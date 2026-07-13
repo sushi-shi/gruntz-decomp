@@ -16,10 +16,10 @@ public:
     i32 HitHover(i32 mx, i32 my);
     void Deactivate();
     i32 Serialize(CSerialArchive* ar);
-    void Dtor();                  // in-place dtor (DestroyGroup teardown, reloc-masked)
+    void Dtor(); // in-place dtor (DestroyGroup teardown, reloc-masked)
     i32 LoadAssets();
 
-    void Forward(i32 a, i32 b);   // 0x49b86 (reloc-masked) - forward (x,y) to the overlay
+    void Forward(i32 a, i32 b);         // 0x49b86 (reloc-masked) - forward (x,y) to the overlay
     int Deserialize(CSerialArchive* s); // 0x00009bb0
 
     i32 m_gridX;               // +0x00  grid X

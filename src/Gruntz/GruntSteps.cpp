@@ -228,12 +228,12 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
-                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                   // It used to be DEFINED here too: six .cpp files each
-                                   // defined it, i.e. six .bss objects for one global
-                                   // (LNK2005). Only the owner defines; everyone externs.
+extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
+                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
+                                  // It used to be DEFINED here too: six .cpp files each
+                                  // defined it, i.e. six .bss objects for one global
+                                  // (LNK2005). Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -709,7 +709,8 @@ i32 CGrunt::StepCompassMove() {
             } else {
                 owner = ((i32*)board->m_8[mty])[mtx * 7 + 1];
             }
-            ((CTriggerMgr*)m_tileMgr)->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
+            ((CTriggerMgr*)m_tileMgr)
+                ->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
         }
         goto commit;
     }

@@ -340,8 +340,8 @@ CFaderSine::~CFaderSine() {}
 // ===========================================================================
 // The inlined game RNG (a THIRD LCG instance: own seed-flag + state, distinct from
 // the 0x6c127d/0x6c1288 and 0x6c2798 pairs), seeded lazily from timeGetTime.
-extern u8 g_fxRandSeeded;                 // 0x6c279c  seed-init flag (bit 0)
-extern i32 g_fxRandSeed;                  // 0x6c27a8  LCG seed
+extern u8 g_fxRandSeeded; // 0x6c279c  seed-init flag (bit 0)
+extern i32 g_fxRandSeed;  // 0x6c27a8  LCG seed
 
 static __inline i32 FxRand(i32 range) {
     u32 x;
@@ -357,7 +357,7 @@ static __inline i32 FxRand(i32 range) {
 
 DATA(0x001f085c)
 extern const float g_faderScale_5f085c = 0.01f; // 0x5f085c  intensity->magnitude scale
-void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
+void ScatterSamples(i32* arr, i32, i32, i32);   // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
 
 // @early-stop
 // regalloc coin-flip wall (73.5% fuzzy). Full body is byte-shape-identical to retail;

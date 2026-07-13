@@ -25,7 +25,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/Fader.h> // the polymorphic base (SetTimers/Set2c/virtual dtor)
+#include <Gruntz/Fader.h>        // the polymorphic base (SetTimers/Set2c/virtual dtor)
 #include <Rez/RezBufferObject.h> // CRezBufferObject - CFaderMesh's +0x58 mesh buffer
 
 // The default-init descriptor built on the CFaderMgr::Add stack when pInit is null:
@@ -97,14 +97,14 @@ public:
     // ApplyInit latches the transition descriptor into these fields, then walks an
     // (m_50 x m_54) grid emitting projected mesh records into the m_58 buffer.
     // m_38/m_3c hold the active dst/src box pointers (stored as dwords via SetTimers).
-    i32 m_38;           // +0x38  active dst box (ptr-as-dword)
-    i32 m_3c;           // +0x3c  active src box (ptr-as-dword)
-    i32 m_40;           // +0x40
-    i32 m_44;           // +0x44
-    i32 m_48;           // +0x48
-    i32 m_4c;           // +0x4c  record-order flag
-    i32 m_50;           // +0x50  columns
-    i32 m_54;           // +0x54  rows
+    i32 m_38;              // +0x38  active dst box (ptr-as-dword)
+    i32 m_3c;              // +0x3c  active src box (ptr-as-dword)
+    i32 m_40;              // +0x40
+    i32 m_44;              // +0x44
+    i32 m_48;              // +0x48
+    i32 m_4c;              // +0x4c  record-order flag
+    i32 m_50;              // +0x50  columns
+    i32 m_54;              // +0x54  rows
     CRezBufferObject m_58; // +0x58..+0x6b  growable mesh buffer (the real CObArray-of-RezElem40)
 };
 
@@ -124,7 +124,7 @@ public:
         return ::operator new(0x7d5c);
     }
     i32 ApplyInit(CFxModeDesc* src); // 0x17fe00 (apply the built default init; body in Fader.cpp)
-    i32 CopyFrom(CFader* src);      // 0x17fe00 (same method; copy from the pInit descriptor)
+    i32 CopyFrom(CFader* src);       // 0x17fe00 (same method; copy from the pInit descriptor)
 
     // ApplyInit latches the source boxes + geometry, range-checks the 0..100 intensity,
     // computes the scaled magnitude (m_54) via the FP pipeline, then fills four parallel
@@ -159,7 +159,7 @@ public:
         return ::operator new(0x50);
     }
     i32 ApplyInit(CFxModeDesc* src); // 0x17f5e0 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x17f5e0 (same method; copy from the pInit descriptor)
+    i32 CopyFrom(CFader* src);       // 0x17f5e0 (same method; copy from the pInit descriptor)
 
     char _pad38[0x3c - 0x38]; // +0x38..+0x3b
     FaderSrc* m_src;          // +0x3c  animation source (frame count at +0x18)
@@ -187,8 +187,8 @@ public:
         return ::operator new(0x206c);
     }
     i32 ApplyInit(CFxModeDesc* src); // 0x1804a0 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x1804a0 (same method; copy from the pInit descriptor)
-    void SubFree180630();           // 0x180630 (dtor member teardown; reloc-masked)
+    i32 CopyFrom(CFader* src);       // 0x1804a0 (same method; copy from the pInit descriptor)
+    void SubFree180630();            // 0x180630 (dtor member teardown; reloc-masked)
 
     // Overlay-pool state read by v3/v4 (AddItem/DropItem). The surface POOL itself is
     // the CFader base's dual-role +0x2c slot (m_set2cArg, read as CDDrawPtrCollections*
@@ -223,8 +223,8 @@ public:
     // default `new CFaderRadial` pushes 0x5c on its own - which is what the retail factory
     // at 0x17d9c0 does.)
     i32 ApplyInit(CFxModeDesc* src); // 0x17fa40 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x17fa40 (same method; copy from the pInit descriptor)
-    void FreeBuffer17fc40();        // 0x17fc40 (dtor: `if(m_50) RezFree(m_50)`; reloc-masked)
+    i32 CopyFrom(CFader* src);       // 0x17fa40 (same method; copy from the pInit descriptor)
+    void FreeBuffer17fc40();         // 0x17fc40 (dtor: `if(m_50) RezFree(m_50)`; reloc-masked)
 
     char _pad38[0x40 - 0x38]; // +0x38..+0x3f
     i32 m_40;                 // +0x40
@@ -257,7 +257,7 @@ public:
     // m_490 declared below, sizeof IS 0x494 and the default `new CFaderShape` pushes 0x494
     // on its own - which is what retail's new-site at 0x17da14 does.)
     i32 ApplyInit(CFxModeDesc* src); // 0x1817e0 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x1817e0 (same method; copy from the pInit descriptor)
+    i32 CopyFrom(CFader* src);       // 0x1817e0 (same method; copy from the pInit descriptor)
 
     char _pad38[0x44 - 0x38];    // +0x38..+0x43
     i32 m_44;                    // +0x44

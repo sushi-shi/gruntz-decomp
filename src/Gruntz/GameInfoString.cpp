@@ -11,7 +11,7 @@
 #include <Mfc.h>  // real MFC CTime (GetCurrentTime / GetLocalTm) - the BuildGameDate clock
 #include <time.h> // struct tm (GetLocalTm's return record)
 #include <rva.h>
-#include <stdio.h>            // sprintf (reloc-masked)
+#include <stdio.h>           // sprintf (reloc-masked)
 #include <string.h>          // strlen/strcat/memset (inlined /O2)
 #include <Gruntz/GameInfo.h> // the shared CGameInfo / CGameInfoTime record (NameRecord shares it)
 

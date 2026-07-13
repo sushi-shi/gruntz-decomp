@@ -50,8 +50,8 @@ public:
     // derived vtable instead of the override.
     virtual i32
     BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, const i32* rect, i32 a7, i32 a8, i32 a9);
-    virtual i32 Vf2();  // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
-    virtual i32 Vf3();  // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
+    virtual i32 Vf2(); // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
+    virtual i32 Vf3(); // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
 
     CTileTriggerSwitchLogic();
     // Non-virtual dtor (the 4 vtable slots are all regular methods, no dtor slot).
@@ -80,10 +80,10 @@ public:
     // The children are 0x9c CTileTriggerLogic (VerifyBlockLinks scans them at +0x3c..+0x9b).
     CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2); // 0x116ee0 (walks the +0x04 sibling list)
     CTileTriggerSwitchLogic* FindByField0C(i32 key);    // 0x1171d0 (same list)
-    i32 ScanNeighborhood(i32 x, i32 y);    // 0x117ec0
-    i32 TransferFlag74(CSerialArchive* s); // 0x117e20
-    i32 LoadFlag74(CSerialArchive* s);     // 0x117e70 (read via slot +0x2c)
-    i32 LoadState(CSerialArchive* s);      // 0x1139a0 (read via slot +0x2c)
+    i32 ScanNeighborhood(i32 x, i32 y);                 // 0x117ec0
+    i32 TransferFlag74(CSerialArchive* s);              // 0x117e20
+    i32 LoadFlag74(CSerialArchive* s);                  // 0x117e70 (read via slot +0x2c)
+    i32 LoadState(CSerialArchive* s);                   // 0x1139a0 (read via slot +0x2c)
     // ValidateByType (0x113a90) / ApplyByType (0x113d40) / SerializeMatrix (0x113dd0) /
     // DeserializeMatrix (0x113e70) are NOT members - they were misattributed here. Retail's
     // CTileTriggerFactory::Build calls them on freshly-`new`ed objects of the OTHER family:
@@ -100,16 +100,16 @@ public:
     void BuildRockBreakInGameText();
 
     // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
-    i32 m_04;       // +0x04  list head (owner) / key (data obj); genuinely dual-role
-    i32 m_08;       // +0x08  (serialized in LoadState)
-    i32 m_key0c;    // +0x0c  secondary key (compared in FindByField0C)
-    i32 m_key1;     // +0x10  primary key (FindIndexByKey/RemoveByKeys/FindChild)
-    i32 m_linkGate; // +0x14  link-check gate (VerifyBlockLinks guard)
-    i32 m_18;       // +0x18  (serialized in LoadState)
-    i32 m_1c;       // +0x1c  (serialized in LoadState)
+    i32 m_04;        // +0x04  list head (owner) / key (data obj); genuinely dual-role
+    i32 m_08;        // +0x08  (serialized in LoadState)
+    i32 m_key0c;     // +0x0c  secondary key (compared in FindByField0C)
+    i32 m_key1;      // +0x10  primary key (FindIndexByKey/RemoveByKeys/FindChild)
+    i32 m_linkGate;  // +0x14  link-check gate (VerifyBlockLinks guard)
+    i32 m_18;        // +0x18  (serialized in LoadState)
+    i32 m_1c;        // +0x1c  (serialized in LoadState)
     ChildNode* m_20; // +0x20  CHILD list head (0x9c CTileTriggerLogic elements; see ChildNode)
     CTileTriggerSwitchLogic* m_owner; // +0x24  back-pointer to the owning switch-logic
-    i32 m_28;        // +0x28  (serialized in LoadState)
+    i32 m_28;                         // +0x28  (serialized in LoadState)
     i32 m_block[24]; // +0x2c..0x8b  (the ctor zeroes exactly these 24; ends at 0x8c)
 
     // TWO DIFFERENT intrusive lists hang off this class, and they hold DIFFERENT element
@@ -184,17 +184,9 @@ public:
     CCheckpointTriggerSwitchLogic(); // 0x1127f0
     // slot 1 (0x112a50): the checkpoint build. Uses the BASE's m_20 gate (+0x20) and copies
     // the caller's 24-dword block into the BASE's m_block (+0x2c) - `rep movsd` ecx=0x18.
-    virtual i32 BuildSmall(
-        i32 a1,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        const i32* rect,
-        i32 a7,
-        i32 a8,
-        i32 a9
-    ) OVERRIDE;
+    virtual i32
+    BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, const i32* rect, i32 a7, i32 a8, i32 a9)
+        OVERRIDE;
 };
 SIZE(CCheckpointTriggerSwitchLogic, 0x8c);
 VTBL(CCheckpointTriggerSwitchLogic, 0x001eaf54);

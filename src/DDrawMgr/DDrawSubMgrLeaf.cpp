@@ -52,9 +52,9 @@ public:
     CAniElement* CreateAniEntry2_1529b0(const char* key, void* entry);
     i32 ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix);
 
-    i32 m_04;            // +0x04  status word
-    i32 m_08;            // +0x08
-    void* m_0c;          // +0x0c  owning CDirectDrawMgr / CDDrawSurfaceMgr manager
+    i32 m_04;             // +0x04  status word
+    i32 m_08;             // +0x08
+    void* m_0c;           // +0x0c  owning CDirectDrawMgr / CDDrawSurfaceMgr manager
     CMapStringToPtr m_10; // +0x10  keyed animation catalog
 };
 

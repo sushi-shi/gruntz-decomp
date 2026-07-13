@@ -53,7 +53,7 @@ i32 CImageState::LoadStateImages() {
     if (Vslot06() == 0) { // the per-state image hook (slot 6, +0x18)
         return 0;
     }
-int(WINAPI * sc)(BOOL) = ::ShowCursor;
+    int(WINAPI * sc)(BOOL) = ::ShowCursor;
     i32 r = sc(1);
     while (r < 0) {
         r = sc(1);
@@ -71,7 +71,7 @@ i32 CBootyState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }
-int(WINAPI * sc)(BOOL) = ::ShowCursor;
+    int(WINAPI * sc)(BOOL) = ::ShowCursor;
     i32 r = sc(0);
     while (r >= 0) {
         r = sc(0);
@@ -99,6 +99,11 @@ int(WINAPI * sc)(BOOL) = ::ShowCursor;
         ShowSecretBonusMessage();
     }
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited; was fake CBootyState::BuildPage)
+    RetireScene(
+        0x50,
+        0x3e8,
+        0,
+        1
+    ); // 0xfa8f0 CState::RetireScene (inherited; was fake CBootyState::BuildPage)
     return 1;
 }

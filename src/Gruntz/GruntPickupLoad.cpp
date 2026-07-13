@@ -58,7 +58,7 @@ struct MegaHolder {
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         a4 = 0;                                                                                    \
-        m_154->m_c->m_2c->m_10map.Lookup((key), (CObject*&)a4);               \
+        m_154->m_c->m_2c->m_10map.Lookup((key), (CObject*&)a4);                                    \
         id = (idv);                                                                                \
         m_pickupGeoSrc = a4;                                                                       \
     } while (0)

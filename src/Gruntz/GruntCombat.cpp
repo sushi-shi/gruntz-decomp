@@ -356,7 +356,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         CombatCue* out = 0;                                                                        \
-        reg->m_world->m_28->m_10.Lookup((key), (void*&)out);                                    \
+        reg->m_world->m_28->m_10.Lookup((key), (void*&)out);                                       \
         cue = out;                                                                                 \
     } while (0)
 
@@ -464,7 +464,7 @@ extern FreeNodePool g_coordPool;
 // Find1de8 was never a method at all: 0x1de8 is an ILT thunk to 0x29a30, the free __stdcall
 // ListNodeAdvance(void**) already defined in BattlezMapConfig.cpp.
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
-struct CScanCell { // 0x1c bytes/cell
+struct CScanCell {                           // 0x1c bytes/cell
     char _00[3];
     u8 m_3; // +0x03 flag byte
     char _04[0x1c - 4];
@@ -509,9 +509,9 @@ namespace ApiMisc {
 
 #define FREELIST_PUSH(elem)                                                                        \
     {                                                                                              \
-        void** node = (void**)((char*)(elem) - g_coordPool.m_linkOffset);                                \
-        *node = g_coordPool.m_freeHead;                                                                        \
-        g_coordPool.m_freeHead = node;                                                                         \
+        void** node = (void**)((char*)(elem) - g_coordPool.m_linkOffset);                          \
+        *node = g_coordPool.m_freeHead;                                                            \
+        g_coordPool.m_freeHead = node;                                                             \
     }
 
 // @early-stop
@@ -555,8 +555,8 @@ SIZE_UNKNOWN(CombatTypeNode);
             g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id = g_typeCounter;                                                                    \
             char* slot = (char*)((_zvec*)&g_nameRegColl)->IndexToPtr(id);                          \
-            i32 n = g_typeColl.m_grown;                                                                   \
-            void** list = (void**)g_typeColl.m_alloc;                                                     \
+            i32 n = g_typeColl.m_grown;                                                            \
+            void** list = (void**)g_typeColl.m_alloc;                                              \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
                     ((CString*)list)->CString::~CString();                                         \
@@ -756,12 +756,12 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
-                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                   // It used to be DEFINED here too: six .cpp files each
-                                   // defined it, i.e. six .bss objects for one global
-                                   // (LNK2005). Only the owner defines; everyone externs.
+extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
+                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
+                                  // It used to be DEFINED here too: six .cpp files each
+                                  // defined it, i.e. six .bss objects for one global
+                                  // (LNK2005). Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,

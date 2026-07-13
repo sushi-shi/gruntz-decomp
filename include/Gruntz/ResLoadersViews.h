@@ -23,14 +23,14 @@ namespace ResLoaders {
     // Draws a numeric count centred into a rect via the counter window's DC.
     struct DrawHost_164380 {
         char m_pad0[0x2c];
-        CounterWnd_164380* m_2c; // +0x2c
+        CounterWnd_164380* m_2c;         // +0x2c
         void DrawCount(RECT* rc, i32 n); // 0x00164380
     };
 
     // Draws a text label centred into a rect via the counter window's DC.
     struct DrawHost2_164420 {
         char m_pad0[0x2c];
-        CounterWnd_164380* m_2c; // +0x2c
+        CounterWnd_164380* m_2c;              // +0x2c
         void DrawLabel(RECT* rc, char* text); // 0x00164420
     };
 

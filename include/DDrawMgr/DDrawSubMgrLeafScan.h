@@ -115,9 +115,9 @@ public:
     void* ScalarDtor(u32 flags); // 0x157550
 
     CMapStringToPtr m_10; // +0x10  keyed asset cache (ends +0x2c)
-    SoundDevice* m_2c;   // +0x2c  held DSound device
-    i32 m_30;            // +0x30  busy/loading guard
-    i32 m_34;            // +0x34  redraw arg
+    SoundDevice* m_2c;    // +0x2c  held DSound device
+    i32 m_30;             // +0x30  busy/loading guard
+    i32 m_34;             // +0x34  redraw arg
 };
 
 SIZE_UNKNOWN(LeafScanBase);

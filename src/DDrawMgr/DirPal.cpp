@@ -759,7 +759,7 @@ i32 BlackoutSystemPalette() {
         }
         HPALETTE hpal = ::CreatePalette((LOGPALETTE*)&lp);
         if (hpal != 0) {
-HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = ::SelectPalette;
+            HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = ::SelectPalette;
             HPALETTE old = pSelect(hdc, hpal, 0);
             ::RealizePalette(hdc);
             ::DeleteObject(pSelect(hdc, old, 0));

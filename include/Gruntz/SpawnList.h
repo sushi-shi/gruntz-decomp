@@ -43,7 +43,7 @@ public:
     CString GetName() {
         return m_name;
     }
-    CString GetTail();                   // 0x9a830  the name past its 8-char group prefix
+    CString GetTail(); // 0x9a830  the name past its 8-char group prefix
 
     CString m_name; // +0x00  the record name
     i32 m_flag;     // +0x04  = 0 at ctor; "wanted" mark (LoadObject*Resources set 1)
@@ -85,7 +85,7 @@ public:
     CSpawnEntry* FindByName(const CString& name);      // 0x9a290  (was Extract/FindAdd)
     void AddVoiceSound(CString s, i32 flag);           // 0x11c560 (def: GruntSpawnConfig.cpp)
 
-    CPtrList m_list;       // +0x00  the entry list (0x1c B; block size 10)
+    CPtrList m_list;      // +0x00  the entry list (0x1c B; block size 10)
     CSpawnNode* m_cursor; // +0x1c  scan cursor (LoadObject*Resources' re-scan)
     i32 m_lastPicked;     // +0x20  last-picked index (-1; the weighted picker's memory)
 };

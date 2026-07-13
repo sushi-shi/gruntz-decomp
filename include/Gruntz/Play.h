@@ -704,7 +704,7 @@ public:
     // (band head 0x1b527e, vtable 0x1ed28c) and retail never calls it here.  The four
     // MFC array classes are byte-identical, so every FID row there is AMBIG.
     //     python -m gruntz.analysis.mfc_class 0x1b4f3e
-    CPtrArray m_startMarkers;  // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
+    CPtrArray m_startMarkers; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
     char m_pad384[0x3a4 - 0x384];
     // +0x3a4: the 4 placed-object record arrays. CPtrArray (not CByteArray):
     // ClearPlacedObjects (0xda030) reads the elements as CPlacedObj* and retail
@@ -732,7 +732,7 @@ public:
     i32 m_viewMode;      // +0x480  StepC/OnRegion view-mode discriminator (0=idle/1/2)
     i32 m_hudSuppressed; // +0x484  HUD-suppress gate (DispatchHudClick early-out)
     // ::CPtrArray (same proof: ~CPlay does `lea ecx,[esi+0x488] / call 0x1b4f3e`).
-    CPtrArray m_488;     // +0x488  5th destructible member (0x14 bytes)
+    CPtrArray m_488; // +0x488  5th destructible member (0x14 bytes)
     char m_pad49c[0x4a0 - 0x49c];
     i32 m_snapBaseLo, m_snapBaseHi, m_snapDur,
         m_snapDurHi;        // +0x4a0  snapshot 64-bit base + duration
@@ -815,7 +815,7 @@ extern "C" {
     extern u32 g_645588;         // g_accumMs (the running game clock)
     extern StateMgrBZ* g_645578; // the dev/render-state singleton (DispatchHudClick)
     extern "C" i32 g_curPlayer;  // a default cue/message wParam
-    extern u32 g_killCueClock;         // draw-clock mirror
+    extern u32 g_killCueClock;   // draw-clock mirror
     extern u32 g_6bf3bc;         // draw-delta mirror
 }
 

@@ -21,9 +21,9 @@
 #include <Image/CImage.h>            // the frame handles ARE CImage (RenderFrame @0x153790)
 #include <Gruntz/SBI_GruntMachine.h> // canonical CSBI_GruntMachine (vtable @0x5eadbc)
 #include <Gruntz/SBI_SideTab.h>      // canonical CSBI_SideTab (vtable @0x5eae3c) + referent views
-#include <Gruntz/SbiSideTabBuildViews.h>  // CStatzTabBuilder (the side tab's `parent`)
-#include <Gruntz/SbiConfig.h>        // canonical CSbiConfigHost (the builders' arg2 config host)
-#include <Gruntz/SBI_ImageSetAni.h>  // canonical CSBI_StatzTabArrow (SetDirection/SetDirectionAlt)
+#include <Gruntz/SbiSideTabBuildViews.h> // CStatzTabBuilder (the side tab's `parent`)
+#include <Gruntz/SbiConfig.h>       // canonical CSbiConfigHost (the builders' arg2 config host)
+#include <Gruntz/SBI_ImageSetAni.h> // canonical CSBI_StatzTabArrow (SetDirection/SetDirectionAlt)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // canonical CSBI_StatzTabGruntBar (BuildMultiplayerTab..)
 
 // The name maps are the real MFC CMapStringToPtr (Lookup @0x1b8008, from <Mfc.h>); no local view.
@@ -243,9 +243,7 @@ i32 Gap_0e8e00(void) {
     return 0;
 }
 
-namespace StatusBarTabBuilders {
-
-} // namespace StatusBarTabBuilders
+namespace StatusBarTabBuilders {} // namespace StatusBarTabBuilders
 
 // ---------------------------------------------------------------------------
 // CSBI_SideTab::BuildStatzTabStatusBar (0xe9600) - the side tab's own configure, run on
@@ -565,10 +563,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (selMode == 0) {
         CStatzGlyphMap* sel = 0;
         ((CSbiConfigHost*)m_24)
-            ->m_10->m_10map.Lookup(
-                "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
-                (void*&)sel
-            );
+            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (void*&)sel);
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;

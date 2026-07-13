@@ -26,11 +26,13 @@ class CEyeCandy : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CEyeCandy(CGameObject* obj);               // 0x0ac620 (ctor body in UserLogic.cpp)
+    CEyeCandy(CGameObject* obj); // 0x0ac620 (ctor body in UserLogic.cpp)
     // 0x0000fca0 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x0000fca0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_EYECANDY; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_EYECANDY;
+    }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00fcc0 (vtable slot 1: two-chain Serialize)
     virtual ~CEyeCandy() OVERRIDE;                // 0x00fd60 (folds the CUserLogic teardown)

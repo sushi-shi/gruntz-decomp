@@ -19,7 +19,7 @@
 #include <rva.h>
 #include <Gruntz/ResMgr.h>        // canonical g_gameReg->m_world (CResMgr + draw chain)
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base
-#include <Gruntz/SbiConfig.h>    // canonical CSbiConfigHost (the configure's arg2)
+#include <Gruntz/SbiConfig.h>     // canonical CSbiConfigHost (the configure's arg2)
 #include <Image/CImage.h>         // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 
 // A sampled grunt record (an element of the registry unit table at g_gameReg+0x68).
@@ -100,7 +100,7 @@ public:
         i32 onLeft
     ); // 0xe9600
 
-    void Reset(); // 0xe9800 (out-of-line)
+    void Reset();            // 0xe9800 (out-of-line)
     i32 Refresh(i32 unused); // vslot 4 (0xe9820)  rebuild the +0x58 draw gate (ret int 0)
     i32 Render(i32 z);       // vslot 5 (0xe99c0)  draw the two side frames
     i32 BuildHandle();       // 0xe9850  sibling: build the +0x58 draw gate

@@ -18,7 +18,7 @@
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
-#include <Globals.h>             // g_projPhase0, g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_645588
+#include <Globals.h> // g_projPhase0, g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_645588
 #include <rva.h>
 
 // @confidence: high
@@ -47,7 +47,7 @@ extern "C" CGameRegistry* g_gameReg;
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 extern FreeNodePool g_coordPool;
-extern "C" u32 g_645588;       // 0x245588  running game clock (return-record base)
+extern "C" u32 g_645588; // 0x245588  running game clock (return-record base)
 
 // The boomerang return-trajectory constants (.rdata doubles). DATA-pinned here (the
 // only referencing TU) so the fmul/fdivr loads reloc-mask against the named symbols.

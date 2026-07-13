@@ -59,7 +59,6 @@ public:
     CWsfOwner* m_owner;     // +0x3c  back-pointer to the owning CStatusBarMgr
 };
 
-
 // The flying-warpstone overlay's registry views (ex WarpStoneFly.cpp): m_cmdGrid+0x260
 // is a CByteArray (the registry tab-state array; SetAtGrow @0x1b5485 == the real MFC
 // CByteArray::SetAtGrow, cast at the call); m_world->m_drawable->m_context is the

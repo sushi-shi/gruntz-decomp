@@ -5,9 +5,9 @@
 #include <Ints.h>
 #include <Wap32/Object.h> // CObject - the shared engine grand-base
 #include <rva.h>
-#include <Mfc.h>              // CArchive (Serialize's arg)
-#include <string.h>           // memset/memcpy -> rep stos/movs in the inlined SetSize
-#include <new>                // placement new (ConstructElements' per-element ctor)
+#include <Mfc.h>                 // CArchive (Serialize's arg)
+#include <string.h>              // memset/memcpy -> rep stos/movs in the inlined SetSize
+#include <new>                   // placement new (ConstructElements' per-element ctor)
 #include <Rez/RezBufferObject.h> // RezElem40 (the 0x28 CArray element type)
 
 // The 40-byte (0x28) mesh-record element the CObArray holds. Its default ctor

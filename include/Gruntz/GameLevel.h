@@ -471,9 +471,10 @@ public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
     // CLoadable members (m_04/m_08/m_0c); the plane-read ctx begins at +0x10.
     LevelCoordRect m_planeCtx; // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
-    CObArray m_array20;   // +0x20  ::CObArray (ctor 0x1b55e9; EH state 0)
-    CObArray m_planes;    // +0x34  ::CObArray of CLevelPlane* (m_size@+0x3c == m_planeCount; EH state 1)
-    CObArray m_imageSets; // +0x48  ::CObArray of CImageSet* (EH state 2)
+    CObArray m_array20;        // +0x20  ::CObArray (ctor 0x1b55e9; EH state 0)
+    CObArray
+        m_planes; // +0x34  ::CObArray of CLevelPlane* (m_size@+0x3c == m_planeCount; EH state 1)
+    CObArray m_imageSets;          // +0x48  ::CObArray of CImageSet* (EH state 2)
     CLevelPlane* m_mainPlane;      // +0x5C  (typed full plane view; same object as CPlane)
     i32 m_mainIndex;               // +0x60
     i32 m_maxStepX;                // +0x64  per-frame max move step (MoveToward; 0x40)

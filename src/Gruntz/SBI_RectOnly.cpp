@@ -1,5 +1,5 @@
 #include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CPtrList consumers below)
-#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
+#include <Gruntz/StatusBarMgr.h>        // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
 #include <Gruntz/LevelSync.h>           // CLevelSync + its referents (was a TU-local view)
 #include <Gruntz/SpriteFactory.h>       // real CSpriteFactory::CreateSprite (0x1597b0); 0x104dd0
@@ -61,7 +61,7 @@ extern "C" u32 g_645588;
 // with none defining it. .bss, zero-init.
 DATA(0x00244c54)
 extern "C" {
-i32 g_curPlayer = 0;
+    i32 g_curPlayer = 0;
 }
 
 // CMapStringToOb/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
@@ -1393,7 +1393,6 @@ i32 CStatusBarMgr::Activate() {
 
 // (the running game clock g_645588 is declared once at the top of this TU)
 
-
 // (the CWsfTabArray/CWsfDrawable/CWsfGameMgr views moved to <Gruntz/WarpStoneFly.h> and
 // the CLevelSync/CLevelSyncChild/SyncSub views to <Gruntz/LevelSync.h> with their
 // functions, when those objs were un-merged back out of this TU.)
@@ -1464,7 +1463,6 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     m[idx + 0x114 / 4] = value;
     return 1;
 }
-
 
 // ===========================================================================
 // EngineLabelBacklog::UpdateGruntOvenStatusBar @0x105310
@@ -1612,8 +1610,6 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     }
 }
 
-
-
 // ===========================================================================
 // EngineLabelBacklog::UpdateWarpStoneStatusBar @0x109bd0
 // ===========================================================================
@@ -1708,9 +1704,6 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     *(double*)&m[0x18 / 4] = (double)dyv;
     return 1;
 }
-
-
-
 
 // (CTabzBuilder::BuildTabzDialog @0x10a340 moved OUT to src/Gruntz/SBI_TabzDialogEh.cpp -
 // its own retail obj. It needs the OUT-OF-LINE base ctor (retail `call ??0CStatusBarItem`)
@@ -2803,7 +2796,15 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 
     // ---- rect-only sub-widget A (id 0x259) ----
     it = new CSbiRectSub;
-    if (!it->Setup((i32)this, (i32)code, 0x259, 0, SbiRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9), 0, -1)) {
+    if (!it->Setup(
+            (i32)this,
+            (i32)code,
+            0x259,
+            0,
+            SbiRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
+            0,
+            -1
+        )) {
         if (it) {
             delete it;
         }
@@ -2813,7 +2814,15 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 
     // ---- rect-only sub-widget B (id 0x25a) ----
     it = new CSbiRectSub;
-    if (!it->Setup((i32)this, (i32)code, 0x25a, 0, SbiRect(bx + 0x8a, by + 0xb9, bx + 0x96, by + 0xc7), 0, -1)) {
+    if (!it->Setup(
+            (i32)this,
+            (i32)code,
+            0x25a,
+            0,
+            SbiRect(bx + 0x8a, by + 0xb9, bx + 0x96, by + 0xc7),
+            0,
+            -1
+        )) {
         if (it) {
             delete it;
         }
@@ -2823,7 +2832,15 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 
     // ---- rect-only sub-widget C (id 0x25b) ----
     it = new CSbiRectSub;
-    if (!it->Setup((i32)this, (i32)code, 0x25b, 0, SbiRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7), 0, -1)) {
+    if (!it->Setup(
+            (i32)this,
+            (i32)code,
+            0x25b,
+            0,
+            SbiRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
+            0,
+            -1
+        )) {
         if (it) {
             delete it;
         }
@@ -2834,7 +2851,16 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- STATZTAB (menu item, type 1) ----
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
-             ->SetupImage((i32)this, (CSbiConfigHost*)code, 1, 0, SbiRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_STATZTAB", -1, 0)) {
+             ->SetupImage(
+                 (i32)this,
+                 (CSbiConfigHost*)code,
+                 1,
+                 0,
+                 SbiRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
+                 (i32) "GAME_STATUSBAR_TABZ_STATZTAB",
+                 -1,
+                 0
+             )) {
         if (it) {
             delete it;
         }
@@ -2846,7 +2872,16 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- GRUNTZTAB (menu item, type 2) ----
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
-             ->SetupImage((i32)this, (CSbiConfigHost*)code, 2, 0, SbiRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_GRUNTZTAB", -1, 0)) {
+             ->SetupImage(
+                 (i32)this,
+                 (CSbiConfigHost*)code,
+                 2,
+                 0,
+                 SbiRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
+                 (i32) "GAME_STATUSBAR_TABZ_GRUNTZTAB",
+                 -1,
+                 0
+             )) {
         if (it) {
             delete it;
         }
@@ -2858,7 +2893,16 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- RESOURCETAB (menu item, type 3) ----
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
-             ->SetupImage((i32)this, (CSbiConfigHost*)code, 3, 0, SbiRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_RESOURCETAB", -1, 0)) {
+             ->SetupImage(
+                 (i32)this,
+                 (CSbiConfigHost*)code,
+                 3,
+                 0,
+                 SbiRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
+                 (i32) "GAME_STATUSBAR_TABZ_RESOURCETAB",
+                 -1,
+                 0
+             )) {
         if (it) {
             delete it;
         }
@@ -2870,7 +2914,16 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- MULTIPLAYERTAB (menu item, type 4) ----
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
-             ->SetupImage((i32)this, (CSbiConfigHost*)code, 4, 0, SbiRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_MULTIPLAYERTAB", -1, 0)) {
+             ->SetupImage(
+                 (i32)this,
+                 (CSbiConfigHost*)code,
+                 4,
+                 0,
+                 SbiRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
+                 (i32) "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
+                 -1,
+                 0
+             )) {
         if (it) {
             delete it;
         }
@@ -2896,7 +2949,16 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // ---- GAMETAB (menu item, type 5; inline ctor) ----
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
-             ->SetupImage((i32)this, (CSbiConfigHost*)code, 5, 0, SbiRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_GAMETAB", -1, 0)) {
+             ->SetupImage(
+                 (i32)this,
+                 (CSbiConfigHost*)code,
+                 5,
+                 0,
+                 SbiRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
+                 (i32) "GAME_STATUSBAR_TABZ_GAMETAB",
+                 -1,
+                 0
+             )) {
         if (it) {
             delete it;
         }

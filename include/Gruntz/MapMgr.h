@@ -64,8 +64,8 @@ public:
     i32 Allocate(u32 count);
 
     BrickzNode* m_block; // +0x00  the 0x24-byte search-record pool (was void*)
-    void* m_0;     // +0x04  (the heap block the dtor frees)
-    u32 m_count;   // +0x08
+    void* m_0;           // +0x04  (the heap block the dtor frees)
+    u32 m_count;         // +0x08
 };
 
 // ---------------------------------------------------------------------------
@@ -84,9 +84,9 @@ public:
     ~CMapArrayB();
     i32 Allocate(u32 count);
 
-    void* m_0;     // +0x00  (the heap block the dtor frees)
+    void* m_0;           // +0x00  (the heap block the dtor frees)
     BrickzNode* m_block; // +0x04  the 0x0c-byte bucket-node pool (was void*)
-    u32 m_count;   // +0x08
+    u32 m_count;         // +0x08
 };
 
 // ---------------------------------------------------------------------------
@@ -123,10 +123,10 @@ public:
     // slot 5 there is the SAME 0x853f0 body - so CMapMgr / CBrickzGrid / CMapVisitTarget
     // are ONE class under three names. Slots 1 and 4 are folded here; IsCellClear stays
     // declared-only until CBrickzGrid's whole method set folds (@identity-TODO).
-    virtual void Reset();                                    // slot 0  0x09ec30
+    virtual void Reset();                                            // slot 0  0x09ec30
     virtual i32 Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // [1] 0x09f7f0
-    virtual i32 Save(CSerialArchive*);                       // slot 2  0x09f840
-    virtual i32 Load(CSerialArchive*);                       // slot 3  0x09f9a0
+    virtual i32 Save(CSerialArchive*);                               // slot 2  0x09f840
+    virtual i32 Load(CSerialArchive*);                               // slot 3  0x09f9a0
     // Slots 4/5 are declared-only HERE: their bodies (0x09eca0 / 0x0853f0) are written
     // against CBrickzGrid's member set (m_rows / Insert / PopFront / Expand / CellPush),
     // so they keep that name until the whole CBrickzGrid method set folds onto this class.
@@ -143,12 +143,20 @@ public:
     void Clip(const tagRECT* r);                        // 0x02b340 board dirty-rect clip
     void ComputeCellFlags(i32 x, i32 y, i32 id3);       // 0x077790 terrain cell-flag compute
     i32 AllocGrid(i32 width, i32 height, i32 callback); // 0x09ea60 grid allocator/initializer
-    i32 SearchEdge(i32 xA, i32 yA, i32 xB, i32 yB, void* list, i32 clearFlag, i32 maskA,
-                   i32 maskC);                          // 0x081e10
-    i32 UpdateDiagonals(i32 unused);                    // 0x082030 diagonal-passability walk
-    i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1);    // 0x082250 straight-line probe
-    i32 Serialize(i32 a0, i32 a1, i32 a2, i32 a3);      // 0x09356c (the +0x7c object comes
-                                                        //          from a3, NOT from `this`)
+    i32 SearchEdge(
+        i32 xA,
+        i32 yA,
+        i32 xB,
+        i32 yB,
+        void* list,
+        i32 clearFlag,
+        i32 maskA,
+        i32 maskC
+    );                                               // 0x081e10
+    i32 UpdateDiagonals(i32 unused);                 // 0x082030 diagonal-passability walk
+    i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1); // 0x082250 straight-line probe
+    i32 Serialize(i32 a0, i32 a1, i32 a2, i32 a3);   // 0x09356c (the +0x7c object comes
+                                                     //          from a3, NOT from `this`)
     i32 Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag); // 0x09f010
     i32 Insert(BrickzNode* node);                                     // 0x09f370
     BrickzNode* PopFront();                                           // 0x09f430
@@ -202,8 +210,8 @@ public:
     // m_freeList (+0x40 = m_colB.m_block, the 0x0c-byte bucket nodes) - one object read
     // from two ends. (No union: a union member may not have a constructor, and these two
     // sub-objects have real ctors/dtors at their own RVAs.)
-    CMapArrayA m_colA; // +0x30
-    CMapArrayB m_colB; // +0x3c
+    CMapArrayA m_colA;  // +0x30
+    CMapArrayB m_colB;  // +0x3c
     void (*m_stepCb)(); // +0x48  per-step callback (engine hook)
     i32 m_edgeMask;     // +0x4c  edge-punch reject mask (SearchEdge; Expand pre-filter)
     i32 m_maskA;        // +0x50  Search maskA: cell blocked when set (= -1 in the ctor)
@@ -213,12 +221,12 @@ public:
     // +0x60..+0x6c IS a RECT - the board bound-rect (Clip/AllocGrid take its address and
     // hand it straight to Win32 IntersectRect). The "serialized 0x10 block" the CMapMgr
     // model saw and the bound rect the CBrickzGrid model saw are the same 16 bytes.
-    i32 m_originX;    // +0x60  bound rect left   (grid origin x)
-    i32 m_originY;    // +0x64  bound rect top    (grid origin y)
-    i32 m_boundRight; // +0x68  bound rect right
-    i32 m_boundBottom; // +0x6c bound rect bottom
-    i32 m_gridW;      // +0x70  clipped grid width extent (cells)
-    i32 m_gridH;      // +0x74  clipped grid height extent (cells)
+    i32 m_originX;            // +0x60  bound rect left   (grid origin x)
+    i32 m_originY;            // +0x64  bound rect top    (grid origin y)
+    i32 m_boundRight;         // +0x68  bound rect right
+    i32 m_boundBottom;        // +0x6c bound rect bottom
+    i32 m_gridW;              // +0x70  clipped grid width extent (cells)
+    i32 m_gridH;              // +0x74  clipped grid height extent (cells)
     BrickzAttrMgr* m_attrMgr; // +0x78  attribute/bute-type manager (ComputeCellFlags)
 };
 

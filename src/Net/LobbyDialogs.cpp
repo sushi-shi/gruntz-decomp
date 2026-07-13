@@ -26,7 +26,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (g_gameReg->m_curState @ +0x2c)
-#include <Gruntz/Multi.h>        // canonical CMulti (the network game-state; m_session is CNetSession)
+#include <Gruntz/Multi.h> // canonical CMulti (the network game-state; m_session is CNetSession)
 #include <Net/NetMgr.h> // canonical CNetSession (m_session command-slot facet; CheckLatency @0xc04a0)
 #include <Wap32/Wap32.h> // CGameApp (m_logic->m_owner->m_hInstance, ReportStatusId)
 #include <string.h>      // strcpy/strcat (inline CRT, reloc-masked)

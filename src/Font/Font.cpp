@@ -346,7 +346,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     i32 rightPartial = 0;
     i32 firstCol = 0;
     i32 packedColor = ((u8)((u8)red >> (u8)g_rDown) << g_rUp)
-                    | ((u8)((u8)green >> (u8)g_gDown) << g_gUp) | ((u8)blue >> (u8)g_bDown);
+                      | ((u8)((u8)green >> (u8)g_gDown) << g_gUp) | ((u8)blue >> (u8)g_bDown);
 
     // Left clip: skip glyphs entirely left of rc.left; firstCol is the sub-glyph
     // column offset into the first partly-visible glyph.

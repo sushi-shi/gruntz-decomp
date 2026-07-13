@@ -1576,13 +1576,23 @@ public:
     // POSITION -> node cast is the one language-forced cast here: MFC keeps CNode
     // private, and a CPtrList POSITION *is* that node ({pNext, pPrev, data}), whose
     // +8 data slot is GruntCoord* m_coord.
-    GruntCoordNode* CoordHead() const { return (GruntCoordNode*)m_31c.GetHeadPosition(); }
-    GruntCoordNode* CoordTail() const { return (GruntCoordNode*)m_31c.GetTailPosition(); }
-    i32 CoordCount() const { return m_31c.GetCount(); }
-    CGruntListNode* PayloadHead() const { return (CGruntListNode*)m_338.GetHeadPosition(); }
-    i32 PayloadCount() const { return m_338.GetCount(); }
+    GruntCoordNode* CoordHead() const {
+        return (GruntCoordNode*)m_31c.GetHeadPosition();
+    }
+    GruntCoordNode* CoordTail() const {
+        return (GruntCoordNode*)m_31c.GetTailPosition();
+    }
+    i32 CoordCount() const {
+        return m_31c.GetCount();
+    }
+    CGruntListNode* PayloadHead() const {
+        return (CGruntListNode*)m_338.GetHeadPosition();
+    }
+    i32 PayloadCount() const {
+        return m_338.GetCount();
+    }
 
-    i32 m_354; // +0x354 (serialized)
+    i32 m_354;       // +0x354 (serialized)
     i32 m_358;       // +0x358
     i32 m_35c;       // +0x35c
     i32 m_deathType; // +0x360 (last LoadGruntDeathAnimations kind; serialized w/ m_364)

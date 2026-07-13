@@ -139,9 +139,9 @@ public:
     // match the void*-typed DInput/Win32 wrappers they flow into and to keep this
     // header (also included by GameApp/UnknownVTables) free of <windows.h> - a
     // documented FOREIGN-HANDLE keep (the SDK's own LPVOID/HANDLE convention).
-    void* m_owner;             // +0x04  owner window (Create arg1; the cooperative-level HWND)
-    void* m_hinst;             // +0x08  the HINSTANCE passed to DirectInputCreateA
-    u32 m_flags;               // +0x0c  the device-type flags (Create arg3)
+    void* m_owner;            // +0x04  owner window (Create arg1; the cooperative-level HWND)
+    void* m_hinst;            // +0x08  the HINSTANCE passed to DirectInputCreateA
+    u32 m_flags;              // +0x0c  the device-type flags (Create arg3)
     CInputDevBase* m_deviceB; // +0x10  keyboard/mouse device B (InitB)
     CInputDevBase* m_deviceA; // +0x14  keyboard device A (InitA)
     CPtrArray m_devices;      // +0x18  extra devices (MFC CPtrArray; data@1c size@20)

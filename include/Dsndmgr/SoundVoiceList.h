@@ -85,12 +85,12 @@ struct DSoundList {
     DSoundLink* m_head; // +0x00
     DSoundLink* m_tail; // +0x04
 
-    void InsertHead(DSoundLink* node);       // 0x1390e0
-    void InsertTail(DSoundLink* node);       // 0x139110
+    void InsertHead(DSoundLink* node);                       // 0x1390e0
+    void InsertTail(DSoundLink* node);                       // 0x139110
     void InsertAfter(DSoundLink* after, DSoundLink* node);   // 0x139140
     void InsertBefore(DSoundLink* before, DSoundLink* node); // 0x139190
-    void Unlink(DSoundLink* node);           // 0x1391e0
-    void RemoveMatching(void* key, u32 tag); // 0x136f60
+    void Unlink(DSoundLink* node);                           // 0x1391e0
+    void RemoveMatching(void* key, u32 tag);                 // 0x136f60
 };
 SIZE(DSoundList, 0x8); // {head,tail} intrusive list head
 

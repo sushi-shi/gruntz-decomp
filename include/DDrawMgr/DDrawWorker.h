@@ -92,17 +92,17 @@ public:
     // offset. So 0x151f00 is slot 14 of THIS class, not a CSprite method, and CSprite is a
     // third view of the same 0x6c object. Folding the three is a real (large) merge with no
     // link-defect payoff - flagged with the evidence rather than half-done.
-    virtual i32 InsertFrame(void* rec, i32 n, i32 flag);   // slot 14 @0x151f00
-    virtual i32 ValidateFramesFromSymTab(CSymTab* tab);    // slot 15 @0x1522b0
-    virtual i32 Slot40_1523b0(i32 rec, i32 n, i32 flag);   // slot 16 @0x1523b0
+    virtual i32 InsertFrame(void* rec, i32 n, i32 flag); // slot 14 @0x151f00
+    virtual i32 ValidateFramesFromSymTab(CSymTab* tab);  // slot 15 @0x1522b0
+    virtual i32 Slot40_1523b0(i32 rec, i32 n, i32 flag); // slot 16 @0x1523b0
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
     void AddFrameAt_1521c0(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
     ::CObArray m_items; // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
-    char m_key[0x40];       // +0x24  registry key buffer (SetKey_155810 strncpy's it,
-                            //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
-    i32 m_64;               // +0x64  cached-index sentinel (DeleteAll seeds 99999)
-    i32 m_68;               // +0x68
+    char m_key[0x40];   // +0x24  registry key buffer (SetKey_155810 strncpy's it,
+                        //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
+    i32 m_64;           // +0x64  cached-index sentinel (DeleteAll seeds 99999)
+    i32 m_68;           // +0x68
 };
 VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 

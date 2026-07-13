@@ -15,9 +15,9 @@
 #include <stdlib.h> // abs() (the Slot34/38 dirty-rect deltas)
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <Wwd/WwdGameObjectFamily.h> // the CWwdGameObjectE/A/F/B/C hierarchy
-#include <Gruntz/WwdGameObject.h>    // canonical CWwdGameObject
-#include <Gruntz/WwdWorker.h>        // the shared per-object worker (+0x7c; Kick at vtbl+0x10)
+#include <Wwd/WwdGameObjectFamily.h>   // the CWwdGameObjectE/A/F/B/C hierarchy
+#include <Gruntz/WwdGameObject.h>      // canonical CWwdGameObject
+#include <Gruntz/WwdWorker.h>          // the shared per-object worker (+0x7c; Kick at vtbl+0x10)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CWwdObjMgrL::m_0c owner
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 

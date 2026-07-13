@@ -17,11 +17,11 @@
 #include <Gruntz/UserLogic.h>       // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>           // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h>    // canonical *0x24556c singleton (color table via m_78)
-#include <Gruntz/TriggerMgr.h>      // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
-#include <Gruntz/ActReg.h>          // CActReg coordinate registry (ResolveEntry) for RunAct
-#include <Gruntz/SerialArchive.h>   // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>    // the +0x34 serialized-object-reference (Chain @0x8c00)
-#include <math.h>                   // sin / cos (the Tick rotation)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
+#include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <math.h>                 // sin / cos (the Tick rotation)
 #include <rva.h>
 
 // The bute store the "A" activation node is resolved through (g_buteTree @0x6bf620,
@@ -343,8 +343,7 @@ i32 CSpotLight::Tick_0b1af0() {
                 CSndHost* obj = reg->m_world->m_28; // the name->cue map host
                 if (obj->m_emitGate == 0) {
                     void* out = 0;
-                    if (obj->m_10.Lookup(name, out) && out != 0
-                        && g_sndEnabled != 0) {
+                    if (obj->m_10.Lookup(name, out) && out != 0 && g_sndEnabled != 0) {
                         SoundPlay_1360d0((i32)out, 0, 0, g_sndCueTag);
                     }
                 }

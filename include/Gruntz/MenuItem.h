@@ -61,7 +61,7 @@ struct CMenuItemCatalog {
     // ::CMapStringToOb - retail's Lookup here is 0x1b8008, which lies in
     // [0x1b7e17, 0x1b8247), the band whose ctor stamps ??_7CMapStringToOb@@6B@.
     // (There is NO fold: CMapStringToPtr's Lookup is a SEPARATE body at 0x1b8438.)
-    CMapStringToOb m_10;  // +0x10 the string->item map base (real MFC)
+    CMapStringToOb m_10; // +0x10 the string->item map base (real MFC)
 };
 SIZE_UNKNOWN(CMenuItemCatalog);
 struct CMenuItemHostOwner {

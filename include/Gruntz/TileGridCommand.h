@@ -17,7 +17,7 @@
 
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (the active layer)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (the active layer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created InGameText sprite)

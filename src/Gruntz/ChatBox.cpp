@@ -87,7 +87,6 @@ struct CChatCatalog {
     i32 m_64; // current frame/index, read straight through the lookup result
 };
 
-
 // The font/sprite passed into Draw: anchor coords m_44/m_48 (0xeeeeeeee = "use the
 // caller's fallback coords") and a virtual Measure() at vtable slot +0x14 (index 5).
 struct CChatSprite {
@@ -104,7 +103,7 @@ struct CChatSprite {
 
 // The horizontal-scroll edge state read by the two scroll-step methods.
 extern i32 g_sndEnabled; // 0x61ab20
-extern i32 g_sndCueTag; // 0x61ab24
+extern i32 g_sndCueTag;  // 0x61ab24
 DATA(0x002bf3c0)
 extern i32 g_scrollClock; // 0x6bf3c0
 
@@ -195,7 +194,9 @@ void CChatBox::Clear() {
         CMenuPage* payload = (CMenuPage*)cur->data;
         if (payload) {
             payload->~CMenuPage();
-            operator delete(payload); // engine ::operator delete (??3@YAXPAX@Z @0x1b9b82), reloc-masked
+            operator delete(
+                payload
+            ); // engine ::operator delete (??3@YAXPAX@Z @0x1b9b82), reloc-masked
         }
     }
     m_nodeList.RemoveAll();

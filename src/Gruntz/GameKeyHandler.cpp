@@ -33,20 +33,20 @@
 // ---------------------------------------------------------------------------
 // Named globals (so their DIR32 operands reloc-mask in objdiff).
 // ---------------------------------------------------------------------------
-extern "C" void* g_gameReg;    // 0x64556c  _g_mgrSettings (game-mgr singleton)
-extern i32 g_sndCueTag;        // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
-extern void* g_devState;       // 0x645578  DAT_00645578 (dev/render state; +0x18 flags)
-extern i32 g_areaIdx;          // 0x644c54  _g_644c54 (current area index)
+extern "C" void* g_gameReg;      // 0x64556c  _g_mgrSettings (game-mgr singleton)
+extern i32 g_sndCueTag;          // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
+extern void* g_devState;         // 0x645578  DAT_00645578 (dev/render state; +0x18 flags)
+extern i32 g_areaIdx;            // 0x644c54  _g_644c54 (current area index)
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 // The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 extern FreeNodePool g_coordPool;
-extern i32 g_cheatA;           // 0x6455a4  DAT_006455a4
-extern i32 g_cheatB;           // 0x6455a8  DAT_006455a8
-extern i32 g_cheatC;           // 0x6455ac  DAT_006455ac
-extern i32 g_cheatD;           // 0x6455f8  DAT_006455f8
+extern i32 g_cheatA; // 0x6455a4  DAT_006455a4
+extern i32 g_cheatB; // 0x6455a8  DAT_006455a8
+extern i32 g_cheatC; // 0x6455ac  DAT_006455ac
+extern i32 g_cheatD; // 0x6455f8  DAT_006455f8
 
 // External engine receiver handle: every method is declared (no body) so its
 // `call rel32` reloc-masks. Receivers are passed via the (EO*) cast so each
@@ -111,7 +111,7 @@ struct RegArea {
     do {                                                                                           \
         CSndHost* _s = (CSndHost*)P(P(base, 0x30), 0x28);                                          \
         if (_s->m_emitGate == 0) {                                                                 \
-            void* found = 0;                                                                    \
+            void* found = 0;                                                                       \
             _s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);                                          \
             if (found != 0)                                                                        \
                 FreeHintSprite(g_sndCueTag, 0, 0, 0);                                              \

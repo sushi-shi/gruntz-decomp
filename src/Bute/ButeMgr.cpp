@@ -51,9 +51,9 @@
 #include <Globals.h>
 
 #include <fstream.h> // the REAL CRT iostream/ios (ClearHelper tears down an embedded stream)
-#include <float.h>  // FLT_MIN / DBL_MIN - the GetFloat/GetDouble miss sentinels
-#include <stdio.h>  // vsprintf (NAFXCW varargs formatter)
-#include <stdlib.h> // atoi (0x11ffb0)
+#include <float.h>   // FLT_MIN / DBL_MIN - the GetFloat/GetDouble miss sentinels
+#include <stdio.h>   // vsprintf (NAFXCW varargs formatter)
+#include <stdlib.h>  // atoi (0x11ffb0)
 
 // g_buteTree (TypeKeyColl.cpp) is a global static of this same CButeStore/CButeTree
 // class whose dynamic-init manually stamps a SEPARATE runtime copy of the +0x08
@@ -2048,8 +2048,8 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 // adjust itself. The old FLAG about colliding with m_errCallback at +0x14 dissolves with it.
 RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
-    ((iostream*)(void*)this)->iostream::~iostream();   // 0x169be0  ??1iostream@@UAE@XZ
-    ((ios*)(void*)((char*)this + 0x14))->ios::~ios();  // 0x169d70  ??1ios@@UAE@XZ
+    ((iostream*)(void*)this)->iostream::~iostream();  // 0x169be0  ??1iostream@@UAE@XZ
+    ((ios*)(void*)((char*)this + 0x14))->ios::~ios(); // 0x169d70  ??1ios@@UAE@XZ
 }
 
 // ===========================================================================

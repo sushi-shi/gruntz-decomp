@@ -63,7 +63,7 @@ extern "C" void* g_gameReg; // 0x64556c (typed CGruntzMgr* in its owner TU)
 // DEFINED in RezMgr.cpp. This TU had it as a private C++ ?g_startTick@@3IA - same cell,
 // divergent symbol, no storage. Init seeds it with the boot timeGetTime().
 extern "C" u32 g_645580;
-extern i32 g_sndEnabled;         // 0x61ab20
+extern i32 g_sndEnabled; // 0x61ab20
 // 0x645584 is extern-"C" tree-wide (RezMgr's g_lastDelta, the frame delta); a plain
 // C++ `extern` here emitted the divergent ?g_645584@@3HA.
 extern "C" i32 g_645584; // 0x645584
@@ -145,7 +145,7 @@ extern "C" {
 // Multi). One name (Attract's - the only semantic one), one linkage (extern "C").
 DATA(0x00245534)
 extern "C" {
-i32 g_attractStateCount = 0; // 0x645534
+    i32 g_attractStateCount = 0; // 0x645534
 }
 
 extern "C" char* StrUpr(char*); // 0x18d330

@@ -752,7 +752,7 @@ RVA(0x0001ed30, 0x549)
 void CBattleStatsView::DrawBattleStats() {
     CString s;
     RECT rc;
-BOOL(WINAPI * copyRect)(LPRECT, const RECT*) = ::CopyRect;
+    BOOL(WINAPI * copyRect)(LPRECT, const RECT*) = ::CopyRect;
     i32 i;
     i32 c;
 

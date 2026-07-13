@@ -25,11 +25,13 @@ class CBehindCandy : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CBehindCandy(CGameObject* obj);            // 0x0ac3f0 (ctor body in UserLogic.cpp)
+    CBehindCandy(CGameObject* obj); // 0x0ac3f0 (ctor body in UserLogic.cpp)
     // 0x0000fb70 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x0000fb70, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_BEHINDCANDY; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_BEHINDCANDY;
+    }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00fb90 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandy() OVERRIDE;             // 0x00fc30 (folds the CUserLogic teardown)

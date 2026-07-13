@@ -4,10 +4,10 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <string.h>              // strlen
+#include <string.h>             // strlen
 #include <DDrawMgr/DDSurface.h> // CDDSurface (BltFast) + RECT/SetRect (via Mfc.h) for the layer-blit helper
-#include <Gruntz/ResMgr.h>      // CResMgr / CDrawTarget (SurfaceA/SurfaceB) - the 0x115300 blit host
-#include <Image/CImage.h>       // CImage - the 0x115300 blit source (was the CImageFrame view)
+#include <Gruntz/ResMgr.h> // CResMgr / CDrawTarget (SurfaceA/SurfaceB) - the 0x115300 blit host
+#include <Image/CImage.h>  // CImage - the 0x115300 blit source (was the CImageFrame view)
 
 struct Drawable {
     virtual void v0();

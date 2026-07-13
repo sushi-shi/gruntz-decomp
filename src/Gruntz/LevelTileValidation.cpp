@@ -42,7 +42,7 @@
                                  // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
 #include <Gruntz/GruntzMgr.h>    // ::CGruntzMgr - CState::m_4's real class (m_modeW/m_modeH);
                                  // Play.h only forward-declares it. This TU is already MFC.
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (tile grid + transform)
+#include <Wwd/WwdFile.h>         // CPlaneRender - the canonical plane (tile grid + transform)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------

@@ -97,7 +97,7 @@ public:
 
     CRandomAmbientWorld* m_world; // +0x00
     void* m_04;                   // +0x04
-    CPtrList m_list;               // +0x08  MFC CPtrList (head at +0x0c)
+    CPtrList m_list;              // +0x08  MFC CPtrList (head at +0x0c)
     i32 m_active;                 // +0x24  active flag
     i32 m_pan;                    // +0x28  pan
     i32 m_vol;                    // +0x2c  vol

@@ -473,7 +473,7 @@ public:
     // (`mov eax,[esp+8]` ... `mov ecx,[eax+0x10]`) to reach the lookup map - it is a
     // CSbiConfigHost*, not the `i32 code` the builders used to pass it as.
     CSbiConfigHost* m_c; // +0x0c
-    i32 m_10;       // +0x10  tab base x
+    i32 m_10;            // +0x10  tab base x
     // +0x14..0x23: a 4-int block. The tab builder reads m_rect14.m_0 as the tab base y.
     SbiRect m_rect14; // +0x14
     i32 m_24;         // +0x24
@@ -485,10 +485,10 @@ public:
     // [0] is the always-present widget list BuildStatusBarTabs appends to; [6]/[7] are
     // the trailing notify/hit-test lists. (This array is what the old view could only
     // reach by casting `((CRezList*)((char*)this + 0x2c))` - the cast fell out with it.)
-    CPtrList m_tabLists[8]; // +0x2c .. +0x10c
-    i32 m_activeTab;        // +0x10c  active tab index (1..5)
-    i32 m_itemKind;         // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
-    i32 m_statFlags[15];    // +0x114  per-stat toggle flag array
+    CPtrList m_tabLists[8];       // +0x2c .. +0x10c
+    i32 m_activeTab;              // +0x10c  active tab index (1..5)
+    i32 m_itemKind;               // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
+    i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
     CSbiRect* m_hitRects[15];     // +0x150  hit-test rect widgets
     CSbiStatObj* m_statObj[15];   // +0x18c  per-stat object array (notified on clear)
     CSBI_MenuItem* m_tabSprite0;  // +0x1c8  per-tab sprite widgets (cleared by
@@ -773,13 +773,11 @@ struct CSbiRenderObj {
 };
 SIZE_UNKNOWN(CSbiRenderObj);
 
-
 // A free-list node {m_0, m_4}; m_0 doubles as the link, m_4 is the sort key.
 struct CSbiFreeNode {
     i32 m_0, m_4;
 };
 SIZE_UNKNOWN(CSbiFreeNode);
-
 
 // (the tab-widget views CSbiRectSub / CSBI_MenuItem moved to
 // <Gruntz/StatusBarTabWidgets.h> - they are instantiated only by the host's own

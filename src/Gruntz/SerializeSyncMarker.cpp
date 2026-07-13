@@ -17,8 +17,8 @@ extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // 0x629a50 wsprintfA scratch buffer (128 B, bounded by g_serialCounter @0x229ad0);
 // DEFINED here (owner TU) with C linkage (_g_629a50).
 extern "C" {
-DATA(0x00229a50)
-char g_629a50[128] = {0};
+    DATA(0x00229a50)
+    char g_629a50[128] = {0};
 }
 
 // SerializeSyncMarker (0x13610, __cdecl): the WAP32 serialize round validator every

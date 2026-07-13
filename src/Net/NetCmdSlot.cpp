@@ -364,7 +364,8 @@ i32 CNetSession::SendAll() {
                         GruntRec* r = (GruntRec*)outer->FindCmd(v);
                         if (r) {
                             i32 flag = (v == hi) ? 3 : 1;
-                            if (m_slots[0].SendGruntRecord(v, r, flag, oi, inner->m_desc->m_netId)) {
+                            if (m_slots[0]
+                                    .SendGruntRecord(v, r, flag, oi, inner->m_desc->m_netId)) {
                                 count++;
                             }
                         }
@@ -1169,4 +1170,3 @@ void CNetCmdSlot::Touch() {
         m_latchedSeq = m_baseSeq;
     }
 }
-

@@ -88,8 +88,8 @@ public:
     // grid/array members (offsets from the field stores; the CUserLogic base owns
     // +0x00..+0x3f). Only the touched offsets are named.
     char m_pad40[0x7c - 0x40];
-    CPtrArray m_arr;    // +0x7c  ::CPtrArray (m_pData@+0x80, m_nSize@+0x84)
-    i32 m_90;           // +0x90  scratch dword the node serializer streams
+    CPtrArray m_arr; // +0x7c  ::CPtrArray (m_pData@+0x80, m_nSize@+0x84)
+    i32 m_90;        // +0x90  scratch dword the node serializer streams
 };
 
 // 0xec230: the float-curve serializer. __cdecl free function (caller-cleanup,

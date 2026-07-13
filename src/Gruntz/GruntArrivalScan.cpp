@@ -40,7 +40,7 @@ DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
 
 DATA(0x00245588)
-extern u32 g_clock; // game clock (g_645588)
+extern u32 g_clock;              // game clock (g_645588)
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 // The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
@@ -93,9 +93,9 @@ extern "C" {
             GruntCoordNode* next = n->m_next;                                                      \
             void* pay = n->m_coord;                                                                \
             if (pay != 0) {                                                                        \
-                void** slot = (void**)((char*)pay - g_coordPool.m_linkOffset);                           \
-                *slot = g_coordPool.m_freeHead;                                                                \
-                g_coordPool.m_freeHead = slot;                                                                 \
+                void** slot = (void**)((char*)pay - g_coordPool.m_linkOffset);                     \
+                *slot = g_coordPool.m_freeHead;                                                    \
+                g_coordPool.m_freeHead = slot;                                                     \
             }                                                                                      \
             n = next;                                                                              \
         }                                                                                          \
@@ -147,7 +147,7 @@ extern "C" {
             CScanListNode* cur = n;                                                                \
             n = cur->m_next;                                                                       \
             if (cur->m_8 != 0) {                                                                   \
-                g_coordPool.Push((void*)(cur->m_8));                                                \
+                g_coordPool.Push((void*)(cur->m_8));                                               \
             }                                                                                      \
         }                                                                                          \
         m_31c.RemoveAll();                                                                         \

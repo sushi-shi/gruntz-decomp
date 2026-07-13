@@ -114,7 +114,7 @@ struct CImageSet3 : CObject {
     // here while the REAL body sat in src/Image/ImageSet3.cpp as a non-virtual on a
     // 5-slot local view of this class - so the vtable pointed at a symbol nothing defined.
     virtual i32 ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal); // [10] 0x166e00
-    virtual void s2c();           // [11] 0x166e60 (recovery gap, not a stub)
+    virtual void s2c(); // [11] 0x166e60 (recovery gap, not a stub)
     // [12] 0x166eb0: vertical run-scan UP from (x,y) - walk to the first row whose pixel
     // at column x differs from (x,y)'s; report that row + its value.
     virtual i32 ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal);

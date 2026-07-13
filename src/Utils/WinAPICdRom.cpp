@@ -81,8 +81,7 @@ char CheckCdRomRegistry() {
         )) {
         valueSize = 0x1e;
         value[0] = 0;
-        if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
-            && (i8)value[0] > 0x14) {
+        if (reg.GetValueString("CdRom Drive", value, &valueSize, 0) && (i8)value[0] > 0x14) {
             letter = value[0];
             sprintf(drivePath, "%c:\\", letter);
             if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/) {
@@ -149,8 +148,7 @@ char GetGruntzDriveLetter() {
             )) {
             valueSize = 0x1e;
             value[0] = 0;
-            if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
-                && (i8)value[0] > 0x14) {
+            if (reg.GetValueString("CdRom Drive", value, &valueSize, 0) && (i8)value[0] > 0x14) {
                 letter = value[0];
                 sprintf(drivePath, "%c:\\", letter);
                 if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/) {

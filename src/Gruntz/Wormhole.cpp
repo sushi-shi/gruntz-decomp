@@ -47,10 +47,10 @@
 #include <Gruntz/Grunt.h>          // CGrunt (Teleporter::Update's hit-test target)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Play.h>
-#include <Gruntz/ActReg.h>          // shared activation-registrar archetype
-#include <Gruntz/GameRegistry.h>    // the ONE CGameRegistry
-#include <Gruntz/BattlezData.h>     // CBattlezData - the typed m_scoreHud (was the CTeleMgrSub view)
-#include <Gruntz/SpriteFactory.h>   // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/ActReg.h>        // shared activation-registrar archetype
+#include <Gruntz/GameRegistry.h>  // the ONE CGameRegistry
+#include <Gruntz/BattlezData.h>   // CBattlezData - the typed m_scoreHud (was the CTeleMgrSub view)
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/ActNameRegistry.h> // g_buteTree/g_typeCounter/s_codeA/ActNameLookup
 #include <Bute/ButeMgr.h>
 #include <Globals.h>

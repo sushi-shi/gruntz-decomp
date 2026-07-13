@@ -27,7 +27,7 @@
 #include <rva.h>
 
 #include <Bute/SymParser.h>     // the shared CSymParser (ResolvePath 0x13c030)
-#include <Gruntz/GruntzMgr.h> // the REAL owner (was the LevelRezLoader view)
+#include <Gruntz/GruntzMgr.h>   // the REAL owner (was the LevelRezLoader view)
 #include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse (0x139960/0x1399d0)
 
 // The ButeMgr symbol tree the rez data is resolved/parsed through.

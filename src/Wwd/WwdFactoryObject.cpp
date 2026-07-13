@@ -71,7 +71,7 @@ SIZE_UNKNOWN(CDDrawBlitWorker);
 class CDDrawBlitLabelSource {
 public:
     CString GetLabel_152d30(CDDrawBlitParamSrc* a);
-    char m_pad00[0x10];       // +0x00..+0x0f
+    char m_pad00[0x10];        // +0x00..+0x0f
     CMapStringToOb m_labelMap; // +0x10 label -> worker map
 };
 SIZE_UNKNOWN(CDDrawBlitLabelSource);

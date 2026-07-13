@@ -27,8 +27,7 @@ extern "C" u32 g_6bf3bc;
 // advance the 214013/2531011 recurrence, take the top 15 bits.
 extern u8 g_randSeeded; // 0x6c127d (bit 0 = seeded)
 extern i32 g_randSeed;  // 0x6c1288 (32-bit LCG state)
-extern "C" {
-}
+extern "C" {}
 
 #include <rva.h>
 

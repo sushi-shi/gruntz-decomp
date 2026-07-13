@@ -60,8 +60,8 @@ public:
     HWND m_sourceHwnd;                // +0x04  source HWND (GetDC/ReleaseDC)
     i32 m_08;                         // +0x08
     HPALETTE m_selectedPalette;       // +0x0c  selected HPALETTE to restore
-    CPtrList m_surfaces;               // +0x10  GDI surface nodes (m_pHead @+0x14)
-    CPtrList m_palettes;               // +0x2c  palette nodes (m_pHead @+0x30)
+    CPtrList m_surfaces;              // +0x10  GDI surface nodes (m_pHead @+0x14)
+    CPtrList m_palettes;              // +0x2c  palette nodes (m_pHead @+0x30)
     i32 m_48;                         // +0x48
 };
 

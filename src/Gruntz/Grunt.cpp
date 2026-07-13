@@ -72,11 +72,11 @@
 // return 0; else return 1.
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
-#include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
-                                // WERE the fake g_animScratch / g_animScratchCount
-                                // globals (defined in 5 TUs each; LNK2005)
-#include <Gruntz/GruntHealthSprite.h>  // CGruntHealthSprite::SetHealthGlyph (health/stamina/toytime/wingz)
+#include <Gruntz/TypeKeyColl.h>       // g_typeColl (folded CAnimNameResolver anim registry)
+extern CTypeKeyColl g_typeColl;       // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
+                                      // WERE the fake g_animScratch / g_animScratchCount
+                                      // globals (defined in 5 TUs each; LNK2005)
+#include <Gruntz/GruntHealthSprite.h> // CGruntHealthSprite::SetHealthGlyph (health/stamina/toytime/wingz)
 #include <Gruntz/GruntToySprite.h>      // CGruntToySprite::SetCell
 #include <Gruntz/GruntPowerupSprite.h>  // CGruntPowerupSprite::SetCell
 #include <Gruntz/GruntSelectedSprite.h> // CGruntSelectedSprite::SetCell
@@ -276,8 +276,7 @@ struct CAnimSetNode {
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CSprite* _out = 0;                                                                         \
-        m_154->m_c->m_2c->m_10map                                              \
-            .Lookup("GRUNTZ_" + m_animSetName + (sfx), (CObject*&)_out);                          \
+        m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_" + m_animSetName + (sfx), (CObject*&)_out);      \
         (dst) = (int)_out;                                                                         \
     } while (0)
 
@@ -374,9 +373,9 @@ CGrunt::~CGrunt() {
 // ---------------------------------------------------------------------------
 // The default entrance-cell record + the +0x438 datum the ctor copies in (the
 // CMovingLogic motion helper + bound constants are defined in Grunt.h). Reloc-masked.
-extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
-extern "C" i32 g_64558c; // 0x64558c  the per-frame counter (RezMgr g_frameTicks); the
-                         // ctor stamps it into m_438 as the grunt's birth frame
+extern i32 g_gruntDefEntranceCell[3]; // 0x6448e8 (default entrance-cell record)
+extern "C" i32 g_64558c;              // 0x64558c  the per-frame counter (RezMgr g_frameTicks); the
+                                      // ctor stamps it into m_438 as the grunt's birth frame
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // CGrunt::Update() @0x16ea90 (__thiscall) the ctor fires after the motion setup.
@@ -575,12 +574,12 @@ i32 g_serialCounter;
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
-                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                   // It used to be DEFINED here too: six .cpp files each
-                                   // defined it, i.e. six .bss objects for one global
-                                   // (LNK2005). Only the owner defines; everyone externs.
+extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
+                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
+                                  // It used to be DEFINED here too: six .cpp files each
+                                  // defined it, i.e. six .bss objects for one global
+                                  // (LNK2005). Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,

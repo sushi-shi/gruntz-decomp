@@ -791,8 +791,8 @@ void* CButeTree::Insert(const char* key, void* value) {
 RVA(0x0016dda0, 0x3c)
 CTypeKeyColl::CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch)
     : zDArray(stride, lo, hi, scratch) {
-    m_alloc = m_base;              // +0x1c  the fresh band base (was the m_cursor view)
-    m_grown = m_hi - m_lo + 1;     // +0x20  its slot count (was the m_count view)
+    m_alloc = m_base;          // +0x1c  the fresh band base (was the m_cursor view)
+    m_grown = m_hi - m_lo + 1; // +0x20  its slot count (was the m_count view)
 }
 
 // ===========================================================================
@@ -818,7 +818,7 @@ CTypeKeyColl::CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch)
 RVA(0x0016de30, 0xe7)
 zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
     : _zvec(&g_zArrayTag) { // -> the CContainerErr base ctor @0x16d9c0
-    m_spare = (i32)scratch;         // +0x14  scratch element (was the m_buf2 view)
+    m_spare = (i32)scratch; // +0x14  scratch element (was the m_buf2 view)
     m_lo = lo;
     m_hi = hi;
     m_base = 0; // +0x10  element band (was the m_buf view)

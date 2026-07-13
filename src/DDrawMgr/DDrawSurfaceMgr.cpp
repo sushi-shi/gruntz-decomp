@@ -17,9 +17,9 @@
 // e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
 // note was wrong - afx.h pulls windows.h the afx-first way, so no C1189.
 #include <Mfc.h>
-#include <Wap32/Object.h>             // CObject - the shared engine grand-base
-#include <DDrawMgr/DDrawSurfaceMgr.h> // THE canonical CDDrawSurfaceMgr class shape
-#include <DDrawMgr/DDrawSubMgr.h>     // generic child base (slot-1 scalar-delete, slot-5 IsReady)
+#include <Wap32/Object.h>              // CObject - the shared engine grand-base
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // THE canonical CDDrawSurfaceMgr class shape
+#include <DDrawMgr/DDrawSubMgr.h>      // generic child base (slot-1 scalar-delete, slot-5 IsReady)
 #include <DDrawMgr/DDrawWorkerCache.h> // real +0x14 child type (m_workerCache; virtual-dtor delete)
 #include <DDrawMgr/DDrawResolveSubMgr.h> // real +0x24 child type (SetCoords)
 #include <DDrawMgr/DDrawSubMgrPages.h>   // real +0x04 child type (m_pages: IsLoaded, m_frontPair)

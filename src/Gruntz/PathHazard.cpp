@@ -13,7 +13,7 @@
 // identities.
 #include <Gruntz/PathHazard.h>
 #include <Gruntz/RainCloud.h> // CRainCloud (its dtor 0x13340 lives in this obj)
-#include <Gruntz/ActReg.h> // CActReg coordinate registry (ResolveEntry) for RunAct
+#include <Gruntz/ActReg.h>    // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>

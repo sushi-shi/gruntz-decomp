@@ -80,12 +80,12 @@ public:
     i32 CountByKind_15aa60(i32 kind);              // 0x15aa60 count of objs with m_04==kind
     i32 SumWeighted_15aaf0();                      // 0x15aaf0 sum i*(m_5c+m_74+m_60+m_04)
 
-    char m_pad00[0x0c];        // +0x00..0x0b
-    CDDrawSurfaceMgr* m_0c;    // +0x0c owning surface manager (raw int handle to the factories)
-    CObList m_10;       // +0x10 sorted object list (MFC CObList - stores CObject*;
-                        // RemoveAt/AddTail/InsertBefore = 0x1b5c2c/0x1b5af6/0x1b5bb0)
-    CMapPtrToPtr m_2c;  // +0x2c key -> object (primary)
-    CMapPtrToPtr m_48;  // +0x48 key -> object (active set / dedup)
+    char m_pad00[0x0c];     // +0x00..0x0b
+    CDDrawSurfaceMgr* m_0c; // +0x0c owning surface manager (raw int handle to the factories)
+    CObList m_10;           // +0x10 sorted object list (MFC CObList - stores CObject*;
+                            // RemoveAt/AddTail/InsertBefore = 0x1b5c2c/0x1b5af6/0x1b5bb0)
+    CMapPtrToPtr m_2c;      // +0x2c key -> object (primary)
+    CMapPtrToPtr m_48;      // +0x48 key -> object (active set / dedup)
 };
 SIZE_UNKNOWN(CWwdObjMgr);
 

@@ -22,8 +22,8 @@
 
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
 #include <Globals.h>
-#include <Gruntz/ResMgr.h>   // canonical CImageRegistry (the +0x10 image registrar)
-#include <Gruntz/GameMode.h> // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
+#include <Gruntz/ResMgr.h>    // canonical CImageRegistry (the +0x10 image registrar)
+#include <Gruntz/GameMode.h>  // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
 #include <Gruntz/GruntzMgr.h> // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
 class DirNode;
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
@@ -160,7 +160,7 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
     }
 
     {
-int(WINAPI * sc)(BOOL) = ::ShowCursor;
+        int(WINAPI * sc)(BOOL) = ::ShowCursor;
         while (sc(0) >= 0) {
         }
     }
@@ -204,4 +204,3 @@ int(WINAPI * sc)(BOOL) = ::ShowCursor;
 fail:
     return 0;
 }
-

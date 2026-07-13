@@ -42,14 +42,17 @@ public:
     // 0x00010030 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x00010030, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_BEHINDCANDYANI; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_BEHINDCANDYANI;
+    }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010050 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandyAni() OVERRIDE;          // 0x0100f0 (folds the CUserLogic teardown)
 
-    i32 m_40;                  // +0x40 (geoId latch; written by the ctor)
-    char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CBehindCandyAni` @0xaa5a0)
+    i32 m_40; // +0x40 (geoId latch; written by the ctor)
+    char
+        m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CBehindCandyAni` @0xaa5a0)
 };
 VTBL(CBehindCandyAni, 0x001e838c);
 SIZE(CBehindCandyAni, 0x54);

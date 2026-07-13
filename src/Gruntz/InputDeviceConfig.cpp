@@ -86,7 +86,7 @@ i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
     if (!ctrl) {
         return 0;
     }
-    SendMessageA(ctrl, 0x14b, 0, 0);                  // CB_RESETCONTENT
+    SendMessageA(ctrl, 0x14b, 0, 0);                   // CB_RESETCONTENT
     SendMessageA(ctrl, 0x143, 0, (LPARAM) "None");     // CB_ADDSTRING
     SendMessageA(ctrl, 0x143, 0, (LPARAM) "Keyboard"); // CB_ADDSTRING
     i32 i = 0;

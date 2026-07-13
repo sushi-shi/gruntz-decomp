@@ -1,9 +1,9 @@
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>            // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/SoundCueMgr.h>             // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
-#include <Gruntz/LeafCue.h>                 // the canonical cue record (was the CStatusBarTab view)
-#include <Gruntz/StatusBarUpdatersViews.h>  // referent views + EngineLabelBacklog host
-#include <Gruntz/TileTriggerSwitchLogic.h>  // real owner of Vf2/Vf3 @0x110570/0x1106b0
+#include <Gruntz/GameRegistry.h>           // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/LeafCue.h>                // the canonical cue record (was the CStatusBarTab view)
+#include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host
+#include <Gruntz/TileTriggerSwitchLogic.h> // real owner of Vf2/Vf3 @0x110570/0x1106b0
 
 // StatusBarUpdaters.cpp - the switch-tile sprite loaders (C:\Proj\Gruntz). The five
 // in-game status-bar updaters that used to live here (UpdateGruntOven/DestructButton/
@@ -27,7 +27,7 @@ extern "C" u32 g_killCueClock; // draw-clock mirror
 // The two paired status-bar globals the advance tail reads (external delinked
 // DATA symbols, reloc-masked): g_sndEnabled gates the push, g_sndCueTag is the value.
 extern i32 g_sndEnabled; // DAT_0061ab20
-extern i32 g_sndCueTag; // DAT_0061ab24
+extern i32 g_sndCueTag;  // DAT_0061ab24
 
 // The canonical CGameRegistry view of the singleton (*0x24556c). The resource
 // holder (+0x30 -> CRegHolder) is cast locally at the deref sites; the tile

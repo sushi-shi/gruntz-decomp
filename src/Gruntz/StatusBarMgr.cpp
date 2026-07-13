@@ -31,8 +31,8 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/SbRect.h>         // the by-value geometry rect the setup virtuals take
-#include <Gruntz/SpriteRefTable.h> // g_gameReg->m_spriteFactory->GetSel (GRUNTOVEN palette)
+#include <Gruntz/SbRect.h>               // the by-value geometry rect the setup virtuals take
+#include <Gruntz/SpriteRefTable.h>       // g_gameReg->m_spriteFactory->GetSel (GRUNTOVEN palette)
 #include <Gruntz/StatusBarMgrBuilders.h> // canonical CStatusBarMgr + the canonical SBI leaves
 
 // The cmd-grid probed by the warlord-head builders is a CTriggerMgr; ByteTableHas @0x79b30.
@@ -137,8 +137,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // GetSel + SetAllTypes/Formats. Pointer locals (aptr/bptr/y) match retail's
             // incremented [esp+0x18]/[esp+0x28]/[esp+0x20] induction variables.
             {
-                i32* aptr = (i32*)m_slotNotify;      // +0x204, stride 4
-                i32* bptr = &m_slots[0].m_value;     // +0x224, stride 0x18
+                i32* aptr = (i32*)m_slotNotify;  // +0x204, stride 4
+                i32* bptr = &m_slots[0].m_value; // +0x224, stride 0x18
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
                     it = new CSBI_ImageSet;
@@ -428,7 +428,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = m_itemRectT + by;
             r.right = m_itemRectR + bx;
             r.bottom = m_itemRectB + by;
-            if (!it->SetupImage(this, code, 0xdf, 3, r, "GAME_INGAMEICONZ_GREYCHIPZ", m_extraNotifyArg0, 0)) {
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    0xdf,
+                    3,
+                    r,
+                    "GAME_INGAMEICONZ_GREYCHIPZ",
+                    m_extraNotifyArg0,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -444,8 +453,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // (&m_4a8[row]) at -0x10/0/+0x10; the id `c` walks 0xd7.. and each column
             // uses c-4/c/c+4. ebp is reused as the item pointer (by is dead here).
             {
-                i32* cfgp = &m_hlGrid[4].m_handle;   // +0x3dc, stride 0x18
-                i32* cachep = (i32*)&m_hlNotify[4];  // +0x4a8, stride 4
+                i32* cfgp = &m_hlGrid[4].m_handle;  // +0x3dc, stride 0x18
+                i32* cachep = (i32*)&m_hlNotify[4]; // +0x4a8, stride 4
                 i32 y = by + 0x155;
                 i32 c = 0xd7;
                 for (i = 0; i < 4; i++) {
@@ -600,7 +609,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = m_fallRectT + by;
             r.right = m_fallRectR + bx;
             r.bottom = m_fallRectB + by;
-            if (!it->SetupImage(this, code, 0xe0, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", m_extraNotifyArg1, 0)) {
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    0xe0,
+                    3,
+                    r,
+                    "GAME_INGAMEICONZ_NORMCHIPZ",
+                    m_extraNotifyArg1,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -750,7 +768,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // HEAD loop: for each active player slot (g_gameReg per-player block, stride
             // 0x238) set the head sprite (GetSel) + SetState/ShowFrames on the cached slot.
             {
-                i32* slot = m_61c;                   // +0x61c
+                i32* slot = m_61c; // +0x61c
                 i32 pi = 0;
                 i32 off = 0;
                 do {
@@ -851,7 +869,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 arrowL = bx + aOff;
                 i32 arrowR = bx + cOff;
                 i32 y = by + 0xd9;
-                i32* p = m_statFlags;                // +0x114 (p[0x1e] reaches m_statObj)
+                i32* p = m_statFlags; // +0x114 (p[0x1e] reaches m_statObj)
                 for (i = 0; i < 15; i++) {
                     i32 id = 0x13b + i;
                     arrow = new CSBI_StatzTabArrow;

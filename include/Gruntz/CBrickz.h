@@ -28,7 +28,9 @@ public:
     // 0x00011300 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x00011300, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_BRICKZ; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_BRICKZ;
+    }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x11320 (vtable slot 1: serialize chain)

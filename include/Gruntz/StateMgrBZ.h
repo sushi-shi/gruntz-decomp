@@ -37,9 +37,9 @@ class CInputDevice;    // the real DinMgr2 device (<DinMgr2/DirectInputMgr2.h>)
 // manager fields below.)
 SIZE_UNKNOWN(SbzControllerArray);
 struct SbzControllerArray {
-    char _vft0[4];           // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    char _vft0[4];         // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     CInputDevice** m_data; // +0x04  controller storage
-    i32 m_count;             // +0x08  controller count
+    i32 m_count;           // +0x08  controller count
 };
 
 // SbzDeviceList - the composite device-list node StateMgrBZ::Reset walks
@@ -47,8 +47,8 @@ struct SbzControllerArray {
 // element@+8.
 SIZE_UNKNOWN(SbzDeviceList);
 struct SbzDeviceList {
-    void* m_00;                 // +0x00
-    i32 m_count;                // +0x04
+    void* m_00;               // +0x00
+    i32 m_count;              // +0x04
     CInputDevice* m_elems[1]; // +0x08.. controller pointers
 };
 
@@ -86,10 +86,10 @@ public:
     i32 SetDirBits(i32 flags); // 0x38770
 
     // --- layout (0x28) --------------------------------------------------------
-    CInputDevice* m_device;    // +0x00  primary device (single combined source)
-    CInputDevice* m_keyboard;  // +0x04  keyboard source (manager m_deviceA)
-    CInputDevice* m_joystick;  // +0x08  joystick source (controller array element)
-    CInputDevice* m_joystick2; // +0x0c  second joystick source (manager m_deviceB)
+    CInputDevice* m_device;      // +0x00  primary device (single combined source)
+    CInputDevice* m_keyboard;    // +0x04  keyboard source (manager m_deviceA)
+    CInputDevice* m_joystick;    // +0x08  joystick source (controller array element)
+    CInputDevice* m_joystick2;   // +0x0c  second joystick source (manager m_deviceB)
     SbzDeviceList* m_deviceList; // +0x10  composite device-list node (AddControllerArr)
     i32 m_mode;                  // +0x14  control mode (Build's mode arg)
     u32 m_edgeKeys;              // +0x18  OR-folded edge-key word (consumers mask `& 0x20`)

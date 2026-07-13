@@ -6,8 +6,8 @@
 #include <rva.h>
 
 #include <stdio.h>
-#include <Bute/SymParser.h>               // the shared CSymParser (ResolvePath 0x13c030)
-#include <Gruntz/State.h>                 // CState: the real owner of the loader (all leaf states inherit it)
+#include <Bute/SymParser.h> // the shared CSymParser (ResolvePath 0x13c030)
+#include <Gruntz/State.h>   // CState: the real owner of the loader (all leaf states inherit it)
 #include <Gruntz/SpriteRefTable.h>        // the shared CSpriteRefTable (g_gameReg->m_74)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
 #include <DDrawMgr/DDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
@@ -102,7 +102,11 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     self->m_14c = 0;
     self->m_24 = a3;
     self->m_areaIndex = t / 4 + 1;
-    sprintf(self->m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
+    sprintf(
+        self->m_versionString,
+        "Alpha Version, Build %i, Monolith Productions Inc.",
+        g_buildNumber
+    );
     char area[32];
     sprintf(area, "AREA%i", self->m_areaIndex);
     void* node = self->m_symParser->ResolvePath(area);

@@ -133,7 +133,7 @@ struct CSecretActReg : public CActReg {};
 SIZE_UNKNOWN(CSecretActReg);
 DATA(0x00244598)
 CSecretActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
-                             // fields 0x24459c..0x2445b8 are this object's members)
+                              // fields 0x24459c..0x2445b8 are this object's members)
 
 // The probed trigger object is the shared <Gruntz/Trigger.h> class: its
 // +0x170/+0x198 are the level/layer ids the bound sprite's +0x11c/+0x120 must

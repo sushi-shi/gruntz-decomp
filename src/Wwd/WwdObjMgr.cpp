@@ -32,7 +32,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical m_0c owner (InvokeCallback + m_workerCache)
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Gruntz/ObList.h>
-#include <Wwd/WwdFile.h> // CPlaneRender (m_parent->m_24->m_5c world transform)
+#include <Wwd/WwdFile.h>            // CPlaneRender (m_parent->m_24->m_5c world transform)
 #include <Gruntz/ResLoadersViews.h> // ResLoaders::DrawHost_164380 (counter draw)
 #include <Win32.h>                  // SetRect + RECT
 
@@ -235,8 +235,8 @@ SIZE_UNKNOWN(Obj15b2b0);
 
 // The shared kill-cue clock (advanced once per tick) + its per-frame delta, and
 // the cached timeGetTime import (bound in DirPal.cpp).
-extern "C" u32 g_killCueClock;        // 0x6bf3c0 kill-cue clock (prev now)
-extern "C" u32 g_6bf3bc;              // 0x6bf3bc per-frame delta
+extern "C" u32 g_killCueClock; // 0x6bf3c0 kill-cue clock (prev now)
+extern "C" u32 g_6bf3bc;       // 0x6bf3bc per-frame delta
 
 // The per-object cue callback fired when a cue expires (obj+0x7c +0x10; __cdecl,
 // one arg = the owning object).

@@ -56,7 +56,7 @@ struct B_13dee0 {
     char _0[0x1c];
     i32 m_1c; // 0x1c
     char _20[0x28 - 0x20];
-    i32 m_28; // 0x28
+    i32 m_28;          // 0x28
     void Set(i32 v);   // 0x13dee0 (now in RezMgr.cpp; called out-of-line by TrySet)
     i32 TrySet(i32 v); // 0x13df00 (still here)
 };

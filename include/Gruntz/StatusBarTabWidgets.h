@@ -121,5 +121,4 @@ public:
 };
 SIZE(CSBI_MenuItem, 0x3c);
 
-
 #endif // GRUNTZ_STATUSBARTABWIDGETS_H

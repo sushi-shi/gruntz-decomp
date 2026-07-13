@@ -125,7 +125,8 @@ i32 CInGameText::Update() {
     }
 
     char** node = (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)found->m_14->m_1c);
-    EngStr4* p = (EngStr4*)g_typeColl.m_alloc; // m_alloc is the i32-typed slot base (the _zvec spelling)
+    EngStr4* p =
+        (EngStr4*)g_typeColl.m_alloc; // m_alloc is the i32-typed slot base (the _zvec spelling)
     i32 n = g_typeColl.m_grown;
     while (n-- != 0) {
         if (p != 0) {

@@ -20,7 +20,7 @@
 extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
-#include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
+#include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360)
 #include <Gruntz/TriggerMgr.h>       // CTriggerMgr::NotifyCell (0x79fb0) + CellDispatch (0x6bcb0)
@@ -106,12 +106,12 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
-                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                   // It used to be DEFINED here too: six .cpp files each
-                                   // defined it, i.e. six .bss objects for one global
-                                   // (LNK2005). Only the owner defines; everyone externs.
+extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
+                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
+                                  // It used to be DEFINED here too: six .cpp files each
+                                  // defined it, i.e. six .bss objects for one global
+                                  // (LNK2005). Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -1207,7 +1207,8 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             LoadAnimNameTable(0, 0);
             ResetEntranceAnimation(1, 0, 0);
             if (s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePxX >> 5, m_lastTilePxY >> 5) & 0x80) {
-                ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+                ((CTileWireLogic*)m_tileMgr)
+                    ->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
             }
             return 0;
         }

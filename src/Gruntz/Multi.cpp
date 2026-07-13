@@ -126,7 +126,7 @@ extern "C" CGameRegistry* g_gameReg;
 // adjacent sibling g_remoteVersion.
 DATA(0x0020fa70)
 extern "C" {
-i32 g_localVersion = 0; // 0x20fa70  local protocol/rez-sync version word
+    i32 g_localVersion = 0; // 0x20fa70  local protocol/rez-sync version word
 }
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1; // 0x20fa74  protocol version word (local build = 1)
@@ -173,7 +173,7 @@ u32 g_648d14; // 0x248d14  drop-throttle deadline
 // every modal exit path clears it). .bss, zero-init.
 DATA(0x00248ce0)
 extern "C" {
-i32 g_sharedFlag = 0; // 0x248ce0
+    i32 g_sharedFlag = 0; // 0x248ce0
 }
 
 // MultiDispatch outcome codes the message handlers switch on (engine command
@@ -247,11 +247,11 @@ extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf91
 // NetSetupDlgProc's referents (the multiplayer host/join setup dialog). The engine
 // caches the USER32 imports as function-pointer globals + runs a shared base dialog
 // proc first; the settings singleton supplies the Player_Name/Game_Name defaults.
-extern "C" HWND g_setupDlgHwnd;                                     // 0x64557c
-extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam);  // 0x1192d0
-extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                    // 0x6c44ac
-extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32);  // 0x6c448c
-extern "C" i32(WINAPI* g_pMessageBeep)(u32);                        // 0x6c4534
+extern "C" HWND g_setupDlgHwnd;                                    // 0x64557c
+extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam); // 0x1192d0
+extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                   // 0x6c44ac
+extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
+extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
 extern "C" CGameRegistry* g_gameReg; // 0x64556c (the same *0x64556c object as m_4)
 
 // (CNetJoinPacket moved to <Net/NetPackets.h> - a fully-known wire struct has no
@@ -976,7 +976,7 @@ i32 CMulti::Vslot09(i32 arg) {
     }
     m_4->CGruntzMgr::PerFrameTick();
     g_645588 = m_savedClock;
-DWORD(WINAPI * tg)(void) = ::timeGetTime;
+    DWORD(WINAPI * tg)(void) = ::timeGetTime;
     m_drainTimer = 0;
     m_lastTime = tg();
     m_frameDelta = 0;

@@ -21,7 +21,7 @@
 // ---------------------------------------------------------------------------
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (world->screen transform)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (world->screen transform)
 #include <Gruntz/ResMgr.h>
 #include <Gruntz/Sprite.h>
 

@@ -366,8 +366,24 @@ extern RECT g_levelMsgRectsA[8]; // 0x60b838  (shared with BootyMessages - stays
 // sits cleanly between RectsA and RectsB (no overlap): DEFINED here (owner gamemode.obj's
 // .data, real initializer) - REHOME DD-D. Subsumes the interior 0x20b8bc loop refs.
 DATA(0x0020b8b8)
-i32 g_levelMsgIconPos[16] = {0xea, 0x80, 0xec, 0xae, 0xeb, 0xe3, 0xe9, 0x10b,
-                             0xe9, 0x12f, 0xe7, 0x159, 0xe8, 0x17c, 0xe9, 0x1a8}; // 0x60b8b8
+i32 g_levelMsgIconPos[16] = {
+    0xea,
+    0x80,
+    0xec,
+    0xae,
+    0xeb,
+    0xe3,
+    0xe9,
+    0x10b,
+    0xe9,
+    0x12f,
+    0xe7,
+    0x159,
+    0xe8,
+    0x17c,
+    0xe9,
+    0x1a8
+}; // 0x60b8b8
 DATA(0x0020b8f8)
 extern RECT g_levelMsgRectsB[8]; // 0x60b8f8  (shared with BootyMessages - stays extern)
 DATA(0x00229ef8)
@@ -462,8 +478,7 @@ i32 CBootyState::LevelMsgHudDriver() {
 
     // ---- reveal pass (m_hudPhase == 0) ----
     if (m_slot < 8) {
-        if (m_slot == 0
-            && ((m_bomb[0]->m_stateFlags & 1) || (m_gokart[0]->m_stateFlags & 1))) {
+        if (m_slot == 0 && ((m_bomb[0]->m_stateFlags & 1) || (m_gokart[0]->m_stateFlags & 1))) {
             m_bomb[0]->m_stateFlags &= ~1;
             m_gokart[0]->m_stateFlags &= ~1;
         }

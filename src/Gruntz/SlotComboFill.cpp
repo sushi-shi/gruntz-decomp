@@ -89,7 +89,7 @@ i32 CLatencyList::SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi) {
     if (!list) {
         return 0;
     }
-LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     i32 searching = 1;
     i32 i = 0;
     while (searching) {

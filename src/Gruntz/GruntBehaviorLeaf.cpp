@@ -8,11 +8,11 @@
 // __thiscall externs. g_645588 = running ms clock. Only offsets / code bytes are
 // load-bearing.
 #include <Gruntz/GruntBehaviorLeaf.h>
-#include <Gruntz/TriggerMgr.h>       // the real owner of NotifyCell/SpawnPuddle (the +0x260 slot)
-#include <Gruntz/RockBreakMgr.h>     // the real owner of BuildRockBreakParticles
-#include <Image/ImageSet.h> // CImageSet::SetAllTypes (m_drawState->m_194)
-#include <Bute/ButeTree.h>  // CButeTree::Find (the "R" animset key)
-#include <Bute/ButeMgr.h>   // CButeMgr getters (Grunt/DecayTime, WANDGRUNT/HealthLoss)
+#include <Gruntz/TriggerMgr.h>   // the real owner of NotifyCell/SpawnPuddle (the +0x260 slot)
+#include <Gruntz/RockBreakMgr.h> // the real owner of BuildRockBreakParticles
+#include <Image/ImageSet.h>      // CImageSet::SetAllTypes (m_drawState->m_194)
+#include <Bute/ButeTree.h>       // CButeTree::Find (the "R" animset key)
+#include <Bute/ButeMgr.h>        // CButeMgr getters (Grunt/DecayTime, WANDGRUNT/HealthLoss)
 
 extern "C" u32 g_645588;   // 0x645588  running game clock (ms)
 extern "C" i32 g_6bf3bc;   // 0x6bf3bc  per-frame draw-delta (arrival probe ctx)
@@ -37,14 +37,15 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
             ((CRockBreakMgr*)m_260)
                 ->BuildRockBreakParticles(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
         } else {
-            ((CTriggerMgr*)m_260)->SpawnPuddle(
-                m_object->m_screenX,
-                m_object->m_screenY,
-                m_animArg0,
-                m_animArg2,
-                m_gruntMode != 5,
-                0x19
-            );
+            ((CTriggerMgr*)m_260)
+                ->SpawnPuddle(
+                    m_object->m_screenX,
+                    m_object->m_screenY,
+                    m_animArg0,
+                    m_animArg2,
+                    m_gruntMode != 5,
+                    0x19
+                );
         }
     }
     CAniAdvanceCursor* sub = &m_drawState->m_1a0;

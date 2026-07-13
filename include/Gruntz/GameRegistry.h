@@ -76,7 +76,7 @@ class CWorldSoundSet;  // +0x54 active-level input/spatial-sound object (WorldSo
 // declared (not included) to keep this ~60-TU header MFC-free (TriggerMgr.h pulls
 // <Mfc.h>); consumers include TriggerMgr.h to reach methods cast-free.
 class CTriggerMgr;
-class CBattlezData;    // +0x7c the HUD/score accumulator (BattlezData.h completes it)
+class CBattlezData; // +0x7c the HUD/score accumulator (BattlezData.h completes it)
 // Sub-objects of the +0x30 resource manager, defined in <Gruntz/ResMgr.h> /
 // <Wwd/WwdFile.h> (CPlaneRender); forward-declared here so consumers reach them typed
 // (no per-site cast) without pulling those headers into this ~60-TU-wide view.
@@ -364,8 +364,8 @@ struct CGameRegistry {
     // m_28 is exactly CBattlezData::m_28 (+0x28), the wormhole/teleporter counter that
     // FormatHudText reads back as its case-7 stat (STAT(SumGroupField20, m_28)).
     CBattlezData* m_scoreHud;
-    i32 m_numRuns;    // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
-                      //         varies the attract title screen by m_numRuns % N + 1)
+    i32 m_numRuns; // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
+                   //         varies the attract title screen by m_numRuns % N + 1)
     char m_pad84[0x8c - 0x84];
     i32 m_modeW;      // +0x8c  live video-mode width (cmp ...,0x280==640)
     i32 m_modeH;      // +0x90  live video-mode height (==480)

@@ -184,7 +184,7 @@ public:
     void* m_fallSprite;           // +0x1f8  "<base>FALL" sprite
     CProjRenderObj* m_shadow;     // +0x1fc  LightFx shadow render companion
     CProjSample* m_sound;         // +0x200  launch sound sample
-    CPtrList m_hitList;            // +0x204  tracked-hit list (block size 10)
+    CPtrList m_hitList;           // +0x204  tracked-hit list (block size 10)
     i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit
     // sizeof(CProjectile) == 0x228 (proven: LogicDispatchE @0xde8a0 `new CProjectile`
     // pushes 0x228). The boomerang return-trajectory fields (+0x228..+0x258) belong to

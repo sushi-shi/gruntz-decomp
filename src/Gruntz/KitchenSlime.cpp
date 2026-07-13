@@ -11,7 +11,7 @@
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) + CGameObject::ApplyName (0x150540)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360) - the +0x1a0 sub-object
-#include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
+#include <Gruntz/Sprite.h>           // CSprite (frame-data value; the looked-up direction sprite)
 #include <Globals.h>
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
@@ -39,10 +39,10 @@ struct CSlimeAnimPlayer {
     char m_pad0[0x8];
     i32 m_8; // +0x08  status/flags word (Tick sets bit 0x10000 when stalled)
     char m_padc[0x190 - 0xc];
-    i32 m_190;             // +0x190  first frame number
-    CSprite* m_194;        // +0x194  the current direction sprite
-    i32* m_198;            // +0x198  first frame pointer
-    char m_pad19c[4];      // +0x19c
+    i32 m_190;               // +0x190  first frame number
+    CSprite* m_194;          // +0x194  the current direction sprite
+    i32* m_198;              // +0x198  first frame pointer
+    char m_pad19c[4];        // +0x19c
     CAniAdvanceCursor m_1a0; // +0x1a0  per-frame advance cursor (Advance_15c360)
 };
 

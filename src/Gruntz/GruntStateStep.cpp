@@ -20,9 +20,9 @@
 #include <Ints.h>
 #include <Mfc.h>        // RECT + IntersectRect (superset of Win32.h; Grunt.h needs MFC)
 #include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord); after Mfc.h (windows.h-first C1189)
-#include <math.h>   // fild/fsqrt/__ftol board distance
-#include <string.h> // inline strcmp type-name gate
-#include <stdlib.h> // engine rand (0x11fee0)
+#include <math.h>       // fild/fsqrt/__ftol board distance
+#include <string.h>     // inline strcmp type-name gate
+#include <stdlib.h>     // engine rand (0x11fee0)
 #include <Globals.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>    // real CGrunt (step grunt is a CGrunt)
@@ -37,7 +37,7 @@ struct CStepCoord {
 // REAL MFC CPtrList (CGrunt::m_31c), whose POSITION is a GruntCoordNode, and Find1de8
 // was never a method - 0x1de8 thunks to the free __stdcall ListNodeAdvance(void**).
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
-struct CStepSub10 { // g->m_10
+struct CStepSub10 {                          // g->m_10
     char _00[0x5c];
     i32 m_5c, m_60; // +0x5c, +0x60
 };
@@ -102,7 +102,7 @@ extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles 
 // empty the list.
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
-        GruntCoordNode* nd = (g)->CoordHead();                                                    \
+        GruntCoordNode* nd = (g)->CoordHead();                                                     \
         if (nd != 0) {                                                                             \
             do {                                                                                   \
                 void* r = ListNodeAdvance((void**)&nd);                                            \
@@ -120,8 +120,8 @@ extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles 
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        (RECT*)new (&ra) CRect(0, 0, (grid)->m_c, (grid)->m_10);                           \
-        RECT* pb = (RECT*)new (&rb) CRect(0, 0, (grid)->m_c, (grid)->m_10);                \
+        (RECT*)new (&ra) CRect(0, 0, (grid)->m_c, (grid)->m_10);                                   \
+        RECT* pb = (RECT*)new (&rb) CRect(0, 0, (grid)->m_c, (grid)->m_10);                        \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
@@ -232,10 +232,9 @@ i32 CStepMgr::Step33520(CGrunt* g) {
                 const char* nm =
                     ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr(((CStepOwner*)g->m_14)->m_1c))
                         ->m_0;
-                if (strcmp(nm, s_codeI) != 0 && strcmp(nm, s_codeG) != 0
-                    && strcmp(nm, s_codeL) != 0 && strcmp(nm, s_codeP) != 0
-                    && strcmp(nm, k_60cc94) != 0 && strcmp(nm, k_60cc90) != 0
-                    && strcmp(nm, k_60bebc) != 0) {
+                if (strcmp(nm, s_codeI) != 0 && strcmp(nm, s_codeG) != 0 && strcmp(nm, s_codeL) != 0
+                    && strcmp(nm, s_codeP) != 0 && strcmp(nm, k_60cc94) != 0
+                    && strcmp(nm, k_60cc90) != 0 && strcmp(nm, k_60bebc) != 0) {
                     Finish3e4f(g, cur);
                 }
             }

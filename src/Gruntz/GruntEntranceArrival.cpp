@@ -27,7 +27,7 @@
 extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
-#include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
+#include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (value member of the warp/decay views)
 #include <Gruntz/FreeNodePool.h>
@@ -61,8 +61,8 @@ struct GruntTileIcon {
 // g_645588 (the running game clock) is declared by MovingLogic.h via Grunt.h.
 
 // The primary MS-CRT LCG generator state (inlined by the re-roll step; reloc-masked).
-extern u8 g_randSeeded;                  // 0x6c127d (bit 0 = seeded)
-extern i32 g_randSeed;                   // 0x6c1288 (32-bit LCG state)
+extern u8 g_randSeeded; // 0x6c127d (bit 0 = seeded)
+extern i32 g_randSeed;  // 0x6c1288 (32-bit LCG state)
 
 // The per-tick draw-clock delta the position interpolation scales by (reloc-masked).
 extern "C" u32 g_645584; // 0x645584
@@ -174,12 +174,12 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
-                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                   // It used to be DEFINED here too: six .cpp files each
-                                   // defined it, i.e. six .bss objects for one global
-                                   // (LNK2005). Only the owner defines; everyone externs.
+extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
+                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
+                                  // It used to be DEFINED here too: six .cpp files each
+                                  // defined it, i.e. six .bss objects for one global
+                                  // (LNK2005). Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -190,11 +190,11 @@ extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
 // HEADS this TU's band) ====
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TerrainTileLoader.h> // the real owner of Load (the +0x260 slot)
-#include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130)
-#include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (fire-view cast)
-#include <Gruntz/Projectile.h>    // canonical CProjectile (slot-17 LoadProjectileSprites)
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite + the bound object)
+#include <Gruntz/TileWireLogic.h>     // CTileWireLogic::WireTileSwitchLogic (0x6c130)
+#include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
+#include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
+#include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 DATA(0x002bf3bc)
 // The entrance geometry-source global at 0x2bf3bc every step in this TU arms the
 // entrance sub-player with (fed to CAniAdvanceCursor::Advance_15c360). 0x2bf3bc is a

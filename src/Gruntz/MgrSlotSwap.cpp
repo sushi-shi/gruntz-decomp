@@ -8,7 +8,7 @@
 #include <Gruntz/Brickz.h>
 #include <Ints.h>
 #include <Gruntz/GruntzMgr.h> // the REAL singleton class
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (the registry plane)
+#include <Wwd/WwdFile.h>      // CPlaneRender - the canonical plane (the registry plane)
 #include <rva.h>
 
 // The registry plane table (g_gameReg->m_world->m_24->m_5c) is the shared
@@ -70,8 +70,8 @@ i32 CSlotHolder::DoSwap() {
         ((RegM30*)mgr->m_world)
             ->m_24->m_5c->m_tileGrid[((RegM30*)mgr->m_world)->m_24->m_5c->m_colOffsets[idx] + grp];
     ((RegM30*)g_gameReg->m_world)
-        ->m_24->m_5c->m_tileGrid[((RegM30*)g_gameReg->m_world)->m_24->m_5c->m_colOffsets[idx] + grp] =
-        oldTok;
+        ->m_24->m_5c
+        ->m_tileGrid[((RegM30*)g_gameReg->m_world)->m_24->m_5c->m_colOffsets[idx] + grp] = oldTok;
     ((CBrickzGrid*)mgr->m_tileGrid)->ComputeCellFlags(grp, idx, oldTok);
     this->m_34 = newTok;
     return 1;

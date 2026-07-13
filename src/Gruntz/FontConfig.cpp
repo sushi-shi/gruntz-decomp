@@ -140,9 +140,9 @@ namespace m4 {
 
     // Password blink timer + last-format cache (reached by address).
     extern "C" i32 g_645584; // 0x00645584 elapsed-time delta
-    extern i32 g_62b438; // 0x0062b438 blink countdown
-    extern i32 g_62b43c; // 0x0062b43c blink on/off state
-    extern i32 g_60c7a8; // 0x0060c7a8 last DrawText format
+    extern i32 g_62b438;     // 0x0062b438 blink countdown
+    extern i32 g_62b43c;     // 0x0062b43c blink on/off state
+    extern i32 g_60c7a8;     // 0x0060c7a8 last DrawText format
 
     // The control's MFC CString (data ptr at +0, length at [data-8]); copy ctor +
     // SetAt + dtor are out-of-line (other TU) -> reloc-masked.
@@ -167,7 +167,6 @@ namespace m4 {
         i32 Render22160(HDC hdc, i32 maxWidth, RECT* rect);
         i32 DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT format); // 0x22770
     };
-
 
     // @identity-TODO: TextHost IS CFontConfig (m_3c/m_40 == m_trainingFont/
     // m_messageFont) per the dossier's layout proof.
@@ -571,7 +570,7 @@ i32 m4::PwdHost::Render22160(HDC hdc, i32 maxWidth, RECT* rect) {
         if (g_62b43c) {
             Draw258b(hdc, rect);
         }
-int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
+        int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
         RECT rc;
         rc.left = rect->left;
         rc.top = rect->top;

@@ -330,7 +330,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     }
     char num[0x20];
     WwdHeader info;
-BOOL(WINAPI * setText)(HWND, int, LPCSTR) = ::SetDlgItemTextA;
+    BOOL(WINAPI * setText)(HWND, int, LPCSTR) = ::SetDlgItemTextA;
     if (((WwdWorldHolder*)g_gameReg->m_world)->m_24->IsValidWwd((const char*)g_pathStr, &info)) {
         char* p = info.levelName;
         while (*p && (*p < '0' || *p > '9')) {

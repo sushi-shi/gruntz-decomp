@@ -34,7 +34,9 @@ public:
     // 0x00012ae0 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x00012ae0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_STATICHAZARD; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_STATICHAZARD;
+    }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     CStaticHazard(CGameObject* obj);                                   // 0x0fb7a0 (1-arg ctor)

@@ -228,8 +228,15 @@ public:
         i32 mode,
         i32 colorkey
     ); // 0x141040
-    i32 ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float angle, i32 mode,
-                  i32 colorkey); // 0x141200
+    i32 ScaleBlit(
+        i32 rect,
+        i32 pivot,
+        i32 a1,
+        i32 a2,
+        float angle,
+        i32 mode,
+        i32 colorkey
+    ); // 0x141200
     i32 RotateScaleBlit(
         i32 rect,
         i32 pivot,

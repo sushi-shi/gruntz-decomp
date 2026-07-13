@@ -18,8 +18,8 @@
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
 #include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
-#include <Net/NetThing.h>        // THE shared CNetThing (its dtor 0xc5280 is virtual - CPtrList base)
-#include <Net/NetMgr.h>          // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
+#include <Net/NetThing.h> // THE shared CNetThing (its dtor 0xc5280 is virtual - CPtrList base)
+#include <Net/NetMgr.h>   // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
 
@@ -175,7 +175,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     ColourBtn1753(ch);               // 0x1753 (side effect only)
     ReadyCheck1159(ch);              // 0x1159 (side effect only)
     ChannelSlot* s = (ChannelSlot*)((char*)m_host + ch * 0x238 + 0x150);
-LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
         if (s->m_14 != 0) {
             if (s->m_active != 0) {

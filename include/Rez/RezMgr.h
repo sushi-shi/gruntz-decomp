@@ -224,7 +224,7 @@ public:
 
     virtual i32 Read(i32 off, i32 base, u32 count, void* buf) OVERRIDE;  // [2] 0x13ca40 -> 0
     virtual i32 Write(i32 base, i32 off, u32 count, void* buf) OVERRIDE; // [3] 0x13ca50 -> 0
-    virtual i32 Open(char* name, i32 readonly, i32 write) OVERRIDE; // [4] 0x13ca60 latch flags
+    virtual i32 Open(char* name, i32 readonly, i32 write) OVERRIDE;      // [4] 0x13ca60 latch flags
     virtual i32 Close() OVERRIDE; // [5] 0x13ca80 close all open children
     virtual i32 Flush() OVERRIDE; // [6] 0x13caa0 -> 1
     virtual i32 Check() OVERRIDE; // [7] 0x13cab0 -> 1

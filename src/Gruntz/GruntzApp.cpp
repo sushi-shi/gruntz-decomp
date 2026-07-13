@@ -57,8 +57,8 @@ namespace NetLobby {
 // The extern "C" block keeps the fixed, renumber-proof symbol while the def line itself
 // carries no `extern` keyword (a real, initialized definition).
 extern "C" {
-DATA(0x00244ea0)
-char g_errorText[0x100] = {0};
+    DATA(0x00244ea0)
+    char g_errorText[0x100] = {0};
 }
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
@@ -221,7 +221,6 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 }
 
 // CGruntzApp::VirtualUnknownMethod11 (0x00080aa0) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::ShowMessage

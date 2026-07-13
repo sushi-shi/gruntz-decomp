@@ -20,7 +20,7 @@
 #define GRUNTZ_CGRUNTZMAPMGR_H
 
 #include <Ints.h>
-#include <Mfc.h>            // the real MFC CPtrArray (m_arr node table)
+#include <Mfc.h>           // the real MFC CPtrArray (m_arr node table)
 #include <Gruntz/MapMgr.h> // the ONE real CMapMgr base (was duplicated in this header)
 #include <rva.h>
 
@@ -50,7 +50,7 @@ public:
     // ::CPtrArray, not CObArray: ~CGruntzMapMgr's member teardown calls into
     // [0x1b4f0b, 0x1b527e) (ctor 0x1b4f0b stamps ??_7CPtrArray@@6B@), not CObArray's
     // [0x1b55e9, 0x1b59cc).  The elements are raw void* nodes, not CObject*.
-    CPtrArray m_arr;                                             // +0x7c
+    CPtrArray m_arr; // +0x7c
 };
 
 #endif // GRUNTZ_CGRUNTZMAPMGR_H

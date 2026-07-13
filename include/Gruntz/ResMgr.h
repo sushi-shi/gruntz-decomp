@@ -120,7 +120,7 @@ struct CImageRegistry {
     virtual i32 LoadNamespace(void* tree, const char* szName, const char* szKey);
 
     char m_pad04[0x10 - 0x4]; // vptr occupies +0x00..+0x03
-    CMapStringToOb m_10map; // +0x10  the name->sprite hash table
+    CMapStringToOb m_10map;   // +0x10  the name->sprite hash table
 };
 
 // The sound registry at CResMgr+0x28 (plain non-virtual helpers) + its +0x10 map + the

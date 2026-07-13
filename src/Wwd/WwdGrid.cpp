@@ -6,9 +6,9 @@
 
 #include <Gruntz/WwdGrid.h>
 #include <Wwd/SubWidget168080.h> // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
-#include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor - Start/Init/GetNext bodies live
-                                // here (0x191ad0..0x191c30, same obj as CWwdGrid); shared
-                                // with WwdSpatialMgr.cpp (its GetFirst/GetNext API driver)
+#include <Gruntz/WwdGridIter.h>  // CWwdGridIter cursor - Start/Init/GetNext bodies live
+                                 // here (0x191ad0..0x191c30, same obj as CWwdGrid); shared
+                                 // with WwdSpatialMgr.cpp (its GetFirst/GetNext API driver)
 
 // --- reloc-masked engine externs -------------------------------------------
 

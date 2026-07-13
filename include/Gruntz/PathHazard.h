@@ -136,7 +136,7 @@ public:
     virtual i32 HitTest(i32, i32); // slot 20 (declared-only; per-frame hit test)
     // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
     // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
-    void ForwardTick();              // 0x0b5070 (out-of-line: tail-jump to Tick(), virtual slot 16)
+    void ForwardTick(); // 0x0b5070 (out-of-line: tail-jump to Tick(), virtual slot 16)
     // INLINE (like ~CUserLogic): the derived leaves (CRainCloud/CUFO) must FOLD this
     // teardown into their own dtors - retail's ~CRainCloud @0x13340 is a flat CUserLogic
     // teardown, byte-identical to ~CPathHazard, with every intermediate vptr stamp

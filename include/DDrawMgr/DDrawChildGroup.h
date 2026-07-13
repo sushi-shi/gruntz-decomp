@@ -93,10 +93,10 @@ public:
     void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
     // Slots 0/2/3/4 inherited from CObject (base thunks). Own slots below:
-    virtual ~CDDrawChildGroup() OVERRIDE; // slot 1  scalar-deleting dtor (0x157610)
-    virtual void Slot14();                // +0x14  slot 5
-    virtual void Slot18();                // +0x18
-    virtual void ForwardTo3C(); // 0x1591e0 (out-of-line)
+    virtual ~CDDrawChildGroup() OVERRIDE;        // slot 1  scalar-deleting dtor (0x157610)
+    virtual void Slot14();                       // +0x14  slot 5
+    virtual void Slot18();                       // +0x18
+    virtual void ForwardTo3C();                  // 0x1591e0 (out-of-line)
     virtual void Slot20();                       // +0x20
     virtual void Slot24();                       // +0x24
     virtual void WalkDispatch2C(i32 a1);         // +0x28

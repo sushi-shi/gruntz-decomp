@@ -204,8 +204,8 @@ public:
     // CSpriteFactoryHolder; its render sub-object facets live in <Gruntz/View.h>.)
     CSpriteFactoryHolder* m_c; // +0x0c
     CFaderMgr* m_faderMgr;     // +0x10  fader mgr (RetireScene's CSoundFxEmitter facet)
-    i32 m_14;         // +0x14
-    i32 m_18;         // +0x18
+    i32 m_14;                  // +0x14
+    i32 m_18;                  // +0x18
     i32 m_levelIndex; // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
     i32 m_levelType;  // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
                       //         switches on it (4/5/8 land-death, 6 no-death) to pick the

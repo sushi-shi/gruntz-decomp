@@ -182,8 +182,8 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // Single-type leaf-state sub-object views, defined in GameMode.cpp; forward-
 // declared so the leaf members below are typed to their real class (no per-site
 // cast). Each is a pointer slot, so the typing is codegen-neutral.
-struct CMenuMusic;       // CMenuState::m_1bc       - menu music controller
-class CMoviePlayer;      // CCreditsState::m_videoHandle - real Smacker video player
+struct CMenuMusic;  // CMenuState::m_1bc       - menu music controller
+class CMoviePlayer; // CCreditsState::m_videoHandle - real Smacker video player
 // (CBootyBonusState is GONE - there was never a "bonus state object": +0x2f8 holds the
 // BOOTY_PERFECT CGameObject sprite, and its "phase" is that sprite's own m_screenX.)
 struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
@@ -368,13 +368,13 @@ public:
     // `char m_1d8[0x10]` - the same 0x20 the pad here used to swallow.
     char m_screenRectA[0x10]; // +0x1c8  Set(0, 0, 0x280, 0x1e0)
     char m_screenRectB[0x10]; // +0x1d8  Set(0, 0, 0x280, 0x1e0)
-    CRgn m_1e8;        // +0x1e8 embedded GDI region (RTTI .?AVCRgn@@; freed by ~CCreditsState)
-    CString m_caption; // +0x1f0 credits caption CString (freed by ~CCreditsState)
-    i32 m_1f4;         // +0x1f4  (ctor-zeroed scroll/roll state block)
-    i32 m_1f8;         // +0x1f8
-    i32 m_1fc;         // +0x1fc
-    i32 m_200;         // +0x200
-    i32 m_204;         // +0x204
+    CRgn m_1e8;         // +0x1e8 embedded GDI region (RTTI .?AVCRgn@@; freed by ~CCreditsState)
+    CString m_caption;  // +0x1f0 credits caption CString (freed by ~CCreditsState)
+    i32 m_1f4;          // +0x1f4  (ctor-zeroed scroll/roll state block)
+    i32 m_1f8;          // +0x1f8
+    i32 m_1fc;          // +0x1fc
+    i32 m_200;          // +0x200
+    i32 m_204;          // +0x204
     i32 m_videoPlaying; // +0x208 video playing gate
     i32 m_20c;          // +0x20c  = 1 in the ctor (video-enabled gate)
     CMoviePlayer* m_videoHandle; // +0x210 Smacker video player (real CMoviePlayer)
@@ -532,8 +532,8 @@ public:
     // id (0xc7/0xc8/-2 in the idle-anim tick, ==200 -> secret-bonus toast in slot 8).
     // The +0xc HUD sink the booty toasts read IS the inherited CState::m_c holder.
     char m_pad1a8[0x1b4 - 0x1a8];
-    i32 m_initGate; // +0x1b4  init/step gate (armed flag)
-    i32 m_1b8;      // +0x1b8  cleared by the slot-1 loader before the build chain
+    i32 m_initGate;   // +0x1b4  init/step gate (armed flag)
+    i32 m_1b8;        // +0x1b8  cleared by the slot-1 loader before the build chain
     i32 m_activation; // +0x1bc  activation / overlay-animation state id
     // +0x1c0..+0x1d0: the four mode words the slot-1 loader stamps last
     // (m_1c8 = 0x21, m_1cc = 0, m_1c0 = g_645588, m_1c4 = 0).
@@ -566,15 +566,15 @@ public:
     // +0x284 / +0x2a4: the view called these m_shownA / m_shownB - the SAME two latches,
     // at the same offsets, that this class already named. Canonical names kept; the roles
     // LevelMsgHudDriver proves are recorded here.
-    i32 m_readyFlags[8];    // +0x284  per-slot "stat line (rectsB) shown" latch
-    i32 m_templateFlags[8]; // +0x2a4  per-slot "level message (rectsA) shown" latch
-    i32 m_slot;             // +0x2c4  active reveal slot / phase counter (0..8)
+    i32 m_readyFlags[8];           // +0x284  per-slot "stat line (rectsB) shown" latch
+    i32 m_templateFlags[8];        // +0x2a4  per-slot "level message (rectsA) shown" latch
+    i32 m_slot;                    // +0x2c4  active reveal slot / phase counter (0..8)
     CGameObject* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
     CGameObject* m_animSprites[4]; // +0x2d8  per-player idle sprites (animation)
     i32 m_stepIndex;               // +0x2e8  active-player step index
     i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
     i32 m_soundStarted;            // +0x2f0  sound-started gate
-    i32 m_secretGate; // +0x2f4  secret-message gate
+    i32 m_secretGate;              // +0x2f4  secret-message gate
     // +0x2f8  the BOOTY_PERFECT celebration sprite BuildBootyPerfectAnimation creates.
     // This is the LAST hole in the class, and it closes the third out-of-bounds
     // @identity-TODO: CMultiBootyState also declares a `m_bonusState` here, but that class
@@ -639,11 +639,11 @@ public:
     // method. Its ONLY caller is 0x18830, CBootyState's own vtable slot 1, calling it with
     // `mov ecx,esi` - its own `this`. CMultiBootyState is a SIBLING of CBootyState, not a
     // base, so a CBootyState method could never have called it on itself.)
-    void StepGlitterAnim();               // 0x196c0 - the trig glitter/spawn positioner
-    void MoveLettersByDir();              // 0x19b90 - the 8-direction letter walk (jump-table)
+    void StepGlitterAnim();  // 0x196c0 - the trig glitter/spawn positioner
+    void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
     // (CheckPerfectBonus @0x1c0f0 is GONE from here - it is CBootyState::, proven by its
     // [this+0x2f8] reads and its sole caller CBootyState::Render.)
-    i32 QueryGruntSlots();                // 0x1ecf0 - scan 4 reg records for an empty slot
+    i32 QueryGruntSlots(); // 0x1ecf0 - scan 4 reg records for an empty slot
 
     // Own booty-title tail helpers reached via ILT thunks (reloc-masked self-calls;
     // formerly the CBootyAnimSelf `this`-alias view). FadeInTitle @0xfa1f0 is a CState

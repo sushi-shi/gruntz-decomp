@@ -18,7 +18,6 @@
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_cmdGrid)
 #include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (was a duplicate .cpp-local view)
 
-
 extern "C" u32 g_6bf3bc;             // 0x6bf3bc  per-frame draw delta (advance ctx)
 extern "C" CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton
 

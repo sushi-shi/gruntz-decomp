@@ -30,18 +30,18 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory/CSpriteListNode (m_world->m_8 live-object list)
 #include <Gruntz/UserLogic.h> // CGameObject (the scanned live objects: m_screenX/Y, m_collCategory)
-#include <Image/CImage.h> // the "Gruntz" set's frames the cheats read ARE CImages
+#include <Image/CImage.h>     // the "Gruntz" set's frames the cheats read ARE CImages
 #include <DDrawMgr/DDrawShadeBlit.h> // CImage::m_owned - the shaded sprite the cheats retype/relight
 #include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
-#include <Gruntz/Attract.h>   // canonical CAttract (was a reduced local ODR-landmine twin)
-#include <Gruntz/GameMode.h>  // canonical CMenuState / CCreditsState / CBootyState / CMultiBootyState
+#include <Gruntz/Attract.h>  // canonical CAttract (was a reduced local ODR-landmine twin)
+#include <Gruntz/GameMode.h> // canonical CMenuState / CCreditsState / CBootyState / CMultiBootyState
 #include <Gruntz/SplashState.h> // canonical CSplashState
-#include <Gruntz/Multi.h>     // canonical CMulti (: CPlay : CState)
-#include <Gruntz/HelpState.h> // canonical CHelpState (same; extracted out of HelpState.cpp)
+#include <Gruntz/Multi.h>       // canonical CMulti (: CPlay : CState)
+#include <Gruntz/HelpState.h>   // canonical CHelpState (same; extracted out of HelpState.cpp)
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzPlayer.h> // GruntzPlayer::Reset (0xda9e0) - the options slots ARE GruntzPlayer
 #include <Gruntz/BattlezData.h>
@@ -49,7 +49,7 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GameRegistry.h>
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (was local CWorldLayer)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
@@ -263,7 +263,7 @@ extern "C" {
     extern i32 g_64557c; // DAT_0064557c  (modal/cursor-busy gate)
     // The clock/scroll/warp globals SaveState streams through the archive.
     extern "C" i32 g_64558c; // DAT_0064558c
-    extern i32 g_645590; // DAT_00645590
+    extern i32 g_645590;     // DAT_00645590
     DATA(0x00245598)
     extern i32 g_645598; // DAT_00645598
     extern i32 g_64559c; // DAT_0064559c
@@ -301,7 +301,7 @@ extern "C" u32 g_killCueClock; // DAT_006bf3c0 (wrap-safe draw clock)
 // CGameRegistry==CGruntzMgr fold is a separate, deferred pass).
 DATA(0x0024556c)
 extern "C" {
-CGruntzMgr* g_gameReg = 0;
+    CGruntzMgr* g_gameReg = 0;
 }
 
 // The +0x68 world command-grid object is the ONE CTriggerMgr (<Gruntz/TriggerMgr.h>,
@@ -1390,7 +1390,8 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             // `if(idx==4)idx--;idx--;` form regresses to 88% (view in edx). The
             // fold is the constant-CSE tiebreak, not source-steerable.
             i32 idx = (count == 4 ? count - 1 : count) - 1;
-            CPlaneRender* layer = (idx < 0 || idx >= count) ? 0 : (CPlaneRender*)view->m_planes[idx];
+            CPlaneRender* layer =
+                (idx < 0 || idx >= count) ? 0 : (CPlaneRender*)view->m_planes[idx];
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1428,7 +1429,8 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
         CGameLevel* view = m_world->m_24;
         if (view) {
-            CPlaneRender* layer = (view->m_planes.GetSize() > 0) ? (CPlaneRender*)view->m_planes[0] : 0;
+            CPlaneRender* layer =
+                (view->m_planes.GetSize() > 0) ? (CPlaneRender*)view->m_planes[0] : 0;
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -2635,7 +2637,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
         m_curState = 0;
     }
 
-int(WINAPI * show)(BOOL) = ::ShowCursor;
+    int(WINAPI * show)(BOOL) = ::ShowCursor;
     while (show(1) < 0) {
     }
 
@@ -3647,7 +3649,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         d->Slot0a();
     }
 
-int(WINAPI * show)(BOOL) = ::ShowCursor;
+    int(WINAPI * show)(BOOL) = ::ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -3691,7 +3693,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
         d->Slot0a();
     }
 
-int(WINAPI * show)(BOOL) = ::ShowCursor;
+    int(WINAPI * show)(BOOL) = ::ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -4208,7 +4210,7 @@ void CGruntzMgr::DelayedQuit() {
     } else {
         base = 0;
     }
-DWORD(WINAPI * tgt)(void) = ::timeGetTime;
+    DWORD(WINAPI * tgt)(void) = ::timeGetTime;
     u32 deadline = base + tgt();
     while (tgt() < deadline) {
     }
@@ -4296,7 +4298,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         d->Slot0a();
     }
 
-int(WINAPI * show)(BOOL) = ::ShowCursor;
+    int(WINAPI * show)(BOOL) = ::ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -4607,10 +4609,7 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     sprintf(szValue, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
                     ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valY);
                     ((Utils::RegistryHelper*)g_gameReg->m_settings)
-                        ->SetValueDword(
-                            "Last Warp Level",
-                            g_gameReg->m_curState->m_levelIndex
-                        );
+                        ->SetValueDword("Last Warp Level", g_gameReg->m_curState->m_levelIndex);
                 }
                 EndDialog(hDlg, 1);
                 return 1;

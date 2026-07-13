@@ -22,8 +22,8 @@
 // load-bearing (campaign doctrine).
 #include <rva.h>
 
-#include <Gruntz/AnimWorker.h>             // shared Owner / Worker views + Worker_DefaultPump
-#include <Gruntz/UserLogic.h>              // CUserLogic 16-slot vtable the pump dispatches
+#include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump
+#include <Gruntz/UserLogic.h>  // CUserLogic 16-slot vtable the pump dispatches
 // The REAL sprite-leaf classes (the AnimWorkerSpriteLeaves.h size-views are dissolved).
 // The "canonical headers cannot coexist with UserLogic.h" wall was FALSE: they compile
 // together under the real MSVC 5.0, and each computes exactly the retail operator-new

@@ -37,7 +37,7 @@ public:
 
 RVA(0x000f9880, 0x43)
 int CTitleApp::OnStart(int) {
-int(WINAPI * sc)(BOOL) = ::ShowCursor;
+    int(WINAPI * sc)(BOOL) = ::ShowCursor;
     while (sc(0) >= 0) {
     }
     RunTitleSeq((const char*)g_assetRoot, 1, 1, 1, 0); // CState::RunTitleSeq @0xfa350

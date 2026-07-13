@@ -23,7 +23,7 @@
 #include <Wap32/ZDArrayDerived.h> // Construct(lo, hi) - the default-range registrar entry
 #include <Wap32/ZVec.h>
 #include <rva.h>
-#include <Gruntz/ActReg.h>      // the shared CActReg coordinate-registry archetype (g_actReg4)
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (g_actReg4)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);

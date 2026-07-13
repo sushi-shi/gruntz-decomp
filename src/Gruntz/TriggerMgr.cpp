@@ -33,7 +33,7 @@
 #include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (dims here)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (dims here)
 #include <stdlib.h>               // rand (0x11fee0, reloc-masked)
 #include <Globals.h>
 
@@ -652,7 +652,8 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         } else if (hit == cell) {
             // toggle off the pending-fx and rewind
             m_pendingFxKind = 0;
-            ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(0, 0); // ILT 0x35da (was the StopFx2 phantom)
+            ((CPlay*)g_gameReg->m_curState)
+                ->LoadCursorSprites(0, 0); // ILT 0x35da (was the StopFx2 phantom)
             CGruntHud* o = hit->m_10;
             this->PlaceA(o->m_5c, o->m_60, a18, a14);
             return 1;
@@ -2752,7 +2753,10 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     } while (n != 0);
     if (m_selSentinel == slot) {
         ((CPlay*)g_gameReg->m_curState)
-            ->ResetGoals(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2); // 0xd5f00 (was Center)
+            ->ResetGoals(
+                minX + (maxX - minX) / 2,
+                minY + (maxY - minY) / 2
+            ); // 0xd5f00 (was Center)
         m_selSentinel = -1;
         return 1;
     }

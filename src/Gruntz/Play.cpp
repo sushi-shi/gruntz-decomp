@@ -150,12 +150,12 @@ public:
 #include <Dsndmgr/GruntzSoundZ.h>
 // The real owners of the ex-`Eng` conflation (see the note below): each was reached by
 // casting a pointer to a fabricated `Eng` and calling a fabricated method on it.
-#include <Gruntz/Multi.h>              // CMulti::AckJoinFailure  (was Eng::Teardown)
-#include <Gruntz/CBrickz.h>            // CBrickz::LoadAttributes (was Eng::LoadAttributes)
-#include <Gruntz/Brickz.h>             // CBrickzGrid::UpdateDiagonals
-#include <Gruntz/ParseSource.h>        // CParseSource::BeginParse/EndParse
-#include <Gruntz/ImageSets.h>         // CImageSet3::GetSize_1633e0 (was Eng::GetSize)
-#include <DinMgr2/DirectInputMgr2.h>   // DirectInputMgr2::ReadAll (was Eng::HideMenu)
+#include <Gruntz/Multi.h>            // CMulti::AckJoinFailure  (was Eng::Teardown)
+#include <Gruntz/CBrickz.h>          // CBrickz::LoadAttributes (was Eng::LoadAttributes)
+#include <Gruntz/Brickz.h>           // CBrickzGrid::UpdateDiagonals
+#include <Gruntz/ParseSource.h>      // CParseSource::BeginParse/EndParse
+#include <Gruntz/ImageSets.h>        // CImageSet3::GetSize_1633e0 (was Eng::GetSize)
+#include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2::ReadAll (was Eng::HideMenu)
 #include <Globals.h>
 
 // Placement new: the team-slot "reset" at 0x40a7 is retail RE-CONSTRUCTING a GruntzPlayer
@@ -761,11 +761,11 @@ struct CRegExit {
 // the majority semantic spelling, and a role rename is separate follow-up.
 DATA(0x002bf3bc)
 extern "C" {
-u32 g_6bf3bc = 0; // 0x2bf3bc  draw-DELTA mirror  (= g_645584 / g_lastDelta)
+    u32 g_6bf3bc = 0; // 0x2bf3bc  draw-DELTA mirror  (= g_645584 / g_lastDelta)
 }
 DATA(0x002bf3c0)
 extern "C" {
-u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_645580 / g_lastNow)
+    u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_645580 / g_lastNow)
 }
 
 extern "C" i32 g_645270; // DAT_00645270 (area page size)
@@ -808,7 +808,6 @@ extern void* g_61139c;              // PTR_DAT_0061139c
 // the rel32 binds to the symbol retail actually calls. Resolved by chasing each ILT
 // thunk to its body and reading the name off symbol_names (gruntz.analysis.vtable_owner
 // / sema disasm). The two still-unresolved ones are marked below.)
-
 
 // ---------------------------------------------------------------------------
 // Genuine __cdecl engine helpers (reloc-masked rel32).
@@ -2974,7 +2973,7 @@ extern "C" {}
 // ===========================================================================
 RVA(0x000ca0a0, 0x101)
 i32 CPlay::ProfileDeltaFrame() {
-DWORD(WINAPI * tg)(void) = ::timeGetTime;
+    DWORD(WINAPI * tg)(void) = ::timeGetTime;
     i32 updates = 0;
     u32 t0 = tg();
     u32 d = g_645584;
@@ -3047,7 +3046,7 @@ i32 CPlay::ProfileInputFrame() {
         ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_84,
         ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_88
     ); // untimed
-DWORD(WINAPI * tg)(void) = ::timeGetTime;
+    DWORD(WINAPI * tg)(void) = ::timeGetTime;
 
     u32 t1 = tg();
     Vslot26(); // this->vtbl[+0x98]
@@ -3760,7 +3759,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (cb == 0) {
         return 0;
     }
-LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 0x11; i++) {
         CString s = GetColorName(i, 0);
@@ -3784,7 +3783,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (cb == 0) {
         return 0;
     }
-LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 3; i++) {
         CString s = GetDifficultyName(i, 0);
@@ -5505,11 +5504,11 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
 // Residual is MSVC's interleave of the geom pointer-chase (sx/sy loads) into the
 // float speed-computation FPU latency gaps (fild/fmul/fimul/fiadd/ftol) + the
 // trailing nop padding - not source-steerable (zero-register-pinning family).
-extern "C" u8 g_scrollLoadFlags;          // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
-extern "C" i32 g_scrollMinSpeed;          // 0x64c274  cached MinScrollSpeed
-extern "C" i32 g_scrollSpeedRange;        // 0x64c270  cached (Max - Min)
-extern CButeMgr g_buteMgr;                // 0x6453d8
-extern "C" double g_scrollSpeedScale;     // 0x5eaa10  (== 0.01)
+extern "C" u8 g_scrollLoadFlags;      // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
+extern "C" i32 g_scrollMinSpeed;      // 0x64c274  cached MinScrollSpeed
+extern "C" i32 g_scrollSpeedRange;    // 0x64c270  cached (Max - Min)
+extern CButeMgr g_buteMgr;            // 0x6453d8
+extern "C" double g_scrollSpeedScale; // 0x5eaa10  (== 0.01)
 
 SIZE_UNKNOWN(ScrollGeom);
 struct ScrollGeom {

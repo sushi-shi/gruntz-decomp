@@ -408,8 +408,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
                 g_gameReg->StoreInputState(sv);
             }
         }
-        if (g_disableAudio == 0 && g_disableMusic == 0
-            && g_gameReg->m_sound->m_enabled != 0) {
+        if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
             g_gameReg->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
             i32 pv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x472);
             if (pv >= 0 && pv <= 100) {
@@ -453,8 +452,7 @@ void CPlay::ApplyGameOptions() {
             g_gameReg->m_isVoiceEnabled = g_opt_22bdd4;
             g_gameReg->StoreInputState(g_opt_22bdc4);
         }
-        if (g_disableAudio == 0 && g_disableMusic == 0
-            && g_gameReg->m_sound->m_enabled != 0) {
+        if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
             g_gameReg->SetSoundLevelState(g_opt_22bdd0);
             g_gameReg->m_sound->SetXMidiVolume(g_opt_22bdcc);
         }

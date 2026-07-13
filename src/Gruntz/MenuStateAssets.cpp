@@ -88,9 +88,9 @@ struct MenuHudObj {
     MenuHudObj();
     char m_pad00[0x24];
     CPtrList m_24; // +0x24 (0x1c bytes -> ends 0x40)
-    i32 m_40;     // +0x40
-    CString m_44; // +0x44
-    CString m_48; // +0x48
+    i32 m_40;      // +0x40
+    CString m_44;  // +0x44
+    CString m_48;  // +0x48
     char m_pad4c[0x7c - 0x4c];
     // Init @0x10c8 IS CChatBox::Init; cast at the call.
     // AddKey @0x182df0 IS CChatBox::AdvanceRow0; cast at the call.
@@ -192,8 +192,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     MenuSndEntry* fm;
-    ((CDDrawSubMgrLeafScan*)g_menuMgrSettings->m_world->m_28)
-        ->m_10.Lookup("MENU_MENU", (void*&)fm);
+    ((CDDrawSubMgrLeafScan*)g_menuMgrSettings->m_world->m_28)->m_10.Lookup("MENU_MENU", (void*&)fm);
     m_1bc = (CMenuMusic*)fm;
     return 1;
 }

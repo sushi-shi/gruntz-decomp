@@ -33,7 +33,7 @@
 #include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (dims here)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (dims here)
 #include <Gruntz/Grunt.h>         // real CGrunt (the grid cells) + CGruntTileMgr (FindAtPixel)
 #include <Globals.h>
 

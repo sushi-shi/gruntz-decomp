@@ -25,7 +25,7 @@
 #include <Bute/ButeTree.h>
 #include <Wap32/ZVec.h>
 
-class CVariantSlot;    // folded CActColl2
+class CVariantSlot; // folded CActColl2
 // CTypeKeyColl is the REAL class of the registry at 0x6bf650 - and its fields ARE the eight
 // scalars this header used to declare as separate globals. Needs the full definition now.
 #include <Gruntz/TypeKeyColl.h>

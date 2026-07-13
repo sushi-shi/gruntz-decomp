@@ -2,7 +2,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Ints.h>
 #include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr)
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (the terrain grid)
+#include <Wwd/WwdFile.h>         // CPlaneRender - the canonical plane (the terrain grid)
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (level mgr via m_world)
 
 #include <stdlib.h> // rand (0x11fee0, the engine rng)

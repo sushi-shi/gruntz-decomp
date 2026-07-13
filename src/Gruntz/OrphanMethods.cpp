@@ -3,14 +3,14 @@
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
 #include <Gruntz/Effect6b.h>
-#include <DDrawMgr/DDrawBlitParam.h>     // CDDrawBlitParam::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
-#include <Gruntz/AniAdvanceCursor.h>     // CAniAdvanceCursor::Advance_15c360 (0x15c360) - +0x1a0 advance
+#include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360) - +0x1a0 advance
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
-#include <Gruntz/State.h>      // CState base (CState95 derives it; RetireScene/FadeInTitle @0xfa8f0/0xfa1f0)
+#include <Gruntz/State.h> // CState base (CState95 derives it; RetireScene/FadeInTitle @0xfa8f0/0xfa1f0)
 // (FadeInTitle @0xfa1f0 is now a CState base method via <Gruntz/State.h>; no Attract.h.)
 #include <Globals.h>
 

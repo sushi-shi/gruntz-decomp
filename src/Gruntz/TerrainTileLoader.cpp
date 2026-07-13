@@ -53,7 +53,7 @@
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez sprite)
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (cell lookup)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (cell lookup)
 #include <Gruntz/TileGridCommand.h> // real CTileTriggerContainer (map+0x2e4) + CTileTriggerLogic (the found set)
 #include <rva.h>
 

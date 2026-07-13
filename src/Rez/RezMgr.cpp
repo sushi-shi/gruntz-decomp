@@ -37,34 +37,34 @@ extern i32 g_wap32FrameDelta; // 0x253c74 (ms since previous frame)
 // (0x245588 is defined in Projectile.cpp already.)
 extern "C" i32 g_645588;
 extern "C" {
-DATA(0x00245580)
-i32 g_645580 = 0;
-DATA(0x00245584)
-i32 g_645584 = 0;
-DATA(0x0024558c)
-i32 g_64558c = 0;
-DATA(0x00245590)
-i32 g_645590 = 0;
-DATA(0x00245598)
-i32 g_645598 = 0;
-DATA(0x0024559c)
-i32 g_64559c = 0;
-DATA(0x002455a0)
-i32 g_6455a0 = 0;
+    DATA(0x00245580)
+    i32 g_645580 = 0;
+    DATA(0x00245584)
+    i32 g_645584 = 0;
+    DATA(0x0024558c)
+    i32 g_64558c = 0;
+    DATA(0x00245590)
+    i32 g_645590 = 0;
+    DATA(0x00245598)
+    i32 g_645598 = 0;
+    DATA(0x0024559c)
+    i32 g_64559c = 0;
+    DATA(0x002455a0)
+    i32 g_6455a0 = 0;
 }
 // 0x245594 keeps C++ linkage - all three users (this TU / gruntzmgr / lightfxrender)
 // agree on ?g_645594@@3HA, so there is no divergence to fix here.
 DATA(0x00245594)
 i32 g_645594 = 0;
-#define g_lastNow g_645580 // 0x245580
-#define g_lastDelta g_645584 // 0x245584 (frame delta, clamped to <= 0x64)
-#define g_accumMs g_645588 // 0x245588 (running accumulated frame time)
+#define g_lastNow g_645580    // 0x245580
+#define g_lastDelta g_645584  // 0x245584 (frame delta, clamped to <= 0x64)
+#define g_accumMs g_645588    // 0x245588 (running accumulated frame time)
 #define g_frameTicks g_64558c // 0x24558c (per-frame counter)
-#define g_timer32 g_645590 // 0x245590 (seed 0x32 ms)
-#define g_timer100 g_645594 // 0x245594 (seed 0x64 ms)
-#define g_timer200 g_645598 // 0x245598 (seed 0xc8 ms)
-#define g_timer400 g_64559c // 0x24559c (seed 0x190 ms)
-#define g_timer500 g_6455a0 // 0x2455a0 (seed 0x1f4 ms)
+#define g_timer32 g_645590    // 0x245590 (seed 0x32 ms)
+#define g_timer100 g_645594   // 0x245594 (seed 0x64 ms)
+#define g_timer200 g_645598   // 0x245598 (seed 0xc8 ms)
+#define g_timer400 g_64559c   // 0x24559c (seed 0x190 ms)
+#define g_timer500 g_6455a0   // 0x2455a0 (seed 0x1f4 ms)
 
 // ---------------------------------------------------------------------------
 // RezMgr::PerFrameTick()  (virtual, vtable slot +0x10).

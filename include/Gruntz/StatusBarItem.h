@@ -82,9 +82,9 @@ public:
     // is the whole trick: a named local makes cl materialize the struct and copy it; an
     // inline temporary makes it build the struct in place, which is what retail does.
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10); // slot 2
-    virtual void SbiSlot3();                                                       // slot 3
-    virtual void SbiSlot4(); // slot 4
-    virtual void SbiSlot5(); // slot 5
+    virtual void SbiSlot3();                                                        // slot 3
+    virtual void SbiSlot4();                                                        // slot 4
+    virtual void SbiSlot5();                                                        // slot 5
     // slots 6..9 (0x100530/0x100550/0x100570/0x100590): base defaults - each is
     // `xor eax,eax; ret 0xc` => i32-return, 3 stack args, `return 0`. No SBI leaf
     // overrides them. Out-of-line default bodies in SBI_RectOnly.cpp.

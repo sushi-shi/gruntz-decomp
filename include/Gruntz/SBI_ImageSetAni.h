@@ -112,7 +112,7 @@ public:
     // `new CSBI_StatzTabArrow` (Statz per-grunt row); slot 14 exists from CSBI_ImageSetAni
     // down, so the arrow is the deepest class both callers agree on. Bodies live in
     // StatusBarTabBuilders.cpp. (They were methods of the fabricated CSbConfigItem.)
-    void SetDirection(i32 a, i32 b);    // 0x0ea0f0
+    void SetDirection(i32 a, i32 b);      // 0x0ea0f0
     void SetDirectionAlt(i32 a1, i32 a2); // 0x0ea170
     // The m_114-gated 2-arg arrow mode sink (reloc `M`).
     void SetArrowMode(i32 a, i32 b);

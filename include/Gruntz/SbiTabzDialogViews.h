@@ -23,8 +23,8 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Mfc.h>           // CPtrList (item list in CTabzBuilder) + RECT
-#include <Gruntz/SbRect.h>       // the by-value geometry rect the slot-11 Setup takes
+#include <Mfc.h>                  // CPtrList (item list in CTabzBuilder) + RECT
+#include <Gruntz/SbRect.h>        // the by-value geometry rect the slot-11 Setup takes
 #include <Gruntz/StatusBarItem.h> // the REAL base (was the CSbDialogItem fabrication)
 
 // The status-bar item family: a REAL polymorphic base (CSbDialogItem) whose
@@ -82,16 +82,8 @@ public:
     // spelling that makes cl build the struct directly in the outgoing arg frame
     // (`sub esp,0x10; mov ecx,esp; ...`), which is what retail emits. This header had that
     // right all along; it is what unblocked slot 2 in StatusBarItem.h.
-    virtual i32 Setup(
-        void* mgr,
-        void* sub,
-        i32 type,
-        i32 idx,
-        SbRect rc,
-        const char* key,
-        i32 flag,
-        i32 e
-    );
+    virtual i32
+    Setup(void* mgr, void* sub, i32 type, i32 idx, SbRect rc, const char* key, i32 flag, i32 e);
 
     i32 m_30; // +0x30
 }; // size 0x34

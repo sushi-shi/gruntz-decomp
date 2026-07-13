@@ -322,11 +322,11 @@ public:
     // holds 0x1ba9d2 at slot 48 - CDialog::DoModal. Slots 49/51 likewise hold
     // OnInitDialog (0x1bac5e) / OnOK (0x1bacc3). The old CModalScreen placeholder
     // with its `Run()` at slot 48 WAS CDialog all along.
-    i32 ExitModalUI(class CDialog* dlg, i32 notify);   // @0x0903f0
-    i32 FinishLevel(i32 full, i32 stopBank);           // @0x08e980
-    i32 FillSaveInfo(SaveInfo* dst, void* snapshot);   // @0x0927b0
-    i32 SaveState(struct CSerialArchive* ar);          // @0x093620 (shared CSerialArchive)
-    i32 LoadState(struct CSerialArchive* ar);          // @0x093920 (deserialize counterpart)
+    i32 ExitModalUI(class CDialog* dlg, i32 notify); // @0x0903f0
+    i32 FinishLevel(i32 full, i32 stopBank);         // @0x08e980
+    i32 FillSaveInfo(SaveInfo* dst, void* snapshot); // @0x0927b0
+    i32 SaveState(struct CSerialArchive* ar);        // @0x093620 (shared CSerialArchive)
+    i32 LoadState(struct CSerialArchive* ar);        // @0x093920 (deserialize counterpart)
     // @0x08e3a0 - the level/viewport text rect (default 640x480, else the active
     // world view's rect at m_world->m_24 + 0x10) written to *out. Was the fake
     // `RectQuery_08e3a0` view in GruntzMgr.cpp AND the phantom CGameRegistry::GetRect:
@@ -399,14 +399,14 @@ public:
     // @0x092d50 - if in play state and the options slot is not yet loaded, assign
     // its name CString. 7 raw args (only the slot index + the value string used).
     i32 LoadOptionsSlotName(i32 slot, i32 a2, i32 a3, i32 a4, i32 a5, const char* val, i32 a7);
-    i32 CountReadyOptionsSlots(i32 anyState);   // @0x092e30 (count loaded/armed slots)
-    GruntzPlayer* FindOptionsSlot(i32 x); // @0x092e80 (slot whose m_18 == x)
-    i32 ResetOptionsSlot(i32 idx);              // @0x092da0 (reset slot idx if loaded)
-    void ResetAllOptionsSlots();                // @0x092df0 (reset all 4 slots)
-    i32 IsStandardMode();                       // @0x08f980 (mode == 640x480)
-    i32 DebugJumpLevel();                       // @0x08e780 (DEBUG_JUMPLEVEL dialog)
-    i32 PostSlotCommandB1(i32 slot);            // @0x0920e0 (post WM_COMMAND 0x80b1, slot)
-    i32 PostSlotCommandB6(i32 slot);            // @0x092130 (post WM_COMMAND 0x80b6, slot)
+    i32 CountReadyOptionsSlots(i32 anyState); // @0x092e30 (count loaded/armed slots)
+    GruntzPlayer* FindOptionsSlot(i32 x);     // @0x092e80 (slot whose m_18 == x)
+    i32 ResetOptionsSlot(i32 idx);            // @0x092da0 (reset slot idx if loaded)
+    void ResetAllOptionsSlots();              // @0x092df0 (reset all 4 slots)
+    i32 IsStandardMode();                     // @0x08f980 (mode == 640x480)
+    i32 DebugJumpLevel();                     // @0x08e780 (DEBUG_JUMPLEVEL dialog)
+    i32 PostSlotCommandB1(i32 slot);          // @0x0920e0 (post WM_COMMAND 0x80b1, slot)
+    i32 PostSlotCommandB6(i32 slot);          // @0x092130 (post WM_COMMAND 0x80b6, slot)
     // Sibling reached by Quicksave (reloc-masked): plays the save-feedback sprite.
     i32 LoadSaveMessageSprite();
 
@@ -492,9 +492,9 @@ public:
     i32 m_128, m_12c, m_130, m_134; // +0x128..+0x134  (m_134==3 -> "won"; FillSaveInfo)
     i32 m_optionsCount;             // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
     i32 m_viewOriginL, m_viewOriginT, m_viewOriginR,
-        m_viewOriginB;              // +0x13c..+0x148  view-edge origins
-    char m_pad14c[0x150 - 0x14c];   // +0x14c..+0x150 gap
-    GruntzPlayer m_options[4]; // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
+        m_viewOriginB;            // +0x13c..+0x148  view-edge origins
+    char m_pad14c[0x150 - 0x14c]; // +0x14c..+0x150 gap
+    GruntzPlayer m_options[4];    // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
 };
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

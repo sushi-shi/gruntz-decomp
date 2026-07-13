@@ -51,7 +51,7 @@ extern "C" u32 g_645588;
 // GruntVoiceActReg.cpp, so 0x2514d8 carried TWO competing DATA() claims under two names.
 // Subsumed: one object, one definition, one name; the per-field scalars are gone.
 extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
-extern void* g_projActCache;    // 0x2bf464 (?g_projActCache@@3PAXA), bound in GruntStartingPoint.cpp
+extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA), bound in GruntStartingPoint.cpp
 
 // The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
 // alias of g_gameReg below; the 0x24556c DATA binding lives on the C++ name).

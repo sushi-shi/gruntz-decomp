@@ -255,17 +255,8 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
 // 9-arg slot-1 signature recovered from the checkpoint override.
 // ---------------------------------------------------------------------------
 RVA(0x00110460, 0x64)
-i32 CTileTriggerSwitchLogic::BuildSmall(
-    i32 a1,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
-    const i32* rect,
-    i32 a7,
-    i32 a8,
-    i32 a9
-) {
+i32 CTileTriggerSwitchLogic::
+    BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, const i32* rect, i32 a7, i32 a8, i32 a9) {
     if (m_20 != 0) {
         return 0;
     }

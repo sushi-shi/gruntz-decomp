@@ -11,7 +11,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntzMgr.h> // the *0x24556c singleton (CGruntzMgr)
-#include <string.h> // strlen / memset (inlined to repne scasb / rep stos)
+#include <string.h>           // strlen / memset (inlined to repne scasb / rep stos)
 
 extern "C" CGruntzMgr* g_gameReg;
 

@@ -24,13 +24,13 @@
 #include <Mfc.h> // MFC superset (afx-first); also pulled by WorldSoundSet.h
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_8860 (== ~CUserLogic; fold blocked, see below)
-#include <Gruntz/AmbientSound.h>       // canonical CAmbientSound / CAmbientPosSound
-#include <Gruntz/RandomAmbientSound.h> // canonical CRandomAmbientSound
-#include <Rez/RezMgr.h>                // RezAlloc - the engine heap allocator (reloc-masked)
+#include <Gruntz/AmbientSound.h>           // canonical CAmbientSound / CAmbientPosSound
+#include <Gruntz/RandomAmbientSound.h>     // canonical CRandomAmbientSound
+#include <Rez/RezMgr.h>                    // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
-#include <Gruntz/UserLogic.h>              // CUserBase (real base of CAmbientSound)
-#include <Gruntz/BoundaryTailViews.h>      // Arg1_bdd0/Entry_bdd0 (0xbdd0 Dispatch arg views)
-#include <Globals.h>                       // g_posSoundReq
+#include <Gruntz/UserLogic.h>         // CUserBase (real base of CAmbientSound)
+#include <Gruntz/BoundaryTailViews.h> // Arg1_bdd0/Entry_bdd0 (0xbdd0 Dispatch arg views)
+#include <Globals.h>                  // g_posSoundReq
 
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
 

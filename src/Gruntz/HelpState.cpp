@@ -28,7 +28,7 @@
 #include <Gruntz/Attract.h>     // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
 #include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
-#include <Globals.h>              // g_6111b0 (RunTitleSeq title buffer)
+#include <Globals.h>            // g_6111b0 (RunTitleSeq title buffer)
 #include <Gruntz/AttractActor.h> // the shared AttractActor/AttractActorList + g_actorList
 #include <rva.h>
 

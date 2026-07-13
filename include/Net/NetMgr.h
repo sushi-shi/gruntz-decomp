@@ -136,8 +136,8 @@ extern i32 g_611d88; // 0x611d88  saved dropped-player id
 // (g_cfgWord @0x645550) plus the global CButeMgr's +0x4 word go into the
 // version-announce packet.
 // ---------------------------------------------------------------------------
-extern "C" i32 g_localVersion; // 0x60fa70  (sibling; not TU-private)
-extern i32 g_remoteVersion;    // 0x60fa74  DEFINED in src/Gruntz/Multi.cpp (owner TU)
+extern "C" i32 g_localVersion;  // 0x60fa70  (sibling; not TU-private)
+extern i32 g_remoteVersion;     // 0x60fa74  DEFINED in src/Gruntz/Multi.cpp (owner TU)
 extern "C" i32 g_cfgWord;       // 0x645550
 extern "C" i32 g_buteMgrField4; // *(g_buteMgr + 4) - the CButeMgr config word
 
@@ -306,7 +306,7 @@ struct CNetCmdSlot {
         i32 m_08;         //        sync:    counter / CNetMgr* (SendGruntRecord casts)
     };
     union {
-        i32* m_cmdHead;   // +0xc  command: -> command-list head value (m_cmdHead[0xb] == +0x2c flag)
+        i32* m_cmdHead; // +0xc  command: -> command-list head value (m_cmdHead[0xb] == +0x2c flag)
         SlotInfo* m_desc; //       sync:    player descriptor (same target, named view)
     };
     union {
@@ -326,17 +326,17 @@ struct CNetCmdSlot {
     // band-A list bodies (ctor 0x1b4867 / AddTail 0x1b4991 / RemoveHead 0x1b4a03),
     // whose vtable 0x1eb054 slot-0 GetRuntimeClass names "CPtrList". (CNetMgr's own
     // group/player/session lists below DO call band B = the real CObList.)
-    CPtrList m_cmds;  // +0x20  queued-command list (CPtrList, 0x1c bytes)
+    CPtrList m_cmds;   // +0x20  queued-command list (CPtrList, 0x1c bytes)
     i32 m_ackFlags[4]; // +0x3c  per-player ack-flag array (ProcessCmd sets m_ackFlags[pid])
     i32 m_rangeA[3];   // +0x4c  command-range A (reset to -1) (sync sub-object m_4c)
     i32 m_rangeB[3];   // +0x58  command-range B (reset to -1) (sync sub-object m_58)
 
-    CNetCmdSlot();                       // bbec0  construct m_cmds (/GX EH) + reset fields
-    ~CNetCmdSlot();                      // b62a0  ResetAll + tear down m_cmds (CObList) [multi]
-    void ResetAll();                     // c0bb0  zero all fields + ranges
-    void AdvanceSeq(i32 id);             // c0f10  fold an ack id into the high-water window
-    void RaiseMax(i32 v);                // c0fa0  keep the high-water sequence
-    void ResetTriple(i32* p);            // c10a0  splat -1 over three dwords
+    CNetCmdSlot();            // bbec0  construct m_cmds (/GX EH) + reset fields
+    ~CNetCmdSlot();           // b62a0  ResetAll + tear down m_cmds (CObList) [multi]
+    void ResetAll();          // c0bb0  zero all fields + ranges
+    void AdvanceSeq(i32 id);  // c0f10  fold an ack id into the high-water window
+    void RaiseMax(i32 v);     // c0fa0  keep the high-water sequence
+    void ResetTriple(i32* p); // c10a0  splat -1 over three dwords
     // The three command-id-window helpers (0xc0fd0/0xc1010/0xc1060, __thiscall). Retail
     // passes the window (m_rangeA/m_rangeB) explicitly and ignores `this`, so at every
     // call site cl loads ecx = this even though the body never reads it - modeling them as
@@ -351,7 +351,7 @@ struct CNetCmdSlot {
     void ClearCmds();                    // c12e0  drain + recycle the queue
     void Touch();                        // c1390  latch the slot (sets +4, +8)
     void FullReset();                    // c0c20  zero the command fields + both ranges
-    void ClearAckFlags();                // bf120  zero the +0x3c..+0x48 ack-flag dwords (sync InitSub3c)
+    void ClearAckFlags(); // bf120  zero the +0x3c..+0x48 ack-flag dwords (sync InitSub3c)
     // Lobby-sync: emit one grunt-state record for the channel (sync SendAll's per-slot
     // send; reads m_08 as CNetMgr* + m_desc as the descriptor, ships via SetData).
     i32 SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId); // bfc70
@@ -557,9 +557,9 @@ struct CNetSession {
     i32 Init(void* a1, class CNetMgr* a2, void* a3); // bef80
 
     // --- lobby-sync methods (ex-CLobbySync, folded onto the same object) ---
-    ~CNetSession();                          // b6220  ResetSync + vector-destroy the 4 slots [multi]
-    void ResetSync();                        // bf000  clear header, recycle each slot, drain pool
-    i32 Poll(i32 delta);                     // bf5a0  advance active channels; drain the endpoint
+    ~CNetSession();      // b6220  ResetSync + vector-destroy the 4 slots [multi]
+    void ResetSync();    // bf000  clear header, recycle each slot, drain pool
+    i32 Poll(i32 delta); // bf5a0  advance active channels; drain the endpoint
     i32 Dispatch(i32 a, LobbyMsg* b, i32 c); // bf700
     i32 DispatchMsg(LobbyMsg* m, i32 arg2);  // bf7c0
     i32 Tick();                              // bf9e0  snapshot -> broadcast -> flush
@@ -572,9 +572,9 @@ struct CNetSession {
     // Declared-only lobby-sync siblings (their calls reloc-mask): Checksum @0xc0590
     // resolves to CGameSyncSig::ComputeSignature, ArmSlot / Step2437 are per-frame
     // pokes with no bound RVA, kept declared so the CMulti dispatch compiles.
-    i32 Checksum();                          // c0590 (== CGameSyncSig::ComputeSignature)
-    void ArmSlot(void* node, i32 parity);    // per-frame arm (reloc-masked)
-    void Step2437();                         // per-frame poke (reloc-masked)
+    i32 Checksum();                       // c0590 (== CGameSyncSig::ComputeSignature)
+    void ArmSlot(void* node, i32 parity); // per-frame arm (reloc-masked)
+    void Step2437();                      // per-frame poke (reloc-masked)
 
     // The engine routes global new/delete through RezAlloc/RezFree; model that as
     // the class allocator so `new CNetSession()` emits a direct RezAlloc call.
@@ -954,7 +954,7 @@ struct CNetGameMgr {
     // through CMulti::Mgr() / a CGruntzMgr cast of the singleton. Only the FIELD view
     // remains; folding these fields onto CGruntzMgr (m_channels == m_options, the
     // 5-name 0x238 record knot) is the record-merge TODO - see <Gruntz/Multi.h>.)
-    char m_pad0[4];                                                   // +0x00
+    char m_pad0[4];     // +0x00
     CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];
     Utils::RegistryHelper* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
@@ -1001,12 +1001,12 @@ extern "C" char g_recvBuffer[]; // 0x6467d8
 // per packet (a single struct would emit base+disp and mis-encode the
 // displacement bytes). External; DIR32 reloc-masked.
 // DEFINED in src/Gruntz/Multi.cpp (owner TU); reference externs only here.
-extern u8 g_chanStat422_flag;  // 0x646fd8
-extern i32 g_chanStat422_id;   // 0x646fdc
-extern i32 g_chanStat422_val;  // 0x646fe0
-extern u8 g_chanStat423_flag;  // 0x646378
-extern i32 g_chanStat423_id;   // 0x64637c
-extern i32 g_chanStat423_val;  // 0x646380
+extern u8 g_chanStat422_flag; // 0x646fd8
+extern i32 g_chanStat422_id;  // 0x646fdc
+extern i32 g_chanStat422_val; // 0x646fe0
+extern u8 g_chanStat423_flag; // 0x646378
+extern i32 g_chanStat423_id;  // 0x64637c
+extern i32 g_chanStat423_val; // 0x646380
 
 // The file-scope static chat-broadcast packet BroadcastChatLine assembles. Like
 // the channel-stat packets, retail emits each field as its own .data symbol

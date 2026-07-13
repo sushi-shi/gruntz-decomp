@@ -19,7 +19,7 @@
 
 #include <rva.h>
 #include <Mfc.h>
-#include <string.h>           // memcpy/memset -> rep movs/stos in the inlined SetSize
+#include <string.h> // memcpy/memset -> rep movs/stos in the inlined SetSize
 
 // ===========================================================================
 // Reloc-masked externals.

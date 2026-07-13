@@ -19,8 +19,8 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/StaticHazard.h>
-#include <Gruntz/GruntzMgr.h> // the REAL singleton class
-#include <Gruntz/TileGrid.h> // CTileGrid == CMapMgr (the +0x70 board's real class)
+#include <Gruntz/GruntzMgr.h>     // the REAL singleton class
+#include <Gruntz/TileGrid.h>      // CTileGrid == CMapMgr (the +0x70 board's real class)
 #include <Gruntz/SerialObjRef.h>  // SerialRef34()->Chain (0x8c00)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
@@ -148,7 +148,7 @@ extern char s_codeA[]; // "A"
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
-struct CTypeNameEntry;   // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 

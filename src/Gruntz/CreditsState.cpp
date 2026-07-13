@@ -16,11 +16,11 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (InitAttractTitle / LoadCreditz gates)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
-#include <Gruntz/GameMode.h> // CCreditsState : CState + CGMEntityList/CGMOwner/CGMSoundEntry
-#include <Rez/RezMgr.h>      // RezFree (ReleaseResources video-handle teardown)
+#include <Gruntz/GameMode.h>      // CCreditsState : CState + CGMEntityList/CGMOwner/CGMSoundEntry
+#include <Rez/RezMgr.h>           // RezFree (ReleaseResources video-handle teardown)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ::CreateBank (0x138670) - credits sound-bank loader
-#include <Win32.h>           // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>           // real IDirectDrawSurface (credits-scroll DC + Render input surface)
+#include <Win32.h>                // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h> // real IDirectDrawSurface (credits-scroll DC + Render input surface)
 #include <rva.h>
 #include <stdio.h> // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
 // Real MFC CRgn/CGdiObject for the credits clip region (CreditsScrollSelf::m_1e8).
@@ -240,9 +240,9 @@ extern "C" i32 g_62bf74; // clip-region enable gate
 // file-scope constants: MSVC5 keeps a `const double` in memory (it does NOT fold FP
 // constant expressions the way it folds integer ones), so `kScreenH / kScrollRate`
 // still lowers to retail's `fld QWORD PTR [c1]; fdiv QWORD PTR [c2]; call __ftol`.
-static const double kScreenH = 480.0;     // 0x5e96f8  screen height
-static const double kScrollRate = 0.025;  // 0x5e96f0  scroll rate
-static const double kStepScale = 1000.0;  // 0x5e9708  scroll-step scale (m_200 reseed)
+static const double kScreenH = 480.0;    // 0x5e96f8  screen height
+static const double kScrollRate = 0.025; // 0x5e96f0  scroll rate
+static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_200 reseed)
 
 // ===========================================================================
 // CCreditsState methods, ascending retail-RVA order.

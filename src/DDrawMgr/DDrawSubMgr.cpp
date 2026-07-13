@@ -73,9 +73,9 @@ SIZE_UNKNOWN(FamilyMapBase);
 struct CDDrawChildGroupDtorHost : public FamilyMapBase {
     ~CDDrawChildGroupDtorHost(); // 0x157630
     void* ScalarDtor(u32 flags); // 0x157610 (the ??_G; runs ~ then RezFree)
-    CMapStringToPtr m_10;         // +0x10
-    CMapStringToPtr m_2c;         // +0x2c
-    CMapStringToPtr m_48;         // +0x48
+    CMapStringToPtr m_10;        // +0x10
+    CMapStringToPtr m_2c;        // +0x2c
+    CMapStringToPtr m_48;        // +0x48
     i32 m_64;                    // +0x64
 };
 SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
@@ -85,7 +85,7 @@ SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 struct CDDrawRegistryDtorHost : public FamilyMapBase {
     ~CDDrawRegistryDtorHost();   // 0x156e10
     void* ScalarDtor(u32 flags); // 0x156df0
-    CMapStringToPtr m_10;         // +0x10
+    CMapStringToPtr m_10;        // +0x10
 };
 SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 
@@ -1134,7 +1134,7 @@ void CDDrawSubMgrLeafScan::ClearMap() {
 // WalkDispatch CObList). Byte-reconstructed; offsets load-bearing.
 struct CAniTriggerMap_1581b0 {
     char m_pad00[0x0c];
-    char* m_parent;         // +0x0c
+    char* m_parent;          // +0x0c
     CMapStringToPtr m_map10; // +0x10  named CAniBlitTrigger map
     char m_pad2c[0x30 - 0x2c];
     i32 m_gate30; // +0x30

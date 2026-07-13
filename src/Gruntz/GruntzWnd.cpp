@@ -66,8 +66,8 @@ CGruntzWnd::~CGruntzWnd() {
 // PreDispatchMessage (slot 1) externs: the IAT-mirror imports (call ds:0x6c44a0/
 // 0x6c44a4), the NetLobby active-dialog HWND (0x64557c), and the empty ret-8
 // message hook (0x138940, unnamed - reloc-masked).
-extern HWND g_curDlg_64557c;                                        // 0x0064557c
-extern void __stdcall Sub_138940(WPARAM, LPARAM);                   // 0x138940 (empty hook)
+extern HWND g_curDlg_64557c;                      // 0x0064557c
+extern void __stdcall Sub_138940(WPARAM, LPARAM); // 0x138940 (empty hook)
 
 // -------------------------------------------------------------------------
 // CGruntzWnd::PreDispatchMessage (vtable slot 1). The window's pre-translate hook,
@@ -89,43 +89,43 @@ extern void __stdcall Sub_138940(WPARAM, LPARAM);                   // 0x138940 
 RVA(0x00094790, 0xc2)
 i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-    case 0x14:
-        return 1;
-    case 0x112: {
-        if (wParam == 0xf100) {
+        case 0x14:
             return 1;
-        }
-BOOL(WINAPI * isIconic)(HWND) = ::IsIconic;
-        i32 mm = wParam & 0xfff0;
-        if (mm == 0xf140 || mm == 0xf170) {
-            if (!isIconic(m_hwnd)) {
+        case 0x112: {
+            if (wParam == 0xf100) {
                 return 1;
             }
-        }
-        if (!isIconic(m_hwnd)) {
+            BOOL(WINAPI * isIconic)(HWND) = ::IsIconic;
+            i32 mm = wParam & 0xfff0;
+            if (mm == 0xf140 || mm == 0xf170) {
+                if (!isIconic(m_hwnd)) {
+                    return 1;
+                }
+            }
+            if (!isIconic(m_hwnd)) {
+                return 0;
+            }
+            if (g_curDlg_64557c == 0) {
+                return 0;
+            }
+            ::SendMessageA(g_curDlg_64557c, 0x112, wParam, lParam);
             return 0;
         }
-        if (g_curDlg_64557c == 0) {
-            return 0;
+        case 0x3b9: {
+            CGruntzMgr* mgr = GameMgr();
+            if (mgr == 0) {
+                return 1;
+            }
+            if (mgr->m_sound == 0) {
+                return 1;
+            }
+            Sub_138940(wParam, lParam);
+            if (wParam != 1) {
+                return 1;
+            }
+            GameMgr()->PerFrameTick();
+            return wParam;
         }
-        ::SendMessageA(g_curDlg_64557c, 0x112, wParam, lParam);
-        return 0;
-    }
-    case 0x3b9: {
-        CGruntzMgr* mgr = GameMgr();
-        if (mgr == 0) {
-            return 1;
-        }
-        if (mgr->m_sound == 0) {
-            return 1;
-        }
-        Sub_138940(wParam, lParam);
-        if (wParam != 1) {
-            return 1;
-        }
-        GameMgr()->PerFrameTick();
-        return wParam;
-    }
     }
     return 0;
 }

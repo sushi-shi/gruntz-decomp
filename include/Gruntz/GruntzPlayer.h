@@ -40,11 +40,11 @@
 SIZE_UNKNOWN(GruntzPlayer);
 class GruntzPlayer {
 public:
-    GruntzPlayer();               // 0x0da790 (default; constructs m_name + m_038, then Clear)
-    ~GruntzPlayer();              // 0x083260 (Clear, then ~CBattlezMapConfig, then ~CString)
-    GruntzPlayer(i32 index);      // 0x0da870 (/GX, seeds the name with "Player")
-    void Clear();                 // 0x0da960 (frameless field seed; ctor + dtor call it)
-    i32 Reset();                  // 0x0da9e0 (frameless re-init; empties name, returns 1)
+    GruntzPlayer();          // 0x0da790 (default; constructs m_name + m_038, then Clear)
+    ~GruntzPlayer();         // 0x083260 (Clear, then ~CBattlezMapConfig, then ~CString)
+    GruntzPlayer(i32 index); // 0x0da870 (/GX, seeds the name with "Player")
+    void Clear();            // 0x0da960 (frameless field seed; ctor + dtor call it)
+    i32 Reset();             // 0x0da9e0 (frameless re-init; empties name, returns 1)
     // 0x0db200 (ex "Cdb200::Swap", a 7th name for this class - see Play.cpp): move the
     // player onto sound/voice channel `channel` if it is free, releasing the old one.
     i32 SwapChannel(i32 channel);

@@ -23,7 +23,7 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (dims here)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (dims here)
 #include <rva.h>
 
 // The pending-fx sprite-id base: a cell's logic kind maps to its pending overlay-fx sprite
@@ -183,7 +183,8 @@ struct CTmLevelView {
     char p18[0x4c - 0x18];
     void** m_4c; // +0x4c  tile-class object table (cell id -> type object; PlaceObjectFull)
     char p50[0x5c - 0x50];
-    CPlaneRender* m_5c; // +0x5c  the plane viewport (real CPlaneRender: tile grid + edge/scroll origin)
+    CPlaneRender*
+        m_5c; // +0x5c  the plane viewport (real CPlaneRender: tile grid + edge/scroll origin)
 };
 
 // The level object stored at CTriggerMgr+0x22c (set by SetLevel): its +0x8 is the sprite

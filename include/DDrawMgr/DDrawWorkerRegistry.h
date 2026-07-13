@@ -24,8 +24,8 @@
 
 class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWorker.h>);
                     // class-key MUST match the definition (mangling: PAV vs PAU)
-                     // is load-bearing: it keeps the PAU (not PAV) tag in the Forward*/
-                     // RemoveWorker method manglings that take CDDrawWorker*.
+                    // is load-bearing: it keeps the PAU (not PAV) tag in the Forward*/
+                    // RemoveWorker method manglings that take CDDrawWorker*.
 class CImageSet;
 class CWorkerMapValue; // a map value viewed for +0x10 + probe (foreign, other TU)
 class CSymTab;         // Bute/SymTab.h (the dir-tree cursor)

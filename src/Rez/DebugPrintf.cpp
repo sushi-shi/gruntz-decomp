@@ -52,7 +52,7 @@ void DebugSetCursorXY(i32 x, i32 y);
 // the release build (its body compiled out); reconstructed below in this TU's band so
 // DebugSetCursorXY's rel32 CALL binds. __cdecl (caller-cleans), returns void.
 void DebugSetCursor(i32, i32, i32); // 0x184fd0
-extern "C" i32 fclose(void* fp); // 0x11f780 (CRT fclose, library row _fclose)
+extern "C" i32 fclose(void* fp);    // 0x11f780 (CRT fclose, library row _fclose)
 
 SIZE_UNKNOWN(CDebugConfig);
 class CDebugConfig {

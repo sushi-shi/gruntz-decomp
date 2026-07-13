@@ -76,7 +76,7 @@ SIZE_UNKNOWN(PidHeader);
 // resource-module handle had no storage at all. .bss, zero-init.
 DATA(0x002bf6e0)
 extern "C" {
-HINSTANCE g_hResModule = 0; // 0x6bf6e0
+    HINSTANCE g_hResModule = 0; // 0x6bf6e0
 }
 
 // ---------------------------------------------------------------------------

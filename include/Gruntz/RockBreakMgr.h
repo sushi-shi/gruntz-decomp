@@ -16,7 +16,7 @@ struct RockMapHost; // the write-grid host (== g_gameReg->m_world); defined in T
 
 class CRockBreakMgr {
 public:
-    void Prepare(i32 cx, i32 cy, i32 r, i32, i32);            // thunk 0x400c __thiscall
+    void Prepare(i32 cx, i32 cy, i32 r, i32, i32);              // thunk 0x400c __thiscall
     i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4); // 0x0007b440 (body: TriggerMgr.cpp)
 
     char m_pad00[0x22c];

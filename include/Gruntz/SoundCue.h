@@ -83,8 +83,8 @@ SIZE_UNKNOWN(SoundStream);
 struct CSndHost {
     char m_pad00[0x10];
     CMapStringToPtr m_10; // +0x10  the real name->cue/sprite map (0x1c bytes -> +0x2c)
-    SoundStream* m_2c;         // +0x2c  DirectSound stream (Stop / audio-kill PurgeVoiceList)
-    i32 m_emitGate;            // +0x30  live-surface / emit gate (must be 0 to emit)
+    SoundStream* m_2c;    // +0x2c  DirectSound stream (Stop / audio-kill PurgeVoiceList)
+    i32 m_emitGate;       // +0x30  live-surface / emit gate (must be 0 to emit)
     // Resolve a cue name to its emitter via the +0x10 finder (@0x05b7e0, thunk
     // 0x2cca): a real CSndHost __thiscall - `push ecx` out-slot, `add ecx,0x10`,
     // tail into the +0x10 map's Lookup (0x1b8438), return the emitter (0 on

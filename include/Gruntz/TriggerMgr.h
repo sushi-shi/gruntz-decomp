@@ -425,7 +425,7 @@ public:
     // their member teardown: 2 scalar ??1CObList CALLs (m_baseList/m_recList) + the
     // m_selLists[10] array teardown, whose __ehvec_dtor takes ??1CObList as a function
     // POINTER (that is ~CTriggerMgr's DATA reloc), + 1 ??1CByteArray CALL. No casts remain.
-    CPtrList m_baseList;    // +0x000  base object-list (holds CTmRecNode payloads)
+    CPtrList m_baseList;   // +0x000  base object-list (holds CTmRecNode payloads)
     CTmCell* m_grid[0x3c]; // +0x01c  the 4x15 placed grid-object cells (stride 4)
     i32 m_rowCount[4];     // +0x10c  per-row placed count (bumped/serialized 0x10 B)
     i32 m_cellFlag[0x3c];  // +0x11c  parallel 4x15 per-cell flag grid; also holds the
@@ -437,7 +437,7 @@ public:
     i32 m_recX;            // +0x234  active-record x
     i32 m_recY;            // +0x238  active-record y
     CTmGoal* m_goal;       // +0x23c  the goal object
-    CPtrList m_recList;     // +0x240  record list (per-cell undo/record nodes)
+    CPtrList m_recList;    // +0x240  record list (per-cell undo/record nodes)
     CActionOptionsMenuBar* m_overlay; // +0x25c  the allocated overlay sub-object (0x40 B)
     CByteArray m_byteArr;             // +0x260  byte-table array
     char m_274[0x10];                 // +0x274  serialized 16-byte region
@@ -451,7 +451,7 @@ public:
     char _pad2ac[0x4];                // +0x2ac
     char m_overlayDescB[0x10];        // +0x2b0  overlay descriptor block 1
     char m_overlayDescC[0x10];        // +0x2c0  overlay descriptor block 2
-    CPtrList m_selLists[10];           // +0x2d0  ten selection lists (stride 0x1c)
+    CPtrList m_selLists[10];          // +0x2d0  ten selection lists (stride 0x1c)
     i32 m_selSentinel;                // +0x3e8  selection-group latch (-1 when idle)
     i32 m_3ec;                        // +0x3ec  serialized scalar
     DirectSoundMgr* m_soundChanA;     // +0x3f0  DirectSound channel A

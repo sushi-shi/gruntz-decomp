@@ -68,14 +68,14 @@ extern void* GetRetAddr(); // 0x16d990
 
 // CGruntVoice's own activation-registry statics (@0x2514xx). The DATA bindings
 // live in GruntVoice.cpp (a header DATA() is not scanned by labels.py).
-extern i32 g_vactLo;               // 0x2514e0
-extern i32 g_vactHi;               // 0x2514e4
-extern char* g_vactBase;           // 0x2514e8
-extern i32 g_vactStride;           // 0x2514f0
+extern i32 g_vactLo;                 // 0x2514e0
+extern i32 g_vactHi;                 // 0x2514e4
+extern char* g_vactBase;             // 0x2514e8
+extern i32 g_vactStride;             // 0x2514f0
 extern struct CVActEntry* g_vactCur; // 0x2514ec
-extern i32 g_vactScratch;          // 0x2514f8
-extern CVActColl g_vactColl;       // 0x2514d8
-extern CVariantSlot* g_vactColl2;  // 0x2514dc
+extern i32 g_vactScratch;            // 0x2514f8
+extern CVActColl g_vactColl;         // 0x2514d8
+extern CVariantSlot* g_vactColl2;    // 0x2514dc
 
 // The cache/alloc scratch globals shared with the trigger registry (reused
 // verbatim - 0x6bf464 / 0x6bf428; owned by UserLogic.cpp, declared extern here

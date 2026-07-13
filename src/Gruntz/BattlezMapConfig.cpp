@@ -1022,39 +1022,27 @@ i32 CBattlezMapConfig::Method_025d90() {
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "G")
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "G") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "L")
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "L") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "P")
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "P") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "J")
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "J") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "C")
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "C") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "R")
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "R") == 0);
                 if (eq) {
                     continue;
                 }
@@ -1507,7 +1495,8 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                             CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
-                                void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                                void** fn =
+                                    (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
                                 *fn = g_coordPool.m_freeHead;
                                 g_coordPool.m_freeHead = fn;
                                 coordList->RemoveAt((POSITION)cur);
@@ -1642,7 +1631,8 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                             CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
-                                void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                                void** fn =
+                                    (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
                                 *fn = g_coordPool.m_freeHead;
                                 g_coordPool.m_freeHead = fn;
                             }
@@ -2685,7 +2675,7 @@ struct CArriveMgr {                                      // this (the CBattlezMa
 // is the recycled coord-node handle Drop takes (as its i32 arg).
 #define ARR_RECYCLE(g)                                                                             \
     if ((g)->CoordCount() != 0) {                                                                  \
-        GruntCoordNode* nd = (g)->CoordHead();                                                           \
+        GruntCoordNode* nd = (g)->CoordHead();                                                     \
         while (nd != 0) {                                                                          \
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
@@ -3745,8 +3735,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 bool eq;
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                            + 0x1c)))),
+                         (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim + 0x1c)))),
                          "I"
                      )
                      == 0);
@@ -3754,7 +3743,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                     eq =
                         (strcmp(
                              (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                                + 0x1c)))),
+                                                                        + 0x1c)))),
                              "G"
                          )
                          == 0);
@@ -3763,7 +3752,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                     eq =
                         (strcmp(
                              (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                                + 0x1c)))),
+                                                                        + 0x1c)))),
                              "L"
                          )
                          == 0);
@@ -3772,7 +3761,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                     eq =
                         (strcmp(
                              (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                                + 0x1c)))),
+                                                                        + 0x1c)))),
                              "P"
                          )
                          == 0);
@@ -3781,7 +3770,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                     eq =
                         (strcmp(
                              (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                                + 0x1c)))),
+                                                                        + 0x1c)))),
                              "J"
                          )
                          == 0);
@@ -3790,7 +3779,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                     eq =
                         (strcmp(
                              (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                                + 0x1c)))),
+                                                                        + 0x1c)))),
                              "C"
                          )
                          == 0);
@@ -3799,7 +3788,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                     eq =
                         (strcmp(
                              (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                                + 0x1c)))),
+                                                                        + 0x1c)))),
                              "R"
                          )
                          == 0);
@@ -3857,8 +3846,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                                         CoordNode* cur = nn;
                                         nn = nn->m_next;
                                         if (cur->m_coord != 0) {
-                                            void** fn =
-                                                (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                                            void** fn = (void**)((char*)cur->m_coord
+                                                                 - g_coordPool.m_linkOffset);
                                             *fn = g_coordPool.m_freeHead;
                                             g_coordPool.m_freeHead = fn;
                                         }
@@ -4930,7 +4919,7 @@ struct CGruntMover {                                             // this (edi)
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
-        GruntCoordNode* nd = (g)->CoordHead();                                                           \
+        GruntCoordNode* nd = (g)->CoordHead();                                                     \
         while (nd != 0) {                                                                          \
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
