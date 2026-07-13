@@ -36,8 +36,8 @@ static inline i32 RegisterActionName() {
         i32 key = g_typeCounter;
         id = key;
         char* slot = ActNameLookup(key);
-        i32 cnt = g_typeCount;
-        void** nodes = (void**)g_typeNodes;
+        i32 cnt = g_typeColl.m_grown;
+        void** nodes = (void**)g_typeColl.m_alloc;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {

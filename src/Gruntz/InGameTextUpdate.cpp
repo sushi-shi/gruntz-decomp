@@ -75,7 +75,7 @@ struct HbMgr { // the *0x64556c singleton, this method's view
 DATA(0x0024556c)
 extern "C" HbMgr* g_gameReg; // _g_mgrSettings (the *0x64556c singleton)
 // The 4-byte default-constructed CString cache nodes (FUN_001b9b93 == CString
-// default ctor; matched array-touch loop). g_typeNodes is the base pointer.
+// default ctor; matched array-touch loop). g_typeColl.m_alloc is the base pointer.
 SIZE_UNKNOWN(EngStr4);
 struct EngStr4 {
     char* m_pszData; // +0x00 (4 bytes so the loop's `p++` advances by 4)
@@ -85,10 +85,6 @@ struct EngStr4 {
 // <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
-DATA(0x002bf66c)
-extern EngStr4* g_typeNodes;
-DATA(0x002bf670)
-extern i32 g_typeCount;
 DATA(0x002bf3bc)
 extern "C" i32 g_6bf3bc; // sub-logic clock fed to CAniAdvanceCursor::Advance_15c360
 DATA(0x002bf3c0)
@@ -129,8 +125,8 @@ i32 CInGameText::Update() {
     }
 
     char** node = (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)found->m_14->m_1c);
-    EngStr4* p = g_typeNodes;
-    i32 n = g_typeCount;
+    EngStr4* p = (EngStr4*)g_typeColl.m_alloc; // m_alloc is the i32-typed slot base (the _zvec spelling)
+    i32 n = g_typeColl.m_grown;
     while (n-- != 0) {
         if (p != 0) {
             p->Ctor();

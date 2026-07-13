@@ -442,8 +442,8 @@ void CWarpStonePad::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -498,8 +498,8 @@ void CTileTriggerSwitch::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -555,8 +555,8 @@ void CTileTrigger::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -620,8 +620,8 @@ void CCheckpointTrigger::RegisterActs() {
         g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
-        i32 cnt = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 cnt = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         if (cnt != 0) {
             do {
                 if (list != 0) {
@@ -723,8 +723,8 @@ void CTileSecretTrigger::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -742,8 +742,8 @@ void CTileSecretTrigger::RegisterActs() {
         id2 = g_typeCounter;
         g_buteTree.Insert(s_actKeyB, (void*)id2);
         char* slot = ActNameLookup(id2);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -854,8 +854,8 @@ void CTileTriggerTransition::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();

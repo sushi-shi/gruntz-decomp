@@ -174,26 +174,10 @@ DATA(0x0021aea8)
 extern i32 g_typeCounter;
 DATA(0x0020a454)
 extern char s_codeA[];
-class CTypeKeyColl;    // canonical g_typeColl @0x6bf650 (<Gruntz/TypeKeyColl.h>)
-struct CTypeNameEntry; // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
+#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
+struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
-DATA(0x002bf654)
-extern CVariantSlot* g_typeColl2; // 0x6bf654
-DATA(0x002bf658)
-extern i32 g_typeLo;
-DATA(0x002bf65c)
-extern i32 g_typeHi;
-DATA(0x002bf660)
-extern char* g_typeBase;
-DATA(0x002bf668)
-extern i32 g_typeStride;
-DATA(0x002bf664)
-extern CTypeNameEntry* g_typeCur; // slow-path result slot
-DATA(0x002bf66c)
-extern void* g_typeNodes; // the slot's CString list base
-DATA(0x002bf670)
-extern i32 g_typeCount; // zeroed first; doubles as the list count
 
 // The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A
 // @0x6bf620, pulled via UserLogic.h; named by mangled symbol so Find/Insert
@@ -206,17 +190,17 @@ extern CButeTree g_buteTree;
 
 // The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
-    g_typeCount = 0;
-    if (id >= g_typeLo && id <= g_typeHi) {
-        return g_typeBase + (id - g_typeLo) * g_typeStride;
+    g_typeColl.m_grown = 0;
+    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
+        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
-        return g_typeBase + (id - g_typeLo) * g_typeStride;
+        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
-    return (char*)g_typeCur;
+    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    return (char*)g_typeColl.m_spare;
 }
 
 // The logic handler bound into the registry slot (the ILT to the toob-spikez logic
@@ -300,8 +284,8 @@ void CToobSpikez::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();

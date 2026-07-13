@@ -312,24 +312,8 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
 // it into R1's entry (after freeing any CString nodes the slot held), and bumping
 // the global type counter. All globals are BSS (DATA-pinned so the loads
 // reloc-mask); the collection / CString helpers are external/no-body.
-DATA(0x002bf658)
-extern i32 g_typeLo;
-DATA(0x002bf65c)
-extern i32 g_typeHi;
-DATA(0x002bf660)
-extern char* g_typeBase;
-DATA(0x002bf668)
-extern i32 g_typeStride;
-DATA(0x002bf664)
-extern CTypeNameEntry* g_typeCur;
-DATA(0x002bf670)
-extern i32 g_typeCount;
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
-DATA(0x002bf654)
-extern CVariantSlot* g_typeColl2;
-DATA(0x002bf66c)
-extern void* g_typeNodes;
 
 // The global type counter (0x61aea8). The class-name bute key is the shared
 // "A" string literal (DAT_0060a454, the same $SG constant CLightFx.cpp uses).
@@ -341,17 +325,17 @@ extern CButeTree g_buteTree;
 
 // R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
 static inline CTypeNameEntry* TypeLookup(i32 key) {
-    g_typeCount = 0;
-    if (key >= g_typeLo && key <= g_typeHi) {
-        return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
+    g_typeColl.m_grown = 0;
+    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
+        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
-        return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
+        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
-    return g_typeCur;
+    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
 }
 
 // The slime's activation handler (LAB_0040180c, an ILT thunk). Referenced by
@@ -377,8 +361,8 @@ void CKitchenSlime::RegisterType() {
         i32 key = g_typeCounter;
         id = key;
         CTypeNameEntry* slot = TypeLookup(key);
-        i32 cnt = g_typeCount;
-        CStringNode* nodes = (CStringNode*)g_typeNodes;
+        i32 cnt = g_typeColl.m_grown;
+        CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {

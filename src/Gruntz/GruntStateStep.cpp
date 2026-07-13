@@ -27,6 +27,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>    // real CGrunt (step grunt is a CGrunt)
 #include <Gruntz/TypeColl.h> // the shared type-name collection
+#include <Gruntz/TypeKeyColl.h>
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CStepCoord {
@@ -50,7 +51,10 @@ struct CStepOwner { // g->m_14
     char _00[0x1c];
     i32 m_1c; // +0x1c type key
 };
-extern CTypeColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A (0x6bf650)
+// CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
+// DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
+#include <Gruntz/TypeKeyColl.h>
+extern CTypeKeyColl g_typeColl; // 0x6bf650
 
 // The single-char type keys pooled in .rdata (named in Globals.cpp).
 extern char k_60cc94[]; // "J"

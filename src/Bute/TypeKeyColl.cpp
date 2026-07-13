@@ -76,15 +76,11 @@ VTBL(zDArray, 0x001f04d4); // ~zDArray-entry vtable (0x5f04d4)
 // ===========================================================================
 DATA(0x002bf468)
 u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zArrayTag)
-DATA(0x002bf658)
-extern i32 g_typeLo;
-DATA(0x002bf65c)
-extern i32 g_typeHi;
 // @identity-TODO INTERIOR-OFFSET CLUSTER - do NOT "fix" these by defining them.
 // g_typeColl (0x6bf650) and the eight scalars around it are ONE object, not nine globals:
-//     g_typeColl +0x00   g_typeColl2 +0x04  g_typeLo  +0x08  g_typeHi    +0x0c
-//     g_typeBase +0x10   g_typeCur   +0x14  g_typeStride +0x18  g_typeNodes +0x1c
-//     g_typeCount +0x20
+//     g_typeColl +0x00   g_typeColl.m_errSink +0x04  g_typeColl.m_lo  +0x08  g_typeColl.m_hi    +0x0c
+//     g_typeColl.m_base +0x10   g_typeColl.m_spare   +0x14  g_typeColl.m_stride +0x18  g_typeColl.m_alloc +0x1c
+//     g_typeColl.m_grown +0x20
 // which is EXACTLY <Gruntz/ActReg.h>'s CActReg field map (m_coll/m_coll2/m_lo/m_hi/m_base/
 // m_cur/m_stride/pad1c/m_scratch), and GruntVoice.cpp's ActNameLookup is CActReg::ResolveEntry
 // hand-inlined over them, statement for statement. So the activation-NAME registry at
@@ -94,14 +90,6 @@ extern i32 g_typeHi;
 // Reverted. The correct fix is to SUBSUME them onto one CActReg (as done for the two
 // registries in GruntVoice.cpp), but they are referenced by ~20 TUs, so that is its own pass -
 // not a drive-by. Left undefined and honest until then.
-DATA(0x002bf660)
-extern char* g_typeBase;
-DATA(0x002bf668)
-extern i32 g_typeStride;
-DATA(0x002bf670)
-extern i32 g_typeCount;
-DATA(0x002bf66c)
-extern void* g_typeNodes;
 
 // The bad-argument / bad-character diagnostic name cell the zBitVec parser reports
 // through (distinct from g_projActName @0x6bf454; this one @0x6bf45c). Reloc-masked.
@@ -130,8 +118,6 @@ extern const char s_out_of_memory[]; // 0x61adf4
 // CZErrSink (the fatal-alloc/bounds error sink stored at +0x04) is the shared
 // <Gruntz/TypeKeyColl.h> shape.
 // The CKSlimeColl2 dispatcher the type-name lookup grows the collection through.
-DATA(0x002bf654)
-extern CVariantSlot* g_typeColl2;
 
 // The zDArray construction hierarchy CZArrayRoot <- CZArray2D <- CTypeKeyColl and
 // the leaf ??_7CTypeKeyColl @0x5f04d0 are the shared <Gruntz/TypeKeyColl.h> shape.
@@ -1195,28 +1181,26 @@ i32 FirstDiffBit(const char* a, const char* b) {
 // ===========================================================================
 // The archive record (`ar`) the serializer drives is the canonical CXferArchive
 // (<Gruntz/XferArchive.h>, included above).
-DATA(0x002bf664)
-extern CTypeNameEntry* g_typeCur;
 
 // The inlined type-id -> entry resolution (== KitchenSlime/Projectile TypeLookup).
 static inline char* TypeResolve(i32 key) {
-    g_typeCount = 0;
-    if (key >= g_typeLo && key <= g_typeHi) {
-        return g_typeBase + (key - g_typeLo) * g_typeStride;
+    g_typeColl.m_grown = 0;
+    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
+        return (char*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
-        return g_typeBase + (key - g_typeLo) * g_typeStride;
+        return (char*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
-    return (char*)g_typeCur;
+    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    return (char*)g_typeColl.m_spare;
 }
 
-// Free the stale node array (g_typeCount slots, walking g_typeNodes).
+// Free the stale node array (g_typeColl.m_grown slots, walking g_typeColl.m_alloc).
 static inline void FreeNodes() {
-    CStringNode* nodes = (CStringNode*)g_typeNodes;
-    i32 cnt = g_typeCount;
+    CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
+    i32 cnt = g_typeColl.m_grown;
     if (cnt != 0) {
         do {
             if (nodes != 0) {
@@ -1321,10 +1305,10 @@ VTBL(CTypeCollRuntime, 0x001f04e4); // g_typeColl runtime-phase vtable @0x5f04e4
 RVA(0x0016e730, 0x51)
 void DynInitTypeColl() {
     new (&g_typeColl) CTypeKeyColl(4, 0x7d0, 0x7da, (void*)1);
-    CStringNode* nodes = (CStringNode*)g_typeNodes;
+    CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     if (nodes != 0) {
-        i32 cnt = g_typeCount;
+        i32 cnt = g_typeColl.m_grown;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {

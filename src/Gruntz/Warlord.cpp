@@ -56,7 +56,7 @@ static const char s_keyF[] = "F";
 // ===========================================================================
 // Registers six single-letter Gruntz action-type keys ("A".."F") into the global
 // bute-name -> type-id tree (g_buteTree), growing the parallel type-key string
-// collection (g_typeColl, backed by g_typeNodes/g_typeCount) on a miss, then
+// collection (g_typeColl, backed by g_typeColl.m_alloc/g_typeColl.m_grown) on a miss, then
 // stamps each resolved type-id's slot in the action-handler dispatch array
 // (g_actionTable @0x644610) with that action's handler entry point. The six
 // (key, handler) pairs are emitted inline (the same find-or-create block x6, via

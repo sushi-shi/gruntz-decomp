@@ -142,7 +142,7 @@ struct CTeleSelHolder {
 
 // ===========================================================================
 // The shared per-class registration infrastructure. g_buteTree / g_typeCounter /
-// s_codeA / ActNameLookup / g_typeCount / g_typeNodes come from
+// s_codeA / ActNameLookup / g_typeColl.m_grown / g_typeColl.m_alloc come from
 // <Gruntz/ActNameRegistry.h>. (The former Wormhole.cpp-local aliases
 // g_logicRegCounter/s_wormholeLogicKey were the SAME globals - folded.)
 // ===========================================================================
@@ -243,8 +243,8 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 // The shared name-slot free loop both key blocks of a registrar run before
 // assigning the key (the same archetype LogicActRegistrars.cpp keeps).
 static inline void FreeNameSlotNodes() {
-    i32 n = g_typeCount;
-    void** list = (void**)g_typeNodes;
+    i32 n = g_typeColl.m_grown;
+    void** list = (void**)g_typeColl.m_alloc;
     while (n-- != 0) {
         if (list != 0) {
             ((CString*)list)->CString::~CString();

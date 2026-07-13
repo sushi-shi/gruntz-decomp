@@ -411,7 +411,7 @@ extern "C" CGameRegistry* g_gameReg;
 // One animation-name record: its first dword is the C-string name (record->m_0).
 // The animation-name resolver singleton (DAT_006bf650 @ VA 0x6bf650). Lookup
 // (RVA 0x0310f0, thunk 0x0437c) is a __thiscall(int index)->CAnimNameRecord*, and
-// Lookup2 (RVA 0x0312a0, thunk 0x03864) resolves into the g_nameScratch CString
+// Lookup2 (RVA 0x0312a0, thunk 0x03864) resolves into the g_typeColl.m_alloc CString
 // array. Probe (0x016da80) / Reserve (0x034960, thunk 0x02685) back the second
 // dispatch. External, reloc-masked (no body).
 DATA(0x002bf650)
@@ -420,20 +420,6 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view)
 // The second-resolver scratch CString[] (data @ g_6bf66c, count @ g_6bf670) plus
 // the candidate-index bounds (g_6bf658/65c lo/hi, g_6bf660 base, g_6bf668 stride,
 // g_6bf664 fallback record, g_6bf464 a default record). Reloc-masked DATA.
-DATA(0x002bf66c)
-extern CAnimNameRecord** g_nameScratch;
-DATA(0x002bf670)
-extern i32 g_nameScratchCount;
-DATA(0x002bf658)
-extern i32 g_candLo;
-DATA(0x002bf65c)
-extern i32 g_candHi;
-DATA(0x002bf660)
-extern i32 g_candBase;
-DATA(0x002bf668)
-extern i32 g_candStride;
-DATA(0x002bf664)
-extern i32 g_candFallback;
 DATA(0x002bf464)
 extern void* g_defaultRec;
 
@@ -3956,8 +3942,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     i32 cnt;
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -3971,8 +3957,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -3986,8 +3972,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -4001,8 +3987,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -4016,8 +4002,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -4031,8 +4017,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -5610,14 +5596,14 @@ void GridUnit::RecycleCoords() {
 // its cached cell (lvl coord == m_cachedX/m_cachedY) and a block of state flags is clear.
 // Then resolve the unit's anim name and reject the simple type codes (I/G/L/J/C)
 // outright; for the remaining codes, run the second resolver (which fills the
-// g_nameScratch CString array, torn down each call) and either map an in-range
+// g_typeColl.m_alloc CString array, torn down each call) and either map an in-range
 // candidate index directly or Probe/Reserve a slot, returning whether the final
 // resolved name differs from the "P" code.
 // ===========================================================================
 // @early-stop
 // resolver-cluster plateau: the eligibility guards + the five inline-strcmp type
 // rejects (I/G/L/J/C) are byte-exact; the second-resolver tail (GetRecords +
-// g_nameScratch teardown loop, the candidate-bounds map, Probe/Reserve) is
+// g_typeColl.m_alloc teardown loop, the candidate-bounds map, Probe/Reserve) is
 // reconstructed but its global-scratch regalloc and the imul/bounds arithmetic
 // diverge from retail's. Deferred to the final sweep.
 RVA(0x00034460, 0x3fc)
@@ -5668,8 +5654,8 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     i32 cnt;
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -5683,8 +5669,8 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     }
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -5698,8 +5684,8 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     }
 
     recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();
@@ -5715,19 +5701,19 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     // Map the candidate index, or Probe/Reserve a fresh slot.
     i32 ci = unit->m_anim->m_1c;
     i32 sel;
-    g_nameScratchCount = 0;
-    if (ci >= g_candLo && ci <= g_candHi) {
-        sel = g_candBase + (ci - g_candLo) * g_candStride;
+    g_typeColl.m_grown = 0;
+    if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
+        sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
     } else if (g_typeColl.Probe(ci, 0) != 0) {
-        sel = g_candBase + (ci - g_candLo) * g_candStride;
+        sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
     } else {
         g_typeColl.Reserve((CAnimNameRecord*)g_defaultRec, 0xc);
-        sel = g_candFallback;
+        sel = g_typeColl.m_spare;
     }
 
     // Tear down the scratch again, then compare the selected name to "R".
-    slot = (CString*)g_nameScratch;
-    cnt = g_nameScratchCount;
+    slot = (CString*)g_typeColl.m_alloc;
+    cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             slot->~CString();

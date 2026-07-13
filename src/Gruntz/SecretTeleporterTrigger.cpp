@@ -253,8 +253,8 @@ void CSecretTeleporterTrigger::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -327,8 +327,8 @@ void CSecretLevelTrigger::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();

@@ -18,6 +18,7 @@
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 #include <Globals.h>
+#include <Gruntz/TypeKeyColl.h>
 
 // (g_buteTree @0x6bf620 - the engine bute store the tile-logic tails query for
 // their "A" node - moved out with the tile-logic leaf ctors it served; no longer

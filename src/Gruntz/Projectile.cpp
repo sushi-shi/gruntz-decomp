@@ -496,27 +496,15 @@ extern CButeTree g_buteTree;
 // (<Gruntz/ActColl.h>): Find 0x16da80, RegisterRange 0x3742-thunk (-> 0x408710),
 // Insert 0x16d850, plus GetRetAddr 0x16d990 and the shared g_actCache (0x6bf464) /
 // g_retAddrBreadcrumb scratch. The per-registry field globals below form the CActReg
-// bodies (g_projTypeColl @0x6bf650, g_projActColl @0x64c758) around those coll objects.
+// bodies (g_typeColl @0x6bf650, g_projActColl @0x64c758) around those coll objects.
 
 // R1 - the shared type-name table (@0x6bf650).
-DATA(0x002bf658)
-extern i32 g_projTypeLo;
-DATA(0x002bf65c)
-extern i32 g_projTypeHi;
-DATA(0x002bf660)
-extern char* g_projTypeBase;
-DATA(0x002bf668)
-extern i32 g_projTypeStride;
-DATA(0x002bf664)
-extern CTypeNameEntry* g_projTypeCur;
-DATA(0x002bf670)
-extern i32 g_projTypeCount;
 DATA(0x002bf650)
-extern CActColl g_projTypeColl;
-DATA(0x002bf654)
-extern CVariantSlot* g_projTypeColl2;
-DATA(0x002bf66c)
-extern void* g_projTypeNodes;
+// (was `extern CActColl g_typeColl;` - a SIXTH spelling of this one object, as the empty
+// CActColl view. The real class is CTypeKeyColl; the g_projType* scalars around it were its
+// fields, not globals.)
+#include <Gruntz/TypeKeyColl.h>
+extern CTypeKeyColl g_typeColl; // 0x6bf650
 DATA(0x0021aea8)
 extern i32 g_projTypeCounter; // 0x61aea8 (global type counter)
 
@@ -566,17 +554,17 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
 
 // R1 lookup (shared type-name table).
 static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
-    g_projTypeCount = 0;
-    if (key >= g_projTypeLo && key <= g_projTypeHi) {
-        return (CTypeNameEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
+    g_typeColl.m_grown = 0;
+    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
+        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
-    if ((i32)((_zvec*)&g_projTypeColl)->GrowTo(key, 0)) {
-        return (CTypeNameEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
+        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_projTypeColl2->Set(&g_projTypeColl, (i32)item, 0xc);
-    return g_projTypeCur;
+    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
 }
 
 // CProjectile::RegisterRange @0x0df920 - seed the projectile's activation table's
@@ -623,8 +611,8 @@ void CProjectile::RegisterType() {
         i32 key = g_projTypeCounter;
         id = key;
         CTypeNameEntry* slot = ProjTypeLookup(key);
-        i32 cnt = g_projTypeCount;
-        CStringNode* nodes = (CStringNode*)g_projTypeNodes;
+        i32 cnt = g_typeColl.m_grown;
+        CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
@@ -1137,25 +1125,8 @@ DATA(0x0021aea8)
 extern i32 g_typeCounter;
 DATA(0x0020a454)
 extern char s_codeA[];
-class CTypeKeyColl; // canonical g_typeColl @0x6bf650 (<Gruntz/TypeKeyColl.h>)
+#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // 0x6bf650
-DATA(0x002bf654)
-extern CVariantSlot* g_typeColl2; // 0x6bf654
-DATA(0x002bf658)
-extern i32 g_typeLo;
-DATA(0x002bf65c)
-extern i32 g_typeHi;
-DATA(0x002bf660)
-extern char* g_typeBase;
-DATA(0x002bf668)
-extern i32 g_typeStride;
-DATA(0x002bf664)
-extern CTypeNameEntry* g_typeCur; // slow-path result slot
-DATA(0x002bf66c)
-extern void* g_typeNodes; // the slot's CString list base
-DATA(0x002bf670)
-extern i32 g_typeCount; // zeroed first; doubles as the list count
 
 // The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A
 // @0x6bf620, pulled via UserLogic.h; named by mangled symbol so Find/Insert
@@ -1164,17 +1135,17 @@ extern CButeTree g_buteTree;
 
 // The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
-    g_typeCount = 0;
-    if (id >= g_typeLo && id <= g_typeHi) {
-        return g_typeBase + (id - g_typeLo) * g_typeStride;
+    g_typeColl.m_grown = 0;
+    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
+        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
-        return g_typeBase + (id - g_typeLo) * g_typeStride;
+        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
-    return (char*)g_typeCur;
+    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    return (char*)g_typeColl.m_spare;
 }
 
 // The logic handler bound into the registry slot (the ILT to CTimeBomb's
@@ -1233,8 +1204,8 @@ void CTimeBomb::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();

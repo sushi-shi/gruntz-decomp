@@ -26,8 +26,10 @@
 #include <Wap32/ZVec.h>
 
 class CVariantSlot;    // folded CActColl2
-class CTypeKeyColl;    // canonical g_typeColl @0x6bf650 (<Gruntz/TypeKeyColl.h>)
-struct CTypeNameEntry; // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
+// CTypeKeyColl is the REAL class of the registry at 0x6bf650 - and its fields ARE the eight
+// scalars this header used to declare as separate globals. Needs the full definition now.
+#include <Gruntz/TypeKeyColl.h>
+struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 #include <rva.h>
 
@@ -63,22 +65,6 @@ extern char s_codeA[];
 // ---------------------------------------------------------------------------
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
-DATA(0x002bf654)
-extern CVariantSlot* g_typeColl2; // 0x6bf654
-DATA(0x002bf658)
-extern i32 g_typeLo; // 0x6bf658
-DATA(0x002bf65c)
-extern i32 g_typeHi; // 0x6bf65c
-DATA(0x002bf660)
-extern char* g_typeBase; // 0x6bf660
-DATA(0x002bf668)
-extern i32 g_typeStride; // 0x6bf668
-DATA(0x002bf664)
-extern CTypeNameEntry* g_typeCur; // 0x6bf664 (slow-path result slot)
-DATA(0x002bf66c)
-extern void* g_typeNodes; // 0x6bf66c (the slot's CString list base)
-DATA(0x002bf670)
-extern i32 g_typeCount; // 0x6bf670 (zeroed first; doubles as the list count)
 
 // A CString in the resolved name slot: ~CString (0x1b9b93) frees the old entries,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
@@ -88,17 +74,17 @@ extern i32 g_typeCount; // 0x6bf670 (zeroed first; doubles as the list count)
 // rebuild), then free the old name list and assign the key. Folded inline by
 // RegisterActs once, in the build-id branch.
 static inline char* ActNameLookup(i32 id) {
-    g_typeCount = 0;
+    g_typeColl.m_grown = 0;
     char* slot;
-    if (id >= g_typeLo && id <= g_typeHi) {
-        slot = g_typeBase + (id - g_typeLo) * g_typeStride;
+    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
+        slot = (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
     } else if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
-        slot = g_typeBase + (id - g_typeLo) * g_typeStride;
+        slot = (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
     } else {
         void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
-        slot = (char*)g_typeCur;
+        g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+        slot = (char*)g_typeColl.m_spare;
     }
     return slot;
 }

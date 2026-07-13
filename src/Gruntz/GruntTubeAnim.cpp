@@ -3,7 +3,7 @@
 // latches the kind flag at +0x234, picks the TOOBGRUNT / TOOBWATERGRUNT anim-set
 // name into m_animSetName (+0x1c0), registers it through the settings manager,
 // runs three reset helpers, conditionally re-inits the entrance gate, clears the
-// shared type-name registry array (g_typeColl/g_typeNodes/g_typeCount), and - when
+// shared type-name registry array (g_typeColl/g_typeColl.m_alloc/g_typeColl.m_grown), and - when
 // the resolved type name is "D" - caches the first entrance frame into the +0x154
 // player and stamps its +0x1a0 blit param + +0x15c descriptor.
 //
@@ -57,10 +57,6 @@ extern "C" CGameRegistry* g_gameReg;
 // The shared type-name registry (0x6bf650/0x6bf66c/0x6bf670).
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
-DATA(0x002bf66c)
-extern void* g_typeNodes;
-DATA(0x002bf670)
-extern i32 g_typeCount;
 
 // --- the offset-faithful CGrunt view ---------------------------------------
 struct CGruntTube {
@@ -101,7 +97,7 @@ struct CGruntTube {
 // const-materialize-into-reg wall (docs/patterns/const-materialize-into-reg-vs-
 // immediate.md): the {-1,-1,1,1}/{0,0,0,0} rect-block init, the kind latch, the
 // TOOB(WATER)GRUNT name select + Register, the three reset helpers, the gated
-// entrance re-init, the g_typeColl resolve + g_typeNodes reset loop, the inline
+// entrance re-init, the g_typeColl resolve + g_typeColl.m_alloc reset loop, the inline
 // strcmp("D") and the matched-branch GetBuffer/CacheFirstFrame/blit-param/descriptor
 // slot build are byte-faithful. Residual: the interleaved xor/mov const-into-reg
 // scheduling of the two rect blocks + the dead m_43c[2] spill - the MSVC5 scheduler
@@ -131,8 +127,8 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
     }
 
     CTubeTypeNode* node = (CTubeTypeNode*)((_zvec*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c);
-    void* p = g_typeNodes;
-    i32 count = g_typeCount;
+    void* p = (void*)g_typeColl.m_alloc; // m_alloc is the i32-typed slot base (the _zvec spelling)
+    i32 count = g_typeColl.m_grown;
     for (i32 i = count; i != 0; i--) {
         if (p != 0) {
             ((CString*)p)->CString::CString(); // 0x1b9b93 re-init the freed registry slot

@@ -15,6 +15,7 @@
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
@@ -84,8 +85,8 @@ void CGruntSelectedSprite::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();

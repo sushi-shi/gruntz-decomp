@@ -23,6 +23,7 @@
 #include <Wap32/ZDArrayDerived.h> // Construct(lo, hi) - the default-range registrar entry
 #include <Wap32/ZVec.h>
 #include <rva.h>
+#include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
@@ -87,24 +88,11 @@ void Register6446d8Range() {
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
 // CTypeColl2 (the Insert facet) is the shared def in <Gruntz/TypeColl2.h>.
-DATA(0x002bf658)
-extern i32 g_typeLo;
-DATA(0x002bf65c)
-extern i32 g_typeHi;
-DATA(0x002bf660)
-extern char* g_typeBase;
-DATA(0x002bf668)
-extern i32 g_typeStride;
-DATA(0x002bf664)
-extern CTypeNameEntry* g_typeCur;
-DATA(0x002bf670)
-extern i32 g_typeCount;
 DATA(0x002bf650)
-extern CTypeColl g_typeColl;
-DATA(0x002bf654)
-extern CVariantSlot* g_typeColl2; // canonical name (was CTypeColl2* - lost keep-last to typekeycoll)
-DATA(0x002bf66c)
-extern void* g_typeNodes;
+// CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
+// DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
+#include <Gruntz/TypeKeyColl.h>
+extern CTypeKeyColl g_typeColl; // 0x6bf650
 DATA(0x0021aea8)
 extern i32 g_typeCounter;
 DATA(0x002bf464)
@@ -116,17 +104,17 @@ extern void* GetRetAddr(); // 0x16d990
 extern "C" void ActReg4Handler(); // 0x4040a2
 
 static inline CTypeNameEntry* TypeLookup(i32 key) {
-    g_typeCount = 0;
-    if (key >= g_typeLo && key <= g_typeHi) {
-        return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
+    g_typeColl.m_grown = 0;
+    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
+        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
-        return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
+        return (CTypeNameEntry*)(g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
-    return g_typeCur;
+    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
 }
 
 // The R4 dispatch entry carries the per-coord handler PMF (a 4-byte code pointer on
@@ -200,8 +188,8 @@ void ActReg4RegisterType() {
         i32 key = g_typeCounter;
         id = key;
         CTypeNameEntry* slot = TypeLookup(key);
-        i32 cnt = g_typeCount;
-        CStringNode* nodes = (CStringNode*)g_typeNodes;
+        i32 cnt = g_typeColl.m_grown;
+        CStringNode* nodes = (CStringNode*)g_typeColl.m_alloc;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {

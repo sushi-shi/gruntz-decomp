@@ -33,8 +33,8 @@ extern "C" void Handler_402252(); // 0x402252
 
 // The shared name-slot free loop both key blocks run before assigning the key.
 static inline void FreeNameSlotNodes() {
-    i32 n = g_typeCount;
-    void** list = (void**)g_typeNodes;
+    i32 n = g_typeColl.m_grown;
+    void** list = (void**)g_typeColl.m_alloc;
     while (n-- != 0) {
         if (list != 0) {
             ((CString*)list)->CString::~CString();

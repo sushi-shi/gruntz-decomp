@@ -179,8 +179,8 @@ static inline i32 RegisterActionName() {
         i32 key = g_typeCounter;
         id = key;
         char* slot = ActNameLookup(key);
-        i32 cnt = g_typeCount;
-        void** nodes = (void**)g_typeNodes;
+        i32 cnt = g_typeColl.m_grown;
+        void** nodes = (void**)g_typeColl.m_alloc;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
@@ -336,8 +336,8 @@ void CFortressFlag::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -565,8 +565,8 @@ void CParticlez::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();

@@ -141,26 +141,10 @@ DATA(0x0020a454)
 extern char s_codeA[]; // "A"
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
-class CTypeKeyColl;      // canonical g_typeColl @0x6bf650 (<Gruntz/TypeKeyColl.h>)
-struct CTypeNameEntry;   // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
+#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
+struct CTypeNameEntry;   // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
-DATA(0x002bf654)
-extern CVariantSlot* g_typeColl2; // 0x6bf654
-DATA(0x002bf658)
-extern i32 g_typeLo;
-DATA(0x002bf65c)
-extern i32 g_typeHi;
-DATA(0x002bf660)
-extern char* g_typeBase;
-DATA(0x002bf668)
-extern i32 g_typeStride;
-DATA(0x002bf664)
-extern CTypeNameEntry* g_typeCur;
-DATA(0x002bf66c)
-extern void* g_typeNodes;
-DATA(0x002bf670)
-extern i32 g_typeCount;
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
@@ -168,17 +152,17 @@ extern i32 g_typeCount;
 
 // The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
-    g_typeCount = 0;
-    if (id >= g_typeLo && id <= g_typeHi) {
-        return g_typeBase + (id - g_typeLo) * g_typeStride;
+    g_typeColl.m_grown = 0;
+    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
+        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
-        return g_typeBase + (id - g_typeLo) * g_typeStride;
+        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
-    return (char*)g_typeCur;
+    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
+    return (char*)g_typeColl.m_spare;
 }
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
@@ -323,8 +307,8 @@ void CStaticHazard::RegisterActs() {
         id = g_typeCounter;
         g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -341,8 +325,8 @@ void CStaticHazard::RegisterActs() {
         id2 = g_typeCounter;
         g_buteTree.Insert(s_actKeyB, (void*)id2);
         char* slot = ActNameLookup(id2);
-        i32 n = g_typeCount;
-        void** list = (void**)g_typeNodes;
+        i32 n = g_typeColl.m_grown;
+        void** list = (void**)g_typeColl.m_alloc;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
