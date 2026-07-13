@@ -64,22 +64,23 @@
 //       0x1efbe8; the named sprite sets the registry resolves). Users: everyone else,
 //       incl. CPlaneRender::SetTileSizeFromImageSet (m_count + GetAt) in LevelPlane.cpp.
 // ---------------------------------------------------------------------------
-class CTileImageSet {
+// CObject base: every concrete variant's vtable carries the CObject family bodies at
+// slots 0-4 (0x1bef01 / the ??_G / 0x0028ec / 0x00106e / 0x004034 - the per-slot maps
+// of CImageSet1/2/3, `vtable_hierarchy --class CImageSetN`), so the base supplies them
+// and the first new virtual (Parse) lands at slot 5 (+0x14) with NO dummy padding.
+// The former "Release(1)" +0x04 slot IS the inherited virtual scalar-deleting dtor -
+// the release sites spell it `delete set` now (same +0x04 flag-1 dispatch).
+class CTileImageSet : public CObject {
 public:
-    virtual i32 dummy0();
-    virtual void Release(i32 arg);   // +0x04  release/free hook (scalar-deleting dtor)
-    virtual i32 dummy2();            // +0x08
-    virtual i32 dummy3();            // +0x0c
-    virtual i32 dummy4();            // +0x10
-    virtual i32 Parse(void* record); // +0x14  init from the WWD record
-    virtual i32 dummy6();            // +0x18
-    virtual i32 dummy7();            // +0x1c
+    virtual i32 Parse(void* record); // slot 5 (+0x14)  init from the WWD record
+    virtual i32 VtSlot6();           // slot 6 (+0x18)  (CImageSet3: FreePixels; role per-variant)
+    virtual i32 VtSlot7();           // slot 7 (+0x1c)  (role unrecovered)
     // +0x20  per-pixel collision-kind query: given sub-tile pixel (x, y) returns the
     // tile's collision category there (0 = empty/passable; 1/2 = soft-blocking, a 2 is
     // downgraded to 0 under the 0x400 target flag; 3 = hard-blocking; 4 = special).
     // The movement/scroll steppers scan tiles pixel-by-pixel through this slot.
-    virtual i32 GetCollisionAt(i32 x, i32 y); // +0x20
-    virtual i32 GetStride();                  // +0x24  record byte length (cursor advance)
+    virtual i32 GetCollisionAt(i32 x, i32 y); // slot 8 (+0x20)
+    virtual i32 GetStride(); // slot 9 (+0x24)  record byte length (cursor advance)
 
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent; == CImageSet3::m_width)
 };
@@ -104,11 +105,11 @@ struct LevelCoordRect {
 // and RecomputePlaneCoords are the engine __thiscall leaves the level drives per
 // plane (RecomputePlaneCoords is matched in GameLevel.cpp; the rest reloc-mask).
 SIZE(CLevelPlane, 0x158);
-class CLevelPlane {
+// CObject base (the real class behind this view, CDDrawWorkerHost, is CObject-derived;
+// slots 0-4 are the CObject family). The former "dtor(1)" +0x04 slot IS the inherited
+// virtual scalar-deleting dtor - the release sites spell it `delete plane` now.
+class CLevelPlane : public CObject {
 public:
-    virtual i32 dummy0();
-    virtual void dtor(i32 flags); // +0x04  scalar-deleting dtor (array release)
-
     void Build(LevelCoordRect* coords); // 0x161e80  re-place + recompute one plane
     void Sync(void* visitor);           // 0x162010  per-plane render-visit helper
     void Refresh();                     // 0x163670  per-plane refresh hook

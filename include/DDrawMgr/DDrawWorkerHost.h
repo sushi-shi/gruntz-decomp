@@ -23,46 +23,42 @@
 // WwdSpatialMgr.cpp's real definitions.)
 struct CWwdSpatialMgr {
     char _vft0[4];             // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    char m_pad04[0x70 - 0x04]; // +0x04..+0x6f  (canonical: grids/origins/bbox/scroll)
-    void* m_baseVtbl;          // +0x70  the m_iter member's vptr (CWwdGridIter : CObject;
-                               //        the ??_7CObject stamp retail emits on teardown)
+    char m_pad04[0x70 - 0x04]; // +0x04..+0x6f
+    void* m_baseVtbl;          // +0x70  base/secondary vtable restamped on teardown
     i32 PruneCount();          // 0x1688b0  (reloc-masked external)
     i32 GetSize();             // 0x168430  (reloc-masked external; serialized-size accessor)
-    void FreeGrids();          // 0x1682f0  (reloc-masked external teardown body)
-    // The out-of-line complete dtor (0x163a40; body with the canonical class in
-    // WwdSpatialMgr.cpp): FreeGrids + the compiler's ~m_iter. DECLARED-ONLY here so an
-    // explicit `p->~CWwdSpatialMgr()` (LevelPlane's CImageSet3::Cleanup) emits the
-    // retail out-of-line call. ~CDDrawWorkerHost instead reproduces retail's INLINED
-    // copy explicitly (FreeGrids + RezFree - see DDrawWorkerHost.cpp).
-    ~CWwdSpatialMgr();
+    void FreeGrids();          // 0x1682f0  (reloc-masked external scalar-dtor body)
+    ~CWwdSpatialMgr();         // inline: FreeGrids() then restamp m_baseVtbl
 };
+
+inline CWwdSpatialMgr::~CWwdSpatialMgr() {
+    FreeGrids();
+    // +0x70 secondary-base vptr restamp dropped (MI; manual stamp removed, % ok)
+}
 
 class CDDrawWorkerHost : public CObject {
 public:
     CDDrawWorkerHost(i32 owner, i32 field04, i32 field08); // 0x1615a0
     virtual ~CDDrawWorkerHost() OVERRIDE;                  // slot 1 (scalar-deleting dtor)
+    // `new CPlane` (CGameLevelPlanes::ReadPlane/ReadObjectPlane) needs an accessible
+    // operator new; MFC CObject's PASCAL one is not usable under MSVC5, so forward to
+    // global new (byte-identical: the same `push 0x158; call ??2@YAPAXI@Z`).
+    void* operator new(size_t n) {
+        return ::operator new(n);
+    }
     // 0x161c50: cache the object named `key` (resolved via the owner context's map)
     // at m_obArray[index], or null on a miss.
     void RegisterNamed(char index, const char* key);
 
-    // The grid-owner teardown/query trio (bodies in LevelPlane.cpp; formerly hosted
-    // on a LOCAL "CImageSet3" view there - WRONG identity: the bodies read +0x20/
-    // +0x24/+0xb0, which are exactly m_buffer0/m_buffer1/m_spatialWorker here, and
-    // 0x161bf0 IS this class's vtable slot 7 per the retail slot map @0x1f0270. The
-    // slot-7 VIRTUAL binding is deferred to the plane-family unification (slots 9/10
-    // of the same vtable are fns the tree still attributes to CLevelPlane -
-    // InitGeometry_1619f0 / the ReadPlaneBlock gap - so the plane IS this class);
-    // these stay non-virtual until then so the emitted vtable shape is unchanged.
-    void Cleanup_161bf0(); // 0x161bf0  prune + destroy the spatial grid, free both buffers
-    i32 Prune_1628d0();    // 0x1628d0  forward the grid's PruneCount when present
-    i32 GetSize_1633e0();  // 0x1633e0  forward the grid's serialized size when present
-
-    i32 m_04, m_08, m_0c;            // +0x04..0x0f (merged CLoadable base fields)
-    char m_pad10[0x18 - 0x10];       // +0x10..+0x17
-    float m_18;                      // +0x18  (=1.0f)
-    float m_1c;                      // +0x1c  (=1.0f)
-    char* m_buffer0;                 // +0x20  owned buffer (RezFree'd)
-    char* m_buffer1;                 // +0x24  owned buffer (RezFree'd)
+    i32 m_04;    // +0x04  (merged CLoadable base field; ctor arg2)
+    u32 m_flags; // +0x08  plane flags (ctor arg3): bit0 = MAIN/origin-fixed plane,
+                 //        bit1 hidden, bit2/3 = wrap X/Y (CPlane/CPlaneRender views)
+    i32 m_0c;    // +0x0c  owner context (ctor arg1; merged CLoadable base field)
+    char m_pad10[0x18 - 0x10];       // +0x10..+0x17 (scaledX/scaledY in the plane views)
+    float m_18;                      // +0x18  X parallax scale (=1.0f)
+    float m_1c;                      // +0x1c  Y parallax scale (=1.0f)
+    char* m_buffer0;                 // +0x20  owned buffer (the tile-handle grid; RezFree'd)
+    char* m_buffer1;                 // +0x24  owned buffer (the per-column offsets; RezFree'd)
     char m_pad28[0x50 - 0x28];       // +0x28..+0x4f
     i32 m_50;                        // +0x50  (=-1)
     char m_pad54[0x9c - 0x54];       // +0x54..+0x9b
@@ -70,13 +66,34 @@ public:
     CWwdSpatialMgr* m_spatialWorker; // +0xb0  spatial-grid worker subobject
     char m_padB4[0xf4 - 0xb4];       // +0xb4..+0xf3
     i32 m_pool[0x19];                // +0xf4..+0x157  (25 dwords; memset 0 then m_pool[0]=100)
-    virtual void VtSlotFill0();      // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1();      // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2();      // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3();      // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4();      // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5();      // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6();      // vtable-slot filler (real slot; declared-only)
+
+    // --- own vtable slots 5..11 (retail ??_7 @0x1f0270 is 12 slots; per-slot RTTI
+    // map from `vtable_hierarchy --class CDDrawWorkerHost`). Slots whose bodies are
+    // still homed on sibling VIEWS of this same plane object are declared-only (the
+    // emitted vtable references them reloc-masked; the vtable datum is not diffed);
+    // the 5-view unification (CPlane/CPlaneRender/CLevelPlane/the LevelPlane.cpp
+    // "CImageSet3" grid-owner pocket) is deferred structural work. ------------------
+    virtual i32 IsLoaded();        // slot 5  (+0x14) 0x163a90 "plane loaded?" gate -
+                                   //         ValidateTiles dispatches it (ex CPlaneRenderPoly)
+    virtual void VtSlot6_1c08();   // slot 6  (+0x18) 0x001c08 shared CWapObj-family default
+    virtual void Cleanup_161bf0(); // slot 7  (+0x1c) 0x161bf0 grid/buffer teardown (body on
+                                   //         the LevelPlane.cpp grid-owner view; @identity-TODO)
+    virtual void VtSlot8_163ab0(); // slot 8  (+0x20) 0x163ab0 (role unrecovered)
+    // slot 9 (+0x24) 0x1619f0 - the 8-arg object-plane/geometry reader
+    // CGameLevelPlanes::ReadObjectPlane dispatches; the BODY is currently homed as
+    // CLevelPlane::InitGeometry_1619f0 (the GameLevel.h view of this same object).
+    virtual i32
+    ReadObjects(i32 w, i32 h, i32 tileW, i32 tileH, i32 depthX, i32 depthY, void* bounds, i32 a8);
+    // slot 10 (+0x28) 0x161640 - the 3-arg plane-block reader
+    // CGameLevelPlanes::ReadPlane dispatches (parses one WwdPlaneHeader, fans out to
+    // the tile/imageset/object sub-readers). Stub body in LevelPlane.cpp (ex Gap_161640).
+    virtual i32 Read(void* planeData, void* blockBase, void* bounds);
+    virtual void VtSlot11_163ac0(); // slot 11 (+0x2c) 0x163ac0 (role unrecovered)
 };
+
+// The engine plane object CGameLevelPlanes::ReadPlane/ReadObjectPlane build (one per
+// WWD plane, `new` size 0x158 == this class: the +0xf4 pool ends at +0x158) - the
+// WwdFile.h "CPlane" view was this class; the alias is kept for its readers.
+typedef CDDrawWorkerHost CPlane;
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

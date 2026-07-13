@@ -16,7 +16,8 @@
 // @0x163af0 is past the TU end and stays in DDrawWorkerHost.cpp.)
 //
 // Class definitions stay canonical: <Gruntz/GameLevel.h> (CLevelPlane + the
-// CImageSet view + <Wwd/WwdFile.h> CPlaneRender/CPlane/CWwdStream/WwdFile),
+// CImageSet view + <Wwd/WwdFile.h> CPlaneRender/WwdFile; CPlane == the canonical
+// CDDrawWorkerHost, the stream is the real CFileMemBase),
 // <DDrawMgr/DDrawWorkerHost.h> (CDDrawWorkerHost), <Gruntz/UserLogic.h>
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
@@ -29,6 +30,7 @@
 // which had these frame fields grafted on; that class is CTileImageSet now.
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
+#include <Io/FileMem.h> // the REAL serialize-stream base CFileMemBase (Save/Load's Read@+0x2c/Write@+0x30)
 #include <DDrawMgr/DDrawWorkerCtx.h>  // shared CDDrawWorkerCtx (RegisterNamed's map chain)
 #include <rva.h>
 
@@ -70,7 +72,7 @@
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08) {
     m_04 = field04;
-    m_08 = field08;
+    m_flags = field08;
     m_0c = owner; // (merged CLoadable ctor)
     // m_obArray (::CObArray) default-constructed here (0x1b55e9).
     m_buffer0 = 0;
@@ -83,17 +85,19 @@ CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08) {
     m_pool[0] = 100;
 }
 
-// @early-stop
-// 0x161640 (930 B) = CLevelPlane::ReadPlaneBlock - the plane object's vtable slot +0x28
-// (??_7CDDrawWorkerHost @0x1f0270+0x28; this multi-view object drives CLevelPlane/
-// CPlaneRender/WwdFile). __thiscall(a1 plane-source record, a2 buffer offset, a3
+// 0x161640 (930 B) = the plane-block reader, CDDrawWorkerHost vtable slot 10
+// (??_7CDDrawWorkerHost @0x1f0270+0x28) - the slot CGameLevelPlanes::ReadPlane
+// dispatches. __thiscall(a1 plane-source record, a2 buffer offset, a3
 // LevelCoordRect* bounds), ret 0xc. Parses a token stream, copies a1->this geometry,
-// SetTileSize, then steps 6-9 byte-identical to CLevelPlane::InitGeometry_1619f0. Homed
-// from GapFunctions.cpp (matcher-5) by RVA neighbourhood (this TU's 0x1615a0 block, and it
-// IS this class's slot). Homed pending SetTileSize/RebuildPlanes/SetAtGrow declared on
-// CLevelPlane + the spatial-grid element modelled.
+// SetTileSize, then steps 6-9 byte-identical to CLevelPlane::InitGeometry_1619f0.
+// (Was the free-fn stub Gap_161640; now the REAL virtual so the emitted vtable's
+// slot 10 binds to a defined symbol.) Body deferred pending SetTileSize/
+// RebuildPlanes/SetAtGrow declared on the unified plane class.
+// @confidence: high
+// @source: vtable_hierarchy-slot-map+ReadPlane-dispatch
+// @stub
 RVA(0x00161640, 0x3a2)
-i32 Gap_161640(void) {
+i32 CDDrawWorkerHost::Read(void* planeData, void* blockBase, void* bounds) {
     return 0;
 }
 
@@ -1206,7 +1210,9 @@ extern i32 g_bDown; // 0x683eb4
 // across the two error sites - a documented entropy/scheduling tail.
 RVA(0x00163510, 0x156)
 i32 CPlaneRender::ValidateTiles(char* errOut) {
-    if (((CPlaneRenderPoly*)this)->IsLoaded() == 0) {
+    // The plane's real vtable slot 5 (??_7CDDrawWorkerHost+0x14, 0x163a90); the cast
+    // is the CPlaneRender-view -> real-class hop until the 5-view unification lands.
+    if (((CDDrawWorkerHost*)this)->IsLoaded() == 0) {
         return 0;
     }
 
@@ -1347,7 +1353,7 @@ i32 __stdcall PlaneSerializeDispatch(void* stream, i32 kind, i32, i32) {
 // stream: the scroll origin/dims block, the origin/extent rect, four shift/log
 // fields, the tile grid (size-prefixed), and the fixed 0x80-byte name field.
 RVA(0x00163780, 0x134)
-i32 CPlaneRender::Save(CWwdStream* s) {
+i32 CPlaneRender::Save(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -1378,7 +1384,7 @@ i32 CPlaneRender::Save(CWwdStream* s) {
 // CPlaneRender::Load (__thiscall, ret 0x4). Inverse of Save: read back the same
 // field sequence; the size-prefix must equal gridW*gridH*4 or the load aborts.
 RVA(0x001638c0, 0x140)
-i32 CPlaneRender::Load(CWwdStream* s) {
+i32 CPlaneRender::Load(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }

@@ -39,6 +39,7 @@
 #include <Gruntz/UserLogic.h>   // canonical CGameObject (the movement target) + world chain types
 #include <Io/FileStream.h>      // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <Gruntz/ImageSets.h>   // CImageSet1/2/3 variant records + RezAlloc/RezFree
+#include <DDrawMgr/DDrawWorkerHost.h> // the REAL plane class (CPlane == CDDrawWorkerHost)
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdLevelInfoSrc (0x160530 IsValidWwd is its method)
 #include <rva.h>
 
@@ -91,7 +92,7 @@
 
 // The pointer arrays hold real objects: m_planes -> CLevelPlane* (the level.s typed
 // view of the engine plane, GameLevel.h), m_imageSets -> CTileImageSet*. Both carry the
-// +0x04 release slot (CLevelPlane::dtor / CTileImageSet::Release). The per-plane object.s
+// +0x04 slot - the inherited virtual scalar-deleting dtor (`delete`). The per-plane object.s
 // tile grid, extents, coord-recompute outputs, tile->pixel shifts and name are all
 // named CLevelPlane members reached without a per-site cast off m_mainPlane.
 
@@ -473,14 +474,14 @@ i32 CGameLevel::Unload() {
     for (i = 0; i < m_planes.GetSize(); i++) {
         CLevelPlane* child = (CLevelPlane*)m_planes.GetData()[i];
         if (child) {
-            child->dtor(1); // scalar-deleting dtor (+0x04)
+            delete child; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
         CTileImageSet* child = (CTileImageSet*)m_imageSets.GetData()[i];
         if (child) {
-            child->Release(1); // release/free hook (+0x04)
+            delete child; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
     }
     m_imageSets.SetSize(0, -1);
@@ -501,14 +502,14 @@ void CGameLevel::ReleaseChildren() {
     for (i = 0; i < m_planes.GetSize(); i++) {
         CLevelPlane* child = (CLevelPlane*)m_planes.GetData()[i];
         if (child) {
-            child->dtor(1); // scalar-deleting dtor (+0x04)
+            delete child; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
         CTileImageSet* child = (CTileImageSet*)m_imageSets.GetData()[i];
         if (child) {
-            child->Release(1); // release/free hook (+0x04)
+            delete child; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
     }
     m_imageSets.SetSize(0, -1);
@@ -607,7 +608,7 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
 
     if (set->Parse(record) == 0) {
         if (set != 0) {
-            set->Release(1);
+            delete set; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
         return 0;
     }
@@ -631,7 +632,7 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
 
     if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
         if (plane) {
-            plane->dtor(1); // scalar-deleting dtor (vtable +0x4)
+            delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)
         }
         return 0;
     }
@@ -659,7 +660,7 @@ CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5
 
     if (plane->ReadObjects(a1, a2, a3, a4, a5, a6, &m_planeCtx, a7) == 0) {
         if (plane) {
-            plane->dtor(1); // scalar-deleting dtor (vtable +0x4)
+            delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)
         }
         return 0;
     }
@@ -2340,7 +2341,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
         return 0;
     }
     i32 wasMain = p->m_flags & 1;
-    p->dtor(1);
+    delete p; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
     m_planes.RemoveAt(index, 1);
     if (wasMain) {
         i32 last = m_planes.GetSize() - 1;

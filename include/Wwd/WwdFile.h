@@ -88,46 +88,19 @@ private:
 
 // ---------------------------------------------------------------------------
 // CPlane - the in-memory plane object ReadPlane constructs (one per WWD plane).
-// UNMATCHED engine class; modeled as an external shell so ReadPlane's calls to
-// it reloc-mask. Size 0x158 (344 B); ctor with three
-// args, two-phase vtable. ReadPlane uses
-// only the vtable: slot 0xA (offset 0x28) = the plane-block reader (reads one
-// WwdPlaneHeader at 0xA0 stride + fans out to tile/imageset/object sub-readers);
-// slot 0x1 (offset 0x4) = the scalar-deleting destructor. m_flags@+0x8 carries
-// the plane flags (bit0 = MAIN). None of these have bodies here.
+// IT IS the real polymorphic CDDrawWorkerHost: the "reloc-masked engine ctor"
+// ReadPlane news (0x1615a0, size 0x158 - the +0xf4 pool ends exactly at +0x158)
+// is ??0CDDrawWorkerHost@@QAE@HHH@Z (LevelPlane.cpp), stamping ??_7CDDrawWorkerHost
+// (0x1f0270, 12 slots). The dispatched slots live on the canonical class now:
+// slot 1 the virtual scalar-deleting dtor (`delete plane`), slot 9 (+0x24)
+// ReadObjects, slot 10 (+0x28) Read; m_flags@+0x08 (bit0 = MAIN) is canonical.
+// The former 11-slot dummy-filler view here is dissolved; the CPlane alias (a
+// typedef in <DDrawMgr/DDrawWorkerHost.h>) keeps the plane-side spelling.
+// (CPlaneRender below and GameLevel.h's CLevelPlane are further VIEWS of this
+// same class - the full member-set unification is deferred structural work.)
 // ---------------------------------------------------------------------------
-SIZE(CPlane, 0x158); // RE'd CPlane object size (0x158)
-class CPlane {
-public:
-    // Construct from (a, planeIndex, c); reloc-masked engine ctor.
-    CPlane(void* a, i32 planeIndex, void* c);
-    // vtable: +0x28 reader(planeData, blockBase, outCtx) -> nonzero on success.
-    virtual i32 dummy0();
-    virtual void dtor(i32 flags); // +0x04  scalar-deleting dtor
-    virtual i32 dummy2();         // +0x08
-    virtual i32 dummy3();         // +0x0c
-    virtual i32 dummy4();         // +0x10
-    virtual i32 dummy5();         // +0x14
-    virtual i32 dummy6();         // +0x18
-    virtual i32 dummy7();         // +0x1c
-    virtual i32 dummy8();         // +0x20
-    // +0x24  the object-plane block reader: 6 forwarded args, the plane context
-    // (&CGameLevelPlanes::m_planeCtx) as the 7th, and a trailing 8th arg.
-    virtual i32 ReadObjects(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, void* outCtx, i32 a7);
-    virtual i32 Read(void* planeData, void* blockBase, void* outCtx); // +0x28
-
-    u8 pad_4[0x4]; // +0x04
-    u32 m_flags;   // +0x08  bit0 = MAIN/origin-fixed plane
-    u8 pad_c[0x10 - 0x0c];
-    float m_scaledX; // +0x10  startX (or startX * m_scaleX)
-    float m_scaledY; // +0x14  startY (or startY * m_scaleY)
-    float m_scaleX;  // +0x18  X parallax factor
-    float m_scaleY;  // +0x1c  Y parallax factor
-    u8 pad_20[0x84 - 0x20];
-    i32 m_originX;           // +0x84
-    i32 m_originY;           // +0x88
-    u8 pad_8c[0x158 - 0x8c]; // pad to the real CPlane size (0x158)
-};
+class CDDrawWorkerHost;
+typedef CDDrawWorkerHost CPlane;
 
 // ---------------------------------------------------------------------------
 // PlaneBlitScratch - the DDBLTFX-ish blit-param scratch the plane embeds at +0xF4
@@ -232,39 +205,20 @@ struct CPlaneMapData {
     CPlaneGeom* m_geometry; // +0x24  plane geometry
 };
 
-// The serialize stream CPlaneRender::Save/Load drive (a CArchive-like binary I/O
-// object). Virtual Read at slot +0x2c, Write at +0x30; both __thiscall, return an
-// int byte-count. UNMATCHED engine code -> reloc-masked virtual calls.
-struct CWwdStream {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual i32 Read(void* buf, i32 len);  // +0x2c
-    virtual i32 Write(void* buf, i32 len); // +0x30
-};
+// The serialize stream CPlaneRender::Save/Load drive is the REAL abstract stream
+// base CFileMemBase (<Io/FileMem.h>, VTBL 0x1efe68): its slot-11 (+0x2c) Read /
+// slot-12 (+0x30) Write are exactly the "+0x2c Read / +0x30 Write" this header's
+// former 13-slot CWwdStream view hand-rolled (and the CSerialArchive view still
+// models - same identity, fold deferred). Pointer-only here; the dispatching TU
+// includes the real header.
+class CFileMemBase;
 
-// CPlaneRender's own vtable dispatch view (the +0x14 "is-loaded" virtual the tile
-// validator gates on). Modeled as a polymorphic interface so the vtable call falls
-// out; no vtable is emitted here (no virtual is defined in this TU).
-// authentic: CPlaneRender cannot be made polymorphic in-TU (its full retail vtable
-// is unmatched engine code; real virtuals would make cl emit a wrong ??_7). This
-// declared-only interface is the recommended manual-dispatch form.
-struct CPlaneRenderPoly {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual i32 IsLoaded(); // +0x14
-};
+// (The former CPlaneRenderPoly "own vtable dispatch view" is GONE - the plane's
+// real vtable is ??_7CDDrawWorkerHost (0x1f0270) and the +0x14 "is-loaded" virtual
+// the tile validator gates on is its slot 5 (IsLoaded, 0x163a90), declared on the
+// canonical class. The recorded "cannot be made polymorphic" wall was false: the
+// class HAS been real-polymorphic in <DDrawMgr/DDrawWorkerHost.h> since the
+// all-vtables-real batch.)
 
 class CPlaneRender {
 public:
@@ -279,8 +233,8 @@ public:
     void InitScrollRects();           // 0x163420  seed the scroll sub-object rects
     i32 ValidateTiles(char* errOut);  // 0x163510  scan the tile grid for bad refs
     void ResolveColorKey();           // 0x163670  pack the +0x144 index to RGB565
-    i32 Save(CWwdStream* s);          // 0x163780  serialize out
-    i32 Load(CWwdStream* s);          // 0x1638c0  serialize in
+    i32 Save(CFileMemBase* s);        // 0x163780  serialize out
+    i32 Load(CFileMemBase* s);        // 0x1638c0  serialize in
     // 0x0d53a0 (__thiscall, ret 8): index the tile-handle grid by (row, col):
     //   m_tileGrid[m_colOffsets[col] + row].
     i32 GetTileHandle(i32 row, i32 col); // 0x0d53a0 (m_tileGrid[m_colOffsets[col]+row])
@@ -349,7 +303,7 @@ public:
     CPlane* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
     u8 pad_0[0x0c];
-    void* m_field0c;            // +0x0C
+    i32 m_field0c;              // +0x0C  (the CPlane/CDDrawWorkerHost ctor's 1st arg)
     u8 m_planeCtx[0x34 - 0x10]; // +0x10  (&m_planeCtx -> CPlane::Read)
     u8 m_planes[0x3c - 0x34];   // +0x34  CArray<CPlane*>
     i32 m_planeCount;           // +0x3C

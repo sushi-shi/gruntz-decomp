@@ -113,9 +113,9 @@ i32 CPlaneRender::GetTileHandle(i32 row, i32 col) {
 // keep every completeness typedef after the last function to avoid a reschedule).
 //
 // VTBL skips (logged, none catalogable here):
-//   CPlane / CWwdStream / CPlaneRenderPoly - external/abstract engine shells;
-//     their virtuals are declared-not-defined so cl emits no ??_7 vtable and the
-//     retail RVA is not modeled in-TU.
+//   (the former CPlane / CWwdStream / CPlaneRenderPoly shells are dissolved:
+//    CPlane == CDDrawWorkerHost, CWwdStream == CFileMemBase, and the "poly"
+//    dispatch view is the canonical class's own slot 5.)
 // ===========================================================================
 // --- WwdFile.h header classes ---
 SIZE(WwdHeader, 0x5f4);     // on-disk WWD header (RE'd 0x5F4 bytes)
@@ -128,8 +128,6 @@ SIZE_UNKNOWN(CPlanePalArr);
 SIZE_UNKNOWN(CPlanePalOwner);
 SIZE_UNKNOWN(CPlanePalHost);
 SIZE_UNKNOWN(CPlaneMapData);
-SIZE_UNKNOWN(CWwdStream);       // abstract serialize-stream slot view
-SIZE_UNKNOWN(CPlaneRenderPoly); // slot-dispatch view
 SIZE_UNKNOWN(CPlaneRender);
 SIZE_UNKNOWN(CGameLevelPlanes);
 SIZE_UNKNOWN(WwdFile); // namespace-class (method-only)
