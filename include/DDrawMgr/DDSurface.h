@@ -135,8 +135,8 @@ public:
     i32 SetDestColorKey(u32 key);                    // 0x13eb80  SetColorKey(DDCKEY_DESTBLT,{v,v})
     // 0x13ee30 - spin until the held surface's pending flip retires
     // (IDirectDrawSurface::GetFlipStatus(DDGFS_ISFLIPDONE) != DDERR_WASSTILLDRAWING).
-    void WaitFlip();                                 // 0x13ee30
-    i32 Blt(CDDSurface* src);                        // 0x13ee60
+    void WaitFlip();                                                               // 0x13ee30
+    i32 Blt(CDDSurface* src);                                                      // 0x13ee60
     i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
     i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans);          // 0x13ef90
     // Overlay update passthrough: this->m_8->UpdateOverlay(srcRect, dest->m_8, destRect,

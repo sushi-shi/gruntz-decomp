@@ -114,7 +114,8 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     if (node == 0) {
         return 0;
     }
-    if (((CDDrawWorkerRegistry*)self->m_workerHolder->m_imageReg)->HasKeyEqual_155550("GAME") == 0) {
+    if (((CDDrawWorkerRegistry*)self->m_workerHolder->m_imageReg)->HasKeyEqual_155550("GAME")
+        == 0) {
         void* img = self->m_symParser->ResolvePath("GAME_IMAGEZ");
         if (img == 0) {
             return 0;

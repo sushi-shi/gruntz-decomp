@@ -27,6 +27,12 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/GruntzCommand.h> // the queued command (the ex-GzTargetObj view)
+// CState (the ex-GzStateProvider view) is pointer-only here - a fwd decl keeps this
+// widely-included header off <Gruntz/State.h>'s decl chain (pulling it in cost
+// CGruntzCmdMgr::RemoveMatchingTarget 100 -> 78 to the decl-count regalloc butterfly).
+// The one TU that DISPATCHES on it (GruntzCmdMgr.cpp) includes State.h itself.
+class CState;
 
 // One CPtrList sub-object (0x1c bytes). Only the engine methods the cluster
 // reaches are declared; all are reloc-masked thiscall callees in the engine
@@ -46,47 +52,27 @@
 // (The same CTmObList->CPtrList / CFileIO->CFile fold.)
 typedef CPtrList GzObList;
 
-class GzStateProvider; // defined below; Select() takes the +0x38 state sub-object
-
 // A queued target object the loops walk (the CPtrList node payload). The drain/
 // iterate loops read a type/key byte at +0x06, an index byte at +0x04, and a
 // flags word at +0x0c, and dispatch the object's own vtable slots +0x24/+0x28.
 // Modeled polymorphically so `obj->Select()` emits the thiscall virtual dispatch
 // at the right slots (the 9 leading virtuals are placeholders fixing the offsets).
 SIZE_UNKNOWN(GzTargetObj);
-class GzTargetObj {
-public:
-    virtual void Slot0();                      // +0x00
-    virtual void Slot1();                      // +0x04
-    virtual void Slot2();                      // +0x08
-    virtual void Slot3();                      // +0x0c
-    virtual void Slot4();                      // +0x10
-    virtual void Slot5();                      // +0x14
-    virtual void Slot6();                      // +0x18
-    virtual void Slot7();                      // +0x1c
-    virtual void Slot8();                      // +0x20
-    virtual void Select(GzStateProvider* mgr); // +0x24 (slot 9)
-    virtual void Deselect();                   // +0x28 (slot 10)
-
-    u8 m_4; // +0x04  per-team index byte
-    char m_pad5[0x6 - 0x5];
-    u8 m_6; // +0x06  type/key byte (matched against the param)
-    char m_pad7[0xc - 0x7];
-    i32 m_c; // +0x0c  flags (bit 0x1 / 0x2)
-};
+// (The GzTargetObj 11-slot view is GONE: it IS the canonical CGruntzCommand
+// (<Gruntz/GruntzCommand.h>, RTTI vtbl@0x1e9674, 11 slots) - the queued command the
+// cmd-mgr's list holds. Its Select/Deselect ARE that class's slots 9/10, which the RTTI
+// map shows as __purecall in the base (leaf-provided), and its m_4/m_6/m_c are the
+// canonical m_4 / m_6 / m_submitted at the same offsets.)
+typedef CGruntzCommand GzTargetObj;
 
 // The +0x38 manager pointer's state sub-object: ->GetStateId() (vtable slot +0x10)
 // reports the current game-state id (compared against 0x11 / 0x3 / 0x4). Modeled
 // polymorphically; the 4 leading virtuals fix GetStateId at slot 4 (+0x10).
 SIZE_UNKNOWN(GzStateProvider);
-class GzStateProvider {
-public:
-    virtual void Slot0();     // +0x00
-    virtual void Slot1();     // +0x04
-    virtual void Slot2();     // +0x08
-    virtual void Slot3();     // +0x0c
-    virtual i32 GetStateId(); // +0x10 (slot 4)
-};
+// (The GzStateProvider 5-slot view is GONE: its "GetStateId at slot 4 (+0x10)" IS
+// CState::Update - the same slot 4 the state hierarchy uses to report its id, and
+// ScanTargets compares it against 0x11, the PLAY id CGruntzMgr::PerFrameTick gates on.)
+typedef CState GzStateProvider;
 SIZE_UNKNOWN(GzMgr);
 struct GzMgr {
     char m_pad0[0x2c];

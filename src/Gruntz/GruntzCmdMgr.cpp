@@ -18,6 +18,7 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
+#include <Gruntz/State.h>             // CState::Update (slot 4) - the live state's id tag
 #include <Gruntz/SerialArchive.h>     // the shared archive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameReg.h>        // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/BoundaryTailViews.h> // CObj23d90 (fuzzy-identity 0x23d90 grid-snap blit)
@@ -98,7 +99,9 @@ void CGruntzCmdMgr::ClearAndReset() {
 RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     GzStateProvider* sp = m_38->m_2c;
-    i32 isPlay = (sp->GetStateId() == 0x11);
+    // slot 4 (+0x10): the state reports its own id tag. 0x11 IS GAMESTATE_NONE (the
+    // PerFrameTick sentinel), not the PLAY id - the local's historical name is kept.
+    i32 isPlay = (sp->Update() == GAMESTATE_NONE);
     GzTargetObj* table[4];
     table[0] = 0;
     table[1] = 0;
@@ -108,7 +111,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
         GzTargetObj* obj = *(GzTargetObj**)((char*)pos + 8);
-        i32 flags = obj->m_c;
+        i32 flags = obj->m_submitted; // +0x0c submit-context latch
         if (!(flags & 2)) {
             if (!(flags & 1)) {
                 continue;
@@ -236,9 +239,9 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
         return;
     }
     if (flag) {
-        if (m_38->m_2c->GetStateId() == 3) {
+        if (m_38->m_2c->Update() == GAMESTATE_PLAY) {
             ((CGruntzCommand*)cmd)->m_submitted = 2; // submit-context = playing
-        } else if (m_38->m_2c->GetStateId() == 0x11) {
+        } else if (m_38->m_2c->Update() == GAMESTATE_NONE) {
             ((CGruntzCommand*)cmd)->m_submitted = 4; // submit-context = ready
         }
         m_1c.AddTail(cmd);

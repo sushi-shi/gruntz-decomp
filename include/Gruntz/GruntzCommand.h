@@ -73,11 +73,17 @@ typedef CFileMemBase CSerialArchive;
 //                       loop), so it is read/written via *(short*)&m_10.
 // ---------------------------------------------------------------------------
 SIZE(CGruntzCommand, 0x14);
+class CState; // the live game state (Select's arg; slot-4 Update() reports its id)
+
 class CGruntzCommand {
 public:
-    char m_4;        // +0x04
+    // m_4/m_6 are UNSIGNED: CGruntzCmdMgr::RemoveMatchingTarget (0x23b00) compares them
+    // against (u8)-cast params and retail emits the ZERO-extending `movzx` - a signed
+    // `char` here makes cl emit `movsx` and drops that fn 100 -> 78.47 (the ex-GzTargetObj
+    // view, which matched 100%, declared them u8; the binary is the arbiter).
+    u8 m_4;          // +0x04  per-team index byte
     char m_5;        // +0x05
-    char m_6;        // +0x06
+    u8 m_6;          // +0x06  type/key byte
     char m_7;        // +0x07 (unused by this cluster)
     i16 m_8;         // +0x08
     i16 m_a;         // +0x0a
@@ -112,9 +118,15 @@ public:
     // override it with real parsers, the base anchor is a no-op. Consumed-byte
     // count returned. (Recovered from NetCmdSlot.cpp's ProcessCmd dispatch.)
     virtual i32 Parse(void* data, i32 len);
-    virtual i32 Vfunc8();  // slot 8
-    virtual i32 Vfunc9();  // slot 9
-    virtual i32 Vfunc10(); // slot 10
+    virtual i32 Vfunc8(); // slot 8
+    // slots 9/10 - __purecall in the base (RTTI: 11 slots, [9] and [10] both
+    // __purecall @0x11fec0), so each leaf provides the body. CGruntzCmdMgr::ScanTargets
+    // (0x23a10) dispatches them back-to-back on every queued command: Select is handed
+    // the live game STATE (CState*, whose slot-4 Update() the same fn reads for the
+    // 0x11 PLAY id), then Deselect retires it. (The ex-GzTargetObj view - 9 filler slots
+    // + these two - was this class; its m_4/m_6/m_c are m_4 / m_6 / m_submitted.)
+    virtual void Select(CState* state); // slot 9  (+0x24)  __purecall in the base
+    virtual void Deselect();            // slot 10 (+0x28)  __purecall in the base
 
     // Non-virtual members of the base (called directly, not via the vtable):
     i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
@@ -161,9 +173,9 @@ public:
     virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
     virtual i32 Vfunc8() OVERRIDE;
-    virtual i32 Vfunc9() OVERRIDE;
-    virtual i32 Vfunc10() OVERRIDE;
-    CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
+    virtual void Select(CState* state) OVERRIDE; // slot 9  (base is __purecall)
+    virtual void Deselect() OVERRIDE;            // slot 10 (base is __purecall)
+    CGruntzSingleCommand() {}                    // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
     static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
     // 0x024050 - pack this command into a flat byte buffer: tag (GetTag), then the
@@ -191,8 +203,8 @@ public:
     virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
     virtual i32 Vfunc8() OVERRIDE;
-    virtual i32 Vfunc9() OVERRIDE;
-    virtual i32 Vfunc10() OVERRIDE;
+    virtual void Select(CState* state) OVERRIDE; // slot 9  (base is __purecall)
+    virtual void Deselect() OVERRIDE;            // slot 10 (base is __purecall)
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
     static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
