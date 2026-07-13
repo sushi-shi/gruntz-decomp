@@ -322,7 +322,28 @@ RESOLVED_RE = re.compile(
     r"do not re-inherit|no longer holds|not a wall",
     re.I,
 )
-SLOT_PREMISE = re.compile(r"(vtable|vtbl|slot)[^.\n]{0,40}(member|field|size)", re.I)
+# T5 - the UNSOUND inference "N vtable slots, therefore the data members are bounded".
+#
+# This used to be `(vtable|vtbl|slot)[^.\n]{0,40}(member|field|size)`, which fires on any prose
+# that mentions a vtable within 40 chars of the word "size" - e.g. "retail vtable 0x5ef6b8,
+# size 0x44", "vtbl 0x5ed494; m_pData@+0x14, m_nSize@+0x18", "slot-3 body AND the dtor's member
+# teardown". Every one of the 19 rows it produced was prose, not an inference: it never once
+# caught the thing it is named for. A detector with a 0% hit rate is worse than none - it is
+# 19 rows of noise that trains people to skip the whole report.
+#
+# The premise it must catch is an ACTUAL derivation: a slot/vtable COUNT being used to CONCLUDE
+# something about data size/members. So require the two halves to be joined by inference words
+# (so/therefore/hence/thus/=>/means/implies/must be/bounds/so the class is), and require a
+# COUNT on the slot side.
+SLOT_PREMISE = re.compile(
+    r"(?:\d+[- ]slot|slot count|\d+\s+(?:vtable|vtbl)\s+slots|"
+    r"(?:vtable|vtbl)[^.\n]{0,20}\b\d+\s+slots)"
+    r"[^.\n]{0,60}"
+    r"(?:so|therefore|hence|thus|=>|means|implies|must be|bounds?|caps?)"
+    r"[^.\n]{0,60}"
+    r"(?:member|field|size|sizeof|layout)",
+    re.I,
+)
 
 
 def comment_blocks(text):

@@ -106,7 +106,7 @@ extern "C" {
 
 extern i32 g_64526c, g_6452d0, g_645268, g_645568, g_645538, g_6451a4;
 extern i32 g_6452d4, g_6452a8, g_645558, g_645560, g_64555c, g_645564;
-extern i32 g_645210, g_645534;
+extern i32 g_645534;
 extern void* g_645570; // attract host
 extern void* g_645578;
 extern void* g_60fa70;
@@ -203,12 +203,53 @@ struct H70 {
 // CButeStore (include/Bute/ButeMgr.h): SetErrCallback (0x170380), Init (0x170330),
 // GetDwordDef (0x1721e0), ParseGroup (0x171580), CButeStore::ClearRecursive
 // (0x16e070) are all reloc-masked __thiscall.
-extern CButeMgr g_buteMgr; // 0x6453d8
-extern CButeStore g_store6453f0, g_store64544c;
-extern i32 g_645460; // 0x645460 (RezSync-local; NOT the 0x24556c singleton)
-extern u8 g_6454e6, g_6454e7, g_6453e5;
-extern i32 g_645478, g_645420, g_645408, g_645418, g_645404;
-extern i32 g_645438, g_645448, g_645434, g_645464, g_645474;
+// STILL EXTERN: these three are CLASS objects with constructors. Defining them here would
+// emit CRT dynamic-initialiser entries into this obj (and into the init table, whose order is
+// the link order) - a change to the emitted bytes, not a neutral one. They need a real
+// definition in their owner TU as part of the CRT-init work, not a drive-by here.
+extern CButeMgr g_buteMgr;                    // 0x6453d8
+extern CButeStore g_store6453f0, g_store64544c; // 0x6453f0 / 0x64544c
+
+// DEFINED (not extern) - these are RezSync's own .bss scalars. They were referenced by this
+// TU and DEFINED BY NOBODY, so they are 15 of the 494 undefined-DATA link blockers: a
+// variable is never produced by reconstructing a function, so no amount of matching would
+// ever have resolved them. Types are the ones this TU's own code proves by use; the DATA()
+// pins each to its retail RVA.
+//
+// NOTE on sizes: data_home bounds each object by the gap to the next REFERENCED address, so
+// some bounds are larger than the type used here (0x245478's gap runs 110 B to 0x2454e6).
+// A larger true object would mean unreferenced trailing bytes we cannot see; the type below
+// is what the code actually proves. Do not widen them on a guess.
+DATA(0x00245210)
+i32 g_645210;
+DATA(0x002453e5)
+u8 g_6453e5;
+DATA(0x00245404)
+i32 g_645404;
+DATA(0x00245408)
+i32 g_645408;
+DATA(0x00245418)
+i32 g_645418;
+DATA(0x00245420)
+i32 g_645420;
+DATA(0x00245434)
+i32 g_645434;
+DATA(0x00245438)
+i32 g_645438;
+DATA(0x00245448)
+i32 g_645448;
+DATA(0x00245460)
+i32 g_645460; // 0x645460 (RezSync-local; NOT the 0x24556c singleton)
+DATA(0x00245464)
+i32 g_645464;
+DATA(0x00245474)
+i32 g_645474;
+DATA(0x00245478)
+i32 g_645478;
+DATA(0x002454e6)
+u8 g_6454e6;
+DATA(0x002454e7)
+u8 g_6454e7;
 
 SIZE(DecodeObj, 0x60);
 struct DecodeObj {

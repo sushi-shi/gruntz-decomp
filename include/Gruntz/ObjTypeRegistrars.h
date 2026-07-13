@@ -9,6 +9,12 @@
 #define GRUNTZ_OBJTYPEREGISTRARS_H
 
 #include <Gruntz/MovingLogic.h> // CMovingLogic (CProjectile base) -> pulls CUserLogic
+// The REAL grunt-HUD sprite leaves (they already declare the static RegisterActs the factory
+// calls). The old base-less shells for these four are gone - see the note below.
+#include <Gruntz/GruntHealthSprite.h>
+#include <Gruntz/GruntPowerupSprite.h>
+#include <Gruntz/GruntSelectedSprite.h>
+#include <Gruntz/GruntToySprite.h>
 
 // RTTI-known logic classes: real base per vtable_hierarchy so INHERIT stays clean.
 struct CObjectDropper : public CUserLogic {
@@ -80,18 +86,13 @@ struct CBehindCandyAni {
 struct CEyeCandyAni {
     static void RegisterActs();
 };
-struct CGruntSelectedSprite {
-    static void RegisterActs();
-};
-struct CGruntHealthSprite {
-    static void RegisterActs();
-};
-struct CGruntToySprite {
-    static void RegisterActs();
-};
-struct CGruntPowerupSprite {
-    static void RegisterActs();
-};
+// The four grunt-HUD sprite leaves are NOT redeclared here. They used to be, as base-less
+// empty `struct C... { static void RegisterActs(); };` shells - a THIRD definition of each
+// (canonical header + the now-deleted AnimWorkerSpriteLeaves.h size-view + this one), each
+// disagreeing about the base. The canonical classes ALREADY declare the same static
+// RegisterActs() at the same RVAs, so the shells bought nothing and only cost a divergent
+// shape. Including the real headers is layout-neutral (a static member changes no offset and
+// no vtable) and the mangled names the factory CALLs bind to are identical.
 struct CCheckpointTrigger {
     static void RegisterActs();
 };
