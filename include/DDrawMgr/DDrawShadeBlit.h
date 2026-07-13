@@ -118,7 +118,16 @@ public:
     // rect + a {0,0,w-1,h-1} clip rect from m_width/m_height, then forward to Blit.
     i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4);              // 0x149780
     i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0
-    void Notify(i32 a, i32 b);                                                   // 0x14dd90
+    // 0x14dd90 - latch the draw type and select the shade/palette descriptor: writes
+    // m_drawType (+0x14) = mode, then m_palDescr (+0x1c) = descr, or, when descr is null,
+    // the mode's global default from g_shadeDescr208..220. This is the REAL owner of that
+    // rva (the disasm writes exactly [ecx+0x14] and [ecx+0x1c] - this class's own two
+    // fields). It used to wear FOUR names: a declared-only CDDrawShadeBlit::Notify, a
+    // whole fake `ShadeSelector` class that the body was BOUND to, a `CImageFormat::SetType`
+    // on the deleted ImageFrame.h view, and a __stdcall `ImageNotify` free function - which
+    // was not even the right calling convention (retail leaves ecx = m_owned from the null
+    // test at 0x152ffb and calls straight through, i.e. __thiscall on the owned sprite).
+    void Select(i32 mode, ShadeDescr* descr); // 0x14dd90
     // The unselected (h-aligned) RLE blit; sel picks the h-flipped sibling. The
     // big inner loops decode the high-bit RLE sprite stream (m_rleData/m_rleLen) into
     // the Lock'd destination surface, clipping x to [clip->left, clip->right].

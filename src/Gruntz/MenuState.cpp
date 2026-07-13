@@ -78,11 +78,13 @@ extern "C" CGMVerRect g_645cc8;
 //     GetC30 -> SumGroupField2c (0xfcf70)   GetC28 -> SumGroupField20 (0xfd100)
 //     GetC14 -> SumGroupField0c (0xfcf20)
 // The view's cached fields were the same object's: its m_c gate is CBattlezData's
-// m_allDone (+0x0c) and its m_10 is m_score (+0x10). The (CBattlezData*) cast is honest -
-// CGameRegistry::m_scoreHud is still `void*` (GameRegistry.h); type that member and it
-// falls out (deferred: Wormhole.cpp casts the SAME member to a CTeleMgrSub*, so the
-// member's real type needs its own reconciliation).
-#define STATS ((CBattlezData*)g_gameReg->m_scoreHud)
+// m_allDone (+0x0c) and its m_10 is m_score (+0x10).
+// The (CBattlezData*) cast that used to sit here is GONE: CGameRegistry::m_scoreHud is
+// TYPED now. The apparent conflict with Wormhole.cpp (which cast the SAME member to a
+// CTeleMgrSub*) was never a conflict - CTeleMgrSub was a one-field view of THIS object,
+// its m_28 being CBattlezData::m_28 (+0x28), the teleporter counter this very function
+// reads back as its case-7 stat. Both casts were pointing at the same class all along.
+#define STATS (g_gameReg->m_scoreHud)
 #define STAT(getter, field)                                                                        \
     ((m_initOnce != 0 && STATS->m_allDone != 0) ? STATS->getter() : STATS->field)
 

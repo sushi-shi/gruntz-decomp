@@ -132,9 +132,12 @@ DATA(0x002bf37c)
 extern i32 g_resourceInstallActive;
 extern i32 g_surfaceColorKey;
 
-// ClassUnknown_36 (0x14dd90): a __stdcall(i32, i32) post-load notify the slot-13
-// path fires with (2, 0). Reloc-masked external; no body.
-void __stdcall ImageNotify(i32 a, i32 b); // 0x14dd90
+// (the __stdcall `ImageNotify` @0x14dd90 free-function alias is GONE - it was neither a
+// free function nor __stdcall. 0x14dd90 is CDDrawShadeBlit::Select, a __thiscall on the
+// owned shaded sprite: retail's LoadDispatch loads `mov ecx,[esi+0x30]` (m_owned) for the
+// null test at 0x152ffb and calls straight through with ecx intact. The slot-13 path's
+// "post-load notify (2, 0)" is really m_owned->Select(2, 0) - latch draw type 2 and take
+// that mode's default shade descriptor.)
 
 class CResolveNode; // the shared clip/resolve singleton (RenderImage arg); defined in the .cpp
 

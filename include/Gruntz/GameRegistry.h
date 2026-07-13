@@ -76,6 +76,7 @@ class CWorldSoundSet;  // +0x54 active-level input/spatial-sound object (WorldSo
 // declared (not included) to keep this ~60-TU header MFC-free (TriggerMgr.h pulls
 // <Mfc.h>); consumers include TriggerMgr.h to reach methods cast-free.
 class CTriggerMgr;
+class CBattlezData;    // +0x7c the HUD/score accumulator (BattlezData.h completes it)
 // Sub-objects of the +0x30 resource manager, defined in <Gruntz/ResMgr.h> /
 // <Gruntz/Viewport.h>; forward-declared here so consumers reach them typed
 // (no per-site cast) without pulling those headers into this ~60-TU-wide view.
@@ -338,8 +339,15 @@ struct CGameRegistry {
                                       //         GetByIndex==GetSel in InGameIcon; Grunt.h GetSel)
     CLightFxMgr* m_logicPump; // +0x78  light-FX / shade-table pump (ONE object, teardown-proven:
     //         Push@0x9dcb0; m_tables[10]@+0x14 is the effect->table array)
-    void* m_scoreHud; // +0x7c  HUD/score accumulator + cmd sink;
-                      //         battlez views it as the CBzData score tracker facet.
+    // +0x7c  the HUD/score accumulator + cmd sink. TYPED (was `void*`, which forced a cast
+    // at every use). It is a CBattlezData, and the proof needed no new work: this class's
+    // OWN twin view - CGruntzMgr, the same physical class at the same offsets - already
+    // declared `CBattlezData* m_scoreHud; // +0x7c` (GruntzMgr.h). The two casts that used
+    // to disagree were never in conflict: the `(CBattlezData*)` sites and Wormhole.cpp's
+    // `(CTeleMgrSub*)` shim both address THIS object - CTeleMgrSub was a one-field view whose
+    // m_28 is exactly CBattlezData::m_28 (+0x28), the wormhole/teleporter counter that
+    // FormatHudText reads back as its case-7 stat (STAT(SumGroupField20, m_28)).
+    CBattlezData* m_scoreHud;
     i32 m_numRuns;    // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
                       //         varies the attract title screen by m_numRuns % N + 1)
     char m_pad84[0x8c - 0x84];

@@ -753,27 +753,27 @@ void CBattleStatsView::DrawBattleStats() {
     // Loop 1: 6 numeric stat columns per active player.
     for (i = 0; i < 4; i++) {
         if (*(i32*)((char*)g_mgr + 0x178 + i * 0x238) != 0) {
-            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x348 + i * 0x10, 4));
+            s.Format("%d", sumRun(g_mgr->m_scoreHud, 0x348 + i * 0x10, 4));
             copyRect(&rc, &g_col1Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x2d8 + i * 0x1c, 7));
+            s.Format("%d", sumRun(g_mgr->m_scoreHud, 0x2d8 + i * 0x1c, 7));
             copyRect(&rc, &g_col2Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x238 + i * 0x28, 10));
+            s.Format("%d", sumRun(g_mgr->m_scoreHud, 0x238 + i * 0x28, 10));
             copyRect(&rc, &g_col3Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0xd8 + i * 0x58, 22));
+            s.Format("%d", sumRun(g_mgr->m_scoreHud, 0xd8 + i * 0x58, 22));
             copyRect(&rc, &g_col4Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", *(i32*)((char*)(CBattlezData*)g_mgr->m_scoreHud + 0x48 + i * 4));
+            s.Format("%d", *(i32*)((char*)g_mgr->m_scoreHud + 0x48 + i * 4));
             copyRect(&rc, &g_col5Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", ((CBattlezData*)g_mgr->m_scoreHud)->SumWinRow(i));
+            s.Format("%d", (g_mgr->m_scoreHud)->SumWinRow(i));
             copyRect(&rc, &g_col6Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }

@@ -49,6 +49,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/ActReg.h>          // shared activation-registrar archetype
 #include <Gruntz/GameRegistry.h>    // the ONE CGameRegistry
+#include <Gruntz/BattlezData.h>     // CBattlezData - the typed m_scoreHud (was the CTeleMgrSub view)
 #include <Gruntz/SpriteFactory.h>   // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/ActNameRegistry.h> // g_buteTree/g_typeCounter/s_codeA/ActNameLookup
 #include <Bute/ButeMgr.h>
@@ -134,11 +135,10 @@ struct CTeleSelHolder {
     char m_pad00[0x8];
     i32* m_8; // +0x08  {a,b} index pair
 };
-// A camera/index sub-object at mgr->m_7c (its +0x28 is bumped on a teleport).
-struct CTeleMgrSub {
-    char m_pad00[0x28];
-    i32 m_28; // +0x28
-};
+// (the CTeleMgrSub view at mgr->m_7c is GONE - that object is the CBattlezData score
+// accumulator, and its "+0x28 bumped on a teleport" is CBattlezData::m_28, the
+// wormhole/teleporter use counter FormatHudText reads back as its case-7 stat.
+// g_gameReg->m_scoreHud is typed now, so the cast fell out.)
 
 // ===========================================================================
 // The shared per-class registration infrastructure. g_buteTree / g_typeCounter /
@@ -1007,7 +1007,7 @@ i32 CTeleporter::Update() {
 
     if (m_object->m_124 == 2) {
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 1, 1);
-        ((CTeleMgrSub*)g_gameReg->m_scoreHud)->m_28++;
+        g_gameReg->m_scoreHud->m_28++; // wormhole/teleporter use counter (FormatHudText case 7)
         m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_object;
@@ -1074,7 +1074,6 @@ SIZE_UNKNOWN(WorldList);
 SIZE_UNKNOWN(WorldNode);
 SIZE_UNKNOWN(CTeleAnimSink);
 SIZE_UNKNOWN(CTeleIconTable);
-SIZE_UNKNOWN(CTeleMgrSub);
 SIZE_UNKNOWN(CTeleScroller);
 SIZE_UNKNOWN(CTeleSelHolder);
 VTBL(CTeleporter, 0x001e80cc); // vtable_names -> code (RTTI game class)

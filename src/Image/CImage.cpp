@@ -23,7 +23,6 @@
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
 #include <DDrawMgr/DDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
-#include <DDrawMgr/ShadeSelector.h>  // 0x14dd90 shade selector (m_owned's pre-notify == Select)
 #include <Win32.h>                   // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                   // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
@@ -262,7 +261,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
             return 0;
         }
         if (m_owned != 0 && (desc->m_04 & 0x40)) {
-            ImageNotify(2, 0);
+            m_owned->Select(2, 0);
             return 1;
         }
         return 1;
@@ -1115,7 +1114,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        ((ShadeSelector*)m_owned)->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
+        m_owned->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
     info->m_outLeft = d.left;
@@ -1130,11 +1129,12 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
 // No flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/1).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct, ~99.86%. The 0x14dd90 pre-notify is now bound to its real
-// callee ShadeSelector::Select (reloc-fidelity fix, wave5-R14; was the unbound
-// CDDrawShadeBlit::Notify view-method): the ((ShadeSelector*)m_owned) reinterpret is
-// the established convention (WwdGameObject / ImageFrame.h) but ripples the /O2
-// origin-load regalloc-tiebreak (ebp/ebx swap in the rect setup). Residual = those
+// Complete + correct, ~99.86%. The 0x14dd90 pre-notify is bound to its real callee
+// CDDrawShadeBlit::Select - a plain `m_owned->Select(...)` now that the fake ShadeSelector
+// class it used to be bound to is dissolved, so the ((ShadeSelector*)m_owned) reinterpret
+// is GONE (the cast was the symptom; the wrong owning class was the cause). It still
+// ripples the /O2 origin-load regalloc-tiebreak (ebp/ebx swap in the rect setup).
+// Residual = those
 // tiebreak insns + the WrapCoord ILT-thunk / CopyRect IAT-import reloc-name artifacts;
 // all other code bytes byte-exact. %-hit accepted per structure-recovery doctrine.
 RVA(0x00154270, 0x257)
@@ -1206,7 +1206,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        ((ShadeSelector*)m_owned)->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
+        m_owned->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
     info->m_outLeft = d.left;
@@ -1296,7 +1296,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        ((ShadeSelector*)m_owned)->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
+        m_owned->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
     info->m_outLeft = d.left;
@@ -1385,7 +1385,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        ((ShadeSelector*)m_owned)->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
+        m_owned->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
     info->m_outLeft = d.left;

@@ -28,7 +28,6 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
 #include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
 #include <DDrawMgr/DDrawShadeBlit.h>      // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
-#include <DDrawMgr/ShadeSelector.h>       // canonical ShadeSelector (0x14dd90 Select binding)
 #include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
 #include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance_15c360)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
@@ -171,8 +170,9 @@ extern "C" u32 g_6bf3bc; // 0x2bf3bc
 // no obj and no .LIB could ever define. The canonical <Image/CImage.h> class emits the
 // real ??_7CImage vtable whose slots are all rva-bound bodies, so they resolve.)
 
-// (the TU-local ShadeSelector view is GONE - the canonical <DDrawMgr/ShadeSelector.h>
-// is included above; ShadeDescr comes from <DDrawMgr/DDrawShadeBlit.h>.)
+// (the TU-local ShadeSelector view is GONE - and so is the shared one: 0x14dd90 is
+// CDDrawShadeBlit::Select, reached straight off CImage::m_owned. ShadeDescr comes from
+// <DDrawMgr/DDrawShadeBlit.h>.)
 
 // The frame ctor CreateFrame24/28/30 inline (vptr stamp + field init at the new-site).
 // The frame IS a CImage, so this is `new CImage` + the same 7 field stores, spelled out
@@ -1569,18 +1569,16 @@ i32 CImageSet::GetMemoryUsage(i32 raw) {
 }
 
 // SetAllTypes (__thiscall, ret 4). Set every populated frame's owned-sprite draw type
-// (m_drawType, +0x14) via the shared 0x14dd90 selector. Returns the number touched.
-// The (ShadeSelector*) cast is honest: 0x14dd90's body is currently BOUND under
-// ?Select@ShadeSelector@@ (ShadeDescrTable.cpp), even though the disasm shows it is a
-// CDDrawShadeBlit method (it writes [ecx+0x14]=mode / [ecx+0x1c]=descr). Dissolving
-// ShadeSelector onto CDDrawShadeBlit re-mangles that bound rva - a separate fold.
+// (m_drawType, +0x14) via CDDrawShadeBlit::Select @0x14dd90. Returns the number touched.
+// (The (ShadeSelector*) cast that used to sit here is GONE: 0x14dd90 is bound to its real
+// owner now, so the owned sprite is called directly.)
 RVA(0x00152480, 0x4e)
 i32 CImageSet::SetAllTypes(i32 type) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame && frame->m_owned) {
-            ((ShadeSelector*)frame->m_owned)->Select(type, 0);
+            frame->m_owned->Select(type, 0);
             count++;
         }
     }

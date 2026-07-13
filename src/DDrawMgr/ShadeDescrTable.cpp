@@ -7,13 +7,13 @@
 // object's +0x1c field.
 #include <rva.h>
 #include <Globals.h>
-#include <DDrawMgr/ShadeSelector.h> // the shared ShadeSelector shape (Select @0x14dd90)
+#include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit - the REAL owner of Select @0x14dd90
 
 struct ShadeDescr;
 
 // Seven global ShadeDescr* slots; only +0x6bf218 carries a real RTTI name.
 // The six mode-keyed slots are owned by this TU (SetShadeDescr writes them,
-// ShadeSelector::Select reads them); DEFINED here (shadedescrtable.obj's .bss,
+// CDDrawShadeBlit::Select reads them); DEFINED here (shadedescrtable.obj's .bss,
 // zero-init), DATA()-pinned, reference externs kept in <Globals.h>. Ascending RVA;
 // g_blendDescr (0x6bf218, the RTTI-named slot) keeps its extern. (Were extern-only
 // in the Globals.cpp pool.)
@@ -65,40 +65,44 @@ void SetShadeDescr(ShadeDescr* v, int mode) {
     }
 }
 
-// ShadeSelector (Select @0x14dd90) is the shared <DDrawMgr/ShadeSelector.h> shape.
+// Select @0x14dd90 is a CDDrawShadeBlit method (<DDrawMgr/DDrawShadeBlit.h>): it writes
+// this class's own m_drawType (+0x14) and m_palDescr (+0x1c). The `ShadeSelector` class
+// this body used to be BOUND to never existed - it was a field-view of the shaded sprite,
+// and every caller reached it by casting a CImage::m_owned (a CDDrawShadeBlit) to it.
+// Re-bound to the real owner; the ((ShadeSelector*)m_owned) casts fell out.
 
 // @early-stop
 // Code bytes byte-exact (verified llvm-objdump base vs target: every byte pairs except
 // the single jmpl table displacement); residual is the switch-jumptable-separate-comdat
 // wall (MSVC $L table symbol vs delinker inline-at-fn+0x74).
 RVA(0x0014dd90, 0x74)
-void ShadeSelector::Select(int mode, ShadeDescr* descr) {
-    m_mode = mode;
+void CDDrawShadeBlit::Select(i32 mode, ShadeDescr* descr) {
+    m_drawType = mode;
     if (descr == 0) {
         switch (mode) {
             case 2:
-                m_descr = g_shadeDescr208;
+                m_palDescr = g_shadeDescr208;
                 break;
             case 3:
-                m_descr = g_shadeDescr20c;
+                m_palDescr = g_shadeDescr20c;
                 break;
             case 4:
-                m_descr = g_shadeDescr210;
+                m_palDescr = g_shadeDescr210;
                 break;
             case 6:
-                m_descr = g_shadeDescr214;
+                m_palDescr = g_shadeDescr214;
                 break;
             case 7:
-                m_descr = g_shadeDescr21c;
+                m_palDescr = g_shadeDescr21c;
                 break;
             case 10:
-                m_descr = g_shadeDescr220;
+                m_palDescr = g_shadeDescr220;
                 break;
             case 11:
-                m_descr = g_shadeDescr220;
+                m_palDescr = g_shadeDescr220;
                 break;
         }
     } else {
-        m_descr = descr;
+        m_palDescr = descr;
     }
 }

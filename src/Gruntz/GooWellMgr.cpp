@@ -314,7 +314,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                     }
                 }
-                ((CBattlezData*)g_gameReg->m_scoreHud)->MarkFlag(idx, i);
+                g_gameReg->m_scoreHud->MarkFlag(idx, i);
                 return 0;
             }
         }

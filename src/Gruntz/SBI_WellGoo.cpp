@@ -217,21 +217,21 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             }
             CImage* fr = (CImage*)m_30;
             if (fr->m_owned != 0) {
-                fr->m_owned->Notify(0xa, 0);
+                fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && ((CImage*)m_30)->m_owned != 0) {
                 ((CImage*)m_30)->m_owned->m_palDescr = (ShadeDescr*)node;
             }
             fr = m_baseFrame;
             if (fr->m_owned != 0) {
-                fr->m_owned->Notify(0xa, 0);
+                fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && m_baseFrame->m_owned != 0) {
                 m_baseFrame->m_owned->m_palDescr = (ShadeDescr*)node;
             }
             fr = m_fgFrame;
             if (fr->m_owned != 0) {
-                fr->m_owned->Notify(0xa, 0);
+                fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && m_fgFrame->m_owned != 0) {
                 m_fgFrame->m_owned->m_palDescr = (ShadeDescr*)node;
