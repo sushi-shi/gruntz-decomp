@@ -23,51 +23,24 @@
 
 #include <Mfc.h> // CObject grand-base of the collapsed ~CImageSet3 (folds ??_7CObject @0x5e8cb4)
 #include <Ints.h>
+#include <Gruntz/ImageSets.h> // the canonical 18-slot CImageSet3 (RTTI vtbl 0x1f0228)
 
 // Engine heap free (0x1b9b82). C++ linkage (NOT extern "C") so cl treats it as
 // potentially-throwing and keeps the /GX base-subobject unwind frame in the
 // collapsed ~CImageSet3 below. The Cleanup free is the NAFXCW global operator delete
 // (??3@YAXPAX@Z @0x1b9b82), reloc-masked.
 
-// The +0xb0 spatial grid: Prune (0x1688b0) sweeps its four sub-managers, GetSize
-// (0x168430) sums their element counts, and the dtor (0x163a40) frees the grids.
-// All reloc-masked __thiscall callees (no body).
-class CWwdGrid {
-public:
-    i32 Prune_1688b0();   // 0x1688b0
-    i32 GetSize_168430(); // 0x168430
-    void Dtor_163a40();   // 0x163a40
-};
-
-// CImageSet3 is the kind-3 WWD image-set collision record (its own vtable
-// ??_7CImageSet3@@6B@ @0x1f0228, VTBL-bound in GameLevel.cpp; CObject grand-base).
-// This TU carries its out-of-line /GX dtor (0x161500) + the 0x166e00 pixel scan.
-// The grid-owner facet (Prune/GetSize/Cleanup, m_b0@+0xb0) is defined in
-// LevelPlane.cpp and is a separate unresolved identity-TODO (a 0xb0-sized object
-// cannot be the 0x18 kind-3 record - the name is conflated); its decls stay as
-// documentation. Deriving from CObject makes the dtor stamp the REAL vtable.
-class CImageSet3 : public CObject {
-public:
-    virtual ~CImageSet3() OVERRIDE; // 0x161500  out-of-line /GX dtor (vtable slot 1)
-    i32 Prune_1628d0();    // 0x1628d0 (LevelPlane.cpp - grid-owner facet, @identity-TODO)
-    i32 GetSize_1633e0();  // 0x1633e0 (out-of-line: m_b0 ? m_b0->GetSize_168430() : 0)
-    void Cleanup_161bf0(); // 0x161bf0
-    // 0x166e00 (vtable slot 10): scan left from (x,y) along the row for the first pixel
-    // that differs from the pixel at (x,y); report its column + value. m_14 is the pixel
-    // buffer, m_c the row-stride shift (row width == 1<<m_c).
-    i32 ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal);
-
-    // CObject supplies the vptr @+0x00; +0x04..+0x0b is the CLoadable base region.
-    char m_pad04[0x0c - 0x04]; // +0x04 .. +0x0b
-    i32 m_c;                   // +0x0c  row-stride shift (log2 of the row width)
-    char m_pad10[0x14 - 0x10]; // +0x10 .. +0x13
-    u8* m_14;                  // +0x14  pixel buffer base
-    char m_pad18[0x20 - 0x18]; // +0x18 .. +0x1f
-    void* m_20;                // +0x20  RezAlloc'd buffer
-    void* m_24;                // +0x24  RezAlloc'd buffer
-    char m_pad28[0xb0 - 0x28]; // +0x28 .. +0xaf
-    CWwdGrid* m_b0;            // +0xb0  spatial grid
-};
+// CImageSet3 is the CANONICAL 18-slot class (<Gruntz/ImageSets.h>, RTTI vtbl 0x1f0228,
+// CObject base). This TU used to define its OWN `class CImageSet3 : public CObject`
+// declaring only the dtor as a virtual - 5 slots - so cl emitted ??_7CImageSet3@@6B@ at
+// 20 BYTES here against the 72 B (18-slot) vtable gamelevel emits from the canonical
+// header. One mangled name, two lengths; MSVC5 keeps one COMDAT and discards the rest,
+// so 13 of this class's 18 virtual slots could vanish under the truncated table.
+//
+// The grid-owner facet the old view carried (Prune/GetSize/Cleanup, m_b0@+0xb0, and the
+// CWwdGrid view) is documented in LevelPlane.cpp and was UNUSED here; its `0xb0`-sized
+// object cannot be this record anyway (a flagged conflation) - dropped rather than
+// re-stated. GetSize_1633e0 is already declared on the canonical class.
 
 // ---------------------------------------------------------------------------
 // 0x161500 - the out-of-line /GX ~CImageSet3: stamp the derived vtable (0x5f0228 ==
@@ -77,10 +50,10 @@ public:
 // placeholder view so the vptr stamp binds the REAL vtable rva (reloc-faithful).
 RVA(0x00161500, 0x58)
 CImageSet3::~CImageSet3() {
-    if (m_14) {
-        ::operator delete(m_14);
+    if (m_pixels) {
+        ::operator delete(m_pixels);
     }
-    m_14 = 0;
+    m_pixels = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -93,20 +66,16 @@ CImageSet3::~CImageSet3() {
 // (the *Eh.cpp merge) - the codegen residue was TU-composition-sensitive, not a wall.
 RVA(0x00166e00, 0xa8)
 i32 CImageSet3::ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal) {
-    i32 off = (y << m_c) + x;
-    i32 target = m_14[off];
+    i32 off = (y << m_heightLog2) + x;
+    i32 target = ((u8*)m_pixels)[off];
     while (x > 0) {
         --x;
         --off;
-        if (m_14[off] != target) {
+        if (((u8*)m_pixels)[off] != target) {
             *outX = x;
-            *outVal = m_14[off];
+            *outVal = ((u8*)m_pixels)[off];
             return 1;
         }
     }
     return 0;
 }
-
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CImageSet3);

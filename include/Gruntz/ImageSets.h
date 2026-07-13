@@ -109,7 +109,11 @@ struct CImageSet3 : CObject {
     virtual i32
     GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161570  per-pixel collision-kind query
     virtual i32 GetStride();      // [9]  +0x24  0x161590  record byte length (cursor advance)
-    virtual void s28();           // [10] 0x166e00 (ScanRunLeft, in ImageSet3.cpp's model)
+    // [10] 0x166e00: scan LEFT from (x,y) along the row for the first pixel that differs
+    // from the pixel at (x,y); report its column + value. Was a body-less `s28` placeholder
+    // here while the REAL body sat in src/Image/ImageSet3.cpp as a non-virtual on a
+    // 5-slot local view of this class - so the vtable pointed at a symbol nothing defined.
+    virtual i32 ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal); // [10] 0x166e00
     virtual void s2c();           // [11] 0x166e60 (recovery gap, not a stub)
     // [12] 0x166eb0: vertical run-scan UP from (x,y) - walk to the first row whose pixel
     // at column x differs from (x,y)'s; report that row + its value.
