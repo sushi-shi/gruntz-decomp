@@ -200,53 +200,54 @@ struct H70 {
 // CButeStore (include/Bute/ButeMgr.h): SetErrCallback (0x170380), Init (0x170330),
 // GetDwordDef (0x1721e0), ParseGroup (0x171580), CButeStore::ClearRecursive
 // (0x16e070) are all reloc-masked __thiscall.
-// STILL EXTERN: these three are CLASS objects with constructors. Defining them here would
-// emit CRT dynamic-initialiser entries into this obj (and into the init table, whose order is
-// the link order) - a change to the emitted bytes, not a neutral one. They need a real
-// definition in their owner TU as part of the CRT-init work, not a drive-by here.
-extern CButeMgr g_buteMgr;                    // 0x6453d8
-extern CButeStore g_store6453f0, g_store64544c; // 0x6453f0 / 0x64544c
+// STILL EXTERN (g_buteMgr @0x6453d8): see the CRT-init note at the field block below.
+extern CButeMgr g_buteMgr;
+// g_store6453f0 / g_store64544c are NOT separate objects: 0x6453f0 is g_buteMgr + 0x18
+// (== m_tree) and 0x64544c is g_buteMgr + 0x74 (== m_tree74) - two of the manager's three
+// EMBEDDED zPTrees, aliased here as standalone CButeStore globals. (CButeStore IS zPTree;
+// see <Bute/ButeStore.h>.) They stay declared for now only because ClearRecursive is
+// modelled on CButeStore, not on zPTree - folding the two calls onto
+// g_buteMgr.m_tree / .m_tree74 is the next step, and it clears 2 more undefined-DATA rows.
+extern CButeStore g_store6453f0, g_store64544c; // == g_buteMgr.m_tree / .m_tree74
 
-// DEFINED (not extern) - these are RezSync's own .bss scalars. They were referenced by this
-// TU and DEFINED BY NOBODY, so they are 15 of the 494 undefined-DATA link blockers: a
-// variable is never produced by reconstructing a function, so no amount of matching would
-// ever have resolved them. Types are the ones this TU's own code proves by use; the DATA()
-// pins each to its retail RVA.
-//
-// NOTE on sizes: data_home bounds each object by the gap to the next REFERENCED address, so
-// some bounds are larger than the type used here (0x245478's gap runs 110 B to 0x2454e6).
-// A larger true object would mean unreferenced trailing bytes we cannot see; the type below
-// is what the code actually proves. Do not widen them on a guess.
+// This TU's own .bss scalar (0x645210 is outside every modelled object).
 DATA(0x00245210)
 i32 g_645210;
-DATA(0x002453e5)
-u8 g_6453e5;
-DATA(0x00245404)
-i32 g_645404;
-DATA(0x00245408)
-i32 g_645408;
-DATA(0x00245418)
-i32 g_645418;
-DATA(0x00245420)
-i32 g_645420;
-DATA(0x00245434)
-i32 g_645434;
-DATA(0x00245438)
-i32 g_645438;
-DATA(0x00245448)
-i32 g_645448;
-DATA(0x00245460)
-i32 g_645460; // 0x645460 (RezSync-local; NOT the 0x24556c singleton)
-DATA(0x00245464)
-i32 g_645464;
-DATA(0x00245474)
-i32 g_645474;
-DATA(0x00245478)
-i32 g_645478;
-DATA(0x002454e6)
-u8 g_6454e6;
-DATA(0x002454e7)
-u8 g_6454e7;
+
+// ---------------------------------------------------------------------------
+// SHREDDED-OBJECT FIX. Fourteen "globals" used to be DEFINED here as separate .bss
+// scalars (the g_6453e5 / g_645404 / ... / g_6454e7 family) on the reasoning that this TU
+// referenced them and nobody defined them. Every one is pinned STRICTLY INSIDE g_buteMgr
+// (0x6453d8, size 0x110 -> 0x6453d8..0x6454e8): they are its INTERIOR FIELDS, so defining
+// them fabricated fourteen .bss variables at interior offsets of one real object. The
+// field map (from the compiler's own record layout) is exact:
+//
+//   0x6453e5 +0x00d  m_0d                        0x645460 +0x088  m_tree74.m_nodeCount
+//   0x645404 +0x02c  m_tree.m_nodeCount          0x645464 +0x08c  m_tree74.m_root
+//   0x645408 +0x030  m_tree.m_root               0x645474 +0x09c  m_tree74.m_lookupPending
+//   0x645418 +0x040  m_tree.m_lookupPending      0x645478 +0x0a0  m_stream
+//   0x645420 +0x048  m_tree48 (start; unused)    0x6454e6 +0x10e  m_10e
+//   0x645434 +0x05c  m_tree48.m_nodeCount        0x6454e7 +0x10f  m_10f (CButeTail)
+//   0x645438 +0x060  m_tree48.m_root
+//   0x645448 +0x070  m_tree48.m_lookupPending
+//
+// The USE SITES prove it independently: the Phase-15 block zeroes three consecutive
+// {m_root, m_lookupPending, m_nodeCount} triples, one per embedded zPTree, each right
+// after that tree's ClearRecursive - i.e. zPTree::Reset inlined three times over
+// g_buteMgr's trees. (0x645420 was written by nothing at all.)
+//
+// g_buteMgr ITSELF STAYS UNDEFINED, and NOT for the reason previously recorded here.
+// The old note said defining it would emit a CRT dynamic-initialiser entry "whose order is
+// the link order". Retail's dynamic-init table is 30 entries (rva 0x2096e4..0x20975c,
+// NULL-bounded); I decoded all 30 and NONE constructs 0x6453d8 - and the address lies past
+// .data's raw extent, so the loader zero-fills it. So retail does NOT dynamically construct
+// g_buteMgr. But our CButeMgr models four CString members (+0x10, +0x100, +0x104, +0x108)
+// and a CButeTail, which WOULD force a dyninit if we defined it. Those two facts cannot both
+// be true: either the CString members are mis-modelled (a raw char*/POD string in retail), or
+// g_buteMgr is placement-constructed at runtime like the CActReg registries are. That is the
+// open question a definition must answer FIRST - defining it on today's model would fabricate
+// a 31st initializer the binary does not have. Left undefined and honest.
+// ---------------------------------------------------------------------------
 
 SIZE(DecodeObj, 0x60);
 struct DecodeObj {
@@ -736,7 +737,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         i32 ok = 0;
         if (node) {
             CParseSource* stream = (CParseSource*)node;
-            g_6454e6 = 1;
+            g_buteMgr.m_10e = 1;
             i32 esz = stream->BeginParse();
             void* src = *(void**)((char*)stream + 0xc);
             DecodeObj* d0 = new DecodeObj;
@@ -746,23 +747,23 @@ i32 RezSync::Init(void* a1, char* a2) {
             void* snk = d1 ? d1->M1698c0(src, esz, 2, 1) : 0;
             BitStreamBlowfishDecode(snk, rdr);
             DecodeObj* d2 = new DecodeObj;
-            g_645478 = (i32)d2;
+            g_buteMgr.m_stream = (void*)d2; // m_stream is the manager's void* parse stream (+0xa0)
             stream->EndParse();
             g_buteMgr.Init();
             g_store6453f0.ClearRecursive(0);
-            g_645408 = 0;
-            g_645418 = 0;
-            g_645404 = 0;
+            g_buteMgr.m_tree.m_root = 0;
+            g_buteMgr.m_tree.m_lookupPending = 0;
+            g_buteMgr.m_tree.m_nodeCount = 0;
             g_store64544c.ClearRecursive(0);
-            g_645438 = 0;
-            g_645448 = 0;
-            g_645434 = 0;
-            g_645464 = 0;
-            g_645474 = 0;
-            g_645460 = 0;
+            g_buteMgr.m_tree48.m_root = 0;
+            g_buteMgr.m_tree48.m_lookupPending = 0;
+            g_buteMgr.m_tree48.m_nodeCount = 0;
+            g_buteMgr.m_tree74.m_root = 0;
+            g_buteMgr.m_tree74.m_lookupPending = 0;
+            g_buteMgr.m_tree74.m_nodeCount = 0;
             ok = 1;
             if (!g_buteMgr.ParseGroup()) {
-                g_6453e5 = 1;
+                g_buteMgr.m_0d = 1;
                 ok = 0;
             }
             RezFree(rdr);
