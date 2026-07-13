@@ -2531,8 +2531,8 @@ void CPlay::StepScroll() {
     CGameLevel* v = m_c->m_24;
     CLevelPlane* geom = v->m_mainPlane;
 
-    i32 y = m_cursorY + (geom->m_tileOriginY - v->m_planeCtx.minY); // [edx+4]-m_14; +=m_cursorY
-    i32 x = geom->m_tileOriginX + (m_cursorX - v->m_planeCtx.minX); // [edx]; +=m_cursorX-m_10
+    i32 y = m_cursorY + (geom->m_originY - v->m_planeCtx.minY); // [edx+4]-m_14; +=m_cursorY
+    i32 x = geom->m_originX + (m_cursorX - v->m_planeCtx.minX); // [edx]; +=m_cursorX-m_10
 
     y = (y & ~0x1f) + 0x10; // align down 0x20 (and al,0xe0); + 0x10
     x = (x & ~0x1f) + 0x10; // align down 0x20 (and edi,~0x1f); + 0x10
@@ -3974,8 +3974,8 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
     }
 
     CGameLevel* h = m_4w()->m_30->m_24;
-    i32 px = h->m_mainPlane->m_tileOriginX - h->m_planeCtx.minX + x;
-    i32 py = h->m_mainPlane->m_tileOriginY - h->m_planeCtx.minY + y;
+    i32 px = h->m_mainPlane->m_originX - h->m_planeCtx.minX + x;
+    i32 py = h->m_mainPlane->m_originY - h->m_planeCtx.minY + y;
     for (i32 i = 0; i < markerCount(); i++) {
         CHitMarker* e = markerData()[i];
         if (e == 0) {
@@ -4150,8 +4150,8 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
             }
         }
         CGameLevel* v = m_c->m_24;
-        i32 wx = v->m_mainPlane->m_tileOriginX - v->m_planeCtx.minX + x;
-        i32 wy = v->m_mainPlane->m_tileOriginY - v->m_planeCtx.minY + y;
+        i32 wx = v->m_mainPlane->m_originX - v->m_planeCtx.minX + x;
+        i32 wy = v->m_mainPlane->m_originY - v->m_planeCtx.minY + y;
         m_4w()->m_68->PlaceObjectFull(wx, wy); // 0x2ca7 -> @0x78a50
         return 1;
     }
@@ -4374,8 +4374,8 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
         CWorld* w = m_4w();
         CGameLevel* geom = w->m_30->m_24;
         CLevelPlane* cam = geom->m_mainPlane;
-        i32 sx = cam->m_tileOriginX - geom->m_planeCtx.minX + xr;
-        i32 sy = cam->m_tileOriginY - geom->m_planeCtx.minY + y;
+        i32 sx = cam->m_originX - geom->m_planeCtx.minX + xr;
+        i32 sy = cam->m_originY - geom->m_planeCtx.minY + y;
         if (m_dragInhibit1 == 0) {
             goto mode_36c;
         }
@@ -4435,8 +4435,8 @@ mode_36c:
         // inside the world rect: place a waypoint through the trigger grid
         CGameLevel* ds = m_c->m_24;
         CLevelPlane* cam = ds->m_mainPlane;
-        i32 wx = cam->m_tileOriginX - ds->m_planeCtx.minX + xr;
-        i32 wy = cam->m_tileOriginY - ds->m_planeCtx.minY + y;
+        i32 wx = cam->m_originX - ds->m_planeCtx.minX + xr;
+        i32 wy = cam->m_originY - ds->m_planeCtx.minY + y;
         i32 tok = *(char*)&m_cursorFrame;
         if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &x, &y, tok) != 0) {
             w->m_6c->EnqueueSingle(1, (char)a, (char)y, 8, 0, 0, (char)tok, 0);
@@ -4688,8 +4688,8 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
         && y >= ph->m_planeCtx.minY) {
         CGameLevel* ds = m_c->m_24;
         CLevelPlane* geom = ds->m_mainPlane;
-        i32 rawX = geom->m_tileOriginX - ds->m_planeCtx.minX + x;
-        i32 rawY = geom->m_tileOriginY - ds->m_planeCtx.minY + y;
+        i32 rawX = geom->m_originX - ds->m_planeCtx.minX + x;
+        i32 rawY = geom->m_originY - ds->m_planeCtx.minY + y;
         i32 snapX = (rawX & ~0x1f) + 0x10;
         i32 snapY = (rawY & ~0x1f) + 0x10;
         m_tileClickX = snapX;

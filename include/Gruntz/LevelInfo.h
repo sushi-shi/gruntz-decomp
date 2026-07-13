@@ -43,15 +43,15 @@ struct CLevelSpawnInfo {
 // the marker loops / spawn scan walk; m_view holds the world->screen mapper. Was TWO
 // .cpp-local views of one object (`CLevelList` outer + `Scene`); the object hung off
 // m_view (+0x24) was a third (`SceneView24`).
-// CPlaneRender is a typedef of the canonical plane class (an elaborated
-// `struct CPlaneRender*` here would re-declare it as a distinct class).
+// The plane class itself (CPlaneRender is one of its typedef spellings; an
+// elaborated `struct CPlaneRender*` here would re-declare it as a DISTINCT class -
+// MSVC5 silently keeps a prior `class X;` over a later `typedef Y X;`).
 class CDDrawWorkerHost;
-typedef CDDrawWorkerHost CPlaneRender;
 
 SIZE_UNKNOWN(CLevelViewHolder);
 struct CLevelViewHolder {
     char m_pad00[0x5c];
-    CPlaneRender* m_5c; // +0x5c  the plane/view mapper (WorldToScreen)
+    CDDrawWorkerHost* m_5c; // +0x5c  the plane/view mapper (WorldToScreen)
 };
 SIZE_UNKNOWN(CLevelList);
 struct CLevelList {
