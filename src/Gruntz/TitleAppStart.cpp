@@ -12,10 +12,9 @@
 // the real CAttract::RunTitleSeq at 0xfa350). Resolve the +0x1b8 conflict + the obj
 // placement in a dedicated CAttract pass before binding.
 #include <rva.h>
-#include <Mfc.h>          // afx-first (unified CObject; superset of Win32.h) - g_ShowCursor fn-ptr
+#include <Mfc.h>          // afx-first (unified CObject; superset of Win32.h) - ::ShowCursor fn-ptr
 #include <Gruntz/State.h> // the CState base this title state derives (RunTitleSeq @0xfa350)
 
-extern int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (RVA 0x2c44c4)
 // The title-sequence's const-char* arg source @0x24e25c IS the global asset-root CString
 // `g_assetRoot` (same datum SplashState/GruntzMgr bind); RunTitleSeq consumes its data
 // ptr (CString::operator LPCTSTR -> the +0 m_pszData load). Single-sourced onto the
@@ -38,7 +37,7 @@ public:
 
 RVA(0x000f9880, 0x43)
 int CTitleApp::OnStart(int) {
-    int(WINAPI * sc)(int) = g_ShowCursor;
+int(WINAPI * sc)(BOOL) = ::ShowCursor;
     while (sc(0) >= 0) {
     }
     RunTitleSeq((const char*)g_assetRoot, 1, 1, 1, 0); // CState::RunTitleSeq @0xfa350

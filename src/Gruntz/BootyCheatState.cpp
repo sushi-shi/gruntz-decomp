@@ -39,9 +39,8 @@ DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 // The engine empty C-string the default text/desc temp copies from (0x6293f4).
 extern "C" char g_emptyString[];
-// The hardware-cursor hide fn-ptr (?g_ShowCursor@@3P6GHH@ZA, 0x6c44c4); the
+// The hardware-cursor hide fn-ptr (?::ShowCursor@@3P6GHH@ZA, 0x6c44c4); the
 // `mov edi,ds:g_ShowCursor; call edi` cached-ptr loop idiom (AppHelpers.cpp).
-extern int(WINAPI* g_ShowCursor)(int);
 // The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0) + its end
 // sentinel g_cheatTableEnd (0x62aef0). .bss (built at runtime); DEFINED here (owner
 // TU), reference externs stay in <Globals.h>. (REHOME DD-G)
@@ -161,7 +160,7 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
     }
 
     {
-        int(WINAPI * sc)(int) = g_ShowCursor;
+int(WINAPI * sc)(BOOL) = ::ShowCursor;
         while (sc(0) >= 0) {
         }
     }

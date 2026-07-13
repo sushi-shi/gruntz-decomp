@@ -38,7 +38,6 @@
 // The cached frame-clock fn-ptr (retail _g_pTimeGetTime @ 0x6c4650, DATA-bound in
 // cplay/globals); FadeRange/Tick time through `call ds:[0x6c4650]`, NOT the WINMM
 // import. StartFadeToColor/StartFadeToPalette DO stamp through the real import.
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 
 // The app HINSTANCE used as the resource module (DAT_00683ee0; DATA-bound in
 // ResourceLoaders.cpp). LoadDefault resolves "PALETTE" resources against it.
@@ -438,7 +437,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
 // each entry in [start,start+count) linearly from its snapshot value toward the
 // solid color (r,g,b), pushing SetEntries once per changed millisecond. Finally
 // SetRange to the exact target. RezAlloc snapshot copy freed at the end. The
-// frame clock is the cached g_pTimeGetTime fn-ptr. (The BLOCKING fade twin of the
+// frame clock is the cached ::timeGetTime fn-ptr. (The BLOCKING fade twin of the
 // per-frame StartFadeToColor/Tick machinery below.)
 // @early-stop
 // timing-loop scheduling tail (~97%; permuter no gain): the snapshot copy, the
@@ -456,9 +455,9 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     for (i32 i = 0; i < 0x400; i += 4) {
         *(i32*)(snapshot + i) = *(i32*)(m_cacheA + i);
     }
-    i32 t0 = g_pTimeGetTime();
+    i32 t0 = ::timeGetTime();
     i32 prev = 9;
-    for (i32 t = 10; t < durationMs; t = g_pTimeGetTime() - t0) {
+    for (i32 t = 10; t < durationMs; t = ::timeGetTime() - t0) {
         if (t != prev) {
             for (i32 j = start; j < start + count; j++) {
                 m_cacheA[j * 4 + 0] =
@@ -547,7 +546,7 @@ i32 CDDPalette::Tick() {
     if (m_active == 0) {
         return 0;
     }
-    u32 dt = g_pTimeGetTime() - m_startTimeMs;
+    u32 dt = ::timeGetTime() - m_startTimeMs;
     if (dt >= (u32)m_durationMs) {
         Flush();
         return 0;
@@ -735,17 +734,11 @@ i32 CDDPalette::CaptureSystemPalette() {
 // blackout reaches GDI through these globals (`call ds:[0x6c44xx]`), not through
 // the import thunks. DATA arg = retail VA - image base (0x400000).
 DATA(0x002c4404)
-extern HDC(WINAPI* g_pGetDC)(HWND); // 0x6c4404
 DATA(0x002c4408)
-extern int(WINAPI* g_pReleaseDC)(HWND, HDC); // 0x6c4408
 DATA(0x002c3e18)
-extern HPALETTE(WINAPI* g_pCreatePalette)(const LOGPALETTE*); // 0x6c3e18
 DATA(0x002c3f04)
-extern HPALETTE(WINAPI* g_pSelectPalette)(HDC, HPALETTE, BOOL); // 0x6c3f04
 DATA(0x002c3e1c)
-extern UINT(WINAPI* g_pRealizePalette)(HDC); // 0x6c3e1c
 DATA(0x002c3ec0)
-extern BOOL(WINAPI* g_pDeleteObject)(HGDIOBJ); // 0x6c3ec0
 
 // BlackoutSystemPalette (0x148720, __cdecl) - build an all-black 256-entry
 // PC_NOCOLLAPSE logical palette, select+realize it into the screen DC (driving
@@ -755,11 +748,11 @@ extern BOOL(WINAPI* g_pDeleteObject)(HGDIOBJ); // 0x6c3ec0
 // reloc-typing scoring artifact (~99%): the CODE BYTES are byte-exact (register/stack
 // layout, the palette-build loop, the cached-SelectPalette `call edi`, the tail-merged
 // failure paths all match). Residual is only that objdiff scores the ~7 `ff 15` GDI
-// calls fuzzy - they route through the cached fn-ptr globals (g_pGetDC etc.) vs retail's
+// calls fuzzy - they route through the cached fn-ptr globals (::GetDC etc.) vs retail's
 // differently-classed reloc target. Same family as CDDPalette::CaptureSystemPalette.
 RVA(0x00148720, 0x117)
 i32 BlackoutSystemPalette() {
-    HDC hdc = g_pGetDC(0);
+    HDC hdc = ::GetDC(0);
     if (hdc != 0) {
         LogPal256 lp;
         lp.palVersion = 0x300;
@@ -770,16 +763,16 @@ i32 BlackoutSystemPalette() {
             lp.palPalEntry[i].peBlue = 0;
             lp.palPalEntry[i].peFlags = 4; // PC_NOCOLLAPSE
         }
-        HPALETTE hpal = g_pCreatePalette((LOGPALETTE*)&lp);
+        HPALETTE hpal = ::CreatePalette((LOGPALETTE*)&lp);
         if (hpal != 0) {
-            HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = g_pSelectPalette;
+HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = ::SelectPalette;
             HPALETTE old = pSelect(hdc, hpal, 0);
-            g_pRealizePalette(hdc);
-            g_pDeleteObject(pSelect(hdc, old, 0));
-            g_pReleaseDC(0, hdc);
+            ::RealizePalette(hdc);
+            ::DeleteObject(pSelect(hdc, old, 0));
+            ::ReleaseDC(0, hdc);
             return 1;
         }
-        g_pReleaseDC(0, hdc);
+        ::ReleaseDC(0, hdc);
     }
     return 0;
 }

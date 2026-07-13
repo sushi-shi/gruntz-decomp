@@ -231,7 +231,6 @@ SIZE_UNKNOWN(Obj15b2b0);
 
 // The shared kill-cue clock (advanced once per tick) + its per-frame delta, and
 // the cached timeGetTime import (bound in DirPal.cpp).
-extern u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 extern "C" u32 g_killCueClock;        // 0x6bf3c0 kill-cue clock (prev now)
 extern "C" u32 g_6bf3bc;              // 0x6bf3bc per-frame delta
 
@@ -638,7 +637,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
     sortQueue.SetSize(0, -1);
 
     if (advance != 0) {
-        u32 now = g_pTimeGetTime();
+        u32 now = ::timeGetTime();
         u32 delta = now - g_killCueClock;
         g_killCueClock = now;
         g_6bf3bc = delta;

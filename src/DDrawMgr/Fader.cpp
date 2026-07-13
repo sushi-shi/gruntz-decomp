@@ -340,7 +340,6 @@ CFaderSine::~CFaderSine() {}
 // ===========================================================================
 // The inlined game RNG (a THIRD LCG instance: own seed-flag + state, distinct from
 // the 0x6c127d/0x6c1288 and 0x6c2798 pairs), seeded lazily from timeGetTime.
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 extern u8 g_fxRandSeeded;                 // 0x6c279c  seed-init flag (bit 0)
 extern i32 g_fxRandSeed;                  // 0x6c27a8  LCG seed
 
@@ -348,7 +347,7 @@ static __inline i32 FxRand(i32 range) {
     u32 x;
     if (!(g_fxRandSeeded & 1)) {
         g_fxRandSeeded |= 1;
-        x = g_pTimeGetTime();
+        x = ::timeGetTime();
     } else {
         x = g_fxRandSeed;
     }
@@ -464,7 +463,6 @@ SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 
 // PtInRect reached through a game-owned function pointer (ff 15).
 DATA(0x002c456c)
-extern BOOL(WINAPI* g_pPtInRect)(const RECT*, POINT);
 
 struct Surf {
     char m_pad00[0x18];
@@ -567,7 +565,7 @@ i32 CFaderLightApply::Setup(LightDesc* d) {
     POINT pt;
     pt.x = m_centerX;
     pt.y = m_centerY;
-    if (g_pPtInRect(&rect, pt) == 0) {
+    if (::PtInRect(&rect, pt) == 0) {
         return 0;
     }
     if (m_48 != 0) {
@@ -947,7 +945,6 @@ struct FxMeshBuffer {
 // The OffsetRect import (reached via the global function pointer at 0x6c4490) and
 // the two .rdata float constants the projection compares/biases against.
 DATA(0x002c4490)
-extern void(WINAPI* g_OffsetRect)(void* r, i32 dx, i32 dy); // PTR_OffsetRect_006c4490
 
 // Rez heap for the buffer grow (reloc-masked). Param unified to i32 across the
 // merged sections (extern "C" cannot overload; 32-bit push is width-neutral).
@@ -1023,42 +1020,42 @@ i32 CFaderMesh::ApplyInit(CFaderInit* descOpaque) {
                 normX = 1.0f;
             }
 
-            i32 pt48[4];
-            pt48[0] = 0;
-            pt48[1] = 0;
-            pt48[2] = dx;
-            pt48[3] = dy;
-            g_OffsetRect(pt48, row, col);
+            RECT pt48;
+            pt48.left = 0;
+            pt48.top = 0;
+            pt48.right = dx;
+            pt48.bottom = dy;
+            ::OffsetRect(&pt48, row, col);
             i32 ox = (i32)(cellR * normX);
             i32 oy = (i32)(cellR * normY);
-            g_OffsetRect(pt48, oy, ox);
+            ::OffsetRect(&pt48, oy, ox);
 
-            i32 pt64[4];
-            pt64[0] = 0;
-            pt64[1] = 0;
-            pt64[2] = d2;
-            pt64[3] = dy;
-            g_OffsetRect(pt64, row, col);
+            RECT pt64;
+            pt64.left = 0;
+            pt64.top = 0;
+            pt64.right = d2;
+            pt64.bottom = dy;
+            ::OffsetRect(&pt64, row, col);
 
             FxPoint pt;
             if (m_4c) {
-                pt.v[0] = pt64[2];
-                pt.v[1] = pt64[3];
-                pt.v[2] = pt64[0];
-                pt.v[3] = pt64[1];
-                pt.v[4] = pt48[0];
-                pt.v[5] = pt48[1];
-                pt.v[6] = pt48[2];
-                pt.v[7] = pt48[3];
+                pt.v[0] = pt64.right;
+                pt.v[1] = pt64.bottom;
+                pt.v[2] = pt64.left;
+                pt.v[3] = pt64.top;
+                pt.v[4] = pt48.left;
+                pt.v[5] = pt48.top;
+                pt.v[6] = pt48.right;
+                pt.v[7] = pt48.bottom;
             } else {
-                pt.v[0] = pt48[0];
-                pt.v[1] = pt48[1];
-                pt.v[2] = pt48[2];
-                pt.v[3] = pt48[3];
-                pt.v[4] = pt64[2];
-                pt.v[5] = pt64[3];
-                pt.v[6] = pt64[0];
-                pt.v[7] = pt64[1];
+                pt.v[0] = pt48.left;
+                pt.v[1] = pt48.top;
+                pt.v[2] = pt48.right;
+                pt.v[3] = pt48.bottom;
+                pt.v[4] = pt64.right;
+                pt.v[5] = pt64.bottom;
+                pt.v[6] = pt64.left;
+                pt.v[7] = pt64.top;
             }
             pt.v[8] = 0;
             pt.v[9] = 0x3f800000;

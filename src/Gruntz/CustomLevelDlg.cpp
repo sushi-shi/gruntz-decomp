@@ -38,7 +38,6 @@ namespace m4dlg {
     };
 
     // Game Win32 pointer table (reloc-masked indirect call).
-    extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
 
     // CRT-style directory walk (engine copies at these RVAs; name at +0x14).
     struct FindData {
@@ -94,7 +93,7 @@ namespace m4dlg {
                 if (h != -1) {
                     do {
                         if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
-                            g_pSendMessageA(
+                            ::SendMessageA(
                                 item->m_hwnd,
                                 0x180,
                                 0,
@@ -103,11 +102,11 @@ namespace m4dlg {
                         }
                     } while (CrtFindNext(h, &fd) != -1);
                 }
-                g_pSendMessageA(item->m_hwnd, 0x186, 0, 0);
+                ::SendMessageA(item->m_hwnd, 0x186, 0, 0);
             }
             return GetWalkOwner1d3631()->m_4->Unlock();
         }
-        i32 sel = (i32)g_pSendMessageA(item->m_hwnd, 0x188, 0, 0);
+        i32 sel = (i32)::SendMessageA(item->m_hwnd, 0x188, 0, 0);
         if (sel == -1) {
             return sel;
         }

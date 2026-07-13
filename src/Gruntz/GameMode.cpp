@@ -359,7 +359,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
 //
 // The message-slot .rdata tables (named so the DIR32 datum reloc-masks): rectsA the
 // level-message text box, rectsB the stat/formatted-text box, iconPos the icon {x,y},
-// strings the CString message set. g_pCopyRect is the engine's CopyRect trampoline.
+// strings the CString message set. ::CopyRect is the engine's CopyRect trampoline.
 DATA(0x0020b838)
 extern RECT g_levelMsgRectsA[8]; // 0x60b838  (shared with BootyMessages - stays extern)
 // g_levelMsgIconPos ({x,y} icon-slide targets) is gamemode-private (extern-only) and
@@ -373,7 +373,6 @@ extern RECT g_levelMsgRectsB[8]; // 0x60b8f8  (shared with BootyMessages - stays
 DATA(0x00229ef8)
 extern CString g_levelMsgStrings[8]; // 0x629ef8
 DATA(0x002c44bc)
-extern void(__stdcall* g_pCopyRect)(RECT*, const RECT*); // 0x6c44bc
 DATA(0x0021ab24)
 extern i32 g_sndCueTag; // 0x61ab24
 DATA(0x0021ab20)
@@ -430,11 +429,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_icons[i]->m_stateFlags &= ~1;
             m_icons[i]->m_screenX = g_levelMsgIconPos[i * 2];
             m_icons[i]->m_screenY = g_levelMsgIconPos[i * 2 + 1];
-            g_pCopyRect(&box, &g_levelMsgRectsA[i]);
+            ::CopyRect(&box, &g_levelMsgRectsA[i]);
             CString text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
-            g_pCopyRect(&box, &g_levelMsgRectsB[i]);
+            ::CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -477,7 +476,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             && (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2 <= gx) {
             RECT box;
             m_templateFlags[s] = 1;
-            g_pCopyRect(&box, &g_levelMsgRectsA[m_slot]);
+            ::CopyRect(&box, &g_levelMsgRectsA[m_slot]);
             CString text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -502,7 +501,7 @@ i32 CBootyState::LevelMsgHudDriver() {
         if (m_bomb[i]->m_screenX <= m_gokart[i]->m_screenX) {
             RECT box;
             CString text;
-            g_pCopyRect(&box, &g_levelMsgRectsB[i]);
+            ::CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);

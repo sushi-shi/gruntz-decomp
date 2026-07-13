@@ -24,9 +24,8 @@
 
 // The cursor-show counter, cached in a game-owned function pointer (ff 15).
 // reloc-fidelity: RVA 0x2c44c4 (was the VA 0x6c44c4 = 0x400000+RVA typo, which
-// keep-last-wins poisoned the shared ?g_ShowCursor binding for `play`/apphelpers).
+// keep-last-wins poisoned the shared ?::ShowCursor binding for `play`/apphelpers).
 DATA(0x002c44c4)
-extern i32(WINAPI* g_ShowCursor)(i32);
 
 // ---------------------------------------------------------------------------
 // CImageState - a CState-derived front-end state whose slot-8 loader installs the "MENU"
@@ -55,7 +54,7 @@ i32 CImageState::LoadStateImages() {
     if (Vslot06() == 0) { // the per-state image hook (slot 6, +0x18)
         return 0;
     }
-    i32(WINAPI * sc)(i32) = g_ShowCursor;
+int(WINAPI * sc)(BOOL) = ::ShowCursor;
     i32 r = sc(1);
     while (r < 0) {
         r = sc(1);
@@ -73,7 +72,7 @@ i32 CBootyState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }
-    i32(WINAPI * sc)(i32) = g_ShowCursor;
+int(WINAPI * sc)(BOOL) = ::ShowCursor;
     i32 r = sc(0);
     while (r >= 0) {
         r = sc(0);

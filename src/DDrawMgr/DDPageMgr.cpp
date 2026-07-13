@@ -61,9 +61,8 @@ extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
 DATA(0x001ef888)
 extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
-// The game's cached ShowCursor fn-ptr global (?g_ShowCursor@@3P6GHH@ZA, def in
+// The game's cached ShowCursor fn-ptr global (?::ShowCursor@@3P6GHH@ZA, def in
 // stateimages) the 0x17c3f0 command handler hides the cursor through.
-extern int(WINAPI* g_ShowCursor)(int); // 0x6c44c4
 
 // --- The 0x17c3f0 page/cursor command handler's transient shapes (a STACK-LOCAL
 // 0x520-byte command block CGruntzMgr::ChangeState_8fab0 builds + Init()s; no
@@ -374,7 +373,7 @@ i32 Handler_17c3f0::Init(
     m_24 = 0;
     m_28 = 0;
     m_508 = a31;
-    g_ShowCursor(0);
+    ::ShowCursor(0);
     m_4 = 1;
     ((CDDPageMgr*)this)->FreeAll();
     return 1;

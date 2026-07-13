@@ -28,7 +28,6 @@ extern "C" u32 g_6bf3bc;
 extern u8 g_randSeeded; // 0x6c127d (bit 0 = seeded)
 extern i32 g_randSeed;  // 0x6c1288 (32-bit LCG state)
 extern "C" {
-    extern u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650 (PTR_timeGetTime)
 }
 
 #include <rva.h>
@@ -847,7 +846,7 @@ i32 CInGameIcon::PeekCycle() {
         u32 x;
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
-            x = g_pTimeGetTime();
+            x = ::timeGetTime();
         } else {
             x = g_randSeed;
         }

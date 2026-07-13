@@ -110,9 +110,6 @@ extern i32 g_645534;
 extern void* g_645570; // attract host
 extern void* g_645578;
 extern void* g_60fa70;
-extern u32(WINAPI* g_pTimeGetTime)();  // 0x6c4650
-extern u32(WINAPI* g_pGetTickCount)(); // 0x6c3fc8
-extern i32(WINAPI* g_ShowCursor)(i32); // 0x6c44c4
 
 extern "C" char* StrUpr(char*); // 0x18d330
 
@@ -388,9 +385,9 @@ i32 RezSync::Init(void* a1, char* a2) {
         Error2(0x800a, 0x463);
         return 0;
     }
-    srand((g_pTimeGetTime() + g_pGetTickCount()) >> 1);
+    srand((::timeGetTime() + ::GetTickCount()) >> 1);
     g_wap32Run80 = 0x21;
-    while (g_ShowCursor(0) >= 0) {
+    while (::ShowCursor(0) >= 0) {
     }
 
     // --- Phase 3: "Monolith Productions" registry --------------------
@@ -722,7 +719,7 @@ i32 RezSync::Init(void* a1, char* a2) {
 
     // --- Phase 14: register mgr + probe 4 settings subobjects -------
     g_mgrPtr = this;
-    g_startTick = g_pTimeGetTime();
+    g_startTick = ::timeGetTime();
     g_645584 = 0;
     for (i32 s = 0; s < 4; ++s) {
         if (!ProbeSettings150(&m_150[s * 0x238])) {

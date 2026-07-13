@@ -15,19 +15,16 @@
 
 // The engine's cached USER32 imports, held as function-pointer globals (the dialog
 // helpers call THESE, not the raw USER32 imports - reloc-masked indirect calls).
-// Both reference their canonical DATA homes (no local DATA here): g_pGetDlgItem is the
-// C++-mangled ?g_pGetDlgItem@@3P6GPAUHWND__@@PAU1@H@ZA (home CustomWorldDialog.cpp
-// @0x2c4564) and g_pSendMessageA is the extern-"C" _g_pSendMessageA (home GruntzMgr.cpp
+// Both reference their canonical DATA homes (no local DATA here): ::GetDlgItem is the
+// C++-mangled ?::GetDlgItem@@3P6GPAUHWND__@@PAU1@H@ZA (home CustomWorldDialog.cpp
+// @0x2c4564) and ::SendMessageA is the extern-"C" _g_pSendMessageA (home GruntzMgr.cpp
 // @0x2c44a4) - so both DIR32 references reloc against the tree-winning symbol at the
 // right RVA (the old extern-"C" _g_pGetDlgItem + DATA(0x006c44a4) VA-typo mis-bound them).
-extern HWND(WINAPI* g_pGetDlgItem)(HWND, int); // 0x2c4564
-extern "C" long(WINAPI*
-                    g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp); // 0x2c44a4
 
 // The control lookup + the four combo messages go through the engine's cached USER32
-// function-pointer globals (g_pGetDlgItem / g_pSendMessageA), not the raw imports:
+// function-pointer globals (::GetDlgItem / ::SendMessageA), not the raw imports:
 // retail has no free callee-saved register here (this/next/data hold them), so each
-// g_pSendMessageA call is an uncached memory-indirect `ff 15 [g_pSendMessageA]` (the
+// ::SendMessageA call is an uncached memory-indirect `ff 15 [::SendMessageA]` (the
 // global is called directly, never hoisted into a register).
 // @early-stop
 // regalloc coin-flip wall (docs/patterns/zero-register-pinning.md), ~61%: with the
@@ -40,11 +37,11 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
     if (m_nCount <= 0) {
         return 0;
     }
-    HWND combo = g_pGetDlgItem((HWND)hDlg, ctrlId);
+    HWND combo = ::GetDlgItem((HWND)hDlg, ctrlId);
     if (combo == 0) {
         return 0;
     }
-    g_pSendMessageA(combo, CB_RESETCONTENT, 0, 0);
+    ::SendMessageA(combo, CB_RESETCONTENT, 0, 0);
     CObList::CNode* node = m_pNodeHead;
     while (node != 0) {
         CObList::CNode* next = node->pNext;
@@ -53,10 +50,10 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
         i32 idx;
         {
             CString name = rec->GetName();
-            idx = g_pSendMessageA(combo, CB_ADDSTRING, 0, (long)(LPCTSTR)name);
+            idx = ::SendMessageA(combo, CB_ADDSTRING, 0, (long)(LPCTSTR)name);
         }
         if (idx != -1) {
-            g_pSendMessageA(combo, CB_SETITEMDATA, idx, data);
+            ::SendMessageA(combo, CB_SETITEMDATA, idx, data);
         }
         node = next;
     }
@@ -83,16 +80,16 @@ CString CLatencyItem::GetName() {
 // item-data equals MAKELONG(lo, hi) and select it (LB_SETCURSEL); returns 1 if
 // found, else 0. The method ignores `this` (a dialog-item scan) - ecx is unused.
 // The control lookup + the three list messages go through the engine's cached USER32
-// function-pointer globals (g_pGetDlgItem / g_pSendMessageA), not the raw imports:
-// retail loads g_pSendMessageA once into edi (`mov edi,[g_pSendMessageA]; call edi`),
+// function-pointer globals (::GetDlgItem / ::SendMessageA), not the raw imports:
+// retail loads ::SendMessageA once into edi (`mov edi,[::SendMessageA]; call edi`),
 // so the local pSend caches it here.
 RVA(0x00038150, 0x91)
 i32 CLatencyList::SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi) {
-    HWND list = g_pGetDlgItem((HWND)hDlg, id);
+    HWND list = ::GetDlgItem((HWND)hDlg, id);
     if (!list) {
         return 0;
     }
-    long(WINAPI * pSend)(void*, unsigned, unsigned, long) = g_pSendMessageA;
+LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     i32 searching = 1;
     i32 i = 0;
     while (searching) {

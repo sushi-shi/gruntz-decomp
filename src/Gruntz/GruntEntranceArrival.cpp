@@ -59,7 +59,6 @@ struct GruntTileIcon {
 // The primary MS-CRT LCG generator state (inlined by the re-roll step; reloc-masked).
 extern u8 g_randSeeded;                  // 0x6c127d (bit 0 = seeded)
 extern i32 g_randSeed;                   // 0x6c1288 (32-bit LCG state)
-extern u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650 (PTR_timeGetTime, the seed source)
 
 // The per-tick draw-clock delta the position interpolation scales by (reloc-masked).
 extern "C" u32 g_645584; // 0x645584
@@ -1629,7 +1628,7 @@ i32 CGrunt::StepArrivalReroll() {
     if (range == 0) {
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
-            x = g_pTimeGetTime();
+            x = ::timeGetTime();
         } else {
             x = g_randSeed;
         }
@@ -1642,7 +1641,7 @@ i32 CGrunt::StepArrivalReroll() {
     } else {
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
-            x = g_pTimeGetTime();
+            x = ::timeGetTime();
         } else {
             x = g_randSeed;
         }
@@ -1655,7 +1654,7 @@ i32 CGrunt::StepArrivalReroll() {
     u32 x2;
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;
-        x2 = g_pTimeGetTime();
+        x2 = ::timeGetTime();
     } else {
         x2 = g_randSeed;
     }

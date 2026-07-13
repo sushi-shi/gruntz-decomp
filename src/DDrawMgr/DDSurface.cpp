@@ -63,7 +63,6 @@ i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 
 // The engine RECT-copier fn-ptr (0x6c44bc), used by ShadeBlt to snapshot the rects.
 DATA(0x002c44bc)
-extern void(__stdcall* g_pCopyRect)(struct tagRECT*, const struct tagRECT*);
 
 // The global image cache the new item is filed into: a real MFC CPtrArray holding
 // the 0xc0 CRezSurfaceItem surface items the 0x13e9a0 factory below builds. Stored
@@ -825,7 +824,7 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
 // register-allocation coin-flip seeded in the setup (validation keeps dstW/srcW in regs
 // + recomputes dstRowAdv from the rect fields where cl reuses the validation locals),
 // which cascades a register-name shift through the whole body. The permuter finds no
-// operand-order fix, and caching g_pCopyRect in a local (to match retail's `mov edi;
+// operand-order fix, and caching ::CopyRect in a local (to match retail's `mov edi;
 // call edi`) REGRESSED it 65->62 - proving the cascade is not source-steerable. Banked
 // for the final sweep.
 RVA(0x0013f020, 0x43f)
@@ -836,8 +835,8 @@ i32 CDDSurface::ShadeBlt(
     i32 shade
 ) {
     RECT dr, sr;
-    g_pCopyRect(&dr, dstRect);
-    g_pCopyRect(&sr, srcRect);
+    ::CopyRect(&dr, dstRect);
+    ::CopyRect(&sr, srcRect);
     if (m_b0 != 2) {
         return 0;
     }

@@ -37,7 +37,6 @@
 // symbol_names: ?g_randSeeded@@3EA / ?g_randSeed@@3HA / _g_pTimeGetTime.
 extern unsigned char g_randSeeded;            // 0x006c127d  bit0 = seeded
 extern i32 g_randSeed;                        // 0x006c1288  32-bit LCG state
-extern "C" u32(WINAPI* g_pTimeGetTime)(void); // 0x006c4650
 
 // Advance the shared LCG one step (lazily seeded); returns 15-bit value.
 // Retail inlines this three times per colour, so force it inline.
@@ -45,7 +44,7 @@ static __inline i32 GameRand() {
     i32 seed;
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;
-        seed = (i32)g_pTimeGetTime();
+        seed = (i32)::timeGetTime();
     } else {
         seed = g_randSeed;
     }

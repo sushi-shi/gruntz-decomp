@@ -228,8 +228,6 @@ extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wPara
 namespace m4 {
 
     // Game Win32 pointer table (reloc-masked indirect calls).
-    extern HWND(WINAPI* g_pGetDlgItem)(HWND, int);                       // 0x006c4564
-    extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
 
     // The directory walk is the real CRT _findfirst/_findnext (0x11f900 / 0x11fa30,
     // FID-carved) over <io.h>'s _finddata_t.
@@ -269,11 +267,11 @@ namespace m4 {
     // steerable from source.
     RVA(0x0003af90, 0x194)
     i32 FillCustomLevelList(HWND hWnd) {
-        HWND lb = g_pGetDlgItem(hWnd, 0x3fc);
+        HWND lb = ::GetDlgItem(hWnd, 0x3fc);
         if (!lb) {
             return 0;
         }
-        g_pSendMessageA(lb, 0x184, 0, 0); // LB_RESETCONTENT
+        ::SendMessageA(lb, 0x184, 0, 0); // LB_RESETCONTENT
         if (CustomGate("Custom")) {
             return 0;
         }
@@ -292,7 +290,7 @@ namespace m4 {
                     if (len > 4) {
                         disp[len - 4] = 0;
                     }
-                    g_pSendMessageA(lb, 0x180, 0, (LPARAM)disp); // LB_ADDSTRING
+                    ::SendMessageA(lb, 0x180, 0, (LPARAM)disp); // LB_ADDSTRING
                 }
             } while (_findnext(h, &fd) != -1);
         }
@@ -306,9 +304,7 @@ namespace m4 {
 // FillLevelInfoDialog reaches USER32 through the game's cached fn-pointers (bare
 // 0x6c45xx absolutes, no import symbols) - the same pattern as g_pPostMessageA.
 DATA(0x002c4564)
-extern HWND(WINAPI* g_pGetDlgItem)(HWND, int);
 DATA(0x002c4554)
-extern BOOL(WINAPI* g_pSetDlgItemTextA)(HWND, int, LPCSTR);
 // The listbox-selection precheck (0x2176, cdecl).
 extern "C" i32 func_2176(HWND hDlg);
 
@@ -327,7 +323,7 @@ extern "C" i32 func_2176(HWND hDlg);
 // higher-% free-call+import form the stub carried (correctness-not-artifacts).
 RVA(0x0003b1a0, 0x118)
 i32 FillLevelInfoDialog(HWND hDlg) {
-    if (!g_pGetDlgItem(hDlg, 0x3fc)) {
+    if (!::GetDlgItem(hDlg, 0x3fc)) {
         return 0;
     }
     if (!func_2176(hDlg)) {
@@ -335,7 +331,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     }
     char num[0x20];
     WwdHeader info;
-    BOOL(WINAPI * setText)(HWND, int, LPCSTR) = g_pSetDlgItemTextA;
+BOOL(WINAPI * setText)(HWND, int, LPCSTR) = ::SetDlgItemTextA;
     if (((WwdWorldHolder*)g_gameReg->m_world)->m_24->IsValidWwd((const char*)g_pathStr, &info)) {
         char* p = info.levelName;
         while (*p && (*p < '0' || *p > '9')) {

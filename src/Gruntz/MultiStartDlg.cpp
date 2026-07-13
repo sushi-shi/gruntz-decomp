@@ -75,8 +75,6 @@ struct MpSymItem {
 // per the wave1-D brief).
 namespace m4 {
     // Game Win32 pointer table (0x6c44xx) -> reloc-masked indirect calls.
-    extern HWND(WINAPI* g_pGetWindow)(HWND, UINT);                       // 0x006c44d8
-    extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
 
     // The multiplayer lobby game-state singleton at 0x64bd5c is a CMulti (xref-
     // proven): m_isHost (+0x528) gates the active branch, m_5b0 (+0x5b0) is the
@@ -197,7 +195,7 @@ RVA(0x000c1aa0, 0x2f8)
 i32 m4::MultiColorDlg::UpdateColorItems() {
     if (g_64bd5c->m_isHost != 0) {
         CWnd* it4ff = GetDlgItem(0x4ff);
-        CWnd* itChild = CWnd::FromHandle(g_pGetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
+        CWnd* itChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
         CWnd* it42b = GetDlgItem(0x42b);
         CWnd* it4e9 = GetDlgItem(0x4e9);
         if (!itChild) {
@@ -220,7 +218,7 @@ i32 m4::MultiColorDlg::UpdateColorItems() {
         return 1;
     }
     CWnd* it4ff = GetDlgItem(0x4ff);
-    CWnd* itChild = CWnd::FromHandle(g_pGetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
+    CWnd* itChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
     CWnd* it42b = GetDlgItem(0x42b);
     CWnd* it4e9 = GetDlgItem(0x4e9);
     if (!itChild) {
@@ -235,7 +233,7 @@ i32 m4::MultiColorDlg::UpdateColorItems() {
     if (!it4e9) {
         return 0;
     }
-    g_pSendMessageA(it4ff->m_hWnd, 0x14e, (WPARAM)-1, 0);
+    ::SendMessageA(it4ff->m_hWnd, 0x14e, (WPARAM)-1, 0);
     m_6c = g_64bd5c->m_5b0;
     if (g_64bd5c->m_5b0 != 0) {
         CString name = g_64bd5c->Name42ff();

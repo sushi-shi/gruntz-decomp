@@ -65,7 +65,6 @@ extern ShowCursorFn g_ShowCursor;
 // PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
 // extern "C" so the reloc emits `_g_pPostMessageA` - the canonical name bound at
 // 0x2c44c8 (home `sbi_rectonly`); the C++-mangled view was the dedup loser.
-extern "C" i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32);
 
 // The per-frame time delta (countdown source for m_idleTimer). C linkage so the
 // symbol pairs with the target's _g_645584 (the convention across the gamemode units).
@@ -84,9 +83,7 @@ extern char g_emptyString[];
 DATA(0x0021ab20)
 extern i32 g_sndEnabled;
 DATA(0x002c4650)
-extern u32(WINAPI* g_pTimeGetTime)();
 DATA(0x002c44c0)
-extern int(WINAPI* g_pwsprintfA)(char* buf, const char* fmt, ...);
 
 // Source string literals (objdiff matches these .data relocations by value).
 #define s_STATEZ_ATTRACT "STATEZ_ATTRACT"
@@ -201,7 +198,7 @@ i32 CAttract::Vslot09(i32 arg) {
     i32 seed;
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;
-        seed = g_pTimeGetTime();
+        seed = ::timeGetTime();
     } else {
         seed = g_randSeed;
     }
@@ -210,7 +207,7 @@ i32 CAttract::Vslot09(i32 arg) {
     const char* pick = (r % 2) ? s_dat60b5bc : g_emptyString;
 
     char buf[0x40];
-    g_pwsprintfA(buf, s_ATTRACT_TITLE_s, pick);
+    ::wsprintfA(buf, s_ATTRACT_TITLE_s, pick);
 
     CMapStringToOb* map = (CMapStringToOb*)((char*)menuRoot()->m_28 + 0x10);
     CObject* found = 0;
@@ -305,7 +302,7 @@ i32 CAttract::Render() {
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
         if (g_actorList->m_data[i]->m_2ac & 0x100) {
-            g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+            ::PostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
             return 1;
         }
     }
@@ -358,7 +355,7 @@ i32 CAttract::Vslot06() {
 RVA(0x00014720, 0x37)
 i32 CAttract::Vslot0c(i32 code, i32 unused) {
     if (code == 0x20 || code == 0xd || code == 0x1b) {
-        g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+        ::PostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;
 }
@@ -367,7 +364,7 @@ i32 CAttract::Vslot0c(i32 code, i32 unused) {
 // (0x8023) to the top-level HWND (m_4->m_gameWnd->m_hwnd) unconditionally, then return 1.
 RVA(0x00014770, 0x24)
 i32 CAttract::Vslot0e(i32, i32, i32) {
-    g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+    ::PostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     return 1;
 }
 

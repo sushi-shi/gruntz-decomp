@@ -73,7 +73,7 @@ CBattlezDlg::~CBattlezDlg() {}
 // ("Battlez_Setup" section: LastMaxGruntz%d / LastDiff%d / LastColour%d,
 // DefaultMaxGruntz) + g_gameReg, populates the dialog controls (the "Computer
 // (easy/normal/difficult)", "Human", "Player", "Serra", "Jebediah" combo/list
-// strings) and drives them via the g_pSendMessageA / PTR_GetWindow / PTR_GetWindowLongA
+// strings) and drives them via the ::SendMessageA / PTR_GetWindow / PTR_GetWindowLongA
 // / PTR_SetWindowLongA function-pointer trampolines. Deferred to the leaf-first final
 // sweep: a >512B body over ~20 CButeMgr/CString/CGameReg callees + a subclass window
 // trampoline that must be modeled first; a partial under-counts AND diverges its
@@ -185,7 +185,6 @@ CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
 // The game's SendMessageA fn-ptr global (reloc-masked indirect call). Bound via
 // DATA(0x006c44a4) later in this TU (CopyComboSelToChild); declared here so the
 // earlier DoDataExchange can reach it.
-extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp); // 0x6c44a4
 
 // CBattlezDlgColors::DoDataExchange (0x179b0): the MFC DDX for the colour-picker
 // listbox (control 0x515). SAVE (m_bSaveAndValidate): read the selected item's
@@ -201,10 +200,10 @@ extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long
 // reorder tried, not steerable.
 RVA(0x000179b0, 0xcb)
 void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
-    long(WINAPI * pSend)(void*, unsigned, unsigned, long);
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM);
     if (pDX->m_bSaveAndValidate) {
         CWnd* lb = GetDlgItem(0x515);
-        pSend = g_pSendMessageA;
+        pSend = ::SendMessageA;
         long sel = pSend(lb->m_hWnd, 0x188, 0, 0);    // LB_GETCURSEL
         long data = pSend(lb->m_hWnd, 0x199, sel, 0); // LB_GETITEMDATA
         m_pickedColor = data;
@@ -213,7 +212,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
         }
     } else {
         CWnd* lb = GetDlgItem(0x515);
-        pSend = g_pSendMessageA;
+        pSend = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
             i32 avail = 1;
             i32* rec = (i32*)(m_slots + 0x158); // -> slot[0].m_158 (color / m_170 occupancy)
@@ -548,14 +547,13 @@ void CBattlezDlg::ApplyColorSlot3() {
 }
 
 // CopyComboSelToChild (0x171b0): read the current selection text of the 0x4ff
-// combo (CB_GETCURSEL via the g_pSendMessageA global fn-ptr, then GetLBText into a
+// combo (CB_GETCURSEL via the ::SendMessageA global fn-ptr, then GetLBText into a
 // local CString) and, if non-empty, push it into the combo's child edit
 // (GetWindow(GW_CHILD) -> FromHandle -> SetWindowText) and latch m_68 = 0. /GX EH
 // frame unwinds the local CString.
 DATA(0x002c44a4)
-extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
 // @early-stop
-// 96.8%: full logic byte-exact (combo GetCurSel via g_pSendMessageA, GetLBText into the
+// 96.8%: full logic byte-exact (combo GetCurSel via ::SendMessageA, GetLBText into the
 // local CString, GetWindow(GW_CHILD)/FromHandle/SetWindowText, m_68 latch). Residual is the
 // local CString's /GX unwind vptr/state ordering (same EH-restamp family), not steerable.
 RVA(0x000171b0, 0xca)
@@ -564,7 +562,7 @@ void CBattlezDlg::CopyComboSelToChild() {
     if (combo == 0) {
         return;
     }
-    long sel = g_pSendMessageA(combo->m_hWnd, 0x147, 0, 0);
+    long sel = ::SendMessageA(combo->m_hWnd, 0x147, 0, 0);
     if (sel == -1) {
         return;
     }

@@ -66,8 +66,6 @@ CGruntzWnd::~CGruntzWnd() {
 // PreDispatchMessage (slot 1) externs: the IAT-mirror imports (call ds:0x6c44a0/
 // 0x6c44a4), the NetLobby active-dialog HWND (0x64557c), and the empty ret-8
 // message hook (0x138940, unnamed - reloc-masked).
-extern "C" i32(WINAPI* g_pIsIconic)(HWND);                          // 0x006c44a0
-extern "C" i32(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
 extern HWND g_curDlg_64557c;                                        // 0x0064557c
 extern void __stdcall Sub_138940(WPARAM, LPARAM);                   // 0x138940 (empty hook)
 
@@ -97,7 +95,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         if (wParam == 0xf100) {
             return 1;
         }
-        i32(WINAPI * isIconic)(HWND) = g_pIsIconic;
+BOOL(WINAPI * isIconic)(HWND) = ::IsIconic;
         i32 mm = wParam & 0xfff0;
         if (mm == 0xf140 || mm == 0xf170) {
             if (!isIconic(m_hwnd)) {
@@ -110,7 +108,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         if (g_curDlg_64557c == 0) {
             return 0;
         }
-        g_pSendMessageA(g_curDlg_64557c, 0x112, wParam, lParam);
+        ::SendMessageA(g_curDlg_64557c, 0x112, wParam, lParam);
         return 0;
     }
     case 0x3b9: {

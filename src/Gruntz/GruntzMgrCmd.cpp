@@ -98,9 +98,7 @@ extern i32 g_isHost_648cf0;
 DATA(0x002c44c0)
 extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 DATA(0x002c44c4)
-extern i32(WINAPI* g_ShowCursor)(i32); // ?g_ShowCursor@@3P6GHH@ZA
 DATA(0x002c44c8)
-extern i32(WINAPI* g_pPostMessageA)(HWND, u32, u32, i32);
 
 // The two brick-display strings the 0x8068/0x806f cheats clear (real CStrings;
 // the "brick text" debug overlay renders them).
@@ -216,15 +214,15 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
         if (st == GAMESTATE_MENU) {                                                                \
             mus = (CMenuState*)m_curState;                                                         \
             ((CMenuState*)m_curState)->StopMusicChain();                                           \
-            if (g_ShowCursor(0) >= 0)                                                              \
-                while (g_ShowCursor(0) >= 0) {                                                     \
+            if (::ShowCursor(0) >= 0)                                                              \
+                while (::ShowCursor(0) >= 0) {                                                     \
                 }                                                                                  \
         }                                                                                          \
         ChangeState_8fab0(N);                                                                      \
         if (mus) {                                                                                 \
             mus->StartMusic();                                                                     \
-            if (g_ShowCursor(1) < 0)                                                               \
-                while (g_ShowCursor(1) < 0) {                                                      \
+            if (::ShowCursor(1) < 0)                                                               \
+                while (::ShowCursor(1) < 0) {                                                      \
                 }                                                                                  \
         }                                                                                          \
         return 1;                                                                                  \
@@ -925,7 +923,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
         case 0x8038:
             if (m_curState->Update() == GAMESTATE_MENU
                 || m_curState->Update() == GAMESTATE_ATTRACT) {
-                while (g_ShowCursor(1) < 0) {
+                while (::ShowCursor(1) < 0) {
                 }
                 LaunchWebBrowser("http://www.gruntzgoo.com/");
             }
@@ -996,7 +994,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 ReportError(0x8005, 0x42c);
                 return 1;
             }
-            g_pPostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+            ::PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
             return 1;
         case 0x80ab:
             if (TransitionState(0xe, 1, 0, 0)) {
@@ -1054,7 +1052,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             return 1;
         case 0x80b7:
             m_lobbyProbed = 0;
-            g_pPostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8025, 0);
+            ::PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8025, 0);
             return 1;
         case 0x800e: // 0x89c92
             if (!CheckPlayState()) {
@@ -1064,7 +1062,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 return 1;
             }
             if (TransitionState(2, 1, 0, 0)) {
-                g_pPostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
+                ::PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
                 return 1;
             }
             ReportError(0x8005, 0x430);

@@ -114,8 +114,7 @@ extern "C" BzGameReg* g_gameReg;
 // USER32 PostMessageA reached through the game-owned IAT-style fn-ptr (ff 15 [ptr]);
 // same global CGruntzMgr/Attract/Play bind. KeyHost::Check posts through it.
 // extern "C" so the reloc emits _g_pPostMessageA - the canonical name bound @0x2c44c8
-// (sbi_rectonly); the C++-mangled form ?g_pPostMessageA@@... never bound (silently dropped).
-extern "C" i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32); // 0x2c44c8
+// (sbi_rectonly); the C++-mangled form ?::PostMessageA@@... never bound (silently dropped).
 // Plain C++ extern: ?g_sndEnabled@@3HA is now the ONE name bound at 0x21ab20 (DEFINED in
 // GruntzMgr.cpp, the owner TU). The old extern "C" spelling here carried a DATA pin that
 // bound _g_sndEnabled and starved every C++-mangled reference in the tree.
@@ -699,7 +698,6 @@ CString* GetColorName(CString* out);
 // CopyRect USER32 import hoisted through a data fn-ptr global (retail loads it once
 // into ebp and calls it ~13x).
 DATA(0x002c44bc)
-extern void(WINAPI* g_pCopyRect)(RECT* dst, const RECT* src); // 0x6c44bc
 
 // The per-column source-rect tables (RECT[] in .data). Indexed by player/category.
 DATA(0x001e9178)
@@ -755,7 +753,7 @@ RVA(0x0001ed30, 0x549)
 void CBattleStatsView::DrawBattleStats() {
     CString s;
     RECT rc;
-    void(WINAPI * copyRect)(RECT*, const RECT*) = g_pCopyRect;
+BOOL(WINAPI * copyRect)(LPRECT, const RECT*) = ::CopyRect;
     i32 i;
     i32 c;
 
@@ -1022,7 +1020,7 @@ i32 CMultiBootyState::Vslot07() {
 // ---------------------------------------------------------------------------
 // CMultiBootyState::PostCommandIfKey (0x1f8a0): if the one-shot battle-stats latch
 // (m_1b8) reads 0xc7, post WM_COMMAND 0x8023 to the game window
-// (g_gameReg->m_gameWnd->m_hwnd) via g_pPostMessageA; always return 1. __thiscall,
+// (g_gameReg->m_gameWnd->m_hwnd) via ::PostMessageA; always return 1. __thiscall,
 // no args. (Was the @identity-TODO PendingCmdKeyHost view; the slot-12/14/17
 // forwarders below tail-call it with ecx = a CMultiBootyState `this`, and it reads
 // m_1b8 (+0x1b8) -- that xref recovers it as this CMultiBootyState method.)
@@ -1030,7 +1028,7 @@ i32 CMultiBootyState::Vslot07() {
 RVA(0x0001f8a0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
     if (m_1b8 == 0xc7) {
-        g_pPostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+        ::PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;
 }

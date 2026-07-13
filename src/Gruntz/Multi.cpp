@@ -227,7 +227,6 @@ extern "C" CNetMgr* g_connectRptMgr;                                  // 0x648cf
 
 // OnJoinConfirm's referents: the game's cached GetDlgItem import pointer, the
 // key=value config parser (0xf9160) + its int parse (0x11ffb0). All reloc-masked.
-extern "C" HWND(WINAPI* g_pGetDlgItem)(HWND hDlg, i32 id);              // 0x6c4564
 extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160
 
 // NetSetupDlgProc's referents (the multiplayer host/join setup dialog). The engine
@@ -238,8 +237,6 @@ extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam);  // 0x1192d0
 extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                    // 0x6c44ac
 extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32);  // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                        // 0x6c4534
-extern "C" i32(WINAPI* g_pSetDlgItemTextA)(HWND, i32, const char*); // 0x6c4554
-extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32);       // 0x6c44a4
 extern "C" CGameRegistry* g_gameReg; // 0x64556c (the same *0x64556c object as m_4)
 
 // The 0x28-byte "player joined" announce packet CreateLocalPlayer builds and ships
@@ -266,7 +263,6 @@ SIZE(CNetJoinPacket, 0x28); // fully-known fixed stat-0x3f9 announce packet
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
 // --- (from MultiResumeSlots.cpp) the cached timeGetTime import fn-ptr (0x6c4650);
 // pinned in a callee-saved reg by CMulti::Vslot09.
-extern "C" u32(WINAPI* g_pTimeGetTime)();
 // The DirectPlay application GUID (DAT_0060fab8) lives at 0x20fab8 as g_dplayAppGuid
 // (i32[4], bound in Globals.cpp); the Open path casts it to GUID for InitFromProvider.
 DATA(0x00248cf0)
@@ -404,11 +400,7 @@ extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
 // the caller falls back to the raw source). External (reloc-masked).
 extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
 
-// ShowCursor Win32 import slot (PTR_ShowCursor_006c44c4) - typed pointer so the
-// indirect `call [0x6c44c4]` reloc-masks.
-typedef i32(WINAPI* ShowCursorFn)(i32);
-DATA(0x002c44c4)
-extern ShowCursorFn g_ShowCursor;
+// (ShowCursor comes from the real USER32 import; 0x6c44c4 is its IAT slot, not a global.)
 
 // The string registry lookup on CMulti::m_stateReg (returns a state pointer or 0). 0x0053c030
 extern "C" void* RegistryFind(void* reg, char* key); // FUN_0053c030 (__cdecl-ish, see body)
@@ -564,8 +556,6 @@ void ConstructFileIOGlobal() {
 // access (TF/MF macros) - the offset is the load-bearing fact, not the name.
 // =========================================================================
 
-extern "C" unsigned(__stdcall* g_pTimeGetTime)(); // 0x6c4650  cached timeGetTime fn ptr
-extern int(__stdcall* g_ShowCursor)(int);         // 0x6c44c4  ?g_ShowCursor (cursor toggler)
 // (g_645580/g_645584/g_645588 are DATA-declared u32 in the CMulti preamble above.)
 extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
@@ -755,7 +745,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     TF(0x5a8) = 0;
     TF(0x320) = 0;
     TF(0x1cc) = 0;
-    TF(0x2d8) = (i32)g_pTimeGetTime();
+    TF(0x2d8) = (i32)::timeGetTime();
     TF(0x58c) = 0;
     TF(0x594) = 0;
 
@@ -788,7 +778,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     } else {
         if (Open() != 0) {
             MF(0xac) = 0;
-            while (g_ShowCursor(0) >= 0) {
+            while (::ShowCursor(0) >= 0) {
             }
             return 0;
         }
@@ -818,7 +808,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (((CNetMgrLite*)this)->ShowMultiStartDlg() == 0) {
         return 0;
     }
-    while (g_ShowCursor(0) >= 0) {
+    while (::ShowCursor(0) >= 0) {
     }
     if (CreateSession() == 0) {
         return 0;
@@ -997,7 +987,7 @@ CNetCmdSlot::~CNetCmdSlot() {
 // frame timer block (two timeGetTime samples), then push a net stat when connected.
 // @early-stop
 // ~98.6%: logic + every instruction byte-faithful. Residual is a single callee-saved
-// register-NAMING swap: retail pins the cached g_pTimeGetTime fn-ptr in ebx and the
+// register-NAMING swap: retail pins the cached ::timeGetTime fn-ptr in ebx and the
 // zero in edi; cl picks edi for the fn-ptr and ebx for the zero. Invariant to
 // materialization order (tried the tg decl before/after the first zero store) and
 // to the permuter - a non-steerable regalloc coin-flip between the two pushed
@@ -1009,7 +999,7 @@ i32 CMulti::Vslot09(i32 arg) {
     }
     m_4->CGruntzMgr::PerFrameTick();
     g_645588 = m_savedClock;
-    u32(WINAPI * tg)() = g_pTimeGetTime;
+DWORD(WINAPI * tg)(void) = ::timeGetTime;
     m_drainTimer = 0;
     m_lastTime = tg();
     m_frameDelta = 0;
@@ -1642,7 +1632,7 @@ i32 CMulti::StartTitle() {
     void* vobj = *(void**)(*(void**)((char*)m_c + 0x1c));
     (*(void(__stdcall**)(void*))((char*)*(void**)vobj + 0x28))(vobj); // vfn +0x28(vobj)
     m_2c = saved;
-    while (g_ShowCursor(1) < 0) {
+    while (::ShowCursor(1) < 0) {
     }
     if (!Mgr()->m_lobby) {
         return 0;
@@ -1823,13 +1813,13 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
 
     switch (msg) {
         case 0x110: {
-            HWND combo = g_pGetDlgItem(hDlg, 0x3fc);
+            HWND combo = ::GetDlgItem(hDlg, 0x3fc);
             g_groupEnumMgr->m_groupSel = 0;
             g_groupEnumMgr->PopulateGroupList(combo, 0);
             if (g_serviceId == 0x3e7) {
-                g_pSendMessageA(combo, 0x186, 0, 0);
-            } else if ((i32)g_pSendMessageA(combo, 0x186, g_serviceId, 0) == -1) {
-                g_pSendMessageA(combo, 0x186, 0, 0);
+                ::SendMessageA(combo, 0x186, 0, 0);
+            } else if ((i32)::SendMessageA(combo, 0x186, g_serviceId, 0) == -1) {
+                ::SendMessageA(combo, 0x186, 0, 0);
             }
 
             char nameBuf[0xa];
@@ -1850,10 +1840,10 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                     (u32*)&cap,
                     "Multiplayer_Gruntz"
                 );
-            g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51b), 0xc5, 9, 0);
-            g_pSetDlgItemTextA(hDlg, 0x51b, nameBuf);
-            g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51c), 0xc5, 0x3f, 0);
-            g_pSetDlgItemTextA(hDlg, 0x51c, gameBuf);
+            ::SendMessageA(::GetDlgItem(hDlg, 0x51b), 0xc5, 9, 0);
+            ::SetDlgItemTextA(hDlg, 0x51b, nameBuf);
+            ::SendMessageA(::GetDlgItem(hDlg, 0x51c), 0xc5, 0x3f, 0);
+            ::SetDlgItemTextA(hDlg, 0x51c, gameBuf);
             return 1;
         }
         case 0x111:
@@ -1888,12 +1878,12 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
         g_connectRptMgr->ApplyDynSetting(CString(gname));
     }
 
-    HWND combo = g_pGetDlgItem(hDlg, 0x3fc);
-    i32 svc = (i32)g_pSendMessageA(combo, 0x188, 0, 0);
+    HWND combo = ::GetDlgItem(hDlg, 0x3fc);
+    i32 svc = (i32)::SendMessageA(combo, 0x188, 0, 0);
     if (svc != -1) {
         g_serviceId = svc;
     }
-    g_groupEnumMgr->ReadGroupSel(g_pGetDlgItem(hDlg, 0x3fc));
+    g_groupEnumMgr->ReadGroupSel(::GetDlgItem(hDlg, 0x3fc));
     g_pEndDialog(hDlg, 1);
     return 1;
 }
@@ -2282,7 +2272,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         return 0;
     }
 
-    g_groupEnumMgr->ReadPlayerSel(g_pGetDlgItem((HWND)hDlg, 0x3fc));
+    g_groupEnumMgr->ReadPlayerSel(::GetDlgItem((HWND)hDlg, 0x3fc));
     void* sel = (void*)Peer()->m_playerSel;
     if (sel == 0) {
         return 0;
@@ -2659,7 +2649,6 @@ extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f94
 
 // The cached USER32 PostMessageA pointer (the game's own function-pointer global,
 // distinct from the IAT import) + the modal chat-sink handle. DIR32 reloc-masked.
-extern "C" i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32); // 0x6c44c8
 extern i32 g_dlgResultSink;                                    // 0x648ce0
 extern i32 g_sndCueTag;                                        // 0x61ab24
 
@@ -2790,7 +2779,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 break;
             }
             ReportVersionMsg("You have been dropped from the game.", 0);
-            g_pPostMessageA(NetGameMgr()->m_wnd->m_hwnd, 0x111, 0x8023, 0);
+            ::PostMessageA(NetGameMgr()->m_wnd->m_hwnd, 0x111, 0x8023, 0);
             m_pollAbort = 1;
             break;
 

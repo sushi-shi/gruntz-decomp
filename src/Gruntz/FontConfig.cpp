@@ -97,7 +97,6 @@ namespace m4 {
 
     // DrawTextA through the game Win32 pointer table (RVA 0x2c454c) -> reloc-masked.
     DATA(0x002c454c)
-    extern int(WINAPI* g_pDrawTextA)(HDC, LPCSTR, int, LPRECT, UINT); // 0x2c454c
 
     // The image-worker/imgHolder scratch (see m4_FlashRect): inline dtor chain, but
     // this call site builds it with a 3-arg out-of-line ctor.
@@ -139,9 +138,7 @@ namespace m4 {
     };
 
     // The game's Win32 pointer table entries (0x6c44xx/0x6c3exx) -> reloc-masked.
-    extern SHORT(WINAPI* g_pGetAsyncKeyState)(int); // 0x006c4500
     DATA(0x002c3ec4)
-    extern HGDIOBJ(WINAPI* g_pSelectObject)(HDC, HGDIOBJ); // 0x2c3ec4
 
     // Password blink timer + last-format cache (reached by address).
     extern i32 g_645584; // 0x00645584 elapsed-time delta
@@ -173,9 +170,6 @@ namespace m4 {
         i32 DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT format); // 0x22770
     };
 
-    extern int(WINAPI* g_pSetBkMode)(HDC, int);              // 0x006c3eb8
-    extern COLORREF(WINAPI* g_pSetBkColor)(HDC, COLORREF);   // 0x006c3eb0
-    extern COLORREF(WINAPI* g_pSetTextColor)(HDC, COLORREF); // 0x006c3eb4
 
     // @identity-TODO: TextHost IS CFontConfig (m_3c/m_40 == m_trainingFont/
     // m_messageFont) per the dossier's layout proof.
@@ -510,7 +504,7 @@ i32 m4::DrawHost::MeasureLabel21f20(HDC hdc, const char* text) {
         rc.top = rp->top;
         rc.right = rp->right;
         rc.bottom = rp->bottom;
-        g_pDrawTextA(hdc, text, *((i32*)text - 2), &rc, 0x420);
+        ::DrawTextA(hdc, text, *((i32*)text - 2), &rc, 0x420);
         i32 textW = rc.right - rc.left;
         i32 provW = rp->right - rp->left;
         g_62b434 = provW;
@@ -553,7 +547,7 @@ i32 m4::PwdHost::Render22160(HDC hdc, i32 maxWidth, RECT* rect) {
         return 0;
     }
     PwdStr text(&m_1c);
-    if (g_pGetAsyncKeyState(0x11) & 0x8000) {
+    if (::GetAsyncKeyState(0x11) & 0x8000) {
         for (i32 i = 0; i < text.Len(); i++) {
             text.SetAt(i, '*');
         }
@@ -574,12 +568,12 @@ i32 m4::PwdHost::Render22160(HDC hdc, i32 maxWidth, RECT* rect) {
     } else {
         HGDIOBJ prev = 0;
         if (m_38) {
-            prev = g_pSelectObject(hdc, m_38);
+            prev = ::SelectObject(hdc, m_38);
         }
         if (g_62b43c) {
             Draw258b(hdc, rect);
         }
-        int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = g_pDrawTextA;
+int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
         RECT rc;
         rc.left = rect->left;
         rc.top = rect->top;
@@ -590,7 +584,7 @@ i32 m4::PwdHost::Render22160(HDC hdc, i32 maxWidth, RECT* rect) {
         g_60c7a8 = fmt;
         pDraw(hdc, text.m_data, text.Len(), rect, fmt);
         if (prev) {
-            g_pSelectObject(hdc, prev);
+            ::SelectObject(hdc, prev);
         }
     }
     return 1;
@@ -624,11 +618,11 @@ i32 m4::PwdHost::DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT f
     }
     HGDIOBJ prev = 0;
     if (m_38) {
-        prev = g_pSelectObject(hdc, m_38);
+        prev = ::SelectObject(hdc, m_38);
     }
-    g_pDrawTextA(hdc, text, strlen(text), rect, format);
+    ::DrawTextA(hdc, text, strlen(text), rect, format);
     if (prev) {
-        g_pSelectObject(hdc, prev);
+        ::SelectObject(hdc, prev);
     }
     return 1;
 }
@@ -677,12 +671,12 @@ i32 m4::TextHost::Draw3DText22810(
     rc.bottom = dst->bottom;
     HGDIOBJ obj = fontFlag ? m_40 : m_3c;
     if (obj) {
-        selPrev = g_pSelectObject(hdc, obj);
+        selPrev = ::SelectObject(hdc, obj);
     }
-    g_pSetBkMode(hdc, 1);
-    g_pSetBkColor(hdc, 0);
+    ::SetBkMode(hdc, 1);
+    ::SetBkColor(hdc, 0);
     PwdStr text(strSrc);
-    g_pDrawTextA(hdc, text.m_data, strlen(text.m_data), &rc, 0x411);
+    ::DrawTextA(hdc, text.m_data, strlen(text.m_data), &rc, 0x411);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
     rc.left += hoff;
@@ -690,21 +684,21 @@ i32 m4::TextHost::Draw3DText22810(
     rc.top += voff;
     rc.bottom += voff;
     if (shadow) {
-        g_pSetTextColor(hdc, 0);
+        ::SetTextColor(hdc, 0);
         rc.left += dx;
         rc.top += dy;
         rc.right += dx;
         rc.bottom += dy;
-        g_pDrawTextA(hdc, text.m_data, strlen(text.m_data), &rc, 0x11);
+        ::DrawTextA(hdc, text.m_data, strlen(text.m_data), &rc, 0x11);
         rc.right -= dx;
         rc.left -= dx;
         rc.bottom -= dy;
         rc.top -= dy;
     }
-    g_pSetTextColor(hdc, RGB(r, g, b));
-    g_pDrawTextA(hdc, text.m_data, strlen(text.m_data), &rc, 0x11);
+    ::SetTextColor(hdc, RGB(r, g, b));
+    ::DrawTextA(hdc, text.m_data, strlen(text.m_data), &rc, 0x11);
     if (selPrev) {
-        g_pSelectObject(hdc, selPrev);
+        ::SelectObject(hdc, selPrev);
     }
     return 1;
 }

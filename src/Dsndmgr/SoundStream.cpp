@@ -59,7 +59,6 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // The retail game-global timeGetTime fn-ptr (_g_pTimeGetTime @ 0x6c4650), NOT the
 // WINMM import; TickSubManagers reaches the clock through PurgeVoiceList's sibling
 // indirection - do NOT swap for timeGetTime.
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 
 // Placement new (construct in place into the RezAlloc'd block); no allocation, so
 // it is matching-neutral - it just runs the StreamVoice ctor (0x1375b0) on the
@@ -474,7 +473,7 @@ void SoundStream::Stop() {
 RVA(0x00137ac0, 0xa2)
 i32 SoundStream::TickSubManagers(i32 time) {
     if (time == -1) {
-        time = (i32)g_pTimeGetTime();
+        time = (i32)::timeGetTime();
     }
     DSoundLink* head = m_voices.m_head;
     StreamVoice* o = elemOf<StreamVoice>(head);

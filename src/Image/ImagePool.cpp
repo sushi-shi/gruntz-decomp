@@ -132,9 +132,6 @@ char g_bmpHeaderTemplate[4] = "BM"; // 0x61aabc  = 42 4d 00 00
 
 // The engine's cached GDI fn-ptr globals (retail reaches GDI via `call ds:[0x6c44xx]`);
 // DATA-bound once in DirPal.cpp, re-declared here (extern only) so the calls reloc-mask.
-extern HDC(WINAPI* g_pGetDC)(HWND);                             // 0x6c4404
-extern int(WINAPI* g_pReleaseDC)(HWND, HDC);                    // 0x6c4408
-extern HPALETTE(WINAPI* g_pSelectPalette)(HDC, HPALETTE, BOOL); // 0x6c3f04
 
 // The palette object handed to Convert8To16: an 8-byte header then the 256-entry
 // RGB table (one u32 per palette index) the 8bpp pixels look up.
@@ -625,13 +622,13 @@ i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, void* 
     if (img == 0) {
         return 0;
     }
-    HDC dc = g_pGetDC(m_sourceHwnd);
+    HDC dc = ::GetDC(m_sourceHwnd);
     i32 result = img->EnsureSize(dc, w, h, bitCount, flag);
     if (m_selectedPalette) {
-        g_pSelectPalette(dc, m_selectedPalette, FALSE);
+        ::SelectPalette(dc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
     }
-    g_pReleaseDC(m_sourceHwnd, dc);
+    ::ReleaseDC(m_sourceHwnd, dc);
     return result;
 }
 

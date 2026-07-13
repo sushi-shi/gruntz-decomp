@@ -425,7 +425,6 @@ void CGameApp::FreeGameManager() {
 // gate and stashes the (code, detail) pair ShowError later reads. __thiscall(2).
 // The cached PostMessageA fn-ptr @0x6c44c8 (extern "C" so the reloc emits the canonical
 // _g_pPostMessageA - the single name bound there).
-extern "C" i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x2c44c8
 RVA(0x0013dcb0, 0x57)
 void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     if (m_errorReported != 0) {
@@ -434,7 +433,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     CGameWnd* wnd = m_gameWnd;
     m_errorReported = 1;
     if (wnd != 0 && wnd->m_closeGuard == 0) {
-        g_pPostMessageA(wnd->m_hwnd, 0x10, 0, 0); // WM_CLOSE
+        ::PostMessageA(wnd->m_hwnd, 0x10, 0, 0); // WM_CLOSE
     }
     m_running = 0;
     m_errorCode = wParam;
@@ -529,7 +528,6 @@ void WAP32::CGameMgr::Close() {
 // timeGetTime in a game-owned global pointer (_g_pTimeGetTime @ RVA 0x2c4650, pinned
 // in cplay/globals) and calls through it (ff 15). extern "C" so the reloc binds the
 // canonical one-symbol-per-RVA at whole-game link (was the raw __imp__timeGetTime@0).
-extern "C" u32(WINAPI* g_pTimeGetTime)();
 
 // The real 0x2c engine base, aliased at file scope: MSVC 5.0 cannot look up the WAP32
 // namespace from inside a member of a class named CGameMgr (same idiom as RezSync.cpp).
@@ -574,7 +572,7 @@ RVA(0x0013ddc0, 0xaa)
 i32 RezMgr::UpdateClock() {
     // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
     // reuses it across the three samples (call edi), exactly as retail does.
-    u32(WINAPI * pTGT)() = g_pTimeGetTime;
+DWORD(WINAPI * pTGT)(void) = ::timeGetTime;
     u32 now = pTGT();
     u32 delta = now - (u32)g_wap32Now;
     g_wap32Now = now;
@@ -646,7 +644,7 @@ void WAP32::CGameMgr::InitializeTimeGlobal() {
 // flips the esi/edi pair; logic complete.
 RVA(0x0013dec0, 0x20)
 void RezMgr::SpinWaitUntil(i32 ms) {
-    u32(WINAPI * fn)() = g_pTimeGetTime;
+DWORD(WINAPI * fn)(void) = ::timeGetTime;
     u32 now = fn();
     u32 end = now + (u32)ms;
     if (now <= end) {
@@ -685,28 +683,27 @@ i32 RezMgr::TrySetFrameRate(i32 fps) {
 // ---------------------------------------------------------------------------
 // WaitKeyEdge (0x13df30; moved from RezMgr.cpp in wave4-K) - busy-wait for a
 // key down-then-up edge on virtual-key `vk`, with an optional `timeoutMs` deadline
-// (through the game-owned timeGetTime fn-ptr g_pTimeGetTime, above). __cdecl, two
+// (through the game-owned timeGetTime fn-ptr ::timeGetTime, above). __cdecl, two
 // stack args. Reads the OS key state through the engine's cached GetAsyncKeyState
-// fn-ptr (g_pGetAsyncKeyState @0x6c4500).
+// fn-ptr (::GetAsyncKeyState @0x6c4500).
 // @orphan: no .text caller (a free __cdecl busy-wait); no owning class.
 // @early-stop
 // regalloc-swap wall (~97%): byte-identical except retail pins `vk` in esi and the
 // cached GetAsyncKeyState ptr in edi, while our /O2 picks the reverse (ptr->esi,
 // vk->edi). Only the modrm reg fields differ; tried direct global calls (77%, no
 // caching) and an `int k = vk` copy (no change). Pure register assignment.
-extern "C" i16(WINAPI* g_pGetAsyncKeyState)(int vk); // 0x6c4500 (PTR_GetAsyncKeyState)
 RVA(0x0013df30, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {
-        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
+SHORT(WINAPI * gaks)(int) = ::GetAsyncKeyState;
         while (!((i32)gaks(vk) & 0x80000000))
             ;
         while ((i32)gaks(vk) & 0x80000000)
             ;
     } else {
-        u32(WINAPI * tgt)() = g_pTimeGetTime;
+DWORD(WINAPI * tgt)(void) = ::timeGetTime;
         u32 deadline = tgt() + timeoutMs;
-        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
+SHORT(WINAPI * gaks)(int) = ::GetAsyncKeyState;
         while (!((i32)gaks(vk) & 0x80000000)) {
             if (tgt() > deadline) {
                 return;

@@ -12,7 +12,6 @@
 
 // SendMessageA is reached through a game-owned function pointer (ff 15).
 DATA(0x002c44a4)
-extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 
 class CBattlezDlg {
 public:
@@ -39,7 +38,7 @@ i32 CBattlezDlg::ToggleRow(i32 row) {
     CWnd* c = GetCtrlC(row);
     if (row != 0) {
         char* rec = m_slots + row * 0x238 + 0x150;
-        if (g_pSendMessageA(a->m_hWnd, 0x147, 0, 0) != 0) {
+        if (::SendMessageA(a->m_hWnd, 0x147, 0, 0) != 0) {
             b->EnableWindow(1);
             d->EnableWindow(1);
             *(i32*)(rec + 0x20) = 1;

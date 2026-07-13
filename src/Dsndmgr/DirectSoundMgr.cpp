@@ -103,7 +103,6 @@ extern const char s_rb[];
 
 // The retail game-global timeGetTime fn-ptr (_g_pTimeGetTime @ 0x6c4650), NOT the
 // WINMM import; PurgeVoiceList calls ds:[0x6c4650] - do NOT swap for timeGetTime.
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 
 // The DirectSoundMgr clone hierarchy (CloneList / DSoundBaseSub / DSoundCloneInst) is
 // defined in DirectSoundMgr.h so the device + feeder can name the concrete leaf.
@@ -1466,7 +1465,7 @@ void SoundDevice::StopAll() {
 // select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md,
 // SAME as DSoundList::RemoveMatching @0x136f60): byte-exact except the `e ? &link : 0`
 // mask (neg/sbb/and) lands in a different register than retail.
-// g_pTimeGetTime = genuine game global fn-ptr (retail _g_pTimeGetTime @ 0x6c4650), NOT
+// ::timeGetTime = genuine game global fn-ptr (retail _g_pTimeGetTime @ 0x6c4650), NOT
 // the WINMM import; call ds:[0x6c4650] indirection - do NOT swap for timeGetTime.
 RVA(0x00136e20, 0xa8)
 i32 SoundDevice::PurgeVoiceList(i32 time) {
@@ -1479,7 +1478,7 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
         return 0;
     }
     if (time == -1) {
-        time = (i32)g_pTimeGetTime();
+        time = (i32)::timeGetTime();
     }
     if ((u32)time <= (u32)m_createFlag) {
         return 1;
@@ -1583,7 +1582,7 @@ DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 
     m_rampStartVolume = pct;
     m_rampEndVolume = key;
     m_rampDurationMs = mode;
-    m_rampStartTime = (stamp == -1) ? g_pTimeGetTime() : stamp;
+    m_rampStartTime = (stamp == -1) ? ::timeGetTime() : stamp;
 }
 
 // ---------------------------------------------------------------------------

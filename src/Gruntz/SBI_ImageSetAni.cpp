@@ -149,13 +149,12 @@ i32 CSBI_ImageSetAni::Tick() {
 // frame window without re-resolving the record: set start/end frames (a -1 means
 // "derive from the record's range, ordered by the step sign"), the step, loop flag
 // and interval (interval -1 = keep), reset the frame to the start, re-arm 2 play
-// cycles and stamp the last-tick clock (via the cached g_pTimeGetTime, not the
+// cycles and stamp the last-tick clock (via the cached ::timeGetTime, not the
 // direct import). Ex CAniPlayer::SetRange (dossier #16: slot [14] thunk 0x3bde).
 // @early-stop
 // 88.2% - logic byte-exact; residual is the -1/record branch shape: retail hoists the
 // m_34 load per else-arm and stores in each branch, cl computes the value into a
 // register and does one store at the merge (explicit if/else made it worse). Final sweep.
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650  cached timeGetTime fn ptr
 RVA(0x000e7c30, 0x7d)
 void CSBI_ImageSetAni::SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval) {
     if (start != -1) {
@@ -175,7 +174,7 @@ void CSBI_ImageSetAni::SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i
     m_48 = loop;
     m_38 = m_4c;
     m_28 = 2;
-    m_40 = g_pTimeGetTime();
+    m_40 = ::timeGetTime();
 }
 
 // vtable slot 1 (0xe7cd0): save/load the six persistent ints (m_3c..m_50) through the

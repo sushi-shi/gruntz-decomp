@@ -2926,13 +2926,12 @@ i32 CPlay::DrawWorldFrames() {
 // ===========================================================================
 // The dev frame profiler (CPlay::ProfileDeltaFrame / ProfileInputFrame).
 // Instrumented variants of the world-draw + present that bracket each phase with
-// the cached timeGetTime fn-ptr (g_pTimeGetTime, pinned in a callee-saved reg)
+// the cached timeGetTime fn-ptr (::timeGetTime, pinned in a callee-saved reg)
 // and emit a per-phase timing line through the variadic logger ProfLog into the
 // shared text sink g_profSink.
 // ===========================================================================
 extern "C" {
     DATA(0x002c4650)
-    extern u32(WINAPI* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
     // The profiler line sink (a global text buffer; its ADDRESS is the logger arg).
     DATA(0x00245524)
     extern i32 g_profSink; // DAT_00645524
@@ -2951,7 +2950,7 @@ extern "C" {}
 // ===========================================================================
 RVA(0x000ca0a0, 0x101)
 i32 CPlay::ProfileDeltaFrame() {
-    u32(WINAPI * tg)() = g_pTimeGetTime;
+DWORD(WINAPI * tg)(void) = ::timeGetTime;
     i32 updates = 0;
     u32 t0 = tg();
     u32 d = g_645584;
@@ -3012,7 +3011,7 @@ extern "C" {
 // block, the PushView/Present draw block, the m_guts status-bar tick, the 11-arg
 // ProfLog with the cross-frame g_profAccA/g_profAccB accumulators, then the timed
 // flush + draw-B writing those globals for next frame, and the ProfReport tail).
-// MSVC pins the g_pTimeGetTime fn-ptr in esi across all 14 calls as retail does,
+// MSVC pins the ::timeGetTime fn-ptr in esi across all 14 calls as retail does,
 // but the seven live phase-times spill to a different set of stack slots / the
 // ebx/ebp coloring of deact/update differs, so the slot-reuse schedule diverges
 // despite identical logic. Same idiom as ProfileDeltaFrame (byte-exact); the extra
@@ -3024,7 +3023,7 @@ i32 CPlay::ProfileInputFrame() {
         ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_84,
         ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_88
     ); // untimed
-    u32(WINAPI * tg)() = g_pTimeGetTime;
+DWORD(WINAPI * tg)(void) = ::timeGetTime;
 
     u32 t1 = tg();
     Vslot26(); // this->vtbl[+0x98]
@@ -3607,8 +3606,6 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // declared here) and reach USER32 through the game's cached fn-ptr globals.
 CString GetColorName(i32 colorIdx, i32 upper);
 CString GetDifficultyName(i32 diffIdx, i32 upper);
-extern "C" HWND(WINAPI* g_pGetDlgItem)(HWND, i32);            // 0x6c4564
-extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32); // 0x6c44a4
 
 // ===========================================================================
 // GruntzPlayer::GruntzPlayer(i32)  @0x0da870  (/GX EH frame)
@@ -3733,11 +3730,11 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (hDlg == 0) {
         return 0;
     }
-    HWND cb = g_pGetDlgItem(hDlg, nID);
+    HWND cb = ::GetDlgItem(hDlg, nID);
     if (cb == 0) {
         return 0;
     }
-    i32(WINAPI * pSend)(HWND, u32, u32, i32) = g_pSendMessageA;
+LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 0x11; i++) {
         CString s = GetColorName(i, 0);
@@ -3757,11 +3754,11 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (hDlg == 0) {
         return 0;
     }
-    HWND cb = g_pGetDlgItem(hDlg, nID);
+    HWND cb = ::GetDlgItem(hDlg, nID);
     if (cb == 0) {
         return 0;
     }
-    i32(WINAPI * pSend)(HWND, u32, u32, i32) = g_pSendMessageA;
+LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 3; i++) {
         CString s = GetDifficultyName(i, 0);
@@ -4517,7 +4514,6 @@ i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
 
 // The cached PostMessageA fn-ptr (bare 0x6c44c8; the paused-frame unpause posts
 // WM_COMMAND 0x816e through it). Same decl used by the Dispatch cluster below.
-extern i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM);
 
 // CPlay::Vslot0d (0x0cda70) - vtable slot 13, the key-UP scroll-edge filter. On a
 // key-up event (flags bit 0x1000000 set) for an arrow key, clear the matching
@@ -4594,7 +4590,7 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
     }
     if (m_paused != 0) {
         m_paused = 0;
-        g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x816e, 0);
+        ::PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x816e, 0);
         return 1;
     }
     // The overlay-drag / command-grid-idle gates route to the guts dispatch tail
@@ -5186,10 +5182,9 @@ void CPlay::Vslot26() {
 // (m_4->m_48, CGruntzSoundZ::StopAndFlush), reset the two world teardown sub-objects
 // (m_4->m_54/m_60), then PostMessageA WM_COMMAND 0x8023. Otherwise re-post 0x8023 while
 // the m_1bc gate is set, else advance via the manager (m_4->Post, level index + 1). The
-// PostMessageA calls go through the cached g_pPostMessageA fn-ptr (bare 0x6c44c8, no
+// PostMessageA calls go through the cached ::PostMessageA fn-ptr (bare 0x6c44c8, no
 // import symbol). Re-homed from the ApiCaller stubs (was Dispatcher_0cfbd0::Dispatch).
 DATA(0x002c44c8)
-extern i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM);
 // @early-stop
 // regalloc-rotation wall (98.4%): logic, instruction selection, hop counts and
 // order are byte-identical (llvm-objdump -dr / sema disasm --diff). The only
@@ -5209,11 +5204,11 @@ i32 CPlay::Vslot15() {
         m_4w()->m_48->StopAndFlush();
         m_4w()->m_54->Reset();
         m_4w()->m_60->Reset();
-        g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8023, 0);
+        ::PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8023, 0);
         return 1;
     }
     if (m_1bc) {
-        g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8023, 0);
+        ::PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8023, 0);
         return 1;
     }
     m_4->Post(m_levelIndex + 1);
@@ -5484,7 +5479,6 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
 extern "C" u8 g_scrollLoadFlags;          // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
 extern "C" i32 g_scrollMinSpeed;          // 0x64c274  cached MinScrollSpeed
 extern "C" i32 g_scrollSpeedRange;        // 0x64c270  cached (Max - Min)
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 extern CButeMgr g_buteMgr;                // 0x6453d8
 extern "C" double g_scrollSpeedScale;     // 0x5eaa10  (== 0.01)
 
@@ -5535,18 +5529,18 @@ i32 CPlay::LoadScrollSpeedOptions() {
     // LEFT edge
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
-            i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeX) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 100;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sx -= d;
-                self->m_lastScrollTimeX = g_pTimeGetTime();
+                self->m_lastScrollTimeX = ::timeGetTime();
                 changed = 1;
             }
         } else {
             self->m_scrollEdgeActive |= 1;
-            self->m_lastScrollTimeX = g_pTimeGetTime();
+            self->m_lastScrollTimeX = ::timeGetTime();
         }
     } else {
         self->m_scrollEdgeActive &= ~1;
@@ -5555,18 +5549,18 @@ i32 CPlay::LoadScrollSpeedOptions() {
     // RIGHT edge
     if (self->m_cursorX > extentX - 0xc || (self->m_scrollEdgeLock & 4)) {
         if (self->m_scrollEdgeActive & 4) {
-            i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeX) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 100;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sx += d;
-                self->m_lastScrollTimeX = g_pTimeGetTime();
+                self->m_lastScrollTimeX = ::timeGetTime();
                 changed = 1;
             }
         } else {
             self->m_scrollEdgeActive |= 4;
-            self->m_lastScrollTimeX = g_pTimeGetTime();
+            self->m_lastScrollTimeX = ::timeGetTime();
         }
     } else {
         self->m_scrollEdgeActive &= ~4;
@@ -5575,18 +5569,18 @@ i32 CPlay::LoadScrollSpeedOptions() {
     // TOP edge
     if (self->m_cursorY < 0xf || (self->m_scrollEdgeLock & 2)) {
         if (self->m_scrollEdgeActive & 2) {
-            i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeY) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 100;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sy -= d;
-                self->m_lastScrollTimeY = g_pTimeGetTime();
+                self->m_lastScrollTimeY = ::timeGetTime();
                 changed = 1;
             }
         } else {
             self->m_scrollEdgeActive |= 2;
-            self->m_lastScrollTimeY = g_pTimeGetTime();
+            self->m_lastScrollTimeY = ::timeGetTime();
         }
     } else {
         self->m_scrollEdgeActive &= ~2;
@@ -5595,18 +5589,18 @@ i32 CPlay::LoadScrollSpeedOptions() {
     // BOTTOM edge
     if (self->m_cursorY > extentY - 0xf || (self->m_scrollEdgeLock & 8)) {
         if (self->m_scrollEdgeActive & 8) {
-            i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeY) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 100;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sy += d;
-                self->m_lastScrollTimeY = g_pTimeGetTime();
+                self->m_lastScrollTimeY = ::timeGetTime();
                 changed = 1;
             }
         } else {
             self->m_scrollEdgeActive |= 8;
-            self->m_lastScrollTimeY = g_pTimeGetTime();
+            self->m_lastScrollTimeY = ::timeGetTime();
         }
     } else {
         self->m_scrollEdgeActive &= ~8;

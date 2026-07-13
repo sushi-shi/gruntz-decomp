@@ -10,13 +10,12 @@
 // canonical `_g_pPostMessageA` (the single name bound at 0x2c44c8) - the C++-mangled
 // spellings diverge per-TU on the fn-ptr's param types (HWND vs void*, LPARAM vs
 // int) and collide under the per-rva keep-last dedup, so they never bind.
-extern "C" i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x2c44c8
 
 // CDemo::Vslot15 (slot 21, 0x3c030): post WM_COMMAND 0x8027 to the owner HWND (the
 // CState/CWorld back-ptr chain m_4w()->m_4->m_4). Returns 1.
 RVA(0x0003c030, 0x22)
 i32 CDemo::Vslot15() {
-    g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8027, 0);
+    ::PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8027, 0);
     return 1;
 }
 

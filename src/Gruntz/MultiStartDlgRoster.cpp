@@ -48,14 +48,10 @@ extern "C" char g_emptyString[];
 // USER32 entry points reached through the game's own IAT-style function pointers
 // (ff 15 [ptr]); UpdatePlayers drives its listboxes/redraws through them.
 DATA(0x002c44a4)
-extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 DATA(0x002c44f0)
-extern BOOL(WINAPI* g_pInvalidateRect)(HWND, const RECT*, BOOL);
 DATA(0x002c4520)
-extern HWND(WINAPI* g_pGetFocus)();
 // More USER32 entry points via the game's own IAT-style pointers.
 DATA(0x002c44d8)
-extern HWND(WINAPI* g_pGetWindow)(HWND, UINT);
 // The EchoLatencySettings printf format (.data), DEFINED here (owner TU). The retail
 // bytes are exactly this 44-byte string, so the initializer is byte-faithful.
 DATA(0x0021243c)
@@ -192,7 +188,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     ColourBtn1753(ch);               // 0x1753 (side effect only)
     ReadyCheck1159(ch);              // 0x1159 (side effect only)
     ChannelSlot* s = (ChannelSlot*)((char*)m_host + ch * 0x238 + 0x150);
-    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = g_pSendMessageA;
+LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
         if (s->m_14 != 0) {
             if (s->m_active != 0) {
@@ -325,7 +321,6 @@ struct CWndOnDrawR {
 // The game's FillRect fn-ptr (the .idata IAT slot, reloc-masked indirect call). The
 // canonical DATA binding is in Dialogs.cpp (g_pFillRectDlg @0x006c44e0); reference-
 // only here so the roster call reloc-masks without a duplicate DATA binding.
-extern int(WINAPI* g_pFillRectR)(HDC, const RECT*, HBRUSH); // 0x006c44e0
 
 // CMultiStartDlg::OnDrawItem (0xc3100): owner-draw the four team-color swatch static
 // controls (0x501/0x503/0x505/0x507) of the multiplayer roster - the exact twin of
@@ -604,7 +599,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         CSwatchDC dc;
         dc.Attach(lpdis->hDC);
         CSwatchBrush brush(color);
-        g_pFillRectR(dc.m_hDC, &lpdis->rcItem, brush.SafeBrush());
+        ::FillRect(dc.m_hDC, &lpdis->rcItem, brush.SafeBrush());
         dc.Detach();
     }
     ((CWndOnDrawR*)this)->OnDrawItem(nIDCtl, lpdis);
@@ -633,7 +628,7 @@ void CMultiStartDlg::OnColorSlot0() {
         if (((CNetSessHost*)this)->SelectColor(0, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x501)->m_hWnd;
-            g_pInvalidateRect(h, 0, 1);
+            ::InvalidateRect(h, 0, 1);
         }
     }
 }
@@ -651,7 +646,7 @@ void CMultiStartDlg::OnColorSlot1() {
         if (((CNetSessHost*)this)->SelectColor(1, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x503)->m_hWnd;
-            g_pInvalidateRect(h, 0, 1);
+            ::InvalidateRect(h, 0, 1);
         }
     }
 }
@@ -669,7 +664,7 @@ void CMultiStartDlg::OnColorSlot2() {
         if (((CNetSessHost*)this)->SelectColor(2, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x505)->m_hWnd;
-            g_pInvalidateRect(h, 0, 1);
+            ::InvalidateRect(h, 0, 1);
         }
     }
 }
@@ -687,7 +682,7 @@ void CMultiStartDlg::OnColorSlot3() {
         if (((CNetSessHost*)this)->SelectColor(3, dlg.m_pickedColor)) {
             Drive();
             HWND h = GetDlgItem(0x507)->m_hWnd;
-            g_pInvalidateRect(h, 0, 1);
+            ::InvalidateRect(h, 0, 1);
         }
     }
 }
@@ -713,7 +708,7 @@ void CMultiStartDlg::OnCustomWorld() {
     }
     CBattlezDlgCustom dlg(0);
     if (dlg.DoModal() == 1 && dlg.m_customName.GetLength() != 0) {
-        CWnd* child = CWnd::FromHandle(g_pGetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
+        CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
         if (child != 0) {
             dlg.m_customName.MakeUpper();
             child->SetWindowTextA((LPCTSTR)dlg.m_customName);
@@ -825,7 +820,7 @@ i32 CMultiStartDlg::EnableControls() {
 // diverge from retail; code shape + all DIR32 data refs match. ~62%.
 RVA(0x000c4230, 0x38e)
 i32 CMultiStartDlg::UpdatePlayers(i32 force) {
-    CWnd::FromHandle(g_pGetFocus());
+    CWnd::FromHandle(::GetFocus());
     i32 f1c = 1;
     i32 f18 = 0;
     i32 idx = 0;
@@ -853,15 +848,15 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             ready->EnableWindow(slot->m_18 == g_64bd5c->m_hostIndex ? 1 : 0);
             if (slot->m_1c) {
                 if (slot->m_20) {
-                    g_pSendMessageA(ready->m_hWnd, 0xf1, 1, 0);
+                    ::SendMessageA(ready->m_hWnd, 0xf1, 1, 0);
                 } else {
-                    g_pSendMessageA(ready->m_hWnd, 0xf1, 0, 0);
+                    ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
                 }
             } else if (slot->m_20) {
-                g_pSendMessageA(ready->m_hWnd, 0xf1, 0, 0);
+                ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
                 f1c = 0;
             } else {
-                g_pSendMessageA(ready->m_hWnd, 0xf1, 0, 0);
+                ::SendMessageA(ready->m_hWnd, 0xf1, 0, 0);
             }
             this->ColourBtn1753(idx)->EnableWindow(
                 g_64bd5c->m_isHost && slot->m_20 && localColour == 0 ? 1 : 0
@@ -883,13 +878,13 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                     this->NameEdit298c(idx)->SetWindowTextA(pch);
                 }
                 if (slot->m_14) {
-                    g_pSendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 4, 0);
+                    ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 4, 0);
                 } else {
-                    g_pSendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, slot->m_10 + 1, 0);
+                    ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, slot->m_10 + 1, 0);
                 }
             } else {
                 this->NameEdit298c(idx)->SetWindowTextA(g_emptyString);
-                g_pSendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 0, 0);
+                ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 0, 0);
             }
             this->SyncChannelSlot(idx); // 0x3ffd thunk -> 0xc2ab0 reconcile (== SyncChannelSlot)
         }
@@ -904,10 +899,10 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
         }
         ok->EnableWindow(f18 & f1c);
     }
-    g_pInvalidateRect(this->GetDlgItem(0x501)->m_hWnd, 0, 1);
-    g_pInvalidateRect(this->GetDlgItem(0x503)->m_hWnd, 0, 1);
-    g_pInvalidateRect(this->GetDlgItem(0x505)->m_hWnd, 0, 1);
-    g_pInvalidateRect(this->GetDlgItem(0x507)->m_hWnd, 0, 1);
+    ::InvalidateRect(this->GetDlgItem(0x501)->m_hWnd, 0, 1);
+    ::InvalidateRect(this->GetDlgItem(0x503)->m_hWnd, 0, 1);
+    ::InvalidateRect(this->GetDlgItem(0x505)->m_hWnd, 0, 1);
+    ::InvalidateRect(this->GetDlgItem(0x507)->m_hWnd, 0, 1);
     return 1;
 }
 
@@ -939,7 +934,6 @@ SIZE_UNKNOWN(WatchReg);
 SIZE_UNKNOWN(WatchRegSlot);
 
 // The cached timeGetTime fn-ptr (DATA symbol; 0-arg, bound by m5_PaletteLerp).
-extern u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 // Watchdog re-entrancy guard + two blink counters (.data).
 extern "C" i32 g_watchBusy;      // 0x64bdc4
 extern "C" i32 g_watchBlinkA;    // 0x64bdc8
@@ -965,7 +959,7 @@ void CMultiStartDlg::Watchdog() {
     g_64bd5c->m_netGate->M178a80(h, 0);
     g_64bd5c->ResolveLocalPlayer();
     if (g_watchBlinkA == 0) {
-        u32 t = g_pTimeGetTime();
+        u32 t = ::timeGetTime();
         g_64bd5c->SendNetStat(0x41f, (i32)t, 0);
     }
     if (g_64bd5c->m_isHost == 0) {
