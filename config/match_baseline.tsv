@@ -367,7 +367,7 @@ uncompr	1	1
 unknownfileioctor	1	1
 userlogic	18	0
 userlogicctoremit	2	1
-videoconfig	18	10
+videoconfig	18	11
 voicesoundlist	1	0
 wallproject	1	0
 wap32rect	3	3
@@ -471,12 +471,12 @@ arrayserialize	??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ	100.0000	100.000
 arrayserialize	??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ	100.0000	100.0000	1	cpp:d628819a671d	0x39f20
 arrayserialize	??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d628819a671d	0x3a1a0
 arrayserialize	?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z	100.0000	100.0000	1	cpp:d628819a671d	0x39fa0
-attract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	7	701b2517f1fd	0xa0a30
+attract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	8	fb67fa39ea57	0xa0a30
 attract	?FadeInTitle@CState@@QAEHPBDHHHHH@Z	75.3691	75.3691	1	ca3dbe62c1f4	0xfa1f0
 attract	?HeaderSerialize@CPlay@@QAEHPAUCSerialArchive@@HHH@Z	0.0000	0.0000	1	cpp:634a5e635029	0xfafa0
 attract	?InputVirtual@CState@@UAEHXZ	0.0000	0.0000	1	cpp:100030976c43	0xface0
 attract	?Load@CMgrPersistObj@@QAEHPAVCFileMemBase@@@Z	95.9116	95.9116	1	a73bcd8f7217	0xfaff0
-attract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	7	0c14cf88c529	0xa03f0
+attract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	8	c44c147b7bb2	0xa03f0
 attract	?Method_fa410@CSoundFxEmitter@@QAEHHHHH@Z	100.0000	100.0000	2	f84e28d2b0f3	0xfa410
 attract	?Method_fa550@CSoundFxEmitter@@QAEHHHHH@Z	98.6759	98.6759	2	53c73fa662a6	0xfa550
 attract	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	2	c133efd3f53e	0xfa790
@@ -491,15 +491,15 @@ attract	?ShadeScreen@CState@@QAEHH@Z	100.0000	100.0000	1	e876d2deb587	0xfaf50
 attract	?Vslot07@CState@@UAEHXZ	100.0000	100.0000	1	ccb2a53a171d	0xfac70
 attract	?Vslot17@CState@@UAEHHHPADHH@Z	100.0000	100.0000	1	95c50c89cc25	0xfa6b0
 attractstate	??1CAttract@@UAE@XZ	100.0000	100.0000	1	b2b974d351ac	0x8cd90
-attractstate	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	4	74e6652003b1	0x13fb0
+attractstate	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	5	1e12ca04f428	0x13fb0
 attractstate	?FrameSlot28@CAttract@@UAEHH@Z	99.7143	99.7143	1	1d0e3912870a	0x14340
-attractstate	?InputVirtual@CAttract@@UAEHXZ	100.0000	100.0000	3	ad7190b52b7d	0x14520
+attractstate	?InputVirtual@CAttract@@UAEHXZ	100.0000	100.0000	4	66915371fc4a	0x14520
 attractstate	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	2	d09114e7a676	0x140d0
 attractstate	?Render@CAttract@@UAEHXZ	97.0833	97.0833	3	0a993a1da2e0	0x143e0
 attractstate	?Update@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	15cb595062e2	0x8cd40
-attractstate	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	3	7d92a01de87d	0x14630
-attractstate	?Vslot07@CAttract@@UAEHXZ	99.1667	99.1667	1	0791b7ad75ea	0x147b0
-attractstate	?Vslot09@CAttract@@UAEHH@Z	98.2836	98.2836	4	04eb43f30215	0x14120
+attractstate	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	4	0a6d2d021362	0x14630
+attractstate	?Vslot07@CAttract@@UAEHXZ	99.1667	99.1667	2	6f27a7a22efb	0x147b0
+attractstate	?Vslot09@CAttract@@UAEHH@Z	98.2836	98.2836	5	fbf8756cf403	0x14120
 attractstate	?Vslot0c@CAttract@@UAEHHH@Z	100.0000	100.0000	2	957fc3ebc89d	0x14720
 attractstate	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	2	c894c2da0cfa	0x14770
 battlezdata	?AllRecordsInBounds@CBattlezData@@QAEHXZ	100.0000	100.0000	3	1ada6078aebb	0xfccf0
@@ -3143,7 +3143,7 @@ play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	4	15dd27fbc08d	0xd91
 play	?ReleaseLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	4	43255391b9af	0xd6560
 play	?Render@CPlay@@UAEHXZ	0.0000	0.0000	13	687fa452c955	0xc8cf0
 play	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	2	8555adcc5a45	0xda9e0
-play	?ResetForMode@CPlay@@QAEHH@Z	100.0000	100.0000	5	b3ef8875f3e8	0xc8a10
+play	?ResetForMode@CPlay@@QAEHH@Z	100.0000	100.0000	6	5ae0ac7641d2	0xc8a10
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	5	07e457a5e42a	0xd5f00
 play	?ResetPlayState@CPlay@@QAEHXZ	92.0100	92.0100	6	dc7c3796c67a	0xd60b0
 play	?ResetViewport@CPlay@@QAEHXZ	95.5455	95.5455	6	aed820cf2bf7	0xd8c60
@@ -4039,7 +4039,7 @@ userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	4
 userlogicctoremit	??0CUserLogic@@QAE@PAUCGameObject@@@Z	89.0446	89.0446	1	cpp:aca2e8db625f	0x58cd0
 userlogicctoremit	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	cpp:aca2e8db625f	0x138d0
 videoconfig	?ApplyGameOptions@CPlay@@QAEXXZ	82.9412	82.9412	6	9498ab547739	0x36be0
-videoconfig	?DialogInit37870@@YAXPAUHWND__@@@Z	93.3333	93.3333	2	aead26572b19	0x37870
+videoconfig	?DialogInit37870@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	aa46c154e741	0x37870
 videoconfig	?GameOptionsDlgProc@@YGHPAUHWND__@@IIJ@Z	96.0315	96.0315	4	75df1748c09e	0x36410
 videoconfig	?GetResolutionCode@@YAHXZ	100.0000	100.0000	5	41065f858605	0x363a0
 videoconfig	?LoadGameOptionsToDialog@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	86a9cb07db3b	0x36860
