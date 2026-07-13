@@ -33,6 +33,7 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GameLevel.h> // CGameLevel (holder->m_24) + CLevelPlane (its m_mainPlane wrap extent)
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CSiblingActReg)
@@ -208,8 +209,8 @@ static inline CDropEntry* DropLookup(i32 coord) {
 //                  (GameRegistry.h); its m_8 is the canonical CSpriteFactory. The Update
 //                  path called CreateSprite through the view while the ActA path (0xc7090)
 //                  already called it cast-free off the real type.
-//   DropperLevel -> CGameViewport    (holder->m_24)
-//   DropperWorld -> CGameViewport::CameraGeom  (the m_5c camera/scroll object; its
+//   DropperLevel -> CGameLevel       (holder->m_24; CGameViewport was the same class)
+//   DropperWorld -> CGameLevel::m_mainPlane (CLevelPlane; the m_5c object) - its +0x30/
 //                  +0x30/+0x34 world bounds are named there now)
 //   DropperTile  -> BrickzCell       (the canonical 0x1c-byte grid cell, <Gruntz/Brickz.h>;
 //                  its m_0 is the packed terrain-flags dword MapMgr.h points at)
@@ -580,7 +581,7 @@ i32 CObjectDropper::Update() {
     if (m_travelDx > 0) {
         m_posX += drift;
         if (m_posX
-            >= (double)((CGameViewport::CameraGeom*)g_gameReg->m_world->m_24->m_5c)->m_worldW) {
+            >= (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapW) {
             m_posX = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -588,7 +589,7 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDx < 0) {
         m_posX -= drift;
         if (m_posX < 0.0) {
-            m_posX = (double)(((CGameViewport::CameraGeom*)g_gameReg->m_world->m_24->m_5c)->m_worldW
+            m_posX = (double)(g_gameReg->m_world->m_24->m_mainPlane->m_wrapW
                               - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -597,7 +598,7 @@ i32 CObjectDropper::Update() {
     if (m_travelDy > 0) {
         m_posY += drift;
         if (m_posY
-            > (double)((CGameViewport::CameraGeom*)g_gameReg->m_world->m_24->m_5c)->m_worldH) {
+            > (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapH) {
             m_posY = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -605,7 +606,7 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDy < 0) {
         m_posY -= drift;
         if (m_posY < 0.0) {
-            m_posY = (double)(((CGameViewport::CameraGeom*)g_gameReg->m_world->m_24->m_5c)->m_worldH
+            m_posY = (double)(g_gameReg->m_world->m_24->m_mainPlane->m_wrapH
                               - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
