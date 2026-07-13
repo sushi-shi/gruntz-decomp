@@ -1071,7 +1071,7 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     // are the same object under two unreconciled names (ResMgr.h already casts this way for
     // its Has/Register/Release siblings), so the call binds to the symbol retail enters.
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(0, 1);
-    w->m_28->RegisterKey(0);
+    w->m_28->SumField_1580b0(0);
     ((CWorldDispatch*)w->m_1c)->Prepare();
     ((CWorldDispatch*)w->m_1c)->Prepare();
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(0, 1);
@@ -1079,10 +1079,10 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(s_assetKeyBa44, 1);
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("LEVEL", 1);
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("ACTION", 1);
-    w->m_28->RegisterKey(0);
-    w->m_28->RegisterKey("GRUNTZ");
-    w->m_28->RegisterKey(s_assetKeyBa44);
-    w->m_28->RegisterKey("LEVEL");
+    w->m_28->SumField_1580b0(0);
+    w->m_28->SumField_1580b0("GRUNTZ");
+    w->m_28->SumField_1580b0(s_assetKeyBa44);
+    w->m_28->SumField_1580b0("LEVEL");
 }
 
 // -------------------------------------------------------------------------

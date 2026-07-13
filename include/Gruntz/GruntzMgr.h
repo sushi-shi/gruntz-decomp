@@ -81,8 +81,10 @@ class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declare
 // CSndFinder (Lookup 0x1b8438). +0x520 is a 4-slot status array the paused-state
 // poll walks (status id at each slot's +0x20).
 struct CWorldView;
-struct CSndHost; // +0x28 sound/anim cue host (full def in <Gruntz/SoundCue.h>; was
-                 // implicitly fwd-declared by the old InputState.h method signature)
+// +0x28 sound/anim cue host: CSndHost IS the canonical CDDrawSubMgrLeafScan
+// (settled; <Gruntz/SoundCue.h> carries the typedef + proof).
+class CDDrawSubMgrLeafScan;
+typedef CDDrawSubMgrLeafScan CSndHost;
 // The world+0x10 image/name registry: the REAL CImageRegistry (<Gruntz/ResMgr.h>), whose
 // own +0x10 is the embedded CMapStringToOb name->object hash. A pointer here, so a fwd
 // decl suffices (GruntzMgr.cpp includes the real header). The ex-CWorldLookupHolder view

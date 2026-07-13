@@ -31,7 +31,7 @@
 
 // Body-only dependency types (defined in the owning .cpp; only pointers/values in the
 // class declaration, so a forward decl suffices and keeps lean consumers lean).
-class SoundDevice;      // +0x2c held DSound device (SoundStream : SoundDevice at the site)
+struct SoundStream;     // +0x2c held DSound stream (SoundStream : SoundDevice; Play stops it)
 struct LeafElementObj;  // 0x1c cache element (CreateEntry factory output)
 class CSymTab;          // <Bute/SymTab.h> - the scope node ScanTree walks (was the DirNode view)
 class LeafScanValue;    // a looked-up map value (scalar-dtor slot + held sound-arg)
@@ -128,9 +128,16 @@ public:
     i32 Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2); // 0x1581b0
 
     CMapStringToPtr m_10; // +0x10  keyed asset cache (ends +0x2c)
-    SoundDevice* m_2c;    // +0x2c  held DSound device
-    i32 m_30;             // +0x30  busy/loading guard
-    i32 m_34;             // +0x34  redraw arg
+    SoundStream* m_2c;    // +0x2c  held DSound stream (game TUs Stop() it on teardown)
+    // +0x30: one field, two established readings (same semantics - nonzero = busy /
+    // not ready): the DDrawSubMgr family's "busy/loading guard" (m_30) and the game
+    // TUs' "live-surface/emit gate" (m_emitGate; must be 0 to emit). Anonymous union
+    // so both spellings bind the one field.
+    union {
+        i32 m_30;
+        i32 m_emitGate;
+    };
+    i32 m_34; // +0x34  redraw arg
 };
 
 SIZE_UNKNOWN(LeafScanBase);

@@ -63,7 +63,7 @@ class CDDrawSubMgrPages; // +0x04 the page/child factory (front/back/overlay sur
 class CDDrawChildGroup;  // +0x08 the broadcast child-group (intrusive list + 2 maps)
 class CDDrawWorkerCache; // +0x14 the string-keyed worker cache (its +0x10 map is the
                          //       name->value resolve map the CWwdObjMgr factories read)
-struct CDDrawSubMgrLeafScan;
+class CDDrawSubMgrLeafScan; // (class, not struct - the PAU/PAV fwd-mangling trap)
 struct CDDrawPtrCollections; // the +0x1c surface pool (heap object)
 struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
 
