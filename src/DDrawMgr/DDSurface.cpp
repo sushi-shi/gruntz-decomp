@@ -96,7 +96,7 @@ void ClearImageCache_13e070() {
 // ---------------------------------------------------------------------------
 // CDDSurface::Init1 (0x13e0a0, vtable slot 2): if the descriptor arg (a, a 0x6c-byte
 // Blk6c* passed as an int handle) is non-null, copy it into the +0x10 DDSURFACEDESC
-// scratch, then dispatch the surface's own slot-8 v20 with the collection context h;
+// scratch, then dispatch the surface own slot-8 BlitIntoDesc with the collection context h;
 // return its result. Folded from Stub/BoundaryUpper.cpp (ImgOwned::Apply - the view
 // IS CDDSurface; the "ambiguous CDDSurface::Init1" note is resolved). Decl in DDSurface.h.
 // ---------------------------------------------------------------------------
@@ -105,7 +105,7 @@ i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
     if (a != 0) {
         memcpy((char*)this + 0x10, (const void*)a, 0x6c);
     }
-    return v20(h);
+    return BlitIntoDesc(h);
 }
 
 // ---------------------------------------------------------------------------
@@ -132,7 +132,7 @@ i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
         *(i32*)(this->m_desc + 0x48) = 0x20; // m_58
         this->m_64 = a4;
     }
-    return this->v20(surf); // slot-8 virtual dispatch (+0x20)
+    return this->BlitIntoDesc(surf); // slot-8 virtual dispatch (+0x20)
 }
 
 // CDDSurface::Refresh (__thiscall, ret 4 => 1 arg). GetSurfaceDesc into the

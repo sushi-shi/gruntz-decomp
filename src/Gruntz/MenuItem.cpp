@@ -156,7 +156,7 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 // between Init and the vfunc block).
 // slot 5 (0x185520): the m_width of the sprite's representative frame (index 2).
 RVA(0x00185520, 0x2c)
-i32 CMenuItem::Vf5() {
+i32 CMenuItem::GetFrameWidth() {
     CMenuSprite* s = (CMenuSprite*)m_sprite;
     if (!s) {
         return 0;
@@ -243,7 +243,7 @@ i32 CMenuItem::Configure(void* notify) {
     if (notify) {
         ((CChatBox*)m_host)->ScrollRow0();
     }
-    Vf6(2);
+    Slot06_184650(2);
     return 1;
 }
 // trigger: scroll the host row, notify, then re-activate the host node.

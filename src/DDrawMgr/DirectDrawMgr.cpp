@@ -642,7 +642,7 @@ CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
 RVA(0x00142260, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->v24(this, a, b, c, d, e)) {
+    if (item->ResolveEx(this, (void*)a, b, c, d, e)) {
         AddItemA(item);
         return item;
     }
@@ -686,7 +686,7 @@ CFileImageSurface::~CFileImageSurface() {}
 RVA(0x001423c0, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->v2c(this, a, b, c, d, e)) {
+    if (item->LoadKeyed(this, a, b, c, d, e)) {
         AddItemA(item);
         return item;
     }
@@ -720,7 +720,7 @@ CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
 RVA(0x00142560, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (item->v28(this, a, b, c)) {
+    if (item->LoadByExt(this, (char*)a, b, c)) {
         AddItemA(item);
         return item;
     }
@@ -786,7 +786,7 @@ i32 CDDrawPtrCollections::CreateRange(
 RVA(0x00142730, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
     CPoolItemA88* item = new CPoolItemA88;
-    if (item->v24(this, a, b, c)) {
+    if (item->Blit7(this, a, b, c)) {
         AddItemA(item);
         return item;
     }
@@ -840,7 +840,7 @@ CDDSurface* CDDrawPtrCollections::Createa88_1(i32 a) {
 RVA(0x00142940, 0xd4)
 CDDSurface* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     CPoolItemAB8* item = new CPoolItemAB8;
-    if (item->v24(this, a, b, c)) {
+    if (item->Setup(this, a, b, c)) {
         AddItemA(item);
         m_palBpp = item->m_bitDepth;
         return item;
@@ -886,12 +886,12 @@ CDDSurface* CDDrawPtrCollections::Createab8_1(i32 a) {
 // @early-stop
 // @early-stop
 // EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue). Slot 9
-// (0x148af0 == CPoolItemAB8::v24, the Setup) takes exactly 4 args (info + 3 ints); this
+// (0x148af0 == CPoolItemAB8::Setup) takes exactly 4 args (info + 3 ints); this
 // site passes {0x18, 0x21, a}, Createab8_3 passes {a, b, c} - one consistent signature.
 RVA(0x00142b70, 0xce)
 CDDSurface* CDDrawPtrCollections::Createab8_24_3(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
-    if (item->v24(this, 0x18, 0x21, a)) {
+    if (item->Setup(this, 0x18, 0x21, a)) {
         AddItemA(item);
         m_palBpp = item->m_bitDepth;
         return item;
@@ -909,7 +909,7 @@ CDDSurface* CDDrawPtrCollections::Createab8_24_3(i32 a) {
 RVA(0x00142c40, 0xd7)
 CDDSurface* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     CPoolItemAE8* item = new CPoolItemAE8;
-    if (item->v24(this, a, b, c, d, e, f)) {
+    if (item->Blit47(this, a, b, c, d, e, f)) {
         AddItemA(item);
         return item;
     }

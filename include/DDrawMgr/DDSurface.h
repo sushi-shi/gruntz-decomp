@@ -85,6 +85,18 @@ enum FileImageFormat {
 // (the throwing CPtrArray member ctor is what gives each factory `new` its /GX frame).
 // ---------------------------------------------------------------------------
 SIZE(CDDSurface, 0xc0);
+
+// The slot-6 (GetPoolKind) per-class tag of the surface-pool family: every body is
+// a bare `mov eax,<kind>; ret` (byte-dumped 2026-07-14). Enumerators name the PROVEN
+// owning class of each value; the tag's consumers are unreconstructed engine code.
+typedef enum DDSurfacePoolKind {
+    POOLKIND_PLAIN = 0,      // CDDSurface base default        (0x141300: xor eax,eax)
+    POOLKIND_MODE = 1,       // CPoolItemAB8 device/mode page  (0x143cd0)
+    POOLKIND_FILEIMAGE = 2,  // CFileImageSurface              (0x143cc0)
+    POOLKIND_BLIT7 = 3,      // CPoolItemA88 "Blit7" pocket    (0x143cb0)
+    POOLKIND_BLIT47 = 4,     // CPoolItemAE8 "Blit47" pocket   (0x143ce0)
+} DDSurfacePoolKind;
+
 VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
 class CDDSurface {
 public:
@@ -97,7 +109,7 @@ public:
     // declared-only (their bodies live in sibling TUs: Refresh 0x13e140 in DirectDrawMgr,
     // the slot-2 init 0x13e0a0 in BoundaryUpper, etc.) so the emitted vtable's DIR32 slot
     // relocs mask. Declaring these real virtuals makes the slot-5 IsValid / slot-3
-    // BlitSurf / slot-8 v20 dispatch sites genuine virtual calls on `this`.
+    // BlitSurf / slot-8 BlitIntoDesc dispatch sites genuine virtual calls on `this`.
     virtual ~CDDSurface(); // slot 0  0x141350 (??_G 0x141330; implicit vptr stamp lands stamp-first)
     virtual i32
     Refresh(IDirectDrawSurface* surf); // slot 1  0x13e140  (GetSurfaceDesc-driven re-cache)
@@ -112,9 +124,11 @@ public:
     virtual void
     FreeSurfaces();        // slot 4  0x13e4d0  (releases m_8/m_c, empties + destroys m_elements)
     virtual i32 IsValid(); // slot 5  0x1412d0  (surface present + positive w/h)
-    virtual i32 v18();     // slot 6  0x141300
+    // slot 6 - the per-class POOL-KIND tag: every body is `mov eax,<kind>; ret`
+    // (base 0x141300 -> 0; the pool subclasses return 1..4 - see DDSurfacePoolKind).
+    virtual i32 GetPoolKind();     // slot 6  0x141300 (POOLKIND_PLAIN)
     virtual i32 RestoreLost(); // slot 7  0x13f960  (restore-this-lost-surface retry)
-    virtual i32 v20(void* a);  // slot 8  0x13e2e0  (the surface's own blit-into-desc)
+    virtual i32 BlitIntoDesc(void* a); // slot 8  0x13e2e0  (the surface's own blit-into-desc)
 
     // --- non-virtual __thiscall DirectDraw thunks (DIRSURF.CPP) ----------------
     // The held-surface COM ops; each dispatches m_8/m_c (IDirectDrawSurface) and retries
@@ -139,9 +153,6 @@ public:
     i32 Blt(CDDSurface* src);                                                      // 0x13ee60
     i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
     i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans);          // 0x13ef90
-    // Overlay update passthrough: this->m_8->UpdateOverlay(srcRect, dest->m_8, destRect,
-    // flags, fx) (COM slot 33 / +0x84). 0x148ac0.
-    i32 UpdateOverlay(void* srcRect, CDDSurface* dest, void* destRect, u32 flags, void* fx);
     void Tile(CDDSurface* src, i32 useColorKey); // 0x13f990 (tile src across this via BltFast)
     void DumpSurfaceInfo(i32 detailed); // 0x140770 (GetSurfaceDesc + TRACE the geometry/caps)
     i32 ShadeBlt(
@@ -162,12 +173,10 @@ public:
 
     // --- the surface SAVE/export path (DIRSURF.CPP) ---------------------------
     // SaveFile validates the surface + args, SaveDispatch picks the per-bit-depth writer
-    // by m_bitDepth (8/16/24). Clear blanks the surface, LoadKeyed blits + installs a key.
+    // by m_bitDepth (8/16/24). Clear blanks the surface.
     i32 SaveFile(char* buf, i32 type, void* a3, void* a4); // 0x13f910 (ret 0x10)
     i32 SaveDispatch(char* a1, void* a2, void* a3);        // 0x144350 (ret 0xc)
     void Clear(i32 white);                                 // 0x13edb0 (ret 4)
-    i32
-    LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key); // 0x148840 (ret 0x18)
 
     // The per-bit-depth file writers SaveDispatch delegates to (ret 0xc = 3 args). SaveBmp
     // (0x1443b0) writes the 8bpp palettized BMP, SaveTga (0x144900) the 24bpp TGA,
@@ -177,11 +186,11 @@ public:
     i32 SaveTga(const char* path, void* pal, i32 mode); // 0x144900 (24bpp)
 
     // --- format dispatchers (Image.cpp). __thiscall on CDDSurface --------------
-    // Resolve picks the BMP/PCX/PID decoder by `type` (1/2/4) for the file path; ResolveEx
-    // is the surface-blit variant that ORs the control word with 0x40, runs the *Data
-    // decoders and installs the transparency colour after.
+    // Resolve picks the BMP/PCX/PID decoder by `type` (1/2/4) for the file path.
+    // (ResolveEx/LoadByExt/LoadKeyed/UpdateOverlay moved to their REAL owners: xref
+    // proves each body is reached ONLY through a DERIVED vtable slot - CFileImageSurface
+    // slots 9/10/11, CPoolItemA88 slot 10 - never by a direct call on this base.)
     i32 Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2); // 0x13e550 (ret 0x14)
-    i32 ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans);
 
     // Per-format decoders (Image.cpp). __thiscall on CDDSurface. arg1 is the source-palette
     // surface (downcast to CDDSurface* in each body); the class passes surfaces as void*.
@@ -266,7 +275,6 @@ public:
     i32 Run(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, ClipRect16 clip); // 0x1471d0
     i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode);    // 0x143e60
     i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);     // 0x144d80
-    i32 LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 a4); // 0x148940
     i32 Load(i32 a, char* name, i32 c);                                       // 0x144270
 
     // The surface blitters + raw run-decoders the decoders delegate to (external no-body,
@@ -299,7 +307,7 @@ public:
     IDirectDrawSurface* m_8; // +0x08  held DirectDraw surface (released via Release)
     IDirectDrawSurface* m_c; // +0x0c  held back/secondary surface (also released)
     // +0x10..+0x7c: the surface's embedded DDSURFACEDESC scratch (0x6c bytes). The pool
-    // slot-9 setup (CPoolItem*::v24) builds it in bulk via the m_ddsd word view; Refresh
+    // slot-9 setup (CPoolItem*::Setup/Blit7/Blit47) builds it in bulk via the m_ddsd word view; Refresh
     // and the geometry accessors read it through the named DDSURFACEDESC fields below.
     // The outer union is matching-neutral (identical offsets) - it only adds the
     // whole-descriptor word view.

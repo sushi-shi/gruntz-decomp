@@ -40,11 +40,11 @@ extern "C" {
 void BuildColorChannelTables();
 
 // ---------------------------------------------------------------------------
-// CDDSurface::LoadKeyed (ret 0x18) - blit a source surface in with the control word
+// CFileImageSurface::LoadKeyed (slot 11, ret 0x18) - blit a source surface in with the control word
 // forced to OR 0x40 (BlitSurf), and on success - unless the colour key is -1 -
 // install it via FillPalette. Returns 1.
 RVA(0x00148840, 0x47)
-i32 CDDSurface::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {
+i32 CFileImageSurface::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {
     // Direct (non-virtual) dispatch to the slot-3 body: qualified call suppresses the
     // vtable indirection (retail direct-calls 0x13e0d0 here).
     if (CDDSurface::BlitSurf(surf, width, height, a4, a5 | 0x40) == 0) {
@@ -67,7 +67,7 @@ i32 CDDSurface::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32
 // handled it (PID = type 4). Returns 1 on success, else 0. The case labels lower
 // to the running-subtract chain (switch, bodies in retail .text order 4, 2, 1).
 RVA(0x00148890, 0xad)
-i32 CDDSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans) {
+i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans) {
     if (size == 0) {
         return 0;
     }
@@ -117,7 +117,7 @@ i32 CDDSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
 // steerable (reordering the `&&` -> 96%); the correct unified-class shape is kept
 // over the coin-flip byte-match (per the no-multiple-views mandate).
 RVA(0x00148940, 0x102)
-i32 CDDSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key) {
+i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key) {
     flags |= 0x40;
     i32 doFill = 1;
     char* ext = strrchr(path, '.');
@@ -143,7 +143,7 @@ i32 CDDSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32
     return 1;
 }
 
-// CPoolItemA88::v24 (0x148a50, slot 9, "Blit7"): build a 0x6c-byte DDSURFACEDESC on the
+// CPoolItemA88::Blit7 (0x148a50, slot 9): build a 0x6c-byte DDSURFACEDESC on the
 // stack (mode 7, ddsCaps = a4|0x80, pitch fields), then run the base surface init
 // (CDDSurface::Init1 @0x13e0a0, the descriptor-driven Apply) and return success.
 // __thiscall, 4 args. (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view
@@ -153,7 +153,7 @@ i32 CDDSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32
 // a stack-local descriptor; retail hoists the a4 load (or al,0x80) ahead of a2 while MSVC
 // loads a2 first, swapping the eax/ecx assignment + a couple store slots. Logic complete.
 RVA(0x00148a50, 0x6b)
-i32 CPoolItemA88::v24(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
+i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
     u32 desc[(0x7c - 0x10) / 4]; // 0x6c-byte DDSURFACEDESC scratch
     memset(desc, 0, 0x6c);
     desc[3] = a2;
@@ -172,7 +172,7 @@ i32 CPoolItemA88::v24(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
 // dest rects, the destination wrapper's own held surface, the flags + the overlay FX.
 // ---------------------------------------------------------------------------
 RVA(0x00148ac0, 0x2b)
-i32 CDDSurface::UpdateOverlay(
+i32 CPoolItemA88::UpdateOverlay(
     void* srcRect,
     CDDSurface* dest,
     void* destRect,
@@ -184,14 +184,14 @@ i32 CDDSurface::UpdateOverlay(
 }
 
 // ---------------------------------------------------------------------------
-// CPoolItemAB8::v24 (0x148af0, slot 9, "Setup"): zero the surface's embedded 0x6c-byte
+// CPoolItemAB8::Setup (0x148af0, slot 9): zero the surface's embedded 0x6c-byte
 // DDSURFACEDESC (m_ddsd), fill {dwSize, dwFlags=a3, [+0x14]=a4, ddsCaps=a2|0x200}, run
 // the base surface init (CDDSurface::Init1 @0x13e0a0, descriptor NULL => use m_ddsd); on
 // success run InstallColorFormat (slot 10) and return 1. __thiscall, 4 args. (Re-homed
 // from src/Stub/BoundaryUpper2.cpp; ImgOwnedX view dissolved onto the real CPoolItemAB8.)
 // Byte-exact.
 RVA(0x00148af0, 0x58)
-i32 CPoolItemAB8::v24(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
+i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
     memset(m_ddsd, 0, 0x6c);
     m_ddsd[0] = 0x6c;
     m_ddsd[0x1a] = a2 | 0x200;
@@ -283,16 +283,16 @@ i32 CPoolItemAB8::InstallColorFormat() {
 }
 
 // ---------------------------------------------------------------------------
-// CPoolItemAE8::v24 (0x148c40, slot 9, "Blit47"): build a 0x6c-byte DDSURFACEDESC on the
+// CPoolItemAE8::Blit47 (0x148c40, slot 9): build a 0x6c-byte DDSURFACEDESC on the
 // stack (mode 0x47, ddsCaps = a5|a4|0x20000, [+0x18]=a7), then run the base surface init
 // (CDDSurface::Init1 @0x13e0a0) and return success. __thiscall, 7 args (a6 unused).
 // (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view dissolved onto the real
 // CPoolItemAE8.)
 // @early-stop
-// descriptor-fill scheduling wall (~85%): mirror of CPoolItemA88::v24 (7-arg / mode 0x47).
+// descriptor-fill scheduling wall (~85%): mirror of CPoolItemA88::Blit7 (7-arg / mode 0x47).
 // Same stack-local-descriptor load/store scheduling divergence. Logic complete.
 RVA(0x00148c40, 0x75)
-i32 CPoolItemAE8::v24(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+i32 CPoolItemAE8::Blit47(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     (void)a6;
     u32 desc[(0x7c - 0x10) / 4]; // 0x6c-byte DDSURFACEDESC scratch
     memset(desc, 0, 0x6c);

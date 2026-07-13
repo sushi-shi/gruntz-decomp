@@ -50,10 +50,14 @@ struct IDirectDraw2; // <ddraw.h> in the dispatching TU
 // adds two init tail slots (9 = 0x148a50, 10 = 0x148ac0).
 class CPoolItemA88 : public CDDSurface {
 public:
-    virtual ~CPoolItemA88() OVERRIDE;                      // slot 0  ~ 0x142820
-    virtual i32 v18() OVERRIDE;                            // slot 6  0x143cb0
-    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32); // slot 9  0x148a50 (Blit7, 4 args)
-    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32); // slot 10 0x148ac0
+    virtual ~CPoolItemA88() OVERRIDE;   // slot 0  ~ 0x142820
+    virtual i32 GetPoolKind() OVERRIDE; // slot 6  0x143cb0 (POOLKIND_BLIT7)
+    virtual i32 Blit7(CDDrawPtrCollections*, i32, i32, i32); // slot 9  0x148a50 (4 args)
+    // slot 10 - xref-proven a REAL virtual reached only through this slot: the
+    // IDirectDrawSurface::UpdateOverlay passthrough (5 args, ret 0x14; body in
+    // DDrawPtrCollections.cpp - was misbound as a 4-arg CDDSurface:: non-virtual).
+    virtual i32 UpdateOverlay(void* srcRect, CDDSurface* dest, void* destRect, u32 flags,
+                              void* fx); // slot 10 0x148ac0
 };
 SIZE(CPoolItemA88, 0xc0);
 VTBL(CPoolItemA88, 0x001efa88);
@@ -64,8 +68,8 @@ class CPoolItemAB8 : public CDDSurface {
 public:
     virtual ~CPoolItemAB8() OVERRIDE;                       // slot 0  ~ 0x142a40
     virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE; // slot 2  0x148b50
-    virtual i32 v18() OVERRIDE;                             // slot 6  0x143cd0
-    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32);  // slot 9  0x148af0 (Setup, 4 args)
+    virtual i32 GetPoolKind() OVERRIDE;                     // slot 6  0x143cd0 (POOLKIND_MODE)
+    virtual i32 Setup(CDDrawPtrCollections*, i32, i32, i32); // slot 9  0x148af0 (4 args)
     virtual i32 InstallColorFormat();                       // slot 10 0x148b80
 };
 SIZE(CPoolItemAB8, 0xc0);
@@ -75,10 +79,10 @@ VTBL(CPoolItemAB8, 0x001efab8);
 // and slot 6 (0x143ce0); adds one init tail slot (9 = 0x148c40, 6-arg).
 class CPoolItemAE8 : public CDDSurface {
 public:
-    virtual ~CPoolItemAE8() OVERRIDE;                                     // slot 0  ~ 0x142d40
-    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;               // slot 2  0x148cc0
-    virtual i32 v18() OVERRIDE;                                           // slot 6  0x143ce0
-    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
+    virtual ~CPoolItemAE8() OVERRIDE;                       // slot 0  ~ 0x142d40
+    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE; // slot 2  0x148cc0
+    virtual i32 GetPoolKind() OVERRIDE;                     // slot 6  0x143ce0 (POOLKIND_BLIT47)
+    virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
 };
 SIZE(CPoolItemAE8, 0xc0);
 VTBL(CPoolItemAE8, 0x001efae8);

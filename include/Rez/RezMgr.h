@@ -111,7 +111,7 @@ public:
     // 0x13c500/0x13c520, [2..7] __purecall). CRezItm / CRezDir / CRezFile each
     // override all six stream slots; every retail call into the family dispatches
     // (no direct .text callers of any slot body - xref-verified).
-    virtual void Slot00();  // [0] 0x13c530 (empty body; original role unrecovered)
+    virtual void Slot00_13c530(); // [0] 0x13c530 (empty body; original role unrecovered)
     virtual ~CRezItmBase(); // [1] ??1 0x13c520 (clears m_parent)
     virtual i32 Read(i32 off, i32 base, u32 count, void* buf) = 0;  // [2]
     virtual i32 Write(i32 base, i32 off, u32 count, void* buf) = 0; // [3]

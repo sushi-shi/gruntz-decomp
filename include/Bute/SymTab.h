@@ -62,7 +62,7 @@ extern void* CSymTab_node_vftable; // 0x5ef748
 // VTBL below is a pure target-side catalog binding.
 SIZE_UNKNOWN(CSymTabNode);
 struct CSymTabNode {
-    virtual void Vf0(); // slot 0 (sub_13c3b0)
+    virtual void Slot00_13c3b0(); // slot 0 (0x13c3b0; role unrecovered)
 };
 VTBL(CSymTabNode, 0x001ef748);
 

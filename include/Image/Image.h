@@ -28,7 +28,7 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDSurface.h> // IDirectDrawSurface (the held COM surface interface) + the
-                                // CDDSurface wrapper's foreign vtable (IsValid/v20 dispatch)
+                                // CDDSurface wrapper vtable (IsValid/BlitIntoDesc dispatch)
 #include <Io/FileStream.h>
 
 // The DDraw surface/palette pool host (<DDrawMgr/DDrawPtrCollections.h>) - the display
@@ -171,7 +171,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // CFileImageSurface - a CDDSurface-derived pool-item surface (the "a58" subclass,
-// vtable 0x5efa58: overrides the dtor + slot 6 v18, adds the init-tail slots 9/10/11).
+// vtable 0x5efa58: overrides the dtor + slot 6 GetPoolKind, adds slots 9/10/11).
 // It is the SAME retail class DDrawPtrCollections.h models as CPoolItemA; its ??_G/~
 // COMDAT (0x142340/0x142360) is emitted under the CFileImageSurface name from
 // DirectDrawMgr.cpp (CPoolItemA there is the declared-only RELOC_VTBL alias).
@@ -189,11 +189,16 @@ class CFileImageSurface : public CDDSurface {
 public:
     void* ScalarDelete(u32 flags);         // 0x142340 (`??_G` scalar-deleting destructor)
     virtual ~CFileImageSurface() OVERRIDE; // slot 0  0x142360
-    virtual i32 v18() OVERRIDE;            // slot 6  0x143cc0
-    // Init-tail slots (declared-only, reloc-masked) so ??_7CFileImageSurface is sized.
-    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
-    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
-    virtual i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
+    virtual i32 GetPoolKind() OVERRIDE;    // slot 6  0x143cc0 (POOLKIND_FILEIMAGE)
+    // The three init-tail slots. xref-proven REAL virtuals (zero direct callers -
+    // each body is reached ONLY through this vtable); bodies in DDrawPtrCollections.cpp
+    // (were misbound as CDDSurface:: non-virtual base methods).
+    virtual i32 ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl,
+                          i32 trans); // slot 9  0x148890 (decode buf into the surface)
+    virtual i32 LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags,
+                          i32 key); // slot 10 0x148940 (pick loader by file extension)
+    virtual i32 LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5,
+                          i32 key); // slot 11 0x148840 (blit + install colour key)
 };
 
 // CFileImage's own surface vtable lives at VA 0x5ef7f0 - the SHARED 9-slot base vtable
@@ -201,8 +206,8 @@ public:
 // g_poolItemVtbl; the sibling derived classes CPoolItemA @0x5efa58 / CDDSurface / ... in
 // CDDrawPtrCollections.cpp / CDDSurfaceDtor.cpp derive from this same base). CFileImage
 // declares the full 9-slot polymorphic layout above (dtor / Refresh / Init1 / BlitSurf /
-// FreeSurfaces / IsValid / v18 / v1c / v20), so the two surface virtuals it dispatches
-// (IsValid @0x14 slot 5, v20 @0x20 slot 8) and the slot-3 BlitSurf dispatch are genuine
+// FreeSurfaces / IsValid / GetPoolKind / RestoreLost / BlitIntoDesc), so the virtuals it dispatches
+// (IsValid @0x14 slot 5, BlitIntoDesc @0x20 slot 8) and the slot-3 BlitSurf dispatch are genuine
 // virtual calls - the former pointer-only CFileImageVtblView is retired.
 
 // [The former CFileImageHeldSurface (a 33-slot thiscall placeholder view of the held
