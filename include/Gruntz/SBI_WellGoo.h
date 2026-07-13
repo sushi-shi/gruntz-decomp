@@ -106,9 +106,8 @@ public:
     // (see StatusBarItem.h).
     virtual ~CSBI_WellGoo() OVERRIDE; // slot 0
     virtual i32 SbiVfunc0() OVERRIDE; // slot 1 (the Serialize below)
-    virtual i32
-    Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10)
-        OVERRIDE;                     // slot 2 (0xe6020)
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10)
+        OVERRIDE; // slot 2 (0xe6020; args 5..8 are ONE by-value SbRect - see StatusBarItem.h)
     virtual void SbiSlot3() OVERRIDE; // slot 3 (the Free below)
     virtual void SbiSlot4() OVERRIDE; // slot 4
     virtual void SbiSlot5() OVERRIDE; // slot 5 (the Tick below)

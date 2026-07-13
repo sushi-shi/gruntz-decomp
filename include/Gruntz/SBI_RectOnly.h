@@ -325,8 +325,9 @@ public:
     virtual ~CSBI_RectOnly(); // 0x00100700 (SBI_RectOnlyDtorEh.cpp)
     virtual i32 SbiVfunc0() OVERRIDE;
 
-    // vtable slot 2 (0xe86e0): the 10-arg setup; inherited by CSBI_Image/_ImageSet.
-    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10);
+    // vtable slot 2 (0xe86e0): the setup; inherited by CSBI_Image/_ImageSet. Args 5..8 are
+    // ONE by-value SbRect (caller-proven - see StatusBarItem.h).
+    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10);
 
     void UpdateDestructButton(i32 arg); // 0x10bc30 (arms the destruct-button warning)
     i32 EnsureSub(i32 a, i32 b, i32 c); // 0x109ad0 (lazily create the +0x54c sub-object)
@@ -847,19 +848,10 @@ public:
     // It is what the old view called "Configure": the tab-configure call site pushes
     // exactly these 11 dwords. Declared with the canonical signature so it mangles to the
     // same ?SetupImage@CSBI_MenuItem@@ symbol (out-of-line body: InitItem @0xe80e0).
-    virtual i32 SetupImage(
-        i32 a1,
-        CSbiConfigHost* host,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 key,
-        i32 a10,
-        i32 a11
-    ); // slot 11
+    // slot 11 - args 5..8 are ONE by-value SbRect, the same 11 dwords the sibling
+    // builder view (SbiTabzDialogViews.h) already spelled correctly.
+    virtual i32
+    SetupImage(i32 a1, CSbiConfigHost* host, i32 a3, i32 a4, SbiRect rc, i32 key, i32 a10, i32 a11);
     // The tab-widget drivers CSBI_RectOnly reaches through m_tabSprite* (non-virtual
     // reloc-masked call rel32; bodies + rvas bound in SBI_MenuItem.cpp). These fold
     // the former fake CSbiSprite view onto the real class: Release->Blit, Show->

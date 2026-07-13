@@ -3354,15 +3354,10 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     i32 by = m_rect14.m_0;
     i32 code = m_c;
     CStatusBarItem* it;
-    SbiRect r;
 
     // ---- rect-only sub-widget A (id 0x259) ----
     it = new CSbiRectSub;
-    r.m_0 = bx + 0x7c;
-    r.m_4 = by + 0xad;
-    r.m_8 = bx + 0x88;
-    r.m_c = by + 0xb9;
-    if (!it->Setup((i32)this, code, 0x259, 0, r.m_0, r.m_4, r.m_8, r.m_c, 0, -1)) {
+    if (!it->Setup((i32)this, code, 0x259, 0, SbiRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9), 0, -1)) {
         if (it) {
             delete it;
         }
@@ -3372,11 +3367,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 
     // ---- rect-only sub-widget B (id 0x25a) ----
     it = new CSbiRectSub;
-    r.m_0 = bx + 0x8a;
-    r.m_4 = by + 0xb9;
-    r.m_8 = bx + 0x96;
-    r.m_c = by + 0xc7;
-    if (!it->Setup((i32)this, code, 0x25a, 0, r.m_0, r.m_4, r.m_8, r.m_c, 0, -1)) {
+    if (!it->Setup((i32)this, code, 0x25a, 0, SbiRect(bx + 0x8a, by + 0xb9, bx + 0x96, by + 0xc7), 0, -1)) {
         if (it) {
             delete it;
         }
@@ -3386,11 +3377,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 
     // ---- rect-only sub-widget C (id 0x25b) ----
     it = new CSbiRectSub;
-    r.m_0 = bx + 0x83;
-    r.m_4 = by + 0xbb;
-    r.m_8 = bx + 0x8f;
-    r.m_c = by + 0xc7;
-    if (!it->Setup((i32)this, code, 0x25b, 0, r.m_0, r.m_4, r.m_8, r.m_c, 0, -1)) {
+    if (!it->Setup((i32)this, code, 0x25b, 0, SbiRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7), 0, -1)) {
         if (it) {
             delete it;
         }
@@ -3400,11 +3387,8 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 
     // ---- STATZTAB (menu item, type 1) ----
     it = new CSBI_MenuItem;
-    r.m_0 = bx + 0x42;
-    r.m_4 = by + 0x82;
-    r.m_8 = bx + 0x62;
-    r.m_c = by + 0x99;
-    if (!((CSBI_MenuItem*)it)->SetupImage((i32)this, (CSbiConfigHost*)code, 1, 0, r.m_0, r.m_4, r.m_8, r.m_c, (i32)"GAME_STATUSBAR_TABZ_STATZTAB", -1, 0)) {
+    if (!((CSBI_MenuItem*)it)
+             ->SetupImage((i32)this, (CSbiConfigHost*)code, 1, 0, SbiRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_STATZTAB", -1, 0)) {
         if (it) {
             delete it;
         }
@@ -3415,11 +3399,8 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 
     // ---- GRUNTZTAB (menu item, type 2) ----
     it = new CSBI_MenuItem;
-    r.m_0 = bx + 0x04;
-    r.m_4 = by + 0x82;
-    r.m_8 = bx + 0x24;
-    r.m_c = by + 0x99;
-    if (!((CSBI_MenuItem*)it)->SetupImage((i32)this, (CSbiConfigHost*)code, 2, 0, r.m_0, r.m_4, r.m_8, r.m_c, (i32)"GAME_STATUSBAR_TABZ_GRUNTZTAB", -1, 0)) {
+    if (!((CSBI_MenuItem*)it)
+             ->SetupImage((i32)this, (CSbiConfigHost*)code, 2, 0, SbiRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_GRUNTZTAB", -1, 0)) {
         if (it) {
             delete it;
         }
@@ -3430,11 +3411,8 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 
     // ---- RESOURCETAB (menu item, type 3) ----
     it = new CSBI_MenuItem;
-    r.m_0 = bx + 0x24;
-    r.m_4 = by + 0x82;
-    r.m_8 = bx + 0x44;
-    r.m_c = by + 0x99;
-    if (!((CSBI_MenuItem*)it)->SetupImage((i32)this, (CSbiConfigHost*)code, 3, 0, r.m_0, r.m_4, r.m_8, r.m_c, (i32)"GAME_STATUSBAR_TABZ_RESOURCETAB", -1, 0)) {
+    if (!((CSBI_MenuItem*)it)
+             ->SetupImage((i32)this, (CSbiConfigHost*)code, 3, 0, SbiRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_RESOURCETAB", -1, 0)) {
         if (it) {
             delete it;
         }
@@ -3445,11 +3423,8 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 
     // ---- MULTIPLAYERTAB (menu item, type 4) ----
     it = new CSBI_MenuItem;
-    r.m_0 = bx + 0x60;
-    r.m_4 = by + 0x82;
-    r.m_8 = bx + 0x80;
-    r.m_c = by + 0x99;
-    if (!((CSBI_MenuItem*)it)->SetupImage((i32)this, (CSbiConfigHost*)code, 4, 0, r.m_0, r.m_4, r.m_8, r.m_c, (i32)"GAME_STATUSBAR_TABZ_MULTIPLAYERTAB", -1, 0)) {
+    if (!((CSBI_MenuItem*)it)
+             ->SetupImage((i32)this, (CSbiConfigHost*)code, 4, 0, SbiRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_MULTIPLAYERTAB", -1, 0)) {
         if (it) {
             delete it;
         }
@@ -3474,11 +3449,8 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 
     // ---- GAMETAB (menu item, type 5; inline ctor) ----
     it = new CSBI_MenuItem;
-    r.m_0 = bx + 0x7e;
-    r.m_4 = by + 0x82;
-    r.m_8 = bx + 0x9e;
-    r.m_c = by + 0x99;
-    if (!((CSBI_MenuItem*)it)->SetupImage((i32)this, (CSbiConfigHost*)code, 5, 0, r.m_0, r.m_4, r.m_8, r.m_c, (i32)"GAME_STATUSBAR_TABZ_GAMETAB", -1, 0)) {
+    if (!((CSBI_MenuItem*)it)
+             ->SetupImage((i32)this, (CSbiConfigHost*)code, 5, 0, SbiRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99), (i32)"GAME_STATUSBAR_TABZ_GAMETAB", -1, 0)) {
         if (it) {
             delete it;
         }

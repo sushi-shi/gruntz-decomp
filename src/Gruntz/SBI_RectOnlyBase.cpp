@@ -24,18 +24,17 @@
 // statement-schedule-faithful.md) - direct, array, and struct-pointer spellings all
 // fold the same; not steerable from C. Deferred to the final sweep.
 RVA(0x000e86e0, 0x53)
-i32 CSBI_RectOnly::
-    Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10) {
+i32 CSBI_RectOnly::Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) {
     if (a2 == 0 || a1 == 0) {
         return 0;
     }
     m_2c = a1;
     m_24 = a2;
     m_10 = a4;
-    m_rect14.m_0 = a5;
-    m_rect14.m_4 = a6;
-    m_rect14.m_8 = a7;
-    m_rect14.m_c = a8;
+    m_rect14.m_0 = rc.m_0;
+    m_rect14.m_4 = rc.m_4;
+    m_rect14.m_8 = rc.m_8;
+    m_rect14.m_c = rc.m_c;
     m_c = a3;
     m_4 = 1;
     return 1;

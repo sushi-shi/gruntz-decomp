@@ -43,6 +43,8 @@ struct SbiRect {
     i32 m_4; // +0x04 (rel +0x18)
     i32 m_8; // +0x08 (rel +0x1c)
     i32 m_c; // +0x0c (rel +0x20)
+    SbiRect() {}
+    SbiRect(i32 l, i32 t, i32 r, i32 b) : m_0(l), m_4(t), m_8(r), m_c(b) {}
 };
 SIZE_UNKNOWN(SbiRect);
 
@@ -69,19 +71,18 @@ public:
     // id (a2) or owner (a1) is null, else stores the eight live args into the base-region
     // fields (the last two args are ABI-accepted but unused). CSBI_RectOnly overrides it
     // (0xe86e0) to additionally mark m_4 = 1 (active).
-    virtual i32 Setup(
-        i32 a1,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 a9,
-        i32 a10
-    );                       // slot 2
-    virtual void SbiSlot3(); // slot 3
+    // Args 5..8 are ONE by-value SbRect, and the CALLER proves it: BuildStatusBarTabs
+    // (0xffde0) materializes them with `sub esp,0x10; mov ecx,esp; mov [ecx],<value>;
+    // mov [ecx+4],..; mov [ecx+8],..; mov [ecx+0xc],..` - the struct is built DIRECTLY in
+    // the outgoing arg frame from freshly-computed values, never from a named local.
+    // Callee-side the two spellings are ABI-identical (10 dwords, same `ret`), so only the
+    // call site can tell them apart. The sibling builder view <Gruntz/SbiTabzDialogViews.h>
+    // already had it right - its slot-11 Setup takes `SbiRect rc` by value and its call
+    // sites pass an INLINE TEMPORARY, `SbRect(cx - 0x5e, cy - 0x3c, ...)`. That temporary
+    // is the whole trick: a named local makes cl materialize the struct and copy it; an
+    // inline temporary makes it build the struct in place, which is what retail does.
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10); // slot 2
+    virtual void SbiSlot3();                                                       // slot 3
     virtual void SbiSlot4(); // slot 4
     virtual void SbiSlot5(); // slot 5
     // slots 6..9 (0x100530/0x100550/0x100570/0x100590): base defaults - each is
