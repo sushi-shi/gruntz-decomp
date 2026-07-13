@@ -34,9 +34,12 @@ i32 CStatzTabBuilder::Build() {
             geomVal = m_18 + 0x1c;
         }
         CSBI_SideTab* newobj = new CSBI_SideTab;
+        // `this` IS the builder - it is the parent the configure reads m_10/m_18 off. The
+        // old view typed that param CSBI_SideTab* purely to compile, which forced this
+        // cross-cast of a CStatzTabBuilder to an unrelated class.
         i32 ok = newobj->BuildStatzTabStatusBar(
-            (CSBI_SideTab*)this,
-            g_gameReg->m_world,
+            this,
+            (CSbiConfigHost*)g_gameReg->m_world,
             i + 0xb,
             0,
             geomBase,

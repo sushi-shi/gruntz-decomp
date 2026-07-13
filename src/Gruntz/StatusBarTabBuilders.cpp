@@ -21,6 +21,7 @@
 #include <Image/CImage.h>            // the frame handles ARE CImage (RenderFrame @0x153790)
 #include <Gruntz/SBI_GruntMachine.h> // canonical CSBI_GruntMachine (vtable @0x5eadbc)
 #include <Gruntz/SBI_SideTab.h>      // canonical CSBI_SideTab (vtable @0x5eae3c) + referent views
+#include <Gruntz/SbiSideTabBuildViews.h>  // CStatzTabBuilder (the side tab's `parent`)
 #include <Gruntz/SbiConfig.h>        // canonical CSbiConfigHost (the builders' arg2 config host)
 #include <Gruntz/SBI_ImageSetAni.h>  // canonical CSBI_StatzTabArrow (SetDirection/SetDirectionAlt)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // canonical CSBI_StatzTabGruntBar (BuildMultiplayerTab..)
@@ -244,90 +245,94 @@ i32 Gap_0e8e00(void) {
 
 namespace StatusBarTabBuilders {
 
-    // ===========================================================================
-    // CSbTab::BuildStatzTabStatusBar  (0xe9600)
-    // ===========================================================================
-    // @early-stop
-    // identical-return-epilogue tail-merge wall (topic:wall) + the p5/p7 callee-saved
-    // register reuse (they stay in ebx/ebp for the (p7-p5)/2 arithmetic, so the geometry
-    // block can't use the struct-copy idiom). Body logic byte-faithful; ~65%. Deferred.
-    RVA(0x000e9600, 0x18c)
-    i32 CSbTab::BuildStatzTabStatusBar(
-        CSbParent* parent,
-        CSbOwner* statusbar,
-        i32 p3,
-        i32 p4,
-        i32 p5,
-        i32 p6,
-        i32 p7,
-        i32 p8,
-        i32 p9,
-        i32 p10,
-        i32 p11,
-        i32 p12,
-        i32 onLeft
-    ) {
-        (void)p9;
-        if (statusbar == 0 || parent == 0) {
-            return 0;
-        }
-        m_owner = statusbar;
-        m_10 = p4;
-        m_parent = parent;
-        m_geom.a = p5;
-        m_28 = 0;
-        m_geom.b = p6;
-        m_geom.c = p7;
-        m_geom.d = p8;
-        m_0c = p3;
-        if (p12 == 0) {
-            m_04 = 0;
-        } else {
-            m_04 = 1;
-        }
-        m_3c = p10;
-        m_frameIdx = p11;
-        m_54 = onLeft;
-        if (onLeft == 0) {
-            void* out = 0;
-            ((CMapStringToPtr*)&((CSbOwner*)g_gameReg->m_world)->m_mapHost->m_map)
-                ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", (void*&)out);
-            CSbImageSet* n = (CSbImageSet*)out;
-            i32 v;
-            if (n == 0 || n->m_idxLo > 1 || n->m_idxHi < 1) {
-                v = 0;
-            } else {
-                v = n->m_formats[1];
-            }
-            m_imageSet = (CSbImageSet*)v;
-            m_50 = -1;
-            m_48 = (p7 - p5) / 2 + parent->m_18;
-        } else {
-            void* out = 0;
-            ((CMapStringToPtr*)&((CSbOwner*)g_gameReg->m_world)->m_mapHost->m_map)
-                ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", (void*&)out);
-            CSbImageSet* n = (CSbImageSet*)out;
-            i32 v;
-            if (n == 0 || n->m_idxLo > 1 || n->m_idxHi < 1) {
-                v = 0;
-            } else {
-                v = n->m_formats[1];
-            }
-            m_imageSet = (CSbImageSet*)v;
-            m_50 = 1;
-            m_48 = parent->m_10 - (p7 - p5) / 2;
-        }
-        m_4c = p11 * 0x12 + 0xd1;
-        if (m_imageSet == 0) {
-            return 0;
-        }
-        m_44 = p12;
-        m_38 = -1;
-        m_58 = BuildHandle();
-        return 1;
-    }
-
 } // namespace StatusBarTabBuilders
+
+// ---------------------------------------------------------------------------
+// CSBI_SideTab::BuildStatzTabStatusBar (0xe9600) - the side tab's own configure, run on
+// the freshly-`new`ed child by CStatzTabBuilder::Build. Re-homed off `CSbTab` (the same
+// conflation view that held the other two Build*). `this` is proven by the call site
+// (`newobj->BuildStatzTabStatusBar` straight after `new CSBI_SideTab`); `parent` is the
+// BUILDER, not another side tab - the body reads parent->m_10 / parent->m_18, which are
+// CStatzTabBuilder's geometry anchors. The caller-side view typed that param CSBI_SideTab*
+// purely to compile, forcing a cross-cast of a CStatzTabBuilder. The view's CSbImageSet is
+// the canonical CSbiConfigRecord.
+// @early-stop
+// identical-return-epilogue tail-merge wall (topic:wall) + the p5/p7 callee-saved
+// register reuse (they stay in ebx/ebp for the (p7-p5)/2 arithmetic, so the geometry
+// block can't use the struct-copy idiom). Body logic byte-faithful; ~65%. Deferred.
+RVA(0x000e9600, 0x18c)
+i32 CSBI_SideTab::BuildStatzTabStatusBar(
+    CStatzTabBuilder* parent,
+    CSbiConfigHost* host,
+    i32 p3,
+    i32 p4,
+    i32 p5,
+    i32 p6,
+    i32 p7,
+    i32 p8,
+    const char* p9,
+    i32 p10,
+    i32 p11,
+    i32 p12,
+    i32 onLeft
+) {
+    (void)p9;
+    if (host == 0 || parent == 0) {
+        return 0;
+    }
+    m_24 = (i32)host;
+    m_10 = p4;
+    m_2c = (i32)parent;
+    m_rect14.m_0 = p5;
+    m_28 = 0;
+    m_rect14.m_4 = p6;
+    m_rect14.m_8 = p7;
+    m_rect14.m_c = p8;
+    m_c = p3;
+    if (p12 == 0) {
+        m_4 = 0;
+    } else {
+        m_4 = 1;
+    }
+    m_3c = p10;
+    m_40 = p11;
+    m_54 = onLeft;
+    if (onLeft == 0) {
+        CSbiConfigRecord* n = 0;
+        ((CSbiConfigHost*)g_gameReg->m_world)
+            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", (void*&)n);
+        CImage* v;
+        if (n == 0 || n->m_64 > 1 || n->m_68 < 1) {
+            v = 0;
+        } else {
+            v = (CImage*)n->m_14[1];
+        }
+        m_30 = v;
+        m_50 = -1;
+        m_48 = (p7 - p5) / 2 + parent->m_18;
+    } else {
+        CSbiConfigRecord* n = 0;
+        ((CSbiConfigHost*)g_gameReg->m_world)
+            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", (void*&)n);
+        CImage* v;
+        if (n == 0 || n->m_64 > 1 || n->m_68 < 1) {
+            v = 0;
+        } else {
+            v = (CImage*)n->m_14[1];
+        }
+        m_30 = v;
+        m_50 = 1;
+        m_48 = parent->m_10 - (p7 - p5) / 2;
+    }
+    m_4c = p11 * 0x12 + 0xd1;
+    if (m_30 == 0) {
+        return 0;
+    }
+    m_44 = p12;
+    m_38 = -1;
+    m_58 = BuildHandle();
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // CSBI_SideTab::Reset (0xe9800): drop the resolved config + frame. Out-of-line (matcher-5).

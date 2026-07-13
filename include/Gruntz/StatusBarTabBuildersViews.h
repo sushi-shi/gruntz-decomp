@@ -79,21 +79,6 @@ namespace StatusBarTabBuilders {
     // 0x88 class. What remains here is BuildStatzTabStatusBar + its two helpers, whose
     // owner is still unproven - an @identity-TODO, not a keep.)
     struct CSbTab {
-        i32 BuildStatzTabStatusBar(
-            CSbParent* parent,
-            CSbOwner* statusbar,
-            i32 p3,
-            i32 p4,
-            i32 p5,
-            i32 p6,
-            i32 p7,
-            i32 p8,
-            i32 p9,
-            i32 p10,
-            i32 p11,
-            i32 p12,
-            i32 onLeft
-        );
         i32 BuildHandle();
         void Update();
 
