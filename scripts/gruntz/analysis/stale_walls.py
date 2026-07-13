@@ -244,6 +244,25 @@ def reconstructed_sizes():
     p = REPO / "build/gen/structs.json"
     if not p.is_file():
         return {}
+
+    # structs.json is NOT a ninja target - `gruntz build` never refreshes it; only an explicit
+    # `gruntz structs` (or `init`) does. So it goes STALE the moment a header's layout changes,
+    # and this check then compares the binary against a snapshot of our OLD sizes. That is
+    # dangerous in BOTH directions: it invents layout bugs that are already fixed, and - far
+    # worse - it can report MATCH for a class whose layout we have since broken. Measured
+    # 2026-07-13: it reported all 9 layout bugs as still-live for hours after they were fixed.
+    # Refuse to answer on stale data; tell the caller exactly how to refresh it.
+    newest_hdr = max(
+        (f.stat().st_mtime for pat in ("include/**/*.h", "src/**/*.h")
+         for f in REPO.glob(pat)),
+        default=0,
+    )
+    if newest_hdr > p.stat().st_mtime:
+        print("  !! build/gen/structs.json is STALE (a header changed after it was generated).")
+        print("     The size check is SKIPPED - it would compare the binary against old sizes,")
+        print("     which can hide a real layout bug. Refresh it:  gruntz structs")
+        return {}
+
     return {e["name"]: e.get("size") for e in json.load(open(p)) if e.get("size")}
 
 
