@@ -42,8 +42,16 @@ struct CViewPooledRes {
 SIZE_UNKNOWN(CDrawTarget);
 struct CDrawTarget {
     char m_pad00[0x10];
-    struct SurfaceA { // +0x10  frame-surface page
-        char p0[0x2c];
+    struct SurfaceA { // +0x10  frame-surface page (same surface-page layout as SurfaceB)
+        char p0[0x10];
+        // +0x10/+0x14 the page's pixel extent. CChatBox's 0x182ab0 seeder defaults its
+        // region RECT to (0,0,width-1,height-1) straight out of this page:
+        //   mov edx,[eax+4]; mov edx,[edx+0x10]; mov edx,[edx+0x10]; dec edx   -> right
+        //   mov eax,[eax+4]; mov edx,[eax+0x10]; mov eax,[edx+0x14]; dec eax   -> bottom
+        // (eax = the CSpriteFactoryHolder, +0x04 = this CDrawTarget, +0x10 = this page).
+        i32 m_10; // +0x10  surface width
+        i32 m_14; // +0x14  surface height
+        char p18[0x2c - 0x18];
         // +0x2c the frame surface: the real CDDSurface (Flip @0x13e850, Draw, and its
         // held IDirectDrawSurface m_8 whose IsLost slot 24 the render/credits path polls;
         // CState::Vslot17 draws text through m_8's GetDC/ReleaseDC). Was the Surface2c view.
