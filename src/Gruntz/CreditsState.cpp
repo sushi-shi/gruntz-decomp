@@ -28,15 +28,15 @@
 #include <Gruntz/BankMgr.h>     // CResSource (InitAttractTitle m_2c state store)
 #include <Gruntz/ParseSource.h> // CParseSource (the resolved MIDIZ sub-entry: BeginParse/m_length)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
-#include <Gruntz/GameMode.h>  // CCreditsState : CState + CGMOwner/CGMSoundEntry
+#include <Gruntz/GameMode.h>              // CCreditsState : CState + CGMOwner/CGMSoundEntry
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (CState::m_4 owner; m_sound @+0x48, m_numRuns @+0x80)
 #include <Rez/RezMgr.h>       // RezFree (ReleaseResources video-handle teardown)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ::CreateBank (0x138670) - credits sound-bank loader
 #include <Win32.h>                // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>                // real IDirectDrawSurface (credits-scroll DC + Render input surface)
+#include <ddraw.h> // real IDirectDrawSurface (credits-scroll DC + Render input surface)
 #include <rva.h>
 #include <stdio.h> // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
 // Real MFC CRgn/CGdiObject for the credits clip region (CCreditsState::m_1e8).

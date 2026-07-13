@@ -25,7 +25,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/Fader.h> // the polymorphic base (SetTimers/Set2c/virtual dtor)
+#include <Gruntz/Fader.h>        // the polymorphic base (SetTimers/Set2c/virtual dtor)
 #include <Rez/RezBufferObject.h> // CRezBufferObject - CFaderMesh's +0x58 mesh buffer
 
 // The default-init descriptor built on the CFaderMgr::Add stack when pInit is null:
@@ -68,17 +68,17 @@ struct FaderSrc {
     i32 m_frameCount; // +0x18  frame count (w)
     i32 m_1c;         // +0x1c  element count
 };
-class CDDSurface;   // the real DDraw surface every subtype's source/dest slots point at
-struct CDDPalette;  // the real DDraw palette (its +0x0c m_cacheA is the 256-entry PalEntry
-                    // base the shade-table builders take) - <DDrawMgr/DirectDrawMgr.h>
+class CDDSurface;  // the real DDraw surface every subtype's source/dest slots point at
+struct CDDPalette; // the real DDraw palette (its +0x0c m_cacheA is the 256-entry PalEntry
+                   // base the shade-table builders take) - <DDrawMgr/DirectDrawMgr.h>
 
 // The 16-byte radial fade cell (CFaderRadial::m_cells[]): the precomputed per-pixel
 // displacement + fade threshold + source pixel. ApplyInit fills one per source pixel;
 // v1 plots the cells whose (fade - frame) still exceeds 1.0. The first three are FLOATS
 // (v1 reads them with fld/fcomp).
 struct CFaderRadialCell {
-    float m_vx;  // +0x00  x displacement
-    float m_vy;  // +0x04  y displacement
+    float m_vx;   // +0x00  x displacement
+    float m_vy;   // +0x04  y displacement
     float m_fade; // +0x08 fade threshold
     i32 m_pixel;  // +0x0c source pixel (byte)
 };
@@ -152,7 +152,7 @@ public:
         return ::operator new(0x7d5c);
     }
     i32 ApplyInit(CFxModeDesc* src); // 0x17fe00 (apply the built default init; body in Fader.cpp)
-    i32 CopyFrom(CFader* src);      // 0x17fe00 (same method; copy from the pInit descriptor)
+    i32 CopyFrom(CFader* src);       // 0x17fe00 (same method; copy from the pInit descriptor)
 
     // ApplyInit latches the source boxes + geometry, range-checks the 0..100 intensity,
     // computes the scaled magnitude (m_54) via the FP pipeline, then fills four parallel
@@ -187,18 +187,18 @@ public:
         return ::operator new(0x50);
     }
     i32 ApplyInit(CFxModeDesc* src); // 0x17f5e0 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x17f5e0 (same method; copy from the pInit descriptor)
+    i32 CopyFrom(CFader* src);       // 0x17f5e0 (same method; copy from the pInit descriptor)
 
     // ApplyInit (0x17f5e0) latches the CFxModeT5 descriptor: the frame source (+0x08,
     // else the base's m_timerB default), the two scalars, the duration percent, and the
     // per-frame work array it RezAllocs. (Was the Fader.cpp-local `CFaderElem` view - the
     // RVA is CFaderFlat::ApplyInit, and its m_src/m_percent are these fields.)
-    i32 m_38;                 // +0x38  desc +0x04 (else the base's m_timerA default)
-    FaderSrc* m_src;          // +0x3c  animation source (frame count at +0x18)
-    i32 m_40;                 // +0x40  desc +0x0c
-    i32 m_percent;            // +0x44  duration-scale percent (desc +0x10; v2)
-    i32 m_48;                 // +0x48  desc +0x14
-    i32* m_frames;            // +0x4c  per-frame work array (m_src->m_frameCount ints)
+    i32 m_38;        // +0x38  desc +0x04 (else the base's m_timerA default)
+    FaderSrc* m_src; // +0x3c  animation source (frame count at +0x18)
+    i32 m_40;        // +0x40  desc +0x0c
+    i32 m_percent;   // +0x44  duration-scale percent (desc +0x10; v2)
+    i32 m_48;        // +0x48  desc +0x14
+    i32* m_frames;   // +0x4c  per-frame work array (m_src->m_frameCount ints)
 };
 
 // ===========================================================================
@@ -219,8 +219,8 @@ public:
         return ::operator new(0x206c);
     }
     i32 ApplyInit(CFxModeDesc* src); // 0x1804a0 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x1804a0 (same method; copy from the pInit descriptor)
-    void SubFree180630();           // 0x180630 (dtor member teardown; reloc-masked)
+    i32 CopyFrom(CFader* src);       // 0x1804a0 (same method; copy from the pInit descriptor)
+    void SubFree180630();            // 0x180630 (dtor member teardown; reloc-masked)
 
     // The light/shade effect state. ApplyInit (0x1804a0) captures the CFxModeT2
     // descriptor's surface/palette/centre, clips the centre to the surface rect and fills
@@ -229,13 +229,13 @@ public:
     // pool held in the CFader base's dual-role +0x2c slot (m_set2cArg, a
     // CDDrawPtrCollections*). (Was the Fader.cpp-local `CFaderLightApply` flat view; the
     // 0x206c size is exactly these fields.)
-    CDDSurface* m_surface;  // +0x38  active surface (desc +0x04, else base m_timerA)
-    i32 m_3c;               // +0x3c  desc +0x08 (else base m_timerB)
-    CDDSurface* m_overlay;  // +0x40  current pooled overlay surface (0 = none)
-    CDDPalette* m_palette;  // +0x44  palette (desc +0x0c) - its m_cacheA feeds HueRampTable
-    i32 m_lightGate;        // +0x48  full-width-span gate (desc +0x10)
-    i32 m_centerX;          // +0x4c  light centre x (desc +0x18; T2 default 0x140)
-    i32 m_centerY;          // +0x50  light centre y (desc +0x1c; T2 default 0xf0)
+    CDDSurface* m_surface; // +0x38  active surface (desc +0x04, else base m_timerA)
+    i32 m_3c;              // +0x3c  desc +0x08 (else base m_timerB)
+    CDDSurface* m_overlay; // +0x40  current pooled overlay surface (0 = none)
+    CDDPalette* m_palette; // +0x44  palette (desc +0x0c) - its m_cacheA feeds HueRampTable
+    i32 m_lightGate;       // +0x48  full-width-span gate (desc +0x10)
+    i32 m_centerX;         // +0x4c  light centre x (desc +0x18; T2 default 0x140)
+    i32 m_centerY;         // +0x50  light centre y (desc +0x1c; T2 default 0xf0)
     char _pad54[0x5c - 0x54];
     i32 m_frameCount;       // +0x5c  fade frame count (v2: max centre->corner distance)
     i32 m_spanStarts[1024]; // +0x60    per-scanline span start
@@ -263,8 +263,8 @@ public:
     // default `new CFaderRadial` pushes 0x5c on its own - which is what the retail factory
     // at 0x17d9c0 does.)
     i32 ApplyInit(CFxModeDesc* src); // 0x17fa40 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x17fa40 (same method; copy from the pInit descriptor)
-    void FreeBuffer17fc40();        // 0x17fc40 (dtor: free the m_cells buffer)
+    i32 CopyFrom(CFader* src);       // 0x17fa40 (same method; copy from the pInit descriptor)
+    void FreeBuffer17fc40();         // 0x17fc40 (dtor: free the m_cells buffer)
 
     // The radial distance-field state. ApplyInit (0x17fa40) resolves the source/dest
     // surfaces from the CFxModeT4 descriptor, builds the base's shade table through the
@@ -301,7 +301,7 @@ public:
     // m_490 declared below, sizeof IS 0x494 and the default `new CFaderShape` pushes 0x494
     // on its own - which is what retail's new-site at 0x17da14 does.)
     i32 ApplyInit(CFxModeDesc* src); // 0x1817e0 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x1817e0 (same method; copy from the pInit descriptor)
+    i32 CopyFrom(CFader* src);       // 0x1817e0 (same method; copy from the pInit descriptor)
     // The two scanline compositors v1 (0x181b00) drives, one per placement mode. Proven
     // CFaderShape methods by sema xref: 0x182610 and 0x181e50 are called from EXACTLY one
     // site each - 0x181b00, this class's vtable slot 1. (They were the Fader.cpp-local

@@ -1000,7 +1000,7 @@ struct CTrigLogic {
     char m_pad10[0x20 - 0x10];
     CTileTriggerContainer* m_20; // +0x20  owner (1abe / 1d39 group)
     CTileTriggerContainer* m_24; // +0x24  owner (277f group)
-    char m_pad28[0x74 - 0x28]; // +0x28..+0x73 (folds the unused +0x70 owner slot)
+    char m_pad28[0x74 - 0x28];   // +0x28..+0x73 (folds the unused +0x70 owner slot)
 
     // Each thunk (ILT 0xNNNN -> the real leaf ctor RVA) constructs one RTTI class;
     // resolved from the ILT jmp target (TileTriggerDerivedCtors.cpp / the base ctors).

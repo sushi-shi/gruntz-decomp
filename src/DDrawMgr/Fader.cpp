@@ -49,8 +49,8 @@
 #include <Ints.h>
 #include <Mfc.h>                // superset of Win32.h; needed for CDDSurface (CPtrArray member)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (was the Surf/FShadeSurf/TileSurf/FxBox views)
-#include <DDrawMgr/DirectDrawMgr.h>       // the real CDDPalette (its +0x0c m_cacheA is the
-                                          // PalEntry base; was the PalHolder/FInitPal/FrImageSrc views)
+#include <DDrawMgr/DirectDrawMgr.h> // the real CDDPalette (its +0x0c m_cacheA is the
+                                    // PalEntry base; was the PalHolder/FInitPal/FrImageSrc views)
 #include <DDrawMgr/DDrawPtrCollections.h> // the +0x2c overlay surface pool (CFaderLight v3/v4)
 #include <Gruntz/FxModeT1.h>              // the CString-bearing CFxModeT1 (ex fxmodedesc)
 #include <Gruntz/FxModeDesc.h>            // CFxModeDesc + T2-T6 (ex fxmodedesc)
@@ -1249,8 +1249,8 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
         for (i32 x = 0; x < m_srcSurface->m_width; x++) {
             i32 dx = x - m_centerX;
             i32 dy = y - m_centerY;
-            float r = (float)((double)m_maxRadius
-                              - sqrt((double)(dx * dx + dy * dy)) * g_faderScale - g_faderBiasR);
+            float r = (float)((double)m_maxRadius - sqrt((double)(dx * dx + dy * dy)) * g_faderScale
+                              - g_faderBiasR);
             float fade = r / m_fadeDivisor - g_faderBiasFade;
             float vx = (float)dx * fade;
             float vy = (float)dy * fade;
@@ -1293,10 +1293,10 @@ void CFaderRadial::v1(i32 frame) {
     CDDSurface* dst = m_dstSurface;         // +0x3c
     void* scratch = RezAlloc(dst->m_width); // per-width scratch (alloc'd, unused)
     dst->Clear(0);
-    m_srcSurface->Lock(0);           // lock source (base unused here)
-    i32 base = dst->Lock(0);         // locked dest pixel base
-    if (m_table->m_data == 0) {      // gate: is the shade table's buffer present?
-        return;                      // retail bails w/o unlock/free (matched)
+    m_srcSurface->Lock(0);      // lock source (base unused here)
+    i32 base = dst->Lock(0);    // locked dest pixel base
+    if (m_table->m_data == 0) { // gate: is the shade table's buffer present?
+        return;                 // retail bails w/o unlock/free (matched)
     }
 
     i32 total = m_srcSurface->m_width * m_srcSurface->m_height;
@@ -1462,8 +1462,8 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 
     m_warpTable = (i32*)RezAlloc(m_halfWidth * 8);
     for (i = 0; i < 2 * m_halfWidth; i++) {
-        m_warpTable[i] = (i32)(acos(((float)i - (float)m_halfWidth) / (float)m_halfWidth)
-                               * (float)m_halfWidth);
+        m_warpTable[i] =
+            (i32)(acos(((float)i - (float)m_halfWidth) / (float)m_halfWidth) * (float)m_halfWidth);
     }
 
     m_useLut = pInit->m_1c;
@@ -1729,8 +1729,7 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
                         } while (i < colBase);
                     }
                     for (; t < stride; t++) {
-                        m_lineBuf[t] =
-                            lut[(u32)m_shadeRamp[t] + (u32)gsrc[m_warpTable[t]] * 0x40];
+                        m_lineBuf[t] = lut[(u32)m_shadeRamp[t] + (u32)gsrc[m_warpTable[t]] * 0x40];
                     }
                 }
                 u8* sp = m_lineBuf;
@@ -1838,8 +1837,7 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
                 if (colBase > 0) {
                     do {
                         e = i + 1;
-                        m_lineBuf[i] =
-                            lut[(u32)m_shadeRamp[i] + (u32)gsrc[m_warpTable[i]] * 0x40];
+                        m_lineBuf[i] = lut[(u32)m_shadeRamp[i] + (u32)gsrc[m_warpTable[i]] * 0x40];
                         i = e;
                     } while (e < colBase);
                 }
