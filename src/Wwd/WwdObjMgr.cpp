@@ -32,6 +32,8 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical m_0c owner (InvokeCallback + m_workerCache)
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Gruntz/ObList.h>
+#include <Gruntz/UserLogic.h>       // CGameObject - the real class of the AABB pair
+                                    // BoxesOverlap_15a130 tests (was the CWwdBox view)
 #include <Wwd/WwdFile.h>            // CPlaneRender (m_parent->m_24->m_5c world transform)
 #include <Gruntz/ResLoadersViews.h> // ResLoaders::DrawHost_164380 (counter draw)
 #include <Win32.h>                  // SetRect + RECT
@@ -965,37 +967,28 @@ void CDDrawChildGroup::Slot40() {
 // 3 spilled box edges, our cl reuses the incoming arg stack slots - shifting every
 // spill offset + rotating esi/edi. A non-steerable codegen heuristic
 // (zero-register-pinning family).
-struct CWwdBox {
-    char m_pad00[0x5c];
-    i32 m_screenX; // screen X
-    i32 m_screenY; // screen Y
-    char m_pad64[0x144 - 0x64];
-    i32 m_aabb0Left;   // a1 AABB: left
-    i32 m_aabb0Top;    // a1 AABB: top
-    i32 m_aabb0Right;  // a1 AABB: right
-    i32 m_aabb0Bottom; // a1 AABB: bottom
-    i32 m_aabb1Left;   // a2 AABB: left
-    i32 m_aabb1Top;    // a2 AABB: top
-    i32 m_aabb1Right;  // a2 AABB: right
-    i32 m_aabb1Bottom; // a2 AABB: bottom
-};
-SIZE_UNKNOWN(CWwdBox);
+// The two boxes are CGameObjects (<Gruntz/UserLogic.h>) - the `CWwdBox` view is gone. Every
+// field it declared is a canonical CGameObject member at the same offset: the screen
+// position (m_screenX @+0x5c / m_screenY @+0x60) and the two 4-dword boxes at +0x144 and
+// +0x154 (m_areaL/T/R/B - "the derived activation/stand box L/T/R/B" - and the m_154 quad).
+// The 0x80000000 "invalid" sentinel this reads is the SAME unset marker CGameObject's
+// extent/area block documents.
 RVA(0x0015a130, 0xdc)
-i32 __stdcall BoxesOverlap_15a130(CWwdBox* a1, CWwdBox* a2) {
-    if (a2->m_aabb1Left == (i32)0x80000000) {
+i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
+    if (a2->m_154 == (i32)0x80000000) {
         return 0;
     }
-    if (a1->m_aabb0Left == (i32)0x80000000) {
+    if (a1->m_areaL == (i32)0x80000000) {
         return 0;
     }
-    i32 a1L = a1->m_aabb0Left + a1->m_screenX;
-    i32 a1R = a1->m_aabb0Right + a1->m_screenX;
-    i32 a1T = a1->m_aabb0Top + a1->m_screenY;
-    i32 a1B = a1->m_aabb0Bottom + a1->m_screenY;
-    i32 a2L = a2->m_aabb1Left + a2->m_screenX;
-    i32 a2T = a2->m_aabb1Top + a2->m_screenY;
-    i32 a2B = a2->m_aabb1Bottom + a2->m_screenY;
-    i32 a2R = a2->m_aabb1Right + a2->m_screenX;
+    i32 a1L = a1->m_areaL + a1->m_screenX;
+    i32 a1R = a1->m_areaR + a1->m_screenX;
+    i32 a1T = a1->m_areaT + a1->m_screenY;
+    i32 a1B = a1->m_areaB + a1->m_screenY;
+    i32 a2L = a2->m_154 + a2->m_screenX;
+    i32 a2T = a2->m_158 + a2->m_screenY;
+    i32 a2B = a2->m_160 + a2->m_screenY;
+    i32 a2R = a2->m_15c + a2->m_screenX;
     if (a1L > a2R) {
         return 0;
     }
@@ -1220,19 +1213,17 @@ CWwdObject* CWwdObjMgr::FindByWorker_15a860(i32 type, void* key) {
 // branch-layout wall: retail pins `found` in ebp and the node in eax (twin-copy),
 // allocates the out slot 4 B higher, and lays out the match path as fall-through -
 // same values, same stores (docs/patterns/zero-register-pinning.md).
-struct CChildFinder_15a8c0 {
-    char m_pad00[0x0c];
-    char* m_parent; // +0x0c
-    char m_pad10[0x14 - 0x10];
-    void* m_listHead; // +0x14
-    void* Find_15a8c0(i32 id, const char* key);
-};
-SIZE_UNKNOWN(CChildFinder_15a8c0);
+// The `CChildFinder_15a8c0` placeholder class is GONE: it WAS this manager. Its two fields
+// were CWwdObjMgr's own - m_parent @+0x0c is m_0c (the CDDrawSurfaceMgr owner, whose
+// +0x14 worker cache holds the name map this looks the key up in, exactly as
+// CreateNamed_1593e0/1595b0 do) and m_listHead @+0x14 is m_10's head node (the CObList sits
+// at +0x10). So Find_15a8c0 is a plain CWwdObjMgr method, walking the same list with the
+// same `(CWwdNode*)m_10.GetHeadPosition()` idiom every sibling FindBy* here uses.
 RVA(0x0015a8c0, 0x7d)
-void* CChildFinder_15a8c0::Find_15a8c0(i32 id, const char* key) {
+void* CWwdObjMgr::Find_15a8c0(i32 id, const char* key) {
     CObject* found = 0;
-    ((CMapStringToOb*)(*(char**)(m_parent + 0x14) + 0x10))->Lookup(key, found);
-    char* node = (char*)m_listHead;
+    m_0c->m_workerCache->m_10.Lookup(key, found);
+    char* node = (char*)m_10.GetHeadPosition();
     if (node == 0) {
         return 0;
     }

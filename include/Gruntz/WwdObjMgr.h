@@ -74,6 +74,11 @@ public:
     CWwdObject* FindByTypeProbe_15a810(i32 type);
     CWwdObject* FindByWorker_15a860(i32 type, void* key);
     CWwdObject* FindByField_15a940(i32 type, void* key);
+    // 0x15a8c0 - first child whose type tag (vtable slot 8) == 5, whose +0x04 id == `id`, and
+    // whose +0x7c sub-object's +0x10 matches the object the worker-cache name map yields for
+    // `key`. (Was the placeholder class CChildFinder_15a8c0, whose "m_parent @+0x0c" and
+    // "m_listHead @+0x14" are this class's own m_0c and m_10-head.)
+    void* Find_15a8c0(i32 id, const char* key);
     CWwdObject* FindByKey_15a9a0(void* key);       // 0x15a9a0 first obj with m_key==key
     CWwdObject* FindByStatusKey_15a9d0(void* key); // 0x15a9d0 first status-5 obj with m_key==key
     i32 IsKindUnique_15aa20(i32 kind);             // 0x15aa20 1 unless 2+ objs share m_04==kind
