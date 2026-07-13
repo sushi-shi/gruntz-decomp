@@ -45,10 +45,11 @@ extern "C" u32 g_645588; // a wrap-safe draw/elapsed counter (FormatElapsed arg 
 // CString (copy-construct into the caller's hidden return slot).
 CString FormatElapsed(i32 count);
 
-// The *0x64556c game-registry singleton, this method's typed alias: GetRect
-// returns the level's text rect by out-param + value.
+// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed); GetRect (@0x8e3a0) is its
+// method - the old `g_dbgMgr` CGameRegistry alias emitted the phantom
+// ?GetRect@CGameRegistry@@QAEPAXPAX@Z, which no obj and no .LIB can ever define.
 DATA(0x0024556c)
-extern CGameRegistry* g_dbgMgr; // *0x64556c, this method's alias
+extern "C" CGruntzMgr* g_gameReg; // *0x64556c the one singleton
 
 // @source: string-xref
 // Code bytes are byte-EXACT vs retail (verified instruction-by-instruction with
@@ -116,7 +117,7 @@ void CPlay::DrawDebugStats() {
     if (buf[0] != 0) {
         RECT rb;
         RECT lr;
-        CopyRect(&lr, (RECT*)g_dbgMgr->GetRect(&rb));
+        CopyRect(&lr, g_gameReg->GetRect(&rb));
         RECT dr;
         dr.left = lr.left;
         dr.top = lr.bottom - 0x1c;

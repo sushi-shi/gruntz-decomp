@@ -50,8 +50,12 @@ DATA(0x002454e8)
 char* g_areaNames[8]; // 0x6454e8
 // g_gameReg comes typed from <Io/SaveGame.h> (the DATA(0x0024556c) binding lives in
 // GruntzMgr.cpp); g_gameReg is the CGruntzMgr view of the SAME 0x24556c datum.
+// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
+// the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
+// (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
+// extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_gameReg; // *0x64556c
+extern "C" CGruntzMgr* g_gameReg;
 DATA(0x00213a9c)
 extern i32 g_savedMenuCmd; // DAT_00613a9c  pending deferred save-menu command
 // The level-preview image pool + previewed DIB (.bss). DEFINED here (owner TU),
@@ -510,7 +514,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         }
     }
     obj->FillSlotByIndex(slot, (i32)name, g_gameReg);
-    ((CGruntzMgr*)g_gameReg)->FillSaveInfo((SaveInfo*)(i32)obj->GetSlot(slot), (void*)name);
+    g_gameReg->FillSaveInfo((SaveInfo*)(i32)obj->GetSlot(slot), (void*)name);
     EndDialog(hDlg, 1);
     if (!obj->Save((i32)obj->GetSlot(slot) + 0x35, 0x81a6)) {
         g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
@@ -850,16 +854,16 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     i32 f8 = slot->m_pathLo;
     const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
     CString s(name);
-    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId);
+    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, s);
     if (r == 0) {
-        g_gameReg->LogError(
+        g_gameReg->EnterModalUI(
             "The level that this game was saved on does not exist!\n\nThis "
             "saved game cannot be loaded and should be deleted."
         );
         return 0;
     }
     if (slot->m_checksum != r) {
-        g_gameReg->LogError(
+        g_gameReg->EnterModalUI(
             "The level that this game was saved on has changed!\n\nThis "
             "saved game cannot be loaded and should be deleted."
         );
@@ -887,7 +891,7 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     i32 f8 = slot->m_pathLo;
     const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
     CString s(name);
-    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId);
+    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, s);
 }
 
 // ---------------------------------------------------------------------------

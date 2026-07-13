@@ -27,6 +27,7 @@
 #include <rva.h>
 
 #include <Bute/SymParser.h>     // the shared CSymParser (ResolvePath 0x13c030)
+#include <Gruntz/GruntzMgr.h> // the REAL owner (was the LevelRezLoader view)
 #include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse (0x139960/0x1399d0)
 
 // The ButeMgr symbol tree the rez data is resolved/parsed through.
@@ -39,13 +40,14 @@ struct LevelRezData {
     char m_pad2f0[0x5f4 - 0x2f0];
 };
 
-class LevelRezLoader {
-public:
-    i32 BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name);
-
-    char m_pad00[0x34];
-    CSymParser* m_34; // +0x34  the rez-tree parser
-};
+// OWNER RECOVERED: the fake `LevelRezLoader` was CGruntzMgr - CSaveGame::VerifySlot /
+// ::Register call this method on the 0x64556c singleton (retail loads ecx from
+// ds:0x64556c), and CGameRegistry::BuildLevelRezPath was the phantom name for it.
+//
+// @conflict: this body reads +0x34 as the rez-tree CSymParser*, while GruntzMgr.cpp's
+// Build/Apply/Teardown read the SAME +0x34 as a CRezSurface94* (m_recolorSurface). Both
+// claims carry in-source evidence; one is a misattribution. Flagged with the cast rather
+// than silently re-typing either side - the cast is the symptom, the conflict is the bug.
 
 // @source: decomp-xref
 // @early-stop
@@ -58,7 +60,7 @@ public:
 // differs by 4 throughout; the only other residual is the demangled-vs-mangled EH/
 // CString reloc names. Documented, not source-steerable: docs/patterns/zero-register-pinning.md.
 RVA(0x00093d40, 0x473)
-i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) {
+i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) {
     char scratch[16];
     LevelRezData buf;
     if (a3 != 0) {
@@ -84,7 +86,7 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
     // inline per sub-path (no factoring), so it is duplicated here to match.
     if (a1 != 0) {
         sprintf(scratch, "AREA%i_WORLDZ", ((a4 - 1) % 0x24) / 4 + 1);
-        CSymTab* node = (CSymTab*)m_34->ResolvePath(scratch);
+        CSymTab* node = (CSymTab*)((CSymParser*)m_recolorSurface)->ResolvePath(scratch);
         if (node == 0) {
             return 0;
         }
@@ -108,7 +110,7 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
         return buf.m_2ec;
     }
     if (a2 == 0) {
-        CSymTab* node = (CSymTab*)m_34->ResolvePath("GAME_MULTI");
+        CSymTab* node = (CSymTab*)((CSymParser*)m_recolorSurface)->ResolvePath("GAME_MULTI");
         if (node == 0) {
             return 0;
         }
@@ -125,7 +127,7 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
         sub->EndParse();
         return buf.m_2ec;
     }
-    CSymTab* node = (CSymTab*)m_34->ResolvePath("GAME_BATTLEZ");
+    CSymTab* node = (CSymTab*)((CSymParser*)m_recolorSurface)->ResolvePath("GAME_BATTLEZ");
     if (node == 0) {
         return 0;
     }
@@ -144,4 +146,3 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
 }
 
 SIZE_UNKNOWN(LevelRezData);
-SIZE_UNKNOWN(LevelRezLoader);

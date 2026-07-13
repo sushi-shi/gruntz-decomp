@@ -333,6 +333,18 @@ public:
     i32 FillSaveInfo(SaveInfo* dst, void* snapshot);   // @0x0927b0
     i32 SaveState(struct CSerialArchive* ar);          // @0x093620 (shared CSerialArchive)
     i32 LoadState(struct CSerialArchive* ar);          // @0x093920 (deserialize counterpart)
+    // @0x08e3a0 - the level/viewport text rect (default 640x480, else the active
+    // world view's rect at m_world->m_24 + 0x10) written to *out. Was the fake
+    // `RectQuery_08e3a0` view in GruntzMgr.cpp AND the phantom CGameRegistry::GetRect:
+    // both are this ONE method - the callers run it on the 0x64556c singleton.
+    RECT* GetRect(RECT* out);
+    // @0x093d40 - resolve+checksum the level rez path for a save slot. Was the fake
+    // `LevelRezLoader` class in LevelRezPath.cpp AND the phantom
+    // CGameRegistry::BuildLevelRezPath: one method, run on the 0x64556c singleton.
+    // The 5th arg is the level-name CString BY VALUE (callee-destroyed) - the old
+    // 4-arg CGameRegistry decl dropped it, which is why CSaveGame::Register's local
+    // CString looked like an unexplained un-destroyed temp (its ~45% "EH-frame wall").
+    i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name);
     void UpdateScoreHud();                             // @0x0860b0
     i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3); // @0x093460
     void RecomputeViewScale();                         // @0x08f7f0

@@ -18,16 +18,18 @@
 #include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic::FindIndexByKey (the 0x9c family)
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h> // the REAL singleton class (ReportError @0x8dc60)
 
 // ===========================================================================
 // Broadcast (0x112080)
 // ===========================================================================
-// The singleton itself (0x64556c) - the "g_gameRegDiag diagnostics sink" was a second
-// NAME for it (and a C++-mangled one that nothing defines: an undefined-data defect on
-// top of the phantom method). One object, one symbol: the extern "C" g_gameReg.
+// The singleton at 0x64556c is the REAL CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64).
+// Declared at THAT type here - not at the Win32-safe CGameRegistry view - so the two
+// report calls below emit ?ReportError@CGruntzMgr@@QAEXIJ@Z (DEFINED, @0x8dc60) instead
+// of ?ReportError@CGameRegistry@@QAEXHH@Z (a phantom no obj and no .LIB can ever define).
+// `extern "C"` gives the pointer ONE C symbol (_g_gameReg) whatever type each TU picks.
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_gameReg; // 0x64556c
+extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // A resolved map node (FOREIGN engine object): only vtable slot 3 (+0x0c, Prepare)
 // is dispatched; slots 0/1/2 are unreconstructed engine code, declared structurally
@@ -111,7 +113,6 @@ i32 CGroupBroadcast::Broadcast() {
     return 1;
 }
 
-SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CFindNode);
 SIZE_UNKNOWN(CBcastMember);
 SIZE_UNKNOWN(CBcastListNode);

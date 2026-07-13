@@ -4862,30 +4862,22 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 // 0x8e3a0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(out): default to the
 // full 0x280x0x1e0 screen rect, or the active viewport's rect (m_30->m_24 + 0x10) when
 // one is set; write it to *out.
-// @orphan: a shared viewport-rect helper called on divergent `this` from many owners
-// (CSingleFrameMessage ctor, CPlay::Render/DrawDebugStats/Profile*) - no single class
-// owns it; RVA-adjacent .obj not pinned. Kept as a placeholder view.
-struct ViewObj_08e3a0 {
-    char m_pad0[0x24];
-    char* m_24; // +0x24 (its +0x10 is a RECT)
-};
-struct RectQuery_08e3a0 {
-    char m_pad0[0x30];
-    ViewObj_08e3a0* m_30; // +0x30
-    void GetRect(RECT* out);
-};
-SIZE_UNKNOWN(ViewObj_08e3a0);
-SIZE_UNKNOWN(RectQuery_08e3a0);
+// OWNER RECOVERED: the "divergent this" was an illusion - every caller runs it on the
+// 0x64556c singleton (DrawDebugStats loaded it from ds:0x64556c; CGameRegistry::GetRect
+// was the phantom name for the same call). The view's `m_30` IS CGruntzMgr::m_world
+// (+0x30) and its `m_24` is CWorldZ::m_24 (the active CGameLevel view, whose +0x10 is
+// the rect), so the fake RectQuery_08e3a0 / ViewObj_08e3a0 pair is dissolved.
 RVA(0x0008e3a0, 0x94)
-void RectQuery_08e3a0::GetRect(RECT* out) {
+RECT* CGruntzMgr::GetRect(RECT* out) {
     RECT local;
     SetRect(&local, 0, 0, 0x27f, 0x1df);
-    if (!m_30) {
+    if (!m_world) {
         *out = local;
-        return;
+        return out;
     }
-    local = *(RECT*)(m_30->m_24 + 0x10);
+    local = *(RECT*)((char*)m_world->m_24 + 0x10);
     *out = local;
+    return out;
 }
 
 // ---------------------------------------------------------------------------

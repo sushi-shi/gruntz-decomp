@@ -98,8 +98,12 @@ struct GmInner8 {
 // runner are modeled; RunModalDialog (0x90260, __thiscall) is reloc-masked. The obj
 // names the pointer _g_mgrSettings (extern "C"), matching the codebase convention
 // for 0x64556c.
+// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
+// the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
+// (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
+// extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_gameReg;
+extern "C" CGruntzMgr* g_gameReg;
 
 // The "game root dir" the loaders resolve is just the current working directory:
 // 0x11fc10 is the CRT _getcwd (LIBCMT __getcwd), the same routine BuildCustomWwdPath

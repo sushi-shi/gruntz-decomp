@@ -218,6 +218,18 @@ struct CFocusSlot {
     // FormatName_3e54 @0x3e54 IS GruntzPlayer::GetName; cast at the call.
 };
 
+// PHANTOM PURGE (this batch): BuildLevelRezPath / LogError / RunModalDialog / GetRect /
+// EnterModalUI are GONE from this view. Every one was a mangled name (?X@CGameRegistry@@..)
+// that no obj and no .LIB can ever define - while the RVA each call actually targets is a
+// REAL CGruntzMgr method (0x93d40 / 0x8ef10 / 0x90260 / 0x8e3a0 / 0x8ef10, read off the
+// call sites' rel32). LogError turned out to BE EnterModalUI (one function, two fake
+// names). Their callers (savegame, loadgamemenu, customworlddialog, drawdebugstats,
+// groupops) now declare the singleton at its REAL type, CGruntzMgr* - which is legal in
+// any TU (GruntzMgr.h already includes THIS header, and extern "C" gives the pointer one
+// C symbol whatever type a TU picks). The rest of this view's methods are the same defect
+// and go the same way as their callers convert; see the matcher report for the blocker
+// (the sub-object views - CWorldZ vs CSpriteFactoryHolder, CGruntzMapMgr vs CTileGrid -
+// must be folded first for the field-heavy TUs).
 struct CGameRegistry {
     // The entrance-reset cue-prep call (thunk_FUN_0040cd00, __thiscall ret 0): run
     // once before the focused-grunt cue test. External/no-body (reloc-masked).
@@ -229,8 +241,6 @@ struct CGameRegistry {
     QueryLevelName(); // 0x928c0 via ILT 0x2531 (level rez path; == CGruntzMgr::GetWorldFileName, same object)
     // Registry service methods some TUs call directly on the singleton
     // (external/no-body, reloc-masked rel32 callees).
-    i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id); // save-game rez-path builder
-    void LogError(const char* msg);                             // 0x404178 save-game error notifier
     i32 Rand();                                                 // game-mgr RNG
     i32 RandRange(i32 lo, i32 hi);                              // game-mgr RNG range
     void ReportError(const char* msg); // plane/scan error notifier
@@ -241,8 +251,6 @@ struct CGameRegistry {
     //  land on 0x8dc60, whose src claim is ?ReportError@CGruntzMgr@@QAEXIJ@Z, 100% exact).
     //  Four fake names for one function is the Eng::Teardown defect in mirror image, so
     //  they are collapsed onto the single real name below.)
-    i32 RunModalDialog(const char* tmpl, void* proc, i32 flag); // modal dialog runner
-    void* GetRect(void* buf); // dev-stats bounds query (RECT* buf/ret)
     // The status-bar HUD reaches these score/level methods on the singleton (== the
     // MFC-side CGruntzMgr view of *0x24556c; reloc-masked, the same-object dual-view).
     // Re-homed here from the former per-TU SBI CGameReg facet's Fn29aa/HiPump/SetToggle.
@@ -257,7 +265,6 @@ struct CGameRegistry {
     // g_gameReg/g_gameReg view (CTmGameReg/RockMgr/LevelSettings/...) must fold onto
     // this canonical first - see the matcher report's CGameRegistry-side worklist.
     CState* PickPausedThenPlayState();        // 0x0929b0
-    void EnterModalUI(const char* msg);       // 0x08ef10 (msg = the modal text)
     i32 IsBattlezMapFile(class CString path); // (== CGruntzMgr::IsBattlezMapFile)
     i32 ChangeState_8fab0(i32 arg);           // 0x08fab0
     // Win32-safe options/run-state setters (== CGruntzMgr's, reloc-masked to the shared

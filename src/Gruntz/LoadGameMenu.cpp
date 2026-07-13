@@ -15,7 +15,12 @@
 
 // The 0x24556c game-manager singleton (== SaveGameMenu's g_gameReg; DATA-bound
 // there, extern here).
-extern "C" CGameRegistry* g_gameReg;
+// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
+// the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
+// (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
+// extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
+DATA(0x0024556c)
+extern "C" CGruntzMgr* g_gameReg;
 // The last-queried slot handle (== SaveGameMenu's g_slotState; DATA-bound there).
 extern i32 g_slotState; // ?g_slotState@@3HA @0x64c864
 // The active GAME_LOAD dialog's CSaveGame sink, latched at WM_INITDIALOG.
@@ -56,7 +61,7 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
                 // the CGameRegistry facet of the same 0x24556c object - reach it through
                 // the established CGruntzMgr dual-view cast (as m_saveInfoRec/m_gameWnd
                 // below) so the call binds ?PickPlayOrPausedState@CGruntzMgr@@ at 0x92990.
-                CPlay* obj = ((CGruntzMgr*)g_gameReg)->PickPlayOrPausedState();
+                CPlay* obj = g_gameReg->PickPlayOrPausedState();
                 if (obj) {
                     obj->m_stepCountdown = 2;
                 }
@@ -262,8 +267,8 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             i32 r = dlg->VerifySlot(slot);
             EnableWindow(hwnd, TRUE);
             if (r) {
-                ((CGruntzMgr*)g_gameReg)->m_saveInfoRec = (SaveInfo*)slot;
-                PostMessageA(((CGruntzMgr*)g_gameReg)->m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
+                g_gameReg->m_saveInfoRec = (SaveInfo*)slot;
+                PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
                 EndDialog(hwnd, 1);
             }
             return 1;
