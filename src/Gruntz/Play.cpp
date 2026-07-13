@@ -3499,14 +3499,25 @@ GruntzPlayer::GruntzPlayer(i32 index) {
 // method the member is already live, no CString() is emitted, and the frame is gone.
 // The real default ctor is 0x0da790 - it constructs m_name AND the m_038
 // CBattlezMapConfig (0x24dc0), which a 0x5b frameless body plainly cannot do.
+//
+// The m_018/m_020/m_014 seeds are written BEFORE the m_name op= call (source order =
+// retail): that pins the zero in callee-saved edi (surviving the call) as retail does,
+// which lifted this 52->94.65% (writing them AFTER the call let cl use a caller-saved
+// zero + a different frame).
+// @early-stop
+// immediate-float scheduling wall (94.65%, identical to the Reset sibling @0x0da9e0):
+// the sole residual is the `m_comboSel = 0xf` (m_228) IMMEDIATE store - MSVC floats it to
+// the tail of the store cluster where retail keeps it in source position (between m_224
+// and m_02c). Reordering / hoisting to a local does not flip it (the scheduler re-floats
+// the imm - proven on the sibling).
 // ===========================================================================
 RVA(0x000da960, 0x5b)
 void GruntzPlayer::Clear() {
     m_playerIndex = -1;
-    m_name = g_emptyString;
     m_018 = -2;
     m_020 = 0;
     m_014 = 1;
+    m_name = g_emptyString;
     m_008 = 0;
     m_010 = 0;
     m_220 = 0;
