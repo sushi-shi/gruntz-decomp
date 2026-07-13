@@ -21,7 +21,6 @@
 #define GRUNTZ_CRANDOMAMBIENTSOUND_H
 
 #include <Gruntz/AmbientSound.h>
-struct CGruntArchive; // struct (not class): uniform tag -> U mangling (see Grunt.h)
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <rva.h>

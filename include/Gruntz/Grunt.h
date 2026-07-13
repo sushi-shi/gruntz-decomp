@@ -765,33 +765,11 @@ i32 __stdcall GruntDropReady029b40(CGrunt* g);
 // defined in <Gruntz/GameRegistry.h> (included above). The arrival path checks
 // its +0x14 gate.
 
-// ---------------------------------------------------------------------------
-// The serialization sink CGrunt::Save drives: a custom archive whose vtable
-// slot 0x30 is a `Write(const void* data, int size)` (member fn, thiscall).
-// Modeled as a polymorphic class with 13 virtuals (slot 0x30 = the 13th) so
-// each `mov edx,[ebx]; push size; push &field; mov ecx,ebx; call [edx+0x30]`
-// falls out. The archive is external (never instantiated here, so no vtable is
-// emitted); Write's body is reloc-masked.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CGruntArchive);
-// `struct` (not class) to match the UserLogic.h forward decl: MSVC mangles the
-// type by its first-seen tag (struct -> U), so a `class` definition here made the
-// clang label step emit V while wine cl emits U -> label MISS. Keep them uniform.
-struct CGruntArchive {
-    virtual void slot00();
-    virtual void slot04();
-    virtual void slot08();
-    virtual void slot0c();
-    virtual void slot10();
-    virtual void slot14();
-    virtual void slot18();
-    virtual void slot1c();
-    virtual void slot20();
-    virtual void slot24();
-    virtual void slot28();
-    virtual void Read(void* data, i32 size);        // vtable slot +0x2c
-    virtual void Write(const void* data, i32 size); // vtable slot +0x30
-};
+// (The serialization sink CGrunt::Save drives - the ex 13-slot `CGruntArchive`
+// stream view - is DISSOLVED: it IS the one engine stream, CSerialArchive ==
+// CFileMemBase (Read @slot 11 +0x2c / Write @slot 12 +0x30 - the same slots this
+// view modeled). `CGruntArchive` is now a typedef in <Gruntz/UserLogic.h>; the
+// dispatching TUs include <Io/FileMem.h> for the complete type.)
 
 // A grunt-embedded sub-record serializer (the CGrunt move/timer state has several
 // at +0x150/+0x278/+0x308/+0x43c/+0x890..+0x8c0). Each is a __thiscall(ar, mode,
@@ -966,7 +944,7 @@ struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
 // from <Gruntz/UserBaseLink.h> - identical sub-object to the tile-logic family's.
 
 // A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
-// slot 0x24 = index 9). Calling Slot9() emits `mov eax,[ecx]; jmp [eax+0x24]`.
+// slot 0x24 = index 9). Calling Dispatch24() emits `mov eax,[ecx]; jmp [eax+0x24]`.
 SIZE_UNKNOWN(CVtSlot9);
 class CVtSlot9 {
 public:
@@ -979,7 +957,7 @@ public:
     virtual void s6();
     virtual void s7();
     virtual void s8();
-    virtual void Slot9();
+    virtual void Dispatch24(); // slot 9 (+0x24)
 };
 
 // (CGruntColl / CGruntList were views of the CGrunt +0x31c / +0x338 collections that

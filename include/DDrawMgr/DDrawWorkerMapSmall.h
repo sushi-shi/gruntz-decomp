@@ -41,18 +41,18 @@ class CDDrawWorkerMapSmall : public CObject {
 public:
     i32 m_04, m_08, m_0c; // +0x04..0x0f (merged CDDrawWorkerMapBase)
 public:
-    virtual i32 IsReady();        // [5]  0x156cd0 (G obj)
-    virtual i32 Slot06_156db0();  // [6]  0x156db0 (G obj)
-    virtual void DestroyAll();    // [7]  0x165810 (T obj)
-    virtual void Slot08_156cf0(); // [8]  0x156cf0 (shared, declared-only)
+    virtual i32 IsReady();       // [5]  0x156cd0 (G obj)
+    virtual i32 Slot06_156db0(); // [6]  0x156db0 (G obj)
+    virtual void DestroyAll();   // [7]  0x165810 (T obj)
+    // [8] the class's REAL GetStateId (`mov eax,0x14; ret` @0x156cf0 - a Ghidra
+    // recovery gap, declared-only). The old "GetStateId 0x157600" plain-method
+    // claim was a misbinding: 0x157600 is CDDrawChildGroup's slot 8 (id 0x10).
+    virtual StateId GetStateId(); // [8]  0x156cf0 (STATE_WORKERMAPSMALL = 0x14)
     virtual void* Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3); // [9] 0x1658c0
     virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);                  // [10] 0x165990
     virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);                  // [11] 0x165a10
     virtual void* Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3);          // [12] 0x165a90
     virtual ~CDDrawWorkerMapSmall() OVERRIDE; // overrides slot [1]; 0x156d20 (G obj)
-
-    // GetStateId (0x157600) is NOT a vtable slot - a plain method (G obj).
-    StateId GetStateId(); // 0x157600
 
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)
     CMapStringToOb m_map2; // +0x2c  worker-by-key map 2 (0x2c..0x47)

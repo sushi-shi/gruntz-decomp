@@ -158,7 +158,7 @@ reject:
 // throughout. Same values/stores. The permuter found no source spelling that flips
 // the this/pixel spill choice. docs/patterns/zero-register-pinning.md.
 RVA(0x001661d0, 0xc2)
-void CWwdGameObjectC::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     memcpy(&m_b8, &m_18, 36);
     if (m_d8 != -1) {
         i32 x = m_b8;
@@ -201,7 +201,7 @@ void CWwdGameObjectC::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // steerable (separate rc buffers fix the merge but re-inflate the frame; permuter
 // no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x001662a0, 0x1fa)
-void CWwdGameObjectC::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     i32 rc[4];                        // one reused src+dst rect buffer
     if (m_20.b != -1 && m_d8 != -1) { // both armed
         i32 dx = abs(m_18 - m_b8) + 1;
@@ -255,7 +255,7 @@ void CWwdGameObjectC::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) 
 // only the two push operands in the large-delta path. Same addresses. The permuter found
 // no source spelling that flips the pair. docs/patterns/zero-register-pinning.md.
 RVA(0x001664a0, 0x133)
-void CWwdGameObjectC::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     if (m_20.b != -1 && m_d8 != -1) { // both armed -> combined region
         i32 dx = abs(m_18 - m_b8) + 1;
         i32 dy = abs(m_1c - m_bc) + 1;
@@ -297,7 +297,7 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
         }
     }
     m_subList.RemoveAll();
-    return Setup(a1, a2, a3, a4) != 0;
+    return CWwdGameObject::Setup(a1, a2, a3, a4) != 0;
 }
 
 // ===========================================================================
@@ -450,7 +450,7 @@ void CWwdGameObjectB::Slot11_1668b0(i32 a1) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Slot2C(a1);
+            cur->m_obj->Render(a1);
         } while (n != 0);
     }
 }
@@ -461,7 +461,7 @@ void CWwdGameObjectB::Slot12_1668e0(i32 a1, i32 a2) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Slot30(a1, a2);
+            cur->m_obj->BltDirty(a1, a2);
         } while (n != 0);
     }
 }
@@ -472,7 +472,7 @@ void CWwdGameObjectB::Slot13_166910(i32 a1, i32 a2, i32 a3) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Vfunc34(a1, a2, a3);
+            cur->m_obj->BltDirtyEx(a1, a2, a3);
         } while (n != 0);
     }
 }
@@ -483,7 +483,7 @@ void CWwdGameObjectB::Slot14_166950(i32 a1, i32 a2, i32 a3) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Vfunc38(a1, a2, a3);
+            cur->m_obj->BltDirtyRegions(a1, a2, a3);
         } while (n != 0);
     }
 }

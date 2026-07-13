@@ -65,7 +65,7 @@ SIZE_UNKNOWN(CDDrawSubMgr);
 // factory sizes 0x1dc/0x1fc/0x190/0x18c). The ex-`CWwdObject` element view is
 // DISSOLVED: its m_04/m_flags/m_5c/m_60/m_74(sort key)/m_78(POSITION cache)/
 // m_7c(worker)/m_188(map key) are the flat class's members at the same offsets,
-// its slot-8 probe is Vfunc20, and its +0x3c dispatch is Slot3C (== Play).
+// its slot-8 probe is GetTypeId, and its +0x3c dispatch is Slot3C (== Play).
 // ===========================================================================
 // (CWwdNode - the typed CObList node the walkers step - lives in
 // <Gruntz/WwdObjMgr.h> next to the list it walks, like the container's TtcNode.)
@@ -127,7 +127,7 @@ inline void* WwdKey(CWwdGameObject* o) {
 // CDDrawChildGroup::ForwardTo3C (0x1591e0): forward to Slot3C.
 RVA(0x001591e0, 0x5)
 void CDDrawChildGroup::ForwardTo3C() {
-    this->Slot3C();
+    this->DestroyChildren();
 }
 
 // ---------------------------------------------------------------------------
@@ -410,7 +410,7 @@ i32 CSpriteFactory::AttachSprite(
         return 0;
     }
     obj->m_flags = flags;
-    if (!obj->Slot28(a1, a2, a3, (i32)tmpl)) {
+    if (!obj->Setup(a1, a2, a3, (i32)tmpl)) {
         return 0;
     }
     // 0x159e40 is CWwdObjMgr::InsertSorted_159e40 (the factory IS the object manager -
@@ -577,7 +577,7 @@ void CDDrawChildGroup::WalkDispatch2C(i32 a1) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Slot2C(a1);
+            cur->m_obj->Render(a1);
         } while (n != 0);
     }
 }
@@ -589,7 +589,7 @@ void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Slot30(a1, a2);
+            cur->m_obj->BltDirty(a1, a2);
         } while (n != 0);
     }
 }
@@ -599,7 +599,7 @@ void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
-            n->m_obj->Vfunc34(a1, a2, a3);
+            n->m_obj->BltDirtyEx(a1, a2, a3);
             n = n->m_next;
         } while (n != 0);
     }
@@ -611,7 +611,7 @@ void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
-            n->m_obj->Vfunc38(a1, a2, a3);
+            n->m_obj->BltDirtyRegions(a1, a2, a3);
             n = n->m_next;
         } while (n != 0);
     }
@@ -723,7 +723,7 @@ i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2);
 // context - a compiler front-end bug, verified by bisection; the nested form
 // compiled fine in the smaller pre-split TU).
 RVA(0x00159f00, 0x22e)
-void CDDrawChildGroup::Slot40() {
+void CDDrawChildGroup::CollideBroadcast() {
     CDDrawGroupNode* outer = m_head;
     while (outer != 0) {
         char* oi = (char*)outer->m_obj;
@@ -988,8 +988,8 @@ i32 CWwdObjMgr::CheckSortOrder_15a780() {
         if ((obj->m_flags & 0x20000) == 0) {
             i32 curKey = obj->m_sortKey;
             if (key > curKey) {
-                anchor->Vfunc20();
-                obj->Vfunc20();
+                anchor->GetTypeId();
+                obj->GetTypeId();
             } else {
                 key = curKey;
                 anchor = obj;
@@ -1026,7 +1026,7 @@ CWwdGameObject* CWwdObjMgr::FindByTypeProbe_15a810(i32 type) {
         CWwdNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_obj;
-        if (obj->Vfunc20() == 5 && obj->m_04 == type) {
+        if (obj->GetTypeId() == 5 && obj->m_04 == type) {
             return obj;
         }
     }
@@ -1051,7 +1051,7 @@ CWwdGameObject* CWwdObjMgr::FindByWorker_15a860(i32 type, void* key) {
         CWwdNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_obj;
-        if (obj->Vfunc20() == 5 && *(i32*)((char*)obj + 0x4) == type) {
+        if (obj->GetTypeId() == 5 && *(i32*)((char*)obj + 0x4) == type) {
             void* worker = *(void**)((char*)obj + 0x7c);
             if (*(i32*)((char*)worker + 0x10) == *(i32*)((char*)key + 0x10)) {
                 return obj;
@@ -1114,7 +1114,7 @@ CWwdGameObject* CWwdObjMgr::FindByField_15a940(i32 type, void* key) {
         CWwdNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_obj;
-        if (obj->Vfunc20() == 5 && *(i32*)((char*)obj + 0x4) == type
+        if (obj->GetTypeId() == 5 && *(i32*)((char*)obj + 0x4) == type
             && *(void**)((char*)obj + 0xe8) == key) {
             return obj;
         }
@@ -1148,7 +1148,7 @@ CWwdGameObject* CWwdObjMgr::FindByStatusKey_15a9d0(void* key) {
         CWwdNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_obj;
-        if (obj->Vfunc20() == 5 && WwdKey(obj) == key) {
+        if (obj->GetTypeId() == 5 && WwdKey(obj) == key) {
             return obj;
         }
     }

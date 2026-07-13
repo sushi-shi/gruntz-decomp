@@ -1268,23 +1268,13 @@ extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
 // CMultiSoundZ view is dissolved - PlayByName (0x138840) / FindBank (0x138730) and
 // the +0x1c inner (m_pCurrent) are CGruntzSoundZ's own members.
 //
-// CMultiSub68 (m_68): the single per-frame FX-driver object, merged with the former
-// PBSub68 view (Step3017 poke + the +0x230 armed gate / Fire1398 / Reset2b85).
-class CMultiSub68 { // the multiplayer facet of CGruntzMgr::m_cmdGrid (+0x68); GruntzMgr.h
-                    // still types that slot CTriggerMgr* - fold deferred to that lane
-public:
-    void Step3017(i32 dt); // 0x3017
-    char m_pad00_230[0x230];
-    i32 m_armed;      // +0x230  armed gate
-    void Fire1398();  // 0x00001398
-    void Reset2b85(); // 0x00002b85
-};
-class CMultiSubDC { // CMulti::m_fxOverlay (the primary FX overlay)
-public:
-    i32 m_0; // +0x00  state
-    char m_pad04_10c[0x10c - 0x04];
-    i32 m_mode; // +0x10c mode
-};
+// [CMultiSub68 + CMultiSubDC DISSOLVED 2026-07-13: the +0x68 facet was
+// CTriggerMgr itself (m_cmdGrid's declared type) - its "Step3017" is
+// LoadTeleporterGooConfig (ILT 0x3017 -> 0x6eb80), "Fire1398" is
+// ScrollToActiveRecord (ILT 0x1398 -> 0x788d0), "Reset2b85" is OverlayRelease
+// (ILT 0x2b85 -> 0x79b00), and the +0x230 armed gate is m_armed. The "DC"
+// overlay was CStatusBarMgr itself (m_guts's declared type: m_0 == m_position,
+// m_mode(+0x10c) == m_activeTab).]
 
 // @early-stop
 // large-body regalloc/scheduling wall (~88%). Prologue, the m_594/m_logic->m_c/ready
@@ -1355,10 +1345,10 @@ i32 CMulti::PumpA() {
     } else {
         g_6455a0 = 0;
     }
-    ((CDDrawChildGroup*)m_c->m_8)->TickKillCues_159a70(g_645584);
-    ((CDDrawChildGroup*)m_c->m_8)->Slot40();
-    ((CMultiSub68*)Mgr()->m_cmdGrid)->Step3017(g_645584);
-    ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadDestructButtonSprite(g_645584);
+    m_c->m_childGroup->TickKillCues_159a70(g_645584);
+    m_c->m_childGroup->CollideBroadcast();
+    Mgr()->m_cmdGrid->LoadTeleporterGooConfig((i32)g_645584);
+    m_guts->LoadDestructButtonSprite(g_645584);
     SoundStream* win = m_c->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
@@ -1434,7 +1424,7 @@ void CMulti::PumpB() {
             (CDDrawSurfacePair*)mgr->m_drawTarget->m_14,
             (CDDrawSurfacePair*)mgr->m_drawTarget->m_18
         );
-        ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
+        m_guts->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
         if (h == 0) {
             return;
@@ -1448,11 +1438,11 @@ void CMulti::PumpB() {
     StepC();
     if (m_region0Gate != 0) {
         ((CDDrawSurfacePair*)mgr->m_drawTarget->m_14)->m_surface->Fill(0);
-        ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->Deactivate();
+        m_guts->Deactivate();
     }
     if (m_worldReady == 0) {
-        if (((CMultiSub68*)Mgr()->m_cmdGrid)->m_armed != 0) {
-            ((CMultiSub68*)Mgr()->m_cmdGrid)->Fire1398();
+        if (Mgr()->m_cmdGrid->m_armed != 0) {
+            Mgr()->m_cmdGrid->ScrollToActiveRecord();
         } else {
             LoadScrollSpeedOptions();
         }
@@ -1472,12 +1462,12 @@ void CMulti::PumpB() {
             (CDDrawSurfacePair*)mgr->m_drawTarget->m_18
         );
     }
-    ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
+    m_guts->LoadMainStatusBarSprite();
     if (m_lightFx != 0) {
-        CMultiSubDC* fx = ((CMultiSubDC*)m_guts);
-        if (fx->m_0 != 2 && fx->m_mode != 5) {
+        CStatusBarMgr* fx = m_guts;
+        if (fx->m_position != 2 && fx->m_activeTab != 5) {
             RECT rc;
-            if (fx->m_0 == 1) {
+            if (fx->m_position == 1) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
                 i32 cx = g_gameReg->m_modeH;
@@ -1497,14 +1487,14 @@ void CMulti::PumpB() {
     }
     m_hitTest->LoadChatBoxSprite((i32)h);
     DrawDebugStats();
-    ((CMultiSub68*)Mgr()->m_cmdGrid)->Reset2b85();
+    Mgr()->m_cmdGrid->OverlayRelease();
     StepGridWalk(g_645584);
     CopyRect(h);
     if (m_worldReady != 0) {
         h->DrawBox((i32*)&m_hudRect, 0xff);
     }
     ((CDDrawSurfacePair*)mgr->m_drawTarget->m_10)->m_surface->Flip(0);
-    PumpBRefresh2356(g_gameReg, ((CMultiSubDC*)m_guts), m_region0Gate);
+    PumpBRefresh2356(g_gameReg, m_guts, m_region0Gate);
     if (((CGameLevel*)mgr->m_24)->m_mainPlane != 0) {
         ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->CenterScrollB();
     }
@@ -1889,8 +1879,6 @@ SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
-SIZE_UNKNOWN(CMultiSub68);
-SIZE_UNKNOWN(CMultiSubDC);
 SIZE_UNKNOWN(CMultiSlotView);
 SIZE_UNKNOWN(CRefresh21bd0);
 SIZE_UNKNOWN(PBListSink);

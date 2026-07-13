@@ -122,23 +122,19 @@ struct WwdMgr {
 struct WwdSnapshot {
     i32 m_00;          // m_4
     i32 m_04;          // m_188
-    i32 m_08;          // this->Vfunc20()
-    i32 m_0c;          // 0 or this->Vfunc40() when Vfunc20()==0x1c
-    i32 m_10;          // 0 or worker->m_18->Vfunc8()
+    i32 m_08;          // this->GetTypeId()
+    i32 m_0c;          // 0 or this->Vfunc40() when GetTypeId()==0x1c
+    i32 m_10;          // 0 or worker->m_18->GetTypeTag()
     char m_name[0x80]; // +0x14  name string from the mgr
     i32 m_94;          // m_5c
     i32 m_98;          // m_60
     i32 m_9c;          // m_74
 };
 
-// The sub-object hung off the worker at WwdAnimWorker+0x18 (own vtable; its +0x8
-// virtual is read in WriteSnapshot).
-class WorkerSub {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual i32 Vfunc8(); // +0x08
-};
+// (The former WorkerSub view of the worker's +0x18 sub-object is DISSOLVED: the
+// object is the bound logic leaf - CUserBase/CUserLogic (<Gruntz/UserLogic.h>;
+// CGameObjAux::m_logic types the same slot) - and its "+0x8 virtual" is
+// CUserBase slot 2 = GetTypeTag, exactly the type tag the snapshot stores.)
 
 // Raw this-offset read of a foreign engine object reached as an opaque void*/int
 // handle (found-object refs, the a4 setup source). authentic: these referents are
@@ -307,7 +303,7 @@ i32 CGameObject::LookupAnimSprite(const char* name) {
 // (left, top) with the record as the source rect + colorkey/wait, and disarm the
 // record. __thiscall, 2 args (ret 8).
 RVA(0x00150660, 0x49)
-void CWwdGameObjectA::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     memcpy(&m_b8, &m_18, 36);
     if (m_20.b != -1) {
         RECT* r = (RECT*)&m_20;
@@ -330,7 +326,7 @@ void CWwdGameObjectA::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // BltEx(rc,b->m_surface,rc,...) calls where retail keeps them inline, plus a callee-saved
 // record-base coloring swap. Not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x001506b0, 0x1ec)
-void CWwdGameObjectA::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     i32 rc[4]; // reused src+dst blit rect buffer
     if (m_20.b != -1 && m_d8 != -1) {
         RECT ir;
@@ -384,7 +380,7 @@ void CWwdGameObjectA::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) 
 // (absent in the twin) adds the register pressure that keeps this below the twin's 99.7%.
 // Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
 RVA(0x001508a0, 0x117)
-void CWwdGameObjectA::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     if (m_20.b != -1 && m_d8 != -1) {
         RECT ir;
         if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
@@ -594,7 +590,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_posY = a2;
     m_sortKey = a3;
     m_104 = a1;
-    WwdAnimWorker* w = m_worker;
+    AnimWorkerObj* w = m_worker;
     m_108 = a2;
     m_10c = a3;
     m_f8 = 10;
@@ -611,7 +607,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_168 = 0;
     m_e0 = 0;
     m_180 = 0;
-    if (w->Init(F((void*)a4, 0x10, i32), F((void*)a4, 0x8, i32)) == 0) {
+    if (w->Vfunc24(F((void*)a4, 0x10, i32), F((void*)a4, 0x8, i32)) == 0) {
         return 0;
     }
     m_80 = 0;
@@ -810,7 +806,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    WwdAnimWorker* w;
+    AnimWorkerObj* w;
     i32 saved;
     i32 node;
     switch (type) {
@@ -825,7 +821,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             }
             saved = w->m_1c;
             w->m_1c = 0x50;
-            w->Advance(this);
+            w->m_collideNotify((CGameObject*)this);
             w = m_worker;
             if (w->m_1c == 0x50) {
                 w->m_1c = saved;
@@ -842,7 +838,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             }
             saved = w->m_1c;
             w->m_1c = 0x51;
-            w->Advance(this);
+            w->m_collideNotify((CGameObject*)this);
             w = m_worker;
             if (w->m_1c == 0x51) {
                 w->m_1c = saved;
@@ -859,7 +855,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             }
             saved = w->m_1c;
             w->m_1c = 0x52;
-            w->Advance(this);
+            w->m_collideNotify((CGameObject*)this);
             w = m_worker;
             if (w->m_1c == 0x52) {
                 w->m_1c = saved;
@@ -884,7 +880,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             }
             saved = w->m_1c;
             w->m_1c = 0x53;
-            w->Advance(this);
+            w->m_collideNotify((CGameObject*)this);
             w = m_worker;
             if (w->m_1c == 0x53) {
                 w->m_1c = saved;
@@ -892,7 +888,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             break;
         }
     }
-    return m_worker->QueryWorkerType(a1, type, a3, a4) != 0;
+    return m_killCue->Dispatch(a1, type, (void*)a3, (void*)a4) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1122,28 +1118,28 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
     if (ar == 0) {
         return 0;
     }
-    WwdAnimWorker* w = m_worker;
+    AnimWorkerObj* w = m_worker;
     if (w == 0) {
         return 0;
     }
     if (w->m_1c == 0) {
-        w->Advance(this);
+        w->m_collideNotify((CGameObject*)this);
     }
 
     i32 ebx = 0;
-    if (this->Vfunc20() == 0x1c) {
+    if (this->GetTypeId() == 0x1c) {
         ebx = this->Vfunc40();
     }
 
     w = m_worker;
     i32 edi = 0;
     if (w->m_18 != 0) {
-        edi = w->m_18->Vfunc8();
+        edi = w->m_18->GetTypeTag();
     }
 
     WwdSnapshot rec;
     rec.m_00 = m_04;
-    rec.m_08 = this->Vfunc20();
+    rec.m_08 = this->GetTypeId();
     rec.m_04 = m_188;
     rec.m_94 = m_posX;
     rec.m_98 = m_posY;
@@ -1250,7 +1246,7 @@ void AnimWorkerObj::Clear() {
         m_178 = 0;
     }
     if (m_18) {
-        m_18->Destroy(1);
+        delete m_18; // the CUserBase virtual scalar dtor at slot 0 (push 1; call [eax])
         m_18 = 0;
     }
     m_170 = 0;
@@ -1673,7 +1669,6 @@ DATA(0x002bf674)
 i32 g_logicTypesRegistered;
 
 // class-metadata sweep (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(WorkerSub);
 SIZE_UNKNOWN(WwdMgr);
 SIZE_UNKNOWN(WwdSnapshot);
 SIZE_UNKNOWN(CObject);

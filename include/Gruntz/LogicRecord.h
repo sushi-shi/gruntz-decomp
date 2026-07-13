@@ -23,28 +23,14 @@
 #include <rva.h>
 #include <Ints.h>
 
-// The serializer the record reads/writes itself through. Its vtable exposes the
-// archive primitives at fixed slots (Write@0x2c == slot 11, Read@0x30 == slot
-// 12); modeled as a polymorphic class with the leading slots as dummy virtuals
-// so `ar->Read(...)` lowers to `mov edx,[ar]; call [edx+0x30]` (__thiscall, no
-// cleanup). External (engine) - no bodies emitted here.
-SIZE_UNKNOWN(LogicArchive);
-class LogicArchive {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0c();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1c();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Write(void* buf, u32 cb); // slot 0x2c
-    virtual void Read(void* buf, u32 cb);  // slot 0x30
-};
+// (The ex `LogicArchive` 13-slot view of the record serializer is DISSOLVED: it
+// IS the one engine stream, CSerialArchive == CFileMemBase. Its labels were
+// INVERTED ("Write@0x2c / Read@0x30") to compensate a second inversion - the
+// record's 0x164960/0x164d80 methods were name-swapped: 0x164960 dispatches
+// +0x30 = the stream's WRITE (it is the Save), and 0x164d80 dispatches +0x2c =
+// READ and allocates the m_14 payload before filling it (it is the Load). Both
+// errors are now fixed; the dispatch offsets are unchanged.)
+#include <Gruntz/SerialArchive.h>
 
 // The polymorphic sub-record held at m_18: virtual slot 0 is the (scalar-
 // deleting) destructor, slot 1 a per-frame step. External.
@@ -69,8 +55,9 @@ public:
     i32 Consume(i32 amount);                             // 0x15b340
     i32 Dispatch(i32 a, i32 mode, void* c, void* d);     // 0x164830
     i32 CacheTargetId(void* a);                          // 0x164920 (Dispatch case 3)
-    i32 Load(LogicArchive* ar);                          // 0x164960
-    i32 Save(LogicArchive* ar);                          // 0x164d80 (external here)
+    i32 Save(CSerialArchive* ar);                        // 0x164960 (writes, slot 12 +0x30)
+    i32 Load(CSerialArchive* ar);                        // 0x164d80 (reads, slot 11 +0x2c;
+                                                         //   allocates the m_14 payload)
     i32 ResolveTarget(void* a);                          // 0x1651b0 (Dispatch case 8)
 
     // --- layout (offsets confirmed from ctor 0x150eb0 + Load 0x164960) ---

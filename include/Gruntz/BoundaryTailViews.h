@@ -17,45 +17,10 @@
 // (src/Image/ImageRectFill.cpp, <Image/Image.h>) - the delinker-guessed CImg176d20 /
 // FillRect176d20 placeholders removed.
 
-// 0x788d0 - sound-emitter screen-position update.
-struct Emitter788d0 {
-    char _0[8];
-    u8 m_8; // flags (bit 0)
-    char _9[0x10 - 9];
-    float m_10, m_14, m_18, m_1c; // 0x10,0x14,0x18,0x1c
-};
-SIZE_UNKNOWN(Emitter788d0);
-struct ElemSrc788d0 {
-    char _0[0x5c];
-    i32 m_5c, m_60; // 0x5c,0x60
-};
-SIZE_UNKNOWN(ElemSrc788d0);
-struct Elem788d0 {
-    char _0[0x10];
-    ElemSrc788d0* m_10; // 0x10
-};
-SIZE_UNKNOWN(Elem788d0);
-struct Holder788d0_24 {
-    char _0[0x5c];
-    Emitter788d0* m_5c; // 0x5c
-};
-SIZE_UNKNOWN(Holder788d0_24);
-struct Holder788d0 {
-    char _0[0x24];
-    Holder788d0_24* m_24; // 0x24
-};
-SIZE_UNKNOWN(Holder788d0);
-struct CSnd788d0 {
-    char _0[0x1c];
-    Elem788d0* m_1c[1]; // 0x1c array
-    char _pad[0x22c - 0x1c - 4];
-    Holder788d0* m_22c; // 0x22c
-    char _230[4];       // 0x230
-    i32 m_234;          // 0x234
-    i32 m_238;          // 0x238
-    i32 PositionUpdate();
-};
-SIZE_UNKNOWN(CSnd788d0);
+// (The 0x788d0 "sound-emitter" view family - CSnd788d0/Elem*/Holder*/Emitter788d0 -
+// is DISSOLVED: the method is CTriggerMgr::ScrollToActiveRecord (TriggerMgr.cpp);
+// the walk was m_grid/m_recX/m_recY/m_level and the "emitter" the canonical
+// CPlaneRender/CDDrawWorkerHost plane.)
 
 // 0x85500 - return a CString member BY VALUE (offset 0xec). (0x38120 was folded onto
 // the real CLatencyItem::GetName in src/Gruntz/SlotComboFill.cpp - view removed.)

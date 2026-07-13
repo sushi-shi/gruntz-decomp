@@ -49,7 +49,6 @@ extern "C" CGruntzMgr* g_gameReg;
 // Merged-donor headers (the dossier-10b one-TU merge):
 #include <Gruntz/Play.h>              // CWorld::WorldTimeline (HudRect @0x78060) + CPlay
 #include <Gruntz/GameLevel.h>         // CLevelPlane (PositionUpdate @0x788d0 tail call)
-#include <Gruntz/BoundaryTailViews.h> // CSnd788d0 (the 0x788d0 emitter view)
 #include <Gruntz/GameRegistry.h>      // canonical singleton view (icon/selection donors)
 #include <Gruntz/Grunt.h>             // CGruntTileMgr (CombatCue @0x7b930) + g_gameReg
 #include <Gruntz/String.h>
@@ -88,7 +87,7 @@ RVA(0x00077f80, 0xab)
 CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
     i32 tx = g->m_lastTilePxX >> 5;
     i32 rowIdx = g->m_tileOwnerHi;
-    CTmCell** cell = &m_grid[rowIdx * 15];
+    CTmCell** cell = &m_grid[rowIdx * TM_GRID_COLS];
     i32 ty = g->m_lastTilePxY >> 5;
     CTmCell* best = 0;
     i32 bestDist = 0x7fffffff;
@@ -221,7 +220,7 @@ found:
     if (m_recList.GetCount() == 1) {
         StopPendingFx();
     }
-    CTmCell* cell = m_grid[y + x * 15];
+    CTmCell* cell = m_grid[y + x * TM_GRID_COLS];
     if (cell != 0) {
         ((CGrunt*)cell)->ClearAllSprites(); // CTmCell IS CGrunt (0x4b240); bridge-cast, see note
     }
@@ -231,7 +230,7 @@ found:
             goal->m_8 |= 0x10000;
             m_goal = 0;
         }
-        m_230 = 0;
+        m_armed = 0;
     }
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != 0 && ov->m_gridX == p[0] && ov->m_gridY == p[1]) {
@@ -275,7 +274,7 @@ void CTriggerMgr::ResetAll() {
             CTmNode* cur = n;
             n = n->m_next;
             i32* payload = cur->m_payload;
-            i32 idx = payload[1] + 15 * payload[0];
+            i32 idx = payload[1] + TM_GRID_COLS * payload[0];
             CTmCell* cell = m_grid[idx];
             if (cell != 0) {
                 ((CGrunt*)cell)
@@ -339,7 +338,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
     while (n != 0) {
         CTmNode* next = n->m_next;
         u8* payload = (u8*)n->m_payload;
-        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
+        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * TM_GRID_COLS];
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = payload[4];
             count++;
@@ -372,7 +371,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
     while (n != 0) {
         CTmNode* next = n->m_next;
         u8* payload = (u8*)n->m_payload;
-        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
+        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * TM_GRID_COLS];
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = payload[4];
             count++;
@@ -420,35 +419,37 @@ void CTriggerMgr::ClearRecords() {
     m_recList.RemoveAll();
 }
 
-// 0x788d0: sound-emitter screen-position update, called by CMulti::PumpB/Tick
-// (and CPlay::Render). Merged from Multi.cpp per dossier 10b (embedded
-// singleton, this TU by retail position; the private-state oracle agrees: it
-// reads NO globals, and its field walk is CTriggerMgr-shaped - m_1c[m_234*15+
-// m_238] is m_grid[recX*15+recY], m_22c->m_24->m_5c the m_level->view->plane
-// chain). @identity-TODO: kept the placeholder CSnd788d0 view
-// (<Gruntz/BoundaryTailViews.h>) - no class renames in the migration.
+// 0x788d0 (via ILT thunk 0x1398): centre the active plane's scroll origin on the
+// selected record cell's bound object - read its screen pos, apply the plane's
+// parallax scale unless the plane is origin-fixed (m_flags bit0), store it as the
+// plane's scroll origin and recompute the plane coords. Called by CMulti::PumpB
+// (when m_armed) and CPlay::Render. The ex-CSnd788d0 "sound-emitter" placeholder
+// view is DISSOLVED: the field walk was CTriggerMgr's own (m_grid[m_recX*15+
+// m_recY]->m_object, m_level->m_24->m_5c the level-view -> plane chain), and its
+// "Emitter788d0" was the canonical plane (CPlaneRender == CDDrawWorkerHost:
+// m_flags/m_scaledX/m_scaledY/m_scaleX/m_scaleY + RecomputePlaneCoords).
 
 // @early-stop
 // /O2 x87 scheduling wall (~63%): logic byte-for-byte identical, but retail
-// materialises m_5c/m_60 in GP regs and spills them to stack temps for the int->float
-// `fild` (register pressure from the m_22c->m_24->m_5c walk reusing edx), then uses
-// `fmul mem`+fxch; our /O2 emits the shorter `fild [struct]` direct + `fmulp`.
-// Confirmed NOT /O1 (o1 profile 45%). Pure instruction scheduling/regalloc.
+// materialises the screen pos in GP regs and spills them to stack temps for the
+// int->float `fild` (register pressure from the m_level->m_24->m_5c walk reusing
+// edx), then uses `fmul mem`+fxch; our /O2 emits the shorter `fild [struct]`
+// direct + `fmulp`. Confirmed NOT /O1 (o1 profile 45%). Pure scheduling/regalloc.
 RVA(0x000788d0, 0x64)
-i32 CSnd788d0::PositionUpdate() {
-    ElemSrc788d0* src = m_1c[m_234 * 15 + m_238]->m_10;
-    i32 v60 = src->m_60;
-    i32 v5c = src->m_5c;
-    Emitter788d0* t = m_22c->m_24->m_5c;
-    float f60 = (float)v60;
-    float f5c = (float)v5c;
-    if (!(t->m_8 & 1)) {
-        f5c *= t->m_18;
-        f60 *= t->m_1c;
+i32 CTriggerMgr::ScrollToActiveRecord() {
+    CGameObject* src = m_grid[m_recX * TM_GRID_COLS + m_recY]->m_object;
+    i32 y = src->m_screenY;
+    i32 x = src->m_screenX;
+    CPlaneRender* t = m_level->m_24->m_5c;
+    float fy = (float)y;
+    float fx = (float)x;
+    if (!(t->m_flags & 1)) {
+        fx *= t->m_scaleX;
+        fy *= t->m_scaleY;
     }
-    t->m_10 = f5c;
-    t->m_14 = f60;
-    ((CLevelPlane*)t)->RecomputePlaneCoords();
+    t->m_scaledX = fx;
+    t->m_scaledY = fy;
+    t->RecomputePlaneCoords();
     return 1;
 }
 
@@ -550,7 +551,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         cell = 0;
     } else {
         i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
-        cell = m_grid[rec[0] * 15 + rec[1]];
+        cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
         return 1;
@@ -653,7 +654,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         cell = 0;
     } else {
         i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
-        cell = m_grid[rec[1] + rec[0] * 15];
+        cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     i32 sel;
     if (cell != 0 && cell->m_tileOwnerHi == g_curPlayer) {
@@ -753,7 +754,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
         return 0;
     }
     i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
-    char* cellp = (char*)m_grid[rec[1] + rec[0] * 15];
+    char* cellp = (char*)m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_curPlayer) {
         return 0;
     }
@@ -942,7 +943,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
 // topic:wall topic:regalloc.
 RVA(0x00079fb0, 0x169)
 void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
-    i32 idx = col * 15 + row; // grid[col][row] base
+    i32 idx = col * TM_GRID_COLS + row; // grid[col][row] base
     CTmCell* cell = m_grid[idx];
     if (cell == 0) {
         return;
@@ -1140,7 +1141,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
         row = startRow;
     }
     if (row <= last) {
-        CTmCell** cell = &m_grid[row * 15];
+        CTmCell** cell = &m_grid[row * TM_GRID_COLS];
         i32 n = last - row + 1;
         do {
             i32 i = 15;
@@ -1342,7 +1343,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     } else {
         return 0;
     }
-    ar->Write(&m_230, 4);
+    ar->Write(&m_armed, 4);
     ar->Write(&m_284, 4);
     ar->Write(&m_288, 4);
     ar->Write(&m_recX, 8);
@@ -1548,7 +1549,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     }
 
     // tail scalars + two globals
-    ar->Read(&m_230, 4);
+    ar->Read(&m_armed, 4);
     ar->Read(&m_284, 4);
     ar->Read(&m_288, 4);
     ar->Read(&m_recX, 8);
@@ -1582,7 +1583,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         cell = 0;
     } else {
         i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
-        cell = m_grid[rec[1] + rec[0] * 15];
+        cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     CPlay* world = (CPlay*)g_gameReg->m_curState;
     i32 kind = this->Classify(x, y);
@@ -2157,9 +2158,9 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 // pin ebp/edi differently than retail; the placement-failure goal-flag path tail-merges.
 RVA(0x0007c110, 0x166)
 i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
-    CTmCell* src = m_grid[col * 15 + a1c];
+    CTmCell* src = m_grid[col * TM_GRID_COLS + a1c];
     i32 free = 0;
-    CTmCell** rowBase = &m_grid[row * 15];
+    CTmCell** rowBase = &m_grid[row * TM_GRID_COLS];
     if (*rowBase != 0) {
         CTmCell** p = rowBase;
         while (free < 15 && *p != 0) {
@@ -2198,9 +2199,9 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
         logic->m_154->m_8 |= 0x10000;
         return 0;
     }
-    m_grid[row * 15 + free] = logic;
+    m_grid[row * TM_GRID_COLS + free] = logic;
     m_rowCount[row] += 1;
-    m_cellFlag[(row * 15 + free)] = 0;
+    m_cellFlag[(row * TM_GRID_COLS + free)] = 0;
     return 1;
 }
 
@@ -2663,7 +2664,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
         CTmNode* cur = n;
         n = n->m_next;
         i32* payload = cur->m_payload;
-        i32 idx = payload[1] + 15 * payload[0];
+        i32 idx = payload[1] + TM_GRID_COLS * payload[0];
         CTmCell* cell = m_grid[idx];
         if (cell != 0) {
             ResetCell(payload[0], payload[1], 1, 0);
@@ -2791,7 +2792,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     do {
         CSelKey* k = n->m_8;
         n = n->m_next;
-        CSelGridCell* cell = m_grid[k->m_0 * 15 + k->m_4];
+        CSelGridCell* cell = m_grid[k->m_0 * TM_GRID_COLS + k->m_4];
         if (cell != 0) {
             count++;
             CSelGrunt* g = cell->m_10;
@@ -2816,7 +2817,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     i32 r = ((CPlay*)g_gameReg->m_curState)->ResetGoals(cx, cy);
     if (r != 0 && count == 1 && m_24c == 1) {
         CSelKey* head = m_244->m_8;
-        CSelGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
+        CSelGridCell* cell2 = m_grid[head->m_0 * TM_GRID_COLS + head->m_4];
         if (cell2 != 0) {
             i32 v1f0 = cell2->m_1f0;
             i32 v1ec = cell2->m_1ec;
@@ -2864,7 +2865,7 @@ void CTriggerMgr::ClearSelections() {
 // row `row` (+0x1c); clear +0x400 when row is the magic group, then refresh world.
 RVA(0x0007d140, 0x61)
 i32 CTriggerMgr::ClearRow(i32 row) {
-    CTmCell** cell = &m_grid[row * 15];
+    CTmCell** cell = &m_grid[row * TM_GRID_COLS];
     i32 i = 15;
     do {
         CTmCell* c = *cell;
@@ -3041,7 +3042,7 @@ i32 CTriggerMgr::ToggleRegionA() {
         cell = 0;
     } else {
         i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
-        cell = m_grid[rec[0] * 15 + rec[1]];
+        cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
         return 1;
@@ -3090,7 +3091,7 @@ i32 CTriggerMgr::ToggleRegionB() {
         cell = 0;
     } else {
         i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
-        cell = m_grid[rec[0] * 15 + rec[1]];
+        cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
         return 1;
@@ -3143,7 +3144,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
             n = n->m_next;
             i32* p = cur->m_payload;
             x = *(char*)p;
-            CTmCell* cell = m_grid[p[0] * 15 + p[1]];
+            CTmCell* cell = m_grid[p[0] * TM_GRID_COLS + p[1]];
             if (cell->m_tileOwnerHi == magic && cell->m_entranceActive == 0) {
                 buf[count] = ((u8*)p)[4];
                 count++;

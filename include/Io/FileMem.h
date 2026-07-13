@@ -41,7 +41,7 @@ public:
     CFileMemBase();
     virtual ~CFileMemBase();                             // slot 0  (0x157960 ??_G)
     virtual i32 SetName(const char* name, i32 a, i32 b); // slot 1  0x00165e30
-    virtual void Slot2();                                // slot 2  (0x157910)
+    virtual void Slot02_157910();                        // slot 2
     RVA(0x00157a40, 0x10)
     virtual void Reset() {
         m_4 = 0;
@@ -49,10 +49,10 @@ public:
         m_name.Empty();
     }
     virtual CString GetName();                     // slot 4  0x157920 (return m_name copy)
-    virtual void Slot5() = 0;                      // slot 5  __purecall
-    virtual void Slot6() = 0;                      // slot 6  __purecall
+    virtual void Slot05_157a00() = 0;              // slot 5  __purecall (CFileMem body rva)
+    virtual void Slot06_157a10() = 0;              // slot 6  __purecall (CFileMem body rva)
     virtual i32 WantRead();                        // slot 7  (0x157940) read-vs-create gate
-    virtual void Slot8();                          // slot 8  (0x157950)
+    virtual void Slot08_157950();                  // slot 8
     virtual i32 Open() = 0;                        // slot 9  __purecall
     virtual i32 Ready() = 0;                       // slot 10 __purecall
     virtual i32 Read(void* buf, i32 n) = 0;        // slot 11 __purecall
@@ -74,7 +74,7 @@ VTBL(CFileMemBase, 0x001efe68);
 class CFileMem : public CFileMemBase {
 public:
     virtual ~CFileMem() OVERRIDE;  // slot 0  0x00157980 (real ~ / ??_G 0x157a20)
-    virtual void Slot2() OVERRIDE; // slot 2  (0x157a70)
+    virtual void Slot02_157910() OVERRIDE; // slot 2  (0x157a70)
     RVA(0x00157a50, 0x16)
     virtual void Reset() OVERRIDE {
         m_length = 0;
@@ -83,8 +83,8 @@ public:
         m_8 = 0;
         m_name.Empty();
     }
-    virtual void Slot5() OVERRIDE;                      // slot 5  (0x157a00)
-    virtual void Slot6() OVERRIDE;                      // slot 6  (0x157a10)
+    virtual void Slot05_157a00() OVERRIDE;              // slot 5
+    virtual void Slot06_157a10() OVERRIDE;              // slot 6
     virtual i32 Open() OVERRIDE;                        // slot 9  0x00165e60
     virtual i32 Ready() OVERRIDE;                       // slot 10 0x00165ef0
     virtual i32 Read(void* buf, i32 n) OVERRIDE;        // slot 11 0x00165f00

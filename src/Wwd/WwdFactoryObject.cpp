@@ -307,7 +307,7 @@ RVA(0x0015b940, 0x38)
 i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_19c = 0;
     m_cmdMap.Construct(this);
-    return Setup(a1, a2, a3, a4);
+    return CWwdGameObject::Setup(a1, a2, a3, a4);
 }
 
 // ---------------------------------------------------------------------------
@@ -368,7 +368,7 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 // CWwdGameObject::SetupDeferred (0x15bc30): Setup with a1/a2 zeroed. Out-of-line.
 RVA(0x0015bc30, 0x16)
 i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
-    return Setup(0, 0, a3, a4);
+    return CWwdGameObject::Setup(0, 0, a3, a4);
 }
 
 // ---------------------------------------------------------------------------
@@ -512,7 +512,7 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
     *(char*)&m_dotColor = (char)flag;
-    return Setup(a1, a2, a3, a4);
+    return CWwdGameObject::Setup(a1, a2, a3, a4);
 }
 
 // ---------------------------------------------------------------------------

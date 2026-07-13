@@ -21,7 +21,7 @@
 
 struct SubWidget_168080 : public CObject {
     virtual ~SubWidget_168080() OVERRIDE; // [1] +0x04; ??_G 0x168280, ??1 0x1682a0
-    virtual void s14();                   // [5] 0x168060 (declared-only)
+    virtual void Slot14_168060();         // [5] 0x168060 (declared-only)
     i32 m_4;                              // +0x04
     char m_pad8[0x44 - 8];
     i32 Setup(RECT rc, i32 a, i32 b); // 0x1915c0 (reloc-masked)

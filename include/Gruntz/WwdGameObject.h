@@ -4,6 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h> // real MFC CObject (the object's grand-base) + CObList (m_subList @+0x1dc)
+#include <Wap32/WapObj.h> // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
 #include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam - the real +0x1a0 command sub-object
 #include <Gruntz/WwdGridIter.h>      // WwdGridNode - the embedded +0x9c region node
 
@@ -29,41 +30,18 @@ struct WwdMgr;
 // <DDrawMgr/DDrawSubMgrLeafScan.h>. Pointer members only -> forward decls suffice.
 struct CSprite;
 struct CGameObjLayer;
+class CDDrawSurfacePair; // slots 12-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 class LeafScanValue;
 class CLogicRecord; // the +0x7c worker's kill-cue API (<Gruntz/LogicRecord.h>)
 
-// Forward of the WwdAnimWorker+0x18 sub-object interface (defined in the .cpp); the
-// worker's m_18 slot is typed as this so the [m_18][+0x8] dispatch needs no cast.
-class WorkerSub;
-
-// The animation/sprite worker at CWwdGameObject+0x7c. Foreign vtable; its
-// virtuals are DECLARED only (never defined) so cl emits no ??_7 - the real
-// vtable is the engine datum the ctor stamps. Declared as a polymorphic class
-// so the virtual dispatch lowers to the exact `mov ecx,worker; call [vtbl+off]`
-// __thiscall sequence (virtuals are __thiscall by default in MSVC 5.0).
-SIZE_UNKNOWN(WwdAnimWorker);
-class WwdAnimWorker {
-public:
-    virtual void Slot00();             // +0x00
-    virtual void Slot04();             // +0x04
-    virtual void Slot08();             // +0x08
-    virtual void Slot0C();             // +0x0c
-    virtual void Advance(void* owner); // +0x10
-    virtual void Slot14();             // +0x14
-    virtual void Slot18();             // +0x18
-    virtual void Slot1C();             // +0x1c
-    virtual void Slot20();             // +0x20
-    virtual i32 Init(i32 a1, i32 a3);  // +0x24
-
-    // Non-virtual play-step helper (0x164830, __thiscall, 4 args) Play tail-calls.
-    i32 QueryWorkerType(i32 a1, i32 type, i32 a3, i32 a4);
-
-    i32 m_04;
-    i32 m_08; // +0x08  flag bits (bit0/bit1 read by Setup)
-    char m_pad0c[0x18 - 0x0c];
-    WorkerSub* m_18; // +0x18  sub-object with its own vtable ([m_18][+0x8] called)
-    i32 m_1c;        // +0x1c  scratch state id (saved/forced 0x50..0x53/restored)
-};
+// (The former WwdAnimWorker view of the +0x7c worker is DISSOLVED onto the
+// canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>, vtable 0x1efb80): its
+// "Advance at vtbl+0x10" was a WRONG dispatch shape - retail loads the fn PTR at
+// worker+0x10 (m_collideNotify) and calls it __cdecl with the owner pushed
+// (`mov edx,[obj+0x7c]; push obj; call [edx+0x10]; add esp,4` in Play 0x151150 /
+// WriteSnapshot 0x151c00) - and its "Init at +0x24" is the slot-9 Vfunc24/Init.
+// Its "QueryWorkerType" (0x164830) is CLogicRecord::Dispatch under the record view.)
+#include <DDrawMgr/AnimWorkerObj.h>
 
 // The +0x1a0 command-dispatch sub-object is the real CDDrawBlitParam
 // (<DDrawMgr/DDrawBlitParam.h>, 0x3c bytes): Construct 0x15c290 (1 arg = owner),
@@ -98,20 +76,34 @@ struct WwdRenderCtx;
 // override @0x15b4c0, is realized by the /GX CWwdGameObjectE sibling in this TU.)
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CWwdGameObject); // the DISPATCH model; the concrete kinds carry the sizes
-class CWwdGameObject : public CObject {
+class CWwdGameObject : public CWapObj {
 public:
-    // slots 0-4 inherited from CObject; slots 5-16 are CWwdGameObject's own:
-    virtual void Slot14();      // slot 5  @0x15b370  (worker-gate; reads [this+0x7c])
-    virtual void Slot18();      // slot 6  @0x001c08 -> 0xd5da0  (unrecovered engine method)
+    // Slots 0-4 come from CObject and 5/6 from CWapObj: slot 6 holds the 0x001c08
+    // IsReady default thunk (the CWapObj fingerprint) and slot 5 the family's
+    // IsLoaded override @0x15b370 (`return m_7c && m_0c && m_04 != -1` - the
+    // worker-gate). Neither is redeclared. Slots 7-16 are the class's own
+    // (slot RVAs = the 0x5f0020 table's ground truth):
     virtual void ReleaseSubs(); // slot 7  @0x15b5d0  ReleaseSubs_15b5d0
-    virtual i32 Vfunc20();      // slot 8  @0x154a00  (xor eax,eax;ret) read by WriteSnapshot
-    virtual i32 Slot24();       // slot 9  @0x164790  == Helper164790 (below; foreign owner)
-    virtual i32 Slot28(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60 == Setup (below;
-                                                        // the factories' 4-arg Build dispatch)
-    virtual void Slot2C();                              // slot 11 @0x11fec0  __purecall
-    virtual void Slot30();                              // slot 12 @0x11fec0  __purecall
-    virtual void Slot34();                              // slot 13 @0x11fec0  __purecall
-    virtual void Slot38();                              // slot 14 @0x11fec0  __purecall
+    // slot 8 - the per-kind type tag (`mov eax,<id>; ret`: E=0, C=6, F=0x16,
+    // B=0x1b; the FindBy* probes compare ==5). Read by WriteSnapshot.
+    virtual i32 GetTypeId(); // slot 8  @0x154a00
+    // slot 9 - set position + reset the draw state (x->m_posX, y->m_posY, zero the
+    // clip/plot fields, reseed m_48=0x32/m_50=1, cache mgr->m_24). The defined body
+    // is Helper164790 below (same RVA; the direct-call spelling).
+    virtual i32 SetPosition(i32 x, i32 y); // slot 9  @0x164790
+    // slot 10 - the factories' 4-arg Build dispatch == this class's own Setup
+    // (0x150d60; the body definition). Direct callers (Init/SetupDeferred/
+    // SetupFlagged/ResetAndSetup) spell it CWwdGameObject::Setup (qualified =
+    // devirtualized) so they keep retail's direct rel32.
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60
+    // slot 11 - the per-object render hook (1 arg = the render context; F's
+    // override is `ret 4`, C's is RenderDot below; __purecall in this base table).
+    virtual void Render(WwdRenderCtx* ctx); // slot 11 @0x11fec0  __purecall
+    // slots 12-14 - the dirty-rect blit ops on the two render surface-pairs
+    // (__purecall in this base table; the A/C/F kinds override - see the family).
+    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b);               // slot 12
+    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c);      // slot 13
+    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 14
     virtual i32 Slot3C(i32 ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150 == Play
                                                               // (the manager's walk dispatch)
     virtual i32
@@ -123,7 +115,6 @@ public:
     // Dispatch entry (0x150a70) and the methods it routes to.
     i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4);             // 0x150a70
     i32 ReadState(i32 src);                                     // 0x150b00
-    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);                  // 0x150d60 (vtbl +0x28)
     i32 Play(i32 a1, i32 type, i32 a3, i32 a4);                 // 0x151150 (vtbl +0x3c)
     i32 Serialize(i32 ar);                                      // 0x151320
     i32 WriteSnapshot(i32 dst, i32 unused);                     // 0x151c00 (ret 8; 2nd arg unused)
@@ -183,7 +174,7 @@ public:
     // the +0x10 callback / the +0x24 refcount). The union models the dual-view at
     // the field so BOTH consumer TUs stay cast-free.
     union {
-        WwdAnimWorker* m_worker; // anim/play API
+        AnimWorkerObj* m_worker; // anim/play API (the canonical 0x17c worker)
         CLogicRecord* m_killCue; // kill-cue API (CWwdObjMgr::TickKillCues)
     };
     void* m_80; // +0x80  object ref (serialized by name)

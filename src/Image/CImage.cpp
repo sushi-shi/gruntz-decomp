@@ -128,7 +128,7 @@ i32 CImage::GetClassId() {
 // CImage::Slot16 (slot 16, 0x0d5e00): a no-op sink (Slot17 forwards its arg here
 // and to Slot15). __thiscall, one arg, ret 4.
 RVA(0x000d5e00, 0x3)
-void CImage::Slot16(void*) {}
+void CImage::Slot16_0d5e00(void*) {}
 
 // ---------------------------------------------------------------------------
 // slot 17 (0x0d5e20): forward the arg through two later virtuals - Slot15
@@ -136,9 +136,9 @@ void CImage::Slot16(void*) {}
 // src/Stub/BoundaryLowerMethods.cpp (was the Cd5e20 placeholder view); the vtable
 // slot-17 thunk 0x1d1b jmps here, so this IS CImage's slot-17 virtual.
 RVA(0x000d5e20, 0x1b)
-void CImage::Slot17(void* arg) {
-    Slot15(arg);
-    Slot16(arg);
+void CImage::Slot17_0d5e20(void* arg) {
+    Slot15_153370(arg);
+    Slot16_0d5e00(arg);
 }
 
 // ---------------------------------------------------------------------------

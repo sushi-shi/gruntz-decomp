@@ -833,8 +833,8 @@ i32 CMultiBootyState::Render() {
         DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
         m_1b8 = 0xc7;
     }
-    m_c->m_8->FrameBegin(1);
-    m_c->m_8->FramePresent(m_c->m_drawTarget->m_14);
+    m_c->m_8->TickKillCues(1);
+    m_c->m_8->WalkDispatch2C(m_c->m_drawTarget->m_14);
 
     // +0x7c->+0x10: the booty countdown's elapsed-millisecond source. The SAME field the
     // battlez scoreboard reads as its score accumulator (CBattlezData::m_score) - one

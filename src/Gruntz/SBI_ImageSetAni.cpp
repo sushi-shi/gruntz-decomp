@@ -9,6 +9,7 @@
 #define SBI_DTOR_CHAIN           // enable the inline base-dtor bodies (see StatusBarItem.h)
 #define SBI_OWN_IMAGESETANI_DTOR // this TU owns the out-of-line ~CSBI_ImageSetAni (0x1047f0)
 #include <rva.h>
+#include <Io/FileMem.h> // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_ImageSetAni.h>
@@ -189,20 +190,20 @@ i32 CSBI_ImageSetAni::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     }
     switch (mode) {
         case 7:
-            s->ReadBytes(&m_3c, 4);
-            s->ReadBytes(&m_40, 4);
-            s->ReadBytes(&m_44, 4);
-            s->ReadBytes(&m_48, 4);
-            s->ReadBytes(&m_4c, 4);
-            s->ReadBytes(&m_50, 4);
+            s->Read(&m_3c, 4);
+            s->Read(&m_40, 4);
+            s->Read(&m_44, 4);
+            s->Read(&m_48, 4);
+            s->Read(&m_4c, 4);
+            s->Read(&m_50, 4);
             break;
         case 4:
-            s->WriteBytes(&m_3c, 4);
-            s->WriteBytes(&m_40, 4);
-            s->WriteBytes(&m_44, 4);
-            s->WriteBytes(&m_48, 4);
-            s->WriteBytes(&m_4c, 4);
-            s->WriteBytes(&m_50, 4);
+            s->Write(&m_3c, 4);
+            s->Write(&m_40, 4);
+            s->Write(&m_44, 4);
+            s->Write(&m_48, 4);
+            s->Write(&m_4c, 4);
+            s->Write(&m_50, 4);
             break;
     }
     return CSBI_ImageSet::Serialize(s, mode, a3, a4) != 0; // qualified = direct base call

@@ -20,6 +20,7 @@
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <Globals.h> // g_projPhase0, g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_645588
 #include <rva.h>
+#include <Io/FileMem.h> // CFileMemBase - the CGruntArchive stream (Read/Write dispatch)
 
 // @confidence: high
 // @source: rtti-vptr

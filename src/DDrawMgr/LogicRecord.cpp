@@ -8,7 +8,8 @@
 // that obj's assembly lands; kept as a single-block correct partial meanwhile.
 #include <Gruntz/LogicRecord.h>
 #include <rva.h>
-#include <Mfc.h> // CMapPtrToPtr::Lookup (0x1b8760)
+#include <Mfc.h>        // CMapPtrToPtr::Lookup (0x1b8760)
+#include <Io/FileMem.h> // CFileMemBase complete type (the CSerialArchive Read/Write dispatch)
 
 // Engine operator delete (0x1b9b82, __cdecl) - reloc-masked rel32.
 extern "C" void Engine_Delete(void* p);
@@ -43,12 +44,14 @@ i32 CLogicRecord::Dispatch(i32 a, i32 mode, void* c, void* d) {
             }
             break;
         case 4:
-            if (Load((LogicArchive*)a) == 0) {
+            // the serialize walk (ForEachSerialize_15b020, WRITES the stream)
+            if (Save((CSerialArchive*)a) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (Save((LogicArchive*)a) == 0) {
+            // the deserialize walk (Deserialize_15b0e0, READS the stream)
+            if (Load((CSerialArchive*)a) == 0) {
                 return 0;
             }
             break;
@@ -92,92 +95,7 @@ i32 CLogicRecord::CacheTargetId(void* a) {
 // the runtime-only m_168/m_16c/m_170), the six 16-byte blocks 0xd0..0x120, the
 // trailer 0x174/0x178, then m_178 bytes of the m_14 payload when both are set.
 RVA(0x00164960, 0x41a)
-i32 CLogicRecord::Load(LogicArchive* ar) {
-    if (ar == 0) {
-        return 0;
-    }
-    char* p = (char*)this;
-    ar->Read(p + 0x1c, 4);
-    ar->Read(p + 0x20, 4);
-    ar->Read(p + 0x24, 4);
-    ar->Read(p + 0x28, 4);
-    ar->Read(p + 0x2c, 4);
-    ar->Read(p + 0x30, 4);
-    ar->Read(p + 0x34, 4);
-    ar->Read(p + 0x38, 4);
-    ar->Read(p + 0x3c, 4);
-    ar->Read(p + 0x40, 4);
-    ar->Read(p + 0x44, 4);
-    ar->Read(p + 0x48, 4);
-    ar->Read(p + 0x4c, 4);
-    ar->Read(p + 0x50, 4);
-    ar->Read(p + 0x54, 4);
-    ar->Read(p + 0x58, 4);
-    ar->Read(p + 0x5c, 4);
-    ar->Read(p + 0x60, 4);
-    ar->Read(p + 0x64, 4);
-    ar->Read(p + 0x68, 4);
-    ar->Read(p + 0x6c, 4);
-    ar->Read(p + 0x70, 4);
-    ar->Read(p + 0x74, 4);
-    ar->Read(p + 0x78, 4);
-    ar->Read(p + 0x7c, 4);
-    ar->Read(p + 0x80, 4);
-    ar->Read(p + 0x84, 4);
-    ar->Read(p + 0x88, 4);
-    ar->Read(p + 0x8c, 4);
-    ar->Read(p + 0x90, 4);
-    ar->Read(p + 0x94, 4);
-    ar->Read(p + 0x98, 4);
-    ar->Read(p + 0x9c, 4);
-    ar->Read(p + 0xa0, 4);
-    ar->Read(p + 0xa4, 4);
-    ar->Read(p + 0xa8, 4);
-    ar->Read(p + 0xac, 4);
-    ar->Read(p + 0xb0, 4);
-    ar->Read(p + 0xb4, 4);
-    ar->Read(p + 0xb8, 4);
-    ar->Read(p + 0xbc, 4);
-    ar->Read(p + 0xc0, 4);
-    ar->Read(p + 0xc4, 4);
-    ar->Read(p + 0xc8, 4);
-    ar->Read(p + 0xcc, 4);
-    ar->Read(p + 0xd0, 16);
-    ar->Read(p + 0xe0, 16);
-    ar->Read(p + 0xf0, 16);
-    ar->Read(p + 0x100, 16);
-    ar->Read(p + 0x110, 16);
-    ar->Read(p + 0x120, 16);
-    ar->Read(p + 0x130, 4);
-    ar->Read(p + 0x134, 4);
-    ar->Read(p + 0x138, 4);
-    ar->Read(p + 0x13c, 4);
-    ar->Read(p + 0x140, 4);
-    ar->Read(p + 0x144, 4);
-    ar->Read(p + 0x148, 4);
-    ar->Read(p + 0x14c, 4);
-    ar->Read(p + 0x150, 4);
-    ar->Read(p + 0x154, 4);
-    ar->Read(p + 0x158, 4);
-    ar->Read(p + 0x15c, 4);
-    ar->Read(p + 0x160, 4);
-    ar->Read(p + 0x164, 4);
-    ar->Read(p + 0x174, 4);
-    ar->Read(&m_178, 4);
-    void* payload = m_14;
-    if (payload && m_178 > 0) {
-        ar->Read(payload, m_178);
-    }
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// Save (0x164d80, __thiscall). The slot-0x2c (Write) counterpart of Load: the
-// same flat block transferred through the archive's Write slot. The trailer
-// allocates the m_14 payload (operator new of the m_178 byte count) before
-// transferring it (so the archive sizes/owns the block on the load pass).
-RVA(0x00164d80, 0x421)
-i32 CLogicRecord::Save(LogicArchive* ar) {
+i32 CLogicRecord::Save(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -249,9 +167,94 @@ i32 CLogicRecord::Save(LogicArchive* ar) {
     ar->Write(p + 0x164, 4);
     ar->Write(p + 0x174, 4);
     ar->Write(&m_178, 4);
+    void* payload = m_14;
+    if (payload && m_178 > 0) {
+        ar->Write(payload, m_178);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Save (0x164d80, __thiscall). The slot-0x2c (Write) counterpart of Load: the
+// same flat block transferred through the archive's Write slot. The trailer
+// allocates the m_14 payload (operator new of the m_178 byte count) before
+// transferring it (so the archive sizes/owns the block on the load pass).
+RVA(0x00164d80, 0x421)
+i32 CLogicRecord::Load(CSerialArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    char* p = (char*)this;
+    ar->Read(p + 0x1c, 4);
+    ar->Read(p + 0x20, 4);
+    ar->Read(p + 0x24, 4);
+    ar->Read(p + 0x28, 4);
+    ar->Read(p + 0x2c, 4);
+    ar->Read(p + 0x30, 4);
+    ar->Read(p + 0x34, 4);
+    ar->Read(p + 0x38, 4);
+    ar->Read(p + 0x3c, 4);
+    ar->Read(p + 0x40, 4);
+    ar->Read(p + 0x44, 4);
+    ar->Read(p + 0x48, 4);
+    ar->Read(p + 0x4c, 4);
+    ar->Read(p + 0x50, 4);
+    ar->Read(p + 0x54, 4);
+    ar->Read(p + 0x58, 4);
+    ar->Read(p + 0x5c, 4);
+    ar->Read(p + 0x60, 4);
+    ar->Read(p + 0x64, 4);
+    ar->Read(p + 0x68, 4);
+    ar->Read(p + 0x6c, 4);
+    ar->Read(p + 0x70, 4);
+    ar->Read(p + 0x74, 4);
+    ar->Read(p + 0x78, 4);
+    ar->Read(p + 0x7c, 4);
+    ar->Read(p + 0x80, 4);
+    ar->Read(p + 0x84, 4);
+    ar->Read(p + 0x88, 4);
+    ar->Read(p + 0x8c, 4);
+    ar->Read(p + 0x90, 4);
+    ar->Read(p + 0x94, 4);
+    ar->Read(p + 0x98, 4);
+    ar->Read(p + 0x9c, 4);
+    ar->Read(p + 0xa0, 4);
+    ar->Read(p + 0xa4, 4);
+    ar->Read(p + 0xa8, 4);
+    ar->Read(p + 0xac, 4);
+    ar->Read(p + 0xb0, 4);
+    ar->Read(p + 0xb4, 4);
+    ar->Read(p + 0xb8, 4);
+    ar->Read(p + 0xbc, 4);
+    ar->Read(p + 0xc0, 4);
+    ar->Read(p + 0xc4, 4);
+    ar->Read(p + 0xc8, 4);
+    ar->Read(p + 0xcc, 4);
+    ar->Read(p + 0xd0, 16);
+    ar->Read(p + 0xe0, 16);
+    ar->Read(p + 0xf0, 16);
+    ar->Read(p + 0x100, 16);
+    ar->Read(p + 0x110, 16);
+    ar->Read(p + 0x120, 16);
+    ar->Read(p + 0x130, 4);
+    ar->Read(p + 0x134, 4);
+    ar->Read(p + 0x138, 4);
+    ar->Read(p + 0x13c, 4);
+    ar->Read(p + 0x140, 4);
+    ar->Read(p + 0x144, 4);
+    ar->Read(p + 0x148, 4);
+    ar->Read(p + 0x14c, 4);
+    ar->Read(p + 0x150, 4);
+    ar->Read(p + 0x154, 4);
+    ar->Read(p + 0x158, 4);
+    ar->Read(p + 0x15c, 4);
+    ar->Read(p + 0x160, 4);
+    ar->Read(p + 0x164, 4);
+    ar->Read(p + 0x174, 4);
+    ar->Read(&m_178, 4);
     if (m_178 > 0) {
         m_14 = ::operator new(m_178);
-        ar->Write(m_14, m_178);
+        ar->Read(m_14, m_178);
     }
     return 1;
 }

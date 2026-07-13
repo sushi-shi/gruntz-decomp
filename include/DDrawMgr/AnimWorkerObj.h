@@ -18,11 +18,13 @@
 #include <Wap32/Object.h>
 #include <rva.h>
 
-// The worker's +0x18 owned sub-object, torn down via its vtable slot 0 in Clear.
-struct AnimWorkerKillable {
-    virtual void Destroy(i32 flags); // slot 0
-};
-SIZE_UNKNOWN(AnimWorkerKillable);
+// The worker's +0x18 owned sub-object IS the bound logic leaf - a CUserBase/
+// CUserLogic (<Gruntz/UserLogic.h>; CGameObjAux::m_logic and CLogicRecord::m_18
+// type the same slot). Its "slot-0 Destroy(1)" teardown is the CUserBase virtual
+// scalar-deleting dtor (slot 0), i.e. plain `delete`; its "+0x8 virtual" is
+// slot 2 = GetTypeTag. The former AnimWorkerKillable/LogicSub/WorkerSub views
+// of it are dissolved.
+class CUserBase;
 
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
 // Real polymorphic: `new AnimWorkerObj` makes cl auto-emit ??_7AnimWorkerObj
@@ -52,7 +54,7 @@ struct AnimWorkerObj : public CObject {
     // (Name migrated from the ex-CAnimWorker view in <Gruntz/UserLogic.h>.)
     i32 (*m_collideNotify)(struct CGameObject* obj); // +0x10
     void* m_14;               // +0x14  = 0  owned buffer (RezFree'd in Clear)
-    AnimWorkerKillable* m_18; // +0x18  = 0  owned sub-object (Destroy(1)'d in Clear)
+    CUserBase* m_18; // +0x18  = 0  the owned bound-logic leaf (deleted in Clear)
     i32 m_1c;                 // +0x1c  = 0
     char m_pad20[0x170 - 0x20];
     i32 m_170; // +0x170 = 0

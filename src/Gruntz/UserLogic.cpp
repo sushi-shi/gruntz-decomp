@@ -92,7 +92,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 // with these slots as DIR32 relocs to the base virtual symbols; unpinned they bound
 // to NO rva (reloc-masked but wrong). Bodies are NOT matched (dummy anchors) - the
 // pin only binds the slot symbol to the address retail's slot uses.
-// @rva-symbol: ?SerializeMove@CUserBase@@UAEHPAUCGruntArchive@@HHH@Z 0x000039e0
+// @rva-symbol: ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z 0x000039e0
 // @rva-symbol: ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ 0x0000242d
 // @rva-symbol: ?UserLogicVfunc1@CUserLogic@@UAEHXZ 0x00003413
 // @rva-symbol: ?UserLogicVfunc2@CUserLogic@@UAEHXZ 0x0000246e

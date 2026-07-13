@@ -125,7 +125,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
     }
     i32 row = (attr >> 8) & 0xff;
     i32 col = attr & 0xff;
-    CTmCell* cell = m_grid[col + row * 15];
+    CTmCell* cell = m_grid[col + row * TM_GRID_COLS];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
@@ -209,7 +209,7 @@ CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* 
             }
             i32 col = val & 0xff;
             i32 row = (val >> 8) & 0xff;
-            CTmCell* g = m_grid[col + row * 15];
+            CTmCell* g = m_grid[col + row * TM_GRID_COLS];
             if (!g) {
                 continue;
             }

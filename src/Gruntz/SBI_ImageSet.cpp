@@ -1,6 +1,7 @@
 #define SBI_DTOR_CHAIN        // enable the inline base-dtor bodies (see StatusBarItem.h)
 #define SBI_OWN_IMAGESET_DTOR // this TU supplies the out-of-line ~CSBI_ImageSet (0x102000)
 #include <rva.h>
+#include <Io/FileMem.h> // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CImageRegistry + CSprite)
@@ -150,7 +151,7 @@ i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
 // result to recover the dead store regresses it (98.4%) - a non-steerable /O2
 // dead-store artifact (docs/patterns/reloc-typing-vptr-global.md). Effectively done.
 RVA(0x000e74f0, 0x152)
-i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_ImageSet::Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
@@ -161,9 +162,9 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     char buf[0x80];
     switch (mode) {
         case 7:
-            s->ReadBytes(&m_38, 4);
+            s->Read(&m_38, 4);
             g_serialCounter++;
-            s->ReadBytes(buf, 0x80);
+            s->Read(buf, 0x80);
             if (strlen(buf)) {
                 CSprite* out;
                 reg->m_10->m_10map.Lookup(buf, (CObject*&)out);
@@ -173,13 +174,13 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
             }
             break;
         case 4:
-            s->WriteBytes(&m_38, 4);
+            s->Write(&m_38, 4);
             g_serialCounter++;
             memset(buf, 0, 0x80);
             if (m_34) {
                 strcpy(buf, m_34->m_name);
             }
-            s->WriteBytes(buf, 0x80);
+            s->Write(buf, 0x80);
             break;
     }
     return SerializeChain(s, mode, a3, a4) != 0; // the CSBI_Image base leg (0xe6e40)

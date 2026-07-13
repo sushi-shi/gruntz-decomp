@@ -133,23 +133,26 @@ struct CGameObject {
     }
 
     // vptr @ +0x00 (declared-only slots; nothing constructs a bare CGameObject, so
-    // no vtable is ever emitted from source - every dispatch reloc-masks). Slot
-    // roles: [1] Delete = scalar-deleting dtor (WwdFile::ReadPlaneObjects `push 1;
-    // call [+4]`); [10] Load = the record-load virtual (ReadPlaneObjects pushes 4
-    // args + checks the int return: `push;push;push;push; call [+0x28]`); [11] Draw:
-    // CGameLevel::VisitVisible dispatches it (+0x2c) per object during the
-    // between-planes render walk, passing the render visitor.
-    virtual void v00();                           // [0]  +0x00
+    // no vtable is ever emitted from source - every dispatch reloc-masks). The real
+    // object's table is the CWwdGameObjectE family's (0x5f0020): slots 0-4 are MFC
+    // CObject's, 5/6 the CWapObj IsLoaded/IsReady pair - named after the canonicals
+    // (<Wwd/WwdGameObjectFamily.h>), NOT derived: this view keeps its own slot 1
+    // `Delete(i32)` spelling because retail's ReadPlaneObjects delete-sites carry NO
+    // null guard (`push 1; call [edx+4]` bare), which plain `delete` under MSVC5
+    // would add (RemoveAndDelete_159db0 shows the guarded form). [10] Load = the
+    // record-load virtual (ReadPlaneObjects pushes 4 args + checks the int return);
+    // [11] Draw: CGameLevel::VisitVisible dispatches it (+0x2c) per object.
+    virtual void GetRuntimeClass();               // [0]  +0x00  CObject slot (0x1bef01)
     virtual void* Delete(i32 flag);               // [1]  +0x04  scalar-deleting dtor
-    virtual void v08();                           // [2]  +0x08
-    virtual void v0c();                           // [3]  +0x0c
-    virtual void v10();                           // [4]  +0x10
-    virtual void v14();                           // [5]  +0x14
-    virtual void v18();                           // [6]  +0x18
-    virtual void v1c();                           // [7]  +0x1c
-    virtual i32 GetTypeId();                      // [8]  +0x20  (serialize type-id getter;
+    virtual void Serialize();                     // [2]  +0x08  CObject slot (0x0028ec)
+    virtual void AssertValid();                   // [3]  +0x0c  CObject slot (0x00106e)
+    virtual void Dump();                          // [4]  +0x10  CObject slot (0x004034)
+    virtual i32 IsLoaded();                       // [5]  +0x14  0x15b370 (worker-gate)
+    virtual i32 IsReady();                        // [6]  +0x18  0x001c08 (CWapObj default)
+    virtual void ReleaseSubs();                   // [7]  +0x1c  0x15b5d0
+    virtual i32 GetTypeId();                      // [8]  +0x20  (per-kind type tag;
                                                   //       CTriggerMgr::Load checks ==5)
-    virtual void v24();                           // [9]  +0x24
+    virtual i32 SetPosition(i32 x, i32 y);        // [9]  +0x24  0x164790 (pos + draw reseed)
     virtual i32 Load(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  record-load virtual
     virtual void Draw(void* arg);                 // [11] +0x2c  per-object draw hook (VisitVisible)
 
@@ -280,23 +283,28 @@ struct CGameObjNode {
     CGameObject* obj;   // +0x08
 };
 
-// The chain owner is polymorphic; slot +0x28 is the hook CGameLevel::VisitVisible
-// dispatches between the plane syncs on the non-origin-fixed path. The head node
-// hangs off a +0x10 sub-record (the engine lea's its ADDRESS and null-checks it
-// before loading the head - the sub-struct keeps that byte shape).
+// The chain owner IS CDDrawChildGroup == CWwdObjMgr (vtable 0x1efdc0, 17 slots):
+// the +0x10 list with its +0x14 head node, the {next@0, obj@8} node shape and the
+// slot-10 (+0x28) walk hook are exactly the canonical's (m_head / CDDrawGroupNode /
+// WalkDispatch2C - the per-object render broadcast). Kept as CGameLevel's local
+// walking view pending the wide fold (@identity-TODO); slots renamed to the
+// canonical's (<DDrawMgr/DDrawChildGroup.h>). The head node hangs off a +0x10
+// sub-record (the engine lea's its ADDRESS and null-checks it before loading the
+// head - the sub-struct keeps that byte shape).
 SIZE_UNKNOWN(CGameObjChain);
 struct CGameObjChain {
-    virtual void v00();           // [0]  +0x00
-    virtual void v04();           // [1]  +0x04
-    virtual void v08();           // [2]  +0x08
-    virtual void v0c();           // [3]  +0x0c
-    virtual void v10();           // [4]  +0x10
-    virtual void v14();           // [5]  +0x14
-    virtual void v18();           // [6]  +0x18
-    virtual void v1c();           // [7]  +0x1c
-    virtual void v20();           // [8]  +0x20
-    virtual void v24();           // [9]  +0x24
-    virtual void Hook(void* arg); // [10] +0x28  render-walk hook (VisitVisible)
+    virtual void GetRuntimeClass();         // [0]  +0x00  CObject slot (0x1bef01)
+    virtual void ScalarDtor();              // [1]  +0x04  0x157610
+    virtual void Serialize();               // [2]  +0x08  CObject slot (0x0028ec)
+    virtual void AssertValid();             // [3]  +0x0c  CObject slot (0x00106e)
+    virtual void Dump();                    // [4]  +0x10  CObject slot (0x004034)
+    virtual i32 IsLoaded();                 // [5]  +0x14  0x1575e0
+    virtual i32 IsReady();                  // [6]  +0x18  0x1576c0
+    virtual void ForwardTo3C();             // [7]  +0x1c  0x1591e0
+    virtual i32 GetStateId();               // [8]  +0x20  0x157600 (STATE_CHILDGROUP)
+    virtual void TickKillCues(i32 advance); // [9]  +0x24  0x159a70
+    virtual void WalkDispatch2C(void* arg); // [10] +0x28  0x159c90 render-walk broadcast
+                                            //      (VisitVisible's hook)
 
     char m_pad04[0x10 - 0x04];
     struct List {
@@ -306,6 +314,10 @@ struct CGameObjChain {
 };
 
 class CGameLevel; // fwd (the world owns the level; full class in <Gruntz/GameLevel.h>)
+// The world IS CDDrawSurfaceMgr (<DDrawMgr/DDrawSurfaceMgr.h>): the canonical's
+// own members are m_childGroup @+0x08 (== m_objChain, typed CDDrawChildGroup*)
+// and m_resolveSubMgr @+0x24 (== m_level, typed CGameLevel*). Kept as the game-
+// side walking view pending the fold (@identity-TODO).
 SIZE_UNKNOWN(CGameObjWorld);
 struct CGameObjWorld {
     char m_pad00[0x08];
@@ -383,7 +395,14 @@ struct CLogicTypeBuilder;
 // CUserBase - root of the game-object hierarchy: just a vptr (3 virtuals,
 // vftable 0x5e70b4). Inline ctor so it folds into derived ctors.
 // ---------------------------------------------------------------------------
-struct CGruntArchive; // slot-1 serialize archive (Grunt world)
+// The slot-1 serialize archive IS the one engine stream - CSerialArchive ==
+// CFileMemBase (<Gruntz/SerialArchive.h>: Read @slot 11 +0x2c, Write @slot 12
+// +0x30). The old `struct CGruntArchive` 13-slot view (Grunt.h) is dissolved;
+// the name stays as a typedef so every SerializeMove override keeps its spelling.
+// (Do NOT fwd-declare `struct CGruntArchive` anywhere - an elaborated fwd decl
+// silently out-ranks this typedef under MSVC5.)
+class CFileMemBase;
+typedef CFileMemBase CGruntArchive;
 class CUserBase {
 public:
     CUserBase() {}

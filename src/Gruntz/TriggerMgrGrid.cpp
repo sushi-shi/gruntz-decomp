@@ -52,7 +52,7 @@ i32 CTriggerMgr::SetLevel(CTmLevel* lvl) {
         return 0;
     }
     m_level = lvl;
-    m_230 = 0;
+    m_armed = 0;
     m_pendingFx = 0;
     m_2a4 = 1;
     return 1;
@@ -133,7 +133,7 @@ i32 CTriggerMgr::PlaceObject(
         return -1;
     }
     // find the first free grid column of row `row`
-    CTmCell** rowBase = &m_grid[row * 15];
+    CTmCell** rowBase = &m_grid[row * TM_GRID_COLS];
     i32 free = 0;
     if (*rowBase != 0) {
         CTmCell** p = rowBase;
@@ -157,9 +157,9 @@ i32 CTriggerMgr::PlaceObject(
     CGrunt* logic = (CGrunt*)sprite->m_7c->m_logic;
     // (the dense kind jump table -> internal id + the Wormhole / Entrance sub-ctors elide
     // here; reconstructed to plateau)
-    m_grid[row * 15 + free] = logic;
+    m_grid[row * TM_GRID_COLS + free] = logic;
     m_rowCount[row] += 1;
-    m_cellFlag[(row * 15 + free)] = 0;
+    m_cellFlag[(row * TM_GRID_COLS + free)] = 0;
     g_gameReg->m_scoreHud->m_counts[row] += 1;
     return free;
 }
@@ -177,7 +177,7 @@ i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32
         last = startRow;
     }
     for (i32 row = startRow; row <= last; row++) {
-        CTmCell** cell = &m_grid[row * 15];
+        CTmCell** cell = &m_grid[row * TM_GRID_COLS];
         for (i32 col = 0; col < 15; col++) {
             if (cell[col] == obj) {
                 return CellDispatch(row, col, kind, arg);
@@ -192,7 +192,7 @@ i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32
 // `kind` (0xd => ExitGrid, else Route(kind,arg)) and ret 1; ret 0 when no cell.
 RVA(0x0006bcb0, 0x6a)
 i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
-    CTmCell* cell = m_grid[row * 15 + col];
+    CTmCell* cell = m_grid[row * TM_GRID_COLS + col];
     if (cell == 0) {
         return 0;
     }
@@ -235,9 +235,9 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     ResetAll();
     if (row <= last) {
         i32 n = last - row + 1;
-        CTmCell** cell = &m_grid[row * 15];
+        CTmCell** cell = &m_grid[row * TM_GRID_COLS];
         i32* perRow = m_rowStateB + row;
-        i32 g2 = row * 15;
+        i32 g2 = row * TM_GRID_COLS;
         do {
             i32 col = 0;
             do {
@@ -298,7 +298,7 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
         row = startRow;
     }
     while (row <= last) {
-        CTmCell** cell = &m_grid[row * 15];
+        CTmCell** cell = &m_grid[row * TM_GRID_COLS];
         for (i32 col = 0; col < 15; col++) {
             CTmCell* g = cell[col];
             if (g != 0 && g->m_entranceCommitted != 0) {
@@ -313,7 +313,7 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
                         if (outCol != 0) {
                             *outCol = col;
                         }
-                        return m_grid[row * 15 + col];
+                        return m_grid[row * TM_GRID_COLS + col];
                     }
                 }
             }
@@ -333,7 +333,7 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
 // push order pin ebx/edi differently than retail. Logic + offsets byte-exact. topic:wall.
 RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
-    i32 idx = col * 15 + row;
+    i32 idx = col * TM_GRID_COLS + row;
     CTmCell* cell = m_grid[idx];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
@@ -583,7 +583,7 @@ i32 __stdcall GridAction7(i32 a, i32 b) {
 // regalloc diverges across the many branches. topic:wall.
 RVA(0x0006dae0, 0x4b7)
 i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
-    CTmCell* cell = m_grid[col * 15 + row];
+    CTmCell* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
@@ -619,7 +619,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
 // + snapped-box arithmetic diverge in regalloc across the branches. topic:wall.
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
-    CTmCell* cell = m_grid[col * 15 + row];
+    CTmCell* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == 0 || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
     }
@@ -659,7 +659,7 @@ CGrunt* CGruntTileMgr::FindAtPixel(i32 x, i32 y) {
 // differently than retail and the box arithmetic spills. Logic + offsets byte-exact.
 RVA(0x0006e800, 0x189)
 i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
-    i32 idx = col * 15 + row;
+    i32 idx = col * TM_GRID_COLS + row;
     CTmCell* cell = m_grid[idx];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;

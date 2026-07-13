@@ -1622,5 +1622,5 @@ kArm:
 // CGrunt::DispatchVtbl24 (0x6b260) - tail-dispatch through virtual slot 9 (offset 0x24).
 RVA(0x0006b260, 0x5)
 void CGrunt::DispatchVtbl24() {
-    ((CVtSlot9*)this)->Slot9();
+    ((CVtSlot9*)this)->Dispatch24();
 }

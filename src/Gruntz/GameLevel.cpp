@@ -34,6 +34,8 @@
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/SerialArchive.h> // CSerialArchive (== CFileMemBase; the EditDispatch stream)
+#include <Io/FileMem.h>           // CFileMemBase complete type (Read/Write dispatch)
 #include <Wap32/Object.h>       // CObject grand-base (slots 0-4) for the CImageSetN variants
 #include <Gruntz/ParseSource.h> // canonical CParseSource (BeginParse/EndParse)
 #include <Gruntz/UserLogic.h>   // canonical CGameObject (the movement target) + world chain types
@@ -800,24 +802,10 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     return set->GetCollisionAt(subX, subY);
 }
 
-// EditSink - the serializer `arg0` of EditDispatch: a polymorphic object whose slots
-// +0x2c (read a name into buf) and +0x30 (write buf as a name) are used.
-SIZE_UNKNOWN(EditSink);
-struct EditSink {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual void GetName(char* buf, i32 cap); // +0x2c
-    virtual void SetName(char* buf, i32 cap); // +0x30
-};
+// (The ex `EditSink` 13-slot view of EditDispatch's serializer arg is DISSOLVED:
+// it IS the one engine stream, CSerialArchive == CFileMemBase - its "+0x2c read a
+// name / +0x30 write a name" are the stream's Read @slot 11 / Write @slot 12.)
+typedef CSerialArchive EditSink;
 
 // Resolve a level/name to a tile id (returns nonzero on success). __stdcall. @0x163710
 extern i32 __stdcall ResolveLevelName(EditSink* sink, i32 a, i32 b, i32 c);
@@ -1167,7 +1155,7 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
             ++idx;
         } while (idx <= m_mainIndex);
     }
-    ctx->Hook(visitor);
+    ctx->WalkDispatch2C(visitor);
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
@@ -1209,10 +1197,10 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
         case 4:
             memset(buf, 0, sizeof(buf));
             strcpy(buf, m_levelName);
-            s->SetName(buf, 0x80);
+            s->Write(buf, 0x80);
             break;
         case 7:
-            s->GetName(buf, 0x80);
+            s->Read(buf, 0x80);
             strcpy(m_levelName, buf);
             break;
     }
@@ -1237,7 +1225,7 @@ i32 CGameLevel::SaveName(void* sink) {
     char buf[0x80];
     memset(buf, 0, sizeof(buf));
     strcpy(buf, m_levelName);
-    s->SetName(buf, 0x80);
+    s->Write(buf, 0x80);
     return 1;
 }
 
@@ -1252,7 +1240,7 @@ i32 CGameLevel::LoadName(void* sink) {
     }
 
     char buf[0x80];
-    s->GetName(buf, 0x80);
+    s->Read(buf, 0x80);
     strcpy(m_levelName, buf);
     return 1;
 }

@@ -32,6 +32,14 @@ extern FreeNodePool g_coordPool;
 // operator delete (static CRT, reloc-masked); operator new comes from <Mfc.h>.
 void operator delete(void*);
 
+// The placed-object grid geometry: m_grid/m_cellFlag are 4 rows x 15 cells
+// (0x3c pointers; every retail index is `row * 15 + col`). Matching-neutral:
+// an MSVC5 enumerator lowers to the identical immediate.
+typedef enum TmGridDim {
+    TM_GRID_COLS = 15, // cells per row (the m_grid/m_cellFlag row stride)
+    TM_GRID_ROWS = 4,  // rows (m_rowCount/m_rowStateB/m_rowStateC are per-row)
+} TmGridDim;
+
 // The (x,y) pair the +0x174/+0x178 origin accessor writes out.
 struct CTrigPoint {
     i32 x; // +0x00
@@ -126,9 +134,14 @@ public:
     // out-slot and return it (ret 4 -> callee cleans the out-ptr arg).
     CTrigPoint* GetOriginXY(CTrigPoint* out); // 0x759e0
 
-    // 0x6b640: store the supplied level at +0x22c, clear m_230 + m_pendingFx and
+    // 0x6b640: store the supplied level at +0x22c, clear m_armed + m_pendingFx and
     // raise m_2a4; returns 1 (0 when arg is null).
     i32 SetLevel(CTmLevel* lvl); // 0x6b640
+
+    // 0x788d0 (ILT 0x1398): centre the active plane's scroll origin on the selected
+    // record cell's bound object (parallax-scaled unless the plane is origin-fixed).
+    // CMulti::PumpB fires it when m_armed. (Ex-CSnd788d0 "sound-emitter" view.)
+    i32 ScrollToActiveRecord();
 
     // 0x78a30: forward to the overlay sub-object's helper when present, else ret.
     void OverlayTick();
@@ -489,7 +502,9 @@ public:
     i32 m_rowStateB[4];    // +0x20c  per-row state band B
     i32 m_rowStateC[4];    // +0x21c  per-row state band C
     CTmLevel* m_level;     // +0x22c  the active level object (SetLevel)
-    i32 m_230;             // +0x230  companion state word (cleared by SetLevel)
+    // +0x230: the multiplayer armed gate (ex-CMultiSub68 view's m_armed) ==
+    // the companion state word cleared by SetLevel; serialized at 0x1339/0x1545.
+    i32 m_armed;           // +0x230
     i32 m_recX;            // +0x234  active-record x
     i32 m_recY;            // +0x238  active-record y
     CTmGoal* m_goal;       // +0x23c  the goal object

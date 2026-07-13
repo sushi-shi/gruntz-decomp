@@ -32,19 +32,24 @@ struct CImageSet1 : CObject {
     // slots 0-4 inherited from CObject (slot 1 = its virtual dtor; cl auto-
     // stamps this vptr in the inline ctor, the base stamp dead-store-elides).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d40
-    virtual void s18();              // [6]  0x161330
-    virtual void s1c();              // [7]  0x161340
+    virtual void FreePixels();       // [6]  0x161330  `ret` (the family's pixel-release
+                                     //      slot; the kind-1 set owns no pixel buffer)
+    virtual i32 GetKind();           // [7]  0x161340  `return 1` - the set-format tag
+                                     //      (kind 2/3 siblings return 2/3 at this slot)
     virtual i32
     GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161380  per-pixel collision-kind query
     virtual i32 GetStride();      // [9]  +0x24  0x161410  record byte length (cursor advance)
-    virtual void s28();           // [10] 0x161390
-    virtual void s2c();           // [11] 0x1613a0
-    virtual void s30();           // [12] 0x1613b0
-    virtual void s34();           // [13] 0x1613c0
-    virtual void s38();           // [14] 0x1613d0
-    virtual void s3c();           // [15] 0x1613e0
-    virtual void s40();           // [16] 0x1613f0
-    virtual void s44();           // [17] 0x161400
+    // [10-17]: the edge-query family (CImageSet2's Query_* slots). The kind-1 set
+    // has no collision box, so six report 0 (`xor eax,eax; ret 0x10`) and the two
+    // far-edge forms report the extent minus one (m_04-1 / m_08-1).
+    virtual i32 Query_161390(i32 a, i32 b, i32* outA, i32* outB); // [10] return 0
+    virtual i32 Query_1613a0(i32 a, i32 b, i32 val, i32* out);    // [11] return 0
+    virtual i32 Query_1613b0(i32 a, i32 b, i32* outA, i32* outB); // [12] return 0
+    virtual i32 Query_1613c0(i32 a, i32 b, i32 val, i32* out);    // [13] return 0
+    virtual i32 Query_1613d0(i32 a, i32 b, i32* outA, i32* outB); // [14] return m_04 - 1
+    virtual i32 Query_1613e0(i32 a, i32 b, i32 val, i32* out);    // [15] return 0
+    virtual i32 Query_1613f0(i32 a, i32 b, i32* outA, i32* outB); // [16] return m_08 - 1
+    virtual i32 Query_161400(i32 a, i32 b, i32 val, i32* out);    // [17] return 0
     CImageSet1() {
         m_04 = 0; // cl auto-stamps &??_7CImageSet1 first
     }
@@ -65,8 +70,8 @@ struct CImageSet2 : CObject {
     virtual ~CImageSet2() OVERRIDE; // slot 1 (CObject dtor)
     // slots 0-4 inherited from CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166990
-    virtual void s18();              // [6]  0x161420
-    virtual void s1c();              // [7]  0x161430
+    virtual void FreePixels();       // [6]  0x161420  `ret` (owns no pixel buffer)
+    virtual i32 GetKind();           // [7]  0x161430  `return 2` - the set-format tag
     virtual i32
     GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161470  per-pixel collision-kind query
     virtual i32 GetStride();      // [9]  +0x24  0x1614a0  record byte length (cursor advance)
@@ -106,7 +111,7 @@ struct CImageSet3 : CObject {
     // slots 0-4 inherited from CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
     virtual void FreePixels();       // [6]  0x1614b0  release the owned +0x14 pixel buffer
-    virtual void s1c();              // [7]  0x1614d0
+    virtual i32 GetKind();           // [7]  0x1614d0  `return 3` - the set-format tag
     virtual i32
     GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161570  per-pixel collision-kind query
     virtual i32 GetStride();      // [9]  +0x24  0x161590  record byte length (cursor advance)
@@ -115,7 +120,9 @@ struct CImageSet3 : CObject {
     // here while the REAL body sat in src/Image/ImageSet3.cpp as a non-virtual on a
     // 5-slot local view of this class - so the vtable pointed at a symbol nothing defined.
     virtual i32 ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal); // [10] 0x166e00
-    virtual void s2c(); // [11] 0x166e60 (recovery gap, not a stub)
+    // [11] 0x166e60: the val-gated form of ScanRunLeft (the family pairs each scan
+    // with a gate variant; body is a Ghidra recovery gap, unreconstructed).
+    virtual i32 ScanRunLeftGate_166e60(i32 x, i32 y, i32 val, i32* outX);
     // [12] 0x166eb0: vertical run-scan UP from (x,y) - walk to the first row whose pixel
     // at column x differs from (x,y)'s; report that row + its value.
     virtual i32 ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal);

@@ -1,5 +1,6 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <Io/FileMem.h> // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WarlordHead.h>
@@ -183,9 +184,9 @@ i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
     if (mode == 4) {
-        s->WriteBytes(&m_3c, 4);
+        s->Write(&m_3c, 4);
     } else if (mode == 7) {
-        s->ReadBytes(&m_3c, 4);
+        s->Read(&m_3c, 4);
     }
     return CSBI_ImageSet::Serialize(s, mode, a3, a4) != 0; // qualified = direct base call
 }

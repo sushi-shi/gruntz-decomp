@@ -113,7 +113,8 @@ public:
     virtual ~CDDrawSubMgr() OVERRIDE {}
     virtual void IsReady();
     virtual i32 Init();
-    virtual i32 OnDestroy();      // 0x1576c0 (out-of-line at its RVA position)
+    virtual i32 OnDestroy();      // declared-only (the old 0x1576c0 attribution was wrong:
+                                  // that body is CDDrawChildGroup::IsReady, vtbl slot 6)
     virtual StateId GetStateId(); // 0x157790 (out-of-line at its RVA position)
 
     i32 m_field08;                   // +0x08
@@ -868,10 +869,11 @@ CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
     // destructor resets +0x04/+0x08/+0x0c and restamps the grand-base vtable.
 }
 
-// CDDrawChildGroup::IsReady (0x1575e0): ready unless parent-less or in the error
-// (m_status == -1) state.
+// CDDrawChildGroup::IsLoaded (0x1575e0, vtable slot 5 - the CWapObj IsLoaded
+// override): loaded unless parent-less or in the error (m_status == -1) state.
+// (Referenced ONLY from ??_7CDDrawChildGroup+0x14.)
 RVA(0x001575e0, 0x16)
-i32 CDDrawChildGroup::IsReady() {
+i32 CDDrawChildGroup::IsLoaded() {
     if (m_parent == 0 || m_status == -1) {
         return 0;
     }
@@ -879,10 +881,13 @@ i32 CDDrawChildGroup::IsReady() {
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerMapSmall::GetStateId (0x157600): the class's state id.
+// CDDrawChildGroup::GetStateId (0x157600, vtable slot 8): the child group's state
+// id. (Was misbound to CDDrawWorkerMapSmall: 0x157600's ONLY reference in the
+// binary is ??_7CDDrawChildGroup+0x20; MapSmall's real slot 8 is 0x156cf0,
+// `mov eax,0x14; ret` - a Ghidra recovery gap, unreconstructed.)
 RVA(0x00157600, 0x6)
-StateId CDDrawWorkerMapSmall::GetStateId() {
-    return STATE_WORKERMAPSMALL; // 0x10
+StateId CDDrawChildGroup::GetStateId() {
+    return STATE_CHILDGROUP; // 0x10
 }
 
 // 0x157610: the ??_G scalar-deleting destructor of the sibling
@@ -912,8 +917,13 @@ CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost() {
     // implicit: ~m_48, ~m_2c, ~m_10, ~FamilyMapBase (resets + base restamp).
 }
 
+// CDDrawChildGroup::IsReady (0x1576c0, vtable slot 6 - the class compiles its OWN
+// `return 1` copy of the CWapObj default; no MSVC5 ICF, so it gets its own body).
+// (Was misbound as "CDDrawSubMgr::OnDestroy": 0x1576c0's ONLY reference in the
+// binary is ??_7CDDrawChildGroup+0x18 - CDDrawSubMgr's own slot 6 is the shared
+// 0x001c08 default thunk.)
 RVA(0x001576c0, 0x6)
-i32 CDDrawSubMgr::OnDestroy() {
+i32 CDDrawChildGroup::IsReady() {
     return 1;
 }
 

@@ -1471,25 +1471,29 @@ i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
     return v != 0;
 }
 
-// The render object CDDrawWorkerB::m_78 holds: its slot 14 (offset 0x38) draws
-// that frame onto one target surface-pair. The concrete node class is not yet
-// recovered (@identity-TODO) - a declared-only manual-dispatch interface.
+// The render object CDDrawWorkerB::m_78 holds IS a CImage frame (the collection
+// elements are CImages, vftable 0x5eaa2c - see CDDrawWorker::InsertFrame): its
+// slot 14 (+0x38) is CImage::RenderImage @0x153470, the blit-mode/clip selector.
+// Kept as this TU's dispatch view pending the fold (@identity-TODO): CImage.h
+// types slot 14's args (CBlitInfo* info, CImage* dst) while this dispatch passes
+// (worker, surface-pair) - the request/record typing must be reconciled first.
+// Slot names below are CImage's own (vtable 0x1eaa2c ground truth).
 struct CDDrawFrameNode {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual void v2c();
-    virtual void v30();
-    virtual void v34();
-    virtual void Draw(CDDrawWorkerB* worker, CDDrawSurfacePair* target); // +0x38
+    virtual void GetRuntimeClass(); // [0]  CObject slot (0x1bef01)
+    virtual void ScalarDtor();      // [1]  0x002adb
+    virtual void Serialize();       // [2]  CObject slot (0x0028ec)
+    virtual void AssertValid();     // [3]  CObject slot (0x00106e)
+    virtual void Dump();            // [4]  CObject slot (0x004034)
+    virtual void IsLoaded();        // [5]  0x0013b6 (CWapObj default)
+    virtual void IsReady();         // [6]  0x001c08 (CWapObj default)
+    virtual void FreeAll();         // [7]  0x153260
+    virtual void GetClassId();      // [8]  0x0042aa
+    virtual void Create24();        // [9]  0x1530e0
+    virtual void LoadDispatch();    // [10] 0x152fb0
+    virtual void Resolve();         // [11] 0x152f20
+    virtual void Create();          // [12] 0x152e90
+    virtual void Reload();          // [13] 0x153380
+    virtual void RenderImage(CDDrawWorkerB* worker, CDDrawSurfacePair* target); // [14] 0x153470
 };
 SIZE_UNKNOWN(CDDrawFrameNode);
 
@@ -1499,8 +1503,8 @@ SIZE_UNKNOWN(CDDrawFrameNode);
 // reinterpreted as the frame-node pointer (authentic DWORD-stores-a-pointer).
 RVA(0x001660b0, 0x33)
 void CDDrawWorkerB::Slot10_1660b0(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    ((CDDrawFrameNode*)m_78)->Draw(this, a);
+    ((CDDrawFrameNode*)m_78)->RenderImage(this, a);
     if (b->m_surface != 0 && (b->m_flags & 0x20000) == 0) {
-        ((CDDrawFrameNode*)m_78)->Draw(this, b);
+        ((CDDrawFrameNode*)m_78)->RenderImage(this, b);
     }
 }

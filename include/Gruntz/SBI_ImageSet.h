@@ -23,26 +23,13 @@
 
 struct CSprite; // full def in <Gruntz/Sprite.h>; only a CSprite* member is needed here
 
-// The serialization stream (Serialize arg1): a real polymorphic object with
-// ReadBytes at vtable slot 0x2c (index 0xb) and WriteBytes at slot 0x30 (index
-// 0xc), both __thiscall (buf, len). Modeled as virtuals so a call lowers to
-// `mov edx,[s]; call [edx+0x2c|0x30]` with ecx=this (no explicit-self push).
-struct CImageSetStream {
-    virtual void Vf0();
-    virtual void Vf1();
-    virtual void Vf2();
-    virtual void Vf3();
-    virtual void Vf4();
-    virtual void Vf5();
-    virtual void Vf6();
-    virtual void Vf7();
-    virtual void Vf8();
-    virtual void Vf9();
-    virtual void Vfa();
-    virtual void ReadBytes(void* buf, i32 len);  // slot 0x2c
-    virtual void WriteBytes(void* buf, i32 len); // slot 0x30
-};
-SIZE_UNKNOWN(CImageSetStream);
+// (The ex `CImageSetStream` 13-slot view of the Serialize arg is DISSOLVED: it
+// IS the one engine stream, CSerialArchive == CFileMemBase - Read @slot 11
+// +0x2c / Write @slot 12 +0x30, exactly the two slots it modeled. The name
+// stays as a typedef so the SBI Serialize signatures keep their spelling;
+// dispatching TUs include <Io/FileMem.h> for the complete type.)
+#include <Gruntz/SerialArchive.h>
+typedef CSerialArchive CImageSetStream;
 
 // CSBI_ImageSet - adds the slot-1 serialize override (save/load of the config id +
 // name) on top of CSBI_Image (its real RTTI base). Offsets are load-bearing.
@@ -66,7 +53,7 @@ public:
     // slot 12 (new), body 0x0e74c0 (a Ghidra recovery gap - not yet reconstructed). It takes
     // ONE arg: the game-menu builder calls it as `Activate(7)` on the DESTRUCT item.
     virtual void SbiSlot12(i32 a);
-    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // vslot 1 (0xe74f0)
+    i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4); // vslot 1 (0xe74f0)
     // (the 0xe6e40 base slot-1 leg is the real CSBI_Image::SerializeChain - SBI_Image.h)
     // slot-3 body (vtbl 0x1eac4c slot [3], thunk 0x2a09): reset the resolved record +
     // latched value. Re-attributed from the SBI_RectOnly host TU (dossier #16).

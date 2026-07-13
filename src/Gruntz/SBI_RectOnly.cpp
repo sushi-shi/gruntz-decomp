@@ -247,7 +247,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
         return 0;
     }
-    CSbiTileEntry* entry = (CSbiTileEntry*)g_gameReg->m_cmdGrid->m_grid[row + col * 15];
+    CSbiTileEntry* entry = (CSbiTileEntry*)g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
     if (entry == 0) {
         return 0;
     }
@@ -257,7 +257,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
         if (obj->RecordListHas(col, row)) {
             obj->m_recX = col;
             obj->m_recY = row;
-            obj->m_230 = 1;
+            obj->m_armed = 1;
             obj->LoadCameraSprite();
         }
     }

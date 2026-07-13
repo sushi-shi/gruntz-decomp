@@ -32,7 +32,7 @@
 //       if (m_ambientInitDone==0) <AMBIENT level-init: wsprintf "AMBIENT%d" -> PlaySound/
 //                      FindSound -> latch m_ambientInitDone=1>;
 //       if (m_region0Gate) { Eng_BeginScene(m_c->m_4->m_14->m_2c); GutsStepB(); }
-//       if (m_worldReady==0) { if (m_4->m_68->m_230) WorldSubstep(); StepWorldB(); }
+//       if (m_worldReady==0) { if (m_4->m_68->m_armed) WorldSubstep(); StepWorldB(); }
 //       StepScroll();
 //       if (0x12<dt && dt<0xc8) RenderFast() else RenderSlow();   // UNSIGNED gate
 //       DRAW_WORLD();                             // same shared world-draw block
@@ -545,7 +545,7 @@ i32 CPlay::Render() {
         }
 
         if (m_worldReady == 0) { // world-ready init
-            if (w->m_68->m_230 != 0) {
+            if (w->m_68->m_armed != 0) {
                 WorldSubstep();
             }
             StepWorldB();
@@ -2095,7 +2095,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     if (oe == 0) {
         ve = 0;
     } else {
-        ve = oe->Kind() == 5 ? (i32)oe : 0;
+        ve = oe->GetTypeId() == 5 ? (i32)oe : 0;
     }
     m_cells[1].m_14 = ve;
     if (ve == 0 && entry2 != 0) {
@@ -2934,7 +2934,7 @@ i32 CPlay::ProfileInputFrame() {
 
 // ===========================================================================
 // CPlay::ResetGoals (0x0d5f00) - clear the world goal object's pending bit
-// (m_4->m_68->m_23c, OR 0x10000 into +0x8), reset the substep gate (m_68->m_230),
+// (m_4->m_68->m_23c, OR 0x10000 into +0x8), reset the substep gate (m_68->m_armed),
 // then recompute the plane geom (m_4->m_30->m_24->m_5c) from the (x,y) args:
 // store them as floats, scaling by the geom's +0x18/+0x1c factors unless bit0 of
 // +0x8 is set, then call RecomputePlaneCoords.
@@ -2947,7 +2947,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
         g->m_goal->m_8 |= 0x10000;
         g->m_goal = 0;
     }
-    g->m_230 = 0;
+    g->m_armed = 0;
     CLevelPlane* pg = m_4w()->m_30->m_24->m_mainPlane;
     if ((pg->m_flags & 1) == 0) {
         pg->m_scaledX = (float)x * pg->m_scaleX;
@@ -4683,7 +4683,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
             w->m_goal->m_8 |= 0x10000;
             w->m_goal = 0;
         }
-        w->m_230 = 0;
+        w->m_armed = 0;
         return 1;
     }
     if (m_4w()->m_68->m_recList.GetCount() == 0) { // +0x24c == m_recList.m_nCount

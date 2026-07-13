@@ -40,31 +40,37 @@ struct CSpriteListNode {
 SIZE_UNKNOWN(CSpriteListNode);
 
 struct CSpriteInner; // GruntObjEntry's +0x7c inner object (grunt world)
-// The serialize key->object map entry (grunt world): its +0x20 Kind() virtual + the
-// +0x7c inner object. Reached through the factory's embedded +0x48 map.
+// The serialize key->object map entry (grunt world), reached through the factory's
+// embedded +0x48 map. It IS the wide game object (the CWwdGameObjectE family /
+// CGameObject views): its "+0x20 Kind()" is the family's slot-8 GetTypeId (the
+// same ==5 probe every FindBy* uses) and its +0x7c inner is the worker/aux block.
+// Kept as the grunt-world walking view pending the wide fold (@identity-TODO);
+// slots carry the canonical names (<Wwd/WwdGameObjectFamily.h>, table 0x5f0020).
 SIZE_UNKNOWN(GruntObjEntry);
 class GruntObjEntry {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual i32 Kind(); // vtable slot +0x20
+    virtual void GetRuntimeClass();        // [0]  CObject slot (0x1bef01)
+    virtual void* Delete(i32 flag);        // [1]  scalar-deleting dtor
+    virtual void Serialize();              // [2]  CObject slot (0x0028ec)
+    virtual void AssertValid();            // [3]  CObject slot (0x00106e)
+    virtual void Dump();                   // [4]  CObject slot (0x004034)
+    virtual i32 IsLoaded();                // [5]  0x15b370 (worker-gate)
+    virtual i32 IsReady();                 // [6]  0x001c08 (CWapObj default)
+    virtual void ReleaseSubs();            // [7]  0x15b5d0
+    virtual i32 GetTypeId();               // [8]  +0x20  per-kind type tag (==5 probe;
+                                           //      was this view's "Kind()")
     char m_pad04[0x7c - 0x04];
-    CSpriteInner* m_7c;         // +0x7c  inner object
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill7(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
+    CSpriteInner* m_7c; // +0x7c  inner object (== CGameObjAux / the anim worker)
+    // Slots 9-17 of the family table, declared-only (canonical names):
+    virtual i32 SetPosition(i32 x, i32 y);                                 // [9]  0x164790
+    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4);                   // [10] 0x150d60
+    virtual void Render(void* ctx);                                        // [11]
+    virtual void BltDirty(void* a, void* b);                               // [12]
+    virtual void BltDirtyEx(void* a, void* b, i32 c);                      // [13]
+    virtual void BltDirtyRegions(void* a, void* b, i32 c);                 // [14]
+    virtual i32 Play3C(i32 ar, i32 mode, i32 a3, void* self);              // [15] 0x151150
+    virtual i32 Vfunc40();                                                 // [16] 0x1bef01
+    virtual u8 GetDotColor();                                              // [17] (C kind)
 };
 SIZE_UNKNOWN(GruntObjMap);
 // MFC CMapPtrToPtr (the serialize-time key->object map). Lookup @0x1b8760 is
@@ -75,21 +81,25 @@ struct GruntObjMap {
 };
 class CSpriteFactory {
 public:
-    // The factory is polymorphic (vptr @+0x00): the per-frame render path dispatches
-    // its "worker apply" slots (CMultiBootyState::Render -> slot 9 FrameBegin(flag),
-    // slot 10 FramePresent(drawSurface)). Slots 0..8 anchor the order (declared-only,
-    // reloc-masked; the vtable is not diffed).
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void FrameBegin(i32 flag);       // slot 9  (+0x24)  begin/apply the frame worker
-    virtual void FramePresent(void* target); // slot 10 (+0x28)  present onto the draw surface
+    // The factory is polymorphic (vptr @+0x00) and IS the object manager - the
+    // CWwdObjMgr == CDDrawChildGroup identity (vtable 0x1efdc0, 17 slots): the
+    // per-frame render path's "slot 9 FrameBegin(flag) / slot 10 FramePresent
+    // (drawSurface)" (CMultiBootyState::Render) are exactly the canonical's
+    // TickKillCues_159a70(advance) / WalkDispatch2C(renderCtx). Slot names are
+    // the canonical's (<DDrawMgr/DDrawChildGroup.h>); declared-only, reloc-masked.
+    virtual void GetRuntimeClass();         // [0]  CObject slot (0x1bef01)
+    virtual void ScalarDtor();              // [1]  0x157610
+    virtual void Serialize();               // [2]  CObject slot (0x0028ec)
+    virtual void AssertValid();             // [3]  CObject slot (0x00106e)
+    virtual void Dump();                    // [4]  CObject slot (0x004034)
+    virtual i32 IsLoaded();                 // [5]  0x1575e0
+    virtual i32 IsReady();                  // [6]  0x1576c0
+    virtual void ForwardTo3C();             // [7]  0x1591e0
+    virtual i32 GetStateId();               // [8]  0x157600 (STATE_CHILDGROUP)
+    virtual void TickKillCues(i32 advance); // slot 9  (+0x24) 0x159a70 per-frame kill-cue
+                                            //         tick (was this view's "FrameBegin")
+    virtual void WalkDispatch2C(void* ctx); // slot 10 (+0x28) 0x159c90 per-object render
+                                            //         broadcast (was "FramePresent")
 
     // Public entry: look the template up by class-NAME, forward to the impl. __thiscall,
     // ret 0x18. Returns the created instance (or 0 if the template is missing).
