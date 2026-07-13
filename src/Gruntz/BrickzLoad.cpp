@@ -475,7 +475,9 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
                         node = (BzFreeNode*)g_coordPool.m_freeHead;
                         node->m_4 = tileX + xo;
                         node->m_8 = tileY + yo;
-                        g_coordPool.m_freeHead = node->m_0;
+                        // Re-READ the head (retail's `g_freeList = g_freeList->m_0`) rather than
+                        // reuse `node` - the reload is what the codegen reproduces.
+                        g_coordPool.m_freeHead = ((BzFreeNode*)g_coordPool.m_freeHead)->m_0;
                     }
                     m_footprint.SetAtGrow(m_84, node);
                 }
