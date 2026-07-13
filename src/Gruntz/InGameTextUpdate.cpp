@@ -94,9 +94,9 @@ extern "C" i32 g_6bf3bc; // sub-logic clock fed to CAniAdvanceCursor::Advance_15
 DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0; // wrap-safe draw clock
 DATA(0x00244c54)
-extern "C" i32 g_644c54; // current area index
-extern i32 g_sndEnabled; // cue enable gate
-extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA (HELPBOOK sound token)
+extern "C" i32 g_curPlayer; // current area index
+extern i32 g_sndEnabled;    // cue enable gate
+extern i32 g_sndCueTag;     // ?g_sndCueTag@@3HA (HELPBOOK sound token)
 DATA(0x0020d7f8)
 extern char s_codeK[]; // "K" (0x60d7f8) - the anim type-code literal
 
@@ -121,7 +121,7 @@ i32 CInGameText::Update() {
         m_38->m_stateFlags &= ~1;
         return 0;
     }
-    if (areaId != g_644c54) {
+    if (areaId != g_curPlayer) {
         return 0;
     }
     if (m_cachedSubId != -1 && areaId == m_cachedAreaId && subId == m_cachedSubId) {

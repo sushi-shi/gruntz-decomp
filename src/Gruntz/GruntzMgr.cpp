@@ -298,7 +298,7 @@ extern "C" {
 }
 
 extern "C" {
-    extern i32 g_644c54; // DAT_00644c54  (active player/world index)
+    extern "C" i32 g_curPlayer; // DAT_00644c54  (active player/world index)
 }
 
 // The two shared sound globals, DEFINED here (owner TU: CGruntzMgr::SetRunState mirrors
@@ -3730,7 +3730,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
 // CGruntzMgr::UpdateScoreHud (0x0860b0; ret). Per-frame score/HUD accumulator,
 // active only while the registry's gate (g_gameReg->m_134) is 1. Folds this
 // world's score/time deltas (m_cmdGrid's +0x20c/+0x21c tables, indexed by the active
-// world g_644c54) into the +0x7c HUD accumulators. If a level name is loaded
+// world g_curPlayer) into the +0x7c HUD accumulators. If a level name is loaded
 // (m_strWorldFile non-empty) it just refreshes the HUD with 1 and marks it dirty;
 // otherwise, on the first frame (m_hudGuard->m_124 == 0) it seeds the HUD from the
 // registry's cumulative score and fires the score-bump / tick / notify chain,
@@ -3748,8 +3748,8 @@ void CGruntzMgr::UpdateScoreHud() {
     }
     ScoreSub2c* sub = (ScoreSub2c*)g_gameReg->m_curState;
 
-    m_scoreHud->m_1c += m_cmdGrid->m_rowStateB[g_644c54];
-    m_scoreHud->m_20 += m_cmdGrid->m_rowStateC[g_644c54];
+    m_scoreHud->m_1c += m_cmdGrid->m_rowStateB[g_curPlayer];
+    m_scoreHud->m_20 += m_cmdGrid->m_rowStateC[g_curPlayer];
 
     if (m_strWorldFile.GetLength() != 0) {
         m_scoreHud->SetCount(1);
@@ -4254,7 +4254,7 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
 // the world-file name (+0xc8): a match clears the per-slot config selector (so
 // the loaded config is replaced by 0). The reload walks the slots with three
 // running pointers (m_10 config / m_14 arm / m_38 sub-object, +0x238 apart);
-// the slot whose index hits the active world g_644c54 is the "current" one - it
+// the slot whose index hits the active world g_curPlayer is the "current" one - it
 // is armed (m_14=1), its sub-object Activated, and its SUCCESSOR slot is handled
 // in the same pass (the dual-slot unroll: idx jumps by 2 but the loop counter by
 // 1). Any LoadConfig failure aborts (delete the CString, return 0).
@@ -4284,7 +4284,7 @@ i32 CGruntzMgr::SyncOptionsState() {
     i32* arm = &((OptionsSlot*)m_options)->m_14;
     for (i32 i = 0; i < m_optionsCount; i++) {
         i32 cfg;
-        if (idx == g_644c54) {
+        if (idx == g_curPlayer) {
             *arm = 1;
             cfg = *cfgp;
             if (matched) {

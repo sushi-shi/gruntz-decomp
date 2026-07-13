@@ -181,7 +181,7 @@ struct CTmCell {
 
 // The level/group base-index sentinel (DAT_00644c54) the selection helpers guard on
 // (same global the StatzTab toggle keys off; see StatusBarUpdaters.cpp / CPlay.h).
-extern "C" i32 g_644c54;
+extern "C" i32 g_curPlayer;
 
 // The global game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Only
 // the +0x2c world back-ptr is read here; the world's hooks are reloc-masked.

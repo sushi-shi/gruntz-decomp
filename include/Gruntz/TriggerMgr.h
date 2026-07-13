@@ -139,7 +139,7 @@ public:
     // magic group, then refresh the world. ret 1.
     i32 ClearRow(i32 row);
 
-    // 0x7d2a0: only when `key` equals the magic kind (g_644c54), scan the 10 selection
+    // 0x7d2a0: only when `key` equals the magic kind (g_curPlayer), scan the 10 selection
     // lists (+0x2d4, stride 0x1c) for a node payload matching (key,y); ret the list
     // index of the first match (0xa when a second match exists) or 0.
     i32 SelectionListFind(i32 key, i32 y);

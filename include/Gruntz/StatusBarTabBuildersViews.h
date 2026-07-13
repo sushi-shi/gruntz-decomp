@@ -60,7 +60,7 @@ namespace StatusBarTabBuilders {
     // 0x4165) maps a tool/toy id to a palette/format selector is the shared
     // ::CSpriteRefTable (unqualified CSpriteRefTable below resolves to it).
 
-    // One 0x238-byte per-world settings record (g_gameReg->m_138[g_644c54]).
+    // One 0x238-byte per-world settings record (g_gameReg->m_138[g_curPlayer]).
     struct CSbWorldSlot {
         char m_00[0x20];
         i32 m_toolId; // +0x20  the tool/toy id GetSel consumes

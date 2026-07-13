@@ -116,7 +116,7 @@ struct LfxGrid {
 //   +0x1d8 a flag (nonzero -> select the alternate color slot)
 //   +0x870 / +0x878 a pair of 64-bit timestamps (spawn time / lifetime), compared
 //          against the running game clock to decide live vs. expired
-//   +0x1ec the owning area index (vs g_644c54)
+//   +0x1ec the owning area index (vs g_curPlayer)
 //   +0x1f4 the kind passed to the ref table's GetA
 struct LfxTileDesc {
     char m_pad1d8[0x1d8];
@@ -154,12 +154,12 @@ extern i32 g_bDown; // blue  down-shift
 
 // Engine globals the resize repaint path reads (reloc-masked DIR32 loads):
 //   g_645588 - the running game clock (low 32 bits of the engine ms counter)
-//   g_644c54 - the current area / world index
+//   g_curPlayer - the current area / world index
 //   g_645594 - a frame-quality / detail threshold (>=0x32 picks the live color)
 DATA(0x00245588)
 extern "C" u32 g_645588; // canonical ?g_clock@@3IA (unsigned; <Gruntz/TriggerMgr.h> et al.)
 DATA(0x00244c54)
-extern i32 g_644c54;
+extern "C" i32 g_curPlayer;
 DATA(0x00245594)
 extern i32 g_645594;
 
@@ -329,7 +329,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             if (desc->m_1d8 != 0) {
                 alt = 1;
             }
-            if ((i64)(u32)g_645588 - desc->m_870 >= desc->m_878 || desc->m_1ec != g_644c54) {
+            if ((i64)(u32)g_645588 - desc->m_870 >= desc->m_878 || desc->m_1ec != g_curPlayer) {
                 CSpriteRef* node = m_mgr->m_74->GetA(desc->m_1f4);
                 if (node == 0) {
                     *dst = 0;

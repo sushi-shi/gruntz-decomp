@@ -42,7 +42,7 @@ extern "C" u32 g_645588;
 
 // The local player index (DAT_00644c54): selects this client's row.
 DATA(0x00244c54)
-extern "C" i32 g_644c54;
+extern "C" i32 g_curPlayer;
 
 // The bute attribute store (?g_buteMgr@@3VCButeMgr@@A): the respawn intervals.
 DATA(0x002453d8)
@@ -187,7 +187,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
                 CObject* out_ob = 0;
-                ((CMgrHolderX*)g_gameReg->m_world)->m_nameMap->m_map10.Lookup("LEVEL_ROLLINGBALL", out_ob);
+                ((CMgrHolderX*)g_gameReg->m_world)
+                    ->m_nameMap->m_map10.Lookup("LEVEL_ROLLINGBALL", out_ob);
                 CLookObj* out = (CLookObj*)out_ob;
                 if (out && out->m_soundFactory) {
                     m_rollingballLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
@@ -204,7 +205,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
                 CObject* out_ob = 0;
-                ((CMgrHolderX*)g_gameReg->m_world)->m_nameMap->m_map10.Lookup("GAME_TELEPORTLOOP", out_ob);
+                ((CMgrHolderX*)g_gameReg->m_world)
+                    ->m_nameMap->m_map10.Lookup("GAME_TELEPORTLOOP", out_ob);
                 CLookObj* out = (CLookObj*)out_ob;
                 if (out && out->m_soundFactory) {
                     m_teleportLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
@@ -277,7 +279,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 i32 i;
                 for (i = 0, off = 0; off < 0x8e0; i++, off += 0x238) {
                     if (i != idx) {
-                        if (g_644c54 == i) {
+                        if (g_curPlayer == i) {
                             Notify(5);
                         }
                         CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + 0x150 + off);
@@ -295,7 +297,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                             ClearRowAndRefresh(i);
                         }
                     } else {
-                        if (g_644c54 == i) {
+                        if (g_curPlayer == i) {
                             ((CGooWellMgr*)g_gameReg->m_cmdGrid)->Notify(2);
                         }
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
@@ -322,13 +324,13 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             m_overlay->Activate(off);
         }
         if (g_gameReg->m_134 == 3) {
-            if (obj->m_4f4 != 0 && m_playerFlag[g_644c54] == 0) {
+            if (obj->m_4f4 != 0 && m_playerFlag[g_curPlayer] == 0) {
                 Notify(4);
                 return 0;
             }
         }
         if (g_gameReg->m_134 == 1) {
-            if (m_playerFlag[g_644c54] != 0) {
+            if (m_playerFlag[g_curPlayer] != 0) {
                 goto done;
             }
             if (obj->m_4f4 != 0) {
@@ -352,7 +354,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         }
         // Last-player-standing: any other live player blocks the win Notify.
         for (i32 i = 0; i < 4; i++) {
-            if (i == g_644c54) {
+            if (i == g_curPlayer) {
                 continue;
             }
             CFocusSlot* slot = &g_gameReg->m_focusSlots[i];

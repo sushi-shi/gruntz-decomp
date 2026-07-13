@@ -90,9 +90,9 @@ extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame ra
 DATA(0x002455f8)
 extern i32 g_explosionz; // "Explosionz"
 DATA(0x002bf3c0)
-extern i32 g_time6bf3c0; // cue-cooldown clock (0x8247 throttle)
-DATA(0x00244c54)         // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_644c54)
-extern i32 g_644c54;     // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
+extern i32 g_time6bf3c0;    // cue-cooldown clock (0x8247 throttle)
+DATA(0x00244c54)            // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_644c54)
+extern "C" i32 g_curPlayer; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
 DATA(0x00248cf0) // RVA (was VA-typo 0x648cf0, which shadowed multi's canonical 0x248cf0 binding)
 extern i32 g_isHost_648cf0;
 DATA(0x002c44c0)
@@ -137,7 +137,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_28->m_emitGate == 0) {                                                          \
         LeafCue* _c = 0;                                                                           \
-        m_world->m_28->m_10.Lookup(TAG, (CObject*&)_c);                       \
+        m_world->m_28->m_10.Lookup(TAG, (CObject*&)_c);                                            \
         if (_c)                                                                                    \
             _c->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);                                        \
     }
@@ -174,7 +174,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
                 : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
-        if (_cell->m_tileOwnerHi != g_644c54)                                                      \
+        if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
             return 0;                                                                              \
         CGrunt* _c2 =                                                                              \
             (CGrunt*)m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15];          \
@@ -198,7 +198,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
                 : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
-        if (_cell->m_tileOwnerHi != g_644c54)                                                      \
+        if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
             return 0;                                                                              \
         if (!_cell->LoadGruntAbilityTuning(N))                                                     \
             return 0;                                                                              \

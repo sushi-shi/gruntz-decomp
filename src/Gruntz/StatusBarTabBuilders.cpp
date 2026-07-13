@@ -48,7 +48,8 @@ namespace StatusBarTabBuilders {
     // distinct from the file-scope extern "C" _g_gameReg above) so the two typed views of
     // *0x24556c coexist in one TU without an extern "C" type clash (clang -emit-llvm).
     extern CGameRegistry* g_gameReg;
-    extern i32 g_644c54; // the current world index (canonical DATA(0x00244c54) in sbi_rectonly)
+    extern "C" i32
+        g_curPlayer; // the current world index (canonical DATA(0x00244c54) in sbi_rectonly)
 
     // ===========================================================================
     // CSbTab::BuildResourceTabStatusBar  (0xe8a70)
@@ -116,8 +117,9 @@ namespace StatusBarTabBuilders {
         if (s == 0) {
             return 0;
         }
-        i32 sel = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)
-                      ->GetSel(((CSbWorldSlot*)((char*)g_gameReg + 0x138))[g_644c54].m_toolId, 0);
+        i32 sel =
+            ((CSpriteRefTable*)g_gameReg->m_spriteFactory)
+                ->GetSel(((CSbWorldSlot*)((char*)g_gameReg + 0x138))[g_curPlayer].m_toolId, 0);
         if (sel == 0) {
             sel = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(1, 0);
         }

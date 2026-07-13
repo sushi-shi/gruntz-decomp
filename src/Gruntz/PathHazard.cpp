@@ -16,7 +16,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_lightGameReg->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_cmdGrid): FindGruntAt @0x75c60, CellDispatch @0x6bcb0
@@ -86,7 +86,9 @@ extern i32 g_strikeThresh; // 0x645598 (compared to 0x64)
 // plays it through the cue manager when the per-emitter cooldown has elapsed.
 
 DATA(0x0024556c)
-extern CGameRegistry* g_lightGameReg;
+// FABRICATED-SYMBOL FIX: this was a C++-linkage alias (?g_gameReg@@3PAUCGameRegistry@@A)
+// of the SAME datum the tree already binds as the extern-"C" g_gameReg - nothing defined it.
+extern "C" CGameRegistry* g_gameReg;
 
 // Strike config globals: the bute window source + the sound-enable flag / cue tag
 // pair the positional emit polls, plus the kill-cue clock.
@@ -401,7 +403,7 @@ i32 CPathHazard::Tick() {
 // @early-stop
 // ~86%: the integer scaffolding (the i64 strike-window compares, the visibility
 // gate, the arrival/BeginLeg + bute re-bind) is byte-correct. The residual is two
-// documented tails: (1) the TU models g_gameReg as ?g_lightGameReg while the retail
+// documented tails: (1) the TU models g_gameReg as ?g_gameReg while the retail
 // obj names it _g_mgrSettings, so its repeated DIR32 data relocs stay fuzzy (a
 // TU-wide rename, the matcher.md reloc-naming artifact); (2) the dual signed-i64
 // `>=` window compares lay the expire/check branches in a different order than
@@ -419,7 +421,7 @@ i32 CLightningHazard::SiblingTick() {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = (i32)g_lightGameReg->m_logicPump->m_tables[sel]; // [m_78 + sel*4 + 0x14]
+        o->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[sel]; // [m_78 + sel*4 + 0x14]
     }
 
     ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_pathTick);
@@ -431,7 +433,7 @@ i32 CLightningHazard::SiblingTick() {
     rect[1] = obj->m_screenY - obj->m_layer->m_1c + 7;
     rect[3] = obj->m_layer->m_1c + obj->m_screenY - 7;
 
-    CGameRegistry* reg = g_lightGameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
         // window mode, skip the query
     } else {
@@ -445,7 +447,7 @@ i32 CLightningHazard::SiblingTick() {
             (RECT*)rect
         );
         if (ent != 0 && ent->m_258 != 0x38) {
-            if (g_lightGameReg->m_134 != 1 || outA != 0) {
+            if (g_gameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) {
                     return 0;
                 }
@@ -458,7 +460,7 @@ i32 CLightningHazard::SiblingTick() {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = (i32)g_lightGameReg->m_logicPump->m_tables[5]; // [m_78 + 0x28]
+        o->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[5]; // [m_78 + 0x28]
         this->BeginLeg();
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
@@ -474,7 +476,7 @@ i32 CLightningHazard::SiblingTick() {
 // 2 args.
 // @early-stop
 // ~95%: code bytes byte-exact; residual is the same TU-wide reloc-naming artifact
-// SiblingTick carries (the obj names g_lightGameReg as _g_mgrSettings and
+// SiblingTick carries (the obj names g_gameReg as _g_mgrSettings and
 // g_strikeClock as _g_645588). Logic byte-for-byte correct.
 // @interleaver CLightningHazard::ArmStrike emitted-in <boundary: PathHazardActReg.cpp
 // RegisterActs_646250 @0xb3cc0 (before) + Ufo.cpp Method_b4cb0 @0xb4cb0 (after)>. A /Gy
@@ -484,10 +486,10 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
     m_strikeWindow = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
     m_strikeDeadline = (i64)(u32)g_strikeClock;
-    g_lightGameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
+    g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
 
     CGameObject* obj = m_object;
-    CGameRegistry* reg = g_lightGameReg;
+    CGameRegistry* reg = g_gameReg;
     i32 y = obj->m_screenY;
     i32 x = obj->m_screenX;
     if (x < reg->m_viewOriginR && x >= reg->m_viewOriginL && y < reg->m_viewOriginB

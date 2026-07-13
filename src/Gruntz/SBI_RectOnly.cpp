@@ -54,7 +54,7 @@ extern i32 g_dat645588;
 
 // The current local-player / area index (PlaceCursorTarget's tile-grid column).
 DATA(0x00244c54)
-extern i32 g_644c54;
+extern "C" i32 g_curPlayer;
 
 // CMapStringToOb/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
 // CSbiTile*/CSbiActiveObj/CSbiLogger/CSbiWndHost/CGameReg moved to
@@ -213,7 +213,7 @@ void CSBI_RectOnly::SetGauge(i32 value) {
 }
 
 // Place the cursor on the resolved tile under highlight row `row`: probe the active
-// object's tile at (g_644c54, row); bail (0) if the probe fails or the grid
+// object's tile at (g_curPlayer, row); bail (0) if the probe fails or the grid
 // cell is empty. Forward the tile's origin pair to the sub-manager's ScrollTo, then
 // (when `commit` is set and the active object accepts the scroll) latch the placed
 // column/row and reload the camera sprite. Always returns 1 past the two probes.
@@ -222,11 +222,11 @@ void CSBI_RectOnly::SetGauge(i32 value) {
 // llvm-objdump -dr base vs target). The residual is purely the reloc-symbol-naming
 // scoring tail - this TU models the g_gameReg singleton as ?g_gameReg@@3PAUCGameReg@@A
 // while the retail obj names it _g_mgrSettings, so the three DIR32 data relocs don't
-// pair (weighted heavily on a short function). g_644c54 + the ILT call thunks already
+// pair (weighted heavily on a short function). g_curPlayer + the ILT call thunks already
 // pair. A TU-wide g_gameReg rename, not a per-function fix; matcher.md reloc artifact.
 RVA(0x00105800, 0x9e)
 i32 CSBI_RectOnly::PlaceCursorTarget(i32 row, i32 commit) {
-    i32 col = g_644c54;
+    i32 col = g_curPlayer;
     if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
         return 0;
     }
@@ -1220,7 +1220,7 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
         return 1;
     }
 
-    i32 slot = idx + 15 * g_644c54;
+    i32 slot = idx + 15 * g_curPlayer;
     // m_68 is the registry's poly per-mode slot (void* in the shared view); in the
     // in-game status-bar context it is always the unit-record table. One authentic
     // downcast to the concrete view, then cast-free field access.
@@ -1287,7 +1287,7 @@ i32 CStatzTabBuilder::Build() {
             geomVal,
             strid,
             "GAME_STATUSBAR_TABZ_STATZTAB_TAB",
-            g_644c54,
+            g_curPlayer,
             i,
             m_114[i],
             m_0 == 0
@@ -3672,7 +3672,7 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
     m_24 = vx - 0x45;
     m_28 = vy - 0x30;
     m_itemKind = 5;
-    m_tabCycle = g_644c54;
+    m_tabCycle = g_curPlayer;
     ResetTabWidgets2b44();
     if (BuildStatusBarTabs() == 0) {
         return 0;

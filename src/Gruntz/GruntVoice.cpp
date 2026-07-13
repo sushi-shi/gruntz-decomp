@@ -55,7 +55,7 @@ extern i32 g_vactScratch;
 DATA(0x002514d8)
 extern CVActColl g_vactColl;
 DATA(0x002514dc)
-CVariantSlot* g_vactColl2; // owner-TU definition (referenced only here)
+CVariantSlot* g_vactColl2;   // owner-TU definition (referenced only here)
 extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA), bound in GruntStartingPoint.cpp
 
 // The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
@@ -214,7 +214,7 @@ extern "C" CGameRegistry* g_gameReg;
 // The current-area index (DAT_00644c54, VA 0x644c54 / RVA 0x244c54); the trigger
 // only fires for the active area. extern "C" so the load reloc-masks against the
 // already-named global.
-extern "C" i32 g_644c54;
+extern "C" i32 g_curPlayer;
 
 // @early-stop
 // @flag: MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::
@@ -523,7 +523,7 @@ i32 CVoiceTrigger::Tick() {
         &outB,
         (RECT*)&m_object->m_areaL
     );
-    if (hit && outA == g_644c54) {
+    if (hit && outA == g_curPlayer) {
         CVoiceHitSprite* hs = hit->m_sprite;
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;

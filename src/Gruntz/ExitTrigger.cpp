@@ -39,7 +39,7 @@ extern char s_codeA[]; // "A"
 
 // The active-area index (DAT_00644c54): the exit trigger pins the focused warlord
 // HUD only for the active area.
-extern "C" i32 g_644c54;
+extern "C" i32 g_curPlayer;
 
 // The level-exit "Warlord" entity is a fresh CSpriteFactory::CreateSprite result
 // (the canonical 0x1597b0 factory entry on g_exitGameReg->m_world->m_8; the former
@@ -119,7 +119,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
         // snapshot the warlord's bound logic (obj->m_7c->m_logic); the cue sink keeps
         // it as a raw DWORD (authentic pointer-as-dword storage)
         m_warlordLogic = e->m_7c->m_logic;
-        if (m_object->m_124 == g_644c54) {
+        if (m_object->m_124 == g_curPlayer) {
             ((CExitCueSink*)g_exitGameReg->m_cmdGrid)->m_2a0 = (i32)m_warlordLogic;
         }
         CFocusSlot* slot2 = &g_exitGameReg->m_focusSlots[m_object->m_124];

@@ -61,7 +61,7 @@ struct CGameRegMapHolder {
 DATA(0x0024556c)
 
 DATA(0x00244c54)
-extern i32 g_curPlayer; // DAT_00644c54  (the current local player index)
+extern "C" i32 g_curPlayer; // DAT_00644c54  (the current local player index)
 
 DATA(0x0021ab24)
 extern i32 g_inputCtx; // DAT_0061ab24  (the input/cmd-flush sink the place path posts to)

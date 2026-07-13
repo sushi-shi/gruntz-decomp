@@ -115,7 +115,7 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
 // or arm a foe's combat state (health sprite + CombatTimeout clock).
 
 DATA(0x00244c54)
-extern i32 g_curPlayer; // 0x644c54  local-player index
+extern "C" i32 g_curPlayer; // 0x644c54  local-player index
 // @early-stop
 // regalloc/CSE wall (~80% - and 0x78060 is not play's .obj, so the frame is re-scored):
 // logic + instruction selection match, but cl pins `this`->ebx (retail ebp) and CSEs
@@ -317,7 +317,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
         CTmNode* next = n->m_next;
         u8* payload = (u8*)n->m_payload;
         CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
-        if (cell->m_1ec == g_644c54 && cell->m_1e4 == 0) {
+        if (cell->m_1ec == g_curPlayer && cell->m_1e4 == 0) {
             bytes[count] = payload[4];
             count++;
         }
@@ -350,7 +350,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
         CTmNode* next = n->m_next;
         u8* payload = (u8*)n->m_payload;
         CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
-        if (cell->m_1ec == g_644c54 && cell->m_1e4 == 0) {
+        if (cell->m_1ec == g_curPlayer && cell->m_1e4 == 0) {
             bytes[count] = payload[4];
             count++;
         }
@@ -532,7 +532,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     if (cell == 0) {
         return 1;
     }
-    if (cell->m_1ec != g_644c54) {
+    if (cell->m_1ec != g_curPlayer) {
         return 1;
     }
     // An active overlay eats the click.
@@ -633,7 +633,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         cell = m_grid[rec[1] + rec[0] * 15];
     }
     i32 sel;
-    if (cell != 0 && cell->m_1ec == g_644c54) {
+    if (cell != 0 && cell->m_1ec == g_curPlayer) {
         if (a28 != 0) {
             sel = 0;
         } else if (hit == 0) {
@@ -730,7 +730,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     }
     i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
     char* cellp = (char*)m_grid[rec[1] + rec[0] * 15];
-    if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_644c54) {
+    if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_curPlayer) {
         return 0;
     }
     if (this->PlaceCell(*(i32*)(cellp + 0x1f0), *(i32*)(cellp + 0x1ec), 0) == 0) {
@@ -1129,7 +1129,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
             n--;
         } while (n != 0);
     }
-    if (startRow == g_644c54) {
+    if (startRow == g_curPlayer) {
         m_groupFlag = 0;
     }
     // m_curState is the live CPlay state (Refresh==FlushPendingOps @0xda2d0,
@@ -1323,7 +1323,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     ar->Write(&m_2a4, 4);
     ar->Write(&m_3ec, 4);
     ar->Write(&m_groupFlag, 4);
-    ar->Write(&g_644c54, 4);
+    ar->Write(&g_curPlayer, 4);
     ar->Write(&g_644ca4, 4);
     ar->Write(&m_pendingFxKind, 4);
     ar->Write(&m_selSentinel, 4);
@@ -1529,7 +1529,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     ar->Read(&m_2a4, 4);
     ar->Read(&m_3ec, 4);
     ar->Read(&m_groupFlag, 4);
-    ar->Read(&g_644c54, 4);
+    ar->Read(&g_curPlayer, 4);
     ar->Read(&g_renderCtx, 4);
     ar->Read(&m_pendingFxKind, 4);
     ar->Read(&m_selSentinel, 4);
@@ -2917,7 +2917,7 @@ i32 CTriggerMgr::ClearRow(i32 row) {
         cell++;
         i--;
     } while (i != 0);
-    if (row == g_644c54) {
+    if (row == g_curPlayer) {
         m_groupFlag = 0;
     }
     ((CPlay*)g_gameReg->m_curState)->FlushPendingOps(); // Refresh==CPlay::FlushPendingOps @0xda2d0
@@ -2962,7 +2962,7 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
     return best;
 }
 
-// 0x7d2a0: SelectionListFind(key, y) - only when key == g_644c54, scan the 10
+// 0x7d2a0: SelectionListFind(key, y) - only when key == g_curPlayer, scan the 10
 // selection lists (+0x2d4, stride 0x1c) for a node whose payload (x,y) matches
 // (key,y); ret the first matching list index, 0xa on a second match, else 0.
 // @early-stop
@@ -2971,7 +2971,7 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
 // the pops; our cl emits `jge end; jmp top` + a clean epilogue. topic:wall.
 RVA(0x0007d2a0, 0x64)
 i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
-    if (key != g_644c54) {
+    if (key != g_curPlayer) {
         return 0;
     }
     i32 result = 0;
@@ -3088,7 +3088,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     if (cell == 0) {
         return 1;
     }
-    if (cell->m_1ec != g_644c54) {
+    if (cell->m_1ec != g_curPlayer) {
         return 1;
     }
     if (((CGrunt*)cell)->CanShowStamina() == 0) { // -> ?CanShowStamina@CGrunt@@ (0x514a0)
@@ -3135,7 +3135,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     if (cell == 0) {
         return 1;
     }
-    if (cell->m_1ec != g_644c54) {
+    if (cell->m_1ec != g_curPlayer) {
         return 1;
     }
     if (cell->m_170 >= 0x17) {
@@ -3177,7 +3177,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     char x = 0;
     CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
     if (n != 0) {
-        i32 magic = g_644c54;
+        i32 magic = g_curPlayer;
         do {
             CTmNode* cur = n;
             n = n->m_next;

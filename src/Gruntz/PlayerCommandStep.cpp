@@ -2,7 +2,7 @@
 // __thiscall(a2..a8) ret 0x1c, returns int. Switches on (a4 & 0xff) - the command
 // code 0..10 - and applies it to the addressed grid grunt (m_4->m_68 slot grid,
 // 15-wide rows): spawn-probe (0), move/attack/tool variants (2..5,9,10), select/
-// deselect (6,7), and the conversion/pickup pre-pass (8). a2 = player id (== g_644c54
+// deselect (6,7), and the conversion/pickup pre-pass (8). a2 = player id (== g_curPlayer
 // is "local"), a3 = column, a5/a6 = pixel target or a second grid cell, a7/a8 spare.
 // The grunt-state reset block (clear +0x308.. / +0x420 / mask +0x248) repeats across
 // most cases. All engine helpers + the manager/registry globals are external
@@ -51,7 +51,7 @@ DATA(0x0021ab24)
 extern i32 g_sndCueTag;
 
 DATA(0x00244c54)
-extern i32 g_localPlayer; // g_644c54
+extern i32 g_localPlayer; // g_curPlayer
 DATA(0x0024556c)
 extern "C" char* g_gameReg; // ->m_134
 

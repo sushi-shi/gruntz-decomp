@@ -199,12 +199,12 @@ void CTimer::Reset() {
 }
 
 // The clock + frame-gate globals the Tick/Draw paths read (external delinked
-// DATA, reloc-masked). g_645588 is the running game clock; g_644c54 a level
+// DATA, reloc-masked). g_645588 is the running game clock; g_curPlayer a level
 // base index; g_6455a0 a draw-throttle frame counter; g_645588 the start clock.
 extern "C" {
     extern u32 g_645588;
 }
-extern i32 g_644c54;
+extern "C" i32 g_curPlayer;
 extern "C" u32 g_6455a0; // 0x2455a0 canonical _g_6455a0 (DATA-bound in Multi.cpp)
 
 // The grunt the expiry / under-attack notify fires target (external, reloc-masked).
@@ -255,8 +255,8 @@ i32 CTimer::Tick(i32 dt) {
         ls->m_cueIntervalHi = 0;
         ls->m_cueTimerLo = g_645588;
         ls->m_cueTimerHi = 0;
-        g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_644c54);
-        CFocusSlot* slot = &g_gameReg->m_focusSlots[g_644c54];
+        g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_curPlayer);
+        CFocusSlot* slot = &g_gameReg->m_focusSlots[g_curPlayer];
         if (slot != 0) {
             slot->m_24 = 1;
         }

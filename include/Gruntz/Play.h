@@ -808,7 +808,7 @@ extern "C" {
     extern u32 g_645584;         // g_lastDelta
     extern u32 g_645588;         // g_accumMs (the running game clock)
     extern StateMgrBZ* g_645578; // the dev/render-state singleton (DispatchHudClick)
-    extern i32 g_644c54;         // a default cue/message wParam
+    extern "C" i32 g_curPlayer;  // a default cue/message wParam
     extern u32 g_6bf3c0;         // draw-clock mirror
     extern u32 g_6bf3bc;         // draw-delta mirror
 }

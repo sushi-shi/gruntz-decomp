@@ -207,6 +207,32 @@ def _demangle_str(s):
     return bytes(out).rstrip(b"\x00")
 
 
+def target_at(site_rva, typ):
+    """The address retail's reloc at `site_rva` ACTUALLY points at, read from the retail image.
+
+    This is the ground truth, and it replaces guessing from the delinker's symbol NAME. The
+    delinker's names are unreliable in both directions: it invents `empty_stub` for every 1-byte
+    `ret` body (so the address is LOST - retail's CWwdGrid::FreeBuckets DIR32 really does point
+    at 0x191d10, exactly our ?BucketHead_Dtor@@YAXXZ, but the name resolves to nothing and the
+    reference looked WRONG), and it reuses ambiguous Ghidra labels like `Teardown` that live at a
+    dozen addresses at once. The bytes cannot lie: the retail image is LINKED, so the reloc site
+    holds the resolved value.
+        DIR32 -> the absolute VA is in the 4 bytes.
+        REL32 -> target = site + 4 + the signed displacement in the 4 bytes.
+    """
+    if _D is None:
+        return None
+    o = _fo(site_rva)
+    if not (0 <= o and o + 4 <= len(_D)):
+        return None
+    if typ == "REL32":
+        return resolve_thunk((site_rva + 4 + struct.unpack("<i", _D[o : o + 4])[0]) & 0xFFFFFFFF)
+    v = struct.unpack("<I", _D[o : o + 4])[0]
+    if not (IMAGE_BASE <= v < IMAGE_END):
+        return None
+    return resolve_thunk(v - IMAGE_BASE)
+
+
 def _str_at(rva):
     """The NUL-terminated bytes the retail image holds at `rva` (or None)."""
     if _D is None:
@@ -274,13 +300,20 @@ def is_fake(sym, data, s, defined=()):
     return not (s in LIBS or s.lstrip("_") in LIBS)  # a real CRT/MFC body is not fabricated
 
 
-def _addend(insn):
-    insn = insn.split("#")[0]  # drop llvm-objdump's "# imm = 0xNN" annotation
-    m = re.search(r"\[(0x[0-9a-f]+)\]", insn)  # absolute-memory operand [0xN] -> addend N
-    if m:
-        return int(m.group(1), 16)
-    imms = re.findall(r"(?<![\w\]])(-?0x[0-9a-f]+)", insn)  # last standalone SIGNED imm/disp
-    return int(imms[-1], 16) & 0xFFFFFFFF if imms else 0  # -0x4c disp -> 0xffffffb4 addend
+def _addend(raw, insn_off, site_off):
+    """The addend, read EXACTLY from the instruction's own bytes at the reloc site.
+
+    The port guessed it from llvm-objdump's TEXT ("last standalone hex immediate"), which is
+    wrong for the very common `movl $0x0, 0x1ec(%esi)` shape: in AT&T the immediate comes FIRST
+    and the memory DISPLACEMENT last, so the guess returned 0x1ec (the field offset) instead of 0
+    (the immediate the DIR32 actually sits on). That silently shifted the base's resolved address
+    by the struct offset - e.g. CGameApp::InitializeDefaultWindowClass' WNDCLASS.lpfnWndProc store
+    resolved to GameWindowProc+0x1ec = 0x13d1dc, an address with no function at all, and reported
+    as WRONG. COFF stores the addend in the field itself, so just read the 4 bytes."""
+    i = site_off - insn_off
+    if raw is None or i < 0 or i + 4 > len(raw):
+        return 0
+    return int.from_bytes(raw[i : i + 4], "little")
 
 
 IMAGE_END = IMAGE_BASE + 0x400000  # generous upper bound on the mapped image
@@ -328,33 +361,41 @@ def parse_obj(obj):
     retail multiset removes that whole false-positive class without weakening the check (an
     address retail truly references is not a defect by definition)."""
     out = subprocess.run(["llvm-objdump", "-dr", obj], capture_output=True, text=True).stdout
-    funcs, raw, cur, prev, had = {}, {}, None, "", True
+    funcs, raw, base = {}, {}, {}
+    cur, prev, had, prev_off, prev_raw = None, "", True, 0, None
     for ln in out.splitlines():
-        m = re.match(r"^[0-9a-f]+ <(.+?)>:", ln)
+        m = re.match(r"^([0-9a-f]+) <(.+?)>:", ln)
         if m:
-            cur = m.group(1)
+            cur = m.group(2)
             funcs.setdefault(cur, [])
             raw.setdefault(cur, [])
-            prev, had = "", True
+            base.setdefault(cur, int(m.group(1), 16))  # the fn's own offset in its section
+            prev, had, prev_raw = "", True, None
             continue
         if cur is None:
             continue
-        mr = re.search(r"IMAGE_REL_I386_(\w+)\s+(\S+)", ln)
+        mr = re.match(r"^\s*([0-9a-f]+):\s+IMAGE_REL_I386_(\w+)\s+(\S+)", ln)
         if mr:
-            s = mr.group(2)
+            s = mr.group(3)
             if not s.startswith("__imp__"):
-                funcs[cur].append((mr.group(1), s, _addend(prev)))
+                # keep the reloc SITE offset: it lets us read the addend exactly out of the
+                # instruction bytes, AND read the true target out of the retail image, instead
+                # of trusting llvm-objdump's disassembly text or the delinker's symbol NAME.
+                site = int(mr.group(1), 16)
+                funcs[cur].append((mr.group(2), s, _addend(prev_raw, prev_off, site), site))
             had = True
             continue
-        mi = re.match(r"^\s*[0-9a-f]+:\s+(?:[0-9a-f]{2}\s+)+(.+)$", ln)
+        mi = re.match(r"^\s*([0-9a-f]+):\s+((?:[0-9a-f]{2} )+)\s*(.+)$", ln)
         if mi:
             if not had and prev:
                 _raw_refs(prev, raw[cur])
-            prev = mi.group(1).replace("\t", " ").strip()
+            prev_off = int(mi.group(1), 16)
+            prev_raw = bytes.fromhex(mi.group(2).replace(" ", ""))
+            prev = mi.group(3).replace("\t", " ").strip()
             had = False
     if cur is not None and not had and prev:
         _raw_refs(prev, raw[cur])
-    return funcs, raw
+    return funcs, raw, base
 
 
 def _raw_refs(insn, out):
@@ -396,15 +437,23 @@ def _cands(dups, typ, s, add):
     return {resolve_thunk((a + add) & 0xFFFFFFFF) for a in c}
 
 
-def _tvas(sym, data, dups, tgt_relocs, tgt_raw=()):
-    """Multiset of every RVA retail references. An ambiguous name contributes ALL its candidate
-    addrs per occurrence, so a base ref to any one of them clears. Candidates are consulted FIRST:
-    a target symbol may be a Ghidra-only label (a thunk) that resolve() - which reads cl's
-    symbol_names.csv - cannot see at all. Dropping those silently is what made the retail multiset
-    incomplete and manufactured ~1400 phantom WRONGs."""
+def _tvas(sym, data, dups, tgt_relocs, tgt_raw=(), fn_rva=None, fn_off=0):
+    """Multiset of every RVA retail references.
+
+    PRIMARY resolution is the retail IMAGE, not the delinker's symbol name: given the reloc's
+    SITE offset we know its RVA (fn_rva + site - fn_off) and can read the resolved value straight
+    out of the linked bytes. That is exact, and it sidesteps every way the delinker's names lie -
+    `empty_stub` for any 1-byte `ret` body (address lost entirely), ambiguous Ghidra labels like
+    `Teardown` that sit at a dozen addresses, thunk-vs-body naming, invented ??_C@ string names.
+    The name-based path below remains as a fallback for anything the image read cannot reach."""
     tvas, tstrs = Counter(), Counter()
     for r in tgt_relocs:
-        cs = _cands(dups, *r)
+        if fn_rva is not None and len(r) > 3:
+            v = target_at(fn_rva + r[3] - fn_off, r[0])
+            if v is not None:
+                tvas[v] += 1
+                continue
+        cs = _cands(dups, r[0], r[1], r[2])
         if len(cs) > 1:
             for c in cs:
                 tvas[c] += 1
@@ -412,7 +461,7 @@ def _tvas(sym, data, dups, tgt_relocs, tgt_raw=()):
         if cs:
             tvas[next(iter(cs))] += 1
             continue
-        v = resolve(sym, data, *r)
+        v = resolve(sym, data, r[0], r[1], r[2])
         if v is not None:
             tvas[v] += 1
         else:
@@ -429,15 +478,18 @@ def _tvas(sym, data, dups, tgt_relocs, tgt_raw=()):
     return tvas, tstrs
 
 
-def check_fn(sym, data, dups, unit, name, base_relocs, tgt_relocs, tgt_raw=(), defined=()):
+def check_fn(
+    sym, data, dups, unit, name, base_relocs, tgt_relocs,
+    tgt_raw=(), defined=(), fn_rva=None, fn_off=0,
+):
     probs = []
     for r in base_relocs:  # (1) fabricated function/data symbol -> would be an unresolved external
         if is_fake(sym, data, r[1], defined) and (unit, name, r[1]) not in ALLOWLIST:
             probs.append("FAKE ref '%s' - in neither CodeView nor a DATA() global" % r[1])
-    tvas, tstrs = _tvas(sym, data, dups, tgt_relocs, tgt_raw)
+    tvas, tstrs = _tvas(sym, data, dups, tgt_relocs, tgt_raw, fn_rva, fn_off)
     bvas, va_sym = Counter(), {}
     for r in base_relocs:
-        v = resolve(sym, data, *r)
+        v = resolve(sym, data, r[0], r[1], r[2])
         if v is not None:
             bvas[v] += 1
             va_sym.setdefault(v, r[1])
@@ -458,11 +510,78 @@ def check_fn(sym, data, dups, unit, name, base_relocs, tgt_relocs, tgt_raw=(), d
     return probs
 
 
+def _rva_of(sym, name):
+    """The function's RETAIL rva. NOT report.json's `address` - that is the symbol's offset in
+    its object's section (for deflate's _deflate_fast it is 0xa14, which is the section offset,
+    not an rva). symbol_names.csv is the authoritative CodeView table."""
+    return sym.get(name) or sym.get(_norm(name)) or sym.get(_key(name))
+
+
 def _objs(unit):
     return (
         os.path.join(REPO, "build/objdiff/base/%s.obj" % unit),
         os.path.join(REPO, "build/objdiff/target/%s.c.obj" % unit),
     )
+
+
+def fake_targets():
+    """--fake-targets: for every FAKE reference, print WHAT RETAIL ACTUALLY CALLS THERE.
+
+    A bare FAKE list ("this symbol is fabricated") says a link will fail but not what to do about
+    it. Now that the target side is resolved from the retail IMAGE, we can pair each fabricated
+    reference with retail's true callee and say exactly what it should have been. That turns the
+    FAKE bucket from an opaque blob into a mechanical worklist: the `->` column is the real rva,
+    and the last column is who already owns it (`gruntz sema rva <addr>` for the full dossier).
+
+    Empirically the bucket is dominated by fake views of LIBRARY classes - CFileIO is MFC CFile
+    (??0CFile@@QAE@XZ @0x1befd7), CConfigReader is istream (??5istream@@QAEAAV0@AAN@Z @0x191fe0),
+    GzObList/CGruntzCmdList are CObList, CStateStackZ is CObArray, Tm_DestroyArray is the CRT's
+    __ehvec_dtor - plus fabricated C++-linkage aliases of globals that already exist under their
+    extern-"C" name. Same shape as the CTmObList/CTmByteArray fold.
+    """
+    sym, data, dups = load_symbols()
+    rev = {}
+    for r in csv.reader(open(os.path.join(REPO, "build/gen/symbol_names.csv"), encoding="latin-1")):
+        if len(r) >= 2:
+            try:
+                rev.setdefault(int(r[0], 16), r[1])
+            except ValueError:
+                pass
+    report = json.load(open(os.path.join(REPO, "build/objdiff/report.json")))
+    hits = {}
+    for u in report["units"]:
+        base_obj, tgt_obj = _objs(u["name"])
+        if not (os.path.exists(base_obj) and os.path.exists(tgt_obj)):
+            continue
+        near = {
+            f["name"] for f in u.get("functions", []) if f.get("fuzzy_match_percent", 0) >= THRESHOLD
+        }
+        if not near:
+            continue
+        (bf, _b, _bb), (tf, _t, tb) = parse_obj(base_obj), parse_obj(tgt_obj)
+        for n in near:
+            if n not in bf or n not in tf or len(bf[n]) != len(tf[n]):
+                continue  # reloc counts must line up to pair them positionally
+            fr = _rva_of(sym, n)
+            if fr is None:
+                continue
+            for b, t in zip(bf[n], tf[n]):
+                if not is_fake(sym, data, b[1]):
+                    continue
+                tv = target_at(fr + t[3] - tb[n], t[0])
+                d = hits.setdefault(b[1], {})
+                d[tv] = d.get(tv, 0) + 1
+    tot = 0
+    for s, d in sorted(hits.items(), key=lambda kv: -sum(kv[1].values())):
+        for a, n in sorted(d.items(), key=lambda kv: -kv[1]):
+            tot += n
+            print(
+                "  x%-3d %-46s -> %-10s %s"
+                % (n, s[:46], hex(a) if a else "?", rev.get(a, "(unclaimed - library/backlog)"))
+            )
+    print("\n%d fabricated reference(s), %d distinct symbol(s)." % (tot, len(hits)))
+    print("The '->' column is retail's REAL callee. `gruntz sema rva <addr>` names its owner.")
+    return 0
 
 
 def review(rva):
@@ -478,13 +597,14 @@ def review(rva):
             if f.get("address") not in (want, want + IMAGE_BASE):
                 continue
             nm = f["name"]
-            (bf, _br), (tf, tr) = parse_obj(base_obj), parse_obj(tgt_obj)
+            (bf, _br, _bb), (tf, tr, tb) = parse_obj(base_obj), parse_obj(tgt_obj)
             if nm not in bf or nm not in tf:
                 print("  %s: no COMDAT on one side" % nm)
                 return 0
             print("%s  %s  (fuzzy %.2f%%)" % (u["name"], nm, f.get("fuzzy_match_percent", 0)))
             for p in check_fn(sym, data, dups, u["name"], nm, bf[nm], tf[nm],
-                              tr.get(nm, []), defined_syms(base_obj)):
+                              tr.get(nm, []), defined_syms(base_obj),
+                              _rva_of(sym, nm), tb.get(nm, 0)):
                 print("  !! " + p)
             print("  base relocs=%d  target relocs=%d" % (len(bf[nm]), len(tf[nm])))
             return 0
@@ -496,7 +616,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("rva", nargs="?", help="review ONE function at this RVA")
     ap.add_argument("--unit", help="audit only this unit")
+    ap.add_argument(
+        "--fake-targets",
+        action="store_true",
+        help="for every FAKE ref, print what retail ACTUALLY calls there (the fix worklist)",
+    )
     a = ap.parse_args()
+    if a.fake_targets:
+        return fake_targets()
     if a.rva:
         return review(a.rva)
 
@@ -517,14 +644,15 @@ def main():
         base_obj, tgt_obj = _objs(unit)
         if not (os.path.exists(base_obj) and os.path.exists(tgt_obj)):
             continue
-        (bf, _br), (tf, tr) = parse_obj(base_obj), parse_obj(tgt_obj)
+        (bf, _br, _bb), (tf, tr, tb) = parse_obj(base_obj), parse_obj(tgt_obj)
         bdef = defined_syms(base_obj)
         for name in sorted(near):
             if name not in bf or name not in tf:
                 continue
             seen += 1
             for p in check_fn(sym, data, dups, unit, name, bf[name], tf[name],
-                              tr.get(name, []), bdef):
+                              tr.get(name, []), bdef,
+                              _rva_of(sym, name), tb.get(name, 0)):
                 bad.append((unit, name, p))
     for unit, name, p in bad:
         print("  %-22s %-46s %s" % (unit, name[:46], p))

@@ -43,7 +43,7 @@
 DATA(0x002455fc)
 extern "C" i32 g_6455fc; // 0x6455fc  cleared at session start
 DATA(0x00244c54)
-extern "C" i32 g_644c54; // 0x644c54  default cue wParam (= *host)
+extern "C" i32 g_curPlayer; // 0x644c54  default cue wParam (= *host)
 DATA(0x00245580)
 extern "C" u32 g_645580; // 0x645580  draw clock
 DATA(0x00245584)
@@ -365,7 +365,7 @@ struct CNetCueRec {
 // CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 struct CNetCfgSub { // m_c->m_28
     char m_pad0[0x10];
-    CMapStringToOb m_10;             // +0x10  embedded registry/bute (Lookup 0x1b8438)
+    CMapStringToOb m_10;       // +0x10  embedded registry/bute (Lookup 0x1b8438)
     char m_pad11[0x30 - 0x11]; // to +0x30
     i32 m_30;                  // +0x30
 };
@@ -1084,12 +1084,12 @@ RVA(0x000b6580, 0x1eb)
 i32 CMulti::StartSession(i32 mode, i32 unused) {
     g_6455fc = 0;
     // FindOptionsSlot's OptionsSlot is defined in GruntzMgr.cpp; only its +0x00 field is
-    // read here (g_644c54 = *host), so the row is taken as i32*.
+    // read here (g_curPlayer = *host), so the row is taken as i32*.
     i32* host = (i32*)Mgr()->FindOptionsSlot(m_hostIndex);
     if (!host) {
         return 0;
     }
-    g_644c54 = *host;
+    g_curPlayer = *host;
     srand(m_rngSeed);
     g_648cec = 0;
     g_645584 = 0;
@@ -2386,7 +2386,8 @@ i32 CMulti::VerifyCustomLevel(void* h, i32 playerTok) {
         return 0;
     }
     if (g_connectRptMgr->m_levelVerifyResult == 0) {
-        ((CGruntzMgr*)(void*)g_gameReg)->EnterModalUI("Not all players have the (same) custom level.");
+        ((CGruntzMgr*)(void*)g_gameReg)
+            ->EnterModalUI("Not all players have the (same) custom level.");
         m_530 = 0;
         return 0;
     }

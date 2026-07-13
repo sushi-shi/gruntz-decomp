@@ -153,7 +153,7 @@ public:
 // The grid cell / selectable object picked at a screen point (OnMouseUp's marker/
 // select dispatch) - the facet of the real CTriggerMgr::CTmCell returned by
 // FindGruntAt (0x32ce) and the timeline ScreenToCell (0x3cb0). +0x1ec is its
-// owner/team id (compared to g_644c54), +0x1fc a live flag. (CTmCell is fwd-only in
+// owner/team id (compared to g_curPlayer), +0x1fc a live flag. (CTmCell is fwd-only in
 // TriggerMgr.h; fold this into it when its full layout is modeled.)
 SIZE_UNKNOWN(CPickedObj);
 struct CPickedObj {
@@ -550,7 +550,7 @@ i32 CPlay::Render() {
                 if (m_guts->m_snapPostSel != 0) {
                     SnapPostMessage(5); // reg->m_68 (5)
                 } else {
-                    SnapPostMessage(g_644c54);
+                    SnapPostMessage(g_curPlayer);
                 }
                 // reset the m_frameMarker marker block (+0x30..0x4c):
                 FrameTimerEnd(0, 0);
@@ -726,7 +726,7 @@ struct CRegExit {
 // waveP - TU_MIGRATION MOVE row `0x0ca200 LoadByMode@CPlayLevelLoad loadlevelbymode ->
 // 0xc8700 play`). The PLAY game-state per-mode level loader (/GX megafunction).
 // `this` IS the canonical CPlay; CPlayLevelLoad here is a thin CPlay-derived facet
-// (LoadByMode not yet on Play.h - a DEFERRED cross-TU fold onto CPlay, reported). g_644c54
+// (LoadByMode not yet on Play.h - a DEFERRED cross-TU fold onto CPlay, reported). g_curPlayer
 // / g_emptyString reuse Play.h's decls.
 // ===========================================================================
 // ---------------------------------------------------------------------------
@@ -889,7 +889,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
 
     gameReg = g_gameReg;
     if (I32(gameReg, 0x134) != 2) {
-        g_644c54 = 0;
+        g_curPlayer = 0;
         if (I32(gameReg, 0xc) != 0) {
             i32 v = I32(gameReg, 0xc) ^ 1;
             I32(gameReg, 0xc) = v;
@@ -1601,7 +1601,12 @@ void CPlay::ModeCleanup() {
     }
     if (m_4) {
         ((CExitWorld*)m_4)->m_48->StopAndFlush();
-        ((CWorldSoundSet*)((CExitWorld*)m_4)->m_54)->Resume();
+        // WRONG-CALLEE FIX (assert_relocs): this called Resume() @0x00bcf0. Retail's rel32 here
+        // resolves to 0x00b660 == CWorldSoundSet::Teardown (already 100% EXACT in src). Both
+        // exist and are methods of the SAME class, so it linked and objdiff reloc-masked it -
+        // a silently-wrong callee. Tearing the world sound set down on mode cleanup is also the
+        // only reading that makes sense next to the StopAndFlush above.
+        ((CWorldSoundSet*)((CExitWorld*)m_4)->m_54)->Teardown();
     }
     if (m_c) {
         ((CExitView*)m_c)->m_10->Teardown();
@@ -1772,7 +1777,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
         case 8: {
             if (m_gridHasSprite) {
                 CWorld* w = m_4w();
-                i32 id = g_644c54;
+                i32 id = g_curPlayer;
                 void* spr = (void*)w->m_74->GetSel((i32) * (void**)(w->m_158 + (id * 0x47) * 8), 0);
                 if (spr == 0) {
                     spr = (void*)g_gameReg->m_spriteFactory->GetSel(1, (i32)spr);
@@ -4191,7 +4196,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
 
     i32 outArea;
     i32 outVal;
-    if (((SbiHost*)m_4)->m_68->ScreenToCell(x, y, &outArea, &outVal, 5) && g_644c54 == outArea) {
+    if (((SbiHost*)m_4)->m_68->ScreenToCell(x, y, &outArea, &outVal, 5) && g_curPlayer == outArea) {
         ((CSBI_RectOnly*)m_guts)->ToggleStat(outVal);
         return 1;
     }
@@ -4199,7 +4204,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
     if (m_dragInhibit1 != 0) {
         return 1;
     }
-    i32 area = g_644c54;
+    i32 area = g_curPlayer;
     SbiCfgEntry* cfg = &g_sbiMgr->m_150[area];
     if (cfg == 0) {
         return 0;
@@ -4222,7 +4227,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
             if (!((CSBI_RectOnly*)m_guts)->FindReadySlot()) {
                 return 1;
             }
-            char ab = (char)g_644c54;
+            char ab = (char)g_curPlayer;
             px = (px & 0xffe0) + 0x10;
             py = (py & 0xffe0) + 0x10;
             ((SbiHost*)m_4)->m_6c->Spawn(1, ab, 0, 0, px, py, 0, 0);
@@ -4237,7 +4242,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
 // up the grid object for `key` in the view's grid map (m_c->m_10->m_10); bail if
 // absent. If `hasGrid`, load the grid's frame sprite from the world sprite factory
 // (m_4->m_74, retrying via the registry's factory) using the per-type descriptor
-// from the world config array (m_4+0x158, indexed by g_644c54), then push it into
+// from the world config array (m_4+0x158, indexed by g_curPlayer), then push it into
 // the grid (SetDelay 0xa / SetSprite). Finally seed the current row (m_gridCurFrame) from
 // `index` (clamped to [m_64,m_68]) and, if non-empty, latch the e8/delay state.
 // ===========================================================================
@@ -4260,7 +4265,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     m_gridHasSprite = hasGrid;
     if (hasGrid != 0) {
         CWorld* w = m_4w();
-        i32 id = g_644c54;
+        i32 id = g_curPlayer;
         void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
         if (spr == 0) {
             spr = g_gameReg->m_spriteFactory->LoadSprite(spr, 1);
@@ -4544,7 +4549,7 @@ i32 CPlay::Vslot0d(i32 key, i32 flags) {
 // steerable codegen fixes landed on the correct structure:
 //   1. nest the no-active-grunt body deepest so the guts-dispatch cold block floats
 //      to the tail (nested-if-success-deepest-error-tail.md): 27 -> 30
-//   2. byte-widen the g_644c54 marker arg via a `char` Place param (mov cl,[g] +
+//   2. byte-widen the g_curPlayer marker arg via a `char` Place param (mov cl,[g] +
 //      store-byte/read-dword): 30 -> 32.2
 //   3. order waypoint_cancel before drag_path per retail (cdf36 < cdf6c)
 //   4. route the drag/pick/reset `return 1`s to a shared `ret1:` tail (retail's
@@ -4621,7 +4626,7 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
             RECT* wr = &geom->m_rect10;
             if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
                 if (FindStartPointAt309e(sx, sy, &x, &y)) {
-                    char tok = *(char*)&g_644c54;
+                    char tok = *(char*)&g_curPlayer;
                     ((CMarkerPlacer*)w->m_6c)->Place(1, tok, 0, 0, x, y, 0, 0);
                     placed = 1;
                 }
@@ -4681,7 +4686,7 @@ mode_36c:
         i32 out28[2] = {0, 0};
         i32 col = 0;
         CTmCell* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, (RECT*)out28, &col, &y, &box);
-        if (p == 0 || g_644c54 != ((CPickedObj*)p)->m_1ec) {
+        if (p == 0 || g_curPlayer != ((CPickedObj*)p)->m_1ec) {
             goto waypoint_cancel;
         }
         ((CMarkerPlacer*)w->m_6c)->Place(1, a, y, 8, 0, 0, tok, 0);
@@ -4803,7 +4808,7 @@ drag_box: {
         goto ret1;
     }
     m_4w()->m_68->ResetCell29cd(slot38, slot38, g_645578->m_18 & 0x20, 0);
-    if (a == g_644c54) {
+    if (a == g_curPlayer) {
         if (0 != (g_645578->m_18 & 0x20)) {
             goto ret1;
         }
@@ -6532,7 +6537,7 @@ struct CRegHitView {
 // tail-merge difference. Not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x000d5f90, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
-    i32 id = g_644c54;
+    i32 id = g_curPlayer;
     CRegHitView* reg = (CRegHitView*)g_gameReg;
     CRegSlot* slot = &reg->m_slots[id];
     if (slot == 0) {
@@ -6730,7 +6735,7 @@ i32 CPlay::ResetPlayState() {
         CRpGeom* g = self->m_4->m_30->m_24;
         ResetGoalGeom(g->m_3b0, g->m_3b4);
     } else {
-        CRpSlot* slot = &((CRpReg*)g_gameReg)->m_slots[g_644c54];
+        CRpSlot* slot = &((CRpReg*)g_gameReg)->m_slots[g_curPlayer];
         if (slot != 0) {
             ResetGoalGeom(slot->m_220, slot->m_224);
         } else {
@@ -7337,7 +7342,7 @@ struct AgThis {
     AgResMgr* m_c; // +0x0c
 };
 
-extern i32 g_644c54;                             // 0x644c54 placeholder token
+extern "C" i32 g_curPlayer;                      // 0x644c54 placeholder token
 void AgLog(CGameRegistry* reg, const char* msg); // 0x417e
 
 // @early-stop
@@ -7357,7 +7362,7 @@ i32 CPlay::AddLevelGruntz() {
         if (g->m_7c[4] != 0x4024a5) {
             continue;
         }
-        if (g->m_124 == g_644c54) {
+        if (g->m_124 == g_curPlayer) {
             continue;
         }
         i32 x = ((g->m_5c & ~0x1f) + 0x10);

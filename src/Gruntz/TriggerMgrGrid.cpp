@@ -322,7 +322,7 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
 
 // 0x6bfd0: ResetCell(col, row, force, ...) - if grid[row*15+col] (+0x1c) is live: for a
 // non-magic row, run its three sub-state resetters then re-seed its CombatTimeout config
-// fields (+0x880..+0x88c); for the magic row (== g_644c54), when not forced recycle the
+// fields (+0x880..+0x88c); for the magic row (== g_curPlayer), when not forced recycle the
 // (row,col) record node onto the free list, AddTail it to +0x240, and run ResetMagic. ret 1
 // only when a magic cell was recycled, else 0. (__stdcall: ret 0x10.)
 // @early-stop
@@ -335,7 +335,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     if (cell == 0 || cell->m_1fc == 0) {
         return 0;
     }
-    if (col != g_644c54) {
+    if (col != g_curPlayer) {
         cell->ResetA();
         cell->ResetB();
         cell->ResetC();
@@ -682,9 +682,9 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
 }
 
 // 0x6ea00: HitTestApply(x, y, kind) - hit-test the cell at (x,y); only for the magic group
-// (out-col == g_644c54) and a cell whose config name is NOT "B" and kind 0x14, add the world's
+// (out-col == g_curPlayer) and a cell whose config name is NOT "B" and kind 0x14, add the world's
 // score delta, zero the status fields, SetStat(0,0xbb7), re-arm the status item (SetMode 1)
-// and ClearMagic(g_644c54). void - no path materialises a return value. (__stdcall: ret 0xc.)
+// and ClearMagic(g_curPlayer). void - no path materialises a return value. (__stdcall: ret 0xc.)
 // @early-stop
 // inline-strcmp result-register coloring wall (~80%): void return + strcmp `!= 0` bool steer +
 // i64 score sub are byte-exact and size now matches retail (0x125). The residual is the inline
@@ -696,7 +696,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     i32 outRow = 0;
     i32 outCol = 0;
     CTmCell* cell = this->Hit(kind, y, y, &outRow, &outCol);
-    if (cell == 0 || outCol != g_644c54) {
+    if (cell == 0 || outCol != g_curPlayer) {
         return;
     }
     char* name = *g_nameReg.Lookup(cell->m_14->m_1c);
@@ -726,5 +726,5 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     sub->m_4c = 0;
     world->SetStat(0, 0xbb7);
     world->m_2dc->SetMode(1);
-    this->ClearMagic(g_644c54);
+    this->ClearMagic(g_curPlayer);
 }

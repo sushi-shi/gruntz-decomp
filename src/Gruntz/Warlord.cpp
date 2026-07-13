@@ -360,7 +360,7 @@ i32 CWarlord::LoadAttributes2() {
 // inner block) where cl saves it at entry; (b) retail rebases `add eax,0x290` to reach
 // the cue stores with disp8 while cl keeps disp32 absolute [eax+0x29c/0x290/0x294] -
 // same instruction count, an MSVC5 addressing-mode scheduling coin-flip.
-extern i32 g_curPlayer; // 0x644c54 (current local player index)
+extern "C" i32 g_curPlayer; // 0x644c54 (current local player index)
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
     ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);

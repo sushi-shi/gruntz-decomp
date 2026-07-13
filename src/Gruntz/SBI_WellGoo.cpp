@@ -107,7 +107,7 @@ i32 CSBI_WellGoo::Tick() {
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 DATA(0x00244c54)
-extern i32 g_644c54;
+extern "C" i32 g_curPlayer;
 
 // CSBI_WellGoo::Serialize (0xe64c0) - vtable slot 1. Bail on a null archive / no
 // game manager; chain the base CSBI_Image serialize; then mode 4/7 round-trip the
@@ -210,7 +210,7 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             if (m_gooSrc == 0) {
                 return 0;
             }
-            i32 sel = *(i32*)((char*)g_gameReg + 0x158 + (g_644c54 * 71) * 8);
+            i32 sel = *(i32*)((char*)g_gameReg + 0x158 + (g_curPlayer * 71) * 8);
             i32 node = g_gameReg->m_74->GetSel(sel, 0);
             if (node == 0) {
                 node = g_gameReg->m_74->GetSel(1, 0);

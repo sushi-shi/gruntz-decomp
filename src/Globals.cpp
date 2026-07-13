@@ -241,9 +241,9 @@ extern "C" {
     // are DEFINED in their owning TU src/Gruntz/VideoConfig.cpp (videoconfig.obj's .bss);
     // the reference externs stay in <Globals.h>.
     DATA(0x002455bc)
-    extern i32 g_gate_2455bc;
+    extern i32 g_optLockAudio;
     DATA(0x002455c0)
-    extern i32 g_gate_2455c0;
+    extern i32 g_optLockSpeech;
     DATA(0x002455c8)
     extern i32 g_6455c8; // DAT_006455c8  (joystick-disable flag)
     DATA(0x002455dc)

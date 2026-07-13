@@ -72,15 +72,20 @@ extern HWND g_curDlg_optdlg; // aliases 0x64557c (reloc-masked)
 // The CD-prompt result gate (?g_6455ec@@3HA @0x6455ec); DATA-bound in GruntzMgrCmd.cpp.
 extern i32 g_cdPromptResult;
 
-// Mode-lock gates (@0x6455b4/bc/c0): when set they grey out option groups AND
-// gate the option commits (the same gates the g_gate_2455* externs name in
-// LevelPreview.cpp / Play.cpp).
-DATA(0x002455b4)
-extern i32 g_optLockAll;
-DATA(0x002455bc)
-extern i32 g_optLockAudio;
-DATA(0x002455c0)
-extern i32 g_optLockSpeech;
+// Mode-lock gates (@0x6455b4/bc/c0): when set they grey out option groups AND gate the
+// option commits. FABRICATED-SYMBOL FIX (assert_relocs --fake-targets): these were declared
+// with C++ linkage, so they mangled to ?g_optLockAll@@3HA etc. - symbols NOTHING defines
+// (the storage is the extern-"C" global the rest of the tree already binds), i.e. three
+// guaranteed `unresolved external symbol`s. extern "C" makes them the SAME datum. The old
+// hex names (g_gate_2455b4/bc/c0, Globals.h + LevelPreview.cpp) were renamed to these
+// semantic ones rather than the reverse - best name wins.
+// g_optLockAudio (0x2455bc) / g_optLockSpeech (0x2455c0) are CONSOLIDATED globals: they come
+// from <Globals.h> (included above), inside its extern-"C" block. Re-declaring them here would
+// re-proliferate them (the labels gate refuses it). Only 0x2455b4 is not consolidated.
+extern "C" {
+    DATA(0x002455b4)
+    extern i32 g_optLockAll;
+}
 
 // The options-dialog staging cells (0x22bd64..0x22bdd4): a snapshot of the live
 // settings LoadGameOptionsToDialog captures so IDCANCEL/Apply can restore/commit

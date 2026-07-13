@@ -70,9 +70,9 @@ extern CButeMgr g_buteMgr;
 DATA(0x002bf3bc)
 extern i32 g_defaultGeo;
 
-// The current local player index (g_644c54) the teleporter warp gates on.
+// The current local player index (g_curPlayer) the teleporter warp gates on.
 DATA(0x00244c54)
-extern i32 g_curPlayer;
+extern "C" i32 g_curPlayer;
 
 // The wormhole-type marker: the address of CWormhole's vtable slot-4 method. The
 // partner walk identifies a game object as a wormhole by comparing its +0x7c

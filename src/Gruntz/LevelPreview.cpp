@@ -72,16 +72,16 @@ public:
     // state layout - the codegen-neutral cross-view State.h already uses). Declared-
     // only so the __thiscall call reloc-masks.
     // LoadGameAssetNamespaces (0x0f9ea0) inherited from CState (called cast-free).
-    i32 Tick();                                  // 0x0de200
+    i32 Tick(); // 0x0de200
     // RetireScene (0x0fa8f0) is a CState base method (inherited from <Gruntz/State.h>);
     // the cast-free calls below bind ?RetireScene@CState@@ - no local decl needed.
-    void Cancel();                                                  // 0x0de590
-    void LoadLevelPreviewScreen();                                  // 0x0de420
-    i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3);         // 0x0fab90
-    i32 NextScreenCmd_0de190(i32 param);                            // 0x0de190
-    i32 Refade_0de2c0();                                            // 0x0de2c0
-    i32 RefadeVirtual_0de340();                                     // 0x0de340
-    i32 OnKey_0de3c0(i32 key, i32 param);                           // 0x0de3c0
+    void Cancel();                                          // 0x0de590
+    void LoadLevelPreviewScreen();                          // 0x0de420
+    i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3); // 0x0fab90
+    i32 NextScreenCmd_0de190(i32 param);                    // 0x0de190
+    i32 Refade_0de2c0();                                    // 0x0de2c0
+    i32 RefadeVirtual_0de340();                             // 0x0de340
+    i32 OnKey_0de3c0(i32 key, i32 param);                   // 0x0de3c0
 
     // CPreviewState-specific fields, past the CState base (which ends at +0x1a8):
     char m_pad1a8[0x1b8 - 0x1a8];
@@ -90,11 +90,11 @@ public:
     i32 m_1c0;     // +0x1c0  preview counter
 };
 
-// The first menu-mode gate global the enter path polls (g_gate_2455bc + g_dat60b588
+// The first menu-mode gate global the enter path polls (g_optLockAudio + g_dat60b588
 // are consolidated in Globals.h; 0x2455b4 is not, so it is pinned here).
 extern "C" {
     DATA(0x002455b4)
-    extern i32 g_gate_2455b4;
+    extern i32 g_optLockAll;
 }
 
 // CPreviewState::Enter (0x0de030) - the level-preview screen's command-entry: load
@@ -113,7 +113,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     if (m_2c == 0) {
         return 0;
     }
-    if (g_gate_2455b4 == 0 && g_gate_2455bc == 0) {
+    if (g_optLockAll == 0 && g_optLockAudio == 0) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
             ((CDDrawSubMgrLeafScan*)((CRegHolder*)m_c)->m_statusBar)

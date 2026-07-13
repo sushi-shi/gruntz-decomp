@@ -86,8 +86,8 @@ static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
-i32 g_focusedGruntSentinel;           // DAT_00644c54
+CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
+i32 g_focusedGruntSentinel;         // DAT_00644c54
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
@@ -278,7 +278,7 @@ struct CombatReg {
 };
 // g_gameReg (0x64556c) is declared above (PathScan section); the combat
 // paths read it through the CombatReg view with a per-use cast.
-extern "C" i32 g_644c54; // _g_644c54 handicap owner id
+extern "C" i32 g_curPlayer; // _g_644c54 handicap owner id
 
 // The tile-mgr grunt board (CGrunt+0x260): 4x15 grunt pointer grid at +0x1c + the
 // per-cell engine ops (all __thiscall, reloc-masked).
@@ -360,7 +360,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         CombatCue* out = 0;                                                                        \
-        reg->m_world->m_28->m_10.Lookup((key), (CObject*&)out);               \
+        reg->m_world->m_28->m_10.Lookup((key), (CObject*&)out);                                    \
         cue = out;                                                                                 \
     } while (0)
 
@@ -605,7 +605,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
-            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 9, 1);
+            ((CLightFx*)spr->m_7c->m_logic)
+                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 9, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -619,7 +620,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
-            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 2, 1);
+            ((CLightFx*)spr->m_7c->m_logic)
+                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 2, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -633,7 +635,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
-            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 8, 1);
+            ((CLightFx*)spr->m_7c->m_logic)
+                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
             return m_tileMgr->ResurrectCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -645,7 +648,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
-            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 7, 1);
+            ((CLightFx*)spr->m_7c->m_logic)
+                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 7, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -659,7 +663,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
-            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 3, 1);
+            ((CLightFx*)spr->m_7c->m_logic)
+                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 3, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -1451,7 +1456,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     // Hit-type byte-table lookup + optional handicap halving.
     i32 hit = g_hitTable[F(this, 0x170) * 23 + a0];
     CombatReg* reg = (CombatReg*)g_gameReg;
-    if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && F(this, 0x1ec) == g_644c54) {
+    if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && F(this, 0x1ec) == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
     }

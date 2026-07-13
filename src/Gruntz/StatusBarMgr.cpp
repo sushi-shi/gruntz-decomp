@@ -52,7 +52,7 @@ DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
 DATA(0x00244c54)
-extern i32 g_curPlayer; // DAT_00644c54
+extern "C" i32 g_curPlayer; // DAT_00644c54
 
 // CSbConfigItem::SetDirection (0x0ea0f0) / SetDirectionAlt (0x0ea170) re-homed to
 // src/Gruntz/StatusBarTabBuilders.cpp (interval dossier 0x0e8a70: the config-item
