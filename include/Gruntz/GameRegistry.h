@@ -299,7 +299,7 @@ struct CGameRegistry {
     //     the LoadWorldMode ctor + all "input" methods being CWorldSoundSet methods at the
     //     exact rvas: StoreFlag=Restart@0xbc30, Arm=Resume, Disarm=Stop, Flush=Deactivate,
     //     InitInput=Init). +0x24 m_active is the mgr's armed flag == the ambient's
-    //     "playable"/object-count gate, +0x08 the shared spatial-sound voice CObList.
+    //     "playable"/object-count gate, +0x08 the shared spatial-sound voice CPtrList.
     //   +0x60 m_cueSink (cue
     //   receiver, 60+ grunt sites) vs GruntzMgr m_timer (per-frame tick + Voice_Volume);
     //   +0x70 m_tileGrid (tile board) vs GruntzMgr m_cmdNotify (cmd sink + cell-height);
@@ -332,7 +332,7 @@ struct CGameRegistry {
     CWorldSoundSet* m_inputState; // +0x54  active-level input/spatial-sound object (ONE
                                   //         object, proven: the mgr's input facet == the
                                   //         ambient TU's active-level facet, +0x24 m_active
-                                  //         armed==playable gate, +0x08 CObList spatial voice
+                                  //         armed==playable gate, +0x08 CPtrList spatial voice
                                   //         list; see WorldSoundSet.h)
     void* m_saveSink;             // +0x58  save-record sink (consumers read save-game progress:
                                   //         MenuProgress->m_1c / final-movie availability)

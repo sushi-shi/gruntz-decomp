@@ -5,7 +5,7 @@
 // list the level loader, the OBJECTZ_ resource reconcilers and the multiplayer
 // roster all walk. One instance is a file-scope singleton (DAT_006459b0);
 // another is reached via the level-loader's pointer at DAT_0061139c. The class
-// is non-polymorphic (the ctor stamps no vtable); only the embedded CObList
+// is non-polymorphic (the ctor stamps no vtable); only the embedded CPtrList
 // carries a vptr.
 //
 // Reset() clears the current-index word; Dispatch(index) records the 1..40 index
@@ -13,7 +13,7 @@
 // returns 1); SameGroup(a) reports whether `a` and the current index fall in the
 // same group-of-four within mod-36 index space (the level-loader's adjacency
 // test). The /GX destructor clears the index then inline-folds the member
-// ~CSpawnList (DeleteAllEntries + ~CObList, EH state 1).
+// ~CSpawnList (DeleteAllEntries + ~CPtrList, EH state 1).
 //
 // LoadObject{Image,Sound,Anim}Resources (0x9a510/0x9a910/0x9ac20, defined in
 // src/Gruntz/LoadObjectResources.cpp) are CAreaMgr methods: their `this` reaches
@@ -36,7 +36,7 @@ class CSymTab; // Bute/SymTab.h (ResolvePath)
 class CAreaMgr {
 public:
     // 0x099ba0 - the ctor: the member CSpawnList's inline ctor folds in
-    // (CObList(10), cursor = 0, last-picked = -1), then the index word clears.
+    // (CPtrList(10), cursor = 0, last-picked = -1), then the index word clears.
     CAreaMgr(); // 0x099ba0
 
     // 0x09a0b0 - clear the current-index word.  Also the +0x00 member-teardown

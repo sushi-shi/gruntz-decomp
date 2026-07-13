@@ -12,7 +12,7 @@
 // the per-index control accessors, and the GetCtrlE combo helpers.
 //
 // Built /GX (eh): the ctor default-constructs embedded MFC members (CString m_70 /
-// CObList m_74) and BuildSlotList's new-expression carries the fs:0 EH frame.
+// CStringList m_74) and BuildSlotList's new-expression carries the fs:0 EH frame.
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------

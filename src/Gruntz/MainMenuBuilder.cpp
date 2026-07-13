@@ -1,7 +1,7 @@
 // MainMenuBuilder.cpp - the game's main-menu tree builder (C:\Proj\Gruntz). The
 // second-biggest backlog function (6157 B): a /GX EH-framed routine that builds
 // the 14-page main-menu tree. Each page allocates a menu-page object (op-new +
-// the 3-CString/CObList ctor), initializes it from a "MENU_<PAGE>" key + label
+// the 3-CString/CPtrList ctor), initializes it from a "MENU_<PAGE>" key + label
 // (Init), fills it with items / sub-items (AddItem / AddSubItem, each a key +
 // label + flags + index), conditionally disables the multiplayer-gated items
 // (when g_multiplayerAvail is set) and the area-progress-gated items (when the
@@ -15,21 +15,21 @@
 //
 // CARCASS doctrine: the menu-page/item classes are opaque shells with the
 // touched offsets; the page ctor builds three CString temps (+8/+c/+10) and a
-// CObList (+0x14); the builder methods (Init/AddItem/AddSubItem/Finalize/
-// RegisterPage) and the CRT/MFC machinery (operator new/delete, CString, CObList)
+// CPtrList (+0x14); the builder methods (Init/AddItem/AddSubItem/Finalize/
+// RegisterPage) and the CRT/MFC machinery (operator new/delete, CString, CPtrList)
 // are external no-body callees (reloc-masked rel32). The "MENU_*"/label strings
 // are $SG literals (reloc-masked against the matched string symbols).
 //
 // @early-stop  (~78% - body fully aligns; residual is the /GX EH-state tail)
 // The 14-page build sequence, the per-item gates, the EH frame and the per-page
 // ctors all match retail; the residual ~22% is the exception-state threading -
-// retail stamps the CObList's ctor state at [esp+0x1c] (a second trylevel slot)
+// retail stamps the CPtrList's ctor state at [esp+0x1c] (a second trylevel slot)
 // where MSVC5 here stamps [esp+0x18], and the per-page failure-path teardown
 // states run descending (7,6,5,4) where our `delete page` emits an ascending
 // sequence. That EH-state-index / trylevel-slot divergence is the documented
 // /GX wall (docs/seh-eh.md; docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md;
 // rezalloc-placement-new-no-eh-frame.md, topic:eh/topic:wall). Deferred to the
-// final sweep: match the CObList ctor/dtor + the page ctor as leaves so the
+// final sweep: match the CPtrList ctor/dtor + the page ctor as leaves so the
 // trylevel-slot threading can be reproduced, then re-attack.
 
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
@@ -44,7 +44,7 @@ typedef u32 u32;
 DATA(0x00245d88)
 RECT g_menuTextRect = {0}; // 0x245d88  (owner-TU definition)
 
-// The embedded CString/CObList sub-objects, declared with real (no-body, reloc-
+// The embedded CString/CPtrList sub-objects, declared with real (no-body, reloc-
 // masked) ctors/dtors so the page ctor/dtor emit the EH-tracked construct/destruct
 // sequences (the `lea ecx,[page+off]; call <ctor/dtor>` + the EH-state stamps).
 struct MenuStr {
@@ -53,8 +53,8 @@ struct MenuStr {
     char m_pad[0x4];
 };
 struct MenuList {
-    MenuList();  // CObList::CObList(10) 0x1b4867
-    ~MenuList(); // CObList dtor         0x1b48c6
+    MenuList();  // CPtrList::CPtrList(10) 0x1b4867
+    ~MenuList(); // CPtrList dtor         0x1b48c6
     char m_pad[0x1c];
 };
 
@@ -82,7 +82,7 @@ static i32 FinalMovieAvailable(void* sub) {
     return ((MovieProbe*)sub)->IsAvailable();
 }
 
-// The menu-page object (0x68 bytes): three CString fields (+8/+c/+10), a CObList
+// The menu-page object (0x68 bytes): three CString fields (+8/+c/+10), a CPtrList
 // (+0x14), scalar state (+0/+4/+0x30/+0x60/+0x64). The builder methods are
 // __thiscall engine callees (reloc-masked).
 struct MenuPage {
@@ -115,7 +115,7 @@ struct MenuPage {
     i32 m_64; // +0x64
 };
 
-// The page ctor: the embedded members (3 CStrings + CObList) run as member ctors
+// The page ctor: the embedded members (3 CStrings + CPtrList) run as member ctors
 // first, then the scalar state is zeroed. Inlined into the builder.
 inline MenuPage::MenuPage() {
     m_04 = 0;

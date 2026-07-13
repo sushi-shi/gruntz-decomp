@@ -56,7 +56,7 @@ i32 CStatzTabBuilder::Build() {
             delete newobj;
             return 0;
         }
-        m_2c.AddTail((CObject*)newobj);
+        m_2c.AddTail(newobj);
         m_150[i] = newobj;
         i++;
     }

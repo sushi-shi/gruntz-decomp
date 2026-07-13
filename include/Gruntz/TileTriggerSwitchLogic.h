@@ -68,9 +68,9 @@ public:
     i32 VerifyBlockLinksB(); // 0x111f40 (FindChild(key, 3) variant)
     i32 VerifyBlockLinks();  // 0x112c70
 
-    // RemoveByKeys reuses the MFC CObList::RemoveAt (0x1b4ac7) directly on `this`
-    // (its leading {vptr,head,tail,count} overlay a CObList; own vtable 0x1eae8c
-    // differs, so a `(CObList*)this` reinterpret, not inheritance) - see the .cpp.
+    // RemoveByKeys reuses the MFC CPtrList::RemoveAt (0x1b4ac7) directly on `this`
+    // (its leading {vptr,head,tail,count} overlay a CPtrList; own vtable 0x1eae8c
+    // differs, so a `(CPtrList*)this` reinterpret, not inheritance) - see the .cpp.
 
     // Trace-discovered child-list accessors (list head @ +0x04; nodes
     // next@+0x00, data@+0x08; data objects are sibling CTileTriggerSwitchLogic

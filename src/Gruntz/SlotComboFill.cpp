@@ -1,16 +1,16 @@
 // SlotComboFill.cpp - CLatencyList::FillCombo (0x37ff0), the /GX combo-box populate
 // for the multiplayer connection-latency slot list. It resets the (hDlg, ctrlId)
-// combo, walks the CObList node list (head @+0x4, count @+0xc), and for each node's
+// combo, walks the CPtrList node list (head @+0x4, count @+0xc), and for each node's
 // CLatencyItem payload adds GetName() text (a returned CString temp) then stashes a
 // packed MAKELONG(m_param,m_id) as the item data.
 //
 // The container is the canonical CLatencyList (<Net/LatencyList.h>) - the former
 // per-TU CMultiSlotList/SlotNode/SlotRec views here folded onto it (wave 3). The
-// node walk uses the real MFC CObList node list (CObList::CNode, protected, reached
+// node walk uses the real MFC CPtrList node list (CPtrList::CNode, protected, reached
 // through the CLatencyList base). GetDlgItem/SendMessageA are Win32 imports; GetName
 // (0x38120 via the 0x256d ILT thunk) and ~CString are reloc-masked. Only offsets +
 // code bytes are load-bearing.
-#include <Net/LatencyList.h> // CLatencyList / CLatencyItem (+ <Mfc.h>: CObList/CString/windows.h)
+#include <Net/LatencyList.h> // CLatencyList / CLatencyItem (+ <Mfc.h>: CPtrList/CString/windows.h)
 #include <rva.h>
 
 // The engine's cached USER32 imports, held as function-pointer globals (the dialog
@@ -42,9 +42,9 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
         return 0;
     }
     ::SendMessageA(combo, CB_RESETCONTENT, 0, 0);
-    CObList::CNode* node = m_pNodeHead;
+    CPtrList::CNode* node = m_pNodeHead;
     while (node != 0) {
-        CObList::CNode* next = node->pNext;
+        CPtrList::CNode* next = node->pNext;
         CLatencyItem* rec = (CLatencyItem*)node->data;
         i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
         i32 idx;

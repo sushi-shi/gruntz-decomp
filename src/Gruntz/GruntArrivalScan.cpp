@@ -85,7 +85,7 @@ extern "C" {
         (grid)->m_74 = (grid)->m_60.bottom - (grid)->m_60.top;                                     \
     }
 
-// Recycle the visited-coord CObList nodes (head) back onto the shared free list.
+// Recycle the visited-coord CPtrList nodes (head) back onto the shared free list.
 #define RECYCLE_COORDS(head)                                                                       \
     {                                                                                              \
         GruntCoordNode* n = (head);                                                                \
@@ -164,7 +164,7 @@ extern "C" u32 g_645588; // 0x645588 (second name for g_clock, reloc-masked)
 // the +0x2ec dwell window passes the thresholds and the (m_arrivalRerollLo..m_arrivalRerollWindowHi) idle timer has
 // elapsed, reset that timer to a fresh rand%0x7530; otherwise re-roll a random target
 // inside the HUD scroll region (m_134..m_140) and tile-switch onto it, escalating to
-// SetEntrancePos when the spread exceeds m_coordCount. Returns 1.
+// SetEntrancePos when the spread exceeds CoordCount(). Returns 1.
 // @early-stop
 // idiv/rand + abs + shared-tail-zero-reg + 64-bit-sbb-timer plateau: the occupant
 // resolve, the in-radius/dwell gates, the random-region re-roll (two rand()%span via
@@ -224,7 +224,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                 outY += GruntRand() % spanY;
             }
             TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
-            i32 m328 = m_coordCount;
+            i32 m328 = CoordCount();
             if (m328 != 0) {
                 i32 mx = spanX > spanY ? spanX : spanY;
                 if (m328 > mx) {
@@ -865,8 +865,8 @@ i32 CGrunt::ArrivalReticleScan() {
                 occ->m_lastTilePxX,
                 occ->m_lastTilePxY
             );
-            if (m_coordCount) {
-                for (GruntCoordNode* n = m_320; n; n = n->m_next) {
+            if (CoordCount()) {
+                for (GruntCoordNode* n = CoordHead(); n; n = n->m_next) {
                     if (n->m_coord) {
                         g_coordPool.Push(n->m_coord);
                     }
@@ -876,8 +876,8 @@ i32 CGrunt::ArrivalReticleScan() {
             return 1;
         }
         if (occOnTile) {
-            if (m_coordCount) {
-                for (GruntCoordNode* n = m_320; n; n = n->m_next) {
+            if (CoordCount()) {
+                for (GruntCoordNode* n = CoordHead(); n; n = n->m_next) {
                     if (n->m_coord) {
                         g_coordPool.Push(n->m_coord);
                     }
@@ -1040,11 +1040,11 @@ i32 CGrunt::UpdateArrival() {
                         && lo2 < (u32)F(g_gameReg->m_tileGrid, 0x10)) {
                         TileSwitch6((i32)lo, (i32)lo2, 0, this->m_arrivalFlags, 1, 0);
                     }
-                    if (this->m_coordCount != 0) {
+                    if (this->CoordCount() != 0) {
                         if (ax <= ay) {
                             ax = ay;
                         }
-                        if (ax < this->m_coordCount) {
+                        if (ax < this->CoordCount()) {
                             SetEntrancePos(1, 1);
                         }
                     }
@@ -1095,15 +1095,15 @@ i32 CGrunt::UpdateArrival() {
             break;
     }
 
-    if (this->m_coordCount != 0) {
+    if (this->CoordCount() != 0) {
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
-        i32* cell = (i32*)this->m_320->m_coord;
+        i32* cell = (i32*)this->CoordHead()->m_coord;
         u8* flags = (u8*)(F(F(g_gameReg->m_tileGrid, 0x8) + cell[1] * 4, 0) + cell[0] * 0x1c);
         if ((flags[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
-            if (this->m_coordCount != 0) {
-                void* p = (void*)this->m_320;
+            if (this->CoordCount() != 0) {
+                void* p = (void*)this->CoordHead();
                 void* prev = g_coordPool.m_freeHead;
                 while (p != 0) {
                     void* next = *(void**)p;
@@ -1921,7 +1921,7 @@ i32 CGrunt::StepArrivalDefense() {
                     && outY < ((GruntBoard*)g_gameReg->m_tileGrid)->m_10) {
                     TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
-                i32 m328 = m_coordCount;
+                i32 m328 = CoordCount();
                 if (m328 != 0) {
                     i32 mx = spanX > spanY ? spanX : spanY;
                     if (m328 > mx) {
@@ -2323,8 +2323,8 @@ s0_reset:
 
 common: {
     i32 st = m_defenderState;
-    if (st != 4 && st != 0x19 && m_coordCount >= 2) {
-        GruntCoordNode* head = m_320;
+    if (st != 4 && st != 0x19 && CoordCount() >= 2) {
+        GruntCoordNode* head = CoordHead();
         i32 bx = head->m_coord->m_x;
         i32 by = head->m_coord->m_y;
         GruntCoord* nc = head->m_next->m_coord;
@@ -2338,8 +2338,8 @@ common: {
             flag = 1;
         }
         if ((flag & 0x20) != 0) {
-            if (m_coordCount != 0) {
-                RECYCLE_COORDS(m_320);
+            if (CoordCount() != 0) {
+                RECYCLE_COORDS(CoordHead());
                 m_31c.RemoveAll();
             }
             ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
@@ -2350,10 +2350,10 @@ common: {
             return 1;
         }
     }
-    if (m_coordCount == 0) {
+    if (CoordCount() == 0) {
         return 1;
     }
-    GruntCoord* p1 = m_320->m_coord;
+    GruntCoord* p1 = CoordHead()->m_coord;
     CScanGrid* pl2 = (CScanGrid*)g_gameReg->m_tileGrid;
     i32 gx = p1->m_x;
     i32 gy = p1->m_y;
@@ -2368,8 +2368,8 @@ common: {
     }
     m_arrivalCol = gx;
     m_arrivalRow = gy;
-    if (m_coordCount != 0) {
-        RECYCLE_COORDS(m_320);
+    if (CoordCount() != 0) {
+        RECYCLE_COORDS(CoordHead());
         m_31c.RemoveAll();
     }
     m_defenderState = 0x1a;
@@ -2387,9 +2387,9 @@ RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
     this->m_defenderX = this->m_lastTilePxX;
     this->m_defenderY = this->m_lastTilePxY;
-    if (this->m_coordCount != 0
+    if (this->CoordCount() != 0
         && F(F(g_gameReg->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0) == 0) {
-        void* p = (void*)this->m_320;
+        void* p = (void*)this->CoordHead();
         while (p != 0) {
             void* next = *(void**)p;
             i32* link = (i32*)((char*)p + 8);
@@ -2409,8 +2409,8 @@ i32 CGrunt::SeekTarget() {
     if (reason == 0 && (reason = this->m_arrivalCol, reason >= 0) && reason < 0xf) {
         CGrunt* slot = (CGrunt*)F(F(g_gameReg->m_cmdGrid, 0x1c) + reason * 4, 0);
         if (slot == 0 || slot->m_entranceCommitted == 0) {
-            if (this->m_coordCount != 0) {
-                void* p = (void*)this->m_320;
+            if (this->CoordCount() != 0) {
+                void* p = (void*)this->CoordHead();
                 while (p != 0) {
                     void* next = *(void**)p;
                     i32* link = (i32*)((char*)p + 8);
@@ -2446,10 +2446,10 @@ i32 CGrunt::SeekTarget() {
                 slot->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(0, 1, 0, 0);
                 this->m_defenderState = 4;
-                if (this->m_coordCount == 0) {
+                if (this->CoordCount() == 0) {
                     return 1;
                 }
-                void* p = (void*)this->m_320;
+                void* p = (void*)this->CoordHead();
                 while (p != 0) {
                     void* next = *(void**)p;
                     i32* link = (i32*)((char*)p + 8);
@@ -2469,7 +2469,7 @@ i32 CGrunt::SeekTarget() {
         reason = this->m_19c;
     }
     if (reason == 0) {
-        if (this->m_coordCount == 0) {
+        if (this->CoordCount() == 0) {
             if (this->m_defenderState != 0) {
                 return 1;
             }
@@ -2810,7 +2810,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 if ((u32)outX < (u32)bd->m_c && (u32)outY < (u32)bd->m_10) {
                     TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
-                i32 m328 = m_coordCount;
+                i32 m328 = CoordCount();
                 if (m328 != 0) {
                     i32 mx = spanX > spanY ? spanX : spanY;
                     if (m328 > mx) {

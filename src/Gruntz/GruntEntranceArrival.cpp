@@ -923,8 +923,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         SetEntrancePos(1, 1);
 
         // Recycle the occupied-coord list (+0x320) onto the free pool, then RemoveAll.
-        if (m_coordCount != 0) {
-            void** node = *(void***)&m_320;
+        if (CoordCount() != 0) {
+            void** node = (void**)CoordHead();
             while (node != 0) {
                 void* next = node[0];
                 void* buf = node[2];
@@ -935,7 +935,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 }
                 node = (void**)next;
             }
-            ((CObList*)(&m_31c))->RemoveAll();
+            m_31c.RemoveAll();
         }
 
         m_entranceStamped = 0;
@@ -1528,13 +1528,13 @@ i32 CGrunt::StepEntranceReinit() {
         ReseedIdleReset(1, 0, 0);
     }
     m_35c = 0;
-    if (m_coordCount == 0) {
+    if (CoordCount() == 0) {
         return 0;
     }
 
     // The head occupied-coord's tile is clear of the spawn-block bit -> re-latch a
     // fresh "D" anim set and re-stamp the first entrance-cell frame.
-    GruntCoord* co = (m_320)->m_coord;
+    GruntCoord* co = (GruntCoord*)m_31c.GetHead();
     GruntBoard* b = g_gameReg->m_tileGrid;
     i32 flag;
     if ((u32)co->m_x >= (u32)b->m_c || (u32)co->m_y >= (u32)b->m_10) {

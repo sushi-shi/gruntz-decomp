@@ -1615,7 +1615,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     ar->Write(&m_2e8, 4);
     ar->Write(&m_288, 8);
 
-    for (CGruntListNode* node = m_33c; node; node = node->m_next) {
+    for (CGruntListNode* node = PayloadHead(); node; node = node->m_next) {
         ar->Write(node->m_data, 0x2c);
     }
     return 1;

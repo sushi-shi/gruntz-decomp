@@ -16,7 +16,7 @@
 #ifndef GRUNTZ_TRIGGERMGR_VIEWS_H
 #define GRUNTZ_TRIGGERMGR_VIEWS_H
 
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint (+ <Mfc.h> CObList/CByteArray)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint (+ <Mfc.h> CPtrList/CByteArray)
 
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
 #include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the world's +0x2dc status-bar item)
@@ -73,8 +73,8 @@ struct CTmDisplay {
 
 // The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
 
-// The embedded MFC pointer-list (CObList @+0x240, base @+0, the ten +0x2d0 selection
-// slots) is the real MFC CObList member (see <Gruntz/TriggerMgr.h>); the leaves
+// The embedded MFC pointer-list (CPtrList @+0x240, base @+0, the ten +0x2d0 selection
+// slots) is the real MFC CPtrList member (see <Gruntz/TriggerMgr.h>); the leaves
 // call m_recList/m_baseList/m_selLists[i] methods directly (no this+offset cast).
 
 // The level/group base-index sentinel (DAT_00644c54) the selection helpers guard on

@@ -457,13 +457,13 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
 // and append it to the list (AddTail). The by-value CString param + the inner
 // copy construct the /GX frame. EXACT once the flag is passed through (the
 // earlier "frame-size wall" was really the dropped 2nd ctor arg - a `push flag`).
-// The (CObject*) cast is language-forced: CObList stores raw non-CObject records
+// The (CObject*) cast is language-forced: CPtrList stores raw non-CObject records
 // here exactly as retail does.
 RVA(0x0011c560, 0x91)
 void CSpawnList::AddVoiceSound(CString s, i32 flag) {
     CSpawnEntry* node = new CSpawnEntry(s, flag);
     if (node != 0) {
-        m_list.AddTail((CObject*)node);
+        m_list.AddTail(node);
     }
 }
 

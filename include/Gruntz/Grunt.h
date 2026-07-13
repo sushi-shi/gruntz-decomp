@@ -26,6 +26,7 @@ class CSoundCueMgr; // folded GruntSampleFactory
 
 class DirectSoundMgr; // folded GruntSoundSample
 
+#include <Mfc.h> // the REAL MFC CPtrList (m_31c/m_338 are value members) + POSITION
 #include <Ints.h>
 #include <Gruntz/LogicTypeId.h>
 #include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
@@ -952,23 +953,12 @@ struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
         Dtor();
     }
 };
-SIZE_UNKNOWN(GruntListSub);
-struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
-    void CtorImpl(i32 nBlock); // 0x1b4867 (CObList ctor, block size)
-    void Dtor();
-    void RemoveAll();          // 0x1b48a6 (CObList::RemoveAll - empty in place, keep the object)
-    void* Find1de8(void** it); // 0x1de8 (CObList iterate; was CMoveObList)
-    // The step machines pop/push the occupied-coord CObList head directly (the
-    // stored value IS the GruntCoord*). External/reloc-masked (MFC CObList slots).
-    struct GruntCoord* RemoveHead(); // 0x1b4a03 (CObList::RemoveHead - returns the coord)
-    void AddHead(void* p);           // 0x1b4967 (CObList::AddHead - push a coord)
-    GruntListSub() {
-        CtorImpl(0xa);
-    }
-    ~GruntListSub() {
-        Dtor();
-    }
-};
+// GruntListSub was a fake view of the REAL MFC CPtrList (m_31c/m_338); its six
+// declared-only methods (CtorImpl/Dtor/RemoveAll/Find1de8/RemoveHead/AddHead) were
+// phantom externals for bodies that already exist - the MFC list slots and, for
+// Find1de8, the free __stdcall ListNodeAdvance(void**) @0x29a30 (BattlezMapConfig.cpp).
+// Both members are now plain CPtrList; see the member block below.
+//
 // The +0x18 CUserLogic link is the shared CUserBaseLink (EngStr, ~EngStr 0x16d2a0)
 // from <Gruntz/UserBaseLink.h> - identical sub-object to the tile-logic family's.
 
@@ -989,12 +979,9 @@ public:
     virtual void Slot9();
 };
 
-// The name/animation cache collections UserLogicVfunc9 drains (sub-objects of CGrunt
-// at +0x31c and +0x338). External engine collections; only the called methods
-// are modeled (reloc-masked).
-SIZE_UNKNOWN(CGruntColl);
-// CGruntColl was a view of the m_31c CObList; Reset = CObList::RemoveAll (cast at each call).
-SIZE_UNKNOWN(CGruntList);
+// (CGruntColl / CGruntList were views of the CGrunt +0x31c / +0x338 collections that
+// UserLogicVfunc9 drains. Both are the real MFC CPtrList - see the member block below -
+// so the placeholder names are gone.)
 // __cdecl node deleter (operator delete-style; push p; call; add esp,4).
 void GruntNode_Delete(void* p);
 
@@ -1567,19 +1554,32 @@ public:
     i32 m_arrivalRerollWindowLo; // +0x310 (arrival re-roll idle window lo = GruntRand()%0x7530 + 0x7530)
     i32 m_arrivalRerollWindowHi; // +0x314 (arrival re-roll idle window hi)
     i32 m_318;                   // +0x318
-    GruntListSub m_31c;          // +0x31c (~CObList 0x1b48c6; destructed by ~CGrunt)
-    char m_pad31d[0x320 - 0x31d];
-    GruntCoordNode* m_320; // +0x320  (occupied-coord CObList head)
-    GruntCoordNode* m_324; // +0x324  (occupied-coord CObList tail node)
-    i32 m_coordCount;      // +0x328 (occupied-coord list count; non-empty gate for the m_320 list)
-    char m_pad32c[0x338 - 0x32c];
-    GruntListSub m_338; // +0x338 (~CObList 0x1b48c6; destructed by ~CGrunt)
-    char m_pad339[0x33c - 0x339];
-    CGruntListNode* m_33c; // +0x33c
-    char m_pad340[0x344 - 0x340];
-    void* m_344; // +0x344
-    char m_pad348[0x354 - 0x348];
-    i32 m_354;       // +0x354 (serialized)
+    // The two owned lists are REAL MFC CPtrLists (0x1c B each), not views: the ctor
+    // calls 0x1b4867 and ~CGrunt calls 0x1b48c6 - the band whose vtable (0x1eb054)
+    // slot-0 GetRuntimeClass returns the CRuntimeClass naming "CPtrList". Their
+    // interior IS the old hand-declared field run, so those "members" are gone:
+    //   m_31c: vptr@31c  head@320  tail@324  count@328  free@32c blocks@330 blk@334
+    //   m_338: vptr@338  head@33c  tail@340  count@344  free@348 blocks@34c blk@350
+    // Read them through the public inline accessors (GetCount/GetHeadPosition/
+    // GetHead/GetTail) - they compile to the same [esi+0x320]/[esi+0x328] loads.
+    // A POSITION here IS a GruntCoordNode* (MFC CNode = {pNext, pPrev, data}, and
+    // GruntCoord* m_coord is the +8 data slot).
+    CPtrList m_31c; // +0x31c  occupied-coord list (block size 0xa); ends +0x338
+    CPtrList m_338; // +0x338  serialized-payload list (block size 0xa); ends +0x354
+
+    // Typed views of the two lists' interior. MFC's GetCount/GetHeadPosition/
+    // GetTailPosition are inline, so these compile to the very same [esi+0x320] /
+    // [esi+0x324] / [esi+0x328] loads the hand-declared fields used to emit. The
+    // POSITION -> node cast is the one language-forced cast here: MFC keeps CNode
+    // private, and a CPtrList POSITION *is* that node ({pNext, pPrev, data}), whose
+    // +8 data slot is GruntCoord* m_coord.
+    GruntCoordNode* CoordHead() const { return (GruntCoordNode*)m_31c.GetHeadPosition(); }
+    GruntCoordNode* CoordTail() const { return (GruntCoordNode*)m_31c.GetTailPosition(); }
+    i32 CoordCount() const { return m_31c.GetCount(); }
+    CGruntListNode* PayloadHead() const { return (CGruntListNode*)m_338.GetHeadPosition(); }
+    i32 PayloadCount() const { return m_338.GetCount(); }
+
+    i32 m_354; // +0x354 (serialized)
     i32 m_358;       // +0x358
     i32 m_35c;       // +0x35c
     i32 m_deathType; // +0x360 (last LoadGruntDeathAnimations kind; serialized w/ m_364)

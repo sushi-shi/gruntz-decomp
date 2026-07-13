@@ -100,8 +100,8 @@ struct PosSoundObj {
     char m_pad164[0x19c - 0x164];
     void* m_layer; // +0x19c  layer/desc (its +0x10 feeds the factory)
 };
-// The spatial-sound voice CObList lives at g_gameReg->m_inputState + 0x08 (the same
-// embedded CObList the manager ctors/tears down); RemoveAt unlinks the voice's node.
+// The spatial-sound voice CPtrList lives at g_gameReg->m_inputState + 0x08 (the same
+// embedded CPtrList the manager ctors/tears down); RemoveAt unlinks the voice's node.
 // g_gameReg->m_inputState is the CWorldSoundSet modeled in this TU's header.
 
 // The factory the spawn path calls (Stub_00b960 via the 0x20e5 thunk). It news a
@@ -219,7 +219,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a
         delete obj;
         return 0;
     }
-    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
+    obj->m_listNode = (void*)m_list.AddTail(obj);
     return obj;
 }
 
@@ -257,7 +257,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a
         delete obj;
         return 0;
     }
-    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
+    obj->m_listNode = (void*)m_list.AddTail(obj);
     return obj;
 }
 
@@ -282,7 +282,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
         delete obj;
         return 0;
     }
-    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
+    obj->m_listNode = (void*)m_list.AddTail(obj);
     return obj;
 }
 
@@ -318,7 +318,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3
         delete obj;
         return 0;
     }
-    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
+    obj->m_listNode = (void*)m_list.AddTail(obj);
     return obj;
 }
 
@@ -359,7 +359,7 @@ CRandomAmbientSound* CWorldSoundSet::
         return 0;
     }
     obj->Init2(a4, a5, a6, a7);
-    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
+    obj->m_listNode = (void*)m_list.AddTail(obj);
     return obj;
 }
 
@@ -396,7 +396,7 @@ CRandomAmbientSound* CWorldSoundSet::
         return 0;
     }
     obj->Init2(a4, a5, a6, a7);
-    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
+    obj->m_listNode = (void*)m_list.AddTail(obj);
     return obj;
 }
 
@@ -1113,7 +1113,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (sound == 0) {
             return;
         }
-        CObList* arr = (CObList*)((char*)g_gameReg->m_inputState + 8);
+        CPtrList* arr = (CPtrList*)((char*)g_gameReg->m_inputState + 8);
         if (sound->m_mgr != 0) {
             sound->m_mgr->StopAndRewind();
             sound->m_isPlaying = 0;

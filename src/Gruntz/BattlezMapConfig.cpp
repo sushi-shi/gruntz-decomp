@@ -178,7 +178,7 @@ struct GridUnit {
     i32 m_goalX;      // +0x300  path goal x (-1 = none)
     i32 m_goalY;      // +0x304  path goal y (-1 = none)
     char m_pad308[0x31c - 0x308];
-    char m_coordList[0x320 - 0x31c]; // +0x31c  occupied-coords CObList base
+    char m_coordList[0x320 - 0x31c]; // +0x31c  occupied-coords CPtrList base
     CoordNode* m_coordHead;          // +0x320  list head (node->next at +0)
     CoordNode* m_coordTail;          // +0x324  list tail node
     i32 m_coordCount;                // +0x328  list count/flag
@@ -190,7 +190,7 @@ struct GridUnit {
 
     // 0x0343f0 (re-homed from the CBattlezMapConfig cluster - it is a __thiscall ON a
     // GridUnit, not the spawn mgr): recycle every occupied-coord node's payload onto
-    // g_coordPool.m_freeHead, then RemoveAll the +0x31c CObList. Defined out-of-line (retail RVA below).
+    // g_coordPool.m_freeHead, then RemoveAll the +0x31c CPtrList. Defined out-of-line (retail RVA below).
     void RecycleCoords(); // 0x0343f0
 
     // The unit-side tile-switch/place: retail's Method_035550 calls this __thiscall
@@ -312,7 +312,7 @@ DATA(0x00245540)
 extern FreeNodePool g_coordPool;
 
 // The coord-list node-advance helper (RVA 0x029a30, thunk 0x01de8): a __thiscall
-// on the +0x31c CObList (the `this` is ignored) taking the address of a POSITION;
+// on the +0x31c CPtrList (the `this` is ignored) taking the address of a POSITION;
 // it returns &node->data (node+8) and advances *pos to node->next. The g_coordPool
 // recycle loops iterate through it (`coord = *(void**)Advance(&pos)`). External,
 // reloc-masked (no body).
@@ -477,7 +477,7 @@ extern i32 g_stepTimer;
 // here (moved out of src/Stub/) and links so its sibling callers resolve; the
 // bodies are placeholders for the final sweep. They share the I/G/L/P/J/C/R
 // anim-name dispatch (g_typeColl) + the g_coordPool.m_freeHead/coord recycling +
-// FindPath/CObList path-swap idioms already modeled above.
+// FindPath/CPtrList path-swap idioms already modeled above.
 // ===========================================================================
 
 // The unit-side state mutator at this+? (RVA 0x06dae0, thunk 0x014bf): a __thiscall
@@ -1083,7 +1083,7 @@ i32 CBattlezMapConfig::Method_025d90() {
                             g_coordPool.m_freeHead = node;
                         }
                     }
-                    ((CObList*)&unit->m_coordList)->RemoveAll();
+                    ((CPtrList*)&unit->m_coordList)->RemoveAll();
                 }
                 break;
             }
@@ -1238,7 +1238,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 //     sibling state-machine methods in this TU).
 // callees (all named, reloc-masked): winapi_02c140/02ae00/02e3a0/031ca0/032060 (the
 //   IntersectRect/PtInRect family), GetScreenPos, IndexToPtr (CTypeKeyColl, x52),
-//   CRect (x15), ListNodeAdvance, g_coordPool.Push, CObList::RemoveAll, RectContains,
+//   CRect (x15), ListNodeAdvance, g_coordPool.Push, CPtrList::RemoveAll, RectContains,
 //   FindGridNeighbor, ResolveArrival, Step/Step33520, Scan/ScanRegion32ce0,
 //   Method_030530/02ed90/0350d0/034c70/0358a0, CGrunt_TileSwitch, ApplyTriggerA,
 //   ResetEntranceAnimation, StepEntranceReinit, rand, CButeMgr::GetIntDef.
@@ -1321,7 +1321,7 @@ i32 CUserLogic::IsAtSavedScreenPos() {
 RVA(0x00029b40, 0x813)
 i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
-    CObList* coordList = (CObList*)&unit->m_coordList;
+    CPtrList* coordList = (CPtrList*)&unit->m_coordList;
     if (unit->m_coordCount == 0) {
         return 0;
     }
@@ -1688,18 +1688,18 @@ recycleBail:
 // back), then scan up to three of its coord-list nodes for one on a blocked (bit 0)
 // tile (or its own tail coord); for such a node build the FindPath flag word from
 // the unit's 0x12/0x16/0xe anim modes and ask CBrickzGrid::FindPath (flags 0x2000098f) for
-// a route into a local CObList. On a route: recycle the route head + the unit's old
+// a route into a local CPtrList. On a route: recycle the route head + the unit's old
 // coords onto g_coordPool.m_freeHead/g_coordPool, empty its coord list, AddTail the new route,
 // re-clamp the board dirty-rect, stamp the unit's packed coord from the new tail, and
 // return 1. Exhausting the three nodes re-clamps the board dirty-rect and returns 0.
 // ===========================================================================
 // @early-stop
 // EH-frame + FindPath reroute plateau: the 13x13 box clamp, the 3-node blocked-tile
-// scan, the 0x12/0x16/0xe FindPath-flag build, CObList(10)/FindPath, the g_coordPool.m_freeHead +
+// scan, the 0x12/0x16/0xe FindPath-flag build, CPtrList(10)/FindPath, the g_coordPool.m_freeHead +
 // g_coordPool recycles, the AddTail path-swap, and both dirty-rect re-clamps are
 // reconstructed in shape + order (same family as Method_030b20 / Method_0302c0).
 // Residual is the /GX cond-temp EH state machine (shared `je <unwind>` cleanup vs
-// cl's per-return duplication), the deep-loop regalloc across the CObList walks, and
+// cl's per-return duplication), the deep-loop regalloc across the CPtrList walks, and
 // the dead maybe-null box branch retail emits (shared with winapi_02c140/02dfa0).
 // Foreign unit/board chains modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002a570, 0x4c6)
@@ -1750,7 +1750,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
         if (proceed == 0) {
             continue;
         }
-        CObList list(10);
+        CPtrList list(10);
         i32 flags = 0;
         i32 prim = unit->m_animPrim;
         if (prim > 0x16) {
@@ -1792,7 +1792,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
                             g_coordPool.Push(c2->m_coord);
                         }
                     }
-                    ((CObList*)&unit->m_coordList)->RemoveAll();
+                    ((CPtrList*)&unit->m_coordList)->RemoveAll();
                 }
                 // AddTail every route node's coord onto the unit's coord list.
                 CoordNode* q = (CoordNode*)list.GetHeadPosition();
@@ -1800,7 +1800,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
                     CoordNode* c3 = q;
                     q = q->m_next;
                     if (c3->m_coord != 0) {
-                        ((CObList*)&unit->m_coordList)->AddTail((CObject*)c3->m_coord);
+                        ((CPtrList*)&unit->m_coordList)->AddTail(c3->m_coord);
                     }
                 }
                 // Re-clamp the board dirty-rect to the board bounds.
@@ -2657,7 +2657,7 @@ struct CArriveSub10b { // this->m_10
     char _00[0x2e4];
     CTileTriggerContainer* m_2e4; // +0x2e4
 };
-// (The scratch CObList block is the real GruntListSub - forces the /GX EH frame.)
+// (The scratch block is a real MFC CPtrList - a stack instance forces the /GX EH frame.)
 struct CArriveFinder { // this->m_14
 };
 struct CArriveMgr {                                      // this (the CBattlezMapConfig board)
@@ -2681,11 +2681,11 @@ struct CArriveMgr {                                      // this (the CBattlezMa
 };
 
 // Recycle the grunt's pending-coord list onto g_coordPool (guarded by m_coordCount).
-// The occupied-coord CObList head is g->m_320 (GruntCoordNode); its +0x08 GruntCoord*
+// The occupied-coord CPtrList head is g->CoordHead() (GruntCoordNode); its +0x08 GruntCoord*
 // is the recycled coord-node handle Drop takes (as its i32 arg).
 #define ARR_RECYCLE(g)                                                                             \
-    if ((g)->m_coordCount != 0) {                                                                  \
-        GruntCoordNode* nd = (g)->m_320;                                                           \
+    if ((g)->CoordCount() != 0) {                                                                  \
+        GruntCoordNode* nd = (g)->CoordHead();                                                           \
         while (nd != 0) {                                                                          \
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
@@ -2738,11 +2738,11 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     if (Gate1a14(g)) {
         return 1;
     }
-    if (g->m_coordCount == 0) {
+    if (g->CoordCount() == 0) {
         return 0;
     }
 
-    GruntCoord* fc = g->m_320->m_coord;
+    GruntCoord* fc = g->CoordHead()->m_coord;
     i32 fcx = fc->m_x; // grunt head coord x (long-lived)
     i32 fcy = fc->m_y; // grunt head coord y
 
@@ -2790,7 +2790,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
             g->GetTilePos(&da);
             for (i32 drow = m_c->m_60.top; drow < m_c->m_60.bottom; drow++) {
                 for (i32 dcol = m_c->m_60.left; dcol < m_c->m_60.right; dcol++) {
-                    GruntListSub cs; // CObList block (default ctor -> CtorImpl(0xa))
+                    CPtrList cs; // real MFC CPtrList block (default ctor -> block size 0xa)
                     if (!(m_c->m_8[drow][dcol].m_0 & 0x20000000)) {
                         void* h = cs.RemoveHead();
                         if (h != 0) {
@@ -3079,7 +3079,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         i32* tile = (i32*)((char*)board->m_rows[row] + tileOff);
         i32 word = *tile;
         if (word & 0x800000) {
-            CObList list(10);
+            CPtrList list(10);
             UnitLevel* lvl = m_ctx->m_level;
             if ((m_board)->SearchEdge(
                     lvl->m_worldX >> 5,
@@ -3107,7 +3107,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 if (*(i32*)((char*)cell + m_curCell * 4 + 0x18) != 0) {
                     break;
                 }
-                CObList list2(10);
+                CPtrList list2(10);
                 UnitLevel* lvl = m_ctx->m_level;
                 if ((m_board)->SearchEdge(
                         lvl->m_worldX >> 5,
@@ -3154,7 +3154,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             if (special == 0) {
                 break;
             }
-            CObList list3(10);
+            CPtrList list3(10);
             UnitLevel* lvl = m_ctx->m_level;
             if ((m_board)->SearchEdge(
                     lvl->m_worldX >> 5,
@@ -3640,7 +3640,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
 // resolver + EH + regalloc plateau: the coord-scan head, the Method_0305b0 collision
 // + Method_030530 block checks, the seven-way I/G/L/P/J/C/R GetRecord setcc dispatch
 // (docs/patterns/strcmp-eq-bool-local-setcc.md), the distance<=0x190 best scan, the
-// 0x16/0x12 flag build, CObList(10)/GetCoord/FindPath, and the g_coordPool/g_coordPool.m_freeHead
+// 0x16/0x12 flag build, CPtrList(10)/GetCoord/FindPath, and the g_coordPool/g_coordPool.m_freeHead
 // path-swap are reconstructed in shape + order. Residual is the 15-slot scan regalloc
 // (retail pins the slot index in [esp+0x4c] and the candidate in ebp) plus the /GX
 // cleanup epilogue funnel; foreign chains modeled by raw offset. Final sweep.
@@ -3703,7 +3703,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                     g_coordPool.m_freeHead = node;
                 }
             }
-            ((CObList*)&unit->m_coordList)->RemoveAll();
+            ((CPtrList*)&unit->m_coordList)->RemoveAll();
         }
         unit->m_state = 0;
         return 1;
@@ -3828,7 +3828,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                         if (prim == 0x12) {
                             flags |= 0x100;
                         }
-                        CObList list(10);
+                        CPtrList list(10);
                         Coord oc;
                         ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&oc);
                         UnitLevel* dl = cand->m_level;
@@ -3863,13 +3863,13 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                                             g_coordPool.m_freeHead = fn;
                                         }
                                     }
-                                    ((CObList*)&unit->m_coordList)->RemoveAll();
+                                    ((CPtrList*)&unit->m_coordList)->RemoveAll();
                                 }
                                 CoordNode* p = (CoordNode*)list.GetHeadPosition();
                                 while (p != 0) {
                                     CoordNode* cur = p;
                                     p = p->m_next;
-                                    ((CObList*)&unit->m_coordList)->AddTail((CObject*)cur->m_coord);
+                                    ((CPtrList*)&unit->m_coordList)->AddTail(cur->m_coord);
                                 }
                                 cand->m_state = 0;
                                 unit->m_state = 5;
@@ -4140,7 +4140,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                             g_coordPool.m_freeHead = node;
                         }
                     }
-                    ((CObList*)&u->m_coordList)->RemoveAll();
+                    ((CPtrList*)&u->m_coordList)->RemoveAll();
                 }
             }
             return 1;
@@ -4167,7 +4167,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                         g_coordPool.m_freeHead = node;
                     }
                 }
-                ((CObList*)&unit->m_coordList)->RemoveAll();
+                ((CPtrList*)&unit->m_coordList)->RemoveAll();
             }
         } else if (mode == 0x16) {
             if (unit->m_coordCount != 0) {
@@ -4181,7 +4181,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                         g_coordPool.m_freeHead = node;
                     }
                 }
-                ((CObList*)&unit->m_coordList)->RemoveAll();
+                ((CPtrList*)&unit->m_coordList)->RemoveAll();
             }
         }
         return 1;
@@ -4247,23 +4247,23 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
 // CBattlezMapConfig::Method_0300c0  @0x0300c0  (/GX EH frame)
 // Re-path `unit` to (gx,gy): if it is already there (its level geometry's
 // (>>5) coord equals the goal) succeed trivially; otherwise ask the board's
-// A* (FindPath) for a route into a local CObList, then swap the unit's path:
+// A* (FindPath) for a route into a local CPtrList, then swap the unit's path:
 // recycle each old coord node onto the coord pool, empty the unit's path list,
 // AddTail every new path node onto it, set the unit's packed coord from the
 // new tail, and destruct the local list. Returns 1 on a route, 0 otherwise.
 // ===========================================================================
 // @early-stop
 // EH-frame + regalloc plateau (~63%): logic + every call (FindPath, RemoveHead,
-// the two CObList walks, the g_coordPool/g_coordPool.m_freeHead recycles) is byte-exact and
+// the two CPtrList walks, the g_coordPool/g_coordPool.m_freeHead recycles) is byte-exact and
 // in the right order. Two coupled walls: (1) retail pins `unit` in ebp and arg2
 // in edi, loading arg3 lazily between the two head compares, where MSVC5 here
 // pins `unit` in ebx and reads arg3 early; (2) retail funnels all `return 0`
 // paths into ONE shared /GX cleanup epilogue (je <shared>) where MSVC5 duplicates
-// the ~CObList/xor/jmp at each early return. No steerable source spelling closes
+// the ~CPtrList/xor/jmp at each early return. No steerable source spelling closes
 // either. Deferred to the final sweep.
 RVA(0x000300c0, 0x190)
 i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5, i32 a6) {
-    CObList list(10);
+    CPtrList list(10);
     GridUnit* unit = (GridUnit*)unitArg;
     UnitLevel* lvl = unit->m_level;
     if ((lvl->m_worldX >> 5) == gx && (lvl->m_worldY >> 5) == gy) {
@@ -4296,7 +4296,7 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
                 g_coordPool.Push(cur->m_coord);
             }
         }
-        ((CObList*)&unit->m_coordList)->RemoveAll();
+        ((CPtrList*)&unit->m_coordList)->RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
     CoordNode* p = (CoordNode*)list.GetHeadPosition();
@@ -4304,7 +4304,7 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
         CoordNode* cur = p;
         p = p->m_next;
         if (cur->m_coord != 0) {
-            ((CObList*)&unit->m_coordList)->AddTail((CObject*)cur->m_coord);
+            ((CPtrList*)&unit->m_coordList)->AddTail(cur->m_coord);
         }
     }
     list.RemoveAll();
@@ -4319,13 +4319,13 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
 // Re-path `unit` to (gx, gy) - the GetCoord-fronted twin of Method_0300c0. If the
 // unit is already at the goal (its GetCoord (>>5) == (gx, gy)) bail; scan its path
 // for a node already on the goal; ask the board's A* (FindPath) for a route into a
-// local CObList; recycle the route's head + (when the goal was already queued) the
+// local CPtrList; recycle the route's head + (when the goal was already queued) the
 // path-list base + the unit's existing coord nodes onto g_coordPool.m_freeHead; then AddTail
 // every new route node onto the unit's path list. Returns 1 on a route, 0 otherwise.
 // ===========================================================================
 // @early-stop
 // EH-frame + regalloc plateau: logic + every call (the two GetCoords, FindPath,
-// RemoveHead, the g_coordPool.m_freeHead recycles, AddTail, the ~CObList unwind) is reconstructed
+// RemoveHead, the g_coordPool.m_freeHead recycles, AddTail, the ~CPtrList unwind) is reconstructed
 // in shape + order. Two walls: (1) the /GX cond-temp EH state machine (shared
 // `je <unwind>` cleanup vs cl's per-return duplication, same as Method_0300c0); (2)
 // the matched-node g_coordPool.m_freeHead recycle in the middle compiles to a degenerate
@@ -4333,7 +4333,7 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
 // spelling reproduces. Foreign unit chains modeled by raw offset. Final sweep.
 RVA(0x000302c0, 0x1ec)
 i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
-    CObList list(10);
+    CPtrList list(10);
     GridUnit* unit = (GridUnit*)unitArg;
     Coord cur;
     ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cur);
@@ -4391,7 +4391,7 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
                 g_coordPool.m_freeHead = node;
             }
         }
-        ((CObList*)&unit->m_coordList)->RemoveAll();
+        ((CPtrList*)&unit->m_coordList)->RemoveAll();
     }
     // AddTail every new route node's coord onto the unit's path list.
     CoordNode* q = (CoordNode*)list.GetHeadPosition();
@@ -4399,7 +4399,7 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
         CoordNode* cur5 = q;
         q = q->m_next;
         if (cur5->m_coord != 0) {
-            ((CObList*)&unit->m_coordList)->AddTail((CObject*)cur5->m_coord);
+            ((CPtrList*)&unit->m_coordList)->AddTail(cur5->m_coord);
         }
     }
     list.RemoveAll();
@@ -4658,14 +4658,14 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
 // pointer block for the candidate, not colliding with `unit` (Method_0305b0),
 // nearest (min squared-distance) to the unit's level coord. If one is found and is
 // reachable, build the FindPath flag word from the unit's 0x16/0x12 anim modes,
-// ask CBrickzGrid::FindPath for a route into a local CObList, then swap the unit's path
+// ask CBrickzGrid::FindPath for a route into a local CPtrList, then swap the unit's path
 // (recycle old coord nodes onto g_coordPool.m_freeHead, AddTail the new ones, stamp the packed
 // target coord + state 5). Returns 1 on a reroute, 0 otherwise.
 // ===========================================================================
 // @early-stop
 // EH-frame + regalloc plateau (~69%): logic + every call (QueryA/QueryB,
-// Method_0305b0, the 0x16/0x12 flag build, CObList(10)/FindPath, the g_coordPool.m_freeHead
-// recycle + AddTail path-swap, ~CObList) is reconstructed in shape + order. Residual
+// Method_0305b0, the 0x16/0x12 flag build, CPtrList(10)/FindPath, the g_coordPool.m_freeHead
+// recycle + AddTail path-swap, ~CPtrList) is reconstructed in shape + order. Residual
 // is the head's instruction scheduling (retail interleaves the goalX/goalY >>5 with
 // the tile lookup and pins the cell base in edi where MSVC5 here computes the goal
 // upfront and spills) plus the /GX cleanup epilogue funnel; the foreign cell/level
@@ -4735,7 +4735,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     if (Method_0305b0(unitArg, bestX, bestY) != 0) {
         return 0;
     }
-    CObList list(10);
+    CPtrList list(10);
     // The FindPath flag word: 0x60 base, + 0x900/0x100 bits from the unit's
     // 0x16 / 0x12 anim modes (primary m_animPrim, or secondary m_animSec when m_animPrim > 0x16).
     i32 flags = 0x60;
@@ -4793,14 +4793,14 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
                 g_coordPool.m_freeHead = fn;
             }
         }
-        ((CObList*)&unit->m_coordList)->RemoveAll();
+        ((CPtrList*)&unit->m_coordList)->RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
     CoordNode* p = (CoordNode*)list.GetHeadPosition();
     while (p != 0) {
         CoordNode* cur = p;
         p = p->m_next;
-        ((CObList*)&unit->m_coordList)->AddTail((CObject*)cur->m_coord);
+        ((CPtrList*)&unit->m_coordList)->AddTail(cur->m_coord);
     }
     Coord* tail = (Coord*)(unit->m_coordTail)->m_coord;
     unit->m_packedX = (tail->m_x << 5) + 0x10;
@@ -4930,7 +4930,7 @@ struct CGruntMover {                                             // this (edi)
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
-        GruntCoordNode* nd = (g)->m_320;                                                           \
+        GruntCoordNode* nd = (g)->CoordHead();                                                           \
         while (nd != 0) {                                                                          \
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
@@ -4961,7 +4961,7 @@ struct CGruntMover {                                             // this (edi)
 // callee-saved `this` register. Final-sweep candidate.
 RVA(0x00031610, 0x501)
 i32 CGruntMover::Step(CGrunt* g) {
-    if (g->m_coordCount == 0) {
+    if (g->CoordCount() == 0) {
         if (g->m_defenderState == 2) {
             goto inflight;
         }
@@ -4994,11 +4994,11 @@ i32 CGruntMover::Step(CGrunt* g) {
             CCoordXY here;
             g->GetScreenPos((GruntTilePos*)&here);
             Plan293c(g, here.x >> 5, here.y >> 5, m_ac, m_b0, -1);
-            if (g->m_coordCount > m_98 + m_94 && g->m_coordCount != 0) {
-                GruntCoordNode* nd = g->m_320;
+            if (g->CoordCount() > m_98 + m_94 && g->CoordCount() != 0) {
+                GruntCoordNode* nd = g->CoordHead();
                 if (nd != 0) {
                     do {
-                        void* r = g->m_31c.Find1de8((void**)&nd);
+                        void* r = ListNodeAdvance((void**)&nd);
                         if (*(i32*)r != 0) {
                             g_coordPool.Push((void*)(*(i32*)r));
                         }
@@ -5032,7 +5032,7 @@ inflight: {
         goto L_clear;
     }
     if (nb != 0 && cur != nb) {
-        if (g->m_coordCount != 0) {
+        if (g->CoordCount() != 0) {
             MOVE_RECYCLE(g);
         }
         g->m_arrivalCol = nb->m_tileOwnerHi;
@@ -5079,12 +5079,12 @@ inflight: {
         i32 ady = dy < 0 ? -dy : dy;
         i32 dist = (i32)sqrt((double)(adx * adx + ady * ady));
         if (dist > m_c0) {
-            if (g->m_coordCount != 0) {
+            if (g->CoordCount() != 0) {
                 MOVE_RECYCLE(g);
             }
             goto L_clearAt;
         }
-        if (g->m_coordCount != 0) {
+        if (g->CoordCount() != 0) {
             MOVE_RECYCLE(g);
         }
         CGruntSub10* s = (CGruntSub10*)cur->m_10;
@@ -5172,7 +5172,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                             g_coordPool.Push(coord);
                         }
                     }
-                    ((CObList*)&unit->m_coordList)->RemoveAll();
+                    ((CPtrList*)&unit->m_coordList)->RemoveAll();
                 }
                 unit->m_targetX = -1;
                 unit->m_targetY = -1;
@@ -5229,7 +5229,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                     }
                 } while (n != 0);
             }
-            ((CObList*)&unit->m_coordList)->RemoveAll();
+            ((CPtrList*)&unit->m_coordList)->RemoveAll();
         }
         return 1;
     }
@@ -5248,7 +5248,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                 g_coordPool.Push(coord);
             }
         }
-        ((CObList*)&unit->m_coordList)->RemoveAll();
+        ((CPtrList*)&unit->m_coordList)->RemoveAll();
     }
     return 1;
 }
@@ -5317,7 +5317,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                         }
                     } while (pos != 0);
                 }
-                ((CObList*)&unit->m_coordList)->RemoveAll();
+                ((CPtrList*)&unit->m_coordList)->RemoveAll();
             }
             unit->m_targetX = -1;
             unit->m_targetY = -1;
@@ -5355,7 +5355,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                         g_coordPool.m_freeHead = node;
                     }
                 }
-                ((CObList*)&unit->m_coordList)->RemoveAll();
+                ((CPtrList*)&unit->m_coordList)->RemoveAll();
             }
             unit->m_goalX = -1;
             unit->m_goalY = -1;
@@ -5377,7 +5377,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                 g_coordPool.m_freeHead = node;
             }
         }
-        ((CObList*)&unit->m_coordList)->RemoveAll();
+        ((CPtrList*)&unit->m_coordList)->RemoveAll();
         unit->m_state = 7;
         unit->m_pathCfg = g_spawnCfg;
         unit->m_pathState = 0x248;
@@ -5437,7 +5437,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                         g_coordPool.Push(cur->m_coord);
                     }
                 }
-                ((CObList*)&unit->m_coordList)->RemoveAll();
+                ((CPtrList*)&unit->m_coordList)->RemoveAll();
             }
             unit->m_goalX = -1;
             unit->m_goalY = -1;
@@ -5560,7 +5560,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
 // GridUnit::RecycleCoords  @0x0343f0  (re-homed off the CBattlezMapConfig cluster;
 // __thiscall on a GridUnit). Recycle each occupied-coord node's payload onto g_coordPool.m_freeHead (head
 // cached in a register across the loop, written each iteration), then tail into the
-// +0x31c CObList's RemoveAll. Skips everything when the count (m_coordCount) is zero.
+// +0x31c CPtrList's RemoveAll. Skips everything when the count (m_coordCount) is zero.
 // ===========================================================================
 // @early-stop
 // 99.78% - the SAME freelist-store register-scheduling coin-flip as Deserialize_02b950's
@@ -5589,7 +5589,7 @@ void GridUnit::RecycleCoords() {
             }
         } while (n != 0);
     }
-    ((CObList*)&m_coordList)->RemoveAll();
+    ((CPtrList*)&m_coordList)->RemoveAll();
 }
 
 // ===========================================================================
@@ -5796,7 +5796,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
                 }
             }
         }
-        ((CObList*)&unit->m_coordList)->RemoveAll();
+        ((CPtrList*)&unit->m_coordList)->RemoveAll();
     } else {
         unit->m_mode = 4;
         if (unit->m_coordCount != 0) {
@@ -5810,7 +5810,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
                     g_coordPool.m_freeHead = slot;
                 }
             }
-            ((CObList*)&unit->m_coordList)->RemoveAll();
+            ((CPtrList*)&unit->m_coordList)->RemoveAll();
         }
     }
     unit->m_targetX = -1;
@@ -6018,7 +6018,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
                 g_coordPool.Push(cur->m_coord);
             }
         }
-        ((CObList*)&unit->m_coordList)->RemoveAll();
+        ((CPtrList*)&unit->m_coordList)->RemoveAll();
         unit->m_targetX = -1;
         unit->m_targetY = -1;
         return 1;
@@ -6063,7 +6063,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             g_coordPool.m_freeHead = slot;
         }
     }
-    ((CObList*)&unit->m_coordList)->RemoveAll();
+    ((CPtrList*)&unit->m_coordList)->RemoveAll();
     return 1;
 }
 SIZE_UNKNOWN(AnimNameResolver);

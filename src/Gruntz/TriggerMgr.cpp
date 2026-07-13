@@ -171,7 +171,7 @@ void CWorld::WorldTimeline::HudRect(RECT r, i32 flag) {
 RVA(0x00078260, 0x165)
 i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
     if (fromSelection != 0) {
-        CObList* list = m_selLists;
+        CPtrList* list = m_selLists;
         i32 k = 10;
         do {
             CTmNode* n = (CTmNode*)list->GetHeadPosition();
@@ -1056,7 +1056,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
             }
         }
     }
-    m_baseList.AddTail((CObject*)tgt);
+    m_baseList.AddTail(tgt);
     return 1;
 }
 
@@ -1279,7 +1279,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
         n = n->m_next;
         ar->Write(cur->m_payload, 8);
     }
-    CObList* list = m_selLists;
+    CPtrList* list = m_selLists;
     i32 k = 10;
     do {
         i32 cnt2 = list->GetCount();
@@ -1358,7 +1358,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
 // The serialize key->object map is the CSpriteFactory's embedded m_objMap (@factory+0x48,
 // see <Gruntz/SpriteFactory.h>); reached through the typed member, no this+offset cast.
 // The manager's embedded list nodes (base list @this+0, record @+0x240, the ten
-// selection lists @+0x2d0) are the real MFC CObList members; the +0x260 byte array is the
+// selection lists @+0x2d0) are the real MFC CPtrList members; the +0x260 byte array is the
 // real MFC CByteArray member; the +0x25c overlay sub-object reuses CTmOverlay (all above).
 void RezFree(void* p); // 0x1b9b82 (__cdecl free used by the overlay teardown)
 
@@ -1430,7 +1430,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
 
     // the +0x240 record list (nodes pulled off the shared free-list)
     ar->Read(&count, 4);
-    CObList* rec = &m_recList;
+    CPtrList* rec = &m_recList;
     for (ci = 0; ci < (u32)count; ci++) {
         char* fl = (char*)g_coordPool.m_freeHead;
         void* node = 0;
@@ -1439,11 +1439,11 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
             g_coordPool.m_freeHead = *(void**)fl;
         }
         ar->Read(node, 8);
-        rec->AddTail((CObject*)node);
+        rec->AddTail(node);
     }
 
     // the ten selection lists (+0x2d0, stride 0x1c)
-    CObList* sel = m_selLists;
+    CPtrList* sel = m_selLists;
     i32 slot = 0xa;
     do {
         ar->Read(&count, 4);
@@ -1455,7 +1455,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
                 g_coordPool.m_freeHead = *(void**)fl;
             }
             ar->Read(node, 8);
-            sel->AddTail((CObject*)node);
+            sel->AddTail(node);
         }
         sel++;
     } while (--slot != 0);
@@ -1514,7 +1514,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         if (obj == 0) {
             return 0;
         }
-        m_baseList.AddTail((CObject*)obj);
+        m_baseList.AddTail(obj);
     }
 
     // the overlay sub-object (+0x25c): tear down the old, rebuild + Load the new
@@ -2651,7 +2651,7 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
 // pins this/idx-base differently across the two list walks. topic:wall.
 RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
-    CObList* sel = &m_selLists[idx];
+    CPtrList* sel = &m_selLists[idx];
     CTmNode* n = (CTmNode*)m_selLists[idx].GetHeadPosition();
     if (n != 0) {
         void* head = g_coordPool.m_freeHead;
@@ -2682,7 +2682,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
         }
         dst[0] = src[0];
         dst[1] = src[1];
-        sel->AddTail((CObject*)dst);
+        sel->AddTail(dst);
     }
     m_selSentinel = -1;
     return 1;
@@ -2891,7 +2891,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
 // to the free list (skipping null-payload nodes), RemoveAll each list, reset +0x3e8.
 RVA(0x0007d0c0, 0x57)
 void CTriggerMgr::ClearSelections() {
-    CObList* list = m_selLists;
+    CPtrList* list = m_selLists;
     i32 k = 10;
     do {
         CTmNode* n = (CTmNode*)list->GetHeadPosition();
@@ -2990,7 +2990,7 @@ i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
     }
     i32 result = 0;
     i32 i = 0;
-    CObList* list = m_selLists;
+    CPtrList* list = m_selLists;
     do {
         CTmNode* n = (CTmNode*)list->GetHeadPosition();
         while (n != 0) {
@@ -3217,7 +3217,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
 // 0x85c50: ~CTriggerMgr - the /GX destructor: Cleanup (drain the lists), then the compiler
 // auto-emits the reverse-order member teardown - the 10 selection lists (+0x2d0, EH state 2),
 // the +0x260 byte array (state 1), the +0x240 record list (state 0) and the embedded base
-// list (state -1) - from the real MFC CObList / CByteArray members. destructors. (__thiscall.)
+// list (state -1) - from the real MFC CPtrList / CByteArray members. destructors. (__thiscall.)
 // @early-stop
 // /GX member-array dtor wall: the compiler-emitted member destructors + vector-dtor helper
 // number their __ehfuncinfo states differently than retail; the teardown sequence is faithful.

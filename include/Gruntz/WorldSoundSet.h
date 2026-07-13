@@ -43,8 +43,8 @@ struct CSoundChannel {
     i32 m_14;                // +0x14  cleared on stop/retune
 };
 
-// The embedded list of channels (+0x08) is the REAL MFC CObList (vtable
-// ??_7CObList@@6B@ @0x1ed4b4; AddTail 0x1b4991 / RemoveAll 0x1b48a6 / ~CObList
+// The embedded list of channels (+0x08) is the REAL MFC CPtrList (vtable
+// ??_7CObList@@6B@ @0x1ed4b4; AddTail 0x1b4991 / RemoveAll 0x1b48a6 / ~CPtrList
 // 0x1b48c6 all reloc-mask). The raw node walks read its m_pNodeHead directly via
 // GetHeadPosition() (byte-identical to the old m_head field read). Its CNode is
 // modeled here as CSoundNode (next at +0x00, prev +0x04, channel payload +0x08).
@@ -97,7 +97,7 @@ public:
 
     CRandomAmbientWorld* m_world; // +0x00
     void* m_04;                   // +0x04
-    CObList m_list;               // +0x08  MFC CObList (head at +0x0c)
+    CPtrList m_list;               // +0x08  MFC CPtrList (head at +0x0c)
     i32 m_active;                 // +0x24  active flag
     i32 m_pan;                    // +0x28  pan
     i32 m_vol;                    // +0x2c  vol

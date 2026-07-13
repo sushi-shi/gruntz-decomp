@@ -1,4 +1,4 @@
-#include <Mfc.h>            // CObList/CString machinery (reloc-masked); /GX EH frame
+#include <Mfc.h>            // CPtrList/CString machinery (reloc-masked); /GX EH frame
 #include <Bute/SymParser.h> // canonical CSymParser + CSymTab (ResolvePath @0x13c030/0x13bae0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -19,9 +19,9 @@ public:
 // state asset loader.  Sibling of CHelpState::LoadAssets / GameLevelState loaders:
 // chains the base namespace loader, registers the "MENU" IMAGEZ+SOUNDZ namespaces
 // through the m_c->m_10 (vtable +0x48) / m_c->m_28 registries, primes the state
-// core (m_c->m_4 IsReady/Init), then heap-allocates the menu HUD object (CObList +
+// core (m_c->m_4 IsReady/Init), then heap-allocates the menu HUD object (CPtrList +
 // two CString members) and wires its MENU_CURSOR/SELECT/ACTIVATE/MENU keys + the
-// MENU_ACTIVATE / MENU_MENU sound cues.  The destructible CObList/CString members
+// MENU_ACTIVATE / MENU_MENU sound cues.  The destructible CPtrList/CString members
 // of the heap object give the routine its /GX exception frame.
 //
 // Only offsets / code bytes are load-bearing; every engine callee is a reloc-
@@ -81,13 +81,13 @@ extern CGameRegistry* g_menuMgrSettings;
 DATA(0x002bf37c) // VA-typo fix: 0x22f37c -> 0x2bf37c (canonical, Play.cpp); same global
 extern i32 g_resourceInstallActive;
 
-// The heap-allocated MENU HUD object (0x7c bytes): a CObList at +0x24 and two
+// The heap-allocated MENU HUD object (0x7c bytes): a CPtrList at +0x24 and two
 // CString members at +0x44/+0x48, then its own sub-init (FUN_004010c8).  The
 // destructible members give LoadAssets its EH frame.
 struct MenuHudObj {
     MenuHudObj();
     char m_pad00[0x24];
-    CObList m_24; // +0x24 (0x1c bytes -> ends 0x40)
+    CPtrList m_24; // +0x24 (0x1c bytes -> ends 0x40)
     i32 m_40;     // +0x40
     CString m_44; // +0x44
     CString m_48; // +0x48
@@ -115,7 +115,7 @@ i32 MenuCommit(MenuHudObj* obj, i32 idx);                                    // 
 
 // @early-stop
 // frame-layout / regalloc wall (~89.5%): complete + correct body - instruction
-// selection, the guarded registry-call chain, the heap MenuHudObj CObList+2 CString
+// selection, the guarded registry-call chain, the heap MenuHudObj CPtrList+2 CString
 // construction + EH trylevel, the MENU_CURSOR/SELECT/ACTIVATE keys and the two sound
 // finds all match retail (verified instruction-by-instruction; the 96 ARG_MISMATCH
 // rows are the reloc-name scoring artifact).  Residual: retail frame-allocates 0x10

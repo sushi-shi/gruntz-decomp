@@ -8,7 +8,7 @@
 
 // InterfaceObject - the DirectPlay service-provider group-list node (C:\Proj\NetMgr):
 // the 0x10-byte payload CNetMgr::AddGroupNode operator-new's onto the +0x1c group
-// CObList. Derives the shared engine grand-base CObject; whole-object vtable
+// CPtrList. Derives the shared engine grand-base CObject; whole-object vtable
 // 0x5f0748 (owned/emitted by InterfaceObject.cpp's VTBL). RTTI-proven (the COL type
 // descriptor is `.?AVInterfaceObject@@` per vtable_hierarchy). Its five GUID predicates
 // (IsInterface1-5, external __thiscall thunks) classify the provider class

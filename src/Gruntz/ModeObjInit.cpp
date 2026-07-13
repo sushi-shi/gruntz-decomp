@@ -7,7 +7,7 @@
 // its own geometry/timer state, running two vtable init slots + a bind slot, and
 // flagging the linked peer. /GX for the owned-object unwind. Placeholder names;
 // only offsets + code bytes are load-bearing.
-#include <Mfc.h> // MFC superset (CObList; timeGetTime/ShowCursor); was Win32.h
+#include <Mfc.h> // MFC superset (CPtrList; timeGetTime/ShowCursor); was Win32.h
 #include <new>
 
 #include <Ints.h>
@@ -439,10 +439,10 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         Rec78* r78 = (Rec78*)modeinit::RezAlloc(0x78);
         if (r78) {
             char* p = (char*)r78;
-            new (p + 0x00) CObList(0xa);
-            new (p + 0x1c) CObList(0xa);
-            new (p + 0x38) CObList(0xa);
-            new (p + 0x54) CObList(0xa);
+            new (p + 0x00) CPtrList(0xa);
+            new (p + 0x1c) CPtrList(0xa);
+            new (p + 0x38) CPtrList(0xa);
+            new (p + 0x54) CPtrList(0xa);
             *(i32*)(p + 0x74) = 0;
         } else {
             r78 = 0;

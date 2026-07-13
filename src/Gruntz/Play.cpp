@@ -975,7 +975,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
     ((CBattlezData*)PTR(g_gameReg, 0x7c))->Init();
-    ((CObList*)((char*)PTR(g_gameReg, 0x6c) + 0x1c))->RemoveAll();
+    ((CPtrList*)((char*)PTR(g_gameReg, 0x6c) + 0x1c))->RemoveAll();
     ((CGruntzCmdMgr*)PTR(g_gameReg, 0x6c))->DrainBase();
     g_64558c = 0;
     I32(self, 0x1bc) = 0;
@@ -5168,17 +5168,17 @@ i32 CPlay::ResumeGame() {
 
 // ---------------------------------------------------------------------------
 // 0x0cef50 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). Teardown:
-// destruct the +0x04 owner's +0xc8 CObList; when +0x1c0 is live, run the +0x0c
+// destruct the +0x04 owner's +0xc8 CPtrList; when +0x1c0 is live, run the +0x0c
 // worker-mgr close (Method_158d20 -> Method_158e40) and dispatch the manager's
 // ChangeState(3). Returns 1. Uses this TU's real CDDrawSubMgrPages/CGruntzMgr/
-// CObList; only the receiver + its +0x0c holder are orphan views (owner unrecovered).
+// CPtrList; only the receiver + its +0x0c holder are orphan views (owner unrecovered).
 struct CMid_cef50 {
     char pad0[4];
     CDDrawSubMgrPages* m_4; // +0x04 the worker manager (Method_158d20/158e40)
 };
 struct Ccef50 {
     char pad0[4];
-    char* m_4; // +0x04 owner (its +0xc8 CObList + a CGruntzMgr view)
+    char* m_4; // +0x04 owner (its +0xc8 CPtrList + a CGruntzMgr view)
     char pad8[0xc - 8];
     CMid_cef50* m_c; // +0x0c
     char pad10[0x1c0 - 0x10];
@@ -5187,7 +5187,7 @@ struct Ccef50 {
 };
 RVA(0x000cef50, 0x46)
 i32 Ccef50::Teardown() {
-    ((CObList*)(m_4 + 0xc8))->~CObList();
+    ((CPtrList*)(m_4 + 0xc8))->~CPtrList();
     if (m_1c0 != 0) {
         if (m_c->m_4->Method_158d20() != 0) {
             m_c->m_4->Method_158e40();
@@ -7012,7 +7012,7 @@ void CPlay::FreeListTeardown() {
 // The +0x2e4 begin-marker: Dtor@0xc8640 IS CTileTriggerContainer::~ (IS-a dtor view);
 // TU-local minimal decl for the explicit dtor call (real class in tiletriggercontainer unit).
 struct DtorObList {
-    // Dtor @0x1b9c69 IS CObList::~CObList; cast at the call.
+    // Dtor @0x1b9c69 IS CPtrList::~CPtrList; cast at the call.
 };
 struct DtorWorld { // this->m_4
     char p0[0x5c];
@@ -7104,7 +7104,7 @@ void CPlay::CPlayDtorBody() {
     self->CallVfunc80();
     if (self->m_4) {
         self->m_4->m_128 = 0;
-        ((CObList*)((char*)self->m_4 + 0xc8))->~CObList();
+        ((CPtrList*)((char*)self->m_4 + 0xc8))->~CPtrList();
     }
     self->m_1d0 = 0;
     i32 off = 0;

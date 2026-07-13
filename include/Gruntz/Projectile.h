@@ -14,7 +14,7 @@
 // (out-of-line 0x13940) is also INLINED into the leaf ctors; modeled inline here
 // so MSVC folds it into CProjectile::CProjectile.
 //
-// CProjectile adds the CObList at +0x204 (the projectile's tracked-hit list, MFC
+// CProjectile adds the CPtrList at +0x204 (the projectile's tracked-hit list, MFC
 // block size 10) and its own most-derived vftable. The no-arg ctor (0x126e0)
 // folds the whole CMovingLogic init, constructs the list, and stamps its vptr.
 #ifndef GRUNTZ_PROJECTILE_H
@@ -22,7 +22,7 @@
 
 class CLightFx; // folded CProjShadowActivate
 
-#include <Mfc.h>                // CObList (+0x204 member)
+#include <Mfc.h>                // CPtrList (+0x204 member)
 #include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
 #include <rva.h>
 
@@ -112,7 +112,7 @@ struct CProjSample {};
 
 // ---------------------------------------------------------------------------
 // CProjectile : CMovingLogic - 18 virtuals (vftable 0x5e798c). Adds the
-// tracked-hit CObList at +0x204 plus the projectile's render/motion state
+// tracked-hit CPtrList at +0x204 plus the projectile's render/motion state
 // (+0x140..+0x224); sizeof == 0x228. Field names are placeholders; the OFFSETS +
 // code bytes are the load-bearing facts.
 // ---------------------------------------------------------------------------
@@ -184,7 +184,7 @@ public:
     void* m_fallSprite;           // +0x1f8  "<base>FALL" sprite
     CProjRenderObj* m_shadow;     // +0x1fc  LightFx shadow render companion
     CProjSample* m_sound;         // +0x200  launch sound sample
-    CObList m_hitList;            // +0x204  tracked-hit list (block size 10)
+    CPtrList m_hitList;            // +0x204  tracked-hit list (block size 10)
     i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit
     // sizeof(CProjectile) == 0x228 (proven: LogicDispatchE @0xde8a0 `new CProjectile`
     // pushes 0x228). The boomerang return-trajectory fields (+0x228..+0x258) belong to

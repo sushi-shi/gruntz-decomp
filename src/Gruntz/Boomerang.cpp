@@ -99,8 +99,8 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
         g->m_284 = 0;
         g->m_278 = g_645588;
         g->m_27c = 0;
-        if (g->m_coordCount != 0) {
-            GruntCoordNode* n = g->m_320;
+        if (g->CoordCount() != 0) {
+            GruntCoordNode* n = g->CoordHead();
             while (n != 0) {
                 GruntCoordNode* next = n->m_next;
                 GruntCoord* data = n->m_coord;

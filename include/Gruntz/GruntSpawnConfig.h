@@ -42,7 +42,7 @@ struct CSpawnTree;
 // ---------------------------------------------------------------------------
 // The per-grunt voice list (the CGruntSpawnConfig CDWordArray element) is the
 // canonical CSpawnList of CSpawnEntry records (<Gruntz/SpawnList.h>). The old
-// local "CSpawnEntry" here was a MISNOMER view of the LIST (its CObList@+0x00,
+// local "CSpawnEntry" here was a MISNOMER view of the LIST (its CPtrList@+0x00,
 // m_1c cursor, m_20 last-picked) and "CVoiceSound" a view of the RECORD - both
 // folded onto the canonicals (see SpawnList.h's six-view unification proof).
 // The methods live where retail homed them: ~CSpawnList @0x99ca0 /

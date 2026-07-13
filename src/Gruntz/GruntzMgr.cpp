@@ -435,9 +435,9 @@ void __stdcall RecolorCell(i32 cell);
 // its object so `mov ecx,obj; call` falls out - the displacements reloc-mask).
 //   m_recolorSurface: a 0x94-byte engine surface object built by Build(), configured by
 //         Apply(), torn down by Teardown() + the operator-delete wrapper.
-//   m_54: the input/state object (0x30 bytes; an embedded CObList at +8 ctor'd
-//         CObList(0xa); wired by InitInput(world->m_28, inputFlag); torn down by a
-//         state-flush (+0) + the embedded CObList dtor (+8)).
+//   m_54: the input/state object (0x30 bytes; an embedded CPtrList at +8 ctor'd
+//         CPtrList(0xa); wired by InitInput(world->m_28, inputFlag); torn down by a
+//         state-flush (+0) + the embedded CPtrList dtor (+8)).
 extern "C" void* RezAlloc(u32 n); // operator new (reloc-masked, __cdecl)
 extern "C" void RezFree(void* p); // _RezFree (operator delete wrapper, __cdecl)
 struct CRezSurface94 {
@@ -446,7 +446,7 @@ struct CRezSurface94 {
     i32 Apply(i32 a, i32 b, i32 c); // FUN_0053ad00 (this, *p, 1, 0) reloc-masked
 };
 // The +0x54 object is the real CWorldSoundSet (<Gruntz/WorldSoundSet.h>) - the same
-// object the ambient-sound TU reads; its +0x08 is that class's CObList voice list.
+// object the ambient-sound TU reads; its +0x08 is that class's CPtrList voice list.
 
 // The world's polymorphic mode-set vtable (slot 7 = +0x1c notify; slot 6 = +0x18
 // SetVideoMode(hwnd, w, h, depth, flag)). MSVC5 forbids __thiscall on a fn-ptr,
@@ -1056,7 +1056,7 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 // byte-proven (llvm-objdump -dr base vs target): the loop body is byte-identical;
 // the ONLY difference is the list-head access. Retail computes `m_8+0x10` then reads
 // `[+4]` with a dead null-preserving check (`add eax,0x10; je`), i.e. it reaches the
-// head through a CObList/CPtrList sub-object at factory+0x10 (head @+0x14 = the
+// head through a CPtrList/CPtrList sub-object at factory+0x10 (head @+0x14 = the
 // sub-object's m_pNodeHead) rather than the flat `m_liveObjects@+0x14` field the
 // ScanObjects walkers use. No source spelling over the flat field reproduces the
 // +0x10 intermediate + its dead guard; the 3-instr shift cascades to 87.6%.
@@ -2476,7 +2476,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
 // are reconstructed and the /GX frame + the head (world/mode/8|16 guards + the
 // m_54/m_recolorSurface two-stage teardowns) match. The low % is a big-SEH scoring desync:
 // (a) the long chain of reloc-masked engine thiscalls (RezBuild/Apply/Teardown,
-// CObList ctor/dtor, the world mode-set vtable, MakeRezPath/ResolveRezRow) each
+// CPtrList ctor/dtor, the world mode-set vtable, MakeRezPath/ResolveRezRow) each
 // fuzzy-mismatch until their whole referent set is named; (b) the entry `push ecx`
 // local-slot reservation + the CString-temp EH-state numbering on the fail chain
 // (gx-state-machine + eh-state-numbering walls). Logic-complete; deferred to the
@@ -2496,7 +2496,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CWorldSoundSet* in = m_inputState;
     if (in) {
         in->Deactivate();
-        ((CObList*)((char*)in + 8))->CObList::~CObList();
+        ((CPtrList*)((char*)in + 8))->CPtrList::~CPtrList();
         RezFree(in);
     }
     m_inputState = 0;
@@ -2559,7 +2559,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CWorldSoundSet* in2 = m_inputState;
     if (in2) {
         in2->Deactivate();
-        ((CObList*)((char*)in2 + 8))->CObList::~CObList();
+        ((CPtrList*)((char*)in2 + 8))->CPtrList::~CPtrList();
         RezFree(in2);
     }
     m_inputState = 0;
@@ -2567,7 +2567,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     void* no = RezAlloc(0x30);
     CWorldSoundSet* ni;
     if (no) {
-        new ((char*)no + 8) CObList(0xa);
+        new ((char*)no + 8) CPtrList(0xa);
         *(i32*)no = 0;
         *(i32*)((char*)no + 4) = 0x64;
         ni = (CWorldSoundSet*)no;

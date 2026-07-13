@@ -1,8 +1,8 @@
 // KeyedList.cpp - the real keyed-list container (COMDATs @0x379a0 / 0x379f0 /
-// 0x37a70). CKeyedList : CObList (the object is allocated via the CObList ctor
-// 0x1b4867 and carries CObList's vtable 0x5eb054); Clear walks the CObList node list
+// 0x37a70). CKeyedList : CPtrList (the object is allocated via the CPtrList ctor
+// 0x1b4867 and carries CPtrList's vtable 0x5eb054); Clear walks the CPtrList node list
 // freeing each node's owned payload, then RemoveAll's the base and zeros the mode.
-// The shared class def lives in <Net/KeyedList.h> so the fake `CLatencyList : CObList`
+// The shared class def lives in <Net/KeyedList.h> so the fake `CLatencyList : CPtrList`
 // view folds onto it (CLatencyList : CKeyedList). Placeholder names; only OFFSETS +
 // code bytes are load-bearing.
 #include <Net/KeyedList.h>
@@ -19,13 +19,13 @@ CKeyedNode::~CKeyedNode() {
 }
 
 // 0x379a0: free every node's owned payload (dtor + operator delete), then RemoveAll
-// the backing CObList and zero the mode.
+// the backing CPtrList and zero the mode.
 RVA(0x000379a0, 0x3d)
 void CKeyedList::Clear() {
-    CObList::CNode* node = m_pNodeHead;
+    CPtrList::CNode* node = m_pNodeHead;
     if (node != 0) {
         do {
-            CObList::CNode* cur = node;
+            CPtrList::CNode* cur = node;
             node = node->pNext;
             CKeyedNode* sub = (CKeyedNode*)cur->data;
             if (sub != 0) {
@@ -55,6 +55,6 @@ CKeyedNode* CKeyedList::AddNode(const char* key, i32 a2, i32 a3) {
     node->m_key = key;
     node->m_4 = a2;
     node->m_8 = a3;
-    AddTail((CObject*)node); // CObList::AddTail (0x1b4991)
+    AddTail(node); // CPtrList::AddTail (0x1b4991) - stores void*, no CObject cast
     return node;
 }

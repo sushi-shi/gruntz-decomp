@@ -303,9 +303,9 @@ struct CAnimSetNode {
 // giant ~0x46c layout tractable.
 
 // Recycle a grunt's occupied-coord list onto the shared freelist, then empty the
-// CObList in place. Head = unit+0x320, count gate = unit+0x328.
+// CPtrList in place. Head = unit+0x320, count gate = unit+0x328.
 void GruntRecycleCoords(CGrunt* g) {
-    GruntCoordNode* n = g->m_320;
+    GruntCoordNode* n = g->CoordHead();
     while (n != 0) {
         GruntCoordNode* cur = n;
         n = n->m_next;
@@ -315,7 +315,7 @@ void GruntRecycleCoords(CGrunt* g) {
             g_coordPool.m_freeHead = node;
         }
     }
-    ((CObList*)&g->m_31c)->RemoveAll();
+    g->m_31c.RemoveAll();
 }
 
 // The scratch CString teardown the GetNameRecords reject paths run (Release each
@@ -339,7 +339,7 @@ static void GruntScratchTeardown() {
 // the /GX frame + the three vptr restamps (CGrunt 0x5e8754 -> CUserLogic 0x5e705c
 // -> CUserBase 0x5e70b4) and the per-member descending trylevel teardown: the body
 // runs UserLogicVfunc9, then MSVC destructs the six owned members in reverse-decl
-// order (m_468[9] via __ehvec_dtor, m_44c/m_448 ~CString, m_338/m_31c ~CObList,
+// order (m_468[9] via __ehvec_dtor, m_44c/m_448 ~CString, m_338/m_31c ~CPtrList,
 // m_animSetName@+0x1c0 ~CString), folds ~CUserLogic (the +0x18 EngStr link) then
 // ~CUserBase. Every teardown callee is external/reloc-masked.
 //
@@ -347,7 +347,7 @@ static void GruntScratchTeardown() {
 // EH-state-base-numbering wall (docs/patterns/eh-dtor-multilevel-polymorphic-chain.md
 // + eh-state-numbering-base.md): the real polymorphic CUserBase<-CUserLogic<-CGrunt
 // chain now auto-emits the /GX frame, the three vptr restamps (0x5e8754 -> 0x5e705c
-// -> 0x5e70b4), the per-member __ehvec_dtor + ~CString/~CObList/~EngStr teardowns in
+// -> 0x5e70b4), the per-member __ehvec_dtor + ~CString/~CPtrList/~EngStr teardowns in
 // retail order, and the descending trylevel chain - all byte-faithful in
 // shape/order (55.5% -> 94.9%). The COUNT of EH states matches (8), but retail numbers
 // them 1..8 (UserLogicVfunc9 region=7, six members 6..1, base m_18=8) while MSVC numbers
@@ -395,7 +395,7 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 // inherent dual-world cost. (b) MSVC runs the six owned value-member ctors
 // (m_animSetName/m_31c/m_338/m_448/m_44c/m_468[9]) in the member-init PHASE while retail
 // interleaves them among the scalar inits - but they must stay value-typed for ~CGrunt's
-// auto __ehvec_dtor/~CString/~CObList teardown (94.9%). (c) the +0x810 timer band's
+// auto __ehvec_dtor/~CString/~CPtrList teardown (94.9%). (c) the +0x810 timer band's
 // lo/hi dword interleave + the /GX EH-state numbering. All entropy/ordering class; the
 // vptr residue is byte-verified (llvm-objdump: only the intermediate stamp reloc differs).
 // Deferred to the final sweep.
@@ -596,12 +596,12 @@ extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
 // CGrunt::UserLogicVfunc9() @0x48360 - tears down the per-grunt name/animation
 // caches: walks a small list at +0x320 returning each node's +0x8 buffer to a
 // global free pool (head/base at 0x645544/0x64554c), empties the collection at
-// +0x31c, then drains the name CObList at +0x338 (count = m_33c->m_8; each node
+// +0x31c, then drains the name CPtrList at +0x338 (count = PayloadHead()->m_8; each node
 // freed via the engine deleter).
 RVA(0x00048360, 0x7e)
 i32 CGrunt::UserLogicVfunc9() {
-    if (m_coordCount != 0) {
-        void** node = *(void***)&m_320;
+    if (CoordCount() != 0) {
+        void** node = (void**)CoordHead();
         if (node) {
             do {
                 void* next = node[0];
@@ -614,19 +614,19 @@ i32 CGrunt::UserLogicVfunc9() {
                 node = (void**)next;
             } while (node);
         }
-        ((CObList*)(&m_31c))->RemoveAll();
+        m_31c.RemoveAll();
     }
 
     while (1) {
-        void* list = m_344;
-        i32 count = list ? *(i32*)((char*)(*(void**)&m_33c) + 8) : 0;
+        i32 n = PayloadCount();
+        i32 count = n ? (i32)m_338.GetHead() : 0;
         if (count == 0) {
             return 0;
         }
-        if (list == 0) {
+        if (n == 0) {
             continue;
         }
-        void* p = ((CObList*)(&m_338))->RemoveHead();
+        void* p = m_338.RemoveHead();
         GruntNode_Delete(p);
     }
     return 0;
@@ -1091,7 +1091,7 @@ i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
 // reachedTarget arg test + a partial coord-node freelist recycle) is present. Retail
 // is 838 insns; the base is ~86. The missing ~750 are the arrival-commit tail the
 // placeholder `StepDropApply()` stands in for: 4 pathfinder re-probes (0x20f4), the
-// CObList release/claim churn (0x1b4a03/0x1b48a6), and the per-direction tile-commit
+// CPtrList release/claim churn (0x1b4a03/0x1b48a6), and the per-direction tile-commit
 // body. Needs a dedicated leaf-first reconstruction of that shared inlined tail (also
 // inlined into MovingSlot16) - deferred to the final sweep, NOT a codegen wall.
 RVA(0x0004b370, 0xafd)
@@ -1105,8 +1105,8 @@ void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     // Recycle the occupied-coord nodes onto the CoordPool, empty the list, then
     // probe the destination tile via the engine pathfinder (0x20f4) and either
     // re-anchor (within range) or fall through to the big arrival commit.
-    if (m_coordCount != 0) {
-        GruntCoordNode* n = m_320;
+    if (CoordCount() != 0) {
+        GruntCoordNode* n = CoordHead();
         while (n != 0) {
             GruntCoordNode* cur = n;
             n = n->m_next;
@@ -1114,7 +1114,7 @@ void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
                 g_coordPool.Push(cur->m_coord);
             }
         }
-        ((CObList*)(&m_31c))->RemoveAll();
+        m_31c.RemoveAll();
     }
     StepDropApply();
     return;
@@ -1174,18 +1174,18 @@ i32 CGrunt::StepGruntMovement() {
             return 0;
         }
     }
-    if (m_coordCount == 0) {
+    if (CoordCount() == 0) {
         goto label_dropRet0;
     }
     if (m_arrivalState != 0x11) {
-        GruntCoord* co = m_31c.RemoveHead();
+        GruntCoord* co = (GruntCoord*)m_31c.RemoveHead();
         coordX = co->m_x;
         coordY = co->m_y;
         void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
         *p = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
     } else {
-        GruntCoord* co = m_320->m_coord;
+        GruntCoord* co = CoordHead()->m_coord;
         coordX = co->m_x;
         coordY = co->m_y;
     }
@@ -1282,7 +1282,7 @@ i32 CGrunt::StepGruntMovement() {
     if (m_arrivalState == 0x11) {
         goto label_4cb2a;
     }
-    if (m_coordCount == 0) {
+    if (CoordCount() == 0) {
         goto label_4cb2a;
     }
     {
@@ -1314,11 +1314,11 @@ i32 CGrunt::StepGruntMovement() {
         return 0;
     }
     // ProbeRetry() != 0
-    if (m_coordCount == 0) {
+    if (CoordCount() == 0) {
         goto label_4cb2a;
     }
     {
-        GruntCoord* co = m_320->m_coord;
+        GruntCoord* co = CoordHead()->m_coord;
         i32 cx = co->m_x;
         i32 cy = co->m_y;
         tgtPxX = (cx << 5) + 0x10;
@@ -1370,7 +1370,7 @@ i32 CGrunt::StepGruntMovement() {
             SetEntrancePos(1, 0);
             return 0;
         }
-        GruntCoord* co2 = m_31c.RemoveHead();
+        GruntCoord* co2 = (GruntCoord*)m_31c.RemoveHead();
         void** p = (void**)((char*)co2 - g_coordPool.m_linkOffset);
         *p = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
@@ -1389,8 +1389,8 @@ label_4c68b:
     }
 
 label_4c6e4:
-    if (m_arrivalState == 0x11 && m_coordCount != 0) {
-        GruntCoord* co = m_31c.RemoveHead();
+    if (m_arrivalState == 0x11 && CoordCount() != 0) {
+        GruntCoord* co = (GruntCoord*)m_31c.RemoveHead();
         void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
         *p = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
@@ -1448,8 +1448,8 @@ label_4c6e4:
         if (beyondFlag & 0x20000939) {
             goto label_4cb2a;
         }
-        if (m_coordCount != 0 && m_arrivalState != 0x11) {
-            GruntCoord* co = m_31c.RemoveHead();
+        if (CoordCount() != 0 && m_arrivalState != 0x11) {
+            GruntCoord* co = (GruntCoord*)m_31c.RemoveHead();
             if (co->m_x == btx && co->m_y == bty) {
                 void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
                 *p = g_coordPool.m_freeHead;
@@ -1652,8 +1652,8 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
         m_arrivalPhase = 0;
         m_arrivalActive = 0;
     }
-    if (b && m_arrivalState != 0x11 && m_coordCount != 0) {
-        void** node = *(void***)&m_320;
+    if (b && m_arrivalState != 0x11 && CoordCount() != 0) {
+        void** node = (void**)CoordHead();
         if (node) {
             do {
                 void* next = node[0];
@@ -1666,7 +1666,7 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
                 node = (void**)next;
             } while (node);
         }
-        ((CObList*)(&m_31c))->RemoveAll();
+        m_31c.RemoveAll();
     }
 }
 
@@ -1907,8 +1907,8 @@ void CGrunt::MovingSlot16() {
     if (m_arrivalState != 0x11) {
         bool eq;
         eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
-        if (eq && m_coordCount != 0) {
-            GruntCoordNode* head = m_320;
+        if (eq && CoordCount() != 0) {
+            GruntCoordNode* head = CoordHead();
             GruntCoord* co = head->m_coord;
             i32 fl = ((i32*)g_gameReg->m_tileGrid->m_8[co->m_y])[co->m_x * 7];
             i32 mask = m_arrivalFlags & fl;
@@ -1920,11 +1920,11 @@ void CGrunt::MovingSlot16() {
                 NotifyDrop();
             } else if (m_coordRetryCount <= 5) {
                 if (ProbeRetry() != 0) {
-                    GruntCoord* h2 = (m_320)->m_coord;
+                    GruntCoord* h2 = (CoordHead())->m_coord;
                     m_entrancePxX = (h2->m_x << 5) + 0x10;
                     m_entrancePxY = (h2->m_y << 5) + 0x10;
-                    if (m_coordCount != 0) {
-                        GruntCoord* h3 = (m_320)->m_coord;
+                    if (CoordCount() != 0) {
+                        GruntCoord* h3 = (CoordHead())->m_coord;
                         i32 fl2 = ((i32*)g_gameReg->m_tileGrid->m_8[h3->m_y])[h3->m_x * 7];
                         if (!(fl2 & 0x20000000)) {
                             m_coordRetryCount = 0;

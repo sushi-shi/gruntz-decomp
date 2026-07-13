@@ -11,7 +11,7 @@
 #include <Gruntz/Dialogs.h>
 #include <rva.h>
 
-// ~CMultiStartDlg @0x0b8960 - destroy the CObList member m_74 then the CString
+// ~CMultiStartDlg @0x0b8960 - destroy the CPtrList member m_74 then the CString
 // member m_70, then chain the NAFXCW ~CDialog base dtor (all reloc-masked). /GX
 // frame unwinds the half-torn object across the member dtors.
 // @early-stop

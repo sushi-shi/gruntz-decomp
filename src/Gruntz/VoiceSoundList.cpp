@@ -1,4 +1,4 @@
-#include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
+#include <Mfc.h> // CPtrList/CString machinery (reloc-masked); /GX EH frame
 #include <Bute/SymParser.h>
 
 #include <Bute/ButeMgr.h>            // canonical CButeMgr (one shape)

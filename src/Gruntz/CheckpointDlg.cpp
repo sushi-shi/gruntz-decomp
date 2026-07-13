@@ -1,11 +1,11 @@
 // CheckpointDlg.cpp - CCheckpointDlg (the checkpoint-prompts CDialog, resource
 // 0xcd) plus the two module dynamic-initializers that build the pair of global
-// MFC CObList singletons in the same retail .text block (0x234a0..0x2396d).
+// MFC CPtrList singletons in the same retail .text block (0x234a0..0x2396d).
 // Split out of the Dialogs.cpp aggregate (matcher-1 de-fragmentation): this is
 // one contiguous retail .obj, distinct from the Battlez-setup dialog .obj that
 // stays in Dialogs.cpp.
 //
-// Built /GX (eh): the CObList base-ctor init path carries the fs:0 frame.
+// Built /GX (eh): the CPtrList base-ctor init path carries the fs:0 frame.
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
@@ -69,19 +69,19 @@ void CCheckpointDlg::OnToggleCheckpointPrompts() {
 // ---------------------------------------------------------------------------
 // 0x0238d0 / 0x023960 - the two module dynamic-initializers that construct the pair of
 // command recycle-list globals (g_singleCmdList @0x62b5d0, g_multiCmdList @0x62b640; the
-// canonical CGruntzCmdList == an MFC CObList) with block size 0xa via the NAFXCW CObList
+// canonical CGruntzCmdList == an MFC CPtrList) with block size 0xa via the NAFXCW CPtrList
 // block-size ctor (0x1b4867 == ??0CObList@@QAE@H@Z, reloc-masked). __cdecl free fns.
 // Re-homed from src/Stub/BoundaryMisc.cpp. The DIR32 for each global's address binds to
 // the tree-winning ?g_singleCmdList/?g_multiCmdList@CGruntzCmdList symbol (DATA home
-// GruntzCmdMgr.cpp) - the old TU-local CObList g_container62b5d0/g_container62b640 views
+// GruntzCmdMgr.cpp) - the old TU-local CPtrList g_container62b5d0/g_container62b640 views
 // were dedup-losers to those canonicals and reloc-masked UNBOUND.
 // @orphan: both callers are unrecovered fns; module-init thunks with no owner class.
 // ---------------------------------------------------------------------------
 RVA(0x000238d0, 0xd)
 void Init238d0() {
-    ((CObList*)&g_singleCmdList)->CObList::CObList(0xa);
+    ((CPtrList*)&g_singleCmdList)->CPtrList::CPtrList(0xa);
 }
 RVA(0x00023960, 0xd)
 void InitGlobalObList62b640() {
-    ((CObList*)&g_multiCmdList)->CObList::CObList(0xa);
+    ((CPtrList*)&g_multiCmdList)->CPtrList::CPtrList(0xa);
 }

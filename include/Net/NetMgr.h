@@ -322,7 +322,11 @@ struct CNetCmdSlot {
         CNetMgr* m_owner; // +0x1c  command: owning CNetMgr back-pointer (Init <- session)
         i32 m_1c;         //        sync
     };
-    CObList m_cmds;   // +0x20  queued-command list (CObList, 0x1c bytes)
+    // CPtrList, not CObList: AddCmd/RemoveCmd/ClearCmds/ResetSync all call the
+    // band-A list bodies (ctor 0x1b4867 / AddTail 0x1b4991 / RemoveHead 0x1b4a03),
+    // whose vtable 0x1eb054 slot-0 GetRuntimeClass names "CPtrList". (CNetMgr's own
+    // group/player/session lists below DO call band B = the real CObList.)
+    CPtrList m_cmds;  // +0x20  queued-command list (CPtrList, 0x1c bytes)
     i32 m_ackFlags[4]; // +0x3c  per-player ack-flag array (ProcessCmd sets m_ackFlags[pid])
     i32 m_rangeA[3];   // +0x4c  command-range A (reset to -1) (sync sub-object m_4c)
     i32 m_rangeB[3];   // +0x58  command-range B (reset to -1) (sync sub-object m_58)

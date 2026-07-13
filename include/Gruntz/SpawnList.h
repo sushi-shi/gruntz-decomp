@@ -7,7 +7,7 @@
 //                 (GruntSpawnConfig.h), AreaMgr.cpp's old local CSpawnEntry
 //   list views:   CSpawnList (AreaMgr.cpp), CObjResBuilder (LoadObjectResources
 //                 .cpp), AreaPtrList/+Base (AreaMgr.h), GruntSpawnConfig.h's old
-//                 "CSpawnEntry" (a misnomer - it held the CObList, i.e. the LIST),
+//                 "CSpawnEntry" (a misnomer - it held the CPtrList, i.e. the LIST),
 //                 VoiceList (VoiceSoundList.cpp), C99ba0's m_sub / C9a420
 //                 (BoundaryLowerMethodsViews.h)
 //
@@ -18,7 +18,7 @@
 // -> all three "element" kinds are ONE class. Same for the list: FindByName
 // @0x9a290 is both areamgr's Extract and loadobjectresources' FindAdd;
 // DeleteAllEntries @0x9a450 is both AreaPtrList::RemoveAllNodes and
-// CSpawnEntry::EmptyVoiceList; the {CObList ctor(10), +0x1c=0, +0x20=-1} init is
+// CSpawnEntry::EmptyVoiceList; the {CPtrList ctor(10), +0x1c=0, +0x20=-1} init is
 // both CAreaMgr's ctor fold (0x99ba0) and VoiceList's inline ctor.
 //
 // Field names are placeholders where unproven; offsets + code bytes are
@@ -29,7 +29,7 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Mfc.h> // CObList (embedded) + CString (name member / by-value returns)
+#include <Mfc.h> // CPtrList (embedded) + CString (name member / by-value returns)
 
 // ---------------------------------------------------------------------------
 // CSpawnEntry - the 12-byte named record: a name CString, the "wanted" mark the
@@ -51,7 +51,7 @@ public:
 };
 SIZE(CSpawnEntry, 0xc);
 
-// The CObList node the walkers traverse (the MFC CNode shape: next/prev/data).
+// The CPtrList node the walkers traverse (the MFC CNode shape: next/prev/data).
 // POSITION <-> node view is MFC's own idiom (GetHeadPosition returns the node).
 struct CSpawnNode {
     CSpawnNode* m_next;   // +0x00
@@ -61,9 +61,9 @@ struct CSpawnNode {
 SIZE(CSpawnNode, 0xc);
 
 // ---------------------------------------------------------------------------
-// CSpawnList - a CObList of CSpawnEntry* plus a scan cursor and the last-picked
-// index (the weighted random picker's memory). The CObList is EMBEDDED, not a
-// base: the dtor @0x99ca0 stamps no vtable before the member ~CObList call.
+// CSpawnList - a CPtrList of CSpawnEntry* plus a scan cursor and the last-picked
+// index (the weighted random picker's memory). The CPtrList is EMBEDDED, not a
+// base: the dtor @0x99ca0 stamps no vtable before the member ~CPtrList call.
 //
 // The ctor is inline (folds into CAreaMgr's ctor @0x99ba0 and the voice
 // builder's `new` site). The dtor's out-of-line copy is @0x99ca0; it is DEFINED
@@ -78,14 +78,14 @@ public:
         m_cursor = 0;
         m_lastPicked = -1;
     }
-    ~CSpawnList();           // 0x99ca0  DeleteAllEntries + member ~CObList (def: AreaMgr.cpp)
+    ~CSpawnList();           // 0x99ca0  DeleteAllEntries + member ~CPtrList (def: AreaMgr.cpp)
     void ClearFlags();       // 0x9a420  zero every entry's m_flag
     void DeleteAllEntries(); // 0x9a450  delete every entry, then m_list.RemoveAll()
     CSpawnEntry* FindEntry(CString name, i32 useHash); // 0x9a0d0  (hash / strcmp match)
     CSpawnEntry* FindByName(const CString& name);      // 0x9a290  (was Extract/FindAdd)
     void AddVoiceSound(CString s, i32 flag);           // 0x11c560 (def: GruntSpawnConfig.cpp)
 
-    CObList m_list;       // +0x00  the entry list (0x1c B; block size 10)
+    CPtrList m_list;       // +0x00  the entry list (0x1c B; block size 10)
     CSpawnNode* m_cursor; // +0x1c  scan cursor (LoadObject*Resources' re-scan)
     i32 m_lastPicked;     // +0x20  last-picked index (-1; the weighted picker's memory)
 };

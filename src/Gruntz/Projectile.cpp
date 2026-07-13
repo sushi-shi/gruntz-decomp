@@ -7,9 +7,9 @@
 //
 // CProjectile::CProjectile() (0x126e0) is the no-arg ctor: it folds the inline
 // CMovingLogic init (the +0x38..+0x10c motion ints + the twelve default-bound
-// doubles), constructs the +0x204 tracked-hit CObList, and stamps its vftable.
+// doubles), constructs the +0x204 tracked-hit CPtrList, and stamps its vftable.
 // Like the rest of the family it constructs a throwing CUserBaseLink (in the
-// CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
+// CUserLogic base) + a CPtrList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
 #include <Gruntz/Boomerang.h> // CBoomerang::MovingSlot16 (@0xe08b0) is defined here, interleaved
 #include <Gruntz/LightFx.h>
@@ -137,9 +137,9 @@ CMovingLogic::~CMovingLogic() {}
 // @source: rtti-vptr
 // @early-stop
 // EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): body, all
-// field offsets, the double init and the CObList construction are byte-identical;
+// field offsets, the double init and the CPtrList construction are byte-identical;
 // the only residue is this ctor's OWN __ehfuncinfo (the EH prologue pushes
-// funcinfo+0x0 vs retail funcinfo+0xe, and the CObList state id is `mov
+// funcinfo+0x0 vs retail funcinfo+0xe, and the CPtrList state id is `mov
 // [esp+0x18],1` vs retail 2). NOT resolvable by completing the projectile TU:
 // the funcinfo is per-function, and the out-of-line CMovingLogic ctor (0x13940)
 // cannot be emitted from this TU (the no-arg ctor must keep CMovingLogic() inline
@@ -229,7 +229,7 @@ extern void Fn16ea90();
 // with-ctor (would regress the banked 99% no-arg ctor - task-forbidden).
 // Secondary residues: +0x38 Init (0x136d0) emits after the CMovingLogic vptr
 // stamp vs retail's member-init position (EH state 0); the EH-state numbering
-// (retail 0/1/2/3 over +0x38 + CObList) and the m_hitList-vs-body order differ.
+// (retail 0/1/2/3 over +0x38 + CPtrList) and the m_hitList-vs-body order differ.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_148 = 0;
@@ -253,7 +253,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
 // ---------------------------------------------------------------------------
 // CProjectile::~CProjectile (0xdef60) - the most-derived dtor. Stop+rewind the
 // launch sample, recycle each tracked-hit node back onto the global free-list,
-// RemoveAll the list, then the compiler auto-destructs the CObList member and the
+// RemoveAll the list, then the compiler auto-destructs the CPtrList member and the
 // CMovingLogic/CUserLogic/link base subobjects (the throwing link forces the /GX
 // frame). Field names are placeholders; the offsets are load-bearing.
 //
@@ -275,7 +275,7 @@ CProjectile::~CProjectile() {
         m_sound = 0;
     }
     for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
-        CObject* data = m_hitList.GetNext(pos);
+        void* data = m_hitList.GetNext(pos);
         if (data != 0) {
             // authentic: freelist recycle - bias the node back to its list-link header
             void** node = (void**)((char*)data - g_coordPool.m_linkOffset);
@@ -1006,7 +1006,7 @@ void CProjectile::ScanTargets(i32 impact) {
             i32 keyX = g->m_tileOwnerHi;
             i32 keyY = g->m_tileOwnerLo;
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
-                // authentic: MFC CObList stores raw hit-key nodes; GetNext returns CObject*
+                // authentic: MFC CPtrList stores raw hit-key nodes; GetNext returns CObject*
                 CHitKey* k = (CHitKey*)m_hitList.GetNext(pos);
                 if (k->m_0 == keyX && k->m_4 == keyY) {
                     return;
@@ -1022,7 +1022,7 @@ void CProjectile::ScanTargets(i32 impact) {
                 slot->m_4 = keyY;
                 g_coordPool.m_freeHead = (void*)p->m_0;
             }
-            m_hitList.AddTail((CObject*)slot); // authentic: MFC AddTail takes CObject*
+            m_hitList.AddTail(slot);
             g->StepCombatReaction(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);
         }
         rowBase += 0x3c;

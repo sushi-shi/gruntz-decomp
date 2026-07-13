@@ -18,21 +18,21 @@
 #ifndef SRC_GRUNTZ_GRUNTZCOMMAND_H
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
-#include <Mfc.h> // the REAL MFC CObList (CGruntzCmdList IS CObList; see the note below)
+#include <Mfc.h> // the REAL MFC CPtrList (CGruntzCmdList IS CPtrList; see the note below)
 #include <rva.h>
 #include <Ints.h>
 
 typedef u32 gz_size_t;
 void* operator new(gz_size_t);
 
-// The recycle-list type each leaf allocator pulls from (a WAP32 CObList-family
+// The recycle-list type each leaf allocator pulls from (a WAP32 CPtrList-family
 // list). Only RemoveTail() is reached (a __thiscall returning the recycled
 // node). The leaf allocator: if the list is non-empty, tail-call RemoveTail();
 // else operator new(0x14) the object + stamp its vftable.
-// CGruntzCmdList IS the MFC CObList too: its RemoveTail is ?RemoveTail@CObList@@QAEPAVCObject@@XZ
+// CGruntzCmdList IS the MFC CPtrList too: its RemoveTail is ?RemoveTail@CPtrList@@QAEPAVCObject@@XZ
 // @0x1b4a27 (NAFXCW). Declaring it on our own name emitted ?RemoveTail@CGruntzCmdList@@QAEPAXXZ,
 // which nothing defines - 4 unresolved externals. Alias the real class (see GruntzCmdMgr.h).
-typedef CObList CGruntzCmdList;
+typedef CPtrList CGruntzCmdList;
 
 // The "apply" target each Apply*() passes the unpacked command params to (the
 // big CPlay command-executor at 0x0d1b60, ret 0x1c => 7 __thiscall args). It is

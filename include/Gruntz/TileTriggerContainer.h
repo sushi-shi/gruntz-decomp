@@ -1,6 +1,6 @@
 // TileTriggerContainer.h - Gruntz CTileTriggerContainer (C:\Proj\Gruntz).
 //
-// A 3-CObList container: a base sub-object at +0x00 plus three CObList members
+// A 3-CPtrList container: a base sub-object at +0x00 plus three CPtrList members
 // at +0x1c / +0x38 / +0x54 (their m_pNodeHead at +0x20 / +0x3c / +0x58).  The
 // lists hold heap command objects; the accessors here move/find/remove those
 // objects across the three lists.  The list elements are sibling command objects
@@ -12,7 +12,7 @@
 #ifndef SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
-#include <Mfc.h> // MFC CObList (the m_base/m_list1-3 sub-object list methods)
+#include <Mfc.h> // MFC CPtrList (the m_base/m_list1-3 sub-object list methods)
 #include <Ints.h>
 #include <Gruntz/SerialArchive.h>     // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
 #include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
@@ -46,29 +46,29 @@ struct TtcKeyedElem {
 };
 SIZE_UNKNOWN(TtcKeyedElem);
 
-// A singly-walked CObList node: next@+0x00, data@+0x08 (MFC CList layout, the
+// A singly-walked CPtrList node: next@+0x00, data@+0x08 (MFC CList layout, the
 // +0x04 prev slot unused by these walkers).
 struct TtcNode {
     TtcNode* m_next; // +0x00
     char _pad04[4];  // +0x04 (prev)
-    // +0x08  the CObList node payload: a genuine heterogeneous CObject* slot - the
+    // +0x08  the CPtrList node payload: a genuine heterogeneous CObject* slot - the
     // four lists store DIFFERENT element types (TtcElem / TtcMark / TtcTrigElem /
     // plain i32 records), downcast per walker. Authentic void* (MFC container payload).
     void* m_data;
 };
 SIZE_UNKNOWN(TtcNode);
 
-// The three list sub-objects ARE the real MFC ::CObList (0x1c bytes; its methods are the
-// FID-labeled NAFXCW CObList members RemoveAt @0x1b4ac7 / AddTail @0x1b4991 / RemoveAll
-// @0x1b48a6 / ~CObList @0x1b48c6, and its vtable is the library ??_7CObList @0x1ed4b4).
+// The three list sub-objects ARE the real MFC ::CPtrList (0x1c bytes; its methods are the
+// FID-labeled NAFXCW CPtrList members RemoveAt @0x1b4ac7 / AddTail @0x1b4991 / RemoveAll
+// @0x1b48a6 / ~CPtrList @0x1b48c6, and its vtable is the library ??_7CObList @0x1ed4b4).
 // The former local TtcObList re-declaration (whose emitted ??_7 aliased that bound library
 // vtable - a RELOC_VTBL) is DISSOLVED: the walkers reach the head through the INLINE
-// CObList::GetHeadPosition() (afxcoll.inl: `return (POSITION)m_pNodeHead;` - the identical
+// CPtrList::GetHeadPosition() (afxcoll.inl: `return (POSITION)m_pNodeHead;` - the identical
 // single load) and the count through the inline GetCount().
-typedef ::CObList TtcObList;
-// Typed intrusive-node access: a POSITION IS the CObList::CNode* the walkers step through
+typedef ::CPtrList TtcObList;
+// Typed intrusive-node access: a POSITION IS the CPtrList::CNode* the walkers step through
 // (MFC's CNode is protected, so the head is retrieved as a POSITION and typed here).
-inline TtcNode* TtcHead(const ::CObList& l) {
+inline TtcNode* TtcHead(const ::CPtrList& l) {
     return (TtcNode*)l.GetHeadPosition();
 }
 
@@ -236,7 +236,7 @@ public:
     // The base sub-object's own destructor; runs RemoveAll then clears +0x74.
     void DtorBase(); // 0x115f30
 
-    TtcObList m_base;  // +0x00 (head @ +0x04)  the base CObList sub-object
+    TtcObList m_base;  // +0x00 (head @ +0x04)  the base CPtrList sub-object
     TtcObList m_list1; // +0x1c (head @ +0x20)
     TtcObList m_list2; // +0x38 (head @ +0x3c)
     TtcObList m_list3;      // +0x54 (head @ +0x58)

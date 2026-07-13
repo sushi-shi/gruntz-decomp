@@ -369,7 +369,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         slot[1] = row;
         g_coordPool.m_freeHead = *(void**)g_coordPool.m_freeHead;
     }
-    m_recList.AddTail((CObject*)slot);
+    m_recList.AddTail(slot);
     // RECOVERED: the 0-arg i32 call in this function's set is the ILT thunk 0x24c8 ->
     // 0x4b130 = ?CommitArrival@CGrunt@@QAEHXZ. `ResetMagic` was a phantom name for it.
     return cell->CommitArrival();

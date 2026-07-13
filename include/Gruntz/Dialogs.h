@@ -264,7 +264,11 @@ public:
 // CMultiStartDlg
 //   base CDialog(0xc5, pParent); m_host = a0; m_slotList = 0; m_6c = 0;
 //   (m_host: heterogeneous handle - CNetDlgHost host-facet + slot-array base; see below.)
-//   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
+//   CString @+0x70; CStringList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
+//   m_74 is a CStringList, NOT a CObList: the ctor @0xc1750 calls the band-C ctor
+//   0x1b5d04 and ~CMultiStartDlg @0xb8960 does `lea ecx,[esi+0x74]; call 0x1b5d78`
+//   - the CStringList dtor (band C = ctor 0x1b5d04 / dtor 0x1b5d78, whose vtable
+//   0x1ed4dc slot-0 GetRuntimeClass returns the CRuntimeClass naming "CStringList").
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMultiStartDlg);
 VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
@@ -272,7 +276,7 @@ class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
     virtual ~CMultiStartDlg()
-        OVERRIDE; // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
+        OVERRIDE; // 0x0b8960 (destroy CStringList m_74, CString m_70, chain ~CDialog)
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual i32 DestroyWindow() OVERRIDE; // slot 24 (own override @0x00218a, origin CWnd)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
@@ -418,7 +422,7 @@ public:
     char m_pad64[8];          // +0x64
     i32 m_6c;                 // +0x6c  (= 0)
     CString m_70;             // +0x70  (default CString)
-    CObList m_74;             // +0x74  (CObList(0xa))
+    CStringList m_74;         // +0x74  (CStringList(0xa); ctor 0x1b5d04 / dtor 0x1b5d78)
 };
 
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.

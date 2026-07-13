@@ -64,7 +64,7 @@ void TokenMgrReset99b80() {
 
 // ---------------------------------------------------------------------------
 // CAreaMgr::CAreaMgr  (0x099ba0)
-// The member CSpawnList's inline ctor folds in: CObList(block size 10), scan
+// The member CSpawnList's inline ctor folds in: CPtrList(block size 10), scan
 // cursor = 0, last-picked = -1; then the index word clears (body, last).
 // ---------------------------------------------------------------------------
 RVA(0x00099ba0, 0x29)
@@ -74,10 +74,10 @@ CAreaMgr::CAreaMgr() {
 
 // ---------------------------------------------------------------------------
 // CSpawnList::~CSpawnList  (0x099ca0)
-// DeleteAllEntries, then the embedded CObList member dtor frees its blocks (the
-// trailing ~CObList under the /GX frame). Defined INLINE in this TU (its retail
+// DeleteAllEntries, then the embedded CPtrList member dtor frees its blocks (the
+// trailing ~CPtrList under the /GX frame). Defined INLINE in this TU (its retail
 // home) so it folds into ~CAreaMgr's member-teardown below exactly as retail
-// (call DeleteAllEntries + call ~CObList, EH states 1 -> -1); other TUs see only
+// (call DeleteAllEntries + call ~CPtrList, EH states 1 -> -1); other TUs see only
 // the SpawnList.h declaration and emit the retail extern call (e.g.
 // CGruntSpawnConfig::Clear's explicit dtor + RezFree). The standalone COMDAT
 // copy is forced by the depth-0 forcer and pinned by mangled name:
@@ -97,7 +97,7 @@ void ForceEmitSpawnListDtor() {
 // CAreaMgr::~CAreaMgr  (0x099c20)
 // The /GX destructor: clears the current-index word (Reset, trylevel 0) then the
 // member CSpawnList's dtor inline-folds (DeleteAllEntries, trylevel 1, then the
-// member ~CObList, trylevel -1).
+// member ~CPtrList, trylevel -1).
 // ---------------------------------------------------------------------------
 RVA(0x00099c20, 0x5f)
 CAreaMgr::~CAreaMgr() {
@@ -322,7 +322,7 @@ void CSpawnList::ClearFlags() {
 
 // ---------------------------------------------------------------------------
 // CSpawnList::DeleteAllEntries  (0x09a450)
-// Walk the CObList node chain; `delete` each held CSpawnEntry (the implicit
+// Walk the CPtrList node chain; `delete` each held CSpawnEntry (the implicit
 // ~CString + the engine operator delete = RezFree), then m_list.RemoveAll().
 // No destructible local, so no /GX frame even under eh flags. (Was
 // CSpawnEntry::EmptyVoiceList / AreaPtrList::RemoveAllNodes.)
@@ -351,15 +351,15 @@ void CSpawnList::DeleteAllEntries() {
 //   1. ClearFlags() resets every existing child entry's +4 "wanted" flag to 0.
 //   2. Walk the source registry's CMapString map (embedded at entry->reg+0x10),
 //      and for each "OBJECTZ_"-prefixed key: FindAdd it in this tree; if it already
-//      exists mark its flag, else queue the source value in a local CObList of new
+//      exists mark its flag, else queue the source value in a local CPtrList of new
 //      objects.
-//   3. Drain that CObList, handing each new source object to the registry's
+//   3. Drain that CPtrList, handing each new source object to the registry's
 //      ProcessNew (Image: a vtable slot; Sound/Anim: a direct method).
 //   4. Re-scan the child entries; for each still-unwanted (flag==0) one, build the
 //      "{IMAGEZ|SOUNDZ|ANIZ}_<name>" key, ResolvePath it in src, and Install it
 //      through the registry, then mark the flag.  The Image arm brackets the
 //      install with the g_resourceInstallActive tile-counter gate.
-// The local CObList carries a destructor -> the /GX exception frame.  Only offsets
+// The local CPtrList carries a destructor -> the /GX exception frame.  Only offsets
 // / code bytes are load-bearing; helpers are reloc-masked engine externs.
 // ===========================================================================
 
@@ -400,7 +400,7 @@ struct ObjImageRegistry {
     virtual void Slot17();
     virtual void Install(void* h, char* name, const char* g); // slot 18 (+0x48)
     virtual void Slot19();
-    virtual void ProcessNew(CObject* val); // slot 20 (+0x50)
+    virtual void ProcessNew(void* val); // slot 20 (+0x50) - the list/map element is a raw void*
     char m_pad04[0x10 - 0x4];
     CMapStringToOb m_map; // +0x10  source map (CString -> CImage*)
 };
@@ -451,7 +451,7 @@ i32 CAreaMgr::LoadObjectResources(ObjSpawnEntry* entry, CSymTab* src) {
 // @source: decomp-xref
 // @early-stop
 // ~88.7%: complete + correct (the OBJECTZ_ GetNextAssoc scan, FindAdd reconcile,
-// CObList drain via the registry's ProcessNew, the IMAGEZ_%s sprintf + CSymTab
+// CPtrList drain via the registry's ProcessNew, the IMAGEZ_%s sprintf + CSymTab
 // ResolvePath + the polymorphic vtable Install, and the g_resourceInstallActive bracket
 // are all byte-faithful, strings/relocs aligned). Residual: retail's frame is 0xb4
 // vs this build's 0xac because retail reserves a guarded CString cleanup slot
@@ -473,7 +473,7 @@ i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src) {
         return 0;
     }
 
-    CObList toAdd;
+    CPtrList toAdd;
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
@@ -491,7 +491,7 @@ i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src) {
 
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
-        CObject* obj = toAdd.GetNext(dp);
+        void* obj = toAdd.GetNext(dp);
         entry->m_10->ProcessNew(obj);
     }
     toAdd.RemoveAll();
@@ -574,7 +574,7 @@ i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src) {
         return 0;
     }
 
-    CObList toAdd;
+    CPtrList toAdd;
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
@@ -585,14 +585,14 @@ i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src) {
             if (found != 0) {
                 found->m_flag = 1;
             } else {
-                toAdd.AddTail((CObject*)val);
+                toAdd.AddTail(val);
             }
         }
     }
 
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
-        CObject* obj = toAdd.GetNext(dp);
+        void* obj = toAdd.GetNext(dp);
         ((CSoundResMap*)entry->m_28)->RemoveByValue((CSoundRes*)obj);
     }
     toAdd.RemoveAll();
@@ -646,7 +646,7 @@ i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src) {
         return 0;
     }
 
-    CObList toAdd;
+    CPtrList toAdd;
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
@@ -657,14 +657,14 @@ i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src) {
             if (found != 0) {
                 found->m_flag = 1;
             } else {
-                toAdd.AddTail((CObject*)val);
+                toAdd.AddTail(val);
             }
         }
     }
 
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
-        CObject* obj = toAdd.GetNext(dp);
+        void* obj = toAdd.GetNext(dp);
         ((CDDrawSubMgrLeaf*)entry->m_2c)->RemoveValue_152660((CCatalogNode*)obj);
     }
     toAdd.RemoveAll();

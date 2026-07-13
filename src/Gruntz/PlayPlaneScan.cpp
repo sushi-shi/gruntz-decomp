@@ -1,7 +1,7 @@
 // PlayPlaneScan.cpp - two CPlay per-frame plane-list sub-steps re-homed from
 // src/Stub/Discovered.cpp (trace-attributed to CPlay: this->m_view at +0xc is the
 // CSpriteFactoryHolder, m_view->m_renderer the renderer that owns the plane list, m_view->m_drawSurf the draw
-// surface). Both walk the renderer's embedded plane list (a CObList-style
+// surface). Both walk the renderer's embedded plane list (a CPtrList-style
 // {pNext,pPrev,data} node chain rooted at renderer+0x14) and dispatch on the
 // plane descriptor's type field (m_desc->m_typeId, a reloc-masked fn-ptr compare).
 //
@@ -37,7 +37,7 @@ struct PlaneDesc {
     Vec4 m_100; // +0x100
 };
 
-// A plane object (the CObList data ptr).
+// A plane object (the CPtrList data ptr).
 struct Plane {
     char pad0[4];
     i32 m_4;     // +0x04

@@ -7,7 +7,7 @@
 #ifndef SRC_IMAGE_IMAGEPOOL_H
 #define SRC_IMAGE_IMAGEPOOL_H
 
-#include <Mfc.h> // CObList + <windows.h> (HINSTANCE/HWND/HPALETTE/PALETTEENTRY)
+#include <Mfc.h> // CPtrList + <windows.h> (HINSTANCE/HWND/HPALETTE/PALETTEENTRY)
 #include <Ints.h>
 #include <rva.h>
 
@@ -23,9 +23,9 @@ SIZE_UNKNOWN(CImagePool);
 class CImagePool {
 public:
     // Inline ctor/dtor: the preview dialog is the only site that `new`s/`delete`s the
-    // pool (g_previewMgr), and retail inlines both there - the two CObList(10) member
+    // pool (g_previewMgr), and retail inlines both there - the two CPtrList(10) member
     // ctors + the five zeroed scalar fields, and a dtor that runs Clear() before the
-    // member CObList teardowns. Modeled inline so MSVC folds them into that dialog proc.
+    // member CPtrList teardowns. Modeled inline so MSVC folds them into that dialog proc.
     CImagePool() : m_surfaces(0xa), m_palettes(0xa) {
         m_resourceModuleHandle = 0;
         m_sourceHwnd = 0;
@@ -60,8 +60,8 @@ public:
     HWND m_sourceHwnd;                // +0x04  source HWND (GetDC/ReleaseDC)
     i32 m_08;                         // +0x08
     HPALETTE m_selectedPalette;       // +0x0c  selected HPALETTE to restore
-    CObList m_surfaces;               // +0x10  GDI surface nodes (m_pHead @+0x14)
-    CObList m_palettes;               // +0x2c  palette nodes (m_pHead @+0x30)
+    CPtrList m_surfaces;               // +0x10  GDI surface nodes (m_pHead @+0x14)
+    CPtrList m_palettes;               // +0x2c  palette nodes (m_pHead @+0x30)
     i32 m_48;                         // +0x48
 };
 

@@ -12,7 +12,7 @@
 // -> SlotComboFill.cpp.
 //
 // Built /GX: three of the four ctors construct embedded MFC C++ objects (CString /
-// CObList) and so carry an fs:0 EH frame (push -1 / push handler / mov fs:0,esp) to
+// CPtrList) and so carry an fs:0 EH frame (push -1 / push handler / mov fs:0,esp) to
 // unwind a half-built object if a member ctor throws. (CBattlezDlgColors has NO
 // embedded C++ member, so its body carries no EH frame even under /GX.)
 //

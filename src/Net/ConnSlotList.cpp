@@ -1,13 +1,13 @@
 #include <Net/LatencyList.h>
 #include <rva.h>
 // ConnSlotList.cpp - three of the five per-mode populators for the connection-
-// latency slot list (CLatencyList, <Net/LatencyList.h>). The list is a CObList of
+// latency slot list (CLatencyList, <Net/LatencyList.h>). The list is a CPtrList of
 // 12-byte {CString text; int id; int param} rows (CLatencyItem) + a mode int at
 // +0x1c; CLatencyList::Dispatch (0x37910) routes modes 1..5 to the populators
 // (mode 2 -> 0x37c30, mode 4 -> 0x37e10, mode 5 -> 0x37f00; these three).
 //
 // Each populator appends eight latency rows via AddItem (0x37a70: new(0xc) node;
-// CString = text; +4 = id; +8 = param; CObList::AddTail) and folds the per-call
+// CString = text; +4 = id; +8 = param; CPtrList::AddTail) and folds the per-call
 // success test into one BOOL. AddItem is a reloc-masked rel32 callee (declared in
 // the header, no body here). Folded from the former CConnSlotList view (wave 3);
 // only the OFFSETS + emitted bytes are load-bearing, the names are placeholders.

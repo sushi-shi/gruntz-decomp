@@ -5,16 +5,19 @@
 // base dtor are external (reloc-masked). Best-guess class; offsets/calls are what
 // is load-bearing.
 #include <rva.h>
-// Base subobject whose destructor (0x1b48c6) the derived dtor chains to: the canonical
-// GzObList (== the COMDAT-folded ~CObList, library_labels ??1GzObList@@QAE@XZ). The real
-// shared struct, not a local view - CNetThing derives it and the chained base dtor binds/
-// exempts. (Was a mis-guessed CInternetSession/CNetThingBase local placeholder.)
+// Base subobject whose destructor (0x1b48c6) the derived dtor chains to: the REAL MFC
+// CPtrList. 0x1b48c6 is the band-A dtor, and band A's ctor (0x1b4867) stamps vtable
+// 0x1eb054, whose slot-0 GetRuntimeClass returns the CRuntimeClass named "CPtrList" -
+// so this is CPtrList, not CObList (whose own dtor is 0x1b5a2b, band B). Nothing is
+// COMDAT-folded here: MSVC5 has no /OPT:ICF and retail carries three distinct list
+// bands that merely share identical code. (Was a mis-guessed CInternetSession/
+// CNetThingBase local placeholder, then a GzObList view.)
 #include <Gruntz/GruntzCmdMgr.h>
 
 // The keyed-list the dtor clears (Clear @0x379a0): the canonical CKeyedList (real
 // shared struct, <Net/KeyedList.h>). 0xc5280 IS CKeyedList::~CKeyedList (Clear() + the
-// ~CObList base chain @0x1b48c6); the reinterpret here is the CNetThing<->CKeyedList
-// identity (both share the CObList/GzObList base) - full unification (CNetThing is
+// ~CPtrList base chain @0x1b48c6); the reinterpret here is the CNetThing<->CKeyedList
+// identity (both share the CPtrList/GzObList base) - full unification (CNetThing is
 // referenced as an opaque child by netcmdslot/multistartdlgroster) is a cross-unit
 // rename, deferred.
 #include <Net/KeyedList.h>

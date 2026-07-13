@@ -25,7 +25,7 @@
 // binds and nothing is duplicated.
 #define SBI_ITEM_OWN_CTOR // out-of-line base ctor => retail's `call ??0CStatusBarItem`
 
-#include <Mfc.h> // afx-first umbrella (CObject / CObList / ::CopyRect)
+#include <Mfc.h> // afx-first umbrella (CObject / CPtrList / ::CopyRect)
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GruntzMgr.h>          // the *0x24556c singleton (CGruntzMgr)
@@ -65,7 +65,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete areYouSure;
             return 0;
         }
-        m_d4.AddTail((CObject*)areYouSure);
+        m_d4.AddTail(areYouSure);
 
         CSBI_MenuItemDlg* yes = new CSBI_MenuItemDlg;
         if (!yes->Setup(
@@ -81,7 +81,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete yes;
             return 0;
         }
-        m_d4.AddTail((CObject*)yes);
+        m_d4.AddTail(yes);
         m_1fc = yes;
 
         CSBI_MenuItemDlg* no = new CSBI_MenuItemDlg;
@@ -98,7 +98,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete no;
             return 0;
         }
-        m_d4.AddTail((CObject*)no);
+        m_d4.AddTail(no);
         m_200 = no;
         return 1;
     }
@@ -118,7 +118,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         delete dialog;
         return 0;
     }
-    m_d4.AddTail((CObject*)dialog);
+    m_d4.AddTail(dialog);
 
     i32 reason = ((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_3ec;
 
@@ -138,7 +138,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete status;
             return 0;
         }
-        m_d4.AddTail((CObject*)status);
+        m_d4.AddTail(status);
 
         CSBI_ImageSet* rsn = new CSBI_ImageSet;
         if (!rsn->Setup(
@@ -154,7 +154,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete rsn;
             return 0;
         }
-        m_d4.AddTail((CObject*)rsn);
+        m_d4.AddTail(rsn);
 
         if (g_gameReg->m_134 == 1) {
             CSBI_MenuItemDlg* next = new CSBI_MenuItemDlg;
@@ -171,7 +171,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
                 delete next;
                 return 0;
             }
-            m_d4.AddTail((CObject*)next);
+            m_d4.AddTail(next);
             m_1f4 = next;
 
             CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
@@ -188,7 +188,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
                 delete quit;
                 return 0;
             }
-            m_d4.AddTail((CObject*)quit);
+            m_d4.AddTail(quit);
             m_1f8 = quit;
         } else {
             CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
@@ -205,7 +205,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
                 delete statz;
                 return 0;
             }
-            m_d4.AddTail((CObject*)statz);
+            m_d4.AddTail(statz);
             m_1f8 = statz;
         }
         return 1;
@@ -226,7 +226,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         delete status;
         return 0;
     }
-    m_d4.AddTail((CObject*)status);
+    m_d4.AddTail(status);
 
     CSBI_ImageSet* rsn = new CSBI_ImageSet;
     if (!rsn->Setup(
@@ -242,7 +242,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         delete rsn;
         return 0;
     }
-    m_d4.AddTail((CObject*)rsn);
+    m_d4.AddTail(rsn);
 
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItemDlg* replay = new CSBI_MenuItemDlg;
@@ -259,7 +259,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete replay;
             return 0;
         }
-        m_d4.AddTail((CObject*)replay);
+        m_d4.AddTail(replay);
         m_1f4 = replay;
 
         CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
@@ -276,7 +276,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete quit;
             return 0;
         }
-        m_d4.AddTail((CObject*)quit);
+        m_d4.AddTail(quit);
         m_1f8 = quit;
         return 1;
     }
@@ -306,7 +306,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete observe;
             return 0;
         }
-        m_d4.AddTail((CObject*)observe);
+        m_d4.AddTail(observe);
         m_1f4 = observe;
         m_578 = 1;
 
@@ -324,7 +324,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete statz;
             return 0;
         }
-        m_d4.AddTail((CObject*)statz);
+        m_d4.AddTail(statz);
         m_1f8 = statz;
     } else {
         m_578 = 0;
@@ -342,7 +342,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
             delete statz;
             return 0;
         }
-        m_d4.AddTail((CObject*)statz);
+        m_d4.AddTail(statz);
         m_1f8 = statz;
     }
     return 1;

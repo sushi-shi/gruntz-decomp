@@ -8,9 +8,9 @@
 // PROOF of one class: the dispatcher 0x37910 (called on the dialog's m_slotList)
 // routes modes 1..5 to the five populators 0x37b40/c30/d20/e10/f00 (thunks 0x3760/
 // 3008/41ce/1eab/1cc1 -> those bodies), and FillCombo/SelectItem run on the SAME
-// container. The container's ctor 0x1b4867 (block size 0xa) is the plain MFC CObList
-// ctor - the object has NO own vtable (it uses CObList's 0x5eb054), so it is a
-// CObList subclass adding only the mode int at +0x1c.
+// container. The container's ctor 0x1b4867 (block size 0xa) is the plain MFC CPtrList
+// ctor - the object has NO own vtable (it uses CPtrList's 0x5eb054), so it is a
+// CPtrList subclass adding only the mode int at +0x1c.
 //
 // BuildSlotList (0x0c1e60) news a 0x20-byte object into CMultiStartDlg::m_slotList,
 // dispatches the connection-type mode via 0x37910, then fills/selects the 0x527
@@ -21,10 +21,10 @@
 #ifndef GRUNTZ_NET_LATENCYLIST_H
 #define GRUNTZ_NET_LATENCYLIST_H
 
-#include <Net/KeyedList.h> // the REAL container: CKeyedList : CObList + AddNode/m_mode
+#include <Net/KeyedList.h> // the REAL container: CKeyedList : CPtrList + AddNode/m_mode
 #include <rva.h>
 
-// The node payload hung off each CObList node's `data` pointer (heap, 0xc bytes). This
+// The node payload hung off each CPtrList node's `data` pointer (heap, 0xc bytes). This
 // IS the CKeyedList payload node (CNode, <Net/KeyedList.h>) under a latency-specific
 // name; GetName (0x38120) returns m_text by value. Kept here (not folded onto CNode)
 // only because CLatencyItem::GetName lives in the not-owned slotcombofill TU - the
@@ -37,15 +37,15 @@ struct CLatencyItem {
 };
 SIZE_UNKNOWN(CLatencyItem);
 
-// The connection-latency slot list IS a CKeyedList (the fake `CLatencyList : CObList`
+// The connection-latency slot list IS a CKeyedList (the fake `CLatencyList : CPtrList`
 // view is folded onto the real container): it adds only the per-mode populators + the
 // combo fill/select. AddItem is the inherited CKeyedList::AddNode (0x37a70), so every
 // populator's append binds to the one real body.
 SIZE(CLatencyList, 0x20);
 class CLatencyList : public CKeyedList {
 public:
-    // Forward to the CKeyedList(nBlockSize) ctor (chains CObList(0x1b4867), zeros the
-    // mode). Inlines to new(0x20) + CObList ctor + `mov [obj+0x1c],0`.
+    // Forward to the CKeyedList(nBlockSize) ctor (chains CPtrList(0x1b4867), zeros the
+    // mode). Inlines to new(0x20) + CPtrList ctor + `mov [obj+0x1c],0`.
     CLatencyList(i32 nBlockSize) : CKeyedList(nBlockSize) {}
 
     // 0x37910: latch `mode` at +0x1c and route to Populate<mode> (mode 1..5), report

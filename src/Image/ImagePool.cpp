@@ -31,13 +31,13 @@
 //                       file by extension (.BMP/.PCX/.PAL -> sibling loaders); the
 //                       former CImageExtLoader view is folded in (proven same `this`).
 //
-// The pool walks/edits the CObLists through the real MFC CObList (AddTail/
+// The pool walks/edits the CObLists through the real MFC CPtrList (AddTail/
 // RemoveAll/RemoveAt are NAFXCW, reloc-masked via library labels) and
 // (de)allocates nodes through the engine RezAlloc/RezFree. The CFileIO/CFile
 // stack objects in the file loaders carry dtors -> C++ EH frames -> this TU
 // builds with /GX. Field names are placeholders; only OFFSETS + code bytes are
 // load-bearing.
-#include <Mfc.h>             // CObList / POSITION / CFile + <windows.h> PALETTEENTRY
+#include <Mfc.h>             // CPtrList / POSITION / CFile + <windows.h> PALETTEENTRY
 #include <Image/Image.h>     // CRezImage - the shared DIB-surface class (the pool's surface node)
 #include <Image/ImagePool.h> // the canonical CImagePool (this TU owns its bodies)
 #include <Rez/RezMgr.h>      // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
@@ -318,7 +318,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail((CObject*)node);
+    node->m_listPosition = m_surfaces.AddTail(node);
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -362,7 +362,7 @@ CRezImage* CImagePool::AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCou
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail((CObject*)node);
+    node->m_listPosition = m_surfaces.AddTail(node);
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -406,7 +406,7 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail((CObject*)node);
+    node->m_listPosition = m_surfaces.AddTail(node);
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -451,7 +451,7 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail((CObject*)node);
+    node->m_listPosition = m_surfaces.AddTail(node);
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -495,7 +495,7 @@ CRezImage* CImagePool::AddSurfaceConvert(i32 src, i32 pal) {
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail((CObject*)node);
+    node->m_listPosition = m_surfaces.AddTail(node);
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -536,7 +536,7 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
         }
         return 0;
     }
-    node->m_listPosition = m_palettes.AddTail((CObject*)node);
+    node->m_listPosition = m_palettes.AddTail(node);
     return node;
 }
 
@@ -562,7 +562,7 @@ CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
         }
         return 0;
     }
-    node->m_listPosition = m_palettes.AddTail((CObject*)node);
+    node->m_listPosition = m_palettes.AddTail(node);
     return node;
 }
 
@@ -586,7 +586,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
         }
         return 0;
     }
-    node->m_listPosition = m_palettes.AddTail((CObject*)node);
+    node->m_listPosition = m_palettes.AddTail(node);
     return node;
 }
 
@@ -612,7 +612,7 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
         }
         return 0;
     }
-    node->m_listPosition = m_palettes.AddTail((CObject*)node);
+    node->m_listPosition = m_palettes.AddTail(node);
     return node;
 }
 
@@ -1369,8 +1369,12 @@ void CRezImage::FillRect(CRezFillRect* r, i32 color) {
 // graph reschedules the whole /O2 regalloc and flips it 100<->66. It last re-surfaced
 // when CImageExtLoader was folded into ApiCallerStubs::CImagePaletteNode, and again
 // when CFileImageSurface (Image.h) was reparented onto its real CDDSurface base (R53
-// reloc-fidelity fix). Body byte-faithful; kept per the clean-room mandate (a correct
-// de-view / reloc-fidelity fix outranks a collateral regalloc %).
+// reloc-fidelity fix), and again (100->66.44) when m_surfaces/m_palettes were retyped
+// from CObList to their real class CPtrList (LIST-AUDIT: every CImagePool list call
+// targets the band whose vtable 0x1eb054 slot-0 CRuntimeClass names "CPtrList").
+// Proven causal + isolated: reverting ONLY this TU's two files restores it to 0-diff.
+// Body byte-faithful; kept per the clean-room mandate (a correct de-view /
+// reloc-fidelity fix outranks a collateral regalloc %).
 RVA(0x00176da0, 0x4b)
 void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
     CRezFillRect r;

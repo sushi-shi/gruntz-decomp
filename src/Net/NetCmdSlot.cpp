@@ -12,7 +12,7 @@
 //       M_c1230 == GetRange, M_c12b0 == FindCmd, M_c11b0 == RemoveCmd, M_c0c70 ==
 //       ProcessCmd, M_c00a0 == FindCmdSlot, M_c0290 == Verify(i32)).
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing.
-#include <Net/NetMgr.h>           // canonical CNetSession / CNetCmdSlot / CObList / CObject
+#include <Net/NetMgr.h>           // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
 #include <Gruntz/GruntzCmdMgr.h>  // CNetGameMgr::m_6c real command manager (EnqueueCommand)
 #include <Gruntz/GruntzCommand.h> // canonical CGruntzCommand/Single/Multi (slot-7 Parse)
 #include <Ints.h>
@@ -1043,7 +1043,7 @@ char* __stdcall NetCmdIdToString(i32* arr) {
 RVA(0x000c1170, 0x26)
 void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
     if (cmd != 0 && FindCmd(cmd->m_seq) == 0) {
-        m_cmds.AddTail((CObject*)cmd);
+        m_cmds.AddTail(cmd);
     }
 }
 

@@ -1,7 +1,7 @@
 // LobbyGroupList.cpp - the /GX listbox-populate method (0x178470) of the network
 // lobby's group/session manager (the DPlay-ish enum cluster around 0x178xxx:
 // ClearGroupList/ReadGroupSel/EnumPlayersInto/...). It resets the target listbox,
-// walks the manager's embedded object list (CObList head @+0x20, iterated through
+// walks the manager's embedded object list (CPtrList head @+0x20, iterated through
 // the position latch @+0x7c), and for each interface object - unless the caller's
 // filter (flags bit1 -> IsInterface2, bit2 -> IsInterface1) rejects it - adds its
 // GetName() text and stashes the object pointer as the item data.
@@ -16,7 +16,7 @@
 
 // A list element: a DPlay-ish interface object with name + kind probes.
 struct LobbyIface {};
-// A CObList node: {pNext@0, pPrev@4, data@8}.
+// A CPtrList node: {pNext@0, pPrev@4, data@8}.
 struct LobbyNode {
     LobbyNode* m_next;  // +0x00
     char m_pad4[4];     // +0x04  pPrev
@@ -27,7 +27,7 @@ class CLobbyGroupMgr {
 public:
     void PopulateGroupList(HWND hList, i32 flags); // 0x178470
 
-    // Inlined CObList::GetNext(m_iterPos)-with-null-guard: return the current node's
+    // Inlined CPtrList::GetNext(m_iterPos)-with-null-guard: return the current node's
     // object and advance the position latch; null position -> null.
     LobbyIface* GetNext() {
         LobbyNode* p = m_iterPos;
@@ -39,7 +39,7 @@ public:
     }
 
     char m_pad0[0x20];
-    LobbyNode* m_listHead; // +0x20  list head node (CObList m_pNodeHead)
+    LobbyNode* m_listHead; // +0x20  list head node (CPtrList m_pNodeHead)
     char m_pad24[0x7c - 0x24];
     LobbyNode* m_iterPos; // +0x7c  iteration position latch
 };

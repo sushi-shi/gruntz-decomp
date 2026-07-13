@@ -23,7 +23,7 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Mfc.h>           // CObList (item list in CTabzBuilder) + RECT
+#include <Mfc.h>           // CPtrList (item list in CTabzBuilder) + RECT
 #include <Gruntz/SbRect.h>       // the by-value geometry rect the slot-11 Setup takes
 #include <Gruntz/StatusBarItem.h> // the REAL base (was the CSbDialogItem fabrication)
 
@@ -179,8 +179,8 @@ public:
     char _00[0x0c];
     TabzSub* m_c; // +0x0c
     char _10[0xd4 - 0x10];
-    CObList m_d4; // +0xd4  item list (AddTail)
-    char _padd4[0x1f4 - (0xd4 + sizeof(CObList))];
+    CPtrList m_d4; // +0xd4  item list (AddTail)
+    char _padd4[0x1f4 - (0xd4 + sizeof(CPtrList))];
     CSBI_Image* m_1f4; // +0x1f4
     CSBI_Image* m_1f8; // +0x1f8
     CSBI_Image* m_1fc; // +0x1fc

@@ -12,7 +12,7 @@
 // queues - see include/Gruntz/GruntzCommand.h. Names are placeholders; offsets +
 // code bytes are load-bearing.
 //
-// The manager destructor (0x085bd0) carries a /GX EH frame (the inline CObList
+// The manager destructor (0x085bd0) carries a /GX EH frame (the inline CPtrList
 // teardown is the destructible sub-object); this TU is built flags="eh".
 #include <Mfc.h> // afx-first umbrella (windows.h for the 0x92ab0 DialogProc; BoundaryTailViews needs MFC)
 #include <Gruntz/GruntzCmdMgr.h>
@@ -240,9 +240,9 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
         } else if (m_38->m_2c->GetStateId() == 0x11) {
             ((CGruntzCommand*)cmd)->m_submitted = 4; // submit-context = ready
         }
-        m_1c.AddTail((CObject*)cmd);
+        m_1c.AddTail(cmd);
     }
-    m_base.AddTail((CObject*)cmd);
+    m_base.AddTail(cmd);
 }
 
 // ---------------------------------------------------------------------------
@@ -794,7 +794,7 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
         if (!cmd->Serialize(stream, 7, a3, a4)) {
             return 0;
         }
-        m_base.AddTail((CObject*)cmd);
+        m_base.AddTail(cmd);
         idx++;
     } while (idx < (u32)count);
     return 1;
@@ -827,7 +827,7 @@ i32 __stdcall IsActive2(void* enable) {
 // the destructor (0x085bd0, out-of-band stray; /GX EH frame). Body:
 // ClearAndReset() (null the manager + drain everything); the compiler then runs
 // the implicit member teardown (~m_1c then ~m_base, reverse declaration order),
-// each an inline ~CObList. The EH frame tracks which sub-object is live across
+// each an inline ~CPtrList. The EH frame tracks which sub-object is live across
 // the teardown.
 RVA(0x00085bd0, 0x56)
 CGruntzCmdMgr::~CGruntzCmdMgr() {

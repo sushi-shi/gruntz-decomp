@@ -33,16 +33,10 @@
 struct CStepCoord {
     i32 x, y;
 };
-struct CStepNode { // g->m_320 pending-coord node
-    CStepNode* m_next;
-    i32 _04;
-    void* m_8; // +0x08
-};
-struct CStepList {             // g->m_31c (CObList view)
-    void* Find1de8(void** it); // 0x1de8
-    void RemoveAll1b48a6();    // 0x1b48a6
-    char _00[4];
-};
+// CStepNode/CStepList were fake views of the grunt's occupied-coord list: it is the
+// REAL MFC CPtrList (CGrunt::m_31c), whose POSITION is a GruntCoordNode, and Find1de8
+// was never a method - 0x1de8 thunks to the free __stdcall ListNodeAdvance(void**).
+void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 struct CStepSub10 { // g->m_10
     char _00[0x5c];
     i32 m_5c, m_60; // +0x5c, +0x60
@@ -104,20 +98,20 @@ struct CStepMgr {                                      // this (ebp)
 
 extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
-// Drain the pending-coord list onto g_coordPool via the CObList Find walk, then
+// Drain the pending-coord list onto g_coordPool via the CPtrList Find walk, then
 // empty the list.
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
-        CStepNode* nd = (CStepNode*)(g)->m_320;                                                    \
+        GruntCoordNode* nd = (g)->CoordHead();                                                    \
         if (nd != 0) {                                                                             \
             do {                                                                                   \
-                void* r = ((CStepList*)&(g)->m_31c)->Find1de8((void**)&nd);                        \
+                void* r = ListNodeAdvance((void**)&nd);                                            \
                 if (*(i32*)r != 0) {                                                               \
                     g_coordPool.Push((void*)(*(i32*)r));                                           \
                 }                                                                                  \
             } while (nd != 0);                                                                     \
         }                                                                                          \
-        ((CStepList*)&(g)->m_31c)->RemoveAll1b48a6();                                              \
+        (g)->m_31c.RemoveAll();                                                                    \
     }
 
 // Recompute the grid dirty rect (m_60) as the {0,0,w,h} box intersected with a copy
@@ -166,7 +160,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
         g->GetScreenPos((GruntTilePos*)&tp);
         CGrunt* nb = QueryTile4098(tp.x >> 5, tp.y >> 5, m_8c, m_90);
         if (nb != 0) {
-            if (g->m_coordCount != 0) {
+            if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
             // board distance nb <-> g
@@ -228,7 +222,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
         CStepSub10* s = (CStepSub10*)cur->m_10;
         if (g->RectContains(s->m_5c, s->m_60) != 0) {
             // arrived on this tile
-            if (g->m_coordCount != 0) {
+            if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
             g->m_arrivalCol = -1;
@@ -264,14 +258,14 @@ i32 CStepMgr::Step33520(CGrunt* g) {
             g->m_dwell = 0;
             g->m_arrivalRow = -1;
             g->m_defenderState = 0;
-            if (g->m_coordCount != 0) {
+            if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
             g->m_dwell = 0;
             goto tail;
         }
         // dist <= m_a4: drain + recompute dirty rect + retarget
-        if (g->m_coordCount != 0) {
+        if (g->CoordCount() != 0) {
             STEP_DRAIN(g);
         }
         CStepCoord c0, c1, c2, c3;
@@ -316,7 +310,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
 
 tail:
     if (ShouldStepGrunt(g)) {
-        if (g->m_coordCount == 0 && (u32)g->m_dwell > (u32)m_a0 && m_f8 != 0) {
+        if (g->CoordCount() == 0 && (u32)g->m_dwell > (u32)m_a0 && m_f8 != 0) {
             CStepGoal* e = m_f4[rand() % m_f8];
             CGrunt_TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
             g->m_dwell = 0;
@@ -330,7 +324,6 @@ SIZE_UNKNOWN(CStepCoord);
 SIZE_UNKNOWN(CStepGoal);
 SIZE_UNKNOWN(CStepGrid);
 SIZE_UNKNOWN(CStepMgr);
-SIZE_UNKNOWN(CStepNode);
 SIZE_UNKNOWN(CStepOwner);
 SIZE_UNKNOWN(CStepRectInit);
 SIZE_UNKNOWN(CStepSub10);

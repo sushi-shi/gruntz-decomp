@@ -52,7 +52,7 @@
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.
 extern "C" CGameRegistry* g_gameReg;
 
-// The record-list node (CTriggerMgr::m_recHead): the MFC CObList node shape
+// The record-list node (CTriggerMgr::m_recHead): the MFC CPtrList node shape
 // {next, prev, data}; the data payload of a record node is the placed (x,y)
 // pair (CTrigPoint). Completes TriggerMgr.h's forward declaration for this TU
 // (the header's sanctioned per-TU completion pattern).

@@ -1,7 +1,7 @@
 // TileTriggerContainer.cpp - Gruntz CTileTriggerContainer (C:\Proj\Gruntz).
 //
-// A 4-CObList container: a base sub-object at +0x00 (head +0x04) plus three more
-// CObList members at +0x1c / +0x38 / +0x54 (heads +0x20 / +0x3c / +0x58).  The
+// A 4-CPtrList container: a base sub-object at +0x00 (head +0x04) plus three more
+// CPtrList members at +0x1c / +0x38 / +0x54 (heads +0x20 / +0x3c / +0x58).  The
 // accessors find/move/remove heap command elements (CTileTriggerLogic) across the
 // lists; an element is destroyed inline (stamp vtable + RezFree) before its node
 // is unlinked.  The /GX ~dtor + RemoveAll empty all four lists; AddToList1/3
@@ -10,7 +10,7 @@
 //
 // The dynamic this-tracer originally lumped these RVAs under
 // CTileTriggerSwitchLogic; they are a DIFFERENT shape (verified by the EH dtor
-// 0xc8640 destroying three CObList sub-objects at +0x1c/+0x38/+0x54 and the base
+// 0xc8640 destroying three CPtrList sub-objects at +0x1c/+0x38/+0x54 and the base
 // at +0x00 - not the +0x04 child-list switch-logic layout).
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
@@ -51,7 +51,7 @@ SIZE_UNKNOWN(TtcElem);
 // ---------------------------------------------------------------------------
 // CTileTriggerContainer::Dtor
 // The /GX destructor: runs the most-derived teardown (DtorBase) then destroys the
-// four CObList sub-objects in reverse declaration order (m_list3, m_list2,
+// four CPtrList sub-objects in reverse declaration order (m_list3, m_list2,
 // m_list1, m_base), each at its own EH trylevel.
 // ---------------------------------------------------------------------------
 RVA(0x000c8640, 0x70)
@@ -105,10 +105,10 @@ void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60() {}
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::RemoveByKeys
-// Walks the child list (head @ +0x04, an MFC CObList: node next@0, prev@4, data@8);
+// Walks the child list (head @ +0x04, an MFC CPtrList: node next@0, prev@4, data@8);
 // on the first child whose +0x04 == k2 and +0x10 == k1, deletes the child (inlined
-// dtor vptr-restamp + RezFree), unlinks the node via CObList::RemoveAt, returns 1.
-// Returns 0 if no match. The loop is the inlined CObList::GetNext idiom: a saved
+// dtor vptr-restamp + RezFree), unlinks the node via CPtrList::RemoveAt, returns 1.
+// Returns 0 if no match. The loop is the inlined CPtrList::GetNext idiom: a saved
 // position (cur, esi) + the GetNext local (pn, ecx) are two distinct node copies;
 // pn advances node then derefs data, so retail materializes the extra `mov ecx,eax`
 // copy and defers the data load past the advance.
@@ -128,10 +128,10 @@ i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
                 data->~CTileTriggerSwitchLogic();
                 ::operator delete(data);
             }
-            // this's leading {vptr,head,tail,count} overlay a CObList (own vtable
-            // 0x1eae8c differs, so no inheritance) - retail reuses CObList::RemoveAt
+            // this's leading {vptr,head,tail,count} overlay a CPtrList (own vtable
+            // 0x1eae8c differs, so no inheritance) - retail reuses CPtrList::RemoveAt
             // (0x1b4ac7) on it directly; cur is the node position.
-            ((CObList*)this)->RemoveAt((POSITION)cur);
+            ((CPtrList*)this)->RemoveAt((POSITION)cur);
             return 1;
         }
     }
@@ -309,7 +309,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     }
 
     TtcObList* list = logicType == 0x17 ? &m_list2 : &m_list1;
-    list->AddTail((CObject*)obj);
+    list->AddTail(obj);
     if (logicType == 0x15 && (a1 == 0x67 || a1 == 0x68)) {
         m_70 = obj;
     }
@@ -352,7 +352,7 @@ CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
     m->m_10 = 1;
     m->m_20 = a7;
     ((CTileActionEvent*)m)->SetActionCode((i32)a1);
-    m_list3.AddTail((CObject*)m);
+    m_list3.AddTail(m);
     return m;
 }
 
@@ -413,7 +413,7 @@ TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4,
     m->m_1c = c;
     m->m_24 = a;
     ((CTileActionEvent*)m)->SetActionCode((i32)a1);
-    m_list3.AddTail((CObject*)m);
+    m_list3.AddTail(m);
     return m;
 }
 
@@ -461,7 +461,7 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
     e->m_30 = 0;
     e->m_30 = a7;
     e->m_24 = (i32)g_645588;
-    m_list1.AddTail((CObject*)e);
+    m_list1.AddTail(e);
     return e;
 }
 
@@ -650,7 +650,7 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
                 }
             } else if (r == -1) {
                 m_list2.RemoveAt((POSITION)cur);
-                m_list1.AddTail((CObject*)elem);
+                m_list1.AddTail(elem);
             }
         } while (node != 0);
     }
@@ -678,7 +678,7 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
         void* elem = cur->m_data;
         if (elem == data) {
             m_list1.RemoveAt((POSITION)cur);
-            m_list2.AddTail((CObject*)elem);
+            m_list2.AddTail(elem);
             *((i32*)elem + 14) = 0; // elem+0x38
             return 1;
         }
@@ -804,7 +804,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         if (e == 0) {
             return 0;
         }
-        m_base.AddTail((CObject*)e);
+        m_base.AddTail(e);
     }
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
@@ -812,7 +812,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         if (e == 0) {
             return 0;
         }
-        m_list1.AddTail((CObject*)e);
+        m_list1.AddTail(e);
     }
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
@@ -820,7 +820,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         if (e == 0) {
             return 0;
         }
-        m_list2.AddTail((CObject*)e);
+        m_list2.AddTail(e);
     }
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
@@ -830,7 +830,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
             return 0;
         }
         m->m_14 = this;
-        m_list3.AddTail((CObject*)m);
+        m_list3.AddTail(m);
     }
     if (LoadFlag74(s) == 0) {
         return 0;

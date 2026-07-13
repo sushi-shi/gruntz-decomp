@@ -1,13 +1,13 @@
 // GruntzCmdMgr.h - CGruntzCmdMgr, the per-game command/target queue the game
 // manager owns at CGruntzMgr+0x6c (BroadcastCmd at 0x093460 dispatches into it).
 //
-// SHAPE (recovered from the 11-method cluster + the engine CObList method set):
-//   +0x00  base CObList   - the primary queue of game-object targets. Its
+// SHAPE (recovered from the 11-method cluster + the engine CPtrList method set):
+//   +0x00  base CPtrList   - the primary queue of game-object targets. Its
 //                           m_nCount lives at +0x0c (the count the drain/iterate
 //                           loops test). RemoveTail()/AddTail()/FindIndex()/
-//                           RemoveAt()/RemoveAll() are the engine CObList methods
+//                           RemoveAt()/RemoveAll() are the engine CPtrList methods
 //                           (FLIRT-named; reloc-masked thiscall callees).
-//   +0x1c  nested CObList - a second 0x1c-byte CObList (the +0x1c "selected
+//   +0x1c  nested CPtrList - a second 0x1c-byte CPtrList (the +0x1c "selected
 //                           subset" queue). Enqueue (0x023d10) adds to BOTH this
 //                           and the base; its head is torn down in the dtor.
 //   +0x38  m_38           - a manager pointer (a CGameMgr-family object whose
@@ -16,39 +16,39 @@
 //                           (0x0239d0) installs it; ClearAndReset (0x0239f0)
 //                           nulls it then drains.
 //
-// Non-polymorphic (no vptr of its own; the base CObList is not virtual). Field
+// Non-polymorphic (no vptr of its own; the base CPtrList is not virtual). Field
 // names are placeholders; only the OFFSETS + code bytes are load-bearing. The
-// destructor (0x085bd0) carries a /GX EH frame (the inline CObList teardown is
+// destructor (0x085bd0) carries a /GX EH frame (the inline CPtrList teardown is
 // the destructible sub-object) - the home TU is built with flags="eh".
 #ifndef GRUNTZ_GRUNTZCMDMGR_H
 #define GRUNTZ_GRUNTZCMDMGR_H
 
-#include <Mfc.h> // the REAL MFC CObList (GzObList IS CObList; see the note below)
+#include <Mfc.h> // the REAL MFC CPtrList (GzObList IS CPtrList; see the note below)
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
-// One CObList sub-object (0x1c bytes). Only the engine methods the cluster
+// One CPtrList sub-object (0x1c bytes). Only the engine methods the cluster
 // reaches are declared; all are reloc-masked thiscall callees in the engine
-// CObList region (FLIRT-named). The body is never reproduced here.
-//   m_4  head node (CObList m_pNodeHead)
-//   m_8  tail node (CObList m_pNodeTail)
+// CPtrList region (FLIRT-named). The body is never reproduced here.
+//   m_4  head node (CPtrList m_pNodeHead)
+//   m_8  tail node (CPtrList m_pNodeTail)
 //   m_c  m_nCount (the queue length the loops test)
-// GzObList IS the MFC CObList (<Mfc.h>) - every one of its methods was already annotated with
-// the NAFXCW library rva: RemoveAll @0x1b48a6, ~CObList @0x1b48c6, AddTail @0x1b4991, RemoveTail
+// GzObList IS the MFC CPtrList (<Mfc.h>) - every one of its methods was already annotated with
+// the NAFXCW library rva: RemoveAll @0x1b48a6, ~CPtrList @0x1b48c6, AddTail @0x1b4991, RemoveTail
 // @0x1b4a27, RemoveAt @0x1b4ac7, FindIndex @0x1b4afe. Declaring them on a class of OUR name
 // mangled them as ?RemoveAll@GzObList@@QAEXXZ / ??1GzObList@@QAE@XZ / ... - symbols NAFXCW does
-// NOT define (it defines ?RemoveAll@CObList@@QAEXXZ / ??1CObList@@UAE@XZ), i.e. 9 guaranteed
+// NOT define (it defines ?RemoveAll@CPtrList@@QAEXXZ / ??1CObList@@UAE@XZ), i.e. 9 guaranteed
 // `unresolved external symbol`s (assert_relocs --fake-targets). Aliasing the REAL class binds
 // them all and is layout-identical (0x1c). The raw m_4/m_8/m_c fields the leaves walked are
-// MFC-protected, so they now go through CObList's PUBLIC accessors GetHeadPosition()/GetCount(),
+// MFC-protected, so they now go through CPtrList's PUBLIC accessors GetHeadPosition()/GetCount(),
 // which are _AFXCOLL_INLINE and lower to the identical single member load - not a call.
-// (The same CTmObList->CObList / CFileIO->CFile fold.)
-typedef CObList GzObList;
+// (The same CTmObList->CPtrList / CFileIO->CFile fold.)
+typedef CPtrList GzObList;
 
 class GzStateProvider; // defined below; Select() takes the +0x38 state sub-object
 
-// A queued target object the loops walk (the CObList node payload). The drain/
+// A queued target object the loops walk (the CPtrList node payload). The drain/
 // iterate loops read a type/key byte at +0x06, an index byte at +0x04, and a
 // flags word at +0x0c, and dispatch the object's own vtable slots +0x24/+0x28.
 // Modeled polymorphically so `obj->Select()` emits the thiscall virtual dispatch
@@ -114,7 +114,7 @@ public:
     virtual i32 GetTag(); // +0x18 (index 6)
 };
 
-// One node of the base CObList the write pass walks: next@+0x00, payload@+0x08.
+// One node of the base CPtrList the write pass walks: next@+0x00, payload@+0x08.
 SIZE_UNKNOWN(GzCmdNode);
 struct GzCmdNode {
     GzCmdNode* m_0; // +0x00  next node

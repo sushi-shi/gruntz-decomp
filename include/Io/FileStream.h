@@ -63,7 +63,7 @@ SIZE_UNKNOWN(CFileIODispatch); // reinterpret dispatch view (never constructed)
 // and NAFXCW.LIB defines ?Open@CFile@@... / ??0CFile@@... - 42 guaranteed `unresolved external
 // symbol`s. Aliasing the REAL class makes every one of them resolve, and is codegen-identical
 // because it is the same class: same 0x10 layout, same 23-slot vtable, same slot order.
-// (Exactly the CTmObList->CObList / CTmByteArray->CByteArray fold.)
+// (Exactly the CTmObList->CPtrList / CTmByteArray->CByteArray fold.)
 //
 // No SIZE()/VTBL() annotation any more: the layout and the ??_7 belong to the library now.
 typedef CFile CFileIO;

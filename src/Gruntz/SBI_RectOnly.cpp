@@ -1,4 +1,4 @@
-#include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CObList consumers below)
+#include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CPtrList consumers below)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
 #include <Gruntz/LevelSync.h>           // CLevelSync + its referents (was a TU-local view)
@@ -1830,7 +1830,7 @@ SIZE_UNKNOWN(C10bbe0);
 // first enabled rect whose span contains the point, else null. Same point-in-rect
 // predicate as HitTest, materialized to a bool per retail.
 // @early-stop
-// ~95.3%: the walk is now byte-exact instruction-for-instruction (the CObList
+// ~95.3%: the walk is now byte-exact instruction-for-instruction (the CPtrList
 // GetNext two-copy idiom - cur=n; n=n->m_next; r=cur->m_payload - reproduces retail's
 // `mov eax,esi; mov esi,[esi]; mov eax,[eax+8]` in all three loops; raised 94.08->95.27
 // from the old payload-first shape). Residual is a pure esi<->edx register-naming

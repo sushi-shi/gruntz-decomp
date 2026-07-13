@@ -84,8 +84,8 @@ extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles 
 RVA(0x00032ce0, 0x448)
 i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
     if (g->m_stamina >= 0x64) {
-        if (g->m_coordCount != 0) {
-            GruntTilePos* c = (GruntTilePos*)g->m_324->m_coord;
+        if (g->CoordCount() != 0) {
+            GruntTilePos* c = (GruntTilePos*)g->CoordTail()->m_coord;
             i32 col = c->m_x;
             i32 row = c->m_y;
             CScanGrid* grid = m_c;
@@ -96,7 +96,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
                 flags = 1;
             }
             if ((flags & 0x4000) && grid->m_8[row][col].m_type == 0x99) {
-                GruntCoordNode* n = g->m_320;
+                GruntCoordNode* n = g->CoordHead();
                 while (n != 0) {
                     GruntCoordNode* cur = n;
                     n = n->m_next;
@@ -108,7 +108,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
                 return 1;
             }
         }
-        if (g->m_dwell > m_cc && g->m_coordCount == 0) {
+        if (g->m_dwell > m_cc && g->CoordCount() == 0) {
             CScanGrid* grid = m_c;
             GruntTilePos tp;
             g->GetScreenPos((GruntTilePos*)&tp);

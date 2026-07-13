@@ -22,7 +22,7 @@
 #include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c)
-#include <Mfc.h>                  // CObList (CRecPtrList fold)
+#include <Mfc.h>                  // CPtrList (CRecPtrList fold)
 #include <rva.h>
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
@@ -355,7 +355,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
                 node = next;
             } while (node != 0);
         }
-        ((CObList*)(p + 0x31c))->RemoveAll();
+        ((CPtrList*)(p + 0x31c))->RemoveAll();
     }
 
     // Rebuild m_31c from a count of 8-byte free-list nodes.
@@ -370,12 +370,12 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
             g_coordPool.m_freeHead = nf;
         }
         ar->Read(item, 8);
-        ((CObList*)(p + 0x31c))->AddTail((CObject*)item);
+        ((CPtrList*)(p + 0x31c))->AddTail(item);
     }
 
     // Drain + free the m_338 list.
     while (*(void**)(p + 0x344) != 0 && *(i32*)((char*)*(void**)(p + 0x33c) + 8) != 0) {
-        void* rem = ((CObList*)(p + 0x338))->RemoveHead();
+        void* rem = ((CPtrList*)(p + 0x338))->RemoveHead();
         RezFree(rem);
     }
 
@@ -389,7 +389,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
             item = mem;
         }
         ar->Read(item, 0x2c);
-        ((CObList*)(p + 0x338))->AddTail((CObject*)item);
+        ((CPtrList*)(p + 0x338))->AddTail(item);
     }
 
     // Push the level-config event(s) into the command buffer at +0x10.

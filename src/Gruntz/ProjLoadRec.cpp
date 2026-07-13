@@ -7,7 +7,7 @@
 //
 // Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
-#include <Rez/RezList.h>         // CRezList / CRezListNode (CObList::AddTail @0x1b4991)
+#include <Rez/RezList.h>         // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
 #include <Gruntz/SerialObjRef.h> // CSerialArchive, CDDrawSubMgrLeaf (KeyOfValue), CSerialObj
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)
 #include <string.h>              // inline strlen / strcpy over the scratch buffer
@@ -37,7 +37,7 @@ extern FreeNodePool g_coordPool;
 // of raw fields, a 7-entry name-ref loop (CMapStringToOb::Lookup @0x1b8438 through
 // reg->m_2c->m_10), a single CMapPtrToPtr::Lookup @0x1b8760 (through reg->m_8->m_48)
 // gated on the looked-up object's type code (virtual +0x20 == 5), then a g_coordPool.m_freeHead
-// node-splice loop appending 8-byte payloads onto m_204 (CObList::AddTail @0x1b4991).
+// node-splice loop appending 8-byte payloads onto m_204 (CPtrList::AddTail @0x1b4991).
 // Mode 4 = WRITE: re-derives each ref's name via reg->m_2c->KeyOfValue_152d30 and
 // writes it back. Either way it tail-chains the base loader (0x16f4a0), then runs an
 // embedded CSerialObjRef record at +0x150 (read/write a key name + 0x10 blob, resolve
@@ -95,7 +95,7 @@ struct CProjNode {
     void* m_08; // +0x08
 };
 
-// The +0x204 list the read path appends payloads to (CObList::AddTail @0x1b4991);
+// The +0x204 list the read path appends payloads to (CPtrList::AddTail @0x1b4991);
 // sized to one pointer so the following fields keep their offsets.
 // a3->m_7c->m_c->m_2c is the registry leaf; CSerialObj/CSerialNameHolder give m_7c
 // and m_0c, but the inlined +0x150 record reaches m_c (not m_0c) - the same shape at
