@@ -26,6 +26,7 @@
 #include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (frame collection; slots 10/14/15/16)
 #include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
+#include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
 #include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
 #include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance_15c360)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
@@ -162,40 +163,11 @@ extern "C" u32 g_6bf3bc; // 0x2bf3bc
 // init) at the new-site, then drives the slot-11 Resolve virtual and, on failure,
 // the slot-1 scalar dtor. Real-polymorphic (all-vtables mandate).
 // ---------------------------------------------------------------------------
-struct CFrameWorker {
-    virtual void GetRuntimeClass();          // [0]  +0x00
-    virtual ~CFrameWorker();                 // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Serialize();                // [2]  +0x08 (ILT)
-    virtual void AssertValid();              // [3]  +0x0c (ILT)
-    virtual void Dump();                     // [4]  +0x10 (ILT)
-    virtual void HasFrames();                // [5]  +0x14 (ILT)
-    virtual void IsValidImage();             // [6]  +0x18 (ILT)
-    virtual void FreeAll();                  // [7]  +0x1c  CImage::FreeAll
-    virtual void GetImageCategory();         // [8]  +0x20 (ILT)
-    virtual void Create24();                 // [9]  +0x24  CImage::Create24
-    virtual void LoadDispatch();             // [10] +0x28  CImage::LoadDispatch
-    virtual i32 Resolve(void* src, i32 arg); // [11] +0x2c  CImage::Resolve
-
-    inline CFrameWorker(i32 frameNumber, void* parent) {
-        m_04 = frameNumber;
-        m_08 = 0;
-        m_0c = parent;
-        m_10 = 0;
-        m_14 = 0;
-        m_2c = 0;
-        m_30 = 0;
-    }
-
-    i32 m_04;              // +0x04  frame number
-    i32 m_08;              // +0x08
-    void* m_0c;            // +0x0c  parent (sprite->m_c)
-    i32 m_10;              // +0x10  (zeroed)
-    i32 m_14;              // +0x14  (zeroed)
-    char _18[0x2c - 0x18]; // +0x18  (untouched)
-    i32 m_2c;              // +0x2c
-    i32 m_30;              // +0x30
-};
-SIZE(CFrameWorker, 0x34);
+// (the CFrameWorker stand-in is GONE - it WAS CImage, exactly as its own comment above
+// said: RTTI .?AVCImage@@, the SHARED ??_7CImage@@6B@ vtable @0x1eaa2c, 0x34 bytes, the
+// same 13 slots. Its ~12 declared-only virtuals mangled as ?X@CFrameWorker@@ - PHANTOMS
+// no obj and no .LIB could ever define. The canonical <Image/CImage.h> class emits the
+// real ??_7CImage vtable whose slots are all rva-bound bodies, so they resolve.)
 
 // The image format/state helper (CImageFrame::m_format) is a ShadeSelector; its Select
 // @0x14dd90 resolves the shade table for a format. TU-local decl (shade-table unit).
@@ -1304,12 +1276,27 @@ void CDDrawWorker::DeleteAll() {
 // (n loaded eagerly). The rotation is the entry coloring, not source-steerable;
 // flipping the guard operands didn't move it. ~84%, logic complete.
 RVA(0x00151f00, 0xa4)
-CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
+CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     if (n < m_frames.m_nSize && m_frames.m_pData[n] != 0) {
         return 0;
     }
-    CFrameWorker* worker = new CFrameWorker(n, m_c);
-    if (!worker->Resolve(src, mode)) { // slot 11 @+0x2c  CImage::Resolve
+    // Two casts SURVIVE here, and they are honest: they are telling us two types above them
+    // are still fake, NOT something to force away.
+    //   (CImageParent*)m_c - CSprite::m_c is still `void* m_c` (Sprite.h). Type that member
+    //                        and this falls out.
+    //   (CParseSource*)src - InsertFrame's `void* src` is a VIRTUAL-SLOT signature shared
+    //                        with CDDrawWorker::InsertFrame (slot 14, the SAME rva 0x151f00 -
+    //                        worth a look on its own), so retyping it ripples through that
+    //                        vtable. Deferred, not bodged.
+    CImage* worker = new CImage;
+    worker->m_status = n;
+    worker->m_08 = 0;
+    worker->m_parent = (CImageParent*)m_c;
+    worker->m_width = 0;
+    worker->m_height = 0;
+    worker->m_surface = 0;
+    worker->m_owned = 0;
+    if (!worker->Resolve((CParseSource*)src, mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
             delete worker; // slot 1 @+0x04  scalar-deleting dtor
         }

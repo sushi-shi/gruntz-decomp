@@ -21,7 +21,7 @@
 #include <rva.h>
 
 struct CSprite;
-struct CFrameWorker;
+class CImage; // the frame element IS the real CImage (Image/CImage.h)
 struct CObject;
 struct CFrameGrid; // the frame-grid value the image registry's map yields (CPlay::m_grid)
 
@@ -65,8 +65,8 @@ struct CSprite {
 
     // Insert a frame worker at frame number `n` (0x151f00); bounds-read a frame
     // pointer (0x15cc30). Bodies live in the spriteresource unit.
-    CFrameWorker* InsertFrame(void* src, i32 n, i32 mode); // 0x151f00
-    i32 GetFrame(i32 n); // 0x15cc30 (out-of-line)
+    CImage* InsertFrame(void* src, i32 n, i32 mode); // 0x151f00
+    i32 GetFrame(i32 n);                             // 0x15cc30 (out-of-line)
 };
 
 #endif // GRUNTZ_SPRITE_H
