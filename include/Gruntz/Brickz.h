@@ -58,8 +58,8 @@ struct BrickzCell {
     // without a cast; it is the same 4 bytes. (This is what the CScanCell view in
     // GruntCombat.cpp existed to express.)
     union {
-        i32 m_0;            // +0x00  packed terrain flags
-        u8 m_flagBytes[4];  //        byte view; [3] & 0x20 = the stepped/visited bit
+        i32 m_0;           // +0x00  packed terrain flags
+        u8 m_flagBytes[4]; //        byte view; [3] & 0x20 = the stepped/visited bit
     };
     i32 m_4; // +0x04  per-cell edge/id payload
     char m_pad8[0x0c - 0x08];

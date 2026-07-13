@@ -20,9 +20,9 @@
 #include <Ints.h>
 #include <Mfc.h>        // RECT + IntersectRect (superset of Win32.h; Grunt.h needs MFC)
 #include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord); after Mfc.h (windows.h-first C1189)
-#include <math.h>   // fild/fsqrt/__ftol board distance
-#include <string.h> // inline strcmp type-name gate
-#include <stdlib.h> // engine rand (0x11fee0)
+#include <math.h>       // fild/fsqrt/__ftol board distance
+#include <string.h>     // inline strcmp type-name gate
+#include <stdlib.h>     // engine rand (0x11fee0)
 #include <Globals.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Brickz.h>   // canonical CBrickzGrid == CMapMgr (the board; was the CStepGrid view)
@@ -34,17 +34,16 @@
 struct CStepCoord {
     i32 x, y;
 };
-struct CStepNode { // g->m_320 pending-coord node
+struct CStepNode { // CGrunt::CoordHead() pending-coord node
     CStepNode* m_next;
     i32 _04;
     void* m_8; // +0x08
 };
-struct CStepList {             // g->m_31c (CObList view)
-    void* Find1de8(void** it); // 0x1de8
-    void RemoveAll1b48a6();    // 0x1b48a6
-    char _00[4];
-};
-struct CStepSub10 { // g->m_10
+// (CStepList was a third fake name for the REAL MFC CPtrList at g->m_31c - the same
+// fabrication Grunt.h records as GruntListSub.  Find1de8 @0x1de8 thunks to the free
+// __stdcall ListNodeAdvance @0x29a30; RemoveAll1b48a6 @0x1b48a6 IS CPtrList::RemoveAll.)
+void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
+struct CStepSub10 {                          // g->m_10
     char _00[0x5c];
     i32 m_5c, m_60; // +0x5c, +0x60
 };
@@ -81,7 +80,7 @@ struct CStepMgr {                                      // this (ebp)
     void Finish3e4f(CGrunt* g, CGrunt* cur);           // 0x3e4f
     i32 ShouldStepGrunt(CGrunt* g);                    // 0x2626
     char _00[0x8];
-    CStepBoard* m_8; // +0x08 board (CGrunt*[] grid at +0x1c)
+    CStepBoard* m_8;  // +0x08 board (CGrunt*[] grid at +0x1c)
     CBrickzGrid* m_c; // +0x0c the board (CMapMgr)
     char _10[0x8c - 0x10];
     i32 m_8c, m_90; // +0x8c, +0x90
@@ -103,16 +102,16 @@ extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles 
 // empty the list.
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
-        CStepNode* nd = (CStepNode*)(g)->m_320;                                                    \
+        CStepNode* nd = (CStepNode*)(g)->CoordHead();                                              \
         if (nd != 0) {                                                                             \
             do {                                                                                   \
-                void* r = ((CStepList*)&(g)->m_31c)->Find1de8((void**)&nd);                        \
+                void* r = ListNodeAdvance((void**)&nd);                                            \
                 if (*(i32*)r != 0) {                                                               \
                     g_coordPool.Push((void*)(*(i32*)r));                                           \
                 }                                                                                  \
             } while (nd != 0);                                                                     \
         }                                                                                          \
-        ((CStepList*)&(g)->m_31c)->RemoveAll1b48a6();                                              \
+        (g)->m_31c.RemoveAll();                                                                    \
     }
 
 // Recompute the grid dirty rect (m_60) as the {0,0,w,h} box intersected with a copy
@@ -127,11 +126,11 @@ extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles 
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect((RECT*)&(grid)->m_originX, &ra, &rb)) {                                      \
-            *(RECT*)&(grid)->m_originX = ra;                                                            \
+        if (!IntersectRect((RECT*)&(grid)->m_originX, &ra, &rb)) {                                 \
+            *(RECT*)&(grid)->m_originX = ra;                                                       \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_boundRight - (grid)->m_originX;                                                \
-        (grid)->m_gridH = (grid)->m_boundBottom - (grid)->m_originY;                                                \
+        (grid)->m_gridW = (grid)->m_boundRight - (grid)->m_originX;                                \
+        (grid)->m_gridH = (grid)->m_boundBottom - (grid)->m_originY;                               \
     }
 
 static i32 iabs(i32 v) {
@@ -161,7 +160,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
         g->GetScreenPos((GruntTilePos*)&tp);
         CGrunt* nb = QueryTile4098(tp.x >> 5, tp.y >> 5, m_8c, m_90);
         if (nb != 0) {
-            if (g->m_coordCount != 0) {
+            if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
             // board distance nb <-> g
@@ -223,7 +222,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
         CStepSub10* s = (CStepSub10*)cur->m_10;
         if (g->RectContains(s->m_5c, s->m_60) != 0) {
             // arrived on this tile
-            if (g->m_coordCount != 0) {
+            if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
             g->m_arrivalCol = -1;
@@ -233,10 +232,9 @@ i32 CStepMgr::Step33520(CGrunt* g) {
                 const char* nm =
                     ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr(((CStepOwner*)g->m_14)->m_1c))
                         ->m_0;
-                if (strcmp(nm, s_codeI) != 0 && strcmp(nm, s_codeG) != 0
-                    && strcmp(nm, s_codeL) != 0 && strcmp(nm, s_codeP) != 0
-                    && strcmp(nm, k_60cc94) != 0 && strcmp(nm, k_60cc90) != 0
-                    && strcmp(nm, k_60bebc) != 0) {
+                if (strcmp(nm, s_codeI) != 0 && strcmp(nm, s_codeG) != 0 && strcmp(nm, s_codeL) != 0
+                    && strcmp(nm, s_codeP) != 0 && strcmp(nm, k_60cc94) != 0
+                    && strcmp(nm, k_60cc90) != 0 && strcmp(nm, k_60bebc) != 0) {
                     Finish3e4f(g, cur);
                 }
             }
@@ -259,14 +257,14 @@ i32 CStepMgr::Step33520(CGrunt* g) {
             g->m_dwell = 0;
             g->m_arrivalRow = -1;
             g->m_defenderState = 0;
-            if (g->m_coordCount != 0) {
+            if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
             g->m_dwell = 0;
             goto tail;
         }
         // dist <= m_a4: drain + recompute dirty rect + retarget
-        if (g->m_coordCount != 0) {
+        if (g->CoordCount() != 0) {
             STEP_DRAIN(g);
         }
         CStepCoord c0, c1, c2, c3;
@@ -311,7 +309,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
 
 tail:
     if (ShouldStepGrunt(g)) {
-        if (g->m_coordCount == 0 && (u32)g->m_dwell > (u32)m_a0 && m_f8 != 0) {
+        if (g->CoordCount() == 0 && (u32)g->m_dwell > (u32)m_a0 && m_f8 != 0) {
             CStepGoal* e = m_f4[rand() % m_f8];
             CGrunt_TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
             g->m_dwell = 0;

@@ -218,8 +218,6 @@ enum SpellzEffect {
     SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
 };
 
-
-
 // ==== LoadGruntCombatAnimations @0x597a0 (ex GruntCombatAnim.cpp; its 15 private .data cells + the
 // i324-i332 frag run sit in this TU) ====
 
@@ -477,24 +475,24 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        ((CScanRectInit*)&ra)->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);                           \
-        RECT* pb = ((CScanRectInit*)&rb)->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);                \
+        ((CScanRectInit*)&ra)->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);                   \
+        RECT* pb = ((CScanRectInit*)&rb)->Set34a4(0, 0, (grid)->m_width, (grid)->m_height);        \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect((RECT*)&(grid)->m_originX, &ra, &rb)) {                                      \
-            *(RECT*)&(grid)->m_originX = ra;                                                            \
+        if (!IntersectRect((RECT*)&(grid)->m_originX, &ra, &rb)) {                                 \
+            *(RECT*)&(grid)->m_originX = ra;                                                       \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_boundRight - (grid)->m_originX;                                                \
-        (grid)->m_gridH = (grid)->m_boundBottom - (grid)->m_originY;                                                \
+        (grid)->m_gridW = (grid)->m_boundRight - (grid)->m_originX;                                \
+        (grid)->m_gridH = (grid)->m_boundBottom - (grid)->m_originY;                               \
     }
 
 #define FREELIST_PUSH(elem)                                                                        \
     {                                                                                              \
-        void** node = (void**)((char*)(elem) - g_coordPool.m_linkOffset);                                \
-        *node = g_coordPool.m_freeHead;                                                                        \
-        g_coordPool.m_freeHead = node;                                                                         \
+        void** node = (void**)((char*)(elem) - g_coordPool.m_linkOffset);                          \
+        *node = g_coordPool.m_freeHead;                                                            \
+        g_coordPool.m_freeHead = node;                                                             \
     }
 
 // @early-stop
@@ -539,8 +537,8 @@ SIZE_UNKNOWN(CombatTypeNode);
             g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id = g_typeCounter;                                                                    \
             char* slot = (char*)((_zvec*)&g_nameRegColl)->IndexToPtr(id);                          \
-            i32 n = g_typeColl.m_grown;                                                                   \
-            void** list = (void**)g_typeColl.m_alloc;                                                     \
+            i32 n = g_typeColl.m_grown;                                                            \
+            void** list = (void**)g_typeColl.m_alloc;                                              \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
                     ((CString*)list)->CString::~CString();                                         \
@@ -740,12 +738,12 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
-                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                   // It used to be DEFINED here too: six .cpp files each
-                                   // defined it, i.e. six .bss objects for one global
-                                   // (LNK2005). Only the owner defines; everyone externs.
+extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
+                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
+                                  // It used to be DEFINED here too: six .cpp files each
+                                  // defined it, i.e. six .bss objects for one global
+                                  // (LNK2005). Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -875,8 +873,8 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (*(i32*)((char*)g_gameReg + 0x10) == 0) {
         return;
     }
-    CObject* entry_ob = 0;
-    g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob);
+    void* entry_ob = 0;
+    g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob); // CMapStringToPtr (void*& out)
     GruntSoundEntry* entry = (GruntSoundEntry*)entry_ob;
     if (entry == 0) {
         return;
@@ -922,8 +920,8 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     if (sample != 0) {
         return;
     }
-    CObject* entry_ob = 0;
-    g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob);
+    void* entry_ob = 0;
+    g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob); // CMapStringToPtr (void*& out)
     GruntSoundEntry* entry = (GruntSoundEntry*)entry_ob;
     if (entry == 0) {
         return;
@@ -1033,7 +1031,7 @@ extern "C" void H_4036f2();
 
 // @early-stop
 // large grunt path-cell scan reconstruction (final-sweep candidate): the /GX EH frame
-// from the scratch CObList local, the m_coordCount gate, the 5x5 dirty box + IntersectRect
+// from the scratch CObList local, the coord-count gate, the 5x5 dirty box + IntersectRect
 // clamp, the tracked-coord scan loop firing Probe20f4 (m_arrivalFlags|0x20000000 / m_24c)
 // capped at five hits, the g_coordPool.m_freeHead pop/push + g_coordPool recycle drains, the 9x9
 // neighbour re-scan (flag 0x20040002) and the plane dirty-rect recompute are byte-shaped
@@ -1044,10 +1042,10 @@ extern "C" void H_4036f2();
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan57db0() {
     CBrickzGrid* grid = *(CBrickzGrid**)((char*)g_gameReg + 0x70);
-    if (m_coordCount == 0) {
+    if (CoordCount() == 0) {
         return 1;
     }
-    GruntCoordNode* node = m_320;
+    GruntCoordNode* node = CoordHead();
 
     i32 col5 = m_10->m_5c >> 5;
     i32 row5 = m_10->m_60 >> 5;
@@ -1067,8 +1065,8 @@ i32 CGrunt::PathScan57db0() {
     grid->m_gridW = grid->m_boundRight - grid->m_originX;
     grid->m_gridH = grid->m_boundBottom - grid->m_originY;
 
-    i32 tcol = m_324->m_coord->m_x;
-    i32 trow = m_324->m_coord->m_y;
+    i32 tcol = CoordTail()->m_coord->m_x;
+    i32 trow = CoordTail()->m_coord->m_y;
     i32 hits = 0;
     i32 hitFound = 0;
 
@@ -1087,17 +1085,16 @@ i32 CGrunt::PathScan57db0() {
                 CPtrList s(0xa);
                 i32 scanHit = 0; // SearchEdge's out-slot (NOT a list field: `s` is
                                  // never passed to it - only this cell's address is)
-                i32 res = grid
-                              ->SearchEdge(
-                                  c,
-                                  r,
-                                  co->m_x,
-                                  co->m_y,
-                                  &scanHit,
-                                  1,
-                                  m_arrivalFlags | 0x20000000,
-                                  m_24c
-                              );
+                i32 res = grid->SearchEdge(
+                    c,
+                    r,
+                    co->m_x,
+                    co->m_y,
+                    &scanHit,
+                    1,
+                    m_arrivalFlags | 0x20000000,
+                    m_24c
+                );
                 if (res != 0) {
                     if (scanHit != 0) {
                         hitFound = 1;
@@ -1127,8 +1124,8 @@ i32 CGrunt::PathScan57db0() {
                 SCAN_LIST()->AddTail(fn);
             }
         }
-        if (m_coordCount != 0) {
-            GruntCoordNode* nd = m_320;
+        if (CoordCount() != 0) {
+            GruntCoordNode* nd = CoordHead();
             while (nd != 0) {
                 void* r = ListNodeAdvance((void**)&nd);
                 if (*(i32*)r != 0) {
@@ -1171,17 +1168,16 @@ i32 CGrunt::PathScan57db0() {
                 CPtrList s(0xa);
                 i32 scanHit = 0; // SearchEdge's out-slot (NOT a list field: `s` is
                                  // never passed to it - only this cell's address is)
-                i32 res = grid
-                              ->SearchEdge(
-                                  col5,
-                                  row5,
-                                  col5,
-                                  row5,
-                                  &scanHit,
-                                  1,
-                                  m_arrivalFlags | 0x20040002,
-                                  m_24c
-                              );
+                i32 res = grid->SearchEdge(
+                    col5,
+                    row5,
+                    col5,
+                    row5,
+                    &scanHit,
+                    1,
+                    m_arrivalFlags | 0x20040002,
+                    m_24c
+                );
                 if (res != 0 && scanHit != 0) {
                     void* elem = s.RemoveHead();
                     if (elem != 0) {
@@ -2109,9 +2105,9 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 // class is now declared via <DDrawMgr/DDrawSubMgrLeafScan.h> (added above).
 RVA(0x0005b7e0, 0x23)
 CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
-    CObject* val = 0;
-    m_10.Lookup(key, val);
-    return val;
+    void* val = 0;
+    m_10.Lookup(key, val); // CMapStringToPtr::Lookup @0x1b8438 (void*& out-param)
+    return (CObject*)val;
 }
 
 // ==== GruntSpawnPump @0x5baf0 (ex GruntSpawnPump.cpp; a worker-pump handler whose leaf is CGrunt) ====
