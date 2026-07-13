@@ -91,7 +91,7 @@ struct EngStr4 {
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
 DATA(0x002bf3bc)
-extern "C" i32 g_6bf3bc; // sub-logic clock fed to CAniAdvanceCursor::Advance_15c360
+extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance_15c360
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
 DATA(0x00244c54)
@@ -111,7 +111,7 @@ char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal
 // See docs/patterns/pin-local-for-callee-saved-reg.md.
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360((i32)g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360((i32)g_engineFrameDelta);
 
     i32 areaId;
     i32 subId;

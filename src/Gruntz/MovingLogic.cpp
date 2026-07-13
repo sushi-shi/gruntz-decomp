@@ -25,10 +25,10 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicSerial.h> // CButeText/CMovingLogicBase + the serialize helpers
 #include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
-#include <Globals.h>                  // Update: g_5f04f0 / g_motionNegHalf / g_645588
+#include <Globals.h>                  // Update: g_5f04f0 / g_motionNegHalf / g_frameTime
 #include <rva.h>
 
-// The per-tick time scale (owner-TU def; VA 0x5f04f0). Update: g_645588 * g_5f04f0.
+// The per-tick time scale (owner-TU def; VA 0x5f04f0). Update: g_frameTime * g_5f04f0.
 DATA(0x001f04f0)
 const double g_5f04f0 = 0.001; // 0x5f04f0
 
@@ -208,7 +208,7 @@ i32 CMovingLogicBase::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 // The ms->units scale the elapsed-clock delta is multiplied by (0x5f04f0, a
 // read-only .rdata double read via `fmul [mem]`); sits just before g_motionNegHalf.
 // g_motionNegHalf (0x5f04f8, -0.5) comes via MotionState.h (canonical include).
-// The running game clock g_645588 comes via <Gruntz/MovingLogic.h>.
+// The running game clock g_frameTime comes via <Gruntz/MovingLogic.h>.
 
 // The bound object is the canonical CGameObject (UserLogic.h, via MovingLogic.h):
 // the former MlBoundObject/MlScrollWorker/MlHolder/MlLevel reduced views are
@@ -246,7 +246,7 @@ void CMovingLogic::MovingSlot16() {
     // elapsed clock delta.
     m_140 = (i32)Motion()->m_40;
     m_144 = (i32)Motion()->m_48;
-    Motion()->Step((double)g_645588 * g_5f04f0 - Motion()->m_00);
+    Motion()->Step((double)g_frameTime * g_5f04f0 - Motion()->m_00);
 
     // Carrier ride: while riding (flags bit4 + a latched carrier), fold the
     // carrier's per-frame deltas into the object's position and re-seed the

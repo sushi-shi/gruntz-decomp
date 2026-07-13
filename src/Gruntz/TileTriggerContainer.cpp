@@ -222,7 +222,7 @@ void CTileTriggerContainer::AddLogicFromRecord(i32 type, i32 a2, CTrigSourceReco
 // deletes the leaf (inline ~CTileTriggerLogic: ??_7 stamp + m_1c=0 + RezFree).
 // @early-stop  (~70%)
 // /GX jump-table + per-`new` trylevel regalloc wall.  Full body + all four ctor / new /
-// delete / AddTail / ??_7CTileTriggerLogic / g_645588 relocs bind - this is what binds
+// delete / AddTail / ??_7CTileTriggerLogic / g_frameTime relocs bind - this is what binds
 // both forwarders' CALLs (reloc_fidelity tiletriggercontainer -> 0 UNBOUND).  The
 // residual is the documented /O2 register-allocation coin-flip (same lever as the
 // AddLogicDefaults @early-stop just above): retail keeps exactly THREE callee-saved regs
@@ -289,7 +289,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             obj->m_10 = a5;
             obj->m_1c = 1;
             obj->m_34 = a6;
-            obj->m_24 = g_645588;
+            obj->m_24 = g_frameTime;
             obj->m_2c = a8;
             obj->m_dutyOn = 0;
             obj->m_28 = a7;
@@ -297,7 +297,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             if (logicType != 0x1a && a9 == 0) {
                 obj->m_30 = a7;
             }
-            obj->m_24 = g_645588;
+            obj->m_24 = g_frameTime;
             ok = 1;
         }
     }
@@ -454,13 +454,13 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
     e->m_20 = this;
     e->m_1c = 1;
     e->m_dutyOn = 0;
-    e->m_24 = g_645588;
+    e->m_24 = g_frameTime;
     e->m_28 = 0;
     e->m_34 = 0;
     e->m_2c = 0;
     e->m_30 = 0;
     e->m_30 = a7;
-    e->m_24 = g_645588;
+    e->m_24 = g_frameTime;
     m_list1.AddTail(e);
     return e;
 }

@@ -193,10 +193,10 @@ void CTimer::Reset() {
 }
 
 // The clock + frame-gate globals the Tick/Draw paths read (external delinked
-// DATA, reloc-masked). g_645588 is the running game clock; g_curPlayer a level
-// base index; g_6455a0 a draw-throttle frame counter; g_645588 the start clock.
+// DATA, reloc-masked). g_frameTime is the running game clock; g_curPlayer a level
+// base index; g_6455a0 a draw-throttle frame counter; g_frameTime the start clock.
 extern "C" {
-    extern u32 g_645588;
+    extern u32 g_frameTime;
 }
 extern "C" i32 g_curPlayer;
 extern "C" u32 g_6455a0; // 0x2455a0 canonical _g_6455a0 (DATA-bound in Multi.cpp)
@@ -230,8 +230,8 @@ i32 CTimer::Tick(i32 dt) {
     if (!m_running) {
         return 1;
     }
-    // remaining = (m_accumLo:m_accumHi) - g_645588 + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
-    i64 rem = *(i64*)&m_accumLo - (u32)g_645588 + *(i64*)&m_baseTimeLo;
+    // remaining = (m_accumLo:m_accumHi) - g_frameTime + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
+    i64 rem = *(i64*)&m_accumLo - (u32)g_frameTime + *(i64*)&m_baseTimeLo;
     i32 v = (rem > 0) ? (i32)rem : 0;
     m_currentMs = v;
 
@@ -247,7 +247,7 @@ i32 CTimer::Tick(i32 dt) {
         ls->m_winLoseBanner = 1;
         ls->m_cueInterval = 0x1f4;
         ls->m_cueIntervalHi = 0;
-        ls->m_cueTimerLo = g_645588;
+        ls->m_cueTimerLo = g_frameTime;
         ls->m_cueTimerHi = 0;
         g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_curPlayer);
         CFocusSlot* slot = &g_gameReg->m_focusSlots[g_curPlayer];

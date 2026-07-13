@@ -8,9 +8,9 @@
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-// The running game clock (g_645588 .data int) stashed into the leaf's +0x58.
+// The running game clock (g_frameTime .data int) stashed into the leaf's +0x58.
 DATA(0x00245588)
-extern "C" i32 g_645588; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
+extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 // CToyPeek::~CToyPeek @0x11c40 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the /GX leaf-dtor archetype).
@@ -39,7 +39,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_124);
     m_countdownLo = 0x1388;
     m_countdownHi = 0;
-    m_startClockLo = g_645588;
+    m_startClockLo = g_frameTime;
     m_startClockHi = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");

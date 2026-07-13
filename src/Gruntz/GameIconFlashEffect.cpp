@@ -17,7 +17,7 @@
 // The per-frame draw-delta the advance cursor consumes (canonical _g_6bf3bc @0x6bf3bc,
 // reloc-masked here). The former g_defaultGeo alias was C++-mangled and UNBOUND -
 // 0x6bf3bc binds to the extern "C" _g_6bf3bc.
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {
@@ -26,7 +26,7 @@ i32 GameIconFlashEffect(CGameObject* obj) {
     if (state != 0) {
         if (state == 5) {
             CAniAdvanceCursor* a = (CAniAdvanceCursor*)((char*)obj + 0x1a0);
-            a->Advance_15c360(g_6bf3bc);
+            a->Advance_15c360(g_engineFrameDelta);
             if (a->m_28 != 0 && a->m_20 == 0) {
                 obj->m_flags |= 0x10000;
                 return 1;

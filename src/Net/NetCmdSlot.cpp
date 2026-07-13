@@ -34,32 +34,31 @@
 // The gA_*/gB_* fields are packed consecutively in retail but retail emits each as
 // its OWN disp-0 .data symbol - so they stay SEPARATE globals (a single struct would
 // emit base+disp and mis-encode the displacement bytes; see NetMgr.h chanStat note).
-DATA(0x00249858)
 char g_649858[0x800]; // 0x249858
 DATA(0x0024a058)
-unsigned char gB_flag; // 0x24a058
+unsigned char gB_flag;  // 0x24a058
 DATA(0x0024a059)
-i32 gB_val; // 0x24a059
+i32 gB_val;  // 0x24a059
 DATA(0x0024a05d)
-i32 gB_m14; // 0x24a05d
+i32 gB_m14;  // 0x24a05d
 DATA(0x0024a061)
-i32 gB_e04; // 0x24a061
+i32 gB_e04;  // 0x24a061
 DATA(0x0024a065)
-unsigned char gB_e08; // 0x24a065
+unsigned char gB_e08;  // 0x24a065
 DATA(0x0024a066)
-unsigned char gB_data; // 0x24a066
+unsigned char gB_data;  // 0x24a066
 DATA(0x0024a8a8)
-unsigned char gA_flag; // 0x24a8a8
+unsigned char gA_flag;  // 0x24a8a8
 DATA(0x0024a8a9)
-unsigned char gA_slot; // 0x24a8a9
+unsigned char gA_slot;  // 0x24a8a9
 DATA(0x0024a8aa)
-i32 gA_seq; // 0x24a8aa
+i32 gA_seq;  // 0x24a8aa
 DATA(0x0024a8b2)
-i32 gA_e04; // 0x24a8b2
+i32 gA_e04;  // 0x24a8b2
 DATA(0x0024a8b6)
-unsigned char gA_e08; // 0x24a8b6
+unsigned char gA_e08;  // 0x24a8b6
 DATA(0x0024a8b7)
-unsigned char gA_data; // 0x24a8b7
+unsigned char gA_data;  // 0x24a8b7
 // The two file-scope debug buffers NetCmdIdToString formats through: a 16-byte
 // per-id wsprintfA scratch (0x64b6a0) and the comma-joined accumulator (0x64b6b0).
 DATA(0x0024b6a0)

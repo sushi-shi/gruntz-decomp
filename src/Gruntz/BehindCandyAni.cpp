@@ -40,7 +40,7 @@ CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 // mirror). Declared extern "C" here so the value-load reloc-masks against the
 // already-matched symbol.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // CBehindCandyAni::GetTypeTag (0x00010030) is now an inline member in the class header.
 
@@ -148,12 +148,12 @@ void CBehindCandyAni::RegisterActs() {
 }
 
 // CBehindCandyAni::AdvanceAnim @0x0adbb0 - re-target the bound object's
-// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc) and
+// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and
 // return 0. Byte-identical to CSimpleAnimation::AdvanceAnim save the call
 // displacement.
 RVA(0x000adbb0, 0x17)
 i32 CBehindCandyAni::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     return 0;
 }
 

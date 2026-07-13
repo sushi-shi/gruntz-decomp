@@ -86,13 +86,13 @@ DATA(0x0024556c)
 // ---------------------------------------------------------------------------
 // A bound-object sub-object on the +0x38 game object: at +0x1a0 sits a helper
 // whose Sync(arg) (0x15c360, __thiscall ret 4) flushes/advances the indicator's
-// draw state. g_6bf3bc (0x6bf3bc, BSS) is the draw-delta the arg carries; it is a
+// draw state. g_engineFrameDelta (0x6bf3bc, BSS) is the draw-delta the arg carries; it is a
 // single view (extern "C" u32) shared with Projectile/CTeleporter/CGruntPuddle.
 // Both are external/no-body so the call + the load reloc-mask.
 // ---------------------------------------------------------------------------
 struct CIndicatorSyncHelper {};
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
+extern "C" u32 g_engineFrameDelta; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 
 // The bute store the powerup setter seeds the "A" node from (g_buteTree.Find).
 // Also the shared activation-name registry types/globals (CActColl / CVariantSlot /

@@ -134,7 +134,7 @@ struct CGMVerRect {
     i32 a, b, c, d;
 };
 extern "C" CGMVerRect g_645cc8; // (the 4-int source @c8/cc/d0/d4)
-extern "C" u32 g_645584;        // (last-frame delta, fed to Step)
+extern "C" u32 g_frameDelta;        // (last-frame delta, fed to Step)
 
 // (g_60ce90 / g_60ce74 were NOT globals: they are the .rdata STRING LITERALS
 //  "CREDITZ" and "MONOLITH" - the credits cue/sound names - re-declared by a previous
@@ -514,7 +514,7 @@ public:
     i32 m_1b8;        // +0x1b8  cleared by the slot-1 loader before the build chain
     i32 m_activation; // +0x1bc  activation / overlay-animation state id
     // +0x1c0..+0x1d0: the four mode words the slot-1 loader stamps last
-    // (m_1c8 = 0x21, m_1cc = 0, m_1c0 = g_645588, m_1c4 = 0).
+    // (m_1c8 = 0x21, m_1cc = 0, m_1c0 = g_frameTime, m_1c4 = 0).
     i32 m_1c0;
     i32 m_1c4;
     i32 m_1c8;

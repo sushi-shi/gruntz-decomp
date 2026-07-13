@@ -59,12 +59,10 @@ extern "C" {
     i32 g_hr = 0; // the raw HRESULT, saved at entry
     DATA(0x002bf6fc)
     i32 g_code = 0; // hr & 0xffff (the (%i) arg); also read by CMulti::ReportNetError
-    DATA(0x002bf700)
     // @undefined-data: a char[] datum here is a STRING (or a run of them); its
     // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
     // in between get swallowed). Inline the literal at its use site instead.
     extern char g_szCode[]; // error-code name buffer; also read by CMulti::ReportNetError
-    DATA(0x002bf740)
     // @undefined-data: a char[] datum here is a STRING (or a run of them); its
     // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
     // in between get swallowed). Inline the literal at its use site instead.

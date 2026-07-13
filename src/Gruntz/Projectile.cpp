@@ -64,7 +64,7 @@ i32 CProjRenderObj::ApplyLookupGeometry(const char* key, i32 flag) {
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
 // the fcomp/mov loads reloc-mask against the named symbols.
 DATA(0x00245584)
-extern "C" i32 g_645584;
+extern "C" i32 g_frameDelta;
 
 // ---------------------------------------------------------------------------
 // Externs the reconstructed projectile methods reference (reloc-masked).
@@ -79,7 +79,7 @@ extern FreeNodePool g_coordPool;
 
 // The draw-clock delta global fed to the render object's anim Tick on detach.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). The DATA pin
 // reloc-masks the `mov ecx,ds:g_gameReg` load against the already-named symbol.
@@ -198,7 +198,7 @@ void CProjectile::ReleaseDeferred(i32) {
 // The 1-arg ctor's spawn constants (reloc-masked DIR32 loads).
 extern "C" {
     DATA(0x00245588)
-    u32 g_645588 = 0;
+    u32 g_frameTime = 0;
 }
 DATA(0x001eaa88)
 const double g_5eaa88 = 0.0;
@@ -678,8 +678,8 @@ void CProjectile::MovingSlot16() {
         if (m_kind == 0x16) {
             ScanTargets(0);
         }
-        m_posX = m_posX + (double)(u32)g_645584 * m_velX * m_velScale;
-        m_posY = m_posY + (double)(u32)g_645584 * m_velY * m_velScale;
+        m_posX = m_posX + (double)(u32)g_frameDelta * m_velX * m_velScale;
+        m_posY = m_posY + (double)(u32)g_frameDelta * m_velY * m_velScale;
         i32 xRes = (i32)(*(double*)&m_roundXLo + m_posX);
         i32 yRes = (i32)(*(double*)&m_roundYLo + m_posY);
         i32 localX = xRes;
@@ -866,7 +866,7 @@ i32 CProjectile::DetachRenderObj() {
     // The +0x1a0 anim sub-object IS a CAniAdvanceCursor (Advance_15c360 @0x15c360); call
     // it directly (retail's DetachRenderObj rel32s straight to 0x15c360, not a forwarder),
     // matching the cast-at-use pattern of the sibling site below (~line 1322).
-    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance_15c360(g_engineFrameDelta);
     CProjRenderObj* r = m_sprite;
     if (r->m_1c8 != 0 && r->m_1c0 == 0) {
         r->m_08 |= 0x10000;
@@ -880,7 +880,7 @@ i32 CProjectile::DetachRenderObj() {
 // 0x317f -> 0xe08b0). Formerly mis-homed as CProjectile::StepMotion: it reads the
 // return-trajectory fields (m_dirX/m_originX/m_phase/m_launched at +0x230..+0x258)
 // which live in CBoomerang (sizeof 0x260), NOT CProjectile (sizeof 0x228). It stays
-// defined here (interleaved in the CProjectile .text band, sharing g_645584 /
+// defined here (interleaved in the CProjectile .text band, sharing g_frameDelta /
 // g_projPhase* with CProjectile::MovingSlot16); CBoomerang inherits ScanTargets and
 // the render/motion members it also touches.
 //
@@ -925,7 +925,7 @@ step:
     // integrate the sin/cos parabola into the render position.
     double s = sin(m_phase);
     double c = cos(m_phase);
-    double amp = (double)g_645584;
+    double amp = (double)g_frameDelta;
     double vx = -m_dirX;
     double vy = m_dirY;
     double px = m_originX + vy * m_velScale * s - vx * amp * c + m_phase;
@@ -1158,7 +1158,7 @@ extern i32 TBombLogic_e1e60();
 
 extern CButeMgr g_buteMgr;
 
-// The running game clock g_645588 is DEFINED above (the spawn-ctor constants).
+// The running game clock g_frameTime is DEFINED above (the spawn-ctor constants).
 
 // The bound game object is the inherited CUserLogic m_10/m_38 (both point at the
 // same CGameObject); the ctor reads/writes it directly (+0x08 flag word, +0x5c/
@@ -1255,14 +1255,14 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = m_object->m_120;
         m_durationHi = 0;
-        m_startTimeLo = g_645588;
+        m_startTimeLo = g_frameTime;
         m_startTimeHi = 0;
         m_fastPhase = 1;
     } else {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
         m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
         m_durationHi = 0;
-        m_startTimeLo = g_645588;
+        m_startTimeLo = g_frameTime;
         m_startTimeHi = 0;
         m_fastPhase = 0;
     }
@@ -1278,9 +1278,9 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
 
 // The +0x1a0 animation sub-mgr the per-frame step advances each draw-delta
 // (Advance 0x15c360, __thiscall ret 4) - the SAME engine sink CTeleporter::Begin
-// drives. The draw-delta mirror (g_6bf3bc) is consumed by the advance.
+// drives. The draw-delta mirror (g_engineFrameDelta) is consumed by the advance.
 SIZE_UNKNOWN(TBombAnimSink);
-// (g_6bf3bc is declared/DATA-pinned in the projectile preamble above.)
+// (g_engineFrameDelta is declared/DATA-pinned in the projectile preamble above.)
 
 // The collision-grid cell lookup the per-frame step folds in three times: the
 // initial state read (out-of-bounds reads as 1) and the two detonate-path
@@ -1331,8 +1331,8 @@ i32 CTimeBomb::LoadAttributes() {
         TBombGridClear(m_object);
         return 0;
     }
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
-    if ((i64)g_645588 - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    if ((i64)g_frameTime - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
         return 0;
     }
     if (m_fastPhase == 0) {
@@ -1340,7 +1340,7 @@ i32 CTimeBomb::LoadAttributes() {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
         m_durationHi = 0;
-        m_startTimeLo = (i32)g_645588;
+        m_startTimeLo = (i32)g_frameTime;
         m_startTimeHi = 0;
         m_fastPhase = 1;
         return 0;

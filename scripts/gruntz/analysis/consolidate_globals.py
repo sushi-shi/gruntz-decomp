@@ -2,31 +2,55 @@
 """consolidate_globals.py - de-proliferate matched-global DATA() bindings.
 
 A matched GLOBAL is bound to its retail address by `DATA(0xADDR)` (include/rva.h)
-sitting above an `extern T g_name;`. Over the campaign matchers RE-DECLARED the
-same global in many TUs, so a single RVA's DATA() can appear in dozens of files
+sitting above its declaration. Over the campaign matchers RE-DECLARED the same
+global in many TUs, so a single RVA's DATA() can appear in dozens of files
 (measured: 118 RVAs in >1 TU). labels.py keeps only the keep-last winner and WARNs
 on the rest; the address binding is silently duplicated.
 
-This tool makes each global's DATA() binding live in ONE place:
+=============================================================================
+THE DEFECT THIS TOOL USED TO CREATE  (fixed 2026-07-13 - do not reintroduce)
+=============================================================================
+This tool used to "consolidate" a global by moving its binding into src/Globals.cpp
+as `DATA(0xADDR)` + `extern T g_name;` - a DECLARATION. Its own banner sold that as
+a feature:
 
-  * src/Globals.cpp - the single DATA() binding point: `DATA(0xADDR) extern T
-    g_name;` exactly once per consolidated global, in the `globals` unit
-    (config/units.toml). labels.py treats `globals` as TRUSTED (the name was
-    authority-checked in the matched TU it came from before being moved here).
-  * include/Globals.h - a plain `extern T g_name;` per global (the canonical
-    reference point for NEW code to include instead of re-declaring).
+    "Unused externs emit no symbols, so the base obj is empty -> matching-neutral."
 
-Each using TU keeps its `extern T g_name;` declaration IN PLACE and loses only the
-`DATA(0xADDR)` macro line above it.
+That sentence IS the bug. An `extern` emits no STORAGE, so NOTHING in the whole tree
+defined the global: the label pass happily binds name->rva (so the symbol looks
+"done" in symbol_names.csv) while every obj carries it as UNDEF. The link can never
+succeed. This single generator shape is why the UNDEFINED-DATA link-defect bucket
+(282 symbols) sat flat for the entire campaign - a data symbol is NEVER produced by
+reconstructing a function, so it could not resolve on its own.
 
-WHY NOT replace the TUs' externs with `#include <Globals.h>`? MEASURED: under
-MSVC 5.0 adding ~270 extern declarations to a TU (via one shared header) PERTURBS
-the optimizer's register allocation for unrelated functions (a DATA() macro emits
-no code, but the extra declarations still shift codegen) - causing objdiff
-regressions. So the externs stay where the matcher wrote them; only the no-op
-`DATA()` macro (which expands to NOTHING under MSVC) is removed - byte-neutral for
-every base obj. Globals.h exists as the documented single reference but is not
-forced into the already-matched TUs.
+THE RIGHT END STATE: src/Globals.cpp should not exist. Every global's DATA() binding
+belongs on its DEFINITION, in its OWNER TU; every other TU keeps a plain local
+`extern`. This tool now homes bindings that way and REFUSES to create a
+declaration-only pen. `--audit` fails on any `DATA()`-on-`extern` left in the tree,
+so the hole cannot silently reopen.
+
+WHY NOT `#include <Globals.h>` everywhere? MEASURED: under MSVC 5.0 adding ~270
+extern declarations to a TU (via one shared header) PERTURBS the optimizer's
+register allocation for unrelated functions - objdiff regressions. So the fix is
+DISPERSAL to owner TUs, never centralisation: TUs keep their own local externs, and
+Globals.h stays a documentation-only reference that is never force-included.
+
+SAFETY GATES on synthesising a definition (each one paid for in real damage):
+  * NEVER a `char[]` / unsized array. Its extent can only be guessed from the gap to
+    the next NAMED address, which SWALLOWS the unnamed $SG string literals in
+    between (measured: g_msgCaption came out 2752 bytes; s_out_of_memory 180 bytes
+    spanning four unrelated strings). Those are compiler-emitted literals, not
+    globals - write the literal at its use site. A wrong-sized array WOULD LINK,
+    which makes it the worst possible defect: a fabrication that passes every gate.
+  * NEVER an INITIALIZED datum whose bytes we cannot transcribe from the retail EXE.
+    A zero-init definition of initialized data is simply wrong.
+  * NEVER a class-typed value (its ctor form is unknown here; e.g. zDArray has no
+    default ctor - retail's static-init thunk calls the 4-arg 0x16de30 ctor).
+  * The owner TU is the UNIQUE referencing TU. If several TUs reference the global,
+    the owner must be settled by xref - "the first file that happens to extern it"
+    is exactly how g_buteMgr would land in BootyCheatState.cpp. Ambiguous -> LEFT IN
+    PLACE and reported, never moved.
+Anything refused is REPORTED, never guessed.
 
 WHAT IS SAFE TO CONSOLIDATE (everything else is left in place + reported):
   * the RVA carries exactly ONE authority-confirmed name in the current build
@@ -241,7 +265,14 @@ def _parse_block(path, rva, start, end, raw, comment, in_linkage=False):
     raw_nc = re.sub(r"/\*.*?\*/", " ", raw, flags=re.S)
     raw_nc = re.sub(r"//[^\n]*", " ", raw_nc)
     decl = re.sub(r"\s+", " ", raw_nc).strip()
-    is_def = ("=" in decl) or ("{" in raw)
+    # A DEFINITION is a decl with an initialiser OR - the case that used to be missed -
+    # one that simply LACKS `extern` (`char g_cheatTable[0xfa0];` is a tentative
+    # definition: it emits storage). Missing that made the tool copy definitions
+    # VERBATIM into Globals.h, so every includer defined the global (C2086 redefinition)
+    # and Globals.cpp emitted a second one. A definition is never moved and never
+    # re-homed.
+    body = re.sub(r'^extern\s+"C"\s*\{?', "", decl).strip()
+    is_def = ("=" in decl) or ("{" in raw) or not re.match(r"extern\b", body or decl)
     # C linkage comes either inline (`extern "C" T g;`) or from an enclosing
     # `extern "C" { ... }` block (in_linkage): both give the C-decorated mangled
     # name, so a member of a linkage block must be re-wrapped when rendered alone.
@@ -648,24 +679,43 @@ HEADER_BANNER = """// Globals.h - the canonical reference declaration of consoli
 //
 // GENERATED by `python3 -m gruntz.analysis.consolidate_globals --apply`; do not
 // hand-edit (re-run the tool). Each consolidated global is declared once here as a
-// plain `extern T g_name;`; its DATA(0xADDR) address binding lives once in
-// src/Globals.cpp (the `globals` unit). NEW code should `#include <Globals.h>`
-// instead of re-declaring a global.
+// plain `extern T g_name;`, purely as DOCUMENTATION of its one true type.
 //
-// NOTE: already-matched TUs deliberately KEEP their in-place externs and are NOT
-// switched to this header - under MSVC 5.0 pulling ~270 extra extern declarations
-// into a TU perturbs the optimizer's register allocation (objdiff regressions),
-// even though a DATA() macro itself emits no code. So this header is the reference,
-// not a forced include. Emits no code -> matching-neutral.
+// This header is NEVER force-included: under MSVC 5.0 pulling ~270 extra extern
+// declarations into a TU perturbs the optimizer's register allocation (measured
+// objdiff regressions). Matched TUs keep their own in-place externs. A global's
+// DATA(0xADDR) binding lives on its DEFINITION in its OWNER TU - not here, and not
+// in a central pen (see src/Globals.cpp).
 """
 
-CPP_BANNER = """// Globals.cpp - the single DATA() binding point for matched engine globals.
+CPP_BANNER = """// Globals.cpp - THE UNHOMED-GLOBAL BACKLOG. Every entry below is a LINK DEFECT.
 //
 // GENERATED by `python3 -m gruntz.analysis.consolidate_globals --apply`; do not
-// hand-edit (re-run the tool). One `DATA(0xADDR)\\nextern T g_name;` per global,
-// authority-trusted by labels.py for the `globals` unit. Unused externs emit no
-// symbols, so the base obj is empty -> matching-neutral.
+// hand-edit (re-run the tool).
+//
+// READ THIS BEFORE ADDING ANYTHING HERE. This file used to be described as "the
+// single DATA() binding point ... unused externs emit no symbols, so the base obj is
+// empty -> matching-neutral". That reassurance was the bug: an `extern` emits no
+// STORAGE, so nothing in the tree defines these globals. The label pass still binds
+// name->rva (they look "done" in symbol_names.csv) while every obj carries them
+// UNDEF - they can NEVER link. A data symbol is never produced by reconstructing a
+// function, so none of this resolves for free.
+//
+// Each `DATA(0xADDR) extern T g_name;` remaining here is therefore an OPEN
+// UNDEFINED-DATA defect, kept in one place only so it is countable. The fix for each
+// is the same: give it ONE real DEFINITION in its OWNER TU (owner = who xrefs it),
+// move the DATA() binding onto that definition, and leave a plain `extern` in the
+// TUs that merely use it. This file shrinks toward EMPTY, and empty is the goal -
+// centralising definitions here instead would just move the lie (and force-including
+// a fat globals header regresses matched TUs through regalloc: measured).
 """
+
+
+def _fwd_set(consolidate):
+    fwd = set()
+    for rva, canon, sites, inc, fd in consolidate:
+        fwd |= fd
+    return fwd
 
 
 def _preamble(consolidate):
@@ -696,21 +746,58 @@ def _split_linkage(consolidate):
     return plain, clink
 
 
-def render_globals_h(consolidate):
+def _as_extern(decl):
+    """Render any decl as a DECLARATION: strip an initialiser and force `extern`.
+    Globals.h is a header - emitting a DEFINITION here (a decl with no `extern`, e.g.
+    `char g_cheatTable[0xfa0];`) defines the global in EVERY includer (C2086)."""
+    d = normalise(decl)
+    d = re.sub(r"\s*=.*$", "", d)                       # drop any initialiser
+    if re.match(r'extern\s+"C"\b', d):
+        return d
+    if not re.match(r"extern\b", d):
+        d = "extern " + d
+    return d
+
+
+def render_globals_h(consolidate, defs=()):
     lines = [HEADER_BANNER, "#ifndef GRUNTZ_GLOBALS_H", "#define GRUNTZ_GLOBALS_H", ""]
     lines += _preamble(consolidate)
     lines.append("")
     plain, clink = _split_linkage(consolidate)
     for rva, canon, sites, inc, fd in plain:
-        lines.append(normalise(canon.decl) + ";")
+        lines.append(_as_extern(canon.decl) + ";")
     if clink:
         # C-linkage globals declared inside an `extern "C" {}` block in their TU:
         # keep them wrapped so the C-decorated mangled name is reproduced and the
         # member decl text matches the TU (idempotency; see from_linkage_block).
         lines += ["", 'extern "C" {']
         for rva, canon, sites, inc, fd in clink:
-            lines.append(normalise(canon.decl) + ";")
+            lines.append(_as_extern(canon.decl) + ";")
         lines.append("}")
+    if defs:
+        # Globals.h must DECLARE every DATA-bound global - including the ones that are
+        # now real DEFINITIONS in their owner TU. TUs `#include <Globals.h>` for the
+        # declaration; dropping it once the global gets defined breaks them (and was
+        # exactly the breakage the first homing run caused).
+        fwd_names = {n for _, n in _fwd_set(consolidate)}
+        lines += ["", "// Globals DEFINED in their owner TU (this is the reference decl)."]
+        seen = set()
+        for b in sorted(defs, key=lambda b: b.var):
+            if b.var in seen:
+                continue
+            # Globals.h is deliberately include-light (<rva.h> only). A class/struct-typed
+            # VALUE cannot be declared here without dragging its header into every
+            # includer - those stay declared in their owner TU / the class's real header.
+            ty = re.sub(r"\[[^\]]*\]", " ", b.type_str)
+            ty = re.sub(r"\b" + re.escape(b.var) + r"\b", " ", ty)
+            ids = [x for x in re.findall(r"[A-Za-z_]\w*", ty)
+                   if x not in BUILTINS and x not in CC_KW]
+            # ...and a POINTER global is only declarable here if its pointee is among
+            # the forward-decls the preamble already emits.
+            if any(x not in fwd_names for x in ids):
+                continue
+            seen.add(b.var)
+            lines.append(_as_extern(b.decl) + ";")
     lines += ["", "#endif // GRUNTZ_GLOBALS_H", ""]
     return "\n".join(lines)
 
@@ -761,7 +848,134 @@ def remove_data_macro(text, block):
     return text[:ls] + pre + text[k:]
 
 
-def apply_changes(consolidate, skipped, do_apply):
+# ---------------------------------------------------------------------------
+# HOMING: a global's DATA() binding belongs on its DEFINITION in its OWNER TU.
+# ---------------------------------------------------------------------------
+
+def _pe_sections():
+    """(name, va, vsize, rawsize) per PE section of the retail EXE, or [] if the EXE
+    is not available (then we simply cannot prove .bss-ness and home nothing)."""
+    import struct
+    exe_path = os.environ.get("GRUNTZ_EXE")
+    if not exe_path or not Path(exe_path).exists():
+        return []
+    data = Path(exe_path).read_bytes()
+    pe = struct.unpack_from("<I", data, 0x3C)[0]
+    nsec = struct.unpack_from("<H", data, pe + 6)[0]
+    optsz = struct.unpack_from("<H", data, pe + 20)[0]
+    out, off = [], pe + 24 + optsz
+    for _ in range(nsec):
+        nm = data[off:off + 8].rstrip(b"\x00").decode(errors="ignore")
+        vsz, va, rsz, _ro = struct.unpack_from("<IIII", data, off + 8)
+        out.append((nm, va, vsz, rsz))
+        off += 40
+    return out
+
+
+def _is_zero_init_data(rva, secs):
+    """True iff `rva` lands in the UNINITIALIZED tail of a data section (retail .bss):
+    the loader zeroes it, so a bare definition reproduces it exactly. Initialized data
+    is refused - a zero-init definition of initialized data is simply wrong."""
+    for nm, va, vsz, rsz in secs:
+        if va <= rva < va + vsz:
+            return nm == ".data" and rva >= va + rsz
+    return False
+
+
+def definable(block, rva, secs):
+    """Can we synthesise an HONEST definition for this global? (ok, reason).
+
+    Every `False` below is a gate paid for in real damage - see the module docstring.
+    """
+    if block.is_def:
+        return False, "already a definition"
+    if not secs:
+        return False, "$GRUNTZ_EXE unavailable - cannot prove the datum is zero-init"
+    if not _is_zero_init_data(rva, secs):
+        return False, ("not zero-init .data - an initialized/.rdata datum needs its "
+                       "RETAIL BYTES transcribed, never a zero-init guess")
+    ty = block.type_str
+    # unsized arrays: the extent can only be guessed from the next NAMED address,
+    # which swallows the unnamed $SG literals in between. Never.
+    if re.search(r"\[\s*\]", ty) or re.search(r"\[\s*\]", block.decl):
+        return False, ("unsized array - its extent would have to be guessed and would "
+                       "swallow the unnamed $SG literals in between")
+    if re.search(r"\bchar\b", ty) and "[" in block.decl:
+        return False, "char[] datum - this is a STRING literal, not a global"
+    core = re.sub(r"\[[^\]]*\]", " ", ty)
+    core = re.sub(r"\b" + re.escape(block.var) + r"\b", " ", core)   # drop the var name
+    core = re.sub(r"\b(extern|const|volatile|static|struct|class|union)\b", " ", core)
+    core = core.replace("*", " ").strip()
+    ids = [x for x in re.findall(r"[A-Za-z_]\w*", core) if x not in CC_KW]
+    is_ptr = "*" in ty
+    if not is_ptr and ids and any(x not in BUILTINS for x in ids):
+        return False, (f"value of a class/struct type ({' '.join(ids)}) - its ctor form "
+                       "is unknown here (e.g. zDArray has no default ctor)")
+    return True, ""
+
+
+def owner_tu(sites):
+    """The TU that OWNS the global = the unique TU that declares/uses it. Several
+    referencing TUs -> the owner must be settled by xref, not by 'first extern'."""
+    files = {s.file.resolve() for s in sites
+             if s.file.resolve() != GLOBALS_CPP.resolve()}
+    return next(iter(files)) if len(files) == 1 else None
+
+
+def audit_tree(blocks):
+    """Every `DATA()`-on-`extern` in the tree is an OPEN undefined-data defect: the
+    name is bound, no storage is emitted, the link can never succeed. Returns the
+    list so the hole cannot silently reopen."""
+    return [b for b in blocks if not b.is_def]
+
+
+def home_definitions(consolidate, do_apply):
+    """Turn each consolidatable global's annotated DECLARATION into a real DEFINITION
+    in its OWNER TU (and drop it from the central pen). Refuses anything it cannot
+    define honestly - see `definable`. Returns (homed, refused)."""
+    secs = _pe_sections()
+    homed, refused = [], []
+    edits = {}   # file -> [(start, end, newtext)]
+    keep = []
+    for entry in consolidate:
+        rva, canon, sites, inc, fd = entry
+        own = owner_tu(sites)
+        if own is None:
+            refused.append((rva, canon.var, "several TUs reference it - the owner must "
+                            "be settled by xref, not by first-extern"))
+            keep.append(entry)
+            continue
+        ok, why = definable(canon, int(rva, 16), secs)
+        if not ok:
+            refused.append((rva, canon.var, why))
+            keep.append(entry)
+            continue
+        site = next(s for s in sites if s.file.resolve() == own)
+        decl = normalise(site.decl)
+        # strip the leading `extern` (keep an `extern "C"` linkage-spec: with an
+        # initializer-less class/POD it must become a definition, so use the block form)
+        if re.match(r'extern\s+"C"\s', decl):
+            body = re.sub(r'^extern\s+"C"\s+', "", decl)
+            newtext = f'DATA({rva})\nextern "C" {{\n{body} = 0;\n}}'
+            if "[" in body:                       # arrays: aggregate zero-init
+                newtext = f'DATA({rva})\nextern "C" {{\n{body} = {{0}};\n}}'
+        else:
+            body = re.sub(r"^extern\s+", "", decl)
+            newtext = f"DATA({rva})\n{body};"
+        cmt = f"  // {site.comment.lstrip('/ ')}" if site.comment else ""
+        newtext += cmt
+        edits.setdefault(site.file, []).append((site.start, site.end, newtext))
+        homed.append((rva, canon.var, str(site.file.relative_to(REPO))))
+    if do_apply:
+        for f, es in edits.items():
+            text = f.read_text()
+            for start, end, new in sorted(es, key=lambda e: e[0], reverse=True):
+                text = text[:start] + new + text[end:]
+            f.write_text(text)
+    return homed, refused, keep
+
+
+def apply_changes(consolidate, skipped, do_apply, defs=()):
     # Drop ONLY the DATA() macro from each using TU site (the extern stays in place);
     # Globals.cpp is regenerated wholesale (never edited in place).
     drop = {}   # file -> [blocks]
@@ -776,7 +990,7 @@ def apply_changes(consolidate, skipped, do_apply):
         for b in sorted(blocks, key=lambda b: b.start, reverse=True):   # bottom-up
             text = remove_data_macro(text, b)
         file_edits[f] = text
-    h = render_globals_h(consolidate)
+    h = render_globals_h(consolidate, defs)
     cpp = render_globals_cpp(consolidate)
     if not do_apply:
         return h, cpp, file_edits
@@ -807,10 +1021,45 @@ def main():
     ap.add_argument("--only-dups", action="store_true",
                     help="consolidate only RVAs declared in >1 site.")
     ap.add_argument("--verbose", action="store_true")
+    ap.add_argument("--audit", action="store_true",
+                    help="FAIL (rc=1) on every DATA()-on-`extern` left in the tree - "
+                         "each one is an open UNDEFINED-DATA defect (the name binds, no "
+                         "storage is emitted, the link can never succeed).")
+    ap.add_argument("--home", action="store_true",
+                    help="home each global's DATA() binding onto a real DEFINITION in "
+                         "its OWNER TU (refuses anything it cannot define honestly).")
     args = ap.parse_args()
 
     blocks = scan_tree()
+
+    if args.audit:
+        bad = audit_tree(blocks)
+        if not bad:
+            log("audit OK - no DATA()-on-`extern` left; every binding sits on a definition")
+            return 0
+        log(f"AUDIT FAIL: {len(bad)} DATA()-on-`extern` binding(s) - each is an OPEN")
+        log("UNDEFINED-DATA defect: the name binds, NO storage is emitted, the link")
+        log("can never succeed. Fix = one real definition in the owner TU.")
+        from collections import Counter
+        for f, n in Counter(str(b.file.relative_to(REPO)) for b in bad).most_common(20):
+            log(f"  {n:4d}  {f}")
+        return 1
+
     consolidate, skipped = plan(blocks, only_dups=args.only_dups)
+
+    if args.home:
+        homed, refused, keep = home_definitions(consolidate, args.apply)
+        log(f"homed {len(homed)} global(s) onto a DEFINITION in their owner TU")
+        for rva, var, f in sorted(homed, key=lambda x: x[2]):
+            log(f"  {var:<28} {rva}  -> {f}")
+        log(f"refused {len(refused)} (reported, never guessed):")
+        from collections import Counter
+        for why, n in Counter(w for _, _, w in refused).most_common():
+            log(f"  {n:4d}  {why}")
+        consolidate = keep
+        if not args.apply:
+            log("dry-run; pass --apply to write.")
+            return 0
     n_sites = sum(len(c[2]) for c in consolidate)
     log(f"scanned {len(blocks)} DATA block(s) across the tree")
     log(f"consolidating {len(consolidate)} rva(s) from {n_sites} site(s) "
@@ -821,7 +1070,9 @@ def main():
         reasons = Counter(r for _, r, _ in skipped)
         for r, n in reasons.most_common():
             log(f"  SKIP {n:4d}  {r}")
-    h, cpp, file_edits = apply_changes(consolidate, skipped, args.apply)
+    defs = [b for b in blocks
+            if b.is_def and b.file.resolve() != GLOBALS_CPP.resolve()]
+    h, cpp, file_edits = apply_changes(consolidate, skipped, args.apply, defs)
     if args.apply:
         log(f"wrote {GLOBALS_H} ({h.count(chr(10))} lines), "
             f"{GLOBALS_CPP} ({cpp.count(chr(10))} lines)")

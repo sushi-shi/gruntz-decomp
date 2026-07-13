@@ -251,7 +251,7 @@ void RegisterWarlordActions() {
 // move (m_28 != 0 && m_20 == 0), resolve the moving animation. Returns 0.
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         ((CGrunt*)this)->ResolveMovingAnimation();
@@ -269,7 +269,7 @@ i32 CWarlord::RearmMoving() {
 // Returns int 0 on every path. Plain /O2 leaf (no destructible local, no /GX use).
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc) != 1) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta) != 1) {
         return 0;
     }
 
@@ -284,7 +284,7 @@ i32 CWarlord::LoadAttributes() {
         }
     }
 
-    if ((i64)(u32)g_645588 - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
+    if ((i64)(u32)g_frameTime - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
         if (rand() % 10 < 5) {
             ((CGrunt*)this)->ResolveIdleAnimation();
             return 0;
@@ -307,12 +307,12 @@ i32 CWarlord::LoadAttributes() {
 // pin-local-for-callee-saved-reg.md): structure/offsets/instruction-selection are
 // byte-exact, but retail keeps g_gameReg in edx (live in BOTH the multiplayer and
 // single-player branches, freeing ecx for the thiscall `this`) while cl parks it
-// in ecx, mirror-swapping g_645588 into the other scratch reg. A pure scratch
+// in ecx, mirror-swapping g_frameTime into the other scratch reg. A pure scratch
 // ecx<->edx coin-flip - no source lever flips it (tried inline vs named helper,
 // m_2c-chain split; all no-change at the same ~91% plateau).
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc) != 1) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta) != 1) {
         return 0;
     }
 
@@ -330,11 +330,11 @@ i32 CWarlord::LoadAttributes2() {
             ((CGrunt*)this)->ResolveMovingAnimation();
             return 0;
         }
-        if ((i64)(u32)g_645588 - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
+        if ((i64)(u32)g_frameTime - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
             ((CRegBattleEvent*)reg->m_cueSink)->PostBattleEvent(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindowLo = 0x7530;
             m_cooldownWindowHi = 0;
-            m_cooldownStampLo = g_645588;
+            m_cooldownStampLo = g_frameTime;
             m_cooldownStampHi = 0;
         }
     }
@@ -347,7 +347,7 @@ i32 CWarlord::LoadAttributes2() {
 // Advance the +0x1a0 anim sub-mgr off the global geo source; bail while it is
 // still animating (m_28==0 || m_20!=0). Once idle, if the fort battle-cue is armed
 // (h->m_288) and this warlord belongs to the local player, re-stamp the cue timer
-// (clear m_2a0, window m_298=0x3e8, start-stamp m_290=g_645588, zero the hi/window-
+// (clear m_2a0, window m_298=0x3e8, start-stamp m_290=g_frameTime, zero the hi/window-
 // hi halves), then re-resolve the moving animation. Returns 0. The registry cue
 // helper is g_gameReg->m_cmdGrid viewed as the warlord threat/cue helper (the same
 // +0x68 multi-view slot LoadAttributes casts). Reached only through the action table.
@@ -363,7 +363,7 @@ i32 CWarlord::LoadAttributes2() {
 extern "C" i32 g_curPlayer; // 0x644c54 (current local player index)
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
@@ -373,7 +373,7 @@ i32 CWarlord::AdvanceMovingAnim() {
         h->m_2a0 = 0;
         CRegThreatHelper* h2 = (CRegThreatHelper*)g_gameReg->m_cmdGrid;
         h2->m_window = 0x3e8;
-        h2->m_stamp = (u32)g_645588;
+        h2->m_stamp = (u32)g_frameTime;
     }
     ((CGrunt*)this)->ResolveMovingAnimation();
     return 0;
@@ -388,7 +388,7 @@ i32 CWarlord::AdvanceMovingAnim() {
 // animation when the sub's state words say it is ready. Returns 0.
 RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         ((CGrunt*)this)->ResolveMovingAnimation();
@@ -403,7 +403,7 @@ i32 CWarlord::RearmMoving2() {
 // particle at the warlord's clamped screen position (registry effect dispatch),
 // arm the panic timer on the registry sub-object, then flag the anim player.
 // DECODED (for the final sweep):
-//   ((CAniAdvanceCursor*)sub)->Advance_15c360(g_6bf3bc);                      // m_38+0x1a0, 0x15c360
+//   ((CAniAdvanceCursor*)sub)->Advance_15c360(g_engineFrameDelta);                      // m_38+0x1a0, 0x15c360
 //   if (sub->m_28 == 0 || sub->m_20 != 0) return;         // ready-to-move gate
 //   CGameObject* o = m_10; i32 x=o->m_5c, y=o->m_60;
 //   if (x in [reg->m_13c, reg->m_144) && y in [reg->m_140, reg->m_148)) {
@@ -411,7 +411,7 @@ i32 CWarlord::RearmMoving2() {
 //     if (spr) { spr->CacheFirstFrame("..."@0x60d30c);    // 0x150540
 //               spr->ApplyLookupGeometry("..."@0x60d30c, 0); } // 0x1505b0
 //   }
-//   ... panic sub reg->m_68 (m_288/m_2a0/m_290 timer arm to 0x3e8/g_645588) ...
+//   ... panic sub reg->m_68 (m_288/m_2a0/m_290 timer arm to 0x3e8/g_frameTime) ...
 //   ... reg->m_150[o->m_124 * 0x48].m_0c = 0 (owner-array slot) ...
 // @early-stop
 // DEFERRED to the final sweep WITH the sprite models: the effect spawn is

@@ -30,7 +30,7 @@ class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
 // The +0x1a0 animation sub-mgr the bring-up advances once each frame (Advance
-// 0x15c360, __thiscall ret 4, takes the g_6bf3bc draw-delta). Its +0x20/+0x28
+// 0x15c360, __thiscall ret 4, takes the g_engineFrameDelta draw-delta). Its +0x20/+0x28
 // int fields gate the one-shot finalize (run once, when +0x28==0 && +0x20!=0).
 // The SAME engine sub-mgr CPathHazard/CSimpleAnimation drive; modeled NO-body so
 // the call reloc-masks.
@@ -42,18 +42,18 @@ struct CTeleAnimSink {
 };
 
 // The per-frame draw-delta mirror (BSS @0x6bf3bc) the sub-mgr Advance consumes.
-// Already named g_6bf3bc in Projectile.cpp; re-declared here, address-pinned.
+// Already named g_engineFrameDelta in Projectile.cpp; re-declared here, address-pinned.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The lookup-geometry key "GAME_TELEPORTER" (VA 0x60bd38) the finalize applies to
 // the bound object via CGameObject::ApplyLookupGeometry (0x1505b0).
 DATA(0x0020bd38)
 extern char g_teleporterGeoKey[]; // s_GAME_TELEPORTER_0060bd38
 
-// The running game clock (g_645588 .data int) stashed into the leaf's +0x58.
+// The running game clock (g_frameTime .data int) stashed into the leaf's +0x58.
 DATA(0x00245588)
-extern "C" u32 g_645588; // VA 0x645588 (?g_clock@@3IA, unsigned)
+extern "C" u32 g_frameTime; // VA 0x645588 (?g_clock@@3IA, unsigned)
 
 // The "B" bute key (0x60d1bc) - the SAME rdata as CInGameIcon.h's g_iconBute;
 // reuse the identical declaration so the reloc pairs.
@@ -124,7 +124,7 @@ public:
     // interval (m_60), each a manually zero-extended i64 (lo stored, hi forced 0) so
     // the per-frame delta test compares them 64-bit; kept as lo/hi i32 pairs because
     // retail emits two separate 32-bit stores (not a sign-extending i64 assign).
-    i32 m_armClockLo;          // +0x58  running-clock snapshot (g_645588)
+    i32 m_armClockLo;          // +0x58  running-clock snapshot (g_frameTime)
     i32 m_armClockHi;          // +0x5c
     i32 m_intervalLo;          // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
     i32 m_intervalHi;          // +0x64

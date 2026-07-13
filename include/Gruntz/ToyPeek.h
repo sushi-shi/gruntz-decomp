@@ -25,7 +25,7 @@ public:
     char m_pad40[0x58 - 0x40];
     // The peek timer: a 64-bit start-clock snapshot (m_startClock) and countdown
     // window (m_countdown), each a lo/hi i32 pair (retail zero-inits both halves).
-    i32 m_startClockLo; // +0x58  running-clock snapshot (g_645588)
+    i32 m_startClockLo; // +0x58  running-clock snapshot (g_frameTime)
     i32 m_startClockHi; // +0x5c
     i32 m_countdownLo;  // +0x60  countdown (0x1388)
     i32 m_countdownHi;  // +0x64

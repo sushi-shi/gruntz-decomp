@@ -212,7 +212,7 @@ static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // (the dead `extern i32 g_defaultGeo` that sat here was an unused, C++-mangled alias of
 // the 0x2bf3bc draw-delta mirror - declared, never referenced; removed)

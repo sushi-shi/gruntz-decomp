@@ -22,7 +22,6 @@
 // operand). ~zDArray (0x16df40) and its emitted ??_7zDArray + the VTBL binding
 // moved to the merged container TU (src/Gruntz/TypeKeyColl.cpp, wave2-H) along
 // with _zvec::GrowTo (0x16da80) - their retail home.
-DATA(0x001e70fc)
 extern void* const zDArrayLiveTable; // 0x5e70fc
 
 // Engine return-address capture helper that seeds the error token.

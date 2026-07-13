@@ -25,7 +25,7 @@
 // eax before the m_c store; cl colors m_1b4 in eax and stores m_c first. Not
 // source-steerable (every operand/declaration reorder reproduced the same coloring).
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The anim sub-player at owner+0x1a0 IS a CDDrawBlitParam (geo setter Setup_15c2d0
 // @0x15c2d0) / CAniAdvanceCursor (advance @0x15c360) - the two canonical engine
@@ -45,7 +45,7 @@ void CEffect6b::Apply(i32 a, i32 b) {
     m_c = m_4->m_1b4;
     ((CDDrawBlitParam*)anim)->Setup_15c2d0((CDDrawBlitParamSrc*)a);
     if (b != 0) {
-        ((CAniAdvanceCursor*)anim)->Advance_15c360((i32)g_6bf3bc);
+        ((CAniAdvanceCursor*)anim)->Advance_15c360((i32)g_engineFrameDelta);
     }
 }
 
@@ -92,7 +92,7 @@ i32 CState95::Step(i32 arg) {
 // has elapsed (which clears the latch), then seed the bound sprite's anim state
 // (m_4c frame / m_50 = 7 / m_58 = 1). Always runs the trailing helper, returns 0.
 DATA(0x00245588)
-extern "C" u32 g_645588;   // tick
+extern "C" u32 g_frameTime;   // tick
 extern i32 g_strikeThresh; // 0x645598
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // 0x64556c
@@ -131,7 +131,7 @@ RVA(0x000b4350, 0x7e)
 i32 CStrikeEffect::Tick() {
     if (m_118 != 0) {
         i32 idx = 5;
-        if ((i64)(u32)g_645588 - m_120 < m_128) {
+        if ((i64)(u32)g_frameTime - m_120 < m_128) {
             if ((u32)g_strikeThresh >= 0x64) {
                 idx = 0;
             }

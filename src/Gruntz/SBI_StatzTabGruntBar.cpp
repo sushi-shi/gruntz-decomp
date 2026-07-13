@@ -20,9 +20,9 @@ extern "C" CStatzGameReg* g_gameReg;
 
 // The running game clock (DAT_00645588; low 32 bits of the engine counter), used by
 // the timer block's 64-bit elapsed-window compare. Same datum the rest of Gruntz
-// reads as g_645588.
+// reads as g_frameTime.
 DATA(0x00245588)
-extern "C" i32 g_645588; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
+extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 // ---------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
 // override/select stack slots ([0x18]<->[0x1c]). No init order / local-decl order
 // flips the slot numbering or the base spill (the table is used twice so the compiler
 // is free either way). Plus the reloc-masked SelectionListFind rel32 + g_gameReg/
-// g_645588 DIR32. Logic complete; deferred to the final sweep (whole-hierarchy model).
+// g_frameTime DIR32. Logic complete; deferred to the final sweep (whole-hierarchy model).
 // 0xea4e0: draw the tab (slot +0x14). Blit each column's background glyph (status/
 // ability/override/select at x-offsets 0/0x14/0x28/0x3c) and, overlaid on it, the
 // resolved value glyph - all onto g_gameReg->m_30->m_4->m_14 (the active render
@@ -214,7 +214,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         timerVal = m_timerValue;
         if (unit->m_alive == 0) {
             timerVal = -1;
-        } else if ((i64)(u32)g_645588 - *(i64*)&m_timerAnchorLo >= *(i64*)&m_timerWindowLo) {
+        } else if ((i64)(u32)g_frameTime - *(i64*)&m_timerAnchorLo >= *(i64*)&m_timerWindowLo) {
             if (timerVal > 0) {
                 timerVal++;
                 if (timerVal > 0xa) {
@@ -225,7 +225,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
             }
             m_timerWindowLo = 0x32;
             m_timerWindowHi = 0;
-            m_timerAnchorLo = g_645588;
+            m_timerAnchorLo = g_frameTime;
             m_timerAnchorHi = 0;
         }
     }

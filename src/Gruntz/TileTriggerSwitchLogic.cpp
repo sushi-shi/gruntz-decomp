@@ -893,7 +893,7 @@ i32 CTileTimeTriggerSwitchLogic::Vf3() {
 // ---------------------------------------------------------------------------
 RVA(0x00112880, 0x12)
 void CTileTriggerLogic::RecordMove() {
-    m_24 = g_645588;
+    m_24 = g_frameTime;
     m_20->MoveList1ToList2(this);
 }
 
@@ -913,7 +913,7 @@ void CTileTriggerLogic::RecordMove() {
 // first-use COMDAT the linker scattered between two OTHER units.
 RVA(0x00112970, 0xad)
 i32 CTileTriggerLogic::Classify(i32 arg) {
-    u32 elapsed = g_645588 - m_24;
+    u32 elapsed = g_frameTime - m_24;
     if (elapsed <= m_2c) {
         goto ret1;
     }

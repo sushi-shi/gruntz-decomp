@@ -36,27 +36,22 @@ DATA(0x0024dad4)
 char* g_sfCurPath = 0; // the path currently being tried
 DATA(0x0024dadc)
 u16 g_sfCfgB12 = 0; // config block B +0xc
-DATA(0x0024dae0)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
 extern char g_sfMusic4[]; // "<drive>:\MUSIC\Gruntz4.SF2"
-DATA(0x0024dc28)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
 extern char g_sfLocal4[]; // "<dir>\Gruntz4.SF2"
-DATA(0x0024dd30)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
 extern char g_sfMusic[]; // "<drive>:\MUSIC\Gruntz.SF2"
-DATA(0x0024de30)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
 extern char g_sfLocal[]; // "<dir>\Gruntz.SF2"
-DATA(0x0024dfa0)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.

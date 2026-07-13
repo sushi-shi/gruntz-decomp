@@ -39,11 +39,11 @@ public:
 // The global default geometry source the re-arm consumes (0x6bf3bc). Bound to the
 // canonical extern "C" _g_6bf3bc (the tree-wide keep-last winner, DATA'd in
 // tilelogicpump); the old C++-mangled g_defaultGeo alias was reloc-UNBOUND.
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The running game clock (low 32 bits of a 64-bit counter at 0x645588; the high
 // half lives in the next word, read together as __int64 in the cooldown clamp).
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // ---------------------------------------------------------------------------
 // The game-registry singleton's threat/spatial helper (g_gameReg->m_cmdGrid, a
@@ -51,7 +51,7 @@ extern "C" u32 g_645588;
 // (0x7d1d0), called directly on m_cmdGrid (see LoadAttributes). This view carries
 // ONLY the fort battle-cue timer sub-block AdvanceMovingAnim arms (armed on the
 // per-frame moving tick): m_288 the cue-armed gate, m_290/m_294 the 64-bit start
-// stamp (g_645588), m_298/m_29c the window (0x3e8 ms), m_2a0 the cue-active flag.
+// stamp (g_frameTime), m_298/m_29c the window (0x3e8 ms), m_2a0 the cue-active flag.
 // @identity-TODO: these +0x290/+0x2a0 cue fields overlap CTriggerMgr's overlay-
 // descriptor / m_pendingFx modeling (a conflation to reconcile cross-lane).
 // ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ public:
     char m_pad00[0x288];
     i32 m_288; // +0x288  cue-armed gate
     char m_pad28c[0x290 - 0x28c];
-    i64 m_stamp;  // +0x290  cue start-stamp (lo=g_645588, hi=0)
+    i64 m_stamp;  // +0x290  cue start-stamp (lo=g_frameTime, hi=0)
     i64 m_window; // +0x298  cue window (lo=0x3e8, hi=0)
     i32 m_2a0;    // +0x2a0  cue-active flag
 };

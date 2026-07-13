@@ -75,7 +75,7 @@ static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // The entrance geometry-source global at 0x2bf3bc the geometry-state setter consumes.
 // 0x2bf3bc is a tree-wide name conflation: ~17 TUs bind it as the placeholder
@@ -84,7 +84,7 @@ extern "C" u32 g_645588;
 // the winning `_g_6bf3bc` so this ref resolves to 0x2bf3bc (reloc-faithful); the true
 // semantic name is unrecovered (conflicting guesses across TUs). Unifying every ref to
 // one canonical name is a cross-lane cleanup (deferred).
-extern "C" i32 g_6bf3bc; // 0x2bf3bc
+extern "C" i32 g_engineFrameDelta; // 0x2bf3bc
 
 // The scratch CString teardown the GetNameRecords reject paths run (defined with the
 // dispatch-machine cluster below); forward-declared for the two entrance-step
@@ -214,7 +214,7 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // gate branch ordering, and the cross-arm regalloc. Deferred to the final sweep.
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
     // The geometry sub-player @m_154+0x1a0: m_20/m_28 live past its own m_1b4, so
     // read via raw offsets off &player->m_1a0 (keeps cl on one base).
     i32* sub = (i32*)((char*)m_154 + 0x1a0);
@@ -464,7 +464,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 // edx/ecx coin-flip; no source lever flips it (an explicit `int z=0;` did not pin).
 RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
-    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc) == 1) {
+    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta) == 1) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         CGruntHud* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
@@ -537,7 +537,7 @@ void CGrunt::LoadEntranceConfig() {
             m_entranceDropActive = 1;
             m_entranceSafeTimeLo = g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 5000);
             m_entranceSafeTimeHi = 0;
-            m_entranceClockLo = g_645588;
+            m_entranceClockLo = g_frameTime;
             m_entranceClockHi = 0;
             m_858 = 0;
             m_85c = 0;
@@ -575,7 +575,7 @@ void CGrunt::LoadEntranceConfig() {
 // as ResetGeometry @0x616e0) - no source lever flips it. ~88.5%.
 RVA(0x00068370, 0x14c)
 void CGrunt::RearmEntranceDrop() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
 
     if (*(i32*)((char*)m_154 + 0x1a0 + 0x28) != 0 && *(i32*)((char*)m_154 + 0x1a0 + 0x20) == 0) {
         m_22c = 0;
@@ -739,7 +739,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_wingzEnabled = 1;
         m_wingzDurationLo = (i32)((double)m_wingzTime * g_wingzScale - g_wingzBias);
         m_wingzDurationHi = 0;
-        m_wingzClockLo = (i32)g_645588;
+        m_wingzClockLo = (i32)g_frameTime;
         m_wingzClockHi = 0;
         CreateWingzTimeSprite();
 
@@ -882,7 +882,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // that whole referent set is a final-sweep task.
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
     char* sub = (char*)m_154 + 0x1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
@@ -1198,7 +1198,7 @@ finalize:
 // cascade (~87.4%). Logic complete; deferred to the final sweep.
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
         if (m_freezeUnfrozen != 0) {
@@ -1217,12 +1217,12 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
         m_idleDelayLo = g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710);
         m_idleDelayHi = 0;
-        m_idleAnchorLo = (i32)g_645588;
+        m_idleAnchorLo = (i32)g_frameTime;
         m_idleAnchorHi = 0;
         m_freezeDelayDone = 0;
     }
     if (m_freezeDelayDone == 0) {
-        if ((i64)(u32)g_645588 - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
+        if ((i64)(u32)g_frameTime - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
             CGruntHud* h = m_10;
@@ -1242,14 +1242,14 @@ i32 CGrunt::LoadFreezeSpellAssets() {
 
 // ---------------------------------------------------------------------------
 // CGrunt::FinishEntranceMove()  @0x69fd0  (__thiscall, ret 0)
-// Arm the entrance geometry source ((CAniAdvanceCursor*)&(m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc)); when
+// Arm the entrance geometry source ((CAniAdvanceCursor*)&(m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta)); when
 // the geometry sub-player is armed-but-not-running (sub+0x28 != 0 && sub+0x20 == 0):
 // unless m_36c is already set, notify the tile-mgr of the drop, then retire the
 // entrance player (m_154->m_8 |= 0x10000). Returns 0.
 RVA(0x00069fd0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
     // 0x15c360 = CAniAdvanceCursor::Advance_15c360 (cast the m_1a0 geometry facet)
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;

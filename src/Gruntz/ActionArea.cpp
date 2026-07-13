@@ -52,17 +52,11 @@ extern CProjReg g_projReg;
 // real definitions live here (DATA-pinned); the single extern is in <Globals.h>.
 DATA(0x0022938c)
 CVariantSlot* g_projRegColl2; // 0x62938c (Insert dispatcher)
-DATA(0x00229390)
 i32 g_projRegLo; // 0x629390
-DATA(0x00229394)
 i32 g_projRegHi; // 0x629394
-DATA(0x00229398)
 char* g_projRegBase; // 0x629398
-DATA(0x0022939c)
 R3Entry* g_projRegCur; // 0x62939c
-DATA(0x002293a0)
 i32 g_projRegStride; // 0x6293a0
-DATA(0x002293a8)
 i32 g_projRegScratch; // 0x6293a8
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
@@ -135,7 +129,7 @@ extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
 
 // The global millisecond tick (_g_645588). The DWORD load reloc-masks.
 DATA(0x00245588)
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // The bound anim sink: m_38 -> anim, anim->m_194 -> sink, sink->Set(brightness).
 struct CPulseAnim {
@@ -280,17 +274,17 @@ RVA(0x00008440, 0xfe)
 i32 CPulseHighlight::Tick() {
     i64* ts = &m_timestamp;
     i32* phase = &m_phase;
-    if ((i64)(u32)g_645588 - *ts >= m_duration) {
+    if ((i64)(u32)g_frameTime - *ts >= m_duration) {
         *phase = (*phase == 0);
         m_duration = 0x1f4;
-        *ts = (u32)g_645588;
+        *ts = (u32)g_frameTime;
     }
     if (*phase != 0) {
-        i64 d2 = (i64)(u32)g_645588 - *ts;
+        i64 d2 = (i64)(u32)g_frameTime - *ts;
         double t = (double)(u32)(d2 < 0 ? 0 : (u32)d2);
         ((CPulseAnim*)m_38)->m_194->SetAllField18((i32)((1.0 - t * 0.002) * 50.0 - (-155.0)));
     } else {
-        i64 d2 = (i64)(u32)g_645588 - *ts;
+        i64 d2 = (i64)(u32)g_frameTime - *ts;
         double t = (double)(u32)(d2 < 0 ? 0 : (u32)d2);
         ((CPulseAnim*)m_38)->m_194->SetAllField18((i32)(t * 0.1 - (-155.0)));
     }

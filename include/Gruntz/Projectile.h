@@ -29,7 +29,7 @@ class CLightFx; // folded CProjShadowActivate
 // The animation sub-object embedded in a render object at +0x1a0. It bridges the two
 // canonical engine classes for this slot: Advance_15c360 (@0x15c360) IS
 // CAniAdvanceCursor::Advance_15c360 (advances the active animation by the draw clock -
-// every call site feeds g_6bf3bc - and returns the anim state: 2 = the fire/cue point
+// every call site feeds g_engineFrameDelta - and returns the anim state: 2 = the fire/cue point
 // the grunt fire step gates on), and SetGeometry (@0x15c2d0) IS
 // CDDrawBlitParam::Setup_15c2d0 (installs the resolved frame-0 sprite). Both are
 // out-of-line forwarders to the real (reloc-masked) methods (defined in

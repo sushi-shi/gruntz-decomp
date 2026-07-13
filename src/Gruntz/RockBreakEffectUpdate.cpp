@@ -18,7 +18,7 @@
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_cmdGrid)
 #include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (was a duplicate .cpp-local view)
 
-extern "C" u32 g_6bf3bc;             // 0x6bf3bc  per-frame draw delta (advance ctx)
+extern "C" u32 g_engineFrameDelta;             // 0x6bf3bc  per-frame draw delta (advance ctx)
 extern "C" CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton
 
 // The target game object (this->m_10): world position + the +0x114 state union.
@@ -64,7 +64,7 @@ struct RbEffect {
 // steerable (a cached-pointer local didn't flip it). Logic + all relocs exact.
 RVA(0x000476b0, 0x69)
 i32 RbEffect::Update() {
-    if (m_38->cursor()->Advance_15c360(g_6bf3bc) == 1) {
+    if (m_38->cursor()->Advance_15c360(g_engineFrameDelta) == 1) {
         RbTarget* t = m_10;
         if (t->m_114 == 1) {
             ((CRockBreakMgr*)g_gameReg->m_cmdGrid)

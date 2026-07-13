@@ -10,9 +10,9 @@
 //
 // AdvanceAnim (0x0abf70) is the per-frame animation-advance: re-target the bound
 // object's animation sub-object (m_38 + 0x1a0) to the current draw-delta
-// (g_6bf3bc) and return 0 - the SAME archetype as CGruntPuddle's remove-path
-// notify (((CGruntPuddleSink*)((char*)m_38 + 0x1a0))->Notify(g_6bf3bc)) and
-// CProjectile::DetachRenderObj's SetAnim(g_6bf3bc).
+// (g_engineFrameDelta) and return 0 - the SAME archetype as CGruntPuddle's remove-path
+// notify (((CGruntPuddleSink*)((char*)m_38 + 0x1a0))->Notify(g_engineFrameDelta)) and
+// CProjectile::DetachRenderObj's SetAnim(g_engineFrameDelta).
 //
 // Field names are placeholders; only OFFSETS + the inheritance chain are
 // load-bearing.

@@ -11,7 +11,7 @@
 //
 // AdvanceAnim (0x0adbb0) is the per-frame animation-advance: re-target the bound
 // object's animation sub-object (m_38 + 0x1a0) to the current draw-delta
-// (g_6bf3bc) and return 0 - byte-identical to CSimpleAnimation::AdvanceAnim
+// (g_engineFrameDelta) and return 0 - byte-identical to CSimpleAnimation::AdvanceAnim
 // (0x0abf70) save the call displacement.
 //
 // Field names are placeholders; only OFFSETS + the inheritance chain are

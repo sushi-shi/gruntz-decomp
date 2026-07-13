@@ -31,7 +31,7 @@ extern "C" void* RezAlloc(u32 n);
 extern "C" void RezFree(void* p);
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // A singly-walked CPtrList node: next@+0x00, data@+0x08 (MFC CList layout, the
 // +0x04 prev slot unused by these walkers).

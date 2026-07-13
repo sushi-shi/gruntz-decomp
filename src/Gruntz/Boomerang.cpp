@@ -18,7 +18,7 @@
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
-#include <Globals.h> // g_projPhase0, g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_645588
+#include <Globals.h> // g_projPhase0, g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_frameTime
 #include <rva.h>
 #include <Io/FileMem.h> // CFileMemBase - the CGruntArchive stream (Read/Write dispatch)
 
@@ -48,7 +48,7 @@ extern "C" CGameRegistry* g_gameReg;
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 extern FreeNodePool g_coordPool;
-extern "C" u32 g_645588; // 0x245588  running game clock (return-record base)
+extern "C" u32 g_frameTime; // 0x245588  running game clock (return-record base)
 
 // The boomerang return-trajectory constants (.rdata doubles). DATA-pinned here (the
 // only referencing TU) so the fmul/fdivr loads reloc-mask against the named symbols.
@@ -98,7 +98,7 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
     if (g != 0) {
         g->m_280 = (i32)(d * m_flightDist * g_boomRetC3 - g_boomRetC4);
         g->m_284 = 0;
-        g->m_278 = g_645588;
+        g->m_278 = g_frameTime;
         g->m_27c = 0;
         if (g->CoordCount() != 0) {
             GruntCoordNode* n = g->CoordHead();
@@ -156,5 +156,5 @@ i32 CBoomerang::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 
 // CBoomerang::MovingSlot16 (slot 16 @0xe08b0, the boomerang motion step) is defined
 // out-of-line in Projectile.cpp (interleaved in the CProjectile .text band, and it
-// shares g_645584/g_projPhase* with CProjectile::MovingSlot16 there). SIZE + VTBL
+// shares g_frameDelta/g_projPhase* with CProjectile::MovingSlot16 there). SIZE + VTBL
 // live in <Gruntz/Boomerang.h>.

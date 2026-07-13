@@ -134,7 +134,7 @@ public:
                                  //        elements are THIS class, not the 0x8c switch logic
                                  //        whose dtor zeroes +0x20)
     CTileTriggerContainer* m_20; // +0x20  owning container
-    u32 m_24;                    // +0x24  game-clock snapshot (g_645588)
+    u32 m_24;                    // +0x24  game-clock snapshot (g_frameTime)
     u32 m_28;                    // +0x28  duty on-span (unsigned duration)
     u32 m_2c;                    // +0x2c  lead-in span (unsigned duration)
     u32 m_30;                    // +0x30  duty off-span (unsigned duration)

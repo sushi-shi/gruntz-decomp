@@ -160,7 +160,7 @@ void CTriggerMgr::HudRect(RECT r, i32 flag) {
                         g->CreateHealthSprite();
                         g->m_888 = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
                         g->m_88c = 0;
-                        g->m_880 = g_645588;
+                        g->m_880 = g_frameTime;
                         g->m_884 = 0;
                     }
                 }
@@ -1923,7 +1923,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         g->m_combatTimeoutLo =
                             g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
                         g->m_combatTimeoutHi = 0;
-                        g->m_combatClockLo = g_645588;
+                        g->m_combatClockLo = g_frameTime;
                         g->m_combatClockHi = 0;
                         CGameObject* spr =
                             g_gameReg->m_world->m_8
@@ -2251,7 +2251,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
 // completion timer and (when the live surface is free) plays its sound cue;
 // the other states reseat the timer or run the grunt death animation.
 // g_sndEnabled/g_sndCueTag/g_killCueClock are declared in the rock-break
-// section above; g_645588 in <Gruntz/TriggerMgrViews.h>.
+// section above; g_frameTime in <Gruntz/TriggerMgrViews.h>.
 // ===========================================================================
 // CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
 // modeled in <Gruntz/SoundCueMgr.h>). The +0x28 cue holder (name->cue map @+0x10,
@@ -2307,7 +2307,7 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
                 LeafCue* p = (LeafCue*)p_ob;
                 m_298 = p->m_10->m_28 + 500;
                 m_29c = 0;
-                m_290 = g_645588;
+                m_290 = g_frameTime;
                 m_294 = 0;
                 CSndHost* h28 = m_22c->m_28;
                 if (h28->m_emitGate == 0) {
@@ -2340,7 +2340,7 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
             m_288 = 2;
             m_298 = 3000;
             m_29c = 0;
-            m_290 = g_645588;
+            m_290 = g_frameTime;
             goto Lab_565;
         case 5:
             m_288 = 2;
@@ -2350,14 +2350,14 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
         Lab_522:
             m_298 = 3000;
             m_29c = 0;
-            m_290 = g_645588;
+            m_290 = g_frameTime;
             goto Lab_565;
         default:
             return;
     }
     m_298 = 3000;
     m_29c = 0;
-    m_290 = g_645588;
+    m_290 = g_frameTime;
 Lab_565:
     m_294 = 0;
 Lab_56b:

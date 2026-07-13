@@ -32,7 +32,7 @@
 // The per-frame draw-delta mirror (BSS @0x6bf3bc) the RenderImage animate path
 // consumes to advance/wrap the request's m_44 counter. Canonical binding in
 // Projectile.cpp; declared address-pinned here (reloc-masked).
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The image-source format tag (CParseSource::GetTag, a packed 3-char fourcc) that
 // both Resolve and Reload dispatch on to pick the format loader index (1..4). Named
@@ -524,7 +524,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
 // ---------------------------------------------------------------------------
 // 0x153470 (vtable slot 14): RenderImage - the sprite blit-mode/clip selector.
 // Reads the request's m_mode word: bit 1 culls; bit 8 runs the per-frame animate
-// step (wrap m_44 against the draw-delta g_6bf3bc, toggling the live bit) and gates
+// step (wrap m_44 against the draw-delta g_engineFrameDelta, toggling the live bit) and gates
 // on bit 0x10000000; bits 2/4 pick the flip variant and m_owned picks surface-vs-
 // shaded, dispatching one of the 7 CImage::Blit* routines. The eighth combination
 // (no flip, no owned sprite) is the inlined "plain surface" path: compute the on-
@@ -546,12 +546,12 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
         return;
     }
     if (mode & 8) {
-        if (g_6bf3bc >= info->m_44) {
+        if (g_engineFrameDelta >= info->m_44) {
             info->m_44 = info->m_48;
             mode ^= 0x10000000;
             info->m_mode = mode;
         } else {
-            info->m_44 -= g_6bf3bc;
+            info->m_44 -= g_engineFrameDelta;
         }
         mode = info->m_mode;
         if (!(mode & 0x10000000)) {

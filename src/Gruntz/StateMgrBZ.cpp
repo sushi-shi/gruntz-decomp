@@ -1,6 +1,6 @@
 #include <rva.h>
 #include <DinMgr2/DirectInputMgr2.h>
-// StateMgrBZ.cpp - the engine input/control state singleton (*g_645578). Built
+// StateMgrBZ.cpp - the engine input/control state singleton (*g_spawnConfig). Built
 // from the DirectInputMgr2 (*g_645570) with control mode 6 by the game's Init
 // (0x83450); driven each frame by CGruntzMgr::TickStateMgrs (0x920b0 -> Flush).
 //

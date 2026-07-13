@@ -51,19 +51,19 @@ DATA(0x0024556c)
 struct CPathSubMgr {};
 
 // A frame/tick counter (BSS, @0x6bf3bc) the sub-mgr Advance consumes. Already
-// named g_6bf3bc in src/Gruntz/Projectile.cpp; re-declared here, address-pinned.
+// named g_engineFrameDelta in src/Gruntz/Projectile.cpp; re-declared here, address-pinned.
 DATA(0x002bf3bc)
 extern "C" u32 g_pathTick;
 
 // The integer step seed the integrator scales by the per-frame speed
-// (g_645584 = .data int). Already used as g_slimeFrameScale in KitchenSlime.cpp.
+// (g_frameDelta = .data int). Already used as g_slimeFrameScale in KitchenSlime.cpp.
 DATA(0x00245584)
 extern i32 g_pathStepSeed; // VA 0x645584
 
 // (The +0x108 new-leg seed at 0x645588 is the running game clock. It used to be
 // re-declared here as `g_pathLegTag` under C++ linkage - a third name for a datum whose
-// ONE definition is Projectile.cpp's extern-"C" g_645588, so ?g_pathLegTag@@3HA was an
-// unresolved external. PathHazard.cpp now reads g_645588 directly.)
+// ONE definition is Projectile.cpp's extern-"C" g_frameTime, so ?g_pathLegTag@@3HA was an
+// unresolved external. PathHazard.cpp now reads g_frameTime directly.)
 
 // 0.0 (the velocity-sign comparand). Already g_slimeZero in KitchenSlime.cpp.
 DATA(0x001ea400)

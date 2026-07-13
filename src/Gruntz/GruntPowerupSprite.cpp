@@ -134,7 +134,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 // Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     CGruntEntry* e = ((CGruntEntry**)((char*)g_gameReg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_object->m_screenX = e->m_renderable->m_screenX;

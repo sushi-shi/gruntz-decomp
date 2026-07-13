@@ -32,9 +32,9 @@ extern CButeTree g_buteTree;
 
 // The running game clock (DAT_00645588; low 32 bits of the engine counter) and
 // the draw-clock delta the per-frame animation re-target reads (DAT_006bf3bc).
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // A .data global the ctor copies into the bound object's +0x124 (DAT_0064553c).
 
@@ -269,7 +269,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_124 = g_64553c;
     m_activeWindow = 0;
     m_idleWindow = m_object->m_120;
-    m_pulseEpoch = g_645588;
+    m_pulseEpoch = g_frameTime;
     CObject* entry_ob = 0;
     ((HazSndRoot*)g_gameReg->m_world)->m_cat->m_map.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
     HazLookupEntry* entry = (HazLookupEntry*)entry_ob;
@@ -364,7 +364,7 @@ i32 CStaticHazard::LoadAttributes2() {
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
         return 0;
     }
-    u32 phase = g_645588 - m_pulseEpoch;
+    u32 phase = g_frameTime - m_pulseEpoch;
     u32 base = (u32)m_object->m_118;
     if (phase <= base) {
         return 0;
@@ -401,7 +401,7 @@ i32 CStaticHazard::LoadAttributes2() {
 // grid-cell op sites spill against retail's stack-slot schedule. Parked for sweep.
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::LoadAttributes() {
-    u32 phase = (g_645588 - m_pulseEpoch) - (u32)m_object->m_118;
+    u32 phase = (g_frameTime - m_pulseEpoch) - (u32)m_object->m_118;
     u32 rem = phase % (u32)(m_idleWindow + m_activeWindow);
     if (rem > (u32)m_activeWindow) {
         // idle window
@@ -469,7 +469,7 @@ i32 CStaticHazard::LoadAttributes() {
     }
 
 dispatch:
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc) == 2) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta) == 2) {
         i32 a = 0, b = 0;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {

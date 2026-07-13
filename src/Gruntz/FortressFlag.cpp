@@ -71,7 +71,7 @@ CFortressFlagActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition
 
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The bound sprite/game-object is the inherited CUserLogic m_10 (a CGameObject*):
 // the tag-8 fixup reads its +0x124 sprite-selector key and re-seeds the
@@ -338,11 +338,11 @@ void CFortressFlag::RegisterActs() {
 }
 
 // CFortressFlag::AdvanceAnim @0x0463e0 - re-target the bound object's animation
-// sub-object (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc) and return 0.
+// sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and return 0.
 // Same archetype as CGruntCreationPoint::AdvanceAnim (0x03ecc0).
 RVA(0x000463e0, 0x17)
 i32 CFortressFlag::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     return 0;
 }
 
@@ -566,12 +566,12 @@ void CParticlez::RegisterActs() {
 }
 
 // CParticlez::Update @0x047090 - re-target the bound object's animation sub-object
-// (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc); then, if its +0x1c8 latch is
+// (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta); then, if its +0x1c8 latch is
 // set and its +0x1c0 latch is clear, mark it on-screen this frame (+0x8 |= 0x10000).
 // Always returns 0. The extended AdvanceAnim archetype.
 RVA(0x00047090, 0x4c)
 i32 CParticlez::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     CGameObject* o = m_38;
     if (o->m_1c8 != 0 && o->m_1c0 == 0) {
         o->m_flags |= 0x10000;

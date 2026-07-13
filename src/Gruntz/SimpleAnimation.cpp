@@ -36,7 +36,7 @@ i32 CSimpleAnimation::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"
 // here so the value-load reloc-masks against the already-matched symbol.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // CSimpleAnimation::~CSimpleAnimation @0x00f9d0 - the leaf adds no destructible
 // members beyond CUserLogic, so its dtor folds the bare CUserLogic teardown:
@@ -218,12 +218,12 @@ void RegisterSimpleAnimLogic() {
 }
 
 // CSimpleAnimation::AdvanceAnim @0x0abf70 - re-target the bound object's
-// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc) and
+// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and
 // return 0. Same archetype as CGruntPuddle's remove-path notify and
-// CProjectile::DetachRenderObj's SetAnim(g_6bf3bc).
+// CProjectile::DetachRenderObj's SetAnim(g_engineFrameDelta).
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     return 0;
 }
 

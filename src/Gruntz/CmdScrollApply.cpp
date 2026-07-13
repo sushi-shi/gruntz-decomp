@@ -1,18 +1,18 @@
 // CmdScrollApply.cpp - the scroll/jitter/pan command applier (0x0ec1c0), a __cdecl
-// free function. It raises the auto-scroll clock to a0+g_645588 (only if not already
+// free function. It raises the auto-scroll clock to a0+g_frameTime (only if not already
 // past it) and latches the jitter/pan command parameters into the MgrAutoScroll
 // globals (already-named data symbols).
 #include <Ints.h>
 #include <rva.h>
 #include <Globals.h>
 
-extern "C" i32 g_645588;  // per-frame sync salt
+extern "C" i32 g_frameTime;  // per-frame sync salt
 extern u32 g_scrollClock; // 0x64cfc0
 extern i64 g_scrollAccum; // 0x64cfb0 (64-bit)
 
 RVA(0x000ec1c0, 0x43)
 void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    i32 t = a0 + g_645588;
+    i32 t = a0 + g_frameTime;
     if (g_scrollClock <= (u32)t) {
         g_scrollClock = t;
     }

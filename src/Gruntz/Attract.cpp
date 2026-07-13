@@ -120,7 +120,7 @@ public:
 // AttractActor / AttractActorList (the per-frame g_actorList view) now live in the
 // shared <Gruntz/AttractActor.h> (folded out of this TU; also used by CDemo/CHelpState).
 
-// (The band-A-only externs - g_645584, g_pPostMessageA, s_dat60b5bc,
+// (The band-A-only externs - g_frameDelta, g_pPostMessageA, s_dat60b5bc,
 // g_emptyString, g_sndEnabled, g_pTimeGetTime, g_pwsprintfA, the AttractWndHolder
 // view + s_ATTRACT_TITLE_s - moved with the CAttract core to AttractState.cpp.)
 

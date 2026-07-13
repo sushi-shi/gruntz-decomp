@@ -119,7 +119,7 @@ public:
     i32 m_44;          // +0x44  interval-roller phase-A hi  / anchor y
     i32 m_intervalLoB; // +0x48  interval-roller phase-B lo (roller-only)
     i32 m_intervalHiB; // +0x4c  interval-roller phase-B hi (roller-only)
-    i32 m_countdownMs; // +0x50  rolled countdown (ms, drained by g_645584)
+    i32 m_countdownMs; // +0x50  rolled countdown (ms, drained by g_frameDelta)
     i32 m_phase;       // +0x54  roller phase flag (toggled each reroll)
 };
 SIZE(CRandomAmbientSound, 0x58);

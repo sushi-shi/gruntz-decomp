@@ -158,7 +158,7 @@ extern "C" {
 // CObject-family flagged scalar-deleting destructor (`delete p` on the polymorphic
 // class): m_30 (m_world) IS the CDDrawSurfaceMgr (slot map: CObject slots 0-4 with the
 // ??_G override @1), m_3c an unidentified CObject-derived engine sub-object. m_settings
-// is the settings/registry writer (WriteInt per named key), and g_645578 is zeroed
+// is the settings/registry writer (WriteInt per named key), and g_spawnConfig is zeroed
 // field-by-field before delete. Each engine entrypoint is out-of-line / reloc-masked.
 // (The former CWorldDelete 2-slot placeholder view is retired.)
 // The settings store open/close brackets around the WriteInt block (reloc-masked
@@ -505,21 +505,20 @@ CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
 // The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
-// stored into the game-side mirror g_645580/g_645584); g_killCueClock/g_6bf3bc are the
+// stored into the game-side mirror g_645580/g_frameDelta); g_killCueClock/g_engineFrameDelta are the
 // draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
 extern "C" {
     extern u32 g_645580; // game-side now mirror (DAT_00645580)
-    extern u32 g_645584; // game-side delta mirror (DAT_00645584)
-    extern u32 g_645588; // game-side abs clock (DAT_00645588)
-    extern u32 g_6bf3bc; // draw-clock delta (cleared) - g_killCueClock is g_killCueClock
+    extern u32 g_frameDelta; // game-side delta mirror (DAT_00645584)
+    extern u32 g_frameTime; // game-side abs clock (DAT_00645588)
+    extern u32 g_engineFrameDelta; // draw-clock delta (cleared) - g_killCueClock is g_killCueClock
     // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
     // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_645600 below.
-    DATA(0x002452d8)
     char g_msgScratch[256]; // 0x6452d8
     // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
     // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
     DATA(0x00245600)
-    u32 g_645600; // DAT_00645600 (owner-TU definition, .bss)
+u32 g_645600;  // DAT_00645600 (owner-TU definition, .bss)
     DATA(0x002455b0)
     u32 g_traitorMode;
     DATA(0x002455a4)
@@ -542,8 +541,8 @@ extern "C" {
 // the directinputmgr2 unit), and BOTH of its invented re-arm entry points (Flush /
 // ReadAll) disassemble to the SAME 0x133110 == DirectInputMgr2::ReadAll, while its
 // "Teardown" is the real ~DirectInputMgr2 (Close's ILT thunk 0x2969 -> 0x85fc0),
-// so the teardown leg is a plain `delete`. g_645578 is a second mgr (Flush @0x4385e0).
-// The +0x578 state manager (g_645578). One object: TickStateMgrs drives its Flush;
+// so the teardown leg is a plain `delete`. g_spawnConfig is a second mgr (Flush @0x4385e0).
+// The +0x578 state manager (g_spawnConfig). One object: TickStateMgrs drives its Flush;
 // Close zeroes its field block (+0x00..+0x14) before delete.
 // DEFINED here (this TU already held the canonical binding). Both were extern-only
 // everywhere - here, Play.h, and RezSync (which spelled them with C++ linkage, a second
@@ -552,7 +551,7 @@ extern "C" {
     DATA(0x00245570)
     DirectInputMgr2* g_645570 = 0; // DAT_00245570
     DATA(0x00245578)
-    StateMgrBZ* g_645578 = 0; // DAT_00245578 (canonical binding; also decl'd in Play.h)
+    StateMgrBZ* g_spawnConfig = 0; // DAT_00245578 (canonical binding; also decl'd in Play.h)
 }
 
 // CGruntzMgr's ctor/dtor pass the m_options[4] element ctor/dtor to the __ehvec
@@ -1486,9 +1485,9 @@ i32 CGruntzMgr::CaptureWorldFile() {
 // The per-frame draw-clock tick. If the active state's Update() reports the
 // "paused/hold" id (0x11) the tick is skipped; otherwise it refreshes the engine
 // clock (CGameMgr::InitializeTimeGlobal), optionally re-stamps the
-// draw clock (g_killCueClock = timeGetTime(), g_6bf3bc = 0) when the draw gate m_world is
+// draw clock (g_killCueClock = timeGetTime(), g_engineFrameDelta = 0) when the draw gate m_world is
 // set, and finally mirrors the freshly-refreshed engine clock into the game-side
-// pair (g_645580/g_645584).
+// pair (g_645580/g_frameDelta).
 RVA(0x0008f620, 0x51)
 void CGruntzMgr::PerFrameTick() {
     if (m_curState && m_curState->Update() == 0x11) {
@@ -1499,11 +1498,11 @@ void CGruntzMgr::PerFrameTick() {
 
     if (m_world) {
         g_killCueClock = timeGetTime();
-        g_6bf3bc = 0;
+        g_engineFrameDelta = 0;
     }
 
     g_645580 = g_wap32Now;
-    g_645584 = g_wap32FrameDelta;
+    g_frameDelta = g_wap32FrameDelta;
 }
 
 // -------------------------------------------------------------------------
@@ -1761,10 +1760,10 @@ void CGruntzMgr::ResetClockGlobals() {
 RVA(0x0008f7b0, 0x2b)
 void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_645580 = now;
-    g_645584 = delta;
-    g_645588 = abs;
+    g_frameDelta = delta;
+    g_frameTime = abs;
     g_killCueClock = now;
-    g_6bf3bc = delta;
+    g_engineFrameDelta = delta;
 }
 
 // RunFromState (0x090200): forward to ChangeState_8fab0(1). Out-of-line (retail
@@ -2751,11 +2750,11 @@ i32 CGruntzMgr::StoreInputState(i32 v) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::TickStateMgrs (0x0920b0). Drives the two engine state singletons
-// (g_645570/g_645578) once and reports success.
+// (g_645570/g_spawnConfig) once and reports success.
 RVA(0x000920b0, 0x1c)
 i32 CGruntzMgr::TickStateMgrs() {
     g_645570->PollAll();
-    g_645578->Flush();
+    g_spawnConfig->Flush();
     return 1;
 }
 
@@ -3316,8 +3315,8 @@ i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     ar->Write(&m_optionsCount, 4);
     ar->Write(&m_viewOriginL, 0x10); // the 0x10-byte view-origin block (+0x13c..+0x148)
     ar->Write(&g_645580, 4);
-    ar->Write(&g_645584, 4);
-    ar->Write(&g_645588, 4);
+    ar->Write(&g_frameDelta, 4);
+    ar->Write(&g_frameTime, 4);
     ar->Write(&g_64558c, 4);
     ar->Write(&g_645590, 4);
     ar->Write(&g_645594, 4);
@@ -3371,8 +3370,8 @@ i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     ar->Read(&m_optionsCount, 4);
     ar->Read(&m_viewOriginL, 0x10); // view-origin block (+0x13c..+0x148)
     ar->Read(&g_645580, 4);
-    ar->Read(&g_645584, 4);
-    ar->Read(&g_645588, 4);
+    ar->Read(&g_frameDelta, 4);
+    ar->Read(&g_frameTime, 4);
     ar->Read(&g_64558c, 4);
     ar->Read(&g_645590, 4);
     ar->Read(&g_645594, 4);
@@ -3934,15 +3933,15 @@ void CGruntzMgr::Close() {
         operator delete(m_cmdSubMgr);
         m_cmdSubMgr = 0;
     }
-    if (g_645578) {
-        StateMgrBZ* v = g_645578;
+    if (g_spawnConfig) {
+        StateMgrBZ* v = g_spawnConfig;
         v->m_0 = 0;
         v->m_4 = 0;
         v->m_8 = 0;
         v->m_10 = 0;
         v->m_14 = 0;
         operator delete(v);
-        g_645578 = 0;
+        g_spawnConfig = 0;
     }
     if (g_645570) {
         // `delete` IS retail's leg: ~DirectInputMgr2 (ILT 0x2969 -> 0x85fc0) + operator delete.
@@ -4029,7 +4028,7 @@ void CGruntzMgr::Close() {
 // time/score accrual). When the level state (m_134) is "active" (1) it refreshes the
 // HUD only if the grid's scored flag is set, then pushes state 0xa. Otherwise it
 // refreshes the registry HUD with the live tally id and, for the "won" state (3),
-// folds the clamped 64-bit level-clock delta (g_645588 - clock->m_38) into the HUD
+// folds the clamped 64-bit level-clock delta (g_frameTime - clock->m_38) into the HUD
 // total; for any other state it folds the live timeGetTime() delta. Each finishes by
 // pushing state 0x12.
 RVA(0x000861e0, 0xc5)
@@ -4047,7 +4046,7 @@ void CGruntzMgr::AccrueScoreTime() {
         // m_134 == 3 is the "won" arm - the live state IS the PLAY state, so the
         // +0x3f4 frame-marker CTimer is reached by a plain derived downcast.
         CTimer* clk = ((CPlay*)st)->m_frameMarker;
-        i64 d = (i64)g_645588 - *(i64*)&clk->m_38; // the +0x38:+0x3c start stamp
+        i64 d = (i64)g_frameTime - *(i64*)&clk->m_38; // the +0x38:+0x3c start stamp
         g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : (i32)d;
         TransitionState(0x12, 1, 0, 0);
         return;

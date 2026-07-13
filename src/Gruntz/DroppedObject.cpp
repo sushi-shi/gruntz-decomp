@@ -67,15 +67,15 @@ extern CButeMgr g_buteMgr;
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
-// The per-frame game clock (g_645588) + frame delta (g_645584) + draw-clock
-// delta (g_6bf3bc). C linkage so the symbols pair with the targets' _g_* names
+// The per-frame game clock (g_frameTime) + frame delta (g_frameDelta) + draw-clock
+// delta (g_engineFrameDelta). C linkage so the symbols pair with the targets' _g_* names
 // (the convention across the gamemode units).
-extern "C" u32 g_645588; // 0x645588
+extern "C" u32 g_frameTime; // 0x645588
 extern "C" {
     DATA(0x00245584)
-    extern u32 g_645584; // 0x645584
+    extern u32 g_frameDelta; // 0x645584
     DATA(0x002bf3bc)
-    extern u32 g_6bf3bc; // 0x6bf3bc
+    extern u32 g_engineFrameDelta; // 0x6bf3bc
 }
 
 extern void* GetRetAddr(); // 0x16d990
@@ -524,12 +524,12 @@ void CObjectDropper::RegisterActs() {
 // reachable destination tile inside the wander box, and if it lands on a new,
 // unblocked tile spawn a "DroppedObjectShadow" there and re-arm the timer from
 // the "Hazardz/ObjectDropperDelay" bute. Every frame: advance the bound sprite's
-// animator, x87-drift the double position by g_645584 * m_speed along the travel
+// animator, x87-drift the double position by g_frameDelta * m_speed along the travel
 // vector (wrapping at the world tile bounds), and write the rounded coords back
 // to the bound object's screen position.
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
-    if ((i64)g_645588 - m_lastDropTime >= m_dropInterval) {
+    if ((i64)g_frameTime - m_lastDropTime >= m_dropInterval) {
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
             CGameObject* o = m_object;
             RECT box;
@@ -568,7 +568,7 @@ i32 CObjectDropper::Update() {
                             m_lastDropTileY = ty;
                             m_dropInterval =
                                 g_buteMgr.GetDwordDef("Hazardz", "ObjectDropperDelay", 1000);
-                            m_lastDropTime = g_645588;
+                            m_lastDropTime = g_frameTime;
                         }
                     }
                 }
@@ -576,9 +576,9 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360((i32)g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360((i32)g_engineFrameDelta);
 
-    double drift = (double)g_645584 * m_speed;
+    double drift = (double)g_frameDelta * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
         if (m_posX >= (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapW) {
@@ -812,8 +812,8 @@ void CDroppedObject::RegisterActs() {
 // sweep.
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
-    m_fallY = (double)g_645584 * m_timePerTile + m_fallY;
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    m_fallY = (double)g_frameDelta * m_timePerTile + m_fallY;
     i32 landed = (i32)(m_fallY - g_dropFallBias);
     if (landed > m_landY) {
         i32 x = m_object->m_screenX;
@@ -891,7 +891,7 @@ i32 CDroppedObject::ActA() {
 // active (m_1c8) but idle (m_1c0 == 0).
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::UserLogicVfunc5() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
         m_38->m_flags |= 0x10000;
     }
@@ -1020,7 +1020,7 @@ void CDroppedObjectShadow::RegisterActs() {
 // (local/inline m_object + permute all identical). Parked for the final sweep.
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc) == 2) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta) == 2) {
         CGameObject* o = m_object;
         g_gameReg->m_world->m_8
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);

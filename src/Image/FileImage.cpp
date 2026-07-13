@@ -37,11 +37,11 @@ HINSTANCE g_resModule;
 // RGB ramp) + g_grayRamp (the greyscale ramp). DEFINED here (owner TU), reference
 // externs stay in <Globals.h>. (REHOME DD-G)
 DATA(0x00283ef0)
-u8 g_683ef0[0x400];        // 0x683ef0
+u8 g_683ef0[0x400];  // 0x683ef0
 static u8 s_palBmp[0x400]; // 0x6842f0
 static u8 s_palPcx[0x400]; // 0x6846f0
 DATA(0x00284af0)
-u8 g_grayRamp[0x401];          // 0x684af0  (indices [1..0x400] written)
+u8 g_grayRamp[0x401];  // 0x684af0  (indices [1..0x400] written)
 static u8 s_palPidData[0x400]; // 0x684ef0 (CDDSurface::DecodePid)
 static u8 s_palPcxData[0x400]; // 0x6852f0 (CDDSurface::DecodePcxData)
 

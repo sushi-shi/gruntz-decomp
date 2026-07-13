@@ -13,9 +13,9 @@
 // SpotLightCtor/BootyWalkAnim/...). (REHOME DD-Drain-1)
 // Per-frame cached coin bit used by the deterministic coin-flip helper:
 DATA(0x0024c22c)
-char g_coinRolled; // bit0 set once this frame's coin was rolled
+char g_coinRolled;  // bit0 set once this frame's coin was rolled
 DATA(0x0024c26c)
-i32 g_coinValue; // the cached 0/1 result
+i32 g_coinValue;  // the cached 0/1 result
 // The primary 214013/2531011 LCG generator's seed-init flag + 32-bit state:
 DATA(0x002c127d)
 u8 g_randSeeded; // 0x6c127d bit0 set once seeded
@@ -23,9 +23,9 @@ DATA(0x002c1288)
 i32 g_randSeed; // 0x6c1288 32-bit LCG state
 // The second generator's state, seeded lazily from timeGetTime:
 DATA(0x002c278c)
-char g_rng2Seeded; // bit0 set once seeded
+char g_rng2Seeded;  // bit0 set once seeded
 DATA(0x002c2798)
-i32 g_rng2State; // 32-bit LCG state
+i32 g_rng2State;  // 32-bit LCG state
 
 // The game-registry singleton (0x24556c); only its replay-mode flags are read
 // here, so a minimal local view (canonical DATA in src/Stub/ApiCallers.cpp).

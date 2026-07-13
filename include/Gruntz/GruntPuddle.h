@@ -60,7 +60,7 @@ struct CGruntPuddleSink {};
 // Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C" here so the
 // value-load reloc-masks against the already-matched symbol.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The one-char bute key "B" (0x60d1bc) the place/set paths look up is the SAME
 // rdata as CInGameIcon.h's g_iconBute (DATA 0x0020d1bc) - reuse it (don't

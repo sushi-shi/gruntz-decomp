@@ -40,7 +40,7 @@
 #include <Globals.h>
 
 DATA(0x00245588)
-extern "C" u32 g_645588; // a wrap-safe draw/elapsed counter (FormatElapsed arg + %lu)
+extern "C" u32 g_frameTime; // a wrap-safe draw/elapsed counter (FormatElapsed arg + %lu)
 
 // FUN_001190f0 __cdecl: format the counter as "%i:%02i:%02i" into a returned
 // CString (copy-construct into the caller's hidden return slot).
@@ -87,7 +87,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, " Timing = On ");
     }
     if (g_debugFlags & 0x80) {
-        CString t = FormatElapsed(g_645588);
+        CString t = FormatElapsed(g_frameTime);
         t += " ";
         strcat(buf, t);
         t += " ";
@@ -99,7 +99,7 @@ void CPlay::DrawDebugStats() {
             m_packetsSent,
             m_packetsRcvd,
             GetFrame(),
-            g_645588
+            g_frameTime
         );
         strcat(buf, scratch);
     }

@@ -20,12 +20,12 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The running game clock the timed-play start is stamped from (DAT_00645588).
 DATA(0x00245588)
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // ===========================================================================
 // CAniPlayer::Start (0x0e5ad0) - seed the item (forward all 14 args to the base
 // CSBI_ImageSetAni::Init); on success record the timed-play window (start clock
-// @+0x58 = g_645588, duration @+0x60 = the play interval m_3c), then return 1.
+// @+0x58 = g_frameTime, duration @+0x60 = the play interval m_3c), then return 1.
 // Returns 0 if Init fails.
 //
 // The rect IS by value. This function's own residual said so: retail groups the four rect
@@ -53,14 +53,14 @@ i32 CAniPlayer::Start(
     }
     m_60 = m_3c;
     m_64 = 0;
-    m_58 = g_645588;
+    m_58 = g_frameTime;
     m_5c = 0;
     return 1;
 }
 
 // ===========================================================================
 // CAniPlayer::TickToggle (0x0e5b90) - a timed frame flip: when the timed-play window
-// (start clock @+0x58, i64) has elapsed against the running clock g_645588, flip the
+// (start clock @+0x58, i64) has elapsed against the running clock g_frameTime, flip the
 // frame between the two range endpoints, restamp the window (duration = m_3c,
 // start = now). Returns 1. The command param is ignored.
 // @early-stop
@@ -70,11 +70,11 @@ i32 CAniPlayer::Start(
 // ===========================================================================
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle_0e5b90(i32 param) {
-    if ((__int64)g_645588 - *(__int64*)&m_58 >= *(__int64*)&m_60) {
+    if ((__int64)g_frameTime - *(__int64*)&m_58 >= *(__int64*)&m_60) {
         m_38 = (m_38 == m_4c) ? m_50 : m_4c;
         m_60 = m_3c;
         m_64 = 0;
-        m_58 = g_645588;
+        m_58 = g_frameTime;
         m_5c = 0;
     }
     return 1;

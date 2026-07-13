@@ -21,7 +21,7 @@
 
 // The per-frame draw-delta the anim-cursor sync carries (0x6bf3bc, BSS; the same view
 // the indicator sprites use). External/no-body so the load reloc-masks.
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The MS-CRT-style LCG rand PeekCycle inlines to roll a random peek sprite (the same
 // generator src/Globals.cpp binds + BootyWalkAnim inlines): lazy-seed from timeGetTime,
@@ -91,7 +91,7 @@ extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
 // The running game clock (0x245588). The old g_iconDefault C++ name lost the
 // keep-last dedup at this rva to the canonical extern-C _g_645588; use that so
 // the drift/seed loads bind (it IS the clock, not an "icon default").
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // CInGameText's member-fn-ptr dispatch table (folded into this TU, wave3-J). The
 // DATA binding lives here in the .cpp (a header DATA() is not scanned by labels.py);
@@ -737,7 +737,7 @@ void RegisterIconState() {
 // ===========================================================================
 // CInGameIcon::RefreshCell  (0x098340)
 // ===========================================================================
-// If the icon's tracked position has drifted at least g_645588 past the
+// If the icon's tracked position has drifted at least g_frameTime past the
 // owning object's stored position (a 64-bit signed compare of {m_driftPosHi:m_driftPos}
 // against {m_driftThreshHi:m_driftThresh}), OR the owning object's tile cell is empty/off-grid,
 // flag the +0x38 render object dirty (|= 0x10000). Returns 0.
@@ -746,7 +746,7 @@ i32 CInGameIcon::RefreshCell() {
     CGameObject* obj = m_object;
     i32 tileY = obj->m_screenX >> 5;
     i32 tileX = (obj->m_screenY + 0x18) >> 5;
-    i64 delta = (i64)(u32)g_645588 - *(i64*)&m_driftPos;
+    i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_driftPos;
     if (delta < *(i64*)&m_driftThresh) {
         CTileGrid* grid = g_gameReg->m_tileGrid;
         i32 cell;
@@ -809,7 +809,7 @@ i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // +0x38 object dirty. For the 0x13/0x1e (peek) commands, once the peek timer
 // ({m_68} vs {m_70}) elapses it rolls a random pickup sprite (the inline LCG rand()%17
 // -> GetSel), publishes it into the bound object's draw fields, and re-arms the timer
-// ({m_70}=0xfa, {m_68}=g_645588). Returns 0.
+// ({m_70}=0xfa, {m_68}=g_frameTime). Returns 0.
 //
 // @early-stop
 // regalloc/scheduling wall (zero-register-pinning class): the command dispatch, the
@@ -819,7 +819,7 @@ i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // this 390-byte body differs from retail's and is not source-steerable. Deferred.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     CGameObject* obj = m_object;
     i32 cmd = obj->m_124;
     if (cmd == 0x55) {
@@ -848,7 +848,7 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_130 != 0) {
         return 0;
     }
-    if ((i64)(u32)g_645588 - *(i64*)&m_68 >= *(i64*)&m_70) {
+    if ((i64)(u32)g_frameTime - *(i64*)&m_68 >= *(i64*)&m_70) {
         u32 x;
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
@@ -864,7 +864,7 @@ i32 CInGameIcon::PeekCycle() {
         o->m_drawFillArg = rec;
         m_70 = 0xfa;
         m_74 = 0;
-        m_68 = g_645588;
+        m_68 = g_frameTime;
         m_6c = 0;
     }
     return 0;
@@ -990,7 +990,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         owner = m_38;
         m_driftPos = owner->m_120;
         m_driftPosHi = 0;
-        m_driftThresh = g_645588;
+        m_driftThresh = g_frameTime;
         m_driftThreshHi = 0;
         return 1;
     }
@@ -1025,8 +1025,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 // this 397-byte body differs from retail's and is not source-steerable. Deferred.
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
-    i64 delta = (i64)(u32)g_645588 - *(i64*)&m_driftPos;
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_driftPos;
     if (delta >= *(i64*)&m_driftThresh) {
         CGameObject* r = m_38;
         r->m_stateFlags &= ~1;

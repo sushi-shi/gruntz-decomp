@@ -59,14 +59,14 @@ struct GruntTileIcon {
 // The entrance geometry-source global (0x2bf3bc) each step arms the entrance
 // sub-player with is declared with its DATA() binding below as the tree-wide
 // keep-last winner `_g_6bf3bc` (see the conflation note there).
-// g_645588 (the running game clock) is declared by MovingLogic.h via Grunt.h.
+// g_frameTime (the running game clock) is declared by MovingLogic.h via Grunt.h.
 
 // The primary MS-CRT LCG generator state (inlined by the re-roll step; reloc-masked).
 extern u8 g_randSeeded; // 0x6c127d (bit 0 = seeded)
 extern i32 g_randSeed;  // 0x6c1288 (32-bit LCG state)
 
 // The per-tick draw-clock delta the position interpolation scales by (reloc-masked).
-extern "C" u32 g_645584; // 0x645584
+extern "C" u32 g_frameDelta; // 0x645584
 // The FP sign threshold (0.0) the overshoot clamp compares the per-cell velocity to.
 DATA(0x001e9a68)
 double s_fpZero = 0.0; // 0x5e9a68
@@ -110,7 +110,7 @@ static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // The scratch CString teardown the GetNameRecords reject paths run (defined with the
 // dispatch-machine cluster below); forward-declared for the two entrance-step
@@ -203,8 +203,8 @@ DATA(0x002bf3bc)
 // tree-wide name conflation: ~17 TUs bind it via this extern "C" `_g_6bf3bc` (the
 // keep-last DATA() winner), others as `g_slimeTick`/`g_defaultGeo` (unconfirmed
 // guesses). Bound here as the winner so all refs resolve to 0x2bf3bc (reloc-faithful).
-extern "C" i32 g_6bf3bc;
-// g_645588 (the running game clock stamped into the downtime timer record) comes
+extern "C" i32 g_engineFrameDelta;
+// g_frameTime (the running game clock stamped into the downtime timer record) comes
 // from <Gruntz/MovingLogic.h> (extern "C" u32; Projectile.cpp owns the DATA pin).
 
 // The created eye-candy sprite is the shared CGameObject (<Gruntz/UserLogic.h>);
@@ -337,8 +337,8 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
         char* cell = (char*)&m_cells[base];
         double d48 = *(double*)(cell + 0x48);
         double d50 = *(double*)(cell + 0x50);
-        m_408 = (double)(i64)(u32)g_645584 * d48 * m_400 + m_408;
-        m_410 = (double)(i64)(u32)g_645584 * d50 * m_400 + m_410;
+        m_408 = (double)(i64)(u32)g_frameDelta * d48 * m_400 + m_408;
+        m_410 = (double)(i64)(u32)g_frameDelta * d50 * m_400 + m_410;
         i32 nx = (i32)(*(double*)(cell + 0x58) + m_408);
         i32 ny = (i32)(*(double*)(cell + 0x60) + m_410);
         if ((d48 > s_fpZero && nx > m_lastTilePxX) || (d48 < s_fpZero && nx < m_lastTilePxX)) {
@@ -369,8 +369,8 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
         char* cell = (char*)&m_cells[base];
         double d48 = *(double*)(cell + 0x48);
         double d50 = *(double*)(cell + 0x50);
-        m_408 = (double)(i64)(u32)g_645584 * d48 * m_400 + m_408;
-        m_410 = (double)(i64)(u32)g_645584 * d50 * m_400 + m_410;
+        m_408 = (double)(i64)(u32)g_frameDelta * d48 * m_400 + m_408;
+        m_410 = (double)(i64)(u32)g_frameDelta * d50 * m_400 + m_410;
         i32 nx = (i32)(*(double*)(cell + 0x58) + m_408);
         i32 ny = (i32)(*(double*)(cell + 0x60) + m_410);
         if ((d48 > s_fpZero && nx > m_lastTilePxX) || (d48 < s_fpZero && nx < m_lastTilePxX)) {
@@ -448,7 +448,7 @@ i32 CGrunt::UpdateGruntStatus() {
         return 0;
     }
 
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
 
     if (m_stamina >= 0x64) {
         if (m_neighborValid == 0) {
@@ -540,7 +540,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     m_combatTimeoutLo = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
     m_combatTimeoutHi = 0;
-    m_combatClockLo = (i32)g_645588;
+    m_combatClockLo = (i32)g_frameTime;
     m_combatClockHi = 0;
 
     {
@@ -670,7 +670,7 @@ struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
     i32 m_animSuppress; // +0x36c anim-suppress gate
 };
 // The frame-clock snapshot fed to the arrival poke (ds:0x6bf3bc).
-extern "C" i32 g_6bf3bc;
+extern "C" i32 g_engineFrameDelta;
 // The mgr singleton (same 0x64556c datum) + the WM_COMMAND PostMessageA IAT slot.
 // WwdGameReg* view (as at the top of this TU); the warp-dialog facet casts to CWarpMgr.
 DATA(0x0024556c)
@@ -687,7 +687,7 @@ extern WarpPostFn g_pPostMessageA;
 // exact retail shape (`mov edx,[edi]; mov ecx,edi; call [edx+0x44]`, then
 // `mov edi,[edi+0x154]; or [edi+0x8],0x10000`), and the 5-slot dense switch on
 // m_toolKind (bias 2, range 0x14) + the named "Projectile"/"Boomerang"/"TimeBomb"
-// /"AttackDowntime" DIR32 strings + g_gameReg/g_buteMgr/g_645588 reproduce
+// /"AttackDowntime" DIR32 strings + g_gameReg/g_buteMgr/g_frameTime reproduce
 // retail. Residues: (1) DOMINANT - cl emits the byte index-table + dword
 // jump-table as $L COMDATs while the delinker INLINES the switchdataD_* tables
 // into .text, so the tables never pair and objdiff mis-aligns the ENTIRE switch
@@ -700,7 +700,7 @@ extern WarpPostFn g_pPostMessageA;
 RVA(0x00061cb0, 0x34a)
 i32 CGruntFireView::Update() {
     i32 flag = 0;
-    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((i32)g_6bf3bc) == 2) {
+    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((i32)g_engineFrameDelta) == 2) {
         switch (m_toolKind) {
             case 9:
             case 10:
@@ -830,7 +830,7 @@ i32 CGruntFireView::Update() {
         }
         m_868 = dt;
         m_86c = 0;
-        m_860 = (i32)g_645588;
+        m_860 = (i32)g_frameTime;
         m_864 = 0;
         m_460 = 0;
         m_3f0 = 0;
@@ -988,7 +988,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
             m_toyDurationLo = (i32)tt;
             m_toyDurationHi = 0;
-            m_toyClockLo = (i32)g_645588;
+            m_toyClockLo = (i32)g_frameTime;
             m_toyClockHi = 0;
             m_toyTime = 0x64;
             CreateToyTimeSprite();
@@ -1018,7 +1018,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
         m_idleDelayLo = (i32)(tt >> 1);
         m_idleDelayHi = 0;
-        m_idleAnchorLo = (i32)g_645588;
+        m_idleAnchorLo = (i32)g_frameTime;
         m_idleAnchorHi = 0;
         return 0;
     }
@@ -1038,7 +1038,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     // against the elapsed toy timer (m_toyClockLo/m_toyClockHi - clock), then re-stamp on change.
     i32 t0 = *(i32*)(*(char**)&m_poseToy1 + 0x24);
     i32 t1 = *(i32*)(*(char**)&m_poseToy2 + 0x24);
-    i64 elapsed = *(i64*)&m_toyClockLo - (i64)(u32)g_645588;
+    i64 elapsed = *(i64*)&m_toyClockLo - (i64)(u32)g_frameTime;
     i32 cap = (i32)elapsed;
     if (elapsed < 0) {
         cap = 0;
@@ -1106,7 +1106,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 // coord list / update the arrival.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
-    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
         if (m_arrived != 0) {
@@ -1142,7 +1142,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         return 0;
     }
     // sub-player armed-but-still-running: the toy-break timer path.
-    i64 diff = (i64)(u32)g_645588 - *(i64*)&m_toyClockLo;
+    i64 diff = (i64)(u32)g_frameTime - *(i64*)&m_toyClockLo;
     if (diff >= *(i64*)&m_toyDurationLo && m_entranceStamped == 0 && ready == 1) {
         if (m_toyTimeSprite != 0) {
             m_toyTimeSprite->m_flags |= 0x10000;
@@ -1280,12 +1280,12 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_154->m_1a0.SetGeometry(m_poseIdle[0]);
         m_idleWindowLo = 0x3a98;
         m_idleWindowHi = 0;
-        m_idleTimerLo = (i32)g_645588;
+        m_idleTimerLo = (i32)g_frameTime;
         m_idleTimerHi = 0;
         i32 n = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530) + 1;
         m_idleDelayLo = GruntRand() % n + 0x7530;
         m_idleDelayHi = 0;
-        m_idleAnchorLo = (i32)g_645588;
+        m_idleAnchorLo = (i32)g_frameTime;
         m_idleAnchorHi = 0;
         applied = 1;
     } else if (m_poseIdle[1] == 0) {
@@ -1304,7 +1304,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             applied = 1;
             m_idleDelayLo = GruntRand() % (d - 0x4e1f) + 0x4e20;
             m_idleDelayHi = 0;
-            m_idleAnchorLo = (i32)g_645588;
+            m_idleAnchorLo = (i32)g_frameTime;
             m_idleAnchorHi = 0;
         }
     } else {
@@ -1432,9 +1432,9 @@ void CGrunt::ResolveEntranceArrival() {
         }
     }
 
-    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
 
-    if ((i64)(u32)g_645588 - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
+    if ((i64)(u32)g_frameTime - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32 mode = g->m_134;
         if (mode != 1) {
@@ -1488,7 +1488,7 @@ tail:
         }
         return;
     }
-    if ((i64)(u32)g_645588 - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo && ready == 1) {
+    if ((i64)(u32)g_frameTime - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo && ready == 1) {
         ResetEntranceAnimation(0, 1, 1);
     }
 }
@@ -1518,7 +1518,7 @@ i32 CGrunt::StepEntranceReinit() {
     // the running game clock.
     m_8c8 = 0x7530;
     m_8cc = 0;
-    m_8c0 = (i32)g_645588;
+    m_8c0 = (i32)g_frameTime;
     m_8c4 = 0;
     m_358 = 0;
 
@@ -1605,8 +1605,8 @@ i32 CGrunt::StepEntranceReinit() {
 // cue operands. Correct shape + control flow; a codegen wall.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
-    i64 diff = (i64)(u32)g_645588 - *(i64*)&m_8c0;
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    i64 diff = (i64)(u32)g_frameTime - *(i64*)&m_8c0;
     u32 elapsed;
     if (diff >= 0) {
         elapsed = (u32)diff;
@@ -1731,7 +1731,7 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 // (the documented regalloc tail).
 RVA(0x00063db0, 0x32f)
 void CGrunt::LoadVehicleGruntAnimations() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
 
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
@@ -1761,7 +1761,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         return;
     }
 
-    i64 elapsed = (i64)(u64)g_645588 - *(i64*)&m_toyClockLo;
+    i64 elapsed = (i64)(u64)g_frameTime - *(i64*)&m_toyClockLo;
     if (elapsed >= *(i64*)&m_toyDurationLo) {
         if (m_entranceStamped == 0 && m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
             if (m_toyTimeSprite) {
@@ -1793,7 +1793,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         return;
     }
 
-    i64 elapsed2 = (i64)(u64)g_645588 - *(i64*)&m_idleAnchorLo;
+    i64 elapsed2 = (i64)(u64)g_frameTime - *(i64*)&m_idleAnchorLo;
     if (elapsed2 >= *(i64*)&m_idleDelayLo) {
         CGruntHud* h = m_10;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
@@ -1938,7 +1938,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 RVA(0x00064540, 0x11c)
 i32 CUserLogic::winapi_064540_PostMessageA() {
     CWarpLeaf* self = (CWarpLeaf*)this;
-    self->m_drawState->m_1a0.Advance_15c360(g_6bf3bc);
+    self->m_drawState->m_1a0.Advance_15c360(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &self->m_drawState->m_1a0;
     if (sub->m_28 == 0) {
         return 0;
@@ -2119,7 +2119,7 @@ tail:
     UpdateCombatTimer();
     m_combatTimeoutLo = g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
     m_combatTimeoutHi = 0;
-    m_combatClockLo = (i32)g_645588;
+    m_combatClockLo = (i32)g_frameTime;
     m_combatClockHi = 0;
     if (m_10->m_5c != m_lastTilePxX || m_10->m_60 != m_lastTilePxY) {
         OnTileMismatch(1);
@@ -2206,7 +2206,7 @@ tail:
 // reset the geometry.
 RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
@@ -2253,7 +2253,7 @@ i32 CGrunt::StepArrivalCommitA() {
 RVA(0x000654b0, 0x130)
 i32 CGrunt::StepArrivalCommitB() {
     // 0x15c360 is CAniAdvanceCursor::Advance_15c360 (cast the m_1a0 geometry facet)
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
@@ -2409,7 +2409,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 // (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
 RVA(0x00065a60, 0x159)
 i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
-    i32 phase = m_drawState->m_1a0.Advance_15c360(g_6bf3bc);
+    i32 phase = m_drawState->m_1a0.Advance_15c360(g_engineFrameDelta);
     if (phase > 0) {
         if (phase == 0x63) {
             m_downtimeLatch = 1;
@@ -2419,7 +2419,7 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
             }
             m_wandDowntimeLo = downtime;
             m_wandDowntimeHi = 0;
-            m_wandTimerLo = g_645588;
+            m_wandTimerLo = g_frameTime;
             m_wandTimerHi = 0;
             m_460 = 0;
             m_3f0 = 0;
@@ -2462,7 +2462,7 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
 // PlaceAt / cue operands. A register-allocation/scheduling wall, not a shape error.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
-    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
+    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
     if (ready > 0) {
         m_tileMgr->Load6(
             m_tileOwnerHi,

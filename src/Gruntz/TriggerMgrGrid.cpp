@@ -348,7 +348,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         cell->CreateToySprite();
         cell->m_888 = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
         cell->m_88c = 0;
-        cell->m_880 = g_645588;
+        cell->m_880 = g_frameTime;
         cell->m_884 = 0;
         return 0;
     }
@@ -722,7 +722,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     }
     CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     CTmScoreSub* sub = world->m_3f4;
-    i64 diff = (i64)(u32)g_645588 - sub->m_38;
+    i64 diff = (i64)(u32)g_frameTime - sub->m_38;
     if (diff < 0) {
         diff = 0;
     }

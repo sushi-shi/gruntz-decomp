@@ -62,7 +62,7 @@ extern "C" PostMessageFn g_pPostMessageA;
 
 // The per-frame attract actor list (DAT_00645574; bound in Globals.cpp) and the
 // per-frame time delta (DAT_00645584; bound in Attract.cpp). Extern here (reloc-masked).
-extern "C" u32 g_645584;
+extern "C" u32 g_frameDelta;
 
 // The ButeFileStream `defaults` arg CButeMgr::Parse hands the stream ctor (owner-TU
 // def; VA 0x5f03e0). Holds the sentinel 0x1a4 (loaded + pushed as the void* arg).
@@ -175,10 +175,10 @@ i32 CDemo::Render() {
             break;
         }
     }
-    if (g_645584 >= m_520) {
+    if (g_frameDelta >= m_520) {
         m_520 = 0;
     } else {
-        m_520 -= g_645584;
+        m_520 -= g_frameDelta;
     }
     if (m_520 == 0) {
         pm(m_4->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);

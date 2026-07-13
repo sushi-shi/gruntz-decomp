@@ -22,7 +22,7 @@
 // The global the advance handlers hand the sink (_g_6bf3bc; the per-frame
 // draw-delta mirror). Declared extern "C" so the value-load reloc-masks.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 
@@ -210,11 +210,11 @@ void CEyeCandyAni::RegisterActs() {
 }
 
 // CEyeCandyAni::AdvanceAnim @0x0acf10 - re-target the bound object's animation
-// sub-object (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc) and return 0.
+// sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and return 0.
 // Byte-identical to CFrontCandyAni::AdvanceAnim (0x0ad510) save the call displacement.
 RVA(0x000acf10, 0x17)
 i32 CEyeCandyAni::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     return 0;
 }
 
@@ -306,11 +306,11 @@ void CFrontCandyAni::RegisterActs() {
 }
 
 // CFrontCandyAni::AdvanceAnim @0x0ad510 - re-target the bound object's animation
-// sub-object (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc) and return 0.
+// sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and return 0.
 // Byte-identical to CBehindCandyAni::AdvanceAnim save the call displacement.
 RVA(0x000ad510, 0x17)
 i32 CFrontCandyAni::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     return 0;
 }
 

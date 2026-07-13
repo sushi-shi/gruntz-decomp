@@ -18,7 +18,7 @@
 //
 //   if (m_inGame) {                  // ---- MAIN in-game frame ----
 //       StepInputA(); StepWorldB(); ViewPreStep(m_c->m_24);
-//       g_killCueClock=g_645580; g_6bf3bc=g_645584;     // mirror the draw clock
+//       g_killCueClock=g_645580; g_engineFrameDelta=g_frameDelta;     // mirror the draw clock
 //       DRAW_WORLD();                             // shared world-draw block
 //       <AMBIENT-cue timer +0x3f8, 0x1f4ms, toggles m_cueToggle -> PlayCueAt 0x8128>
 //       MarkerBegin(now); GutsStep();             // m_beginMarker marker + m_guts step
@@ -38,7 +38,7 @@
 //       DRAW_WORLD();                             // same shared world-draw block
 //       InputSubStep(m_4->m_70);
 //       if (m_overlayActive && m_guts->state-ok) ShowOverlay();   // on-screen banner
-//       WorldBlit(g_645584);
+//       WorldBlit(g_frameDelta);
 //       if (m_c->m_4->m_14==0) return 1;
 //       if (m_snapshotActive) SnapshotStep();                // screenshot countdown +0x4a0
 //       <four scroll-region one-shots at +0x430/+0x440/+0x450/+0x460>; return 1;
@@ -57,7 +57,7 @@
 //   m_c->m_c->vtbl[+0x34](m_c->m_4->m_14, m_c->m_4->m_18);          // present
 //   WorldBlit(m_c->m_24->m_5c->m_84, ->m_88) on m_4->m_54;
 //   if (m_c->m_soundStream) { t=timeGetTime(); PurgeVoiceList(t); TickSubManagers(t); }  // sound tick
-//   MarkerBegin(g_645584); GutsStep();                             // marker + guts
+//   MarkerBegin(g_frameDelta); GutsStep();                             // marker + guts
 //
 // The per-ENTITY layer is one indirection down: g_entityList is walked
 // by the world object (m_4->m_54) inside the reloc-masked camera-blit call. The
@@ -209,7 +209,7 @@ void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
 // 0x1bedde is MFC CString::LoadString - the cue TEXT is loaded from the string
 // table and a missing resource skips the cue.)
 
-// Per-frame timer intervals (the game clock g_645588 is in ms).
+// Per-frame timer intervals (the game clock g_frameTime is in ms).
 typedef enum {
     CUE_INTERVAL_MS = 0x1f4,           // 500 ms  ambient/win-lose cue toggle
     BOOTY_INTERVAL_MS = 0x2710,        // 10000 ms booty-region one-shot
@@ -363,7 +363,7 @@ void ShowHudMessageAlt(
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::FrameSlot28(i32 arg) {
     m_4w()->m_60->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
-    m_savedClock = (i32)g_645588;
+    m_savedClock = (i32)g_frameTime;
     if (m_40) {
         QuitToMenu();
     }
@@ -407,7 +407,7 @@ i32 CPlay::FrameSlot28(i32 arg) {
 //   * ALL the interval one-shots (cue +0x3f8, booty +0x328, ambient +0x338,
 //     win/lose, snapshot +0x4a0) are 64-BIT elapsed tests: retail does
 //     `sub ecx,lo; sbb eax,hi; cmp eax,intervalHi; jl/jg; cmp ecx,intervalLo; jb`
-//     ((i64)(u32)g_645588 - *(i64*)&m_timerLo >= *(i64*)&m_intervalLo), not 32-bit.
+//     ((i64)(u32)g_frameTime - *(i64*)&m_timerLo >= *(i64*)&m_intervalLo), not 32-bit.
 //   * the in-game tail (after the view check) has 2 CPlay this-calls the carcass
 //     omits (0x2e2d(clock), 0x1519(view)) + a 3-arg cdecl(g_gameReg, m_guts,
 //     m_region0Gate) before m_c->m_24->PostStep(); surface flush is a __thiscall on
@@ -432,10 +432,10 @@ i32 CPlay::Render() {
         // =================================================================
         StepInputA();                // cursor draw (BltFast)
         StepWorldB();                // world/camera sub-step B
-        StepGridWalk((i32)g_645584); // 0x2e2d  frame-grid advance (was fake "PreStep")
+        StepGridWalk((i32)g_frameDelta); // 0x2e2d  frame-grid advance (was fake "PreStep")
 
         g_killCueClock = g_645580; // mirror the draw clock
-        g_6bf3bc = g_645584;
+        g_engineFrameDelta = g_frameDelta;
 
         // --- shared world-draw block #1 ---
         ((CRenderer*)m_c->m_8)->BeginScene(0); // m_c->m_8->vtbl[+0x24](0)
@@ -451,17 +451,17 @@ i32 CPlay::Render() {
             m_c->m_soundStream->PurgeVoiceList(t);  // 0x136e20 (thiscall, SoundDevice base)
             m_c->m_soundStream->TickSubManagers(t); // 0x137ac0 (thiscall)
         }
-        m_beginMarker->FilterList2((void*)g_645584);     // 0x2cc0  begin-marker
-        m_guts->LoadDestructButtonSprite((i32)g_645584); // 0x34bd  guts step
+        m_beginMarker->FilterList2((void*)g_frameDelta);     // 0x2cc0  begin-marker
+        m_guts->LoadDestructButtonSprite((i32)g_frameDelta); // 0x34bd  guts step
 
         // --- periodic AMBIENT-cue timer (+0x3f8, 0x1f4 ms; toggles m_cueToggle) ---
         {
-            u32 elapsed = g_645588 - (u32)m_cueTimerLo;
+            u32 elapsed = g_frameTime - (u32)m_cueTimerLo;
             if (elapsed >= (u32)m_cueInterval) {
                 m_cueToggle = (m_cueToggle == 0);
                 m_cueInterval = CUE_INTERVAL_MS;
                 m_cueIntervalHi = 0;
-                m_cueTimerLo = (i32)g_645588;
+                m_cueTimerLo = (i32)g_frameTime;
                 m_cueTimerHi = 0;
             }
             if (m_cueToggle != 0) {
@@ -473,8 +473,8 @@ i32 CPlay::Render() {
             return 1; // no view -> bail
         }
 
-        m_frameMarker->Tick((i32)g_645584);     // 0x3710  CTimer::Tick
-        m_frameMarker->Draw(0, (i32)g_645584);  // 0x27a2  CTimer::Draw
+        m_frameMarker->Tick((i32)g_frameDelta);     // 0x3710  CTimer::Tick
+        m_frameMarker->Draw(0, (i32)g_frameDelta);  // 0x27a2  CTimer::Draw
         m_c->m_drawTarget->m_10->m_2c->Flip(0); // 0x13e850  CDDSurface::Flip
         UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0x2356
         winapi_0d0b30_CopyRect((i32)m_c->m_drawTarget->m_14); // 0x1519 (was fake "PostStep")
@@ -497,16 +497,16 @@ i32 CPlay::Render() {
     // =================================================================
     {
         CWorld* w = m_4w();
-        m_frameMarker->Tick((i32)g_645584); // m_frameMarker begin
+        m_frameMarker->Tick((i32)g_frameDelta); // m_frameMarker begin
         Eng_FrameTimerStep(w->m_6c, 0);     // m_4->m_6c step (carcass; unresolved callee)
 
         if (m_levelId == CURSOR_FLAILINGGRUNT) { // booty/flailing-grunt one-shot
-            u32 elapsed = g_645588 - (u32)m_bootyTimerLo;
+            u32 elapsed = g_frameTime - (u32)m_bootyTimerLo;
             if (elapsed >= (u32)m_bootyInterval) {
                 RegCue(g_gameReg->m_cueSink, 0x33e); // reg->m_cueSink cue
                 m_bootyInterval = BOOTY_INTERVAL_MS;
                 m_bootyIntervalHi = 0;
-                m_bootyTimerLo = (i32)g_645588;
+                m_bootyTimerLo = (i32)g_frameTime;
                 m_bootyTimerHi = 0;
             }
         }
@@ -516,7 +516,7 @@ i32 CPlay::Render() {
 
         // --- AMBIENT level-init one-shot (+0x348) ---
         if (m_ambientInitDone == 0) {
-            u32 elapsed = g_645588 - (u32)m_ambientTimerLo;
+            u32 elapsed = g_frameTime - (u32)m_ambientTimerLo;
             if (elapsed >= (u32)m_ambientInterval) {
                 i32 id = GetAmbientId();
                 CString name;
@@ -555,7 +555,7 @@ i32 CPlay::Render() {
 
         // per-frame timing gate (UNSIGNED clamp: 0x12 < dt < 0xc8):
         {
-            u32 dt = g_645584;
+            u32 dt = g_frameDelta;
             if (dt > 0x12 && dt < 0xc8) {
                 DrawWorldFrames(); // call [eax+0xa0] (slot 40; ex "RenderFast")
             } else {
@@ -572,12 +572,12 @@ i32 CPlay::Render() {
             m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
             m_c->m_rendererB->Present(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
         }
-        m_beginMarker->FilterList2((void*)g_645584);
-        m_guts->LoadDestructButtonSprite((i32)g_645584);
+        m_beginMarker->FilterList2((void*)g_frameDelta);
+        m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
         InputSubStep(w->m_70); // m_4->m_70
 
         if (m_lightFx != 0 && m_guts->m_activeTab != 5) { // on-screen overlay/banner
-            Overlay1(0, (i32)g_645584);
+            Overlay1(0, (i32)g_frameDelta);
             Overlay2(m_c, 0);
         }
 
@@ -591,7 +591,7 @@ i32 CPlay::Render() {
 
         // --- snapshot/screenshot countdown (+0x4a0/+0x4a8) ---
         if (m_snapshotActive != 0) {
-            u32 now = g_645588;
+            u32 now = g_frameTime;
             u32 dur = (u32)(m_snapDur + m_snapBaseLo) - now;
             if ((i32)dur >= 0) {
                 // duration elapsed: post a message + reset the marker block + walk.
@@ -632,12 +632,12 @@ i32 CPlay::Render() {
 
         if (m_winLoseBanner != 0 && m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
             // win/lose banner timer (+0x3f8 again, 0x1f4 ms):
-            u32 elapsed = g_645588 - (u32)m_cueTimerLo;
+            u32 elapsed = g_frameTime - (u32)m_cueTimerLo;
             if (elapsed >= (u32)m_cueInterval) {
                 m_cueToggle = (m_cueToggle == 0);
                 m_cueInterval = CUE_INTERVAL_MS;
                 m_cueIntervalHi = 0;
-                m_cueTimerLo = (i32)g_645588;
+                m_cueTimerLo = (i32)g_frameTime;
                 m_cueTimerHi = 0;
             }
             if (m_cueToggle != 0) {
@@ -645,7 +645,7 @@ i32 CPlay::Render() {
             }
         }
 
-        m_beginMarker->FilterList2((void*)g_645584);
+        m_beginMarker->FilterList2((void*)g_frameDelta);
         PostHud(0);
         if (m_worldReady != 0) { // optional HUD overlay draw
             Eng_HudDraw(m_c->m_drawTarget->m_10->m_2c, &m_hudRect, 0xff); // (this=m_4->m_10->m_2c)
@@ -655,27 +655,27 @@ i32 CPlay::Render() {
         // --- the four screen-region scroll one-shots: each is
         // a 64-bit "inside region" elapsed test that fires its OnRegion handler. ---
         if (m_region0Gate != 0) { // region-1 (+0x430)
-            u32 e = g_645588 - (u32)m_region0TimerLo;
+            u32 e = g_frameTime - (u32)m_region0TimerLo;
             if (e >= (u32)m_region0Interval) {
-                OnRegion2((i32)g_645588);
+                OnRegion2((i32)g_frameTime);
             }
         }
         if (m_region1Gate != 0) { // region-2 (+0x440)
-            u32 e = g_645588 - (u32)m_region1TimerLo;
+            u32 e = g_frameTime - (u32)m_region1TimerLo;
             if (e >= (u32)m_region1Interval) {
-                OnRegion1((i32)g_645588);
+                OnRegion1((i32)g_frameTime);
             }
         }
         if (m_region2Gate != 0) { // region-3 (+0x450)
-            u32 e = g_645588 - (u32)m_region2TimerLo;
+            u32 e = g_frameTime - (u32)m_region2TimerLo;
             if (e >= (u32)m_region2Interval) {
-                OnRegion3((i32)g_645588);
+                OnRegion3((i32)g_frameTime);
             }
         }
         if (m_region3Gate != 0) { // region-4 (+0x460)
-            u32 e = g_645588 - (u32)m_region3TimerLo;
+            u32 e = g_frameTime - (u32)m_region3TimerLo;
             if (e >= (u32)m_region3Interval) {
-                OnRegion4((i32)g_645588);
+                OnRegion4((i32)g_frameTime);
             }
         }
         return 1; // -> draw tail
@@ -700,7 +700,7 @@ alt2:
             m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
             m_c->m_rendererB->Present(m_c->m_drawTarget->m_14,
                                       m_c->m_drawTarget->m_18); // present
-            m_guts->LoadDestructButtonSprite((i32)g_645584);
+            m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
             if (m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
                 PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // win/lose
             }
@@ -714,14 +714,14 @@ alt2:
                     m_c->m_drawTarget->m_14,
                     m_c->m_drawTarget->m_18
                 ); // present
-                m_guts->LoadDestructButtonSprite((i32)g_645584);
+                m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
                 Eng_FrameTimerStep(m_guts, 0x32); // (carcass; unresolved callee)
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, 0); // (cueId=m_lastCueId)
                 m_frameMarker->Draw(1, 0);
             }
             if (m_ambientInitDone == 0) {
                 // the same AMBIENT level-init one-shot (+0x348):
-                u32 elapsed = g_645588 - (u32)m_ambientTimerLo;
+                u32 elapsed = g_frameTime - (u32)m_ambientTimerLo;
                 if (elapsed >= (u32)m_ambientInterval) {
                     i32 id = GetAmbientId();
                     CString name;
@@ -744,7 +744,7 @@ alt2:
                 }
             }
         }
-        m_beginMarker->FilterList2((void*)g_645584);
+        m_beginMarker->FilterList2((void*)g_frameDelta);
         PostHud(0);
         m_c->m_drawTarget->m_10->m_2c->Flip(0);
     }
@@ -770,7 +770,7 @@ alt2:
 // Shared singletons + the per-mode/per-area globals (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------
 // The DRAW-CLOCK MIRROR PAIR - DEFINED HERE (owner = the producer). This TU is the only
-// writer: every frame it does `g_killCueClock = g_645580; g_6bf3bc = g_645584;`, i.e. it
+// writer: every frame it does `g_killCueClock = g_645580; g_engineFrameDelta = g_frameDelta;`, i.e. it
 // snapshots the WAP32 frame clock (now / delta) into the pair the whole game reads to
 // gate animations (`clk - m_last >= m_interval`). ~15 TUs consumed them and NONE defined
 // them, under FIVE names between them: _g_killCueClock and _g_6bf3c0 for 0x2bf3c0 (plus
@@ -783,7 +783,7 @@ alt2:
 // the majority semantic spelling, and a role rename is separate follow-up.
 DATA(0x002bf3bc)
 extern "C" {
-    u32 g_6bf3bc = 0; // 0x2bf3bc  draw-DELTA mirror  (= g_645584 / g_lastDelta)
+    u32 g_engineFrameDelta = 0; // 0x2bf3bc  draw-DELTA mirror  (= g_frameDelta / g_lastDelta)
 }
 DATA(0x002bf3c0)
 extern "C" {
@@ -885,9 +885,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // ---- 1) reset prior-level scroll/area globals ----
     I32(self, 0x484) = 1;
-    g_645584 = 0;
+    g_frameDelta = 0;
     g_645580 = 0;
-    g_645588 = 0;
+    g_frameTime = 0;
     g_6455f0 = 0;
     if (level > 0x64) {
         level -= 0x64;
@@ -938,7 +938,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     g_killCueClock = g_645580;
-    g_6bf3bc = g_645584;
+    g_engineFrameDelta = g_frameDelta;
 
     // reset the 4 team blocks at host->m_150 (stride 0x238): single-mode primes
     // team 0 ready, multi-mode zeroes the round counters.
@@ -970,7 +970,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     gameReg = g_gameReg;
-    g_645588 = 0;
+    g_frameTime = 0;
     if (I32(gameReg, 0x134) == 3) {
         srand(timeGetTime());
     }
@@ -1472,7 +1472,7 @@ okContinue:
     I32(self, 0x4f4) = 0;
     I32(self, 0x400) = 0x1f4;
     I32(self, 0x404) = 0;
-    I32(self, 0x3f8) = g_645588;
+    I32(self, 0x3f8) = g_frameTime;
     I32(self, 0x3fc) = 0;
     I32(self, 0x408) = 1;
     ((CString*)((char*)self + 0x410))->operator=(g_emptyString);
@@ -2369,7 +2369,7 @@ void CPlay::RegionLeave() {
 // The four screen-region scroll one-shots.
 // Each: thiscall(int z), set its region-active gate to bool(z), call the shared
 // enter/leave sub-step, (re)arm its 64-bit countdown timer (interval 0x7530 ms,
-// lo = g_645588, hi = 0), and return 1. They share ONE shape; OnRegion2 also
+// lo = g_frameTime, hi = 0), and return 1. They share ONE shape; OnRegion2 also
 // pins the view discriminator m_viewMode, OnRegion3/4 fire an extra cue on enter/leave.
 // ===========================================================================
 RVA(0x000d8a00, 0x73)
@@ -2386,7 +2386,7 @@ i32 CPlay::OnRegion2(i32 z) // (region-0 / gate m_region0Gate, timer +0x430)
     }
     m_region0Interval = REGION_INTERVAL_MS;
     m_region0IntervalHi = 0;
-    *(u64*)&m_region0TimerLo = g_645588; // 64-bit store: lo=g_645588, hi=0
+    *(u64*)&m_region0TimerLo = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
     return 1;
 }
 
@@ -2402,7 +2402,7 @@ i32 CPlay::OnRegion1(i32 z) // (region-1 / gate m_region1Gate, timer +0x440)
     }
     m_region1Interval = REGION_INTERVAL_MS;
     m_region1IntervalHi = 0;
-    *(u64*)&m_region1TimerLo = g_645588; // 64-bit store: lo=g_645588, hi=0
+    *(u64*)&m_region1TimerLo = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
     return 1;
 }
 
@@ -2419,7 +2419,7 @@ i32 CPlay::OnRegion3(i32 z) // (region-2 / gate m_region2Gate, timer +0x450)
     }
     m_region2Interval = REGION_INTERVAL_MS;
     m_region2IntervalHi = 0;
-    *(u64*)&m_region2TimerLo = g_645588; // 64-bit store: lo=g_645588, hi=0
+    *(u64*)&m_region2TimerLo = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
     return 1;
 }
 
@@ -2436,7 +2436,7 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
     }
     m_region3Interval = REGION_INTERVAL_MS;
     m_region3IntervalHi = 0;
-    *(u64*)&m_region3TimerLo = g_645588; // 64-bit store: lo=g_645588, hi=0
+    *(u64*)&m_region3TimerLo = g_frameTime; // 64-bit store: lo=g_frameTime, hi=0
     return 1;
 }
 
@@ -2703,15 +2703,15 @@ void CPlay::DrawWorldFrame() {
         ((CPlaneRender*)m_c->m_24->m_mainPlane)->CenterScrollA();
     }
     g_killCueClock = g_645580;
-    g_6bf3bc = g_645584;
+    g_engineFrameDelta = g_frameDelta;
     ((CRenderer*)m_c->m_8)->BeginScene(0);                // m_c->m_8->vtbl[+0x24](0)
-    m_4w()->m_68->LoadTeleporterGooConfig((i32)g_645584); // 0x3017 -> 0x6eb80 per-frame grid step
+    m_4w()->m_68->LoadTeleporterGooConfig((i32)g_frameDelta); // 0x3017 -> 0x6eb80 per-frame grid step
     if (g_gameReg->m_134 == 3) {
         // 0x933e0 == CGruntzMgr::AdvanceOptionsCycle (rel32 via ILT 0x2d33; was the
         // `PerFrameCue` phantom - same object, RTTI-true name).
         ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle();
     }
-    m_guts->LoadDestructButtonSprite((i32)g_645584); // guts step @0xffb20
+    m_guts->LoadDestructButtonSprite((i32)g_frameDelta); // guts step @0xffb20
 }
 
 // ===========================================================================
@@ -2726,10 +2726,10 @@ void CPlay::DrawWorldFrame() {
 // retail and the prologue spill schedule differs. See docs/patterns/zero-register-pinning.md.
 RVA(0x000c9cc0, 0x12e)
 i32 CPlay::DrawWorldFrames() {
-    i32 delta = (i32)g_645584;
+    i32 delta = (i32)g_frameDelta;
     i32 steps = (i32)((u32)delta / FIXED_SUBSTEP_MS); // 0x38e38e39 magic-div by 18
     i32 now = (i32)g_645580;
-    i32 accum = (i32)g_645588;
+    i32 accum = (i32)g_frameTime;
     i32 rem = delta - steps * FIXED_SUBSTEP_MS;
     i32 saveDelta = delta; // [esp+0x1c]
     i32 saveAccum = accum; // [esp+0x20]
@@ -2761,11 +2761,11 @@ i32 CPlay::DrawWorldFrames() {
                 ((CPlaneRender*)m_c->m_24->m_mainPlane)->CenterScrollA();
             }
             ((CRenderer*)m_c->m_8)->BeginScene(0);
-            m_4w()->m_68->LoadTeleporterGooConfig((i32)g_645584);
+            m_4w()->m_68->LoadTeleporterGooConfig((i32)g_frameDelta);
             if (g_gameReg->m_134 == 3) {
                 ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle(); // 0x933e0 (was PerFrameCue)
             }
-            m_guts->LoadDestructButtonSprite((i32)g_645584);
+            m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
             i++;
         } while (i < steps);
     }
@@ -2802,7 +2802,7 @@ i32 CPlay::ProfileDeltaFrame() {
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
     i32 updates = 0;
     u32 t0 = tg();
-    u32 d = g_645584;
+    u32 d = g_frameDelta;
     if (d > 0x12 && d < 0xc8) {
         updates = DrawWorldFrames();
     } else {
@@ -2820,7 +2820,7 @@ i32 CPlay::ProfileDeltaFrame() {
     ProfLog(
         &g_profSink,
         "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
-        (i32)g_645584,
+        (i32)g_frameDelta,
         renderMs,
         presentMs,
         updates
@@ -2841,9 +2841,9 @@ i32 CPlay::ProfileDeltaFrame() {
 // g_profAccA the camera draw-B duration - read next frame at ProfLog time.
 extern "C" {
     DATA(0x0024c284)
-    i32 g_profAccA;
+i32 g_profAccA;
     DATA(0x0024c288)
-    i32 g_profAccB;
+i32 g_profAccB;
 }
 
 // ===========================================================================
@@ -2885,8 +2885,8 @@ i32 CPlay::ProfileInputFrame() {
 
     u32 t5 = tg();
     ((CRenderer*)m_c->m_8)->BeginScene(1);
-    m_4w()->m_68->LoadTeleporterGooConfig((i32)g_645584);
-    m_guts->LoadDestructButtonSprite((i32)g_645584);
+    m_4w()->m_68->LoadTeleporterGooConfig((i32)g_frameDelta);
+    m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
     i32 updateMs = (i32)(tg() - t5);
 
     u32 t7 = tg();
@@ -2980,12 +2980,12 @@ i32 CPlay::RegisterInputBindings() {
 }
 
 // CPlay::ArmSnapshot (0x0d9240) - thiscall(active, dur). When `active`, latch the
-// snapshot duration (dur) and base clock (g_645588) 64-bit timers; always store
+// snapshot duration (dur) and base clock (g_frameTime) 64-bit timers; always store
 // `active` into m_snapshotActive. Migrated from engine_boundary (CPlay).
 // @early-stop
 // scheduling wall (99.2%): logic + regalloc byte-exact except the two independent
 // 64-bit-base stores (m_snapBaseLo/m_snapBaseHi) emit in hi,lo order where retail
-// emits lo,hi; cl fills the g_645588 load-use latency gap with the hi=0 store.
+// emits lo,hi; cl fills the g_frameTime load-use latency gap with the hi=0 store.
 // Loading the clock into a local forces lo,hi but diverges the whole regalloc
 // (push edi / immediates) to 62% — not source-steerable.
 RVA(0x000d9240, 0x3c)
@@ -2993,7 +2993,7 @@ i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
     if (active != 0) {
         m_snapDur = dur;
         m_snapDurHi = 0;
-        m_snapBaseLo = g_645588;
+        m_snapBaseLo = g_frameTime;
         m_snapBaseHi = 0;
     }
     m_snapshotActive = active;
@@ -3406,7 +3406,7 @@ i32 CPlay::CanQuickSave() {
 RVA(0x000da440, 0x60)
 i32 CPlay::PostHudRect() {
     if (m_worldReady != 0) {
-        m_4w()->m_68->HudRect(m_hudRect, g_645578->m_18 & 0x20);
+        m_4w()->m_68->HudRect(m_hudRect, g_spawnConfig->m_18 & 0x20);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -3725,7 +3725,7 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
 // Owner-TU definition of the channel-slot table (canonical extern in <Globals.h>).
 extern "C" {
     DATA(0x0024c3f0)
-    i32 g_64c3f0[17];
+i32 g_64c3f0[17];
 }
 
 // Reset every slot to "free" (1).
@@ -3871,7 +3871,7 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
             ->ClearHandle(a, x, y); // 0x13f2 -> CLightFxRender::ClearHandle @0xa9500 (ecx=m_320)
     }
     if (m_worldReady != 0) {
-        m_4w()->m_68->HudRect(m_hudRect, g_645578->m_18 & 0x20);
+        m_4w()->m_68->HudRect(m_hudRect, g_spawnConfig->m_18 & 0x20);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -4582,9 +4582,9 @@ drag_box: {
         m_worldReady = 1;
         goto ret1;
     }
-    m_4w()->m_68->ResetCell(slot38, slot38, g_645578->m_18 & 0x20, 0); // 0x29cd -> @0x6bfd0
+    m_4w()->m_68->ResetCell(slot38, slot38, g_spawnConfig->m_18 & 0x20, 0); // 0x29cd -> @0x6bfd0
     if (a == g_curPlayer) {
-        if (0 != (g_645578->m_18 & 0x20)) {
+        if (0 != (g_spawnConfig->m_18 & 0x20)) {
             goto ret1;
         }
         picked->OnStruck(1); // 0x1f4b -> CGrunt::OnStruck @0x588f0
@@ -4848,7 +4848,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     g->TryActivate();
     g->m_hlBusy = 1;
     g->Deactivate();
-    m_savedClock = g_645588;
+    m_savedClock = g_frameTime;
     return 1;
 }
 
@@ -4865,7 +4865,7 @@ i32 CPlay::ReleaseLevelOverlay(i32) {
         m_overlayDrag = 0;
         worker->ExitMode();
         if (g_gameReg->m_134 != 2) {
-            g_645588 = m_savedClock;
+            g_frameTime = m_savedClock;
         }
     }
     return 1;
@@ -4893,7 +4893,7 @@ i32 CPlay::PauseGame() {
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
-    m_savedClock = g_645588;
+    m_savedClock = g_frameTime;
     return 1;
 }
 
@@ -4903,7 +4903,7 @@ i32 CPlay::PauseGame() {
 RVA(0x000cef00, 0x39)
 i32 CPlay::ResumeGame() {
     m_guts->BuildGameTabPauseButton();
-    g_645588 = m_savedClock;
+    g_frameTime = m_savedClock;
     m_paused = 0;
     if (m_guts != 0) {
         m_guts->Deactivate();
@@ -5046,7 +5046,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         ((CGruntSpawnConfig*)g_gameReg->m_cueSink)->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
         this->m_bootyInterval = BOOTY_INTERVAL_MS;
         this->m_bootyIntervalHi = 0;
-        this->m_bootyTimerLo = g_645588;
+        this->m_bootyTimerLo = g_frameTime;
         this->m_bootyTimerHi = 0;
         this->m_levelId = frame;
         return 1;
@@ -6201,7 +6201,7 @@ i32 CPlay::ResetForMode(i32 mode) {
         } while (showCursor(0) >= 0);
     }
     if (mode == 9) {
-        g_645588 = m_savedClock;
+        g_frameTime = m_savedClock;
         if (!EnterMode(9)) {
             return 0;
         }
@@ -6296,7 +6296,7 @@ i32 CPlay::ResetPlayState() {
     if (m_4w()->m_14 != 0 && g_gameReg->m_134 == 1) {
         m_ambientInterval = AMBIENT_INTRO_INTERVAL_MS;
         m_ambientIntervalHi = 0;
-        m_ambientTimerLo = g_645588;
+        m_ambientTimerLo = g_frameTime;
         m_ambientTimerHi = 0;
         wsprintfA(buf, "INTRO%d", GetAmbientId());
         if (g_gameReg->m_14 != 0) {
@@ -6367,15 +6367,15 @@ i32 CPlay::ResetPlayState() {
         fm->m_40 = -1;
         fm->m_44 = 0;
         if (fm->m_currentMs != 0) {
-            fm->m_38 = g_645588;
+            fm->m_38 = g_frameTime;
             fm->m_3c = 0;
             fm->m_accumLo = fm->m_currentMs;
             fm->m_accumHi = 0;
-            fm->m_baseTimeLo = g_645588;
+            fm->m_baseTimeLo = g_frameTime;
             fm->m_baseTimeHi = 0;
             fm->m_running = 1;
         } else {
-            fm->m_38 = g_645588;
+            fm->m_38 = g_frameTime;
             fm->m_3c = 0;
         }
     }
@@ -6601,7 +6601,7 @@ void CPlay::CPlayDtorBody() {
 // "CDDrawWorkerMgr" facet is the CDDrawSubMgrPages cast on m_drawTarget), EmHdr14
 // ==CDrawTarget::SurfaceB, EmRendC (a FABRICATED 13-filler vtable)==CRenderer
 // (Present IS its real slot-13 virtual), EmWorld==CWorld (m_10/m_54), EmGuts==
-// CStatusBarMgr, "g_645588_clk"==g_645588 (a duplicate extern of the game clock),
+// CStatusBarMgr, "g_645588_clk"==g_frameTime (a duplicate extern of the game clock),
 // "EmRegWorldStep"==UpdateMgrScroll @0xebd70.)
 // @early-stop
 // large state-machine wall: the mode dispatch + renderer reinstall + guts re-arm
@@ -6666,7 +6666,7 @@ finish:
         m_4w()->m_54->Resume();
     }
     if (mode == 9) {
-        g_645588 = m_savedClock;
+        g_frameTime = m_savedClock;
     }
     m_guts->Deactivate();
     RegisterInputBindings();

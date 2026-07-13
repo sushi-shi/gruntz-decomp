@@ -107,7 +107,7 @@ struct CTileSecretTriggerActEntry {
 
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // The CTileTriggerTransition activation-coordinate registry @0x64e720: the fixed
 // [0x7d0, 0x7da] (== [2000, 2010]) range built by the shared registry ctor (0x408710).
@@ -892,11 +892,11 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 }
 
 // Handler_110110 (0x110110) - the per-frame handler bound by RegisterActs. Advance the bound
-// object's +0x1a0 anim sub-object to the current draw-delta (g_6bf3bc); if the sub-mgr is
+// object's +0x1a0 anim sub-object to the current draw-delta (g_engineFrameDelta); if the sub-mgr is
 // active (m_1c8 != 0) but not idle (m_1c0 == 0), mark the object stalled/handled this frame.
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::Handler_110110() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
         m_38->m_flags |= 0x10000;
     }

@@ -36,7 +36,7 @@
 
 // The positional-sound request flag (owner-TU def; .bss, VA 0x62990c). Set to 2.
 DATA(0x0022990c)
-i32 g_posSoundReq; // 0x62990c
+i32 g_posSoundReq;  // 0x62990c
 
 inline void* operator new(u32, void* p) {
     return p;

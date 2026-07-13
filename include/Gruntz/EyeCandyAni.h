@@ -34,7 +34,7 @@ public:
     // @0x646060). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
     static void RegisterActs(); // 0x0acd10
     // Re-target the bound object's animation sub-object (m_38 + 0x1a0) to the
-    // current draw-delta (g_6bf3bc) and return 0.
+    // current draw-delta (g_engineFrameDelta) and return 0.
     i32 AdvanceAnim(); // 0x0acf10
 
     i32 m_savedGeoId;          // +0x40  geometry id (m_38->m_geoId snapshot)

@@ -97,7 +97,6 @@ DATA(0x00244c54)            // RVA (was VA-typo 0x644c54, which shadowed the can
 extern "C" i32 g_curPlayer; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
 DATA(0x00248cf0) // RVA (was VA-typo 0x648cf0, which shadowed multi's canonical 0x248cf0 binding)
 extern i32 g_isHost_648cf0;
-DATA(0x002c44c0)
 extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 
 // The two brick-display strings the 0x8068/0x806f cheats clear (real CStrings;

@@ -65,8 +65,8 @@ extern "C" void* g_gameReg; // 0x64556c (typed CGruntzMgr* in its owner TU)
 extern "C" u32 g_645580;
 extern i32 g_sndEnabled; // 0x61ab20
 // 0x645584 is extern-"C" tree-wide (RezMgr's g_lastDelta, the frame delta); a plain
-// C++ `extern` here emitted the divergent ?g_645584@@3HA.
-extern "C" i32 g_645584; // 0x645584
+// C++ `extern` here emitted the divergent ?g_frameDelta@@3HA.
+extern "C" i32 g_frameDelta; // 0x645584
 // 0x20fa70: the local protocol/rez-sync version word (canonical decl in <Net/NetMgr.h>,
 // DEFINED in Multi.cpp). Init loads it from the .bute [General] "RezSync" key; Net
 // compares it against the host packet's version field. This TU had it as a private
@@ -133,8 +133,17 @@ extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
 // extern "C" carries no type, so it links either way; the disagreement is REAL and
 // unresolved - flagged, not papered over.)
 extern "C" {
-    extern void* g_645570; // attract host (GruntzMgr: DirectInputMgr2*)
-    extern void* g_645578; // (GruntzMgr: StateMgrBZ*)
+    // @identity-TODO: 0x645570 has TWO readings and they contradict - here it is the
+    // CSpawnOwner* handed to CGruntSpawnConfig::Init, in GruntzMgr it is read as a
+    // DirectInputMgr2* ("attract host"). Typing it either way would be a guess, so it
+    // stays void* and the `(CSpawnOwner*)` cast at the call site STAYS: the cast is
+    // telling the truth - the type above it is still unresolved. Settle the conflation
+    // (one object, two class names) and the cast falls out on its own.
+    extern void* g_645570;
+    // 0x645578 IS the CGruntSpawnConfig singleton - PROVEN in this very function:
+    // RezAlloc(0x28) (its exact size), then ->Init(CSpawnOwner*), then RezFree on the
+    // failure path. Typed, so the `(CGruntSpawnConfig*)` cast at the Init call is gone.
+    extern CGruntSpawnConfig* g_spawnConfig;
 }
 
 // DEFINED HERE (owner = the producer): the attract title-screen count. Init counts how
@@ -712,18 +721,18 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_7c = new CBattlezData;
     m_7c->InitWithRecords((char*)m_58 + 0x24);
 
-    // --- Phase 12: attract host list (g_645578) ---------------------
-    g_645578 = RezAlloc(0x28);
-    if (g_645578) {
-        i32* z = (i32*)g_645578;
+    // --- Phase 12: the grunt spawn-config singleton (g_spawnConfig) -------
+    g_spawnConfig = (CGruntSpawnConfig*)RezAlloc(0x28);
+    if (g_spawnConfig) {
+        i32* z = (i32*)g_spawnConfig;
         z[0] = z[1] = z[2] = z[4] = z[5] = 0;
     }
-    if (!((CGruntSpawnConfig*)g_645578)->Init((CSpawnOwner*)g_645570)) {
-        if (g_645578) {
-            i32* z = (i32*)g_645578;
+    if (!g_spawnConfig->Init((CSpawnOwner*)g_645570)) {
+        if (g_spawnConfig) {
+            i32* z = (i32*)g_spawnConfig;
             z[0] = z[1] = z[2] = z[4] = z[5] = 0;
-            RezFree(g_645578);
-            g_645578 = 0;
+            RezFree(g_spawnConfig);
+            g_spawnConfig = 0;
         }
         Error2(0x800a, 0x413);
         return 0;
@@ -758,7 +767,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     // --- Phase 14: register mgr + probe 4 settings subobjects -------
     g_gameReg = this;
     g_645580 = ::timeGetTime();
-    g_645584 = 0;
+    g_frameDelta = 0;
     for (i32 s = 0; s < 4; ++s) {
         if (!ProbeSettings150(&m_150[s * 0x238])) {
             Error2(0x800a, 0x417);
@@ -871,9 +880,9 @@ i32 RezSync::Init(void* a1, char* a2) {
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }
         if (Fn12d0(mode, 1, 0, 0)) {
-            g_645584 = 0;
+            g_frameDelta = 0;
         } else if (mode == 0x11 && Fn12d0(2, 1, 0, 0)) {
-            g_645584 = 0;
+            g_frameDelta = 0;
         } else {
             Error2(0x8005, mode == 0x11 ? 0x41c : 0x41d);
             return 0;

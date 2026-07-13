@@ -1,7 +1,7 @@
 // SpotLight.cpp - re-homed from src/Stub/Discovered.cpp (0x0b1ee0). The
 // CSpotLight per-tick update: when the owner's mode (m_owner->m_mode) is 1 it rotates
 // the (m_offsetX,m_offsetY) offset by the running angle m_angle (scaled by m_angleStep and the frame
-// delta g_645584), folds in the tracked target (m_target->m_x/m_y), and advances
+// delta g_frameDelta), folds in the tracked target (m_target->m_x/m_y), and advances
 // m_angle; then it (re)resolves the light's bute key into m_lightCfg->m_buteNode when the
 // manager's per-cell slot is empty. X/Y within each coordinate pair is inferred;
 // offsets are load-bearing. Engine globals + CButeTree::Find are external
@@ -13,7 +13,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (light-grid via m_68)
 
-extern "C" unsigned g_645584; // 0x645584 frame delta
+extern "C" unsigned g_frameDelta; // 0x645584 frame delta
 extern CButeTree g_buteTree;  // 0x6bf620
 extern char s_codeA[];        // 0x60a454 "A"
 
@@ -80,7 +80,7 @@ int CSpotLight::Update_0b1ee0() {
         }
         m_worldX = m_anchorX + m_worldX;
         m_worldY = m_anchorY + m_worldY;
-        m_angle = (double)g_645584 * m_angleStep + m_angle;
+        m_angle = (double)g_frameDelta * m_angleStep + m_angle;
     }
     if (((MgrObj68*)g_gameReg->m_cmdGrid)->arr[m_gridCol + m_gridRow * 15] == 0) {
         m_prevNode = m_lightCfg->m_buteNode;

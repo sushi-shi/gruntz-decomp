@@ -50,12 +50,12 @@
 // The strike-clock + threshold globals the timer windows poll.
 //
 // 0x645588 is the running accumulated frame time (the game clock). It has exactly ONE
-// definition in the tree - `extern "C" u32 g_645588` in Projectile.cpp - so that is the
+// definition in the tree - `extern "C" u32 g_frameTime` in Projectile.cpp - so that is the
 // only name for it that LINKS. This TU used to declare it twice more under C++ linkage
 // (`g_strikeClock` here, `g_pathLegTag` in PathHazard.h): two extra mangled symbols
 // (?g_strikeClock@@3HA / ?g_pathLegTag@@3HA) that nothing defines. Both were guaranteed
 // unresolved externals; objdiff masked the reloc so they scored 100%.
-extern "C" u32 g_645588;   // 0x645588  running game clock (strike/leg deadlines poll it)
+extern "C" u32 g_frameTime;   // 0x645588  running game clock (strike/leg deadlines poll it)
 extern i32 g_strikeThresh; // 0x645598 (compared to 0x64)
 
 // The sibling hazard reads its bound CGameObject (m_10) directly: the draw trio
@@ -332,7 +332,7 @@ i32 CPathHazard::Tick() {
             i32 segs = m_object->m_120;
             if (segs > 0) {
                 m_legWindow = segs;
-                m_legDeadline = (u32)g_645588; // the running game clock seeds the leg deadline
+                m_legDeadline = (u32)g_frameTime; // the running game clock seeds the leg deadline
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = g_buteTree.Find(g_iconBute);
                 return 0;
@@ -394,7 +394,7 @@ RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {
         i32 sel = 5;
-        i64 elapsed = (i64)(u32)g_645588 - m_strikeDeadline;
+        i64 elapsed = (i64)(u32)g_frameTime - m_strikeDeadline;
         if (elapsed >= m_strikeWindow) {
             m_strikeArmed = 0;
         } else if (g_strikeThresh < 0x64) {
@@ -437,7 +437,7 @@ i32 CPathHazard::SiblingTick() {
         }
     }
 
-    i64 legElapsed = (i64)(u32)g_645588 - m_legDeadline;
+    i64 legElapsed = (i64)(u32)g_frameTime - m_legDeadline;
     if (legElapsed >= m_legWindow) {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
@@ -467,7 +467,7 @@ RVA(0x000b4640, 0x104)
 i32 CPathHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
     m_strikeWindow = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
-    m_strikeDeadline = (i64)(u32)g_645588;
+    m_strikeDeadline = (i64)(u32)g_frameTime;
     g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
 
     CGameObject* obj = m_object;

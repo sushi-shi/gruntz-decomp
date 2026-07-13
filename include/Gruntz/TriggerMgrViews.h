@@ -146,7 +146,7 @@ struct CTmRegSub30 {
 // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8 - the canonical CButeMgr (via TriggerMgr.h);
 // the int-with-default getter (0x1721e0) is reloc-masked __thiscall.
 extern CButeMgr g_buteMgr;
-extern "C" u32 g_645588; // DAT_00645588 (the level base score / id sentinel)
+extern "C" u32 g_frameTime; // DAT_00645588 (the level base score / id sentinel)
 // (g_644ca4 moved to its only user, TriggerMgr.cpp, where it can carry the DATA()
 //  binding a header cannot: a DATA() in a header is ignored by the label pass, so
 //  declaring it here bound it to NO retail address at all.)

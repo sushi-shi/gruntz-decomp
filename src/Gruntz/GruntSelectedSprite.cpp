@@ -128,7 +128,7 @@ i32 CGruntSelectedSprite::Update() {
     CGameRegistry* reg = g_gameReg;
     CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_drawn != 0) {
-        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
         m_object->m_screenX = e->m_renderable->m_screenX;
         m_object->m_screenY = e->m_renderable->m_screenY;
     }

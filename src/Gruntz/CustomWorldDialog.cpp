@@ -57,7 +57,6 @@ namespace NetLobby {
 // exchange CStrings stay `extern`: their storage is default-constructed in place by
 // this obj's .CRT$XC init statics (FreeGlobal62c25c/InitStr62c264/FreeLevelStr), so
 // a real `CString g_x;` definition here would emit a duplicate dynamic initializer.
-DATA(0x0022c00c)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.

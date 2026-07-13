@@ -24,7 +24,7 @@ extern "C" CGameRegistry* g_gameReg; // 0x64556c
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
-// g_645588 (the free-running clock global) comes from <Gruntz/Play.h>.
+// g_frameTime (the free-running clock global) comes from <Gruntz/Play.h>.
 
 RVA(0x0010bc30, 0x78)
 void CStatusBarMgr::UpdateDestructButton(i32 arg) {
@@ -33,7 +33,7 @@ void CStatusBarMgr::UpdateDestructButton(i32 arg) {
     m_modeState = 2;
     m_destructWarnDelay = g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
     m_destructWarnDelayHi = 0;
-    m_destructWarnLast = g_645588;
+    m_destructWarnLast = g_frameTime;
     m_destructWarnLastHi = 0;
     play->ArmSnapshot(1, arg);
     SetMode(0);

@@ -18,7 +18,6 @@ extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // 0x629a50 wsprintfA scratch buffer (128 B, bounded by g_serialCounter @0x229ad0);
 // DEFINED here (owner TU) with C linkage (_g_629a50).
 extern "C" {
-    DATA(0x00229a50)
     // @undefined-data: a char[] datum here is a STRING (or a run of them); its
     // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
     // in between get swallowed). Inline the literal at its use site instead.

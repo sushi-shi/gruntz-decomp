@@ -597,7 +597,7 @@ public:
     i32 m_1c0; // +0x1c0  Dispatch level-quiesce latch (set 1 on level index 0x20)
     i32 m_1c4; // +0x1c4  deferred-draw gate (LoadByMode sets 1; EnterMode consumes; serialized)
     char m_pad1c8[0x1cc - 0x1c8]; // +0x1c8
-    i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_645588)
+    i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_frameTime)
     i32 m_1d0; // +0x1d0  cleared by the ~CPlay teardown body
     char m_pad1d4[0x2d0 - 0x1d4];
     i32 m_packetsRcvd; // +0x2d0  net packets received (debug HUD "Rcvd = %i")
@@ -756,7 +756,7 @@ public:
 // ===========================================================================
 // The frame-clock + singleton globals CPlay::Render reads each frame.
 // ===========================================================================
-// The dev/render-state singleton DispatchHudClick reads (*g_645578); its +0x18 is
+// The dev/render-state singleton DispatchHudClick reads (*g_spawnConfig); its +0x18 is
 // a flags word masked with 0x20 to gate the HUD-rect post.
 struct StateMgrBZ {
     i32 m_0, m_4, m_8; // +0x00..+0x08
@@ -768,12 +768,12 @@ struct StateMgrBZ {
 
 extern "C" {
     extern u32 g_645580;         // g_lastNow  (-> mirror g_killCueClock)
-    extern u32 g_645584;         // g_lastDelta
-    extern u32 g_645588;         // g_accumMs (the running game clock)
-    extern StateMgrBZ* g_645578; // the dev/render-state singleton (DispatchHudClick)
+    extern u32 g_frameDelta;         // g_lastDelta
+    extern u32 g_frameTime;         // g_accumMs (the running game clock)
+    extern StateMgrBZ* g_spawnConfig; // the dev/render-state singleton (DispatchHudClick)
     extern "C" i32 g_curPlayer;  // a default cue/message wParam
     extern u32 g_killCueClock;   // draw-clock mirror
-    extern u32 g_6bf3bc;         // draw-delta mirror
+    extern u32 g_engineFrameDelta;         // draw-delta mirror
 }
 
 #endif // SRC_GRUNTZ_CPLAY_H

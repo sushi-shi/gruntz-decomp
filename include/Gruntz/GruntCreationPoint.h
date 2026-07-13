@@ -10,7 +10,7 @@
 //
 // AdvanceAnim (0x03ecc0) is the SAME per-frame animation-advance archetype as
 // CSimpleAnimation::AdvanceAnim (0x0abf70): re-target the bound object's
-// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc) and
+// animation sub-object (m_38 + 0x1a0) to the current draw-delta (g_engineFrameDelta) and
 // return 0.
 //
 // Field names are placeholders; only OFFSETS + the inheritance chain are

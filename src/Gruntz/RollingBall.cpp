@@ -74,14 +74,14 @@ CRollingBallActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x
 extern "C" void* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 // (g_buteMgr comes from <Bute/ButeMgr.h> via UserLogic.h; Update reaches it only
 //  through RbGetDwordDef, so no direct extern is needed here.)
-extern "C" i32 g_645588;    // DAT_00645588 @0x645588 (world clock ms)
-extern "C" i32 g_645584;    // DAT_00645584 @0x645584 (frame delta ms)
+extern "C" i32 g_frameTime;    // DAT_00645588 @0x645588 (world clock ms)
+extern "C" i32 g_frameDelta;    // DAT_00645584 @0x645584 (frame delta ms)
 // (g_5ea3e8 was NOT a global: it is MSVC's literal-pool entry for the 1000.0 in the
 //  expression below - an fp constant a previous pass re-declared as an extern "C"
 //  symbol that NOTHING defines. The dev wrote the literal; cl emits the same
 //  reloc-masked .rdata entry and the identical fdiv.)
 static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
-extern "C" u32 g_6bf3bc;    // _g_6bf3bc @0x6bf3bc (the per-frame draw-delta; Advance arg)
+extern "C" u32 g_engineFrameDelta;    // _g_6bf3bc @0x6bf3bc (the per-frame draw-delta; Advance arg)
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked thunks (no body).
@@ -260,7 +260,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     }
     m_explodeWindowLo = o->m_118;
     m_explodeWindowHi = 0;
-    m_explodeStartLo = g_645588;
+    m_explodeStartLo = g_frameTime;
     m_explodeStartHi = 0;
     m_targetY = snapY;
     m_targetX = snapY;
@@ -332,8 +332,8 @@ void CRollingBall::RegisterActs() {
 // reconstruction (prologue, explosion/fall latches, action/direction/sink switches,
 // x87 interpolation tail). Two binary-proven structural fixes landed the prologue
 // exactly (36.4%->38.0%): the m_38+0x1a0 sub-update is the real CAniAdvanceCursor::
-// Advance_15c360(g_6bf3bc) __thiscall (was a fake free-fn RbSubUpdate + a dead
-// g_6bf3bc load), and g_gameReg is re-loaded per use (retail does not cache the game
+// Advance_15c360(g_engineFrameDelta) __thiscall (was a fake free-fn RbSubUpdate + a dead
+// g_engineFrameDelta load), and g_gameReg is re-loaded per use (retail does not cache the game
 // registry in a callee-saved reg - ~15 fresh ds:0x64556c loads). Residual is the
 // documented wall: MSVC5's constant-materialization (test eax,eax vs cmp [mem],ebx),
 // the +8B frame spill count, the EH-state numbering + the three nested jump-table
@@ -342,7 +342,7 @@ RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
     void* self = this;
 
-    ((CAniAdvanceCursor*)((char*)PTR(self, 0x38) + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)PTR(self, 0x38) + 0x1a0))->Advance_15c360(g_engineFrameDelta);
 
     void* anim = PTR(self, 0x38);
     if (I32(anim, 0x1c8) != 0 && I32(anim, 0x1c0) == 0) {
@@ -353,7 +353,7 @@ i32 CRollingBall::Update() {
     // The explosion latch (+0x80): the explosion sound + cell-clear fire once.
     if (I32(self, 0x80) == 0) {
         void* logic = PTR(self, 0x10);
-        i32 lo = g_645588 - I32(self, 0x88);
+        i32 lo = g_frameTime - I32(self, 0x88);
         i32 hi = 0 - I32(self, 0x8c);
         i32 lim = I32(self, 0x94);
         if (hi < lim || (hi == lim && (u32)lo < (u32)I32(self, 0x90))) {
@@ -521,7 +521,7 @@ i32 CRollingBall::Update() {
     I32(self, 0x98) = 0;
     I32(self, 0x9c) = 0;
 
-    double dt = (double)g_645584 * DBL(self, 0x58);
+    double dt = (double)g_frameDelta * DBL(self, 0x58);
     i32 nx = I32(self, 0x78) >> 5;
     if (I32(self, 0x70) > 0) {
         double v = dt + DBL(self, 0x60);

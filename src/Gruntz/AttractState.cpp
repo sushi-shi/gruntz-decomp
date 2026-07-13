@@ -69,7 +69,7 @@ extern ShowCursorFn g_ShowCursor;
 // symbol pairs with the target's _g_645584 (the convention across the gamemode units).
 extern "C" {
     DATA(0x00245584)
-    extern u32 g_645584;
+    extern u32 g_frameDelta;
 }
 
 // The random-pick target string (DAT_0060b5bc) and the shared empty string
@@ -284,8 +284,8 @@ i32 CAttract::Render() {
         ((SoundDevice*)res)->PurgeVoiceList(-1);
     }
 
-    if (g_645584 < m_idleTimer) {
-        m_idleTimer -= g_645584;
+    if (g_frameDelta < m_idleTimer) {
+        m_idleTimer -= g_frameDelta;
     } else {
         m_idleTimer = 0;
     }

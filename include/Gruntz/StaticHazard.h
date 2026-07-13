@@ -49,7 +49,7 @@ public:
     // CStaticHazard's own data begins at +0x40 (CUserLogic ends at +0x40).
     i32 m_prevAnimNode; // +0x40  snapshot of the bound object's active-anim descriptor
     char m_pad44[0x54 - 0x44];
-    u32 m_pulseEpoch;   // +0x54  pulse epoch (latched g_645588 at construction)
+    u32 m_pulseEpoch;   // +0x54  pulse epoch (latched g_frameTime at construction)
     i32 m_activeWindow; // +0x58  active-window length (Hazardz/AniPad bute int + offset)
     i32 m_idleWindow;   // +0x5c  idle-window length
     i32 m_fired;        // +0x60  fired flag (0/1)

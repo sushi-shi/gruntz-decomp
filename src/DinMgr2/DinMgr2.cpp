@@ -94,13 +94,13 @@ extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref)
 // MessageBox path; g_dinputBeepEnabled gates the startup beep, g_dinputThirdEnabled is
 // a third "any output wanted" gate at entry.
 DATA(0x00253aa4)
-i32 g_dinputLogEnabled; // 0x653aa4
+i32 g_dinputLogEnabled;  // 0x653aa4
 DATA(0x00253aa8)
-i32 g_dinputMsgBoxEnabled; // 0x653aa8
+i32 g_dinputMsgBoxEnabled;  // 0x653aa8
 DATA(0x00253aac)
-i32 g_dinputBeepEnabled; // 0x653aac
+i32 g_dinputBeepEnabled;  // 0x653aac
 DATA(0x00253ab0)
-i32 g_dinputThirdEnabled; // 0x653ab0
+i32 g_dinputThirdEnabled;  // 0x653ab0
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)

@@ -32,7 +32,7 @@ extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A
 // The wingz-duration FP constants (reloc-masked .rodata doubles).
 
 // The global running game clock (reloc-masked).
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 // The global manager pointer (the object at *0x64556c; reloc-masked).
 extern "C" CGameRegistry* g_gameReg;
 // The scratch CString[] the ScratchResolve reject paths tear down (reloc-masked).

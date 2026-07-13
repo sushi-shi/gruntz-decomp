@@ -43,9 +43,7 @@ extern "C" char g_emptyString[];
 // The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0) + its end
 // sentinel g_cheatTableEnd (0x62aef0). .bss (built at runtime); DEFINED here (owner
 // TU), reference externs stay in <Globals.h>. (REHOME DD-G)
-DATA(0x00229f50)
 char g_cheatTable[0xfa0]; // 0x629f50  (25 entries x 0xa0 stride)
-DATA(0x0022aef0)
 char g_cheatTableEnd[4]; // 0x62aef0  (loop end sentinel = &g_cheatTable[0xfa0])
 // First-run guard (DAT_0062af10): 0 until the cheat table is built. DEFINED here
 // (owner TU); a plain `extern` stays in Globals.h.
@@ -55,7 +53,7 @@ i32 g_bootyCheatBuilt = 0; // 0x22af10
 // loop pointer walks [base .. end); each entry's text lands at p-0x20, desc at p.
 // The +0x1c0 mode-record seed (_g_645588).
 DATA(0x00245588)
-extern "C" i32 g_645588; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
+extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 // (the six Bc* sub-views are GONE too - each was a facet of a class CState already names:
 //    BcStateRoot   -> CState::m_4  is CGruntzMgr*, and its "Reset(0)" @thunk 0x34ef is
@@ -196,7 +194,7 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
 
     m_1c8 = 0x21;
     m_1cc = 0;
-    m_1c0 = g_645588;
+    m_1c0 = g_frameTime;
     m_1c4 = 0;
     return 1;
 

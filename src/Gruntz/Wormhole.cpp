@@ -36,7 +36,7 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GruntPuddle.h>     // CGruntPuddle (+ InGameIcon.h: CGameRegistry/g_gameReg)
-#include <Gruntz/Teleporter.h>      // CTeleporter (+ g_6bf3bc/g_645588/g_iconBute/geo keys)
+#include <Gruntz/Teleporter.h>      // CTeleporter (+ g_engineFrameDelta/g_frameTime/g_iconBute/geo keys)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
@@ -68,10 +68,10 @@ extern CButeMgr g_buteMgr;
 // raw slot table cast it per use ((i32**)g_gameReg / (CSpawnReg*)g_gameReg).
 
 // 0x2bf3bc is NOT a "default geometry source": it is the per-frame DRAW-DELTA mirror
-// (Play.cpp sets it every frame from g_645584 == g_lastDelta), and what the calls below
+// (Play.cpp sets it every frame from g_frameDelta == g_lastDelta), and what the calls below
 // do is advance an animation cursor BY THE FRAME DELTA. This TU had it as a C++-mangled
 // `g_defaultGeo` - a divergent, undefinable symbol under a wrong name. It comes from
-// <Gruntz/Teleporter.h> (extern "C" u32 g_6bf3bc), included above.
+// <Gruntz/Teleporter.h> (extern "C" u32 g_engineFrameDelta), included above.
 
 // The current local player index (g_curPlayer) the teleporter warp gates on.
 DATA(0x00244c54)
@@ -438,7 +438,7 @@ void CWormhole::SpawnPartners() {
     // The geo-call dereferences m_38 once (its own ecx); the gate block then
     // re-reads m_38 ONCE into a scratch and reuses it for all three field reads
     // (the target keeps this=esi live across both, loading [esi+0x38] twice).
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
 
     // Gate: only spawn partners when the object is "open" (m_1c8 set) and not
     // already paired (m_1c0 clear); then mark it paired-in-progress (m_08 |= 0x10000).
@@ -655,7 +655,7 @@ i32 CGruntPuddle::Remove() {
             }
         }
     }
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     CGameObject* o = m_38;
     if (o->m_1c8 != 0 && o->m_1c0 == 0) {
         if (m_placed != 0) {
@@ -914,13 +914,13 @@ void CTeleporter_RegisterActs() {
 // inverse register-pinning wall (~88%, docs/patterns/zero-register-pinning.md):
 // every offset / immediate / branch target / call arg / field store is byte-faithful,
 // but our MSVC enregisters the reloaded m_38+0x1a0 pointer + the m_7c->m_bc /
-// g_645588 values in callee-saved edi (extra push edi/pop edi; folds +0x1a0 into the
+// g_frameTime values in callee-saved edi (extra push edi/pop edi; folds +0x1a0 into the
 // +0x1c8/+0x1c0 field offsets instead of re-adding 0x1a0; reuses eax for the m_1b4
 // read) where retail re-reads from memory each time. The SAME coin-flip
 // CGruntPuddle::Place / CPlay::ApplyGameOptions carry; no source lever flips it.
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
 
     if (((CTeleAnimSink*)((char*)m_38 + 0x1a0))->m_28 == 0) {
         return 0;
@@ -931,7 +931,7 @@ i32 CTeleporter::Begin() {
 
     m_intervalLo = m_object->m_7c->m_bc;
     m_intervalHi = 0;
-    m_armClockLo = g_645588;
+    m_armClockLo = g_frameTime;
     m_armClockHi = 0;
     m_savedGeoId = m_38->m_geoId;
     m_object->ApplyLookupGeometry(g_teleporterGeoKey, 0);
@@ -960,7 +960,7 @@ i32 CTeleporter::Begin() {
 // carry; not source-steerable. Logic + every offset/branch/call-arg byte-faithful.
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     CGameObject* a = m_38;
     if (a->m_1c8 != 0 && a->m_1c0 == 0) {
         if (m_object->m_124 == 1) {
@@ -989,7 +989,7 @@ i32 CTeleporter::Update() {
 
     CGameObject* o = m_object;
     if (o->m_7c->m_bc != 0) {
-        i64 delta = (i64)(u32)g_645588 - *(i64*)&m_armClockLo;
+        i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_armClockLo;
         if (delta >= *(i64*)&m_intervalLo) {
             m_savedGeoId = m_38->m_geoId;
             m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);

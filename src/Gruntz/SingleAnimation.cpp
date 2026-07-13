@@ -34,7 +34,7 @@ CSingleAnimActReg g_singleAnimActReg; // 0x645f70
 // The per-frame draw-delta mirror (_g_6bf3bc) the advance hands the sink; declared
 // extern "C" so the value-load reloc-masks against the already-matched symbol.
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc;
+extern "C" u32 g_engineFrameDelta;
 
 // CSingleAnimation::Serialize @0x104a0 - the vtable slot-1 override: chain the shared
 // CUserLogic serialize helper on `this`, then (only on success) the +0x34 sub-object's
@@ -125,7 +125,7 @@ void CSingleAnimation::RegisterActs() {
 // Returns 0. (Sibling of CMenuSparkle::AdvanceAnim without the flicker countdown.)
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
         m_38->m_flags |= 0x10000;
     }

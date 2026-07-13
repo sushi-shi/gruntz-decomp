@@ -415,26 +415,26 @@ i32 CCreditsState::DrawScrollingCredits() {
     // COM slot 17 (+0x44), ReleaseDC slot 26 (+0x68).
     CDDSurface* prov = m_c->m_drawTarget->m_14->m_2c;
 
-    if (g_645584 >= m_1f4) {
+    if (g_frameDelta >= m_1f4) {
         m_1f4 = 0;
     } else {
-        m_1f4 -= g_645584;
+        m_1f4 -= g_frameDelta;
     }
     if (m_1c4 != 0) {
-        if (g_645584 >= m_1bc) {
+        if (g_frameDelta >= m_1bc) {
             m_1bc = 0;
         } else {
-            m_1bc -= g_645584;
+            m_1bc -= g_frameDelta;
         }
-        if (g_645584 >= m_1c0) {
+        if (g_frameDelta >= m_1c0) {
             m_1c0 = 0;
         } else {
-            m_1c0 -= g_645584;
+            m_1c0 -= g_frameDelta;
         }
     }
 
     m_drawRect = m_scrollRect;
-    double contrib = (double)g_645584 * m_scrollStep * 0.001;
+    double contrib = (double)g_frameDelta * m_scrollStep * 0.001;
     m_scrollAccum = m_scrollAccum + contrib;
     i32 scrolled = (i32)m_scrollAccum;
     m_drawRect.top -= scrolled;

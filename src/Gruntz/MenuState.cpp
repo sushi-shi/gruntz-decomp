@@ -327,7 +327,7 @@ i32 CMenuState::FrameSlot28(i32) {
 //      matching no-arg method on the UI object m_1b4 and short-circuits to the
 //      tail; the 0x100 scan, if its handler returns 0, also posts a WM_COMMAND
 //      0x8036 before the tail.
-//   3. TAIL: m_1b4->Step(g_645584); m_1b4->Pre(); DrawVersion({g_645cc8..d4});
+//   3. TAIL: m_1b4->Step(g_frameDelta); m_1b4->Pre(); DrawVersion({g_645cc8..d4});
 //      m_1b4->Post();   return 1;
 RVA(0x000a0750, 0x1d0)
 i32 CMenuState::Render() {
@@ -381,7 +381,7 @@ i32 CMenuState::Render() {
         }
     }
 tail:
-    m_1b4->Step(g_645584);
+    m_1b4->Step(g_frameDelta);
     m_1b4->Pre();
     BuildVersionString(g_645cc8); // 0xa0d80 (the fake DrawVersion alias folded away)
     m_1b4->Post();

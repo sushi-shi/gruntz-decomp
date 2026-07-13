@@ -40,9 +40,9 @@ extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
 
-// g_clock was a SECOND NAME for g_645588 (0x245588 frame clock) - same address,
+// g_clock was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 // The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
@@ -155,7 +155,7 @@ extern "C" {
         m_31c.RemoveAll();                                                                         \
     }
 
-extern "C" u32 g_645588; // 0x645588 (second name for g_645588, reloc-masked)
+extern "C" u32 g_frameTime; // 0x645588 (second name for g_frameTime, reloc-masked)
 
 // ---------------------------------------------------------------------------
 // CGrunt::ResolveArrivalReposition()   @0xec670   (__thiscall, ret 0 -> 1)
@@ -209,7 +209,7 @@ i32 CGrunt::ResolveArrivalReposition() {
     {
         u32 dwell = *(u32*)&m_dwell;
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_318 != 0 && dwell > 0xbb8) {
-            if ((i64)(u32)g_645588 - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
+            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
                 goto L8b5;
             }
             CGruntHud* h = m_10;
@@ -251,7 +251,7 @@ L8b5:
     m_arrivalRerollWindowHi = 0;
     m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
     m_arrivalRerollWindowHi = 0;
-    m_arrivalRerollLo = (i32)g_645588;
+    m_arrivalRerollLo = (i32)g_frameTime;
     m_arrivalRerollHi = 0;
     m_390 = 1;
     goto L8a2;
@@ -748,8 +748,8 @@ i32 CGrunt::WanderStep() {
 
 timeout:
     if (F(this, 0x244) == 0 && F(this, 0x318) != 0 && (u32)F(this, 0x2ec) > 0xbb8) {
-        i32 hi = -(i32)((u32)g_645588 < (u32)F(this, 0x308)) - F(this, 0x30c);
-        i32 lo = (i32)(g_645588 - (u32)F(this, 0x308));
+        i32 hi = -(i32)((u32)g_frameTime < (u32)F(this, 0x308)) - F(this, 0x30c);
+        i32 lo = (i32)(g_frameTime - (u32)F(this, 0x308));
         if (F(this, 0x314) < hi || (F(this, 0x314) == hi && (u32)lo >= (u32)F(this, 0x310))) {
             ResetEntranceAnimation(1, 1, 0);
             F(this, 0x308) = 0;
@@ -758,7 +758,7 @@ timeout:
             F(this, 0x314) = 0;
             F(this, 0x310) = GameRand() % 30000 + 30000;
             F(this, 0x314) = 0;
-            F(this, 0x308) = (i32)g_645588;
+            F(this, 0x308) = (i32)g_frameTime;
             F(this, 0x30c) = 0;
         } else {
             i32 base = F(this, 0x10);
@@ -1010,11 +1010,11 @@ i32 CGrunt::UpdateArrival() {
             }
             if (this->m_resetApplied == 0 && this->m_318 != 0 && (u32)this->m_dwell > 3000) {
                 i32 cmp =
-                    -(i32)((u32)g_645588 < (u32)this->m_arrivalRerollLo) - this->m_arrivalRerollHi;
+                    -(i32)((u32)g_frameTime < (u32)this->m_arrivalRerollLo) - this->m_arrivalRerollHi;
                 if (this->m_arrivalRerollWindowHi < cmp
                     || (this->m_arrivalRerollWindowHi <= cmp
                         && (u32)this->m_arrivalRerollWindowLo
-                               <= g_645588 - (u32)this->m_arrivalRerollLo)) {
+                               <= g_frameTime - (u32)this->m_arrivalRerollLo)) {
                     ResetEntranceAnimation(1, 1, 0);
                     this->m_arrivalRerollLo = 0;
                     this->m_arrivalRerollWindowLo = 0;
@@ -1022,7 +1022,7 @@ i32 CGrunt::UpdateArrival() {
                     this->m_arrivalRerollWindowHi = 0;
                     this->m_arrivalRerollWindowLo = GruntRand() % 30000 + 30000;
                     this->m_arrivalRerollWindowHi = 0;
-                    this->m_arrivalRerollLo = (i32)g_645588;
+                    this->m_arrivalRerollLo = (i32)g_frameTime;
                     this->m_arrivalRerollHi = 0;
                 } else {
                     CGruntHud* base = this->m_10;
@@ -1893,7 +1893,7 @@ i32 CGrunt::StepArrivalDefense() {
             if ((u32)m_dwell <= 0xbb8) {
                 return 1;
             }
-            if ((i64)(u32)g_645588 - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
+            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollLo = 0;
                 m_arrivalRerollWindowLo = 0;
@@ -1901,7 +1901,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_arrivalRerollWindowHi = 0;
                 m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollLo = (i32)g_645588;
+                m_arrivalRerollLo = (i32)g_frameTime;
                 m_arrivalRerollHi = 0;
                 m_dwell = 0;
                 return 1;
@@ -2791,11 +2791,11 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if ((u32)m_dwell <= 0xbb8) {
                 return 1;
             }
-            if ((i64)(u32)g_645588 - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
+            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollLo = (i32)g_645588;
+                m_arrivalRerollLo = (i32)g_frameTime;
                 m_arrivalRerollHi = 0;
                 m_dwell = 0;
                 return 1;

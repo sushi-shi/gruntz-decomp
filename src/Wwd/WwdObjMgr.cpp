@@ -110,7 +110,7 @@ SIZE_UNKNOWN(CDDrawSubMgr);
 // The shared kill-cue clock (advanced once per tick) + its per-frame delta, and
 // the cached timeGetTime import (bound in DirPal.cpp).
 extern "C" u32 g_killCueClock; // 0x6bf3c0 kill-cue clock (prev now)
-extern "C" u32 g_6bf3bc;       // 0x6bf3bc per-frame delta
+extern "C" u32 g_engineFrameDelta;       // 0x6bf3bc per-frame delta
 
 // The manager's map key is the object id (+0x188) used as the MFC void* key.
 // (Spelled through this inline - the direct `WwdKey(obj)` argument-cast
@@ -508,7 +508,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
         u32 now = ::timeGetTime();
         u32 delta = now - g_killCueClock;
         g_killCueClock = now;
-        g_6bf3bc = delta;
+        g_engineFrameDelta = delta;
     }
 
     CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
@@ -517,7 +517,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
         node = node->m_next;
         CWwdGameObject* obj = cur->m_obj;
         CLogicRecord* rec = obj->m_killCue;
-        if (rec->Consume((i32)g_6bf3bc) == 0) {
+        if (rec->Consume((i32)g_engineFrameDelta) == 0) {
             i32* refc = (i32*)((char*)rec + 0x24);
             if (*refc != 0) {
                 --*refc;

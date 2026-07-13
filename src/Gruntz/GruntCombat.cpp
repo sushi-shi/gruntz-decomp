@@ -122,7 +122,7 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 extern i32 g_6455b0; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // The scratch CString teardown the GetNameRecords reject paths run (defined with the
 // dispatch-machine cluster below); forward-declared for the two entrance-step
@@ -1216,7 +1216,7 @@ RVA(0x000588f0, 0x1ea)
 void CGrunt::OnStruck(i32 wasHit) {
     m_struckTimerLo = 0xfa0;
     m_struckTimerHi = 0;
-    m_struckClockLo = (i32)g_645588;
+    m_struckClockLo = (i32)g_frameTime;
     m_struckClockHi = 0;
     i32 c = ++m_struckCount;
 
@@ -1941,7 +1941,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     CreateHealthSprite();
     m_combatTimeoutLo = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
     m_combatTimeoutHi = 0;
-    m_combatClockLo = (i32)g_645588;
+    m_combatClockLo = (i32)g_frameTime;
     m_combatClockHi = 0;
     m_358 = 1;
 
@@ -2004,7 +2004,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     nb->CreateHealthSprite();
     nb->m_combatTimeoutLo = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
     nb->m_combatTimeoutHi = 0;
-    nb->m_combatClockLo = (i32)g_645588;
+    nb->m_combatClockLo = (i32)g_frameTime;
     nb->m_combatClockHi = 0;
     ArrivalRecycle(c, d, 1, a, b);
     m_neighborCol = a;
@@ -2059,7 +2059,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
 
     m_combatTimeoutLo = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
     m_combatTimeoutHi = 0;
-    m_combatClockLo = (i32)g_645588;
+    m_combatClockLo = (i32)g_frameTime;
     m_combatClockHi = 0;
     m_358 = 1;
     m_208 = a;

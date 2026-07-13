@@ -145,7 +145,7 @@ DATA(0x0020c7a8)
 extern "C" i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
 
 // The shared frame-delta clock (defined in its own owner TU; one extern, no DATA here).
-extern "C" i32 g_645584; // 0x00645584 elapsed-time delta (ms)
+extern "C" i32 g_frameDelta; // 0x00645584 elapsed-time delta (ms)
 
 // ---------------------------------------------------------------------------
 // CFontConfig::LoadFontConfig
@@ -494,7 +494,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
 // @early-stop
 // regalloc/EH-state wall. Complete correct reconstruction: the /GX frame, the
 // arg-null gate before the CString copy, the Ctrl-held '*'-mask loop, the
-// g_645584/g_62b438 countdown + g_62b43c toggle, the blink-off-empty caret branch,
+// g_frameDelta/g_62b438 countdown + g_62b43c toggle, the blink-off-empty caret branch,
 // the font SelectObject save/restore, the DT_CALCRECT measure + overflow
 // right-align, and both DrawTextA renders align by shape (llvm-objdump -dr).
 // Residual is MSVC5 pinning the shared zero in edi + reusing dead arg slots for the
@@ -511,8 +511,8 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         }
     }
     i32 t;
-    if ((u32)g_645584 < (u32)g_caretBlinkMs) {
-        t = g_caretBlinkMs - g_645584;
+    if ((u32)g_frameDelta < (u32)g_caretBlinkMs) {
+        t = g_caretBlinkMs - g_frameDelta;
     } else {
         t = 0;
     }

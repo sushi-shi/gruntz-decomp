@@ -246,7 +246,7 @@ i32 CChatBox::Find(const char* s) {
 // ---------------------------------------------------------------------------
 
 // notify the page of the per-frame delta, then run the inner scroll
-// Step (0x182ed0). The dt arg is u32 (Render passes g_645584); the inner Step
+// Step (0x182ed0). The dt arg is u32 (Render passes g_frameDelta); the inner Step
 // takes i32, so this is the Step(u32) overload that calls Step(i32).
 RVA(0x00182c70, 0x38)
 i32 CChatBox::Step(u32 dt) {

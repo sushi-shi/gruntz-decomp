@@ -1,7 +1,7 @@
 // GameChecksum.cpp - the multiplayer game-state signature accumulator
 // (C:\Proj\Gruntz). Walks the 60-entry object table (this->m_4->m_4->m_68,
 // indexed 0x1c..0x108 step 4, in 4 batches of 15) and folds a large set of each
-// object's fields plus the global sync salt (g_645588 @0x645588) and a per-object
+// object's fields plus the global sync salt (g_frameTime @0x645588) and a per-object
 // switch term into a running 32-bit signature. Deliberate raw-offset reads keep the
 // codegen naming-independent over the opaque object layout; offsets are load-bearing.
 #include <Ints.h>
@@ -10,7 +10,7 @@
 
 #define I32AT(p, off) (*(i32*)((char*)(p) + (off)))
 
-extern "C" i32 g_645588; // 0x645588 (the per-frame sync salt)
+extern "C" i32 g_frameTime; // 0x645588 (the per-frame sync salt)
 
 struct CGameSyncSig {
     i32 ComputeSignature();
@@ -21,7 +21,7 @@ struct CGameSyncSig {
 // @early-stop
 // integer-sum reassociation/scheduling wall (topic:wall topic:regalloc, ~58%):
 // every field offset, the nested 15x4 loop, the value->value+2 switch jump table,
-// the g_645588 salt and the rand() term are all byte-faithful, but retail
+// the g_frameTime salt and the rand() term are all byte-faithful, but retail
 // spills m_17c/m_180 to locals (a 0x10-byte frame) which reschedules the long field
 // sum (adjacent independent loads land in a different order, e.g. 0x3f0/0x3f4 and
 // 0x60/0x74 swapped). MSVC freely reassociates the integer +, so the order is not
@@ -125,7 +125,7 @@ i32 CGameSyncSig::ComputeSignature() {
                     }
                 }
                 sum += I32AT(obj, 0x450) + I32AT(obj, 0x358) + I32AT(obj, 0x218) + I32AT(obj, 0x21c)
-                       + I32AT(obj, 0x220) + g_645588 + r;
+                       + I32AT(obj, 0x220) + g_frameTime + r;
                 sum += rand();
             }
             off += 4;

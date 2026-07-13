@@ -53,9 +53,9 @@ extern "C" i32 g_curPlayer; // 0x644c54  default cue wParam (= *host)
 DATA(0x00245580)
 extern "C" u32 g_645580; // 0x645580  draw clock
 DATA(0x00245584)
-extern "C" u32 g_645584; // 0x645584  delta cap
+extern "C" u32 g_frameDelta; // 0x645584  delta cap
 DATA(0x00245588)
-extern "C" u32 g_645588; // 0x645588  accum clock
+extern "C" u32 g_frameTime; // 0x645588  accum clock
 
 // The game-manager singleton + a divisor for the TITLE%d index.
 DATA(0x0024556c)
@@ -166,15 +166,15 @@ i32 g_chanStat422_id; // 0x246fdc
 DATA(0x00246fe0)
 i32 g_chanStat422_val; // 0x246fe0
 DATA(0x00248d04)
-i32 g_pauseGuard; // 0x248d04  OnMultiPause reentrancy guard
+i32 g_pauseGuard;  // 0x248d04  OnMultiPause reentrancy guard
 DATA(0x00248d08)
-i32 g_optionzGuard; // 0x248d08  OnMultiOptionz reentrancy guard
+i32 g_optionzGuard;  // 0x248d08  OnMultiOptionz reentrancy guard
 DATA(0x00248d0c)
-i32 g_syncToggle; // 0x248d0c  FrameSyncWait alternating low-bit flag
+i32 g_syncToggle;  // 0x248d0c  FrameSyncWait alternating low-bit flag
 DATA(0x00248d10)
-i32 g_dropGuard; // 0x248d10  OnDropPlayer reentrancy guard
+i32 g_dropGuard;  // 0x248d10  OnDropPlayer reentrancy guard
 DATA(0x00248d14)
-u32 g_648d14; // 0x248d14  drop-throttle deadline
+u32 g_648d14;  // 0x248d14  drop-throttle deadline
 
 // Non-worklist siblings referenced here (shared / homed elsewhere): kept as plain
 // extern refs carrying their DATA fallback (no private definition of them here).
@@ -525,7 +525,7 @@ void ConstructFileIOGlobal() {
 // access (TF/MF macros) - the offset is the load-bearing fact, not the name.
 // =========================================================================
 
-// (g_645580/g_645584/g_645588 are DATA-declared u32 in the CMulti preamble above.)
+// (g_645580/g_frameDelta/g_frameTime are DATA-declared u32 in the CMulti preamble above.)
 extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
 // VTABLE CATALOGUE (2026-07-05, read from GRUNTZ.EXE .rdata @0x1ea42c): CNetMgr's own
@@ -845,9 +845,9 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
     PollSession();
     srand(TF(0x2d8));
-    g_645584 = 0;
+    g_frameDelta = 0;
     g_645580 = 0;
-    g_645588 = 0;
+    g_frameTime = 0;
     TF(0x1cc) = 0;
     NetGameMgr()->m_5c->FreeNodes();
     TF(0x580) = 1;
@@ -965,7 +965,7 @@ i32 CMulti::Vslot09(i32 arg) {
         return 0;
     }
     m_4->CGruntzMgr::PerFrameTick();
-    g_645588 = m_savedClock;
+    g_frameTime = m_savedClock;
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
     m_drainTimer = 0;
     m_lastTime = tg();
@@ -1006,7 +1006,7 @@ void ShowHudMessage(
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::FrameSlot28(i32 arg) {
     m_4w()->m_60->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
-    m_savedClock = (i32)g_645588;
+    m_savedClock = (i32)g_frameTime;
     if (m_40) {
         QuitToMenu();
     }
@@ -1049,9 +1049,9 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     g_curPlayer = *host;
     srand(m_rngSeed);
     g_648cec = 0;
-    g_645584 = 0;
+    g_frameDelta = 0;
     g_645580 = 0;
-    g_645588 = 0;
+    g_frameTime = 0;
     m_savedClock = 0;
     m_5d0 = 0;
     m_drainTimer = 0;
@@ -1081,9 +1081,9 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     }
     this->RefreshSlotTable();
     srand(m_rngSeed);
-    g_645584 = 0;
+    g_frameDelta = 0;
     g_645580 = 0;
-    g_645588 = 0;
+    g_frameTime = 0;
     m_savedClock = 0;
     m_5d0 = 0;
     m_drainTimer = 0;
@@ -1174,8 +1174,8 @@ i32 CMulti::Tick() {
         m_session->ArmSlot(node, (i32)(u8)((u8)m_5a4 << 1));
     }
     i32 dt = m_frameDelta;
-    if ((u32)dt >= g_645584) {
-        dt = (i32)g_645584;
+    if ((u32)dt >= g_frameDelta) {
+        dt = (i32)g_frameDelta;
     }
     m_packetsRcvd = m_session->Poll(dt); // 0xbf5a0  (was Step view)
     m_packetsSent = 0;
@@ -1238,7 +1238,7 @@ i32 CMulti::Tick() {
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 DATA(0x002bf3bc)
-extern "C" u32 g_6bf3bc; // 0x6bf3bc  (= delta cap mirror)
+extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 DATA(0x0024558c)
 extern "C" i32 g_64558c; // 0x64558c  ambient frame counter
 DATA(0x00245590)
@@ -1281,7 +1281,7 @@ extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
 // early-out, the shared-clock advance and frame size (sub esp,0x44) are byte-exact
 // (llvm-objdump -dr); the residual is MSVC5's register/branch choices across the
 // five stat-timer decay blocks + the m_view->m_8 vfn-host dispatch on this 670-byte
-// body (0-in-ebp reuse, g_645584 single-load hoisting), not steerable from source.
+// body (0-in-ebp reuse, g_frameDelta single-load hoisting), not steerable from source.
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::PumpA() {
     i32 ready = PumpAReady();
@@ -1290,12 +1290,12 @@ i32 CMulti::PumpA() {
         return 1;
     }
     g_645580 += 0x21;
-    g_645588 += 0x21;
-    g_645584 = 0x21;
+    g_frameTime += 0x21;
+    g_frameDelta = 0x21;
     g_killCueClock = g_645580;
-    g_6bf3bc = 0x21;
+    g_engineFrameDelta = 0x21;
     if (m_ambientInitDone == 0) {
-        if ((i64)(u32)g_645588 - *(i64*)&m_ambientTimerLo >= *(i64*)&m_ambientInterval) {
+        if ((i64)(u32)g_frameTime - *(i64*)&m_ambientTimerLo >= *(i64*)&m_ambientInterval) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
             if (g_gameReg->m_14 != 0) {
@@ -1316,46 +1316,46 @@ i32 CMulti::PumpA() {
     m_session->Step2437();
     g_64558c++;
     u32 t1 = g_645590 ? g_645590 : 0x32;
-    if (g_645584 < t1) {
-        g_645590 = t1 - g_645584;
+    if (g_frameDelta < t1) {
+        g_645590 = t1 - g_frameDelta;
     } else {
         g_645590 = 0;
     }
     u32 t2 = g_645594 ? g_645594 : 0x64;
-    if (g_645584 < t2) {
-        g_645594 = t2 - g_645584;
+    if (g_frameDelta < t2) {
+        g_645594 = t2 - g_frameDelta;
     } else {
         g_645594 = 0;
     }
     u32 t3 = g_strikeThresh ? g_strikeThresh : 0xc8;
-    if (g_645584 < t3) {
-        g_strikeThresh = t3 - g_645584;
+    if (g_frameDelta < t3) {
+        g_strikeThresh = t3 - g_frameDelta;
     } else {
         g_strikeThresh = 0;
     }
     u32 t4 = g_64559c ? g_64559c : 0x190;
-    if (g_645584 < t4) {
-        g_64559c = t4 - g_645584;
+    if (g_frameDelta < t4) {
+        g_64559c = t4 - g_frameDelta;
     } else {
         g_64559c = 0;
     }
     u32 t5 = g_6455a0 ? g_6455a0 : 0x1f4;
-    if (g_645584 < t5) {
-        g_6455a0 = t5 - g_645584;
+    if (g_frameDelta < t5) {
+        g_6455a0 = t5 - g_frameDelta;
     } else {
         g_6455a0 = 0;
     }
-    m_c->m_childGroup->TickKillCues_159a70(g_645584);
+    m_c->m_childGroup->TickKillCues_159a70(g_frameDelta);
     m_c->m_childGroup->CollideBroadcast();
-    Mgr()->m_cmdGrid->LoadTeleporterGooConfig((i32)g_645584);
-    m_guts->LoadDestructButtonSprite(g_645584);
+    Mgr()->m_cmdGrid->LoadTeleporterGooConfig((i32)g_frameDelta);
+    m_guts->LoadDestructButtonSprite(g_frameDelta);
     SoundStream* win = m_c->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
         win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
         win->TickSubManagers(now); // 0x137ac0
     }
-    ((CTileTriggerContainer*)m_beginMarker)->FilterList2((void*)g_645584);
+    ((CTileTriggerContainer*)m_beginMarker)->FilterList2((void*)g_frameDelta);
     ((CBrickzGrid*)Mgr()->m_tileGrid)
         ->UpdateDiagonals((i32)Mgr()); // CBrickzGrid is a view of CGruntzMapMgr (+0x70)
     if (ready == 0) {
@@ -1371,7 +1371,7 @@ i32 CMulti::PumpA() {
 // primary pane; otherwise the full frame runs: two deadline-gated FX, the
 // m_view manager sub-tree (panes m_10/m_14, the +0xc vfn host, the +0x24 chain),
 // the ambient overlays (m_fxOverlay/m_2e0/m_attractOverlay) and two int64 clock gates against
-// g_645588. All callees are out-of-line (reloc-masked); PumpB's members not in
+// g_frameTime. All callees are out-of-line (reloc-masked); PumpB's members not in
 // CMulti.h are reached through dedicated view structs / documented offsets.
 // ---------------------------------------------------------------------------
 
@@ -1429,7 +1429,7 @@ void CMulti::PumpB() {
         if (h == 0) {
             return;
         }
-        StepGridWalk(g_645584);
+        StepGridWalk(g_frameDelta);
         CopyRect(h);
         ((CDDrawSurfacePair*)mgr->m_drawTarget->m_10)->m_surface->Flip(0);
         return;
@@ -1476,11 +1476,11 @@ void CMulti::PumpB() {
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
             PBSub320* ov = (PBSub320*)m_lightFx;
-            ov->Tick1fa0(g_645584, 0);
+            ov->Tick1fa0(g_frameDelta, 0);
             ov->Render14dd(mgr->m_drawTarget->m_14, &rc);
         }
     }
-    Mgr()->m_chatLog->Scroll(g_645584);
+    Mgr()->m_chatLog->Scroll(g_frameDelta);
     CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
     if (h == 0) {
         return;
@@ -1488,7 +1488,7 @@ void CMulti::PumpB() {
     m_hitTest->LoadChatBoxSprite((i32)h);
     DrawDebugStats();
     Mgr()->m_cmdGrid->OverlayRelease();
-    StepGridWalk(g_645584);
+    StepGridWalk(g_frameDelta);
     CopyRect(h);
     if (m_worldReady != 0) {
         h->DrawBox((i32*)&m_hudRect, 0xff);
@@ -1499,12 +1499,12 @@ void CMulti::PumpB() {
         ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->CenterScrollB();
     }
     if (m_region0Gate != 0) {
-        if ((i64)g_645588 - *(i64*)&m_region0TimerLo >= *(i64*)&m_region0Interval) {
+        if ((i64)g_frameTime - *(i64*)&m_region0TimerLo >= *(i64*)&m_region0Interval) {
             OnRegion2(0);
         }
     }
     if (m_region1Gate != 0) {
-        if ((i64)g_645588 - *(i64*)&m_region1TimerLo >= *(i64*)&m_region1Interval) {
+        if ((i64)g_frameTime - *(i64*)&m_region1TimerLo >= *(i64*)&m_region1Interval) {
             OnRegion1(0);
         }
     }

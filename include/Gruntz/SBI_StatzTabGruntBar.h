@@ -193,7 +193,7 @@ public:
     CImage* m_timerGlyph;            // +0x6c  timer glyph (resolved by Update)
     i32 m_timerValue;                // +0x70  timer value (tracked)
     CStatzGlyphMap* m_glyphMap;      // +0x74  glyph map for the first four values
-    i32 m_timerAnchorLo;             // +0x78  timer anchor lo (g_645588 at last bump)
+    i32 m_timerAnchorLo;             // +0x78  timer anchor lo (g_frameTime at last bump)
     i32 m_timerAnchorHi;             // +0x7c  timer anchor hi
     i32 m_timerWindowLo;             // +0x80  timer window lo
     i32 m_timerWindowHi;             // +0x84  timer window hi

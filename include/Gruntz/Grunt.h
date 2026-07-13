@@ -797,7 +797,7 @@ struct CGruntListNode {
     void* m_data; // +0x08  serialized payload (0x2c bytes)
 };
 
-// The global running game clock (DAT_00645588) - already declared as g_645588
+// The global running game clock (DAT_00645588) - already declared as g_frameTime
 // in the .cpp; the Save serialize loop's name-table lookup helper.
 class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 
@@ -1196,7 +1196,7 @@ inline CGruntMovingBase::CGruntMovingBase(CGameObject* owner) : CUserLogic(owner
         0.0,
         0.0,
         0.0,
-        (double)g_645588 * g_gruntSpawnScale,
+        (double)g_frameTime * g_gruntSpawnScale,
         0.0
     );
     m->SetZ((double)g_5f04e8);
@@ -1492,7 +1492,7 @@ public:
     i32 m_entranceArmed;   // +0x25c (entrance: set to 1)
     CGruntTileMgr* m_tileMgr; // +0x260 (path/occupancy sub-manager)
     i32 m_struckCount;        // +0x264 (struck-reaction counter; cue tier 5/0xa)
-    i32 m_struckClockLo;      // +0x268 (= g_645588 game clock at last struck)
+    i32 m_struckClockLo;      // +0x268 (= g_frameTime game clock at last struck)
     i32 m_struckClockHi;      // +0x26c (= 0)
     i32 m_struckTimerLo;      // +0x270 (= 0xfa0 struck cooldown window)
     i32 m_struckTimerHi;      // +0x274 (= 0)
@@ -1658,7 +1658,7 @@ public:
     i32 m_idleTimerHi;        // +0x834 (idle-anchor: high)
     i32 m_idleWindowLo;       // +0x838 (idle-window: low = 0x3a98)
     i32 m_idleWindowHi;       // +0x83c (idle-window: high = 0)
-    i32 m_entranceClockLo;    // +0x840 (entrance: = g_645588 game clock, low dword)
+    i32 m_entranceClockLo;    // +0x840 (entrance: = g_frameTime game clock, low dword)
     i32 m_entranceClockHi;    // +0x844 (entrance: = 0, high dword)
     i32 m_entranceSafeTimeLo; // +0x848 (entrance: = EntranceSafeTime config)
     i32 m_entranceSafeTimeHi; // +0x84c (entrance: = 0)
@@ -1669,13 +1669,13 @@ public:
     // +0x860..+0x86f: the attack-downtime timer record (same {clock i64, duration
     // i64} shape as the combat/wingz timers below; SerializeMove round-trips it
     // from m_860). The attack-fire step (UserLogicVfunc7) stamps it at each impact:
-    // clock = g_645588 (lo) / 0 (hi), duration = "AttackDowntime" bute (lo) / 0.
-    i32 m_860;              // +0x860 (attack timer: anchor clock lo = g_645588)
+    // clock = g_frameTime (lo) / 0 (hi), duration = "AttackDowntime" bute (lo) / 0.
+    i32 m_860;              // +0x860 (attack timer: anchor clock lo = g_frameTime)
     i32 m_864;              // +0x864 (attack timer: anchor clock hi = 0)
     i32 m_attackDowntimeLo; // +0x868 (attack timer: duration lo = AttackDowntime config)
     i32 m_attackDowntimeHi; // +0x86c (attack timer: duration hi = 0)
     // Combat/wingz state timers (the GruntAssetLoaders cluster fills them).
-    i32 m_combatClockLo; // +0x870 (combat timer: anchor clock lo = g_645588; i64 w/ m_combatClockHi)
+    i32 m_combatClockLo; // +0x870 (combat timer: anchor clock lo = g_frameTime; i64 w/ m_combatClockHi)
     i32 m_combatClockHi;   // +0x874 (combat timer: anchor clock hi = 0)
     i32 m_combatTimeoutLo; // +0x878 (combat timer: duration lo = CombatTimeout config)
     i32 m_combatTimeoutHi; // +0x87c (combat timer: duration hi = 0)
@@ -1686,7 +1686,7 @@ public:
     // keeps its offset name until the two roles are reconciled (do not guess).
     i32 m_888;          // +0x888
     i32 m_88c;          // +0x88c
-    i32 m_wingzClockLo; // +0x890 (wingz timer: anchor clock lo = g_645588; i64 w/ m_wingzClockHi)
+    i32 m_wingzClockLo; // +0x890 (wingz timer: anchor clock lo = g_frameTime; i64 w/ m_wingzClockHi)
     i32 m_wingzClockHi; // +0x894 (wingz timer: anchor clock hi = 0)
     i32 m_wingzDurationLo; // +0x898 (wingz timer: duration lo = (long)(m_wingzTime*scale-bias))
     i32 m_wingzDurationHi; // +0x89c (wingz timer: duration hi = 0)

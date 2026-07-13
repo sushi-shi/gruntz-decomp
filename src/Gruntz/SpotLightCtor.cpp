@@ -278,11 +278,10 @@ extern "C" unsigned char g_randSeeded; // 0x6c127d
 extern "C" i32 g_randSeed;             // 0x6c1288
 extern u32 (*g_pTimeGetTime)();        // 0x6c4650
 DATA(0x00245584)
-extern "C" u32 g_645584; // frame-time delta
+extern "C" u32 g_frameDelta; // frame-time delta
 // The activation-key "B" the update re-resolves through the bute tree.
 extern char s_actKeyB[]; // 0x60d1bc "B"
 // The laser-sound format string + the sound-play gate globals.
-DATA(0x00211c54)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
@@ -309,7 +308,7 @@ struct CSpotLaser {
 // and either (m_object->m_114 == 1) emit the cell sound-cue + spawn a numbered
 // "LEVEL_UFOHAZARDLASER%d" laser sound (inline-seeded rand id) + play it, or else
 // activate the target and emit the alternate cue. Otherwise fall through to the 2D
-// rotation of the light offset (angle m_90 advanced by g_645584 * rate m_58).
+// rotation of the light offset (angle m_90 advanced by g_frameDelta * rate m_58).
 // @early-stop
 // ~52% - megafunction frame/regalloc + x87 fp-stack-schedule wall
 // (docs/patterns/x87-fp-stack-schedule.md, topic:wall topic:regalloc): the control
@@ -364,7 +363,7 @@ i32 CSpotLight::Tick_0b1af0() {
     // 2D rotation of the light offset (the fp-stack-schedule wall)
     double s = sin(m_90);
     double c = cos(m_90);
-    double dt = (double)(i32)g_645584;
+    double dt = (double)(i32)g_frameDelta;
     CSpotLaser* mv = (CSpotLaser*)m_98;
     double rx = m_80 * c - m_88 * s;
     double ry = m_80 * s + m_88 * c;

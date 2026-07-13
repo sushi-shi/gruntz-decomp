@@ -32,7 +32,7 @@
 
 // The global running game clock (DAT_00645588); the value-load reloc-masks.
 DATA(0x00245588)
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // Reloc-fidelity bindings for the registry statics whose plain externs live in
 // GruntVoice.h (labels.py does not scan a header's DATA(), so they are bound here
@@ -572,7 +572,7 @@ void CGruntVoice::Reset() {
 // CSpotLight::SerializeMove's Read path.
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
-    if (m_sample == 0 || (i64)g_645588 - *(i64*)&m_icon >= *(i64*)&m_durationMs) {
+    if (m_sample == 0 || (i64)g_frameTime - *(i64*)&m_icon >= *(i64*)&m_durationMs) {
         m_sample = 0;
         m_source = 0;
         m_object->m_stateFlags |= 1;

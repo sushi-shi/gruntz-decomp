@@ -26,7 +26,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
-extern "C" u32 g_645588;
+extern "C" u32 g_frameTime;
 
 // The active tile layer (flat cell array + per-row base-offset table, cell (x,y) =
 // m_tileGrid[m_colOffsets[y] + x]) is the shared CPlaneRender.

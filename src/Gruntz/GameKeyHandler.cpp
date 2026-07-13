@@ -4,7 +4,7 @@
 // key code to its game/cheat action.
 //
 // `this` (esi) is a >0x500-byte PLAY-state object; it reads the game-mgr
-// singleton g_gameReg (*0x64556c), the dev/render-state g_645578
+// singleton g_gameReg (*0x64556c), the dev/render-state g_spawnConfig
 // (*0x645578, its +0x18 flags byte gated by 0x20 = "cheats enabled"), the area
 // index g_curPlayer (0x644c54), the recycled-node free list g_coordPool.m_freeHead /
 // g_coordPool.m_linkOffset, and a set of cheat-enable globals (g_gruntDestruction/B/C/D); it
@@ -35,9 +35,9 @@
 // ---------------------------------------------------------------------------
 extern "C" void* g_gameReg;      // 0x64556c  _g_mgrSettings (game-mgr singleton)
 extern i32 g_sndCueTag;          // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
-// g_devState was a SECOND NAME for g_645578 (0x245578) - same address,
+// g_devState was a SECOND NAME for g_spawnConfig (0x245578) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern "C" void* g_645578;
+extern "C" void* g_spawnConfig;
 // g_areaIdx was a SECOND NAME for g_curPlayer (0x244c54 current player index) - same address,
 // so nothing ever defined it. Unified onto the canonical.
 extern "C" i32 g_curPlayer;
@@ -306,7 +306,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
 
     // ---- letter cheats (cc21b) ---------------------------------------------
-    void* dev = g_645578;
+    void* dev = g_spawnConfig;
     // Tab (cc221): cycle the active area to the next non-empty
     if (key == 0x9) {
         i32 idx = M(self, 0x514);
@@ -569,7 +569,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             return 1;
         }
         CLEAR_TAB_HINT(host);
-        ((CStatusBarMgr*)(P(self, 0x2dc)))->AdvanceTab(M(g_645578, 0x18) & 1);
+        ((CStatusBarMgr*)(P(self, 0x2dc)))->AdvanceTab(M(g_spawnConfig, 0x18) & 1);
         return 1;
     }
     // G (cc986)
@@ -705,7 +705,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // digit cheats 1-9 (cce0f)
     if (key == 0x31) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(1);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(1);
@@ -713,7 +713,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x32) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(2);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(2);
@@ -721,7 +721,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x33) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(3);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(3);
@@ -729,7 +729,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x34) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(4);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(4);
@@ -737,7 +737,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x35) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(5);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(5);
@@ -745,7 +745,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x36) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(6);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(6);
@@ -753,7 +753,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x37) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(7);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(7);
@@ -761,7 +761,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x38) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(8);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(8);
@@ -769,7 +769,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x39) {
-        if (M(g_645578, 0x18) & 0x20) {
+        if (M(g_spawnConfig, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(9);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(9);

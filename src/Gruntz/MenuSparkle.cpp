@@ -22,10 +22,10 @@ public:
 };
 
 // The frame delta / tick globals the sparkle handler drives (DATA-bound elsewhere:
-// g_645584 in Attract.cpp, g_6bf3bc in the pump cluster); declared extern so the
+// g_frameDelta in Attract.cpp, g_engineFrameDelta in the pump cluster); declared extern so the
 // loads reloc-mask against the already-matched symbols.
-extern "C" u32 g_645584; // 0x645584  per-frame time delta
-extern "C" i32 g_6bf3bc; // 0x6bf3bc  frame tick
+extern "C" u32 g_frameDelta; // 0x645584  per-frame time delta
+extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  frame tick
 
 // --- CMenuSparkle (0x0adbe0), vptr 0x5e82dc --- the ctor anchors the ??_7CMenuSparkle
 // vtable in this TU. Folds the inline CUserLogic(obj) base + the sparkle name/geometry
@@ -60,14 +60,14 @@ CMenuSparkle::~CMenuSparkle() {}
 // + reg choice not steerable from C (tried o-local, active-local, direct m_38).
 RVA(0x000ae2a0, 0x8e)
 i32 CMenuSparkle::AdvanceAnim() {
-    u32 delta = g_645584;
+    u32 delta = g_frameDelta;
     if (delta >= m_objAux->m_130) {
         m_objAux->m_130 = 0;
     } else {
         m_objAux->m_130 -= delta;
     }
     if (m_objAux->m_130 == 0) {
-        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     }
     CAniAdvanceCursor* anim = (CAniAdvanceCursor*)((char*)m_38 + 0x1a0);
     i32 active = m_38->m_1c8;
