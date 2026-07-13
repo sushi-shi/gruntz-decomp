@@ -10,9 +10,10 @@ Retail LINKED, so none of them can exist in the real source.
                   .LIB can supply -> `unresolved external symbol` at link. Split by
                   what the REMEDY is, because the three halves need opposite work:
 
-      PHANTOM         a FUNCTION whose owning class owns no retail address at all.
-                      The class is a fabricated per-TU view, so the member can never
-                      resolve. Fix = recover the real class (??1CSbConfigItem@@UAE@XZ).
+      PHANTOM         a FUNCTION whose owning class does not exist in retail: it owns no
+                      retail address at all, OR the binary's own RTTI REFUTES it (see
+                      fabricated_classes()). The class is a fabricated per-TU view, so the
+                      member can never resolve. Fix = recover the real class.
 
       UNDEFINED DATA  a VARIABLE (not a function) that nothing defines. This is a
                       DIFFERENT defect with a DIFFERENT fix, and it used to be
@@ -27,10 +28,20 @@ Retail LINKED, so none of them can exist in the real source.
                       extern-"C" _g_645584 that actually has storage).
                       Fix = one real definition in the xref-proven owner TU.
 
-      BACKLOG         a function of a REAL class, simply not reconstructed yet. Every
-                      unreconstructed engine callee is deliberately declared-only so
-                      its rel32 reloc-masks. NOT a modelling defect; it resolves for
-                      free the day someone reconstructs the body.
+      BACKLOG         a function of a class retail plausibly HAS, simply not reconstructed
+                      yet. Every unreconstructed engine callee is deliberately declared-only
+                      so its rel32 reloc-masks; it resolves the day someone writes the body.
+
+                      Read this bucket as UNPROVEN, never as "fine". NOT ONE symbol in it is
+                      bound to a retail address (if it were, it would be reconstructed, and
+                      hence defined), so "it will resolve" is always an inference from its
+                      CLASS, never from the symbol. That inference used to be pure tree SELF-
+                      CERTIFICATION - "some sibling member of this class has an RVA claim" -
+                      and fabricated classes walked straight through it: CSbConfigItem
+                      laundered TWENTY guaranteed link failures in here on the strength of
+                      two invented-name RVA rows. fabricated_classes() now catches the ones
+                      the BINARY can refute. That is a FLOOR, not a ceiling - more are still
+                      hiding in here, and this bucket is where you look for them.
 
   (2) MULTIPLY-DEFINED
                   one name DEFINED, in a NON-COMDAT section, by more than one obj ->
@@ -383,7 +394,99 @@ def real_classes():
             c = owning_class(r["name"])
             if c:
                 real.add(c)
-    return real
+    return real - fabricated_classes()
+
+
+def retail_rtti_classes():
+    """Every class name retail's RTTI type descriptors (`??_R0`) attest to, read straight
+    out of the EXE: the `.?AVFoo@@` / `.?AUFoo@@` decorated-name field of each descriptor.
+
+    This is BINARY ground truth, not a tree claim - but read what it does and does NOT
+    prove. Retail is five separate projects (C:\\Proj\\{DDrawMgr,DinMgr2,Dsndmgr,NetMgr,
+    Gruntz}) and /GR was on for only SOME of them, so:
+
+      PRESENT  -> the class exists in retail.                       (proof)
+      ABSENT   -> it may still be a real class compiled WITHOUT /GR (the whole engine side:
+                  CGameLevel, CDDSurface, CStatusBarMgr, CRezFile, the faders, the sound
+                  and net classes ... all real, all descriptor-less). ABSENCE PROVES
+                  NOTHING ON ITS OWN and must never be used as a fabrication test - doing
+                  so mis-flags ~145 real classes."""
+    cache = REPO / "build" / "gen" / "rtti_classes.txt"
+    if cache.is_file():
+        return set(cache.read_text().split())
+    exe = os.environ.get("GRUNTZ_EXE", "")
+    if not exe or not os.path.isfile(exe):
+        return set()
+    blob = open(exe, "rb").read()
+    names = {m.group(1).decode("latin1")
+             for m in re.finditer(rb"\.\?A[VU]([A-Za-z_]\w*)@@", blob)}
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text("\n".join(sorted(names)))
+    return names
+
+
+_DERIVES_RE = re.compile(
+    r"^\s*(?:class|struct)\s+([A-Za-z_]\w*)\s*:\s*"
+    r"(?:public\s+|protected\s+|private\s+|virtual\s+)*([A-Za-z_][\w:]*)\s*([<{,])?")
+
+
+def declared_bases():
+    """{base -> {(derived, file)}} for every `class D : public B` our own source declares.
+    Template bases are skipped (a `?$`-mangled descriptor is not in the plain-name set, so
+    they cannot be attested and would false-positive)."""
+    out = defaultdict(set)
+    for pat in ("include/**/*.h", "src/**/*.h", "src/**/*.cpp"):
+        for p in REPO.glob(pat):
+            if "vendor" in p.parts:
+                continue
+            for line in p.read_text(errors="ignore").split("\n"):
+                m = _DERIVES_RE.match(line)
+                if m and m.group(3) != "<":                 # skip template bases
+                    out[m.group(2).split("::")[-1]].add(
+                        (m.group(1), str(p.relative_to(REPO))))
+    return out
+
+
+def fabricated_classes():
+    """Classes the BINARY ITSELF REFUTES - proven not to exist in retail, so every member
+    of them is a permanent `unresolved external symbol`.
+
+    The proof is a sound consequence of how MSVC lays out RTTI: a /GR class's
+    RTTIClassHierarchyDescriptor carries a base-class array naming EVERY base in its
+    hierarchy, and each entry points at that base's OWN `??_R0` type descriptor. So a base
+    of an attested class is necessarily attested too - and the module-scoped /GR that makes
+    bare absence useless (see retail_rtti_classes) does NOT weaken this: if the DERIVED
+    class got a descriptor, its whole base chain got one, engine-side or not.
+
+        D is RTTI-attested  AND  our source says `class D : public B`  AND  B has no
+        descriptor   =>   B is not D's retail base   =>   B DOES NOT EXIST.
+
+    This is the hole that let ~30 guaranteed link failures hide in the "backlog" bucket.
+    The old real_classes() test was `the class owns >=1 symbol_names row`, which is TREE
+    SELF-CERTIFICATION: the tree minted the name AND the RVA claim. CSbConfigItem - a class
+    with no descriptor, refuted as the base of five attested CSBI_* classes whose real root
+    RTTI names as CStatusBarItem - had exactly TWO members pinned to real retail addresses
+    under invented names, and those two rows laundered its other twenty (a ctor, thirteen
+    virtuals, ...) into "resolves for free as those bodies land". They cannot: nobody will
+    ever write CSbConfigItem::Configure, because retail has no CSbConfigItem. Same shape:
+    CGruntMovingBase (RTTI: CGrunt's real base is CMovingLogic).
+
+    NOTE this is a floor, not a ceiling. It catches a fabricated class only when an
+    RTTI-attested class DERIVES from it. A fabricated class nobody inherits from - or one
+    under a /GR-less engine hierarchy - is still invisible here, so the true PHANTOM count
+    is >= what this reports. An honest floor beats a false zero."""
+    rtti = retail_rtti_classes()
+    if not rtti:
+        return set()
+    libs = {owning_class(s) for s in lib_symbols()}
+    libs.discard("")
+    bad = set()
+    for base, derived in declared_bases().items():
+        if base in rtti or base in libs:
+            continue
+        if any(d in rtti for d, _f in derived):
+            bad.add(base)
+    return bad
 
 
 def main():
@@ -502,10 +605,22 @@ def main():
           % (len(objs), len(libs)))
 
     print("=" * 78)
-    print("(1) PHANTOM EXTERNALS - referenced; owning class owns NO retail address")
+    print("(1) PHANTOM EXTERNALS - referenced; owning class does not exist in retail")
     print("    -> can NEVER link: retail has no such function. Fix = model the real")
     print("       class (these are fabricated per-TU views). %d symbol(s)." % len(unresolved))
     print("=" * 78)
+    fab = fabricated_classes()
+    if fab:
+        bases = declared_bases()
+        print("  [RTTI-REFUTED] %d class(es) the BINARY disproves: an RTTI-attested class"
+              % len(fab))
+        print("  derives from them, so retail would have emitted a ??_R0 for them - it did")
+        print("  not. RVA claims by the tree do NOT make these real (that self-certification")
+        print("  is what hid them in `backlog`):")
+        for c in sorted(fab):
+            ds = sorted(d for d, _f in bases.get(c, ()) if d in retail_rtti_classes())
+            print("      %-24s refuted by attested derived: %s" % (c, ", ".join(ds)))
+        print()
     by_cls = defaultdict(list)
     for nm, units in unresolved:
         by_cls[owning_class(nm) or "(free)"].append((nm, units))
@@ -531,10 +646,12 @@ def main():
 
     if not args.phantom_only:
         print()
-        print("  [backlog] %d further unresolved symbol(s) are FUNCTIONS of REAL classes"
+        print("  [backlog] %d further unresolved symbol(s) are functions of classes retail"
               % len(backlog))
-        print("            not reconstructed yet (declared-only so their rel32 reloc-masks).")
-        print("            They resolve for free as those bodies land - not modelling defects.")
+        print("            PLAUSIBLY has, not reconstructed yet (declared-only so their rel32")
+        print("            reloc-masks). UNPROVEN, not fine: none is bound to a retail address,")
+        print("            so this is an inference from the CLASS. It is where fabricated")
+        print("            classes hide - the 3 RTTI-refuted ones above were in here.")
 
     print()
     print("=" * 78)
@@ -569,7 +686,7 @@ def main():
     print("\nTOTAL: %d PHANTOM, %d UNDEFINED-DATA, %d MULTIPLY-DEFINED, %d DIVERGENT"
           "  (target: 0 / 0 / 0 / 0)"
           % (len(unresolved), len(undef_data), len(multi_def), len(divergent)))
-    print("       defects that PREVENT A SUCCESSFUL LINK = %d  [+%d backlog fns, not defects]"
+    print("       defects that PREVENT A SUCCESSFUL LINK = %d  [+%d backlog fns, UNPROVEN]"
           % (len(unresolved) + len(undef_data) + len(multi_def), len(backlog)))
     return 0
 
