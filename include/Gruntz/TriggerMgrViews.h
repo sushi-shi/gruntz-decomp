@@ -44,7 +44,6 @@ struct CTmNode {
 // name registry maps to a string. And the goal object (cell->m_154 / the manager's goal),
 // whose +0x8 flags word gets the 0x10000 done-bit; full CTmGoal is defined below.
 struct CTmGoal;
-struct CTmSpriteDesc;
 struct CTmNotifyHook; // a cell's opaque +0x368 notify hook (only null-tested)
 struct CTmCellConfig {
     char p0[0x1c];
@@ -168,27 +167,12 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 // cast to this TU's placed-object view CTmCell (the unit-wide B-view; its full fold
 // onto CGameObject is deferred). The sprite carries a descriptor at +0x7c whose
 // slot-4 (+0x10) is an Init thunk run on the fresh sprite.
-// The object CSpriteFactory::CreateSprite hands back - a SPRITE (a CGameObject), NOT the
-// placed grunt. The deleted CTmCell view conflated the two: it typed +0x7c as a sprite
-// descriptor, but on a real CGrunt +0x7c is m_movingGeoSrc, an i32 geometry-source id
-// (Warlord.cpp passes it to SetGeometry(i32)). They are different classes that were being
-// modelled as one. The trigger code runs the descriptor's Init on the fresh sprite and then
-// Place()s the logic object hanging at desc+0x18.
-// @identity-TODO: the sprite's real class (a CGameObject-derived sprite) is not modelled
-// yet, so only the +0x7c descriptor slot it needs is declared.
-SIZE_UNKNOWN(CTmSprite);
-struct CTmSprite {
-    char p0[0x7c];
-    struct CTmSpriteDesc* m_7c; // +0x7c  sprite descriptor (Init hook + logic at desc+0x18)
-};
-
-struct CTmSpriteDesc {
-    void* s0[4];
-    void (*Init)(void*); // +0x10
-    char p14[0x18 - 0x14];
-    void* m_18; // +0x18  the sprite's logic object (per-kind: userlogic / puddle target)
-};
-
+// (CTmSprite / CTmSpriteDesc are GONE. They were duplicates of the canonical
+//  <Gruntz/UserLogic.h> CGameObject and CGameObjAux - which already model exactly this:
+//  "spr->m_7c->Init(spr) on the fresh CSpriteFactory::CreateSprite result", and
+//  CGameObjAux::m_logic as the bound logic leaf. CreateSprite RETURNS CGameObject*, so the
+//  (CTmCell*) casts on its result were wrong outright: the deleted CTmCell view had
+//  conflated the SPRITE with the LOGIC the sprite carries.)
 // The level view at level->m_24: ScreenToCell biases the input by its scroll origin - the
 // view holds the origin (m_10/m_14) and the scroll object (m_5c), whose +0x40/+0x44 is the
 // current scroll (x,y).
@@ -295,7 +279,6 @@ SIZE_UNKNOWN(CTmScoreSub);
 SIZE_UNKNOWN(CTmGridHolder);
 SIZE_UNKNOWN(CTmRegSub30);
 SIZE_UNKNOWN(CTmNameReg);
-SIZE_UNKNOWN(CTmSpriteDesc);
 SIZE_UNKNOWN(CTmLevel);
 SIZE_UNKNOWN(CTmPuddleTarget);
 SIZE_UNKNOWN(CTmRecNode);

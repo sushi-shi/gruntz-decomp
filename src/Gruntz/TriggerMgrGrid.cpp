@@ -145,16 +145,18 @@ i32 CTriggerMgr::PlaceObject(
         return -1;
     }
     CSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
+    CGameObject* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
     if (sprite == 0) {
         return -1;
     }
-    ((CTmSprite*)sprite)->m_7c->Init(sprite);
-    void* logicTag = ((CTmSprite*)sprite)->m_7c->m_18;
-    (void)logicTag;
+    sprite->m_7c->Init(sprite);
+    // Same shape as CTriggerMgr::SpawnGrunt (0x7c110), and the same correction: the grid
+    // holds the sprite's LOGIC leaf, not the CreateSprite result (retail reassigns the
+    // register to aux->m_logic before the `mov [grid],reg`). It stored the sprite here too.
+    CGrunt* logic = (CGrunt*)sprite->m_7c->m_logic;
     // (the dense kind jump table -> internal id + the Wormhole / Entrance sub-ctors elide
     // here; reconstructed to plateau)
-    m_grid[row * 15 + free] = sprite;
+    m_grid[row * 15 + free] = logic;
     m_rowCount[row] += 1;
     m_cellFlag[(row * 15 + free)] = 0;
     g_gameReg->m_scoreHud->m_counts[row] += 1;
@@ -336,9 +338,13 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         return 0;
     }
     if (col != g_curPlayer) {
-        cell->ResetA();
-        cell->ResetB();
-        cell->ResetC();
+        // RECOVERED (the view's RVAs for these were bogus - see <Gruntz/Grunt.h>). Retail
+        // calls three ILT thunks here (0x243c / 0x22de / 0x4246), which jump to 0x4d130 /
+        // 0x4d2f0 / 0x4d220: CGrunt's own CreateHealthSprite / CreateStaminaSprite /
+        // CreateToySprite, all already-claimed bodies. They were ResetA/B/C - phantoms.
+        cell->CreateHealthSprite();
+        cell->CreateStaminaSprite();
+        cell->CreateToySprite();
         cell->m_888 = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
         cell->m_88c = 0;
         cell->m_880 = g_645588;
@@ -363,7 +369,9 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         g_freeList = *(void**)g_freeList;
     }
     m_recList.AddTail((CObject*)slot);
-    return cell->ResetMagic();
+    // RECOVERED: the 0-arg i32 call in this function's set is the ILT thunk 0x24c8 ->
+    // 0x4b130 = ?CommitArrival@CGrunt@@QAEHXZ. `ResetMagic` was a phantom name for it.
+    return cell->CommitArrival();
 }
 
 // ===========================================================================

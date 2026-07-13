@@ -48,6 +48,7 @@ SIZE_UNKNOWN(CTrigPoint);
 // its own pass - not a wall, just cross-lane. Same for the level object, sound-channel
 // helper and the two intrusive list-node shapes - each TU completes them as it needs.
 class CGrunt;
+struct CGameObject; // <Gruntz/UserLogic.h> - what CSpriteFactory::CreateSprite returns
 // CTmCell IS ::CGrunt - PROVEN, and the fold is done: this is an alias now, so every
 // `CTmCell*` here keeps compiling while every method call on one mangles to the REAL
 // ?X@CGrunt@@ body. (The "+0x120 phantom-gap layout bug" that was said to block this does
@@ -229,7 +230,7 @@ public:
 
     // 0x7a240: PlacePuddle(sprite, color) - place the puddle via its CUserLogic and, on
     // success, flag/remove the matching record + selection nodes. ret 1 on success.
-    i32 PlacePuddle(CTmCell* sprite, i32 color);
+    i32 PlacePuddle(CGameObject* sprite, i32 color);
 
     // ---- the remaining reconstructed methods (retail-RVA order) ----------------
 

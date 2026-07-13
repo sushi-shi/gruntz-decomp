@@ -1135,11 +1135,20 @@ class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); 
 //
 // The canonical CMovingLogic (<Gruntz/MovingLogic.h>) embeds the 0x108-byte
 // CMotionState band + the twelve bound doubles as REAL members, making it a fat
-// 0x150 class. That view is correct for CProjectile, but as CGrunt's base it pushes
-// every CGrunt member +0x120 too far (m_400 -> +0x520, etc.), silently capping the
-// whole CGrunt high-member/FP family - the +0x120 header-layout bug. The two cannot
-// share the CMovingLogic name in the four dual-include TUs (Projectile/Boomerang/
+// 0x150 class. That view is correct for CProjectile, but as CGrunt's base it WOULD push
+// every CGrunt member +0x120 too far (m_400 -> +0x520, etc.). The two cannot share the
+// CMovingLogic name in the four dual-include TUs (Projectile/Boomerang/
 // ProjectileUpdate/GruntEntranceArrival), so CGrunt rides its own lean base.
+//
+// THAT IS THE FIX, NOT AN OPEN BUG - read the tense. The lean base above is what keeps
+// CGrunt's members at their true offsets, and the layout is now VERIFIED: sizeof(CGrunt)
+// is 0x8d8, the ground truth from its allocation site (GruntSpawnPump @0x5baf0 does
+// `push 0x8d8; call ??2` right before the ctor), and our reconstruction computes exactly
+// that. This paragraph used to end "- the +0x120 header-layout bug", present tense, and a
+// whole fold (CTmCell -> CGrunt) sat blocked for months on the belief that CGrunt still
+// carried a phantom +0x120 gap. It does not. If you are about to inherit a layout claim
+// from a comment, re-derive it from the binary first: allocation site for the size, then
+// the field offsets the real bodies actually read.
 //
 // The 1-arg ctor is inlined into CGrunt::CGrunt @0x47a10: it seeds the CTileLogic
 // back-pointers, builds the +0x38 CMotionState band via Motion()->Init(), seeds the
@@ -1411,15 +1420,12 @@ public:
     // without shifting CGrunt's layout), so they stay raw - authentic, not a hack.
     i32 m_animResolved; // +0xa8  (resolve gate / dirty flag; == moveMinX double lo)
     i32 m_deathCueArg;  // +0xac  (cue arg; == moveMinX double hi)
-    char m_padb0[0x114 - 0xb0];
-    // +0x114/+0x118/+0x124 - the placement params the trigger/switch leaves write when
-    // they place this grunt on the grid (recovered from those TUs' disasm; they were the
-    // CTmCell view's m_114/m_118/m_124, and they land here unshifted).
-    i32 m_placeParamA; // +0x114
-    i32 m_placeParamB; // +0x118
-    char m_pad11c[0x124 - 0x11c];
-    i32 m_placeParamC; // +0x124
-    char m_pad128[0x148 - 0x128];
+    // (+0x114/+0x118/+0x124 were migrated here last batch as "placement params". That was
+    //  WRONG and is reverted: those writes happen on the CreateSprite RESULT - a CGameObject,
+    //  not a grunt - and <Gruntz/UserLogic.h>'s CGameObject already models them (m_114 /
+    //  m_118 / m_124) with recovered roles. The old CTmCell view conflated the SPRITE with
+    //  the LOGIC, and this was a piece of that conflation leaking onto CGrunt.)
+    char m_padb0[0x148 - 0xb0];
     i32 m_148;                       // +0x148
     i32 m_14c;                       // +0x14c
     void* m_150;                     // +0x150

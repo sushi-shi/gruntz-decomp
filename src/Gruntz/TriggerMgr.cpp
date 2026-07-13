@@ -489,7 +489,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
     CSpriteFactory* fac = m_level->m_8;
     CGameObject* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_goal = (CTmGoal*)spr;
-    ((CTmSprite*)spr)->m_7c->Init(spr);
+    spr->m_7c->Init(spr);
     ((CGameObject*)m_goal)->ApplyName("GAME_CAMERASPRITE");
     return 1;
 }
@@ -652,7 +652,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         sel = (hit != 0) ? 2 : 1;
     }
 
-    CTmCell* sprite = 0;
+    CGameObject* sprite = 0;
     i32 kindArg = 0;
     i32 logicArg = 0;
     if (sel == 0) {
@@ -671,22 +671,22 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
             return 0;
         }
         CSpriteFactory* fac = m_level->m_8;
-        sprite = (CTmCell*)fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+        sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
         kindArg = 3;
         logicArg = 1;
     } else {
         // sel==2: place-and-report variant -> WarpStone factory
         this->PlaceB(a14, a18, 1);
         CSpriteFactory* fac = m_level->m_8;
-        sprite = (CTmCell*)fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+        sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
         kindArg = 2;
         logicArg = 1;
     }
     if (sprite == 0) {
         return 0;
     }
-    ((CTmSprite*)sprite)->m_7c->Init(sprite);
-    void* logic = ((CTmSprite*)sprite)->m_7c->m_18;
+    sprite->m_7c->Init(sprite);
+    void* logic = sprite->m_7c->m_logic;
     ((CUserLogic*)logic)->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, logicArg);
     return 1;
 }
@@ -975,7 +975,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
 RVA(0x0007a180, 0x86)
 i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
     CSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
+    CGameObject* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
         // The *0x24556c singleton IS a CGruntzMgr; ReportError @0x08dc60 is ITS method.
         // Calling it through the CGameRegistry view emitted ?ReportError@CGameRegistry@@QAEXHH@Z,
@@ -989,10 +989,10 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
         g_gameReg->ReportError(0x8009, 0x400);
         return 0;
     }
-    ((CTmSprite*)sprite)->m_7c->Init(sprite);
-    sprite->m_placeParamC = f124;
-    sprite->m_placeParamA = f114;
-    sprite->m_placeParamB = f118;
+    sprite->m_7c->Init(sprite);
+    sprite->m_124 = f124;
+    sprite->m_114 = f114;
+    sprite->m_118 = f118;
     return PlacePuddle(sprite, color);
 }
 
@@ -1005,13 +1005,13 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
 // spill to different stack slots than retail and the (x,y)==busy fast-path goto reorders.
 // Logic + offsets + the RemoveAt/RemoveAll recycle byte-exact. topic:wall.
 RVA(0x0007a240, 0x143)
-i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
-    CTmPuddleTarget* tgt = (CTmPuddleTarget*)((CTmSprite*)sprite)->m_7c->m_18;
-    i32 d = sprite->m_placeParamB;
+i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
+    CTmPuddleTarget* tgt = (CTmPuddleTarget*)sprite->m_7c->m_logic;
+    i32 d = sprite->m_118;
     if (d == 0) {
         d = 0x19;
     }
-    if (tgt->Place(sprite->m_placeParamC, sprite->m_placeParamA, color, d) == 0) {
+    if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
         tgt->m_38->m_8 |= 0x10000;
         g_gameReg->ReportError(0x8009, 0x401); // dual-view bridge; see SpawnPuddle
         return 0;
@@ -1961,7 +1961,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                     g_gameReg->m_world->m_8
                                         ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                                 done = 1;
-                                ((CTmSprite*)spr)->m_7c->Init(spr);
+                                spr->m_7c->Init(spr);
                                 ((CLightFx*)spr->m_7c->m_logic)
                                     ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 3, 1);
                             }
@@ -1982,7 +1982,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         CGameObject* spr =
                             g_gameReg->m_world->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
-                        ((CTmSprite*)spr)->m_7c->Init(spr);
+                        spr->m_7c->Init(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
                             ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 2, 1);
                         break;
@@ -1999,7 +1999,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         CGameObject* spr =
                             g_gameReg->m_world->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
-                        ((CTmSprite*)spr)->m_7c->Init(spr);
+                        spr->m_7c->Init(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
                             ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 7, 1);
                         break;
@@ -2013,7 +2013,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         CGameObject* spr =
                             g_gameReg->m_world->m_8
                                 ->CreateSprite(0, h->m_5c, h->m_60, 0xf4240, s_LightFx, 0x40003);
-                        ((CTmSprite*)spr)->m_7c->Init(spr);
+                        spr->m_7c->Init(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
                             ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 9, 1);
                         break;
@@ -2190,7 +2190,7 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             Notify(node);
             CGameObject* spr =
                 g_gameReg->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
-            ((CTmSprite*)spr)->m_7c->Init(spr);
+            spr->m_7c->Init(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
         }
@@ -2235,23 +2235,25 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     i32 vis = src->m_198;
     this->Reset3(col, k, vis); // prep self-call 0x7ec96
     CSpriteFactory* fac = m_level->m_8;
-    CTmSprite* sprite = (CTmSprite*)fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
+    CGameObject* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == 0) {
         return 0;
     }
-    ((CTmSprite*)sprite)->m_7c->Init(sprite);
-    void* logic = ((CTmSprite*)sprite)->m_7c->m_18;
-    if (((CUserLogic*)logic)->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
-        *(i32*)(*(char**)((char*)logic + 0x154) + 0x8) |= 0x10000;
+    sprite->m_7c->Init(sprite);
+    // SETTLED FROM THE BINARY (the contradiction the deleted CTmCell view was hiding). Retail:
+    //   mov ecx,[edi+0x7c] ; push edi ; call [ecx+0x10]   <- aux->Init(sprite)
+    //   mov edx,[edi+0x7c] ; mov edi,[edx+0x18]           <- edi := aux->m_logic  (REASSIGNED)
+    //   ... mov ecx,edi ; call <Place>
+    //   mov DWORD PTR [esi+ebp*4+0x1c],edi                <- m_grid[..] := THE LOGIC
+    // The grid holds the LOGIC (this grunt), not the CreateSprite result - the earlier
+    // reconstruction stored the sprite, which is why the cell offsets never lined up with the
+    // sprite's. The downcast to the concrete leaf is the authentic one every creator does.
+    CGrunt* logic = (CGrunt*)sprite->m_7c->m_logic;
+    if (logic->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
+        logic->m_154->m_8 |= 0x10000;
         return 0;
     }
-    // @identity-TODO (a contradiction the deleted CTmCell view was hiding): the value stored
-    // in the grid here is the CreateSprite RESULT, but every other site dereferences a grid
-    // cell with CGrunt (logic) offsets - and this same sprite's logic object (desc+0x18) is
-    // what gets Place()d two lines up. So either the grid holds the logic and this store is
-    // mis-reconstructed, or the sprite and its logic share a head. Cast (byte-identical to
-    // what this stored before the fold) rather than guess.
-    m_grid[row * 15 + free] = (CGrunt*)sprite;
+    m_grid[row * 15 + free] = logic;
     m_rowCount[row] += 1;
     m_cellFlag[(row * 15 + free)] = 0;
     return 1;
