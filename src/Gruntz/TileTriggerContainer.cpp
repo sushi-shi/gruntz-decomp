@@ -2,7 +2,7 @@
 //
 // A 4-CObList container: a base sub-object at +0x00 (head +0x04) plus three more
 // CObList members at +0x1c / +0x38 / +0x54 (heads +0x20 / +0x3c / +0x58).  The
-// accessors find/move/remove heap command elements (CTileGridCommand) across the
+// accessors find/move/remove heap command elements (CTileTriggerLogic) across the
 // lists; an element is destroyed inline (stamp vtable + RezFree) before its node
 // is unlinked.  The /GX ~dtor + RemoveAll empty all four lists; AddToList1/3
 // allocate+append elements; SetCell flags a keyed element; SerializeApplyA/B are
@@ -45,7 +45,7 @@ extern "C" CGameRegistry* g_gameReg;
 i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4);
 
 // The list1/list2 command element: its data is compared against an arg by the
-// CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
+// CTileTriggerLogic classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
 SIZE_UNKNOWN(TtcElem);
 
 // ---------------------------------------------------------------------------
@@ -286,7 +286,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             obj->m_0c = a4;
             obj->m_08 = a3;
             obj->m_20 = this;
-            obj->m_04 = logicType;
+            obj->m_typeTag = logicType;
             obj->m_10 = a5;
             obj->m_1c = 1;
             obj->m_34 = a6;
@@ -484,10 +484,10 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
     do {
         TtcNode* cur = node;
         node = node->m_next;
-        CTileGridCommand* elem = (CTileGridCommand*)cur->m_data;
-        if (elem == (CTileGridCommand*)data) {
+        CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
+        if (elem == (CTileTriggerLogic*)data) {
             if (elem != 0) {
-                // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
+                // vptr restore compiler-managed via CTileTriggerLogic's real vtable; manual stamp dropped
                 elem->m_1c = 0;
                 ::operator delete(elem);
             }
@@ -577,7 +577,7 @@ void CTileTriggerContainer::RemoveAll() {
         node = node->m_next;
         i32* elem = (i32*)cur->m_data;
         if (elem != 0) {
-            // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
+            // vptr restore compiler-managed via CTileTriggerLogic's real vtable; manual stamp dropped
             elem[7] = 0; // +0x1c
             ::operator delete(elem);
         }
@@ -601,7 +601,7 @@ void CTileTriggerContainer::RemoveAll() {
         node = node->m_next;
         i32* elem = (i32*)cur->m_data;
         if (elem != 0) {
-            // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
+            // vptr restore compiler-managed via CTileTriggerLogic's real vtable; manual stamp dropped
             elem[7] = 0; // +0x1c
             ::operator delete(elem);
         }
@@ -623,7 +623,7 @@ void CTileTriggerContainer::RemoveAll() {
 
 // ---------------------------------------------------------------------------
 // CTileTriggerContainer::FilterList2
-// Walks list2 (head @ +0x3c); classifies each element via CTileGridCommand
+// Walks list2 (head @ +0x3c); classifies each element via CTileTriggerLogic
 // 0x112970.  result 0  -> remove from list2 + delete element (0x5eaea4 + RezFree);
 //           result -1 -> move element from list2 to list1 (RemoveAt + AddTail).
 // Returns 1.
@@ -639,12 +639,12 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
         do {
             TtcNode* cur = node;
             node = node->m_next;
-            CTileGridCommand* elem = (CTileGridCommand*)cur->m_data;
+            CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
             i32 r = elem->Classify((i32)arg);
             if (r == 0) {
                 m_list2.RemoveAt((POSITION)cur);
                 if (elem != 0) {
-                    // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
+                    // vptr restore compiler-managed via CTileTriggerLogic's real vtable; manual stamp dropped
                     elem->m_1c = 0;
                     ::operator delete(elem);
                 }

@@ -62,7 +62,7 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (rock-break)
 #include <Gruntz/TileActionEvent.h>        // canonical CTileActionEvent (rock-break)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (rock-break)
-#include <Gruntz/TileGridCommand.h>        // canonical CTileGridCommand (rock-break)
+#include <Gruntz/TileGridCommand.h>        // canonical CTileTriggerLogic (rock-break)
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
 
@@ -1690,7 +1690,7 @@ struct RockMapHost { // this->m_22c (== g_gameReg->m_world)
 // The per-cell "logic object" the registry hands out.
 struct RockLogicObj {
     // Retire @0x3af8 IS CTileTriggerSwitchLogic::BuildRockBreakInGameText; cast at the call.
-    // SetType @0x1a00 IS CTileGridCommand::ApplyMove; cast at the call.
+    // SetType @0x1a00 IS CTileTriggerLogic::ApplyMove; cast at the call.
     // Reconcile @0x3adf IS CTileActionEvent::Process; cast at the call.
 };
 struct RockLogicMgr { // g_gameReg->m_curState->m_2e4
@@ -1818,7 +1818,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             RockLogicObj* lo = (RockLogicObj*)((CTileTriggerContainer*)root->m_2e4)
                                    ->FindInLists12(ty + (tx << 8), 0x1a);
             if (lo != 0) {
-                ((CTileGridCommand*)lo)->ApplyMove(type);
+                ((CTileTriggerLogic*)lo)->ApplyMove(type);
                 ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)lo);
             } else {
                 RockGrid* wg = (RockGrid*)g_gameReg->m_world->m_24->m_mainPlane;

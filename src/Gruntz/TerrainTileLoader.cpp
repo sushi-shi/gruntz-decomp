@@ -53,7 +53,7 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez sprite)
 #include <Gruntz/Viewport.h>      // the shared tile-grid geometry (cell lookup)
-#include <Gruntz/TileGridCommand.h> // real CTileTriggerContainer (map+0x2e4) + CTileGridCommand (the found set)
+#include <Gruntz/TileGridCommand.h> // real CTileTriggerContainer (map+0x2e4) + CTileTriggerLogic (the found set)
 #include <rva.h>
 
 // The *0x24556c singleton. Declared here: <Gruntz/TileGridCommand.h>'s header-level decl was
@@ -70,7 +70,7 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The trigger registrar reached through the level map's (g_gameReg->m_2c) +0x2e4 is the
 // real CTileTriggerContainer (FindInLists12 @0x116f20 resolves a set by (key,kind);
-// DelFromList1 @0x116e60 releases it); the looked-up set is a CTileGridCommand
+// DelFromList1 @0x116e60 releases it); the looked-up set is a CTileTriggerLogic
 // (ApplyMove @0x112590 tags it 0x22). All __thiscall, reloc-masked.
 
 // ---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ i32 CTerrainTileLoader::Load(
                 CTileTriggerContainer* reg = (CTileTriggerContainer*)PTR(map, 0x2e4);
                 void* found = reg->FindInLists12((tileX << 8) + tileY, 0x1a);
                 if (found != 0) {
-                    ((CTileGridCommand*)found)->ApplyMove(0x22);
+                    ((CTileTriggerLogic*)found)->ApplyMove(0x22);
                     reg->DelFromList1(found);
                 }
             }

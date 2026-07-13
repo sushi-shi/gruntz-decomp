@@ -2023,10 +2023,6 @@ unit = "mgrlistfind"
 source = "src/Gruntz/MgrListFind.cpp"
 flags = "base"
 [[unit]]
-unit = "vtblforward"
-source = "src/Gruntz/VtblForward.cpp"
-flags = "base"
-[[unit]]
 unit = "finalvtables"
 source = "src/Gruntz/FinalVtables.cpp"
 flags = "base"

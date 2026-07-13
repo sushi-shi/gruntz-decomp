@@ -37,7 +37,26 @@ public:
     ~CTileTriggerLogic() {
         m_1c = 0;
     }
-    virtual i32 TileLogicVfunc0(); // slot 0 (0x110c10 via ILT thunk 0x402072)
+    // slot 0 (0x110c10 via ILT thunk 0x402072): the duty-edge tick virtual. `Tick` is the
+    // name the folded CTileGridCommand view carried for this same slot-0 virtual; kept over
+    // the placeholder `TileLogicVfunc0` (name-preserving fold - best name wins).
+    virtual i32 Tick();
+
+    // --- folded in from the INVENTED "CTileGridCommand" (see the note below) -------------
+    void RecordMove(); // 0x112880
+    // Time-driven duty-cycle classifier: +1 while inside the on/off span, 0 on the rising
+    // edge of a one-shot, -1 on the falling edge.
+    i32 Classify(i32 arg); // 0x112970
+    // NOTE: BumpCell (0x112b70) is NOT a member, though the folded view claimed it. The
+    // retail vtable ??_7CCheckpointTriggerSwitchLogic@@6B@ (0x1eaf54) holds it in SLOT 2 (and
+    // its decrement sibling 0x112bf0 in slot 3), so both are overrides on the 0x8c
+    // CTileTriggerSwitchLogic hierarchy. They touch only +0x08/+0x0c/+0x14 - offsets both
+    // families share, which is why only the vtable could tell them apart. See
+    // CCheckpointTriggerSwitchLogic::Vf2/Vf3 in TileTriggerSwitchLogic.cpp.
+
+    // Edits the tile grid according to a verb arg (set/clear/notify), then reports the move
+    // into the in-game text log.
+    i32 ApplyMove(i32 verb); // 0x112590
 
     // Linear scan of the 24-dword m_block; 1 on a hit. RE-HOMED from
     // CTileTriggerSwitchLogic (0x8c), where it could not fit: retail does `add ecx,0x3c`
@@ -53,22 +72,28 @@ public:
     i32 Serialize(CSerialArchive* s);                            // 0x113ae0
     i32 Deserialize(CSerialArchive* s);                          // 0x113c10
 
-    i32 m_04;                    // +0x04
-    i32 m_08;                    // +0x08
-    i32 m_0c;                    // +0x0c
+    // Field names below take the RICHER of the two spellings this class was reconstructed
+    // under (the CTileGridCommand view named the tag/coords/duty spans; this one did not).
+    i32 m_typeTag;               // +0x04  type tag (0x17/0x18 duty-cycle discriminant)
+    i32 m_08;                    // +0x08  coord x
+    i32 m_0c;                    // +0x0c  coord y
     i32 m_10;                    // +0x10
-    i32 m_14;                    // +0x14
+    i32 m_14;                    // +0x14  flag
     i32 m_18;                    // +0x18
-    i32 m_1c;                    // +0x1c  init flag (zeroed by ctor AFTER m_block)
+    i32 m_1c;                    // +0x1c  init flag (zeroed by ctor AFTER m_block; the
+                                 //        inlined `delete` in the container walkers zeroes
+                                 //        exactly this - which is what proves those list
+                                 //        elements are THIS class, not the 0x8c switch logic
+                                 //        whose dtor zeroes +0x20)
     CTileTriggerContainer* m_20; // +0x20  owning container
     u32 m_24;                    // +0x24  game-clock snapshot (g_645588)
-    i32 m_28;                    // +0x28
-    i32 m_2c;                    // +0x2c
-    i32 m_30;                    // +0x30
+    u32 m_28;                    // +0x28  duty on-span (unsigned duration)
+    u32 m_2c;                    // +0x2c  lead-in span (unsigned duration)
+    u32 m_30;                    // +0x30  duty off-span (unsigned duration)
     i32 m_34;                    // +0x34
-    i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (name kept from the folded
-                                 //        CTileGridCommand view, which shares this layout)
-    i32 m_block[24];             // +0x3c..0x9b  (rep stosl, 24 dwords)
+    i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (1 = currently on)
+    i32 m_block[24];             // +0x3c..0x9b  (rep stosl, 24 dwords; the "m_grid" of the
+                                 //        folded view - same 24 dwords at the same offset)
 };
 
 // The per-id logic leaves of the CTileTriggerLogic family (base = 1 virtual): each is
@@ -119,7 +144,7 @@ SIZE(CTileTimeTriggerLogic, 0x9c);
 VTBL(CTileTimeTriggerLogic, 0x001eaf04); // vtable_names -> code (RTTI game class)
 
 class CTileSecretTriggerLogic : public CTileTriggerLogic {
-    virtual i32 TileLogicVfunc0() OVERRIDE; // slot 0
+    virtual i32 Tick() OVERRIDE; // slot 0
 public:
     CTileSecretTriggerLogic(); // 0x112760 (ILT 0x310c)
 };

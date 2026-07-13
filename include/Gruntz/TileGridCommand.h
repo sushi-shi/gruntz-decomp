@@ -72,57 +72,24 @@ SIZE_UNKNOWN(CGameRegistry);
 // Write @ +0x30 - the store/transfer slot this cluster drives), now the one modeled
 // class in <Gruntz/SerialArchive.h> - the former local `TgcStream` view is folded away.
 
-class CTileGridCommand {
-public:
-    // slot 0 (+0x00): the duty-edge tick virtual (real polymorphic; was fired via a
-    // TgcTickView cast of a manual-vptr command -> mov eax,[this]; call [eax]).
-    virtual void Tick();
-
-    void RecordMove();                  // 0x112880
-    // Serialize (0x113ae0) / Deserialize (0x113c10) moved to CTileTriggerLogic
-    // (<Gruntz/TileTriggerLogic.h>): retail reaches them ONLY through
-    // CTileTriggerLogic::ValidateByType, which passes its own `this` in ecx, and Build
-    // proves that `this` is a freshly-`new`ed 0x9c CTileTriggerLogic.
-    //
-    // @identity-TODO CTileGridCommand is an INVENTED name - the string does not occur
-    // anywhere in GRUNTZ.EXE, while CTileTriggerLogic / CGiantRockLogic /
-    // CTileTriggerSwitchLogic all do (RTTI). Its layout is field-for-field identical to
-    // CTileTriggerLogic (0x9c, m_20 = CTileTriggerContainer*, 24-dword block at +0x3c), and
-    // the ecx passthrough above proves the two names denote ONE object at runtime. The
-    // remaining methods (Tick/RecordMove/Classify/BumpCell/ApplyMove) should fold onto
-    // CTileTriggerLogic; not done here to keep the layout fix reviewable.
-
-    // Time-driven duty-cycle classifier: returns +1 while inside the on/off span,
-    // 0 on the rising edge of a one-shot, -1 on the falling edge.  __thiscall.
-    i32 Classify(i32 arg); // 0x112970
-
-    // Sets the tile cell (m_08,m_0c) of the active layer to its value+1 and marks
-    // it dirty; latches m_14.  __thiscall.
-    i32 BumpCell(); // 0x112b70
-
-    // Edits the tile grid according to a verb arg (set/clear/notify), then reports
-    // the move into the in-game text log.  __thiscall.
-    i32 ApplyMove(i32 verb); // 0x112590
-
-    // +0x00  implicit vptr (real virtual Tick above; was an explicit void* m_vptr)
-    i32 m_typeTag;               // +0x04  type tag (0x17/0x18 duty-cycle discriminant)
-    i32 m_08;                    // +0x08  coord x
-    i32 m_0c;                    // +0x0c  coord y
-    i32 m_10;                    // +0x10
-    i32 m_14;                    // +0x14  flag
-    i32 m_18;                    // +0x18
-    i32 m_1c;                    // +0x1c
-    CTileTriggerContainer* m_20; // +0x20  owning container
-    u32 m_24;                    // +0x24  captured game clock
-    u32 m_28;                    // +0x28  duty on-span (unsigned duration)
-    u32 m_2c;                    // +0x2c  lead-in span (unsigned duration)
-    u32 m_30;                    // +0x30  duty off-span (unsigned duration)
-    i32 m_34;                    // +0x34
-    i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (1 = currently on)
-    i32 m_grid[24];              // +0x3c..+0x9b  (24-dword block, serialized in a loop)
-};
-SIZE_UNKNOWN(CTileGridCommand);
-
-// --- vtable catalog ---
+// CTileGridCommand IS GONE (folded 2026-07-13). It was an INVENTED name: the string
+// "CTileGridCommand" does not occur anywhere in GRUNTZ.EXE, while CTileTriggerLogic /
+// CGiantRockLogic / CTileTriggerSwitchLogic all do (RTTI). It was a second, divergent
+// reconstruction of CTileTriggerLogic - field-for-field identical (0x9c, type tag @ +0x04,
+// coords @ +0x08/+0x0c, container back-pointer @ +0x20, 24-dword block @ +0x3c) - and the
+// binary proves the two names denote ONE object at runtime, three ways:
+//   1. CTileTriggerLogic::ValidateByType (called by CTileTriggerFactory::Build on a freshly
+//      `new`ed 0x9c CTileTriggerLogic) hands its own `this` in ecx straight to what was
+//      "CTileGridCommand::Serialize/Deserialize".
+//   2. The container's list walkers `new` these elements through AddLogic, whose retail
+//      signature RETURNS CTileTriggerLogic* - and then cast them to CTileGridCommand to call
+//      ApplyMove/Classify. The cast was the symptom.
+//   3. Decisive: the inlined `delete` in those same walkers zeroes +0x1c, which is
+//      CTileTriggerLogic's dtor (`m_1c = 0`). The 0x8c CTileTriggerSwitchLogic's dtor zeroes
+//      +0x20 instead - that is how RemoveByKeys' element type was told apart from this one.
+// All five methods (Tick/RecordMove/Classify/BumpCell/ApplyMove) now live on
+// CTileTriggerLogic in <Gruntz/TileTriggerLogic.h>, with the richer field names migrated.
+// The remaining Tgc* structs here are the real engine helper shapes the bodies reach.
+#include <Gruntz/TileTriggerLogic.h>
 
 #endif // SRC_GRUNTZ_TILEGRIDCOMMAND_H

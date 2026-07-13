@@ -4,7 +4,7 @@
 // at +0x1c / +0x38 / +0x54 (their m_pNodeHead at +0x20 / +0x3c / +0x58).  The
 // lists hold heap command objects; the accessors here move/find/remove those
 // objects across the three lists.  The list elements are sibling command objects
-// (the CTileGridCommand class) destroyed inline (vtable 0x5eaea4 stamp + RezFree)
+// (the CTileTriggerLogic class) destroyed inline (vtable 0x5eaea4 stamp + RezFree)
 // before the node is unlinked.
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted

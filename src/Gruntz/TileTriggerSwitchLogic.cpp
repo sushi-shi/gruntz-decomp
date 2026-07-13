@@ -6,7 +6,7 @@
 // first link => ONE original TU (wave2-F merge; + the tiletriggerlogic /
 // tiletriggerload singletons and Gate113860, whose RVAs sit inside this
 // interval). Classes: CTileTriggerSwitchLogic + the 8 derived *Logic /
-// *SwitchLogic leaves, base CTileTriggerLogic, CTileGridCommand,
+// *SwitchLogic leaves, base CTileTriggerLogic, CTileTriggerLogic,
 // CTileActionEvent, the CTileTriggerData record and the Gate113860 mode gate.
 //
 // NOT one TU with the 0x115b60 container interval: the between-space
@@ -18,6 +18,7 @@
 //
 // Flags: eh (/GX) - the interval carries EH-registration evidence
 // (TU_MIGRATION hard error: 0x110430-0x1140e2, 1 EH site).
+#include <string.h> // memcpy -> the /Oi `rep movsd` in BuildSmall
 #include <Mfc.h>
 #include <rva.h>
 
@@ -153,7 +154,7 @@ SIZE_UNKNOWN(CImpactSound);
 // The sound-bank lookup by name (thunk_FUN_0045b7e0, __cdecl). External no-body.
 extern CImpactSound* Eng_FindSound(const char* name);
 
-// TileGridCommand.cpp - Gruntz CTileGridCommand (C:\Proj\Gruntz).
+// TileGridCommand.cpp - Gruntz CTileTriggerLogic (C:\Proj\Gruntz).
 //
 // A tile-grid command object (type tag @ +0x04, coords @ +0x08/+0x0c, container
 // back-pointer @ +0x20, game-clock snapshot @ +0x24).  RecordMove captures the
@@ -230,7 +231,46 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     m_20 = 0;
 }
 
-// Vf1/Vf2/Vf3 stay DECLARED-ONLY (bodies live in unmatched engine TUs); cl still
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::BuildSmall (slot 1, 0x110460) - the BASE builder that
+// CCheckpointTriggerSwitchLogic::BuildSmall (0x112a50) overrides. Gate on the m_20
+// one-shot, reject a type-4 build with an empty record, copy the caller's 24-dword
+// record into m_block (+0x2c, `rep movsd` ecx=0x18), then chain the slot-0 build
+// virtual with the remaining 8 args.
+//
+// RE-HOMED from src/Stub-era VtblForward.cpp, where it lived as "CVtEmitRecv::Accept" on a
+// placeholder receiver. That name occurs nowhere in GRUNTZ.EXE, and the note there said the
+// owner was "not recoverable from the xref graph" - true, because it is reached ONLY through
+// the vtable, never by a rel32 call. The VTABLE is what recovers it:
+// ??_7CTileTriggerSwitchLogic@@6B@ (0x1eae8c) slot 1 == 0x110460, and the checkpoint class's
+// vtable overrides that same slot with 0x112a50. The placeholder's shape maps exactly onto
+// this class: its "busy gate @+0x20" is m_20, its "0x60-byte record sink @+0x2c" is
+// m_block[24], and its "virtual Dispatch slot 0" is Vf0 - which independently confirms the
+// 9-arg slot-1 signature recovered from the checkpoint override.
+// ---------------------------------------------------------------------------
+RVA(0x00110460, 0x64)
+i32 CTileTriggerSwitchLogic::BuildSmall(
+    i32 a1,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    const i32* rect,
+    i32 a7,
+    i32 a8,
+    i32 a9
+) {
+    if (m_20 != 0) {
+        return 0;
+    }
+    if (a2 == 4 && rect[0] == 0) {
+        return 0;
+    }
+    memcpy(m_block, rect, sizeof(m_block));
+    return Vf0(a1, a2, a3, a4, a5, a7, a8, a9);
+}
+
+// Vf2/Vf3 stay DECLARED-ONLY on the base (bodies live in unmatched engine TUs); cl still
 // emits the ??_7 vftable (the ctor references it) with those slots as external
 // refs. Vf0 (slot 0, thunk 0x1749) IS reconstructed below.
 
@@ -682,7 +722,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
 #undef TY
 
 // ---------------------------------------------------------------------------
-// CTileGridCommand::ApplyMove
+// CTileTriggerLogic::ApplyMove
 // Edits the (m_08,m_0c) tile cell of the active layer: an explicit override m_34
 // when set, else by the verb (0x1e->0x5a, 0x1f->0x5b, 0x21->cell+1), marks the
 // cell dirty, flags the surrounding screen rect, and (when m_2c is set) posts an
@@ -693,7 +733,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
 // shared px/py reuse match; the four duplicated grid-access blocks allocate
 // registers differently from retail (same scale-4 vs pre-shift split as BumpCell).
 RVA(0x00112590, 0x166)
-i32 CTileGridCommand::ApplyMove(i32 verb) {
+i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     i32 v;
     if (m_34 != 0) {
         CGameRegistry* reg = g_gameReg;
@@ -786,18 +826,18 @@ i32 CTileTimeTriggerSwitchLogic::Vf3() {
 }
 
 // ---------------------------------------------------------------------------
-// CTileGridCommand::RecordMove
+// CTileTriggerLogic::RecordMove
 // Captures the running game clock into +0x24, then hands this command to its
 // owning container (m_20->MoveList1ToList2(this)).
 // ---------------------------------------------------------------------------
 RVA(0x00112880, 0x12)
-void CTileGridCommand::RecordMove() {
+void CTileTriggerLogic::RecordMove() {
     m_24 = g_645588;
     m_20->MoveList1ToList2(this);
 }
 
 // ---------------------------------------------------------------------------
-// CTileGridCommand::Classify
+// CTileTriggerLogic::Classify
 // Drives the command's on/off duty cycle off the running game clock: while the
 // elapsed time is within the lead-in (m_2c) it stays active (+1); past it, the
 // remainder modulo the on+off period (m_28+m_30) selects the on or off phase,
@@ -807,11 +847,11 @@ void CTileGridCommand::RecordMove() {
 // @early-stop
 // entropy-tail (~96%): logic + the single-ret1 convergence match; only the last
 // type==0x17 case's ret1 is tail-duplicated instead of merged into the shared tail.
-// @interleaver CTileGridCommand::Classify emitted-in <boundary: MgrSlotSwap.cpp DoSwap
+// @interleaver CTileTriggerLogic::Classify emitted-in <boundary: MgrSlotSwap.cpp DoSwap
 // @0x1128b0 (before) + CheckpointSwitchBuild.cpp BuildSmall @0x112a50 (after)>. A /Gy
 // first-use COMDAT the linker scattered between two OTHER units.
 RVA(0x00112970, 0xad)
-i32 CTileGridCommand::Classify(i32 arg) {
+i32 CTileTriggerLogic::Classify(i32 arg) {
     u32 elapsed = g_645588 - m_24;
     if (elapsed <= m_2c) {
         goto ret1;
@@ -857,59 +897,61 @@ ret1:
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTileGridCommand::BumpCell
-// Reads the active tile layer's cell at (m_08,m_0c), stores value+1 back, marks
-// the cell dirty for redraw, and latches m_14.  Returns 1.
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// The checkpoint switch-logic's slot-2 / slot-3 overrides (the "bump cell" /
+// "decrement cell" pair). BOTH were misattributed; the retail VTABLE settles it.
+// Reading ??_7CCheckpointTriggerSwitchLogic@@6B@ (0x1eaf54) straight out of the image:
+//     slot 0 -> 0x1104f0  Vf0        (inherited from CTileTriggerSwitchLogic)
+//     slot 1 -> 0x112a50  BuildSmall (override)
+//     slot 2 -> 0x112b70  <-- THIS   (override)
+//     slot 3 -> 0x112bf0  <-- THIS   (override)
+// So `this` is a CCheckpointTriggerSwitchLogic (0x8c, CTileTriggerSwitchLogic base) - NOT
+// the 0x9c CTileTriggerLogic, and NOT an orphan "CDecrementCellHost" (a name that does not
+// occur anywhere in GRUNTZ.EXE). The +0x08/+0x0c/+0x14 fields they touch exist in BOTH
+// class families at the same offsets, which is exactly why the offsets alone never
+// disambiguated them and the vtable had to.
+//
+// The fields are dual-role on this class: +0x08/+0x0c are the tile column/row here, while
+// the switch-logic key paths (FindByField0C / FindChild) read +0x0c/+0x10 as lookup keys -
+// consistent, since a cell key IS (x << 8) + y. Names stay as the base declares them; only
+// the offsets are load-bearing.
+// ===========================================================================
+
+// Slot 2: reads the active tile layer's cell at (col,row), stores value+1 back, republishes
+// it through the tile grid, and SETS the +0x14 flag.  Returns 1.
 // @early-stop
 // addressing-mode wall (~73%): logic identical; retail indexes the row table with
 // a scale-4 address mode (`[rowtbl+y*4]`), the recompile pre-shifts y (shl 2) and
 // uses scale-1, propagating through both cell accesses.
 RVA(0x00112b70, 0x5a)
-i32 CTileGridCommand::BumpCell() {
+i32 CCheckpointTriggerSwitchLogic::Vf2() {
     CGameRegistry* reg = g_gameReg;
     CViewport* layer = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-    i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_0c]] + 1;
+    i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_key0c]] + 1;
     CViewport* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-    layer2->m_cells[m_08 + layer2->m_rowBase[m_0c]] = v;
-    ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
-    m_14 = 1;
+    layer2->m_cells[m_08 + layer2->m_rowBase[m_key0c]] = v;
+    ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
+    m_linkGate = 1;
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x112bf0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). The
-// decrement sibling of BumpCell: reads the active tile layer's cell at
-// (m_08,m_0c), stores value-1 back, re-publishes it through the tile grid, and
-// clears m_14. Reuses this TU's real grid types (TgcGameMgr/CViewport/CBrickzGrid);
-// only the receiver is an orphan view - its true class is CCheckpointTriggerSwitch-
-// Logic (vtbl slot 3, thunk 0x36fc) per BoundaryLowerMethodsViews.h, class
-// attribution deferred.
+// Slot 3: the decrement sibling - same cell read/write path, value-1, and CLEARS the +0x14
+// flag.  Returns 1.
 // @early-stop
-// strength-reduction wall (~73%): cl materializes m_row<<2 (shl ecx,2) and reuses
-// scale-1 addressing where retail keeps m_row in a scale-4 address mode in both cell
+// strength-reduction wall (~73%): cl materializes row<<2 (shl ecx,2) and reuses
+// scale-1 addressing where retail keeps the row in a scale-4 address mode in both cell
 // stores; the shift vs scaled-index pick is not steerable.
-struct CDecrementCellHost { // orphan receiver (m_08 col / m_0c row / m_14, same as BumpCell)
-    char pad0[8];
-    i32 m_08; // +0x08 column
-    i32 m_0c; // +0x0c row
-    char pad10[0x14 - 0x10];
-    i32 m_14; // +0x14
-    i32 DecrementCell();
-};
 RVA(0x00112bf0, 0x5e)
-i32 CDecrementCellHost::DecrementCell() {
+i32 CCheckpointTriggerSwitchLogic::Vf3() {
     CGameRegistry* reg = g_gameReg;
     CViewport* layer = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-    i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_0c]] - 1;
+    i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_key0c]] - 1;
     CViewport* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-    layer2->m_cells[m_08 + layer2->m_rowBase[m_0c]] = v;
-    ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
-    m_14 = 0;
+    layer2->m_cells[m_08 + layer2->m_rowBase[m_key0c]] = v;
+    ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
+    m_linkGate = 0;
     return 1;
 }
-SIZE_UNKNOWN(CDecrementCellHost);
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::VerifyBlockLinks
@@ -1551,10 +1593,10 @@ i32 CTileTriggerLogic::ValidateByType(void* archive, i32 type, i32 a3, i32 a4) {
 // null; otherwise transfers the scalar fields then the 24-dword m_block through
 // the stream's Write slot and returns 1.
 //
-// RE-HOMED off the invented `CTileGridCommand` (see TileGridCommand.h @identity-TODO):
+// RE-HOMED off the invented `CTileTriggerLogic` (see TileGridCommand.h @identity-TODO):
 // ValidateByType reaches it with `this` in ecx, and that `this` is a 0x9c CTileTriggerLogic
 // straight off the allocation site. Fields are the same offsets under this class's names
-// (m_grid -> m_block, m_dutyOn kept).
+// (m_block -> m_block, m_dutyOn kept).
 // ---------------------------------------------------------------------------
 RVA(0x00113ae0, 0xe8)
 i32 CTileTriggerLogic::Serialize(CSerialArchive* s) {
