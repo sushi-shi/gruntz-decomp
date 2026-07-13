@@ -21,7 +21,6 @@
 
 // The global the advance handlers hand the sink (_g_6bf3bc; the per-frame
 // draw-delta mirror). Declared extern "C" so the value-load reloc-masks.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip

@@ -39,7 +39,6 @@
 // returns the entry at [this + idx*4 + (flag ? 0x4c : 0x08)], 0 if idx >= 0x11.
 // The handle it returns is stored into the sprite's i32 draw-fill arg, so it is
 // i32-typed here (no cast at the store).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // *0x64556c (canonical _g_mgrSettings view)
 
 // The created SimpleAnimation sprite is the shared CGameObject: ApplyName (0x150540)

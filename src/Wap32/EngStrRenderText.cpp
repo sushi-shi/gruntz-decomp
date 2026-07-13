@@ -15,13 +15,9 @@
 
 // The size-selected fonts (g_largeFont..g_tinyFont = VFont in retail). Opaque.
 struct Font;
-DATA(0x0024eac0)
 extern Font g_largeFont;
-DATA(0x0024eae8)
 extern Font g_mediumFont;
-DATA(0x0024eb00)
 extern Font g_smallFont;
-DATA(0x0024ea58)
 extern Font g_tinyFont;
 
 // WapRect - the WAP32-LOCAL rect (16 bytes) the render worker takes by value, NOT

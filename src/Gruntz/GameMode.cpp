@@ -361,7 +361,6 @@ i32 CBootyState::LoadGruntEffectSprites() {
 // The message-slot .rdata tables (named so the DIR32 datum reloc-masks): rectsA the
 // level-message text box, rectsB the stat/formatted-text box, iconPos the icon {x,y},
 // strings the CString message set. ::CopyRect is the engine's CopyRect trampoline.
-DATA(0x0020b838)
 extern RECT g_levelMsgRectsA[8]; // 0x60b838  (shared with BootyMessages - stays extern)
 // g_levelMsgIconPos ({x,y} icon-slide targets) is gamemode-private (extern-only) and
 // sits cleanly between RectsA and RectsB (no overlap): DEFINED here (owner gamemode.obj's
@@ -385,15 +384,11 @@ i32 g_levelMsgIconPos[16] = {
     0xe9,
     0x1a8
 }; // 0x60b8b8
-DATA(0x0020b8f8)
 extern RECT g_levelMsgRectsB[8]; // 0x60b8f8  (shared with BootyMessages - stays extern)
 DATA(0x00229ef8)
 extern CString g_levelMsgStrings[8]; // 0x629ef8
-DATA(0x0021ab24)
 extern i32 g_sndCueTag; // 0x61ab24
-DATA(0x0021ab20)
 extern i32 g_sndEnabled; // 0x61ab20
-DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // ShowHudMessage (0x1154b0, glyphstr): draw a CString into a RECT via the render/HUD

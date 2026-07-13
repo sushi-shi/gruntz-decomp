@@ -42,7 +42,6 @@ inline void* operator new(u32, void* p) {
 // the RegWorkerValue reduced dispatch view - both dissolved onto the canonical.)
 SIZE(CDDrawWorker, 0x6c);
 
-DATA(0x002bf37c)
 extern i32 g_resourceInstallActive;
 
 // operator delete + the engine free.

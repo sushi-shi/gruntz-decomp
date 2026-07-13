@@ -16,7 +16,6 @@
 
 // The cue enable flag (0x61ab20) and the wrap-safe kill-cue draw-clock (0x6bf3c0,
 // bound by triggermgr). Reloc-masked externs.
-DATA(0x0021ab20)
 extern i32 g_sndEnabled;
 extern "C" u32 g_killCueClock; // 0x2bf3c0
 

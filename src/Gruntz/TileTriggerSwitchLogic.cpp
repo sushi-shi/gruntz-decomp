@@ -114,7 +114,6 @@ SIZE_UNKNOWN(CTileEventSink);
 // ?ReportError@CGameRegistry@@QAEXHH@Z. The sub-object chain reads through the real
 // classes too - CWorldZ::m_24 is the CGameLevel whose +0x5c IS m_mainPlane (the field the
 // fake view called `m_5c`; it was there all along, under its real name).
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 
 // The shared global at DAT_00644c54 (VA 0x644c54): used here as the per-player /

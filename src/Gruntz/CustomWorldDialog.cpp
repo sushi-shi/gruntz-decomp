@@ -104,7 +104,6 @@ struct GmInner8 {
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
 // (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
 // extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 
 // The "game root dir" the loaders resolve is just the current working directory:

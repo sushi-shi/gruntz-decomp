@@ -79,7 +79,6 @@ struct CObjDir {
 // <Gruntz/GruntzMgr.h>): the object directory at +0x30 (canonical m_world, viewed
 // here as the serial/name-map host), an engine helper at +0x74 the tail invokes
 // (0x4165). Both sub-objects are engine carcasses reached by a struct-view cast.
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // The event/command buffer at this+0x10 the tail writes (type/value/flag slots).

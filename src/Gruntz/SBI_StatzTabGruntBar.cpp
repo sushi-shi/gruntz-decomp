@@ -15,13 +15,11 @@
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only
 // the +0x68 unit-table base the Statz tab samples is modeled.
-DATA(0x0024556c)
 extern "C" CStatzGameReg* g_gameReg;
 
 // The running game clock (DAT_00645588; low 32 bits of the engine counter), used by
 // the timer block's 64-bit elapsed-window compare. Same datum the rest of Gruntz
 // reads as g_frameTime.
-DATA(0x00245588)
 extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 // ---------------------------------------------------------------------------

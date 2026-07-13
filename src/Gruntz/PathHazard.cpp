@@ -68,7 +68,6 @@ extern i32 g_strikeThresh;  // 0x645598 (compared to 0x64)
 // (m_10 the CSoundCueMgr play-object, m_14 last-play clock, m_18 cooldown), then
 // plays it through the cue manager when the per-emitter cooldown has elapsed.
 
-DATA(0x0024556c)
 // FABRICATED-SYMBOL FIX: this was a C++-linkage alias (?g_gameReg@@3PAUCGameRegistry@@A)
 // of the SAME datum the tree already binds as the extern-"C" g_gameReg - nothing defined it.
 extern "C" CGameRegistry* g_gameReg;
@@ -76,11 +75,8 @@ extern "C" CGameRegistry* g_gameReg;
 // Strike config globals: the bute window source + the sound-enable flag / cue tag
 // pair the positional emit polls, plus the kill-cue clock.
 extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A (butemgr unit)
-DATA(0x0021ab20)
 extern i32 g_sndEnabled; // 0x61ab20 (sound-enable flag)
-DATA(0x0021ab24)
 extern i32 g_sndCueTag; // 0x61ab24 (cue tag)
-DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // The "A" bute key the new-leg re-bind looks up (DAT_0060a454 $SG literal).
@@ -287,7 +283,7 @@ i32 CPathHazard::RunAct(i32 id) {
 // wall CKitchenSlime::Tick carries). Logic byte-for-byte correct.
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_pathTick);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
 
     CGameObject* obj = m_object;
     // The probe rect (a 4-int local) the on-screen query tests, computed
@@ -343,9 +339,9 @@ i32 CPathHazard::Tick() {
     }
 
     // Not arrived: integrate the sub-pixel movement vector toward the waypoint.
-    double step = (double)(i64)(u64)(u32)g_pathStepSeed * m_speed;
+    double step = (double)(i64)(u64)(u32)g_frameDelta * m_speed;
     m_posX = m_posX + step * m_unitX;
-    m_posY = m_posY + (double)(u32)g_pathStepSeed * m_unitY * m_speed;
+    m_posY = m_posY + (double)(u32)g_frameDelta * m_unitY * m_speed;
     i32 newX = (i32)(m_roundBiasX + m_posX);
     i32 newY = (i32)(m_roundBiasY + m_posY);
 
@@ -406,7 +402,7 @@ i32 CPathHazard::SiblingTick() {
         o->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[sel]; // [m_78 + sel*4 + 0x14]
     }
 
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_pathTick);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
 
     CGameObject* obj = m_object;
     i32 rect[4];

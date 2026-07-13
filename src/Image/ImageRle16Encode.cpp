@@ -15,15 +15,10 @@
 #include <Rez/RezMgr.h> // RezAlloc (_RezAlloc 0x1b9b46)
 
 // The live screen RGB-format unpack/pack shift table (0x683ea0..0x683eb4).
-DATA(0x00283ea0)
 extern i32 g_rUp;
-DATA(0x00283ea4)
 extern i32 g_gUp;
-DATA(0x00283eac)
 extern i32 g_rDown;
-DATA(0x00283eb0)
 extern i32 g_gDown;
-DATA(0x00283eb4)
 extern i32 g_bDown;
 
 struct CImageRle16 {

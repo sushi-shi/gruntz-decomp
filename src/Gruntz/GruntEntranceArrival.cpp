@@ -197,7 +197,6 @@ extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
 #include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
 #include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
-DATA(0x002bf3bc)
 // The entrance geometry-source global at 0x2bf3bc every step in this TU arms the
 // entrance sub-player with (fed to CAniAdvanceCursor::Advance_15c360). 0x2bf3bc is a
 // tree-wide name conflation: ~17 TUs bind it via this extern "C" `_g_6bf3bc` (the
@@ -673,7 +672,6 @@ struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
 extern "C" i32 g_engineFrameDelta;
 // The mgr singleton (same 0x64556c datum) + the WM_COMMAND PostMessageA IAT slot.
 // WwdGameReg* view (as at the top of this TU); the warp-dialog facet casts to CWarpMgr.
-DATA(0x0024556c)
 extern "C" WwdGameReg* g_gameReg;
 typedef i32(WINAPI* WarpPostFn)(void* hwnd, unsigned msg, unsigned wp, i32 lp);
 DATA(0x002c44c8)

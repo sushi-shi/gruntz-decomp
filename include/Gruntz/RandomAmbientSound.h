@@ -33,12 +33,10 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 // playable gate (m_inputState->m_active; CWorldSoundSet in <Gruntz/WorldSoundSet.h>). The
 // interval roller in Step also loads g_gameReg as a dead receiver before the rand
 // call (the binary proves the load even though rand ignores it).
-DATA(0x0024556c)
 
-// The global frame-delta clock in ms (DAT_00645584, canonical ?g_tickDelta@@3HA);
+// The global frame-delta clock in ms (DAT_00645584, canonical ?g_frameDelta@@3HA);
 // the countdown at +0x50 is drained by it each Step.
-DATA(0x00245584)
-extern i32 g_tickDelta;
+extern "C" i32 g_frameDelta;
 
 // The MS-CRT LCG rand() at 0x0000cd00 (lazily seeded from timeGetTime). Reached
 // through the 0x39ae ILT thunk; called as a free function from Step.

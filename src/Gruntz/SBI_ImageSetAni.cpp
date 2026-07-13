@@ -19,7 +19,6 @@
 #include <Image/CImage.h>        // the resolved frame record (Tick's blit)
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // ===========================================================================

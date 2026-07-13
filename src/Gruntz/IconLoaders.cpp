@@ -31,7 +31,6 @@
 #include <Gruntz/GameMode.h> // CBootyState - the REAL owner of BuildBootyPerfectAnimation
 
 // The game-manager singleton (g_gameReg, *0x64556c), canonical view.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The attribute manager (butemgr unit), reached as the g_buteMgr singleton.

@@ -58,21 +58,16 @@ struct CGameRegMapHolder {
 // CSpriteRefTable::GetSel(i, bAlt) - the icon paths call GetSel directly, cast-free
 // (thunk 0x4165 -> 0xe23c0 == CSpriteRefTable::GetSel).
 
-DATA(0x0024556c)
 
-DATA(0x00244c54)
 extern "C" i32 g_curPlayer; // DAT_00644c54  (the current local player index)
 
-DATA(0x0021ab24)
-extern i32 g_inputCtx; // DAT_0061ab24  (the input/cmd-flush sink the place path posts to)
+extern i32 g_sndCueTag; // DAT_0061ab24  (the input/cmd-flush sink the place path posts to)
 
 DATA(0x0020d1bc)
 extern char g_iconBute[]; // DAT_0060d1bc  (the bute key string the place path queries)
 
-DATA(0x00245588)
-extern i32 g_iconDefault; // DAT_00645588  (the default icon id seeded into +0x58)
+extern "C" u32 g_frameTime; // DAT_00645588  (the running game clock stamped into +0x58)
 
-DATA(0x00229ad0)
 extern i32 g_serialCounter; // DAT_00629ad0  (the serialize sequence counter)
 
 // ---------------------------------------------------------------------------

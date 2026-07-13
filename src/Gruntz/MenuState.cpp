@@ -40,7 +40,6 @@
 // <Gruntz/GruntzMgr.h>. (The options-dialog reader/writer family that also taps it
 // is homed in src/Gruntz/VideoConfig.cpp, the options-dialogs TU.)
 extern "C" {
-    DATA(0x0024556c)
     extern "C" CGruntzMgr* g_gameReg; // = g_gameReg (the CGruntzMgr singleton)
 }
 

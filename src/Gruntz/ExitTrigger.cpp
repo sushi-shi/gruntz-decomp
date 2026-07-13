@@ -35,7 +35,6 @@ CExitTrigger::~CExitTrigger() {}
 // 0x16d190 __thiscall ret 4). The "A" key (0x60a454).
 #include <Bute/ButeMgr.h>
 extern CButeTree g_buteTree;
-DATA(0x0020a454)
 extern char s_codeA[]; // "A"
 
 // The active-area index (DAT_00644c54): the exit trigger pins the focused warlord
@@ -43,14 +42,14 @@ extern char s_codeA[]; // "A"
 extern "C" i32 g_curPlayer;
 
 // The level-exit "Warlord" entity is a fresh CSpriteFactory::CreateSprite result
-// (the canonical 0x1597b0 factory entry on g_exitGameReg->m_world->m_8; the former
+// (the canonical 0x1597b0 factory entry on g_gameReg->m_world->m_8; the former
 // "Probe" reading was a mislabel - it CREATES the warlord head sprite at the bound
 // screen pos). The created instance is the shared CGameObject: +0x7c AnimWorkerObj
 // carries the Init driver (+0x10, the finalize fn-ptr here) and the per-class
 // setup slot m_18 the ctor snapshots raw as the warlord id; m_124 the area/owner
 // index, m_188 the object id stored back into the focus slot.
 
-// The focused-warlord cue slot is CFocusSlot, the g_exitGameReg->m_focusSlots[]
+// The focused-warlord cue slot is CFocusSlot, the g_gameReg->m_focusSlots[]
 // element (<Gruntz/GameRegistry.h>), indexed by the bound object's area index
 // m_124: m_20 the live gate, m_0c the stored id, m_220/m_224 the snapped position.
 
@@ -64,8 +63,7 @@ SIZE_UNKNOWN(CExitCueSink);
 // The game registry singleton (g_gameReg @0x64556c): +0x30 the probe-sink
 // holder, +0x68 the cue receiver, the per-area focus slots at +0x150.
 SIZE_UNKNOWN(CGameRegistry);
-DATA(0x0024556c)
-extern CGameRegistry* g_exitGameReg;
+extern "C" CGameRegistry* g_gameReg; // *0x64556c canonical singleton (def: GruntzMgr.cpp)
 
 // CExitTrigger::CExitTrigger(CGameObject*) @0x03ecf0 - the 1-arg leaf ctor: the
 // standard CUserLogic(obj) init (folded inline) plus the exit tail - cl emits the
@@ -104,7 +102,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = 0;
-    CFocusSlot* slot = &g_exitGameReg->m_focusSlots[m_object->m_124];
+    CFocusSlot* slot = &g_gameReg->m_focusSlots[m_object->m_124];
     if (slot->m_20 == 0) {
         m_resolved = 0;
         return;
@@ -112,7 +110,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     slot->m_220 = m_object->m_screenX;
     slot->m_224 = m_object->m_screenY;
     CGameObject* e =
-        g_exitGameReg->m_world->m_8
+        g_gameReg->m_world->m_8
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
     if (e != 0) {
         e->m_124 = m_object->m_124;
@@ -121,9 +119,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
         // it as a raw DWORD (authentic pointer-as-dword storage)
         m_warlordLogic = e->m_7c->m_logic;
         if (m_object->m_124 == g_curPlayer) {
-            ((CExitCueSink*)g_exitGameReg->m_cmdGrid)->m_2a0 = (i32)m_warlordLogic;
+            ((CExitCueSink*)g_gameReg->m_cmdGrid)->m_2a0 = (i32)m_warlordLogic;
         }
-        CFocusSlot* slot2 = &g_exitGameReg->m_focusSlots[m_object->m_124];
+        CFocusSlot* slot2 = &g_gameReg->m_focusSlots[m_object->m_124];
         if (slot2 != 0) {
             slot2->m_0c = e->m_188;
         }
@@ -156,7 +154,7 @@ i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
 
-    CSpriteFactoryHolder* holder = g_exitGameReg->m_world;
+    CSpriteFactoryHolder* holder = g_gameReg->m_world;
     switch (mode) {
         case 7: {
             arc->Read(&m_resolved, 4);

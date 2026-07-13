@@ -27,16 +27,14 @@
 #include <DDrawMgr/DDrawChildGroup.h>  // real +0x08 child type (m_childGroup)
 #include <Gruntz/WwdObjMgr.h> // CWwdObjMgr (Snapshot/RestoreChildren blit-op target, waveP)
 #include <Gruntz/GameLevel.h> // CGameLevel (m_resolveSubMgr child; EditDispatch/MainPlaneQueryB)
-#include <Globals.h>          // g_61ab14 (serialized header id)
+#include <Globals.h>          // g_wwdObjIdCounter (serialized header id)
 #include <string.h>           // strcpy/memset (inline header build)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // real +0x28 child type (m_2c held stream, ClearMap)
 #include <DDrawMgr/DDrawSurfacePair.h>    // m_pages->m_frontPair geometry (m_width/m_height)
 #include <DDrawMgr/DDrawPtrCollections.h> // real +0x1c pool type (non-virtual dtor 0x141d50)
 #include <Dsndmgr/SoundStream.h>          // real +0x20 stream type (Stop 0x137a80 / Free 0x137740)
 
-DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // draw-clock mirror (== donor g_killCueClock, 0x2bf3c0)
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta; // draw-delta mirror
 
 // ---------------------------------------------------------------------------
@@ -365,7 +363,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header + 0x10, name);
     i32 probe = ((CWwdObjMgr*)m_childGroup)->CountActive_15abc0();
-    *(u32*)(header + 0x114) = g_61ab14;
+    *(u32*)(header + 0x114) = g_wwdObjIdCounter;
     *(i32*)(header + 0x118) = probe;
     ((CFileMem*)&S)->Write((const void*)header, 0x120);
 
@@ -412,7 +410,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::RestoreChildren (0x156530, __thiscall, /GX) - the load
 // counterpart of SnapshotChildren. Opens the same CFileMem-backed serializer over
-// `name`, reads back the 0x120-byte header (publishing header[0x114] -> g_61ab14),
+// `name`, reads back the 0x120-byte header (publishing header[0x114] -> g_wwdObjIdCounter),
 // then replays the run-callback (m_callback, REQUIRED here - a null m_callback rejects) and the
 // child load-ops over the m_08 (CDDrawChildGroup) + m_24 (CGameLevel) children for
 // modes 2/6/7/8. Success closes via End()/MainPlaneQueryB()/Close(). Field/method
@@ -424,7 +422,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
 // + gx-state-machine-scalar-delete-cleanup.md + eh-state-numbering-base.md): a 1367-B
 // /GX function with a multi-way fall-through reject ladder over the CFileMem serializer
 // temp. The whole carcass (every offset, the embedded-stream Init, the 0x120 header
-// Read, the g_61ab14 publish, the ordered child load-op call sequence, the inline-vs-
+// Read, the g_wwdObjIdCounter publish, the ordered child load-op call sequence, the inline-vs-
 // out-of-line ~Serializer split) is reproduced, but at each reject retail destroys the
 // temp via the re-stamped scalar-deleting vtable (mov [esp+0xc],0x5efe30; call
 // ds:0x5efe3c) under an even/odd __ehfuncinfo state pair before a shared ~T tail, while
@@ -455,7 +453,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 2, arg3, (i32)header) == 0) {
         return 0;
     }
-    g_61ab14 = *(u32*)(header + 0x114);
+    g_wwdObjIdCounter = *(u32*)(header + 0x114);
     m_childGroup->DestroyChildren_159ef0();
     if (((CWwdObjMgr*)m_childGroup)
             ->LoadObjects((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)

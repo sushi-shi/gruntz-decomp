@@ -19,7 +19,6 @@
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
 // (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
 // extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 // The last-queried slot handle (== SaveGameMenu's g_slotState; DATA-bound there).
 extern i32 g_slotState; // ?g_slotState@@3HA @0x64c864

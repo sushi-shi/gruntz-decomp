@@ -43,7 +43,6 @@ struct CTeleAnimSink {
 
 // The per-frame draw-delta mirror (BSS @0x6bf3bc) the sub-mgr Advance consumes.
 // Already named g_engineFrameDelta in Projectile.cpp; re-declared here, address-pinned.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // The lookup-geometry key "GAME_TELEPORTER" (VA 0x60bd38) the finalize applies to
@@ -52,7 +51,6 @@ DATA(0x0020bd38)
 extern char g_teleporterGeoKey[]; // s_GAME_TELEPORTER_0060bd38
 
 // The running game clock (g_frameTime .data int) stashed into the leaf's +0x58.
-DATA(0x00245588)
 extern "C" u32 g_frameTime; // VA 0x645588 (?g_clock@@3IA, unsigned)
 
 // The "B" bute key (0x60d1bc) - the SAME rdata as CInGameIcon.h's g_iconBute;

@@ -37,11 +37,9 @@
 
 // The free-running game clock (DAT_00645588), read as an unsigned 32-bit tick and
 // zero-extended into the 64-bit countdown subtracts.
-DATA(0x00245588)
 extern "C" u32 g_frameTime;
 
 // The local player index (DAT_00644c54): selects this client's row.
-DATA(0x00244c54)
 extern "C" i32 g_curPlayer;
 
 // The bute attribute store (?g_buteMgr@@3VCButeMgr@@A): the respawn intervals.
@@ -96,7 +94,6 @@ extern CButeMgr g_buteMgr;
 //          the CTriggerMgr goo-well step in battlez) - a real per-mode object.
 // The m_10/m_11c/m_134 scalars match, and the per-player slot array at +0x150
 // (stride 0x238) is reached via raw offset.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------

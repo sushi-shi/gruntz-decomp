@@ -46,7 +46,6 @@
 // The canonical CGameRegistry view of the singleton (*0x24556c): the resource mgr
 // (+0x30, typed CSpriteFactoryHolder) is reached without a cast; the grid object
 // table (+0x68) is a genuinely reused slot cast locally (see below).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The menu-bar frame (this->m_frame) doubles as the engine drawable that paints the
@@ -57,7 +56,6 @@ struct CMenuBarFrame {
 };
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter).
-DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
 // The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10,

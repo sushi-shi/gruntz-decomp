@@ -106,7 +106,6 @@ struct CTileSecretTriggerActEntry {
 // --- CTileTriggerTransition (the tiletriggertransition stray, folded waveM-strays) -----------
 
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // The CTileTriggerTransition activation-coordinate registry @0x64e720: the fixed

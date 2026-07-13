@@ -39,7 +39,6 @@ CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Declared extern "C" here so the value-load reloc-masks against the
 // already-matched symbol.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // CBehindCandyAni::GetTypeTag (0x00010030) is now an inline member in the class header.

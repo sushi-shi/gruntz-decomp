@@ -185,7 +185,6 @@ extern FreeNodePool g_coordPool;
 // freelist node header (the allocator hands out node + bias; recycle reverses it).
 
 // The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // A render-context object the cell-probe call site passes through (DAT_00644ca4 @
@@ -203,8 +202,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view)
 // The second-resolver scratch CString[] (data @ g_6bf66c, count @ g_6bf670) plus
 // the candidate-index bounds (g_6bf658/65c lo/hi, g_6bf660 base, g_6bf668 stride,
 // g_6bf664 fallback record, g_6bf464 a default record). Reloc-masked DATA.
-DATA(0x002bf464)
-extern void* g_defaultRec;
+extern void* g_projActCache;
 
 // CString::Release-style teardown (RVA 0x1b9b93), a __thiscall on a CString slot.
 // A CString is a single char* (4 B), so the scratch walk strides by 4. External,
@@ -212,8 +210,7 @@ extern void* g_defaultRec;
 
 // The per-tick advance delta added to the bundle's timers each step
 // (DAT_00645584 @ VA 0x645584). Reloc-masked DATA.
-DATA(0x00245584)
-extern i32 g_tickDelta;
+extern "C" i32 g_frameDelta;
 
 // The unit-side state mutator (RVA 0x065e80, thunk 0x03c6a): a __thiscall on a
 // CGrunt taking (value, 0, 0, 1, 1). External, reloc-masked (no body).
@@ -243,10 +240,9 @@ i32 g_diffTier;
 DATA(0x0022b7ec)
 i32 g_spawnState;
 
-// The global step timer (?g_stepTimer, DAT_00645588 @ VA 0x645588): the 32-bit
+// The global step timer (?g_frameTime, DAT_00645588 @ VA 0x645588): the 32-bit
 // tick counter the m_390 latch debounces against the bundle's m_scratch78..m_084 pair.
-DATA(0x00245588)
-extern i32 g_stepTimer;
+extern "C" u32 g_frameTime;
 
 // The scene-hit dispatcher reached via g_gameReg->m_cueSink (RVA 0x11b3b0, thunk
 // 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-
@@ -643,7 +639,7 @@ void CBattlezMapConfig::FreeArrays() {
 // cell + clear-flags guards and is NOT one of the I/G/L/P/J/C/R type codes) whose
 // countdown reached 0, transition it (state 0/5 + SetState), and on a 0x12/0x16
 // mode recycle its coord nodes onto g_coordPool.m_freeHead. Decrement every mode-3 unit's
-// countdown and advance the bundle's timers by g_tickDelta. Returns 1.
+// countdown and advance the bundle's timers by g_frameDelta. Returns 1.
 // ===========================================================================
 // @early-stop
 // large-state-machine plateau: the timer/budget head, the I/G/L/P/J/C/R anim-name
@@ -798,9 +794,9 @@ i32 CBattlezMapConfig::Method_025d90() {
         }
     }
     winapi_0267c0_IntersectRect_PtInRect();
-    m_spawnTimer += g_tickDelta;
-    m_repickTimer += g_tickDelta;
-    m_claimTimer += g_tickDelta;
+    m_spawnTimer += g_frameDelta;
+    m_repickTimer += g_frameDelta;
+    m_claimTimer += g_frameDelta;
     return 1;
 }
 
@@ -875,10 +871,10 @@ i32 CBattlezMapConfig::Method_026470(i32) {
     i32 cell;
     if (slot38 != 0) {
         cell = m_ctx->m_triggerMgr
-                   ->ProbeCell(m_curCell, screen.m_x, (void*)0x186a0, 2, g_renderCtx, 0, 0, 0, 0);
+                   ->ProbeCell(m_curCell, screen.m_x, (void*)0x186a0, 2, (void*)g_groupSentinel, 0, 0, 0, 0);
     } else {
         cell = m_ctx->m_triggerMgr
-                   ->ProbeCell(m_curCell, screen.m_x, (void*)0x186a0, 0, g_renderCtx, 0, 0, 0, 0);
+                   ->ProbeCell(m_curCell, screen.m_x, (void*)0x186a0, 0, (void*)g_groupSentinel, 0, 0, 0, 0);
     }
     if (cell == -1) {
         return 0;
@@ -3043,7 +3039,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
 // If one is found (and the arg unit's m_dwell cooldown > 0x64), clamp the board
 // dirty-rect to that box, build the FindPath flag word from the unit's 0x12/0x16/
 // 0xe anim modes, and re-path the unit toward it (Method_0300c0, flags 0x1000d8f).
-// On a route, debounce the m_390 latch (a g_stepTimer window against m_scratch78..m_084,
+// On a route, debounce the m_390 latch (a g_frameTime window against m_scratch78..m_084,
 // firing the scene hit when the unit's level coord is on-screen), re-clamp the
 // board dirty-rect, and return 1. No candidate latches m_390 and returns 0.
 // ===========================================================================
@@ -3236,7 +3232,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         unit->m_254 = 0;
     }
     if (unit->m_390 != 0) {
-        __int64 elapsed = (__int64)(u32)g_stepTimer - *(__int64*)&m_scratch78;
+        __int64 elapsed = (__int64)(u32)g_frameTime - *(__int64*)&m_scratch78;
         if (elapsed >= *(__int64*)&m_scratch80) {
             unit->m_390 = 0;
             CGameObject* lvl = unit->m_object;
@@ -3251,7 +3247,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
             *(__int64*)&m_scratch78 = 0;
             m_scratch80 = 0x1388;
             m_scratch84 = 0;
-            m_scratch78 = g_stepTimer;
+            m_scratch78 = g_frameTime;
             m_scratch7c = 0;
         }
     }
@@ -5325,7 +5321,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     } else if (g_typeColl.Probe(ci, 0) != 0) {
         sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
     } else {
-        g_typeColl.Reserve((CAnimNameRecord*)g_defaultRec, 0xc);
+        g_typeColl.Reserve((CAnimNameRecord*)g_projActCache, 0xc);
         sel = g_typeColl.m_spare;
     }
 

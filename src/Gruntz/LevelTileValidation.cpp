@@ -143,7 +143,6 @@ struct PlayfieldMgr {
 //   the per-player start record (`WwdStartPlayer`, stride 0x238) IS m_options[k]
 //     (GruntzPlayer) - its +0x228 is the start-grunt cap this TU reads (the same field the
 //     battlez roster calls m_comboSel; one field, two readers).
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 
 // The recycled-node free-list head (?g_coordPool.m_freeHead@@3PAXA) and a tile-id constant

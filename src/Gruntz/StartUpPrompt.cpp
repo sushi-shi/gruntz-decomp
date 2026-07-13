@@ -25,6 +25,13 @@
 DATA(0x00251618)
 extern "C" HINSTANCE g_appResHandle; // 0x651618
 
+// The CD-prompt result gate (0x6455ec, .bss). Owner-TU definition: this prompt is
+// its writer; GruntzMgrCmd / VideoConfig / MenuState / MainMenuBuilder read it.
+DATA(0x002455ec)
+extern "C" {
+    i32 g_cdPromptResult = 0;
+}
+
 // Engine launch helpers (reloc-masked __cdecl).
 extern "C" i32 IsGruntzCDInAnyDrive();    // 0x402540
 extern "C" i32 FileExists(const char* p); // 0x404282

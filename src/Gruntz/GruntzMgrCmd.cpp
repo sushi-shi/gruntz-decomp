@@ -68,43 +68,32 @@ struct CTmNode {
 // IS. The two sites below that need the CGameRegistry facet (m_focusSlots /
 // m_modeW) bridge-cast; the WwdGameReg->CGameRegistry view unification is a
 // deferred Grunt.h-scale fold.
-DATA(0x0021ab24)
 extern i32 g_sndCueTag;
-DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA (mirrors m_soundEnabled)
-// Cheat toggles (named from their own ShowToggleMessage strings).
-DATA(0x002455a4)
-extern i32 g_gruntDestruction; // "Grunt destruction"
-DATA(0x002455a8)
-extern i32 g_gruntCreation; // "Grunt creation"
-DATA(0x002455ac)
-extern i32 g_gooPuddlez; // "Goo puddlez"
-DATA(0x002455b0)
-extern i32 g_traitorMode; // "Traitor Mode"
-DATA(0x002455e8)
-extern i32 g_monologoShown; // the MONOLITH logo is on screen (LoadMonologoSprite)
-DATA(0x002455ec)
-extern i32 g_6455ec; // load/quicksave-UI suppress gate (role unproven)
-DATA(0x002455f4)
+// Cheat toggles (named from their own ShowToggleMessage strings; DEFINED extern "C"
+// in GruntzMgr.cpp with their .bss band).
+extern "C" u32 g_gruntDestruction; // "Grunt destruction"
+extern "C" u32 g_gruntCreation;    // "Grunt creation"
+extern "C" u32 g_gooPuddlez;       // "Goo puddlez"
+extern i32 g_traitorMode; // "Traitor Mode" (def: Grunt.cpp, C++)
+extern "C" i32 g_monologoShown; // the MONOLITH logo is on screen (LoadMonologoSprite)
+// The CD-prompt result gate (0x6455ec; def: StartUpPrompt.cpp). The old local
+// hex-named alias ("load/quicksave-UI suppress gate") was this same cell: no CD
+// present suppresses the save/load UI.
+extern "C" i32 g_cdPromptResult;
 extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
                                 // 0x20/0x400 ?, 0x40/0x100 brick text, 0x80 elapsed time
-DATA(0x002455f8)
-extern i32 g_explosionz; // "Explosionz"
-DATA(0x002bf3c0)
+extern "C" u32 g_explosionz; // "Explosionz"
 // the draw-clock mirror (here: the 0x8247 cue-cooldown throttle). Was a C++-mangled
 // ?g_time6bf3c0@@3HA - a divergent symbol for a cell 9 other TUs share.
 extern "C" u32 g_killCueClock;
-DATA(0x00244c54)            // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_644c54)
 extern "C" i32 g_curPlayer; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
-DATA(0x00248cf0) // RVA (was VA-typo 0x648cf0, which shadowed multi's canonical 0x248cf0 binding)
 extern i32 g_isHost_648cf0;
 extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 
 // The two brick-display strings the 0x8068/0x806f cheats clear (real CStrings;
 // the "brick text" debug overlay renders them).
-DATA(0x00245524)
 extern CString g_brickText1;
-DATA(0x00245528)
 extern CString g_brickText2;
 
 // ParseSerial (@0x0d210) + SerialObjectFactory (@0x0d2a0) carved out to
@@ -749,7 +738,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             return 1;
         case 0x80ce:
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MENU) {
-                if (!g_6455ec) {
+                if (!g_cdPromptResult) {
                     RunLoadGameDialog();
                 }
             }
@@ -772,7 +761,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             return 1;
         case 0x80d9:
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MENU) {
-                if (!g_6455ec) {
+                if (!g_cdPromptResult) {
                     Quickload();
                 }
             }
@@ -1071,7 +1060,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             ReportError(0x8005, 0x430);
             return 1;
         case 0x8042: // 0x89d00
-            if (g_6455ec) {
+            if (g_cdPromptResult) {
                 return 1;
             }
             CaptureWorldFile();

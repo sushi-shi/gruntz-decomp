@@ -21,7 +21,6 @@ class Obj0f7d90;
 // The CGameRegistry view of the 0x24556c singleton (the SAME object as WwdGameReg* g_gameReg,
 // the 0x24556c dual-view): typed CGameRegistry so its m_cmdGrid (CTriggerMgr) / m_cueSink
 // (CGruntCueSink) slots are reached cast-free. Bound here (Win32 dual-view convention).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The managed object's screen-position sub-object (m_10): its +0x5c/+0x60 are the screen

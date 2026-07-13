@@ -203,7 +203,7 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 // A global enable flag the neighbor-combat gate reads when the candidate IS self
 // (DAT_006455b0, reloc-masked).
 DATA(0x002455b0)
-i32 g_6455b0; // 0x6455b0 - DEFINED once here; GruntCombat.cpp defined it too (LNK2005),
+i32 g_traitorMode; // 0x6455b0 - DEFINED once here; GruntCombat.cpp defined it too (LNK2005),
               // and neither definition carried an rva pin, so the symbol was unbound.
 
 // The single-char anim-set keys the entrance reads/looks-up (reloc-masked

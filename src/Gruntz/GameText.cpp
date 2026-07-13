@@ -83,16 +83,16 @@ void InitResButeMgr82b20() {
 }
 
 // The debug-overlay / profiler text-sink CString globals (0x645524..0x645530).
-// g_profSink is the shared text sink Play.cpp logs through (== GruntzMgrCmd's
-// g_brickText1); the g_str6455xx names are the still-anonymous siblings. Externs
-// (storage lives in the owning subsystem TU); the DATA pins name the ones this
-// cluster owns.
-// extern "C" so the reloc emits the canonical `_g_profSink` - the single name bound
-// at 0x245524 (play owns it as extern "C"); the C++-mangled ?g_profSink@@3VCString@@A
-// never bound.
-extern "C" CString g_profSink; // 0x645524 (_g_profSink; pinned in Play.cpp)
+// g_brickText1 (0x645524) is the "brick text" debug-overlay line GruntzMgrCmd's
+// cheat handler empties AND the text sink Play.cpp's frame profiler ProfLog's into
+// (one cell, both roles; the old `i32 g_profSink` view in Play.cpp was this same
+// datum). g_brickText2 (0x645528) is its second overlay line. The whole
+// 0x645514..0x645530 run is THIS obj's .data (private-globals oracle), so the
+// definitions live here, constructed by this TU's reconstructed $E thunks below.
+DATA(0x00245524)
+CString g_brickText1;
 DATA(0x00245528)
-CString g_str645528;
+CString g_brickText2;
 DATA(0x0024552c)
 CString g_str64552c;
 DATA(0x00245530)
@@ -100,11 +100,11 @@ CString g_str645530;
 
 RVA(0x00082ba0, 0xa)
 void InitStr645524() {
-    g_profSink.CString::CString();
+    g_brickText1.CString::CString();
 }
 RVA(0x00082c20, 0xa)
 void InitStr645528() {
-    g_str645528.CString::CString();
+    g_brickText2.CString::CString();
 }
 RVA(0x00082ca0, 0xa)
 void InitStr64552c() {

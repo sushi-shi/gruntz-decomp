@@ -92,7 +92,6 @@ void ReadName(void* accum, void* pstr);  // 0x193140
 
 // The persisted "logic types registered" cell (.data 0x6bf674) the base Serialize
 // streams alongside the three trailing ints.
-DATA(0x002bf674)
 extern i32 g_logicTypesRegistered; // 0x6bf674 (?g_logicTypesRegistered@@3HA)
 
 // The read-mode context arg: m_14 is seeded from ctx->m_7c.

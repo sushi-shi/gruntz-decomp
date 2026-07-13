@@ -33,7 +33,6 @@ extern i32 g_sndCueTag;  // DAT_0061ab24
 // holder (+0x30 -> CRegHolder) is cast locally at the deref sites; the tile
 // notifier (+0x70) is the canonical CTileGrid (Notify facet), reached without a
 // cast, and the view-bounds rectangle scalars (+0x13c..+0x148) match directly.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 
 // ===========================================================================

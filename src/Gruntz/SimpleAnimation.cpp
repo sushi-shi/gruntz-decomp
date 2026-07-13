@@ -35,7 +35,6 @@ i32 CSimpleAnimation::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"
 // here so the value-load reloc-masks against the already-matched symbol.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // CSimpleAnimation::~CSimpleAnimation @0x00f9d0 - the leaf adds no destructible
@@ -63,8 +62,7 @@ CSimpleAnimation::~CSimpleAnimation() {}
 extern CButeTree g_buteTree;
 
 // The running registration index (0x61aea8) bumped on each fresh insert.
-DATA(0x0021aea8)
-extern i32 g_logicRegCounter;
+extern i32 g_typeCounter;
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
@@ -83,8 +81,7 @@ extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
 
 // The logic registration key (the .data string constant @ 0x60a454, the SAME key
 // string every per-class register thunk inserts).
-DATA(0x0020a454)
-extern const char s_simpleAnimLogicKey[];
+extern char s_codeA[];
 
 // The CSimpleAnimation-logic dispatch table (a zDArray<int (CUserLogic::*)(void)>
 // @ 0x646038). The 0x15 thunk constructs it over the index band [0x7d0, 0x7da].
@@ -206,12 +203,12 @@ void CSimpleAnimation::Dispatch(i32 idx) {
 // register assignment is not source-steerable.
 RVA(0x000abd70, 0x18d)
 void RegisterSimpleAnimLogic() {
-    i32 idx = (i32)g_buteTree.Find(s_simpleAnimLogicKey);
+    i32 idx = (i32)g_buteTree.Find(s_codeA);
     if (idx == 0) {
-        g_buteTree.Insert(s_simpleAnimLogicKey, (void*)g_logicRegCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_logicRegCounter);
-        *(CString*)slot = s_simpleAnimLogicKey;
-        g_logicRegCounter++;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        *(CString*)slot = s_codeA;
+        g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_simpleAnimDispatch, idx);
     *(void**)dslot = (void*)&SimpleAnimLogic_4028b0;

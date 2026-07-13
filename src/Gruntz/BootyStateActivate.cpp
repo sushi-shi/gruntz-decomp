@@ -93,7 +93,6 @@ void ShowHudMessageAlt(
 // The booty countdown reads CBattlezData +0x10 as elapsed milliseconds where the battlez
 // scoreboard reads it as a score accumulator: ONE field, two readers (the canonical name
 // m_score is kept - the divergence is noted, not forked into a second class).
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 // USER32 PostMessageA reached through the game-owned IAT-style fn-ptr (ff 15 [ptr]);
 // same global CGruntzMgr/Attract/Play bind. KeyHost::Check posts through it.
@@ -103,7 +102,6 @@ extern "C" CGruntzMgr* g_gameReg;
 // GruntzMgr.cpp, the owner TU). The old extern "C" spelling here carried a DATA pin that
 // bound _g_sndEnabled and starved every C++-mangled reference in the tree.
 extern i32 g_sndEnabled; // BOOTY_LOOP enable gate (0x61ab20)
-DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
 
 // The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).

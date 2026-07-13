@@ -44,21 +44,18 @@ struct CPathEntity {
 // CTriggerMgr*): QueryAt IS CTriggerMgr::FindGruntAt @0x75c60, Strike IS
 // CTriggerMgr::CellDispatch @0x6bcb0 (both via <Gruntz/TriggerMgr.h>).
 
-DATA(0x0024556c)
 
 // The +0x1a0 sub-mgr the per-frame Tick advances once (SetGeoSource 0x15c360,
-// __thiscall ret 4, takes the g_pathTick frame counter as its int arg).
+// __thiscall ret 4, takes the g_engineFrameDelta frame counter as its int arg).
 struct CPathSubMgr {};
 
 // A frame/tick counter (BSS, @0x6bf3bc) the sub-mgr Advance consumes. Already
 // named g_engineFrameDelta in src/Gruntz/Projectile.cpp; re-declared here, address-pinned.
-DATA(0x002bf3bc)
-extern "C" u32 g_pathTick;
+extern "C" u32 g_engineFrameDelta;
 
 // The integer step seed the integrator scales by the per-frame speed
 // (g_frameDelta = .data int). Already used as g_slimeFrameScale in KitchenSlime.cpp.
-DATA(0x00245584)
-extern i32 g_pathStepSeed; // VA 0x645584
+extern "C" i32 g_frameDelta; // VA 0x645584
 
 // (The +0x108 new-leg seed at 0x645588 is the running game clock. It used to be
 // re-declared here as `g_pathLegTag` under C++ linkage - a third name for a datum whose

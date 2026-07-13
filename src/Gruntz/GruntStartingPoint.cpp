@@ -103,7 +103,6 @@ DATA(0x002bf650)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 extern CTypeKeyColl g_typeColl;   // 0x6bf650
-DATA(0x0021aea8)
 extern i32 g_typeCounter;
 DATA(0x002bf464)
 void* g_projActCache;

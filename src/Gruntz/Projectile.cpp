@@ -63,7 +63,6 @@ i32 CProjRenderObj::ApplyLookupGeometry(const char* key, i32 flag) {
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
 // the fcomp/mov loads reloc-mask against the named symbols.
-DATA(0x00245584)
 extern "C" i32 g_frameDelta;
 
 // ---------------------------------------------------------------------------
@@ -78,7 +77,6 @@ extern "C" i32 g_frameDelta;
 extern FreeNodePool g_coordPool;
 
 // The draw-clock delta global fed to the render object's anim Tick on detach.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). The DATA pin
@@ -89,7 +87,6 @@ extern "C" u32 g_engineFrameDelta;
 // reg->m_tileGrid the terrain grid (CTileGrid, cell dword 0 = the terrain flags
 // MovingSlot16 tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
 // the level-type descriptor (CState, +0x20 terrain-class id switch key).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // A grunt in the hit-scan grid (g_gameReg->m_68 is a flat 15x15 cell table; each
@@ -1128,7 +1125,6 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 // (0x60a454) is the "A" key. The id->name-slot resolve reuses the shared
 // Find/GetRetAddr/Insert + g_actCache/g_retAddrBreadcrumb collection methods.
 // ---------------------------------------------------------------------------
-DATA(0x0021aea8)
 extern i32 g_typeCounter;
 DATA(0x0020a454)
 char s_codeA[] = "A";

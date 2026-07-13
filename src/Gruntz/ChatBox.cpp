@@ -96,8 +96,7 @@ struct CChatCatalog {
 // The horizontal-scroll edge state read by the two scroll-step methods.
 extern i32 g_sndEnabled; // 0x61ab20
 extern i32 g_sndCueTag;  // 0x61ab24
-DATA(0x002bf3c0)
-extern i32 g_scrollClock; // 0x6bf3c0
+extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // The sprite poke target hung off a scroll-timer's m_10 (0x1360d0). __thiscall.
 
@@ -509,7 +508,7 @@ i32 CChatBox::ScrollRow0() {
         return 0;
     }
     i32 delta = g_sndCueTag;
-    i32 clock = g_scrollClock;
+    i32 clock = g_killCueClock;
     u32 elapsed = (u32)clock - (u32)t->m_14;
     if (elapsed < (u32)t->m_18) {
         return 0;
@@ -542,7 +541,7 @@ i32 CChatBox::ScrollRow1() {
         return 0;
     }
     i32 delta = g_sndCueTag;
-    i32 clock = g_scrollClock;
+    i32 clock = g_killCueClock;
     u32 elapsed = (u32)clock - (u32)t->m_14;
     if (elapsed < (u32)t->m_18) {
         return 0;

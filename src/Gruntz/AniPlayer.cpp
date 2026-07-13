@@ -19,7 +19,6 @@
 extern "C" CGameRegistry* g_gameReg;
 
 // The running game clock the timed-play start is stamped from (DAT_00645588).
-DATA(0x00245588)
 extern "C" u32 g_frameTime;
 
 // ===========================================================================

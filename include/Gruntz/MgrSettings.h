@@ -43,11 +43,9 @@ struct CMgrActiveHolder {
     char _00[0x10];
     CDDrawWorkerRegistry* m_10; // +0x10
 };
-DATA(0x0024556c)
 
 // Per-serialize round counter the archive bumps.
-DATA(0x00229ad0)
-extern i32 g_serialCount;
+extern i32 g_serialCounter;
 
 // The settings record itself.
 SIZE_UNKNOWN(CMgrSettings);

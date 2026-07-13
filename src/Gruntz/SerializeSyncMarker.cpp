@@ -13,7 +13,6 @@
 // game-manager singleton (*0x64556c), and the wsprintfA scratch buffer (VA 0x629a50)
 // the desync path formats into (its sole DATA home is here now).
 extern i32 g_serialCounter; // 0x229ad0
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // 0x629a50 wsprintfA scratch buffer (128 B, bounded by g_serialCounter @0x229ad0);
 // DEFINED here (owner TU) with C linkage (_g_629a50).

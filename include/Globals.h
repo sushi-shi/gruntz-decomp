@@ -123,7 +123,7 @@ extern char s_GameMessagez[];
 extern char s_GameKey[];
 extern i32 g_warpX;
 extern i32 g_warpY;
-extern i32 g_archiveDefault612618;
+extern i32 g_lastLevelNum;
 extern char g_dat613054[8];
 extern char s_PREVIEW_6135e8[];
 extern void* g_desc_6156f4;
@@ -180,7 +180,7 @@ extern "C" i32 g_64553c;
 // (0x645548 is g_coordPool.m_count (+0x08) - an interior field, not a global.)
 extern "C" i32 g_cdPromptResult;
 extern "C" i32 g_6455f0;
-extern u8 g_debugFlags;
+extern i32 g_debugDisplayFlags; // 0x6455f4 debug-overlay flags word (def: GruntzMgr.cpp)
 // (g_kslimeColl @0x646228 is ONE 0x24 CActReg object, DEFINED in src/Gruntz/KitchenSlime.cpp
 //  and private to it; 0x64622c..0x646248 are its interior fields, not globals.)
 extern i32 g_dlgResultSink;
@@ -314,10 +314,11 @@ extern float g_zeroF;
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];
 // g_imageTag folded onto g_bmpHeaderTemplate (same 0x21aabc "BM" datum). (DD-G)
-extern "C" u32 g_61ab14;
+// (g_61ab14 was a second symbol for g_wwdObjIdCounter @0x61ab14 - folded; the one
+//  definition lives in src/Wwd/WwdObjMgr.cpp.)
 extern char g_mapNamePre[4];
 extern char g_mapNameBuf[0x200];
-extern void* g_renderCtx;
+extern i32 g_groupSentinel; // serialized with the trigger group/selection state (def: TriggerMgr.cpp)
 extern char* g_areaNames[];
 extern CImagePool* g_previewMgr;
 extern void* g_previewImage;

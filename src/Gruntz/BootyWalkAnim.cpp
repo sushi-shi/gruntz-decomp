@@ -30,13 +30,9 @@
 
 // Per-player idle-sprite id table (0x5e9068), the wand/flag cue tag + enable gate,
 // the wrap-safe draw clock, the "A" action-key string, and the inline-RNG state.
-DATA(0x0021ab24)
 extern i32 g_sndCueTag; // 0x61ab24
-DATA(0x0021ab20)
 extern i32 g_sndEnabled; // 0x61ab20
-DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
-DATA(0x0020a454)
 extern char s_codeA[]; // "A" (0x60a454)
 
 // The per-player secret-letter table "WARP" (0x5e93a8); CString::Format @0x1b2cf5.

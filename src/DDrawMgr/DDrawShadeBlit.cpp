@@ -17,22 +17,14 @@
 #include <string.h> // inline rep-movs memcpy intrinsic
 #include <Globals.h>
 
-// The live screen RGB-format shift table at RVA 0x283ea0..0x283eb4 - the canonical
-// binding is the extern "C" _g_683eaX (DATA-bound in GruntzMgr.cpp); the C++ ?g_rUp
-// aliases lost the keep-last symbol dedup, so bind to the winning names directly.
+// The live screen RGB-format shift table at RVA 0x283ea0..0x283eb4, DEFINED in
+// src/DDrawMgr/DDSurface.cpp (owner TU; the C++ ?g_rUp@@3HA family).
 // The mode-2 gate compares these against the magic 5/10/3/3/3 state. Reloc-masked.
-extern "C" {
-    DATA(0x00283ea0)
-    extern i32 g_683ea0; // red   shift-up
-    DATA(0x00283ea4)
-    extern i32 g_683ea4; // green shift-up
-    DATA(0x00283eac)
-    extern i32 g_683eac; // red   shift-down
-    DATA(0x00283eb0)
-    extern i32 g_683eb0; // green shift-down
-    DATA(0x00283eb4)
-    extern i32 g_683eb4; // blue  shift-down
-}
+extern i32 g_rUp; // red   shift-up
+extern i32 g_gUp; // green shift-up
+extern i32 g_rDown; // red   shift-down
+extern i32 g_gDown; // green shift-down
+extern i32 g_bDown; // blue  shift-down
 
 // The per-scanline RLE-decode scratch (owner-TU def; .bss, VA 0x6bed08). The shaded
 // blit memcpy's the source run here, then indexes it through the palette LUT.
@@ -82,7 +74,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     i32 mode = src->m_b0;
     m_dstBpp = (u8)mode;
     if ((u8)mode == 2) {
-        if (g_683eac == 3 && g_683eb0 == 3 && g_683eb4 == 3 && g_683ea0 == 0xa && g_683ea4 == 5) {
+        if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
             m_blendVariant = 1;
         } else {
             m_blendVariant = 0;

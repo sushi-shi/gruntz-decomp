@@ -44,11 +44,9 @@ extern CButeTree g_buteTree;
 
 // The running activation-id counter (0x61aea8): the next id handed out, bumped
 // after each new name is registered.
-DATA(0x0021aea8)
 extern i32 g_typeCounter;
 
 // The activation key string "A" (0x60a454) every RegisterActs registers under.
-DATA(0x0020a454)
 extern char s_codeA[];
 
 // The shared coordinate-registry collection methods + alloc scratch (CActColl /

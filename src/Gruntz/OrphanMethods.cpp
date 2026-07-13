@@ -24,7 +24,6 @@
 // in this 0x39-byte leaf - retail keeps m_1b4 in edx and hoists the `a` load into
 // eax before the m_c store; cl colors m_1b4 in eax and stores m_c first. Not
 // source-steerable (every operand/declaration reorder reproduced the same coloring).
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // The anim sub-player at owner+0x1a0 IS a CDDrawBlitParam (geo setter Setup_15c2d0
@@ -91,10 +90,8 @@ i32 CState95::Step(i32 arg) {
 // frame index (5, or 0 once a global threshold is reached) unless the strike timer
 // has elapsed (which clears the latch), then seed the bound sprite's anim state
 // (m_4c frame / m_50 = 7 / m_58 = 1). Always runs the trailing helper, returns 0.
-DATA(0x00245588)
 extern "C" u32 g_frameTime; // tick
 extern i32 g_strikeThresh;  // 0x645598
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // 0x64556c
 extern "C" void Helper2914();        // 0x2914 (ILT thunk)
 

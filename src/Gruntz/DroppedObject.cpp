@@ -64,7 +64,6 @@ extern CButeMgr g_buteMgr;
 // The game-registry singleton (0x64556c; the SAME instance every gamemode unit
 // binds as g_gameReg / g_gameReg). The dropper family reaches its facets
 // through the reused per-mode slots (authentic downcasts, see CGameRegistry.h).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The per-frame game clock (g_frameTime) + frame delta (g_frameDelta) + draw-clock
@@ -72,14 +71,11 @@ extern "C" CGameRegistry* g_gameReg;
 // (the convention across the gamemode units).
 extern "C" u32 g_frameTime; // 0x645588
 extern "C" {
-    DATA(0x00245584)
     extern u32 g_frameDelta; // 0x645584
-    DATA(0x002bf3bc)
     extern u32 g_engineFrameDelta; // 0x6bf3bc
 }
 
 extern void* GetRetAddr(); // 0x16d990
-DATA(0x002bf464)
 extern void* g_projActCache; // 0x2bf464 canonical (bound in GruntStartingPoint.cpp); the old
                              // g_actCache spelling was an unbound VA-typo alias of this global
 extern void* g_retAddrBreadcrumb;
@@ -127,9 +123,7 @@ struct CShadowActEntry {
 // The shared activation-NAME registry (@0x6bf650, the SAME shared instance
 // CTimeBomb/CKitchenSlime use) + the running id counter and the two key strings.
 // ---------------------------------------------------------------------------
-DATA(0x0021aea8)
 extern i32 g_typeCounter;
-DATA(0x0020a454)
 extern char s_codeA[]; // "A"
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"

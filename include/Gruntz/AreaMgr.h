@@ -108,4 +108,10 @@ public:
 };
 SIZE(CAreaMgr, 0x28);
 
+// The manager singleton object (VA 0x6459b0; DEFINED in src/Gruntz/AreaMgr.cpp) and
+// the statically-initialized pointer to it (VA 0x61139c; DEFINED in src/Gruntz/Play.cpp,
+// its only referencing unit - retail .data holds &g_areaMgr there).
+extern CAreaMgr g_areaMgr;
+extern CAreaMgr* g_pAreaMgr;
+
 #endif // SRC_GRUNTZ_AREAMGR_H

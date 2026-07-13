@@ -68,10 +68,13 @@ extern "C" CGruntzMgr* g_gameReg;
 
 #include <Gruntz/TriggerMgrViews.h>
 
-// The secondary group sentinel (0x644ca4; ScanGroup serializes it). Homed here from
-// TriggerMgrViews.h - a header cannot carry the DATA() binding, so it had none.
+// The group sentinel this TU serializes with its group/selection state (Save writes
+// it between m_groupFlag and m_pendingFxKind; Load reads it back); BattlezMapConfig
+// feeds it to ProbeCell and PlayerCommandStep passes it down the command chain.
+// (`g_renderCtx` was a second, weaker-evidenced alias of this same cell - folded.)
+// Owner-TU definition (this TU is its reader AND writer through the save/load pair).
 DATA(0x00244ca4)
-extern i32 g_groupSentinel;
+i32 g_groupSentinel;
 // the shared CTm* views + singleton externs
 
 // 0x77f80: FindNearestInRow(g) - the grunt-to-cell proximity probe: scan the 15 cells
@@ -122,7 +125,6 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
 // re-arm the local player's grunt (Method_36ed/ResetCell29cd on g_curPlayer)
 // or arm a foe's combat state (health sprite + CombatTimeout clock).
 
-DATA(0x00244c54)
 extern "C" i32 g_curPlayer; // 0x644c54  local-player index
 // @early-stop
 // regalloc/CSE wall (~80% - and 0x78060 is not play's .obj, so the frame is re-scored):
@@ -1561,7 +1563,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     ar->Read(&m_3ec, 4);
     ar->Read(&m_groupFlag, 4);
     ar->Read(&g_curPlayer, 4);
-    ar->Read(&g_renderCtx, 4);
+    ar->Read(&g_groupSentinel, 4);
     ar->Read(&m_pendingFxKind, 4);
     ar->Read(&m_selSentinel, 4);
     return 1;
@@ -1681,11 +1683,8 @@ void FormatStr(CString* out, const char* fmt, ...);
 // BrickzCellFlags_077790.cpp) is dissolved onto CGameLevel/CLevelPlane/CTileImageSet;
 // the rock-break sites below use the real classes.
 
-DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
-DATA(0x0021ab24)
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
-DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 
 // (CRockBreakMgr is the canonical <Gruntz/RockBreakMgr.h> class - was a .cpp-local view here.)

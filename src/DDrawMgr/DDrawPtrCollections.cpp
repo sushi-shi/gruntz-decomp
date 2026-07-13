@@ -20,20 +20,13 @@
 
 // The RGB low-bit-position / 8-minus-bitcount pair tables InstallColorFormat fills
 // (the same six .data words ComputeColorMasks in the DDRAWMGR obj writes).
-extern "C" {
-    DATA(0x00283ea0)
-    extern i32 g_683ea0; // red   low-bit shift
-    DATA(0x00283ea4)
-    extern i32 g_683ea4; // green low-bit shift
-    DATA(0x00283ea8)
-    i32 g_683ea8;
-    DATA(0x00283eac)
-    extern i32 g_683eac; // red   8-minus-count
-    DATA(0x00283eb0)
-    extern i32 g_683eb0; // green 8-minus-count
-    DATA(0x00283eb4)
-    extern i32 g_683eb4; // blue  8-minus-count
-}
+// DEFINED in src/DDrawMgr/DDSurface.cpp (owner TU); reference externs only.
+extern i32 g_rUp; // red   low-bit shift
+extern i32 g_gUp; // green low-bit shift
+extern i32 g_bUp; // blue  low-bit shift
+extern i32 g_rDown; // red   8-minus-count
+extern i32 g_gDown; // green 8-minus-count
+extern i32 g_bDown; // blue  8-minus-count
 
 // The post-mask surface-format apply (BuildColorChannelTables @0x13f740, DDSurface.cpp
 // obj); free-fn decl so the bare `call rel32` reloc-masks.
@@ -245,8 +238,8 @@ i32 CPoolItemAB8::InstallColorFormat() {
         }
         m >>= 1;
     }
-    g_683ea0 = shift;
-    g_683eac = 8 - count;
+    g_rUp = shift;
+    g_rDown = 8 - count;
 
     shift = -1;
     m = m_gMask;
@@ -260,8 +253,8 @@ i32 CPoolItemAB8::InstallColorFormat() {
         }
         m >>= 1;
     }
-    g_683eb0 = 8 - count;
-    g_683ea4 = shift;
+    g_gDown = 8 - count;
+    g_gUp = shift;
 
     count = 0;
     m = m_bMask;
@@ -275,8 +268,8 @@ i32 CPoolItemAB8::InstallColorFormat() {
         }
         m >>= 1;
     }
-    g_683eb4 = 8 - count;
-    g_683ea8 = shift;
+    g_bDown = 8 - count;
+    g_bUp = shift;
 
     BuildColorChannelTables();
     return 1;

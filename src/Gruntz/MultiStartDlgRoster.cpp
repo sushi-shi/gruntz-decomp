@@ -41,7 +41,6 @@
 extern "C" CGameRegistry* g_gameReg;
 // The multiplayer game-state (a CMulti, xref-proven); the roster reads m_isHost /
 // m_hostIndex off it. DATA reloc-masks against ReconBatch2's home.
-DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 extern "C" char g_emptyString[];
@@ -86,8 +85,7 @@ struct ChannelSlot {
 SIZE_UNKNOWN(ChannelSlot);
 
 extern "C" CGameRegistry* g_gameReg; // _g_mgrSettings (0x64556c)
-DATA(0x0024bdb0)
-extern CString g_64bdb0[]; // 0x64bdb0 per-channel label table
+extern CString g_gruntNames[]; // 0x64bdb0 per-channel label table
 
 void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
 i32 ChannelSlots_FindFree();            // 0xdb280
@@ -206,7 +204,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
             s->m_14 = 0;
             s->m_selectionIndex = (i32)pSend(owner->m_hWnd, 0x147, 0, 0) - 1;
             s->m_active = 1;
-            s->m_label = g_64bdb0[ch];
+            s->m_label = g_gruntNames[ch];
         }
         c1->EnableWindow(1);
         c2->EnableWindow(1);

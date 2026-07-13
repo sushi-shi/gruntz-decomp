@@ -129,7 +129,6 @@ public:
 // down; its +0x0c field feeds the LoadDispatch call. Reloc-masked __thiscall.
 // The resource-install gate (@0x6bf37c) and the surface color-key (@0x6bf380),
 // gating the CreateA cap (0x800) and the flags arg. Reloc-masked C++ globals.
-DATA(0x002bf37c)
 extern i32 g_resourceInstallActive;
 extern i32 g_surfaceColorKey;
 

@@ -37,7 +37,6 @@
 // CGameRegistry view of *0x64556c; the ex-teleporter-side WwdGameReg extern is
 // unified onto it - same offsets: m_world +0x30, m_cueSink +0x60, m_cmdGrid
 // +0x68, m_scoreHud +0x7c).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The +0x7c aux facet (g_gameReg->m_scoreHud): the teleporter ctor bumps its

@@ -17,7 +17,6 @@
 // ChatBoxOwner.h - and its +0x34 dirty flag is CFontConfig::m_34, so the downcasts at
 // the two render sites fell out with it.)
 
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------

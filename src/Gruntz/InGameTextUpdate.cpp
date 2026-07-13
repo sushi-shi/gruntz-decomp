@@ -32,7 +32,7 @@
 // The *0x64556c singleton is the canonical CGameRegistry: m_cmdGrid the CTriggerMgr cell
 // hit-tester, m_world the resource holder (its +0x28 CSndHost is the cue host),
 // m_viewOriginL/T/R/B (+0x13c..+0x148) the on-screen view bounds.
-DATA(0x0024556c)
+// g_gameReg: plain extern; its one canonical DATA(0x0024556c) definition lives in GruntzMgr.cpp
 extern "C" CGameRegistry* g_gameReg;
 // The 4-byte default-constructed CString cache nodes (FUN_001b9b93 == CString
 // default ctor; matched array-touch loop). g_typeColl.m_alloc is the base pointer.

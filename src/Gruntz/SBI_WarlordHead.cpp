@@ -20,7 +20,6 @@
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
 // game-manager chain Render reads is modeled.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------

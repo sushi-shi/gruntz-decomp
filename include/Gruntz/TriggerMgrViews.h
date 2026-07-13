@@ -265,7 +265,7 @@ struct CTmOverlaySrc {
 struct CTmCursorMgr {
     void Spawn(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x90bf4 (gameReg+0x60)
 };
-extern i32 g_6455b0; // DAT_006455b0 (the alt-group gate)
+extern i32 g_traitorMode; // DAT_006455b0 (the alt-group gate)
 
 // Class-metadata size annotations (all partial modeling views -> SIZE_UNKNOWN).
 // Placed at end-of-TU: interspersed placement (right after each class) reschedules

@@ -88,7 +88,7 @@ extern void* GetRetAddr(); // 0x16d990
 // g_zvecErrSentinel @0x1f0464 was a WRONG global - a real but unrelated rva).
 extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
 
-// The running game clock (0x245588). The old g_iconDefault C++ name lost the
+// The running game clock (0x245588). The old g_frameTime C++ name lost the
 // keep-last dedup at this rva to the canonical extern-C _g_645588; use that so
 // the drift/seed loads bind (it IS the clock, not an "icon default").
 extern "C" u32 g_frameTime;
@@ -940,7 +940,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             CGameObject* o = m_object;
             if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
                 && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
-                Eng_PostCmd(g_inputCtx, 0, 0, 0);
+                Eng_PostCmd(g_sndCueTag, 0, 0, 0);
                 reg = g_gameReg;
             }
         }
@@ -976,7 +976,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         CGameObject* o = m_object;
         if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
             && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
-            Eng_PostCmd(g_inputCtx, 0, 0, 0);
+            Eng_PostCmd(g_sndCueTag, 0, 0, 0);
             reg = g_gameReg;
         }
     }

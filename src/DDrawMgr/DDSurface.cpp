@@ -433,7 +433,6 @@ public:
 };
 
 // The data tag passed to the source probe (reloc-masked .rdata datum).
-DATA(0x001ef888)
 extern void* g_imageProbeTag; // 0x5ef888
 
 // The created 0xc0 surface item: vptr @0, the slot-1 Load, a CByteArray @+0x94.

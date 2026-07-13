@@ -60,7 +60,6 @@ i32 g_projRegStride;          // 0x6293a0
 i32 g_projRegScratch;         // 0x6293a8
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
-DATA(0x002bf464)
 extern void* g_projActCache;      // 0x6bf464
 extern void* g_retAddrBreadcrumb; // 0x6bf428
 extern void* GetRetAddr();        // 0x16d990
@@ -106,7 +105,6 @@ DATA(0x002bf650)
 // DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
 extern CTypeKeyColl g_typeColl; // 0x6bf650
-DATA(0x0021aea8)
 extern i32 g_typeCounter; // 0x61aea8
 
 // R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
@@ -128,7 +126,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
 
 // The global millisecond tick (_g_645588). The DWORD load reloc-masks.
-DATA(0x00245588)
 extern "C" u32 g_frameTime;
 
 // The bound anim sink: m_38 -> anim, anim->m_194 -> sink, sink->Set(brightness).

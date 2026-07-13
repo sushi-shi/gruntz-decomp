@@ -29,7 +29,6 @@ struct MgrFindList {
 // The settings manager (only its +0x68 list sub-object is touched here).
 
 extern "C" CGameRegistry* g_gameReg;
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg (VA 0x64556c)
 
 // ---------------------------------------------------------------------------

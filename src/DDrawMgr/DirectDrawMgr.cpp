@@ -58,7 +58,6 @@ DATA(0x00283edc)
 i32 (*g_restoreHandler)() = 0; // 0x683edc
 
 // Empty mutable string in .data copied into the working buffer up front.
-DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // The engine logger that consumes the formatted line (DDrawMgr-local helper).
@@ -89,22 +88,14 @@ DATA(0x00283ee4)
 void* g_ddCreateCtx = 0; // 0x683ee4
 
 // The RGB low-bit-position / 8-minus-bitcount pair tables ComputeColorMasks fills from
-// the back-buffer's pixel format (reloc-masked .data globals; named g_683* across the
-// run - GruntzMgr.cpp's 16-bit pack reads the same six words).
-extern "C" {
-    DATA(0x00283ea0)
-    extern i32 g_683ea0; // red   low-bit shift
-    DATA(0x00283ea4)
-    extern i32 g_683ea4; // green low-bit shift
-    DATA(0x00283ea8)
-    extern i32 g_683ea8; // blue  low-bit shift
-    DATA(0x00283eac)
-    extern i32 g_683eac; // red   8-minus-count
-    DATA(0x00283eb0)
-    extern i32 g_683eb0; // green 8-minus-count
-    DATA(0x00283eb4)
-    extern i32 g_683eb4; // blue  8-minus-count
-}
+// the back-buffer's pixel format. DEFINED in src/DDrawMgr/DDSurface.cpp (owner TU);
+// GruntzMgr.cpp's 16-bit pack reads the same six words. Reference externs only.
+extern i32 g_rUp; // red   low-bit shift
+extern i32 g_gUp; // green low-bit shift
+extern i32 g_bUp; // blue  low-bit shift
+extern i32 g_rDown; // red   8-minus-count
+extern i32 g_gDown; // green 8-minus-count
+extern i32 g_bDown; // blue  8-minus-count
 
 // The post-mask surface-format apply (BuildColorChannelTables @0x13f740, the
 // DDSurface.cpp obj); free-fn decl so the bare `call rel32` reloc-masks.
@@ -1105,10 +1096,9 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 // ===========================================================================
 
 // The transient global mode array EnumDisplayModes rebuilds (a real MFC CPtrArray
-// @0x683ec8). The m_poolItems array (real MFC CPtrArray) + the pool comparator/
-// publisher (Compare/AddPoolItem) live on CDirectDrawMgr in <DDrawMgr/DirectDrawMgr.h>.
-DATA(0x00283ec8)
-extern CPtrArray g_modeArray;
+// @0x683ec8; DEFINED above, near the top of this TU). The m_poolItems array (real MFC
+// CPtrArray) + the pool comparator/publisher (Compare/AddPoolItem) live on
+// CDirectDrawMgr in <DDrawMgr/DirectDrawMgr.h>.
 
 // The EnumDisplayModes callback (0x143390); only its address is referenced.
 // (EnumDisplayModes is slot 8 / +0x20 on the IDirectDraw2 interface.)
@@ -1637,8 +1627,8 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
         }
         m >>= 1;
     }
-    g_683ea0 = shift;
-    g_683eac = 8 - count;
+    g_rUp = shift;
+    g_rDown = 8 - count;
 
     m = desc.ddpfPixelFormat.dwGBitMask;
     count = 0;
@@ -1652,8 +1642,8 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
         }
         m >>= 1;
     }
-    g_683ea4 = shift;
-    g_683eb0 = 8 - count;
+    g_gUp = shift;
+    g_gDown = 8 - count;
 
     m = desc.ddpfPixelFormat.dwBBitMask;
     count = 0;
@@ -1667,8 +1657,8 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
         }
         m >>= 1;
     }
-    g_683ea8 = shift;
-    g_683eb4 = 8 - count;
+    g_bUp = shift;
+    g_bDown = 8 - count;
 
     BuildColorChannelTables();
     return 1;

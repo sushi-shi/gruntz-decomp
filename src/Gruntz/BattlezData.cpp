@@ -16,7 +16,6 @@ float g_zeroF = 0.0f; // 0x5eab40
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local
 // view: FillRecord folds reg->m_118 into each record. The DATA pin reloc-masks
 // the `mov ds:g_gameReg` load against the already-named symbol.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // 0xfc9c0 - the (re)initialize-with-records entry: run Init() on this, then bind

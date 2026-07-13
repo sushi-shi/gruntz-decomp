@@ -48,7 +48,6 @@
 
 // The game registry singleton (canonical CGameRegistry): its +0x80 launch counter
 // (m_numRuns) selects the TITLE state. Canonical DATA at 0x24556c.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The attract-state count divisor (DAT_00645534, a writable global int). extern "C"
@@ -65,7 +64,6 @@ extern "C" i32 g_attractStateCount;
 // The per-frame time delta (countdown source for m_idleTimer). C linkage so the
 // symbol pairs with the target's _g_645584 (the convention across the gamemode units).
 extern "C" {
-    DATA(0x00245584)
     extern u32 g_frameDelta;
 }
 
@@ -74,9 +72,7 @@ extern "C" {
 // timeGetTime / wsprintfA import fn-ptrs the title roll reaches through. All reloc-masked.
 DATA(0x0020b5bc)
 char s_dat60b5bc[] = "2";
-DATA(0x002293f4)
 extern char g_emptyString[];
-DATA(0x0021ab20)
 extern i32 g_sndEnabled;
 
 // Source string literals (objdiff matches these .data relocations by value).

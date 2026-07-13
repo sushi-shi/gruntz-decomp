@@ -66,16 +66,18 @@ public:
 // base at the same offsets (m_soundEnabled +0x10, m_musicEnabled +0x14, m_savedModeW/H
 // +0x94/+0x98, ...), so the swap is byte-neutral.
 extern "C" {
-    DATA(0x0024556c)
     extern "C" CGruntzMgr* g_gameReg;
 }
 
-// The active dialog handle latch (NetLobby::g_curDlg_64557c @0x64557c); the proc
-// stamps it on entry. DATA-bound in Net/LobbyDialogs.cpp; extern here.
-extern HWND g_curDlg_optdlg; // aliases 0x64557c (reloc-masked)
+// The active dialog handle latch (@0x64557c); the proc stamps it on entry.
+// DEFINED in Net/LobbyDialogs.cpp (namespace NetLobby); the old `g_curDlg_optdlg`
+// alias symbol (nothing defined it) is gone.
+namespace NetLobby {
+    extern HWND g_curDlg_64557c;
+}
 
-// The CD-prompt result gate (?g_6455ec@@3HA @0x6455ec); DATA-bound in GruntzMgrCmd.cpp.
-extern i32 g_cdPromptResult;
+// The CD-prompt result gate (@0x6455ec); DEFINED in StartUpPrompt.cpp (its writer).
+extern "C" i32 g_cdPromptResult;
 
 // Mode-lock gates (@0x6455b4/bc/c0): when set they grey out option groups AND gate the
 // option commits. FABRICATED-SYMBOL FIX (assert_relocs --fake-targets): these were declared
@@ -202,7 +204,7 @@ i32 GetResolutionCode() {
 // cross-cast) is reloc-masked scaffolding pending those classes' shared modeling.
 RVA(0x00036410, 0x366)
 BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    g_curDlg_optdlg = hDlg;
+    NetLobby::g_curDlg_64557c = hDlg;
 
     switch (msg) {
         case WM_HSCROLL: { // 0x114

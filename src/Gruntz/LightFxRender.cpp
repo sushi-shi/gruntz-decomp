@@ -141,26 +141,18 @@ struct LfxTileBank {
 // per channel a right-shift (8-bit -> channel width) then a left-shift into the
 // channel's slot. B sits at bit 0, so it has no left-shift.
 // See docs/patterns/rgb-pack-variable-shift.md.
-DATA(0x00283ea0)
 extern i32 g_rUp; // red   up-shift (into position)
-DATA(0x00283ea4)
 extern i32 g_gUp; // green up-shift
-DATA(0x00283eac)
 extern i32 g_rDown; // red   down-shift (scale 8-bit -> width)
-DATA(0x00283eb0)
 extern i32 g_gDown; // green down-shift
-DATA(0x00283eb4)
 extern i32 g_bDown; // blue  down-shift
 
 // Engine globals the resize repaint path reads (reloc-masked DIR32 loads):
 //   g_frameTime - the running game clock (low 32 bits of the engine ms counter)
 //   g_curPlayer - the current area / world index
 //   g_645594 - a frame-quality / detail threshold (>=0x32 picks the live color)
-DATA(0x00245588)
 extern "C" u32 g_frameTime; // canonical ?g_clock@@3IA (unsigned; <Gruntz/TriggerMgr.h> et al.)
-DATA(0x00244c54)
 extern "C" i32 g_curPlayer;
-DATA(0x00245594)
 extern i32 g_645594;
 
 // Pack an 8-bit (r,g,b) constant triple into a screen-native 16-bit pixel.

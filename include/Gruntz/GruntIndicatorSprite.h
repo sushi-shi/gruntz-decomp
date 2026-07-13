@@ -81,7 +81,6 @@ struct CGruntEntry {
 //   +0x78  m_78 : the bute lookup table the powerup setter indexes
 // ---------------------------------------------------------------------------
 
-DATA(0x0024556c)
 
 // ---------------------------------------------------------------------------
 // A bound-object sub-object on the +0x38 game object: at +0x1a0 sits a helper
@@ -91,7 +90,6 @@ DATA(0x0024556c)
 // Both are external/no-body so the call + the load reloc-mask.
 // ---------------------------------------------------------------------------
 struct CIndicatorSyncHelper {};
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 
 // The bute store the powerup setter seeds the "A" node from (g_buteTree.Find).

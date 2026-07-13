@@ -24,7 +24,6 @@
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
 // game-manager chain Tick reads (surface context + back-buffer) is modeled.
-DATA(0x0024556c)
 extern "C" CGooGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
@@ -105,9 +104,7 @@ i32 CSBI_WellGoo::Tick() {
 
 // The serialize record counter (bumped before each name+index frame slot) + the
 // focused-grunt sentinel keying the mode-8 selector table.
-DATA(0x00229ad0)
 extern i32 g_serialCounter;
-DATA(0x00244c54)
 extern "C" i32 g_curPlayer;
 
 // CSBI_WellGoo::Serialize (0xe64c0) - vtable slot 1. Bail on a null archive / no

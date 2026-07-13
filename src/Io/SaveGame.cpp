@@ -53,7 +53,6 @@ char* g_areaNames[8]; // 0x6454e8
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
 // (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
 // extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 DATA(0x00213a9c)
 i32 g_savedMenuCmd = -1;

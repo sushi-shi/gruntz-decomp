@@ -51,7 +51,6 @@ struct CTubeAnimLookup { // CGrunt::m_14
 };
 
 // The settings singleton (0x64556c) viewed for its +0x2c manager.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The shared type-name registry (0x6bf650/0x6bf66c/0x6bf670).

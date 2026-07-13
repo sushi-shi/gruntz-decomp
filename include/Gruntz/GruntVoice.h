@@ -26,7 +26,7 @@ struct CVariantSlot; // folded CVActColl2 (struct tag = canonical PAU mangling, 
 #include <Mfc.h> // CObject base + <windows.h>
 
 #include <Gruntz/UserLogic.h>  // CUserLogic : CUserBase, EngStr, CGameObject
-#include <Gruntz/InGameIcon.h> // g_iconBute ("B" @0x60d1bc), g_iconDefault (@0x645588)
+#include <Gruntz/InGameIcon.h> // g_iconBute ("B" @0x60d1bc), g_frameTime (@0x645588)
 
 // The bute store the setup/reset paths query (mov ecx,&g_buteTree; call Find).
 // CButeTree is declared in <Bute/ButeMgr.h> (pulled via UserLogic.h); g_buteTree
@@ -80,7 +80,6 @@ extern CVariantSlot* g_vactColl2;    // 0x2514dc
 // The cache/alloc scratch globals shared with the trigger registry (reused
 // verbatim - 0x6bf464 / 0x6bf428; owned by UserLogic.cpp, declared extern here
 // so the loads reloc-mask against the already-matched symbols).
-DATA(0x002bf464)
 extern void* g_projActCache; // 0x2bf464 canonical (?g_projActCache@@3PAXA); use this
 extern void* g_actCache;     // unbound VA-typo alias of g_projActCache (legacy includers)
 extern void* g_retAddrBreadcrumb;
@@ -112,7 +111,7 @@ public:
     // --- CGruntVoice own fields (offsets load-bearing; roles from Setup/Reset) ---
     char m_pad40[0x54 - 0x40];
     i32 m_sample;     // +0x54  the play request's sample object (Setup stores, Reset clears)
-    i32 m_icon;       // +0x58  in-game icon handle (seeded to g_iconDefault)
+    i32 m_icon;       // +0x58  in-game icon handle (seeded to g_frameTime)
     i32 m_5c;         // +0x5c  icon-companion slot (zeroed with m_icon; role unproven)
     i32 m_durationMs; // +0x60  cached sample play duration (sample->ComputeDuration)
     i32 m_64;         // +0x64  running/elapsed slot (zeroed on setup; role unproven)

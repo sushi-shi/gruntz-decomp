@@ -38,7 +38,6 @@ CCreationPointActReg g_creationPointActReg; // 0x644700
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"
 // here so the value-load reloc-masks against the already-matched symbol.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // CGruntCreationPoint::~CGruntCreationPoint @0x010730 - the leaf adds no
@@ -70,7 +69,6 @@ struct CreationGameReg {
     char m_pad138[0x158 - 0x138];
     CreationRefSlot m_158[1]; // +0x158 base of the ref-index array
 };
-DATA(0x0024556c)
 extern "C" CreationGameReg* g_gameReg;
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);

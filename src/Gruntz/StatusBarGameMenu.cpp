@@ -58,7 +58,6 @@
 // CSBI_MenuItem), the registry factory view CGmFactory and the CGameMenuMgr class
 // moved to <Gruntz/GameMenuMgrBuilders.h>.
 // ---------------------------------------------------------------------------
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // ===========================================================================

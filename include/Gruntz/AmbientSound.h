@@ -48,7 +48,6 @@ struct AmbientBox {
 // active-level object's armed/playable gate (m_inputState->m_active; CWorldSoundSet in
 // <Gruntz/WorldSoundSet.h> - the same object CRandomAmbientSound taps).
 // ---------------------------------------------------------------------------
-DATA(0x0024556c)
 
 // ---------------------------------------------------------------------------
 // CAmbientSound : CUserBase (sizeof 0x40, vftable 0x5e710c). Real polymorphic:

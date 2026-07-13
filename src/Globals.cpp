@@ -144,8 +144,8 @@ char s_GameMessagez[] = "GAME_MESSAGEZ"; // s_GAME_MESSAGEZ_00611ab8 (image-set 
 // g_archiveDefault612618 / g_dat613054 DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x002135e8)
 char s_PREVIEW_6135e8[] = "PREVIEW"; // "PREVIEW"
-DATA(0x0021ab14)
-extern i32 g_wwdObjIdCounter; // 0x61ab14
+// g_wwdObjIdCounter (0x61ab14, init = 1) DEFINED in src/Wwd/WwdObjMgr.cpp (owner:
+// stamps + post-increments it per created object); extern in <Globals.h>.
 DATA(0x00224fe8)
 extern u16 g_modeTab_e8; // 0x624fe8
 DATA(0x00224fea)
@@ -167,12 +167,11 @@ extern "C" i32 g_64553c = 0;
 // (0x645548 is g_coordPool.m_count (+0x08), an interior field of the pool object at
 //  0x645540 - not a global. The fabricated `g_poolScratch645548` scalar that used to be
 //  pinned here was referenced by nothing at all.)
-DATA(0x002455ec)
-extern "C" i32 g_cdPromptResult = 0;
+// g_cdPromptResult (0x2455ec) DEFINED in src/Gruntz/StartUpPrompt.cpp (owner: the
+// prompt writes it). g_debugDisplayFlags (0x2455f4, PROVEN i32 - dword cheat-switch
+// accesses) DEFINED in src/Gruntz/GruntzMgr.cpp with its band siblings.
 DATA(0x002455f0)
 extern "C" i32 g_6455f0 = 0;
-DATA(0x002455f4)
-u8 g_debugFlags;
 // g_kslime* fields DEFINED in src/Gruntz/KitchenSlime.cpp (owner TU).
 // 0x248ce0 was ALSO bound here as `g_dlgResultSink` while Multi.cpp bound it as
 // `g_sharedFlag` - one cell, two symbols, no storage. Folded onto g_sharedFlag, which
@@ -227,10 +226,8 @@ void* g_projActName;
 // reference header - removing them perturbs MSVC5 regalloc in matched includers).
 // g_zeroF (0x5eab40, shared 0.0f .rdata const) DEFINED in src/Gruntz/BattlezData.cpp.
 // g_colorNames / g_difficultyNames DEFINED in src/Gruntz/Play.cpp (owner TU).
-DATA(0x0021ab14)
-extern "C" u32 g_61ab14 = 1;
-DATA(0x00244ca4)
-void* g_renderCtx;
+// (g_61ab14 was a SECOND symbol for g_wwdObjIdCounter @0x61ab14 - folded onto it;
+//  the one definition lives in src/Wwd/WwdObjMgr.cpp.)
 // g_645570 (the DirectInputMgr2 reset singleton @0x245570) is bound canonically in
 // GruntzMgr.cpp; the former g_glsResetMgr view (VA-typo'd 0x645570, mis-typed
 // GLSResetMgr*) was folded onto it (PlayStateActivate uses g_645570 directly).

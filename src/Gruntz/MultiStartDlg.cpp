@@ -34,11 +34,9 @@
 
 // The global CGameRegistry the ctor snapshots: it copies g_gameReg->m_curState into
 // the file-scope multiplayer game-state sink g_64bd5c (both reloc-masked DIR32).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 // 0x64bd5c holds the multiplayer game-state singleton (a CMulti, xref-proven); the
 // ctor snapshots it from g_gameReg->m_curState (+0x2c). (DATA also bound in ReconBatch2.)
-DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 extern "C" char g_emptyString[];

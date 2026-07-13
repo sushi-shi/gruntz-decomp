@@ -414,15 +414,10 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 // VA 0x683ea0..). SaveRle16 uses them to expand a screen-native 16bpp pixel into
 // an 8-bit-per-channel BGR triple (the inverse of the CLightFxRender Pack). Same
 // differently-named symbols as elsewhere; reloc-masked.
-DATA(0x00283ea0)
 extern i32 g_rUp; // red   up-shift   (channel position in the 16bpp word)
-DATA(0x00283ea4)
 extern i32 g_gUp; // green up-shift
-DATA(0x00283eac)
 extern i32 g_rDown; // red   down-shift (scale 5/6-bit -> 8-bit)
-DATA(0x00283eb0)
 extern i32 g_gDown; // green down-shift
-DATA(0x00283eb4)
 extern i32 g_bDown; // blue  down-shift
 
 // ---------------------------------------------------------------------------

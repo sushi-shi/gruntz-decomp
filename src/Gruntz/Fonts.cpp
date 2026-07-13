@@ -21,7 +21,7 @@
 // literals, addressed by fixed VA so the loads reloc-mask against the matched
 // Font::LoadFont and the CString literal-ctor.
 DATA(0x0024eac0)
-extern Font g_largeFont;
+Font g_largeFont;
 DATA(0x0024eae8)
 Font g_mediumFont;
 DATA(0x0024eb00)

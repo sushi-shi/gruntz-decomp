@@ -29,7 +29,6 @@ struct RegM30 {
 // Now possible because its +0x70 sub-object folded: CGruntzMgr::m_tileGrid is a
 // CGruntzMapMgr*, and the CTileGrid this TU reads IS its CMapMgr base (one class, two
 // names) - so the read is a plain upcast, no cast needed.
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 
 // The owning object: group/index coordinates + the parked token.

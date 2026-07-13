@@ -33,7 +33,6 @@ extern CButeTree g_buteTree;
 // The running game clock (DAT_00645588; low 32 bits of the engine counter) and
 // the draw-clock delta the per-frame animation re-target reads (DAT_006bf3bc).
 extern "C" u32 g_frameTime;
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // A .data global the ctor copies into the bound object's +0x124 (DAT_0064553c).
@@ -95,7 +94,6 @@ struct HazSndRoot {
 // Now possible because its +0x70 sub-object folded: CGruntzMgr::m_tileGrid is a
 // CGruntzMapMgr*, and the CTileGrid this TU reads IS its CMapMgr base (one class, two
 // names) - so the read is a plain upcast, no cast needed.
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 
 // ===========================================================================
@@ -118,7 +116,6 @@ RVA(0x000fbb70, 0x15)
 void ConstructHaznRange() {
     ((CZDArrayDerived*)&g_haznColl)->Construct(0x7d0, 0x7da);
 }
-DATA(0x002bf464)
 extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
 
@@ -142,9 +139,7 @@ struct CHaznEntry2 {
 // bute store and records each in the shared name registry (@0x6bf650, the SAME
 // instance CTimeBomb/CDroppedObject use), then resolves the id in CStaticHazard's
 // OWN registry (HaznLookup) and stores the per-key handler PMF.
-DATA(0x0021aea8)
 extern i32 g_typeCounter;
-DATA(0x0020a454)
 extern char s_codeA[]; // "A"
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"

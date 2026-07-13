@@ -123,7 +123,7 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 
 // A global enable flag the neighbor-combat gate reads when the candidate IS self
 // (DAT_006455b0, reloc-masked).
-extern i32 g_6455b0; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
+extern i32 g_traitorMode; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
 extern "C" u32 g_frameTime;
@@ -1868,7 +1868,7 @@ L_moveDone:
 // and the strcmp-eq sentinel pinning. Deferred to the final sweep.
 RVA(0x0005b050, 0x40b)
 i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
-    if (a == m_tileOwnerHi && g_6455b0 == 0) {
+    if (a == m_tileOwnerHi && g_traitorMode == 0) {
         return 0;
     }
     i32 reason = m_entranceReason;

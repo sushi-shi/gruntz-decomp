@@ -9,7 +9,6 @@ DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
 // The running game clock (g_frameTime .data int) stashed into the leaf's +0x58.
-DATA(0x00245588)
 extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 // CToyPeek::~CToyPeek @0x11c40 - empty vtable-anchor dtor; folds the CUserLogic

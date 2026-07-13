@@ -41,14 +41,12 @@
 // The g_gameReg singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view
 // (<Gruntz/GruntzMgr.h>). Its +0x30 world slot (m_world) is the resource manager
 // here, cast locally to CResMgr at the deref sites.
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight cue plays through, and the
 // draw-clock mirror (wrap-safe gate compare).
 extern i32 g_sndEnabled;
 extern i32 g_sndCueTag;
-DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock;
 
 // CMiTabHost/CMiSelf moved to <Gruntz/SBI_MenuItem.h>.
@@ -57,7 +55,6 @@ extern "C" u32 g_killCueClock;
 // (<Gruntz/SbiConfig.h>): CSpriteFactoryHolder / CSbiConfigMap / CSbiConfigRecord.
 
 // Per-serialize round counter the CString archive helpers bump (DAT_00629ad0).
-DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
 // The frame-name reverse-lookup is CImageRegistry::ReadField (mgr->m_10,

@@ -86,7 +86,6 @@ struct CSlimeLevel {
 
 // The canonical CGameRegistry view of the singleton; m_posY (cue gate) and m_dirX
 // (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The entity QueryAt returns; +0x258 is its type/state tag (0x38 == the slime
@@ -147,7 +146,6 @@ extern void* GetRetAddr(); // 0x16d990
 // ctors it in place at runtime; hence the (_zvec*) cast at the engine call sites.
 DATA(0x00246228)
 CActReg g_kslimeColl;
-DATA(0x002bf464)
 extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
 
@@ -301,10 +299,11 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
 
-// The global type counter (0x61aea8). The class-name bute key is the shared
-// "A" string literal (DAT_0060a454, the same $SG constant CLightFx.cpp uses).
+// The global type counter (0x61aea8; retail .data init = 2000). The class-name bute
+// key is the shared "A" string literal (DAT_0060a454, the same $SG constant
+// CLightFx.cpp uses).
 DATA(0x0021aea8)
-i32 g_typeCounter;
+i32 g_typeCounter = 2000;
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
 extern CButeTree g_buteTree;

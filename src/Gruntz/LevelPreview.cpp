@@ -32,7 +32,6 @@
 extern i32 g_sndEnabled;
 extern i32 g_sndCueTag;
 extern "C" {
-    DATA(0x002bf3c0)
     extern u32 g_killCueClock;
 }
 

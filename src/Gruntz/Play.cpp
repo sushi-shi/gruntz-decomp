@@ -67,7 +67,7 @@
 
 #include <Gruntz/Play.h>
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/AreaMgr.h> // CAreaMgr (g_61139c; CPlayLevelLoad::LoadByMode, waveP)
+#include <Gruntz/AreaMgr.h> // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode, waveP)
 #include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader (BuildAssetNamespacePrefixes, waveP)
 // The GRUNTZ_/GAME image worker registry (owner+0x10): 18 vtable slots then the
 // virtual LoadTree at +0x48; plus the non-virtual key probe + direct-load (same shape
@@ -809,12 +809,13 @@ extern "C" void* g_645570;          // DAT_00645570
 extern "C" i32 g_64558c;            // DAT_0064558c
 extern "C" i32 g_64e35c;            // DAT_0064e35c
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
-DATA(0x00212618)
-extern void* g_lastLevelCache; // 0x612618 (last-level cache)
-// 0x61139c: bound, but NOT renamed - the only evidence is that it is a pointer read
-// by the level loader. An invented name would be worse than the honest address.
+// (0x612618 - the last-loaded level number, init -1 - is DEFINED below as
+// g_lastLevelNum; the old `void* g_lastLevelCache` view here was the same cell.)
+// 0x61139c: the CAreaMgr singleton pointer, statically initialized to &g_areaMgr
+// (retail .data holds VA 0x6459b0 = the g_areaMgr object AreaMgr.cpp defines).
+// Owner-TU definition here (play is its only referencing unit).
 DATA(0x0021139c)
-extern void* g_61139c;
+CAreaMgr* g_pAreaMgr = &g_areaMgr;
 
 // ---------------------------------------------------------------------------
 // RESIDUAL carcass (9 classes already folded onto their real canonical headers:
@@ -1167,16 +1168,16 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
 
-    // the warp-stone / last-level cache comparison (612618 / 61139c)
+    // the warp-stone / last-level comparison (g_lastLevelNum / g_pAreaMgr)
     {
-        void* cached = g_lastLevelCache;
-        i32 eq = ((CAreaMgr*)g_61139c)->SameGroup((i32)cached); // 0x2f2c
+        i32 cached = g_lastLevelNum;
+        i32 eq = g_pAreaMgr->SameGroup(cached); // 0x2f2c
         reload = (eq == 0) ? 1 : 0;
-        i32 diff = (level != (i32)g_lastLevelCache) ? 1 : 0;
-        if (g_61139c == 0) {
+        i32 diff = (level != g_lastLevelNum) ? 1 : 0;
+        if (g_pAreaMgr == 0) {
             return 0;
         }
-        g_lastLevelCache = (void*)level;
+        g_lastLevelNum = level;
 
         BuildHelpReveal(0);
         if (savedThis != 0) {
@@ -1787,14 +1788,14 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
 // (Write). __thiscall, ret 4; returns 0 when the archive or the bound manager (m_c) is
 // absent, else 1. NB the CArchiveLoadRec::Load method name is the recovered-symbol
 // placeholder; only the +0x30 slot offset is load-bearing. g_serialCounter /
-// g_archiveDefault612618 reuse this TU's decls; the record views are local.
+// g_lastLevelNum reuse this TU's decls; the record views are local.
 // ===========================================================================
 extern i32 g_serialCounter; // ?g_serialCounter@@3HA @0x629ad0 (bumped per string field)
 
-// The archive default sentinel this TU streams after m_40c (.data, init -1). Owner-TU
-// definition here; canonical extern in <Globals.h>.
+// The last-loaded level number (.data, init -1; compared/assigned by the level loader
+// above and streamed after m_40c here). Owner-TU definition; extern in <Globals.h>.
 DATA(0x00212618)
-i32 g_archiveDefault612618 = -1;
+i32 g_lastLevelNum = -1;
 
 // (The CArchiveMgr/CArchiveDefInt/CArchiveSubArray/CArchiveLoadRec views are GONE:
 // CArchiveLoadRec was a full-object 0x514 placeholder of CPLAY ITSELF (the fn is
@@ -1867,7 +1868,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
     }
 
     s->Write(&m_lastCueId, 4);
-    s->Write(&g_archiveDefault612618, 4);
+    s->Write(&g_lastLevelNum, 4);
 
     g_serialCounter++;
     {
@@ -2792,12 +2793,12 @@ i32 CPlay::DrawWorldFrames() {
 // Instrumented variants of the world-draw + present that bracket each phase with
 // the cached timeGetTime fn-ptr (::timeGetTime, pinned in a callee-saved reg)
 // and emit a per-phase timing line through the variadic logger ProfLog into the
-// shared text sink g_profSink.
+// brick-text overlay line (g_brickText1 @0x645524, the same CString the debug
+// overlay renders and GruntzMgrCmd's cheat handler empties; DEFINED in
+// GameText.cpp with the rest of the 0x645514..0x645530 CString run).
 // ===========================================================================
+extern CString g_brickText1; // 0x645524 (def: GameText.cpp)
 extern "C" {
-    // The profiler line sink (a global text buffer; its ADDRESS is the logger arg).
-    DATA(0x00245524)
-    i32 g_profSink;
     // The variadic profiler logger (cdecl). 0x1b2cf5.
     void ProfLog(void* sink, const char* fmt, ...);
 }
@@ -2832,7 +2833,7 @@ i32 CPlay::ProfileDeltaFrame() {
     m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
     i32 presentMs = (i32)(tg() - t2);
     ProfLog(
-        &g_profSink,
+        &g_brickText1,
         "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
         (i32)g_frameDelta,
         renderMs,
@@ -2919,7 +2920,7 @@ i32 CPlay::ProfileInputFrame() {
     i32 statusBarMs = (i32)(tg() - t13);
 
     ProfLog(
-        &g_profSink,
+        &g_brickText1,
         "Input=%i, Activate=%i, Deact=%i, Update=%i, HitTest=%i, Draw=%i, Fixed=%i, "
         "StatusBar=%i, Flip=%i  ",
         activateMs,
@@ -3438,7 +3439,6 @@ i32 CPlay::PostHudRect() {
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter,
 // = ?g_serialCounter@@3HA @0x229ad0). Reloc-masked DATA.
-DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
 // The MFC empty C string (the afxEmptyString data buffer @0x6293f4); the name
@@ -3930,7 +3930,6 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
 // g_gameReg singleton!), SbiMgr68==CTriggerMgr (m_rowCount/m_groupFlag),
 // SbiCfgEntry==CFocusSlot (m_228). "SbiPointInChild" (a fabricated __stdcall)
 // is m_guts->HitTestLayer (thunk 0x1c44 -> 0xfe8a0).)
-DATA(0x0021ab24)
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA (HandleMousePress tab cue tag)
 
 // @early-stop
@@ -5912,7 +5911,6 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
 // / CDDrawSubMgrAni (augmented above with LoadTree/HasKeyEqual/... ). g_gameReg is the
 // 0x64556c singleton, g_resourceInstallActive is reused. Callees reloc-masked.
 // ===========================================================================
-DATA(0x002bf37c)
 extern i32 g_resourceInstallActive; // 0x6bf37c
 
 // (AssetRoot is GONE - CNamespaceLoader::m_c is the typed CSpriteFactoryHolder.
@@ -5920,8 +5918,7 @@ extern i32 g_resourceInstallActive; // 0x6bf37c
 // "DrawPreview" (thunk 0x1c5d) IS EngStr_DrawText @0x115440. "FinishAssetLoad"
 // (thunk 0x35e4) IS CMulti::AckJoinFailure @0xbc420 with ecx = the finishGate
 // notify object - the same dropped-`this` pattern as the loaders.)
-DATA(0x0024556c)
-extern CGameRegistry* g_gameReg; // *0x64556c
+extern "C" CGameRegistry* g_gameReg; // *0x64556c (def: GruntzMgr.cpp)
 
 // @source: decomp-xref
 // @early-stop

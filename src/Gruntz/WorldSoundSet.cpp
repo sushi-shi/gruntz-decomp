@@ -1185,10 +1185,10 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
         return;
     }
 
-    if ((u32)m_countdownMs <= (u32)g_tickDelta) {
+    if ((u32)m_countdownMs <= (u32)g_frameDelta) {
         m_countdownMs = 0;
     } else {
-        m_countdownMs = m_countdownMs - g_tickDelta;
+        m_countdownMs = m_countdownMs - g_frameDelta;
     }
     if (m_countdownMs != 0) {
         return;

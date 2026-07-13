@@ -14,12 +14,10 @@
 #include <string.h>               // inline strlen / strcpy / memset over the scratch buffer
 
 // The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once per
 // string field read.
-DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
 // ===========================================================================

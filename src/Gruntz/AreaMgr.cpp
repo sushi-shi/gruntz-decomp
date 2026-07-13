@@ -363,7 +363,6 @@ void CSpawnList::DeleteAllEntries() {
 // / code bytes are load-bearing; helpers are reloc-masked engine externs.
 // ===========================================================================
 
-DATA(0x002bf37c)
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA (Image install bracket)
 
 // (The old CObjResNode / CObjResListNode / CObjResBuilder / CObjResTree views

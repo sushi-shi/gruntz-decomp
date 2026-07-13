@@ -61,9 +61,7 @@ struct MenuSndEntry {
 // (CSpriteFactoryHolder::m_28) is a genuinely heterogeneous void* - other TUs view it
 // as a sound-set (HbSndSet) or a mute gate - so it is cast to the sound-registry view
 // at this one use-site (the authentic proven-heterogeneous-slot cast).
-DATA(0x0024556c)
-extern CGameRegistry* g_menuMgrSettings;
-DATA(0x002bf37c) // VA-typo fix: 0x22f37c -> 0x2bf37c (canonical, Play.cpp); same global
+extern "C" CGameRegistry* g_gameReg; // *0x64556c canonical singleton (def: GruntzMgr.cpp)
 extern i32 g_resourceInstallActive;
 
 // The heap-allocated MENU UI object (0x7c bytes) IS the canonical CChatBox
@@ -184,7 +182,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     MenuSndEntry* fm;
-    ((CDDrawSubMgrLeafScan*)g_menuMgrSettings->m_world->m_28)->m_10.Lookup("MENU_MENU", (void*&)fm);
+    ((CDDrawSubMgrLeafScan*)g_gameReg->m_world->m_28)->m_10.Lookup("MENU_MENU", (void*&)fm);
     m_1bc = (CMenuMusic*)fm;
     return 1;
 }

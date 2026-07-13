@@ -16,7 +16,7 @@
 // GetFrame (slot 27, +0x6c) and PostSetup (slot 37, +0x94) are the inherited
 // CState fat-interface virtuals (State.h).
 //
-// Structure: a debug-flags byte (g_debugFlags @0x6455f4) gates the whole thing
+// Structure: a debug-flags byte (g_debugDisplayFlags @0x6455f4) gates the whole thing
 // (bit 0x20 = master off) and each text piece (0x10 Fps, 0x1 Objs, 0x4 Pos,
 // 0x40 Timing, 0x80 elapsed-time, 0x2 net stats). Each piece sprintf's into a
 // scratch buffer and inline-strcat's onto the accumulator; the 0x80 piece builds
@@ -41,7 +41,6 @@
 #include <rva.h>
 #include <Globals.h>
 
-DATA(0x00245588)
 extern "C" u32 g_frameTime; // a wrap-safe draw/elapsed counter (FormatElapsed arg + %lu)
 
 // FUN_001190f0 __cdecl: format the counter as "%i:%02i:%02i" into a returned
@@ -51,7 +50,6 @@ CString FormatElapsed(i32 count);
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed); GetRect (@0x8e3a0) is its
 // method - the old `g_dbgMgr` CGameRegistry alias emitted the phantom
 // ?GetRect@CGameRegistry@@QAEPAXPAX@Z, which no obj and no .LIB can ever define.
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg; // *0x64556c the one singleton
 
 // @source: string-xref
@@ -64,7 +62,7 @@ extern "C" CGruntzMgr* g_gameReg; // *0x64556c the one singleton
 // CString cleanup unwind funclet. No instruction-byte difference - green-enough (§2a).
 RVA(0x000cf770, 0x35e)
 void CPlay::DrawDebugStats() {
-    if (g_debugFlags & 0x20) {
+    if (g_debugDisplayFlags & 0x20) {
         return;
     }
 
@@ -72,29 +70,29 @@ void CPlay::DrawDebugStats() {
     char scratch[0x40];
     buf[0] = 0;
 
-    if (g_debugFlags & 0x10) {
+    if (g_debugDisplayFlags & 0x10) {
         sprintf(scratch, "Fps = %i ", m_4->m_fps);
         strcat(buf, scratch);
     }
-    if (g_debugFlags & 0x1) {
+    if (g_debugDisplayFlags & 0x1) {
         sprintf(scratch, " Objs = %i ", m_c->m_childGroup->m_count);
         strcat(buf, scratch);
     }
-    if (g_debugFlags & 0x4) {
+    if (g_debugDisplayFlags & 0x4) {
         CLevelPlane* p = m_c->m_24->m_mainPlane;
         sprintf(scratch, " Pos = %i,%i", p->m_originX, p->m_originY);
         strcat(buf, scratch);
     }
-    if (g_debugFlags & 0x40) {
+    if (g_debugDisplayFlags & 0x40) {
         strcat(buf, " Timing = On ");
     }
-    if (g_debugFlags & 0x80) {
+    if (g_debugDisplayFlags & 0x80) {
         CString t = FormatElapsed(g_frameTime);
         t += " ";
         strcat(buf, t);
         t += " ";
     }
-    if (g_debugFlags & 0x2) {
+    if (g_debugDisplayFlags & 0x2) {
         sprintf(
             scratch,
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",

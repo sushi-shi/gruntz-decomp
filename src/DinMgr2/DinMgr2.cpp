@@ -103,7 +103,6 @@ DATA(0x00253ab0)
 i32 g_dinputThirdEnabled; // 0x653ab0
 
 // Empty mutable string in .data copied into the working buffer up front.
-DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // The global operator new / delete (the engine allocator) are the language's

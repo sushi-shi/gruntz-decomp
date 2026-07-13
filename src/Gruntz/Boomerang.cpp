@@ -37,7 +37,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 }
 
 // The game registry singleton (the m_world resource gate + m_cmdGrid launcher grid).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // Shared free-list globals (recycle the launcher grunt's occupied-coord payloads);

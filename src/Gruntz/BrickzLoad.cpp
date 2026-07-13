@@ -71,7 +71,6 @@ struct BzLevelMgr {
 // +0x30 world/resource slot ((BzLevelMgr*)g_gameReg->m_world; see CGameRegistry.h);
 // the editor/test-mode gates are the registry's m_isEasyMode (+0x118) and m_134
 // (+0x134, 1 => test) discriminators. Authentic per-mode downcast of the singleton.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // A moving object off the level manager's list: a type record at +0x7c whose

@@ -253,14 +253,16 @@ extern i32 g_jitterX; // ?g_jitterX@@3HA @0x2452a4 (was g_6452a4)
 extern i32 g_jitterY; // ?g_jitterY@@3HA @0x2452cc (was g_6452cc)
 extern i32 g_panMinX; // ?g_panMinX@@3HA @0x245508 (was g_645508)
 extern i32 g_panMaxX; // ?g_panMaxX@@3HA @0x24550c (was g_64550c)
+// 0x64557c - the active modeless dialog HWND (cleared on both modal-dialog exits);
+// DEFINED in src/Net/LobbyDialogs.cpp (namespace NetLobby), where the dialog procs
+// cache it. The old `g_modalBusy` alias here was the same cell.
+namespace NetLobby {
+    extern HWND g_curDlg_64557c;
+}
 extern "C" {
-    // 0x64557c - the modal/cursor-busy gate (set 0 on both modal-dialog exits).
-    DATA(0x0024557c)
-    extern i32 g_modalBusy;
     // The clock/scroll/warp globals SaveState streams through the archive.
     extern "C" i32 g_64558c; // DAT_0064558c
     extern i32 g_645590;     // DAT_00645590
-    DATA(0x00245598)
     extern i32 g_645598; // DAT_00645598
     extern i32 g_64559c; // DAT_0064559c
     extern i32 g_6455a0; // DAT_006455a0
@@ -280,9 +282,9 @@ extern "C" {
 // and left every C++-mangled reference - the overwhelming majority - UNBOUND.)
 // The plain externs live in <Globals.h>.
 DATA(0x0021ab20)
-i32 g_sndEnabled = 0; // 0x61ab20  sound-on gate (mirrors CGruntzMgr::m_soundEnabled)
+i32 g_sndEnabled = 1; // 0x61ab20  sound-on gate (retail .data init = 1)
 DATA(0x0021ab24)
-i32 g_sndCueTag = 0;           // 0x61ab24  the cue-item id played through PlayIfElapsed
+i32 g_sndCueTag = 100;         // 0x61ab24  the cue-item id (retail .data init = 100)
 extern "C" u32 g_killCueClock; // DAT_006bf3c0 (wrap-safe draw clock)
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). The `ScoreSub2c` view that
@@ -373,24 +375,15 @@ extern "C" {
 }
 
 // -------------------------------------------------------------------------
-// The packed-color global SetColorDepth writes + the RGB shift/mask globals it
-// reads (the engine's per-bit-depth color-format conversion table). All reloc-
-// masked DATA refs; only the load/store shapes are load-bearing. g_surfaceColorKey
-// is the C++-mangled ?g_surfaceColorKey@@3HA (no extern "C"); the rest are DAT_
-// C globals pinned by their DATA() RVA so the DIR32 reloc pairs.
-extern "C" {
-    DATA(0x00283ea0)
-    i32 g_683ea0;
-    DATA(0x00283ea4)
-    i32 g_683ea4;
-    DATA(0x00283eac)
-    i32 g_683eac;
-    DATA(0x00283eb0)
-    i32 g_683eb0;
-    DATA(0x00283eb4)
-    i32 g_683eb4;
-    // The world-mode reload globals LoadWorldMode resets (reloc-masked).
-}
+// The packed-color global SetColorDepth writes + the RGB shift/size globals it
+// reads: the live RGB565 pixel-format ints, DEFINED in their owner TU
+// src/DDrawMgr/DDSurface.cpp (g_rUp/g_gUp/g_rDown/g_gDown/g_bDown). Reference
+// externs only here (the old extern "C" _g_683eaX shadow definitions are gone).
+extern i32 g_rUp;   // 0x683ea0
+extern i32 g_gUp;   // 0x683ea4
+extern i32 g_rDown; // 0x683eac
+extern i32 g_gDown; // 0x683eb0
+extern i32 g_bDown; // 0x683eb4
 
 // The world's +0x10 slot is the game's IMAGE/NAME registry: the REAL CImageRegistry
 // (<Gruntz/ResMgr.h>) - the ex-CWorldLookupHolder view is DISSOLVED. Its "+0x10
@@ -518,9 +511,7 @@ extern "C" {
     // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
     // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
     DATA(0x00245600)
-    u32 g_645600; // DAT_00645600 (owner-TU definition, .bss)
-    DATA(0x002455b0)
-    u32 g_traitorMode;
+    u32 g_645600; // DAT_00245600 (owner-TU definition, .bss)
     DATA(0x002455a4)
     u32 g_gruntDestruction;
     DATA(0x002455a8)
@@ -529,10 +520,18 @@ extern "C" {
     u32 g_gooPuddlez;
     DATA(0x002455f8)
     u32 g_explosionz;
-    // g_debugFlags (0x6455f4, the u8 debug-overlay byte) comes from <Globals.h>;
-    // ResetClockGlobals over-wide dword-zeroes it via `*(u32*)&g_debugFlags`, which
-    // reloc-binds the real ?g_debugFlags@@3EA symbol while keeping the dword store.
 }
+// The "Traitor Mode" cheat gate (0x6455b0; DEFINED in src/Gruntz/Grunt.cpp, C++
+// ?g_traitorMode@@3HA - GruntCombat/TriggerMgrGrid/GruntzMgrCmd read the same symbol).
+extern i32 g_traitorMode;
+// The debug-overlay display-flags word (0x6455f4). PROVEN i32, not u8: the cheat
+// switch (0x862f0) xors/ands it with 0x100/0x400 masks through full DWORD loads and
+// stores. The old `u8 g_debugFlags` model (with a documented `*(u32*)&` over-wide
+// zero) is gone; ResetClockGlobals' dword store is just `= 0` now. Owner-TU
+// definition (this TU's .bss band holds the 0x2455a4..0x2455f8 run + writes it first).
+DATA(0x002455f4)
+i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
+                         // 0x20/0x400 ?, 0x40/0x100 brick text, 0x80 elapsed time
 
 // The two engine input/state singletons TickStateMgrs drives once per call
 // (DAT_00645570/DAT_00645578; reloc-masked DATA refs). g_645570 is the REAL
@@ -1751,7 +1750,7 @@ void CGruntzMgr::ResetClockGlobals() {
     g_gruntCreation = 0;
     g_gooPuddlez = 0;
     g_explosionz = 0;
-    *(u32*)&g_debugFlags = 0; // dword-zero the u8 debug-overlay byte + 3 trailing bytes
+    g_debugDisplayFlags = 0; // clear the debug-overlay flags word
 }
 
 // -------------------------------------------------------------------------
@@ -2351,9 +2350,9 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
         // result): red (0xff), green (0), blue (0x84). The masks are spelled as
         // u16 truncations so MSVC keeps them per-channel (an explicit `& 0xffff`
         // on all three gets reassociated to one fold).
-        i32 packed = (u16)((0xff >> g_683eac) << g_683ea0);
-        packed |= (u16)((0 >> g_683eb0) << g_683ea4);
-        packed |= (u16)(0x84 >> g_683eb4);
+        i32 packed = (u16)((0xff >> g_rDown) << g_rUp);
+        packed |= (u16)((0 >> g_gDown) << g_gUp);
+        packed |= (u16)(0x84 >> g_bDown);
         g_surfaceColorKey = packed;
         return 1;
     }
@@ -3549,7 +3548,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 
     m_modalBusy = 1;
     app->RunModal(msg, m_gameWnd->m_hwnd);
-    g_modalBusy = 0;
+    NetLobby::g_curDlg_64557c = 0;
     m_modalBusy = 0;
     if (shown <= 0) {
         while (show(0) >= 0) {
@@ -3592,7 +3591,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
 
     m_modalBusy = 1;
     i32 result = dlg->DoModal(); // vtable slot 48 (+0xc0) - see the proof in GruntzMgr.h
-    g_modalBusy = 0;
+    NetLobby::g_curDlg_64557c = 0;
     m_modalBusy = 0;
     if (m_curState && notify) {
         m_curState->Vslot06();
@@ -4196,7 +4195,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     m_modalBusy = 1;
     i32 result =
         ::DialogBoxParamA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, (DLGPROC)dlgProc, 0);
-    g_modalBusy = 0;
+    NetLobby::g_curDlg_64557c = 0;
     m_modalBusy = 0;
     if (m_curState && flag) {
         m_curState->Vslot06();

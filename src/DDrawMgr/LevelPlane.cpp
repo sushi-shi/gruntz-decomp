@@ -1184,15 +1184,10 @@ void CDDrawWorkerHost::InitScrollRects() {
 // ---------------------------------------------------------------------------
 // The live screen RGB-format shift table at 0x683ea0.. (already named by
 // SpriteRef.cpp / CLightFxRender.cpp). Reloc-masked DIR32 data refs.
-DATA(0x00283ea0)
 extern i32 g_rUp; // 0x683ea0
-DATA(0x00283ea4)
 extern i32 g_gUp; // 0x683ea4
-DATA(0x00283eac)
 extern i32 g_rDown; // 0x683eac
-DATA(0x00283eb0)
 extern i32 g_gDown; // 0x683eb0
-DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
 // ---------------------------------------------------------------------------

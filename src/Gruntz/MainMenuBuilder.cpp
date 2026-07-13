@@ -120,7 +120,6 @@ struct MenuHost {
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A); its +0x58
 // save sink (the CSaveGame) carries the m_curLevel (+0x1c) area-progress counter
 // the QUESTZ/AREAS gates read. (The MenuProgress view of it is dissolved.)
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The multiplayer-availability gate (DAT_006455ec): nonzero disables the

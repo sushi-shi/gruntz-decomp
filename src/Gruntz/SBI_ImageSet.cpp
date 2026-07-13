@@ -26,11 +26,9 @@
 // registry's embedded m_10map (CSpriteHashTable, Lookup 0x1b8008) - the same map
 // shape SetupImage uses, reached as reg->m_10->m_10map.
 
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The serialize-sequence counter bumped once per non-trivial pass.
-DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
 // ---------------------------------------------------------------------------

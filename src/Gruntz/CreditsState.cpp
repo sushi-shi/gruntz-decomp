@@ -68,7 +68,6 @@ extern CButeMgr g_buteMgr;
 // The game-manager singleton (0x64556c). Its +0x80 launch counter (m_numRuns,
 // "Num_Runs") rotates the attract TITLE index; same object as CState::m_4. Spelled
 // CGruntzMgr* here exactly as the sibling CreditzAssets.cpp does (was CCreditzAttractReg).
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 
 // The attract-state count divisor (DEFINED in src/Rez/RezSync.cpp).

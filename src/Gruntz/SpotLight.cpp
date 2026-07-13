@@ -37,7 +37,6 @@ struct MgrObj68 {
     char pad[0x1c];
     int arr[1]; // 0x1c
 };
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 class CSpotLight : public CUserLogic {

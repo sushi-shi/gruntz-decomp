@@ -36,7 +36,6 @@
 // m_drawTarget (+0x04) -> m_14 surface context, and the side-tab unit table
 // m_68. One TU-wide decl (the CSideTabGameReg view from <Gruntz/SBI_SideTab.h>;
 // the builders' namespace-scoped CGameRegistry decl below is its own symbol).
-DATA(0x0024556c)
 extern "C" CSideTabGameReg* g_gameReg;
 
 namespace StatusBarTabBuilders {

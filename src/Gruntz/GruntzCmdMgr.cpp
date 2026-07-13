@@ -29,7 +29,6 @@
 // +0x30 active-game slot (m_world) being non-null; this TU only null-tests it, so
 // the m_world facet type is irrelevant here. (The former separate MgrSettings30
 // view of the same singleton is dissolved onto this one canonical extern.)
-DATA(0x0024556c)
 extern "C" WwdGameReg* g_gameReg;
 
 // the registry-active predicate the read pass gates on (0x024ac0, an out-of-line

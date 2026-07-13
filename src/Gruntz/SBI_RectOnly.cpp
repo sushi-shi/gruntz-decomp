@@ -36,7 +36,7 @@
 #include <Gruntz/StatusBarUpdatersViews.h> // EngineLabelBacklog host + updater referent views
 #include <Gruntz/Sprite.h>                 // CSprite (frame-data value) + CSpriteHashTable
 #include <Gruntz/SbiSideTabBuildViews.h>   // CSBI_SideTab (ctor view) + CStatzTabBuilder
-#include <Gruntz/MgrSettings.h>            // CMgrSettings + the g_gameReg/g_serialCount externs
+#include <Gruntz/MgrSettings.h>            // CMgrSettings + the g_gameReg/g_serialCounter externs
 #include <Rez/RezMgr.h>                    // RezFree (the per-frame warpstone overlay free)
 #include <math.h>   // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
 #include <string.h> // strlen / memset (inlined repne scas / rep stos; CMgrSettings::Serialize)
@@ -58,7 +58,6 @@
 // This TU used to declare the SAME cell twice - here as a C++ `g_frameTime` and again
 // below as the extern-"C" `g_frameTime` - i.e. two symbols for one address, neither with
 // storage. One declaration now; it is DEFINED in Projectile.cpp.
-DATA(0x00245588)
 extern "C" u32 g_frameTime;
 
 // The current local-player / area index (PlaceCursorTarget's tile-grid column).
@@ -89,11 +88,9 @@ extern "C" CGruntzMgr* g_gameReg;
 extern i32 g_sndEnabled;
 extern i32 g_sndCueTag;
 // The draw-clock mirror (g_killCueClock), unsigned for the wrap-safe gate compare.
-DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock;
 
 // Global serialize-sequence counter (bumped once per Serialize).
-DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
 // The engine free-list head + the node-pointer bias (raw subtrahend), shared with

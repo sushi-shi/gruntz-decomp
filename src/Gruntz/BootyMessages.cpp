@@ -39,7 +39,6 @@ extern BzGeomPair g_idleGeom[4]; // 0x5e8fe4
 // (owner TU), reference extern stays in <Globals.h>. (REHOME DD-G)
 DATA(0x001e93b0)
 float g_secretRatioScale = 100.0f; // 0x5e93b0
-DATA(0x0021ab24)
 extern i32 g_sndCueTag; // 0x61ab24 (?g_sndCueTag@@3HA)
 
 // The 8 level-complete message templates (global CString array at 0x629ef8) and

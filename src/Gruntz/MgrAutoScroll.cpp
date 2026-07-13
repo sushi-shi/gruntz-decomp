@@ -60,7 +60,6 @@ extern "C" {
 }
 
 // Reloc-masked engine globals (DIR32 data operands).
-DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr; // VA 0x6453d8 -> RVA 0x2453d8

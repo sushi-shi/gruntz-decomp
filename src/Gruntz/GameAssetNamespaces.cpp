@@ -13,7 +13,6 @@
 #include <DDrawMgr/DDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
 #include <Globals.h>
 
-DATA(0x002bf37c) // VA-typo fix: 0x6bf37c -> 0x2bf37c (canonical, Play.cpp); 6->2 typo class
 extern i32 g_resourceInstallActive;
 
 // The build number the version string embeds (owner-TU def; .bss, VA 0x651614).

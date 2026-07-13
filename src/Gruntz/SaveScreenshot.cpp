@@ -51,7 +51,6 @@ struct ScrOwner { // arg3
 
 // The global game/manager settings singleton (*0x64556c); m_modeW/m_modeH = the screen
 // capture width/height.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // @source: decomp-xref

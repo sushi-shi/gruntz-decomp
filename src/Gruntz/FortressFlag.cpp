@@ -70,7 +70,6 @@ CFortressFlagActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition
                                           // interior fields 0x24463c..0x244658 are members)
 
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // The bound sprite/game-object is the inherited CUserLogic m_10 (a CGameObject*):
@@ -95,7 +94,6 @@ struct WwdRefSlot {
 // owns the DATA label). The tag-8 fixup reads the level sprite-ref table at +0x74
 // (m_74) and the ref-index array in the m_options block at +0x158 (raw offset - the
 // established 0x150-region idiom; WwdRefSlot is this TU's element view).
-DATA(0x0024556c)
 extern "C" WwdGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------

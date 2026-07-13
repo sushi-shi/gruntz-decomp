@@ -59,7 +59,6 @@ struct CGruntPuddleSink {};
 // The global the remove path hands the sink (_g_6bf3bc; the draw-delta mirror).
 // Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C" here so the
 // value-load reloc-masks against the already-matched symbol.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // The one-char bute key "B" (0x60d1bc) the place/set paths look up is the SAME

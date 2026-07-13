@@ -23,12 +23,10 @@
 
 // The game registry singleton (0x64556c). The delinker's canonical symbol is the
 // extern "C" _g_mgrSettings (the cplay unit owns it); reloc-masked DIR32.
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once
 // per string field read.
-DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
 // ===========================================================================

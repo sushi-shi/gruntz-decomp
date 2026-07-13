@@ -33,7 +33,6 @@ CSingleAnimActReg g_singleAnimActReg; // 0x645f70
 
 // The per-frame draw-delta mirror (_g_6bf3bc) the advance hands the sink; declared
 // extern "C" so the value-load reloc-masks against the already-matched symbol.
-DATA(0x002bf3bc)
 extern "C" u32 g_engineFrameDelta;
 
 // CSingleAnimation::Serialize @0x104a0 - the vtable slot-1 override: chain the shared

@@ -47,12 +47,9 @@ extern CButeMgr g_buteMgr;
 
 // The missed-select complaint cue lives at 0x61ab24 (the engine ?g_sndCueTag@@3HA int;
 // its address is the LeafCue the Complain path fires).
-DATA(0x0021ab24)
 extern i32 g_sndCueTag;
 
-DATA(0x00244c54)
-extern i32 g_localPlayer; // g_curPlayer
-DATA(0x0024556c)
+extern "C" i32 g_curPlayer;
 extern "C" char* g_gameReg; // ->m_134
 
 // Free engine helpers (reloc-masked).
@@ -104,7 +101,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                             a6 & 0xffff,
                             100000,
                             2,
-                            (i32)g_renderCtx,
+                            g_groupSentinel,
                             0,
                             0,
                             0,
@@ -114,7 +111,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                             0
                         );
             if (r != -1) {
-                if ((a2 & 0xff) == (u32)g_localPlayer) {
+                if ((a2 & 0xff) == (u32)g_curPlayer) {
                     // retail re-loads the grid from g_gameReg (0x64556c), not world.
                     ((CTriggerMgr*)P(g_gameReg, 0x68))->ResetAll();
                 }
@@ -136,7 +133,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             }
             res = grid->ClearCell(a2, a3 & 0xff, a5 & 0xffff, a6 & 0xffff, 0);
             if (res != 0) {
-                if (a2 != (u32)g_localPlayer) {
+                if (a2 != (u32)g_curPlayer) {
                     return 1;
                 }
                 if (g != 0 && F(g, 0x1fc) != 0) {
@@ -144,7 +141,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 }
                 return 1;
             }
-            if (a2 != (u32)g_localPlayer || g == 0 || F(g, 0x1fc) == 0) {
+            if (a2 != (u32)g_curPlayer || g == 0 || F(g, 0x1fc) == 0) {
                 return 0;
             }
             GruntCue(g, 0x324, -1, 0, -1, -1);
@@ -193,7 +190,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                              : grid->ApplyTriggerB(player, a4, a8, 0);
             if (res != 0) {
                 if (res != -1) {
-                    if (player != (u32)g_localPlayer) {
+                    if (player != (u32)g_curPlayer) {
                         return 1;
                     }
                     if (F(g, 0x1fc) != 0) {
@@ -203,7 +200,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 }
                 res = grid->ClearCell(player, a4, a8, 0, (isB == 0) ? 2 : 3);
                 if (res != 0) {
-                    if (player != (u32)g_localPlayer) {
+                    if (player != (u32)g_curPlayer) {
                         return 1;
                     }
                     if (F(g, 0x1fc) != 0) {
@@ -211,13 +208,13 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                     }
                     return 1;
                 }
-                if (player != (u32)g_localPlayer || F(g, 0x1fc) == 0) {
+                if (player != (u32)g_curPlayer || F(g, 0x1fc) == 0) {
                     return 0;
                 }
                 GruntCue(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (player != (u32)g_localPlayer) {
+            if (player != (u32)g_curPlayer) {
                 return 0;
             }
             res = F(g, 0x1fc);
@@ -306,7 +303,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
 
         case 8: {
             a2 &= 0xff;
-            if (a2 == (u32)g_localPlayer) {
+            if (a2 == (u32)g_curPlayer) {
                 F(this, 0x4f0) = 0;
             }
             i32 idx = (a3 & 0xff) + a2 * 0xf;
@@ -332,12 +329,12 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             if (r == 0) {
                 sel = 0;
             } else {
-                if (a2 == (u32)g_localPlayer) {
+                if (a2 == (u32)g_curPlayer) {
                     grid->ResetCell(a2, a3 & 0xff, 0, 0);
                 }
                 sel = 1;
             }
-            if (a2 == (u32)g_localPlayer) {
+            if (a2 == (u32)g_curPlayer) {
                 F(this, 0x36c) = 0;
                 Defended(sel, F(this, 0x2f4));
                 NotifySelect(0);
@@ -374,29 +371,29 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 if (res == -1) {
                     res = grid->ClearCell(player, a8, a2, 0, 2);
                     if (res == 0) {
-                        if ((u32)g_localPlayer != player || F(g, 0x1fc) == 0) {
+                        if ((u32)g_curPlayer != player || F(g, 0x1fc) == 0) {
                             return 0;
                         }
                         GruntCue(g, 0x324, -1, 0, -1, -1);
                         return 0;
                     }
-                    if ((a2 & 0xff) != (u32)g_localPlayer) {
+                    if ((a2 & 0xff) != (u32)g_curPlayer) {
                         return 1;
                     }
-                    if (a4 != (u32)g_localPlayer && F(g, 0x1fc) != 0) {
+                    if (a4 != (u32)g_curPlayer && F(g, 0x1fc) != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                if ((a2 & 0xff) != (u32)g_localPlayer) {
+                if ((a2 & 0xff) != (u32)g_curPlayer) {
                     return 1;
                 }
-                if ((u32)g_localPlayer != a8 && F(g, 0x1fc) != 0) {
+                if ((u32)g_curPlayer != a8 && F(g, 0x1fc) != 0) {
                     GruntCue(g, 0x325, -1, 0, -1, -1);
                 }
                 return 1;
             }
-            if (player != (u32)g_localPlayer) {
+            if (player != (u32)g_curPlayer) {
                 return 0;
             }
             res = F(g, 0x1fc);
@@ -434,31 +431,31 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             res = grid->ApplyTriggerB(player, a7, row, 0);
             if (res != 0) {
                 if (res != -1) {
-                    if ((a2 & 0xff) != (u32)g_localPlayer) {
+                    if ((a2 & 0xff) != (u32)g_curPlayer) {
                         return 1;
                     }
-                    if (a8 != (u32)g_localPlayer && F(g, 0x1fc) != 0) {
+                    if (a8 != (u32)g_curPlayer && F(g, 0x1fc) != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
                 res = grid->ClearCell(player, a8, a2, 0, 3);
                 if (res != 0) {
-                    if ((a2 & 0xff) != (u32)g_localPlayer) {
+                    if ((a2 & 0xff) != (u32)g_curPlayer) {
                         return 1;
                     }
-                    if ((u32)g_localPlayer != a4 && F(g, 0x1fc) != 0) {
+                    if ((u32)g_curPlayer != a4 && F(g, 0x1fc) != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                if ((u32)g_localPlayer != player || F(g, 0x1fc) == 0) {
+                if ((u32)g_curPlayer != player || F(g, 0x1fc) == 0) {
                     return 0;
                 }
                 GruntCue(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (player != (u32)g_localPlayer) {
+            if (player != (u32)g_curPlayer) {
                 return 0;
             }
             res = F(g, 0x1fc);

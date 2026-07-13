@@ -18,7 +18,7 @@ extern "C" CGruntzMgr* g_gameReg;
 
 // @early-stop
 // 89.1% - logic byte-faithful: the mode-4/7 dispatch, the eight scalar Read/Write
-// virtual calls, g_serialCount bump, inline strlen/memset, the Lookup + indexed
+// virtual calls, g_serialCounter bump, inline strlen/memset, the Lookup + indexed
 // record resolve, and the AnyValueMatches reverse-probe all match. Residual is one
 // regalloc choice in the lookup range-check: retail keeps `index` in callee-saved
 // esi across the Lookup and materializes the out-init 0 transiently, while cl pins
@@ -45,7 +45,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             arc->Read(&m_20, 8);
             arc->Read(&m_28, 8);
             arc->Read(&m_30, 8);
-            g_serialCount++;
+            g_serialCounter++;
 
             char name[0x80];
             i32 index;
@@ -75,7 +75,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         arc->Write(&m_20, 8);
         arc->Write(&m_28, 8);
         arc->Write(&m_30, 8);
-        g_serialCount++;
+        g_serialCounter++;
 
         void* obj = m_38;
         char name[0x80];

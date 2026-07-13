@@ -74,7 +74,6 @@ extern CButeMgr g_buteMgr;
 // <Gruntz/Teleporter.h> (extern "C" u32 g_engineFrameDelta), included above.
 
 // The current local player index (g_curPlayer) the teleporter warp gates on.
-DATA(0x00244c54)
 extern "C" i32 g_curPlayer;
 
 // The wormhole-type marker: the address of CWormhole's vtable slot-4 method. The

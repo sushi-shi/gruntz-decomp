@@ -53,7 +53,6 @@ extern "C" {
 }
 
 // Empty mutable string in .data copied into the working buffer up front.
-DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // The retail game-global timeGetTime fn-ptr (_g_pTimeGetTime @ 0x6c4650), NOT the

@@ -113,7 +113,6 @@ extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e978)
 CToobColl g_toobColl;
-DATA(0x002bf464)
 extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
 
@@ -170,9 +169,7 @@ static inline CToobEntry* ToobLookup(i32 coord) {
 // name->id map; g_typeCounter (0x61aea8) is the running id counter; s_codeA
 // (0x60a454) is the "A" key.
 // ---------------------------------------------------------------------------
-DATA(0x0021aea8)
 extern i32 g_typeCounter;
-DATA(0x0020a454)
 extern char s_codeA[];
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)

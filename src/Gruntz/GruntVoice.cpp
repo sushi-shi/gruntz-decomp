@@ -31,7 +31,6 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // The global running game clock (DAT_00645588); the value-load reloc-masks.
-DATA(0x00245588)
 extern "C" u32 g_frameTime;
 
 // Reloc-fidelity bindings for the registry statics whose plain externs live in
@@ -90,7 +89,6 @@ CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 // (0x6bf620, mangled-named) doubles as the name->id map; g_typeCounter (0x61aea8)
 // is the running id counter; s_codeA (0x60a454) is the "A" key; the scratch
 // name registry is @0x6bf650 (same shape as g_vtrigColl).
-DATA(0x0021aea8)
 extern i32 g_typeCounter;
 // s_codeA is the "A" key byte-array @0x60a454 (RVA 0x20a454); the DATA binding lives
 // in toobspikez (?s_codeA@@3PADA), so this is a plain extern here.
@@ -166,7 +164,6 @@ SIZE_UNKNOWN(CVoiceHit);
 // label). The on-screen window bounds are at +0x13c/+0x140/+0x144/+0x148; the
 // cue receiver at +0x60 (CueA's `this`) and the probe sink at +0x68 (QueryAt's
 // `this`).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The current-area index (DAT_00644c54, VA 0x644c54 / RVA 0x244c54); the trigger
@@ -518,7 +515,7 @@ i32 CVoiceTrigger::Tick() {
 // is structurally byte-exact - every offset, immediate, call arg and branch
 // matches retail. The sole residual is a ~2-3 instruction phase shift: MSVC fills
 // the latency slot after the ComputeDuration call by hoisting the `m_14` load
-// (edx) up, which in turn swaps the adjacent {m_58:=g_iconDefault, m_5c:=0}
+// (edx) up, which in turn swaps the adjacent {m_58:=g_frameTime, m_5c:=0}
 // stores; retail loads m_14 late (after the icon stores) and keeps m_58 before
 // m_5c. No source reorder flips the allocator (m_58/m_5c swap -> 83%, a captured
 // m_14 local -> 70%, m_6c hoist -> 83%); the in-order spelling at 85% is the best.
@@ -533,7 +530,7 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     m_sample = (i32)sample;
     m_durationMs = ((StreamVoice*)sample)->ComputeRatio();
     m_64 = 0;
-    m_icon = g_iconDefault;
+    m_icon = g_frameTime;
     m_5c = 0;
     m_playFlags = a2;
     m_prevAnimSetNode = m_objAux->m_1c;

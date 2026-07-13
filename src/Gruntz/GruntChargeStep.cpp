@@ -40,7 +40,6 @@
 #include <Gruntz/TriggerMgr.h>       // canonical CTriggerMgr (the +0x260 board)
 
 extern "C" {
-    DATA(0x0024556c)
     extern "C" WwdGameReg* g_gameReg;
 }
 

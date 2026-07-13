@@ -69,7 +69,6 @@ extern CButeMgr g_attractButeMgr;
 // reads it off the canonical g_gameReg pointer at ds:0x64556c (verified in InputVirtual/
 // Activate/LoadTitleConfig: mov ecx,ds:0x64556c; mov eax,[ecx+0x80]). Canonical DATA at
 // 0x24556c (the CMgrPersistObj::Save m_world gate is the same object).
-DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // The attract-state count divisor (DAT_00645534, a writable global int).

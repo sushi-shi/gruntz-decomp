@@ -55,7 +55,6 @@
 // both call sites' rel32 (`mov ecx,[0x64556c]; push msg; call 0x417e`); the former
 // `?ReportError@CGameRegistry@@QAEXPBD@Z` was a phantom alias of it.
 extern "C" {
-    DATA(0x0024556c)
     extern "C" CGruntzMgr* g_gameReg;
 }
 
