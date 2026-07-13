@@ -2931,7 +2931,6 @@ i32 CPlay::DrawWorldFrames() {
 // shared text sink g_profSink.
 // ===========================================================================
 extern "C" {
-    DATA(0x002c4650)
     // The profiler line sink (a global text buffer; its ADDRESS is the logger arg).
     DATA(0x00245524)
     extern i32 g_profSink; // DAT_00645524
@@ -5184,7 +5183,6 @@ void CPlay::Vslot26() {
 // the m_1bc gate is set, else advance via the manager (m_4->Post, level index + 1). The
 // PostMessageA calls go through the cached ::PostMessageA fn-ptr (bare 0x6c44c8, no
 // import symbol). Re-homed from the ApiCaller stubs (was Dispatcher_0cfbd0::Dispatch).
-DATA(0x002c44c8)
 // @early-stop
 // regalloc-rotation wall (98.4%): logic, instruction selection, hop counts and
 // order are byte-identical (llvm-objdump -dr / sema disasm --diff). The only

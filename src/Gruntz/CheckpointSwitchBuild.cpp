@@ -42,9 +42,9 @@ struct CStatzGameReg {
 DATA(0x0024556c)
 extern CStatzGameReg* g_statzGameReg; // *0x64556c
 DATA(0x0020aa34)
-extern char g_statzTabSpriteName[]; // CreateSprite name buffer
+char g_statzTabSpriteName[] = "BehindCandy"; // CreateSprite name buffer
 DATA(0x0020f928)
-extern char g_statzTabCfgTag[]; // Configure tag global
+char g_statzTabCfgTag[] = "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"; // Configure tag global
 
 // The class itself now lives in <Gruntz/TileTriggerSwitchLogic.h> (real derived class, no
 // data members, sizeof 0x8c). BuildSmall is its slot-1 override; the base's slot-0 "build"

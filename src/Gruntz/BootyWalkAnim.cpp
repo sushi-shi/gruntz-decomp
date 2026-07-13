@@ -41,7 +41,7 @@ extern char s_codeA[]; // "A" (0x60a454)
 
 // The per-player secret-letter table "WARP" (0x5e93a8); CString::Format @0x1b2cf5.
 DATA(0x001e93a8)
-extern char g_secretChars[]; // "WARP"
+char g_secretChars[] = "WARP"; // "WARP"
 
 // ===========================================================================
 // BuildBootyWalkingGruntz @0x1b450 - the ONE-TIME setup that creates the four

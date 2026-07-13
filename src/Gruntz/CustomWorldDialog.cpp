@@ -303,7 +303,6 @@ namespace m4 {
 
 // FillLevelInfoDialog reaches USER32 through the game's cached fn-pointers (bare
 // 0x6c45xx absolutes, no import symbols) - the same pattern as g_pPostMessageA.
-DATA(0x002c4564)
 DATA(0x002c4554)
 // The listbox-selection precheck (0x2176, cdecl).
 extern "C" i32 func_2176(HWND hDlg);

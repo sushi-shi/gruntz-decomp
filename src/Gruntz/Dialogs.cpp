@@ -551,7 +551,6 @@ void CBattlezDlg::ApplyColorSlot3() {
 // local CString) and, if non-empty, push it into the combo's child edit
 // (GetWindow(GW_CHILD) -> FromHandle -> SetWindowText) and latch m_68 = 0. /GX EH
 // frame unwinds the local CString.
-DATA(0x002c44a4)
 // @early-stop
 // 96.8%: full logic byte-exact (combo GetCurSel via ::SendMessageA, GetLBText into the
 // local CString, GetWindow(GW_CHILD)/FromHandle/SetWindowText, m_68 latch). Residual is the

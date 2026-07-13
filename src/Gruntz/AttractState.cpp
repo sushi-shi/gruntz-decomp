@@ -77,7 +77,7 @@ extern "C" {
 // (0x6293f4) the ATTRACT_TITLE key is built from; the sound-enabled gate; the cached
 // timeGetTime / wsprintfA import fn-ptrs the title roll reaches through. All reloc-masked.
 DATA(0x0020b5bc)
-extern char s_dat60b5bc[];
+char s_dat60b5bc[] = "2";
 DATA(0x002293f4)
 extern char g_emptyString[];
 DATA(0x0021ab20)

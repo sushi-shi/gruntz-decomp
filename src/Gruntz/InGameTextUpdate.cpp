@@ -94,7 +94,7 @@ extern "C" i32 g_curPlayer; // current area index
 extern i32 g_sndEnabled;    // cue enable gate
 extern i32 g_sndCueTag;     // ?g_sndCueTag@@3HA (HELPBOOK sound token)
 DATA(0x0020d7f8)
-extern char s_codeK[]; // "K" (0x60d7f8) - the anim type-code literal
+char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal
 
 // @early-stop
 // regalloc/scheduling wall (~76%): complete + correct, verified instruction-by-

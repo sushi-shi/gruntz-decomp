@@ -1210,13 +1210,38 @@ def main():
     # above, which is how this was finally caught.)
     # ------------------------------------------------------------------
     orphans = []
+    # The invariant, stated once: BETWEEN TWO ANNOTATION LINES THERE MUST BE A DECLARATION.
+    # An annotation annotates exactly one declaration, so if the next thing after it (past
+    # blanks and comments) is EOF or ANOTHER annotation, the first one is dangling.
+    #
+    # The blank-line-only check this started as was too weak, and the weakness was live: it
+    # missed STACKED orphans, where a removed declaration leaves its DATA() piled on top of
+    # the next one's -
+    #
+    #     DATA(0x002c44a4)      <- decl deleted; dangling
+    #     DATA(0x002c44f0)      <- decl deleted; dangling
+    #     DATA(0x002c4520)      <- decl deleted; dangling
+    #     DATA(0x002c44d8)      <- decl deleted; dangling
+    #     DATA(0x0021243c)
+    #     char s_UsingCmdDelay[] = "...";
+    #
+    # - which bound s_UsingCmdDelay to FIVE rvas, four of them import-table slots. Found by
+    # auditing symbol_names.csv for one name mapped to several rvas (the g_faderHalf
+    # signature); that audit is what this rule now enforces at the source.
+    _ANN = re.compile(r"\s*(?:DATA|RVA)\([^)]*\)\s*$")
     for tu in args.tu:
         try:
             lines = Path(tu).read_text(encoding="latin-1").split("\n")
         except OSError:
             continue
-        for i, ln in enumerate(lines[:-1]):
-            if re.match(r"\s*(?:DATA|RVA)\([^)]*\)\s*$", ln) and not lines[i + 1].strip():
+        for i, ln in enumerate(lines):
+            if not _ANN.match(ln):
+                continue
+            j = i + 1
+            while j < len(lines) and (not lines[j].strip()
+                                      or lines[j].lstrip().startswith("//")):
+                j += 1
+            if j >= len(lines) or _ANN.match(lines[j]):
                 orphans.append((tu, i + 1, ln.strip()))
     if orphans:
         for tu, n, txt in orphans:

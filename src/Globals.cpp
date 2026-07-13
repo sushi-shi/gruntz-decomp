@@ -67,13 +67,13 @@ extern const double g_slimeSpeedNum; // VA 0x5ea3e0
 DATA(0x001eaae8)
 extern const double g_projPhase0;
 DATA(0x001ef698)
-extern const double c_volScale; // 0x5ef698  v / c_volScale, and the final * c_volScale
+extern const double c_volScale = 100.0; // 0x5ef698  v / c_volScale, and the final * c_volScale
 DATA(0x001ef6a0)
-extern const double c_volNum; // 0x5ef6a0  numerator of the reciprocal
+extern const double c_volNum = 1.0; // 0x5ef6a0  numerator of the reciprocal
 DATA(0x001ef6a8)
-extern const double c_powExp; // 0x5ef6a8  pow() exponent
+extern const double c_powExp = 10.0; // 0x5ef6a8  pow() exponent
 DATA(0x001ef6b0)
-extern const double c_acosNorm; // 0x5ef6b0  acos() normalizer arg
+extern const double c_acosNorm = 2.0; // 0x5ef6b0  acos() normalizer arg
 // The GetRetAddr diagnostic breadcrumb: the coordinate registries (ActColl / ProjAct
 // / ZVec / TypeKeyColl) stamp the caller's return address here right before an Insert.
 // Write-only (no reader); the "ActAlloc"/"ProjActAlloc"/"zvecErr" names were misnomers.
@@ -83,9 +83,9 @@ extern void* g_retAddrBreadcrumb; // 0x6bf428
 DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
 DATA(0x001f04f8)
-extern const double g_motionNegHalf;
+extern const double g_motionNegHalf = -0.5;
 DATA(0x0020a7ac)
-extern char g_wormholeSpawnKey[]; // "Wormhole" @ 0x60a7ac
+char g_wormholeSpawnKey[] = "Wormhole"; // "Wormhole" @ 0x60a7ac
 DATA(0x0020aac8)
 extern i32 g_desc60aac8;
 DATA(0x0020b588)
@@ -139,11 +139,11 @@ char k_60df94[] = "S";
 DATA(0x002111b0)
 extern u8 g_6111b0; // 0x6111b0
 DATA(0x00211ab8)
-extern char s_GameMessagez[]; // s_GAME_MESSAGEZ_00611ab8 (image-set name literal)
+char s_GameMessagez[] = "GAME_MESSAGEZ"; // s_GAME_MESSAGEZ_00611ab8 (image-set name literal)
 // g_warpX / g_warpY DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
 // g_archiveDefault612618 / g_dat613054 DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x002135e8)
-extern char s_PREVIEW_6135e8[]; // "PREVIEW"
+char s_PREVIEW_6135e8[] = "PREVIEW"; // "PREVIEW"
 DATA(0x0021ab14)
 extern i32 g_wwdObjIdCounter; // 0x61ab14
 DATA(0x00224fe8)

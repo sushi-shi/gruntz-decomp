@@ -1124,7 +1124,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 DATA(0x0021aea8)
 extern i32 g_typeCounter;
 DATA(0x0020a454)
-extern char s_codeA[];
+char s_codeA[] = "A";
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A

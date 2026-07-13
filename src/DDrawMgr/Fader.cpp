@@ -355,7 +355,8 @@ static __inline i32 FxRand(i32 range) {
     return (((i32)g_fxRandSeed >> 16) & 0x7fff) % range;
 }
 
-extern const float g_faderScale_5f085c;       // 0x5f085c  intensity->magnitude scale
+DATA(0x001f085c)
+extern const float g_faderScale_5f085c = 0.01f; // 0x5f085c  intensity->magnitude scale
 void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
 
 // @early-stop
@@ -451,7 +452,7 @@ CFaderLight::~CFaderLight() {
 // The corner-distance exponent (retail .rdata double @0x5f0888 = 2.0); passed to the
 // __CIpow intrinsic so the squarings emit `fild x; fld K; call pow`.
 DATA(0x001f0888)
-extern const double g_faderPowK; // 2.0
+extern const double g_faderPowK = 2.0; // 2.0
 
 // SIZE annotations for the ShadeTableCache.h classes are hosted here (a neutral
 // includer) rather than in the header: shadetablecache.cpp reschedules under any
@@ -1266,15 +1267,15 @@ extern "C" int __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
 // The radial-fade FP constants (retail .rdata): fade divisor half, the sqrt->units
 // scale, and the two -1.0 bias subtractions the per-cell fade formula applies.
 DATA(0x001f0828)
-extern const float g_faderHalf; // 0.5
+extern const float g_faderHalf = 0.5f; // 0.5
 DATA(0x001f0830)
-extern const double g_faderScale; // 10000.0
+extern const double g_faderScale = 10000.0; // 10000.0
 DATA(0x001f0838)
-extern const double g_faderBiasR; // -1.0  (r - K == r + 1.0)
+extern const double g_faderBiasR = -1.0; // -1.0  (r - K == r + 1.0)
 DATA(0x001f0840)
-extern const float g_faderBiasFade; // -1.0  (fade - K == fade + 1.0)
+extern const float g_faderBiasFade = -1.0f; // -1.0  (fade - K == fade + 1.0)
 DATA(0x001f0844)
-extern const float g_faderOne; // 1.0  (per-cell render threshold: fade - frame > 1.0)
+extern const float g_faderOne = 1.0f; // 1.0  (per-cell render threshold: fade - frame > 1.0)
 
 // The image-source descriptor reached via FrConfig::m_imageSrc: dimension/handle
 // at +0x0c that seeds BuildSurface.

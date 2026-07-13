@@ -16,7 +16,7 @@
 // _mbscmp). Reloc-masked rel32; the ".." is the shared $SG constant (0x5ee8ec) the
 // ButeMgr parser also references, so reach it by symbol so the DIR32 pairs.
 DATA(0x001ee8ec)
-extern char g_dotDot[]; // 0x5ee8ec  ".."
+char g_dotDot[] = "."; // 0x5ee8ec  ".."
 
 // Load: the special ".." name forwards to the slot-15 handler (LoadSpecial); otherwise
 // open `name`, require >= 4 bytes, slurp it whole into m_loadBuffer, and run the

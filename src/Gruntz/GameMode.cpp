@@ -372,7 +372,6 @@ DATA(0x0020b8f8)
 extern RECT g_levelMsgRectsB[8]; // 0x60b8f8  (shared with BootyMessages - stays extern)
 DATA(0x00229ef8)
 extern CString g_levelMsgStrings[8]; // 0x629ef8
-DATA(0x002c44bc)
 DATA(0x0021ab24)
 extern i32 g_sndCueTag; // 0x61ab24
 DATA(0x0021ab20)

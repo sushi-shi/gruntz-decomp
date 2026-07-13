@@ -47,11 +47,7 @@ extern CMulti* g_64bd5c;
 extern "C" char g_emptyString[];
 // USER32 entry points reached through the game's own IAT-style function pointers
 // (ff 15 [ptr]); UpdatePlayers drives its listboxes/redraws through them.
-DATA(0x002c44a4)
-DATA(0x002c44f0)
-DATA(0x002c4520)
 // More USER32 entry points via the game's own IAT-style pointers.
-DATA(0x002c44d8)
 // The EchoLatencySettings printf format (.data), DEFINED here (owner TU). The retail
 // bytes are exactly this 44-byte string, so the initializer is byte-faithful.
 DATA(0x0021243c)
