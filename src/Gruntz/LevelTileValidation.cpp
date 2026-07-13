@@ -36,12 +36,12 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/TriggerMgr.h>
 
-#include <Gruntz/ChatBoxOwner.h> // CChatBoxOwner (this->m_2e0; Configure @0x20530)
-#include <Gruntz/Play.h>         // ::CPlay - the REAL class of this TU's CLevelValidator view
-                                 // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
-#include <Gruntz/GruntzMgr.h>    // ::CGruntzMgr - the RTTI-true *0x24556c singleton AND
-                                 // CState::m_4 (m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_options)
-#include <Gruntz/UserLogic.h>    // CGameObject + CGameObjAux - the objects being validated
+#include <Gruntz/ChatBoxOwner.h>  // CChatBoxOwner (this->m_2e0; Configure @0x20530)
+#include <Gruntz/Play.h>          // ::CPlay - the REAL class of this TU's CLevelValidator view
+                                  // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
+#include <Gruntz/GruntzMgr.h>     // ::CGruntzMgr - the RTTI-true *0x24556c singleton AND
+                                  // CState::m_4 (m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_options)
+#include <Gruntz/UserLogic.h>     // CGameObject + CGameObjAux - the objects being validated
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory + CSpriteListNode - the live-object list
 #include <Gruntz/GameLevel.h>     // CGameLevel - the +0x24 level (image sets @+0x48, plane @+0x5c)
 #include <Gruntz/ImageSets.h>     // CImageSet1 - the tile-attrib class (GetCollisionAt, slot 8)
@@ -441,7 +441,9 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
+                        g_gameReg->EnterModalUI(
+                            (LPCSTR)s
+                        ); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -466,7 +468,9 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
+                        g_gameReg->EnterModalUI(
+                            (LPCSTR)s
+                        ); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -491,7 +495,9 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
+                        g_gameReg->EnterModalUI(
+                            (LPCSTR)s
+                        ); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -516,7 +522,9 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
+                        g_gameReg->EnterModalUI(
+                            (LPCSTR)s
+                        ); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -541,7 +549,9 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
+                        g_gameReg->EnterModalUI(
+                            (LPCSTR)s
+                        ); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -566,7 +576,9 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
+                        g_gameReg->EnterModalUI(
+                            (LPCSTR)s
+                        ); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -591,7 +603,9 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
+                        g_gameReg->EnterModalUI(
+                            (LPCSTR)s
+                        ); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -616,7 +630,9 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
+                        g_gameReg->EnterModalUI(
+                            (LPCSTR)s
+                        ); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;

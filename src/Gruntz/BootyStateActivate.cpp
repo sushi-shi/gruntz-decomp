@@ -224,14 +224,8 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     m_scratchX = 0;
     m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
-        CGameObject* a = g_gameReg->m_world->m_8->CreateSprite(
-            0,
-            0,
-            0,
-            (i != m_letterIdx) ? 1 : 3,
-            "DoNothing",
-            3
-        );
+        CGameObject* a = g_gameReg->m_world->m_8
+                             ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;
@@ -807,7 +801,6 @@ void CMultiBootyState::DrawBattleStats() {
     rc.bottom = 0x73;
     DrawStatText(m_c, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
-
 
 // ---------------------------------------------------------------------------
 // CMultiBootyState::Render (slot 5, +0x14, 0x1f480) - the booty-countdown per-frame
