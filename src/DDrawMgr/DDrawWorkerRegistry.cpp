@@ -219,7 +219,7 @@ i32 CDDrawWorkerRegistry::InsertWorkerKey(CSymTab* dir, const char* sub, const c
         } else {
             strcpy(buf, e->m_name);
         }
-        count += ((CWorkerVtableView*)this)->Vfunc48(e, buf, (void*)prefix);
+        count += ((CWorkerVtableView*)this)->InstallTree(e, buf, prefix);
         e = (RegDirEntry*)dir->NextSub(e);
     }
     if (sub != 0 && *sub != 0) {
@@ -259,7 +259,7 @@ i32 CDDrawWorkerRegistry::LookupWorkerKey(CSymTab* dir, const char* sub, const c
         } else {
             strcpy(buf, e->m_name);
         }
-        i32 r = ((CWorkerVtableView*)this)->Vfunc4C(e, buf, (void*)prefix);
+        i32 r = ((CWorkerVtableView*)this)->LoadNamespace(e, buf, prefix);
         if (r < 0) {
             operator delete(buf);
             return -1;

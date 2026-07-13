@@ -5556,7 +5556,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     if (!tiles) {
         return 0;
     }
-    self->m_c->m_10->Install(tiles, g_emptyString, "_");
+    self->m_c->m_10->InstallTree(tiles, g_emptyString, "_");
     return 1;
 }
 
@@ -5640,7 +5640,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
     if (!images) {
         return 0;
     }
-    self->m_c->m_10->Install(images, "LEVEL", "_");
+    self->m_c->m_10->InstallTree(images, "LEVEL", "_");
     g_resourceInstallActive = 0;
     return 1;
 }
@@ -5663,7 +5663,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     if (!images) {
         return 0;
     }
-    self->m_c->m_10->Install(images, "GAME", "_");
+    self->m_c->m_10->InstallTree(images, "GAME", "_");
     g_resourceInstallActive = 0;
     return 1;
 }
@@ -5943,7 +5943,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
                 goto done;
             }
             ((CWorkerVtableView*)m_c->m_10)
-                ->Vfunc48(tree, "GRUNTZ_" + name, (void*)"_"); // LoadTree +0x48
+                ->InstallTree(tree, "GRUNTZ_" + name, "_"); // slot 18 (+0x48)
             g_resourceInstallActive = 0;
             if (finishGate != 0) {
                 ((CMulti*)finishGate)->AckJoinFailure(); // 0x35e4, ecx=notify
@@ -6007,7 +6007,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_NORMALGRUNT", "_");
+        self->m_c->m_10->InstallTree(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6017,7 +6017,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_DEATHZ", "_");
+        self->m_c->m_10->InstallTree(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6027,7 +6027,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_ENTRANCEZ", "_");
+        self->m_c->m_10->InstallTree(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6037,7 +6037,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_EXITZ", "_");
+        self->m_c->m_10->InstallTree(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6047,7 +6047,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
+        self->m_c->m_10->InstallTree(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6057,7 +6057,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_PICKUPS", "_");
+        self->m_c->m_10->InstallTree(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -6067,7 +6067,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_BOMBGRUNT", "_");
+        self->m_c->m_10->InstallTree(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }

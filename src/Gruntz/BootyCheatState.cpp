@@ -155,7 +155,7 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
         if (!imagez) {
             goto fail;
         }
-        m_c->m_10->Install(imagez, "BOOTY", "_");
+        m_c->m_10->InstallTree(imagez, "BOOTY", "_");
     }
 
     {

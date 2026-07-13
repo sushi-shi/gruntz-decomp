@@ -13,7 +13,7 @@
 // load-bearing. The shared registry views (CRegSub30 / CRegTypeTable) live in
 // <Gruntz/SerialRecView.h>.
 #include <rva.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (the name map at g_gameReg->m_world +0x10)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (reader; Read @ vtable +0x2c)
@@ -79,7 +79,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         m_8 = out;
     } else {
         m_8 = 0;
@@ -93,7 +93,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -112,7 +112,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -131,7 +131,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -150,7 +150,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -169,7 +169,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {

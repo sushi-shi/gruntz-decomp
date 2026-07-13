@@ -197,7 +197,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (img == 0) {
         return 0;
     }
-    m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
+    m_c->m_10->InstallTree(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
     CSpriteFactory* f = g_gameReg->m_world->m_8;
 

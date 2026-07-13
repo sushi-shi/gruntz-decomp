@@ -87,7 +87,7 @@ i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         m_30 = out;
     } else {
         m_30 = 0;
@@ -97,7 +97,7 @@ i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         m_34 = out;
     } else {
         m_34 = 0;
@@ -107,7 +107,7 @@ i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         m_38 = out;
     } else {
         m_38 = 0;
@@ -119,7 +119,7 @@ i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -138,7 +138,7 @@ i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -157,7 +157,7 @@ i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, out);
+        reg->m_10->m_map.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {

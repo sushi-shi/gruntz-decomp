@@ -31,6 +31,7 @@ extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 // TU-local decls with the exact pointer arg types (load-bearing for the mangled names).
 #include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CWorkerVtableView)
 class CCatalogNode;
 class CDDrawSubMgrLeaf {
 public:
@@ -378,31 +379,11 @@ extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA (Image inst
 // only the TWO dispatched slots - Install at vtable slot 18 (+0x48) and ProcessNew
 // at slot 20 (+0x50), both __thiscall. Its CMapStringToOb source map is embedded at
 // +0x10. Real polymorphic view: 18 fillers precede Install.
-struct ObjImageRegistry {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Install(void* h, char* name, const char* g); // slot 18 (+0x48)
-    virtual void Slot19();
-    virtual void ProcessNew(void* val); // slot 20 (+0x50) - the list/map element is a raw void*
-    char m_pad04[0x10 - 0x4];
-    CMapStringToOb m_map; // +0x10  source map (CString -> CImage*)
-};
+// (The ObjImageRegistry 19-filler view is GONE: it IS the canonical CWorkerVtableView
+// (<DDrawMgr/DDrawWorkerRegistry.h>) - same object (vptr@0, CMapStringToOb@+0x10), same
+// slot 18 (+0x48) InstallTree, and its "ProcessNew(void*)" @ slot 20 (+0x50) is that
+// class's RemoveWorker at the SAME rva 0x155280.)
+typedef CWorkerVtableView ObjImageRegistry;
 
 // The Sound registry (entry->m_28): concrete; CMapStringToPtr source map at +0x10,
 // ProcessNew/Install are direct __thiscall methods.
@@ -467,7 +448,7 @@ i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src) {
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToOb* srcMap = &entry->m_10->m_map;
+    CMapStringToOb* srcMap = &entry->m_10->m_10map;
     if (srcMap == 0) {
         return 0;
     }
@@ -491,7 +472,7 @@ i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src) {
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
         void* obj = toAdd.GetNext(dp);
-        entry->m_10->ProcessNew(obj);
+        entry->m_10->RemoveWorker(obj);
     }
     toAdd.RemoveAll();
 
@@ -514,7 +495,7 @@ i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            entry->m_10->Install(handle, (char*)(LPCTSTR)e->GetName(), "");
+            entry->m_10->InstallTree(handle, (char*)(LPCTSTR)e->GetName(), "");
             g_resourceInstallActive = 0;
             e->m_flag = 1;
         }
@@ -728,7 +709,6 @@ i32 CAreaMgr::SameGroup(i32 a) {
 }
 
 SIZE_UNKNOWN(ObjAnimRegistry);
-SIZE_UNKNOWN(ObjImageRegistry);
 SIZE_UNKNOWN(ObjSoundRegistry);
 SIZE_UNKNOWN(ObjSpawnEntry);
 

@@ -19,15 +19,12 @@
 // a header-level decl pins one view's type on every includer and blocks the
 // CGameRegistry == CGruntzMgr fold. Each includer declares it with the type it needs.
 
-// The registry leaf reached as g_gameReg->m_world->m_10: a CDDrawWorkerRegistry with
-// the name map at +0x10 (read path) and the reverse name+index probe (write path).
-SIZE_UNKNOWN(CDDrawWorkerRegistry);
-class CDDrawWorkerRegistry {
-public:
-    char _00[0x10];
-    CMapStringToOb m_10;                                          // +0x10
-    i32 AnyValueMatches_155630(i32 obj, i32 nameBuf, i32 idxPtr); // 0x155630
-};
+// The registry leaf reached as g_gameReg->m_world->m_10 IS the canonical
+// CWorkerVtableView (<DDrawMgr/DDrawWorkerRegistry.h>): same object, same
+// CMapStringToOb at +0x10, and this view's AnyValueMatches_155630 is that class's
+// ReadField at the SAME rva 0x155630. The 4th duplicate definition of this class is
+// dissolved (it was an ODR divergence the two never-meeting TUs hid).
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 
 // The record CMapStringToOb::Lookup yields, viewed as a bounded element array.
 SIZE_UNKNOWN(CMgrLookupRec);

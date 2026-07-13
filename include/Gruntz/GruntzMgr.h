@@ -97,7 +97,11 @@ typedef CDDrawSubMgrLeafScan CSndHost;
 // decl suffices (GruntzMgr.cpp includes the real header). The ex-CWorldLookupHolder view
 // is dissolved: its "map-type contradiction" was an inverted tree label (0x1b8008 IS
 // CMapStringToOb::Lookup), not a binary fact.
-struct CImageRegistry;
+// The image/name registry IS the canonical CWorkerVtableView
+// (<DDrawMgr/DDrawWorkerRegistry.h>); an elaborated fwd decl of the old placeholder
+// name would re-declare a DISTINCT class and silently out-rank the typedef (MSVC5).
+class CWorkerVtableView;
+typedef CWorkerVtableView CImageRegistry;
 // [The CWorldZ view is DISSOLVED (Fable lane, 2026-07-13): the loaded-world object
 // at +0x30 IS the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) == the
 // polymorphic CDDrawSurfaceMgr (see the settled-identity note there). The old

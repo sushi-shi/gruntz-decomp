@@ -64,11 +64,29 @@ public:
     virtual void Forward34_154f00();       // [15] +0x3c 0x154f00
     virtual void DispatchKeyed34_154be0(); // [16] +0x40 0x154be0
     virtual void Probe_156e80();           // [17] +0x44 0x156e80
-    virtual i32 Vfunc48(void* a, const char* b, void* c); // [18] +0x48 0x154f80 (tree LoadTree)
-    virtual i32 Vfunc4C(void* a, const char* b, void* c); // [19] +0x4c 0x155160
-    virtual void RemoveWorker_155280();                   // [20] +0x50 0x155280
-    virtual void Vfunc54(const char* key);                // [21] +0x54 0x156ec0 (RemoveByKey)
-    virtual void MapTeardown_1552b0();                    // [22] +0x58 0x1552b0
+    // [18] +0x48 0x154f80 - install a resolved symbol TREE under a (name, separator)
+    // prefix. The ex-CImageRegistry/ObjImageRegistry "Install" and the
+    // ex-CDDrawWorkerRegistry "LoadTree" are this ONE slot (the const char*/char* and
+    // void*/const char* arg spellings of the three views unify as the superset below).
+    virtual i32 InstallTree(void* tree, const char* szName, const char* szKey);
+    // [19] +0x4c 0x155160 - register a resolved namespace under a prefix; returns -1 on
+    // failure (the RESOURCE-facet op the game-state activators reach: CBootyState /
+    // CMenuState / CPlay slot-8 loaders, StateImages' m_c->m_10->LoadNamespace).
+    virtual i32 LoadNamespace(void* tree, const char* szName, const char* szKey);
+    // [20] +0x50 0x155280 - drop a worker/value from the registry (the ex-ObjImageRegistry
+    // "ProcessNew(void*)" call site hands it the raw map element).
+    virtual void RemoveWorker(void* value);
+    virtual void Vfunc54(const char* key); // [21] +0x54 0x156ec0 (RemoveByKey)
+    virtual void MapTeardown_1552b0();     // [22] +0x58 0x1552b0
+
+    // --- layout (the union of the three ex-views; all agreed) ---------------------
+    // vptr occupies +0x00..+0x03.
+    char m_pad04[0x10 - 0x4];
+    CMapStringToOb m_10map; // +0x10  the name -> sprite/worker hash table
+
+    // Non-virtual entries the registry's own method set exposes (reloc-masked; the
+    // ex-views reached these by direct call, not through a slot).
+    void ReadField(i32 handle, char* tmp, i32* outZero); // 0x155630 (frame-name reverse lookup)
 };
 
 // ---------------------------------------------------------------------------

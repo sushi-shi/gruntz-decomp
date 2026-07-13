@@ -521,7 +521,8 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymTab* arg1, i32 arg2) {
     if (result == 0) {
         return 0;
     }
-    return ((CWorkerVtableView*)this)->Vfunc48(result, g_emptyString, &g_dat60b588);
+    return ((CWorkerVtableView*)this)
+        ->InstallTree(result, g_emptyString, (const char*)&g_dat60b588);
 }
 
 // ---------------------------------------------------------------------------

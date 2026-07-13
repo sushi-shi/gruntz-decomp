@@ -27,12 +27,9 @@
 #include <Gruntz/ResMgr.h>
 #include <Gruntz/Sprite.h>
 
-class CDDrawWorkerRegistry {
-public:
-    i32 HasKeyEqual_155550(const char* k);
-    i32 RemoveKeysEqual_155360(const char* a, const char* b);
-    void Method_155630(i32 h, char* t, i32* o);
-}; // 0x155550/0x155360/0x155630
+// (The 5th local CDDrawWorkerRegistry duplicate is GONE - the canonical class comes in
+// via <Gruntz/ResMgr.h> -> <DDrawMgr/DDrawWorkerRegistry.h>, and this view's
+// "Method_155630" is its AnyValueMatches_155630 at the SAME rva.)
 
 // CPlaneRender (world->screen transform, g_gameReg->m_world->m_24->m_5c) is the shared
 // <Wwd/WwdFile.h> class: m_wrapW (+0x30) clamps the bar position;
@@ -441,7 +438,8 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frame) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_frame, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)
+                ->AnyValueMatches_155630((i32)m_frame, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -452,7 +450,8 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_button0Frame) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_button0Frame, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)
+                ->AnyValueMatches_155630((i32)m_button0Frame, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -464,7 +463,8 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
         i32 v20 = m_button1Frame;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630(v20, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)
+                ->AnyValueMatches_155630((i32)v20, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);

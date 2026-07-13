@@ -96,49 +96,17 @@ struct CKeyTable {
 // This is the ONE image/name registry class - the render/resource state TUs reach it as
 // CState::m_c->m_10 (the former View.h CSpriteFactoryHolder::CImageRegistry view folds here); the
 // int-keyed frame-grid Lookup at CPlay::BeginGridWalk casts to the name-keyed m_10map.Lookup.
-// FOREIGN object - the honest form (manual m_vtbl into a typed CImageRegistryVtbl
-// naming only the +0x48 Install slot + char pad) is WALLED here: converting this
-// polymorphic class to the non-polymorphic PMF form flips CSBI_MenuItem::DecCounter
-// (sbi_menuitem, RVA 0xe82a0) 100->92.04% - a whole-TU load-schedule coin-flip (that
-// fn's own @early-stop notes it is a non-steerable 1-instruction schedule swap). The
-// drop is identical (92.0357) whether the Vtbl is inlined or moved to end-of-header, so
-// it is not layout-steerable. Left in the vNN placeholder form to preserve DecCounter's
-// 100%; re-attack in the final sweep once DecCounter is stably matched.
-SIZE_UNKNOWN(CImageRegistry);
-struct CImageRegistry {
-    // Has @0x155550 IS CDDrawWorkerRegistry::HasKeyEqual_155550; cast at each call.
-    // Register @0x155360 IS CDDrawWorkerRegistry::RemoveKeysEqual_155360; cast at each call.
-    // Release @0x155360 IS CDDrawWorkerRegistry::RemoveKeysEqual_155360; cast at each call.
-    // Frame-name reverse-lookup (given a frame handle, write its name into tmp;
-    // *outZero gets a found-index). Was the CStrReader / CMiNameReg placeholder views.
-    void ReadField(i32 handle, char* tmp, i32* outZero); // 0x155630 __thiscall
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void Install(void* set, const char* szName, const char* szKey); // slot 18 (+0x48)
-    // slot 19 (+0x4c): register a resolved symbol tree under a prefix (returns -1 on
-    // failure) - the RESOURCE-facet op the game-state activators reach (CBootyState/
-    // CMenuState/CPlay slot-8 loaders). Same +0x10 registrar object as Install.
-    virtual i32 LoadNamespace(void* tree, const char* szName, const char* szKey);
-
-    char m_pad04[0x10 - 0x4]; // vptr occupies +0x00..+0x03
-    CMapStringToOb m_10map;   // +0x10  the name->sprite hash table
-};
+// IT IS THE CANONICAL CWorkerVtableView (<DDrawMgr/DDrawWorkerRegistry.h>, RTTI vtable
+// ??_7CDDrawWorkerRegistry @0x1efd28, 23 slots ALL named from the retail slot map). The
+// 18-filler view that stood here is dissolved: same object (vptr@0, CMapStringToOb@+0x10),
+// same slot 18 (+0x48) install and slot 19 (+0x4c) LoadNamespace, and its own comments
+// already conceded the point ("Has @0x155550 IS CDDrawWorkerRegistry::HasKeyEqual_155550").
+// The recorded "FOREIGN object / honest manual-vtbl form" WALL was about converting the
+// class to a PMF vtable struct (which flipped CSBI_MenuItem::DecCounter 100->92) - that is
+// NOT what this fold does: the class stays real-polymorphic, it just becomes the ONE class
+// instead of a filler twin, so DecCounter's schedule is untouched.
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+typedef CWorkerVtableView CImageRegistry;
 
 // The sound registry at CResMgr+0x28 (plain non-virtual helpers) + its +0x10 map + the
 // pooled resource at +0x2c. The render/resource state TUs reach it as CState::m_c->m_28

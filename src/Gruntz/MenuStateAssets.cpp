@@ -130,7 +130,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
             return 0;
         }
         g_resourceInstallActive = 1;
-        m_c->m_10->Install(set, "MENU", "_");
+        m_c->m_10->InstallTree(set, "MENU", "_");
         g_resourceInstallActive = 0;
     }
 
