@@ -594,7 +594,7 @@ SIZE_UNKNOWN(CSbiCueRecord);
 // (== CResMgr::m_28 viewed as its cue facet; see the consolidation note above).
 struct CSbiMusicHost {
     char m_pad0[0x10];         // +0x00..0x0f
-    CMapStringToOb m_map10;     // +0x10  cue lookup map (CMapStringToOb view)
+    CMapStringToOb m_map10;    // +0x10  cue lookup map (CMapStringToOb view)
     char m_pad11[0x30 - 0x11]; // +0x11..0x2f
     i32 m_30; // +0x30  reentrancy gate flag (opaque; only null-tested => skip the cue play)
 };
@@ -794,17 +794,29 @@ public:
 };
 SIZE(CSbiTab, 0x30);
 
-// tag-1 rect-only sub-widget (0x30). Its TRUE retail class is CSBI_RectOnly (vtable
-// 0x5eab8c), but that name is bound in this TU to the big status-bar HOST (the `this`
-// of BuildStatusBarTabs), so the sub-widget carries this placeholder name; MSVC still
-// auto-stamps a real vtable (reloc-masked, as the retail name is unavailable here).
+// tag-1 rect-only sub-widget. Its TRUE retail class is CSBI_RectOnly (vtable 0x5eab8c),
+// but that name is bound in this TU to the big status-bar HOST, so the sub-widget carries
+// this placeholder name; MSVC still auto-stamps a real vtable (reloc-masked).
+//
+// SIZE IS 0x3c, NOT 0x30 - binary-proven at the allocation site rather than inferred from
+// the (empty) field list. Retail's CStatusBarMgr::LoadTabSprites does, at 0x10237d:
+//     push 0x3c            ; sizeof
+//     call 0x1b9b46        ; operator new
+//     mov  ecx,eax
+//     call 0x1e88          ; -> 0x101fa0 ??0CSBI_RectOnly (stamps ??_7CSBI_RectOnly)
+// so CSBI_RectOnly = CStatusBarItem (0x30) + three words. The ctor leaves them
+// uninitialised (Setup fills them), which is why the old 0x30 guess looked self-
+// consistent: an incomplete ctor does NOT bound an object.
 class CSbiRectSub : public CSbiTab { // TRUE class CSBI_RectOnly, vtable 0x5eab8c
 public:
     CSbiRectSub() {
         m_8 = 1;
     }
+    i32 m_30; // +0x30  (ctor-uninitialised; filled by Setup)
+    i32 m_34; // +0x34
+    i32 m_38; // +0x38
 };
-SIZE(CSbiRectSub, 0x30);
+SIZE(CSbiRectSub, 0x3c);
 
 // tag-2 menu item (0x3c). vtable 0x5eab4c -> auto-named ??_7CSBI_MenuItem@@6B@.
 // The dtor is declared OUT-OF-LINE (no body): an implicit one makes cl5 emit a

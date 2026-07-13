@@ -396,6 +396,15 @@ i32 CAttract::Vslot07() {
     return 1;
 }
 
+// CAttract::Update (slot 4, 0x08cd40): the state-id probe. Defined HERE rather than
+// inline in <Gruntz/Attract.h> because GruntzMgr.cpp also constructs CAttract; an RVA()
+// on an inline header body gets emitted as a COMDAT in every such TU, both claim this
+// rva, and merge_labels re-attributes the symbol away from this unit.
+RVA(0x0008cd40, 0x6)
+GameStateId CAttract::Update() {
+    return GAMESTATE_ATTRACT;
+}
+
 // CAttract::~CAttract() (`??1`, 0x08cd90): the EH-framed destructor (COMDAT-pooled
 // into the 0x08cxxx dtor band). MSVC emits the CAttract-vtable restore + slot-2
 // release (ReleaseResources, statically bound) + CState-vtable restore + base

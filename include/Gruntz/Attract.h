@@ -153,11 +153,15 @@ public:
     // CAttract vtable, runs the slot-2 release, re-stamps CState, chains base cleanup.
     virtual ~CAttract() OVERRIDE;             // slot 0  0x08cd90 (??1) / 0x08cd60 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x0140d0
-    RVA(0x0008cd40, 0x6)
-    virtual GameStateId Update() OVERRIDE {
-        return GAMESTATE_ATTRACT;
-    }
-    virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x0143e0  attract per-frame poll/draw
+    // Update is declared OUT-OF-LINE (body + RVA in AttractState.cpp) ON PURPOSE. An
+    // RVA() sitting on an INLINE body in a header is only safe while exactly ONE TU emits
+    // that COMDAT: the moment a second TU includes the header and instantiates the class
+    // (GruntzMgr.cpp does, to `new CAttract`), cl emits the inline COMDAT there too, both
+    // units claim rva 0x0008cd40, and merge_labels re-attributes the symbol to the last
+    // one - the function silently drops out of attractstate's diff. Keep the body in the
+    // owning TU for any class a second TU constructs.
+    virtual GameStateId Update() OVERRIDE; // slot 4  (+0x10) 0x08cd40
+    virtual i32 Render() OVERRIDE;         // slot 5  (+0x14) 0x0143e0  attract per-frame poll/draw
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x014630  random-title roll (Vfunc3 gate)
     virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x0147b0  host/paint poll
     virtual i32 InputVirtual() OVERRIDE; // slot 8  (+0x20) 0x014520  random-title roll (page gate)

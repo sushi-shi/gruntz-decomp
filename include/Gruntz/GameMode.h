@@ -261,6 +261,18 @@ public:
     i32 m_1b8;         // +0x1b8 fade/poll duration
     CMenuMusic* m_1bc; // +0x1bc menu music controller (player + draw-clock gate)
     char m_pad1c0[0x1d0 - 0x1c0];
+    // @identity-TODO: THIS FIELD IS OUT OF BOUNDS AND SO IS ITS ONLY USER.
+    // CMenuState is 0x1c0 - binary-proven by retail's TransitionState (0x8b960), which does
+    // `push 0x1c0; call ??2@YAPAXI@Z` @0x8be11 and then stamps ??_7CMenuState (0x5e9e84).
+    // +0x1d0 is 0x14 bytes PAST the end of the object, so no CMenuState can hold it.
+    // Its only reader is FormatHudText (0x1af70), whose retail body really does
+    // `mov esi,ecx` then `mov eax,[esi+0x1d0]` - i.e. it reads +0x1d0 off its OWN `this`.
+    // => ?FormatHudText@CMenuState@@ is MISATTRIBUTED; its owner is a state with >= 0x1d4
+    // bytes. Its callers are ?LevelMsgHudDriver@CState@@ (0x1a700, on its own `this`) and
+    // ?ShowLevelCompleteMessage@CBootyState@@ (0x1c9d0, ditto) - and CBootyState IS big
+    // enough (0x320), as are CPlay (0x520), CMultiBootyState (0x244), CCreditsState (0x218).
+    // The exact owner is NOT proven, so the method is deliberately NOT re-homed to a guess.
+    // Until it is, this field + its 0x1c0..0x1d0 pad must NOT be trusted as CMenuState's.
     i32 m_liveGame; // +0x1d0  live-game flag (FormatHudText getter-path gate)
 
     void BuildVersionString(CGMVerRect r); // 0xa0d80 (RECT by value; Render's tail draw)
@@ -533,6 +545,13 @@ public:
     char m_pad1ec[0x1fc - 0x1ec];
     CGameObject* m_cursorLetter; // +0x1fc the trailing/cursor letter sprite
     char m_pad200[0x2f8 - 0x200];
+    // @identity-TODO: OUT OF BOUNDS, same shape as CMenuState::m_liveGame above.
+    // CMultiBootyState is 0x244 - binary-proven by TransitionState's `push 0x244; call ??2`
+    // @0x8c056 followed by the ??_7CMultiBootyState (0x5e9bdc) stamp. +0x2f8 is 0xb4 bytes
+    // past the end, so the BootyStateActivate.cpp methods that read m_bonusState are running
+    // on a bigger object than a CMultiBootyState (CBootyState @0x320 is the obvious
+    // candidate - it is the sibling in the same TU - but that is NOT proven, so nothing is
+    // re-homed). Do not trust this field's placement as CMultiBootyState's.
     CBootyBonusState* m_bonusState; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
 };
 VTBL(CMultiBootyState, 0x001e9bdc);

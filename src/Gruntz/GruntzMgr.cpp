@@ -26,6 +26,7 @@
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
+#include <Gruntz/Attract.h>   // canonical CAttract (was a reduced local ODR-landmine twin)
 #include <Gruntz/HelpState.h> // canonical CHelpState (same; extracted out of HelpState.cpp)
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzPlayer.h> // GruntzPlayer::Reset (0xda9e0) - the options slots ARE GruntzPlayer
@@ -913,35 +914,11 @@ void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 a
 // Declared-only => no definition is emitted here, so each reference binds to the one real
 // body. The classes are polymorphic already (CState's dtor is virtual), so this changes
 // no layout and no vtable slot - it is byte-neutral.
-// CAttract stays a LOCAL layout twin rather than including <Gruntz/Attract.h>, for one
-// measured tooling reason: Attract.h defines CAttract::Update INLINE and carries its
-// RVA(0x0008cd40) on that inline body. Pulling the header in makes THIS TU emit the same
-// inline COMDAT, so the rva ends up claimed by two units and merge_labels re-attributes
-// ?Update@CAttract@@... from attractstate to gruntzmgr - the function drops out of
-// attractstate's diff entirely (measured: 1 LOST). Un-inlining Update in Attract.h is the
-// real fix and is left for its owner. The ODR hazard itself is closed the same way as the
-// other leaves below: by declaring the canonical overrides, so this obj's ??_7CAttract is
-// byte-identical to attractstate's. sizeof == 0x1c0 = retail's operator-new size
-// (TransitionState `push 0x1c0` @0x8bacf).
-struct CAttract : CState { // param 2, 0x1c0
-    char m_pad[0x1c0 - 0x1b4];
-    CAttract() {
-        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-    }
-    virtual ~CAttract() OVERRIDE;                // 0x0008cd90 (AttractState.cpp)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 Vslot07() OVERRIDE;              // slot 7
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-};
-SIZE(CAttract, 0x1c0);
+// CAttract is the CANONICAL <Gruntz/Attract.h> class (included above). The reduced local
+// twin is GONE: its all-CState-base-slot ??_7CAttract@@6B@ was an ODR landmine, and the
+// canonical class emits the vtable attractstate emits. This fold needed Attract.h's
+// CAttract::Update to be UN-INLINED first (an RVA() on an inline header body is claimed
+// by every TU that emits the COMDAT - see the note on Update in Attract.h).
 // NOT foldable onto the canonical <Gruntz/GameMode.h> `CMenuState : CState` (Bucket-C
 // base-fold wall): a canonical polymorphic CMenuState would make cl emit + stamp a
 // LOCAL ??_7CMenuState here (the ctor references its own vtable), claiming the retail

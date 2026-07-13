@@ -543,7 +543,10 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
     CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     if (m_pendingFxKind == 0) {
-        if (cell->CanShowStamina() == 0) {
+        // bridge-cast (as ClearAllSprites above): CTmCell IS CGrunt, so this binds to the
+        // REAL ?CanShowStamina@CGrunt@@QAEHXZ (0x514a0). Declared on CTmCell it mangled to
+        // ?CanShowStamina@CTmCell@@QAEHXZ - a PHANTOM no obj and no .LIB defines.
+        if (((CGrunt*)cell)->CanShowStamina() == 0) {
             world->LoadCursorSprites(0, 0);
             return 1;
         }
@@ -2267,10 +2270,10 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                         if (g->m_1f8 == -1) {
                             g->m_1f8 = g->m_1f4;
                         }
-                        g->SelectMoveIcon(t);
+                        ((CGrunt*)g)->SelectMoveIcon(t); // -> ?SelectMoveIcon@CGrunt@@ (0x57800)
                         ((CTmWorld*)g_gameReg->m_curState)->OnRegion4(1);
                     } else if (g->m_1f8 != -1) {
-                        g->SelectMoveIcon(g->m_1f8);
+                        ((CGrunt*)g)->SelectMoveIcon(g->m_1f8); // -> CGrunt (0x57800)
                         g->m_1f8 = -1;
                     }
                 }
@@ -3010,7 +3013,7 @@ void CTriggerMgr::DestroyAllAnims() {
         do {
             CTmCell* g = *cell;
             if (g != 0) {
-                g->DestroyAnims();
+                ((CGrunt*)g)->DestroyAnims(); // -> ?DestroyAnims@CGrunt@@QAEXXZ (0x57d80)
             }
             cell++;
             i--;
@@ -3088,7 +3091,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     if (cell->m_1ec != g_644c54) {
         return 1;
     }
-    if (cell->CanShowStamina() == 0) {
+    if (((CGrunt*)cell)->CanShowStamina() == 0) { // -> ?CanShowStamina@CGrunt@@ (0x514a0)
         OverlayTick();
         return 1;
     }

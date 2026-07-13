@@ -67,15 +67,31 @@ struct CTmDisplay {
 // unified shape. m_grid[] holds CTmCell*. The reloc-masked __thiscall engine hooks the
 // leaves dispatch are declared here; the raw this+offset fields the leaves read are named
 // data members (recovered from usage). Config/goal/display sub-objects are typed pointers.
+// @link-defect: the methods below that are DECLARED HERE mangle as ?X@CTmCell@@... and are
+// PHANTOMS - CTmCell owns no retail address, so no obj and no .LIB can ever define them and
+// they would be unresolved externals at link. CTmCell IS CGrunt (see the note above), so the
+// cure is to type the grid as CGrunt** and let these bind to the real bodies. Three already
+// have: CanShowStamina (0x514a0), SelectMoveIcon (0x57800) and DestroyAnims (0x57d80) moved
+// to the REAL ?X@CGrunt@@ symbols and their call sites now bridge-cast (as ClearAllSprites
+// @0x4b240 already did). The rest are BLOCKED on CGrunt's known +0x120 phantom-gap layout
+// bug: this view's high offsets (m_170..m_3e4) are the ones recovered from the trigger TUs'
+// disasm and are RIGHT, while CGrunt's interior is shifted - so re-typing the grid today
+// would mis-address every field. Fix CGrunt's layout first, then this whole view deletes.
+// The real-body map for the rest (all verified against build/gen/symbol_names.csv):
+//   ExitGrid  0x641b0 = ?BuildGruntExitAnimation@CGrunt@@QAEHXZ
+//   Route     0x60150 = ?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z
+//   Recall    0x68520 = ?StartBombGruntRun@CGrunt@@QAEHXZ
+//   ClearAllSprites 0x4b240 / RunMoveConfig 0x65630 / RectContains 0x51850 /
+//   CommitNeighbor 0x5b050 / BeginAttack 0x5b570 / PlayMoveSound 0x511b0 /
+//   ResetEntranceAnimation 0x62e10  - all already claimed ?X@CGrunt@@ bodies.
+//   ResetA/B/C, ResetMagic, Disarm, ApplyBox, Type13Check, Apply13, Dispatch,
+//   ReadConfigFromButeMgr - retail rvas still UNCLAIMED (nothing to bind to yet).
 struct CTmCell {
     void ClearAllSprites();                                 // 0x4b240
     void ExitGrid();                                        // 0x641b0
     void Route(i32 kind, i32 a);                            // 0x60150
-    void DestroyAnims();                                    // 0x57d80
     void Recall();                                          // 0x68520 (row-recall variant)
     void ReadConfigFromButeMgr();                           // type-tag address (DestroyAllAnims)
-    void SelectMoveIcon(i32 icon);                          // 0x57800
-    i32 CanShowStamina();                                   // 0x514a0
     void ResetA();                                          // 0x6a40c
     void ResetB();                                          // 0x6a2ae
     void ResetC();                                          // 0x6c216
