@@ -1,29 +1,45 @@
 // CreditsState.cpp - CCreditsState, the credits/attract game-state (C:\Proj\Gruntz).
-// Split out of the former GameMode.cpp god-TU (per-class TU cut): CCreditsState +
-// CCreditzOwner (the credits-scroll owner facet, SetupTitle @0x39a60) now own their
-// full method set here. The CState base + the CGameModeBase cleanup pair stay in
+// Split out of the former GameMode.cpp god-TU (per-class TU cut): CCreditsState owns
+// its full method set here (incl. SetupTitle @0x39a60, formerly hosted on the fake
+// `CCreditzOwner` this-view). The CState base + the CGameModeBase cleanup pair stay in
 // GameMode.cpp; the sibling states live in MenuState.cpp / BootyStateActivate.cpp.
 // The ~CCreditsState `??1` (with the CState ctor) is the class's vtable +
-// inline-virtual (Update) emission anchor - it stays in this TU. Names are
-// placeholders; only offsets + code bytes are load-bearing.
+// inline-virtual (Update) emission anchor - it stays in this TU.
+//
+// DE-VIEW PASS (2026-07-13): the 23 .cpp-local view structs this TU carried are GONE.
+// Every one of them was a per-hop shadow of a class the tree already models, and the
+// SAME FILE proved it: CCreditsState::Render already walked the real chain
+// (m_c->m_drawTarget->m_10->m_2c->m_8, CSpriteFactoryHolder -> CDrawTarget ->
+// SurfaceA/B -> CDDSurface -> IDirectDrawSurface) while its neighbours re-modelled the
+// identical hops as CreditsScrollView/CreditsView4/CreditsView4M14/CreditsHdcProv,
+// CMenuRootA/CMenuPageA/CMenuBrightHolder and CCreditsDrawRoot/CCreditsDrawView/
+// CCreditsDrawHolder/CCreditsSurface. Likewise CCreditzOwner + CreditsScrollSelf were
+// two `this`-views of CCreditsState itself (their fields ARE the class's +0x1b4..+0x20c
+// block), CCreditzImageRoot was CState::m_4 (the CGruntzMgr owner; +0x48 == m_sound, the
+// spelling CreditzAssets.cpp already uses), CCreditzSoundMgr was CState::m_c, CCreditzRegSet
+// was CState::m_8, CCreditzRegObj/CCreditzMusicSet were the CSymTab the code already cast
+// them to, CCreditzSubEntry was CParseSource (its m_c IS m_length @+0x0c), CButeCfg was
+// the canonical CButeMgr singleton and CCreditzAttractReg was the CGruntzMgr singleton
+// (+0x80 == m_numRuns). Names are placeholders; only offsets + code bytes are load-bearing.
 #include <Bute/SymParser.h>     // CSymParser::ResolvePath (LoadCreditz / InitAttractTitle)
 #include <Bute/SymTab.h>        // CSymTab Insert/FindSub/ResolvePath (LoadCreditz / SetupTitle)
 #include <Bute/ButeMgr.h>       // CButeMgr GetIntDef (InitAttractTitle brightness)
 #include <Io/MoviePlayer.h>     // CMoviePlayer (~/CloseSmacker - ReleaseResources / StepVideo)
 #include <Gruntz/BankMgr.h>     // CResSource (InitAttractTitle m_2c state store)
-#include <Gruntz/ParseSource.h> // CParseSource::BeginParse (Creditz IsLoaded probe)
+#include <Gruntz/ParseSource.h> // CParseSource (the resolved MIDIZ sub-entry: BeginParse/m_length)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (InitAttractTitle / LoadCreditz gates)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
-#include <Gruntz/GameMode.h>      // CCreditsState : CState + CGMEntityList/CGMOwner/CGMSoundEntry
-#include <Rez/RezMgr.h>           // RezFree (ReleaseResources video-handle teardown)
+#include <Gruntz/GameMode.h>  // CCreditsState : CState + CGMOwner/CGMSoundEntry
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr (CState::m_4 owner; m_sound @+0x48, m_numRuns @+0x80)
+#include <Rez/RezMgr.h>       // RezFree (ReleaseResources video-handle teardown)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ::CreateBank (0x138670) - credits sound-bank loader
 #include <Win32.h>                // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h> // real IDirectDrawSurface (credits-scroll DC + Render input surface)
+#include <ddraw.h>                // real IDirectDrawSurface (credits-scroll DC + Render input surface)
 #include <rva.h>
 #include <stdio.h> // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
-// Real MFC CRgn/CGdiObject for the credits clip region (CreditsScrollSelf::m_1e8).
+// Real MFC CRgn/CGdiObject for the credits clip region (CCreditsState::m_1e8).
 // GameMode.h pulled <Mfc.h>->afx.h (defines _AFX_ENABLE_INLINES); skip afxwin*.inl for
 // the clang label step only (implicit-int CMenu::op==); wine cl keeps the inlines.
 // See docs/patterns/afxwin-clang-label-step-skip-inl.md.
@@ -33,7 +49,9 @@
 #include <afxwin.h>
 
 // The owning game-manager (CState::m_4, a real CGruntzMgr*) reached through the
-// gamemode-local CGMOwner reduced view (same helper the sibling state TUs use).
+// gamemode-local CGMOwner reduced view (same helper the sibling state TUs use). The
+// sound-bank path does NOT go through it: m_4 is already typed CGruntzMgr*, so
+// m_4->m_sound is cast-free (the spelling CreditzAssets.cpp uses).
 static inline CGMOwner* Owner(CState* s) {
     return (CGMOwner*)s->m_4;
 }
@@ -41,196 +59,23 @@ static inline CGMOwner* Owner(CState* s) {
 // The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).
 void operator delete(void*);
 
-// ---------------------------------------------------------------------------
-// Credits-scroll sub-object views (walked by DrawScrollingCredits / SetupTitle /
-// LoadCreditz). Only the offsets they read are modeled; field names placeholder.
-// ---------------------------------------------------------------------------
-
-// The credits scroll's DirectDraw surface (prov->m_8): the game's real
-// IDirectDrawSurface (<ddraw.h>). Only GetDC (slot 17, +0x44) and ReleaseDC
-// (slot 26, +0x68) are used; both __stdcall with the surface as the hidden `this`.
-SIZE_UNKNOWN(CreditsHdcProv);
-struct CreditsHdcProv { // m_c->m_4->m_14->m_2c
-    char p0[0x8];
-    IDirectDrawSurface* m_8; // +0x08 the DDraw surface
-};
-SIZE_UNKNOWN(CreditsView4M14);
-struct CreditsView4M14 {
-    char p0[0x2c];
-    CreditsHdcProv* m_2c; // +0x2c
-};
-SIZE_UNKNOWN(CreditsView4);
-struct CreditsView4 {
-    char p0[0x14];
-    CreditsView4M14* m_14; // +0x14
-};
-SIZE_UNKNOWN(CreditsScrollView);
-struct CreditsScrollView {
-    char p0[0x4];
-    CreditsView4* m_4; // +0x04
-};
-// The credits clip region at CreditsScrollSelf+0x1e8 is the real MFC CRgn/CGdiObject
-// (vptr @+0x0, m_hObject @+0x4): the `(&m_1e8 != 0) ? m_hObject : 0` ternary at the
-// SelectClipRgn site is CGdiObject::operator HRGN's null-this check verbatim.
-SIZE_UNKNOWN(CreditsScrollSelf);
-struct CreditsScrollSelf {
-    char m_pad00[0xc];
-    CreditsScrollView* m_c; // +0x0c
-    char m_pad10[0x1bc - 0x10];
-    u32 m_1bc;    // +0x1bc overlay timer B (unsigned countdown)
-    u32 m_1c0;    // +0x1c0 overlay timer C (unsigned countdown)
-    i32 m_1c4;    // +0x1c4 second-caption gate
-    RECT m_src;   // +0x1c8 source caption RECT
-    RECT m_dst;   // +0x1d8 scrolled caption RECT (top +0x1dc / bottom +0x1e4 scroll)
-    CRgn m_1e8;   // +0x1e8 clip region (real MFC CRgn: vptr + m_hObject)
-    char* m_1f0;  // +0x1f0 caption CString buffer
-    u32 m_1f4;    // +0x1f4 reseed timer A (unsigned countdown)
-    double m_1f8; // +0x1f8 scroll accumulator
-    double m_200; // +0x200 scroll speed
-};
-
-// The "STATEZ_CREDITZ" registered object (m_2c): same Register source as CHelpState
-// (FUN_0053c030). FindSet/FindSubset/Resolve/IsLoaded below are the reloc-masked
-// __thiscall helpers off it / its sub-entries.
-SIZE_UNKNOWN(CCreditzSubEntry);
-struct CCreditzSubEntry { // a music sub-entry ("PLAY"/"MONOLITH")
-    // IsLoaded @0x139960 IS CParseSource::BeginParse; cast at each call.
-    char m_pad00[0xc];
-    void* m_c; // +0x0c
-};
-SIZE_UNKNOWN(CCreditzMusicSet);
-struct CCreditzMusicSet { // the looked-up "MIDIZ" set (m_2c->FindSet)
-    // Resolve @0x13a000 IS CSymTab::Insert; cast at each call.
-};
-SIZE_UNKNOWN(CCreditzRegObj);
-struct CCreditzRegObj { // the registered STATEZ_CREDITZ object (m_2c)
-    // FindSoundSet @0x13a230 IS CSymTab::FindSub; cast at the call.
-    // FindMusicSet @0x13bae0 IS CSymTab::ResolvePath; cast at the call.
-};
-SIZE_UNKNOWN(CCreditzSoundRegistry);
-struct CCreditzSoundRegistry { // this->m_c->+0x28 (the LoadLevelSounds registry)
-    void Install(void* set, char* szName, char* szKey); // FUN_00557ee0 __thiscall
-};
-SIZE_UNKNOWN(CCreditzStateCore);
-struct CCreditzStateCore { // this->m_c->m_4 (the ready/init pump)
-    // IsReady @0x158d20 IS CDDrawSubMgrPages::Method_158d20; cast at the call.
-    // Init @0x158cb0 IS CDDrawSubMgrPages::Method_158cb0; cast at the call.
-    i32 IsLoaded(); // FUN_00558bc0 __thiscall, ret BOOL (ready-3 predicate)
-
-    char m_pad00[0x14];
-    CreditsView4M14* m_14; // +0x14  DC-chain link (== CreditsView4::m_14; SetupTitle's HDC prov)
-};
-SIZE_UNKNOWN(CCreditzImageRoot);
-struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
-    char m_pad00[0x48];
-    CGruntzSoundZ* m_48; // +0x48  credits sound-bank store (CreateBank @0x138670)
-};
-SIZE_UNKNOWN(CCreditzSoundMgr);
-struct CCreditzSoundMgr { // this->m_c points here
-    char m_pad00[0x4];
-    CCreditzStateCore* m_4; // +0x04
-    char m_pad08[0x28 - 0x8];
-    CCreditzSoundRegistry* m_28; // +0x28
-};
-SIZE_UNKNOWN(CCreditzRegSet);
-struct CCreditzRegSet { // this->m_8 points here
-    // Register @0x13c030 IS CSymParser::ResolvePath; cast at the call.
-};
-// Typed view of `this`: m_4 the image-registry root, m_8 the namespace registry,
-// m_c the sound/state manager, m_2c the registered STATEZ_CREDITZ object.
-SIZE_UNKNOWN(CCreditzOwner);
-struct CCreditzOwner {
-    char m_pad00[0x4];
-    CCreditzImageRoot* m_4; // +0x04
-    CCreditzRegSet* m_8;    // +0x08
-    CCreditzSoundMgr* m_c;  // +0x0c
-    char m_pad10[0x2c - 0x10];
-    CCreditzRegObj*
-        m_2c; // +0x2c  STATEZ_CREDITZ object (dispatched as CSymTab: Insert/FindSub/ResolvePath)
-    char m_pad30[0x1b4 - 0x30];
-    i32 m_1b4; // +0x1b4
-    i32 m_1b8; // +0x1b8
-    i32 m_1bc; // +0x1bc
-    i32 m_1c0; // +0x1c0
-    i32 m_1c4; // +0x1c4
-    // SetupTitle's credits-scroll fields (== the CreditsScrollSelf view's m_src/m_dst/
-    // m_1e8/m_1f0/m_1f4/m_1f8/m_200).
-    RECT m_scrollRect; // +0x1c8  scroll caption rect (SetRect target)
-    RECT m_textRect;   // +0x1d8  DrawTextA measure rect
-    CRgn m_clipRgn;    // +0x1e8  clip region (real MFC CRgn; Attach)
-    CString m_text;    // +0x1f0  credits caption CString (m_pszData read as LPCTSTR)
-    i32 m_1f4;         // +0x1f4  reseed timer A
-    double m_1f8;      // +0x1f8  scroll accumulator (reset to 0.0)
-    double m_200;      // +0x200  scroll step (reseeded)
-    char m_pad208[0x20c - 0x208];
-    i32 m_20c;         // +0x20c
-    i32 SetupTitle();  // RVA 0x39a60 __thiscall (credits title/scroll setup)
-    i32 FinishState(); // RVA 0x439c40 __thiscall
-    // LoadGameAssetNamespaces (0xf9ea0) is inherited from CState; call it on `this`
-    // (CCreditsState), not on this CCreditzOwner facet view.
-};
-
-// InitAttractTitle sub-object views: the menu page brightness holders + surface.
-SIZE_UNKNOWN(CMenuBrightHolder);
-struct CMenuBrightHolder {
-    char m_pad00[0x2c];
-    CDDSurface* m_2c; // +0x2c
-};
-SIZE_UNKNOWN(CMenuPageA);
-struct CMenuPageA {
-    char m_pad00[0x14];
-    CMenuBrightHolder* m_14; // +0x14 title brightness holder
-    CMenuBrightHolder* m_18; // +0x18 menu brightness holder
-};
-SIZE_UNKNOWN(CMenuRootA);
-struct CMenuRootA {
-    char m_pad00[0x4];
-    CMenuPageA* m_04; // +0x04
-};
-// The CButeMgr text-config singleton (same 0x6453d8 datum as g_buteMgr) + the
-// attract-state count divisor. TU-local views; both reloc-mask.
-SIZE_UNKNOWN(CButeCfg);
-struct CButeCfg {};
+// The CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8 ->
+// RVA 0x2453d8) - the canonical class (<Bute/ButeMgr.h>); was the CButeCfg shell.
 DATA(0x002453d8)
-extern CButeCfg g_buteCfg;
-extern "C" i32 g_attractStateCount;
-// g_gameReg (*0x24556c) viewed for its +0x80 attract frame counter (InitAttractTitle
-// rotates the TITLE index off it). Reloc-masked; the 0x24556c canonical-type unification
-// is a separate worklist item.
-SIZE_UNKNOWN(CCreditzAttractReg);
-struct CCreditzAttractReg {
-    char m_pad00[0x80];
-    i32 m_80; // +0x80  attract frame counter (title rotation source)
-};
-extern "C" CCreditzAttractReg* g_gameReg;
+extern CButeMgr g_buteMgr;
 
-// StepVideo draw views: the credits draw chain (m_c->m_4) + the Smacker frame step.
-// The Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame); ret nonzero
-// while more frames remain (PTR__SmackGoto@8). Reloc-masked.
+// The game-manager singleton (0x64556c). Its +0x80 launch counter (m_numRuns,
+// "Num_Runs") rotates the attract TITLE index; same object as CState::m_4. Spelled
+// CGruntzMgr* here exactly as the sibling CreditzAssets.cpp does (was CCreditzAttractReg).
+DATA(0x0024556c)
+extern "C" CGruntzMgr* g_gameReg;
+
+// The attract-state count divisor (DEFINED in src/Rez/RezSync.cpp).
+extern "C" i32 g_attractStateCount;
+
+// StepVideo: the Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame);
+// ret nonzero while more frames remain (PTR__SmackGoto@8). Reloc-masked.
 extern "C" i32 __stdcall Eng_SmackStep(void* handle, i32 frame);
-SIZE_UNKNOWN(CCreditsSurface);
-struct CCreditsSurface {
-    char m_pad00[0x8];
-    void* m_8; // +0x08  Smacker frame buffer (SmackStep arg)
-};
-SIZE_UNKNOWN(CCreditsDrawHolder);
-struct CCreditsDrawHolder {
-    char m_pad00[0x1c];
-    i32 m_1c; // +0x1c  clip RECT (address taken)
-    char m_pad20[0x2c - 0x20];
-    CDDSurface* m_2c; // +0x2c  the DD surface
-};
-SIZE_UNKNOWN(CCreditsDrawView);
-struct CCreditsDrawView {
-    char m_pad00[0x14];
-    CCreditsDrawHolder* m_14; // +0x14  source surface holder
-    CCreditsDrawHolder* m_18; // +0x18  dest surface holder
-};
-SIZE_UNKNOWN(CCreditsDrawRoot);
-struct CCreditsDrawRoot {
-    char m_pad00[0x4];
-    CCreditsDrawView* m_4; // +0x04
-};
 
 extern "C" i32 g_62bf74; // clip-region enable gate
 
@@ -242,7 +87,7 @@ extern "C" i32 g_62bf74; // clip-region enable gate
 // still lowers to retail's `fld QWORD PTR [c1]; fdiv QWORD PTR [c2]; call __ftol`.
 static const double kScreenH = 480.0;    // 0x5e96f8  screen height
 static const double kScrollRate = 0.025; // 0x5e96f0  scroll rate
-static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_200 reseed)
+static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_scrollStep reseed)
 
 // ===========================================================================
 // CCreditsState methods, ascending retail-RVA order.
@@ -255,39 +100,37 @@ static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_200 r
 // `test eax,eax`. The MONOLITH block is a SIBLING `if(midiz)` so the second
 // `cmp edi,ebp; je` survives (docs/patterns/redundant-sibling-guard-retest.md). The
 // 'IMX' music tag (0x584d49) is a non-relocated immediate. The "STATEZ_CREDITZ" Register
-// is the CHelpState::LoadAssets source (FUN_0053c030).
+// is the CHelpState::LoadAssets source (0x13c030 == CSymParser::ResolvePath).
 RVA(0x00038d20, 0x176)
 i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
-    CCreditzOwner* self = (CCreditzOwner*)this;
-
     if (!LoadGameAssetNamespaces(a1, a2, a3)) { // inherited CState method on `this`
         return 0;
     }
     while (ShowCursor(0) >= 0)
         ;
 
-    self->m_1b8 = 0;
-    self->m_1bc = 0;
-    self->m_1c0 = 0;
-    self->m_1c4 = 0;
-    self->m_2c = (CCreditzRegObj*)((CSymParser*)self->m_8)->ResolvePath("STATEZ_CREDITZ");
-    if (!self->m_2c) {
+    m_1b8 = 0;
+    m_1bc = 0;
+    m_1c0 = 0;
+    m_1c4 = 0;
+    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_CREDITZ");
+    if (!m_2c) {
         return 0;
     }
 
-    void* sounds = ((CSymTab*)self->m_2c)->FindSub("SOUNDZ");
+    void* sounds = SymTab2c()->FindSub("SOUNDZ");
     if (!sounds) {
         return 0;
     }
-    ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "CREDITZ", "_");
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "CREDITZ", "_");
 
-    CCreditzMusicSet* midiz = (CCreditzMusicSet*)((CSymTab*)self->m_2c)->ResolvePath("MIDIZ");
+    CSymTab* midiz = (CSymTab*)SymTab2c()->ResolvePath("MIDIZ");
     if (midiz) {
-        CCreditzSubEntry* e = (CCreditzSubEntry*)((CSymTab*)midiz)->Insert("PLAY", (void*)0x584d49);
+        CParseSource* e = (CParseSource*)midiz->Insert("PLAY", (void*)0x584d49);
         if (e) {
-            i32 val = ((CParseSource*)e)->BeginParse();
+            i32 val = e->BeginParse();
             if (val) {
-                self->m_4->m_48->CreateBank((void*)val, (u32)e->m_c, "CREDITZ"); // 0x138670
+                m_4->m_sound->CreateBank((void*)val, e->m_length, "CREDITZ"); // 0x138670
             }
         }
     }
@@ -295,28 +138,25 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     // MONOLITH block, pinning midiz in edi across the PLAY calls
     // (docs/patterns/redundant-sibling-guard-retest.md).
     if (midiz) {
-        CCreditzSubEntry* e2 =
-            (CCreditzSubEntry*)((CSymTab*)midiz)->Insert("MONOLITH", (void*)0x584d49);
+        CParseSource* e2 = (CParseSource*)midiz->Insert("MONOLITH", (void*)0x584d49);
         if (e2) {
-            i32 val = ((CParseSource*)e2)->BeginParse();
+            i32 val = e2->BeginParse();
             if (val) {
-                self->m_4->m_48->CreateBank((void*)val, (u32)e2->m_c, "MONOLITH"); // 0x138670
+                m_4->m_sound->CreateBank((void*)val, e2->m_length, "MONOLITH"); // 0x138670
             }
         }
     }
 
-    if (!((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158d20()) {
-        if (!((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158cb0(0, 0x30000)) {
+    if (!((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158d20()) {
+        if (!((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158cb0(0, 0x30000)) {
             return 0;
         }
     }
 
-    self->SetupTitle();
-    self->m_20c = 2;
-    // FinishState is CCreditsState's own method (0x39c40), not CCreditzOwner's - call
-    // it on `this` (same pointer as self) so the rel32 ties to the real body.
+    SetupTitle();
+    m_20c = 2;
     i32 r = FinishState();
-    self->m_1b4 = 0;
+    m_1b4 = 0;
     return r;
 }
 
@@ -425,15 +265,15 @@ i32 CCreditsState::Render() {
 }
 
 // CCreditsState::InputVirtual (slot 8 / +0x20, @0x393b0, formerly ShowAttractTitle) -
-// the per-frame input poll: gate on the state core (m_c->m_4->IsLoaded); if loaded,
-// force the cursor hidden then prime the attract title. Returns 1 (0 when not loaded).
+// the per-frame input poll: gate on the page pump (m_c->m_drawTarget, dispatched as
+// CDDrawSubMgrPages); if loaded, force the cursor hidden then prime the attract title.
+// Returns 1 (0 when not loaded).
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::InputVirtual() {
-    CCreditzOwner* self = (CCreditzOwner*)this;
-    // the page pump at m_c->m_4 is CDDrawSubMgrPages; the ready gate is Method_158bc0
-    // (0x158bc0) - NOT CParseSource::BeginParse (0x139960); same m_c->m_4 page-gate the
-    // sibling states (CHelpState/CSplashState) poll.
-    if (((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158bc0() == 0) {
+    // the page pump at m_c->m_drawTarget is CDDrawSubMgrPages; the ready gate is
+    // Method_158bc0 (0x158bc0) - NOT CParseSource::BeginParse (0x139960); same page gate
+    // the sibling states (CHelpState/CSplashState) poll.
+    if (((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158bc0() == 0) {
         return 0;
     }
     if (ShowCursor(0) >= 0) {
@@ -511,26 +351,26 @@ i32 CCreditsState::Vslot0e(i32 x, i32 unused, i32 y) {
 // InitAttractTitle (0x39570): the credits/attract title (re)init - the twin of
 // CAttract::LoadTitleConfig. If the title view is already live (m_videoPlaying), just
 // run the menu-page frame sub-steps and bail; otherwise pick a rotating TITLE index off
-// the mgr frame counter, format the "STATEZ_ATTRACT"/"TITLE%d" keys, resolve the attract
-// state into m_2c, fade the title in, apply the configured brightness, transition the
-// page, and build the menu page.
+// the mgr launch counter (g_gameReg->m_numRuns), format the "STATEZ_ATTRACT"/"TITLE%d"
+// keys, resolve the attract state into m_2c, fade the title in, apply the configured
+// brightness, transition the page, and build the menu page.
 // @early-stop
 // 81.2%: logic byte-faithful (the twin of CAttract::LoadTitleConfig). Residual is the
 // identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md)
 // on the FadeInTitle fail return-0 + the sprintf stack-buffer slot layout. Not steerable.
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
-    CMenuRootA* root = (CMenuRootA*)m_c;
+    CSpriteFactoryHolder* root = m_c;
     if (m_videoPlaying != 0) {
-        ((CDDrawSubMgrPages*)root->m_04)->Method_158dc0();
-        ((CDDrawSubMgrPages*)root->m_04)->Method_158e90();
-        ((CDDrawSubMgrPages*)root->m_04)->Method_158d50(0);
-        root->m_04->m_18->m_2c->Fill(0);
+        ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158dc0();
+        ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158e90();
+        ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158d50(0);
+        root->m_drawTarget->m_18->m_2c->Fill(0);
         return 1;
     }
     char stateName[0x20];
     char titleName[0x20];
-    i32 idx = g_gameReg->m_80 % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
     void* saved = (void*)m_2c;
@@ -544,9 +384,9 @@ i32 CCreditsState::InitAttractTitle() {
     if (faded == 0) {
         return 0;
     }
-    CDDSurface* tgt = root->m_04->m_14->m_2c;
-    tgt->ShadeRect(((CButeMgr*)&g_buteCfg)->GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
-    ((CDDrawSubMgrPages*)root->m_04)->Method_158e90();
+    CDDSurface* tgt = root->m_drawTarget->m_14->m_2c;
+    tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
+    ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158e90();
     BuildMenuPage(0x50, 0x3e8, 0, 1);
     return 1;
 }
@@ -566,40 +406,42 @@ i32 CCreditsState::InitAttractTitle() {
 // logic + externs/strings named; the 3 FP-constant relocs stay differently-named.
 RVA(0x000396f0, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
-    CreditsScrollSelf* self = (CreditsScrollSelf*)this;
-    if (self->m_c == 0) {
+    if (m_c == 0) {
         return 0;
     }
-    CreditsHdcProv* prov = self->m_c->m_4->m_14->m_2c;
+    // The credits scroll paints through the draw-surface page's real CDDSurface
+    // (m_c->m_drawTarget->m_14->m_2c) and its held IDirectDrawSurface (m_8): GetDC is
+    // COM slot 17 (+0x44), ReleaseDC slot 26 (+0x68).
+    CDDSurface* prov = m_c->m_drawTarget->m_14->m_2c;
 
-    if (g_645584 >= self->m_1f4) {
-        self->m_1f4 = 0;
+    if (g_645584 >= m_1f4) {
+        m_1f4 = 0;
     } else {
-        self->m_1f4 -= g_645584;
+        m_1f4 -= g_645584;
     }
-    if (self->m_1c4 != 0) {
-        if (g_645584 >= self->m_1bc) {
-            self->m_1bc = 0;
+    if (m_1c4 != 0) {
+        if (g_645584 >= m_1bc) {
+            m_1bc = 0;
         } else {
-            self->m_1bc -= g_645584;
+            m_1bc -= g_645584;
         }
-        if (g_645584 >= self->m_1c0) {
-            self->m_1c0 = 0;
+        if (g_645584 >= m_1c0) {
+            m_1c0 = 0;
         } else {
-            self->m_1c0 -= g_645584;
+            m_1c0 -= g_645584;
         }
     }
 
-    self->m_dst = self->m_src;
-    double contrib = (double)g_645584 * self->m_200 * 0.001;
-    self->m_1f8 = self->m_1f8 + contrib;
-    i32 scrolled = (i32)self->m_1f8;
-    self->m_dst.top -= scrolled;
-    self->m_dst.bottom -= scrolled;
-    if (self->m_dst.bottom < 0) {
-        self->m_1f8 = 0.0;
-        self->m_dst = self->m_src;
-        self->m_1f4 = (i32)(kScreenH / kScrollRate);
+    m_drawRect = m_scrollRect;
+    double contrib = (double)g_645584 * m_scrollStep * 0.001;
+    m_scrollAccum = m_scrollAccum + contrib;
+    i32 scrolled = (i32)m_scrollAccum;
+    m_drawRect.top -= scrolled;
+    m_drawRect.bottom -= scrolled;
+    if (m_drawRect.bottom < 0) {
+        m_scrollAccum = 0.0;
+        m_drawRect = m_scrollRect;
+        m_1f4 = (i32)(kScreenH / kScrollRate);
     }
 
     HDC hdc = 0;
@@ -607,15 +449,12 @@ i32 CCreditsState::DrawScrollingCredits() {
     if (hdc != 0) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
         if (g_62bf74 != 0) {
-            SelectClipRgn(
-                hdc,
-                self->m_1e8
-            ); // CRgn -> HRGN via CGdiObject::operator HRGN (null-this)
+            SelectClipRgn(hdc, m_1e8); // CRgn -> HRGN via CGdiObject::operator HRGN
         }
-        i32 oldColor = SetTextColor(hdc, ((CCreditsState*)self)->FlashColor());
-        DrawTextA(hdc, self->m_1f0, -1, &self->m_dst, 0x50);
+        i32 oldColor = SetTextColor(hdc, FlashColor());
+        DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x50);
         SetTextColor(hdc, oldColor);
-        if (self->m_1c4 != 0 && self->m_1c0 != 0) {
+        if (m_1c4 != 0 && m_1c0 != 0) {
             CString s("Now is the time at Monolith when we dance");
             RECT r = {0, 0, 0x280, 0x1e0};
             i32 oldColor2 = SetTextColor(hdc, 0xffffff);
@@ -631,20 +470,21 @@ i32 CCreditsState::DrawScrollingCredits() {
     return 1;
 }
 
-// CCreditzOwner::SetupTitle (0x39a60, __thiscall, ret BOOL) - build the credits scroll:
+// CCreditsState::SetupTitle (0x39a60, __thiscall, ret BOOL) - build the credits scroll:
 // pull the "CREDITZ" TXT section from the STATEZ_CREDITZ store (m_2c, dispatched as
-// CSymTab) into the m_text CString, build the clip region, measure the text against the
-// offscreen DDraw surface's HDC to set the scroll rect, then seed the scroll accumulator.
+// CSymTab) into the m_caption CString, build the clip region, measure the text against
+// the offscreen DDraw surface's HDC to set the scroll rect, then seed the scroll
+// accumulator. (Was hosted on the fake CCreditzOwner this-view.)
 // @early-stop
 // scheduling tail (~99.7%): for the final (double)(unsigned)m_1f4 conversion the int64
 // temp's two halves are emitted in the opposite order relative to the fld/fmul. All other
 // bytes identical (llvm-objdump -dr). GetDC/ReleaseDC region is byte-exact via the real
 // IDirectDrawSurface COM slots.
 RVA(0x00039a60, 0x179)
-i32 CCreditzOwner::SetupTitle() {
+i32 CCreditsState::SetupTitle() {
     // CSymTab::Insert resolves the "CREDITZ" section of FOURCC type 'TXT'
     // (== 0x545854, a tag value not an address); returns the section CParseSource as H.
-    CParseSource* sect = (CParseSource*)((CSymTab*)m_2c)->Insert("CREDITZ", (void*)'TXT');
+    CParseSource* sect = (CParseSource*)SymTab2c()->Insert("CREDITZ", (void*)'TXT');
     if (sect) {
         char* src = (char*)sect->BeginParse();
         if (!src) {
@@ -657,22 +497,22 @@ i32 CCreditzOwner::SetupTitle() {
         }
         memcpy(buf, src, len);
         buf[len] = 0;
-        m_text = buf;
+        m_caption = buf;
         sect->EndParse();
         operator delete(buf);
     }
-    m_clipRgn.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
-    CreditsHdcProv* prov = m_c->m_4->m_14->m_2c;
+    m_1e8.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
+    CDDSurface* prov = m_c->m_drawTarget->m_14->m_2c;
     HDC hdc = 0;
     prov->m_8->GetDC(&hdc);
     if (hdc) {
-        i32 h = DrawTextA(hdc, m_text, -1, &m_textRect, 0x450);
+        i32 h = DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x450);
         SetRect(&m_scrollRect, 0x32, 0x1e0, 0x24e, h + 0x1e0);
         prov->m_8->ReleaseDC(hdc);
     }
-    m_1f8 = 0.0;
+    m_scrollAccum = 0.0;
     m_1f4 = (i32)(kScreenH / kScrollRate);
-    m_200 = (kScreenH * kStepScale) / (double)(unsigned)m_1f4;
+    m_scrollStep = (kScreenH * kStepScale) / (double)(unsigned)m_1f4;
     return 1;
 }
 
@@ -690,6 +530,8 @@ i32 CCreditsState::FinishState() {
 // CCreditsState::StepVideo() (0x39c60): if the credits aren't playing return 1. Else
 // advance the Smacker movie one frame; when the last frame is reached, Close() the handle
 // and FinishState(). Either way, if both surfaces are live, blit the current frame.
+// The draw chain is the real one: m_c->m_drawTarget (CDrawTarget) -> the +0x14 / +0x18
+// surface pages -> their CDDSurface (m_2c) and the page's own BltFast source RECT (m_1c).
 // @early-stop
 // scheduling coin-flip wall (~95%): 49/51 instructions byte-identical; the sole residual
 // is the BltFast `this` (src->m_2c) load scheduled one push earlier in retail + scratch-
@@ -701,9 +543,9 @@ i32 CCreditsState::StepVideo() {
     }
     i32 ret = 0;
     if (m_videoHandle) {
-        CCreditsDrawView* v = ((CCreditsDrawRoot*)m_c)->m_4;
-        CCreditsDrawHolder* dst = v->m_18;
-        CCreditsDrawHolder* src = v->m_14;
+        CDrawTarget* v = m_c->m_drawTarget;
+        CDrawTarget::SurfaceB* dst = v->m_18;
+        CDrawTarget::SurfaceB* src = v->m_14;
         if (!Eng_SmackStep(dst->m_2c->m_8, -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();
