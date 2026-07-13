@@ -24,6 +24,20 @@ SIZE_UNKNOWN(CChatBoxTextHost);
 
 class CChatBoxOwner {
 public:
+    // Inline ctor, recovered from its retail inline expansion at CMulti::
+    // SetupMultiplayerSession 0xb583d (`push 0x1c; call RezAlloc` then the seven
+    // field stores in this exact order, m_8 = 1 through the pinned-1 register):
+    // clear everything, mode = 1. No out-of-line ??0 exists (header-inline).
+    CChatBoxOwner() {
+        m_18 = 0;
+        m_14 = 0;
+        m_c = 0;
+        m_10 = 0;
+        m_0 = 0;
+        m_4 = 0;
+        m_8 = 1;
+    }
+
     // Latch the source registry root + text host and raise the active flag.
     void Attach(void* reg, CChatBoxTextHost* host);
     // Lower the active flag.

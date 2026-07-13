@@ -589,8 +589,9 @@ public:
     // Its internals are the fields this header used to name by hand: m_pData @+0x534 (was
     // m_ptrTable), m_nSize @+0x538 (was m_ptrCount), m_nMaxSize @+0x53c, m_nGrowBy @+0x540.
     ::CPtrArray m_ptrPool;
-    char m_pad544[0x548 - 0x544];
-    i32 m_hlBusy;                 // +0x548
+    i32 m_544;    // +0x544  stamped 1 at the session new-site (CMulti::SetupMultiplayerSession
+                  //         0xb5460, with m_barFrameGate = 0x1e0); role unrecovered
+    i32 m_hlBusy; // +0x548
     CWarpStoneFly* m_retabNotify; // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
     i32 m_toggleActive;           // +0x550  toggle-mode active flag
     i32 m_toggleHandle;           // +0x554  toggle-mode tab handle

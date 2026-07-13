@@ -551,15 +551,13 @@ struct CNetConnectSlotView {
     NmSlotVoid OnReady; // +0x90
 };
 
-// The external `this`-methods the driver calls (thunked -> reloc-masked no-body):
-SIZE_UNKNOWN(CNetConnectThis);
-struct CNetConnectThis {
-    // InitConnect IS CState::LoadGameAssetNamespaces (inherited); called cast-free.
-    // StartTitle IS CMulti::StartTitle (called cast-free from SetupMultiplayerSession).
-    // Open IS CMulti::Open @0xb77a0 (called cast-free; the NetSessionOpener view is gone).
-    // ShowMultiStartDlg IS CMulti::ShowMultiStartDlg (called cast-free).
-    // LoadCursorSprites IS CPlay::LoadCursorSprites; cast at the call.
-};
+// The external `this`-methods the driver calls (all resolved to real classes;
+// the empty CNetConnectThis shell is gone):
+//   InitConnect IS CState::LoadGameAssetNamespaces (inherited); called cast-free.
+//   StartTitle IS CMulti::StartTitle (called cast-free from SetupMultiplayerSession).
+//   Open IS CMulti::Open @0xb77a0 (called cast-free; the NetSessionOpener view is gone).
+//   ShowMultiStartDlg IS CMulti::ShowMultiStartDlg (called cast-free).
+//   LoadCursorSprites IS CPlay::LoadCursorSprites; cast at the call.
 // The m_4 game-mgr lobby helpers (ResetClockGlobals/ClearOptionsSlots/
 // InitLobbySettings/GetWorldFileName) and the chat-log FreeNodes are now declared
 // directly on their real classes (CNetGameMgr / CNetChatLog in NetMgr.h) - the
@@ -598,42 +596,18 @@ struct CNetPeer : public CObject {
     }
 };
 
-// (2) the 0x1c interface object: 7 dwords, no vtable/dtor. Attach/Deactivate/
-// Configure are external (thunked) methods, reloc-masked.
-SIZE_UNKNOWN(CNetIface);
-struct CNetIface {
-    i32 m_0, m_4, m_8, m_c, m_10, m_14, m_18;
-    CNetIface() {
-        m_18 = 0;
-        m_14 = 0;
-        m_c = 0;
-        m_10 = 0;
-        m_0 = 0;
-        m_4 = 0;
-        m_8 = 1;
-    }
-};
-
-// (3) the 0x630 session = CStatusBarMgr (a cross-module Gruntz class): 8 CPtrList
-// notify lists (vector-ctor 0x11f5a0), a CByteArray at +0x530. Its ~400-byte scalar
-// init is that class's OWN leaf (a separate TU), not reproduced here - only the two
-// notable non-zero fields are set. ~CNetSess (Teardown + member dtors) drives the
-// failure-path teardown (states 9/0xa).
-SIZE_UNKNOWN(CNetSess);
-struct CNetSess {
-    char m_pad0[0x2c];
-    CPtrList m_notify[8]; // +0x2c
-    char m_pad_mid[0x530 - (0x2c + sizeof(CPtrList) * 8)];
-    CByteArray m_ba; // +0x530
-    char m_pad_end[0x630 - (0x530 + sizeof(CByteArray))];
-    CNetSess() {
-        *(i32*)((char*)this + 0x614) = 0x1e0;
-        *(i32*)((char*)this + 0x544) = 1;
-    }
-    ~CNetSess() {
-        ((CStatusBarMgr*)this)->Teardown();
-    }
-};
+// (2) the 0x1c interface object IS a CChatBoxOwner (<Gruntz/ChatBoxOwner.h>):
+// same size, same seven fields in the same store order (retail inlines its
+// header-inline ctor at 0xb583d), and every method the site runs on it
+// (Attach/Configure) is a CChatBoxOwner method. The CNetIface view is gone.
+//
+// (3) the 0x630 session IS the canonical CStatusBarMgr (<Gruntz/StatusBarMgr.h>,
+// SIZE 0x630): the 8 CPtrLists @+0x2c are m_tabLists (vector-ctor 0x11f5a0), the
+// +0x530 array is m_ptrPool, and the two non-default stamps are m_barFrameGate
+// (+0x614 = 0x1e0) and m_544 (= 1). Retail inlines the (header-inline) ctor's
+// ~400-byte scalar init - that init is NOT yet recovered (only the two non-zero
+// stamps are), so the stamps live at the site. The failure path runs Teardown +
+// the member dtors (the view's ~CNetSess). The CNetSess view is gone.
 
 // (4) the 0x78 command manager: 4 CPtrLists + a flag at +0x74. The dtor runs a base
 // cleanup (0x2207) then the 4 members reverse-destruct (states 0xf..0x12).
@@ -654,10 +628,15 @@ struct CNetSess {
 //     FINAL stamp 0x5ea42c stays manual (it is CNetMgr's own, un-catalogued vtable
 //     that cl cannot re-emit here). A residual /GX state-numbering delta remains
 //     around that manual final stamp until CNetMgr's own vtable is catalogued.
-//  3. The 0x630 session is a cross-module CStatusBarMgr whose ~400-byte scalar ctor
-//     init (3 stride-0x18 sub-loops + 3 rep-stos regions) is that class's own leaf,
-//     not reproduced inline. Final sweep: needs the real CStatusBarMgr + a catalogued
-//     CNetMgr vtable (which would also close walls 2/3).
+//  3. The 0x630 session IS the canonical CStatusBarMgr now (view dissolved), but its
+//     ~400-byte scalar ctor init (3 stride-0x18 sub-loops + 3 rep-stos regions) is
+//     still unrecovered - retail inlines that (header-inline) ctor here, ours emits
+//     only the member ctors + the two site stamps. Likewise the iface/session/cmd-mgr
+//     failure paths: retail INLINES the (header-inline) dtors, ours calls the
+//     out-of-line ??1s (~CTileTriggerContainer is the 0xc8640 COMDAT of exactly that
+//     inline dtor - moving it header-side is the interleaved-COMDAT fix, deferred).
+//     71.2 -> 66.6 from these shape deltas; the structure (real classes, real sizes,
+//     real teardown order) is now correct per drive-to-0.
 RVA(0x000b5460, 0x914)
 i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 #define TF(o) (*(i32*)((char*)this + (o)))
@@ -788,24 +767,28 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    // (2) interface object
-    CNetIface* iface = new CNetIface();
+    // (2) interface object - a CChatBoxOwner (the CNetIface view is gone)
+    CChatBoxOwner* iface = new CChatBoxOwner();
     TF(0x2e0) = (i32)iface;
     // CChatBoxOwner::Attach is void (QAEX): no failure signal, so no failure branch (the
     // reconstruction's `== 0` guard was an artifact - the real shape just attaches + proceeds).
-    ((CChatBoxOwner*)iface)
-        ->Attach((void*)((CSndSubMgr*)m_c), (CChatBoxTextHost*)NetGameMgr()->m_5c);
-    ((CNetIface*)TF(0x2e0))->m_10 = 0;
+    iface->Attach((void*)((CSndSubMgr*)m_c), (CChatBoxTextHost*)NetGameMgr()->m_5c);
+    ((CChatBoxOwner*)TF(0x2e0))->m_10 = 0;
     ((CChatBoxOwner*)TF(0x2e0))->Configure(1);
 
-    // (3) session (CStatusBarMgr)
-    CNetSess* sess = new CNetSess();
+    // (3) session - the 0x630 CStatusBarMgr (the CNetSess view is gone). The two
+    // non-default stamps sit at the site because the class's real ~400-byte inline
+    // ctor init is not yet recovered.
+    CStatusBarMgr* sess = new CStatusBarMgr();
+    sess->m_barFrameGate = 0x1e0;
+    sess->m_544 = 1;
     TF(0x2dc) = (i32)sess;
-    if (((CStatusBarMgr*)sess)->LoadBattlezItemConfig((i32)((CSndSubMgr*)m_c)) == 0) {
-        CNetSess* so = (CNetSess*)TF(0x2dc);
+    if (sess->LoadBattlezItemConfig((i32)((CSndSubMgr*)m_c)) == 0) {
+        CStatusBarMgr* so = (CStatusBarMgr*)TF(0x2dc);
         if (so == 0) {
             return 0;
         }
+        so->Teardown(); // the view's ~CNetSess body; the members then tear down
         delete so;
         TF(0x2dc) = 0;
         return 0;
