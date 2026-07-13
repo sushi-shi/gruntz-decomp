@@ -93,6 +93,7 @@ public:
 // CDDrawWorkerRegistry - only the load-bearing offset is modeled: the CMapStringToOb at
 // +0x10. The matched methods occupy vtable slots (slot number not load-bearing, only body).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CDDrawWorkerRegistry); // (the annotation the dissolved MgrSettings.h twin carried)
 class CDDrawWorkerRegistry {
 public:
     // IsReady (0x1576d0, slot 5) now homes on CDDrawWorkerCache's real vtable slot
