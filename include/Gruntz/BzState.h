@@ -113,59 +113,26 @@ struct BzGameReg {
 extern "C" BzGameReg* g_gameReg; // *0x24556c (Booty view of the singleton)
 SIZE_UNKNOWN(BzGameReg);
 
-// The grunt-data loader (BzSink::m_loader): Load/Finish; m_data feeds the notify.
-struct BzLoader {
-    char m_pad00[0x14];
-    void* m_data; // +0x14
-};
-SIZE_UNKNOWN(BzLoader);
-
-// The vtable-bearing notify object (BzSink::m_notify): a real polymorphic object
-// whose notify slot lives at vtable +0x28 (index 10). Modeled with declared-only
-// virtuals (the slot methods live in another TU) so cl emits NO ??_7 here, yet
-// `notify->OnLoaded(arg)` lowers to the same __thiscall dispatch
-// `mov ecx,notify; push arg; mov eax,[notify]; call [eax+0x28]` the old PMF table
-// produced. This is the real devs' shape (a CObject-like sink), not a hand-roll.
-struct BzSink8 {
-    virtual void s00();               // +0x00
-    virtual void s04();               // +0x04
-    virtual void s08();               // +0x08
-    virtual void s0c();               // +0x0c
-    virtual void s10();               // +0x10
-    virtual void s14();               // +0x14
-    virtual void s18();               // +0x18
-    virtual void s1c();               // +0x1c
-    virtual void s20();               // +0x20
-    virtual void s24();               // +0x24
-    virtual void OnLoaded(void* arg); // +0x28  the notify slot
-};
-
-struct BzSinkSub {};
-SIZE_UNKNOWN(BzSinkSub);
-struct BzSinkSub28 {
-    char m_pad00[0x2c];
-    BzSinkSub* m_sprite; // +0x2c  dropped sprite (freed on exit)
-};
-SIZE_UNKNOWN(BzSinkSub28);
-
-// The HUD message sink (BzState::m_sink). m_loader is the grunt-data loader;
-// m_notify the vtable-bearing notify object; m_dropped a dropped-sprite holder.
-struct BzSink {
-    char m_pad00[0x4];
-    BzLoader* m_loader; // +0x04
-    BzSink8* m_notify;  // +0x08
-    char m_pad0c[0x28 - 0xc];
-    BzSinkSub28* m_dropped; // +0x28
-};
-SIZE_UNKNOWN(BzSink);
-SIZE_UNKNOWN(BzSink8);
+// DISSOLVED (Fable A2, 2026-07-14): the "BzSink" HUD message-sink view WAS the
+// canonical CSpriteFactoryHolder (CState::m_c == g_gameReg->m_30) - proven by the
+// call site's own address chain (BootyMessages 0x1ce60 reads `[0x64556c]+0x30`):
+//   BzSink               == CSpriteFactoryHolder      (<Gruntz/GameRegistry.h>)
+//   BzSink::m_loader+04  == m_pages (CDDrawSubMgrPages; Method_158ee0/158e90)
+//   BzLoader::m_data+14  == CDDrawSubMgrPages::m_backPair (CDDrawSurfacePair*)
+//   BzSink::m_notify+08  == m_8/m_childGroup (CDDrawChildGroup, vtbl 0x1efdc0);
+//                           its "OnLoaded" slot 10 (+0x28) IS WalkDispatch2C
+//                           @0x159c90 - the per-object render broadcast
+//   BzSink::m_dropped+28 == m_28 (CSndHost == CDDrawSubMgrLeafScan); the +0x2c
+//                           "dropped sprite" IS its m_2c held SoundStream (Stop()'d)
+// The 11-slot BzSink8 placeholder vtable (s00..s24 + OnLoaded) is gone with it;
+// BootyMessages.cpp now dispatches through the canonical classes, cast-free.
 
 // NOTE: the former `class BzState` VIEW is dissolved - the booty/secret game-state
 // object IS the canonical CBootyState (<Gruntz/GameMode.h>): the booty members
 // (m_initGate/m_activation/m_trailSprites/m_visSprites/m_animSprites/m_stepIndex/...)
 // now live on CBootyState; the HUD message sink the toasts read at +0xc IS the
-// inherited CState::m_c holder (this header's BzSink is the still-deferred sub-object
-// VIEW of that holder - the g_gameReg / m_c web reconciliation is a separate task).
+// inherited CState::m_c holder (the canonical CSpriteFactoryHolder - the former
+// BzSink view of it is dissolved, see the note above).
 // The overlay/tick bodies (BootyMessages.cpp, BootyWalkAnim.cpp) are real
 // CBootyState:: methods; RegisterMultiNamespaces folds onto CState::FadeInTitle
 // (0xfa1f0), StartTimer onto CBootyState::BuildPage (0xfa8f0), FormatHudText onto

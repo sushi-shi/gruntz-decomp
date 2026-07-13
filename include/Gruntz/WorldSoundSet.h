@@ -24,24 +24,16 @@
 // reloc-masked __thiscall calls pair by symbol.
 #include <Dsndmgr/SoundDevice.h> // real SoundDevice (also pulls DirectSoundMgr)
 
-// One active sound channel hanging off a list node. Polymorphic: the teardown /
-// retune paths dispatch through its vtable (scalar-deleting dtor at slot 0, a
-// 3-arg retune at slot 3). The class + its vtable live in another TU, so it is
-// modeled as a small typed shell whose virtual calls reloc-mask by slot.
-struct CSoundChannel {
-    virtual ~CSoundChannel(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Retune(i32 a1, i32 a2, i32 a3); // slot 3 -> call [vptr+0xc]
-
-    void Recompute(i32 frame); // 0x00bf10  level-scale -> SetVolByIdx on m_voice
-
-    DirectSoundMgr* m_voice; // +0x04  DirectSound handle (StopAndRewind / SetVolByIdx)
-    i32 m_level;             // +0x08  level multiplier (scaled by the frame in Recompute)
-    i32 m_lastFrame;         // +0x0c  last frame fed to Recompute (early-out compare)
-    i32 m_multiplier;        // +0x10  secondary multiplier (>0 gate, percent)
-    i32 m_14;                // +0x14  cleared on stop/retune
-};
+// DISSOLVED (Fable A2, 2026-07-14): the former "CSoundChannel" shell WAS the
+// canonical CAmbientSound (<Gruntz/AmbientSound.h>) - the common base of every
+// channel the Create* factories append to m_list (CAmbientSound / CAmbientPosSound
+// / CRandomAmbientSound, all `: CAmbientSound`). Slot-for-slot: its dtor = the
+// family slot-0 scalar dtor; "Slot1/Slot2" = the inherited CUserBase
+// SerializeMove/GetTypeTag; "Retune(a1,a2,a3)" = the slot-3 Update(x,y,force)
+// (the args are LISTENER COORDS - Play/Multi push the main plane's scroll origin);
+// "Recompute" (0xbf10) is now CAmbientSound::Recompute (its m_level/m_scaleA/
+// m_scaleB are the same +0x08/+0x0c/+0x10 fields SetLevel scales through).
+class CAmbientSound;
 
 // The embedded list of channels (+0x08) is the REAL MFC CPtrList (vtable
 // ??_7CObList@@6B@ @0x1ed4b4; AddTail 0x1b4991 / RemoveAll 0x1b48a6 / ~CPtrList
@@ -51,7 +43,7 @@ struct CSoundChannel {
 struct CSoundNode {
     CSoundNode* m_next;    // +0x00
     CSoundNode* m_prev;    // +0x04
-    CSoundChannel* m_data; // +0x08
+    CAmbientSound* m_data; // +0x08  the channel (family base; see the note above)
 };
 
 // The sound-channel objects the Create* factories allocate + add to the list are
@@ -59,7 +51,6 @@ struct CSoundNode {
 // forward-declared here so the factory signatures carry the real types without
 // fattening this header's includers. (The old SoundChannelNew shell view of the
 // same family is dissolved.)
-class CAmbientSound;
 class CAmbientPosSound;
 class CRandomAmbientSound;
 
@@ -77,7 +68,7 @@ public:
     void Restart(void* a1);        // 0x00bc30
     void Stop();                   // 0x00bc80
     void Resume();                 // 0x00bcf0
-    void Retune(i32 pan, i32 vol); // 0x00bd60
+    void Retune(i32 x, i32 y); // 0x00bd60  push the listener position to every channel
     void Deactivate();             // 0x00b620
     ~CWorldSoundSet();             // 0x085ed0
 
@@ -99,8 +90,11 @@ public:
     void* m_04;                   // +0x04
     CPtrList m_list;              // +0x08  MFC CPtrList (head at +0x0c)
     i32 m_active;                 // +0x24  active flag
-    i32 m_pan;                    // +0x28  pan
-    i32 m_vol;                    // +0x2c  vol
+    // +0x28/+0x2c: the pending LISTENER position (not pan/vol - Play/Multi push the
+    // main plane's scroll origin here via Retune; Resume replays it into each
+    // channel's Update(x,y,force) slot).
+    i32 m_listenerX; // +0x28
+    i32 m_listenerY; // +0x2c
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

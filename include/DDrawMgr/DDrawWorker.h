@@ -20,27 +20,14 @@
 #include <Ints.h>
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 
-// An owned CObject element: a real polymorphic object whose scalar-deleting
-// destructor is at vtable slot 1 (byte +0x04), __thiscall (flags arg). Declared-
-// only virtuals (the slot methods live in another TU) => cl emits NO ??_7 here;
-// `el->Delete(1)` lowers to the same `mov ecx,el; push 1; mov eax,[el]; call
-// [eax+0x04]` dispatch the old PMF table produced.
-struct CWorkerElement {
-    virtual void s0();                 // +0x00
-    virtual void* Delete(u32 flags);   // +0x04  scalar-deleting dtor
-    virtual void s2();                 // +0x08  (declared-only fillers to slot 13)
-    virtual void s3();                 // +0x0c
-    virtual void s4();                 // +0x10
-    virtual void s5();                 // +0x14
-    virtual void s6();                 // +0x18
-    virtual void s7();                 // +0x1c
-    virtual void s8();                 // +0x20
-    virtual void s9();                 // +0x24
-    virtual void s10();                // +0x28
-    virtual void s11();                // +0x2c
-    virtual void s12();                // +0x30
-    virtual i32 Query34(i32 a, i32 b); // +0x34  slot 13 (range-query predicate)
-};
+// DISSOLVED (Fable A2, 2026-07-14): the former "CWorkerElement" 14-slot shell WAS
+// the canonical CImage (<Image/CImage.h>, ??_7 @0x5eaa2c, 18 slots): the elements
+// of m_items are built by CSprite::InsertFrame as `new CImage(n, m_c)`, walked as
+// CImage* by CImageSet::GetMemoryUsage, and the shell's two live dispatches map
+// slot-for-slot - "Delete(1)" = the slot-1 scalar-deleting dtor (`delete el`),
+// "Query34(rec, flag)" (+0x34, slot 13) = CImage::Reload(CParseSource*, i32)
+// @0x153380. The consumers (WwdGameObject.cpp) now use CImage directly.
+class CImage; // <Image/CImage.h>
 
 // (CWorkerObArray is GONE: the +0x10 owned-pointer array IS MFC ::CObArray.  PROVEN from
 //  the binary - its ctor 0x1b55e9 stamps vtable 0x1ed494, whose MFC CRuntimeClass names it

@@ -152,8 +152,8 @@ i32 CWorldSoundSet::Init(void* world, i32 a2) {
     m_world = (CRandomAmbientWorld*)world;
     m_04 = (void*)a2;
     m_active = 1;
-    m_pan = 0;
-    m_vol = 0;
+    m_listenerX = 0;
+    m_listenerY = 0;
     return 1;
 }
 
@@ -181,7 +181,7 @@ void CWorldSoundSet::Teardown() {
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
-        CSoundChannel* ch = cur->m_data;
+        CAmbientSound* ch = cur->m_data;
         if (ch != 0) {
             delete ch;
         }
@@ -414,7 +414,7 @@ void CWorldSoundSet::Restart(void* a1) {
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
-        CSoundChannel* ch = cur->m_data;
+        CAmbientSound* ch = cur->m_data;
         if (ch != 0) {
             ch->Recompute((i32)a1);
         }
@@ -434,10 +434,10 @@ void CWorldSoundSet::Stop() {
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
-        CSoundChannel* ch = cur->m_data;
+        CAmbientSound* ch = cur->m_data;
         if (ch != 0 && ch->m_voice != 0) {
             ch->m_voice->StopAndRewind();
-            ch->m_14 = 0;
+            ch->m_isPlaying = 0;
         }
     }
 }
@@ -457,10 +457,10 @@ void CWorldSoundSet::Resume() {
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
-        CSoundChannel* ch = cur->m_data;
+        CAmbientSound* ch = cur->m_data;
         if (ch != 0) {
-            ch->m_14 = 0;
-            ch->Retune(m_pan, m_vol, 1);
+            ch->m_isPlaying = 0;
+            ch->Update(m_listenerX, m_listenerY, 1);
         }
     }
     if (m_world->m_soundDev != 0) {
@@ -469,28 +469,28 @@ void CWorldSoundSet::Resume() {
 }
 
 // ---------------------------------------------------------------------------
-// Retune: record the new pan/vol, push them to every live channel (vtbl slot 3,
-// flag 0), then rewind the world handle.
+// Retune: record the new listener position, push it to every live channel
+// (vtbl slot 3 = Update(x,y,force), force 0), then rewind the world handle.
 // ---------------------------------------------------------------------------
 // @early-stop
 // regalloc/schedule-coinflip wall (~86.3%) - logic complete, all relocs paired.
 // Structurally identical to Resume (matched body) but the two up-front member
-// stores (m_pan=pan, m_vol=vol) let cl hoist the loop-head load + null-test above
+// stores (m_listenerX=x, m_listenerY=y) let cl hoist the loop-head load + null-test above
 // the stores and pin `mov ebp,ecx` early, whereas retail keeps `this` in ecx
 // until the stores and reads the head after - a pure register/schedule permutation
 // (same bytes, reordered) plus the same dead-this tail load as Resume. The
 // for-loop / store-order levers did not flip it. See zero-register-pinning.md.
 RVA(0x0000bd60, 0x4b)
-void CWorldSoundSet::Retune(i32 pan, i32 vol) {
-    m_pan = pan;
-    m_vol = vol;
+void CWorldSoundSet::Retune(i32 x, i32 y) {
+    m_listenerX = x;
+    m_listenerY = y;
     CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
-        CSoundChannel* ch = cur->m_data;
+        CAmbientSound* ch = cur->m_data;
         if (ch != 0) {
-            ch->Retune(pan, vol, 0);
+            ch->Update(x, y, 0);
         }
     }
     if (m_world->m_soundDev != 0) {
@@ -553,33 +553,33 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
 }
 
 // ---------------------------------------------------------------------------
-// CSoundChannel::Recompute (0x00bf10): per-channel volume recompute, invoked by
-// CWorldSoundSet::Restart for each live channel. Skip when the frame is unchanged
-// from last time; otherwise scale the frame through m_level (with the >5 -> -0xf
-// curve), apply the secondary multiplier m_multiplier (signed /100 by the 0x51eb851f
-// reciprocal each step), clamp to 0..100 and push it to the voice via SetVolByIdx.
-// The level-scale math is the CAmbientSound::SetLevel idiom with frame/m_level
-// transposed and an unconditional voice drive.
+// CAmbientSound::Recompute (0x00bf10): per-channel volume recompute, invoked by
+// CWorldSoundSet::Restart for each live channel (was the CSoundChannel view's
+// method - the channels ARE this family). Skip when the pushed master level is
+// unchanged from the cached m_scaleA; otherwise cache it, apply the >5 -> -0xf
+// curve, scale by m_level then m_scaleB (signed /100 by the 0x51eb851f reciprocal
+// each step), clamp to 0..100 and push it to the voice via SetVolByIdx. This is
+// the SetLevel scale math with the master (m_scaleA) as the LIVE operand.
 //
 // @early-stop
 // regalloc-coinflip wall (~97.9%) - logic complete, all relocs paired. retail pins
-// the `frame` arg in eax (dead m_lastFrame -> edx); our cl does the reverse (frame in edx),
-// which permutes the first ~5 instrs (cmp modrm, the m_lastFrame store reg, add eax,-0xf vs
+// the `master` arg in eax (dead m_scaleA -> edx); our cl does the reverse (arg in edx),
+// which permutes the first ~5 instrs (cmp modrm, the m_scaleA store reg, add eax,-0xf vs
 // sub edx,0xf). The compare-operand-order lever did not flip the pin. See
 // docs/patterns/zero-register-pinning.md.
 RVA(0x0000bf10, 0x72)
-void CSoundChannel::Recompute(i32 frame) {
-    if (frame == m_lastFrame) {
+void CAmbientSound::Recompute(i32 master) {
+    if (master == m_scaleA) {
         return;
     }
     i32 mult = m_level;
-    m_lastFrame = frame;
-    if (frame > 5) {
-        frame -= 0xf;
+    m_scaleA = master;
+    if (master > 5) {
+        master -= 0xf;
     }
-    i32 v = (frame * mult) / 100;
-    if (m_multiplier > 0) {
-        v = (v * m_multiplier) / 100;
+    i32 v = (master * mult) / 100;
+    if (m_scaleB > 0) {
+        v = (v * m_scaleB) / 100;
     }
     if (v < 0) {
         v = 0;
@@ -1253,6 +1253,6 @@ SIZE_UNKNOWN(PosSoundAux);
 SIZE_UNKNOWN(PosSoundObj);
 SIZE_UNKNOWN(PosSoundVoice);
 SIZE_UNKNOWN(CRandomAmbientWorld);
-SIZE_UNKNOWN(CSoundChannel);
+
 SIZE_UNKNOWN(CSoundNode);
 SIZE_UNKNOWN(CWorldSoundSet);

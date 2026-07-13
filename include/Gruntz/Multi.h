@@ -159,7 +159,9 @@ SIZE_UNKNOWN(CMultiPlayerInfo);
 // player-info sub-object's per-slot occupancy probes.
 class CMultiReportGate {
 public:
-    virtual void Slot00();                // +0x00
+    // Slot identities from the real ??_7CNetMgr @0x1ea42c (5 slots, the MFC CObject
+    // scheme): [0] GetRuntimeClass (0x1bef01), [1] the scalar-deleting dtor.
+    virtual void GetRuntimeClass();       // [0] CObject slot (0x1bef01)
     virtual ~CMultiReportGate();          // slot 1 (deleting dtor -> cl-emitted ??_G)
     i32 Bind(i32* tmpl);                  // 0x578170  bind to host template -> nonzero ok
     void Activate();                      // 0x578750

@@ -1250,9 +1250,9 @@ void AnimWorkerObj::Clear() {
 RVA(0x00151eb0, 0x43)
 void CDDrawWorker::DeleteAll() {
     for (i32 i = 0; i < m_items.GetSize(); i++) {
-        CWorkerElement* el = (CWorkerElement*)m_items.GetAt(i);
+        CImage* el = (CImage*)m_items.GetAt(i);
         if (el != 0) {
-            el->Delete(1);
+            delete el; // the slot-1 scalar-deleting dtor (push 1; call [eax+0x04])
         }
     }
     m_items.SetSize(0, -1); // CObArray::SetSize @0x1b5653 - the m_items
@@ -1477,9 +1477,9 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
         i32 cnt;
         cnt = 0;
         for (i32 i = 0; i < n; i++) {
-            CWorkerElement* el;
+            CImage* el;
             if (i >= m_64 && i <= m_68) {
-                el = (CWorkerElement*)m_items.GetAt(i);
+                el = (CImage*)m_items.GetAt(i);
             } else {
                 el = 0;
             }
@@ -1522,16 +1522,18 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
 // ===========================================================================
 RVA(0x001523b0, 0x3b)
 i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
-    CWorkerElement* el;
+    CImage* el;
     if (n >= m_64 && n <= m_68) {
-        el = (CWorkerElement*)m_items.GetAt(n);
+        el = (CImage*)m_items.GetAt(n);
     } else {
         el = 0;
     }
     if (el == 0) {
         return 0;
     }
-    return el->Query34(rec, flag) != 0;
+    // slot 13 = CImage::Reload(src, flag); `rec` stays i32 because it is this
+    // virtual's own slot-signature word (the caller passes the CParseSource* as int).
+    return el->Reload((CParseSource*)rec, flag) != 0;
 }
 
 // CImageSet::GetMemoryUsage (__thiscall, ret 4). Walk every populated frame in
@@ -1669,4 +1671,3 @@ SIZE_UNKNOWN(WwdMgr);
 SIZE_UNKNOWN(WwdSnapshot);
 SIZE_UNKNOWN(CObject);
 SIZE_UNKNOWN(CDDrawWorker);
-SIZE_UNKNOWN(CWorkerElement);

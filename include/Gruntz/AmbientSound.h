@@ -84,6 +84,12 @@ public:
     // world is live. Inlines SetLevel(m_08, 0, 0)'s scale+clamp then SetVolumeByIndex.
     void Restart(); // 0xbfb0
 
+    // 0xbf10: per-channel volume recompute (CWorldSoundSet::Restart pushes the new
+    // master level to every live channel). Caches the master in m_scaleA, then runs
+    // the SetLevel scale/clamp and drives SetVolumeByIndex. (Was the dissolved
+    // CSoundChannel view's "Recompute(frame)".)
+    void Recompute(i32 master); // 0xbf10
+
     // One-time inits run by the CWorldSoundSet::Create* factories right after
     // construction (unreconstructed; declared NO-body so the `call` reloc-masks).
     i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);

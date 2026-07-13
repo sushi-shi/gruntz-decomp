@@ -22,7 +22,7 @@
 #include <Mfc.h>            // CString temps (/GX) + RECT/CopyRect/SetRect
 
 #include <Gruntz/GameMode.h> // canonical CBootyState : CState (the folded booty state)
-#include <Gruntz/BzState.h>  // the deferred g_gameReg / BzSink sub-object views
+#include <Gruntz/BzState.h>  // the deferred g_gameReg sub-object views (BzSink is dissolved)
 
 #include <rva.h>
 #include <Globals.h>
@@ -98,12 +98,11 @@ void ShowHudMessage(
     i32 e
 ); // 0x1154b0
 
-// The booty HUD message sink: CState::m_c (the +0xc holder) viewed as BzSink. The
-// idle-anim tick reaches the sink's loader/notify/dropped sub-objects through this
-// view (the m_c / CSpriteFactoryHolder web reconciliation is a separate task).
-static inline BzSink* Sink(CBootyState* self) {
-    return (BzSink*)self->m_c;
-}
+// The booty HUD message sink IS the inherited CState::m_c holder (the canonical
+// CSpriteFactoryHolder): m_pages (+0x04) the page sub-manager, m_8 (+0x08) the
+// object-group render broadcaster, m_28 (+0x28) the cue host whose m_2c is the
+// held SoundStream. (The former BzSink view + its BzSink8 placeholder vtable are
+// dissolved - see <Gruntz/BzState.h>.)
 
 // ===========================================================================
 // ShowLevelCompleteMessage @0x1c9d0 - draws the per-slot ready/template overlays,
@@ -356,9 +355,9 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 return 0;
             }
             ShowLevelCompleteMessage();
-            ((CDDrawSubMgrPages*)Sink(this)->m_loader)->Method_158ee0();
-            Sink(this)->m_notify->OnLoaded(Sink(this)->m_loader->m_data);
-            ((CDDrawSubMgrPages*)Sink(this)->m_loader)->Method_158e90();
+            m_c->m_pages->Method_158ee0();
+            m_c->m_8->WalkDispatch2C(m_c->m_pages->m_backPair);
+            m_c->m_pages->Method_158e90();
             BuildPage(0x50, 0x3e8, 0, 1);
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
@@ -371,7 +370,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
-            ((CDDrawSubMgrPages*)Sink(this)->m_loader)->Method_158ee0();
+            m_c->m_pages->Method_158ee0();
             BuildPage(0x50, 0x3e8, 0, 1);
             m_activation = 0xfffffffe;
             return 1;
@@ -385,16 +384,16 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (!ShowSecretBonusMessage()) {
             return 0;
         }
-        ((CDDrawSubMgrPages*)Sink(this)->m_loader)->Method_158ee0();
+        m_c->m_pages->Method_158ee0();
         BuildPage(0x50, 0x3e8, 0, 1);
         return 1;
     }
 
     BzLevelRecord* rec2 = g_gameReg->m_levelRecord;
     if (rec2->m_levelIndex == 0x20) {
-        BzSinkSub* sub = Sink(this)->m_dropped->m_sprite;
+        SoundStream* sub = m_c->m_28->m_2c;
         if (sub != 0) {
-            ((SoundStream*)sub)->Stop();
+            sub->Stop();
         }
         g_gameReg->ChangeState_8fab0(3);
         PostMessageA((HWND)g_gameReg->m_wnd->m_hwnd, 0x111, 0x8021, 0);

@@ -9,7 +9,7 @@
 // <Gruntz/MapLogic.h>. Engine callees are reloc-masked (no body).
 //
 // BANKED (all byte-exact): ~CMapLogic (0x113c0), MapSerializeCurve (0xec230),
-//   CMapLogic::FreeNodes (0x85480), CMapVisitTarget::Visit (0x9f7f0).
+//   CMapLogic::FreeNodes (0x85480); CMapMgr::Visit (0x9f7f0) is MapMgr.cpp's.
 //   SerializeNodes (0x82430) reconstructed here (~96%, stack-slot entropy tail).
 // The terrain-grid methods (0x77790/0x81e10/0x82030) operate on the CBrickz grid
 // shape (+0x4 cell pool / +0x8 column table / +0xc/+0x10 dims / +0x4c mask) and
@@ -20,6 +20,7 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/MapLogic.h>
+#include <Gruntz/MapMgr.h> // CMapMgr::Visit (0x9f7f0) - SerializeNodes' direct tail-call
 
 #include <rva.h>
 
@@ -179,9 +180,14 @@ i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             break;
         }
     }
-    return ((CMapVisitTarget*)this)->Visit(ar, mode, a2, a3) != 0;
+    // Retail tail: `mov ecx,this; call 0x26b2` (the ?Visit@CMapMgr@@ ILT thunk) - a
+    // DIRECT call of CMapMgr::Visit (slot [1] body, 0x9f7f0, MapMgr.cpp) on THIS
+    // CUserLogic-family object. The qualified call keeps it non-virtual; the cross-cast
+    // survives because the receiver's real relation to CMapMgr is still unrecovered
+    // (@identity-TODO in MapMgr.h - CMapMgr/CBrickzGrid/CMapLogic reconciliation).
+    return ((CMapMgr*)this)->CMapMgr::Visit(ar, mode, a2, a3) != 0;
 }
 
-// CMapVisitTarget::Visit (0x9f7f0) lives in its home TU per the interval dossier
+// CMapMgr::Visit (0x9f7f0) lives in its home TU per the interval dossier
 // (#10a seam): src/Gruntz/MapMgr.cpp - the single fn between the CBrickzGrid
 // block and CMapMgr::Save/Load.

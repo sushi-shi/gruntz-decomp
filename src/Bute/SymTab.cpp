@@ -1126,13 +1126,11 @@ CSymParser::~CSymParser() {
     if (m_parseArmed) {
         Clear(0);
     }
-    CSymObjNode* p;
-    for (p = (CSymObjNode*)m_list.m_head; p != 0; p = (CSymObjNode*)m_list.m_head) {
+    CRezItmBase* p;
+    for (p = (CRezItmBase*)m_list.m_head; p != 0; p = (CRezItmBase*)m_list.m_head) {
         m_list.Remove((CObjNode*)p);
         m_list.m_count--;
-        if (p) {
-            p->Delete(1);
-        }
+        delete p; // the slot-1 scalar-deleting dtor (delete emits the same null test)
     }
     CSymTab* root = m_root;
     if (root) {
@@ -1179,22 +1177,14 @@ CSymParser::~CSymParser() {
     // in reverse declaration order, under the /GX member-teardown trylevels.
 }
 
-// The two concrete reader nodes ParseBuffer builds (text @0x13c940 ctor(this, m_2c),
-// binary @0x13c540 ctor(this)). Both __thiscall on a freshly allocated reader block.
-// Reloc-masked externs. Each is a real CSymObjNode leaf (the intrusive-list-node base:
-// vptr + next/prev at +0..+0xb, the Read/ReadRaw reader vtable), so `new T(...)` is a
-// plain CSymObjNode* upcast (base @ offset 0) - no reinterpret cast, and the list-Link /
-// Read / ReadRaw dispatches fall out of the inherited base.
-struct CTextReaderInit : public CSymObjNode {
-    CTextReaderInit(CSymParser* p, i32 a); // 0x13c940
-    char m_body[0x38 - 0xc];               // own text-reader state (past the CSymObjNode base)
-};
-SIZE(CTextReaderInit, 0x38); // text-reader alloc block (operator new)
-struct CBinReaderInit : public CSymObjNode {
-    CBinReaderInit(CSymParser* p); // 0x13c540
-    char m_body[0x24 - 0xc];       // own binary-reader state (past the CSymObjNode base)
-};
-SIZE(CBinReaderInit, 0x24); // binary-reader alloc block (operator new)
+// The two concrete reader nodes ParseBuffer builds are the REAL Rez archive
+// classes (<Rez/RezMgr.h>, included above): the text reader is CRezDir (ctor
+// 0x13c940 (this, m_2c) stamps ??_7CRezDir @0x5ef7a8, 0x38 B) and the binary
+// reader CRezItm (ctor 0x13c540 (this) stamps ??_7CRezItm @0x5ef788, 0x24 B) -
+// both `: CRezItmBase`, so `new T(...)` upcasts plainly (base @ offset 0) and the
+// list-Link / Open / Read dispatches fall out of the inherited base. (The former
+// CTextReaderInit/CBinReaderInit local shells + the CSymObjNode view are
+// dissolved - see <Bute/SymParser.h>.)
 
 // @early-stop
 // 0x3b8 (952 B) /GX text/binary loader. The body reproduces the buffer recache
@@ -1222,7 +1212,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         if (m_40 == 0) {
             return 0;
         }
-        CSymObjNode* reader = new CTextReaderInit(this, m_2c);
+        CRezItmBase* reader = new CRezDir(this, m_2c);
         if (reader == 0) {
             ::operator delete(m_cachedSourceBuffer);
             m_cachedSourceBuffer = 0;
@@ -1231,7 +1221,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         m_activeNode = reader;
         m_list.Link(reader);
         m_list.m_count++;
-        if (reader->Read(buf, a, b) == 0) {
+        if (reader->Open((char*)buf, a, b) == 0) {
             return 0;
         }
         m_parseArmed = 1;
@@ -1250,7 +1240,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         return 1;
     }
     // binary stream
-    CSymObjNode* reader = new CBinReaderInit(this);
+    CRezItmBase* reader = new CRezItm(this);
     if (reader == 0) {
         ::operator delete(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
@@ -1259,7 +1249,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_activeNode = reader;
     m_list.Link(reader);
     m_list.m_count++;
-    if (reader->Read(buf, a, b) == 0) {
+    if (reader->Open((char*)buf, a, b) == 0) {
         return 0;
     }
     m_parseArmed = 1;
@@ -1281,7 +1271,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     }
     // b == 0: read the 0xa8-byte binary header, copy its packed fields, validate magic.
     char hdr[0xa8];
-    reader->ReadRaw(0, 0, 0xa8, hdr);
+    reader->Read(0, 0, 0xa8, hdr); // [2] (the view's "ReadRaw")
     m_50 = *(i32*)(hdr + 0x7f);
     m_30 = *(i32*)(hdr + 0x83);
     m_34 = *(i32*)(hdr + 0x87);
@@ -1539,23 +1529,19 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
 // assignment. Body byte-exact modulo the register-naming; logic complete. ~91%,
 // parked for the final sweep.
 RVA(0x0013b850, 0xa8)
-void* CSymParser::Clear(i32 final) {
+i32 CSymParser::Clear(i32 final) {
     (void) final;
-    void* r = m_activeNode->Detach();
+    i32 r = m_activeNode->Close(); // [5] (the view's "Detach")
     m_list.Remove((CObjNode*)m_activeNode);
     m_list.m_count--;
-    if (m_activeNode) {
-        m_activeNode->Delete(1);
-    }
+    delete m_activeNode; // slot-1 scalar dtor (delete emits the same null test)
     m_activeNode = 0;
-    CSymObjNode* p;
-    for (p = (CSymObjNode*)m_list.m_head; p != 0; p = (CSymObjNode*)m_list.m_head) {
-        p->Detach();
+    CRezItmBase* p;
+    for (p = (CRezItmBase*)m_list.m_head; p != 0; p = (CRezItmBase*)m_list.m_head) {
+        p->Close();
         m_list.Remove((CObjNode*)p);
         m_list.m_count--;
-        if (p) {
-            p->Delete(1);
-        }
+        delete p;
     }
     if (m_root) {
         m_root->~CSymTab();
@@ -1643,8 +1629,8 @@ void __stdcall UnpackTag(u32 tag, char* dst) {
 RVA(0x0013ba20, 0x27)
 i32 CSymParser::CheckNodes() {
     i32 ok = 1;
-    for (CSymObjNode* n = (CSymObjNode*)m_list.m_head; n != 0; n = n->m_next) {
-        if (n->Slot1c() == 0) {
+    for (CRezItmBase* n = (CRezItmBase*)m_list.m_head; n != 0; n = n->m_next) {
+        if (n->Check() == 0) {
             ok = 0;
         }
     }

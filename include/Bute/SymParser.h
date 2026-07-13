@@ -42,28 +42,17 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // also real polymorphic now (??_7CObjList @0x5ef760); the ctor/dtor vptr stamps
 // reloc-mask against it.
 
-// A polymorphic reader/list node: { vptr@+0, next@+4, prev@+8 }. Its vtable carries
-// a scalar-deleting dtor at slot 1 (+0x4, a delete-flag arg) and a teardown/detach
-// method at slot 5 (+0x14). Modeled as a polymorphic class (like CNetPlayerObj) so
-// `n->Delete(1)` / `n->Detach()` lower to the __thiscall virtual dispatch; the
-// virtuals are never defined here, so no vtable is emitted in this TU. (Renamed
-// from "CObjNode" - that name is the Rez list family's type-erased node base in
-// <Rez/RezList.h>, a DIFFERENT class; this is the parser's reader-node interface.)
-class CSymObjNode {
-public:
-    virtual void Slot00();                                 // +0x00
-    virtual void Delete(i32 flag);                         // +0x04  slot 1 (scalar-deleting dtor)
-    virtual i32 ReadRaw(i32 a, i32 b, i32 len, void* buf); // +0x08  slot 2 (binary read)
-    virtual void Slot0c();                                 // +0x0c
-    virtual i32 Read(void* buf, i32 a, i32 b);             // +0x10  slot 4 (parse buffer)
-    virtual void* Detach();                                // +0x14  slot 5 (teardown/detach)
-    virtual void Slot18();                                 // +0x18  slot 6
-    virtual i32 Slot1c();                                  // +0x1c  slot 7 (CheckNodes probe)
-
-    CSymObjNode* m_next; // +0x04
-    CSymObjNode* m_prev; // +0x08
-};
-SIZE(CSymObjNode, 0xc); // base subobject { vptr, next, prev }
+// DISSOLVED (Fable A2, 2026-07-14): the former "CSymObjNode" 8-slot reader-node
+// view WAS the canonical CRezItmBase (<Rez/RezMgr.h>) - PROVEN by the reader
+// ctors ParseBuffer calls: the text reader's ctor 0x13c940 stamps ??_7CRezDir
+// (0x5ef7a8) and the binary reader's 0x13c540 stamps ??_7CRezItm (0x5ef788),
+// both `: CRezItmBase` ({vptr,next,prev} @+0..+0xb, the same 8-slot table).
+// Slot-for-slot: "Delete(1)" = the slot-1 scalar-deleting dtor (`delete p`);
+// "ReadRaw" = Read [2]; "Slot0c" = Write [3]; the view's "Read(buf,a,b)" = Open
+// [4] (ParseBuffer OPENS the source); "Detach" = Close [5]; "Slot18" = Flush [6];
+// "Slot1c" = Check [7] (the CheckNodes probe). Forward-declared here (SymTab.cpp
+// pulls the real <Rez/RezMgr.h>).
+class CRezItmBase;
 
 // CObjListBase - the abstract list-interface base whose vtable (0x1ef760, one
 // __purecall slot) is the DESTRUCTION vtable of the +0x10 CObjList sub-object: the
@@ -152,11 +141,11 @@ public:
     // /GX member-teardown) and re-stamp the +0x10 list vtable.
     ~CSymParser();
 
-    // Clear (0x13b850): detach the active node (m_activeNode), drop the +0x10 object
-    // list, free the heap root + the cached source buffer, then null m_parseArmed. The (discarded)
-    // return is m_activeNode's Detach() result, left in eax. `final` is unused. RVA-keyed pairing
-    // absorbs the void(QAEXH)-vs-void*(QAEPAXH) mangling mismatch.
-    void* Clear(i32 final);
+    // Clear (0x13b850): Close() the active node (m_activeNode), drop the +0x10 object
+    // list, free the heap root + the cached source buffer, then null m_parseArmed. The
+    // (discarded) return is m_activeNode's Close() result, left in eax. `final` is
+    // unused. RVA-keyed pairing absorbs mangling drift on the (discarded) return type.
+    i32 Clear(i32 final);
 
     // GetRoot (0x13b900): the heap root CSymTab accessor (`mov eax,[ecx+0x44];
     // ret`). NOT inlined into the thunks - a separate __thiscall function the
@@ -222,7 +211,7 @@ public:
     i32 m_08;                   // +0x08  (=1)
     i32 m_parseArmed;           // +0x0c  Clear guard (0/1 flag)
     CParserObjList m_list;      // +0x10  (+0x10..+0x1c)
-    CSymObjNode* m_activeNode;  // +0x20  detached+removed+deleted first in Clear
+    CRezItmBase* m_activeNode;  // +0x20  Close()'d+removed+deleted first in Clear
     i32 m_24;                   // +0x24
     i32 m_nextGeneratedFileKey; // +0x28
     i32 m_2c;                   // +0x2c

@@ -97,19 +97,12 @@ public:
 // `mode` (7=read via +0x2c, 4=write via +0x30). Declared at namespace scope.
 i32 MapSerializeCurve(CSerialArchive* ar, i32 mode); // 0x0ec230
 
-// 0x9f7f0: a tiny polymorphic Visit - reads [ecx] as a vtable and calls slot +0x08
-// (mode 4) or +0x0c (mode 7) with the buffer arg, returning 1 unless the slot
-// returned non-zero. __thiscall (ecx=this) with 4 stack args (ret 0x10), only the
-// first two used. The visited object's slots +0x08 / +0x0c are modeled polymorphic
-// (decls only) so `mov edx,[ecx]; push buf; call [edx+8]` falls out.
-SIZE_UNKNOWN(CMapVisitTarget);
-struct CMapVisitTarget {
-    virtual i32 Slot00();
-    virtual i32 Slot04();
-    virtual i32 Slot08(void* buf);                  // +0x08 (mode 4)
-    virtual i32 Slot0C(void* buf);                  // +0x0c (mode 7)
-    i32 Visit(void* buf, i32 mode, i32 a2, i32 a3); // 0x09f7f0 (__thiscall)
-};
+// DISSOLVED (Fable A2, 2026-07-14): the "CMapVisitTarget" shell (4 fabricated
+// slots + a non-virtual Visit) is gone - 0x9f7f0 IS CMapMgr::Visit, slot [1] of
+// ??_7CMapMgr @0x1ea3b4 (<Gruntz/MapMgr.h>; MapMgr.cpp owns the body).
+// SerializeNodes tail-calls it DIRECTLY (retail: `mov ecx,this; call 0x26b2`, the
+// ?Visit@CMapMgr@@ ILT thunk) - spelled as the qualified CMapMgr::Visit call in
+// MapLogic.cpp so no vtable load is emitted.
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
