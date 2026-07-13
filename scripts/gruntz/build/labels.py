@@ -840,6 +840,66 @@ def vtbl_labels(repo):
     return out
 
 
+LABELS_MANIFEST = REPO / "config/labels_manifest.tsv"
+
+
+def check_labels_manifest(rows):
+    """BUILD-INTEGRITY GATE (fatal): the tree-wide label DENOMINATOR may not shrink.
+
+    The per-TU and empty-fragment gates make it impossible for one unit to contribute
+    nothing. This is the last line: a COMMITTED per-unit function count. Any unit whose
+    count DROPS - or that disappears entirely - fails the build and is named, with the
+    before/after. Growth is fine and is recorded silently.
+
+    Why a committed file: the failure we are guarding against makes the numbers look
+    BETTER (fewer functions in the denominator => a higher exact %). Nothing in the build
+    itself can notice that, because every metric is computed from the very file that just
+    lost the rows. Only a value carried in from the last known-good commit can.
+
+    A deliberate drop (deleting a stub, moving functions between units) is acknowledged
+    with GRUNTZ_LABELS_ACK=1, which rewrites the manifest; the commit then RECORDS the
+    drop, which is exactly the "explicit acknowledgement" we want in the history.
+    """
+    cur = {}
+    for _rva, _name, unit, _size, kind in rows:
+        if kind != "data":
+            cur[unit] = cur.get(unit, 0) + 1
+    ack = os.environ.get("GRUNTZ_LABELS_ACK") == "1"
+    if LABELS_MANIFEST.exists() and not ack:
+        prev = {}
+        for ln in LABELS_MANIFEST.read_text().splitlines():
+            ln = ln.strip()
+            if not ln or ln.startswith("#"):
+                continue
+            u, _, n = ln.partition("\t")
+            if n.strip().isdigit():
+                prev[u] = int(n)
+        drops = [(u, n, cur.get(u, 0)) for u, n in sorted(prev.items())
+                 if cur.get(u, 0) < n]
+        if drops:
+            for u, was, now in drops:
+                log(f"ERROR unit '{u}': labelled functions DROPPED {was} -> {now}"
+                    + ("  (the unit vanished entirely)" if now == 0 else ""))
+            lost = sum(was - now for _u, was, now in drops)
+            log(f"{len(drops)} unit(s) lost {lost} labelled function(s) vs "
+                f"{LABELS_MANIFEST.relative_to(REPO)}. A shrinking denominator makes every "
+                f"metric look BETTER while the tree gets WORSE, so this is fatal. If the "
+                f"drop is DELIBERATE, re-run with GRUNTZ_LABELS_ACK=1 to rewrite the "
+                f"manifest (and commit it, so the history records the acknowledgement).")
+            return 1
+    body = "".join(f"{u}\t{n}\n" for u, n in sorted(cur.items()))
+    new = ("# labels_manifest.tsv - per-unit labelled-FUNCTION counts, the committed\n"
+           "# floor for the build-integrity denominator gate (labels.py). A unit whose\n"
+           "# count DROPS fails the build; see check_labels_manifest(). Regenerate a\n"
+           "# deliberate drop with GRUNTZ_LABELS_ACK=1.\n"
+           f"# units: {len(cur)}  functions: {sum(cur.values())}\n") + body
+    if not LABELS_MANIFEST.exists() or LABELS_MANIFEST.read_text() != new:
+        LABELS_MANIFEST.write_text(new)
+        log(f"labels manifest: {len(cur)} unit(s), {sum(cur.values())} function(s)"
+            + ("  [ACK: drop acknowledged]" if ack else ""))
+    return 0
+
+
 def merge_fragments(frags, out, functions_frags=None, functions_out=None,
                     globals_frags=None, globals_out=None):
     """Combine per-TU fragment CSVs into symbol_names.csv, re-applying the cross-TU
@@ -850,7 +910,9 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
     vtable-catalog rows are folded in here too (tree-wide source scan)."""
     import csv as _csv
     rows, addr_sites = [], {}
+    empty_frags = []
     for frag in frags:
+        n_before = len(rows)
         with open(frag) as f:
             reader = _csv.DictReader(ln for ln in f if not ln.lstrip().startswith("#"))
             for r in reader:
@@ -860,10 +922,42 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
                 rows.append((rva, r["name"], r["unit"], size, kind))
                 if kind != "data":
                     addr_sites.setdefault(rva, []).append((r["unit"], r["name"]))
+        if len(rows) == n_before:
+            empty_frags.append(frag)
+    # BUILD-INTEGRITY GATE (fatal): an EMPTY fragment whose TU actually HAS annotations.
+    # The per-TU emit now refuses to write one, but ninja CACHES fragments - a fragment
+    # left empty by an older, broken label run survives untouched until its TU changes,
+    # so the merge must reject it too. This is the last place a unit can silently
+    # contribute nothing.
+    #
+    # A fragment IS allowed to be empty when its TU carries no RVA/DATA/SYMBOL macro at
+    # all: the class-metadata-only TUs (FinalVtables.cpp, OrphanClassMeta.cpp) exist
+    # purely to host SIZE()/VTBL() annotations, and VTBL rows are folded in below from a
+    # tree-wide source scan, not from the per-TU fragment. So consult the SOURCE rather
+    # than guessing from the file - the check stays honest and needs no marker file.
+    src_of = {u: s for s, u in units_from_toml(REPO / "config/units.toml").items()} \
+        if (REPO / "config/units.toml").exists() else {}
+    bad = []
+    for frag in empty_frags:
+        src = src_of.get(Path(frag).stem)
+        if src and (REPO / src).exists() and MACRO_RE.search((REPO / src).read_text()):
+            bad.append((frag, src))
+    if bad:
+        for frag, src in bad:
+            log(f"ERROR empty label fragment {frag}: {src} CARRIES rva.h annotations but "
+                f"labelled nothing, so its functions would silently vanish from {out}. "
+                f"(A common cause: RVA() on an INLINE member that is never called - clang "
+                f"only annotates functions it actually EMITS, so the label never reaches "
+                f"the IR. Move the body out-of-line.)")
+        log(f"{len(bad)} empty label fragment(s); refusing to write {out}.")
+        return 1
     # VTBL(Class, 0x..) catalog rows (kind=data, cosmetic "vtables" unit - synth_pdb
     # ignores the unit for data symbols, keying the datum rename by rva->name).
     for rva, name in vtbl_labels(REPO):
         rows.append((rva, name, "vtables", None, "data"))
+    rc = check_labels_manifest(rows)
+    if rc != 0:
+        return rc
     rc = write_symbol_names(rows, addr_sites, out)
     if rc != 0:
         return rc
@@ -933,6 +1027,8 @@ def main():
     addr_sites = {}    # rva -> [(tu, "fn")] for every function rva, to catch dups
     func_meta = {}     # rva -> {ir_sym, names} for functions.json signatures
     global_meta = {}   # rva -> {name, type, unit} for globals.json (typed data)
+    no_ir = []         # TUs whose label pass produced NO IR at all      -> FATAL
+    no_rows = []       # TUs that carry rva.h macros but labelled nothing -> FATAL
     for i, tu in enumerate(args.tu):
         text = Path(tu).read_text()
         if args.unit:
@@ -956,9 +1052,22 @@ def main():
             continue
 
         # --- functions / SYMBOL via LLVM IR (mangled symbol paired directly) ---
+        # FATAL, never `continue`. The label pass is CLANG, not the wine cl that builds
+        # the objs, so a TU can compile perfectly under cl and still yield NO IR here -
+        # e.g. afxwin*.inl's implicit-int CMenu::operator== which clang rejects and cl
+        # accepts (the #undef _AFX_ENABLE_INLINES guard). This used to `continue`, so
+        # the TU contributed ZERO labels and every function in it silently vanished from
+        # symbol_names.csv while the build still reported SUCCESS. That is the worst kind
+        # of bug we can have: every metric we trust (exact count, reloc_fidelity,
+        # assert_relocs, link_defects) reads symbol_names.csv, so a silent label drop
+        # makes the numbers LOOK BETTER while the tree gets worse (8 units / 211 fns went
+        # missing before anyone noticed the denominator move). A TU that compiles MUST
+        # contribute; if it cannot, the build stops and says which one.
         ir = emit_ir(args.clang, tu, args.flag, cl_flags)
         if ir is None:
+            no_ir.append(tu)
             continue
+        rows_before = len(rows)
         # AST: source-only signal - parameter NAMES (for functions.json) and the
         # DATA extern join. One dump, reused by both. Keyed by clang's mangledName,
         # which equals the IR-paired symbol (`ir_sym`), so the join is by rva below.
@@ -1045,6 +1154,37 @@ def main():
                 else:
                     misses.append((rva, cand, unit,
                                    "data candidate not in base obj"))
+
+        # A TU that carries rva.h macros MUST label something. If it labelled nothing,
+        # the label pass silently dropped it (clang parsed the source but the IR/AST
+        # join produced no rows) - the same class of silent hole as `no_ir` above.
+        if len(rows) == rows_before:
+            no_rows.append(tu)
+
+    # ------------------------------------------------------------------
+    # BUILD-INTEGRITY GATE (fatal): a TU that compiles must CONTRIBUTE.
+    #
+    # The label pass runs clang, the objs are built by wine cl. When clang chokes on
+    # something cl accepts, the TU used to be skipped in silence: it still compiled, the
+    # build still said SUCCESS, and every one of its functions just... was not in
+    # symbol_names.csv. Because every metric we report reads that file, the tree can get
+    # WORSE while the numbers get BETTER (a smaller denominator). 8 units / 211 functions
+    # went missing exactly this way and it was caught only by someone noticing the
+    # denominator move. A green build must MEAN the labels landed - so this is fatal, and
+    # it names the units.
+    # ------------------------------------------------------------------
+    if no_ir or no_rows:
+        for tu in no_ir:
+            log(f"ERROR {tu}: label pass produced NO IR - the TU compiles under cl but "
+                f"clang rejected it, so ALL of its functions would silently vanish from "
+                f"{args.out}. (Common cause: an MFC header inline clang rejects - see the "
+                f"`#undef _AFX_ENABLE_INLINES` guard in docs/build-system.md.)")
+        for tu in no_rows:
+            log(f"ERROR {tu}: carries rva.h macros but labelled NOTHING - its functions "
+                f"would silently vanish from {args.out}.")
+        log(f"{len(no_ir) + len(no_rows)} TU(s) contributed no labels; refusing to write "
+            f"{args.out}. A TU that compiles MUST contribute.")
+        return 1
 
     # Finalize + write the CSV via the shared helper (cross-TU dup-RVA guard,
     # DATA keep-last-per-rva dedup, sort, write-if-changed). It sorts `rows` in

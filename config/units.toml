@@ -2052,10 +2052,6 @@ unit = "bitarray"
 source = "src/Utils/BitArray.cpp"
 flags = "base"
 [[unit]]
-unit = "triggersound"
-source = "src/Gruntz/TriggerSound.cpp"
-flags = "base"
-[[unit]]
 unit = "surfacepalette"
 source = "src/Image/PaletteReset.cpp"
 flags = "base"
