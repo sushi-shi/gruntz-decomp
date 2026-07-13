@@ -167,17 +167,25 @@ struct CPlanePalHost {
     CPlanePalOwner* m_owner; // +0x64
 };
 struct CPlaneGeom {
-    u8 pad_0[0xc8];
+    u8 pad_0[0xb0];
+    // +0xb0..+0xc4: the first three geometry pairs (ex the WwdPlaneHdr view's
+    // geo[0..5]); with the three rect-dim pairs below they are the SIX pairs
+    // RebuildPlanes hands the spatial worker's Init.
+    i32 m_pairA[2]; // +0xb0
+    i32 m_pairB[2]; // +0xb8
+    i32 m_pairC[2]; // +0xc0
     i32 m_rectAWidth, m_rectAHeight, m_rectBWidth, m_rectBHeight, m_rectCWidth,
         m_rectCHeight; // +0xc8..+0xdc
 };
 struct CPlaneMapData {
     void* m_0;
     CPlaneSurf* m_surface; // +0x4  pixel-format chain
-    u8 pad_8[0x18 - 0x8];
+    void* m_8;             // +0x08  worker source (RebuildPlanes hands it to the grid Init;
+                           //        ex the WwdRegOwner view's m_8)
+    u8 pad_c[0x18 - 0xc];
     CPlanePalHost* m_paletteHost; // +0x18  palette host
     u8 pad_1c[0x24 - 0x1c];
-    CPlaneGeom* m_geometry; // +0x24  plane geometry
+    CPlaneGeom* m_geometry; // +0x24  plane geometry (ex the WwdRegOwner view's m_24)
 };
 
 // The serialize stream CPlaneRender::Save/Load drive is the REAL abstract stream

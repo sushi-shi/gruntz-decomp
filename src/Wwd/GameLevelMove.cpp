@@ -701,11 +701,11 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 // extents (min-1 + half-centers) from three more size-pairs and finish with a SetRect
 // over rc's corners.
 //
-// ATTRIBUTION (proven, sema xref + disasm): this IS WwdPlaneRender::Init - the 0xb8-byte
+// ATTRIBUTION (proven, sema xref + disasm): this IS CWwdSpatialMgr::Init - the 0xb8-byte
 // plane-render worker's init, and its ONLY caller is WwdFile::RebuildPlanes (@0x1628f0,
 // src/Wwd/WwdFile.cpp). Builder_168080 (+0x00..+0x6c) is a partial view of
-// WwdPlaneRender; SubWidget_168080 (0x44 B, vtable 0x5f0310) is the sub-render-object it
-// allocates x3. DEFERRED fold onto WwdPlaneRender::Init: the real Init takes 8 args
+// grid/scroll worker; SubWidget_168080 (0x44 B, vtable 0x5f0310) is the sub-render-object it
+// allocates x3. DEFERRED fold onto CWwdSpatialMgr::Init: the real Init takes 8 args
 // (this ret 0x20) with a RECT* + 6 Pt*, but RebuildPlanes' @early-stop reconstruction
 // passes 7 args with a simplified geo mapping - folding would force rewriting
 // RebuildPlanes' scrambled arg-build (risks regressing its match). Left as the placeholder

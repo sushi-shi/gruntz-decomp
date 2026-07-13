@@ -2737,6 +2737,7 @@ VTBL(CImageSet2, 0x001f01e0); // ??_7CImageSet2 (was g_imageSet2Vtbl)
 VTBL(CImageSet3, 0x001f0228); // ??_7CImageSet3 (was g_imageSet3Vtbl)
 SIZE(CImageSet1, 0x10);
 SIZE(CImageSet2, 0x24);
+SIZE(CImageSet3, 0x18); // ReadImageSet's `new CImageSet3` (push 0x18)
 // Size PROVEN from the allocation site (push 0x6d4; call ??2 -> the ctor), and our
 // reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CGameLevel, 0x6d4);

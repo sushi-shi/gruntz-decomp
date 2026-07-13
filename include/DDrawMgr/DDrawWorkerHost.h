@@ -62,9 +62,14 @@ struct CWwdSpatialMgr {
 
     i32 SetTargetA(i32 a, i32 b); // 0x168340
     i32 SetTargetB(i32 a, i32 b); // 0x168500
-    i32 PruneCount();             // 0x1688b0  (reloc-masked external)
-    i32 GetSize();                // 0x168430  (reloc-masked external; serialized-size accessor)
-    void FreeGrids();             // 0x1682f0  (reloc-masked external teardown body)
+    // Init from (src, six geometry-pair pointers) - the RebuildPlanes bring-up
+    // (ex the WwdPlaneRender view's Init; allocation-proven 0xb8 B).
+    i32 Init(void* src, i32* p0, i32* p1, i32* p2, i32* p3, i32* p4, i32* p5); // 0x168080
+    i32 PruneCount(); // 0x1688b0  (reloc-masked external)
+    i32 GetSize();    // 0x168430  (reloc-masked external; serialized-size accessor)
+    void FreeGrids(); // 0x1682f0  (reloc-masked external teardown body; the
+                      //  ex-WwdPlaneRender "DtorBody" - same RVA)
+    void ListDtor();  // 0x163a10  the m_iter member teardown
     // The out-of-line COMPLETE dtor (0x163a40; body with the canonical class in
     // WwdSpatialMgr.cpp): FreeGrids + the compiler's ~m_iter. DECLARED-ONLY - an
     // explicit `p->~CWwdSpatialMgr()` (Cleanup_161bf0) then emits the retail

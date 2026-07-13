@@ -689,25 +689,12 @@ struct WwdObjAnimInit {
 // The throwing operator-new + partial-construct cleanup gives the /GX frame.
 // ---------------------------------------------------------------------------
 
-// The level header reached via this->m_assetOwner->m_24 (six geometry pairs at +0xb0).
-struct WwdPlaneHdr {
-    char pad[0xb0];
-    i32 geo[12]; // +0xb0..+0xdc
-};
-struct WwdRegOwner {
-    char pad0[0x8];
-    void* m_8; // +0x08  worker source
-    char pad9[0x24 - 0xc];
-    WwdPlaneHdr* m_24; // +0x24
-};
-
-// The 0xb8-byte plane-render worker (vtable 0x5f02a8; embedded CObList at +0x70).
-struct WwdPlaneRender {
-    void DtorBody(); // 0x1682f0  __thiscall
-    void ListDtor(); // 0x163a10  CObList at +0x70
-    // 0x168080: init from source + 6 coordinate-pair pointers.
-    i32 Init(void* src, i32* p0, i32* p1, i32* p2, i32* p3, i32* p4, i32* p5);
-};
+// (The WwdRegOwner/WwdPlaneHdr/WwdPlaneRender views are GONE: the +0xc "reg owner"
+// IS CPlaneMapData (m_8 worker source, m_24 geometry), the "plane header" IS its
+// CPlaneGeom (the six geometry pairs at +0xb0..+0xdc), and the 0xb8-byte
+// "plane-render worker" IS the CWwdSpatialMgr grid/scroll worker - its "DtorBody"
+// 0x1682f0 is FreeGrids at the SAME RVA, and the vtable it wears (0x5f02a8,
+// realized as ??_7CWwdGridIter in WwdSpatialMgr.cpp) is the +0x70 embedded list's.)
 
 // 0x5f02a8 is realized as ??_7CWwdGridIter (5 slots, dtor at slot 1) in
 // src/Gruntz/WwdSpatialMgr.cpp, which OWNS the RVA catalog name via VTBL. UNPINNED
@@ -737,7 +724,7 @@ i32 CDDrawWorkerHost::Prune_1628d0() {
 // vtable stamped manually (g_planeRenderVtbl @0x5f02a8 = ??_7CWwdGridIter, realized
 // in WwdSpatialMgr.cpp; and g_wapObjectDtorVtbl @0x5e8cb4 = the CObject base-dtor
 // table on the fail path). The worker's own +0x00 vptr is ZEROED here (not a
-// polymorphic outer object), so `new WwdPlaneRender` cannot express this; the
+// polymorphic outer object), so a plain `new CWwdSpatialMgr` cannot express this; the
 // embedded-object-at-offset re-stamp is the only expressible form (wall).
 RVA(0x001628f0, 0x1fc)
 i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
@@ -745,32 +732,32 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
         return 0;
     }
 
-    WwdPlaneRender*& worker = WLOADER(WwdPlaneRender*, 0xb0);
+    CWwdSpatialMgr*& worker = WLOADER(CWwdSpatialMgr*, 0xb0);
     if (worker) {
-        worker->DtorBody();
+        worker->FreeGrids();
         worker->ListDtor();
         ::operator delete(worker);
         worker = 0;
     }
 
-    WwdRegOwner* reg = WLOADER(WwdRegOwner*, 0xc);
+    CPlaneMapData* reg = WLOADER(CPlaneMapData*, 0xc);
     void* src = reg->m_8;
     if (src == 0) {
         return 0;
     }
-    WwdPlaneHdr* hdr = reg->m_24;
+    CPlaneGeom* hdr = reg->m_geometry;
     if (hdr == 0) {
         return 0;
     }
 
-    i32 p0[2] = {hdr->geo[0], hdr->geo[1]};
-    i32 p1[2] = {hdr->geo[2], hdr->geo[3]};
-    i32 p2[2] = {hdr->geo[4], hdr->geo[5]};
-    i32 p3[2] = {hdr->geo[6], hdr->geo[7]};
-    i32 p4[2] = {hdr->geo[8], hdr->geo[9]};
-    i32 p5[2] = {hdr->geo[10], hdr->geo[11]};
+    i32 p0[2] = {hdr->m_pairA[0], hdr->m_pairA[1]};
+    i32 p1[2] = {hdr->m_pairB[0], hdr->m_pairB[1]};
+    i32 p2[2] = {hdr->m_pairC[0], hdr->m_pairC[1]};
+    i32 p3[2] = {hdr->m_rectAWidth, hdr->m_rectAHeight};
+    i32 p4[2] = {hdr->m_rectBWidth, hdr->m_rectBHeight};
+    i32 p5[2] = {hdr->m_rectCWidth, hdr->m_rectCHeight};
 
-    WwdPlaneRender* nw = (WwdPlaneRender*)::operator new(0xb8);
+    CWwdSpatialMgr* nw = (CWwdSpatialMgr*)::operator new(0xb8);
     if (nw) {
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)((char*)nw + 0x74) = 0;
@@ -783,9 +770,9 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
     }
     worker = nw;
     if (nw->Init(src, p0, p1, p2, p3, p4, p5) == 0) {
-        WwdPlaneRender* w = WLOADER(WwdPlaneRender*, 0xb0);
+        CWwdSpatialMgr* w = WLOADER(CWwdSpatialMgr*, 0xb0);
         if (w) {
-            w->DtorBody();
+            w->FreeGrids();
             // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
             ::operator delete(w);
         }
@@ -1420,7 +1407,3 @@ SIZE_UNKNOWN(WwdLevelLoader);
 SIZE_UNKNOWN(CStringAssign); // +0xdc CString::operator= helper (WwdGameObj folded to CGameObject)
 SIZE_UNKNOWN(WwdSubMgrCtor);
 SIZE_UNKNOWN(WwdObjAnimInit);
-SIZE_UNKNOWN(WwdObjList);
-SIZE_UNKNOWN(WwdPlaneHdr);
-SIZE_UNKNOWN(WwdRegOwner);
-SIZE_UNKNOWN(WwdPlaneRender);
