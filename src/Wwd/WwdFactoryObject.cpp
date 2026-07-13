@@ -110,7 +110,7 @@ AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
     m_04 = b;
     m_08 = c;
     m_0c = a;
-    m_10 = 0;
+    m_collideNotify = 0;
     m_14 = 0;
     m_18 = 0;
     m_170 = 0;

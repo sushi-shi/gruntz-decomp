@@ -928,7 +928,7 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
         w->m_04 = field1c;
         w->m_08 = 0;
         w->m_0c = surfaceMgr;
-        w->m_10 = 0;
+        w->m_collideNotify = 0;
         w->m_14 = 0;
         w->m_18 = 0;
         w->m_170 = 0;

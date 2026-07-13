@@ -191,7 +191,7 @@ static inline CImage* NewFrame(void* owner, i32 index) {
 
 // Stamp helper retired: the worker builds are real `new`-less inline constructions
 // whose vptr install is dropped (compiler-emitted vtable; % ok per drive-to-0).
-static inline void StampWorkerVtbl(CAnimWorker* w) {
+static inline void StampWorkerVtbl(AnimWorkerObj* w) {
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
 }
 
@@ -653,9 +653,9 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
         return 0;
     }
     if (m_80 != 0) {
-        m_80->Slot07();
+        m_80->Clear();
     } else {
-        CAnimWorker* w = (CAnimWorker*)::operator new(0x17c);
+        AnimWorkerObj* w = (AnimWorkerObj*)::operator new(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -676,7 +676,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     if (m_80 == 0) {
         return 0;
     }
-    return m_80->Slot09(src->m_10, 0);
+    return m_80->Vfunc24(src->m_10, 0);
 }
 
 // CGameObject's three built-in logic-handler registrars: look the logic-name key
@@ -711,9 +711,9 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
         return 0;
     }
     if (m_88 != 0) {
-        m_88->Slot07();
+        m_88->Clear();
     } else {
-        CAnimWorker* w = (CAnimWorker*)::operator new(0x17c);
+        AnimWorkerObj* w = (AnimWorkerObj*)::operator new(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -734,7 +734,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
     if (m_88 == 0) {
         return 0;
     }
-    return m_88->Slot09(src->m_10, 0);
+    return m_88->Vfunc24(src->m_10, 0);
 }
 
 // @early-stop
@@ -757,9 +757,9 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
         return 0;
     }
     if (m_collideWorker != 0) {
-        m_collideWorker->Slot07();
+        m_collideWorker->Clear();
     } else {
-        CAnimWorker* w = (CAnimWorker*)::operator new(0x17c);
+        AnimWorkerObj* w = (AnimWorkerObj*)::operator new(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -780,7 +780,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
     if (m_collideWorker == 0) {
         return 0;
     }
-    return m_collideWorker->Slot09(src->m_10, 0);
+    return m_collideWorker->Vfunc24(src->m_10, 0);
 }
 
 // @early-stop
@@ -1242,7 +1242,7 @@ i32 CLogicRecord::Init(void* pData, i32 frame) {
 // ---------------------------------------------------------------------------
 RVA(0x00151e70, 0x3b)
 void AnimWorkerObj::Clear() {
-    m_10 = 0;
+    m_collideNotify = 0;
     if (m_14) {
         ::operator delete(m_14);
         m_14 = 0;

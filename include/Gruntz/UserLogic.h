@@ -44,7 +44,7 @@
 //   m_7c                    = a sub-object pointer copied into the trigger.
 // ---------------------------------------------------------------------------
 struct CGameObjAux;  // the sub-object reached through CGameObject::m_7c
-struct CGameObject;  // fwd (CAnimWorker's collide callback takes the object)
+struct CGameObject;  // fwd (the worker's collide callback takes the object)
 class CUserLogic;    // fwd (CGameObjAux::m_logic is the object's bound logic leaf)
 class CSerialObjRef; // fwd (the +0x34 serialize-ref facet; <Gruntz/SerialObjRef.h>)
 
@@ -59,40 +59,11 @@ class CSerialObjRef; // fwd (the +0x34 serialize-ref facet; <Gruntz/SerialObjRef
 // `call [eax+0x24]`) fall out; the vtable itself is the foreign 0x5efb80 stamped
 // by address in the ctor, so this class never emits one (the named virtuals only
 // drive the dispatch shape - slot 7 @ +0x1c, slot 9 @ +0x24).
-SIZE_UNKNOWN(CAnimWorker);
-class CAnimWorker {
-public:
-    virtual void Slot00();              // +0x00
-    virtual void Slot01();              // +0x04
-    virtual void Slot02();              // +0x08
-    virtual void Slot03();              // +0x0c
-    virtual void Slot04();              // +0x10
-    virtual void Slot05();              // +0x14
-    virtual void Slot06();              // +0x18
-    virtual i32 Slot07();               // +0x1c  reuse path
-    virtual void Slot08();              // +0x20
-    virtual i32 Slot09(i32 ctx, i32 z); // +0x24  fed CGameObject->m_10
-
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c
-    // +0x10  collision-notify callback: CGameLevel::BroadPhase calls
-    // `obj->m_collideWorker->m_collideNotify(obj)` (a raw fn-ptr load off the
-    // worker, NOT a vtable dispatch - one indirection in the retail bytes) when a
-    // candidate move would overlap another object; zero-stamped at worker build
-    // (UserBaseLink) = "no callback".
-    i32 (*m_collideNotify)(CGameObject* obj); // +0x10
-    i32 m_14;                                 // +0x14
-    i32 m_18;                                 // +0x18
-    i32 m_1c;                                 // +0x1c
-    char m_pad20[0x170 - 0x20];
-    i32 m_170;
-    i32 m_174;
-    i32 m_178;
-};
-
-// The foreign worker vftable (0x5efb80); the worker ctor stamps it by address so
-// the DIR32 vptr store reloc-masks. Owned by another TU.
+// [The former CAnimWorker 10-slot placeholder view IS the canonical AnimWorkerObj
+// (<DDrawMgr/AnimWorkerObj.h>, ??_7 @0x1efb80): "Slot07 (+0x1c, reuse path)" is its
+// Clear (slot 7, 0x151e70) and "Slot09 (+0x24)" its Vfunc24/Init (slot 9, 0x151e20).
+// The m_collideNotify (+0x10) semantic name migrated onto the canonical.]
+#include <DDrawMgr/AnimWorkerObj.h>
 
 // The +0x198 layer descriptor several eyecandy ctors poll for z-clamping (its
 // +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
@@ -208,11 +179,11 @@ struct CGameObject {
     i32 m_latchedAnimId; // +0x74
     char m_pad78[0x7c - 0x78];
     CGameObjAux* m_7c; // +0x7c
-    CAnimWorker* m_80; // +0x80  lazily-built worker (EnsureWorker80)
+    AnimWorkerObj* m_80; // +0x80  lazily-built worker (EnsureWorker80)
     char m_pad84[0x88 - 0x84];
-    CAnimWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
+    AnimWorkerObj* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
-    CAnimWorker* m_collideWorker; // +0x90  lazily-built worker (EnsureWorker90); its
+    AnimWorkerObj* m_collideWorker; // +0x90  lazily-built worker (EnsureWorker90); its
                                   //        m_collideNotify is fired by BroadPhase
     CGameObject* m_hitOther;      // +0x94  the other party of the pending collision
                                   //        (stored just before m_collideNotify fires)

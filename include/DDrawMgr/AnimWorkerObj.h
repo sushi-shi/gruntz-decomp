@@ -43,10 +43,14 @@ struct AnimWorkerObj : public CObject {
     // The full 3-arg seed ctor (0x15b300, WwdFactoryObject.cpp): m_04=b, m_08=c,
     // m_0c=a, zero the rest (was the WorkerFull view's ctor).
     AnimWorkerObj(i32 a, i32 b, i32 c);
-    i32 m_04;                 // +0x04  = parent->m_1c
-    i32 m_08;                 // +0x08  = 0
-    i32 m_0c;                 // +0x0c  = parent->m_0c
-    i32 m_10;                 // +0x10  = 0
+    i32 m_04; // +0x04  = parent->m_1c
+    i32 m_08; // +0x08  = 0
+    i32 m_0c; // +0x0c  = parent->m_0c
+    // +0x10  = 0. The collision-notify callback: CGameLevel::BroadPhase calls
+    // `obj->m_collideWorker->m_collideNotify(obj)` (a raw fn-ptr load off the
+    // worker, NOT a vtable dispatch); zero-stamped at worker build = "no callback".
+    // (Name migrated from the ex-CAnimWorker view in <Gruntz/UserLogic.h>.)
+    i32 (*m_collideNotify)(struct CGameObject* obj); // +0x10
     void* m_14;               // +0x14  = 0  owned buffer (RezFree'd in Clear)
     AnimWorkerKillable* m_18; // +0x18  = 0  owned sub-object (Destroy(1)'d in Clear)
     i32 m_1c;                 // +0x1c  = 0
