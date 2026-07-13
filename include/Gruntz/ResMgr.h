@@ -75,9 +75,18 @@ struct CDrawTarget {
 
 // The world/key lookup table at CResMgr+0x08 the timer-expiry path probes
 // (FindByKey / engine "Lookup" @0x1b8760, reached at +0x48). Modeled NO-body.
+//
+// The +0x48 probe target is now a REAL typed member: it is the MFC CMapPtrToPtr whose
+// Lookup IS 0x1b8760 (the same class+rva CDDrawChildGroup's m_map2c/m_map48 bind,
+// FID-confirmed). WwdGameObject's kill-cue path calls it directly as
+// m_mgr->m_8->m_map48.Lookup(node, found) - it used to reach the identical hop through
+// a `WwdMgrSub08` + `CMapStringToObLite` view pair, which this member dissolves.
 SIZE_UNKNOWN(CKeyTable);
 struct CKeyTable {
     i32 FindByKey(i32 key, i32* outFound);
+
+    char m_pad00[0x48];    // +0x00..0x47
+    CMapPtrToPtr m_map48;  // +0x48  key -> object (Lookup 0x1b8760)
 };
 
 // The image/tile registry at CResMgr+0x10: a virtual Install at vtable slot 18

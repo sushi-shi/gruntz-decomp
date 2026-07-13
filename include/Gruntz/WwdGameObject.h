@@ -23,6 +23,13 @@
 // lowers to the exact `mov eax,[mgr+slot]; call` with no cast.
 struct WwdMgr;
 
+// The cached sprite / frame / sound-cue value the object resolves by name (+0x194,
+// +0x198, +0x19c). Real classes: <Gruntz/Sprite.h>, <Gruntz/UserLogic.h> and
+// <DDrawMgr/DDrawSubMgrLeafScan.h>. Pointer members only -> forward decls suffice.
+struct CSprite;
+struct CGameObjLayer;
+class LeafScanValue;
+
 // Forward of the WwdAnimWorker+0x18 sub-object interface (defined in the .cpp); the
 // worker's m_18 slot is typed as this so the [m_18][+0x8] dispatch needs no cast.
 class WorkerSub;
@@ -221,10 +228,19 @@ public:
     i32 m_184;                // +0x184
     i32 m_188;                // +0x188
     i32 m_dotColor;           // +0x18c  low byte = dot color / setup flag
-    i32 m_190;                // +0x190
-    void* m_194;              // +0x194  resolved object ref
-    i32 m_198;                // +0x198
-    void* m_19c;              // +0x19c  resolved object ref
+    i32 m_190; // +0x190  the cached frame NUMBER (index into m_194's frame array)
+    // +0x194/+0x198 are the cached sprite and the cached FRAME it resolves to. Proven by
+    // Sub150c30 (0x150c30), which is CGameObject::ApplyLookupSprite spelled through offset
+    // macros: it bounds-checks the frame number against the looked-up object's +0x64/+0x68
+    // (== CSprite::m_firstFrame / m_lastFrame) and then indexes its +0x14 (==
+    // CSprite::m_frames.m_pData) to get +0x198 - exactly what ApplyLookupSprite assigns to
+    // its CGameObjLayer* m_layer at the SAME +0x198. ReadState confirms the sprite: it
+    // strcpy's the name at m_194+0x24, and CSprite::m_name is at +0x24.
+    CSprite* m_194;       // +0x194  cached sprite (was void*)
+    CGameObjLayer* m_198; // +0x198  cached frame / layer (half-extents; was i32)
+    // +0x19c is the resolved sound-cue value: ReadState hands it straight to
+    // CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue*), which is its type.
+    LeafScanValue* m_19c;     // +0x19c  resolved leaf-scan value (was void*)
     CDDrawBlitParam m_cmdMap; // +0x1a0  command-dispatch sub-object (real class)
     CObList m_subList;        // +0x1dc  MFC CObList of owned sub-objects
 };
