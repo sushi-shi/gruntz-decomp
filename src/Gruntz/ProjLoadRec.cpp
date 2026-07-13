@@ -34,7 +34,7 @@ extern FreeNodePool g_coordPool;
 // CProjLoadRec::Load (0x0e0d40) - a CProjectile/CTimeBomb-family dual-mode record
 // loader. A __thiscall(reader, mode, a2, a3), ret 0x10, bailing (0) when the
 // registry sub-object (g_gameReg->m_world) is absent. Mode 7 = READ: a fixed run
-// of raw fields, a 7-entry name-ref loop (CMapStringToOb::Lookup @0x1b8438 through
+// of raw fields, a 7-entry name-ref loop (CMapStringToPtr::Lookup x1b8438 through
 // reg->m_2c->m_10), a single CMapPtrToPtr::Lookup @0x1b8760 (through reg->m_8->m_48)
 // gated on the looked-up object's type code (virtual +0x20 == 5), then a g_coordPool.m_freeHead
 // node-splice loop appending 8-byte payloads onto m_204 (CPtrList::AddTail @0x1b4991).
@@ -108,7 +108,7 @@ struct CProjLoadRec {
     CSerialObj* m_150;                     // +0x150  a3
     CSerialObj* m_154;                     // +0x154  a3
     CSerialNameHolder* m_158;              // +0x158  a3->m_7c
-    CObject* m_15c;                        // +0x15c  resolved value (CMapStringToOb entry)
+    void* m_15c;                           // +0x15c  resolved value (CMapStringToPtr entry)
     i32 m_160, m_164, m_168, m_16c;        // +0x160  the 0x10-byte blob
     i32 m_170, m_174, m_178, m_17c, m_180; // +0x170
     i32 _184;
@@ -123,7 +123,7 @@ struct CProjLoadRec {
     i32 m_1c0, m_1c4;               // +0x1c0 (8)
     i32 m_1c8, m_1cc;               // +0x1c8 (8)
     i32 m_1d0, m_1d4, m_1d8, m_1dc; // +0x1d0
-    CObject* m_1e0[7];              // +0x1e0..+0x1f8  name refs (CMapStringToOb entries)
+    void* m_1e0[7];                 // +0x1e0..+0x1f8  name refs (CMapStringToPtr entries)
     CProjTypeObj* m_1fc;            // +0x1fc  type-5 latch
     i32 m_200;                      // +0x200
     CRezList m_204;                 // +0x204  AddTail target
@@ -179,7 +179,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
                 g_serialCounter++;
                 s->Read(buf, 0x80);
                 if (strlen(buf) != 0) {
-                    CObject* out = 0;
+                    void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
                     reg->m_2c->m_10.Lookup(buf, out);
                     m_1e0[ni] = out;
                 } else {
@@ -245,7 +245,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (m_1e0[wi] != 0) {
-                    CString nm = reg->m_2c->KeyOfValue_152d30(m_1e0[wi]);
+                    CString nm = reg->m_2c->KeyOfValue_152d30((CObject*)m_1e0[wi]);
                     strcpy(buf, nm);
                 }
                 s->Write(buf, 0x80);
@@ -279,7 +279,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
         char blob[0x80];
         memset(blob, 0, sizeof(blob));
         if (m_15c != 0) {
-            CString nm = m_158->m_0c->m_2c->KeyOfValue_152d30(m_15c);
+            CString nm = m_158->m_0c->m_2c->KeyOfValue_152d30((CObject*)m_15c);
             strcpy(blob, nm);
         }
         s->Write(blob, 0x80);
@@ -299,7 +299,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
         m_15c = 0;
         return 1;
     }
-    CObject* out = 0;
+    void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
     m_158->m_0c->m_2c->m_10.Lookup(buf, out);
     m_15c = out;
     return 1;

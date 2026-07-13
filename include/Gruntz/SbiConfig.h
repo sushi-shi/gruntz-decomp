@@ -21,20 +21,26 @@
 
 struct CSbiConfigRecord; // the value the lookup yields (defined below)
 
-// CMapWordToOb::Lookup (engine 0x1b8008, __thiscall, ret 8): key -> *out record.
-// Modeled with NO body so the `ecx=<map>; call 0x1b8008` shape reloc-masks.
-// (The ex-`CMapStringToPtr` view is DISSOLVED: an empty phantom aliasing the MFC library
-// ?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z @0x1b8008 - the rva CSBI_MenuItem::ResolveFrame
-// @0xe81e0 really calls. NOTE: this is a DIFFERENT class from CMapStringToOb (@0x1b8438);
-// the old source cast it to CMapStringToOb, which would have bound the WRONG routine.)
-
-// The registry object held at config-host+0x10: the CMapWordToOb map is embedded
-// at ITS +0x10. Accessing `host->m_10->m_10map` yields the `[host+0x10]+0x10`
-// map `this` the lookup uses (no raw-offset cast needed).
+// The registry object held at config-host+0x10: its name->record map is embedded at
+// ITS +0x10. Accessing `host->m_10->m_10map` yields the `[host+0x10]+0x10` map `this`
+// the lookup uses (no raw-offset cast needed).
+//
+// THE MAP IS ::CMapStringToOb, NOT CMapStringToPtr (mfc_class + disasm, 2026-07-13). The
+// note that used to sit here had BOTH halves of the pairing inverted - it called 0x1b8008
+// "CMapStringToPtr::Lookup" and 0x1b8438 "CMapStringToOb". The binary names the bands from
+// each .obj ctor's own vtable stamp:
+//     0x1b8008 = CMapStringToOb::Lookup   band [0x1b7e17, 0x1b8247)  vtbl 0x1eafd4
+//     0x1b8438 = CMapStringToPtr::Lookup  band [0x1b8247, 0x1b85b1)  vtbl 0x1eb014
+// and CSBI_GruntMachine::BuildResourceTabStatusBar (0xe8a70) / CSBI_MenuItem::ResolveFrame
+// (0xe81e0) both `call 0x1b8008` - i.e. CMapStringToOb. Declaring CMapStringToPtr bound the
+// WRONG routine (mfc_class --audit WRONG-CLASS; reloc-masked, so objdiff showed nothing).
+// The four map classes are byte-identical (no COMDAT fold - MSVC5 has no /OPT:ICF), which
+// is why every FID row there is AMBIG.  Ask the binary:
+//     python -m gruntz.analysis.mfc_class 0x1b8008
 SIZE_UNKNOWN(CSbiConfigReg);
 struct CSbiConfigReg {
     char m_pad0[0x10];
-    CMapStringToPtr m_10map; // +0x10  embedded lookup map
+    CMapStringToOb m_10map; // +0x10  embedded name->record map (Lookup 0x1b8008)
 };
 
 // The keyed config record: m_14 = frame/value table (i32*, indexed by frame),

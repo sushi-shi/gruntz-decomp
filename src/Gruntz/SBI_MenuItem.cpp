@@ -130,7 +130,8 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     if (key == 0) {
         return key;
     }
-    void* rec_v = 0;
+    // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
+    CObject* rec_v = 0;
     CSbiConfigHost* host = (CSbiConfigHost*)m_24;
     host->m_10->m_10map.Lookup((const char*)key, rec_v);
     CSbiConfigRecord* rec = (CSbiConfigRecord*)rec_v;

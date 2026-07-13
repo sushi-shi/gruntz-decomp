@@ -26,7 +26,8 @@
 #include <Gruntz/SBI_ImageSetAni.h> // canonical CSBI_StatzTabArrow (SetDirection/SetDirectionAlt)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // canonical CSBI_StatzTabGruntBar (BuildMultiplayerTab..)
 
-// The name maps are the real MFC CMapStringToPtr (Lookup @0x1b8008, from <Mfc.h>); no local view.
+// The name maps are the real MFC CMapStringToOb (Lookup x1b8008 - mfc_class names that
+// band CMapStringToOb; the ex-note here had the Ob/Ptr pairing inverted). No local view.
 #include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)
 #include <Image/ImageSet.h>                   // canonical CImageSet (SetAllTypes/SetAllFormats)
 
@@ -99,7 +100,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     m_rect14.m_c = g.bottom;
     CGmConfig* rec = 0;
     m_c = p3;
-    h->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", (void*&)rec);
+    h->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", (CObject*&)rec);
     CImage* spr;
     if (rec == 0 || rec->m_64 > 1 || rec->m_68 < 1) {
         spr = 0;
@@ -111,7 +112,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     CGmConfig* cfg = 0;
-    ((CSbiConfigHost*)m_24)->m_10->m_10map.Lookup(key, (void*&)cfg);
+    ((CSbiConfigHost*)m_24)->m_10->m_10map.Lookup(key, (CObject*&)cfg);
     m_30 = cfg;
     if (cfg == 0) {
         return 0;
@@ -298,7 +299,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     if (onLeft == 0) {
         CSbiConfigRecord* n = 0;
         ((CSbiConfigHost*)g_gameReg->m_world)
-            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", (void*&)n);
+            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", (CObject*&)n);
         CImage* v;
         if (n == 0 || n->m_64 > 1 || n->m_68 < 1) {
             v = 0;
@@ -311,7 +312,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     } else {
         CSbiConfigRecord* n = 0;
         ((CSbiConfigHost*)g_gameReg->m_world)
-            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", (void*&)n);
+            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", (CObject*&)n);
         CImage* v;
         if (n == 0 || n->m_64 > 1 || n->m_68 < 1) {
             v = 0;
@@ -534,7 +535,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     m_rect14.m_c = g.bottom;
     CStatzGlyphMap* head = 0;
     m_c = p3;
-    h->m_10->m_10map.Lookup(key, (void*&)head);
+    h->m_10->m_10map.Lookup(key, (CObject*&)head);
     m_glyphMap = head;
     if (head == 0) {
         return 0;
@@ -563,7 +564,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (selMode == 0) {
         CStatzGlyphMap* sel = 0;
         ((CSbiConfigHost*)m_24)
-            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (void*&)sel);
+            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (CObject*&)sel);
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;
@@ -576,7 +577,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     } else {
         CStatzGlyphMap* sel = 0;
         ((CSbiConfigHost*)m_24)
-            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", (void*&)sel);
+            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", (CObject*&)sel);
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;

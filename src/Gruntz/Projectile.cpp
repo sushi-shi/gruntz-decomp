@@ -401,8 +401,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     }
 
     // Resolve the six numbered frame sprites; frame "1" is required.
-    CMapStringToOb& map = m_sprite->m_c->m_2c->m_10;
-    CObject* out;
+    CMapStringToPtr& map = m_sprite->m_c->m_2c->m_10; // Lookup 0x1b8438 -> void& out-param
+    void* out;
     out = 0;
     map.Lookup(key + "1", out);
     m_frame1 = out;

@@ -47,9 +47,9 @@ i32 CSerialObjRef::Chain(CSerialArchive* arc, i32 mode, i32 unused, CSerialObj* 
             m_value = 0;
             return 1;
         }
-        CObject* val = 0;
+        void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
         m_08->m_0c->m_2c->m_10.Lookup(name, val);
-        m_value = val;
+        m_value = (CObject*)val; // the map stores void*; KeyOfValue_152d30 takes CObject*
         return 1;
     }
     if (mode == 4) {

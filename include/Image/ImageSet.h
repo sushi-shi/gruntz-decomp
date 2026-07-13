@@ -34,6 +34,10 @@
 
 #include <Image/CImage.h> // the frame element IS the RTTI CImage (was the CImageFrame view)
 
+// Object size 0x6c (recorded in the header note above; the body computes exactly that:
+// m_maxIndex at +0x68). The SIZE line used to sit on the GameLevel.h class of the same
+// name - that class is CTileImageSet now, so it lives here, on the class it describes.
+SIZE(CImageSet, 0x6c);
 class CImageSet {
 public:
     // Walk every populated frame in [m_minIndex, m_maxIndex] and (re)set the draw type

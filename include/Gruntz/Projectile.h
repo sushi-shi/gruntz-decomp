@@ -42,14 +42,17 @@ struct CProjAnim {
 };
 SIZE_UNKNOWN(CProjAnim);
 
-// The name->sprite geometry map the sprite object owns (the CMapStringToOb the
-// loaders Lookup by frame name). Reached via m_154->m_c->m_2c, map embedded @+0x10.
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom whose only "method" was a fake
-// alias of the MFC library CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
+// The name->sprite geometry map the sprite object owns (the loaders Lookup by frame name).
+// Reached via m_154->m_c->m_2c, map embedded 27930x10.
+// THE MAP IS ::CMapStringToPtr, NOT CMapStringToOb (mfc_class + disasm, 2026-07-13):
+// CProjectile::LoadProjectileSprites (0xdf050) `call 0x1b8438` x7, and mfc_class names that
+// band [0x1b8247, 0x1b85b1) CMapStringToPtr (ctor stamps ??_7CMapStringToPtr@B@ 0x1eb014).
+// CMapStringToOb is the SEPARATE band [0x1b7e17, 0x1b8247), Lookup 0x1b8008. The old
+// CMapStringToOb decl bound the WRONG routine - reloc-masked, so objdiff showed nothing.
 SIZE_UNKNOWN(CProjSpriteMgr);
 struct CProjSpriteMgr {
     char m_pad00[0x10];
-    CMapStringToOb m_10; // +0x10  the lookup map
+    CMapStringToPtr m_10; // +0x10  the lookup map (Lookup 0x1b8438)
 };
 SIZE_UNKNOWN(CProjResMgr);
 struct CProjResMgr {
