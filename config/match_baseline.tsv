@@ -3059,7 +3059,7 @@ play	?BuildAssetNamespacePrefixes@CNamespaceLoader@@QAEHABVCString@@HHH@Z	95.483
 play	?BuildGruntNamespaceList@CPlay@@QAEHH@Z	100.0000	100.0000	3	97e6ef6d569e	0xdd050
 play	?BuildGruntTypeNameTable@CPlay@@QAEHHHHH@Z	33.2624	33.2624	3	3e88c79ef00a	0xdc6d0
 play	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	24f4f811bcd2	0xd72c0
-play	?BuildMusicCategoryTable@CPlay@@UAEHH@Z	100.0000	100.0000	2	bb8d6574e9d5	0xdba30
+play	?BuildMusicCategoryTable@CPlay@@UAEHH@Z	100.0000	100.0000	3	62e32c6eedb8	0xdba30
 play	?BuildSpriteImageKeyTable@CPlay@@QAEHPAVCMulti@@@Z	100.0000	100.0000	1	78ebb49edd86	0xdd540
 play	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	3	2af956c2fecc	0xdd340
 play	?CPlayDtorBody@CPlay@@QAEXXZ	89.3158	89.3158	5	18874e561a8f	0xc8700
@@ -3096,7 +3096,7 @@ play	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9962	34.9962	5	22d426061a41	0xd0db0
 play	?HandleMousePress@CPlay@@QAEHHHH@Z	84.2021	84.2021	3	fc8858ebaec1	0xce660
 play	?HandleTileClick@CPlay@@QAEHHHH@Z	80.7050	80.7050	8	4d7d52f3e5c1	0xceae0
 play	?LoadActionTileSprites@CPlay@@QAEHH@Z	100.0000	100.0000	5	dd46839bc6c2	0xdb600
-play	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	78.8338	78.8338	3	4c09e8fa4c97	0xca200
+play	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	77.7998	77.7998	4	bac1d0680d9c	0xca200
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	92.6389	92.6389	5	f9dd69297635	0xd0120
 play	?LoadGameAnims@CPlay@@QAEHH@Z	100.0000	100.0000	5	3c3888cd9903	0xdb9b0
 play	?LoadGameImages@CPlay@@QAEHH@Z	100.0000	100.0000	5	0e6a6d869be4	0xdb8a0
@@ -3106,7 +3106,7 @@ play	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	4	9567653c832a	0xcffe0
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	5	1d7fd4fc8082	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	5	fd1ac9b2399d	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	4	8309f61d38e2	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.2200	86.2200	3	b94f48adc376	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.8450	85.8450	3	b94f48adc376	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	7	30e45f615576	0xd65d0
 play	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	1	79c5e8e9a800	0xcedf0
 play	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	1	17305dac4ee5	0xcee10
