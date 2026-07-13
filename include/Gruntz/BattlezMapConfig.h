@@ -39,7 +39,8 @@
 #ifndef SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 #define SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 
-class CBrickzGrid; // folded Board
+#include <Gruntz/MapMgr.h> // CBrickzGrid IS CMapMgr (a typedef now - a fwd decl
+                          // of it would be a redefinition, C2371)
 #include <rva.h>
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD

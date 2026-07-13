@@ -48,7 +48,8 @@ class CGruntzSoundZ;         // CGruntzMgr::m_sound (+0x48; PlayByName/FindBank)
 class CFontConfig;           // CGruntzMgr::m_chatLog (+0x5c; the chat/text-input config)
 class CMultiSub68;           // CGruntzMgr::m_cmdGrid (+0x68) multiplayer facet
 class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
-class CBrickzGrid;           // CGruntzMgr::m_cmdNotify (+0x70) multiplayer facet
+#include <Gruntz/MapMgr.h> // CBrickzGrid IS CMapMgr (a typedef now - a fwd decl
+                          // of it would be a redefinition, C2371)
 class CWorldSoundSet;        // CGruntzMgr::m_inputState (+0x54; Retune @0xbd60)
 // The small real CNetMgr (the +0x524 DirectPlay wrapper) and the network views of
 // CMulti's base sub-objects, forward-declared so the accessors below compile without

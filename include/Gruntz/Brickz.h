@@ -24,6 +24,7 @@ class CBattlezData; // folded BrickzSerObj
 struct tagRECT;     // Win32 RECT (CBrickzGrid::Clip arg)
 
 #include <Ints.h>
+#include <Gruntz/MapMgr.h> // CBrickzGrid IS CMapMgr (see the fold note below)
 
 // A graph/list node. The container threads nodes through several intrusive links;
 // the same physical node is reached as different "views" depending on the list.
@@ -99,119 +100,18 @@ struct BrickzAttrMgr {
     BrickzGridDesc* m_5c; // +0x5c  the terrain grid descriptor
 };
 
-// The +0x7c serialize sub-object the Serialize wrapper dispatches to. Modeled with
-// a no-body Serialize so the `mov ecx,[arg3+0x7c]; call` reloc-masks.
-class CBrickzGrid {
-public:
-    // ---- reconstructed in src/Gruntz/Brickz.cpp ----
-    // The board dirty-rect clip finaliser (0x02b340): clip the (0,0,m_width,m_height)
-    // box against the optional src rect (right/bottom inclusive -> +1) via Win32
-    // IntersectRect, store the clipped rect at the +0x60 bound-rect, and derive its
-    // width/height at +0x70/+0x74. __thiscall(const RECT*) ; ret 0x4. `this` is the
-    // board (m_board in the Battlez/Grunt movement methods); called on divergent
-    // callers so reloc-masked at each site.
-    void Clip(const tagRECT* r); // 0x02b340
-
-    // The terrain-grid cell-flag compute (0x077790): look up the bute-type id for
-    // cell (x,y) via the m_78 attribute manager, switch it to a packed flag value,
-    // OR in the preserved high bits, then run the 8-neighbour edge-update walk over
-    // the 3x3 block. __thiscall(x, y, id3) ; ret 0xc.
-    void ComputeCellFlags(i32 x, i32 y, i32 id3); // 0x077790
-
-    // The grid allocator/initializer (0x09ea60): allocate the width*height cell
-    // pool + the per-row column table, zero the pool, thread the two node pools,
-    // record the per-step callback, and seed the grid bounding rect (width x
-    // height) via the Win32 IntersectRect. __thiscall(width, height, cb) ; ret 0xc.
-    // (Ghidra labeled it "winapi_09ea60_IntersectRect" off that one import.)
-    i32 AllocGrid(i32 width, i32 height, i32 callback); // 0x09ea60
-
-    // The edge-search op (0x081e10): temporarily punch a passage between the two
-    // cells (xA,yA)/(xB,yB), run Search() between them, then restore the cells.
-    // __thiscall(8 args) ; ret 0x20.
-    i32 SearchEdge(
-        i32 xA,
-        i32 yA,
-        i32 xB,
-        i32 yB,
-        void* list,
-        i32 clearFlag,
-        i32 maskA,
-        i32 maskC
-    ); // 0x081e10
-
-    // The diagonal-passability flag walk (0x082030): when m_5c (dirty) is set, walk
-    // the whole flat cell pool and, for each cell with bit 0x100 set, set bit 0x1000
-    // if any opposite neighbour pair is both passable (no 0x939 bit). __thiscall(1
-    // unused arg) ; ret 0x4. Returns 1.
-    i32 UpdateDiagonals(i32 unused); // 0x082030
-
-    // Straight-line grid probe (0x082250): DDA-walk the cells between (x0,y0) and
-    // (x1,y1); return 0 the moment any cell's terrain flags are non-zero, else 1
-    // (a clear line of sight). __thiscall(x0,y0,x1,y1) ; ret 0x10.
-    i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1); // 0x082250
-
-    // Point-in-bounds cell probe (0x0853f0): clear iff (x,y) is in [0,m_width) x
-    // [0,m_height) AND its cell's flags are 0. CMapMgr vtable slot 5.
-    // __thiscall(x,y) ; ret 0x8.
-    i32 IsCellClear(i32 x, i32 y); // 0x0853f0
-
-    // The thin Serialize wrapper (0x09356c): MapSerializeCurve(...) then, on success,
-    // the +0x7c sub-object's Serialize(...). __thiscall(4 args) ; ret 0x10.
-    i32 Serialize(i32 a0, i32 a1, i32 a2, i32 a3); // 0x09356c
-
-    i32 Search(
-        i32 x1,
-        i32 y1,
-        i32 x2,
-        i32 y2,
-        void* list,
-        i32 maskA,
-        i32 maskB,
-        i32 maskC
-    );                                                                // 0x09eca0
-    i32 Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag); // 0x09f010
-    i32 Insert(BrickzNode* node);                                     // 0x09f370
-    BrickzNode* PopFront();                                           // 0x09f430
-    void CellPush(BrickzNode* node);                                  // 0x09f470
-    BrickzNode* Find(i32 key1, i32 key2);                             // 0x09f500
-    BrickzNode* FindCellNode(i32 col, i32 row);                       // 0x09f540
-    void Drain();                                                     // 0x09f590
-    void Unlink(BrickzNode* node);                                    // 0x09f690
-    void CellPop(BrickzNode* node, i32 flag);                         // 0x09f710
-    void Reset();                                                     // 0x09f5d0
-
-    // container fields (offsets recovered from the field stores above)
-    char m_pad0[0x04];
-    BrickzCell* m_cellPool; // +0x04  flat cell pool (width*height cells)
-    BrickzCell** m_rows;    // +0x08  row table (m_rows[row] -> cell row base)
-    u32 m_width;            // +0x0c  grid width (columns; AllocGrid: m_c = width)
-    u32 m_height;           // +0x10  grid height (rows; AllocGrid: m_10 = height)
-    u32 m_cellCount;        // +0x14  total cell count (width*height)
-    BrickzNode* m_openList; // +0x18  sorted open/lookup list head (ascending by BrickzNode::m_10 f)
-    i32 m_1c;               // +0x1c  (container scratch; unused in this TU)
-    i32 m_startX;           // +0x20  search start x1
-    i32 m_startY;           // +0x24  search start y1
-    i32 m_goalX;            // +0x28  search goal x2
-    i32 m_goalY;            // +0x2c  search goal y2
-    BrickzNode* m_nodePool; // +0x30  search-record recycling pool (linked via BrickzNode::m_14)
-    char m_pad34[0x40 - 0x34];
-    BrickzNode* m_freeList; // +0x40  bucket-node free list (linked via BrickzNode::m_8)
-    char m_pad44[0x48 - 0x44];
-    void (*m_stepCb)();       // +0x48  per-step callback (engine hook)
-    i32 m_edgeMask;           // +0x4c  edge-punch reject mask (SearchEdge; Expand pre-filter)
-    i32 m_maskA;              // +0x50  Search maskA: cell blocked when set (unless m_maskC bit)
-    i32 m_maskC;              // +0x54  Search maskC: allow-override for m_maskA
-    i32 m_maskB;              // +0x58  Search maskB: diagonal corner-cut reject mask
-    i32 m_dirty;              // +0x5c  dirty flag (UpdateDiagonals re-walk gate)
-    i32 m_originX;            // +0x60  grid origin x (also RECT.left of the +0x60 bound rect)
-    i32 m_originY;            // +0x64  grid origin y (RECT.top)
-    i32 m_boundRight;         // +0x68  (Board dirty-rect right)
-    i32 m_boundBottom;        // +0x6c  (Board dirty-rect bottom)
-    i32 m_gridW;              // +0x70  grid width extent (cells)
-    i32 m_gridH;              // +0x74  grid height extent (cells)
-    BrickzAttrMgr* m_attrMgr; // +0x78  attribute/bute-type manager (ComputeCellFlags)
-    CBattlezData* m_7c;       // +0x7c  serialize sub-object (unused in this TU)
-};
+// CBrickzGrid IS CMapMgr - RTTI .?AVCMapMgr@@, vtable 0x1ea3b4, and the binary says so
+// three ways: its Search (0x09eca0) and IsCellClear (0x0853f0) ARE slots 4 and 5 of that
+// vtable; its cell record is the same 0x1c-byte struct CMapMgr's MapCell describes; and
+// its "+0x30 node pool / +0x40 free list" are exactly the block pointers of CMapMgr's
+// embedded CMapArrayA (+0x30, 0x24-byte elements) and CMapArrayB (+0x3c). The trace tool
+// that named this class grouped methods by a shared `this` and never had the vtable.
+//
+// The class definition is DISSOLVED onto <Gruntz/MapMgr.h>'s CMapMgr (which absorbed this
+// model's semantic field names and its whole method set). The NAME survives as a typedef:
+// MSVC5 mangles `i32 CBrickzGrid::Search(...)` through the typedef as ?Search@CMapMgr@@,
+// so every definition and all 17 consumers keep compiling while the symbols become the
+// real class's.
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
