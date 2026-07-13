@@ -83,6 +83,12 @@ struct CImageFrameRebuildDesc {
 // defaults (draw type 1 @+0x14, light 0x80 @+0x18, src/dst bpp 1 @+0x28/+0x29, key
 // -1 @+0x24); the blit methods draw it. The former CImageOwned placeholder was that
 // same physical struct - unified so CImage::m_owned carries no facet cast.
+//
+// It is also what Image/ImageFrame.h used to model as a separate "CImageFormat" frame
+// helper: CImageSet's frame walkers (SetAllTypes / SetAllField18 / SetAllFormats /
+// GetFirstFrameState / GetMemoryUsage, 0x1523f0..0x152570) drive m_drawType (+0x14),
+// m_light (+0x18), m_palDescr (+0x1c) and m_rleLen (+0x10) on this object through
+// CImage::m_owned. The minor cheats read m_drawType and write a rand()%256 m_light.
 SIZE(CDDrawShadeBlit, 0x3c);
 class CDDrawShadeBlit {
 public:

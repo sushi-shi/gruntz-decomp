@@ -27,6 +27,8 @@
 #include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
 #include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
+#include <DDrawMgr/DDrawShadeBlit.h>      // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
+#include <DDrawMgr/ShadeSelector.h>       // canonical ShadeSelector (0x14dd90 Select binding)
 #include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
 #include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance_15c360)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
@@ -169,23 +171,24 @@ extern "C" u32 g_6bf3bc; // 0x2bf3bc
 // no obj and no .LIB could ever define. The canonical <Image/CImage.h> class emits the
 // real ??_7CImage vtable whose slots are all rva-bound bodies, so they resolve.)
 
-// The image format/state helper (CImageFrame::m_format) is a ShadeSelector; its Select
-// @0x14dd90 resolves the shade table for a format. TU-local decl (shade-table unit).
-struct ShadeDescr;
-class ShadeSelector {
-public:
-    void Select(i32 type, ShadeDescr* desc);
-};
+// (the TU-local ShadeSelector view is GONE - the canonical <DDrawMgr/ShadeSelector.h>
+// is included above; ShadeDescr comes from <DDrawMgr/DDrawShadeBlit.h>.)
 
 // The frame ctor CreateFrame24/28/30 inline (vptr stamp + field init at the new-site).
-inline CImageFrame::CImageFrame(void* owner, i32 index) {
-    m_index = index;
-    m_8 = 0;
-    m_owner = owner;
-    m_width = 0;
-    m_height = 0;
-    m_surface = 0;
-    m_format = 0;
+// The frame IS a CImage, so this is `new CImage` + the same 7 field stores, spelled out
+// at each new-site (NewFrame below) rather than as a CImage ctor: CImage.h is included
+// tree-wide and its own comment warns that touching the class is a heavy /O2 butterfly
+// for no binding gain, and the explicit stores emit the identical code.
+static inline CImage* NewFrame(void* owner, i32 index) {
+    CImage* nf = new CImage;
+    nf->m_status = index; // +0x04  frame index (see CImage.h @name-conflict)
+    nf->m_08 = 0;
+    nf->m_parent = (CImageParent*)owner; // honest cast: CImageSet::m_owner is still void*
+    nf->m_width = 0;
+    nf->m_height = 0;
+    nf->m_surface = 0;
+    nf->m_owned = 0;
+    return nf;
 }
 
 // Stamp helper retired: the worker builds are real `new`-less inline constructions
@@ -1313,17 +1316,19 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
 }
 
 // CImageSet::CreateFrame30 (__thiscall, ret 0xc). Refuse if a frame already
-// occupies `index`; else allocate a CImageFrame, run its loader virtual at slot
+// occupies `index`; else allocate a CImage frame, run its loader virtual at slot
 // +0x30, insert it (SetAtGrow at `index`) and widen the populated index range.
+// The (CImageFrameDesc*) casts on a0 are honest: CreateFrame*'s `i32 a0` params are
+// still the fake type (the callers hand in a descriptor pointer as an int).
 RVA(0x00151fb0, 0xa4)
-CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
+CImage* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImageFrame* nf = new CImageFrame(m_owner, index);
+    CImage* nf = NewFrame(m_owner, index);
 
-    if (nf->Create(a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
+    if (nf->Create((CImageFrameDesc*)a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1343,14 +1348,15 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
 // CreateFrame28 (__thiscall, ret 0x10). As CreateFrame30, but the loader
 // virtual is at slot +0x28 and takes (a0, a1, a3, 1).
 RVA(0x00152060, 0xab)
-CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
+CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImageFrame* nf = new CImageFrame(m_owner, index);
+    CImage* nf = NewFrame(m_owner, index);
 
-    if (nf->LoadDispatch(a0, a1, a3, 1) == 0) { // slot 10 @+0x28  CImage::LoadDispatch
+    // slot 10 @+0x28  CImage::LoadDispatch
+    if (nf->LoadDispatch((CImageFrameDesc*)a0, (u32)a1, (void*)a3, 1) == 0) {
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1370,14 +1376,14 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 // CreateFrame24 (__thiscall, ret 0x10). As CreateFrame30, but the loader
 // virtual is at slot +0x24 and takes (a0, a1, a3).
 RVA(0x00152110, 0xa9)
-CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
+CImage* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImageFrame* nf = new CImageFrame(m_owner, index);
+    CImage* nf = NewFrame(m_owner, index);
 
-    if (nf->Create24(a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
+    if (nf->Create24((CImageFrameDesc*)a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1541,7 +1547,7 @@ RVA(0x001523f0, 0x82)
 i32 CImageSet::GetMemoryUsage(i32 raw) {
     i32 sum = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
-        CImageFrame* frame = GetAt(i);
+        CImage* frame = GetAt(i);
         if (frame) {
             i32 size = frame->m_height * frame->m_width;
             if (frame->m_surface && frame->m_surface->m_bitDepth == 0x10) {
@@ -1550,11 +1556,11 @@ i32 CImageSet::GetMemoryUsage(i32 raw) {
             if (frame->m_surface && frame->m_surface->m_bitDepth == 0x18) {
                 size = size * 3;
             }
-            if (frame->m_format) {
-                size = frame->m_format->m_decodedByteCount;
+            if (frame->m_owned) {
+                size = frame->m_owned->m_rleLen; // the owned sprite's exact decoded count
             }
             if (raw == 0) {
-                size += 0x34;
+                size += 0x34; // == sizeof(CImage), the frame element itself
             }
             sum += size;
         }
@@ -1562,14 +1568,19 @@ i32 CImageSet::GetMemoryUsage(i32 raw) {
     return sum;
 }
 
-// SetAllTypes (__thiscall, ret 4). Returns the number of frames touched.
+// SetAllTypes (__thiscall, ret 4). Set every populated frame's owned-sprite draw type
+// (m_drawType, +0x14) via the shared 0x14dd90 selector. Returns the number touched.
+// The (ShadeSelector*) cast is honest: 0x14dd90's body is currently BOUND under
+// ?Select@ShadeSelector@@ (ShadeDescrTable.cpp), even though the disasm shows it is a
+// CDDrawShadeBlit method (it writes [ecx+0x14]=mode / [ecx+0x1c]=descr). Dissolving
+// ShadeSelector onto CDDrawShadeBlit re-mangles that bound rva - a separate fold.
 RVA(0x00152480, 0x4e)
 i32 CImageSet::SetAllTypes(i32 type) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
-        CImageFrame* frame = GetAt(i);
-        if (frame && frame->m_format) {
-            ((ShadeSelector*)frame->m_format)->Select(type, 0);
+        CImage* frame = GetAt(i);
+        if (frame && frame->m_owned) {
+            ((ShadeSelector*)frame->m_owned)->Select(type, 0);
             count++;
         }
     }
@@ -1577,23 +1588,28 @@ i32 CImageSet::SetAllTypes(i32 type) {
 }
 
 // SetAllField18 (__thiscall, ret 4). Walk every populated frame in
-// [m_minIndex, m_maxIndex] and write `value` into its format helper's +0x18 field;
-// returns the count touched. Unlike SetAllFormats there is no up-front null guard -
-// the empty range simply yields count 0 (the `jg` skips straight to the return).
+// [m_minIndex, m_maxIndex] and write `value` into its owned sprite's light level
+// (m_light, +0x18); returns the count touched. Unlike SetAllFormats there is no
+// up-front null guard - the empty range simply yields count 0 (the `jg` skips
+// straight to the return). CheatEclipseToggle drives it with rand() % 256, which is
+// exactly what a 0..255 light level wants.
 RVA(0x001524d0, 0x41)
 i32 CImageSet::SetAllField18(i32 value) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
-        CImageFrame* frame = GetAt(i);
-        if (frame && frame->m_format) {
-            frame->m_format->m_18 = value;
+        CImage* frame = GetAt(i);
+        if (frame && frame->m_owned) {
+            frame->m_owned->m_light = value;
             count++;
         }
     }
     return count;
 }
 
-// SetAllFormats (__thiscall, ret 4). Returns the number of frames touched.
+// SetAllFormats (__thiscall, ret 4). Point every populated frame's owned sprite at the
+// shade/palette descriptor `format`. Returns the number of frames touched.
+// The (ShadeDescr*) cast is honest: the `i32 format` param is still the fake type (every
+// caller casts a descriptor POINTER into it) - see the @fake-param note in ImageSet.h.
 RVA(0x00152520, 0x4b)
 i32 CImageSet::SetAllFormats(i32 format) {
     if (!format) {
@@ -1601,36 +1617,36 @@ i32 CImageSet::SetAllFormats(i32 format) {
     }
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
-        CImageFrame* frame = GetAt(i);
-        if (frame && frame->m_format) {
-            frame->m_format->m_resolvedFormat = format;
+        CImage* frame = GetAt(i);
+        if (frame && frame->m_owned) {
+            frame->m_owned->m_palDescr = (ShadeDescr*)format;
             count++;
         }
     }
     return count;
 }
 
-// GetFirstFrameState (__thiscall, ret 0). Read the shade/type state (+0x14) of the
-// lowest-indexed frame's format helper; returns 1 when that frame or its format is null.
+// GetFirstFrameState (__thiscall, ret 0). Read the draw type (+0x14) of the
+// lowest-indexed frame's owned sprite; returns 1 when that frame or its sprite is null.
 RVA(0x00152570, 0x24)
 i32 CImageSet::GetFirstFrameState() {
-    CImageFrame* frame = m_frames[m_minIndex];
+    CImage* frame = m_frames[m_minIndex];
     if (frame == 0) {
         return 1;
     }
-    CImageFormat* fmt = frame->m_format;
+    CDDrawShadeBlit* fmt = frame->m_owned;
     if (fmt == 0) {
         return 1;
     }
-    return fmt->m_14;
+    return fmt->m_drawType;
 }
 
 // FindFrame (__thiscall, ret 0xc). Returns 1 on a hit, 0 otherwise.
 RVA(0x001525c0, 0x76)
-i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
+i32 CImageSet::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     if (frame) {
         for (i32 i = 0; i < m_count; i++) {
-            CImageFrame* cur = m_frames[i];
+            CImage* cur = m_frames[i];
             if (cur && cur == frame) {
                 if (outName) {
                     strcpy(outName, m_name);
@@ -1657,9 +1673,6 @@ SIZE_UNKNOWN(WwdMgrSub08);
 SIZE_UNKNOWN(WwdMgrSub10);
 SIZE_UNKNOWN(WwdSnapshot);
 SIZE_UNKNOWN(CObject);
-SIZE_UNKNOWN(CImageFormat);
-SIZE_UNKNOWN(CImageFrameSurface);
-SIZE(CImageFrame, 0x34);
 SIZE_UNKNOWN(CDDrawWorker);
 SIZE_UNKNOWN(CWorkerObArray);
 SIZE_UNKNOWN(CWorkerElement);

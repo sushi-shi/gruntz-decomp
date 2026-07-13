@@ -7,7 +7,7 @@
 #include <string.h>              // strlen
 #include <DDrawMgr/DDSurface.h> // CDDSurface (BltFast) + RECT/SetRect (via Mfc.h) for the layer-blit helper
 #include <Gruntz/ResMgr.h>      // CResMgr / CDrawTarget (SurfaceA/SurfaceB) - the 0x115300 blit host
-#include <Image/ImageFrame.h>   // CImageFrame - the 0x115300 blit source
+#include <Image/CImage.h>       // CImage - the 0x115300 blit source (was the CImageFrame view)
 
 struct Drawable {
     virtual void v0();
@@ -72,16 +72,22 @@ SIZE_UNKNOWN(DrawCtx);
 SIZE_UNKNOWN(GlyphFont);
 
 // ---------------------------------------------------------------------------
-// LayerBlitFrame (0x115300) - blit a CImageFrame into the active draw-target layer,
-// centered by the frame origin. RVA-adjacent to DrawGlyphString; also called cross-TU
-// from src/Gruntz/PlayMessageImage.cpp (CPlay's GAME_MESSAGEZ overlay). Pick the front
-// (useFront) SurfaceA page or the back SurfaceB page off the CResMgr's CDrawTarget, get
-// its CDDSurface, compute the (x,y) offset from the frame's blit origin, and BltFast the
-// frame surface into it. The four ApiCallerStubs LayerHost/LayerSet/LayerNode/RectSrc
-// views were fake facets of CResMgr / CDrawTarget / its Surface pages / CImageFrame -
-// now dissolved onto those real classes. Re-homed from src/Stub/ApiCallers.cpp.
+// LayerBlitFrame (0x115300) - blit a CImage frame into the active draw-target layer,
+// CENTERED by the frame's draw anchor. RVA-adjacent to DrawGlyphString; also called
+// cross-TU from src/Gruntz/PlayMessageImage.cpp (CPlay's GAME_MESSAGEZ overlay). Pick the
+// front (useFront) SurfaceA page or the back SurfaceB page off the CResMgr's CDrawTarget,
+// get its CDDSurface, subtract the frame's anchor from (x,y), and BltFast the frame
+// surface into it. The four ApiCallerStubs LayerHost/LayerSet/LayerNode/RectSrc views
+// were fake facets of CResMgr / CDrawTarget / its Surface pages / CImageFrame - now
+// dissolved onto those real classes. Re-homed from src/Stub/ApiCallers.cpp.
+//
+// The +0x18/+0x1c it subtracts are CImage's m_anchorX/m_anchorY, NOT the origin: retail's
+// CImage::Create (0x152e90) fills them with `width>>1` / `height>>1` (`sar edx,1`) - a
+// half-extent CENTER - while the true m_originX/m_originY live at +0x20/+0x24. The old
+// CImageFrame view mislabelled +0x18 "m_originX"; its own comment ("the layer-blit
+// centers by it") already described an anchor.
 RVA(0x00115300, 0xf5)
-i32 LayerBlitFrame(CResMgr* host, CImageFrame* src, i32 x, i32 y, i32 useFront, i32 mode) {
+i32 LayerBlitFrame(CResMgr* host, CImage* src, i32 x, i32 y, i32 useFront, i32 mode) {
     if (!host) {
         return 0;
     }
@@ -106,12 +112,12 @@ i32 LayerBlitFrame(CResMgr* host, CImageFrame* src, i32 x, i32 y, i32 useFront, 
     if (!dst) {
         return 0;
     }
-    CImageFrameSurface* srcHandle = src->m_surface;
+    CDDSurface* srcHandle = src->m_surface;
     if (!srcHandle) {
         return 0;
     }
-    i32 dx = x - src->m_originX;
-    i32 dy = y - src->m_originY;
+    i32 dx = x - src->m_anchorX;
+    i32 dy = y - src->m_anchorY;
     RECT rc;
     SetRect(&rc, 0, 0, src->m_width - 1, src->m_height - 1);
     RECT rc2 = rc;
@@ -119,7 +125,7 @@ i32 LayerBlitFrame(CResMgr* host, CImageFrame* src, i32 x, i32 y, i32 useFront, 
     if (mode) {
         flags = 0x11;
     }
-    dst->BltFast(dx, dy, (CDDSurface*)srcHandle, &rc2, flags);
+    dst->BltFast(dx, dy, srcHandle, &rc2, flags);
     return 1;
 }
 

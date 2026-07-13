@@ -20,6 +20,7 @@
 // <Gruntz/GameMode.h>. Only offsets / control IDs / code bytes are load-bearing;
 // names are placeholders for the recovered engine identities.
 #include <Gruntz/GameMode.h>
+#include <Gruntz/BattlezData.h>           // the REAL stats object (was the CHudStats view)
 #include <Gruntz/GruntzMgr.h>             // CGruntzMgr (the game-manager singleton; one true shape)
 #include <Gruntz/SoundCueMgr.h>           // CSoundCueMgr (StartMusic/StopMusicChain ConfigureItem)
 #include <Gruntz/WwdGameReg.h>            // g_gameReg (StartMusic music gate)
@@ -55,31 +56,28 @@ extern "C" CGMVerRect g_645cc8;
 // emission in this TU.
 // ===========================================================================
 
-// FormatHudText's stats source: g_gameReg->m_scoreHud (the +0x7c CBattlezData
-// HUD/score accumulator) viewed for its 13 live-value getters (thiscall on the stats
-// object) + cached fields. The getter path is gated by m_liveGame && stats->m_c (the
-// sibling-guard idiom). Fold onto CBattlezData is a follow-up (placeholder getters).
-SIZE_UNKNOWN(CHudStats);
-struct CHudStats {
-    i32 GetC10();
-    i32 GetC1c();
-    i32 GetC20();
-    i32 GetC34();
-    i32 GetC18();
-    i32 GetC30();
-    i32 GetC14();
-    i32 GetC38();
-    i32 GetC24();
-    i32 GetC40();
-    i32 GetC2c();
-    i32 GetC3c();
-    i32 GetC28();
-    char p0[0xc];
-    i32 m_c; // +0xc  live-game flag (getter gate)
-    i32 m_10, m_14, m_18, m_1c, m_20, m_24, m_28, m_2c, m_30, m_34, m_38, m_3c, m_40;
-};
-#define STATS ((CHudStats*)g_gameReg->m_scoreHud)
-#define STAT(getter, field) ((m_liveGame != 0 && STATS->m_c != 0) ? STATS->getter() : STATS->field)
+// FormatHudText's stats source IS the real CBattlezData (g_gameReg->m_scoreHud, the
+// +0x7c HUD/score accumulator). The CHudStats view that used to sit here is GONE: its
+// 13 GetC10..GetC40 "getters" were placeholder names for CBattlezData's own
+// SumGroupField* methods - PHANTOMS (declared-only, no body, no rva) that no obj and no
+// .LIB could ever define. Each was resolved from the binary by following the ILT thunk
+// FormatHudText actually calls to its target rva, every one of which is an
+// already-reconstructed, rva-bound CBattlezData method in the `battlezdata` unit:
+//     GetC10 -> SumGroupField08 (0xfd2e0)   GetC38 -> SumGroupField34 (0xfd0b0)
+//     GetC1c -> SumGroupField14 (0xfd290)   GetC24 -> SumGroupField1c (0xfd060)
+//     GetC20 -> SumGroupField18 (0xfd240)   GetC40 -> SumGroupField3c (0xfd1f0)
+//     GetC34 -> SumGroupField30 (0xfd010)   GetC2c -> SumGroupField24 (0xfd1a0)
+//     GetC18 -> SumGroupField10 (0xfcfc0)   GetC3c -> SumGroupField38 (0xfd150)
+//     GetC30 -> SumGroupField2c (0xfcf70)   GetC28 -> SumGroupField20 (0xfd100)
+//     GetC14 -> SumGroupField0c (0xfcf20)
+// The view's cached fields were the same object's: its m_c gate is CBattlezData's
+// m_allDone (+0x0c) and its m_10 is m_score (+0x10). The (CBattlezData*) cast is honest -
+// CGameRegistry::m_scoreHud is still `void*` (GameRegistry.h); type that member and it
+// falls out (deferred: Wormhole.cpp casts the SAME member to a CTeleMgrSub*, so the
+// member's real type needs its own reconciliation).
+#define STATS ((CBattlezData*)g_gameReg->m_scoreHud)
+#define STAT(getter, field)                                                                        \
+    ((m_liveGame != 0 && STATS->m_allDone != 0) ? STATS->getter() : STATS->field)
 
 // CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
 // 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
@@ -97,20 +95,20 @@ RVA(0x0001af70, 0x3c0)
 void CMenuState::FormatHudText(CString* buf, i32 sel) {
     switch (sel) {
         case 0: {
-            u32 secs = (u32)(STAT(GetC10, m_10) / 1000);
+            u32 secs = (u32)(STAT(SumGroupField08, m_score) / 1000);
             buf->Format("%d:%2.2d", secs / 60, secs % 60);
             return;
         }
         case 1:
-            buf->Format("%d", STAT(GetC1c, m_1c));
+            buf->Format("%d", STAT(SumGroupField14, m_1c));
             return;
         case 2:
-            buf->Format("%d", STAT(GetC20, m_20));
+            buf->Format("%d", STAT(SumGroupField18, m_20));
             return;
         case 3: {
-            i32 total = STAT(GetC34, m_34);
-            i32 cap = STAT(GetC34, m_34);
-            i32 cur = STAT(GetC18, m_18);
+            i32 total = STAT(SumGroupField30, m_34);
+            i32 cap = STAT(SumGroupField30, m_34);
+            i32 cur = STAT(SumGroupField10, m_18);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -118,9 +116,9 @@ void CMenuState::FormatHudText(CString* buf, i32 sel) {
             return;
         }
         case 4: {
-            i32 total = STAT(GetC30, m_30);
-            i32 cap = STAT(GetC30, m_30);
-            i32 cur = STAT(GetC14, m_14);
+            i32 total = STAT(SumGroupField2c, m_30);
+            i32 cap = STAT(SumGroupField2c, m_30);
+            i32 cur = STAT(SumGroupField0c, m_14);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -128,9 +126,9 @@ void CMenuState::FormatHudText(CString* buf, i32 sel) {
             return;
         }
         case 5: {
-            i32 total = STAT(GetC38, m_38);
-            i32 cap = STAT(GetC38, m_38);
-            i32 cur = STAT(GetC24, m_24);
+            i32 total = STAT(SumGroupField34, m_38);
+            i32 cap = STAT(SumGroupField34, m_38);
+            i32 cur = STAT(SumGroupField1c, m_24);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -138,9 +136,9 @@ void CMenuState::FormatHudText(CString* buf, i32 sel) {
             return;
         }
         case 6: {
-            i32 total = STAT(GetC40, m_40);
-            i32 cap = STAT(GetC40, m_40);
-            i32 cur = STAT(GetC2c, m_2c);
+            i32 total = STAT(SumGroupField3c, m_40);
+            i32 cap = STAT(SumGroupField3c, m_40);
+            i32 cur = STAT(SumGroupField24, m_2c);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -148,9 +146,9 @@ void CMenuState::FormatHudText(CString* buf, i32 sel) {
             return;
         }
         case 7: {
-            i32 total = STAT(GetC3c, m_3c);
-            i32 cap = STAT(GetC3c, m_3c);
-            i32 cur = STAT(GetC28, m_28);
+            i32 total = STAT(SumGroupField38, m_3c);
+            i32 cap = STAT(SumGroupField38, m_3c);
+            i32 cur = STAT(SumGroupField20, m_28);
             if (cur >= cap) {
                 cur = cap;
             }

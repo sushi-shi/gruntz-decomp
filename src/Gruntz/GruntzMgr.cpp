@@ -30,7 +30,8 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory/CSpriteListNode (m_world->m_8 live-object list)
 #include <Gruntz/UserLogic.h> // CGameObject (the scanned live objects: m_screenX/Y, m_collCategory)
-#include <Image/ImageFrame.h> // CImageFrame/CImageFormat (the "Gruntz" set's frames the cheats read)
+#include <Image/CImage.h> // the "Gruntz" set's frames the cheats read ARE CImages
+#include <DDrawMgr/DDrawShadeBlit.h> // CImage::m_owned - the shaded sprite the cheats retype/relight
 #include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
@@ -2578,11 +2579,11 @@ void CGruntzMgr::CheatSkeletonToggle() {
         ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("Gruntz", (void*&)found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
-            CImageFrame* fr = set->m_frames[set->m_minIndex];
+            CImage* fr = set->m_frames[set->m_minIndex];
             if (fr) {
-                CImageFormat* fmt = fr->m_format;
+                CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
-                    i32 st = fmt->m_14;
+                    i32 st = fmt->m_drawType;
                     if (st != 2) {
                         set->SetAllTypes(2);
                         AppendChatMessage((char*)"You're scaring me...");
@@ -2635,11 +2636,11 @@ void CGruntzMgr::CheatEclipseToggle() {
         ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("Gruntz", (void*&)found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
-            CImageFrame* fr = set->m_frames[set->m_minIndex];
+            CImage* fr = set->m_frames[set->m_minIndex];
             if (fr) {
-                CImageFormat* fmt = fr->m_format;
+                CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
-                    i32 st = fmt->m_14;
+                    i32 st = fmt->m_drawType;
                     if (st != 3) {
                         set->SetAllTypes(3);
                         set->SetAllField18(rand() % 256);

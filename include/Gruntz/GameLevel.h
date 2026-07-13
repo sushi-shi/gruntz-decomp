@@ -43,7 +43,8 @@
 // dummy0/2/3/4/6/7 are the CObject-family + unused engine slots (never called by the
 // level; roles unrecovered - left as placeholders).
 // ---------------------------------------------------------------------------
-class CImageFrame; // Image/ImageFrame.h (the set's frame element; consumers include it)
+class CImage; // Image/CImage.h - the set's frame element IS the RTTI CImage (the old
+              // CImageFrame placeholder is dissolved; consumers include the real header)
 class CImageSet {
 public:
     i32 SetAllTypes(i32 type);    // real CImageSet::SetAllTypes (Image/ImageSet.cpp)
@@ -66,8 +67,8 @@ public:
 
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
     char m_pad08[0x14 - 0x08];
-    CImageFrame** m_frames; // +0x14  frame pointer array (== Image/ImageSet.h m_frames)
-    i32 m_count;            // +0x18  frame array element count (== Image/ImageSet.h m_count)
+    CImage** m_frames; // +0x14  frame pointer array (== Image/ImageSet.h m_frames)
+    i32 m_count;       // +0x18  frame array element count (== Image/ImageSet.h m_count)
     char m_pad1c[0x64 - 0x1c];
     i32 m_minIndex; // +0x64  lowest populated frame index
     i32 m_maxIndex; // +0x68  highest populated frame index
@@ -75,7 +76,7 @@ public:
     // The bounds-checked accessor CPlaneRender::SetTileSizeFromImageSet inlines
     // (== Image/ImageSet.h GetAt): an index outside [m_minIndex, m_maxIndex]
     // yields a null frame. (Emitted only where called; matching-neutral here.)
-    CImageFrame* GetAt(i32 index) {
+    CImage* GetAt(i32 index) {
         if (index < m_minIndex || index > m_maxIndex) {
             return 0;
         }

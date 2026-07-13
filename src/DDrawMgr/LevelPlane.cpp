@@ -23,7 +23,7 @@
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>         // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
 #include <Gruntz/UserLogic.h>         // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
-#include <Image/ImageFrame.h>         // CImageFrame m_width/m_height (SetTileSizeFromImageSet)
+#include <Image/CImage.h>             // CImage m_width/m_height (SetTileSizeFromImageSet)
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
 #include <DDrawMgr/DDrawWorkerCtx.h>  // shared CDDrawWorkerCtx (RegisterNamed's map chain)
@@ -410,7 +410,7 @@ RVA(0x00161fa0, 0x6c)
 void CPlaneRender::SetTileSizeFromImageSet(CImageSet* set) {
     for (i32 i = 0; i < set->m_count; i++) {
         if (set->GetAt(i) != 0) {
-            CImageFrame* f = set->GetAt(i);
+            CImage* f = set->GetAt(i);
             SetTileSize(f->m_width, f->m_height);
             break;
         }

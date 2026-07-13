@@ -401,7 +401,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
     POSITION pos = m_map.GetStartPosition();
     while (pos != 0) {
         m_map.GetNextAssoc(pos, key, val);
-        if (val != 0 && ((CImageSet*)val)->FindFrame((CImageFrame*)a1, (char*)a2, (int*)a3)) {
+        if (val != 0 && ((CImageSet*)val)->FindFrame((CImage*)a1, (char*)a2, (int*)a3)) {
             return 1;
         }
     }

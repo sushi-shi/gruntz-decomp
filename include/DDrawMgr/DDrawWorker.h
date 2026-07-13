@@ -100,6 +100,17 @@ public:
     virtual i32 CreateFrame24(i32 a, i32 b, i32 c, i32 d); // slot 11 @0x152110
     virtual i32 CreateFrame28(i32 a, i32 b, i32 c, i32 d); // slot 12 @0x152060
     virtual i32 CreateFrame30(i32 a, i32 b, i32 c);        // slot 13 @0x151fb0
+    // @identity-TODO: CDDrawWorker IS CImageSet (<Image/ImageSet.h>) - one class, two names.
+    // PROVEN from the binary: this class's vtable is ??_7CDDrawWorker@@6B@ @RVA 0x1efbe8 =
+    // VA 0x5efbe8, and ImageSet.h independently records CImageSet's vtable as @0x5efbe8 -
+    // the SAME datum. The slot bodies agree too: slot 11 @0x152110 and slot 12 @0x152060 are
+    // exactly CImageSet::CreateFrame24 / CreateFrame28 (reconstructed in WwdGameObject.cpp),
+    // and slot 14 @0x151f00 below is the body currently claimed as ?InsertFrame@CSprite@@ -
+    // whose own code reads the frame CObArray at +0x10 (m_pData@+0x14 / m_nSize@+0x18) and
+    // the owner at +0x0c, i.e. CImageSet's m_array/m_frames/m_count/m_owner, offset for
+    // offset. So 0x151f00 is slot 14 of THIS class, not a CSprite method, and CSprite is a
+    // third view of the same 0x6c object. Folding the three is a real (large) merge with no
+    // link-defect payoff - flagged with the evidence rather than half-done.
     virtual i32 InsertFrame(void* rec, i32 n, i32 flag);   // slot 14 @0x151f00
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);    // slot 15 @0x1522b0
     virtual i32 Slot40_1523b0(i32 rec, i32 n, i32 flag);   // slot 16 @0x1523b0

@@ -267,12 +267,27 @@ public:
     // +0x1d0 is 0x14 bytes PAST the end of the object, so no CMenuState can hold it.
     // Its only reader is FormatHudText (0x1af70), whose retail body really does
     // `mov esi,ecx` then `mov eax,[esi+0x1d0]` - i.e. it reads +0x1d0 off its OWN `this`.
-    // => ?FormatHudText@CMenuState@@ is MISATTRIBUTED; its owner is a state with >= 0x1d4
-    // bytes. Its callers are ?LevelMsgHudDriver@CState@@ (0x1a700, on its own `this`) and
-    // ?ShowLevelCompleteMessage@CBootyState@@ (0x1c9d0, ditto) - and CBootyState IS big
-    // enough (0x320), as are CPlay (0x520), CMultiBootyState (0x244), CCreditsState (0x218).
-    // The exact owner is NOT proven, so the method is deliberately NOT re-homed to a guess.
-    // Until it is, this field + its 0x1c0..0x1d0 pad must NOT be trusted as CMenuState's.
+    // => ?FormatHudText@CMenuState@@ is MISATTRIBUTED.
+    //
+    // THE OWNER IS NOW PROVEN: CBootyState (0x320, allocation-proven - TransitionState does
+    // `push 0x320; call ??2@YAPAXI@Z` @0x8bebc then `mov esi,eax`). The chain, all from the
+    // binary:
+    //   * FormatHudText (0x1af70) has exactly 2 callers, both reaching it through its ILT
+    //     thunk 0x238d with ecx = their OWN `this` (`mov ecx,esi; call 0x238d`):
+    //       - ?ShowLevelCompleteMessage@CBootyState@@ (0x1c9d0)  <- already a CBootyState
+    //       - ?LevelMsgHudDriver@CState@@ (0x1a700)
+    //   * LevelMsgHudDriver (0x1a700) is itself MISATTRIBUTED the same way: it reads
+    //     [this+0x2c4] and an 8-entry pointer array at [this+0x264], and its ONLY caller is
+    //     ?Render@CBootyState@@UAEHXZ (0x1c210, a CBootyState virtual) which invokes it via
+    //     thunk 0x24b4 with `mov ecx,esi` - its own `this`. So its `this` is a CBootyState.
+    //   * CState cannot own either one: CState is the RTTI base of CMenuState (0x1c0), so
+    //     CState <= 0x1c0 and cannot hold +0x1d0 or +0x2c4. CBootyState (0x320) holds both.
+    //   * FormatHudText is non-virtual and called on `this` from CBootyState methods, so its
+    //     owner is CBootyState or a base of it; the only base (CState) is too small. QED.
+    // The re-home is therefore ATOMIC (both 0x1af70 and 0x1a700 must move to CBootyState
+    // together, else a CState method would be calling a CBootyState method on its own this)
+    // and is left as the next lane's bounded task - NOT done here, so nothing is guessed.
+    // Until then, this field + its 0x1c0..0x1d0 pad must NOT be trusted as CMenuState's.
     i32 m_liveGame; // +0x1d0  live-game flag (FormatHudText getter-path gate)
 
     void BuildVersionString(CGMVerRect r); // 0xa0d80 (RECT by value; Render's tail draw)

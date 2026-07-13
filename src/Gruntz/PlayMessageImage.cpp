@@ -19,10 +19,10 @@
 #include <Globals.h>            // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
 
 // The shared __cdecl layer-blit helper (0x115300, in src/Gruntz/GlyphStringDraw.cpp):
-// blit a CImageFrame into the active draw-target layer. `m_c` is a CSpriteFactoryHolder,
+// blit a CImage frame into the active draw-target layer. `m_c` is a CSpriteFactoryHolder,
 // the same real class ResMgr.h models as CResMgr (the helper's host param), so the cast
-// documents that conflation; `frame` is a CImageFrame (passed as-is).
-i32 LayerBlitFrame(CResMgr*, CImageFrame*, i32, i32, i32, i32); // 0x115300
+// documents that conflation; `frame` is a CImage (passed as-is).
+i32 LayerBlitFrame(CResMgr*, CImage*, i32, i32, i32, i32); // 0x115300
 
 // The Present host (0xfaec0). Its class identity is unrecovered - the only inbound
 // edge is ILT thunk 0x1ec9, and Vslot23 invokes it on its own `this` (CPlay is
@@ -50,7 +50,7 @@ void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     m_c->m_10->m_10map.Lookup(s_GameMessagez, set_ob);
     CImageSet* set = (CImageSet*)set_ob;
     if (set != 0) {
-        CImageFrame* frame = set->GetAt(index);
+        CImage* frame = set->GetAt(index);
         if (frame != 0) {
             CGameViewport::SViewRect& vp = m_c->m_24->m_viewport;
             i32 cx = vp.left + (vp.right - vp.left) / 2;
@@ -87,7 +87,7 @@ i32 CPlay::Vslot23() {
     if (Update() == 7) {
         index = 4;
     }
-    CImageFrame* frame = set->GetAt(index);
+    CImage* frame = set->GetAt(index);
     if (frame == 0) {
         return 0;
     }
