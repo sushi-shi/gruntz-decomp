@@ -28,6 +28,18 @@ struct CAniRecordBase2 : public CObject {
 
     CAniRecordBase2() {}
 
+    // The map-worker ctor (inline): the 5 CDDrawWorkerMapSmall factory sites all build a
+    // CAniRecordBase2 with the SAME 4-field seed (field04 = parent->+0x1c, field0c =
+    // parent->m_0c, m_08/m_10 = 0). Modeled as a real ctor (not spelled-out stores / a
+    // helper call) so cl schedules the vptr store 4th - after m_04/m_08/m_0c, before m_10 -
+    // matching retail; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
+    CAniRecordBase2(i32 field04, i32 field0c) {
+        m_04 = field04;
+        m_08 = 0;
+        m_0c = field0c;
+        m_10 = 0;
+    }
+
     virtual ~CAniRecordBase2() OVERRIDE; // [1] 0x165dd0 (AniRecord.cpp); ??_G 0x165db0
     virtual void Slot05_165d90();        // [5] 0x165d90
     virtual void IsValidImage();         // [6] 0x001c08 (CWapObj-family marker slot)

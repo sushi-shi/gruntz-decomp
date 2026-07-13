@@ -179,6 +179,23 @@ public:
     i32 m_08;               // +0x08
     CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 
+    // The frame ctor (inline; the 4 construction sites - CImageSet::CreateFrame24/28/30
+    // @0x151fb0/152060/152110 and CSprite::InsertFrame @0x151f00 - all build a CImage
+    // with the SAME 7-field seed). Modeled as a real ctor (not spelled-out stores) so
+    // cl schedules the vptr store AMONG the member inits (retail emits it 4th: after
+    // m_status/m_08/m_parent, before m_width) - see
+    // docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md. Member-init ORDER here
+    // reproduces retail's store order.
+    CImage(i32 index, CImageParent* parent) {
+        m_status = index;
+        m_08 = 0;
+        m_parent = parent;
+        m_width = 0;
+        m_height = 0;
+        m_surface = 0;
+        m_owned = 0;
+    }
+
     virtual ~CImage()
         OVERRIDE; // 0x0d5e80 (overrides CObject slot 1; cl stamps ??_7CImage at entry)
 

@@ -1268,12 +1268,11 @@ void CDDrawWorker::DeleteAll() {
 // vftable @0x5eaa2c) at frame number `n` in the sprite's +0x10 frame CObArray.
 // __thiscall, ret 0xc.
 // @early-stop
-// regalloc wall (pin-local-for-callee-saved-reg.md): the body is byte-identical
-// from the operator-new site (off 0x22) to the end, but retail colors the
-// callee-saved triple this->esi / n->edi / worker->ebx (loading n from the stack
-// late, post-prologue) while MSVC5 here colors this->edi / n->ebx / worker->esi
-// (n loaded eagerly). The rotation is the entry coloring, not source-steerable;
-// flipping the guard operands didn't move it. ~84%, logic complete.
+// vptr-scheduler wall (99.5%): the real `new CImage(n, m_c)` ctor
+// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the regalloc that
+// used to cap this at ~84% (the this/n/worker coloring resolved once the construction
+// became a clean ctor). The only residual is the vptr store position (cl 1st vs retail
+// 4th) - same wall as CreateFrame30.
 RVA(0x00151f00, 0xa4)
 CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     if (n < m_frames.m_nSize && m_frames.m_pData[n] != 0) {
@@ -1287,14 +1286,7 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     //                        with CDDrawWorker::InsertFrame (slot 14, the SAME rva 0x151f00 -
     //                        worth a look on its own), so retyping it ripples through that
     //                        vtable. Deferred, not bodged.
-    CImage* worker = new CImage;
-    worker->m_status = n;
-    worker->m_08 = 0;
-    worker->m_parent = (CImageParent*)m_c;
-    worker->m_width = 0;
-    worker->m_height = 0;
-    worker->m_surface = 0;
-    worker->m_owned = 0;
+    CImage* worker = new CImage(n, m_c); // real frame ctor (vptr interleaved)
     if (!worker->Resolve((CParseSource*)src, mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
             delete worker; // slot 1 @+0x04  scalar-deleting dtor
@@ -1317,26 +1309,22 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
 // The (CImageFrameDesc*) casts on a0 are honest: CreateFrame*'s `i32 a0` params are
 // still the fake type (the callers hand in a descriptor pointer as an int).
 // @early-stop
-// vptr-position + regalloc wall: the inline new(0x34)+field-init now matches retail's
-// shape, but `new CImage` runs the (implicit default) ctor's vptr stamp BEFORE the field
-// assignments, so cl emits vptr first; retail schedules the vptr store 4th (interleaved
-// with the field stores), which only comes from a real parameterized CImage ctor - a
-// tree-wide /O2 butterfly the class header forbids. The this/index/nf register roles
-// (esi/edi/ebx retail vs edi/ebx/esi here) cascade off that. ~66%.
+// vptr-scheduler wall (99.5%): the real `new CImage(index, m_owner)` ctor
+// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the whole regalloc
+// (was ~66% with a spelled-out new+store or a helper call). The ONLY residual is the
+// vptr store position: cl stamps `mov [nf],??_7CImage` at ctor entry (1st store) while
+// retail schedules it 4th - after m_status/m_08/m_parent, before m_width. The scheduler
+// won't sink the vptr past scalar member stores from any source form tried (body-order,
+// member-init-list); a source-level fix would need the 3 leading fields to come from a
+// base-class ctor. (The other diff, `[eax+edi*4]` vs `[eax+4*edi]`, is a byte-neutral
+// disasm-spelling artifact.)
 RVA(0x00151fb0, 0xa4)
 CImage* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImage* nf = new CImage; // inline new(0x34) + field init (retail spells this out inline)
-    nf->m_status = index;
-    nf->m_08 = 0;
-    nf->m_parent = (CImageParent*)m_owner;
-    nf->m_width = 0;
-    nf->m_height = 0;
-    nf->m_surface = 0;
-    nf->m_owned = 0;
+    CImage* nf = new CImage(index, m_owner); // real frame ctor (vptr interleaved)
 
     if (nf->Create((CImageFrameDesc*)a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
@@ -1358,21 +1346,14 @@ CImage* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
 // CreateFrame28 (__thiscall, ret 0x10). As CreateFrame30, but the loader
 // virtual is at slot +0x28 and takes (a0, a1, a3, 1).
 // @early-stop
-// Same vptr-position + regalloc wall as CreateFrame30 (see there). ~67%.
+// Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152060, 0xab)
 CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImage* nf = new CImage; // inline new(0x34) + field init (retail spells this out inline)
-    nf->m_status = index;
-    nf->m_08 = 0;
-    nf->m_parent = (CImageParent*)m_owner;
-    nf->m_width = 0;
-    nf->m_height = 0;
-    nf->m_surface = 0;
-    nf->m_owned = 0;
+    CImage* nf = new CImage(index, m_owner); // real frame ctor (vptr interleaved)
 
     // slot 10 @+0x28  CImage::LoadDispatch
     if (nf->LoadDispatch((CImageFrameDesc*)a0, (u32)a1, (void*)a3, 1) == 0) {
@@ -1395,21 +1376,14 @@ CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 // CreateFrame24 (__thiscall, ret 0x10). As CreateFrame30, but the loader
 // virtual is at slot +0x24 and takes (a0, a1, a3).
 // @early-stop
-// Same vptr-position + regalloc wall as CreateFrame30 (see there). ~67%.
+// Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152110, 0xa9)
 CImage* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImage* nf = new CImage; // inline new(0x34) + field init (retail spells this out inline)
-    nf->m_status = index;
-    nf->m_08 = 0;
-    nf->m_parent = (CImageParent*)m_owner;
-    nf->m_width = 0;
-    nf->m_height = 0;
-    nf->m_surface = 0;
-    nf->m_owned = 0;
+    CImage* nf = new CImage(index, m_owner); // real frame ctor (vptr interleaved)
 
     if (nf->Create24((CImageFrameDesc*)a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {

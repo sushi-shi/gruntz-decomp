@@ -89,7 +89,7 @@ public:
     }
 
     char m_pad00[0x0c];
-    void* m_owner;             // +0x0c  shared into each created frame's m_parent (+0xc)
+    CImageParent* m_owner;     // +0x0c  shared into each created frame's m_parent (+0xc)
     char m_array[0x14 - 0x10]; // +0x10  embedded frame array (SetAtGrow this)
     CImage** m_frames;         // +0x14  frame pointer array (indexed by signed frame index)
     i32 m_count;               // +0x18  array element count (for the linear FindFrame scan)

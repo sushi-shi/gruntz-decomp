@@ -1139,26 +1139,11 @@ void CAniElement::DeleteAll() {
 // ===========================================================================
 // The CDDrawWorkerMapSmall meat (0x165810-0x165d30).
 // ===========================================================================
-static inline i32 MapReadField1c(const CDDrawWorkerMapSmall* p) {
-    return *(const i32*)((const char*)p + 0x1c);
-}
-
-// Inline worker constructor. New's the raw 0x14 block; on success seeds the fields
-// THROUGH the allocation register and returns it. Defined inline so it folds into
-// each factory. The parent fields are read INSIDE the init (after the null check).
-// RESIDUE (~99.74%): the two interchangeable parent loads get the OPPOSITE
-// register pair vs the target (ecx<->edx coin-flip); all else byte-exact.
-static inline CAniRecordBase2* MakeMapWorker(const CDDrawWorkerMapSmall* parent) {
-    CAniRecordBase2* w = new CAniRecordBase2;
-    if (w != 0) {
-        i32 surfaceMgr = parent->m_0c;
-        w->m_04 = MapReadField1c(parent);
-        w->m_08 = 0;
-        w->m_0c = surfaceMgr;
-        w->m_10 = 0;
-    }
-    return w;
-}
+// The worker construction is now the real CAniRecordBase2(field04, field0c) ctor
+// (AniRecordBase2.h); the former MakeMapWorker `static inline` helper was NOT inlined by
+// cl (it emitted a call), so it capped the factories at ~66%. Each site now writes
+// `new CAniRecordBase2(m_map1.GetCount(), m_0c)` and cl folds the ctor in with the
+// vptr scheduled 4th - see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
 
 // Map teardown (0x165810, __thiscall, /GX): iterate every entry of m_map1 via
 // GetNextAssoc, destroying each CObject* value through its scalar-deleting
@@ -1184,21 +1169,17 @@ void CDDrawWorkerMapSmall::DestroyAll() {
 // virtual with (data, a3); unlock. On failure destroy the worker and return 0; on
 // success store it in m_map1 under `key` (or the surface name) and return it.
 // @early-stop
-// worker-ctor vptr-position wall: retail stamps the 0x5f02d8 worker vtable AFTER
-// the field seeds (vptr-last); the polymorphic `new` stamps vptr-first.
+// vptr-scheduler wall (~96%): the real CAniRecordBase2(field04, field0c) ctor
+// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the construction
+// regalloc; the residual is the vptr store position (cl 1st vs retail 4th) + the /GX
+// EH-state schedule around the destructible worker/CString locals.
 RVA(0x001658c0, 0xcc)
 void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3) {
     i32 data = ((CParseSource*)a1)->BeginParse();
     if (data == 0) {
         return 0;
     }
-    CAniRecordBase2* w = new CAniRecordBase2;
-    if (w != 0) {
-        w->m_08 = 0;
-        w->m_10 = 0;
-        w->m_04 = MapReadField1c(this);
-        w->m_0c = m_0c;
-    }
+    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
     if (w->Alloc168ee0(data, a3) == 0) {
         ((CParseSource*)a1)->EndParse();
         if (w != 0) {
@@ -1215,9 +1196,13 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
 }
 
 // Allocate + construct a worker, call its +0x28 virtual with (arg1, arg3).
+// @early-stop
+// vptr-scheduler wall (see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md):
+// the real ctor fixed the regalloc; residual is only the vptr store position (cl 1st vs
+// retail 4th).
 RVA(0x00165990, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
-    CAniRecordBase2* w = MakeMapWorker(this);
+    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
     if (w->Alloc168ee0(a1, a3) == 0) {
         if (w != 0) {
             delete w;
@@ -1229,9 +1214,12 @@ void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
 }
 
 // As CreateWorker28 but dispatches the worker's +0x2c virtual.
+// @early-stop
+// vptr-scheduler wall (see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md):
+// residual is only the vptr store position (cl 1st vs retail 4th).
 RVA(0x00165a10, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
-    CAniRecordBase2* w = MakeMapWorker(this);
+    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
     if (w->Alloc168ea0(a1, a3) == 0) {
         if (w != 0) {
             delete w;
@@ -1245,7 +1233,8 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
 // 0x165a90: require the surface's format id to be 0x504358; lock it, bail on 0.
 // Build a worker, dispatch its +0x30 virtual with (data, a1, a3).
 // @early-stop
-// worker-ctor vptr-position wall (twin of Factory_1658c0).
+// vptr-scheduler wall (~93%, twin of Factory_1658c0): real ctor fixed the regalloc;
+// residual is the vptr store position (cl 1st vs retail 4th) + the /GX EH-state schedule.
 RVA(0x00165a90, 0xf4)
 void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3) {
     if (((CParseSource*)a1)->GetEntryTag() != 0x504358) {
@@ -1256,13 +1245,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
         return 0;
     }
     const char* keyHandle = a1->m_0c;
-    CAniRecordBase2* w = new CAniRecordBase2;
-    if (w != 0) {
-        w->m_04 = MapReadField1c(this);
-        w->m_08 = 0;
-        w->m_0c = m_0c;
-        w->m_10 = 0;
-    }
+    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
     if (w->Alloc168f60(data, (i32)a1, a3) == 0) {
         if (w != 0) {
             delete w;
