@@ -291,11 +291,24 @@ def cmd_build(args) -> None:
         subprocess.run([sys.executable, "-m", "gruntz.match.status",
                         "--report", str(REPORT), "check"], cwd=str(REPO), env=_pkg_env())
 
+    # build/gen/structs.json holds clang's ACTUAL record layouts, and it is NOT a ninja
+    # target - so it goes stale the instant a header changes, and every consumer then
+    # answers from a snapshot of the old tree. Measured 2026-07-13: this made class_sizes
+    # BOTH false-fail (3 classes flagged whose fixes had already landed) and, far worse,
+    # capable of false-PASSING a class whose layout we have since broken - which is the
+    # exact defect the gate exists to catch. It also fooled stale_walls into reporting all
+    # 9 layout bugs as still-live for 90 minutes after they were fixed.
+    # Regenerate it here, before anything reads it. It is cheap next to the build.
+    cmd_structs(argparse.Namespace(tu=[]))
+
     # Class-metadata invariants. Every vtable-bearing class should carry a
     # VTBL/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
     # class added without one is caught here, not later.
     # SIZE reached 0 (all classes annotated) -> now a FATAL gate: a class added
-    # without SIZE/SIZE_UNKNOWN fails the build (class_sizes exits nonzero).
+    # without SIZE/SIZE_UNKNOWN fails the build. It ALSO now checks CORRECTNESS:
+    # a class that DECLARES SIZE(C,N) but does not COMPUTE N, and is `new`ed, emits the
+    # wrong `push <size>` immediate into operator new - a real byte defect that nothing
+    # checked before (SIZE() was effectively a comment).
     run([sys.executable, "-m", "gruntz.match.class_sizes"])
     # The four manual-vtable idioms (*Vtbl structs / ->vtbl / g_*Vtbl / m_vtbl/m_vptr)
     # were driven to 0 - a FATAL gate so none can reappear (they must be real virtuals).
