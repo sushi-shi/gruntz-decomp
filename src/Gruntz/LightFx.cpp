@@ -325,7 +325,7 @@ CLightFx::~CLightFx() {}
 // LogicDispatchA (0xf1, all four 100%); the built type here is the real CLightFx.
 RVA(0x0009cdc0, 0xf1)
 i32 LightFxLogicDispatch(CGameObject* obj) {
-    CGameObjAux* aux = obj->m_7c;
+    AnimWorkerObj* aux = obj->m_7c;
     switch ((u32)(size_t)aux->m_1c) {
         case 0:
             aux->m_1c = (void*)0x3e8;

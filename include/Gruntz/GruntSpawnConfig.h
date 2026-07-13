@@ -30,7 +30,7 @@
 #include <Gruntz/GameRegistry.h>  // WwdGameReg / g_gameReg
 #include <Gruntz/SpawnList.h>     // canonical CSpawnList / CSpawnEntry (voice lists)
 #include <Gruntz/SpriteFactory.h> // the shared CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + AnimWorkerObj
 
 // Forward decls so the manager's typed slots need no view-casts (defs below / in
 // the .cpp). m_04 is ONE config tree (its +0x08 sprite factory + +0x20 collection),
@@ -134,7 +134,7 @@ public:
 // LoadGruntVoices builds a play request through the shared sprite factory
 // (m_04->m_08, the CSpriteFactory whose CreateSprite lives at 0x1597b0; see
 // <Gruntz/SpriteFactory.h>). The created instance is the shared CGameObject
-// (<Gruntz/UserLogic.h>); this loader only touches its +0x7c CGameObjAux control
+// (<Gruntz/UserLogic.h>); this loader only touches its +0x7c AnimWorkerObj control
 // block (the Init driver @+0x10, the m_18 setup slot it stashes as the voice
 // stream handle).
 

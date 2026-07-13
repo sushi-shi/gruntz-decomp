@@ -454,7 +454,7 @@ void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
             if (trig == 0) {
                 goto done;
             }
-            trig->m_7c->Init(trig);
+            trig->m_7c->m_notify(trig);
             transId = (i32)trig->m_7c->m_logic;
         }
     }

@@ -9,7 +9,7 @@
 //              (m_flags |= 0x10000).
 // Always returns 1. @orphan: the owning/registering TU is unrecovered (it sits in
 // the gap between CUserLogic @0xae2a0 and CWayPoint @0xae3f0); homed as a focused
-// free-function TU over the canonical CGameObject/CGameObjAux/CAniAdvanceCursor.
+// free-function TU over the canonical CGameObject/AnimWorkerObj/CAniAdvanceCursor.
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <rva.h>
@@ -21,7 +21,7 @@ extern "C" u32 g_engineFrameDelta;
 
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {
-    CGameObjAux* w = obj->m_7c;
+    AnimWorkerObj* w = obj->m_7c;
     i32 state = (i32)w->m_1c;
     if (state != 0) {
         if (state == 5) {

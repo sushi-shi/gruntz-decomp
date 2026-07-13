@@ -634,7 +634,7 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
 // object whose category matches t's mask and whose extents are set (m_extentL !=
 // sentinel), tests whether t currently overlaps it. If NOT (a separation on any
 // axis) but t's CANDIDATE box (at candX, candY) WOULD overlap, it stores the
-// other party in t->m_hitOther and fires t's worker m_collideNotify; on a
+// other party in t->m_hitOther and fires t's worker m_notify; on a
 // nonzero reply it fires the object's own notify (masks permitting), returns 1.
 // (The `(CGameObjWorld*)m_0c` cast is language-forced: the CLoadable base stores
 // the owning context as a generic i32 across the whole family.)
@@ -673,7 +673,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
                     i32 fire;
                     if (t->m_collideWorker != 0) {
                         t->m_hitOther = obj;
-                        fire = t->m_collideWorker->m_collideNotify(t);
+                        fire = t->m_collideWorker->m_notify(t);
                     } else {
                         fire = 1;
                     }
@@ -681,7 +681,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
                         if (t->m_collMask & obj->m_collCategory) {
                             if (obj->m_collideWorker != 0) {
                                 obj->m_hitOther = t;
-                                obj->m_collideWorker->m_collideNotify(obj);
+                                obj->m_collideWorker->m_notify(obj);
                             }
                         }
                         return 1;

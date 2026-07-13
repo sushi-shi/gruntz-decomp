@@ -17,7 +17,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <Wwd/WwdGameObjectFamily.h>   // the CWwdGameObjectE/A/F/B/C hierarchy
 #include <Gruntz/WwdGameObject.h>      // canonical CWwdGameObject
-#include <Gruntz/WwdWorker.h>          // the shared per-object worker (+0x7c; Kick at vtbl+0x10)
+#include <DDrawMgr/AnimWorkerObj.h>    // the canonical +0x7c worker (m_notify fire callback)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CWwdObjMgrL::m_0c owner
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 
@@ -349,7 +349,8 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
     }
     *(void**)(obj + 0x78) = node;
     if (*(int*)(obj + 8) & 0x200000) {
-        ((CWwdWorker*)*(void**)(obj + 0x7c))->Kick(result);
+        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
+        (*(AnimWorkerObj**)(obj + 0x7c))->m_notify((CGameObject*)result);
     }
     return (CWwdGameObject*)(void*)result;
 }
@@ -423,7 +424,7 @@ i32 CWwdGameObjectB::RemoveChild_166850(CDDrawGroupChild* child) {
 
 // ---------------------------------------------------------------------------
 // 0x166880 (__thiscall, ret): walk the broadcast child list (m_listHead), invoke
-// each child's per-child worker callback (child->m_7c->m_fn10(child), __cdecl), and
+// each child's worker fire callback (child->m_7c->m_notify(child), __cdecl), and
 // return the number of children visited. Advances to the next node BEFORE the
 // callback (so a callback that unlinks the child is safe).
 RVA(0x00166880, 0x29)
@@ -433,7 +434,7 @@ i32 CWwdGameObjectB::WalkChildWorkers_166880() {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
         CDDrawGroupChild* o = cur->m_obj;
-        o->m_7c->m_fn10(o);
+        o->m_7c->m_notify((CGameObject*)o);
         count++;
     }
     return count;

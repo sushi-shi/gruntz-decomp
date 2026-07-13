@@ -40,7 +40,7 @@
 //   phase 0x51 -> UserLogicVfuncB (slot 13, +0x34)
 //   phase 0x50 -> UserLogicVfuncC (slot 14, +0x38)
 //   phase 0x53 -> UserLogicVfuncD (slot 15, +0x3c)
-// The record is the game object's +0x7c sub-object (canonical CGameObjAux): m_logic
+// The record is the game object's +0x7c sub-object (canonical AnimWorkerObj): m_logic
 // is its bound logic leaf (typed CUserLogic*, so the shared virtual slots dispatch
 // cast-free) and m_1c the phase code (a generic int|ptr slot - here a phase int; the
 // int reinterpret at the site is authentic, cf. the field note in UserLogic.h).
@@ -53,7 +53,7 @@
 // 0x114480: dispatch the bound object's current logic phase.
 RVA(0x00114480, 0xf1)
 i32 ToobSpikezLogic(CGameObject* obj) {
-    CGameObjAux* rec = obj->m_7c;
+    AnimWorkerObj* rec = obj->m_7c;
     switch ((u32)rec->m_1c) {
         case 0: {
             rec->m_1c = (void*)0x3e8;

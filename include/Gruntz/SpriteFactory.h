@@ -9,7 +9,7 @@
 // shared engine game object (CGameObject, <Gruntz/UserLogic.h>: it owns the
 // ApplyName @0x150540 / ApplyLookupGeometry @0x1505b0 / ApplyLookupSprite
 // @0x1504d0 setters every creating TU drives on the result, plus the +0x7c
-// CGameObjAux control block whose Init @+0x10 the creators run post-create), so
+// AnimWorkerObj control block whose Init @+0x10 the creators run post-create), so
 // CreateSprite returns CGameObject*. The former per-TU created-instance names
 // (CIconSprite / CHudSprite / CProjSprite / ...) were views of this one class.
 // The lookup RESULT (the frame-data template) is the separate CSprite value type.
@@ -39,7 +39,7 @@ struct CSpriteListNode {
 };
 SIZE_UNKNOWN(CSpriteListNode);
 
-struct CSpriteInner; // GruntObjEntry's +0x7c inner object (grunt world)
+struct AnimWorkerObj; // the canonical +0x7c worker/logic record (<DDrawMgr/AnimWorkerObj.h>)
 // The serialize key->object map entry (grunt world), reached through the factory's
 // embedded +0x48 map. It IS the wide game object (the CWwdGameObjectE family /
 // CGameObject views): its "+0x20 Kind()" is the family's slot-8 GetTypeId (the
@@ -60,7 +60,7 @@ public:
     virtual i32 GetTypeId();        // [8]  +0x20  per-kind type tag (==5 probe;
                                     //      was this view's "Kind()")
     char m_pad04[0x7c - 0x04];
-    CSpriteInner* m_7c; // +0x7c  inner object (== CGameObjAux / the anim worker)
+    AnimWorkerObj* m_7c; // +0x7c  the owned 0x17c worker/logic record
     // Slots 9-17 of the family table, declared-only (canonical names):
     virtual i32 SetPosition(i32 x, i32 y);                    // [9]  0x164790
     virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4);      // [10] 0x150d60

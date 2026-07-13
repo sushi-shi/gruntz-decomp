@@ -45,7 +45,7 @@ extern "C" i32 g_curPlayer;
 // The level-exit "Warlord" entity is a fresh CSpriteFactory::CreateSprite result
 // (the canonical 0x1597b0 factory entry on g_exitGameReg->m_world->m_8; the former
 // "Probe" reading was a mislabel - it CREATES the warlord head sprite at the bound
-// screen pos). The created instance is the shared CGameObject: +0x7c CGameObjAux
+// screen pos). The created instance is the shared CGameObject: +0x7c AnimWorkerObj
 // carries the Init driver (+0x10, the finalize fn-ptr here) and the per-class
 // setup slot m_18 the ctor snapshots raw as the warlord id; m_124 the area/owner
 // index, m_188 the object id stored back into the focus slot.
@@ -116,7 +116,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
     if (e != 0) {
         e->m_124 = m_object->m_124;
-        e->m_7c->Init(e);
+        e->m_7c->m_notify(e);
         // snapshot the warlord's bound logic (obj->m_7c->m_logic); the cue sink keeps
         // it as a raw DWORD (authentic pointer-as-dword storage)
         m_warlordLogic = e->m_7c->m_logic;

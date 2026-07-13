@@ -921,10 +921,10 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
         i32 surfaceMgr = parent->m_0c;
         w->m_04 = field1c;
         w->m_08 = 0;
-        w->m_0c = surfaceMgr;
-        w->m_collideNotify = 0;
+        w->m_0c = (LogicContext*)surfaceMgr;
+        w->m_notify = 0;
         w->m_14 = 0;
-        w->m_18 = 0;
+        w->m_logic = 0;
         w->m_170 = 0;
         w->m_1c = 0;
         w->m_174 = 0;
@@ -936,7 +936,7 @@ RVA(0x001652c0, 0x92)
 void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
     AnimWorkerObj* w = MakeAnimWorker(this);
 
-    if (w->Vfunc24(a1, a3) == 0) {
+    if (w->Init((GameObjNotifyFn)a1, a3) == 0) {
         if (w != 0) {
             delete w;
         }

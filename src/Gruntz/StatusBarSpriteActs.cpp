@@ -50,37 +50,37 @@ CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
 // TYPE `new`d on state 0 (hence the size 0x54 + ctor target).
 RVA(0x0010c0f0, 0xf1)
 i32 StatusBarSpriteStep(CGameObject* obj) {
-    CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;
-    switch (ctl->m_stateId) {
+    AnimWorkerObj* ctl = obj->m_7c;
+    switch ((u32)ctl->m_1c) {
         case 0: {
-            ctl->m_stateId = 0x3e8;
+            ctl->m_1c = (void*)0x3e8;
             CStatusBarSprite* t = new CStatusBarSprite(obj);
-            ((CTileTransitionState*)t)->Activate();
-            ctl->m_state = (CTileTransitionState*)t;
+            t->Activate();
+            ctl->m_logic = t;
             break;
         }
         case 0x1d:
-            ctl->m_state->Vfunc2C();
+            ctl->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            ctl->m_state->Vfunc28();
+            ctl->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            ctl->m_state->Vfunc38();
+            ctl->m_logic->UserLogicVfuncC();
             break;
         case 0x51:
-            ctl->m_state->Vfunc34();
+            ctl->m_logic->UserLogicVfuncB();
             break;
         case 0x52:
-            ctl->m_state->Vfunc30();
+            ctl->m_logic->UserLogicVfuncA();
             break;
         case 0x53:
-            ctl->m_state->Vfunc3C();
+            ctl->m_logic->UserLogicVfuncD();
             break;
         case 0x3e8:
             break;
         default:
-            TileTransitionDefaultStep(ctl->m_state);
+            ProjTypeXfer((CXferArchive*)ctl->m_logic);
             break;
     }
     return 1;

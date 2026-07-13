@@ -16,7 +16,7 @@
 #include <string.h>                  // strcpy/strlen (blit-param label buffer)
 #include <Wwd/WwdGameObjectFamily.h> // the CWwdGameObjectE/A/F/B/C dtor-family hierarchy
 #include <Gruntz/WwdGameObject.h>    // canonical CWwdGameObject (Init/Setup* out-of-lines)
-#include <Gruntz/LogicRecord.h>      // CLogicRecord (Consume @0x15b340)
+// (LogicRecord.h dissolved: the record IS AnimWorkerObj - Consume @0x15b340 below)
 #include <Gruntz/Sprite.h>           // CSprite (GetFrame @0x15cc30 + the Clamp pair)
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (the 0x17c worker; 3-arg ctor @0x15b300)
@@ -25,7 +25,7 @@
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
 #include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam (the +0x1a0 command sub-object)
 #include <Gruntz/SerialArchive.h>    // the shared CSerialArchive stream (Read/Write)
-#include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CWwdNotifier/CDDrawRect
+#include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
 #include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker
 #include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed_01f940 - Advance's sound cue)
 #include <Globals.h>
@@ -110,10 +110,10 @@ RVA(0x0015b300, 0x40)
 AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
     m_04 = b;
     m_08 = c;
-    m_0c = a;
-    m_collideNotify = 0;
+    m_0c = (LogicContext*)a;
+    m_notify = 0;
     m_14 = 0;
-    m_18 = 0;
+    m_logic = 0;
     m_170 = 0;
     m_1c = 0;
     m_174 = 0;
@@ -121,20 +121,20 @@ AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
 }
 
 // ---------------------------------------------------------------------------
-// CLogicRecord::Consume (0x15b340, __thiscall). Draw `amount` from the
+// AnimWorkerObj::Consume (0x15b340, __thiscall; was CLogicRecord::). Draw `amount` from the
 // remaining-count at m_20: returns 1 with the balance debited while it covers the
 // request, else clamps to 0 and returns 0.
 RVA(0x0015b340, 0x2b)
-i32 CLogicRecord::Consume(i32 amount) {
-    i32 remaining = m_serial[(0x20 - 0x20) / 4]; // m_20
+i32 AnimWorkerObj::Consume(i32 amount) {
+    i32 remaining = m_20;
     if (remaining == 0) {
         return remaining; // eax already holds 0
     }
     if ((u32)amount >= (u32)remaining) {
-        m_serial[(0x20 - 0x20) / 4] = 0;
+        m_20 = 0;
         return 0;
     }
-    m_serial[(0x20 - 0x20) / 4] = remaining - amount;
+    m_20 = remaining - amount;
     return 1;
 }
 
@@ -144,7 +144,7 @@ i32 CLogicRecord::Consume(i32 amount) {
 // WwdFile::ReadPlaneObjects 0x162af0). A REAL /GX ctor: the CResolveNode base
 // subobject stamps ??_7CResolveNode (0x5efbc0) + its +0x04..+0xd8 fields, then the
 // CString label member (+0xdc) constructs, then the derived body final-stamps the
-// wide-object vtable, `new`-allocates the +0x7c anim worker (WwdAnimWorkerInit), and
+// wide-object vtable, `new`-allocates the +0x7c anim worker (AnimWorkerObj), and
 // publishes g_wwdObjIdCounter.
 // @early-stop
 // eh-member-state wall (59.7%): the real /GX ctor is byte-faithful store-for-store,
@@ -158,7 +158,7 @@ CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c)
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     m_5c = (int)0x80000000;
     m_78 = 0;
-    m_7c = new WwdAnimWorkerInit(b, a);
+    m_7c = new AnimWorkerObj(a, b);
     m_98 = 0;
     m_80 = 0;
     m_88 = 0;
@@ -240,10 +240,10 @@ void CWwdFactoryObject::Notify_15b650(void* p) {
             *(i32*)(*(char**)(o + 0x7c) + 0x1c) = 0x1c;
         }
     } else {
-        CWwdNotifier* h = *(CWwdNotifier**)(o + 0x80);
+        AnimWorkerObj* h = *(AnimWorkerObj**)(o + 0x80);
         if (h != 0) {
             *(void**)(o + 0x84) = p;
-            h->m_callback(this);
+            h->m_notify((CGameObject*)this);
         }
     }
 }

@@ -1682,9 +1682,9 @@ i32 CGrunt::CreateHealthSprite() {
     m_healthSprite =
         g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
-    m_healthSprite->m_7c->Init(m_healthSprite);
+    m_healthSprite->m_7c->m_notify(m_healthSprite);
 
-    CGameObjAux* inner = m_healthSprite->m_7c;
+    AnimWorkerObj* inner = m_healthSprite->m_7c;
     CGruntHealthSprite* reg = (CGruntHealthSprite*)inner->m_logic;
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_health)) {
         reg->m_38->m_flags |= 0x10000;
@@ -1707,7 +1707,7 @@ i32 CGrunt::CreateToySprite() {
     m_toySprite =
         g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
-    m_toySprite->m_7c->Init(m_toySprite);
+    m_toySprite->m_7c->m_notify(m_toySprite);
 
     CGruntToySprite* reg = (CGruntToySprite*)m_toySprite->m_7c->m_logic;
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
@@ -1736,9 +1736,9 @@ i32 CGrunt::CreateStaminaSprite() {
         s_GruntStaminaSprite,
         0x40003
     );
-    m_staminaSprite->m_7c->Init(m_staminaSprite);
+    m_staminaSprite->m_7c->m_notify(m_staminaSprite);
 
-    CGameObjAux* inner = m_staminaSprite->m_7c;
+    AnimWorkerObj* inner = m_staminaSprite->m_7c;
     CGruntHealthSprite* reg = (CGruntHealthSprite*)inner->m_logic;
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_stamina)) {
         reg->m_38->m_flags |= 0x10000;
@@ -1777,9 +1777,9 @@ i32 CGrunt::CreateToyTimeSprite() {
         s_GruntToyTimeSprite,
         0x40003
     );
-    m_toyTimeSprite->m_7c->Init(m_toyTimeSprite);
+    m_toyTimeSprite->m_7c->m_notify(m_toyTimeSprite);
 
-    CGameObjAux* inner = m_toyTimeSprite->m_7c;
+    AnimWorkerObj* inner = m_toyTimeSprite->m_7c;
     CGruntHealthSprite* reg = (CGruntHealthSprite*)inner->m_logic;
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_toyTime)) {
         reg->m_38->m_flags |= 0x10000;
@@ -1813,9 +1813,9 @@ i32 CGrunt::CreateWingzTimeSprite() {
         s_GruntWingzTimeSprite,
         0x40003
     );
-    m_wingzTimeSprite->m_7c->Init(m_wingzTimeSprite);
+    m_wingzTimeSprite->m_7c->m_notify(m_wingzTimeSprite);
 
-    CGameObjAux* inner = m_wingzTimeSprite->m_7c;
+    AnimWorkerObj* inner = m_wingzTimeSprite->m_7c;
     CGruntHealthSprite* reg = (CGruntHealthSprite*)inner->m_logic;
     if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_wingzTime)) {
         reg->m_38->m_flags |= 0x10000;
@@ -1838,9 +1838,9 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
     m_powerupSprite =
         g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x15, s_GruntPowerupSprite, 0x40003);
-    m_powerupSprite->m_7c->Init(m_powerupSprite);
+    m_powerupSprite->m_7c->m_notify(m_powerupSprite);
 
-    CGameObjAux* inner = m_powerupSprite->m_7c;
+    AnimWorkerObj* inner = m_powerupSprite->m_7c;
     CGruntPowerupSprite* reg = (CGruntPowerupSprite*)inner->m_logic;
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo, a)) {
         reg->m_38->m_flags |= 0x10000;
@@ -1863,7 +1863,7 @@ i32 CGrunt::CreateSelectedSprite() {
     m_selectedSprite =
         g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x14, s_GruntSelectedSprite, 0x40003);
-    m_selectedSprite->m_7c->Init(m_selectedSprite);
+    m_selectedSprite->m_7c->m_notify(m_selectedSprite);
 
     CGruntSelectedSprite* reg = (CGruntSelectedSprite*)m_selectedSprite->m_7c->m_logic;
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {

@@ -76,7 +76,7 @@ struct CProjRenderObj {
     i32 m_5c; // +0x5c  screen X
     i32 m_60; // +0x60  screen Y
     char m_pad64[0x7c - 0x64];
-    struct CProjShadowSub* m_7c; // +0x7c  shadow sub-table (Init @+0x10, host @+0x18)
+    struct AnimWorkerObj* m_7c;  // +0x7c  the canonical worker (m_notify @+0x10, leaf @+0x18)
     char m_pad80[0x1a0 - 0x80];
     CProjAnim m_1a0; // +0x1a0  animation sub-object (CAniAdvanceCursor/CDDrawBlitParam bridge)
     char m_pad1a4[0x1b4 - 0x1a4];
@@ -93,20 +93,10 @@ struct CProjRenderObj {
     i32 ApplyLookupGeometry(const char* key, i32 flag); // -> CGameObject::ApplyLookupGeometry
 };
 
-// The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at
-// +0x10 (fired with the shadow) and an "activation host" at +0x18 whose Activate
-// (0x9d520) installs the shadow's two frame names.
-SIZE_UNKNOWN(CProjShadowActivate);
-struct CProjShadowActivate {
-    void Activate(const char* shadowName, const char* baseName, i32 a, i32 b); // 0x9d520
-};
-SIZE_UNKNOWN(CProjShadowSub);
-struct CProjShadowSub {
-    char m_pad00[0x10];
-    void (*Init)(CProjRenderObj* self); // +0x10
-    char m_pad14[0x18 - 0x14];
-    CLightFx* m_18; // +0x18
-};
+// (The former CProjShadowSub/CProjShadowActivate views of the shadow's +0x7c
+// sub-object are DISSOLVED onto the canonical AnimWorkerObj: the "+0x10 Init"
+// is m_notify and the "+0x18 activation host" the bound CLightFx leaf at
+// m_logic - its real Activate is CLightFx::Activate @0x9d520.)
 
 // The CSample-like sound sample object the projectile launches (+0x200). Its
 // StopAndRewind (0x135380) is reached as an out-of-line engine method.

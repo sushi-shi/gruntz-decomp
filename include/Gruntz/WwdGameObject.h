@@ -32,15 +32,13 @@ struct CSprite;
 struct CGameObjLayer;
 class CDDrawSurfacePair; // slots 12-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 class LeafScanValue;
-class CLogicRecord; // the +0x7c worker's kill-cue API (<Gruntz/LogicRecord.h>)
 
-// (The former WwdAnimWorker view of the +0x7c worker is DISSOLVED onto the
-// canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>, vtable 0x1efb80): its
-// "Advance at vtbl+0x10" was a WRONG dispatch shape - retail loads the fn PTR at
-// worker+0x10 (m_collideNotify) and calls it __cdecl with the owner pushed
-// (`mov edx,[obj+0x7c]; push obj; call [edx+0x10]; add esp,4` in Play 0x151150 /
-// WriteSnapshot 0x151c00) - and its "Init at +0x24" is the slot-9 Vfunc24/Init.
-// Its "QueryWorkerType" (0x164830) is CLogicRecord::Dispatch under the record view.)
+// The +0x7c worker is the ONE canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>,
+// vtable 0x1efb80) - the 2026-07-13 worker unification dissolved the former
+// WwdAnimWorker view (its "Advance at vtbl+0x10" was a WRONG dispatch shape:
+// retail fires the +0x10 FN POINTER m_notify, `mov edx,[obj+0x7c]; push obj;
+// call [edx+0x10]; add esp,4` in Play 0x151150 / WriteSnapshot 0x151c00) AND the
+// CLogicRecord kill-cue view (Consume / Dispatch / the +0x24 refcount) onto it.
 #include <DDrawMgr/AnimWorkerObj.h>
 
 // The +0x1a0 command-dispatch sub-object is the real CDDrawBlitParam
@@ -168,15 +166,9 @@ public:
                       //         CWwdObjMgr::InsertSorted orders the list by it)
     i32 m_posCache;   // +0x78  CObList POSITION cache (CWwdObjMgr::InsertSorted stores the
                       //         node; TickKillCues/RemoveAndDelete unlink through it)
-    // +0x7c  the owned 0x17c worker. ONE object, TWO APIs pending the documented
-    // vtable-reunification sweep (LogicRecord.h): the anim/play interface
-    // (WwdAnimWorker) and the kill-cue record interface (CLogicRecord: Consume /
-    // the +0x10 callback / the +0x24 refcount). The union models the dual-view at
-    // the field so BOTH consumer TUs stay cast-free.
-    union {
-        AnimWorkerObj* m_worker; // anim/play API (the canonical 0x17c worker)
-        CLogicRecord* m_killCue; // kill-cue API (CWwdObjMgr::TickKillCues)
-    };
+    // +0x7c  the owned 0x17c worker/logic record - ONE class, ONE api
+    // (the ex-CLogicRecord kill-cue view is folded onto AnimWorkerObj).
+    AnimWorkerObj* m_worker;
     void* m_80; // +0x80  object ref (serialized by name)
     i32 m_84;   // +0x84
     void* m_88; // +0x88  object ref

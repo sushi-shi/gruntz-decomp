@@ -591,7 +591,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             CGameObject* spr =
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->Init(spr);
+            spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 9, 1);
             return m_tileMgr->CombatCue(
@@ -606,7 +606,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             CGameObject* spr =
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->Init(spr);
+            spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 2, 1);
             return m_tileMgr->CombatCue(
@@ -621,7 +621,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             CGameObject* spr =
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->Init(spr);
+            spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
             return m_tileMgr->ResurrectCue(
@@ -634,7 +634,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             CGameObject* spr =
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->Init(spr);
+            spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 7, 1);
             return m_tileMgr->CombatCue(
@@ -649,7 +649,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             CGameObject* spr =
                 g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->Init(spr);
+            spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 3, 1);
             return m_tileMgr->CombatCue(
@@ -670,7 +670,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
-            CGameObjAux* ni = n->m_7c;
+            AnimWorkerObj* ni = n->m_7c;
             ni->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             n->m_124 = 0;
             n->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
@@ -684,7 +684,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             e->ApplyName("LEVEL_ROLLINGBALL_EAST");
-            CGameObjAux* ei = e->m_7c;
+            AnimWorkerObj* ei = e->m_7c;
             ei->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             e->m_124 = 0;
             e->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
@@ -698,7 +698,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
-            CGameObjAux* si = s->m_7c;
+            AnimWorkerObj* si = s->m_7c;
             si->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             s->m_124 = 0;
             s->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
@@ -712,7 +712,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             w->ApplyName("LEVEL_ROLLINGBALL_WEST");
-            CGameObjAux* wi = w->m_7c;
+            AnimWorkerObj* wi = w->m_7c;
             wi->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             w->m_124 = 0;
             w->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);

@@ -23,7 +23,7 @@
 #include <Gruntz/ResMgr.h>                // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // THE canonical CDDrawWorkerRegistry (was shadowed here)
 #include <Gruntz/Sprite.h>                // CSprite (frame-data), CMapStringToOb, CFrameArray
-#include <Gruntz/LogicRecord.h>           // CLogicRecord (the +0x80 worker under its record view)
+// (LogicRecord.h dissolved: CLogicRecord IS AnimWorkerObj - one 0x17c class)
 #include <DDrawMgr/AnimWorkerObj.h>       // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
 #include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (frame collection; slots 10/14/15/16)
 #include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
@@ -133,7 +133,7 @@ struct WwdSnapshot {
 
 // (The former WorkerSub view of the worker's +0x18 sub-object is DISSOLVED: the
 // object is the bound logic leaf - CUserBase/CUserLogic (<Gruntz/UserLogic.h>;
-// CGameObjAux::m_logic types the same slot) - and its "+0x8 virtual" is
+// AnimWorkerObj::m_logic types the same slot) - and its "+0x8 virtual" is
 // CUserBase slot 2 = GetTypeTag, exactly the type tag the snapshot stores.)
 
 // Raw this-offset read of a foreign engine object reached as an opaque void*/int
@@ -598,7 +598,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_168 = 0;
     m_e0 = 0;
     m_180 = 0;
-    if (w->Vfunc24(F((void*)a4, 0x10, i32), F((void*)a4, 0x8, i32)) == 0) {
+    if (w->Init((GameObjNotifyFn)F((void*)a4, 0x10, i32), F((void*)a4, 0x8, i32)) == 0) {
         return 0;
     }
     m_80 = 0;
@@ -647,11 +647,11 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = m_0c;
+            w->m_0c = (LogicContext*)m_0c;
             StampWorkerVtbl(w);
-            w->m_collideNotify = 0;
+            w->m_notify = 0;
             w->m_14 = 0;
-            w->m_18 = 0;
+            w->m_logic = 0;
             w->m_170 = 0;
             w->m_1c = 0;
             w->m_174 = 0;
@@ -664,7 +664,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     if (m_80 == 0) {
         return 0;
     }
-    return m_80->Vfunc24(src->m_10, 0);
+    return m_80->Init((GameObjNotifyFn)src->m_10, 0);
 }
 
 // CGameObject's three built-in logic-handler registrars: look the logic-name key
@@ -705,11 +705,11 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = m_0c;
+            w->m_0c = (LogicContext*)m_0c;
             StampWorkerVtbl(w);
-            w->m_collideNotify = 0;
+            w->m_notify = 0;
             w->m_14 = 0;
-            w->m_18 = 0;
+            w->m_logic = 0;
             w->m_170 = 0;
             w->m_1c = 0;
             w->m_174 = 0;
@@ -722,7 +722,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
     if (m_88 == 0) {
         return 0;
     }
-    return m_88->Vfunc24(src->m_10, 0);
+    return m_88->Init((GameObjNotifyFn)src->m_10, 0);
 }
 
 // @early-stop
@@ -751,11 +751,11 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = m_0c;
+            w->m_0c = (LogicContext*)m_0c;
             StampWorkerVtbl(w);
-            w->m_collideNotify = 0;
+            w->m_notify = 0;
             w->m_14 = 0;
-            w->m_18 = 0;
+            w->m_logic = 0;
             w->m_170 = 0;
             w->m_1c = 0;
             w->m_174 = 0;
@@ -768,7 +768,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
     if (m_collideWorker == 0) {
         return 0;
     }
-    return m_collideWorker->Vfunc24(src->m_10, 0);
+    return m_collideWorker->Init((GameObjNotifyFn)src->m_10, 0);
 }
 
 // @early-stop
@@ -798,7 +798,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
         return 0;
     }
     AnimWorkerObj* w;
-    i32 saved;
+    void* saved;
     i32 node;
     switch (type) {
         case 3: {
@@ -811,10 +811,10 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 return 0;
             }
             saved = w->m_1c;
-            w->m_1c = 0x50;
-            w->m_collideNotify((CGameObject*)this);
+            w->m_1c = (void*)0x50;
+            w->m_notify((CGameObject*)this);
             w = m_worker;
-            if (w->m_1c == 0x50) {
+            if (w->m_1c == (void*)0x50) {
                 w->m_1c = saved;
             }
             break;
@@ -828,10 +828,10 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 return 0;
             }
             saved = w->m_1c;
-            w->m_1c = 0x51;
-            w->m_collideNotify((CGameObject*)this);
+            w->m_1c = (void*)0x51;
+            w->m_notify((CGameObject*)this);
             w = m_worker;
-            if (w->m_1c == 0x51) {
+            if (w->m_1c == (void*)0x51) {
                 w->m_1c = saved;
             }
             break;
@@ -845,10 +845,10 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 return 0;
             }
             saved = w->m_1c;
-            w->m_1c = 0x52;
-            w->m_collideNotify((CGameObject*)this);
+            w->m_1c = (void*)0x52;
+            w->m_notify((CGameObject*)this);
             w = m_worker;
-            if (w->m_1c == 0x52) {
+            if (w->m_1c == (void*)0x52) {
                 w->m_1c = saved;
             }
             break;
@@ -870,16 +870,16 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 return 0;
             }
             saved = w->m_1c;
-            w->m_1c = 0x53;
-            w->m_collideNotify((CGameObject*)this);
+            w->m_1c = (void*)0x53;
+            w->m_notify((CGameObject*)this);
             w = m_worker;
-            if (w->m_1c == 0x53) {
+            if (w->m_1c == (void*)0x53) {
                 w->m_1c = saved;
             }
             break;
         }
     }
-    return m_killCue->Dispatch(a1, type, (void*)a3, (void*)a4) != 0;
+    return m_worker->Dispatch(a1, type, (void*)a3, (void*)a4) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1114,7 +1114,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
         return 0;
     }
     if (w->m_1c == 0) {
-        w->m_collideNotify((CGameObject*)this);
+        w->m_notify((CGameObject*)this);
     }
 
     i32 ebx = 0;
@@ -1124,8 +1124,8 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
 
     w = m_worker;
     i32 edi = 0;
-    if (w->m_18 != 0) {
-        edi = w->m_18->GetTypeTag();
+    if (w->m_logic != 0) {
+        edi = w->m_logic->GetTypeTag();
     }
 
     WwdSnapshot rec;
@@ -1168,29 +1168,27 @@ i32 B_151d20::Notify(void* arg) {
 }
 
 // ---------------------------------------------------------------------------
-// ~CLogicRecord (0x151da0, __thiscall, /GX). Stamp the derived vptr, free the
-// owned heap block (m_14), tear down the polymorphic sub-record (m_18) via its
-// virtual slot-0 destructor, zero the live fields, then restamp the base vptr.
-// (Identity: this record class IS the 0x17c AnimWorkerObj under a second view -
-// see <DDrawMgr/AnimWorkerObj.h>.)
+// ~AnimWorkerObj (0x151da0, __thiscall, /GX; was ~CLogicRecord - the record view
+// is folded onto the one 0x17c worker class). Stamp the derived vptr, free the
+// owned heap block (m_14), `delete` the bound logic leaf (its CUserBase slot-0
+// scalar dtor), zero the live fields, then restamp the base vptr.
 // @early-stop
 // eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
-// the body (derived vptr stamp, m_14 free, m_18->vtbl[0](1), field zeroing, base
+// the body (derived vptr stamp, m_14 free, m_logic->vtbl[0](1), field zeroing, base
 // vptr restamp) is byte-exact, but the retail /GX frame (push -1 / fs:0 / trylevel)
 // comes from a non-trivial CObject base subobject the manual-vptr non-polymorphic
 // model can't emit. Defer to the final sweep once the base + full vtable are modeled.
 RVA(0x00151da0, 0x80)
-CLogicRecord::~CLogicRecord() {
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    m_10 = 0;
+AnimWorkerObj::~AnimWorkerObj() {
+    m_notify = 0;
     if (m_14) {
         ::operator delete(m_14);
         m_14 = 0;
         m_178 = 0;
     }
-    if (m_18) {
-        m_18->Destroy(1);
-        m_18 = 0;
+    if (m_logic) {
+        delete m_logic; // the CUserBase virtual scalar dtor at slot 0 (push 1; call [eax])
+        m_logic = 0;
     }
     m_170 = 0;
     m_08 = 0;
@@ -1200,45 +1198,46 @@ CLogicRecord::~CLogicRecord() {
 }
 
 // ---------------------------------------------------------------------------
-// CLogicRecord::Init (0x151e20, __thiscall). Bind the fire callback (m_10) and
+// AnimWorkerObj::Init (0x151e20, vtable slot 9; was CLogicRecord::Init and the
+// "Vfunc24" dispatch view - one body). Bind the fire callback (m_notify) and
 // the frame stamp (m_08), zeroing the working fields. Returns 0 if callback null.
 RVA(0x00151e20, 0x46)
-i32 CLogicRecord::Init(void(__cdecl* callback)(void*), i32 frame) {
+i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
     if (callback == 0) {
         return 0;
     }
-    m_10 = callback;
+    m_notify = callback;
     m_08 = frame;
     m_14 = 0;
-    m_18 = 0;
-    m_serial[(0x20 - 0x20) / 4] = 0; // m_20
-    m_serial[(0x24 - 0x20) / 4] = 0; // m_24
-    m_serial[(0x2c - 0x20) / 4] = 0; // m_2c
-    m_serial[(0x34 - 0x20) / 4] = 0; // m_34
-    m_serial[(0x30 - 0x20) / 4] = 0; // m_30
-    m_serial[(0x38 - 0x20) / 4] = 0; // m_38
+    m_logic = 0;
+    m_20 = 0;
+    m_24 = 0;
+    m_2c = 0;
+    m_34 = 0;
+    m_30 = 0;
+    m_38 = 0;
     m_168 = 0;
     m_16c = 0;
-    m_serial[(0x28 - 0x20) / 4] = 0; // m_28
+    m_28 = 0;
     return 1;
 }
 
 // ---------------------------------------------------------------------------
-// AnimWorkerObj::Clear (0x151e70, vtable slot 7): reset the worker - zero m_10,
-// release the owned +0x14 buffer (+ its m_178 size), scalar-delete the +0x18
-// sub-object (slot 0, arg 1), zero m_170.
+// AnimWorkerObj::Clear (0x151e70, vtable slot 7): reset the worker - zero the
+// notify callback, release the owned +0x14 buffer (+ its m_178 size),
+// scalar-delete the bound logic leaf (slot 0, arg 1), zero m_170.
 // ---------------------------------------------------------------------------
 RVA(0x00151e70, 0x3b)
 void AnimWorkerObj::Clear() {
-    m_collideNotify = 0;
+    m_notify = 0;
     if (m_14) {
         ::operator delete(m_14);
         m_14 = 0;
         m_178 = 0;
     }
-    if (m_18) {
-        delete m_18; // the CUserBase virtual scalar dtor at slot 0 (push 1; call [eax])
-        m_18 = 0;
+    if (m_logic) {
+        delete m_logic; // the CUserBase virtual scalar dtor at slot 0 (push 1; call [eax])
+        m_logic = 0;
     }
     m_170 = 0;
 }

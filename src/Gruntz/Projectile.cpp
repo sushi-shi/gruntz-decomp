@@ -472,8 +472,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
         (CProjRenderObj*)factory
             ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
     if (m_shadow != 0) {
-        m_shadow->m_7c->Init(m_shadow);
-        m_shadow->m_7c->m_18
+        m_shadow->m_7c->m_notify((CGameObject*)m_shadow);
+        ((CLightFx*)m_shadow->m_7c->m_logic)
             ->Activate((i32)(const char*)(key + "_SHADOW"), (i32)(const char*)(key + "1"), 5, 1);
     }
 

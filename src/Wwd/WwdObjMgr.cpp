@@ -23,8 +23,7 @@
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory (CreateSprite @0x1597b0 / AttachSprite @0x159830)
 #include <Gruntz/ResMgr.h>        // CResMgr + the factory's sprite-set registry (m_14)
 #include <Gruntz/Sprite.h>        // CSprite (frame-data template value)
-#include <Gruntz/WwdWorker.h>     // the shared per-object worker class (+0x7c; Kick)
-#include <Gruntz/LogicRecord.h>   // CLogicRecord (the +0x7c kill-cue record: Consume/m_10/m_1c)
+#include <DDrawMgr/AnimWorkerObj.h> // the canonical +0x7c worker/logic record (ex CWwdWorker/CLogicRecord views)
 #include <Gruntz/ResolveNode.h>   // canonical CResolveNode (the factory base sub-object)
 #include <Gruntz/AniAdvanceCursor.h>   // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
 #include <Wwd/WwdFactoryObject.h>      // CWwdFactoryObject/CWwdNotifier/CDDrawRect/RectsOverlap
@@ -92,7 +91,7 @@ SIZE_UNKNOWN(CDDrawSubMgr);
 
 // (The former .cpp-local `CWwdGameObject`/`WwdGameObjAux` pair was a DUP of the
 // canonical <Gruntz/WwdGameObject.h> class - same WriteSnapshot @0x151c00, same
-// +0x7c worker; the aux's +0x18 child slot is CLogicRecord::m_18, the owned
+// +0x7c worker; the aux's +0x18 child slot is AnimWorkerObj::m_logic, the owned
 // polymorphic sub-record.)
 
 // The factories' Build dispatches are the family kinds' OWN vtable slots
@@ -121,7 +120,7 @@ inline void* WwdKey(CWwdGameObject* o) {
 }
 
 // (The per-object expiry callback at worker+0x10 is now TYPED on the record -
-// CLogicRecord::m_10 - so the old KillCueFn cast-at-fire-site is gone.)
+// AnimWorkerObj::m_notify - so the old KillCueFn cast-at-fire-site is gone.)
 
 // ---------------------------------------------------------------------------
 // CDDrawChildGroup::ForwardTo3C (0x1591e0): forward to Slot3C.
@@ -181,12 +180,8 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
-        char* worker = (char*)RezAlloc(0x17c);
-        if (worker != 0) {
-            ((CWwdWorker*)worker)->Ctor(root, a1, 0);
-        } else {
-            worker = 0;
-        }
+        // alloc + placement-construct the real worker (test-else-0 shape == retail)
+        AnimWorkerObj* worker = new ((void*)RezAlloc(0x17c)) AnimWorkerObj(root, a1, 0);
         *(void**)(obj + 0x7c) = worker;
         *(int*)(obj + 0x98) = 0;
         *(int*)(obj + 0x80) = 0;
@@ -208,7 +203,8 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
     }
     InsertSorted_159e40((CWwdGameObject*)(void*)result, 1);
     if (a7 & 0x200000) {
-        ((CWwdWorker*)result->m_7c)->Kick(result);
+        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
+        result->m_7c->m_notify((CGameObject*)result);
     }
     return (CWwdGameObject*)(void*)result;
 }
@@ -248,12 +244,8 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
-        char* worker = (char*)RezAlloc(0x17c);
-        if (worker != 0) {
-            ((CWwdWorker*)worker)->Ctor(root, a1, 0);
-        } else {
-            worker = 0;
-        }
+        // alloc + placement-construct the real worker (test-else-0 shape == retail)
+        AnimWorkerObj* worker = new ((void*)RezAlloc(0x17c)) AnimWorkerObj(root, a1, 0);
         *(void**)(obj + 0x7c) = worker;
         *(int*)(obj + 0x98) = 0;
         *(int*)(obj + 0x80) = 0;
@@ -274,7 +266,8 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
     }
     InsertSorted_159e40((CWwdGameObject*)(void*)result, 1);
     if (a4 & 0x200000) {
-        ((CWwdWorker*)result->m_7c)->Kick(result);
+        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
+        result->m_7c->m_notify((CGameObject*)result);
     }
     return (CWwdGameObject*)(void*)result;
 }
@@ -317,12 +310,8 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)(obj + 0x5c) = (i32)0x80000000;
         *(i32*)(obj + 0x78) = 0;
-        char* worker = (char*)RezAlloc(0x17c);
-        if (worker != 0) {
-            ((CWwdWorker*)worker)->Ctor(root, a1, flags);
-        } else {
-            worker = 0;
-        }
+        // alloc + placement-construct the real worker (test-else-0 shape == retail)
+        AnimWorkerObj* worker = new ((void*)RezAlloc(0x17c)) AnimWorkerObj(root, a1, flags);
         *(void**)(obj + 0x7c) = worker;
         *(i32*)(obj + 0x98) = 0;
         *(i32*)(obj + 0x80) = 0;
@@ -349,7 +338,8 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     }
     InsertSorted_159e40((CWwdGameObject*)(void*)result, 1);
     if (flags & 0x200000) {
-        ((CWwdWorker*)result->m_7c)->Kick(result);
+        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
+        result->m_7c->m_notify((CGameObject*)result);
     }
     return (CWwdGameObject*)(void*)result;
 }
@@ -359,7 +349,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
 // the CWwdGameObject family: its init virtual is the same slot-10 (+0x28) 4-arg
 // build the factories dispatch (the 4th arg carries the resolved CSprite template
 // on this path), its +0x08 is the shared flags word, and its +0x7c worker's +0x10
-// entry is the SAME callback slot TickKillCues fires (CLogicRecord::m_10). The
+// entry is the SAME callback slot TickKillCues fires (AnimWorkerObj::m_notify). The
 // ex-CSprite2/CSprite2SubTable views are gone.
 
 // ===========================================================================
@@ -417,8 +407,8 @@ i32 CSpriteFactory::AttachSprite(
     // same `this`); bind the real method (reloc-masked ?InsertSorted_159e40@CWwdObjMgr).
     ((CWwdObjMgr*)this)->InsertSorted_159e40(obj, 1);
     if (flags & 0x200000) {
-        // the worker's +0x10 callback slot - the same one TickKillCues fires
-        obj->m_killCue->m_10(obj);
+        // the worker fire callback - the same slot TickKillCues fires
+        obj->m_worker->m_notify((CGameObject*)obj);
     }
     return 1;
 }
@@ -461,7 +451,8 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     }
     InsertSorted_159e40((CWwdGameObject*)(void*)result, 1);
     if (a6 & 0x200000) {
-        ((CWwdWorker*)result->m_7c)->Kick(result);
+        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
+        result->m_7c->m_notify((CGameObject*)result);
     }
     return (CWwdGameObject*)(void*)result;
 }
@@ -516,13 +507,13 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
         CWwdNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = cur->m_obj;
-        CLogicRecord* rec = obj->m_killCue;
+        AnimWorkerObj* rec = obj->m_worker;
         if (rec->Consume((i32)g_engineFrameDelta) == 0) {
-            i32* refc = (i32*)((char*)rec + 0x24);
+            i32* refc = &rec->m_24;
             if (*refc != 0) {
                 --*refc;
             } else {
-                rec->m_10(obj);
+                rec->m_notify((CGameObject*)obj);
             }
         }
         i32 flags = obj->m_flags;
@@ -537,9 +528,9 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
     for (i = 0; i < killQueue.GetSize(); i++) {
         CWwdGameObject* obj = (CWwdGameObject*)killQueue.GetData()[i];
         if (obj->m_flags & 0x80000) {
-            CLogicRecord* rec = obj->m_killCue;
-            rec->m_1c = 0x1d;
-            rec->m_10(obj);
+            AnimWorkerObj* rec = obj->m_worker;
+            rec->m_1c = (void*)0x1d;
+            rec->m_notify((CGameObject*)obj);
         }
         if (obj->m_flags & 0x800) {
             if (obj != 0) {
@@ -772,10 +763,10 @@ void CDDrawChildGroup::CollideBroadcast() {
                         }
                         if (overlap) {
                             if (mask2) {
-                                CWwdNotifier* nf = *(CWwdNotifier**)(oj + 0x88);
+                                AnimWorkerObj* nf = *(AnimWorkerObj**)(oj + 0x88);
                                 if (nf != 0) {
                                     *(void**)(oj + 0x8c) = oi;
-                                    nf->m_callback(oj);
+                                    nf->m_notify((CGameObject*)oj);
                                 }
                             }
                             if (mask1) {
@@ -786,10 +777,10 @@ void CDDrawChildGroup::CollideBroadcast() {
                                         *(i32*)(*(char**)(oi + 0x7c) + 0x1c) = 0x1c;
                                     }
                                 } else {
-                                    CWwdNotifier* nf = *(CWwdNotifier**)(oi + 0x80);
+                                    AnimWorkerObj* nf = *(AnimWorkerObj**)(oi + 0x80);
                                     if (nf != 0) {
                                         *(void**)(oi + 0x84) = oj;
-                                        nf->m_callback(oi);
+                                        nf->m_notify((CGameObject*)oi);
                                     }
                                 }
                             }
@@ -807,10 +798,10 @@ void CDDrawChildGroup::CollideBroadcast() {
                 i32 mask2b = *(i32*)(oj + 0xe8) & *(i32*)(oi + 0xf0);
                 if ((mask1b || mask2b) && BoxesOverlap_15a130((CGameObject*)oj, (CGameObject*)oi)) {
                     if (mask2b) {
-                        CWwdNotifier* nf = *(CWwdNotifier**)(oi + 0x88);
+                        AnimWorkerObj* nf = *(AnimWorkerObj**)(oi + 0x88);
                         if (nf != 0) {
                             *(void**)(oi + 0x8c) = oj;
-                            nf->m_callback(oi);
+                            nf->m_notify((CGameObject*)oi);
                         }
                     }
                     if (mask1b) {
@@ -1435,7 +1426,7 @@ i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
         if (createdObj == 0) {
             return 0;
         }
-        if (createdObj->m_killCue == 0) {
+        if (createdObj->m_worker == 0) {
             return 0;
         }
         if (desc.m_10 != 0) {
@@ -1446,8 +1437,8 @@ i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
             if (child == 0) {
                 return 0;
             }
-            // the worker's owned polymorphic sub-record slot (CLogicRecord::m_18)
-            createdObj->m_killCue->m_18 = (LogicSub*)child;
+            // the worker's owned bound-logic slot (AnimWorkerObj::m_logic)
+            createdObj->m_worker->m_logic = (CUserLogic*)child;
         }
     }
     return 1;

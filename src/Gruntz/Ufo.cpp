@@ -56,14 +56,14 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
         CGameObject* sl = g_gameReg->m_world->m_8->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
         if (sl != 0) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
-            CGameObjAux* sub = sl->m_7c;
+            AnimWorkerObj* sub = sl->m_7c;
             sl->m_114 = 1;
             sl->m_12c = 0;
             sl->m_124 = 2;
             sl->m_11c = 0;
             sl->m_118 = i;
             sl->m_120 = m_object->m_130;
-            sub->Init(sl);
+            sub->m_notify(sl);
             // The spotlight's bound logic leaf (CSpotLight): stash the UFO's owner
             // game-object into its reused +0x98 slot (downcast at the site).
             ((CSpotLight*)sl->m_7c->m_logic)->m_98 = (i32)m_object;

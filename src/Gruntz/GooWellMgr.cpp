@@ -60,7 +60,7 @@ extern CButeMgr g_buteMgr;
 //   CLookObj     -> was a CONFLATION of the two maps' value types, which are different
 //        classes: the NAME map yields a LeafCue (+0x10 CSoundCueMgr, <Gruntz/LeafCue.h>),
 //        the ID map yields a GruntObjEntry (+0x7c inner, <Gruntz/SpriteFactory.h>).
-//   CObj7c       -> CSpriteInner          (<Gruntz/Grunt.h>): its +0x18 is the bound
+//   CObj7c       -> AnimWorkerObj (canonical): its m_logic is the bound
 //        CUserLogic leaf, downcast to CGrunt for the animation resolve.
 //   CGaugeObj    -> CStatusBarMgr         (<Gruntz/StatusBarMgr.h>): +0x550 m_toggleActive,
 //        +0x554 m_toggleHandle. The file already CAST this member to CStatusBarMgr to call
@@ -245,8 +245,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                             if (((CMapPtrToPtr*)&g_gameReg->m_world->m_8->m_objMap)
                                     ->Lookup((void*)slot->m_0c, (void*&)out)
                                 && out) {
-                                if (out->m_7c->m_18) {
-                                    ((CGrunt*)out->m_7c->m_18)->ResolveDeathAnimation();
+                                if (out->m_7c->m_logic) {
+                                    ((CGrunt*)out->m_7c->m_logic)->ResolveDeathAnimation();
                                 }
                             }
                             ClearRowAndRefresh(i);
@@ -260,8 +260,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                             if (((CMapPtrToPtr*)&g_gameReg->m_world->m_8->m_objMap)
                                     ->Lookup((void*)lastSlot->m_0c, (void*&)out)
                                 && out) {
-                                if (out->m_7c->m_18) {
-                                    ((CGrunt*)out->m_7c->m_18)->ResolveAnimation();
+                                if (out->m_7c->m_logic) {
+                                    ((CGrunt*)out->m_7c->m_logic)->ResolveAnimation();
                                 }
                             }
                             ClearRow(i);

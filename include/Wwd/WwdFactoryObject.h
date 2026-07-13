@@ -46,13 +46,10 @@ public:
 };
 SIZE_UNKNOWN(CWwdFactoryObject);
 
-// The +0x80 notifier: a cdecl callback pointer at +0x10 invoked with the owner.
-class CWwdNotifier {
-public:
-    char m_pad00[0x10];        // +0x00..0x0f
-    void (*m_callback)(void*); // +0x10
-};
-SIZE_UNKNOWN(CWwdNotifier);
+// (The former CWwdNotifier view of the +0x80/+0x88 notifier is DISSOLVED onto
+// the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>): its "+0x10 cdecl
+// callback" is the worker's m_notify.)
+#include <DDrawMgr/AnimWorkerObj.h>
 
 // The RECT overlap predicate pair (RectsOverlap defined in the I obj @0x15bfb0;
 // BoxesOverlap in the H obj @0x15a130 - each declared here for the cross-obj call).

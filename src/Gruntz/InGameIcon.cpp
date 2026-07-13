@@ -251,7 +251,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     }
 
     // swap the aux bute node (save old into m_30) + seed the cycle geometry
-    CGameObjAux* aux = m_objAux;
+    AnimWorkerObj* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
     aux->m_1c = g_buteTree.Find(s_codeA);
     m_savedGeoId = m_38->m_geoId;
@@ -984,7 +984,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     CGameObject* owner = m_38;
     if (owner->m_120 > 0) {
         owner->m_stateFlags |= 1;
-        CGameObjAux* aux = m_objAux;
+        AnimWorkerObj* aux = m_objAux;
         m_prevAnimSetNode = aux->m_1c;
         aux->m_1c = g_buteTree.Find(g_iconBute);
         owner = m_38;

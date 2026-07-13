@@ -459,8 +459,8 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                                 && _dr) {
                                 // the entry's inner receiver is the grunt logic (thunk
                                 // 0x3a1c -> CGrunt::ResolveDeathAnimation @0x455f0);
-                                // CSpriteInner::m_18's identity fold is a TODO
-                                CGrunt* _d = (CGrunt*)_dr->m_7c->m_18;
+                                // AnimWorkerObj::m_logic holds the bound grunt logic leaf
+                                CGrunt* _d = (CGrunt*)_dr->m_7c->m_logic;
                                 if (_d) {
                                     _d->ResolveDeathAnimation();
                                 }

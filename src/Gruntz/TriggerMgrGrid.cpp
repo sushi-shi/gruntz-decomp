@@ -150,7 +150,7 @@ i32 CTriggerMgr::PlaceObject(
     if (sprite == 0) {
         return -1;
     }
-    sprite->m_7c->Init(sprite);
+    sprite->m_7c->m_notify(sprite);
     // Same shape as CTriggerMgr::SpawnGrunt (0x7c110), and the same correction: the grid
     // holds the sprite's LOGIC leaf, not the CreateSprite result (retail reassigns the
     // register to aux->m_logic before the `mov [grid],reg`). It stored the sprite here too.

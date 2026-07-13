@@ -208,7 +208,7 @@ extern "C" i32 g_engineFrameDelta;
 // from <Gruntz/MovingLogic.h> (extern "C" u32; Projectile.cpp owns the DATA pin).
 
 // The created eye-candy sprite is the shared CGameObject (<Gruntz/UserLogic.h>);
-// its +0x7c CGameObjAux control block carries the Init driver (+0x10) and the
+// its +0x7c AnimWorkerObj control block carries the Init driver (+0x10) and the
 // per-class setup slot m_18 (+0x18) - for "Projectile"/"Boomerang"/"TimeBomb"
 // the bound setup/logic object IS a CProjectile (downcast per site; the slot is
 // generically typed on the canonical aux; proven-heterogeneous across classes).
@@ -714,7 +714,7 @@ i32 CGruntFireView::Update() {
                                            "Projectile",
                                            0x40003
                                        );
-                spr->m_7c->Init(spr);
+                spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
                         m_toolKind,
@@ -740,7 +740,7 @@ i32 CGruntFireView::Update() {
                                            "Boomerang",
                                            0x40003
                                        );
-                spr->m_7c->Init(spr);
+                spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
                         m_toolKind,
@@ -762,7 +762,7 @@ i32 CGruntFireView::Update() {
                 CGameObject* spr = g_gameReg->m_world->m_8
                                        ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_120 = 0;
-                spr->m_7c->Init(spr);
+                spr->m_7c->m_notify(spr);
                 spr->m_124 = m_tileOwnerHi;
                 break;
             }
@@ -777,7 +777,7 @@ i32 CGruntFireView::Update() {
                                            "Projectile",
                                            0x40003
                                        );
-                spr->m_7c->Init(spr);
+                spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
                         m_toolKind,

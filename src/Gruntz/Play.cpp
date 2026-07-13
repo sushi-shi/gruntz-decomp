@@ -117,7 +117,7 @@
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface: Fill/Restore)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (m_beginMarker: Serialize/FilterList2)
 #include <Gruntz/LevelSync.h>            // CLevelSync (the +0x2dc guts child-sync @0x1084d0)
-#include <Gruntz/UserLogic.h> // CGameObject/CGameObjAux (entity views dissolved onto them)
+#include <Gruntz/UserLogic.h> // CGameObject/AnimWorkerObj (entity views dissolved onto them)
 
 // The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
 // resume the currently-playing zoned sound via its real (named) methods.
@@ -2476,7 +2476,7 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
 // (CVisEntity/CVisEntityType/CVisNode are GONE - the entity is the canonical
 // CGameObject (<Gruntz/UserLogic.h>): its REAL slot-11 virtual is Draw (the
 // VisitVisible per-object hook, +0x2c) and the "+0x7c type record's slot 4" is
-// CGameObjAux::Init (+0x10), the post-create init fn-ptr the factory stamps -
+// AnimWorkerObj::Init (+0x10), the post-create init fn-ptr the factory stamps -
 // compared by ADDRESS as the object's dynamic-type discriminator. The list node
 // is the shared CWarlordListNode (<Gruntz/View.h>).)
 
@@ -2515,7 +2515,7 @@ i32 CPlay::NotifyVisibleEntities() {
 
     while (node != 0) {
         CGameObject* o = node->m_gameObj;
-        void* id = (void*)o->m_7c->Init;
+        void* id = (void*)o->m_7c->m_notify;
         if (id == (void*)VisFn_40fe90 || id == (void*)VisFn_4bf150 || id == (void*)VisFn_423b40
             || id == (void*)VisFn_Roll || id == (void*)VisFn_41e570 || id == (void*)VisFn_41e520
             || id == (void*)VisFn_40fe90 || id == (void*)VisFn_49b410
@@ -6718,7 +6718,7 @@ extern "C" char
     CreateGiantRock[]; // 0x137a (counted object keyed on m_11c; sibling of CoveredPowerup)
 
 // (The 6 Ag* views are GONE - AgGrunt==CGameObject (m_08==m_flags, m_5c/m_60==
-// m_screenX/Y, m_7c[4]==CGameObjAux::Init, the m_114..m_134 record band),
+// m_screenX/Y, m_7c[4]==AnimWorkerObj::Init, the m_114..m_134 record band),
 // AgNode/AgListHdr==CWarlordListNode/CWarlordListHead (View.h), AgWorld==CWorld,
 // AgResMgr==CSpriteFactoryHolder, AgThis==CPlay. The bare `0x4024a5` type-marker
 // immediate (a reloc-less VA!) is now the CreateGruntStartingPoint symbol.)
@@ -6736,7 +6736,7 @@ i32 CPlay::AddLevelGruntz() {
         if (g == 0) {
             continue;
         }
-        if ((void*)g->m_7c->Init != (void*)CreateGruntStartingPoint) {
+        if ((void*)g->m_7c->m_notify != (void*)CreateGruntStartingPoint) {
             continue;
         }
         if (g->m_124 == g_curPlayer) {
@@ -6844,7 +6844,7 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
 }
 
 // (CWarlordObj is GONE - the placed object is the canonical CGameObject; the
-// "+0x7c raw vtable's slot 4" is CGameObjAux::Init. CWarlordListNode now lives
+// "+0x7c raw vtable's slot 4" is AnimWorkerObj::Init. CWarlordListNode now lives
 // in <Gruntz/View.h> next to its list head.)
 
 // LoadWarlordSprites (0x0d65d0) - ensure every sprite set a placed warlord needs is
@@ -6921,7 +6921,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         CGameObject* obj = node->m_gameObj;
         CDDrawGroupNode* nxt = node->m_next;
         if (obj) {
-            void* marker = (void*)obj->m_7c->Init;
+            void* marker = (void*)obj->m_7c->m_notify;
             if (marker == (void*)CreateGruntStartingPoint) {
                 i32 v = obj->m_11c;
                 if (v) {

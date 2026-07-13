@@ -90,9 +90,9 @@ void* __stdcall ListNodeAdvance(void** pos);
 // (kind 7) / Serialize_02b420 (kind 4). The former `CSerialArchive` view (11 nameless filler
 // virtuals + Emit2c/Emit30) was a second, identical model of it - dissolved.
 
-// The unit's type/anim sub-object (grunt->m_objAux, +0x14) is the real CGameObjAux
+// The unit's type/anim sub-object (grunt->m_objAux, +0x14) is the real AnimWorkerObj
 // (<Gruntz/UserLogic.h>): its +0x1c is the anim-name index g_typeColl resolves. The
-// former `CGameObjAux` view is dissolved onto it.
+// former `AnimWorkerObj` view is dissolved onto it.
 
 // The grid units ARE ::CGrunt (<Gruntz/Grunt.h>, included above) - the former
 // `CGrunt` view was a 40-field second model of it, and the file already had to cast
@@ -102,7 +102,7 @@ void* __stdcall ListNodeAdvance(void** pos);
 // +0x1ec/+0x1f0, m_gruntKind +0x258, m_defenderState +0x2d4, m_arrivalCol/Row
 // +0x2f0/+0x2f4, and the occupied-coord list at +0x31c), and its +0x10/+0x14 "level
 // geometry"/"anim" sub-objects are CUserLogic::m_object (CGameObject) / m_objAux
-// (CGameObjAux). Dissolved. The view's four hand-declared list fields
+// (AnimWorkerObj). Dissolved. The view's four hand-declared list fields
 // (m_31c/m_320/m_324/m_coordCount) are the INTERIOR of CGrunt's real MFC CPtrList
 // m_31c, so they are gone: this TU now reads the list through the real member and
 // through main's inline accessors (CoordHead/CoordTail/CoordCount).
@@ -279,7 +279,7 @@ extern CButeMgr g_buteMgr;
 extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 
 // The three engine RTTI type-descriptor records the marker filters key off. Each
-// loop's type test is `obj->m_7c->Init == (void (*)(CGameObject*)) (typeId)`, where the engine encodes the
+// loop's type test is `obj->m_7c->m_notify == (void (*)(CGameObject*)) (typeId)`, where the engine encodes the
 // type id as `descriptor_address + 5`: the compiled `cmp $5, [rtti+0x10]` carries a
 // DIR32 reloc to the descriptor on its immediate (imm32 = &descN + 5). Modeling the
 // RHS as `(int)(&descN + 5)` reproduces that relocation byte-for-byte. The records
@@ -294,14 +294,14 @@ extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 // The three marker loops walk the level's game-object collection
 // (lvl->m_objList->m_coll, <Gruntz/QueueDrainHost.h>): cells are CQueueProbeNode
 // {next@+0, data@+8}, payloads are real ::CGameObject (m_flags +0x08, m_screenX/Y
-// +0x5c/+0x60, m_7c the CGameObjAux whose +0x10 holds the object's FACTORY fn-ptr -
+// +0x5c/+0x60, m_7c the AnimWorkerObj whose +0x10 holds the object's FACTORY fn-ptr -
 // the type key the filters compare - and m_124 the per-map id). The former CQueueProbeNode
-// / CGameObject / CGameObjAux / CLevelList / CBrickzGrid / CLevelSpawnInfo views are dissolved
+// / CGameObject / AnimWorkerObj / CLevelList / CBrickzGrid / CLevelSpawnInfo views are dissolved
 // onto those real classes (CBrickzGrid was the CBrickzGrid; its "+0xc" is m_width).
 // ---------------------------------------------------------------------------
 // The +0x7c aux's +0x10 slot holds the object type's registered FACTORY function
 // pointer (RegisterType stores the create-fn there), so each marker loop's type test is
-// `obj->m_7c->Init == &Create<Type>` - a DIR32 on the ILT thunk.
+// `obj->m_7c->m_notify == &Create<Type>` - a DIR32 on the ILT thunk.
 extern "C" {
     void* CreateGruntCreationPoint(); // ILT thunk 0x17e4 (GameObjectFactory.cpp)
     void* CreateExitTrigger();        // ILT thunk 0x192e
@@ -449,7 +449,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     //     cursor idiom on every step. ---
     for (CGameObject* cur = ListGetFirst(lvl->m_objList->m_coll); cur != 0;
          cur = ListGetNext(lvl->m_objList->m_coll)) {
-        if (cur->m_7c->Init == (void (*)(CGameObject*))&CreateGruntCreationPoint
+        if (cur->m_7c->m_notify == (GameObjNotifyFn)&CreateGruntCreationPoint
             && cur->m_124 == id) {
             CoordPoolNode* p = (CoordPoolNode*)g_coordPool.m_freeHead;
             i32* slot = 0;
@@ -467,7 +467,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     //     and stop (fall straight into loop 3). ---
     for (CGameObject* cur2 = ListGetFirst(lvl->m_objList->m_coll); cur2 != 0;
          cur2 = ListGetNext(lvl->m_objList->m_coll)) {
-        if (cur2->m_7c->Init == (void (*)(CGameObject*))&CreateExitTrigger && cur2->m_124 == id) {
+        if (cur2->m_7c->m_notify == (GameObjNotifyFn)&CreateExitTrigger && cur2->m_124 == id) {
             m_markerX = cur2->m_screenX / 32;
             m_markerY = cur2->m_screenY / 32;
             break;
@@ -478,7 +478,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
     for (CGameObject* cur3 = ListGetFirst(lvl->m_objList->m_coll); cur3 != 0;
          cur3 = ListGetNext(lvl->m_objList->m_coll)) {
-        if (cur3->m_7c->Init == (void (*)(CGameObject*))&CreateWayPoint && cur3->m_124 == id) {
+        if (cur3->m_7c->m_notify == (GameObjNotifyFn)&CreateWayPoint && cur3->m_124 == id) {
             CoordPoolNode* p = (CoordPoolNode*)g_coordPool.m_freeHead;
             i32* slot = 0;
             if (p->m_next != 0) {
@@ -2188,7 +2188,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     coll->m_scan = coll->m_head;
     CGameObject* g = (CGameObject*)coll->Drain_031250();
     while (g != 0) {
-        if (g->m_7c->Init == (void (*)(CGameObject*))Handler_0040288d
+        if (g->m_7c->m_notify == (GameObjNotifyFn)Handler_0040288d
             && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
             switch (g->m_124) {

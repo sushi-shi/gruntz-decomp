@@ -43,9 +43,8 @@
 //   AddLogicHit/Attack/Bump = 0x150f50 / 0x151030 / 0x151110  (__thiscall, char*)
 //   m_7c                    = a sub-object pointer copied into the trigger.
 // ---------------------------------------------------------------------------
-struct CGameObjAux;  // the sub-object reached through CGameObject::m_7c
 struct CGameObject;  // fwd (the worker's collide callback takes the object)
-class CUserLogic;    // fwd (CGameObjAux::m_logic is the object's bound logic leaf)
+class CUserLogic;    // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
 class CSerialObjRef; // fwd (the +0x34 serialize-ref facet; <Gruntz/SerialObjRef.h>)
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
@@ -181,7 +180,8 @@ struct CGameObject {
     i32 m_70;            // +0x70  (WwdFile record clipRect bottom)
     i32 m_latchedAnimId; // +0x74
     char m_pad78[0x7c - 0x78];
-    CGameObjAux* m_7c;   // +0x7c
+    AnimWorkerObj* m_7c; // +0x7c  the owned 0x17c worker/logic record (its m_notify
+                         //        is the post-create init driver the creators run)
     AnimWorkerObj* m_80; // +0x80  lazily-built worker (EnsureWorker80)
     char m_pad84[0x88 - 0x84];
     AnimWorkerObj* m_88; // +0x88  lazily-built worker (EnsureWorker88)
@@ -326,52 +326,12 @@ struct CGameObjWorld {
     CGameLevel* m_level; // +0x24  the loaded level (CMovingLogic / WorldLevelPath hop)
 };
 
-// The +0x7c sub-object: its +0x08 flags, +0x1c bute-node and +0x130 timer are
-// touched by the eyecandy/sparkle ctors.
-SIZE_UNKNOWN(CGameObjAux);
-struct CGameObjAux {
-    char m_pad00[0x08];
-    i32 m_08; // +0x08
-    char m_pad0c[0x10 - 0x0c];
-    // +0x10  post-create init/activation driver: the creating TUs run
-    // `spr->m_7c->Init(spr)` on the fresh CSpriteFactory::CreateSprite result
-    // (ProjectileUpdate / CheckpointSwitchBuild / GruntResurrectRadius /
-    // GruntSpawnConfig / ExitTrigger; SpriteResource's AttachSprite drives the
-    // same slot post-attach).
-    void (*Init)(CGameObject* obj); // +0x10
-    char m_pad14[0x18 - 0x14];
-    // +0x18  the per-class logic leaf bound to the created object - a CUserLogic in
-    // every recovered case (a real CProjectile for "Projectile"/"Boomerang" (the grunt
-    // fire step dispatches slot-17 LoadProjectileSprites on it), a CToobSpikez/CObj in
-    // the logic pumps, a CMovingLogic leaf, ...). Typed as the common CUserLogic base so
-    // the logic dispatchers reach the shared virtual slots cast-free; sites needing the
-    // concrete leaf (ProjectileUpdate) downcast. The "LightFx flash"/"voice handle"/
-    // "warlord id" sites reach a DIFFERENT concrete type through their own local sprite
-    // views (CHudSprite etc.), not this canonical slot.
-    CUserLogic* m_logic; // +0x18
-    void* m_1c;          // +0x1c  generic slot: a logic phase/state int in the logic
-                         //         pumps, a bute-tree animset node ptr in StaticHazard
-                         //         (a genuine int|ptr union - no union per the toolchain,
-                         //         so kept void*; the int uses reinterpret at the site)
-    char m_pad20[0x2c - 0x20];
-    // +0x2c/+0x30: two spawn-record config words. The level-load validator forwards
-    // them to the trigger grid's PlaceObject (CPlay::PlaceStartGruntz,
-    // LevelTileValidation.cpp); CPlay::AddLevelGruntz passes them as AddGrunt args 11/12.
-    i32 m_2c; // +0x2c  spawn-record param A
-    i32 m_30; // +0x30  spawn-record param B
-    char m_pad34[0xbc - 0x34];
-    i32 m_bc; // +0xbc  per-tile time (teleporter reads the bound object's clock here)
-    char m_padc0[0xf0 - 0xc0];
-    // +0xf0/+0x100: two 4-dword quads (L/T/R/B rects) the tile-switch registrar takes BY
-    // VALUE - CPlay::ValidateLevelTiles pushes both, 16 bytes each, into every
-    // RegisterSwitchLogic call. (Named as the raw dwords: the members either side are
-    // plain ints, so the by-value push site overlays them as a RECT - the sanctioned
-    // int-quad-as-struct read, not a retype of the class.)
-    i32 m_f0, m_f4, m_f8, m_fc;     // +0xf0
-    i32 m_100, m_104, m_108, m_10c; // +0x100
-    char m_pad110[0x130 - 0x110];
-    i32 m_130; // +0x130
-};
+// (The former AnimWorkerObj view of the +0x7c sub-object is DISSOLVED onto the
+// canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>, the 0x17c worker/logic
+// record, vtable 0x1efb80): its "Init @+0x10 post-create driver" IS the worker's
+// m_notify fire callback, and m_logic/m_08/m_1c/m_2c/m_30/m_bc/m_f0../m_130 are
+// the same fields under the same offsets - the union of both views' knowledge
+// now lives on the canonical.)
 
 // The engine bute manager the eyecandy ctors query for "World"/"BigActHeight"
 // (CButeMgr::GetInt 0x171af0). The class + its singleton g_buteMgr
@@ -500,7 +460,7 @@ public:
     void LoadGruntTypeTable(i32, i32, i32, i32);
     void LoadGruntTuningConstants(i32);
     // Leaf placement/arm entrypoints reached through the bound-logic base pointer
-    // (CTriggerMgr::SpawnGrunt / ResetGroup on the created sprite's CGameObjAux::m_logic):
+    // (CTriggerMgr::SpawnGrunt / ResetGroup on the created sprite's AnimWorkerObj::m_logic):
     // Place @0x4c1c4 (the grunt/puddle placement driver), Arm @0x4e517 (the target-cursor
     // lighting/config arm). Reloc-masked leaf bodies.
     // FinalizeStep (0x8b90, body in LogicTypeTable.cpp): fire the two registered
@@ -521,7 +481,7 @@ public:
         CGruntHud* m_10;
     };
     union { // +0x14  aux sub-object (obj->m_7c); CGrunt views it as CAnimLookupNode*
-        CGameObjAux* m_objAux;
+        AnimWorkerObj* m_objAux;
         CAnimLookupNode* m_14;
     };
     CUserBaseLink m_link; // +0x18..+0x27 (ctor 0x16d710, can throw)
@@ -561,8 +521,8 @@ VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
 //     nothing). Canonical boundary is the correct one.
 //   * +0x10: canonical m_object (CGameObject*) == Grunt.h m_10 (CGruntHud*, a redundant
 //     partial CGameObject view -> delete on merge).
-//   * +0x14: canonical m_objAux (CGameObjAux*, == obj->m_7c) == Grunt.h m_14
-//     (CAnimLookupNode*, a partial CGameObjAux view).
+//   * +0x14: canonical m_objAux (AnimWorkerObj*, == obj->m_7c) == Grunt.h m_14
+//     (CAnimLookupNode*, a partial AnimWorkerObj view).
 //   * Vtable: 16 slots, same order. Grunt.h's SerializeMove(1)/UserBaseVfunc2(2)/
 //     Activate(6)/UserLogicVfunc9(11) are CGrunt-SPECIFIC OVERRIDE names; the base
 //     slot names stay generic (UserBaseVfunc*/UserLogicVfunc*).
@@ -658,7 +618,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     void* m_prevAnimSetNode;                                                                       \
     CGameObject* m_34;                                                                             \
     CGameObject* m_38;                                                                             \
-    CGameObjAux* m_3c;
+    AnimWorkerObj* m_3c;
 #define TILE_LOGIC_SEED(obj)                                                                       \
     m_34 = (obj);                                                                                  \
     m_38 = (obj);                                                                                  \
@@ -673,7 +633,7 @@ public:
         m_prevAnimSetNode; // +0x30  saved prior aux lookup node (m_objAux->m_1c) before installing "A"
     CGameObject* m_34;     // +0x34
     CGameObject* m_38;     // +0x38  (== the bound object; leaves read m_38->m_flags etc.)
-    CGameObjAux* m_3c;     // +0x3c
+    AnimWorkerObj* m_3c;     // +0x3c
 };
 SIZE(CTileLogic, 0x40);
 

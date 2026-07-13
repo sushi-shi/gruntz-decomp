@@ -30,7 +30,7 @@
 #include <Wap32/WapObj.h>   // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
 #include <Gruntz/StateId.h> // StateId - the slot-8 GetStateId tag space
 
-struct CDDrawChildWorker; // CDDrawGroupChild+0x7c worker (WalkChildWorkers callback host)
+struct AnimWorkerObj; // the +0x7c worker/logic record (<DDrawMgr/AnimWorkerObj.h>)
 
 // The child object dispatched per list node - the WIDE game object (the
 // CWwdGameObject / CWwdGameObjectE factory family, vtables 0x5f0020/0x5f00a8/...):
@@ -63,23 +63,12 @@ public:
     // is linked into a broadcast list (CWwdGameObjectB Add/RemoveChild); m_d8 written
     // by ResetChildD8.
     char m_pad04[0x78 - 4];
-    i32 m_78;                // +0x78  cached CObList POSITION
-    CDDrawChildWorker* m_7c; // +0x7c  per-child worker (WalkChildWorkers callback host)
+    i32 m_78;            // +0x78  cached CObList POSITION
+    AnimWorkerObj* m_7c; // +0x7c  the canonical 0x17c worker (its m_notify is the
+                         //        per-child callback WalkChildWorkers_166880 fires)
     char m_pad80[0xd8 - 0x80];
     i32 m_d8; // +0xd8
 };
-
-// The per-child worker/handler sub-object held at CDDrawGroupChild+0x7c - the same
-// 0x17c AnimWorkerObj (vtable 0x1efb80) the wide object owns at +0x7c; its +0x10
-// slot is the collide/expiry callback (AnimWorkerObj::m_collideNotify)
-// CWwdGameObjectB::WalkChildWorkers_166880 invokes once per child (passing the
-// child). Kept as the thin callback view pending the worker unification
-// (@identity-TODO: CDDrawChildWorker == AnimWorkerObj == CLogicRecord).
-struct CDDrawChildWorker {
-    char m_pad00[0x10];
-    void(__cdecl* m_fn10)(CDDrawGroupChild*); // +0x10  per-child callback (m_collideNotify)
-};
-SIZE_UNKNOWN(CDDrawChildWorker);
 
 // One node of the intrusive list at +0x14 (the +0x10 CObList's CNode: pNext @0,
 // pPrev @4, data @8). The object is read two ways pending the wide-object

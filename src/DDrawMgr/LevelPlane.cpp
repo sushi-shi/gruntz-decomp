@@ -919,7 +919,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     obj->m_flags |= 0x40000;
 
-    CGameObjAux* anim = obj->m_7c;
+    AnimWorkerObj* anim = obj->m_7c;
     if (anim == 0) {
         obj->Delete(1);
         return 0;

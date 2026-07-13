@@ -43,27 +43,18 @@ class DirectSoundMgr; // folded GruntSoundSample
 // -> CGameObject*). The former CHudSprite / CSpriteRegistrar / CSpriteRegRecord
 // views are DISSOLVED onto the real classes: the created object IS a CGameObject
 // (m_flags @+0x08 is the retire-flag word; m_118/m_124 the rolling-ball fields);
-// its +0x7c inner object is CGameObjAux (Init @+0x10, bound logic leaf m_logic
+// its +0x7c inner object is AnimWorkerObj (Init @+0x10, bound logic leaf m_logic
 // @+0x18); the per-kind registration receiver is that leaf's CONCRETE class -
 // CGruntHealthSprite::SetHealthGlyph @0x7f0d0 (shared by stamina/toytime/wingz,
 // which derive from it), CGruntToySprite::SetCell @0x7f920, CGruntSelectedSprite::
 // SetCell @0x7e9c0, CGruntPowerupSprite::SetCell @0x80380. On registration failure
 // the creators reach the bound object's flags via leaf->m_38->m_flags |= 0x10000.
-// (<Gruntz/UserLogic.h> CGameObject/CGameObjAux + the per-kind headers model these
+// (<Gruntz/UserLogic.h> CGameObject/AnimWorkerObj + the per-kind headers model these
 // directly, cast-free.)
 // ---------------------------------------------------------------------------
-// CSpriteInner - GruntObjEntry's +0x7c inner object as SEEN by <Gruntz/SpriteFactory.h>
-// (a lean duplicate of the canonical CGameObjAux; its full fold is a SpriteFactory.h
-// TODO). Kept only for that consumer; the grunt creators use CGameObjAux directly.
-SIZE_UNKNOWN(CSpriteInner);
-struct CSpriteInner {
-    char m_pad0[0x10];
-    void (*m_init)(void* self); // +0x10  init driver (== CGameObjAux::Init)
-    char m_pad14[0x18 - 0x14];
-    CUserLogic* m_18; // +0x18  bound logic leaf (== CGameObjAux::m_logic)
-    char m_pad1c[0xbc - 0x1c];
-    i32 m_bc; // +0xbc  (rolling-ball speed; LoadGruntAbilityTuning)
-};
+// (The former CSpriteInner view of GruntObjEntry's +0x7c inner object is
+// DISSOLVED onto the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>): its
+// m_init/m_18/m_bc are m_notify/m_logic/m_bc on the one 0x17c worker class.)
 
 // The on-screen cue gate's visibility rect, reached as
 // (g->m_30->m_24->m_5c + 0x40): {left, top, right, bottom}. The viewport's m_5c is

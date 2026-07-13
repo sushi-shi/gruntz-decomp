@@ -22,14 +22,14 @@
 // already includes <Gruntz/TileTriggerSwitchLogic.h>.
 #include <string.h>               // memcpy -> the /Oi `rep movsd` that copies rect into m_block
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + AnimWorkerObj
 #include <rva.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 
 // (CStatzRect60 is gone: the 0x60 block is the base's m_block[24] at +0x2c.)
 // The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
 // CreateSprite @0x1597b0 returns the created CGameObject (ApplyLookupSprite @0x1504d0
-// configures it; the +0x7c CGameObjAux Init runs post-create; m_layer gates success).
+// configures it; the +0x7c AnimWorkerObj Init runs post-create; m_layer gates success).
 SIZE_UNKNOWN(CStatzFactoryHolder);
 struct CStatzFactoryHolder {
     char m_pad0[0x8];
@@ -92,7 +92,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (!spr) {
         return 0;
     }
-    spr->m_7c->Init(spr);
+    spr->m_7c->m_notify(spr);
     spr->ApplyLookupSprite(g_statzTabCfgTag, a9);
     if (spr->m_layer == 0) {
         return 0;

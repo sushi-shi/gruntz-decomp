@@ -41,7 +41,7 @@
                                   // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
 #include <Gruntz/GruntzMgr.h>     // ::CGruntzMgr - the RTTI-true *0x24556c singleton AND
                                   // CState::m_4 (m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_options)
-#include <Gruntz/UserLogic.h>     // CGameObject + CGameObjAux - the objects being validated
+#include <Gruntz/UserLogic.h>     // CGameObject + AnimWorkerObj - the objects being validated
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory + CSpriteListNode - the live-object list
 #include <Gruntz/GameLevel.h>     // CGameLevel - the +0x24 level (image sets @+0x48, plane @+0x5c)
 #include <Gruntz/ImageSets.h>     // CImageSet1 - the tile-attrib class (GetCollisionAt, slot 8)
@@ -65,9 +65,9 @@
 //                                                      +0x134/+0x144/+0x154/+0x164/+0x168) is
 //                                                      a declared CGameObject member, and the
 //                                                      list's element type says so outright)
-//              ->m_7c      == CGameObjAux*            (was `GameObjAux7c`)
+//              ->m_7c      == AnimWorkerObj*            (was `GameObjAux7c`)
 //                 ->Init   == the +0x10 FN-PTR        (was the `m_id` "identity fn-address":
-//                                                      it IS CGameObjAux::Init, the per-leaf
+//                                                      it IS AnimWorkerObj::Init, the per-leaf
 //                                                      post-create driver the creating TUs
 //                                                      call as `spr->m_7c->Init(spr)`. The
 //                                                      constants below (0x401799, 0x4017e4,
@@ -272,8 +272,8 @@ i32 CPlay::PlaceStartGruntz() {
         CGameObject* obj = node->m_sprite;
         CSpriteListNode* next = node->next;
         if (obj != 0) {
-            CGameObjAux* aux = obj->m_7c;
-            void* who = (void*)aux->Init; // +0x10: WHICH leaf class built this object
+            AnimWorkerObj* aux = obj->m_7c;
+            void* who = (void*)aux->m_notify; // +0x10: WHICH leaf class built this object
             if (who == (void*)0x4024a5) {
                 i32 idx = reg->m_cmdGrid->PlaceObject(
                     obj->m_124,
@@ -361,9 +361,9 @@ i32 CPlay::ValidateLevelTiles() {
             continue;
         }
 
-        // 2-load leaf identity: [obj+0x7c] -> +0x10 == CGameObjAux::Init (the per-leaf
+        // 2-load leaf identity: [obj+0x7c] -> +0x10 == AnimWorkerObj::Init (the per-leaf
         // post-create driver fn-ptr). The constants are those leaves' Init thunks.
-        void* who = (void*)obj->m_7c->Init;
+        void* who = (void*)obj->m_7c->m_notify;
 
         if (who == (void*)0x401799) {
             CGameLevel* grid = LevelOf(m_c); // recomputed per-arm (retail spills it)

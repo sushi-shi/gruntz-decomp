@@ -170,9 +170,9 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 // onto CGameObject is deferred). The sprite carries a descriptor at +0x7c whose
 // slot-4 (+0x10) is an Init thunk run on the fresh sprite.
 // (CTmSprite / CTmSpriteDesc are GONE. They were duplicates of the canonical
-//  <Gruntz/UserLogic.h> CGameObject and CGameObjAux - which already model exactly this:
+//  <Gruntz/UserLogic.h> CGameObject and AnimWorkerObj - which already model exactly this:
 //  "spr->m_7c->Init(spr) on the fresh CSpriteFactory::CreateSprite result", and
-//  CGameObjAux::m_logic as the bound logic leaf. CreateSprite RETURNS CGameObject*, so the
+//  AnimWorkerObj::m_logic as the bound logic leaf. CreateSprite RETURNS CGameObject*, so the
 //  (CTmCell*) casts on its result were wrong outright: the deleted CTmCell view had
 //  conflated the SPRITE with the LOGIC the sprite carries.)
 // The level view at level->m_24: ScreenToCell biases the input by its scroll origin - the

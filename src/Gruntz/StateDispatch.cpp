@@ -12,12 +12,12 @@
 // this new-site bare-calls (0x9b8b0 via ILT thunk 0x404d) is the claimed+matched
 // ??0CLevelTime@@QAE@PAUCGameObject@@@Z (LevelTimeDtor.cpp, 94.8%), the new size
 // 0x54 == sizeof(CLevelTime), and the ctx arg is the ctor's CGameObject (its +0x7c
-// aux is CGameObjAux).  The former local CStateHandler/CStateObj/CStateCtx views
+// aux is AnimWorkerObj).  The former local CStateHandler/CStateObj/CStateCtx views
 // are dissolved onto the canonical <Gruntz/LevelTimeDtor.h> / <Gruntz/UserLogic.h>
 // classes (slot [6]=Activate, [10..15]=UserLogicVfunc8..D).
 #include <rva.h>
 
-#include <Gruntz/LevelTimeDtor.h> // canonical CLevelTime : CTileLogic : CUserLogic (+ CGameObject/CGameObjAux)
+#include <Gruntz/LevelTimeDtor.h> // canonical CLevelTime : CTileLogic : CUserLogic (+ CGameObject/AnimWorkerObj)
 
 // The default case runs the type-keyed record transfer/dispatch: NOT a bespoke
 // "fallback" - it is the shared CTypeKeyColl serializer ProjTypeXfer (0x16e4f0,
@@ -38,7 +38,7 @@ i32 ProjTypeXfer(CXferArchive* ar); // 0x16e4f0
 // (retail epilogue is a plain `ret`; the old __stdcall(obj,a1,a2) emitted ret 0xc).
 RVA(0x0009b770, 0xf1)
 i32 StateDispatch(CGameObject* obj) {
-    CGameObjAux* aux = obj->m_7c;
+    AnimWorkerObj* aux = obj->m_7c;
     // aux->m_1c doubles as the state id here (0 / 0x1d / 0x1e / 0x50..0x53 / 0x3e8)
     // - the same proven-heterogeneous aux slot other sprite classes use as a
     // lookup-node pointer; kept generically typed in the canonical (documented

@@ -72,27 +72,10 @@ struct CWwdGameObj15b390 : public WwdCtorBase {
 };
 SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 
-// The +0x7c sprite/anim worker (0x17c bytes). `new`-constructed inline in the base
-// ctor; self-contained inline-construction view (only the field stores matter).
-struct WwdAnimWorkerInit {
-    WwdAnimWorkerInit(int b, int a) {
-        m_04 = b;
-        m_08 = 0;
-        m_0c = a;
-        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0) // 0x5efb80
-        m_10 = 0;
-        m_14 = 0;
-        m_18 = 0;
-        m_170 = 0;
-        m_1c = 0;
-        m_174 = 0;
-        m_178 = 0;
-    }
-    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    int m_04, m_08, m_0c, m_10, m_14, m_18, m_1c;
-    char _p20[0x170 - 0x20];
-    int m_170, m_174, m_178;
-};
-SIZE(WwdAnimWorkerInit, 0x17c); // the +0x7c anim worker
+// (The former WwdAnimWorkerInit inline-construction view of the +0x7c worker is
+// DISSOLVED onto the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>): the
+// 0x15b390 ctor's `new` folds the real class's inline 2-arg ctor - the same
+// stores, on the one 0x17c class.)
+#include <DDrawMgr/AnimWorkerObj.h>
 
 #endif // GRUNTZ_WWD_WWDGAMEOBJCTOR_H
