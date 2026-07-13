@@ -24,7 +24,18 @@
 
 #include <Gruntz/AnimWorker.h>             // shared Owner / Worker views + Worker_DefaultPump
 #include <Gruntz/UserLogic.h>              // CUserLogic 16-slot vtable the pump dispatches
-#include <Gruntz/AnimWorkerSpriteLeaves.h> // the grunt-indicator sprite size-views
+// The REAL sprite-leaf classes (the AnimWorkerSpriteLeaves.h size-views are dissolved).
+// The "canonical headers cannot coexist with UserLogic.h" wall was FALSE: they compile
+// together under the real MSVC 5.0, and each computes exactly the retail operator-new
+// immediate the views recorded (0x5c / 0x60 / 0x64 / 0x60) - proven with compile-time
+// size assertions, so the `new T(owner)` size + ctor target are unchanged.
+#include <Gruntz/GruntSelectedSprite.h>  // 0x5c
+#include <Gruntz/GruntToySprite.h>       // 0x60
+#include <Gruntz/GruntHealthSprite.h>    // 0x64
+#include <Gruntz/GruntStaminaSprite.h>   // 0x64
+#include <Gruntz/GruntToyTimeSprite.h>   // 0x64
+#include <Gruntz/GruntWingzTimeSprite.h> // 0x64
+#include <Gruntz/GruntPowerupSprite.h>   // 0x60
 
 // The 0x7dc60.. handlers are byte-identical to the two written out below bar the leaf
 // TYPE `new`d on state 0 (the size + ctor target); shared as a macro.
