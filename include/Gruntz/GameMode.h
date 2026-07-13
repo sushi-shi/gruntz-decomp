@@ -235,10 +235,9 @@ public:
     // reloc-masked). Returns nonzero when the pending state commit succeeds.
     i32 CommitState();
 
-    // 0x1af70 - the 960-B HUD-text formatter switch: 8 cases of sprintf over the
-    // game-stats object (g_gameReg->m_7c), each stat read via the live-getter /
-    // cached-field pair gated by m_liveGame && stats->m_c (the sibling-guard idiom).
-    void FormatHudText(CString* buf, i32 sel);
+    // (FormatHudText @0x1af70 is GONE from here - it is a CBootyState method; see the
+    // proof on CBootyState below. It never belonged to CMenuState: it reads [this+0x1d0]
+    // off its own `this`, and this class is 0x1c0.)
 
     // MENU asset loader (0x9fe50, MenuStateAssets.cpp): registers the MENU
     // IMAGEZ/SOUNDZ namespaces through the m_c (CSpriteFactoryHolder) resource facet, primes the
@@ -250,35 +249,11 @@ public:
     CChatBox* m_1b4;   // +0x1b4 the menu UI object the scans drive (the real CChatBox)
     i32 m_1b8;         // +0x1b8 fade/poll duration
     CMenuMusic* m_1bc; // +0x1bc menu music controller (player + draw-clock gate)
-    char m_pad1c0[0x1d0 - 0x1c0];
-    // @identity-TODO: THIS FIELD IS OUT OF BOUNDS AND SO IS ITS ONLY USER.
-    // CMenuState is 0x1c0 - binary-proven by retail's TransitionState (0x8b960), which does
-    // `push 0x1c0; call ??2@YAPAXI@Z` @0x8be11 and then stamps ??_7CMenuState (0x5e9e84).
-    // +0x1d0 is 0x14 bytes PAST the end of the object, so no CMenuState can hold it.
-    // Its only reader is FormatHudText (0x1af70), whose retail body really does
-    // `mov esi,ecx` then `mov eax,[esi+0x1d0]` - i.e. it reads +0x1d0 off its OWN `this`.
-    // => ?FormatHudText@CMenuState@@ is MISATTRIBUTED.
-    //
-    // THE OWNER IS NOW PROVEN: CBootyState (0x320, allocation-proven - TransitionState does
-    // `push 0x320; call ??2@YAPAXI@Z` @0x8bebc then `mov esi,eax`). The chain, all from the
-    // binary:
-    //   * FormatHudText (0x1af70) has exactly 2 callers, both reaching it through its ILT
-    //     thunk 0x238d with ecx = their OWN `this` (`mov ecx,esi; call 0x238d`):
-    //       - ?ShowLevelCompleteMessage@CBootyState@@ (0x1c9d0)  <- already a CBootyState
-    //       - ?LevelMsgHudDriver@CState@@ (0x1a700)
-    //   * LevelMsgHudDriver (0x1a700) is itself MISATTRIBUTED the same way: it reads
-    //     [this+0x2c4] and an 8-entry pointer array at [this+0x264], and its ONLY caller is
-    //     ?Render@CBootyState@@UAEHXZ (0x1c210, a CBootyState virtual) which invokes it via
-    //     thunk 0x24b4 with `mov ecx,esi` - its own `this`. So its `this` is a CBootyState.
-    //   * CState cannot own either one: CState is the RTTI base of CMenuState (0x1c0), so
-    //     CState <= 0x1c0 and cannot hold +0x1d0 or +0x2c4. CBootyState (0x320) holds both.
-    //   * FormatHudText is non-virtual and called on `this` from CBootyState methods, so its
-    //     owner is CBootyState or a base of it; the only base (CState) is too small. QED.
-    // The re-home is therefore ATOMIC (both 0x1af70 and 0x1a700 must move to CBootyState
-    // together, else a CState method would be calling a CBootyState method on its own this)
-    // and is left as the next lane's bounded task - NOT done here, so nothing is guessed.
-    // Until then, this field + its 0x1c0..0x1d0 pad must NOT be trusted as CMenuState's.
-    i32 m_liveGame; // +0x1d0  live-game flag (FormatHudText getter-path gate)
+    // ENDS AT 0x1c0 - the allocation-proven size (TransitionState @0x8be11:
+    // `push 0x1c0; call ??2@YAPAXI@Z`, then the ??_7CMenuState (0x5e9e84) stamp).
+    // The out-of-bounds `m_liveGame` @+0x1d0 (and its 0x1c0..0x1d0 pad) that used to sit
+    // here is GONE: it was never CMenuState's. It is CBootyState::m_initOnce @+0x1d0, read
+    // by FormatHudText - a CBootyState method, now re-homed. This class is whole again.
 
     void BuildVersionString(CGMVerRect r); // 0xa0d80 (RECT by value; Render's tail draw)
 };
@@ -440,6 +415,26 @@ public:
     i32 BuildBootyWalkingGruntz();   // 0x1b450  one-time per-player idle/walk sprite setup
     i32 UpdateBootyWalkingGruntz();  // 0x1b690  per-frame walking-grunt state machine
 
+    // --- the level-message HUD / effect-sprite trio, RE-HOMED here from CState ---
+    // All three were CState-homed (and FormatHudText CMenuState-homed) behind a
+    // `(CEffLoaderSelf*)this` view-cast; all three are binary-proven CBootyState methods:
+    //   * 0x18830 (this class's vtable SLOT 1, Vfunc1) is data-referenced at
+    //     ??_7CBootyState@@6B@+0x4 - so its `this` IS a CBootyState. It calls
+    //     LoadGruntEffectSprites via thunk 0x3b8e with `mov ecx,esi` (its own `this`).
+    //   * LoadGruntEffectSprites WRITES m_icons at +0x2fc..+0x31c, and LevelMsgHudDriver
+    //     reads [this+0x2c4] / [this+0x264] - all far beyond CState, which is the base of
+    //     the 0x1c0 CMenuState and therefore <= 0x1c0. CState can host NONE of them.
+    //   * LevelMsgHudDriver's only caller is Render (slot 5, 0x1c210) via thunk 0x24b4 with
+    //     `mov ecx,esi`; FormatHudText's only two callers are LevelMsgHudDriver and
+    //     ShowLevelCompleteMessage (0x1c9d0), both via thunk 0x238d with `mov ecx,esi`.
+    //   * Every field the view modeled lands in one of this class's existing PADS at the
+    //     same offset, and the three it already named agree exactly (view m_hudPhase@+0x1b4
+    //     == m_initGate, m_shownA@+0x284 == m_readyFlags, m_shownB@+0x2a4 == m_templateFlags),
+    //     with the view's top field ending at 0x31c - just inside the allocation-proven 0x320.
+    i32 LoadGruntEffectSprites();              // 0x1a040  build the 8 effect icons + sprites
+    i32 LevelMsgHudDriver();                   // 0x1a700  per-frame level-message HUD driver
+    void FormatHudText(CString* buf, i32 sel); // 0x1af70  the 960-B stat-line formatter
+
     // --- CBootyState members (offsets are the ctor ground truth; folded from the
     // former BzState view). m_activation@+0x1bc doubles as the overlay/animation state
     // id (0xc7/0xc8/-2 in the idle-anim tick, ==200 -> secret-bonus toast in slot 8).
@@ -455,19 +450,34 @@ public:
     CGameObject* m_trailSprites[4]; // +0x1ec  trailing idle sprites
     char m_pad1fc[0x200 - 0x1fc];
     i32 m_levelCompleteGate; // +0x200  level-complete gate
-    char m_pad204[0x284 - 0x204];
-    i32 m_readyFlags[8];    // +0x284  per-slot "ready text" flags
-    i32 m_templateFlags[8]; // +0x2a4  per-slot "template" flags
-    char m_pad2c4[0x2c8 - 0x2c4];
+    char m_pad204[0x224 - 0x204];
+    // The level-message HUD sprite banks (folded in from the CEffLoaderSelf view; each
+    // lands in what was pure padding here, so no declared field moved).
+    CGameObject* m_bomb[8];   // +0x224  bomb-grunt sprites (slide left)
+    CGameObject* m_gokart[8]; // +0x244  go-kart sprites (slide right)
+    CGameObject* m_expl[8];   // +0x264  explosion sprites (latched active once landed)
+    // +0x284 / +0x2a4: the view called these m_shownA / m_shownB - the SAME two latches,
+    // at the same offsets, that this class already named. Canonical names kept; the roles
+    // LevelMsgHudDriver proves are recorded here.
+    i32 m_readyFlags[8];    // +0x284  per-slot "stat line (rectsB) shown" latch
+    i32 m_templateFlags[8]; // +0x2a4  per-slot "level message (rectsA) shown" latch
+    i32 m_slot;             // +0x2c4  active reveal slot / phase counter (0..8)
     CGameObject* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
     CGameObject* m_animSprites[4]; // +0x2d8  per-player idle sprites (animation)
     i32 m_stepIndex;               // +0x2e8  active-player step index
     i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
     i32 m_soundStarted;            // +0x2f0  sound-started gate
     i32 m_secretGate;              // +0x2f4  secret-message gate
+    char m_pad2f8[0x2fc - 0x2f8];
+    // +0x2fc  the eight in-game effect icons LoadGruntEffectSprites populates
+    // ([0]=stopwatch [1]=exit [2]=deathtwitch [3]=gauntletz [4]=beachballz [5]=roidz
+    //  [6]=coin [7]=wormhole/teleporter); LevelMsgHudDriver indexes them by m_slot.
+    // Ends at 0x31c - inside the allocation-proven 0x320, which is what pins these
+    // methods to THIS class rather than any smaller state.
+    CGameObject* m_icons[8]; // +0x2fc
     // Tail padding to the TRUE retail size: TransitionState `push 0x320; call ??2` @0x8bebc,
     // then the inline `mov [esi],??_7CBootyState@@6B@` (0x5e9cec) stamp.
-    char m_pad2f8[0x320 - 0x2f8];
+    char m_pad31c[0x320 - 0x31c];
 };
 VTBL(CBootyState, 0x001e9cec);
 

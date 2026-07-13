@@ -83,30 +83,13 @@ struct CEffGeomRow {
 DATA(0x0020b8fc)
 extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
 
-// Typed self-view for the in-game effect loader. The +0x0c view is the shared
-// CSpriteFactoryHolder; the effect-sprite members (m_224/m_2fc.. arrays) are reached by
-// offset (a documented offset-reuse ambiguity vs CPlay's own layout).
-SIZE_UNKNOWN(CEffLoaderSelf);
-struct CEffLoaderSelf {
-    char m_pad00[0xc];
-    CSpriteFactoryHolder* m_c; // +0x0c  shared view/render/resource ctx + HUD-message sink
-    char m_pad10[0x30 - 0x10];
-    CSymTab* m_30; // +0x30  image namespace
-    char m_pad34[0x1b4 - 0x34];
-    i32 m_hudPhase; // +0x1b4  LevelMsgHudDriver phase gate (0 = reveal pass, != 0 = drive/finalize)
-    char m_pad1b8[0x224 - 0x1b8];
-    CGameObject* m_bomb[8];   // +0x224  bomb-grunt sprites
-    CGameObject* m_gokart[8]; // +0x244  go-kart sprites
-    CGameObject* m_expl[8];   // +0x264  explosion sprites
-    i32 m_shownA[8];          // +0x284  per-slot "text-box message shown" latch (rectsB pass)
-    i32 m_shownB[8];          // +0x2a4  per-slot "level-message shown" latch (rectsA pass)
-    i32 m_slot;               // +0x2c4  active reveal-slot / phase counter
-    char m_pad2c8[0x2fc - 0x2c8];
-    // +0x2fc  the eight in-game effect icons LoadGruntEffectSprites populated
-    // ([0]=stopwatch [1]=exit [2]=deathtwitch [3]=gauntletz [4]=beachballz [5]=roidz
-    //  [6]=coin [7]=wormhole/teleporter); LevelMsgHudDriver indexes them by m_slot.
-    CGameObject* m_icons[8];
-};
+// (the CEffLoaderSelf `this`-alias view is GONE - it WAS CBootyState. Every field it
+// modeled sits in a CBootyState pad at the same offset, and the three it duplicated agree
+// exactly (m_hudPhase@+0x1b4 == m_initGate, m_shownA@+0x284 == m_readyFlags,
+// m_shownB@+0x2a4 == m_templateFlags); its top field ends at 0x31c, inside CBootyState's
+// allocation-proven 0x320. The three methods that cast `this` to it are now CBootyState
+// methods and use their own members directly - the `(CEffLoaderSelf*)this` casts, which
+// were the symptom, fell out. See <Gruntz/GameMode.h> for the full proof.)
 
 // ===========================================================================
 // GenMenuRandPos (0x19cd0): a free __stdcall helper (no `this`). Generates a random
@@ -199,165 +182,163 @@ void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 // externs/strings named.
 // ===========================================================================
 RVA(0x0001a040, 0x55e)
-i32 CState::LoadGruntEffectSprites() {
-    CEffLoaderSelf* self = (CEffLoaderSelf*)this;
-
+i32 CBootyState::LoadGruntEffectSprites() {
     i32 handleA = g_gameReg->m_74->GetSel(0, 0);
     if (handleA == 0) {
         return 0;
     }
     i32 handleB = g_gameReg->m_74->GetSel(0, 1);
 
-    void* img = self->m_30->ResolvePath("IMAGEZ_GOKARTGRUNT");
+    void* img = m_gruntzBank->ResolvePath("IMAGEZ_GOKARTGRUNT");
     if (img == 0) {
         return 0;
     }
-    self->m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
+    m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
     CSpriteFactory* f = g_gameReg->m_world->m_8;
 
     CGameObject* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_icons[0] = sw;
+    m_icons[0] = sw;
     if (sw == 0) {
         return 0;
     }
     sw->ApplyName("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
-    self->m_icons[0]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    self->m_icons[0]->m_stateFlags |= 1;
+    m_icons[0]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_icons[0]->m_stateFlags |= 1;
 
     CGameObject* wh = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_icons[7] = wh;
+    m_icons[7] = wh;
     if (wh == 0) {
         return 0;
     }
     i32 tint = ((CGlitterMgr*)g_gameReg)
                    ->m_78->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
-    self->m_icons[7]->ApplyName("GAME_WORMHOLE");
-    self->m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
-    CGameObject* p318 = self->m_icons[7];
+    m_icons[7]->ApplyName("GAME_WORMHOLE");
+    m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
+    CGameObject* p318 = m_icons[7];
     p318->m_drawActive = 1;
     p318->m_drawFillCmd = 7;
     p318->m_drawFillArg = tint;
 
     CGameObject* ex = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_icons[1] = ex;
+    m_icons[1] = ex;
     if (ex == 0) {
         return 0;
     }
     ex->ApplyName("GRUNTZ_EXITZ");
-    self->m_icons[1]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
-    CGameObject* p300 = self->m_icons[1];
+    m_icons[1]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
+    CGameObject* p300 = m_icons[1];
     p300->m_drawActive = 1;
     p300->m_drawFillCmd = 0xa;
     p300->m_drawFillArg = handleA;
-    self->m_icons[1]->m_stateFlags |= 1;
+    m_icons[1]->m_stateFlags |= 1;
 
     CGameObject* dt = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_icons[2] = dt;
+    m_icons[2] = dt;
     if (dt == 0) {
         return 0;
     }
     dt->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
-    self->m_icons[2]->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
-    CGameObject* p304 = self->m_icons[2];
+    m_icons[2]->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
+    CGameObject* p304 = m_icons[2];
     p304->m_drawActive = 1;
     p304->m_drawFillCmd = 0xa;
     p304->m_drawFillArg = handleA;
-    self->m_icons[2]->m_stateFlags |= 1;
+    m_icons[2]->m_stateFlags |= 1;
 
     CGameObject* gl = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_icons[3] = gl;
+    m_icons[3] = gl;
     if (gl == 0) {
         return 0;
     }
     gl->ApplyName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
-    self->m_icons[3]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p308 = self->m_icons[3];
+    m_icons[3]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p308 = m_icons[3];
     p308->m_drawActive = 1;
     p308->m_drawFillCmd = 0xa;
     p308->m_drawFillArg = handleA;
-    self->m_icons[3]->m_stateFlags |= 1;
+    m_icons[3]->m_stateFlags |= 1;
 
     CGameObject* bb = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_icons[4] = bb;
+    m_icons[4] = bb;
     if (bb == 0) {
         return 0;
     }
     bb->ApplyName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
-    self->m_icons[4]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p30c = self->m_icons[4];
+    m_icons[4]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p30c = m_icons[4];
     p30c->m_drawActive = 1;
     p30c->m_drawFillCmd = 0xa;
     p30c->m_drawFillArg = handleA;
-    self->m_icons[4]->m_stateFlags |= 1;
+    m_icons[4]->m_stateFlags |= 1;
 
     CGameObject* rz = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_icons[5] = rz;
+    m_icons[5] = rz;
     if (rz == 0) {
         return 0;
     }
     rz->ApplyName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
-    self->m_icons[5]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p310 = self->m_icons[5];
+    m_icons[5]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p310 = m_icons[5];
     p310->m_drawActive = 1;
     p310->m_drawFillCmd = 0xa;
     p310->m_drawFillArg = handleA;
-    self->m_icons[5]->m_stateFlags |= 1;
+    m_icons[5]->m_stateFlags |= 1;
 
     CGameObject* cn = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_icons[6] = cn;
+    m_icons[6] = cn;
     if (cn == 0) {
         return 0;
     }
     cn->ApplyName("GAME_INGAMEICONZ_POWERUPZ_COIN");
-    self->m_icons[6]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p314 = self->m_icons[6];
+    m_icons[6]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p314 = m_icons[6];
     p314->m_drawActive = 1;
     p314->m_drawFillCmd = 0xa;
     p314->m_drawFillArg = handleA;
-    self->m_icons[6]->m_stateFlags |= 1;
+    m_icons[6]->m_stateFlags |= 1;
 
     // The three per-direction sprite arrays sit contiguously (bomb/go-kart/explosion),
     // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
     // parallel array walks + the geom walk into single induction pointers.
     for (i32 i = 0; i < 8; i++) {
         CGameObject* b = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
-        self->m_bomb[i] = b;
+        m_bomb[i] = b;
         if (b == 0) {
             return 0;
         }
         b->ApplyName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
-        self->m_bomb[i]->ApplyLookupGeometry("GAME_GRUNTBOMBSPRINT", 0);
-        CGameObject* bp = self->m_bomb[i];
+        m_bomb[i]->ApplyLookupGeometry("GAME_GRUNTBOMBSPRINT", 0);
+        CGameObject* bp = m_bomb[i];
         bp->m_drawActive = 1;
         bp->m_drawFillCmd = 0xa;
         bp->m_drawFillArg = handleA;
-        self->m_bomb[i]->m_screenX = 0x2c6;
-        self->m_bomb[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
-        self->m_bomb[i]->m_stateFlags |= 1;
+        m_bomb[i]->m_screenX = 0x2c6;
+        m_bomb[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        m_bomb[i]->m_stateFlags |= 1;
 
         CGameObject* e = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
-        self->m_expl[i] = e;
+        m_expl[i] = e;
         if (e == 0) {
             return 0;
         }
         e->ApplyName("GAME_EXPLOSION");
-        self->m_expl[i]->m_stateFlags |= 1;
+        m_expl[i]->m_stateFlags |= 1;
 
         CGameObject* g = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
-        self->m_gokart[i] = g;
+        m_gokart[i] = g;
         if (g == 0) {
             return 0;
         }
         g->ApplyName("GRUNTZ_GOKARTGRUNT_EAST");
-        self->m_gokart[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-        CGameObject* gp = self->m_gokart[i];
+        m_gokart[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        CGameObject* gp = m_gokart[i];
         gp->m_drawActive = 1;
         gp->m_drawFillCmd = 0xa;
         gp->m_drawFillArg = handleB;
-        self->m_gokart[i]->m_screenX = -70;
-        self->m_gokart[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
-        self->m_gokart[i]->m_stateFlags |= 1;
+        m_gokart[i]->m_screenX = -70;
+        m_gokart[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        m_gokart[i]->m_stateFlags |= 1;
     }
     return 1;
 }
@@ -422,16 +403,14 @@ extern void ShowHudMessage(
 // bound `cmp ebp,offset g_effGeom`) that MSVC5 will not reproduce from counted C loops.
 // Final-sweep candidate (docs/patterns/big-seh-fuzzy-desync.md; jumptable-data-overlap.md).
 RVA(0x0001a700, 0x6b6)
-i32 CState::LevelMsgHudDriver() {
-    CEffLoaderSelf* self = (CEffLoaderSelf*)this;
-
-    if (self->m_hudPhase != 0) {
+i32 CBootyState::LevelMsgHudDriver() {
+    if (m_initGate != 0) {
         // ---- drive/finalize pass ----
-        if (self->m_slot == 8) {
+        if (m_slot == 8) {
             // every slot landed: latch the explosion sprites visible once their anim
             // sub-mgr reports active-but-not-idle, then done.
             for (i32 i = 0; i < 8; i++) {
-                CGameObject* e = self->m_expl[i];
+                CGameObject* e = m_expl[i];
                 if (e->m_1c8 != 0 && e->m_1c0 == 0) {
                     e->m_stateFlags |= 1;
                 }
@@ -443,21 +422,21 @@ i32 CState::LevelMsgHudDriver() {
         i32 shown = 0;
         for (i32 i = 0; i < 8; i++) {
             RECT box;
-            self->m_bomb[i]->m_stateFlags |= 1;
-            self->m_gokart[i]->m_stateFlags |= 1;
-            self->m_icons[i]->m_stateFlags &= ~1;
-            self->m_icons[i]->m_screenX = g_levelMsgIconPos[i * 2];
-            self->m_icons[i]->m_screenY = g_levelMsgIconPos[i * 2 + 1];
+            m_bomb[i]->m_stateFlags |= 1;
+            m_gokart[i]->m_stateFlags |= 1;
+            m_icons[i]->m_stateFlags &= ~1;
+            m_icons[i]->m_screenX = g_levelMsgIconPos[i * 2];
+            m_icons[i]->m_screenY = g_levelMsgIconPos[i * 2 + 1];
             g_pCopyRect(&box, &g_levelMsgRectsA[i]);
             CString text = g_levelMsgStrings[i];
-            self->m_shownB[i] = 1;
-            ShowHudMessage(self->m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            m_templateFlags[i] = 1;
+            ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
             g_pCopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
-            self->m_shownA[i] = 1;
-            ShowHudMessage(self->m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
-            if (i >= self->m_slot && (i != self->m_slot || self->m_expl[i]->m_geoId == 0)) {
-                CGameObject* e = self->m_expl[i];
+            m_readyFlags[i] = 1;
+            ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            if (i >= m_slot && (i != m_slot || m_expl[i]->m_geoId == 0)) {
+                CGameObject* e = m_expl[i];
                 e->m_stateFlags &= ~1;
                 e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
                 e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
@@ -476,62 +455,62 @@ i32 CState::LevelMsgHudDriver() {
                 }
             }
         }
-        self->m_slot = 8;
+        m_slot = 8;
         return 1;
     }
 
     // ---- reveal pass (m_hudPhase == 0) ----
-    if (self->m_slot < 8) {
-        if (self->m_slot == 0
-            && ((self->m_bomb[0]->m_stateFlags & 1) || (self->m_gokart[0]->m_stateFlags & 1))) {
-            self->m_bomb[0]->m_stateFlags &= ~1;
-            self->m_gokart[0]->m_stateFlags &= ~1;
+    if (m_slot < 8) {
+        if (m_slot == 0
+            && ((m_bomb[0]->m_stateFlags & 1) || (m_gokart[0]->m_stateFlags & 1))) {
+            m_bomb[0]->m_stateFlags &= ~1;
+            m_gokart[0]->m_stateFlags &= ~1;
         }
-        self->m_bomb[self->m_slot]->m_screenX -= 10;
-        i32 gx = self->m_gokart[self->m_slot]->m_screenX + 10;
-        self->m_gokart[self->m_slot]->m_screenX = gx;
-        i32 s = self->m_slot;
-        if (self->m_shownB[s] == 0
+        m_bomb[m_slot]->m_screenX -= 10;
+        i32 gx = m_gokart[m_slot]->m_screenX + 10;
+        m_gokart[m_slot]->m_screenX = gx;
+        i32 s = m_slot;
+        if (m_templateFlags[s] == 0
             && (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2 <= gx) {
             RECT box;
-            self->m_shownB[s] = 1;
-            g_pCopyRect(&box, &g_levelMsgRectsA[self->m_slot]);
-            CString text = g_levelMsgStrings[self->m_slot];
-            self->m_shownB[self->m_slot] = 1;
-            ShowHudMessage(self->m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            m_templateFlags[s] = 1;
+            g_pCopyRect(&box, &g_levelMsgRectsA[m_slot]);
+            CString text = g_levelMsgStrings[m_slot];
+            m_templateFlags[m_slot] = 1;
+            ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
         }
-        s = self->m_slot;
-        if (self->m_shownA[s] == 0 && g_levelMsgIconPos[s * 2] <= gx) {
-            self->m_shownA[s] = 1;
-            self->m_icons[self->m_slot]->m_stateFlags &= ~1;
-            self->m_icons[self->m_slot]->m_screenX = g_levelMsgIconPos[self->m_slot * 2];
-            self->m_icons[self->m_slot]->m_screenY = g_levelMsgIconPos[self->m_slot * 2 + 1];
+        s = m_slot;
+        if (m_readyFlags[s] == 0 && g_levelMsgIconPos[s * 2] <= gx) {
+            m_readyFlags[s] = 1;
+            m_icons[m_slot]->m_stateFlags &= ~1;
+            m_icons[m_slot]->m_screenX = g_levelMsgIconPos[m_slot * 2];
+            m_icons[m_slot]->m_screenY = g_levelMsgIconPos[m_slot * 2 + 1];
         }
     }
     // latch the already-landed explosion sprites active.
-    for (i32 j = 0; j < self->m_slot; j++) {
-        CGameObject* e = self->m_expl[j];
+    for (i32 j = 0; j < m_slot; j++) {
+        CGameObject* e = m_expl[j];
         if (e->m_1c8 != 0 && e->m_1c0 == 0) {
             e->m_stateFlags |= 1;
         }
     }
     // finalize the slots from m_slot onward once the bomb/gokart pair has crossed.
-    for (i32 i = self->m_slot; i < 8; i++) {
-        if (self->m_bomb[i]->m_screenX <= self->m_gokart[i]->m_screenX) {
+    for (i32 i = m_slot; i < 8; i++) {
+        if (m_bomb[i]->m_screenX <= m_gokart[i]->m_screenX) {
             RECT box;
             CString text;
             g_pCopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
-            self->m_shownA[i] = 1;
-            ShowHudMessage(self->m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
-            CGameObject* e = self->m_expl[i];
+            m_readyFlags[i] = 1;
+            ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            CGameObject* e = m_expl[i];
             e->m_stateFlags &= ~1;
             e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
             e->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
             e->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
-            self->m_bomb[i]->m_stateFlags |= 1;
-            self->m_gokart[i]->m_stateFlags |= 1;
-            self->m_slot++;
+            m_bomb[i]->m_stateFlags |= 1;
+            m_gokart[i]->m_stateFlags |= 1;
+            m_slot++;
             CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
             if (host->m_emitGate == 0) {
                 CObject* cue_ob = 0;
@@ -543,11 +522,11 @@ i32 CState::LevelMsgHudDriver() {
                     cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                 }
             }
-            if (self->m_slot >= 8) {
+            if (m_slot >= 8) {
                 return 1;
             }
-            self->m_bomb[self->m_slot]->m_stateFlags &= ~1;
-            self->m_gokart[self->m_slot]->m_stateFlags &= ~1;
+            m_bomb[m_slot]->m_stateFlags &= ~1;
+            m_gokart[m_slot]->m_stateFlags &= ~1;
         }
     }
     return 0;

@@ -259,15 +259,18 @@ public:
     i32 m_1a4;
 
     // BuildWarpStoneGlitterAnimation (0x19540) re-homed to its real owner
-    // CMultiBootyState (GameMode.h); LoadGruntEffectSprites (0x1a040) is a
-    // CPlay-layout method the trace mis-homed on the base (kept CState-homed).
-    i32 LoadGruntEffectSprites();
-    // LevelMsgHudDriver (0x1a700): the per-frame level-message HUD + explosion driver
-    // (only caller CBootyState::Render on its own `this` -> __thiscall on this base).
-    i32 LevelMsgHudDriver();
-    // The slot's formatted stat-line builder, shared with the derived states (retail
-    // symbol is ?FormatHudText@CMenuState@@; external no-body -> reloc-masked here).
-    void FormatHudText(class CString* buf, i32 sel);
+    // CMultiBootyState (GameMode.h).
+    //
+    // LoadGruntEffectSprites (0x1a040), LevelMsgHudDriver (0x1a700) and FormatHudText
+    // (0x1af70) are all GONE from this base - they are CBootyState methods (re-homed;
+    // proof on CBootyState in <Gruntz/GameMode.h>). None of them could ever have lived
+    // here: they touch [this+0x1d0], [this+0x264], [this+0x2c4] and write m_icons out to
+    // [this+0x31c], while CState is the base of the allocation-proven 0x1c0 CMenuState
+    // and is therefore <= 0x1c0. The old "LoadGruntEffectSprites is a CPlay-layout method
+    // the trace mis-homed on the base" note was wrong on both counts: its `this` comes
+    // from CBootyState's own vtable slot 1 (0x18830, data-referenced at
+    // ??_7CBootyState@@6B@+0x4), which calls it with `mov ecx,esi`.
+    //
     // BuildBootyWalkingGruntz (0x1b450) re-homed to BzState (BootyWalkAnim.cpp).
 };
 

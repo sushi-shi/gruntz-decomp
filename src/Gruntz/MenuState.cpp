@@ -84,7 +84,7 @@ extern "C" CGMVerRect g_645cc8;
 // member's real type needs its own reconciliation).
 #define STATS ((CBattlezData*)g_gameReg->m_scoreHud)
 #define STAT(getter, field)                                                                        \
-    ((m_liveGame != 0 && STATS->m_allDone != 0) ? STATS->getter() : STATS->field)
+    ((m_initOnce != 0 && STATS->m_allDone != 0) ? STATS->getter() : STATS->field)
 
 // CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
 // 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
@@ -99,7 +99,7 @@ extern "C" CGMVerRect g_645cc8;
 // inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
 // operands, neither source-steerable. ~97.5%.
 RVA(0x0001af70, 0x3c0)
-void CMenuState::FormatHudText(CString* buf, i32 sel) {
+void CBootyState::FormatHudText(CString* buf, i32 sel) {
     switch (sel) {
         case 0: {
             u32 secs = (u32)(STAT(SumGroupField08, m_score) / 1000);
