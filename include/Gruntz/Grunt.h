@@ -1045,17 +1045,8 @@ struct GruntTilePos {
 // as a tiny CByteArray-style object {?, data@+4, count@+8} so the /GX-framed local
 // + the SetAtGrow/RemoveAt/dtor calls fall out (all engine, external/reloc-masked).
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CToyTileBag);
-class CToyTileBag {
-public:
-    CToyTileBag();                    // 0x1b527e (ctor)
-    ~CToyTileBag();                   // 0x1b52b1 (dtor)
-    void SetAtGrow(i32 idx, i32 val); // 0x1b5485 (append at idx, grow)
-    void RemoveAt(i32 idx, i32 n);    // 0x1b5525 (remove n at idx)
-    i32 m_0;                          // +0x00
-    u8* m_data;                       // +0x04  byte data
-    i32 m_count;                      // +0x08  element count
-};
+// (CToyTileBag is GONE: it WAS MFC ::CByteArray - same NAFXCW cluster; note its
+//  SetAtGrow second arg is a BYTE (?SetAtGrow@CByteArray@@QAEXHE@Z), not an int.)
 
 // ---------------------------------------------------------------------------
 // CGrunt - only the members the HUD sprite creators touch. CGrunt is large;

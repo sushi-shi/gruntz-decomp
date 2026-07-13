@@ -788,18 +788,18 @@ i32 CGrunt::StepCompassMove() {
     // The toy-tile bag: random-pick each of the 8 compass directions in turn and
     // commit the first that validates.
     {
-        CToyTileBag bag;
-        bag.SetAtGrow(bag.m_count, 1);
-        bag.SetAtGrow(bag.m_count, 2);
-        bag.SetAtGrow(bag.m_count, 3);
-        bag.SetAtGrow(bag.m_count, 4);
-        bag.SetAtGrow(bag.m_count, 5);
-        bag.SetAtGrow(bag.m_count, 6);
-        bag.SetAtGrow(bag.m_count, 7);
-        bag.SetAtGrow(bag.m_count, 8);
-        while (bag.m_count > 0) {
-            i32 idx = GruntRand() % bag.m_count;
-            i32 dir = bag.m_data[idx];
+        ::CByteArray bag;
+        bag.SetAtGrow(bag.GetSize(), 1);
+        bag.SetAtGrow(bag.GetSize(), 2);
+        bag.SetAtGrow(bag.GetSize(), 3);
+        bag.SetAtGrow(bag.GetSize(), 4);
+        bag.SetAtGrow(bag.GetSize(), 5);
+        bag.SetAtGrow(bag.GetSize(), 6);
+        bag.SetAtGrow(bag.GetSize(), 7);
+        bag.SetAtGrow(bag.GetSize(), 8);
+        while (bag.GetSize() > 0) {
+            i32 idx = GruntRand() % bag.GetSize();
+            i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;
             switch (dir - 1) {

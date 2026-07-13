@@ -155,24 +155,9 @@ extern "C" {
     void PlaneType_Covered(); // 0x403d0f
 }
 
-// A byte array shuffled by ScanShuffleQuads (MFC CByteArray shape). ctor/dtor and
-// the grow/remove ops are external (reloc-masked); GetAt/GetSize inline.
-struct CByteArrayV {
-    u8* m_pData;                 // +0x00
-    i32 m_nSize;                 // +0x04
-    i32 m_nMaxSize;              // +0x08
-    i32 m_nGrowBy;               // +0x0c
-    CByteArrayV();               // 0x1b527e
-    ~CByteArrayV();              // 0x1b52b1
-    void SetAtGrow(i32 i, u8 v); // 0x1b5485
-    void RemoveAt(i32 i, i32 n); // 0x1b5525
-    i32 GetSize() {
-        return m_nSize;
-    }
-    u8 GetAt(i32 i) {
-        return m_pData[i];
-    }
-};
+// (CByteArrayV is GONE: it WAS MFC ::CByteArray - ctor 0x1b527e / ~ctor 0x1b52b1 /
+//  SetAtGrow 0x1b5485 / RemoveAt 0x1b5525, all NAFXCW.  Its hand layout was also wrong:
+//  it started at m_pData@+0x00, but CByteArray derives from CObject, so +0x00 is the vptr.)
 
 // The six plane-type discriminators ScanShuffleQuads compares against.
 extern "C" {
@@ -349,7 +334,7 @@ i32 CPlay::ScanShuffleQuads() {
     PlaneNode* pos = pl->head;
 
     i32 perm[4];
-    CByteArrayV arr;
+    ::CByteArray arr;
     arr.SetAtGrow(arr.GetSize(), 0);
     arr.SetAtGrow(arr.GetSize(), 1);
     arr.SetAtGrow(arr.GetSize(), 2);
@@ -407,7 +392,6 @@ i32 CPlay::ScanShuffleQuads() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CByteArrayV);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(DrawSurf);
 SIZE_UNKNOWN(GridGeom);

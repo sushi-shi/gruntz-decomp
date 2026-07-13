@@ -6,7 +6,6 @@
 #include <Wap32/Object.h> // CObject - the shared engine grand-base
 #include <rva.h>
 #include <Mfc.h>              // CArchive (Serialize's arg)
-#include <Wap32/MfcArchive.h> // reloc-masked CArchive count/data accessor
 #include <string.h>           // memset/memcpy -> rep stos/movs in the inlined SetSize
 #include <new>                // placement new (ConstructElements' per-element ctor)
 #include <Rez/RezBufferObject.h> // RezElem40 (the 0x28 CArray element type)
@@ -75,11 +74,10 @@ CRezBufferObject::~CRezBufferObject() {
 // chains. Not source-steerable.
 RVA(0x0017f130, 0x1ce)
 void CRezBufferObject::Serialize(CArchive& ar) {
-    MfcArchive* a = (MfcArchive*)&ar;
-    if (a->IsStoring()) {
-        a->WriteCount(m_nSize);
+    if (ar.IsStoring()) {
+        ar.WriteCount(m_nSize);
     } else {
-        i32 n = a->ReadCount();
+        i32 n = ar.ReadCount();
         if (n == 0) {
             if (m_pData != 0) {
                 ::operator delete(m_pData);
@@ -120,10 +118,10 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             m_nMaxSize = newMax;
         }
     }
-    if (a->IsStoring()) {
-        a->WriteData(m_pData, m_nSize * sizeof(RezElem40));
+    if (ar.IsStoring()) {
+        ar.Write(m_pData, m_nSize * sizeof(RezElem40));
     } else {
-        a->ReadData(m_pData, m_nSize * sizeof(RezElem40));
+        ar.Read(m_pData, m_nSize * sizeof(RezElem40));
     }
 }
 // SIZE_UNKNOWN(CRezBufferObject) now lives with the class in <Rez/RezBufferObject.h>.

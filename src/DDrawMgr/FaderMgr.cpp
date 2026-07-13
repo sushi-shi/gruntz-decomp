@@ -18,7 +18,6 @@
 
 #include <rva.h>
 #include <Mfc.h>
-#include <Wap32/MfcArchive.h> // CFaderArray::Serialize's reloc-masked CArchive accessor
 #include <string.h>           // memcpy/memset -> rep movs/stos in the inlined SetSize
 
 // ===========================================================================
@@ -399,11 +398,10 @@ void __stdcall Fader_TraceStr(CString s) {
 // scratch edx/ecx picks through the realloc lea chains. Not source-steerable.
 RVA(0x0017e2a0, 0x188)
 void CFaderArray::Serialize(CArchive& ar) {
-    MfcArchive* a = (MfcArchive*)&ar;
-    if (a->IsStoring()) {
-        a->WriteCount(m_nSize);
+    if (ar.IsStoring()) {
+        ar.WriteCount(m_nSize);
     } else {
-        i32 n = a->ReadCount();
+        i32 n = ar.ReadCount();
         if (n == 0) {
             if (m_pData != 0) {
                 ::operator delete(m_pData);
@@ -444,9 +442,9 @@ void CFaderArray::Serialize(CArchive& ar) {
             m_nMaxSize = newMax;
         }
     }
-    if (a->IsStoring()) {
-        a->WriteData(m_pData, m_nSize * 4);
+    if (ar.IsStoring()) {
+        ar.Write(m_pData, m_nSize * 4);
     } else {
-        a->ReadData(m_pData, m_nSize * 4);
+        ar.Read(m_pData, m_nSize * 4);
     }
 }

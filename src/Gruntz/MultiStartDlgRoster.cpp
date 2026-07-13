@@ -297,18 +297,8 @@ struct CSwatchBrush : CSwatchDrawBase {
     }
 };
 SIZE_UNKNOWN(CSwatchBrush);
-// Minimal MFC CDC wrapper (vptr + m_hDC@4 + m_hAttribDC@8 + zero-init field@0xc = 0x10).
-SIZE_UNKNOWN(CSwatchDC);
-struct CSwatchDC {
-    char m_vfptr[4];    // +0x00  (CDC::CDC stamps the CObject vptr here; opaque slot)
-    HDC m_hDC;          // +0x04
-    HDC m_hAttribDC;    // +0x08
-    i32 m_0c;           // +0x0c
-    CSwatchDC();        // 0x1c563b  CDC::CDC
-    void Attach(HDC h); // 0x1c5705  CDC::Attach
-    void Detach();      // 0x1c573c  CDC::Detach
-    ~CSwatchDC();       // 0x1c5783  CDC::~CDC
-};
+// (CSwatchDC is GONE: it WAS MFC ::CDC - ctor 0x1c563b / Attach 0x1c5705 /
+//  Detach 0x1c573c / ~ctor 0x1c5783, all NAFXCW.)
 // CWnd::OnDrawItem @0x1bbde7 (NAFXCW default owner-draw handler; reloc-masked shim).
 SIZE_UNKNOWN(CWndOnDrawR);
 struct CWndOnDrawR {
@@ -592,7 +582,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
     }
     if (bDraw) {
-        CSwatchDC dc;
+        ::CDC dc;
         dc.Attach(lpdis->hDC);
         CSwatchBrush brush(color);
         ::FillRect(dc.m_hDC, &lpdis->rcItem, brush.SafeBrush());

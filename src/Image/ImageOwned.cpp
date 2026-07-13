@@ -63,16 +63,7 @@ void CDDrawShadeBlit::Teardown() {
 // Layout: vptr@0, data@+4, size@+8, alloc@+0xc. Modeled as a tiny host so the
 // thiscall calls lower with callee-side cleanup and the destructible local forces
 // the /GX frame on BuildRle.
-struct CRleByteArray {
-    void* vptr;                          // +0x00
-    u8* m_data;                          // +0x04  element buffer
-    i32 m_size;                          // +0x08  element count
-    i32 m_alloc;                         // +0x0c
-    CRleByteArray();                     // 0x1b527e
-    void SetSize(i32 n, i32 growBy);     // 0x1b52e8
-    void SetAtGrow(i32 index, u8 value); // 0x1b5485
-    ~CRleByteArray();                    // 0x1b52b1
-};
+// (CRleByteArray is GONE: it WAS MFC ::CByteArray - same NAFXCW cluster.)
 
 // ---------------------------------------------------------------------------
 // BuildRle - run-length encode the source plane into the owned pixel
@@ -116,7 +107,7 @@ i32 CDDrawShadeBlit::BuildRle(
     m_width = width;
     m_height = height;
 
-    CRleByteArray ba;
+    ::CByteArray ba;
     ba.SetSize(0x3e8, 0);
 
     i32 row = 0;
@@ -131,9 +122,9 @@ i32 CDDrawShadeBlit::BuildRle(
                         while (i < m_width && (i - runStart) < 0x7e && (i32)src[i] != keyVal) {
                             i++;
                         }
-                        ba.SetAtGrow(ba.m_size, (u8)(i - runStart));
+                        ba.SetAtGrow(ba.GetSize(), (u8)(i - runStart));
                         for (i32 j = runStart; j < i; j++) {
-                            ba.SetAtGrow(ba.m_size, src[j]);
+                            ba.SetAtGrow(ba.GetSize(), src[j]);
                         }
                         runStart = i;
                     } else {
@@ -141,7 +132,7 @@ i32 CDDrawShadeBlit::BuildRle(
                         while (i < m_width && (i - runStart) < 0x7e && (i32)src[i] == keyVal) {
                             i++;
                         }
-                        ba.SetAtGrow(ba.m_size, (u8)((i - runStart) | 0x80));
+                        ba.SetAtGrow(ba.GetSize(), (u8)((i - runStart) | 0x80));
                         runStart = i;
                     }
                 } while (i < m_width);
@@ -154,11 +145,11 @@ i32 CDDrawShadeBlit::BuildRle(
     if (m_rleData != 0) {
         ::operator delete(m_rleData);
     }
-    m_rleLen = ba.m_size;
-    m_rleData = (u8*)::operator new(ba.m_size);
+    m_rleLen = ba.GetSize();
+    m_rleData = (u8*)::operator new(ba.GetSize());
     i32 n = m_rleLen;
     for (i32 k = 0; k < n; k++) {
-        m_rleData[k] = ba.m_data[k];
+        m_rleData[k] = ba.GetData()[k];
     }
 
     if (palette != 0) {
@@ -389,6 +380,5 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
     return 1;
 }
 
-SIZE_UNKNOWN(CRleByteArray);
 SIZE_UNKNOWN(CImageBuildDesc);
 SIZE(CImageFrameRebuildDesc, 0x20); // 8-dword by-value frame descriptor

@@ -9,7 +9,6 @@
 // external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/DataBuffer.h> // the real CDataBuffer (CShadeTable's dual-view): Free/Reset bind here
-#include <Wap32/MfcArchive.h> // CShadeTableArray::Serialize archive accessor
 
 #include <math.h> // pow (__CIpow) in HsvShiftTable
 #include <rva.h>
@@ -958,9 +957,8 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 
 // prologue push/mov and register coloring differently. Not source-steerable.
 RVA(0x0014fe90, 0x188)
 void CShadeTableArray::Serialize(CArchive& arc) {
-    MfcArchive* ar = (MfcArchive*)&arc;
-    if (!ar->IsStoring()) {
-        i32 n = ar->ReadCount();
+    if (!arc.IsStoring()) {
+        i32 n = arc.ReadCount();
         if (n == 0) {
             if (m_pData != 0) {
                 ::operator delete(m_pData);
@@ -1001,13 +999,13 @@ void CShadeTableArray::Serialize(CArchive& arc) {
             m_nMaxSize = newcap;
         }
     } else {
-        ar->WriteCount(m_nSize);
+        arc.WriteCount(m_nSize);
     }
 
-    if (ar->IsStoring()) {
-        ar->WriteData(m_pData, m_nSize * 4);
+    if (arc.IsStoring()) {
+        arc.Write(m_pData, m_nSize * 4);
     } else {
-        ar->ReadData(m_pData, m_nSize * 4);
+        arc.Read(m_pData, m_nSize * 4);
     }
 }
 
