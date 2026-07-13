@@ -209,19 +209,105 @@ void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
 // table and a missing resource skips the cue.)
 
 // Per-frame timer intervals (the game clock g_645588 is in ms).
-enum {
-    CUE_INTERVAL_MS = 0x1f4,     // 500 ms  ambient/win-lose cue toggle
-    BOOTY_INTERVAL_MS = 0x2710,  // 10000 ms booty-region one-shot
-    REGION_INTERVAL_MS = 0x7530, // 30000 ms scroll-region re-arm
-    FIXED_SUBSTEP_MS = 0x12,     // 18 ms   world fixed-substep quantum
-};
+typedef enum {
+    CUE_INTERVAL_MS = 0x1f4,           // 500 ms  ambient/win-lose cue toggle
+    BOOTY_INTERVAL_MS = 0x2710,        // 10000 ms booty-region one-shot
+    REGION_INTERVAL_MS = 0x7530,       // 30000 ms scroll-region re-arm
+    FIXED_SUBSTEP_MS = 0x12,           // 18 ms   world fixed-substep quantum
+    AMBIENT_INTRO_INTERVAL_MS = 0x1f40 // 8000 ms INTRO-cue window (ResetPlayState)
+} PlayIntervalMs;
 
 // m_viewMode (StepC / OnRegion2 discriminator).
-enum {
+typedef enum {
     VIEW_MODE_IDLE = 0, // no view yet -> bail
     VIEW_MODE_A = 1,    // mode-A sub-step
-    VIEW_MODE_B = 2,    // mode-B sub-step
-};
+    VIEW_MODE_B = 2     // mode-B sub-step
+} PlayViewMode;
+
+// The grunt-type ids (the BuildGruntTypeNameTable jump-table index; each name is
+// the bute namespace key that case binds - evidence, not invention). 0x39/0x3a
+// are the two ids BuildWarlordNameTable/LoadWarlordSprites probe as the "boss"
+// pair: HAREKRISHNAGRUNT / REAPERGRUNT.
+typedef enum {
+    GRUNT_TYPE_NORMAL = 0, // default: NORMALGRUNT
+    GRUNT_TYPE_BOMB = 1,
+    GRUNT_TYPE_BOOMERANG = 2,
+    GRUNT_TYPE_BRICK = 3,
+    GRUNT_TYPE_CLUB = 4,
+    GRUNT_TYPE_GAUNTLETZ = 5,
+    GRUNT_TYPE_GLOVEZ = 6,
+    GRUNT_TYPE_GOOBER = 7,
+    GRUNT_TYPE_GRAVITYBOOTZ = 8,
+    GRUNT_TYPE_GUNHAT = 9,
+    GRUNT_TYPE_NERFGUN = 10,
+    GRUNT_TYPE_ROCK = 11,
+    GRUNT_TYPE_SHIELD = 12,
+    GRUNT_TYPE_SHOVEL = 13,
+    GRUNT_TYPE_SPRING = 14,
+    GRUNT_TYPE_SPY = 15,
+    GRUNT_TYPE_SWORD = 16,
+    GRUNT_TYPE_TIMEBOMB = 17,
+    GRUNT_TYPE_TOOB = 18, // + TOOBWATERGRUNT on success
+    GRUNT_TYPE_WAND = 19,
+    GRUNT_TYPE_WARPSTONE = 20,
+    GRUNT_TYPE_WELDER = 21,
+    GRUNT_TYPE_WINGZ = 22,
+    GRUNT_TYPE_BABYWALKER = 23,
+    GRUNT_TYPE_BEACHBALL = 24,
+    GRUNT_TYPE_BIGWHEEL = 25,
+    GRUNT_TYPE_GOKART = 26,
+    GRUNT_TYPE_JACKINTHEBOX = 27,
+    GRUNT_TYPE_JUMPROPE = 28,
+    GRUNT_TYPE_POGOSTICK = 29,
+    GRUNT_TYPE_SCROLL = 30,
+    GRUNT_TYPE_SQUEAKTOY = 31,
+    GRUNT_TYPE_YOYO = 32,
+    GRUNT_TYPE_HAREKRISHNA = 0x39, // boss pair (BuildWarlordNameTable probes)
+    GRUNT_TYPE_REAPER = 0x3a
+} GruntTypeId;
+
+// The tool/cursor ids LoadCursorSprites dispatches on (each name is the
+// GAME_CURSORZ_* set that case loads). 1..0x26 is the numeric-chip range;
+// 0x66 the flailing-grunt cursor; 0xc8..0xe8 the per-tool cursor table.
+typedef enum {
+    CURSOR_POINTER = 0,
+    CURSOR_CHIP_FIRST = 1,
+    CURSOR_CHIP_LAST = 0x26,
+    CURSOR_FLAILINGGRUNT = 0x66,
+    CURSOR_TOOL_HANDZ = 0xc8,
+    CURSOR_TOOL_BOMBZ = 0xc9,
+    CURSOR_TOOL_BOOMERANGZ = 0xca,
+    CURSOR_TOOL_BRICKZ = 0xcb,
+    CURSOR_TOOL_CLUBZ = 0xcc,
+    CURSOR_TOOL_GAUNTLETZ = 0xcd,
+    CURSOR_TOOL_GLOVEZ = 0xce,
+    CURSOR_TOOL_GOOBERZ = 0xcf,
+    CURSOR_TOOL_GRAVITYBOOTZ = 0xd0,
+    CURSOR_TOOL_GUNHATZ = 0xd1,
+    CURSOR_TOOL_NERFGUNZ = 0xd2,
+    CURSOR_TOOL_ROCKZ = 0xd3,
+    CURSOR_TOOL_SHIELDZ = 0xd4,
+    CURSOR_TOOL_SHOVELZ = 0xd5,
+    CURSOR_TOOL_SPRINGZ = 0xd6,
+    CURSOR_TOOL_SPYZ = 0xd7,
+    CURSOR_TOOL_SWORDZ = 0xd8,
+    CURSOR_TOOL_TIMEBOMBZ = 0xd9,
+    CURSOR_TOOL_TOOBZ = 0xda,
+    CURSOR_TOOL_WANDZ = 0xdb,
+    CURSOR_TOOL_WARPSTONEZ = 0xdc,
+    CURSOR_TOOL_WELDERZ = 0xdd,
+    CURSOR_TOOL_WINGZ = 0xde,
+    CURSOR_TOOL_BABYWALKERZ = 0xdf,
+    CURSOR_TOOL_BEACHBALLZ = 0xe0,
+    CURSOR_TOOL_BIGWHEELZ = 0xe1,
+    CURSOR_TOOL_GOKARTZ = 0xe2,
+    CURSOR_TOOL_JACKINTHEBOXZ = 0xe3,
+    CURSOR_TOOL_JUMPROPEZ = 0xe4,
+    CURSOR_TOOL_POGOSTICKZ = 0xe5,
+    CURSOR_TOOL_SCROLLZ = 0xe6,
+    CURSOR_TOOL_SQUEAKTOYZ = 0xe7,
+    CURSOR_TOOL_YOYOZ = 0xe8
+} ToolCursorId;
 
 // CPlay::ApplyGameOptions (0x036be0) lives in its home TU per the interval
 // dossier (#10c seam): src/Gruntz/VideoConfig.cpp (the options-dialogs TU).
@@ -413,7 +499,7 @@ i32 CPlay::Render() {
         m_frameMarker->Tick((i32)g_645584); // m_frameMarker begin
         Eng_FrameTimerStep(w->m_6c, 0);     // m_4->m_6c step (carcass; unresolved callee)
 
-        if (m_levelId == 0x66) { // booty-region one-shot
+        if (m_levelId == CURSOR_FLAILINGGRUNT) { // booty/flailing-grunt one-shot
             u32 elapsed = g_645588 - (u32)m_bootyTimerLo;
             if (elapsed >= (u32)m_bootyInterval) {
                 RegCue(g_gameReg->m_cueSink, 0x33e); // reg->m_cueSink cue
@@ -1516,19 +1602,19 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
         m_4w()->m_5c->TypeChar(key, flag); // 0x3508 -> CFontConfig::TypeChar @0x21e20
         return 1;
     }
-    if (key == 0x5d) {
+    if (key == ']') {
         m_guts->winapi_0fe520_SetRect();
         return 1;
     }
-    if (key == 0x5b) {
+    if (key == '[') {
         m_guts->RefreshA();
         return 1;
     }
-    if (key == 0x2d) {
+    if (key == '-') {
         m_guts->HideRect();
         return 1;
     }
-    if (key == 0x3d || key == 0x2b) {
+    if (key == '=' || key == '+') {
         m_guts->RefreshState();
         m_hitTest->Configure(m_guts->m_position == 1 ? 2 : 1);
         return 1;
@@ -4185,13 +4271,13 @@ i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
 RVA(0x000cda70, 0x7a)
 i32 CPlay::Vslot0d(i32 key, i32 flags) {
     if (flags & 0x01000000) {
-        if (key == 0x25) {
+        if (key == VK_LEFT) {
             m_scrollEdgeLock &= ~1;
-        } else if (key == 0x27) {
+        } else if (key == VK_RIGHT) {
             m_scrollEdgeLock &= ~4;
-        } else if (key == 0x26) {
+        } else if (key == VK_UP) {
             m_scrollEdgeLock &= ~2;
-        } else if (key == 0x28) {
+        } else if (key == VK_DOWN) {
             m_scrollEdgeLock &= ~8;
         }
     }
@@ -4896,7 +4982,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
     if (this->m_levelId == frame && flag == this->m_dragEndNotify) {
         return 1;
     }
-    if (frame >= 1 && frame <= 0x26) {
+    if (frame >= CURSOR_CHIP_FIRST && frame <= CURSOR_CHIP_LAST) {
         if (this->BeginGridWalk("GAME_INGAMEICONZ_NORMCHIPZ", frame, 0, 0x64, 0) == 0) {
             return 0;
         }
@@ -4910,7 +4996,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_levelId = frame;
         return 1;
     }
-    if (frame == 0) {
+    if (frame == CURSOR_POINTER) {
         if (this->BeginGridWalk("GAME_CURSORZ_POINTER", 1, 1, 0x64, 0) == 0) {
             return 0;
         }
@@ -4923,7 +5009,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_levelId = frame;
         return 1;
     }
-    if (frame == 0x66) {
+    if (frame == CURSOR_FLAILINGGRUNT) {
         if (this->BeginGridWalk("GAME_CURSORZ_FLAILINGGRUNT", 1, 1, 0x64, 1) == 0) {
             return 0;
         }
@@ -4935,7 +5021,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_dragInhibit1 = 1;
         this->m_dragEndNotify = 0;
         ((CGruntSpawnConfig*)g_gameReg->m_cueSink)->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
-        this->m_bootyInterval = 0x2710;
+        this->m_bootyInterval = BOOTY_INTERVAL_MS;
         this->m_bootyIntervalHi = 0;
         this->m_bootyTimerLo = g_645588;
         this->m_bootyTimerHi = 0;
@@ -4943,167 +5029,167 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         return 1;
     }
     switch (frame) {
-        case 0xc8:
+        case CURSOR_TOOL_HANDZ:
             if (this->BeginGridWalk("GAME_CURSORZ_HANDZ", 1, flag, 0x64, 1) == 0) {
                 return 0;
             }
             break;
-        case 0xc9:
+        case CURSOR_TOOL_BOMBZ:
             if (this->BeginGridWalk("GAME_CURSORZ_BOMBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xca:
+        case CURSOR_TOOL_BOOMERANGZ:
             if (this->BeginGridWalk("GAME_CURSORZ_BOOMERANGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xcb:
+        case CURSOR_TOOL_BRICKZ:
             if (this->BeginGridWalk("GAME_CURSORZ_BRICKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xcc:
+        case CURSOR_TOOL_CLUBZ:
             if (this->BeginGridWalk("GAME_CURSORZ_CLUBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xcd:
+        case CURSOR_TOOL_GAUNTLETZ:
             if (this->BeginGridWalk("GAME_CURSORZ_GAUNTLETZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xce:
+        case CURSOR_TOOL_GLOVEZ:
             if (this->BeginGridWalk("GAME_CURSORZ_GLOVEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xcf:
+        case CURSOR_TOOL_GOOBERZ:
             if (this->BeginGridWalk("GAME_CURSORZ_GOOBERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd0:
+        case CURSOR_TOOL_GRAVITYBOOTZ:
             if (this->BeginGridWalk("GAME_CURSORZ_GRAVITYBOOTZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd1:
+        case CURSOR_TOOL_GUNHATZ:
             if (this->BeginGridWalk("GAME_CURSORZ_GUNHATZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd2:
+        case CURSOR_TOOL_NERFGUNZ:
             if (this->BeginGridWalk("GAME_CURSORZ_NERFGUNZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd3:
+        case CURSOR_TOOL_ROCKZ:
             if (this->BeginGridWalk("GAME_CURSORZ_ROCKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd4:
+        case CURSOR_TOOL_SHIELDZ:
             if (this->BeginGridWalk("GAME_CURSORZ_SHIELDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd5:
+        case CURSOR_TOOL_SHOVELZ:
             if (this->BeginGridWalk("GAME_CURSORZ_SHOVELZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd6:
+        case CURSOR_TOOL_SPRINGZ:
             if (this->BeginGridWalk("GAME_CURSORZ_SPRINGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd7:
+        case CURSOR_TOOL_SPYZ:
             if (this->BeginGridWalk("GAME_CURSORZ_SPYZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd8:
+        case CURSOR_TOOL_SWORDZ:
             if (this->BeginGridWalk("GAME_CURSORZ_SWORDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xd9:
+        case CURSOR_TOOL_TIMEBOMBZ:
             if (this->BeginGridWalk("GAME_CURSORZ_TIMEBOMBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xda:
+        case CURSOR_TOOL_TOOBZ:
             if (this->BeginGridWalk("GAME_CURSORZ_TOOBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xdb:
+        case CURSOR_TOOL_WANDZ:
             if (this->BeginGridWalk("GAME_CURSORZ_WANDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xdc:
+        case CURSOR_TOOL_WARPSTONEZ:
             if (this->BeginGridWalk("GAME_CURSORZ_WARPSTONEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xdd:
+        case CURSOR_TOOL_WELDERZ:
             if (this->BeginGridWalk("GAME_CURSORZ_WELDERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xde:
+        case CURSOR_TOOL_WINGZ:
             if (this->BeginGridWalk("GAME_CURSORZ_WINGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xdf:
+        case CURSOR_TOOL_BABYWALKERZ:
             if (this->BeginGridWalk("GAME_CURSORZ_BABYWALKERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe0:
+        case CURSOR_TOOL_BEACHBALLZ:
             if (this->BeginGridWalk("GAME_CURSORZ_BEACHBALLZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe1:
+        case CURSOR_TOOL_BIGWHEELZ:
             if (this->BeginGridWalk("GAME_CURSORZ_BIGWHEELZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe2:
+        case CURSOR_TOOL_GOKARTZ:
             if (this->BeginGridWalk("GAME_CURSORZ_GOKARTZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe3:
+        case CURSOR_TOOL_JACKINTHEBOXZ:
             if (this->BeginGridWalk("GAME_CURSORZ_JACKINTHEBOXZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe4:
+        case CURSOR_TOOL_JUMPROPEZ:
             if (this->BeginGridWalk("GAME_CURSORZ_JUMPROPEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe5:
+        case CURSOR_TOOL_POGOSTICKZ:
             if (this->BeginGridWalk("GAME_CURSORZ_POGOSTICKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe6:
+        case CURSOR_TOOL_SCROLLZ:
             if (this->BeginGridWalk("GAME_CURSORZ_SCROLLZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe7:
+        case CURSOR_TOOL_SQUEAKTOYZ:
             if (this->BeginGridWalk("GAME_CURSORZ_SQUEAKTOYZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
-        case 0xe8:
+        case CURSOR_TOOL_YOYOZ:
             if (this->BeginGridWalk("GAME_CURSORZ_YOYOZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
@@ -5271,110 +5357,110 @@ RVA(0x000dc6d0, 0x215)
 i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
     CString name("NORMALGRUNT");
     switch (typeIdx) {
-        case 1:
+        case GRUNT_TYPE_BOMB:
             name = "BOMBGRUNT";
             break;
-        case 2:
+        case GRUNT_TYPE_BOOMERANG:
             name = "BOOMERANGGRUNT";
             break;
-        case 3:
+        case GRUNT_TYPE_BRICK:
             name = "BRICKGRUNT";
             break;
-        case 4:
+        case GRUNT_TYPE_CLUB:
             name = "CLUBGRUNT";
             break;
-        case 5:
+        case GRUNT_TYPE_GAUNTLETZ:
             name = "GAUNTLETZGRUNT";
             break;
-        case 6:
+        case GRUNT_TYPE_GLOVEZ:
             name = "GLOVEZGRUNT";
             break;
-        case 7:
+        case GRUNT_TYPE_GOOBER:
             name = "GOOBERGRUNT";
             break;
-        case 8:
+        case GRUNT_TYPE_GRAVITYBOOTZ:
             name = "GRAVITYBOOTZGRUNT";
             break;
-        case 9:
+        case GRUNT_TYPE_GUNHAT:
             name = "GUNHATGRUNT";
             break;
-        case 10:
+        case GRUNT_TYPE_NERFGUN:
             name = "NERFGUNGRUNT";
             break;
-        case 11:
+        case GRUNT_TYPE_ROCK:
             name = "ROCKGRUNT";
             break;
-        case 12:
+        case GRUNT_TYPE_SHIELD:
             name = "SHIELDGRUNT";
             break;
-        case 13:
+        case GRUNT_TYPE_SHOVEL:
             name = "SHOVELGRUNT";
             break;
-        case 14:
+        case GRUNT_TYPE_SPRING:
             name = "SPRINGGRUNT";
             break;
-        case 15:
+        case GRUNT_TYPE_SPY:
             name = "SPYGRUNT";
             break;
-        case 16:
+        case GRUNT_TYPE_SWORD:
             name = "SWORDGRUNT";
             break;
-        case 17:
+        case GRUNT_TYPE_TIMEBOMB:
             name = "TIMEBOMBGRUNT";
             break;
-        case 18:
+        case GRUNT_TYPE_TOOB:
             name = "TOOBGRUNT";
             if (((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(name, a2, a3, a4) == 0) {
                 return 0;
             }
             name = "TOOBWATERGRUNT";
             return ((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(name, a2, a3, a4);
-        case 19:
+        case GRUNT_TYPE_WAND:
             name = "WANDGRUNT";
             break;
-        case 20:
+        case GRUNT_TYPE_WARPSTONE:
             name = "WARPSTONEGRUNT";
             break;
-        case 21:
+        case GRUNT_TYPE_WELDER:
             name = "WELDERGRUNT";
             break;
-        case 22:
+        case GRUNT_TYPE_WINGZ:
             name = "WINGZGRUNT";
             break;
-        case 23:
+        case GRUNT_TYPE_BABYWALKER:
             name = "BABYWALKERGRUNT";
             break;
-        case 24:
+        case GRUNT_TYPE_BEACHBALL:
             name = "BEACHBALLGRUNT";
             break;
-        case 25:
+        case GRUNT_TYPE_BIGWHEEL:
             name = "BIGWHEELGRUNT";
             break;
-        case 26:
+        case GRUNT_TYPE_GOKART:
             name = "GOKARTGRUNT";
             break;
-        case 27:
+        case GRUNT_TYPE_JACKINTHEBOX:
             name = "JACKINTHEBOXGRUNT";
             break;
-        case 28:
+        case GRUNT_TYPE_JUMPROPE:
             name = "JUMPROPEGRUNT";
             break;
-        case 29:
+        case GRUNT_TYPE_POGOSTICK:
             name = "POGOSTICKGRUNT";
             break;
-        case 30:
+        case GRUNT_TYPE_SCROLL:
             name = "SCROLLGRUNT";
             break;
-        case 31:
+        case GRUNT_TYPE_SQUEAKTOY:
             name = "SQUEAKTOYGRUNT";
             break;
-        case 32:
+        case GRUNT_TYPE_YOYO:
             name = "YOYOGRUNT";
             break;
-        case 57:
+        case GRUNT_TYPE_HAREKRISHNA:
             name = "HAREKRISHNAGRUNT";
             break;
-        case 58:
+        case GRUNT_TYPE_REAPER:
             name = "REAPERGRUNT";
             break;
     }
@@ -6173,7 +6259,7 @@ RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char buf[0x40];
     if (m_4w()->m_14 != 0 && g_gameReg->m_134 == 1) {
-        m_ambientInterval = 0x1f40;
+        m_ambientInterval = AMBIENT_INTRO_INTERVAL_MS;
         m_ambientIntervalHi = 0;
         m_ambientTimerLo = g_645588;
         m_ambientTimerHi = 0;
@@ -6673,15 +6759,15 @@ i32 CPlay::BuildGruntNamespaceList(i32 arg) {
 // __thiscall(arg), ret 4.
 RVA(0x000dd340, 0x189)
 i32 CPlay::BuildWarlordNameTable(i32 arg) {
-    for (i32 id = 2; id <= 0x20; id++) {
+    for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {
         if (!BuildGruntTypeNameTable(id, 0, 0, 0)) {
             return 0;
         }
     }
-    if (!BuildGruntTypeNameTable(0x39, 0, 0, arg)) {
+    if (!BuildGruntTypeNameTable(GRUNT_TYPE_HAREKRISHNA, 0, 0, arg)) {
         return 0;
     }
-    if (!BuildGruntTypeNameTable(0x3a, 0, 0, arg)) {
+    if (!BuildGruntTypeNameTable(GRUNT_TYPE_REAPER, 0, 0, arg)) {
         return 0;
     }
     CString s("WARLORDZ_NAPOLEAN");
@@ -6718,7 +6804,7 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
 RVA(0x000d65d0, 0x7a4)
 i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
     if (g_gameReg->m_134 != 1) {
-        for (i32 id = 2; id <= 0x20; id++) {
+        for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {
             if (loaded[id] == 0) {
                 BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
                 loaded[id] = 1;
@@ -6727,14 +6813,14 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                 return 0;
             }
         }
-        if (!BuildGruntTypeNameTable(0x39, 1, 0, ctx)) {
+        if (!BuildGruntTypeNameTable(GRUNT_TYPE_HAREKRISHNA, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x21] == 0) {
             BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
             loaded[0x21] = 1;
         }
-        if (!BuildGruntTypeNameTable(0x3a, 1, 0, ctx)) {
+        if (!BuildGruntTypeNameTable(GRUNT_TYPE_REAPER, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x22] == 0) {
@@ -6892,16 +6978,16 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
                         loaded[obj->m_124] = 1;
                     }
-                } else if (d == 0x39) {
-                    if (!BuildGruntTypeNameTable(0x39, 1, 0, ctx)) {
+                } else if (d == GRUNT_TYPE_HAREKRISHNA) {
+                    if (!BuildGruntTypeNameTable(GRUNT_TYPE_HAREKRISHNA, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
                         BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
                         loaded[0x21] = 1;
                     }
-                } else if (d == 0x3a) {
-                    if (!BuildGruntTypeNameTable(0x3a, 1, 0, ctx)) {
+                } else if (d == GRUNT_TYPE_REAPER) {
+                    if (!BuildGruntTypeNameTable(GRUNT_TYPE_REAPER, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
@@ -6937,16 +7023,16 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
                         loaded[obj->m_11c] = 1;
                     }
-                } else if (obj->m_124 == 0x39) {
-                    if (!BuildGruntTypeNameTable(0x39, 1, 0, ctx)) {
+                } else if (obj->m_124 == GRUNT_TYPE_HAREKRISHNA) {
+                    if (!BuildGruntTypeNameTable(GRUNT_TYPE_HAREKRISHNA, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
                         BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
                         loaded[0x21] = 1;
                     }
-                } else if (obj->m_124 == 0x3a) {
-                    if (!BuildGruntTypeNameTable(0x3a, 1, 0, ctx)) {
+                } else if (obj->m_124 == GRUNT_TYPE_REAPER) {
+                    if (!BuildGruntTypeNameTable(GRUNT_TYPE_REAPER, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
