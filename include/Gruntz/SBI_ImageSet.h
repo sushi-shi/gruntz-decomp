@@ -63,7 +63,9 @@ public:
     virtual i32
     SetupImage(CStatusBarMgr*, CSbiConfigHost*, i32, i32, SbRect, const char*, i32, i32)
         OVERRIDE;                                                // slot 11
-    virtual void SbiSlot12();                                    // slot 12 (new)
+    // slot 12 (new), body 0x0e74c0 (a Ghidra recovery gap - not yet reconstructed). It takes
+    // ONE arg: the game-menu builder calls it as `Activate(7)` on the DESTRUCT item.
+    virtual void SbiSlot12(i32 a);
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // vslot 1 (0xe74f0)
     // (the 0xe6e40 base slot-1 leg is the real CSBI_Image::SerializeChain - SBI_Image.h)
     // slot-3 body (vtbl 0x1eac4c slot [3], thunk 0x2a09): reset the resolved record +

@@ -27,97 +27,31 @@
 #include <Mfc.h>           // CPtrList (embedded Game-tab widget list in CGameMenuMgr)
 #include <Gruntz/SbRect.h> // the by-value geometry rect each Configure takes (slot 0x2c)
 
-class CGameMenuMgr;
-
-// The GAMETAB widget base. Polymorphic so MSVC emits native __thiscall vtable
-// dispatch (call [edx+0x2c] / [edx+0x30]); the concrete CSBI_ImageSet / CSBI_MenuItem
-// leaves below auto-stamp the retail vtables. Eleven leading placeholder virtuals line
-// Configure up to slot 0x2c. Slot 0 is the scalar-deleting dtor (the fail `delete it`).
-// The inline base ctor zeroes the base fields the retail base ctor cleared.
-// CSBI_Image's RTTI direct base (CSBI_RectOnly : CStatusBarItem). The builder deliberately
-// COLLAPSES the SBI vtable hierarchy into the single facet below (the out-of-line shared base
-// ctor / /GX-frame reason in the ctor note); name the real base here as an empty EBO base so
-// the class derives its RTTI-true parent without pulling the full chain (layout/matching-neutral,
-// and non-polymorphic so it carries no vtable of its own).
-struct CStatusBarItem {};
-struct CSBI_RectOnly : CStatusBarItem {};
-
-class CSBI_Image : public CSBI_RectOnly {
-public:
-    // OUT-OF-LINE ctor (declaration only): retail `new CSBI_X` CALLS the base ctor out
-    // of line (call 0x101fa0), so the opaque may-throw call makes cl register the
-    // `new`-expression operator-delete-on-ctor-throw cleanup and raise the /GX frame.
-    // Folding it inline let cl prove no-throw -> no frame -> 0% (every byte shifted).
-    // Reloc-masked call target, so one shared base ctor pairs with retail's per-class
-    // ctors. See docs/patterns/gx-frame-outofline-ctor.md.
-    CSBI_Image();
-    virtual ~CSBI_Image();      // +0x00
-    virtual void Serialize();   // slot 1
-    virtual void Setup();       // slot 2
-    virtual void ClearFrame();  // slot 3
-    virtual void Poll();        // slot 4
-    virtual void Tick();        // slot 5
-    virtual void HitHandlerA(); // slot 6
-    virtual void HitHandlerB(); // slot 7
-    virtual void HitHandlerC(); // slot 8
-    virtual void HitHandlerD(); // slot 9
-    virtual void Refresh();     // slot 10
-    virtual i32 Configure(
-        CGameMenuMgr* mgr,
-        i32 code,
-        i32 type,
-        i32 idx,
-        SbRect rect,
-        const char* key,
-        i32 flag,
-        i32 e
-    );                            // +0x2c
-    virtual void Activate(i32 a); // +0x30
-
-    i32 m_enabled; // +0x04  enabled flag (zeroed to disable the widget)
-    i32 m_tag;     // +0x08  type tag (2 / 4)
-    char pad0c[0x24 - 0x0c];
-    i32 m_24; // +0x24
-    i32 m_28; // +0x28
-    char pad2c[0x30 - 0x2c];
-    i32 m_30; // +0x30
-    i32 m_34; // +0x34
-    i32 m_38; // +0x38
-};
-SIZE_UNKNOWN(CSBI_Image);
-
-// The concrete widget leaves. `new CSBI_ImageSet` / `new CSBI_MenuItem` makes MSVC
-// auto-stamp the retail ??_7CSBI_ImageSet@@6B@ (0x5eac4c) / ??_7CSBI_MenuItem@@6B@
-// (0x5eab4c) vtables (catalogued in config/vtable_names.csv) - no manual stamp. The
-// inline ctor sets the per-tag fields the retail mk* helper wrote after the ctor
-// (m_tag = tag, m_34 = m_30 = m_38 = 0). Both are 0x3c bytes (the base CSBI_Image size).
-// Both leaves declare the dtor OUT-OF-LINE, exactly as CSBI_Image above does: an
-// IMPLICIT dtor makes cl5 emit a divergent 5-byte COMDAT `??1CSBI_X@@UAE@XZ =
-// jmp ??1CSBI_Image@@UAE@XZ`, an ODR-conflicting duplicate of the real body in
-// SBI_ImageSet.cpp / SBI_MenuItem.cpp. Declared-only => no definition here, so the
-// reference binds to the one real dtor at its retail rva.
-class CSBI_ImageSet : public CSBI_Image { // vtable 0x5eac4c, tag 4
-public:
-    CSBI_ImageSet() {
-        m_tag = 4;
-        m_34 = 0;
-        m_30 = 0;
-        m_38 = 0;
-    }
-    virtual ~CSBI_ImageSet(); // 0x00102000 (SBI_ImageSet.cpp)
-};
-SIZE(CSBI_ImageSet, 0x3c);
-class CSBI_MenuItem : public CSBI_Image { // vtable 0x5eab4c, tag 2
-public:
-    CSBI_MenuItem() {
-        m_tag = 2;
-        m_34 = 0;
-        m_30 = 0;
-        m_38 = 0;
-    }
-    virtual ~CSBI_MenuItem(); // 0x001007d0 (SBI_MenuItem.cpp)
-};
-SIZE(CSBI_MenuItem, 0x3c);
+// The FABRICATED HIERARCHY THAT USED TO LIVE HERE (deleted):
+//   struct CStatusBarItem {};                 // empty stub
+//   struct CSBI_RectOnly : CStatusBarItem {}; // empty stub
+//   class  CSBI_Image : CSBI_RectOnly { 13 virtuals };  // 11 of them placeholders
+//   class  CSBI_ImageSet : CSBI_Image {};  class CSBI_MenuItem : CSBI_Image {};
+//
+// Eleven body-less placeholder virtuals padded `Configure` out to slot +0x2c and
+// `Activate` to +0x30, so every leaf got a 13-slot (52 B) vtable. RTTI says CSBI_MenuItem
+// has TWELVE (48 B): ??_7CSBI_MenuItem@@6B@ was emitted at 52 B here and 48 B by
+// sbi_menuitem - one mangled name, two lengths, and MSVC5 keeps only one COMDAT.
+// The whole facet was unnecessary: `Configure` IS CSBI_Image::SetupImage (slot 11) and
+// `Activate` IS CSBI_ImageSet::SbiSlot12 (slot 12). The builder now uses the canonical
+// classes from <Gruntz/SBI_MenuItem.h> / <Gruntz/SBI_ImageSet.h>.
+//
+// CGameMenuMgr is likewise gone: it IS CStatusBarMgr. Proof, not a guess:
+//   1. CStatusBarMgr::LoadTabSprites (0x102250) calls `BuildGameMenu()` UNQUALIFIED - on
+//      its own `this` - and CStatusBarMgr::BuildGameMenu was declared at the very RVA
+//      (0x101580) that CGameMenuMgr::BuildGameMenu defined. Two mangled names, one
+//      function: the caller's reference resolved to NO definition at link (a phantom).
+//   2. The view's m_items sat at +0xb8 == CStatusBarMgr::m_tabLists[5] (0x2c + 5*0x1c) -
+//      exactly the Game-tab list, which is the list BuildGameMenu appends to.
+//   3. Every other field lined up with the canonical, offset for offset: m_code/m_baseX/
+//      m_baseY == m_c/m_10/m_rect14.m_0, and +0x110 / +0x1dc..+0x1f0 / +0x354 / +0x558 /
+//      +0x55c / +0x570 all already existed on CStatusBarMgr (two independent
+//      reconstructions of one object).
 
 // The game registry singleton (?g_gameReg, DATA 0x64556c). Only the fields the
 // builder touches are modeled.
@@ -127,35 +61,19 @@ struct CGmFactory {
 };
 SIZE_UNKNOWN(CGmFactory);
 
-// CGameMenuMgr layout (placeholder fields; only offsets are load-bearing).
-class CGameMenuMgr {
-public:
-    void BuildGameMenu(); // 0x101580
-
-    char m_pad00[0xc];
-    i32 m_code;  // +0x0c  configure `code` arg
-    i32 m_baseX; // +0x10  base x
-    i32 m_baseY; // +0x14  base y
-    char m_pad18[0xb8 - 0x18];
-    CPtrList m_items; // +0xb8  Game-tab widget list (AddTail)
-    char m_padd4[0x110 - (0xb8 + sizeof(CPtrList))];
-    i32 m_briefingGate; // +0x110  briefing/MISSIONSTATUS gate (==0x1fb)
-    char m_pad114[0x1dc - 0x114];
-    CSBI_Image* m_slotResume;   // +0x1dc  RESUME/PAUSE slot
-    CSBI_Image* m_slotLoad;     // +0x1e0  LOAD slot
-    CSBI_Image* m_slotSave;     // +0x1e4  SAVE slot
-    CSBI_Image* m_slotSettings; // +0x1e8  SETTINGS slot
-    CSBI_Image* m_slotHelp;     // +0x1ec  HELP slot
-    CSBI_Image* m_slotQuit;     // +0x1f0  QUIT slot
-    char m_pad1f4[0x354 - 0x1f4];
-    i32 m_showResume; // +0x354  show-RESUME gate
-    char m_pad358[0x558 - 0x358];
-    i32 m_558;           // +0x558
-    i32 m_destructState; // +0x55c  DESTRUCT-button state
-    char m_pad560[0x570 - 0x560];
-    CSBI_Image* m_slotDestruct; // +0x570  DESTRUCT/MISSIONSTATUS slot
-};
-SIZE_UNKNOWN(CGameMenuMgr);
+// CGameMenuMgr's fields are the canonical CStatusBarMgr's, offset for offset (see the
+// identity proof at the top of this file). The view's SEMANTIC names, preserved here
+// because the canonical carries placeholders for them:
+//   +0x0c m_code=m_c | +0x10 m_baseX=m_10 | +0x14 m_baseY=m_rect14.m_0
+//   +0xb8  m_items         = m_tabLists[5]        (the Game-tab list)
+//   +0x110 m_briefingGate  = m_itemKind           (== 0x1fb selects the briefing variant)
+//   +0x1dc m_slotResume    = m_tabSprite5         +0x1e0 m_slotLoad     = m_tabSprite6
+//   +0x1e4 m_slotSave      = m_tabSprite7         +0x1e8 m_slotSettings = m_tabSprite8
+//   +0x1ec m_slotHelp      = m_tabSprite9         +0x1f0 m_slotQuit     = m_tabSprite10
+//   +0x354 m_showResume    = m_hitTestDisabled    (the two readings DISAGREE - unresolved)
+//   +0x558 m_558           = m_destructWarnActive +0x55c m_destructState = m_modeState
+//   +0x570 m_slotDestruct  = m_modeNotify         (typed CSbiSlotPtr* - itself a fake view
+//          of the SBI item: StatusBarMgr.cpp already casts CSBI_Image* -> CSbiSlotPtr*)
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

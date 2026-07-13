@@ -7,13 +7,13 @@
 // + type tag, configures it from a GAME_STATUSBAR_TABZ_GAMETAB_* asset key + a
 // geometry rect (tab base coords m_baseX/m_baseY plus per-item offsets), appends it
 // to the Game-tab CPtrList m_items, and stashes the created widget into a per-command
-// slot (m_slotResume..m_slotQuit, m_slotDestruct). Built under a /GX EH frame (the
+// slot (m_tabSprite5..m_tabSprite10, m_slotDestruct). Built under a /GX EH frame (the
 // just-created item is rolled back if its Configure throws). Identical create idiom
 // to CStatusBarMgr::LoadTabSprites.
 //
 // Owner verified by the member writes: m_code (the configure `code` arg), the base
-// coords m_baseX/m_baseY, the m_items Game CPtrList, the m_briefingGate==0x1fb gate,
-// the m_showResume gate, the m_558/m_destructState/m_slotDestruct destruct-button
+// coords m_baseX/m_baseY, the m_items Game CPtrList, the m_itemKind==0x1fb gate,
+// the m_hitTestDisabled gate, the m_destructWarnActive/m_modeState/m_slotDestruct destruct-button
 // state, and the per-command slot stores. The widgets are REAL polymorphic
 // CSBI_ImageSet / CSBI_MenuItem leaves, so `new CSBI_ImageSet` makes cl auto-stamp
 // the retail vtable (config/vtable_names.csv); no manual stamp. Field names are
@@ -48,7 +48,10 @@
 #include <Gruntz/GameRegistry.h>
 
 #include <Gruntz/SbRect.h> // the by-value geometry rect each Configure takes (slot 0x2c)
-#include <Gruntz/GameMenuMgrBuilders.h> // CSBI_Image builder-facet + SBI leaves + CGameMenuMgr
+#include <Gruntz/GameMenuMgrBuilders.h> // CGmFactory (the registry factory view)
+#include <Gruntz/StatusBarMgr.h>        // canonical CStatusBarMgr (== the ex-CGameMenuMgr)
+#include <Gruntz/SBI_MenuItem.h>        // canonical CSBI_MenuItem (12 slots, vtbl 0x5eab4c)
+#include <Gruntz/SBI_ImageSet.h>        // canonical CSBI_ImageSet  (13 slots, vtbl 0x5eac4c)
 
 // ---------------------------------------------------------------------------
 // The builder-facet base CSBI_Image, its concrete SBI leaves (CSBI_ImageSet /
@@ -62,25 +65,25 @@ extern "C" CGameRegistry* g_gameReg;
 // CGameMenuMgr::BuildGameMenu  @0x101580
 // ===========================================================================
 RVA(0x00101580, 0x806)
-void CGameMenuMgr::BuildGameMenu() {
-    i32 code = m_code;
-    i32 bx = m_baseX;
-    i32 by = m_baseY;
+void CStatusBarMgr::BuildGameMenu() {
+    CSbiConfigHost* code = m_c; // the setup arg2 config host
+    i32 bx = m_10;
+    i32 by = m_rect14.m_0;
     CSBI_Image* it;
     SbRect r;
 
     // Non-briefing path is the fall-through (retail `je` sinks the briefing block to
     // the end): the `!=` gate keeps the common menu inline and the MISSIONSTATUS
     // widget out of line.
-    if (m_briefingGate != 0x1fb) {
+    if (m_itemKind != 0x1fb) {
         // ---- RESUME or PAUSE in the first slot ----
-        if (m_showResume != 0 && g_gameReg->m_frameGate != 0) {
+        if (m_hitTestDisabled != 0 && g_gameReg->m_frameGate != 0) {
             it = new CSBI_MenuItem;
             r.left = bx;
             r.top = by + 0xd5;
             r.right = bx + 0x9f;
             r.bottom = by + 0xec;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x1f4,
@@ -95,14 +98,14 @@ void CGameMenuMgr::BuildGameMenu() {
                 }
                 return;
             }
-            m_items.AddTail(it);
+            m_tabLists[5].AddTail(it);
         } else {
             it = new CSBI_MenuItem;
             r.left = bx;
             r.top = by + 0xd5;
             r.right = bx + 0x9f;
             r.bottom = by + 0xec;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x1f4,
@@ -117,9 +120,9 @@ void CGameMenuMgr::BuildGameMenu() {
                 }
                 return;
             }
-            m_items.AddTail(it);
+            m_tabLists[5].AddTail(it);
         }
-        m_slotResume = it;
+        m_tabSprite5 = (CSBI_MenuItem*)it;
 
         // ---- LOAD ----
         it = new CSBI_MenuItem;
@@ -127,16 +130,16 @@ void CGameMenuMgr::BuildGameMenu() {
         r.top = by + 0x125;
         r.right = bx + 0x9f;
         r.bottom = by + 0x13c;
-        if (!it->Configure(this, code, 0x1f5, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_LOAD", -1, 0)) {
+        if (!it->SetupImage(this, code, 0x1f5, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_LOAD", -1, 0)) {
             if (it) {
                 delete it;
             }
             return;
         }
-        m_items.AddTail(it);
-        m_slotLoad = it;
+        m_tabLists[5].AddTail(it);
+        m_tabSprite6 = (CSBI_MenuItem*)it;
         if (g_gameReg->m_134 == 2) {
-            it->m_enabled = 0;
+            it->m_4 = 0;
         }
 
         // ---- SAVE ----
@@ -145,16 +148,16 @@ void CGameMenuMgr::BuildGameMenu() {
         r.top = by + 0xfd;
         r.right = bx + 0x9f;
         r.bottom = by + 0x114;
-        if (!it->Configure(this, code, 0x1f6, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_SAVE", -1, 0)) {
+        if (!it->SetupImage(this, code, 0x1f6, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_SAVE", -1, 0)) {
             if (it) {
                 delete it;
             }
             return;
         }
-        m_items.AddTail(it);
-        m_slotSave = it;
+        m_tabLists[5].AddTail(it);
+        m_tabSprite7 = (CSBI_MenuItem*)it;
         if (g_gameReg->m_134 == 2) {
-            it->m_enabled = 0;
+            it->m_4 = 0;
         }
 
         // ---- SETTINGS ----
@@ -163,7 +166,7 @@ void CGameMenuMgr::BuildGameMenu() {
         r.top = by + 0x14d;
         r.right = bx + 0x9f;
         r.bottom = by + 0x164;
-        if (!it->Configure(
+        if (!it->SetupImage(
                 this,
                 code,
                 0x1f7,
@@ -178,8 +181,8 @@ void CGameMenuMgr::BuildGameMenu() {
             }
             return;
         }
-        m_items.AddTail(it);
-        m_slotSettings = it;
+        m_tabLists[5].AddTail(it);
+        m_tabSprite8 = (CSBI_MenuItem*)it;
 
         // ---- HELP ----
         it = new CSBI_MenuItem;
@@ -187,16 +190,16 @@ void CGameMenuMgr::BuildGameMenu() {
         r.top = by + 0x175;
         r.right = bx + 0x9f;
         r.bottom = by + 0x18c;
-        if (!it->Configure(this, code, 0x1f8, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_HELP", -1, 0)) {
+        if (!it->SetupImage(this, code, 0x1f8, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_HELP", -1, 0)) {
             if (it) {
                 delete it;
             }
             return;
         }
-        m_items.AddTail(it);
-        m_slotHelp = it;
+        m_tabLists[5].AddTail(it);
+        m_tabSprite9 = (CSBI_MenuItem*)it;
         if (g_gameReg->m_134 == 2) {
-            it->m_enabled = 0;
+            it->m_4 = 0;
         }
 
         // ---- QUIT (inlined ctor in retail) ----
@@ -205,14 +208,14 @@ void CGameMenuMgr::BuildGameMenu() {
         r.top = by + 0x19d;
         r.right = bx + 0x9f;
         r.bottom = by + 0x1b4;
-        if (!it->Configure(this, code, 0x1f9, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_QUIT", -1, 0)) {
+        if (!it->SetupImage(this, code, 0x1f9, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_QUIT", -1, 0)) {
             if (it) {
                 delete it;
             }
             return;
         }
-        m_items.AddTail(it);
-        m_slotQuit = it;
+        m_tabLists[5].AddTail(it);
+        m_tabSprite10 = (CSBI_MenuItem*)it;
 
         // ---- DESTRUCT (CSBI_ImageSet, tag 4) ----
         it = new CSBI_ImageSet;
@@ -220,14 +223,14 @@ void CGameMenuMgr::BuildGameMenu() {
         r.top = by + 0x1be;
         r.right = bx + 0x7d;
         r.bottom = by + 0x1d6;
-        if (!it->Configure(
+        if (!it->SetupImage(
                 this,
                 code,
                 0x1fc,
                 5,
                 r,
                 "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
-                m_destructState,
+                m_modeState,
                 0
             )) {
             if (it) {
@@ -235,13 +238,13 @@ void CGameMenuMgr::BuildGameMenu() {
             }
             return;
         }
-        m_items.AddTail(it);
-        m_slotDestruct = it;
+        m_tabLists[5].AddTail(it);
+        m_modeNotify = (CSbiSlotPtr*)it;
         if (g_gameReg->m_134 != 1) {
-            it->m_enabled = 0;
-            m_destructState = 7;
-            m_558 = 0;
-            m_slotDestruct->Activate(7);
+            it->m_4 = 0;
+            m_modeState = 7;
+            m_destructWarnActive = 0;
+            ((CSBI_ImageSet*)m_modeNotify)->SbiSlot12(7);
         }
         return;
     }
@@ -253,7 +256,7 @@ void CGameMenuMgr::BuildGameMenu() {
     r.top = by + 0xd7;
     r.right = bx + 0x9f;
     r.bottom = by + 0xec;
-    if (!it->Configure(
+    if (!it->SetupImage(
             this,
             code,
             0x1fb,
@@ -268,5 +271,5 @@ void CGameMenuMgr::BuildGameMenu() {
         }
         return;
     }
-    m_items.AddTail(it);
+    m_tabLists[5].AddTail(it);
 }
