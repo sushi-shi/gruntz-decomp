@@ -270,7 +270,7 @@ extern i32 g_panMaxX; // ?g_panMaxX@@3HA @0x24550c (was g_64550c)
 extern "C" {
     extern i32 g_64557c; // DAT_0064557c  (modal/cursor-busy gate)
     // The clock/scroll/warp globals SaveState streams through the archive.
-    extern i32 g_64558c; // DAT_0064558c
+    extern "C" i32 g_64558c; // DAT_0064558c
     extern i32 g_645590; // DAT_00645590
     DATA(0x00245598)
     extern i32 g_645598; // DAT_00645598
@@ -304,8 +304,15 @@ struct ScoreSub2c { // g_gameReg->m_curState
     char m_pad0[0x1c];
     i32 m_1c; // +0x1c  cumulative score
 };
+// DEFINED here (owner = the class TU of the object it points at). ~50 TUs reference this
+// singleton and NONE defined it. Its producer is CGruntzMgr::Init (RezSync.cpp), which
+// self-registers with `g_gameReg = this` - that is what proves 0x24556c holds the
+// CGruntzMgr. extern "C" keeps ONE C symbol whatever C++ view a TU declares it at (the
+// CGameRegistry==CGruntzMgr fold is a separate, deferred pass).
 DATA(0x0024556c)
-extern "C" CGruntzMgr* g_gameReg;
+extern "C" {
+CGruntzMgr* g_gameReg = 0;
+}
 
 // The +0x68 world command-grid object is the ONE CTriggerMgr (<Gruntz/TriggerMgr.h>,
 // included above) - the former CCmdGrid facet view is dissolved onto it, thunk-proven:
@@ -542,13 +549,13 @@ CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
 // The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
-// stored into the game-side mirror g_645580/g_645584); g_6bf3c0/g_6bf3bc are the
+// stored into the game-side mirror g_645580/g_645584); g_killCueClock/g_6bf3bc are the
 // draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
 extern "C" {
     extern u32 g_645580; // game-side now mirror (DAT_00645580)
     extern u32 g_645584; // game-side delta mirror (DAT_00645584)
     extern u32 g_645588; // game-side abs clock (DAT_00645588)
-    extern u32 g_6bf3bc; // draw-clock delta (cleared) - g_6bf3c0 is g_killCueClock
+    extern u32 g_6bf3bc; // draw-clock delta (cleared) - g_killCueClock is g_killCueClock
     // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
     // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_645600 below.
     DATA(0x002452d8)
@@ -585,11 +592,14 @@ struct DirectInputMgr2 {
 };
 // The +0x578 state manager (g_645578). One object: TickStateMgrs drives its Flush;
 // Close zeroes its field block (+0x00..+0x14) before delete.
+// DEFINED here (this TU already held the canonical binding). Both were extern-only
+// everywhere - here, Play.h, and RezSync (which spelled them with C++ linkage, a second
+// symbol for the same memory) - so neither name had storage. .bss, zero-init.
 extern "C" {
     DATA(0x00245570)
-    extern DirectInputMgr2* g_645570; // DAT_00245570
+    DirectInputMgr2* g_645570 = 0; // DAT_00245570
     DATA(0x00245578)
-    extern StateMgrBZ* g_645578; // DAT_00245578 (canonical binding; also decl'd in Play.h)
+    StateMgrBZ* g_645578 = 0; // DAT_00245578 (canonical binding; also decl'd in Play.h)
 }
 
 // The embedded options object's ctor/dtor are out-of-line helpers whose real bodies
@@ -1845,7 +1855,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
 // The per-frame draw-clock tick. If the active state's Update() reports the
 // "paused/hold" id (0x11) the tick is skipped; otherwise it refreshes the engine
 // clock (CGameMgr::InitializeTimeGlobal), optionally re-stamps the
-// draw clock (g_6bf3c0 = timeGetTime(), g_6bf3bc = 0) when the draw gate m_world is
+// draw clock (g_killCueClock = timeGetTime(), g_6bf3bc = 0) when the draw gate m_world is
 // set, and finally mirrors the freshly-refreshed engine clock into the game-side
 // pair (g_645580/g_645584).
 RVA(0x0008f620, 0x51)

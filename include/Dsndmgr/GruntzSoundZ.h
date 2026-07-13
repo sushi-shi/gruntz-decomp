@@ -25,6 +25,16 @@
 // includer; GruntzSoundZ.cpp gets the identical typedef from <mss.h> itself.
 typedef struct _SEQUENCE* HSEQUENCE;
 
+// The AIL XMIDI driver handle (<mss.h>'s HMDIDRIVER), same forward-declare trick.
+// _MDI_DRIVER is part of the mangled name (?g_ailMidiDriver@@3PAU_MDI_DRIVER@@A), so
+// every referencing TU must see this exact type or it emits a divergent symbol.
+typedef struct _MDI_DRIVER* HMDIDRIVER_;
+
+// The one AIL MIDI driver handle (0 = none open). DEFINED in GruntzSoundZ.cpp (owner);
+// CRezSync::Init zeroes it right before constructing the CGruntzSoundZ host, which is
+// what proves 0x653c5c is this handle and not a separate counter.
+extern HMDIDRIVER_ g_ailMidiDriver;
+
 // The inner per-bank sound object (0x60 bytes, vtable @ 0x5ef700). Derives from the
 // shared CObject grand-base: cl inherits its 5 base slots (0 GetRuntimeClass /
 // 1 dtor / 2 Serialize / 3 AssertValid / 4 Dump) and this class overrides the dtor

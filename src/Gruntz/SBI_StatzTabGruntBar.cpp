@@ -22,7 +22,7 @@ extern "C" CStatzGameReg* g_gameReg;
 // the timer block's 64-bit elapsed-window compare. Same datum the rest of Gruntz
 // reads as g_645588.
 DATA(0x00245588)
-extern i32 g_645588;
+extern "C" i32 g_645588; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 // ---------------------------------------------------------------------------
 

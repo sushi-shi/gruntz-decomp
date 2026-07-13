@@ -16,13 +16,13 @@
 // the rest of the backlog hangs off) and share the engine's "advance status-bar tab"
 // tail: a named-sprite Lookup through the global status-bar mgr
 // (g_gameReg->m_world->m_statusBar->m_10 -> CSndFinder::Lookup), a draw-clock window
-// check (g_6bf3c0 - t->m_drawClock >= t->m_window), and a
+// check (g_killCueClock - t->m_drawClock >= t->m_window), and a
 // CStatusBarMgr::ConfigureItem push (the shared 0x1360d0 helper, reloc-masked).
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 
 // The draw-clock mirror global (canonical in CPlay.h / surfacemgr).
-extern "C" u32 g_6bf3c0; // draw-clock mirror
+extern "C" u32 g_killCueClock; // draw-clock mirror
 
 // The two paired status-bar globals the advance tail reads (external delinked
 // DATA symbols, reloc-masked): g_sndEnabled gates the push, g_sndCueTag is the value.
@@ -75,8 +75,8 @@ i32 CTileTriggerSwitchLogic::Vf2() {
             h->m_10.Lookup("GAME_SWITCHDOWN", spr_ob);
             LeafCue* spr = (LeafCue*)spr_ob;
             if (spr) {
-                if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
-                    spr->m_14 = g_6bf3c0;
+                if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
+                    spr->m_14 = g_killCueClock;
                     spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                 }
             }
@@ -115,8 +115,8 @@ i32 CTileTriggerSwitchLogic::Vf3() {
             h->m_10.Lookup("GAME_SWITCHUP", spr_ob);
             LeafCue* spr = (LeafCue*)spr_ob;
             if (spr) {
-                if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
-                    spr->m_14 = g_6bf3c0;
+                if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
+                    spr->m_14 = g_killCueClock;
                     spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                 }
             }

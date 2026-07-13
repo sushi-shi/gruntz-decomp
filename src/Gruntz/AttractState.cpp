@@ -55,7 +55,7 @@ extern "C" CGameRegistry* g_gameReg;
 // The attract-state count divisor (DAT_00645534, a writable global int). extern "C"
 // so it emits the canonical `_g_645534` - the single name bound at 0x245534 (home
 // `multi`); the ex C++-mangled g_attractStateCount lost the per-rva keep-last dedup.
-extern "C" i32 g_645534;
+extern "C" i32 g_attractStateCount;
 
 // The "ShowCursor" Win32 import slot (PTR_ShowCursor_006c44c4).
 typedef i32(WINAPI* ShowCursorFn)(i32);
@@ -186,7 +186,7 @@ i32 CAttract::Vslot09(i32 arg) {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = g_gameReg->m_numRuns % g_645534 + 1;
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     RunTitleSeq(s, 0, 0, 1, 0);
@@ -323,7 +323,7 @@ i32 CAttract::InputVirtual() {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = g_gameReg->m_numRuns % g_645534 + 1;
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     return RunTitleSeq(s, 0, 0, 1, 0);
@@ -341,7 +341,7 @@ i32 CAttract::Vslot06() {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = g_gameReg->m_numRuns % g_645534 + 1;
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     return RunTitleSeq(s, 0, 0, 1, 0);

@@ -154,7 +154,7 @@ extern char g_emptyString[]; // 0x2293f4
 // ===========================================================================
 // The sound-cue globals (g_sndEnabled/g_sndCueTag - defined in GruntzMgr.cpp, declared
 // in <Globals.h>; g_killCueClock is bound by triggermgr). The donor-name aliases
-// (g_61ab20/g_61ab24/g_scrollEnabled/g_scrollDelta/g_6bf3c0/g_aniCueItem) are unified
+// (g_61ab20/g_61ab24/g_scrollEnabled/g_scrollDelta/g_killCueClock/g_aniCueItem) are unified
 // onto these canonicals so the reloc targets bind to their real rvas; reloc-masked,
 // matching-neutral.
 extern "C" u32 g_killCueClock; // 0x2bf3c0

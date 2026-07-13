@@ -174,8 +174,9 @@ extern "C" i32 g_6455f0; // 0x6455f0
 DATA(0x002455f4)
 extern u8 g_debugFlags; // 0x6455f4  debug-overlay flag bits
 // g_kslime* fields DEFINED in src/Gruntz/KitchenSlime.cpp (owner TU).
-DATA(0x00248ce0)
-extern i32 g_dlgResultSink; // DAT_00648ce0 (cleared after the modal run)
+// 0x248ce0 was ALSO bound here as `g_dlgResultSink` while Multi.cpp bound it as
+// `g_sharedFlag` - one cell, two symbols, no storage. Folded onto g_sharedFlag, which
+// Multi.cpp (owner) now DEFINES. Binding + declaration removed together.
 DATA(0x00248cec)
 extern "C" i32 g_648cec; // 0x648cec
 // g_648d14 (0x248d14) DEFINED in src/Gruntz/Multi.cpp (owner TU); ref extern in <Globals.h>.

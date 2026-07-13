@@ -215,9 +215,8 @@ static const char s_animKeyK[] = "K";
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
 extern "C" u32 g_645588;
 
-// The global default geometry source the entrance geometry-state setter consumes
-// (g_defaultGeo @0x6bf3bc; defined in SpriteResource.cpp, reloc-masked here).
-extern i32 g_defaultGeo;
+// (the dead `extern i32 g_defaultGeo` that sat here was an unused, C++-mangled alias of
+// the 0x2bf3bc draw-delta mirror - declared, never referenced; removed)
 
 // The scratch CString teardown the GetNameRecords reject paths run (defined with the
 // dispatch-machine cluster below); forward-declared for the two entrance-step
@@ -385,7 +384,8 @@ CGrunt::~CGrunt() {
 // The default entrance-cell record + the +0x438 datum the ctor copies in (the
 // CMovingLogic motion helper + bound constants are defined in Grunt.h). Reloc-masked.
 extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
-extern i32 g_gruntCtor64558c;                      // 0x64558c (-> m_438)
+extern "C" i32 g_64558c; // 0x64558c  the per-frame counter (RezMgr g_frameTicks); the
+                         // ctor stamps it into m_438 as the grunt's birth frame
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // CGrunt::Update() @0x16ea90 (__thiscall) the ctor fires after the motion setup.
@@ -472,7 +472,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     m_entranceCell.row = g_gruntDefEntranceCell[1];
     m_entranceCell.reason = g_gruntDefEntranceCell[2];
     m_434 = m_10->m_11c;
-    m_438 = g_gruntCtor64558c;
+    m_438 = g_64558c;
     m_10->m_e4 = 1;
     m_430 = 0;
     m_42c = 0;

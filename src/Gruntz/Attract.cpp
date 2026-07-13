@@ -73,7 +73,7 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The attract-state count divisor (DAT_00645534, a writable global int).
 DATA(0x00245534)
-extern i32 g_attractStateCount;
+extern "C" i32 g_attractStateCount; // DEFINED in RezSync.cpp (the producer)
 
 // The "Disable Fades" [Config] gate the CSoundFxEmitter methods poll (0x2455c4).
 // DEFINED in src/Rez/RezSync.cpp (owner); declared in <Globals.h>.

@@ -139,7 +139,7 @@ namespace m4 {
     // The game's Win32 pointer table entries (0x6c44xx/0x6c3exx) -> reloc-masked.
 
     // Password blink timer + last-format cache (reached by address).
-    extern i32 g_645584; // 0x00645584 elapsed-time delta
+    extern "C" i32 g_645584; // 0x00645584 elapsed-time delta
     extern i32 g_62b438; // 0x0062b438 blink countdown
     extern i32 g_62b43c; // 0x0062b43c blink on/off state
     extern i32 g_60c7a8; // 0x0060c7a8 last DrawText format

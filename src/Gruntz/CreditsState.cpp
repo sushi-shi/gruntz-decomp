@@ -193,7 +193,7 @@ SIZE_UNKNOWN(CButeCfg);
 struct CButeCfg {};
 DATA(0x002453d8)
 extern CButeCfg g_buteCfg;
-extern "C" i32 g_645534;
+extern "C" i32 g_attractStateCount;
 // g_gameReg (*0x24556c) viewed for its +0x80 attract frame counter (InitAttractTitle
 // rotates the TITLE index off it). Reloc-masked; the 0x24556c canonical-type unification
 // is a separate worklist item.
@@ -530,7 +530,7 @@ i32 CCreditsState::InitAttractTitle() {
     }
     char stateName[0x20];
     char titleName[0x20];
-    i32 idx = g_gameReg->m_80 % g_645534 + 1;
+    i32 idx = g_gameReg->m_80 % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
     void* saved = (void*)m_2c;

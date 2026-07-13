@@ -30,8 +30,8 @@
 // The g_gameReg singleton (VA 0x64556c), shared by the CSBI_GruntMachine /
 // CSBI_SideTab methods below: the render chain m_world (+0x30, CResMgr) ->
 // m_drawTarget (+0x04) -> m_14 surface context, and the side-tab unit table
-// m_68. One TU-wide decl (the CSideTabGameReg view from <Gruntz/SBI_SideTab.h>;
-// the builders' namespace-scoped CGameRegistry decl below is its own symbol).
+// m_68. The ONE decl in this TU (the CSideTabGameReg view from <Gruntz/SBI_SideTab.h>);
+// DEFINED in GruntzMgr.cpp. extern "C" -> the single C symbol _g_gameReg.
 DATA(0x0024556c)
 extern "C" CSideTabGameReg* g_gameReg;
 
@@ -41,13 +41,19 @@ namespace StatusBarTabBuilders {
     // CSpriteRefTable/CSbWorldSlot/CSbTab views live in
     // <Gruntz/StatusBarTabBuildersViews.h>.
 
-    // The game registry / settings singleton (*0x24556c) - the canonical
-    // CGameRegistry view. The namespace owner (+0x30 -> CSbOwner), sprite-ref table
-    // (+0x74 -> CSpriteRefTable) and per-world slot array (+0x138, stride 0x238 ->
-    // CSbWorldSlot) are cast locally at the deref sites. C++-namespaced (its OWN symbol,
-    // distinct from the file-scope extern "C" _g_gameReg above) so the two typed views of
-    // *0x24556c coexist in one TU without an extern "C" type clash (clang -emit-llvm).
-    extern CGameRegistry* g_gameReg;
+    // The namespaced `extern CGameRegistry* g_gameReg` that used to sit here was a
+    // C++-linkage decl, so it emitted ?g_gameReg@StatusBarTabBuilders@@3PAUCGameRegistry@@A
+    // - a SECOND symbol for 0x24556c that no obj and no .LIB could ever define. It bought
+    // a compile-time convenience (two typed views in one TU without an extern "C" type
+    // clash) at the price of a guaranteed `unresolved external symbol`. Gone: the file-
+    // scope extern "C" decl above is the only one, and the CGameRegistry-view derefs cast
+    // at the site.
+    //
+    // The cast is honest and it is TELLING THE TRUTH: CSideTabGameReg is a narrow VIEW of
+    // CGameRegistry (both put m_world at +0x30; CSideTabGameReg's `m_68` unit table is
+    // CGameRegistry's +0x68 m_cmdGrid == the ONE CTriggerMgr, whose +0x1c grid is the
+    // 15-column table indexed here). Dissolving the view is the deferred CGameRegistry
+    // fold, not this lane's - so the type stays fake and the cast stays visible.
     extern "C" i32
         g_curPlayer; // the current world index (canonical DATA(0x00244c54) in sbi_rectonly)
 
@@ -118,10 +124,10 @@ namespace StatusBarTabBuilders {
             return 0;
         }
         i32 sel =
-            ((CSpriteRefTable*)g_gameReg->m_spriteFactory)
+            ((CSpriteRefTable*)((CGameRegistry*)g_gameReg)->m_spriteFactory)
                 ->GetSel(((CSbWorldSlot*)((char*)g_gameReg + 0x138))[g_curPlayer].m_toolId, 0);
         if (sel == 0) {
-            sel = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(1, 0);
+            sel = ((CSpriteRefTable*)((CGameRegistry*)g_gameReg)->m_spriteFactory)->GetSel(1, 0);
         }
         ((CImageSet*)m_imageSet)->SetAllTypes(10);
         ((CImageSet*)m_imageSet)->SetAllFormats(sel);
@@ -277,7 +283,7 @@ namespace StatusBarTabBuilders {
         m_54 = onLeft;
         if (onLeft == 0) {
             void* out = 0;
-            ((CMapStringToPtr*)&((CSbOwner*)g_gameReg->m_world)->m_mapHost->m_map)
+            ((CMapStringToPtr*)&((CSbOwner*)((CGameRegistry*)g_gameReg)->m_world)->m_mapHost->m_map)
                 ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", (void*&)out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;
@@ -291,7 +297,7 @@ namespace StatusBarTabBuilders {
             m_48 = (p7 - p5) / 2 + parent->m_18;
         } else {
             void* out = 0;
-            ((CMapStringToPtr*)&((CSbOwner*)g_gameReg->m_world)->m_mapHost->m_map)
+            ((CMapStringToPtr*)&((CSbOwner*)((CGameRegistry*)g_gameReg)->m_world)->m_mapHost->m_map)
                 ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", (void*&)out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;

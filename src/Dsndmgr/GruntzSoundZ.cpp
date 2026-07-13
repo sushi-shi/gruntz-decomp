@@ -29,9 +29,11 @@
 
 // ---------------------------------------------------------------------------
 // The AIL MIDI driver state globals (.data), shared with the RezSync game-init.
+// DEFINED here (owner TU). It was extern on BOTH sides - this TU and RezSync's game-init
+// (which spelled it `g_653c5c`, C++ linkage, so it was a divergent symbol too) - leaving
+// one variable with two names and no storage. The shared declaration is in the header.
 DATA(0x00253c5c)
-extern HMDIDRIVER g_ailMidiDriver; // 0x653c5c  AIL/digital MIDI driver handle (0 = none open)
-                                   // (shared with RezSync game-init - stays extern)
+HMDIDRIVER g_ailMidiDriver = 0; // 0x653c5c  AIL/digital MIDI driver handle (0 = none open)
 // g_midiSeqCounter/g_ailDriver64 DEFINED here (owner TU gruntzsoundz.obj's .bss,
 // zero-init) - REHOME DD-D: extern-only (only this TU references them).
 DATA(0x00253c60)

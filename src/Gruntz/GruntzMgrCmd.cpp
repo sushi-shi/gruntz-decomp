@@ -90,7 +90,9 @@ extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame ra
 DATA(0x002455f8)
 extern i32 g_explosionz; // "Explosionz"
 DATA(0x002bf3c0)
-extern i32 g_time6bf3c0;    // cue-cooldown clock (0x8247 throttle)
+// the draw-clock mirror (here: the 0x8247 cue-cooldown throttle). Was a C++-mangled
+// ?g_time6bf3c0@@3HA - a divergent symbol for a cell 9 other TUs share.
+extern "C" u32 g_killCueClock;
 DATA(0x00244c54)            // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_644c54)
 extern "C" i32 g_curPlayer; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
 DATA(0x00248cf0) // RVA (was VA-typo 0x648cf0, which shadowed multi's canonical 0x248cf0 binding)
@@ -680,7 +682,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                             m_world->m_28->m_10.Lookup("GAME_MAJORCHEAT", _c_ob);
                             LeafCue* _c = (LeafCue*)_c_ob;
                             if (_c && g_sndEnabled) {
-                                i32 now = g_time6bf3c0;
+                                i32 now = g_killCueClock;
                                 if ((u32)(now - _c->m_14) >= (u32)_c->m_18) {
                                     _c->m_14 = now;
                                     _c->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);

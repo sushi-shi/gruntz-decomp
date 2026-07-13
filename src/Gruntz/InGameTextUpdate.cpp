@@ -88,7 +88,7 @@ extern CTypeKeyColl g_typeColl;
 DATA(0x002bf3bc)
 extern "C" i32 g_6bf3bc; // sub-logic clock fed to CAniAdvanceCursor::Advance_15c360
 DATA(0x002bf3c0)
-extern "C" u32 g_6bf3c0; // wrap-safe draw clock
+extern "C" u32 g_killCueClock; // wrap-safe draw clock
 DATA(0x00244c54)
 extern "C" i32 g_curPlayer; // current area index
 extern i32 g_sndEnabled;    // cue enable gate
@@ -156,7 +156,7 @@ i32 CInGameText::Update() {
                 i32 enable = g_sndEnabled;
                 i32 token = g_sndCueTag;
                 if (enable != 0) {
-                    u32 now = g_6bf3c0;
+                    u32 now = g_killCueClock;
                     if (now - res->m_14 >= res->m_18) {
                         res->m_14 = now;
                         ((CSoundCueMgr*)res->m_10)->ConfigureItem(token, 0, 0, 0);

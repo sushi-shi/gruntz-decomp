@@ -881,30 +881,40 @@ extern CGruntzCmdList g_multiCmdList;
 // edit fields into controls 0x4db..0x4e6; IDOK reads them back; IDCANCEL closes.
 // The 12 field caches are cluster-local globals (moved here with the DlgProc).
 // ---------------------------------------------------------------------------
-DATA(0x0024526c)
-extern i32 g_dlgVal_64526c;
-DATA(0x002452d0)
-extern i32 g_dlgVal_6452d0;
-DATA(0x00245268)
-extern i32 g_dlgVal_645268;
-DATA(0x00245568)
-extern i32 g_dlgVal_645568;
-DATA(0x00245538)
-extern i32 g_dlgVal_645538;
+// DEFINED HERE (storage, .bss zero-init), RVA-ascending. Nothing in the tree defined
+// these twelve: this TU extern-bound them while CRezSync::Init reset the same addresses
+// under its own C++-linkage hex spellings (g_6451a4/g_645268/...), so BOTH names were
+// unresolved externals - one variable, two symbols. RezSync now references these names.
+//
+// OWNER: this TU. The dialog is the only code that gives each cell an individual
+// identity (one dedicated edit control apiece, 0x4da..0x4e9); RezSync only bulk-resets
+// the band. No .bute key names them, so the role name (`dlgVal`) is all the binary
+// proves - the numeric value cached behind edit control N. Not invented, but not a
+// recovered dev name either.
 DATA(0x002451a4)
-extern i32 g_dlgVal_6451a4;
-DATA(0x002452d4)
-extern i32 g_dlgVal_6452d4;
+i32 g_dlgVal_6451a4;
+DATA(0x00245268)
+i32 g_dlgVal_645268;
+DATA(0x0024526c)
+i32 g_dlgVal_64526c;
 DATA(0x002452a8)
-extern i32 g_dlgVal_6452a8;
+i32 g_dlgVal_6452a8;
+DATA(0x002452d0)
+i32 g_dlgVal_6452d0;
+DATA(0x002452d4)
+i32 g_dlgVal_6452d4;
+DATA(0x00245538)
+i32 g_dlgVal_645538;
 DATA(0x00245558)
-extern i32 g_dlgVal_645558;
-DATA(0x00245560)
-extern i32 g_dlgVal_645560;
+i32 g_dlgVal_645558;
 DATA(0x0024555c)
-extern i32 g_dlgVal_64555c;
+i32 g_dlgVal_64555c;
+DATA(0x00245560)
+i32 g_dlgVal_645560;
 DATA(0x00245564)
-extern i32 g_dlgVal_645564;
+i32 g_dlgVal_645564;
+DATA(0x00245568)
+i32 g_dlgVal_645568;
 RVA(0x00092ab0, 0x20d)
 i32 CALLBACK winapi_092ab0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

@@ -66,10 +66,11 @@ extern CButeMgr g_buteMgr;
 // <Gruntz/InGameIcon.h> (via GruntPuddle.h); the wormhole paths that walk it as a
 // raw slot table cast it per use ((i32**)g_gameReg / (CSpawnReg*)g_gameReg).
 
-// The global default geometry source SpawnPartners feeds m_38->m_1a0.SetGeoSource
-// (matched in SpriteResource.cpp as g_defaultGeo, RVA 0x2bf3bc).
-DATA(0x002bf3bc)
-extern i32 g_defaultGeo;
+// 0x2bf3bc is NOT a "default geometry source": it is the per-frame DRAW-DELTA mirror
+// (Play.cpp sets it every frame from g_645584 == g_lastDelta), and what the calls below
+// do is advance an animation cursor BY THE FRAME DELTA. This TU had it as a C++-mangled
+// `g_defaultGeo` - a divergent, undefinable symbol under a wrong name. It comes from
+// <Gruntz/Teleporter.h> (extern "C" u32 g_6bf3bc), included above.
 
 // The current local player index (g_curPlayer) the teleporter warp gates on.
 DATA(0x00244c54)
@@ -436,7 +437,7 @@ void CWormhole::SpawnPartners() {
     // The geo-call dereferences m_38 once (its own ecx); the gate block then
     // re-reads m_38 ONCE into a scratch and reuses it for all three field reads
     // (the target keeps this=esi live across both, loading [esi+0x38] twice).
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
 
     // Gate: only spawn partners when the object is "open" (m_1c8 set) and not
     // already paired (m_1c0 clear); then mark it paired-in-progress (m_08 |= 0x10000).

@@ -49,13 +49,20 @@
 // (included above); the serialize stream is the shared CSerialArchive. Only the
 // RVA-keyed method bodies and the DATA()-bound globals remain in this TU.
 
-// An unnamed engine DWORD global read by the HUD-rect group setters.
+// The running game clock (RezMgr's g_accumMs) read by the HUD-rect group setters.
+// This TU used to declare the SAME cell twice - here as a C++ `g_645588` and again
+// below as the extern-"C" `g_645588` - i.e. two symbols for one address, neither with
+// storage. One declaration now; it is DEFINED in Projectile.cpp.
 DATA(0x00245588)
-extern i32 g_dat645588;
+extern "C" u32 g_645588;
 
 // The current local-player / area index (PlaceCursorTarget's tile-grid column).
+// DEFINED HERE - this TU already held the canonical binding and 11 TUs referenced it
+// with none defining it. .bss, zero-init.
 DATA(0x00244c54)
-extern "C" i32 g_curPlayer;
+extern "C" {
+i32 g_curPlayer = 0;
+}
 
 // CMapStringToOb/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
 // CSbiTile*/CSbiActiveObj/CSbiLogger/CSbiWndHost/CGameReg moved to
@@ -76,9 +83,9 @@ extern "C" CGruntzMgr* g_gameReg;
 // The reentrancy gate + cue-item id pair the highlight handlers play through.
 extern i32 g_sndEnabled;
 extern i32 g_sndCueTag;
-// The draw-clock mirror (g_6bf3c0), unsigned for the wrap-safe gate compare.
+// The draw-clock mirror (g_killCueClock), unsigned for the wrap-safe gate compare.
 DATA(0x002bf3c0)
-extern "C" u32 g_6bf3c0;
+extern "C" u32 g_killCueClock;
 
 // Global serialize-sequence counter (bumped once per Serialize).
 DATA(0x00229ad0)
@@ -321,7 +328,7 @@ void CStatusBarMgr::SetHudRectA(i32 y0, i32 x0, i32 z) {
     m_hudRectA_x = x0;
     m_hudRectA_z = z;
     m_hudRectA_zHi = 0;
-    m_hudRectA_clock = g_dat645588;
+    m_hudRectA_clock = g_645588;
     m_hudRectA_clockHi = 0;
 }
 
@@ -334,7 +341,7 @@ void CStatusBarMgr::SetHudRectB(i32 y0, i32 x0, i32 z) {
     m_hudRectB_x = x0;
     m_hudRectB_z = z;
     m_hudRectB_zHi = 0;
-    m_hudRectB_clock = g_dat645588;
+    m_hudRectB_clock = g_645588;
     m_hudRectB_clockHi = 0;
 }
 
@@ -1008,8 +1015,8 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                            p->m_14 = g_6bf3c0;
+                        if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                            p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
@@ -1044,8 +1051,8 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                            p->m_14 = g_6bf3c0;
+                        if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                            p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
@@ -1079,8 +1086,8 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                            p->m_14 = g_6bf3c0;
+                        if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                            p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
@@ -1384,8 +1391,7 @@ i32 CStatusBarMgr::Activate() {
 // Referent decls carried over from the absorbed TUs:
 // ===========================================================================
 
-// The running game clock (the updaters' 64-bit elapsed clamps; canonical in CPlay.h).
-extern "C" u32 g_645588;
+// (the running game clock g_645588 is declared once at the top of this TU)
 
 
 // (the CWsfTabArray/CWsfDrawable/CWsfGameMgr views moved to <Gruntz/WarpStoneFly.h> and
@@ -1447,8 +1453,8 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
                 LeafCue* spr = (LeafCue*)spr_ob;
                 if (spr) {
-                    if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
-                        spr->m_14 = g_6bf3c0;
+                    if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
+                        spr->m_14 = g_killCueClock;
                         spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
                 }
@@ -1501,8 +1507,8 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
                     LeafCue* spr = (LeafCue*)spr_ob;
                     if (spr) {
-                        if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
-                            spr->m_14 = g_6bf3c0;
+                        if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
+                            spr->m_14 = g_killCueClock;
                             spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                         }
                     }
@@ -1564,8 +1570,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                         h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
                         LeafCue* spr = (LeafCue*)spr_ob;
                         if (spr) {
-                            if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
-                                spr->m_14 = g_6bf3c0;
+                            if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
+                                spr->m_14 = g_killCueClock;
                                 spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                             }
                         }
@@ -1691,8 +1697,8 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
         h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);
         LeafCue* fly = (LeafCue*)fly_ob;
         if (fly) {
-            if (g_sndEnabled != 0 && g_6bf3c0 - fly->m_14 >= fly->m_18) {
-                fly->m_14 = g_6bf3c0;
+            if (g_sndEnabled != 0 && g_killCueClock - fly->m_14 >= fly->m_18) {
+                fly->m_14 = g_killCueClock;
                 fly->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
             }
         }
@@ -2369,8 +2375,8 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
-                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                        p->m_14 = g_6bf3c0;
+                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                        p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }
@@ -2404,8 +2410,8 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                            p->m_14 = g_6bf3c0;
+                        if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                            p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
@@ -2492,8 +2498,8 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
-                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                        p->m_14 = g_6bf3c0;
+                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                        p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }
@@ -2522,8 +2528,8 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
             i32 item = g_sndCueTag;
             if (gate != 0) {
                 CSbiCueRecord* p = (CSbiCueRecord*)found;
-                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                    p->m_14 = g_6bf3c0;
+                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                    p->m_14 = g_killCueClock;
                     p->m_10->ConfigureItem(item, 0, 0, 0);
                 }
             }
@@ -3295,8 +3301,8 @@ static __inline void HiCueTimed() {
         if (found && g_sndEnabled != 0) {
             i32 item = g_sndCueTag;
             CSbiCueRecord* p = (CSbiCueRecord*)found;
-            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                p->m_14 = g_6bf3c0;
+            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                p->m_14 = g_killCueClock;
                 p->m_10->ConfigureItem(item, 0, 0, 0);
             }
         }
@@ -3495,7 +3501,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                                 0x32
                             );
                             m_destructWarnDelayHi = 0;
-                            m_destructWarnLast = g_dat645588;
+                            m_destructWarnLast = g_645588;
                             m_destructWarnLastHi = 0;
                             sm->ArmSnapshot(1, 0xbb7);
                         } else {
@@ -3668,13 +3674,13 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 // 0x1055b0 - build the GOOCOOKING1 status-bar sprite for stat slot `idx`. Bails (0)
 // if the slot is already active; when the game is running (m_134==1) and the mode
 // gate is down (m_hlBusy==0), refresh the subtype-2 cursor, apply the (2,3) rect off the
-// gauge tab, and commit. Latch the gauge span for slot idx+0x17 (base g_dat645588, hi
+// gauge tab, and commit. Latch the gauge span for slot idx+0x17 (base g_645588, hi
 // 0x7fffffff); then, on the gauge tab and not the cursor subtype, play the
 // GAME_GOOCOOKING1 cue on the draw-clock window if the music gate is free. Returns 1.
 // @early-stop
 // ~96.7%: the code bytes are byte-exact vs retail (verified llvm-objdump -dr base vs
 // target). The residual is purely the reloc-symbol-naming scoring tail - this TU models
-// the shared singletons as ?g_gameReg@@... / ?g_dat645588@@... / ?g_sndEnabled@@... etc.
+// the shared singletons as ?g_gameReg@@... / ?g_645588@@... / ?g_sndEnabled@@... etc.
 // while retail names them _g_mgrSettings / _g_645588 / ?g_sndEnabled@@... / ?g_sndCueTag@@
 // ... / _g_killCueClock (+ the GAME_GOOCOOKING1 $SG string), so those DIR32 operands
 // don't pair. A TU-wide rename, not a per-function fix; matcher.md reloc artifact.
@@ -3697,7 +3703,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     CSbiSlot* g = (CSbiSlot*)this + (idx + 0x17);
     g->m_8 = 0x7fffffff;
     g->m_c = 0;
-    g->m_state = g_dat645588;
+    g->m_state = g_645588;
     g->m_value = 0;
     if (m_activeTab == 2 && m_position != 2) {
         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
@@ -3710,8 +3716,8 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
-                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                        p->m_14 = g_6bf3c0;
+                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                        p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }
@@ -3730,7 +3736,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
 // @early-stop
 // complete reconstruction; residual is the 64-bit draw-clock gate scheduling +
 // zero/1-register pinning across the 3-slot loop + the shared-global DIR32 naming
-// (g_gameReg/g_dat645588/g_sndEnabled...); documented regalloc/scheduling walls.
+// (g_gameReg/g_645588/g_sndEnabled...); documented regalloc/scheduling walls.
 RVA(0x00105990, 0x398)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
@@ -3744,13 +3750,13 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 2:
-                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if ((i64)(u32)g_645588 - ph->m_last >= ph->m_interval) {
                     if (++ph->m_counter >= 0x12) {
                         ph->m_counter = 0x12;
                         ph->m_state = 7;
                         ph->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
-                        ph->m_last = (u32)g_dat645588;
+                        ph->m_last = (u32)g_645588;
                         UpdateFallingItemStatusBar(
                             m_extraNotifyArg0,
                             m_itemRectL + 0xc,
@@ -3761,7 +3767,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 3:
-                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if ((i64)(u32)g_645588 - ph->m_last >= ph->m_interval) {
                     if (--ph->m_counter < 0xa) {
                         ph->m_state = 0;
                         ph->m_counter = 1;
@@ -3769,21 +3775,21 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 4:
-                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if ((i64)(u32)g_645588 - ph->m_last >= ph->m_interval) {
                     if (++ph->m_counter >= 0x18) {
                         ph->m_counter = 0x18;
                         ph->m_state = 6;
                         ph->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
-                        ph->m_last = (u32)g_dat645588;
+                        ph->m_last = (u32)g_645588;
                         m_machinePhase = 8;
                         m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                        m_beltLast = (u32)g_dat645588;
+                        m_beltLast = (u32)g_645588;
                     }
                 }
                 break;
             case 5:
-                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if ((i64)(u32)g_645588 - ph->m_last >= ph->m_interval) {
                     if (--ph->m_counter < 0x13) {
                         ph->m_state = 0;
                         ph->m_counter = 1;
@@ -3791,7 +3797,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 6:
-                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if ((i64)(u32)g_645588 - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
@@ -3801,8 +3807,8 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
-                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                    p->m_14 = g_6bf3c0;
+                                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                    p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
                             }
@@ -3812,7 +3818,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 7:
-                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if ((i64)(u32)g_645588 - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
@@ -3822,8 +3828,8 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
-                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                    p->m_14 = g_6bf3c0;
+                                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                    p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
                             }
@@ -3851,14 +3857,14 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 // @early-stop
 // complete reconstruction; residual is the 64-bit draw-clock gates + MSVC cross-jump/
 // tail-merge of the shared GetIntDef/SetStatBar sequences + zero-register pinning +
-// shared-global DIR32 naming (g_gameReg/g_dat645588/g_buteMgr/g_sndEnabled). Walls.
+// shared-global DIR32 naming (g_gameReg/g_645588/g_buteMgr/g_sndEnabled). Walls.
 RVA(0x00105e40, 0x62c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     SbiPhaseSlot* pA = (SbiPhaseSlot*)&m_hudRectB_x;
     SbiPhaseSlot* pB = (SbiPhaseSlot*)&m_hudRectA_x;
     SbiPhaseSlot* g = (SbiPhaseSlot*)m_groupSlots;
     if (pA->m_state == 5) {
-        if ((i64)(u32)g_dat645588 - pA->m_last >= pA->m_interval) {
+        if ((i64)(u32)g_645588 - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x34) {
                 SetHudRectB(
                     0x2b,
@@ -3867,23 +3873,23 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 );
             } else {
                 pA->m_interval = g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d);
-                pA->m_last = (u32)g_dat645588;
+                pA->m_last = (u32)g_645588;
             }
         }
     } else if (pA->m_state == 6) {
-        if ((i64)(u32)g_dat645588 - pA->m_last >= pA->m_interval) {
+        if ((i64)(u32)g_645588 - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x44) {
                 SetHudRectB(0x2b, 0, 0x7fffffff);
             } else {
                 pA->m_interval = g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
-                pA->m_last = (u32)g_dat645588;
+                pA->m_last = (u32)g_645588;
             }
         }
     }
 
     switch (pB->m_state) {
         case 1:
-            if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+            if ((i64)(u32)g_645588 - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 8) {
                     SetHudRectA(
                         1,
@@ -3893,12 +3899,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 } else {
                     pB->m_interval =
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64);
-                    pB->m_last = (u32)g_dat645588;
+                    pB->m_last = (u32)g_645588;
                 }
             }
             break;
         case 2:
-            if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+            if ((i64)(u32)g_645588 - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x13) {
                     SetHudRectA(
                         0x14,
@@ -3918,7 +3924,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     }
                     m_machinePhase = 2;
                     m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                    m_beltLast = (u32)g_dat645588;
+                    m_beltLast = (u32)g_645588;
                     if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
@@ -3928,8 +3934,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
-                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                    p->m_14 = g_6bf3c0;
+                                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                    p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
                             }
@@ -3938,12 +3944,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 } else {
                     pB->m_interval =
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 0x64);
-                    pB->m_last = (u32)g_dat645588;
+                    pB->m_last = (u32)g_645588;
                 }
             }
             break;
         case 3:
-            if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+            if ((i64)(u32)g_645588 - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x1d) {
                     SetHudRectA(
                         0x14,
@@ -3953,12 +3959,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 } else {
                     pB->m_interval =
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64);
-                    pB->m_last = (u32)g_dat645588;
+                    pB->m_last = (u32)g_645588;
                 }
             }
             break;
         case 4:
-            if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+            if ((i64)(u32)g_645588 - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter == 0x26) {
                     i32 col;
                     i32 which = m_extraNotifyArg0;
@@ -3986,8 +3992,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
-                                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                        p->m_14 = g_6bf3c0;
+                                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                        p->m_14 = g_killCueClock;
                                         p->m_10->ConfigureItem(item, 0, 0, 0);
                                     }
                                 }
@@ -4005,8 +4011,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
-                                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                        p->m_14 = g_6bf3c0;
+                                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                        p->m_14 = g_killCueClock;
                                         p->m_10->ConfigureItem(item, 0, 0, 0);
                                     }
                                 }
@@ -4014,7 +4020,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         }
                     }
                     g[0].m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltDelay", 0x64);
-                    g[0].m_last = (u32)g_dat645588;
+                    g[0].m_last = (u32)g_645588;
                     if (pB->m_counter > 0x2a) {
                         SetHudRectA(
                             1,
@@ -4024,7 +4030,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     } else {
                         pB->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64);
-                        pB->m_last = (u32)g_dat645588;
+                        pB->m_last = (u32)g_645588;
                     }
                 }
             }
@@ -4068,23 +4074,23 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     i32 rectFlag = 0;
     switch (m_machinePhase) {
         case 2:
-            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            if ((i64)(u32)g_645588 - m_beltLast >= m_beltInterval) {
                 m_itemRectL += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRectR += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = (u32)g_dat645588;
+                m_beltLast = (u32)g_645588;
             }
             if (m_itemRectL >= 0x6d) {
                 m_itemRectL = 0x6d;
                 m_itemRectR = 0x84;
                 m_machinePhase = 3;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemInMachineTime", 0x7d0);
-                m_beltLast = (u32)g_dat645588;
+                m_beltLast = (u32)g_645588;
             }
             refreshFlag = 1;
             break;
         case 3:
-            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            if ((i64)(u32)g_645588 - m_beltLast >= m_beltInterval) {
                 SetHudRectB(
                     0x35,
                     6,
@@ -4092,11 +4098,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 );
                 m_machinePhase = 4;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemWaitTime", 0x1f4);
-                m_beltLast = (u32)g_dat645588;
+                m_beltLast = (u32)g_645588;
             }
             break;
         case 4:
-            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            if ((i64)(u32)g_645588 - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
                 if (m_activeTab == 3 && m_position != 2) {
                     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
@@ -4107,23 +4113,23 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                p->m_14 = g_6bf3c0;
+                            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
                             }
                         }
                     }
                 }
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = (u32)g_dat645588;
+                m_beltLast = (u32)g_645588;
             }
             break;
         case 5:
-            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            if ((i64)(u32)g_645588 - m_beltLast >= m_beltInterval) {
                 m_itemRectT += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_itemRectB += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = (u32)g_dat645588;
+                m_beltLast = (u32)g_645588;
             }
             if (m_itemRectB >= 0x11c) {
                 m_itemRectB = 0x11c;
@@ -4138,8 +4144,8 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                p->m_14 = g_6bf3c0;
+                            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
                             }
                         }
@@ -4147,7 +4153,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 }
                 m_machinePhase = 7;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = (u32)g_dat645588;
+                m_beltLast = (u32)g_645588;
                 if (m_extraNotifyArg0 >= 0x22) {
                     m_itemBaseX = 0x6d;
                 } else if (m_extraNotifyArg0 >= 0x17) {
@@ -4159,11 +4165,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case 7:
-            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            if ((i64)(u32)g_645588 - m_beltLast >= m_beltInterval) {
                 m_itemRectL -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRectR -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = (u32)g_dat645588;
+                m_beltLast = (u32)g_645588;
             }
             if (m_itemRectL <= m_itemBaseX) {
                 m_itemRectL = m_itemBaseX;
@@ -4180,11 +4186,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case 8: {
-            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            if ((i64)(u32)g_645588 - m_beltLast >= m_beltInterval) {
                 m_itemRectT += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_itemRectB += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = (u32)g_dat645588;
+                m_beltLast = (u32)g_645588;
             }
             i32 col;
             if (m_extraNotifyArg0 >= 0x22) {
@@ -4209,8 +4215,8 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                p->m_14 = g_6bf3c0;
+                            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
                             }
                         }
@@ -4239,7 +4245,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 
 // 0x107590 - configure the falling-item HUD gauge from a center point (a2,a3). Latch
 // the notify arg + active flag, pull the FallingItemDelay config, seed the rect base
-// from g_dat645588, build the relative +/-0xc rect (m_fallRectL block), and - if the notify
+// from g_645588, build the relative +/-0xc rect (m_fallRectL block), and - if the notify
 // object exists - write the absolute rect (offset by the item base coords m_10/m_14)
 // into its +0x14 slot. Finish with the fall-rect refresh helper.
 // @early-stop
@@ -4255,7 +4261,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_fallActive = 1;
     m_fallDelay = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
     m_fallDelayHi = 0;
-    m_fallLast = g_dat645588;
+    m_fallLast = g_645588;
     m_fallLastHi = 0;
     CSbiSlotPtr* n = m_extraNotify1;
     i32 l = a2 - 0xc;

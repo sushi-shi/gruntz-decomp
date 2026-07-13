@@ -48,7 +48,7 @@ extern "C" CGruntzMgr* g_gameReg;
 extern i32 g_sndEnabled;
 extern i32 g_sndCueTag;
 DATA(0x002bf3c0)
-extern "C" u32 g_6bf3c0;
+extern "C" u32 g_killCueClock;
 
 // CMiTabHost/CMiSelf moved to <Gruntz/SBI_MenuItem.h>.
 
@@ -220,8 +220,8 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CMiCue* p = found;
-                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                        p->m_14 = g_6bf3c0;
+                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                        p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }

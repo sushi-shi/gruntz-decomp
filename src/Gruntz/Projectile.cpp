@@ -63,7 +63,7 @@ i32 CProjRenderObj::ApplyLookupGeometry(const char* key, i32 flag) {
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
 // the fcomp/mov loads reloc-mask against the named symbols.
 DATA(0x00245584)
-extern i32 g_645584;
+extern "C" i32 g_645584;
 
 // ---------------------------------------------------------------------------
 // Externs the reconstructed projectile methods reference (reloc-masked).

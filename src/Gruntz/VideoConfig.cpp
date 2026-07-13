@@ -142,7 +142,7 @@ HWND g_optHwndCk8 = 0; // IDC 0x476
 // The scroll-cue throttle globals ScrollDialog's config-cue chain reads.
 extern i32 g_sndEnabled;       // 0x61ab20 (?g_sndEnabled@@3HA)
 extern i32 g_sndCueTag;        // 0x61ab24 (?g_sndCueTag@@3HA)
-extern "C" i32 g_killCueClock; // 0x6bf3c0 (_g_killCueClock)
+extern "C" u32 g_killCueClock; // 0x6bf3c0 (_g_killCueClock; u32 - the wrap-safe gate)
 
 // Forward decls for the in-TU definitions below (callers precede them in RVA order).
 void LoadGameOptionsToDialog(HWND hDlg);                           // 0x036860

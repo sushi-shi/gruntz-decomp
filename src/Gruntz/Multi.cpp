@@ -55,7 +55,7 @@ extern "C" u32 g_645588; // 0x645588  accum clock
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 DATA(0x00245534)
-extern "C" i32 g_645534; // 0x645534  title-index modulus
+extern "C" i32 g_attractStateCount; // 0x645534  title-index modulus
 
 // The DirectPlay session-name CString global (assigned in StartTitle).
 DATA(0x002473d8)
@@ -118,6 +118,15 @@ extern "C" CGameRegistry* g_gameReg;
 // only from this TU (data_home: private); the single reference extern lives in
 // <Net/NetMgr.h> / <Globals.h>. DATA() rides the DEFINITION (reloc-masked DIR32 at
 // the use sites). Ordered ascending by RVA per section (.data then .bss).
+// g_localVersion was extern-only tree-wide (here + <Net/NetMgr.h>), while CRezSync::Init
+// wrote the SAME address under a private `void* g_60fa70` - so one variable had two
+// symbols and no storage. It is the .bute [General] "RezSync" dword (RezSync::Init loads
+// it) that Net compares against the host packet's m_1c. Defined here, beside its
+// adjacent sibling g_remoteVersion.
+DATA(0x0020fa70)
+extern "C" {
+i32 g_localVersion = 0; // 0x20fa70  local protocol/rez-sync version word
+}
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1; // 0x20fa74  protocol version word (local build = 1)
 DATA(0x0020fab8)
@@ -156,10 +165,15 @@ u32 g_648d14; // 0x248d14  drop-throttle deadline
 
 // Non-worklist siblings referenced here (shared / homed elsewhere): kept as plain
 // extern refs carrying their DATA fallback (no private definition of them here).
-DATA(0x0020fa70)
-extern "C" i32 g_localVersion; // 0x20fa70  version-word sibling (not TU-private)
+// DEFINED HERE (owner TU; only LobbyDialogs also reads it). This TU used to declare the
+// SAME cell twice - as the extern-"C" g_sharedFlag here and again as a C++ `g_dlgResultSink`
+// further down (Globals.cpp/Globals.h carried that second name too) - so 0x248ce0 had two
+// symbols and no storage. It is the modal chat-sink handle (ShowChatLine consumes it, and
+// every modal exit path clears it). .bss, zero-init.
 DATA(0x00248ce0)
-extern "C" i32 g_sharedFlag; // 0x248ce0  (conflated with g_dlgResultSink @Globals.cpp; shared)
+extern "C" {
+i32 g_sharedFlag = 0; // 0x248ce0
+}
 
 // MultiDispatch outcome codes the message handlers switch on (engine command
 // dispatcher result space; names reconstructed from the branches, values
@@ -1621,7 +1635,7 @@ i32 CMulti::StartTitle() {
     if (!st) {
         return 0;
     }
-    i32 idx = g_gameReg->m_numRuns % g_645534 + 1;
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString title;
     title.Format("TITLE%d", idx);
     if (LoadTitleScreen(title, 0, 0, 1, 0) == 0) {
@@ -2087,7 +2101,7 @@ RVA(0x000b86c0, 0x206)
 i32 CNetMgrLite::ShowMultiStartDlg() {
     CMultiStartDlg dlg((i32)m_4, 0);
     i32 r = m_4->ExitModalUI(&dlg, 0);
-    g_dlgResultSink = 0;
+    g_sharedFlag = 0;
     if (r != 1) {
         if (m_528 != 0) {
             CNetCueRec* rec = (CNetCueRec*)m_4->FindOptionsSlot(m_5c0);
@@ -2649,8 +2663,8 @@ extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f94
 
 // The cached USER32 PostMessageA pointer (the game's own function-pointer global,
 // distinct from the IAT import) + the modal chat-sink handle. DIR32 reloc-masked.
-extern i32 g_dlgResultSink;                                    // 0x648ce0
-extern i32 g_sndCueTag;                                        // 0x61ab24
+// (g_sharedFlag @0x648ce0 is declared+defined once, at the top of this TU)
+extern i32 g_sndCueTag; // 0x61ab24
 
 // The received-message view: a bit7 flag byte, the message id, then a payload the
 // arms read as a word / channel byte / chat text depending on the id.
@@ -2748,8 +2762,8 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         }
 
         case 0x3f0: {
-            if (g_dlgResultSink != 0) {
-                ShowChatLine((void*)g_dlgResultSink, msg->m_c);
+            if (g_sharedFlag != 0) {
+                ShowChatLine((void*)g_sharedFlag, msg->m_c);
                 break;
             }
             if (m_connected == 0) {
@@ -2987,8 +3001,8 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             } else {
                 result.Format("*** A player had a different version of the game.");
             }
-            if (g_dlgResultSink != 0) {
-                ShowChatLine((void*)g_dlgResultSink, result);
+            if (g_sharedFlag != 0) {
+                ShowChatLine((void*)g_sharedFlag, result);
             } else {
                 ((CFontConfig*)NetGameMgr()->m_5c)->AddItem(result, 0, 0x11);
             }

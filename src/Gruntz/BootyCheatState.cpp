@@ -56,7 +56,7 @@ i32 g_bootyCheatBuilt = 0; // 0x22af10
 // loop pointer walks [base .. end); each entry's text lands at p-0x20, desc at p.
 // The +0x1c0 mode-record seed (_g_645588).
 DATA(0x00245588)
-extern i32 g_645588;
+extern "C" i32 g_645588; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)
 
 // (the six Bc* sub-views are GONE too - each was a facet of a class CState already names:
 //    BcStateRoot   -> CState::m_4  is CGruntzMgr*, and its "Reset(0)" @thunk 0x34ef is

@@ -244,12 +244,12 @@ namespace m4 {
     };
     extern "C" WalkOwner* GetWalkOwner1d3631(); // 0x001d3631
 
-    // The settings-manager singleton == *g_gameReg (the real CGruntzMgr, the MFC view
-    // of the file-global g_gameReg above); IsBattlezMapFile takes the display
-    // name by value (callee destroys). C++-namespaced here (its OWN symbol) so the one
-    // file-scope extern "C" _g_gameReg keeps the single global-scope DATA binding and the
-    // two typed views coexist without an extern "C" type clash (clang -emit-llvm).
-    extern CGruntzMgr* g_gameReg; // 0x0064556c
+    // The settings-manager singleton == *g_gameReg (the real CGruntzMgr, the MFC view of
+    // the file-global g_gameReg above); IsBattlezMapFile takes the display name by value
+    // (callee destroys). The namespaced re-declaration that used to sit here was a
+    // C++-linkage SHADOW of the file-scope extern "C" g_gameReg - at the identical type,
+    // so it bought nothing and emitted ?g_gameReg@m4@@3PAVCGruntzMgr@@A: a second symbol
+    // for 0x24556c that nothing could ever define. Plain lookup finds ::g_gameReg.
 
     // The custom-level glob + display-name format + "already loaded" strings.
     extern char g_customGlob[]; // 0x0060cf94

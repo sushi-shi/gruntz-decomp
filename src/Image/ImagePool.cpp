@@ -72,8 +72,12 @@ SIZE_UNKNOWN(PidHeader);
 // The resource module handle the .DEFAULT loader pulls RT_BITMAP resources from
 // and the pool's AddSurfaceRez/AddImageFile latch before a file-backed add
 // (reloc-masked .data global; 0 until the engine records the instance handle).
+// DEFINED HERE (owner TU; PaletteBmp only reads it). It was extern on both sides, so the
+// resource-module handle had no storage at all. .bss, zero-init.
 DATA(0x002bf6e0)
-extern "C" HINSTANCE g_hResModule; // 0x6bf6e0
+extern "C" {
+HINSTANCE g_hResModule = 0; // 0x6bf6e0
+}
 
 // ---------------------------------------------------------------------------
 // The palette node payload type. Declared with the EXACT class/namespace/

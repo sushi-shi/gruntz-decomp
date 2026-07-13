@@ -24,7 +24,7 @@ public:
 // The frame delta / tick globals the sparkle handler drives (DATA-bound elsewhere:
 // g_645584 in Attract.cpp, g_6bf3bc in the pump cluster); declared extern so the
 // loads reloc-mask against the already-matched symbols.
-extern u32 g_645584;     // 0x645584  per-frame time delta
+extern "C" u32 g_645584;     // 0x645584  per-frame time delta
 extern "C" i32 g_6bf3bc; // 0x6bf3bc  frame tick
 
 // --- CMenuSparkle (0x0adbe0), vptr 0x5e82dc --- the ctor anchors the ??_7CMenuSparkle

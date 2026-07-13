@@ -33,7 +33,7 @@
 #include <Dsndmgr/SoundStream.h>          // real +0x20 stream type (Stop 0x137a80 / Free 0x137740)
 
 DATA(0x002bf3c0)
-extern "C" u32 g_killCueClock; // draw-clock mirror (== donor g_6bf3c0, 0x2bf3c0)
+extern "C" u32 g_killCueClock; // draw-clock mirror (== donor g_killCueClock, 0x2bf3c0)
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc; // draw-delta mirror
 

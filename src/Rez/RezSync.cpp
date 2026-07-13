@@ -54,11 +54,24 @@ extern "C" void RezFree(void*);          // 0x1b9b82
 // separate fabricated symbols at 0x645540/44/48/4c - interior addresses of this object,
 // so they could never resolve at link. Defined in src/Gruntz/GameText.cpp (owner TU).
 extern FreeNodePool g_coordPool; // 0x645540
-extern void* g_mgrPtr;             // 0x64556c
-extern u32 g_startTick;            // 0x645580
-extern i32 g_645584;               // 0x645584
-extern i32 g_653c5c;               // 0x653c5c
-extern i32 g_sndEnabled;           // 0x61ab20
+// 0x24556c is the game-registry singleton g_gameReg (DEFINED in GruntzMgr.cpp). The
+// assignment below is CGruntzMgr::Init SELF-REGISTERING - which is exactly what proves
+// the cell holds this manager. Spelling it `g_mgrPtr` with C++ linkage made a second,
+// unresolvable symbol (?g_mgrPtr@@3PAXA) for a cell 50 other TUs already share.
+extern "C" void* g_gameReg; // 0x64556c (typed CGruntzMgr* in its owner TU)
+// 0x245580 is the frame-clock "now" cell (RezMgr g_lastNow), extern-"C" tree-wide and
+// DEFINED in RezMgr.cpp. This TU had it as a private C++ ?g_startTick@@3IA - same cell,
+// divergent symbol, no storage. Init seeds it with the boot timeGetTime().
+extern "C" u32 g_645580;
+extern i32 g_sndEnabled;         // 0x61ab20
+// 0x645584 is extern-"C" tree-wide (RezMgr's g_lastDelta, the frame delta); a plain
+// C++ `extern` here emitted the divergent ?g_645584@@3HA.
+extern "C" i32 g_645584; // 0x645584
+// 0x20fa70: the local protocol/rez-sync version word (canonical decl in <Net/NetMgr.h>,
+// DEFINED in Multi.cpp). Init loads it from the .bute [General] "RezSync" key; Net
+// compares it against the host packet's version field. This TU had it as a private
+// `void* g_60fa70` - same cell, divergent symbol, and the void* forced two casts.
+extern "C" i32 g_localVersion; // 0x60fa70
 // ---------------------------------------------------------------------------
 // The [Config] gate band, 0x6455b4..0x6455e4 - DEFINED HERE (storage), declared in
 // <Globals.h>.
@@ -104,12 +117,36 @@ extern "C" {
     i32 g_enableEmulation = 0; // "Enable Emulation"
 }
 
-extern i32 g_64526c, g_6452d0, g_645268, g_645568, g_645538, g_6451a4;
-extern i32 g_6452d4, g_6452a8, g_645558, g_645560, g_64555c, g_645564;
-extern i32 g_645534;
-extern void* g_645570; // attract host
-extern void* g_645578;
-extern void* g_60fa70;
+// The settings-dialog numeric cells (0x2451a4..0x245568). Init bulk-resets them; the
+// dialog at 0x092ab0 (GruntzCmdMgr.cpp) owns them and DEFINES the storage. This TU had
+// spelled them g_6451a4/... with C++ linkage - a second symbol for the same memory, so
+// neither name resolved. Reference the owner's names.
+extern i32 g_dlgVal_6451a4, g_dlgVal_645268, g_dlgVal_64526c, g_dlgVal_6452a8;
+extern i32 g_dlgVal_6452d0, g_dlgVal_6452d4, g_dlgVal_645538, g_dlgVal_645558;
+extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
+
+// LINKAGE FIX: 0x245570/0x245578 are extern-"C" tree-wide (GruntzMgr owns and DEFINES
+// them, typed DirectInputMgr2*/StateMgrBZ*). Declaring them with C++ linkage here
+// emitted ?g_645570@@3PAXA - a divergent symbol for the same address, unresolved on both
+// sides. Same names, one linkage. (This TU's void* view of them contradicts GruntzMgr's
+// types - RezSync casts 0x245578 to CGruntSpawnConfig* and 0x245570 to CSpawnOwner*.
+// extern "C" carries no type, so it links either way; the disagreement is REAL and
+// unresolved - flagged, not papered over.)
+extern "C" {
+    extern void* g_645570; // attract host (GruntzMgr: DirectInputMgr2*)
+    extern void* g_645578; // (GruntzMgr: StateMgrBZ*)
+}
+
+// DEFINED HERE (owner = the producer): the attract title-screen count. Init counts how
+// many "\SCREENZ\TITLE%d" tabs resolve under STATEZ_ATTRACT (loop below); AttractState /
+// CreditsState then pick a screen with `g_gameReg->m_numRuns % g_attractStateCount + 1`.
+// It had THREE spellings and no storage: ?g_attractStateCount@@3HA (Attract), this TU's
+// C++-linkage ?g_645534@@3HA, and the extern-"C" _g_645534 (AttractState/CreditsState/
+// Multi). One name (Attract's - the only semantic one), one linkage (extern "C").
+DATA(0x00245534)
+extern "C" {
+i32 g_attractStateCount = 0; // 0x645534
+}
 
 extern "C" char* StrUpr(char*); // 0x18d330
 
@@ -419,18 +456,18 @@ i32 RezSync::Init(void* a1, char* a2) {
     g_enableEmulation = m_38->GetValueDword("Enable Emulation", 0);
     m_checkpointPrompts = m_38->GetValueDword("Checkpoint Prompts", 1);
     g_enableHiColor = 1;
-    g_64526c = 0;
-    g_6452d0 = 0;
-    g_645268 = 0;
-    g_645568 = 0;
-    g_645538 = 0;
-    g_6451a4 = 0;
-    g_6452d4 = 1;
-    g_6452a8 = 0;
-    g_645558 = 0;
-    g_645560 = 0;
-    g_64555c = 0;
-    g_645564 = 0;
+    g_dlgVal_64526c = 0;
+    g_dlgVal_6452d0 = 0;
+    g_dlgVal_645268 = 0;
+    g_dlgVal_645568 = 0;
+    g_dlgVal_645538 = 0;
+    g_dlgVal_6451a4 = 0;
+    g_dlgVal_6452d4 = 1;
+    g_dlgVal_6452a8 = 0;
+    g_dlgVal_645558 = 0;
+    g_dlgVal_645560 = 0;
+    g_dlgVal_64555c = 0;
+    g_dlgVal_645564 = 0;
 
     // --- Phase 4: audio/video settings -------------------------------
     i32 vMusic = m_38->GetValueDword("Music", m_music);
@@ -609,7 +646,7 @@ i32 RezSync::Init(void* a1, char* a2) {
 
     // --- Phase 9: audio host (m_48) ---------------------------------
     m_48 = new CGruntzSoundZ;
-    g_653c5c = 0;
+    g_ailMidiDriver = 0;
     if (!m_48->Init(*(i32*)((char*)m_08 + 0xc), *(i32*)((char*)m_04 + 4), 0)) {
         Error2(0x800a, 0x40c);
         return 0;
@@ -719,8 +756,8 @@ i32 RezSync::Init(void* a1, char* a2) {
     }
 
     // --- Phase 14: register mgr + probe 4 settings subobjects -------
-    g_mgrPtr = this;
-    g_startTick = ::timeGetTime();
+    g_gameReg = this;
+    g_645580 = ::timeGetTime();
     g_645584 = 0;
     for (i32 s = 0; s < 4; ++s) {
         if (!ProbeSettings150(&m_150[s * 0x238])) {
@@ -783,7 +820,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         Error2(0x800a, 0x41b);
         return 0;
     }
-    g_60fa70 = (void*)g_buteMgr.GetDwordDef("General", "RezSync", (u32)g_60fa70);
+    g_localVersion = (i32)g_buteMgr.GetDwordDef("General", "RezSync", (u32)g_localVersion);
     m_60 = new CGruntSpawnConfig;
     if (!m_60->Init((CSpawnOwner*)this)) {
         Error2(0x800a, 0x45f);
@@ -827,11 +864,11 @@ i32 RezSync::Init(void* a1, char* a2) {
     {
         CSymParser* attract = (CSymParser*)m_34->ResolvePath("STATEZ_ATTRACT");
         CString title;
-        g_645534 = 0;
-        title.Format("\\SCREENZ\\TITLE%d", g_645534 + 1);
+        g_attractStateCount = 0;
+        title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         while (attract->ResolveTab((const char*)*(void**)&title, &g_lab504358)) {
-            g_645534++;
-            title.Format("\\SCREENZ\\TITLE%d", g_645534 + 1);
+            g_attractStateCount++;
+            title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }
         if (Fn12d0(mode, 1, 0, 0)) {
             g_645584 = 0;

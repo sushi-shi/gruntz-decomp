@@ -729,6 +729,11 @@ i32 g_imageClipRect[4] = {0}; // 0x2bf28c  (owner-TU definition)
 // <Globals.h>. (REHOME DD-Drain-1)
 DATA(0x002bf318)
 i32 g_bltFxScratch[25] = {0}; // 0x2bf318
+// The resource-install gate - DEFINED here beside its sibling g_surfaceColorKey (the two
+// are declared as a pair in <Image/CImage.h> and gate the same CreateA call: cap 0x800 /
+// the flags arg). 10 TUs referenced it and none defined it. .bss, zero-init.
+DATA(0x002bf37c)
+i32 g_resourceInstallActive = 0; // 0x2bf37c
 DATA(0x002bf380)
 i32 g_surfaceColorKey = 0; // 0x2bf380
 

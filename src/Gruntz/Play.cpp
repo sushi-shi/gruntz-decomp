@@ -18,7 +18,7 @@
 //
 //   if (m_inGame) {                  // ---- MAIN in-game frame ----
 //       StepInputA(); StepWorldB(); ViewPreStep(m_c->m_24);
-//       g_6bf3c0=g_645580; g_6bf3bc=g_645584;     // mirror the draw clock
+//       g_killCueClock=g_645580; g_6bf3bc=g_645584;     // mirror the draw clock
 //       DRAW_WORLD();                             // shared world-draw block
 //       <AMBIENT-cue timer +0x3f8, 0x1f4ms, toggles m_cueToggle -> PlayCueAt 0x8128>
 //       MarkerBegin(now); GutsStep();             // m_beginMarker marker + m_guts step
@@ -401,7 +401,7 @@ i32 CPlay::Render() {
         StepWorldB();         // world/camera sub-step B
         m_c->m_24->PreStep(); // on m_c->m_24 (view pre-step)
 
-        g_6bf3c0 = g_645580; // mirror the draw clock
+        g_killCueClock = g_645580; // mirror the draw clock
         g_6bf3bc = g_645584;
 
         // --- shared world-draw block #1 ---
@@ -747,8 +747,31 @@ struct CRegExit {
 // ---------------------------------------------------------------------------
 // Shared singletons + the per-mode/per-area globals (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------
-extern "C" i32 g_645270;            // DAT_00645270 (area page size)
-extern void* g_645570;              // DAT_00645570
+// The DRAW-CLOCK MIRROR PAIR - DEFINED HERE (owner = the producer). This TU is the only
+// writer: every frame it does `g_killCueClock = g_645580; g_6bf3bc = g_645584;`, i.e. it
+// snapshots the WAP32 frame clock (now / delta) into the pair the whole game reads to
+// gate animations (`clk - m_last >= m_interval`). ~15 TUs consumed them and NONE defined
+// them, under FIVE names between them: _g_killCueClock and _g_6bf3c0 for 0x2bf3c0 (plus
+// GruntzMgrCmd's C++ ?g_time6bf3c0@@3HA), and _g_6bf3bc plus a C++ ?g_defaultGeo@@3HA
+// (Wormhole/Grunt) for 0x2bf3bc - "default geometry" being simply a WRONG name for the
+// frame delta. One name + one linkage per cell now.
+//
+// The surviving name g_killCueClock is narrower than the role the binary shows (it is the
+// draw-clock now-mirror generally, not only a kill-cue clock); it is kept because it is
+// the majority semantic spelling, and a role rename is separate follow-up.
+DATA(0x002bf3bc)
+extern "C" {
+u32 g_6bf3bc = 0; // 0x2bf3bc  draw-DELTA mirror  (= g_645584 / g_lastDelta)
+}
+DATA(0x002bf3c0)
+extern "C" {
+u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_645580 / g_lastNow)
+}
+
+extern "C" i32 g_645270; // DAT_00645270 (area page size)
+// extern "C" to hit the definition's C-linkage name _g_645570 (GruntzMgr.cpp, typed
+// DirectInputMgr2*); a plain C++ extern emitted ?g_645570@@3PAXA - unresolved.
+extern "C" void* g_645570;          // DAT_00645570
 extern "C" i32 g_64558c;            // DAT_0064558c
 extern "C" i32 g_64e35c;            // DAT_0064e35c
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
@@ -912,7 +935,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
         } while (--n);
     }
 
-    g_6bf3c0 = g_645580;
+    g_killCueClock = g_645580;
     g_6bf3bc = g_645584;
 
     // reset the 4 team blocks at host->m_150 (stride 0x238): single-mode primes
@@ -2858,7 +2881,7 @@ void CPlay::DrawWorldFrame() {
     if (m_c->m_24->m_5c != 0) {
         ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollA();
     }
-    g_6bf3c0 = g_645580;
+    g_killCueClock = g_645580;
     g_6bf3bc = g_645584;
     ((CRenderer*)m_c->m_8)->BeginScene(0); // m_c->m_8->vtbl[+0x24](0)
     m_4w()->m_68->Step((i32)g_645584);     // m_4->m_68 frame-timer step

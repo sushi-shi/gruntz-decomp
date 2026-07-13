@@ -24,12 +24,38 @@ extern i32 g_wap32FrameDelta; // 0x253c74 (ms since previous frame)
 // The per-frame accumulators PerFrameTick reads/writes are SHARED WAP32 globals
 // (0x245580..0x2455a0), not rezmgr file-statics: multi/projectile/gruntzmgr/
 // lightfxrender/RezSync/CreditsState all touch the same cells (Play.h documents
-// g_645580==g_lastNow, g_645584==g_lastDelta). Bind rezmgr's refs to the tree's
-// current keep-last winners (hex placeholder names); keep the semantic spelling
-// via #define so PerFrameTick stays readable. A canonical semantic rename of the
-// whole block (g_lastNow/... everywhere) is DATA-def-campaign follow-up.
-extern "C" i32 g_645580, g_645584, g_645588, g_64558c, g_645590, g_645598, g_64559c, g_6455a0;
-extern i32 g_645594;       // 0x245594 C++ winner ?g_645594@@3HA (lightfxrender)
+// g_645580==g_lastNow, g_645584==g_lastDelta).
+//
+// DEFINED HERE (owner = the producer): PerFrameTick below is the sole WRITER of the whole
+// band - it samples now, derives the delta, accumulates it, and decrements the five
+// countdown timers; every other TU only reads. Nothing in the tree defined any of them,
+// and each was ALSO spelled differently somewhere (?g_startTick@@3IA for 0x245580;
+// ?g_645584@@3HA / @@3IA / @m4@@3HA for 0x245584; ?g_gruntCtor64558c@@3HA for 0x24558c),
+// so EVERY name was an unresolved external - N symbols, one cell, no storage. One name +
+// one linkage per address now; the semantic spelling stays available through the #defines
+// below, and renaming the block to those names tree-wide is still follow-up.
+// (0x245588 is defined in Projectile.cpp already.)
+extern "C" i32 g_645588;
+extern "C" {
+DATA(0x00245580)
+i32 g_645580 = 0;
+DATA(0x00245584)
+i32 g_645584 = 0;
+DATA(0x0024558c)
+i32 g_64558c = 0;
+DATA(0x00245590)
+i32 g_645590 = 0;
+DATA(0x00245598)
+i32 g_645598 = 0;
+DATA(0x0024559c)
+i32 g_64559c = 0;
+DATA(0x002455a0)
+i32 g_6455a0 = 0;
+}
+// 0x245594 keeps C++ linkage - all three users (this TU / gruntzmgr / lightfxrender)
+// agree on ?g_645594@@3HA, so there is no divergence to fix here.
+DATA(0x00245594)
+i32 g_645594 = 0;
 #define g_lastNow g_645580 // 0x245580
 #define g_lastDelta g_645584 // 0x245584 (frame delta, clamped to <= 0x64)
 #define g_accumMs g_645588 // 0x245588 (running accumulated frame time)
