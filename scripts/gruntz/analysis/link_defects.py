@@ -1,15 +1,36 @@
 #!/usr/bin/env python3
-"""link_defects.py - the two defect shapes that break a LINK, hunted tree-wide.
+"""link_defects.py - the defect shapes that break a LINK, hunted tree-wide.
 
 objdiff scores a relocation site by MASKING it: a reference bound to a fake symbol,
-or a symbol defined twice with different bytes, still scores 100%. Both are invisible
-to every match metric we have - and both make the reconstruction unlinkable. Retail
-LINKED, so neither can exist in the real source.
+or a symbol defined twice with different bytes, still scores 100%. All of these are
+invisible to every match metric we have - and all make the reconstruction unlinkable.
+Retail LINKED, so none of them can exist in the real source.
 
   (1) UNRESOLVED  a symbol some obj REFERENCES that NO obj defines and NO shippable
-                  .LIB can supply -> `unresolved external symbol` at link.
-                  Typical cause: a fake per-TU VIEW base class whose declared-only
-                  virtual dtor/method is a phantom (??1CSbConfigItem@@UAE@XZ).
+                  .LIB can supply -> `unresolved external symbol` at link. Split by
+                  what the REMEDY is, because the three halves need opposite work:
+
+      PHANTOM         a FUNCTION whose owning class owns no retail address at all.
+                      The class is a fabricated per-TU view, so the member can never
+                      resolve. Fix = recover the real class (??1CSbConfigItem@@UAE@XZ).
+
+      UNDEFINED DATA  a VARIABLE (not a function) that nothing defines. This is a
+                      DIFFERENT defect with a DIFFERENT fix, and it used to be
+                      silently filed under "backlog" - which was WRONG, and hid ~450
+                      guaranteed link failures behind a bucket labelled "resolves for
+                      free as bodies land". It does NOT: a data symbol is never
+                      produced by reconstructing a function. Somebody has to WRITE
+                      THE DEFINITION. Typical cause: the tree declares a global in N
+                      TUs (`DATA(0x..) extern i32 g_x;`) and defines it in none - or
+                      defines it once under a DIFFERENT name/linkage, so the C++-
+                      mangled alias resolves to nothing (?g_pathStepSeed@@3HA vs the
+                      extern-"C" _g_645584 that actually has storage).
+                      Fix = one real definition in the xref-proven owner TU.
+
+      BACKLOG         a function of a REAL class, simply not reconstructed yet. Every
+                      unreconstructed engine callee is deliberately declared-only so
+                      its rel32 reloc-masks. NOT a modelling defect; it resolves for
+                      free the day someone reconstructs the body.
 
   (2) DIVERGENT   one mangled name DEFINED in >1 obj with DIFFERENT bytes -> an ODR
                   landmine. MSVC keeps ONE COMDAT copy per name, chosen arbitrarily
@@ -21,11 +42,16 @@ LINKED, so neither can exist in the real source.
 
 Ground truth, not heuristics: "can the linker resolve it" is answered by reading the
 symbol tables of the real toolchain archives ($MSVC_DIR/lib/*.LIB + $DXSDK_DIR/Lib),
-so CRT/MFC/Win32-import symbols are never mistaken for defects.
+so CRT/MFC/Win32-import symbols are never mistaken for defects. "Is it data or a
+function" is answered by the MSVC mangling grammar, and for extern-"C" names (which
+carry no type at all) by which SECTION the retail address lands in - NOT by
+symbol_names.csv's `kind` column, which records the MACRO used, not the symbol's
+nature. See is_data_symbol().
 
 Usage:
-  python -m gruntz.analysis.link_defects            # headline + both inventories
+  python -m gruntz.analysis.link_defects            # headline + all inventories
   python -m gruntz.analysis.link_defects --csv      # machine-readable worklist
+  python -m gruntz.analysis.link_defects --data     # ONLY the undefined-data worklist
   python -m gruntz.analysis.link_defects --unit sbi_image
 """
 import argparse
@@ -206,6 +232,83 @@ def owning_class(sym):
     return ""
 
 
+# The retail .text span (same section map assert_relocs uses). An address inside it is
+# CODE; anything above is .rdata/.data/.bss.
+_TEXT = (0x1000, 0x1E626B)
+
+
+def symbol_rvas():
+    """{symbol -> retail rva} from symbol_names.csv.
+
+    NOTE the `kind` column is deliberately NOT used to decide data-vs-function. It records
+    which MACRO the source used (DATA() vs RVA()), not what the symbol IS - and the tree
+    binds some FUNCTIONS with DATA() at their ILT-thunk address, so it reports
+    `??0CGruntzMgrOptions@@QAE@XZ ... ,data` for a constructor. Trusting it put ctors,
+    dtors and plain methods in the undefined-DATA bucket. The RVA cannot lie the same way:
+    which SECTION the address lands in settles it."""
+    rvas = {}
+    p = REPO / "build/gen/symbol_names.csv"
+    if p.is_file():
+        import csv as _csv
+        for r in _csv.DictReader(open(p, encoding="latin-1")):
+            try:
+                rvas[r["name"]] = int(r["rva"], 16)
+            except (ValueError, KeyError, TypeError):
+                pass
+    return rvas
+
+
+def _mangled_is_data(sym):
+    """True iff an MSVC-mangled name denotes a VARIABLE rather than a function.
+
+    The grammar: `?<name>@<scope>@...@@<code>...`. The qualified name ends at the FIRST
+    `@@`; the character straight after it is the storage/type code, and it is a DIGIT for
+    data (`3` plain global, `2`/`1`/`0` public/protected/private static member, ...) and a
+    LETTER for a function (`Q`/`A`/`I`/`U`/`E`/`Y`/... = access + calling convention).
+
+        ?g_wildcard@@3PBDB          -> '3' -> data (const char* g_wildcard)
+        ?s_tbl@CFoo@@2PAHA          -> '2' -> data (static member)
+        ?Meth@CFoo@@QAEXXZ          -> 'Q' -> function
+
+    Anchoring on the FIRST `@@` is load-bearing: a naive `.*@@[0-8]` search matches an
+    INNER `@@0`, because MSVC back-references a repeated argument type as a digit -
+    `?BigDraw@ObjSink2e4@@QAEHHHHHHUVec4@@00000HHHH@Z` (the `@@00000` is five repeats of
+    `UVec4`), which mis-filed 53 plain functions as data.
+
+    `??`-prefixed names (ctors/dtors ??0/??1, vftables ??_7, string literals ??_C@) are
+    deliberately NOT data here: the compiler emits ??_7/??_8/??_R itself into the obj that
+    needs them, and a truly unresolved one is a CLASS-identity defect (PHANTOM), not a
+    missing variable definition."""
+    if not sym.startswith("?") or sym.startswith("??"):
+        return False
+    i = sym.find("@@")
+    return i >= 0 and i + 2 < len(sym) and sym[i + 2].isdigit()
+
+
+def is_data_symbol(sym, rvas):
+    """Is this undefined symbol a VARIABLE (needs a definition) or a function?
+
+    Two authorities, in priority order, neither of which is a guess:
+
+      1. the MSVC MANGLING GRAMMAR - decisive for every C++-linkage name (`?`-prefixed),
+         and it OVERRIDES everything else: if the grammar says `?Reset@CMapLogic@@QAEXXZ`
+         is a method, it is a method no matter how the tree annotated it.
+
+      2. for an extern-"C" name (`_g_645584`) the name carries no type at all, so fall
+         back to the RETAIL ADDRESS: a symbol bound into .text is code, anything else is
+         data. That is read from the binary's section map, not from an annotation.
+
+    A symbol neither can classify (extern-"C", no retail rva) stays OUT of this bucket:
+    an honest gap beats a guess, and over-counting here would be as dishonest as the
+    under-counting this bucket exists to fix."""
+    if sym.startswith("?"):
+        return _mangled_is_data(sym)
+    r = rvas.get(sym)
+    if r is None:
+        return False
+    return not (_TEXT[0] <= r < _TEXT[1])
+
+
 def real_classes():
     """Classes PROVEN to exist in retail: they own at least one symbol bound to a real
     retail RVA (symbol_names.csv) or a catalogued vtable. Used to split the unresolved
@@ -252,11 +355,15 @@ def main():
     ap.add_argument("--phantom-only", action="store_true",
                     help="only unresolved symbols of classes with NO retail address "
                          "(the can-never-link set); hides the reconstruct-me backlog")
+    ap.add_argument("--data", action="store_true",
+                    help="ONLY the undefined-DATA worklist (referenced variables that "
+                         "nothing defines); each needs a definition in its owner TU")
     args = ap.parse_args()
 
     libs = lib_symbols()
     objs = current_unit_objs()
     real = real_classes()
+    rvas = symbol_rvas()
 
     defined = defaultdict(list)     # name -> [(unit, shape_hash, size)]
     referenced = defaultdict(set)   # name -> {units}
@@ -270,11 +377,16 @@ def main():
             referenced[nm].add(unit)
 
     # (1) UNRESOLVED: referenced, defined by no obj, and no .LIB can supply it.
-    # Split PHANTOM (owning class owns no retail address at all -> can never link)
-    # from BACKLOG (real class, member simply not reconstructed yet).
-    unresolved, backlog = [], []
+    # Three-way split by REMEDY: UNDEFINED DATA (write the definition) / PHANTOM (recover
+    # the class) / BACKLOG (reconstruct the body). DATA is tested FIRST: a variable needs a
+    # definition no matter whose class it hangs off, and filing it under either of the
+    # other two buckets misdescribes the work (that is exactly how ~450 of them hid).
+    unresolved, backlog, undef_data = [], [], []
     for nm, units in sorted(referenced.items()):
         if nm in defined or is_exempt(nm, libs):
+            continue
+        if is_data_symbol(nm, rvas):
+            undef_data.append((nm, sorted(units)))
             continue
         cls = owning_class(nm)
         (unresolved if (cls and cls not in real) else backlog).append((nm, sorted(units)))
@@ -295,19 +407,40 @@ def main():
     if args.unit:
         unresolved = [r for r in unresolved if args.unit in r[1]]
         backlog = [r for r in backlog if args.unit in r[1]]
+        undef_data = [r for r in undef_data if args.unit in r[1]]
         divergent = [d for d in divergent
                      if any(args.unit in us for _sz, us in d[1])]
+
+    # the retail rva each undefined global is annotated at (DATA()/@data-symbol), when known
+    rva_of = {}
+    p = REPO / "build/gen/symbol_names.csv"
+    if p.is_file():
+        import csv as _csv
+        for r in _csv.DictReader(open(p, encoding="latin-1")):
+            rva_of[r["name"]] = r.get("rva") or r.get("address") or ""
+
+    if args.data:
+        print("UNDEFINED DATA - %d referenced variable(s) that NO obj defines and no .LIB\n"
+              "supplies. Each needs ONE real definition in its xref-proven owner TU.\n"
+              % len(undef_data))
+        for nm, units in undef_data:
+            print("  %-46s %-12s <- %s"
+                  % (nm[:46], rva_of.get(nm, ""), ",".join(units)[:60]))
+        return 1 if undef_data else 0
 
     if args.csv:
         w = sys.stdout
         w.write("kind,symbol,class,detail\n")
+        for nm, units in undef_data:
+            w.write('UNDEFINED_DATA,%s,%s,"rva %s; referenced by: %s"\n'
+                    % (nm, owning_class(nm), rva_of.get(nm, "?"), " ".join(units)))
         for nm, units in unresolved:
             w.write('UNRESOLVED,%s,%s,"referenced by: %s"\n'
                     % (nm, owning_class(nm), " ".join(units)))
         for nm, variants in divergent:
             det = " | ".join("%dB in %s" % (sz, ",".join(us)) for sz, us in variants)
             w.write('DIVERGENT,%s,%s,"%s"\n' % (nm, owning_class(nm), det))
-        return 1 if (unresolved or divergent) else 0
+        return 1 if (unresolved or divergent or undef_data) else 0
 
     print("link-defect scan over %d current-unit objs (%d lib symbols resolvable)\n"
           % (len(objs), len(libs)))
@@ -325,16 +458,31 @@ def main():
         for nm, units in rows:
             print("      %-52s <- %s" % (nm, ",".join(units)))
 
+    print()
+    print("=" * 78)
+    print("(2) UNDEFINED DATA - referenced VARIABLES that no obj defines and no .LIB")
+    print("    supplies. A data symbol is NEVER produced by reconstructing a function,")
+    print("    so these do NOT 'resolve for free' - each needs ONE real definition in")
+    print("    its owner TU. %d symbol(s)." % len(undef_data))
+    print("=" * 78)
+    if not args.phantom_only:
+        for nm, units in undef_data[:40]:
+            print("  %-46s %-12s <- %s"
+                  % (nm[:46], rva_of.get(nm, ""), ",".join(units)[:40]))
+        if len(undef_data) > 40:
+            print("  ... %d more (--data for the full worklist, --csv for machine-readable)"
+                  % (len(undef_data) - 40))
+
     if not args.phantom_only:
         print()
-        print("  [backlog] %d further unresolved symbol(s) belong to REAL classes/free "
-              "functions" % len(backlog))
+        print("  [backlog] %d further unresolved symbol(s) are FUNCTIONS of REAL classes"
+              % len(backlog))
         print("            not reconstructed yet (declared-only so their rel32 reloc-masks).")
         print("            They resolve for free as those bodies land - not modelling defects.")
 
     print()
     print("=" * 78)
-    print("(2) DIVERGENT DUPLICATE COMDATs - one name, different bytes in >1 obj")
+    print("(3) DIVERGENT DUPLICATE COMDATs - one name, different bytes in >1 obj")
     print("    -> ODR landmine: the linker may pick the stub over the real body.")
     print("       %d symbol(s)." % len(divergent))
     print("=" * 78)
@@ -343,8 +491,13 @@ def main():
         for sz, us in variants:
             print("      %5d B  %s" % (sz, ",".join(us)))
 
-    print("\nTOTAL: %d PHANTOM, %d DIVERGENT  (target: 0 / 0)   [+%d backlog]"
-          % (len(unresolved), len(divergent), len(backlog)))
+    # The headline. UNDEFINED-DATA is counted HERE, not hidden in `backlog`: every one of
+    # them is an `unresolved external symbol` today, exactly like a PHANTOM. Folding them
+    # into the backlog made the number look ~450 better than the link actually is.
+    print("\nTOTAL: %d PHANTOM, %d UNDEFINED-DATA, %d DIVERGENT  (target: 0 / 0 / 0)"
+          % (len(unresolved), len(undef_data), len(divergent)))
+    print("       unresolved externals at link = %d  [+%d backlog fns, not defects]"
+          % (len(unresolved) + len(undef_data), len(backlog)))
     return 0
 
 
