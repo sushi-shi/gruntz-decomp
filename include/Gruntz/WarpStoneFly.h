@@ -59,4 +59,25 @@ public:
     CWsfOwner* m_owner;     // +0x3c  back-pointer to the owning CStatusBarMgr
 };
 
+
+// The flying-warpstone overlay's registry views (ex WarpStoneFly.cpp): m_cmdGrid+0x260
+// is a CByteArray (the registry tab-state array; SetAtGrow @0x1b5485 == the real MFC
+// CByteArray::SetAtGrow, cast at the call); m_world->m_drawable->m_context is the
+// draw surface context.
+struct CWsfTabArray {
+    char m_pad0[0x8];
+    i32 m_index; // +0x08  array index
+};
+struct CWsfDrawable {
+    char m_pad0[0x14];
+    i32 m_context; // +0x14  surface context
+};
+struct CWsfGameMgr {
+    char m_pad0[0x4];
+    CWsfDrawable* m_drawable; // +0x04  active drawable
+};
+SIZE_UNKNOWN(CWsfTabArray);
+SIZE_UNKNOWN(CWsfDrawable);
+SIZE_UNKNOWN(CWsfGameMgr);
+
 #endif // GRUNTZ_GRUNTZ_WARPSTONEFLY_H
