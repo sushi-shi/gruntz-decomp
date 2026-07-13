@@ -798,25 +798,26 @@ i32 CMgrPersistObj::Init() {
 // the front surface, then Refresh again. @orphan: reached from CGruntzMgr::
 // RunModalDialog/ExitModalUI on an unidentified modal-UI presenter object.
 // (g_suppress_64e360 - the present-suppress latch - comes from <Globals.h>.)
-struct Mid_faec0 {
-    char m_pad0[0x4];
-    CDDrawSubMgrPages* m_4; // +0x04
-};
-struct PresentHost_faec0 { // owner unidentified (only inbound edge: ILT thunk 0x1ec9)
-    char m_pad0[0xc];
-    Mid_faec0* m_c; // +0x0c
-    void Present(i32 arg0);
-};
+// IT IS CState::Present, and the xrefs say so with no ambiguity. 0xfaec0 has exactly two
+// callers: CGruntzMgr::RunModalDialog (0x90260) invokes it as `mov ecx,[esi+0x2c]; call
+// 0x1ec9` - and CGruntzMgr+0x2c is m_curState, a CState* (<Gruntz/GruntzMgr.h>) - while
+// CPlay::Vslot23 (0xcfef0) invokes it on its OWN `this`, and CPlay IS a CState. One receiver
+// type, reached two ways. The call is a direct rel32 through an ILT thunk, so it is a plain
+// non-virtual - the same CState-level helper shape as RetireScene (0xfa8f0) and
+// LoadGameAssetNamespaces (0xf9ea0) next door, which this unit already owns.
+// The "Mid_faec0" it hung off is the canonical FxResource (<Gruntz/SoundFxEmitter.h>):
+// CState::m_c reinterpreted as the emitter resource chain, +0x04 = the shared
+// CDDrawSubMgrPages worker - the exact shape, already reachable through CState::fxRes().
 RVA(0x000faec0, 0x67)
-void PresentHost_faec0::Present(i32 arg0) {
+void CState::Present(i32 arg0) {
     if (g_suppress_64e360 != 0) {
         g_suppress_64e360 = 0;
         return;
     }
-    m_c->m_4->Method_158c70(m_c->m_4->m_backPair);
-    m_c->m_4->m_backPair->m_surface->ShadeRect(arg0, (RECT*)0);
-    m_c->m_4->m_frontPair->m_surface->Flip((CDDSurface*)0);
-    m_c->m_4->Method_158c70(m_c->m_4->m_backPair);
+    fxRes()->m_worker->Method_158c70(fxRes()->m_worker->m_backPair);
+    fxRes()->m_worker->m_backPair->m_surface->ShadeRect(arg0, (RECT*)0);
+    fxRes()->m_worker->m_frontPair->m_surface->Flip((CDDSurface*)0);
+    fxRes()->m_worker->Method_158c70(fxRes()->m_worker->m_backPair);
 }
 
 // CState::ShadeScreen (0x0faf50): consume the g_suppress latch (return its old value)
@@ -959,7 +960,5 @@ SIZE_UNKNOWN(CLevelData);
 SIZE_UNKNOWN(CMgrPersistObj);
 SIZE_UNKNOWN(CRezLocator);
 SIZE_UNKNOWN(SplashParams);
-SIZE_UNKNOWN(Mid_faec0);
-SIZE_UNKNOWN(PresentHost_faec0);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

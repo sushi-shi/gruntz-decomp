@@ -24,12 +24,11 @@
 // documents that conflation; `frame` is a CImage (passed as-is).
 i32 LayerBlitFrame(CResMgr*, CImage*, i32, i32, i32, i32); // 0x115300
 
-// The Present host (0xfaec0). Its class identity is unrecovered - the only inbound
-// edge is ILT thunk 0x1ec9, and Vslot23 invokes it on its own `this` (CPlay is
-// passed as the host). @orphan placeholder pending identity recovery.
-struct PresentHost_faec0 {
-    void Present(i32 arg0); // 0xfaec0
-};
+// (the PresentHost_faec0 placeholder is GONE - identity RECOVERED. 0xfaec0 is
+// CState::Present (declared in <Gruntz/State.h>, defined in Attract.cpp): its only other
+// caller, CGruntzMgr::RunModalDialog, invokes it as `mov ecx,[esi+0x2c]; call 0x1ec9` and
+// CGruntzMgr+0x2c is m_curState, a CState* - so the receiver Vslot23 was casting `this` to
+// was simply CState, which CPlay already IS. The cast fell out with the placeholder.)
 
 // ===========================================================================
 // CPlay::DrawMessageFrame (0x0d1650) - draw the GAME_MESSAGEZ image `index`
@@ -73,7 +72,7 @@ void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
 // `sar eax`/`sar eax,1` diff rows are disasm-formatting only, not real byte diffs.
 RVA(0x000cfef0, 0xbc)
 i32 CPlay::Vslot23() {
-    ((PresentHost_faec0*)this)->Present(0x3c);
+    Present(0x3c);
 
     CObject* lookup_ob = 0;
     m_c->m_10->m_10map.Lookup(s_GameMessagez, lookup_ob);

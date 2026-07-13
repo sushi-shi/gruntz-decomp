@@ -164,6 +164,13 @@ public:
     // Method_fa8f0 view was the sibling-facet lie. Definition lives in Attract.cpp (the
     // attract unit owns 0xfa8f0.. RVAs) as a CState:: method; reloc-masked.
     i32 RetireScene(i32 a1, i32 a2, i32 a3, i32 a4); // 0x0fa8f0
+    // Present (0xfaec0): per-frame present/refresh of the bound view - shade the back
+    // surface, flip the front. Same CState-level non-virtual shape as RetireScene, and the
+    // xrefs prove the receiver: CGruntzMgr::RunModalDialog calls it as `mov ecx,[esi+0x2c];
+    // call 0x1ec9` (CGruntzMgr+0x2c IS m_curState, a CState*), and CPlay::Vslot23 calls it on
+    // its own `this`. Direct rel32 => non-virtual. Definition in Attract.cpp (the unit that
+    // owns the 0xfa.. band). Was the PresentHost_faec0 placeholder, in two TUs.
+    void Present(i32 arg0); // 0x0faec0
     // The emitter resource-chain view of the +0x0c holder (== m_c reinterpreted): its
     // +0x04 DDraw worker + +0x1c gate are what RetireScene walks. Inline -> the same
     // `mov reg,[this+0x0c]` as the direct member read (forward-declared facet).

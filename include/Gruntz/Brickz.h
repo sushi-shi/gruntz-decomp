@@ -52,7 +52,15 @@ struct BrickzNode {
 // +0x04 a per-cell edge/id payload; the per-cell open-count sits at +0x14 and the
 // bucket-list head at +0x18.
 struct BrickzCell {
-    i32 m_0; // +0x00  packed terrain flags
+    // +0x00 is read BOTH ways in retail: as a dword of packed terrain flags, and as a single
+    // BYTE at +3 (CGrunt's tracked-coord scan tests `byte [cell+3] & 0x20` - the "stepped"
+    // bit - with a byte load, not a dword test of 0x20000000). An anonymous union models both
+    // without a cast; it is the same 4 bytes. (This is what the CScanCell view in
+    // GruntCombat.cpp existed to express.)
+    union {
+        i32 m_0;            // +0x00  packed terrain flags
+        u8 m_flagBytes[4];  //        byte view; [3] & 0x20 = the stepped/visited bit
+    };
     i32 m_4; // +0x04  per-cell edge/id payload
     char m_pad8[0x0c - 0x08];
     i32 m_c;            // +0x0c  id3 payload (ComputeCellFlags)
