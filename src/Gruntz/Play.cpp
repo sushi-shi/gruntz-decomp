@@ -429,9 +429,9 @@ i32 CPlay::Render() {
         // =================================================================
         // ---- MAIN in-game frame ----
         // =================================================================
-        StepInputA();                     // cursor draw (BltFast)
-        StepWorldB();                     // world/camera sub-step B
-        StepGridWalk((i32)g_645584);      // 0x2e2d  frame-grid advance (was fake "PreStep")
+        StepInputA();                // cursor draw (BltFast)
+        StepWorldB();                // world/camera sub-step B
+        StepGridWalk((i32)g_645584); // 0x2e2d  frame-grid advance (was fake "PreStep")
 
         g_killCueClock = g_645580; // mirror the draw clock
         g_6bf3bc = g_645584;
@@ -450,7 +450,7 @@ i32 CPlay::Render() {
             m_c->m_soundStream->PurgeVoiceList(t);  // 0x136e20 (thiscall, SoundDevice base)
             m_c->m_soundStream->TickSubManagers(t); // 0x137ac0 (thiscall)
         }
-        m_beginMarker->FilterList2((void*)g_645584); // 0x2cc0  begin-marker
+        m_beginMarker->FilterList2((void*)g_645584);     // 0x2cc0  begin-marker
         m_guts->LoadDestructButtonSprite((i32)g_645584); // 0x34bd  guts step
 
         // --- periodic AMBIENT-cue timer (+0x3f8, 0x1f4 ms; toggles m_cueToggle) ---
@@ -472,12 +472,12 @@ i32 CPlay::Render() {
             return 1; // no view -> bail
         }
 
-        m_frameMarker->Tick((i32)g_645584);          // 0x3710  CTimer::Tick
-        m_frameMarker->Draw(0, (i32)g_645584);       // 0x27a2  CTimer::Draw
-        m_c->m_drawTarget->m_10->m_2c->Flip(0);      // 0x13e850  CDDSurface::Flip
+        m_frameMarker->Tick((i32)g_645584);     // 0x3710  CTimer::Tick
+        m_frameMarker->Draw(0, (i32)g_645584);  // 0x27a2  CTimer::Draw
+        m_c->m_drawTarget->m_10->m_2c->Flip(0); // 0x13e850  CDDSurface::Flip
         UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0x2356
         winapi_0d0b30_CopyRect((i32)m_c->m_drawTarget->m_14); // 0x1519 (was fake "PostStep")
-        return 1; // -> draw tail
+        return 1;                                             // -> draw tail
     }
 
     // m_inGame == 0
@@ -1129,7 +1129,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     RetireScene(0x50, 0x3e8, 0, 1); // 0x1843 -> CState::RetireScene
-    DrawLevelInfoText(); // 0x14b5 -> 0xd95f0
+    DrawLevelInfoText();            // 0x14b5 -> 0xd95f0
     I32(self, 0x2c) = 0;
     {
         i32* z = (i32*)((char*)nameBuf + 0x20);
@@ -1383,7 +1383,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LoadWarlordSprites((i32)savedThis, (i32*)((char*)nameBuf + 0x20)) /* 0x2b80 */ && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles() /* 0x345e */
+            if (LoadWarlordSprites((i32)savedThis, (i32*)((char*)nameBuf + 0x20)) /* 0x2b80 */
+                && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
                 void* host8b = PTR(PTR(self, 0xc), 0x8);
                 (*(void (**)(void*, i32))((char*)*(void**)host8b + 0x24))(host8b, 0);
@@ -1441,7 +1442,17 @@ okContinue:
         rect[2] = 0x280;
         rect[3] = 0x1e0;
         if (scr.LoadString(0x8128)) {
-            EngStr_DrawText((EngStrRenderObj*)PTR(self, 0xc), (i32)rect, (i32)((char*)nameBuf + 0x4), 0x78, 1, 0xff, 0xff, 0, 1);
+            EngStr_DrawText(
+                (EngStrRenderObj*)PTR(self, 0xc),
+                (i32)rect,
+                (i32)((char*)nameBuf + 0x4),
+                0x78,
+                1,
+                0xff,
+                0xff,
+                0,
+                1
+            );
         }
     } else {
         I32(self, 0x484) = 1;
@@ -2687,7 +2698,7 @@ void CPlay::DrawWorldFrame() {
     }
     g_killCueClock = g_645580;
     g_6bf3bc = g_645584;
-    ((CRenderer*)m_c->m_8)->BeginScene(0); // m_c->m_8->vtbl[+0x24](0)
+    ((CRenderer*)m_c->m_8)->BeginScene(0);                // m_c->m_8->vtbl[+0x24](0)
     m_4w()->m_68->LoadTeleporterGooConfig((i32)g_645584); // 0x3017 -> 0x6eb80 per-frame grid step
     if (g_gameReg->m_134 == 3) {
         // 0x933e0 == CGruntzMgr::AdvanceOptionsCycle (rel32 via ILT 0x2d33; was the
@@ -2729,7 +2740,11 @@ i32 CPlay::DrawWorldFrames() {
             i32 dt = (i == last && rem != 0) ? rem : FIXED_SUBSTEP_MS;
             accum += dt;
             now += dt;
-            m_4->SetGameClock(now, dt, accum); // 0x3404 -> @0x8f7b0 (retail ecx=m_4; the old m_68 this was fake)
+            m_4->SetGameClock(
+                now,
+                dt,
+                accum
+            ); // 0x3404 -> @0x8f7b0 (retail ecx=m_4; the old m_68 this was fake)
             if (i > 0 && i < last) {
                 if (m_c->m_24->m_mainPlane != 0) {
                     ((CPlaneRender*)m_c->m_24->m_mainPlane)->CenterScrollB();
@@ -3243,7 +3258,6 @@ i32 CPlay::DrawLevelInfoText() {
     EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s3, (i32)&r4, 0x6e, 0, 0, 0, 0, 1);
     return 1;
 }
-
 
 // ===========================================================================
 // @early-stop
@@ -3847,7 +3861,8 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
         return 1;
     }
     if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
-        m_lightFx->ClearHandle(a, x, y); // 0x13f2 -> CLightFxRender::ClearHandle @0xa9500 (ecx=m_320)
+        m_lightFx
+            ->ClearHandle(a, x, y); // 0x13f2 -> CLightFxRender::ClearHandle @0xa9500 (ecx=m_320)
     }
     if (m_worldReady != 0) {
         m_4w()->m_68->HudRect(m_hudRect, g_645578->m_18 & 0x20);
@@ -4203,7 +4218,7 @@ rearm:
 // reconstruction still lacks (final-sweep item).
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(i32 final) {
-    (void)final;
+    (void) final;
     CImage* view = (CImage*)m_c->m_drawTarget->m_14;
     if (view == 0) {
         return 0;
@@ -4376,13 +4391,15 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
             if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
                 if (FindStartPointAt(sx, sy, &x, &y)) {
                     char tok = *(char*)&g_curPlayer;
-                    w->m_6c->EnqueueSingle(1, tok, 0, 0, (i16)x, (i16)y, 0, 0); // 0x2095 -> @0x23c30
+                    w->m_6c
+                        ->EnqueueSingle(1, tok, 0, 0, (i16)x, (i16)y, 0, 0); // 0x2095 -> @0x23c30
                     placed = 1;
                 }
             }
         }
         if (placed == 0) {
-            ((CGruntSpawnConfig*)g_gameReg->m_cueSink)->SpawnVoiceDriver(placed, 0x340, -1, 1, -1, -1);
+            ((CGruntSpawnConfig*)g_gameReg->m_cueSink)
+                ->SpawnVoiceDriver(placed, 0x340, -1, 1, -1, -1);
         }
         m_dragInhibit1 = 0;
         m_guts->CommitSlot(placed);
@@ -5244,8 +5261,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
     CPlay* self = this;
     CWorld* w = m_4w();
     i32 changed = 0;
-    i32 speed =
-        (i32)((double)w->m_scrollSpeed * g_scrollSpeedScale * g_scrollSpeedRange + g_scrollMinSpeed);
+    i32 speed = (i32)((double)w->m_scrollSpeed * g_scrollSpeedScale * g_scrollSpeedRange
+                      + g_scrollMinSpeed);
     CLevelPlane* g = w->m_30->m_24->m_mainPlane;
     i32 sx = g->m_originX;
     i32 sy = g->m_originY;
@@ -5907,8 +5924,15 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
                 RECT r2;
                 CopyRect(&r2, &r);
                 EngStr_DrawText(
-                    (EngStrRenderObj*)g_gameReg->m_world, (i32)&cs, (i32)&r2, 0x82, 1, 0xff,
-                    0xff, 0, 1
+                    (EngStrRenderObj*)g_gameReg->m_world,
+                    (i32)&cs,
+                    (i32)&r2,
+                    0x82,
+                    1,
+                    0xff,
+                    0xff,
+                    0,
+                    1
                 );
             }
             g_resourceInstallActive = 1;
@@ -5917,7 +5941,8 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
                 result = 0;
                 goto done;
             }
-            ((CWorkerVtableView*)m_c->m_10)->Vfunc48(tree, "GRUNTZ_" + name, (void*)"_"); // LoadTree +0x48
+            ((CWorkerVtableView*)m_c->m_10)
+                ->Vfunc48(tree, "GRUNTZ_" + name, (void*)"_"); // LoadTree +0x48
             g_resourceInstallActive = 0;
             if (finishGate != 0) {
                 ((CMulti*)finishGate)->AckJoinFailure(); // 0x35e4, ecx=notify
@@ -5928,7 +5953,8 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
             if (tree != 0) {
                 // the m_28 cast stays until the CSndHost/CDDrawSubMgrLeafScan conflation is settled (Fable);
                 // `tree` is the real CSymTab - DirNode was a view of it.
-                ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)tree, "GRUNTZ_" + name, "_");
+                ((CDDrawSubMgrLeafScan*)m_c->m_28)
+                    ->ScanTree_157ee0((CSymTab*)tree, "GRUNTZ_" + name, "_");
             }
         }
         if (((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_" + name) == 0) {
@@ -5937,7 +5963,8 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
                 result = 0;
                 goto done;
             }
-            ((CDDrawSubMgrAni*)m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)tree, "GRUNTZ_" + name, "_");
+            ((CDDrawSubMgrAni*)m_c->m_animRegistry)
+                ->ScanTree_152ad0((CSymTab*)tree, "GRUNTZ_" + name, "_");
         }
         result = 1;
         goto done;

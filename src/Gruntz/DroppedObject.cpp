@@ -580,8 +580,7 @@ i32 CObjectDropper::Update() {
     double drift = (double)g_645584 * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
-        if (m_posX
-            >= (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapW) {
+        if (m_posX >= (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapW) {
             m_posX = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -589,16 +588,14 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDx < 0) {
         m_posX -= drift;
         if (m_posX < 0.0) {
-            m_posX = (double)(g_gameReg->m_world->m_24->m_mainPlane->m_wrapW
-                              - 1);
+            m_posX = (double)(g_gameReg->m_world->m_24->m_mainPlane->m_wrapW - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }
     }
     if (m_travelDy > 0) {
         m_posY += drift;
-        if (m_posY
-            > (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapH) {
+        if (m_posY > (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapH) {
             m_posY = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -606,8 +603,7 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDy < 0) {
         m_posY -= drift;
         if (m_posY < 0.0) {
-            m_posY = (double)(g_gameReg->m_world->m_24->m_mainPlane->m_wrapH
-                              - 1);
+            m_posY = (double)(g_gameReg->m_world->m_24->m_mainPlane->m_wrapH - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }

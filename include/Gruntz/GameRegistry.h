@@ -357,8 +357,8 @@ struct CGameRegistry {
     i32 m_isEasyMode; // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
     i32 m_inputFlag; // +0x11c  StoreInputFlag target (FLAG: some consumers read it as sound volume)
     i32 m_inputStateVal; // +0x120  StoreInputState target (FLAG: consumer-side role diverges)
-    i32 m_scrollSpeed; // +0x124  "Scroll_Speed"
-    i32 m_128;         // +0x128  per-frame play word (CPlay::OnExit clears it on state exit)
+    i32 m_scrollSpeed;   // +0x124  "Scroll_Speed"
+    i32 m_128;           // +0x128  per-frame play word (CPlay::OnExit clears it on state exit)
     char m_pad12c[0x130 - 0x12c];
     // +0x130  play-sub-mode gate within active play (m_134==1). Proven behavior: when 0,
     // the RNG runs deterministic/replay-style (CoinFlip), secret-level triggers initialize

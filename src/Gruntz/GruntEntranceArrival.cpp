@@ -23,7 +23,7 @@
 //
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
+#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
@@ -1315,16 +1315,28 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             g->CuePrep();
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
-                if (CueVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
+                if (CueVisible(
+                        (i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX,
+                        m_10->m_5c,
+                        m_10->m_60
+                    )) {
                     g->m_cueSink->Cue((i32)this, 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
-                    if (CueVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
+                    if (CueVisible(
+                            (i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX,
+                            m_10->m_5c,
+                            m_10->m_60
+                        )) {
                         g->m_cueSink->Cue((i32)this, 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
-                    if (CueVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
+                    if (CueVisible(
+                            (i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX,
+                            m_10->m_5c,
+                            m_10->m_60
+                        )) {
                         g->m_cueSink->Cue((i32)this, 6, -1, -1, -1);
                     }
                 }
@@ -1883,19 +1895,31 @@ i32 CGrunt::BuildGruntExitAnimation() {
     if (r > 0x140) {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        if (GruntPointVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
+        if (GruntPointVisible(
+                (i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX,
+                m_10->m_5c,
+                m_10->m_60
+            )) {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        if (GruntPointVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
+        if (GruntPointVisible(
+                (i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX,
+                m_10->m_5c,
+                m_10->m_60
+            )) {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        if (GruntPointVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
+        if (GruntPointVisible(
+                (i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX,
+                m_10->m_5c,
+                m_10->m_60
+            )) {
             g->m_cueSink->CueA(this, 0x386, -1, 0, -1, -1);
         }
     }

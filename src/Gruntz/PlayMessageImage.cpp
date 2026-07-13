@@ -14,8 +14,8 @@
 // matched Play.cpp regalloc. Only offsets + code bytes are load-bearing.
 #include <Gruntz/Play.h>
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_24: planeCtx viewport rect) // CPlay + CSpriteFactoryHolder/CImageRegistry/CDrawTarget (m_c->m_10/m_24/m_drawTarget)
-#include <Image/ImageSet.h>     // CImageSet::GetAt (m_frames/m_minIndex/m_maxIndex) + CImageFrame
-#include <Image/CImage.h>       // CImage::RenderFrame (0x153790)
+#include <Image/ImageSet.h>   // CImageSet::GetAt (m_frames/m_minIndex/m_maxIndex) + CImageFrame
+#include <Image/CImage.h>     // CImage::RenderFrame (0x153790)
 #include <DDrawMgr/DDSurface.h> // CDDSurface::Flip (0x13e850)
 #include <Globals.h>            // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
 

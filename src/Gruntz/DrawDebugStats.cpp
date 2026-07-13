@@ -30,7 +30,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Play.h> // the real CPlay : CState (the method owner)
 #include <Gruntz/View.h> // the CSpriteFactoryHolder chain (renderer A, render state, draw surface)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (the m_24 level + scroll origin)
+#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (the m_24 level + scroll origin)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
 #include <Gruntz/GruntzMgr.h>   // CGruntzMgr (base CGameMgr::m_fps @+0x18)
 #include <stdio.h>              // engine sprintf (reloc-masked)

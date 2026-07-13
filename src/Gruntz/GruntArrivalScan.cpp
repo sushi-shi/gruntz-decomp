@@ -12,7 +12,7 @@
 // their own files pending the WwdGameReg/CGameRegistry singleton dual-view reconciliation
 // (see the M2 report); they interleave this unit's span until then.
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
-#include <Gruntz/Grunt.h> // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
+#include <Gruntz/Grunt.h>     // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24) + CLevelPlane visible rect
 #include <Wap32/ZVec.h>
 #include <Ints.h>
@@ -1583,7 +1583,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 CGruntHud* h = m_10;
                 i32 x = h->m_5c;
                 i32 y = h->m_60;
-                i32* rect = &g_gameReg->m_world->m_24->m_mainPlane->m_tileOriginX; // the +0x40 visible rect
+                i32* rect =
+                    &g_gameReg->m_world->m_24->m_mainPlane->m_tileOriginX; // the +0x40 visible rect
                 if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
@@ -2313,7 +2314,11 @@ state0: {
     if (m_390 == 0) {
         goto common;
     }
-    if (GruntPointVisible((i32)&g_gameReg->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)
+    if (GruntPointVisible(
+            (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_tileOriginX,
+            m_10->m_5c,
+            m_10->m_60
+        )
         == 0) {
         goto s0_reset;
     }

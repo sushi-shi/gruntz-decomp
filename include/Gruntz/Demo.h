@@ -14,6 +14,7 @@
 #include <rva.h>         // OVERRIDE
 #include <Gruntz/Play.h> // canonical CPlay base (typed MFC members -> the /GX fold)
 
+SIZE_UNKNOWN(CDemo);
 class CDemo : public CPlay {
 public:
     // Empty ctor: cl runs the CPlay/CState base chain + auto-stamps ??_7CDemo

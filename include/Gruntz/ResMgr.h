@@ -85,8 +85,8 @@ SIZE_UNKNOWN(CKeyTable);
 struct CKeyTable {
     i32 FindByKey(i32 key, i32* outFound);
 
-    char m_pad00[0x48];    // +0x00..0x47
-    CMapPtrToPtr m_map48;  // +0x48  key -> object (Lookup 0x1b8760)
+    char m_pad00[0x48];   // +0x00..0x47
+    CMapPtrToPtr m_map48; // +0x48  key -> object (Lookup 0x1b8760)
 };
 
 // The image/tile registry at CResMgr+0x10: a virtual Install at vtable slot 18

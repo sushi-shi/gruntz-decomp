@@ -4652,7 +4652,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         if (st->m_guts != 0) {
             st->m_guts->m_barFrameGate = h;
             if (st->m_guts->m_position == 0) {
-                st->m_guts->RefreshA();            // 0xfe460 (']'/'[' resize re-place pair)
+                st->m_guts->RefreshA();              // 0xfe460 (']'/'[' resize re-place pair)
                 st->m_guts->winapi_0fe520_SetRect(); // 0xfe520
             } else if (st->m_guts->m_position == 1) {
                 st->m_guts->winapi_0fe520_SetRect();

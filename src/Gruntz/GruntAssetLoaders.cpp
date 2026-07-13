@@ -115,7 +115,11 @@ enum GruntDeathType {
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
         CGameRegistry* _g = g_gameReg;                                                             \
-        if (GruntPointVisible((i32)&_g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {           \
+        if (GruntPointVisible(                                                                     \
+                (i32) & _g->m_world->m_24->m_mainPlane->m_tileOriginX,                             \
+                m_10->m_5c,                                                                        \
+                m_10->m_60                                                                         \
+            )) {                                                                                   \
             _g->m_cueSink->CueA(this, (tag), -1, 0, -1, -1);                                       \
         }                                                                                          \
     } while (0)
@@ -413,7 +417,11 @@ pathA:
     m_154->CacheFirstFrame(*(char**)&m_44c);
     {
         CGameRegistry* g = g_gameReg;
-        if (GruntPointVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
+        if (GruntPointVisible(
+                (i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX,
+                m_10->m_5c,
+                m_10->m_60
+            )) {
             g->m_cueSink->CueSpawn(this, 3, -1, -1, -1);
         }
     }

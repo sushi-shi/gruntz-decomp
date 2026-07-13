@@ -33,7 +33,7 @@
 // the TUs that dispatch on them); forward-declared here so the members can be typed.
 class CGruntzSoundZ;
 class CGruntzSoundInnerZ;
-class CBattlezData; // CWorld::m_7c score/HUD sink (BattlezData.h; the per-kind counters)
+class CBattlezData;  // CWorld::m_7c score/HUD sink (BattlezData.h; the per-kind counters)
 class CChatBoxOwner; // +0x2e0 hit-test/region sink (real type; deref TUs include ChatBoxOwner.h)
 // Real classes of the retyped CWorld/CPlay slots (thunk-target proven, 2026-07-13;
 // forward-declared so this header stays lean - the deref TUs include the real headers):
@@ -417,7 +417,7 @@ public:
     // IS CPlay - see the fold note in LevelTileValidation.cpp, where all three bodies live).
     i32 PlaceStartGruntz();   // 0x0d2b20 (called by ResetPlayState @0x0d60b0 on this same `this`)
     i32 ValidateLevelTiles(); // 0x0d2dd0
-    i32 HiRefresh(i32 a); // 0x0d6560  highlight-cursor refresh
+    i32 HiRefresh(i32 a);     // 0x0d6560  highlight-cursor refresh
     // BuildHelpReveal (0x0d72c0, THIS TU): the LOADING-BAR wipe tick - retail rets
     // 0x4, so it takes ONE i32 (the old no-arg decl had a DROPPED PARAMETER; every
     // caller pushes 0, the LoadByMode finale pushes 1). Its m_revealFrame/m_revealCap*
@@ -573,7 +573,7 @@ public:
     i32 m_1c4; // +0x1c4  deferred-draw gate (LoadByMode sets 1; EnterMode consumes; serialized)
     char m_pad1c8[0x1cc - 0x1c8]; // +0x1c8
     i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_645588)
-    i32 m_1d0;        // +0x1d0  cleared by the ~CPlay teardown body
+    i32 m_1d0; // +0x1d0  cleared by the ~CPlay teardown body
     char m_pad1d4[0x2d0 - 0x1d4];
     i32 m_packetsRcvd; // +0x2d0  net packets received (debug HUD "Rcvd = %i")
     i32 m_packetsSent; // +0x2d4  net packets sent (debug HUD "Sent = %i")
@@ -596,16 +596,16 @@ public:
     // +0x2e4: the begin-marker sink - the real CTileTriggerContainer (FilterList2 is
     // the per-frame "begin marker"; Serialize @0x117280 is SyncState's child sync).
     CTileTriggerContainer* m_beginMarker; // +0x2e4
-    i32 m_dragSnapActive;            // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
-    i32 m_dragInProgress;            // +0x2ec  box-drag-in-progress latch (HandleDragMove)
-    i32 m_2f0;                       // +0x2f0
+    i32 m_dragSnapActive; // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
+    i32 m_dragInProgress; // +0x2ec  box-drag-in-progress latch (HandleDragMove)
+    i32 m_2f0;            // +0x2f0
     i32 m_cursorFrame; // +0x2f4  latched cursor sprite frame (SetCursorFrame; FlushPendingOps re-arm)
     i32 m_levelId;     // +0x2f8  level/region id (==0x66 -> booty-region init)
-    i32 m_2fc, m_300;  // +0x2fc  serialized 8-byte pair (SyncWrite19fb)
+    i32 m_2fc, m_300;    // +0x2fc  serialized 8-byte pair (SyncWrite19fb)
     i32 m_dragClampMaxX; // +0x304  drag-clamp max X
     i32 m_dragClampMaxY; // +0x308  drag-clamp max Y
     i32 m_worldReady;    // +0x30c  world-ready gate (0 until inited)
-    RECT m_hudRect; // +0x310  HUD/selection rect buffer fed to the HUD draw
+    RECT m_hudRect;      // +0x310  HUD/selection rect buffer fed to the HUD draw
     // +0x320: the level light-FX overlay - the real CLightFxRender (LoadByMode
     // allocates its 0x43c bytes here + Init/BuildShape; the click/drag paths run
     // ApplyGlobal/ApplyA/ApplyB/ClearHandle on it; ~CPlay frees it). Doubles as the

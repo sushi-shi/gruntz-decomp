@@ -25,7 +25,7 @@
 // (trirecordserialize), Lookup_05b7e0 @0x5b7e0 (ddrawsubmgrleafscan).
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
-#include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
+#include <Gruntz/ActReg.h>    // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
