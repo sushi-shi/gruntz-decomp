@@ -121,16 +121,37 @@ class CGameLevel;
 // factory (+0x08, CreateSprite + key lookup), the image registry (+0x10), the
 // level/view object (+0x24) and the sound/anim registry (+0x28).
 class SoundStream; // +0x20 (Dsndmgr; the per-frame sound tick)
+// [SETTLED IDENTITY (Fable lane, 2026-07-13): this class IS CDDrawSurfaceMgr
+// (<DDrawMgr/DDrawSurfaceMgr.h>, ??_7 @0x1efc58, SIZE 0x40) - the two canonicals
+// agree member-for-member: +0x20 both named m_soundStream, +0x24 both CGameLevel,
+// +0x28 CSndHost==CDDrawSubMgrLeafScan (settled), and the pairs m_drawTarget==
+// m_pages / m_8(CSpriteFactory)==m_childGroup / m_10(CImageRegistry)==m_surfaceDesc /
+// m_animRegistry==m_leaf are per-slot identities of the same children. The CLASS
+// merge (one definition) is deferred - it must not emit two vtables for the one
+// retail ??_7; this game-side view stays vptr-padded (m_pad0) until then.]
 struct CSpriteFactoryHolder {
-    char m_pad0[0x4];
-    CDrawTarget* m_drawTarget; // +0x04  active draw surface / render-flip pump (CDrawTarget:
-                               //         Flush + the frame/draw surface pages; render TUs use it)
-    CSpriteFactory* m_8;       // +0x08  sprite/object factory (CreateSprite / key lookup); the
-                               //         render facet reaches it as renderer A (cast to CRenderer)
+    char m_pad0[0x4]; // the vptr (the real class is polymorphic - see the note above)
+    // +0x04: one child, two established names (CDrawTarget the game-side reading;
+    // CDDrawSubMgrPages the DDraw-side canonical - Method_158c70 pause, m_backPair).
+    union {
+        CDrawTarget* m_drawTarget;
+        struct CDDrawSubMgrPages* m_pages;
+    };
+    // +0x08: the sprite/object factory == the DDraw child-group == CWwdObjMgr (the
+    // three-way class identity is documented in SpriteFactory.h / WwdObjMgr.cpp).
+    union {
+        CSpriteFactory* m_8;
+        struct CDDrawChildGroup* m_childGroup;
+    };
     CRenderer* m_rendererB;    // +0x0c  renderer B (present) / resource worker holder (View.h)
     CImageRegistry* m_10;      // +0x10  image/name registry (real ResMgr.h class: Install/Has/
                                //         Register/Release/LoadNamespace + the m_10map hash)
-    char m_pad14[0x20 - 0x14];
+    // +0x14..+0x1c: the DDraw-side children (names from the CDDrawSurfaceMgr
+    // canonical; the Init decode 0x155900 news each).
+    struct CDDrawWorkerCache* m_workerCache; // +0x14  string-keyed worker cache
+    struct CDDrawSubMgr* m_workerMap;        // +0x18  CDDrawWorkerMapSmall
+    struct CDDrawPtrCollections* m_ptrColl;  // +0x1c  device/surface pool (m_surf0 =
+                                             //        the IDirectDraw2; GetCapsChecked)
     // +0x20  the REAL SoundStream (<Dsndmgr/SoundStream.h>). Was "m_frameProfiler": the
     // two per-frame `(obj, timeGetTime())` calls on it are SoundDevice::PurgeVoiceList
     // (0x136e20) + SoundStream::TickSubManagers (0x137ac0), BOTH 100%% EXACT in the tree -
@@ -141,8 +162,19 @@ struct CSpriteFactoryHolder {
     CSndHost* m_28;   // +0x28  sound registry (CSndHost cue facet <Gruntz/SoundCue.h>; the
                       //         render/resource facet reaches it as CSoundRegistry, cast).
                       //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
-    CAnimRegistry* m_animRegistry; // +0x2c  anim/third registry (real ResMgr.h class)
+    CAnimRegistry* m_animRegistry; // +0x2c  anim/third registry (real ResMgr.h class;
+                                   //         == CDDrawSurfaceMgr::m_leaf)
+    void* m_hWnd30;  // +0x30  bound window / device handle (CDDrawSurfaceMgr::m_hWnd)
+    i32 m_flags34;   // +0x34  caps flags
+    // +0x38  last-error / world load-status code (ReportWorldStatus maps it to a
+    // message id; Init stores 0x3e9..0x3f1). u32 alias = the old CWorldZ::m_38.
+    union {
+        i32 m_lastError;
+        u32 m_38;
+    };
+    void* m_callback3c; // +0x3c  run/config callback (HP_Callback)
 };
+SIZE(CSpriteFactoryHolder, 0x40); // == SIZE(CDDrawSurfaceMgr, 0x40)
 
 // The tile occupancy grid (*g_gameReg+0x70) is CTileGrid, in
 // <Gruntz/TileGrid.h>. CGrunt::LoadEntranceConfig stamps the grunt's footprint

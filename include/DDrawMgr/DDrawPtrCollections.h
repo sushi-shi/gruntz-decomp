@@ -153,6 +153,10 @@ public:
     // Reconfigure the cached surface (vtbl +0x54) and, on success, recompute the color
     // masks; report + latch the failure code on either error. 0x143c20.
     i32 ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4); // 0x143c20
+    // 0x08dd80 (body in DDrawBltErrThunk.cpp; ex "DDrawBltHost::BltChecked" - the
+    // held object IS this class): m_surf0->GetCaps(driver, hel) with the DDraw
+    // error log on failure. CGruntzMgr::RegisterLevelAssetKeys calls it twice.
+    i32 GetCapsChecked(); // 0x08dd80
 
     IDirectDraw2* m_surf0; // +0x00 - the held DirectDraw device (Release on Clear).
                            //         NOTE (wave4-K): +0x00/+0x04 mirror CDirectDrawMgr's
@@ -161,7 +165,12 @@ public:
                            //         manager class (shared +0x4b4 array, +0x93c..+0x944
                            //         tail); flagged for a canonical-class unification.
     IDirectDraw* m_surf4;  // +0x04 - the raw pre-QI DirectDraw device (Release on Clear)
-    char _pad008[0x47c - 0x08];
+    // +0x008/+0x184: the driver + HEL DDCAPS blocks (0x17c B each; the SDK DDCAPS'
+    // sizeof differs across DX versions, so raw dword storage + LPDDCAPS casts at
+    // the GetCaps call - the CDDPageMgr view models its copy the same way).
+    i32 m_driverCaps[0x5f]; // +0x008  driver DDCAPS (GetCapsChecked fills)
+    i32 m_helCaps[0x5f];    // +0x184  HEL DDCAPS (GetCapsChecked fills)
+    char _pad300[0x47c - 0x300];
     CPtrList m_poolA;  // +0x47c  (block size 0xa) - CFileImageSurface* (pool-A items)
     CPtrList m_poolB;  // +0x498  (block size 0xa) - CDDPalette*
     CPtrArray m_array; // +0x4b4  (default ctor); m_pData@+0x4b8 / m_nSize@+0x4bc

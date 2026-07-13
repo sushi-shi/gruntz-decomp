@@ -91,46 +91,14 @@ typedef CDDrawSubMgrLeafScan CSndHost;
 // is dissolved: its "map-type contradiction" was an inverted tree label (0x1b8008 IS
 // CMapStringToOb::Lookup), not a binary fact.
 struct CImageRegistry;
-// A polymorphic sub-object held in the world at +0x1c, dispatched through a
-// pointer-to-pointer (`*m_1c`) then virtual slot 10 (+0x28). The full COM-interface
-// definition (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on
-// it; here CWorldZ::m_1c is a pointer, so a forward declaration suffices (keeps this
-// widely-included class header free of the COM/STDMETHOD (objbase.h) footprint).
-struct CWorldDispatch;
-// The world's +0x4 sub-object exposes a map-index field at +0x14 and, at +0x10, the
-// command-context object the world-present toolbar forwarder (Fwd114f00) drills to.
-SIZE_UNKNOWN(CWorldSub4);
-struct CWorldSub4 {
-    // 0x158c70 (__thiscall): pause/park the sub-object's own +0x14 page. Retail
-    // passes THIS object's m_14 back in as the argument (ShowMessageBox 0x08ee70:
-    // `mov ecx,[world+4]; mov eax,[ecx+0x14]; push eax; call`). Reloc-masked.
-    void PausePages(i32 page); // 0x158c70
-    char m_pad0[0x10];
-    void* m_10; // +0x10  command-context object (its +0x2c is forwarded to 0x267b)
-    i32 m_14;   // +0x14
-};
-// The real loaded-world/map object (CGruntzMgr::m_world). One object; each manager
-// method that touches it reads a different facet: the +0x4 map sub-object, the +0x10
-// recolor lookup holder, the +0x1c polymorphic dispatch, the +0x24 active view, the
-// +0x28 sound/state sub-controller and the +0x38 load-status code.
-SIZE_UNKNOWN(CWorldZ);
-struct CWorldZ {
-    char m_pad0[0x4];
-    CWorldSub4* m_4; // +0x04
-    // +0x08 the sprite/object factory (== CSpriteFactoryHolder::m_8 in the
-    // GameRegistry.h view of this same object; its +0x48 embedded map hosts the
-    // 0x8106 death lookup). Fwd-declared; Grunt.h carries the full def.
-    struct CSpriteFactory* m_8; // +0x08
-    char m_padc[0x10 - 0xc];
-    CImageRegistry* m_10; // +0x10  image/name registry (its +0x10 is the CMapStringToOb hash)
-    char m_pad14[0x1c - 0x14];
-    CWorldDispatch** m_1c; // +0x1c
-    char m_pad20[0x24 - 0x20];
-    CGameLevel* m_24; // +0x24  active world view
-    CSndHost* m_28;   // +0x28  sound/anim cue host (finder m_10 / stream m_2c / gate m_30)
-    char m_pad2c[0x38 - 0x2c];
-    u32 m_38; // +0x38  load-status code (ReportWorldStatus maps it to a message id)
-};
+// [The CWorldZ view is DISSOLVED (Fable lane, 2026-07-13): the loaded-world object
+// at +0x30 IS the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) == the
+// polymorphic CDDrawSurfaceMgr (see the settled-identity note there). The old
+// facets resolved: m_4 == m_drawTarget/m_pages (CWorldSub4 was CDDrawSubMgrPages;
+// "PausePages" @0x158c70 IS its Method_158c70(CDDrawSurfacePair*)); m_1c ==
+// m_ptrColl (the "*m_1c slot-10 dispatch" is m_ptrColl->m_surf0 IDirectDraw2::
+// FlipToGDISurface, slot 10 +0x28); m_38 == m_lastError.]
+struct CSpriteFactoryHolder;
 
 // Minimal IDirectPlayLobby-shaped COM surface used by
 // InitializeLobbyConnectionSettings (Release slot 2 / GetConnectionSettings slot 8,
@@ -444,7 +412,8 @@ public:
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
     CState* m_curState;                // +0x2c  current game-state (Update() -> state id)
-    CWorldZ* m_world;                  // +0x30  loaded world/map object (also a draw gate)
+    CSpriteFactoryHolder* m_world;     // +0x30  loaded world/map object (also a draw gate;
+                                       //         == CGameRegistry::m_world, one singleton field)
     CSymParser* m_recolorSurface;      // +0x34  the level/rez symbol parser (LoadWorldMode
                                        //        new's it (0x94) + ParseBuffer's the rez row;
                                        //        LevelRezPath's ResolvePath runs on it)

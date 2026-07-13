@@ -633,10 +633,10 @@ extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 RVA(0x001122a0, 0x241)
 void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
     char* self = (char*)this;
-    // CWorldZ IS the CSpriteFactoryHolder view (one object at +0x30): the two fields this
+    // The world at +0x30 IS the CSpriteFactoryHolder (ex-CWorldZ, dissolved): the two fields this
     // fn reads - the sprite factory at +0x08 and the sound host at +0x28 - are declared
     // IDENTICALLY on both, so reading through the real class is a pure rename.
-    CWorldZ* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
+    CSpriteFactoryHolder* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
 
     // (1) in-rect gate: is the tile center inside the view rect (+0x13c)?
     i32 inRect = 0;

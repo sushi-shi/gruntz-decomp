@@ -410,7 +410,7 @@ i32 CBootyState::CheckPerfectBonus() {
     CGameObject* st = m_bootyPerfectSprite;
     i32 phase = st->m_screenX;
     if (phase == (i32)0xffffff7e) {
-        CWorldZ* host = g_gameReg->m_world;
+        CSpriteFactoryHolder* host = g_gameReg->m_world;
         i32 item = g_gameReg->m_inputFlag; // +0x11c (configured music item, this facet)
         CSndHost* m28 = host->m_28;
         if (m28->m_emitGate == 0) {
@@ -523,7 +523,7 @@ i32 CMultiBootyState::Vslot09(i32) {
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
-    CWorldZ* host = g_gameReg->m_world;
+    CSpriteFactoryHolder* host = g_gameReg->m_world;
     i32 item = g_gameReg->m_inputFlag; // +0x11c (configured music item, this facet)
     CSndHost* m28 = host->m_28;
     if (m28->m_emitGate == 0) {

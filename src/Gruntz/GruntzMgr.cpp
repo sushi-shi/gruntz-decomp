@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <ddraw.h> // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
 // The REAL MFC CDialog (ExitModalUI's argument - proof in <Gruntz/GruntzMgr.h>). afx.h
 // arrives first via <Mfc.h>, so there is no windows.h-first C1189 here. The afxwin*.inl
 // bodies are skipped for the clang LABEL step only (they carry an implicit-int
@@ -49,6 +50,9 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>    // m_world->m_pages (ex CWorldSub4; Method_158c70 pause)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>  // m_world->m_28 (CSndHost == the leaf-scan registry)
+#include <DDrawMgr/DDrawPtrCollections.h> // m_world->m_ptrColl (GetCapsChecked / the held IDirectDraw2)
 #include <Gruntz/GameRegistry.h>
 #include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -89,23 +93,10 @@
 // A polymorphic world sub-object (CWorldZ::m_1c -> *m_1c): abstract __stdcall COM
 // interface, only slot 10 (+0x28) is dispatched. STDMETHOD_(void, ...) ==
 // `virtual void __stdcall`, so `d->Slot0a()` lowers to `mov eax,[d]; call [eax+0x28]`.
-SIZE_UNKNOWN(CWorldDispatch);
-struct CWorldDispatch {
-    STDMETHOD_(void, v00)() PURE;
-    STDMETHOD_(void, v01)() PURE;
-    STDMETHOD_(void, v02)() PURE;
-    STDMETHOD_(void, v03)() PURE;
-    STDMETHOD_(void, v04)() PURE;
-    STDMETHOD_(void, v05)() PURE;
-    STDMETHOD_(void, v06)() PURE;
-    STDMETHOD_(void, v07)() PURE;
-    STDMETHOD_(void, v08)() PURE;
-    STDMETHOD_(void, v09)() PURE;
-    STDMETHOD_(void, Slot0a)() PURE; // slot 10 (+0x28)
-    // Non-virtual pre-level reset (@0x08dd80, reached via ILT thunk 0x1406); the
-    // asset-key register step calls it twice on the world dispatch object.
-    void Prepare(); // 0x08dd80
-};
+// [The CWorldDispatch 11-slot view is DISSOLVED: the +0x1c child is m_ptrColl
+// (CDDrawPtrCollections); its "Prepare" @0x08dd80 IS GetCapsChecked (the
+// IDirectDraw2::GetCaps probe), and the "*m_1c slot-10 Slot0a" dispatch is
+// m_surf0->FlipToGDISurface() (IDirectDraw2 slot 10, +0x28) before each modal UI.]
 
 // CGruntzMgr::m_lobby is the REAL DirectPlay lobby COM interface (IDirectPlayLobby,
 // from the vendored <dplobby.h>); only Release (slot 2) + GetConnectionSettings
@@ -630,7 +621,7 @@ i32 PumpIdleFrame() {
     if (mgr == 0) {
         return 0;
     }
-    CWorldZ* world = mgr->m_world;
+    CSpriteFactoryHolder* world = mgr->m_world;
     if (world == 0) {
         return 0;
     }
@@ -1062,7 +1053,7 @@ extern const char s_assetKeyBa44[]; // 0x60ba44
 // dispatch (m_1c) twice in between. No-op with no world loaded.
 RVA(0x0008dc90, 0xb1)
 void CGruntzMgr::RegisterLevelAssetKeys() {
-    CWorldZ* w = m_world;
+    CSpriteFactoryHolder* w = m_world;
     if (w == 0) {
         return;
     }
@@ -1072,8 +1063,8 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     // its Has/Register/Release siblings), so the call binds to the symbol retail enters.
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(0, 1);
     w->m_28->SumField_1580b0(0);
-    ((CWorldDispatch*)w->m_1c)->Prepare();
-    ((CWorldDispatch*)w->m_1c)->Prepare();
+    w->m_ptrColl->GetCapsChecked();
+    w->m_ptrColl->GetCapsChecked();
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(0, 1);
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("GRUNTZ", 1);
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(s_assetKeyBa44, 1);
@@ -1298,10 +1289,9 @@ extern char g_msgCaption[];
 RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
-        CWorldSub4* pages = m_world->m_4;
-        pages->PausePages(pages->m_14);
-        CWorldDispatch* d = *m_world->m_1c;
-        d->Slot0a();
+        CDDrawSubMgrPages* pages = m_world->m_pages;
+        pages->Method_158c70(pages->m_backPair); // pause the back pair (ex "PausePages")
+        m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
     i32 wasShown = ShowCursor(1);
     while (ShowCursor(1) < 0) {
@@ -3539,9 +3529,8 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         m_timer->Stop();
     }
     if (m_world) {
-        RedrawMapIndex(m_world->m_4->m_14);
-        CWorldDispatch* d = *m_world->m_1c;
-        d->Slot0a();
+        RedrawMapIndex((i32)m_world->m_pages->m_backPair);
+        m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;
@@ -3584,8 +3573,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
         } else {
             notify = 0;
         }
-        CWorldDispatch* d = *m_world->m_1c;
-        d->Slot0a();
+        m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;
@@ -4188,8 +4176,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         } else {
             flag = 0;
         }
-        CWorldDispatch* d = *m_world->m_1c;
-        d->Slot0a();
+        m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;
@@ -4375,7 +4362,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CDdModePair pt;
-    ((CDirectDrawMgr*)m_world->m_1c)->FindFwd(&pt, m_modeW, m_modeH, m_colorDepth);
+    ((CDirectDrawMgr*)m_world->m_ptrColl)->FindFwd(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -4401,7 +4388,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CDdModePair pt;
-    ((CDirectDrawMgr*)m_world->m_1c)->FindBack(&pt, m_modeW, m_modeH, m_colorDepth);
+    ((CDirectDrawMgr*)m_world->m_ptrColl)->FindBack(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {

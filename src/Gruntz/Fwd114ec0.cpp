@@ -6,12 +6,14 @@
 // Fwd114ec0 @0x114ec0 - straight 6-arg forwarder to the guarded forwarder Fwd114f00.
 // Fwd114f00 @0x114f00 - its a2 IS `this` (a CGruntzMgr - HandleCommand's case-0x8070
 // caller passes `(i32)this`), so the chain a2->m_30->m_4->m_10->m_2c dissolves onto the
-// real m_world (CWorldZ) -> m_4 (CWorldSub4) -> m_10 (the command-context object) ->
+// real m_world (CSpriteFactoryHolder) -> m_pages (+0x4) -> m_frontPair (+0x10) ->
 // +0x2c, which it forwards plus the six args to 0x267b. Only the final +0x2c object's
 // class is unrecovered (a small placeholder). Both __cdecl.
 #include <Ints.h>
 
-#include <Gruntz/GruntzMgr.h> // the real CGruntzMgr (a2's true class) + m_world chain
+#include <Gruntz/GruntzMgr.h>            // the real CGruntzMgr (a2's true class) + m_world chain
+#include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (m_world's real class)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // m_pages (the ex-CWorldSub4 +0x4 child)
 
 #include <rva.h>
 
@@ -36,7 +38,7 @@ extern "C" void Func267b(void* v, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
 // chain + 6-arg re-push forward are byte-faithful.
 RVA(0x00114f00, 0x3e)
 void Fwd114f00(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    CObj114f* obj = (CObj114f*)((CGruntzMgr*)a2)->m_world->m_4->m_10;
+    CObj114f* obj = (CObj114f*)((CGruntzMgr*)a2)->m_world->m_pages->m_frontPair;
     if (obj == 0) {
         return;
     }

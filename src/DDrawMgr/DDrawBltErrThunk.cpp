@@ -10,47 +10,27 @@
 // call shape are load-bearing; names are placeholders.
 #include <rva.h>
 
-#include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::GetErrorString (the DDraw error reporter)
+#include <Mfc.h> // afx-first umbrella (DDrawPtrCollections.h needs MFC CPtrList) + windows.h
+#include <ddraw.h> // real IDirectDraw2 (GetCaps @slot 11) + LPDDCAPS
+#include <DDrawMgr/DirectDrawMgr.h>        // CDirectDrawMgr::GetErrorString (the DDraw error reporter)
+#include <DDrawMgr/DDrawPtrCollections.h>  // the canonical owner (ex the DDrawBltHost view)
 #include <Ints.h>
 
-// The held surface/display object: COM-ABI, so its virtuals are __stdcall with the
-// interface as the hidden first arg. Slot 11 (offset 0x2c) is the 2-RECT Blt.
-struct DDrawBltSurface {
-    virtual i32 __stdcall s00();
-    virtual i32 __stdcall s01();
-    virtual i32 __stdcall s02();
-    virtual i32 __stdcall s03();
-    virtual i32 __stdcall s04();
-    virtual i32 __stdcall s05();
-    virtual i32 __stdcall s06();
-    virtual i32 __stdcall s07();
-    virtual i32 __stdcall s08();
-    virtual i32 __stdcall s09();
-    virtual i32 __stdcall s10();
-    virtual i32 __stdcall Blt(void* dstRect, void* srcRect); // slot 11 (+0x2c)
-};
+// [SETTLED (Fable lane, 2026-07-13): the "DDrawBltHost/DDrawBltSurface" views WERE
+// CDDrawPtrCollections + its held IDirectDraw2 (+0x00 m_surf0): the "2-RECT Blt at
+// slot 11" is IDirectDraw2::GetCaps (slot 11, +0x2c, __stdcall, TWO LPDDCAPS args)
+// and the "+0x08 dest RECT" is the 0x17c-byte driver DDCAPS block (+0x184 = HEL).
+// The 12-slot placeholder interface is dissolved onto the real COM vtable.]
 
-// The display helper that owns the surface at +0 and the two RECTs at +8 / +0x184.
-struct DDrawBltHost {
-    i32 BltChecked();
-    DDrawBltSurface* m_0;    // +0x00  held surface object
-    char m_pad04[0x8 - 0x4]; //
-    char m_8[0x184 - 0x8];   // +0x08  destination RECT (passed as &m_8)
-    char m_184[16];          // +0x184 source RECT (passed as &m_184)
-};
-
-// Blt the two RECTs through the held surface; log a nonzero HRESULT through the
-// DDraw error reporter CDirectDrawMgr::GetErrorString (0x141400, static __cdecl).
+// Query the device caps into the embedded driver/HEL blocks; log a nonzero HRESULT
+// through the DDraw error reporter CDirectDrawMgr::GetErrorString (0x141400).
 RVA(0x0008dd80, 0x31)
-i32 DDrawBltHost::BltChecked() {
-    i32 hr = m_0->Blt(&m_8, &m_184);
+i32 CDDrawPtrCollections::GetCapsChecked() {
+    i32 hr = m_surf0->GetCaps((LPDDCAPS)m_driverCaps, (LPDDCAPS)m_helCaps);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString((char*)"c:\\proj\\incs\\ddrawmgr.h", 0x135, hr);
     }
     return hr;
 }
-
-SIZE_UNKNOWN(DDrawBltSurface);
-SIZE_UNKNOWN(DDrawBltHost);
 
 // --- vtable catalog ---
