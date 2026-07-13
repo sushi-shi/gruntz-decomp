@@ -190,13 +190,13 @@ public:
         };
         // Load-phase (LoadConfig) view.
         struct {
-            i32 m_0;                 // +0x00  = 1
-            CLevelInfo* m_levelInfo; // +0x04  = lvl  (the SAME slot + object as m_ctx)
-            CTriggerMgr* m_8;        // +0x08  = lvl->m_triggerMgr  (== m_triggerMgr)
-            CMapMgr* m_dims;         // +0x0c  = lvl->m_dims        (== m_board)
-            CLevelSpawnInfo* m_10;   // +0x10  = lvl->m_spawnInfo
+            i32 m_0;                       // +0x00  = 1
+            CLevelInfo* m_levelInfo;       // +0x04  = lvl  (the SAME slot + object as m_ctx)
+            CTriggerMgr* m_8;              // +0x08  = lvl->m_triggerMgr  (== m_triggerMgr)
+            CMapMgr* m_dims;               // +0x0c  = lvl->m_dims        (== m_board)
+            CLevelSpawnInfo* m_10;         // +0x10  = lvl->m_spawnInfo
             CTileTriggerSwitchLogic* m_14; // +0x14 = m_10->m_2e4   (== m_cellQuery)
-            i32 m_ownerId;           // +0x18  = id (owner/team id)
+            i32 m_ownerId;                 // +0x18  = id (owner/team id)
             char m_pad1c[0x30 - 0x1c];
             DWORD m_defenderChance; // +0x30  DefenderChance
             char m_pad34[0x48 - 0x34];

@@ -60,7 +60,7 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/LeafCue.h>         // LeafCue (the finish-level looked-up cue)
 #include <Gruntz/LightFx.h>         // CLightFx (resurrect flash Activate)
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/LevelInfo.h> // CLevelSpawnInfo - the concrete state behind m_curState
+#include <Gruntz/LevelInfo.h>              // CLevelSpawnInfo - the concrete state behind m_curState
 #include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (rock-break)
 #include <Gruntz/TileActionEvent.h>        // canonical CTileActionEvent (rock-break)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (rock-break)
@@ -1731,8 +1731,9 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
 
             if (type != 0x1e && type != 0x1f) {
                 if (type == 0x21) {
-                    CTileTriggerSwitchLogic* gr = (CTileTriggerSwitchLogic*)((CTileTriggerSwitchLogic*)root->m_2e4)
-                                           ->ScanNeighborhood(tx, ty);
+                    CTileTriggerSwitchLogic* gr =
+                        (CTileTriggerSwitchLogic*)((CTileTriggerSwitchLogic*)root->m_2e4)
+                            ->ScanNeighborhood(tx, ty);
                     if (gr == 0) {
                         CString msg;
                         FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
@@ -1747,8 +1748,9 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                 if (type != 0x97 && type != 0x98 && type != 0x99) {
                     continue;
                 }
-                CTileTriggerSwitchLogic* o = (CTileTriggerSwitchLogic*)((CTileTriggerSwitchLogic*)root->m_2e4)
-                                      ->FindByField0C(ty + (tx << 8));
+                CTileTriggerSwitchLogic* o =
+                    (CTileTriggerSwitchLogic*)((CTileTriggerSwitchLogic*)root->m_2e4)
+                        ->FindByField0C(ty + (tx << 8));
                 if (((CTileActionEvent*)o)->Process(0)) {
                     ((CTileTriggerContainer*)root->m_2e4)->DelFromList3((void*)o);
                 }
@@ -1756,8 +1758,9 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             }
 
             // type == 0x1e || type == 0x1f: rock-break marker + particle
-            CTileTriggerSwitchLogic* lo = (CTileTriggerSwitchLogic*)((CTileTriggerContainer*)root->m_2e4)
-                                   ->FindInLists12(ty + (tx << 8), 0x1a);
+            CTileTriggerSwitchLogic* lo =
+                (CTileTriggerSwitchLogic*)((CTileTriggerContainer*)root->m_2e4)
+                    ->FindInLists12(ty + (tx << 8), 0x1a);
             if (lo != 0) {
                 ((CTileTriggerLogic*)lo)->ApplyMove(type);
                 ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)lo);
