@@ -6,33 +6,32 @@
 //
 // It chains the base activate, hides the cursor, registers the TILEZ/IMAGEZ(LEVEL)/
 // IMAGEZ(GRUNTZ) namespaces through the m_c->m_10 registrar (vtable slot +0x4c),
-// then runs the level-specific init chain (m_2dc map mgr, m_c sub-objects) and kicks
-// the state timer. __thiscall; every callee is a reloc-masked external.
+// then runs the level-specific init chain (m_guts status bar, m_c sub-objects) and
+// kicks the state timer. __thiscall; every callee is a reloc-masked external.
 //
-// Following CPlay's documented loader idiom (<Gruntz/Play.h>): the routine casts
-// `this` once to a typed activation facet (the +0xc resource root, +0x28/+0x30
-// bank sources, +0x2dc guts, the region gates), keeping the sub-object views local.
+// (2026-07-14: the former PlayActivate/GLS* view nest - PlayActivate, GLSAssetRoot,
+// GLSSubA, GLSSub14, GLSSub2c, GLSObj24, GLSNamespace, GLSMapMgr, plus the local
+// CStatusBarMgr/CDDSurface decl-only shadows - is DISSOLVED: every field was a
+// CPlay/CState/CSpriteFactoryHolder member that already existed under its real name
+// (m_levelBank/m_gruntzBank/m_guts/m_region0Gate/m_region1Gate/m_stepCountdown; the
+// asset root's m_4/m_c/m_24 are m_drawTarget/m_rendererB/m_24 with their real
+// classes). "Present" IS CDDrawWorkerList::PruneWorkers, slot 13.)
 #include <Mfc.h>         // ShowCursor (afx-first)
 #include <Bute/SymTab.h> // canonical CSymTab (ResolvePath @0x13bae0)
 
 #include <Gruntz/Play.h>       // the real CPlay : CState (method owner)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
-#include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar)
-#include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
+#include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar) + CDrawTarget
 #include <rva.h>
-#include <Globals.h>                   // g_gameReg / shared globals
-#include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
-#include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
-#include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90/159ef0)
-class CStatusBarMgr {
-public:
-    i32 LoadMainStatusBarSprite();
-    i32 Deactivate();
-};
-class CDDSurface {
-public:
-    i32 Fill(unsigned int c);
-}; // 0x13e760
+#include <Globals.h>                    // g_gameReg / shared globals
+#include <Gruntz/GameLevel.h>           // canonical CGameLevel (VisitVisible)
+#include <DinMgr2/DirectInputMgr2.h>    // canonical DirectInputMgr2 (ReadAll)
+#include <DDrawMgr/DDrawSubMgrPages.h>  // canonical CDDrawSubMgrPages (Method_158e90)
+#include <DDrawMgr/DDrawSurfacePair.h>  // the CDrawTarget pages (m_surface Fill target)
+#include <DDrawMgr/DDrawWorkerList.h>   // renderer B (PruneWorkers - the "present")
+#include <DDrawMgr/DDSurface.h>         // CDDSurface::Fill (0x13e760)
+#include <Gruntz/StatusBarMgr.h>        // canonical CStatusBarMgr (m_guts Deactivate/Load...)
+
 // 0xface0: the shared image-load activate gate = CState::InputVirtual (slot-8 base
 // virtual, SYMBOL-bound in Attract.cpp), called qualified (direct) on `this` - the same
 // spelling StateImages.cpp's CBootyState/CImageState use. 0xfa8f0 is CState::RetireScene
@@ -41,44 +40,6 @@ public:
 // The global empty C string (0x6293f4).
 extern "C" char g_emptyString[];
 
-// The +0x10 image registrar is the canonical CImageRegistry (ResMgr.h): the
-// namespace-register op here is its LoadNamespace slot-19 (+0x4c) virtual. Uses the
-// real class - no local registrar view.
-struct GLSNamespace { // m_28 / m_30
-    // Lookup @0x13bae0 IS CSymTab::ResolvePath; cast at each call.
-};
-struct GLSSub2c {
-    // Step @0x13e760 IS CDDSurface::Fill; cast at the call.
-};
-struct GLSSub14 {
-    char m_pad00[0x2c];
-    GLSSub2c* m_2c; // +0x2c
-};
-struct GLSSubA { // m_c->m_4
-    // Begin @0x158e90 IS CDDrawSubMgrPages::Method_158e90; cast at the call.
-    char m_pad00[0x14];
-    GLSSub14* m_14; // +0x14
-    void* m_18;     // +0x18
-};
-struct GLSObj24 { // m_c->m_24
-    // Wire @0x15dc90 IS CGameLevel::VisitVisible; cast at the call.
-};
-// The asset root (CPlay+0xc) is the canonical CSpriteFactoryHolder (Play.h): m_c is CSpriteFactoryHolder's
-// renderer-B (CSpriteFactoryHolder+0xc, the real class CRenderer, View.h), and the dispatched
-// slot 13 (+0x34) is CRenderer::Present. Uses the real class - no local view.
-struct GLSAssetRoot { // this->m_c (== CSpriteFactoryHolder, View.h)
-    char m_pad00[0x4];
-    GLSSubA* m_4;         // +0x04  CSpriteFactoryHolder render-state (CDDrawSubMgrPages family)
-    void* m_8;            // +0x08  renderer A
-    CRenderer* m_c;       // +0x0c  renderer B (CRenderer, Present slot 13)
-    CImageRegistry* m_10; // +0x10  the image/tile registrar
-    char m_pad14[0x24 - 0x14];
-    GLSObj24* m_24; // +0x24
-};
-struct GLSMapMgr { // this->m_2dc
-    // Finalize @0x125d IS CStatusBarMgr::Deactivate; cast at the call.
-    // Activate2 @0x21b7 IS CStatusBarMgr::LoadMainStatusBarSprite; cast at the call.
-};
 // The +0xc4 reset manager is the DirectInputMgr2 input singleton g_645570
 // (DAT_00245570, bound extern "C" in GruntzMgr.cpp): ReadAll (@0x133110) polls devices.
 extern "C" DirectInputMgr2* g_645570;
@@ -87,31 +48,12 @@ extern "C" DirectInputMgr2* g_645570;
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.
 extern "C" CGameRegistry* g_gameReg;
 // The camera auto-scroll/clamp update (MgrAutoScroll.cpp @0xebd70, cdecl 3-arg),
-// called with (g_gameReg, this->m_2dc, this->m_470).
+// called with (g_gameReg, this->m_guts, this->m_region0Gate).
 class CGruntzMgr;
 void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag); // reloc-masked
 
-// The CPlay activation facet: `this` cast once, so the field accesses take CPlay's
-// activation offsets without disturbing Play.cpp's Render-side member typing.
-struct PlayActivate {
-    char m_pad00[0xc];
-    GLSAssetRoot* m_c; // +0x0c
-    char m_pad10[0x28 - 0x10];
-    GLSNamespace* m_28; // +0x28
-    char m_pad2c[0x30 - 0x2c];
-    GLSNamespace* m_30; // +0x30
-    char m_pad34[0x2dc - 0x34];
-    GLSMapMgr* m_2dc; // +0x2dc
-    char m_pad2e0[0x470 - 0x2e0];
-    i32 m_470; // +0x470
-    i32 m_474; // +0x474
-    char m_pad478[0x510 - 0x478];
-    i32 m_510; // +0x510
-};
-
 RVA(0x000cb800, 0x191)
 i32 CPlay::OnActivate() {
-    PlayActivate* p = (PlayActivate*)this;
     if (!CState::
             InputVirtual()) { // 0xface0 CState base activate gate (was fake CMgrPersistObj::Init)
         return 0;
@@ -119,27 +61,27 @@ i32 CPlay::OnActivate() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    void* h = ((CSymTab*)p->m_28)->ResolvePath("TILEZ");
+    void* h = m_levelBank->ResolvePath("TILEZ");
     if (!h) {
         return 0;
     }
-    if (p->m_c->m_10->LoadNamespace(h, g_emptyString, "_") == -1) {
+    if (m_c->m_10->LoadNamespace(h, g_emptyString, "_") == -1) {
         return 0;
     }
 
-    h = ((CSymTab*)p->m_28)->ResolvePath("IMAGEZ");
+    h = m_levelBank->ResolvePath("IMAGEZ");
     if (!h) {
         return 0;
     }
-    if (p->m_c->m_10->LoadNamespace(h, "LEVEL", "_") == -1) {
+    if (m_c->m_10->LoadNamespace(h, "LEVEL", "_") == -1) {
         return 0;
     }
 
-    h = ((CSymTab*)p->m_30)->ResolvePath("IMAGEZ");
+    h = m_gruntzBank->ResolvePath("IMAGEZ");
     if (!h) {
         return 0;
     }
-    if (p->m_c->m_10->LoadNamespace(h, "GRUNTZ", "_") == -1) {
+    if (m_c->m_10->LoadNamespace(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -147,30 +89,20 @@ i32 CPlay::OnActivate() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    ((CDDSurface*)p->m_c->m_4->m_14->m_2c)->Fill(0);
-    UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)p->m_2dc, p->m_470);
+    m_c->m_drawTarget->m_14->m_surface->Fill(0);
+    UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate);
 
-    if (p->m_474 != 0) {
+    if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
-        ((CGameLevel*)p->m_c->m_24)
-            ->VisitVisible((void*)p->m_c->m_4->m_14, (CGameObjChain*)p->m_c->m_8);
-        p->m_c->m_c->Present(p->m_c->m_4->m_14, p->m_c->m_4->m_18);
+        m_c->m_24->VisitVisible((void*)m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+        m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
     }
 
-    ((CStatusBarMgr*)p->m_2dc)->Deactivate();
-    ((CStatusBarMgr*)p->m_2dc)->LoadMainStatusBarSprite();
-    p->m_510 = 2;
-    ((CDDrawSubMgrPages*)p->m_c->m_4)->Method_158e90();
+    m_guts->Deactivate();
+    m_guts->LoadMainStatusBarSprite();
+    m_stepCountdown = 2;
+    m_c->m_pages->Method_158e90();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited by CPlay, cast-free)
     return 1;
 }
-
-SIZE_UNKNOWN(GLSAssetRoot);
-SIZE_UNKNOWN(GLSMapMgr);
-SIZE_UNKNOWN(GLSNamespace);
-SIZE_UNKNOWN(GLSObj24);
-SIZE_UNKNOWN(GLSSub14);
-SIZE_UNKNOWN(GLSSub2c);
-SIZE_UNKNOWN(GLSSubA);
-SIZE_UNKNOWN(PlayActivate);

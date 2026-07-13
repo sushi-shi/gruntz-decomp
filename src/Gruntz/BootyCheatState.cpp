@@ -26,10 +26,7 @@
 #include <Gruntz/GameMode.h>  // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
 #include <Gruntz/GruntzMgr.h> // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
-class CDDrawSubMgrPages {
-public:
-    void Method_159ef0();
-}; // 0x159ef0
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - holder+0x08 (DestroyChildren_159ef0)
 
 // BcRegSet::Register @0x13c030 IS CSymParser::ResolvePath (canonical <Bute/SymParser.h>).
 
@@ -133,7 +130,7 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
         goto fail;
     }
 
-    ((CDDrawSubMgrPages*)m_c->m_8)->Method_159ef0();
+    m_c->m_childGroup->DestroyChildren_159ef0();
 
     {
         void* soundz = SymTab2c()->FindSub("SOUNDZ");

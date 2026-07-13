@@ -455,7 +455,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
         return 0;
     }
     g_61ab14 = *(u32*)(header + 0x114);
-    ((CDDrawSubMgrPages*)m_childGroup)->Method_159ef0();
+    m_childGroup->DestroyChildren_159ef0();
     if (((CWwdObjMgr*)m_childGroup)
             ->LoadObjects((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
         == 0) {

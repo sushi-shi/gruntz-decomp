@@ -35,6 +35,7 @@
 #include <Gruntz/GameRegistry.h> // the ONE game-registry shape (CGameRegistry / g_gameReg)
 #include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view (also used by CDemo/CHelpState)
 #include <Gruntz/ResMgr.h>       // CDrawTarget (m_10 frame surface / m_14 draw surface)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c: Flip + m_8)
@@ -456,7 +457,7 @@ i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == 0) {
         return 0;
     }
-    CDDSurface* s = m_c->m_drawTarget->m_10->m_2c;
+    CDDSurface* s = m_c->m_drawTarget->m_10->m_surface;
     if (s == 0) {
         return 0;
     }
@@ -808,7 +809,7 @@ i32 CState::ShadeScreen(i32 pct) {
         g_suppress_64e360 = 0;
         return v;
     }
-    return m_c->m_drawTarget->m_14->m_2c->ShadeRect(pct, 0);
+    return m_c->m_drawTarget->m_14->m_surface->ShadeRect(pct, 0);
 }
 
 // -------------------------------------------------------------------------

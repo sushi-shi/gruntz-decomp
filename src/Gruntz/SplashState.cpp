@@ -37,6 +37,7 @@
 #include <Gruntz/Attract.h> // CSymParser (m_8 facet; ResolvePath). RunTitleSeq @0xfa350 is now a CState base method.
 #include <Gruntz/SplashState.h> // CSplashState (shared def; dtor emitted in HelpState.cpp)
 #include <rva.h>
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
 
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
 extern "C" char g_emptyString[]; // 0x6293f4
@@ -103,7 +104,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
 // byte-exact; final sweep.
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
-    IDirectDrawSurface* in = m_c->m_drawTarget->m_10->m_2c->m_8;
+    IDirectDrawSurface* in = m_c->m_drawTarget->m_10->m_surface->m_8;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             m_4->ReportError(0x8006, 0x447);

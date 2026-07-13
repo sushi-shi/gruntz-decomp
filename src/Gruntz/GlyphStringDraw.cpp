@@ -6,6 +6,7 @@
 
 #include <string.h>             // strlen
 #include <DDrawMgr/DDSurface.h> // CDDSurface (BltFast) + RECT/SetRect (via Mfc.h) for the layer-blit helper
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
 #include <Gruntz/ResMgr.h> // CResMgr / CDrawTarget (SurfaceA/SurfaceB) - the 0x115300 blit host
 #include <Image/CImage.h>  // CImage - the 0x115300 blit source (was the CImageFrame view)
 
@@ -96,9 +97,9 @@ i32 LayerBlitFrame(CResMgr* host, CImage* src, i32 x, i32 y, i32 useFront, i32 m
     }
     // Front page is the SurfaceA frame page, back is the SurfaceB draw page; both expose
     // their target surface at +0x2c (SurfaceA's Surface2c* is used as a CDDSurface here).
-    CDrawTarget::SurfaceB* node;
+    CDDrawSurfacePair* node;
     if (useFront) {
-        node = (CDrawTarget::SurfaceB*)host->m_drawTarget->m_10;
+        node = host->m_drawTarget->m_10; // same class as m_14 - the old SurfaceA->SurfaceB cast is gone
         if (!node) {
             return 0;
         }
@@ -108,7 +109,7 @@ i32 LayerBlitFrame(CResMgr* host, CImage* src, i32 x, i32 y, i32 useFront, i32 m
             return 0;
         }
     }
-    CDDSurface* dst = node->m_2c;
+    CDDSurface* dst = node->m_surface;
     if (!dst) {
         return 0;
     }

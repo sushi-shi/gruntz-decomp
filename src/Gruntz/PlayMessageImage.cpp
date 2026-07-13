@@ -16,7 +16,8 @@
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_24: planeCtx viewport rect) // CPlay + CSpriteFactoryHolder/CImageRegistry/CDrawTarget (m_c->m_10/m_24/m_drawTarget)
 #include <Image/ImageSet.h>   // CImageSet::GetAt (m_frames/m_minIndex/m_maxIndex) + CImageFrame
 #include <Image/CImage.h>     // CImage::RenderFrame (0x153790)
-#include <DDrawMgr/DDSurface.h> // CDDSurface::Flip (0x13e850)
+#include <DDrawMgr/DDSurface.h>       // CDDSurface::Flip (0x13e850)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
 #include <Globals.h>            // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
 
 // The shared __cdecl layer-blit helper (0x115300, in src/Gruntz/GlyphStringDraw.cpp):
@@ -92,11 +93,11 @@ i32 CPlay::Vslot23() {
         return 0;
     }
 
-    CDrawTarget::SurfaceB* surf = m_c->m_drawTarget->m_14;
+    CDDrawSurfacePair* surf = m_c->m_drawTarget->m_14;
     if (surf == 0) {
         return 0;
     }
-    ((CImage*)frame)->RenderFrame(surf, (void*)(surf->m_10 / 2), (void*)(surf->m_14 / 2), 0);
-    ((CDDSurface*)m_c->m_drawTarget->m_10->m_2c)->Flip((CDDSurface*)0);
+    ((CImage*)frame)->RenderFrame(surf, (void*)(surf->m_width / 2), (void*)(surf->m_height / 2), 0);
+    m_c->m_drawTarget->m_10->m_surface->Flip((CDDSurface*)0);
     return 1;
 }

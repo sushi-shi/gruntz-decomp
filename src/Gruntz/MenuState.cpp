@@ -30,6 +30,8 @@
 #include <DDrawMgr/DDSurface.h>           // CDDSurface Flip (FrameSlot28)
 
 #include <rva.h>
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
+#include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
 #include <Win32.h> // IsDlgButtonChecked + HWND (real USER32 header)
 #include <Globals.h>
 
@@ -192,12 +194,9 @@ static inline CGMOwner* Owner(CState* s) {
 // The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).
 void operator delete(void*);
 
-// The renderer's DisposeWorkers @0x163c60 IS CDDrawWorkerList::ClearWorkers; local decl
-// (CDDrawWorkerList has no shared header - defined in src/DDrawMgr/DDrawWorkerList.cpp).
-class CDDrawWorkerList {
-public:
-    void ClearWorkers();
-};
+// The renderer's ClearWorkers @0x163c60 comes from the real CDDrawWorkerList
+// (<DDrawMgr/DDrawWorkerList.h> - the m_rendererB type; the stale local decl-only
+// shadow class is gone).
 
 // The menu music controller (CMenuState+0x1bc): a player @+0x10 (real DirectSoundMgr,
 // IsPlaying 0x1353f0 / CloneAndPlay 0x135660) with a draw-clock gate (last @+0x14,
@@ -241,7 +240,7 @@ void CMenuState::ReleaseResources() {
         if (r) {
             ((SoundStream*)r)->Stop();
         }
-        ((CDDrawWorkerList*)m_c->m_rendererB)->ClearWorkers();
+        m_c->m_rendererB->ClearWorkers();
     }
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CChatBox* ui = m_1b4;
@@ -312,7 +311,7 @@ void CMenuState::StopMusicChain() {
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    m_c->m_drawTarget->m_10->m_2c->Flip(0);
+    m_c->m_drawTarget->m_10->m_surface->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_1b8)

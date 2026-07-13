@@ -14,6 +14,7 @@
 #include <Gruntz/Play.h>      // canonical CPlay (one shape)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (the RTTI-true *g_gameReg type; EnterModalUI)
 #include <rva.h>
+#include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (the +0x10 list host)
 #include <Gruntz/String.h>
 
 // ---------------------------------------------------------------------------
@@ -194,7 +195,7 @@ extern "C" {
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
     CSpriteFactoryHolder* v = m_c;
-    PlaneList* pl = (PlaneList*)&((CRenderer*)v->m_8)->m_10;
+    PlaneList* pl = (PlaneList*)&v->m_childGroup->m_pad10; // the +0x10 CObList facet
     if (pl == 0) {
         return 0;
     }
@@ -331,7 +332,7 @@ i32 CPlay::ScanBuildTiles() {
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CSpriteFactoryHolder* v = m_c;
-    PlaneList* pl = (PlaneList*)&((CRenderer*)v->m_8)->m_10;
+    PlaneList* pl = (PlaneList*)&v->m_childGroup->m_pad10; // the +0x10 CObList facet
     if (pl == 0) {
         return 0;
     }

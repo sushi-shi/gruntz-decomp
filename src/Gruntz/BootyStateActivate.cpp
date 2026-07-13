@@ -23,6 +23,7 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (Booty/MultiBooty ReleaseResources)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // RemoveKeysEqual_155360 (CBootyState::ReleaseResources)
 #include <DDrawMgr/DDSurface.h> // CMultiBootyState::Render: CDDSurface Flip/BltFast on the frame surfaces
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
 #include <Mfc.h>                // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 #include <ddraw.h> // CMultiBootyState::Render: real IDirectDrawSurface::IsLost dispatch (slot 24)
 #include <math.h>  // sin/cos (StepGlitterAnim sine spiral)
@@ -837,7 +838,7 @@ void CMultiBootyState::DrawBattleStats() {
 // the target, and purge finished sound voices. /GX (the CString temp).
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
-    IDirectDrawSurface* frameSurf = m_c->m_drawTarget->m_10->m_2c->m_8;
+    IDirectDrawSurface* frameSurf = m_c->m_drawTarget->m_10->m_surface->m_8;
     if (frameSurf == 0 || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_4->ReportError(0x8006, 0x459);
@@ -866,8 +867,8 @@ i32 CMultiBootyState::Render() {
     ShowHudMessageAlt((HudMsgSink*)m_c, (i32)&s, (i32)&rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 
     CDrawTarget* dt = m_c->m_drawTarget;
-    dt->m_10->m_2c->Flip(0);
-    dt->m_14->m_2c->BltFast(0, 0, dt->m_18->m_2c, &dt->m_18->m_1c, 0x10);
+    dt->m_10->m_surface->Flip(0);
+    dt->m_14->m_surface->BltFast(0, 0, dt->m_18->m_surface, &dt->m_18->m_srcRect, 0x10);
     if (m_c->m_28->m_2c != 0) {
         m_c->m_28->m_2c->PurgeVoiceList(-1); // SoundDevice base method (inherited)
     }

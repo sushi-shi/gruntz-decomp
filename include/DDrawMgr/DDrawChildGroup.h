@@ -81,11 +81,21 @@ struct CDDrawChildWorker {
 };
 SIZE_UNKNOWN(CDDrawChildWorker);
 
-// One node of the intrusive list at +0x14: next pointer @0, child object @8.
+// One node of the intrusive list at +0x14 (the +0x10 CObList's CNode: pNext @0,
+// pPrev @4, data @8). The object is read two ways pending the wide-object
+// unification (@identity-TODO: CDDrawGroupChild == CWwdGameObject == CGameObject,
+// one class): the DDraw walkers dispatch it as CDDrawGroupChild, the game-side
+// warlord/grunt loaders (Play.cpp) read it as CGameObject - same pointer, union'd
+// (the CSpriteFactoryHolder pattern). The former View.h CWarlordListHead/
+// CWarlordListNode duplicate of this node shape is dissolved here (2026-07-14).
+struct CGameObject; // <Gruntz/UserLogic.h> (game-side reading of the same object)
 struct CDDrawGroupNode {
     CDDrawGroupNode* m_next; // +0x00
-    i32 m_04;                // +0x04
-    CDDrawGroupChild* m_obj; // +0x08
+    i32 m_04;                // +0x04  (pPrev; not walked)
+    union {
+        CDDrawGroupChild* m_obj; // +0x08  DDraw-side dispatch view
+        CGameObject* m_gameObj;  // +0x08  game-side reading (UserLogic.h)
+    };
 };
 
 // ---------------------------------------------------------------------------
@@ -120,12 +130,21 @@ public:
     class CDDrawSurfaceMgr* m_parent;
     char m_pad10[0x14 - 0x10]; // +0x10..0x13 (the +0x10 CObList's vptr)
     CDDrawGroupNode* m_head;   // +0x14  the +0x10 CObList's node-head (intrusive walk)
-    char m_pad18[0x2c - 0x18]; // +0x18..0x2b (rest of the +0x10 CObList)
+    char m_pad18[0x1c - 0x18]; // +0x18..0x1b (the CObList's pTail)
+    i32 m_count;               // +0x1c  the CObList's m_nCount (CPlay::DrawDebugStats "Objs = %i")
+    char m_pad20[0x2c - 0x20]; // +0x20..0x2b (rest of the +0x10 CObList)
     CMapPtrToPtr m_map2c;      // +0x2c  (CMapPtrToPtr::Lookup 0x1b8760, FID-confirmed)
     CMapPtrToPtr m_map48;      // +0x48
 
     // Engine-label backlog stub.
     void DrawObjectCounts_15a650(); // 0x15a650  per-object debug-count overlay
+
+    // 0x159ef0 - non-virtual entry that virtual-dispatches slot 15 (DestroyChildren):
+    // `mov eax,[ecx]; jmp [eax+0x3c]`. Receiver byte-proven = holder+0x08 (this class):
+    // CDDrawSurfaceMgr::RestoreChildren calls it with `mov ecx,[esi+0x8]`, and +0x3c is
+    // IN BOUNDS only on this 17-slot vtable (the old CDDrawSubMgrPages attribution read
+    // past that class's 10-slot table into ??_7CFileMem - a fabricated slot 15).
+    void DestroyChildren_159ef0();
 };
 
 SIZE_UNKNOWN(CDDrawChildGroup);

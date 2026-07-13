@@ -24,6 +24,7 @@
 #include <Dsndmgr/SoundStream.h>  // SoundStream : SoundDevice - the REAL m_c->m_soundStream (+0x20)
 #include <Gruntz/SoundCue.h>      // CSndHost - the REAL m_c->m_28 (name->cue map + emit gate)
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerList.h> // renderer B - the real CDDrawWorkerList (PruneWorkers)
 #include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_8 object manager (was the McObj/McHost views)
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/WorldSoundSet.h>
@@ -37,7 +38,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/ResMgr.h>       // CDrawTarget (m_c->m_drawTarget->m_18->m_2c Fill)
+#include <Gruntz/ResMgr.h>       // CDrawTarget (m_c->m_drawTarget->m_18->m_surface Fill)
 #include <stdio.h>               // engine sprintf (reloc-masked)
 #include <stdlib.h>              // srand (reloc-masked)
 #include <Globals.h>
@@ -1014,7 +1015,7 @@ i32 CMulti::FrameSlot28(i32 arg) {
         return 1;
     }
     RECT r;
-    m_c->m_drawTarget->m_18->m_2c->Fill(0);
+    m_c->m_drawTarget->m_18->m_surface->Fill(0);
     CString s;
     s.LoadString(0x81a9);
     r.right = m_4w()->m_8c;
@@ -1419,10 +1420,10 @@ void CMulti::PumpB() {
     if (m_594 == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
         ((CGameLevel*)mgr->m_24)
-            ->VisitVisible((CDDrawSurfacePair*)mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
-        mgr->m_rendererB->Present(
-            (CDDrawSurfacePair*)mgr->m_drawTarget->m_14,
-            (CDDrawSurfacePair*)mgr->m_drawTarget->m_18
+            ->VisitVisible(mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
+        mgr->m_rendererB->PruneWorkers(
+            mgr->m_drawTarget->m_14,
+            mgr->m_drawTarget->m_18
         );
         m_guts->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
@@ -1456,10 +1457,10 @@ void CMulti::PumpB() {
         NotifyVisibleEntities();
     } else {
         ((CGameLevel*)mgr->m_24)
-            ->VisitVisible((CDDrawSurfacePair*)mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
-        mgr->m_rendererB->Present(
-            (CDDrawSurfacePair*)mgr->m_drawTarget->m_14,
-            (CDDrawSurfacePair*)mgr->m_drawTarget->m_18
+            ->VisitVisible(mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
+        mgr->m_rendererB->PruneWorkers(
+            mgr->m_drawTarget->m_14,
+            mgr->m_drawTarget->m_18
         );
     }
     m_guts->LoadMainStatusBarSprite();

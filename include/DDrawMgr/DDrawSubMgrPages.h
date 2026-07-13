@@ -65,41 +65,35 @@ class CDDSurface;        // the held surface (CDDrawSurfaceChildA::m_surface)
 class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgrPages (retail RTTI ??_7CDDrawSubMgrDraco @0x5efe08). A CWapObj leaf:
-// it overrides slot 5 (IsLoaded) and slot 1 (the virtual dtor), keeps slot 6
-// (IsReady) inherited, and adds slots 7..22.
+// CDDrawSubMgrPages (retail RTTI ??_7CDDrawSubMgrDraco @0x5efe08): a 10-slot
+// vtable (0x28 B) - byte-proven 2026-07-14: the adjacent 0x1efe30 is the REAL
+// ??_7CFileMem (15 separate ctor-stamp code refs), NOT a Pages continuation, so
+// the former "slots 10..22" decls here were FABRICATED overhang transcriptions
+// of the filemem tables (e.g. the old Slot0F_157a00 "+0x3c slot" is really
+// ??_7CFileMem+0x14; 0x159ef0 belongs to CDDrawChildGroup, whose 17-slot table
+// makes its `jmp [eax+0x3c]` in-bounds). Slot 5 IsLoaded is an own body
+// (0x157480); slot 6 IsReady holds the shared family default 0x1c08 - the
+// CWapObj-scheme slot (WapObj.h). Modeled `: CObject` with slots 5/6 declared,
+// the same convention as CDDrawSubMgr.h (the vtable_hierarchy audit diffs this
+// family against CObject because the abstract CWapObj emits no vtable to diff
+// against; the family-wide `: CWapObj` rebase is the flagged intermediate pass).
 // ---------------------------------------------------------------------------
 SIZE(CDDrawSubMgrPages, 0x1c);
-class CDDrawSubMgrPages : public CWapObj {
+class CDDrawSubMgrPages : public CObject {
 public:
     virtual ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0)
     // The `??_G` scalar-deleting destructor (slot 1 @0x1574b0): run the real
     // ~CDDrawSubMgrPages (direct call), conditionally RezFree, return this. Hand-written
     // non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern) so the body emits.
     void* ScalarDtor(u32 flags); // 0x1574b0
-    i32 IsLoaded() OVERRIDE;     // slot 5 (@0x14) 0x157480 ("all children present?")
-    // slot 6 (@0x18) IsReady 0x001c08 inherited from CWapObj (not re-declared).
+    virtual i32 IsLoaded();         // slot 5 (@0x14) 0x157480 ("all children present?")
+    virtual i32 IsReady();          // slot 6 (@0x18) the shared family default 0x001c08
     virtual void DestroyChildren(); // slot 7 (@0x1c) 0x158ac0
     RVA(0x001574a0, 0x6)
     virtual StateId GetStateId() {
         return STATE_SUBMGRPAGES; // 0xf
     }
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
-
-    // --- slots 10..22: declared-only (no RVA); shape the emitted vtable only ---
-    virtual void Slot0A_157a20(); // [10] 0x157a20 (deleting-dtor variant)
-    virtual void Slot0B_165e30(); // [11] 0x165e30 (COMDAT CFileMemBase::SetName)
-    virtual void Slot0C_157a70(); // [12] 0x157a70
-    virtual void Slot0D_157a50(); // [13] 0x157a50 (COMDAT CFileMem::Reset)
-    virtual void Slot0E_157920(); // [14] 0x157920
-    virtual void Slot0F_157a00(); // [15] 0x157a00 (Method_159ef0 forwards here)
-    virtual void Slot10_157a10(); // [16] 0x157a10
-    virtual void Slot11_157940(); // [17] 0x157940
-    virtual void Slot12_157950(); // [18] 0x157950
-    virtual void Slot13_165e60(); // [19] 0x165e60 (COMDAT CFileMem::Open)
-    virtual void Slot14_165ef0(); // [20] 0x165ef0 (COMDAT CFileMem::Ready)
-    virtual void Slot15_165f00(); // [21] 0x165f00 (COMDAT CFileMem::Read)
-    virtual void Slot16_165f50(); // [22] 0x165f50 (COMDAT CFileMem::Write)
 
     // --- the 0x158xxx surface-op cluster (was CDDrawWorkerMgr::Method_*) ---------
     i32 Method_158b10(i32 arg1, i32 arg2);     // 0x158b10
@@ -115,7 +109,6 @@ public:
     i32 Method_158e40();                       // 0x158e40
     i32 Method_158e90();                       // 0x158e90
     i32 Method_158ee0();                       // 0x158ee0
-    void Method_159ef0();                      // 0x159ef0 (out-of-line)
 
     // vptr @+0x00 (grand-base); the three-word header at +0x04..+0x0c.
     i32 m_04;                         // +0x04  (reset to -1 on teardown)

@@ -2,6 +2,7 @@
 #include <Bute/SymParser.h> // canonical CSymParser + CSymTab (ResolvePath @0x13c030/0x13bae0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (m_width/m_height extent)
 
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // canonical CSpriteFactoryHolder (this->m_c) + CGameRegistry
@@ -230,8 +231,8 @@ i32 MenuRegion::Init(CSpriteFactoryHolder* src, i32 a, RECT* rc, i32 d, i32 e, i
     }
     m_8.left = 0;
     m_8.top = 0;
-    m_8.right = src->m_drawTarget->m_10->m_10 - 1;
-    m_8.bottom = src->m_drawTarget->m_10->m_14 - 1;
+    m_8.right = src->m_drawTarget->m_10->m_width - 1;
+    m_8.bottom = src->m_drawTarget->m_10->m_height - 1;
     return 1;
 }
 

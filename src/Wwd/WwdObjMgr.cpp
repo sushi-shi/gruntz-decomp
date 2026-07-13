@@ -16,6 +16,7 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/WwdObjMgr.h>     // the shared object-collection manager class
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_pages->m_backPair)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (level reader, Read @+0x2c)
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_2c/m_48 layout)
 #include <Globals.h>
@@ -31,7 +32,6 @@
 #include <Gruntz/WwdGameObject.h>      // canonical flat CWwdGameObject (the managed objects)
 #include <Wwd/WwdGameObjectFamily.h>   // the concrete kinds A/B/C/F + the embedded records
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (the walk dispatchers; IDENTITY == this)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (Method_159ef0 tail-forward)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical m_0c owner (InvokeCallback + m_workerCache)
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Gruntz/ObList.h>
@@ -691,10 +691,14 @@ void CWwdObjMgr::InsertSorted_159e40(CWwdGameObject* obj, i32 addToMaps) {
     obj->m_posCache = (i32)m_10.AddTail((CObject*)obj);
 }
 
-// CDDrawSubMgrPages::Method_159ef0 (0x159ef0): forward to Slot0F_157a00.
+// CDDrawChildGroup::DestroyChildren_159ef0 (0x159ef0): non-virtual entry that
+// virtual-dispatches slot 15 - `mov eax,[ecx]; jmp [eax+0x3c]`. Receiver proven:
+// CDDrawSurfaceMgr::RestoreChildren calls it on [this+0x8] (the child group), and
+// +0x3c is only in-bounds on this 17-slot vtable (the old CDDrawSubMgrPages
+// attribution read past that class's 10-slot table into ??_7CFileMem).
 RVA(0x00159ef0, 0x5)
-void CDDrawSubMgrPages::Method_159ef0() {
-    this->Slot0F_157a00();
+void CDDrawChildGroup::DestroyChildren_159ef0() {
+    DestroyChildren();
 }
 
 // ---------------------------------------------------------------------------

@@ -32,45 +32,35 @@ struct CViewPooledRes {
     // TickAnim @? IS SoundDevice::PurgeVoiceList; cast at the call.
 };
 
+// The three surface pages at CDrawTarget +0x10/+0x14/+0x18 are the REAL
+// CDDrawSurfacePair (<DDrawMgr/DDrawSurfacePair.h>). The former nested
+// SurfaceA/SurfaceB views (2026-07-14, dissolved) agreed with it field-for-field:
+// "+0x10/+0x14 pixel extent" == m_width/m_height, the "+0x1c blit-source RECT
+// origin" == m_srcRect[0], the +0x2c CDDSurface == m_surface (Fill @0x13e760 /
+// Restore @0x13e7d0 / Flip @0x13e850), and SurfaceB::Blit IS
+// CDDrawSurfacePair::BltSelf @0x3a1d0 (xref-proven: CCreditsState::Render's blit
+// call -> thunk 0x1564 -> 0x3a1d0). GlyphStringDraw even cast SurfaceA* to
+// SurfaceB* - one class all along. Pointer-only here (fwd decl) so this header
+// stays afx-neutral; dereferencing TUs pull the real header.
+class CDDrawSurfacePair;
+
 // The active draw surface / render-flip pump at CResMgr+0x04. The loaders read its
 // +0x14 as an opaque draw-context handle; the render/credits path drives it as the flip
 // pump: Flush (0x158ee0 == CDDrawWorkerMgr::Method_158ee0 - the state activators call the
 // SAME fn as the resource worker-apply on activate), the frame-surface page (+0x10), the
-// draw-surface view (+0x14, the same handle the loaders read as m_14) and the present
-// target (+0x18). (This is the real +0x04 class; the former View.h StateMgrBZ view folds
-// here.) The nested surface pages are DDraw objects; their leaf +0x2c is the real CDDSurface.
+// draw page (+0x14) and the present target (+0x18). (This is the real +0x04 class; the
+// former View.h StateMgrBZ view folds here. Its three pages mirror CDDrawSubMgrPages'
+// m_frontPair/m_backPair/m_overlayPair EXACTLY - the CDrawTarget==CDDrawSubMgrPages
+// identity is documented at the CSpriteFactoryHolder union in GameRegistry.h.)
 SIZE_UNKNOWN(CDrawTarget);
 struct CDrawTarget {
     char m_pad00[0x10];
-    struct SurfaceA { // +0x10  frame-surface page (same surface-page layout as SurfaceB)
-        char p0[0x10];
-        // +0x10/+0x14 the page's pixel extent. CChatBox's 0x182ab0 seeder defaults its
-        // region RECT to (0,0,width-1,height-1) straight out of this page:
-        //   mov edx,[eax+4]; mov edx,[edx+0x10]; mov edx,[edx+0x10]; dec edx   -> right
-        //   mov eax,[eax+4]; mov edx,[eax+0x10]; mov eax,[edx+0x14]; dec eax   -> bottom
-        // (eax = the CSpriteFactoryHolder, +0x04 = this CDrawTarget, +0x10 = this page).
-        i32 m_10; // +0x10  surface width
-        i32 m_14; // +0x14  surface height
-        char p18[0x2c - 0x18];
-        // +0x2c the frame surface: the real CDDSurface (Flip @0x13e850, Draw, and its
-        // held IDirectDrawSurface m_8 whose IsLost slot 24 the render/credits path polls;
-        // CState::Vslot17 draws text through m_8's GetDC/ReleaseDC). Was the Surface2c view.
-        CDDSurface* m_2c;
-    }* m_10;
-    struct SurfaceB {       // +0x14  draw-surface view (the loaders' "draw context" handle)
-        void Blit(i32 arg); // credits blit-target blit (thiscall)
-        char p0[0x10];
-        i32 m_10; // +0x10  surface width  (CPlay::Vslot23 centers the message frame)
-        i32 m_14; // +0x14  surface height
-        char p18[0x1c - 0x18];
-        i32 m_1c; // +0x1c  the surface's own blit-source RECT origin (BltFast srcRect)
-        char p20[0x2c - 0x20];
-        CDDSurface* m_2c; // +0x2c  the real CDDSurface (Fill @0x13e760 / Restore @0x13e7d0)
-    };
-    SurfaceB* m_14;
-    // +0x18  the present/back-buffer page (same surface-page layout as m_14); the
-    // status-screen overlay (CPlay/CMulti::FrameSlot28) clears it via m_2c->Fill(0).
-    SurfaceB* m_18;
+    CDDrawSurfacePair* m_10; // +0x10  frame-surface page (== Pages::m_frontPair; CChatBox's
+                             //        0x182ab0 seeder reads its m_width/m_height extent)
+    CDDrawSurfacePair* m_14; // +0x14  draw page (== Pages::m_backPair)
+    // +0x18  the present/back-buffer page (== Pages::m_overlayPair); the status-screen
+    // overlay (CPlay/CMulti::FrameSlot28) clears it via m_surface->Fill(0).
+    CDDrawSurfacePair* m_18;
 };
 
 // The world/key lookup table at CResMgr+0x08 the timer-expiry path probes

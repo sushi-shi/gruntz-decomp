@@ -565,17 +565,17 @@ StateId CDDrawWorkerList::GetStateId() {
     return STATE_WORKERLIST; // 0x11
 }
 
-// 0x156f50: real member-teardown ~ of the sibling manager (vtable 0x5efd88): stamp
-// the class vtable, run the cleanup helper (0x163bc0, T obj), destruct the CObList
-// member @+0x10, reset the header fields + restamp the grand-base vtable.
-// @early-stop
-// (formerly the eh-unit-rule wall: the donor list file was /MT base; this G obj is
-// /GX like retail, so re-measure on the next sweep.) The vtable stamps / cleanup
-// call / CObList destruct / field resets are reproduced.
+// 0x156f50: the REAL ~CDDrawWorkerList (vtable 0x5efd88): stamp the class vtable,
+// run the DestroyWorkers slot body (direct call 0x163bc0 - the just-stamped vptr
+// constant-folds the dispatch), destruct the CObList member @+0x10, then the
+// inlined intermediate-base dtor resets the header fields + restamps the
+// grand-base vtable. (The former `CDDrawWorkerListSib` was a fake sibling view of
+// THIS class - same vtable, same layout; its cross-cast dtor chained to the
+// misbound 0x163bc0 "dtor". Identity folded 2026-07-13.)
 RVA(0x00156f50, 0x68)
-CDDrawWorkerListSib::~CDDrawWorkerListSib() {
-    ((CDDrawWorkerList*)this)->~CDDrawWorkerList();
-    // implicit: ~m_10 (CObList) then ~WorkerListSibBase (field resets + base restamp).
+CDDrawWorkerList::~CDDrawWorkerList() {
+    DestroyWorkers();
+    // implicit: ~m_workers (CObList) then ~WorkerListSibBase (field resets + base restamp).
 }
 
 RVA(0x00156fc0, 0x6)

@@ -104,7 +104,13 @@ class CLightFxMgr;
 // - the deferred int-vs-pointer sub-object reconciliation (see View.h). Forward-declared so
 // this ~60-TU MFC-free header never pulls View.h; the ~60 pure-Win32 m_world consumers
 // never touch these render-only slots.
-struct CRenderer;     // +0x0c  renderer B (present) / resource worker holder (View.h)
+// +0x0c renderer B IS the real CDDrawWorkerList (<DDrawMgr/DDrawWorkerList.h>,
+// vtable 0x1efd88): CDDrawSurfaceMgr::Init (0x155900) news it (0x2c B) and stores
+// it at +0x0c; the play states' per-frame "Present" is its slot 13, PruneWorkers.
+// (The former View.h `CRenderer` view - and its 12 fabricated filler slots - is
+// dissolved 2026-07-14; renderer A at +0x08 was a SECOND class all along, the
+// already-canonical CDDrawChildGroup.)
+class CDDrawWorkerList;
 struct CAnimRegistry; // +0x2c  anim/third registry (ResMgr.h, real class)
 
 // The level/view object reached as g->m_30->m_24 (== CState::m_c holder's +0x24) IS
@@ -147,7 +153,9 @@ struct CSpriteFactoryHolder {
         CSpriteFactory* m_8;
         struct CDDrawChildGroup* m_childGroup;
     };
-    CRenderer* m_rendererB; // +0x0c  renderer B (present) / resource worker holder (View.h)
+    // +0x0c  renderer B: the real CDDrawWorkerList (per-frame worker pump; "Present"
+    // == its slot-13 PruneWorkers; ClearWorkers is the leaf-state teardown).
+    CDDrawWorkerList* m_rendererB;
     CImageRegistry* m_10;   // +0x10  image/name registry (real ResMgr.h class: Install/Has/
                             //         Register/Release/LoadNamespace + the m_10map hash)
     // +0x14..+0x1c: the DDraw-side children (names from the CDDrawSurfaceMgr

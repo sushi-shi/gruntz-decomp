@@ -146,35 +146,39 @@ RVA(0x0006b270, 0x1b)
 // ===========================================================================
 // The CDDrawWorkerList teardown trio (0x163bc0-0x163c60).
 // ===========================================================================
-// ~CDDrawWorkerList (0x163bc0): walk the work-node list (head @ this+0x14),
-// destroy every node's child via its scalar-deleting destructor, then the
-// embedded CObList member auto-destructs.
+// DestroyWorkers (0x163bc0, vtable slot 7): walk the work-node list (head @
+// this+0x14), destroy every node's child via its scalar-deleting destructor, then
+// RemoveAll the list (tail call 0x1b5a0b == CObList::RemoveAll - byte-IDENTICAL
+// twin of the non-virtual ClearWorkers below; no /OPT:ICF, the same source body
+// compiled twice). The REAL dtor is 0x156f50 (DDrawSubMgr.cpp), which direct-calls
+// this slot body. (Was misbound as ~CDDrawWorkerList: the reloc-masked tail hid
+// that the old model's implicit ~CObList bound 0x1b5a2b, not retail's 0x1b5a0b.)
 RVA(0x00163bc0, 0x2c)
-CDDrawWorkerList::~CDDrawWorkerList() {
-    WorkNode* pNode = (WorkNode*)m_workers.GetHeadPosition();
-    while (pNode) {
-        WorkNode* pCurrent = pNode;
-        pNode = pNode->m_next;
-        if (pCurrent->m_child) {
-            delete pCurrent->m_child;
+void CDDrawWorkerList::DestroyWorkers() {
+    POSITION pos = m_workers.GetHeadPosition();
+    while (pos) {
+        CDDrawWorkerItem* child = (CDDrawWorkerItem*)m_workers.GetNext(pos);
+        if (child) {
+            delete child;
         }
     }
+    m_workers.RemoveAll();
 }
 
-// PruneWorkers (0x163bf0): for each node call the child's +0x28 virtual,
-// decrement child->m_refCount, and conditionally remove + destroy.
+// PruneWorkers (0x163bf0, vtable slot 13 - the play states' per-frame "present"):
+// for each node dispatch the worker's RenderFrame onto the two surface pairs,
+// decrement child->m_refCount, and remove + destroy (immediately when pair b is
+// live (m_surface set) and not flagged 0x20000, else on refcount expiry).
 RVA(0x00163bf0, 0x6d)
-void CDDrawWorkerList::PruneWorkers(i32 a1, i32 a2) {
-    WorkNode* pNode = (WorkNode*)m_workers.GetHeadPosition();
-    while (pNode) {
-        WorkNode* pCurrent = pNode;
-        CDDrawWorkerItem* child = pCurrent->m_child;
-        pNode = pNode->m_next;
-        child->Vfunc28(a1, a2);
+void CDDrawWorkerList::PruneWorkers(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+    POSITION pos = m_workers.GetHeadPosition();
+    while (pos) {
+        POSITION cur = pos;
+        CDDrawWorkerItem* child = (CDDrawWorkerItem*)m_workers.GetNext(pos);
+        child->RenderFrame(a, b);
         child->m_refCount--;
-        if ((*(i32*)((char*)a2 + 0x2c) != 0 && (*(i32*)((char*)a2 + 0x08) & 0x20000) == 0)
-            || child->m_refCount <= 0) {
-            m_workers.RemoveAt((__POSITION*)pCurrent);
+        if ((b->m_surface != 0 && (b->m_flags & 0x20000) == 0) || child->m_refCount <= 0) {
+            m_workers.RemoveAt(cur);
             if (child) {
                 delete child;
             }
@@ -185,12 +189,11 @@ void CDDrawWorkerList::PruneWorkers(i32 a1, i32 a2) {
 // ClearWorkers (0x163c60): destroy each node's child then RemoveAll the list.
 RVA(0x00163c60, 0x2c)
 void CDDrawWorkerList::ClearWorkers() {
-    WorkNode* pNode = (WorkNode*)m_workers.GetHeadPosition();
-    while (pNode) {
-        WorkNode* pCurrent = pNode;
-        pNode = pNode->m_next;
-        if (pCurrent->m_child) {
-            delete pCurrent->m_child;
+    POSITION pos = m_workers.GetHeadPosition();
+    while (pos) {
+        CDDrawWorkerItem* child = (CDDrawWorkerItem*)m_workers.GetNext(pos);
+        if (child) {
+            delete child;
         }
     }
     m_workers.RemoveAll();
