@@ -58,6 +58,13 @@ enum LoadableClassId {
     CLASSID_IMAGE = 10,       // CImage::GetClassId @0xd5de0 (mov eax,0xa)
     CLASSID_WORKER = 14,      // CDDrawWorker::GetClassId @0x155770 (mov eax,0xe)
     CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
+    // The wide game-object kinds (CWwdGameObject* family; slot-8 bodies are
+    // `mov eax,<id>; ret` at the cited RVAs). The serialize-map probes compare
+    // GetClassId()==5 - id 5's owning class is not yet recovered (no enumerator).
+    CLASSID_WWDOBJ_C = 6,    // CWwdGameObjectC::GetClassId @0x15c020
+    CLASSID_WWDOBJ_F = 0x16, // CWwdGameObjectF::GetClassId @0x15ba60
+    CLASSID_WWDOBJ_B = 0x1b, // CWwdGameObjectB::GetClassId @0x15bce0
+    CLASSID_WWDOBJ_A = 0x1c, // CWwdGameObjectA::GetClassId @0x15b760 (the CreateSprite kind)
 };
 
 SIZE(CLoadable, 0x10);

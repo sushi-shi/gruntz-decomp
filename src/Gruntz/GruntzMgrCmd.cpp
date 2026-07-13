@@ -42,6 +42,7 @@
 #include <Gruntz/GameMode.h>      // CMenuState (StopMusicChain/StartMusic; state 5)
 #include <Gruntz/Multi.h>         // CMulti (Connect; state 0x11)
 #include <Gruntz/TriggerMgr.h>    // CTriggerMgr (m_cmdGrid)
+#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
 #include <Gruntz/Grunt.h>         // CGrunt (grid cells) + GruntObjEntry (death chain)
 #include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the play state's +0x2dc guts receiver)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ (m_sound)
@@ -453,7 +454,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                             (CGameRegistry*)g_gameReg; // dual-view bridge (same object)
                         void* _key = (void*)_s->m_focusSlots[0].m_0c; // death/monologo sprite key
                         if (_key) {
-                            GruntObjEntry* _dr = 0;
+                            CWwdGameObjectE* _dr = 0;
                             if (((CMapPtrToPtr*)&_s->m_world->m_8->m_objMap)
                                     ->Lookup((void*)_key, (void*&)_dr)
                                 && _dr) {

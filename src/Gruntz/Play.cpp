@@ -109,6 +109,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
 #include <Gruntz/GruntzPlayer.h>   // the per-player slot record (its TU folded here, wave3-J)
+#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
 #include <Gruntz/Grunt.h>          // CGrunt (Load @0xd8060 folds here per the 0xd5960 dossier)
 #include <Gruntz/SerialArchive.h>  // the shared archive stream (GruntzPlayer::Serialize)
 #include <rva.h>
@@ -2099,13 +2100,14 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     g_serialCounter++;
     i32 v;
     ar->Read(&v, 4);
-    GruntObjEntry* oe = 0;
+    CWwdGameObjectE* oe = 0;
     ((CMapPtrToPtr*)(res->m_8 + 0x48))->Lookup((void*)entry2, (void*&)oe);
     i32 ve;
     if (oe == 0) {
         ve = 0;
     } else {
-        ve = oe->GetTypeId() == 5 ? (i32)oe : 0;
+        // GetClassId (slot 8) == 5: the serialize-map probe kind (id 5's class TBD)
+        ve = oe->GetClassId() == 5 ? (i32)oe : 0;
     }
     m_cells[1].m_14 = ve;
     if (ve == 0 && entry2 != 0) {

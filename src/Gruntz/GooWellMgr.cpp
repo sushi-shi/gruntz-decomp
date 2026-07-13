@@ -16,6 +16,7 @@
 // callee/global is an external no-body decl so its `call rel32` / DIR32 operand
 // reloc-masks.
 #include <Gruntz/BattlezData.h>
+#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -241,7 +242,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + 0x150 + off);
                         if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
                             slot->m_24 = 1;
-                            GruntObjEntry* out = 0;
+                            CWwdGameObjectE* out = 0;
                             if (((CMapPtrToPtr*)&g_gameReg->m_world->m_8->m_objMap)
                                     ->Lookup((void*)slot->m_0c, (void*&)out)
                                 && out) {
@@ -256,7 +257,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                             ((CGooWellMgr*)g_gameReg->m_cmdGrid)->Notify(2);
                         }
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
-                            GruntObjEntry* out = 0;
+                            CWwdGameObjectE* out = 0;
                             if (((CMapPtrToPtr*)&g_gameReg->m_world->m_8->m_objMap)
                                     ->Lookup((void*)lastSlot->m_0c, (void*&)out)
                                 && out) {
