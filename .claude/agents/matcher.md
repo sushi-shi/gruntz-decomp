@@ -43,6 +43,49 @@ Do **not**, for any reason, in any file:
 in one line as a Fable item and move to the next view.** A view you correctly leave alone is
 a success; a view you dissolve by inventing a vtable is the crash bug we already shipped once.
 
+### MAGIC NUMBERS: DECLARE A TYPED ENUM. A COMMENT IS NOT ENOUGH.
+
+When you work out what a bare constant MEANS — a switch tag, a state/mode id, a type code,
+a flag bit, an SDK magic — **write it into the type system, not into a comment.** A comment
+is invisible at the next use site, it does not propagate, and the next lane re-derives it
+(or, worse, re-derives it wrong; that is precisely how the inverted `CMapStringTo*` labels
+survived across dozens of files and cost a whole dissolution).
+
+```cpp
+// NO - the knowledge dies here:
+if (m_state == 3) { ... }  // 3 = attacking
+
+// YES - the knowledge is now in the type system and every site reads it:
+typedef enum GruntState {
+    GRUNT_IDLE      = 0,
+    GRUNT_WALKING   = 1,
+    GRUNT_ATTACKING = 3,  // retail 0x57db0 switch arm
+} GruntState;
+
+if (m_state == GRUNT_ATTACKING) { ... }
+```
+
+Use `typedef enum Name { ... } Name;` (the codebase is compiled as C++ by MSVC5; the typedef
+form keeps the tag usable unqualified and matches the existing style). Name the enumerators
+after what they DO, not after their value. Enumerate the arms you have PROVEN and stop —
+**do not invent enumerators to "fill in" a range.** An unproven arm is a fabrication exactly
+like an unproven vtable slot; leave a gap and say so.
+
+**Matching-neutrality — the one rule you must not get wrong.** Enum *values* are matching-
+neutral: at /O2 an enumerator lowers to the identical immediate, so replacing `3` with
+`GRUNT_ATTACKING` cannot cost a byte. But **enum TYPES change MSVC name mangling**: a
+parameter declared `MyEnum` mangles as `W4MyEnum@@` where `int` mangles as `H`. So:
+
+- **Use sites** (comparisons, assignments, `switch` cases, initializers) — ALWAYS safe. Do it.
+- **Data members** — safe (MSVC5 enum is 4 bytes, same as `i32`; layout unchanged).
+- **Function parameters and return types** — **DO NOT retype without checking.** It rewrites
+  the mangled name and breaks the `RVA()` binding to retail. If a signature genuinely takes
+  the enum, that is a deliberate change: verify the resulting mangled name still binds, and
+  say so in the report.
+
+This is cleanup, not matching: it costs nothing and it is how the knowledge you paid for
+survives you.
+
 ### The only metric that counts this phase
 
 **View cleanliness**, driven to 0: `placeholder classes` · `.cpp-local views` ·
