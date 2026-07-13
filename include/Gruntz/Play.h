@@ -256,8 +256,13 @@ public:
     virtual i32 Vslot1a();  // slot 26 (0x8c930)  ret 0
     virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
     virtual i32 Vslot1c(i32 category); // slot 28 (+0x70) count live objects by coll-category
-    virtual void Vslot1d();
-    virtual i32 Vslot1e(i32, i32);               // slot 30 (+0x78)  (a0, a2) -> handled flag
+    // slot 29 (+0x74): the GRUNTZ/GAME bank cache load (0x0cffe0, body in Play.cpp).
+    // PROVEN virtual: retail ??_7CPlay@0x1ea0bc slot 29 -> ILT 0x1a41 -> 0x0cffe0.
+    virtual i32 LoadImageBanks();
+    // slot 30 (+0x78): the PLAY per-mode level loader (0x0ca200, /GX megafunction,
+    // body in Play.cpp; ex the .cpp-local `CPlayLevelLoad : CPlay` facet - `this` IS
+    // this CPlay). PROVEN virtual: retail slot 30 -> ILT 0x3337 -> 0x0ca200.
+    virtual i32 LoadByMode(i32 level, i32 unused);
     virtual void BeginFrameClear(i32, i32, i32); // slot 31 (+0x7c)
     virtual void Vslot20();
     virtual void Vslot21();
@@ -424,11 +429,7 @@ public:
     // members are the loading-bar counter + frame sprites (LoadLoadingBarSprite).
     i32 BuildHelpReveal(i32 final); // 0x0d72c0 (THIS TU)
     i32 RegisterInputBindings();    // 0x0d9160 (THIS TU)
-    // LoadByMode (0x0ca200, THIS TU): the PLAY per-mode level loader (/GX
-    // megafunction; ex the .cpp-local `CPlayLevelLoad : CPlay` facet - `this` IS
-    // this CPlay, proven by its init-chain leaves all being CPlay/CState methods
-    // defined in this very TU).
-    i32 LoadByMode(i32 level, i32 unused); // 0x0ca200
+    // (LoadByMode moved up to its PROVEN vtable slot 30.)
     // LoadLevelAnims (0x0db750, THIS TU): the LEVEL-namespace anim loader - the
     // missing sibling of LoadLevelSounds/LoadLevelImages (ex the .cpp-local
     // `Cdb750::SyncLevelKey` orphan view: its +0x0c holder is CState::m_c and its
@@ -491,7 +492,7 @@ public:
     // sources are reached through offset-specific sub-types that Render models
     // differently, so a single struct-view cast at entry keeps Render's matched
     // member typing untouched.
-    i32 LoadImageBanks();                         // 0x0cffe0  (the GRUNTZ/GAME bank cache)
+    // (LoadImageBanks moved up to its PROVEN vtable slot 29.)
     i32 LoadActionTileSprites(i32 force);         // 0x0db600
     i32 LoadLevelSounds(i32 force);               // 0x0db6c0
     i32 LoadLevelImages(i32 force);               // 0x0db7e0

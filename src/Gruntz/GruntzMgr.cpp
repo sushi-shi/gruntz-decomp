@@ -974,7 +974,7 @@ CDemo::~CDemo() {
 // (id 3): clears the world-file name, computes the next level index
 // (m_curState->m_levelIndex + 1, wrapping past 0x28 back to 1), and - unless that
 // index lands in the reserved band 0x21..0x24 - notifies the state (FrameSlot28
-// with the live id) and routes the level switch through Vslot1e(next, 1). On a
+// with the live id) and routes the level switch through LoadByMode(next, 1). On a
 // successful switch it re-notifies via Vslot09(live id) and returns 1; any
 // reserved-index / failed-switch surfaces a (0x8007, 0x436) error and returns 0.
 RVA(0x0008d850, 0x83)
@@ -990,7 +990,7 @@ i32 CGruntzMgr::GoToNextLevel() {
     }
     if (next <= 0x20 || next >= 0x25) {
         st->FrameSlot28(st->Update());
-        if (((CPlay*)st)->Vslot1e(next, 1)) {
+        if (((CPlay*)st)->LoadByMode(next, 1)) {
             st->Vslot09(st->Update());
             return 1;
         }
@@ -1016,7 +1016,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
     }
     if (prev <= 0x20 || prev >= 0x25) {
         st->FrameSlot28(st->Update());
-        if (((CPlay*)st)->Vslot1e(prev, 1)) {
+        if (((CPlay*)st)->LoadByMode(prev, 1)) {
             st->Vslot09(st->Update());
             return 1;
         }
@@ -3673,7 +3673,7 @@ i32 CGruntzMgr::SwitchToNextState() {
 // CGruntzMgr::PassClickToPlayState (0x08d780; ret 0xc). When the live state is
 // the PLAY (3) or paused (0x11) state and the gate arg a1 is clear, it forwards
 // the click into the state: notify slot 10 (FrameSlot28) with the state id, then
-// route the (a0, a2) hit through slot 30 (Vslot1e); on a hit it also notifies
+// route the (a0, a2) hit through slot 30 (LoadByMode); on a hit it also notifies
 // slot 9 (Vslot09) and returns 1, otherwise returns 0. When not in PLAY/paused
 // it pushes a fresh PLAY transition via ChangeToPlayState(3, a0, 0, 0).
 // @early-stop
@@ -3693,7 +3693,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
     }
     if (inPlay && a1 == 0) {
         m_curState->FrameSlot28(m_curState->Update());
-        if (((CPlay*)m_curState)->Vslot1e(a0, a2) == 0) {
+        if (((CPlay*)m_curState)->LoadByMode(a0, a2) == 0) {
             return 0;
         }
         m_curState->Vslot09(m_curState->Update());

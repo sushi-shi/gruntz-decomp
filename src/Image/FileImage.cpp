@@ -386,12 +386,12 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, 0)) {
-            ((CFileImageHeldSurface*)m_8)->Unlock(0);
+            m_8->Unlock(0);
             return 0;
         }
     } else {
         if (!file.Open(path, 0x1001, 0)) {
-            ((CFileImageHeldSurface*)m_8)->Unlock(0);
+            m_8->Unlock(0);
             return 0;
         }
     }
@@ -406,7 +406,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         --row;
     }
 
-    ((CFileImageHeldSurface*)m_8)->Unlock(0);
+    m_8->Unlock(0);
     return 1;
 }
 
@@ -575,12 +575,12 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, 0)) {
-            ((CFileImageHeldSurface*)m_8)->Unlock(0);
+            m_8->Unlock(0);
             return 0;
         }
     } else {
         if (!file.Open(path, 0x1001, 0)) {
-            ((CFileImageHeldSurface*)m_8)->Unlock(0);
+            m_8->Unlock(0);
             return 0;
         }
     }
@@ -601,7 +601,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
         --row;
     }
 
-    ((CFileImageHeldSurface*)m_8)->Unlock(0);
+    m_8->Unlock(0);
     return 1;
 }
 
@@ -1351,12 +1351,10 @@ void* CDDSurface::LoadPid(char* name, char* path, void* a3) {
 }
 
 // ===========================================================================
-// Class-metadata annotations (EOF-hosted). CFileImageHeldSurface (the thiscall
-// held-surface slot-dispatch view) emits no vtable -> VTBL skip. CFileImageInfo was
-// folded into CDDSurface (it is a 2nd CDDSurface instance passed as `info`).
+// Class-metadata annotations (EOF-hosted). CFileImageInfo was folded into
+// CDDSurface (it is a 2nd CDDSurface instance passed as `info`).
 // ===========================================================================
 // --- shared CDDSurface (Image.h) header classes ---
-SIZE_UNKNOWN(CFileImageHeldSurface);
 SIZE_UNKNOWN(CFileImageSrc);
 SIZE_UNKNOWN(CFileImagePal);
 SIZE_UNKNOWN(CDDSurface);

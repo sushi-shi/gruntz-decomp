@@ -13,16 +13,16 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
-#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ResetClockGlobals)
-#include <Gruntz/Play.h>      // canonical CPlay: 0xc7ec0 IS CPlay::Vfunc1 (slot 1)
-// The two decl-only SHADOWS of CStatusBarMgr / CChatBoxOwner are DISSOLVED (2026-07-13):
-// both are real canonical classes and every call in this body already cast to them.
-#include <Gruntz/ChatBoxOwner.h>         // canonical CChatBoxOwner (Attach/Deactivate/Configure)
-#include <Gruntz/StatusBarMgr.h>         // canonical CStatusBarMgr (LoadBattlezItemConfig/Teardown)
-#include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (dtor 0xc8640)
+#include <Gruntz/GruntzMgr.h>              // canonical CGruntzMgr (ResetClockGlobals; the a1 arg)
+#include <Gruntz/Play.h>                   // canonical CPlay: 0xc7ec0 IS CPlay::Vfunc1 (slot 1)
+#include <Gruntz/StatusBarMgr.h>           // canonical CStatusBarMgr (m_guts; LoadBattlezItemConfig/Teardown)
+#include <Gruntz/ChatBoxOwner.h>           // canonical CChatBoxOwner (m_hitTest; Attach/Deactivate/Configure)
+#include <Gruntz/UserLogic.h>              // canonical CGameObject (m_scrollSink; m_stateFlags bit0)
+#include <Net/NetMgr.h>                    // CNetGameMgr field view of a1 (m_channels[0] gates)
+#include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (m_beginMarker; dtor 0xc8640)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (GetFlag74)
 
-// The 0x50 record's Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
+// Rec50::Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
 #include <Gruntz/Timer.h>
 
 namespace modeinit {
@@ -36,161 +36,48 @@ namespace modeinit {
     extern "C" void* RezAlloc(u32 sz);                                                // 0x001b9b46
     extern "C" void RezFree(void* p);                                                 // 0x001b9b82
 
-    // DISSOLVED (2026-07-13), by retyping ModeObj's member pointers to the classes
-    // this body ALREADY cast to at every single call site - the views were nothing but
-    // placeholder pointees:
-    //   Ctl1c     (0x1c, +0x2e0) -> CChatBoxOwner  (<Gruntz/ChatBoxOwner.h>): the real
-    //             class carries exactly m_0..m_18, and Attach/Deactivate/Configure ARE
-    //             the "Init3e77/Dtor285b/SetModeFlag" calls. == CPlay::m_hitTest.
-    //   Worker630 (0x630, +0x2dc) -> CStatusBarMgr (<Gruntz/StatusBarMgr.h>): the
-    //             0x630-byte guts/UI host, LoadBattlezItemConfig/Teardown. It had NO
-    //             members at all - the ctor writes go through a raw `char* p`.
-    //             == CPlay::m_guts.
-    //   Rec50     (0x50, +0x3f4) -> CTimer (<Gruntz/Timer.h>): Init286f IS CTimer::Init.
-    //             == CPlay::m_frameMarker.
-    //
-    // Worker630's +0x530 sub-object is the MFC ::CPtrArray that CStatusBarMgr already
-    // models there (StatusBarMgr.h: ctor 0x1b4f0b stamps the vtable MFC's CRuntimeClass
-    // names "CPtrArray"; 0x1b4f3e is its dtor). Kept as a decl-only ctor/dtor thunk pair
-    // below: realizing it as a placement-new CPtrArray is a VPTR-STAMP change, which is
-    // the vtable lane - not this pass.
-    struct CPtrArrayAt530 {
-        void Ctor1b4f0b(); // 0x001b4f0b  == ??0CPtrArray@@QAE@XZ
-        void Dtor1b4f3e(); // 0x001b4f3e  == ??1CPtrArray@@UAE@XZ
+    // The 0x1c control block owned at this->m_2e0 IS the canonical CChatBoxOwner
+    // (Attach @0x3e77->0x204e0 / Deactivate @0x285b->0x20510 / Configure @0x171c->
+    // 0x20530); the inline nothrow ctor emulation below writes its real fields.
+
+    // A CString-like record element (out-of-line ctor/dtor -> reloc-masked).
+
+    // The 0x630 worker owned at this->m_2dc.
+    struct Worker630 {
+        // Init10b4 IS CStatusBarMgr::LoadBattlezItemConfig; cast at the call.
+        // PreDtor248c IS CStatusBarMgr::Teardown; cast at the call.
+        // ModePostInit IS CGruntzMgr::ResetClockGlobals; cast at the call.
+        // one owned sub-object at +0x530 (ctor 0x1b4f0b, dtor 0x1b4f3e)
+        struct Sub530 {
+            void Ctor1b4f0b(); // 0x001b4f0b
+            void Dtor1b4f3e(); // 0x001b4f3e
+        };
     };
 
-    // The 0x78 four-CString record owned at this->m_2e4. NOT DISSOLVED - the two calls
-    // on it name two DIFFERENT classes (GetFlag74 @0x403e is CTileTriggerSwitchLogic's,
-    // the dtor @0x1cad is ~CTileTriggerContainer's) and I could not prove which one owns
-    // the object, or that one derives from the other. Reported, not guessed.
-    struct Rec78 {};
-
-    // The owner's parent object (this->m_4).
-    struct Parent {
-        char m_pad0[0x5c];
-        i32 m_5c; // +0x5c
-        char m_pad60[0xbc - 0x60];
-        i32 m_bc; // +0xbc
-        char m_padc0[0x114 - 0xc0];
-        i32 m_114; // +0x114
-    };
-
-    struct Arg1 {
-        char m_pad0[0x164];
-        i32 m_164; // +0x164 (a1->m_150.m_14)
-        char m_pad168[0x170 - 0x168];
-        i32 m_170; // +0x170 (a1->m_150.m_20)
-    };
-
-    // The peer linked at this->m_4e4.
-    struct Peer {
-        char m_pad0[0x40];
-        i32 m_40; // +0x40
-    };
-
-    // The owner (this). This is a FOREIGN engine class: its ??_7 and slots 0..36 are
-    // unreconstructed engine code, so the honest model is the THREE dispatched slots.
-    // Its own vtable slots +0x74/+0x78 (init hooks) and +0x90 (bind hook) are
-    // __thiscall (`this` in ecx, args pushed), modeled as 4-byte member-function
-    // pointers loaded from the vtable (the `char m_pad` runs document the un-recovered
-    // slots) so `this->CallVNN(...)` emits `mov eax,[this]; mov ecx,this;
-    // call [eax+0xNN]`. Class COMPLETE before the T::* typedef so each PMF stays 4
-    // bytes (docs/patterns/pmf-complete-class-4byte.md).
-    // Real polymorphic view: V74/V78/V90 are slots 29/30/36 (+0x74/+0x78/+0x90),
-    // real virtuals; the compiler emits the vptr at +0x00.
-    struct ModeObj {
-        virtual void Slot00();
-        virtual void Slot01();
-        virtual void Slot02();
-        virtual void Slot03();
-        virtual void Slot04();
-        virtual void Slot05();
-        virtual void Slot06();
-        virtual void Slot07();
-        virtual void Slot08();
-        virtual void Slot09();
-        virtual void Slot10();
-        virtual void Slot11();
-        virtual void Slot12();
-        virtual void Slot13();
-        virtual void Slot14();
-        virtual void Slot15();
-        virtual void Slot16();
-        virtual void Slot17();
-        virtual void Slot18();
-        virtual void Slot19();
-        virtual void Slot20();
-        virtual void Slot21();
-        virtual void Slot22();
-        virtual void Slot23();
-        virtual void Slot24();
-        virtual void Slot25();
-        virtual void Slot26();
-        virtual void Slot27();
-        virtual void Slot28();
-        virtual i32 V74();             // slot 29 (+0x74)
-        virtual i32 V78(i32 a, i32 b); // slot 30 (+0x78)
-        virtual void Slot31();
-        virtual void Slot32();
-        virtual void Slot33();
-        virtual void Slot34();
-        virtual void Slot35();
-        virtual void V90(); // slot 36 (+0x90)
-
-        Parent* m_4; // +0x04
-        char m_pad8[0xc - 8];
-        i32 m_c; // +0x0c
-        char m_pad10[0x40 - 0x10];
-        u8 m_40; // +0x40
-        char m_pad41[0x1c0 - 0x41];
-        i32 m_1c0; // +0x1c0
-        i32 m_1c4; // +0x1c4
-        char m_pad1c8[0x1cc - 0x1c8];
-        i32 m_1cc;       // +0x1cc
-        i32 m_1d0[0x40]; // +0x1d0
-        char m_pad2d0[0x2d8 - (0x1d0 + 0x40 * 4)];
-        i32 m_2d8;            // +0x2d8
-        CStatusBarMgr* m_2dc; // +0x2dc  == CPlay::m_guts
-        CChatBoxOwner* m_2e0; // +0x2e0  == CPlay::m_hitTest
-        Rec78* m_2e4;         // +0x2e4
-        char m_pad2e8[0x320 - 0x2e8];
-        i32 m_320; // +0x320
-        char m_pad324[0x3f4 - 0x324];
-        CTimer* m_3f4; // +0x3f4  == CPlay::m_frameMarker
-        char m_pad3f8[0x470 - 0x3f8];
-        i32 m_470, m_474, m_478, m_47c, m_480, m_484; // +0x470..
-        char m_pad488[0x49c - 0x488];
-        i32 m_49c; // +0x49c
-        char m_pad4a0[0x4b0 - 0x4a0];
-        i32 m_4b0, m_4b4, m_4b8; // +0x4b0..
-        char m_pad4bc[0x4e4 - 0x4bc];
-        Peer* m_4e4; // +0x4e4
-
-        i32 Init0c7ec0(Arg1* a1, i32 a2, i32 a3);
-        i32 Setup43a9(Arg1* a1, i32 a2, i32 a3); // 0x000043a9
-        i32 IsModeReady(i32 a, i32 b);           // 0x000035da
-        i32 CallV74() {
-            return V74();
-        }
-        i32 CallV78(i32 a, i32 b) {
-            return V78(a, b);
-        }
-        void CallV90() {
-            V90();
-        }
-    };
+    // [The former ModeObj 37-slot placeholder view IS the canonical CPlay (this fn is
+    // CPlay's slot-1 override): V74/V78/V90 are the RTTI-proven CPlay slots 29/30/36
+    // = LoadImageBanks (+0x74, 0xcffe0) / LoadByMode (+0x78, 0xca200) / Vslot24
+    // (+0x90, 0xd0030 - a bare `ret` empty body). Setup43a9 @0x43a9 IS
+    // CState::LoadGameAssetNamespaces (0xf9ea0); IsModeReady @0x35da IS
+    // CPlay::LoadCursorSprites (0xd0120). The Parent view was CGruntzMgr (m_chatLog/
+    // m_saveInfoRec/m_114), Arg1 the CNetGameMgr field view (m_channels[0] gates),
+    // Peer the CGameObject m_scrollSink (m_stateFlags bit0), Ctl1c the CChatBoxOwner,
+    // Rec78 the CTileTriggerContainer, Rec50 the CTimer - all dissolved onto the
+    // canonicals; only Worker630 (the manual CStatusBarMgr-ctor emulation the /GX
+    // rewrite below owns) remains a local shape.]
 
 } // namespace modeinit
 
 // @early-stop
 // REPARENTED 2026-07-10: 0xc7ec0 is now the real CPlay::Vfunc1 (slot 1) so
 // CDemo::Vfunc1 (0x3bfa0) reloc-pairs its base call (Demo.cpp, now byte-exact).
-// The whole body is still driven through the modeinit::ModeObj foreign view via a
-// single byte-neutral (ModeObj*)this reinterpret; folding it onto CPlay's real
-// m_guts/m_hitTest/m_frameMarker members is the documented 5-sub-object leaf-first
-// cascade below. Including <Gruntz/Play.h> here (needed to define CPlay::Vfunc1)
-// shifted the fwd-decl/type-table state and re-colored the regalloc, dropping the
-// fuzzy% ~55 -> ~48 (header-fwd-decl-count-regalloc-butterfly); still the EH wall:
+// FOLDED 2026-07-13 (Fable lane): the ModeObj foreign view is DISSOLVED - the body
+// now runs on the canonical CPlay members (m_guts/m_hitTest/m_beginMarker/
+// m_frameMarker/m_region*Gate/...), the three slot dispatches are the real virtuals
+// (LoadImageBanks/LoadByMode/Vslot24), and the two noted bugs are fixed (a1 is the
+// ResetClockGlobals receiver; m_40 is the i32 CState field). Only the Worker630
+// construction block (the manual CStatusBarMgr-ctor emulation) remains a local
+// shape - it is what the /GX rewrite below replaces. Still the EH wall:
 // EH-frame-absence wall (~55%, RE-PROVEN 2026-07-05). Root cause pinned via --diff:
 // retail emits the full /GX C++-EH frame (mov eax,fs:0; push handler; push scope;
 // mov fs:0,esp) because the 0x630 worker's field arrays are REAL C++ array members
@@ -262,35 +149,35 @@ namespace modeinit {
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
     using namespace modeinit;
-    ModeObj* t = (ModeObj*)this;
-    Arg1* a1 = (Arg1*)a1_i;
+    CNetGameMgr* a1 = (CNetGameMgr*)a1_i; // a1 IS the game-manager singleton (field view)
     {
         if (a1 == 0) {
             return 0;
         }
-        Arg1* sub = a1; // &a1->m_150 sub-object (never null; the null-check is emitted)
+        CNetChannel* sub = a1->m_channels; // &a1->m_150 (never null; the null-check is emitted)
         if (sub == 0) {
             return 0;
         }
-        sub->m_170 = 1;
-        sub->m_164 = 1;
-        t->m_470 = 0;
-        t->m_474 = 0;
-        t->m_478 = 0;
-        t->m_47c = 0;
-        t->m_480 = 0;
-        t->m_484 = 1;
-        t->m_49c = -1;
-        t->m_4b0 = 0;
-        t->m_4b4 = 0;
-        t->m_4b8 = 0;
-        t->m_3f4 = 0;
-        if (!t->Setup43a9(a1, a2, a3)) {
+        sub->m_active = 1;
+        sub->m_14 = 1;
+        m_region0Gate = 0;
+        m_region1Gate = 0;
+        m_region2Gate = 0;
+        m_region3Gate = 0;
+        m_viewMode = 0;
+        m_hudSuppressed = 1;
+        m_49c = -1;
+        m_snapshotActive = 0;
+        m_scrollEdgeActive = 0;
+        m_scrollEdgeLock = 0;
+        m_frameMarker = 0;
+        if (!LoadGameAssetNamespaces(a1_i, a2, a3)) {
             return 0;
         }
 
         CChatBoxOwner* ctl = (CChatBoxOwner*)modeinit::RezAlloc(0x1c);
         if (ctl) {
+            // the inline nothrow ctor (no EH state)
             ctl->m_18 = 0;
             ctl->m_14 = 0;
             ctl->m_c = 0;
@@ -301,19 +188,19 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         } else {
             ctl = 0;
         }
-        t->m_2e0 = ctl;
-        if ((t->m_2e0->Attach((void*)t->m_c, (CChatBoxTextHost*)t->m_4->m_5c), 0)) {
-            if (t->m_2e0) {
-                t->m_2e0->Deactivate();
-                modeinit::RezFree(t->m_2e0);
+        m_hitTest = ctl;
+        if ((m_hitTest->Attach(m_c, (CChatBoxTextHost*)m_4->m_chatLog), 0)) {
+            if (m_hitTest) {
+                m_hitTest->Deactivate();
+                modeinit::RezFree(m_hitTest);
             }
-            t->m_2e0 = 0;
+            m_hitTest = 0;
             return 0;
         }
-        t->m_2e0->m_10 = 0;
-        t->m_2e0->Configure(1);
+        m_hitTest->m_10 = 0;
+        m_hitTest->Configure(1);
 
-        CStatusBarMgr* wk = (CStatusBarMgr*)modeinit::RezAlloc(0x630);
+        Worker630* wk = (Worker630*)modeinit::RezAlloc(0x630);
         if (wk) {
             char* p = (char*)wk;
             i32 i;
@@ -327,7 +214,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             }
             VecCtor(p + 0x2c0, 0x18, 3, (void*)ElemCtor403a3a);
             VecCtor(p + 0x378, 0x18, 12, (void*)ElemCtor403a3a);
-            ((CPtrArrayAt530*)(p + 0x530))->Ctor1b4f0b();
+            ((Worker630::Sub530*)(p + 0x530))->Ctor1b4f0b();
             i32* w = (i32*)p;
             w[0x228 / 4] = 0;
             w[0x22c / 4] = 0;
@@ -405,42 +292,42 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         } else {
             wk = 0;
         }
-        t->m_2dc = wk;
-        if (t->m_2dc->LoadBattlezItemConfig((i32)t->m_c) == 0) {
-            if (t->m_2dc) {
-                t->m_2dc->Teardown();
-                ((CPtrArrayAt530*)((char*)t->m_2dc + 0x530))->Dtor1b4f3e();
+        m_guts = (CStatusBarMgr*)wk;
+        if (m_guts->LoadBattlezItemConfig((i32)m_c) == 0) {
+            if (m_guts) {
+                m_guts->Teardown();
+                ((Worker630::Sub530*)((char*)m_guts + 0x530))->Dtor1b4f3e();
                 EhVecCtor(
-                    (char*)t->m_2dc + 0x2c,
+                    (char*)m_guts + 0x2c,
                     0,
                     0,
                     0,
                     0
                 ); // __ehvec_dtor 0x11f640 (reloc-masked)
-                modeinit::RezFree(t->m_2dc);
+                modeinit::RezFree(m_guts);
             }
-            t->m_2dc = 0;
+            m_guts = 0;
             return 0;
         }
 
-        Rec78* r78 = (Rec78*)modeinit::RezAlloc(0x78);
+        CTileTriggerContainer* r78 = (CTileTriggerContainer*)modeinit::RezAlloc(0x78);
         if (r78) {
-            char* p = (char*)r78;
-            new (p + 0x00) CPtrList(0xa);
-            new (p + 0x1c) CPtrList(0xa);
-            new (p + 0x38) CPtrList(0xa);
-            new (p + 0x54) CPtrList(0xa);
-            *(i32*)(p + 0x74) = 0;
+            // the inline ctor: the four CPtrList(0xa) members + the m_74 gate
+            new (&r78->m_base) CPtrList(0xa);
+            new (&r78->m_list1) CPtrList(0xa);
+            new (&r78->m_list2) CPtrList(0xa);
+            new (&r78->m_list3) CPtrList(0xa);
+            r78->m_74 = 0;
         } else {
             r78 = 0;
         }
-        t->m_2e4 = r78;
-        if (((CTileTriggerSwitchLogic*)t->m_2e4)->GetFlag74() == 0) {
-            if (t->m_2e4) {
-                ((CTileTriggerContainer*)t->m_2e4)->~CTileTriggerContainer();
-                modeinit::RezFree(t->m_2e4);
+        m_beginMarker = r78;
+        if (((CTileTriggerSwitchLogic*)m_beginMarker)->GetFlag74() == 0) {
+            if (m_beginMarker) {
+                m_beginMarker->~CTileTriggerContainer();
+                modeinit::RezFree(m_beginMarker);
             }
-            t->m_2e4 = 0;
+            m_beginMarker = 0;
             return 0;
         }
 
@@ -450,7 +337,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         } else {
             r50 = 0;
         }
-        t->m_3f4 = r50;
+        m_frameMarker = r50;
         if (r50 == 0) {
             return 0;
         }
@@ -459,30 +346,30 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             while (ShowCursor(0) >= 0) {
             }
         }
-        t->m_1c4 = 1;
-        t->m_40 = 0;
-        t->m_1c0 = 0;
-        memset(t->m_1d0, 0, 0x40 * 4);
-        ((CGruntzMgr*)t->m_2dc)->ResetClockGlobals();
-        t->m_1cc = 0;
-        t->m_2d8 = timeGetTime();
-        t->m_320 = 0;
-        if (t->m_4->m_114 == 0) {
-            t->m_4->m_bc = 0;
+        m_1c4 = 1;
+        m_40 = 0; // the retail DWORD store (the ex-view's u8 was the noted bug)
+        m_1c0 = 0;
+        memset(&m_1d0, 0, 0x40 * 4); // clears +0x1d0..+0x2d0
+        ((CGruntzMgr*)a1)->ResetClockGlobals(); // retail ecx = the A1 arg slot (a1 IS the mgr)
+        m_savedClock = 0;
+        m_rngSeed = timeGetTime();
+        m_lightFx = 0;
+        if (m_4->m_114 == 0) {
+            m_4->m_saveInfoRec = 0;
         }
-        if (!t->CallV74()) {
+        if (!LoadImageBanks()) { // slot 29 (+0x74) virtual dispatch
             return 0;
         }
-        t->CallV90();
-        if (!t->CallV78(a2, 1)) {
+        Vslot24(); // slot 36 (+0x90) virtual dispatch (retail body: bare ret)
+        if (!LoadByMode(a2, 1)) { // slot 30 (+0x78) virtual dispatch
             return 0;
         }
-        if (!t->IsModeReady(0, 0)) {
+        if (!LoadCursorSprites(0, 0)) {
             return 0;
         }
-        Peer* peer = t->m_4e4;
+        CGameObject* peer = m_scrollSink;
         if (peer) {
-            peer->m_40 |= 1;
+            peer->m_stateFlags |= 1;
         }
         return 1;
     }

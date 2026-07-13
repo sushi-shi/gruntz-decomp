@@ -226,7 +226,7 @@ public:
     virtual i32 Vslot15() OVERRIDE;             // slot 21 (CState)
     virtual i32 Vslot1a() OVERRIDE;             // slot 26 (CPlay)
     virtual i32 GetFrame() OVERRIDE;            // slot 27 (CPlay)
-    virtual i32 Vslot1e(i32, i32) OVERRIDE;     // slot 30 (CPlay)
+    virtual i32 LoadByMode(i32, i32) OVERRIDE;  // slot 30 (CPlay; the per-mode level loader)
     virtual void Vslot20() OVERRIDE;            // slot 32 (CPlay)
     virtual void Vslot26() OVERRIDE;            // slot 38 (CPlay)
     CMultiSlotView* vtbl() {

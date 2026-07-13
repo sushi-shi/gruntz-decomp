@@ -21,7 +21,7 @@
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette/pool context the decoders read
-#include <Image/Image.h> // CFileImageElement / CFileImageHeldSurface / CFileImageSrc
+#include <Image/Image.h> // CFileImageElement / CFileImageSrc
 #include <ddraw.h> // real DirectDraw SDK (IDirectDrawSurface, DDBLTFX, DDCOLORKEY, DDERR_*/DDBD_*/DDSCAPS_*)
 #include <rva.h>
 #include <stdio.h>
@@ -599,7 +599,7 @@ void CDDSurface::FlipVertical() {
     }
     u8* tmp = (u8*)operator new(m_width);
     if (tmp == 0) {
-        ((CFileImageHeldSurface*)m_8)->Unlock(0);
+        m_8->Unlock(0);
         return;
     }
 
@@ -645,7 +645,7 @@ void CDDSurface::FlipVertical() {
         } while (i < half);
     }
 
-    ((CFileImageHeldSurface*)m_8)->Unlock(0);
+    m_8->Unlock(0);
     RezFree(tmp);
 }
 
@@ -2172,7 +2172,6 @@ i32 CDDSurface::Scale(i32 n) {
 // Class-metadata annotations (EOF-hosted).
 // ===========================================================================
 SIZE_UNKNOWN(CFileImageElement);
-SIZE_UNKNOWN(CFileImageHeldSurface);
 SIZE_UNKNOWN(CFileImageSrc);
 SIZE_UNKNOWN(CByteArrayMember);
 SIZE_UNKNOWN(CImageFactory);

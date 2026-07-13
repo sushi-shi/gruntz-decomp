@@ -5,7 +5,7 @@
 //
 // Owner recovered by xref (was ResLoaders::PalCache_17cd90::Snapshot, split out of
 // the ResourceLoaders.cpp holding TU): the callers are CDDPageMgr::Init (0x17c040)
-// and Handler_17c3f0::Init (0x17c3f0), and this body is RVA-embedded in the DDPageMgr
+// and CDDScreen::InitMode (0x17c3f0), and this body is RVA-embedded in the DDPageMgr
 // obj between CDDScreen::HandleError (0x17cc80) and CDDScreen::BlitRegion (0x17cdf0) -
 // so it is a CDDScreen method. The former PalCache view is dissolved onto the
 // canonical <DDrawMgr/DDScreen.h> CDDScreen (+0x108 IS CDDScreen::m_colorSlots, the

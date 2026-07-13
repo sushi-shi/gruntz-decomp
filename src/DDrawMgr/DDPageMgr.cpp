@@ -64,115 +64,13 @@ extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 // The game's cached ShowCursor fn-ptr global (?::ShowCursor@@3P6GHH@ZA, def in
 // stateimages) the 0x17c3f0 command handler hides the cursor through.
 
-// --- The 0x17c3f0 page/cursor command handler's transient shapes (a STACK-LOCAL
-// 0x520-byte command block CGruntzMgr::ChangeState_8fab0 builds + Init()s; no
-// persistent owning class - a placeholder shape). --------------------------------
-struct ObjA2_17c3f0 { // real polymorphic; fn5 is slot 5 (+0x14)
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual i32 __stdcall fn5(i32, i32*, i32*, i32); // slot 5 (+0x14)
-};
-SIZE_UNKNOWN(ObjA2_17c3f0);
-struct ObjA3_17c3f0 { // real polymorphic; fn31 is slot 31 (+0x7c)
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Slot18();
-    virtual void Slot19();
-    virtual void Slot20();
-    virtual void Slot21();
-    virtual void Slot22();
-    virtual void Slot23();
-    virtual void Slot24();
-    virtual void Slot25();
-    virtual void Slot26();
-    virtual void Slot27();
-    virtual void Slot28();
-    virtual void Slot29();
-    virtual void Slot30();
-    virtual void __stdcall fn31(i32); // slot 31 (+0x7c)
-};
-SIZE_UNKNOWN(ObjA3_17c3f0);
-struct Handler_17c3f0 {
-    void* m_0; // +0x00
-    i32 m_4;   // +0x04
-    void* m_8; // +0x08
-    i32 m_c;   // +0x0c
-    char m_pad10[0x14 - 0x10];
-    ObjA2_17c3f0* m_14; // +0x14
-    char m_pad18[0x1c - 0x18];
-    ObjA3_17c3f0* m_1c; // +0x1c
-    char m_pad20[0x24 - 0x20];
-    i32 m_24; // +0x24
-    i32 m_28; // +0x28
-    i32 m_2c; // +0x2c
-    char m_pad30[0x108 - 0x30];
-    i32 m_108; // +0x108
-    char m_pad10c[0x508 - 0x10c];
-    i32 m_508; // +0x508
-    char m_pad50c[0x510 - 0x50c];
-    i32 m_510; // +0x510
-    char m_pad514[0x518 - 0x514];
-    i32 m_518; // +0x518
-    i32 m_51c; // +0x51c
-    i32 m_520; // +0x520
-    // The command block IS the CDDScreen/CDDPageMgr display object (esi==this used
-    // directly as the ecx for all four cross-view calls); the retargets below bind to
-    // the real methods. The 4-view conflation (CDDScreen/CDDPageMgr/CMoviePlayer/this)
-    // is pre-existing deferred-fold structural work.
-    i32 Init(
-        void* a1,
-        ObjA2_17c3f0* a2,
-        ObjA3_17c3f0* a3,
-        i32 p4,
-        i32 p5,
-        i32 a6,
-        i32 a7,
-        i32 p8,
-        i32 p9,
-        i32 p10,
-        i32 p11,
-        i32 p12,
-        i32 p13,
-        i32 p14,
-        i32 p15,
-        i32 p16,
-        i32 p17,
-        i32 p18,
-        i32 p19,
-        i32 p20,
-        i32 p21,
-        i32 p22,
-        i32 p23,
-        i32 p24,
-        i32 kind,
-        i32 p26,
-        i32 p27,
-        i32 p28,
-        i32 p29,
-        i32 p30,
-        i32 a31
-    );
-};
-SIZE_UNKNOWN(Handler_17c3f0);
+// [The former Handler_17c3f0 command-block view (with its ObjA2/ObjA3 placeholder-slot
+// interfaces) is dissolved onto the canonical CDDScreen (<DDrawMgr/DDScreen.h>): the
+// dispatches are genuine COM - IDirectDraw2::CreatePalette (slot 5, +0x14) and
+// IDirectDrawSurface::SetPalette (slot 31, +0x7c) - and every touched field sits at a
+// CDDScreen offset (m_dd2/m_primary/m_palette/m_palEntries/m_screenWidth/m_screenHeight/
+// m_bpp). The remaining (CDDPageMgr*) casts are the documented CDDScreen==CDDPageMgr
+// cross-header conflation (deferred fold).]
 
 // ===========================================================================
 // Functions in retail-RVA order.
@@ -305,16 +203,18 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     return Init(h, a0, a1);
 }
 
-// 0x17c3f0 - a page/cursor command handler over a stack-local 0x520-byte command block.
+// CDDScreen::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the
+// CDDScreen display object (a stack-local 0x520+-byte block in the caller;
+// CGruntzMgr::ChangeState_8fab0 builds + InitMode()s it).
 RVA(0x0017c3f0, 0x14e)
-i32 Handler_17c3f0::Init(
-    void* a1,
-    ObjA2_17c3f0* a2,
-    ObjA3_17c3f0* a3,
+i32 CDDScreen::InitMode(
+    HWND wnd,
+    IDirectDraw2* dd2,
+    IDirectDrawSurface* primary,
     i32 p4,
     i32 p5,
-    i32 a6,
-    i32 a7,
+    i32 height,
+    i32 width,
     i32 p8,
     i32 p9,
     i32 p10,
@@ -332,7 +232,7 @@ i32 Handler_17c3f0::Init(
     i32 p22,
     i32 p23,
     i32 p24,
-    i32 kind,
+    i32 bpp,
     i32 p26,
     i32 p27,
     i32 p28,
@@ -340,41 +240,41 @@ i32 Handler_17c3f0::Init(
     i32 p30,
     i32 a31
 ) {
-    if (!a1 || !a2 || !a3) {
+    if (!wnd || !dd2 || !primary) {
         return 0;
     }
-    m_14 = a2;
-    m_c = 1;
-    m_1c = a3;
-    ((CDDScreen*)this)->Snapshot((HWND)a1);
-    if (kind == 8) {
-        if (m_14->fn5(4, &m_108, &m_2c, 0)) {
-            ((CDDScreen*)this)->HandleError();
+    m_dd2 = dd2;
+    m_0c = 1;
+    m_primary = primary;
+    Snapshot(wnd);
+    if (bpp == 8) {
+        if (m_dd2->CreatePalette(DDPCAPS_8BIT, m_palEntries, &m_palette, 0)) {
+            HandleError();
             return 0;
         }
-        m_1c->fn31(m_2c);
+        m_primary->SetPalette(m_palette);
         m_510 = 0;
     }
-    if (kind == 0x18) {
-        ((CDDScreen*)this)->HandleError();
+    if (bpp == 24) {
+        HandleError();
         return 0;
     }
-    if (kind == 0x10) {
+    if (bpp == 16) {
         if (!((CDDPageMgr*)this)->CheckMode16()) {
-            ((CDDScreen*)this)->HandleError();
+            HandleError();
             return 0;
         }
     }
-    m_518 = a7;
-    m_51c = a6;
-    m_520 = kind;
-    m_0 = a1;
+    m_screenWidth = width;
+    m_screenHeight = height;
+    m_bpp = bpp;
+    m_window = wnd;
     m_8 = 0;
-    m_24 = 0;
+    m_srcSurf = 0;
     m_28 = 0;
     m_508 = a31;
     ::ShowCursor(0);
-    m_4 = 1;
+    m_initialized = 1;
     ((CDDPageMgr*)this)->FreeAll();
     return 1;
 }

@@ -36,8 +36,47 @@ public:
     i32 Configure(i32 mode, i32 flags, POINT* origin, RECT* rect); // 0x17cfc0
     i32 CheckGrid();                                               // 0x17cbe0 (sibling, external)
     void UploadPalette(); // 0x17ca10 (palette re-realize on 8bpp restore; body in PaletteCopy.cpp)
+    // 0x17c3f0 (body in DDPageMgr.cpp): the borrowed-interface mode bring-up - snapshot
+    // the system palette, create+attach the 8bpp palette (or validate 16bpp / reject
+    // 24bpp), latch geometry+bpp and hide the cursor. Only p-args 4..30 (minus the
+    // consumed ones) are dead pass-throughs the retail caller pushes.
+    i32 InitMode(
+        HWND wnd,
+        IDirectDraw2* dd2,
+        IDirectDrawSurface* primary,
+        i32 p4,
+        i32 p5,
+        i32 height,
+        i32 width,
+        i32 p8,
+        i32 p9,
+        i32 p10,
+        i32 p11,
+        i32 p12,
+        i32 p13,
+        i32 p14,
+        i32 p15,
+        i32 p16,
+        i32 p17,
+        i32 p18,
+        i32 p19,
+        i32 p20,
+        i32 p21,
+        i32 p22,
+        i32 p23,
+        i32 p24,
+        i32 bpp,
+        i32 p26,
+        i32 p27,
+        i32 p28,
+        i32 p29,
+        i32 p30,
+        i32 a31
+    );
 
-    char m_pad00[0x0c];
+    HWND m_window;      // +0x00  owner window (InitMode stores it)
+    i32 m_initialized;  // +0x04  "initialized" flag (InitMode sets 1; cf. CDDPageMgr +0x04)
+    void* m_8;          // +0x08  cleared by InitMode (role unproven)
     i32 m_0c; // +0x0c   ==0 gates full DDraw-stack teardown (owns-vs-borrows, unproven)
     CTileInfo* m_tileInfo;         // +0x10
     IDirectDraw2* m_dd2;           // +0x14   IDirectDraw2
@@ -55,9 +94,9 @@ public:
         u8 m_colorSlots[0x400];
         PALETTEENTRY m_palEntries[0x100];
     };
-    char m_pad508[0x50c - 0x508];
+    i32 m_508; // +0x508   InitMode stores its a31 pass-through scalar (role unproven)
     i32 m_50c; // +0x50c   reset to 0 by Configure
-    char m_pad510[0x514 - 0x510];
+    i32 m_510; // +0x510   cleared by InitMode after the 8bpp palette attach (role unproven)
     i32 m_514;            // +0x514  set in mode-2 fallback (unproven)
     u32 m_screenWidth;    // +0x518
     u32 m_screenHeight;   // +0x51c

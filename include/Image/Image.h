@@ -205,48 +205,9 @@ public:
 // (IsValid @0x14 slot 5, v20 @0x20 slot 8) and the slot-3 BlitSurf dispatch are genuine
 // virtual calls - the former pointer-only CFileImageVtblView is retired.
 
-// The held DirectDraw surface at +0x08, dispatched THISCALL for the CFileImage.cpp
-// save/flip Unlock call sites (vtable slot +0x80 = Unlock(rect)). Same physical held
-// surface as m_8 (IDirectDrawSurface*, the DDraw COM/stdcall view); this is the
-// pointer-only dispatch interface for the thiscall Unlock sites - it holds NO data.
-// [The held-surface convention (thiscall here vs stdcall COM elsewhere) is a re-match
-// reconcile item - see docs/multi-view-worklist.md.]
-class CFileImageHeldSurface {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void s2c();
-    virtual void s30();
-    virtual void s34();
-    virtual void s38();
-    virtual void s3c();
-    virtual void s40();
-    virtual void s44();
-    virtual void s48();
-    virtual void s4c();
-    virtual void s50();
-    virtual void s54();
-    virtual void s58();
-    virtual void s5c();
-    virtual void s60();
-    virtual void s64();
-    virtual void s68();
-    virtual void s6c();
-    virtual void s70();
-    virtual void s74();
-    virtual void s78();
-    virtual void s7c();
-    virtual i32 Unlock(void* rect); // +0x80
-};
+// [The former CFileImageHeldSurface (a 33-slot thiscall placeholder view of the held
+// surface, Unlock @+0x80) is retired: retail's Unlock sites are genuine COM stdcall
+// (push arg / push surf / call [vtbl+0x80]) on m_8 (IDirectDrawSurface*), slot 32.]
 
 // The run-length source header handed to Decode (arg `src`): a +0x04/+0x06/+0x08/+0x0a
 // int16 bounding box and a +0x41 format byte (1 = 8-bit, 3 = 24-bit); run data at +0x80.
