@@ -33,5 +33,10 @@ struct CRezBufferObject : public CObject {
     }
     virtual ~CRezBufferObject() OVERRIDE;          // 0x17f330
     virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2  0x17f130
+    // 0x17f390 - the out-of-line CArray<RezElem40>::SetSize (alloc / grow-with-copy /
+    // shrink-in-place around RezAlloc/RezFree). Its only caller is CFaderMesh::ApplyInit
+    // (0x17ea00, which grows THIS buffer at CFaderMesh+0x58) - so it is this class's
+    // method, not a free "CArrayE40" the fader TU invented. Body in Fader.cpp.
+    void SetSize(i32 nNewSize, i32 nGrowBy);
 };
 SIZE_UNKNOWN(CRezBufferObject);
