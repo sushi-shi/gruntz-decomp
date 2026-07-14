@@ -12,6 +12,7 @@
 // multi-way error ladder) - the deliverable is the control-flow + offset +
 // ordered-call carcass, not a byte-perfect frame.
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_30; ex the local view)
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
@@ -185,33 +186,9 @@ struct Mfc {
     void C_11f5a0(i32, i32, void*, void*);
 };
 
-// Partial call-view of CDDrawSurfaceMgr (canonical shape in <DDrawMgr/DDrawSurfaceMgr.h>).
-// Modeled CObject-derived so its 8-slot vtable matches the real class (CObject slots 0-4 +
-// dtor override@1 + IsReady@5 + slot-6 Init); VInit is that slot-6 5-arg Init (+0x18). The
-// slot-5 filler is declared-only. TODO(framework-B): fold onto the canonical header (needs
-// m_24/m_resolveSubMgr member re-typing to CGameLevel).
-struct CDDrawSurfaceMgr : CObject { // m_30 (0x40)
-    // CObject vptr @ +0 (extern ctor 0x155840 stamps the real ??_7CDDrawSurfaceMgr)
-    CDDrawSubMgrPages* m_04; // +4
-    char _p08[0x24 - 0x08];
-    CGameLevel* m_24;           // +0x24
-    CDDrawSubMgrLeafScan* m_28; // +0x28
-    char _p2c[0x40 - 0x2c];
-    // `new CDDrawSurfaceMgr` needs an accessible operator new; MFC CObject's PASCAL
-    // one is not usable under MSVC5, so forward to global new (byte-identical to the
-    // former flat view's allocation - a `call ??2@YAPAXI@Z`).
-    void* operator new(size_t n) {
-        return ::operator new(n);
-    }
-    void operator delete(void* p) {
-        ::operator delete(p);
-    }
-    CDDrawSurfaceMgr();
-    virtual ~CDDrawSurfaceMgr();                  // slot 1 (override)
-    virtual i32 IsReady();                        // slot 5 (declared-only filler)
-    virtual i32 VInit(void*, i32, i32, i32, i32); // slot 6 (+0x18): the 5-arg Init
-    void VMethod155f50(void*);                    // 0x155f50 (= SetHwnd)
-};
+// (The local CDDrawSurfaceMgr call-view is DISSOLVED onto the canonical
+// <DDrawMgr/DDrawSurfaceMgr.h>: VInit was the slot-6 Init, VMethod155f50 is
+// SetHwnd, m_04/m_24/m_28 are m_pages/m_resolveSubMgr/m_leafScan.)
 struct CSymParser { // m_34 (0x94)
     CSymParser();
     ~CSymParser();
@@ -585,7 +562,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         flags |= 0x10;
     }
     m_88 = 0x10;
-    if (!m_30->VInit(*(void**)((char*)m_04 + 4), 0x280, 0x1e0, 0x10, flags)) {
+    if (!m_30->Init(*(void**)((char*)m_04 + 4), 0x280, 0x1e0, 0x10, flags)) {
         Error1(0x407);
         return 0;
     }
@@ -597,12 +574,12 @@ i32 RezSync::Init(void* a1, char* a2) {
         rect[3] = 0x1df;
         m_8c = 0x280;
         m_90 = 0x1e0;
-        m_30->m_24->BuildAllPlanes((LevelCoordRect*)rect);
+        m_30->m_resolveSubMgr->BuildAllPlanes((LevelCoordRect*)rect);
     }
-    m_30->VMethod155f50((void*)&cb_403193);
-    m_30->m_24->m_maxStepX = 0xe;
-    m_30->m_24->m_maxStepY = 0xe;
-    m_30->m_04->Method_158cb0(0, 0x30000);
+    m_30->SetHwnd((void*)&cb_403193);
+    m_30->m_resolveSubMgr->m_maxStepX = 0xe;
+    m_30->m_resolveSubMgr->m_maxStepY = 0xe;
+    m_30->m_pages->Method_158cb0(0, 0x30000);
     Fn1db6();
     Fn3526cdecl(m_30);
     if (!Fn1c12()) {
@@ -673,7 +650,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         m_54 = 0;
     }
     m_54 = new CWorldSoundSet;
-    if (!m_54->Init(m_30->m_28, vSndVol)) {
+    if (!m_54->Init(m_30->m_leafScan, vSndVol)) {
         Error2(0x800a, 0x40d);
         return 0;
     }
@@ -843,17 +820,17 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_interlaced = vInterlaced;
     m_highDetail = vHigh1;
     m_110 = vEasy;
-    if (!m_30->m_28->HasKeyEqual_1583c0("GAME")) {
+    if (!m_30->m_leafScan->HasKeyEqual_1583c0("GAME")) {
         void* sz = m_34->ResolvePath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
-        m_30->m_28->ScanTree_157ee0((CSymTab*)sz, "GAME", "_");
+        m_30->m_leafScan->ScanTree_157ee0((CSymTab*)sz, "GAME", "_");
     }
     {
         void* mv = 0;
-        m_30->m_28->m_10.Lookup("GAME_MOVIE", mv);
-        m_30->m_28->MatchSub_1584f0((LeafCue*)mv, 0);
+        m_30->m_leafScan->m_10.Lookup("GAME_MOVIE", mv);
+        m_30->m_leafScan->MatchSub_1584f0((LeafCue*)mv, 0);
     }
     Fn1ed8();
     if (!Fn2112()) {

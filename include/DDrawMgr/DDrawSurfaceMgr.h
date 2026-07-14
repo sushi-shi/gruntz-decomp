@@ -79,6 +79,15 @@ SIZE(CDDrawSurfaceMgr, 0x40);
 class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();
+    // `new CDDrawSurfaceMgr` (CGruntzMgr::Init / RezSync) needs an accessible
+    // operator new; MFC CObject's PASCAL one is not usable under MSVC5, so forward
+    // to global new (byte-identical: the same `push 0x40; call ??2@YAPAXI@Z`).
+    void* operator new(size_t n) {
+        return ::operator new(n);
+    }
+    void operator delete(void* p) {
+        ::operator delete(p);
+    }
     // The real 8-slot retail vtable @0x1efc58 (== ??_7CDDrawSurfaceMgr@@6B@): CObject's
     // 5 slots (0-4, dtor override @1) + THREE CDDrawSurfaceMgr-own slots. The per-slot
     // vtable audit proves IsReady/Init/Cleanup are the ONLY new virtuals; FreeContext/
