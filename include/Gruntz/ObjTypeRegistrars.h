@@ -72,8 +72,9 @@ struct CWormhole : public CUserLogic {
 
 // non-RTTI helper registrars: CClass::RegisterActs()/RegisterType() -> ?..@@SAXXZ
 struct CProjActObj {
-    static void RegisterType(); // 0x8240 (home: ActionArea.cpp)
+    static void RegisterType(); // 0x8240 (home: ActionArea.cpp; the ActionArea class registrar)
 };
+SIZE_UNKNOWN(CProjActObj); // static-only registrar shell - never instantiated
 struct CAniCycle {
     static void RegisterActs();
 };

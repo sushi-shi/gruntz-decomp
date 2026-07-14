@@ -24,11 +24,11 @@ public:
     // activation dispatch body; the fat CUserLogic base models slot 4 with the
     // no-arg UserLogicVfunc2() placeholder below, so the int-arg real shape is a
     // plain method (the leaf vtable slot stays base-attributed - same pattern as
-    // CProjectile::RunAct). RegisterType (0x8240) is the static level-load class
-    // registrar. (Both were the .cpp-local CProjActObj view - vtable_hierarchy
-    // proves ??_7CActionArea slot 4 IS FireActivation.)
+    // CProjectile::RunAct). The .cpp-local CProjActObj OBJECT view dissolved here -
+    // vtable_hierarchy proves ??_7CActionArea slot 4 IS FireActivation. (The static
+    // level-load registrar @0x8240 stays CProjActObj::RegisterType - the
+    // ObjTypeRegistrars.h shell the factory calls; see ActionArea.cpp.)
     void FireActivation(i32 coord); // 0x80e0
-    static void RegisterType();     // 0x8240 (static: no this, called by the factory)
     // ApplyColor (0x8580): re-name the bound object's sprite for the owning team
     // (owner 1 -> "GAME_ACTIONAREA_BLUE", owner 2 -> "GAME_ACTIONAREA_RED"), reset
     // its image set's pixel-format types (SetAllTypes 8), clear the object's
@@ -83,5 +83,8 @@ public:
     i64 m_timestamp;           // +0x58 last-toggle game clock
     i64 m_duration;            // +0x60 current interval (ms)
 };
+// Layout modeled to +0x68 (m_duration i64 @+0x60); exact retail size not yet pinned
+// from an operator new / sizeof site, so left UNKNOWN rather than asserted.
+SIZE_UNKNOWN(CPulseHighlight);
 
 #endif // GRUNTZ_CACTIONAREA_H

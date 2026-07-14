@@ -14,7 +14,8 @@
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
 #include <Globals.h>
-#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
+#include <Gruntz/TypeNameEntry.h>   // the shared type-name-registry record (CString m_name)
+#include <Gruntz/ObjTypeRegistrars.h> // CProjActObj registrar-shell decl (RegisterType @0x8240)
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
 #include <Wap32/ZVec.h>
@@ -217,7 +218,11 @@ void CActionArea::FireActivation(i32 coord) {
 // ebp,[eax+1]` strength-reduced idiom (cl loads the count plainly) and pins the
 // type-id register differently. Not source-steerable; deferred to the final sweep.
 RVA(0x00008240, 0x18d)
-void CActionArea::RegisterType() {
+// The level-load registrar for the ActionArea type. Kept under the CProjActObj
+// registrar-shell name (ObjTypeRegistrars.h) that GameObjectFactory calls, for
+// caller/definition reloc consistency - the object VIEW folded to CActionArea, but
+// this static registrar's symbol stays CProjActObj:: (no phantom).
+void CProjActObj::RegisterType() {
     i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
