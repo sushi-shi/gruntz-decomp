@@ -38,8 +38,9 @@
 // builds with /GX. Field names are placeholders; only OFFSETS + code bytes are
 // load-bearing.
 #include <Mfc.h>             // CPtrList / POSITION / CFile + <windows.h> PALETTEENTRY
-#include <Image/Image.h>     // CRezImage - the shared DIB-surface class (the pool's surface node)
-#include <Image/ImagePool.h> // the canonical CImagePool (this TU owns its bodies)
+#include <Image/Image.h>          // CRezImage - the shared DIB-surface class (the pool's surface node)
+#include <Image/ImagePaletteNode.h> // the canonical CImagePaletteNode (this TU owns most bodies)
+#include <Image/ImagePool.h>      // the canonical CImagePool (this TU owns its bodies)
 #include <Rez/RezMgr.h>      // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
 // <string.h>: strrchr (find the ext dot) / _stricmp (the case-insensitive ext
@@ -85,39 +86,10 @@ extern "C" {
 // are pinned.
 // ---------------------------------------------------------------------------
 namespace ApiCallerStubs {
-    // The palette list node (+0x2c list). Build realizes the HPALETTE from a 256-entry
-    // LOGPALETTE it assembles in-place; the front-ends fill that array. Run (former
-    // CImagePaletteNode free view, folded in) deletes the realized HPALETTE before
-    // the node is freed.
-    struct CImagePaletteNode {
-        HPALETTE m_palette;                     // +0x000  realized HPALETTE (CreatePalette)
-        LOGPALETTE m_pal;                       // +0x004  header + entry[0]
-        char m_padEntries[0x408 - (4 + 4 + 4)]; // entry[1..255] -> +0x408
-        i32 m_flags;                            // +0x408  Build's stored flags (Run zeroes it)
-        i32 m_systemTuned;                      // +0x40c  1 when reserved system range snapshotted
-        POSITION m_listPosition;                // +0x410  cached AddTail POSITION
-        i32 Build(PALETTEENTRY* entries, i32 flags);                // 0x176df0 (this TU)
-        void Tune1770e0();                                          // 0x1770e0 (this TU)
-        i32 ProcessPal(void* rgb, i32 flags);                       // 0x176e70 (this TU)
-        i32 ProcessPalQuad(void* bgr, i32 flags);                   // 0x176ec0 (this TU)
-        i32 ProcessPalBGR(void* bgr, i32 flags);                    // 0x176f30 (this TU)
-        i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x177040 (this TU)
-        i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);        // 0x177400 (this TU)
-        void Run();                                                 // 0x177070 (this TU)
-
-        // The file-extension loader front-ends (former CImageExtLoader view, folded in:
-        // its `this` was xref-proven a CImagePaletteNode - AddImageFile 0x1755f0 news a
-        // CImagePaletteNode and dispatches here). strrchr the dot then a stricmp ladder.
-        i32 LoadByExtension(char* path, i32 arg); // 0x176f90 (this TU)
-        i32 LoadPalFile(char* path, i32 arg);     // 0x1771f0 (this TU)
-        i32 LoadPcxFile(char* path, i32 arg);     // 0x1772e0 (this TU)
-        // LoadBmpFile/Apply bodies live (mis-named) in the palettebmp obj as
-        // CPalLoader::LoadBmpPalette (0x177480) / CPalLoader::Apply (0x1775f0) - same
-        // `this`, so really CImagePaletteNode methods. Declared-only here until that TU
-        // renames its CPalLoader view onto CImagePaletteNode.
-        i32 LoadBmpFile(char* path, i32 arg); // 0x177480 (external, palettebmp)
-        i32 Apply(char* path, i32 arg);       // 0x1775f0 (external, palettebmp)
-    };
+    // The palette list node CImagePaletteNode is the ONE canonical class in
+    // <Image/ImagePaletteNode.h> (included above): this TU owns its Build/ProcessPal*/
+    // Parse*/Load* bodies (below); PaletteBmp.cpp owns LoadBmpFile/Apply. The former
+    // identical .cpp-local definition here is DISSOLVED onto that header (2026-07-14).
 
     // Two free GDI palette helpers PalBuilder::Build/Tune funnel through:
     // 0x1770a0 probes display-palette support; 0x177160 resets the screen
