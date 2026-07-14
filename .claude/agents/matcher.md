@@ -273,16 +273,31 @@ re-justified as a wall.
 
 **RECOVER THE REAL IDENTITY VIA XREFS BEFORE inventing any view (standing rule).** A
 fake/placeholder view struct (`Obj<hex>`/`CFoo<rva>`/`m_<hex>` shells) is a LAST resort,
-never a first move. Before you write one, run the xref recovery: `gruntz sema xref
-<rva>` for the caller graph (who calls it on what `this` → the owning class); chase
-vtable DATA-refs (a slot data-ref names the vtable → its RTTI/VTBL class); read the
-Ghidra decomp's field readers/writers and `new`-sites to pin the type; check the RTTI
-name. Nine times out of ten this yields the REAL class — model THAT (in its canonical
-header), casting nothing. Only when xref recovery genuinely dead-ends (no caller, no
-vtable slot, sub-object `this` of an unreconstructed parent) may a view exist, and then
-ONLY as a flagged `@identity-TODO` with the xref evidence you gathered — never a silent
-placeholder. "I couldn't name it" is acceptable only after you show the xref chase that
-failed.
+never a first move. **Every view HAS a real identity — the retail binary linked, so every
+callee, vtable slot, global, and reference the view touches resolves to a concrete class.
+Your job is to FIND it, not to decide it's unfindable.** Reasoning from the code/name and
+bailing to `@identity-TODO` is FORBIDDEN — this session a lane did exactly that and the
+first xref cracked it (`CSpotTarget` WAS `CGrunt` because `FindGruntAt`'s mangled return
+type is `PAVCGrunt@@`). Guessing "unrecoverable" without the chase is the #1 way lanes
+waste a view.
+
+**Run the FULL chase — every applicable technique, not the first one that's inconclusive:**
+1. `gruntz sema xref <rva>` — caller graph: who calls the view's methods on what `this` → the owner class. `--tree` chases caller-of-caller through ILT jmp-thunks.
+2. **Callee return/param types** — a method that stores the view is often fed by a retail fn whose MANGLED signature names the class (`?Find…@@…PAVCGrunt@@` → returns `CGrunt*`). `gruntz sema disasm` the callee, read the mangled name.
+3. **ILT thunk targets** — a reloc-masked `call 0x3b4d`-style thunk: `llvm-objdump`/`gruntz sema disasm` the thunk target → the real fn → its class.
+4. **vtable DATA-ref** — the view's `mov [this],0x5eXXXX` vptr stamp names `??_7<Class>@@6B@`; cross-check with `vtable_scan` + the VTBL() catalog and `vtable_hierarchy`.
+5. **`operator new(<size>)` at the creation site** — the alloc size is ground-truth for the class SIZE; find who `new`s it (`sema xref` the ctor) → the owning field/class.
+6. **RTTI COL** at `vtable-4` (`vtable_hierarchy`/`mfc_class`) — names the class + base chain directly.
+7. **field readers/writers** in the Ghidra decomp — the offsets a method touches, matched against a candidate class's known members, confirm/refute identity.
+
+Nine times out of ten one of these yields the REAL class — model THAT in its canonical
+header, casting nothing. **`@identity-TODO` is permitted ONLY after you have RUN and
+reported all applicable techniques above and each genuinely dead-ended** (e.g. the sole
+caller is an unreconstructed fn, or `this` is a sub-object of a parent no one has built
+yet). A bare "I couldn't name it" with no per-technique evidence is a rejected report —
+go back and finish the chase. If the identity IS found but the fold is blocked because
+another lane owns the canonical header, that is DEFERRED-FOLD work you report with the
+proven identity — NOT an `@identity-TODO` (the identity is known).
 
 ## Tool discipline — semantic questions go to `gruntz sema`, not grep
 
