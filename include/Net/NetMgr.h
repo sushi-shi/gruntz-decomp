@@ -301,10 +301,9 @@ struct CNetCmdSlot {
         i32 m_resetGuard; // +0x4  command: "slot already reset" guard
         i32 m_isRemote;   //        sync:    0 = local channel
     };
-    union {
-        i32 m_latchedSeq; // +0x8  command: latched sequence (Touch copies m_baseSeq here)
-        i32 m_08;         //        sync:    counter / CNetMgr* (SendGruntRecord casts)
-    };
+    // +0x8  command: latched sequence (Touch copies m_baseSeq here); sync reuses the
+    // same i32 as a counter / a CNetMgr* it casts (SendGruntRecord). One canonical name.
+    i32 m_latchedSeq;
     union {
         i32* m_cmdHead; // +0xc  command: -> command-list head value (m_cmdHead[0xb] == +0x2c flag)
         SlotInfo* m_desc; //       sync:    player descriptor (same target, named view)
@@ -318,10 +317,8 @@ struct CNetCmdSlot {
         i32 m_maxSeq;  // +0x18  command: high-water sequence (RaiseMax keeps the max)
         i32 m_sentSeq; //        sync:    highest sequence sent
     };
-    union {
-        CMulti* m_owner;  // +0x1c  command: owning CMulti back-pointer (reaches m_session/m_4/DispatchRecvMsg)
-        i32 m_1c;         //        sync
-    };
+    CMulti* m_owner; // +0x1c  owning CMulti back-pointer (reaches m_session/m_4/DispatchRecvMsg;
+                     //         sync cleared the same slot as m_1c). One canonical name.
     // CPtrList, not CObList: AddCmd/RemoveCmd/ClearCmds/ResetSync all call the
     // band-A list bodies (ctor 0x1b4867 / AddTail 0x1b4991 / RemoveHead 0x1b4a03),
     // whose vtable 0x1eb054 slot-0 GetRuntimeClass names "CPtrList". (CNetMgr's own
@@ -494,43 +491,20 @@ void RecycleCmd(void* cmd); // bf580  __cdecl
 // lobby-sync-view name via an anonymous union (byte-neutral; offsets unchanged).
 // ---------------------------------------------------------------------------
 struct CNetSession {
-    union {
-        CNetCmdBuf* m_0; // +0x00  command: base of the per-slot command-buffer array (Init a1)
-        i32 m_00;        //        sync:    cleared by ResetSync
-    };
-    union {
-        i32 m_4;                // +0x04  command: owning net manager as an i32 handle (Init a2)
-        CMulti* m_session; //        sync:    owning CMulti (== m_4; +0x564 m_pollAbort busy gate)
-    };
-    union {
-        void* m_8;         // +0x08  command: peer/owner back-ptr (Init a3)
-        CNetMgr* m_netMgr; //        sync:    the DirectPlay CNetMgr (endpoint at +0x18)
-    };
-    union {
-        i32 m_c;               // +0x0c  command
-        SlotInfo* m_localDesc; //        sync:    local player descriptor
-    };
-    union {
-        i32 m_10;   // +0x10  command / lobby slot-count-id base (Multi reads m_10)
-        i32 m_tick; //        sync:    sub-tick counter
-    };
-    union {
-        i32 m_14;           // +0x14  command
-        i32 m_snapshotDone; //        sync:    per-period snapshot-built flag
-    };
-    union {
-        i32 m_18;  // +0x18  command: resync tick base (Verify: (m_18-2)%128)
-        i32 m_seq; //        sync:    reconcile-period sequence
-    };
-    union {
-        i32 m_1c;     // +0x1c  command: cached owner m_cmdDelay (Init)
-        i32 m_period; //        sync:    ticks per period (modulus)
-    };
+    // Unions dissolved: the command-session and lobby-sync contexts share ONE field
+    // per offset, so each carries a single canonical (typed/semantic) name - the
+    // former hex/command-view aliases (m_00/m_4/m_8/m_c/m_10/m_14/m_18/m_1c/m_1b0)
+    // are folded onto them.
+    CNetCmdBuf* m_0;       // +0x00  base of the per-slot command-buffer array (Init a1); ResetSync clears it
+    CMulti* m_session;     // +0x04  owning CMulti (Init a2, kept as an i32 handle re-passed to CreateSlot)
+    CNetMgr* m_netMgr;     // +0x08  the DirectPlay CNetMgr peer (Init a3; endpoint at +0x18)
+    SlotInfo* m_localDesc; // +0x0c  local player descriptor
+    i32 m_tick;            // +0x10  sub-tick counter (also the lobby slot-count-id base)
+    i32 m_snapshotDone;    // +0x14  per-period snapshot-built flag
+    i32 m_seq;             // +0x18  reconcile-period sequence (Verify: (m_seq-2)%128)
+    i32 m_period;          // +0x1c  ticks per period / cached owner m_cmdDelay (the modulus)
     CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
-    union {
-        i32 m_1b0[0x80];         // +0x1b0  command: 0x200-byte resync scratch
-        CSyncObj* m_idMap[0x80]; //        sync:    synced-object ptr table (GetSlotPtr)
-    };
+    CSyncObj* m_idMap[0x80]; // +0x1b0  synced-object ptr table (GetSlotPtr) / 0x200-byte resync scratch
     union {
         CNetResyncEntry m_entries[0x80]; // +0x3b0  command: resync entries (signed-indexed)
         GruntRec m_records[0x80];        //        sync:    grunt-record table

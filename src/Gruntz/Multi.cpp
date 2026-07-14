@@ -1041,7 +1041,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_accumTime = 0;
     m_5e4 = timeGetTime();
     m_574 = 0;
-    m_curSlotId = m_session->m_10 - 1;
+    m_curSlotId = m_session->m_tick - 1;
     if (LoadLevelByMode(mode, 0) == 0) {
         return 0;
     }
@@ -1072,7 +1072,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_5e8 = 0;
     m_accumTime = 0;
     m_5e4 = timeGetTime();
-    m_curSlotId = m_session->m_10 - 1;
+    m_curSlotId = m_session->m_tick - 1;
     m_574 = 0;
     Mgr()->m_chatLog->FreeNodes();
     m_session->Reset(); // 0xbf150  (was StartTick view)
@@ -1133,7 +1133,7 @@ i32 CMulti::Tick() {
     m_lastTime = t;
     m_frameDelta = t - oldT;
     m_accumTime += (t - oldT);
-    i32 newId = m_session->m_10;
+    i32 newId = m_session->m_tick;
     if (m_curSlotId != newId) {
         m_curSlotId = newId;
         CMultiLogicList* lst = (CMultiLogicList*)Mgr()->m_cmdSubMgr;
@@ -4034,8 +4034,8 @@ i32 CMulti::CreateSession() {
         return 0;
     }
 
-    Session()->m_c = (i32)LocalPlayer();
-    i32 raw10 = m_session->m_10;
+    Session()->m_localDesc = (SlotInfo*)LocalPlayer();
+    i32 raw10 = m_session->m_tick;
     u8 b = (u8)raw10;
     if (b == 0) {
         b = 0x7f;
@@ -4111,13 +4111,13 @@ CNetCmdSlot::CNetCmdSlot() {
 RVA(0x000bbf80, 0xb7)
 void CNetSession::ResetAll() {
     m_0 = 0;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_1c = 1;
+    m_session = 0;
+    m_netMgr = 0;
+    m_localDesc = 0;
+    m_tick = 0;
+    m_snapshotDone = 0;
+    m_seq = 0;
+    m_period = 1;
 
     i32 i;
     CNetCmdSlot* slot = m_slots;
@@ -4140,7 +4140,7 @@ void CNetSession::ResetAll() {
         slot++;
     }
 
-    memset(m_1b0, 0, sizeof(m_1b0));
+    memset(m_idMap, 0, sizeof(m_idMap));
 
     CNetResyncEntry* e = m_entries;
     for (i = 0x80; i != 0; i--) {

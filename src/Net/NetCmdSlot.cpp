@@ -100,10 +100,10 @@ i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
         return 0;
     }
     m_0 = (CNetCmdBuf*)a1;
-    m_4 = (i32)a2; // the owning CNetMgr is kept as an i32 handle (CreateSlot re-passes it)
-    m_8 = a3;
+    m_session = a2; // the owning CMulti (kept as the +0x4 handle CreateSlot re-passes)
+    m_netMgr = (CNetMgr*)a3;
     Reset();
-    m_1c = a2->m_5a4;
+    m_period = a2->m_5a4;
     return 1;
 }
 
@@ -116,7 +116,7 @@ i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
 // then drain the recycled-node free pool.
 RVA(0x000bf000, 0xd5)
 void CNetSession::ResetSync() {
-    m_00 = 0;
+    m_0 = 0;
     m_session = 0;
     m_netMgr = 0;
     m_localDesc = 0;
@@ -128,13 +128,13 @@ void CNetSession::ResetSync() {
     i32 n = 4;
     do {
         s->m_isRemote = 0;
-        s->m_08 = 0;
+        s->m_latchedSeq = 0;
         s->m_state = 0;
         s->m_desc = 0;
         s->m_timer = 0;
         s->m_baseSeq = 0;
         s->m_sentSeq = 0;
-        s->m_1c = 0;
+        s->m_owner = 0;
         s->ClearCmds();
         s->ClearAckFlags();
         s->ResetTriple(s->m_rangeA);
@@ -183,14 +183,14 @@ void CNetCmdSlot::ClearAckFlags() {
 // swap, source-invariant under /O2). Plus Reset now unpairs (delinker section-packing).
 RVA(0x000bf150, 0x58)
 void CNetSession::Reset() {
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
+    m_tick = 0;
+    m_snapshotDone = 0;
+    m_seq = 0;
     i32 i;
     for (i = 0; i < 4; i++) {
         m_slots[i].FullReset();
     }
-    memset(m_1b0, 0, 0x200);
+    memset(m_idMap, 0, 0x200);
     for (i = 0; i < 0x80; i++) {
         m_entries[i].m_0 = 0;
         m_entries[i].m_8 = 0;
@@ -398,7 +398,7 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
     gA_e04 = rec->m_checksum;
     gA_e08 = rec->m_count;
     memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
-    return ((CNetMgr*)m_08)
+    return ((CNetMgr*)m_latchedSeq)
                ->SetData(m_desc->m_playerId, gruntId, 0, (i32)&gA_flag, rec->m_payloadLen + 0xf)
            == 0;
 }
@@ -497,7 +497,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     ((CNetCmdSlot*)slot)->ResetAll();
-    return slot->Init(m_4, &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
+    return slot->Init((i32)m_session, &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -562,7 +562,7 @@ void CNetSession::Reconcile() {
         CNetCmdSlot* s = base;
         i32 n = 4;
         do {
-            if (s && s->m_state == 3 && s->m_isRemote != 0 && m_seq > s->m_08 + 2) {
+            if (s && s->m_state == 3 && s->m_isRemote != 0 && m_seq > s->m_latchedSeq + 2) {
                 s->FullReset(); // 0xc0c20
                 SlotInfo* p = s->m_desc;
                 s->m_state = 1;
@@ -714,7 +714,7 @@ i32 CNetSession::CheckLatency(i32 cap) {
 // ---------------------------------------------------------------------------
 RVA(0x000c04f0, 0x7c)
 i32 CNetSession::Verify() {
-    i32 seq = m_18 - 2;
+    i32 seq = m_seq - 2;
     CNetResyncEntry* e = &m_entries[seq % 128];
     if (e != 0) {
         for (i32 i = 0; i < 4; i++) {
