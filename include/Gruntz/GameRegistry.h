@@ -229,7 +229,9 @@ struct CFocusSlot {
     i32 m_224; // +0x224  snapped focus Y
     i32 m_228; // +0x228  roster: combo/selection value (OnSlotSelectN caches sel+1;
                //          UpdatePlayers relays it to SyncColour)
-    char m_pad22c[0x238 - 0x22c];
+    i32 m_22c; // +0x22c  roster: per-slot display value (Watchdog reads it into the "%d"
+               //          status readout when the slot is active+present)
+    char m_pad230[0x238 - 0x230];
 
     // Format the player's display name (multiplayer roster; __thiscall @0x3e54 ILT
     // thunk). Returns CString BY VALUE, declared via the elaborated-type-specifier

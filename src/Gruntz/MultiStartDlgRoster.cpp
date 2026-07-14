@@ -894,23 +894,9 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 // message, and tears down. Field/class names are placeholders; g_64bd5c/g_gameReg
 // reuse this TU's canonical decls.
 // ===========================================================================
-// The game-registry slot array (*0x64556c + 0x150, stride 0x238/slot) viewed for the
-// three fields this watchdog reads (a WatchReg cast of the CGameRegistry singleton).
-struct WatchRegSlot {
-    char m_pad00[0x14];
-    i32 m_14; // +0x14 present flag
-    char m_pad18[0x20 - 0x18];
-    i32 m_20; // +0x20 active flag
-    char m_pad24[0x22c - 0x24];
-    i32 m_22c; // +0x22c display value
-    char m_tail[0x238 - 0x230];
-};
-struct WatchReg {
-    char m_pad000[0x150];
-    WatchRegSlot m_slots[1]; // +0x150
-};
-SIZE_UNKNOWN(WatchReg);
-SIZE_UNKNOWN(WatchRegSlot);
+// The watchdog reads three fields (m_14 present / m_20 active / m_22c display value)
+// per player off the canonical CGameRegistry::m_focusSlots[] (GameRegistry.h, +0x150,
+// stride 0x238) - the former WatchReg/WatchRegSlot cast views are dissolved onto it.
 
 // The cached timeGetTime fn-ptr (DATA symbol; 0-arg, bound by m5_PaletteLerp).
 // Watchdog re-entrancy guard + two blink counters (.data).
@@ -966,7 +952,7 @@ void CMultiStartDlg::Watchdog() {
     }
     if (g_watchBlinkB == 0) {
         for (i32 i = 0; i < 4; i++) {
-            WatchRegSlot* slot = &((WatchReg*)g_gameReg)->m_slots[i];
+            CFocusSlot* slot = &g_gameReg->m_focusSlots[i];
             CWnd* item1;
             CWnd* item2;
             switch (i) {
