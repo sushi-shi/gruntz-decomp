@@ -495,14 +495,19 @@ i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
 // sample the tile attribute, decode the logic class, switch over the kind dispatching the
 // matching switch/trigger logic object's Apply; on a miss Format an error CString ("No switch
 // logic found for switch at: x=%d, y=%d" / "No trigger logic ...") into a stack temp and
-// ReportError. (__stdcall: ret 0xc.) Reconstructed to plateau.
+// ReportError. Reconstructed to plateau.
+// ARITY FIXED (2026-07-14): retail ends `ret 0xc` = THREE dwords - every caller
+// (GruntSteps/Grunt.cpp/GruntCombat) pushes (grunt, x, y); the old 2-arg spelling
+// emitted `ret 8`. The grunt arg is unread by this driver (the callers pass it for
+// the logic objects that need the actor; this body dispatches by tile only).
 // @early-stop
 // big /GX switch driver (0x5b2 B): the dense jump table + the six CString-error stanzas
 // (ctor/Format/ReportError/dtor under the EH frame) diverge wholesale in regalloc and the
 // __ehfuncinfo state numbering; the validated head + the error-Format shape are faithful.
 // topic:wall topic:eh.
 RVA(0x0006d300, 0x5b2)
-i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
+i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
+    (void)g;
     char* plane = (char*)g_gameReg->m_curState;
     char* view = *(char**)((char*)m_level + 0x24);
     i32 x = sx;

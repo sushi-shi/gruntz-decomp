@@ -304,8 +304,10 @@ public:
     // sample the tile attribute, switch on the logic class (CDDraw tag - 0x34), dispatch
     // the matching switch/trigger logic object; on a miss, Format an error CString
     // ("No switch/trigger logic found for switch ...") and ReportError. (lives in the
-    // eh sibling TU; __stdcall ret 0xc.)
-    i32 ApplySwitch(i32 sx, i32 sy);
+    // eh sibling TU.) THREE args - retail ends `ret 0xc`, and every caller (GruntSteps/
+    // Grunt.cpp/GruntCombat, ex `ApplyTileSwitch`/`ApplySwitch(this,x,y)` view aliases)
+    // pushes (grunt, x, y). The 2-arg spelling was a shape defect (ret 8).
+    i32 ApplySwitch(CGrunt* g, i32 sx, i32 sy);
 
     // 0x6dae0 / 0x6e120: the two big tile-trigger appliers (apply-on-enter / apply-on-
     // exit). Look up the cell, walk its trigger/switch sub-objects, dispatch each logic

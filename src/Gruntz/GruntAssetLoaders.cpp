@@ -448,6 +448,3 @@ tail:
 #undef DEATH_CUE
 
 SIZE_UNKNOWN(CDeathReg7c);
-SIZE_UNKNOWN(CGruntSndRes);
-SIZE_UNKNOWN(CGruntSndResMgr);
-SIZE_UNKNOWN(CGruntSndSlot);

@@ -670,9 +670,9 @@ public:
     // (UpdateEntranceAnim's arrival-commit at 0x6c130 used to be declared here as
     // `CommitArrivalMove`. It IS CTileWireLogic::WireTileSwitchLogic - see the note above -
     // so the call sites cast the tile-mgr to CTileWireLogic and call the real body.)
-    // ClaimSwitchTile's tile-mgr apply (thunk_0x26df -> 0x6d300 ApplySwitch),
-    // __thiscall(grunt, lastX, lastY) ret 0xc. External/reloc-masked.
-    void ApplyTileSwitch(CGrunt* g, i32 x, i32 y);
+    // (ClaimSwitchTile's tile-mgr apply, ex `ApplyTileSwitch`, IS the real
+    // ?ApplySwitch@CTriggerMgr@@ @0x6d300 (thunk 0x26df) - callers now cast to
+    // CTriggerMgr and call it; the alias decl is gone.)
     // TryPowerupAtTile's tile-mgr probe (thunk_0x152d -> 0x7c620), 6 args ret 0x18.
     void ProbeMoveTile(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
     // The two big tile-mgr occupancy-commit helpers the arrival/update steps drive
@@ -1413,9 +1413,15 @@ public:
     char m_padb0[0x148 - 0xb0];
     i32 m_148;                       // +0x148
     i32 m_14c;                       // +0x14c
-    void* m_150;                     // +0x150
-    CEntranceAnimPlayer* m_154;      // +0x154 (entrance animation player)
-    struct CGruntSndResMgr* m_158;   // +0x158 (ability/sound resource mgr)
+    void* m_150;                // +0x150
+    CEntranceAnimPlayer* m_154; // +0x154 (entrance animation player)
+    // +0x158: the sprite's worker record. IDENTITY PROVEN by the ctor tail
+    // (Grunt.cpp): `m_158 = obj->m_7c` - the bound object's AnimWorkerObj. The
+    // ex-`CGruntSndResMgr` view (GruntCombat.cpp) modeled its hop chain
+    // m_0c->m_28->m_30: worker->m_0c is the owner/world context (the
+    // CSpriteFactoryHolder facet) whose +0x28 is the CSndHost cue registry
+    // (emit gate +0x30, CMapStringToPtr map +0x10).
+    AnimWorkerObj* m_158;            // +0x158 (the bound object's worker record)
     CAniElement* m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
     char m_pad160[0x170 - 0x160];
     // +0x170 (entrance-reason / movement state). The attack-fire step (UserLogicVfunc7)
@@ -1779,6 +1785,11 @@ public:
     // member offset they touch is in this layout). All three drive the grunt's
     // arrival/entrance bookkeeping + the occupied-slot recycle.
     i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e); // @0x59230 (ret 0x14)
+    // @0x597a0 (ret 0x20) - the combat-hit megahandler (GruntCombat.cpp): conversion
+    // hit / death-touch damage, the hit/block launch-cue resolve, the knockback
+    // direction-octant resolver + occupied-coord recycle. (Was the ex-`CGruntCombat`
+    // view's method; every offset it touches is this layout - m_31c, m_400..m_410.)
+    i32 LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
     // (Activate is the vtable slot-6 override, declared at the top of CGrunt.)
     i32 UpdateArrival(i32 a1, i32 a2); // @0x62110 (ret 0x8)
 

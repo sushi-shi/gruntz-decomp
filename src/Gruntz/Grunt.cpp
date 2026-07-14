@@ -72,6 +72,7 @@
 // return 0; else return 1.
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr::ApplySwitch @0x6d300 (the ex-ApplyTileSwitch alias)
 #include <Gruntz/TypeKeyColl.h>       // g_typeColl (folded CAnimNameResolver anim registry)
 extern CTypeKeyColl g_typeColl;       // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                       // WERE the fake g_animScratch / g_animScratchCount
@@ -440,7 +441,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     CGameObject* obj = (CGameObject*)owner; // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
     m_150 = obj;
     m_154 = (CEntranceAnimPlayer*)owner; // the owner object doubles as the entrance player
-    m_158 = (CGruntSndResMgr*)obj->m_7c;
+    m_158 = obj->m_7c; // the bound object's AnimWorkerObj (typed; the ex-CGruntSndResMgr cast fell out)
     m_struckClockLo = 0;
     m_struckTimerLo = 0;
     m_struckClockHi = 0;
@@ -1570,7 +1571,7 @@ label_4cb2a:
 
 label_4cb4b:
     m_210 = 0;
-    m_tileMgr->ApplyTileSwitch(this, m_lastTilePxX, m_lastTilePxY);
+    ((CTriggerMgr*)m_tileMgr)->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY); // real 0x6d300 (ex ApplyTileSwitch alias)
     m_coordRetryCount = 0;
     PlaySound(0x3e8, rec);
     {

@@ -378,7 +378,9 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
         ((i32*)((CGruntzMgr*)(void*)g_gameReg)->m_tileGrid->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_5c == m_17c && m_10->m_60 == m_180) {
-            ((CTriggerMgr*)m_260)->ApplySwitch(m_17c, m_180);
+            // retail pushes (this, x, y) - ret 0xc; the old 2-arg spelling had dropped
+            // the receiver arg ("recv-this dropped" note above).
+            ((CTriggerMgr*)m_260)->ApplySwitch((CGrunt*)this, m_17c, m_180);
             ((CTileWireLogic*)m_260)->WireTileSwitchLogic((void*)this, m_17c, m_180);
         }
     }
@@ -854,7 +856,7 @@ i32 CGrunt::StepCompassMove() {
     }
 
 commit:
-    m_tileMgr->ApplyTileSwitch(this, m_lastTilePxX, m_lastTilePxY);
+    ((CTriggerMgr*)m_tileMgr)->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY); // real 0x6d300 (ex ApplyTileSwitch alias)
     PlaySound(0x3e8, voice);
     m_commitPxX = m_lastTilePxX;
     m_commitPxY = m_lastTilePxY;
@@ -952,7 +954,7 @@ i32 CGrunt::ClaimSwitchTile() {
         return 0;
     }
 
-    m_tileMgr->ApplyTileSwitch(this, m_lastTilePxX, m_lastTilePxY);
+    ((CTriggerMgr*)m_tileMgr)->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY); // real 0x6d300 (ex ApplyTileSwitch alias)
 
     // Release the grunt's old tile: clear bit 5 of the old tile's flag byte, set
     // its owner record to -1.

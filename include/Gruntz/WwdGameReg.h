@@ -62,6 +62,13 @@ struct WwdGameReg {
     char m_pad120[0x130 - 0x120];
     i32 m_130; // +0x130
     i32 m_134; // +0x134  view-cull / place-mode / game-outcome gate
+    char m_pad138[0x13c - 0x138];
+    // +0x13c..+0x148: the visible view-edge origins (same names/offsets as the
+    // CGameRegistry / CGruntzMgr sibling views; the combat on-screen gate reads them).
+    i32 m_viewOriginL; // +0x13c  view min X
+    i32 m_viewOriginT; // +0x140  view min Y
+    i32 m_viewOriginR; // +0x144  view max X
+    i32 m_viewOriginB; // +0x148  view max Y
     // 0x150.. is the CGruntzMgr m_options[4] block; reach it by raw offset.
 };
 

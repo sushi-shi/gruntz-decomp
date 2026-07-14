@@ -52,6 +52,10 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
 #include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130) - the arrival commit
+#include <Gruntz/GameRegistry.h>  // CSpriteFactoryHolder - the worker's m_0c owner-context facet
+#include <Gruntz/LeafCue.h>       // LeafCue - the launch-sound cue entries (ex CombatCue/ConvCue)
+#include <Gruntz/SoundCue.h>      // CSndHost (typedef of CDDrawSubMgrLeafScan) - the cue registry
+#include <Gruntz/TriggerMgr.h>    // CTriggerMgr - the CGrunt+0x260 board (ex CombatTileMgr)
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
 
@@ -170,28 +174,21 @@ static void GruntScratchTeardown() {
 // cue (FreezeRadius/HealthRadius/RessurectionRadius/ToyzRadius/TeleportRadius) or
 // the 4-direction rolling-ball sprites.
 //
-// The ability-sound resource chain (m_158 -> m_c -> m_28): the GAME_ATTACK map is
-// at +0x10, the armed-flag at +0x30.
-struct CGruntSndSlot {
-    char m_pad0[0x30];
-    i32 m_30; // +0x30  armed flag (0 = fire the sound)
-};
-struct CGruntSndRes {
-    char m_pad0[0x28];
-    CGruntSndSlot* m_28; // +0x28
-};
-struct CGruntSndResMgr {
-    char m_pad0[0xc];
-    CGruntSndRes* m_c; // +0x0c
-};
+// The ability-sound resource chain (m_158 -> m_0c -> m_28) IS the canonical facet
+// web (views dissolved 2026-07-14): m_158 is the sprite's AnimWorkerObj (Grunt.h,
+// ctor-proven), its m_0c the owner/world context == the CSpriteFactoryHolder facet
+// (<Gruntz/GameRegistry.h>), whose m_28 is the CSndHost cue registry
+// (<Gruntz/SoundCue.h>: emit gate m_emitGate @+0x30, CMapStringToPtr map @+0x10,
+// Lookup_05b7e0). The ex-CGruntSndSlot/CGruntSndRes/CGruntSndResMgr re-modeled
+// those three hops; the map here really is CMapStringToPtr - retail's GAME_ATTACK
+// Lookup is 0x1b8438 (the Ptr band), NOT CMapStringToOb's 0x1b8008.
 
-// The launch-sound cue tag (reloc-masked global) + the throttled cue player.
+// The launch-sound cue tag (reloc-masked global).
 // DEFINED in GruntzMgr.cpp (owner TU); plain C++ extern here.
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA @0x61ab24
-// LeafCue::PlayIfElapsed (0x1f940, __thiscall): plays the cue when the kill-cue clock
-// throttle has elapsed. Reached as a bare call (latent-ecx cue object), so modeled as
-// a flat __stdcall alias through thunk 0x25fe. External -> reloc-masked.
-extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
+// (The flat `extern "C" PlayIfElapsed` alias is GONE: thunk 0x25fe IS
+// ?PlayIfElapsed_01f940@LeafCue@@ - retail loads the looked-up cue into ecx and
+// __thiscalls it; callers now call the real method on the cue.)
 
 // The GAME_ATTACK sound cue tag (const char*). The other spell-effect key
 // strings (CreateSprite/Activate/ApplyName args) are spelled as inline literals
@@ -229,26 +226,13 @@ enum SpellzEffect {
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
 
-struct CGruntCombat;
-
-// The struck enemy's launch-sound cue (Lookup out-param): m_10 owner runs ConfigureItem,
-// m_14 last-fire clock, m_18 the cooldown window.
-struct CombatCue {
-    char m_pad0[0x10];
-    CSoundCueMgr* m_10; // +0x10
-    i32 m_14;           // +0x14 last-fire clock
-    i32 m_18;           // +0x18 cooldown window
-};
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom whose only "method" was a fake
-// alias of the MFC library CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
-struct CombatSprInner {
-    char m_pad0[0x10];
-    CMapStringToOb m_10; // +0x10 the launch-sound lookup map
-};
-struct CombatSprCat {
-    char m_pad0[0x28];
-    CombatSprInner* m_28; // +0x28
-};
+// (CombatCue is GONE - it was LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem
+//  owner, m_14 last-fire clock, m_18 cooldown - and its throttled fire is the real
+//  ?PlayIfElapsed_01f940@LeafCue@@. CombatSprInner/CombatSprCat are GONE - the
+//  world holder + cue host are the canonical CSpriteFactoryHolder / CSndHost, and
+//  the launch-sound map is CMapStringToPtr: every LK Lookup in 0x597a0 calls
+//  0x1b8438 (the Ptr band) - the old `CMapStringToOb m_10` bound the WRONG library
+//  body, 0x1b8008.)
 
 // (the CombatGrid view is GONE - it was a THIRD name in this one TU for the board at
 // g_gameReg+0x70, alongside CScanPlane and the GruntBoard the canonical g_gameReg already
@@ -258,42 +242,25 @@ struct CombatSprCat {
 // +0x70 teardown leg - so the pointer is typed with the canonical CBrickzGrid (== CMapMgr)
 // and every field lands on the real member.)
 
-// The manager singleton (0x64556c): sprite-cue category, board grid, handicap gate,
-// visible-bounds rect.
-struct CombatReg {
-    char m_pad0[0x30];
-    CombatSprCat* m_world; // +0x30
-    char m_pad34[0x70 - 0x34];
-    CBrickzGrid* m_tileGrid; // +0x70 the tile board (CGruntzMapMgr : CMapMgr)
-    char m_pad74[0x118 - 0x74];
-    i32 m_isEasyMode; // +0x118 handicap enable
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134 handicap side
-    char m_pad138[0x13c - 0x138];
-    i32 m_viewOriginL; // +0x13c view left
-    i32 m_viewOriginT; // +0x140 view top
-    i32 m_viewOriginR; // +0x144 view right
-    i32 m_viewOriginB; // +0x148 view bottom
-};
-// g_gameReg (0x64556c) is declared above (PathScan section); the combat
-// paths read it through the CombatReg view with a per-use cast.
+// (CombatReg is GONE - g_gameReg's own WwdGameReg canonical carries every field
+//  the combat paths read: m_isEasyMode/m_134/m_viewOrigin* (the view-edge quad was
+//  merged into <Gruntz/WwdGameReg.h>) and the +0x70 board, reached as the
+//  canonical CBrickzGrid via a facet cast (GruntBoard == CBrickzGrid == CMapMgr,
+//  a pending unification).)
 extern "C" i32 g_curPlayer; // _g_644c54 handicap owner id
 
-// The tile-mgr grunt board (CGrunt+0x260): 4x15 grunt pointer grid at +0x1c + the
-// per-cell engine ops (all __thiscall, reloc-masked).
-struct CombatTileMgr {
-    i32 CheckSpawn(i32 ownerHi, i32 ownerLo, i32 tile, i32 icon); // 0x4014a1
-    void ApplyCellEffect(i32 i, i32 j, i32 k, i32 flag);          // 0x402e96 (ret 0x10)
-    void ApplySwitch(CGruntCombat* g, i32 x, i32 y);              // 0x406d300 -> thunk 0x26df
-    char m_pad0[0x1c];
-    CGruntCombat* m_grid[4][15]; // +0x1c
-};
+// (CombatTileMgr is GONE - the CGrunt+0x260 "tile-mgr grunt board" is the real
+//  CTriggerMgr (<Gruntz/TriggerMgr.h>): its m_grid 4x15 grid at +0x1c, and its
+//  three "engine ops" were phantom aliases of already-reconstructed CTriggerMgr
+//  methods, read off the thunks: `CheckSpawn` (ILT 0x14a1) == ?SpawnGrunt@
+//  CTriggerMgr@@ @0x7c110, `ApplyCellEffect` (ILT 0x2e96) == ?CellDispatch@
+//  CTriggerMgr@@ @0x6bcb0, `ApplySwitch` (ILT 0x26df) == ?ApplySwitch@CTriggerMgr@@
+//  @0x6d300 - the sites call the real names.)
 
-// The GAME_CONVERSIONHIT cue: __cdecl lookup (0x2cca) then a __thiscall play (0x25fe).
-struct CombatConvCue {
-    void PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x2025fe (__thiscall, 4 args)
-};
-extern "C" CombatConvCue* CombatConvLookup(const char* key); // 0x2cca (__cdecl, 1 arg)
+// (CombatConvCue/CombatConvLookup are GONE - retail loads the m_158->m_0c->m_28
+//  cue host into ecx and __thiscalls 0x2cca == ?Lookup_05b7e0@CDDrawSubMgrLeafScan@@
+//  (the CSndHost, defined below in this very TU), then __thiscalls the looked-up
+//  LeafCue's PlayIfElapsed_01f940. The "__cdecl lookup" was a latent-ecx flat alias.)
 
 // The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeColl.m_alloc[0..g_typeColl.m_grown) each get Reset.
@@ -302,12 +269,9 @@ extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 // reloc-masked __thiscall.
 extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
 
-// The occupied-coord recycle list at CGrunt+0x31c (AddHead/RemoveAll) + the shared
-// coord node free-list (head @0x645544, bias @0x64554c).
-struct CombatCoordList {
-    void AddHead(void* node); // 0x1b4967
-    void RemoveAll();         // 0x1b48a6
-};
+// (CombatCoordList is GONE - the CGrunt+0x31c occupied-coord recycle list is the
+//  REAL MFC CPtrList member m_31c (Grunt.h); its AddHead/RemoveAll @0x1b4967/
+//  0x1b48a6 are the library CPtrList bodies, now bound by name.)
 // g_coordPool.m_freeHead / g_coordPool.m_linkOffset are declared above (PathScan section).
 
 // The kill-clock + sound-enable + cue-tag globals.
@@ -349,11 +313,13 @@ static const char s_typeO[] = "O";
 static const char s_knockKey[] = "KnockBackTimePerTile";
 static const char s_gruntSec[] = "Grunt";
 
-// Resolve a launch-sound cue by key into a fresh out slot.
+// Resolve a launch-sound cue by key into a fresh out slot (the same cast-free
+// facet chain EnsureStruckSlot/EnsureStruckVoice walk: world holder -> cue host ->
+// its CMapStringToPtr; retail Lookup 0x1b8438).
 #define LK(key)                                                                                    \
     do {                                                                                           \
-        CombatCue* out = 0;                                                                        \
-        reg->m_world->m_28->m_10.Lookup((key), (CObject*&)out);                                    \
+        LeafCue* out = 0;                                                                          \
+        g_gameReg->m_world->m_28->m_10.Lookup((key), (void*&)out);                                 \
         cue = out;                                                                                 \
     } while (0)
 
@@ -367,20 +333,10 @@ static const char s_gruntSec[] = "Grunt";
         newY = (ny);                                                                               \
     } while (0)
 
-struct CGruntCombat {
-    i32 LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
-
-    // The CGrunt field bag is otherwise reached by raw F()/P() offset; only the
-    // owned coord-recycle list (+0x31c) and the three knockback doubles
-    // (+0x400/+0x408/+0x410) are typed so they access as real members instead of
-    // (char*)this offset casts. CombatCoordList is an empty reloc-masked view (1 B).
-    char m_pad00[0x31c];   // +0x000
-    CombatCoordList m_31c; // +0x31c  occupied-coord recycle list
-    char m_pad31d[0x400 - 0x31d];
-    double m_400; // +0x400  knockback distance / tiles-per-ms
-    double m_408; // +0x408  target tile x
-    double m_410; // +0x410  target tile y
-};
+// (CGruntCombat is GONE - it was CGrunt itself: the +0x31c occupied-coord CPtrList,
+//  the +0x400/+0x408/+0x410 knockback doubles and every F()/P() offset it bagged are
+//  CGrunt members at the identical offsets (Grunt.h). LoadGruntCombatAnimations is
+//  declared there; the "enemy" grid elements below are placed CGruntz.)
 // CGrunt::EntranceTileOffset(out) @0x56f80 - the pixel position of the tile adjacent
 // to the grunt's last occupied tile (m_lastTilePxX/Y) in the entrance-cell direction
 // (m_entranceCell.reason, a 1..8 compass code: 1=N, 2=NE, 3=E, 4=SE, 5=S, 6=SW, 7=W, 8=NW;
@@ -469,7 +425,7 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 
 // The this+0x31c CObList reinterpreted as the scratch-list view (same object as the
 // canonical GruntListSub m_31c; one reinterpret at the address, no cast at the uses).
-#define SCAN_LIST() ((CPtrList*)&m_31c) // m_31c IS the grunt's CPtrList (see Grunt.h)
+#define SCAN_LIST() (&m_31c) // m_31c IS the grunt's real CPtrList member (Grunt.h)
 
 // Recompute the plane dirty rect (m_60) as {0,0,w,h} intersected with a copy.
 #define SCAN_BOUNDS(grid)                                                                          \
@@ -514,16 +470,7 @@ void CGrunt::ComputeFacing(double dt) {
     m_410 = (double)h->m_60;
 }
 
-SIZE_UNKNOWN(CGruntCombat);
-SIZE_UNKNOWN(CombatConvCue);
-SIZE_UNKNOWN(CombatCoordList);
-SIZE_UNKNOWN(CombatCue);
-
 SIZE_UNKNOWN(CombatItemOwner);
-SIZE_UNKNOWN(CombatReg);
-SIZE_UNKNOWN(CombatSprCat);
-SIZE_UNKNOWN(CombatSprInner);
-SIZE_UNKNOWN(CombatTileMgr);
 SIZE_UNKNOWN(CombatTypeNode);
 
 // One unrolled per-key registration block (the shared archetype). A macro so all
@@ -577,12 +524,14 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
     }
 
-    CGruntSndSlot* slot = m_158->m_c->m_28;
-    if (slot->m_30 == 0) {
-        GruntSoundEntry* sout = 0;
-        ((CMapStringToOb*)((char*)slot + 0x10))->Lookup(s_GAME_ATTACK, (CObject*&)sout);
+    // the sprite's worker -> owner context (CSpriteFactoryHolder facet) -> cue host
+    CSndHost* slot = ((CSpriteFactoryHolder*)m_158->m_0c)->m_28;
+    if (slot->m_emitGate == 0) {
+        LeafCue* sout = 0;
+        slot->m_10.Lookup(s_GAME_ATTACK, (void*&)sout); // CMapStringToPtr @0x1b8438
         if (sout != 0) {
-            PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            // retail reloads the looked-up cue into ecx and __thiscalls 0x1f940
+            sout->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
         }
     }
 
@@ -1412,7 +1361,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 }
 
 RVA(0x000597a0, 0x1345)
-i32 CGruntCombat::LoadGruntCombatAnimations(
+i32 CGrunt::LoadGruntCombatAnimations(
     i32 a0,
     i32 a1,
     i32 a2,
@@ -1428,20 +1377,23 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
 
     // a7 == 0x39: conversion hit - heal the struck enemy, fire GAME_CONVERSIONHIT.
     if (a7 == 0x39) {
-        CGruntCombat* enemy = ((CombatTileMgr*)P(this, 0x260))->m_grid[a2][a3];
+        CGrunt* enemy = ((CTriggerMgr*)P(this, 0x260))->m_grid[a2 * TM_GRID_COLS + a3];
         if (enemy != 0
-            && ((CombatTileMgr*)P(this, 0x260))
-                       ->CheckSpawn(F(this, 0x1ec), F(this, 0x1f0), a2, F(enemy, 0x1f4))
+            && ((CTriggerMgr*)P(this, 0x260))
+                       ->SpawnGrunt(F(this, 0x1ec), F(this, 0x1f0), a2, F(enemy, 0x1f4))
                    != 0) {
             i32 h = F(enemy, 0x3ec) + 0x19;
             if (h >= 0x64) {
                 h = 0x64;
             }
             F(enemy, 0x3ec) = h;
-            if (F(P(P(P(this, 0x158), 0xc), 0x28), 0x30) == 0) {
-                CombatConvCue* cc = CombatConvLookup(s_CONVERSIONHIT);
+            // worker -> owner context (the world holder facet) -> cue host; retail
+            // keeps the host in ecx from the gate test into the Lookup __thiscall.
+            CSndHost* host = ((CSpriteFactoryHolder*)m_158->m_0c)->m_28;
+            if (host->m_emitGate == 0) {
+                LeafCue* cc = (LeafCue*)host->Lookup_05b7e0(s_CONVERSIONHIT);
                 if (cc != 0) {
-                    cc->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    cc->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
                 }
             }
             return 0;
@@ -1450,7 +1402,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
 
     // Hit-type byte-table lookup + optional handicap halving.
     i32 hit = g_hitTable[F(this, 0x170) * 23 + a0];
-    CombatReg* reg = (CombatReg*)g_gameReg;
+    WwdGameReg* reg = g_gameReg; // cached once (retail keeps the singleton in a reg)
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && F(this, 0x1ec) == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
@@ -1462,7 +1414,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     } else if (F(this, 0x258) == 0x3c) {
         hit = (i32)((float)hit * g_dtScale);
         if (a6 == 0) {
-            CGruntCombat* enemy = ((CombatTileMgr*)P(this, 0x260))->m_grid[a2][a3];
+            CGrunt* enemy = ((CTriggerMgr*)P(this, 0x260))->m_grid[a2 * TM_GRID_COLS + a3];
             if (enemy != 0 && F(enemy, 0x1fc) != 0) {
                 i32 nh = F(enemy, 0x3ec) - hit * 3;
                 if (nh < 0) {
@@ -1470,7 +1422,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
                 }
                 F(enemy, 0x3ec) = nh;
                 if (nh <= 0) {
-                    ((CombatTileMgr*)P(this, 0x260))->ApplyCellEffect(a2, a3, 1, -1);
+                    ((CTriggerMgr*)P(this, 0x260))->CellDispatch(a2, a3, 1, -1);
                 }
             }
         }
@@ -1483,7 +1435,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     }
     F(this, 0x3ec) = nh;
     if (F(this, 0x170) == 1) {
-        ((CombatTileMgr*)P(this, 0x260))->ApplyCellEffect(F(this, 0x1ec), F(this, 0x1f0), 1, a2);
+        ((CTriggerMgr*)P(this, 0x260))->CellDispatch(F(this, 0x1ec), F(this, 0x1f0), 1, a2);
         return 0;
     }
     if (nh <= 0) {
@@ -1492,7 +1444,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     }
 
     // On-screen visibility gate, then the hit/block sound-cue resolve.
-    CombatCue* cue = 0;
+    LeafCue* cue = 0;
     i32 vx = F(P(this, 0x10), 0x5c);
     i32 vy = F(P(this, 0x10), 0x60);
     if (vx < reg->m_viewOriginR && vx >= reg->m_viewOriginL && vy < reg->m_viewOriginB
@@ -1664,7 +1616,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
         if (F(this, 0x3ec) > 0) {
             return 1;
         }
-        ((CombatTileMgr*)P(this, 0x260))->ApplyCellEffect(F(this, 0x1ec), F(this, 0x1f0), 7, a2);
+        ((CTriggerMgr*)P(this, 0x260))->CellDispatch(F(this, 0x1ec), F(this, 0x1f0), 7, a2);
         return 0;
     }
 
@@ -1766,7 +1718,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     // Tile-to-tile occupancy + diagonal-corner move check.
     {
         i32 flags = F(this, 0x248) | 0x20000000;
-        CBrickzGrid* grid = ((CombatReg*)g_gameReg)->m_tileGrid;
+        CBrickzGrid* grid = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
         i32 nyt = newY >> 5;
         i32 nxt = newX >> 5;
         i32 oxt = F(this, 0x17c) >> 5;
@@ -1829,9 +1781,9 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
 
         // Arrival commit + occupancy re-stamp + knockback trajectory tail.
         if (F(this, 0x1e8) == 0) {
-            ((CombatTileMgr*)P(this, 0x260))->ApplySwitch(this, F(this, 0x17c), F(this, 0x180));
+            ((CTriggerMgr*)P(this, 0x260))->ApplySwitch(this, F(this, 0x17c), F(this, 0x180));
         }
-        CBrickzGrid* g2 = ((CombatReg*)g_gameReg)->m_tileGrid;
+        CBrickzGrid* g2 = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
         i32 ox = F(this, 0x17c) >> 5;
         i32 oy = F(this, 0x180) >> 5;
         i32* oc = g2->m_8[oy] + ox * 7;
