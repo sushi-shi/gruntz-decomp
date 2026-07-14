@@ -27,8 +27,12 @@
 #include <Globals.h>          // the g_opt_* staging globals
 #include <string.h>           // strcat (inline repnz scasb + rep movs under /O2 /Oi)
 
-// Control-ID literal (kept local, not from <windows.h>).
-#define IDC_RESCAPTION 0x52d // the "current resolution" static text ctrl
+// Control-ID literal (kept local, not from <windows.h>). Enum VALUE lowers to the same
+// immediate in int context (the GetDlgItem control-id arg); the enum TYPE is not used as
+// a parameter type, so mangling is unaffected.
+typedef enum VideoConfigDlgId {
+    IDC_RESCAPTION = 0x52d, // the "current resolution" static text ctrl
+} VideoConfigDlgId;
 
 // ---------------------------------------------------------------------------
 // The global selected-resolution discriminator (an int; 1=640x480, 2=800x600,

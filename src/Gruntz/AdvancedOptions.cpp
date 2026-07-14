@@ -17,13 +17,18 @@
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
 
-// Control IDs of the five "Disable ..." checkboxes and the "Defaults" button.
-#define IDC_DISABLE_VIDEO 0x46c
-#define IDC_DISABLE_AUDIO 0x46d
-#define IDC_DISABLE_SOUND 0x46e
-#define IDC_DISABLE_MUSIC 0x46f
-#define IDC_DISABLE_MOVIE 0x470
-#define IDC_DEFAULTS 0x426
+// Control IDs of the five "Disable ..." checkboxes and the "Defaults" button. Enum VALUES
+// lower to the same immediates in int context (the CheckDlgButton / IsDlgButtonChecked
+// control-id args and the wParam compare); the enum TYPE is never a parameter type
+// (SaveOption's controlId stays DWORD), so no signature mangling changes.
+typedef enum AdvancedOptionsDlgId {
+    IDC_DISABLE_VIDEO = 0x46c,
+    IDC_DISABLE_AUDIO = 0x46d,
+    IDC_DISABLE_SOUND = 0x46e,
+    IDC_DISABLE_MUSIC = 0x46f,
+    IDC_DISABLE_MOVIE = 0x470,
+    IDC_DEFAULTS = 0x426,
+} AdvancedOptionsDlgId;
 
 // File-scope globals. The reloc that names them is masked in objdiff; only the
 // address-load bytes are load-bearing. Bound to their retail DATA rvas by exact

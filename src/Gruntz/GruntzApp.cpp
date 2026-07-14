@@ -21,11 +21,13 @@
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strlen/strcpy/strcat (rep movs/scas)
 
-// The control ID of the static text field that displays the error message.
-#define IDC_ERROR_TEXT 0x40d
-
-// Default resource string id used when the requested error id is 0 / missing.
-#define IDS_DEFAULT_ERROR 0x8009
+// The error dialog's resource ids. Enum VALUES lower to the same immediates in int
+// context (the SetDlgItemTextA control-id arg / the LoadStringA string-id arg); the enum
+// TYPE is never used as a parameter type, so no signature mangling changes.
+typedef enum GruntzAppResId {
+    IDC_ERROR_TEXT = 0x40d,     // static text field displaying the error message
+    IDS_DEFAULT_ERROR = 0x8009, // default string-resource id when the requested id is 0/missing
+} GruntzAppResId;
 
 // ---------------------------------------------------------------------------
 // The game manager. CGruntzApp::InitializeGameManager allocates the derived
