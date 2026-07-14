@@ -90,29 +90,18 @@ extern "C" void WormholeTypeMarker();
 #define s_NormalColor "NormalColor"
 
 // ---------------------------------------------------------------------------
-// The game-object registry list SpawnPartners walks: g_gameReg->m_world (the
-// CSpriteFactoryHolder at +0x30) -> m_8 (the object factory/manager) + 0x10 is a
-// node header whose +0x14 is the list head; each WorldNode chains via m_next and
-// holds a CGameObject at +0x8. Only the object-manager's intrusive list node/header
-// remains a local view (identity unrecovered); the candidates are the real
-// CGameObject (m_screenX/m_screenY @ +0x5c/+0x60, worker @ +0x7c) whose owned
-// AnimWorkerObj carries the wormhole marker (m_notify @ +0x10) + logic (m_logic @ +0x18).
+// The game-object registry list SpawnPartners walks IS the world's object chain:
+// g_gameReg->m_world (CSpriteFactoryHolder == CGameObjWorld) -> m_objChain (+0x08,
+// == m_8) is the CGameObjChain (CDDrawChildGroup == CWwdObjMgr); its +0x10 List
+// sub-object holds the head at +0x14 and each CGameObjNode chains via `next` and
+// holds a CGameObject at +0x08 - the SAME canonical shape CGameLevel::VisitVisible
+// walks. (The former Wormhole-local WorldNode/WorldList views are dissolved onto
+// CGameObjChain/CGameObjNode from <Gruntz/UserLogic.h>.)
 // ---------------------------------------------------------------------------
-struct WorldNode {
-    WorldNode* m_next; // +0x00
-    char m_pad04[4];
-    CGameObject* m_obj; // +0x08  the candidate game object
-};
-struct WorldList {
-    char m_pad00[0x4];
-    WorldNode* m_head; // +0x04  list head within the m_8+0x10 header (retail: [m_8+0x14])
-};
-
-// The selection holder at mgr->m_68->m_244 (its +0x8 -> the {row,col} index pair).
-struct CTeleSelHolder {
-    char m_pad00[0x8];
-    i32* m_8; // +0x08  {a,b} index pair
-};
+// (the CTeleporter selection-record node holder at mgr->m_cmdGrid->m_recList's head
+// is the real MFC CPtrList node - its +0x8 data (the {row,col} index pair) is reached
+// through the inline CPtrList::GetHead() accessor; the former CTeleSelHolder view is
+// dissolved.)
 // (the CTeleMgrSub view at mgr->m_7c is GONE - that object is the CBattlezData score
 // accumulator, and its "+0x28 bumped on a teleport" is CBattlezData::m_28, the
 // wormhole/teleporter use counter FormatHudText reads back as its case-7 stat.
@@ -440,17 +429,17 @@ void CWormhole::SpawnPartners() {
         return;
     }
 
-    WorldList* list = (WorldList*)((char*)g_gameReg->m_world->m_8 + 0x10);
+    CGameObjChain::List* list = &((CGameObjWorld*)g_gameReg->m_world)->m_objChain->m_list;
     if (list == 0) {
         return;
     }
-    WorldNode* node = list->m_head;
+    CGameObjNode* node = list->head;
     if (node == 0) {
         return;
     }
     do {
-        CGameObject* obj = node->m_obj;
-        node = node->m_next;
+        CGameObject* obj = node->obj;
+        node = node->next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
             if ((void*)aux->m_notify == (void*)&WormholeTypeMarker && obj->m_screenX == tx
@@ -1039,8 +1028,7 @@ i32 CTeleporter::Update() {
     if (((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.GetCount() != 1) {
         current = 0;
     } else {
-        i32* pair =
-            ((CTeleSelHolder*)((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.GetHeadPosition())->m_8;
+        i32* pair = (i32*)((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.GetHead();
         i32 row = pair[0];
         i32 col = pair[1];
         current = ((CGrunt**)((char*)(CTriggerMgr*)mgr->m_cmdGrid + 0x1c))[row * 15 + col];
@@ -1055,11 +1043,8 @@ i32 CTeleporter::Update() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CWormGeoSub);
-SIZE_UNKNOWN(WorldList);
-SIZE_UNKNOWN(WorldNode);
 SIZE_UNKNOWN(CTeleAnimSink);
 SIZE_UNKNOWN(CTeleIconTable);
 SIZE_UNKNOWN(CTeleScroller);
-SIZE_UNKNOWN(CTeleSelHolder);
 VTBL(CTeleporter, 0x001e80cc); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CTeleporterActReg);
