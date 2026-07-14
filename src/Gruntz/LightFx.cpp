@@ -2,7 +2,7 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LightFx.h>
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 #include <rva.h>

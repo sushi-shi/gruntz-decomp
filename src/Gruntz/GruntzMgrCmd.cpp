@@ -36,17 +36,17 @@
 #include <rva.h>
 #include <string.h>
 
-#include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg) + CSpriteFactoryHolder
-#include <Gruntz/GruntzMgr.h>     // the real CGruntzMgr (this) + SaveInfo.h + SoundCue.h
-#include <Gruntz/Play.h>          // CPlay (the cheat receiver) + CTimer (m_frameMarker)
-#include <Gruntz/GameMode.h>      // CMenuState (StopMusicChain/StartMusic; state 5)
-#include <Gruntz/Multi.h>         // CMulti (Connect; state 0x11)
-#include <Gruntz/TriggerMgr.h>    // CTriggerMgr (m_cmdGrid)
+#include <Gruntz/GameRegistry.h>     // CGameRegistry (g_gameReg) + CSpriteFactoryHolder
+#include <Gruntz/GruntzMgr.h>        // the real CGruntzMgr (this) + SaveInfo.h + SoundCue.h
+#include <Gruntz/Play.h>             // CPlay (the cheat receiver) + CTimer (m_frameMarker)
+#include <Gruntz/GameMode.h>         // CMenuState (StopMusicChain/StartMusic; state 5)
+#include <Gruntz/Multi.h>            // CMulti (Connect; state 0x11)
+#include <Gruntz/TriggerMgr.h>       // CTriggerMgr (m_cmdGrid)
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
-#include <Gruntz/Grunt.h>         // CGrunt (grid cells) + GruntObjEntry (death chain)
-#include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the play state's +0x2dc guts receiver)
-#include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ (m_sound)
-#include <Gruntz/WorldSoundSet.h> // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
+#include <Gruntz/Grunt.h>            // CGrunt (grid cells) + GruntObjEntry (death chain)
+#include <Gruntz/StatusBarMgr.h>     // CStatusBarMgr (the play state's +0x2dc guts receiver)
+#include <Dsndmgr/GruntzSoundZ.h>    // CGruntzSoundZ (m_sound)
+#include <Gruntz/WorldSoundSet.h>    // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
 // The *0x24556c game-manager singleton. Declared here (it used to arrive from
 // <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /

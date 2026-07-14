@@ -5,8 +5,8 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // Slot30/34/38 render targets (held surface @+0x2c)
 #include <Win32.h>                     // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                     // IDirectDrawSurface::Unlock for the pixel plots
-#include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawGroupChild/Node - the broadcast child interface
+#include <Gruntz/AniAdvanceCursor.h>   // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
+#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawGroupChild/Node - the broadcast child interface
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
 #include <stdlib.h>               // abs() / atoi()
@@ -24,14 +24,14 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // THE canonical CDDrawWorkerRegistry (was shadowed here)
 #include <Gruntz/Sprite.h>                // CSprite (frame-data), CMapStringToOb, CFrameArray
 // (LogicRecord.h dissolved: CLogicRecord IS AnimWorkerObj - one 0x17c class)
-#include <DDrawMgr/AnimWorkerObj.h>       // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
-#include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (frame collection; slots 10/14/15/16)
-#include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
-#include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
-#include <DDrawMgr/DDrawShadeBlit.h>      // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
-#include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
-#include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance_15c360)
+#include <DDrawMgr/AnimWorkerObj.h>   // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
+#include <DDrawMgr/DDrawWorker.h>     // CDDrawWorker (frame collection; slots 10/14/15/16)
+#include <Bute/SymTab.h>              // CSymTab iteration (FirstSym/NextSym{,2,3})
+#include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c owner (m_flags bit 0x100 = single-frame)
+#include <Image/CImage.h>             // the REAL CImage (was the local CFrameWorker stand-in)
+#include <DDrawMgr/DDrawShadeBlit.h>  // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
+#include <Image/ImageSet.h>           // CImageSet (sparse CImage-frame collection)
+#include <Gruntz/AniAdvanceCursor.h>  // canonical CAniAdvanceCursor (Advance_15c360)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
@@ -385,7 +385,7 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
             a->BlitDirtyRect_164650(b, pos, size);
         } else {
             a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record
-            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
+            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);        // shadow record
         }
     } else if (m_38 != -1) {
         a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record only

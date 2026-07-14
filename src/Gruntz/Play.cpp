@@ -107,11 +107,11 @@
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
-#include <Gruntz/GruntzPlayer.h>   // the per-player slot record (its TU folded here, wave3-J)
+#include <Gruntz/SpriteRefTable.h>   // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
+#include <Gruntz/GruntzPlayer.h>     // the per-player slot record (its TU folded here, wave3-J)
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
-#include <Gruntz/Grunt.h>          // CGrunt (Load @0xd8060 folds here per the 0xd5960 dossier)
-#include <Gruntz/SerialArchive.h>  // the shared archive stream (GruntzPlayer::Serialize)
+#include <Gruntz/Grunt.h>            // CGrunt (Load @0xd8060 folds here per the 0xd5960 dossier)
+#include <Gruntz/SerialArchive.h>    // the shared archive stream (GruntzPlayer::Serialize)
 #include <rva.h>
 #include <Gruntz/ResMgr.h>      // CResMgr + its image/sound/anim registries (m_10/m_28/m_2c)
 #include <Gruntz/SoundCue.h>    // CSndHost (m_c->m_28) + SoundStream (m_2c; Vslot15 quiesce stop)

@@ -449,8 +449,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     //     cursor idiom on every step. ---
     for (CGameObject* cur = ListGetFirst(lvl->m_objList->m_coll); cur != 0;
          cur = ListGetNext(lvl->m_objList->m_coll)) {
-        if (cur->m_7c->m_notify == (GameObjNotifyFn)&CreateGruntCreationPoint
-            && cur->m_124 == id) {
+        if (cur->m_7c->m_notify == (GameObjNotifyFn)&CreateGruntCreationPoint && cur->m_124 == id) {
             CoordPoolNode* p = (CoordPoolNode*)g_coordPool.m_freeHead;
             i32* slot = 0;
             if (p->m_next != 0) {
@@ -2188,8 +2187,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     coll->m_scan = coll->m_head;
     CGameObject* g = (CGameObject*)coll->Drain_031250();
     while (g != 0) {
-        if (g->m_7c->m_notify == (GameObjNotifyFn)Handler_0040288d
-            && (g->m_stateFlags & 1) == 0) {
+        if (g->m_7c->m_notify == (GameObjNotifyFn)Handler_0040288d && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
             switch (g->m_124) {
                 case 0x33:

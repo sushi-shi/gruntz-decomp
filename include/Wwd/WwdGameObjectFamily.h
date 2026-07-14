@@ -92,9 +92,9 @@ public:
     virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60
     // slots 11-14 - per-object render + dirty-rect blit hooks: PURE in this base
     // (retail table holds __purecall @0x11fec0); every concrete kind overrides.
-    virtual void Render(WwdRenderCtx* ctx) = 0;                                     // slot 11
-    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) = 0;          // slot 12
-    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0; // slot 13
+    virtual void Render(WwdRenderCtx* ctx) = 0;                                          // slot 11
+    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) = 0;               // slot 12
+    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0;      // slot 13
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0; // slot 14
     // slot 15 - the 4-arg play/serialize dispatch (the flat model's Play
     // @0x151150 is the body).
@@ -105,15 +105,15 @@ public:
     // notifier's m_notify with the owner. (Ex CWwdFactoryObject::Notify_15b650.)
     void Notify_15b650(void* p); // 0x15b650
 
-    i32 m_clipTop;    // +0x68  clip rect tail (m_64 = clipLeft on CResolveNode)
-    i32 m_clipRight;  // +0x6c
-    i32 m_clipBottom; // +0x70
-    i32 m_sortKey;    // +0x74  the manager z-order sort key (Setup28 stores a3;
-                      //         CWwdObjMgr::InsertSorted orders the list by it)
-    i32 m_posCache;   // +0x78  CObList POSITION cache (InsertSorted stores the node;
-                      //         TickKillCues/RemoveAndDelete unlink through it)
-    AnimWorkerObj* m_7c;    // +0x7c  the owned worker/logic record
-    AnimWorkerObj* m_80;    // +0x80  lazily-built Hit handler worker
+    i32 m_clipTop;       // +0x68  clip rect tail (m_64 = clipLeft on CResolveNode)
+    i32 m_clipRight;     // +0x6c
+    i32 m_clipBottom;    // +0x70
+    i32 m_sortKey;       // +0x74  the manager z-order sort key (Setup28 stores a3;
+                         //         CWwdObjMgr::InsertSorted orders the list by it)
+    i32 m_posCache;      // +0x78  CObList POSITION cache (InsertSorted stores the node;
+                         //         TickKillCues/RemoveAndDelete unlink through it)
+    AnimWorkerObj* m_7c; // +0x7c  the owned worker/logic record
+    AnimWorkerObj* m_80; // +0x80  lazily-built Hit handler worker
     char _p84[0x88 - 0x84];
     AnimWorkerObj* m_88; // +0x88  lazily-built Attack handler worker
     char _p8c[0x90 - 0x8c];

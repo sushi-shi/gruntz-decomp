@@ -24,7 +24,7 @@
 #include <Gruntz/ResMgr.h>        // CResMgr + the factory's sprite-set registry (m_14)
 #include <Gruntz/Sprite.h>        // CSprite (frame-data template value)
 #include <DDrawMgr/AnimWorkerObj.h> // the canonical +0x7c worker/logic record (ex CWwdWorker/CLogicRecord views)
-#include <Gruntz/ResolveNode.h>   // canonical CResolveNode (the factory base sub-object)
+#include <Gruntz/ResolveNode.h>        // canonical CResolveNode (the factory base sub-object)
 #include <Gruntz/AniAdvanceCursor.h>   // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
 #include <Wwd/WwdFactoryObject.h>      // CWwdFactoryObject/CWwdNotifier/CDDrawRect/RectsOverlap
 #include <Wwd/WwdGameObjCtor.h>        // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker (ctor cluster)

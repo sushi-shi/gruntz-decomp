@@ -24,10 +24,10 @@
 #include <DDrawMgr/AniAdvance.h>     // CAniRenderCtx/CAniDesc/CAniBlitTrigger satellites
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
 // (DDrawBlitParam.h dissolved onto <Gruntz/AniAdvanceCursor.h>, included above)
-#include <Gruntz/SerialArchive.h>    // the shared CSerialArchive stream (Read/Write)
-#include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
-#include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker
-#include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed_01f940 - Advance's sound cue)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read/Write)
+#include <Wwd/WwdFactoryObject.h> // CWwdFactoryObject/CDDrawRect
+#include <Wwd/WwdGameObjCtor.h>   // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker
+#include <Gruntz/LeafCue.h>       // LeafCue (PlayIfElapsed_01f940 - Advance's sound cue)
 #include <Globals.h>
 
 // The engine RNG @0x15cbe0 is the free __cdecl Rng::Next2 (its body stays in

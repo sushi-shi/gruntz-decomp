@@ -633,7 +633,7 @@ public:
         m_prevAnimSetNode; // +0x30  saved prior aux lookup node (m_objAux->m_1c) before installing "A"
     CGameObject* m_34;     // +0x34
     CGameObject* m_38;     // +0x38  (== the bound object; leaves read m_38->m_flags etc.)
-    AnimWorkerObj* m_3c;     // +0x3c
+    AnimWorkerObj* m_3c; // +0x3c
 };
 SIZE(CTileLogic, 0x40);
 

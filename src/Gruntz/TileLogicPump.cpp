@@ -165,37 +165,37 @@ struct TileActEntry {
 // anything else runs the default engine step.
 // ---------------------------------------------------------------------------
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
-    AnimWorkerObj* ctl = obj->m_7c;                        \
+    AnimWorkerObj* ctl = obj->m_7c;                                                                \
     switch ((u32)ctl->m_1c) {                                                                      \
         case 0: {                                                                                  \
-            ctl->m_1c = (void*)0x3e8;                                                                \
+            ctl->m_1c = (void*)0x3e8;                                                              \
             LEAF* t = new LEAF(obj);                                                               \
-            t->Activate();                                                \
-            ctl->m_logic = t;                                               \
+            t->Activate();                                                                         \
+            ctl->m_logic = t;                                                                      \
             break;                                                                                 \
         }                                                                                          \
         case 0x1d:                                                                                 \
-            ctl->m_logic->UserLogicVfunc9();                                                               \
+            ctl->m_logic->UserLogicVfunc9();                                                       \
             break;                                                                                 \
         case 0x1e:                                                                                 \
-            ctl->m_logic->UserLogicVfunc8();                                                               \
+            ctl->m_logic->UserLogicVfunc8();                                                       \
             break;                                                                                 \
         case 0x50:                                                                                 \
-            ctl->m_logic->UserLogicVfuncC();                                                               \
+            ctl->m_logic->UserLogicVfuncC();                                                       \
             break;                                                                                 \
         case 0x51:                                                                                 \
-            ctl->m_logic->UserLogicVfuncB();                                                               \
+            ctl->m_logic->UserLogicVfuncB();                                                       \
             break;                                                                                 \
         case 0x52:                                                                                 \
-            ctl->m_logic->UserLogicVfuncA();                                                               \
+            ctl->m_logic->UserLogicVfuncA();                                                       \
             break;                                                                                 \
         case 0x53:                                                                                 \
-            ctl->m_logic->UserLogicVfuncD();                                                               \
+            ctl->m_logic->UserLogicVfuncD();                                                       \
             break;                                                                                 \
         case 0x3e8:                                                                                \
             break;                                                                                 \
         default:                                                                                   \
-            ProjTypeXfer((CXferArchive*)ctl->m_logic);                                               \
+            ProjTypeXfer((CXferArchive*)ctl->m_logic);                                             \
             break;                                                                                 \
     }                                                                                              \
     return 1;

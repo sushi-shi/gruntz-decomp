@@ -76,7 +76,7 @@ struct CProjRenderObj {
     i32 m_5c; // +0x5c  screen X
     i32 m_60; // +0x60  screen Y
     char m_pad64[0x7c - 0x64];
-    struct AnimWorkerObj* m_7c;  // +0x7c  the canonical worker (m_notify @+0x10, leaf @+0x18)
+    struct AnimWorkerObj* m_7c; // +0x7c  the canonical worker (m_notify @+0x10, leaf @+0x18)
     char m_pad80[0x1a0 - 0x80];
     CProjAnim m_1a0; // +0x1a0  animation sub-object (CAniAdvanceCursor/CDDrawBlitParam bridge)
     char m_pad1a4[0x1b4 - 0x1a4];

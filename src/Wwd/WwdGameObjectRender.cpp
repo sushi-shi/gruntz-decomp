@@ -18,7 +18,7 @@
 #include <Wwd/WwdGameObjectFamily.h>   // the CWwdGameObjectE/A/F/B/C hierarchy
 #include <Gruntz/WwdGameObject.h>      // canonical CWwdGameObject
 #include <DDrawMgr/AnimWorkerObj.h>    // the canonical +0x7c worker (m_notify fire callback)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawGroupNode (the broadcast child-list node)
+#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawGroupNode (the broadcast child-list node)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CWwdObjMgrL::m_0c owner
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 
@@ -203,7 +203,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    i32 rc[4];                        // one reused src+dst rect buffer
+    i32 rc[4];                      // one reused src+dst rect buffer
     if (m_38 != -1 && m_d8 != -1) { // both armed
         i32 dx = abs(m_lastX - m_b8) + 1;
         i32 dy = abs(m_lastY - m_bc) + 1;
@@ -262,7 +262,7 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
         i32 dy = abs(m_lastY - m_bc) + 1;
         if (dx > 0x20 || dy > 0x20) {
             a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record
-            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
+            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);        // shadow record
         } else {
             i32 left = m_lastX < m_b8 ? m_lastX : m_b8; // min x
             i32 top = m_lastY < m_bc ? m_lastY : m_bc;  // min y

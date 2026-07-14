@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h> // real MFC CObject (the object's grand-base) + CObList (m_subList @+0x1dc)
-#include <Wap32/WapObj.h> // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
+#include <Wap32/WapObj.h>            // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - the real +0x1a0 anim/command cursor
 #include <Gruntz/WwdGridIter.h>      // WwdGridNode - the embedded +0x9c region node
 
@@ -240,9 +240,9 @@ public:
     CGameObjLayer* m_198; // +0x198  cached frame / layer (half-extents; was i32)
     // +0x19c is the resolved sound-cue value: ReadState hands it straight to
     // CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue*), which is its type.
-    LeafScanValue* m_19c;     // +0x19c  resolved leaf-scan value (was void*)
+    LeafScanValue* m_19c;       // +0x19c  resolved leaf-scan value (was void*)
     CAniAdvanceCursor m_cmdMap; // +0x1a0  anim/command cursor sub-object (real class)
-    CObList m_subList;        // +0x1dc  MFC CObList of owned sub-objects
+    CObList m_subList;          // +0x1dc  MFC CObList of owned sub-objects
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
