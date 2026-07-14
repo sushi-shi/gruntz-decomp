@@ -25,13 +25,8 @@
 #include <Gruntz/UserLogic.h> // canonical CGameObject (the movement target) + world chain types
 #include <rva.h>
 
-// The collision-relevant tile codes (see GameLevel.cpp for the full derivation
-// note). #define, not an enum, for the same no-AST-footprint reason.
-#define kTilePassable 0 // empty tile / any non-colliding code
-#define kTileSoft 1     // soft-blocking (triggers the inward axis re-scan)
-#define kTileSoft2 2    // soft-blocking; 0x400-flag downgradeable, and blocks a fall
-#define kTileHard 3     // hard-blocking (the axis gates' `== kTileHard` stop code)
-#define kTileSpecial 4  // special (folds the target's 0x400000 flag)
+// The collision-relevant tile codes are the typed enum TileCollision in
+// <Gruntz/GameLevel.h> (consolidated from here + GameLevel.cpp).
 
 // LookupTile's empty-cell sentinels: 0xeeeeeeee is the uninitialized-heap fill
 // (no tile placed); -1 is the explicit "clear" marker.

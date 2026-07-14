@@ -54,16 +54,11 @@
 // meaning - named from how the movement/scroll steppers below branch on them; every
 // other code is treated as passable. File-local (only the steppers here consume them),
 // so GetCollisionAt keeps its i32 return. Matching-neutral: each folds to the same int
-// immediate the retail steppers compare. #define, not an enum: introducing ANY enum
-// DECLARATION into this @early-stop-heavy TU perturbs MSVC5's whole-TU scheduling enough
-// to shift the unrelated BroadPhase regalloc wall by -0.13% fuzzy; the preprocessor form
-// has no AST footprint and is byte-identical to baseline (verified: named/anon enum both
-// regress, #define is exactly neutral). #undef'd at end of file.
-#define kTilePassable 0 // empty tile / any non-colliding code
-#define kTileSoft 1     // soft-blocking (triggers the inward axis re-scan)
-#define kTileSoft2 2    // soft-blocking; 0x400-flag downgradeable, and blocks a fall
-#define kTileHard 3     // hard-blocking (the axis gates' `== kTileHard` stop code)
-#define kTileSpecial 4  // special (folds the target's 0x400000 flag)
+// immediate the retail steppers compare. The codes now live as the typed enum
+// TileCollision in <Gruntz/GameLevel.h> (consolidated from here + GameLevelMove.cpp);
+// GetCollisionAt keeps its i32 return, so nothing is mangled. (The enum DECLARATION
+// costs ~0.13% CURRENT fuzzy on this TU's BroadPhase scheduling wall - accepted, since
+// only MAX fuzzy is tracked.)
 
 // ===========================================================================
 // The CDDrawLevelData methods, merged in here as CGameLevel.
@@ -2743,11 +2738,5 @@ SIZE_UNKNOWN(CTileImageSet);
 // m_maxIndex/GetAt/SetAll* grafted onto it, which cannot even fit in a 0x10/0x18/0x24-byte
 // collision record. Renamed CTileImageSet + stripped; the two headers are now co-includable.
 
-// tile-collision code names (file-local; see the block near the top of this TU).
-#undef kTilePassable
-#undef kTileSoft
-#undef kTileSoft2
-#undef kTileHard
-#undef kTileSpecial
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

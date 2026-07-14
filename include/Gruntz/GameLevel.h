@@ -38,6 +38,22 @@
 //     python -m gruntz.analysis.mfc_class 0x1b55e9
 #include <Mfc.h> // CObArray (afxcoll)
 
+// The tile collision-kind codes CTileImageSet::GetCollisionAt returns (and the
+// movement/scroll steppers compare against). Consolidated here from the former
+// per-TU #define copies in GameLevel.cpp / GameLevelMove.cpp. Values only ever live
+// in int context (compared to / assigned from i32 results, never a fn param or
+// return), so this is mangling-neutral. NOTE: the enum DECLARATION costs ~0.13%
+// CURRENT fuzzy in GameLevel.cpp (an MSVC5 whole-TU scheduling shift on the unrelated
+// BroadPhase @early-stop; the old #define had no AST footprint) - accepted, since only
+// MAX fuzzy is tracked and the typed form is the right shape.
+typedef enum {
+    kTilePassable = 0, // empty tile / any non-colliding code
+    kTileSoft = 1,     // soft-blocking (triggers the inward axis re-scan)
+    kTileSoft2 = 2,    // soft-blocking; 0x400-flag downgradeable, and blocks a fall
+    kTileHard = 3,     // hard-blocking (the axis gates' `== kTileHard` stop code)
+    kTileSpecial = 4,  // special (folds the target's 0x400000 flag)
+} TileCollision;
+
 // ---------------------------------------------------------------------------
 // CTileImageSet - the per-tile COLLISION-DESCRIPTOR record the level builds from the
 // WWD tile-description block. A dispatch-only base: never instantiated (the factory
