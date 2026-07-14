@@ -145,17 +145,38 @@ public:
     // (anim player); CString m_54 is CWarlord's own destructible member; the
     // 64-bit cooldown stamp/window live at m_88/m_8c and m_90/m_94.
     char m_pad40[0x54 - 0x40];
-    CString m_54; // +0x54  destructible string member
-    char m_pad58[0x88 - 0x58];
+    CString m_54; // +0x54  destructible string member (the resolved "WARLORDZ_<owner>" name)
+    // The ctor resolves the eleven per-state animation handles by looking each
+    // "GRUNTZ_<owner>_<state>" key up in the bound object's embedded name->handle map
+    // and stashing the result here (0 when absent).
+    void* m_animIdle1;      // +0x58
+    void* m_animIdle2;      // +0x5c
+    void* m_animIdle3;      // +0x60
+    void* m_animIdle4;      // +0x64
+    void* m_animBattlecry1; // +0x68
+    void* m_animBattlecry2; // +0x6c
+    void* m_animBattlecry3; // +0x70
+    void* m_animJoy;        // +0x74
+    void* m_animDeath;      // +0x78
+    void* m_animMoving;     // +0x7c
+    void* m_animPanic;      // +0x80
+    char m_pad84[0x88 - 0x84]; // +0x84
     // The threat-cooldown timer: a 64-bit start stamp (m_cooldownStamp) and window
     // (m_cooldownWindow), each stored as a manually zero-extended lo/hi i32 pair so
     // the elapsed compare runs 64-bit; retail emits separate 32-bit stores.
-    i32 m_cooldownStampLo;     // +0x88
-    i32 m_cooldownStampHi;     // +0x8c
-    i32 m_cooldownWindowLo;    // +0x90
-    i32 m_cooldownWindowHi;    // +0x94
-    char m_pad98[0xb0 - 0x98]; // +0x98  (unmodeled tail; size proven 0xb0 from
-                               //         AnimWorkerHandlers `new CWarlord`)
+    i32 m_cooldownStampLo;  // +0x88
+    i32 m_cooldownStampHi;  // +0x8c
+    i32 m_cooldownWindowLo; // +0x90
+    i32 m_cooldownWindowHi; // +0x94
+    // A second 64-bit stamp/window timer pair (zeroed in the ctor prologue and again
+    // just before the initial moving-anim resolve).
+    i32 m_timer2StampLo;  // +0x98
+    i32 m_timer2StampHi;  // +0x9c
+    i32 m_timer2WindowLo; // +0xa0
+    i32 m_timer2WindowHi; // +0xa4
+    i32 m_a8;             // +0xa8
+    // +0xac  the warlord battle-event tag (0x442..0x445 per owner KING/NAPOLEAN/PATTON/VIKING)
+    i32 m_ownerTag;
 };
 VTBL(CWarlord, 0x1e7404);
 SIZE(CWarlord, 0xb0);

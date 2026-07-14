@@ -205,7 +205,9 @@ SIZE(CSpriteFactoryHolder, 0x40); // == SIZE(CDDrawSurfaceMgr, 0x40)
 // by mode (sound id in battlez, entity id in the exit trigger, a key pointer in
 // the sprite loader) so it is a plain i32 the pointer-consumer reinterprets.
 struct CFocusSlot {
-    char m_pad0[0x0c];
+    char m_pad0[0x8];
+    i32 m_08; // +0x08  per-owner sprite-selector config row (CWarlord ctor reads it,
+              //         clamps to [0,0x11), and feeds CSpriteRefTable::GetSel)
     i32 m_0c; // +0x0c  per-mode id / sound id / key word
     i32 m_10; // +0x10  multiplayer roster: combo index base (slot-kind selection;
               //         UpdatePlayers seeds the kind combo with m_10+1)

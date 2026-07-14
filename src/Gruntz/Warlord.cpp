@@ -27,6 +27,8 @@
                                 // (the five Resolve*Animation bodies below)
 #include <Gruntz/AniElement.h>  // full CAniElement (ResolveIdleAnimation's desc walk)
 #include <Gruntz/TriggerMgr.h>  // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
+#include <Gruntz/SpriteRefTable.h>      // CSpriteRefTable::GetSel (g_gameReg->m_spriteFactory)
+#include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader::BuildAssetNamespacePrefixes (m_curState)
 
 #include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
 
@@ -40,6 +42,20 @@ static const char s__DEATH[] = "_DEATH";
 static const char s__JOY[] = "_JOY";
 static const char s__IDLE[] = "_IDLE";
 static const char s__BATTLECRY[] = "_BATTLECRY";
+// The ctor's own eleven per-state anim-key suffixes + the four owner-name prefixes
+// (the same 0x20d218-0x20d374 private .data band, reloc-masked).
+static const char s__IDLE1[] = "_IDLE1";
+static const char s__IDLE2[] = "_IDLE2";
+static const char s__IDLE3[] = "_IDLE3";
+static const char s__IDLE4[] = "_IDLE4";
+static const char s__BATTLECRY1[] = "_BATTLECRY1";
+static const char s__BATTLECRY2[] = "_BATTLECRY2";
+static const char s__BATTLECRY3[] = "_BATTLECRY3";
+static const char s__PANIC[] = "_PANIC";
+static const char s_WARLORDZ_KING[] = "WARLORDZ_KING";
+static const char s_WARLORDZ_NAPOLEAN[] = "WARLORDZ_NAPOLEAN";
+static const char s_WARLORDZ_PATTON[] = "WARLORDZ_PATTON";
+static const char s_WARLORDZ_VIKING[] = "WARLORDZ_VIKING";
 static const char s_keyB[] = "B";
 static const char s_keyC[] = "C";
 static const char s_keyE[] = "E";
@@ -152,32 +168,161 @@ CWarlord::~CWarlord() {}
 // ===========================================================================
 // CWarlord::CWarlord(int)  (0x042d40)  - the warlord ctor
 // ===========================================================================
-// Builds the CUserLogic base, names the warlord's threat string, then a 4-way
-// switch over the owner-index selects the king/napolean/patton/viking config and
-// seeds the per-state idle/battlecry/death/moving animation table off the
-// "Gruntz" bute group. ~0x73e bytes.
+// Folds the shared CUserLogic(obj) base init (base vptr, the +0x18 link, the
+// empty-string threat name, the one-shot logic-type table, the three built-in
+// handler registrations), seeds the tile-logic tail + the two cooldown timers,
+// then: snaps the bound object onto the tile grid, latches its warlord anim id,
+// resolves a per-owner sprite selector, and a 4-way switch over the owner index
+// names the warlord ("WARLORDZ_KING".."WARLORDZ_VIKING") + its battle-event tag.
+// For each of the eleven per-state keys ("GRUNTZ_<owner>_<state>") it looks the
+// handle up in the object's embedded name->handle map and stashes it (m_58..m_80).
+// Finally re-zeros the second timer and resolves the initial moving animation.
+// The +0x18 throwing link + the destructible m_54 CString drive the /GX EH frame.
 //
-// @early-stop
-// STUB (>512B, complete-body-OR-regress wall - gx-this-esi-via-cache-store-pressure.md:
-// only the COMPLETE body pins this->esi and snaps retail's scopetable prologue
-// `push -1; push h; mov eax,fs:0; push eax; sub esp,0x1c; mov esi,ecx`; a partial
-// provably REGRESSES, so it stays stubbed pending a dedicated leaf-first pass).
-// Structure fully MAPPED (matcher-5) for that pass:
-//   1. CUserBaseLink base ctor (0x16d710) at this+0x18.
-//   2. this+0xc/+0x10 = the bound game object (link result, edi); +0x14 = [obj+0x7c].
-//   3. AddLogicHit/Attack/Bump("Logic{Hit,Attack,Bump}") -> 0x150f50/0x151030/0x151110
-//      on this+0x10; then member inits m_28=0x3e9, m_2c=2, m_34/m_38=obj, m_3c=[obj+0x7c];
-//      ~CString(m_54); zero m_88..m_a8.
-//   4. level object (this+0x10) bit-fixups: [lvl+0x5c] &=~0x1f |=0x10, [lvl+0x60] likewise,
-//      [lvl+0x74]=0xc3500 + flag |=0x20000, geo enable, difficulty read at [lvl+0x124].
-//   5. 4-way owner switch (WARLORDZ_{KING,NAPOLEAN,PATTON,VIKING}) -> m_ac = 0x442..0x445.
-//   6. 11 UNROLLED anim-key lookups: zBitVec key = "GRUNTZ_"+ownerPrefix+suffix over
-//      {_IDLE1.._IDLE4,_BATTLECRY1.._BATTLECRY3,_DEATH,_JOY,_MOVING,_PANIC}; resolve via
-//      [m_38]->+0xc->+0x2c(+0x10)(key); store handle into m_58,m_5c,..,m_80. Helpers:
-//      zBitVec ctor 0x16d3a0(const char*,int) / op= 0x16d2f0 / ~zBitVec 0x16d2a0;
-//      ~CString 0x1b9cde (x22 = 2 temps/anim). Trailing panic-timer arm + return this.
+// The owner index (the bound object's m_124) selects both the per-owner focus-slot
+// config row and the switch arm.
+typedef enum WarlordOwner {
+    WARLORDZ_KING = 0,
+    WARLORDZ_NAPOLEAN = 1,
+    WARLORDZ_PATTON = 2,
+    WARLORDZ_VIKING = 3,
+} WarlordOwner;
+
+// The per-owner warlord battle-event tag stored at m_ownerTag (retail 0x442..0x445).
+typedef enum WarlordBattleTag {
+    WARLORD_TAG_KING = 0x442,
+    WARLORD_TAG_NAPOLEAN = 0x443,
+    WARLORD_TAG_PATTON = 0x444,
+    WARLORD_TAG_VIKING = 0x445,
+} WarlordBattleTag;
+
+// The bound object's embedded animation name->handle map: the object's generically-
+// typed world/resource slot (CGameObject::m_0c, +0xc; cast at the deref site per the
+// UserLogic.h convention) -> +0x2c sprite manager -> +0x10 map. The map's Lookup is
+// the FID-proven CMapStringToPtr::Lookup @0x1b8438 (the shared CEntranceSpriteMgr
+// models the embedded map as CMapStringToOb; corrected to CMapStringToPtr here). Kept
+// in the macro (not a cached local) so cl reloads m_38 per unrolled lookup, as retail.
+#define WARLORD_ANIM_MAP()                                                                          \
+    ((CMapStringToPtr*)&((CEntranceResMgr*)m_38->m_0c)->m_2c->m_10map)
+
+// One unrolled anim-key lookup: build "GRUNTZ_" + m_54 + suffix (two CString temps),
+// look it up (out-param zeroed first so a miss stores 0), stash the handle.
+#define WARLORD_ANIM_LOOKUP(dst, suffix)                                                            \
+    {                                                                                              \
+        void* h = 0;                                                                               \
+        WARLORD_ANIM_MAP()->Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                                \
+        dst = h;                                                                                   \
+    }
+
+// @early-stop  (~79%; complete correct body, up from a 3.7% stub)
+// The whole 1854-byte body is reconstructed and byte-faithful in logic/offsets/
+// calls/control-flow (base init, grid-snap, per-owner selector, 4-way owner switch,
+// the eleven unrolled name->handle lookups, the tail timer + moving-anim resolve).
+// The residual is the classic /GX-heavy-ctor regalloc + EH-state wall in the ~50-
+// instruction prologue (the eleven lookups + tail objdiff-match):
+//   * prologue regalloc: retail pins the bound object (arg) in edi across the whole
+//     base init and holds &m_link in ebx; cl keeps &m_link in edi and reloads arg
+//     from [esp+0x3c] - a register-role coin-flip in the shared inline CUserLogic(obj)
+//     under this leaf's higher pressure, cascading to the grid-snap `and al,0xe0`
+//     (cl: `and ecx,-0x20`), the m_10 reload-vs-cache choices, and the bl EH-const.
+//   * emission order: retail seeds the tile-tail (m_34/m_38/m_3c) BEFORE the m_54
+//     CString member ctor; with `: CUserLogic` + a body TILE_LOGIC_SEED the seed
+//     necessarily emits AFTER the member ctor. Deriving CWarlord from the byte-
+//     neutral CTileLogic intermediate (its ctor seeds the tail before the member
+//     ctor) recovers exactly this order and measured +1.4% (79.15 -> 80.53) - an
+//     inheritance change owned by the Fable lane; left as a hand-off (see report).
 RVA(0x00042d40, 0x73e)
-CWarlord::CWarlord(i32) {}
+// NB the arg is `int` in retail's mangling (??0CWarlord@@QAE@H@Z), not CGameObject* -
+// the 1997 dev declared the ctor `CWarlord(int)` and used the int as the bound game
+// object handle; the cast to CGameObject* reproduces that (kept i32 so the mangled
+// symbol still binds to 0x42d40). Sibling leaf ctors (CGruntVoice, ...) took a real
+// CGameObject*; this one did not.
+CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
+    CGameObject* obj = (CGameObject*)arg;
+    TILE_LOGIC_SEED(obj);
+
+    // Two 64-bit stamp/window cooldown timers, cleared.
+    m_cooldownStampLo = 0;
+    m_cooldownWindowLo = 0;
+    m_cooldownStampHi = 0;
+    m_cooldownWindowHi = 0;
+    m_timer2StampLo = 0;
+    m_timer2WindowLo = 0;
+    m_timer2StampHi = 0;
+    m_timer2WindowHi = 0;
+
+    // Snap the bound object onto the 32px tile grid (centered) + latch the warlord
+    // anim id and mark the geometry z-key dirty.
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    if (m_object->m_latchedAnimId != 0xc3500) {
+        m_object->m_latchedAnimId = 0xc3500;
+        m_object->m_flags |= 0x20000;
+    }
+    m_38->m_flags |= 0x2000002;
+
+    // Resolve the per-owner sprite selector from the focus-slot config row (clamped to
+    // [0,0x11); fall back to row 1 when the selector resolves empty).
+    i32 owner = m_object->m_124;
+    i32 cfg = g_gameReg->m_focusSlots[owner].m_08;
+    if (cfg < 0 || cfg >= 0x11) {
+        cfg = 0;
+    }
+    i32 sel = g_gameReg->m_spriteFactory->GetSel(cfg, 0);
+    if (sel == 0) {
+        sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+    }
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = 0xa;
+    m_object->m_drawFillArg = sel;
+
+    switch (owner) {
+    case WARLORDZ_KING:
+        m_54 = s_WARLORDZ_KING;
+        m_ownerTag = WARLORD_TAG_KING;
+        break;
+    case WARLORDZ_NAPOLEAN:
+        m_54 = s_WARLORDZ_NAPOLEAN;
+        m_ownerTag = WARLORD_TAG_NAPOLEAN;
+        break;
+    case WARLORDZ_PATTON:
+        m_54 = s_WARLORDZ_PATTON;
+        m_ownerTag = WARLORD_TAG_PATTON;
+        break;
+    case WARLORDZ_VIKING:
+        m_54 = s_WARLORDZ_VIKING;
+        m_ownerTag = WARLORD_TAG_VIKING;
+        break;
+    default:
+        // 0x8009 / 0x3e9 = the status-bar report id/tag (meaning unproven, kept literal).
+        g_gameReg->ReportError(0x8009, 0x3e9);
+        return;
+    }
+
+    // Register the warlord's asset namespace, then resolve every per-state handle.
+    ((CNamespaceLoader*)g_gameReg->m_curState)->BuildAssetNamespacePrefixes(m_54, 1, 0, 0);
+
+    WARLORD_ANIM_LOOKUP(m_animIdle1, s__IDLE1);
+    WARLORD_ANIM_LOOKUP(m_animIdle2, s__IDLE2);
+    WARLORD_ANIM_LOOKUP(m_animIdle3, s__IDLE3);
+    WARLORD_ANIM_LOOKUP(m_animIdle4, s__IDLE4);
+    WARLORD_ANIM_LOOKUP(m_animBattlecry1, s__BATTLECRY1);
+    WARLORD_ANIM_LOOKUP(m_animBattlecry2, s__BATTLECRY2);
+    WARLORD_ANIM_LOOKUP(m_animBattlecry3, s__BATTLECRY3);
+    WARLORD_ANIM_LOOKUP(m_animJoy, s__JOY);
+    WARLORD_ANIM_LOOKUP(m_animDeath, s__DEATH);
+    WARLORD_ANIM_LOOKUP(m_animMoving, s__MOVING);
+    WARLORD_ANIM_LOOKUP(m_animPanic, s__PANIC);
+
+    m_timer2StampLo = 0;
+    m_timer2WindowLo = 0;
+    m_timer2StampHi = 0;
+    m_timer2WindowHi = 0;
+    m_a8 = 0;
+    ((CGrunt*)this)->ResolveMovingAnimation();
+}
+#undef WARLORD_ANIM_LOOKUP
+#undef WARLORD_ANIM_MAP
 
 // @early-stop
 // 0x43670 = CWarlord::SerializeMove (vtable slot 1, +0x4; origin CUserBase). Homed
