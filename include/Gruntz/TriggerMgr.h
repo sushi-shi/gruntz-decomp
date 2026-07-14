@@ -499,6 +499,13 @@ public:
     // class and reloc-mask. No body/RVA in this TU.
     i32 FireCommand(i32 cmd, i32 x, i32 y, i32 slot, i32 a5, i32 a6);
 
+    // 0x7b330: the brick-break explosion-sprite loader (x, y, id, kind), the sibling of
+    // FireCommand fired on this same +0x68 registry m_cmdGrid by CTileActionEvent::Process
+    // (effect 0x144). Was the other half of the fake EngineLabelBacklog host (mislabeled
+    // ?LoadExplosionSprites@EngineLabelBacklog); declared-only here so the consumer call
+    // mangles onto this class and reloc-masks. No body/RVA in this TU.
+    i32 LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind);
+
     // 0x46b6d0: the screen-coord -> cell-index probe the battlez spawn machine fires on
     // this grid (two arg shapes at the same body; Ghidra leaves it class-unattributed).
     // Declared-only (reloc-masked). These two are all that BattlezMapConfig.cpp's

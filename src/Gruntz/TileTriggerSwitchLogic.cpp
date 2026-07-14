@@ -50,14 +50,10 @@
 // they are CTileTriggerLogic::Serialize / ::Deserialize, __thiscall on `this` - see
 // ValidateByType below.)
 
-// The engine-label backlog host reached through the command grid: the
-// powerup-icon and explosion sprite loaders (the two donor TUs' local hosts,
-// merged - both dispatch reloc-masked, declared-only).
-class EngineLabelBacklog {
-public:
-    i32 LoadPowerupIconSprites(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
-    i32 LoadExplosionSprites(i32 a, i32 b, i32 c, i32 d);
-};
+// (The EngineLabelBacklog host is DISSOLVED: its two "loaders" are CTriggerMgr
+// methods on the +0x68 registry m_cmdGrid - LoadPowerupIconSprites IS FireCommand
+// (0x7c620), LoadExplosionSprites (0x7b330) is its sibling. Both declared on the real
+// CTriggerMgr (<Gruntz/TriggerMgr.h>), so the calls run cast-free on m_cmdGrid.)
 
 // TileActionEvent.cpp - the per-tile game-action event record (trace placeholder
 // tomalla-108). Methods in ascending retail-RVA order. The record shape comes from
@@ -100,23 +96,16 @@ extern i32 g_tileKindMagic;
 // owns the address; Process is deferred so its pairing is non-critical anyway).
 extern i32 g_sndCueTag;
 
-// The grid manager method the action-set path runs after stamping a tile
-// (thunk_FUN_00477790, __thiscall ret 0). External/no-body -> reloc-masked.
-struct CActionGridMgr {
-    void RefreshTile();
-};
-SIZE_UNKNOWN(CActionGridMgr);
+// (The CActionGridMgr::RefreshTile view is DISSOLVED: the method the action-set path
+// runs after stamping a tile is CMapMgr::ComputeCellFlags(x, y, code) @0x77790 - a
+// 3-arg terrain cell-flag recompute on g_gameReg->m_tileGrid (CGruntzMapMgr : CMapMgr),
+// NOT a 0-arg "RefreshTile". The RVA neighbour ComputeCellFlags calls confirm it.)
 
-// The brick / tile-object passed as Process's arg (ebx). External methods modeled
-// no-body so their __thiscall dispatch reloc-masks.
-struct CBrickTile {
-    // Detonate @0x3bd9 IS CUserLogic::LoadGruntTypeTable; cast at the call.
-    i32 m_8;   // +0x08  flag word (|= 0x10000 on uncached default break)
-    i32 m_198; // +0x198 cache-state gate
-    i32 m_1e4; // +0x1e4 cleared on edi==0x132
-    i32 m_1ec; // +0x1ec brick-color / slot discriminator (==5 -> all-slots)
-};
-SIZE_UNKNOWN(CBrickTile);
+// (The CBrickTile view is DISSOLVED: the tile-object Process acts on is the placed
+// grid CELL, and CTmCell IS CGrunt (proven, <Gruntz/TriggerMgr.h>). It reaches beyond
+// +0x1f0 (m_1e4/m_1ec), so it can only be the large CGrunt (0x8d8); the touched offsets
+// ARE CGrunt members - LoadGruntTypeTable is the inherited CUserLogic method, m_1e4 is
+// m_entranceActive, m_1ec is m_tileOwnerHi (the owning player id, indexing m_playerFlags).)
 
 // The spawned brick-break sprite (CreateSprite result) is the shared CGameObject:
 // ApplyLookupGeometry (0x1505b0) selects the break animation by name, ApplyName
@@ -802,7 +791,7 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     CGruntzMgr* reg = g_gameReg;
     i32 py = (m_0c << 5) + 0x10;
     i32 px = (m_08 << 5) + 0x10;
-    ((EngineLabelBacklog*)reg->m_cmdGrid)->LoadPowerupIconSprites(m_28, px, py, m_30, 1, 0);
+    reg->m_cmdGrid->FireCommand(m_28, px, py, m_30, 1, 0);
     if (m_2c != 0) {
         CGameObject* rec = reg->m_world->m_8->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != 0) {
@@ -1109,7 +1098,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
             return 0;
         }
         *cell = code;
-        ((CActionGridMgr*)g_gameReg->m_tileGrid)->RefreshTile();
+        g_gameReg->m_tileGrid->ComputeCellFlags(m_tileX, m_tileY, code);
         return 1;
     }
 }
@@ -1237,11 +1226,11 @@ i32 CTileActionEvent::Process(i32 arg) {
             break;
     }
 
-    CBrickTile* brick = (CBrickTile*)arg;
+    CGrunt* brick = (CGrunt*)arg;
     if (effect != 0 && brick != 0) {
         if (effect == 0x132) {
-            ((CUserLogic*)brick)->LoadGruntTypeTable(0, 1, 0, 0);
-            brick->m_1e4 = 0;
+            brick->LoadGruntTypeTable(0, 1, 0, 0);
+            brick->m_entranceActive = 0;
         } else if (effect == 0x138) {
             ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
                 ->CombatCue((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
@@ -1257,7 +1246,7 @@ i32 CTileActionEvent::Process(i32 arg) {
                     snd->PlayIfElapsed((i32)g_sndCueTag, 0, 0, 0);
                 }
             }
-            if (brick->m_1ec == 5) {
+            if (brick->m_tileOwnerHi == 5) {
                 m_playerFlags[0] = 1;
                 m_playerFlags[1] = 1;
                 m_playerFlags[2] = 1;
@@ -1265,12 +1254,13 @@ i32 CTileActionEvent::Process(i32 arg) {
                 SetActionCode(m_actionCode);
                 return 0;
             }
-            m_playerFlags[brick->m_1ec] = 1;
+            m_playerFlags[brick->m_tileOwnerHi] = 1;
             SetActionCode(m_actionCode);
             return 0;
         } else if (effect == 0x144) {
-            ((EngineLabelBacklog*)g_gameReg->m_cmdGrid)
-                ->LoadExplosionSprites((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
+            g_gameReg->m_cmdGrid->LoadExplosionSprites(
+                (m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2
+            );
         }
     }
 
