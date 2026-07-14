@@ -27,8 +27,6 @@
 
 #pragma intrinsic(strcmp)
 
-#define F(base, o) (*(i32*)((char*)(base) + (o)))
-#define P(base, o) (*(char**)((char*)(base) + (o)))
 #define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31)) // MSVC cdq/xor/sub abs
 
 // The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry.
@@ -143,8 +141,8 @@ extern "C" {
 
 // Drain the pending-coord list (recycle each node's link, then RemoveAll).
 #define DRAIN_COORDS()                                                                             \
-    if (F(this, 0x328) != 0) {                                                                     \
-        CScanListNode* n = (CScanListNode*)P(this, 0x320);                                         \
+    if (CoordCount() != 0) {                                                                       \
+        CScanListNode* n = (CScanListNode*)m_31c.GetHeadPosition();                                \
         while (n != 0) {                                                                           \
             CScanListNode* cur = n;                                                                \
             n = cur->m_next;                                                                       \
@@ -269,8 +267,8 @@ i32 CGrunt::ArrivalScanA() {
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0) {
         return 1;
     }
-    F(this, 0x300) = F(this, 0x17c);
-    F(this, 0x304) = F(this, 0x180);
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
     CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
@@ -284,60 +282,60 @@ i32 CGrunt::ArrivalScanA() {
     CGrunt* g = m_tileMgr->GetOccupant(this);
     i32 atTarget = 0;
     if (g != 0) {
-        i32 x = F(P(g, 0x10), 0x5c);
-        if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
-            && RectContains(x, F(P(g, 0x10), 0x60)) != 0) {
+        i32 x = g->m_10->m_5c;
+        if (x == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
+            && RectContains(x, g->m_10->m_60) != 0) {
             atTarget = 1;
         }
     }
 
-    if (F(this, 0x220) != 0) {
-        if (F(this, 0x21c) != 0) {
-            F(this, 0x21c) = 0;
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
             return 1;
         }
-        if (F(this, 0x218) != 0) {
+        if (m_combatActive != 0) {
             return 1;
         }
-        if (F(this, 0x3f0) >= 100) {
+        if (m_stamina >= 100) {
             if (FindGridNeighbor(1) != 0) {
                 return 1;
             }
             if (atTarget && g == 0) {
                 return 1;
             }
-            if (F(this, 0x220) == 0) {
+            if (m_poweredUp == 0) {
                 return 1;
             }
         } else {
             if (atTarget) {
                 return 1;
             }
-            if (F(this, 0x220) == 0) {
+            if (m_poweredUp == 0) {
                 return 1;
             }
         }
-        if (F(this, 0x21c) != 0) {
+        if (m_neighborValid != 0) {
             return 1;
         }
-        F(this, 0x1e4) = 0;
-        F(this, 0x218) = 0;
-        F(this, 0x21c) = 0;
-        F(this, 0x220) = 0;
+        m_entranceActive = 0;
+        m_combatActive = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
         ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
     if (g == 0) {
-        F(this, 0x390) = 0;
+        m_390 = 0;
         goto L_ed006;
     }
-    if (F(this, 0x21c) != 0) {
+    if (m_neighborValid != 0) {
         return 1;
     }
-    if (F(this, 0x218) == 0 && F(this, 0x3f0) >= 100) {
+    if (m_combatActive == 0 && m_stamina >= 100) {
         if (atTarget) {
-            CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+            CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
             DRAIN_COORDS();
             return 1;
         }
@@ -349,61 +347,59 @@ i32 CGrunt::ArrivalScanA() {
     }
 
 L_ed006:
-    if (g == 0 || (u32)F(this, 0x2ec) <= 0x1f4 || GruntInRadius(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
-        F(this, 0x390) = 0;
+    if (g == 0 || (u32)m_dwell <= 0x1f4 || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+        m_390 = 0;
         goto L_ed153;
     }
-    if (F(this, 0x220) != 0) {
+    if (m_poweredUp != 0) {
         goto L_ed153;
     }
-    if (F(this, 0x3f0) >= 100 && F(P(g, 0x10), 0x5c) == F(g, 0x17c)
-        && F(P(g, 0x10), 0x60) == F(g, 0x180)
-        && RectContains(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
-        CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
-        F(this, 0x2ec) = 0;
+    if (m_stamina >= 100 && g->m_10->m_5c == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
+        && RectContains(g->m_10->m_5c, g->m_10->m_60) != 0) {
+        CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
+        m_dwell = 0;
         return 1;
     }
-    if (F(this, 0x220) != 0) {
+    if (m_poweredUp != 0) {
         goto L_ed153;
     }
-    if (TileSwitch6(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
-        == 0) {
+    if (TileSwitch6(g->m_10->m_5c >> 5, g->m_10->m_60 >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
         goto L_ed153;
     }
-    if (F(this, 0x390) != 0) {
-        char* board = P(g_gameReg->m_world->m_24, 0x5c) + 0x40;
-        i32 x = F(P(this, 0x10), 0x5c);
-        i32 y = F(P(this, 0x10), 0x60);
-        if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
+    if (m_390 != 0) {
+        CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
+        i32 x = m_10->m_5c;
+        i32 y = m_10->m_60;
+        if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
             g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
         }
-        F(this, 0x390) = 0;
+        m_390 = 0;
     }
-    F(this, 0x2ec) = 0;
+    m_dwell = 0;
 
 L_ed153:
-    if (F(this, 0x328) != 0) {
-        CScanCoord* coord = ((CScanNode324*)P(this, 0x320))->m_8;
+    if (CoordCount() != 0) {
+        CScanCoord* coord = ((CScanNode324*)m_31c.GetHeadPosition())->m_8;
         i32 col = coord->x;
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
             m_tileMgr->CommitTileSlot2(
-                F(this, 0x1ec),
-                F(this, 0x1f0),
+                m_tileOwnerHi,
+                m_tileOwnerLo,
                 (col << 5) + 0x10,
                 (row << 5) + 0x10
             );
             SetEntrancePos(1, 1);
-            F(this, 0x2ec) = 0;
+            m_dwell = 0;
         }
         return 1;
     }
-    if ((u32)F(this, 0x2ec) <= 0x3e8) {
+    if ((u32)m_dwell <= 0x3e8) {
         return 1;
     }
 
-    i32 r = F(this, 0x2dc);
+    i32 r = m_defenderRadius;
     RECT box;
     box.left = cx - r;
     box.right = cx + r;
@@ -464,18 +460,18 @@ L_ed153:
         IABS(dr);
         if (dc <= 1 && dr <= 1) {
             m_tileMgr->CommitTileSlot2(
-                F(this, 0x1ec),
-                F(this, 0x1f0),
+                m_tileOwnerHi,
+                m_tileOwnerLo,
                 (bestCol << 5) + 0x10,
                 (bestRow << 5) + 0x10
             );
             SetEntrancePos(1, 1);
         } else {
-            TileSwitch6(bestCol, bestRow, 0, F(this, 0x248), 1, 0);
+            TileSwitch6(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
         }
     }
     GRID_RECT_INLINE(grid);
-    F(this, 0x2ec) = 0;
+    m_dwell = 0;
     return 1;
 }
 
@@ -496,29 +492,29 @@ L_ed153:
 // Final-sweep candidate.
 RVA(0x000ed9f0, 0x8dd)
 i32 CGrunt::WanderStep() {
-    F(this, 0x300) = F(this, 0x17c);
-    F(this, 0x304) = F(this, 0x180);
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
 
     i32 flag = 0;
     CGrunt* g = m_tileMgr->GetOccupant(this);
     if (g != 0) {
-        i32 gx = F(P(g, 0x10), 0x5c);
-        if (gx == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
-            && RectContains(gx, F(P(g, 0x10), 0x60)) != 0) {
+        i32 gx = g->m_10->m_5c;
+        if (gx == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
+            && RectContains(gx, g->m_10->m_60) != 0) {
             flag = 1;
         }
     }
 
     // Powered-up / arrival gate: never returns except through FindGridNeighbor;
     // otherwise it forces the phase to 5 and falls into the switch.
-    if (F(this, 0x220) != 0) {
-        if (F(this, 0x21c) != 0) {
-            F(this, 0x21c) = 0;
-        } else if (F(this, 0x218) == 0) {
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
+        } else if (m_combatActive == 0) {
             bool reset;
-            if (F(this, 0x3f0) >= 0x64) {
+            if (m_stamina >= 0x64) {
                 if (FindGridNeighbor(1) != 0) {
-                    F(this, 0x2d4) = 5;
+                    m_defenderState = 5;
                     return 1;
                 }
                 reset = !(flag != 0 && g == 0);
@@ -526,26 +522,31 @@ i32 CGrunt::WanderStep() {
                 reset = (flag == 0);
             }
             if (reset) {
-                F(this, 0x1e4) = 0;
-                F(this, 0x218) = 0;
-                F(this, 0x21c) = 0;
-                F(this, 0x220) = 0;
+                m_entranceActive = 0;
+                m_combatActive = 0;
+                m_neighborValid = 0;
+                m_poweredUp = 0;
                 ResetEntranceAnimation(1, 0, 0);
             }
         }
-        F(this, 0x2d4) = 5;
+        m_defenderState = 5;
     }
 
-    switch (F(this, 0x2d4)) {
+    switch (m_defenderState) {
         case 0:
             if (g != 0) {
-                if (F(this, 0x220) == 0 && F(this, 0x3f0) >= 0x64
-                    && F(P(g, 0x10), 0x5c) == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
-                    && RectContains(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
-                    CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
-                    F(this, 0x358) = 0;
-                    if (F(this, 0x328) != 0) {
-                        void* node = P(this, 0x320);
+                if (m_poweredUp == 0 && m_stamina >= 0x64 && g->m_10->m_5c == g->m_lastTilePxX
+                    && g->m_10->m_60 == g->m_lastTilePxY
+                    && RectContains(g->m_10->m_5c, g->m_10->m_60) != 0) {
+                    CommitNeighbor(
+                        g->m_tileOwnerHi,
+                        g->m_tileOwnerLo,
+                        g->m_lastTilePxX,
+                        g->m_lastTilePxY
+                    );
+                    m_358 = 0;
+                    if (CoordCount() != 0) {
+                        void* node = m_31c.GetHeadPosition();
                         if (node != 0) {
                             do {
                                 void* cur = node;
@@ -558,71 +559,76 @@ i32 CGrunt::WanderStep() {
                         }
                         m_31c.RemoveAll();
                     }
-                    F(this, 0x2d4) = 5;
+                    m_defenderState = 5;
                     return 1;
                 }
-                if ((u32)F(this, 0x2ec) > 0x3e8) {
-                    if (GruntInRadius(F(g, 0x1ec), F(g, 0x1f0)) != 0) {
+                if ((u32)m_dwell > 0x3e8) {
+                    if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         i32 c[4];
                         g->GetScreenPos((GruntTilePos*)c);
-                        if (TileSwitch6(c[0] >> 5, c[1] >> 5, 0, F(this, 0x248), 1, 0) != 0) {
+                        if (TileSwitch6(c[0] >> 5, c[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                             SetEntrancePos(1, 1);
-                            F(this, 0x2f0) = F(g, 0x1ec);
-                            F(this, 0x2f4) = F(g, 0x1f0);
-                            F(this, 0x2d4) = 1;
+                            m_arrivalCol = g->m_tileOwnerHi;
+                            m_arrivalRow = g->m_tileOwnerLo;
+                            m_defenderState = 1;
                             if (GruntPointVisible(
-                                    F(g_gameReg->m_world->m_24, 0x5c) + 0x40,
-                                    F(P(this, 0x10), 0x5c),
-                                    F(P(this, 0x10), 0x60)
+                                    (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
+                                    m_10->m_5c,
+                                    m_10->m_60
                                 )
                                 != 0) {
                                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }
-                    F(this, 0x2ec) = 0;
+                    m_dwell = 0;
                     return 1;
                 }
             }
             goto timeout;
 
         case 1: {
-            CGrunt* slot = m_tileMgr->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+            CGrunt* slot = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
             CGrunt* active = m_tileMgr->GetOccupant(this);
             if (active != 0 && active != slot) {
-                F(this, 0x2f0) = -1;
-                F(this, 0x2d4) = 0;
-                F(this, 0x2f4) = -1;
+                m_arrivalCol = -1;
+                m_defenderState = 0;
+                m_arrivalRow = -1;
                 return 1;
             }
-            if (slot == 0 || F(slot, 0x1fc) == 0
-                || GruntInRadius(F(slot, 0x1ec), F(slot, 0x1f0)) == 0) {
-                F(this, 0x2d4) = 0;
+            if (slot == 0 || slot->m_entranceCommitted == 0
+                || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
+                m_defenderState = 0;
                 return 1;
             }
-            if ((u32)F(this, 0x2ec) > 0x1f4) {
-                StepArrivalDrop(F(slot, 0x17c), F(slot, 0x180), 0, F(this, 0x248), 1, 0);
-                F(this, 0x2ec) = 0;
+            if ((u32)m_dwell > 0x1f4) {
+                StepArrivalDrop(slot->m_lastTilePxX, slot->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
+                m_dwell = 0;
             }
-            if (F(this, 0x220) != 0) {
+            if (m_poweredUp != 0) {
                 return 1;
             }
-            if (F(this, 0x3f0) < 0x64) {
+            if (m_stamina < 0x64) {
                 return 1;
             }
-            if (RectContains(F(P(slot, 0x10), 0x5c), F(P(slot, 0x10), 0x60)) == 0) {
+            if (RectContains(slot->m_10->m_5c, slot->m_10->m_60) == 0) {
                 return 1;
             }
-            if (F(P(slot, 0x10), 0x5c) != F(slot, 0x17c)) {
+            if (slot->m_10->m_5c != slot->m_lastTilePxX) {
                 return 1;
             }
-            if (F(P(slot, 0x10), 0x60) != F(slot, 0x180)) {
+            if (slot->m_10->m_60 != slot->m_lastTilePxY) {
                 return 1;
             }
-            CommitNeighbor(F(slot, 0x1ec), F(slot, 0x1f0), F(slot, 0x17c), F(slot, 0x180));
-            F(this, 0x358) = 0;
-            if (F(this, 0x328) != 0) {
-                void* node = P(this, 0x320);
+            CommitNeighbor(
+                slot->m_tileOwnerHi,
+                slot->m_tileOwnerLo,
+                slot->m_lastTilePxX,
+                slot->m_lastTilePxY
+            );
+            m_358 = 0;
+            if (CoordCount() != 0) {
+                void* node = m_31c.GetHeadPosition();
                 if (node != 0) {
                     do {
                         void* cur = node;
@@ -635,42 +641,47 @@ i32 CGrunt::WanderStep() {
                 }
                 m_31c.RemoveAll();
             }
-            F(this, 0x2d4) = 5;
+            m_defenderState = 5;
             return 1;
         }
 
         case 2: {
-            if (F(this, 0x220) == 0) {
-                F(this, 0x2d4) = 0;
+            if (m_poweredUp == 0) {
+                m_defenderState = 0;
                 return 1;
             }
-            CGrunt* slot = m_tileMgr->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
-            if (slot == 0 || GruntInRadius(F(slot, 0x1ec), F(slot, 0x1f0)) == 0
-                || F(slot, 0x1fc) == 0) {
+            CGrunt* slot = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            if (slot == 0 || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
+                || slot->m_entranceCommitted == 0) {
                 goto ph1;
             }
-            if (F(this, 0x21c) != 0) {
+            if (m_neighborValid != 0) {
                 return 1;
             }
-            if (F(this, 0x218) != 0) {
+            if (m_combatActive != 0) {
                 return 1;
             }
-            if (F(this, 0x3f0) < 0x64) {
+            if (m_stamina < 0x64) {
                 return 1;
             }
-            if (RectContains(F(P(slot, 0x10), 0x5c), F(P(slot, 0x10), 0x60)) == 0) {
+            if (RectContains(slot->m_10->m_5c, slot->m_10->m_60) == 0) {
                 goto ph1;
             }
-            if (F(P(slot, 0x10), 0x5c) != F(slot, 0x17c)) {
+            if (slot->m_10->m_5c != slot->m_lastTilePxX) {
                 goto ph1;
             }
-            if (F(P(slot, 0x10), 0x60) != F(slot, 0x180)) {
+            if (slot->m_10->m_60 != slot->m_lastTilePxY) {
                 goto ph1;
             }
-            CommitNeighbor(F(slot, 0x1ec), F(slot, 0x1f0), F(slot, 0x17c), F(slot, 0x180));
-            F(this, 0x358) = 0;
-            if (F(this, 0x328) != 0) {
-                void* node = P(this, 0x320);
+            CommitNeighbor(
+                slot->m_tileOwnerHi,
+                slot->m_tileOwnerLo,
+                slot->m_lastTilePxX,
+                slot->m_lastTilePxY
+            );
+            m_358 = 0;
+            if (CoordCount() != 0) {
+                void* node = m_31c.GetHeadPosition();
                 if (node != 0) {
                     i32 prev = (i32)g_coordPool.m_freeHead;
                     do {
@@ -687,40 +698,40 @@ i32 CGrunt::WanderStep() {
                 }
                 m_31c.RemoveAll();
             }
-            F(this, 0x2d4) = 5;
-            F(this, 0x2ec) = 0x1f4;
+            m_defenderState = 5;
+            m_dwell = 0x1f4;
             return 1;
         ph1:
-            F(this, 0x2d4) = 1;
-            F(this, 0x2ec) = 0x1f4;
+            m_defenderState = 1;
+            m_dwell = 0x1f4;
             return 1;
         }
 
         case 5: {
-            if (F(this, 0x218) != 0) {
+            if (m_combatActive != 0) {
                 return 1;
             }
-            if (F(this, 0x3f0) >= 0x64) {
-                F(this, 0x2d4) = 0;
+            if (m_stamina >= 0x64) {
+                m_defenderState = 0;
                 return 1;
             }
-            if (F(this, 0x328) != 0) {
+            if (CoordCount() != 0) {
                 return 1;
             }
-            i32 base = F(this, 0x10);
+            CGruntHud* base = m_10;
             i32 clip = 1;
-            i32 py = GameRand() % 4 + (F(base, 0x60) >> 5) - 2;
-            i32 px = GameRand() % 4 + (F(base, 0x5c) >> 5) - 2;
-            if ((u32)F(this, 0x2f0) < 4 && (u32)F(this, 0x2f4) < 0xf) {
+            i32 py = GameRand() % 4 + (base->m_60 >> 5) - 2;
+            i32 px = GameRand() % 4 + (base->m_5c >> 5) - 2;
+            if ((u32)m_arrivalCol < 4 && (u32)m_arrivalRow < 0xf) {
                 CGrunt* entry =
-                    ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+                    ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[m_arrivalCol][m_arrivalRow];
                 if (entry != 0) {
-                    i32 e10 = F(entry, 0x10);
+                    CGruntHud* e10 = entry->m_10;
                     RECT rc;
-                    rc.left = (F(e10, 0x5c) >> 5) - 2;
-                    rc.top = (F(e10, 0x60) >> 5) - 2;
-                    rc.right = (F(e10, 0x5c) >> 5) + 3;
-                    rc.bottom = (F(e10, 0x60) >> 5) + 3;
+                    rc.left = (e10->m_5c >> 5) - 2;
+                    rc.top = (e10->m_60 >> 5) - 2;
+                    rc.right = (e10->m_5c >> 5) + 3;
+                    rc.bottom = (e10->m_60 >> 5) + 3;
                     POINT pt;
                     pt.x = px;
                     pt.y = py;
@@ -739,7 +750,7 @@ i32 CGrunt::WanderStep() {
             if ((u32)py >= (u32)grid->m_10) {
                 return 1;
             }
-            TileSwitch6(px, py, 0, F(this, 0x248), 1, 0);
+            TileSwitch6(px, py, 0, m_arrivalFlags, 1, 0);
             return 1;
         }
 
@@ -748,26 +759,27 @@ i32 CGrunt::WanderStep() {
     }
 
 timeout:
-    if (F(this, 0x244) == 0 && F(this, 0x318) != 0 && (u32)F(this, 0x2ec) > 0xbb8) {
-        i32 hi = -(i32)((u32)g_frameTime < (u32)F(this, 0x308)) - F(this, 0x30c);
-        i32 lo = (i32)(g_frameTime - (u32)F(this, 0x308));
-        if (F(this, 0x314) < hi || (F(this, 0x314) == hi && (u32)lo >= (u32)F(this, 0x310))) {
+    if (m_resetApplied == 0 && m_318 != 0 && (u32)m_dwell > 0xbb8) {
+        i32 hi = -(i32)((u32)g_frameTime < (u32)m_arrivalRerollLo) - m_arrivalRerollHi;
+        i32 lo = (i32)(g_frameTime - (u32)m_arrivalRerollLo);
+        if (m_arrivalRerollWindowHi < hi
+            || (m_arrivalRerollWindowHi == hi && (u32)lo >= (u32)m_arrivalRerollWindowLo)) {
             ResetEntranceAnimation(1, 1, 0);
-            F(this, 0x308) = 0;
-            F(this, 0x310) = 0;
-            F(this, 0x30c) = 0;
-            F(this, 0x314) = 0;
-            F(this, 0x310) = GameRand() % 30000 + 30000;
-            F(this, 0x314) = 0;
-            F(this, 0x308) = (i32)g_frameTime;
-            F(this, 0x30c) = 0;
+            m_arrivalRerollLo = 0;
+            m_arrivalRerollWindowLo = 0;
+            m_arrivalRerollHi = 0;
+            m_arrivalRerollWindowHi = 0;
+            m_arrivalRerollWindowLo = GameRand() % 30000 + 30000;
+            m_arrivalRerollWindowHi = 0;
+            m_arrivalRerollLo = (i32)g_frameTime;
+            m_arrivalRerollHi = 0;
         } else {
-            i32 base = F(this, 0x10);
-            u32 lx = (u32)F(base, 0x134);
-            i32 dxr = F(base, 0x13c) - (i32)lx;
+            CGruntHud* base = m_10;
+            u32 lx = (u32)base->m_134;
+            i32 dxr = base->m_13c - (i32)lx;
             i32 ax = (dxr ^ (dxr >> 31)) - (dxr >> 31);
-            u32 ly = (u32)F(base, 0x138);
-            i32 dyr = F(base, 0x140) - (i32)ly;
+            u32 ly = (u32)base->m_138;
+            i32 dyr = base->m_140 - (i32)ly;
             i32 ay = (dyr ^ (dyr >> 31)) - (dyr >> 31);
             if (ax != 0) {
                 lx += GameRand() % ax;
@@ -775,22 +787,22 @@ timeout:
             if (ay != 0) {
                 ly += GameRand() % ay;
             }
-            if (lx < (u32)F(g_gameReg->m_tileGrid, 0xc)
-                && ly < (u32)F(g_gameReg->m_tileGrid, 0x10)) {
-                TileSwitch6((i32)lx, (i32)ly, 0, F(this, 0x248), 1, 0);
+            if (lx < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_c
+                && ly < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_10) {
+                TileSwitch6((i32)lx, (i32)ly, 0, m_arrivalFlags, 1, 0);
             }
-            if (F(this, 0x328) != 0) {
+            if (CoordCount() != 0) {
                 if (ax <= ay) {
                     ax = ay;
                 }
-                if (ax < F(this, 0x328)) {
+                if (ax < CoordCount()) {
                     SetEntrancePos(1, 1);
-                    F(this, 0x2ec) = 0;
+                    m_dwell = 0;
                     return 1;
                 }
             }
         }
-        F(this, 0x2ec) = 0;
+        m_dwell = 0;
     }
     return 1;
 }
@@ -996,7 +1008,7 @@ i32 CGrunt::UpdateArrival() {
                             this->m_arrivalRow = g->m_tileOwnerLo;
                             this->m_defenderState = 1;
                             i32 r = GruntPointVisible(
-                                F(P(g_gameReg->m_world->m_24, 0x5c), 0) + 0x40,
+                                *(i32*)g_gameReg->m_world->m_24->m_mainPlane + 0x40,
                                 this->m_10->m_5c,
                                 this->m_10->m_60
                             );
@@ -1039,8 +1051,8 @@ i32 CGrunt::UpdateArrival() {
                     if (ay != 0) {
                         lo2 = lo2 + GruntRand() % ay;
                     }
-                    if (lo < (u32)F(g_gameReg->m_tileGrid, 0xc)
-                        && lo2 < (u32)F(g_gameReg->m_tileGrid, 0x10)) {
+                    if (lo < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_c
+                        && lo2 < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_10) {
                         TileSwitch6((i32)lo, (i32)lo2, 0, this->m_arrivalFlags, 1, 0);
                     }
                     if (this->CoordCount() != 0) {
@@ -1102,7 +1114,7 @@ i32 CGrunt::UpdateArrival() {
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
         i32* cell = (i32*)this->CoordHead()->m_coord;
-        u8* flags = (u8*)(F(F(g_gameReg->m_tileGrid, 0x8) + cell[1] * 4, 0) + cell[0] * 0x1c);
+        u8* flags = (u8*)(((GruntBoard*)g_gameReg->m_tileGrid)->m_8[cell[1]] + cell[0] * 0x1c);
         if ((flags[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
@@ -1137,8 +1149,8 @@ i32 CGrunt::ArrivalScanB() {
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0) {
         return 1;
     }
-    F(this, 0x300) = F(this, 0x17c);
-    F(this, 0x304) = F(this, 0x180);
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
     CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
@@ -1152,60 +1164,60 @@ i32 CGrunt::ArrivalScanB() {
     CGrunt* g = m_tileMgr->GetOccupant(this);
     i32 atTarget = 0;
     if (g != 0) {
-        i32 x = F(P(g, 0x10), 0x5c);
-        if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
-            && RectContains(x, F(P(g, 0x10), 0x60)) != 0) {
+        i32 x = g->m_10->m_5c;
+        if (x == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
+            && RectContains(x, g->m_10->m_60) != 0) {
             atTarget = 1;
         }
     }
 
-    if (F(this, 0x220) != 0) {
-        if (F(this, 0x21c) != 0) {
-            F(this, 0x21c) = 0;
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
             return 1;
         }
-        if (F(this, 0x218) != 0) {
+        if (m_combatActive != 0) {
             return 1;
         }
-        if (F(this, 0x3f0) >= 100) {
+        if (m_stamina >= 100) {
             if (FindGridNeighbor(1) != 0) {
                 return 1;
             }
             if (atTarget && g == 0) {
                 return 1;
             }
-            if (F(this, 0x220) == 0) {
+            if (m_poweredUp == 0) {
                 return 1;
             }
         } else {
             if (atTarget) {
                 return 1;
             }
-            if (F(this, 0x220) == 0) {
+            if (m_poweredUp == 0) {
                 return 1;
             }
         }
-        if (F(this, 0x21c) != 0) {
+        if (m_neighborValid != 0) {
             return 1;
         }
-        F(this, 0x1e4) = 0;
-        F(this, 0x218) = 0;
-        F(this, 0x21c) = 0;
-        F(this, 0x220) = 0;
+        m_entranceActive = 0;
+        m_combatActive = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
         ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
     if (g == 0) {
-        F(this, 0x390) = 0;
+        m_390 = 0;
         goto L_ed006b;
     }
-    if (F(this, 0x21c) != 0) {
+    if (m_neighborValid != 0) {
         return 1;
     }
-    if (F(this, 0x218) == 0 && F(this, 0x3f0) >= 100) {
+    if (m_combatActive == 0 && m_stamina >= 100) {
         if (atTarget) {
-            CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+            CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
             DRAIN_COORDS();
             return 1;
         }
@@ -1217,62 +1229,66 @@ i32 CGrunt::ArrivalScanB() {
     }
 
 L_ed006b:
-    if (g == 0 || GruntInRadius(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
-        F(this, 0x390) = 0;
+    if (g == 0 || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+        m_390 = 0;
         goto L_scanb;
     }
-    if (F(this, 0x220) != 0) {
+    if (m_poweredUp != 0) {
         goto L_scanb;
     }
-    if (F(this, 0x3f0) >= 100 && F(P(g, 0x10), 0x5c) == F(g, 0x17c)
-        && F(P(g, 0x10), 0x60) == F(g, 0x180)
-        && RectContains(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
-        CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+    if (m_stamina >= 100 && g->m_10->m_5c == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
+        && RectContains(g->m_10->m_5c, g->m_10->m_60) != 0) {
+        CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
     }
-    if (F(this, 0x220) != 0) {
+    if (m_poweredUp != 0) {
         goto L_scanb;
     }
-    if ((u32)F(this, 0x2ec) <= 0x1f4) {
+    if ((u32)m_dwell <= 0x1f4) {
         goto L_scanb;
     }
     {
         i32 cc[4];
         g->GetScreenPos((GruntTilePos*)cc);
-        if (TileSwitch6(cc[0] >> 5, cc[1] >> 5, 0, F(this, 0x248), 1, 0) != 0) {
-            if (F(this, 0x390) != 0) {
-                i32 x = F(P(this, 0x10), 0x5c);
-                i32 y = F(P(this, 0x10), 0x60);
-                if (GruntPointVisible((i32)(P(g_gameReg->m_world->m_24, 0x5c) + 0x40), x, y) != 0) {
+        if (TileSwitch6(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+            if (m_390 != 0) {
+                i32 x = m_10->m_5c;
+                i32 y = m_10->m_60;
+                if (GruntPointVisible(
+                        (i32)((CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX),
+                        x,
+                        y
+                    )
+                    != 0) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
-                F(this, 0x390) = 0;
+                m_390 = 0;
             }
-            F(this, 0x2ec) = 0;
+            m_dwell = 0;
         }
     }
 
 L_scanb:
-    if (F(this, 0x328) != 0) {
-        CScanCoord* coord = ((CScanNode324*)P(this, 0x320))->m_8;
+    if (CoordCount() != 0) {
+        CScanCoord* coord = ((CScanNode324*)m_31c.GetHeadPosition())->m_8;
         i32 col = coord->x;
         i32 row = coord->y;
         if (CellTargetable(col, row) != 0) {
             m_tileMgr->CommitTileSlot2(
-                F(this, 0x1ec),
-                F(this, 0x1f0),
+                m_tileOwnerHi,
+                m_tileOwnerLo,
                 (col << 5) + 0x10,
                 (row << 5) + 0x10
             );
             SetEntrancePos(1, 1);
-            F(this, 0x2ec) = 0;
+            m_dwell = 0;
         }
         return 1;
     }
-    if ((u32)F(this, 0x2ec) <= 0x3e8) {
+    if ((u32)m_dwell <= 0x3e8) {
         return 1;
     }
 
-    i32 r = F(this, 0x2dc);
+    i32 r = m_defenderRadius;
     RECT box;
     box.left = cx - r;
     box.right = cx + r;
@@ -1312,22 +1328,22 @@ L_scanb:
     while (node != 0) {
         char* gg = node->m_entry;
         node = node->m_next;
-        if (F(gg, 0x5c) == 0) {
-            i32 gx = F(gg, 0x54);
-            i32 gy = F(gg, 0x58);
+        if (*(i32*)(gg + 0x5c) == 0) {
+            i32 gx = *(i32*)(gg + 0x54);
+            i32 gy = *(i32*)(gg + 0x58);
             if (RectContains((gx << 5) + 0x10, (gy << 5) + 0x10) != 0) {
                 m_tileMgr->CommitTileSlot2(
-                    F(this, 0x1ec),
-                    F(this, 0x1f0),
+                    m_tileOwnerHi,
+                    m_tileOwnerLo,
                     (gx << 5) + 0x10,
                     (gy << 5) + 0x10
                 );
                 GRID_RECT_BOUNDS(grid);
                 return 1;
             }
-            i32 dx = gx - (F(P(this, 0x10), 0x5c) >> 5);
+            i32 dx = gx - (m_10->m_5c >> 5);
             IABS(dx);
-            i32 dy = gy - (F(P(this, 0x10), 0x60) >> 5);
+            i32 dy = gy - (m_10->m_60 >> 5);
             i32 dist = ((dy ^ (dy >> 31)) - (dy >> 31)) + dx;
             if (dist < best) {
                 POINT pt;
@@ -1348,18 +1364,18 @@ L_scanb:
         IABS(dy);
         if (dx <= 1 && dy <= 1) {
             m_tileMgr->CommitTileSlot2(
-                F(this, 0x1ec),
-                F(this, 0x1f0),
+                m_tileOwnerHi,
+                m_tileOwnerLo,
                 (bestX << 5) + 0x10,
                 (bestY << 5) + 0x10
             );
             SetEntrancePos(1, 1);
         } else {
-            TileSwitch6(bestX, bestY, 0, F(this, 0x248), 1, 0);
+            TileSwitch6(bestX, bestY, 0, m_arrivalFlags, 1, 0);
         }
     }
     GRID_RECT_INLINE(grid);
-    F(this, 0x2ec) = 0;
+    m_dwell = 0;
     return 1;
 }
 
@@ -1966,115 +1982,113 @@ i32 CGrunt::ArrivalScanC() {
     CGrunt* g = m_tileMgr->GetOccupant(this);
     i32 atTarget = 0;
     if (g != 0) {
-        i32 x = F(P(g, 0x10), 0x5c);
-        if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
-            && RectContains(x, F(P(g, 0x10), 0x60)) != 0) {
+        i32 x = g->m_10->m_5c;
+        if (x == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
+            && RectContains(x, g->m_10->m_60) != 0) {
             atTarget = 1;
         }
     }
 
-    F(this, 0x300) = F(this, 0x17c);
-    F(this, 0x304) = F(this, 0x180);
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
 
-    if (F(this, 0x220) != 0) {
-        if (F(this, 0x21c) != 0) {
-            F(this, 0x21c) = 0;
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
             return 1;
         }
-        if (F(this, 0x218) != 0) {
+        if (m_combatActive != 0) {
             return 1;
         }
-        if (F(this, 0x3f0) >= 100) {
+        if (m_stamina >= 100) {
             if (FindGridNeighbor(1) != 0) {
                 return 1;
             }
             if (atTarget && g == 0) {
                 return 1;
             }
-            if (F(this, 0x220) == 0) {
+            if (m_poweredUp == 0) {
                 return 1;
             }
-            if (F(this, 0x21c) != 0) {
+            if (m_neighborValid != 0) {
                 return 1;
             }
-            F(this, 0x1e4) = 0;
-            F(this, 0x218) = 0;
-            F(this, 0x21c) = 0;
-            F(this, 0x220) = 0;
+            m_entranceActive = 0;
+            m_combatActive = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
         if (atTarget) {
             return 1;
         }
-        if (F(this, 0x220) == 0) {
+        if (m_poweredUp == 0) {
             return 1;
         }
-        if (F(this, 0x21c) != 0) {
+        if (m_neighborValid != 0) {
             return 1;
         }
-        F(this, 0x1e4) = 0;
-        F(this, 0x218) = 0;
-        F(this, 0x21c) = 0;
-        F(this, 0x220) = 0;
+        m_entranceActive = 0;
+        m_combatActive = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
         ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
-    if (g == 0 || GruntInRadius(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
-        F(this, 0x390) = 0;
+    if (g == 0 || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+        m_390 = 0;
         goto L_tailc;
     }
-    if (F(this, 0x220) != 0) {
+    if (m_poweredUp != 0) {
         goto L_tailc;
     }
-    if (F(this, 0x3f0) >= 100 && F(P(g, 0x10), 0x5c) == F(g, 0x17c)
-        && F(P(g, 0x10), 0x60) == F(g, 0x180)
-        && RectContains(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
-        CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
-        F(this, 0x2ec) = 0;
+    if (m_stamina >= 100 && g->m_10->m_5c == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
+        && RectContains(g->m_10->m_5c, g->m_10->m_60) != 0) {
+        CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
+        m_dwell = 0;
         return 1;
     }
-    if (F(this, 0x220) != 0) {
+    if (m_poweredUp != 0) {
         goto L_tailc;
     }
-    if ((u32)F(this, 0x2ec) <= 0x1f4) {
+    if ((u32)m_dwell <= 0x1f4) {
         goto L_tailc;
     }
-    if (TileSwitch6(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
-        != 0) {
-        if (F(this, 0x390) != 0) {
-            char* board = P(g_gameReg->m_world->m_24, 0x5c) + 0x40;
-            i32 x = F(P(this, 0x10), 0x5c);
-            i32 y = F(P(this, 0x10), 0x60);
-            if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
+    if (TileSwitch6(g->m_10->m_5c >> 5, g->m_10->m_60 >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+        if (m_390 != 0) {
+            CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
+            i32 x = m_10->m_5c;
+            i32 y = m_10->m_60;
+            if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
                 g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
             }
-            F(this, 0x390) = 0;
+            m_390 = 0;
         }
-        F(this, 0x2ec) = 0;
+        m_dwell = 0;
     }
 
 L_tailc:
-    if (F(this, 0x328) != 0) {
-        CScanCoord* coord = ((CScanNode324*)P(this, 0x320))->m_8;
+    if (CoordCount() != 0) {
+        CScanCoord* coord = ((CScanNode324*)m_31c.GetHeadPosition())->m_8;
         i32 col = coord->x;
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
             m_tileMgr->CommitTileSlot2(
-                F(this, 0x1ec),
-                F(this, 0x1f0),
+                m_tileOwnerHi,
+                m_tileOwnerLo,
                 (col << 5) + 0x10,
                 (row << 5) + 0x10
             );
             SetEntrancePos(1, 1);
-            F(this, 0x2ec) = 0;
+            m_dwell = 0;
         }
         return 1;
     }
-    if (F(this, 0x220) == 0 && (u32)F(this, 0x2ec) > 0x3e8) {
-        i32 r = F(this, 0x2dc);
+    if (m_poweredUp == 0 && (u32)m_dwell > 0x3e8) {
+        i32 r = m_defenderRadius;
         RECT box;
         box.left = cx - r;
         box.right = cx + r;
@@ -2134,18 +2148,18 @@ L_tailc:
             IABS(dr);
             if (dc <= 1 && dr <= 1) {
                 m_tileMgr->CommitTileSlot2(
-                    F(this, 0x1ec),
-                    F(this, 0x1f0),
+                    m_tileOwnerHi,
+                    m_tileOwnerLo,
                     (bestCol << 5) + 0x10,
                     (bestRow << 5) + 0x10
                 );
                 SetEntrancePos(1, 1);
             } else {
-                TileSwitch6(bestCol, bestRow, 0, F(this, 0x248), 1, 0);
+                TileSwitch6(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
             }
         }
         GRID_RECT_INLINE(grid);
-        F(this, 0x2ec) = 0;
+        m_dwell = 0;
     }
     return 1;
 }
@@ -2398,7 +2412,7 @@ i32 CGrunt::SeekTarget() {
     this->m_defenderX = this->m_lastTilePxX;
     this->m_defenderY = this->m_lastTilePxY;
     if (this->CoordCount() != 0
-        && F(F(g_gameReg->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0) == 0) {
+        && (*(CGrunt***)((char*)g_gameReg->m_cmdGrid + 0x1c))[this->m_arrivalCol] == 0) {
         void* p = (void*)this->CoordHead();
         while (p != 0) {
             void* next = *(void**)p;
@@ -2417,7 +2431,7 @@ i32 CGrunt::SeekTarget() {
         reason = this->m_19c;
     }
     if (reason == 0 && (reason = this->m_arrivalCol, reason >= 0) && reason < 0xf) {
-        CGrunt* slot = (CGrunt*)F(F(g_gameReg->m_cmdGrid, 0x1c) + reason * 4, 0);
+        CGrunt* slot = (CGrunt*)(*(CGrunt***)((char*)g_gameReg->m_cmdGrid + 0x1c))[reason];
         if (slot == 0 || slot->m_entranceCommitted == 0) {
             if (this->CoordCount() != 0) {
                 void* p = (void*)this->CoordHead();
@@ -2485,7 +2499,7 @@ i32 CGrunt::SeekTarget() {
             }
             i32 best = 0x7fffffff;
             i32 bestIdx = -1;
-            CGrunt** slots = (CGrunt**)((char*)0 + F(g_gameReg->m_cmdGrid, 0x1c));
+            CGrunt** slots = *(CGrunt***)((char*)g_gameReg->m_cmdGrid + 0x1c);
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
@@ -2517,9 +2531,10 @@ i32 CGrunt::SeekTarget() {
                     != 0) {
                     i32 by = this->m_10->m_60;
                     i32 bx = this->m_10->m_5c;
-                    i32 board = F(P(g_gameReg->m_world->m_24, 0x5c), 0);
-                    if (bx < F(board, 0x48) && F(board, 0x40) <= bx && by < F(board, 0x4c)
-                        && F(board, 0x44) <= by) {
+                    CCueRect* board =
+                        (CCueRect*)(*(i32*)g_gameReg->m_world->m_24->m_mainPlane + 0x40);
+                    if (bx < board->right && board->left <= bx && by < board->bottom
+                        && board->top <= by) {
                         g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                     }
                 }
@@ -2534,7 +2549,7 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         CGruntHud* base =
-            ((CGrunt*)F(F(g_gameReg->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0))->m_10;
+            ((CGrunt*)(*(CGrunt***)((char*)g_gameReg->m_cmdGrid + 0x1c))[this->m_arrivalCol])->m_10;
         TileSwitch6(base->m_5c >> 5, base->m_60 >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->GetOccupant(this);
@@ -2614,7 +2629,7 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_390 != 0) {
             i32 r = GruntPointVisible(
-                F(P(g_gameReg->m_world->m_24, 0x5c), 0) + 0x40,
+                *(i32*)g_gameReg->m_world->m_24->m_mainPlane + 0x40,
                 this->m_10->m_5c,
                 this->m_10->m_60
             );
