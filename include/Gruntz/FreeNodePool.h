@@ -47,4 +47,8 @@ public:
 };
 SIZE_UNKNOWN(FreeNodePool);
 
+// The global coord-node recycler singleton (?g_coordPool @0x645540). Declared here so
+// consumers include the header rather than re-declaring a local extern.
+extern FreeNodePool g_coordPool;
+
 #endif // GRUNTZ_FREENODEPOOL_H

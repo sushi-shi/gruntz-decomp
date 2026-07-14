@@ -54,6 +54,7 @@ SIZE_UNKNOWN(GruntObjMap);
 // name shift is free - the symbol was reloc-masked/undefined either way).
 struct GruntObjMap {
     i32 Lookup(void* key, CGameObject*& out); // 0x1b8760 (CMapPtrToPtr::Lookup)
+    char m_raw[0x1c];                         // CMapPtrToPtr body (vptr + hash/free/block state)
 };
 class CSpriteFactory {
 public:
@@ -99,7 +100,10 @@ public:
     char m_pad10[0x14 - 0x10];
     CSpriteListNode* m_liveObjects; // +0x14  live created-object list head
     char m_pad18[0x48 - 0x18];
-    GruntObjMap m_objMap; // +0x48  embedded key->object map (Lookup @0x1b8760)
+    GruntObjMap m_objMap;          // +0x48  embedded key->object map (Lookup @0x1b8760)
+    CSpriteListNode* m_walkCursor; // +0x64  transient list walk cursor (seeded from
+                                   //        m_liveObjects; CGruntzMapMgr::LoadAttributes
+                                   //        footprint pass @0x0810f0)
     // +0x48: an embedded MFC CMapPtrToPtr (the serialize-time key->object map that
     // CTriggerMgr::Load resolves record keys through, Lookup @0x1b8760). Not typed here
     // because this Win32-included header must stay MFC-free (afx C1189); the MFC consumer

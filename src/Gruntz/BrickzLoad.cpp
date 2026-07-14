@@ -1,15 +1,33 @@
+#include <Mfc.h> // real ::CPtrArray (CGruntzMapMgr::m_arr) - MFC umbrella kept first
 #include <rva.h>
-#include <Gruntz/GameLevel.h>
 #include <Ints.h>
-#include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr)
-#include <Wwd/WwdFile.h>         // CPlaneRender - the canonical plane (the terrain grid)
-#include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (level mgr via m_world)
+#include <Gruntz/GruntzMapMgr.h>  // CGruntzMapMgr : CMapMgr (the +0x70 grid container)
+#include <Gruntz/Brickz.h>        // BrickzCell (the 0x1c-byte grid cell)
+#include <Gruntz/GameRegistry.h>  // CGameRegistry (*0x64556c); m_world == CSpriteFactoryHolder
+#include <Gruntz/SpriteFactory.h> // CSpriteFactory (object mgr) + CSpriteListNode (live list)
+#include <Gruntz/UserLogic.h>     // CGameObject (walked sprite) + AnimWorkerObj (m_7c) + g_buteMgr
+#include <Gruntz/GameLevel.h>     // CGameLevel (m_world->m_24; m_mainPlane @+0x5c)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the raw tile-grid facet of the main plane
+#include <Bute/ButeMgr.h>         // CButeMgr::GetInt (g_buteMgr @0x6453d8)
+#include <Gruntz/FreeNodePool.h>  // g_coordPool @0x645540 + CoordPoolNode (recycled coord node)
 
 #include <stdlib.h> // rand (0x11fee0, the engine rng)
-// BrickzLoad.cpp - CBrickz::LoadAttributes (0x0810f0), the level-load terrain
-// parser for the self-contained pathfinding grid container (the placeholder
-// "CBrickz" in <Gruntz/Brickz.h>; the SAME container AllocGrid/ComputeCellFlags
-// run on, NOT the CUserLogic-derived game object).
+
+// BrickzLoad.cpp - CGruntzMapMgr::LoadAttributes (0x0810f0), the level-load terrain
+// parser for the tile occupancy grid the game registry holds at +0x70.
+//
+// SETTLED IDENTITY (2026-07-14): this is NOT the game-object CBrickz (a distinct
+// CUserLogic-derived RTTI class, ??_7 @0x1e7c54) and NOT a plain CMapMgr. The object
+// is a CGruntzMapMgr - a real RTTI subclass of CMapMgr (??_7CGruntzMapMgr @0x1e9bb4).
+// Proven at its creation site inside the game-mgr init (0x83450):
+//     push 0x94 ; call ??2@YAPAXI@Z        ; allocate 0x94 bytes
+//     mov ecx,edi ; call ??0CMapMgr@@       ; run the CMapMgr base ctor (stamps 0x5ea3b4)
+//     lea ecx,[edi+0x7c] ; call 0x1b4f0b    ; construct the ::CPtrArray footprint at +0x7c
+//     mov DWORD PTR [edi],0x5e9bb4          ; re-stamp the DERIVED CGruntzMapMgr vtable
+//     mov DWORD PTR [ebp+0x70],edi          ; store into WwdGameReg::m_tileGrid (+0x70)
+// So the CMapMgr base carries +0x00..+0x7b (cell pool, row table, width/height, the
+// bound-rect, m_attrMgr) and the derived class adds the +0x7c CPtrArray + a +0x90 word
+// (object size 0x94). The former per-file `CBrickz` view (a fake placeholder) is gone.
 //
 // The function allocates the grid (AllocGrid), reads the five brick-colour counts
 // (Brown/Red/Blue/Gold/Black) from the "Brickz" bute section into cumulative
@@ -20,126 +38,20 @@
 //   3. inline the per-cell ComputeCellFlags: LookupTile -> pack cell->m_0 via a
 //      second dense jump table -> run the 8-neighbour diagonal-passability walk.
 // Then a freelist-recycle pass seeds the moving-object footprints and finally
-// stamps the dirty flag m_5c = 1.
+// stamps the dirty flag m_dirty = 1.
 //
 // The two jump-table data regions score as a delinker artifact (REL32 vs cl's $L
-// self-relocs, same as CBrickz::ComputeCellFlags), so the whole symbol reads ~0%;
+// self-relocs, same as CMapMgr::ComputeCellFlags), so the whole symbol reads ~0%;
 // the logic is byte-faithful. Field names are placeholders; the OFFSETS + code
 // bytes are the load-bearing fact.
 
 // ---------------------------------------------------------------------------
-// Modelled engine views (only the touched members/methods; every call is
-// reloc-masked).
-
-// A grid cell (0x1c bytes): packed terrain flags at +0, the resolved tile id at
-// +0xc, the bute type code at +0x10.
-struct BzCell {
-    i32 m_0;      // +0x00  packed terrain flags
-    i32 m_4;      // +0x04
-    BzCell* m_8;  // +0x08
-    i32 m_c;      // +0x0c  resolved tile id
-    i32 m_10;     // +0x10  bute type code
-    i32 m_14;     // +0x14
-    BzCell* m_18; // +0x18
-};
-
-// The terrain grid descriptor (attr->m_5c): a flat id table (m_20) indexed by a
-// per-row base-offset table (m_24).
-// The terrain grid descriptor (m_78->m_24->m_5c) is the shared world-plane
-// CPlaneRender (<Wwd/WwdFile.h>): cell = m_tileGrid[m_colOffsets[col] + row].
-
-// The attribute/bute-type manager (this->m_78->m_24): the grid descriptor at
-// +0x5c and the per-cell tile-type lookup at 0x082600 (ILT thunk 0x4228).
-
-// The level manager reached as (BzLevelMgr*)g_gameReg->m_world: the attribute manager at
-// +0x24 and the moving-object manager at +0x8.
-struct BzMovingObj;
-struct BzObjMgr {
-    char m_pad0[0x14];
-    BzMovingObj* m_14; // +0x14  moving-object list head-source
-    char m_pad18[0x64 - 0x18];
-    BzMovingObj* m_64; // +0x64  walk cursor
-};
-struct BzLevelMgr {
-    char m_pad0[0x8];
-    BzObjMgr* m_8; // +0x08  moving-object manager
-    char m_pad0c[0x24 - 0xc];
-    CGameLevel* m_24; // +0x24  attribute/bute-type manager
-};
-
-// The level manager is the Brickz-loader facet of the canonical registry's reused
-// +0x30 world/resource slot ((BzLevelMgr*)g_gameReg->m_world; see CGameRegistry.h);
-// the editor/test-mode gates are the registry's m_isEasyMode (+0x118) and m_134
-// (+0x134, 1 => test) discriminators. Authentic per-mode downcast of the singleton.
+// The engine registry singleton (*0x64556c). m_world (+0x30) is the world/asset
+// holder; the editor/test-mode gates are m_isEasyMode (+0x118) and m_134 (+0x134,
+// 1 => test). g_gameReg is a divergent-view singleton (CGruntzMgr* / WwdGameReg* /
+// CGameRegistry* across TUs, three distinct structs), so its extern stays local -
+// a shared-header decl would collide with the other views' TUs.
 extern "C" CGameRegistry* g_gameReg;
-
-// A moving object off the level manager's list: a type record at +0x7c whose
-// +0x10 identifies the class (0x40192e), and its tile position at +0x5c/+0x60.
-struct BzMovingObjType {
-    char m_pad0[0x10];
-    i32 m_10; // +0x10  class id (== 0x40192e for the footprint kind)
-};
-struct BzMovingObj {
-    BzMovingObj* m_0; // +0x00  free-list next link
-    char m_pad4[0x8 - 0x4];
-    BzMovingObj* m_8; // +0x08  object payload
-    char m_pad0c[0x5c - 0xc];
-    i32 m_5c; // +0x5c  world x
-    i32 m_60; // +0x60  world y
-    char m_pad64[0x7c - 0x64];
-    BzMovingObjType* m_7c; // +0x7c  type record
-};
-
-// A recycled footprint node off the shared free-list (g_freeList): the (col,row)
-// pair the recycle pass stamps into the grid.
-struct BzFreeNode {
-    BzFreeNode* m_0; // +0x00  next-free link / col write base
-    i32 m_4;         // +0x04  col
-    i32 m_8;         // +0x08  row
-};
-// The free-list head (0x645544) and node bias (0x64554c) are NOT globals: they are the
-// INTERIOR FIELDS m_freeHead (+0x04) / m_linkOffset (+0x0c) of the coord-node pool
-// g_coordPool @0x645540 (DEFINED in src/Gruntz/GameText.cpp). This TU used to redeclare
-// the head under its own BzFreeNode* type - a divergent second symbol for the same slot.
-// The pool's head is genuinely void* (it recycles nodes of several element types), so the
-// BzFreeNode view is a cast at the use sites, which is what retail does.
-#include <Gruntz/FreeNodePool.h>
-extern FreeNodePool g_coordPool;
-
-// CPtrArray helpers on the container's +0x7c footprint array (m_80 = data,
-// m_84 = count). SetAtGrow (0x1b5144, __thiscall ret 8), SetSize (0x1b4f75,
-// __thiscall ret 8). Modelled no-body so the calls reloc-mask.
-struct BzPtrArray {
-    void SetAtGrow(i32 index, void* elem); // 0x1b5144
-    void SetSize(i32 newSize, i32 growBy); // 0x1b4f75
-};
-
-// The global bute store (?g_buteMgr@@3VCButeMgr@@A, 0x6453d8); GetInt @0x171af0.
-extern CButeMgr g_buteMgr;
-
-// ---------------------------------------------------------------------------
-// The pathfinding grid container. Minimal per-file view (offsets are the
-// load-bearing fact); the full container lives in <Gruntz/Brickz.h>.
-class CBrickz {
-public:
-    i32 LoadAttributes(i32 width, i32 height);    // 0x0810f0
-    i32 AllocGrid(i32 width, i32 height, i32 cb); // 0x09ea60 (via ILT 0x412e)
-
-    char m_pad0[0x4];
-    BzCell* m_4;  // +0x04  flat cell pool
-    BzCell** m_8; // +0x08  column table
-    i32 m_c;      // +0x0c  height
-    i32 m_10;     // +0x10  width
-    char m_pad14[0x5c - 0x14];
-    i32 m_5c; // +0x5c  dirty flag (stamped 1 at the end)
-    char m_pad60[0x78 - 0x60];
-    BzLevelMgr* m_78;       // +0x78  level manager (= (BzLevelMgr*)g_gameReg->m_world)
-    BzPtrArray m_footprint; // +0x7c  footprint CPtrArray (m_80 data, m_84 count)
-    void** m_80;            // +0x80  footprint array data
-    i32 m_84;               // +0x84  footprint array count
-    char m_pad88[0x90 - 0x88];
-    i32 m_90; // +0x90  cleared at start
-};
 
 // A weighted colour selector: rolls rand()%total (+1) or rand()&1 when total==0,
 // walks the four cumulative thresholds t1..t4 and returns the picked tile id.
@@ -210,21 +122,20 @@ static i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 
 // @early-stop
 // jump-table-data scoring artifact + regalloc-cascade wall (verified base-vs-target
-// with llvm-objdump -dr): the head is byte-faithful (g_gameReg->m_world / m_78,
-// the m_24->m_5c grid gate + early return, the AllocGrid call, the five
+// with llvm-objdump -dr): the head is byte-faithful (g_gameReg->m_world / m_attrMgr,
+// the m_24->m_mainPlane grid gate + early return, the AllocGrid call, the five
 // Brickz-section GetInt threshold sums with the correct pooled strings). Two
 // divergences drag the whole symbol to ~0% and neither is source-steerable here:
 // (1) the two dense switches (the [0x12f,0x149] colour selector + the 0x99-case
 // cell-flag packer) emit byte-index LUT + jump-table data whose self-relocs the
-// delinker types REL32 where cl emits $L (same wall as CBrickz::ComputeCellFlags);
+// delinker types REL32 where cl emits $L (same wall as CMapMgr::ComputeCellFlags);
 // (2) MSVC5 pins `this` in ebp + defers the esi save (frame 0x48) where retail pins
 // `this` in esi + shrink-wraps only edi (frame 0x40), a whole-function regalloc
-// cascade. The empty stub's fuzzy 14.9% was size-mismatch noise; this is the
-// complete correct body. Parked for the final sweep (a leaf-first redo).
+// cascade. Parked for the final sweep (a leaf-first redo).
 RVA(0x000810f0, 0x8b4)
-i32 CBrickz::LoadAttributes(i32 width, i32 height) {
-    m_78 = (BzLevelMgr*)g_gameReg->m_world;
-    CPlaneRender* grid = (CPlaneRender*)m_78->m_24->m_mainPlane;
+i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
+    m_attrMgr = g_gameReg->m_world;
+    CPlaneRender* grid = (CPlaneRender*)m_attrMgr->m_24->m_mainPlane;
     if (grid == 0) {
         return 0;
     }
@@ -238,9 +149,9 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
     i32 t4 = t3 + g_buteMgr.GetInt("Brickz", "Gold");
     i32 total = t4 + g_buteMgr.GetInt("Brickz", "Black");
 
-    BzCell* cell = m_4;
-    for (i32 col = 0; col < m_10; col++) {
-        for (i32 row = 0; row < m_c; row++, cell++) {
+    BrickzCell* cell = m_cellPool;
+    for (i32 col = 0; col < (i32)m_10; col++) {
+        for (i32 row = 0; row < (i32)m_c; row++, cell++) {
             i32 tileId = grid->m_tileGrid[grid->m_colOffsets[col] + row];
             if (tileId != -1) {
                 tileId &= 0xffff;
@@ -304,7 +215,7 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
             }
 
             // Inline ComputeCellFlags: look up the type code, pack the flags.
-            i32 typeCode = m_78->m_24->LookupTile(row, col);
+            i32 typeCode = m_attrMgr->m_24->LookupTile(row, col);
             i32 oldFlags = cell->m_0;
             i32 keep = oldFlags & 0x1bf40000;
             i32 edgeBit = oldFlags & 0x20000000;
@@ -418,20 +329,20 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
                         if (c < 0 || (u32)c >= (u32)m_10) {
                             continue;
                         }
-                        BzCell* nc = &m_8[c][r];
+                        BrickzCell* nc = &m_rows[c][r];
                         i32 nf = nc->m_0 & ~0x1000;
                         nc->m_0 = nf;
                         if ((nf & 0x100) == 0) {
                             continue;
                         }
-                        BzCell* up = (r != 0) ? nc - 1 : 0;
-                        BzCell* down = (r < colCount - 1) ? nc + 1 : 0;
-                        BzCell* right = (c < m_10 - 1) ? nc + colCount : 0;
-                        BzCell* left = (c != 0) ? nc - colCount : 0;
-                        BzCell* ur = (up && right) ? up + colCount : 0;
-                        BzCell* dl = (down && left) ? down - colCount : 0;
-                        BzCell* ul = (up && left) ? up - colCount : 0;
-                        BzCell* dr = (down && right) ? down + colCount : 0;
+                        BrickzCell* up = (r != 0) ? nc - 1 : 0;
+                        BrickzCell* down = (r < colCount - 1) ? nc + 1 : 0;
+                        BrickzCell* right = (c < (i32)m_10 - 1) ? nc + colCount : 0;
+                        BrickzCell* left = (c != 0) ? nc - colCount : 0;
+                        BrickzCell* ur = (up && right) ? up + colCount : 0;
+                        BrickzCell* dl = (down && left) ? down - colCount : 0;
+                        BrickzCell* ul = (up && left) ? up - colCount : 0;
+                        BrickzCell* dr = (down && right) ? down + colCount : 0;
                         bool set = false;
                         if (up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939)) {
                             set = true;
@@ -453,63 +364,62 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
 
     // Freelist-recycle pass: for each moving object of the footprint kind, seed a
     // 3x3 footprint of recycled free nodes, then commit them into the grid.
-    BzObjMgr* mgr = ((BzLevelMgr*)g_gameReg->m_world)->m_8;
-    mgr->m_64 = mgr->m_14;
-    BzMovingObj* obj;
-    if (mgr->m_64 != 0) {
-        BzMovingObj* n = mgr->m_64;
-        mgr->m_64 = n->m_0;
-        obj = n->m_8;
+    CSpriteFactory* mgr = g_gameReg->m_world->m_8;
+    mgr->m_walkCursor = mgr->m_liveObjects;
+    CGameObject* obj;
+    if (mgr->m_walkCursor != 0) {
+        CSpriteListNode* n = mgr->m_walkCursor;
+        mgr->m_walkCursor = n->next;
+        obj = n->m_sprite;
     } else {
         obj = 0;
     }
     while (obj != 0) {
-        if (obj->m_7c->m_10 == 0x40192e) {
-            i32 tileX = (obj->m_5c + (obj->m_5c >> 31 & 0x1f)) >> 5;
-            i32 tileY = (obj->m_60 + (obj->m_60 >> 31 & 0x1f)) >> 5;
+        // The footprint kind is the object whose worker's post-create notify hook is
+        // &CreateExitTrigger (@0x40192e); m_notify is a raw fn-ptr, reinterpreted to int
+        // exactly as retail's `cmp [worker+0x10], 0x40192e`.
+        if ((i32)obj->m_7c->m_notify == 0x40192e) {
+            i32 tileX = (obj->m_screenX + (obj->m_screenX >> 31 & 0x1f)) >> 5;
+            i32 tileY = (obj->m_screenY + (obj->m_screenY >> 31 & 0x1f)) >> 5;
             for (i32 xo = -1; xo < 2; xo++) {
                 for (i32 yo = -1; yo < 2; yo++) {
-                    BzFreeNode* node = 0;
+                    // Pop a CoordPoolNode off g_coordPool: the {x,y} payload (a Coord) sits
+                    // one link-offset (4) past the head, the m_next link is at head+0. Same
+                    // void* generic-free-list idiom as Grunt.cpp's recycle. Retail hardcodes
+                    // the +4 in the pop (and reads m_linkOffset only in the push below).
+                    Coord* elem = 0;
                     if (*(void**)g_coordPool.m_freeHead != 0) {
-                        node = (BzFreeNode*)g_coordPool.m_freeHead;
-                        node->m_4 = tileX + xo;
-                        node->m_8 = tileY + yo;
-                        // Re-READ the head (retail's `g_freeList = g_freeList->m_0`) rather than
-                        // reuse `node` - the reload is what the codegen reproduces.
-                        g_coordPool.m_freeHead = ((BzFreeNode*)g_coordPool.m_freeHead)->m_0;
+                        elem = (Coord*)((char*)g_coordPool.m_freeHead + 4);
+                        elem->m_x = tileX + xo;
+                        elem->m_y = tileY + yo;
+                        g_coordPool.m_freeHead = *(void**)g_coordPool.m_freeHead;
                     }
-                    m_footprint.SetAtGrow(m_84, node);
+                    m_arr.SetAtGrow(m_arr.GetSize(), elem);
                 }
             }
-            for (i32 k = 0; k < m_84; k++) {
-                BzFreeNode* node = (BzFreeNode*)m_80[k];
-                if (node != 0 && (u32)node->m_4 < (u32)m_c && (u32)node->m_8 < (u32)m_10) {
-                    m_4[node->m_8 * m_c + node->m_4].m_0 = 0x10;
-                    m_4[node->m_8 * m_c + node->m_4].m_c = 0;
-                    BzFreeNode* rec = (BzFreeNode*)((char*)node - g_coordPool.m_linkOffset);
-                    rec->m_0 = (BzFreeNode*)g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = rec;
+            for (i32 k = 0; k < m_arr.GetSize(); k++) {
+                Coord* elem = (Coord*)m_arr[k];
+                if (elem != 0 && (u32)elem->m_x < (u32)m_c && (u32)elem->m_y < (u32)m_10) {
+                    m_cellPool[elem->m_y * m_c + elem->m_x].m_0 = 0x10;
+                    m_cellPool[elem->m_y * m_c + elem->m_x].m_c = 0;
+                    // Recycle: recover the raw node (payload - m_linkOffset) and relink onto
+                    // the free-list head (the Grunt.cpp void** idiom).
+                    void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
+                    *node = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = node;
                 }
             }
-            m_footprint.SetSize(0, -1);
+            m_arr.SetSize(0, -1);
         }
-        if (mgr->m_64 != 0) {
-            BzMovingObj* n = mgr->m_64;
-            mgr->m_64 = n->m_0;
-            obj = n->m_8;
+        if (mgr->m_walkCursor != 0) {
+            CSpriteListNode* n = mgr->m_walkCursor;
+            mgr->m_walkCursor = n->next;
+            obj = n->m_sprite;
         } else {
             obj = 0;
         }
     }
 
-    m_5c = 1;
+    m_dirty = 1;
     return 1;
 }
-
-SIZE_UNKNOWN(BzCell);
-SIZE_UNKNOWN(BzFreeNode);
-SIZE_UNKNOWN(BzLevelMgr);
-SIZE_UNKNOWN(BzMovingObj);
-SIZE_UNKNOWN(BzMovingObjType);
-SIZE_UNKNOWN(BzObjMgr);
-SIZE_UNKNOWN(BzPtrArray);

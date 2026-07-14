@@ -295,4 +295,8 @@ SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
+// The global bute store singleton (?g_buteMgr@@3VCButeMgr@@A @0x6453d8); its getters
+// (GetInt/GetString/...) reloc-mask. Declared here so consumers include the header.
+extern CButeMgr g_buteMgr;
+
 #endif // SRC_BUTE_BUTEMGR_H

@@ -61,8 +61,8 @@ struct BrickzCell {
         i32 m_0;           // +0x00  packed terrain flags
         u8 m_flagBytes[4]; //        byte view; [3] & 0x20 = the stepped/visited bit
     };
-    i32 m_4; // +0x04  per-cell edge/id payload
-    char m_pad8[0x0c - 0x08];
+    i32 m_4;            // +0x04  per-cell edge/id payload
+    BrickzCell* m_8;    // +0x08  per-cell link (CGruntzMapMgr::LoadAttributes zeroes it)
     i32 m_c;            // +0x0c  id3 payload (ComputeCellFlags)
     i32 m_10;           // +0x10  bute type code (ComputeCellFlags)
     i32 m_count;        // +0x14  per-cell open-list reference count

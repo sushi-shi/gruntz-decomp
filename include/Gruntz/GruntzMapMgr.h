@@ -54,10 +54,17 @@ public:
     // slot 1 (0x082430 SerializeNodes): the base's Visit slot, overridden. CGruntzMgr::
     // BroadcastCmd drives it as a 4-arg command dispatch (`mov eax,[ecx]; call [eax+4]`).
     virtual i32 Visit(CSerialArchive* ar, i32 b, i32 c, i32 d) OVERRIDE;
+
+    // The level-load terrain parser (0x0810f0): allocates the grid, rolls per-cell
+    // brick colours off the "Brickz" bute section, packs the cell flags, then seeds
+    // moving-object footprints from the free-node pool. Body in BrickzLoad.cpp.
+    i32 LoadAttributes(i32 width, i32 height); // 0x0810f0
+
     // ::CPtrArray, not CObArray: ~CGruntzMapMgr's member teardown calls into
     // [0x1b4f0b, 0x1b527e) (ctor 0x1b4f0b stamps ??_7CPtrArray@@6B@), not CObArray's
     // [0x1b55e9, 0x1b59cc).  The elements are raw void* nodes, not CObject*.
-    CPtrArray m_arr; // +0x7c
+    CPtrArray m_arr; // +0x7c  footprint array (m_pData@+0x80, m_nSize@+0x84)
+    i32 m_90;        // +0x90  cleared at LoadAttributes start (object size 0x94)
 };
 
 #endif // GRUNTZ_CGRUNTZMAPMGR_H
