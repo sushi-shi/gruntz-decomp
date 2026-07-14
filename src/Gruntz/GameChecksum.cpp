@@ -2,15 +2,14 @@
 // (C:\Proj\Gruntz). Walks the 60-entry object table (this->m_4->m_4->m_68,
 // indexed 0x1c..0x108 step 4, in 4 batches of 15) and folds a large set of each
 // object's fields plus the global sync salt (g_frameTime @0x645588) and a per-object
-// switch term into a running 32-bit signature. Deliberate raw-offset reads keep the
-// codegen naming-independent over the opaque object layout; offsets are load-bearing.
+// switch term into a running 32-bit signature. The folded object-table entry is the
+// real CGrunt (its m_10 is the CGruntHud geometry source), typed via <Gruntz/Grunt.h>.
 #include <Ints.h>
 #include <rva.h>
-#include <stdlib.h> // rand (0x11fee0), the trailing signature component
-
-#define I32AT(p, off) (*(i32*)((char*)(p) + (off)))
-
-extern "C" i32 g_frameTime; // 0x645588 (the per-frame sync salt)
+#include <stdlib.h>       // rand (0x11fee0), the trailing signature component
+#include <Gruntz/Grunt.h> // the real CGrunt object-table entry + its CGruntHud* m_10
+// g_frameTime (the per-frame sync salt, 0x645588) comes from <Gruntz/MovingLogic.h>
+// via Grunt.h as `extern "C" u32 g_frameTime` - re-declaring it here clashed (C2371).
 
 struct CGameSyncSig {
     i32 ComputeSignature();
@@ -34,20 +33,20 @@ i32 CGameSyncSig::ComputeSignature() {
         i32 cnt = 15;
         do {
             char* base = *(char**)(*(char**)(*(char**)((char*)this + 4) + 4) + 0x68);
-            char* obj = *(char**)(base + off);
+            CGrunt* obj = *(CGrunt**)(base + off);
             if (obj != 0) {
-                char* sub = *(char**)(obj + 0x10);
-                sum += I32AT(obj, 0x444) + I32AT(obj, 0x3f0) + I32AT(obj, 0x3f4) + I32AT(obj, 0x3ec)
-                       + I32AT(sub, 0x60) + I32AT(sub, 0x74) + I32AT(sub, 0x5c) + I32AT(obj, 0x17c)
-                       + I32AT(obj, 0x180);
-                i32 n = I32AT(obj, 0x170);
+                CGruntHud* sub = obj->m_10;
+                sum += obj->m_entranceCell.reason + obj->m_stamina + obj->m_toyTime + obj->m_health
+                       + sub->m_60 + sub->m_74 + sub->m_5c + obj->m_lastTilePxX
+                       + obj->m_lastTilePxY;
+                i32 n = obj->m_entranceReason;
                 i32 d = n;
                 if (n > 0x16) {
-                    d = I32AT(obj, 0x19c);
+                    d = obj->m_19c;
                 }
-                sum += I32AT(obj, 0x198) + I32AT(obj, 0x1fc) + I32AT(obj, 0x1e4) + I32AT(obj, 0x224)
-                       + d;
-                i32 v = I32AT(obj, 0x170) - 1;
+                sum +=
+                    obj->m_198 + obj->m_entranceCommitted + obj->m_entranceActive + obj->m_224 + d;
+                i32 v = obj->m_entranceReason - 1;
                 i32 r;
                 if ((u32)v > 0x15) {
                     r = 0x17;
@@ -124,8 +123,8 @@ i32 CGameSyncSig::ComputeSignature() {
                             break;
                     }
                 }
-                sum += I32AT(obj, 0x450) + I32AT(obj, 0x358) + I32AT(obj, 0x218) + I32AT(obj, 0x21c)
-                       + I32AT(obj, 0x220) + g_frameTime + r;
+                sum += obj->m_arrivalPhase + obj->m_358 + obj->m_combatActive + obj->m_neighborValid
+                       + obj->m_poweredUp + g_frameTime + r;
                 sum += rand();
             }
             off += 4;
