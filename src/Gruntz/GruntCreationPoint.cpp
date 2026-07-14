@@ -18,22 +18,17 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class).
+// The per-class registry slot holds the per-frame handler PMF (AdvanceAnim, a 4-byte
+// code ptr on this single-inheritance class); read straight off the ResolveEntry slot
+// as the PMF pointer (no entry-struct view). FireActivation invokes it on `this`.
 typedef i32 (CGruntCreationPoint::*CreationPointHandler)();
-struct CCreationPointActEntry {
-    CreationPointHandler m_fn;
-};
 
 // The class's activation-coordinate registry singleton (@0x644700), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
-// duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
-// derives from it, keeping its own placeholder name so the DATA-pinned global is
-// unchanged.
-struct CCreationPointActReg : public CActReg {};
+// fixed [2000,2010] range by the shared registry ctor (0x408710). IS the shared
+// <Gruntz/ActReg.h> CActReg archetype directly (single-TU global; the empty placeholder
+// subclass added nothing) - same pattern as g_lightFxActReg / g_kslimeColl.
 DATA(0x00244700)
-CCreationPointActReg g_creationPointActReg; // 0x644700
+CActReg g_creationPointActReg; // 0x644700
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"
@@ -177,11 +172,10 @@ void CGruntCreationPoint::InitActReg() {
 // ResolveEntry + PMF dispatch.
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
-    CCreationPointActEntry* e = (CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(coord);
-    if (e->m_fn != 0) {
-        CCreationPointActEntry* e2 =
-            (CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(coord);
-        (this->*(e2->m_fn))();
+    CreationPointHandler* e = (CreationPointHandler*)g_creationPointActReg.ResolveEntry(coord);
+    if (*e != 0) {
+        CreationPointHandler* e2 = (CreationPointHandler*)g_creationPointActReg.ResolveEntry(coord);
+        (this->*(*e2))();
     }
 }
 
@@ -213,7 +207,7 @@ void CGruntCreationPoint::RegisterActs() {
         ((CString*)slot)->operator=(s_codeA);
         g_typeCounter++;
     }
-    ((CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(id))->m_fn =
+    *(CreationPointHandler*)g_creationPointActReg.ResolveEntry(id) =
         &CGruntCreationPoint::AdvanceAnim;
 }
 
@@ -227,6 +221,4 @@ i32 CGruntCreationPoint::AdvanceAnim() {
 }
 
 SIZE_UNKNOWN(CAnimSink);
-SIZE_UNKNOWN(CCreationPointActEntry);
-SIZE_UNKNOWN(CCreationPointActReg);
 SIZE_UNKNOWN(CCreationSpriteRefTable);
