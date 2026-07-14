@@ -33,8 +33,9 @@
 #include <Gruntz/AniElement.h>
 #include <Wap32/Object.h>
 #include <rva.h>
-#include <Gruntz/StateId.h> // StateId (GetStateId return type)
-#include <Mfc.h>            // real MFC CMapStringToPtr / CString / POSITION
+#include <Gruntz/StateId.h>  // StateId (GetStateId return type)
+#include <Gruntz/Loadable.h> // CLoadable - the 9-slot loadable base (3-arg ctor def below)
+#include <Mfc.h>             // real MFC CMapStringToPtr / CString / POSITION
 #include <Bute/SymTab.h>    // CSymTab (ProbeWorkerKey's probe chain)
 #include <string.h>
 #include <DDrawMgr/DirectDrawMgr.h>
@@ -93,39 +94,15 @@ SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 // operator delete (NAFXCW ??3@YAXPAX@Z @0x1b9b82) - the scalar-dtor free path.
 void operator delete(void*);
 
-// The CLoadable-shaped base arg-ctor class (its own local model; the CObject-derived
-// <DDrawMgr/DDrawSubMgr.h> base is a DIFFERENT class wearing the same name - the
-// conflation is flagged there for the identity pass).
-class CDDrawSubMgrBase {
-public:
-    CDDrawSubMgrBase() {}
-    CDDrawSubMgrBase(i32 x) {
-        m_base04 = x;
-    }
-    virtual ~CDDrawSubMgrBase() {}
-    i32 m_base04; // +0x04
-};
-SIZE_UNKNOWN(CDDrawSubMgrBase);
-
-class CDDrawSubMgr : public CDDrawSubMgrBase {
-public:
-    CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 a2, i32 a3);
-    virtual ~CDDrawSubMgr() OVERRIDE {}
-    virtual void IsReady();
-    virtual i32 Init();
-    virtual i32 OnDestroy();      // declared-only (the old 0x1576c0 attribution was wrong:
-                                  // that body is CDDrawChildGroup::IsReady, vtbl slot 6)
-    virtual StateId GetStateId(); // 0x157790 (out-of-line at its RVA position)
-
-    i32 m_field08;                   // +0x08
-    CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c
-};
-SIZE_UNKNOWN(CDDrawSubMgr);
-// 0x155720 is NOT this local CDDrawSubMgr's ??_G: it is CDDrawSubMgrFar's scalar-
-// deleting destructor (member-teardown ~ at 0xd5d70, CImage.cpp), now modeled as
-// CDDrawSubMgrFar::ScalarDtor in DDrawWorkerRegistry.cpp (its RVA-correct obj span)
-// so the member-dtor CALL binds to ??1CDDrawSubMgrFar. The prior @rva-symbol pinned
-// this local class's empty-dtor ??_G here, leaving that call UNBOUND (misattribution).
+// (The local CDDrawSubMgrBase/CDDrawSubMgr pair is DISSOLVED 2026-07-14: the ctor
+// 0x156cb0 stamps 0x5efc30 - CLoadable's OWN vtable - so "CDDrawSubMgr" was CLoadable
+// under a second name (<Gruntz/Loadable.h> records the proof). The 3-arg CLoadable
+// base ctor is defined below at its retail RVA.)
+// 0x155720 is CLoadable's ??_G scalar-deleting-dtor COMDAT copy (member-teardown ~ at
+// 0xd5d70, CImage.cpp) - kept as the CDDrawSubMgrFar COMDAT-scaffold pair in
+// DDrawWorkerRegistry.cpp/CImage.cpp (see the notes there): the (A)-form inline
+// ~CLoadable cannot ALSO be defined out-of-line, so the linker-kept COMDAT copies
+// wear the scaffold name until the family's (B)-form flip.
 
 // (The former CDDrawBlitParamSrc source view is DISSOLVED onto the real
 // CAniElement - see <Gruntz/AniAdvanceCursor.h>.)
@@ -416,19 +393,16 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgr::CDDrawSubMgr (0x156cb0): chains the base(int) ctor (inlined:
-// this+0x04 = a2), stamps the CDDrawSubMgr vtable (compiler-generated), then
-// seeds the remaining fields.
+// CLoadable::CLoadable (0x156cb0, the ex "??0CDDrawSubMgr"): the out-of-line 3-arg
+// loadable-base ctor - seed the three header words, stamp ??_7CLoadable (compiler-
+// generated). Retail callers: CDDrawSurfaceMgr::Init 0x155900, CDDrawSubMgrPages::
+// CreateChildren 0x1588f0, CWwdObjMgr::CreateObject 0x1598d0, CDDrawWorkerHost::
+// ReadPlaneObjects 0x162af0.
 RVA(0x00156cb0, 0x20)
-CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 a2, i32 a3) : CDDrawSubMgrBase(a2) {
-    m_field08 = a3;
-    m_pSurfaceMgr = pSurfaceMgr;
-}
-
-// Out-of-line stubs for unmatched virtuals (anchors the vtable in this TU).
-void CDDrawSubMgr::IsReady() {}
-i32 CDDrawSubMgr::Init() {
-    return 0;
+CLoadable::CLoadable(i32 owner, i32 field04, i32 field08) {
+    m_04 = field04;
+    m_08 = field08;
+    m_0c = owner;
 }
 
 // ---------------------------------------------------------------------------
@@ -905,10 +879,12 @@ CDDrawWorkerCache::~CDDrawWorkerCache() {
     // ??_7 re-stamp - reproduces retail's teardown order.
 }
 
-RVA(0x00157790, 0x6)
-StateId CDDrawSubMgr::GetStateId() {
-    return STATE_SUBMGR; // 1
-}
+// (0x157790 - the ex "CDDrawSubMgr::GetStateId returning STATE_SUBMGR=1" - is
+// CDDrawWorkerCache's slot-6 IsReady: its ONLY reference in the binary is
+// ??_7CDDrawWorkerCache@@6B@+0x18, and the body is the class's own compiled copy
+// of the CWapObj `return 1` default (no MSVC5 ICF; same pattern as
+// CDDrawChildGroup::IsReady @0x1576c0). Defined inline in
+// <DDrawMgr/DDrawWorkerCache.h> beside its slot-5/slot-8 siblings.)
 
 // [5] 0x1577a0: leaf ready iff +0x0c is bound and the +0x04 status latch isn't -1.
 RVA(0x001577a0, 0x16)

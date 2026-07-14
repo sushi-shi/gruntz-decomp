@@ -83,12 +83,15 @@ i32 Gap_0d5c10(void) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0d5d70 - CDDrawSubMgrFar::~CDDrawSubMgrFar: the member-teardown destructor of a
-// far sibling of the DDraw surface-manager family (a FamilyMapBase-shaped, CObject-
-// derived 5-slot class) whose .text landed in this cimage unit's RVA range. Its ??_G
-// scalar-deleting dtor lives at 0x155720 (DDrawSubMgr.cpp) and calls this ~. The empty
-// derived-vtable stamp over the inline MFC ~CObject is elided, so the dtor lowers to
-// the field resets (m_04=-1, m_08/m_0c=0) followed by the single ??_7CObject re-stamp.
+// 0x0d5d70 - IDENTITY: this is ~CLoadable's out-of-line COMDAT copy (the linker kept
+// THIS unit's emission; its ??_G pair 0x155720 was kept from the DDrawSubMgr-band obj
+// and calls it via the ILT thunk 0x429b). It CANNOT be spelled `CLoadable::~CLoadable`
+// here because the (A)-form canonical (<Gruntz/Loadable.h>) defines that dtor INLINE -
+// every derived dtor in the tree folds its resets - and C++ allows no second,
+// out-of-line definition. Until the family's (B)-form explicit-ScalarDtor flip, the
+// linker-kept COMDAT pair wears this distinct scaffold name (C168c10 pattern). The
+// body: field resets (m_04=-1, m_08/m_0c=0) + the single surviving ??_7CObject
+// re-stamp (the intermediate stamps dead-store-eliminated).
 struct CDDrawSubMgrFar : public CObject {
     virtual void s0();          // slot 0
     virtual ~CDDrawSubMgrFar(); // slot 1 (its ??_G is 0x155720 in DDrawSubMgr.cpp)

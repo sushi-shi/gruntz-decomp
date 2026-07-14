@@ -91,10 +91,11 @@ public:
     CDDrawSurfaceMgr* m_mgr; // +0x0c (from merged CSurfacePairBase)
 public:
     // The spawned-child ctor: the CreateChildren path reuses the shared base-family
-    // arg-ctor (??0CDDrawSubMgr @0x156cb0, which stamps the CLoadable base vtable
-    // 0x5efc30) then manually re-stamps this class's own vtable (g_ddrawSurfacePairVtbl
-    // @0x5eff30). Declared-only here (the body is the shared 0x156cb0 base ctor, not
-    // in this TU); consumers that spawn a pair call it via placement-new.
+    // arg-ctor (??0CLoadable @0x156cb0 - <Gruntz/Loadable.h>, the ex "??0CDDrawSubMgr" -
+    // which stamps the CLoadable base vtable 0x5efc30) then manually re-stamps this
+    // class's own vtable (g_ddrawSurfacePairVtbl @0x5eff30). Declared-only here (the
+    // body IS the shared 0x156cb0 base ctor - the reloc pairs masked; folding this
+    // decl away requires the `: CLoadable` family rebase, which renames slots 7/8).
     CDDrawSurfacePair(i32 mgr, i32 kind, i32 a3); // 0x156cb0 (shared base ctor)
 
     // --- own vtable slots 7..14 (declared-only where the body lives elsewhere) ---

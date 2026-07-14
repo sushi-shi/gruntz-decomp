@@ -68,42 +68,41 @@ enum LoadableClassId {
 };
 
 SIZE(CLoadable, 0x10);
-// This RELOC_VTBL is reloc-CORRECT and stays (it is doing real work, unlike the four
-// no-op aliases deleted this batch): our `new CDDrawWorker` emits a real ??_7CLoadable
-// base-subobject vptr stamp (ddrawworkerregistry.obj, MakeWorker) and retail's
-// corresponding stamp writes 0x5efc30 - the very rva bound here - before the derived
-// 0x5efbe8 stamp. 0x1efc30 has no RTTI COL, is 9 slots, and is ALSO bound by
-// VTBL(CDDrawSubMgr) in <DDrawMgr/DDrawSubMgr.h>; MSVC5 has no /OPT:ICF, so ONE datum
-// cannot be two classes' vtables:
-// @identity-TODO: CLoadable == CDDrawSubMgr (one class, two names - the 9-slot
-// CWapObj-derived loadable base). Same species as the CZArray2D==zDArray fold done this
-// batch; the merge is a real refactor across every CDDrawSubMgr-derived leaf, so the
-// alias is recorded with its evidence rather than half-done.
-RELOC_VTBL(CLoadable, 0x001efc30); // == ??_7CDDrawSubMgr (the shared 9-slot base vtable)
+// The 0x1efc30 vtable is CLoadable's OWN (9 slots, no RTTI COL). The former
+// "CDDrawSubMgr" identity (include/DDrawMgr/DDrawSubMgr.h + the DDrawSubMgr.cpp-local
+// CDDrawSubMgrBase/CDDrawSubMgr pair) was the SAME class under a second name - proven
+// by the ctor 0x156cb0 (out-of-line def below in DDrawSubMgr.cpp) stamping this very
+// vtable, and slot-for-slot vtable equality ([5] 0x155700 IsLoaded / [6] 0x001c08
+// IsReady / [7] 0x155740 Unload / [8] 0x154a00 GetClassId). Folded 2026-07-14; the
+// name CDDrawSubMgr is retired.
+VTBL(CLoadable, 0x001efc30); // ??_7CLoadable (the shared 9-slot loadable-base vtable)
 class CLoadable : public CWapObj {
 public:
     // slot 5 IsLoaded: CLoadable's own default @0x155700 (distinct from CWapObj's
     // 0xd5dc0). Declared-only (reloc-masked). Every concrete leaf overrides it.
     virtual i32 IsLoaded() OVERRIDE; // [5] @+0x14  0x155700
-    // slots 6 IsReady is inherited from CWapObj (default @0x001c08 `return 1`).
-    virtual i32 Unload();     // [7] @+0x1c  0x155740 (reset/unload hook)
-    virtual i32 GetClassId(); // [8] @+0x20  0x154a00 -> CLASSID_NONE
+    // slot 6 IsReady carries the CWapObj default body (@0x001c08 `return 1`);
+    // redeclared per the family convention (the audit diffs src-only tables vs
+    // CObject - the abstract CWapObj emits no vtable to diff against).
+    virtual i32 IsReady() OVERRIDE; // [6] @+0x18  0x001c08
+    virtual i32 Unload();           // [7] @+0x1c  0x155740 (reset/unload hook)
+    virtual i32 GetClassId();       // [8] @+0x20  0x154a00 -> CLASSID_NONE
 
     i32 m_04; // +0x04  (reset to -1 on teardown)
     i32 m_08; // +0x08  (reset to 0)
     i32 m_0c; // +0x0c  (reset to 0)
 
     CLoadable() {}
-    // Arg-taking base ctor: cl inlines the vptr stamp + the three field stores at
-    // the head of a derived ctor. `owner` is the owning/parent context stored at
-    // m_0c (IsLoaded checks it nonzero); field04/field08 are the two managed header
-    // words. Params are in derived-ctor arg order (owner first) so a leaf forwards
-    // them straight through; the store order (m_04, m_08, m_0c) is the retail one.
-    CLoadable(i32 owner, i32 field04, i32 field08) {
-        m_04 = field04;
-        m_08 = field08;
-        m_0c = owner;
-    }
+    // Arg-taking base ctor - OUT-OF-LINE at 0x156cb0 (DDrawSubMgr.cpp; the ex
+    // "??0CDDrawSubMgr"). `owner` is the owning/parent context stored at m_0c
+    // (IsLoaded checks it nonzero); field04/field08 are the two managed header
+    // words. Retail call sites: CDDrawSurfaceMgr::Init 0x155900, CDDrawSubMgrPages::
+    // CreateChildren 0x1588f0, CWwdObjMgr::CreateObject 0x1598d0, CDDrawWorkerHost::
+    // ReadPlaneObjects 0x162af0. NB retail ALSO shows the store triple fused into
+    // ctors like CResolveNode(i32,i32,i32) @0x15b2c0 - those leaves spell the three
+    // stores in their own ctor body (over the default base ctor), reproducing the
+    // fused shape without a second definition.
+    CLoadable(i32 owner, i32 field04, i32 field08);
     // Field-reset base-subobject dtor: resets the three header fields; the grand-
     // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~CObject
     // (no manual `*(void**)this = &g_*Vtbl`).

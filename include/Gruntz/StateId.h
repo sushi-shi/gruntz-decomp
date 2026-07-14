@@ -15,7 +15,9 @@
 #define GRUNTZ_STATEID_H
 
 enum StateId {
-    STATE_SUBMGR = 0x1,      // CDDrawSubMgr::GetStateId          @0x157790
+    // (The former STATE_SUBMGR=1 was a fiction: 0x157790's only reference is
+    // ??_7CDDrawWorkerCache+0x18 - it is the cache's slot-6 IsReady `return 1`
+    // copy, not a state id. Enumerate only PROVEN ids.)
     STATE_ANIMWORKER = 0x9,  // AnimWorkerObj::GetStateId         @0x151d70 (vtbl 0x1efb80[8])
     STATE_SUBMGRPAGES = 0xf, // CDDrawSubMgrPages::GetStateId     @0x1574a0
     // 0x10 was mislabeled STATE_WORKERMAPSMALL: 0x157600's ONLY reference in the

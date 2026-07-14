@@ -49,14 +49,10 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// The +0x1a0 draw sub-manager the 0x1598d0 factory placement-constructs (real ctor
-// 0x156cb0 in the G obj; ctor-only view - the name-conflation with the CObject-
-// derived <DDrawMgr/DDrawSubMgr.h> base is flagged there for the identity pass).
-class CDDrawSurfaceMgr;
-struct CDDrawSubMgr { // the +0x1a0 draw sub-manager (real ctor in DDrawSubMgr.cpp)
-    CDDrawSubMgr(CDDrawSurfaceMgr* mgr, i32 a2, i32 a3); // 0x156cb0
-};
-SIZE_UNKNOWN(CDDrawSubMgr);
+// The +0x1a0 embedded sub-object the 0x1598d0 factory placement-constructs is a
+// CLoadable (base ctor 0x156cb0; via <Gruntz/ResolveNode.h> -> <Gruntz/Loadable.h>).
+// The former ctor-only `CDDrawSubMgr` view is DISSOLVED (2026-07-14): that name was
+// CLoadable's second identity (see Loadable.h).
 
 // ===========================================================================
 // The managed objects ARE the CWwdGameObject family (<Gruntz/WwdGameObject.h>
@@ -425,7 +421,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     if (obj != 0) {
         int root = (int)m_0c;
         new (obj) CWwdGameObj15b390(root, a1, a6);
-        new (obj + 0x1a0) CDDrawSubMgr((CDDrawSurfaceMgr*)root, a1, a6);
+        new (obj + 0x1a0) CLoadable(root, a1, a6); // the embedded loadable (ctor 0x156cb0)
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x1b0) = 0;
         *(int*)(obj + 0x1b4) = 0;

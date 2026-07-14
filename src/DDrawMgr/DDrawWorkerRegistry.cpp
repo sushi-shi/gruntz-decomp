@@ -49,11 +49,12 @@ extern i32 g_resourceInstallActive;
 void operator delete(void*);
 extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil)
 
-// The far sibling class (a FamilyMapBase-shaped, CObject-derived 5-slot class; real
-// member-teardown ~ at 0xd5d70, CImage.cpp) whose scalar-deleting destructor
-// (0x155720) landed in THIS obj's RVA span. Modeled with its ScalarDtor here so the
-// ??_G call reloc binds to the real ??1CDDrawSubMgrFar @0xd5d70 (was misattributed to
-// DDrawSubMgr.cpp's local CDDrawSubMgr, whose empty inline ~ left the call UNBOUND).
+// IDENTITY: CDDrawSubMgrFar is the linker-kept COMDAT-copy pair of CLoadable's
+// (A)-form inline dtor - ??_G @0x155720 (this obj's span) calling ??1 @0xd5d70
+// (CImage.cpp's span). It cannot be spelled on CLoadable itself while the canonical
+// dtor is inline (<Gruntz/Loadable.h>; one-definition rule) - the scaffold name
+// survives until the family's (B)-form explicit-ScalarDtor flip. Modeled with its
+// ScalarDtor here so the ??_G call reloc binds to the real ??1 @0xd5d70.
 class CDDrawSubMgrFar {
 public:
     void* ScalarDtor(u32 flags); // 0x155720 (`??_G` scalar-deleting destructor)

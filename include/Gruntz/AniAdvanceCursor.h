@@ -36,11 +36,11 @@ public:
     CAniAdvanceCursor(i32 owner, i32 field04, i32 field08);
     virtual ~CAniAdvanceCursor() OVERRIDE; // slot 1 (scalar-deleting dtor 0x15b6b0)
     virtual i32 IsLoaded() OVERRIDE;       // slot 5  0x15b6a0
-    virtual i32 IsReady() OVERRIDE;        // slot 6  0x001c08 (CWapObj default)
+    // slot 6 IsReady (0x001c08) + slot 8 GetClassId (0x154a00) are INHERITED from
+    // CLoadable (same body RVAs; audit: redeclare-nothing).
     // slot 7 - clear the bound source refs (m_10/m_14/m_element). The ex
     // "CDDrawBlitParam::Reset_15c2c0" - the body IS the Unload override.
-    virtual i32 Unload() OVERRIDE;     // slot 7  0x15c2c0
-    virtual i32 GetClassId() OVERRIDE; // slot 8  0x154a00 (CLoadable default)
+    virtual i32 Unload() OVERRIDE; // slot 7  0x15c2c0
 
     // --- the runtime/serialize method set (ex-CDDrawBlitParam; bodies in
     // WwdFactoryObject.cpp / DDrawSubMgr.cpp) ---

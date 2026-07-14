@@ -232,11 +232,21 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
 
 // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
 // header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes m_10/m_14/m_18.
-// 100%: deriving from the real CLoadable base reproduces retail's vptr-first store
-// schedule exactly.
+// Retail FUSES the base seed into this ctor (no `call 0x156cb0`), so the three
+// stores are spelled here over the default base ctor - the 3-arg CLoadable ctor
+// is out-of-line at 0x156cb0 (its big-caller sites call it; retail's inline copy
+// here came from the same source cl chose to inline) and chaining it would
+// inject a call retail does not have.
+// @early-stop
+// vptr-stamp position (97.6%): one 2-instruction swap - retail sinks the ??_7
+// stamp BELOW the m_08 store (the chained-inline-base-ctor schedule); a plain
+// ctor body stamps before it. The 100% spelling needs the base ctor inline
+// (`: CLoadable(...)`), which contradicts its proven out-of-line 0x156cb0 body.
 RVA(0x0015b730, 0x2b)
-CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08)
-    : CLoadable(owner, field04, field08) {
+CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08) {
+    m_04 = field04;
+    m_08 = field08;
+    m_0c = owner;
     m_10 = 0;
     m_14 = 0;
     m_element = 0;

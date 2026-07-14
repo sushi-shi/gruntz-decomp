@@ -74,9 +74,9 @@ class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface element
 // makes its `jmp [eax+0x3c]` in-bounds). Slot 5 IsLoaded is an own body
 // (0x157480); slot 6 IsReady holds the shared family default 0x1c08 - the
 // CWapObj-scheme slot (WapObj.h). Modeled `: CObject` with slots 5/6 declared,
-// the same convention as CDDrawSubMgr.h (the vtable_hierarchy audit diffs this
+// the family flat-model convention (the vtable_hierarchy audit diffs this
 // family against CObject because the abstract CWapObj emits no vtable to diff
-// against; the family-wide `: CWapObj` rebase is the flagged intermediate pass).
+// against; the family-wide `: CLoadable` rebase is the flagged intermediate pass).
 // ---------------------------------------------------------------------------
 SIZE(CDDrawSubMgrPages, 0x1c);
 class CDDrawSubMgrPages : public CObject {

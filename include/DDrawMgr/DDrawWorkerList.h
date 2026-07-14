@@ -68,10 +68,13 @@ SIZE_UNKNOWN(CDDrawWorkerItem);
 // restamps ??_7CObject @0x5e8cb4 - an inlined intermediate-base dtor over the
 // CObject grand-base; the intermediate's own stamp is dead-store-eliminated, no
 // call/ctor intervenes before the CObject stamp). Its ctor is 0x156cb0 (stores
-// parent/a2/a3 at +0xc/+4/+8, stamps 0x5efc30) - i.e. this IS the real
-// CDDrawSubMgr-family base (vtable 0x1efc30); the fold onto
-// <DDrawMgr/DDrawSubMgr.h>'s CDDrawSubMgr is DEFERRED to the flagged DDrawSubMgr
-// identity pass (that header models the same vtable with no members yet).
+// parent/a2/a3 at +0xc/+4/+8, stamps 0x5efc30).
+// @identity-TODO: WorkerListSibBase IS CLoadable (<Gruntz/Loadable.h>, the ex
+// "CDDrawSubMgr" - same ctor 0x156cb0, same vtable 0x1efc30, same reset dtor).
+// The fold is blocked by the family slot-name/signature flip it forces: the list's
+// slots 5-8 (IsReady/IsReadyPredicate/DestroyWorkers/GetStateId, StateId-typed)
+// would have to become overrides of CLoadable's IsLoaded/IsReady/Unload/GetClassId
+// (i32-typed) - the whole-family rebase Loadable.h defers to the (B)-form flip.
 class WorkerListSibBase : public CObject {
 public:
     virtual ~WorkerListSibBase() OVERRIDE; // slot 1 (deleting dtor -> cl-emitted ??_G)

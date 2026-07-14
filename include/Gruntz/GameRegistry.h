@@ -161,7 +161,7 @@ struct CSpriteFactoryHolder {
     // +0x14..+0x1c: the DDraw-side children (names from the CDDrawSurfaceMgr
     // canonical; the Init decode 0x155900 news each).
     struct CDDrawWorkerCache* m_workerCache; // +0x14  string-keyed worker cache
-    struct CDDrawSubMgr* m_workerMap;        // +0x18  CDDrawWorkerMapSmall
+    class CLoadable* m_workerMap;            // +0x18  CDDrawWorkerMapSmall (CLoadable child)
     struct CDDrawPtrCollections* m_ptrColl;  // +0x1c  device/surface pool (m_surf0 =
                                              //        the IDirectDraw2; GetCapsChecked)
     // +0x20  the REAL SoundStream (<Dsndmgr/SoundStream.h>). Was "m_frameProfiler": the

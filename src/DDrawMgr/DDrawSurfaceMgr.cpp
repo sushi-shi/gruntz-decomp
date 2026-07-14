@@ -11,8 +11,9 @@
 // VIEW-FREE: every type this TU dereferences is the canonical header class - the
 // former local views (CDDrawSubMgr 6-slot, SoundStream 3-method, CDDrawSubMgrLeafScan,
 // CDDrawResolveSubMgr, CDDrawPtrCollections{Dtor}) are dissolved onto
-// <DDrawMgr/DDrawSubMgr.h>, <Dsndmgr/SoundStream.h>, <DDrawMgr/DDrawSubMgrLeafScan.h>,
-// <DDrawMgr/DDrawResolveSubMgr.h>, <DDrawMgr/DDrawPtrCollections.h>.
+// <Gruntz/Loadable.h> (the child base, ex "CDDrawSubMgr"), <Dsndmgr/SoundStream.h>,
+// <DDrawMgr/DDrawSubMgrLeafScan.h>, <Gruntz/GameLevel.h> (the +0x24 child, ex
+// "CDDrawResolveSubMgr"), <DDrawMgr/DDrawPtrCollections.h>.
 
 // <Mfc.h> FIRST (superset of Win32.h: same <windows.h> for HWND + the MFC classes,
 // e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
@@ -20,10 +21,9 @@
 #include <Mfc.h>
 #include <Wap32/Object.h>              // CObject - the shared engine grand-base
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // THE canonical CDDrawSurfaceMgr class shape
-#include <DDrawMgr/DDrawSubMgr.h>      // generic child base (slot-1 scalar-delete, slot-5 IsReady)
+#include <Gruntz/Loadable.h>           // CLoadable - the shared child base (slot-1 scalar-delete)
 #include <DDrawMgr/DDrawWorkerCache.h> // real +0x14 child type (m_workerCache; virtual-dtor delete)
-#include <DDrawMgr/DDrawResolveSubMgr.h> // real +0x24 child type (SetCoords)
-#include <DDrawMgr/DDrawSubMgrPages.h>   // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
+#include <DDrawMgr/DDrawSubMgrPages.h> // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
 #include <DDrawMgr/DDrawChildGroup.h>    // real +0x08 child type (m_childGroup)
 #include <Gruntz/WwdObjMgr.h> // CWwdObjMgr (Snapshot/RestoreChildren blit-op target, waveP)
 #include <Gruntz/GameLevel.h> // CGameLevel (m_resolveSubMgr child; EditDispatch/MainPlaneQueryB)
@@ -245,10 +245,11 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
         }
     }
     if (m_resolveSubMgr != 0) {
-        // FLAG(retype-deferred): m_resolveSubMgr is generically typed CDDrawSubMgr*
-        // in the canonical owner header; Init always stores a CDDrawResolveSubMgr
-        // (new(0x6d4), ctor 0x15ccd0) there, so the member's true type is
-        // CDDrawResolveSubMgr* (DDrawSurfaceMgr.h is additive-only this session).
+        // FLAG(cross-cast): m_resolveSubMgr is the CGameLevel child (new(0x6d4),
+        // ctor 0x15ccd0), yet retail dispatches 0x155f60 - this class's own
+        // SetDimensions body - on it. Either CGameLevel exposes a same-layout
+        // SetCoords or the +0x24 head mirrors the owner's; unresolved, the cast
+        // preserves retail's call target. @identity-TODO.
         if (((CDDrawSurfaceMgr*)m_resolveSubMgr)->SetDimensions(x, y, 0) == 0) {
             return 0;
         }

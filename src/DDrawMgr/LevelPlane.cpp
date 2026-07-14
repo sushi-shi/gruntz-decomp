@@ -669,15 +669,13 @@ struct CStringAssign {
     // Assign @0x1b9e74 IS CString::operator=; cast at the call.
 };
 
-// CDDrawSubMgr ctor embedded at +0x1A0: (this, surfMgr, a, b). __thiscall, ret 0xc.
-class CDDrawSurfaceMgr;
+// The +0x1a0 embedded sub-object is a CLoadable (base ctor 0x156cb0; the former
+// ctor-only `CDDrawSubMgr` view is DISSOLVED - that name was CLoadable's second
+// identity, see <Gruntz/Loadable.h>).
+#include <Gruntz/Loadable.h>
 inline void* operator new(u32, void* p) {
     return p;
 } // placement (embedded sub-object ctor)
-SIZE_UNKNOWN(CDDrawSubMgr);
-struct CDDrawSubMgr { // the +0x1a0 embedded draw sub-manager (real ctor in DDrawSubMgr.cpp)
-    CDDrawSubMgr(CDDrawSurfaceMgr* mgr, i32 a2, i32 a3); // 0x156cb0
-};
 
 // The embedded sub-object's stampable view: vptr@0, then the three DWORDs
 // (+0x10/+0x14/+0x18) ReadPlaneObjects zeroes right after re-stamping its vtable.
@@ -840,7 +838,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
     WwdObjAnimInit* subInit = (WwdObjAnimInit*)((char*)obj + 0x1a0);
-    new (subInit) CDDrawSubMgr((CDDrawSurfaceMgr*)m_mapData, id, 0);
+    new (subInit) CLoadable((i32)m_mapData, id, 0); // the embedded loadable (ctor 0x156cb0)
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     subInit->z10 = 0;
     subInit->z14 = 0;

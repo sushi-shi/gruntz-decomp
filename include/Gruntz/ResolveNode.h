@@ -23,13 +23,11 @@ public:
     // Re-based onto the canonical 9-slot CLoadable: the m_04/m_08/m_0c header +
     // slots 5..8 come from CLoadable. This node OVERRIDES slot 5 (IsLoaded
     // @0x154a10) and slot 7 (Unload/reset @0x154a80); slots 6/8 carry the
-    // CWapObj/CLoadable default bodies (0x001c08 / 0x154a00) and are redeclared
-    // per the CLoadable-family convention (the binary audit diffs src-only
-    // tables vs CObject). SetPosition (slot 9) is the node's own new virtual.
-    virtual i32 IsLoaded() OVERRIDE;   // [5] 0x154a10  (checks m_04!=-1 && m_0c)
-    virtual i32 IsReady() OVERRIDE;    // [6] 0x001c08  (the CWapObj default)
-    virtual i32 Unload() OVERRIDE;     // [7] 0x154a80  disarm the dirty-rect sentinels
-    virtual i32 GetClassId() OVERRIDE; // [8] 0x154a00  (the CLoadable default)
+    // CLoadable default bodies (0x001c08 / 0x154a00) and are INHERITED (audit:
+    // redeclare-nothing now that CLoadable's own vtable 0x1efc30 is bound).
+    // SetPosition (slot 9) is the node's own new virtual.
+    virtual i32 IsLoaded() OVERRIDE; // [5] 0x154a10  (checks m_04!=-1 && m_0c)
+    virtual i32 Unload() OVERRIDE;   // [7] 0x154a80  disarm the dirty-rect sentinels
     // slot 9 (new): set position + reset the draw state (x->m_5c, y->m_60, zero
     // the clip/plot fields, reseed m_48=0x32/m_50=1, cache owner->m_24). Body
     // 0x164790 (T obj); shared by the whole wide-object family (never overridden).

@@ -24,9 +24,11 @@ class CDDrawWorkerCache : public CObject {
 public:
     i32 m_04, m_08, m_0c;                  // +0x04..0x0f (merged CDDrawWorkerCacheBase)
     virtual ~CDDrawWorkerCache() OVERRIDE; // [1] dtor 0x157720 (??_G 0x157700 pinned at def)
-    // [5] 0x1576d0: ready iff +0x0c is bound and the +0x04 status latch isn't -1.
+    // [5] 0x1576d0 IsLoaded (the CLoadable-scheme slot-5 predicate): loaded iff +0x0c
+    // is bound and the +0x04 status latch isn't -1. (Renamed from "IsReady" - slot 6
+    // below is the scheme's IsReady.)
     RVA(0x001576d0, 0x16)
-    virtual i32 IsReady() {
+    virtual i32 IsLoaded() {
         if (m_0c == 0) {
             goto fail;
         }
@@ -37,7 +39,14 @@ public:
     fail:
         return 0;
     }
-    virtual void GetStateId_157790(); // [6] 0x157790 (= CDDrawSubMgr::GetStateId, declared-only)
+    // [6] 0x157790: the class's OWN compiled copy of the CWapObj `return 1` IsReady
+    // default (no MSVC5 ICF - same pattern as CDDrawChildGroup::IsReady @0x1576c0).
+    // Only reference in the binary: ??_7CDDrawWorkerCache@@6B@+0x18. (Ex the fictional
+    // "CDDrawSubMgr::GetStateId returning STATE_SUBMGR=1".)
+    RVA(0x00157790, 0x6)
+    virtual i32 IsReady() {
+        return 1;
+    }
     virtual void
     DestroyAll(); // [7] 0x165210 (= CDDrawWorkerRegistry::DestroyAll, defined in Registry TU)
     RVA(0x001576f0, 0x6)
