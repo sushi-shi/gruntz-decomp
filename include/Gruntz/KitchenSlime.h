@@ -12,10 +12,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGameObject / CGruntArchive)
 
-// The slime's typed views of the SAME bound object (full defs live in the .cpp).
-struct CSlimeLevel;
-struct CSlimeAnimPlayer;
-
 class CKitchenSlime : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -36,15 +32,18 @@ public:
     CKitchenSlime(CGameObject* obj);   // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
     virtual ~CKitchenSlime() OVERRIDE; // 0x013100 (folds the CUserLogic teardown)
 
-    // The bound CGameObject (inherited m_object==m_38) viewed as the slime's typed
-    // level / anim-player data (same object, non-overlapping field windows). The one
-    // reinterpret lives here so the bodies read Level()->/Anim()-> with no cast;
-    // codegen-neutral (each call is the same `mov reg,[this+0x10]` / `+0x38`).
-    CSlimeLevel* Level() {
-        return (CSlimeLevel*)m_object;
+    // The bound CGameObject IS the slime's level/anim data (inherited m_object == m_38,
+    // the same object). The two accessors keep the two distinct base-member loads
+    // retail emits (level state read through m_object, the anim/frame-cache facet
+    // through m_38); both dissolve to the canonical CGameObject - the slime reads its
+    // fields (m_screenX/m_screenY, m_124, m_12c, m_extentL..m_extentB, m_areaL, m_7c->
+    // m_bc via AnimWorkerObj) cast-free, and reaches the leaf-embedded +0x1a0
+    // CAniAdvanceCursor / the +0x190.. frame-cache role-union by documented address.
+    CGameObject* Level() {
+        return m_object;
     }
-    CSlimeAnimPlayer* Anim() {
-        return (CSlimeAnimPlayer*)m_38;
+    CGameObject* Anim() {
+        return m_38;
     }
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
@@ -61,5 +60,18 @@ public:
 };
 VTBL(CKitchenSlime, 0x1e750c);
 SIZE(CKitchenSlime, 0x90);
+
+// The activation-registry entry record: its first dword is a PMF of CKitchenSlime
+// (single inheritance -> a 4-byte code pointer). FireActivation dispatches it on
+// `this` (proven by the 0x46080-family `call [entry]`), RegisterType stores the
+// activation handler. Declared AFTER the complete class so the PMF stays 4 bytes.
+// (Retail's grow-path allocs 0xc-byte nodes, so the real record may carry 2 more
+// fields at +4/+8 that no code touches - @identity-TODO; the addressing stride is a
+// runtime DATA value, so the 4-byte model is byte-exact here.)
+typedef void (CKitchenSlime::*KSlimeHandler)();
+struct CKSlimeEntry {
+    KSlimeHandler m_fn; // [entry]
+};
+SIZE_UNKNOWN(CKSlimeEntry);
 
 #endif // GRUNTZ_CKITCHENSLIME_H

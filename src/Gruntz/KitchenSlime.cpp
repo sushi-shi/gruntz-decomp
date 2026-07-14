@@ -31,49 +31,15 @@
 
 // CSprite (frame-data value) comes from <Gruntz/Sprite.h>.
 
-// The animation player @this+0x38 that holds the current direction sprite at
-// +0x194 and the cached first-frame trio at +0x190/+0x194/+0x198. It IS the bound
-// CGameObject (Anim() reinterprets m_38): the first-frame cache is CGameObject::
-// ApplyName (0x150540, cast at each call) and the +0x1a0 sub-object is the canonical
-// CAniAdvanceCursor (Advance @0x15c360).
-struct CSlimeAnimPlayer {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08  status/flags word (Tick sets bit 0x10000 when stalled)
-    char m_padc[0x190 - 0xc];
-    i32 m_190;               // +0x190  first frame number
-    CSprite* m_194;          // +0x194  the current direction sprite
-    i32* m_198;              // +0x198  first frame pointer
-    char m_pad19c[4];        // +0x19c
-    CAniAdvanceCursor m_1a0; // +0x1a0  per-frame advance cursor (Advance)
-};
-
-// The slime's resource/level holder (this->m_10). m_124 = travel direction
-// (1..4); m_5c/m_posX = per-step pixel deltas; m_134..m_140 = the on-screen tile
-// window; m_12c = a "lock direction" flag; m_7c = the level/timing object whose
-// +0xbc overrides the per-tile time.
-// The level/timing object at CSlimeLevel+0x7c; its +0xbc overrides the per-tile time.
-struct CSlimeTiming {
-    char m_pad0[0xbc];
-    u32 m_bc;
-};
-
-struct CSlimeLevel {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c  step dx (pixels)
-    i32 m_60; // +0x60  step dy (pixels)
-    char m_pad64[0x7c - 0x64];
-    CSlimeTiming* m_7c; // +0x7c  level/timing object (m_7c->m_bc time override)
-    char m_pad80[0x124 - 0x80];
-    i32 m_124; // +0x124 travel direction (1..4)
-    char m_pad128[0x12c - 0x128];
-    i32 m_12c; // +0x12c lock-direction flag
-    char m_pad130[0x134 - 0x130];
-    i32 m_134; // +0x134 window min X
-    i32 m_138; // +0x138 window min Y
-    i32 m_13c; // +0x13c window max X
-    i32 m_140; // +0x140 window max Y
-    i32 m_144; // +0x144 on-screen rect base (Tick passes &m_144 to the cue gate)
-};
+// The slime's bound object (Level() == m_object, Anim() == m_38) IS the canonical
+// CGameObject; the ex CSlimeLevel / CSlimeAnimPlayer / CSlimeTiming views are
+// dissolved onto it (KitchenSlime.h). The level state reads m_screenX/m_screenY
+// (+0x5c/+0x60), m_124 (travel dir), m_12c (lock-dir), m_extentL..m_extentB
+// (+0x134..+0x140, the on-screen tile window), m_areaL (+0x144, the cue-gate rect
+// base), and m_7c->m_bc (the AnimWorkerObj per-tile-time override) - all cast-free.
+// The anim facet reaches the leaf-embedded +0x1a0 CAniAdvanceCursor (Advance
+// @0x15c360) by documented address and the +0x190.. frame cache through the
+// m_194/m_198 role-union CGameObject already models (frame-cache reinterpret).
 
 // The level tile map reached via g_gameReg->m_tileGrid is the canonical CTileGrid
 // (<Gruntz/TileGrid.h>): m_c/m_10 = grid extents, m_8 = the row table
@@ -88,12 +54,13 @@ struct CSlimeLevel {
 // (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
 extern "C" CGameRegistry* g_gameReg;
 
-// The entity QueryAt returns; +0x258 is its type/state tag (0x38 == the slime
-// itself, so its own footprint is ignored when probing the destination tile).
-struct CSlimeEntity {
-    char m_pad0[0x258];
-    i32 m_258; // +0x258 type tag
-};
+// The entity FindGruntAt returns IS a CGrunt (retail signature
+// ?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@..., returns CGrunt*; the header still
+// types it CTmCell* pending the deferred cross-lane retype, so cast at the site).
+// Its +0x258 is CGrunt::m_gruntKind (the object-kind id); 0x38 is the slime's own
+// kind, so its own footprint is skipped. The ex CSlimeEntity view is dissolved onto
+// the canonical CGrunt (<Gruntz/Grunt.h>), exactly as SpotLightCtor does.
+#include <Gruntz/Grunt.h>
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator).
 
@@ -115,7 +82,7 @@ extern "C" u32 g_engineFrameDelta;
 // CKitchenSlime : CUserLogic is modeled in <Gruntz/KitchenSlime.h> (canonical
 // header, included below). The CUserLogic base gives the +0x18 destructible link,
 // so ~CKitchenSlime folds the shared teardown (the /GX leaf-dtor archetype, see
-// UserLogic.cpp 0x10ab0). CSlimeLevel/CSlimeAnimPlayer full defs live above.
+// UserLogic.cpp 0x10ab0). The slime's level/anim views are dissolved onto CGameObject.
 #include <Gruntz/KitchenSlime.h>
 
 // ---------------------------------------------------------------------------
@@ -133,7 +100,6 @@ extern "C" u32 g_engineFrameDelta;
 // external/no-body (shared with the trigger registry's engine functions). The
 // alloc-cache pair (g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the
 // SAME shared global both registries write.
-struct CKSlimeEntry;       // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 // SHREDDED-OBJECT FIX: g_kslimeColl is ONE 0x24-byte CActReg object, not eight globals -
@@ -149,14 +115,8 @@ CActReg g_kslimeColl;
 extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
 
-// The entry's first dword is a pointer-to-member-function of CKitchenSlime
-// (single inheritance -> 4-byte code pointer); FireActivation invokes it on
-// `this`, emitting `mov ecx,this; call [entry]`. CKitchenSlime is defined
-// COMPLETE above this typedef so the PMF stays 4 bytes (pmf-complete-class-4byte).
-typedef void (CKitchenSlime::*KSlimeHandler)();
-struct CKSlimeEntry {
-    KSlimeHandler m_fn; // [entry]
-};
+// The entry record (KSlimeHandler/CKSlimeEntry, the PMF slot) is defined in
+// <Gruntz/KitchenSlime.h> after the complete class.
 
 // The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
 // inline, typed to this registry's entry.
@@ -178,38 +138,12 @@ CKitchenSlime::~CKitchenSlime() {}
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-// The bound CGameObject viewed by the ctor (m_10 == m_38). The slime reads the
-// screen position (m_5c/m_posX), the layer key (m_74), the flags (m_08), the travel
-// window (m_134..m_140) clamped from the raw target tile (m_164/m_168), the
-// direction name (m_194+0x24), and re-seeds the rect (m_144..m_150). Only the
-// touched offsets are modeled.
-struct CSlimeCtorObj {
-    char m_pad00[0x08];
-    i32 m_08; // +0x08 flags
-    char m_pad0c[0x5c - 0x0c];
-    i32 m_5c; // +0x5c screen X
-    i32 m_60; // +0x60 screen Y
-    char m_pad64[0x74 - 0x64];
-    i32 m_74; // +0x74 layer key
-    char m_pad78[0x124 - 0x78];
-    i32 m_124; // +0x124 travel direction (1..4)
-    char m_pad128[0x134 - 0x128];
-    i32 m_134; // +0x134 window min X
-    i32 m_138; // +0x138 window min Y
-    i32 m_13c; // +0x13c window max X
-    i32 m_140; // +0x140 window max Y
-    i32 m_144; // +0x144 rect base
-    i32 m_148; // +0x148
-    i32 m_14c; // +0x14c
-    i32 m_150; // +0x150
-    char m_pad154[0x164 - 0x154];
-    i32 m_164; // +0x164 target tile X (raw -> scaled in place)
-    i32 m_168; // +0x168 target tile Y
-    char m_pad16c[0x194 - 0x16c];
-    void* m_194; // +0x194 sprite/name record (dir name at +0x24)
-    char m_pad198[0x1b4 - 0x198];
-    i32 m_1b4; // +0x1b4 cycle-geometry id
-};
+// The bound object the ctor reads IS the canonical CGameObject (m_object == m_38):
+// the screen position m_screenX/m_screenY (+0x5c/+0x60), the layer key
+// m_latchedAnimId (+0x74), the flags m_flags (+0x08), the on-screen travel window
+// m_extentL..m_extentB (+0x134..+0x140) clamped from the raw target tile m_164/m_168,
+// the direction name at m_194+0x24, and the re-seeded rect m_areaL..m_areaB
+// (+0x144..+0x150) all read cast-free (the ex CSlimeCtorObj view is dissolved).
 
 // CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,
 // snap the bound object to the tile grid (m_posX/m_posY doubles + m_74 layer key +
@@ -231,35 +165,35 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 0x2000002;
 
-    CSlimeCtorObj* o = (CSlimeCtorObj*)m_object;
-    i32 snapX = (o->m_5c & ~0x1f) + 0x10;
-    i32 snapY = (o->m_60 & ~0x1f) + 0x10;
-    o->m_5c = snapX;
+    CGameObject* o = m_object;
+    i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
+    i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
+    o->m_screenX = snapX;
     m_posX = (double)snapX;
-    o->m_60 = snapY;
+    o->m_screenY = snapY;
     m_posY = (double)snapY;
-    if (o->m_74 != 0x13) {
-        o->m_74 = 0x13;
-        o->m_08 |= 0x20000;
+    if (o->m_latchedAnimId != 0x13) {
+        o->m_latchedAnimId = 0x13;
+        o->m_flags |= 0x20000;
     }
     m_tileY = snapY;
     m_tileX = snapX;
 
     o->m_164 = (o->m_164 << 5) + 0x10;
     o->m_168 = (o->m_168 << 5) + 0x10;
-    if (o->m_5c == o->m_164 && o->m_60 == o->m_168) {
+    if (o->m_screenX == o->m_164 && o->m_screenY == o->m_168) {
         m_38->m_flags |= 0x10000;
         return;
     }
-    o->m_134 = (o->m_5c < o->m_164) ? o->m_5c : o->m_164;
-    o->m_13c = (o->m_5c <= o->m_164) ? o->m_164 : o->m_5c;
-    o->m_138 = (o->m_60 >= o->m_168) ? o->m_168 : o->m_60;
-    o->m_140 = (o->m_60 <= o->m_168) ? o->m_168 : o->m_60;
+    o->m_extentL = (o->m_screenX < o->m_164) ? o->m_screenX : o->m_164;
+    o->m_extentR = (o->m_screenX <= o->m_164) ? o->m_164 : o->m_screenX;
+    o->m_extentT = (o->m_screenY >= o->m_168) ? o->m_168 : o->m_screenY;
+    o->m_extentB = (o->m_screenY <= o->m_168) ? o->m_168 : o->m_screenY;
 
-    CSlimeAnimPlayer* obj38 = Anim();
+    CGameObject* obj38 = Anim();
     if (obj38->m_194 != 0) {
         CString name;
-        name = (char*)obj38->m_194 + 0x24;
+        name = obj38->m_194 + 0x24;
         const char* s = (LPCTSTR)name;
         if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
             o->m_124 = 1;
@@ -281,10 +215,10 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    o->m_144 = 0;
-    o->m_14c = 0;
-    o->m_148 = 0;
-    o->m_150 = 0;
+    o->m_areaL = 0;
+    o->m_areaR = 0;
+    o->m_areaT = 0;
+    o->m_areaB = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -398,23 +332,28 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    Anim()->m_1a0.Advance((i32)g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance((i32)g_engineFrameDelta);
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
-        CSlimeLevel* lvl = Level();
+        CGameObject* lvl = Level();
         i32 outX, outY;
-        CSlimeEntity* ent =
-            (CSlimeEntity*)reg->m_cmdGrid
-                ->FindGruntAt(lvl->m_5c, lvl->m_60, (RECT*)&lvl->m_144, &outY, &outX, (RECT*)0);
-        if (ent && ent->m_258 != 0x38) {
+        CGrunt* ent = (CGrunt*)reg->m_cmdGrid->FindGruntAt(
+            lvl->m_screenX,
+            lvl->m_screenY,
+            (RECT*)&lvl->m_areaL,
+            &outY,
+            &outX,
+            (RECT*)0
+        );
+        if (ent && ent->m_gruntKind != 0x38) {
             ((CTriggerMgr*)g_gameReg->m_cmdGrid)->CellDispatch(outY, outX, 5, -1);
         }
     }
 
-    CSlimeLevel* lvl = Level();
-    if (lvl->m_5c == m_tileX && lvl->m_60 == m_tileY && LoadSprites() == 0) {
-        Anim()->m_8 |= 0x10000;
+    CGameObject* lvl = Level();
+    if (lvl->m_screenX == m_tileX && lvl->m_screenY == m_tileY && LoadSprites() == 0) {
+        m_38->m_flags |= 0x10000;
         return 0;
     }
 
@@ -452,8 +391,8 @@ i32 CKitchenSlime::Tick() {
         i32 ty = m_tileY;
         *m88d = fabs(m_posY - (double)ty);
         if (newY > ty) {
-            Level()->m_5c = newX;
-            Level()->m_60 = ty;
+            Level()->m_screenX = newX;
+            Level()->m_screenY = ty;
             return 0;
         }
     } else if (m_dirY < g_slimeZero) {
@@ -462,16 +401,16 @@ i32 CKitchenSlime::Tick() {
         i32 ty = m_tileY;
         *m88d = fabs(m_posY - (double)ty);
         if (newY < ty) {
-            Level()->m_5c = newX;
-            Level()->m_60 = ty;
+            Level()->m_screenX = newX;
+            Level()->m_screenY = ty;
             return 0;
         }
     } else {
         newY = (i32)floor(m_posY);
     }
 
-    Level()->m_5c = newX;
-    Level()->m_60 = newY;
+    Level()->m_screenX = newX;
+    Level()->m_screenY = newY;
     return 0;
 }
 
@@ -536,7 +475,7 @@ i32 CKitchenSlime::LoadSprites() {
     i32 tileX, tileY;
     i32 found = 0;
     for (i32 i = 0; i <= 4;) {
-        CSlimeLevel* lvl = Level();
+        CGameObject* lvl = Level();
         i32 sw = lvl->m_124 - 1;
         switch (sw) {
             case 0:
@@ -567,8 +506,8 @@ i32 CKitchenSlime::LoadSprites() {
             tileFlags = ((i32*)map->m_8[gy])[gx * 7];
         }
 
-        if (tileY >= lvl->m_138 && tileX <= lvl->m_13c && tileY <= lvl->m_140 && tileX >= lvl->m_134
-            && !(tileFlags & 0x939) && !(tileFlags & 2)) {
+        if (tileY >= lvl->m_extentT && tileX <= lvl->m_extentR && tileY <= lvl->m_extentB
+            && tileX >= lvl->m_extentL && !(tileFlags & 0x939) && !(tileFlags & 2)) {
             found = 1;
             break;
         }
@@ -605,7 +544,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0;
             *((i32*)&m_dirY + 1) = 0xbff00000;
             if (changed) {
-                ((CGameObject*)Anim())->ApplyName("LEVEL_KITCHENSLIME_NORTH");
+                Anim()->ApplyName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
@@ -616,7 +555,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0x3ff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                ((CGameObject*)Anim())->ApplyName("LEVEL_KITCHENSLIME_EAST");
+                Anim()->ApplyName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
@@ -627,7 +566,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirY + 1) = 0x3ff00000;
             *((i32*)&m_dirX + 1) = 0;
             if (changed) {
-                ((CGameObject*)Anim())->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
+                Anim()->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
@@ -637,13 +576,13 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0xbff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                ((CGameObject*)Anim())->ApplyName("LEVEL_KITCHENSLIME_WEST");
+                Anim()->ApplyName("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
 
-    m_posX = (double)Level()->m_5c + m_posX;
-    m_posY = (double)Level()->m_60 + m_posY;
+    m_posX = (double)Level()->m_screenX + m_posX;
+    m_posY = (double)Level()->m_screenY + m_posY;
 
     u32 time;
     if (Level()->m_7c->m_bc != 0) {
@@ -656,18 +595,22 @@ i32 CKitchenSlime::LoadSprites() {
     m_tileX = tileX;
     m_tileY = tileY;
 
-    CSlimeAnimPlayer* player = Anim();
-    CSprite* spr = player->m_194;
+    // The direction sprite + first-frame cache is the CGameObject frame-cache
+    // role-union: +0x194 (m_194) is the cached CSprite*, +0x198 (m_layer) doubles as
+    // the first-frame pointer - the same reinterpret CGameObject's own ApplyName does
+    // (authentic union access, cast at the site).
+    CGameObject* player = Anim();
+    CSprite* spr = (CSprite*)player->m_194;
     if (changed != 0 && spr != 0) {
         if (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) {
             player->m_190 = 1;
-            player->m_198 = spr->m_frames.m_pData[1];
+            *(i32**)&player->m_layer = spr->m_frames.m_pData[1];
             m_stepMag = 0;
             m_stepMagHi = 0;
             return 1;
         }
         player->m_190 = 1;
-        player->m_198 = 0;
+        *(i32**)&player->m_layer = 0;
         m_stepMag = 0;
         m_stepMagHi = 0;
         return 1;
@@ -678,11 +621,8 @@ i32 CKitchenSlime::LoadSprites() {
 }
 // size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
 
-SIZE_UNKNOWN(CKSlimeEntry);
-SIZE_UNKNOWN(CSlimeAnimPlayer);
-SIZE_UNKNOWN(CSlimeCtorObj);
-SIZE_UNKNOWN(CSlimeEntity);
-SIZE_UNKNOWN(CSlimeLevel);
-SIZE_UNKNOWN(CSlimeTiming);
+// (CKSlimeEntry SIZE_UNKNOWN lives in KitchenSlime.h; CSlimeAnimPlayer/CSlimeLevel/
+//  CSlimeTiming/CSlimeCtorObj are dissolved onto CGameObject/AnimWorkerObj.)
+// (CSlimeEntity is dissolved onto the canonical CGrunt - FindGruntAt's real return.)
 SIZE_UNKNOWN(CSprite);
 SIZE_UNKNOWN(CStringNode);
