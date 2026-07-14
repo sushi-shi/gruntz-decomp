@@ -13,7 +13,9 @@
 //       ProcessCmd, M_c00a0 == FindCmdSlot, M_c0290 == Verify(i32)).
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing.
 #include <Net/NetMgr.h>           // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
-#include <Gruntz/GruntzCmdMgr.h>  // CNetGameMgr::m_6c real command manager (EnqueueCommand)
+#include <Gruntz/Multi.h> // CMulti - the real owner of the LoadMenuSelectSprite/OnPlayerLeft/... game-mgr methods (netmgr-vs-cmulti split); Init a2 is a CMulti
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr - CMulti::m_4's real type (its +0x6c m_cmdSubMgr is the CGruntzCmdMgr command manager)
+#include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr::EnqueueCommand (the +0x6c command manager)
 #include <Gruntz/GruntzCommand.h> // canonical CGruntzCommand/Single/Multi (slot-7 Parse)
 #include <Ints.h>
 #include <Rez/RezMgr.h>
@@ -87,7 +89,7 @@ void ReportError(const char* file, i32 line, i32 code, i32 extra); // 0x1776a0
 // ===========================================================================
 
 RVA(0x000bef80, 0x51)
-i32 CNetSession::Init(void* a1, CNetMgr* a2, void* a3) {
+i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
     if (a1 == 0) {
         return 0;
     }
@@ -101,7 +103,7 @@ i32 CNetSession::Init(void* a1, CNetMgr* a2, void* a3) {
     m_4 = (i32)a2; // the owning CNetMgr is kept as an i32 handle (CreateSlot re-passes it)
     m_8 = a3;
     Reset();
-    m_1c = a2->m_cmdDelay;
+    m_1c = a2->m_5a4;
     return 1;
 }
 
@@ -234,7 +236,7 @@ i32 CNetSession::Poll(i32 delta) {
 
     i32 a = 0;
     i32 received = 0;
-    while (avail > 0 && m_session->m_busy == 0) {
+    while (avail > 0 && m_session->m_pollAbort == 0) {
         i32 len = 0x800;
         i32 chan = m_localDesc->m_playerId;
         IDirectPlay4* ep = (*(IDirectPlay4**)((char*)m_netMgr + 0x18));
@@ -293,20 +295,20 @@ i32 CNetSession::DispatchMsg(LobbyMsg* m, i32 arg2) {
     }
     switch (m->m_type) {
         case 3:
-            ((CNetMgr*)m_session)->LoadMenuSelectSprite((void*)m);
+            m_session->LoadMenuSelectSprite((void*)m);
             return 1;
         case 5:
             if (m->m_04 == 1) {
                 void* p = (void*)m->m_08;
-                ((CNetMgr*)m_session)->OnPlayerLeft((i32)p);
-                ((CNetMgr*)m_session)->ResetPlayerCommands((i32)p);
+                m_session->OnPlayerLeft((i32)p);
+                m_session->ResetPlayerCommands((i32)p);
                 return 1;
             }
             return 1;
         case 49:
-            return ((CNetMgr*)m_session)->HandleControlMsg((CNetCtrlMsg*)m, arg2);
+            return m_session->HandleControlMsg((CNetCtrlMsg*)m, arg2);
         case 257:
-            return ((CNetMgr*)m_session)->HandleControlMsg((CNetCtrlMsg*)m, arg2);
+            return m_session->HandleControlMsg((CNetCtrlMsg*)m, arg2);
         default:
             return 1;
     }
@@ -337,7 +339,7 @@ i32 CNetSession::Tick() {
                 payload += obj->Serialize(payload, (char*)rec - payload + 0x410);
             }
         }
-        ((CNetMgr*)m_session)->WriteTag("[end]\n");
+        m_session->WriteTag("[end]\n");
         rec->m_payloadLen = (i32)(payload - (char*)rec - 0x10);
         m_snapshotDone = 1;
     }
@@ -745,7 +747,7 @@ i32 CNetCmdSlot::Init(i32 a1, i32* a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    m_owner = (CNetMgr*)a1; // the session passes its owning CNetMgr in as an i32 handle
+    m_owner = (CMulti*)a1; // the session passes its owning CMulti in as an i32 handle
     m_state = a3;
     m_resetGuard = 0;
     m_latchedSeq = 0;
@@ -916,7 +918,9 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         }
         i32 consumed = obj->Parse(cursor, rem);
         obj->m_submitted = 1; // "submitted" latch
-        m_owner->m_4->m_6c->EnqueueCommand(0, obj);
+        // m_owner->m_4 is the game-mgr (CGruntzMgr); its +0x6c command manager is the
+        // real CGruntzCmdMgr member m_cmdSubMgr - no cross-cast to a net-facet view.
+        m_owner->m_4->m_cmdSubMgr->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
     }
@@ -1145,7 +1149,7 @@ void CNetCmdSlot::ClearCmds() {
 // sess+offset into one running slot pointer and counts i<4. An IV-selection coin-flip.
 RVA(0x000c1320, 0x4a)
 i32 CNetCmdSlot::Ready() {
-    CNetMgr* mgr = m_owner;
+    CMulti* mgr = m_owner;
     if (mgr == 0) {
         return 0;
     }

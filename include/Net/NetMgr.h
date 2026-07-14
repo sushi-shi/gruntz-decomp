@@ -87,6 +87,7 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 class GruntzPlayer;          // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
 class CGruntzCmdMgr;         // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
 class CNetMgr;               // defined below; the command slot caches one as its +0x1c owner
+class CMulti;                // <Gruntz/Multi.h> - the multiplayer game-state (owns CNetSession::Init a2)
 struct GruntRec;             // the lobby-sync grunt-state record (defined below CNetCmdSlot)
 struct CSpriteFactoryHolder; // <Gruntz/GameRegistry.h> - the +0xc world holder (CState::m_c mirror)
 
@@ -318,7 +319,7 @@ struct CNetCmdSlot {
         i32 m_sentSeq; //        sync:    highest sequence sent
     };
     union {
-        CNetMgr* m_owner; // +0x1c  command: owning CNetMgr back-pointer (Init <- session)
+        CMulti* m_owner;  // +0x1c  command: owning CMulti back-pointer (reaches m_session/m_4/DispatchRecvMsg)
         i32 m_1c;         //        sync
     };
     // CPtrList, not CObList: AddCmd/RemoveCmd/ClearCmds/ResetSync all call the
@@ -466,13 +467,10 @@ struct CSyncObj {
 };
 SIZE_UNKNOWN(CSyncObj);
 
-// The game/session manager the sync object caches at +0x04 (only +0x564 net-busy
-// flag + the reloc-masked call shapes are load-bearing).
-struct CSessionMgr {
-    char pad000[0x564];
-    i32 m_busy; // +0x564 net busy flag
-};
-SIZE_UNKNOWN(CSessionMgr);
+// (CSessionMgr view dissolved: the "session/game manager" the sync object caches at
+// CNetSession+0x04 IS the owning CMulti - the same +0x04 field the command view holds
+// as m_4 (Init's a2, the CMulti). Its "+0x564 net-busy flag" is CMulti::m_pollAbort.
+// Typed CMulti* below; the deref sites (NetCmdSlot.cpp) pull <Gruntz/Multi.h>.)
 
 // A lobby-sync control/command message header (the net protocol's 3-word header).
 struct LobbyMsg {
@@ -502,7 +500,7 @@ struct CNetSession {
     };
     union {
         i32 m_4;                // +0x04  command: owning net manager as an i32 handle (Init a2)
-        CSessionMgr* m_session; //        sync:    owning session/game manager (m_busy gate)
+        CMulti* m_session; //        sync:    owning CMulti (== m_4; +0x564 m_pollAbort busy gate)
     };
     union {
         void* m_8;         // +0x08  command: peer/owner back-ptr (Init a3)
@@ -553,7 +551,7 @@ struct CNetSession {
     // un-reset (m_resetGuard==0) slot whose latency exceeds key (unsigned).
     CNetCmdSlot* FindSlot(u32 key); // c0460
     // Wiring init (caches the owner pointers then Reset()s). a1=command-buffer array.
-    i32 Init(void* a1, class CNetMgr* a2, void* a3); // bef80
+    i32 Init(void* a1, class CMulti* a2, void* a3); // bef80  (a2 is the owning CMulti; reads a2->m_5a4)
 
     // --- lobby-sync methods (ex-CLobbySync, folded onto the same object) ---
     ~CNetSession();      // b6220  ResetSync + vector-destroy the 4 slots [multi]
@@ -1312,108 +1310,47 @@ public:
     i32 PollSession();                                    // 0xb95f0
     i32 DispatchRecvMsg(i32 sender, char* buf, i32 size); // 0xb9750 (ret used by ProcessCmd)
 
-    // (vptr implicit at +0x000; was `char m_pad0[4]`)
-    // The +0x4 game-manager sub-object (the canonical CNetGameMgr view above):
-    // ->m_wnd->m_hwnd is the HWND the message handlers PostMessageA through; ->m_6c
-    // is the CGruntzCmdMgr command manager. The +0x4 object ALSO holds the inline
-    // per-channel ack-latency slot array at +0x150 (CNetGameMgr::m_channels[4]),
-    // reached by name now (except the one m_4-relative GetMaxAckLatency leaf, which
-    // keeps its authentic CNetPlayerSlot base/disp encoding).
-    CNetGameMgr* m_4; // +0x004
-    // A CString member at +0x8 (GetName returns a copy of it by value).
-    CString m_8; // +0x008
-    // The world holder (CState::m_c through the CMulti overlay): the chat/menu-select
-    // handlers read its +0x28 CSndHost for the "GAME_CHAT"/"GAME_MENUS_SELECT" cues,
-    // and the session/chat attach sites hand it on (the ex-CSndSubMgr facet is gone).
-    CSpriteFactoryHolder* m_c; // +0x00c
+    // === CNetMgr layout: the REAL 0x8c-byte DirectPlay wrapper ================
+    // netmgr-vs-cmulti split DONE: the former +0x2d8..+0x60c multiplayer block and
+    // the 0xb5xxx-0xbdxxx method cluster belong to CMulti (<Gruntz/Multi.h>); this
+    // class is only the DirectPlay session wrapper CMulti holds at CMulti+0x524
+    // (CMulti::m_netGate, reached via Peer()). Constructed inline at
+    // CMulti::SetupMultiplayerSession @0xb560e: global `operator new(0x8c)`, the
+    // CObject base vptr stamp (0x5e8cb4), the three CObList ctors (nBlockSize 10),
+    // the derived vptr stamp (0x5ea42c), then zero +0x14/+0x18.
+    // (vptr implicit at +0x000)
+    CNetGameMgr* m_4;          // +0x004  game-manager sub-object (window/HWND, +0x6c cmd mgr)
+    CString m_8;               // +0x008  a name CString (GetName returns a copy by value)
+    CSpriteFactoryHolder* m_c; // +0x00c  the world holder (CState::m_c mirror)
     char m_pad10[0x14 - 0x10];
-    INetReleasable* m_releaseIface; // +0x014  the secondary COM interface Destroy releases (slot 2)
+    INetReleasable* m_releaseIface; // +0x014  secondary COM interface Destroy releases (slot 2)
     IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)
-    i32 m_resyncLParam;          // +0x01c  WM_COMMAND lParam value the resync handlers post
-    char m_pad20[0x28 - 0x20];
-    i32 m_groupCount; // +0x028  group-list item count (ReadGroupSel bound)
-    char m_pad2c[0x3c - 0x2c];
-    CNetListNode* m_3c; // +0x03c  head of the +0x38 player CObList (PopulatePlayerList walks it)
-    char m_pad40[0x44 - 0x40];
-    i32 m_playerCount; // +0x044  player-list item count (ReadPlayerSel bound)
-    char m_pad48[0x58 - 0x48];
-    // The managed-player-object list (a by-value CObList embedded at +0x54). Its
-    // 0x1c-byte body spans +0x54..+0x70; the +0x58 head node ptr below is the
-    // CObList's own m_pHead (what FindPlayerById walks). Modeled as the head
-    // pointer here; RemovePlayerObj reaches the embedded CObList via a +0x54 cast.
-    CNetPlayerNode* m_58; // +0x58  head of the player-object list (CObList m_pHead)
-    char m_pad5c[0x60 - 0x5c];
-    // +0x60: read by the CMulti wait loop (WaitForOtherPlayers) as a "peer already
-    // ready" gate (==1 short-circuits the wait). Folded from the former Multi.cpp-local
-    // WaitReportGate view of m_peer; the +0x54 region's exact CObList shape is unproven,
-    // so this is modeled as a plain field at the load-bearing offset.
-    i32 m_peerReady; // +0x60
-    char m_pad64[0x70 - 0x64];
-    // The three list-box selection latches (one per managed list). Each list's
-    // ReadXxxSel reader writes the selected item's data here when it is in range;
-    // the matching clear-loop zeroes it (along with the +0x7c/+0x80/+0x84 id below).
-    i32 m_groupSel;   // +0x70  group-list selected item data (ReadGroupSel)
-    i32 m_playerSel;  // +0x74  player-list selected item data (ReadPlayerSel)
-    i32 m_sessionSel; // +0x78  player-object-list selected item data
-    i32 m_groupSelId; // +0x7c  group-list selection id (zeroed with m_groupSel on clear)
-    // +0x80/+0x84: cleared with the selection latches, but retail also reuses each as
-    // the running list-walk cursor its Populate<X>List loop advances (a node pointer),
-    // so they are typed as the node they hold - no int<->pointer casts at the walks.
-    CNetListNode* m_playerSelId;  // +0x80  player-list walk cursor / selection id
-    CNetListNode* m_sessionSelId; // +0x84  player-object-list walk cursor / selection id
-    char m_pad88[0x2d8 - 0x88];
-    i32 m_2d8; // +0x2d8  a command-timing config word (LoadConfig copies cfg+0x118)
-    char m_pad2dc[0x520 - 0x2dc];
-    CNetSession* m_session; // +0x520  the DirectPlay session sub-object (command slots)
-    CNetMgr* m_peer;        // +0x524  THE REAL CNetMgr (RTTI CNetMgr:CObject, ??1 @0xb6000; ==
-                            // <Gruntz/Multi.h> CMulti::m_netGate); null => no session. See the
-                            // header verdict: this class from +0x2d8 down is really CMulti.
-    i32 m_useChannelLatency; // +0x528  ack-latency source selector (set => inline m_channelLatency[])
-    i32 m_sessionTerminated; // +0x52c  "the game session has been terminated"
-    i32 m_530;               // +0x530  config-loaded / connection-active gate
-    i32 m_534;               // +0x534  drop-finalize latch: RecordDropPlayer2 sets it once every
-                             //         state-3 slot is recorded, switching AckDropPlayer to host
-                             //         teardown; exact role unproven, left placeholder
-    i32 m_removedFromGame;   // +0x538  "you have been removed from the game by the host"
-    i32 m_levelVerifyResult; // +0x53c  level-verify response latch (VerifyCustomLevel)
-    i32 m_verifyDone;        // +0x540  Poll's exit gate (set once the verify vote resolves)
-    i32 m_recordAcked[4];    // +0x544  Poll's per-record ack latch (one per session slot)
-    i32 m_recordToken[4];    // +0x554  Poll's per-record vote/token latch
-    i32 m_pollAbort;         // +0x564  set => PollSession stops pumping the receive queue
-    i32 m_568;               // +0x568  channel-latency "removed slot" latch (dispatch id 0x419)
-    i32 m_gameFull;          // +0x56c  "this game is already full"
-    i32 m_versionMismatch; // +0x570  version-mismatch latch (HandleVersionCheck sets; WaitForConnect reports)
-    i32 m_outOfSyncGuard; // +0x574  OnOutOfSync per-instance reentrancy guard
-    i32 m_syncGate;       // +0x578  gates the frame-sync long-frame toggle
-    i32 m_57c;            // +0x57c  reconnect/rejoin-in-progress gate (OR'd with m_connected)
-    i32 m_connected;      // +0x580  connection established (gates resend/version report)
-    i32 m_584; // +0x584  state word cleared on each dispatch handler entry (role unproven)
-    char m_pad588[0x58c - 0x588];
-    i32 m_admitted; // +0x58c  set once the local player is admitted (connect-wait exit latch)
-    char m_pad590[0x598 - 0x590];
-    CString m_configSection; // +0x598  config section/value-name prefix ("<section>_CmdDelay" etc.)
-    char m_pad59c[0x5a4 - 0x59c];
-    DWORD m_cmdDelay; // +0x5a4  the "_CmdDelay" value (also the per-command sequence scale)
-    DWORD m_resend;   // +0x5a8  the "_Resend" value
-    i32 m_gameClosed; // +0x5ac  "this game is closed"
-    i32 m_5b0;        // +0x5b0  config word (LoadConfig copies cfg+0x8)
-    CString m_5b4;    // +0x5b4  config name CString A (LoadConfig <- cfg+0xc)
-    CString m_5b8;    // +0x5b8  config name CString B (LoadConfig <- cfg+0x8c)
-    CNetPlayerEntry* m_localPlayer; // +0x5bc  the local player descriptor (gate in WaitForConnect)
-    i32 m_localPlayerId; // +0x5c0  local player id (== m_localPlayer->m_4; matched against
-                         //         peer player ids in RecordDropPlayer2/CreateSession/Poll)
-    i32 m_lastSenderId;  // +0x5c4  sender-id latch (dispatch id 0x402 records msg->m_8 here)
-    char m_pad5c8[0x5cc - 0x5c8];
-    i32 m_resyncTick; // +0x5cc  the resync "tick" byte derived from the session sub-object
-    char m_pad5d0[0x5e0 - 0x5d0];
-    u32 m_lastFrameDelta; // +0x5e0  last frame-sync delta (ms)
-    u32 m_lastFrameTime;  // +0x5e4  last frame-sync timestamp (timeGetTime)
-    char m_pad5e8[0x5f0 - 0x5e8];
-    DWORD m_channelLatency[4]; // +0x5f0  per-channel ack-latency values
-    i32 m_600;                 // +0x600  a command-timing config word (LoadConfig copies cfg+0x114)
-    char m_pad604[0x608 - 0x604];
-    i32* m_dropIds;    // +0x608  the pending-drop id array (RecordDropPlayer fills it)
-    i32 m_dropIdCount; // +0x60c  the pending-drop id array element count
+    // The three managed collections (by-value MFC CObList, 0x1c bytes each; head at
+    // +0x4, count at +0xc within each). ~CNetMgr @0xb6000 tears them down in reverse
+    // (+0x54,+0x38,+0x1c) after Destroy(); the ctor default-constructs each. The
+    // Clear/Add/Populate methods reach them by name now; the named head/count reads
+    // use the assert-free MFC GetHeadPosition()/GetCount() inlines (byte-identical to
+    // the old m_3c/+0x20/+0x58 head and m_groupCount/m_playerCount +0x28/+0x44 reads).
+    CObList m_groups;   // +0x01c  service-provider group list  (head +0x20, count +0x28)
+    CObList m_players;  // +0x038  player-descriptor list        (head +0x3c, count +0x44)
+    CObList m_sessions; // +0x054  session / player-object list  (head +0x58, count +0x60)
+    // The three list-box selection latches + their walk-cursor ids. Each ReadXxxSel
+    // reader writes the selected item's data here in range; the clear-loops zero them.
+    i32 m_groupSel;               // +0x070  group-list selected item data (ReadGroupSel)
+    i32 m_playerSel;              // +0x074  player-list selected item data (ReadPlayerSel)
+    i32 m_sessionSel;             // +0x078  session-list selected item data
+    i32 m_groupSelId;             // +0x07c  group selection id / Find() walk cursor
+    CNetListNode* m_playerSelId;  // +0x080  player-list walk cursor / selection id
+    CNetListNode* m_sessionSelId; // +0x084  session-list walk cursor / selection id
+    i32 m_88; // +0x088  (rounds the object to the observed RezAlloc/operator-new 0x8c size)
+
+    // Inline ctor: the CObject base + three CObList members are auto-constructed by
+    // cl (base+member+derived vptr stamps), then this body zeroes +0x14/+0x18 -
+    // reproducing the peer construction inlined at SetupMultiplayerSession @0xb560e.
+    CNetMgr() {
+        m_releaseIface = 0;
+        m_directPlay = 0;
+    }
 
     // The managed-list teardown run of the destructor (~CNetMgr, 0x0b6000) is
     // declared as `virtual ~CNetMgr()` in the vtable block above.
@@ -1457,7 +1394,7 @@ public:
     // on a fully-established session, 0 on any failure. (a1 must be non-null.)
     i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3);
 };
-SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
+SIZE(CNetMgr, 0x8c);       // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
 VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

@@ -20,7 +20,8 @@
 #include <Gruntz/Play.h>      // CPlay (ApplyGameOptions host)
 #include <Gruntz/State.h>     // CState::Update (m_curState state probe)
 #include <Gruntz/LeafCue.h>   // LeafCue (the config-cue leaf: m_10/m_14/m_18) for ScrollDialog
-#include <Net/NetMgr.h>       // CNetMgr::SendChannelStat422/423 (dispatched on m_curState)
+#include <Net/NetMgr.h>
+#include <Gruntz/Multi.h> // CMulti::SendChannelStat422/423 (dispatched on m_curState; netmgr-vs-cmulti split)
 #include <Gruntz/Wnd.h>       // the minimal MFC CWnd view (FromHandle; m_hWnd @+0x1c)
 #include <Gruntz/Enums.h>     // RES_640x480/RES_800x600/RES_1024x768
 #include <Globals.h>          // the g_opt_* staging globals
@@ -222,14 +223,14 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             switch (wParam) {
                 case 2: // IDCANCEL: discard
                     if (g_gameReg->m_curState->Update() == 0x11) {
-                        ((CNetMgr*)g_gameReg->m_curState)->SendChannelStat423();
+                        ((CMulti*)g_gameReg->m_curState)->SendChannelStat423();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
                 case 1: { // IDOK: commit
                     if (g_gameReg->m_curState->Update() == 0x11) {
-                        ((CNetMgr*)g_gameReg->m_curState)->SendChannelStat423();
+                        ((CMulti*)g_gameReg->m_curState)->SendChannelStat423();
                     }
                     ReadMenuOptionsDialog(hDlg);
                     EndDialog(hDlg, 1);
@@ -288,7 +289,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
             if (g_gameReg->m_curState->Update() != 3) {
                 if (g_gameReg->m_curState->Update() == 0x11) {
-                    ((CNetMgr*)g_gameReg->m_curState)->SendChannelStat422();
+                    ((CMulti*)g_gameReg->m_curState)->SendChannelStat422();
                 } else {
                     EnableWindow(g_optHwndEasy, g_cdPromptResult == 0);
                 }

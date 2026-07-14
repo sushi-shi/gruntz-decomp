@@ -1076,14 +1076,14 @@ void CMultiStartDlg::VerifyCustomLevel() {
         CString a = GetConfigNameA();
         token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, g_64bd5c->m_5b0, 0, 0, a);
     }
-    g_64bd5c->m_53c = 0;
+    g_64bd5c->m_levelVerifyResult = 0;
     if (g_64bd5c->Poll(token) == 0) {
         g_64bd5c->m_530 = 0;
         EnableWindow(0);
         ((CGruntzMgr*)(void*)g_gameReg)
             ->EnterModalUI("Unable to verify custom level with other players");
         EnableWindow(1);
-    } else if (g_64bd5c->m_53c == 0) {
+    } else if (g_64bd5c->m_levelVerifyResult == 0) {
         g_64bd5c->m_530 = 1;
         CDialog::OnOK(); // 0x1bacc3 direct base call (?OnOK@CDialog@@MAEXXZ, reloc-masked)
     } else {

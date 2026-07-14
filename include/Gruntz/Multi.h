@@ -398,6 +398,7 @@ public:
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2);                            // 0x0ba1a0
     i32 OnPlayerLeft(i32 playerId);                                              // 0x0ba3b0
     void AckDropPlayer(i32 id);                                                  // 0x0ba590
+    void WriteTag(const char* tag);                                              // 0x0bd4a0 (reloc-masked)
     // Drop/wait helpers (moved off the conflated CNetMgr in the netmgr-vs-cmulti
     // split): both run on `this`==CMulti (they read the +0x520 session, the +0x604
     // drop-id CDWordArray, m_534, m_hostIndex).
@@ -453,7 +454,7 @@ public:
     i32 m_530;                   // +0x530
     i32 m_534;                   // +0x534
     i32 m_538;                   // +0x538  (Frankenstein m_removedFromGame)
-    i32 m_53c;                   // +0x53c  (Frankenstein m_levelVerifyResult)
+    i32 m_levelVerifyResult;     // +0x53c  level-verify response latch (VerifyCustomLevel/Poll)
     i32 m_verifyDone;     // +0x540  Poll's exit gate (gap-named; == Frankenstein m_verifyDone)
     i32 m_recordAcked[4]; // +0x544  Poll's per-record ack latch (gap-named)
     i32 m_recordToken[4]; // +0x554  Poll's per-record vote/token latch (gap-named)

@@ -244,7 +244,7 @@ extern "C" void ServicesDispatchCb(); // 0x401a19
 extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
 extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
 extern "C" CNetMgr* g_groupEnumMgr;                                   // 0x648cf4
-extern "C" CNetMgr* g_connectRptMgr;                                  // 0x648cf8
+extern "C" CMulti* g_connectRptMgr;                                  // 0x648cf8
 // The channel-table base at CNetGameMgr+0x150 is m_4->m_channels[0] (CNetChannel);
 // JoinAndRegisterChannel seeds its name CString (+0x4) / id (m_8) directly.
 
@@ -548,9 +548,9 @@ extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx
 // loaded from the vtable (MSVC5 forbids the __thiscall fn-ptr keyword; PMFs of the
 // complete, non-polymorphic class are 4 bytes and emit `mov edx,[this]; call [edx+off]`
 // - see docs/patterns/pmf-complete-class-4byte.md).
-typedef i32 (CNetMgr::*NmSlotRet)();
-typedef i32 (CNetMgr::*NmConnFn)(i32, i32);
-typedef void (CNetMgr::*NmSlotVoid)();
+typedef i32 (CMulti::*NmSlotRet)();
+typedef i32 (CMulti::*NmConnFn)(i32, i32);
+typedef void (CMulti::*NmSlotVoid)();
 SIZE_UNKNOWN(CNetConnectSlotView);
 struct CNetConnectSlotView {
     char m_pad0[8];
@@ -579,33 +579,15 @@ struct CNetConnectSlotView {
 // shared g_emptyString literal (const char[]) which collides with this TU's own
 // `extern "C" char g_emptyString[]` decl (C2373) - so the real include cannot be
 // pulled in here. Reloc-masked either way (same 0x13c030 CSymParser::ResolvePath).
-// (1) the 0x8c-byte peer object (RezAlloc 0x8c): a real CObject-derived class
-// with 3 by-value CObList members at +0x1c/+0x38/+0x54. Retail sequence (dump_target
-// @0x0b560e..0x0b5643): stamp the base vptr 0x5e8cb4, run the 3 CObList ctors, then
-// stamp the FINAL vptr 0x5ea42c (== ??_7CNetMgr@@; the peer shares CNetMgr's vtable
-// but is a distinct 0x8c object). Modeled as `: public CObject` so cl emits the
-// base-phase vptr stamp (reloc-masks 0x5e8cb4) at ctor entry and runs the CObList
-// member ctors under its /GX new-cleanup frame - only the FINAL stamp stays manual.
-// CATALOGUE (above): 0x5ea42c is the 5-slot CObject vtable with slot 1 overridden
-// (0x00260d); to compiler-emit it here the peer would have to be `: public CNetMgr`
-// with CNetMgr modeled as the REAL small 5-slot DirectPlay wrapper declaring those 5
-// virtuals. That class is currently conflated (the NetMgr.h `CNetMgr` is the BIG
-// multiplayer view), so realizing it + re-parenting the peer is a deferred split, not
-// done here (would otherwise emit a divergent ??_7CNetPeer). Terminal stamp kept per
-// docs vtable-realization-ctor-boundary until that split lands.
-SIZE_UNKNOWN(CNetPeer);
-struct CNetPeer : public CObject {
-    char m_pad4[0x1c - 4]; // +0x04 (incl. +0x14 / +0x18)
-    CObList m_l0;          // +0x1c
-    CObList m_l1;          // +0x38
-    CObList m_l2;          // +0x54
-    char m_pad_tail[0x8c - (0x1c + 3 * sizeof(CObList))];
-    CNetPeer() {
-        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0) // 0x5ea42c (final stamp; CNetMgr vtbl un-catalogued)
-        *(i32*)((char*)this + 0x14) = 0;
-        *(i32*)((char*)this + 0x18) = 0;
-    }
-};
+// (1) the 0x8c-byte peer object: the REAL CNetMgr (netmgr-vs-cmulti split DONE). It
+// is the small DirectPlay wrapper (RTTI CNetMgr : CObject, ??_7 @0x5ea42c/0x1ea42c,
+// ??1 @0xb6000) CMulti holds at +0x524. `new CNetMgr()` reproduces the inlined ctor
+// at 0xb560e byte-for-byte: cl stamps the CObject base vptr (0x5e8cb4), runs the
+// three by-value CObList member ctors (m_groups/m_players/m_sessions, nBlockSize 10),
+// stamps the derived CNetMgr vptr (0x5ea42c), then the inline ctor body zeroes
+// +0x14/+0x18. The former CNetPeer placeholder view (`: public CObject` + a manual
+// terminal stamp) is gone - the class is realized in <Net/NetMgr.h> at its true 0x8c
+// size with its real base and cl-emitted vtable.
 
 // (2) the 0x1c interface object IS a CChatBoxOwner (<Gruntz/ChatBoxOwner.h>):
 // same size, same seven fields in the same store order (retail inlines its
@@ -660,7 +642,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if ((LoadGameAssetNamespaces(a1, a2, a3), 0)) {
         return 0;
     }
-    g_connectRptMgr = (CNetMgr*)this;
+    g_connectRptMgr = this;
 
     // --- zero the connect-state field block (disasm order) ---
     TF(0x470) = 0;
@@ -715,16 +697,16 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     Mgr()->ClearOptionsSlots();
     ChannelSlots_InitAll();
 
-    // (1) peer CNetMgr
-    CNetPeer* peer = new CNetPeer();
+    // (1) peer CNetMgr - the real small DirectPlay wrapper (CNetPeer view dissolved).
+    CNetMgr* peer = new CNetMgr();
     m_netGate = (CMultiReportGate*)peer;
-    g_groupEnumMgr = (CNetMgr*)peer;
+    g_groupEnumMgr = peer;
 
     MF(0xac) = 1;
     if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
         if (StartTitle() != 0) {
             MF(0xac) = 0;
-            (((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
+            ((this)->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
             return 0;
         }
     } else {
@@ -749,10 +731,10 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
     TF(0x590) = MF(0x110);
     MF(0x110) = 1;
-    if ((((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->OnStart))() == 0) {
+    if (((this)->*(((CNetConnectSlotView*)*(void**)this)->OnStart))() == 0) {
         return 0;
     }
-    (((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->OnReady))();
+    ((this)->*(((CNetConnectSlotView*)*(void**)this)->OnReady))();
     TF(0x2c) = (i32)((CSymParser*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
     if (TF(0x2c) == 0) {
         return 0;
@@ -834,7 +816,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     // --- kick off the connect wait + first poll ---
-    if ((((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->OnConnect))(1, 1) == 0) {
+    if (((this)->*(((CNetConnectSlotView*)*(void**)this)->OnConnect))(1, 1) == 0) {
         return 0;
     }
     TF(0x57c) = 1;
@@ -867,22 +849,15 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 // class (own ??_7CNetMgr@@6B@ @0x1ea42c) deriving from CObject, so the compiler
 // writes the own vptr at dtor entry (masks 0x1ea42c) AND folds the CObject
 // grand-base restamp (masks 0x5e8cb4) at the tail - no manual `*(void**)this = &g_*`
-// store. The body runs the session Destroy then destructs the three managed CObLists
-// at +0x54/+0x38/+0x1c (reverse order).
-// @early-stop
-// /GX-frame residual: the cl-emitted own + grand-base vptr stamps, the Destroy call
-// and the three reverse-order CObList member dtors are all reproduced, but retail
-// wraps the three CObList teardowns in the compiler's /GX unwind frame with
-// descending EH-state cookies (2/1/0) - which only the auto member destruction of
-// real embedded `CObList` members (at +0x1c/+0x38/+0x54) emits. Those are still
-// offset-cast, so the frame is the residual. Final sweep once the three CObList
-// members are modeled by value.
+// store. The body runs the session Destroy then the compiler auto-destructs the three
+// managed CObLists at +0x54/+0x38/+0x1c (reverse decl order) and restamps the CObject
+// base - now that they are real by-value CObList members (m_groups/m_players/m_sessions
+// in <Net/NetMgr.h>, netmgr-vs-cmulti split), cl emits the /GX unwind frame with the
+// descending EH-state cookies (2/1/0) retail has, so the manual offset-cast dtors are
+// gone.
 RVA(0x000b6000, 0x6d)
 CNetMgr::~CNetMgr() {
     Destroy();
-    ((CObList*)((char*)this + 0x54))->~CObList();
-    ((CObList*)((char*)this + 0x38))->~CObList();
-    ((CObList*)((char*)this + 0x1c))->~CObList();
 }
 
 // ===========================================================================
@@ -979,7 +954,7 @@ i32 CMulti::Vslot09(i32 arg) {
     m_accumTime = 0;
     m_5e4 = tg();
     if (m_connected != 0) {
-        ((CNetMgr*)this)->SendNetStat(0x402, 0x4d2, 1);
+        SendNetStat(0x402, 0x4d2, 1);
     }
     return 1;
 }
@@ -2908,11 +2883,11 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
 
         case 0x41d:
             m_verifyDone = 1;
-            m_53c = 1;
+            m_levelVerifyResult = 1;
             return 1;
 
         case 0x41e:
-            m_53c = 0;
+            m_levelVerifyResult = 0;
             m_verifyDone = 1;
             return 1;
 
@@ -3163,10 +3138,10 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     if (ev->m_armed != 1) {
         return 0;
     }
-    PlayerNode* node = (PlayerNode*)((CNetMgr*)Peer())->GetPlayerData(ev->m_id);
+    PlayerNode* node = (PlayerNode*)Peer()->GetPlayerData(ev->m_id);
     if (node == 0) {
         node =
-            (PlayerNode*)((CNetMgr*)Peer())
+            (PlayerNode*)Peer()
                 ->AddSessionNode(ev->m_id, (const char*)ev->m_20, (const char*)ev->m_24, (i32)node);
         if (node == 0) {
             return 0;
@@ -3839,7 +3814,7 @@ i32 CMulti::WaitForOtherPlayers() {
     for (i32 k = 3; k != 0; k--) {
         votes->SetAtGrow(votes->GetSize(), 0);
     }
-    if (Peer()->m_peerReady == 1) {
+    if (Peer()->m_sessions.GetCount() == 1) {
         m_534 = 1;
         return 1;
     }
@@ -4009,11 +3984,11 @@ i32 CMulti::Poll(i32 token) {
         if (allAcked != 0) {
             if (allAgree != 0) {
                 SendStatFlag(STAT_VERIFY_AGREE, 1);
-                m_53c = 1;
+                m_levelVerifyResult = 1;
                 m_verifyDone = 1;
             } else {
                 SendStatFlag(STAT_VERIFY_DISAGREE, 1);
-                m_53c = 0;
+                m_levelVerifyResult = 0;
                 m_verifyDone = 1;
             }
         }
@@ -4055,7 +4030,7 @@ i32 CMulti::CreateSession() {
     if (session == 0) {
         return 0;
     }
-    if (session->Init(NetGameMgr(), (CNetMgr*)this, Peer()) == 0) {
+    if (session->Init(NetGameMgr(), this, Peer()) == 0) {
         return 0;
     }
 
@@ -4574,7 +4549,7 @@ void CMulti::AutoTuneCmdDelay() {
 // local CGameSettings view is gone). External; the `call rel32` reloc-masks.
 
 // The active net session the verify path polls (DAT_00648cf8, a CNetMgr*).
-extern "C" CNetMgr* g_connectRptMgr; // 0x648cf8
+extern "C" CMulti* g_connectRptMgr; // 0x648cf8
 
 // The shared empty-string literal CreateLocalPlayer hands to the peer's player
 // factory (0x6293f4; DIR32 reloc-masked).

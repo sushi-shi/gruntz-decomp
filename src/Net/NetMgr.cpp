@@ -244,7 +244,7 @@ i32 CNetMgr::AddGroupNode(void* guid, void* name) {
 
     node->m_4 = (i32)guid;
     node->m_name = (const char*)name;
-    node->m_c = (i32)((CObList*)((char*)this + 0x1c))->AddTail((::CObject*)node);
+    node->m_c = (i32)m_groups.AddTail((::CObject*)node);
     return (i32)node;
 }
 
@@ -255,7 +255,7 @@ i32 CNetMgr::AddGroupNode(void* guid, void* name) {
 // RemoveAll's the list and zeroes the count/id pair (+0x7c, +0x70).
 RVA(0x00178430, 0x3a)
 void CNetMgr::ClearGroupList() {
-    CNetListNode* node = *(CNetListNode**)((char*)this + 0x20);
+    CNetListNode* node = (CNetListNode*)m_groups.GetHeadPosition();
     while (node != 0) {
         CNetListNode* cur = node;
         node = node->m_next;
@@ -263,7 +263,7 @@ void CNetMgr::ClearGroupList() {
             cur->m_data->SelfDestruct(1);
         }
     }
-    ((CObList*)((char*)this + 0x1c))->RemoveAll();
+    m_groups.RemoveAll();
     m_groupSelId = 0;
     m_groupSel = 0;
 }
@@ -285,7 +285,7 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     if (sel < 0) {
         return 0;
     }
-    if (sel >= m_groupCount) {
+    if (sel >= (i32)m_groups.GetCount()) {
         return 0;
     }
     i32 data = (i32)SendMessageA((HWND)hList, LB_GETITEMDATA, sel, 0);
@@ -382,7 +382,7 @@ i32 CNetMgr::AddPlayerNode(void* playerDesc) {
         return 0;
     }
 
-    node->m_54 = (__POSITION*)((CObList*)((char*)this + 0x38))->AddTail((::CObject*)node);
+    node->m_54 = (__POSITION*)m_players.AddTail((::CObject*)node);
     return (i32)node;
 }
 
@@ -392,7 +392,7 @@ i32 CNetMgr::AddPlayerNode(void* playerDesc) {
 // node's payload, RemoveAll's the list, zeroes the count/id pair (+0x80, +0x74).
 RVA(0x00178750, 0x3d)
 void CNetMgr::ClearPlayerList() {
-    CNetListNode* node = m_3c;
+    CNetListNode* node = (CNetListNode*)m_players.GetHeadPosition();
     while (node != 0) {
         CNetListNode* cur = node;
         node = node->m_next;
@@ -400,7 +400,7 @@ void CNetMgr::ClearPlayerList() {
             cur->m_data->SelfDestruct(1);
         }
     }
-    ((CObList*)((char*)this + 0x38))->RemoveAll();
+    m_players.RemoveAll();
     m_playerSelId = 0;
     m_playerSel = 0;
 }
@@ -425,7 +425,7 @@ void CNetMgr::PopulatePlayerList(void* hList) {
 
     SendMessageA((HWND)hList, LB_RESETCONTENT, 0, 0);
 
-    CNetListNode* node = m_3c;
+    CNetListNode* node = (CNetListNode*)m_players.GetHeadPosition();
     m_playerSelId = node;
     CNetPlayerDesc* payload;
     if (node != 0) {
@@ -465,7 +465,7 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
     if (sel < 0) {
         return 0;
     }
-    if (sel >= m_playerCount) {
+    if (sel >= (i32)m_players.GetCount()) {
         return 0;
     }
     i32 data = (i32)SendMessageA((HWND)hList, LB_GETITEMDATA, sel, 0);
@@ -662,7 +662,7 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
     }
 
     if (node != 0) {
-        __POSITION* pos = (__POSITION*)((CObList*)((char*)this + 0x54))->AddTail((::CObject*)node);
+        __POSITION* pos = (__POSITION*)m_sessions.AddTail((::CObject*)node);
         if (pos == 0) {
             delete node;
         } else {
@@ -678,7 +678,7 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
 // node's payload, RemoveAll's the list, zeroes the count/id pair (+0x84, +0x78).
 RVA(0x00178c70, 0x3d)
 void CNetMgr::ClearSessionList() {
-    CNetListNode* node = *(CNetListNode**)((char*)this + 0x58);
+    CNetListNode* node = (CNetListNode*)m_sessions.GetHeadPosition();
     while (node != 0) {
         CNetListNode* cur = node;
         node = node->m_next;
@@ -686,7 +686,7 @@ void CNetMgr::ClearSessionList() {
             cur->m_data->SelfDestruct(1);
         }
     }
-    ((CObList*)((char*)this + 0x54))->RemoveAll();
+    m_sessions.RemoveAll();
     m_sessionSelId = 0;
     m_sessionSel = 0;
 }
@@ -746,7 +746,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
 
     SendMessageA((HWND)hList, LB_RESETCONTENT, 0, 0);
 
-    CNetListNode* node = (CNetListNode*)m_58;
+    CNetListNode* node = (CNetListNode*)m_sessions.GetHeadPosition();
     m_sessionSelId = node;
     CNetSessionNode* payload;
     if (node != 0) {
@@ -786,7 +786,7 @@ i32 CNetMgr::RemovePlayerObj(CNetPlayerObj* obj) {
     __POSITION* pos = obj->m_20;
     obj->SelfDestruct(1);
     if (pos != 0) {
-        ((CObList*)((char*)this + 0x54))->RemoveAt(pos);
+        m_sessions.RemoveAt(pos);
     }
     return 1;
 }
@@ -811,7 +811,7 @@ i32 CNetMgr::RemovePlayerById(i32 id) {
 // the requested id, or null if the list is empty / no entry matches.
 RVA(0x00178e90, 0x20)
 CNetPlayerEntry* CNetMgr::FindPlayerById(i32 id) {
-    CNetPlayerNode* node = m_58;
+    CNetPlayerNode* node = (CNetPlayerNode*)m_sessions.GetHeadPosition();
     while (node != 0) {
         CNetPlayerNode* cur = node;
         node = node->m_next;
@@ -938,7 +938,7 @@ i32 CNetMgr::RemovePlayerNode(CNetPlayerListNode* node) {
     __POSITION* pos = node->m_54;
     delete node;
     if (pos != 0) {
-        ((CObList*)((char*)this + 0x38))->RemoveAt(pos);
+        m_players.RemoveAt(pos);
     }
     return 1;
 }
@@ -1031,7 +1031,7 @@ SIZE_UNKNOWN(CGroupNode); // traversal view of the +0x1c group list node
 // docs/patterns/linked-list-walk-node-eax-rotation.md. Logic complete.
 RVA(0x00179270, 0x89)
 InterfaceObject* CNetMgr::Find(i32 kind) {
-    CGroupNode* node = *(CGroupNode**)((char*)this + 0x20);
+    CGroupNode* node = (CGroupNode*)m_groups.GetHeadPosition();
     *(CGroupNode**)((char*)this + 0x7c) = node;
     InterfaceObject* item;
     if (node) {
