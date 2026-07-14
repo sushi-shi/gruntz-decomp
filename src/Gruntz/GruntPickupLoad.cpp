@@ -51,7 +51,6 @@ struct MegaHolder {
     MegaCounter* m_2dc; // +0x2dc
 };
 
-#define GREG_I32(g, o) (*(i32*)((char*)(g) + (o)))
 // The looked-up sprite handle lands in the (otherwise dead) arg4 slot: taking its
 // address pins a4 to its incoming stack slot, exactly as retail reuses [esp+0x20].
 #define PICKUP(key, idv)                                                                           \
@@ -467,8 +466,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     if (id != 0) {
         CGruntHud* hud = m_10;
         WwdGameReg* g = g_gameReg;
-        if ((hud->m_5c < GREG_I32(g, 0x144) && hud->m_5c >= GREG_I32(g, 0x13c)
-             && hud->m_60 < GREG_I32(g, 0x148) && hud->m_60 >= GREG_I32(g, 0x140))
+        if ((hud->m_5c < g->m_viewOriginR && hud->m_5c >= g->m_viewOriginL
+             && hud->m_60 < g->m_viewOriginB && hud->m_60 >= g->m_viewOriginT)
             || a2 != 0) {
             g->m_cueSink->CueA(this, id, -1, 0, -1, -1);
         }
