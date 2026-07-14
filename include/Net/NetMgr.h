@@ -1029,8 +1029,9 @@ extern "C" i32 g_648cec; // 0x648cec  active-player refcount
 struct InterfaceObject; // the DirectPlay service-provider node (IsInterface2 probe)
 struct CNetCreateCtx {
     char m_pad0[0x70];
-    InterfaceObject* m_serviceProvider; // +0x70  selected service-provider (IsInterface2 -> slow-link timeout)
-    void* m_74;                         // +0x74  the group-enumeration record
+    InterfaceObject*
+        m_serviceProvider; // +0x70  selected service-provider (IsInterface2 -> slow-link timeout)
+    void* m_74;            // +0x74  the group-enumeration record
 };
 SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail size TBD
 // (g_648cf4 moved to its only user, Multi.cpp, so it can carry the DATA() binding a
