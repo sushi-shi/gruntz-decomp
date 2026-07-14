@@ -18,129 +18,37 @@
 #include <Gruntz/String.h>
 
 // ---------------------------------------------------------------------------
-// Shared plane / renderer / draw-surface layout the two scans walk.
+// THE VIEWS ARE DISSOLVED (2026-07-14). Every shape the two scans walked is a
+// canonical class this tree already models:
+//   Plane        -> CGameObject (<Gruntz/UserLogic.h>): m_04/m_flags(|=0x10000
+//        consumed)/m_screenX/m_screenY/m_7c/m_114..m_130 and the four 16-byte
+//        quads are the NAMED extent/area/config bands (m_64..m_70 @0x64,
+//        m_extentL..B @0x134, m_areaL..B @0x144, m_154..m_160) - with the
+//        documented 0x80000000 = "unset" sentinel the scans normalize.
+//   PlaneDesc    -> AnimWorkerObj: the "+0x10 type-id fn ptr" IS m_notify (the
+//        same creator-fn compare AddLevelGruntz does), +0xf0/+0x100 the two
+//        by-value CTrigParam quads (m_f0../m_100..).
+//   PlaneNode/PlaneList -> the CDDrawChildGroup +0x10 CObList facet + its
+//        CDDrawGroupNode chain (the SAME list AddLevelGruntz walks).
+//   TileObj      -> CImageSet1 (<Gruntz/ImageSets.h>): "Query" is the real slot-8
+//        virtual GetCollisionAt(x, y) - no padded s0..s7 fabrication needed.
+//   GridGeom     -> CLevelPlane (== CDDrawWorkerHost): m_tileGrid/m_colOffsets
+//        @0x20/0x24, m_wrapW/m_wrapH @0x30/0x34, m_shiftX/m_shiftY @0x8c/0x90.
+//   DrawSurf     -> CGameLevel: the "+0x4c object table" is the m_imageSets
+//        CObArray INTERIOR (m_pData @0x4c; operator[] emits the same load) and
+//        the "+0x5c grid" is m_mainPlane.
+//   ObjSink2e4   -> CTileTriggerContainer (m_beginMarker's real type): its
+//        "AddToList1" IS ?AddToList1@CTileTriggerContainer@@ @0x116cf0 and its
+//        "BigDraw" IS ?AddLogic@CTileTriggerContainer@@ @0x116610 with
+//        logicType 0x1a - the CCoveredPowerupLogic factory arm ("covered
+//        powerup", matching this scan's own error string). The six by-value
+//        Vec4s were the six CTrigParam marshaling blocks.
+//   Vec3/Vec4    -> the 9-dword rock matrix buf + CTrigParam.
 // ---------------------------------------------------------------------------
-struct Vec3 {
-    i32 a, b, c;
-};
-struct Vec4 {
-    i32 a, b, c, d;
-};
-
-// The plane descriptor at plane->m_desc: +0x10 is the type discriminator (a
-// function pointer compared against the known plane-type methods, reloc-masked);
-// +0xf0/+0x100 are two by-value 4-vectors the covered-tile draw passes.
-struct PlaneDesc {
-    char pad0[0x10];
-    void (*m_typeId)(); // +0x10 type-id fn ptr (compared against the plane-type fns)
-    char pad14[0xf0 - 0x14];
-    Vec4 m_f0;  // +0xf0
-    Vec4 m_100; // +0x100
-};
-
-// A plane object (the CPtrList data ptr).
-struct Plane {
-    char pad0[4];
-    i32 m_4;     // +0x04
-    i32 m_flags; // +0x08 flags (|= 0x10000 when consumed)
-    char pad0c[0x5c - 0xc];
-    i32 m_x;       // +0x5c  x
-    i32 m_y;       // +0x60  y
-    Vec4 m_blockC; // +0x64  by-value block C
-    char pad74[0x7c - 0x74];
-    PlaneDesc* m_desc; // +0x7c descriptor
-    char pad80[0x114 - 0x80];
-    i32 m_114; // +0x114
-    i32 m_118; // +0x118
-    i32 m_11c; // +0x11c (== 0x32 -> extra insert)
-    char pad120[0x124 - 0x120];
-    i32 m_quadIndex; // +0x124
-    char pad128[0x130 - 0x128];
-    i32 m_130;     // +0x130
-    Vec4 m_blockF; // +0x134 block F
-    Vec4 m_blockE; // +0x144 block E
-    Vec4 m_blockD; // +0x154 block D
-    i32 m_164;     // +0x164
-    i32 m_168;     // +0x168
-};
-
-struct PlaneNode {
-    PlaneNode* next; // +0x00
-    PlaneNode* prev; // +0x04
-    Plane* obj;      // +0x08
-};
-
-struct PlaneList {
-    char m_pad0[4];  // +0x00  (list-head guard word)
-    PlaneNode* head; // +0x04
-};
-
-// A tile object reached through the covered-tile grid; slot 8 (+0x20) is the
-// per-cell query the covered draw passes its result to.
-struct TileObj {
-    virtual void s0();
-    virtual void s1();
-    virtual void s2();
-    virtual void s3();
-    virtual void s4();
-    virtual void s5();
-    virtual void s6();
-    virtual void s7();
-    virtual i32 Query(i32 subX, i32 subY); // slot 8 (+0x20)
-};
-
-// The grid geometry at drawSurf->m_grid.
-struct GridGeom {
-    char pad0[0x20];
-    i32* m_cellTable; // +0x20 cell table
-    i32* m_rowTable;  // +0x24 row table
-    char pad28[0x30 - 0x28];
-    i32 m_tileCountX; // +0x30 tile count X
-    i32 m_tileCountY; // +0x34 tile count Y
-    char pad38[0x8c - 0x38];
-    i32 m_shiftX; // +0x8c shift X
-    i32 m_shiftY; // +0x90 shift Y
-};
-
-// The draw surface at m_view->m_drawSurf.
-struct DrawSurf {
-    char pad0[0x4c];
-    TileObj** m_objTable; // +0x4c object table
-    char pad50[0x5c - 0x50];
-    GridGeom* m_grid; // +0x5c grid geometry
-};
-
-// The plane list the scans walk is the SAME placed-object display list the warlord
-// loader walks (shared CRenderer::m_10 CWarlordListHead, at rendererA+0x10); this TU
-// reaches it through the canonical CSpriteFactoryHolder (((CRenderer*)m_c->m_8) / ((CDrawSurface*)m_c->m_24)).
-// The draw surface's +0x5c tile-grid facet (GridGeom) differs from the shared
-// CDrawSurface's +0x5c camera facet, so the draw-surface facet is reached by cast.
-
-// The per-level sinks the scans feed. m_recordSink receives the rebuilt tile/plane
-// records (AddToList1 / the big covered-tile draw); m_ptrSink receives the extra
-// pointer insert when m_11c == 0x32. External/reloc-masked.
-struct ObjSink2e4 {
-    // 0x116cf0 (ILT 0x38c8): thiscall, 7 args, callee-clean.
-    i32 AddToList1(i32 a164, i32 a168, i32 a4, i32* buf, i32 a11c, i32 a118, i32 a130);
-    // 0x116610 (ILT 0x10ff): the big covered-tile draw; thiscall, callee-clean.
-    i32 BigDraw(
-        i32 tile,
-        i32 kind,
-        i32 a164,
-        i32 a168,
-        i32 a4,
-        Vec4 blockF,
-        Vec4 blockE,
-        Vec4 blockD,
-        Vec4 blockC,
-        Vec4 descF0,
-        Vec4 desc100,
-        i32 a124,
-        i32 a11c,
-        i32 a118,
-        i32 a130
-    );
-};
+#include <Gruntz/ImageSets.h>            // CImageSet1::GetCollisionAt (slot 8)
+#include <Gruntz/TileTriggerContainer.h> // the m_beginMarker sink (AddLogic/AddToList1)
+#include <Gruntz/UserLogic.h>            // CGameObject + AnimWorkerObj (the placed objects)
+#include <Gruntz/GameLevel.h>            // CGameLevel + CLevelPlane (the tile grid)
 
 // The global game-manager singleton (*g_gameReg) at its RTTI-true type. The error
 // paths call CGruntzMgr::EnterModalUI(const char*) @0x8ef10 (ILT 0x417e) - read off
@@ -195,66 +103,63 @@ extern "C" {
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
     CSpriteFactoryHolder* v = m_c;
-    PlaneList* pl = (PlaneList*)&v->m_childGroup->m_pad10; // the +0x10 CObList facet
+    // retail null-tests the +0x10 list-facet address then walks its head node
+    CObList* pl = (CObList*)&v->m_childGroup->m_pad10;
     if (pl == 0) {
         return 0;
     }
-    PlaneNode* pos = pl->head;
+    CDDrawGroupNode* pos = (CDDrawGroupNode*)pl->GetHeadPosition();
     while (pos != 0) {
-        PlaneNode* node = pos;
-        pos = node->next;
-        Plane* p = node->obj;
+        CDDrawGroupNode* node = pos;
+        pos = node->m_next;
+        CGameObject* p = node->m_gameObj;
         if (p == 0) {
             continue;
         }
-        if (p->m_blockF.a == (i32)0x80000000) {
-            p->m_blockF.a = 0;
+        if (p->m_extentL == (i32)0x80000000) {
+            p->m_extentL = 0;
         }
-        if (p->m_blockE.a == (i32)0x80000000) {
-            p->m_blockE.a = 0;
+        if (p->m_areaL == (i32)0x80000000) {
+            p->m_areaL = 0;
         }
-        if (p->m_blockD.a == (i32)0x80000000) {
-            p->m_blockD.a = 0;
+        if (p->m_154 == (i32)0x80000000) {
+            p->m_154 = 0;
         }
-        if (p->m_blockC.a == (i32)0x80000000) {
-            p->m_blockC.a = 0;
+        if (p->m_64 == (i32)0x80000000) {
+            p->m_64 = 0;
         }
-        void (*vf)() = p->m_desc->m_typeId;
-        if (vf == PlaneType_Rock) {
-            struct {
-                Vec3 v0, v1, v2;
-            } buf;
-            buf.v0 = *(Vec3*)&p->m_blockF;
-            buf.v1 = *(Vec3*)&p->m_blockE;
-            buf.v2 = *(Vec3*)&p->m_blockD;
-            if (((ObjSink2e4*)m_beginMarker)
-                    ->AddToList1(
-                        p->m_164,
-                        p->m_168,
-                        p->m_4,
-                        (i32*)&buf,
-                        p->m_11c,
-                        p->m_118,
-                        p->m_130
-                    )
+        GameObjNotifyFn vf = p->m_7c->m_notify;
+        if ((void*)vf == (void*)PlaneType_Rock) {
+            i32 buf[9]; // the extent/area/config bands as a 3x3 record
+            buf[0] = p->m_extentL;
+            buf[1] = p->m_extentT;
+            buf[2] = p->m_extentR;
+            buf[3] = p->m_areaL;
+            buf[4] = p->m_areaT;
+            buf[5] = p->m_areaR;
+            buf[6] = p->m_154;
+            buf[7] = p->m_158;
+            buf[8] = p->m_15c;
+            if (m_beginMarker
+                    ->AddToList1(p->m_164, p->m_168, p->m_04, buf, p->m_11c, p->m_118, p->m_130)
                 == 0) {
                 CString s;
-                s.Format("Bad rock at: x=%d, y=%d", p->m_x, p->m_y);
+                s.Format("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
             if (p->m_11c == 0x32) {
-                ((CStatusBarMgr*)m_guts)->InsertPtr(p->m_118, p->m_114);
+                m_guts->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
-        } else if (vf == PlaneType_Covered) {
-            DrawSurf* ds = (DrawSurf*)v->m_24;
-            i32 x = p->m_x;
-            i32 y = p->m_y;
+        } else if ((void*)vf == (void*)PlaneType_Covered) {
+            CGameLevel* ds = v->m_24;
+            i32 x = p->m_screenX;
+            i32 y = p->m_screenY;
             if (x < 0) {
                 x = 0;
             } else {
-                i32 lim = ds->m_grid->m_tileCountX;
+                i32 lim = ds->m_mainPlane->m_wrapW;
                 if (x >= lim) {
                     x = lim - 1;
                 }
@@ -262,51 +167,51 @@ i32 CPlay::ScanBuildTiles() {
             if (y < 0) {
                 y = 0;
             } else {
-                i32 lim = ds->m_grid->m_tileCountY;
+                i32 lim = ds->m_mainPlane->m_wrapH;
                 if (y >= lim) {
                     y = lim - 1;
                 }
             }
-            GridGeom* g = ds->m_grid;
+            CLevelPlane* g = ds->m_mainPlane;
             i32 shX = g->m_shiftX;
             i32 tileX = x >> shX;
             i32 shY = g->m_shiftY;
             i32 tileY = y >> shY;
             i32 subX = x - (tileX << shX);
             i32 subY = y - (tileY << shY);
-            i32 cell = g->m_cellTable[g->m_rowTable[tileY] + tileX];
+            i32 cell = g->m_tileGrid[g->m_colOffsets[tileY] + tileX];
             i32 tile;
             if (cell == (i32)0xeeeeeeee || cell == (i32)0xffffffff) {
                 tile = 0;
             } else {
-                tile = ds->m_objTable[cell & 0xffff]->Query(subX, subY);
+                // the m_imageSets CObArray element's slot-8 per-pixel collision query
+                tile = ((CImageSet1*)ds->m_imageSets[cell & 0xffff])->GetCollisionAt(subX, subY);
             }
-            if (((ObjSink2e4*)m_beginMarker)
-                    ->BigDraw(
-                        tile,
-                        0x1a,
-                        p->m_164,
-                        p->m_168,
-                        p->m_4,
-                        p->m_blockF,
-                        p->m_blockE,
-                        p->m_blockD,
-                        p->m_blockC,
-                        p->m_desc->m_f0,
-                        p->m_desc->m_100,
-                        p->m_quadIndex,
-                        p->m_11c,
-                        p->m_118,
-                        p->m_130
-                    )
+            if (m_beginMarker->AddLogic(
+                    tile,
+                    0x1a, // TRIGID: the CCoveredPowerupLogic factory arm
+                    p->m_164,
+                    p->m_168,
+                    p->m_04,
+                    *(CTrigParam*)&p->m_extentL,
+                    *(CTrigParam*)&p->m_areaL,
+                    *(CTrigParam*)&p->m_154,
+                    *(CTrigParam*)&p->m_64,
+                    *(CTrigParam*)&p->m_7c->m_f0,
+                    *(CTrigParam*)&p->m_7c->m_100,
+                    p->m_124,
+                    p->m_11c,
+                    p->m_118,
+                    p->m_130
+                )
                 == 0) {
                 CString s;
-                s.Format("Bad covered powerup at: x=%d, y=%d", p->m_x, p->m_y);
+                s.Format("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
             if (p->m_11c == 0x32) {
-                ((CStatusBarMgr*)m_guts)->InsertPtr(p->m_118, p->m_114);
+                m_guts->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
         }
@@ -332,11 +237,12 @@ i32 CPlay::ScanBuildTiles() {
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CSpriteFactoryHolder* v = m_c;
-    PlaneList* pl = (PlaneList*)&v->m_childGroup->m_pad10; // the +0x10 CObList facet
+    // retail null-tests the +0x10 list-facet address then walks its head node
+    CObList* pl = (CObList*)&v->m_childGroup->m_pad10;
     if (pl == 0) {
         return 0;
     }
-    PlaneNode* pos = pl->head;
+    CDDrawGroupNode* pos = (CDDrawGroupNode*)pl->GetHeadPosition();
 
     i32 perm[4];
     ::CByteArray arr;
@@ -358,55 +264,43 @@ i32 CPlay::ScanShuffleQuads() {
     arr.RemoveAt(0, 1);
 
     while (pos != 0) {
-        PlaneNode* node = pos;
-        pos = node->next;
-        Plane* p = node->obj;
+        CDDrawGroupNode* node = pos;
+        pos = node->m_next;
+        CGameObject* p = node->m_gameObj;
         if (p == 0) {
             continue;
         }
-        void (*vf)() = p->m_desc->m_typeId;
-        if (vf == PlaneQuadA || vf == PlaneQuadB || vf == PlaneQuadC || vf == PlaneQuadD
-            || vf == PlaneQuadE) {
-            p->m_quadIndex = perm[p->m_quadIndex];
-        } else if (vf == PlaneQuadF) {
-            if (p->m_blockF.a == (i32)0x80000000) {
-                p->m_blockF.a = 0;
+        GameObjNotifyFn vf = p->m_7c->m_notify;
+        if ((void*)vf == (void*)PlaneQuadA || (void*)vf == (void*)PlaneQuadB
+            || (void*)vf == (void*)PlaneQuadC || (void*)vf == (void*)PlaneQuadD
+            || (void*)vf == (void*)PlaneQuadE) {
+            p->m_124 = perm[p->m_124];
+        } else if ((void*)vf == (void*)PlaneQuadF) {
+            if (p->m_extentL == (i32)0x80000000) {
+                p->m_extentL = 0;
             }
-            if (p->m_blockE.a == (i32)0x80000000) {
-                p->m_blockE.a = 0;
+            if (p->m_areaL == (i32)0x80000000) {
+                p->m_areaL = 0;
             }
-            if (p->m_blockD.a == (i32)0x80000000) {
-                p->m_blockD.a = 0;
+            if (p->m_154 == (i32)0x80000000) {
+                p->m_154 = 0;
             }
-            if (p->m_blockC.a == (i32)0x80000000) {
-                p->m_blockC.a = 0;
+            if (p->m_64 == (i32)0x80000000) {
+                p->m_64 = 0;
             }
+            // scatter-permute the four extent-quad corners
             i32 scatter[4];
-            scatter[perm[0]] = p->m_blockF.a;
-            scatter[perm[1]] = p->m_blockF.b;
-            scatter[perm[2]] = p->m_blockF.c;
-            scatter[perm[3]] = p->m_blockF.d;
-            p->m_blockF.a = scatter[0];
-            p->m_blockF.b = scatter[1];
-            p->m_blockF.c = scatter[2];
-            p->m_blockF.d = scatter[3];
+            scatter[perm[0]] = p->m_extentL;
+            scatter[perm[1]] = p->m_extentT;
+            scatter[perm[2]] = p->m_extentR;
+            scatter[perm[3]] = p->m_extentB;
+            p->m_extentL = scatter[0];
+            p->m_extentT = scatter[1];
+            p->m_extentR = scatter[2];
+            p->m_extentB = scatter[3];
         }
     }
     return 1;
 }
-
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(DrawSurf);
-SIZE_UNKNOWN(GridGeom);
-SIZE_UNKNOWN(ObjSink2dc);
-SIZE_UNKNOWN(ObjSink2e4);
-SIZE_UNKNOWN(Plane);
-SIZE_UNKNOWN(PlaneDesc);
-SIZE_UNKNOWN(PlaneList);
-SIZE_UNKNOWN(PlaneNode);
-SIZE_UNKNOWN(TileObj);
-SIZE_UNKNOWN(Vec3);
-SIZE_UNKNOWN(Vec4);
 
 // --- vtable catalog ---

@@ -425,10 +425,15 @@ CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type
 // @early-stop
 // /GX operator-new wall (~29%): the RezAlloc + placement-ctor + exception-cleanup
 // trylevel guard around the partial heap element is not reproducible with a plain
-// new; field-fill + rep-movs + AddTail identical (arg->field mapping approximate).
+// new; field-fill + rep-movs + AddTail identical.
+// ARG ORDER FIXED (2026-07-14, retail stack reads): the 9-dword matrix source is
+// the FOURTH arg (rep movs esi=[esp+0x34]=arg4), matching the byte-proven caller
+// CPlay::ScanBuildTiles (m_164, m_168, m_4, &buf, m_11c, m_118, m_130) and the
+// sibling AddLogic mapping (m_08<-m_164, m_0c<-m_168, m_10<-m_4). The old def had
+// block9 third and folded two args into one.
 RVA(0x00116cf0, 0x111)
 CGiantRockLogic*
-CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i32 a6, i32 a7) {
+CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i32 a6, i32 a7) {
     CGiantRockLogic* e = new CGiantRockLogic;
     if (e == 0) {
         return 0;
@@ -445,12 +450,12 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
     for (i32 i = 0; i < 9; i++) {
         e->m_matrix[i] = block9[i];
     }
-    e->m_c0 = a4;
+    e->m_c0 = a5;
     e->m_c4 = a6;
     e->m_0c = a2;
     e->m_typeTag = TRIGID_GIANT_ROCK_22;
     e->m_08 = a1;
-    e->m_10 = (i32)block9;
+    e->m_10 = a3;
     e->m_20 = this;
     e->m_1c = 1;
     e->m_dutyOn = 0;
