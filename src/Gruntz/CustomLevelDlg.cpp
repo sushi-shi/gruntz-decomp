@@ -1,118 +1,76 @@
-// CustomLevelDlg.cpp - the Battlez/custom-level dialog helper re-homed out of
-// src/Stub/ApiCallers.cpp (0x000180e0). __thiscall on the dialog host: when the
-// incoming flag is 0 it (re)fills the custom-level listbox (item 0x516) by walking
-// "<gamedir>\custom\*.wwd" under the shared reentrancy lock, prefixing each match
-// with a function-static CString("custom\\"), asking the settings manager whether
-// to show it, and LB_ADDSTRING-ing it; when the flag is non-zero it reads the
-// current listbox selection's text into the host's +0x5c CString and post-processes
-// it. /GX for the by-value CString arg + the local CString glob unwind. Placeholder
-// names; only offsets + code bytes are load-bearing.
-#include <Mfc.h> // real MFC CString (ctor 0x1b9d4c, operator+= 0x1ba0c8, operator+ 0x1b9f81)
-
+// CustomLevelDlg.cpp - CBattlezDlgCustom::DoDataExchange (0x000180e0), the DDX of
+// the Battlez custom-rules dialog (RTTI-proven: the fn is slot 35 == DoDataExchange
+// of ??_7CBattlezDlgCustom@@6B@ @0x1e8ee4). Re-homed out of src/Stub/ApiCallers.cpp.
+//
+// The MFC DDX contract: pDX->m_bSaveAndValidate FALSE => transfer member->control
+// (re)fill the custom-level listbox (item 0x516) by walking "<curdir>\custom\*.wwd"
+// under the MFC wait cursor, prefixing each match with a function-static
+// CString("custom\\"), asking the settings manager whether to show it, and
+// LB_ADDSTRING-ing it; TRUE => control->member, read the current selection's text
+// into m_customName (+0x5c) and MakeUpper it. /GX for the by-value CString arg +
+// the local CString glob unwind.
+//
+// This DEFINES the body the CBattlezDlgCustom vtable slot 35 reloc pointed at (the
+// former `?Populate180e0@CustomLevelDlg@m4dlg@@...` fake view was a phantom for the
+// real ?DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z). Placeholder
+// names elsewhere; only offsets + code bytes are load-bearing.
+#include <Gruntz/Dialogs.h>       // CBattlezDlgCustom (: CDialog), CDataExchange, CListBox (afxwin)
+#include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (IsBattlezMapFile)
+#include <Gruntz/WaitCursorApp.h> // CWaitCursorApp (Begin/EndWaitCursor via AfxGetModuleState)
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (IsBattlezMapFile)
 
-namespace m4dlg {
+#include <io.h>     // _finddata_t / _findfirst / _findnext (the custom-level dir walk)
+#include <direct.h> // _getcwd (0x11fc10; the "game dir" resolver == current directory)
 
-    // The listbox / dialog item the host resolves (its HWND lives at +0x1c).
-    struct WndItem {
-        char m_pad0[0x1c];
-        HWND m_hwnd; // +0x1c
-        // copy the item text at index `sel` into the host's CString.
-        void GetText1ce692(i32 sel, void* out);
-    };
+// The settings-manager singleton == *0x64556c (the real CGruntzMgr); IsBattlezMapFile
+// takes the display name by value (callee destroys).
+extern "C" CGruntzMgr* g_gameReg; // 0x0064556c
 
-    // The post-select processor run on the host's +0x5c CString.
-    struct SelName {
-        char m_pad0[4];
-        void Proc1ba24c(); // 0x001ba24c (thiscall, no args)
-    };
-
-    // The dialog host (this).
-    struct CustomLevelDlg {
-        i32 Populate180e0(i32* pFlag);  // 0x000180e0
-        WndItem* GetItem1be27d(i32 id); // 0x001be27d (thiscall)
-        char m_pad0[0x5c];
-        SelName m_5c; // +0x5c (selected-map name)
-    };
-
-    // Game Win32 pointer table (reloc-masked indirect call).
-
-    // CRT-style directory walk (engine copies at these RVAs; name at +0x14).
-    struct FindData {
-        u32 attrib;      // +0x00
-        i32 time_create; // +0x04
-        i32 time_access; // +0x08
-        i32 time_write;  // +0x0c
-        i32 size;        // +0x10
-        char name[260];  // +0x14
-    };
-    extern "C" i32 CrtFindFirst(const char* spec, FindData* fd); // 0x0011f900
-    extern "C" i32 CrtFindNext(i32 h, FindData* fd);             // 0x0011fa30
-    extern "C" void GetGameDir(char* buf, i32 size);             // 0x0011fc10
-
-    // The shared reentrancy lock guarding the directory walk.
-    struct WalkLock {
-        i32 Lock();   // 0x001beafb
-        i32 Unlock(); // 0x001beb10
-    };
-    struct WalkOwner {
-        char m_pad0[4];
-        WalkLock* m_4; // +0x04
-    };
-    extern "C" WalkOwner* GetWalkOwner1d3631(); // 0x001d3631
-
-    // The settings-manager singleton == *g_gameReg (the real CGruntzMgr); IsBattlezMapFile
-    // takes the display name by value (callee destroys). No local view, no cross-cast.
-    extern "C" CGruntzMgr* g_gameReg; // 0x0064556c
-
-    // @early-stop
-    // stack-buffer-placement wall (same as sibling m4::FillCustomLevelList @0x3af90):
-    // complete correct reconstruction - the GetItem gate, the shared lock's /GX
-    // unwind, the gamedir "\custom\*.wwd" glob, the function-static CString("custom\\")
-    // magic-static guard + atexit, the loop-rotated _findfirst/_findnext walk with the
-    // per-entry operator+ + by-value IsHidden query + LB_ADDSTRING, the LB finalize
-    // and unlock, and the flag!=0 select branch all align by shape (llvm-objdump -dr).
-    // Residual is MSVC5's [esp+N] local placement (glob / FindData / CString-temp arg
-    // slots land differently than retail) + the by-value CString-temp lifetime - not
-    // steerable from source.
-    RVA(0x000180e0, 0x23f)
-    i32 CustomLevelDlg::Populate180e0(i32* pFlag) {
-        WndItem* item = GetItem1be27d(0x516);
-        if (*pFlag == 0) {
-            GetWalkOwner1d3631()->m_4->Lock();
-            {
-                char buf[0x400];
-                GetGameDir(buf, 0x400);
-                CString glob(buf);
-                glob += "\\custom\\*.wwd";
-                FindData fd;
-                i32 h = CrtFindFirst(glob, &fd);
-                static CString s_custom("custom\\");
-                if (h != -1) {
-                    do {
-                        if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
-                            ::SendMessageA(
-                                item->m_hwnd,
-                                0x180,
-                                0,
-                                (LPARAM)(const char*)(s_custom + fd.name)
-                            );
-                        }
-                    } while (CrtFindNext(h, &fd) != -1);
-                }
-                ::SendMessageA(item->m_hwnd, 0x186, 0, 0);
+// @early-stop
+// stack-buffer-placement wall (same as sibling CBattlezDlg::FillCustomLevelList
+// @0x3af90): complete correct reconstruction - the GetDlgItem gate, the MFC wait
+// cursor's /GX unwind, the "\custom\*.wwd" glob under the current dir, the
+// function-static CString("custom\\") magic-static guard + atexit, the loop-rotated
+// _findfirst/_findnext walk with the per-entry operator+ + by-value IsHidden query +
+// LB_ADDSTRING, the LB finalize and EndWaitCursor, and the save/validate select
+// branch all align by shape (llvm-objdump -dr). Residual is MSVC5's [esp+N] local
+// placement (glob / _finddata_t / CString-temp arg slots land differently than
+// retail) + the by-value CString-temp lifetime - not steerable from source.
+RVA(0x000180e0, 0x23f)
+void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
+    CListBox* item = (CListBox*)GetDlgItem(0x516);
+    if (pDX->m_bSaveAndValidate == 0) {
+        ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
+        {
+            char buf[0x400];
+            _getcwd(buf, 0x400);
+            CString glob(buf);
+            glob += "\\custom\\*.wwd";
+            _finddata_t fd;
+            i32 h = _findfirst(glob, &fd);
+            static CString s_custom("custom\\");
+            if (h != -1) {
+                do {
+                    if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
+                        ::SendMessageA(
+                            item->m_hWnd,
+                            0x180,
+                            0,
+                            (LPARAM)(const char*)(s_custom + fd.name)
+                        );
+                    }
+                } while (_findnext(h, &fd) != -1);
             }
-            return GetWalkOwner1d3631()->m_4->Unlock();
+            ::SendMessageA(item->m_hWnd, 0x186, 0, 0);
         }
-        i32 sel = (i32)::SendMessageA(item->m_hwnd, 0x188, 0, 0);
-        if (sel == -1) {
-            return sel;
-        }
-        item->GetText1ce692(sel, &m_5c);
-        m_5c.Proc1ba24c();
-        return 0;
+        ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
+        return;
     }
-
-} // namespace m4dlg
+    i32 sel = (i32)::SendMessageA(item->m_hWnd, 0x188, 0, 0);
+    if (sel == -1) {
+        return;
+    }
+    item->GetText(sel, m_customName);
+    m_customName.MakeUpper();
+}
