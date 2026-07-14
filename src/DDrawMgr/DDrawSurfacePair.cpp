@@ -43,70 +43,22 @@
 #include <Gruntz/ResolveNode.h>           // canonical CResolveNode (Init here, 0x1647e0)
 #include <Image/ImageSet.h>               // CImageSet (FindKeyOfValue_165360's target)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (2 teardown fns here)
-class CDDSurface;
-class CDDrawPtrCollections {
-public:
-    void RemoveItemA(CDDSurface* i);
-    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e);
-    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);
-    CDDSurface* Createab8_24_3(i32 m);
-    i32 ConfigureSurface(i32 w, i32 h, i32 bpp, i32 a4, i32 a5); // 0x142850
-};
+#include <DDrawMgr/DDrawSurfaceMgr.h>      // canonical CDDrawSurfaceMgr (m_mgr / m_0c parent)
+#include <DDrawMgr/DDrawPtrCollections.h>  // canonical CDDrawPtrCollections (the +0x1c surface pool)
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
 // its held IDirectDrawSurface (m_8 @+0x08, for Unlock). No facet view needed.
-
-// ---------------------------------------------------------------------------
-// The parent manager m_mgr points at, and its surface pool: only the offsets
-// Create()/1644a0 read are pinned. These are owner-TU-only views (CDDrawSurfaceMgr
-// is forward-declared, pointer-only, in the shared DDrawSurfacePair.h). The pool
-// callees are reloc-masked __thiscall engine callees modeled as methods on a tiny
-// view so `mov ecx,pool; call` falls out with no caller-side stack cleanup.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CDDrawSurfacePool);
-class CDDrawSurfacePool {
-public:
-    // RemoveItemA @0x142160 IS CDDrawPtrCollections::RemoveItemA; cast at the call.
-    // AcquireA @0x143630 IS CDirectDrawMgr::CreatePoolItem; cast at the call.
-    // MakeAndAddB @0x142e60 IS CDDrawPtrCollections::MakeAndAddB; cast at the call.
-    // CreateB @0x1423c0 IS CDDrawPtrCollections::CreateB; cast at the call.
-    // CreateModeSurface @0x141dc0 IS CDirectDrawMgr::CreateDevice; cast at the call.
-    // AttachMode @0x142b70 IS CDDrawPtrCollections::Createab8_24_3; cast at the call.
-    char _pad0[0x944];
-    i32 m_lastError; // +0x944  last DirectDraw error stash
-};
-
-// The pixel-format chain m_fmtChain walks: +0x04 -> +0x10 -> +0x2c.
-SIZE_UNKNOWN(CDDrawSurfChainB);
-struct CDDrawSurfChainB {
-    char _pad0[0x2c];
-    i32 m_pixelFormat; // +0x2c  pixel-format token
-};
-SIZE_UNKNOWN(CDDrawSurfChainA);
-struct CDDrawSurfChainA {
-    char _pad0[0x10];
-    CDDrawSurfChainB* m_next; // +0x10
-};
-
-// CDDrawSurfaceMgr - the parent manager view m_mgr points at (owner-TU view; the
-// shared header forward-declares it). A pixel-format chain at +0x4, the surface pool
-// at +0x1c, device/caps at +0x30/+0x34, and a last-error word at +0x38.
-// (renamed from the CDDrawSurfaceMgr name: the canonical class is fwd-declared as
-// `class` by the shared Pages/SurfacePair headers; this owner-TU view keeps the
-// role-named fields - the +0x04 "fmt chain" IS the canonical m_pages under the
-// pixel-format-walk role, +0x1c m_pool IS m_ptrColl - fold on the identity pass.)
-SIZE_UNKNOWN(CDDrawSurfaceMgrT);
-struct CDDrawSurfaceMgrT {
-    char _pad0[0x04];
-    CDDrawSurfChainA* m_fmtChain; // +0x04  pixel-format chain
-    char _pad8[0x1c - 0x08];
-    CDDrawSurfacePool* m_pool; // +0x1c  surface pool
-    char _pad20[0x30 - 0x20];
-    i32 m_device;    // +0x30  device/context handle
-    i32 m_capsFlags; // +0x34  caps flags (bit4 = fullscreen, bit1 = double-buffer)
-    i32 m_lastError; // +0x38  last-error word
-};
+//
+// The parent manager m_mgr (pair +0x0c) / m_0c (child +0x0c) points at IS the
+// canonical CDDrawSurfaceMgr; its surface pool IS m_ptrColl (+0x1c,
+// CDDrawPtrCollections). The former per-TU views (CDDrawSurfaceMgrT / CDDrawSurfacePool
+// / CDDrawSurfChainA/B, and the method-only CDDrawPtrCollections re-decl) are DISSOLVED
+// onto them (2026-07-14): pool +0x1c = m_ptrColl, caps +0x34 = m_flags, hWnd/device
+// +0x30 = m_hWnd, mgr-err +0x38 = m_lastError, pool-err +0x944 = m_944, and the fake
+// pixel-format chain +0x04 -> +0x10 -> +0x2c is m_pages -> m_frontPair -> m_surface.
+// CreatePoolItem/CreateDevice remain (CDirectDrawMgr*) casts on m_ptrColl (the
+// documented CDDrawPtrCollections==CDirectDrawMgr manager-unification @identity-TODO).
 
 // ---------------------------------------------------------------------------
 // 0x03a1d0: BltFast `src`'s held surface onto ours at (0,0) with the source's
@@ -220,7 +172,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     m_flags = a3;
     if (w <= 0 || h <= 0) {
         i32 k = m_status;
-        CDDrawSurfaceMgrT* mgr = (CDDrawSurfaceMgrT*)m_mgr;
+        CDDrawSurfaceMgr* mgr = m_mgr;
         if (k == 1) {
             if (mgr->m_lastError == 0) {
                 mgr->m_lastError = 0xfa1;
@@ -241,27 +193,25 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     rect[2] = w;
     rect[3] = h;
     if (m_status == 1) {
-        CDDrawSurfaceMgrT* mgr = (CDDrawSurfaceMgrT*)m_mgr;
-        m_surface = (CDDSurface*)((CDirectDrawMgr*)mgr->m_pool)
-                        ->CreatePoolItem((void*)mgr->m_fmtChain->m_next->m_pixelFormat, (void*)4);
+        CDDrawSurfaceMgr* mgr = m_mgr;
+        m_surface = (CDDSurface*)((CDirectDrawMgr*)mgr->m_ptrColl)
+                        ->CreatePoolItem((void*)mgr->m_pages->m_frontPair->m_surface, (void*)4);
         if (m_surface == 0) {
-            if (((CDDrawSurfaceMgrT*)m_mgr)->m_lastError == 0) {
-                ((CDDrawSurfaceMgrT*)m_mgr)->m_lastError = 0xfa3;
+            if (m_mgr->m_lastError == 0) {
+                m_mgr->m_lastError = 0xfa3;
             }
             return 0;
         }
     }
     if (m_status != 1) {
         if (m_flags & 0x10000) {
-            m_surface = ((CDDrawPtrCollections*)((CDDrawSurfaceMgrT*)m_mgr)->m_pool)
-                            ->MakeAndAddB(w, h, 0, 0, -1);
+            m_surface = m_mgr->m_ptrColl->MakeAndAddB(w, h, 0, 0, -1);
         } else {
-            m_surface = ((CDDrawPtrCollections*)((CDDrawSurfaceMgrT*)m_mgr)->m_pool)
-                            ->CreateB(w, h, 0, 0, -1);
+            m_surface = m_mgr->m_ptrColl->CreateB(w, h, 0, 0, -1);
         }
         if (m_surface == 0) {
-            if (((CDDrawSurfaceMgrT*)m_mgr)->m_lastError == 0) {
-                ((CDDrawSurfaceMgrT*)m_mgr)->m_lastError = 0xfa4;
+            if (m_mgr->m_lastError == 0) {
+                m_mgr->m_lastError = 0xfa4;
             }
             return 0;
         }
@@ -311,8 +261,8 @@ i32 CDDrawSurfacePair::InitFromSurface_163db0(CDDSurface* src) {
 RVA(0x00163e20, 0x2d)
 void CDDrawSurfacePair::TeardownSurface() {
     if (m_surface != 0 && m_ownsSurface != 0) {
-        CDDrawSurfacePool* pool = ((CDDrawSurfaceMgrT*)m_mgr)->m_pool;
-        ((CDDrawPtrCollections*)pool)->RemoveItemA(m_surface);
+        CDDrawPtrCollections* pool = m_mgr->m_ptrColl;
+        pool->RemoveItemA(m_surface);
         m_surface = 0;
     }
     m_width = 0;
@@ -348,7 +298,7 @@ i32 CDDrawSurfacePair::LoadImage_163e50(CParseSource* src) {
         return 0;
     }
     i32 r = m_surface->Resolve(
-        (void*)((CDDrawSurfaceMgrT*)m_mgr)->m_pool,
+        (void*)m_mgr->m_ptrColl,
         (void*)buf,
         type,
         src->m_length,
@@ -556,24 +506,22 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
                 sysmem = 0;
             }
         }
-        ((CDDrawPtrCollections*)((CDDrawSurfaceMgrT*)m_mgr)->m_pool)->RemoveItemA(m_surface);
+        m_mgr->m_ptrColl->RemoveItemA(m_surface);
         m_surface = 0;
         if (m_status == 1) {
-            CDDrawSurfaceMgrT* mgr = (CDDrawSurfaceMgrT*)m_mgr;
+            CDDrawSurfaceMgr* mgr = m_mgr;
             m_surface =
-                (CDDSurface*)((CDirectDrawMgr*)mgr->m_pool)
-                    ->CreatePoolItem((void*)mgr->m_fmtChain->m_next->m_pixelFormat, (void*)4);
+                (CDDSurface*)((CDirectDrawMgr*)mgr->m_ptrColl)
+                    ->CreatePoolItem((void*)mgr->m_pages->m_frontPair->m_surface, (void*)4);
             if (m_surface == 0) {
                 return 0;
             }
         }
         if (m_status != 1) {
             if (sysmem != 0) {
-                m_surface = ((CDDrawPtrCollections*)((CDDrawSurfaceMgrT*)m_mgr)->m_pool)
-                                ->MakeAndAddB(w, h, bpp, 0, -1);
+                m_surface = m_mgr->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
             } else {
-                m_surface = ((CDDrawPtrCollections*)((CDDrawSurfaceMgrT*)m_mgr)->m_pool)
-                                ->CreateB(w, h, bpp, 0, -1);
+                m_surface = m_mgr->m_ptrColl->CreateB(w, h, bpp, 0, -1);
             }
             if (m_surface == 0) {
                 return 0;
@@ -647,7 +595,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 // pair's own vtable, whose [9] is the inherited 0x158fd0). Create the DirectDraw
 // mode surface: cache {w,h,bpp}, build the device
 // surface through the pool (mode 0x11 for w>320 else 0x51; fullscreen bit from
-// mgr->m_capsFlags), then attach + validate it. Each failure path stashes an error code
+// mgr->m_flags), then attach + validate it. Each failure path stashes an error code
 // in mgr->m_lastError (only if not already set): 0x80e9..0x80ed for the five pool error
 // codes, 0xbb9 for an unresolved/zero pool error, 0xbba for an attach/validate miss.
 // ---------------------------------------------------------------------------
@@ -661,84 +609,84 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 // source lever (the two paths are genuinely identical code). Logic byte-faithful.
 RVA(0x001644a0, 0x19b)
 i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
-    CDDrawSurfaceMgrT* mgr = (CDDrawSurfaceMgrT*)m_0c;
+    CDDrawSurfaceMgr* mgr = (CDDrawSurfaceMgr*)m_0c;
     m_width = w;
     m_height = h;
     m_bpp = bpp;
-    CDDrawSurfacePool* pool = mgr->m_pool;
+    CDDrawPtrCollections* pool = mgr->m_ptrColl;
     i32 mode = 0x11;
     if (w <= 0x140) {
         mode = 0x51;
     }
     i32 hr;
-    if (mgr->m_capsFlags & 0x10) {
-        hr = ((CDirectDrawMgr*)pool)->CreateDevice((void*)mgr->m_device, (void*)2, w, h, bpp, mode);
+    if (mgr->m_flags & 0x10) {
+        hr = ((CDirectDrawMgr*)pool)->CreateDevice((void*)mgr->m_hWnd, (void*)2, w, h, bpp, mode);
     } else {
-        hr = ((CDirectDrawMgr*)pool)->CreateDevice((void*)mgr->m_device, (void*)0, w, h, bpp, mode);
+        hr = ((CDirectDrawMgr*)pool)->CreateDevice((void*)mgr->m_hWnd, (void*)0, w, h, bpp, mode);
     }
     if (hr == 0) {
-        i32 err = pool->m_lastError;
+        i32 err = pool->m_944;
         if (err != 0) {
             switch (err) {
                 case 0x3e9: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80e9;
                     }
                     return 0;
                 }
                 case 0x3ea: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ea;
                     }
                     return 0;
                 }
                 case 0x3eb: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80eb;
                     }
                     return 0;
                 }
                 case 0x3ec: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ec;
                     }
                     return 0;
                 }
                 case 0x3ed: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ed;
                     }
                     return 0;
                 }
             }
-            CDDrawSurfaceMgrT* md = (CDDrawSurfaceMgrT*)m_0c;
+            CDDrawSurfaceMgr* md = (CDDrawSurfaceMgr*)m_0c;
             if (md->m_lastError == 0) {
                 md->m_lastError = 0xbb9;
             }
             return 0;
         }
-        CDDrawSurfaceMgrT* m4 = (CDDrawSurfaceMgrT*)m_0c;
+        CDDrawSurfaceMgr* m4 = (CDDrawSurfaceMgr*)m_0c;
         if (m4->m_lastError == 0) {
             m4->m_lastError = 0xbb9;
         }
         return 0;
     }
-    CDDrawSurfaceMgrT* m2 = (CDDrawSurfaceMgrT*)m_0c;
+    CDDrawSurfaceMgr* m2 = (CDDrawSurfaceMgr*)m_0c;
     i32 amode = 1;
-    if (m2->m_capsFlags & 2) {
+    if (m2->m_flags & 2) {
         amode = 2;
     }
-    CDDSurface* surf = ((CDDrawPtrCollections*)pool)->Createab8_24_3(amode);
+    CDDSurface* surf = pool->Createab8_24_3(amode);
     m_surface = surf;
     if (surf != 0 && surf->IsValid()) {
         return 1;
     }
-    CDDrawSurfaceMgrT* m3 = (CDDrawSurfaceMgrT*)m_0c;
+    CDDrawSurfaceMgr* m3 = (CDDrawSurfaceMgr*)m_0c;
     if (m3->m_lastError == 0) {
         m3->m_lastError = 0xbba;
     }
@@ -791,7 +739,7 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
     }
-    CDDrawPtrCollections* pool = (CDDrawPtrCollections*)((CDDrawSurfaceMgrT*)m_0c)->m_pool;
+    CDDrawPtrCollections* pool = ((CDDrawSurfaceMgr*)m_0c)->m_ptrColl;
     if (pool == 0) {
         return 0;
     }
@@ -801,7 +749,7 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
         return 0;
     }
     i32 amode = 1;
-    if (((CDDrawSurfaceMgrT*)m_0c)->m_capsFlags & 2) {
+    if (((CDDrawSurfaceMgr*)m_0c)->m_flags & 2) {
         amode = 2;
     }
     m_surface = pool->Createab8_24_3(amode);
