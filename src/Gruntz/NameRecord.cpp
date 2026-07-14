@@ -1,37 +1,20 @@
 #include <rva.h>
-// NameRecord.cpp - the two-string name record setter (0x118040). A __thiscall
-// validator/copier: it rejects an empty or over-long primary name (>16 chars),
-// optionally rejects when a secondary string is present and the primary is over
-// 64 chars (the retail re-measures the SAME primary name - reproduced verbatim),
-// zero-fills the record body, and inline-copies the primary into +0x14 and the
-// optional secondary into +0x36. Pure /O2 /Oi inline CRT (repne scasb / rep stos
-// / rep movs), no relocations. Names are placeholders; the offsets + emitted
-// bytes are load-bearing.
+// NameRecord.cpp - the CGameInfo record setters (0x118040..0x1182c2). Every method
+// here operates on the ONE saved-game info record CGameInfo (<Gruntz/GameInfo.h>): the
+// former per-TU views CNameRecord / C1181d0 / CBoundsCopy118 were all facets of it (they
+// share the +0x08 ready flag, the +0xb8 CGameInfoTime sub-object and the +0xd4 Type), and
+// BuildGameDate's only caller is Update (proving Update's +0xb8 box IS CGameInfoTime), so
+// they are folded onto the canonical class. Pure /O2 /Oi inline CRT (repne scasb / rep
+// stos / rep movs); names are placeholders, the offsets + emitted bytes are load-bearing.
 #include <string.h>
-#include <Gruntz/GameInfo.h> // shared CGameInfo (CopyBody calls its Check1 @0x1182f0 on `this`)
-
-class CNameRecord {
-public:
-    i32 SetNames(char* name, char* name2, i32 unused); // 0x118040
-    i32 CopyBody(char* body);                          // 0x118130
-    // The success predicate CopyBody polls (retail 0x1182f0) is CGameInfo::Check1
-    // (`return m_8 == 1`): CNameRecord IS a CGameInfo facet (shared +0x08 ready flag),
-    // so CopyBody calls it through the shared CGameInfo header - `((CGameInfo*)this)->
-    // Check1()` - which binds the near call to 0x1182f0 (was a reloc-masked local decl).
-    // The +0x36 tails still diverge (name buffer vs Location/Time/Type), so the classes
-    // are not fully unified yet (@identity-TODO: merge the divergent tail).
-
-    char _vft0[4];              // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    i32 m_04;                   // +0x04 (head of the zeroed body)
-    i32 m_08;                   // +0x08 set to 1 on success
-    char m_body0c[0x14 - 0x0c]; // +0x0c..+0x13
-    char m_name[0x36 - 0x14];   // +0x14..+0x35  primary name (<=16 chars)
-    char m_name2[0xd8 - 0x36];  // +0x36..+0xd7  secondary string
-};
+#include <Gruntz/GameInfo.h> // canonical CGameInfo / CGameInfoTime + BuildGameDate decl
 
 // ===========================================================================
-// validate + store the record's names. Returns 0 on any rejection,
-// 1 on success. memset(&m_04,0,212) clears +0x04..+0xd7 before the copies.
+// CGameInfo::SetNames (0x118040) - validate + store the record's name (m_14) and its
+// optional secondary/Location string (m_36). Rejects an empty or over-long (>16 char)
+// primary name; rejects a secondary-present + primary >64 chars (retail re-measures the
+// SAME primary name - reproduced verbatim); memset(&m_04, 0, 212) clears the whole body
+// (+0x04..+0xd7) before the copies. Returns 0 on any rejection, 1 on success.
 // ===========================================================================
 // @early-stop
 // Unsigned-compare scheduling micro-idiom (~96.6%): retail lowers each
@@ -42,7 +25,7 @@ public:
 // single `jbe` (worse), an explicit `n<0||n>N` reschedules (much worse). The `js`
 // is a cl scheduling artifact off the live dec flags, not steerable from C.
 RVA(0x00118040, 0xb6)
-i32 CNameRecord::SetNames(char* name, char* name2, i32 unused) {
+i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     if (name == 0) {
         return 0;
     }
@@ -53,29 +36,29 @@ i32 CNameRecord::SetNames(char* name, char* name2, i32 unused) {
         return 0;
     }
     memset(&m_04, 0, 212);
-    strcpy(m_name, name);
+    strcpy(m_14, name);
     if (name2 != 0) {
-        strcpy(m_name2, name2);
+        strcpy(m_36, name2);
     }
-    m_08 = 1;
+    m_8 = 1;
     return 1;
 }
 
 // ===========================================================================
-// CNameRecord::CopyBody (0x118130) - copy a 212-byte record body into m_04..m_d7
-// (the whole record body) from an external source buffer, gated on the source's
-// embedded name (at body+0x10, i.e. the m_name field position within the body)
-// being 1..15 chars; then run the m_08==1 predicate (side-effect call, discarded)
-// and return 1. Rejects a null source or an out-of-range name (returns 0). Inline
-// /Oi CRT (repnz scasb strlen + rep movsd), no relocations except the near Check1 call.
+// CGameInfo::CopyBody (0x118130) - copy a 212-byte record body into m_04..m_d7 (the
+// whole body) from an external source buffer, gated on the source's embedded name (at
+// body+0x10, i.e. the m_14 field position within the body) being 1..15 chars; then run
+// the m_8==1 ready predicate (Check1, side-effect call, discarded) and return 1. Rejects
+// a null source or an out-of-range name. Inline /Oi CRT (repnz scasb strlen + rep movsd),
+// no relocations except the near Check1 call (now cast-free - this IS a CGameInfo).
 // ===========================================================================
 RVA(0x00118130, 0x44)
-i32 CNameRecord::CopyBody(char* body) {
+i32 CGameInfo::CopyBody(char* body) {
     if (body != 0) {
         i32 len = (i32)strlen(body + 0x10);
         if (len > 0 && len < 16) {
             memcpy(&m_04, body, 212);
-            ((CGameInfo*)this)->Check1(); // 0x1182f0 (facet: same +0x08 ready flag)
+            Check1(); // 0x1182f0 (same +0x08 ready flag)
             return 1;
         }
     }
@@ -83,78 +66,51 @@ i32 CNameRecord::CopyBody(char* body) {
 }
 
 // ===========================================================================
-// 0x1181d0 - a spatially-adjacent CGameInfo-family time-update object (NOT CNameRecord:
-// its +0xb8 record is a CGameInfoTime, a 0x1c-byte time record). Reject when the new
-// (seconds,timestamp) pair does not exceed the current one; else store it, rebuild the
-// calendar date (BuildGameDate @0x118330, reached via the 0x3661 ILT jmp-thunk) and
-// stash +0xd4. __thiscall(3). Re-homed from src/Stub/BoundaryLowerMethods.cpp.
+// CGameInfo::Update (0x1181d0) - store a newer (S, timestamp) pair into the time box
+// (m_b8, a CGameInfoTime) and its Type (m_d4). Reject when the new (S, timestamp) pair
+// does not exceed the current one; else store it, rebuild the calendar date (BuildGameDate
+// @0x118330, reached via the 0x3661 ILT jmp-thunk) and stash the Type. __thiscall(3).
+// (Was the C1181d0::Update view, re-homed from src/Stub/BoundaryLowerMethods.cpp.)
 // ===========================================================================
-struct CBox118 { // the CGameInfoTime prefix Update touches (S @+0x04, timestamp @+0x08)
-    void* m_0;
-    u32 m_4;
-    u32 m_8;
-};
-struct C1181d0 {
-    char pad0[0xb8];
-    CBox118 m_bounds; // +0xb8  (== CGameInfoTime; BuildGameDate fills +0xc4/+0xc8/+0xcc)
-    char padd4[0xd4 - 0xb8 - 0xc];
-    i32 m_d4; // +0xd4
-    i32 Update(i32 a1, i32 a2, i32 a3);
-};
-// The real notify callee is the free BuildGameDate (gameinfostring 0x118330), which
-// takes a CGameInfoTime*; the 0x3661 fake extern was the reloc-masked ILT thunk to it.
-struct CGameInfoTime;
-i32 BuildGameDate(CGameInfoTime* out); // 0x118330 (via 0x3661 thunk)
 RVA(0x001181d0, 0x70)
-i32 C1181d0::Update(i32 a1, i32 a2, i32 a3) {
-    if (a1 == 0) {
+i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
+    if (s == 0) {
         return 0;
     }
-    if (a2 == 0) {
+    if (timestamp == 0) {
         return 0;
     }
-    CBox118* b = &m_bounds;
+    CGameInfoTime* b = &m_b8;
     if (b == 0) {
         return 0;
     }
-    if (b->m_4 > a1) {
+    if (b->m_4 > s) {
         return 0;
     }
-    if (b->m_4 == a1 && b->m_8 < a2) {
+    if (b->m_4 == s && b->m_8 < timestamp) {
         return 0;
     }
-    b->m_4 = a1;
-    b->m_8 = a2;
-    BuildGameDate((CGameInfoTime*)b);
-    m_d4 = a3;
+    b->m_4 = s;
+    b->m_8 = timestamp;
+    BuildGameDate(b);
+    m_d4 = type;
     return 1;
 }
 
 // ===========================================================================
-// 0x118260 - CopyIfLarger: the RVA-contiguous TWIN of C1181d0::Update above (same
-// +0xb8 bounds box, same +0xd4 field). Reject a null/absent source, or one that does
-// not exceed the current box (+0xb8); else copy the whole 7-dword box in and stash
-// +0xd4. __thiscall(src, arg2) ret 8. Re-homed from src/Stub/BoundaryLowerMethods.cpp.
-// @identity-TODO: no direct caller (a bounds-grow updater); owner class unrecovered.
+// CGameInfo::CopyIfLarger (0x118260) - the RVA-contiguous TWIN of Update above (same
+// +0xb8 time box, same +0xd4 Type). Reject a null/absent source, or one that does not
+// exceed the current box; else copy the whole 7-dword CGameInfoTime in and stash Type.
+// __thiscall(src, type) ret 8. (Was the CBoundsCopy118::CopyIfLarger view, re-homed from
+// src/Stub/BoundaryLowerMethods.cpp.)
+// @identity-TODO: no direct caller (a bounds-grow updater); reached only via an ILT thunk.
 // ===========================================================================
-struct CGrowBox {
-    void* m_0;
-    u32 m_4;
-    u32 m_8;
-    char pad[0x1c - 0xc]; // 7 dwords total
-};
-struct CBoundsCopy118 {
-    char pad0[0xb8];
-    CGrowBox m_bounds; // +0xb8 (7 dwords, ends at 0xd4)
-    i32 m_d4;          // +0xd4
-    i32 CopyIfLarger(CGrowBox* src, i32 arg2);
-};
 RVA(0x00118260, 0x63)
-i32 CBoundsCopy118::CopyIfLarger(CGrowBox* src, i32 arg2) {
+i32 CGameInfo::CopyIfLarger(CGameInfoTime* src, i32 type) {
     if (src == 0) {
         return 0;
     }
-    CGrowBox* dst = &m_bounds;
+    CGameInfoTime* dst = &m_b8;
     if (dst == 0) {
         return 0;
     }
@@ -165,12 +121,6 @@ i32 CBoundsCopy118::CopyIfLarger(CGrowBox* src, i32 arg2) {
         return 0;
     }
     *dst = *src;
-    m_d4 = arg2;
+    m_d4 = type;
     return 1;
 }
-
-SIZE_UNKNOWN(CNameRecord);
-SIZE_UNKNOWN(CBox118);
-SIZE_UNKNOWN(C1181d0);
-SIZE_UNKNOWN(CGrowBox);
-SIZE_UNKNOWN(CBoundsCopy118);
