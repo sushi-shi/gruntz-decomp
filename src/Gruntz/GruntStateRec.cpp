@@ -133,7 +133,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
-        reg->m_10->m_map.Lookup(buf, out);                                                         \
+        reg->m_10->m_10map.Lookup(buf, out);                                                         \
         CRegTypeTable* tt = (CRegTypeTable*)out;                                                   \
         void* r;                                                                                   \
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {                           \
@@ -150,7 +150,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     s->Read(buf, 0x80);                                                                            \
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
-        reg->m_10->m_map.Lookup(buf, out);                                                         \
+        reg->m_10->m_10map.Lookup(buf, out);                                                         \
         field = out;                                                                               \
     } else {                                                                                       \
         field = 0;                                                                                 \

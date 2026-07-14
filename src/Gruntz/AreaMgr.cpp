@@ -31,7 +31,7 @@ extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 // TU-local decls with the exact pointer arg types (load-bearing for the mangled names).
 #include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CWorkerVtableView)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
 class CCatalogNode;
 class CDDrawSubMgrLeaf {
 public:
@@ -378,11 +378,11 @@ extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA (Image inst
 // only the TWO dispatched slots - Install at vtable slot 18 (+0x48) and ProcessNew
 // at slot 20 (+0x50), both __thiscall. Its CMapStringToOb source map is embedded at
 // +0x10. Real polymorphic view: 18 fillers precede Install.
-// (The ObjImageRegistry 19-filler view is GONE: it IS the canonical CWorkerVtableView
+// (The ObjImageRegistry 19-filler view is GONE: it IS the canonical CDDrawWorkerRegistry
 // (<DDrawMgr/DDrawWorkerRegistry.h>) - same object (vptr@0, CMapStringToOb@+0x10), same
 // slot 18 (+0x48) InstallTree, and its "ProcessNew(void*)" @ slot 20 (+0x50) is that
 // class's RemoveWorker at the SAME rva 0x155280.)
-typedef CWorkerVtableView ObjImageRegistry;
+typedef CDDrawWorkerRegistry ObjImageRegistry;
 
 // The Sound registry (entry->m_28): concrete; CMapStringToPtr source map at +0x10,
 // ProcessNew/Install are direct __thiscall methods.
@@ -470,7 +470,7 @@ i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src) {
 
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
-        void* obj = toAdd.GetNext(dp);
+        CDDrawWorker* obj = (CDDrawWorker*)toAdd.GetNext(dp); // the pooled map values ARE workers
         entry->m_10->RemoveWorker(obj);
     }
     toAdd.RemoveAll();

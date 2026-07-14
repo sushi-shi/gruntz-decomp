@@ -31,6 +31,7 @@
 #include <DDrawMgr/DDrawWorkerNode.h>     // CDDrawWorkerBase/A/B (Plot/helpers here)
 #include <DDrawMgr/DDrawWorkerCtx.h>      // shared CDDrawWorkerCtx (the +0x0c owner context)
 #include <DDrawMgr/DDrawWorkerCache.h>    // CDDrawWorkerCache (CreateWorker here)
+#include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (the registry map values, DestroyAll's delete)
 #include <DDrawMgr/AnimWorkerObj.h>       // AnimWorkerObj (the 0x17c worker CreateWorker news)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSurfaceChildA (SetGeom_1646b0 here)
 #include <Io/FileMem.h>                   // CFileMem/CFileMemBase (the runtime core here)
@@ -897,17 +898,17 @@ i32 CResolveNode::Init(
 RVA(0x00165210, 0xa2)
 void CDDrawWorkerRegistry::DestroyAll() {
     ::CObject* val = 0;
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_10map.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_map.GetNextAssoc(pos, key, val);
+            m_10map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete ((CWorkerValue*)val);
+                delete ((CDDrawWorker*)val); // the map values ARE the keyed workers
             }
         } while (pos != 0);
     }
-    m_map.RemoveAll();
+    m_10map.RemoveAll();
 }
 
 // ---------------------------------------------------------------------------
@@ -966,10 +967,10 @@ extern "C" void RezFree(void* p);
 RVA(0x00165360, 0xf1)
 CString CDDrawWorkerRegistry::FindKeyOfValue_165360(CImageSet* target) {
     ::CObject* val = 0;
-    POSITION pos = m_map.GetStartPosition();
+    POSITION pos = m_10map.GetStartPosition();
     CString key;
     while (pos != 0) {
-        m_map.GetNextAssoc(pos, key, val);
+        m_10map.GetNextAssoc(pos, key, val);
         if (val != 0 && *(i32*)((CImageSet*)val)->m_array == *(i32*)target->m_array) {
             return key;
         }

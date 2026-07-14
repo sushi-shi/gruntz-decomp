@@ -26,7 +26,7 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 
 // The GRUNTZ_/GAME image worker registry (owner+0x10) is the canonical
-// CWorkerVtableView (<DDrawMgr/DDrawWorkerRegistry.h>): same object, same slot 18
+// CDDrawWorkerRegistry (<DDrawMgr/DDrawWorkerRegistry.h>): same object, same slot 18
 // (+0x48) tree install, and the same non-virtual key probe (HasKeyEqual_155550 @
 // 0x155550) / direct load (0x155360). The 18-filler twin that stood here is dissolved -
 // it was the 2nd of FIVE definitions of this one class.

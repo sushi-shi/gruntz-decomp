@@ -40,7 +40,7 @@
 
 // NOTE: the other four residual vtables (0x1efd28/0x1efd88/0x1efdc0/0x1eff70) are now
 // bound by their REAL classes and no longer need a CVtEmit_ tracking shim:
-//   0x1efd28 -> CWorkerVtableView (<DDrawMgr/DDrawWorkerRegistry.h>, all 23 slots)
+//   0x1efd28 -> CDDrawWorkerRegistry (<DDrawMgr/DDrawWorkerRegistry.h>, all 23 slots)
 //   0x1efd88 -> CDDrawWorkerList  (DDrawWorkerList.cpp)
 //   0x1efdc0 -> CDDrawChildGroup  (<DDrawMgr/DDrawChildGroup.h>)
 //   0x1eff70 -> CDDrawSurfaceChildA (DDrawSubMgrPages.cpp, CWapObj-derived)

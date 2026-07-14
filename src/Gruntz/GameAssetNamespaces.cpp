@@ -30,7 +30,7 @@ i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
 SIZE_UNKNOWN(WorkerHolder);
 struct WorkerHolder {
     char m_pad00[0x10];
-    CWorkerVtableView* m_imageReg; // +0x10  (the canonical image/worker registry)
+    CDDrawWorkerRegistry* m_imageReg; // +0x10  (the canonical image/worker registry)
     char m_pad14[0x1c - 0x14];
     CDDrawPtrCollections* m_ptrCollections; // +0x1c
     char m_pad20[0x28 - 0x20];

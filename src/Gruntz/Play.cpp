@@ -78,7 +78,7 @@
 // and the worker list are the CANONICAL DDrawMgr classes - the former .cpp-local
 // CDDrawWorkerRegistry / CDDrawSubMgrAni / CDDrawSubMgrLeaf / CDDrawWorkerList
 // duplicate views are dissolved onto them.
-#include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry + CWorkerVtableView (LoadTree +0x48)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry (InstallTree slot 18, +0x48)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf / CDDrawSubMgrAni (0x152xxx leaf API)
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (renderer B: PruneWorkers/ClearWorkers)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (renderer A: TickKillCues/DestroyChildren_159ef0)
@@ -1541,8 +1541,8 @@ void CPlay::OnExit() {
 // that object's teardown method (two are virtual). Self-contained (no DIR32
 // relocs); the view ptr is re-read before every block (no cached local).
 // (The CExitV58/CExitV44/CExitView/CExitWorld views + their FABRICATED padded
-// vtables are GONE: the +0x10 slot-22 teardown is the canonical CWorkerVtableView
-// device (MapTeardown_1552b0, DDrawWorkerRegistry.h) and the +0x24 slot-17
+// vtables are GONE: the +0x10 slot-22 teardown is the canonical CDDrawWorkerRegistry
+// device (CDDrawWorkerRegistry::MapTeardown_1552b0) and the +0x24 slot-17
 // teardown is CGameLevel::ReleaseChildren - a REAL virtual on the real class.)
 // ===========================================================================
 // @early-stop
@@ -1570,7 +1570,7 @@ void CPlay::ModeCleanup() {
         m_4w()->m_54->Teardown();
     }
     if (m_c) {
-        ((CWorkerVtableView*)m_c->m_10)->MapTeardown_1552b0(); // slot 22 (+0x58)
+        m_c->m_10->MapTeardown_1552b0(); // slot 22 (+0x58)
     }
     if (m_c) {
         ((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->FreeAll_152720(); // @0x152720
@@ -5969,8 +5969,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
                 result = 0;
                 goto done;
             }
-            ((CWorkerVtableView*)m_c->m_10)
-                ->InstallTree(tree, "GRUNTZ_" + name, "_"); // slot 18 (+0x48)
+            m_c->m_10->InstallTree(tree, "GRUNTZ_" + name, "_"); // slot 18 (+0x48)
             g_resourceInstallActive = 0;
             if (finishGate != 0) {
                 ((CMulti*)finishGate)->AckJoinFailure(); // 0x35e4, ecx=notify

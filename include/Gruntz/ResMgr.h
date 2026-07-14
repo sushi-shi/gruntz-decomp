@@ -86,7 +86,7 @@ struct CKeyTable {
 // This is the ONE image/name registry class - the render/resource state TUs reach it as
 // CState::m_c->m_10 (the former View.h CSpriteFactoryHolder::CImageRegistry view folds here); the
 // int-keyed frame-grid Lookup at CPlay::BeginGridWalk casts to the name-keyed m_10map.Lookup.
-// IT IS THE CANONICAL CWorkerVtableView (<DDrawMgr/DDrawWorkerRegistry.h>, RTTI vtable
+// IT IS THE CANONICAL CDDrawWorkerRegistry (<DDrawMgr/DDrawWorkerRegistry.h>, vtable
 // ??_7CDDrawWorkerRegistry @0x1efd28, 23 slots ALL named from the retail slot map). The
 // 18-filler view that stood here is dissolved: same object (vptr@0, CMapStringToOb@+0x10),
 // same slot 18 (+0x48) install and slot 19 (+0x4c) LoadNamespace, and its own comments
@@ -96,7 +96,7 @@ struct CKeyTable {
 // NOT what this fold does: the class stays real-polymorphic, it just becomes the ONE class
 // instead of a filler twin, so DecCounter's schedule is untouched.
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-typedef CWorkerVtableView CImageRegistry;
+typedef CDDrawWorkerRegistry CImageRegistry;
 
 // The sound registry at CResMgr+0x28 (plain non-virtual helpers) + its +0x10 map + the
 // pooled resource at +0x2c. The render/resource state TUs reach it as CState::m_c->m_28

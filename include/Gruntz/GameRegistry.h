@@ -81,11 +81,10 @@ class CBattlezData; // +0x7c the HUD/score accumulator (BattlezData.h completes 
 // <Wwd/WwdFile.h> (CPlaneRender); forward-declared here so consumers reach them typed
 // (no per-site cast) without pulling those headers into this ~60-TU-wide view.
 struct CDrawTarget; // +0x30->+0x04 active draw surface (m_drawContext at +0x14)
-// The image/name registry IS the canonical CWorkerVtableView
-// (<DDrawMgr/DDrawWorkerRegistry.h>); an elaborated fwd decl of the old placeholder
-// name would re-declare a DISTINCT class and silently out-rank the typedef (MSVC5).
-class CWorkerVtableView;
-typedef CWorkerVtableView CImageRegistry;
+// The image/name registry IS the canonical CDDrawWorkerRegistry
+// (<DDrawMgr/DDrawWorkerRegistry.h>, real polymorphic; ex CWorkerVtableView).
+class CDDrawWorkerRegistry;
+typedef CDDrawWorkerRegistry CImageRegistry;
 // +0x74 sprite/animation reference table (<Gruntz/SpriteRefTable.h>): GetSel(i,bAlt)
 // resolves a kind slot to its sprite/frame pointer; LoadSprite(desc,flag) loads by
 // descriptor. `new`'d in the game bootstrap (0x83450), torn down by CGruntzMgr::Close

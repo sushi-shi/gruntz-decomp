@@ -56,7 +56,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
                 return 1;
             }
             CObject* out = 0;
-            lvl->m_10->m_map.Lookup(name, out);
+            lvl->m_10->m_10map.Lookup(name, out);
             CMgrLookupRec* rec = (CMgrLookupRec*)out;
             if (rec == 0 || index < rec->m_64 || index > rec->m_68) {
                 m_38 = 0;

@@ -45,7 +45,8 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr
 #include <DDrawMgr/DDrawSubMgrPages.h>    // single-source CDDrawSubMgrPages (surface ops)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (the 3-map dtor-host twin)
-#include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (+CWorkerValue)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (real polymorphic)
+#include <DDrawMgr/DDrawWorker.h>        // CDDrawWorker (the registry map values)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan
 #include <DDrawMgr/AniAdvance.h>          // CAniBlitTrigger (the per-frame sound trigger)
@@ -82,14 +83,11 @@ struct CDDrawChildGroupDtorHost : public FamilyMapBase {
 };
 SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 
-// 1-map sibling (vtable 0x5efd28): member-teardown ~ at 0x156e10; its ??_G scalar-dtor
-// (0x156df0) calls this ~ then RezFree.
-struct CDDrawRegistryDtorHost : public FamilyMapBase {
-    ~CDDrawRegistryDtorHost();   // 0x156e10
-    void* ScalarDtor(u32 flags); // 0x156df0
-    CMapStringToPtr m_10;        // +0x10
-};
-SIZE_UNKNOWN(CDDrawRegistryDtorHost);
+// (The 1-map sibling "CDDrawRegistryDtorHost" view is DISSOLVED 2026-07-14: its ~
+// (0x156e10) stamps 0x5efd28 = ??_7CDDrawWorkerRegistry and tears down a
+// CMapStringToOb at +0x10 (mfc_class 0x1b7ef2) - it IS ~CDDrawWorkerRegistry,
+// defined below on the canonical (<DDrawMgr/DDrawWorkerRegistry.h>, now real
+// polymorphic : CLoadable). Its "CMapStringToPtr" member claim was wrong.)
 
 // operator delete (NAFXCW ??3@YAXPAX@Z @0x1b9b82) - the scalar-dtor free path.
 void operator delete(void*);
@@ -443,37 +441,27 @@ i32 CDDrawWorkerMapSmall::Slot06_156db0() {
     return 1;
 }
 
-// CDDrawWorkerRegistry::GetStateId (0x156de0): the class's state id.
+// CDDrawWorkerRegistry::GetClassId (0x156de0, slot 8 - the CLoadable-scheme tag;
+// the family's "GetStateId" and CLoadable's "GetClassId" are ONE slot/tag space).
 RVA(0x00156de0, 0x6)
-StateId CDDrawWorkerRegistry::GetStateId() {
+i32 CDDrawWorkerRegistry::GetClassId() {
     return STATE_WORKERREGISTRY; // 0x12
 }
 
 // ---------------------------------------------------------------------------
-// 0x156df0: the ??_G scalar-deleting destructor of the 1-map sibling
-// CDDrawRegistryDtorHost - run the real member-teardown ~ (0x156e10, below)
-// then, when the low deleting-flag bit is set, RezFree(this); return this.
-// Hand-written RVA-pinned method (the CGruntzCommand::ScalarDtor pattern).
-RVA(0x00156df0, 0x1e)
-void* CDDrawRegistryDtorHost::ScalarDtor(u32 flags) {
-    this->CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost();
-    if (flags & 1) {
-        ::operator delete(this);
-    }
-    return this;
-}
-
-// ---------------------------------------------------------------------------
-// 0x156e10: member-teardown ~ of the 1-map sibling CDDrawRegistryDtorHost (vtable
-// 0x5efd28). Runs the cleanup helper (0x154ac0), then the CMapStringToPtr member
-// and the FamilyMapBase grand-base auto-destruct. /GX member-teardown frame.
-// @early-stop
-// vptr-position wall (~95%, family twin): grand-base vptr re-stamp position + the
-// reloc-masked EH-state/teardown/map-dtor names are the residual.
+// 0x156e10: ~CDDrawWorkerRegistry (real ??1; the compiler-generated ??_G at
+// 0x156df0 calls it). cl stamps ??_7CDDrawWorkerRegistry (0x5efd28) at entry, runs
+// Unload (slot 7, devirtualized in the dtor to the retail direct `call 0x154ac0`),
+// destructs the CMapStringToOb member (+0x10, retail `call 0x1b7ef2`), then the
+// inline ~CLoadable resets m_04/-1 m_08/0 m_0c/0 and the real CObject grand-base
+// sinks the 0x5e8cb4 re-stamp after them (the ~CDDrawWorker-proven model). /GX.
+// The cl-auto scalar-deleting destructor (vtable slot 1):
+// @rva-symbol: ??_GCDDrawWorkerRegistry@@UAEPAXI@Z 0x00156df0 0x1e
 RVA(0x00156e10, 0x68)
-CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost() {
-    ((CDDrawWorkerRegistry*)this)->Shutdown();
-    // implicit: ~m_10, ~FamilyMapBase (resets + base restamp).
+CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
+    Unload();
+    // implicit: ~m_10map (CMapStringToOb), then ~CLoadable (field resets + grand-base
+    // 0x5e8cb4 re-stamp) - reproduces retail's teardown order.
 }
 
 // ---------------------------------------------------------------------------
@@ -487,8 +475,7 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymTab* arg1, i32 arg2) {
     if (result == 0) {
         return 0;
     }
-    return ((CWorkerVtableView*)this)
-        ->InstallTree(result, g_emptyString, (const char*)&g_dat60b588);
+    return InstallTree(result, g_emptyString, (const char*)&g_dat60b588); // slot-18 self-dispatch
 }
 
 // ---------------------------------------------------------------------------
@@ -504,9 +491,9 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymTab* arg1, i32 arg2) {
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
-    if (m_map.Lookup(key, val)) {
-        m_map.RemoveKey(key);
-        delete ((CWorkerValue*)val);
+    if (m_10map.Lookup(key, val)) {
+        m_10map.RemoveKey(key);
+        delete ((CDDrawWorker*)val); // the map values ARE the keyed workers
     }
 }
 

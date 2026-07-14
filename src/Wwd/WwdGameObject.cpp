@@ -1035,7 +1035,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_14->m_map.Lookup(name, found);
+        m_mgr->m_14->m_10map.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker80((CGameObject*)found) == 0) {
             return 0;
         }
@@ -1044,7 +1044,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_14->m_map.Lookup(name, found);
+        m_mgr->m_14->m_10map.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker88((CGameObject*)found) == 0) {
             return 0;
         }
@@ -1053,7 +1053,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_14->m_map.Lookup(name, found);
+        m_mgr->m_14->m_10map.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker90((CGameObject*)found) == 0) {
             return 0;
         }

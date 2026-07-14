@@ -20,7 +20,7 @@
 // CGameRegistry == CGruntzMgr fold. Each includer declares it with the type it needs.
 
 // The registry leaf reached as g_gameReg->m_world->m_10 IS the canonical
-// CWorkerVtableView (<DDrawMgr/DDrawWorkerRegistry.h>): same object, same
+// CDDrawWorkerRegistry (<DDrawMgr/DDrawWorkerRegistry.h>): same object, same
 // CMapStringToOb at +0x10, and this view's AnyValueMatches_155630 is that class's
 // ReadField at the SAME rva 0x155630. The 4th duplicate definition of this class is
 // dissolved (it was an ODR divergence the two never-meeting TUs hid).
