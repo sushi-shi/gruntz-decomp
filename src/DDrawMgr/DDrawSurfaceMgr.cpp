@@ -23,6 +23,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // THE canonical CDDrawSurfaceMgr class shape
 #include <Gruntz/Loadable.h>           // CLoadable - the shared child base (slot-1 scalar-delete)
 #include <DDrawMgr/DDrawWorkerCache.h> // real +0x14 child type (m_workerCache; virtual-dtor delete)
+#include <DDrawMgr/DDrawWorkerMapSmall.h> // real +0x18 child type (m_workerMap; slot-1 scalar-delete)
 #include <DDrawMgr/DDrawSubMgrPages.h> // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
 #include <DDrawMgr/DDrawChildGroup.h>  // real +0x08 child type (m_childGroup)
 #include <Gruntz/WwdObjMgr.h> // CWwdObjMgr (Snapshot/RestoreChildren blit-op target, waveP)

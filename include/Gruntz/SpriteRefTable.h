@@ -54,6 +54,12 @@ class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at
 // Forward-declared for the pointer member; the deref TUs include ShadeTableCache.h.
 class CShadeTableCache;
 
+// m_spriteMgrHolder IS the canonical CDDrawSurfaceMgr (RezSync+0x30): its +0x18
+// m_workerMap (CDDrawWorkerMapSmall) is the polymorphic sprite/palette registry
+// Add()/LoadGruntzPalette() reach. Pointer member -> forward decl keeps the DDrawMgr
+// chain out of this header; the .cpp includes the full def.
+class CDDrawSurfaceMgr;
+
 SIZE_UNKNOWN(CSpriteRefTable);
 class CSpriteRefTable {
 public:
@@ -103,8 +109,8 @@ public:
     // at the color's kind slot; latches m_built when complete. 0xe2400.
     i32 BuildToolToyColorTable(i32 src);
 
-    CShadeTableCache* m_factory; // +0x00  Init arg0 (the alpha/shade-table factory)
-    void* m_spriteMgrHolder;      // +0x04  Init arg1 (holder->m_spriteMgr -> the sprite mgr)
+    CShadeTableCache* m_factory;         // +0x00  Init arg0 (the alpha/shade-table factory)
+    CDDrawSurfaceMgr* m_spriteMgrHolder; // +0x04  Init arg1 (holder->m_workerMap = the sprite mgr)
     CSpriteRef* m_refA[0x11];     // +0x08  bucket A nodes (17 slots)
     CSpriteRef* m_refB[0x11];     // +0x4c  bucket B nodes (17 slots)
     i32 m_built;                  // +0x90  count/flag (reset to 0 on Init/Clear)

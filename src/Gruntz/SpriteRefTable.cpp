@@ -9,6 +9,8 @@
 #include <Win32.h>
 
 #include <Gruntz/SpriteRefTable.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>      // m_spriteMgrHolder's canonical CDDrawSurfaceMgr
+#include <DDrawMgr/DDrawWorkerMapSmall.h>  // its +0x18 m_workerMap (the sprite/palette registry)
 
 #include <rva.h>
 
@@ -20,14 +22,16 @@
 // (??2@YAPAXI@Z @0x1b9b46, ??3@YAXPAX@Z @0x1b9b82); reloc-masked DIR32/REL32.
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
-// m_spriteMgrHolder->m_spriteMgr is the sprite manager; +0x10 of it is the name->sprite hash table.
-struct CSpriteMgrHolder {
-    char m_pad00[0x18];
-    char* m_spriteMgr; // +0x18  its +0x10 is the CSpriteRefHashTable
-};
+// The holder IS the canonical CDDrawSurfaceMgr; its +0x18 m_workerMap
+// (CDDrawWorkerMapSmall) carries the name->object registry at +0x10 (m_map1,
+// CMapStringToOb). Add()/LoadGruntzPalette() reach it cast-free.
 
 // The object Lookup writes into `out`: +0x10 is the sprite, whose +0xc holds the
-// frame data fed to the alpha factory.
+// frame data fed to the alpha factory. (@identity-TODO - honest map-value view: the
+// registry map (m_map1) is a heterogeneous CMapStringToOb; the palette/worker path
+// stores CAniRecordBase2 (dissolved), but this SPRITE value is stored by the sprite
+// LOADER elsewhere, so its concrete class needs an xref chase from THAT side - it is
+// NOT CAniRecordBase2 (whose +0x10 m_10 is a plain i32 buffer, not a sprite ptr).)
 struct CLookupSprite {
     char m_pad00[0xc];
     void* m_frameData; // +0x0c
@@ -45,7 +49,7 @@ i32 CSpriteRefTable::Init(i32 p0, i32 p1) {
         return p0;
     }
     m_factory = (CShadeTableCache*)p0;
-    m_spriteMgrHolder = (void*)p1;
+    m_spriteMgrHolder = (CDDrawSurfaceMgr*)p1;
     m_built = 0;
     return 1;
 }
@@ -124,10 +128,8 @@ i32 CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
 // rest of the 182-byte body is byte-exact. docs/patterns/outparam-zeroinit-scheduling.md
 RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
-    void* out = 0;
-    CSpriteRefHashTable* tbl =
-        (CSpriteRefHashTable*)(((CSpriteMgrHolder*)m_spriteMgrHolder)->m_spriteMgr + 0x10);
-    ((CMapStringToPtr*)tbl)->Lookup(szName, (void*&)out);
+    CObject* out = 0;
+    m_spriteMgrHolder->m_workerMap->m_map1.Lookup(szName, out);
     if (!out) {
         return 0;
     }
@@ -161,43 +163,22 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 // ---------------------------------------------------------------------------
 // CSpriteRefTable::LoadGruntzPalette (0xe2d10) - register a level's
 // "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry reached through
-// this->m_spriteMgrHolder->m_spriteMgr. Lookup() (the +0x10 hash sub-table) probes whether it is
-// already present; Install (vtable slot 9) installs the resolved palette. src is
+// this->m_spriteMgrHolder->m_workerMap (CDDrawWorkerMapSmall). m_map1.Lookup() (the
+// +0x10 CMapStringToOb) probes whether it is already present; Factory_1658c0
+// (vtable slot 9, the fabricated "Install") installs the resolved palette. src is
 // the source resolver (FUN_0053bff0 resolves a packed-tag 'PAL'=0x50414c resource
 // by namespaced name); name is the level/name string. Helpers are reloc-masked
-// externals; the destination-registry root is reached through the real member
-// m_spriteMgrHolder (typed as CPaletteDestRoot), whose +0x18 is the sprite mgr.
+// externals; the registry is reached cast-free through the real polymorphic member.
 //
 // int (BOOL) return: the `!src` and already-present guards return literal 0/1
 // (reusing the zeroed eax / `mov eax,1`); the success path normalizes the
-// Install() return through neg/sbb/neg (`!!x`). A void return would tail-merge
+// Factory_1658c0() return through neg/sbb/neg (`!!x`). A void return would tail-merge
 // the bare epilogues and drop the eax=1 tail.
-
-// The destination registry at m_spriteMgrHolder->m_spriteMgr is polymorphic: a hash sub-table at +0x10
-// backs Lookup() (out-param non-null => already present), and Install (vtable slot
-// 9) takes the resolved palette + two null args.
-// MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call.
-struct CPaletteHashTable {};
-struct CPaletteDestRegistry {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual i32 Install(void* res, i32 a, i32 b); // slot 9 (+0x24)
-    char m_pad04[0x10 - 0x4];
-    CPaletteHashTable m_hash; // +0x10  hash sub-table Lookup runs on
-};
-struct CPaletteDestRoot { // m_spriteMgrHolder points here; +0x18 is the dest registry
-    char m_pad00[0x18];
-    CPaletteDestRegistry* m_spriteMgr; // +0x18
-};
-// src's source registry: FUN_0053bff0 __thiscall resolves a packed-tag resource by
-// namespaced name, returning the resource (0 if absent).
+//
+// The fabricated CPaletteDestRegistry (v0-v8 + Install@9) / CPaletteHashTable /
+// CPaletteDestRoot / CSpriteMgrHolder views ARE the real CDDrawSurfaceMgr +
+// CDDrawWorkerMapSmall (Install@slot9 == Factory_1658c0 @0x1658c0, Lookup @0x1b8008
+// == CMapStringToOb::Lookup). Dissolved onto them 2026-07-14.
 
 // @early-stop
 // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
@@ -211,9 +192,8 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
         return 0;
     }
 
-    void* found = 0;
-    ((CMapStringToPtr*)&((CPaletteDestRoot*)m_spriteMgrHolder)->m_spriteMgr->m_hash)
-        ->Lookup((char*)name, (void*&)found);
+    CObject* found = 0;
+    m_spriteMgrHolder->m_workerMap->m_map1.Lookup((char*)name, found);
     if (found) {
         return 1;
     }
@@ -224,7 +204,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
     if (!pal) {
         return 0;
     }
-    return ((CPaletteDestRoot*)m_spriteMgrHolder)->m_spriteMgr->Install(pal, 0, 0) != 0;
+    return m_spriteMgrHolder->m_workerMap->Factory_1658c0((CDDrawSurfaceSource*)pal, 0, 0) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -453,10 +433,5 @@ i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
 }
 SIZE_UNKNOWN(CLookupResult);
 SIZE_UNKNOWN(CLookupSprite);
-SIZE_UNKNOWN(CPaletteDestRegistry);
-SIZE_UNKNOWN(CPaletteDestRoot);
-SIZE_UNKNOWN(CPaletteHashTable);
-SIZE_UNKNOWN(CPaletteSource);
-SIZE_UNKNOWN(CSpriteMgrHolder);
 
 // --- vtable catalog ---

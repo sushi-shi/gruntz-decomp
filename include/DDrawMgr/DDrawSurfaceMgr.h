@@ -64,6 +64,7 @@ class CDDrawSubMgrPages;     // +0x04 the page/child factory (front/back/overlay
 class CDDrawChildGroup;      // +0x08 the broadcast child-group (intrusive list + 2 maps)
 class CDDrawWorkerCache;     // +0x14 the string-keyed worker cache (its +0x10 map is the
                              //       name->value resolve map the CWwdObjMgr factories read)
+class CDDrawWorkerMapSmall;  // +0x18 the polymorphic sprite/palette registry (: CObject, 13 slots)
 class CDDrawSubMgrLeafScan;  // (class, not struct - the PAU/PAV fwd-mangling trap)
 struct CDDrawPtrCollections; // the +0x1c surface pool (heap object)
 struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
@@ -107,7 +108,7 @@ public:
     CLoadable* m_workerList;          // +0x0c  CDDrawWorkerList
     CLoadable* m_surfaceDesc;         // +0x10  CDDrawWorkerRegistry (1 map @0x10, vtbl 0x5efd28)
     CDDrawWorkerCache* m_workerCache; // +0x14  the string-keyed worker cache (real type)
-    CLoadable* m_workerMap;           // +0x18  CDDrawWorkerMapSmall
+    CDDrawWorkerMapSmall* m_workerMap; // +0x18  the sprite/palette registry (real type)
     CDDrawPtrCollections* m_ptrColl;  // +0x1c  surface pool
     SoundStream* m_soundStream;       // +0x20  foreign Dsndmgr sound stream
     // +0x24: "CDDrawResolveSubMgr" IS the canonical CGameLevel - PROVEN: Init news
