@@ -20,7 +20,8 @@
 // is in PlayDtor.cpp. Field names are placeholders (m_<hexoffset>); only OFFSETS
 // + emitted code bytes are load-bearing (campaign doctrine).
 #include <Gruntz/Demo.h>
-#include <Io/FileMem.h>       // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 / COwnerWithSubs (the TU's helper types)
+#include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
 #include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view
 #include <fstream.h> // the REAL CRT ifstream/ofstream/ios (their dtors ARE in the CRT libs)
@@ -94,20 +95,8 @@ i32 CDemo::Vslot15() {
 }
 
 // ---------------------------------------------------------------------------
-// CDemoSetup - the attract/demo-mode actor seeding. this->m_c is the world holder
-// (the canonical CSpriteFactoryHolder; ex-CDemoWorld view - its +0x8 IS the typed
-// m_8 factory).
-// @identity-TODO: the OWNER class is genuinely unrecovered - 0x3c070 has no rel32
-// caller, no vtable membership in the exports and no RTTI; it is reached by fn-ptr
-// from unreconstructed data. The +0xc world-context slot pattern fits the
-// CGameObject/AnimWorkerObj/CUserLogic m_0c family but nothing disambiguates.
-class CDemoSetup {
-public:
-    i32 SetupDemoActors(); // 0x3c070
-    char m_pad0[0xc];
-    CSpriteFactoryHolder* m_c; // +0xc  bound world holder
-};
-
+// CDemoSetup (the attract/demo-mode actor seeding; @identity-TODO owner genuinely
+// unrecovered) is modeled in <Gruntz/DemoHelpers.h>, not as a .cpp-local view.
 // SetupDemoActors @0x3c070 - seed the two attract-mode demo HUD sprites
 // ("DemoMover", "DemoSign") through the bound world's sprite factory.
 RVA(0x0003c070, 0x47)
@@ -284,12 +273,9 @@ extern "C" const i32 g_rotTableB_60d078[27] = {
     1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
 }; // CCW transitions
 
+// Orient3 (the {facing,sub,dir} rotation stepper; @orphan) is modeled in
+// <Gruntz/DemoHelpers.h>, not as a .cpp-local view.
 SIZE_UNKNOWN(Orient3);
-struct Orient3 {
-    i32 m_0, m_4, m_8;
-    void StepA(i32 count); // 0x3c850
-    void StepB(i32 count); // 0x3c8a0
-};
 
 // @early-stop
 // Counter-register regalloc wall: retail pins the loop counter in edi (push edi at
@@ -393,11 +379,8 @@ i32 Gap_03c990(void) {
 // reads its vbtable at [ecx-0xc], ~ofstream at [ecx-0x8]; the adjust is per-class). So the
 // stream sits at offset 0 and cl computes the adjusted `this` itself; the shared `ios`
 // virtual-base dtor then runs on that SAME adjusted pointer.
-struct COwnerWithSubs {
-    void DtorSubC(); // 0x3cbc0  (`this` is an ifstream; vbase adjust 0xc)
-    void DtorSub8(); // 0x3cbf0  (`this` is an ofstream; vbase adjust 0x8)
-};
-
+// COwnerWithSubs (the fstream member-dtor thunk pair) is modeled in
+// <Gruntz/DemoHelpers.h>, not as a .cpp-local view.
 RVA(0x0003cbc0, 0x14)
 void COwnerWithSubs::DtorSubC() {
     ((ifstream*)(void*)this)->ifstream::~ifstream(); // 0x16a240 ??1ifstream@@UAE@XZ
