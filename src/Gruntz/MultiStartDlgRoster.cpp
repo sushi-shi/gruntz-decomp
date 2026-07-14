@@ -67,10 +67,15 @@ CWnd* __stdcall ResolveItem_1159(i32 idx); // 0x01159
 void __stdcall Func1d70(i32 flag);            // 0x01d70
 void __stdcall Refresh185c(CFocusSlot* slot); // 0x0185c
 
-// The per-channel player-slot record (lives at +0x150 inside a 0x238-byte channel
-// entry, reached off CMultiStartDlg::m_host). Same memory as the roster's RosterSlot
-// (MultiStartDlgRoster.cpp); the two interpretations are kept local to their units
-// per the established "roster interpretation stays local" decision.
+// The per-channel player-slot record (lives at +0x150 inside a 0x238-byte channel entry,
+// reached off CMultiStartDlg::m_host). DEFERRED-FOLD onto CFocusSlot (GameRegistry.h):
+// m_host's entries are CFocusSlot (base m_host, stride 0x238 - exactly as OnColorSlotN /
+// UpdatePlayers already treat them via ((CFocusSlot*)m_host)[N]); this record is the
+// +0x150-shifted sub-window, so ChannelSlot.m_14 (entry+0x164) IS CFocusSlot::m_164 and
+// ChannelSlot.m_ready (entry+0x16c) IS CFocusSlot::m_16c. Fully dissolving it needs 5 more
+// CFocusSlot members at +0x150/+0x154(CString)/+0x158/+0x160/+0x170 - GameRegistry.h is a
+// reserved hot header, so those adds are flagged for the GameRegistry lane; kept local
+// meanwhile (only offsets + code bytes are load-bearing).
 struct ChannelSlot {
     i32 m_playerId;  // +0x00 player id
     CString m_label; // +0x04 label
@@ -212,21 +217,15 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
 }
 
 // ---------------------------------------------------------------------------
-// The area/zone timer dialog's OnInitDialog (0x0c2cb0), re-homed from
-// AreaMgr.cpp (wave2-H): its RVA sits INSIDE this roster-dialog TU (between
-// SyncChannelSlot 0xc2ab0 and AppendChatLine 0xc2ce0 - first-link contiguity),
-// so it is one of this multiplayer-dialog TU's own CDialog leaves, not
-// AreaMgr's. It chains the base CDialog::OnInitDialog (0x1bac5e, reloc-masked)
-// then arms a 50 ms repaint timer; the HWND lives at +0x1c (CWnd::m_hWnd of a
-// CDialog subclass). Concrete dialog identity not yet recovered
-// (@identity-TODO); modeled minimally (offsets + code bytes load-bearing).
-struct AreaTimerDlg : public CDialog {
-    i32 OnInitDialog(); // 0x0c2cb0  (this dialog's WM_INITDIALOG handler; m_hWnd @+0x1c
-                        //  is CWnd::m_hWnd, inherited via CDialog)
-};
-SIZE_UNKNOWN(AreaTimerDlg);
+// CMultiStartDlg::OnInitDialog (0x0c2cb0): the WM_INITDIALOG handler - vtable slot 49
+// (== ??_7CMultiStartDlg@@6B@+0xc4, reached via ILT thunk 0x16fe; declared in Dialogs.h).
+// The former AreaTimerDlg @identity-TODO is DISSOLVED: the vtable DATA-ref proved this is
+// CMultiStartDlg's own OnInitDialog override, not a separate dialog. It chains the base
+// CDialog::OnInitDialog (0x1bac5e, reloc-masked) then arms a 50 ms repaint timer; m_hWnd
+// is CWnd::m_hWnd (+0x1c), inherited via CDialog.
+// ---------------------------------------------------------------------------
 RVA(0x000c2cb0, 0x1f)
-i32 AreaTimerDlg::OnInitDialog() {
+i32 CMultiStartDlg::OnInitDialog() {
     CDialog::OnInitDialog(); // 0x1bac5e ?OnInitDialog@CDialog@@UAEHXZ (base call, exempt)
     ::SetTimer(m_hWnd, 1, 0x32, 0);
     return 1;
@@ -264,35 +263,13 @@ void CMultiStartDlg::AppendChatLine(char* str) {
 }
 
 // ---------------------------------------------------------------------------
-// Owner-draw swatch-fill shims for CMultiStartDlg::OnDrawItem (twin of the
-// CBattlezDlg swatch draw in Dialogs.cpp). All bodies are NAFXCW/game externals
-// reached by call-rel32 (reloc-masked); the holder hierarchy is modeled with real
-// virtual dtors so cl emits the /GX EH frame + the inline vptr-stamp dtor chain
-// (0x5e8cd4 own, 0x5e8cb4 grand-base) retail shows. Placeholder names; only offsets
-// + code bytes are load-bearing. Local to this TU (the vtables reloc-mask).
-SIZE_UNKNOWN(CSwatchDrawBase);
-struct CSwatchDrawBase {
-    virtual ~CSwatchDrawBase() {}
-};
-struct CSwatchBrush : CSwatchDrawBase {
-    HBRUSH m_hObject;        // +0x04
-    CSwatchBrush(u32 color); // 0x1c6b18 (CreateSolidBrush + attach; external)
-    void Release1c6a5c();    // 0x1c6a5c (DeleteObject; external)
-    virtual ~CSwatchBrush() OVERRIDE {
-        Release1c6a5c();
-    }
-    HBRUSH SafeBrush() {
-        return this ? m_hObject : (HBRUSH)0;
-    }
-};
-SIZE_UNKNOWN(CSwatchBrush);
-// (CSwatchDC is GONE: it WAS MFC ::CDC - ctor 0x1c563b / Attach 0x1c5705 /
-//  Detach 0x1c573c / ~ctor 0x1c5783, all NAFXCW.)
-// CWnd::OnDrawItem @0x1bbde7 (NAFXCW default owner-draw handler; reloc-masked shim).
-SIZE_UNKNOWN(CWndOnDrawR);
-struct CWndOnDrawR {
-    void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
-};
+// Owner-draw swatch fill for CMultiStartDlg::OnDrawItem (twin of the CBattlezDlg swatch
+// draw in Dialogs.cpp). The former CSwatchBrush/CSwatchDrawBase/CWndOnDrawR fake views are
+// DISSOLVED onto the real MFC classes: the stack brush is ::CBrush (CGdiObject base -
+// ??_7CObject/CGdiObject/CBrush COMDATs first-instantiated in Dialogs.cpp), the stack DC
+// is ::CDC, and the base owner-draw default is CWnd::OnDrawItem (0x1bbde7). Passing the
+// CBrush to FillRect runs its inline operator HBRUSH() (the old SafeBrush). The /GX EH
+// frame unwinds the CDC/CBrush locals.
 // The game's FillRect fn-ptr (the .idata IAT slot, reloc-masked indirect call). The
 // canonical DATA binding is in Dialogs.cpp (g_pFillRectDlg @0x006c44e0); reference-
 // only here so the roster call reloc-masks without a duplicate DATA binding.
@@ -573,11 +550,11 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     if (bDraw) {
         ::CDC dc;
         dc.Attach(lpdis->hDC);
-        CSwatchBrush brush(color);
-        ::FillRect(dc.m_hDC, &lpdis->rcItem, brush.SafeBrush());
+        ::CBrush brush(color);
+        ::FillRect(dc.m_hDC, &lpdis->rcItem, brush);
         dc.Detach();
     }
-    ((CWndOnDrawR*)this)->OnDrawItem(nIDCtl, lpdis);
+    CWnd::OnDrawItem(nIDCtl, lpdis);
 }
 
 // ---------------------------------------------------------------------------
@@ -1191,38 +1168,24 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0c5240 (spatially re-homed from src/Stub/Cluster0c.cpp). Teardown of the
-// unidentified per-session net object: release+free the +0x60 CNetThing child,
-// then run the final Destroy_1bbb7c. @orphan (class identity unrecovered; its Init
-// sibling homes to src/Net/NetCmdSlot.cpp).
-// (The TU-local `struct CNetThing { ~CNetThing(); }` view is gone - it was a
-// NON-polymorphic shape of a class that really derives MFC CPtrList, so its teardown call
-// bound to ??1CNetThing@@QAE@XZ while the one definition emits ??1CNetThing@@UAE@XZ. The
-// real shape is <Net/NetThing.h>, included at the top.)
-struct CCluster0c {
-    char pad00[0x60];
-    CNetThing* m_60; // +0x60 owned child
-    void Cleanup();  // 0xc5240
-    // 0x1bbb7c is CWnd::DestroyWindow (the reduced-view `this` IS a CWnd-derived; full
-    // identity unrecovered - @orphan). Reached below via the shared Dialogs.h CWnd's
-    // slot-24 DestroyWindow, called qualified (direct, non-virtual) to bind the near call.
-};
+// CMultiStartDlg::DestroyWindow (0x0c5240): vtable slot 24 (== ??_7CMultiStartDlg@@6B@
+// +0x60, reached via ILT thunk 0x218a; declared in Dialogs.h as the own CWnd override).
+// The former CCluster0c @orphan is DISSOLVED: the vtable DATA-ref proved this is
+// CMultiStartDlg's own DestroyWindow. It frees the +0x60 connection-latency slot list
+// (m_slotList, a CLatencyList : CKeyedList) via that container's CKeyedList/CPtrList
+// teardown at 0xc5280 - the symbol bound as ??1CNetThing@@UAE@XZ (NetThing.h notes
+// CNetThing == CKeyedList, a deferred cross-unit rename), then chains CWnd::DestroyWindow.
+// ---------------------------------------------------------------------------
 RVA(0x000c5240, 0x2c)
-void CCluster0c::Cleanup() {
-    CNetThing* p = m_60;
+i32 CMultiStartDlg::DestroyWindow() {
+    CNetThing* p = (CNetThing*)m_slotList; // +0x60 slot list, freed via its CKeyedList teardown
     if (p) {
-        p->CNetThing::~CNetThing();
-        ::operator delete(p); // 0x1b9b82 == ??3@YAXPAX@Z (reloc-masked/exempt)
-        m_60 = 0;
+        p->CNetThing::~CNetThing(); // 0xc5280 (qualified, non-virtual - direct near call)
+        ::operator delete(p);       // 0x1b9b82 == ??3@YAXPAX@Z (reloc-masked/exempt)
+        m_slotList = 0;
     }
-    // 0x1bbb7c == CWnd::DestroyWindow (?DestroyWindow@CWnd@@UAEHXZ, slot 24). Qualified
-    // (direct, non-virtual) call so it binds as the real MFC symbol instead of a fake
-    // CCluster0c method. Renaming CWnd's slot-24 placeholder to DestroyWindow does NOT
-    // perturb derived vtables: CBattlezDlg inherits it, CMultiStartDlg's override is
-    // declared-only (both reloc-masked).
-    ((CWnd*)this)->CWnd::DestroyWindow();
+    return CWnd::DestroyWindow(); // 0x1bbb7c ?DestroyWindow@CWnd@@UAEHXZ (base, eax passthrough)
 }
-SIZE_UNKNOWN(CCluster0c);
 
 // EchoLatencySettings (0xc52f0): print the current session CmdDelay (m_5a4) and
 // ResendDelay (m_drainReload) to the chat log via wsprintfA into a stack buffer.
