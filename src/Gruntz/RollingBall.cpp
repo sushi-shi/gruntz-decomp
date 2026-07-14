@@ -66,9 +66,10 @@ CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
 // Shared singletons (named so their DIR32 datum reloc-masks).
 // ---------------------------------------------------------------------------
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-                                     // (the raw-offset I32/PTR/DBL macros in Update cast
-                                     //  it to char* - the type is only for the ctor's
-                                     //  cast-free m_isEasyMode/m_134 reads)
+                                     // (Update reaches its sub-objects cast-free through the
+                                     //  canonical members: m_tileGrid/m_world/m_cmdGrid +
+                                     //  the m_viewOrigin* bounds; the deep level-plane graph
+                                     //  stays raw-offset like the sibling ApplySwitch)
 // (g_buteMgr comes from <Bute/ButeMgr.h> via UserLogic.h; Update reaches it only
 //  through RbGetDwordDef, so no direct extern is needed here.)
 extern "C" i32 g_frameTime;  // DAT_00645588 @0x645588 (world clock ms)
@@ -102,10 +103,6 @@ extern "C" i32 __ftol(double x);                              // 0x11f570
 i32 RbProbeRect(void* obj, i32 cx, i32 cy, i32* rectBase, i32* outA, i32* outB, i32 z); // 0x32ce
 void RbMarkRect(void* obj, i32 a, i32 b, i32 mode, i32 neg);                            // 0x2e96
 void RbClearCell(void* obj, i32 a, i32 b, i32 z);                                       // 0x26df
-
-#define I32(p, off) (*(i32*)((char*)(p) + (off)))
-#define PTR(p, off) (*(void**)((char*)(p) + (off)))
-#define DBL(p, off) (*(double*)((char*)(p) + (off)))
 
 // Vtable slot +0x20 (the cell -> object-id resolver): mov edx,[ent]; call [edx+0x20].
 static i32 VtblResolve(void* ent) {
@@ -297,78 +294,75 @@ void CRollingBall::RegisterActs() {
 // reloc-typings across 2682 B. See file header; final-sweep.
 RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
-    void* self = this;
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
 
-    ((CAniAdvanceCursor*)((char*)PTR(self, 0x38) + 0x1a0))->Advance(g_engineFrameDelta);
-
-    void* anim = PTR(self, 0x38);
-    if (I32(anim, 0x1c8) != 0 && I32(anim, 0x1c0) == 0) {
-        I32(anim, 0x8) |= 0x10000;
+    CGameObject* anim = m_38;
+    if (anim->m_1c8 != 0 && anim->m_1c0 == 0) {
+        anim->m_flags |= 0x10000;
         return 0;
     }
 
     // The explosion latch (+0x80): the explosion sound + cell-clear fire once.
-    if (I32(self, 0x80) == 0) {
-        void* logic = PTR(self, 0x10);
-        i32 lo = g_frameTime - I32(self, 0x88);
-        i32 hi = 0 - I32(self, 0x8c);
-        i32 lim = I32(self, 0x94);
-        if (hi < lim || (hi == lim && (u32)lo < (u32)I32(self, 0x90))) {
-            RbCacheFirst(PTR(self, 0x38), "LEVEL_ROLLINGBALL_EXPLOSION");
-            I32(self, 0x40) = I32(PTR(self, 0x38), 0x1b4);
-            RbApplyLookup(PTR(self, 0x38), "LEVEL_ROLLINGBALLEXPLOSION", 0);
-            void* map = PTR(g_gameReg, 0x70);
-            i32 cx = I32(logic, 0x5c) >> 5;
-            i32 cy = I32(logic, 0x60) >> 5;
-            if ((u32)cx < (u32)I32(map, 0xc) && (u32)cy < (u32)I32(map, 0x10)) {
-                void* row = PTR(map, 0x8);
+    if (m_explodeLatch == 0) {
+        CGameObject* logic = m_object;
+        i32 lo = g_frameTime - m_explodeStartLo;
+        i32 hi = 0 - m_explodeStartHi;
+        i32 lim = m_explodeWindowHi;
+        if (hi < lim || (hi == lim && (u32)lo < (u32)m_explodeWindowLo)) {
+            RbCacheFirst(m_38, "LEVEL_ROLLINGBALL_EXPLOSION");
+            m_savedGeoId = m_38->m_geoId;
+            RbApplyLookup(m_38, "LEVEL_ROLLINGBALLEXPLOSION", 0);
+            CTileGrid* map = g_gameReg->m_tileGrid;
+            i32 cx = logic->m_screenX >> 5;
+            i32 cy = logic->m_screenY >> 5;
+            if ((u32)cx < map->m_c && (u32)cy < map->m_10) {
+                i32** row = map->m_8;
                 i32 ix = cx * 7;
-                i32* cell = (i32*)((char*)PTR(row, cy * 4) + ix * 4);
-                *cell &= 0xefffffff;
+                row[cy][ix] &= 0xefffffff;
             }
         }
-        I32(self, 0x80) = 1;
+        m_explodeLatch = 1;
     }
 
     // The fall latch (+0x84): grid-side death flag + rect re-mark.
-    if (I32(self, 0x84) == 0) {
-        void* logic = PTR(self, 0x10);
-        i32 cx = I32(logic, 0x5c);
-        i32 cy = I32(logic, 0x60);
-        if (cx < I32(g_gameReg, 0x144) && cx >= I32(g_gameReg, 0x13c) && cy < I32(g_gameReg, 0x148)
-            && cy >= I32(g_gameReg, 0x140)) {
-            I32(PTR(g_gameReg, 0x68), 0x3f8) = 1;
+    if (m_fallLatch == 0) {
+        CGameObject* logic = m_object;
+        i32 cx = logic->m_screenX;
+        i32 cy = logic->m_screenY;
+        if (cx < g_gameReg->m_viewOriginR && cx >= g_gameReg->m_viewOriginL
+            && cy < g_gameReg->m_viewOriginB && cy >= g_gameReg->m_viewOriginT) {
+            *(i32*)((char*)g_gameReg->m_cmdGrid + 0x3f8) = 1;
         }
-        void* logic2 = PTR(self, 0x10);
+        CGameObject* logic2 = m_object;
         i32 outA, outB;
         if (RbProbeRect(
-                PTR(g_gameReg, 0x68),
-                I32(logic2, 0x5c),
-                I32(logic2, 0x60),
-                (i32*)((char*)logic2 + 0x144),
+                g_gameReg->m_cmdGrid,
+                logic2->m_screenX,
+                logic2->m_screenY,
+                &logic2->m_areaL,
                 &outB,
                 &outA,
                 0
             )) {
-            RbMarkRect(PTR(g_gameReg, 0x68), outA, outB, 2, -1);
+            RbMarkRect(g_gameReg->m_cmdGrid, outA, outB, 2, -1);
         }
     }
 
     // ----- the sub-tile-snapped move + action switch -----
-    void* logic = PTR(self, 0x10);
-    if (I32(logic, 0x5c) == I32(self, 0x78) && I32(self, 0x7c) == I32(logic, 0x60)) {
+    CGameObject* logic = m_object;
+    if (logic->m_screenX == m_targetX && m_targetY == logic->m_screenY) {
         // arrived at the target cell: clear the cell, read its terrain id and
         // dispatch on the rolling-ball action.
-        RbClearCell(PTR(g_gameReg, 0x68), I32(self, 0x7c), I32(self, 0x78), 0);
+        RbClearCell(g_gameReg->m_cmdGrid, m_targetY, m_targetX, 0);
 
-        void* map = PTR(g_gameReg, 0x70);
-        i32 cx = I32(self, 0x78) >> 5;
-        i32 cy = I32(self, 0x7c) >> 5;
+        CTileGrid* map = g_gameReg->m_tileGrid;
+        i32 cx = m_targetX >> 5;
+        i32 cy = m_targetY >> 5;
         i32 terrain;
-        if ((u32)cx < (u32)I32(map, 0xc) && (u32)cy < (u32)I32(map, 0x10)) {
-            void* row = PTR(map, 0x8);
+        if ((u32)cx < map->m_c && (u32)cy < map->m_10) {
+            i32** row = map->m_8;
             i32 ix = cx * 7;
-            terrain = I32((char*)PTR(row, cy * 4) + ix * 4, 0);
+            terrain = row[cy][ix];
         } else {
             terrain = 1;
         }
@@ -376,15 +370,18 @@ i32 CRollingBall::Update() {
         if ((terrain & 0x939) != 0 || (terrain & 2) != 0) {
             CString fall;      // [esp+0x14]
             CString explosion; // [esp+0x10]
-            // resolve the action id from the second grid plane.
-            void* m2 = PTR(g_gameReg, 0x30);
-            void* lvl = PTR(m2, 0x24);
-            i32 ax = I32(self, 0x7c) >> 5;
-            i32 ay = I32(self, 0x78) >> 5;
+            // Resolve the action id from the level's main-plane tile/object graph
+            // (g_gameReg->m_world->m_24 is the CGameLevel). The plane +0x5c geom /
+            // +0x20 attr array / +0x4c object table below stay raw-offset: this is
+            // the same murky level-graph the sibling ApplySwitch/WireTileSwitchLogic
+            // walk with raw casts (its interior classes are unmodeled).
+            char* lvl = (char*)g_gameReg->m_world->m_24;
+            i32 ax = m_targetY >> 5;
+            i32 ay = m_targetX >> 5;
             if (ax < 0) {
                 ax = 0;
             } else {
-                i32 w = I32(PTR(lvl, 0x5c), 0x28);
+                i32 w = *(i32*)(*(char**)(lvl + 0x5c) + 0x28);
                 if (ax >= w) {
                     ax = w - 1;
                 }
@@ -392,18 +389,18 @@ i32 CRollingBall::Update() {
             if (ay < 0) {
                 ay = 0;
             } else {
-                i32 h = I32(PTR(lvl, 0x5c), 0x2c);
+                i32 h = *(i32*)(*(char**)(lvl + 0x5c) + 0x2c);
                 if (ay >= h) {
                     ay = h - 1;
                 }
             }
-            i32 col = I32(PTR(lvl, 0x5c), 0x24);
-            i32 idx = I32((char*)col + ay * 4, 0) + ax;
-            i32 raw = I32(PTR(lvl, 0x20), idx * 4);
+            i32 col = *(i32*)(*(char**)(lvl + 0x5c) + 0x24);
+            i32 idx = *(i32*)((char*)col + ay * 4) + ax;
+            i32 raw = *(i32*)(*(char**)(lvl + 0x20) + idx * 4);
             i32 obj = 0;
             if (raw != (i32)0xeeeeeeee && raw != -1) {
-                void* tbl = PTR(lvl, 0x4c);
-                void* ent = PTR((char*)tbl, (raw & 0xffff) * 4);
+                void* tbl = *(void**)(lvl + 0x4c);
+                void* ent = *(void**)((char*)tbl + (raw & 0xffff) * 4);
                 obj = VtblResolve(ent);
             }
 
@@ -426,105 +423,108 @@ i32 CRollingBall::Update() {
                     RbStrAssign(&explosion, "LEVEL_ROLLINGBALLSINKDEATH");
                     break;
             }
-            RbCacheFirst(PTR(self, 0x38), explosion);
-            I32(self, 0x40) = I32(PTR(self, 0x38), 0x1b4);
-            RbApplyLookup(PTR(self, 0x38), fall, 0);
+            RbCacheFirst(m_38, explosion);
+            m_savedGeoId = m_38->m_geoId;
+            RbApplyLookup(m_38, fall, 0);
             if (obj == 4) {
                 i32 t = RbGetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
-                DBL(self, 0x58) = kMsPerSecond / (double)t;
+                m_moveSpeed = kMsPerSecond / (double)t;
             }
         }
     }
 
     // ----- the direction sub-switch (state +0x12c -> NORTH/SOUTH/EAST/WEST) -----
-    I32(self, 0x60) = 0;
-    I32(self, 0x68) = 0;
-    I32(self, 0x64) = 0;
-    I32(self, 0x6c) = 0;
-    void* lg = PTR(self, 0x10);
-    switch (I32(lg, 0x12c)) {
+    // m_subX/m_subY are doubles; the direction arms zero/seed them (and m_moveDelta)
+    // as int pairs in this exact interleaved store order, so their halves are
+    // addressed as ints via ((i32*)&member)[0/1] (matching retail's dword stores).
+    ((i32*)&m_subX)[0] = 0;
+    ((i32*)&m_subY)[0] = 0;
+    ((i32*)&m_subX)[1] = 0;
+    ((i32*)&m_subY)[1] = 0;
+    CGameObject* lg = m_object;
+    switch (lg->m_12c) {
         case 1:
-            DBL(self, 0x68) = -DBL(self, 0x98);
-            I32(self, 0x78) -= 0x20;
-            I32(self, 0x70) = -1;
-            I32(self, 0x74) = -1;
+            m_subY = -*(double*)&m_moveDeltaLo;
+            m_targetX -= 0x20;
+            m_stepDirX = -1;
+            m_stepDirY = -1;
             break;
         case 2:
-            I32(self, 0x60) = I32(self, 0x98);
-            I32(self, 0x64) = I32(self, 0x9c);
-            I32(self, 0x78) += 0x20;
-            I32(self, 0x70) = 1;
-            I32(self, 0x74) = 0;
+            ((i32*)&m_subX)[0] = m_moveDeltaLo;
+            ((i32*)&m_subX)[1] = m_moveDeltaHi;
+            m_targetX += 0x20;
+            m_stepDirX = 1;
+            m_stepDirY = 0;
             break;
         case 4:
-            I32(self, 0x68) = I32(self, 0x98);
-            I32(self, 0x6c) = I32(self, 0x9c);
-            I32(self, 0x78) += 0x20;
-            I32(self, 0x70) = 0;
-            I32(self, 0x74) = 1;
+            ((i32*)&m_subY)[0] = m_moveDeltaLo;
+            ((i32*)&m_subY)[1] = m_moveDeltaHi;
+            m_targetX += 0x20;
+            m_stepDirX = 0;
+            m_stepDirY = 1;
             break;
         case 3:
-            DBL(self, 0x60) = -DBL(self, 0x98);
-            I32(self, 0x78) -= 0x20;
-            I32(self, 0x70) = -1;
-            I32(self, 0x74) = 0;
+            m_subX = -*(double*)&m_moveDeltaLo;
+            m_targetX -= 0x20;
+            m_stepDirX = -1;
+            m_stepDirY = 0;
             break;
     }
 
     // ----- the x87 sub-tile interpolation tail -----
-    void* lg2 = PTR(self, 0x10);
-    DBL(self, 0x60) = (double)I32(lg2, 0x5c) + DBL(self, 0x60);
-    DBL(self, 0x68) = (double)I32(lg2, 0x60) + DBL(self, 0x68);
-    I32(self, 0x98) = 0;
-    I32(self, 0x9c) = 0;
+    CGameObject* lg2 = m_object;
+    m_subX = (double)lg2->m_screenX + m_subX;
+    m_subY = (double)lg2->m_screenY + m_subY;
+    m_moveDeltaLo = 0;
+    m_moveDeltaHi = 0;
 
-    double dt = (double)g_frameDelta * DBL(self, 0x58);
-    i32 nx = I32(self, 0x78) >> 5;
-    if (I32(self, 0x70) > 0) {
-        double v = dt + DBL(self, 0x60);
-        DBL(self, 0x60) = v;
+    double dt = (double)g_frameDelta * m_moveSpeed;
+    i32 nx = m_targetX >> 5;
+    if (m_stepDirX > 0) {
+        double v = dt + m_subX;
+        m_subX = v;
         nx = __ftol(RbCeil(v));
-        if (nx >= (I32(self, 0x78) >> 5)) {
-            nx = I32(self, 0x78) >> 5;
+        if (nx >= (m_targetX >> 5)) {
+            nx = m_targetX >> 5;
         }
-    } else if (I32(self, 0x70) < 0) {
-        double v = DBL(self, 0x60) - dt;
-        DBL(self, 0x60) = v;
+    } else if (m_stepDirX < 0) {
+        double v = m_subX - dt;
+        m_subX = v;
         nx = __ftol(RbFloor(v));
-        if (nx < (I32(self, 0x78) >> 5)) {
-            nx = I32(self, 0x78) >> 5;
+        if (nx < (m_targetX >> 5)) {
+            nx = m_targetX >> 5;
         }
     } else {
-        nx = __ftol(RbFloor(DBL(self, 0x60)));
+        nx = __ftol(RbFloor(m_subX));
     }
 
-    i32 ny = I32(self, 0x7c) >> 5;
-    if (I32(self, 0x74) > 0) {
-        double v = dt + DBL(self, 0x68);
-        DBL(self, 0x68) = v;
+    i32 ny = m_targetY >> 5;
+    if (m_stepDirY > 0) {
+        double v = dt + m_subY;
+        m_subY = v;
         ny = __ftol(RbCeil(v));
-        if (ny >= (I32(self, 0x7c) >> 5)) {
-            ny = I32(self, 0x7c) >> 5;
+        if (ny >= (m_targetY >> 5)) {
+            ny = m_targetY >> 5;
         }
-    } else if (I32(self, 0x74) < 0) {
-        double v = DBL(self, 0x68) - dt;
-        DBL(self, 0x68) = v;
+    } else if (m_stepDirY < 0) {
+        double v = m_subY - dt;
+        m_subY = v;
         ny = __ftol(RbFloor(v));
-        if (ny < (I32(self, 0x7c) >> 5)) {
-            ny = I32(self, 0x7c) >> 5;
+        if (ny < (m_targetY >> 5)) {
+            ny = m_targetY >> 5;
         }
     } else {
-        ny = __ftol(RbFloor(DBL(self, 0x68)));
+        ny = __ftol(RbFloor(m_subY));
     }
 
-    void* out = PTR(self, 0x10);
-    I32(out, 0x5c) = nx;
-    I32(out, 0x60) = ny;
-    void* out2 = PTR(self, 0x10);
-    i32 next = I32(out2, 0x60) + 0x186a0;
-    if (I32(out2, 0x74) != next) {
-        I32(out2, 0x74) = next;
-        I32(out2, 0x8) |= 0x20000;
+    CGameObject* out = m_object;
+    out->m_screenX = nx;
+    out->m_screenY = ny;
+    CGameObject* out2 = m_object;
+    i32 next = out2->m_screenY + 0x186a0;
+    if (out2->m_latchedAnimId != next) {
+        out2->m_latchedAnimId = next;
+        out2->m_flags |= 0x20000;
     }
     return 0;
 }
