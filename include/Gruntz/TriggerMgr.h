@@ -445,6 +445,14 @@ public:
     // ?RemoveAt@CPtrList@@ @0x1b4ac7 on the +0 baseList - this class, proven twice.
     i32 LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r);
 
+    // 0x77df0: FindNearestEnemy(g) - scan all live, non-kind-0x36 grid cells
+    // SKIPPING g's own row (m_tileOwnerHi), pick the nearest to g's tile; null it
+    // unless inside g's +/-(m_reachRadius+m_defenderRadius+1) tile box. Body in
+    // BrickzCellFlags_077790.cpp (ex `Grid_77df0::FindNearest` - the receiver at
+    // every call site is the grunt's +0x260 board == THIS class; the identity the
+    // old @identity-TODO said "does not crack" cracks from that settled slot type).
+    CTmCell* FindNearestEnemy(CTmCell* g);
+
     // 0x7cf40: centre the view on the selection group's bounding-box midpoint, then
     // (single selection) re-arm the record latch. Ex-`CGroupSel` view (TriggerMgr.cpp
     // + GameKeyHandler.cpp): its +0x1c grid / +0x230..+0x238 latch / +0x244 list head

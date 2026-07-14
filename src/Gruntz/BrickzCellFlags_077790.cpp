@@ -4,18 +4,17 @@
 // are dissolved onto CGameLevel/CLevelPlane/CTileImageSet, see Brickz.h), and
 // Grid_77df0::FindNearest (0x077df0) - one contiguous retail .text block, distinct
 // from the main CBrickzGrid pathfinding obj (0x081e10+ in Brickz.cpp).
-// Grid_77df0 stays an @identity-TODO RVA-named view.
+// (Grid_77df0 was CTriggerMgr - dissolved 2026-07-14, see FindNearestEnemy below.)
 //
-// @identity-TODO Grid_77df0 (FindNearest 0x077df0): xref (2026-07-11) - the only
-// direct caller is the ILT thunk 0x253b; the caller tree resolves to ~15 CGrunt
-// arrival/scan methods (ResolveArrivalReposition/ArrivalScanA-C/WanderStep/
-// ChargeStep/UpdateArrival/SeekTarget/PhaseStep/StepArrivalDefense*/...). So `this`
-// is a per-Grunt 4x15 spatial-neighbour grid (cells' spatial obj @+0x10 with x/y at
-// +0x5c/+0x60; the GridWorld arg carries reference x/y @+0x17c/+0x180, a skip-row
-// @+0x1ec and radius parts @+0x298/+0x2dc) - a distinct object, NOT CGrunt itself.
-// The exact class does not crack from the caller set alone (per-call-site `this`
-// typing needed); left RVA-named rather than fabricating a placeholder.
+// IDENTITY CRACKED (2026-07-14): the 2026-07-11 xref stopped at "a per-Grunt 4x15
+// spatial-neighbour grid, does not crack from the caller set alone" - but the
+// receiver at every one of those ~15 CGrunt call sites is the grunt's +0x260
+// board slot, whose type Grunt.h had ALREADY settled as CTriggerMgr. FindNearest
+// is CTriggerMgr::FindNearestEnemy (declared in <Gruntz/TriggerMgr.h>), the twin
+// of FindNearestInRow @0x77f80 in TriggerMgr.cpp's own interval next door.
 #include <rva.h>
+#include <Gruntz/Grunt.h>      // CGrunt (== CTmCell) + CGruntHud - the grid cells
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindNearestEnemy's owner)
 #include <Mfc.h> // CObArray (CGameLevel::m_imageSets) + RECT/POINT/PtInRect (FindNearest)
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane / CTileImageSet (ex Brickz* views)
@@ -230,55 +229,27 @@ void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
 // regalloc wall: logic + the distance/rect math are byte-exact, but MSVC spills
 // colPtr/rowPtr to the stack where retail keeps them in edi/ecx (it instead reloads
 // `w` per outer iter). A spill-weight choice; the loop body matches.
-struct GridSpatial_77df0 {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c x
-    i32 m_60; // +0x60 y
-};
-struct GridCell_77df0 {
-    char m_pad0[0x10];
-    GridSpatial_77df0* m_10; // +0x10
-    char m_pad14[0x1fc - 0x14];
-    i32 m_1fc; // +0x1fc live flag
-    char m_pad200[0x258 - 0x200];
-    i32 m_258; // +0x258 kind
-};
-struct GridWorld_77df0 {
-    char m_pad0[0x10];
-    GridSpatial_77df0* m_10; // +0x10 reference object
-    char m_pad14[0x17c - 0x14];
-    i32 m_17c; // +0x17c reference x
-    i32 m_180; // +0x180 reference y
-    char m_pad184[0x1ec - 0x184];
-    i32 m_1ec; // +0x1ec row to skip
-    char m_pad1f0[0x298 - 0x1f0];
-    i32 m_298; // +0x298 radius part
-    char m_pad29c[0x2dc - 0x29c];
-    i32 m_2dc; // +0x2dc radius part
-};
-struct Grid_77df0 {
-    char m_pad0[0x1c];
-    GridCell_77df0* m_cells[4][15]; // +0x1c (row stride 0x3c)
-    GridCell_77df0* FindNearest(GridWorld_77df0* w);
-};
-SIZE_UNKNOWN(GridSpatial_77df0);
-SIZE_UNKNOWN(GridCell_77df0);
-SIZE_UNKNOWN(GridWorld_77df0);
-SIZE_UNKNOWN(Grid_77df0);
+// THE Grid_77df0 FAMILY IS DISSOLVED (2026-07-14): the receiver at EVERY call site
+// is the grunt's +0x260 board slot, whose type is settled as CTriggerMgr (Grunt.h's
+// CGruntTileMgr note) - the crack the old @identity-TODO lacked. The cells/world
+// are CGrunt (live flag +0x1fc == m_entranceCommitted, kind +0x258 == m_gruntKind,
+// ref x/y == m_lastTilePxX/Y, skip-row == m_tileOwnerHi, radius parts ==
+// m_reachRadius/m_defenderRadius) and the +0x10 spatial obj is CGruntHud - the
+// same shapes as the sibling FindNearestInRow @0x77f80 in TriggerMgr.cpp.
 RVA(0x00077df0, 0x13d)
-GridCell_77df0* Grid_77df0::FindNearest(GridWorld_77df0* w) {
-    GridCell_77df0* best = 0;
+CTmCell* CTriggerMgr::FindNearestEnemy(CTmCell* w) {
+    CTmCell* best = 0;
     i32 bestDist = 0x7fffffff;
-    i32 tileX = w->m_17c >> 5;
-    i32 tileY = w->m_180 >> 5;
-    GridCell_77df0** rowPtr = &m_cells[0][0];
+    i32 tileX = w->m_lastTilePxX >> 5;
+    i32 tileY = w->m_lastTilePxY >> 5;
+    CTmCell** rowPtr = m_grid;
     for (i32 i = 0; i < 4; i++) {
-        if (i != w->m_1ec) {
-            GridCell_77df0** colPtr = rowPtr;
+        if (i != w->m_tileOwnerHi) {
+            CTmCell** colPtr = rowPtr;
             i32 j = 15;
             do {
-                GridCell_77df0* cell = *colPtr;
-                if (cell && cell->m_1fc != 0 && cell->m_258 != 0x36) {
+                CTmCell* cell = *colPtr;
+                if (cell && cell->m_entranceCommitted != 0 && cell->m_gruntKind != 0x36) {
                     i32 dx = (cell->m_10->m_5c >> 5) - tileX;
                     i32 dy = (cell->m_10->m_60 >> 5) - tileY;
                     i32 dist = dx * dx + dy * dy;
@@ -292,7 +263,7 @@ GridCell_77df0* Grid_77df0::FindNearest(GridWorld_77df0* w) {
         }
         rowPtr += 15;
     }
-    i32 k = w->m_298 + w->m_2dc + 1;
+    i32 k = w->m_reachRadius + w->m_defenderRadius + 1;
     i32 px = w->m_10->m_5c >> 5;
     i32 py = w->m_10->m_60 >> 5;
     RECT rc;

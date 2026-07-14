@@ -1280,6 +1280,10 @@ public:
     RectContainsGated(i32 x, i32 y); // @0x51a20 (ret 8) sibling; m_198 gate, rects +0x2b0/+0x2c0
     i32 CommitNeighbor(i32 a, i32 b, i32 c, i32 d); // @0x5b050 (ret 0x10)
     CGrunt* FindGridNeighbor(i32 validate);         // @0x5b6f0 (ret 4)
+    // @0xef6b0 (GruntChargeStep.cpp) - the per-frame pursue/charge behavior step:
+    // a scan/move/arrived machine over m_defenderState driving the trigger-mgr
+    // grid + the wander fallback. (Ex the GruntChargeStep view family.)
+    i32 ChargeStep();
     i32 UpdateGruntStatus();                        // @0x617c0 (ret 0)
     // @0x51c00 (ret 0, /GX) - the per-tick compass-move driver: resolves the grunt's
     // next move tile by the 8-way direction code (m_444), tests/stamps the board
