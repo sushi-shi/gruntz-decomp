@@ -336,7 +336,7 @@ stateimages	2	2
 statemgrbz	7	5
 statichazard	9	5
 statusbargamemenu	1	0
-statusbaritem	3	1
+statusbaritem	3	2
 statusbarmgr	1	0
 statusbarspriteacts	7	5
 statusbartabbuilders	16	8
@@ -2611,12 +2611,12 @@ logicrecord	?Dispatch@AnimWorkerObj@@QAEHHHPAX0@Z	79.6203	79.6203	1	50053e349b43
 logicrecord	?Load@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	bf12c25522ea	0x164d80
 logicrecord	?ResolveTarget@AnimWorkerObj@@QAEHPAX@Z	99.3333	99.3333	1	ffdfdbbadeac	0x1651b0
 logicrecord	?Save@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	ed1db10c7c0e	0x164960
-logicrecorddispatch	?LogicDispatchA@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	d191da2bcb77	0xfb660
-logicrecorddispatch	?LogicDispatchBoomerang@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	5731e32b1d7c	0xde9e0
-logicrecorddispatch	?LogicDispatchD@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	7eb4de039353	0xdeb20
-logicrecorddispatch	?LogicDispatchE@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	3b977408a348	0xde8a0
-logictypetable	?BuildLogicTypeTable@@YGXPAUCGameObject@@@Z	84.5833	84.5833	1	cpp:3848ec44b08f	0x8a40
-logictypetable	?FinalizeStep@CUserLogic@@UAEXH@Z	100.0000	100.0000	1	cpp:3848ec44b08f	0x8b90
+logicrecorddispatch	?LogicDispatchA@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	1811dedd8cb4	0xfb660
+logicrecorddispatch	?LogicDispatchBoomerang@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	e3776b8543d1	0xde9e0
+logicrecorddispatch	?LogicDispatchD@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	5328e7de05f2	0xdeb20
+logicrecorddispatch	?LogicDispatchE@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	501e877736f8	0xde8a0
+logictypetable	?BuildLogicTypeTable@@YGXPAUCGameObject@@@Z	84.5833	84.5833	1	3d1a7f201745	0x8a40
+logictypetable	?FinalizeStep@CUserLogic@@UAEXH@Z	100.0000	100.0000	1	217c316c0d77	0x8b90
 logicworkerhandlersa	?Handler0aa6e0@@YAHPAUOwner@@@Z	99.9881	99.9881	1	5c76db60628a	0xaa6e0
 logicworkerhandlersa	?HandlerA9A40@@YAHPAUOwner@@@Z	100.0000	100.0000	1	2878a1d2ac0e	0xa9a40
 logicworkerhandlersa	?HandlerA9B80@@YAHPAUOwner@@@Z	100.0000	100.0000	1	64a1c8e2b3e4	0xa9b80
@@ -3356,7 +3356,7 @@ sbi_rectonly	?AnySlotActive@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	1	a2374f91cb
 sbi_rectonly	?ArmSlot@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	144b06fa5750	0x105560
 sbi_rectonly	?BuildGameTabPauseButton@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	deaf42b5f97c	0x102200
 sbi_rectonly	?BuildGameTabResumeButton@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	7ad367bffd56	0x102180
-sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	71.5763	71.5763	4	4be4f2971522	0xffde0
+sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	73.4110	73.4110	5	5f9c518d33ce	0xffde0
 sbi_rectonly	?ClearHlCell@CStatusBarMgr@@QAEXHH@Z	100.0000	100.0000	1	5a1e1bad6e85	0x1069c0
 sbi_rectonly	?ClearStat@CStatusBarMgr@@QAEHH@Z	90.8750	90.8750	1	0ae7158a84a0	0x104f90
 sbi_rectonly	?ClearTabGroup@CStatusBarMgr@@QAEXXZ	67.4706	67.4706	1	9b122f7f097a	0x100b00
@@ -3443,7 +3443,7 @@ sbi_statztabgruntbar	?Blit@CSBI_StatzTabGruntBar@@QAEHXZ	100.0000	100.0000	2	c37
 sbi_statztabgruntbar	?Poll@CSBI_StatzTabGruntBar@@QAEHH@Z	100.0000	100.0000	2	7606a511f798	0xea4b0
 sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	100.0000	100.0000	3	2f72923e9d9c	0xea470
 sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.6923	91.6923	5	9d35483f97ea	0xea6c0
-sbi_tabzdialog_eh	?BuildTabzDialog@CTabzBuilder@@QAEHXZ	83.7185	83.7185	2	717ec3557d46	0x10a340
+sbi_tabzdialog_eh	?BuildTabzDialog@CTabzBuilder@@QAEHXZ	83.7185	83.7185	3	bef0c9592158	0x10a340
 sbi_warlordhead	??1CSBI_WarlordHead@@UAE@XZ	100.0000	100.0000	2	7c5aeb46a90f	0x104a00
 sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	87.0676	87.0676	7	ed8f1b436e25	0xeb880
 sbi_warlordhead	?Serialize@CSBI_WarlordHead@@QAEHPAVCFileMemBase@@HHH@Z	92.4444	92.4444	1	9f2ef885a045	0xeb970
@@ -3649,7 +3649,7 @@ statichazard	?RegisterActs@CStaticHazard@@SAXXZ	78.5970	78.5970	5	0ee3d6f03fe9	0
 statichazard	?SerializeMove@CStaticHazard@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	1	bc025ee4ec5f	0xfc5b0
 statusbargamemenu	?BuildGameMenu@CStatusBarMgr@@QAEXXZ	51.2482	51.2482	2	cbf7d909c6b2	0x101580
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	4	7c1bf73fb437	0x1005d0
-statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	91.6667	91.6667	1	cpp:08500b778fe1	0x100620
+statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	100.0000	100.0000	1	cpp:08500b778fe1	0x100620
 statusbaritem	?Setup@CStatusBarItem@@UAEHHHHHUSbiRect@@HH@Z	90.0000	90.0000	1	1a397525d18a	0x100660
 statusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	83.5879	83.5879	9	7af5e5662387	0x102250
 statusbarspriteacts	??0CStatusBarSprite@@QAE@PAUCGameObject@@@Z	91.4583	91.4583	4	304356b4df41	0x10c230
@@ -3677,7 +3677,7 @@ statusbartabbuilders	?SetDirectionAlt@CSBI_StatzTabArrow@@QAEXHH@Z	100.0000	100.
 statusbartabbuilders	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	75abcbe5ef59	0xe8dc0
 statusbarupdaters	?SwitchDown@CTileTriggerSwitchLogic@@UAEHXZ	66.6897	66.6897	1	4d986b76821b	0x110570
 statusbarupdaters	?SwitchUp@CTileTriggerSwitchLogic@@UAEHXZ	68.6437	68.6437	1	13ada9bac4da	0x1106b0
-streamrecordloaders	?Find@CDDrawWorkerCache@@QAEHPBD@Z	100.0000	100.0000	1	cpp:57594b7de6f7	0x9cab0
+streamrecordloaders	?Find@CDDrawWorkerCache@@QAEHPBD@Z	100.0000	100.0000	1	f81b43d4ddbd	0x9cab0
 streamrecordloaders	?Load@CEventLoadRec@@QAEHPAVCFileMemBase@@@Z	93.9657	93.9657	1	80f8001990d8	0x9c650
 surfacepalette	?ResetPalette@CDDScreen@@QAEXXZ	100.0000	100.0000	13	09079b6f5cdf	0x17ca60
 symtab	??0CSymParser@@QAE@PAXHH@Z	72.8781	72.8781	2	fa6bf4c8db65	0x13ab00
