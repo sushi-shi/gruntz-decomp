@@ -1,96 +1,53 @@
-// SpotLight.cpp - re-homed from src/Stub/Discovered.cpp (0x0b1ee0). The
-// CSpotLight per-tick update: when the owner's mode (m_owner->m_mode) is 1 it rotates
-// the (m_offsetX,m_offsetY) offset by the running angle m_angle (scaled by m_angleStep and the frame
-// delta g_frameDelta), folds in the tracked target (m_target->m_x/m_y), and advances
-// m_angle; then it (re)resolves the light's bute key into m_lightCfg->m_buteNode when the
-// manager's per-cell slot is empty. X/Y within each coordinate pair is inferred;
-// offsets are load-bearing. Engine globals + CButeTree::Find are external
-// (reloc-masked). flags=base (/O2 /Oi -> fsin/fcos).
+// SpotLight.cpp - the CSpotLight per-tick eyecandy update (0x0b1ee0). CSpotLight is
+// modeled canonically in <Gruntz/SpotLight.h> (a CUserLogic leaf, vftable 0x5e75bc,
+// size 0xa8 - the operator new(0xa8) at its new-site 0xaf210); this TU contributes
+// only the Update_0b1ee0 method. When the owner object's mode (m_object->m_114) is 1
+// it rotates the (m_80,m_88) offset by the running angle m_90 (advanced by the per-tick
+// rate m_58 scaled by the frame delta g_frameDelta), folds in the tracked target's
+// screen pos (m_focus->m_screenX/m_screenY), and advances m_90; then it (re)resolves the
+// light's "A" bute node into m_objAux->m_1c when the trigger manager's per-cell grid
+// slot (m_cmdGrid->m_grid[col + row*15]) is empty. Engine globals + CButeTree::Find are
+// external (reloc-masked). flags=base (/O2 /Oi -> fsin/fcos).
+//
+// (The former flat CSpotLight carcass here was a DOUBLE DEFINITION whose fields were all
+// +0x30 shifted - it inherited CUserLogic (0x30) AND added a pad00[0x10], so sizeof was
+// 0xd8 and every field offset was wrong, capping this fn at 56%. Dissolved onto the one
+// canonical CSpotLight (SpotLight.h). The SpotM10/SpotM14/SpotM98 views were CGameObject/
+// AnimWorkerObj/CGameObject facets and MgrObj68 was CTriggerMgr::m_grid - all dissolved.)
 #include <rva.h>
 #include <Mfc.h>
 #include <math.h>
-#include <Bute/ButeMgr.h> // CButeTree::Find
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (light-grid via m_68)
+#include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA (the "A" name->node bute map)
+#include <Gruntz/SpotLight.h>       // canonical CSpotLight : CUserLogic (size 0xa8)
+#include <Gruntz/GameRegistry.h>    // g_gameReg singleton (+0x68 CTriggerMgr* cmd grid)
+#include <Gruntz/TriggerMgr.h>      // CTriggerMgr::m_grid (+0x1c 4x15 placed-cell grid)
 
-extern "C" unsigned g_frameDelta; // 0x645584 frame delta
-extern CButeTree g_buteTree;      // 0x6bf620
-extern char s_codeA[];            // 0x60a454 "A"
-
-struct SpotM10 {
-    char pad[0x114];
-    int m_mode; // 0x114
-};
-struct SpotM14 {
-    char pad[0x1c];
-    void* m_buteNode; // 0x1c
-};
-struct SpotM98 {
-    char pad[0x5c];
-    int m_x; // 0x5c
-    int m_y; // 0x60
-};
-// The light-fx cell grid is the spotlight facet of the registry's reused +0x68
-// slot ((MgrObj68*)g_gameReg->m_68; see CGameRegistry.h): a flat i32 grid at +0x1c
-// indexed (col + row*15). Authentic per-mode downcast of the canonical singleton.
-struct MgrObj68 {
-    char pad[0x1c];
-    int arr[1]; // 0x1c
-};
-extern "C" CGameRegistry* g_gameReg;
-
-class CSpotLight : public CUserLogic {
-public:
-    char pad00[0x10];
-    SpotM10* m_owner;    // 0x10
-    SpotM14* m_lightCfg; // 0x14
-    char pad18[0x30 - 0x18];
-    void* m_prevNode; // 0x30
-    char pad34[0x58 - 0x34];
-    double m_angleStep; // 0x58
-    double m_worldX;    // 0x60
-    double m_worldY;    // 0x68
-    double m_anchorX;   // 0x70
-    double m_anchorY;   // 0x78
-    double m_offsetX;   // 0x80
-    double m_offsetY;   // 0x88
-    double m_angle;     // 0x90
-    SpotM98* m_target;  // 0x98
-    int m_gridRow;      // 0x9c
-    int m_gridCol;      // 0xa0
-    int Update_0b1ee0();
-};
+extern "C" unsigned g_frameDelta;    // 0x645584 frame delta (canonical ?n@@3HA; reloc-masked)
+extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // @early-stop
-// x87 fp-stack scheduling wall: the rotation's fld/fmul/fsub tree + the fxch
-// interleave (and the frame-delta fild hoist) follow the x87-fp-stack-schedule
-// pattern - prologue, control flow, the m_gridRow*15 cell lookup and the bute re-resolve
-// match, but the FP block's fxch ordering is not source-steerable under MSVC5 /O2.
+// x87 fp-stack scheduling wall (docs/patterns/x87-fp-stack-schedule.md, topic:wall):
+// the mode gate, the target/anchor fold, the m_gridCol+m_gridRow*15 cell lookup and the
+// "A" bute re-resolve match; the residual is the rotation fld/fmul/fsub tree's fxch
+// interleave (and the frame-delta fild hoist), not source-steerable under MSVC5 /O2.
 RVA(0x000b1ee0, 0x11d)
 int CSpotLight::Update_0b1ee0() {
-    if (m_owner->m_mode == 1) {
-        double c = cos(m_angle);
-        double s = sin(m_angle);
-        m_worldX = -(m_offsetY * s + m_offsetX * c);
-        m_worldY = m_offsetX * s - m_offsetY * c;
-        if (m_target) {
-            m_anchorX = (double)m_target->m_x;
-            m_anchorY = (double)m_target->m_y;
+    if (m_object->m_114 == 1) {
+        double c = cos(m_90);
+        double s = sin(m_90);
+        m_60 = -(m_88 * s + m_80 * c);
+        m_68 = m_80 * s - m_88 * c;
+        if (m_focus) {
+            m_70 = (double)m_focus->m_screenX;
+            m_78 = (double)m_focus->m_screenY;
         }
-        m_worldX = m_anchorX + m_worldX;
-        m_worldY = m_anchorY + m_worldY;
-        m_angle = (double)g_frameDelta * m_angleStep + m_angle;
+        m_60 = m_70 + m_60;
+        m_68 = m_78 + m_68;
+        m_90 = (double)g_frameDelta * m_58 + m_90;
     }
-    if (((MgrObj68*)g_gameReg->m_cmdGrid)->arr[m_gridCol + m_gridRow * 15] == 0) {
-        m_prevNode = m_lightCfg->m_buteNode;
-        m_lightCfg->m_buteNode = g_buteTree.Find(s_codeA);
+    if (g_gameReg->m_cmdGrid->m_grid[m_a0 + m_9c * 15] == 0) {
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find(s_codeA);
     }
     return 0;
 }
-
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(MgrObj68);
-SIZE_UNKNOWN(SpotM10);
-SIZE_UNKNOWN(SpotM14);
-SIZE_UNKNOWN(SpotM98);

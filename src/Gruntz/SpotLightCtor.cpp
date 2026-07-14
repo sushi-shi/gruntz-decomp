@@ -18,7 +18,7 @@
 #include <Gruntz/UserLogic.h>       // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>           // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h>    // canonical *0x24556c singleton (color table via m_78)
-#include <Gruntz/LightFxMgr.h>  // CLightFxMgr - m_logicPump's real class (m_tables[10] @+0x14)
+#include <Gruntz/LightFxMgr.h>      // CLightFxMgr - m_logicPump's real class (m_tables[10] @+0x14)
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory - m_world->m_8 (embedded GruntObjMap m_objMap @+0x48)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
 #include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
@@ -26,7 +26,7 @@
 #include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/Loadable.h> // LoadableClassId - CLASSID_SERIALREF (the GetTypeId()==5 focus probe)
 #include <Gruntz/Grunt.h> // CGrunt - the Probe_32ce (CTriggerMgr::FindGruntAt) result (m_gruntKind)
-#include <math.h>                 // sin / cos (the Tick rotation)
+#include <math.h>         // sin / cos (the Tick rotation)
 #include <rva.h>
 
 // The bute store the "A" activation node is resolved through (g_buteTree @0x6bf620,
@@ -114,7 +114,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;
-    m_98 = 0;
+    m_focus = 0;
     m_object->m_areaL = 0;
     m_object->m_areaR = 0;
     m_object->m_areaT = 0;
@@ -151,7 +151,7 @@ i32 CSpotLight::RunAct(i32 id) {
     return (i32)e;
 }
 
-// SerializeMove's +0x98 focus slot (m_98) holds a serialized object reference: a
+// SerializeMove's +0x98 focus slot (m_focus) holds a serialized object reference: a
 // REAL CGameObject (<Gruntz/UserLogic.h>). The Read path resolves the id through the
 // world sprite factory's embedded id->object map (g_gameReg->m_world->m_8->m_objMap,
 // the canonical GruntObjMap @+0x48, Lookup @0x1b8760), keeping the object only when
@@ -173,7 +173,7 @@ extern i32 g_serialCounter; // 0x629ad0
 // chains, the mode switch, all sixteen 8-byte double transfers, the g_serialCounter
 // bump, the mode-8 draw-fill, the Write serialize-id, and the Read MFC CMapPtrToPtr
 // Lookup + branchless `(GetTypeId()==5)?obj:0` resolve) is byte-faithful. Sole residual:
-// the Write-id load `id = m_98->m_188` uses ecx here vs eax in retail (a 1-byte
+// the Write-id load `id = m_focus->m_188` uses ecx here vs eax in retail (a 1-byte
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
@@ -198,8 +198,8 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
             g_serialCounter++;
             {
                 i32 id = 0;
-                if (m_98 != 0) {
-                    id = m_98->m_188;
+                if (m_focus != 0) {
+                    id = m_focus->m_188;
                 }
                 s->Write(&id, 4);
             }
@@ -229,8 +229,8 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                         resolved = (out->GetTypeId() == CLASSID_SERIALREF) ? (i32)out : 0;
                     }
                 }
-                m_98 = (CGameObject*)resolved;
-                if (m_98 == 0 && id != 0) {
+                m_focus = (CGameObject*)resolved;
+                if (m_focus == 0 && id != 0) {
                     return 0;
                 }
             }
@@ -280,7 +280,7 @@ extern i32 g_sndCueTag;               // 0x61ab24
 // the Tick checks (!= 0x38) is CGrunt::m_gruntKind (+0x258); +0x10 is the grunt's
 // bound geometry source (a game object with screen coords at +0x5c/+0x60, undeclared
 // base padding on CGrunt so reached by documented offset). The ex CSpotTarget view
-// is dissolved onto CGrunt. (The ex CSpotLaser view of m_98 is likewise dissolved
+// is dissolved onto CGrunt. (The ex CSpotLaser view of m_focus is likewise dissolved
 // onto CGameObject: its +0x5c/+0x60 "move-delta" are m_screenX/m_screenY.)
 
 // CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is
@@ -306,8 +306,8 @@ i32 CSpotLight::Tick_0b1af0() {
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || *(i32*)((char*)reg + 0x134) != 1) {
         char* o = (char*)m_object;
-        CGrunt* tgt = (CGrunt*)
-            Probe_32ce(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
+        CGrunt* tgt =
+            (CGrunt*)Probe_32ce(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
         if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
@@ -346,7 +346,7 @@ i32 CSpotLight::Tick_0b1af0() {
     double s = sin(m_90);
     double c = cos(m_90);
     double dt = (double)(i32)g_frameDelta;
-    CGameObject* mv = m_98; // the focus object (real CGameObject; ex CSpotLaser view)
+    CGameObject* mv = m_focus; // the focus object (real CGameObject; ex CSpotLaser view)
     double rx = m_80 * c - m_88 * s;
     double ry = m_80 * s + m_88 * c;
     if (mv != 0) {

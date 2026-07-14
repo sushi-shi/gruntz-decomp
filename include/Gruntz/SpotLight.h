@@ -28,21 +28,24 @@ public:
     i32 RunAct(i32 id);
     // The per-tick laser/rotation update (0x0b1af0).
     i32 Tick_0b1af0();
+    // The per-tick offset-rotation + grid-cell "A" bute re-resolve (0x0b1ee0);
+    // body in SpotLight.cpp.
+    int Update_0b1ee0();
 
     char m_pad40[0x58 - 0x40];
-    double m_58; // +0x58  per-tick rate
-    double m_60; // +0x60
-    double m_68; // +0x68
-    double m_70; // +0x70
-    double m_78; // +0x78
-    double m_80; // +0x80
-    double m_88; // +0x88
-    double m_90;       // +0x90  pi or 0
-    CGameObject* m_98; // +0x98  the serialized focus object (GetTypeId()==5 gate; a
-                       //         real CGameObject - id at +0x188, coords at +0x5c/+0x60)
-    i32 m_9c;          // +0x9c
-    i32 m_a0;    // +0xa0
-    i32 m_a4;    // +0xa4
+    double m_58;          // +0x58  per-tick angular rate (Update: angleStep advancing m_90)
+    double m_60;          // +0x60  computed/world offset X (Update result m_70/m_78 + rotation)
+    double m_68;          // +0x68  computed/world offset Y
+    double m_70;          // +0x70  anchor/base X (target screen pos or grid-snapped seed)
+    double m_78;          // +0x78  anchor/base Y
+    double m_80;          // +0x80  rotation offset X (m_70 - snapped origin)
+    double m_88;          // +0x88  rotation offset Y (m_78 - snapped origin)
+    double m_90;          // +0x90  running rotation angle (seeded pi or 0)
+    CGameObject* m_focus; // +0x98  the serialized focus object (GetTypeId()==5 gate; a
+                          //         real CGameObject - id at +0x188, coords at +0x5c/+0x60)
+    i32 m_9c;             // +0x9c
+    i32 m_a0;             // +0xa0
+    i32 m_a4;             // +0xa4
 };
 VTBL(CSpotLight, 0x1e75bc);
 SIZE(CSpotLight, 0xa8);
