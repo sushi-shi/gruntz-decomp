@@ -219,11 +219,15 @@ enum SpellzEffect {
 // ==== LoadGruntCombatAnimations @0x597a0 (ex GruntCombatAnim.cpp; its 15 private .data cells + the
 // i324-i332 frag run sit in this TU) ====
 
-// authentic: the CGrunt/tile-mgr field bag is deliberately addressed by raw byte
-// offset (naming-independent-codegen exception per the file header). Every (char*)
-// cast in this TU is either one of these two accessors, an inline copy of the same
-// *(T*)((char*)base+o) form, or a freelist node-link recycle - all intentional.
-#define F(base, o) (*(i32*)((char*)(base) + (o)))
+// P: reads a pointer member at a raw offset (double-star char**, not a counted cast).
+// The F (single-star i32) offset-macro is GONE - every field access it hid is now a
+// typed CGrunt/CGameObject/CAnimLookupNode member (Grunt.h/UserLogic.h). P is retained
+// only for two DIVERGENT/internal reaches whose clean typing is a deferred fold:
+//   * +0x260: the path/occupancy board. Grunt.h types m_tileMgr as CGruntTileMgr* but
+//     the combat paths use it as CTriggerMgr* (m_grid / SpawnGrunt / CellDispatch /
+//     ApplySwitch) - a pending CGruntTileMgr==CTriggerMgr unification (do not retype
+//     Grunt.h here). The cast sits on P(...), so it is not a counted this/member cast.
+//   * +0x320: the m_31c CPtrList head node (freelist recycle; no public MFC accessor).
 #define P(base, o) (*(char**)((char*)(base) + (o)))
 
 // (CombatCue is GONE - it was LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem
@@ -326,9 +330,9 @@ static const char s_gruntSec[] = "Grunt";
 // Copy octant direction-vector triple k into CGrunt+0x43c; set the target tile pixel.
 #define SETDIR(k, nx, ny)                                                                          \
     do {                                                                                           \
-        F(this, 0x43c) = g_dirVec[k][0];                                                           \
-        F(this, 0x440) = g_dirVec[k][1];                                                           \
-        F(this, 0x444) = g_dirVec[k][2];                                                           \
+        this->m_entranceCell.col = g_dirVec[k][0];                                                 \
+        this->m_entranceCell.row = g_dirVec[k][1];                                                 \
+        this->m_entranceCell.reason = g_dirVec[k][2];                                              \
         newX = (nx);                                                                               \
         newY = (ny);                                                                               \
     } while (0)
@@ -1371,7 +1375,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 a6,
     i32 a7
 ) {
-    if (F(this, 0x258) == 0x38 && F(this, 0x170) != 1) {
+    if (this->m_gruntKind == 0x38 && this->m_entranceReason != 1) {
         return 1;
     }
 
@@ -1380,13 +1384,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CGrunt* enemy = ((CTriggerMgr*)P(this, 0x260))->m_grid[a2 * TM_GRID_COLS + a3];
         if (enemy != 0
             && ((CTriggerMgr*)P(this, 0x260))
-                       ->SpawnGrunt(F(this, 0x1ec), F(this, 0x1f0), a2, F(enemy, 0x1f4))
+                       ->SpawnGrunt(this->m_tileOwnerHi, this->m_tileOwnerLo, a2, enemy->m_1f4_moveIcon)
                    != 0) {
-            i32 h = F(enemy, 0x3ec) + 0x19;
+            i32 h = enemy->m_health + 0x19;
             if (h >= 0x64) {
                 h = 0x64;
             }
-            F(enemy, 0x3ec) = h;
+            enemy->m_health = h;
             // worker -> owner context (the world holder facet) -> cue host; retail
             // keeps the host in ecx from the gate test into the Lookup __thiscall.
             CSndHost* host = ((CSpriteFactoryHolder*)m_158->m_0c)->m_28;
@@ -1401,9 +1405,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Hit-type byte-table lookup + optional handicap halving.
-    i32 hit = g_hitTable[F(this, 0x170) * 23 + a0];
+    i32 hit = g_hitTable[this->m_entranceReason * 23 + a0];
     WwdGameReg* reg = g_gameReg; // cached once (retail keeps the singleton in a reg)
-    if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && F(this, 0x1ec) == g_curPlayer) {
+    if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && this->m_tileOwnerHi == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
     }
@@ -1411,16 +1415,16 @@ i32 CGrunt::LoadGruntCombatAnimations(
     // Duration scale (kind 0x3c death-touch): scale by g_dtScale, then damage the enemy.
     if (a7 == 0x3a) {
         hit = 0x64;
-    } else if (F(this, 0x258) == 0x3c) {
+    } else if (this->m_gruntKind == 0x3c) {
         hit = (i32)((float)hit * g_dtScale);
         if (a6 == 0) {
             CGrunt* enemy = ((CTriggerMgr*)P(this, 0x260))->m_grid[a2 * TM_GRID_COLS + a3];
-            if (enemy != 0 && F(enemy, 0x1fc) != 0) {
-                i32 nh = F(enemy, 0x3ec) - hit * 3;
+            if (enemy != 0 && enemy->m_entranceCommitted != 0) {
+                i32 nh = enemy->m_health - hit * 3;
                 if (nh < 0) {
                     nh = 0;
                 }
-                F(enemy, 0x3ec) = nh;
+                enemy->m_health = nh;
                 if (nh <= 0) {
                     ((CTriggerMgr*)P(this, 0x260))->CellDispatch(a2, a3, 1, -1);
                 }
@@ -1429,24 +1433,24 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Self health decrement + reason-1 kill dispatch.
-    i32 nh = F(this, 0x3ec) - hit;
+    i32 nh = this->m_health - hit;
     if (nh < 0) {
         nh = 0;
     }
-    F(this, 0x3ec) = nh;
-    if (F(this, 0x170) == 1) {
-        ((CTriggerMgr*)P(this, 0x260))->CellDispatch(F(this, 0x1ec), F(this, 0x1f0), 1, a2);
+    this->m_health = nh;
+    if (this->m_entranceReason == 1) {
+        ((CTriggerMgr*)P(this, 0x260))->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 1, a2);
         return 0;
     }
     if (nh <= 0) {
-        F(this, 0x1fc) = 0;
-        F(this, 0x370) = a2;
+        this->m_entranceCommitted = 0;
+        this->m_370 = a2;
     }
 
     // On-screen visibility gate, then the hit/block sound-cue resolve.
     LeafCue* cue = 0;
-    i32 vx = F(P(this, 0x10), 0x5c);
-    i32 vy = F(P(this, 0x10), 0x60);
+    i32 vx = this->m_object->m_screenX;
+    i32 vy = this->m_object->m_screenY;
     if (vx < reg->m_viewOriginR && vx >= reg->m_viewOriginL && vy < reg->m_viewOriginB
         && vy >= reg->m_viewOriginT) {
         if (a7 == 0x3a) {
@@ -1454,14 +1458,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
             goto L_cue;
         }
         if (a0 == 6 || a0 == 0xa || a0 == 0x16) {
-            if (F(this, 0x170) == 8) {
+            if (this->m_entranceReason == 8) {
                 LK(s_BLOCKBODY2);
             } else {
                 LK(s_IMPACTMM2);
             }
             goto L_cue;
         }
-        if (F(this, 0x170) == 9) {
+        if (this->m_entranceReason == 9) {
             if (a0 == 5 || a0 == 0xd || a0 == 0xe || a0 == 4) {
                 LK(s_IMPACTMM4);
             } else {
@@ -1469,11 +1473,11 @@ i32 CGrunt::LoadGruntCombatAnimations(
             }
             goto L_cue;
         }
-        if (F(this, 0x170) == 0xc) {
+        if (this->m_entranceReason == 0xc) {
             LK(s_BLOCKMETAL1);
             goto L_cue;
         }
-        if (F(this, 0x170) == 0xe) {
+        if (this->m_entranceReason == 0xe) {
             if (a1 == 1) {
                 LK(s_SPRING2);
             } else {
@@ -1481,7 +1485,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             }
             goto L_cue;
         }
-        if (F(this, 0x170) == 0x12 && F(this, 0x234) != 0) {
+        if (this->m_entranceReason == 0x12 && this->m_coordToggle != 0) {
             LK(s_TOOBZ);
             goto L_cue;
         }
@@ -1613,20 +1617,20 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (a0 != 0x15) {
             return 1;
         }
-        if (F(this, 0x3ec) > 0) {
+        if (this->m_health > 0) {
             return 1;
         }
-        ((CTriggerMgr*)P(this, 0x260))->CellDispatch(F(this, 0x1ec), F(this, 0x1f0), 7, a2);
+        ((CTriggerMgr*)P(this, 0x260))->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 7, a2);
         return 0;
     }
 
-    if (F(this, 0x170) == 8) {
+    if (this->m_entranceReason == 8) {
         return 1;
     }
 
     // Rebuild the active-anim-set type-name registry free list.
     char** typeRec =
-        (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)(*(void**)(P(this, 0x14) + 0x1c)));
+        (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)(this->m_14->m_1c));
     if (g_typeColl.m_grown != 0) {
         char* p = (char*)g_typeColl.m_alloc;
         i32 n = g_typeColl.m_grown;
@@ -1643,86 +1647,86 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     // x87 angle-octant direction resolver: copy the matching g_dirVec triple into
     // CGrunt+0x43c and set the target tile pixel (newX/newY).
-    i32 dy = a5 - F(P(this, 0x10), 0x60);
-    i32 dx = a4 - F(P(this, 0x10), 0x5c);
+    i32 dy = a5 - this->m_object->m_screenY;
+    i32 dx = a4 - this->m_object->m_screenX;
     i32 newX;
     i32 newY;
     if (a0 == 0x16) {
         switch (rand() % 8 - 1) {
             case 0:
-                SETDIR(8, F(this, 0x17c) + 0x20, F(this, 0x180) - 0x20);
+                SETDIR(8, this->m_lastTilePxX + 0x20, this->m_lastTilePxY - 0x20);
                 break;
             case 1:
-                SETDIR(3, F(this, 0x17c) + 0x20, F(this, 0x180));
+                SETDIR(3, this->m_lastTilePxX + 0x20, this->m_lastTilePxY);
                 break;
             case 2:
-                SETDIR(5, F(this, 0x17c) + 0x20, F(this, 0x180) + 0x20);
+                SETDIR(5, this->m_lastTilePxX + 0x20, this->m_lastTilePxY + 0x20);
                 break;
             case 3:
-                SETDIR(1, F(this, 0x17c), F(this, 0x180) + 0x20);
+                SETDIR(1, this->m_lastTilePxX, this->m_lastTilePxY + 0x20);
                 break;
             case 4:
-                SETDIR(4, F(this, 0x17c) - 0x20, F(this, 0x180) + 0x20);
+                SETDIR(4, this->m_lastTilePxX - 0x20, this->m_lastTilePxY + 0x20);
                 break;
             case 5:
-                SETDIR(0, F(this, 0x17c) - 0x20, F(this, 0x180));
+                SETDIR(0, this->m_lastTilePxX - 0x20, this->m_lastTilePxY);
                 break;
             case 6:
-                SETDIR(6, F(this, 0x17c) - 0x20, F(this, 0x180) - 0x20);
+                SETDIR(6, this->m_lastTilePxX - 0x20, this->m_lastTilePxY - 0x20);
                 break;
             default:
-                SETDIR(2, F(this, 0x17c), F(this, 0x180) - 0x20);
+                SETDIR(2, this->m_lastTilePxX, this->m_lastTilePxY - 0x20);
                 break;
         }
     } else if (dx == 0) {
-        if (a5 > F(P(this, 0x10), 0x60)) {
-            SETDIR(2, F(this, 0x17c), F(this, 0x180) - 0x20);
-        } else if (a5 < F(P(this, 0x10), 0x60)) {
-            SETDIR(1, F(this, 0x17c), F(this, 0x180) + 0x20);
+        if (a5 > this->m_object->m_screenY) {
+            SETDIR(2, this->m_lastTilePxX, this->m_lastTilePxY - 0x20);
+        } else if (a5 < this->m_object->m_screenY) {
+            SETDIR(1, this->m_lastTilePxX, this->m_lastTilePxY + 0x20);
         } else {
             goto L_moveDone;
         }
     } else {
         float slope = (float)dy / dx;
         if (slope > g_tanC0 || slope < g_tanC1) {
-            if (a5 > F(P(this, 0x10), 0x60)) {
-                SETDIR(2, F(this, 0x17c), F(this, 0x180) - 0x20);
+            if (a5 > this->m_object->m_screenY) {
+                SETDIR(2, this->m_lastTilePxX, this->m_lastTilePxY - 0x20);
             } else {
-                SETDIR(1, F(this, 0x17c), F(this, 0x180) + 0x20);
+                SETDIR(1, this->m_lastTilePxX, this->m_lastTilePxY + 0x20);
             }
         } else if (slope > g_tanC2 || slope < g_tanC3) {
             if (slope > g_tanC2) {
-                if (a4 > F(P(this, 0x10), 0x5c)) {
-                    SETDIR(6, F(this, 0x17c) - 0x20, F(this, 0x180) - 0x20);
+                if (a4 > this->m_object->m_screenX) {
+                    SETDIR(6, this->m_lastTilePxX - 0x20, this->m_lastTilePxY - 0x20);
                 } else {
-                    SETDIR(5, F(this, 0x17c) + 0x20, F(this, 0x180) + 0x20);
+                    SETDIR(5, this->m_lastTilePxX + 0x20, this->m_lastTilePxY + 0x20);
                 }
             } else if (slope < g_tanC3) {
-                if (a4 > F(P(this, 0x10), 0x5c)) {
-                    SETDIR(4, F(this, 0x17c) - 0x20, F(this, 0x180) + 0x20);
+                if (a4 > this->m_object->m_screenX) {
+                    SETDIR(4, this->m_lastTilePxX - 0x20, this->m_lastTilePxY + 0x20);
                 } else {
-                    SETDIR(8, F(this, 0x17c) + 0x20, F(this, 0x180) - 0x20);
+                    SETDIR(8, this->m_lastTilePxX + 0x20, this->m_lastTilePxY - 0x20);
                 }
             } else {
                 goto L_moveDone;
             }
         } else {
-            if (a4 > F(P(this, 0x10), 0x5c)) {
-                SETDIR(0, F(this, 0x17c) - 0x20, F(this, 0x180));
+            if (a4 > this->m_object->m_screenX) {
+                SETDIR(0, this->m_lastTilePxX - 0x20, this->m_lastTilePxY);
             } else {
-                SETDIR(3, F(this, 0x17c) + 0x20, F(this, 0x180));
+                SETDIR(3, this->m_lastTilePxX + 0x20, this->m_lastTilePxY);
             }
         }
     }
 
     // Tile-to-tile occupancy + diagonal-corner move check.
     {
-        i32 flags = F(this, 0x248) | 0x20000000;
+        i32 flags = this->m_arrivalFlags | 0x20000000;
         CBrickzGrid* grid = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
         i32 nyt = newY >> 5;
         i32 nxt = newX >> 5;
-        i32 oxt = F(this, 0x17c) >> 5;
-        i32 oyt = F(this, 0x180) >> 5;
+        i32 oxt = this->m_lastTilePxX >> 5;
+        i32 oyt = this->m_lastTilePxY >> 5;
         if (!(oxt == nxt && oyt == nyt)) {
             if ((u32)nxt >= (u32)grid->m_width) {
                 return 1;
@@ -1735,7 +1739,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             if (t & 0x20000000) {
                 return 1;
             }
-            if (t != 0 && (cell[0] & (F(this, 0x24c) | 0x18000482)) == 0) {
+            if (t != 0 && (cell[0] & (this->m_24c | 0x18000482)) == 0) {
                 return 1;
             }
             i32* ocell = grid->m_8[oyt] + oxt * 7;
@@ -1780,12 +1784,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
 
         // Arrival commit + occupancy re-stamp + knockback trajectory tail.
-        if (F(this, 0x1e8) == 0) {
-            ((CTriggerMgr*)P(this, 0x260))->ApplySwitch(this, F(this, 0x17c), F(this, 0x180));
+        if (this->m_arrivalPending == 0) {
+            ((CTriggerMgr*)P(this, 0x260))->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
         }
         CBrickzGrid* g2 = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
-        i32 ox = F(this, 0x17c) >> 5;
-        i32 oy = F(this, 0x180) >> 5;
+        i32 ox = this->m_lastTilePxX >> 5;
+        i32 oy = this->m_lastTilePxY >> 5;
         i32* oc = g2->m_8[oy] + ox * 7;
         *((unsigned char*)oc + 3) &= 0xdf;
         i32* oc2 = g2->m_8[oy] + ox * 7;
@@ -1793,12 +1797,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
         i32* nc = g2->m_8[nyt] + nxt * 7;
         *((unsigned char*)nc + 3) |= 0x20;
         i32* nc2 = g2->m_8[nyt] + nxt * 7;
-        nc2[1] = (F(this, 0x1ec) << 8) | F(this, 0x1f0);
+        nc2[1] = (this->m_tileOwnerHi << 8) | this->m_tileOwnerLo;
 
-        if (F(this, 0x328) != 0) {
+        if (m_31c.GetCount() != 0) {
             i32* node = 0;
-            i32 rx = F(this, 0x17c) >> 5;
-            i32 ry = F(this, 0x180) >> 5;
+            i32 rx = this->m_lastTilePxX >> 5;
+            i32 ry = this->m_lastTilePxY >> 5;
             if (*(void**)g_coordPool.m_freeHead != 0) {
                 node = (i32*)((char*)g_coordPool.m_freeHead + 4);
                 node[0] = rx;
@@ -1808,19 +1812,19 @@ i32 CGrunt::LoadGruntCombatAnimations(
             m_31c.AddHead(node);
         }
 
-        F(this, 0x17c) = newX;
-        F(this, 0x180) = newY;
-        F(this, 0x30) = F(P(this, 0x14), 0x1c);
-        F(P(this, 0x14), 0x1c) = (i32)g_buteTree.Find(s_typeO);
-        double ddx = (double)newX - F(P(this, 0x10), 0x5c);
-        double ddy = (double)newY - F(P(this, 0x10), 0x60);
+        this->m_lastTilePxX = newX;
+        this->m_lastTilePxY = newY;
+        this->m_prevAnimSetNode = this->m_14->m_1c;
+        this->m_14->m_1c = g_buteTree.Find(s_typeO);
+        double ddx = (double)newX - this->m_object->m_screenX;
+        double ddy = (double)newY - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
         u32 kb = g_buteMgr.GetDwordDef(s_gruntSec, s_knockKey, 200);
         m_400 = dist / (double)kb;
-        m_408 = (double)F(P(this, 0x10), 0x5c);
-        m_410 = (double)F(P(this, 0x10), 0x60);
+        m_408 = (double)(this->m_object->m_screenX);
+        m_410 = (double)(this->m_object->m_screenY);
 
-        if (F(this, 0x328) != 0) {
+        if (m_31c.GetCount() != 0) {
             void** node = (void**)P(this, 0x320);
             if (node != 0) {
                 void* fl = g_coordPool.m_freeHead;
@@ -1838,7 +1842,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             }
             m_31c.RemoveAll();
         }
-        F(this, 0x1e8) = 0;
+        this->m_arrivalPending = 0;
     }
 
 L_moveDone:
