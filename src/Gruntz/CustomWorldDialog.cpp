@@ -23,6 +23,7 @@
 #include <Mfc.h> // afx-first: CString + the dialog API
 
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdWorldHolder/WwdLevelInfoSrc (IsValidWwd receiver)
+#include <Gruntz/WaitCursorApp.h>      // CWaitCursorApp (Begin/EndWaitCursor via AfxGetModuleState)
 #include <Gruntz/GameRegistry.h> // the canonical manager singleton view (m_gameWnd/m_world/m_owner)
 #include <Gruntz/GruntzMgr.h>    // the MFC view of the same singleton (IsBattlezMapFile)
 #include <Wwd/WwdFile.h>         // WwdHeader + WwdFile statics + WwdFile_CheckHeader
@@ -86,16 +87,6 @@ i32 LoadCustomWorldInfo(HWND hDlg);      // 0x3b7c0
 i32 FillLevelInfoDialog(HWND hDlg);      // 0x3b1a0
 i32 LoadCustomWorldSelection(HWND hWnd); // 0x3b310
 
-// Manager member chains the seed reads (placeholder offsets).
-struct GmInner4 {
-    char m_pad0[4];
-    i32 m_4; // +0x04
-};
-struct GmInner8 {
-    char m_pad0[0xc];
-    i32 m_c; // +0x0c
-};
-
 // The game-manager singleton (*0x64556c). Only the seed members + the modal-dialog
 // runner are modeled; RunModalDialog (0x90260, __thiscall) is reloc-masked. The obj
 // names the pointer _g_mgrSettings (extern "C"), matching the codebase convention
@@ -155,11 +146,13 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     g_pathStr.Empty();
     i32 v = id;
     if (id == 0) {
-        v = ((GmInner4*)g_gameReg->m_gameWnd)->m_4;
+        // m_gameWnd (CGameWnd*, CGameMgr+0x4) -> +0x4 window handle (raw offset read).
+        v = *(i32*)((char*)g_gameReg->m_gameWnd + 4);
     }
     g_customWorldParent = (HWND)v;
     g_dat62c268 = (i32)g_gameReg->m_world;
-    g_customWorldInst = (HINSTANCE)((GmInner8*)g_gameReg->m_owner)->m_c;
+    // m_owner (CGameApp*, CGameMgr+0x8) -> +0xc HINSTANCE (raw offset read).
+    g_customWorldInst = (HINSTANCE) * (i32*)((char*)g_gameReg->m_owner + 0xc);
     if (g_gameReg->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldDlgProc, 0) == 0) {
         g_pathStr.Empty();
     }
@@ -245,16 +238,8 @@ namespace m4 {
     // FID-carved) over <io.h>'s _finddata_t.
     extern "C" i32 CustomGate(const char* name); // 0x0018d290
 
-    // The shared reentrancy lock guarding the directory walk.
-    struct WalkLock {
-        void Lock();   // 0x001beafb
-        void Unlock(); // 0x001beb10
-    };
-    struct WalkOwner {
-        char m_pad0[4];
-        WalkLock* m_4; // +0x04
-    };
-    extern "C" WalkOwner* GetWalkOwner1d3631(); // 0x001d3631
+    // The "reentrancy lock" guarding the directory walk is the MFC wait cursor:
+    // AfxGetModuleState()->m_pCurrentWinApp->Begin/EndWaitCursor (<Gruntz/WaitCursorApp.h>).
 
     // The settings-manager singleton == *g_gameReg (the real CGruntzMgr, the MFC view of
     // the file-global g_gameReg above); IsBattlezMapFile takes the display name by value
@@ -292,7 +277,7 @@ namespace m4 {
         _finddata_t fd;
         i32 h = _findfirst(pattern, &fd);
         i32 found = (h != -1);
-        GetWalkOwner1d3631()->m_4->Lock();
+        ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
         if (found) {
             do {
                 char disp[260];
@@ -307,7 +292,7 @@ namespace m4 {
             } while (_findnext(h, &fd) != -1);
         }
         CustomGate(g_dotDot);
-        GetWalkOwner1d3631()->m_4->Unlock();
+        ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
         return 1;
     }
 
@@ -398,15 +383,6 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
 }
 
 // ---------------------------------------------------------------------------
-// The manager world slot's +0x24 as ValidateMainBlock reads it (a filename the
-// header probe validates). authentic: reduced local view of the cross-TU world
-// slot; only the +0x24 path field is modeled (offset-faithful, mangling-neutral).
-struct WwdGameRegSlot {
-    char pad_0[0x24];
-    char* m_wwdPath; // +0x24  a WWD path / numeric-tail string CheckHeader validates
-};
-
-// ---------------------------------------------------------------------------
 // WwdFile::ValidateMainBlock (static, __cdecl: ignores `this`, caller-cleaned
 // `ret`; Ghidra mis-derived the void/no-arg `QAEXXZ` prototype).
 // Takes a CString BY VALUE (the callee runs its dtor on every exit). Returns -1
@@ -424,11 +400,18 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     if (name.GetLength() == 0) {
         return -1;
     }
-    if (((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath == 0) {
+    // The world slot's +0x24 IS WwdWorldHolder::m_24 (the level-info source, WwdLevelInfoSrc*
+    // - the same +0x24 FillLevelInfoDialog drives IsValidWwd on); ValidateMainBlock passes
+    // that object pointer to CheckHeader's `const char* name` slot (retail's own pun).
+    if (((WwdWorldHolder*)g_gameReg->m_world)->m_24 == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath, header) == 0) {
+    if (WwdFile_CheckHeader(
+            (const char*)((WwdWorldHolder*)g_gameReg->m_world)->m_24,
+            header
+        )
+        == 0) {
         return -1;
     }
 
@@ -606,6 +589,3 @@ CString WwdFile::GetMapBaseName(CString path) {
     return result;
 }
 
-SIZE_UNKNOWN(GmInner4);
-SIZE_UNKNOWN(GmInner8);
-SIZE_UNKNOWN(WwdGameRegSlot);
