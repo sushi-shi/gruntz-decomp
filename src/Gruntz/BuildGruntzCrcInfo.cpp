@@ -1,85 +1,45 @@
-// BuildGruntzCrcInfo.cpp - BuildGruntzCrcInfo (0xbf1d0). A diagnostic dump:
-// __thiscall(this) walks the level's flat grunt array (this->m_4->m_4->m_68,
-// indexed 0x1c..0x108 by 4) and, for each present grunt, formats a
+// BuildGruntzCrcInfo.cpp - CNetSession::BuildGruntzCrcInfo (0xbf1d0). A network
+// CRC/sync-diagnostic dump: __thiscall(this) walks the level's 4x15 placed-grunt
+// roster and, for each present grunt, formats a
 // "[p=%d][g=%d][health=%d]...[rnd=%d]" line (18 fields incl. a per-grunt
 // type->weapon-id switch and a random nonce) and appends it to a CString seeded
 // with "crc info for all gruntz:\n----...". The assembled report is handed to the
-// sink (this->m_4->ReportVersionMsg).
+// owning CMulti's ReportVersionMsg.
 //
 // /GX EH-framed: the local CString (its ~CString must run on the normal + unwind
 // exits) gives the body the exception frame, so it lives in an `eh` unit. Only
 // offsets / strings / code bytes are load-bearing; the CString ops, wsprintfA,
 // the rand nonce and ReportVersionMsg are reloc-masked engine calls.
 //
-// IDENTITY RECOVERED (2026-07-14) - the view fold is DEFERRED, blocked by two lanes
-// owning the canonical headers THIS wave (report, don't force with casts):
-//   * CrcGrunt IS CGrunt (<Gruntz/Grunt.h>): m_3ec=m_health, m_3f0=m_stamina,
-//     m_3f4=m_toyTime, m_218=m_combatActive, m_21c=m_neighborValid, m_220=m_poweredUp,
-//     m_224, m_358, m_198, m_19c, m_450=m_arrivalPhase all match named CGrunt members.
-//     BLOCKERS: type @+0x170 (the switch input) and dir @+0x444 are NOT yet named
-//     members of CGrunt, and Grunt.h is owned by the grunt-behavior lane this wave -
-//     the grunt-behavior lane must add `i32 m_170;`(type) + `i32 m_444;`(dir) before
-//     this dissolves cast-free.
-//   * CrcGruntPos IS CGrunt::m_10's geometry source (CUserBase::m_10; x @+0x5c / y @+0x60) -
-//     part of the same Grunt.h fold.
-//   * CrcSink / CrcOwner are the Net/Multi version-reporter chain: WriteLog == ReportVersionMsg
-//     (0x101af0), a Net-subsystem method (CNetCmdMgr/Multi.cpp/NetMgr.h). Dissolving them
-//     needs the net-lane headers (net lane owns them this wave).
-//   * CrcLevelHolder is the level/grunt-roster holder (the flat grunt-ptr array @+0x68).
-// BuildGruntzCrcInfo has NO rel32 caller (a debug/CRC-sync dump), so the owner class is not
-// caller-recoverable; the reading-views below stay clean (no casts) until the fold lands.
+// IDENTITY RECOVERED + FOLD DONE (2026-07-14). Every ex-view is a real class now:
+//   * this           IS CNetSession (<Net/NetMgr.h>): the sync-session neighbour
+//     of the surrounding netcmdslot cluster; +0x04 is CNetSession::m_session (a
+//     CMulti*). PROVEN: the WriteLog receiver `this->m_4` is called with 0xb7e30
+//     == CMulti::ReportVersionMsg (via ILT thunk 0x1af0), so this->m_4 IS a CMulti,
+//     and CNetSession is the one class whose +0x04 is a CMulti (Init(void*,CMulti*,
+//     void*)). RVA 0xbf1d0 also sits inside the netcmdslot RVA band.
+//   * CrcSink        IS CMulti (m_session): its WriteLog IS CMulti::ReportVersionMsg.
+//   * CrcLevelHolder IS CGruntzMgr (m_session->Mgr(), == CMulti::m_4/CState::m_4);
+//     the flat grunt array `@+0x68` is CGruntzMgr::m_cmdGrid (a CTriggerMgr).
+//   * the grunt roster IS CTriggerMgr::m_grid[player*15 + g] (the 4x15 placed-cell
+//     grid at CTriggerMgr+0x1c; CTmCell == CGrunt), each cell a CGrunt*.
+//   * CrcGrunt       IS CGrunt (<Gruntz/Grunt.h>): m_170=m_entranceReason,
+//     m_3ec=m_health, m_3f0=m_stamina, m_3f4=m_toyTime, m_218=m_combatActive,
+//     m_21c=m_neighborValid, m_220=m_poweredUp, m_450=m_arrivalPhase, m_444=
+//     m_entranceCell.reason; m_198/m_19c/m_224/m_358 keep their canonical hex names.
+//   * CrcGruntPos    IS CGruntHud (CGrunt::m_10; x @+0x5c / y @+0x60).
+// BuildGruntzCrcInfo has NO rel32 caller (a debug/CRC-sync dump reached only via the
+// thunk band), so the owner was not caller-recoverable - it was recovered from the
+// +0x04 CMulti receiver and the RVA neighbourhood instead.
 #include <Mfc.h> // real MFC CString + <windows.h> wsprintfA (afx-first)
 #include <rva.h>
 #include <stdlib.h> // rand (0x11fee0), the per-grunt random nonce
 
-// @identity: CGrunt (<Gruntz/Grunt.h>); fold DEFERRED (grunt-behavior lane owns the header
-// this wave + type@+0x170/dir@+0x444 unmodeled). Only the dumped fields are named here.
-struct CrcGrunt {
-    char m_pad00[0x10];
-    struct CrcGruntPos* m_10; // +0x10  (x/y at +0x5c/+0x60)
-    char m_pad14[0x170 - 0x14];
-    i32 m_170; // +0x170  type id (switch input)
-    char m_pad174[0x198 - 0x174];
-    i32 m_198; // +0x198  toy
-    i32 m_19c; // +0x19c  tool override (type > 0x16)
-    char m_pad1a0[0x218 - 0x1a0];
-    i32 m_218; // +0x218  ia
-    i32 m_21c; // +0x21c  qat
-    i32 m_220; // +0x220  iic
-    i32 m_224; // +0x224  da
-    char m_pad228[0x358 - 0x228];
-    i32 m_358; // +0x358  iad
-    char m_pad35c[0x3ec - 0x35c];
-    i32 m_3ec; // +0x3ec  health
-    i32 m_3f0; // +0x3f0  stm
-    i32 m_3f4; // +0x3f4  ttl
-    char m_pad3f8[0x444 - 0x3f8];
-    i32 m_444; // +0x444  dir
-    char m_pad448[0x450 - 0x448];
-    i32 m_450; // +0x450  qax
-};
-struct CrcGruntPos {
-    char m_pad00[0x5c];
-    i32 m_5c; // +0x5c  x
-    i32 m_60; // +0x60  y
-};
-struct CrcLevelHolder {
-    char m_pad00[0x68];
-    void* m_68; // +0x68  flat grunt-pointer array base
-};
-// @identity: the Net/Multi version-reporter chain; WriteLog == ReportVersionMsg (0x101af0,
-// CNetCmdMgr/Multi). Fold DEFERRED - the net lane owns those headers this wave.
-struct CrcSink {
-    char m_pad00[0x4];
-    CrcLevelHolder* m_4;           // +0x04
-    void WriteLog(char* s, i32 z); // FUN_00101af0 == ReportVersionMsg __thiscall
-};
-SIZE_UNKNOWN(CrcSink);
-struct CrcOwner {
-    char m_pad00[0x4];
-    CrcSink* m_4; // +0x04
-    void BuildGruntzCrcInfo();
-};
+#include <Net/NetMgr.h>       // CNetSession (this; m_session)
+#include <Gruntz/Multi.h>     // CMulti (ReportVersionMsg, Mgr())
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr (m_cmdGrid)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid; CTmCell == CGrunt)
+#include <Gruntz/Grunt.h>     // CGrunt + CGruntHud (the dumped fields)
 
 extern "C" char g_emptyString[]; // 0x6293f4 (== "")
 
@@ -93,22 +53,22 @@ extern "C" char g_emptyString[]; // 0x6293f4 (== "")
 // megafunctions RollingBall/TerrainTileLoader): not source-steerable. See
 // docs/patterns/big-seh-fuzzy-desync.md + eh-state-numbering-base.md.
 RVA(0x000bf1d0, 0x249)
-void CrcOwner::BuildGruntzCrcInfo() {
+void CNetSession::BuildGruntzCrcInfo() {
     char szLine[0x100];
     szLine[0] = g_emptyString[0];
     memset(szLine + 1, 0, sizeof(szLine) - 1);
 
     CString info("crc info for all gruntz:\n------------------------\n");
 
-    i32 arrOff = 0x1c;
-    for (i32 player = 0; arrOff < 0x10c; player++) {
-        for (i32 g = 0; g < 0xf; g++, arrOff += 4) {
-            CrcGrunt* grunt = *(CrcGrunt**)((char*)m_4->m_4->m_68 + arrOff);
+    for (i32 player = 0; player < 4; player++) {
+        for (i32 g = 0; g < 0xf; g++) {
+            // the 4x15 placed-grunt cell grid on the world command manager
+            CGrunt* grunt = m_session->Mgr()->m_cmdGrid->m_grid[player * 0xf + g];
             if (grunt == 0) {
                 continue;
             }
             i32 rnd = rand();
-            i32 type = grunt->m_170;
+            i32 type = grunt->m_entranceReason;
             i32 wp;
             switch (type) {
                 case 1:
@@ -188,20 +148,20 @@ void CrcOwner::BuildGruntzCrcInfo() {
                 "[toy=%d][da=%d][wp=%d][iic=%d][qat=%d][qax=%d][ia=%d][iad=%d][rnd=%d]\n",
                 player,
                 g,
-                grunt->m_3ec,
+                grunt->m_health,
                 grunt->m_10->m_5c,
                 grunt->m_10->m_60,
-                grunt->m_444,
-                grunt->m_3f0,
-                grunt->m_3f4,
+                grunt->m_entranceCell.reason,
+                grunt->m_stamina,
+                grunt->m_toyTime,
                 tool,
                 grunt->m_198,
                 grunt->m_224,
                 wp,
-                grunt->m_220,
-                grunt->m_21c,
-                grunt->m_450,
-                grunt->m_218,
+                grunt->m_poweredUp,
+                grunt->m_neighborValid,
+                grunt->m_arrivalPhase,
+                grunt->m_combatActive,
                 grunt->m_358,
                 rnd
             );
@@ -209,10 +169,5 @@ void CrcOwner::BuildGruntzCrcInfo() {
             info += szLine;
         }
     }
-    m_4->WriteLog((char*)(const char*)info, 0);
+    m_session->ReportVersionMsg((char*)(const char*)info, 0);
 }
-
-SIZE_UNKNOWN(CrcGrunt);
-SIZE_UNKNOWN(CrcGruntPos);
-SIZE_UNKNOWN(CrcLevelHolder);
-SIZE_UNKNOWN(CrcOwner);

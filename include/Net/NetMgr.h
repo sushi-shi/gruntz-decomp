@@ -555,6 +555,10 @@ struct CNetSession {
     i32 Checksum();                       // c0590 (== CGameSyncSig::ComputeSignature)
     void ArmSlot(void* node, i32 parity); // per-frame arm (reloc-masked)
     void Step2437();                      // per-frame poke (reloc-masked)
+    // 0xbf1d0 (/GX): a CRC/sync-diagnostic dump - walk the level's 4x15 placed-grunt
+    // roster (m_session->Mgr()->m_cmdGrid->m_grid) and report a per-grunt CRC line
+    // through m_session->ReportVersionMsg. Defined out-of-line in BuildGruntzCrcInfo.cpp.
+    void BuildGruntzCrcInfo();
 
     // The engine routes global new/delete through RezAlloc/RezFree; model that as
     // the class allocator so `new CNetSession()` emits a direct RezAlloc call.
