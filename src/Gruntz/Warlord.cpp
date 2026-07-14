@@ -21,13 +21,13 @@
 // MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
 #include <Gruntz/Warlord.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>      // the shared CActReg (g_actionTable @0x644610)
-#include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
-#include <Gruntz/Grunt.h>       // CGrunt + CGruntHud/CAnimElem/g_animLookupTree/GruntRand
-                                // (the five Resolve*Animation bodies below)
-#include <Gruntz/AniElement.h>  // full CAniElement (ResolveIdleAnimation's desc walk)
-#include <Gruntz/TriggerMgr.h>  // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
-#include <Gruntz/SpriteRefTable.h>      // CSpriteRefTable::GetSel (g_gameReg->m_spriteFactory)
+#include <Gruntz/ActReg.h>         // the shared CActReg (g_actionTable @0x644610)
+#include <Gruntz/TypeKeyColl.h>    // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+#include <Gruntz/Grunt.h>          // CGrunt + CGruntHud/CAnimElem/g_animLookupTree/GruntRand
+                                   // (the five Resolve*Animation bodies below)
+#include <Gruntz/AniElement.h>     // full CAniElement (ResolveIdleAnimation's desc walk)
+#include <Gruntz/TriggerMgr.h>     // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable::GetSel (g_gameReg->m_spriteFactory)
 #include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader::BuildAssetNamespacePrefixes (m_curState)
 
 #include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
@@ -202,12 +202,11 @@ typedef enum WarlordBattleTag {
 // the FID-proven CMapStringToPtr::Lookup @0x1b8438 (the shared CEntranceSpriteMgr
 // models the embedded map as CMapStringToOb; corrected to CMapStringToPtr here). Kept
 // in the macro (not a cached local) so cl reloads m_38 per unrolled lookup, as retail.
-#define WARLORD_ANIM_MAP()                                                                          \
-    ((CMapStringToPtr*)&((CEntranceResMgr*)m_38->m_0c)->m_2c->m_10map)
+#define WARLORD_ANIM_MAP() ((CMapStringToPtr*)&((CEntranceResMgr*)m_38->m_0c)->m_2c->m_10map)
 
 // One unrolled anim-key lookup: build "GRUNTZ_" + m_54 + suffix (two CString temps),
 // look it up (out-param zeroed first so a miss stores 0), stash the handle.
-#define WARLORD_ANIM_LOOKUP(dst, suffix)                                                            \
+#define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
         void* h = 0;                                                                               \
         WARLORD_ANIM_MAP()->Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                                \
@@ -277,26 +276,26 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
     m_object->m_drawFillArg = sel;
 
     switch (owner) {
-    case WARLORDZ_KING:
-        m_54 = s_WARLORDZ_KING;
-        m_ownerTag = WARLORD_TAG_KING;
-        break;
-    case WARLORDZ_NAPOLEAN:
-        m_54 = s_WARLORDZ_NAPOLEAN;
-        m_ownerTag = WARLORD_TAG_NAPOLEAN;
-        break;
-    case WARLORDZ_PATTON:
-        m_54 = s_WARLORDZ_PATTON;
-        m_ownerTag = WARLORD_TAG_PATTON;
-        break;
-    case WARLORDZ_VIKING:
-        m_54 = s_WARLORDZ_VIKING;
-        m_ownerTag = WARLORD_TAG_VIKING;
-        break;
-    default:
-        // 0x8009 / 0x3e9 = the status-bar report id/tag (meaning unproven, kept literal).
-        g_gameReg->ReportError(0x8009, 0x3e9);
-        return;
+        case WARLORDZ_KING:
+            m_54 = s_WARLORDZ_KING;
+            m_ownerTag = WARLORD_TAG_KING;
+            break;
+        case WARLORDZ_NAPOLEAN:
+            m_54 = s_WARLORDZ_NAPOLEAN;
+            m_ownerTag = WARLORD_TAG_NAPOLEAN;
+            break;
+        case WARLORDZ_PATTON:
+            m_54 = s_WARLORDZ_PATTON;
+            m_ownerTag = WARLORD_TAG_PATTON;
+            break;
+        case WARLORDZ_VIKING:
+            m_54 = s_WARLORDZ_VIKING;
+            m_ownerTag = WARLORD_TAG_VIKING;
+            break;
+        default:
+            // 0x8009 / 0x3e9 = the status-bar report id/tag (meaning unproven, kept literal).
+            g_gameReg->ReportError(0x8009, 0x3e9);
+            return;
     }
 
     // Register the warlord's asset namespace, then resolve every per-state handle.

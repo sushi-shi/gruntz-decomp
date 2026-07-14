@@ -149,17 +149,17 @@ public:
     // The ctor resolves the eleven per-state animation handles by looking each
     // "GRUNTZ_<owner>_<state>" key up in the bound object's embedded name->handle map
     // and stashing the result here (0 when absent).
-    void* m_animIdle1;      // +0x58
-    void* m_animIdle2;      // +0x5c
-    void* m_animIdle3;      // +0x60
-    void* m_animIdle4;      // +0x64
-    void* m_animBattlecry1; // +0x68
-    void* m_animBattlecry2; // +0x6c
-    void* m_animBattlecry3; // +0x70
-    void* m_animJoy;        // +0x74
-    void* m_animDeath;      // +0x78
-    void* m_animMoving;     // +0x7c
-    void* m_animPanic;      // +0x80
+    void* m_animIdle1;         // +0x58
+    void* m_animIdle2;         // +0x5c
+    void* m_animIdle3;         // +0x60
+    void* m_animIdle4;         // +0x64
+    void* m_animBattlecry1;    // +0x68
+    void* m_animBattlecry2;    // +0x6c
+    void* m_animBattlecry3;    // +0x70
+    void* m_animJoy;           // +0x74
+    void* m_animDeath;         // +0x78
+    void* m_animMoving;        // +0x7c
+    void* m_animPanic;         // +0x80
     char m_pad84[0x88 - 0x84]; // +0x84
     // The threat-cooldown timer: a 64-bit start stamp (m_cooldownStamp) and window
     // (m_cooldownWindow), each stored as a manually zero-extended lo/hi i32 pair so
