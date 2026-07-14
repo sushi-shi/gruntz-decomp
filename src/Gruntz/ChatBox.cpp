@@ -14,6 +14,7 @@
 // externs so their calls are reloc-masked.
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Image/CImage.h>
+#include <Image/ImageSet.h> // CImageSet - the per-row animation record (m_page->m_10 map value)
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
@@ -21,7 +22,10 @@
 // (m_activeNode, a CMenuPage - the same class the node-walks dispatch into) and
 // blit the menu surface set (CDDSurface) hung off the owner.
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <Gruntz/LeafCue.h> // the per-row scroll timer IS the canonical LeafCue (CSndHost map value)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // m_page->m_pages: front/back/overlay CDDrawSurfacePair
+#include <DDrawMgr/DDrawSurfacePair.h>    // each pair's +0x2c CDDSurface + +0x1c src RECT
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_page->m_10: CImageRegistry (CMapStringToOb catalog)
+#include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (m_page) + CSndHost + LeafCue
 #include <Gruntz/MenuPage.h>
 
 // ---------------------------------------------------------------------------
@@ -32,61 +36,28 @@
 // accessors (dtor 0x183250, ReleaseAll 0x183990, RestoreFocus 0x1839d0, Click
 // 0x1840a0, SelectForward 0x1843f0, SelectBackward 0x1844d0, SelectFwd2 0x184230,
 // SelectBack2 0x184310, GetKey 0x1832d0) are the same RVAs. __thiscall.
-
-struct CChatCatalog;
-struct CChatRoster;
-struct CMenuRenderSet;
-
-// The on-screen page/owner reached through CChatBox::m_page: the menu surface set
-// (Post/Pre) at +0x04, the key->node catalog at +0x10, the sprite roster (scroll-
-// step) at +0x28.
-struct CChatPage {
-    char m_pad0[0x4];
-    CMenuRenderSet* m_4; // +0x04 -> the menu surface set (Flip/BltFast)
-    char m_pad8[0x10 - 0x8];
-    CChatCatalog* m_10; // +0x10 -> the key->node catalog
-    char m_pad14[0x28 - 0x14];
-    CChatRoster* m_28; // +0x28 -> sprite roster (scroll-step)
-};
-
-// A view of the CPtrList node layout (CPtrList::CNode is protected): pNext/pPrev/
-// data. The teardown walk follows pNext and frees each stored payload.
-struct CChatListNode {
-    CChatListNode* pNext;
-    CChatListNode* pPrev;
-    void* data;
-};
-
-// The per-row frame drawable each row blits through (0x153790). __thiscall.
-
-// The animation/frame record the row-advance lookups return: a frame table m_14
-// indexed by the current frame m_64, plus a clamp range m_64..m_68.
-struct CChatAnim {
-    void* vptr;
-    char pad4[0x14 - 0x4];
-    CImage** m_14; // +0x14 frame-drawable table
-    char pad18[0x64 - 0x18];
-    i32 m_64; // +0x64 current frame index
-    i32 m_68; // +0x68 max frame
-};
-
-// The key->record map (CMapWordToOb-style Lookup at 0x1b8008 / 0x1b8438). The
-// value type differs per instance (CChatAnim for the rows, LeafCue for scroll),
-// so the out-param is generic. __thiscall.
-// The key->node map is an MFC ::CMapStringToPtr (its Lookup is 0x1b8438).  There is NO COMDAT fold - MSVC5 has no /OPT:ICF.  CMapStringToOb's .obj is
-// [0x1b7e17, 0x1b8247) (its ctor stamps ??_7CMapStringToOb@@6B@ @0x1eafd4; Lookup
-// 0x1b8008); CMapStringToPtr's is [0x1b8247, 0x1b85b1) (ctor stamps 0x1eb014; Lookup
-// 0x1b8438).  Two classes, identical code - which is why every FID row there is AMBIG.
-// The binary names them itself: `python -m gruntz.analysis.mfc_class 0x1b8438`.
-
-// The on-screen catalog reached through CChatPage::m_10; the key->node map lives
-// at +0x10 inside it (the `add ecx,0x10` in the row-advance lookups).
-struct CChatCatalog {
-    char pad0[0x10];
-    CMapStringToPtr m_10map;
-    char pad14[0x64 - 0x14];
-    i32 m_64; // current frame/index, read straight through the lookup result
-};
+//
+// The owner reached through m_page is the canonical CSpriteFactoryHolder
+// (GameRegistry.h). Its three facets this box drives are all real engine classes
+// (the ex CChatPage/CMenuRenderSet/CChatCatalog/CChatRoster/CChatAnim/CChatListNode
+// views are DISSOLVED, 2026-07-14):
+//   +0x04 m_pages : CDDrawSubMgrPages   - the menu surface set (Flip/BltFast in Post).
+//                   Its +0x10/+0x14/+0x18 are front/back/overlay CDDrawSurfacePair,
+//                   each carrying a CDDSurface @+0x2c and the source's src RECT @+0x1c.
+//   +0x10 m_10    : CImageRegistry (== CDDrawWorkerRegistry) - the key->record catalog.
+//                   Its +0x10 map is a CMapStringToOb (Lookup 0x1b8008, disasm-proven -
+//                   NOT the 0x1b8438 CMapStringToPtr the ex-view guessed), whose values
+//                   are CImageSet animation records (m_frames @+0x14, index range
+//                   [m_minIndex @+0x64, m_maxIndex @+0x68]).
+//   +0x28 m_28    : CSndHost (== CDDrawSubMgrLeafScan) - the scroll-cue roster. Its +0x10
+//                   map is a CMapStringToPtr (Lookup 0x1b8438) of LeafCue timers, gated on
+//                   the +0x30 emit/busy word; each LeafCue carries the pooled
+//                   DSoundCloneInst (m_10), a last-play clock (m_14) and cooldown (m_18).
+//
+// The CPtrList node list (m_nodeList) is walked with the PUBLIC MFC accessors
+// GetHeadPosition()/GetNext(POSITION&) (both inline; GetNext advances the POSITION
+// then returns the void* payload) - byte-identical to the raw CNode chain walk and
+// with no need to reach the protected CPtrList::CNode.
 
 // DISSOLVED (Fable A2, 2026-07-14): the "CChatSprite" arg WAS the canonical
 // CMenuItem (<Gruntz/MenuItem.h>, via MenuPage.h): its "+0x44/+0x48 anchor with
@@ -98,43 +69,6 @@ struct CChatCatalog {
 extern i32 g_sndEnabled;       // 0x61ab20
 extern i32 g_sndCueTag;        // 0x61ab24
 extern "C" u32 g_killCueClock; // 0x6bf3c0
-
-// The per-row scroll timer record the scroll-step lookups return IS the canonical
-// LeafCue (<Gruntz/LeafCue.h>): the roster (CChatRoster, below) is CSndHost ==
-// CDDrawSubMgrLeafScan, whose +0x10 name-keyed CMapStringToPtr maps to LeafCue map
-// values. LeafCue's m_10 (the pooled DSoundCloneInst 'poke target'), m_14 (last-play
-// clock) and m_18 (cooldown interval) are exactly this record's three fields - the
-// former CChatTimer view is DISSOLVED (2026-07-14).
-
-// The on-screen sprite roster reached via CChatPage::m_28: a key->timer map at
-// +0x10 and a "busy" gate at +0x30.
-struct CChatRoster {
-    char pad0[0x10];
-    CMapStringToPtr m_10; // +0x10 key->timer map (Lookup 0x1b8438)
-    char pad14[0x30 - 0x14];
-    i32 m_30; // +0x30 busy gate
-};
-
-// The menu surface set the Post() flip/blit reaches via the owner (m_page->m_4):
-// three surface holders (a back buffer to Flip, a target + a source to BltFast),
-// each carrying its CDDSurface at +0x2c; the source holder also carries the blit
-// RECT at +0x1c. Field names are placeholders (offsets are load-bearing).
-struct CMenuSurf {
-    char pad0[0x2c];
-    CDDSurface* m_2c; // +0x2c owned surface
-};
-struct CMenuSurfSrc {
-    char pad0[0x1c];
-    i32 m_1c; // +0x1c blit RECT (4 ints, &m_1c)
-    char pad20[0x2c - 0x20];
-    CDDSurface* m_2c; // +0x2c source surface
-};
-struct CMenuRenderSet {
-    char pad0[0x10];
-    CMenuSurf* m_10;    // +0x10 back buffer (Flip)
-    CMenuSurf* m_14;    // +0x14 blit target
-    CMenuSurfSrc* m_18; // +0x18 blit source + RECT
-};
 
 // ===========================================================================
 // CChatBox
@@ -175,11 +109,9 @@ void CChatBox::Reset() {
 // free every node's owned payload, empty the list, clear the queue slot.
 RVA(0x00182b60, 0x3e)
 void CChatBox::Clear() {
-    CChatListNode* node = (CChatListNode*)m_nodeList.GetHeadPosition();
-    while (node) {
-        CChatListNode* cur = node;
-        node = node->pNext;
-        CMenuPage* payload = (CMenuPage*)cur->data;
+    POSITION pos = m_nodeList.GetHeadPosition();
+    while (pos) {
+        CMenuPage* payload = (CMenuPage*)m_nodeList.GetNext(pos);
         if (payload) {
             payload->~CMenuPage();
             operator delete(
@@ -212,11 +144,9 @@ i32 CChatBox::AddNode(void* node) {
 // find the message node whose key matches s (linear scan + strcmp).
 RVA(0x00182be0, 0x8d)
 i32 CChatBox::Find(const char* s) {
-    CChatListNode* node = (CChatListNode*)m_nodeList.GetHeadPosition();
-    while (node) {
-        CChatListNode* cur = node;
-        node = node->pNext;
-        CMenuPage* payload = (CMenuPage*)cur->data;
+    POSITION pos = m_nodeList.GetHeadPosition();
+    while (pos) {
+        CMenuPage* payload = (CMenuPage*)m_nodeList.GetNext(pos);
         if (payload) {
             CString key = payload->GetKey();
             if (strcmp(key, s) == 0) {
@@ -253,7 +183,7 @@ i32 CChatBox::Pre() {
     if (!m_activeNode) {
         return 0;
     }
-    i32 ctx = (i32)m_page->m_4->m_14;
+    i32 ctx = (i32)m_page->m_pages->m_backPair;
     if (!ctx) {
         return ctx;
     }
@@ -263,9 +193,11 @@ i32 CChatBox::Pre() {
 // flip the menu back buffer, then blit the source onto the target.
 RVA(0x00182ce0, 0x36)
 i32 CChatBox::Post() {
-    CMenuRenderSet* s = m_page->m_4;
-    s->m_10->m_2c->Flip(0);
-    s->m_14->m_2c->BltFast(0, 0, s->m_18->m_2c, &s->m_18->m_1c, 0x10);
+    CDDrawSubMgrPages* s = m_page->m_pages;
+    s->m_frontPair->m_surface->Flip(0);
+    s->m_backPair->m_surface->BltFast(
+        0, 0, s->m_overlayPair->m_surface, &s->m_overlayPair->m_srcRect, 0x10
+    );
     return 1;
 }
 
@@ -351,23 +283,27 @@ i32 CChatBox::ReplaceNode(void* n) {
 }
 
 // @early-stop
-// reloc-masked plateau: instruction stream byte-identical to retail; the residual
-// is only the differently-named Lookup extern (0x1b8008, another TU's CMap). ~95%.
-// advance row0 to the message keyed by `key`; cache its frame state.
+// scheduling wall (~95%): body byte-exact and the Lookup reloc now binds correctly to
+// CMapStringToOb::Lookup @0x1b8008 (masked in objdiff). Residual is a 1-instruction
+// reorder: cl emits the out-param zero-init (`a_ob = 0` -> `mov [slot],0`) BEFORE the
+// arg pushes, where retail defers it past them (`mov [esp+0xc],0` after push ecx/edx).
+// Independent-store scheduler choice, not steerable from source. Logic complete.
+// advance row0 to the message keyed by `key`; cache its frame state. The catalog map
+// is a CMapStringToOb (Lookup 0x1b8008); its CObject* value is a CImageSet record.
 RVA(0x00182df0, 0x69)
 i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
-    void* a_ob = 0;
+    CObject* a_ob = 0;
     m_page->m_10->m_10map.Lookup((const char*)key, a_ob);
-    CChatAnim* a = (CChatAnim*)a_ob;
+    CImageSet* a = (CImageSet*)a_ob;
     m_row0Anim = a;
     if (!a) {
         return 0;
     }
-    m_row0Frame = a->m_14[a->m_64];
-    m_row0FrameIdx = a->m_64;
+    m_row0Frame = a->m_frames[a->m_minIndex];
+    m_row0FrameIdx = a->m_minIndex;
     m_row0Period = x;
     m_row0Timer = x;
     m_row0Offset = y;
@@ -375,23 +311,24 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
 }
 
 // @early-stop
-// reloc-masked plateau: instruction stream byte-identical to retail; residual is
-// only the differently-named Lookup extern (0x1b8008, another TU's CMap). ~95%.
+// scheduling wall (~95%): same as AdvanceRow0 - body byte-exact, Lookup reloc binds
+// CMapStringToOb::Lookup @0x1b8008 (masked), residual is cl emitting the out-param
+// zero-init before the arg pushes vs retail deferring it past them. Logic complete.
 // advance row1 to the message keyed by `key`; cache its frame state.
 RVA(0x00182e60, 0x69)
 i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
-    void* a_ob = 0;
+    CObject* a_ob = 0;
     m_page->m_10->m_10map.Lookup((const char*)key, a_ob);
-    CChatAnim* a = (CChatAnim*)a_ob;
+    CImageSet* a = (CImageSet*)a_ob;
     m_row1Anim = a;
     if (!a) {
         return 0;
     }
-    m_row1Frame = a->m_14[a->m_64];
-    m_row1FrameIdx = a->m_64;
+    m_row1Frame = a->m_frames[a->m_minIndex];
+    m_row1FrameIdx = a->m_minIndex;
     m_row1Period = x;
     m_row1Timer = x;
     m_row1Offset = y;
@@ -405,7 +342,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
 // per-frame advance of both rows' scroll counters & frame indices.
 RVA(0x00182ed0, 0xbc)
 i32 CChatBox::Step(i32 delta) {
-    CChatAnim* a = m_row0Anim;
+    CImageSet* a = m_row0Anim;
     if (a) {
         if ((u32)m_row0Timer > (u32)delta) {
             m_row0Timer -= delta;
@@ -414,19 +351,19 @@ i32 CChatBox::Step(i32 delta) {
             i32 f = m_row0FrameIdx + 1;
             m_row0FrameIdx = f;
             CImage* v;
-            if (f >= a->m_64 && f <= a->m_68) {
-                v = a->m_14[f];
+            if (f >= a->m_minIndex && f <= a->m_maxIndex) {
+                v = a->m_frames[f];
             } else {
                 v = 0;
             }
             m_row0Frame = v;
             if (v == 0) {
-                m_row0Frame = a->m_14[a->m_64];
-                m_row0FrameIdx = a->m_64;
+                m_row0Frame = a->m_frames[a->m_minIndex];
+                m_row0FrameIdx = a->m_minIndex;
             }
         }
     }
-    CChatAnim* b = m_row1Anim;
+    CImageSet* b = m_row1Anim;
     if (b) {
         if ((u32)m_row1Timer > (u32)delta) {
             m_row1Timer -= delta;
@@ -436,15 +373,15 @@ i32 CChatBox::Step(i32 delta) {
         i32 f = m_row1FrameIdx + 1;
         m_row1FrameIdx = f;
         CImage* v;
-        if (f >= b->m_64 && f <= b->m_68) {
-            v = b->m_14[f];
+        if (f >= b->m_minIndex && f <= b->m_maxIndex) {
+            v = b->m_frames[f];
         } else {
             v = 0;
         }
         m_row1Frame = v;
         if (v == 0) {
-            m_row1Frame = b->m_14[b->m_64];
-            m_row1FrameIdx = b->m_64;
+            m_row1Frame = b->m_frames[b->m_minIndex];
+            m_row1FrameIdx = b->m_minIndex;
         }
     }
     return 1;
@@ -491,8 +428,8 @@ i32 CChatBox::ScrollRow0() {
     if (m_row0Key.GetLength() == 0) {
         return 0;
     }
-    CChatRoster* roster = m_page->m_28;
-    if (roster->m_30) {
+    CSndHost* roster = m_page->m_28;
+    if (roster->m_emitGate) {
         return 0;
     }
     void* t_ob = 0;
@@ -524,8 +461,8 @@ i32 CChatBox::ScrollRow1() {
     if (m_row1Key.GetLength() == 0) {
         return 0;
     }
-    CChatRoster* roster = m_page->m_28;
-    if (roster->m_30) {
+    CSndHost* roster = m_page->m_28;
+    if (roster->m_emitGate) {
         return 0;
     }
     void* t_ob = 0;
@@ -598,15 +535,7 @@ i32 CChatBox::HitTest4() {
     return n->SelectBack2() != 0;
 }
 
-// SIZE metadata for the .cpp-local engine views (CChatBox lives in ChatBox.h).
-SIZE_UNKNOWN(CChatAnim);
-SIZE_UNKNOWN(CChatCatalog);
-SIZE_UNKNOWN(CChatListNode);
-SIZE_UNKNOWN(CChatPage);
-SIZE_UNKNOWN(CChatPoker);
-SIZE_UNKNOWN(CChatRoster);
-SIZE_UNKNOWN(CMenuRenderSet);
-SIZE_UNKNOWN(CMenuSurf);
-SIZE_UNKNOWN(CMenuSurfSrc);
-
-// --- vtable catalog ---
+// All the .cpp-local engine views are DISSOLVED onto their canonical classes
+// (CSpriteFactoryHolder / CDDrawSubMgrPages / CDDrawSurfacePair / CImageRegistry /
+// CImageSet / CSndHost / LeafCue), which carry their own SIZE metadata in their
+// headers. CChatBox itself lives in ChatBox.h.

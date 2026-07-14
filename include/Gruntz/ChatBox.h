@@ -25,13 +25,17 @@
 // 0x184230, SelectBack2 0x184310, GetKey 0x1832d0) are the same RVAs as CMenuPage's.
 class CMenuPage;
 
-// The on-screen "page"/owner object reached through m_page (render surface set at
-// +0x04, key->node catalog at +0x10, sprite roster at +0x28). Defined in ChatBox.cpp.
-struct CChatPage;
+// The on-screen "page"/owner object reached through m_page IS the canonical
+// CSpriteFactoryHolder (the CState::m_c render/resource holder, <Gruntz/GameRegistry.h>):
+// its +0x04 render set (m_pages, CDDrawSubMgrPages), +0x10 image registry (m_10,
+// CImageRegistry == CDDrawWorkerRegistry) and +0x28 sound/cue host (m_28, CSndHost ==
+// CDDrawSubMgrLeafScan) are exactly the render/catalog/roster facets this box drives.
+// ChatBox.cpp includes GameRegistry.h + the three facet headers.
+struct CSpriteFactoryHolder;
 
-// Per-row animation record (frame table + clamp range) and per-row frame drawable
-// (Blit 0x153790); both defined in ChatBox.cpp.
-struct CChatAnim;
+// Per-row animation record: the canonical CImageSet (<Image/ImageSet.h>) - each advance
+// caches m_frames[m_minIndex]; Step clamps the frame index to [m_minIndex, m_maxIndex].
+class CImageSet;
 class CImage; // Image/CImage.h
 
 // ---------------------------------------------------------------------------
@@ -74,12 +78,10 @@ public:
     i32 OnFlag10000000(); // 0x183130  page FocusBackwardN
     i32 OnFlag20000000(); // 0x183150  page FocusForwardN
 
-    CChatPage* m_page; // +0x00 parent/page back pointer (render set / catalog / roster).
-                       //       [Settled identity: the page IS the CState::m_c
-                       //       CSpriteFactoryHolder (MenuRegion::Init @0x182ab0 types the
-                       //       stored arg CSpriteFactoryHolder*); the CChatPage view's
-                       //       +0x04/+0x10/+0x28 facets re-open the DDrawSubMgr-cluster
-                       //       identity knot, so the retype is deferred to that lane.]
+    CSpriteFactoryHolder* m_page; // +0x00 parent/page back pointer == the CState::m_c
+                                  //       resource holder (MenuRegion::Init @0x182ab0 stores
+                                  //       a CSpriteFactoryHolder*): the box drives its +0x04
+                                  //       render set, +0x10 image registry, +0x28 cue host.
     i32 m_4;           // +0x04  (Init seeds it with the HWND; otherwise only zeroed)
     // +0x08..+0x1f: the region rect + 2 scalars (retail Init @0x182ab0 CopyRects the
     // rect arg into +0x08 and stores the two i32 args at +0x18/+0x1c).
@@ -93,13 +95,13 @@ public:
     CMenuPage* m_activeNode; // +0x40 queued/active node slot (a CMenuPage)
     CString m_row0Key;       // +0x44 row0 font/asset key
     CString m_row1Key;       // +0x48 row1 font/asset key
-    CChatAnim* m_row0Anim;   // +0x4c row0 current message/animation record
+    CImageSet* m_row0Anim;   // +0x4c row0 current message/animation record (CImageSet)
     CImage* m_row0Frame;     // +0x50 row0 current frame drawable (Blit)
     i32 m_row0Period;        // +0x54 row0 frame-advance reload period
     i32 m_row0Timer;         // +0x58 row0 frame-advance countdown
     i32 m_row0Offset;        // +0x5c row0 horizontal draw offset
     i32 m_row0FrameIdx;      // +0x60 row0 index into the frame table
-    CChatAnim* m_row1Anim;   // +0x64 row1 current message/animation record
+    CImageSet* m_row1Anim;   // +0x64 row1 current message/animation record (CImageSet)
     CImage* m_row1Frame;     // +0x68 row1 current frame drawable (Blit)
     i32 m_row1Period;        // +0x6c row1 frame-advance reload period
     i32 m_row1Timer;         // +0x70 row1 frame-advance countdown
