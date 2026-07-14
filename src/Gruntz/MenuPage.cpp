@@ -39,18 +39,26 @@ struct CMenuListNode {
     CMenuItem* data;
 };
 
-// The catalog map reached through m_owner->m_catalog->m_map (CMapStringToPtr::Lookup, 0x1b8008).
-// The catalog map reached through m_0->m_10->m_10 (CMapStringToPtr::Lookup, 0x1b8008).
-// The string->item map base is an MFC CMapStringToOb (Lookup @0x1b8438); cast at the call.
+// The name->page catalog reached through m_owner->m_catalog->m_map. Disasm of Configure
+// (0x1832f0) pins the chain: `mov edx,[this]` (m_owner @+0x00) -> `mov ecx,[edx+0x10]`
+// (m_catalog @m_owner+0x10) -> `add ecx,0x10` (&m_map @m_catalog+0x10) -> call 0x1b8008.
+// The LEAF is recovered: 0x1b8008 is CMapStringToOb::Lookup (mfc_class-verified; the band
+// table 0x1b8008=CMapStringToOb / 0x1b8438=CMapStringToPtr was INVERTED tree-wide), so the
+// map is the real MFC CMapStringToOb from <Mfc.h>. The two INTERMEDIATE holders remain
+// local structural views: m_owner is set from the template's +0x00 field (Configure:
+// `m_owner = (CMenuHost*)tmpl[0]`), a data pointer into an owning menu system that carries
+// no vtable stamp and no RTTI - the xref chase (disasm chain + callee mangling) recovers
+// the map but dead-ends on naming these two plain holder structs. Kept minimal (offsets +
+// code bytes load-bearing); not @identity-TODO since the polymorphic leaf IS the real class.
 SIZE_UNKNOWN(CMapStringToOb);
 struct CMenuCatalog {
     char pad0[0x10];
-    CMapStringToOb m_map; // +0x10 the string->item map base
+    CMapStringToOb m_map; // +0x10 the string->page map base (real MFC CMapStringToOb)
 };
 SIZE_UNKNOWN(CMenuCatalog);
 struct CMenuHost {
     char pad0[0x10];
-    CMenuCatalog* m_catalog; // +0x10 -> the catalog
+    CMenuCatalog* m_catalog; // +0x10 -> the catalog holder
 };
 SIZE_UNKNOWN(CMenuHost);
 
@@ -111,11 +119,9 @@ i32 CMenuPage::Configure(
     m_rowSpacing = t[7]; // tmpl+0x1c
     m_headGap = t[6];    // tmpl+0x18
     m_flags = flags;
-    // 4-dword block copy tmpl+0x8 -> this+0x34 (the layout rect L,T,R,B).
-    struct Geom4 {
-        i32 a, b, c, d;
-    };
-    *(Geom4*)&m_rectLeft = *(Geom4*)((char*)tmpl + 0x8);
+    // 16-byte block copy tmpl+0x8 -> this+0x34: the layout rect {L,T,R,B} (m_rectLeft..
+    // m_rectBottom IS a RECT), so the real type is RECT - no .cpp-local struct.
+    *(RECT*)&m_rectLeft = *(RECT*)((char*)tmpl + 0x8);
     m_offsetX = 0;
     m_offsetY = 0;
     CObject* slot_ob = 0;
