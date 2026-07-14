@@ -29,7 +29,7 @@ extern "C" u32 g_killCueClock; // 0x2bf3c0
 // reloc-masked (CStatusBarMgr vs LeafCuePlayer at the same 0x1360d0). Not source-
 // steerable (tried flat + nested guard forms). Logic complete.
 RVA(0x0001f940, 0x4c)
-i32 LeafCue::PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3) {
+i32 LeafCue::PlayIfElapsed(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (g_sndEnabled == 0) {
         return 0;
     }

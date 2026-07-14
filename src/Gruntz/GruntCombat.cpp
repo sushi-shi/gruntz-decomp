@@ -187,7 +187,7 @@ static void GruntScratchTeardown() {
 // DEFINED in GruntzMgr.cpp (owner TU); plain C++ extern here.
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA @0x61ab24
 // (The flat `extern "C" PlayIfElapsed` alias is GONE: thunk 0x25fe IS
-// ?PlayIfElapsed_01f940@LeafCue@@ - retail loads the looked-up cue into ecx and
+// ?PlayIfElapsed@LeafCue@@ - retail loads the looked-up cue into ecx and
 // __thiscalls it; callers now call the real method on the cue.)
 
 // The GAME_ATTACK sound cue tag (const char*). The other spell-effect key
@@ -228,7 +228,7 @@ enum SpellzEffect {
 
 // (CombatCue is GONE - it was LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem
 //  owner, m_14 last-fire clock, m_18 cooldown - and its throttled fire is the real
-//  ?PlayIfElapsed_01f940@LeafCue@@. CombatSprInner/CombatSprCat are GONE - the
+//  ?PlayIfElapsed@LeafCue@@. CombatSprInner/CombatSprCat are GONE - the
 //  world holder + cue host are the canonical CSpriteFactoryHolder / CSndHost, and
 //  the launch-sound map is CMapStringToPtr: every LK Lookup in 0x597a0 calls
 //  0x1b8438 (the Ptr band) - the old `CMapStringToOb m_10` bound the WRONG library
@@ -260,7 +260,7 @@ extern "C" i32 g_curPlayer; // _g_644c54 handicap owner id
 // (CombatConvCue/CombatConvLookup are GONE - retail loads the m_158->m_0c->m_28
 //  cue host into ecx and __thiscalls 0x2cca == ?Lookup_05b7e0@CDDrawSubMgrLeafScan@@
 //  (the CSndHost, defined below in this very TU), then __thiscalls the looked-up
-//  LeafCue's PlayIfElapsed_01f940. The "__cdecl lookup" was a latent-ecx flat alias.)
+//  LeafCue's PlayIfElapsed. The "__cdecl lookup" was a latent-ecx flat alias.)
 
 // The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeColl.m_alloc[0..g_typeColl.m_grown) each get Reset.
@@ -531,7 +531,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         slot->m_10.Lookup(s_GAME_ATTACK, (void*&)sout); // CMapStringToPtr @0x1b8438
         if (sout != 0) {
             // retail reloads the looked-up cue into ecx and __thiscalls 0x1f940
-            sout->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+            sout->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
     }
 
@@ -1393,7 +1393,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             if (host->m_emitGate == 0) {
                 LeafCue* cc = (LeafCue*)host->Lookup_05b7e0(s_CONVERSIONHIT);
                 if (cc != 0) {
-                    cc->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                    cc->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
             return 0;

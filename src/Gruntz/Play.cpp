@@ -96,7 +96,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GruntzCmdMgr.h> // CGruntzCmdMgr::Spawn (HandleMousePress, waveP)
-#include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed_01f940 (HandleMousePress tab cue)
+#include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed (HandleMousePress tab cue)
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/ActionOptionsMenuBar.h> // canonical overlay (CTriggerMgr::m_overlay->m_active)
@@ -3957,7 +3957,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
             LeafCue* e = 0;
             set->m_10.Lookup("GAME_TABHIGHLIGHT1", (void*&)e); // Ptr map out-param idiom
             if (e != 0) {
-                e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             }
         }
         m_guts->RefreshState();

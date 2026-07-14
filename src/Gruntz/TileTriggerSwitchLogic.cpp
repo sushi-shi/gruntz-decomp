@@ -126,7 +126,7 @@ SIZE_UNKNOWN(CBrickTile);
 
 // The impact-sound lookup by name is the canonical name->cue lookup on the world
 // CSndHost (g_gameReg->m_world->m_28): CDDrawSubMgrLeafScan::Lookup_05b7e0(name)
-// returns the CObject cache value (a LeafCue), then LeafCue::PlayIfElapsed_01f940
+// returns the CObject cache value (a LeafCue), then LeafCue::PlayIfElapsed
 // plays it. (The ex CImpactSound view + the fake `Eng_FindSound` free-function extern
 // are dissolved onto the real classes - same thiscall thunk 0x2cca as GruntCombat.)
 
@@ -1254,7 +1254,7 @@ i32 CTileActionEvent::Process(i32 arg) {
                 LeafCue* snd =
                     (LeafCue*)g_gameReg->m_world->m_28->Lookup_05b7e0("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 if (snd != 0) {
-                    snd->PlayIfElapsed_01f940((i32)g_sndCueTag, 0, 0, 0);
+                    snd->PlayIfElapsed((i32)g_sndCueTag, 0, 0, 0);
                 }
             }
             if (brick->m_1ec == 5) {

@@ -3356,7 +3356,7 @@ static __inline void HiCueFind() {
     if (host->m_30 == 0) {
         void* obj = ((CDDrawSubMgrLeafScan*)host)->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
         if (obj) {
-            ((LeafCue*)obj)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+            ((LeafCue*)obj)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
     }
 }
@@ -3368,7 +3368,7 @@ static __inline void HiCueLookup() {
         void* out = 0;
         ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)out);
         if (out) {
-            ((LeafCue*)out)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+            ((LeafCue*)out)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
     }
 }

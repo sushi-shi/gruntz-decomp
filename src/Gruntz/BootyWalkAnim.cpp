@@ -207,7 +207,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 ((CMapStringToPtr*)&ss->m_findTable)
                     ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", (void*&)res);
                 if (res != 0) {
-                    ((LeafCue*)res)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                    ((LeafCue*)res)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
         }

@@ -12,7 +12,7 @@
 
 #include <rva.h>
 #include <Globals.h>
-#include <Gruntz/LeafCue.h>    // canonical LeafCue (PlayIfElapsed_01f940)
+#include <Gruntz/LeafCue.h>    // canonical LeafCue (PlayIfElapsed)
 #include <Gruntz/Grunt.h>      // canonical CGrunt (SetEntrancePos/SetArrivalTarget)
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (the world->m_68 tile-object grid)
 
@@ -119,7 +119,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             }
             if (F(F(P(this, 0xc), 0x28), 0x30) == 0) {
                 if (BadSelect(s_gameBadSelect) != 0) {
-                    ((LeafCue*)&g_sndCueTag)->PlayIfElapsed_01f940(0, 0, 0, 0);
+                    ((LeafCue*)&g_sndCueTag)->PlayIfElapsed(0, 0, 0, 0);
                 }
             }
             return 0;

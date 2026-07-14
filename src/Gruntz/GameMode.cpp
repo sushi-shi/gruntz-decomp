@@ -27,7 +27,7 @@
 #include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (the real m_world class)
 #include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_8 factory)
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
-#include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed_01f940 + m_10/m_14/m_18)
+#include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed + m_10/m_14/m_18)
 #include <rva.h>
 
 // (CState's ??_G scalar-deleting dtor - and the `operator delete` it reaches - moved to
@@ -457,7 +457,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                         host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
                         LeafCue* cue = (LeafCue*)cue_ob;
                         if (cue != 0) {
-                            cue->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                            cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                         }
                     }
                     shown = 1;

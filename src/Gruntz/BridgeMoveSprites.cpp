@@ -83,7 +83,7 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
                 if (set->m_30 == 0) {
                     LeafCue* e = (LeafCue*)set->Lookup_05b7e0("GAME_PYRAMIDMOVE");
                     if (e) {
-                        e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                        e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                     }
                 }
             }
@@ -98,7 +98,7 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
                 if (set->m_30 == 0) {
                     LeafCue* e = (LeafCue*)set->Lookup_05b7e0("LEVEL_WATERBRIDGEMOVE");
                     if (e) {
-                        e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                        e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                     }
                 }
             }

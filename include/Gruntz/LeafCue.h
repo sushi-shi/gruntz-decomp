@@ -51,7 +51,7 @@ struct LeafCue : public CLoadable {
 
     // The gated play entry (LeafCuePlay.cpp): when the throttle interval elapsed,
     // restamp the clock and forward the 4 args to the player's ConfigureItem.
-    i32 PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940 (ret 0x10)
+    i32 PlayIfElapsed(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940 (ret 0x10)
 
     DSoundCloneInst* m_10; // +0x10  the acquired/pooled DirectSound buffer (0 = unloaded)
     i32 m_14;              // +0x14  last draw-clock (throttle stamp)

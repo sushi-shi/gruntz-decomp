@@ -323,7 +323,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 ((CMapStringToPtr*)&ss->m_findTable)
                     ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", (void*&)res);
                 if (res != 0) {
-                    ((LeafCue*)res)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                    ((LeafCue*)res)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
             if (g_gameReg->m_levelRecord->m_levelIndex < 0x24) {
