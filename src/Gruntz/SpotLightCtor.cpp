@@ -229,7 +229,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                 i32 id;
                 s->Read(&id, 4);
                 CSpotFocus* out = 0;
-                i32 resolved = reg->m_world->m_8->m_objMap.Lookup((void*)id, (void*&)out);
+                i32 resolved = reg->m_world->m_8->m_objMap.Lookup((void*)id, (CGameObject*&)out);
                 if (resolved != 0) {
                     if (out == 0) {
                         resolved = 0;
