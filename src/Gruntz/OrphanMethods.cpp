@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
+#include <Rez/FrameClock.h> // g_timer200 (strike-effect threshold)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <Gruntz/State.h> // CState base (CState95 derives it; RetireScene/FadeInTitle @0xfa8f0/0xfa1f0)
@@ -90,8 +91,8 @@ i32 CState95::Step(i32 arg) {
 // frame index (5, or 0 once a global threshold is reached) unless the strike timer
 // has elapsed (which clears the latch), then seed the bound sprite's anim state
 // (m_4c frame / m_50 = 7 / m_58 = 1). Always runs the trailing helper, returns 0.
-extern "C" u32 g_frameTime;          // tick
-extern i32 g_strikeThresh;           // 0x645598
+extern "C" u32 g_frameTime; // tick
+// g_timer200 (0x245598 countdown timer, compared to 0x64) comes from <Rez/FrameClock.h>.
 extern "C" CGameRegistry* g_gameReg; // 0x64556c
 extern "C" void Helper2914();        // 0x2914 (ILT thunk)
 
@@ -129,7 +130,7 @@ i32 CStrikeEffect::Tick() {
     if (m_118 != 0) {
         i32 idx = 5;
         if ((i64)(u32)g_frameTime - m_120 < m_128) {
-            if ((u32)g_strikeThresh >= 0x64) {
+            if ((u32)g_timer200 >= 0x64) {
                 idx = 0;
             }
         } else {

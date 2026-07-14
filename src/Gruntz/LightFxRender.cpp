@@ -23,6 +23,7 @@
 #include <Gruntz/TriggerMgr.h>   // g_gameReg->m_cmdGrid (+0x68): CTriggerMgr::ResetGroup @0x79520
 #include <Gruntz/Play.h>         // LfxMgr::m_2c draw context: CPlay::ResetGoals @0xd5f00
 #include <rva.h>
+#include <Rez/FrameClock.h> // g_timer100 (detail threshold)
 
 // The held surface (LfxBorderCtx::m_08 / CDDSurface::m_08) is the real
 // IDirectDrawSurface COM interface: `s->m_08->Unlock(0)` dispatches through slot 32
@@ -150,10 +151,10 @@ extern i32 g_bDown; // blue  down-shift
 // Engine globals the resize repaint path reads (reloc-masked DIR32 loads):
 //   g_frameTime - the running game clock (low 32 bits of the engine ms counter)
 //   g_curPlayer - the current area / world index
-//   g_645594 - a frame-quality / detail threshold (>=0x32 picks the live color)
+//   g_timer100 - a frame-quality / detail threshold (>=0x32 picks the live color)
 extern "C" u32 g_frameTime; // canonical ?g_clock@@3IA (unsigned; <Gruntz/TriggerMgr.h> et al.)
 extern "C" i32 g_curPlayer;
-extern i32 g_645594;
+// g_timer100 (0x245594, C++ linkage) comes from <Rez/FrameClock.h>.
 
 // Pack an 8-bit (r,g,b) constant triple into a screen-native 16-bit pixel.
 static inline u16 Pack(i32 r, i32 g, i32 b) {
@@ -338,7 +339,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 }
                 continue;
             }
-            if (g_645594 >= 0x32) {
+            if (g_timer100 >= 0x32) {
                 CSpriteRef* node = m_mgr->m_74->GetA(desc->m_1f4);
                 if (node == 0) {
                     *dst = 0;

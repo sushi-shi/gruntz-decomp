@@ -23,6 +23,7 @@
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_cmdGrid): FindGruntAt @0x75c60, CellDispatch @0x6bcb0
 
 #include <math.h> // sqrt - inlines to fsqrt at /O2; the (int)double casts lower to __ftol
+#include <Rez/FrameClock.h> // g_timer200 (strike/leg deadline threshold)
 
 // CPathHazard's own Tick / ForwardTick now dispatch its added virtuals directly
 // (`this->Tick/Arrive/BeginLeg/HitTest()`): CUserLogic is modeled at its full 16
@@ -56,7 +57,7 @@
 // (?g_strikeClock@@3HA / ?g_pathLegTag@@3HA) that nothing defines. Both were guaranteed
 // unresolved externals; objdiff masked the reloc so they scored 100%.
 extern "C" u32 g_frameTime; // 0x645588  running game clock (strike/leg deadlines poll it)
-extern i32 g_strikeThresh;  // 0x645598 (compared to 0x64)
+// g_timer200 (0x245598, signed-compared to 0x64) comes from <Rez/FrameClock.h>.
 
 // The sibling hazard reads its bound CGameObject (m_10) directly: the draw trio
 // (+0x4c sprite-ref / +0x50 state / +0x58 active), screen pos (+0x5c/+0x60), the
@@ -393,7 +394,7 @@ i32 CPathHazard::SiblingTick() {
         i64 elapsed = (i64)(u32)g_frameTime - m_strikeDeadline;
         if (elapsed >= m_strikeWindow) {
             m_strikeArmed = 0;
-        } else if (g_strikeThresh < 0x64) {
+        } else if (g_timer200 < 0x64) {
             sel = 0;
         }
         CGameObject* o = m_object;

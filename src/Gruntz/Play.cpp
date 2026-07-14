@@ -18,7 +18,7 @@
 //
 //   if (m_inGame) {                  // ---- MAIN in-game frame ----
 //       StepInputA(); StepWorldB(); ViewPreStep(m_c->m_24);
-//       g_killCueClock=g_645580; g_engineFrameDelta=g_frameDelta;     // mirror the draw clock
+//       g_killCueClock=g_lastNow; g_engineFrameDelta=g_frameDelta;     // mirror the draw clock
 //       DRAW_WORLD();                             // shared world-draw block
 //       <AMBIENT-cue timer +0x3f8, 0x1f4ms, toggles m_cueToggle -> PlayCueAt 0x8128>
 //       MarkerBegin(now); GutsStep();             // m_beginMarker marker + m_guts step
@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Rez/FrameClock.h> // g_lastNow / g_frameTicks (frame-clock band)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/AreaMgr.h> // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode, waveP)
 #include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader (BuildAssetNamespacePrefixes, waveP)
@@ -437,7 +438,7 @@ i32 CPlay::Render() {
         StepWorldB();                    // world/camera sub-step B
         StepGridWalk((i32)g_frameDelta); // 0x2e2d  frame-grid advance (was fake "PreStep")
 
-        g_killCueClock = g_645580; // mirror the draw clock
+        g_killCueClock = g_lastNow; // mirror the draw clock
         g_engineFrameDelta = g_frameDelta;
 
         // --- shared world-draw block #1 ---
@@ -781,7 +782,7 @@ alt2:
 // Shared singletons + the per-mode/per-area globals (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------
 // The DRAW-CLOCK MIRROR PAIR - DEFINED HERE (owner = the producer). This TU is the only
-// writer: every frame it does `g_killCueClock = g_645580; g_engineFrameDelta = g_frameDelta;`, i.e. it
+// writer: every frame it does `g_killCueClock = g_lastNow; g_engineFrameDelta = g_frameDelta;`, i.e. it
 // snapshots the WAP32 frame clock (now / delta) into the pair the whole game reads to
 // gate animations (`clk - m_last >= m_interval`). ~15 TUs consumed them and NONE defined
 // them, under FIVE names between them: _g_killCueClock and _g_6bf3c0 for 0x2bf3c0 (plus
@@ -798,7 +799,7 @@ extern "C" {
 }
 DATA(0x002bf3c0)
 extern "C" {
-    u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_645580 / g_lastNow)
+    u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_lastNow)
 }
 
 DATA(0x00245270)
@@ -806,7 +807,7 @@ extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
 // extern "C" to hit the definition's C-linkage name _g_645570 (GruntzMgr.cpp, typed
 // DirectInputMgr2*); a plain C++ extern emitted ?g_645570@@3PAXA - unresolved.
 extern "C" void* g_645570;          // DAT_00645570
-extern "C" i32 g_64558c;            // DAT_0064558c
+// g_frameTicks (0x24558c) comes from <Rez/FrameClock.h>.
 extern "C" i32 g_64e35c;            // DAT_0064e35c
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
 // (0x612618 - the last-loaded level number, init -1 - is DEFINED below as
@@ -898,7 +899,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // ---- 1) reset prior-level scroll/area globals ----
     I32(self, 0x484) = 1;
     g_frameDelta = 0;
-    g_645580 = 0;
+    g_lastNow = 0;
     g_frameTime = 0;
     g_6455f0 = 0;
     if (level > 0x64) {
@@ -949,7 +950,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         } while (--n);
     }
 
-    g_killCueClock = g_645580;
+    g_killCueClock = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
 
     // reset the 4 team blocks at host->m_150 (stride 0x238): single-mode primes
@@ -991,7 +992,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     ((CBattlezData*)PTR(g_gameReg, 0x7c))->Init();
     ((CPtrList*)((char*)PTR(g_gameReg, 0x6c) + 0x1c))->RemoveAll();
     ((CGruntzCmdMgr*)PTR(g_gameReg, 0x6c))->DrainBase();
-    g_64558c = 0;
+    g_frameTicks = 0;
     I32(self, 0x1bc) = 0;
     I32(PTR(self, 0x4), 0x130) = 0;
 
@@ -2715,7 +2716,7 @@ void CPlay::DrawWorldFrame() {
     if (m_c->m_24->m_mainPlane != 0) {
         ((CPlaneRender*)m_c->m_24->m_mainPlane)->CenterScrollA();
     }
-    g_killCueClock = g_645580;
+    g_killCueClock = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
     m_c->m_childGroup->TickKillCues_159a70(0); // m_c->m_8->vtbl[+0x24](0)
     m_4w()->m_68->LoadTeleporterGooConfig(
@@ -2743,7 +2744,7 @@ RVA(0x000c9cc0, 0x12e)
 i32 CPlay::DrawWorldFrames() {
     i32 delta = (i32)g_frameDelta;
     i32 steps = (i32)((u32)delta / FIXED_SUBSTEP_MS); // 0x38e38e39 magic-div by 18
-    i32 now = (i32)g_645580;
+    i32 now = (i32)g_lastNow;
     i32 accum = (i32)g_frameTime;
     i32 rem = delta - steps * FIXED_SUBSTEP_MS;
     i32 saveDelta = delta; // [esp+0x1c]

@@ -92,6 +92,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Dsndmgr/DirectSoundMgr.h>
 extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <rva.h>
+#include <Rez/FrameClock.h> // g_frameTicks (grunt birth-frame stamp)
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -375,8 +376,8 @@ CGrunt::~CGrunt() {
 // The default entrance-cell record + the +0x438 datum the ctor copies in (the
 // CMovingLogic motion helper + bound constants are defined in Grunt.h). Reloc-masked.
 extern i32 g_gruntDefEntranceCell[3]; // 0x6448e8 (default entrance-cell record)
-extern "C" i32 g_64558c;              // 0x64558c  the per-frame counter (RezMgr g_frameTicks); the
-                                      // ctor stamps it into m_438 as the grunt's birth frame
+// g_frameTicks (0x24558c per-frame counter) comes from <Rez/FrameClock.h>; the ctor
+// stamps it into m_438 as the grunt's birth frame.
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // CGrunt::Update() @0x16ea90 (__thiscall) the ctor fires after the motion setup.
@@ -464,7 +465,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     m_entranceCell.row = g_gruntDefEntranceCell[1];
     m_entranceCell.reason = g_gruntDefEntranceCell[2];
     m_434 = m_10->m_11c;
-    m_438 = g_64558c;
+    m_438 = g_frameTicks;
     m_10->m_e4 = 1;
     m_430 = 0;
     m_42c = 0;

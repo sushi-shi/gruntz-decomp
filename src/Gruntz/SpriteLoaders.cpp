@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Rez/FrameClock.h> // g_timer500 (draw-throttle counter)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
 #include <Image/CImage.h>
@@ -193,12 +194,12 @@ void CTimer::Reset() {
 
 // The clock + frame-gate globals the Tick/Draw paths read (external delinked
 // DATA, reloc-masked). g_frameTime is the running game clock; g_curPlayer a level
-// base index; g_6455a0 a draw-throttle frame counter; g_frameTime the start clock.
+// base index; g_timer500 a draw-throttle frame counter; g_frameTime the start clock.
 extern "C" {
     extern u32 g_frameTime;
 }
 extern "C" i32 g_curPlayer;
-extern "C" u32 g_6455a0; // 0x2455a0 canonical _g_6455a0 (DATA-bound in Multi.cpp)
+// g_timer500 (0x2455a0 draw-throttle counter) comes from <Rez/FrameClock.h>.
 
 // The grunt the expiry / under-attack notify fires target (external, reloc-masked).
 // ResolveDeathAnimation = "time up"; NotifyFortUnderAttack = "<60s remaining".
@@ -322,7 +323,7 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
     if (!m_running) {
         return 1;
     }
-    if (force == 0 && (u32)m_currentMs < 0x2710 && (u32)g_6455a0 >= 0xfa) {
+    if (force == 0 && (u32)m_currentMs < 0x2710 && (u32)g_timer500 >= 0xfa) {
         return 1;
     }
     if (m_frameMinTens) {

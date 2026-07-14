@@ -38,6 +38,7 @@
 #include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
+#include <Rez/FrameClock.h> // the frame-clock/timer band SaveState/LoadState/PerFrameTick stream
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (CPlay::m_guts; SetVideoMode resize hooks)
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
 #include <Gruntz/Attract.h>  // canonical CAttract (was a reduced local ODR-landmine twin)
@@ -248,7 +249,7 @@ extern i32 g_serialCounter;
 // SaveState/LoadState stream these; their canonical C++-linkage (?g_...@@3HA)
 // bindings live in the globals/lightfxrender units - reference those directly so the
 // DIR32 reloc pairs (an extern "C" _g_* twin would collide on the same RVA).
-extern i32 g_645594;  // ?g_645594@@3HA @0x245594 (lightfxrender)
+// (g_timer100 @0x245594, also C++-linkage and streamed here, now comes from <Rez/FrameClock.h>.)
 extern i32 g_jitterX; // ?g_jitterX@@3HA @0x2452a4 (was g_6452a4)
 extern i32 g_jitterY; // ?g_jitterY@@3HA @0x2452cc (was g_6452cc)
 extern i32 g_panMinX; // ?g_panMinX@@3HA @0x245508 (was g_645508)
@@ -260,12 +261,7 @@ namespace NetLobby {
     extern HWND g_curDlg_64557c;
 }
 extern "C" {
-    // The clock/scroll/warp globals SaveState streams through the archive.
-    extern "C" i32 g_64558c; // DAT_0064558c
-    extern i32 g_645590;     // DAT_00645590
-    extern i32 g_645598;     // DAT_00645598
-    extern i32 g_64559c;     // DAT_0064559c
-    extern i32 g_6455a0;     // DAT_006455a0
+    // The clock/scroll/warp timer globals SaveState streams live in <Rez/FrameClock.h>.
     DATA(0x002455e8)
     i32 g_monologoShown;
 }
@@ -498,10 +494,10 @@ CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
 // The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
-// stored into the game-side mirror g_645580/g_frameDelta); g_killCueClock/g_engineFrameDelta are the
+// stored into the game-side mirror g_lastNow/g_frameDelta); g_killCueClock/g_engineFrameDelta are the
 // draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
 extern "C" {
-    extern u32 g_645580;           // game-side now mirror (DAT_00645580)
+    // g_lastNow (game-side now mirror, 0x245580) comes from <Rez/FrameClock.h>.
     extern u32 g_frameDelta;       // game-side delta mirror (DAT_00645584)
     extern u32 g_frameTime;        // game-side abs clock (DAT_00645588)
     extern u32 g_engineFrameDelta; // draw-clock delta (cleared) - g_killCueClock is g_killCueClock
@@ -1481,7 +1477,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
 // clock (CGameMgr::InitializeTimeGlobal), optionally re-stamps the
 // draw clock (g_killCueClock = timeGetTime(), g_engineFrameDelta = 0) when the draw gate m_world is
 // set, and finally mirrors the freshly-refreshed engine clock into the game-side
-// pair (g_645580/g_frameDelta).
+// pair (g_lastNow/g_frameDelta).
 RVA(0x0008f620, 0x51)
 void CGruntzMgr::PerFrameTick() {
     if (m_curState && m_curState->Update() == 0x11) {
@@ -1495,7 +1491,7 @@ void CGruntzMgr::PerFrameTick() {
         g_engineFrameDelta = 0;
     }
 
-    g_645580 = g_wap32Now;
+    g_lastNow = g_wap32Now;
     g_frameDelta = g_wap32FrameDelta;
 }
 
@@ -1753,7 +1749,7 @@ void CGruntzMgr::ResetClockGlobals() {
 // the game-side now/delta/abs globals plus the draw-clock pair (reloc-masked).
 RVA(0x0008f7b0, 0x2b)
 void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
-    g_645580 = now;
+    g_lastNow = now;
     g_frameDelta = delta;
     g_frameTime = abs;
     g_killCueClock = now;
@@ -3308,15 +3304,15 @@ i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     ar->Write(&m_134, 4);
     ar->Write(&m_optionsCount, 4);
     ar->Write(&m_viewOriginL, 0x10); // the 0x10-byte view-origin block (+0x13c..+0x148)
-    ar->Write(&g_645580, 4);
+    ar->Write(&g_lastNow, 4);
     ar->Write(&g_frameDelta, 4);
     ar->Write(&g_frameTime, 4);
-    ar->Write(&g_64558c, 4);
-    ar->Write(&g_645590, 4);
-    ar->Write(&g_645594, 4);
-    ar->Write(&g_645598, 4);
-    ar->Write(&g_64559c, 4);
-    ar->Write(&g_6455a0, 4);
+    ar->Write(&g_frameTicks, 4);
+    ar->Write(&g_timer32, 4);
+    ar->Write(&g_timer100, 4);
+    ar->Write(&g_timer200, 4);
+    ar->Write(&g_timer400, 4);
+    ar->Write(&g_timer500, 4);
     ar->Write(&g_traitorMode, 4);
     ar->Write(&g_gruntCreation, 4);
     ar->Write(&g_gruntDestruction, 4);
@@ -3363,15 +3359,15 @@ i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     ar->Read(&m_134, 4);
     ar->Read(&m_optionsCount, 4);
     ar->Read(&m_viewOriginL, 0x10); // view-origin block (+0x13c..+0x148)
-    ar->Read(&g_645580, 4);
+    ar->Read(&g_lastNow, 4);
     ar->Read(&g_frameDelta, 4);
     ar->Read(&g_frameTime, 4);
-    ar->Read(&g_64558c, 4);
-    ar->Read(&g_645590, 4);
-    ar->Read(&g_645594, 4);
-    ar->Read(&g_645598, 4);
-    ar->Read(&g_64559c, 4);
-    ar->Read(&g_6455a0, 4);
+    ar->Read(&g_frameTicks, 4);
+    ar->Read(&g_timer32, 4);
+    ar->Read(&g_timer100, 4);
+    ar->Read(&g_timer200, 4);
+    ar->Read(&g_timer400, 4);
+    ar->Read(&g_timer500, 4);
     ar->Read(&g_traitorMode, 4);
     ar->Read(&g_gruntCreation, 4);
     ar->Read(&g_gruntDestruction, 4);

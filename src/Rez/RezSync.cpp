@@ -15,6 +15,7 @@
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
+#include <Rez/FrameClock.h> // g_lastNow (the frame-clock now cell Init seeds)
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h>                      // CString + the MFC collection ctors/dtors (reloc-masked)
@@ -59,12 +60,10 @@ extern FreeNodePool g_coordPool; // 0x645540
 // the cell holds this manager. Spelling it `g_mgrPtr` with C++ linkage made a second,
 // unresolvable symbol (?g_mgrPtr@@3PAXA) for a cell 50 other TUs already share.
 extern "C" void* g_gameReg; // 0x64556c (typed CGruntzMgr* in its owner TU)
-// 0x245580 is the frame-clock "now" cell (RezMgr g_lastNow), extern-"C" tree-wide and
-// DEFINED in RezMgr.cpp. This TU had it as a private C++ ?g_startTick@@3IA - same cell,
-// divergent symbol, no storage. Init seeds it with the boot timeGetTime().
-extern "C" u32 g_645580;
+// g_lastNow (0x245580, the frame-clock "now" cell) is declared in <Rez/FrameClock.h>;
+// Init seeds it with the boot timeGetTime().
 extern i32 g_sndEnabled; // 0x61ab20
-// 0x645584 is extern-"C" tree-wide (RezMgr's g_lastDelta, the frame delta); a plain
+// 0x645584 is extern-"C" tree-wide (RezMgr's g_frameDelta, the frame delta); a plain
 // C++ `extern` here emitted the divergent ?g_frameDelta@@3HA.
 extern "C" i32 g_frameDelta; // 0x645584
 // 0x20fa70: the local protocol/rez-sync version word (canonical decl in <Net/NetMgr.h>,
@@ -766,7 +765,7 @@ i32 RezSync::Init(void* a1, char* a2) {
 
     // --- Phase 14: register mgr + probe 4 settings subobjects -------
     g_gameReg = this;
-    g_645580 = ::timeGetTime();
+    g_lastNow = ::timeGetTime();
     g_frameDelta = 0;
     for (i32 s = 0; s < 4; ++s) {
         if (!ProbeSettings150(&m_150[s * 0x238])) {

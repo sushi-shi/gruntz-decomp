@@ -12,6 +12,7 @@
 // Functions in strictly ascending retail-RVA order. Field names are placeholders;
 // only the OFFSETS + the per-method call/branch structure are load-bearing.
 #include <rva.h>
+#include <Rez/FrameClock.h> // the frame-clock/timer band the session loop reads/pumps
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (CWorld::m_68; ClearGridRange)
@@ -49,8 +50,7 @@
 DATA(0x002455fc)
 extern "C" i32 g_6455fc = 0;
 extern "C" i32 g_curPlayer; // 0x644c54  default cue wParam (= *host)
-DATA(0x00245580)
-extern "C" u32 g_645580;     // 0x645580  draw clock
+// g_lastNow (0x245580 draw clock) comes from <Rez/FrameClock.h>.
 extern "C" u32 g_frameDelta; // 0x645584  delta cap
 extern "C" u32 g_frameTime;  // 0x645588  accum clock
 
@@ -527,7 +527,7 @@ void ConstructFileIOGlobal() {
 // access (TF/MF macros) - the offset is the load-bearing fact, not the name.
 // =========================================================================
 
-// (g_645580/g_frameDelta/g_frameTime are DATA-declared u32 in the CMulti preamble above.)
+// (g_lastNow is in <Rez/FrameClock.h>; g_frameDelta/g_frameTime are declared in the CMulti preamble above.)
 extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
 // VTABLE CATALOGUE (2026-07-05, read from GRUNTZ.EXE .rdata @0x1ea42c): CNetMgr's own
@@ -833,7 +833,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     PollSession();
     srand(m_rngSeed);
     g_frameDelta = 0;
-    g_645580 = 0;
+    g_lastNow = 0;
     g_frameTime = 0;
     m_savedClock = 0;
     NetGameMgr()->m_5c->FreeNodes();
@@ -1027,7 +1027,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     srand(m_rngSeed);
     g_648cec = 0;
     g_frameDelta = 0;
-    g_645580 = 0;
+    g_lastNow = 0;
     g_frameTime = 0;
     m_savedClock = 0;
     m_5d0 = 0;
@@ -1059,7 +1059,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     this->RefreshSlotTable();
     srand(m_rngSeed);
     g_frameDelta = 0;
-    g_645580 = 0;
+    g_lastNow = 0;
     g_frameTime = 0;
     m_savedClock = 0;
     m_5d0 = 0;
@@ -1214,16 +1214,9 @@ i32 CMulti::Tick() {
 // operands reloc-mask).
 extern "C" u32 g_killCueClock;     // 0x6bf3c0
 extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
-DATA(0x0024558c)
-extern "C" i32 g_64558c; // 0x64558c  ambient frame counter
-DATA(0x00245590)
-extern "C" u32 g_645590;       // 0x645590  stat timer 1
-extern "C" i32 g_645594;       // 0x645594  (?g_645594@@3HA)
-extern "C" i32 g_strikeThresh; // 0x645598 (?g_strikeThresh@@3HA)
-DATA(0x0024559c)
-extern "C" u32 g_64559c; // 0x64559c  stat timer 4
-DATA(0x002455a0)
-extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
+// The 0x24558c..0x2455a0 countdown band (g_frameTicks/g_timer32/g_timer100/g_timer200/
+// g_timer400/g_timer500) comes from <Rez/FrameClock.h>. NOTE: the pump below proves
+// 0x245598 == g_timer200 (seed 0xc8 countdown), NOT the old "g_timer200" guess.
 
 // [McObj (17 padded slots) + McHost DISSOLVED 2026-07-13. The per-frame pump
 // dispatches m_c->m_8's slot 9 (+0x24, ONE arg = the frame delta) then slot 16
@@ -1264,10 +1257,10 @@ i32 CMulti::PumpA() {
         PumpAReset();
         return 1;
     }
-    g_645580 += 0x21;
+    g_lastNow += 0x21;
     g_frameTime += 0x21;
     g_frameDelta = 0x21;
-    g_killCueClock = g_645580;
+    g_killCueClock = g_lastNow;
     g_engineFrameDelta = 0x21;
     if (m_ambientInitDone == 0) {
         if ((i64)(u32)g_frameTime - *(i64*)&m_ambientTimerLo >= *(i64*)&m_ambientInterval) {
@@ -1289,36 +1282,36 @@ i32 CMulti::PumpA() {
     }
     ((CMultiLogicList*)Mgr()->m_cmdSubMgr)->Step20b3(m_curSlotId % 128);
     m_session->Step2437();
-    g_64558c++;
-    u32 t1 = g_645590 ? g_645590 : 0x32;
+    g_frameTicks++;
+    u32 t1 = g_timer32 ? g_timer32 : 0x32;
     if (g_frameDelta < t1) {
-        g_645590 = t1 - g_frameDelta;
+        g_timer32 = t1 - g_frameDelta;
     } else {
-        g_645590 = 0;
+        g_timer32 = 0;
     }
-    u32 t2 = g_645594 ? g_645594 : 0x64;
+    u32 t2 = g_timer100 ? g_timer100 : 0x64;
     if (g_frameDelta < t2) {
-        g_645594 = t2 - g_frameDelta;
+        g_timer100 = t2 - g_frameDelta;
     } else {
-        g_645594 = 0;
+        g_timer100 = 0;
     }
-    u32 t3 = g_strikeThresh ? g_strikeThresh : 0xc8;
+    u32 t3 = g_timer200 ? g_timer200 : 0xc8;
     if (g_frameDelta < t3) {
-        g_strikeThresh = t3 - g_frameDelta;
+        g_timer200 = t3 - g_frameDelta;
     } else {
-        g_strikeThresh = 0;
+        g_timer200 = 0;
     }
-    u32 t4 = g_64559c ? g_64559c : 0x190;
+    u32 t4 = g_timer400 ? g_timer400 : 0x190;
     if (g_frameDelta < t4) {
-        g_64559c = t4 - g_frameDelta;
+        g_timer400 = t4 - g_frameDelta;
     } else {
-        g_64559c = 0;
+        g_timer400 = 0;
     }
-    u32 t5 = g_6455a0 ? g_6455a0 : 0x1f4;
+    u32 t5 = g_timer500 ? g_timer500 : 0x1f4;
     if (g_frameDelta < t5) {
-        g_6455a0 = t5 - g_frameDelta;
+        g_timer500 = t5 - g_frameDelta;
     } else {
-        g_6455a0 = 0;
+        g_timer500 = 0;
     }
     m_c->m_childGroup->TickKillCues_159a70(g_frameDelta);
     m_c->m_childGroup->CollideBroadcast();

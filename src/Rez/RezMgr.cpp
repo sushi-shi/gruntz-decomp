@@ -9,6 +9,7 @@
 // SetFrameRate / ... @0x13ddc0.. moved to GameApp.cpp; MakeImageKey @0x13e5d0 to
 // DDSurface.cpp - see RezFile.cpp's breadcrumbs.)
 #include <Rez/RezMgr.h>
+#include <Rez/FrameClock.h>
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -23,51 +24,41 @@ extern i32 g_wap32FrameDelta; // 0x253c74 (ms since previous frame)
 
 // The per-frame accumulators PerFrameTick reads/writes are SHARED WAP32 globals
 // (0x245580..0x2455a0), not rezmgr file-statics: multi/projectile/gruntzmgr/
-// lightfxrender/RezSync/CreditsState all touch the same cells (Play.h documents
-// g_645580==g_lastNow, g_frameDelta==g_lastDelta).
+// lightfxrender/RezSync/CreditsState all touch the same cells (declared once in
+// <Rez/FrameClock.h>; g_frameDelta==0x245584, g_frameTime==0x245588).
 //
 // DEFINED HERE (owner = the producer): PerFrameTick below is the sole WRITER of the whole
 // band - it samples now, derives the delta, accumulates it, and decrements the five
 // countdown timers; every other TU only reads. Nothing in the tree defined any of them,
 // and each was ALSO spelled differently somewhere (?g_startTick@@3IA for 0x245580;
 // ?g_frameDelta@@3HA / @@3IA / @m4@@3HA for 0x245584; ?g_gruntCtor64558c@@3HA for 0x24558c),
-// so EVERY name was an unresolved external - N symbols, one cell, no storage. One name +
-// one linkage per address now; the semantic spelling stays available through the #defines
-// below, and renaming the block to those names tree-wide is still follow-up.
+// so EVERY name was an unresolved external - N symbols, one cell, no storage. One semantic
+// name + one linkage per address now; consumers pull the decls from <Rez/FrameClock.h>.
 extern "C" {
     DATA(0x00245580)
-    i32 g_645580 = 0;
+    i32 g_lastNow = 0; // last timeGetTime() sample
     DATA(0x00245584)
-    i32 g_frameDelta = 0;
-    // 0x245588 - the running accumulated frame time (g_accumMs). RezMgr is the SOLE
-    // writer (g_accumMs += dt, below) and owns this contiguous 0x245580-0x2455a0
-    // .bss band, so the definition lives here (was misfiled in Projectile.cpp).
+    i32 g_frameDelta = 0; // frame delta, clamped to <= 0x64
+    // 0x245588 - the running accumulated frame time. RezMgr is the SOLE writer
+    // (g_frameTime += dt, below) and owns this contiguous 0x245580-0x2455a0 .bss band,
+    // so the definition lives here (was misfiled in Projectile.cpp).
     DATA(0x00245588)
     i32 g_frameTime = 0;
     DATA(0x0024558c)
-    i32 g_64558c = 0;
+    i32 g_frameTicks = 0; // per-frame counter
     DATA(0x00245590)
-    i32 g_645590 = 0;
+    i32 g_timer32 = 0; // interval countdown, seed 0x32
     DATA(0x00245598)
-    i32 g_645598 = 0;
+    i32 g_timer200 = 0; // interval countdown, seed 0xc8
     DATA(0x0024559c)
-    i32 g_64559c = 0;
+    i32 g_timer400 = 0; // interval countdown, seed 0x190
     DATA(0x002455a0)
-    i32 g_6455a0 = 0;
+    i32 g_timer500 = 0; // interval countdown, seed 0x1f4
 }
 // 0x245594 keeps C++ linkage - all three users (this TU / gruntzmgr / lightfxrender)
-// agree on ?g_645594@@3HA, so there is no divergence to fix here.
+// agree on ?g_timer100@@3HA, so there is no divergence to fix here.
 DATA(0x00245594)
-i32 g_645594 = 0;
-#define g_lastNow g_645580       // 0x245580
-#define g_lastDelta g_frameDelta // 0x245584 (frame delta, clamped to <= 0x64)
-#define g_accumMs g_frameTime    // 0x245588 (running accumulated frame time)
-#define g_frameTicks g_64558c    // 0x24558c (per-frame counter)
-#define g_timer32 g_645590       // 0x245590 (seed 0x32 ms)
-#define g_timer100 g_645594      // 0x245594 (seed 0x64 ms)
-#define g_timer200 g_645598      // 0x245598 (seed 0xc8 ms)
-#define g_timer400 g_64559c      // 0x24559c (seed 0x190 ms)
-#define g_timer500 g_6455a0      // 0x2455a0 (seed 0x1f4 ms)
+i32 g_timer100 = 0; // interval countdown, seed 0x64
 
 // ---------------------------------------------------------------------------
 // RezMgr::PerFrameTick()  (virtual, vtable slot +0x10).
@@ -80,9 +71,9 @@ i32 g_645594 = 0;
 //   if (r != 0x11) {                     // 0x11 = a state that suppresses timing
 //       // clamp this frame's delta to <= 0x64 ms and accumulate
 //       int dt = g_wap32FrameDelta;
-//       g_lastNow = g_wap32Now;  g_lastDelta = dt;
-//       if (dt > 0x64) { dt = 0x64; g_lastDelta = 0x64; }
-//       g_accumMs += dt;
+//       g_lastNow = g_wap32Now;  g_frameDelta = dt;
+//       if (dt > 0x64) { dt = 0x64; g_frameDelta = 0x64; }
+//       g_frameTime += dt;
 //       // five interval countdown timers: reseed when expired, else subtract dt
 //       <timer32/100/200/400/500>
 //       g_frameTicks++;
@@ -119,12 +110,12 @@ i32 RezMgr::PerFrameTick() {
     if (r != 0x11) {
         u32 dt = g_wap32FrameDelta;
         g_lastNow = g_wap32Now;
-        g_lastDelta = dt;
+        g_frameDelta = dt;
         if (dt > 0x64) {
             dt = 0x64;
-            g_lastDelta = 0x64;
+            g_frameDelta = 0x64;
         }
-        g_accumMs += dt;
+        g_frameTime += dt;
 
         u32 v;
         v = (g_timer32 == 0) ? 0x32 : g_timer32;
