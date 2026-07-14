@@ -21,6 +21,7 @@
 // (m_activeNode, a CMenuPage - the same class the node-walks dispatch into) and
 // blit the menu surface set (CDDSurface) hung off the owner.
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <Gruntz/LeafCue.h> // the per-row scroll timer IS the canonical LeafCue (CSndHost map value)
 #include <Gruntz/MenuPage.h>
 
 // ---------------------------------------------------------------------------
@@ -70,7 +71,7 @@ struct CChatAnim {
 };
 
 // The key->record map (CMapWordToOb-style Lookup at 0x1b8008 / 0x1b8438). The
-// value type differs per instance (CChatAnim for the rows, CChatTimer for scroll),
+// value type differs per instance (CChatAnim for the rows, LeafCue for scroll),
 // so the out-param is generic. __thiscall.
 // The key->node map is an MFC ::CMapStringToPtr (its Lookup is 0x1b8438).  There is NO COMDAT fold - MSVC5 has no /OPT:ICF.  CMapStringToOb's .obj is
 // [0x1b7e17, 0x1b8247) (its ctor stamps ??_7CMapStringToOb@@6B@ @0x1eafd4; Lookup
@@ -98,16 +99,12 @@ extern i32 g_sndEnabled;       // 0x61ab20
 extern i32 g_sndCueTag;        // 0x61ab24
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
-// The sprite poke target hung off a scroll-timer's m_10 (0x1360d0). __thiscall.
-
-// The per-row scroll timer record the scroll-step lookups return: a sprite poke
-// target m_10, a last-tick m_14, and an interval m_18.
-struct CChatTimer {
-    char pad0[0x10];
-    DSoundCloneInst* m_10; // +0x10 sprite poke target
-    i32 m_14;              // +0x14 last tick the row scrolled at
-    i32 m_18;              // +0x18 scroll interval
-};
+// The per-row scroll timer record the scroll-step lookups return IS the canonical
+// LeafCue (<Gruntz/LeafCue.h>): the roster (CChatRoster, below) is CSndHost ==
+// CDDrawSubMgrLeafScan, whose +0x10 name-keyed CMapStringToPtr maps to LeafCue map
+// values. LeafCue's m_10 (the pooled DSoundCloneInst 'poke target'), m_14 (last-play
+// clock) and m_18 (cooldown interval) are exactly this record's three fields - the
+// former CChatTimer view is DISSOLVED (2026-07-14).
 
 // The on-screen sprite roster reached via CChatPage::m_28: a key->timer map at
 // +0x10 and a "busy" gate at +0x30.
@@ -500,7 +497,7 @@ i32 CChatBox::ScrollRow0() {
     }
     void* t_ob = 0;
     roster->m_10.Lookup((const char*)m_row0Key, t_ob);
-    CChatTimer* t = (CChatTimer*)t_ob;
+    LeafCue* t = (LeafCue*)t_ob;
     if (!t) {
         return 0;
     }
@@ -533,7 +530,7 @@ i32 CChatBox::ScrollRow1() {
     }
     void* t_ob = 0;
     roster->m_10.Lookup((const char*)m_row1Key, t_ob);
-    CChatTimer* t = (CChatTimer*)t_ob;
+    LeafCue* t = (LeafCue*)t_ob;
     if (!t) {
         return 0;
     }
@@ -608,7 +605,6 @@ SIZE_UNKNOWN(CChatListNode);
 SIZE_UNKNOWN(CChatPage);
 SIZE_UNKNOWN(CChatPoker);
 SIZE_UNKNOWN(CChatRoster);
-SIZE_UNKNOWN(CChatTimer);
 SIZE_UNKNOWN(CMenuRenderSet);
 SIZE_UNKNOWN(CMenuSurf);
 SIZE_UNKNOWN(CMenuSurfSrc);
