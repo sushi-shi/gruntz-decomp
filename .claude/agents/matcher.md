@@ -324,9 +324,19 @@ header, casting nothing. **`@identity-TODO` is permitted ONLY after you have RUN
 reported all applicable techniques above and each genuinely dead-ended** (e.g. the sole
 caller is an unreconstructed fn, or `this` is a sub-object of a parent no one has built
 yet). A bare "I couldn't name it" with no per-technique evidence is a rejected report —
-go back and finish the chase. If the identity IS found but the fold is blocked because
-another lane owns the canonical header, that is DEFERRED-FOLD work you report with the
-proven identity — NOT an `@identity-TODO` (the identity is known).
+go back and finish the chase.
+
+**Do NOT defer a fold because "another lane owns that header." EDIT THE HEADER AND DO THE
+FOLD.** (2026-07-14, user override.) You have the proven identity + the file context in
+hand RIGHT NOW; that context is the expensive thing. If two lanes edit the same canonical
+header, the orchestrator resolves the merge conflict at integration — a few minutes of
+`git` — which is FAR cheaper than deferring, losing your context, and forcing a fresh agent
+to re-derive the whole identity from scratch. So: finish every fold whose identity you've
+proven, editing whatever header (`GruntzMgr.h`, `Grunt.h`, `UserLogic.h`, `TriggerMgr.h`,
+etc.) it requires — add the real member, retype the field, home the body. The ONLY genuine
+defer is a still-UNRESOLVED identity (a real `@identity-TODO` after the full chase dead-
+ended) or a fold that needs ANOTHER function reconstructed first (state that dependency).
+Header co-ownership is never a reason to stop.
 
 ## Tool discipline — semantic questions go to `gruntz sema`, not grep
 
