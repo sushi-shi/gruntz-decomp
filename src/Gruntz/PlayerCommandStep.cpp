@@ -1,15 +1,22 @@
-// PlayerCommandStep.cpp - 0xd1b60, the player-command dispatch (CGruntzMgr-side).
-// __thiscall(a2..a8) ret 0x1c, returns int. Switches on (a4 & 0xff) - the command
-// code 0..10 - and applies it to the addressed grid grunt (m_4->m_68 slot grid,
-// 15-wide rows): spawn-probe (0), move/attack/tool variants (2..5,9,10), select/
-// deselect (6,7), and the conversion/pickup pre-pass (8). a2 = player id (== g_curPlayer
-// is "local"), a3 = column, a5/a6 = pixel target or a second grid cell, a7/a8 spare.
-// The grunt-state reset block (clear m_arrivalReroll* / m_tileClaimed / m_arrivalState /
-// mask m_arrivalFlags) repeats across most cases. All engine helpers + the manager/registry
-// globals are external (reloc-masked). The grid CELLS are now TYPED CGrunt (existing Grunt.h
-// members - the F(g,...) offset-cast macro is eliminated at every grunt site); node->m_10 is
-// the CGruntHud geometry source. A residual F()/P() remains only on the handler `this`
-// (CGruntzMgr) + `world` (CWorld) sub-objects, which need their real-class headers to type.
+// PlayerCommandStep.cpp - CPlay::ExecCommand @0xd1b60, the player-command
+// executor. __thiscall(a2..a8) ret 0x1c, returns int. Switches on (a4 & 0xff) -
+// the command code 0..10 - and applies it to the addressed grid grunt
+// (m_4->m_cmdGrid slot grid, 15-wide rows): spawn-probe (0), move/attack/tool
+// variants (2..5,9,10), select/deselect (6,7), and the conversion/pickup
+// pre-pass (8). a2 = player id (== g_curPlayer is "local"), a3 = column, a5/a6 =
+// pixel target or a second grid cell, a7/a8 spare.
+//
+// IDENTITY (ex the .cpp-local CCmdHandler view, DISSOLVED 2026-07-15): `this` IS
+// ::CPlay - the two retail callers (CGruntzCommand::ApplyOne/ApplyMask via thunk
+// 0x21e4) hand it the CGruntzCmdTarget, and the body's own fields prove the play
+// state: m_4 the CGruntzMgr (its +0x0c frameGate / +0x68 cmdGrid), m_c the world
+// holder (its m_28 CSndHost +0x30 busy gate), m_2f4 m_cursorFrame, m_2dc m_guts,
+// m_36c m_dragInhibit2, m_4f0 the highlight-busy gate - and its two helper thunks
+// are real methods on those receivers: 0x17a8 -> CPlay::SetCursorFrame @0xd1b30
+// (ecx=this @0xd26d3), 0x213f -> CStatusBarMgr::EnterHlRow @0x106820
+// (ecx=[this+0x2dc] @0xd26c6). The grunt-state reset block (clear
+// m_arrivalReroll* / m_tileClaimed / m_arrivalState / mask m_arrivalFlags)
+// repeats across most cases. All engine helpers are external (reloc-masked).
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Ints.h>
 
@@ -17,10 +24,10 @@
 #include <Globals.h>
 #include <Gruntz/LeafCue.h>    // canonical LeafCue (PlayIfElapsed)
 #include <Gruntz/Grunt.h>      // canonical CGrunt (SetEntrancePos/SetArrivalTarget)
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (the world->m_68 tile-object grid)
-
-#define F(base, o) (*(i32*)((char*)(base) + (o)))
-#define P(base, o) (*(char**)((char*)(base) + (o)))
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (the mgr's m_cmdGrid grid)
+#include <Gruntz/Play.h>          // canonical CPlay (the ex-CCmdHandler identity)
+#include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (CPlay::m_4)
+#include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr::EnterHlRow (m_guts, +0x2dc)
 
 // .rodata string literals (were bare (char*)0xADDR immediates; named so the operand
 // relocates like retail's `push offset` instead of an unrelocated `push imm32`).
@@ -28,20 +35,11 @@ static const char s_gameBadSelect[] = "GAME_BADSELECT";              // 0x612c28
 static const char s_grunt[] = "Grunt";                               // 0x60a9ec
 static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 
-// The world grid (m_4->m_68) is the real CTriggerMgr (TriggerMgr.h); its 15-wide
-// placed-cell grid lives at +0x1c (stride 4), reached cell-by-cell (the header models
-// the cells as opaque per-TU). GC(g)[idx] yields the CGrunt* cell. The per-command
-// engine helpers are the real reloc-masked CTriggerMgr methods (recovered via xref):
-//   PlaceObject 0x6b6d0, ClearCell 0x6e800, CellHitTest 0x6bea0, ApplyTriggerA 0x6dae0,
-//   ApplyTriggerB 0x6e120, ResetAll 0x78430, ResetCell 0x6bfd0.
-#define GC(g) ((CGrunt**)((char*)(g) + 0x1c))
-
-// This handler object (CGruntzMgr): m_4 = world (->m_68 grid, +0xc gate), m_c chain.
-struct CCmdHandler {
-    i32 Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8); // 0xd1b60
-    void NotifySelect(i32 a);                                             // 0x4017a8
-    void Defended(i32 a, i32 b);                                          // 0x40213f
-};
+// The world grid (m_4->m_cmdGrid) is the real CTriggerMgr (TriggerMgr.h); its
+// 15-wide placed-cell grid is the typed m_grid[0x3c] (cells = CGrunt). The
+// per-command engine helpers are the real reloc-masked CTriggerMgr methods:
+//   PlaceObject 0x6b6d0, ClearCell 0x6e800, CellHitTest 0x6bea0, ApplyTriggerA
+//   0x6dae0, ApplyTriggerB 0x6e120, ResetAll 0x78430, ResetCell 0x6bfd0.
 
 // Bute-config manager (g_buteMgr @ VA 0x6453d8 -> RVA 0x2453d8): read the defender-radius
 // value via the canonical CButeMgr::GetIntDef (0x171aa0, include/Bute/ButeMgr.h).
@@ -53,7 +51,7 @@ extern CButeMgr g_buteMgr;
 extern i32 g_sndCueTag;
 
 extern "C" i32 g_curPlayer;
-extern "C" char* g_gameReg; // ->m_134
+extern "C" CGameRegistry* g_gameReg; // ->m_134 / ->m_cmdGrid
 
 // Free engine helpers (reloc-masked).
 extern "C" {
@@ -79,25 +77,25 @@ extern "C" {
 // identical suffixes). The 11-case logic + grunt-state resets + cell lookups are
 // byte-faithful. Final-sweep permuter candidate (pure /O2 regalloc residue).
 RVA(0x000d1b60, 0xc2f)
-i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8) {
-    char* world = P(this, 4);
-    if (F(world, 0xc) != 0) {
+i32 CPlay::ExecCommand(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8) {
+    CGruntzMgr* mgr = m_4;
+    if (mgr->m_frameGate != 0) {
         return 0;
     }
     i32 res;
 
-// grid is re-derived per case as this->m_4->m_68: retail keeps `this` in a callee-
-// saved reg and re-reads m_4 inside each case (only case 0 reuses the gate's cached
-// `world` in eax); caching `world` across the whole switch would pin it in a callee-
-// saved reg and spill `this`. CSE collapses the repeats within a case.
-#define grid ((CTriggerMgr*)P(P(this, 4), 0x68))
+// grid is re-derived per case as this->m_4->m_cmdGrid: retail keeps `this` in a
+// callee-saved reg and re-reads m_4 inside each case (only case 0 reuses the
+// gate's cached `mgr` in eax); caching it across the whole switch would pin it
+// in a callee-saved reg and spill `this`. CSE collapses the repeats within a case.
+#define grid (m_4->m_cmdGrid)
     switch (a4 & 0xff) {
         default:
             return 1;
 
         case 0: {
-            // case 0 reuses the gate's cached world (eax) for the spawn probe.
-            i32 r = ((CTriggerMgr*)P(world, 0x68))
+            // case 0 reuses the gate's cached mgr (eax) for the spawn probe.
+            i32 r = mgr->m_cmdGrid
                         ->PlaceObject(
                             a2 & 0xff,
                             a5 & 0xffff,
@@ -115,12 +113,12 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                         );
             if (r != -1) {
                 if ((a2 & 0xff) == (u32)g_curPlayer) {
-                    // retail re-loads the grid from g_gameReg (0x64556c), not world.
-                    ((CTriggerMgr*)P(g_gameReg, 0x68))->ResetAll();
+                    // retail re-loads the grid from g_gameReg (0x64556c), not mgr.
+                    g_gameReg->m_cmdGrid->ResetAll();
                 }
                 return 1;
             }
-            if (F(F(P(this, 0xc), 0x28), 0x30) == 0) {
+            if (m_c->m_28->m_30 == 0) { // the sound host's busy/emit gate
                 if (BadSelect(s_gameBadSelect) != 0) {
                     ((LeafCue*)&g_sndCueTag)->PlayIfElapsed(0, 0, 0, 0);
                 }
@@ -130,7 +128,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
 
         case 2: {
             a2 &= 0xff;
-            CGrunt* g = GC(grid)[(a3 & 0xff) + a2 * 0xf];
+            CGrunt* g = grid->m_grid[(a3 & 0xff) + a2 * 0xf];
             if (g != 0 && g->m_entranceCommitted != 0) {
                 g->m_arrivalActive = 0;
             }
@@ -159,7 +157,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             // switch selector `a4 & 0xff` (which would spill the selector + add a frame).
             i32 isB = a4 & 4;
             u32 player = a2 & 0xff;
-            CGrunt* g = GC(grid)[(a3 & 0xff) + player * 0xf];
+            CGrunt* g = grid->m_grid[(a3 & 0xff) + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -224,7 +222,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
         }
 
         case 5: {
-            CGrunt* g = GC(grid)[(a2 & 0xff) * 0xf + (a3 & 0xff)];
+            CGrunt* g = grid->m_grid[(a2 & 0xff) * 0xf + (a3 & 0xff)];
             if (g == 0 || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -243,7 +241,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
         }
 
         case 6: {
-            CGrunt* g = GC(grid)[(a2 & 0xff) * 0xf + (a3 & 0xff)];
+            CGrunt* g = grid->m_grid[(a2 & 0xff) * 0xf + (a3 & 0xff)];
             if (g != 0) {
                 if (g->m_tileClaimed != 1) {
                     g->m_arrivalRerollLo = 0;
@@ -284,7 +282,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
         }
 
         case 7: {
-            CGrunt* g = GC(grid)[(a2 & 0xff) * 0xf + (a3 & 0xff)];
+            CGrunt* g = grid->m_grid[(a2 & 0xff) * 0xf + (a3 & 0xff)];
             if (g == 0 || g->m_tileClaimed == 0) {
                 return 1;
             }
@@ -302,10 +300,10 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
         case 8: {
             a2 &= 0xff;
             if (a2 == (u32)g_curPlayer) {
-                F(this, 0x4f0) = 0;
+                m_4f0 = 0;
             }
             i32 idx = (a3 & 0xff) + a2 * 0xf;
-            CGrunt* g = GC(grid)[idx];
+            CGrunt* g = grid->m_grid[idx];
             if (g != 0 && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
                 g->m_arrivalRerollLo = 0;
                 g->m_arrivalRerollWindowLo = 0;
@@ -316,12 +314,12 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
-            CGrunt* g2 = GC((CTriggerMgr*)P(P(this, 4), 0x68))[idx];
+            CGrunt* g2 = m_4->m_cmdGrid->m_grid[idx];
             i32 r;
             if (g2 == 0 || g2->m_entranceCommitted == 0) {
                 r = 0;
             } else {
-                r = PickupCheck(a7 & 0xff, 0, 0, 0, F(g_gameReg, 0x134) != 1);
+                r = PickupCheck(a7 & 0xff, 0, 0, 0, g_gameReg->m_134 != 1);
             }
             i32 sel;
             if (r == 0) {
@@ -333,16 +331,16 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 sel = 1;
             }
             if (a2 == (u32)g_curPlayer) {
-                F(this, 0x36c) = 0;
-                Defended(sel, F(this, 0x2f4));
-                NotifySelect(0);
+                m_dragInhibit2 = 0;
+                m_guts->EnterHlRow(sel, m_cursorFrame); // 0x213f, ecx = m_guts (+0x2dc)
+                SetCursorFrame(0);                      // 0x17a8, ecx = this
             }
             return r;
         }
 
         case 9: {
             u32 player = a2 & 0xff;
-            CGrunt* g = GC(grid)[(a3 & 0xff) + player * 0xf];
+            CGrunt* g = grid->m_grid[(a3 & 0xff) + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -357,7 +355,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 g->SetEntrancePos(1, 1);
             }
             u32 row = a5 & 0xffff, col = a6 & 0xffff;
-            CGrunt* g2 = GC((CTriggerMgr*)P(P(this, 4), 0x68))[col + row * 0xf];
+            CGrunt* g2 = m_4->m_cmdGrid->m_grid[col + row * 0xf];
             if (g2 == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
                 return 0;
@@ -404,7 +402,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
 
         case 10: {
             u32 player = a2 & 0xff;
-            CGrunt* g = GC(grid)[(a3 & 0xff) + player * 0xf];
+            CGrunt* g = grid->m_grid[(a3 & 0xff) + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -419,7 +417,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 g->SetEntrancePos(1, 1);
             }
             u32 row = a5 & 0xffff, col = a6 & 0xffff;
-            CGrunt* g2 = GC((CTriggerMgr*)P(P(this, 4), 0x68))[col + row * 0xf];
+            CGrunt* g2 = m_4->m_cmdGrid->m_grid[col + row * 0xf];
             if (g2 == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
                 return 0;
@@ -467,4 +465,3 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
     return 0;
 }
 #undef grid
-SIZE_UNKNOWN(CCmdHandler);

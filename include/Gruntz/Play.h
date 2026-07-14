@@ -491,6 +491,11 @@ public:
     // `item` (the 0x80e5..0x8104 ITEMCHEAT family; thunk 0x17a8); Flip returns the
     // AMBIENT%d variant index for the 0x8086 Monolith cheat (thunk 0x1df2).
     i32 SetCursorFrame(i32 item); // 0x0d1b30
+    // 0x0d1b60 (ret 0x1c; body in PlayerCommandStep.cpp) - the player-command
+    // executor (ex ?Dispatch@CCmdHandler@@ - that view WAS this play state; the
+    // CGruntzCommand::ApplyOne/ApplyMask thunk 0x21e4 dispatches it on the
+    // command target). Switches on (a4 & 0xff) over the mgr's m_cmdGrid board.
+    i32 ExecCommand(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8);
     i32 Flip();                   // 0x0da200
     // Level-lifecycle steps (ex the "CGameModeObj" view, GameModeObjLifecycle.cpp;
     // folded onto CPlay wave3-J - the +0x3a4/+0x2dc/+0x4fc/+0x1cc offsets pin it):

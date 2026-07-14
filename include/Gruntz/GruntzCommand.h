@@ -34,10 +34,15 @@ void* operator new(gz_size_t);
 // which nothing defines - 4 unresolved externals. Alias the real class (see GruntzCmdMgr.h).
 typedef CPtrList CGruntzCmdList;
 
-// The "apply" target each Apply*() passes the unpacked command params to (the
-// big CPlay command-executor at 0x0d1b60, ret 0x1c => 7 __thiscall args). It is
-// external to this TU (reloc-masked); modeled here as a method on a tiny opaque
-// helper so `mov ecx,p; push args...; call` falls out with no stack cleanup.
+// The "apply" target each Apply*() passes the unpacked command params to: it IS
+// the CPlay play state, and 0x0d1b60 is now ?ExecCommand@CPlay@@ (ret 0x1c,
+// 7 __thiscall args; PlayerCommandStep.cpp - the ex-CCmdHandler view). This
+// caller-side shim is KEPT (documented arg-shape view): ApplyOne/ApplyMask push
+// the packed char/i16 command fields UNEXTENDED (`mov dl,[eax+6]; push edx`),
+// which only a char/short-param callee decl reproduces - calling the real u32
+// signature would force movzx widening at both call sites (a byte regression).
+// Dissolving it needs the executor's true param types settled (the unextended
+// pushes suggest the ORIGINAL Exec took char/i16 params).
 SIZE_UNKNOWN(CGruntzCmdTarget);
 struct CGruntzCmdTarget {
     i32 Exec(char kind, char index, char a2, i16 a3, i16 a4, char a5, char a6);
