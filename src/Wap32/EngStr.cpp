@@ -23,6 +23,16 @@ extern "C" void EngStr_RenderText(
 
 // The render config the forwarder fetches: arg0->m_sub->m_10 is the config; its
 // +0x2c is the font draw-method pointer injected as the 4th render arg.
+//
+// @identity-TODO (foreign object, chase run + dead-ended): the forwarder's `obj` is arg0,
+// read purely by offset (obj->+0x04 sub -> +0x10 cfg -> +0x2c drawFn - disasm 0x115440). It
+// is NOT a single global: xref shows ~10 diverse UI callers (CMulti/CPlay/CGruntzMgr/
+// CStatusBarMgr) each pass their own register-sourced object as arg0; the `push 0x60c818`-
+// style operands in those callers are STRING args (font names "ARIAL"/"Font..."), not obj.
+// So obj is a per-caller WAP32 EngStr text-render object whose concrete class + its m_sub/m_cfg
+// sub-object classes are unmodeled in the corpus - recovering + folding this 3-level chain is a
+// WAP32-EngStr-family modeling effort beyond this view pass. Kept as a documented foreign
+// interface (offset-only access; no methods dispatched on it) pending that recovery.
 struct EngStrRenderCfg {
     char m_pad00[0x2c]; // +0x00
     void* m_drawFn;     // +0x2c

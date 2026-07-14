@@ -20,13 +20,17 @@ extern Font g_mediumFont;
 extern Font g_smallFont;
 extern Font g_tinyFont;
 
-// WapRect - the WAP32-LOCAL rect (16 bytes) the render worker takes by value, NOT
-// MFC CRect: its ctor 0x115b30 (via the 0x37c4 ILT thunk) is in the Wap32/EngStr
-// module range, does CopyRect(this,&src) then returns this - a Wap32 helper, not
-// NAFXCW (which lives at 0x1b9xxx). Kept as a local view.
+// WapRect IS the WAP32 CRect (<Wap32/Rect.h>, 16 bytes {left,top,right,bottom}): its
+// "0x115b30 converting ctor" is actually ??4CRect@@QAEAAU0@ABUtagRECT@@@Z ==
+// CRect::operator=(const tagRECT&) (disasm-confirmed - the 0x37c4 thunk target 0x115b30
+// carries that mangled name, and Rect.h already binds it). @deferred-fold: dissolving this
+// onto CRect requires the main pass to build a CRect then assign (`CRect t; t = *rc;` -> the
+// 0x115b30 operator=), which needs a CRect default ctor added to the SHARED <Wap32/Rect.h>;
+// that ripples to the matched Font.cpp CRect consumers (out of this lane's scope). Kept as a
+// local view modeling operator= as a converting ctor (same reloc-masked call to 0x115b30).
 struct WapRect {
     i32 left, top, right, bottom;
-    WapRect(const RECT& r); // 0x115b30 (Wap32-local, reloc-masked); the compiler-
+    WapRect(const RECT& r); // 0x115b30 == CRect::operator=(const tagRECT&); the compiler-
                             // generated trivial copy ctor is what the shadow pass uses.
 };
 
