@@ -26,7 +26,8 @@
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_8860 (== ~CUserLogic; fold blocked, see below)
 #include <Gruntz/AmbientSound.h>           // canonical CAmbientSound / CAmbientPosSound
 #include <Gruntz/RandomAmbientSound.h>     // canonical CRandomAmbientSound
-#include <Rez/RezMgr.h>                    // RezAlloc - the engine heap allocator (reloc-masked)
+#include <Gruntz/PosSound.h> // PosSoundObj / PosSoundAux / PosSoundPlaced spawn-path types
+#include <Rez/RezMgr.h>      // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 #include <Gruntz/UserLogic.h>         // CUserBase (real base of CAmbientSound)
 #include <Gruntz/BoundaryTailViews.h> // Arg1_bdd0/Entry_bdd0 (0xbdd0 Dispatch arg views)
@@ -47,59 +48,13 @@ inline void* operator new(u32, void* p) {
 // drive the ambient voice that hangs off a CGameObject's +0x7c aux: aux->m_requestState is
 // the request state (0 = "spawn", 0x1e = "stop"), aux->m_voice the live voice.
 // ---------------------------------------------------------------------------
-// The sound voice object the aux points at (+0x168): its CObject vptr (slot 0 =
-// scalar-deleting dtor), the DirectSoundMgr handle (+0x04), the playing flag
-// (+0x14) and the spatial-mgr list node (+0x3c) RemoveAt unlinks.
-class PosSoundVoice {
-public:
-    virtual ~PosSoundVoice(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    DirectSoundMgr* m_mgr;    // +0x04
-    char m_pad8[0x14 - 0x8];
-    i32 m_isPlaying; // +0x14  playing flag
-    char m_pad18[0x3c - 0x18];
-    void* m_spatialNode;        // +0x3c  spatial-mgr list node
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-};
-// The aux sub-object (CGameObject+0x7c): the init/action handler, the request state,
-// the emit src-clip and the live voice slot.
-struct PosSoundAux {
-    char m_pad00[0x10];
-    void* m_handler; // +0x10  the object's init/action handler (vs the default at 0x402d15)
-    char m_pad14[0x1c - 0x14];
-    i32 m_requestState; // +0x1c  request state (0 spawn / 0x1e stop / 5 spawned)
-    char m_pad20[0x2c - 0x20];
-    i32 m_srcL; // +0x2c  emit src clip: left
-    i32 m_srcR; // +0x30                   right
-    i32 m_srcT; // +0x34                   top
-    i32 m_srcB; // +0x38                   bottom
-    char m_pad3c[0x168 - 0x3c];
-    PosSoundVoice* m_voice; // +0x168  the live voice
-};
-// The CGameObject the request rides on (only the touched offsets).
-struct PosSoundObj {
-    char m_pad00[0x08];
-    i32 m_flags08; // +0x08  flags
-    char m_pad0c[0x40 - 0xc];
-    i32 m_flags40; // +0x40  flags
-    char m_pad44[0x5c - 0x44];
-    i32 m_x; // +0x5c  x
-    i32 m_y; // +0x60  y
-    char m_pad64[0x7c - 0x64];
-    PosSoundAux* m_aux; // +0x7c  the aux
-    char m_pad80[0x120 - 0x80];
-    i32 m_120; // +0x120
-    char m_pad124[0x134 - 0x124];
-    i32 m_extentL; // +0x134  per-side emit extents (L/T/R/B)
-    i32 m_extentT; // +0x138
-    i32 m_extentR; // +0x13c
-    i32 m_extentB; // +0x140
-    RECT m_area;   // +0x144  emit source area (CopyRect base)
-    RECT m_placed; // +0x154  placed rect written back on emit
-    char m_pad164[0x19c - 0x164];
-    void* m_layer; // +0x19c  layer/desc (its +0x10 feeds the factory)
-};
+// The PosSoundObj / PosSoundAux spawn-path types now live in <Gruntz/PosSound.h>
+// (included above), not as .cpp-local views. The former PosSoundVoice view IS the
+// canonical CAmbientPosSound (<Gruntz/AmbientSound.h>): the spawn factory 0xb960 =
+// CWorldSoundSet::CreatePos5_b960 returns a 0x48-byte CAmbientPosSound, and the view's
+// m_mgr@+0x04 / m_isPlaying@+0x14 / m_spatialNode@+0x3c ARE CAmbientSound::m_voice /
+// m_isPlaying / m_listNode - so aux->m_voice is typed CAmbientPosSound* and the three
+// placeholder vtable-slot fillers (VtSlotFill0/1/2) fold onto the real channel vtable.
 // The spatial-sound voice CPtrList lives at g_gameReg->m_inputState + 0x08 (the same
 // embedded CPtrList the manager ctors/tears down); RemoveAt unlinks the voice's node.
 // g_gameReg->m_inputState is the CWorldSoundSet modeled in this TU's header.
@@ -1005,10 +960,8 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
 // exits; the residual is MSVC's just-in-time vs pre-load interleaving of the factory
 // member-arg loads (same push order, same args) + the g_gameReg->m_inputState test
 // landing in eax vs retail's ecx. Same instructions, different temp-register rotation.
-struct PosSoundPlaced { // the create-helper return record; its placed RECT is at +0x28
-    char m_pad0[0x28];
-    RECT m_28; // +0x28
-};
+// PosSoundPlaced (the create-helper return record; == a CAmbientSound-family channel,
+// its +0x28 record IS CAmbientSound::m_box2) now lives in <Gruntz/PosSound.h>.
 SIZE_UNKNOWN(PosSoundPlaced);
 extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
 // The world sound-set factory create calls (CWorldSoundSet::CreateRandom @0xbb60 via
@@ -1109,17 +1062,17 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (state != 0x1e) {
             return;
         }
-        PosSoundVoice* sound = aux->m_voice;
+        CAmbientPosSound* sound = aux->m_voice;
         if (sound == 0) {
             return;
         }
         CPtrList* arr = (CPtrList*)((char*)g_gameReg->m_inputState + 8);
-        if (sound->m_mgr != 0) {
-            sound->m_mgr->StopAndRewind();
+        if (sound->m_voice != 0) {
+            sound->m_voice->StopAndRewind();
             sound->m_isPlaying = 0;
         }
-        if (sound->m_spatialNode != 0) {
-            arr->RemoveAt((POSITION)sound->m_spatialNode);
+        if (sound->m_listNode != 0) {
+            arr->RemoveAt((POSITION)sound->m_listNode);
             delete sound;
         }
         aux->m_voice = 0;
@@ -1137,7 +1090,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         pt[1] = obj->m_y;
         void* v = PosSoundSpawn(*(void**)((char*)layer + 0x10), 0x64, &pt, obj->m_120, 0);
         if (v != 0) {
-            aux->m_voice = (PosSoundVoice*)v;
+            aux->m_voice = (CAmbientPosSound*)v;
         }
     }
     aux->m_requestState = 5;
@@ -1251,7 +1204,6 @@ SIZE_UNKNOWN(AmbSoundRecord);
 SIZE_UNKNOWN(AmbientPoint);
 SIZE_UNKNOWN(PosSoundAux);
 SIZE_UNKNOWN(PosSoundObj);
-SIZE_UNKNOWN(PosSoundVoice);
 SIZE_UNKNOWN(CRandomAmbientWorld);
 
 SIZE_UNKNOWN(CSoundNode);
