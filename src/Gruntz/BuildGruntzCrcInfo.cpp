@@ -10,11 +10,30 @@
 // exits) gives the body the exception frame, so it lives in an `eh` unit. Only
 // offsets / strings / code bytes are load-bearing; the CString ops, wsprintfA,
 // the rand nonce and ReportVersionMsg are reloc-masked engine calls.
+//
+// IDENTITY RECOVERED (2026-07-14) - the view fold is DEFERRED, blocked by two lanes
+// owning the canonical headers THIS wave (report, don't force with casts):
+//   * CrcGrunt IS CGrunt (<Gruntz/Grunt.h>): m_3ec=m_health, m_3f0=m_stamina,
+//     m_3f4=m_toyTime, m_218=m_combatActive, m_21c=m_neighborValid, m_220=m_poweredUp,
+//     m_224, m_358, m_198, m_19c, m_450=m_arrivalPhase all match named CGrunt members.
+//     BLOCKERS: type @+0x170 (the switch input) and dir @+0x444 are NOT yet named
+//     members of CGrunt, and Grunt.h is owned by the grunt-behavior lane this wave -
+//     the grunt-behavior lane must add `i32 m_170;`(type) + `i32 m_444;`(dir) before
+//     this dissolves cast-free.
+//   * CrcGruntPos IS CGrunt::m_10's geometry source (CUserBase::m_10; x @+0x5c / y @+0x60) -
+//     part of the same Grunt.h fold.
+//   * CrcSink / CrcOwner are the Net/Multi version-reporter chain: WriteLog == ReportVersionMsg
+//     (0x101af0), a Net-subsystem method (CNetCmdMgr/Multi.cpp/NetMgr.h). Dissolving them
+//     needs the net-lane headers (net lane owns them this wave).
+//   * CrcLevelHolder is the level/grunt-roster holder (the flat grunt-ptr array @+0x68).
+// BuildGruntzCrcInfo has NO rel32 caller (a debug/CRC-sync dump), so the owner class is not
+// caller-recoverable; the reading-views below stay clean (no casts) until the fold lands.
 #include <Mfc.h> // real MFC CString + <windows.h> wsprintfA (afx-first)
 #include <rva.h>
 #include <stdlib.h> // rand (0x11fee0), the per-grunt random nonce
 
-// A grunt record: only the dumped fields are named (sparse, raw offsets).
+// @identity: CGrunt (<Gruntz/Grunt.h>); fold DEFERRED (grunt-behavior lane owns the header
+// this wave + type@+0x170/dir@+0x444 unmodeled). Only the dumped fields are named here.
 struct CrcGrunt {
     char m_pad00[0x10];
     struct CrcGruntPos* m_10; // +0x10  (x/y at +0x5c/+0x60)
@@ -48,10 +67,12 @@ struct CrcLevelHolder {
     char m_pad00[0x68];
     void* m_68; // +0x68  flat grunt-pointer array base
 };
+// @identity: the Net/Multi version-reporter chain; WriteLog == ReportVersionMsg (0x101af0,
+// CNetCmdMgr/Multi). Fold DEFERRED - the net lane owns those headers this wave.
 struct CrcSink {
     char m_pad00[0x4];
     CrcLevelHolder* m_4;           // +0x04
-    void WriteLog(char* s, i32 z); // FUN_00101af0 __thiscall
+    void WriteLog(char* s, i32 z); // FUN_00101af0 == ReportVersionMsg __thiscall
 };
 SIZE_UNKNOWN(CrcSink);
 struct CrcOwner {
