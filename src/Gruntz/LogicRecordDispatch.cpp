@@ -47,7 +47,6 @@ enum LogicRecordState {
     kLogicStateBuilt = 0x3e8, // sub-record built / idle (no-op)
 };
 
-
 // State-0 sub-record types (built lazily) are all real engine classes, `new`'d directly
 // through their shared headers so the ctor CALL binds to the retail RVA: LogicDispatchA
 // -> CStaticHazard (0x6c, ctor 0xfb7a0), D -> CTimeBomb (0x68, ctor 0xe1b90),
@@ -250,6 +249,5 @@ i32 LogicDispatchA(CGameObject* owner) {
 // LogicDispatchB @0x10d3d0 (state-0 news a CBrickz: ctor thunk 0x3701 -> 0x10e800) was folded
 // into src/Gruntz/TileLogicPump.cpp (waveM-strays): its retail body is text-contained in the
 // tile-trigger logic obj's contiguous first-link .text block, and it is CBrickz's state pump.
-
 
 // --- vtable catalog ---

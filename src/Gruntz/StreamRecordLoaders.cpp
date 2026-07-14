@@ -19,7 +19,7 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (reader; Read @ vtable +0x2c)
 #include <Gruntz/SerialRecView.h> // CRegSub30 / CRegTypeTable (shared registry views)
 #include <DDrawMgr/DDrawWorkerCache.h> // the +0x14 worker cache - Find (0x9cab0) is its method
-#include <string.h>               // inline strlen (repne scasb) over the scratch buffer
+#include <string.h>                    // inline strlen (repne scasb) over the scratch buffer
 
 // The game registry singleton (0x64556c). The delinker's canonical symbol is the
 // extern "C" _g_mgrSettings (the cplay unit owns it); reloc-masked DIR32.

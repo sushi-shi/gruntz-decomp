@@ -68,7 +68,7 @@ public:
     void Restart(void* a1);        // 0x00bc30
     void Stop();                   // 0x00bc80
     void Resume();                 // 0x00bcf0
-    void Retune(i32 x, i32 y); // 0x00bd60  push the listener position to every channel
+    void Retune(i32 x, i32 y);     // 0x00bd60  push the listener position to every channel
     void Deactivate();             // 0x00b620
     ~CWorldSoundSet();             // 0x085ed0
 

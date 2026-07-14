@@ -129,5 +129,4 @@ void CUserLogic::FinalizeStep(i32 /*unused*/) {
     m_28 = 0x3e9;
 }
 
-
 // --- vtable catalog ---

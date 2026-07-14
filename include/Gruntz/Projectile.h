@@ -136,12 +136,12 @@ public:
     // slot-4 (UserLogicVfunc2) per-coordinate activation dispatch @0xdf9a0. The fat
     // base models slot 4 with the no-arg UserLogicVfunc2() placeholder, so the int-arg
     // real shape is a plain method (the leaf vtable slot stays base-attributed).
-    i32 RunAct(i32 coord);         // 0xdf9a0
-    static void RegisterType();    // 0xdfb00 (level-load class registrar)
+    i32 RunAct(i32 coord);      // 0xdf9a0
+    static void RegisterType(); // 0xdfb00 (level-load class registrar)
     // (ReleaseDeferred @0x13c70 is GONE from here: it is CMovingLogic::FinalizeStep,
     //  the inherited slot-5 override - see MovingLogic.h / Projectile.cpp.)
-    i32 DetachRenderObj();         // 0xe05e0  (clear +0x154's flag, detach, gate hide)
-    void ScanTargets(i32 impact);  // 0xe0b10  (15x15 grid hit-scan against nearby grunts)
+    i32 DetachRenderObj();                // 0xe05e0  (clear +0x154's flag, detach, gate hide)
+    void ScanTargets(i32 impact);         // 0xe0b10  (15x15 grid hit-scan against nearby grunts)
     i32 LaunchSound(const char* key);     // 0xe2190 (create + play the launch CSample)
     virtual void MovingSlot16() OVERRIDE; // slot 16 @0xdfd00 (impact/particle effects)
 

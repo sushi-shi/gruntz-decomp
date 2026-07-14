@@ -36,8 +36,8 @@
 // SBI_MenuItem TU's transitive fwd-decl count under the DecCounter regalloc-butterfly
 // threshold (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
-#include <Gruntz/SaveInfo.h> // SaveInfo (m_saveInfoRec) + HudGuard44 (+0x44)
-#include <Io/SaveGame.h>     // CSaveGame - the +0x58 save sink (ex the SaveSink58 view)
+#include <Gruntz/SaveInfo.h>       // SaveInfo (m_saveInfoRec) + HudGuard44 (+0x44)
+#include <Io/SaveGame.h>           // CSaveGame - the +0x58 save sink (ex the SaveSink58 view)
 // +0x70 is the REAL RTTI class CGruntzMapMgr (: CMapMgr, vtbl 0x1e9bb4). PROVEN by the
 // teardown legs of retail Close() @0x0855e0: the +0x68 leg calls ILT thunk 0x3b1b ->
 // ~CTriggerMgr @0x85c50, and the +0x70 leg calls a DIFFERENT thunk 0x35b7 ->

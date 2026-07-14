@@ -60,8 +60,10 @@ public:
         i32 a8,
         i32 a9
     );
-    virtual i32 SwitchDown(); // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
-    virtual i32 SwitchUp(); // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
+    virtual i32
+    SwitchDown(); // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
+    virtual i32
+    SwitchUp(); // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
 
     CTileTriggerSwitchLogic();
     // Non-virtual dtor (the 4 vtable slots are all regular methods, no dtor slot).
@@ -165,7 +167,7 @@ VTBL(CTileSecretTriggerSwitchLogic, 0x001eaf24);
 
 class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 SwitchDown() OVERRIDE; // slot 2
-    virtual i32 SwitchUp() OVERRIDE; // slot 3
+    virtual i32 SwitchUp() OVERRIDE;   // slot 3
 public:
     CTileTimeTriggerSwitchLogic(); // 0x1127c0
 };
@@ -176,7 +178,7 @@ VTBL(CTileTimeTriggerSwitchLogic, 0x001eaf3c);
 // (24 dwords at +0x2c) - it is not a distinct "rect" member, and the class adds nothing.
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 SwitchDown() OVERRIDE; // slot 2
-    virtual i32 SwitchUp() OVERRIDE; // slot 3
+    virtual i32 SwitchUp() OVERRIDE;   // slot 3
 public:
     CCheckpointTriggerSwitchLogic(); // 0x1127f0
     // slot 1 (0x112a50): the checkpoint build. Uses the BASE's m_20 gate (+0x20) and copies
