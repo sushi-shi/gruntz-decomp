@@ -4,9 +4,12 @@
 // 15-wide rows): spawn-probe (0), move/attack/tool variants (2..5,9,10), select/
 // deselect (6,7), and the conversion/pickup pre-pass (8). a2 = player id (== g_curPlayer
 // is "local"), a3 = column, a5/a6 = pixel target or a second grid cell, a7/a8 spare.
-// The grunt-state reset block (clear +0x308.. / +0x420 / mask +0x248) repeats across
-// most cases. All engine helpers + the manager/registry globals are external
-// (reloc-masked); the grunt/grid/this field bags are raw-offset addressed as retail.
+// The grunt-state reset block (clear m_arrivalReroll* / m_tileClaimed / m_arrivalState /
+// mask m_arrivalFlags) repeats across most cases. All engine helpers + the manager/registry
+// globals are external (reloc-masked). The grid CELLS are now TYPED CGrunt (existing Grunt.h
+// members - the F(g,...) offset-cast macro is eliminated at every grunt site); node->m_10 is
+// the CGruntHud geometry source. A residual F()/P() remains only on the handler `this`
+// (CGruntzMgr) + `world` (CWorld) sub-objects, which need their real-class headers to type.
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Ints.h>
 
@@ -128,20 +131,20 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
         case 2: {
             a2 &= 0xff;
             CGrunt* g = GC(grid)[(a3 & 0xff) + a2 * 0xf];
-            if (g != 0 && F(g, 0x1fc) != 0) {
-                F(g, 0x230) = 0;
+            if (g != 0 && g->m_entranceCommitted != 0) {
+                g->m_arrivalActive = 0;
             }
             res = grid->ClearCell(a2, a3 & 0xff, a5 & 0xffff, a6 & 0xffff, 0);
             if (res != 0) {
                 if (a2 != (u32)g_curPlayer) {
                     return 1;
                 }
-                if (g != 0 && F(g, 0x1fc) != 0) {
+                if (g != 0 && g->m_entranceCommitted != 0) {
                     GruntCue(g, 0x323, -1, 0, -1, -1);
                 }
                 return 1;
             }
-            if (a2 != (u32)g_curPlayer || g == 0 || F(g, 0x1fc) == 0) {
+            if (a2 != (u32)g_curPlayer || g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
             GruntCue(g, 0x324, -1, 0, -1, -1);
@@ -157,34 +160,29 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             i32 isB = a4 & 4;
             u32 player = a2 & 0xff;
             CGrunt* g = GC(grid)[(a3 & 0xff) + player * 0xf];
-            if (g == 0 || F(g, 0x1fc) == 0) {
+            if (g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
-            if (isB != 0 && F(g, 0x1e4) != 0) {
+            if (isB != 0 && g->m_entranceActive != 0) {
                 return 0;
             }
-            if (F(g, 0x420) != 0) {
-                F(g, 0x308) = 0;
-                F(g, 0x310) = 0;
-                F(g, 0x30c) = 0;
-                F(g, 0x314) = 0;
-                F(g, 0x420) = 0;
-                F(g, 0x2d0) = 0;
-                F(g, 0x248) &= 0xe7fbfbfd;
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = 0;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
             a6 &= 0xffff;
             a5 &= 0xffff;
-            char* node = (char*)grid->CellHitTest(a5, a6, (i32*)&a4, (i32*)&a8, 5);
-            if (node == 0 || F(g, 0x1e4) != 0) {
-                F(g, 0x230) = 0;
+            CGrunt* node = (CGrunt*)grid->CellHitTest(a5, a6, (i32*)&a4, (i32*)&a8, 5);
+            if (node == 0 || g->m_entranceActive != 0) {
+                g->m_arrivalActive = 0;
             } else {
-                g->SetArrivalTarget(
-                    (i32)player,
-                    a5,
-                    F(P(node, 0x10), 0x5c),
-                    F(P(node, 0x10), 0x60)
-                );
+                g->SetArrivalTarget((i32)player, a5, node->m_10->m_5c, node->m_10->m_60);
             }
             res = (isB == 0) ? grid->ApplyTriggerA(player, a4, a8, 0)
                              : grid->ApplyTriggerB(player, a4, a8, 0);
@@ -193,7 +191,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                     if (player != (u32)g_curPlayer) {
                         return 1;
                     }
-                    if (F(g, 0x1fc) != 0) {
+                    if (g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x323, -1, 0, -1, -1);
                     }
                     return 1;
@@ -203,12 +201,12 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                     if (player != (u32)g_curPlayer) {
                         return 1;
                     }
-                    if (F(g, 0x1fc) != 0) {
+                    if (g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x323, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                if (player != (u32)g_curPlayer || F(g, 0x1fc) == 0) {
+                if (player != (u32)g_curPlayer || g->m_entranceCommitted == 0) {
                     return 0;
                 }
                 GruntCue(g, 0x324, -1, 0, -1, -1);
@@ -217,7 +215,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             if (player != (u32)g_curPlayer) {
                 return 0;
             }
-            res = F(g, 0x1fc);
+            res = g->m_entranceCommitted;
             if (res == 0) {
                 return 0;
             }
@@ -227,18 +225,18 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
 
         case 5: {
             CGrunt* g = GC(grid)[(a2 & 0xff) * 0xf + (a3 & 0xff)];
-            if (g == 0 || F(g, 0x1fc) == 0 || F(g, 0x1e4) != 0) {
+            if (g == 0 || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
             g->SetEntrancePos(1, 1);
-            if (F(g, 0x420) != 0) {
-                F(g, 0x308) = 0;
-                F(g, 0x310) = 0;
-                F(g, 0x30c) = 0;
-                F(g, 0x314) = 0;
-                F(g, 0x420) = 0;
-                F(g, 0x2d0) = 0;
-                F(g, 0x248) &= 0xe7fbfbfd;
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = 0;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
             return 1;
@@ -247,56 +245,56 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
         case 6: {
             CGrunt* g = GC(grid)[(a2 & 0xff) * 0xf + (a3 & 0xff)];
             if (g != 0) {
-                if (F(g, 0x420) != 1) {
-                    F(g, 0x308) = 0;
-                    F(g, 0x310) = 0;
-                    F(g, 0x30c) = 0;
-                    F(g, 0x314) = 0;
-                    F(g, 0x300) = F(g, 0x17c);
-                    F(g, 0x420) = 1;
-                    F(g, 0x304) = F(g, 0x180);
-                    switch (F(g, 0x170)) {
+                if (g->m_tileClaimed != 1) {
+                    g->m_arrivalRerollLo = 0;
+                    g->m_arrivalRerollWindowLo = 0;
+                    g->m_arrivalRerollHi = 0;
+                    g->m_arrivalRerollWindowHi = 0;
+                    g->m_defenderX = g->m_lastTilePxX;
+                    g->m_tileClaimed = 1;
+                    g->m_defenderY = g->m_lastTilePxY;
+                    switch (g->m_entranceReason) {
                         case 2:
                         case 9:
                         case 10:
                         case 0xb:
                         case 0x15:
                         case 0x16:
-                            F(g, 0x2dc) = 1;
+                            g->m_defenderRadius = 1;
                             break;
                         default:
-                            F(g, 0x2dc) =
+                            g->m_defenderRadius =
                                 g_buteMgr.GetIntDef(s_grunt, s_playerDefenderRadius, 3) + 1;
                     }
-                    F(g, 0x248) |= 0x18040402;
-                    F(g, 0x2f0) = -1;
-                    F(g, 0x2d0) = 4;
-                    F(g, 0x2d4) = 0;
-                    F(g, 0x2f4) = -1;
-                    F(g, 0x230) = 0;
-                    F(P(g, 0x10), 0x134) = 0;
-                    F(P(g, 0x10), 0x13c) = 0;
-                    F(P(g, 0x10), 0x138) = 0;
-                    F(P(g, 0x10), 0x140) = 0;
+                    g->m_arrivalFlags |= 0x18040402;
+                    g->m_arrivalCol = -1;
+                    g->m_arrivalState = 4;
+                    g->m_defenderState = 0;
+                    g->m_arrivalRow = -1;
+                    g->m_arrivalActive = 0;
+                    g->m_10->m_134 = 0;
+                    g->m_10->m_13c = 0;
+                    g->m_10->m_138 = 0;
+                    g->m_10->m_140 = 0;
                     g->SetEntrancePos(1, 1);
                 }
-                F(g, 0x464) = 0;
+                g->m_arrivalNotified = 0;
             }
             return 1;
         }
 
         case 7: {
             CGrunt* g = GC(grid)[(a2 & 0xff) * 0xf + (a3 & 0xff)];
-            if (g == 0 || F(g, 0x420) == 0) {
+            if (g == 0 || g->m_tileClaimed == 0) {
                 return 1;
             }
-            F(g, 0x308) = 0;
-            F(g, 0x310) = 0;
-            F(g, 0x30c) = 0;
-            F(g, 0x314) = 0;
-            F(g, 0x420) = 0;
-            F(g, 0x2d0) = 0;
-            F(g, 0x248) &= 0xe7fbfbfd;
+            g->m_arrivalRerollLo = 0;
+            g->m_arrivalRerollWindowLo = 0;
+            g->m_arrivalRerollHi = 0;
+            g->m_arrivalRerollWindowHi = 0;
+            g->m_tileClaimed = 0;
+            g->m_arrivalState = 0;
+            g->m_arrivalFlags &= 0xe7fbfbfd;
             g->SetEntrancePos(1, 1);
             return 1;
         }
@@ -308,19 +306,19 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             }
             i32 idx = (a3 & 0xff) + a2 * 0xf;
             CGrunt* g = GC(grid)[idx];
-            if (g != 0 && F(g, 0x1fc) != 0 && F(g, 0x420) != 0) {
-                F(g, 0x308) = 0;
-                F(g, 0x310) = 0;
-                F(g, 0x30c) = 0;
-                F(g, 0x314) = 0;
-                F(g, 0x420) = 0;
-                F(g, 0x2d0) = 0;
-                F(g, 0x248) &= 0xe7fbfbfd;
+            if (g != 0 && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = 0;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
             CGrunt* g2 = GC((CTriggerMgr*)P(P(this, 4), 0x68))[idx];
             i32 r;
-            if (g2 == 0 || F(g2, 0x1fc) == 0) {
+            if (g2 == 0 || g2->m_entranceCommitted == 0) {
                 r = 0;
             } else {
                 r = PickupCheck(a7 & 0xff, 0, 0, 0, F(g_gameReg, 0x134) != 1);
@@ -345,33 +343,33 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
         case 9: {
             u32 player = a2 & 0xff;
             CGrunt* g = GC(grid)[(a3 & 0xff) + player * 0xf];
-            if (g == 0 || F(g, 0x1fc) == 0) {
+            if (g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
-            if (F(g, 0x420) != 0) {
-                F(g, 0x308) = 0;
-                F(g, 0x310) = 0;
-                F(g, 0x30c) = 0;
-                F(g, 0x314) = 0;
-                F(g, 0x420) = 0;
-                F(g, 0x2d0) = 0;
-                F(g, 0x248) &= 0xe7fbfbfd;
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = 0;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
             u32 row = a5 & 0xffff, col = a6 & 0xffff;
             CGrunt* g2 = GC((CTriggerMgr*)P(P(this, 4), 0x68))[col + row * 0xf];
-            if (g2 == 0 || F(g, 0x1e4) != 0) {
-                F(g, 0x230) = 0;
+            if (g2 == 0 || g->m_entranceActive != 0) {
+                g->m_arrivalActive = 0;
                 return 0;
             }
-            char* m10 = P(g2, 0x10);
-            g->SetArrivalTarget(row, col, F(m10, 0x5c), F(m10, 0x60));
+            CGruntHud* m10 = g2->m_10;
+            g->SetArrivalTarget(row, col, m10->m_5c, m10->m_60);
             res = grid->ApplyTriggerA(player, a7, row, 0);
             if (res != 0) {
                 if (res == -1) {
                     res = grid->ClearCell(player, a8, a2, 0, 2);
                     if (res == 0) {
-                        if ((u32)g_curPlayer != player || F(g, 0x1fc) == 0) {
+                        if ((u32)g_curPlayer != player || g->m_entranceCommitted == 0) {
                             return 0;
                         }
                         GruntCue(g, 0x324, -1, 0, -1, -1);
@@ -380,7 +378,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                     if ((a2 & 0xff) != (u32)g_curPlayer) {
                         return 1;
                     }
-                    if (a4 != (u32)g_curPlayer && F(g, 0x1fc) != 0) {
+                    if (a4 != (u32)g_curPlayer && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
@@ -388,7 +386,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 if ((a2 & 0xff) != (u32)g_curPlayer) {
                     return 1;
                 }
-                if ((u32)g_curPlayer != a8 && F(g, 0x1fc) != 0) {
+                if ((u32)g_curPlayer != a8 && g->m_entranceCommitted != 0) {
                     GruntCue(g, 0x325, -1, 0, -1, -1);
                 }
                 return 1;
@@ -396,7 +394,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             if (player != (u32)g_curPlayer) {
                 return 0;
             }
-            res = F(g, 0x1fc);
+            res = g->m_entranceCommitted;
             if (res == 0) {
                 return 0;
             }
@@ -407,34 +405,34 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
         case 10: {
             u32 player = a2 & 0xff;
             CGrunt* g = GC(grid)[(a3 & 0xff) + player * 0xf];
-            if (g == 0 || F(g, 0x1fc) == 0 || F(g, 0x1e4) != 0) {
+            if (g == 0 || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
-            if (F(g, 0x420) != 0) {
-                F(g, 0x308) = 0;
-                F(g, 0x310) = 0;
-                F(g, 0x30c) = 0;
-                F(g, 0x314) = 0;
-                F(g, 0x420) = 0;
-                F(g, 0x2d0) = 0;
-                F(g, 0x248) &= 0xe7fbfbfd;
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = 0;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
             u32 row = a5 & 0xffff, col = a6 & 0xffff;
             CGrunt* g2 = GC((CTriggerMgr*)P(P(this, 4), 0x68))[col + row * 0xf];
-            if (g2 == 0 || F(g, 0x1e4) != 0) {
-                F(g, 0x230) = 0;
+            if (g2 == 0 || g->m_entranceActive != 0) {
+                g->m_arrivalActive = 0;
                 return 0;
             }
-            char* m10 = P(g2, 0x10);
-            g->SetArrivalTarget(row, col, F(m10, 0x5c), F(m10, 0x60));
+            CGruntHud* m10 = g2->m_10;
+            g->SetArrivalTarget(row, col, m10->m_5c, m10->m_60);
             res = grid->ApplyTriggerB(player, a7, row, 0);
             if (res != 0) {
                 if (res != -1) {
                     if ((a2 & 0xff) != (u32)g_curPlayer) {
                         return 1;
                     }
-                    if (a8 != (u32)g_curPlayer && F(g, 0x1fc) != 0) {
+                    if (a8 != (u32)g_curPlayer && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
@@ -444,12 +442,12 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                     if ((a2 & 0xff) != (u32)g_curPlayer) {
                         return 1;
                     }
-                    if ((u32)g_curPlayer != a4 && F(g, 0x1fc) != 0) {
+                    if ((u32)g_curPlayer != a4 && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                if ((u32)g_curPlayer != player || F(g, 0x1fc) == 0) {
+                if ((u32)g_curPlayer != player || g->m_entranceCommitted == 0) {
                     return 0;
                 }
                 GruntCue(g, 0x324, -1, 0, -1, -1);
@@ -458,7 +456,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             if (player != (u32)g_curPlayer) {
                 return 0;
             }
-            res = F(g, 0x1fc);
+            res = g->m_entranceCommitted;
             break;
         }
     }
