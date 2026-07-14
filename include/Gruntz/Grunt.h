@@ -96,8 +96,8 @@ struct CGruntHud {
     i32 m_40; // +0x40   (sprite-state flag word; ExitAnim/RunConfig clears bit 8)
     char m_pad44[0x4c - 0x44];
     i32 m_4c; // +0x4c   (SelectMoveIcon: = GetSel result)
-    i32 m_50; // +0x50   (SelectMoveIcon: = 0xa)
-    char m_pad54[0x58 - 0x54];
+    i32 m_50; // +0x50   (SelectMoveIcon: = 0xa; CGrunt::Load: 0xa/0xb event kind)
+    i32 m_54; // +0x54   (CGrunt::Load: the 0xb event value - ghost transparency)
     i32 m_58; // +0x58   (SelectMoveIcon: = 1)
     i32 m_screenX; // +0x5c
     i32 m_screenY; // +0x60
@@ -1661,6 +1661,11 @@ public:
     i32 UpdateEntranceAnim();               // @0x690a0 entrance-anim/arrival update step
     void ApplyMoveKind(i32 v);              // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
     i32 Save(CGruntArchive* ar);            // @0x53f90 serialize
+    // @0x555e0 (4856 B; body in GameStateRecordLoad.cpp) - the game-state-record
+    // load counterpart of Save: SerializeMove's mode-7 arm, dispatched on this
+    // same grunt (ex the CGameStateRecord owner view). Named LoadStateRecord -
+    // plain `Load` is taken by the 0xd8060 body (Play.cpp).
+    i32 LoadStateRecord(CGruntArchive* ar);
     i32 Load(CGruntArchive* ar);            // @0xd8060 deserialize (Read inverse of Save)
     void ClearAllSprites();                 // @0x4b240
     i32 CommitArrival();                    // @0x4b130
@@ -1707,7 +1712,7 @@ public:
     // serialize through their own engine helpers (external/reloc-masked).
     // (SerializeMove is the vtable slot-1 override, declared at the top of CGrunt.)
     // The head sub-serializer is CMovingLogicBase::Serialize (0x16e7f0); the mode-4/7
-    // pre-steps are CGrunt::Save (0x53f90) / CGameStateRecord::Load (0x555e0) - all
+    // pre-steps are CGrunt::Save (0x53f90) / CGrunt::Load (0x555e0) - all
     // real bound callees now, so the former SerializeAnimState/SerPreStep4/SerPreStep7
     // fake decls are gone.
 

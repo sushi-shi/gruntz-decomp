@@ -16,16 +16,9 @@ class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 class CSerialObj;
 
-// 0x555e0 is delinked/labeled ?Load@CGameStateRecord@@QAEHPAUCSerialArchive@@@Z
-// (reconstructed in gamestaterecordload), but its ONLY caller is CGrunt::SerializeMove
-// (mode 7) invoked on ecx = the CGrunt `this`, and its body indexes that same grunt
-// layout by raw offset - i.e. it is really CGrunt's load facet. Declared here decl-only
-// so SerializeMove's mode-7 call binds to 0x555e0 without a .cpp-local view. Attribution
-// TODO: rename 0x555e0 to CGrunt::Load in gamestaterecordload.
-class CGameStateRecord {
-public:
-    i32 Load(CSerialArchive* ar); // 0x555e0
-};
+// (The CGameStateRecord shim is GONE: 0x555e0 is CGrunt::Load, declared in
+// <Gruntz/Grunt.h> and defined in GameStateRecordLoad.cpp - the attribution
+// TODO this header carried is executed.)
 
 // CSerialObjRef::Chain (0x8c00): the +0x150 serialized-object-reference's chain. The
 // full class lives in <Gruntz/SerialObjRef.h>; only Chain is needed here and that

@@ -30,7 +30,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/GameStateRecord.h> // CSerialObjRef::Chain (0x8c00) + CGameStateRecord::Load (0x555e0)
+#include <Gruntz/GameStateRecord.h> // CSerialObjRef::Chain (0x8c00)
 #include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130)
 #include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Effect6b.h>
@@ -1214,9 +1214,8 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             }
             break;
         case 7:
-            // mode-7 load path (0x555e0; labeled CGameStateRecord::Load in gamestaterecordload,
-            // really CGrunt's load facet on the same `this` layout - attribution TODO there)
-            if (((CGameStateRecord*)this)->Load((CSerialArchive*)ar) == 0) {
+            // mode-7 load path: CGrunt::LoadStateRecord @0x555e0 (GameStateRecordLoad.cpp)
+            if (LoadStateRecord(ar) == 0) {
                 return 0;
             }
             break;

@@ -1,5 +1,8 @@
-// GameStateRecordLoad.cpp - the big game-state-record deserializer @0x555e0
-// (?Load@... , 4856 B). Reads an entire saved game-state record off a CRecReader:
+// GameStateRecordLoad.cpp - CGrunt::LoadStateRecord @0x555e0 (4856 B), the grunt's
+// game-state-record deserializer (mode-7 arm of CGrunt::SerializeMove @0x53b80,
+// its ONLY caller, dispatched on the grunt `this` - the ex-CGameStateRecord
+// owner view is dissolved; the raw offsets below ARE CGrunt's layout AND the
+// on-disk record spec). Reads an entire saved record off the stream:
 //   - 7 serial-id object refs (read a 4-byte serial, look it up in the engine
 //     object directory's serial map, type-tag-check (==5), store the pointer;
 //     fail the load if a non-zero serial resolves to nothing),
@@ -18,6 +21,9 @@
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
 #include <Gruntz/GruntDataRecord.h>
+#include <Gruntz/Grunt.h>  // canonical CGrunt (this) + CGruntHud + CSpriteFactory
+#include <Gruntz/ResMgr.h> // CAnimRegistry (the name map host, holder +0x2c)
+#include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE::GetClassId (the ==5 probe)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SpriteRefTable.h>
 #include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
@@ -45,19 +51,11 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
 // now the one modeled class in <Gruntz/SerialArchive.h> - the former local `CRecReader`
 // view is folded away. `ar->Read` lowers to `mov edx,[ar]; call [edx+0x2c]`.
 
-// A directory object whose runtime type tag (virtual slot 0x20 = index 8) gates
-// the serial-ref store (only tag==5 objects are accepted).
-struct CDirObj {
-    virtual void dv0();
-    virtual void dv1();
-    virtual void dv2();
-    virtual void dv3();
-    virtual void dv4();
-    virtual void dv5();
-    virtual void dv6();
-    virtual void dv7();
-    virtual i32 GetTag(); // slot 8 -> +0x20
-};
+// The serial-ref type probe (virtual slot 8, +0x20) is the canonical
+// CWwdGameObjectE::GetClassId (<Wwd/WwdGameObjectFamily.h>); only
+// CLASSID_SERIALREF (5) objects are accepted - the same probe idiom as
+// CPlay::SerializeMove / CSpotLight::SerializeMove. (Ex the CDirObj 9-slot
+// placeholder-padded view.)
 
 // The two engine lookup maps are the real MFC containers (reached below by casting
 // the map host + its embedded-map offset): the serial map @0x1b8760 =
@@ -65,14 +63,11 @@ struct CDirObj {
 // (string key). Modeled directly as the MFC classes at the use sites (Mfc.h), so no
 // per-TU map view is needed.
 
-// The engine object directory (g_gameReg->m_world): the serial-map host at +8
-// (map at +0x48), the name-map host at +0x2c (map at +0x10).
-struct CObjDir {
-    char _00[8];
-    char* m_serialHost; // +0x08  (serial map @ +0x48)
-    char _0c[0x2c - 0xc];
-    char* m_nameHost; // +0x2c  (name map @ +0x10)
-};
+// The engine object directory IS the canonical CSpriteFactoryHolder
+// (g_gameReg->m_world): the serial map is its m_8 factory's embedded key->object
+// CMapPtrToPtr (+0x48, GruntObjMap in <Gruntz/SpriteFactory.h>), the name map
+// its m_animRegistry's +0x10 CMapStringToOb (<Gruntz/ResMgr.h>). (Ex the CObjDir
+// offset view.)
 
 // The game-manager singleton (the one true CGruntzMgr shape lives in
 // <Gruntz/GruntzMgr.h>): the object directory at +0x30 (canonical m_world, viewed
@@ -80,14 +75,9 @@ struct CObjDir {
 // (0x4165). Both sub-objects are engine carcasses reached by a struct-view cast.
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
-// The event/command buffer at this+0x10 the tail writes (type/value/flag slots).
-struct CCmdBuf {
-    char _00[0x4c];
-    i32 m_4c; // +0x4c
-    i32 m_50; // +0x50
-    i32 m_54; // +0x54
-    i32 m_58; // +0x58
-};
+// The event/command buffer the tail writes is the grunt's own m_10 CGruntHud
+// (the m_4c/m_50/m_58 move-icon triple SelectMoveIcon also writes, + m_54).
+// (Ex the CCmdBuf offset view.)
 
 // CRecPtrList (engine; AddTail/RemoveHead/RemoveAll reloc-masked __thiscall).
 
@@ -97,10 +87,6 @@ struct CCmdBuf {
 void* operator new(u32 n);        // 0x1b9b46
 extern "C" void RezFree(void* p); // 0x1b9b82  (operator delete / free)
 
-class CGameStateRecord {
-public:
-    i32 Load(CSerialArchive* ar);
-};
 
 // The three repeating block shapes, expanded inline + unrolled (retail unrolls
 // each and shares one 0x80 text buffer + the id/obj scratch locals - a helper
@@ -114,9 +100,8 @@ public:
         ar->Read(&id, 4);                                                                          \
         obj = 0;                                                                                   \
         void* r;                                                                                   \
-        if (((CMapPtrToPtr*)(dir->m_serialHost + 0x48))->Lookup((void*)id, obj) != 0               \
-            && obj != 0) {                                                                         \
-            r = (((CDirObj*)obj)->GetTag() == 5) ? obj : 0;                                        \
+        if (dir->m_8->m_objMap.Lookup((void*)id, (CGameObject*&)obj) != 0 && obj != 0) {          \
+            r = (((CWwdGameObjectE*)obj)->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
@@ -139,7 +124,7 @@ public:
         ar->Read(buf, 0x80);                                                                       \
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
-            ((CMapStringToOb*)(dir->m_nameHost + 0x10))->Lookup(buf, (CObject*&)obj);              \
+            dir->m_animRegistry->m_10map.Lookup(buf, (CObject*&)obj);                             \
             *(void**)(p + (off)) = obj;                                                            \
         } else {                                                                                   \
             *(void**)(p + (off)) = 0;                                                              \
@@ -166,12 +151,12 @@ public:
 // effect). The documented large-function regalloc/frame-layout wall; reconstructed
 // in full per the no-stub mandate.
 RVA(0x000555e0, 0x12f8)
-i32 CGameStateRecord::Load(CSerialArchive* ar) {
+i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     char* p = (char*)this;
     if (ar == 0) {
         return 0;
     }
-    CObjDir* dir = (CObjDir*)g_gameReg->m_world;
+    CSpriteFactoryHolder* dir = g_gameReg->m_world;
     if (dir == 0) {
         return 0;
     }
@@ -391,18 +376,17 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
         ((CPtrList*)(p + 0x338))->AddTail(item);
     }
 
-    // Push the level-config event(s) into the command buffer at +0x10.
-    i32 m170 = *(i32*)(p + 0x170);
-    i32 m1f4 = *(i32*)(p + 0x1f4);
-    i32 flag = (m170 >= 0x17);
-    i32 r = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(m1f4, flag);
-    CCmdBuf* cb = *(CCmdBuf**)(p + 0x10);
+    // Push the level-config event(s) into the grunt's HUD object (the
+    // m_4c/m_50/m_58 move-icon triple, the SelectMoveIcon idiom).
+    i32 flag = (m_entranceReason >= 0x17);
+    i32 r = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, flag);
+    CGruntHud* cb = m_10;
     cb->m_58 = 1;
     cb->m_50 = 0xa;
     cb->m_4c = r;
 
-    if (*(i32*)(p + 0x258) == 0x36) {
-        CCmdBuf* cb2 = *(CCmdBuf**)(p + 0x10);
+    if (m_gruntKind == 0x36) {
+        CGruntHud* cb2 = m_10;
         i32 v = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
         cb2->m_58 = 1;
         cb2->m_50 = 0xb;
@@ -410,10 +394,5 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(CDirObj);
-SIZE_UNKNOWN(CObjDir);
-SIZE_UNKNOWN(CCmdBuf);
-SIZE_UNKNOWN(CGameStateRecord);
 
 // --- vtable catalog ---
