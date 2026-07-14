@@ -399,9 +399,6 @@ void TsFree(void* sink, i32 a, i32 b, i32 c);                 // 0x25fe free a s
 void TsAck(void* gr, i32 a, i32 b);                           // 0x346d ack a switch fire
 void TsRemove(void* gr, i32 a);                               // 0x417e remove from queue
 
-#define WTS_I32(p, off) (*(i32*)((char*)(p) + (off)))
-#define WTS_PTR(p, off) (*(void**)((char*)(p) + (off)))
-
 // Vtable slot +0x20 (the cell -> object-id resolver): mov edx,[node]; call [edx+0x20].
 static i32 WtsVtblResolve(void* node) {
     void* vtbl = *(void**)node;
@@ -410,12 +407,18 @@ static i32 WtsVtblResolve(void* node) {
 
 // The tile/switch-logic owner that hosts WireTileSwitchLogic (`this`, ecx). NOT the
 // CGruntzMgr game manager (loaded separately as g_gameReg): its level lives at
-// +0x22c and its trigger container at +0x2e4. Only touched offsets matter.
+// +0x22c and its trigger container at +0x2e4 (both typed members below). Only these
+// two offsets are reached on `this`; the level/plane graph the level points at is
+// unmodeled engine structure walked with raw casts (like the sibling ApplySwitch).
 SIZE_UNKNOWN(CTileWireLogic);
 class CTileWireLogic {
 public:
     i32 WireTileSwitchLogic(void* trigger, i32 x, i32 y); // __thiscall (callee cleans 0xc)
-    char m_pad[0x2f0];
+    char m_pad0[0x22c];
+    void* m_level; // +0x22c  the level object (its +0x24 is the action plane)
+    char m_pad230[0x2e4 - 0x230];
+    void* m_triggerContainer; // +0x2e4  the switch/trigger container (TsLookupSwitch host)
+    char m_pad2e8[0x2f0 - 0x2e8];
 };
 
 // @early-stop
@@ -426,23 +429,24 @@ public:
 // docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md; eh-state-numbering-base.md.
 RVA(0x0006c130, 0xd62)
 i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
-    void* self = this;
-    void* gr = g_gameReg;
-    i32 areaGm = WTS_I32(gr, 0x2c);
+    char* gr = (char*)g_gameReg;
+    i32 areaGm = *(i32*)(gr + 0x2c);
 
     if (trigger != 0) {
-        WTS_I32(trigger, 0x358) = 1;
+        *(i32*)((char*)trigger + 0x358) = 1;
     }
 
-    // Resolve the tile cell from the level's action plane and clamp (x, y).
-    void* lvl = WTS_PTR(self, 0x22c);
-    void* plane = WTS_PTR(lvl, 0x24);
+    // Resolve the tile cell from the level's action plane and clamp (x, y). The
+    // level/plane/geom graph below is unmodeled engine structure walked with raw
+    // casts - the same murky level-graph the sibling ApplySwitch/RollingBall walk.
+    char* lvl = (char*)m_level;
+    char* plane = *(char**)(lvl + 0x24);
     i32 cx = x;
     i32 cy = y;
     if (cx < 0) {
         cx = 0;
     } else {
-        i32 w = WTS_I32(WTS_PTR(plane, 0x5c), 0x30);
+        i32 w = *(i32*)(*(char**)(plane + 0x5c) + 0x30);
         if (cx >= w) {
             cx = w - 1;
         }
@@ -450,22 +454,22 @@ i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
     if (cy < 0) {
         cy = 0;
     } else {
-        i32 h = WTS_I32(WTS_PTR(plane, 0x5c), 0x34);
+        i32 h = *(i32*)(*(char**)(plane + 0x5c) + 0x34);
         if (cy >= h) {
             cy = h - 1;
         }
     }
-    void* p5c = WTS_PTR(plane, 0x5c);
-    i32 sx = WTS_I32(p5c, 0x8c);
-    i32 sy = WTS_I32(p5c, 0x90);
+    char* p5c = *(char**)(plane + 0x5c);
+    i32 sx = *(i32*)(p5c + 0x8c);
+    i32 sy = *(i32*)(p5c + 0x90);
     i32 col = (cx >> sx);
     i32 row = (cy >> sy);
-    i32 base = WTS_I32(WTS_I32(p5c, 0x24), row * 4) + col;
-    i32 raw = WTS_I32(WTS_PTR(p5c, 0x20), base * 4);
+    i32 base = *(i32*)(*(char**)(p5c + 0x24) + row * 4) + col;
+    i32 raw = *(i32*)(*(char**)(p5c + 0x20) + base * 4);
     i32 tag = 0;
     if (raw != (i32)0xeeeeeeee && raw != -1) {
-        void* tbl = WTS_PTR(plane, 0x4c);
-        void* node = WTS_PTR((char*)tbl, (raw & 0xffff) * 4);
+        char* tbl = *(char**)(plane + 0x4c);
+        void* node = *(void**)(tbl + (raw & 0xffff) * 4);
         tag = WtsVtblResolve(node);
     }
 
@@ -474,7 +478,7 @@ i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
         return 0;
     }
 
-    void* trig = WTS_PTR(self, 0x2e4);
+    void* trig = m_triggerContainer;
     void* sw = TsLookupSwitch(trig, (x >> 5) + ((y >> 5) << 8) + 0x700);
     if (sw == 0) {
         CString msg; // [esp+0x30] diagnostic temp
@@ -488,8 +492,6 @@ i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
     (void)sw;
     return 1;
 }
-#undef WTS_I32
-#undef WTS_PTR
 
 // 0x6d300: ApplySwitch(sx, sy) - the /GX switch-logic driver. Clamp (sx,sy) to the plane,
 // sample the tile attribute, decode the logic class, switch over the kind dispatching the
