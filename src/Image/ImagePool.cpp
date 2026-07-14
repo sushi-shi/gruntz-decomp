@@ -50,22 +50,9 @@
 // The .PID/.PCX-via-RezMgr flags word (PidFlags) now comes from the shared
 // <DDrawMgr/DDSurface.h> (via Image.h) - wave4-K dedup.
 
-// The .PID on-disk image header (32 = 0x20 bytes; 8 dwords). DecodePidData reads
-// this at the head of the RezMgr payload; the RLE/uncompressed 8bpp pixel stream
-// begins right after it (buf + 0x20). Typing the buffer lets the decoder read the
-// header by name instead of raw offsets (matching-neutral - same offsets/widths).
-struct PidHeader {
-    u32 fileDesc; // +0x00  id / file descriptor
-    u32 flags;    // +0x04  PidFlags
-    i32 width;    // +0x08
-    i32 height;   // +0x0c
-    i32 offsetX;  // +0x10  draw anchor X
-    i32 offsetY;  // +0x14  draw anchor Y
-    u32 fill;     // +0x18  fill colour (masked to low word when flags & 0x100)
-    u32 unk1;     // +0x1c
-    // +0x20: the RLE/uncompressed 8bpp pixel stream begins here.
-};
-SIZE_UNKNOWN(PidHeader);
+// The .PID on-disk image header (PidHeader, 0x20 B) is the shared format struct in
+// <DDrawMgr/DDSurface.h> (via Image.h), homed next to the PidFlags it carries at +0x04
+// (2026-07-14); DecodePidData reads it by name at the head of the RezMgr payload.
 
 // The five file-extension string LITERALS (??_C@ .rdata constants, pooled + shared
 // with the DirPal.cpp / Image.cpp loaders; reloc-masked, so each `push OFFSET` pairs).
@@ -117,26 +104,12 @@ struct ScanlinePalette {
 };
 SIZE_UNKNOWN(ScanlinePalette); // partial view of the foreign palette object (pointer-passed)
 
-// The stack CFile temp SaveBmp writes through: ctor/dtor act on the object base;
-// the engine writer's Open lives on the +0xc sub-object and Write on the +0x8
-// sub-object (the embedded stream bases), so the `lea ecx,[file+N]` adjustments
-// fall out. All reloc-masked.
-struct BmpFile {
-    struct Stream {
-        // Write @0x1bf362 IS CFile::Write; cast at each call.
-    };
-    struct Opener {
-        // Open @0x1bf200 IS CFile::Open; cast at the call.
-    };
-    BmpFile();  // 0x1befd7
-    ~BmpFile(); // 0x1bf121
-    char p0[0x8];
-    Stream m_8; // +0x08
-    char p9[0xc - 0x9];
-    Opener m_c;           // +0x0c
-    char pad[0x10 - 0xd]; // file object is 0x10 B on the frame (info sits at file+0x10)
-};
-SIZE_UNKNOWN(BmpFile);
+// SaveBmp writes through a plain destructible MFC CFile stack temp (ctor 0x1befd7,
+// Open 0x1bf200, Write 0x1bf362, dtor 0x1bf121 - all NAFXCW, reloc-masked via <Mfc.h>).
+// The former BmpFile/Stream/Opener view read Open on file+0xc / Write on file+0x8 as
+// "sub-objects"; that was a MISREADING - the retail `lea ecx,[esp+0x30]`/`[esp+0x2c]`
+// are AFTER the arg pushes shifted esp, so the effective `this` is the SAME file base
+// for ctor/Open/Write/dtor. Dissolved to `CFile file;` (2026-07-14).
 
 // CImagePool is the canonical class in <Image/ImagePool.h> (included above); this
 // TU owns its method bodies. The five surface factories below RezAlloc a fresh
@@ -1271,18 +1244,17 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
         }
     }
 
-    char fileHdr[0xe]; // BITMAPFILEHEADER  ([esp+0x10])
-    char info[0x428];  // BITMAPINFOHEADER + 256-entry colour table ([esp+0x34])
-    for (i32 z = 0; z < 0x428 / 4; z++) {
-        *(i32*)(info + z * 4) = 0;
-    }
-    *(i32*)(info + 0x00) = 0x28;     // biSize
-    *(i32*)(info + 0x04) = m_width;  // biWidth
-    *(i32*)(info + 0x08) = m_height; // biHeight
-    *(i16*)(info + 0x0c) = 1;        // biPlanes
-    *(i16*)(info + 0x0e) = 8;        // biBitCount
-    *(i32*)(info + 0x10) = 0;        // biCompression
-    *(i32*)(info + 0x14) = 0;        // biSizeImage
+    BITMAPFILEHEADER fileHdr;  // real 0xe-byte packed file header ([esp+0x10])
+    char info[0x428];          // BITMAPINFOHEADER + 256-entry RGBQUAD table ([esp+0x34])
+    BITMAPINFOHEADER* bih = (BITMAPINFOHEADER*)info;
+    memset(info, 0, 0x428);
+    bih->biSize = 0x28;
+    bih->biWidth = m_width;
+    bih->biHeight = m_height;
+    bih->biPlanes = 1;
+    bih->biBitCount = 8;
+    bih->biCompression = 0;
+    bih->biSizeImage = 0;
 
     u8* pal = (u8*)obj + 8;
     if (pal == 0) {
@@ -1299,20 +1271,21 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     }
 
     // Copy the 14-byte file-header template, then patch bfSize / bfOffBits.
+    char* fh = (char*)&fileHdr;
     for (i32 b = 0; b < 0xe; b++) {
-        fileHdr[b] = g_bmpHeaderTemplate[b];
+        fh[b] = g_bmpHeaderTemplate[b];
     }
-    *(i32*)(fileHdr + 2) = m_width * m_height + 0x436; // bfSize
-    *(i32*)(fileHdr + 0xa) = 0x436;                    // bfOffBits
+    fileHdr.bfSize = m_width * m_height + 0x436;
+    fileHdr.bfOffBits = 0x436;
 
-    BmpFile file;
-    if (((CFile*)&file.m_c)->Open(filename, 0x1001, 0) == 0) {
+    CFile file;
+    if (file.Open(filename, 0x1001, 0) == 0) {
         return 0;
     }
-    ((CFile*)&file.m_8)->Write(fileHdr, 0xe);
-    ((CFile*)&file.m_8)->Write(info, 0x428);
+    file.Write(&fileHdr, 0xe);
+    file.Write(info, 0x428);
     for (i32 row = m_height - 1; row >= 0; row--) {
-        ((CFile*)&file.m_8)->Write((u8*)m_pixels + m_rowOffsets[row], m_width);
+        file.Write((u8*)m_pixels + m_rowOffsets[row], m_width);
     }
     return 1;
 }
@@ -1343,7 +1316,9 @@ void CRezImage::FillRect(CRezFillRect* r, i32 color) {
 // when CFileImageSurface (Image.h) was reparented onto its real CDDSurface base (R53
 // reloc-fidelity fix), and again (100->66.44) when m_surfaces/m_palettes were retyped
 // from CObList to their real class CPtrList (LIST-AUDIT: every CImagePool list call
-// targets the band whose vtable 0x1eb054 slot-0 CRuntimeClass names "CPtrList").
+// targets the band whose vtable 0x1eb054 slot-0 CRuntimeClass names "CPtrList"), and
+// again (2026-07-14) when SaveBmp dropped the BmpFile view for a real CFile + modeled
+// fileHdr/info as BITMAPFILEHEADER/BITMAPINFOHEADER (same TU-type-graph reschedule).
 // Proven causal + isolated: reverting ONLY this TU's two files restores it to 0-diff.
 // Body byte-faithful; kept per the clean-room mandate (a correct de-view /
 // reloc-fidelity fix outranks a collateral regalloc %).

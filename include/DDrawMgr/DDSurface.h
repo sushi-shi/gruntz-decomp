@@ -61,6 +61,24 @@ enum PidFlags {
     PID_EMBEDDED_PALETTE = 0x80, // bit7  trailing 768-byte VGA palette at EOF
 };
 
+// The .PID on-disk image header (32 = 0x20 bytes; 8 dwords). CRezImage::DecodePidData
+// reads it at the head of the RezMgr payload; the RLE/uncompressed 8bpp pixel stream
+// begins right after it (buf + 0x20). Monolith's WAP32 layout (libwap32 wap32/pid.h);
+// naming the fields is matching-neutral (same offsets/widths). Shared here next to the
+// PidFlags it carries at +0x04.
+struct PidHeader {
+    u32 fileDesc; // +0x00  id / file descriptor
+    u32 flags;    // +0x04  PidFlags
+    i32 width;    // +0x08
+    i32 height;   // +0x0c
+    i32 offsetX;  // +0x10  draw anchor X
+    i32 offsetY;  // +0x14  draw anchor Y
+    u32 fill;     // +0x18  fill colour (masked to low word when flags & 0x100)
+    u32 unk1;     // +0x1c
+    // +0x20: the RLE/uncompressed 8bpp pixel stream begins here.
+};
+SIZE(PidHeader, 0x20);
+
 // The CDDSurface::Resolve / ResolveEx `type` selector. Same case immediates as the
 // bare 1/2/4 labels (the running-subtract switch chain is value-driven), so naming
 // them is matching-neutral; bodies stay in retail .text order (4, 2, 1).
