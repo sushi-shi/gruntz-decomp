@@ -40,4 +40,21 @@ public:
 VTBL(CSecretTeleporterTrigger, 0x1e7564);
 SIZE(CSecretTeleporterTrigger, 0x54);
 
+// The activation-registry entry record: its first dword is a PMF of the trigger
+// class. Single inheritance -> a 4-byte code pointer, so the store is a single-word
+// `mov [entry],offset handler` and the dispatch is `mov ecx,this; call [entry]`.
+// FireActivation reads it as an ActHandler (void); RegisterActs stamps
+// SpawnTeleporter through the i32-returning SpawnHandler view of the same slot.
+// (Declared AFTER the complete class so the PMF stays 4 bytes.)
+typedef void (CSecretTeleporterTrigger::*ActHandler)();
+struct CActEntry {
+    ActHandler m_fn; // [entry]
+};
+SIZE_UNKNOWN(CActEntry);
+typedef i32 (CSecretTeleporterTrigger::*SpawnHandler)();
+struct CTelActEntry {
+    SpawnHandler m_fn;
+};
+SIZE_UNKNOWN(CTelActEntry);
+
 #endif // GRUNTZ_CSECRETTELEPORTERTRIGGER_H

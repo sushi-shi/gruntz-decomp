@@ -39,4 +39,13 @@ public:
 };
 VTBL(CSecretLevelTrigger, 0x1e8804);
 
+// The secret-level trigger's activation-registry entry: its first dword is the
+// Tick handler PMF (a 4-byte code pointer on this single-inheritance class).
+// Declared AFTER the complete class so the PMF stays 4 bytes.
+typedef i32 (CSecretLevelTrigger::*SecretActHandler)();
+struct CSecretActEntry {
+    SecretActHandler m_fn;
+};
+SIZE_UNKNOWN(CSecretActEntry);
+
 #endif // GRUNTZ_CSECRETLEVELTRIGGER_H

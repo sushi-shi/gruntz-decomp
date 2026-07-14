@@ -21,6 +21,7 @@
 #include <Gruntz/Trigger.h>          // CTrigger (point-probe result, its m_10 HUD sprite)
 #include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (m_world/m_cmdGrid/
                                      // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
+#include <Gruntz/BattlezData.h>      // CBattlezData (g_gameReg->m_scoreHud; +0x3c armed counter)
 #include <Gruntz/SpriteFactory.h>    // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/ActColl.h>          // CActColl/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/ActNameRegistry.h>  // the SHARED activation-name registry (g_buteTree/
@@ -39,24 +40,13 @@
 // +0x68, m_scoreHud +0x7c).
 extern "C" CGameRegistry* g_gameReg;
 
-// The +0x7c aux facet (g_gameReg->m_scoreHud): the teleporter ctor bumps its
-// +0x3c "teleporter armed" counter. @identity-TODO (the scoreHud/aux slot's
-// concrete class is unrecovered).
-SIZE_UNKNOWN(WwdGameRegAux);
-struct WwdGameRegAux {
-    char m_pad00[0x3c];
-    i32 m_3c; // +0x3c
-};
-
-// The viewport rect base reached as g_gameReg->m_world->m_24->m_5c + 0x40; the
-// on-screen test reads its left/top/right/bottom (m_0/m_4/m_8/m_c).
-SIZE_UNKNOWN(CViewRect);
-struct CViewRect {
-    i32 m_left;   // +0x00
-    i32 m_top;    // +0x04
-    i32 m_right;  // +0x08
-    i32 m_bottom; // +0x0c
-};
+// The +0x7c aux facet g_gameReg->m_scoreHud IS the canonical CBattlezData
+// (<Gruntz/BattlezData.h>): the teleporter ctor bumps its +0x3c "teleporter armed"
+// counter directly on the singleton's typed member (the ex WwdGameRegAux view is
+// dissolved). The on-screen viewport rect the spawn cue tests is the bound level's
+// main plane (g_gameReg->m_world->m_24->m_mainPlane): its near-origin/far-extent
+// pair {m_originX,m_originY,m_extentX,m_extentY} IS the {left,top,right,bottom}
+// window (the ex CViewRect reinterpret is dissolved onto CLevelPlane).
 
 // ---------------------------------------------------------------------------
 // The teleporter's per-coordinate activation registry FireActivation (0x042150)
@@ -69,14 +59,8 @@ struct CViewRect {
 DATA(0x00244688)
 CActColl g_actColl;
 
-// The entry's first dword is a pointer-to-member-function of the trigger class
-// (single inheritance -> a 4-byte code pointer); FireActivation invokes it on
-// `this`, emitting `mov ecx,this; call [entry]`.
-typedef void (CSecretTeleporterTrigger::*ActHandler)();
-SIZE_UNKNOWN(CActEntry);
-struct CActEntry {
-    ActHandler m_fn; // [entry]
-};
+// The entry record (ActHandler/CActEntry, the PMF slot) is defined in
+// <Gruntz/SecretTeleporterTrigger.h> after the complete class.
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
 // g_act* registry-field globals (referenced only from this TU): real
@@ -110,31 +94,18 @@ static inline CActEntry* ActLookup(i32 coord) {
     return g_actCur;
 }
 
-// The activation-registry entry for SpawnTeleporter (an i32-returning handler PMF
-// on the complete single-inheritance class).
-typedef i32 (CSecretTeleporterTrigger::*SpawnHandler)();
-SIZE_UNKNOWN(CTelActEntry);
-struct CTelActEntry {
-    SpawnHandler m_fn;
-};
+// The SpawnTeleporter entry (SpawnHandler/CTelActEntry) is defined in
+// <Gruntz/SecretTeleporterTrigger.h>; the secret-level Tick entry
+// (SecretActHandler/CSecretActEntry) in <Gruntz/SecretLevelTrigger.h> - both after
+// the complete class so the PMF stays 4 bytes.
 
-// The secret-level trigger's registry entry: its first dword receives the Tick
-// handler PMF (a 4-byte code pointer on this complete single-inheritance class).
-typedef i32 (CSecretLevelTrigger::*SecretActHandler)();
-struct CSecretActEntry {
-    SecretActHandler m_fn;
-};
-SIZE_UNKNOWN(CSecretActEntry);
-
-// The secret-level trigger's activation-coordinate registry singleton
-// (@0x644598): the fixed [2000,2010] range built by the shared registry ctor
-// (0x408710). CSecretActReg is the shared <Gruntz/ActReg.h> CActReg archetype;
-// it keeps its own placeholder name so the DATA-pinned global symbol is unchanged.
-struct CSecretActReg : public CActReg {};
-SIZE_UNKNOWN(CSecretActReg);
+// The secret-level trigger's activation-coordinate registry singleton (@0x644598):
+// the fixed [2000,2010] range built by the shared registry ctor (0x408710). It is
+// the shared <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
+// CSecretActReg view is dissolved); the DATA-pinned global symbol is unchanged.
 DATA(0x00244598)
-CSecretActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
-                              // fields 0x24459c..0x2445b8 are this object's members)
+CActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
+                        // fields 0x24459c..0x2445b8 are this object's members)
 
 // The probed trigger object is the shared <Gruntz/Trigger.h> class: its
 // +0x170/+0x198 are the level/layer ids the bound sprite's +0x11c/+0x120 must
@@ -209,7 +180,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
         m_38->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
-        ((WwdGameRegAux*)g_gameReg->m_scoreHud)->m_3c++;
+        g_gameReg->m_scoreHud->m_3c++;
     }
 }
 
@@ -411,8 +382,9 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             CGameRegistry* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
-            CViewRect* rc = (CViewRect*)&g->m_world->m_24->m_mainPlane->m_originX;
-            if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
+            CLevelPlane* rc = g->m_world->m_24->m_mainPlane;
+            if (ex < rc->m_extentX && ex >= rc->m_originX && ey < rc->m_extentY
+                && ey >= rc->m_originY) {
                 ((CGruntSpawnConfig*)g->m_cueSink)
                     ->SpawnVoiceDriver((i32)hit, 0x3fc, -1, 0, -1, -1);
             }
