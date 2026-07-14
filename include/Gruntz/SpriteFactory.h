@@ -86,7 +86,13 @@ public:
     // AttachSprite calls it through a CWwdObjMgr* view - no fake local placeholder.
 
     char m_pad04[0xc - 0x4]; // vptr occupies +0x00..+0x03
-    CResMgr* m_c;            // +0x0c
+    // @identity-TODO (item-2 merge prerequisite): this +0x0c owner is read as CResMgr*
+    // here (m_c->m_14 sprite-set registry) but as CDDrawSurfaceMgr* in the CWwdObjMgr view
+    // (m_0c->m_workerCache) - the SAME field of the SAME object (CSpriteFactory == CWwdObjMgr
+    // == CDDrawChildGroup, vtable 0x1efdc0). Folding the trio to one class requires first
+    // resolving whether CResMgr == CDDrawSurfaceMgr (a nested identity) or one view mistypes
+    // +0x0c; do that before the ~50-80 file rename so the merged field carries one true type.
+    CResMgr* m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
     CSpriteListNode* m_liveObjects; // +0x14  live created-object list head
     char m_pad18[0x48 - 0x18];

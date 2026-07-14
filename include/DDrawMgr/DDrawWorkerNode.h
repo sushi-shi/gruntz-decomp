@@ -43,14 +43,30 @@ struct CDDrawFrameSource;
 // <DDrawMgr/DDrawSurfacePair.h>, pulled by CDDrawWorkers.cpp for the method body.
 class CDDrawSurfacePair;
 
-// The REAL shared base of both worker subtypes (CDDrawWorkerA/B derive it), so the
-// non-virtual Helper_164790 has ONE definition (CDDrawWorkerBase::Helper_164790
-// @0x164790) that BOTH subtypes' Vfunc* calls bind to (reloc-fidelity: was a fake
-// CDDrawWorkerA/B::Helper_164790 per-view decl that stayed UNBOUND). Base carries the
-// +0x00..+0x77 field layout; the CObject grand-base supplies vtable slots [0..4] and
-// each concrete subtype declares its own slots [5..] (A: 12-slot 0x1efea0; B: 14-slot
-// 0x1efed0, sharing the same 0x157200/0x157310/... slot RVAs). Base is abstract (never
-// instantiated) and adds no new virtual slots, so it has NO distinct emitted vtable -
+// @identity-TODO: CDDrawWorkerBase IS CResolveNode-derived (<Gruntz/ResolveNode.h>).
+// PROVEN: the 0x164790 body below IS CResolveNode::SetPosition (slot 9 of the retail
+// vtable ??_7CResolveNode @0x1efbc0 - the vtable datum holds 0x164790 at +0x24), and it
+// is `call`ed BOTH from the wide-object family Setup @0x150d60 (on a CWwdGameObjectE,
+// which IS a CResolveNode) AND from every worker Vfunc* here - so a worker holds a
+// CResolveNode base subobject. The base field block +0x04..+0x64 maps field-for-field
+// onto CResolveNode (m_ctx @+0x0c == CLoadable::m_0c owner; m_20/m_38/m_5c/m_64 are its
+// dirty-rect/position sentinels), with CDDrawWorkerBase adding only m_74 @+0x74.
+// BLOCKER (why this is NOT yet realized - the ctor prerequisite): retail builds a worker
+// with a SINGLE inline vptr stamp + flat field seed and NO CResolveNode ctor call
+// (disasm 0x157150: `mov [eax],0x5efed0` once, no `call 0x1549d0`). Deriving CResolveNode
+// injects either an out-of-line `call CResolveNode::CResolveNode()` (0x1549d0, non-trivial)
+// or - if that ctor is inlined to elide it - folds its body into the ResolveNode.cpp ??_G
+// pocket, which retail did NOT (ResolveNode.h keeps it out-of-line on purpose). Unblock
+// path: a trivial CResolveNode tag-ctor for the worker sites (so the derived seed stays a
+// single stamp, relying on MSVC5 /O2 dead-intermediate-vptr elision like the family ctor
+// 0x15b390 does) + retype the worker slots 5/7/8/9 as OVERRIDEs of IsLoaded/Unload/
+// GetClassId/SetPosition. Until then the workers stay CObject-derived (distinct emitted
+// vtables 0x1efea0/0x1efed0 - NOT a DIVERGENT with CResolveNode's 0x1efbc0).
+//
+// The base carries the +0x00..+0x77 field layout; the CObject grand-base supplies vtable
+// slots [0..4] and each concrete subtype declares its own slots [5..] (A: 12-slot 0x1efea0;
+// B: 14-slot 0x1efed0, sharing the same 0x157200/0x157310/... slot RVAs). Base is abstract
+// (never instantiated) and adds no new virtual slots, so it has NO distinct emitted vtable -
 // hence no VTBL/RELOC_VTBL (0x1efed0 is owned solely by CDDrawWorkerB's VTBL below).
 class CDDrawWorkerBase : public CObject {
 public:
