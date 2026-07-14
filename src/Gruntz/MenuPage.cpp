@@ -39,26 +39,32 @@ struct CMenuListNode {
     CMenuItem* data;
 };
 
-// The name->page catalog reached through m_owner->m_catalog->m_map. Disasm of Configure
-// (0x1832f0) pins the chain: `mov edx,[this]` (m_owner @+0x00) -> `mov ecx,[edx+0x10]`
-// (m_catalog @m_owner+0x10) -> `add ecx,0x10` (&m_map @m_catalog+0x10) -> call 0x1b8008.
-// The LEAF is recovered: 0x1b8008 is CMapStringToOb::Lookup (mfc_class-verified; the band
-// table 0x1b8008=CMapStringToOb / 0x1b8438=CMapStringToPtr was INVERTED tree-wide), so the
-// map is the real MFC CMapStringToOb from <Mfc.h>. The two INTERMEDIATE holders remain
-// local structural views: m_owner is set from the template's +0x00 field (Configure:
-// `m_owner = (CMenuHost*)tmpl[0]`), a data pointer into an owning menu system that carries
-// no vtable stamp and no RTTI - the xref chase (disasm chain + callee mangling) recovers
-// the map but dead-ends on naming these two plain holder structs. Kept minimal (offsets +
-// code bytes load-bearing); not @identity-TODO since the polymorphic leaf IS the real class.
+// The name->page catalog reached through m_owner->m_catalog->m_map. The full chase pins
+// every hop to a REAL class:
+//   * Configure disasm (0x1832f0): `mov edx,[this]` (m_owner @+0) -> `mov ecx,[edx+0x10]`
+//     (m_catalog @m_owner+0x10) -> `add ecx,0x10` (&m_map @m_catalog+0x10) -> call 0x1b8008.
+//   * m_owner = the template's +0 field (Configure: `m_owner = tmpl[0]`); the builder's
+//     template IS the CChatBox, whose +0x00 is `CSpriteFactoryHolder* m_page` (ChatBox.h) -
+//     so m_owner is a CSpriteFactoryHolder (== CState::m_c, GameRegistry.h).
+//   * CSpriteFactoryHolder+0x10 is `CImageRegistry* m_10` (GameRegistry.h) -> m_catalog IS
+//     a CImageRegistry (the image/name registry).
+//   * CImageRegistry+0x10 is its name map; 0x1b8008 is CMapStringToOb::Lookup (mfc_class-
+//     verified; the 0x1b8008=Ob / 0x1b8438=Ptr band table was INVERTED tree-wide) -> the
+//     map is the real MFC CMapStringToOb (menu pages register as CObject* by key).
+// So CMenuHost==CSpriteFactoryHolder and CMenuCatalog==CImageRegistry. The clean fold is a
+// DEFERRED-FOLD blocked on CImageRegistry: it is only ever forward-declared tree-wide (no
+// TU models its layout), so the middle hop's .m_map can't be typed without first modeling
+// CImageRegistry in ResMgr.h. Kept as minimal, correctly-attributed structural views until
+// then (offsets + code bytes load-bearing); the polymorphic leaf IS the real CMapStringToOb.
 SIZE_UNKNOWN(CMapStringToOb);
-struct CMenuCatalog {
+struct CMenuCatalog { // == CImageRegistry (opaque tree-wide; modeling it in ResMgr.h unblocks the fold)
     char pad0[0x10];
-    CMapStringToOb m_map; // +0x10 the string->page map base (real MFC CMapStringToOb)
+    CMapStringToOb m_map; // +0x10 the name->page map base (real MFC CMapStringToOb)
 };
 SIZE_UNKNOWN(CMenuCatalog);
-struct CMenuHost {
+struct CMenuHost { // == CSpriteFactoryHolder (GameRegistry.h; == CChatBox::m_page / CState::m_c)
     char pad0[0x10];
-    CMenuCatalog* m_catalog; // +0x10 -> the catalog holder
+    CMenuCatalog* m_catalog; // +0x10 -> the CImageRegistry catalog
 };
 SIZE_UNKNOWN(CMenuHost);
 
