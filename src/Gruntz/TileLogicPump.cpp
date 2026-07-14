@@ -115,45 +115,11 @@ extern "C" u32 g_engineFrameDelta;
 DATA(0x0024e720)
 CActReg g_tileActReg;
 
-// CTileTriggerTransition - the CUserLogic leaf the state machine (StepController) builds.
-// Layout is plain CUserLogic (0x40) + the leaf tail; it is a .cpp-local view of the leaf
-// (a real class whose identity/vtable live entirely in this obj); folding it to a shared
-// header is deferred (it would leak the class into GruntVoice/StatusBarSpriteActs which only
-// need the controller/state types).
-class CTileTriggerTransition : public CUserLogic {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CTileTriggerTransition(CGameObject* obj); // 0x10faf0
-    virtual ~CTileTriggerTransition() OVERRIDE;
-
-    // per-class logic-type id (0x405); body out-of-line at 0x011730 in the leaf pool
-    // (below, so the file stays RVA-ascending).
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
-    void Register_10fc90();         // 0x10fc90
-    void FireActivation(i32 coord); // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
-    static void RegisterActs();     // 0x10fe70  intern "A", bind Handler (static: no this;
-                                    //           called this-less by the game-object factory)
-    i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
-    i32 Handler_110110();                         // 0x110110  the per-frame handler bound here
-
-    // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
-    // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the +0x1b4
-    // animation descriptor (same field CGrunt's resolvers name m_activeAnimDesc).
-    i32 m_activeAnimDesc;      // +0x40
-    char m_pad44[0x54 - 0x44]; // +0x44..+0x53
-};
-VTBL(CTileTriggerTransition, 0x1e7db4);
-SIZE_UNKNOWN(CTileTriggerTransition);
-
-// The per-class registry entry: its first dword receives the per-frame handler PMF
-// (a 4-byte code pointer on this complete single-inheritance class).
-typedef i32 (CTileTriggerTransition::*TileActHandler)();
-struct TileActEntry {
-    TileActHandler m_fn;
-};
+// CTileTriggerTransition (the CUserLogic leaf the state machine builds), its
+// vtable slot map, and its TileActEntry PMF holder now live in the shared header
+// <Gruntz/TileTriggerTransition.h> (included above) - it is a real class, not a
+// per-TU view. GruntVoice/StatusBarSpriteActs already include that header (they
+// don't use the class, so it emits no code there - a class decl is matching-neutral).
 
 // ---------------------------------------------------------------------------
 // The per-object tile-logic state pump: read the per-object state machine
@@ -907,4 +873,4 @@ SIZE_UNKNOWN(CCheckpointActEntry);
 SIZE_UNKNOWN(CCheckpointActReg);
 SIZE_UNKNOWN(CTileTriggerActEntry);
 SIZE_UNKNOWN(CTileSecretTriggerActEntry);
-SIZE_UNKNOWN(TileActEntry);
+// (TileActEntry's SIZE_UNKNOWN moved to <Gruntz/TileTriggerTransition.h> with the class.)
