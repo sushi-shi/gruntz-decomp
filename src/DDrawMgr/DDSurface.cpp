@@ -64,9 +64,8 @@ i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 // The engine RECT-copier fn-ptr (0x6c44bc), used by ShadeBlt to snapshot the rects.
 
 // The global image cache the new item is filed into: a real MFC CPtrArray holding
-// the 0xc0 CRezSurfaceItem surface items the 0x13e9a0 factory below builds. Stored
+// the 0xc0 CDDSurface pool items the 0x13e9a0 factory below builds. Stored
 // in retail .data at 0x653c88; DATA-referenced (reloc-masked), so declared extern.
-class CRezSurfaceItem;
 DATA(0x00253c88)
 CPtrArray g_imageCache;
 // g_imageCacheIndex (the next-free slot, an i32 right after the 8-byte CPtrArray)
@@ -405,7 +404,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
 // @early-stop
 // 0x13e8f0 (176 B) = a DIRSURF image-cache reload (__thiscall): scalar-deletes each
 // g_imageCache element, clears this->m_94 (CDdObArray) + g_imageCache, rebuilds via
-// this->m_8->vtbl[9](0, &CImageFactory::Build_13e9a0), reports through
+// this->m_8->EnumAttachedSurfaces(0, &EnumSurfacesCallback) (slot 9), reports through
 // CDirectDrawMgr::GetErrorString, then repopulates m_94 from g_imageCache. Homed from
 // GapFunctions.cpp (matcher-5); lives in the DIRSURF block (DDSurface.cpp) by RVA.
 // Homed pending the owning class (m_8 vtable + m_94 array) + the Build PMF push modelled.
@@ -414,104 +413,48 @@ i32 Gap_13e8f0(void) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// The factory at 0x13e9a0 builds a CFileImageSurface from a source resolver.
-// Modeling pieces (all reloc-masked):
-//   - the source's slot-0 probe(magic, &out) - declared on a tiny polymorphic view;
-//   - the global CObArray registry @0x653c88 + its grow index @0x653c90;
-//   - the 0xc0 surface item (surface vtable @0x5ef7f0, CByteArray @+0x94), the same
-//     shape as CDDrawPtrCollections::Create7f0_1.
-// ---------------------------------------------------------------------------
-inline void* operator new(u32, void* p) {
-    return p;
-} // placement new (construct in place)
-
-SIZE_UNKNOWN(CRezImageSource);
-class CRezImageSource {
-public:
-    virtual i32 Probe(void* magic, void** out); // slot 0 (@0x00)
-};
-
-// The tag passed to the source probe is the REAL SDK GUID IID_IDirectDrawSurface3
+// The IID passed to the QI below is the REAL SDK GUID IID_IDirectDrawSurface3
 // (its bytes at 0x5ef888 ARE {DA044E00-69B2-11D0-A1D5-00AA00B8DFBB}; DEFINED in
-// DDPageMgr.cpp). The old `void* g_imageProbeTag` was that GUID mis-modeled as an
-// opaque datum.
+// DDPageMgr.cpp).
 extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
-// The created 0xc0 surface item: vptr @0, the slot-1 Load, a CByteArray @+0x94.
-class CByteArrayMember {
-public:
-    CByteArrayMember(); // 0x1b4f0b (reloc-masked rel32)
-};
-// The built 0xc0 surface item: the SHARED CPoolItemA base vtable ??@0x1ef7f0
-// (VA 0x5ef7f0, 9 slots; uncataloged - a foreign shared base also stamped by
-// CDDSurface/CPoolItemA/CDDSurface). Real-polymorphic (2-slot declared-only foreign
-// surface-item vtable; the declared-only slots reloc-mask). cl auto-stamps the vptr
-// (??_7CRezSurfaceItem@@6B@) at ctor entry - the former manual surface-vtable stamp
-// stamped the vptr FIRST, so the store position is preserved (extern + stamp removed
-// per the all-vtables mandate). Slots named by their retail 0x1ef7f0 vtable-slot RVA
-// (FUN_<rva>): slot 0 = 0x141330 (scalar dtor), slot 1 = 0x13e140 (Load). This is the
-// ONE class the factory news, dispatches through, and files into the cache - the
-// former CImageSurfaceItemInit "init view" was the same physical object; folded here
-// so Build_13e9a0 carries no cross-cast.
-SIZE(CRezSurfaceItem, 0xc0); // `new CRezSurfaceItem` allocates the 0xc0 item
-class CRezSurfaceItem {
-public:
-    virtual ~CRezSurfaceItem();         // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual i32 ImgItemLoad(void* src); // slot 1 @+0x04  Load
-    inline CRezSurfaceItem() {
-        m_08 = 0;
-        m_0c = 0;
-        m_04 = 0;
-        m_dontOwn = 0;
-        m_bitDepth = 0;
-        m_b8 = 0;
-    }
-
-    i32 m_04;                  // +0x04
-    i32 m_08;                  // +0x08
-    i32 m_0c;                  // +0x0c
-    char m_pad10[0x7c - 0x10]; // +0x10
-    i32 m_dontOwn;             // +0x7c
-    char m_pad80[0x94 - 0x80]; // +0x80
-    CByteArrayMember m_94;     // +0x94
-    char m_pad98[0xa8 - 0x98]; // +0x98
-    i32 m_bitDepth;            // +0xa8
-    char m_padac[0xb8 - 0xac]; // +0xac
-    i32 m_b8;                  // +0xb8
-    char m_padbc[0xc0 - 0xbc]; // +0xbc
-};
-
-// The owner of the factory (this) is not touched by the body; modeled as an
-// opaque shell so the call lowers to the retail __thiscall frame.
-class CImageFactory {
-public:
-    i32 Build_13e9a0(CRezImageSource* src, i32 a2);
-};
-
 // ---------------------------------------------------------------------------
-// Probe `src` (slot 0); if it yields a payload, allocate a 0xc0 surface
-// item, construct it (CByteArray @+0x94, stamp the surface vtable, zero the scalar
-// fields), Load the payload through slot 1, and on success file it into the global
-// image cache - else virtual-delete it. /GX. ret 0xc.
+// 0x13e9a0: the IDirectDrawSurface::EnumAttachedSurfaces callback (DDENUMSURFACESCALLBACK,
+// __stdcall / WINAPI, 3 args -> ret 0xc; disasm-proven, `mov eax,1; ret 0xc`). Passed as
+// the fn-ptr to m_8->EnumAttachedSurfaces (vtable slot 9) by the image-cache reload at
+// 0x13e8f0. For each enumerated surface: QueryInterface (slot 0, `call [surf_vtable]` with
+// `this`=surf PUSHED - a __stdcall COM call, NOT thiscall) it for IID_IDirectDrawSurface3;
+// on S_OK (== 0) wrap the v3 interface in a fresh CDDSurface (`new CDDSurface` = the retail
+// operator-new(0xc0) + inlined ctor: CPtrArray @+0x94, vptr stamp 0x5ef7f0, 6 field zeros),
+// Refresh caches its geometry, and file it into the global image cache; a failed QI or
+// Refresh drops it (delete = slot-0 scalar-deleting dtor under the null-guard). `desc`/`ctx`
+// are unused. The throwing CPtrArray member ctor gives the /GX ctor-in-flight EH frame.
+//
+// The former CImageFactory (fabricated __thiscall receiver - `this` is never touched, and
+// the true fn is a FREE __stdcall callback) + CRezImageSource (the "probe source", really a
+// real <ddraw.h> IDirectDrawSurface COM interface whose slot 0 is IUnknown::QueryInterface)
+// views are DISSOLVED; the old `Probe(...) != 0` guard was an inverted-polarity bug (retail
+// builds on QI == S_OK).
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall (docs/patterns/rezalloc-placement-new-no-eh-
-// frame.md), the same wall as the sibling Create7f0_1/CreateA factories: retail wraps
-// `new`+throwing-member-ctor in a /GX frame; MSVC5 placement-new emits no
-// ctor-in-flight EH state, so the body is byte-exact but the frame differs. Deferred
-// to the final sweep.
+// ~62%: complete + correct reconstruction (QI slot 0, `new CDDSurface`, slot-1 Refresh,
+// SetAtGrow/delete, ret 0xc all disasm-verified). Residual is (a) `new CDDSurface` here
+// emits an EXTERNAL ctor call because CDDSurface's inline ctor body lives in
+// DirectDrawMgr.cpp (not DDSurface.h), while retail INLINES the ctor at this new-site;
+// (b) the /GX ctor-in-flight EH-state index (the Create7f0_1/CreateA factory-EH family
+// wall). Fix for (a) = move CDDSurface::CDDSurface() inline into DDSurface.h (touches a
+// widely-included header - deferred to avoid the butterfly mid-cleanup).
 RVA(0x0013e9a0, 0xcc)
-i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
+i32 __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     void* payload = 0;
-    if (src->Probe((void*)&IID_IDirectDrawSurface3, &payload) != 0) {
-        CRezSurfaceItem* item = new CRezSurfaceItem;
-        if (item->ImgItemLoad(payload)) { // slot 1 @+0x04  Load
+    if (surf->QueryInterface(IID_IDirectDrawSurface3, &payload) == 0) {
+        CDDSurface* item = new CDDSurface;
+        if (item->Refresh((IDirectDrawSurface*)payload)) { // slot 1 @+0x04
             g_imageCache.SetAtGrow(g_imageCacheIndex, item);
         } else if (item) {
             delete item; // slot 0 @+0x00  scalar-deleting dtor
         }
     }
-    return 1;
+    return 1; // DDENUMRET_OK (continue enumeration)
 }
 
 // CDDSurface::GetElementAt (__thiscall): bounds-checked m_elements[i], or 0.
@@ -2158,8 +2101,6 @@ i32 CDDSurface::Scale(i32 n) {
 // ===========================================================================
 SIZE_UNKNOWN(CFileImageElement);
 SIZE_UNKNOWN(CFileImageSrc);
-SIZE_UNKNOWN(CByteArrayMember);
-SIZE_UNKNOWN(CImageFactory);
 SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
 
 // --- vtable catalog ---
