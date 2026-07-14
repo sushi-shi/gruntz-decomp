@@ -44,20 +44,6 @@ typedef u32 u32;
 DATA(0x00245d88)
 RECT g_menuTextRect = {0}; // 0x245d88  (owner-TU definition)
 
-// The embedded CString/CPtrList sub-objects, declared with real (no-body, reloc-
-// masked) ctors/dtors so the page ctor/dtor emit the EH-tracked construct/destruct
-// sequences (the `lea ecx,[page+off]; call <ctor/dtor>` + the EH-state stamps).
-struct MenuStr {
-    MenuStr();  // CString::CString  0x1b9b93
-    ~MenuStr(); // CString::~CString 0x1b9cde
-    char m_pad[0x4];
-};
-struct MenuList {
-    MenuList();  // CPtrList::CPtrList(10) 0x1b4867
-    ~MenuList(); // CPtrList dtor         0x1b48c6
-    char m_pad[0x1c];
-};
-
 // The per-item object AddItem/AddSubItem return IS the canonical CMenuItem
 // (<Gruntz/MenuItem.h>, via MenuPage.h): the "+0x18 disable" dispatch is its
 // slot 6, Disable(i32) @0x184650 (name recovered HERE - the builder disables the
@@ -67,11 +53,20 @@ struct MenuList {
 // (the old `it->m_58` receiver was a misreconstruction; retail:
 // `mov eax,ds:0x64556c; mov ecx,[eax+0x58]; call 0x31ac`).
 #include <Gruntz/MenuPage.h> // canonical CMenuItem (Disable [6], the AddItem product)
+#include <Gruntz/ChatBox.h>  // the menu host CChatBox (RegisterPage == AddNode @0x182ba0)
 #include <Io/SaveGame.h>     // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
 
-// The menu-page object (0x68 bytes): three CString fields (+8/+c/+10), a CPtrList
-// (+0x14), scalar state (+0/+4/+0x30/+0x60/+0x64). The builder methods are
-// __thiscall engine callees (reloc-masked).
+// The menu-page object (0x68 bytes): this IS the canonical CMenuPage (MenuPage.h) - the
+// Init/Finalize/AddItem/AddSub callees bind to the SAME RVAs as CMenuPage::Configure
+// (0x1832f0) / InitDefaults (0x1833a0) / AddItem (0x183460) / AddSubItem (0x1835a0). A full
+// fold onto CMenuPage is a DEFERRED-FOLD: it is blocked by the page DTOR - BuildMainMenuTree's
+// `delete page` emits an INLINE member-only teardown (CPtrList dtor 0x1b48c6 + 3x CString dtor
+// 0x1b9cde + operator delete), NOT a call to CMenuPage::~CMenuPage (0x183250 = InitDefaults +
+// teardown, 113 B). Reconciling that (is 0x183250 the real dtor or a Reset method?) touches
+// MenuPage.cpp's matched dtor, so the fold is left pending. Meanwhile the embedded sub-objects
+// are the REAL MFC types (the former MenuStr/MenuList views are dissolved - CString's ctor is
+// 0x1b9b93 / dtor 0x1b9cde, CPtrList's default ctor is the block-size-10 0x1b4867 / dtor
+// 0x1b48c6, so this is byte-neutral). The builder methods are __thiscall engine callees.
 struct MenuPage {
     MenuPage();
     ~MenuPage();
@@ -90,12 +85,12 @@ struct MenuPage {
         i32 z2
     ); // 0x1835a0
 
-    char _vft0[4];    // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
+    char _vft0[4];    // +0x00 CMenuPage::m_owner (data pointer; unused in the builder)
     i32 m_04;         // +0x04
-    MenuStr m_str08;  // +0x08
-    MenuStr m_str0c;  // +0x0c
-    MenuStr m_str10;  // +0x10
-    MenuList m_items; // +0x14  (0x1c -> ends 0x30)
+    CString m_str08;  // +0x08
+    CString m_str0c;  // +0x0c
+    CString m_str10;  // +0x10
+    CPtrList m_items; // +0x14  (0x1c -> ends 0x30)
     i32 m_30;         // +0x30
     char m_pad34[0x60 - 0x34];
     i32 m_60; // +0x60
@@ -111,11 +106,11 @@ inline MenuPage::MenuPage() {
     m_30 = 0;
 }
 
-// The menu host the page is registered into (the arg). RegisterPage commits a
-// finished page; returns nonzero on success. 0x182ba0 (__thiscall, ret 4).
-struct MenuHost {
-    i32 RegisterPage(MenuPage* page);
-};
+// The menu host the page is registered into (the `arg`) IS the CChatBox: xref proved
+// the register-page callee 0x182ba0 is CChatBox::AddNode (?AddNode@CChatBox@@QAEHPAX@Z),
+// which commits a finished page and returns nonzero on success. The former MenuHost view
+// is dissolved onto the real class (arg stays void* only because it is BuildMainMenuTree's
+// mangled ?...@@YAXPAX@Z parameter; cast to CChatBox at the register boundary).
 
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A); its +0x58
 // save sink (the CSaveGame) carries the m_curLevel (+0x1c) area-progress counter
@@ -126,9 +121,9 @@ extern "C" CGameRegistry* g_gameReg;
 // multiplayer/network-gated items.
 extern i32 g_multiplayerAvail;
 
-// Forward so RegisterPage(arg,...) mangles onto MenuHost.
+// Commit a finished page into the menu host (CChatBox::AddNode @0x182ba0).
 static i32 RegisterPage(void* arg, MenuPage* page) {
-    return ((MenuHost*)arg)->RegisterPage(page);
+    return ((CChatBox*)arg)->AddNode(page);
 }
 
 static char s_MAIN[] = "MAIN";
@@ -589,11 +584,6 @@ void BuildMainMenuTree(void* arg) {
     }
 }
 
-SIZE_UNKNOWN(MenuHost);
-SIZE_UNKNOWN(MenuItem);
-SIZE_UNKNOWN(MenuList);
 SIZE_UNKNOWN(MenuPage);
-SIZE_UNKNOWN(MenuStr);
-SIZE_UNKNOWN(MovieProbe);
 
 // --- vtable catalog ---
