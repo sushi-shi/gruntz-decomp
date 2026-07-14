@@ -64,8 +64,8 @@ DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
 // The game-manager singleton (CGameRegistry* @ 0x64556c) comes typed from
-// <Gruntz/InGameIcon.h> (via GruntPuddle.h); the wormhole paths that walk it as a
-// raw slot table cast it per use ((i32**)g_gameReg / (CSpawnReg*)g_gameReg).
+// <Gruntz/InGameIcon.h> (via GruntPuddle.h); SpawnPartners reaches the object list
+// through its real m_world (CSpriteFactoryHolder) -> m_8 (object factory/manager).
 
 // 0x2bf3bc is NOT a "default geometry source": it is the per-frame DRAW-DELTA mirror
 // (Play.cpp sets it every frame from g_frameDelta == g_lastDelta), and what the calls below
@@ -91,45 +91,22 @@ extern "C" void WormholeTypeMarker();
 #define s_NormalColor "NormalColor"
 
 // ---------------------------------------------------------------------------
-// The game-object registry list SpawnPartners walks. g_gameReg->m_world (offset
-// 0x30) -> [+8] -> a node header whose [+0x14] is the list head; each WorldNode
-// chains via m_next and holds a game object at +0x8.
+// The game-object registry list SpawnPartners walks: g_gameReg->m_world (the
+// CSpriteFactoryHolder at +0x30) -> m_8 (the object factory/manager) + 0x10 is a
+// node header whose +0x14 is the list head; each WorldNode chains via m_next and
+// holds a CGameObject at +0x8. Only the object-manager's intrusive list node/header
+// remains a local view (identity unrecovered); the candidates are the real
+// CGameObject (m_screenX/m_screenY @ +0x5c/+0x60, worker @ +0x7c) whose owned
+// AnimWorkerObj carries the wormhole marker (m_notify @ +0x10) + logic (m_logic @ +0x18).
 // ---------------------------------------------------------------------------
-struct CSpawnObj;
 struct WorldNode {
     WorldNode* m_next; // +0x00
     char m_pad04[4];
-    CSpawnObj* m_obj; // +0x08  the candidate game object
+    CGameObject* m_obj; // +0x08  the candidate game object
 };
 struct WorldList {
-    char m_pad00[0x14];
-    WorldNode* m_head; // +0x14
-};
-struct CSpawnHolder {
-    char m_pad00[0x8];
-    WorldList* m_list; // +0x08 (read as (m_list + 0x10) -> +0x4 = head; modeled directly)
-};
-SIZE_UNKNOWN(CSpawnReg);
-struct CSpawnReg {
-    char m_pad00[0x30];
-    CSpawnHolder* m_holder; // +0x30
-};
-
-// The +0x7c sub-object that carries the type marker (its +0x10 slot) and, for a
-// wormhole, the partner CWormhole* (its +0x18 slot).
-struct CSpawnAux {
-    char m_pad00[0x10];
-    void* m_typeMarker; // +0x10  type marker (compared to &WormholeTypeMarker)
-    char m_pad14[4];
-    CWormhole* m_wormhole; // +0x18  the wormhole logic object
-};
-// The candidate game object: tile coords at +0x5c/+0x60 and the aux at +0x7c.
-struct CSpawnObj {
-    char m_pad00[0x5c];
-    i32 m_tileX; // +0x5c  tile x
-    i32 m_tileY; // +0x60  tile y
-    char m_pad64[0x7c - 0x64];
-    CSpawnAux* m_aux; // +0x7c
+    char m_pad00[0x4];
+    WorldNode* m_head; // +0x04  list head within the m_8+0x10 header (retail: [m_8+0x14])
 };
 
 // The selection holder at mgr->m_68->m_244 (its +0x8 -> the {row,col} index pair).
@@ -455,7 +432,7 @@ void CWormhole::SpawnPartners() {
         return;
     }
 
-    WorldList* list = (WorldList*)((char*)((CSpawnReg*)g_gameReg)->m_holder->m_list + 0x10);
+    WorldList* list = (WorldList*)((char*)g_gameReg->m_world->m_8 + 0x10);
     if (list == 0) {
         return;
     }
@@ -464,13 +441,13 @@ void CWormhole::SpawnPartners() {
         return;
     }
     do {
-        CSpawnObj* obj = node->m_obj;
+        CGameObject* obj = node->m_obj;
         node = node->m_next;
         if (obj != 0) {
-            CSpawnAux* aux = obj->m_aux;
-            if (aux->m_typeMarker == (void*)&WormholeTypeMarker && obj->m_tileX == tx
-                && obj->m_tileY == ty && aux->m_wormhole != 0) {
-                aux->m_wormhole->ReapplyConfig();
+            AnimWorkerObj* aux = obj->m_7c;
+            if ((void*)aux->m_notify == (void*)&WormholeTypeMarker && obj->m_screenX == tx
+                && obj->m_screenY == ty && aux->m_logic != 0) {
+                ((CWormhole*)aux->m_logic)->ReapplyConfig();
             }
         }
     } while (node != 0);
@@ -1068,9 +1045,6 @@ i32 CTeleporter::Update() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CSpawnAux);
-SIZE_UNKNOWN(CSpawnHolder);
-SIZE_UNKNOWN(CSpawnObj);
 SIZE_UNKNOWN(CWormGeoSub);
 SIZE_UNKNOWN(WorldList);
 SIZE_UNKNOWN(WorldNode);
