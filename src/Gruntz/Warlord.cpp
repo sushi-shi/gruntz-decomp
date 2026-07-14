@@ -323,12 +323,48 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
 #undef WARLORD_ANIM_LOOKUP
 #undef WARLORD_ANIM_MAP
 
-// @early-stop
+// @early-stop  (STUB - kept at 0% rather than regress; see the FRAME WALL below)
 // 0x43670 = CWarlord::SerializeMove (vtable slot 1, +0x4; origin CUserBase). Homed
 // from src/Stub/GapFunctions.cpp (matcher-5); attribution vtable-proven (??_7CWarlord
-// +0x4). LARGE (3104 B) bute/archive serialize round-trip (uses g_serialCounter): a
-// deep switch + engine string-table + inline bute-config expansion. Homed pending a
-// dedicated leaf-first pass (>512 B, per-field archive read/write chain bottom-up).
+// +0x4). A 3104-byte archive save/load round-trip.
+//
+// FULLY DECODED (R3, this session) - the complete body is understood; it is NOT a
+// blind stub. Signature: i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
+// where ar == CFileMemBase (Read @vtbl+0x2c / Write @vtbl+0x30), a4 is the referenced
+// object (int in the mangling, a CSerialObj*). Structure:
+//   1. if (!((CMovingLogicBase*)this)->Serialize(ar,mode,a3,a4)) return 0;   (0x16e7f0)
+//   2. if (!ar) return 0;   (retail SHARES this ret-0 with the save-body null check @43c5c)
+//   3. header field (m_40 handle + m_44 0x10 blob):
+//        mode 7 LOAD : ar->Read(hbuf,0x80); ar->Read(&m_44,0x10); m_34=m_38=a4;
+//                      m_3c=a4->m_7c; m_40 = strlen(hbuf)? reg->m_10.Lookup(hbuf):0
+//        mode 4 SAVE : memset(buf); if(m_40) strcpy(buf, reg->KeyOfValue_152d30(m_40));
+//                      ar->Write(buf,0x80); ar->Write(&m_44,0x10)
+//   4. body (2nd switch on mode):
+//        mode 7 LOAD : ++g_serialCounter;Read(buf,0x80);m_54=buf; then 11 handles
+//                      m_58..m_80 by-name (Read name, Lookup or 0), then Read(&m_a8,4),
+//                      Read(&m_ownerTag,4).
+//        mode 4 SAVE : the same 11 handles reverse (KeyOfValue->name->Write), then
+//                      Write(&m_a8,4), Write(&m_ownerTag,4).
+//        mode 8 POST : re-derive the draw-fill selector (the ctor GetSel path, UNCLAMPED).
+//   5. tail: the two i64 timers m_88/m_90 then m_98/m_a0, Read (7) / Write (4), ret 1.
+//   The registry is the canonical CSerialObjRef.h chain: a4->m_7c (CSerialNameHolder)
+//   ->m_0c (CSerialRegHolder) ->m_2c (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_10
+//   forward-Lookups a key (0x1b8438) and KeyOfValue_152d30 (RVO CString) reverses it.
+//   Every callee/field/mode/chain above was verified against the retail disasm.
+//
+// FRAME WALL (why it is parked at STUB, not landed): retail's frame is 0x130 because
+// its /GX cl gives EACH of the eleven SAVE-side KeyOfValue CString temporaries its OWN
+// stack slot ([esp+0x14] + [esp+0x98..0xbc]) and holds two disjoint 0x80 stream
+// buffers ([esp+0x18] body + [esp+0xc0] mode-7 header). Our MSVC5 /O2 /GX COALESCES
+// those eleven destructible temporaries into one slot (their lifetimes are disjoint -
+// KeyOfValue -> inline strcpy -> ~CString, no throwing call spanning them), yielding a
+// 0x108 frame. No source spelling defeats the coalescing (tried: unnamed temporary,
+// eleven distinct named locals, function-scope buffers). The 0x28 frame delta shifts
+// EVERY [esp+N] operand + the arg-load offsets, so objdiff cannot align the base with
+// the target at all (match_percent = null, i.e. below the stub's own 0.14%). A complete
+// body was written + built green but REVERTED here because it scores under the stub -
+// committing it would regress. Needs a dedicated frame-exact pass that can reproduce
+// the per-temp slot allocation (or a permuter run seeded with the decode above).
 RVA(0x00043670, 0xc20)
 i32 Gap_043670(void) {
     return 0;
