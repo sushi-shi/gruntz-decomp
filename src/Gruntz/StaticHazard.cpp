@@ -50,17 +50,11 @@ extern "C" u32 g_engineFrameDelta;
 // gate the "animation finished -> revert to IDLE" branch; their exact roles are
 // unproven, so they stay placeholders.
 
-// The active-anim descriptor (m_38->m_1b4): the SetAnimEx idiom reads its first
-// element's frame seed.
-struct HazAnimElem {
-    char m_pad00[0x14];
-    i32 m_frameSeed; // +0x14
-};
-struct HazAnimDesc {
-    char m_pad00[0x0c];
-    HazAnimElem** m_elems; // +0x0c  element vector (first elem = *m_elems)
-    i32 m_count;           // +0x10  element count (>0 gate)
-};
+// The active-anim descriptor is the resolved geometry element (m_38->m_geoId, a
+// CAniElement): the SetAnimEx idiom reads its first frame record's (CAniRecordView)
+// seed frame (m_seedFrame). Same idiom TileLogicPump uses. (The former HazAnimElem/
+// HazAnimDesc .cpp-local views are dissolved onto <Gruntz/AniElement.h>.)
+#include <Gruntz/AniElement.h> // CAniElement + CAniRecordView (the SetAnimEx idiom)
 
 // ---------------------------------------------------------------------------
 // The game registry singleton (0x64556c) is the CGruntzMgr view here; its sub-object
@@ -69,15 +63,12 @@ struct HazAnimDesc {
 //   m_curState -> CState               (the ctor switches on CState::m_levelType @+0x20)
 //   m_world    -> CSpriteFactoryHolder (m_animRegistry @+0x2c is CAnimRegistry, whose
 //                 m_10map @+0x10 is the CMapStringToOb the "GO" cue resolves in).
-// The one residual is HazLookupEntry: the map's VALUE record (a CObject-derived anim-cue
-// catalog entry whose +0x24 is the per-effect AniPad bias) - its class is not modeled in
-// this tree, so the Lookup result stays a flagged local view (@identity-TODO).
+// The map's VALUE record is a CAniElement (the anim registry's 'ANI' element - the
+// SAME value type the geometry lookup / m_geoId resolves to, and read here as an int
+// at +0x24 == CAniElement::m_total, the accumulated frame total used as the per-effect
+// AniPad bias). (The former HazLookupEntry .cpp-local view is dissolved onto CAniElement.)
 // ---------------------------------------------------------------------------
 #include <Gruntz/ResMgr.h> // CAnimRegistry (m_world->m_animRegistry->m_10map cue lookup)
-struct HazLookupEntry {
-    char m_pad00[0x24];
-    i32 m_aniPadBias; // +0x24  the per-effect AniPad bias
-};
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms.
 // Now possible because its +0x70 sub-object folded: CGruntzMgr::m_tileGrid is a
@@ -217,9 +208,9 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
-        HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
-        HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
-        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
+        CAniElement* d = (CAniElement*)m_38->m_geoId;
+        CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     // snap the bound object's screen position to tile center.
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -255,9 +246,10 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_pulseEpoch = g_frameTime;
     CObject* entry_ob = 0;
     g_gameReg->m_world->m_animRegistry->m_10map.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
-    HazLookupEntry* entry = (HazLookupEntry*)entry_ob;
+    CAniElement* entry = (CAniElement*)entry_ob;
     if (entry != 0) {
-        m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_aniPadBias;
+        // base AniPad window + the resolved anim's frame total (the per-effect AniPad bias)
+        m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_total;
     } else {
         g_gameReg->ReportError(0x8009, 0x461);
     }
@@ -361,9 +353,9 @@ i32 CStaticHazard::LoadAttributes2() {
     m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
-        HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
-        HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
-        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
+        CAniElement* d = (CAniElement*)m_38->m_geoId;
+        CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("B");
@@ -398,9 +390,9 @@ i32 CStaticHazard::LoadAttributes() {
             m_prevAnimNode = m_38->m_geoId;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
-                HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
-                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
+                CAniElement* d = (CAniElement*)m_38->m_geoId;
+                CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             if (m_object->m_latchedAnimId != 0) {
                 m_object->m_latchedAnimId = 0;
@@ -417,9 +409,9 @@ i32 CStaticHazard::LoadAttributes() {
         m_prevAnimNode = m_38->m_geoId;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
-            HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
-            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
+            CAniElement* d = (CAniElement*)m_38->m_geoId;
+            CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_latchedAnimId != 0) {
             m_object->m_latchedAnimId = 0;
@@ -439,9 +431,9 @@ i32 CStaticHazard::LoadAttributes() {
         m_prevAnimNode = m_38->m_geoId;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
-            HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
-            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
+            CAniElement* d = (CAniElement*)m_38->m_geoId;
+            CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_latchedAnimId != 0) {
             m_object->m_latchedAnimId = 0;
@@ -482,9 +474,9 @@ dispatch:
             m_prevAnimNode = m_38->m_geoId;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
-                HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
-                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
+                CAniElement* d = (CAniElement*)m_38->m_geoId;
+                CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;
             if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
@@ -503,11 +495,8 @@ dispatch:
 SIZE_UNKNOWN(CHaznEntry);
 SIZE_UNKNOWN(CHaznEntry2);
 SIZE_UNKNOWN(CStaticHazard);
-SIZE_UNKNOWN(HazAnimDesc);
-SIZE_UNKNOWN(HazAnimElem);
 SIZE_UNKNOWN(HazGrid);
 SIZE_UNKNOWN(HazGridMgr);
-SIZE_UNKNOWN(HazLookupEntry);
 // Tree-wide SIZE anchor for the unified CCoordColl coordinate/activation-registry
 // archetype (<Gruntz/HaznColl.h>; the former CTBombColl/CHaznColl views, used across
 // TimeBomb/StaticHazard). Moved here from the deleted src/Stub/BoundaryLowerThunks.cpp.

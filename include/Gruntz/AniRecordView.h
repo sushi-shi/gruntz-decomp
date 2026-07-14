@@ -64,7 +64,7 @@ struct CAniRecordView : public CObject {
     i32 m_08;                 // +0x08
     CAniRecordOwner* m_owner; // +0x0c  owner node (seeded 0xffff)
     i32 m_buf;                // +0x10  pool work buffer
-    i32 m_14;                 // +0x14
+    i32 m_seedFrame;          // +0x14  parsed seed/start frame (SetAnimEx reads record[0]'s)
     i32 m_frameCount;         // +0x18  frame count (GetSize)
     i32 m_1c;                 // +0x1c
     i32 m_20;                 // +0x20

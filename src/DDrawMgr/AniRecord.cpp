@@ -151,7 +151,7 @@ i32 CAniRecordView::Parse_168c60(void* ctx, const i16* src) {
     m_08 = *p++;
     m_owner = (CAniRecordOwner*)*p++;
     m_buf = *p++;
-    m_14 = *p++;
+    m_seedFrame = *p++;
     m_frameCount = *p++;
     m_1c = *p++;
     m_20 = *p++;
