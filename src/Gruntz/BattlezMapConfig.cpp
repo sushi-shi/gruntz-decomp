@@ -2700,26 +2700,26 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 #undef ARR_RECYCLE
 
 // @early-stop
-// recursive flood-fill plateau: the global-flag loop, both FindPath arms (0x4903 /
-// 0x4003), the special anim-id set test, the commit (g_stepRun/Col/Row + g_coordPool.m_freeHead
-// recycle), the 0x20000 visited-mark, and the 8-neighbour self-recursion are
-// reconstructed in shape + order. Residual: the eight unrolled neighbour blocks
-// each pin the (col-1/col+1/row-1/row+1) operands in a different reg than retail,
-// and the /GX cleanup epilogues funnel differently; the board/cell chains are
-// modeled by raw offset. Deferred to the final sweep.
+// register-coloring wall (logic byte-shaped & complete). All arms reconstructed:
+// 0x8000/0x4000 tile-bit tests (test bh), the arg-`unit`->m_object corner reads, the
+// a5-gated occupancy branch, the special anim-id set, the arm1/2/3 commits (g_stepRun/
+// Col/Row + g_coordPool recycle), the 0x20000 RMW visited-mark, the 8-neighbour
+// self-recursion, and single ~CPtrList-per-list scope teardown. Residual: retail
+// colours word->ebx, col->ebp, row->edi and spills tileOff@[esp+0x10]; MSVC here
+// keeps tileOff in a callee-saved reg and spills word, so the whole body's stack
+// offsets shift +0x20 (frame 0x40 vs 0x60) and every reg operand diverges. Not
+// source-steerable; a permuter target for the final sweep.
 RVA(0x0002d800, 0x605)
 i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
     if (g_stepRun == 0) {
         return 0;
     }
     for (;;) {
-        CBrickzGrid* board = m_board;
         i32 tileOff = ((col * 7) << 2);
-        i32* tile = (i32*)((char*)board->m_rows[row] + tileOff);
-        i32 word = *tile;
-        if (word & 0x800000) {
+        i32 word = *(i32*)((char*)m_board->m_rows[row] + tileOff);
+        if (word & 0x8000) {
             CPtrList list(10);
-            CGameObject* lvl = m_ctx->m_10;
+            CGameObject* lvl = ((CGrunt*)a4)->m_object;
             if ((m_board)->SearchEdge(
                     lvl->m_screenX >> 5,
                     lvl->m_screenY >> 5,
@@ -2731,15 +2731,26 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                     0
                 )
                 != 0) {
-                // Route found: handled by the commit tail below (shared path).
-                i32 dummy = 0;
-                (void)dummy;
+                void* head = list.GetHeadPosition();
+                g_stepRun = 0;
+                g_stepCol = col;
+                g_stepRow = row;
+                if (head != 0) {
+                    GruntCoordNode* n = (GruntCoordNode*)head;
+                    while (n != 0) {
+                        GruntCoordNode* cur = n;
+                        n = n->m_next;
+                        void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                        *node = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = node;
+                    }
+                }
+                return 0;
             }
-            list.RemoveAll();
         }
-        if (word & 0x400000) {
+        if (word & 0x4000) {
             void* cell = m_cellQuery->FindByField0C((col << 8) + row);
-            if (m_curCell != 0) {
+            if (a5 != 0) {
                 if (cell == 0) {
                     break;
                 }
@@ -2747,7 +2758,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                     break;
                 }
                 CPtrList list2(10);
-                CGameObject* lvl = m_ctx->m_10;
+                CGameObject* lvl = ((CGrunt*)a4)->m_object;
                 if ((m_board)->SearchEdge(
                         lvl->m_screenX >> 5,
                         lvl->m_screenY >> 5,
@@ -2774,7 +2785,6 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                         }
                     }
                 }
-                list2.RemoveAll();
                 break;
             }
             if (cell == 0) {
@@ -2794,7 +2804,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 break;
             }
             CPtrList list3(10);
-            CGameObject* lvl = m_ctx->m_10;
+            CGameObject* lvl = ((CGrunt*)a4)->m_object;
             if ((m_board)->SearchEdge(
                     lvl->m_screenX >> 5,
                     lvl->m_screenY >> 5,
@@ -2821,12 +2831,11 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                     }
                 }
             }
-            list3.RemoveAll();
             break;
         }
         // Mark this tile visited, then recurse into the 8 neighbours. Each block:
         // in bounds + not visited (0x20000) + passable (0xc0000 set or anim 0x9a).
-        *tile = word | 0x20000;
+        *(i32*)((char*)m_board->m_rows[row] + tileOff) |= 0x20000;
         i32 cm = col - 1;
         i32 cp = col + 1;
         i32 rm = row - 1;
