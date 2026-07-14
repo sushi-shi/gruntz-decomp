@@ -7,12 +7,13 @@
 //
 // Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
-#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Rez/RezList.h>         // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
-#include <Gruntz/SerialObjRef.h> // CSerialArchive, CDDrawSubMgrLeaf (KeyOfValue), CSerialObj
-#include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)
-#include <Gruntz/UserLogic.h>    // CGameObject (the resolved object; GetTypeId [8] + m_188)
-#include <string.h>              // inline strlen / strcpy over the scratch buffer
+#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Rez/RezList.h>          // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
+#include <Gruntz/SerialObjRef.h>  // CSerialArchive, CDDrawSubMgrLeaf (KeyOfValue), CSerialObj
+#include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world = CSpriteFactoryHolder*)
+#include <Gruntz/SpriteFactory.h> // CSpriteFactory (m_world->m_8; m_objMap key->object map @+0x48)
+#include <Gruntz/UserLogic.h>     // CGameObject (the resolved object; GetTypeId [8] + m_188)
+#include <string.h>               // inline strlen / strcpy over the scratch buffer
 
 // The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
 extern "C" CGameRegistry* g_gameReg;
@@ -44,44 +45,35 @@ extern FreeNodePool g_coordPool;
 // through a3->m_7c->m_c->m_2c). Names are placeholders; offsets + bytes load-bearing.
 // ===========================================================================
 
-// reg->m_8: a sub-registry whose CMapPtrToPtr (Lookup @0x1b8760) sits at +0x48.
-struct CProjObjReg {
-    char _00[0x48];
-    CMapPtrToPtr m_48; // +0x48
-};
+// g_gameReg->m_world IS the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>):
+// this loader reaches its projectile-object factory (m_8, a CSpriteFactory whose
+// embedded key->object map m_objMap @+0x48 has Lookup @0x1b8760) and its name-leaf
+// registry (m_animRegistry @+0x2c, reached here as the CDDrawSubMgrLeaf serialize
+// facet - m_10 name map + KeyOfValue_152d30). Both keyed values ARE created game
+// objects (the same map CTriggerMgr::Load resolves, with the `slot-8 GetTypeId()==5`
+// gate at +0x20), so the out-param is CGameObject*. (Were the .cpp-local CProjObjReg
+// + CProjRegSub30 views.)
 
-// g_gameReg->m_world (the game registry's +0x30 sub-registry) viewed by this
-// loader: the projectile-object map at +0x8 and the name leaf at +0x2c (the same
-// CDDrawSubMgrLeaf type CSerialObjRef resolves through). +0x8 is a CProjObjReg*
-// (the retail-correct type). Distinct object from CProjReg in ProjActRegistry.cpp.
-SIZE_UNKNOWN(CProjRegSub30);
-struct CProjRegSub30 {
-    char _00[0x8];
-    CProjObjReg* m_8; // +0x08
-    char _0c[0x2c - 0xc];
-    CDDrawSubMgrLeaf* m_2c; // +0x2c
-};
-
-// IDENTITY RECOVERED (Fable A2, 2026-07-14): the CMapPtrToPtr-resolved object IS
-// the CGameObject (<Gruntz/UserLogic.h>) - the +0x48 map is CSpriteFactory::
-// m_objMap, the serialize-time key->object map (the same one CTriggerMgr::Load
-// resolves, with the same `slot-8 GetTypeId() == 5` gate at +0x20), and the
-// "+0x188 default-int" the write path re-derives the key from is the canonical
-// m_188 archive-cue id. (The former CProjTypeObj shell - 8 Slot fillers + a
-// GetTypeCode alias of GetTypeId - is dissolved.)
-
-// One spliced freelist node: next at +0, payload pointer at +8.
-struct CProjNode {
-    CProjNode* m_next; // +0x00
-    i32 m_04;
-    void* m_08; // +0x08
-};
+// One spliced freelist node is the canonical CoordPoolNode (read: link @+0, inline
+// {x,y} payload @+4) / CoordNode (write list m_208: link @+0, Coord* payload @+8) -
+// <Gruntz/CoordNode.h> / FreeNodePool.h. Was the .cpp-local CProjNode view.
 
 // The +0x204 list the read path appends payloads to (CPtrList::AddTail @0x1b4991);
 // sized to one pointer so the following fields keep their offsets.
 // a3->m_7c->m_c->m_2c is the registry leaf; CSerialObj/CSerialNameHolder give m_7c
 // and m_0c, but the inlined +0x150 record reaches m_c (not m_0c) - the same shape at
 // +0x0c. Reuse CSerialObj for a3; view its name-holder's +0x0c through CSerialNameHolder.
+// @identity-recovered: CProjLoadRec IS CProjectile, and Load @0x0e0d40 IS
+// CProjectile::SerializeMove (vtable slot 1). PROOF: vtable_hierarchy --class
+// CProjectile resolves slot 1 (ILT thunk 0x0034b3) to this RVA under the src name
+// "Load"; the field layout mirrors CProjectile exactly (m_1e0[7] = the seven frame
+// sprites, m_1fc = m_shadow, m_204 = m_hitList, m_220/m_224 = m_targetId/m_ownerId,
+// and the +0x150 sub-record `m_150=a3; m_154=a3; m_158=a3->m_7c` restores the same
+// owner/sprite/m_7c triple the ctor sets). DEFERRED-FOLD: 0x0e0d40 lives in
+// Projectile.cpp's RVA band (0xdec60..0xe2213), so folding onto CProjectile means
+// re-homing this whole @early-stop body into Projectile.cpp AND reconciling
+// m_1e0[]/m_204 with CProjectile's named-field/CPtrList layout - risks the byte
+// match; left for the projectile-serialize rehome.
 struct CProjLoadRec {
     i32 Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3);      // 0x0e0d40
     i32 ChainLoad(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3); // 0x16f4a0
@@ -109,7 +101,7 @@ struct CProjLoadRec {
     CGameObject* m_1fc;             // +0x1fc  type-5 latch (the resolved game object)
     i32 m_200;                      // +0x200
     CRezList m_204;                 // +0x204  AddTail target
-    CProjNode* m_208;               // +0x208  write-path node list
+    CoordNode* m_208;               // +0x208  write-path node list
     i32 _20c;
     i32 m_210; // +0x210
     i32 _214, _218, _21c;
@@ -126,7 +118,7 @@ struct CProjLoadRec {
 // source-steerable.
 RVA(0x000e0d40, 0x6c2)
 i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
-    CProjRegSub30* reg = (CProjRegSub30*)(void*)g_gameReg->m_world;
+    CSpriteFactoryHolder* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -162,7 +154,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
                 s->Read(buf, 0x80);
                 if (strlen(buf) != 0) {
                     void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-                    reg->m_2c->m_10.Lookup(buf, out);
+                    ((CDDrawSubMgrLeaf*)reg->m_animRegistry)->m_10.Lookup(buf, out);
                     m_1e0[ni] = out;
                 } else {
                     m_1e0[ni] = 0;
@@ -172,14 +164,14 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             g_serialCounter++;
             i32 key;
             s->Read(&key, 4);
-            void* found = 0;
+            CGameObject* found = 0;
             i32 r;
-            if (reg->m_8->m_48.Lookup((void*)key, found) == 0) {
+            if (reg->m_8->m_objMap.Lookup((void*)key, found) == 0) {
                 r = 0;
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (((CGameObject*)found)->GetTypeId() == 5) ? (i32)found : 0;
+                r = (found->GetTypeId() == 5) ? (i32)found : 0;
             }
             m_1fc = (CGameObject*)r;
             if (m_1fc == 0 && key != 0) {
@@ -189,11 +181,11 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             i32 cnt;
             s->Read(&cnt, 4);
             for (i32 ci = 0; ci < cnt; ci++) {
-                CProjNode* node = (CProjNode*)g_coordPool.m_freeHead;
+                CoordPoolNode* node = (CoordPoolNode*)g_coordPool.m_freeHead;
                 void* payload = 0;
                 if (node->m_next != 0) {
                     g_coordPool.m_freeHead = node->m_next;
-                    payload = &node->m_04;
+                    payload = &node->m_coord;
                 }
                 s->Read(payload, 8);
                 m_204.AddTail((CRezListNode*)payload);
@@ -227,7 +219,8 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (m_1e0[wi] != 0) {
-                    CString nm = reg->m_2c->KeyOfValue_152d30((CObject*)m_1e0[wi]);
+                    CString nm = ((CDDrawSubMgrLeaf*)reg->m_animRegistry)
+                                     ->KeyOfValue_152d30((CObject*)m_1e0[wi]);
                     strcpy(buf, nm);
                 }
                 s->Write(buf, 0x80);
@@ -243,8 +236,8 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             i32 v2 = m_210;
             s->Write(&v2, 4);
 
-            for (CProjNode* n = m_208; n != 0; n = n->m_next) {
-                s->Write(n->m_08, 8);
+            for (CoordNode* n = m_208; n != 0; n = n->m_next) {
+                s->Write(n->m_coord, 8);
             }
             break;
         }
@@ -287,5 +280,3 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
     return 1;
 }
 SIZE_UNKNOWN(CProjLoadRec);
-SIZE_UNKNOWN(CProjNode);
-SIZE_UNKNOWN(CProjObjReg);
