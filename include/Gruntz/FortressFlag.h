@@ -58,4 +58,13 @@ public:
 VTBL(CFortressFlag, 0x001e725c);
 SIZE(CFortressFlag, 0x54);
 
+// The class's activation-registry entry record: its first dword receives the
+// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
+// class). Declared AFTER the complete class so the PMF stays 4 bytes.
+typedef i32 (CFortressFlag::*FortressFlagHandler)();
+struct CFortressFlagActEntry {
+    FortressFlagHandler m_fn;
+};
+SIZE_UNKNOWN(CFortressFlagActEntry);
+
 #endif // GRUNTZ_CFORTRESSFLAG_H

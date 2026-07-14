@@ -48,4 +48,20 @@ public:
 };
 VTBL(CParticlez, 0x001e7614);
 
+// The activation-registry entry record: its first dword is a PMF of CParticlez
+// (single inheritance -> a 4-byte code pointer). FireActivation reads it as a void
+// PMF (CPartEntry); RegisterActs stamps Update through the i32-returning
+// CPartEntryI32 view of the same slot. Declared AFTER the complete class so the
+// PMF stays 4 bytes.
+typedef void (CParticlez::*PartHandler)();
+struct CPartEntry {
+    PartHandler m_fn; // [entry]
+};
+SIZE_UNKNOWN(CPartEntry);
+typedef i32 (CParticlez::*PartHandlerI32)();
+struct CPartEntryI32 {
+    PartHandlerI32 m_fn;
+};
+SIZE_UNKNOWN(CPartEntryI32);
+
 #endif // GRUNTZ_CPARTICLEZ_H

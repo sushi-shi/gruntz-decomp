@@ -51,23 +51,19 @@
 #include <Bute/ButeTree.h>     // CVariantSlot::Set (the grow-path node inserter m_4->Set)
 #include <Globals.h>           // g_part* (CParticlez's registry scalars)
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class).
-typedef i32 (CFortressFlag::*FortressFlagHandler)();
-struct CFortressFlagActEntry {
-    FortressFlagHandler m_fn;
-};
+// The handler entry record (FortressFlagHandler/CFortressFlagActEntry, the PMF slot,
+// proven at 0x46080/0x461e0) is defined in <Gruntz/FortressFlag.h> after the
+// complete class. (The retail grow-path allocs 0xc-byte nodes, so the real record may
+// carry 2 more fields at +4/+8 that no code in this TU touches - @identity-TODO; the
+// stride is a runtime DATA value so the 4-byte model stays byte-exact here.)
 
 // The class's activation-coordinate registry singleton (@0x644638), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
-// duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
-// derives from it, keeping its own placeholder name so the DATA-pinned global is
-// unchanged.
-struct CFortressFlagActReg : public CActReg {};
+// fixed [2000,2010] range by the shared registry ctor (0x408710). It is the shared
+// <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
+// CFortressFlagActReg view is dissolved); the DATA-pinned global symbol is unchanged.
 DATA(0x00244638)
-CFortressFlagActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
-                                          // interior fields 0x24463c..0x244658 are members)
+CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
+                              // interior fields 0x24463c..0x244658 are members)
 
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 extern "C" u32 g_engineFrameDelta;
@@ -120,21 +116,8 @@ extern "C" WwdGameReg* g_gameReg;
 DATA(0x00244870)
 CActReg g_partColl;
 
-// The entry's first dword is a pointer-to-member-function of CParticlez (single
-// inheritance -> 4-byte code pointer); FireActivation invokes it on `this`,
-// emitting `mov ecx,this; call [entry]`. CParticlez is defined COMPLETE in the
-// header above this typedef so the PMF stays 4 bytes (pmf-complete-class-4byte).
-typedef void (CParticlez::*PartHandler)();
-struct CPartEntry {
-    PartHandler m_fn; // [entry]
-};
-
-// RegisterActs binds the i32-returning Update handler; a parallel entry view with
-// the correct PMF signature for the `mov [entry],offset Update` store.
-typedef i32 (CParticlez::*PartHandlerI32)();
-struct CPartEntryI32 {
-    PartHandlerI32 m_fn;
-};
+// The CParticlez entry records (PartHandler/CPartEntry, PartHandlerI32/CPartEntryI32,
+// the PMF slot) are defined in <Gruntz/Particlez.h> after the complete class.
 
 // The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
 // inline, typed to this registry's entry.
@@ -640,9 +623,9 @@ void RegisterXLogic_6447f8() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-SIZE_UNKNOWN(CFortressFlagActEntry);
-SIZE_UNKNOWN(CFortressFlagActReg);
+// (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
+//  definitions in FortressFlag.h/Particlez.h; CFortressFlagActReg is dissolved to
+//  CActReg.) WwdRefSlot stays a flagged .cpp view - it is a genuine element of the
+//  unmodeled CGameRegistry m_focusSlots ref-index sub-array (@identity-TODO).
 SIZE_UNKNOWN(WwdRefSlot);
-SIZE_UNKNOWN(CPartEntry);
-SIZE_UNKNOWN(CPartEntryI32);
 SIZE_UNKNOWN(CParticlez);
