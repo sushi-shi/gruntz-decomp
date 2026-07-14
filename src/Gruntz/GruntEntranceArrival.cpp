@@ -16,7 +16,7 @@
 //     (between 0x641b0 and 0x646b0, deep inside the weave).
 //   * 2 EH sites in the interval -> /GX; the unit's flags flip base->eh
 //     (TU_MIGRATION FLAGS mixed-group resolution).
-// NOT this TU: RunPositionInterpStep @0x5ecd0 (kept below with a note) - its
+// NOT this TU: CGrunt::FinalizeStep @0x5ecd0 (kept below with a note) - its
 // birth interval is the lone 0x5ecd0-0x5f1c3 block between the 0x5d210 userlogic
 // single and MovingSlot16 @0x5f310, OUTSIDE this obj's text; the owning original
 // TU is unrecovered (@identity-TODO), it stays here pending that partition.
@@ -291,7 +291,7 @@ SIZE_UNKNOWN(CGruntFireView);
 // 0x20e27c-0x20e28c sit INSIDE this TU's band, not the 0x612a0 behaviorleaf extent) ====
 #include <Gruntz/GruntBehaviorLeaf.h>
 // ---------------------------------------------------------------------------
-// CGrunt::RunPositionInterpStep(arg)   @0x5ecd0   (ret 4, vtable slot-5 body)
+// CGrunt::FinalizeStep(arg)   @0x5ecd0   (ret 4, the settled vtable slot-5 override)
 // @early-stop
 // complete reconstruction (all logic + control flow: the Finalize + slot-16 tick,
 // the L/G ClearSubA gate, the off-screen ClearSubB gate, and BOTH the "O" and the
@@ -303,8 +303,8 @@ SIZE_UNKNOWN(CGruntFireView);
 // (out of the Gap stub) as a real CGrunt method so its 0x5ecd0 symbol resolves for
 // callers; the % is a codegen wall, not a shape error.
 RVA(0x0005ecd0, 0x4f3)
-i32 CGrunt::RunPositionInterpStep(i32 arg) {
-    FinalizeStep(arg);
+void CGrunt::FinalizeStep(i32 arg) {
+    CUserLogic::FinalizeStep(arg); // direct base call (retail `call 0x3913`)
     MovingSlot16();
     if (m_424 != 0) {
         bool neL = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeL) != 0);
@@ -328,7 +328,7 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeO) == 0) {
         // "O": flip the entrance cell col/row (0<->2), interpolate toward the target.
         if (m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
-            return 0;
+            return;
         }
         GruntEntranceCell c = m_entranceCell;
         i32 col = (c.col == 0) ? 2 : (c.col == 2 ? 0 : c.col);
@@ -355,14 +355,14 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
             h->m_74 = v;
             h->m_8 |= 0x20000;
         }
-        return 0;
+        return;
     }
     // scratch-resolved branch: tear down the scratch CString[], latch on k_60df94.
     CAnimNameRecord* rec = g_typeColl.ScratchResolve(m_14->m_1c);
     GruntPosScratchTeardown();
     if (strcmp(rec->m_name, k_60df94) == 0) {
         if (m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
-            return 0;
+            return;
         }
         GruntEntranceCell c = m_entranceCell;
         i32 base = 3 * c.col + c.row;
@@ -388,7 +388,7 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
             h->m_8 |= 0x20000;
         }
     }
-    return 0;
+    return;
 }
 
 // The geometry sub-player's m_20/m_28 live PAST the player's own m_1b4, so they

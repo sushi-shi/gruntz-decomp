@@ -52,9 +52,6 @@ i32 CUserLogic::UserLogicVfunc1() {
 i32 CUserLogic::UserLogicVfunc2() {
     return 0;
 }
-i32 CUserLogic::UserLogicVfunc3() {
-    return 0;
-}
 i32 CUserLogic::Activate() {
     return 0;
 }
@@ -96,7 +93,6 @@ i32 CUserLogic::UserLogicVfuncD() {
 // @rva-symbol: ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ 0x0000242d
 // @rva-symbol: ?UserLogicVfunc1@CUserLogic@@UAEHXZ 0x00003413
 // @rva-symbol: ?UserLogicVfunc2@CUserLogic@@UAEHXZ 0x0000246e
-// @rva-symbol: ?UserLogicVfunc3@CUserLogic@@UAEHXZ 0x00003913
 // @rva-symbol: ?Activate@CUserLogic@@UAEHXZ 0x000033dc
 // @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x00002162
 // @rva-symbol: ?UserLogicVfunc6@CUserLogic@@UAEHXZ 0x000026b7

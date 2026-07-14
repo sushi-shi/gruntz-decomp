@@ -99,17 +99,12 @@ void __stdcall BuildLogicTypeTable(CGameObject* obj) {
 //     guaranteed unresolved external; its one call site (GruntEntranceArrival.cpp) runs
 //     it on a CGrunt `this`, which INHERITS this CUserLogic method. Phantom killed: the
 //     call now resolves here, cast-free, and CGrunt's duplicate decl is deleted.
-//   * `?UserLogicVfunc3@CUserLogic@@UAEHXZ` - the vtable SLOT-5 binding (an @rva-symbol
-//     on ILT thunk 0x3913, which jmps straight here). STILL OPEN, and it is a genuine
-//     SIGNATURE defect rather than a naming one: the slot is `void f(i32)` (retail
-//     `ret 4`), but UserLogic.h declares `virtual i32 UserLogicVfunc3()` - a DROPPED
-//     PARAMETER plus a wrong return type. Grunt.h:1945 already records the fallout
-//     ("the no-arg UserLogicVfunc3() base placeholder blocks the OVERRIDE spelling"),
-//     which is exactly why CGrunt's real slot-5 override (0x5ecd0, also `ret 4`) has to
-//     be spelled as the plain method RunPositionInterpStep(i32). Correcting the virtual
-//     migrates three headers (UserLogic.h / Grunt.h / MovingLogic.h) and first needs
-//     0x5ecd0's and CMovingLogic's override RETURN types settled from disasm - NOT
-//     guessed. Left for a dedicated pass; reported, not fabricated.
+//   * `UserLogicVfunc3` (the old slot-5 placeholder) - SETTLED (Fable A2,
+//     2026-07-14): the slot is `virtual void FinalizeStep(i32)` - THIS body IS the
+//     base slot-5 implementation (retail slot holds its ILT thunk 0x3913). Return
+//     types settled from disasm: CMovingLogic's 0x13c70 override is QAEXH (100%
+//     EXACT, Projectile.cpp) and CGrunt's 0x5ecd0 has NO exit that materializes
+//     eax -> void across the family; both overrides now spell OVERRIDE.
 //
 // The two callback slots stay i32 IN THE HEADER on purpose: a pointer-to-member typed
 // inside its own (still-incomplete) class makes MSVC pick the most-general PMF

@@ -410,7 +410,14 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     virtual i32 UserLogicVfunc1();
     virtual i32 UserLogicVfunc2();
-    virtual i32 UserLogicVfunc3();
+    // slot 5 (+0x14): the per-tick finalize step - SIGNATURE SETTLED (Fable A2,
+    // 2026-07-14) from all three bodies: base 0x8b90 (`ret 4`, arg unused; body in
+    // LogicTypeTable.cpp - fires the two m_04/m_08 deferred callbacks, resets
+    // m_28), CMovingLogic's 0x13c70 override (QAEXH, 100% EXACT; + MovingSlot16
+    // tail) and CGrunt's 0x5ecd0 (`ret 4`, NO exit materializes eax -> void).
+    // Was the no-arg/i32 `UserLogicVfunc3` placeholder + a non-virtual
+    // FinalizeStep twin of the same 0x8b90 body.
+    virtual void FinalizeStep(i32 unused);
     virtual i32 Activate();
     virtual i32 UserLogicVfunc5();
     virtual i32 UserLogicVfunc6();
@@ -468,13 +475,9 @@ public:
     // (CTriggerMgr::SpawnGrunt / ResetGroup on the created sprite's AnimWorkerObj::m_logic):
     // Place @0x4c1c4 (the grunt/puddle placement driver), Arm @0x4e517 (the target-cursor
     // lighting/config arm). Reloc-masked leaf bodies.
-    // FinalizeStep (0x8b90, body in LogicTypeTable.cpp): fire the two registered
-    // __thiscall callbacks in m_04/m_08 and reset m_28. __thiscall(i32) - the arg is
-    // unused (retail `ret 4`). It is ALSO the body the vtable's slot 5 reaches (via
-    // ILT 0x3913) - see the signature-defect note at the definition: the slot decl
-    // below (`virtual i32 UserLogicVfunc3()`) has a DROPPED PARAMETER and a wrong
-    // return type, which is why the two cannot yet be spelled as one method.
-    void FinalizeStep(i32 unused);                                         // 0x8b90
+    // (FinalizeStep - 0x8b90, body in LogicTypeTable.cpp - is now the slot-5
+    // virtual above; retail's slot holds its ILT thunk 0x3913, which
+    // reloc_fidelity thunk-resolves onto the body.)
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4c1c4
     void Arm(const char* lighting, const char* cursor, i32 kind, i32 one); // 0x4e517
 

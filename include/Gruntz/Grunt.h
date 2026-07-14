@@ -1244,7 +1244,6 @@ public:
     i32 Type13Check();
     void Apply13(i32 a, i32 b);
     i32 Dispatch(i32 kind, i32 a);
-    virtual i32 UserLogicVfunc3() OVERRIDE; // slot 5  (0x5ecd0)
     virtual i32 Activate() OVERRIDE;        // slot 6  @0x5caa0
     virtual i32 UserLogicVfunc6() OVERRIDE; // slot 8  (0x62b40)
     virtual i32 UserLogicVfunc7() OVERRIDE; // slot 9  @0x61cb0 (attack-fire step)
@@ -1911,14 +1910,15 @@ public:
     // load RunningTimePerTile, fire the on-screen spawn cue, and re-stamp the cell frame.
     i32 StartBombGruntRun(); // @0x68520
 
-    // @0x5ecd0 (ret 4, vtable slot-5 body; 1-arg - the no-arg UserLogicVfunc3()
-    // base placeholder blocks the OVERRIDE spelling, so it is a plain RVA method
-    // like RunAct). Finalize + slot-16 tick, gated anim-code cleanups (L/G ->
-    // ClearSubA, off-screen -> ClearSubB), then on the "O" (or scratch-resolved)
-    // anim code smoothly interpolate the grunt's HUD position toward the target
-    // tile using the per-cell velocity records (m_cells[base] +0x48..+0x60 doubles),
-    // clamping on overshoot, and mark the HUD scroll dirty.
-    i32 RunPositionInterpStep(i32 arg);
+    // @0x5ecd0 (vtable slot-5 override; `ret 4`, void - NO exit materializes eax;
+    // the base signature is settled so the OVERRIDE spelling works now). Finalize
+    // (direct base call, retail `call 0x3913`) + slot-16 tick, gated anim-code
+    // cleanups (L/G -> ClearSubA, off-screen -> ClearSubB), then on the "O" (or
+    // scratch-resolved) anim code smoothly interpolate the grunt's HUD position
+    // toward the target tile using the per-cell velocity records (m_cells[base]
+    // +0x48..+0x60 doubles), clamping on overshoot, and mark the HUD scroll
+    // dirty. (Was the plain RVA method RunPositionInterpStep.)
+    virtual void FinalizeStep(i32 arg) OVERRIDE;
     // (FinalizeStep is GONE from here - it was a PHANTOM duplicate: nothing ever
     //  defined ?FinalizeStep@CGrunt@@, and 0x8b90 is CUserLogic::FinalizeStep, which
     //  CGrunt INHERITS. Its call site resolves to the base method, cast-free.)

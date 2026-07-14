@@ -165,30 +165,33 @@ RVA(0x00012a70, 0x44)
 CTimeBomb::~CTimeBomb() {}
 
 // ---------------------------------------------------------------------------
-// CProjectile::ReleaseDeferred (0x13c70) - fire the two queued one-shot callbacks
-// (m_08 first, gated on the recorded hit-handle still matching m_28; then m_04
-// unconditionally), reset the handle to its default 0x3e9, then run the slot-16
-// virtual. The callbacks are raw __thiscall code pointers cached in the inherited
-// CUserLogic int slots m_04/m_08 (a heterogeneous "user data" slot). MSVC5 has no
-// __thiscall on free fn-ptrs, so the code address is called through a
-// single-inheritance pointer-to-member-function (one word == the raw address),
-// yielding `mov ecx,this; call ptr`. Typing the base member as a PMF is not an option
-// (MSVC5 fattens the PMF to the general 16-byte form, shifting the shared CUserLogic
-// layout and regressing every leaf that folds the base ctor), so the int slot's bits
-// are reinterpreted at the call with reinterpret_cast (byte-identical to the store).
+// CMovingLogic::FinalizeStep (0x13c70) - the slot-5 override (SETTLED: it sits in
+// ??_7CMovingLogic @0x1e87ac slot 5 via ILT 0x26e9, so its owner is CMovingLogic,
+// which CProjectile inherits; was bound `CProjectile::ReleaseDeferred`). Fire the
+// two queued one-shot callbacks (m_08 first, gated on the recorded hit-handle
+// still matching m_28; then m_04 unconditionally), reset the handle to its
+// default 0x3e9, then run the slot-16 virtual. The callbacks are raw __thiscall
+// code pointers cached in the inherited CUserLogic int slots m_04/m_08 (a
+// heterogeneous "user data" slot). MSVC5 has no __thiscall on free fn-ptrs, so
+// the code address is called through a single-inheritance pointer-to-member-
+// function (one word == the raw address), yielding `mov ecx,this; call ptr`.
+// Typing the base member as a PMF is not an option (MSVC5 fattens the PMF to the
+// general 16-byte form, shifting the shared CUserLogic layout and regressing
+// every leaf that folds the base ctor), so the int slot's bits are reinterpreted
+// at the call with reinterpret_cast (byte-identical to the store).
 // ---------------------------------------------------------------------------
-typedef void (CProjectile::*ProjCallback)();
+typedef void (CMovingLogic::*MovingCallback)();
 
-// @interleaver CProjectile - own-class out-of-line COMDAT in the 0x13xxx leaf pool
+// @interleaver CMovingLogic - out-of-line COMDAT in the 0x13xxx leaf pool
 // (far from the projectile main block @0xdec60+); RVA-placement artifact, kept here.
 RVA(0x00013c70, 0x47)
-void CProjectile::ReleaseDeferred(i32) {
+void CMovingLogic::FinalizeStep(i32) {
     if (m_04 != 0) {
         if (m_08 != 0 && (i32)m_objAux->m_1c == m_28) {
-            (this->*reinterpret_cast<ProjCallback&>(m_08))();
+            (this->*reinterpret_cast<MovingCallback&>(m_08))();
             m_08 = 0;
         }
-        (this->*reinterpret_cast<ProjCallback&>(m_04))();
+        (this->*reinterpret_cast<MovingCallback&>(m_04))();
         m_04 = 0;
         m_28 = 0x3e9;
     }
