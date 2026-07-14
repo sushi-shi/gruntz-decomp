@@ -630,12 +630,47 @@ i32 CGrunt::ResolveMovingAnimation() {
 }
 
 // ===========================================================================
-// CWarlord::NotifyFortUnderAttack  (0x045270)
+// CWarlord::NotifyFortUnderAttack  (0x045270)  - resolve the fort-panic animation
 // ===========================================================================
-// Raise the fort-under-attack alert when an enemy breaches the panic radius.
-// @early-stop
-// DEFERRED to the final sweep (big function, 0x2a8 > 512B, STOP-EARLY). Homed so
-// the RVA + its LoadAttributes caller pair; full body left for a leaf-first redo.
+// Raise the fort-under-attack alert + resolve the warlord's panic animation. A /GX
+// leaf (frame 0x14; NO SerializeMove-style frame wall). FULLY DECODED (R3), left as a
+// STUB only for budget (a >512B multi-subsystem body); the next pass can land it from
+// this decode:
+//   gate:  if (m_a8 != 0) return 0;
+//          if (strcmp(*(char**)g_typeColl.IndexToPtr(m_14->m_1c), s_codeD) == 0) return 0;
+//                                              // 0x310f0 IndexToPtr; skip if already "D"/death
+//   cue + cooldown:
+//     if (g_gameReg->m_134 == 1) {            // on-screen / single-player
+//         g_gameReg->m_cueSink->Cue(m_object->m_188, 0x436, -1,-1,-1);   // 0x11b7c0
+//         m_cooldownWindowLo = 0x7530; m_cooldownWindowHi = 0; m_cooldownStampLo = g_frameTime;
+//     } else {                                 // multiplayer
+//         if ((i64)(u32)g_frameTime - *(i64*)&m_timer2StampLo >= *(i64*)&m_timer2WindowLo
+//             && ((CRegThreatHelper*)g_gameReg->m_cmdGrid)->m_2a0 == this) {
+//             g_gameReg->m_cueSink->Cue(m_object->m_188, 0x440, -1,-1,-1);
+//             if ((g_notifyShownFlag & 1) == 0) {                        // g_6445bc, one-shot
+//                 g_notifyShownFlag |= 1;
+//                 g_notifyAlertStr = CString("ALERT - Your Fort is under attack"@0x60d340); // 0x1b9d4c @ 0x6446fc
+//                 FUN_0011f490(&LAB_004455d0);                            // 0x11f490 (queue the banner)
+//             }
+//             CString notifyMsg; g_buteMgr.GetStringDef("Warlordz","NotifyString",&notifyMsg); // 0x173180
+//             ((CFontConfig*)g_gameReg->m_5c)->AddItem(notifyMsg, ...);   // 0x21c60 HUD line
+//             m_timer2WindowLo = g_buteMgr.GetIntDef("Warlordz","NotifyTimer",0x1770); // 0x171aa0
+//             m_timer2WindowHi = 0; m_timer2StampLo = g_frameTime; m_timer2StampHi = 0;
+//         }
+//         // (MP cooldown re-arm:) m_cooldownWindowLo = (GruntRand()%0x5dc1 + 0x1770)*10; ...
+//     }
+//     m_cooldownStampHi = 0;
+//   resolve panic anim (shared tail):
+//     m_activeAnimDesc = m_38->m_1b4;
+//     m_38->m_1a0.SetGeometry((i32)m_animPanic);                          // 0x15c2d0
+//     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);                       // 0x150540
+//     m_prevAnimSetNode = m_14->m_1c; m_14->m_1c = g_buteTree.Find(s_codeD);  // 0x16d190
+//     return 1;
+// New models the next pass needs (lean reloc-masked shells + externs): CFontConfig::
+// AddItem @0x21c60, FUN_0011f490, the global CString g_notifyAlertStr @0x6446fc + its
+// ctor 0x1b9d4c, the one-shot byte g_notifyShownFlag @0x6445bc, and s_codeD (shared
+// ?s_codeD@@3PADA @0x60cca4, "D"). g_typeColl/g_buteMgr/g_buteTree/cueSink are already
+// modeled. Risk: the inline strcmp gate + the two-way (SP/MP) cooldown-store schedule.
 RVA(0x00045270, 0x2a8)
 void CWarlord::NotifyFortUnderAttack() {}
 
