@@ -37,10 +37,10 @@
 // .text obj block, between GruntzLoadGameDlgProc @0x9dff0 and LoadGameCommand @0x9e390,
 // and are called by both; REHOME package D7.)
 // The slot-occupancy probe IS TempFileExists_e5700 (0x2694 jmp-thunk -> 0xe5700,
-// defined below): a SaveSlot overlaps the SaveTempRec fields it reads (m_type@0 =
-// the flag word, m_savePath@0x35 = the temp path). All reloc-masked.
-struct SaveTempRec;                       // defined below (the temp save-record)
-int TempFileExists_e5700(SaveTempRec* p); // 0x0e5700 (defined below)
+// defined below): it reads the canonical SaveSlot directly (m_type@0 = the flag word,
+// m_savePath@0x35 = the temp path) - the former SaveTempRec view is dissolved onto it.
+// All reloc-masked.
+int TempFileExists_e5700(SaveSlot* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 
 // --- the dialog half's shared state/decls (ex LevelInfoDlg.cpp/SaveGameMenu.cpp) ---
@@ -61,14 +61,14 @@ i32 g_savedMenuCmd = -1;
 DATA(0x0024c814)
 CImagePool* g_previewMgr; // 0x64c814
 // The last-selected save record @0x24c864: read as an i32 SaveSlot* handle in the
-// selection code and as a char*/SaveTempRec* (its leading bytes) in the save-confirm
+// selection code and as a char*/SaveSlot* (its leading bytes) in the save-confirm
 // info dialog - ONE datum, so the ex `g_dlgInfoText` char* view folds onto g_slotState
 // (the tree winner; the C++-mangled g_dlgInfoText lost the per-rva dedup).
 DATA(0x0024c864)
 i32 g_slotState;
 DATA(0x0024c868)
-void* g_previewImage;                              // 0x64c868  (CRezImage* previewed DIB)
-i32 __stdcall CloseTempFile_e5550(SaveTempRec* r); // defined below (0x0e5550)
+void* g_previewImage;                           // 0x64c868  (CRezImage* previewed DIB)
+i32 __stdcall CloseTempFile_e5550(SaveSlot* r); // defined below (0x0e5550)
 // The SetDlgItemTextA helper (0x0e4850) + the title builder (0x0e44e0), defined below.
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
 void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev);
@@ -220,7 +220,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 return 1;
             }
             if (wParam == 1) {
-                CloseTempFile_e5550((SaveTempRec*)g_slotState);
+                CloseTempFile_e5550((SaveSlot*)g_slotState);
                 ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
                 EndDialog(hDlg, 1);
                 return 1;
@@ -500,7 +500,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     if (_strcmpi(name, "(Empty)") == 0) {
         sprintf(name, "Saved Game #%i", slot + 1);
     }
-    if (TempFileExists_e5700((SaveTempRec*)obj->GetSlot(slot))) {
+    if (TempFileExists_e5700(obj->GetSlot(slot))) {
         g_slotState = (i32)obj->GetSlot(slot);
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
@@ -963,15 +963,10 @@ i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
     return CopySlot(GetSlot(idx), src);
 }
 
-// A save-slot record probed by the two temp-file helpers below: an int/flag at
-// +0x00 (bit0 = "has a temp file"; cleared to 0 by the closer) and the temp-file
-// path string at +0x35. Only these two offsets are touched.
-SIZE_UNKNOWN(SaveTempRec);
-struct SaveTempRec {
-    i32 m_flags;        // +0x00  flags (bit0) / cleared to 0 by the closer
-    char m_pad04[0x31]; // +0x04..+0x34
-    char m_path[1];     // +0x35  the temp-file path
-};
+// The two temp-file helpers below probe the canonical SaveSlot directly: its m_type
+// @+0x00 doubles as the "has a temp file" flag word (bit0; cleared to 0 by the
+// closer) and m_savePath @+0x35 is the temp-file path. Only these two offsets are
+// touched here (the former SaveTempRec view is dissolved).
 
 // The temp-file delete at 0x1bf559 is the static MFC CFile::Remove (NAFXCW library;
 // library_labels ?Remove@CFile@@SGXPBD@Z) - call it by its real name (reloc-masked).
@@ -981,16 +976,16 @@ struct SaveTempRec {
 // and delete it, then clear the record's flag. Returns 1 once the record was
 // processed (0 only for a null record). Free __stdcall helper (callee-cleans).
 RVA(0x000e5550, 0x9a)
-int __stdcall CloseTempFile_e5550(SaveTempRec* p) {
+int __stdcall CloseTempFile_e5550(SaveSlot* p) {
     if (p == 0) {
         return 0;
     }
     CFileIO file;
-    if (file.Open(p->m_path, 0, 0)) {
+    if (file.Open(p->m_savePath, 0, 0)) {
         file.Close();
-        CFile::Remove(p->m_path);
+        CFile::Remove(p->m_savePath);
     }
-    p->m_flags = 0;
+    p->m_type = 0;
     return 1;
 }
 
@@ -1061,10 +1056,10 @@ void CSaveGame::SetMagic() {
 // can be opened for read: if bit0 is set and the path opens, close it and return
 // 1, else 0. Free __cdecl helper (caller cleans the argument).
 RVA(0x000e5700, 0x9e)
-int TempFileExists_e5700(SaveTempRec* p) {
-    if (p != 0 && (p->m_flags & 1)) {
+int TempFileExists_e5700(SaveSlot* p) {
+    if (p != 0 && (p->m_type & 1)) {
         CFileIO file;
-        if (file.Open(p->m_path, 0, 0)) {
+        if (file.Open(p->m_savePath, 0, 0)) {
             file.Close();
             return 1;
         }
@@ -1082,7 +1077,7 @@ int TempFileExists_e5700(SaveTempRec* p) {
 RVA(0x000e3e80, 0x86)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     i32 flag;
-    if (TempFileExists_e5700((SaveTempRec*)item)) {
+    if (TempFileExists_e5700(item)) {
         SetDlgItemTextA(hWnd, id3, item->m_name);
         flag = 1;
     } else {
