@@ -46,13 +46,13 @@ public:
 SIZE_UNKNOWN(CSpriteRefHashTable);
 class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call
 
-// The animation/alpha factory cached as Init's arg0 (m_factory). Its AlphaTable method
-// (0x14f5b0) turns a looked-up sprite's frame data into an alpha object; modeled
-// NO-body so its `call` reloc-masks. Build (the node ctor) also receives it.
-SIZE_UNKNOWN(CSpriteRefFactory);
-class CSpriteRefFactory {
-public:
-};
+// The animation/alpha factory cached as Init's arg0 (m_factory) IS the canonical
+// CShadeTableCache (<DDrawMgr/ShadeTableCache.h>). XREF proof: its builder passes
+// RezSync+0x50 (RezSync.cpp: `CShadeTableCache* m_50`) as arg0, and the "factory"
+// method Add() calls on it - AlphaTable @0x14f5b0 - IS CShadeTableCache::AlphaTable
+// (same RVA). The former CSpriteRefFactory placeholder is DISSOLVED (2026-07-14).
+// Forward-declared for the pointer member; the deref TUs include ShadeTableCache.h.
+class CShadeTableCache;
 
 SIZE_UNKNOWN(CSpriteRefTable);
 class CSpriteRefTable {
@@ -103,7 +103,7 @@ public:
     // at the color's kind slot; latches m_built when complete. 0xe2400.
     i32 BuildToolToyColorTable(i32 src);
 
-    CSpriteRefFactory* m_factory; // +0x00  Init arg0 (the alpha/anim factory)
+    CShadeTableCache* m_factory; // +0x00  Init arg0 (the alpha/shade-table factory)
     void* m_spriteMgrHolder;      // +0x04  Init arg1 (holder->m_spriteMgr -> the sprite mgr)
     CSpriteRef* m_refA[0x11];     // +0x08  bucket A nodes (17 slots)
     CSpriteRef* m_refB[0x11];     // +0x4c  bucket B nodes (17 slots)

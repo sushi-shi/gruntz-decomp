@@ -44,7 +44,7 @@ i32 CSpriteRefTable::Init(i32 p0, i32 p1) {
     if (!p0) {
         return p0;
     }
-    m_factory = (CSpriteRefFactory*)p0;
+    m_factory = (CShadeTableCache*)p0;
     m_spriteMgrHolder = (void*)p1;
     m_built = 0;
     return 1;
@@ -135,7 +135,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     if (!sprite) {
         return 0;
     }
-    void* alpha = ((CShadeTableCache*)m_factory)->AlphaTable((unsigned char*)sprite);
+    void* alpha = m_factory->AlphaTable((unsigned char*)sprite);
     if (!alpha) {
         return 0;
     }
