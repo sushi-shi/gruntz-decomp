@@ -41,13 +41,19 @@ extern CMulti* g_64bd5c;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 extern "C" char g_emptyString[];
 
-// A player-slot record in the m_host slot array (0x238 stride); only the +0x16c
-// occupancy field is read here.
+// A player-slot record in the m_host slot array (0x238 stride). DEFERRED-FOLD onto the
+// canonical CFocusSlot (<Gruntz/GameRegistry.h>, the g_gameReg->m_focusSlots[4] element
+// MultiStartDlgRoster.cpp already indexes as (CFocusSlot*)m_host): m_16c IS CFocusSlot::
+// m_16c (the roster colour/lock value). BLOCKED: this view also models a CString player-
+// name at +0x154 that CFocusSlot does NOT yet declare (it falls inside CFocusSlot's
+// m_pad30[0x30..0x164]) - folding now would DEGRADE that typed member to a raw offset,
+// and GameRegistry.h is a hot header owned by the CGruntzMgr manager-fold lane. So the
+// fold waits on that lane adding `CString m_154` (+ the +0x150/+0x158/+0x160/+0x170 tail).
 struct CMultiSlot {
     char m_pad00[0x154];
     CString m_154; // +0x154  player-name edit contents (DoDataExchange save pass)
     char m_pad158[0x16c - 0x158];
-    i32 m_16c; // +0x16c  occupancy field
+    i32 m_16c; // +0x16c  occupancy field (== CFocusSlot::m_16c)
     char m_pad170[0x238 - 0x170];
 };
 
@@ -78,27 +84,14 @@ struct MpSymItem {
     char* m_name; // +0x00  entry name (LPCSTR)
 };
 
-// The m4 color-dialog facet (dossier seam 0xc1aa0, from the former multicolordlg
-// unit). @identity-TODO: the dialog object is a CDialog-derived class with its
-// own fields from +0x5c (the same span CMultiStartDlg uses); whether MultiColorDlg
-// IS CMultiStartDlg (the 0x4ff combo + the 0x238-stride slot table both match) or
-// a sibling dialog is unsettled - kept the m4 view this package (no class renames
-// per the wave1-D brief).
-namespace m4 {
-    // Game Win32 pointer table (0x6c44xx) -> reloc-masked indirect calls.
-
-    // The multiplayer lobby game-state singleton at 0x64bd5c is a CMulti (xref-
-    // proven): m_isHost (+0x528) gates the active branch, m_5b0 (+0x5b0) is the
-    // current selection, Name42ff/Name31d4 return the current-slot / default name
-    // (CString by value).
-    struct MultiColorDlg : public CDialog {
-        char* m_5c; // +0x5c color-slot table base
-        char m_pad60[0x6c - 0x60];
-        i32 m_6c;            // +0x6c cached selection
-        i32 SlotIndex2d4c(); // 0x00002d4c
-        i32 UpdateColorItems();
-    };
-} // namespace m4
+// The color-dialog facet (0xc1aa0) IS CMultiStartDlg - PROVEN, dissolved (was the
+// m4::MultiColorDlg view): its SlotIndex2d4c is the ILT thunk 0x2d4c to
+// CMultiStartDlg::GetSlotIndex (0xc4b30), its m_5c is CMultiStartDlg::m_host (+0x5c,
+// the 0x238-stride slot table) and its m_6c the cached selection (+0x6c), and all
+// three UpdateColorItems callers (DoDataExchange/Watchdog/ToggleReady) are CMultiStartDlg
+// methods. The lobby game-state singleton g_64bd5c (0x64bd5c) is a CMulti (xref-proven):
+// m_isHost (+0x528) gates the active branch, m_5b0 the current selection, Name42ff/
+// Name31d4 return the current-slot / default name (CString by value).
 
 // ---------------------------------------------------------------------------
 // BuildNamedGruntTable (0xc16b0) - seeds the 4 default named-grunt CString globals
@@ -187,7 +180,7 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 }
 
 // ---------------------------------------------------------------------------
-// m4::MultiColorDlg::UpdateColorItems (0xc1aa0, dossier seam -> this TU): refresh
+// CMultiStartDlg::UpdateColorItems (0xc1aa0, dossier seam -> this TU): refresh
 // three dialog items (0x4ff combo, 0x42b, 0x4e9) plus the combo's child window.
 // In an active session the items are enabled per an empty-slot table probe; out
 // of session the combo's cursel is cleared and the child's text is (re)synced to
@@ -203,7 +196,7 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 // the dead arg/temp stack slots between the two branches, shifting [esp+N] operands
 // - plus the demangled-vs-mangled MFC/CString reloc names - not steerable.
 RVA(0x000c1aa0, 0x2f8)
-i32 m4::MultiColorDlg::UpdateColorItems() {
+i32 CMultiStartDlg::UpdateColorItems() {
     if (g_64bd5c->m_isHost != 0) {
         CWnd* it4ff = GetDlgItem(0x4ff);
         CWnd* itChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
@@ -221,8 +214,8 @@ i32 m4::MultiColorDlg::UpdateColorItems() {
         if (!it4e9) {
             return 0;
         }
-        i32 idx = SlotIndex2d4c();
-        i32 en = (*(i32*)(m_5c + idx * 568 + 0x16c) == 0);
+        i32 idx = GetSlotIndex();
+        i32 en = (((CMultiSlot*)m_host)[idx].m_16c == 0);
         it4ff->EnableWindow(en);
         it42b->EnableWindow(en);
         it4e9->EnableWindow(0);
@@ -432,7 +425,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         g_64bd5c->m_netGate->m_78 = 0;
         g_64bd5c->PollSession();
-        if (!Sync2c0c()) {
+        if (!UpdateColorItems()) {
             return;
         }
         if (!Sync38d2()) {
@@ -628,4 +621,3 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
 
 SIZE_UNKNOWN(CMultiSlot);
 SIZE_UNKNOWN(MpSymItem);
-SIZE_UNKNOWN(MpSymTable);

@@ -382,7 +382,7 @@ public:
     void Drive();                  // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)
     i32 Sync16db(i32);             // 0x016db  (DoDataExchange tests the result)
     void Sync227a();               // 0x0227a
-    i32 Sync2c0c();                // 0x02c0c  (DoDataExchange tests the result)
+    i32 UpdateColorItems();        // 0xc1aa0 (color-item refresh; via 0x02c0c thunk; ex m4::MultiColorDlg)
     i32 Sync38d2();                // 0x038d2  (DoDataExchange tests the result)
     i32 LocalSlot2d4c();           // 0x02d4c  current local slot index
     CWnd* NameEdit298c(i32 idx);   // 0x0298c  name edit for slot idx

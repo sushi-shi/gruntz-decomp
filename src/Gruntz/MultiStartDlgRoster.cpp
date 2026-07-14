@@ -995,13 +995,13 @@ void CMultiStartDlg::Watchdog() {
         if (g_playerLeftFlag != 0) {
             Sync16db(1);
             Sync227a();
-            Sync2c0c();
+            UpdateColorItems();
             Sync38d2();
             g_playerLeftFlag = 0;
         }
         if (g_64bd5c->m_58c != 0) {
             Sync227a();
-            Sync2c0c();
+            UpdateColorItems();
             Sync38d2();
             g_64bd5c->m_58c = 0;
         }
@@ -1160,7 +1160,7 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         Func1d70(0);
         Sync16db(1);
         Sync227a();
-        Sync2c0c();
+        UpdateColorItems();
         Sync38d2();
     } else {
         Refresh185c(slot);
