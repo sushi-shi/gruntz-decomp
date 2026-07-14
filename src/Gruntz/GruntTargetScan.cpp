@@ -7,9 +7,9 @@
 // candidate, squared-distance min tracking, a PtInRect box gate, the m_defenderState
 // mode dispatch (0=wander/seek, 1=lock, 2=arrive), and a rand()-driven idle-wander tail
 // (idiv 0x7530 window + idiv m_extentR/m_extentB nearby jitter). All engine helpers +
-// the manager/grid globals are external (reloc-masked); CGrunt fields not yet carrying a
-// semantic name are addressed by the F/P raw-offset macros exactly as GruntArrivalScan
-// does (naming-independent-codegen).
+// the manager/grid globals are external (reloc-masked); every CGrunt/CGruntHud field is
+// reached through its real typed member on the canonical class (the old F/P raw-offset
+// cast-hiding macros are gone; only offsets + code bytes are load-bearing).
 //
 // The .cpp-local views are DISSOLVED onto the canonical classes (mirroring the sibling
 // GruntArrivalScan.cpp): CGruntScan IS CGrunt (this method's owner), CScanReg IS
@@ -38,11 +38,9 @@
 #include <rva.h>
 #include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
 #include <Gruntz/GameRegistry.h> // CGameRegistry / CSpriteFactoryHolder
+#include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane (world->m_24->m_mainPlane->m_originX)
 #include <Gruntz/ScanGrid.h>     // CScanGrid (the shared board-grid dims view)
 #include <stdlib.h>              // engine rand (0x11fee0)
-
-#define F(base, o) (*(i32*)((char*)(base) + (o)))
-#define P(base, o) (*(char**)((char*)(base) + (o)))
 
 // The reason(m_170)->priority map, inlined at each of the 6 candidate-compare sites
 // (12 jump tables). Case bodies emit the priority constants 2..0x17 in value order
@@ -121,16 +119,16 @@
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern "C" u32 g_frameTime;          // 0x245588 frame clock
 
-// __cdecl board rect predicate (0x401127): point-in-board-rect.
-extern "C" i32 BoardTest(char* board, i32 x, i32 y); // 0x401127
+// __cdecl board rect predicate (0x401127): point-in-board-rect (the visible CCueRect).
+extern "C" i32 BoardTest(CCueRect* board, i32 x, i32 y); // 0x401127
 
 RVA(0x000f42f0, 0x1193)
 i32 CGrunt::ScanNearestTarget() {
-    i32 ownerHi = F(this, 0x1ec);
-    F(this, 0x300) = F(this, 0x17c);
-    F(this, 0x304) = F(this, 0x180);
-    i32 cx = F(this, 0x17c) >> 5;
-    i32 cy = F(this, 0x180) >> 5;
+    i32 ownerHi = m_tileOwnerHi;
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
+    i32 cx = m_lastTilePxX >> 5;
+    i32 cy = m_lastTilePxY >> 5;
 
     // Scan the tile-mgr grunt board for the nearest higher-or-equal-priority target.
     CGrunt* best = 0;
@@ -142,14 +140,14 @@ i32 CGrunt::ScanNearestTarget() {
         CGruntTileMgr* board = (CGruntTileMgr*)g_gameReg->m_cmdGrid;
         for (i32 col = 0; col < 15; col++) {
             CGrunt* cand = board->m_grid[row][col];
-            if (cand != 0 && F(cand, 0x1fc) != 0 && F(cand, 0x258) != 0x36) {
+            if (cand != 0 && cand->m_entranceCommitted != 0 && cand->m_gruntKind != 0x36) {
                 i32 pa;
-                PRIO(pa, F(this, 0x170));
+                PRIO(pa, m_entranceReason);
                 i32 pb;
-                PRIO(pb, F(cand, 0x170));
+                PRIO(pb, cand->m_entranceReason);
                 if (pa <= pb) {
-                    i32 dx = (F(P(cand, 0x10), 0x5c) >> 5) - cx;
-                    i32 dy = (F(P(cand, 0x10), 0x60) >> 5) - cy;
+                    i32 dx = (cand->m_10->m_5c >> 5) - cx;
+                    i32 dy = (cand->m_10->m_60 >> 5) - cy;
                     i32 d = dx * dx + dy * dy;
                     if (d < bestDist) {
                         best = cand;
@@ -162,7 +160,7 @@ i32 CGrunt::ScanNearestTarget() {
 
     // Recompute the scan box (center +- (m_2dc + m_298 + 1)) and reject `best` when its
     // center falls outside it.
-    i32 halfBox = F(this, 0x2dc) + F(this, 0x298) + 1;
+    i32 halfBox = m_defenderRadius + m_reachRadius + 1;
     i32 pt[2];
     GetScreenPos((GruntTilePos*)pt);
     i32 by = pt[1] >> 5;
@@ -179,8 +177,8 @@ i32 CGrunt::ScanNearestTarget() {
     box.bottom = by + halfBox + 1;
     if (best != 0) {
         POINT pt;
-        pt.x = F(best, 0x17c) >> 5;
-        pt.y = F(best, 0x180) >> 5;
+        pt.x = best->m_lastTilePxX >> 5;
+        pt.y = best->m_lastTilePxY >> 5;
         if (!PtInRect(&box, pt)) {
             best = 0;
         }
@@ -189,47 +187,47 @@ i32 CGrunt::ScanNearestTarget() {
     // atTarget: `best` has reached its own last-tile pixel AND the tile probes free.
     i32 atTarget = 0;
     if (best != 0) {
-        i32 x = F(P(best, 0x10), 0x5c);
-        if (x == F(best, 0x17c) && F(P(best, 0x10), 0x60) == F(best, 0x180)
-            && this->RectContains(x, F(P(best, 0x10), 0x60)) != 0) {
+        i32 x = best->m_10->m_5c;
+        if (x == best->m_lastTilePxX && best->m_10->m_60 == best->m_lastTilePxY
+            && this->RectContains(x, best->m_10->m_60) != 0) {
             atTarget = 1;
         }
     }
 
     // Powered-up reset gate (identical to ArrivalScanB's m_poweredUp path).
-    if (F(this, 0x220) != 0) {
-        if (F(this, 0x21c) != 0) {
-            F(this, 0x21c) = 0;
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
             return 1;
         }
-        if (F(this, 0x218) != 0) {
+        if (m_combatActive != 0) {
             return 1;
         }
-        if (F(this, 0x3f0) >= 100) {
+        if (m_stamina >= 100) {
             if (FindGridNeighbor(1) != 0) {
                 return 1;
             }
             if (atTarget && best == 0) {
                 return 1;
             }
-            if (F(this, 0x220) == 0) {
+            if (m_poweredUp == 0) {
                 return 1;
             }
         } else {
             if (atTarget) {
                 return 1;
             }
-            if (F(this, 0x220) == 0) {
+            if (m_poweredUp == 0) {
                 return 1;
             }
         }
-        if (F(this, 0x21c) != 0) {
+        if (m_neighborValid != 0) {
             return 1;
         }
-        F(this, 0x1e4) = 0;
-        F(this, 0x218) = 0;
-        F(this, 0x21c) = 0;
-        F(this, 0x220) = 0;
+        m_entranceActive = 0;
+        m_combatActive = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
         ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
@@ -237,22 +235,25 @@ i32 CGrunt::ScanNearestTarget() {
     // m_defenderState mode dispatch (switch -> retail's sub/dec ladder: tests 0, 1, then 2
     // falls through; default (m_defenderState not 0/1/2) returns 1). Case bodies lay out
     // case 2 nearest, case 0 (seek/wander) farthest, matching retail.
-    switch (F(this, 0x2d4)) {
+    switch (m_defenderState) {
         case 0: {
             // seek / commit toward `best`, else idle wander.
             if (best == 0) {
                 goto L_wander;
             }
-            if (F(this, 0x220) == 0 && F(this, 0x3f0) >= 100
-                && F(P(best, 0x10), 0x5c) == F(best, 0x17c)
-                && F(P(best, 0x10), 0x60) == F(best, 0x180)) {
+            if (m_poweredUp == 0 && m_stamina >= 100 && best->m_10->m_5c == best->m_lastTilePxX
+                && best->m_10->m_60 == best->m_lastTilePxY) {
                 i32 pa;
-                PRIO(pa, F(this, 0x170));
+                PRIO(pa, m_entranceReason);
                 i32 pb;
-                PRIO(pb, F(best, 0x170));
-                if (pa <= pb
-                    && this->RectContains(F(P(best, 0x10), 0x5c), F(P(best, 0x10), 0x60)) != 0) {
-                    CommitNeighbor(F(best, 0x1ec), F(best, 0x1f0), F(best, 0x17c), F(best, 0x180));
+                PRIO(pb, best->m_entranceReason);
+                if (pa <= pb && this->RectContains(best->m_10->m_5c, best->m_10->m_60) != 0) {
+                    CommitNeighbor(
+                        best->m_tileOwnerHi,
+                        best->m_tileOwnerLo,
+                        best->m_lastTilePxX,
+                        best->m_lastTilePxY
+                    );
                     return 1;
                 }
             }
@@ -263,83 +264,84 @@ i32 CGrunt::ScanNearestTarget() {
             }
             {
                 i32 pa;
-                PRIO(pa, F(this, 0x170));
+                PRIO(pa, m_entranceReason);
                 i32 pb;
-                PRIO(pb, F(best, 0x170));
+                PRIO(pb, best->m_entranceReason);
                 if (pa > pb) {
                     goto L_wander;
                 }
             }
-            if ((u32)F(this, 0x2ec) <= 0x3e8) {
+            if ((u32)m_dwell <= 0x3e8) {
                 goto L_wander;
             }
-            F(this, 0x300) = F(this, 0x17c);
-            F(this, 0x304) = F(this, 0x180);
+            m_defenderX = m_lastTilePxX;
+            m_defenderY = m_lastTilePxY;
             {
                 i32 pa;
-                PRIO(pa, F(this, 0x170));
+                PRIO(pa, m_entranceReason);
                 i32 pb;
-                PRIO(pb, F(best, 0x170));
+                PRIO(pb, best->m_entranceReason);
                 if (pa > pb) {
                     goto L_scanDone;
                 }
             }
-            if (this->GruntInRadius(F(best, 0x1ec), F(best, 0x1f0)) == 0) {
+            if (this->GruntInRadius(best->m_tileOwnerHi, best->m_tileOwnerLo) == 0) {
                 goto L_scanDone;
             }
             {
                 i32 cc[4];
                 best->GetScreenPos((GruntTilePos*)cc);
-                if (this->TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, F(this, 0x248), 1, 0) == 0) {
+                if (this->TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
                     goto L_scanDone;
                 }
             }
             SetEntrancePos(1, 1);
-            F(this, 0x2f0) = F(best, 0x1ec);
-            F(this, 0x2f4) = F(best, 0x1f0);
-            F(this, 0x2d4) = 1;
+            m_arrivalCol = best->m_tileOwnerHi;
+            m_arrivalRow = best->m_tileOwnerLo;
+            m_defenderState = 1;
             {
                 if (BoardTest(
-                        P(g_gameReg->m_world->m_24, 0x5c) + 0x40,
-                        F(P(this, 0x10), 0x5c),
-                        F(P(this, 0x10), 0x60)
+                        (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
+                        m_10->m_5c,
+                        m_10->m_60
                     )
                     != 0) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
             }
         L_scanDone:
-            F(this, 0x2ec) = 0;
+            m_dwell = 0;
             return 1;
 
         L_wander:
-            if (F(this, 0x244) != 0 || F(this, 0x318) == 0 || (u32)F(this, 0x2ec) <= 0xbb8) {
+            if (m_resetApplied != 0 || m_318 == 0 || (u32)m_dwell <= 0xbb8) {
                 return 1;
             }
             // 64-bit elapsed = g_frameTime - {m_308:m_30c}; compare with window {m_310:m_314}.
             {
-                i32 lo = (i32)g_frameTime - F(this, 0x308);
-                i32 hi = 0 - F(this, 0x30c) - ((u32)(i32)g_frameTime < (u32)F(this, 0x308) ? 1 : 0);
-                i32 winHi = F(this, 0x314);
-                if (hi > winHi || (hi == winHi && (u32)lo >= (u32)F(this, 0x310))) {
+                i32 lo = (i32)g_frameTime - m_arrivalRerollLo;
+                i32 hi = 0 - m_arrivalRerollHi
+                         - ((u32)(i32)g_frameTime < (u32)m_arrivalRerollLo ? 1 : 0);
+                i32 winHi = m_arrivalRerollWindowHi;
+                if (hi > winHi || (hi == winHi && (u32)lo >= (u32)m_arrivalRerollWindowLo)) {
                     // window elapsed: re-arm the idle timer with a fresh rand()%0x7530+0x7530.
                     ResetEntranceAnimation(1, 1, 0);
-                    F(this, 0x308) = 0;
-                    F(this, 0x310) = 0;
-                    F(this, 0x30c) = 0;
-                    F(this, 0x314) = 0;
-                    F(this, 0x310) = rand() % 0x7530 + 0x7530;
-                    F(this, 0x314) = 0;
-                    F(this, 0x308) = (i32)g_frameTime;
-                    F(this, 0x30c) = 0;
+                    m_arrivalRerollLo = 0;
+                    m_arrivalRerollWindowLo = 0;
+                    m_arrivalRerollHi = 0;
+                    m_arrivalRerollWindowHi = 0;
+                    m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
+                    m_arrivalRerollWindowHi = 0;
+                    m_arrivalRerollLo = (i32)g_frameTime;
+                    m_arrivalRerollHi = 0;
                 } else {
                     // not elapsed: jitter to a random nearby board cell.
-                    char* hud = P(this, 0x10);
-                    i32 baseCol = F(hud, 0x134);
-                    i32 spanX = F(hud, 0x13c) - baseCol;
-                    i32 baseRow = F(hud, 0x138);
+                    CGruntHud* hud = m_10;
+                    i32 baseCol = hud->m_134;
+                    i32 spanX = hud->m_13c - baseCol;
+                    i32 baseRow = hud->m_138;
                     spanX = (spanX ^ (spanX >> 31)) - (spanX >> 31);
-                    i32 spanY = F(hud, 0x140) - baseRow;
+                    i32 spanY = hud->m_140 - baseRow;
                     spanY = (spanY ^ (spanY >> 31)) - (spanY >> 31);
                     if (spanX != 0) {
                         baseCol += rand() % spanX;
@@ -349,103 +351,113 @@ i32 CGrunt::ScanNearestTarget() {
                     }
                     CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
                     if ((u32)baseCol < (u32)grid->m_c && (u32)baseRow < (u32)grid->m_10) {
-                        this->TileSwitch(baseCol, baseRow, 0, F(this, 0x248), 1, 0);
+                        this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
                     }
-                    if (F(this, 0x328) != 0) {
+                    if (CoordCount() != 0) {
                         if (spanX > spanY) {
                             spanX = spanY;
                         }
-                        if (F(this, 0x328) > spanX) {
+                        if (CoordCount() > spanX) {
                             SetEntrancePos(1, 1);
                         }
                     }
                 }
             }
-            F(this, 0x2ec) = 0;
+            m_dwell = 0;
             return 1;
         }
         case 1: {
-            CGrunt* sg = m_tileMgr->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+            CGrunt* sg = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
             if (best != 0 && best != sg) {
-                F(this, 0x2f0) = -1;
-                F(this, 0x2d4) = 0;
-                F(this, 0x2f4) = -1;
+                m_arrivalCol = -1;
+                m_defenderState = 0;
+                m_arrivalRow = -1;
                 return 1;
             }
             if (sg == 0) {
                 goto L_clearMode;
             }
             i32 pa;
-            PRIO(pa, F(this, 0x170));
+            PRIO(pa, m_entranceReason);
             i32 pb;
-            PRIO(pb, F(sg, 0x170));
+            PRIO(pb, sg->m_entranceReason);
             if (pa > pb) {
                 goto L_clearMode;
             }
-            if (F(sg, 0x1fc) == 0) {
+            if (sg->m_entranceCommitted == 0) {
                 goto L_clearMode;
             }
-            if (this->GruntInRadius(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
+            if (this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) == 0) {
                 goto L_clearMode;
             }
-            if ((u32)F(this, 0x2ec) > 0x1f4) {
-                StepArrivalDrop(F(sg, 0x17c), F(sg, 0x180), F(this, 0x248), 0, 1, 0);
-                F(this, 0x2ec) = 0;
+            if ((u32)m_dwell > 0x1f4) {
+                StepArrivalDrop(sg->m_lastTilePxX, sg->m_lastTilePxY, m_arrivalFlags, 0, 1, 0);
+                m_dwell = 0;
             }
-            if (F(this, 0x220) != 0 || F(this, 0x3f0) < 100) {
+            if (m_poweredUp != 0 || m_stamina < 100) {
                 return 1;
             }
-            if (this->RectContains(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
+            if (this->RectContains(sg->m_10->m_5c, sg->m_10->m_60) == 0) {
                 return 1;
             }
-            if (F(P(sg, 0x10), 0x5c) != F(sg, 0x17c) || F(P(sg, 0x10), 0x60) != F(sg, 0x180)) {
+            if (sg->m_10->m_5c != sg->m_lastTilePxX || sg->m_10->m_60 != sg->m_lastTilePxY) {
                 return 1;
             }
-            CommitNeighbor(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
-            F(this, 0x2d4) = 2;
+            CommitNeighbor(
+                sg->m_tileOwnerHi,
+                sg->m_tileOwnerLo,
+                sg->m_lastTilePxX,
+                sg->m_lastTilePxY
+            );
+            m_defenderState = 2;
             return 1;
         L_clearMode:
-            F(this, 0x2d4) = 0;
+            m_defenderState = 0;
             return 1;
         }
         case 2: {
-            if (F(this, 0x220) != 0) {
-                CGrunt* sg = m_tileMgr->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+            if (m_poweredUp != 0) {
+                CGrunt* sg = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
                 if (sg == 0) {
                     goto L_setLock;
                 }
                 i32 pa;
-                PRIO(pa, F(this, 0x170));
+                PRIO(pa, m_entranceReason);
                 i32 pb;
-                PRIO(pb, F(sg, 0x170));
+                PRIO(pb, sg->m_entranceReason);
                 if (pa > pb) {
                     goto L_setLock;
                 }
-                if (this->GruntInRadius(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
+                if (this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) == 0) {
                     goto L_setLock;
                 }
-                if (F(sg, 0x1fc) == 0) {
+                if (sg->m_entranceCommitted == 0) {
                     goto L_setLock;
                 }
-                if (F(this, 0x21c) != 0 || F(this, 0x218) != 0 || F(this, 0x3f0) < 100) {
+                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
                     return 1;
                 }
-                if (this->RectContains(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
+                if (this->RectContains(sg->m_10->m_5c, sg->m_10->m_60) == 0) {
                     goto L_setLock;
                 }
-                if (F(P(sg, 0x10), 0x5c) != F(sg, 0x17c) || F(P(sg, 0x10), 0x60) != F(sg, 0x180)) {
+                if (sg->m_10->m_5c != sg->m_lastTilePxX || sg->m_10->m_60 != sg->m_lastTilePxY) {
                     goto L_setLock;
                 }
-                CommitNeighbor(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
-                F(this, 0x2d4) = 2;
+                CommitNeighbor(
+                    sg->m_tileOwnerHi,
+                    sg->m_tileOwnerLo,
+                    sg->m_lastTilePxX,
+                    sg->m_lastTilePxY
+                );
+                m_defenderState = 2;
                 return 1;
             L_setLock:
-                F(this, 0x2d4) = 1;
-                F(this, 0x2ec) = 0x1f4;
+                m_defenderState = 1;
+                m_dwell = 0x1f4;
                 return 1;
             }
-            F(this, 0x2d4) = 1;
-            F(this, 0x2ec) = 0x1f4;
+            m_defenderState = 1;
+            m_dwell = 0x1f4;
             return 1;
         }
     }
