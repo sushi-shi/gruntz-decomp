@@ -20,10 +20,13 @@
 // this-OFFSETS and emitted code bytes are load-bearing (campaign doctrine), so
 // field names are placeholders m_<hexoffset>.
 
-// The owning manager reached through CWwdGameObject+0x0c. Its methods are
-// reached as [[+0xc]+slot] - modeled as a typed vtable struct so the dispatch
-// lowers to the exact `mov eax,[mgr+slot]; call` with no cast.
-struct WwdMgr;
+// The owning manager reached through CWwdGameObject+0x0c IS the canonical
+// CDDrawSurfaceMgr (<DDrawMgr/DDrawSurfaceMgr.h>): PROVEN by the ctor chain (the
+// factories' m_0c is a CDDrawSurfaceMgr*) and by the members the methods reach -
+// +0x04 m_pages, +0x08 m_childGroup, +0x10 m_surfaceDesc (sprite registry), +0x14
+// m_workerCache, +0x24 m_resolveSubMgr (CGameLevel), +0x28 m_leafScan - which are
+// exactly CDDrawSurfaceMgr's fields. The ex WwdMgr / WwdCamHolder views are dissolved.
+class CDDrawSurfaceMgr;
 
 // The 0xa0-byte snapshot record CWwdGameObject::WriteSnapshot (0x151c00) assembles on
 // the stack and emits through the archive. CWwdGameObject's snapshot serialization
@@ -67,12 +70,9 @@ struct LeafCue;          // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex Le
 // WwdSubList/WwdSubNode/WwdSubDel views are dissolved. ResetAndSetup walks it with
 // the real CObList::GetHeadPosition/GetNext + `delete` on each MFC CObject payload.)
 
-// The owning manager (+0x0c) is a typed engine object whose full layout lives in
-// WwdGameObject.cpp (the only TU that walks it); a pointer member needs only a fwd
-// decl. The render context (RenderDot's / Render's arg) is the real CDDrawSurfacePair
+// The render context (RenderDot's / Render's arg) is the real CDDrawSurfacePair
 // (fwd-declared above; its m_width/m_height/m_surface are the clip extent + dest surface
 // the former WwdRenderCtx view described offset-for-offset).
-struct WwdMgr;
 
 // ---------------------------------------------------------------------------
 // CWwdGameObject - the canonical runtime plane object (raw-offset access; only
@@ -153,7 +153,7 @@ public:
     // +0x00 is the CObject base vptr (the 17-slot table); m_04 at +0x04.
     i32 m_04;         // +0x04
     i32 m_flags;      // +0x08  bit flags (|=0x800000 / 0x1000000)
-    WwdMgr* m_mgr;    // +0x0c  owning manager
+    CDDrawSurfaceMgr* m_mgr; // +0x0c  owning manager (the canonical CDDrawSurfaceMgr)
     i32 m_10;         // +0x10
     i32 m_14;         // +0x14
     i32 m_lastX;      // +0x18  last-drawn column (cached by RenderDot)

@@ -28,6 +28,9 @@
 #include <DDrawMgr/DDrawWorker.h>     // CDDrawWorker (frame collection; slots 10/14/15/16)
 #include <Bute/SymTab.h>              // CSymTab iteration (FirstSym/NextSym{,2,3})
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c owner (m_flags bit 0x100 = single-frame)
+#include <DDrawMgr/DDrawSubMgrPages.h> // m_mgr->m_pages->m_frontPair (Test cull extent)
+#include <DDrawMgr/DDrawWorkerCache.h> // m_mgr->m_workerCache (FindKeyOfValue_165360 / m_10)
+#include <Gruntz/GameLevel.h>          // m_mgr->m_resolveSubMgr->m_mainPlane (Test camera cull)
 #include <Image/CImage.h>             // the REAL CImage (was the local CFrameWorker stand-in)
 #include <DDrawMgr/DDrawShadeBlit.h>  // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
 #include <Image/ImageSet.h>           // CImageSet (sparse CImage-frame collection)
@@ -76,52 +79,24 @@
 // The "spatial grid" was never a grid: it is the draw surface, and Test()'s non-camera
 // branch culls against the surface's width/height.
 //
-// DEFERRED-FOLD (identity FOUND, header-blocked): the manager pointer + the +0x24
-// camera holder fold onto the CDDrawSurfaceMgr family - see the WwdMgr note below.
-
-// The camera-rect holder at the manager's +0x24 IS the canonical CGameLevel
-// (CDDrawSurfaceMgr::m_resolveSubMgr / CResMgr::m_view both sit at +0x24). The camera
-// object hangs at its +0x5c and its rect at camera+0x40; that rect is the real Win32 RECT
-// (the former `WwdCamRect` view's own field comments already read left/top/right/bottom,
-// and Test's four compares are a textbook rect-overlap test). DEFERRED-FOLD: dissolving
-// this onto CGameLevel is blocked with the WwdMgr fold below (same cross-header +0x24
-// conflation: CResMgr types it CMenuViewObj*, CDDrawSurfaceMgr types it CGameLevel*).
-struct WwdCamHolder {
-    char m_pad00[0x5c];
-    char* m_5c; // +0x5c  the camera object; its RECT sits at +0x40
-};
-SIZE_UNKNOWN(WwdCamHolder);
-
-// CWwdGameObject+0x0c owning manager.
-//
-// DEFERRED-FOLD (identity FOUND): this IS the canonical CDDrawSurfaceMgr - PROVEN by the
-// ctor chain (the factories' CWwdObjMgrL/CWwdGameObjectB::m_0c is a CDDrawSurfaceMgr*, and
-// CreateNamed_166780's disasm reads m_0c->m_workerCache (+0x14) -> +0x10 name map). It is
-// ALSO the CResMgr the file's own 0x1504d0/0x150540 cast the same pointer to - CResMgr and
-// CDDrawSurfaceMgr are TWO models of this one retail class (ResMgr.h itself notes
-// CDrawTarget==CDDrawSubMgrPages, CKeyTable==CDDrawChildGroup, CImageRegistry==the canonical
-// CDDrawWorkerRegistry). Front (+0x04/+0x08/+0x10/+0x14) folds cleanly; the +0x14 conflict
-// the old note flagged is RESOLVED (CImageRegistry IS a typedef for CDDrawWorkerRegistry in
-// ResMgr.h, so FindKeyOfValue_165360 binds). The fold is BLOCKED only by the unreconciled
-// cross-header +0x24/+0x28 conflation:
-//   +0x24  CResMgr: CMenuViewObj*        / CDDrawSurfaceMgr: CGameLevel* (== the camera holder)
-//   +0x28  CResMgr: CSoundRegistry*      / here + CDDrawSurfaceMgr: CDDrawSubMgrLeafScan*
-//          (FindKeyOfValue_158570 + the +0x10 CMapStringToPtr prove leaf-scan)
-// Unifying those spans the resource/sound state TUs' CResMgr view AND the hot DDrawSurfaceMgr.h
-// (being rewritten this wave by the CGruntzMgr-knot lane) - a class-identity fold out of this
-// view pass's scope. Handed off. Members stay typed by the class whose methods are ACTUALLY
-// called on them (the honest shape), which is what CResMgr's front already agrees with.
-struct WwdMgr {
-    char m_pad00[0x04];
-    CDrawTarget* m_drawTarget; // +0x04  active draw surface (Test off-screen cull extent)
-    CKeyTable* m_8;            // +0x08  world/key table (its +0x48 map = the kill-cue map)
-    char m_pad0c[0x10 - 0x0c];
-    CImageRegistry* m_10;       // +0x10  image/tile registry (name -> sprite, m_10map)
-    CDDrawWorkerRegistry* m_14; // +0x14  worker registry (FindKeyOfValue_165360)
-    char m_pad18[0x24 - 0x18];
-    WwdCamHolder* m_camera;     // +0x24  camera-rect holder (Test off-screen cull)
-    CDDrawSubMgrLeafScan* m_28; // +0x28  leaf-scan registry (FindKeyOfValue_158570)
-};
+// The WwdMgr + WwdCamHolder views are DISSOLVED (given-back deferral, this wave) onto
+// the canonical CDDrawSurfaceMgr (m_mgr, typed in <Gruntz/WwdGameObject.h>) and CGameLevel:
+//   WwdMgr member      -> CDDrawSurfaceMgr member (same offset)
+//   -----------------     -------------------------------------
+//   m_drawTarget +0x04    m_pages         (CDDrawSubMgrPages*, ->m_frontPair = cull extent)
+//   m_8          +0x08    m_childGroup    (CDDrawChildGroup*,  ->m_map48 kill-cue map)
+//   m_10         +0x10    m_surfaceDesc   (CDDrawWorkerRegistry*, ->m_10map name->sprite)
+//   m_14         +0x14    m_workerCache   (CDDrawWorkerCache*, ->FindKeyOfValue_165360 / ->m_10)
+//   m_camera     +0x24    m_resolveSubMgr (CGameLevel*, ->m_mainPlane = the +0x5c cull object)
+//   m_28         +0x28    m_leafScan      (CDDrawSubMgrLeafScan*, ->FindKeyOfValue_158570 / ->m_10)
+// Byte-neutral (every access is the same offset read). The +0x14 conflation the prior note
+// flagged is RESOLVED: FindKeyOfValue_165360 was xref-proven to belong to CDDrawWorkerCache
+// (its only callers reverse-look-up a worker in THIS +0x14 cache), so it was re-homed off
+// the CDDrawWorkerRegistry sibling and now binds on m_workerCache directly (see
+// DDrawWorkerCache.h / DDrawSurfacePair.cpp). The +0x24 camera holder IS CGameLevel::m_mainPlane
+// (CLevelPlane), whose +0x40 Win32 RECT is the off-screen cull rect Test compares against.
+// (CGameObject::Apply* below still cast m_0c to the SEPARATE CResMgr model - that is
+// CGameObject's own manager view, a distinct fold not in this deferral's scope.)
 
 // (The 0xa0-byte WwdSnapshot record WriteSnapshot assembles on the stack lives in
 // the canonical <Gruntz/WwdGameObject.h> - it is CWwdGameObject's snapshot format,
@@ -405,7 +380,9 @@ i32 CWwdGameObject::Test() {
     i32 top = m_posY - e->m_halfHeight;
     i32 bottom = m_posY + e->m_halfHeight;
     if (m_flags & 0x40000) {
-        RECT* r = (RECT*)(m_mgr->m_camera->m_5c + 0x40);
+        // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
+        // CGameLevel -> +0x5c CLevelPlane == the former WwdCamHolder->m_5c camera object).
+        RECT* r = (RECT*)((char*)m_mgr->m_resolveSubMgr->m_mainPlane + 0x40);
         if (right < r->left) {
             return 0;
         }
@@ -417,9 +394,9 @@ i32 CWwdGameObject::Test() {
         }
         return top <= r->bottom;
     } else {
-        // The non-camera cull bounds are the DRAW SURFACE's extent (m_10/m_14 = width/
-        // height of the draw target's frame page) - the former "grid limits" view.
-        CDDrawSurfacePair* g = m_mgr->m_drawTarget->m_10;
+        // The non-camera cull bounds are the DRAW SURFACE's extent (front pair's
+        // m_width/m_height) - the former "grid limits" view.
+        CDDrawSurfacePair* g = m_mgr->m_pages->m_frontPair;
         if (right < 0) {
             return 0;
         }
@@ -493,7 +470,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
 
     memset(tmp, 0, 0x80);
     {
-        CString str = m_mgr->m_28->FindKeyOfValue_158570(m_19c);
+        CString str = m_mgr->m_leafScan->FindKeyOfValue_158570(m_19c);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -527,8 +504,8 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // number against the sprite's valid range, then index its frame array. The former
         // F(found,0x64/0x68/0x14) offset reads ARE m_firstFrame / m_lastFrame / m_frames.
         CSprite* found = 0;
-        WwdMgr* mgr = m_mgr;
-        mgr->m_10->m_10map.Lookup(name, (CObject*&)found);
+        CDDrawSurfaceMgr* mgr = m_mgr;
+        mgr->m_surfaceDesc->m_10map.Lookup(name, (CObject*&)found);
         m_194 = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
@@ -548,8 +525,8 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // m_28's map is a CMapStringToPtr - a genuinely void*-valued container, so the
         // element cast is authentic (it is the map's own interface, not a missing type).
         void* found = 0;
-        WwdMgr* mgr = m_mgr;
-        mgr->m_28->m_10.Lookup(name, found);
+        CDDrawSurfaceMgr* mgr = m_mgr;
+        mgr->m_leafScan->m_10.Lookup(name, found);
         m_19c = (LeafCue*)found;
     }
     return 1;
@@ -851,7 +828,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                if (m_mgr->m_8->m_map48.Lookup((void*)node, found) == 0) {
+                if (m_mgr->m_childGroup->m_map48.Lookup((void*)node, found) == 0) {
                     m_98 = 0;
                 } else {
                     m_98 = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
@@ -940,21 +917,21 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CString str = m_mgr->m_14->FindKeyOfValue_165360((CImageSet*)m_80);
+        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360((CImageSet*)m_80);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CString str = m_mgr->m_14->FindKeyOfValue_165360((CImageSet*)m_88);
+        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360((CImageSet*)m_88);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_90 != 0) {
-        CString str = m_mgr->m_14->FindKeyOfValue_165360((CImageSet*)m_90);
+        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360((CImageSet*)m_90);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -1029,7 +1006,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_14->m_10map.Lookup(name, found);
+        m_mgr->m_workerCache->m_10.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker80((CGameObject*)found) == 0) {
             return 0;
         }
@@ -1038,7 +1015,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_14->m_10map.Lookup(name, found);
+        m_mgr->m_workerCache->m_10.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker88((CGameObject*)found) == 0) {
             return 0;
         }
@@ -1047,7 +1024,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         CObject* found = 0;
-        m_mgr->m_14->m_10map.Lookup(name, found);
+        m_mgr->m_workerCache->m_10.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker90((CGameObject*)found) == 0) {
             return 0;
         }
@@ -1058,7 +1035,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 // ---------------------------------------------------------------------------
 // Sub151b90 (0x151b90): cache the linked object (m_98) resolved from the
 // serialized key handle (m_184) through the manager's kill-cue map
-// (m_mgr->m_8->m_map48, the real CMapPtrToPtr::Lookup @0x1b8760). Gated on a non-null
+// (m_mgr->m_childGroup->m_map48, the real CMapPtrToPtr::Lookup @0x1b8760). Gated on a non-null
 // caller arg; a null key or a lookup miss clears m_98. __thiscall, ret 4.
 // @early-stop
 // Logic complete + verified (74.6%). Residual is a pure MSVC5 block-layout tiebreak:
@@ -1076,7 +1053,7 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
     }
     if (m_184 != 0) {
         void* found = 0;
-        if (m_mgr->m_8->m_map48.Lookup((void*)m_184, found) == 0) {
+        if (m_mgr->m_childGroup->m_map48.Lookup((void*)m_184, found) == 0) {
             m_98 = 0;
             return 1;
         }
@@ -1133,7 +1110,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
     rec.m_10 = edi;
 
     {
-        CString str = m_mgr->m_14->FindKeyOfValue_165360((CImageSet*)m_worker);
+        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360((CImageSet*)m_worker);
         strcpy(rec.m_name, str);
     }
     ar->Write(&rec, 0xa0);
@@ -1661,6 +1638,5 @@ DATA(0x002bf674)
 i32 g_logicTypesRegistered;
 
 // class-metadata sweep (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(WwdMgr);
 SIZE_UNKNOWN(CObject);
 SIZE_UNKNOWN(CDDrawWorker);

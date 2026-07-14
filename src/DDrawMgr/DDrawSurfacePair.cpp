@@ -905,19 +905,22 @@ void* operator new(u32 n);
 extern "C" void RezFree(void* p);
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerRegistry::FindKeyOfValue_165360 (0x165360): map scan - return (by
+// CDDrawWorkerCache::FindKeyOfValue_165360 (0x165360): map scan - return (by
 // value) the key of the first entry whose value's +0x10 dword equals target's
 // +0x10; empty CString if none. Closed by the map-scan idiom (top-tested while +
 // real GetStartPosition) plus spelling the no-match return as a named
 // `CString empty; return empty;` so cl materializes the empty temp + copy-ctor
-// exactly as retail (a bare `return CString()` RVOs it into the return slot).
+// exactly as retail (a bare `return CString()` RVOs it into the return slot). The
+// true owner is CDDrawWorkerCache (the +0x14 worker cache): xref shows the only
+// callers (CWwdGameObject::Serialize/WriteSnapshot) reverse-look-up a worker here;
+// the sibling CDDrawWorkerRegistry (+0x10) shares the byte-identical map@+0x10 (m_10).
 RVA(0x00165360, 0xf1)
-CString CDDrawWorkerRegistry::FindKeyOfValue_165360(CImageSet* target) {
+CString CDDrawWorkerCache::FindKeyOfValue_165360(CImageSet* target) {
     ::CObject* val = 0;
-    POSITION pos = m_10map.GetStartPosition();
+    POSITION pos = m_10.GetStartPosition();
     CString key;
     while (pos != 0) {
-        m_10map.GetNextAssoc(pos, key, val);
+        m_10.GetNextAssoc(pos, key, val);
         if (val != 0 && *(i32*)((CImageSet*)val)->m_array == *(i32*)target->m_array) {
             return key;
         }

@@ -86,7 +86,8 @@ public:
     i32 SumSizesEqual_155460(const char* str, i32 a2);
     i32 HasKeyEqual_155550(const char* str);
     i32 AnyValueMatches_155630(i32 a1, i32 a2, i32 a3);
-    CString FindKeyOfValue_165360(CImageSet* target);
+    // FindKeyOfValue_165360 (0x165360) moved to CDDrawWorkerCache (its true owner: the
+    // only callers reverse-look-up a worker in the +0x14 worker cache, xref-confirmed).
     // 0x155630 (frame-name reverse lookup; reloc-masked direct call).
     void ReadField(i32 handle, char* tmp, i32* outZero);
 };

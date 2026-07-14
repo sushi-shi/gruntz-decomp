@@ -16,6 +16,8 @@
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Gruntz/MapStringToOb.h>
 
+class CImageSet; // FindKeyOfValue_165360's reverse-lookup target (<Image/ImageSet.h>)
+
 // Real polymorphic (own 10-slot vtable ??_7CDDrawWorkerCache @0x5efd00). Slots
 // 0/2/3/4 are the shared CObject thunks, slot 1 the ??_G scalar-deleting dtor
 // (0x157700), slots 5/6/7 leaf virtuals, slot 8 = GetStateId (0x1576f0) and
@@ -62,6 +64,13 @@ public:
     // slot-9 CreateWorker to register a missing type (was the C9cab0::LookupPtr
     // placeholder / the CLogicTypeReg::Find view).
     i32 Find(const char* key); // 0x9cab0
+
+    // 0x165360 (map scan): return by value the key of the first m_10 entry whose value's
+    // +0x10 dword equals target's; empty CString if none. The ONLY callers (CWwdGameObject::
+    // Serialize/WriteSnapshot, xref-confirmed) reverse-look-up a WORKER in THIS worker cache,
+    // so this reverse-lookup is a CDDrawWorkerCache method (was mis-attributed to the +0x10
+    // CDDrawWorkerRegistry sibling, which shares the byte-identical map@+0x10 layout).
+    CString FindKeyOfValue_165360(CImageSet* target); // 0x165360
 
     CMapStringToOb m_10; // +0x10  map (internal field at +0x1c seeds worker->m_04)
 };
