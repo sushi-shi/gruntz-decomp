@@ -34,13 +34,16 @@ extern i32 g_wap32FrameDelta; // 0x253c74 (ms since previous frame)
 // so EVERY name was an unresolved external - N symbols, one cell, no storage. One name +
 // one linkage per address now; the semantic spelling stays available through the #defines
 // below, and renaming the block to those names tree-wide is still follow-up.
-// (0x245588 is defined in Projectile.cpp already.)
-extern "C" i32 g_frameTime;
 extern "C" {
     DATA(0x00245580)
     i32 g_645580 = 0;
     DATA(0x00245584)
     i32 g_frameDelta = 0;
+    // 0x245588 - the running accumulated frame time (g_accumMs). RezMgr is the SOLE
+    // writer (g_accumMs += dt, below) and owns this contiguous 0x245580-0x2455a0
+    // .bss band, so the definition lives here (was misfiled in Projectile.cpp).
+    DATA(0x00245588)
+    i32 g_frameTime = 0;
     DATA(0x0024558c)
     i32 g_64558c = 0;
     DATA(0x00245590)

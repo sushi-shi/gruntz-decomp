@@ -195,11 +195,9 @@ void CMovingLogic::FinalizeStep(i32) {
     MovingSlot16(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
 }
 
-// The 1-arg ctor's spawn constants (reloc-masked DIR32 loads).
-extern "C" {
-    DATA(0x00245588)
-    u32 g_frameTime = 0;
-}
+// The running game clock g_frameTime (0x245588) is DEFINED in RezMgr.cpp (RezMgr
+// is the sole writer + owner of the 0x245580-0x2455a0 frame-timer band); only read here.
+extern "C" u32 g_frameTime;
 DATA(0x001eaa88)
 const double g_5eaa88 = 0.0;
 DATA(0x001eab00)
@@ -1157,7 +1155,7 @@ extern i32 TBombLogic_e1e60();
 
 extern CButeMgr g_buteMgr;
 
-// The running game clock g_frameTime is DEFINED above (the spawn-ctor constants).
+// The running game clock g_frameTime is DEFINED in RezMgr.cpp (referenced above).
 
 // The bound game object is the inherited CUserLogic m_10/m_38 (both point at the
 // same CGameObject); the ctor reads/writes it directly (+0x08 flag word, +0x5c/
