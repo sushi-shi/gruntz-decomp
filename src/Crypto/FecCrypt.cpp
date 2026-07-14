@@ -41,7 +41,7 @@ i32 CFecFile::Init() {
     m_08 = 0;
     m_index.SetSize(0, -1);
     memset(&m_0c, 0, 12); // m_0c, m_10, m_14
-    memset(m_18, 0, sizeof(m_18));
+    memset(&m_entry, 0, sizeof(m_entry));
     m_134 = 0;
     m_00 = 1;
     return 1;
@@ -110,26 +110,26 @@ i32 CFecFile::ReadArchive(const char* name) {
     sprintf(buf, "Opened FEC File %s\n", name);
     sprintf(buf, "FEC File Version: %d.%d\nNumber of Files: %d\n", m_0c, m_10, m_14);
 
-    if (m_stream.Read(m_18, 0x10c) != 0x10c) {
+    if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
         goto fail;
     }
     {
-        i32 tail = FEC_W(this) - 0x19d;
-        if (m_stream.Seek(FEC_W(this) - 0x2b8, 1) != tail) {
+        i32 tail = m_entry.m_scramble - 0x19d;
+        if (m_stream.Seek(m_entry.m_scramble - 0x2b8, 1) != tail) {
             goto fail;
         }
         m_index.Add(tail);
 
         for (u16 i = 1; i < (u32)m_14; i++) {
-            i32 stride = FEC_STRIDE(this);
+            i32 stride = m_entry.m_payloadLen;
             if (m_stream.Seek(stride, 1) != (i32)m_index.GetData()[i - 1] + stride) {
                 goto fail;
             }
-            memset(m_18, 0, 0x10c);
-            if (m_stream.Read(m_18, 0x10c) != 0x10c) {
+            memset(&m_entry, 0, 0x10c);
+            if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
                 goto fail;
             }
-            i32 w2 = FEC_W(this);
+            i32 w2 = m_entry.m_scramble;
             if (m_stream.Seek(w2 - 0x2b8, 1)
                 != (i32)m_index.GetData()[i - 1] + stride + w2 - 0x1ac) {
                 goto fail;
@@ -220,37 +220,37 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
         base = base.Right(base.GetLength() - slash - 1);
     }
 
-    memset(m_18, 0, 0x10c);
-    *(i32*)m_18 = m_134;
-    FEC_NAMELEN(this) = (u16)base.GetLength();
+    memset(&m_entry, 0, 0x10c);
+    m_entry.m_index = m_134;
+    m_entry.m_nameLen = (u16)base.GetLength();
 
     char* enc = (char*)operator new(base.GetLength() + 1);
     FecEncode(base, enc);
-    memcpy(FEC_NAME(this), enc, base.GetLength());
+    memcpy(m_entry.m_name, enc, base.GetLength());
     operator delete(enc);
 
     if (base.GetLength() < 0x100) {
-        char* p = FEC_NAME(this) + base.GetLength();
+        char* p = m_entry.m_name + base.GetLength();
         for (i32 c = 0x100 - base.GetLength(); c != 0; c--) {
             *p++ = (char)(rand() % 0xff);
         }
     }
 
-    FEC_W(this) = (u16)(rand() % 0x400 + 0x2b8);
-    FEC_STRIDE(this) = file.Seek(0, 2);
+    m_entry.m_scramble = (u16)(rand() % 0x400 + 0x2b8);
+    m_entry.m_payloadLen = file.Seek(0, 2);
     if (file.Seek(0, 0) != 0) {
         m_134--;
         return 0;
     }
 
     m_stream.Seek(0, 2);
-    m_stream.Write(m_18, 0x10c);
+    m_stream.Write(&m_entry, 0x10c);
 
-    char* pad = (char*)operator new(FEC_W(this) - 0x2b8);
-    for (i32 i = 0; i < FEC_W(this) - 0x2b8; i++) {
+    char* pad = (char*)operator new(m_entry.m_scramble - 0x2b8);
+    for (i32 i = 0; i < m_entry.m_scramble - 0x2b8; i++) {
         pad[i] = (char)(rand() % 0xff);
     }
-    m_stream.Write(pad, FEC_W(this) - 0x2b8);
+    m_stream.Write(pad, m_entry.m_scramble - 0x2b8);
     operator delete(pad);
 
     memset(m_14c, 0, 0x8000);
@@ -269,13 +269,13 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
             return 0;
         }
         u32 chunk = 0x8000;
-        if (copied + 0x8000 > (u32)FEC_STRIDE(this)) {
-            chunk = FEC_STRIDE(this) - copied;
+        if (copied + 0x8000 > (u32)m_entry.m_payloadLen) {
+            chunk = m_entry.m_payloadLen - copied;
         }
         file.Read(m_14c, chunk);
         m_stream.Write(m_14c, chunk);
         copied += chunk;
-        if (copied == (u32)FEC_STRIDE(this)) {
+        if (copied == (u32)m_entry.m_payloadLen) {
             done = 1;
         }
     }
@@ -321,11 +321,11 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     m_stream.Seek(0xf, 0);
 
     for (u16 i = 0; i < (u32)m_14; i++) {
-        if (m_stream.Read(m_18, 0x10c) != 0x10c) {
+        if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
             goto fail;
         }
         char decoded[0x100];
-        FecDecode(FEC_NAME(this), decoded, FEC_NAMELEN(this));
+        FecDecode(m_entry.m_name, decoded, m_entry.m_nameLen);
         if (file.Open(decoded, 0x1002, 0) == 0) {
             goto fail;
         }
@@ -345,7 +345,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             if (*pCancel != 0) {
                 return 0;
             }
-            u32 chunk = FEC_STRIDE(this);
+            u32 chunk = m_entry.m_payloadLen;
             if (copied + 0x8000 <= chunk) {
                 chunk = 0x8000;
             } else {
@@ -354,7 +354,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             m_stream.Read(m_14c, chunk);
             file.Write(m_14c, chunk);
             copied += chunk;
-            if (copied == (u32)FEC_STRIDE(this)) {
+            if (copied == (u32)m_entry.m_payloadLen) {
                 done = 1;
             }
         }
@@ -408,5 +408,6 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
 }
 
 SIZE(CFecFile, 0x814c);
+SIZE(FecEntry, 0x10c); // the CFecFile+0x18 per-entry record (typed in FecCrypt.h)
 
 // --- vtable catalog ---

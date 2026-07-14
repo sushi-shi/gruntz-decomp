@@ -29,6 +29,21 @@
 // call [eax+0x3c]` retail has. (The former `FecStream` declared-only proxy - and its
 // devirtualization fear - is dissolved; the fear was disproven by the same measurement.)
 
+// The per-entry on-disk record (the CFecFile+0x18 scratch, 0x10c bytes, streamed as a
+// blob by Read/Write). Its fields (record-relative offsets):
+//   +0x00 i32   m_index      entry index (1-based; = ++m_134 on the write path)
+//   +0x04 u16   m_nameLen    encoded-name length
+//   +0x06 char  m_name[0x100] FecEncode'd basename + random padding
+//   +0x106 u16  m_scramble   rand()%0x400 + 0x2b8 (per-entry pad/scramble word)
+//   +0x108 i32  m_payloadLen payload length (== the source file size)
+struct FecEntry {
+    i32 m_index;        // +0x00
+    u16 m_nameLen;      // +0x04
+    char m_name[0x100]; // +0x06
+    u16 m_scramble;     // +0x106
+    i32 m_payloadLen;   // +0x108
+};
+
 class CFecFile {
 public:
     // Init/Close/Lookup are the CMoviePlayer-driven decode-store lifecycle (this same
@@ -54,7 +69,7 @@ public:
     i32 m_0c;         // +0x0c  version major (12-byte header word 0)
     i32 m_10;         // +0x10  version minor
     i32 m_14;         // +0x14  entry count
-    char m_18[0x10c]; // +0x18  per-entry record (index/m_1c namelen/m_1e name/m_11e/m_120)
+    FecEntry m_entry; // +0x18  per-entry record (0x10c B; typed above, streamed as a blob)
     // +0x124  the embedded MFC CFile (0x10 B: vptr, m_hFile @+0x128, m_bCloseOnDelete
     // @+0x12c, m_strFileName @+0x130). Lookup's "+0x128 success result" is m_stream.m_hFile.
     CFile m_stream;
@@ -62,13 +77,5 @@ public:
     CDWordArray m_index; // +0x138  per-entry offset table (m_pData @+0x13c, m_nSize @+0x140)
     char m_14c[0x8000];  // +0x14c  32 KB streaming copy buffer
 };
-
-// The m_18 record's internal fields (a serialized on-disk 0x10c-byte record):
-//   +0x00 i32 index | +0x04 u16 nameLen | +0x06 char name[0x100] |
-//   +0x106 u16 scramble (rand()%0x400 + 0x2b8) | +0x108 i32 payloadLen
-#define FEC_NAMELEN(p) (*(u16*)((char*)(p) + 0x1c))
-#define FEC_NAME(p) ((char*)(p) + 0x1e)
-#define FEC_W(p) (*(u16*)((char*)(p) + 0x11e))      // scramble word (m_11e)
-#define FEC_STRIDE(p) (*(i32*)((char*)(p) + 0x120)) // payload length (m_120)
 
 #endif // CRYPTO_FECCRYPT_H
