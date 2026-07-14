@@ -1633,16 +1633,17 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
 // The arg is unused. (__thiscall, ret 0x4.)
 // ===========================================================================
 // @early-stop
-// regalloc wall: the double rand()%4 band-pick (with the m_curCell skip), the rand()%15
-// start, and the 15-cell scan (incl. the dead running-cell-index recompute via
-// idiv 15) are reconstructed in shape, but retail pins the row walker in esi / the
+// regalloc wall: the double rand()%4 band-pick (with the m_curCell skip; the compare
+// is `m_curCell == band` so the m_curCell load schedules early like retail), the
+// rand()%15 start, and the 15-cell scan (incl. the dead running-cell-index recompute
+// via idiv 15) are reconstructed in shape, but retail pins the row walker in esi / the
 // m_364 temp + the 15 const in edi where MSVC5 here swaps them (edi walker, esi
 // counter), and the swap cascades through the small body. Logic + offsets correct;
-// not source-steerable. Deferred to the final sweep.
+// the residual reg-swap is not source-steerable (permuter-confirmed). Final sweep.
 RVA(0x0002ad40, 0x71)
 void* CBattlezMapConfig::Method_02ad40(i32) {
     i32 band = rand() % 4;
-    if (band == m_curCell) {
+    if (m_curCell == band) {
         band++;
     }
     band = band % 4;
