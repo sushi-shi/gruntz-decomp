@@ -27,20 +27,17 @@
 // The name-match helper (__cdecl(entry-name, search-name, len), 0x120440).
 extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 
-// The sound/anim object registries dispatch each op to a distinct real class (verified by RVA);
-// TU-local decls with the exact pointer arg types (load-bearing for the mangled names).
+// The sound/anim object registries are the canonical DDraw/Sound sub-managers, reached
+// off the spawn entry's per-namespace registry slots (mirrors the sibling loaders
+// GameAssetNamespaces.cpp / AssetNamespacePrefixes.cpp, whose WorkerHolder is this same
+// object). Include the real class headers; the drain path's ProcessNew methods are the
+// per-family reduced-view siblings (CSoundResMap::RemoveByValue / CDDrawSubMgrLeaf::
+// RemoveValue_152660), cross-cast at the call because they describe the SAME object under
+// a different family-name (an unresolved DDrawMgr-family conflation, out of scope here).
 #include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf/CDDrawSubMgrAni + CCatalogNode
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
-class CCatalogNode;
-class CDDrawSubMgrLeaf {
-public:
-    void RemoveValue_152660(CCatalogNode* n); // 0x152660
-};
-class CDDrawSubMgrAni {
-public:
-    i32 ScanTree_152ad0(CSymTab* t, const char* key, const char* g); // 0x152ad0
-};
 
 // ---------------------------------------------------------------------------
 // The manager singleton @0x6459b0 (ex ?g_tokenMgr@@3UCTokenMgr@@A - the
@@ -373,41 +370,24 @@ extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA (Image inst
 // (the builder at +0x04 is m_spawnEntryList; same retail TU band). See
 // <Gruntz/SpawnList.h> for the unification proof.)
 
-// The Image registry (entry->m_10). This is a FOREIGN engine class: its ??_7 and
-// the intermediate slots are unreconstructed engine code, so the honest model names
-// only the TWO dispatched slots - Install at vtable slot 18 (+0x48) and ProcessNew
-// at slot 20 (+0x50), both __thiscall. Its CMapStringToOb source map is embedded at
-// +0x10. Real polymorphic view: 18 fillers precede Install.
-// (The ObjImageRegistry 19-filler view is GONE: it IS the canonical CDDrawWorkerRegistry
-// (<DDrawMgr/DDrawWorkerRegistry.h>) - same object (vptr@0, CMapStringToOb@+0x10), same
-// slot 18 (+0x48) InstallTree, and its "ProcessNew(void*)" @ slot 20 (+0x50) is that
-// class's RemoveWorker at the SAME rva 0x155280.)
-typedef CDDrawWorkerRegistry ObjImageRegistry;
-
-// The Sound registry (entry->m_28): concrete; CMapStringToPtr source map at +0x10,
-// ProcessNew/Install are direct __thiscall methods.
-struct ObjSoundRegistry {
-    // ProcessNew @0x157b00 = CSoundResMap::RemoveByValue, Install @0x157ee0 =
-    // CDDrawSubMgrLeafScan::ScanTree_157ee0; cast at each call.
-    char m_pad04[0x10];
-    CMapStringToPtr m_map; // +0x10
-};
-
-// The Anim registry (entry->m_2c): concrete; same shape as Sound, different methods.
-struct ObjAnimRegistry {
-    // ProcessNew @0x152660 = CDDrawSubMgrLeaf::RemoveValue_152660, Install @0x152ad0 =
-    // CDDrawSubMgrAni::ScanTree_152ad0; cast at each call.
-    char m_pad04[0x10];
-    CMapStringToPtr m_map; // +0x10
-};
-
-// The per-spawn entry (arg1): the three registry slots.
+// The per-spawn entry (arg1): the three per-namespace asset registries, typed to their
+// real classes (same object the sibling loaders model as `WorkerHolder`):
+//   +0x10 image  = CDDrawWorkerRegistry (CMapStringToOb map @+0x10; InstallTree slot 18,
+//                  RemoveWorker slot 20 @0x155280).
+//   +0x28 sound  = CDDrawSubMgrLeafScan (CMapStringToPtr map @+0x10; ScanTree_157ee0 direct;
+//                  ProcessNew drain = the reduced-view CSoundResMap::RemoveByValue @0x157b00).
+//   +0x2c aniz   = CDDrawSubMgrAni     (CMapStringToPtr map @+0x10; ScanTree_152ad0 direct;
+//                  ProcessNew drain = the reduced-view CDDrawSubMgrLeaf::RemoveValue_152660).
+// @identity-TODO: the holder's own class is unrecovered (LoadObjectResources' only caller
+// is the ~0x3c51 ILT thunk, no named owner). It is the SAME object as GameAssetNamespaces
+// .cpp / AssetNamespacePrefixes.cpp's `WorkerHolder` placeholder - a dedup candidate once
+// the identity lands.
 struct ObjSpawnEntry {
     char m_pad00[0x10];
-    ObjImageRegistry* m_10; // +0x10
+    CDDrawWorkerRegistry* m_10; // +0x10 image worker registry
     char m_pad14[0x28 - 0x14];
-    ObjSoundRegistry* m_28; // +0x28
-    ObjAnimRegistry* m_2c;  // +0x2c
+    CDDrawSubMgrLeafScan* m_28; // +0x28 sound leaf-scan registry
+    CDDrawSubMgrAni* m_2c;      // +0x2c aniz sub-manager
 };
 
 // The resolution source (arg2): ResolvePath looks a namespaced key up, returning a
@@ -548,7 +528,7 @@ i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src) {
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToPtr* srcMap = &entry->m_28->m_map;
+    CMapStringToPtr* srcMap = &entry->m_28->m_10;
     if (srcMap == 0) {
         return 0;
     }
@@ -594,8 +574,7 @@ i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            ((CDDrawSubMgrLeafScan*)entry->m_28)
-                ->ScanTree_157ee0((CSymTab*)handle, (char*)(LPCTSTR)e->GetName(), "");
+            entry->m_28->ScanTree_157ee0((CSymTab*)handle, (char*)(LPCTSTR)e->GetName(), "");
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {
@@ -620,7 +599,7 @@ i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src) {
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToPtr* srcMap = &entry->m_2c->m_map;
+    CMapStringToPtr* srcMap = &entry->m_2c->m_10;
     if (srcMap == 0) {
         return 0;
     }
@@ -666,8 +645,7 @@ i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            ((CDDrawSubMgrAni*)entry->m_2c)
-                ->ScanTree_152ad0((CSymTab*)handle, (char*)(LPCTSTR)e->GetName(), "");
+            entry->m_2c->ScanTree_152ad0((CSymTab*)handle, (char*)(LPCTSTR)e->GetName(), "");
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {
@@ -707,8 +685,6 @@ i32 CAreaMgr::SameGroup(i32 a) {
     return gc == ga;
 }
 
-SIZE_UNKNOWN(ObjAnimRegistry);
-SIZE_UNKNOWN(ObjSoundRegistry);
 SIZE_UNKNOWN(ObjSpawnEntry);
 
 // --- vtable catalog ---
