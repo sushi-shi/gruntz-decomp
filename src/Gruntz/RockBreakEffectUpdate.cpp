@@ -15,45 +15,29 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/UserLogic.h>    // CGameObject (the target + effect sprite are both one)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_cmdGrid)
 #include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (was a duplicate .cpp-local view)
 
 extern "C" u32 g_engineFrameDelta;   // 0x6bf3bc  per-frame draw delta (advance ctx)
 extern "C" CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton
 
-// The target game object (this->m_10): world position + the +0x114 state union.
-SIZE_UNKNOWN(RbTarget);
-struct RbTarget {
-    char p0[0x5c];
-    i32 m_5c, m_60; // +0x5c  world position (particle spawn center)
-    char p64[0x114 - 0x64];
-    i32 m_114; // +0x114  state union (==1 -> gates the particle spawn)
-    char p118[0x124 - 0x118];
-    i32 m_124; // +0x124  spawn param
-};
-
-// The effect sprite (this->m_38): a game object with a CAniAdvanceCursor at +0x1a0
-// plus the +0x8 goal-flag word and the +0x1c0/+0x1c8 arm/consume gates.
-SIZE_UNKNOWN(RbSprite);
-struct RbSprite {
-    char p0[0x8];
-    i32 m_8; // +0x8  flags (|= 0x10000 goal mark)
-    char pc[0x1c0 - 0xc];
-    i32 m_1c0; // +0x1c0  consumed gate
-    char p1c4[0x1c8 - 0x1c4];
-    i32 m_1c8; // +0x1c8  armed gate
-    CAniAdvanceCursor* cursor() {
-        return (CAniAdvanceCursor*)((char*)this + 0x1a0);
-    }
-};
-
+// The effect leaf: its bound target (m_10, +0x114 state gates the spawn) and its
+// effect sprite (m_38, CAniAdvanceCursor @+0x1a0, +0x1c0/+0x1c8 gates) are BOTH real
+// CGameObjects (world pos @+0x5c/+0x60, flags @+0x08 - proven: the ex RbTarget/RbSprite
+// .cpp-local views are the same class at the same offsets, now dissolved onto
+// CGameObject <Gruntz/UserLogic.h>). @identity-TODO: this owning leaf's own class name
+// is unrecovered (orphan COMDAT @0x476b0 - no caller/new-site/RTTI/vtable-dispatch; the
+// applicable techniques - caller xref, callee sigs (CAniAdvanceCursor::Advance +
+// CRockBreakMgr::BuildRockBreakParticles name the callees not the owner), new-site,
+// COL/RTTI - all dead-end), so the leaf stays a flagged local placeholder.
 SIZE_UNKNOWN(RbEffect);
 struct RbEffect {
     char p0[0x10];
-    RbTarget* m_10; // +0x10  target object
+    CGameObject* m_10; // +0x10  target object
     char p14[0x38 - 0x14];
-    RbSprite* m_38; // +0x38  effect sprite
-    i32 Update();   // 0x476b0
+    CGameObject* m_38; // +0x38  effect sprite
+    i32 Update();      // 0x476b0
 };
 
 // @early-stop
@@ -64,15 +48,15 @@ struct RbEffect {
 // steerable (a cached-pointer local didn't flip it). Logic + all relocs exact.
 RVA(0x000476b0, 0x69)
 i32 RbEffect::Update() {
-    if (m_38->cursor()->Advance(g_engineFrameDelta) == 1) {
-        RbTarget* t = m_10;
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) == 1) {
+        CGameObject* t = m_10;
         if (t->m_114 == 1) {
             ((CRockBreakMgr*)g_gameReg->m_cmdGrid)
-                ->BuildRockBreakParticles(t->m_5c, t->m_60, 1, t->m_124);
+                ->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_124);
         }
     }
     if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
-        m_38->m_8 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     }
     return 0;
 }
