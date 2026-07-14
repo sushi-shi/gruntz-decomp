@@ -1091,12 +1091,19 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
 }
 
 // ---------------------------------------------------------------------------
-// The save-flow "show" blit (0x0d00a0), re-homed from the ApiCaller stubs: the
-// object reached in the savegame temp-file path (via the 0x3b48 thunk from
-// TempFileExists_e5700). Copies its source object's RECT ([m_c->m_24 + 0x10])
-// into a stack rect and blits it (mode 8, flags 0x10) into the +0x5c draw sink.
-// A placeholder host whose concrete class is not yet recovered; offsets + code
-// bytes load-bearing.
+// 0x0d00a0 is CPlay::Show - vtable slot 37 (a NEW virtual on CPlay, RVA-thunk 0x3b4d).
+// IDENTITY RECOVERED (2026-07-14) via the vtable DATA-ref technique: the same address
+// is bound at +0x94 (slot 37 * 4) in THREE vtables - ??_7CPlay@@6B@, ??_7CDemo@@6B@,
+// ??_7CMulti@@6B@ (CDemo/CMulti : CPlay, so all inherit CPlay's slot 37); vtable_hierarchy
+// --class CPlay names slot 37 "Show". `this` is therefore a CPlay*: m_4 (+0x04) and m_c
+// (+0x0c) are CPlay members, and the +0x5c draw-sink hangs off m_4. The method copies the
+// source RECT ([m_c->m_24 + 0x10]) into a stack rect and blits it (mode 8, flags 0x10).
+// DEFERRED-FOLD: dissolving BlitHost onto the real CPlay (declare `virtual Show(int)` slot
+// 37 in CPlay's header + type CPlay's +0x04/+0x0c members + home this body to Play.cpp)
+// requires CPlay's header (UserLogic.h) and Play.cpp, both owned by other lanes - so the
+// placeholder views persist here until that fold lands. (The `play` .text neighbourhood -
+// CPlay::Vslot1c @0x0d0050 precedes, CPlay::LoadCursorSprites @0x0d0120 follows - already
+// pointed at CPlay; the 3-vtable data-ref now proves the exact slot.)
 struct BlitDrawOwner {
     char m_pad0[0x5c];
     CFontConfig* m_5c; // +0x5c
@@ -1105,7 +1112,7 @@ struct BlitRectSrc {
     char m_pad0[0x24];
     char* m_24; // +0x24 (its [+0x10] is the source RECT)
 };
-struct BlitHost {
+struct BlitHost { // == CPlay (deferred: fold onto CPlay when UserLogic.h/Play.cpp free)
     char m_pad0[4];
     BlitDrawOwner* m_4; // +0x04
     char m_pad8[0xc - 8];
@@ -1116,11 +1123,7 @@ SIZE_UNKNOWN(BlitDrawSink);
 SIZE_UNKNOWN(BlitDrawOwner);
 SIZE_UNKNOWN(BlitRectSrc);
 SIZE_UNKNOWN(BlitHost);
-// @interleaver BlitHost emitted-in play
-// Lone method (0x0d00a0) inside the `play` .text obj block - CPlay::Vslot1c @0x0d0050
-// precedes it and CPlay::LoadCursorSprites @0x0d0120 follows it, both `play`. Its
-// concrete class is unrecovered (BlitHost is a placeholder view), so homing it into
-// Play.cpp is BLOCKED on @identity-recovery; flagged in-host per REHOME rule (c).
+// @interleaver BlitHost emitted-in play  (CPlay::Show slot 37; home to Play.cpp on fold)
 RVA(0x000d00a0, 0x5a)
 void BlitHost::Show(i32 arg) {
     RECT src = *(RECT*)(m_c->m_24 + 0x10);
