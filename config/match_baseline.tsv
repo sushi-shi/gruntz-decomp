@@ -79,7 +79,7 @@ ddrawblterrthunk	1	1
 ddrawpolyfill	1	0
 ddrawptrcollections	10	7
 ddrawshadeblit	10	2
-ddrawsubmgr	99	71
+ddrawsubmgr	105	80
 ddrawsubmgrleaf	13	9
 ddrawsurfacemgr	13	8
 ddrawsurfacepair	44	26
@@ -151,7 +151,7 @@ grunthealthsprite	10	7
 gruntindicatorworkerhandlers	7	7
 gruntmovestep	1	0
 gruntpickupload	1	0
-gruntpowerupsprite	9	6
+gruntpowerupsprite	9	7
 gruntpuddle	1	1
 gruntselectedsprite	9	6
 gruntspawnconfig	18	10
@@ -211,7 +211,6 @@ keyedlist	3	2
 kitchenslime	9	5
 latencylist	2	2
 leafcueplay	1	0
-leafelementobj	2	2
 levelplane	22	5
 levelpreview	9	7
 levelrezpath	1	0
@@ -292,7 +291,7 @@ rockbreakeffectupdate	1	0
 rollingball	8	5
 savegame	34	24
 savescreenshot	1	0
-sbi_image	5	2
+sbi_image	5	3
 sbi_imageset	5	2
 sbi_imagesetani	5	2
 sbi_menuitem	12	7
@@ -432,7 +431,7 @@ anicycle	?InitActReg@CAniCycle@@SAXXZ	100.0000	100.0000	2	43ebb2d1d8d4	0xaaf00
 anicycle	?RegisterActs@CAniCycle@@SAXXZ	92.9130	92.9130	4	7f52de50dac2	0xab0e0
 anicycle	?RunAct@CAniCycle@@QAEHH@Z	100.0000	100.0000	1	5cdc81b66bc8	0xaaf80
 anicycle	?Serialize@CAniCycle@@QAEHHHHH@Z	100.0000	100.0000	3	712583070ed2	0xf470
-aniplayer	?RenderCel_0e5c10@CAniPlayer@@QAEHXZ	75.6364	75.6364	2	7f13ffa8be25	0xe5c10
+aniplayer	?RenderCel_0e5c10@CAniPlayer@@QAEHXZ	98.1212	98.1212	2	7f13ffa8be25	0xe5c10
 aniplayer	?Serialize@CAniPlayer@@QAEHPAVCFileMemBase@@HHH@Z	88.2500	88.2500	1	9bd50000807a	0xe5c90
 aniplayer	?Start@CAniPlayer@@QAEHPAVCStatusBarMgr@@PAUCSpriteFactoryHolder@@HHUSbRect@@PBDHHHHH@Z	74.8958	74.8958	2	b6e0a0d9d63d	0xe5ad0
 aniplayer	?TickToggle_0e5b90@CAniPlayer@@QAEHH@Z	91.6897	91.6897	3	0cfe5c2137cd	0xe5b90
@@ -460,7 +459,7 @@ areamgr	?FindEntry@CSpawnList@@QAEPAVCSpawnEntry@@VCString@@H@Z	74.3367	74.3367	
 areamgr	?GetName@CSpawnEntry@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:511427eaaf4a	0x9a260
 areamgr	?GetTail@CSpawnEntry@@QAE?AVCString@@XZ	66.3774	66.3774	3	8d85105e3cd0	0x9a830
 areamgr	?LoadObjectAnimResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3103	88.3103	2	fd0f9cb5c116	0x9ac20
-areamgr	?LoadObjectImageResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3889	88.3889	3	ced593843e11	0x9a510
+areamgr	?LoadObjectImageResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3889	88.3889	4	3a039d7eb00a	0x9a510
 areamgr	?LoadObjectResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	100.0000	100.0000	1	bdc7b33dd33d	0x9a4c0
 areamgr	?LoadObjectSoundResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3103	88.3103	3	7c796d534c8e	0x9a910
 areamgr	?QueryToken@@YAHH@Z	100.0000	100.0000	1	dbb2fda8d63c	0x99d10
@@ -545,7 +544,7 @@ battlezmapconfig	?ListNodeAdvance@@YGPAXPAPAX@Z	100.0000	100.0000	1	2e81a8ba66d0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.4667	85.4667	13	2dd46e853ce0	0x25020
 battlezmapconfig	?Method_025c20@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	3	65d88d5a3ec5	0x25c20
 battlezmapconfig	?Method_025d90@CBattlezMapConfig@@QAEHXZ	75.2712	75.2712	8	b8bd2f14067d	0x25d90
-battlezmapconfig	?Method_026470@CBattlezMapConfig@@QAEHH@Z	82.2366	82.2366	5	4df577d066b9	0x26470
+battlezmapconfig	?Method_026470@CBattlezMapConfig@@QAEHH@Z	82.2366	82.2366	6	e38ac89fa7a1	0x26470
 battlezmapconfig	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	58.6316	58.6316	9	6f667d8d3eaa	0x29b40
 battlezmapconfig	?Method_02ad40@CBattlezMapConfig@@QAEPAXH@Z	59.8750	59.8750	4	42f86afa2df3	0x2ad40
 battlezmapconfig	?Method_02bfc0@CBattlezMapConfig@@QAEHHPAXHH@Z	100.0000	100.0000	5	35df3f0a3a98	0x2bfc0
@@ -576,7 +575,7 @@ battlezmapconfig	?Serialize_02b420@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.000
 battlezmapconfig	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	72.5025	72.5025	1	78ed2e9bd8b2	0x31610
 battlezmapconfig	?winapi_0267c0_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHXZ	0.0596	0.0596	2	831a3129959e	0x267c0
 battlezmapconfig	?winapi_02a570_IntersectRect@CBattlezMapConfig@@QAEHH@Z	57.4442	57.4442	8	3dc540587f4b	0x2a570
-battlezmapconfig	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.4911	77.4821	3	8ab44dc8bfb3	0x2ab80
+battlezmapconfig	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.4911	77.4911	3	8ab44dc8bfb3	0x2ab80
 battlezmapconfig	?winapi_02ae00_IntersectRect@CBattlezMapConfig@@QAEHHH@Z	82.9729	82.9729	6	06cea274e795	0x2ae00
 battlezmapconfig	?winapi_02c140_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHH@Z	61.8146	61.8146	9	af5510f686d7	0x2c140
 battlezmapconfig	?winapi_02dfa0_IntersectRect@CBattlezMapConfig@@QAEHHHHH@Z	59.2921	59.2921	5	93f0d0333e36	0x2dfa0
@@ -639,7 +638,7 @@ bootystateactivate	?Vslot0e@CMultiBootyState@@UAEHHHH@Z	100.0000	100.0000	1	c3e7
 bootystateactivate	?Vslot11@CBootyState@@UAEHHHH@Z	100.0000	100.0000	2	141a8fc80406	0x1d400
 bootystateactivate	?Vslot11@CMultiBootyState@@UAEHHHH@Z	100.0000	100.0000	1	83f904b8d067	0x1f900
 bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.8158	92.8158	1	199f07b1b7c1	0x1b450
-bootywalkanim	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	93.5142	93.5142	2	68b154308dc1	0x1b690
+bootywalkanim	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	93.5142	93.5142	3	42a7db186c05	0x1b690
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	22	621add35a117	0xf9160
 brickz	?IsCellClear@CMapMgr@@UAEHHH@Z	100.0000	100.0000	1	cpp:21b941a07ae8	0x853f0
 brickz	?LineIsClear@CMapMgr@@QAEHHHHH@Z	99.7500	99.7500	1	cpp:21b941a07ae8	0x82250
@@ -806,7 +805,7 @@ creditsstate	??1CCreditsState@@UAE@XZ	100.0000	100.0000	1	b928973f08d8	0x8d5e0
 creditsstate	??1CRgn@@UAE@XZ	100.0000	100.0000	1	cpp:f04f02469898	0x8c400
 creditsstate	?DrawScrollingCredits@CCreditsState@@QAEHXZ	77.4734	77.4734	6	c8396794c346	0x396f0
 creditsstate	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	5b6722d9ab3b	0x39c40
-creditsstate	?FlashColor@CCreditsState@@QAEHXZ	63.6923	63.6923	1	443a0dbfd237	0x39d00
+creditsstate	?FlashColor@CCreditsState@@QAEHXZ	67.5385	67.5385	1	443a0dbfd237	0x39d00
 creditsstate	?InitAttractTitle@CCreditsState@@QAEHXZ	81.1980	81.1980	5	b1c9575bef03	0x39570
 creditsstate	?InputVirtual@CCreditsState@@UAEHXZ	100.0000	100.0000	3	fbcf0a78e65f	0x393b0
 creditsstate	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	6	2373480fbbb3	0x38d20
@@ -916,54 +915,60 @@ ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	52.0807	52.0807	2	17
 ddrawsubmgr	??0CDrawSubWorker@@QAE@HHH@Z	96.3000	96.3000	3	e41c4ab50b8e	0x158f30
 ddrawsubmgr	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	c0ad1f62a683	0x157850
 ddrawsubmgr	??0CLoadable@@QAE@HHH@Z	100.0000	100.0000	1	0f8ef201088c	0x156cb0
-ddrawsubmgr	??1CDDrawChildGroupDtorHost@@UAE@XZ	95.9000	95.9000	1	fe3d192f4902	0x157630
-ddrawsubmgr	??1CDDrawRegistryDtorHost@@UAE@XZ	94.8750	94.8750	1	3f128385bf08	0x156e10
+ddrawsubmgr	??1CDDrawChildGroup@@UAE@XZ	77.6000	77.6000	1	8cb411e2dbd0	0x157630
 ddrawsubmgr	??1CDDrawSubMgrLeaf@@UAE@XZ	100.0000	100.0000	3	f34d8ab15f44	0x1577e0
 ddrawsubmgr	??1CDDrawSubMgrLeafScan@@UAE@XZ	100.0000	100.0000	2	77803fd645b6	0x157570
 ddrawsubmgr	??1CDDrawSubMgrPages@@UAE@XZ	100.0000	100.0000	1	eacae0c8e71a	0x1574d0
+ddrawsubmgr	??1CDDrawSurfaceChildA@@UAE@XZ	100.0000	100.0000	1	74d05ebd5590	0x1591b0
 ddrawsubmgr	??1CDDrawSurfacePair@@UAE@XZ	100.0000	100.0000	1	ae1440419366	0x1590f0
 ddrawsubmgr	??1CDDrawWorkerA@@UAE@XZ	59.1333	59.1333	2	6010c3c2e71f	0x1570d0
 ddrawsubmgr	??1CDDrawWorkerB@@UAE@XZ	59.1333	59.1333	2	67e559be345f	0x157240
 ddrawsubmgr	??1CDDrawWorkerCache@@UAE@XZ	82.5000	82.5000	2	1553559d4c99	0x157720
 ddrawsubmgr	??1CDDrawWorkerList@@UAE@XZ	100.0000	100.0000	1	ed80d583572e	0x156f50
 ddrawsubmgr	??1CDDrawWorkerMapSmall@@UAE@XZ	86.0000	86.0000	1	6784c6fe7242	0x156d20
+ddrawsubmgr	??1CDDrawWorkerRegistry@@UAE@XZ	100.0000	100.0000	1	ac61d06c4a33	0x156e10
+ddrawsubmgr	??1CDrawSubWorker@@UAE@XZ	100.0000	100.0000	1	cpp:a0f4af0cd92e	0x158fb0
 ddrawsubmgr	??1CFileMem@@UAE@XZ	1.9630	1.9630	1	a1f232b171ae	0x157980
 ddrawsubmgr	??1CFileMemBase@@UAE@XZ	49.9500	49.9500	1	bad3d9b2673b	0x1578b0
-ddrawsubmgr	??1LeafElementObj@@UAE@XZ	80.0000	80.0000	1	4aeec84ccd91	0x158680
+ddrawsubmgr	??1LeafCue@@UAE@XZ	100.0000	100.0000	1	b0fd2081b7f4	0x158680
+ddrawsubmgr	??_GCDDrawChildGroup@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a0f4af0cd92e	0x157610
 ddrawsubmgr	??_GCDDrawSubMgrLeaf@@UAEPAXI@Z	100.0000	100.0000	1	cpp:053c6c4df6ba	0x1577c0
+ddrawsubmgr	??_GCDDrawSurfaceChildA@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a0f4af0cd92e	0x159190
 ddrawsubmgr	??_GCDDrawWorkerCache@@UAEPAXI@Z	100.0000	100.0000	1	cpp:053c6c4df6ba	0x157700
-ddrawsubmgr	?AddEntry_157ec0@CDDrawSubMgrLeafScan@@QAEXPAULeafElementObj@@PBD@Z	100.0000	100.0000	2	1322c87594eb	0x157ec0
-ddrawsubmgr	?AddFromSource_157e90@CDDrawSubMgrLeafScan@@QAEPAULeafElementObj@@PAUCParseSource@@@Z	100.0000	100.0000	1	2d5263fa2dcf	0x157e90
-ddrawsubmgr	?BaseInit@WapObjBase@@QAEXXZ	85.7143	85.7143	1	e138c751a237	0x1591b0
+ddrawsubmgr	??_GCDDrawWorkerRegistry@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a0f4af0cd92e	0x156df0
+ddrawsubmgr	??_GCDrawSubWorker@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a0f4af0cd92e	0x158f90
+ddrawsubmgr	??_GLeafCue@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a0f4af0cd92e	0x158660
+ddrawsubmgr	?AddEntry_157ec0@CDDrawSubMgrLeafScan@@QAEXPAULeafCue@@PBD@Z	100.0000	100.0000	1	52b0a5b34888	0x157ec0
+ddrawsubmgr	?AddFromSource_157e90@CDDrawSubMgrLeafScan@@QAEPAULeafCue@@PAUCParseSource@@@Z	100.0000	100.0000	1	c9ea90e1debf	0x157e90
 ddrawsubmgr	?ClearContext@CDDrawSubMgrLeafScan@@UAEXXZ	99.8333	99.8333	1	5b3c3f879573	0x157ae0
-ddrawsubmgr	?ClearMap@CDDrawSubMgrLeafScan@@QAEXXZ	94.6939	94.6939	2	4dc1880ade03	0x157bc0
-ddrawsubmgr	?Configure_158760@LeafElementObj@@QAEHPAUCParseSource@@@Z	41.0811	41.0811	1	1d7e48711ba4	0x158760
-ddrawsubmgr	?CreateChildren@CDDrawSubMgrPages@@UAEHHHHH@Z	63.2516	63.2516	1	49249dd0164c	0x1588f0
-ddrawsubmgr	?CreateEntry2_157e00@CDDrawSubMgrLeafScan@@QAEPAULeafElementObj@@PBDPAX@Z	63.1270	63.1270	2	f8fbeb9d18a3	0x157e00
-ddrawsubmgr	?CreateEntry_157d70@CDDrawSubMgrLeafScan@@QAEPAULeafElementObj@@PBDPAX@Z	63.1270	63.1270	2	6f873917ad49	0x157d70
+ddrawsubmgr	?ClearMap@CDDrawSubMgrLeafScan@@QAEXXZ	94.6939	94.6939	3	26373c79f20e	0x157bc0
+ddrawsubmgr	?Configure_158760@LeafCue@@QAEHPAUCParseSource@@@Z	41.0811	41.0811	1	06c86730fcec	0x158760
+ddrawsubmgr	?CreateChildren@CDDrawSubMgrPages@@UAEHHHHH@Z	63.2516	63.2516	2	a9d5a6945b62	0x1588f0
+ddrawsubmgr	?CreateEntry2_157e00@CDDrawSubMgrLeafScan@@QAEPAULeafCue@@PBDPAX@Z	99.3175	99.3175	1	a6e37d1e828b	0x157e00
+ddrawsubmgr	?CreateEntry_157d70@CDDrawSubMgrLeafScan@@QAEPAULeafCue@@PBDPAX@Z	99.3175	99.3175	1	f90aaa719869	0x157d70
 ddrawsubmgr	?CreateWorkerA@CDDrawWorkerList@@UAEPAXHHH@Z	100.0000	100.0000	1	dbaca2d518b0	0x156fd0
 ddrawsubmgr	?CreateWorkerB28@CDDrawWorkerList@@UAEPAXHHHH@Z	100.0000	100.0000	1	b7cc1951b339	0x1573e0
-ddrawsubmgr	?CreateWorkerB2C@CDDrawWorkerList@@UAEPAXHHPAUCDDrawFrameSource@@HH@Z	100.0000	100.0000	1	1a0c6ad171d2	0x157330
+ddrawsubmgr	?CreateWorkerB2C@CDDrawWorkerList@@UAEPAXHHPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	b55850aceae8	0x157330
 ddrawsubmgr	?CreateWorkerB30@CDDrawWorkerList@@UAEPAXHHHHH@Z	100.0000	100.0000	1	a5b7a4b825ac	0x157150
 ddrawsubmgr	?DestroyChildren@CDDrawSubMgrPages@@UAEXXZ	100.0000	100.0000	1	38bf3c5cab0c	0x158ac0
-ddrawsubmgr	?FindKeyOfValue_158570@CDDrawSubMgrLeafScan@@QAE?AVCString@@PAVLeafScanValue@@@Z	100.0000	100.0000	2	48eb12ea6dae	0x158570
+ddrawsubmgr	?FindKeyOfValue_158570@CDDrawSubMgrLeafScan@@QAE?AVCString@@PAULeafCue@@@Z	100.0000	100.0000	1	6a96508c640b	0x158570
 ddrawsubmgr	?Fire_1581b0@CDDrawSubMgrLeafScan@@QAEHPBDHHH@Z	100.0000	100.0000	1	2a5d8116fe80	0x1581b0
 ddrawsubmgr	?GetClassId@CDDrawWorkerBase@@UAEHXZ	100.0000	100.0000	1	354282b38512	0x157210
-ddrawsubmgr	?GetFirstValue_158210@CDDrawSubMgrLeafScan@@QAEPAVLeafScanValue@@XZ	100.0000	100.0000	2	3646fc78d27c	0x158210
+ddrawsubmgr	?GetClassId@CDDrawWorkerRegistry@@UAEHXZ	100.0000	100.0000	1	ba446ff6d2b1	0x156de0
+ddrawsubmgr	?GetFirstValue_158210@CDDrawSubMgrLeafScan@@QAEPAULeafCue@@XZ	100.0000	100.0000	1	c9946b9bd484	0x158210
 ddrawsubmgr	?GetName@CFileMemBase@@UAE?AVCString@@XZ	100.0000	100.0000	1	5e863ec4b43c	0x157920
 ddrawsubmgr	?GetStateId@CDDrawChildGroup@@UAE?AW4StateId@@XZ	100.0000	100.0000	1	89b00a9b0cc4	0x157600
 ddrawsubmgr	?GetStateId@CDDrawSubMgrPages@@UAE?AW4StateId@@XZ	100.0000	100.0000	1	cpp:053c6c4df6ba	0x1574a0
 ddrawsubmgr	?GetStateId@CDDrawWorkerCache@@UAE?AW4StateId@@XZ	100.0000	100.0000	1	cpp:053c6c4df6ba	0x1576f0
 ddrawsubmgr	?GetStateId@CDDrawWorkerList@@UAE?AW4StateId@@XZ	100.0000	100.0000	1	c653297d5a69	0x156f20
-ddrawsubmgr	?GetStateId@CDDrawWorkerRegistry@@QAE?AW4StateId@@XZ	100.0000	100.0000	1	80a616432bf9	0x156de0
 ddrawsubmgr	?HasKeyEqual_1583c0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	100.0000	100.0000	2	9551e2f8145d	0x1583c0
-ddrawsubmgr	?Init_158fb0@CDrawSubWorkerBase@@QAEXXZ	85.7143	85.7143	3	0f6431d8a7d6	0x158fb0
 ddrawsubmgr	?IsLoaded@CDDrawChildGroup@@UAEHXZ	100.0000	100.0000	1	168265106ab0	0x1575e0
 ddrawsubmgr	?IsLoaded@CDDrawSubMgrPages@@UAEHXZ	100.0000	100.0000	1	e5ee5198f84c	0x157480
-ddrawsubmgr	?IsLoaded@CDDrawSurfaceChildA@@UAEHXZ	100.0000	100.0000	1	4eb144866d32	0x159150
+ddrawsubmgr	?IsLoaded@CDDrawSurfaceChildA@@UAEHXZ	100.0000	100.0000	2	3ee97a2b031e	0x159150
 ddrawsubmgr	?IsLoaded@CDDrawSurfacePair@@UAEHXZ	100.0000	100.0000	1	34db3d2ad5df	0x159090
 ddrawsubmgr	?IsLoaded@CDDrawWorkerBase@@UAEHXZ	100.0000	100.0000	1	fabec9870a13	0x157200
 ddrawsubmgr	?IsLoaded@CDDrawWorkerCache@@UAEHXZ	100.0000	100.0000	1	cpp:46292b2b4d23	0x1576d0
+ddrawsubmgr	?IsLoaded@LeafCue@@UAEHXZ	100.0000	100.0000	1	cpp:a0f4af0cd92e	0x158650
 ddrawsubmgr	?IsReady@CDDrawChildGroup@@UAEHXZ	100.0000	100.0000	1	e888eaa1330f	0x1576c0
 ddrawsubmgr	?IsReady@CDDrawSubMgrLeaf@@UAEHXZ	100.0000	100.0000	1	16b3c1206e37	0x1577a0
 ddrawsubmgr	?IsReady@CDDrawSubMgrLeafScan@@UAEHXZ	41.5000	41.5000	1	cpp:053c6c4df6ba	0x157530
@@ -971,7 +976,9 @@ ddrawsubmgr	?IsReady@CDDrawWorkerCache@@UAEHXZ	100.0000	100.0000	1	cpp:053c6c4df
 ddrawsubmgr	?IsReady@CDDrawWorkerList@@UAEHXZ	100.0000	100.0000	1	7497eb7740e1	0x156f00
 ddrawsubmgr	?IsReady@CDDrawWorkerMapSmall@@UAEHXZ	100.0000	100.0000	1	26734955164e	0x156cd0
 ddrawsubmgr	?IsReadyPredicate@CDDrawWorkerList@@UAEHXZ	100.0000	100.0000	1	66c2126d7823	0x156fc0
-ddrawsubmgr	?MatchSub_1584f0@CDDrawSubMgrLeafScan@@QAEHPAVLeafScanSoundArg@@H@Z	99.9800	99.9800	1	c7c0d59a6144	0x1584f0
+ddrawsubmgr	?LoadSoundA@LeafCue@@QAEHPAX@Z	100.0000	100.0000	1	fb0505067599	0x1586e0
+ddrawsubmgr	?LoadSoundB@LeafCue@@QAEHPAX@Z	100.0000	100.0000	1	26426ab43ab4	0x158720
+ddrawsubmgr	?MatchSub_1584f0@CDDrawSubMgrLeafScan@@QAEHPAULeafCue@@H@Z	99.9800	99.9800	1	18cb0977f927	0x1584f0
 ddrawsubmgr	?Method_158b10@CDDrawSubMgrPages@@QAEHHH@Z	100.0000	100.0000	1	ef04116a2a05	0x158b10
 ddrawsubmgr	?Method_158b40@CDDrawSubMgrPages@@QAEHHH@Z	100.0000	100.0000	3	6fd9d2e35cf8	0x158b40
 ddrawsubmgr	?Method_158b90@CDDrawSubMgrPages@@QAEXXZ	100.0000	100.0000	2	5cfc92a059bb	0x158b90
@@ -985,32 +992,30 @@ ddrawsubmgr	?Method_158dc0@CDDrawSubMgrPages@@QAEHXZ	71.1429	71.1429	2	86820c702
 ddrawsubmgr	?Method_158e40@CDDrawSubMgrPages@@QAEHXZ	50.1282	50.1282	2	f6ac41d05ea8	0x158e40
 ddrawsubmgr	?Method_158e90@CDDrawSubMgrPages@@QAEHXZ	100.0000	100.0000	2	e2df18397d02	0x158e90
 ddrawsubmgr	?Method_158ee0@CDDrawSubMgrPages@@QAEHXZ	100.0000	100.0000	2	aa29b65c7c06	0x158ee0
-ddrawsubmgr	?NextValueAfter_1582c0@CDDrawSubMgrLeafScan@@QAEPAVLeafScanValue@@PAV2@@Z	100.0000	100.0000	2	7fd6974bf0fe	0x1582c0
-ddrawsubmgr	?ProbeFirst_1584a0@CDDrawSubMgrLeafScan@@QAEHH@Z	100.0000	100.0000	1	cabfbbdd941c	0x1584a0
-ddrawsubmgr	?ProbeWorkerKey@CDDrawWorkerRegistry@@QAEHPAVCSymTab@@H@Z	51.3809	51.3809	2	da3494cf0e00	0x156e80
+ddrawsubmgr	?NextValueAfter_1582c0@CDDrawSubMgrLeafScan@@QAEPAULeafCue@@PAU2@@Z	100.0000	100.0000	1	edf3e5482a30	0x1582c0
+ddrawsubmgr	?ProbeFirst_1584a0@CDDrawSubMgrLeafScan@@QAEHH@Z	100.0000	100.0000	2	73e6ce1fbde3	0x1584a0
+ddrawsubmgr	?ProbeWorkerKey@CDDrawWorkerRegistry@@UAEHPAVCSymTab@@H@Z	51.3809	51.3809	1	101a08908414	0x156e80
 ddrawsubmgr	?RefreshAsset_114120@CDDrawSubMgrLeafScan@@QAEHPBD@Z	100.0000	100.0000	3	71a1972d26b3	0x114120
-ddrawsubmgr	?Release_1587c0@LeafElementObj@@QAEXXZ	100.0000	100.0000	1	f7fb457bfcc4	0x1587c0
-ddrawsubmgr	?RemoveByKey@CDDrawWorkerRegistry@@QAEXPBD@Z	67.5185	67.5185	1	e73da5dc30d6	0x156ec0
+ddrawsubmgr	?RemoveByKey@CDDrawWorkerRegistry@@UAEXPBD@Z	67.5185	67.5185	1	7baf4a80f4e9	0x156ec0
 ddrawsubmgr	?RemoveByValue@CSoundResMap@@QAEXPAVCSoundRes@@@Z	74.8000	74.8000	1	ba2b8e7e359f	0x157b00
-ddrawsubmgr	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	100.0000	100.0000	2	32064180e04e	0x157c70
+ddrawsubmgr	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	100.0000	100.0000	3	e901fdf6af21	0x157c70
 ddrawsubmgr	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	1	cpp:053c6c4df6ba	0x157a50
 ddrawsubmgr	?Reset@CFileMemBase@@UAEXXZ	100.0000	100.0000	1	cpp:053c6c4df6ba	0x157a40
-ddrawsubmgr	?ScalarDtor@CDDrawChildGroupDtorHost@@QAEPAXI@Z	100.0000	100.0000	2	273170ecc380	0x157610
-ddrawsubmgr	?ScalarDtor@CDDrawRegistryDtorHost@@QAEPAXI@Z	100.0000	100.0000	2	933bb7fe6775	0x156df0
 ddrawsubmgr	?ScalarDtor@CDDrawSubMgrLeafScan@@QAEPAXI@Z	100.0000	100.0000	2	79c8a59a070e	0x157550
 ddrawsubmgr	?ScalarDtor@CDDrawSubMgrPages@@QAEPAXI@Z	100.0000	100.0000	2	7b7774c9e0d1	0x1574b0
 ddrawsubmgr	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVCSymTab@@PBD1@Z	100.0000	100.0000	1	8eef52e0ed93	0x157ee0
 ddrawsubmgr	?SelectCue_157a80@CAniAdvanceCursor@@QAEHPAX@Z	100.0000	100.0000	1	cb25f78c8ccf	0x157a80
-ddrawsubmgr	?SetGeom_159020@CDrawSubWorker@@UAEHHHH@Z	100.0000	100.0000	1	97bd3a0009d7	0x159020
+ddrawsubmgr	?SetGeom@CDrawSubWorker@@UAEHHHH@Z	100.0000	100.0000	1	032a61699e71	0x159020
 ddrawsubmgr	?SetGeometry_158fd0@CDDrawSurfacePair@@UAEHHHH@Z	83.8571	83.8571	1	f828cce26f63	0x158fd0
 ddrawsubmgr	?SetPosition@CDDrawWorkerBase@@UAEHHH@Z	100.0000	100.0000	1	2fb31570981b	0x157080
 ddrawsubmgr	?Slot06_156db0@CDDrawWorkerMapSmall@@UAEHXZ	100.0000	100.0000	1	1ef02328dd36	0x156db0
-ddrawsubmgr	?SumField_1580b0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	66.2093	66.2093	2	026880e7fc2f	0x1580b0
+ddrawsubmgr	?SumField_1580b0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	66.2093	66.2093	3	8340a1587df9	0x1580b0
 ddrawsubmgr	?TriggerBlit_1587f0@CAniBlitTrigger@@QAEHHHHH@Z	72.7604	72.7604	4	6a226cbdaa89	0x1587f0
 ddrawsubmgr	?Unload@CDDrawWorkerBase@@UAEHXZ	100.0000	100.0000	1	fc249d617b80	0x157310
+ddrawsubmgr	?Unload@LeafCue@@UAEHXZ	76.4286	76.4286	1	2659e9de6226	0x1587c0
 ddrawsubmgr	?Vfunc2C@CDDrawWorkerA@@UAEHHHH@Z	100.0000	100.0000	2	d93c76f20c1c	0x157110
 ddrawsubmgr	?Vfunc2C@CDDrawWorkerB@@UAEHHHH@Z	100.0000	100.0000	2	7fedfc69a040	0x1572f0
-ddrawsubmgr	?Vfunc30@CDDrawWorkerB@@UAEHHHPAUCDDrawFrameSource@@H@Z	100.0000	100.0000	2	0ff10c28931f	0x1572b0
+ddrawsubmgr	?Vfunc30@CDDrawWorkerB@@UAEHHHPAVCDDrawWorker@@H@Z	100.0000	100.0000	1	babbcdd3f2ad	0x1572b0
 ddrawsubmgr	?Vfunc34@CDDrawWorkerB@@UAEHHHHH@Z	100.0000	100.0000	2	bca20f5d49af	0x157280
 ddrawsubmgrleaf	??1CAniElement@@UAE@XZ	100.0000	100.0000	1	a3aef33fe4b7	0x152e30
 ddrawsubmgrleaf	??_GCAniElement@@UAEPAXI@Z	100.0000	100.0000	1	cpp:18324c1e09a2	0x152e10
@@ -1050,7 +1055,7 @@ ddrawsurfacepair	?CreateWorker2C@CDDrawWorkerMapSmall@@UAEPAXHPBDH@Z	96.7174	96.
 ddrawsurfacepair	?CreateWorker@CDDrawWorkerCache@@UAEPAXHPBDH@Z	54.6071	54.6071	2	083f44cec9ae	0x1652c0
 ddrawsurfacepair	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	1	d4ff94432a66	0x165730
 ddrawsurfacepair	?DestroyAll@CDDrawWorkerMapSmall@@UAEXXZ	100.0000	100.0000	2	d19a389455c7	0x165810
-ddrawsurfacepair	?DestroyAll@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	1	ce5d3f870169	0x165210
+ddrawsurfacepair	?DestroyAll@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	2	e31d47961cf9	0x165210
 ddrawsurfacepair	?DestroyWorkers@CDDrawWorkerList@@UAEXXZ	100.0000	100.0000	2	05d55b17980b	0x163bc0
 ddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAHH@Z	52.7887	52.7887	2	52fc88669347	0x163f40
 ddrawsurfacepair	?DrawCount@CDDrawSurfacePair@@QAEXPAUtagRECT@@H@Z	100.0000	100.0000	1	df5642e174cb	0x164380
@@ -1058,7 +1063,7 @@ ddrawsurfacepair	?DrawCross@CDDrawSurfacePair@@QAEXHH@Z	73.2877	73.2877	2	c7c2a0
 ddrawsurfacepair	?DrawLabel@CDDrawSurfacePair@@QAEXPAUtagRECT@@PAD@Z	100.0000	100.0000	1	b0552c4ffe4e	0x164420
 ddrawsurfacepair	?Factory_1658c0@CDDrawWorkerMapSmall@@UAEPAXPAVCDDrawSurfaceSource@@PBDH@Z	95.8736	95.8736	3	976446bed043	0x1658c0
 ddrawsurfacepair	?Factory_165a90@CDDrawWorkerMapSmall@@UAEPAXPAVCDDrawSurfaceSource@@HH@Z	92.9423	92.9423	3	6417565d3c42	0x165a90
-ddrawsurfacepair	?FindKeyOfValue_165360@CDDrawWorkerRegistry@@QAE?AVCString@@PAVCImageSet@@@Z	100.0000	100.0000	1	d0e4764cd577	0x165360
+ddrawsurfacepair	?FindKeyOfValue_165360@CDDrawWorkerRegistry@@QAE?AVCString@@PAVCImageSet@@@Z	100.0000	100.0000	2	20482bd31a8a	0x165360
 ddrawsurfacepair	?Helper_166040@CDDrawWorkerB@@QAEHHH@Z	95.0000	95.0000	2	09f9879779cd	0x166040
 ddrawsurfacepair	?Init@CResolveNode@@QAEHHHHHHH@Z	100.0000	100.0000	2	d8432522a282	0x1647e0
 ddrawsurfacepair	?InitFromSurface_163db0@CDDrawSurfacePair@@UAEHPAVCDDSurface@@@Z	77.6765	77.6765	1	d82febc1b6ac	0x163db0
@@ -1075,38 +1080,38 @@ ddrawsurfacepair	?RenderFrame@CDDrawWorkerA@@UAEXPAVCDDrawSurfacePair@@0@Z	88.96
 ddrawsurfacepair	?RenderFrame@CDDrawWorkerB@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	5f2d5f1e55cf	0x1660b0
 ddrawsurfacepair	?ResetSlots@CDDrawWorkerMapSmall@@QAEXXZ	100.0000	100.0000	2	bfd76353e331	0x165b90
 ddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	98.6667	98.6667	3	7e0ab5d90859	0x163f00
+ddrawsurfacepair	?SetGeom@CDDrawSurfaceChildA@@UAEHHHH@Z	100.0000	100.0000	1	db7e8b10b633	0x1646b0
 ddrawsurfacepair	?SetGeom_164250@CDDrawSurfacePair@@UAEHHHH@Z	78.5294	78.5294	3	641e2ea841b7	0x164250
-ddrawsurfacepair	?SetGeom_1646b0@CDDrawSurfaceChildA@@UAEHHHH@Z	100.0000	100.0000	1	86a39974e72a	0x1646b0
+ddrawsurfacepair	?SetGeometry@CDDrawSurfaceChildA@@UAEHHHH@Z	87.4172	87.4172	1	2915677ce51c	0x1644a0
 ddrawsurfacepair	?SetName@CFileMemBase@@UAEHPBDHH@Z	100.0000	100.0000	1	e539c2e95067	0x165e30
 ddrawsurfacepair	?SetPosition@CResolveNode@@UAEHHH@Z	90.5556	90.5556	1	465195c0a126	0x164790
 ddrawsurfacepair	?TeardownSurface@CDDrawSurfacePair@@UAEXXZ	100.0000	100.0000	3	dcb1d282a5f9	0x163e20
 ddrawsurfacepair	?Write@CFileMem@@UAEHPBXH@Z	100.0000	100.0000	1	7ae1704bcf5a	0x165f50
-ddrawsurfacepair	?directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA@CDDrawSurfacePair@@QAEHHHH@Z	87.4172	87.4172	3	7f01c2ce97b7	0x1644a0
 ddrawworkerhost	??1CDDrawWorkerHost@@UAE@XZ	69.3500	69.3500	4	9802b24ccae6	0x163af0
 ddrawworkerregistry	??1CDDrawWorker@@UAE@XZ	100.0000	100.0000	4	32108ab9434f	0x1557a0
 ddrawworkerregistry	??_GCDDrawWorker@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b7a89cd7618e	0x155780
-ddrawworkerregistry	?AnyValueMatches_155630@CDDrawWorkerRegistry@@QAEHHHH@Z	100.0000	100.0000	3	890399ce1bbd	0x155630
-ddrawworkerregistry	?DispatchKeyed2C@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	39.5814	39.5814	3	2c0fdfefdc5a	0x154df0
-ddrawworkerregistry	?DispatchKeyed30@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	39.5814	39.5814	3	cab0a53f6c25	0x154ce0
-ddrawworkerregistry	?DispatchKeyed34@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	38.2143	38.2143	3	f9392f4176e2	0x154be0
-ddrawworkerregistry	?DispatchKeyed38@CDDrawWorkerRegistry@@QAEHPAXPBDHH@Z	38.2143	38.2143	1	f0c9ee85bc4a	0x154ae0
-ddrawworkerregistry	?Forward2C@CDDrawWorkerRegistry@@QAEHHHPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	bbc6918f9f33	0x154f60
-ddrawworkerregistry	?Forward30@CDDrawWorkerRegistry@@QAEHHHPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	bdc910e2369d	0x154f40
-ddrawworkerregistry	?Forward34@CDDrawWorkerRegistry@@QAEHHPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	1b735ab55f3d	0x154f00
-ddrawworkerregistry	?Forward38@CDDrawWorkerRegistry@@QAEHPAXPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	a59217adac32	0x154f20
+ddrawworkerregistry	?AnyValueMatches_155630@CDDrawWorkerRegistry@@QAEHHHH@Z	100.0000	100.0000	4	fd05a1e39117	0x155630
+ddrawworkerregistry	?DispatchKeyed2C@CDDrawWorkerRegistry@@UAEHHHPBDHH@Z	39.5814	39.5814	1	2c0fdfefdc5a	0x154df0
+ddrawworkerregistry	?DispatchKeyed30@CDDrawWorkerRegistry@@UAEHHHPBDHH@Z	39.5814	39.5814	1	cab0a53f6c25	0x154ce0
+ddrawworkerregistry	?DispatchKeyed34@CDDrawWorkerRegistry@@UAEHHPBDHH@Z	38.2143	38.2143	1	f9392f4176e2	0x154be0
+ddrawworkerregistry	?DispatchKeyed38@CDDrawWorkerRegistry@@UAEHPAXPBDHH@Z	38.2143	38.2143	1	f0c9ee85bc4a	0x154ae0
+ddrawworkerregistry	?Forward2C@CDDrawWorkerRegistry@@UAEHHHPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	bbc6918f9f33	0x154f60
+ddrawworkerregistry	?Forward30@CDDrawWorkerRegistry@@UAEHHHPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	bdc910e2369d	0x154f40
+ddrawworkerregistry	?Forward34@CDDrawWorkerRegistry@@UAEHHPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	1b735ab55f3d	0x154f00
+ddrawworkerregistry	?Forward38@CDDrawWorkerRegistry@@UAEHPAXPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	a59217adac32	0x154f20
 ddrawworkerregistry	?GetClassId@CDDrawWorker@@UAEHXZ	100.0000	100.0000	1	47281cb41d8a	0x155770
-ddrawworkerregistry	?HasKeyEqual_155550@CDDrawWorkerRegistry@@QAEHPBD@Z	100.0000	100.0000	2	5e75c9ad9ac6	0x155550
-ddrawworkerregistry	?InsertWorkerKey@CDDrawWorkerRegistry@@QAEHPAVCSymTab@@PBD1@Z	63.1795	63.1795	4	cd67452d38e2	0x154f80
+ddrawworkerregistry	?HasKeyEqual_155550@CDDrawWorkerRegistry@@QAEHPBD@Z	100.0000	100.0000	3	d1281dd7f341	0x155550
+ddrawworkerregistry	?InstallTree@CDDrawWorkerRegistry@@UAEHPAXPBD1@Z	63.1795	63.1795	1	444ac0d07aea	0x154f80
 ddrawworkerregistry	?IsLoaded@CDDrawWorker@@UAEHXZ	100.0000	100.0000	1	4e62d6c3db0c	0x155750
-ddrawworkerregistry	?LookupWorkerKey@CDDrawWorkerRegistry@@QAEHPAVCSymTab@@PBD1@Z	98.0180	98.0180	4	d48269db53e3	0x155160
-ddrawworkerregistry	?MapTeardown_1552b0@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	3	87daccd5c041	0x1552b0
-ddrawworkerregistry	?RemoveKeysEqual_155360@CDDrawWorkerRegistry@@QAEHPBD0@Z	100.0000	100.0000	3	a904de43fd60	0x155360
-ddrawworkerregistry	?RemoveWorker@CDDrawWorkerRegistry@@QAEXPAVCDDrawWorker@@@Z	100.0000	100.0000	1	1fff7060474d	0x155280
-ddrawworkerregistry	?ResetScratch@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	2	922451319416	0x154aa0
+ddrawworkerregistry	?IsReady@CDDrawWorkerRegistry@@UAEHXZ	100.0000	100.0000	1	141ac51e4fb5	0x154aa0
+ddrawworkerregistry	?LoadNamespace@CDDrawWorkerRegistry@@UAEHPAXPBD1@Z	98.0180	98.0180	1	104f53d01168	0x155160
+ddrawworkerregistry	?MapTeardown_1552b0@CDDrawWorkerRegistry@@UAEXXZ	100.0000	100.0000	1	07e9a714a21d	0x1552b0
+ddrawworkerregistry	?RemoveKeysEqual_155360@CDDrawWorkerRegistry@@QAEHPBD0@Z	100.0000	100.0000	4	3f851b5ccfed	0x155360
+ddrawworkerregistry	?RemoveWorker@CDDrawWorkerRegistry@@UAEXPAVCDDrawWorker@@@Z	100.0000	100.0000	1	fd5564ac5778	0x155280
 ddrawworkerregistry	?ScalarDtor@CDDrawSubMgrFar@@QAEPAXI@Z	100.0000	100.0000	1	c955ba044c95	0x155720
 ddrawworkerregistry	?SetKey_155810@CDDrawWorker@@UAEHPBD@Z	100.0000	100.0000	1	23c4fa8fa3dd	0x155810
-ddrawworkerregistry	?Shutdown@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	2	b551eaf14026	0x154ac0
-ddrawworkerregistry	?SumSizesEqual_155460@CDDrawWorkerRegistry@@QAEHPBDH@Z	65.6000	65.6000	2	840e7cb179fc	0x155460
+ddrawworkerregistry	?SumSizesEqual_155460@CDDrawWorkerRegistry@@QAEHPBDH@Z	65.6000	65.6000	3	bab74b030655	0x155460
+ddrawworkerregistry	?Unload@CDDrawWorkerRegistry@@UAEHXZ	100.0000	100.0000	1	220748b9d122	0x154ac0
 ddsurface	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	bbcdcbde2404	0x141350
 ddsurface	?Blit1624@CDDSurface@@QAEHPAXH@Z	72.0703	72.0703	1	35d4c3c9667e	0x13fce0
 ddsurface	?Blit168@CDDSurface@@QAEHPAX0H@Z	67.5044	67.5044	1	0ff47ec558d1	0x13fbb0
@@ -1391,23 +1396,23 @@ directsoundmgr	??1DSoundCloneInst@@UAE@XZ	99.9655	99.9655	3	2ca44997c07e	0x135bb
 directsoundmgr	??1DirectSoundMgr@@UAE@XZ	100.0000	100.0000	2	25a0537188d4	0x135300
 directsoundmgr	??1SoundDevice@@UAE@XZ	28.2353	28.2353	1	a9599aba9fdc	0x136500
 directsoundmgr	??_GSoundDevice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:6ae4746fea2e	0x1364c0
-directsoundmgr	?Acquire@SoundDevice@@QAEPAVDirectSoundMgr@@PAXII@Z	99.7685	99.7685	1	b7ed2b4c981d	0x136910
-directsoundmgr	?AcquireFile@SoundDevice@@QAEPAVDirectSoundMgr@@PADII@Z	100.0000	100.0000	2	a3f72a3d38bf	0x136860
-directsoundmgr	?AcquireResource@SoundDevice@@QAEPAVDirectSoundMgr@@PBDII@Z	100.0000	100.0000	2	3a6a1d8c8813	0x136a30
+directsoundmgr	?Acquire@SoundDevice@@QAEPAVDSoundCloneInst@@PAXII@Z	99.7685	99.7685	1	5af8c8f55265	0x136910
+directsoundmgr	?AcquireFile@SoundDevice@@QAEPAVDSoundCloneInst@@PADII@Z	100.0000	100.0000	1	5b83328ef58a	0x136860
+directsoundmgr	?AcquireResource@SoundDevice@@QAEPAVDSoundCloneInst@@PBDII@Z	100.0000	100.0000	1	e3bbfc384125	0x136a30
 directsoundmgr	?ApplyAndPlay@DirectSoundMgr@@QAEHHHHH@Z	100.0000	100.0000	3	7701bbd20517	0x136300
 directsoundmgr	?BuildVolumeTable@SoundDevice@@SAXXZ	100.0000	100.0000	1	da3fbae23813	0x1351a0
 directsoundmgr	?Clone@DSoundCloneInst@@QAEPAVDirectSoundMgr@@H@Z	100.0000	100.0000	3	fb2191f9ab8b	0x135c20
 directsoundmgr	?CloneAndPlay@DirectSoundMgr@@QAEHHHH@Z	100.0000	100.0000	5	4e4ecf51e916	0x135660
 directsoundmgr	?Compact@SoundDevice@@QAEHXZ	100.0000	100.0000	1	2aecdee8585a	0x136650
 directsoundmgr	?ComputeDuration@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	3	b808e14fc74d	0x1359a0
-directsoundmgr	?ConfigureItem@CSoundCueMgr@@QAEHHHHH@Z	100.0000	100.0000	1	e59299752ad3	0x1360d0
+directsoundmgr	?ConfigureItem@DSoundCloneInst@@QAEHHHHH@Z	100.0000	100.0000	1	2db72510f581	0x1360d0
 directsoundmgr	?Create@SoundDevice@@QAEHPAXII@Z	100.0000	100.0000	3	fc3a9cbb7286	0x136550
-directsoundmgr	?CreateBuffer@SoundDevice@@QAEPAVDirectSoundMgr@@PAUWaveFormatX@@II@Z	43.0084	43.0084	1	2db1b0f0e9f4	0x1366f0
+directsoundmgr	?CreateBuffer@SoundDevice@@QAEPAVDSoundCloneInst@@PAUWaveFormatX@@II@Z	43.0084	43.0084	1	5cac002e48e6	0x1366f0
 directsoundmgr	?CreatePrimaryBuffer@SoundDevice@@QAEHXZ	98.7755	98.7755	2	1ed561e6ab6b	0x137260
 directsoundmgr	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	1	9a5d4f47b638	0x136ed0
 directsoundmgr	?GetCurrentPosition@DirectSoundMgr@@QAEHPAI0@Z	100.0000	100.0000	5	fa718a692ea4	0x135a20
 directsoundmgr	?GetFormat@DirectSoundMgr@@QAEHPAXIPAI@Z	100.0000	100.0000	5	26eb9011de54	0x135ac0
-directsoundmgr	?GetItem@CSoundCueMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.3125	1	04455391a147	0x135d70
+directsoundmgr	?GetItem@DSoundCloneInst@@QAEPAVDirectSoundMgr@@XZ	90.3125	90.3125	1	87a77d736d8b	0x135d70
 directsoundmgr	?GetPan@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	5	4e5905069d6e	0x1357f0
 directsoundmgr	?GetPanPercent@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	b3d945a2be9b	0x135840
 directsoundmgr	?GetPrimary@SoundDevice@@QAEPAUIDirectSoundBuffer@@XZ	100.0000	100.0000	1	17a5a7bc1717	0x137300
@@ -1459,7 +1464,7 @@ donothing	?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp
 donothing	?GetTypeTag@CDoNothingNormal@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:d78cd31167b1	0xf7e0
 donothing	?Serialize@CDoNothing@@QAEHHHHH@Z	100.0000	100.0000	2	293c999095e8	0xf6d0
 donothing	?Serialize@CDoNothingNormal@@QAEHHHHH@Z	100.0000	100.0000	2	7426039f844a	0xf800
-drawdebugstats	?DrawDebugStats@CPlay@@QAEXXZ	99.5458	99.5458	9	5d4187c848fd	0xcf770
+drawdebugstats	?DrawDebugStats@CPlay@@QAEXXZ	99.5458	99.5458	10	112f0777643c	0xcf770
 droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	84.7836	84.7836	4	a3bd6090033e	0xc68b0
 droppedobject	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	80.8318	80.8318	1	cde893217f4c	0xc7490
 droppedobject	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.4057	86.4057	2	0aa78fecac4a	0xc59f0
@@ -1873,8 +1878,8 @@ grunt	?UserLogicVfunc9@CGrunt@@UAEHXZ	79.3902	79.3902	3	94504e7c08db	0x48360
 grunt	?winapi_04a9f0_CopyRect_OffsetRect@CGrunt@@QAEHXZ	100.0000	100.0000	2	8ec6e2486bea	0x4a9f0
 gruntarrivalscan	?ArrivalReticleScan@CGrunt@@QAEHXZ	15.1823	15.1823	2	a4bca9017997	0xee800
 gruntarrivalscan	?ArrivalScanA@CGrunt@@QAEHXZ	51.5152	51.5152	5	89fef9d5f125	0xecc90
-gruntarrivalscan	?ArrivalScanB@CGrunt@@QAEHXZ	44.3476	44.3476	5	a6590af39fbc	0xf0e20
-gruntarrivalscan	?ArrivalScanC@CGrunt@@QAEHXZ	44.6972	44.6972	5	8c4ef216a01a	0xf36a0
+gruntarrivalscan	?ArrivalScanB@CGrunt@@QAEHXZ	44.3338	44.3338	5	a6590af39fbc	0xf0e20
+gruntarrivalscan	?ArrivalScanC@CGrunt@@QAEHXZ	44.6805	44.6805	5	8c4ef216a01a	0xf36a0
 gruntarrivalscan	?PhaseStep@CGrunt@@QAEHXZ	37.2482	37.2482	7	890427a9e9b6	0xf60f0
 gruntarrivalscan	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	1	754edb4096a3	0xf26f0
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	66.6582	66.6582	4	0a8ff6875658	0xec670
@@ -1986,7 +1991,7 @@ gruntpowerupsprite	?RegisterActs@CGruntPowerupSprite@@SAXXZ	92.9130	92.9130	5	b2
 gruntpowerupsprite	?RunAct@CGruntPowerupSprite@@QAEXH@Z	100.0000	100.0000	1	0ab183a3719e	0x80020
 gruntpowerupsprite	?Serialize@CGruntPowerupSprite@@QAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	1	1c204b55f43d	0x80490
 gruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	5	612113b3716a	0x80380
-gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	89.8214	89.8214	7	821dac4a8a12	0x80410
+gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	100.0000	7	821dac4a8a12	0x80410
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	3	fb5afdebf73a	0x7d810
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	91.4583	91.4583	1	723bc061ed39	0x7e3e0
 gruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	2	e4dba9b44f5d	0x11e80
@@ -2029,10 +2034,10 @@ gruntstartingpoint	?FireActivation@CGruntStartingPoint@@QAEXH@Z	100.0000	100.000
 gruntstartingpoint	?GetTypeTag@CGruntStartingPoint@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:c998e2bf560d	0x105b0
 gruntstartingpoint	?Register6446d8Range@@YAXXZ	100.0000	100.0000	1	4f020f7e3251	0x3e120
 gruntstartingpoint	?Serialize@CGruntStartingPoint@@QAEHHHHH@Z	100.0000	100.0000	2	3ae2cdd52fb8	0x105d0
-gruntstaterec	?Load@CGruntStateRec@@QAEHPAVCFileMemBase@@HHH@Z	90.6240	90.6240	2	1bdb6796e1b9	0xea990
+gruntstaterec	?Load@CGruntStateRec@@QAEHPAVCFileMemBase@@HHH@Z	90.6240	90.6240	3	aea5de769d15	0xea990
 gruntstatestep	?Step33520@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	53.8168	53.8168	1	9d6e5342a774	0x33520
 gruntsteps	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2cdce80ada0	0x514a0
-gruntsteps	?ClaimSwitchTile@CGrunt@@QAEHXZ	59.7786	59.7786	2	bbbf1c249655	0x52c70
+gruntsteps	?ClaimSwitchTile@CGrunt@@QAEHXZ	59.7405	59.7405	2	bbbf1c249655	0x52c70
 gruntsteps	?ConsiderArrival@CGrunt@@QAEXH@Z	83.7667	83.7667	1	66e2bb8df210	0x52f40
 gruntsteps	?LoadTypeTableClearMove@CGrunt@@QAEXH@Z	100.0000	100.0000	2	46e9b0d21df6	0x50ca0
 gruntsteps	?LoadVehicleGruntSprites@CGruntCmdObj@@QAEHH@Z	34.3921	34.3921	4	e96a2c5f7d8a	0x50ce0
@@ -2046,7 +2051,7 @@ gruntsteps	?SetArrivalTarget@CGrunt@@QAEXHHHH@Z	64.4000	64.4000	1	057deba63704	0
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	2	7f746bfbe5ee	0x517b0
 gruntsteps	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	42.3556	42.3556	3	cbb95259a163	0x52fb0
 gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	35.2959	35.2959	5	ea19bfb404ec	0x51c00
-grunttargetscan	?ScanNearestTarget@CGruntScan@@QAEHXZ	27.3428	27.3428	10	3e3fb67aec72	0xf42f0
+grunttargetscan	?ScanNearestTarget@CGruntScan@@QAEHXZ	27.3428	27.3420	10	3e3fb67aec72	0xf42f0
 grunttilescan	?ScanRegion32ce0@CScanMgr@@QAEHPAVCGrunt@@@Z	68.8655	68.8655	2	b1881552564e	0x32ce0
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	90.8400	90.8400	1	a3168b5f06af	0x7f350
 grunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	2	b4eee91c8f6d	0x122b0
@@ -2164,7 +2169,7 @@ gruntzmgr	?ClearWorldFile@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	be16aeed58ac	0x
 gruntzmgr	?Close@CGruntzMgr@@UAEXXZ	80.1166	80.1166	13	c318e8a94d08	0x855e0
 gruntzmgr	?CountReadyOptionsSlots@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	76df7c4d25f0	0x92e30
 gruntzmgr	?DebugJumpLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	5a1770cef8a8	0x8e780
-gruntzmgr	?DelayedQuit@CGruntzMgr@@QAEXXZ	10.2459	10.2459	10	3be61ed68c78	0x8f530
+gruntzmgr	?DelayedQuit@CGruntzMgr@@QAEXXZ	10.2459	10.2459	11	5bacda6344e1	0x8f530
 gruntzmgr	?EnterModalUI@CGruntzMgr@@QAEXPBD@Z	97.3016	97.3016	6	69eceb721849	0x8ef10
 gruntzmgr	?ExitModalUI@CGruntzMgr@@QAEHPAVCDialog@@H@Z	99.5745	99.5745	7	49a9d856bbdb	0x903f0
 gruntzmgr	?FillSaveInfo@CGruntzMgr@@QAEHPAUSaveInfo@@PAX@Z	100.0000	100.0000	12	bb5494f30ed8	0x927b0
@@ -2524,8 +2529,6 @@ kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.5841	94.5841	16	a6902a738bcb	0xb2ca0
 latencylist	?Populate1@CLatencyList@@QAEHXZ	100.0000	100.0000	7	f83cebcf46fb	0x37b40
 latencylist	?Populate3@CLatencyList@@QAEHXZ	100.0000	100.0000	7	4eaf811725e6	0x37d20
 leafcueplay	?PlayIfElapsed_01f940@LeafCue@@QAEHHHHH@Z	66.0000	66.0000	1	5589bc2c7789	0x1f940
-leafelementobj	?LoadSoundA@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	3	fe418eb5cdcd	0x1586e0
-leafelementobj	?LoadSoundB@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	3	8ae3ec9e4d29	0x158720
 levelplane	??0CDDrawWorkerHost@@QAE@PAUCPlaneMapData@@HH@Z	67.7143	67.7143	1	adf9694812a6	0x1615a0
 levelplane	?Build@CDDrawWorkerHost@@QAEXPAULevelCoordRect@@@Z	90.4318	90.4318	1	a42b2874558c	0x161e80
 levelplane	?CenterScrollA@CDDrawWorkerHost@@QAEHXZ	87.9464	87.9464	1	f283d6e90aa2	0x163300
@@ -2588,20 +2591,20 @@ lightfxrender	?ClampRect@CLightFxRender@@QAEHHHPAHH@Z	88.4819	88.4819	2	43197eff
 lightfxrender	?ClearHandle@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	2	f97cbde62124	0xa9500
 lightfxrender	?ComputeRect@CLightFxRender@@QAEHPAULfxBorderCtx@@PAULfxRect@@@Z	58.0705	58.0705	2	62c97a3877d1	0xa3820
 lightfxrender	?Ctor@CLightFxRender@@QAEXXZ	100.0000	100.0000	2	bd9a0fec0006	0xa3360
-lightfxrender	?DrawBorder@CLightFxRender@@QAEXPAULfxRect@@PAULfxBorderCtx@@H@Z	70.3333	70.3333	2	ea8628e5224c	0xa3b50
+lightfxrender	?DrawBorder@CLightFxRender@@QAEXPAULfxRect@@PAULfxBorderCtx@@H@Z	70.4086	70.4086	2	ea8628e5224c	0xa3b50
 lightfxrender	?DrawBorderRaw@CLightFxRender@@QAEXPAULfxRect@@PAXH@Z	69.0345	69.0345	2	5bac770e7681	0xa3a20
 lightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	2	dab55b822081	0xa4840
 lightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	2	256004b8f4cc	0xa33a0
 lightfxrender	?Init@CLightFxRender@@QAEHPAULfxMgr@@H@Z	100.0000	100.0000	2	809cd77e9d7a	0xa32c0
-lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	48.6176	48.6176	5	3d0b0f7bf514	0xa3460
-lightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.5357	73.5357	2	cacbe4b54694	0xa3dc0
-lightfxrender	?Shape2@CLightFxRender@@QAEHXZ	73.1042	73.1042	2	af0da48bf1a7	0xa4890
-lightfxrender	?Shape3@CLightFxRender@@QAEHXZ	72.1144	72.1144	2	3a9fd6c093b1	0xa5310
+lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	47.3824	47.3824	5	3d0b0f7bf514	0xa3460
+lightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.4969	73.4969	2	cacbe4b54694	0xa3dc0
+lightfxrender	?Shape2@CLightFxRender@@QAEHXZ	73.0785	73.0785	2	af0da48bf1a7	0xa4890
+lightfxrender	?Shape3@CLightFxRender@@QAEHXZ	72.2163	72.2163	2	3a9fd6c093b1	0xa5310
 lightfxrender	?Shape4@CLightFxRender@@QAEHXZ	68.9935	68.9935	2	359593eae658	0xa5d90
-lightfxrender	?Shape5@CLightFxRender@@QAEHXZ	73.9256	73.9256	2	518d52e6c679	0xa67d0
-lightfxrender	?Shape6@CLightFxRender@@QAEHXZ	76.9864	76.9864	2	053bfdf01474	0xa7260
-lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.1100	73.1100	2	67db6c9338be	0xa7d50
-lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	69.7435	69.7435	2	d25b846364de	0xa8900
+lightfxrender	?Shape5@CLightFxRender@@QAEHXZ	74.1814	74.1814	2	518d52e6c679	0xa67d0
+lightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.0015	77.0015	2	053bfdf01474	0xa7260
+lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.8956	73.8956	2	67db6c9338be	0xa7d50
+lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	67.6819	67.6819	2	d25b846364de	0xa8900
 loadgamemenu	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	1c5aceaaa979	0x9e0b0
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	2232df86607b	0x9dff0
 loadgamemenu	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	2	51589c80adb5	0x9e2d0
@@ -2668,7 +2671,7 @@ mapmgr	?Insert@CMapMgr@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	1	cpp:9c12c84dc6
 mapmgr	?Load@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	515acd4b03c0	0x9f9a0
 mapmgr	?PopFront@CMapMgr@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	1	cpp:9c12c84dc665	0x9f430
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	7	16a47b5fc418	0x9ec30
-mapmgr	?ResetCells@CMapMgr@@QAEXXZ	64.6731	64.6731	1	cpp:9c12c84dc665	0x9f5d0
+mapmgr	?ResetCells@CMapMgr@@QAEXXZ	64.7115	64.7115	1	cpp:9c12c84dc665	0x9f5d0
 mapmgr	?Save@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	c077aa4e2a47	0x9f840
 mapmgr	?Search@CMapMgr@@UAEHHHHHPAXHHH@Z	89.8447	89.8447	1	cpp:9c12c84dc665	0x9eca0
 mapmgr	?SetVersionRect@@YAXXZ	100.0000	100.0000	2	7ba69cb43ec5	0x9fe10
@@ -2742,7 +2745,7 @@ menustate	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	2	458a236a5b2e	0xa0
 menustate	?ReadyGate@CMenuState@@QAEHXZ	100.0000	100.0000	3	004b4a24a05e	0xa0d40
 menustate	?ReleaseResources@CMenuState@@UAEXXZ	99.4474	99.4474	2	861efda4ab89	0xa02c0
 menustate	?Render@CMenuState@@UAEHXZ	100.0000	100.0000	4	a6ea82e3df23	0xa0750
-menustate	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	4	acc516f1cceb	0xa05a0
+menustate	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	5	bafb5ed27437	0xa05a0
 menustate	?StopMusicChain@CMenuState@@QAEXXZ	99.6765	99.6765	1	c82647304c38	0xa0640
 menustate	?Update@CMenuState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:84d1bc2f78e0	0x8ce10
 menustate	?Vslot0c@CMenuState@@UAEHHH@Z	100.0000	100.0000	1	7d59ffb0cdb8	0xa0b90
@@ -2752,7 +2755,7 @@ menustateassets	?Init@MenuRegion@@QAEHPAUCSpriteFactoryHolder@@HPAUtagRECT@@HHH@
 menustateassets	?LoadAssets@CMenuState@@QAEHHHH@Z	87.8510	87.8510	14	9b03561a711b	0x9fe50
 mgrautoscroll	?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHH@Z	58.0113	58.0113	3	591205fef4f4	0xebd70
 mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	13	1c2704f1983f	0xf0db0
-mgrsettings	?Serialize@CMgrSettings@@QAEHPAVCFileMemBase@@HHH@Z	89.0526	89.0526	2	2e7ff992c87a	0x109e00
+mgrsettings	?Serialize@CMgrSettings@@QAEHPAVCFileMemBase@@HHH@Z	89.0526	89.0526	3	6eaa768c21b7	0x109e00
 mgrslotswap	?DoSwap@CSlotHolder@@QAEHXZ	87.6226	87.6226	11	174f0d71514b	0x1128b0
 modeobjinit	??0CSbiHlRow@@QAE@XZ	100.0000	100.0000	1	9f0d1c5d8aa0	0xc86d0
 modeobjinit	?Vfunc1@CPlay@@UAEHHHH@Z	73.1632	73.1632	5	b7e89ced0a9c	0xc7ec0
@@ -2916,7 +2919,7 @@ multistartdlgroster	?SyncChannelSlot@CMultiStartDlg@@QAEXH@Z	69.3281	69.3281	4	b
 multistartdlgroster	?ToggleReady@CMultiStartDlg@@QAEXH@Z	97.6531	97.6531	4	5d413a0f1d2f	0xc50f0
 multistartdlgroster	?UpdatePlayers@CMultiStartDlg@@QAEHH@Z	63.0946	63.0946	5	1882948ab063	0xc4230
 multistartdlgroster	?VerifyCustomLevel@CMultiStartDlg@@QAEXXZ	50.3805	50.3805	6	02393f4daa83	0xc4c00
-multistartdlgroster	?Watchdog@CMultiStartDlg@@QAEXXZ	93.9344	93.9344	4	aaea56a03605	0xc46b0
+multistartdlgroster	?Watchdog@CMultiStartDlg@@QAEXXZ	93.9344	93.9344	5	3eef0a917a73	0xc46b0
 namerecord	?CopyBody@CNameRecord@@QAEHPAD@Z	100.0000	100.0000	2	e89549e40ce7	0x118130
 namerecord	?CopyIfLarger@CBoundsCopy118@@QAEHPAUCGrowBox@@H@Z	100.0000	100.0000	1	de456dad077d	0x118260
 namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	3	d3bfd5a67cb7	0x118040
@@ -3035,7 +3038,7 @@ netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	2	33d25a36956c	0x
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	3	3c2d70d366e0	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	3	92ace19fe500	0x1795a0
 netthingdtor	??1CNetThing@@UAE@XZ	91.5790	91.5790	1	efbf31726082	0xc5280
-objecttracker	?Update@CObjectTracker@@QAEHXZ	97.9915	97.9915	5	bbe42fe5ba8a	0xf7d90
+objecttracker	?Update@CObjectTracker@@QAEHXZ	95.0593	95.0593	6	135cf8d091a1	0xf7d90
 orphanleaves	?EndWaitCursorOnThread@@YAXXZ	100.0000	100.0000	2	2fe8c1810007	0x18430
 orphanleaves	?GetGlobal5e8e98@@YAPAXXZ	100.0000	100.0000	2	4173b2b46bf6	0x183d0
 orphanleaves	?PickIfSelected@DlgHost_183f0@@QAEXXZ	100.0000	100.0000	4	4f7eb408153c	0x183f0
@@ -3063,11 +3066,11 @@ pathhazard	?Tick@CPathHazard@@UAEHXZ	95.7638	95.7638	13	9741f676745e	0xb4020
 pathhazardactreg	?ConstructActRange_646250@@YAXXZ	100.0000	100.0000	1	850cfde52e7b	0xb3ae0
 pathhazardactreg	?RegisterActs_646250@@YAXXZ	79.1144	79.1144	2	7e205a0de6ad	0xb3cc0
 play	??0GruntzPlayer@@QAE@H@Z	39.1373	39.1373	2	99b46f4773c8	0xda870
-play	?AddLevelGruntz@CPlay@@QAEHXZ	79.9911	79.9911	10	ccda29ddfe99	0xd5960
+play	?AddLevelGruntz@CPlay@@QAEHXZ	79.9911	79.9911	11	ab7bb3b7f799	0xd5960
 play	?ArmSnapshot@CPlay@@QAEHHH@Z	99.2000	99.2000	3	064d27a3324b	0xd9240
 play	?BeginGridWalk@CPlay@@QAEHPBDHHHH@Z	81.1191	81.1191	6	108fcdce963e	0xd0920
 play	?BuildAnizKeyTable@CPlay@@QAEHPAVCMulti@@@Z	100.0000	100.0000	3	6363e1bc3c26	0xddaa0
-play	?BuildAssetNamespacePrefixes@CNamespaceLoader@@QAEHABVCString@@HHH@Z	95.5718	95.5718	4	181309850fcc	0xdca70
+play	?BuildAssetNamespacePrefixes@CNamespaceLoader@@QAEHABVCString@@HHH@Z	95.5718	95.5718	5	6a30344dcffa	0xdca70
 play	?BuildGruntNamespaceList@CPlay@@QAEHH@Z	100.0000	100.0000	3	97e6ef6d569e	0xdd050
 play	?BuildGruntTypeNameTable@CPlay@@QAEHHHHH@Z	33.2624	33.2624	4	2938b8dc5e9a	0xdc6d0
 play	?BuildHelpReveal@CPlay@@QAEHH@Z	70.2604	70.2604	2	5ff025807f87	0xd72c0
@@ -3121,12 +3124,12 @@ play	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	1	96021d110816	0xdb750
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	6	a5553a05bbbd	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	6	b23765ab3ca6	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	5	1c56e829bbd9	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.0250	90.0250	6	2631813bd7ca	0xd12b0
-play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	90.8191	90.8191	10	a100f6bb42aa	0xd65d0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	89.9500	89.9500	6	2631813bd7ca	0xd12b0
+play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	90.8191	90.8191	11	6c2e65812bd6	0xd65d0
 play	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	1	79c5e8e9a800	0xcedf0
 play	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	1	17305dac4ee5	0xcee10
-play	?ModeCleanup@CPlay@@UAEXXZ	99.6154	99.6154	2	6c3523808375	0xcb740
-play	?NotifyVisibleEntities@CPlay@@QAEHXZ	76.3529	76.3529	8	1be1d92379b1	0xd9050
+play	?ModeCleanup@CPlay@@UAEXXZ	99.6154	99.6154	3	aea9a70b504b	0xcb740
+play	?NotifyVisibleEntities@CPlay@@QAEHXZ	76.3529	76.3529	9	abe306e5a292	0xd9050
 play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	2	53d6c298164b	0xcb400
 play	?OnKeyCommand@CPlay@@QAEHHH@Z	82.2718	82.2718	7	dc87cdb8716f	0xcbaf0
 play	?OnRegion1@CPlay@@QAEHH@Z	100.0000	100.0000	3	768867f2f1bf	0xd8aa0
@@ -3175,8 +3178,8 @@ play	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	da693a1aace5	0xd0b30
 playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	23.6893	23.6893	9	b6c233f02c81	0xd1b60
 playmessageimage	?DrawMessageFrame@CPlay@@QAEXHH@Z	87.9677	87.9677	5	cc75c750b718	0xd1650
 playmessageimage	?Vslot23@CPlay@@UAEHXZ	95.1807	95.1807	5	2b028e689fbe	0xcfef0
-playplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	95.8323	95.8323	10	ca7a0800f6f5	0xd53d0
-playplanescan	?ScanShuffleQuads@CPlay@@QAEHXZ	77.8731	77.8731	6	1eb7a334841f	0xd9290
+playplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	95.8323	95.8323	11	b3cd926f3648	0xd53d0
+playplanescan	?ScanShuffleQuads@CPlay@@QAEHXZ	77.8731	77.8731	7	d0a0925be286	0xd9290
 playstateactivate	?OnActivate@CPlay@@QAEHXZ	100.0000	100.0000	10	875f61f71bf3	0xcb800
 polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.9844	53.9844	16	44918c575c83	0x146550
 portalpath	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	15	3ef14b990f16	0x90550
@@ -3195,7 +3198,7 @@ projectile	?FinalizeStep@CMovingLogic@@UAEXH@Z	100.0000	100.0000	1	058bb662343e	
 projectile	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	7d3624842f2b	0xe1830
 projectile	?GetTypeTag@CProjectile@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:cb6c32e06c4c	0x12960
 projectile	?GetTypeTag@CTimeBomb@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:cb6c32e06c4c	0x12a20
-projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	33.9778	33.9778	11	eb9615cb64b2	0xe2190
+projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	33.9778	33.9778	12	ee7c5279542e	0xe2190
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	90.5000	90.5000	2	4ab60a73cf81	0xe1e60
 projectile	?LoadProjectileSprites@CProjectile@@UAEHHHHHHHH@Z	57.1201	57.1201	7	dac8231e5acc	0xdf050
 projectile	?MovingSlot16@CBoomerang@@UAEXXZ	70.6977	70.6977	2	a239b580d8ca	0xe08b0
@@ -3280,7 +3283,7 @@ rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	8	401d496aa449	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	7	d5c92db455a7	0x8b740
 rezsync	??1CGameMgr@@UAE@XZ	100.0000	100.0000	2	997dd3d34a29	0x85540
 rezsync	?GetName@Obj85500@@QAE?AVCString@@XZ	100.0000	100.0000	1	a603b2ac0b4f	0x85500
-rezsync	?Init@RezSync@@QAEHPAXPAD@Z	65.1051	65.1051	15	6f3cb61f99e1	0x83450
+rezsync	?Init@RezSync@@QAEHPAXPAD@Z	65.1051	65.1051	16	53015da60230	0x83450
 rezsync	?RezFreeStdcall@@YGXPAX@Z	100.0000	100.0000	2	b9d4502f6f0e	0x853d0
 rockbreakeffectupdate	?Update@RbEffect@@QAEHXZ	98.4848	98.4848	2	49938bc595c1	0x476b0
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	77.7835	77.7835	11	8c50de96a828	0xaf820
@@ -3330,21 +3333,21 @@ sbi_image	??1CSBI_Image@@UAE@XZ	100.0000	100.0000	2	5f9ee7310bcd	0x100870
 sbi_image	?ClearFrame@CSBI_Image@@QAEXXZ	100.0000	100.0000	1	0d6b35ae4b65	0xe6d90
 sbi_image	?SerializeChain@CSBI_Image@@QAEHPAXHHH@Z	84.9697	84.9697	2	606ba2cf291f	0xe6e40
 sbi_image	?SetupImage@CSBI_Image@@UAEHPAVCStatusBarMgr@@PAUCSpriteFactoryHolder@@HHUSbRect@@PBDHH@Z	66.3906	66.3906	1	2491f1292938	0xe6c80
-sbi_image	?TickRenderCurrent_0e6dd0@CSBI_Image@@QAEHXZ	74.0357	74.0357	1	d72ed4c4f19b	0xe6dd0
+sbi_image	?TickRenderCurrent_0e6dd0@CSBI_Image@@QAEHXZ	100.0000	100.0000	1	d72ed4c4f19b	0xe6dd0
 sbi_imageset	??1CSBI_ImageSet@@UAE@XZ	100.0000	100.0000	2	3f1b9a71357d	0x102000
 sbi_imageset	?ResetCounters@CSBI_ImageSet@@QAEXXZ	100.0000	100.0000	1	2bf5a7410bc9	0xe7400
 sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAVCFileMemBase@@HHH@Z	99.1803	99.1803	1	1b2ff11d95ed	0xe74f0
 sbi_imageset	?SetupImage@CSBI_ImageSet@@UAEHPAVCStatusBarMgr@@PAUCSpriteFactoryHolder@@HHUSbRect@@PBDHH@Z	61.0923	61.0923	1	4ba9156b1112	0xe72f0
-sbi_imageset	?TickRenderFrame_0e7440@CSBI_ImageSet@@QAEHXZ	86.7368	86.7368	1	10835d7b512b	0xe7440
+sbi_imageset	?TickRenderFrame_0e7440@CSBI_ImageSet@@QAEHXZ	87.0526	87.0526	1	10835d7b512b	0xe7440
 sbi_imagesetani	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	2	275dd4b26c58	0x1047f0
 sbi_imagesetani	?Init@CSBI_ImageSetAni@@UAEHPAVCStatusBarMgr@@PAUCSpriteFactoryHolder@@HHUSbRect@@PBDHHHHH@Z	62.9239	62.9239	1	972947606773	0xe7980
 sbi_imagesetani	?Serialize@CSBI_ImageSetAni@@QAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	1	23729abe9c7f	0xe7cd0
 sbi_imagesetani	?SetRange_0e7c30@CSBI_ImageSetAni@@UAEXHHHHH@Z	88.0698	88.0698	1	f3080826b6d0	0xe7c30
-sbi_imagesetani	?Tick@CSBI_ImageSetAni@@QAEHXZ	91.1333	91.1333	1	672fb665c899	0xe7b00
+sbi_imagesetani	?Tick@CSBI_ImageSetAni@@QAEHXZ	91.2667	91.2667	1	672fb665c899	0xe7b00
 sbi_menuitem	??1CSBI_MenuItem@@UAE@XZ	100.0000	100.0000	1	674154901a15	0x1007d0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	2	c243a91ef3a4	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	0438e44a3a76	0xe81a0
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	74.0357	74.0357	9	e4753988cff8	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	74.0714	74.0714	9	e4753988cff8	0xe82a0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	2	316d4a1ee9fa	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	44.6226	44.6226	8	a898ff8485da	0xe81e0
 sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	9	6d723b3d7e21	0xe8520
@@ -3389,7 +3392,7 @@ sbi_rectonly	?InitTabRects@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	281764b8c10
 sbi_rectonly	?InsertPtr@CStatusBarMgr@@QAEHHH@Z	75.8491	75.8491	2	9162a22fb139	0x108410
 sbi_rectonly	?LoadBattlezItemConfig@CStatusBarMgr@@QAEHPAUCSpriteFactoryHolder@@@Z	93.6625	93.6625	1	7d92b799ac45	0xfdc00
 sbi_rectonly	?LoadChipMachineConfig@CStatusBarMgr@@QAEXXZ	78.9525	78.9525	2	251d13c10a17	0x106bb0
-sbi_rectonly	?LoadDestructButtonSprite@CStatusBarMgr@@QAEHH@Z	97.2477	97.2477	1	493152da6190	0xffb20
+sbi_rectonly	?LoadDestructButtonSprite@CStatusBarMgr@@QAEHH@Z	97.2477	97.2477	2	0b20cb71fd8f	0xffb20
 sbi_rectonly	?LoadGooCookingSprite@CStatusBarMgr@@QAEHH@Z	96.6548	96.6548	2	f84e00c038d0	0x1055b0
 sbi_rectonly	?LoadMainStatusBarSprite@CStatusBarMgr@@QAEHXZ	88.5526	88.5526	1	9d08086093c8	0xfe6b0
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CStatusBarMgr@@QAEXH@Z	90.4545	90.4545	2	9fccc5952091	0x107ae0
@@ -3582,7 +3585,7 @@ splashstate	?Render@CSplashState@@UAEHXZ	98.2812	98.2812	3	795f5a7e69a4	0xf9920
 splashstate	?Vslot06@CSplashState@@UAEHXZ	100.0000	100.0000	3	4b72fe17e023	0xf9af0
 splashstate	?Vslot0c@CSplashState@@UAEHHH@Z	100.0000	100.0000	1	2e67cc64f520	0xf9b40
 splashstate	?Vslot0e@CSplashState@@UAEHHHH@Z	100.0000	100.0000	1	3a625d245c6f	0xf9b90
-spotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	56.0000	56.0000	5	970a02c0b54c	0xb1ee0
+spotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	57.1236	57.1236	5	970a02c0b54c	0xb1ee0
 spotlightactreg	?ConstructActRange_646188@@YAXXZ	100.0000	100.0000	1	0c6803bfe56c	0xb15b0
 spotlightactreg	?RegisterActs_646188@@YAXXZ	79.1144	79.1144	2	d9781d92ebae	0xb1790
 spotlightctor	??0CSpotLight@@QAE@PAUCGameObject@@@Z	82.4628	82.4628	5	8fba94ca8f39	0xb1200
@@ -3673,7 +3676,7 @@ statusbartabbuilders	?BuildStatzTabStatusBar@CSBI_SideTab@@QAEHPAVCStatzTabBuild
 statusbartabbuilders	?Gap_0e8e00@@YAHXZ	0.3804	0.3804	1	1f58f992f60f	0xe8e00
 statusbartabbuilders	?Gap_0e9a30@@YAHXZ	0.4605	0.4605	1	500512805759	0xe9a30
 statusbartabbuilders	?Refresh@CSBI_SideTab@@QAEHH@Z	100.0000	100.0000	1	2776bb4ed252	0xe9820
-statusbartabbuilders	?Render@CSBI_GruntMachine@@QAEHH@Z	87.8205	87.8205	1	3a9c6647e8ac	0xe8cb0
+statusbartabbuilders	?Render@CSBI_GruntMachine@@QAEHH@Z	87.3590	87.3590	1	3a9c6647e8ac	0xe8cb0
 statusbartabbuilders	?Render@CSBI_SideTab@@QAEHH@Z	98.1250	98.1250	1	3d4fa687e28c	0xe99c0
 statusbartabbuilders	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	d4cd06936c9a	0xe8c70
 statusbartabbuilders	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	bb44fbcd4bb5	0xe9800
@@ -3683,7 +3686,7 @@ statusbartabbuilders	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	
 statusbarupdaters	?SwitchDown@CTileTriggerSwitchLogic@@UAEHXZ	66.6897	66.6897	1	4d986b76821b	0x110570
 statusbarupdaters	?SwitchUp@CTileTriggerSwitchLogic@@UAEHXZ	68.6437	68.6437	1	13ada9bac4da	0x1106b0
 streamrecordloaders	?Find@CDDrawWorkerCache@@QAEHPBD@Z	100.0000	100.0000	1	f81b43d4ddbd	0x9cab0
-streamrecordloaders	?Load@CEventLoadRec@@QAEHPAVCFileMemBase@@@Z	93.9657	93.9657	1	80f8001990d8	0x9c650
+streamrecordloaders	?Load@CEventLoadRec@@QAEHPAVCFileMemBase@@@Z	93.9657	93.9657	2	46ecafd577ec	0x9c650
 surfacepalette	?ResetPalette@CDDScreen@@QAEXXZ	100.0000	100.0000	13	09079b6f5cdf	0x17ca60
 symtab	??0CSymParser@@QAE@PAXHH@Z	72.8781	72.8781	2	fa6bf4c8db65	0x13ab00
 symtab	??0CSymParser@@QAE@XZ	72.6250	72.6250	2	fa6bf4c8db65	0x13aa10
@@ -3909,7 +3912,7 @@ trees	_send_all_trees	100.0000	100.0000	1	4943fa3be295	0x1893a0
 trees	_send_tree	100.0000	100.0000	1	0a0643654ea9	0x189610
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841	0x18a100
 trees	_tr_static_init	100.0000	100.0000	1	988facf51b1a	0x1884c0
-triggerloadrec	?Deserialize@CTriggerLoadRec@@QAEHPAVCFileMemBase@@@Z	91.7760	91.7760	1	81dde04a53c0	0x9bb0
+triggerloadrec	?Deserialize@CTriggerLoadRec@@QAEHPAVCFileMemBase@@@Z	91.7760	91.7760	2	8faa8c3fdc70	0x9bb0
 triggermgr	??1CTriggerMgr@@QAE@XZ	100.0000	100.0000	3	88db8e45269b	0x85c50
 triggermgr	?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z	84.5920	84.5920	9	947f94f00d61	0x7b440
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHH@Z	84.7778	84.7778	9	04832517b78b	0x79b30
@@ -3929,7 +3932,7 @@ triggermgr	?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	79.7155	79.7155	2	af7afaaa480
 triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	80.0213	80.0213	4	186be481f620	0x7abc0
 triggermgr	?LoadCameraSprite@CTriggerMgr@@QAEHXZ	86.8000	86.8000	4	eb20cc28cfbe	0x78960
 triggermgr	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	1	5b16375695ee	0x7b330
-triggermgr	?LoadFinishLevelSprite@CTriggerMgr@@QAEXH@Z	55.1667	55.1667	1	6a6937ec4ca1	0x7c3d0
+triggermgr	?LoadFinishLevelSprite@CTriggerMgr@@QAEXH@Z	55.1667	55.1667	2	b1a124ac62c4	0x7c3d0
 triggermgr	?LoadGruntResurrectTuning@CTriggerMgr@@QAEHHHH@Z	64.6298	64.6298	1	3f8c9da2fe75	0x7be60
 triggermgr	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	2	7ae371b9b2e4	0x7c620
 triggermgr	?LoadToyBoxIcon@EngineLabelBacklog@@QAEHHHHHH@Z	99.9444	99.9444	4	528a4db5ccd7	0x7a3f0
@@ -3937,7 +3940,7 @@ triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	6	a143df8e7
 triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	75.3824	75.3824	13	43ff7dadf6d7	0x79fb0
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	7	aa17ca3713d7	0x79b00
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	6	12c00630f681	0x78a30
-triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	18.2909	18.2909	19	5aacdef4fc7f	0x78a50
+triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	18.2459	18.2459	19	5aacdef4fc7f	0x78a50
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	87.8205	87.8205	3	eaf3c1322163	0x7a240
 triggermgr	?RebuildOverlay@CTriggerMgr@@QAEHPAXHHH@Z	100.0000	100.0000	5	4e4f2fbdff39	0x7a5e0
 triggermgr	?RebuildSelectionList@CTriggerMgr@@QAEHH@Z	85.7759	85.7759	8	e3f69a9a1e03	0x7cc60
@@ -3950,13 +3953,13 @@ triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	100.0000	10	904abafa4060	0x784
 triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHHH@Z	46.4783	46.4783	22	480bfc81e1b0	0x79520
 triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	97.7885	97.7885	14	f54a8d299d69	0x79d90
 triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	77.9083	77.9083	4	779284323c98	0x7a760
-triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	64.8276	64.8276	1	058e0df8fe83	0x788d0
+triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	65.3448	65.3448	1	058e0df8fe83	0x788d0
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	84.5833	84.5833	9	5e1da1b948f5	0x7d2a0
 triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	68.5938	68.5938	10	875346bca7ff	0x7c110
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	13	69fe131418b8	0x7a180
 triggermgr	?SpawnTileFx@@YGHHHH@Z	80.9595	80.9595	7	addf42938abd	0x79ea0
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	10	e3103b052724	0x7be10
-triggermgr	?ToggleRegionA@CTriggerMgr@@QAEHXZ	71.9277	71.9277	18	205fc89e3cc3	0x7d450
+triggermgr	?ToggleRegionA@CTriggerMgr@@QAEHXZ	76.5663	76.5663	18	205fc89e3cc3	0x7d450
 triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	87.1622	87.1622	16	18871f052309	0x7d5c0
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	84.4804	84.4804	17	1b90baa7f3c5	0x7b1b0
 triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	21.1766	21.1766	1	2e3cca1f5def	0x6d300
@@ -4241,8 +4244,8 @@ wwdgameobject	?SetAllFormats@CImageSet@@QAEHH@Z	100.0000	100.0000	2	1fb59c245879
 wwdgameobject	?SetAllTypes@CImageSet@@QAEHH@Z	100.0000	100.0000	3	4815a22e86d5	0x152480
 wwdgameobject	?Setup@CWwdGameObject@@UAEHHHHH@Z	97.1059	97.1059	2	a8dba2df825c	0x150d60
 wwdgameobject	?Slot40_1523b0@CDDrawWorker@@UAEHHHH@Z	100.0000	100.0000	3	fe4ccf5a2f81	0x1523b0
-wwdgameobject	?Sub150c30@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	11	f50468ce3646	0x150c30
-wwdgameobject	?Sub151780@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	9	f5e9a8ceee57	0x151780
+wwdgameobject	?Sub150c30@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	12	0c72f8cf480f	0x150c30
+wwdgameobject	?Sub151780@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	10	481e38e58335	0x151780
 wwdgameobject	?Sub151b90@CWwdGameObject@@QAEHH@Z	74.7059	74.7059	2	32ab33395a31	0x151b90
 wwdgameobject	?Test@CWwdGameObject@@QAEHXZ	72.9561	72.9561	3	4a94934b0275	0x1509c0
 wwdgameobject	?ValidateFramesFromSymTab@CDDrawWorker@@UAEHPAVCSymTab@@@Z	87.8061	87.8061	3	529f07044b8e	0x1522b0
@@ -4283,7 +4286,7 @@ wwdobjmgr	?AddToMap48_15aba0@CWwdObjMgr@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.
 wwdobjmgr	?AttachSprite@CSpriteFactory@@QAEHPAVCWwdGameObject@@HHHPBDH@Z	100.0000	100.0000	3	5e249970106c	0x159830
 wwdobjmgr	?BoxesOverlap_15a130@@YGHPAUCGameObject@@0@Z	75.8506	75.8506	1	e2e5536814b6	0x15a130
 wwdobjmgr	?CheckSortOrder_15a780@CWwdObjMgr@@QAEHXZ	78.7000	78.7000	3	8fd358790149	0x15a780
-wwdobjmgr	?CollideBroadcast@CDDrawChildGroup@@UAEXXZ	86.4286	86.4286	3	5b0ce57901f4	0x159f00
+wwdobjmgr	?CollideBroadcast@CDDrawChildGroup@@UAEXXZ	86.5000	86.5000	4	419df6a34914	0x159f00
 wwdobjmgr	?CountActive_15abc0@CWwdObjMgr@@QAEHXZ	100.0000	100.0000	2	41d42b67e34f	0x15abc0
 wwdobjmgr	?CountByKind_15aa60@CWwdObjMgr@@QAEHH@Z	100.0000	100.0000	2	50e3040cb238	0x15aa60
 wwdobjmgr	?CreateNamed_1593e0@CWwdObjMgr@@QAEPAVCWwdGameObject@@HHHHPBDHH@Z	93.5484	93.5484	2	778ab11a5c6d	0x1593e0
@@ -4295,9 +4298,9 @@ wwdobjmgr	?CreateObject_159600@CWwdObjMgr@@QAEPAVCWwdGameObject@@HHHHHH@Z	66.496
 wwdobjmgr	?CreateObject_1598d0@CWwdObjMgr@@QAEPAVCWwdGameObject@@HHHHHH@Z	62.5400	62.5400	5	1030c7bcee8a	0x1598d0
 wwdobjmgr	?CreateSprite@CSpriteFactory@@QAEPAUCGameObject@@HHHHPBDH@Z	94.1176	94.1176	3	600bbf08b19b	0x1597b0
 wwdobjmgr	?Deserialize_15b0e0@CWwdObjMgr@@QAEHPAVCFileMemBase@@IH@Z	74.5532	74.5532	1	a23e25bfe52a	0x15b0e0
-wwdobjmgr	?DestroyChildren@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	2	4649df2f5da5	0x1591f0
+wwdobjmgr	?DestroyChildren@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	3	6ee6b3d94b45	0x1591f0
 wwdobjmgr	?DestroyChildren_159ef0@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	1	aef855b2359f	0x159ef0
-wwdobjmgr	?DrawObjectCounts_15a650@CDDrawChildGroup@@QAEXXZ	86.7699	86.7699	3	be33da171219	0x15a650
+wwdobjmgr	?DrawObjectCounts_15a650@CDDrawChildGroup@@QAEXXZ	86.7699	86.7699	4	d5104ac34409	0x15a650
 wwdobjmgr	?FindByField_15a940@CWwdObjMgr@@QAEPAVCWwdGameObject@@HPAX@Z	84.8781	84.8781	2	bf18c1fe1eaa	0x15a940
 wwdobjmgr	?FindByKey_15a9a0@CWwdObjMgr@@QAEPAVCWwdGameObject@@PAX@Z	100.0000	100.0000	1	f24b84f1abd7	0x15a9a0
 wwdobjmgr	?FindByStatusKey_15a9d0@CWwdObjMgr@@QAEPAVCWwdGameObject@@PAX@Z	100.0000	100.0000	2	1bad1a6b87a7	0x15a9d0
@@ -4319,13 +4322,13 @@ wwdobjmgr	?ReinsertUnflagged_159e10@CWwdObjMgr@@QAEXPAVCWwdGameObject@@@Z	100.00
 wwdobjmgr	?RemoveAll_15ab30@CWwdObjMgr@@QAEXHPAVCWwdGameObject@@@Z	100.0000	100.0000	1	7395d0b08007	0x15ab30
 wwdobjmgr	?RemoveAndDelete_159db0@CWwdObjMgr@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	1	652ef3aa926d	0x159db0
 wwdobjmgr	?RemoveByPosition_15ab70@CWwdObjMgr@@QAEXHPAVCWwdGameObject@@@Z	100.0000	100.0000	1	3594af1bc3d5	0x15ab70
-wwdobjmgr	?ResetChildD8@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	b0c5c82e4d4f	0x159d90
-wwdobjmgr	?SumWeighted_15aaf0@CWwdObjMgr@@QAEHXZ	99.2593	99.2593	2	bce5a6b3f0ba	0x15aaf0
+wwdobjmgr	?ResetChildD8@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	2	0e1ca9da16c5	0x159d90
+wwdobjmgr	?SumWeighted_15aaf0@CWwdObjMgr@@QAEHXZ	99.1852	99.1852	2	bce5a6b3f0ba	0x15aaf0
 wwdobjmgr	?TickKillCues_159a70@CWwdObjMgr@@QAEXH@Z	93.0414	93.0414	5	6e1ceee9b6bc	0x159a70
-wwdobjmgr	?WalkDispatch2C@CDDrawChildGroup@@UAEXH@Z	100.0000	100.0000	3	3f947355c1bf	0x159c90
-wwdobjmgr	?WalkDispatch30@CDDrawChildGroup@@UAEXHH@Z	100.0000	100.0000	3	a53b668db736	0x159cc0
-wwdobjmgr	?WalkDispatch34@CDDrawChildGroup@@UAEXHHH@Z	89.0909	89.0909	2	043894416200	0x159cf0
-wwdobjmgr	?WalkDispatch38@CDDrawChildGroup@@UAEXHHH@Z	89.0909	89.0909	2	897dc9254499	0x159d40
+wwdobjmgr	?WalkDispatch2C@CDDrawChildGroup@@UAEXH@Z	100.0000	100.0000	4	f95bbbd9f416	0x159c90
+wwdobjmgr	?WalkDispatch30@CDDrawChildGroup@@UAEXHH@Z	100.0000	100.0000	4	10b686681f1c	0x159cc0
+wwdobjmgr	?WalkDispatch34@CDDrawChildGroup@@UAEXHHH@Z	89.0909	89.0909	3	40fc427d686f	0x159cf0
+wwdobjmgr	?WalkDispatch38@CDDrawChildGroup@@UAEXHHH@Z	89.0909	89.0909	3	87d2dd436cb5	0x159d40
 wwdspatialmgr	??1CWwdSpatialMgr@@QAE@XZ	100.0000	100.0000	1	ddb32f57ee4d	0x163a40
 wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	5	f85b8a8123bf	0x168460
 wwdspatialmgr	?FlushAll@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	baee0bdc096e	0x168960
