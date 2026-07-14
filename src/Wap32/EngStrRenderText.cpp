@@ -12,63 +12,38 @@
 #include <Mfc.h> // real MFC CString (copy ctor 0x1b9ba3) + windows.h (RECT/CopyRect/OffsetRect)
 #include <Ints.h>
 #include <rva.h>
+#include <Font/Font.h> // canonical FontRenderer + CRect (RenderText IS DrawWrapped @0x17a460)
 
-// The size-selected fonts (g_largeFont..g_tinyFont = VFont in retail). Opaque.
-struct Font;
+// The size-selected fonts (g_largeFont..g_tinyFont = VFont in retail). Defined in Fonts.cpp.
 extern Font g_largeFont;
 extern Font g_mediumFont;
 extern Font g_smallFont;
 extern Font g_tinyFont;
 
-// WapRect IS the WAP32 CRect (<Wap32/Rect.h>, 16 bytes {left,top,right,bottom}): its
-// "0x115b30 converting ctor" is actually ??4CRect@@QAEAAU0@ABUtagRECT@@@Z ==
-// CRect::operator=(const tagRECT&) (disasm-confirmed - the 0x37c4 thunk target 0x115b30
-// carries that mangled name, and Rect.h already binds it). @deferred-fold: dissolving this
-// onto CRect requires the main pass to build a CRect then assign (`CRect t; t = *rc;` -> the
-// 0x115b30 operator=), which needs a CRect default ctor added to the SHARED <Wap32/Rect.h>;
-// that ripples to the matched Font.cpp CRect consumers (out of this lane's scope). Kept as a
-// local view modeling operator= as a converting ctor (same reloc-masked call to 0x115b30).
-struct WapRect {
-    i32 left, top, right, bottom;
-    WapRect(const RECT& r); // 0x115b30 == CRect::operator=(const tagRECT&); the compiler-
-                            // generated trivial copy ctor is what the shadow pass uses.
-};
+// The former WapRect view is DISSOLVED onto the canonical CRect (<Wap32/Rect.h>, pulled in
+// by <Font/Font.h>): 16 bytes {left,top,right,bottom}. Its "0x115b30 converting ctor" is
+// ??4CRect@@QAEAAU0@ABUtagRECT@@@Z == CRect::operator=(const tagRECT&) (Rect.h binds it), so
+// the main pass builds a CRect then assigns (`CRect rect; rect = *rc;` -> the 0x115b30
+// operator=) and the shadow pass reinterprets the local RECT as a CRect lvalue so the
+// compiler-generated TRIVIAL COPY ctor inlines. The former per-TU FontRenderer re-signature
+// is dissolved too: g_textObj is the canonical FontRenderer and RenderText IS DrawWrapped.
 
-// The global text renderer g_textObj (DAT_0064ead8) is THE canonical FontRenderer
-// (<Font/Font.h>); it is DEFINED (with its DATA pin) in src/Gruntz/Fonts.cpp, the TU
-// that holds its dynamic initializer. `class` (not struct) so the reference mangles
-// ?g_textObj@@3VFontRenderer@@A - the one name bound at 0x24ead8; the old struct-key
-// spelling emitted a second name (...@@3U...) that starved Fonts.cpp's reference.
-//
-// @identity-TODO (view debt): this is still a per-TU RE-SIGNATURE of the canonical class,
-// not a distinct type. Its `RenderText(CString, void*, WapRect, i32,i32,i32)` IS
-// FontRenderer::DrawWrapped @0x17a460, whose canonical Font.h declaration spells the
-// same four rect words as four separate i32 params (x0/top/right/bottom). The retail
-// CALLER builds that rect BY VALUE through the converting ctor @0x115b30 (the cracked
-// @early-stop below depends on it), so dissolving this view onto <Font/Font.h> requires
-// first re-spelling the canonical DrawWrapped to take the rect by value (and adding the
-// real SetFont @0x179c10) - a Font.cpp/Font.h change, out of this lane's scope.
-class FontRenderer {
-public:
-    Font* m_font;          // +0x00  current font
-    i32 m_color;           // +0x04  current color
-    void SetFont(Font* f); // 0x179c10
-    void SetColor(i32 c);  // 0x179c20
-    void RenderText(CString s, void* drawFn, WapRect r, i32 a, i32 b, i32 c); // 0x17a460
-};
+// The global text renderer g_textObj (0x24ead8) is THE canonical FontRenderer (<Font/Font.h>),
+// DEFINED (with its DATA pin) in src/Gruntz/Fonts.cpp (the TU that holds its dynamic
+// initializer). `class` FontRenderer -> the reference mangles ?g_textObj@@3VFontRenderer@@A,
+// the one name bound at 0x24ead8.
 extern FontRenderer g_textObj;
 
 // @early-stop
-// WapRect-by-value wall CRACKED (53 -> 60): the two render-arg builds now match retail
-// exactly. Retail SPLITS the two by-value WapRect builds - the shadow pass INLINES a
-// 4-mov copy of the local sh, the main pass CALLs the converting ctor 0x115b30 (the
-// "Copy" reloc). The trick: pass the shadow's rect as a WapRect lvalue (*(WapRect*)&sh)
-// so the compiler-generated TRIVIAL COPY ctor inlines, while `WapRect(*rc)` in the main
-// pass keeps the EXTERNAL converting ctor -> a call. That collapses the persistent rect
-// slot, so the frame drops sub esp,0x20 -> 0x10 and every [esp+N] realigns; all 10
-// callees (SetFont/CopyRect/OffsetRect/SetColor x2/CString x2/RenderText x2 + the
-// WapRect Copy) now pair. Residual: the font-size sparse switch byte-index-table +
-// jump-table are separate $L COMDATs (delinker-inline artifact, docs/patterns/
+// WapRect-by-value wall CRACKED (53 -> 60): the two render-arg builds match retail exactly.
+// Retail SPLITS the two by-value rect builds - the shadow pass INLINES a 4-mov copy of the
+// local sh, the main pass CALLs the operator= 0x115b30 (the "Copy" reloc). The dissolve keeps
+// that split: the shadow's rect is passed as a CRect lvalue (*(CRect*)&sh) so the trivial
+// copy ctor inlines, while the main pass's `CRect rect; rect = *rc;` keeps the EXTERNAL
+// operator= -> a call. The rect-slot collapse drops sub esp,0x20 -> 0x10 so every [esp+N]
+// realigns; all 10 callees (SetFont/CopyRect/OffsetRect/SetColor x2/CString x2/DrawWrapped x2
+// + the CRect Copy) pair. Residual: the font-size sparse switch byte-index-table + jump-table
+// are separate $L COMDATs (delinker-inline artifact, docs/patterns/
 // switch-jumptable-separate-comdat.md) plus a 2-byte `add eax,-100` imm8-vs-imm32
 // encoding in the switch prologue - not source-steerable.
 RVA(0x00115930, 0x15b)
@@ -118,15 +93,14 @@ extern "C" i32 EngStr_RenderText(
         CopyRect(&sh, rc);
         OffsetRect(&sh, 2, 3);
         g_textObj.SetColor(0);
-        // retail inlines the shadow's by-value rect build (4-mov copy of the local sh)
-        // via the trivial copy ctor; the main pass below CALLs the converting ctor.
-        g_textObj.RenderText(*str, drawFn, *(WapRect*)&sh, 1, flag, 0);
+        // the shadow pass reinterprets the local RECT as a CRect lvalue so the trivial
+        // copy ctor inlines (4-mov copy of sh); the main pass below CALLs the 0x115b30
+        // operator= to build its rect.
+        g_textObj.DrawWrapped(*str, (CDDSurface*)drawFn, *(CRect*)&sh, 1, flag, 0);
     }
     g_textObj.SetColor(((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
-    g_textObj.RenderText(*str, drawFn, WapRect(*rc), 1, flag, 0);
+    CRect rect;
+    rect = *rc; // 0x115b30 CRect::operator=(const tagRECT&) (the "Copy" reloc)
+    g_textObj.DrawWrapped(*str, (CDDSurface*)drawFn, rect, 1, flag, 0);
     return 1;
 }
-
-// Class metadata (annotate-only; the settled EngStr_RenderText body is untouched).
-SIZE_UNKNOWN(WapRect);      // Wap32-local RECT view (0x115b30 ctor, not MFC)
-SIZE_UNKNOWN(FontRenderer); // global FontRenderer view (current font/color)

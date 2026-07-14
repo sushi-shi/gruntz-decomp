@@ -208,6 +208,11 @@ FontRenderer::FontRenderer() {
     m_surface = 0;
 }
 
+// FontRenderer::SetFont (0x179c10, m_font = f) is declared in Font.h but left as an
+// external reloc-masked call here: RVA(0x00179c10) collides with a config/library_labels.csv
+// carve-out row (a FID false-positive labeling it CDataBoundProperty::SetClientSite), so
+// reconstructing it needs that CSV row pruned - deferred (out of this lane's config scope).
+
 // FontRenderer::SetColor (0x179c20) - set the packed colour.
 RVA(0x00179c20, 0xa)
 void FontRenderer::SetColor(i32 color) {
@@ -451,28 +456,18 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 // the 4-int {x0,top,right,bottom} arg tuple via `sub esp,0x10`+stores; cl emits
 // pushes). Verified base-vs-target with llvm-objdump -dr.
 RVA(0x0017a460, 0x7ec)
-void FontRenderer::DrawWrapped(
-    CString text,
-    CDDSurface* surf,
-    i32 x0,
-    i32 top,
-    i32 right,
-    i32 bottom,
-    i32 z,
-    i32 hcenter,
-    i32 spacing
-) {
+void FontRenderer::DrawWrapped(CString text, CDDSurface* surf, CRect rc, i32 z, i32 hcenter, i32 spacing) {
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
-        TextExtent m = MeasureWrapped(text, x0, top, right, bottom);
-        top = top + (bottom - top) / 2 - m.height / 2;
+        TextExtent m = MeasureWrapped(text, rc.left, rc.top, rc.right, rc.bottom);
+        rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.height / 2;
     }
 
-    i32 y = top;
-    i32 x = x0;
+    i32 y = rc.top;
+    i32 x = rc.left;
 
     CString line;
-    while (y < bottom) {
+    while (y < rc.bottom) {
         i32 len = text.GetLength();
         if (len <= 0) {
             break;
@@ -487,15 +482,15 @@ void FontRenderer::DrawWrapped(
         }
 
         TextExtent e = MeasureText(text);
-        if (e.width + x <= right && !nl) {
+        if (e.width + x <= rc.right && !nl) {
             line += text;
             text = "";
-            if (y + lineAdvance <= bottom) {
+            if (y + lineAdvance <= rc.bottom) {
                 if (hcenter) {
-                    i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
-                    DrawLine(line, surf, x0, y, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
             }
             line = "";
@@ -520,41 +515,41 @@ void FontRenderer::DrawWrapped(
             }
             i32 headW = MeasureText(head).width;
             text = text.Right(len - i - 1);
-            if (headW + x < right) {
+            if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < right - x0) {
+            } else if (headW < rc.right - rc.left) {
                 if (hcenter) {
-                    i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
-                    DrawLine(line, surf, x0, y, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
                 y = y + lineAdvance;
-                x = x0;
+                x = rc.left;
                 line = "";
-                if (lineAdvance + y < bottom) {
+                if (lineAdvance + y < rc.bottom) {
                     line += head;
-                    x = headW + x0;
+                    x = headW + rc.left;
                 }
             } else {
                 if (head.GetLength() > 0) {
-                    while (y < bottom) {
+                    while (y < rc.bottom) {
                         i32 chW =
                             MeasureText(CString((char)((CharCursor*)&head)->GetChar(0), 1)).width;
-                        if (chW + x > right) {
+                        if (chW + x > rc.right) {
                             if (hcenter) {
-                                i32 cx = x0 + ((TextRange*)&x0)->Span() / 2
+                                i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2
                                          - MeasureText(line).width / 2;
                                 DrawLine(line, surf, cx, y, z);
                             } else {
-                                DrawLine(line, surf, x0, y, z);
+                                DrawLine(line, surf, rc.left, y, z);
                             }
                             y = y + lineAdvance;
-                            x = x0;
+                            x = rc.left;
                             line = "";
                         }
-                        if (lineAdvance + y >= bottom) {
+                        if (lineAdvance + y >= rc.bottom) {
                             break;
                         }
                         line += head[0];
@@ -567,23 +562,23 @@ void FontRenderer::DrawWrapped(
             }
             if (breakNL) {
                 if (hcenter) {
-                    i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
+                    i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2 - MeasureText(line).width / 2;
                     DrawLine(line, surf, cx, y, z);
                 } else {
-                    DrawLine(line, surf, x0, y, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
                 y = y + lineAdvance;
-                x = x0;
+                x = rc.left;
                 line = "";
             }
         }
     }
-    if (y + lineAdvance <= bottom && line.GetLength() > 0) {
+    if (y + lineAdvance <= rc.bottom && line.GetLength() > 0) {
         if (hcenter) {
-            i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
+            i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2 - MeasureText(line).width / 2;
             DrawLine(line, surf, cx, y, z);
         } else {
-            DrawLine(line, surf, x0, y, z);
+            DrawLine(line, surf, rc.left, y, z);
         }
     }
 }

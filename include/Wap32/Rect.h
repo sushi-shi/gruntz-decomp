@@ -13,6 +13,8 @@
 #include <rva.h>
 
 struct CRect : public tagRECT {
+    CRect() {}                                // trivial default ctor (no code; enables `CRect t;`
+                                              // then `t = *rc` -> the 0x115b30 operator= build)
     CRect(i32 l, i32 t, i32 r, i32 b);        // 0x29ac0 (direct-store ctor, was QuadIntRecord)
     void SetRect(i32 l, i32 t, i32 r, i32 b); // 0x8c380
     CRect& operator=(const tagRECT& src);     // 0x115b30 (returns *this)

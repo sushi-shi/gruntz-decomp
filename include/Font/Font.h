@@ -119,6 +119,7 @@ class CDDSurface; // <DDrawMgr/DDSurface.h> in the dereferencing TUs
 class FontRenderer {
 public:
     FontRenderer();
+    void SetFont(Font* f);    // 0x179c10  (m_font = f)
     void SetColor(i32 color); // 0x179c20
 
     // Text geometry + drawing (the ClassUnknown_52 cluster).
@@ -139,17 +140,18 @@ public:
     //   DrawWrapped    - lay out + draw each line via DrawLine     (0x17a460)
     // CString-temp-heavy /GX bodies (~1-2 KB) - see src/Font/Font.cpp.
     TextExtent MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom); // 0x17ad10
+    // The layout rect {left=x0, top, right, bottom} is a by-value CRect (the retail
+    // caller EngStr_RenderText builds it through the 0x115b30 CRect operator=): the
+    // four rect words land contiguously in the arg area exactly as four adjacent ints,
+    // so &rc reinterpreted as a TextRange reads left/right at +0/+8 (the Span helper).
     void DrawWrapped(
         CString text,
         CDDSurface* surf,
-        i32 x0,
-        i32 top,
-        i32 right,
-        i32 bottom,
+        CRect rc,
         i32 z,
         i32 hcenter,
         i32 spacing
-    ); // 0x17a460
+    ); // 0x17a460 (== EngStr's FontRenderer::RenderText)
 
     // 0x17b120 - a third word-wrap entry: greedily lays out `text` from `begin`
     // down to `bottom`, returns the final cursor {x, y + lineHeight + 1} and writes
