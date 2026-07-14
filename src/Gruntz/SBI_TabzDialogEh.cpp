@@ -51,9 +51,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
     if (m_554 != 0) {
         // ---- confirm dialog: AREYOUSURE + YES/NO ----
         CSBI_Image* areYouSure = new CSBI_Image;
-        if (!areYouSure->Setup(
-                this,
-                m_c,
+        if (!areYouSure->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x321,
                 6,
                 SbRect(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
@@ -67,9 +67,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
         m_d4.AddTail(areYouSure);
 
         CSBI_MenuItemDlg* yes = new CSBI_MenuItemDlg;
-        if (!yes->Setup(
-                this,
-                m_c,
+        if (!yes->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x327,
                 6,
                 SbRect(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
@@ -84,9 +84,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
         m_1fc = yes;
 
         CSBI_MenuItemDlg* no = new CSBI_MenuItemDlg;
-        if (!no->Setup(
-                this,
-                m_c,
+        if (!no->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x328,
                 6,
                 SbRect(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
@@ -104,9 +104,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
 
     // ---- main tabz dialog: DIALOG then a mission/mode decision tree ----
     CSBI_Image* dialog = new CSBI_Image;
-    if (!dialog->Setup(
-            this,
-            m_c,
+    if (!dialog->SetupImage(
+            (CStatusBarMgr*)this,
+            (CSpriteFactoryHolder*)m_c,
             0x321,
             6,
             SbRect(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
@@ -124,9 +124,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
     if (((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_288 == 1) {
         // mission accomplished
         CSBI_ImageSet* status = new CSBI_ImageSet;
-        if (!status->Setup(
-                this,
-                m_c,
+        if (!status->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x322,
                 6,
                 SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
@@ -140,9 +140,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
         m_d4.AddTail(status);
 
         CSBI_ImageSet* rsn = new CSBI_ImageSet;
-        if (!rsn->Setup(
-                this,
-                m_c,
+        if (!rsn->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x326,
                 6,
                 SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
@@ -157,9 +157,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
 
         if (g_gameReg->m_134 == 1) {
             CSBI_MenuItemDlg* next = new CSBI_MenuItemDlg;
-            if (!next->Setup(
-                    this,
-                    m_c,
+            if (!next->SetupImage(
+                    (CStatusBarMgr*)this,
+                    (CSpriteFactoryHolder*)m_c,
                     0x324,
                     6,
                     SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -174,9 +174,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
             m_1f4 = next;
 
             CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
-            if (!quit->Setup(
-                    this,
-                    m_c,
+            if (!quit->SetupImage(
+                    (CStatusBarMgr*)this,
+                    (CSpriteFactoryHolder*)m_c,
                     0x325,
                     6,
                     SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -191,9 +191,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
             m_1f8 = quit;
         } else {
             CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
-            if (!statz->Setup(
-                    this,
-                    m_c,
+            if (!statz->SetupImage(
+                    (CStatusBarMgr*)this,
+                    (CSpriteFactoryHolder*)m_c,
                     0x325,
                     6,
                     SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
@@ -212,9 +212,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
 
     // mission not complete
     CSBI_ImageSet* status = new CSBI_ImageSet;
-    if (!status->Setup(
-            this,
-            m_c,
+    if (!status->SetupImage(
+            (CStatusBarMgr*)this,
+            (CSpriteFactoryHolder*)m_c,
             0x322,
             6,
             SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
@@ -228,9 +228,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
     m_d4.AddTail(status);
 
     CSBI_ImageSet* rsn = new CSBI_ImageSet;
-    if (!rsn->Setup(
-            this,
-            m_c,
+    if (!rsn->SetupImage(
+            (CStatusBarMgr*)this,
+            (CSpriteFactoryHolder*)m_c,
             0x326,
             6,
             SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
@@ -245,9 +245,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
 
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItemDlg* replay = new CSBI_MenuItemDlg;
-        if (!replay->Setup(
-                this,
-                m_c,
+        if (!replay->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x324,
                 6,
                 SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -262,9 +262,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
         m_1f4 = replay;
 
         CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
-        if (!quit->Setup(
-                this,
-                m_c,
+        if (!quit->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x325,
                 6,
                 SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -292,9 +292,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
 
     if (count >= 2) {
         CSBI_MenuItemDlg* observe = new CSBI_MenuItemDlg;
-        if (!observe->Setup(
-                this,
-                m_c,
+        if (!observe->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x324,
                 6,
                 SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -310,9 +310,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
         m_578 = 1;
 
         CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
-        if (!statz->Setup(
-                this,
-                m_c,
+        if (!statz->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x325,
                 6,
                 SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -328,9 +328,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
     } else {
         m_578 = 0;
         CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
-        if (!statz->Setup(
-                this,
-                m_c,
+        if (!statz->SetupImage(
+                (CStatusBarMgr*)this,
+                (CSpriteFactoryHolder*)m_c,
                 0x325,
                 6,
                 SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),

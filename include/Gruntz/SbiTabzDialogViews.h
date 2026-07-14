@@ -23,78 +23,31 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Mfc.h>                  // CPtrList (item list in CTabzBuilder) + RECT
-#include <Gruntz/SbRect.h>        // the by-value geometry rect the slot-11 Setup takes
-#include <Gruntz/StatusBarItem.h> // the REAL base (was the CSbDialogItem fabrication)
+#include <Mfc.h>                 // CPtrList (item list in CTabzBuilder) + RECT
+#include <Gruntz/SbRect.h>       // the by-value geometry rect the slot-11 SetupImage takes
+#include <Gruntz/SBI_ImageSet.h> // the CANONICAL CSBI_Image / CSBI_ImageSet chain
+                                 // (: CSBI_RectOnly : CStatusBarItem) + SetupImage (slot 11)
 
-// The status-bar item family: a REAL polymorphic base (CSbDialogItem) whose
-// concrete leaves are the retail CSBI_* classes. `new CSBI_Image` makes MSVC
-// auto-stamp the retail ??_7CSBI_Image@@6B@ vtable (0x5eac0c, catalogued in
-// config/vtable_names.csv) - no manual stamp. The base ctor is OUT-OF-LINE
-// (declared-only) so `new` emits the retail throwing base-ctor `call` + the /GX
-// ctor-in-flight EH frame; the derived ctors are inline (the tag + field clears
-// that land at each new-site). The virtual dtor (slot 0) is the scalar-deleting dtor
-// the fail-path `delete` dispatches; Setup is slot 0x2c (`call [edx+0x2c]`).
-// (the CSbDialogItem base is GONE - it was never a type. Like the CSbiTab fabrication next
-// door, it was a stand-in for the canonical CStatusBarItem (<Gruntz/StatusBarItem.h>), and
-// its 13 declared-only members were 13 guaranteed unresolved externals, all referenced from
-// this one unit. Its slots mapped 1:1 onto the real base -
-//     ~dtor / Serialize==SbiVfunc0 / SetupRect==Setup(slot 2) / ClearFrame==SbiSlot3 /
-//     Poll==SbiSlot4 / Tick==SbiSlot5 / HitHandlerA..D==SbiSlot6..9 / Refresh==SetSubtype
-// - and unlike CSbiTab its slot COUNT was already right (12 = retail's CSBI_Image), so
-// there was no wrong-dispatch bug here, only the unresolved symbols. The leaves below now
-// derive DIRECTLY from CStatusBarItem (the CSBI_RectOnly intermediate adds no fields, so
-// this is layout-identical) and CSBI_Image declares the ONE extra slot it really has:
-// slot 11, the image setup.
-//
-// NOTE: this header cannot name the real CSBI_RectOnly/CSBI_Image chain from
-// <Gruntz/SBI_Image.h>, because the TU that includes this (the merged SBI_RectOnly.cpp)
-// also defines a DIFFERENT class under the CSBI_RectOnly name - the 0x630 non-polymorphic
-// host. That is the documented split, not a fold I can do from here.
-//
-// THE FABRICATION WAS BUYING SOMETHING, AND THIS IS WHAT IT COST TO STOP. CSbDialogItem
-// declared its base ctor OUT-OF-LINE, so `new CSBI_Image` emitted a base-ctor CALL - which
-// is what retail's BuildTabzDialog does (`mov ecx,eax; call ??0CStatusBarItem@@QAE@XZ`
-// @0x1005d0 via thunk 0x22c0, THEN the ??_7CSBI_Image stamp). CStatusBarItem's ctor is
-// INLINE, so folding onto it inlines that ctor and costs BuildTabzDialog 83.7% -> 75.4%.
-// StatusBarItem.h has an SBI_ITEM_OWN_CTOR knob that makes the base ctor out-of-line, and
-// it DOES restore BuildTabzDialog to 83.7% - but the knob is per-TU, and the same merged TU
-// also builds the rect widgets, where retail INLINES the base ctor. Turning it on craters
-// ??0CSBI_RectOnly (0x101fa0) from 100% to 25.5% and BuildStatusBarTabs to 67%. Measured
-// both ways; kept the one that preserves a 100% function and the higher exact count.
-// The real fix is to UN-MERGE this TU (BuildTabzDialog was its own obj, SBI_TabzDialogEh.cpp,
-// before the wave1-E one-TU merge) - then each new-site gets its own retail ctor spelling.
-// Until then the 8.3% is the honest price of not shipping 13 unresolved externals.)
-
-// tag 3 image item: m_8=3, clear m_30.  vtable 0x5eac0c (12 slots).
-// The dtor is declared OUT-OF-LINE (no body) so it binds to the one real body at its rva
-// (SBI_Image.cpp 0x100870) instead of cl5 synthesising a divergent COMDAT copy.
-class CSBI_Image : public CStatusBarItem {
-public:
-    CSBI_Image() {
-        m_8 = 3;
-        m_30 = 0;
-    }
-    virtual ~CSBI_Image(); // slot 0  0x00100870 (SBI_Image.cpp)
-    // slot 11 - the image setup (`call [edx+0x2c]`). CStatusBarItem ends at slot 10, so
-    // this new virtual lands at 11, exactly where retail's CSBI_Image vtable has it. It
-    // takes the geometry rect BY VALUE, and the call sites pass an INLINE TEMPORARY - the
-    // spelling that makes cl build the struct directly in the outgoing arg frame
-    // (`sub esp,0x10; mov ecx,esp; ...`), which is what retail emits. This header had that
-    // right all along; it is what unblocked slot 2 in StatusBarItem.h.
-    virtual i32
-    Setup(void* mgr, void* sub, i32 type, i32 idx, SbRect rc, const char* key, i32 flag, i32 e);
-
-    i32 m_30; // +0x30
-}; // size 0x34
-SIZE(CSBI_Image, 0x34);
+// The concrete status-bar leaves the tabz-dialog builder `new`s are the CANONICAL
+// retail CSBI_Image / CSBI_ImageSet classes (SBI_Image.h / SBI_ImageSet.h). The
+// former per-TU views here derived CStatusBarItem DIRECTLY (skipping the real
+// CSBI_RectOnly intermediate) and declared only ~dtor + a void*-typed `Setup`, so
+// their emitted ??_7CSBI_Image / ??_7CSBI_ImageSet carried CStatusBarItem's inherited
+// slot bodies at 1..5 (and an unbound slot 11) - a DIVERGENT COMDAT vs every other
+// SBI TU, and for CSBI_ImageSet also the WRONG length (12 slots / 48 B vs the real
+// 13 / 52). Dissolved onto the canonicals (2026-07-14): `new CSBI_Image` still emits
+// the retail base-ctor call (SBI_ITEM_OWN_CTOR makes CStatusBarItem's ctor out-of-
+// line -> `call ??0CStatusBarItem` @0x1005d0 via thunk 0x22c0, RectOnly ctor inlined),
+// and `new CSBI_ImageSet` calls ??0CSBI_RectOnly @0x101fa0 (thunk 0x1e88), exactly as
+// retail's BuildTabzDialog - the CSBI_RectOnly intermediate is required to reproduce
+// that second ctor shape. slot 11 SetupImage takes the geometry rect BY VALUE, and the
+// call sites pass an INLINE TEMPORARY (SbRect(...)) so cl builds the struct in place.
 
 // tag 2 menu item: m_8=2, clear m_34/m_30/m_38.  vtable 0x5eab4c.
-// == retail CSBI_MenuItem; renamed apart (Dlg suffix) because the merged
-// SBI_RectOnly TU (which hosts BuildTabzDialog since the wave1-E one-TU merge)
-// already defines the CSbiTab-based CSBI_MenuItem view (SBI_RectOnly.h) - a
-// redefinition-merge TODO; until unified the emitted ??_7CSBI_MenuItemDlg vtable
-// name mismatches the target's ??_7CSBI_MenuItem (reloc-masked).
+// == retail CSBI_MenuItem; kept under a distinct name (Dlg suffix) so its emitted
+// ??_7 does not collide with the CSBI_MenuItem canonical (SBI_MenuItem.h) until that
+// leaf's slot-0/1/3/4/5 overrides are wired here (a follow-on fold, not a DIVERGENT:
+// this name is emitted only in this TU, reloc-masked against retail's 0x5eab4c stamp).
 class CSBI_MenuItemDlg : public CSBI_Image {
 public:
     CSBI_MenuItemDlg() {
@@ -107,20 +60,6 @@ public:
     i32 m_38; // +0x38
 }; // size 0x3c
 SIZE(CSBI_MenuItemDlg, 0x3c);
-
-// tag 4 image-set item: clear m_30, m_8=4, clear m_34.  vtable 0x5eac4c
-class CSBI_ImageSet : public CSBI_Image {
-public:
-    CSBI_ImageSet() {
-        m_30 = 0;
-        m_8 = 4;
-        m_34 = 0;
-    }
-    virtual ~CSBI_ImageSet(); // 0x00102000 (SBI_ImageSet.cpp) - see CSBI_Image above
-    i32 m_34;                 // +0x34
-    i32 m_38;                 // +0x38
-}; // size 0x3c
-SIZE(CSBI_ImageSet, 0x3c);
 
 // The g_gameReg singleton chain (DATA 0x64556c, RVA 0x24556c). Only the fields
 // this builder reads are modeled: the mission-complete selector (m_68->m_288), the
