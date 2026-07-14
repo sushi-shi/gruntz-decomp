@@ -42,6 +42,7 @@
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance)
 #include <Gruntz/RollingBall.h>      // CRollingBall : CUserLogic (+ the /GX CString temps)
+#include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (g_gameReg typed)
 
 #include <rva.h>
 #include <string.h> // inline strcmp for the ctor's direction-name match
@@ -49,29 +50,25 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (Update, a 4-byte code ptr on this single-inheritance
-// class).
-typedef i32 (CRollingBall::*RollingBallHandler)();
-struct CRollingBallActEntry {
-    RollingBallHandler m_fn;
-};
+// The handler entry record (RollingBallHandler/CRollingBallActEntry, the PMF slot)
+// is defined in <Gruntz/RollingBall.h> after the complete class.
 
 // The class's activation-coordinate registry singleton (@0x6461b0): the fixed
-// [2000,2010] range built by the shared registry ctor (0x408710). CRollingBallActReg
-// is the shared <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its
-// layout + ResolveEntry); it keeps its own placeholder name so the DATA-pinned
-// global symbol is unchanged.
-struct CRollingBallActReg : public CActReg {};
+// [2000,2010] range built by the shared registry ctor (0x408710). It is the shared
+// <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
+// CRollingBallActReg view is dissolved); the DATA-pinned global symbol is unchanged.
 DATA(0x002461b0)
-CRollingBallActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
-                                        // CActReg extent covers the interior fields
-                                        // 0x2461b4..0x2461d0, bound as g_obj+offset)
+CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
+                             // CActReg extent covers the interior fields
+                             // 0x2461b4..0x2461d0, bound as g_obj+offset)
 
 // ---------------------------------------------------------------------------
 // Shared singletons (named so their DIR32 datum reloc-masks).
 // ---------------------------------------------------------------------------
-extern "C" void* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+                                     // (the raw-offset I32/PTR/DBL macros in Update cast
+                                     //  it to char* - the type is only for the ctor's
+                                     //  cast-free m_isEasyMode/m_134 reads)
 // (g_buteMgr comes from <Bute/ButeMgr.h> via UserLogic.h; Update reaches it only
 //  through RbGetDwordDef, so no direct extern is needed here.)
 extern "C" i32 g_frameTime;  // DAT_00645588 @0x645588 (world clock ms)
@@ -126,58 +123,18 @@ static i32 VtblResolve(void* ent) {
 RVA(0x00012f80, 0x44)
 CRollingBall::~CRollingBall() {}
 
-// The CString temp the direction-name match builds (static-linked MFC CString
-// helpers, modeled NO-body so the calls reloc-mask): MiniStr() = 0x1b9b93,
-// operator=(LPCSTR) = 0x1b9e74, ~MiniStr() = 0x1b9cde. The real C++ dtor makes
-// MSVC emit the temp's /GX cleanup state like retail.
-struct CRbMiniStr {
-    char* m_buf; // +0x00 the strcmp operand
-    CRbMiniStr();
-    ~CRbMiniStr();
-    CRbMiniStr& operator=(const char* s);
-};
+// The direction-name match builds an MFC CString temp (static-linked helpers,
+// reloc-masked: CString() = 0x1b9b93, operator=(LPCSTR) = 0x1b9e74, ~CString() =
+// 0x1b9cde). The real CString (via <Mfc.h> from RollingBall.h) makes MSVC emit the
+// temp's /GX cleanup state like retail (the ex CRbMiniStr view is dissolved - the
+// same real-CString spelling KitchenSlime's ctor uses).
 
-// The bound CGameObject viewed by the ctor (m_10 == m_38). Only the touched
-// offsets are modeled.
-struct CRbCtorSub { // m_10->m_7c (per-tile-time owner)
-    char m_pad00[0xbc];
-    i32 m_bc; // +0xbc per-tile time
-};
-struct CRbCtorObj {
-    char m_pad00[0x08];
-    i32 m_08; // +0x08 flags
-    char m_pad0c[0x5c - 0x0c];
-    i32 m_5c; // +0x5c screen X
-    i32 m_60; // +0x60 screen Y
-    char m_pad64[0x74 - 0x64];
-    i32 m_74; // +0x74 layer key
-    char m_pad78[0x7c - 0x78];
-    CRbCtorSub* m_7c; // +0x7c
-    char m_pad80[0x118 - 0x80];
-    i32 m_118; // +0x118 active flag (snapshot into m_explodeWindowLo)
-    char m_pad11c[0x124 - 0x11c];
-    i32 m_124; // +0x124 place mode (== 1 -> no time bonus)
-    char m_pad128[0x12c - 0x128];
-    i32 m_12c; // +0x12c travel direction (1..4)
-    char m_pad130[0x144 - 0x130];
-    i32 m_144; // +0x144 rect base
-    i32 m_148; // +0x148
-    i32 m_14c; // +0x14c
-    i32 m_150; // +0x150
-    char m_pad154[0x194 - 0x154];
-    char* m_194; // +0x194 sprite/name record (dir name at +0x24); char* like CGameObject::m_194
-    char m_pad198[0x1b4 - 0x198];
-    i32 m_1b4; // +0x1b4 cycle-geometry id
-};
-
-// The global game registry (WwdGameReg @0x64556c; g_gameReg masks _g_mgrSettings).
-// m_118 the has-window gate; m_134 the mode discriminator (the time-bonus gate).
-struct CRbReg {
-    char m_pad00[0x118];
-    i32 m_isEasyMode; // +0x118
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134
-};
+// The ctor's bound object (m_object == m_38) IS the canonical CGameObject and the
+// game registry IS the canonical CGameRegistry (g_gameReg, typed above): the ex
+// CRbCtorObj / CRbCtorSub / CRbReg views are dissolved onto them - m_screenX/m_screenY
+// (+0x5c/+0x60), m_latchedAnimId (+0x74), m_7c->m_bc (AnimWorkerObj per-tile time),
+// m_118/m_124/m_12c, m_areaL..m_areaB (+0x144..+0x150), m_194, and the registry's
+// m_isEasyMode/m_134 all read cast-free through the canonical members.
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator), VA 0x5ea3e0
 // (?g_slimeSpeedNum@@3NB; the consolidated global is pinned via <Globals.h>, so
@@ -213,24 +170,24 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
 
-    CRbCtorObj* o = (CRbCtorObj*)m_object;
-    i32 snapX = (o->m_5c & ~0x1f) + 0x10;
-    i32 snapY = 0x10 + (o->m_60 & ~0x1f);
-    o->m_5c = snapX;
+    CGameObject* o = m_object;
+    i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
+    i32 snapY = 0x10 + (o->m_screenY & ~0x1f);
+    o->m_screenX = snapX;
     m_subX = (double)snapX;
-    o->m_60 = snapY;
+    o->m_screenY = snapY;
     m_subY = (double)snapY;
-    if (o->m_74 != 0x186a0 + snapY) {
-        o->m_74 = snapY + 0x186a0;
-        o->m_08 |= 0x20000;
+    if (o->m_latchedAnimId != 0x186a0 + snapY) {
+        o->m_latchedAnimId = snapY + 0x186a0;
+        o->m_flags |= 0x20000;
     }
 
-    CRbCtorObj* obj38 = (CRbCtorObj*)m_38;
+    CGameObject* obj38 = m_38;
     if (obj38->m_194 != 0) {
-        CRbMiniStr name;
+        CString name;
         name = obj38->m_194 + 0x24;
         const char* s;
-        s = name.m_buf;
+        s = (LPCTSTR)name;
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
             o->m_12c = 1;
             m_stepDirX = 0;
@@ -254,7 +211,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     if (time == 0) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
-    CRbReg* reg = (CRbReg*)g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     if (0 != reg->m_isEasyMode && reg->m_134 == 1 && o->m_124 != 1) {
         time += 1000;
     }
@@ -267,10 +224,10 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     m_explodeLatch = 0;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / (double)(i64)(u32)time;
-    o->m_144 = 0;
-    o->m_14c = 0;
-    o->m_148 = 0;
-    o->m_150 = 0;
+    o->m_areaL = 0;
+    o->m_areaR = 0;
+    o->m_areaT = 0;
+    o->m_areaB = 0;
     m_moveDeltaHi = 0;
     m_moveDeltaLo = 0;
 }
@@ -637,9 +594,6 @@ i32 CRollingBall::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-SIZE_UNKNOWN(CRbCtorObj);
-SIZE_UNKNOWN(CRbCtorSub);
-SIZE_UNKNOWN(CRbMiniStr);
-SIZE_UNKNOWN(CRbReg);
-SIZE_UNKNOWN(CRollingBallActEntry);
-SIZE_UNKNOWN(CRollingBallActReg);
+// (CRbCtorObj/CRbCtorSub/CRbMiniStr/CRbReg/CRollingBallActReg are dissolved onto
+//  CGameObject/AnimWorkerObj/CString/CGameRegistry/CActReg; CRollingBallActEntry's
+//  SIZE_UNKNOWN lives in <Gruntz/RollingBall.h> beside its definition.)

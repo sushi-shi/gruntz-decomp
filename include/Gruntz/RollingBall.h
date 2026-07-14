@@ -88,6 +88,15 @@ public:
 };
 VTBL(CRollingBall, 0x1e86fc);
 
+// The class's activation-registry entry record: its first dword receives the
+// per-frame handler PMF (Update, a 4-byte code ptr on this single-inheritance
+// class). Declared AFTER the complete class so the PMF stays 4 bytes.
+typedef i32 (CRollingBall::*RollingBallHandler)();
+struct CRollingBallActEntry {
+    RollingBallHandler m_fn;
+};
+SIZE_UNKNOWN(CRollingBallActEntry);
+
 SIZE(CRollingBall, 0xa0);
 
 #endif // GRUNTZ_GRUNTZ_ROLLINGBALL_H
