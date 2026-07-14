@@ -14,7 +14,9 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
-#include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
+#include <Gruntz/XferArchive.h>       // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
+#include <Gruntz/ActReg.h>            // CActReg (g_toobColl); ResolveEntry + GetRetAddr/g_projActCache
+#include <Gruntz/ActNameRegistry.h>  // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
 #include <Globals.h>
 
 // ===========================================================================
@@ -104,101 +106,33 @@ i32 ToobSpikezLogic(CGameObject* obj) {
 // alloc-cache pair (g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME
 // shared global every registry writes (already named by KitchenSlime.cpp -
 // re-declared here, address-pinned).
-struct CToobEntry; // an entry: first dword is the registered handler
-struct CToobColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
-    // Reserve8710 @0x8710 IS CZDArrayDerived::Construct; cast at the call.
-};
-extern void* GetRetAddr(); // 0x16d990
-
+// CToobSpikez's OWN activation-coordinate registry (0x24e978) IS the shared CActReg
+// archetype (<Gruntz/ActReg.h>): the seven ex-`g_toob*` field globals
+// (m_coll2/m_lo/m_hi/m_base/m_cur/m_stride/m_scratch at +0x04..+0x20) were its members,
+// and the old inline `ToobLookup` was a verbatim copy of CActReg::ResolveEntry. One
+// object, one definition; the fast-range + slow Find/GetRetAddr/Insert rebuild lookup is
+// CActReg::ResolveEntry now. (Construct @0x8710 == CZDArrayDerived::Construct; cast at call.)
 DATA(0x0024e978)
-CToobColl g_toobColl;
-extern void* g_projActCache;
-extern void* g_retAddrBreadcrumb;
+CActReg g_toobColl;
 
-// The entry's first dword is a pointer-to-member-function of CToobSpikez
-// (single inheritance -> 4-byte code pointer); FireActivation invokes it on
-// `this`, emitting `mov ecx,this; call [entry]`. CToobSpikez is defined
-// COMPLETE in the header above this typedef so the PMF stays 4 bytes
-// (pmf-complete-class-4byte).
+// The registry slot stores a pointer-to-member-function of CToobSpikez (single
+// inheritance -> 4-byte code pointer); FireActivation invokes it on `this`, emitting
+// `mov ecx,this; call [entry]`. CToobSpikez is defined COMPLETE in the header above so
+// the PMF stays 4 bytes (pmf-complete-class-4byte). ResolveEntry returns the raw slot,
+// reinterpreted as the PMF pointer (no entry-struct view needed).
 typedef void (CToobSpikez::*ToobHandler)();
-struct CToobEntry {
-    ToobHandler m_fn; // [entry]
-};
-
-// The inlined coordinate->Entry* lookup FireActivation folds in twice.
-// g_toob* registry-field globals (referenced only from this TU): real
-// definitions DATA-pinned here; the single extern is in <Globals.h>.
-DATA(0x0024e97c)
-CVariantSlot* g_toobColl2;
-DATA(0x0024e980)
-i32 g_toobLo;
-DATA(0x0024e984)
-i32 g_toobHi;
-DATA(0x0024e988)
-char* g_toobBase;
-DATA(0x0024e98c)
-CToobEntry* g_toobCur;
-DATA(0x0024e990)
-i32 g_toobStride;
-DATA(0x0024e998)
-i32 g_toobScratch;
-
-static inline CToobEntry* ToobLookup(i32 coord) {
-    g_toobScratch = 0;
-    if (coord >= g_toobLo && coord <= g_toobHi) {
-        return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
-    }
-    if ((i32)((_zvec*)&g_toobColl)->GrowTo(coord, 0)) {
-        return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_toobColl2->Set(&g_toobColl, (i32)item, 0xc);
-    return g_toobCur;
-}
 
 // ---------------------------------------------------------------------------
 // The shared activation-NAME registry CToobSpikez::RegisterActs (0x1149c0) interns
 // the key "A" into g_buteTree (Find returns the id, 0 == absent); on a fresh id it
-// records the key in the shared scratch name registry (@0x6bf650, the SAME range/
-// cache shape as g_toobColl) and bumps g_typeCounter. Then it resolves id->Entry in
-// CToobSpikez's OWN registry (g_toobColl via ToobLookup, the SAME instance
-// FireActivation uses) and stores the logic handler (the ILT to the logic method
-// @0x114bc0). g_buteTree (0x6bf620, named by mangled symbol) doubles as the
-// name->id map; g_typeCounter (0x61aea8) is the running id counter; s_codeA
-// (0x60a454) is the "A" key.
+// records the key in the shared scratch name registry (g_typeColl @0x6bf650) and bumps
+// g_typeCounter. Then it resolves id->Entry in CToobSpikez's OWN registry (g_toobColl
+// via ResolveEntry, the SAME instance FireActivation uses) and stores the logic handler
+// (the ILT to the logic method @0x114bc0). g_buteTree/g_typeCounter/s_codeA/g_typeColl
+// and the shared id->name-slot resolve ActNameLookup all come from <Gruntz/ActNameRegistry.h>
+// (included above) - the SAME shared name registry every per-class RegisterActs uses; the
+// former per-TU copies (local externs + a verbatim ActNameLookup) are dissolved onto it.
 // ---------------------------------------------------------------------------
-extern i32 g_typeCounter;
-extern char s_codeA[];
-#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
-struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // 0x6bf650
-
-// The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A
-// @0x6bf620, pulled via UserLogic.h; named by mangled symbol so Find/Insert
-// reloc-mask).
-extern CButeTree g_buteTree;
-
-// The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
-// operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
-#include <Gruntz/ActName.h> // CActName (shared)
-
-// The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
-static inline char* ActNameLookup(i32 id) {
-    g_typeColl.m_grown = 0;
-    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
-    }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
-        return (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
-    return (char*)g_typeColl.m_spare;
-}
 
 // The logic handler bound into the registry slot (the ILT to the toob-spikez logic
 // method @0x114bc0); referenced by address so the DIR32 operand reloc-masks.
@@ -258,10 +192,10 @@ CToobSpikez::~CToobSpikez() {}
 // (0x0e1830).
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
-    CToobEntry* e = ToobLookup(coord);
-    if (e->m_fn != 0) {
-        CToobEntry* e2 = ToobLookup(coord);
-        (this->*(e2->m_fn))();
+    ToobHandler* e = (ToobHandler*)g_toobColl.ResolveEntry(coord);
+    if (*e != 0) {
+        ToobHandler* e2 = (ToobHandler*)g_toobColl.ResolveEntry(coord);
+        (this->*(*e2))();
     }
 }
 
@@ -292,7 +226,7 @@ void CToobSpikez::RegisterActs() {
         ((CString*)slot)->operator=(s_codeA);
         g_typeCounter++;
     }
-    *(void**)ToobLookup(id) = (void*)&ToobLogic_114bc0;
+    *(void**)g_toobColl.ResolveEntry(id) = (void*)&ToobLogic_114bc0;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
@@ -301,5 +235,3 @@ void CToobSpikez::RegisterActs() {
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-SIZE_UNKNOWN(CToobColl);
-SIZE_UNKNOWN(CToobEntry);
