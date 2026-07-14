@@ -1008,7 +1008,7 @@ i32 CGrunt::UpdateArrival() {
                             this->m_arrivalRow = g->m_tileOwnerLo;
                             this->m_defenderState = 1;
                             i32 r = GruntPointVisible(
-                                *(i32*)g_gameReg->m_world->m_24->m_mainPlane + 0x40,
+                                (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
                                 this->m_10->m_5c,
                                 this->m_10->m_60
                             );
@@ -1326,11 +1326,11 @@ L_scanb:
     i32 bestY = 0;
     CGruntLiveNode* node = m_tileMgr->m_4;
     while (node != 0) {
-        char* gg = node->m_entry;
+        CGruntTileEntry* gg = node->m_entry;
         node = node->m_next;
-        if (*(i32*)(gg + 0x5c) == 0) {
-            i32 gx = *(i32*)(gg + 0x54);
-            i32 gy = *(i32*)(gg + 0x58);
+        if (gg->m_busy == 0) {
+            i32 gx = gg->m_col;
+            i32 gy = gg->m_row;
             if (RectContains((gx << 5) + 0x10, (gy << 5) + 0x10) != 0) {
                 m_tileMgr->CommitTileSlot2(
                     m_tileOwnerHi,
@@ -2412,7 +2412,7 @@ i32 CGrunt::SeekTarget() {
     this->m_defenderX = this->m_lastTilePxX;
     this->m_defenderY = this->m_lastTilePxY;
     if (this->CoordCount() != 0
-        && (*(CGrunt***)((char*)g_gameReg->m_cmdGrid + 0x1c))[this->m_arrivalCol] == 0) {
+        && ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[0][this->m_arrivalCol] == 0) {
         void* p = (void*)this->CoordHead();
         while (p != 0) {
             void* next = *(void**)p;
@@ -2431,7 +2431,7 @@ i32 CGrunt::SeekTarget() {
         reason = this->m_19c;
     }
     if (reason == 0 && (reason = this->m_arrivalCol, reason >= 0) && reason < 0xf) {
-        CGrunt* slot = (CGrunt*)(*(CGrunt***)((char*)g_gameReg->m_cmdGrid + 0x1c))[reason];
+        CGrunt* slot = ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[0][reason];
         if (slot == 0 || slot->m_entranceCommitted == 0) {
             if (this->CoordCount() != 0) {
                 void* p = (void*)this->CoordHead();
@@ -2499,7 +2499,7 @@ i32 CGrunt::SeekTarget() {
             }
             i32 best = 0x7fffffff;
             i32 bestIdx = -1;
-            CGrunt** slots = *(CGrunt***)((char*)g_gameReg->m_cmdGrid + 0x1c);
+            CGrunt** slots = ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[0];
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
@@ -2531,8 +2531,7 @@ i32 CGrunt::SeekTarget() {
                     != 0) {
                     i32 by = this->m_10->m_60;
                     i32 bx = this->m_10->m_5c;
-                    CCueRect* board =
-                        (CCueRect*)(*(i32*)g_gameReg->m_world->m_24->m_mainPlane + 0x40);
+                    CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
                     if (bx < board->right && board->left <= bx && by < board->bottom
                         && board->top <= by) {
                         g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -2549,7 +2548,7 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         CGruntHud* base =
-            ((CGrunt*)(*(CGrunt***)((char*)g_gameReg->m_cmdGrid + 0x1c))[this->m_arrivalCol])->m_10;
+            ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[0][this->m_arrivalCol]->m_10;
         TileSwitch6(base->m_5c >> 5, base->m_60 >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->GetOccupant(this);
@@ -2629,7 +2628,7 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_390 != 0) {
             i32 r = GruntPointVisible(
-                *(i32*)g_gameReg->m_world->m_24->m_mainPlane + 0x40,
+                (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
                 this->m_10->m_5c,
                 this->m_10->m_60
             );

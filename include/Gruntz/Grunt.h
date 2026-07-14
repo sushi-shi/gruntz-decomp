@@ -641,13 +641,26 @@ struct CTileReg {
 //   ReleaseTile(a,b)     thunk_FUN_004784d0  (release on lookup miss; ret int)
 //   PostWire()           the 0-arg wire call after the grid stamp (WireTileSwitchLogic)
 // ---------------------------------------------------------------------------
+// The tile-mgr's live-grunt list entry (the CGruntTileMgr::m_4 chain payload): a
+// per-entry record whose tile col/row and busy flag the arrival scan reads (verified
+// from retail: [entry+0x54]=col, [entry+0x58]=row, [entry+0x5c]=busy, 0 = free). A
+// distinct record from CGrunt's own layout; modeled as a partial view (only the three
+// proven offsets are load-bearing; full identity of the record is still open).
+SIZE_UNKNOWN(CGruntTileEntry);
+struct CGruntTileEntry {
+    char m_pad0[0x54];
+    i32 m_col;  // +0x54  tile column
+    i32 m_row;  // +0x58  tile row
+    i32 m_busy; // +0x5c  occupancy flag (0 = free)
+};
+
 // A node of the tile-mgr's live-grunt list (CGruntTileMgr::m_4 chain): m_next @+0,
-// and @+8 the live-grunt entry (raw-offset col@0x54 / row@0x58 / busy@0x5c).
+// and @+8 the live-grunt entry (CGruntTileEntry: col/row/busy at +0x54/58/5c).
 SIZE_UNKNOWN(CGruntLiveNode);
 struct CGruntLiveNode {
     CGruntLiveNode* m_next; // +0x00
     char m_pad4[0x8 - 0x4];
-    char* m_entry; // +0x08  live-grunt entry (raw offsets col/row/busy at +0x54/58/5c)
+    CGruntTileEntry* m_entry; // +0x08  live-grunt entry (col/row/busy at +0x54/58/5c)
 };
 
 // @identity-TODO: this view IS the real CTriggerMgr (<Gruntz/TriggerMgr.h>) - the same
@@ -1259,7 +1272,7 @@ public:
     i32 Dispatch(i32 kind, i32 a);
     virtual i32 Activate() OVERRIDE;        // slot 6  @0x5caa0
     virtual i32 UserLogicVfunc6() OVERRIDE; // slot 8  (0x62b40)
-    virtual i32 StepAttackFire() OVERRIDE; // slot 9  @0x61cb0 (attack-fire step)
+    virtual i32 StepAttackFire() OVERRIDE;  // slot 9  @0x61cb0 (attack-fire step)
     // slot 9 @0x61cb0 - the per-frame ATTACK-FIRE step (defined in
     // GruntEntranceArrival.cpp; ex the CGruntFireView::Update misbinding): ticks
     // the attack anim; at the fire cue spawns the ranged projectile
