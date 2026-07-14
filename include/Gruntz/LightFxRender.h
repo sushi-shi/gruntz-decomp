@@ -1,17 +1,26 @@
 // LightFxRender.h - a non-polymorphic (no vftable / no RTTI) software light /
-// glow effect renderer in the lighting-effects module (between CLightFx @0x49cf00
-// and CDoNothingNormal @0x4a9e00). The object (~0x440 bytes) owns an embedded
-// 16-bit pixel buffer at +0x4c (~500 words) that the shape generators fill, a
-// source/screen RECT pair at +0x24..+0x40, and pointers to the surface / lighting
-// managers. It allocates a DirectDraw surface via the manager's vtable, fills the
-// buffer with computed 16-bit (565/555) colors using the screen RGB shift globals
-// (0x683ea0..0x683eb4), and blits.
+// glow / minimap-style overlay renderer in the lighting-effects module (between
+// CLightFx @0x49cf00 and CDoNothingNormal @0x4a9e00). The object (~0x440 bytes)
+// owns an embedded 16-bit pixel buffer at +0x4c (~500 words) that the shape
+// generators fill, a source/screen RECT pair at +0x24..+0x40, and pointers into
+// the CGruntzMgr singleton's manager family. It allocates a DirectDraw work
+// surface via the world's surface pool, fills the buffer with computed 16-bit
+// (565/555) colors using the screen RGB shift globals (0x683ea0..0x683eb4), and
+// blits.
 //
-// Recovered from a tracer placeholder (tomalla-68). Non-polymorphic: NONE of
-// the method addresses appear as data anywhere in the EXE (no vtable), so every
-// method is a plain __thiscall. Field names are placeholders (m_<hexoffset>); only
-// the OFFSETS + code bytes are load-bearing (campaign doctrine). Layout recovered
-// from the ctor/init field stores + the field reads in the draw/clip paths.
+// IDENTITY (xref-proven, 2026-07-14): the Init arg IS the CGruntzMgr singleton -
+// CPlay's install site (Play.cpp @0x0c8a90 region) passes CState::m_4 (the typed
+// CGruntzMgr* back-ptr), and the three cached pointers are the manager's own
+// +0x68/+0x70/+0x30 slots: m_cmdGrid (CTriggerMgr, the 4x15 grunt board whose
+// cells the repaint colors), m_tileGrid (CGruntzMapMgr, the tile grid walked
+// cell-by-cell) and m_world (CSpriteFactoryHolder, whose +0x1c surface pool
+// allocs/frees the work surface). The border-draw context handed to ComputeRect/
+// DrawBorder is the draw target's back CDDrawSurfacePair (m_c->m_drawTarget->
+// m_14 at both retail call sites, CPlay::Render @0xc9255 and CMulti::PumpB).
+// The former per-TU views (LfxMgr/LfxTileBank/LfxGrid/LfxSurfMgr/LfxView/
+// LfxWorldRect/LfxTileDesc/LfxCell/LfxBorderCtx) are dissolved onto those
+// canonicals. Non-polymorphic: NONE of the method addresses appear as data
+// anywhere in the EXE (no vtable), so every method is a plain __thiscall.
 #ifndef GRUNTZ_GRUNTZ_CLIGHTFXRENDER_H
 #define GRUNTZ_GRUNTZ_CLIGHTFXRENDER_H
 
@@ -28,90 +37,70 @@ struct LfxRect {
     i32 bottom;
 };
 
-// The surface manager the renderer talks to (the object at this+0xc / this+0x10).
-// Only the offsets the reconstructed paths touch are modeled.
-//   +0x18 / +0x1c : tile/zoom pixel dims (idiv divisors)
-//   +0x1c         : surface-alloc / -free dispatch (a vtable-like fn table)
-struct LfxSurfMgr;
-
-// The render manager (this+0x00, set by Init); +0x2c holds the draw context.
-struct LfxMgr;
-
-// The allocated draw surface (this+0x2c held by callers; +0x10 held by us).
-//   +0x20  : bytes-per-pixel / x-stride
-//   +0xb0  : surface pitch (bytes per scanline)
-struct CDDSurface;
-
-// The global game-manager singleton (the object at *0x64556c, ?g_gameReg). Only
-// the +0x68 slot the blit path reads is modeled.
-struct CGameReg;
-
-// The border-draw context (DrawBorder's 2nd arg): +0x2c is the locked DirectDraw
-// work surface (pitch/stride/Lock), +0x08 the unlock interface (vtable[0x20]).
-struct LfxBorderCtx;
-
-// The resize repaint descriptor bank (this+0x04, mgr+0x68) and the tile grid
-// (this+0x08, mgr+0x70: row table + w/h); the full layouts live in the .cpp.
-struct LfxTileBank;
-struct LfxGrid;
+// The real manager family (pointer members only - fwd decls keep this header
+// afx-neutral; the deref TUs include the canonical headers).
+class CGruntzMgr;            // the game-manager singleton (Init's arg / m_mgr)
+class CTriggerMgr;           // mgr->m_cmdGrid: the 4x15 grunt board (cells = CGrunt)
+class CGruntzMapMgr;         // mgr->m_tileGrid: the tile grid (CMapMgr row table)
+struct CSpriteFactoryHolder; // mgr->m_world: the world/resource holder (+0x1c pool)
+class CDDSurface;            // the alloc'd DirectDraw work surface (m_surface)
+class CDDrawSurfacePair;     // the border-draw ctx (its +0x2c CDDSurface is drawn on)
 
 class CLightFxRender {
 public:
-    // 0x0a32c0  Init - copy mgr fields, validate, zero the rect/state block.
-    i32 Init(LfxMgr* mgr, i32 arg2);
+    // 0x0a32c0  Init - cache the manager family, validate, zero the rect/state block.
+    i32 Init(CGruntzMgr* mgr, i32 arg2);
     // 0x0a3360  ctor - zero the core pointers + sizes.
     void Ctor();
-    // 0x0a33a0  FreeSurface - release the alloc'd surface (+0x10) via the mgr.
+    // 0x0a33a0  FreeSurface - release the alloc'd surface (+0x10) via the world pool.
     void FreeSurface();
-    // 0x0a33e0  AllocSurface - create the work surface via the surface mgr.
+    // 0x0a33e0  AllocSurface - create the work surface via the world pool.
     i32 AllocSurface();
     // 0x0a3460  (755B) the rebuild/repaint path: (re-)alloc the work surface to the
-    // grid's dims, lock it, repaint every cell (buffer copy or live-tile color),
-    // unlock. `delta`/`rebuild` gate the partial-decay fast path.
+    // tile grid's dims, lock it, repaint every cell (buffer copy or live-grunt
+    // color), unlock. `delta`/`rebuild` gate the partial-decay fast path.
     i32 Resize(i32 delta, i32 rebuild);
     // 0x0a3820  (398B) compute the centered effect rect from a source rect +
     // the chosen scale (m_44), blit the work surface to it, then draw the border
     // framing the live world rect through `ctx`.
-    i32 ComputeRect(LfxBorderCtx* ctx, LfxRect* src);
+    i32 ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src);
     // 0x0a3a20  DrawBorderRaw - fill the 4 rect edges of `r` with a 16-bit color
     // directly into an already-locked buffer `base`, on this->m_surface's geometry
     // (m_pitch per row, m_b0 per column). No lock/unlock (the caller holds them).
     void DrawBorderRaw(LfxRect* r, void* base, i32 color);
-    // 0x0a3b50  DrawBorder - lock the ctx surface, fill the 4 rect edges with a
-    // 16-bit color, unlock. `this`/ecx is unused; ctx supplies the surface.
-    void DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color);
+    // 0x0a3b50  DrawBorder - lock the ctx pair's surface, fill the 4 rect edges
+    // with a 16-bit color, unlock. `this`/ecx is unused; ctx supplies the surface.
+    void DrawBorder(LfxRect* r, CDDrawSurfacePair* ctx, i32 color);
     // 0x0a3c90  BuildShape - zero the buffer, dispatch the shape generator.
     i32 BuildShape(i32 shape);
-    // The 8 shape generators the switch dispatches to. Four are in this TU's
-    // target set (RVA stubs, deferred to the final sweep); the other four
-    // (Shape2/5/7/8) live in adjacent TUs - declared so the calls reloc-mask.
-    i32 Shape1(); // 0x0a3dc0 (deferred)
-    i32 Shape2(); // 0x0a4890 (extern)
-    i32 Shape3(); // 0x0a5310 (deferred)
-    i32 Shape4(); // 0x0a5d90 (deferred)
-    i32 Shape5(); // 0x0a67d0 (extern)
-    i32 Shape6(); // 0x0a7260 (deferred)
-    i32 Shape7(); // 0x0a7d50 (extern)
-    i32 Shape8(); // 0x0a8900 (extern)
+    // The 8 shape generators the switch dispatches to (all in LightFxRender.cpp).
+    i32 Shape1(); // 0x0a3dc0
+    i32 Shape2(); // 0x0a4890
+    i32 Shape3(); // 0x0a5310
+    i32 Shape4(); // 0x0a5d90
+    i32 Shape5(); // 0x0a67d0
+    i32 Shape6(); // 0x0a7260
+    i32 Shape7(); // 0x0a7d50
+    i32 Shape8(); // 0x0a8900
     // 0x0a4840  FillSpan - fill one horizontal 16-bit span in the +0x4c buffer.
     void FillSpan(u32 x1, u32 x2, u16 color);
-    // 0x0a9480  ApplyA - clamp (x,y) to a tile cell, draw via the mgr context.
+    // 0x0a9480  ApplyA - clamp (x,y) to a tile cell, draw via the play state.
     i32 ApplyA(i32 dummy, i32 x, i32 y);
     // 0x0a9500  ClearHandle - drop the +0x48 cached handle.
     i32 ClearHandle(i32 a, i32 b, i32 c);
-    // 0x0a9550  ApplyGlobal - clamp + blit through the g_gameReg surface.
+    // 0x0a9550  ApplyGlobal - clamp + blit through the g_gameReg trigger grid.
     i32 ApplyGlobal(i32 dummy, i32 x, i32 y);
     // 0x0a95d0  ApplyB - like ApplyA but gated on the +0x48 handle.
     i32 ApplyB(i32 dummy, i32 x, i32 y);
     // 0x0a9660  ClampRect - bounds-check + snap (x,y), emit tile-cell out.
     i32 ClampRect(i32 x, i32 y, i32* out, i32 margin);
 
-    // ----- layout -----
-    LfxMgr* m_mgr;           // +0x00 game/render manager (set by Init)
-    LfxTileBank* m_tileBank; // +0x04 mgr+0x68 (the resize repaint bank)
-    LfxGrid* m_grid;         // +0x08 mgr+0x70 (w/h + row table)
-    LfxSurfMgr* m_surfMgr;   // +0x0c mgr+0x30 (the surface manager)
-    CDDSurface* m_surface;   // +0x10 the alloc'd work surface
+    // ----- layout (member names mirror the CGruntzMgr slots they cache) -----
+    CGruntzMgr* m_mgr;             // +0x00 the game-manager singleton (set by Init)
+    CTriggerMgr* m_cmdGrid;        // +0x04 = mgr->m_cmdGrid (+0x68 grunt board)
+    CGruntzMapMgr* m_tileGrid;     // +0x08 = mgr->m_tileGrid (+0x70 tile grid)
+    CSpriteFactoryHolder* m_world; // +0x0c = mgr->m_world (+0x30 world holder)
+    CDDSurface* m_surface;         // +0x10 the alloc'd work surface
     char m_pad14[0x10];
     i32 m_srcL;             // +0x24 source rect L
     i32 m_srcT;             // +0x28 source rect T

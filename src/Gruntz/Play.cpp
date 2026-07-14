@@ -582,9 +582,23 @@ i32 CPlay::Render() {
         m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
         InputSubStep(w->m_70); // m_4->m_70
 
-        if (m_lightFx != 0 && m_guts->m_activeTab != 5) { // on-screen overlay/banner
-            Overlay1(0, (i32)g_frameDelta);
-            Overlay2(m_c, 0);
+        // On-screen overlay/banner: the retail block (0xc91b7..0xc9259) is the same
+        // shape as CMulti::PumpB's - place the 120x120 overlay rect by HUD position,
+        // decay-tick then blit+border via the draw page. (The ex Overlay1/Overlay2
+        // phantom CPlay wrappers dispatched these two calls on the WRONG receiver;
+        // retail runs both on m_lightFx: thunks 0x1fa0=Resize / 0x14dd=ComputeRect.)
+        if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
+            RECT rc;
+            if (m_guts->m_position == 1) {
+                SetRect(&rc, 20, 5, 140, 125);
+            } else {
+                i32 cx = g_gameReg->m_modeH;
+                i32 cy = g_gameReg->m_modeW;
+                rc.top = cx; // the kept redundant store (rc escapes to SetRect)
+                SetRect(&rc, cy - 140, 5, cy - 20, 125);
+            }
+            m_lightFx->Resize((i32)g_frameDelta, 0);
+            m_lightFx->ComputeRect(m_c->m_drawTarget->m_14, (LfxRect*)&rc);
         }
 
         m_4w()->m_54->Retune( // world sound retune off the plane scroll origin
@@ -1318,9 +1332,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CLightFxRender* ctx = (CLightFxRender*)RezAlloc(0x43c);
         if (ctx != 0) {
             ctx->m_mgr = 0;
-            ctx->m_tileBank = 0;
-            ctx->m_grid = 0;
-            ctx->m_surfMgr = 0;
+            ctx->m_cmdGrid = 0;
+            ctx->m_tileGrid = 0;
+            ctx->m_world = 0;
             ctx->m_surface = 0;
             ctx->m_handle = 0;
             ctx->m_refreshInterval = 0;
@@ -1329,7 +1343,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             ctx = 0;
         }
         self->m_lightFx = ctx;
-        if (!ctx->Init((LfxMgr*)self->m_4, 0xfa)) {
+        if (!ctx->Init(self->m_4, 0xfa)) { // m_4 IS the CGruntzMgr (ex the LfxMgr view)
             goto fail0;
         }
     }

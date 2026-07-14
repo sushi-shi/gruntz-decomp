@@ -412,8 +412,9 @@ public:
     void GutsStepB();
     void GutsStepC();
     void WorldSubstep();
-    void Overlay1(i32 now, i32 z);
-    void Overlay2(void* a, i32 z);
+    // (Overlay1/Overlay2 are GONE - they were phantom CPlay wrappers of the two
+    // CLightFxRender thunks 0x1fa0/0x14dd, which retail dispatches straight on
+    // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_14, &rc).)
     void InputSubStep(void* in);         // (m_4->m_70)
     void RegCue(void* sink, i32 wParam); // (reg->m_60)
     void SnapWalk();

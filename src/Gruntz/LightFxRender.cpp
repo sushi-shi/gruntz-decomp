@@ -1,12 +1,26 @@
 #include <Mfc.h>
 #include <DDrawMgr/DDSurface.h>
-// LightFxRender.cpp - software light/glow effect renderer (tracer placeholder
+// LightFxRender.cpp - software light/glow/overlay renderer (ex tracer placeholder
 // tomalla-68), a non-polymorphic helper in the lighting module. Methods in
 // ascending retail-RVA order. The class owns an embedded 16-bit pixel buffer at
 // +0x4c that the shape generators fill; it allocates a DirectDraw work surface
-// via the surface manager and blits the computed light. Engine callees (Lock /
-// BltEx / surface alloc) are reloc-masked (no body). Intra-class calls go through
-// the ILT thunks in retail; objdiff masks the rel32 displacement.
+// via the world's surface pool and blits the computed light. Engine callees
+// (Lock / BltEx / surface alloc) are reloc-masked (no body). Intra-class calls go
+// through the ILT thunks in retail; objdiff masks the rel32 displacement.
+//
+// IDENTITIES (xref-proven; the 9 former .cpp-local Lfx* views are dissolved):
+//   LfxMgr        == CGruntzMgr      (Init's arg IS CPlay::m_4, the typed mgr)
+//   LfxTileBank   == CTriggerMgr     (mgr+0x68; the +0x1c table IS m_grid[4][15])
+//   LfxTileDesc   == CGrunt          (the board cells; m_arrived/m_tileOwnerHi/
+//                                     m_1f4_moveIcon/m_combatClock*/m_combatTimeout*)
+//   LfxGrid       == CGruntzMapMgr   (mgr+0x70; CMapMgr m_rows/m_width/m_height)
+//   LfxCell       == BrickzCell      (the 0x1c-stride map cell; m_4 id / m_c color)
+//   LfxSurfMgr    == CSpriteFactoryHolder (mgr+0x30; m_ptrColl pool + m_24 level)
+//   LfxView       == CGameLevel      (holder+0x24; m_mainPlane @+0x5c)
+//   LfxWorldRect  == CLevelPlane     (the world rect IS m_originX..m_extentY @+0x40)
+//   LfxBorderCtx  == CDDrawSurfacePair (both retail callers - CPlay::Render
+//                    @0xc9255 and CMulti::PumpB - pass m_c->m_drawTarget->m_14,
+//                    the back pair; the +0x2c "work surface" IS its m_surface)
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing. See <Gruntz/LightFxRender.h> for the layout.
@@ -14,129 +28,30 @@
                  // the real CMapStringToOb. Still supplies the windows.h base types ddraw.h wants.
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <Gruntz/SpriteRefTable.h>
-#include <ddraw.h> // real IDirectDrawSurface dispatch (Unlock, slot 32 +0x80) - this TU
-                   // uses only IDirectDrawSurface (no CDDSurface), so it stays off the
-                   // <Mfc.h>-pulling <DDrawMgr/DDSurface.h> and keeps its lean Win32 chain
+#include <ddraw.h> // real IDirectDrawSurface dispatch (Unlock, slot 32 +0x80) on
+                   // CDDSurface::m_8 (the pair's held surface)
 #include <Gruntz/LightFxRender.h>
 
 #include <Gruntz/GameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/TriggerMgr.h>   // g_gameReg->m_cmdGrid (+0x68): CTriggerMgr::ResetGroup @0x79520
-#include <Gruntz/Play.h>         // LfxMgr::m_2c draw context: CPlay::ResetGoals @0xd5f00
+#include <Gruntz/TriggerMgr.h>   // CTriggerMgr (m_cmdGrid board; ResetGroup @0x79520)
+#include <Gruntz/Play.h>         // mgr->m_curState play state: CPlay::ResetGoals @0xd5f00
+#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (the ex-LfxMgr identity)
+#include <Gruntz/Grunt.h>        // canonical CGrunt (the board cells; ex LfxTileDesc)
+#include <Gruntz/Brickz.h>       // BrickzCell (the 0x1c map cell; ex LfxCell)
+#include <Gruntz/GameLevel.h>    // CGameLevel + CLevelPlane (ex LfxView/LfxWorldRect)
+#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (ex LfxBorderCtx)
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer100 (detail threshold)
 
-// The held surface (LfxBorderCtx::m_08 / CDDSurface::m_08) is the real
-// IDirectDrawSurface COM interface: `s->m_08->Unlock(0)` dispatches through slot 32
-// (+0x80). The canonical IDirectDrawSurface lives in <DDrawMgr/DDSurface.h>.
-
-// Forward declares so LfxMgr / the class members can hold typed pointers to the
-// tile-descriptor bank and the tile grid (full layouts defined further down).
-struct LfxTileBank;
-struct LfxGrid;
-
-// The DirectDraw work surface (this+0x10, callers pass it at +0x2c).
-//   +0x08 unlock interface (Resize's own unlock path)
-//   +0x18 / +0x1c the tile/zoom pixel dims (idiv divisors in Resize/ComputeRect)
-//   +0x20 row stride (per y) / +0xb0 column stride (per x), in bytes
-// The border-draw context (DrawBorder's 2nd arg): +0x08 the unlock interface,
-// +0x2c the locked work surface (pitch / stride / Lock).
-struct LfxBorderCtx {
-    char m_pad0[0x8];
-    IDirectDrawSurface* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
-    char m_pad0c[0x2c - 0xc];
-    CDDSurface* m_2c; // +0x2c the work surface
-};
-
-// The surface pool the manager points at (m_0c->m_1c). __thiscall Free/Alloc map
-// to the engine routines FUN_00542160 / FUN_00542e60 (reloc-masked, no body).
-// The world-rect holder (LfxView::m_5c): +0x40 is the live world RECT (4 ints,
-// in world pixels; >>5 converts to tile units).
-struct LfxWorldRect {
-    char m_pad[0x40];
-    LfxRect m_40; // +0x40 world rect (world pixels)
-};
-
-// The viewport/world-state object (LfxSurfMgr::m_24): +0x5c points at the holder.
-struct LfxView {
-    char m_pad[0x5c];
-    LfxWorldRect* m_5c; // +0x5c -> the world-rect holder
-};
-
-// The surface manager (this+0xc): +0x1c holds the surface pool, +0x24 the view.
-struct LfxSurfMgr {
-    char m_pad[0x1c];
-    CDDrawPtrCollections* m_1c; // +0x1c the surface pool
-    char m_pad20[0x24 - 0x20];
-    LfxView* m_24; // +0x24 the view/world-state object
-};
-
-// The per-tile color node returned by the ref table (GetA) is the real
-// CSpriteRef (<Gruntz/SpriteRefTable.h>): the renderer reads one of its three
-// 16-bit team-color slots (+0x8 / +0xa / +0xc) by the alternate-set selector.
-
-// The game-registry sprite/animation reference table (g_gameReg+0x74). GetA maps
-// a kind index to its color node (FUN_004e2360, reloc-masked, ret 0x4).
-// The render manager (this+0x00, set by Init). Init copies +0x68/+0x70/+0x30 into
-// this+0x4/0x8/0xc; the apply paths draw through +0x2c; the resize path resolves
-// tile colors through +0x74 (the ref table).
-struct LfxMgr {
-    char m_pad0[0x2c];
-    CPlay* m_2c;         // +0x2c draw context (CPlay::ResetGoals @0xd5f00)
-    LfxSurfMgr* m_world; // +0x30 surface manager     -> this+0xc
-    char m_pad34[0x68 - 0x34];
-    LfxTileBank* m_68; // +0x68 tile-descriptor bank -> this+0x4
-    char m_pad6c[0x70 - 0x6c];
-    LfxGrid* m_tileGrid;   // +0x70 tile grid           -> this+0x8
-    CSpriteRefTable* m_74; // +0x74 sprite/animation ref table
-};
+// The per-tile color node returned by the ref table (CSpriteRefTable::GetA
+// @0xe2360) is the real CSpriteRef (<Gruntz/SpriteRefTable.h>): the renderer
+// reads one of its three 16-bit team-color slots (+0x8 / +0xa / +0xc) by the
+// alternate-set selector.
 
 // g_gameReg singleton (*0x64556c) - the canonical CGameRegistry view. The global
 // apply path blits through g_gameReg->m_cmdGrid (+0x68), the real CTriggerMgr
 // (<Gruntz/TriggerMgr.h>): CTriggerMgr::ResetGroup @0x79520.
 extern "C" CGameRegistry* g_gameReg;
-
-// One tile cell of the grid row (stride 0x1c): +0x4 the tile id (-1 = empty),
-// +0xc a direct index into the +0x4c color buffer.
-struct LfxCell {
-    char m_pad[0x4];
-    i32 m_04; // +0x04 tile id (high byte = bank, low byte = slot; -1 = empty)
-    char m_pad08[0xc - 0x8];
-    i32 m_0c; // +0x0c direct color-buffer index
-};
-
-// The tile grid the resize path walks (this+0x08): +0x08 the row table (one row
-// pointer per y), +0x0c width, +0x10 height. Cells are stride 0x1c (LfxCell).
-struct LfxGrid {
-    char m_pad[0x8];
-    LfxCell** m_08; // +0x08 row table  (m_08[y] -> first cell of row y)
-    u32 m_0c;       // +0x0c width  (cells per row)
-    u32 m_10;       // +0x10 height (rows)
-};
-
-// A tile descriptor (one slot of the LfxTileBank::m_1c table). The renderer reads:
-//   +0x1d8 a flag (nonzero -> select the alternate color slot)
-//   +0x870 / +0x878 a pair of 64-bit timestamps (spawn time / lifetime), compared
-//          against the running game clock to decide live vs. expired
-//   +0x1ec the owning area index (vs g_curPlayer)
-//   +0x1f4 the kind passed to the ref table's GetA
-struct LfxTileDesc {
-    char m_pad1d8[0x1d8];
-    i32 m_1d8; // +0x1d8 alt-slot select flag
-    char m_pad1dc[0x1ec - 0x1dc];
-    i32 m_1ec; // +0x1ec owning area index
-    char m_pad1f0[0x1f4 - 0x1f0];
-    i32 m_1f4; // +0x1f4 ref-table kind
-    char m_pad1f8[0x870 - 0x1f8];
-    i64 m_870; // +0x870 spawn timestamp (64-bit)
-    i64 m_878; // +0x878 lifetime (64-bit)
-};
-
-// The tile-descriptor bank (this+0x04): a base whose +0x1c is a flat pointer table
-// indexed by the packed tile id (slot + bank*15). Null entries skip the cell.
-struct LfxTileBank {
-    char m_pad[0x1c];
-    LfxTileDesc* m_1c[1]; // +0x1c descriptor pointer table (flexible)
-};
 
 // The live screen RGB-format shift table (VA 0x683ea0..0x683eb4 = RVA 0x283ea0..):
 // per channel a right-shift (8-bit -> channel width) then a left-shift into the
@@ -165,14 +80,14 @@ static inline u16 Pack(i32 r, i32 g, i32 b) {
 // CLightFxRender::Init  (0x0a32c0)  - bind the manager, validate, zero state.
 // ===========================================================================
 RVA(0x000a32c0, 0x72)
-i32 CLightFxRender::Init(LfxMgr* mgr, i32 arg2) {
+i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 arg2) {
     if (mgr == 0) {
         return 0;
     }
     m_mgr = mgr;
-    m_tileBank = mgr->m_68;
-    m_grid = mgr->m_tileGrid;
-    m_surfMgr = mgr->m_world;
+    m_cmdGrid = mgr->m_cmdGrid;
+    m_tileGrid = mgr->m_tileGrid;
+    m_world = mgr->m_world;
     m_refreshInterval = arg2;
     m_scale = 1;
     m_refreshRemaining = 0;
@@ -197,9 +112,9 @@ RVA(0x000a3360, 0x29)
 void CLightFxRender::Ctor() {
     FreeSurface();
     m_mgr = 0;
-    m_tileBank = 0;
-    m_grid = 0;
-    m_surfMgr = 0;
+    m_cmdGrid = 0;
+    m_tileGrid = 0;
+    m_world = 0;
     m_surface = 0;
     m_handle = 0;
     m_refreshInterval = 0;
@@ -211,8 +126,8 @@ void CLightFxRender::Ctor() {
 // ===========================================================================
 RVA(0x000a33a0, 0x23)
 void CLightFxRender::FreeSurface() {
-    if (m_surfMgr != 0 && m_surface != 0) {
-        m_surfMgr->m_1c->RemoveItemA((CDDSurface*)m_surface);
+    if (m_world != 0 && m_surface != 0) {
+        m_world->m_ptrColl->RemoveItemA(m_surface);
         m_surface = 0;
     }
 }
@@ -225,16 +140,16 @@ void CLightFxRender::FreeSurface() {
 // swapped registers vs retail (edx<->eax); values + push order identical.
 RVA(0x000a33e0, 0x55)
 i32 CLightFxRender::AllocSurface() {
-    if (m_grid == 0) {
+    if (m_tileGrid == 0) {
         return 0;
     }
-    if (m_surfMgr == 0) {
+    if (m_world == 0) {
         return 0;
     }
     FreeSurface();
-    LfxGrid* info = m_grid;
-    LfxSurfMgr* mgr = m_surfMgr;
-    m_surface = (CDDSurface*)mgr->m_1c->MakeAndAddB(info->m_0c, info->m_10, 0, 0, -1);
+    CGruntzMapMgr* info = m_tileGrid;
+    CSpriteFactoryHolder* mgr = m_world;
+    m_surface = mgr->m_ptrColl->MakeAndAddB(info->m_width, info->m_height, 0, 0, -1);
     if (m_surface == 0) {
         return 0;
     }
@@ -280,8 +195,8 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             return 0;
         }
     }
-    LfxGrid* grid = m_grid;
-    if (m_surface->m_width != (i32)grid->m_0c || m_surface->m_height != (i32)grid->m_10) {
+    CGruntzMapMgr* grid = m_tileGrid;
+    if (m_surface->m_width != (i32)grid->m_width || m_surface->m_height != (i32)grid->m_height) {
         if (!AllocSurface()) {
             return 0;
         }
@@ -290,20 +205,20 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     if (base == 0) {
         return 0;
     }
-    LfxTileBank* bank = m_tileBank;
-    for (u32 y = 0; y < grid->m_10; y++) {
-        for (u32 x = 0; x < grid->m_0c; x++) {
+    CTriggerMgr* board = m_cmdGrid;
+    for (u32 y = 0; y < grid->m_height; y++) {
+        for (u32 x = 0; x < grid->m_width; x++) {
             u16* dst = (u16*)((char*)base + y * m_surface->m_pitch + x * m_surface->m_b0);
             i32 tile;
-            if (x < grid->m_0c && y < grid->m_10) {
-                tile = grid->m_08[y][x].m_04;
+            if (x < grid->m_width && y < grid->m_height) {
+                tile = grid->m_rows[y][x].m_4;
             } else {
                 tile = -1;
             }
             if (tile == -1) {
                 i32 idx;
-                if (x < grid->m_0c && y < grid->m_10) {
-                    idx = grid->m_08[y][x].m_0c;
+                if (x < grid->m_width && y < grid->m_height) {
+                    idx = grid->m_rows[y][x].m_c;
                 } else {
                     idx = 0;
                 }
@@ -314,16 +229,23 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 }
                 continue;
             }
-            LfxTileDesc* desc = bank->m_1c[(tile & 0xff) + ((tile >> 8) & 0xff) * 15];
+            // The packed cell id (low byte = col, high byte = row) indexes the
+            // trigger mgr's 4x15 grunt board; the cell IS a CGrunt.
+            CGrunt* desc = board->m_grid[(tile & 0xff) + ((tile >> 8) & 0xff) * 15];
             if (desc == 0) {
                 continue;
             }
             i32 alt = 0;
-            if (desc->m_1d8 != 0) {
+            if (desc->m_arrived != 0) {
                 alt = 1;
             }
-            if ((i64)(u32)g_frameTime - desc->m_870 >= desc->m_878 || desc->m_1ec != g_curPlayer) {
-                CSpriteRef* node = m_mgr->m_74->GetA(desc->m_1f4);
+            // The combat clock/timeout i64 pairs are stored as lo/hi i32 halves
+            // (every writer stamps them as (lo, hi=0)); the 64-bit compare reads
+            // them as the i64 they are - the documented int-pair overlay.
+            if ((i64)(u32)g_frameTime - *(i64*)&desc->m_combatClockLo
+                    >= *(i64*)&desc->m_combatTimeoutLo
+                || desc->m_tileOwnerHi != g_curPlayer) {
+                CSpriteRef* node = m_mgr->m_spriteFactory->GetA(desc->m_1f4_moveIcon);
                 if (node == 0) {
                     *dst = 0;
                     continue;
@@ -340,7 +262,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 continue;
             }
             if (g_timer100 >= 0x32) {
-                CSpriteRef* node = m_mgr->m_74->GetA(desc->m_1f4);
+                CSpriteRef* node = m_mgr->m_spriteFactory->GetA(desc->m_1f4_moveIcon);
                 if (node == 0) {
                     *dst = 0;
                     continue;
@@ -349,8 +271,8 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 continue;
             }
             i32 idx;
-            if (x < grid->m_0c && y < grid->m_10) {
-                idx = grid->m_08[y][x].m_0c;
+            if (x < grid->m_width && y < grid->m_height) {
+                idx = grid->m_rows[y][x].m_c;
             } else {
                 idx = 0;
             }
@@ -380,7 +302,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 // slot arrangement than retail (which holds W in ebp live across the H compute +
 // first idiv, +1 frame slot). Logic 100% correct; deferred to the final sweep.
 RVA(0x000a3820, 0x18e)
-i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
+i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src) {
     CDDSurface* surf = m_surface;
     if (surf == 0) {
         return 0;
@@ -404,14 +326,16 @@ i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
     m_dstT = cy - ((hpx - (hpx >> 31)) >> 1);
     m_dstR = surf->m_width * scale + m_dstL;
     m_dstB = surf->m_height * scale + m_dstT;
-    if (ctx->m_2c->BltEx(&m_dstL, m_surface, 0, 0x1000000, 0) != 0) {
+    if (ctx->m_surface->BltEx(&m_dstL, m_surface, 0, 0x1000000, 0) != 0) {
         return 0;
     }
-    LfxRect* world = &m_surfMgr->m_24->m_5c->m_40;
-    i32 l = world->left >> 5;
-    i32 t = world->top >> 5;
-    i32 rr = world->right >> 5;
-    i32 b = world->bottom >> 5;
+    // The live world rect is the main plane's origin/extent quad (+0x40..+0x4c);
+    // >>5 converts world pixels to tile units.
+    CLevelPlane* world = m_world->m_24->m_mainPlane;
+    i32 l = world->m_originX >> 5;
+    i32 t = world->m_originY >> 5;
+    i32 rr = world->m_extentX >> 5;
+    i32 b = world->m_extentY >> 5;
     if (m_scale != 1) {
         l *= m_scale;
         t *= m_scale;
@@ -481,8 +405,8 @@ void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
 // `this` via `push ecx`, a 1-instr phase shift that renames registers through
 // the whole body. Logic 100% correct.
 RVA(0x000a3b50, 0xfa)
-void CLightFxRender::DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color) {
-    CDDSurface* surf = ctx->m_2c;
+void CLightFxRender::DrawBorder(LfxRect* r, CDDrawSurfacePair* ctx, i32 color) {
+    CDDSurface* surf = ctx->m_surface;
     u16* base = (u16*)surf->Lock(0);
     if (base == 0) {
         return;
@@ -508,7 +432,9 @@ void CLightFxRender::DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color) {
         lp += surf->m_pitch;
         rp += surf->m_pitch;
     }
-    ctx->m_08->Unlock(0);
+    // Retail reloads the cached pair surface from its spill and unlocks ITS held
+    // DirectDraw surface: [surf+0x8] -> IDirectDrawSurface::Unlock (slot 32).
+    surf->m_8->Unlock(0);
 }
 
 // ===========================================================================
@@ -1638,7 +1564,9 @@ i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    CPlay* ctx = m_mgr->m_2c;
+    // The +0x2c slot is the current game state; the draw path only runs in play,
+    // so the concrete state is the CPlay (the PickPlayOrPausedState downcast).
+    CPlay* ctx = (CPlay*)m_mgr->m_curState;
     if (ctx != 0) {
         ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
@@ -1683,7 +1611,7 @@ i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    CPlay* ctx = m_mgr->m_2c;
+    CPlay* ctx = (CPlay*)m_mgr->m_curState;
     if (ctx != 0) {
         ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
@@ -1729,13 +1657,4 @@ i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CLightFxRender);
-SIZE_UNKNOWN(LfxBorderCtx);
-SIZE_UNKNOWN(LfxCell);
-SIZE_UNKNOWN(LfxGrid);
-SIZE_UNKNOWN(LfxMgr);
 SIZE_UNKNOWN(LfxRect);
-SIZE_UNKNOWN(LfxSurfMgr);
-SIZE_UNKNOWN(LfxTileBank);
-SIZE_UNKNOWN(LfxTileDesc);
-SIZE_UNKNOWN(LfxView);
-SIZE_UNKNOWN(LfxWorldRect);

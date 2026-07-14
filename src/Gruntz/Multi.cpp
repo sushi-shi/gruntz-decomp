@@ -1365,11 +1365,9 @@ i32 CMulti::PumpA() {
 
 // The output sink hung off CGruntzMgr::m_inputState (+0x54; thiscall 2-arg blit).
 // (The +0x68 FX-driver view PBSub68 is folded into CMultiSub68 above.)
-class PBSub320 { // CMulti::m_attractOverlay (attract-mode overlay)
-public:
-    void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
-    void Render14dd(void* pane, RECT* rc); // 0x000014dd
-};
+// (The PBSub320 view is DISSOLVED: its Tick1fa0/Render14dd thunks are the real
+// CLightFxRender::Resize @0xa3460 / ComputeRect @0xa3820, dispatched on the
+// typed m_lightFx below - same receiver, same thunks 0x1fa0/0x14dd.)
 // The compositor refresh helper (__cdecl free fn). 0x00002356
 extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 
@@ -1435,9 +1433,8 @@ void CMulti::PumpB() {
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
-            PBSub320* ov = (PBSub320*)m_lightFx;
-            ov->Tick1fa0(g_frameDelta, 0);
-            ov->Render14dd(mgr->m_drawTarget->m_14, &rc);
+            m_lightFx->Resize((i32)g_frameDelta, 0);
+            m_lightFx->ComputeRect((CDDrawSurfacePair*)mgr->m_drawTarget->m_14, (LfxRect*)&rc);
         }
     }
     Mgr()->m_chatLog->Scroll(g_frameDelta);
@@ -1842,7 +1839,6 @@ SIZE_UNKNOWN(CMultiReportGate);
 SIZE_UNKNOWN(CMultiSlotView);
 SIZE_UNKNOWN(CRefresh21bd0);
 SIZE_UNKNOWN(PBListSink);
-SIZE_UNKNOWN(PBSub320);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
