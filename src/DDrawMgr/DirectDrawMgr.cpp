@@ -105,13 +105,10 @@ void BuildColorChannelTables();
 // engine free, reloc-masked rel32.
 void operator delete(void*);
 
-// A CPtrList internal node: { Node* pNext; Node* pPrev; void* data; }.  The pool
-// walk in Clear/Empty derefs node->pNext (+0) and node->data (+8) directly.
-struct CPtrListNode {
-    CPtrListNode* pNext;
-    CPtrListNode* pPrev;
-    void* data;
-};
+// The two pool lists (m_poolA/m_poolB) are real MFC CPtrLists; the drain walks read
+// the head node (GetHeadPosition) and advance element-by-element (GetNext) - the
+// afxcoll.inl inlines lower to the identical `mov reg,[list+4]` head read + node
+// pNext/data walk the old raw-CPtrListNode view spelled by hand.
 
 // The shared pool-item base ctor + dtor, defined INLINE here (before the derived
 // classes' bodies) so each derived dtor inlines the shared teardown - retail has
@@ -583,11 +580,9 @@ void CDDrawPtrCollections::AddItemA(CDDSurface* item) {
 // ---------------------------------------------------------------------------
 RVA(0x00142120, 0x31)
 void CDDrawPtrCollections::EmptyPoolA() {
-    CPtrListNode* node = *(CPtrListNode**)((char*)&m_poolA + 4);
-    while (node) {
-        CPtrListNode* cur = node;
-        node = node->pNext;
-        CDDSurface* item = (CDDSurface*)cur->data;
+    POSITION pos = m_poolA.GetHeadPosition();
+    while (pos) {
+        CDDSurface* item = (CDDSurface*)m_poolA.GetNext(pos);
         delete item;
     }
     m_poolA.RemoveAll();
@@ -956,11 +951,9 @@ void CDDrawPtrCollections::AddItemB(CDDPalette* item) {
 // ---------------------------------------------------------------------------
 RVA(0x00142ed0, 0x3d)
 void CDDrawPtrCollections::EmptyPoolB() {
-    CPtrListNode* node = *(CPtrListNode**)((char*)&m_poolB + 4);
-    while (node) {
-        CPtrListNode* cur = node;
-        node = node->pNext;
-        CDDPalette* item = (CDDPalette*)cur->data;
+    POSITION pos = m_poolB.GetHeadPosition();
+    while (pos) {
+        CDDPalette* item = (CDDPalette*)m_poolB.GetNext(pos);
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1288,6 +1281,18 @@ void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 // new's /GX cleanup frame (push -1/fs:0 + trylevel) the manual operator-new body
 // omits.  docs/patterns/rezalloc-placement-new-no-eh-frame.md family.
 // ---------------------------------------------------------------------------
+// @identity-TODO (full xref chase run, all techniques dead-end at a void*/RTTI-less
+// nested descriptor):
+//   1. sema xref 0x143630 -> callers CDDrawSurfacePair::Create @0x163c90 / SetGeom @0x164250.
+//   2. mangled sig of CreatePoolItem is ?...@@QAEPAXPAX0@Z -> arg0 is `void*` in retail (no
+//      class name recoverable from the signature).
+//   3. disasm 0x163c90 at the call: arg0 = the DEEPLY-NESTED descriptor
+//      [[[CDDrawSurfacePair+0xc]+0x4]+0x10]+0x2c (5 indirections); the factory invokes only
+//      its +0x08 COM interface's slot 12 (+0x30) Make(outB,outA)
+//      (`mov eax,[arg0+8]; mov edx,[eax]; call [edx+0x30]`).
+//   4. no RTTI COL on the descriptor or its interface (no vptr-by-address stamp).
+// Kept as honest by-offset + abstract-COM-interface models (no fabricated identity) until
+// the CDDrawSurfacePair->+0xc surface-descriptor subsystem is RTTI-pinned.
 // The descriptor source (arg0->m_8): a COM-style interface; slot +0x30 fills the
 // two out params.  Reloc-masked __stdcall.
 struct CDdDescSrc {
@@ -1313,23 +1318,14 @@ struct CDdCreateArg {
     CDdDescSrc* m_8; // +0x08 descriptor source
 };
 
-// The pool item: a polymorphic object whose vtable is the RETAIL vtable at 0x5ef7f0.
-// Its Init (slot 1) / scalar-deleting-dtor (slot 0) virtual bodies live in other
-// DDrawMgr TUs, so cl cannot emit a matching ??_7 here; the factory operator-new's
-// the raw 0xc0 block and stamps that retail vtable by ADDRESS (transitional
-// workaround - a non-ctor stamp, the vtable-realization compiler-model wall, same
-// idiom as g_planeRenderVtbl in WwdFile.cpp). The dispatch is expressed as real
-// thiscall virtuals (no hand-rolled vtbl struct): `pi->Init(x)` lowers to the retail
-// `mov edx,[pi]; mov ecx,pi; call [edx+4]`.
-
-struct CDdPoolSub {
-    // Ctor @0x1b4f0b IS the CPtrArray in-place ctor; placement-new at the call.
-};
-struct CDdPoolItem {
-    virtual i32 Dtor(i32);   // slot 0 (+0x00) scalar-deleting dtor (delete-flag arg)
-    virtual i32 Init(void*); // slot 1 (+0x04)
-};
-
+// The pool item is a real CDDSurface (vtable 0x5ef7f0): the former CDdPoolItem
+// "Init/Dtor" 2-slot view + the hand-rolled operator-new construction are dissolved
+// onto `new CDDSurface` + slot-1 Refresh / `delete` (see CreatePoolItem below).
+// @early-stop
+// ~89%: `new CDDSurface` now inlines the ctor correctly (CPtrArray @+0x94, vptr stamp
+// 0x5ef7f0, 6 field-zeros - the old hand-rolled path was MISSING the stamp, +% recovered).
+// Residual is the /GX ctor-in-flight EH-state index of the throwing CPtrArray member ctor
+// (the Create7f0_1/CreateA factory-EH family wall; code bytes match, EH-frame state differs).
 RVA(0x00143630, 0x10d)
 void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
     CDdCreateArg* arg0 = (CDdCreateArg*)arg0v;
@@ -1340,28 +1336,17 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
         return 0;
     }
-    char* item = (char*)::operator new(0xc0);
-    if (item != 0) {
-        new ((CPtrArray*)(item + 0x94)) CPtrArray(); // in-place CPtrArray ctor (0x1b4f0b)
-        // Manual vptr stamp by ADDRESS (the vtable-realization wall - cl cannot emit a
-        // matching ??_7CDDSurface in this DDrawMgr TU); the scalar zeroing is typed onto
-        // the unified CDDSurface fields (same offsets, byte-identical stores).
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        CDDSurface* s = (CDDSurface*)item;
-        s->m_8 = 0;
-        s->m_c = 0;
-        s->m_pos = 0;
-        s->m_dontOwn = 0;
-        s->m_bitDepth = 0;
-        s->m_b8 = 0;
-    } else {
-        item = 0;
-    }
-    CDdPoolItem* pi = (CDdPoolItem*)item;
-    if (pi->Init(outA) == 0) {
-        if (item != 0) {
-            pi->Dtor(1);
-        }
+    // The item IS a CDDSurface (base pool item): `new CDDSurface` emits exactly the
+    // retail operator-new(0xc0) + inlined ctor - the CPtrArray member ctor at +0x94,
+    // the vptr stamp (mov [esi],0x5ef7f0), then the 6 scalar-field zeros in ctor order
+    // (m_8/m_c/m_pos/m_dontOwn/m_bitDepth/m_b8). The throwing CPtrArray member ctor is
+    // what gives the factory its /GX ctor-in-flight EH frame. Slot 1 (Refresh) is the
+    // "init"; a failed init `delete`s the item (slot-0 scalar-deleting dtor under the
+    // compiler's null-guard). The former hand-rolled operator-new + CDdPoolItem view is
+    // dissolved onto this real construction/dispatch.
+    CDDSurface* item = new CDDSurface;
+    if (item->Refresh((IDirectDrawSurface*)outA) == 0) {
+        delete item;
         return 0;
     }
     AddPoolItem(item);
@@ -1693,10 +1678,6 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
 
 SIZE_UNKNOWN(CDdCreateArg);
 SIZE_UNKNOWN(CDdDescSrc);
-SIZE_UNKNOWN(CDdEnumVtbl);
-SIZE_UNKNOWN(CDdPoolItem);
-SIZE_UNKNOWN(CDdPoolSub);
-SIZE_UNKNOWN(CPtrListNode);
 // Size PROVEN from the allocation site (push 0x948; call ??2 -> the ctor), and our
 // reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CDDrawPtrCollections, 0x948);
