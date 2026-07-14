@@ -346,6 +346,10 @@ public:
     // was a fake shape).
     i32 StepInputA(); // (THIS TU)
     void StepWorldB();
+    // The PLAY-state keyboard/cheat dispatcher (0xcbcc0, GameKeyHandler.cpp). Routes a
+    // virtual-key to its game/cheat action; reads the guts (+0x2dc), chat sink (+0x2e0),
+    // area idx and cheat globals. Non-virtual __thiscall; body in its own split TU.
+    i32 DispatchKey(i32 vk, i32 lparam); // 0x0cbcc0 (GameKeyHandler.cpp)
     // (ViewPreStep/ViewPostStep are GONE - fabricated; retail's per-frame view
     // pre/post calls are StepGridWalk (0x2e2d) + winapi_0d0b30_CopyRect (0x1519).)
     // PlayCueAt: (cueId,a2,a3,a4,a5,a6,a7,rectSrc)

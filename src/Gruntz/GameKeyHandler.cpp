@@ -1,6 +1,6 @@
 // GameKeyHandler.cpp - the in-game keyboard/cheat input dispatcher
 // (C:\Proj\Gruntz). The biggest backlog megafunction (5850 B): the PLAY-state
-// key handler, CGamePlayInput::DispatchKey(vk, lparam), which routes a virtual-
+// key handler, CPlay::DispatchKey(vk, lparam), which routes a virtual-
 // key code to its game/cheat action.
 //
 // `this` (esi) is a >0x500-byte PLAY-state object; it reads the game-mgr
@@ -36,8 +36,8 @@
 extern "C" void* g_gameReg; // 0x64556c  _g_mgrSettings (game-mgr singleton)
 extern i32 g_sndCueTag;     // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
 // g_devState was a SECOND NAME for g_spawnConfig (0x245578) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-extern "C" void* g_spawnConfig;
+// so nothing ever defined it. The canonical `StateMgrBZ* g_spawnConfig` comes from
+// <Gruntz/Play.h> (included below); the M(g_spawnConfig,...) raw reads still mask.
 // g_areaIdx was a SECOND NAME for g_curPlayer (0x244c54 current player index) - same address,
 // so nothing ever defined it. Unified onto the canonical.
 extern "C" i32 g_curPlayer;
@@ -60,38 +60,19 @@ extern "C" i32 g_gooPuddlez;
 // so nothing ever defined it. Unified onto the canonical.
 extern "C" i32 g_explosionz;
 
-// External engine receiver handle: every method is declared (no body) so its
-// `call rel32` reloc-masks. Receivers are passed via the (EO*) cast so each
-// `mov ecx,recv; call` falls out.
-// Minimal typed views of the real receiver classes (folded from the old generic
-// `EO` megaview): declared-only + reloc-masked, so each `call rel32` still masks,
-// but the SYMBOL is now the real class method (defined in its own unit) - the call
-// links and EO is gone. Heavy real headers are avoided (CARCASS doctrine); the
-// mangled names match by class+method+signature.
-struct CStatusBarMgr {
-    i32 RefreshState();
-    i32 Deactivate();
-    void CommitSlot(i32 a);
-    i32 SetTabState(i32 a, i32 b);
-    i32 ActivateSlot(i32 a);
-    i32 HlClickGroup2(i32 a);
-    void AdvanceTab(i32 a);
-    i32 HlClickGroup1(i32 a);
-    i32 SetTab(i32 a, i32 b);
-    i32 HlClickGroup0(i32 a);
-};
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
+// External engine receivers - all now the REAL canonical classes (declared-only
+// methods stay reloc-masked, so each `call rel32` masks; the SYMBOL is the real
+// class method defined in its own unit). No .cpp-local receiver views remain.
+#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the +0x2dc guts: tab/slot dispatch)
+#include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (+0x2e0 chat/cheat text sink)
+#include <Gruntz/IconLoaderViews.h> // EngineLabelBacklog (LoadExplosionSprites @0x7b330, shared view)
+#include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
 #include <Gruntz/FontConfig.h> // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
 #include <Gruntz/SoundCue.h>   // CSndHost (its +0x10 IS the real MFC CMapStringToOb)
-#include <Gruntz/GruntzMgr.h>  // canonical CGruntzMgr (score/run/finish helpers)
+#include <Gruntz/GruntzMgr.h>  // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
+#include <Gruntz/Play.h>       // canonical CPlay - the PLAY-state object DispatchKey runs on
 // CObj23d90 (the 0x23d90 grid-snap blit) is the canonical view in
 // <Gruntz/BoundaryTailViews.h>, included below; its Blit body is re-homed here.
-struct EngineLabelBacklog {
-    i32 LoadExplosionSprites(i32 a, i32 b, i32 c, i32 d);
-};
-struct CChatBoxOwner {
-    void ProcessCheatInput(i32 a, i32 b);
-};
 // The +0x488 ring buffer is a real MFC CDWordArray (SetAtGrow @0x1b5144, InsertAt
 // @0x1b516b, RemoveAt @0x1b5200) and the +0x10 name map a real CMapStringToOb
 // (Lookup @0x1b8008 -> CObject*&); both from <Mfc.h>, no local views. (??_7CMapStringToOb
@@ -102,11 +83,9 @@ void __stdcall FreeHintSprite(i32 tag, i32 a, i32 b, i32 c); // 0x25fe
 void __stdcall Fn213f(i32 a, i32 b);                         // 0x213f
 void __stdcall Fn2135(i32 a);                                // 0x2135
 
-// External engine array element in the game-mgr's area table at reg+0x150
-// (0x238-byte stride: drives the `idx*71` strength-reduced index addressing).
-struct RegArea {
-    char _pad[0x238];
-};
+// The game-mgr's area table at reg+0x150 IS the canonical GruntzPlayer m_options[4]
+// (each 0x238 bytes: drives the `idx*71` strength-reduced index addressing) -
+// <Gruntz/GruntzPlayer.h> via GruntzMgr.h above. No local area-slot view.
 
 #define M(o, off) (*(i32*)((char*)(o) + (off)))
 #define W(o, off) (*(i16*)((char*)(o) + (off)))
@@ -127,18 +106,12 @@ struct RegArea {
         }                                                                                          \
     } while (0)
 
-class CGamePlayInput {
-public:
-    i32 DispatchKey(i32 vk, i32 lparam);
-    // self-receiver (esi) engine callees.
-    i32 Fn2c7f();              // 0x2c7f
-    void Fn385a(i32 a);        // 0x385a
-    void Fn2e28(i32 a, i32 b); // 0x2e28
-    void Fn3c15(i32 a);        // 0x3c15
-    void Fn17a8(i32 a);        // 0x17a8
-    void Fn35da(i32 a, i32 b); // 0x35da
-    char m_pad[4];
-};
+// DispatchKey's `this` (esi) IS the canonical CPlay (Play.h). Its self-receiver (esi)
+// engine callees are all real CPlay methods (thunk RVAs resolved to their bodies):
+//   Fn2c7f 0x2c7f->0xda2d0 CPlay::FlushPendingOps    Fn385a 0x385a->0xd6560 ReleaseLevelOverlay
+//   Fn2e28 0x2e28->0xd5f00 CPlay::ResetGoals         Fn3c15 0x3c15->0xd6440 EnterOverlayDrag
+//   Fn17a8 0x17a8->0xd1b30 CPlay::SetCursorFrame     Fn35da 0x35da->0xd0120 LoadCursorSprites
+// (all declared on CPlay in Play.h; reloc-masked non-virtual __thiscall calls).
 
 // 0x23d90 (CObj23d90::Blit, the grid-snap blit DispatchKey drives via a
 // (CObj23d90*)(P(h,0x6c)) receiver) lives in its home TU per the interval
@@ -165,7 +138,7 @@ public:
 // banked. Deferred to the final sweep. See docs/patterns/
 // megafunction-cached-locals-vs-reload-regalloc.md.
 RVA(0x000cbcc0, 0x16da)
-i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
+i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
     void* self = this;
 
     // Top guard (cbcc9): any of five transition flags set -> swallow (ret 1).
@@ -208,7 +181,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             }
             if (key == 0x4e || key == 0x1b) {
                 CLEAR_TAB_HINT(host);
-                this->Fn385a(0);
+                this->ReleaseLevelOverlay(0);
                 return 1;
             }
             // else fall through to the normal map
@@ -247,7 +220,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             if (key == 0x4f) {
                 if (M(host, 0x134) != 1 && M(P(self, 0x2dc), 0x578) != 0) {
                     CLEAR_TAB_HINT(host);
-                    this->Fn385a(0);
+                    this->ReleaseLevelOverlay(0);
                 }
                 return 1;
             }
@@ -278,12 +251,12 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         M(h68, 0x230) = 0;
         void* rec = P(self, 0x2e0);
         if (M(rec, 0x10) != 0) {
-            this->Fn2c7f();
+            this->FlushPendingOps();
             ((CFontConfig*)(P(P(self, 0x2e0), 0x14)))->EndInput();
             M(P(self, 0x2e0), 0x10) = 0;
             return 1;
         }
-        if (this->Fn2c7f() != 0) {
+        if (this->FlushPendingOps() != 0) {
             return 1;
         }
         CLEAR_TAB_HINT(g_gameReg);
@@ -291,7 +264,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             M(g_gameReg, 0xc) ^= 1;
             ((CGruntzMgr*)(g_gameReg))->FinishLevel(M(g_gameReg, 0xc), 1);
         }
-        this->Fn3c15(1);
+        this->EnterOverlayDrag(1);
         return 1;
     }
     // gate (cc1ed): recorder busy / mode gate closed -> swallow
@@ -308,13 +281,13 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     if (key == 0x9) {
         i32 idx = M(self, 0x514);
         i32 pick;
-        RegArea* area;
+        GruntzPlayer* area;
         if (M(dev, 0x18) & 1) {
             pick = idx - 1;
             if (pick < 0) {
                 pick = 3;
             }
-            area = &((RegArea*)((char*)g_gameReg + 0x150))[pick];
+            area = &((GruntzPlayer*)((char*)g_gameReg + 0x150))[pick];
             while (pick != idx) {
                 if (M(area, 0x28) == 0 || (M(area, 0x2c) == 0 && M(area, 0x24) == 0)) {
                     break;
@@ -323,14 +296,14 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
                 if (pick < 0) {
                     pick = 3;
                 }
-                area = &((RegArea*)((char*)g_gameReg + 0x150))[pick];
+                area = &((GruntzPlayer*)((char*)g_gameReg + 0x150))[pick];
             }
         } else {
             pick = idx + 1;
             if (pick >= 4) {
                 pick = 0;
             }
-            area = &((RegArea*)((char*)g_gameReg + 0x150))[pick];
+            area = &((GruntzPlayer*)((char*)g_gameReg + 0x150))[pick];
             while (pick != idx) {
                 if (M(area, 0x28) == 0 || (M(area, 0x2c) == 0 && M(area, 0x24) == 0)) {
                     break;
@@ -339,21 +312,21 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
                 if (pick >= 4) {
                     pick = 0;
                 }
-                area = &((RegArea*)((char*)g_gameReg + 0x150))[pick];
+                area = &((GruntzPlayer*)((char*)g_gameReg + 0x150))[pick];
             }
         }
         if (M(area, 0x28) != 0 && M(area, 0x2c) == 0 && M(area, 0x24) == 0) {
             M(self, 0x514) = pick;
-            this->Fn2e28(M(area, 0x220), M(area, 0x224));
+            this->ResetGoals(M(area, 0x220), M(area, 0x224));
         }
     }
     // H (cc30b): jump to the current area's default cue
     if (key == 0x48) {
-        RegArea* a = &((RegArea*)((char*)g_gameReg + 0x150))[g_curPlayer];
+        GruntzPlayer* a = &((GruntzPlayer*)((char*)g_gameReg + 0x150))[g_curPlayer];
         if (a == 0) {
             return 1;
         }
-        this->Fn2e28(M(a, 0x220), M(a, 0x224));
+        this->ResetGoals(M(a, 0x220), M(a, 0x224));
         return 1;
     }
     // Q (cc350): toggle the pause flag
@@ -388,13 +361,13 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // T (cc41c)
     if (key == 0x54) {
-        this->Fn2c7f();
+        this->FlushPendingOps();
         ((CTriggerMgr*)(P(g_gameReg, 0x68)))->ToggleRegionA();
         return 1;
     }
     // Y (cc444)
     if (key == 0x59) {
-        this->Fn2c7f();
+        this->FlushPendingOps();
         ((CTriggerMgr*)(P(g_gameReg, 0x68)))->ToggleRegionB();
         return 1;
     }
@@ -451,7 +424,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             }
         }
         void* e = P(P(self, 0x48c), M(self, 0x49c) * 4);
-        this->Fn2e28(M(e, 0), M(e, 0x4));
+        this->ResetGoals(M(e, 0), M(e, 0x4));
         return 1;
     }
     // Backspace (cc5da): delete the current recorder node
@@ -625,7 +598,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         if (g_gruntCreation == 0) {
             return 1;
         }
-        RegArea* a = &((RegArea*)((char*)g_gameReg + 0x150))[g_curPlayer];
+        GruntzPlayer* a = &((GruntzPlayer*)((char*)g_gameReg + 0x150))[g_curPlayer];
         if (a == 0) {
             return 1;
         }
@@ -787,7 +760,7 @@ recorder_place:
         if (M(self, 0x368) != 0) {
             M(self, 0x368) = 0;
             ((CStatusBarMgr*)(P(self, 0x2dc)))->CommitSlot(0);
-            this->Fn17a8(0);
+            this->SetCursorFrame(0);
             if (key != 0x2d) {
                 goto tail_default;
             }
@@ -807,11 +780,11 @@ recorder_place:
         M(self, 0x36c) = 0;
         if (key == 0x2e || key == 0x6e) {
             Fn2135(st);
-            this->Fn17a8(0);
+            this->SetCursorFrame(0);
             return 1;
         }
         Fn213f(0, st);
-        this->Fn17a8(0);
+        this->SetCursorFrame(0);
         if (lvl == 0) {
             if (ph == 0) {
                 if (key != 0x90) {
@@ -913,7 +886,7 @@ tail_default:
     {
         void* h68 = P(g_gameReg, 0x68);
         M(h68, 0x2a8) = 0;
-        this->Fn35da(0, 0);
+        this->LoadCursorSprites(0, 0);
     }
 tail_default2:
     // cd24a
@@ -1001,6 +974,3 @@ tail_default2:
 #undef E
 #undef CLEAR_TAB_HINT
 
-SIZE_UNKNOWN(CGamePlayInput);
-SIZE(RegArea, 0x238);
-SIZE_UNKNOWN(EO);
