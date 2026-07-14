@@ -483,7 +483,7 @@ CMulti::~CMulti() {
     // virtual dtor); no manual stamp is needed at the most-derived level.
     Teardown();
     // CMulti sub-object teardown (high block).
-    m_604.~CByteArray();
+    m_604.~CDWordArray();
     m_5b8.~CString();
     m_5b4.~CString();
     m_hostName.~CString();
@@ -769,10 +769,10 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     // --- custom-level path ---
     if (TF(0x5b0) != 0) {
         MF(0x12c) = 0;
-        *(CString*)((char*)NetGameMgr() + 0xc8) = "custom\\" + ((CNetMgr*)this)->GetConfigNameB();
+        *(CString*)((char*)NetGameMgr() + 0xc8) = "custom\\" + GetConfigNameB();
     } else {
         MF(0x12c) = 1;
-        *(CString*)((char*)NetGameMgr() + 0xc8) = ((CNetMgr*)this)->GetConfigNameA();
+        *(CString*)((char*)NetGameMgr() + 0xc8) = GetConfigNameA();
     }
     if (Mgr()->GetWorldFileName().GetLength() == 0) {
         return 0;
@@ -839,7 +839,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
     TF(0x57c) = 1;
     TF(0x534) = 0;
-    i32 wr = ((CNetMgr*)this)->WaitForOtherPlayers();
+    i32 wr = WaitForOtherPlayers();
     TF(0x57c) = 0;
     if (wr == 0) {
         return 0;
@@ -2363,10 +2363,10 @@ i32 CMulti::VerifyCustomLevel(void* h, i32 playerTok) {
 
     i32 token;
     if (m_5b0 != 0) {
-        CString b = ((CNetMgr*)this)->GetConfigNameB();
+        CString b = GetConfigNameB();
         token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, b);
     } else {
-        CString a = ((CNetMgr*)this)->GetConfigNameA();
+        CString a = GetConfigNameA();
         token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, a);
     }
 
@@ -2710,7 +2710,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_534 != 0) {
                 break;
             }
-            ((CNetMgr*)this)->RecordDropPlayer2((i32)pd, sender);
+            RecordDropPlayer2((i32)pd, sender);
             break;
 
         case 0x422: {
@@ -3115,7 +3115,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
 RVA(0x000ba590, 0x63)
 void CMulti::AckDropPlayer(i32 id) {
     if (m_534 == 0) {
-        ((CNetMgr*)this)->RecordDropPlayer2(0, id);
+        RecordDropPlayer2(0, id);
         CNetCmdSlot* slot = Session()->FindCmdSlot(id);
         if (slot != 0) {
             slot->Touch();
@@ -3755,25 +3755,25 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
 // the m_534 latch) but retail pins this->esi / id->edi where cl assigns this->edi /
 // id->esi; the register choice is not steerable from source. Final sweep.
 RVA(0x000bb5e0, 0xd9)
-void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
+void CMulti::RecordDropPlayer2(i32 a, i32 id) {
     if (m_534 != 0) {
         return;
     }
-    if (id == m_localPlayerId) {
+    if (id == m_hostIndex) {
         return;
     }
 
-    i32 count = m_dropIdCount;
+    i32 count = m_604.GetSize();
     i32 i;
     for (i = 0; i < count; i++) {
-        if (m_dropIds[i] == id) {
+        if ((i32)m_604[i] == id) {
             return;
         }
     }
 
     i32 slot = 0;
     while (slot < count) {
-        if (m_dropIds[slot] == 0) {
+        if (m_604[slot] == 0) {
             break;
         }
         slot++;
@@ -3781,7 +3781,7 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
     if (slot >= count) {
         return;
     }
-    m_dropIds[slot] = id;
+    m_604[slot] = id;
 
     i32 stateThree = 0;
     CNetCmdSlot* p = m_session->m_slots;
@@ -3794,7 +3794,7 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
 
     i32 recorded = 0;
     for (i = 0; i < count; i++) {
-        if (m_dropIds[i] != 0) {
+        if (m_604[i] != 0) {
             recorded++;
         }
     }
@@ -3833,13 +3833,13 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
 //       the wait loop (edi/ebx/ebp) differently than cl colours them - the same
 //       zero-register/regalloc wall as Poll. Logic + control flow are byte-faithful.
 RVA(0x000bb700, 0x265)
-i32 CNetMgr::WaitForOtherPlayers() {
-    CDWordArray* votes = (CDWordArray*)((char*)this + 0x604);
+i32 CMulti::WaitForOtherPlayers() {
+    CDWordArray* votes = &m_604;
     votes->SetSize(0, -1);
     for (i32 k = 3; k != 0; k--) {
         votes->SetAtGrow(votes->GetSize(), 0);
     }
-    if (m_peer->m_peerReady == 1) {
+    if (Peer()->m_peerReady == 1) {
         m_534 = 1;
         return 1;
     }
@@ -3907,7 +3907,7 @@ i32 CNetMgr::WaitForOtherPlayers() {
     if (g->m_14 != 0) {
         char buf[0x40];
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-        m_4->m_sound->PlayByName(buf, 1);
+        NetGameMgr()->m_sound->PlayByName(buf, 1);
     }
     return 1;
 }
@@ -4608,11 +4608,11 @@ i32 CMulti::SaveConfig(CNetPlayerEntry* recipient) {
     blob.m_4 = STAT_CONFIG;
     blob.m_8 = m_5b0;
     {
-        CString a = ((CNetMgr*)this)->GetConfigNameA();
+        CString a = GetConfigNameA();
         wsprintfA(blob.m_nameA, (const char*)a);
     }
     {
-        CString b = ((CNetMgr*)this)->GetConfigNameB();
+        CString b = GetConfigNameB();
         wsprintfA(blob.m_nameB, (const char*)b);
     }
     blob.m_10c = m_5a4;

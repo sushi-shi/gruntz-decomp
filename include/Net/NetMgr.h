@@ -1130,7 +1130,6 @@ public:
     void PopulateSessionList(void* hList);   // 0x178d40  (/GX) fill a Win32 session list box
 
     // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
-    void RecordDropPlayer2(i32 a, i32 id); // 0xbb5e0  record a pending drop (matched here)
     i32 DropChannelPlayer(i32 idx);        // 0xbb510  drop the player on channel[idx]
     i32 LoadConfig(void* cfg);             // 0xbce80  copy the command-timing config in
     void AutoTuneCmdDelay();               // 0xbcc10  derive m_cmdDelay/m_resend from the ping
@@ -1191,11 +1190,7 @@ public:
     void DropTimeout();    // 0xbc2d0 (drop a timed-out player)
     i32 GetAmbientId();    // 0xda200 (current ambient-track index for the "AMBIENT%d" cue)
 
-    // WaitForOtherPlayers (0xbb700, /GX): count session slots in state 3; if any,
-    // announce the wait (stat 0x3ed), put up the "Waiting for other playerz" status
-    // string, and spin (Sleep + PollSession) with a 5s resend / 120s abort timer,
-    // playing an "AMBIENT%d" cue each pass, until every slot leaves state 3.
-    i32 WaitForOtherPlayers(); // 0xbb700
+    // (WaitForOtherPlayers @0xbb700 moved to CMulti in the netmgr-vs-cmulti split.)
 
     // CreateLocalPlayer (0xbc750, /GX EH): register the local player with the peer
     // under the local name, latch its id (m_localPlayerId), wait for the host to admit it,
@@ -1235,15 +1230,8 @@ public:
     // Session-ready gate (0xb9180): with both args set, polls the session once if the
     // done-latch (m_534) is clear, then reports whether it is now set.
     i32 PollSessionGated(i32 a1, i32 a2); // 0xb9180
-    // The two config-name accessors: return the m_5b4 / m_5b8 CStrings by value.
-    RVA(0x000b6090, 0x23)
-    CString GetConfigNameA() {
-        return m_5b4;
-    }
-    RVA(0x000b60d0, 0x23)
-    CString GetConfigNameB() {
-        return m_5b8;
-    }
+    // (GetConfigNameA @0xb6090 / GetConfigNameB @0xb60d0 moved to CMulti in the
+    // netmgr-vs-cmulti split - they return CMulti's m_5b4/m_5b8 config-name CStrings.)
     // The control-message dispatch + the player-left handler.
     RVA(0x000ba170, 0x20)
     CString GetName() {

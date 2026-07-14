@@ -275,6 +275,17 @@ public:
     CString GetString5a0() {
         return m_hostName;
     }
+    // The two config-name accessors (moved off the conflated CNetMgr in the
+    // netmgr-vs-cmulti split): return the m_5b4 / m_5b8 CStrings by value. `this`
+    // is a CMulti at every call site (SetupMultiplayerSession/OnJoinConfirm/...).
+    RVA(0x000b6090, 0x23)
+    CString GetConfigNameA() {
+        return m_5b4;
+    }
+    RVA(0x000b60d0, 0x23)
+    CString GetConfigNameB() {
+        return m_5b8;
+    }
     CString Name42ff(); // ILT 0x0042ff -> GetConfigNameB 0x0b60d0 (MultiColorDlg)
     CString Name31d4(); // ILT 0x0031d4 -> GetConfigNameA 0x0b6090 (MultiColorDlg)
     void ReportVersionMsg(char* msg, i32 code); // 0x0b7e30
@@ -387,6 +398,11 @@ public:
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2);                            // 0x0ba1a0
     i32 OnPlayerLeft(i32 playerId);                                              // 0x0ba3b0
     void AckDropPlayer(i32 id);                                                  // 0x0ba590
+    // Drop/wait helpers (moved off the conflated CNetMgr in the netmgr-vs-cmulti
+    // split): both run on `this`==CMulti (they read the +0x520 session, the +0x604
+    // drop-id CDWordArray, m_534, m_hostIndex).
+    void RecordDropPlayer2(i32 a, i32 id); // 0x0bb5e0
+    i32 WaitForOtherPlayers();             // 0x0bb700
     i32 LoadMenuSelectSprite(void* evp);                                         // 0x0ba620
     i32 ParseChannelTable(void* packet);                                         // 0x0ba980
     i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e); // 0x0baac0
@@ -478,7 +494,11 @@ public:
     i32 m_5ec;               // +0x5ec
     i32 m_channelLatency[4]; // +0x5f0  per-channel ack-latency values (gap-named)
     i32 m_600;               // +0x600
-    CByteArray m_604; // +0x604  (drop-id array; net methods view m_pData/m_nSize as dropIds/count)
+    // +0x604  the drop-id / vote scratch array. It is a CDWordArray (dword
+    // elements): WaitForOtherPlayers drives it via CDWordArray SetSize
+    // @0x1b4bad / SetAtGrow @0x1b4d7c, and RecordDropPlayer2 reads GetData()
+    // (+0x608) / GetSize() (+0x60c) as the pending-drop id list.
+    CDWordArray m_604; // +0x604
     // Tail padding to the TRUE retail size: TransitionState `push 0x660; call ??2` @0x8bd24,
     // then the inline `mov [esi],??_7CMulti@@6B@` (0x5e9fe4) stamp.
     char m_pad618[0x660 - 0x618];
