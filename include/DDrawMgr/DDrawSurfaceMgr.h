@@ -66,6 +66,7 @@ class CDDrawWorkerCache;     // +0x14 the string-keyed worker cache (its +0x10 m
                              //       name->value resolve map the CWwdObjMgr factories read)
 class CDDrawWorkerMapSmall;  // +0x18 the polymorphic sprite/palette registry (: CObject, 13 slots)
 class CDDrawSubMgrLeafScan;  // (class, not struct - the PAU/PAV fwd-mangling trap)
+class CDDrawSubMgrLeaf;      // +0x2c the label sub-manager (KeyOfValue_152d30 / m_10 map)
 struct CDDrawPtrCollections; // the +0x1c surface pool (heap object)
 struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
 
@@ -115,7 +116,7 @@ public:
     // it with new(0x6d4) + ctor 0x15ccd0 == SIZE(CGameLevel, 0x6d4) + ??0CGameLevel.
     class CGameLevel* m_resolveSubMgr;
     CDDrawSubMgrLeafScan* m_leafScan; // +0x28  CDDrawSubMgrLeafScan
-    CLoadable* m_leaf;                // +0x2c  CDDrawSubMgrLeaf
+    CDDrawSubMgrLeaf* m_leaf;         // +0x2c  CDDrawSubMgrLeaf (label sub-mgr; KeyOfValue_152d30)
     HWND m_hWnd;                      // +0x30  bound window / device handle
     i32 m_flags;                      // +0x34  caps flags
     i32 m_lastError;                  // +0x38  last-error code

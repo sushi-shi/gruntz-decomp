@@ -31,6 +31,7 @@
 #include <Globals.h>          // g_wwdObjIdCounter (serialized header id)
 #include <string.h>           // strcpy/memset (inline header build)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // real +0x28 child type (m_2c held stream, ClearMap)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>     // real +0x2c child type (m_leaf; virtual-dtor delete)
 #include <DDrawMgr/DDrawSurfacePair.h>    // m_pages->m_frontPair geometry (m_width/m_height)
 #include <DDrawMgr/DDrawPtrCollections.h> // real +0x1c pool type (non-virtual dtor 0x141d50)
 #include <Dsndmgr/SoundStream.h>          // real +0x20 stream type (Stop 0x137a80 / Free 0x137740)
