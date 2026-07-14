@@ -19,6 +19,7 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint (+ <Mfc.h> CPtrList/CByteArray)
 
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
+#include <Gruntz/SoundCue.h>      // CSndHost (a typedef - never fwd-declare it): CTmLevel::m_28
 #include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the world's +0x2dc status-bar item)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
@@ -190,12 +191,19 @@ struct CTmLevelView {
 };
 
 // The level object stored at CTriggerMgr+0x22c (set by SetLevel): its +0x8 is the sprite
-// factory the spawners create from, +0x24 the level view.
+// factory the spawners create from, +0x24 the level view, +0x28 the named-cue registry.
+// IDENTITY: this IS the world holder CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) -
+// all three members land on it exactly (m_8 CSpriteFactory* / m_24 the level object /
+// m_28 CSndHost*), and the finish-level driver reaches the SAME +0x28 registry through
+// g_gameReg->m_world in GooWellMgr.cpp. Fold deferred only because m_24's CTmLevelView
+// must first reconcile with the canonical CGameLevel (m_10/m_14 == m_planeCtx ints,
+// m_5c == m_mainPlane as CLevelPlane-vs-CPlaneRender) - a cross-header pass.
 struct CTmLevel {
     char p0[0x8];
     CSpriteFactory* m_8; // +0x08  sprite/object factory + live-object list holder
     char pc[0x24 - 0xc];
     CTmLevelView* m_24; // +0x24  the level view (scroll origin)
+    CSndHost* m_28;     // +0x28  named-cue registry (== CSpriteFactoryHolder::m_28)
 };
 
 // The level's display-object list (level->m_8->m_liveObjects, the canonical
@@ -207,31 +215,22 @@ struct CTmLevel {
 // (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
 // masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
 
-// The puddle's placement target (sprite desc +0x18): a CUserLogic-ish object whose
-// PlacePuddle(a,b,c,d) does the real placement (reloc-masked @0x9c3f0) and whose +0x38
-// goal carries the +0x8 flags ORed with 0x10000 on failure. The (x,y,z) the record-list
-// walk matches against live at +0x54/+0x58/+0x5c.
-struct CTmPuddleTarget {
-    i32 Place(i32 a, i32 b, i32 c, i32 d); // 0x9c3f0
-    char p0[0x38];
-    CTmGoal* m_38; // +0x38  goal object (its +0x8 is the flags word)
-    char p1[0x54 - 0x3c];
-    i32 m_54; // +0x54  match x
-    i32 m_58; // +0x58  match y
-    i32 m_5c; // +0x5c  busy flag
-};
+// (CTmPuddleTarget is GONE - it was a SECOND view of the baseList element the canonical
+//  CTmCandidate (<Gruntz/TriggerMgr.h>) already models: same +0x38 bound/goal object,
+//  same +0x54/+0x58 grid pair, same +0x5c occupied gate. Its Place @0x9c3f0 moved there.)
 // The cell record nodes PlacePuddle walks: this+0x4 is the intrusive CPtrList head node,
 // this+0xc its count. Each node carries the next ptr @+0 and the placed-object @+0x8.
+// (These are MFC CPtrList CNodes - next/prev/data - viewed with a typed data slot.)
 struct CTmRecNode {
-    CTmRecNode* m_next;     // +0x00
-    char p0[0x4];           // +0x04
-    CTmPuddleTarget* m_obj; // +0x08  placed object (the puddle target shape)
+    CTmRecNode* m_next;   // +0x00
+    char p0[0x4];         // +0x04
+    CTmCandidate* m_obj;  // +0x08  placed object (the baseList candidate element)
 };
 
-// The pending-fx sub-object at CTriggerMgr+0x2a0; its Pulse() is the reloc-masked thiscall.
-struct CTmPendingFx {
-    void Pulse(); // reloc-masked
-};
+// (CTmPendingFx is GONE - the +0x2a0 object is the pending-fx GRUNT: its `Pulse()` was
+//  ?ResolveDeathAnimation@CGrunt@@QAEHXZ @0x455f0 through ILT 0x3a1c at both call sites,
+//  and the deserializer stores the looked-up sprite's m_7c->m_logic there. The member is
+//  typed CTmCell* (== CGrunt) in <Gruntz/TriggerMgr.h>.)
 
 // The overlay snapshot source `obj`: a sprite whose +0x2c / +0x30 vtable slots are the
 // 8-byte field getters RebuildOverlay copies into the manager's three pose blocks. Modeled
@@ -283,10 +282,8 @@ SIZE_UNKNOWN(CTmGridHolder);
 SIZE_UNKNOWN(CTmRegSub30);
 SIZE_UNKNOWN(CTmNameReg);
 SIZE_UNKNOWN(CTmLevel);
-SIZE_UNKNOWN(CTmPuddleTarget);
 SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CTmCell);
-SIZE_UNKNOWN(CTmPendingFx);
 SIZE_UNKNOWN(CTmOverlaySrc);
 SIZE_UNKNOWN(CTmCursorMgr);
 SIZE_UNKNOWN(CTmScroll);

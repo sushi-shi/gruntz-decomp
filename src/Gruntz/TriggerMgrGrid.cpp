@@ -44,8 +44,8 @@
 // ReportError @0x08dc60 (it used to emit ?ReportError@CTmGameReg@@, which nothing defines).
 extern "C" CGruntzMgr* g_gameReg;
 
-// 0x6b640: SetLevel - store the supplied level at +0x22c, clear m_230 + m_pendingFx
-// and raise m_2a4; returns 1 (0 when arg is null).
+// 0x6b640: SetLevel - store the supplied level at +0x22c, clear m_armed + m_pendingFx
+// and raise m_countdownActive; returns 1 (0 when arg is null).
 RVA(0x0006b640, 0x2f)
 i32 CTriggerMgr::SetLevel(CTmLevel* lvl) {
     if (lvl == 0) {
@@ -54,7 +54,7 @@ i32 CTriggerMgr::SetLevel(CTmLevel* lvl) {
     m_level = lvl;
     m_armed = 0;
     m_pendingFx = 0;
-    m_2a4 = 1;
+    m_countdownActive = 1;
     return 1;
 }
 

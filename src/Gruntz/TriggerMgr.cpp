@@ -881,9 +881,9 @@ void CTriggerMgr::ResetSpawnState() {
         }
     }
     if (g_gameReg->m_134 == 1) {
-        CTmPendingFx* fx = m_pendingFx;
+        CTmCell* fx = m_pendingFx; // the pending-fx grunt (ex-CTmPendingFx::Pulse == 0x455f0)
         if (fx != 0) {
-            fx->Pulse();
+            fx->ResolveDeathAnimation();
         }
     }
     this->RefreshB(6);
@@ -973,9 +973,9 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         }
         if (k == 0x14) {
             if (g_gameReg->m_134 == 1) {
-                CTmPendingFx* fx = m_pendingFx;
+                CTmCell* fx = m_pendingFx; // the pending-fx grunt
                 if (fx != 0) {
-                    fx->Pulse();
+                    fx->ResolveDeathAnimation();
                 }
             }
             this->RefreshB(1);
@@ -1031,7 +1031,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
 // Logic + offsets + the RemoveAt/RemoveAll recycle byte-exact. topic:wall.
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
-    CTmPuddleTarget* tgt = (CTmPuddleTarget*)sprite->m_7c->m_logic;
+    CTmCandidate* tgt = (CTmCandidate*)sprite->m_7c->m_logic;
     i32 d = sprite->m_118;
     if (d == 0) {
         d = 0x19;
@@ -1047,9 +1047,9 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     while (n != 0 && unlinked == 0) {
         CTmRecNode* cur = n;
         n = n->m_next;
-        CTmPuddleTarget* o = cur->m_obj;
-        if (o->m_54 == tgt->m_54 && o->m_58 == tgt->m_58) {
-            if (o->m_5c != 0) {
+        CTmCandidate* o = cur->m_obj;
+        if (o->m_gridX == tgt->m_gridX && o->m_gridY == tgt->m_gridY) {
+            if (o->m_occupied != 0) {
                 tgt->m_38->m_8 |= 0x10000;
                 return 0;
             }
@@ -1063,8 +1063,8 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         while (n != 0) {
             CTmRecNode* cur = n;
             n = n->m_next;
-            CTmPuddleTarget* o = cur->m_obj;
-            if (o->m_5c == 0) {
+            CTmCandidate* o = cur->m_obj;
+            if (o->m_occupied == 0) {
                 o->m_38->m_8 |= 0x10000;
                 m_baseList.RemoveAt((POSITION)cur);
             }
@@ -1203,7 +1203,9 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
         }
     }
     CTmOverlaySrc* src = (CTmOverlaySrc*)obj;
-    char* blk0 = m_overlayDescA;
+    // The three i64 timer pairs, snapshotted as raw 8-byte blocks (the GetA/GetB
+    // getters copy bytes); (char*)& keeps retail's one-lea + biased-second-push shape.
+    char* blk0 = (char*)&m_timerBase;
     if (kind != 4) {
         if (kind == 7) {
             src->GetA(blk0, 8);
@@ -1213,7 +1215,7 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
         src->GetB(blk0, 8);
         src->GetB(blk0 + 8, 8);
     }
-    char* blk1 = m_overlayDescB;
+    char* blk1 = (char*)&m_gooTimerBase;
     if (kind != 4) {
         if (kind == 7) {
             src->GetA(blk1, 8);
@@ -1223,7 +1225,7 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
         src->GetB(blk1, 8);
         src->GetB(blk1 + 8, 8);
     }
-    char* blk2 = m_overlayDescC;
+    char* blk2 = (char*)&m_resourceTimerBase;
     if (kind != 4) {
         if (kind == 7) {
             src->GetA(blk2, 8);
@@ -1313,10 +1315,10 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
         goalId = *(i32*)((char*)goal + 0x188);
     }
     ar->Write(&goalId, 4);
-    void* ov = m_pendingFx;
+    CTmCell* ov = m_pendingFx; // the pending-fx grunt; its HUD carries the archive id
     i32 ovId = 0;
-    if (ov != 0 && *(void**)((char*)ov + 0x10) != 0) {
-        ovId = *(i32*)(*(char**)((char*)ov + 0x10) + 0x188);
+    if (ov != 0 && ov->m_10 != 0) {
+        ovId = ov->m_10->m_188;
     }
     ar->Write(&ovId, 4);
     ar->Write(m_274, 0x10);
@@ -1345,9 +1347,9 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     }
     ar->Write(&m_armed, 4);
     ar->Write(&m_284, 4);
-    ar->Write(&m_288, 4);
+    ar->Write(&m_phase, 4);
     ar->Write(&m_recX, 8);
-    ar->Write(&m_2a4, 4);
+    ar->Write(&m_countdownActive, 4);
     ar->Write(&m_3ec, 4);
     ar->Write(&m_groupFlag, 4);
     ar->Write(&g_curPlayer, 4);
@@ -1393,10 +1395,10 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     if (m_level == 0) {
         return 0;
     }
-    m_soundChanA = 0;
-    m_soundChanB = 0;
-    m_3f8 = 0;
-    m_3fc = 0;
+    m_rollingballLoop = 0;
+    m_teleportLoop = 0;
+    m_rollingballWanted = 0;
+    m_teleportWanted = 0;
 
     // The factory's embedded serialize map is the real MFC CMapPtrToPtr at +0x48
     // (Lookup @0x1b8760); documented embedded-member offset (see SpriteFactory.h).
@@ -1499,8 +1501,10 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
             if (looked == 0) {
                 return 0;
             }
-            void* obj = ((CGameObject*)looked)->m_7c->m_logic;
-            m_pendingFx = (CTmPendingFx*)obj; // Eh's serialize-view reinterpret
+            // the looked-up sprite's bound logic IS the pending-fx grunt (the creator
+            // downcast every m_7c->m_logic consumer does)
+            CTmCell* obj = (CTmCell*)((CGameObject*)looked)->m_7c->m_logic;
+            m_pendingFx = obj;
             if (obj == 0) {
                 return 0;
             }
@@ -1551,9 +1555,9 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     // tail scalars + two globals
     ar->Read(&m_armed, 4);
     ar->Read(&m_284, 4);
-    ar->Read(&m_288, 4);
+    ar->Read(&m_phase, 4);
     ar->Read(&m_recX, 8);
-    ar->Read(&m_2a4, 4);
+    ar->Read(&m_countdownActive, 4);
     ar->Read(&m_3ec, 4);
     ar->Read(&m_groupFlag, 4);
     ar->Read(&g_curPlayer, 4);
@@ -1984,95 +1988,30 @@ void CTriggerMgr::StopPendingFx() {
 }
 
 // ===========================================================================
-// CGruntResurrector::LoadGruntResurrectTuning (0x7be60) - merged from
+// CTriggerMgr::LoadGruntResurrectTuning (0x7be60) - merged from
 // GruntResurrectRadius.cpp per dossier 10b (the resurrect-radius pass, sibling
-// of the rock-break scan; called by CGrunt::LoadGruntAbilityTuning @0x572db).
-// @identity-TODO: CGruntResurrector/Res* identities are placeholders (the
-// owning `this` is the grunt-list manager; g_gameReg/g_resButeMgr are the
-// donor's names for the 0x64556c / 0x2453d8 singletons).
+// of the rock-break scan; called by CGrunt::LoadGruntAbilityTuning @0x57100 via
+// ILT 0x1fff). THE Res* VIEWS ARE DISSOLVED (2026-07-14) - the whole donor
+// family was CTriggerMgr + its canonicals, proven by the methods it masked:
+//   CGruntResurrector           -> CTriggerMgr: its `Resurrect` (ILT 0x40bb) is
+//        ?PlaceObject@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z @0x6b6d0 and its `Notify`
+//        (0x1b4ac7) is the MFC ?RemoveAt@CPtrList@@ on the +0 m_baseList - the
+//        same list head (+0x4) the view called `m_4`.
+//   ResNode                     -> CTmRecNode (an MFC CPtrList CNode).
+//   ResGrunt                    -> CTmCandidate (<Gruntz/TriggerMgr.h>): identical
+//        +0x38 bound obj / +0x54 +0x58 grid pair / +0x5c occupied / +0x68 type /
+//        +0x6c host - the third view of the baseList element (with the ex-
+//        CTmPuddleTarget); knowledge merged onto the canonical.
+//   ResGruntLogic               -> CTmGoal (the +0x8 flags 0x10000 released bit).
+//   ResMgrCfgEntry              -> GruntzPlayer (the m_options[4] element; its
+//        +0x38 CBattlezMapConfig is the real embedded bundle).
+//   ResSettings / ResFactoryHost-> CGruntzMgr / CSpriteFactoryHolder (m_134,
+//        m_options @+0x150, m_world @+0x30, m_world->m_8 factory).
 // ===========================================================================
-SIZE_UNKNOWN(ResGruntLogic);
-struct ResGruntLogic { // grunt->m_38
-    char m_pad00[0x8];
-    u32 m_8; // +0x08  flags (|= 0x10000 on resurrect)
-};
-struct ResHost; // grunt->m_6c (opaque; passed through to Resurrect)
-SIZE_UNKNOWN(ResGrunt);
-struct ResGrunt {
-    char m_pad00[0x38];
-    ResGruntLogic* m_38; // +0x38
-    char m_pad3c[0x54 - 0x3c];
-    i32 m_54; // +0x54  x tile
-    i32 m_58; // +0x58  y tile
-    i32 m_5c; // +0x5c  busy/skip gate
-    char m_pad60[0x68 - 0x60];
-    i32 m_68;      // +0x68  grunt type index
-    ResHost* m_6c; // +0x6c
-};
-SIZE_UNKNOWN(ResNode);
-struct ResNode {
-    ResNode* m_next; // +0x00
-    char m_pad04[0x4];
-    ResGrunt* m_grunt; // +0x08
-};
-SIZE_UNKNOWN(ResMgrCfgEntry);
-struct ResMgrCfgEntry { // g_gameReg + 0x150 + type*0x238
-    char m_pad00[0x14];
-    i32 m_14; // +0x14
-    char m_pad18[0x20 - 0x18];
-    i32 m_20; // +0x20
-    i32 m_24; // +0x24
-    char m_pad28[0x2c - 0x28];
-    i32 m_2c; // +0x2c
-    char m_pad30[0x38 - 0x30];
-    CBattlezMapConfig m_38; // +0x38
-    char m_pad3c[0x238 - 0x3c];
-};
-// The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
-// the created "LightFx" eye-candy sprite is the shared CGameObject whose +0x7c
-// AnimWorkerObj carries the Init driver (+0x10) and the per-class setup slot m_18
-// (+0x18) - here the LightFx flash config below, downcast at the site.
-SIZE_UNKNOWN(ResFactoryHost);
-struct ResFactoryHost {
-    char m_pad00[0x8];
-    CSpriteFactory* m_8; // +0x08
-};
-SIZE_UNKNOWN(ResSettings);
-struct ResSettings {
-    char m_pad00[0x30];
-    ResFactoryHost* m_world; // +0x30
-    char m_pad34[0x134 - 0x34];
-    i32 m_134; // +0x134  resurrect mode
-    char m_pad138[0x150 - 0x138];
-    ResMgrCfgEntry m_150[1]; // +0x150  per-type config (stride 0x238)
-};
 // The resource-config manager @0x2453d8 IS the canonical CButeMgr singleton g_buteMgr
 // (?g_buteMgr@@3VCButeMgr@@A, DATA-bound tree-wide; the former ResButeMgr {} view + its
 // (CButeMgr*) cross-casts were a fake facet - dissolved onto the real class).
 extern CButeMgr g_buteMgr;
-SIZE_UNKNOWN(CGruntResurrector);
-struct CGruntResurrector {
-    char m_pad00[0x4];
-    ResNode* m_4; // +0x04  grunt list head
-    // FUN_000040bb __thiscall: spawn/resurrect one grunt (ret != -1 on success).
-    i32 Resurrect(
-        i32 type,
-        i32 px,
-        i32 py,
-        i32 a3,
-        i32 a4,
-        ResHost* host,
-        i32 a6,
-        i32 a7,
-        i32 aiType,
-        i32 radius,
-        i32 a10,
-        i32 a11,
-        i32 a12
-    );
-    void Notify(ResNode* node); // FUN_001b4ac7 __thiscall
-    i32 LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r);
-};
 
 // @early-stop
 // regalloc/frame-layout wall (~65%): instruction selection, calls, constants,
@@ -2083,7 +2022,7 @@ struct CGruntResurrector {
 // (the slot-vs-frame choice is the allocator's). Logic complete. See
 // docs/patterns/zero-register-pinning.md + const-materialize-into-reg-vs-immediate.md.
 RVA(0x0007be60, 0x21e)
-i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
+i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     RECT rect;
     i32 hx = cx >> 5;
     i32 hy = cy >> 5;
@@ -2092,48 +2031,50 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     rect.top = hy - r;
     rect.bottom = hy + r;
 
-    for (ResNode* node = m_4; node != 0; node = node->m_next) {
-        ResGrunt* g = node->m_grunt;
-        if (g->m_5c != 0) {
+    for (CTmRecNode* node = (CTmRecNode*)m_baseList.GetHeadPosition(); node != 0;
+         node = node->m_next) {
+        CTmCandidate* g = node->m_obj;
+        if (g->m_occupied != 0) {
             continue;
         }
         POINT pt;
-        pt.x = g->m_54;
-        pt.y = g->m_58;
+        pt.x = g->m_gridX;
+        pt.y = g->m_gridY;
         if (!PtInRect(&rect, pt)) {
             continue;
         }
 
-        i32 type = g->m_68;
-        ResSettings* s = (ResSettings*)g_gameReg;
-        ResMgrCfgEntry* cfg = &s->m_150[type];
+        i32 type = g->m_gruntType;
+        GruntzPlayer* cfg = &g_gameReg->m_options[type];
         i32 aiType = 0;
         i32 ok = 0;
-        i32 px = (g->m_54 << 5) + 0x10;
-        i32 py = (g->m_58 << 5) + 0x10;
+        i32 px = (g->m_gridX << 5) + 0x10;
+        i32 py = (g->m_gridY << 5) + 0x10;
 
-        if (s->m_134 == 1) {
+        if (g_gameReg->m_134 == 1) {
             i32 radius = 0;
-            if (cfg->m_14 == 0) {
+            if (cfg->m_014 == 0) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
                 radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
-            if (Resurrect(type, px, py, 0x186a0, 3, g->m_6c, 0, 0, aiType, radius, 0, 0, 0) != -1) {
+            if (PlaceObject(type, px, py, 0x186a0, 3, g->m_spawnHost, 0, 0, aiType, radius, 0, 0, 0)
+                != -1) {
                 ok = 1;
             }
-        } else if (cfg->m_20 != 0 && cfg->m_2c == 0 && cfg->m_24 == 0) {
-            if (cfg->m_14 != 0) {
-                if (Resurrect(type, px, py, 0x186a0, 3, g->m_6c, 0, 0, 0, 0, 0, 0, 0) != -1) {
+        } else if (cfg->m_020 != 0 && cfg->m_02c == 0 && cfg->m_024 == 0) {
+            if (cfg->m_014 != 0) {
+                if (PlaceObject(type, px, py, 0x186a0, 3, g->m_spawnHost, 0, 0, 0, 0, 0, 0, 0)
+                    != -1) {
                     ok = 1;
                 }
-            } else if (cfg->m_38.Method_030990(g->m_54, g->m_58) != 0) {
+            } else if (cfg->m_038.Method_030990(g->m_gridX, g->m_gridY) != 0) {
                 ok = 1;
             }
         }
 
         if (ok) {
             g->m_38->m_8 |= 0x10000;
-            Notify(node);
+            m_baseList.RemoveAt((POSITION)node); // 0x1b4ac7 (retail then reads node->m_next)
             CGameObject* spr =
                 g_gameReg->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
@@ -2243,46 +2184,27 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
 }
 
 // ===========================================================================
-// CFinishLevelState::LoadFinishLevelSprite (0x7c3d0) - merged from
+// CTriggerMgr::LoadFinishLevelSprite (0x7c3d0) - merged from
 // FinishLevelSprite.cpp per dossier 10b (the finish-level overlay state
-// driver; embedded singleton, this TU by retail position). @identity-TODO:
-// CFinishLevelState is a placeholder identity. The 6-way state transition:
-// entering state 1 looks up the GAME\FINISHLEVEL sprite, latches its
-// completion timer and (when the live surface is free) plays its sound cue;
-// the other states reseat the timer or run the grunt death animation.
-// g_sndEnabled/g_sndCueTag/g_killCueClock are declared in the rock-break
-// section above; g_frameTime in <Gruntz/TriggerMgrViews.h>.
+// driver; embedded singleton, this TU by retail position). The 6-way state
+// transition: entering state 1 looks up the GAME\FINISHLEVEL sprite, latches
+// its completion timer and (when the live surface is free) plays its sound
+// cue; the other states reseat the timer or run the pending grunt's death
+// animation. g_sndEnabled/g_sndCueTag/g_killCueClock are declared in the
+// rock-break section above; g_frameTime in <Gruntz/TriggerMgrViews.h>.
+//
+// THE VIEWS ARE DISSOLVED (2026-07-14): ex-`CFinishLevelState` was CTriggerMgr
+// itself - m_22c==m_level, m_288==m_phase, the +0x290 pair==m_timerBase/
+// m_timerWindow (written as lo,hi=0 - the u32 zero-extend spelling), m_2a0==
+// m_pendingFx (the SAME CGrunt* + ResolveDeathAnimation the +0x2a0 slot's other
+// three users prove), m_3ec/m_400==m_3ec/m_groupFlag. The goo-well update
+// (0x6eb80) calls this driver as its "Notify" on this same object. Ex-
+// `FinishLevelMgr` was the world holder m_level (its +0x28 CSndHost registry).
 // ===========================================================================
 // CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
 // modeled in <Gruntz/SoundCueMgr.h>). The +0x28 cue holder (name->cue map @+0x10,
 // emit gate @+0x30) is the canonical CSndHost, its looked-up cue the LeafCue -
 // both in <Gruntz/SoundCue.h> (the former CueObj / CStatusBarHolder folded onto them).
-
-SIZE_UNKNOWN(FinishLevelMgr);
-struct FinishLevelMgr {
-    char m_pad00[0x28];
-    CSndHost* m_28; // +0x28  the +0x28 cue/status holder (canonical CSndHost)
-};
-
-SIZE_UNKNOWN(CFinishLevelState);
-class CFinishLevelState {
-public:
-    void LoadFinishLevelSprite(i32 state);
-    char m_pad000[0x22c];
-    FinishLevelMgr* m_22c; // +0x22c
-    char m_pad230[0x288 - 0x230];
-    i32 m_288; // +0x288 phase
-    char m_pad28c[0x290 - 0x28c];
-    i32 m_290;     // +0x290 timer base
-    i32 m_294;     // +0x294
-    i32 m_298;     // +0x298 timer duration
-    i32 m_29c;     // +0x29c
-    CGrunt* m_2a0; // +0x2a0
-    char m_pad2a4[0x3ec - 0x2a4];
-    i32 m_3ec; // +0x3ec last state
-    char m_pad3f0[0x400 - 0x3f0];
-    i32 m_400; // +0x400
-};
 
 // @early-stop
 // Dense 6-case switch (~61%). Two stacked residuals, both confirmed by llvm-objdump
@@ -2290,26 +2212,26 @@ public:
 // separate $L COMDAT (jmp reloc -> $L19166), the delinker inlines it at fn+0x1b0
 // (jmp reloc -> fn) - documented ~79% ceiling, docs/patterns/
 // switch-jumptable-separate-comdat.md. (2) case-1 /O2 scheduling below that ceiling:
-// caching CSndHost* h28 = m_22c->m_28 recovered the m_28 share between the
+// caching CSndHost* h28 = m_level->m_28 recovered the m_28 share between the
 // m_30 check and the 2nd Lookup (58->61), but MSVC still (a) re-materializes edi=0
 // with a redundant `xor edi,edi` (the header zero doesn't propagate through the
-// indirect switch jmp in this build) and (b) HOISTS the m_22c reload for h28 up into
-// the m_298 computation, which reorders the independent m_298/m_29c stores. Cases
+// indirect switch jmp in this build) and (b) HOISTS the m_level reload for h28 up into
+// the window computation, which reorders the independent +0x298/+0x29c stores. Cases
 // 2-6 are byte-identical to retail; only case-1 instruction scheduling diverges,
-// not source-steerable.
+// not source-steerable. (The i64 retype trades retail's shared `mov [+0x294],0` at
+// the Lab_565 merge for a per-path hi-zero store - same multiset, the pair is the
+// proven shape.)
 RVA(0x0007c3d0, 0x1ae)
-void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
+void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
     switch (state) {
         case 1:
-            if (m_288 != 2) {
+            if (m_phase != 2) {
                 void* p_ob = 0;
-                m_22c->m_28->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
+                m_level->m_28->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
                 LeafCue* p = (LeafCue*)p_ob;
-                m_298 = p->m_10->m_28 + 500;
-                m_29c = 0;
-                m_290 = g_frameTime;
-                m_294 = 0;
-                CSndHost* h28 = m_22c->m_28;
+                m_timerWindow = (u32)(p->m_10->m_28 + 500);
+                m_timerBase = g_frameTime;
+                CSndHost* h28 = m_level->m_28;
                 if (h28->m_emitGate == 0) {
                     p = 0;
                     h28->m_10.Lookup("GAME\\FINISHLEVEL", (void*&)p);
@@ -2319,49 +2241,44 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
                         p->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
                 }
-                m_288 = 1;
-                m_400 = 0;
+                m_phase = 1;
+                m_groupFlag = 0;
                 m_3ec = state;
                 return;
             }
             goto Lab_56b;
         case 2:
-            m_288 = 1;
+            m_phase = 1;
             break;
         case 3:
-            if (m_288 == 0) {
-                m_288 = 2;
-                if (m_2a0 != 0) {
-                    m_2a0->ResolveDeathAnimation();
+            if (m_phase == 0) {
+                m_phase = 2;
+                if (m_pendingFx != 0) {
+                    m_pendingFx->ResolveDeathAnimation();
                 }
             }
             goto Lab_522;
         case 4:
-            m_288 = 2;
-            m_298 = 3000;
-            m_29c = 0;
-            m_290 = g_frameTime;
-            goto Lab_565;
+            m_phase = 2;
+            m_timerWindow = 3000;
+            m_timerBase = g_frameTime;
+            goto Lab_56b;
         case 5:
-            m_288 = 2;
+            m_phase = 2;
             break;
         case 6:
-            m_288 = 2;
+            m_phase = 2;
         Lab_522:
-            m_298 = 3000;
-            m_29c = 0;
-            m_290 = g_frameTime;
-            goto Lab_565;
+            m_timerWindow = 3000;
+            m_timerBase = g_frameTime;
+            goto Lab_56b;
         default:
             return;
     }
-    m_298 = 3000;
-    m_29c = 0;
-    m_290 = g_frameTime;
-Lab_565:
-    m_294 = 0;
+    m_timerWindow = 3000;
+    m_timerBase = g_frameTime;
 Lab_56b:
-    m_400 = 0;
+    m_groupFlag = 0;
     m_3ec = state;
 }
 
@@ -2706,80 +2623,31 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 }
 
 // ===========================================================================
-// CGroupSel::CenterOnGroup (0x7cf40) - merged from GroupOps.cpp per dossier
+// CTriggerMgr::CenterOnGroup (0x7cf40) - merged from GroupOps.cpp per dossier
 // 10b (directly abuts ?CenterSelectionGroup@CTriggerMgr @0x7cd40, same
-// selection feature). @identity-TODO: CGroupSel is a placeholder view - its
-// +0x1c grid / +0x230..+0x238 latch / +0x244 list head ARE CTriggerMgr's
-// m_grid / m_230-m_recX-m_recY / m_recList.m_head; the fold onto CTriggerMgr
-// is deferred (the m_grid[1] flexible-index idiom + CSel* sub-views diverge
-// from the CTm* shapes). GroupOps.cpp keeps CGroupBroadcast::Broadcast
-// (0x112080, a different interval).
+// selection feature). THE CSel*/CMapHolder*/CGroupSel VIEWS ARE DISSOLVED
+// (2026-07-14) - the whole donor family was CTriggerMgr + its canonicals:
+//   CGroupSel     -> CTriggerMgr: +0x1c grid == m_grid, +0x230/0x234/0x238 ==
+//        m_armed/m_recX/m_recY, +0x244/+0x24c == m_recList's head/count (the MFC
+//        CPtrList public inlines). Its `TrySelect` (ILT 0x33aa) is RecordListHas
+//        @0x784d0 and its `Commit` (ILT 0x3d1e) LoadCameraSprite @0x78960 - both
+//        already-reconstructed CTriggerMgr methods (phantom aliases, now bound).
+//   CSelNode/CSelKey -> CTmNode + its i32[2] (x,y) payload.
+//   CSelGridCell  -> CTmCell (== CGrunt): m_10 / m_tileOwnerHi / m_tileOwnerLo.
+//   CSelGrunt     -> CGruntHud (m_5c/m_60).
+//   CMapHolderA/B -> already-canonical g_gameReg->m_world->m_24->m_mainPlane.
+// GroupOps.cpp keeps CGroupBroadcast::Broadcast (0x112080, a different interval).
+// Reached as ((CTmWorld*)g_gameReg->m_curState)->Center(x, y) (0x2e28 thunk) and
+// from GameKeyHandler.cpp on g_gameReg+0x68.
 // ===========================================================================
-// ===========================================================================
-// CenterOnGroup (0x7cf40)
-// ===========================================================================
-// The view-centre helper reached as ((CTmWorld*)g_gameReg->m_curState)->Center(x, y) (0x2e28 thunk).
-// The map dimensions grid (gameReg->m_world->m_24->m_5c) is the shared
-// CPlaneRender (<Wwd/WwdFile.h>); only its m_wrapW/m_wrapH are read here.
-struct CMapHolderB {
-    char m_pad00[0x5c];
-    CPlaneRender* m_5c; // +0x5c
-};
-struct CMapHolderA {
-    char m_pad00[0x24];
-    CMapHolderB* m_24; // +0x24
-};
-
-// A selected cell's grunt (cell->m_10) carries its tile position at +0x5c/+0x60.
-struct CSelGrunt {
-    char m_pad00[0x5c];
-    i32 m_5c; // +0x5c x
-    i32 m_60; // +0x60 y
-};
-// A grid cell: +0x10 the grunt, +0x1ec/+0x1f0 the latch values.
-struct CSelGridCell {
-    char m_pad00[0x10];
-    CSelGrunt* m_10; // +0x10
-    char m_pad14[0x1ec - 0x14];
-    i32 m_1ec; // +0x1ec
-    i32 m_1f0; // +0x1f0
-};
-// A selection list node: next @0, the cell-key object @0x08.
-struct CSelKey {
-    i32 m_0; // +0x00 grid x-ish
-    i32 m_4; // +0x04 grid y-ish
-};
-struct CSelNode {
-    CSelNode* m_next; // +0x00
-    void* m_pad04;
-    CSelKey* m_8; // +0x08
-};
-
-struct CGroupSel {
-    char m_pad00[0x1c];
-    CSelGridCell* m_grid[1]; // +0x1c  grid cell pointer table (indexed by x*15 + y)
-    // The latch / state fields below live well past the grid; the modeled grid
-    // stays size-1 (indexed past its end) so these keep their true offsets.
-    char m_pad20[0x230 - 0x20];
-    i32 m_230; // +0x230  select-latch gate
-    i32 m_234; // +0x234  latched x
-    i32 m_238; // +0x238  latched y
-    char m_pad23c[0x244 - 0x23c];
-    CSelNode* m_244; // +0x244  selection list head
-    char m_pad248[0x24c - 0x248];
-    i32 m_24c;                       // +0x24c  single-selection flag
-    i32 CenterOnGroup(i32 doSelect); // 0x7cf40
-    i32 TrySelect(i32 a, i32 b);     // 0x33aa
-    void Commit();                   // 0x3d1e
-};
 
 // @early-stop
 // 83% - regalloc wall: the list walk, grid-hash (x*15 + y), bounding-box min/max
 // fold, midpoint centre call and single-selection latch are byte-faithful; the
 // residual is min/max register colouring + the doubled grid-lookup spill.  No EH.
 RVA(0x0007cf40, 0x12e)
-i32 CGroupSel::CenterOnGroup(i32 doSelect) {
-    CSelNode* n = m_244;
+i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
+    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
     if (n == 0) {
         return 0;
     }
@@ -2790,12 +2658,12 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     i32 maxY = 0;
     i32 count = 0;
     do {
-        CSelKey* k = n->m_8;
+        i32* k = n->m_payload; // the (x,y) record pair
         n = n->m_next;
-        CSelGridCell* cell = m_grid[k->m_0 * TM_GRID_COLS + k->m_4];
+        CTmCell* cell = m_grid[k[0] * TM_GRID_COLS + k[1]];
         if (cell != 0) {
             count++;
-            CSelGrunt* g = cell->m_10;
+            CGruntHud* g = cell->m_10;
             i32 gx = g->m_5c;
             i32 gy = g->m_60;
             if (gx < minX) {
@@ -2815,17 +2683,17 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
     i32 r = ((CPlay*)g_gameReg->m_curState)->ResetGoals(cx, cy);
-    if (r != 0 && count == 1 && m_24c == 1) {
-        CSelKey* head = m_244->m_8;
-        CSelGridCell* cell2 = m_grid[head->m_0 * TM_GRID_COLS + head->m_4];
+    if (r != 0 && count == 1 && m_recList.GetCount() == 1) {
+        i32* head = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
+        CTmCell* cell2 = m_grid[head[0] * TM_GRID_COLS + head[1]];
         if (cell2 != 0) {
-            i32 v1f0 = cell2->m_1f0;
-            i32 v1ec = cell2->m_1ec;
-            if (TrySelect(v1ec, v1f0)) {
-                m_234 = v1ec;
-                m_238 = v1f0;
-                m_230 = 1;
-                Commit();
+            i32 v1f0 = cell2->m_tileOwnerLo;
+            i32 v1ec = cell2->m_tileOwnerHi;
+            if (RecordListHas(v1ec, v1f0)) {
+                m_recX = v1ec;
+                m_recY = v1f0;
+                m_armed = 1;
+                LoadCameraSprite();
             }
         }
     }
@@ -2994,15 +2862,15 @@ void CTriggerMgr::DestroyAllAnims() {
         }
     }
 
-    DirectSoundMgr* ch0 = m_soundChanA;
+    DirectSoundMgr* ch0 = m_rollingballLoop;
     if (ch0 != 0) {
         ch0->StopAndRewind();
-        m_soundChanA = 0;
+        m_rollingballLoop = 0;
     }
-    DirectSoundMgr* ch1 = m_soundChanB;
+    DirectSoundMgr* ch1 = m_teleportLoop;
     if (ch1 != 0) {
         ch1->StopAndRewind();
-        m_soundChanB = 0;
+        m_teleportLoop = 0;
     }
     void* state = g_gameReg->PickPausedThenPlayState();
     if (state != 0) {

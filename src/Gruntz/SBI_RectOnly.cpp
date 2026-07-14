@@ -3606,7 +3606,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
         case 6:
             switch (cmd) {
                 case 0x324:
-                    if (g_gameReg->m_cmdGrid->m_288 == 1) {
+                    if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         HiCueLookup();
                         g_gameReg->AccrueScoreTime();
                     } else if (g_gameReg->m_134 == 1) {
@@ -3619,7 +3619,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case 0x325:
                     if (g_gameReg->m_134 == 1) {
-                        if (g_gameReg->m_cmdGrid->m_288 == 1) {
+                        if (g_gameReg->m_cmdGrid->m_phase == 1) {
                             g_gameReg->UpdateScoreHud();
                         }
                         HiCueLookup();
@@ -3631,7 +3631,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case 0x327:
                     if (g_gameReg->m_134 == 1) {
-                        if (g_gameReg->m_cmdGrid->m_288 == 1) {
+                        if (g_gameReg->m_cmdGrid->m_phase == 1) {
                             g_gameReg->UpdateScoreHud();
                         }
                         HiCueTimed();

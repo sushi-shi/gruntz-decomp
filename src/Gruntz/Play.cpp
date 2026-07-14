@@ -6405,20 +6405,22 @@ i32 CPlay::ResetPlayState() {
         }
     }
     CTriggerMgr* tl = m_4w()->m_68;
-    tl->m_2a4 = 1;
-    tl->m_288 = 0;
+    tl->m_countdownActive = 1;
+    tl->m_phase = 0;
     tl->m_pendingFxKind = 0;
-    ((i32*)tl->m_overlayDescB)[0] = 0;
-    ((i32*)tl->m_overlayDescB)[2] = 0;
-    ((i32*)tl->m_overlayDescB)[1] = 0;
-    ((i32*)tl->m_overlayDescB)[3] = 0;
-    ((i32*)tl->m_overlayDescC)[0] = 0;
-    ((i32*)tl->m_overlayDescC)[2] = 0;
-    ((i32*)tl->m_overlayDescC)[1] = 0;
-    ((i32*)tl->m_overlayDescC)[3] = 0;
+    // zero the goo/resource i64 timer pairs half-by-half, preserving retail's
+    // lo(base), lo(window), hi(base), hi(window) store order per pair
+    ((i32*)&tl->m_gooTimerBase)[0] = 0;
+    ((i32*)&tl->m_gooInterval)[0] = 0;
+    ((i32*)&tl->m_gooTimerBase)[1] = 0;
+    ((i32*)&tl->m_gooInterval)[1] = 0;
+    ((i32*)&tl->m_resourceTimerBase)[0] = 0;
+    ((i32*)&tl->m_resourceInterval)[0] = 0;
+    ((i32*)&tl->m_resourceTimerBase)[1] = 0;
+    ((i32*)&tl->m_resourceInterval)[1] = 0;
     tl->m_3ec = 0;
-    tl->m_3f8 = 0;
-    tl->m_3fc = 0;
+    tl->m_rollingballWanted = 0;
+    tl->m_teleportWanted = 0;
     tl->m_groupFlag = 1;
     return 1;
 }
@@ -6486,7 +6488,7 @@ void CPlay::FreeListTeardown() {
     CTriggerMgr* tl68 = m_4w()->m_68;
     ((CPtrArray*)&tl68->m_byteArr)->SetSize(0, -1); // retail-proven CPtrArray::SetSize @0x1b52e8
     tl68->m_284 = 0;
-    m_4w()->m_68->Reset1b48a6();
+    m_4w()->m_68->m_baseList.RemoveAll(); // ?RemoveAll@CPtrList@@ @0x1b48a6 (+0 member; ex Reset1b48a6)
     m_4w()->m_68->m_pendingFx = 0;
     ((CDDrawWorkerList*)m_c->m_rendererB)->ClearWorkers();
     for (i = 0; i < markerCount(); i++) {
@@ -6746,7 +6748,10 @@ i32 CPlay::AddLevelGruntz() {
         }
         i32 x = ((g->m_screenX & ~0x1f) + 0x10);
         i32 y = ((g->m_screenY & ~0x1f) + 0x10);
-        i32 r = m_4w()->m_68->AddGrunt(
+        // ILT 0x40bb == ?PlaceObject@CTriggerMgr@@ @0x6b6d0 (the ex-`AddGrunt` decl was a
+        // phantom alias of it). The 13th arg really is an address at THIS site (the a30
+        // slot is kind-dependent).
+        i32 r = m_4w()->m_68->PlaceObject(
             g->m_124,
             y,
             x,
@@ -6759,7 +6764,7 @@ i32 CPlay::AddLevelGruntz() {
             g->m_12c,
             g->m_7c->m_2c,
             g->m_7c->m_30,
-            &g->m_extentL
+            (i32)&g->m_extentL
         );
         if (r == -1) {
             CString msg;

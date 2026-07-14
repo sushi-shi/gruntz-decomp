@@ -1,21 +1,25 @@
-// GooWellMgr.cpp - CGooWellMgr, the multiplayer (Battlez) goo-well / resource
-// respawn + win-condition manager held at g_gameReg->m_68. Its per-frame Update
-// (0x6eb80) does four things over the 4 player slots (g_gameReg + 0x150, stride
-// 0x238):
+// GooWellMgr.cpp - the multiplayer (Battlez) goo-well / resource respawn +
+// win-condition step of CTriggerMgr (the g_gameReg->m_68 / m_cmdGrid object).
+// THE `CGooWellMgr` VIEW IS DISSOLVED (2026-07-14): it was another fake name for
+// CTriggerMgr - every field overlaid the canonical exactly (m_playerFlag[4]@+0x10c
+// == m_rowCount, m_overlay@+0x25c, m_phase@+0x288, the +0x290..+0x2c8 i64 timer
+// pairs, m_2a0==m_pendingFx, m_2a4==m_countdownActive, the +0x3f0..+0x3fc loop
+// channels), its `Notify` @0x7c3d0 is CTriggerMgr::LoadFinishLevelSprite and its
+// ClearRowAndRefresh/ClearRow @0x7a510/0x7d140 the already-reconstructed
+// CTriggerMgr methods. The per-frame Update (0x6eb80) does four things over the
+// 4 player slots (g_gameReg + 0x150, stride 0x238):
 //   1. start/stop the LEVEL_ROLLINGBALL and GAME_TELEPORTLOOP looping sounds
-//      (sound handles cached in m_rollingballLoop/m_teleportLoop, gated by the m_rollingballWanted/m_teleportWanted flags);
-//   2. drive the 64-bit "match over" countdown (m_countdownBase/m_countdownLength) once one player is
-//      left, dispatched on the game-mode (g_gameReg->m_134) value;
+//      (handles cached in m_rollingballLoop/m_teleportLoop, gated by the
+//      m_rollingballWanted/m_teleportWanted flags);
+//   2. drive the 64-bit "match over" countdown (m_timerBase/m_timerWindow) once
+//      one player is left, dispatched on the game-mode (g_gameReg->m_134) value;
 //   3. on a resolved winner (g_gameReg->m_curState->ClearPlacedObjects() != -1), walk
 //      the player rows clearing/refreshing the HUD and resolving death anims;
-//   4. run the goo (m_gooTimerBase/m_gooInterval, "TimePerGoo") and resource (m_resourceTimerBase/m_resourceInterval,
-//      "TimePerResource") respawn timers, reading the intervals from g_buteMgr.
-//
-// Field names are recovered from usage; only the OFFSETS + the
-// per-method call/branch structure are load-bearing (campaign doctrine). Every
-// callee/global is an external no-body decl so its `call rel32` / DIR32 operand
-// reloc-masks.
+//   4. run the goo (m_gooTimerBase/m_gooInterval, "TimePerGoo") and resource
+//      (m_resourceTimerBase/m_resourceInterval, "TimePerResource") respawn timers,
+//      reading the intervals from g_buteMgr.
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/TriggerMgr.h> // the canonical class this TU's method extends
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -30,8 +34,6 @@
 #include <Gruntz/Play.h>          // the real CPlay (EnterOverlayDrag / ClearPlacedObjects)
 #include <Gruntz/SoundCue.h>      // CSndHost - the world holder's +0x28 named-cue registry
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory + GruntObjEntry - the +0x08 id->object map
-
-struct CGooWellMgr;
 
 // The free-running game clock (DAT_00645588), read as an unsigned 32-bit tick and
 // zero-extended into the 64-bit countdown subtracts.
@@ -91,40 +93,11 @@ extern CButeMgr g_buteMgr;
 // walks are typed there; the casts that remain are AUTHENTIC view/downcasts:
 //   +0x2c  m_2c is CState*; CPlay/CMulti are the concrete play-mode DOWNCASTs.
 //   +0x68  m_68 is a genuinely REUSED slot (placement/cue grid in single-player,
-//          this CGooWellMgr in battlez) - a real per-mode object downcast.
+//          the CTriggerMgr goo-well step in battlez) - a real per-mode object.
 // The m_10/m_11c/m_134 scalars match, and the per-player slot array at +0x150
 // (stride 0x238) is reached via raw offset.
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
-
-struct CGooWellMgr {
-    char _0[0x10c];
-    i32 m_playerFlag[4]; // +0x10c per-player flag
-    char _11c[0x25c - 0x11c];
-    CActionOptionsMenuBar* m_overlay; // +0x25c
-    char _260[0x288 - 0x260];
-    i32 m_phase; // +0x288 phase
-    char _28c[0x290 - 0x28c];
-    i64 m_countdownBase;   // +0x290 countdown base
-    i64 m_countdownLength; // +0x298 countdown length
-    i32 m_2a0;             // +0x2a0
-    i32 m_countdownActive; // +0x2a4
-    char _2a8[0x2b0 - 0x2a8];
-    i64 m_gooTimerBase;      // +0x2b0 goo timer base
-    i64 m_gooInterval;       // +0x2b8 goo interval
-    i64 m_resourceTimerBase; // +0x2c0 resource timer base
-    i64 m_resourceInterval;  // +0x2c8 resource interval
-    char _2d0[0x3f0 - 0x2d0];
-    DirectSoundMgr* m_rollingballLoop; // +0x3f0 rollingball loop handle
-    DirectSoundMgr* m_teleportLoop;    // +0x3f4 teleportloop handle
-    i32 m_rollingballWanted;           // +0x3f8 rollingball wanted
-    i32 m_teleportWanted;              // +0x3fc teleportloop wanted
-
-    i32 LoadTeleporterGooConfig(i32 off); // 0x6eb80
-    void Notify(i32);                     // 0x7c3d0
-    void ClearRowAndRefresh(i32);         // 0x7a510
-    void ClearRow(i32);                   // 0x7d140
-};
 
 // ---------------------------------------------------------------------------
 // 0x6eb80 (__thiscall, ret 4) - the per-frame goo-well / win-condition update.
@@ -138,7 +111,7 @@ struct CGooWellMgr {
 // m_phase load into a reg + hoists g->m_2c before the `cmp $2`, and the per-row
 // `g + 0x150 + off` slot lea picks the opposite base/index register pair.
 RVA(0x0006eb80, 0x5ef)
-i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
+i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     if (g_gameReg->m_soundEnabled) {
         // LEVEL_ROLLINGBALL loop (m_rollingballLoop), wanted by m_rollingballWanted.
         if (m_rollingballWanted) {
@@ -188,8 +161,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         }
     }
     if (count <= 1 && m_phase == 2 && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleActive == 0
-        && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleHandle == 0 && m_2a0 == 0) {
-        if ((i64)g_frameTime - m_countdownBase >= m_countdownLength) {
+        && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleHandle == 0 && m_pendingFx == 0) {
+        if ((i64)g_frameTime - m_timerBase >= m_timerWindow) {
             ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
         }
     }
@@ -199,10 +172,10 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
     }
 
     if (m_phase == 2) {
-        if (m_2a0 != 0) {
+        if (m_pendingFx != 0) {
             goto done;
         }
-        if ((i64)g_frameTime - m_countdownBase >= m_countdownLength) {
+        if ((i64)g_frameTime - m_timerBase >= m_timerWindow) {
             if (g_gameReg->m_134 == 2) {
                 // +0x594 lives past CPlay's tail: it is CMulti::m_594 (CMulti : CPlay),
                 // and the m_134 == 2 arm is exactly the mode where m_curState is a CMulti.
@@ -216,10 +189,10 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
     }
 
     if (m_phase == 1) {
-        if ((i64)g_frameTime - m_countdownBase < m_countdownLength) {
+        if ((i64)g_frameTime - m_timerBase < m_timerWindow) {
             goto done;
         }
-        if (g_gameReg->m_134 == 1 && m_2a0 != 0) {
+        if (g_gameReg->m_134 == 1 && m_pendingFx != 0) {
             goto done;
         }
         ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
@@ -237,7 +210,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 for (i = 0, off = 0; off < 0x8e0; i++, off += 0x238) {
                     if (i != idx) {
                         if (g_curPlayer == i) {
-                            Notify(5);
+                            LoadFinishLevelSprite(5);
                         }
                         CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + 0x150 + off);
                         if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
@@ -254,7 +227,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                     } else {
                         if (g_curPlayer == i) {
-                            ((CGooWellMgr*)g_gameReg->m_cmdGrid)->Notify(2);
+                            g_gameReg->m_cmdGrid->LoadFinishLevelSprite(2);
                         }
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
                             CWwdGameObjectE* out = 0;
@@ -279,19 +252,19 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             m_overlay->Activate(off);
         }
         if (g_gameReg->m_134 == 3) {
-            if (obj->m_winLoseBanner != 0 && m_playerFlag[g_curPlayer] == 0) {
-                Notify(4);
+            if (obj->m_winLoseBanner != 0 && m_rowCount[g_curPlayer] == 0) {
+                LoadFinishLevelSprite(4);
                 return 0;
             }
         }
         if (g_gameReg->m_134 == 1) {
-            if (m_playerFlag[g_curPlayer] != 0) {
+            if (m_rowCount[g_curPlayer] != 0) {
                 goto done;
             }
             if (obj->m_winLoseBanner != 0) {
-                Notify(4);
+                LoadFinishLevelSprite(4);
             } else {
-                Notify(3);
+                LoadFinishLevelSprite(3);
             }
             return 0;
         }
@@ -317,10 +290,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 goto done;
             }
         }
-        Notify(2);
+        LoadFinishLevelSprite(2);
     }
 done:
     return 0;
 }
 
-SIZE_UNKNOWN(CGooWellMgr);

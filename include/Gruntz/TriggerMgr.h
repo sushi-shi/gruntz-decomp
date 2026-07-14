@@ -82,7 +82,6 @@ struct CTmGoal {
     char p0[0x8];
     i32 m_8; // +0x08  flags (the 0x10000 "released" bit)
 };
-struct CTmPendingFx; // the pending-fx sub-object (+0x2a0); completed in each TU
 class CActionOptionsMenuBar;
 
 // The ELEMENT type of the base object list (m_baseList, +0x000): the battlez spawn
@@ -95,12 +94,27 @@ class CActionOptionsMenuBar;
 // a CGameObject (whose +0x54..+0x5c are the draw-fill triple). It was BattlezMapConfig
 // .cpp's local `GridCand`; promoted here (onto the list that owns it) rather than kept
 // as a per-TU view. Its cells are plain MFC CPtrList nodes (no separate node type).
+//
+// MERGED VIEWS (2026-07-14): the ex-`CTmPuddleTarget` (TriggerMgrViews.h) and the
+// ex-`ResGrunt` (TriggerMgr.cpp resurrect pass) were BOTH this same baseList element:
+// identical +0x54/+0x58 grid pair + +0x5c occupied gate, plus the +0x38 bound-object
+// slot (leaf->m_38->m_8 |= 0x10000 "released" - the CTileLogic-tail bound-object idiom),
+// the +0x68 grunt-type index and the +0x6c spawn-host word the resurrect pass feeds to
+// PlaceObject. Union of the three views' knowledge, one shape.
 SIZE_UNKNOWN(CTmCandidate);
 struct CTmCandidate {
-    char m_pad00[0x54];
+    // PlacePuddle's real placement driver on the element (reloc-masked @0x9c3f0).
+    i32 Place(i32 a, i32 b, i32 c, i32 d); // 0x9c3f0
+    char m_pad00[0x38];
+    CTmGoal* m_38; // +0x38  bound/goal object (its +0x8 flags word takes the 0x10000
+                   //        released bit; the CTileLogic tail stores the bound obj here)
+    char m_pad3c[0x54 - 0x3c];
     i32 m_gridX;    // +0x54  grid x
     i32 m_gridY;    // +0x58  grid y
-    i32 m_occupied; // +0x5c  occupied flag (the spawn scan skips a set one)
+    i32 m_occupied; // +0x5c  occupied flag (the spawn/resurrect scans skip a set one)
+    char m_pad60[0x68 - 0x60];
+    i32 m_gruntType; // +0x68  grunt type index (the m_options[] row the resurrect uses)
+    i32 m_spawnHost; // +0x6c  spawn-host word (opaque; passed through to PlaceObject a6)
 };
 
 // The embedded MFC containers are the REAL MFC classes from <Mfc.h> (CPtrList 0x1c B,
@@ -135,7 +149,7 @@ public:
     CTrigPoint* GetOriginXY(CTrigPoint* out); // 0x759e0
 
     // 0x6b640: store the supplied level at +0x22c, clear m_armed + m_pendingFx and
-    // raise m_2a4; returns 1 (0 when arg is null).
+    // raise m_countdownActive; returns 1 (0 when arg is null).
     i32 SetLevel(CTmLevel* lvl); // 0x6b640
 
     // 0x788d0 (ILT 0x1398): centre the active plane's scroll origin on the selected
@@ -145,22 +159,10 @@ public:
 
     // 0x78a30: forward to the overlay sub-object's helper when present, else ret.
     void OverlayTick();
-    i32 AddGrunt(
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32*
-    );                  // 0x40bb reloc-masked
-    void Reset1b48a6(); // 0x1b48a6  reloc-masked
+    // (The ex-`AddGrunt` 13-arg decl is GONE: ILT 0x40bb lands on ?PlaceObject@
+    // CTriggerMgr@@ @0x6b6d0 - it was a phantom alias; Play.cpp calls PlaceObject.
+    // The ex-`Reset1b48a6` decl is GONE the same way: 0x1b48a6 is the MFC
+    // ?RemoveAll@CPtrList@@ on the +0 m_baseList.)
 
     // 0x79b00: forward-and-free the overlay sub-object when present; ret 1.
     i32 OverlayRelease();
@@ -421,12 +423,35 @@ public:
     void HudRect(RECT r, i32 flag);
 
     // 0x6eb80: the per-frame goo-well / win-condition grid step (thiscall(clock)).
-    // BOUND under the `CGooWellMgr` view in GooWellMgr.cpp - that struct's fields
-    // (m_playerFlag[4]@+0x10c==m_rowCount, m_overlay@+0x25c, m_phase@+0x288==m_288,
-    // +0x3f0/+0x3f4 DirectSoundMgr* == m_soundChanA/B) overlay THIS class exactly,
-    // so CGooWellMgr is another fake name for CTriggerMgr; fold TODO (this decl
-    // reloc-masks until then).
+    // Body in GooWellMgr.cpp. (The ex-`CGooWellMgr` view there was another fake name
+    // for THIS class - every field overlaid: m_playerFlag[4]@+0x10c==m_rowCount,
+    // m_overlay@+0x25c, m_phase@+0x288, the +0x290..+0x2c8 i64 timer pairs, the
+    // +0x3f0..+0x3fc loop channels. Folded 2026-07-14.)
     i32 LoadTeleporterGooConfig(i32 clock);
+
+    // 0x7c3d0: the finish-level / round-end state driver (TriggerMgr.cpp): a 6-way
+    // switch on `state` that latches m_phase + the countdown pair, plays the
+    // GAME\FINISHLEVEL cue on entering state 1, and resolves the pending-fx grunt's
+    // death anim on state 3. The goo-well update fires it as its "Notify" (states
+    // 2..5) on this same object - the ex-`CFinishLevelState` and ex-`CGooWellMgr`
+    // views were both THIS class (offsets 0x22c/0x288/0x290/0x2a0/0x3ec/0x400).
+    void LoadFinishLevelSprite(i32 state);
+
+    // 0x7be60: the resurrect-radius pass (called by CGrunt::LoadGruntAbilityTuning
+    // @0x57100 via ILT 0x1fff): walk the baseList candidates inside the (cx,cy,r)
+    // tile rect and PlaceObject/board-place each un-occupied one, flagging its bound
+    // object + RemoveAt'ing the node. Ex-`CGruntResurrector` view: its `Resurrect`
+    // was ?PlaceObject@CTriggerMgr@@ @0x6b6d0 (ILT 0x40bb) and its `Notify` the MFC
+    // ?RemoveAt@CPtrList@@ @0x1b4ac7 on the +0 baseList - this class, proven twice.
+    i32 LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r);
+
+    // 0x7cf40: centre the view on the selection group's bounding-box midpoint, then
+    // (single selection) re-arm the record latch. Ex-`CGroupSel` view (TriggerMgr.cpp
+    // + GameKeyHandler.cpp): its +0x1c grid / +0x230..+0x238 latch / +0x244 list head
+    // / +0x24c count are m_grid / m_armed-m_recX-m_recY / m_recList's head+count, and
+    // its `TrySelect`/`Commit` were RecordListHas @0x784d0 / LoadCameraSprite @0x78960
+    // (ILT 0x33aa / 0x3d1e) - both already reconstructed on THIS class.
+    i32 CenterOnGroup(i32 doSelect);
 
     // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
     // list arrays). Reconstructed to plateau (eh sibling TU).
@@ -513,23 +538,44 @@ public:
     CByteArray m_byteArr;             // +0x260  byte-table array
     char m_274[0x10];                 // +0x274  serialized 16-byte region
     i32 m_284;                        // +0x284  build/reinit gate flag
-    i32 m_288;                        // +0x288  serialized scalar
-    char _pad28c[0x4];                // +0x28c
-    char m_overlayDescA[0x10];        // +0x290  overlay descriptor block 0
-    CTmPendingFx* m_pendingFx;        // +0x2a0  pending-fx sub-object
-    i32 m_2a4;                        // +0x2a4  serialized scalar
-    i32 m_pendingFxKind;              // +0x2a8  active pending overlay-fx kind
-    char _pad2ac[0x4];                // +0x2ac
-    char m_overlayDescB[0x10];        // +0x2b0  overlay descriptor block 1
-    char m_overlayDescC[0x10];        // +0x2c0  overlay descriptor block 2
+    // +0x288: the round phase (0 = running, 1 = finishing, 2 = finished). PROVEN by the
+    // two state drivers on this class: LoadTeleporterGooConfig (0x6eb80, the goo-well
+    // update) and LoadFinishLevelSprite (0x7c3d0, the finish-level 6-state switch).
+    i32 m_phase;       // +0x288  round phase (serialized)
+    char _pad28c[0x4]; // +0x28c
+    // +0x290..+0x2c8: the three 64-bit timer pairs (base tick, window). PROVEN i64 by
+    // 0x6eb80's 64-bit subtract/compare chains ((i64)g_frameTime - base >= window). The
+    // finish-level driver writes them as (lo, hi=0) pairs - spell those stores as u32
+    // zero-extends. RebuildOverlay (0x7a5e0) snapshots the same three pairs in 8-byte
+    // strides through the overlay source's GetA/GetB getters. The first pair is
+    // multi-role (same storage, mode-dependent client): the battlez match-over
+    // countdown (0x6eb80), the finish-level cue timer (0x7c3d0, base=g_frameTime,
+    // window=cueDuration+500 or 3000), and the warlord fort-battle cue window
+    // (CWarlord::AdvanceMovingAnim, window=0x3e8).
+    i64 m_timerBase;   // +0x290  timer pair 0: base tick
+    i64 m_timerWindow; // +0x298  timer pair 0: window/length
+    // +0x2a0: the pending-fx GRUNT (the spawned fx sprite's bound logic). Ex-CTmPendingFx
+    // view; its `Pulse()` was ?ResolveDeathAnimation@CGrunt@@QAEHXZ @0x455f0 all along
+    // (ILT 0x3a1c at both call sites), and the deserializer stores m_7c->m_logic here.
+    CTmCell* m_pendingFx;    // +0x2a0  pending-fx grunt logic
+    i32 m_countdownActive;   // +0x2a4  countdown armed gate (serialized; ex m_2a4)
+    i32 m_pendingFxKind;     // +0x2a8  active pending overlay-fx kind
+    char _pad2ac[0x4];       // +0x2ac
+    i64 m_gooTimerBase;      // +0x2b0  goo respawn timer base ("TimePerGoo")
+    i64 m_gooInterval;       // +0x2b8  goo respawn interval
+    i64 m_resourceTimerBase; // +0x2c0  resource respawn timer base ("TimePerResource")
+    i64 m_resourceInterval;  // +0x2c8  resource respawn interval
     CPtrList m_selLists[10];          // +0x2d0  ten selection lists (stride 0x1c)
-    i32 m_selSentinel;                // +0x3e8  selection-group latch (-1 when idle)
-    i32 m_3ec;                        // +0x3ec  serialized scalar
-    DirectSoundMgr* m_soundChanA;     // +0x3f0  DirectSound channel A
-    DirectSoundMgr* m_soundChanB;     // +0x3f4  DirectSound channel B
-    i32 m_3f8;                        // +0x3f8
-    i32 m_3fc;                        // +0x3fc
-    i32 m_groupFlag;                  // +0x400  magic-group active flag
+    i32 m_selSentinel; // +0x3e8  selection-group latch (-1 when idle)
+    i32 m_3ec;         // +0x3ec  serialized scalar (LoadFinishLevelSprite: last state)
+    // +0x3f0..+0x3fc: the two looping-sound channels + their per-frame wanted flags.
+    // Names PROVEN by the goo-well update's lookup keys: "LEVEL_ROLLINGBALL" plays
+    // into +0x3f0 gated by +0x3f8, "GAME_TELEPORTLOOP" into +0x3f4 gated by +0x3fc.
+    DirectSoundMgr* m_rollingballLoop; // +0x3f0  LEVEL_ROLLINGBALL loop handle
+    DirectSoundMgr* m_teleportLoop;    // +0x3f4  GAME_TELEPORTLOOP loop handle
+    i32 m_rollingballWanted;           // +0x3f8  rollingball wanted this frame
+    i32 m_teleportWanted;              // +0x3fc  teleportloop wanted this frame
+    i32 m_groupFlag;                   // +0x400  magic-group active flag
 };
 SIZE_UNKNOWN(CTriggerMgr);
 

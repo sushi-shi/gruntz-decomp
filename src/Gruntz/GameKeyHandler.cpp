@@ -80,10 +80,7 @@ struct CStatusBarMgr {
     i32 SetTab(i32 a, i32 b);
     i32 HlClickGroup0(i32 a);
 };
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch)
-struct CGroupSel {
-    i32 CenterOnGroup(i32 a);
-};
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
 #include <Gruntz/FontConfig.h> // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
 #include <Gruntz/SoundCue.h>   // CSndHost (its +0x10 IS the real MFC CMapStringToOb)
 #include <Gruntz/GruntzMgr.h>  // canonical CGruntzMgr (score/run/finish helpers)
@@ -386,7 +383,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // C (cc3f9)
     if (key == 0x43) {
-        ((CGroupSel*)(P(g_gameReg, 0x68)))->CenterOnGroup(M(dev, 0x18) & 0x20);
+        ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterOnGroup(M(dev, 0x18) & 0x20);
         return 1;
     }
     // T (cc41c)

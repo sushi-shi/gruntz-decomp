@@ -4035,7 +4035,7 @@ RVA(0x000861e0, 0xc5)
 void CGruntzMgr::AccrueScoreTime() {
     CState* st = m_curState;
     if (m_134 == 1) {
-        if (m_cmdGrid->m_288 == 1) {
+        if (m_cmdGrid->m_phase == 1) {
             UpdateScoreHud();
         }
         TransitionState(0xa, 1, 0, 0);
