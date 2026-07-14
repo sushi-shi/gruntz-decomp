@@ -44,6 +44,7 @@
 #include <Gruntz/Fader.h>              // CFaderMgr / CFader / CFxModeT2/T3
 #include <Bute/SymParser.h>            // CSymParser (CMgrPersistObj::m_rezLocator ResolvePath)
 #include <Gruntz/SerialArchive.h>      // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
+#include <Gruntz/MgrPersist.h>         // CMgrPersistObj / SplashParams (the persisted settings obj)
 #include <rva.h>
 #include <Globals.h>
 
@@ -93,13 +94,9 @@ i32 g_suppress_64e360 = 0; // 0x24e360
 #define s_BrightnessPercent "BrightnessPercent"
 #define s_SCREENZ_PCT_S "\\SCREENZ\\%s"
 
-// FadeInTitle's resolved-state object (m_2c re-typed): its ResolveScreen
-// (FUN_00520120) maps the "\SCREENZ\%s" path + a screen-type tag to a fade page.
-class CAttractScreenObj {
-public:
-    void* ResolveScreen(char* path, void* tag); // 0x120120
-};
-
+// FadeInTitle's resolved-state object (m_2c re-typed) is the CAttractScreenObj
+// facet (full model in <Gruntz/Attract.h>); its ResolveScreen (FUN_00520120) maps
+// the "\SCREENZ\%s" path + a screen-type tag to a fade page.
 // The screen-type tag (DAT_00504358) ResolveScreen keys off.
 
 // The menu page worker (m_c->m_04 re-typed): its fader (0x158b40, ret 8) runs the
@@ -657,65 +654,13 @@ i32 g_64e35c;
 // slot 19 (+0x4c)" IS CImageRegistry::LoadNamespace, the very slot the game-state
 // activators (CBootyState/CMenuState/CPlay slot-8 loaders) already reach.)
 
-// The level-data object (m_levelData) and the renderer it owns.
-struct CLevelData {
-    char pad00[4];
-    CDDrawSubMgrPages* m_ready; // +0x04 (the Method_158bc0 readiness gate)
-    char pad08[0x10 - 0x08];
-    CImageRegistry* m_imageSet; // +0x10  the real image/name registry
-};
-
-// The display owner (m_displayMgr): its m_8c/m_90 are blitted into the splash params.
-struct CDisplayMgr {
-    char pad00[0x8c];
-    i32 m_8c; // +0x8c
-    i32 m_90; // +0x90
-};
-
-// The on-screen splash params block built on the stack for EngStr_DrawText; its
-// leading slot is the loaded caption CString.
-struct SplashParams {
-    CString text; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08, m_0c, m_10, m_14;
-};
-void EngStr_DrawText(
-    CLevelData* lvl,
-    SplashParams* a,
-    i32* b,
-    i32 size,
-    i32 e,
-    i32 f,
-    i32 g,
-    i32 h,
-    i32 i
-); // 0x115440
-
-// The persisted object. Only the serialized fields are named. NB the Save/Load
-// method names are recovered-symbol placeholders; the archive object drives the
-// actual transfer direction, only the +0x2c/+0x30 slot offsets are load-bearing.
-struct CMgrPersistObj {
-    i32 m_00;                  // +0x00
-    CDisplayMgr* m_displayMgr; // +0x04
-    CSymParser* m_rezLocator;  // +0x08
-    CLevelData* m_levelData;   // +0x0c
-    char m_pad10[0x1c - 0x10];
-    i32 m_1c, m_20, m_24;
-    char m_pad28[0x38 - 0x28];
-    i32 m_38, m_3c, m_40, m_44, m_48;
-    char m_4c[0x100]; // 0x4c..0x14c
-    i32 m_14c, m_150, m_154, m_158, m_15c;
-    char m_pad160[0x168 - 0x160];
-    char m_168[0x10];
-    char m_178[0x10];
-    char m_188[0x10];
-    char m_198[0x10];
-    i32 m_1a8, m_1ac, m_1b0;
-
-    i32 Save(CSerialArchive* w); // 0x0fb1c0 (+0x2c slot pass)
-    i32 Load(CSerialArchive* s); // 0x0faff0 (+0x30 slot pass; ex SaveRecord::Load)
-    i32 Init();                  // 0x0face0
-};
+// CLevelData / CDisplayMgr are DISSOLVED (2026-07-14): m_levelData IS the canonical
+// CSpriteFactoryHolder (<Gruntz/GameRegistry.h>; its +0x04 CDDrawSubMgrPages worker ==
+// the old m_ready, its +0x10 CImageRegistry == the old m_imageSet) and m_displayMgr IS
+// the canonical CGruntzMgr (<Gruntz/GruntzMgr.h>; its +0x8c/+0x90 m_modeW/m_modeH ==
+// the old m_8c/m_90 video mode). Both are the CState m_c / m_4 prefix. The persisted
+// object (CMgrPersistObj) + SplashParams + EngStr_DrawText now live in the shared
+// <Gruntz/MgrPersist.h> (included above), not as .cpp-local views.
 
 // @early-stop
 // /GX frame-packing artifact (~96%): the instruction stream is byte-faithful, but
@@ -742,14 +687,14 @@ i32 CMgrPersistObj::Init() {
     // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
     while (ShowCursor(0) >= 0)
         ;
-    if (m_levelData->m_ready->Method_158bc0() == 0) {
+    if (m_levelData->m_pages->Method_158bc0() == 0) {
         return 0;
     }
     if (g_64e35c == 0) {
         SplashParams sp;
         sp.text.LoadString(0x81a9);
-        sp.m_08 = m_displayMgr->m_8c;
-        sp.m_0c = m_displayMgr->m_90;
+        sp.m_08 = m_displayMgr->m_modeW;
+        sp.m_0c = m_displayMgr->m_modeH;
         sp.m_10 = 0;
         sp.m_14 = 0;
         EngStr_DrawText(m_levelData, &sp, &sp.m_04, 0x78, 1, 0xff, 0, 0xff, 1);
@@ -761,7 +706,7 @@ i32 CMgrPersistObj::Init() {
     if (path == 0) {
         return 0;
     }
-    if (m_levelData->m_imageSet->LoadNamespace(path, "GAME", "_") == -1) {
+    if (m_levelData->m_10->LoadNamespace(path, "GAME", "_") == -1) {
         return 0;
     }
     m_1a8 = 0;
@@ -933,8 +878,6 @@ SIZE_UNKNOWN(CMenuRoot);
 SIZE_UNKNOWN(CSoundFxEmitter);
 SIZE_UNKNOWN(CDDrawSurfacePair);
 SIZE_UNKNOWN(FxResource);
-SIZE_UNKNOWN(CDisplayMgr);
-SIZE_UNKNOWN(CLevelData);
 SIZE_UNKNOWN(CMgrPersistObj);
 SIZE_UNKNOWN(CRezLocator);
 SIZE_UNKNOWN(SplashParams);

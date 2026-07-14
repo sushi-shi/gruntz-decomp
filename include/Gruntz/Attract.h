@@ -129,12 +129,19 @@ struct CAttractHost {
     CAttractVoice* m_10; // +0x10  voice/host object
 };
 
-// Two more attract facets whose full model lives in CAttract.cpp (m_4 as the game
-// manager's error/HWND owner; m_2c as the fade screen-resolver). Forward-declared
-// here so the typed slot accessors below can name them (cast to an incomplete
-// pointer type is well-formed; the call sites in CAttract.cpp see the full type).
+// The game-manager owner facet (m_4). Forward-declared here so the typed slot
+// accessors can name it (cast to an incomplete pointer type is well-formed; the
+// call sites in CAttract.cpp see the full CGruntzMgr type from <Gruntz/GruntzMgr.h>).
 class CGruntzMgr;
-class CAttractScreenObj;
+
+// The m_2c fade-screen-resolver facet: CState::m_2c (a CResSource) re-typed. Its
+// ResolveScreen maps a "\SCREENZ\<name>" path + a screen-type tag to a fade page.
+// (State.h forward-declares this for the shared screenObj() accessor; the full
+// model lives here in the owning module's header, not in a .cpp view.)
+class CAttractScreenObj {
+public:
+    void* ResolveScreen(char* path, void* tag); // 0x120120
+};
 
 // ---------------------------------------------------------------------------
 // CAttract - the attract/title state. Derives from CState (RTTI ground truth);
