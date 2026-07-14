@@ -64,27 +64,21 @@ extern "C" PostMessageFn g_pPostMessageA;
 // per-frame time delta (DAT_00645584; bound in Attract.cpp). Extern here (reloc-masked).
 extern "C" u32 g_frameDelta;
 
-// The ButeFileStream `defaults` arg CButeMgr::Parse hands the stream ctor (owner-TU
-// def; VA 0x5f03e0). Holds the sentinel 0x1a4 (loaded + pushed as the void* arg).
-extern "C" {
-    DATA(0x001f03e0)
-    void* g_pButeDefaults = (void*)0x1a4; // 0x5f03e0
-}
+// (The fake `g_pButeDefaults = (void*)0x1a4` global def @0x5f03e0 is GONE: that
+// cell is the CRT's own ?openprot@filebuf@@2HB - filebuf::openprot == 0x1a4 (0644),
+// the DEFAULT third argument of the real `ifstream(const char*, int, int)` ctor.
+// Retail's load+push of [0x5f03e0] is the CALLER materializing the default arg;
+// spelling the ctor with the default emits the same reference, and the CRT lib
+// defines the symbol.)
 
-// The first arg is the game-manager/entry context whose CString at +0xc8 (a
-// pending-name latch) is cleared before delegating to the CPlay base entry.
-SIZE_UNKNOWN(CDemoEnterCtx);
-struct CDemoEnterCtx {
-    char p0[0xc8];
-    CString m_c8; // +0xc8
-};
-
-// 0x3bfa0 - CDemo::Vfunc1 (slot 1): clear the entry context's pending name, run
-// the CPlay base slot-1 (CPlay::Vfunc1 == the mode/object initializer at 0xc7ec0);
-// on failure return 0, else latch m_520 and return 1.
+// 0x3bfa0 - CDemo::Vfunc1 (slot 1): clear the manager's pending world-file name,
+// run the CPlay base slot-1 (CPlay::Vfunc1 == the mode/object initializer at
+// 0xc7ec0); on failure return 0, else latch m_520 and return 1. (The ex-
+// `CDemoEnterCtx` view is GONE: the ctx arg IS the CGruntzMgr - its +0xc8 CString
+// is the canonical m_strWorldFile "world file name", which demo mode blanks.)
 RVA(0x0003bfa0, 0x42)
 i32 CDemo::Vfunc1(i32 ctx, i32 a1, i32 a2) {
-    ((CDemoEnterCtx*)ctx)->m_c8.Empty();
+    ((CGruntzMgr*)ctx)->m_strWorldFile.Empty();
     if (CPlay::Vfunc1(ctx, a1, a2) == 0) {
         return 0;
     }
@@ -103,18 +97,18 @@ i32 CDemo::Vslot15() {
 }
 
 // ---------------------------------------------------------------------------
-// CDemoSetup - the attract/demo-mode actor seeding. this->m_c is the bound world
-// object; its +0x8 is the sprite factory.
-struct CDemoWorld {
-    char m_pad0[0x8];
-    CSpriteFactory* m_8; // +0x8
-};
-
+// CDemoSetup - the attract/demo-mode actor seeding. this->m_c is the world holder
+// (the canonical CSpriteFactoryHolder; ex-CDemoWorld view - its +0x8 IS the typed
+// m_8 factory).
+// @identity-TODO: the OWNER class is genuinely unrecovered - 0x3c070 has no rel32
+// caller, no vtable membership in the exports and no RTTI; it is reached by fn-ptr
+// from unreconstructed data. The +0xc world-context slot pattern fits the
+// CGameObject/AnimWorkerObj/CUserLogic m_0c family but nothing disambiguates.
 class CDemoSetup {
 public:
     i32 SetupDemoActors(); // 0x3c070
     char m_pad0[0xc];
-    CDemoWorld* m_c; // +0xc  bound world
+    CSpriteFactoryHolder* m_c; // +0xc  bound world holder
 };
 
 // SetupDemoActors @0x3c070 - seed the two attract-mode demo HUD sprites
@@ -187,67 +181,42 @@ i32 CDemo::Render() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x3c300 - the demo/attract auto-scroll camera director (__cdecl(owner)).
-// ---------------------------------------------------------------------------
-// @identity-TODO: owner->m_7c is the demo/level render context (owns the plane
-// list + main plane via m_c->m_24; Ghidra carved neither, no RTTI). The plane
-// objects are the canonical CLevelPlane; the surrounding holders are modeled by
-// their proven offsets until the context class is recovered.
-SIZE_UNKNOWN(ScrollGeomHolder);
-struct ScrollGeomHolder {
-    char p0[0x38];
-    CLevelPlane** m_38; // +0x38  plane-layer array
-    i32 m_3c;           // +0x3c  plane-layer count
-    char p40[0x5c - 0x40];
-    CLevelPlane* m_5c; // +0x5c  main plane
-};
-SIZE_UNKNOWN(ScrollViewHolder);
-struct ScrollViewHolder {
-    char p0[0x24];
-    ScrollGeomHolder* m_24; // +0x24
-};
-SIZE_UNKNOWN(AutoScrollState);
-struct AutoScrollState {
-    char p0[0xc];
-    ScrollViewHolder* m_c; // +0xc
-    char p10[0x1c - 0x10];
-    i32 m_1c; // +0x1c  mode (0 = pick target, 1 = scroll toward it)
-    char p20[0x4c - 0x20];
-    i32 m_4c, m_50; // +0x4c  per-axis scroll target
-};
-SIZE_UNKNOWN(ScrollOwner);
-struct ScrollOwner {
-    char p0[0x7c];
-    AutoScrollState* m_7c; // +0x7c
-};
-
+// 0x3c300 - the demo/attract auto-scroll camera director (__cdecl(owner)) - an
+// anim-worker handler like the 0x3d2b0.. family below. THE Scroll* VIEWS ARE
+// DISSOLVED (2026-07-14): the owner is the canonical CGameObject (its +0x7c IS
+// m_7c, the AnimWorkerObj), the worker's +0xc IS m_0c (the owner/world context ==
+// the CSpriteFactoryHolder facet), its +0x24 the canonical CGameLevel whose
+// +0x38/+0x3c "plane array + count" are the INTERIOR of the m_planes CObArray
+// (GetSize/GetAt inlines emit the same loads) and +0x5c is m_mainPlane. The
+// worker's +0x1c is the m_1c state tag (int|ptr role-union; int here) and
+// +0x4c/+0x50 the per-axis scroll target in its flat serialized band.
+RVA(0x0003c300, 0x183)
 // @early-stop
 // Structure exact (switch mode-dispatch sub/je/dec/jne matches, x87 scale-multiply
 // + plane loop + RecomputePlaneCoords all correct). Residual is a regalloc butterfly:
-// retail pins m_c->m_24 in esi (freeing edi for the plane-loop counter i), cl pins it
+// retail pins the level in esi (freeing edi for the plane-loop counter i), cl pins it
 // in edi (spilling i to a 3rd stack slot -> sub esp,0xc vs 0x8) + holds curY in
 // edx/[esp+0x20] vs retail's ecx/[esp+0x1c]. Not source-steerable; ~73% code-correct.
-RVA(0x0003c300, 0x183)
-i32 DemoAutoScrollStep(ScrollOwner* owner) {
-    AutoScrollState* st = owner->m_7c;
-    switch (st->m_1c) {
+i32 DemoAutoScrollStep(CGameObject* owner) {
+    AnimWorkerObj* st = owner->m_7c;
+    switch ((i32)st->m_1c) {
         case 1: {
             // step the current scroll position one unit toward the target.
-            ScrollGeomHolder* gh = st->m_c->m_24;
-            i32 curX = gh->m_5c->m_originX;
-            i32 curY = gh->m_5c->m_originY;
-            if (curX < st->m_4c) {
+            CGameLevel* gh = ((CSpriteFactoryHolder*)st->m_0c)->m_24;
+            i32 curX = gh->m_mainPlane->m_originX;
+            i32 curY = gh->m_mainPlane->m_originY;
+            if (curX < st->m_scrollTargetX) {
                 curX++;
-            } else if (curX > st->m_4c) {
+            } else if (curX > st->m_scrollTargetX) {
                 curX--;
             }
-            if (curY < st->m_50) {
+            if (curY < st->m_scrollTargetY) {
                 curY++;
-            } else if (curY > st->m_50) {
+            } else if (curY > st->m_scrollTargetY) {
                 curY--;
             }
             // apply the (optionally parallax-scaled) coords to the main plane + recompute.
-            CLevelPlane* mg = gh->m_5c;
+            CLevelPlane* mg = gh->m_mainPlane;
             float fx = (float)curX;
             float fy = (float)curY;
             if (!(mg->m_flags & 1)) {
@@ -257,9 +226,10 @@ i32 DemoAutoScrollStep(ScrollOwner* owner) {
             mg->m_scaledX = fx;
             mg->m_scaledY = fy;
             mg->RecomputePlaneCoords();
-            // apply the same coords to every plane layer.
-            for (i32 i = 0; i < gh->m_3c; i++) {
-                CLevelPlane* p = gh->m_38[i];
+            // apply the same coords to every plane layer (the m_planes CObArray;
+            // the element cast is the devs' own - CObArray stores CObject*).
+            for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
+                CLevelPlane* p = (CLevelPlane*)gh->m_planes[i];
                 float px = (float)curX;
                 float py = (float)curY;
                 if (!(p->m_flags & 1)) {
@@ -271,18 +241,18 @@ i32 DemoAutoScrollStep(ScrollOwner* owner) {
                 p->RecomputePlaneCoords();
             }
             // reached the target -> back to mode 0.
-            if (st->m_4c == curX && st->m_50 == curY) {
+            if (st->m_scrollTargetX == curX && st->m_scrollTargetY == curY) {
                 st->m_1c = 0;
             }
             return 1;
         }
         case 0: {
             // pick a fresh random per-axis target within the main plane's wrap range.
-            i32 rx = st->m_c->m_24->m_5c->m_wrapW;
-            st->m_4c = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
-            i32 ry = st->m_c->m_24->m_5c->m_wrapH;
-            st->m_50 = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
-            st->m_1c = 1;
+            i32 rx = ((CSpriteFactoryHolder*)st->m_0c)->m_24->m_mainPlane->m_wrapW;
+            st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
+            i32 ry = ((CSpriteFactoryHolder*)st->m_0c)->m_24->m_mainPlane->m_wrapH;
+            st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
+            st->m_1c = (void*)1;
             break;
         }
     }
@@ -437,47 +407,19 @@ void COwnerWithSubs::DtorSub8() {
 
 // ---------------------------------------------------------------------------
 // CButeMgr::Parse(CString, int) @0x3cc20 - the .att file-parse entry point: opens
-// a CRT istream-derived source stream over the named file, checks it opened OK
-// (ios::state & (failbit|badbit)), resets the three keyed stores, runs the
-// recursive group parse, then closes + deletes the stream. /GX EH-framed.
+// a CRT ifstream over the named file, checks it opened OK (ios::fail() ==
+// state & (failbit|badbit)), resets the three keyed stores, runs the recursive
+// group parse, then syncs + deletes the stream. /GX EH-framed.
 //
-// The stream is a multiply/virtually-derived CRT iostream class: its `ios`
-// virtual base carries the state word at +8 (the `& 6` open-failure probe) and
-// the vtable whose slot-0 scalar-deleting dtor runs the `delete`. Modeled as a
-// real virtual-base hierarchy so MSVC lowers the vbtable lookups + the vbase-
-// adjusted virtual delete; the engine ctor/Sync (0x169fb0 / 0x16a3b0) are
-// external no-body callees (reloc-masked).
-class streambuf; // the CRT <streambuf.h> foreign type (opaque here)
-struct ButeIos {
-    virtual ~ButeIos(); // vptr @ +0
-    streambuf* m_bp;    // +0x04  the CRT streambuf the ios owns
-    int m_state;        // +0x08  io_state (& 6 == failbit|badbit)
-    char m_pad0c[0x50 - 0xc];
-};
-SIZE(ButeIos, 0x50); // CRT ios virtual base view (vptr, streambuf, state, ...)
-
-// The file source stream `new`-d at +0xa0: vbptr @ +0, two derived dwords, then
-// the `ios` virtual base @ +0xc -> sizeof 0x5c. The ctor (0x169fb0) takes the
-// filename, an open-mode word (0x21), and the defaults pointer; MSVC appends the
-// hidden most-derived vbase flag (=1). Sync (0x16a3b0) finalizes before delete.
-struct ButeFileStream : virtual ButeIos {
-    int m_d4;                                                       // +0x04
-    int m_d8;                                                       // +0x08
-    ButeFileStream(const char* fileName, int mode, void* defaults); // 0x169fb0
-    void Sync();                                                    // 0x16a3b0
-    virtual ~ButeFileStream() OVERRIDE; // external; the delete runs the vbase vtable's slot-0
-};
-SIZE(ButeFileStream, 0x5c); // vbptr + 2 dwords + the ios virtual base @0xc
-// NO VTBL: its ctor/dtor are declared-only (the CRT bodies), so cl emits no ??_7 for
-// this class in ANY form - not the plain ??_7ButeFileStream@@6B@ and not a through-base
-// ??_7ButeFileStream@@6BButeIos@@@ (llvm-nm over every base obj). The old
-// RELOC_VTBL(ButeFileStream, 0x001f03c4) therefore masked nothing, and the rva it named
-// is not even a primary vtable: 0x1f03c4 carries RTTI .?AVifstream@@ at **base_off 12**,
-// i.e. the ios VIRTUAL-BASE secondary table of the CRT ifstream - whose mangled name
-// embeds the base and can never be a plain ??_7<class>@@6B@ row.
-// @identity-TODO: ButeFileStream IS the CRT `ifstream` (FID-labelled iostream methods;
-// the +0x14/+0xc/+0x8 constants in the users are vbase adjustments, not member offsets).
-// Folding it onto the real <fstream.h> class is the remaining work.
+// THE ButeIos/ButeFileStream VIEWS ARE DISSOLVED (2026-07-14): the stream IS the
+// CRT `ifstream` (<fstream.h>, this toolchain's own header - the class that BUILT
+// retail): the ctor @0x169fb0 is ??0ifstream@@QAE@PBDHH@Z (filename, 0x21 =
+// ios::in|ios::nocreate, filebuf::openprot - the third arg was the fake
+// "g_pButeDefaults" global; 0x5f03e0 is ?openprot@filebuf@@2HB == 0x1a4), Sync
+// @0x16a3b0 is istream::sync, the "+0x14 state" is the ios virtual base's state
+// word behind the +0xc vbase adjustment, and `delete` runs the real virtual dtor.
+// (The old RELOC_VTBL(ButeFileStream, 0x001f03c4) masked nothing - 0x1f03c4 is
+// ifstream's ios virtual-base SECONDARY vtable, RTTI .?AVifstream@@ base_off 12.)
 
 // @early-stop
 // 98.84% - logic + instruction-selection byte-exact (verified base-vs-target
@@ -495,9 +437,11 @@ SIZE(ButeFileStream, 0x5c); // vbptr + 2 dwords + the ios virtual base @0xc
 //       tree pointer; neither flips it (one regressed to 96.3%).
 RVA(0x0003cc20, 0x14e)
 bool CButeMgr::Parse(CString filename, int streamBase) {
-    ButeFileStream* s = new ButeFileStream(filename, 0x21, g_pButeDefaults);
+    // the third ctor arg is the header default `= filebuf::openprot` - the caller
+    // materializes it as a load+push of ?openprot@filebuf@@2HB (retail 0x5f03e0)
+    ifstream* s = new ifstream(filename, ios::in | ios::nocreate);
     m_stream = s;
-    if ((s->m_state & 6) != 0) {
+    if (s->fail()) { // ios state & (failbit|badbit), behind the vbase adjust
         return false;
     }
 
@@ -519,8 +463,8 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
     // CButeStream* / void** / int); the reload-through-cast here reproduces retail's
     // two member reloads (using the typed local `s` would keep it in a register and
     // diverge). Documented reinterpret of the multi-view slot, not a placeholder.
-    ((ButeFileStream*)m_stream)->Sync();
-    delete (ButeFileStream*)m_stream;
+    ((ifstream*)m_stream)->sync();
+    delete (ifstream*)m_stream;
     return result;
 }
 

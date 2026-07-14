@@ -131,7 +131,10 @@ struct AnimWorkerObj : public CObject {
     i32 m_30;                  // +0x30  spawn-record param B (AddGrunt arg 12)
     i32 m_34;                  // +0x34  (zeroed by Init)
     i32 m_38;                  // +0x38  (zeroed by Init)
-    char m_pad3c[0xbc - 0x3c]; // +0x3c  flat serialized state (Save/Load stream it)
+    char m_pad3c[0x4c - 0x3c]; // +0x3c  flat serialized state (Save/Load stream it)
+    i32 m_scrollTargetX;       // +0x4c  demo auto-scroll per-axis target (DemoAutoScrollStep,
+    i32 m_scrollTargetY;       // +0x50  Demo.cpp; part of the flat serialized band)
+    char m_pad54[0xbc - 0x54]; // +0x54  flat serialized state (continued)
     i32 m_bc;                  // +0xbc  per-tile time (teleporter reads the bound clock here;
                                //        rolling-ball speed in LoadGruntAbilityTuning)
     char m_padc0[0xf0 - 0xc0];

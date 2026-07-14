@@ -82,7 +82,8 @@ extern float g_lumaR;
 extern float g_lumaG;
 extern float g_lumaB;
 extern float g_inv255;
-extern "C" void* g_pButeDefaults;
+// (g_pButeDefaults is GONE - 0x5f03e0 is the CRT's ?openprot@filebuf@@2HB, the
+//  ifstream ctor's default third arg; Demo.cpp spells the real ctor now.)
 extern void* g_retAddrBreadcrumb;
 extern u32 g_zvecErrSentinel;
 extern const double g_5f04f0;
