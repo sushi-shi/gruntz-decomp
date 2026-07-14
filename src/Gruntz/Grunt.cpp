@@ -548,7 +548,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     m_2d8 = 0;
     {
         CGruntHud* h = m_10;
-        i32 lim = h->m_60 + 0x186a0;
+        i32 lim = h->m_screenY + 0x186a0;
         if (h->m_74 != lim) {
             h->m_74 = lim;
             h->m_8 |= 0x20000;
@@ -839,45 +839,45 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 // center): vertical, horizontal, and the two diagonals. Return 1 on the first hit.
 RVA(0x0004a9f0, 0x1aa)
 i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
-    CGrunt* tgt = m_tileMgr->FindAtPixel(m_10->m_5c, m_10->m_60);
+    CGrunt* tgt = m_tileMgr->FindAtPixel(m_10->m_screenX, m_10->m_screenY);
     if (tgt == 0) {
         return 0;
     }
     RECT r;
     CopyRect(&r, (LPRECT)((char*)tgt->m_154 + 0x144));
     CGruntHud* th = tgt->m_10;
-    OffsetRect(&r, th->m_5c, th->m_60);
+    OffsetRect(&r, th->m_screenX, th->m_screenY);
 
     POINT a, b;
 
-    b.x = m_10->m_5c;
-    b.y = m_10->m_60 - 0x3e8;
-    a.x = m_10->m_5c;
-    a.y = m_10->m_60 + 0x3e8;
+    b.x = m_10->m_screenX;
+    b.y = m_10->m_screenY - 0x3e8;
+    a.x = m_10->m_screenX;
+    a.y = m_10->m_screenY + 0x3e8;
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_10->m_5c - 0x3e8;
-    b.y = m_10->m_60;
-    a.x = m_10->m_5c + 0x3e8;
-    a.y = m_10->m_60;
+    b.x = m_10->m_screenX - 0x3e8;
+    b.y = m_10->m_screenY;
+    a.x = m_10->m_screenX + 0x3e8;
+    a.y = m_10->m_screenY;
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_10->m_5c - 0x3e8;
-    b.y = m_10->m_60 - 0x3e8;
-    a.x = m_10->m_5c + 0x3e8;
-    a.y = m_10->m_60 + 0x3e8;
+    b.x = m_10->m_screenX - 0x3e8;
+    b.y = m_10->m_screenY - 0x3e8;
+    a.x = m_10->m_screenX + 0x3e8;
+    a.y = m_10->m_screenY + 0x3e8;
     if (RectSegProbe(&r, &b, &a)) {
         return 1;
     }
 
-    b.x = m_10->m_5c - 0x3e8;
-    b.y = m_10->m_60 + 0x3e8;
-    a.x = m_10->m_5c + 0x3e8;
-    a.y = m_10->m_60 - 0x3e8;
+    b.x = m_10->m_screenX - 0x3e8;
+    b.y = m_10->m_screenY + 0x3e8;
+    a.x = m_10->m_screenX + 0x3e8;
+    a.y = m_10->m_screenY - 0x3e8;
     return RectSegProbe(&r, &b, &a) != 0;
 }
 
@@ -1192,8 +1192,8 @@ i32 CGrunt::StepGruntMovement() {
         coordY = co->m_y;
     }
 
-    gtX = m_10->m_5c >> 5;
-    gtY = m_10->m_60 >> 5;
+    gtX = m_10->m_screenX >> 5;
+    gtY = m_10->m_screenY >> 5;
     if (coordX > gtX) {
         if (coordY > gtY) {
             rec.m_0 = g_voiceSE[0];
@@ -1325,8 +1325,8 @@ i32 CGrunt::StepGruntMovement() {
         i32 cy = co->m_y;
         tgtPxX = (cx << 5) + 0x10;
         tgtPxY = (cy << 5) + 0x10;
-        i32 gx = m_10->m_5c >> 5;
-        i32 gy = m_10->m_60 >> 5;
+        i32 gx = m_10->m_screenX >> 5;
+        i32 gy = m_10->m_screenY >> 5;
         if (cx > gx) {
             if (cy > gy) {
                 rec.m_0 = g_voiceSE[0];
@@ -1460,8 +1460,8 @@ label_4c6e4:
                 m_31c.AddHead(co);
             }
         }
-        i32 hudY = m_10->m_60;
-        i32 hudX = m_10->m_5c;
+        i32 hudY = m_10->m_screenY;
+        i32 hudX = m_10->m_screenX;
         CCueRect* rr = (CCueRect*)(g_gameReg->m_world->m_24->m_5c + 0x40);
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
             g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
@@ -1689,7 +1689,7 @@ i32 CGrunt::CreateHealthSprite() {
 
     m_healthSprite =
         g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
+            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
     m_healthSprite->m_7c->m_notify(m_healthSprite);
 
     AnimWorkerObj* inner = m_healthSprite->m_7c;
@@ -1714,7 +1714,7 @@ i32 CGrunt::CreateToySprite() {
 
     m_toySprite =
         g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
+            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
     m_toySprite->m_7c->m_notify(m_toySprite);
 
     CGruntToySprite* reg = (CGruntToySprite*)m_toySprite->m_7c->m_logic;
@@ -1738,8 +1738,8 @@ i32 CGrunt::CreateStaminaSprite() {
 
     m_staminaSprite = g_gameReg->m_world->m_8->CreateSprite(
         0,
-        m_10->m_5c,
-        m_10->m_60 - 0x20,
+        m_10->m_screenX,
+        m_10->m_screenY - 0x20,
         0xdbba0,
         s_GruntStaminaSprite,
         0x40003
@@ -1779,8 +1779,8 @@ i32 CGrunt::CreateToyTimeSprite() {
 
     m_toyTimeSprite = g_gameReg->m_world->m_8->CreateSprite(
         0,
-        m_10->m_5c,
-        m_10->m_60 - 0x20,
+        m_10->m_screenX,
+        m_10->m_screenY - 0x20,
         0xdbba0,
         s_GruntToyTimeSprite,
         0x40003
@@ -1815,8 +1815,8 @@ i32 CGrunt::CreateWingzTimeSprite() {
 
     m_wingzTimeSprite = g_gameReg->m_world->m_8->CreateSprite(
         0,
-        m_10->m_5c,
-        m_10->m_60 - 0x26,
+        m_10->m_screenX,
+        m_10->m_screenY - 0x26,
         0xdbba0,
         s_GruntWingzTimeSprite,
         0x40003
@@ -1845,7 +1845,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
 
     m_powerupSprite =
         g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x15, s_GruntPowerupSprite, 0x40003);
+            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY, 0x15, s_GruntPowerupSprite, 0x40003);
     m_powerupSprite->m_7c->m_notify(m_powerupSprite);
 
     AnimWorkerObj* inner = m_powerupSprite->m_7c;
@@ -1870,7 +1870,7 @@ i32 CGrunt::CreateSelectedSprite() {
 
     m_selectedSprite =
         g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x14, s_GruntSelectedSprite, 0x40003);
+            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY, 0x14, s_GruntSelectedSprite, 0x40003);
     m_selectedSprite->m_7c->m_notify(m_selectedSprite);
 
     CGruntSelectedSprite* reg = (CGruntSelectedSprite*)m_selectedSprite->m_7c->m_logic;

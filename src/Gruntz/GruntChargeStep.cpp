@@ -69,8 +69,8 @@ i32 CGrunt::ChargeStep() {
     i32 hitGate = 0;
     if (g != 0) {
         CGruntHud* gp = g->m_10;
-        if (gp->m_5c == g->m_lastTilePxX && gp->m_60 == g->m_lastTilePxY
-            && RectContains(gp->m_5c, gp->m_60)) {
+        if (gp->m_screenX == g->m_lastTilePxX && gp->m_screenY == g->m_lastTilePxY
+            && RectContains(gp->m_screenX, gp->m_screenY)) {
             hitGate = 1;
         }
     }
@@ -129,8 +129,8 @@ i32 CGrunt::ChargeStep() {
             if (g != 0) {
                 if (hitGate != 0 && m_stamina >= 100) {
                     CGruntHud* gp = g->m_10;
-                    if (gp->m_5c == g->m_lastTilePxX && gp->m_60 == g->m_lastTilePxY
-                        && RectContains(gp->m_5c, gp->m_60)) {
+                    if (gp->m_screenX == g->m_lastTilePxX && gp->m_screenY == g->m_lastTilePxY
+                        && RectContains(gp->m_screenX, gp->m_screenY)) {
                         CommitNeighbor(
                             g->m_tileOwnerHi,
                             g->m_tileOwnerLo,
@@ -145,8 +145,8 @@ i32 CGrunt::ChargeStep() {
                         return 1;
                     }
                     if (CGrunt_TileSwitch(
-                            g->m_10->m_5c >> 5,
-                            g->m_10->m_60 >> 5,
+                            g->m_10->m_screenX >> 5,
+                            g->m_10->m_screenY >> 5,
                             0,
                             m_arrivalFlags,
                             1,
@@ -163,8 +163,8 @@ i32 CGrunt::ChargeStep() {
                         // grunt is on screen (the rect sits 0x40 into the viewport object)
                         i32 los = CGameLevel::PointInBounds(
                             (const LevelCoordRect*)(mgr->m_world->m_24->m_5c + 0x40),
-                            mp->m_5c,
-                            mp->m_60
+                            mp->m_screenX,
+                            mp->m_screenY
                         );
                         if (los != 0) {
                             ((CGruntSpawnConfig*)mgr->m_cueSink)
@@ -227,8 +227,8 @@ i32 CGrunt::ChargeStep() {
                 m_dwell = 0;
             }
             if (m_poweredUp == 0 && m_stamina >= 100
-                && RectContains(t->m_10->m_5c, t->m_10->m_60) != 0
-                && t->m_10->m_5c == t->m_lastTilePxX && t->m_10->m_60 == t->m_lastTilePxY) {
+                && RectContains(t->m_10->m_screenX, t->m_10->m_screenY) != 0
+                && t->m_10->m_screenX == t->m_lastTilePxX && t->m_10->m_screenY == t->m_lastTilePxY) {
                 CommitNeighbor(
                     t->m_tileOwnerHi,
                     t->m_tileOwnerLo,
@@ -254,8 +254,8 @@ i32 CGrunt::ChargeStep() {
                 if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
                     return 1;
                 }
-                if (RectContains(t->m_10->m_5c, t->m_10->m_60) == 0
-                    || t->m_10->m_5c != t->m_lastTilePxX || t->m_10->m_60 != t->m_lastTilePxY) {
+                if (RectContains(t->m_10->m_screenX, t->m_10->m_screenY) == 0
+                    || t->m_10->m_screenX != t->m_lastTilePxX || t->m_10->m_screenY != t->m_lastTilePxY) {
                     m_defenderState = 1;
                     m_dwell = 0x1f4;
                     return 1;

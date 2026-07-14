@@ -4757,8 +4757,8 @@ L_clear:
 RVA(0x00031c70, 0x1d)
 GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
     CGruntHud* h = m_10;
-    i32 x = h->m_5c >> 5;
-    i32 y = h->m_60 >> 5;
+    i32 x = h->m_screenX >> 5;
+    i32 y = h->m_screenY >> 5;
     out->m_x = x;
     out->m_y = y;
     return out;

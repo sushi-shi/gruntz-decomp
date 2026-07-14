@@ -99,8 +99,8 @@ struct CGruntHud {
     i32 m_50; // +0x50   (SelectMoveIcon: = 0xa)
     char m_pad54[0x58 - 0x54];
     i32 m_58; // +0x58   (SelectMoveIcon: = 1)
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
+    i32 m_screenX; // +0x5c
+    i32 m_screenY; // +0x60
     char m_pad64[0x74 - 0x64];
     i32 m_74; // +0x74   (entrance: latched anim id; cmp 0xcf850)
     char m_pad78[0xe4 - 0x78];
@@ -1805,6 +1805,14 @@ public:
     // committed, not state 0x36), then test whether the squared tile-distance from
     // this grunt to it is within the (radius-sum)^2 threshold.
     i32 GruntInRadius(i32 col, i32 row); // @0x67b00
+    // @0x0f7d90 (body in ObjectTracker.cpp) - the per-tick peer-tracking behavior
+    // step (ex ?Update@CObjectTracker@@ - that view WAS this grunt: the one retail
+    // caller, LoadGruntTuningConstants @0x5d210 - itself data-ref'd in
+    // ??_7CGrunt@@6B@ - dispatches thunk 0x2806 on its own `this` @0x5dd4e, and
+    // all 12 fields land on CGrunt members at identical offsets). Publish the
+    // defended position, then track the nearest board enemy: relay its screen pos
+    // to the trigger grid, or (m_dwell > 1000) re-place at its tile + cue 0x366.
+    i32 StepPeerTracking(); // @0x0f7d90
     // @0x69fd0 (ret 0) - finish the entrance move: arm the entrance geometry source,
     // gate on the armed-but-not-running sub-player, notify the tile-mgr of the drop
     // (unless m_36c set), then retire the entrance player (m_154->m_8 |= 0x10000).

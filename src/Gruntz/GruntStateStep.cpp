@@ -204,7 +204,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             goto tail;
         }
         CGruntHud* s = cur->m_10;
-        if (g->RectContains(s->m_5c, s->m_60) != 0) {
+        if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
             // arrived on this tile
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);

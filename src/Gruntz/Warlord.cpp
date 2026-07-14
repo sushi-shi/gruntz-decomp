@@ -687,8 +687,8 @@ i32 CGrunt::ResolveDeathAnimation() {
     CGameRegistry* g = g_gameReg;
     if (g->m_134 == 1) {
         CGruntHud* h = m_10;
-        i32 x = h->m_5c;
-        i32 y = h->m_60;
+        i32 x = h->m_screenX;
+        i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
             g->m_cueSink->Cue(h->m_188, m_deathCueArg, -1, -1, -1);
@@ -720,8 +720,8 @@ i32 CGrunt::ResolveAnimation() {
     CGameRegistry* g = g_gameReg;
     if (g->m_134 == 1) {
         CGruntHud* h = m_10;
-        i32 x = h->m_5c;
-        i32 y = h->m_60;
+        i32 x = h->m_screenX;
+        i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
             g->m_cueSink->Cue(h->m_188, 0x435, -1, -1, -1);
@@ -757,8 +757,8 @@ i32 CGrunt::ResolveIdleAnimation() {
     CGameRegistry* g = g_gameReg;
     if (g->m_134 == 1) {
         CGruntHud* h = m_10;
-        i32 x = h->m_5c;
-        i32 y = h->m_60;
+        i32 x = h->m_screenX;
+        i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
             g->m_cueSink->Cue(h->m_188, idx + 0x431, -1, -1, -1);
@@ -797,8 +797,8 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     CGameRegistry* g = g_gameReg;
     if (g->m_134 == 1) {
         CGruntHud* h = m_10;
-        i32 x = h->m_5c;
-        i32 y = h->m_60;
+        i32 x = h->m_screenX;
+        i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
             g->m_cueSink->Cue(h->m_188, idx + 0x42e, -1, -1, -1);

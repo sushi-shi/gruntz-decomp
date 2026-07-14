@@ -182,7 +182,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             if (node == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
             } else {
-                g->SetArrivalTarget((i32)player, a5, node->m_10->m_5c, node->m_10->m_60);
+                g->SetArrivalTarget((i32)player, a5, node->m_10->m_screenX, node->m_10->m_screenY);
             }
             res = (isB == 0) ? grid->ApplyTriggerA(player, a4, a8, 0)
                              : grid->ApplyTriggerB(player, a4, a8, 0);
@@ -363,7 +363,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 return 0;
             }
             CGruntHud* m10 = g2->m_10;
-            g->SetArrivalTarget(row, col, m10->m_5c, m10->m_60);
+            g->SetArrivalTarget(row, col, m10->m_screenX, m10->m_screenY);
             res = grid->ApplyTriggerA(player, a7, row, 0);
             if (res != 0) {
                 if (res == -1) {
@@ -425,7 +425,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 return 0;
             }
             CGruntHud* m10 = g2->m_10;
-            g->SetArrivalTarget(row, col, m10->m_5c, m10->m_60);
+            g->SetArrivalTarget(row, col, m10->m_screenX, m10->m_screenY);
             res = grid->ApplyTriggerB(player, a7, row, 0);
             if (res != 0) {
                 if (res != -1) {

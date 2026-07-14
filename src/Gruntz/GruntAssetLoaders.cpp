@@ -118,8 +118,8 @@ enum GruntDeathType {
         CGameRegistry* _g = g_gameReg;                                                             \
         if (GruntPointVisible(                                                                     \
                 (i32) & _g->m_world->m_24->m_mainPlane->m_originX,                                 \
-                m_10->m_5c,                                                                        \
-                m_10->m_60                                                                         \
+                m_10->m_screenX,                                                                        \
+                m_10->m_screenY                                                                         \
             )) {                                                                                   \
             _g->m_cueSink->CueA(this, (tag), -1, 0, -1, -1);                                       \
         }                                                                                          \
@@ -260,8 +260,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
 
         case DEATH_QUICKFALL: // GRUNTZ_DEATHZ_QUICKFALL (apply FALL), snap to tile center
-            m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-            m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+            m_10->m_screenX = (m_10->m_screenX & ~0x1f) + 0x10;
+            m_10->m_screenY = (m_10->m_screenY & ~0x1f) + 0x10;
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_QUICKFALL);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
@@ -275,7 +275,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_FALL: { // FALL / QUICKFALL by tile attribute
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            i32 attr = ((i32*)grid->m_8[m_10->m_60 >> 5])[(m_10->m_5c >> 5) * 7 + 4];
+            i32 attr = ((i32*)grid->m_8[m_10->m_screenY >> 5])[(m_10->m_screenX >> 5) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
                 m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_QUICKFALL);
@@ -284,8 +284,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                     m_10->m_74 = -1;
                     m_10->m_8 |= 0x20000;
                 }
-                m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-                m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+                m_10->m_screenX = (m_10->m_screenX & ~0x1f) + 0x10;
+                m_10->m_screenY = (m_10->m_screenY & ~0x1f) + 0x10;
             } else {
                 m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_FALL);
             }
@@ -300,7 +300,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_FALL2: { // FALL2 / QUICKFALL2 by tile attribute
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            i32 attr = ((i32*)grid->m_8[m_10->m_60 >> 5])[(m_10->m_5c >> 5) * 7 + 4];
+            i32 attr = ((i32*)grid->m_8[m_10->m_screenY >> 5])[(m_10->m_screenX >> 5) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
                 m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_QUICKFALL2);
@@ -309,8 +309,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                     m_10->m_74 = -1;
                     m_10->m_8 |= 0x20000;
                 }
-                m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-                m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+                m_10->m_screenX = (m_10->m_screenX & ~0x1f) + 0x10;
+                m_10->m_screenY = (m_10->m_screenY & ~0x1f) + 0x10;
             } else {
                 CObject* out_ob = 0;
                 m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_FALL2, out_ob);
@@ -400,8 +400,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             {
                 CGameRegistry* g = g_gameReg;
                 CCueRect* r = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_originX;
-                i32 x = m_10->m_5c;
-                i32 y = m_10->m_60;
+                i32 x = m_10->m_screenX;
+                i32 y = m_10->m_screenY;
                 if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
                     g->m_cueSink->CueSpawn(this, 3, -1, -1, -1);
                 }
@@ -420,8 +420,8 @@ pathA:
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 (i32)&g->m_world->m_24->m_mainPlane->m_originX,
-                m_10->m_5c,
-                m_10->m_60
+                m_10->m_screenX,
+                m_10->m_screenY
             )) {
             g->m_cueSink->CueSpawn(this, 3, -1, -1, -1);
         }
@@ -435,7 +435,7 @@ finalize:
 tail:
     // block B: m_38c finalize cue
     if (m_entranceReason == 0x14 && g_gameReg->m_134 != 1) {
-        m_tileMgr->SpawnTileFx(m_10->m_5c, m_10->m_60, m_38c);
+        m_tileMgr->SpawnTileFx(m_10->m_screenX, m_10->m_screenY, m_38c);
     }
     if (m_arrivalState == 0xd) {
         TryPowerupAtTile();

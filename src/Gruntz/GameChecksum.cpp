@@ -37,7 +37,7 @@ i32 CGameSyncSig::ComputeSignature() {
             if (obj != 0) {
                 CGruntHud* sub = obj->m_10;
                 sum += obj->m_entranceCell.reason + obj->m_stamina + obj->m_toyTime + obj->m_health
-                       + sub->m_60 + sub->m_74 + sub->m_5c + obj->m_lastTilePxX
+                       + sub->m_screenY + sub->m_74 + sub->m_screenX + obj->m_lastTilePxX
                        + obj->m_lastTilePxY;
                 i32 n = obj->m_entranceReason;
                 i32 d = n;

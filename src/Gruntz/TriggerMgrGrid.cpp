@@ -304,8 +304,8 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
             if (g != 0 && g->m_entranceCommitted != 0) {
                 CGruntHud* o = g->m_10;
                 if (o->m_198 != 0) {
-                    i32 x0 = o->m_5c - 15;
-                    i32 y0 = o->m_60 - 15;
+                    i32 x0 = o->m_screenX - 15;
+                    i32 y0 = o->m_screenY - 15;
                     if (px < x0 + 30 && px >= x0 && py < y0 + 30 && py >= y0) {
                         if (outRow != 0) {
                             *outRow = row;
@@ -595,8 +595,8 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
         return 0;
     }
     CGruntHud* o = cell->m_10;
-    if (o->m_5c != cell->m_lastTilePxX) {
-        if (o->m_60 != cell->m_lastTilePxY) {
+    if (o->m_screenX != cell->m_lastTilePxX) {
+        if (o->m_screenY != cell->m_lastTilePxY) {
             return -1;
         }
     }
@@ -631,12 +631,12 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
         return 0;
     }
     CGruntHud* o = cell->m_10;
-    if (o->m_5c != cell->m_lastTilePxX) {
-        if (o->m_60 != cell->m_lastTilePxY) {
+    if (o->m_screenX != cell->m_lastTilePxX) {
+        if (o->m_screenY != cell->m_lastTilePxY) {
             return -1;
         }
     }
-    if (o->m_5c == cell->m_lastTilePxX && o->m_60 == cell->m_lastTilePxY && cell->m_198 != 0x1e
+    if (o->m_screenX == cell->m_lastTilePxX && o->m_screenY == cell->m_lastTilePxY && cell->m_198 != 0x1e
         && g_traitorMode == 0) {
         return 0;
     }

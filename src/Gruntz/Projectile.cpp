@@ -967,8 +967,8 @@ void CProjectile::ScanTargets(i32 impact) {
             if (g->m_entranceCommitted == 0) {
                 continue;
             }
-            i32 gx = g->m_10->m_5c - 7;
-            i32 gy = g->m_10->m_60 - 7;
+            i32 gx = g->m_10->m_screenX - 7;
+            i32 gy = g->m_10->m_screenY - 7;
             i32 gxhi = gx + 0xe;
             i32 gyhi = gy + 0xe;
             if (projXlo > gxhi) {

@@ -367,8 +367,8 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     i32 onScreen = 0;
     CGameRegistry* g = (CGameRegistry*)g_gameReg;
     {
-        i32 x = m_10->m_5c;
-        i32 y = m_10->m_60;
+        i32 x = m_10->m_screenX;
+        i32 y = m_10->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
             onScreen = 1;
@@ -468,8 +468,8 @@ void CGrunt::LoadEntranceConfig() {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         CGruntHud* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
-        i32 tx = h->m_5c >> 5;
-        i32 ty = h->m_60 >> 5;
+        i32 tx = h->m_screenX >> 5;
+        i32 ty = h->m_screenY >> 5;
 
         i32 flags;
         if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
@@ -496,8 +496,8 @@ void CGrunt::LoadEntranceConfig() {
         h = m_10;
         i32 oldX = m_lastTilePxX;
         m_entranceArmed = 0;
-        i32 newPxX = h->m_5c;
-        i32 newPxY = h->m_60;
+        i32 newPxX = h->m_screenX;
+        i32 newPxY = h->m_screenY;
         i32 oldTileX = oldX >> 5;
         i32 oldTileY = m_lastTilePxY >> 5;
         i32 newTileX = newPxX >> 5;
@@ -519,8 +519,8 @@ void CGrunt::LoadEntranceConfig() {
 
         h = m_10;
         m_entranceCommitted = 1;
-        if (h->m_74 != h->m_60 + 0x186a0) {
-            h->m_74 = h->m_60 + 0x186a0;
+        if (h->m_74 != h->m_screenY + 0x186a0) {
+            h->m_74 = h->m_screenY + 0x186a0;
             h->m_8 |= 0x20000;
         }
 
@@ -600,7 +600,7 @@ void CGrunt::RearmEntranceDrop() {
         i32 a;
         i32 b;
         m_entranceCommitted = 0;
-        if (m_tileMgr->HitTestCell(m_10->m_5c, m_10->m_60, &a, &b, 0) != 0) {
+        if (m_tileMgr->HitTestCell(m_10->m_screenX, m_10->m_screenY, &a, &b, 0) != 0) {
             m_tileMgr->CellDispatch(a, b, 0xb, -1);
             m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         } else {
@@ -673,7 +673,7 @@ i32 CGrunt::StartBombGruntRun() {
     SetEntrancePos(1, 1);
     if (SetMoveStateA(1, 1, 0, 1) == 0) {
         CGruntHud* h = m_10;
-        m_tileMgr->LoadExplosionSprites(h->m_5c, h->m_60, -1, 0);
+        m_tileMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
     }
     i32 dx = GruntRand() % 3 - 1;
@@ -683,8 +683,8 @@ i32 CGrunt::StartBombGruntRun() {
     }
     {
         CGruntHud* h = m_10;
-        dy += h->m_60 >> 5;
-        dx += h->m_5c >> 5;
+        dy += h->m_screenY >> 5;
+        dx += h->m_screenX >> 5;
     }
     PlayMoveSoundAtTile(dx, dy);
     m_moveTileX = dx;
@@ -695,8 +695,8 @@ i32 CGrunt::StartBombGruntRun() {
     m_22c = 1;
     {
         CGruntHud* h = m_10;
-        i32 vx = h->m_5c;
-        i32 vy = h->m_60;
+        i32 vx = h->m_screenX;
+        i32 vy = h->m_screenY;
         char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
         i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
         if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
@@ -774,8 +774,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_poseIdle5 = 0;
 
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32 y = m_10->m_60;
-        i32 x = m_10->m_5c;
+        i32 y = m_10->m_screenY;
+        i32 x = m_10->m_screenX;
         CCueRect* r = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_originX;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
@@ -938,7 +938,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     }
 
     CGruntHud* h = m_10;
-    i32 z = h->m_60 + 0x186a0;
+    i32 z = h->m_screenY + 0x186a0;
     if (h->m_74 != z) {
         h->m_74 = z;
         h->m_8 |= 0x20000;
@@ -1054,8 +1054,8 @@ i32 CGrunt::StepArrivalCommit() {
     // default: the M / N reject codes.
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeN) == 0);
     if (eq) {
-        i32 px = (m_10->m_5c & ~0x1f) + 0x10;
-        i32 py = (m_10->m_60 & ~0x1f) + 0x10;
+        i32 px = (m_10->m_screenX & ~0x1f) + 0x10;
+        i32 py = (m_10->m_screenY & ~0x1f) + 0x10;
         i32 redo = 1;
         if (px != m_lastTilePxX || py != m_lastTilePxY) {
             if (IsDropReady(1)) {
@@ -1088,7 +1088,7 @@ idleReseed:
     }
     SetMoveStateA(m_19c, 1, 0, 0);
     {
-        i32 z = m_10->m_60 + 0x186a0;
+        i32 z = m_10->m_screenY + 0x186a0;
         if (m_10->m_74 != z) {
             m_10->m_74 = z;
             m_10->m_8 |= 0x20000;
@@ -1158,7 +1158,7 @@ finalize:
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeQ);
     {
-        i32 z = m_10->m_60 + 0x186a0;
+        i32 z = m_10->m_screenY + 0x186a0;
         if (m_10->m_74 != z) {
             m_10->m_74 = z;
             m_10->m_8 |= 0x20000;
@@ -1226,8 +1226,8 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
             CGruntHud* h = m_10;
-            i32 vx = h->m_5c;
-            i32 vy = h->m_60;
+            i32 vx = h->m_screenX;
+            i32 vy = h->m_screenY;
             char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
             i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
             if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
@@ -1311,8 +1311,8 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     GruntBoard* b = g->m_tileGrid;
     CGruntHud* h = m_10;
     i32 xbound = b->m_c;
-    i32 tileY = h->m_60 >> 5;
-    i32 tileX = h->m_5c >> 5;
+    i32 tileY = h->m_screenY >> 5;
+    i32 tileX = h->m_screenX >> 5;
     i32 dir;
     if ((u32)tileX >= (u32)xbound || (u32)tileY >= (u32)b->m_10) {
         dir = 0;

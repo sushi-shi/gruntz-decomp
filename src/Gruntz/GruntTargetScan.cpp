@@ -147,8 +147,8 @@ i32 CGrunt::ScanNearestTarget() {
                 i32 pb;
                 PRIO(pb, cand->m_entranceReason);
                 if (pa <= pb) {
-                    i32 dx = (cand->m_10->m_5c >> 5) - cx;
-                    i32 dy = (cand->m_10->m_60 >> 5) - cy;
+                    i32 dx = (cand->m_10->m_screenX >> 5) - cx;
+                    i32 dy = (cand->m_10->m_screenY >> 5) - cy;
                     i32 d = dx * dx + dy * dy;
                     if (d < bestDist) {
                         best = cand;
@@ -188,9 +188,9 @@ i32 CGrunt::ScanNearestTarget() {
     // atTarget: `best` has reached its own last-tile pixel AND the tile probes free.
     i32 atTarget = 0;
     if (best != 0) {
-        i32 x = best->m_10->m_5c;
-        if (x == best->m_lastTilePxX && best->m_10->m_60 == best->m_lastTilePxY
-            && this->RectContains(x, best->m_10->m_60) != 0) {
+        i32 x = best->m_10->m_screenX;
+        if (x == best->m_lastTilePxX && best->m_10->m_screenY == best->m_lastTilePxY
+            && this->RectContains(x, best->m_10->m_screenY) != 0) {
             atTarget = 1;
         }
     }
@@ -242,13 +242,13 @@ i32 CGrunt::ScanNearestTarget() {
             if (best == 0) {
                 goto L_wander;
             }
-            if (m_poweredUp == 0 && m_stamina >= 100 && best->m_10->m_5c == best->m_lastTilePxX
-                && best->m_10->m_60 == best->m_lastTilePxY) {
+            if (m_poweredUp == 0 && m_stamina >= 100 && best->m_10->m_screenX == best->m_lastTilePxX
+                && best->m_10->m_screenY == best->m_lastTilePxY) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
                 i32 pb;
                 PRIO(pb, best->m_entranceReason);
-                if (pa <= pb && this->RectContains(best->m_10->m_5c, best->m_10->m_60) != 0) {
+                if (pa <= pb && this->RectContains(best->m_10->m_screenX, best->m_10->m_screenY) != 0) {
                     CommitNeighbor(
                         best->m_tileOwnerHi,
                         best->m_tileOwnerLo,
@@ -303,8 +303,8 @@ i32 CGrunt::ScanNearestTarget() {
             {
                 if (BoardTest(
                         (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
-                        m_10->m_5c,
-                        m_10->m_60
+                        m_10->m_screenX,
+                        m_10->m_screenY
                     )
                     != 0) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -398,10 +398,10 @@ i32 CGrunt::ScanNearestTarget() {
             if (m_poweredUp != 0 || m_stamina < 100) {
                 return 1;
             }
-            if (this->RectContains(sg->m_10->m_5c, sg->m_10->m_60) == 0) {
+            if (this->RectContains(sg->m_10->m_screenX, sg->m_10->m_screenY) == 0) {
                 return 1;
             }
-            if (sg->m_10->m_5c != sg->m_lastTilePxX || sg->m_10->m_60 != sg->m_lastTilePxY) {
+            if (sg->m_10->m_screenX != sg->m_lastTilePxX || sg->m_10->m_screenY != sg->m_lastTilePxY) {
                 return 1;
             }
             CommitNeighbor(
@@ -438,10 +438,10 @@ i32 CGrunt::ScanNearestTarget() {
                 if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
                     return 1;
                 }
-                if (this->RectContains(sg->m_10->m_5c, sg->m_10->m_60) == 0) {
+                if (this->RectContains(sg->m_10->m_screenX, sg->m_10->m_screenY) == 0) {
                     goto L_setLock;
                 }
-                if (sg->m_10->m_5c != sg->m_lastTilePxX || sg->m_10->m_60 != sg->m_lastTilePxY) {
+                if (sg->m_10->m_screenX != sg->m_lastTilePxX || sg->m_10->m_screenY != sg->m_lastTilePxY) {
                     goto L_setLock;
                 }
                 CommitNeighbor(
