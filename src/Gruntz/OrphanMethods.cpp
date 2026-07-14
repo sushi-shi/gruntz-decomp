@@ -11,8 +11,6 @@
 #include <Rez/FrameClock.h> // g_timer200 (strike-effect threshold)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
-#include <Gruntz/State.h> // CState base (CState95 derives it; RetireScene/FadeInTitle @0xfa8f0/0xfa1f0)
-// (FadeInTitle @0xfa1f0 is now a CState base method via <Gruntz/State.h>; no Attract.h.)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -54,37 +52,12 @@ void CEffect6b::Apply(i32 a, i32 b) {
 // called only by that TU's megafn FUN_6f2f0; interval verdict.)
 
 // ---------------------------------------------------------------------------
-// 0x95140: a state-machine step - poke the input sub-object, gate on the worker
-// being busy or acquirable, then run the start sequence + report. Returns 1 on the
-// full path, 0 on either early-out.
-// CState95 IS a CState leaf (its Step runs FadeInTitle/RetireScene on its own `this` -
-// CState base methods - and reads only the CState m_4/m_c facets). Its exact leaf identity
-// is still @identity-TODO, but it DERIVES CState here (no cross-cast): FadeInTitle/
-// RetireScene are cast-free inherited calls. The +0x0c holder's +0x04 DDraw worker is
-// reached as CDDrawSubMgrPages (the tree-wide CSpriteFactoryHolder::m_drawTarget facet).
-struct CState95 : public CState {
-    i32 Step(i32 arg); // 0x95140
-};
-
-// @interleaver CState95::Step emitted-in helpstate - blocked: CState95 is a local
-// placeholder view (this .cpp), identity unrecovered. Retail emits this COMDAT INSIDE
-// helpstate's block (0x95090 CHelpState::LoadAssets .. 0x951f0 CHelpState::Render,
-// both helpstate) - a rule-(c) interleaver surrounded by helpstate on both sides, so
-// CState95 is very likely a sibling menu/help state. Homing to HelpState.cpp is
-// blocked until CState95's identity is recovered into a shared header (@identity-TODO).
-RVA(0x00095140, 0x6e)
-i32 CState95::Step(i32 arg) {
-    m_4->RestoreVideoMode(0);
-    CDDrawSubMgrPages* w = (CDDrawSubMgrPages*)m_c->m_drawTarget;
-    if (w->Method_158d20() == 0 && w->Method_158cb0(0, 0x30000) == 0) {
-        return 0;
-    }
-    if (FadeInTitle((const char*)&g_6111b0, 0, 0, 0, 0, 1) == 0) {
-        return 0;
-    }
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
-    return 1;
-}
+// 0x95140 (was the CState95 placeholder view) IS CHelpState::Vslot09 (slot 9) - HOMED
+// to src/Gruntz/HelpState.cpp (2026-07-14). Identity proven by the ??_7CHelpState@@6B@
+// +0x24 slot-9 data-ref (via thunk 0x3b43): the retail vtable's slot-9 entry points at
+// 0x95140, so it is CHelpState's own slot-9 body, emitted in the helpstate obj (its
+// RVA sits between LoadAssets 0x95090 and Render 0x951f0, both helpstate). The former
+// CState95/CMenuHolder95/CWorkerObj95 views are gone.
 
 // ---------------------------------------------------------------------------
 // 0xb4350: a strike/flash effect tick - while the latch m_118 is set, pick the
@@ -146,10 +119,6 @@ i32 CStrikeEffect::Tick() {
     return 0;
 }
 SIZE_UNKNOWN(CAnimOwner6b);
-SIZE_UNKNOWN(CGridLookup);
-SIZE_UNKNOWN(CMenuHolder95);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CState95);
 SIZE_UNKNOWN(CStrikeEffect);
 SIZE_UNKNOWN(CStrikeSprite);
-SIZE_UNKNOWN(CWorkerObj95);

@@ -65,6 +65,7 @@ struct CGridCell {
     i32 m_0;
     char _pad[0x1c - 4];
 };
+SIZE_UNKNOWN(CGridLookup);
 struct CGridLookup {
     char _00[8];
     CGridCell** m_8;          // +0x08  rows

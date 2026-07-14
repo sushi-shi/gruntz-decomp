@@ -71,6 +71,29 @@ i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
+// CHelpState::Vslot09 (0x95140, slot 9) - the mode-restore/title step: re-assert the
+// video mode, gate on the page manager being busy (Method_158d20) or acquirable
+// (Method_158cb0), roll the help title (FadeInTitle) then retire the prior scene.
+// Returns 1 on the full path, 0 on either early-out. Homed from OrphanMethods.cpp
+// (was the CState95 placeholder view); identity proven by the ??_7CHelpState@@6B@+0x24
+// slot-9 data-ref (via thunk 0x3b43). m_c's +0x04 DDraw pages reached via the file's
+// CRegHolder idiom (GameRegistry.h can't be pulled here - ODR clash with GruntzMgr.h).
+RVA(0x00095140, 0x6e)
+i32 CHelpState::Vslot09(i32 arg) {
+    m_4->RestoreVideoMode(0);
+    // The pages ptr is re-read at each call (retail does NOT cache it in a reg across
+    // the Method_158d20 call - a caching local would pin it in edi and mismatch).
+    if (((CRegHolder*)m_c)->m_04->Method_158d20() == 0
+        && ((CRegHolder*)m_c)->m_04->Method_158cb0(0, 0x30000) == 0) {
+        return 0;
+    }
+    if (FadeInTitle((const char*)&g_6111b0, 0, 0, 0, 0, 1) == 0) {
+        return 0;
+    }
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
+    return 1;
+}
+
 // (The per-frame attract-actor list + element class used to be re-declared HERE, a third
 // identical copy of the shape <Gruntz/AttractActor.h> already carries - the file's own TODO
 // said "fold both views onto one shared header". Done: the header is included above, and

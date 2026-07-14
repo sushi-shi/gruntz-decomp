@@ -173,7 +173,7 @@ gruntzwnd	16
 guardpoint	4
 hash	6
 heapdiag	8
-helpstate	24
+helpstate	25
 iconloaders	2
 imageowned	8
 imagepolyclip	2
@@ -251,7 +251,7 @@ netsessionnode	3
 netthingdtor	1
 objecttracker	1
 orphanleaves	3
-orphanmethods	3
+orphanmethods	2
 packetpool	2
 palettebmp	2
 palettecopy	1
