@@ -1,6 +1,7 @@
 // WwdGameObjectRender.cpp - the 0x1660f0-0x166984 wwd render/broadcast block:
 // CWwdGameObject::RenderDot + the CWwdGameObjectC render slots + ResetAndSetup +
-// the CWwdObjMgrL factory pair + the CWwdGameObjectB broadcast walkers.
+// the CWwdGameObjectB child-object factory pair (ex-CWwdObjMgrL, dissolved onto the
+// family class) + the CWwdGameObjectB broadcast walkers.
 //
 // original TU: filename unknown (@identity-TODO - wave4-L dossier #15 block R: the
 // 0x1660f0-0x1670d0+ zone (these wwd render fns + the imageset1/2/3 Parse/Query
@@ -19,19 +20,14 @@
 #include <Gruntz/WwdGameObject.h>      // canonical CWwdGameObject
 #include <DDrawMgr/AnimWorkerObj.h>    // the canonical +0x7c worker (m_notify fire callback)
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawGroupNode (the broadcast child-list node)
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CWwdObjMgrL::m_0c owner
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // the CWwdGameObjectB owner (m_0c) real class
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
+#include <Wwd/WwdGameObjCtor.h> // CWwdGameObj15b390 - the shared 0x15b390 base-object ctor
 
-// The render context RenderDot (0x1660f0) plots into: a clip extent at +0x10/
-// +0x14 and the destination surface at +0x2c.
-struct WwdRenderCtx {
-    char m_pad00[0x10];
-    i32 m_10; // +0x10  clip width
-    i32 m_14; // +0x14  clip height
-    char m_pad18[0x2c - 0x18];
-    CDDSurface* m_2c; // +0x2c  destination surface
-};
-SIZE_UNKNOWN(WwdRenderCtx);
+// The render context RenderDot (0x1660f0) plots into IS the real CDDrawSurfacePair
+// (<DDrawMgr/DDrawSurfacePair.h>, already included): its clip extent m_10/m_14 ARE
+// CDDrawSurfacePair::m_width/m_height and its destination surface m_2c IS m_surface.
+// The former WwdRenderCtx view is dissolved onto it (offset-exact: +0x10/+0x14/+0x2c).
 
 inline void* operator new(u32, void* p) {
     return p;
@@ -40,36 +36,15 @@ inline void* operator new(u32, void* p) {
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
-// The shared CWwdGameObject base-object ctor (0x15b390, defined in the H obj with
-// the full field view). Ctor-only decl here so the call reloc-masks cross-obj.
-struct CWwdGameObj15b390 {
-    CWwdGameObj15b390(int a, int b, int c); // 0x15b390
-};
-
-// CWwdObjMgrL::m_0c is the canonical CDDrawSurfaceMgr (same chain as CWwdObjMgr::
-// m_0c - `[this+0xc] -> [+0x14] -> +0x10 -> call 0x1b8008` read off CreateNamed_166780's
-// retail bytes); the former local `WwdFile` view is dissolved. The (CMapStringToPtr*)
-// cast at the call preserves the FID-HIGH retail Lookup shape - the m_10 element-class
-// (Ob vs Ptr) is an open conflict the binary cannot settle (see WwdObjMgr.cpp).
-
-// The built 0x1dc object is the A kind (<Wwd/WwdGameObjectFamily.h>; the family
-// size table pins 0x166640 as CWwdGameObjectA's new-site) - its Build dispatch is
-// the family slot 10 (Setup28) and the delete its virtual slot-1 dtor. The
-// ex-CWwdFactoryA dispatch view is gone.
-
-// The manager's own published-objects list (CPtrList) at +0x1dc; AddTail returns
-// the new node pointer (stored into the object's +0x78). Reloc-masked thiscall.
-class CWwdObjMgrL {
-public:
-    CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6);
-    CWwdGameObject*
-    CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
-    char m_pad00[0x0c];
-    CDDrawSurfaceMgr* m_0c; // +0x0c owning surface manager (name map at m_workerCache->m_10)
-    char m_pad10[0x1dc - 0x10];
-    CObList m_1dc; // +0x1dc published-objects list (real MFC, main's fold)
-};
-SIZE_UNKNOWN(CWwdObjMgrL);
+// The factory pair CreateObject_166640/CreateNamed_166780 are CWwdGameObjectB methods
+// (the former CWwdObjMgrL view is DISSOLVED onto the family class). PROVEN: `this`
+// reads only +0x0c (the CLoadable owner int handle = the CDDrawSurfaceMgr) and the
+// +0x1dc child CObList (CWwdGameObjectB::m_1dc) - the exact two members CWwdGameObjectB
+// already owns for AddChild_1667e0 / Clear_166810 / WalkChildWorkers_166880; CreateObject
+// builds a child CWwdGameObjectA (the 0x1dc size table's new-site) via the family Build
+// dispatch (slot 10 Setup28) + the virtual slot-1 dtor, and publishes it into that same
+// list. m_0c is cast to the CDDrawSurfaceMgr the render TU already includes (its
+// m_workerCache->m_10 name map = the `[this+0xc]->[+0x14]->+0x10->call 0x1b8438` lookup).
 
 // ---------------------------------------------------------------------------
 // RenderDot (0x1660f0): plot the object's (+0x5c,+0x60) position as a single
@@ -88,7 +63,7 @@ SIZE_UNKNOWN(CWwdObjMgrL);
 // "x in ebx + color spilled" layout. See const-materialize-into-reg-vs-immediate.
 // ---------------------------------------------------------------------------
 RVA(0x001660f0, 0xd1)
-void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
+void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
     i32 x = m_posX;
     i32 m64 = m_clipLeft;
     i32 y;
@@ -100,10 +75,10 @@ void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
         if (y < 0) {
             goto reject;
         }
-        if (x >= a->m_10) {
+        if (x >= a->m_width) {
             goto reject;
         }
-        if (y >= a->m_14) {
+        if (y >= a->m_height) {
             goto reject;
         }
     } else {
@@ -123,7 +98,7 @@ void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
     }
 
     {
-        CDDSurface* surf = a->m_2c;
+        CDDSurface* surf = a->m_surface;
         i32 base = surf->Lock((void*)0);
         if (base != 0) {
             i32 row = surf->m_pitch * y;
@@ -313,26 +288,28 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
 // ===========================================================================
 RVA(0x00166640, 0x13b)
-CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
+CWwdGameObject* CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = (char*)RezAlloc(0x1dc);
     CWwdGameObjectA* result;
     if (obj != 0) {
-        int root = (int)m_0c;
+        int root = m_0c; // the CLoadable owner int handle (== this->m_0c, the CDDrawSurfaceMgr)
         new (obj) CWwdGameObj15b390(root, a1, a6);
-        *(int*)(obj + 0x1a4) = a1;
-        *(int*)(obj + 0x1a8) = a6;
-        *(int*)(obj + 0x1ac) = root;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(int*)(obj + 0x1b0) = 0;
-        *(int*)(obj + 0x1b4) = 0;
-        *(int*)(obj + 0x1b8) = 0;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(int*)(obj + 0x18c) = -1;
-        *(int*)(obj + 0x190) = -1;
-        *(int*)(obj + 0x198) = 0;
-        *(int*)(obj + 0x194) = 0;
-        *(int*)(obj + 0x19c) = 0;
         result = (CWwdGameObjectA*)obj;
+        // the embedded +0x1a0 CAniAdvanceCursor(owner=root, field04=a1, field08=a6): retail
+        // INLINES the ctor here (no call), spelled out so the store shape matches; its 0x5f0128
+        // vptr stamp is compiler-emitted-vtable-dropped (% ok per drive-to-0).
+        result->m_1a0.m_04 = a1;
+        result->m_1a0.m_08 = a6;
+        result->m_1a0.m_0c = root;
+        result->m_1a0.m_10 = 0;
+        result->m_1a0.m_14 = 0;
+        result->m_1a0.m_element = 0;
+        // the CWwdGameObjectA vptr (0x5f00a8) stamp is compiler-emitted-vtable-dropped.
+        result->m_18c = -1;
+        result->m_190 = -1;
+        result->m_198 = 0;
+        result->m_194 = 0;
+        result->m_19c = 0;
     } else {
         result = 0;
     }
@@ -343,16 +320,18 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
         delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
     }
-    void* node = m_1dc.AddTail((CObject*)(void*)result);
+    POSITION node = m_1dc.AddTail((CObject*)result);
     if (node == 0) {
         delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
     }
-    *(void**)(obj + 0x78) = node;
-    if (*(int*)(obj + 8) & 0x200000) {
+    result->m_posCache = (i32)node;
+    if (result->m_08 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
-        (*(AnimWorkerObj**)(obj + 0x7c))->m_notify((CGameObject*)result);
+        result->m_7c->m_notify((CGameObject*)result);
     }
+    // the flat CWwdGameObject dispatch model and the CWwdGameObjectA family model are two
+    // reconstructions of the ONE retail object (offset-0 identity); the return reinterprets.
     return (CWwdGameObject*)(void*)result;
 }
 
@@ -362,9 +341,12 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
 // 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x00166780, 0x57)
 CWwdGameObject*
-CWwdObjMgrL::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
-    void* val = 0;
-    ((CMapStringToPtr*)&m_0c->m_workerCache->m_10)->Lookup(name, val);
+CWwdGameObjectB::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
+    CObject* val = 0;
+    // m_0c is the CLoadable owner int handle == the CDDrawSurfaceMgr; its worker-cache name
+    // map (CMapStringToOb @+0x10, Lookup 0x1b8008 - disasm-confirmed, NOT the CMapStringToPtr
+    // the ex-view guessed) resolves `name` -> the child's arg5.
+    ((CDDrawSurfaceMgr*)m_0c)->m_workerCache->m_10.Lookup(name, val);
     if (val == 0) {
         return 0;
     }
@@ -446,7 +428,7 @@ i32 CWwdGameObjectB::WalkChildWorkers_166880() {
 // the +0x1e0 child list, dispatching each child's matching broadcast virtual with the
 // forwarded args. No post-loop dispatch. __thiscall.
 RVA(0x001668b0, 0x26)
-void CWwdGameObjectB::Render(WwdRenderCtx* ctx) {
+void CWwdGameObjectB::Render(CDDrawSurfacePair* ctx) {
     CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {

@@ -25,6 +25,22 @@
 // lowers to the exact `mov eax,[mgr+slot]; call` with no cast.
 struct WwdMgr;
 
+// The 0xa0-byte snapshot record CWwdGameObject::WriteSnapshot (0x151c00) assembles on
+// the stack and emits through the archive. CWwdGameObject's snapshot serialization
+// format (a real record type, not a per-TU view).
+struct WwdSnapshot {
+    i32 m_00;          // +0x00  m_04
+    i32 m_04;          // +0x04  m_188 (object id)
+    i32 m_08;          // +0x08  this->GetTypeId()
+    i32 m_0c;          // +0x0c  0, or this->Vfunc40() when GetTypeId()==0x1c
+    i32 m_10;          // +0x10  0, or worker->m_logic->GetTypeTag()
+    char m_name[0x80]; // +0x14  name string from the mgr
+    i32 m_94;          // +0x94  m_posX
+    i32 m_98;          // +0x98  m_posY
+    i32 m_9c;          // +0x9c  m_sortKey
+};
+SIZE(WwdSnapshot, 0xa0); // WriteSnapshot emits ar->Write(&rec, 0xa0)
+
 // The cached sprite / frame / sound-cue value the object resolves by name (+0x194,
 // +0x198, +0x19c). Real classes: <Gruntz/Sprite.h>, <Gruntz/UserLogic.h> and
 // <DDrawMgr/DDrawSubMgrLeafScan.h>. Pointer members only -> forward decls suffice.
@@ -51,11 +67,12 @@ struct LeafCue;          // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex Le
 // WwdSubList/WwdSubNode/WwdSubDel views are dissolved. ResetAndSetup walks it with
 // the real CObList::GetHeadPosition/GetNext + `delete` on each MFC CObject payload.)
 
-// The owning manager (+0x0c) and the render context (RenderDot's arg) are typed
-// engine objects whose full layouts live in WwdGameObject.cpp (the only TU that
-// walks them); pointer members here need only forward declarations.
+// The owning manager (+0x0c) is a typed engine object whose full layout lives in
+// WwdGameObject.cpp (the only TU that walks it); a pointer member needs only a fwd
+// decl. The render context (RenderDot's / Render's arg) is the real CDDrawSurfacePair
+// (fwd-declared above; its m_width/m_height/m_surface are the clip extent + dest surface
+// the former WwdRenderCtx view described offset-for-offset).
 struct WwdMgr;
-struct WwdRenderCtx;
 
 // ---------------------------------------------------------------------------
 // CWwdGameObject - the canonical runtime plane object (raw-offset access; only
@@ -96,7 +113,7 @@ public:
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60
     // slot 11 - the per-object render hook (1 arg = the render context; F's
     // override is `ret 4`, C's is RenderDot below; __purecall in this base table).
-    virtual void Render(WwdRenderCtx* ctx); // slot 11 @0x11fec0  __purecall
+    virtual void Render(CDDrawSurfacePair* ctx); // slot 11 @0x11fec0  __purecall
     // slots 12-14 - the dirty-rect blit ops on the two render surface-pairs
     // (__purecall in this base table; the A/C/F kinds override - see the family).
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b);               // slot 12
@@ -120,7 +137,7 @@ public:
     i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x1665e0
     i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // 0x15c1d0 (out-of-line)
     i32 SetupDeferred(i32 a3, i32 a4);                          // 0x15bc30 (out-of-line)
-    void RenderDot(WwdRenderCtx* a);                            // 0x1660f0
+    void RenderDot(CDDrawSurfacePair* a);                       // 0x1660f0
 
     // Sibling helpers (modeled as same-class methods so ecx=this matches).
     i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
@@ -175,7 +192,7 @@ public:
     i32 m_8c;   // +0x8c
     void* m_90; // +0x90  object ref
     i32 m_94;   // +0x94
-    void* m_98; // +0x98  linked object (reads its +0x188)
+    CWwdGameObject* m_98; // +0x98  linked object (Play case 3 reads its +0x188 object id)
     // +0x9c  the embedded spatial-grid region node (<Gruntz/WwdGridIter.h>): its
     // m_x/m_y (+0xac/+0xb0) are the position copies Setup refreshes and its
     // m_object (+0xb4) the self back-pointer - the old m_ac/m_b0/m_self trio.

@@ -570,7 +570,7 @@ void CDDrawChildGroup::WalkDispatch2C(i32 a1) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Render((WwdRenderCtx*)a1);
+            cur->m_obj->Render((CDDrawSurfacePair*)a1);
         } while (n != 0);
     }
 }
