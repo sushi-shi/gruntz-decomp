@@ -109,15 +109,10 @@ DATA(0x0024bf00)
 CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
                                // fields 0x24bf04..0x24bf20 are this object's members)
 
-// The registered-handler entries (first dword = the handler PMF; single
-// inheritance -> 4-byte code pointers; the classes are COMPLETE above so each
-// PMF stays 4 bytes - pmf-complete-class-4byte).
-struct CDropperActEntry {
-    i32 (CObjectDropper::*m_fn)();
-};
-struct CShadowActEntry {
-    i32 (CDroppedObjectShadow::*m_fn)();
-};
+// The registered-handler entries (first dword = the handler PMF, single inheritance
+// -> 4-byte code pointers) are the canonical per-class structs in their headers:
+// CDropperActEntry (<Gruntz/ObjectDropper.h>) + CShadowActEntry
+// (<Gruntz/DroppedObjectShadow.h>).
 
 // ---------------------------------------------------------------------------
 // The shared activation-NAME registry (@0x6bf650, the SAME shared instance
@@ -155,12 +150,8 @@ static inline char* ActNameLookup(i32 id) {
 extern i32 DropActA_c7090();
 extern i32 DropActB_c7be0();
 
-// CDroppedObject's entry type + the inlined coordinate->Entry* lookup its
-// FireActivation folds in twice.
-typedef void (CDroppedObject::*DropHandler)();
-struct CDropEntry {
-    DropHandler m_fn; // [entry]
-};
+// CDroppedObject's entry type CDropEntry (+ the DropHandler PMF) is the canonical
+// struct in <Gruntz/DroppedObject.h>.
 // The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
 // inline (the seven g_drop* scalars it used to run over ARE g_dropColl's fields).
 static inline CDropEntry* DropLookup(i32 coord) {
@@ -1048,9 +1039,6 @@ i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 
 }
 
 #include <rva.h>
-SIZE_UNKNOWN(CDropEntry);
-SIZE_UNKNOWN(CDropperActEntry);
-SIZE_UNKNOWN(CShadowActEntry);
 SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);
 SIZE_UNKNOWN(CGameRegistry);

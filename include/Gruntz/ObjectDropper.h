@@ -63,4 +63,13 @@ public:
 VTBL(CObjectDropper, 0x001e7a9c);
 SIZE(CObjectDropper, 0x98);
 
+// The dropper's activation entry: its first dword is the registered handler,
+// dispatched __thiscall on `this` (4-byte single-inheritance PMF -> `mov ecx,this;
+// call [entry]`; CObjectDropper is complete above so the PMF stays 4 bytes). Was the
+// .cpp-local CDropperActEntry view.
+struct CDropperActEntry {
+    i32 (CObjectDropper::*m_fn)();
+};
+SIZE_UNKNOWN(CDropperActEntry);
+
 #endif // GRUNTZ_COBJECTDROPPER_H

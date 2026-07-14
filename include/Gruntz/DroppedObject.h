@@ -57,4 +57,14 @@ public:
 };
 VTBL(CDroppedObject, 0x1e78d4);
 
+// CDroppedObject's activation entry: its first dword is the registered handler,
+// dispatched __thiscall on `this` (4-byte single-inheritance PMF -> `mov ecx,this;
+// call [entry]`; CDroppedObject is complete above so the PMF stays 4 bytes). Was the
+// .cpp-local CDropEntry view.
+typedef void (CDroppedObject::*DropHandler)();
+struct CDropEntry {
+    DropHandler m_fn; // [entry]
+};
+SIZE_UNKNOWN(CDropEntry);
+
 #endif // GRUNTZ_CDROPPEDOBJECT_H

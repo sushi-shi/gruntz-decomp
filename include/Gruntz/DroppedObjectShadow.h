@@ -47,4 +47,12 @@ public:
 VTBL(CDroppedObjectShadow, 0x1e787c);
 SIZE(CDroppedObjectShadow, 0x54);
 
+// The shadow's activation entry: its first dword is the registered handler,
+// dispatched __thiscall on `this` (4-byte single-inheritance PMF; CDroppedObjectShadow
+// is complete above so the PMF stays 4 bytes). Was the .cpp-local CShadowActEntry view.
+struct CShadowActEntry {
+    i32 (CDroppedObjectShadow::*m_fn)();
+};
+SIZE_UNKNOWN(CShadowActEntry);
+
 #endif // GRUNTZ_CDROPPEDOBJECTSHADOW_H
