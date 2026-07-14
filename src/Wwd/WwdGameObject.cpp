@@ -76,15 +76,16 @@
 // The "spatial grid" was never a grid: it is the draw surface, and Test()'s non-camera
 // branch culls against the surface's width/height.
 //
-// NOT dissolved (@identity-TODO, see the WwdMgr note below): the manager POINTER itself
-// and the +0x24 camera holder.
+// DEFERRED-FOLD (identity FOUND, header-blocked): the manager pointer + the +0x24
+// camera holder fold onto the CDDrawSurfaceMgr family - see the WwdMgr note below.
 
-// The camera-rect holder at CResMgr+0x24. The camera object hangs at its +0x5c and its
-// rect at camera+0x40; that rect is the real Win32 RECT (the former `WwdCamRect` view's
-// own field comments already read left/top/right/bottom, and Test's four compares are a
-// textbook rect-overlap test). @identity-TODO: the HOLDER class itself is unrecovered -
-// CResMgr types +0x24 as CMenuViewObj*, which is forward-declared only (no layout), so
-// there is no existing class to fold onto. Left as a flagged view, not guessed.
+// The camera-rect holder at the manager's +0x24 IS the canonical CGameLevel
+// (CDDrawSurfaceMgr::m_resolveSubMgr / CResMgr::m_view both sit at +0x24). The camera
+// object hangs at its +0x5c and its rect at camera+0x40; that rect is the real Win32 RECT
+// (the former `WwdCamRect` view's own field comments already read left/top/right/bottom,
+// and Test's four compares are a textbook rect-overlap test). DEFERRED-FOLD: dissolving
+// this onto CGameLevel is blocked with the WwdMgr fold below (same cross-header +0x24
+// conflation: CResMgr types it CMenuViewObj*, CDDrawSurfaceMgr types it CGameLevel*).
 struct WwdCamHolder {
     char m_pad00[0x5c];
     char* m_5c; // +0x5c  the camera object; its RECT sits at +0x40
@@ -93,19 +94,23 @@ SIZE_UNKNOWN(WwdCamHolder);
 
 // CWwdGameObject+0x0c owning manager.
 //
-// @identity-TODO: this IS CResMgr (every member below lands on a CResMgr slot at the
-// same offset, and the file's own 0x1504d0/0x150540 cast the same pointer to CResMgr).
-// It is NOT folded onto CResMgr yet because two of CResMgr's slots are typed by a name
-// this file's calls contradict - the same object under two class names:
-//   +0x14  CResMgr says CImageRegistry*   / here FindKeyOfValue_165360 proves
-//          CDDrawWorkerRegistry  (CResMgr's OWN comments already concede this:
-//          "Has @0x155550 IS CDDrawWorkerRegistry::HasKeyEqual_155550")
-//   +0x28  CResMgr says CSoundRegistry*   / here FindKeyOfValue_158570 + the +0x10 map
-//          prove CDDrawSubMgrLeafScan
-// Unifying those names is a CLASS-IDENTITY fold across two polymorphic, vtable-bearing
-// classes (CImageRegistry carries a documented vtable wall) - out of scope for a view
-// pass. Handed off. Until then the members are typed by the class whose methods are
-// ACTUALLY CALLED on them, which is the honest shape.
+// DEFERRED-FOLD (identity FOUND): this IS the canonical CDDrawSurfaceMgr - PROVEN by the
+// ctor chain (the factories' CWwdObjMgrL/CWwdGameObjectB::m_0c is a CDDrawSurfaceMgr*, and
+// CreateNamed_166780's disasm reads m_0c->m_workerCache (+0x14) -> +0x10 name map). It is
+// ALSO the CResMgr the file's own 0x1504d0/0x150540 cast the same pointer to - CResMgr and
+// CDDrawSurfaceMgr are TWO models of this one retail class (ResMgr.h itself notes
+// CDrawTarget==CDDrawSubMgrPages, CKeyTable==CDDrawChildGroup, CImageRegistry==the canonical
+// CDDrawWorkerRegistry). Front (+0x04/+0x08/+0x10/+0x14) folds cleanly; the +0x14 conflict
+// the old note flagged is RESOLVED (CImageRegistry IS a typedef for CDDrawWorkerRegistry in
+// ResMgr.h, so FindKeyOfValue_165360 binds). The fold is BLOCKED only by the unreconciled
+// cross-header +0x24/+0x28 conflation:
+//   +0x24  CResMgr: CMenuViewObj*        / CDDrawSurfaceMgr: CGameLevel* (== the camera holder)
+//   +0x28  CResMgr: CSoundRegistry*      / here + CDDrawSurfaceMgr: CDDrawSubMgrLeafScan*
+//          (FindKeyOfValue_158570 + the +0x10 CMapStringToPtr prove leaf-scan)
+// Unifying those spans the resource/sound state TUs' CResMgr view AND the hot DDrawSurfaceMgr.h
+// (being rewritten this wave by the CGruntzMgr-knot lane) - a class-identity fold out of this
+// view pass's scope. Handed off. Members stay typed by the class whose methods are ACTUALLY
+// called on them (the honest shape), which is what CResMgr's front already agrees with.
 struct WwdMgr {
     char m_pad00[0x04];
     CDrawTarget* m_drawTarget; // +0x04  active draw surface (Test off-screen cull extent)
@@ -118,29 +123,14 @@ struct WwdMgr {
     CDDrawSubMgrLeafScan* m_28; // +0x28  leaf-scan registry (FindKeyOfValue_158570)
 };
 
-// The 0xa0-byte snapshot record WriteSnapshot assembles on the stack.
-struct WwdSnapshot {
-    i32 m_00;          // m_4
-    i32 m_04;          // m_188
-    i32 m_08;          // this->GetTypeId()
-    i32 m_0c;          // 0 or this->Vfunc40() when GetTypeId()==0x1c
-    i32 m_10;          // 0 or worker->m_18->GetTypeTag()
-    char m_name[0x80]; // +0x14  name string from the mgr
-    i32 m_94;          // m_5c
-    i32 m_98;          // m_60
-    i32 m_9c;          // m_74
-};
+// (The 0xa0-byte WwdSnapshot record WriteSnapshot assembles on the stack lives in
+// the canonical <Gruntz/WwdGameObject.h> - it is CWwdGameObject's snapshot format,
+// not a per-TU view.)
 
 // (The former WorkerSub view of the worker's +0x18 sub-object is DISSOLVED: the
 // object is the bound logic leaf - CUserBase/CUserLogic (<Gruntz/UserLogic.h>;
 // AnimWorkerObj::m_logic types the same slot) - and its "+0x8 virtual" is
 // CUserBase slot 2 = GetTypeTag, exactly the type tag the snapshot stores.)
-
-// Raw this-offset read of a foreign engine object reached as an opaque void*/int
-// handle (found-object refs, the a4 setup source). authentic: these referents are
-// heterogeneous unmodeled engine objects (no single concrete class to type), so a
-// documented offset read is the deliberate access - only the offset is load-bearing.
-#define F(p, off, ty) (*(ty*)((char*)(p) + (off)))
 
 // The global NAFXCW allocator/deallocator (::operator new @0x1b9b46 = ??2@YAPAXI@Z,
 // ::operator delete @0x1b9b82 = ??3@YAXPAX@Z; both reloc-masked rel32).
@@ -598,7 +588,11 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_168 = 0;
     m_e0 = 0;
     m_180 = 0;
-    if (w->Init((GameObjNotifyFn)F((void*)a4, 0x10, i32), F((void*)a4, 0x8, i32)) == 0) {
+    // a4 is a foreign notify-source object (heterogeneous, no recovered concrete class):
+    // its +0x10 is the notify fn passed to the worker's Init, its +0x08 the frame stamp.
+    // The offset access is the deliberate foreign-object read (only the offsets are load-bearing).
+    char* src = (char*)a4;
+    if (w->Init((GameObjNotifyFn)*(i32*)(src + 0x10), *(i32*)(src + 0x08)) == 0) {
         return 0;
     }
     m_80 = 0;
@@ -804,7 +798,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
         case 3: {
             m_184 = 0;
             if (m_98 != 0) {
-                m_184 = F(m_98, 0x188, i32);
+                m_184 = m_98->m_188; // the linked object's +0x188 id
             }
             w = m_worker;
             if (w == 0) {
@@ -860,7 +854,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 if (m_mgr->m_8->m_map48.Lookup((void*)node, found) == 0) {
                     m_98 = 0;
                 } else {
-                    m_98 = found;
+                    m_98 = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
                 }
             } else {
                 m_98 = 0;
@@ -1086,7 +1080,7 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
             m_98 = 0;
             return 1;
         }
-        m_98 = found;
+        m_98 = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
         return 1;
     }
     m_98 = 0;
@@ -1668,6 +1662,5 @@ i32 g_logicTypesRegistered;
 
 // class-metadata sweep (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(WwdMgr);
-SIZE_UNKNOWN(WwdSnapshot);
 SIZE_UNKNOWN(CObject);
 SIZE_UNKNOWN(CDDrawWorker);
