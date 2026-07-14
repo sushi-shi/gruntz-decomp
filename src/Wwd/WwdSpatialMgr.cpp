@@ -5,6 +5,8 @@
 #include <Gruntz/WwdObjMgr.h>     // the shared object-collection manager class
 #include <Gruntz/WwdGameObject.h> // canonical CWwdGameObject (the managed sprites)
 #include <Wwd/WwdSpatialMgr.h>    // the canonical class (was defined locally here)
+#include <Gruntz/WwdGrid.h>       // canonical CWwdGrid (Add/Remove/Query/Clear @0x191840..0x191a70)
+                                  // + WwdRegion + BucketHead - was a reduced .cpp-local view here
 #include <Gruntz/WwdGridIter.h>   // CWwdGridIter cursor + WwdGridNode + WwdRect (shared;
                                   // the cursor's Start/Init/GetNext bodies live in WwdGrid.cpp)
 #include <Mfc.h>
@@ -28,8 +30,16 @@
 // WwdGridNode (the region sub-object @ CWwdGameObject+0x9c), WwdRect, and the cursor
 // CWwdGridIter now live in <Gruntz/WwdGridIter.h> (shared with WwdGrid.cpp, which
 // carries the cursor's Start/Init/GetNext bodies - same obj as CWwdGrid).
-// WwdBucketHead below is this TU's reduced-grid bucket view.
-struct WwdBucketHead;
+//
+// CWwdGrid + WwdBucketHead ARE DISSOLVED (2026-07-14): the ex-local reduced view of
+// CWwdGrid (which named its methods Scroll_1918c0/Remove_191890 to take the iterator's
+// WwdGridNode directly, and its buckets WwdBucketHead) IS the canonical polymorphic
+// CWwdGrid in <Gruntz/WwdGrid.h> - VERIFIED by RVA: Add @0x191840, Remove @0x191890,
+// Query @0x1918c0 (the ex-Scroll_1918c0 - a WwdRect passed by value == 4 scalars),
+// Clear @0x191a70 all match. FreeGrids' `delete m_grid0` dispatches the same slot-1
+// scalar-deleting dtor (vtable layout identical: vptr@0, m_buckets@0x40). The
+// iterator's WwdGridNode* is cast to the canonical WwdRegion* at the two Remove sites
+// (same engine node, two shared-header names).
 
 // The sprites ARE the canonical CWwdGameObject (<Gruntz/WwdGameObject.h>): the
 // ex-`CWwdGameObject`/`CWwdObjWorker` views' every field lands on it - m_flags
@@ -38,55 +48,6 @@ struct WwdBucketHead;
 
 // CWwdObjMgr - master object manager (m_mgr) is the shared <Gruntz/WwdObjMgr.h>
 // class; the cluster calls InsertSorted_159e40 / AddToMap48_15aba0 / PruneOrphans_15b1d0.
-
-// (WwdRect moved to <Gruntz/WwdGridIter.h>.)
-
-// 8-byte intrusive list head {head, tail} of WwdGridNode; one per grid cell.
-// The unlink op is __thiscall on the head (the node passed as the lone stack
-// arg, callee-cleanup ret 4) - a reloc-masked engine extern.
-struct WwdBucketHead {
-    WwdGridNode* m_head; // +0x00
-    WwdGridNode* m_tail; // +0x04
-    void Unlink_1391e0(WwdGridNode* node);
-};
-
-// CWwdGrid (tomalla-64) - one plane's spatial bucket index. The CANONICAL
-// polymorphic model (CObject base, real ~CWwdGrid OVERRIDE at vtbl slot 1,
-// pure-virtual OnFound at slot 5) lives in <Gruntz/WwdGrid.h>; this is the
-// spatial-mgr's reduced local view. It intentionally models slot 1 as an
-// explicit scalar-dtor(i32) method rather than the real destructor because
-// FreeGrids/CountInRect invoke the engine's scalar-DELETING-dtor thunk directly
-// (`mov eax,[ecx]; push 1; call [eax+4]`); a C++ `delete grid` cannot reproduce
-// that (it adds its own null-check + nulls the pointer unconditionally, where
-// retail nulls inside the taken branch), so this correct-bytes view is retained.
-// (The vtable_hierarchy --audit "CWwdGrid 1 override, 0 OVERRIDE" line is a
-// _body_counts artifact of this reduced view - the header carries the OVERRIDE.)
-// Data fields (offsets per WwdGrid.h) are read by the iterator: the rect bounds,
-// the log2 cell shifts, the column count, and the 8-byte bucket-head array.
-struct WwdRegion; // canonical grid node type (== WwdGridNode); real Add/Clear param
-class CWwdGrid {
-public:
-    virtual void GetRuntimeClass(); // [0] CObject slot (0x1bef01; canonical CWwdGrid : CObject)
-    virtual ~CWwdGrid();            // slot 1 (deleting dtor -> cl-emitted ??_G)
-    i32 Scroll_1918c0(WwdRect r, i32 flag);
-    i32 Add(WwdRegion* region); // 0x191840 (real body in wwdgrid)
-    i32 Remove_191890(WwdGridNode* region);
-    i32 Clear(); // 0x191a70 (real body in wwdgrid)
-
-    i32 m_allocated; // +0x04  buckets-allocated flag
-    i32 m_count;     // +0x08  live object count
-    i32 m_cols;      // +0x0c  columns
-    i32 m_rows;      // +0x10  rows
-    i32 m_shiftY;    // +0x14  log2(cellW)
-    i32 m_shiftX;    // +0x18  log2(cellH)
-    char m_pad1c[0x28 - 0x1c];
-    i32 m_minX; // +0x28
-    i32 m_minY; // +0x2c
-    i32 m_maxX; // +0x30
-    i32 m_maxY; // +0x34
-    char m_pad38[0x40 - 0x38];
-    WwdBucketHead* m_buckets; // +0x40  array of 8-byte {head,tail} bucket heads
-};
 
 // CWwdGridIter (the rect-restricted position cursor over a CWwdGrid) is defined
 // in <Gruntz/WwdGridIter.h>; its Start/Init/GetNext bodies live in WwdGrid.cpp
@@ -136,11 +97,16 @@ void CWwdSpatialMgr::FreeGrids() {
 // the three grid-scroll results.
 // ===========================================================================
 // @early-stop
-// scheduling wall - MSVC floats the m_scrollX/m_scrollY (0x68/0x6c) member
-// stores down into the first grid's struct setup to fill pipeline slots; retail
-// emits them eagerly at the jne target. Body otherwise byte-identical; the
-// inserted-then-shifted store pair caps fuzzy% (statement-schedule-faithful,
-// not steerable from C). ~66%.
+// scheduling wall (+ dissolution cost) - MSVC floats the m_scrollX/m_scrollY
+// (0x68/0x6c) member stores down into the first grid's struct setup to fill
+// pipeline slots; retail emits them eagerly at the jne target. Body logic
+// byte-faithful. NOTE (2026-07-14): dropped ~66% -> ~35% when the ex-view's
+// Scroll_1918c0(WwdRect BY VALUE, flag) call was dissolved onto the canonical
+// CWwdGrid::Query(x0,y0,x1,y1,doRemove) (5 scalars): retail's caller pushes the
+// rect BY VALUE (the by-value model scored closer), so a faithful re-match wants
+// canonical Query retyped to `Query(WwdRect, i32)` - a cross-TU unification with
+// WwdGrid.cpp, deferred. The view was a divergent 2nd CWwdGrid definition (the
+// anti-pattern); the canonical dissolution is correct, the % is the accepted cost.
 RVA(0x00168340, 0xe1)
 i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     if (m_scrollX == dx && m_scrollY == dy) {
@@ -154,21 +120,21 @@ i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     r0.b = dy - m_org0y;
     r0.c = m_org0x + dx;
     r0.d = m_org0y + dy;
-    i32 n = m_grid0->Scroll_1918c0(r0, 1);
+    i32 n = m_grid0->Query(r0.a, r0.b, r0.c, r0.d, 1);
 
     WwdRect r1;
     r1.a = dx - m_org1x;
     r1.b = dy - m_org1y;
     r1.c = m_org1x + dx;
     r1.d = m_org1y + dy;
-    n += m_grid1->Scroll_1918c0(r1, 1);
+    n += m_grid1->Query(r1.a, r1.b, r1.c, r1.d, 1);
 
     WwdRect r2;
     r2.a = dx - m_org2x;
     r2.b = dy - m_org2y;
     r2.c = m_org2x + dx;
     r2.d = m_org2y + dy;
-    n += m_grid2->Scroll_1918c0(r2, 1);
+    n += m_grid2->Query(r2.a, r2.b, r2.c, r2.d, 1);
 
     return n;
 }
@@ -202,7 +168,7 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
         CWwdGameObject* w = obj->m_object;
         if ((w->m_flags & 0x2) || (w->m_worker->m_08 & 0x4)) {
             m_mgr->InsertSorted_159e40(w, 1);
-            grid->Remove_191890(obj);
+            grid->Remove((WwdRegion*)obj);
             ++count;
         }
     }
@@ -302,7 +268,7 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     for (WwdGridNode* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
         CWwdGameObject* w = obj->m_object;
         m_mgr->InsertSorted_159e40(w, 1);
-        grid->Remove_191890(obj);
+        grid->Remove((WwdRegion*)obj);
         ++count;
     }
     return count;
@@ -405,4 +371,3 @@ CWwdGameObject* CWwdSpatialMgr::GetNextObject() {
 // were re-homed to WwdGrid.cpp - the same obj/.text run as CWwdGrid, matcher-2 D6.)
 SIZE_UNKNOWN(CWwdObjWorker);
 SIZE_UNKNOWN(CWwdSpatialMgr);
-SIZE_UNKNOWN(WwdBucketHead);
