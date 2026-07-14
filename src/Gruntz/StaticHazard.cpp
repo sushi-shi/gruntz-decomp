@@ -63,31 +63,20 @@ struct HazAnimDesc {
 };
 
 // ---------------------------------------------------------------------------
-// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Modeled here with
-// the offsets the static-hazard paths touch.
-// DISPOSITION: HazSwitchSrc/HazLookupEntry/HazSndCat/HazSndRoot/HazGrid are the
-// SANCTIONED per-TU views of the 0x64556c multi-view singleton's void* sub-object
-// slots (see <Gruntz/GameRegistry.h>: each TU casts the slot to its own concrete
-// sub-object type at the deref site). The singleton is the CGruntzMgr view (classifier
-// scope); these stay as the endorsed per-TU sub-object casts, not fabricated types.
+// The game registry singleton (0x64556c) is the CGruntzMgr view here; its sub-object
+// slots ARE real modeled classes, so the static-hazard paths reach them cast-free
+// (the ex-HazSwitchSrc/HazSndRoot/HazSndCat views were dissolved, 2026-07-14):
+//   m_curState -> CState               (the ctor switches on CState::m_levelType @+0x20)
+//   m_world    -> CSpriteFactoryHolder (m_animRegistry @+0x2c is CAnimRegistry, whose
+//                 m_10map @+0x10 is the CMapStringToOb the "GO" cue resolves in).
+// The one residual is HazLookupEntry: the map's VALUE record (a CObject-derived anim-cue
+// catalog entry whose +0x24 is the per-effect AniPad bias) - its class is not modeled in
+// this tree, so the Lookup result stays a flagged local view (@identity-TODO).
 // ---------------------------------------------------------------------------
-struct HazSwitchSrc {
-    char m_pad00[0x20];
-    i32 m_levelKind; // +0x20  the level-kind tag the ctor switches on
-};
+#include <Gruntz/ResMgr.h> // CAnimRegistry (m_world->m_animRegistry->m_10map cue lookup)
 struct HazLookupEntry {
     char m_pad00[0x24];
     i32 m_aniPadBias; // +0x24  the per-effect AniPad bias
-};
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
-struct HazSndCat {
-    char m_pad00[0x10];
-    CMapStringToOb m_map; // +0x10  the lookup map
-};
-struct HazSndRoot {
-    char m_pad00[0x2c];
-    HazSndCat* m_cat; // +0x2c
 };
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms.
@@ -242,7 +231,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_tileCol = m_object->m_screenX >> 5;
     m_tileRow = m_object->m_screenY >> 5;
     m_object->m_placeMode = 0;
-    switch (((HazSwitchSrc*)g_gameReg->m_curState)->m_levelKind) {
+    switch (g_gameReg->m_curState->m_levelType) {
         case 3:
         case 4:
         case 7:
@@ -265,7 +254,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_idleWindow = m_object->m_120;
     m_pulseEpoch = g_frameTime;
     CObject* entry_ob = 0;
-    ((HazSndRoot*)g_gameReg->m_world)->m_cat->m_map.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
+    g_gameReg->m_world->m_animRegistry->m_10map.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
     HazLookupEntry* entry = (HazLookupEntry*)entry_ob;
     if (entry != 0) {
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_aniPadBias;
@@ -519,9 +508,6 @@ SIZE_UNKNOWN(HazAnimElem);
 SIZE_UNKNOWN(HazGrid);
 SIZE_UNKNOWN(HazGridMgr);
 SIZE_UNKNOWN(HazLookupEntry);
-SIZE_UNKNOWN(HazSndCat);
-SIZE_UNKNOWN(HazSndRoot);
-SIZE_UNKNOWN(HazSwitchSrc);
 // Tree-wide SIZE anchor for the unified CCoordColl coordinate/activation-registry
 // archetype (<Gruntz/HaznColl.h>; the former CTBombColl/CHaznColl views, used across
 // TimeBomb/StaticHazard). Moved here from the deleted src/Stub/BoundaryLowerThunks.cpp.
