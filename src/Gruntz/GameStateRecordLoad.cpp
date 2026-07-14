@@ -59,12 +59,11 @@ struct CDirObj {
     virtual i32 GetTag(); // slot 8 -> +0x20
 };
 
-// The two engine lookup maps (external __thiscall, reloc-masked). The serial map
-// keys on the 4-byte id; the name map keys on the text name.
-// serial-map @0x1b8760 = MFC CMapPtrToPtr::Lookup (int key); name-map @0x1b8438 =
-// CMapStringToOb::Lookup (string key). Both cast at the call.
-struct CSerialMap {};
-struct CNameMap {};
+// The two engine lookup maps are the real MFC containers (reached below by casting
+// the map host + its embedded-map offset): the serial map @0x1b8760 =
+// CMapPtrToPtr::Lookup (int key); the name map @0x1b8438 = CMapStringToOb::Lookup
+// (string key). Modeled directly as the MFC classes at the use sites (Mfc.h), so no
+// per-TU map view is needed.
 
 // The engine object directory (g_gameReg->m_world): the serial-map host at +8
 // (map at +0x48), the name-map host at +0x2c (map at +0x10).
@@ -413,12 +412,8 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
 }
 
 SIZE_UNKNOWN(CDirObj);
-SIZE_UNKNOWN(CSerialMap);
-SIZE_UNKNOWN(CNameMap);
 SIZE_UNKNOWN(CObjDir);
-SIZE_UNKNOWN(CMgr74);
 SIZE_UNKNOWN(CCmdBuf);
-SIZE_UNKNOWN(CSubRecord);
 SIZE_UNKNOWN(CGameStateRecord);
 
 // --- vtable catalog ---
