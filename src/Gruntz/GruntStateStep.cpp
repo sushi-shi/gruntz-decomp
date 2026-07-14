@@ -1,8 +1,9 @@
-// GruntStateStep.cpp - CGruntStepMgr::Step33520 (0x033520, __thiscall ret 4). A
-// grunt AI move-resolution step, sibling of CGruntMover::Step (GruntMoveStep.cpp)
-// and the region scan (GruntTileScan.cpp). `this` (ebp) is the grunt move manager
-// (board m_8, grid m_c, thresholds m_8c/m_90/m_a0/m_a4, random-goal table
-// m_f4/m_f8); the argument (esi) is the CGrunt being moved. Dispatches on the
+// GruntStateStep.cpp - CBattlezMapConfig::Step33520 (0x033520, __thiscall ret 4). A
+// grunt AI move-resolution step, sibling of CBattlezMapConfig::Step (0x031610,
+// BattlezMapConfig.cpp) and the region scan (GruntTileScan.cpp). `this` (ebp) is the
+// same CBattlezMapConfig object (board m_triggerMgr, grid m_board, thresholds
+// m_08c/m_090/m_0a0/m_0a4, random-goal CPtrArray m_0f0); the argument (esi) is the
+// CGrunt being moved. Dispatches on the
 // grunt arrival state (g->m_defenderState):
 //   state 3 -> return immediately;
 //   state 2 -> in-flight: fetch the path node, test arrival (Check3c4c). On arrival
@@ -25,9 +26,11 @@
 #include <stdlib.h>     // engine rand (0x11fee0)
 #include <Globals.h>
 #include <Gruntz/FreeNodePool.h>
-#include <Gruntz/Brickz.h>   // canonical CBrickzGrid == CMapMgr (the board; was the CStepGrid view)
-#include <Gruntz/Grunt.h>    // real CGrunt (step grunt is a CGrunt)
-#include <Gruntz/TypeColl.h> // the shared type-name collection
+#include <Gruntz/Brickz.h>          // canonical CBrickzGrid == CMapMgr (the board; was the CStepGrid view)
+#include <Gruntz/Grunt.h>           // real CGrunt (step grunt is a CGrunt); CGruntHud m_10 + CAnimLookupNode m_14
+#include <Gruntz/TriggerMgr.h>      // CTriggerMgr (the board's 4x15 CGrunt* grid; was the CStepBoard view)
+#include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig - the step mgr `this` (was the CStepMgr view)
+#include <Gruntz/TypeColl.h>        // the shared type-name collection
 #include <Gruntz/TypeKeyColl.h>
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
@@ -43,14 +46,9 @@ struct CStepNode { // CGrunt::CoordHead() pending-coord node
 // fabrication Grunt.h records as GruntListSub.  Find1de8 @0x1de8 thunks to the free
 // __stdcall ListNodeAdvance @0x29a30; RemoveAll1b48a6 @0x1b48a6 IS CPtrList::RemoveAll.)
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
-struct CStepSub10 {                          // g->m_10
-    char _00[0x5c];
-    i32 m_5c, m_60; // +0x5c, +0x60
-};
-struct CStepOwner { // g->m_14
-    char _00[0x1c];
-    i32 m_1c; // +0x1c type key
-};
+// (the ex-CStepSub10 view of g->m_10 is GONE - it is the real CGruntHud (m_5c/m_60);
+// the ex-CStepOwner view of g->m_14 is GONE - it is the real CAnimLookupNode (m_1c). Both
+// are CGrunt's already-typed sub-objects, so the local views were redundant casts.)
 // CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
 // DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
@@ -69,30 +67,14 @@ extern char s_codeJ[];
 // m_width/m_height, +0x60..+0x6c the bound RECT, +0x70/+0x74 the clipped extents. It IS the
 // CBrickzGrid/CMapMgr board. Typing the member with the real class made both the shell and
 // the cast at the call fall out.)
-struct CStepGoal { // this->m_f4[] element
+struct CStepGoal { // a goal-table element (the CPtrArray m_0f0's void* payloads)
     i32 m_0, m_4;
 };
-// The step mgr's board (m_8): a 4x15 grunt-pointer grid at +0x1c, indexed [15*col+row].
-struct CStepBoard {
-    char _00[0x1c];
-    CGrunt* m_grid[60]; // +0x1c
-};
-struct CStepMgr {                                      // this (ebp)
-    CGrunt* QueryTile4098(i32 x, i32 y, i32 a, i32 b); // 0x4098
-    void Finish3e4f(CGrunt* g, CGrunt* cur);           // 0x3e4f
-    i32 ShouldStepGrunt(CGrunt* g);                    // 0x2626
-    char _00[0x8];
-    CStepBoard* m_8;  // +0x08 board (CGrunt*[] grid at +0x1c)
-    CBrickzGrid* m_c; // +0x0c the board (CMapMgr)
-    char _10[0x8c - 0x10];
-    i32 m_8c, m_90; // +0x8c, +0x90
-    char _94[0xa0 - 0x94];
-    i32 m_a0, m_a4; // +0xa0 idle threshold, +0xa4 reroute distance
-    char _a8[0xf4 - 0xa8];
-    CStepGoal** m_f4; // +0xf4 goal table
-    i32 m_f8;         // +0xf8 goal count
-    i32 Step33520(CGrunt* g);
-};
+// `this` (ebp) is the canonical CBattlezMapConfig (was the CStepMgr view): its board
+// is m_triggerMgr (CTriggerMgr, the 4x15 CGrunt* m_grid at +0x1c), the pathfinding grid
+// is m_board (CBrickzGrid/CMapMgr), the thresholds are m_08c/m_090/m_0a0/m_0a4, and the
+// random-goal "table" is the CPtrArray m_0f0 (data @ +0xf4 via GetData, count @ +0xf8
+// via GetSize). QueryTile4098/Finish3e4f/Method_034460 are its declared methods.
 
 // @0x29ac0 (thunk 0x34a4) IS the engine CRect(l,t,r,b) direct-store ctor (Ghidra/
 // FID: ??0CRect@@QAE@HHHH@Z), out-of-line so it is CALLed here. Modeled by the
@@ -151,7 +133,7 @@ static i32 iabs(i32 v) {
 // here), the sqrt is modeled without /Oi, and the shared-landing-pad regalloc /
 // slot schedule diverges - re-attack leaf-first in the final sweep.
 RVA(0x00033520, 0xbc3)
-i32 CStepMgr::Step33520(CGrunt* g) {
+i32 CBattlezMapConfig::Step33520(CGrunt* g) {
     i32 state = g->m_defenderState;
     if (state == 3) {
         return 1;
@@ -160,7 +142,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
         // ---- fresh: re-query the move grid ----
         CStepCoord tp;
         g->GetScreenPos((GruntTilePos*)&tp);
-        CGrunt* nb = QueryTile4098(tp.x >> 5, tp.y >> 5, m_8c, m_90);
+        CGrunt* nb = QueryTile4098(tp.x >> 5, tp.y >> 5, m_08c, m_090);
         if (nb != 0) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
@@ -179,7 +161,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
                 g->GetScreenPos((GruntTilePos*)&b1);
                 g->GetScreenPos((GruntTilePos*)&b2);
                 g->GetScreenPos((GruntTilePos*)&b3);
-                CBrickzGrid* grid = m_c;
+                CBrickzGrid* grid = m_board;
                 RECT box;
                 box.left = (b0.x >> 5) - 5;
                 box.top = (b1.y >> 5) - 5;
@@ -202,7 +184,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
                 g->m_dwell = 0;
             }
             if (dist <= 0xa) {
-                STEP_BOUNDS(m_c);
+                STEP_BOUNDS(m_board);
             }
         }
         goto tail;
@@ -212,7 +194,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
     {
         i32 col = g->m_arrivalCol;
         i32 row = g->m_arrivalRow;
-        CGrunt* cur = m_8->m_grid[15 * col + row];
+        CGrunt* cur = m_triggerMgr->m_grid[15 * col + row];
         if (cur == 0) {
             // clear path
             g->m_arrivalCol = -1;
@@ -221,7 +203,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
             GruntRecycleCoords(g);
             goto tail;
         }
-        CStepSub10* s = (CStepSub10*)cur->m_10;
+        CGruntHud* s = cur->m_10;
         if (g->RectContains(s->m_5c, s->m_60) != 0) {
             // arrived on this tile
             if (g->CoordCount() != 0) {
@@ -232,8 +214,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
             if (g != 0 && g->IsAtSavedScreenPos() && g->m_entranceCommitted != 0
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm =
-                    ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr(((CStepOwner*)g->m_14)->m_1c))
-                        ->m_0;
+                    ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)g->m_14->m_1c))->m_0;
                 if (strcmp(nm, s_codeI) != 0 && strcmp(nm, s_codeG) != 0 && strcmp(nm, s_codeL) != 0
                     && strcmp(nm, s_codeP) != 0 && strcmp(nm, s_codeJ) != 0
                     && strcmp(nm, k_60cc90) != 0 && strcmp(nm, k_60bebc) != 0) {
@@ -250,9 +231,9 @@ i32 CStepMgr::Step33520(CGrunt* g) {
         i32 dx = np.x - here.x;
         i32 dy = np.y - here.y;
         i32 dist = (i32)sqrt((double)(iabs(dx) * iabs(dx) + iabs(dy) * iabs(dy)));
-        if (dist > m_a4) {
-            if (m_f8 != 0) {
-                CStepGoal* e = m_f4[rand() % m_f8];
+        if (dist > m_0a4) {
+            if (m_0f0.GetSize() != 0) {
+                CStepGoal* e = ((CStepGoal**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
                 CGrunt_TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
             }
             g->m_arrivalCol = -1;
@@ -265,7 +246,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
             g->m_dwell = 0;
             goto tail;
         }
-        // dist <= m_a4: drain + recompute dirty rect + retarget
+        // dist <= m_0a4: drain + recompute dirty rect + retarget
         if (g->CoordCount() != 0) {
             STEP_DRAIN(g);
         }
@@ -281,7 +262,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
             g->GetScreenPos((GruntTilePos*)&d1);
             g->GetScreenPos((GruntTilePos*)&d2);
             g->GetScreenPos((GruntTilePos*)&d3);
-            CBrickzGrid* grid = m_c;
+            CBrickzGrid* grid = m_board;
             RECT box;
             box.left = (d0.x >> 5) - 5;
             box.top = (d1.y >> 5) - 5;
@@ -303,16 +284,16 @@ i32 CStepMgr::Step33520(CGrunt* g) {
             g->m_defenderState = 0;
         }
         if (dist2 <= 0xa) {
-            m_c->Clip(0);
+            m_board->Clip(0);
         }
         g->m_dwell = 0;
         goto tail;
     }
 
 tail:
-    if (ShouldStepGrunt(g)) {
-        if (g->CoordCount() == 0 && (u32)g->m_dwell > (u32)m_a0 && m_f8 != 0) {
-            CStepGoal* e = m_f4[rand() % m_f8];
+    if (Method_034460((i32)g)) {
+        if (g->CoordCount() == 0 && (u32)g->m_dwell > (u32)m_0a0 && m_0f0.GetSize() != 0) {
+            CStepGoal* e = ((CStepGoal**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
             CGrunt_TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
             g->m_dwell = 0;
         }
@@ -320,11 +301,6 @@ tail:
     return 1;
 }
 
-SIZE_UNKNOWN(CStepBoard);
 SIZE_UNKNOWN(CStepCoord);
 SIZE_UNKNOWN(CStepGoal);
-SIZE_UNKNOWN(CStepMgr);
 SIZE_UNKNOWN(CStepNode);
-SIZE_UNKNOWN(CStepOwner);
-SIZE_UNKNOWN(CStepRectInit);
-SIZE_UNKNOWN(CStepSub10);

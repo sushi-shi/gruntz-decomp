@@ -113,6 +113,7 @@ public:
     // the `this` casts and the duplicate layouts are gone.
     i32 ResolveArrival(CGrunt* g); // 0x02c690  (was CArriveMgr::ResolveArrival)
     i32 Step(CGrunt* g);           // 0x031610  (was CGruntMover::Step)
+    i32 Step33520(CGrunt* g);      // 0x033520  (was the CStepMgr view; GruntStateStep.cpp)
 
     // The reloc-masked engine siblings both views dispatched on `this` (unreconstructed;
     // declared-only so the __thiscall rel32 masks). Named by their ILT thunk rva.
