@@ -226,6 +226,17 @@ extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wPara
 // custom-level directory glob (_findfirst/_findnext under a shared singleton lock),
 // format each entry's display name, ask the settings manager whether to hide it,
 // and LB_ADDSTRING it with its 4-char extension stripped. __cdecl(HWND).
+
+// This TU's .data literal run (0x60cf90.. "..", "*.WWD", "Custom", "Bad Level
+// File"...): owner-TU definitions, lengths NULL-TERMINATOR-PROVEN from the retail
+// bytes. g_dotDot doubles as SymTab's directory-walk skip-name (it externs it);
+// the old `g_customDone` name here was a second alias of the same ".." literal.
+DATA(0x0020cf90)
+char g_dotDot[] = ".."; // 0x60cf90
+DATA(0x0020cf94)
+char g_customGlob[] = "*.WWD"; // 0x60cf94
+extern char g_nameFmt[]; // 0x60c5b8 "%s" (def: BootyStateActivate.cpp)
+
 namespace m4 {
 
     // Game Win32 pointer table (reloc-masked indirect calls).
@@ -252,22 +263,10 @@ namespace m4 {
     // so it bought nothing and emitted ?g_gameReg@m4@@3PAVCGruntzMgr@@A: a second symbol
     // for 0x24556c that nothing could ever define. Plain lookup finds ::g_gameReg.
 
-    // The custom-level glob + display-name format + "already loaded" strings.
-    DATA(0x0020cf94)
-    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
-    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-    // in between get swallowed). Inline the literal at its use site instead.
-    extern char g_customGlob[]; // 0x0060cf94
-    DATA(0x0020cf90)
-    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
-    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-    // in between get swallowed). Inline the literal at its use site instead.
-    extern char g_customDone[]; // 0x0060cf90
-    DATA(0x0020c5b8)
-    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
-    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-    // in between get swallowed). Inline the literal at its use site instead.
-    extern char g_nameFmt[]; // 0x0060c5b8
+    // (The display-name format literal g_nameFmt "%s" @0x60c5b8 is DEFINED in
+    // src/Gruntz/BootyStateActivate.cpp, whose .data run holds it - the "Cursez:"
+    // literal follows it there; declared at file scope below this namespace. The
+    // glob + ".." literals are this TU's own, DEFINED at file scope above.)
 
     // @early-stop
     // regalloc + frame-layout wall. Complete correct reconstruction: the listbox
@@ -307,7 +306,7 @@ namespace m4 {
                 }
             } while (_findnext(h, &fd) != -1);
         }
-        CustomGate(g_customDone);
+        CustomGate(g_dotDot);
         GetWalkOwner1d3631()->m_4->Unlock();
         return 1;
     }

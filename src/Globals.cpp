@@ -50,10 +50,9 @@ DATA(0x00051510)
 extern char g_typeDesc1[];
 DATA(0x00104358)
 extern i32 g_screenTag;
-DATA(0x0016ea10)
-extern void* g_buteTreeArg; // 0x56ea10 (ctor argument)
-DATA(0x00174de0)
-extern u8 g_streamTag; // 0x574de0
+// (g_buteTreeArg @0x56ea10 and g_streamTag @0x574de0 are GONE: both were CODE
+//  mis-modeled as data - the zPTree free-callbacks ButeTreeNopFree (TypeKeyColl.cpp)
+//  and ButeStoreFreeAdapter (ButeNode.cpp), now reconstructed as real functions.)
 DATA(0x001e8d10)
 const i32 g_msgmap_CBattlezDlgColors = 6205544;
 DATA(0x001e8e98)
@@ -86,8 +85,8 @@ DATA(0x001f04f8)
 extern const double g_motionNegHalf = -0.5;
 DATA(0x0020a7ac)
 char g_wormholeSpawnKey[] = "Wormhole"; // "Wormhole" @ 0x60a7ac
-DATA(0x0020aac8)
-extern i32 g_desc60aac8;
+// (g_desc60aac8 was the "Gruntz" app-name literal @0x60aac8 viewed as an i32 tag;
+//  folded onto g_msgCaption, DEFINED in src/Gruntz/WinMain.cpp.)
 DATA(0x0020b588)
 u8 g_dat60b588 = 95;
 // The single-character bute key literals (0x60beb8..0x60df94 in retail's .rdata). Each is
@@ -146,16 +145,12 @@ DATA(0x002135e8)
 char s_PREVIEW_6135e8[] = "PREVIEW"; // "PREVIEW"
 // g_wwdObjIdCounter (0x61ab14, init = 1) DEFINED in src/Wwd/WwdObjMgr.cpp (owner:
 // stamps + post-increments it per created object); extern in <Globals.h>.
-DATA(0x00224fe8)
-extern u16 g_modeTab_e8; // 0x624fe8
-DATA(0x00224fea)
-extern u16 g_modeTab_ea; // 0x624fea
-DATA(0x00224fec)
-extern u16 g_modeTab_ec; // 0x624fec
-DATA(0x00224fee)
-extern u16 g_modeTab_ee; // 0x624fee
-DATA(0x002256f0)
-extern double g_scale6256f0;
+// (g_modeTab_e8..ee are GONE: 0x624fe8..ee are the four u16s of zlib's
+//  configuration_table[0] {good_length,max_lazy,nice_length,max_chain} - a
+//  deflate.c-internal `local` static the vendored zlib already defines; the four
+//  scalar externs were a shredded view of library data that no game code reads.)
+// (g_scale6256f0 is GONE: 0x6256f0 is the CRT's own 0.5 double constant - library
+//  .data near the CRT "pow"/"acos" strings; nothing in src/ referenced it.)
 // g_projReg* R3-registry fields: DEFINED in src/Gruntz/ActionArea.cpp (owner TU).
 // g_stepRun/g_stepCol/g_stepRow/g_diffTier DEFINED in src/Gruntz/BattlezMapConfig.cpp (owner TU).
 // g_act* fields DEFINED in src/Gruntz/SecretTeleporterTrigger.cpp (owner TU).
@@ -237,8 +232,8 @@ extern "C" i32 g_helperRefCount; // 0x6bf400
 // g_6bf8dc (debug-output mode word, VA 0x6bf8dc) is DEFINED in its owning TU
 // src/Rez/DebugPrintf.cpp (debugprintf.obj's .bss); the reference extern stays in
 // <Globals.h>.
-DATA(0x002c3fdc)
-extern int(__stdcall* g_impFreeLibrary)(void*);
+// (g_impFreeLibrary is GONE: 0x6c3fdc is KERNEL32's FreeLibrary IAT slot - import
+//  machinery, not a game global; nothing in src/ referenced the name.)
 
 extern "C" {
     // g_opt_22bd64..g_opt_22bdd4 (the options-dialog staging cells, 0x22bd64..0x22bdd4)

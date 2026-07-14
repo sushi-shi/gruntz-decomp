@@ -33,18 +33,26 @@ struct BzGeomPair {
     i32 m_y; // +0x00  onscreen y
     i32 m_x; // +0x04  onscreen x
 };
+// Owner-TU definition, TRANSCRIBED from the retail .rdata bytes @0x5e8fe4
+// ({0,472} {101,525} {98,474} {146,525} - the four idle-sprite onscreen spots).
 DATA(0x001e8fe4)
-extern BzGeomPair g_idleGeom[4]; // 0x5e8fe4
+BzGeomPair g_idleGeom[4] = {
+    {0, 472},
+    {101, 525},
+    {98, 474},
+    {146, 525},
+};
 // The secret-bonus group-ratio scale (0x5e93b0, .rdata const 100.0); DEFINED here
 // (owner TU), reference extern stays in <Globals.h>. (REHOME DD-G)
 DATA(0x001e93b0)
 float g_secretRatioScale = 100.0f; // 0x5e93b0
 extern i32 g_sndCueTag; // 0x61ab24 (?g_sndCueTag@@3HA)
 
-// The 8 level-complete message templates (global CString array at 0x629ef8) and
-// the two parallel RECT arrays they are drawn into.
+// The 8 level-complete message templates (global CString array at 0x629ef8, .bss;
+// the CRT default-constructs the elements at startup) and the two parallel RECT
+// arrays they are drawn into. Owner-TU definition.
 DATA(0x00229ef8)
-extern CString g_levelMsgStrings[8]; // 0x629ef8
+CString g_levelMsgStrings[8]; // 0x629ef8
 DATA(0x0020b838)
 RECT g_levelMsgRectsA[8] = {
     {105, 106, 190, 155},
@@ -75,11 +83,14 @@ struct SecretMsgRow {
     char strA[0x20]; // +0x00  encoded line A
     char strB[0x80]; // +0x20  encoded line B
 };
+// Owner-TU definition (.bss, runtime-filled). Row count CODE+DOMAIN-PROVEN, not
+// gap-guessed: idx = rowBase*3 + j with j in 0..2 and rowBase = (levelIndex-1)/4,
+// levelIndex <= 32 (8 worldz x 4 levelz) -> rowBase <= 7 -> 24 rows.
 DATA(0x00229f30)
-extern SecretMsgRow g_secretMsgRows[]; // 0x629f30  (0xa0 stride)
-// The single-record banner's encoded string pair (.bss, decoded in place at runtime).
-// They are the strA[0x20]/strB[0x80] of the LAST SecretMsgRow (row 24 @0x629f30+0xf00 =
-// 0x62ae30/0x62ae50); DEFINED here (owner TU), reference externs stay in <Globals.h>. (DD-G)
+SecretMsgRow g_secretMsgRows[24]; // 0x629f30  (0xa0 stride)
+// The single-record banner's encoded string pair (.bss, decoded in place at runtime),
+// laid DIRECTLY AFTER the row table (0x629f30+0xf00 = 0x62ae30/0x62ae50); DEFINED
+// here (owner TU), reference externs stay in <Globals.h>. (DD-G)
 char g_secretMsgA[0x20]; // 0x62ae30  encoded line A
 char g_secretMsgB[0x80]; // 0x62ae50  encoded line B (strB extent 0x80, not 0x20)
 

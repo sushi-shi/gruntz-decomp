@@ -1044,12 +1044,9 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     }
 }
 
-// The asset-namespace key at 0x60ba44 (an unlabeled .rdata datum; reloc-masked).
-DATA(0x0020ba44)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-extern const char s_assetKeyBa44[]; // 0x60ba44
+// The "GAME" asset-namespace root key (0x60ba44; DEFINED in
+// src/Gruntz/BootyStateActivate.cpp, whose .data run holds it).
+extern char s_assetKeyGame[];
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::RegisterLevelAssetKeys  (@0x08dc90, ret 0)
@@ -1072,12 +1069,12 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     w->m_ptrColl->GetCapsChecked();
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(0, 1);
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("GRUNTZ", 1);
-    ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(s_assetKeyBa44, 1);
+    ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(s_assetKeyGame, 1);
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("LEVEL", 1);
     ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("ACTION", 1);
     w->m_28->SumField_1580b0(0);
     w->m_28->SumField_1580b0("GRUNTZ");
-    w->m_28->SumField_1580b0(s_assetKeyBa44);
+    w->m_28->SumField_1580b0(s_assetKeyGame);
     w->m_28->SumField_1580b0("LEVEL");
 }
 
@@ -1282,11 +1279,9 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 // The 0x158c70 callee is a __thiscall on the world's +0x04 sub-object taking that
 // object's OWN +0x14 page handle (retail: `mov ecx,[eax+4]; mov eax,[ecx+0x14];
 // push eax; call`) - modeled as CWorldSub4::PausePages, not the old free __stdcall.
-// The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
-DATA(0x0020aac8)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
+// The shared "Gruntz" app-name caption (0x60aac8) passed as the MessageBoxA title;
+// DEFINED in src/Gruntz/WinMain.cpp (the app TU whose .data run holds it, next to
+// the "1.0" version literal).
 extern char g_msgCaption[];
 // @early-stop
 // regalloc free-list-pick wall (98.89%): every instruction matches one-for-one; the

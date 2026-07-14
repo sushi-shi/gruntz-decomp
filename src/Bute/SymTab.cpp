@@ -1424,22 +1424,21 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 // .rodata literals.
 void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey); // 0x13b970
 void SymBindRecord(void* rec, char* name, i32 h);             // 0x13cac0
+// The path separator this walker appends (0x60cff0 "\\"). Owner-TU definition:
+// this TU is its dominant referencing unit (4 sites; heapdiag/portalpath/
+// customworlddialog share it). Length NULL-TERMINATOR-PROVEN ("\\" + NUL = 2 B),
+// not a gap guess. extern "C" avoids the const-array mangling that drops DATA().
 DATA(0x0020cff0)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-extern const char g_sepSlash[]; // 0x60cff0  "\\"
-DATA(0x0021a0a0)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-extern const char g_wildcard[]; // 0x61a0a0  "*.*"
-extern const char g_dotDot[];   // 0x5ee8ec  ".."
-DATA(0x0020cf90)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-extern const char g_dot[]; // 0x60cf90  "."
+extern "C" const char g_sepSlash[] = "\\";
+// The find-all glob (0x61a0a0 "*.*"; DEFINED in src/Rez/RezFile.cpp - its .data
+// run continues with that TU's "r+b"/"w+b" fopen-mode literals).
+extern "C" const char g_wildcard[];
+// The two skip-names of the directory walk below. NOTE the previous names were
+// SWAPPED relative to the retail bytes: 0x5ee8ec is "." (a CRT .rdata literal in
+// the CRT band near the _y* strings; extern only) and 0x60cf90 is ".." (DEFINED in
+// src/Gruntz/CustomWorldDialog.cpp, whose .data literal run holds it).
+extern char g_dot[];           // 0x5ee8ec  "." (def: Dsndmgr/SoundBankLoad.cpp)
+extern char g_dotDot[];        // 0x60cf90  ".."
 
 // @early-stop
 // 0x545 (1349 B) /GX recursive directory loader: enumerates `path` with
@@ -1468,7 +1467,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         return 1;
     }
     do {
-        if (strcmp(fd.name, g_dotDot) == 0 || strcmp(fd.name, g_dot) == 0) {
+        if (strcmp(fd.name, g_dot) == 0 || strcmp(fd.name, g_dotDot) == 0) {
             continue;
         }
         if ((fd.attrib & 0x10) == 0x10) {

@@ -432,8 +432,11 @@ public:
     virtual i32 Probe(void* magic, void** out); // slot 0 (@0x00)
 };
 
-// The data tag passed to the source probe (reloc-masked .rdata datum).
-extern void* g_imageProbeTag; // 0x5ef888
+// The tag passed to the source probe is the REAL SDK GUID IID_IDirectDrawSurface3
+// (its bytes at 0x5ef888 ARE {DA044E00-69B2-11D0-A1D5-00AA00B8DFBB}; DEFINED in
+// DDPageMgr.cpp). The old `void* g_imageProbeTag` was that GUID mis-modeled as an
+// opaque datum.
+extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
 // The created 0xc0 surface item: vptr @0, the slot-1 Load, a CByteArray @+0x94.
 class CByteArrayMember {
@@ -500,7 +503,7 @@ public:
 RVA(0x0013e9a0, 0xcc)
 i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
     void* payload = 0;
-    if (src->Probe(&g_imageProbeTag, &payload) != 0) {
+    if (src->Probe((void*)&IID_IDirectDrawSurface3, &payload) != 0) {
         CRezSurfaceItem* item = new CRezSurfaceItem;
         if (item->ImgItemLoad(payload)) { // slot 1 @+0x04  Load
             g_imageCache.SetAtGrow(g_imageCacheIndex, item);

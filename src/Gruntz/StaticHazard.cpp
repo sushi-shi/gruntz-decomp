@@ -141,7 +141,6 @@ struct CHaznEntry2 {
 // OWN registry (HaznLookup) and stores the per-key handler PMF.
 extern i32 g_typeCounter;
 extern char s_codeA[]; // "A"
-DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)

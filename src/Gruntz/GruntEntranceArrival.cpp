@@ -670,12 +670,11 @@ struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
 };
 // The frame-clock snapshot fed to the arrival poke (ds:0x6bf3bc).
 extern "C" i32 g_engineFrameDelta;
-// The mgr singleton (same 0x64556c datum) + the WM_COMMAND PostMessageA IAT slot.
-// WwdGameReg* view (as at the top of this TU); the warp-dialog facet casts to CWarpMgr.
+// The mgr singleton (same 0x64556c datum); the warp-dialog facet casts to CWarpMgr.
+// (The old `WarpPostFn g_pPostMessageA` fn-ptr global @0x2c44c8 is GONE: that
+// address is USER32's PostMessageA IAT slot - retail's `call [0x6c44c8]` is just
+// the dllimport call. A plain ::PostMessageA call is the honest source.)
 extern "C" WwdGameReg* g_gameReg;
-typedef i32(WINAPI* WarpPostFn)(void* hwnd, unsigned msg, unsigned wp, i32 lp);
-DATA(0x002c44c8)
-extern WarpPostFn g_pPostMessageA;
 // @source: string-xref
 // @early-stop
 // jump-table-data-overlap wall (fuzzy % is an alignment artifact): logic complete
@@ -1950,7 +1949,7 @@ i32 CUserLogic::winapi_064540_PostMessageA() {
         CString s;
         s.Format("WORLDZ\\LEVEL%i", lvl);
         if (reg->m_28->ResolveQualified((LPCTSTR)s, (void*)0x575744)) {
-            g_pPostMessageA(((CWarpMgr*)g_gameReg)->m_4->m_4, 0x111, 0x807f, lvl);
+            PostMessageA((HWND)((CWarpMgr*)g_gameReg)->m_4->m_4, 0x111, 0x807f, lvl);
         }
     }
     if (self->m_animSuppress == 0) {

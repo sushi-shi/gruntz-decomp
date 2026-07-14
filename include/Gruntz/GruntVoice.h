@@ -26,7 +26,7 @@ struct CVariantSlot; // folded CVActColl2 (struct tag = canonical PAU mangling, 
 #include <Mfc.h> // CObject base + <windows.h>
 
 #include <Gruntz/UserLogic.h>  // CUserLogic : CUserBase, EngStr, CGameObject
-#include <Gruntz/InGameIcon.h> // g_iconBute ("B" @0x60d1bc), g_frameTime (@0x645588)
+#include <Gruntz/InGameIcon.h> // s_actKeyB ("B" @0x60d1bc), g_frameTime (@0x645588)
 
 // The bute store the setup/reset paths query (mov ecx,&g_buteTree; call Find).
 // CButeTree is declared in <Bute/ButeMgr.h> (pulled via UserLogic.h); g_buteTree

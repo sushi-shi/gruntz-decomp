@@ -36,7 +36,7 @@
 #include <Io/FileMem.h>      // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GruntPuddle.h>     // CGruntPuddle (+ InGameIcon.h: CGameRegistry/g_gameReg)
-#include <Gruntz/Teleporter.h> // CTeleporter (+ g_engineFrameDelta/g_frameTime/g_iconBute/geo keys)
+#include <Gruntz/Teleporter.h> // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
@@ -125,16 +125,25 @@ struct CTeleSelHolder {
 // g_logicRegCounter/s_wormholeLogicKey were the SAME globals - folded.)
 // ===========================================================================
 
-// The second activation key string "B" (0x60d1bc == g_iconBute's rdata; DATA
-// binding lives in LogicActRegistrars.cpp).
-extern char s_actKeyB[];
+// The second activation key string "B" (0x60d1bc; its .data run continues with this
+// TU's "NormalColor"/"SingleUseColor" literals - owner pool). DEFINED here; the ten
+// registration TUs + the icon/hazard headers reference it (the old `s_actKeyB`
+// name was a second alias of this same literal).
+DATA(0x0020d1bc)
+char s_actKeyB[] = "B";
 
 // The teleporter geometry-lookup key strings (.data literals). DEFINED here (owner
 // TU), reference externs stay in <Globals.h>. (REHOME DD-G)
 DATA(0x0020a72c)
 char g_teleporterSpawnKey[] = "Teleporter"; // 0x60a72c
+DATA(0x0020bd38)
+char g_teleporterGeoKey[] = "GAME_TELEPORTER"; // 0x60bd38 (extern in <Gruntz/Teleporter.h>)
 DATA(0x0020d1fc)
 char g_teleporterCloseKey[] = "GAME_TELEPORTERCLOSE"; // 0x60d1fc
+
+// The puddle sprite-set geometry key (0x60c1c0; extern in <Gruntz/GruntPuddle.h>).
+DATA(0x0020c1c0)
+char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
@@ -574,7 +583,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     obj->m_drawFillArg = rec;
     m_38->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(g_iconBute);
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
     if (a1 == 0) {
         m_placed = 1;
         m_pending = 0;
@@ -912,7 +921,7 @@ i32 CTeleporter::Begin() {
     m_savedGeoId = m_38->m_geoId;
     m_object->ApplyLookupGeometry(g_teleporterGeoKey, 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(g_iconBute);
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
     return 0;
 }
 

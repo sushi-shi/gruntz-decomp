@@ -65,6 +65,13 @@ extern "C" {
     // come from <windows.h> (winver, pulled by afx.h/MFC).
 }
 
+// The "Gruntz" app-name literal (0x60aac8, this TU's .data run - the "1.0" version
+// literal follows it). Owner-TU definition; shared as the window title here and as
+// the MessageBoxA caption in GruntzMgr.cpp (extern there as g_msgCaption). Length
+// NULL-TERMINATOR-PROVEN ("Gruntz" + NUL = 7 B).
+DATA(0x0020aac8)
+char g_msgCaption[] = "Gruntz";
+
 // The MFC global allocator / deallocator (NAFXCW); used as
 // the explicit operator-function forms for the FileVersion query buffer (the
 // `new CGruntzApp` further down uses the implicit new+ctor form).

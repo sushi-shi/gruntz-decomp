@@ -32,6 +32,12 @@
 // @data-symbol: ?s_rPlusB@@3PBDB 0x0021a0a4
 // @data-symbol: ?s_wPlusB@@3PBDB 0x0021a0a8
 
+// The find-all glob directly PRECEDING them in this obj's .data run (0x61a0a0
+// "*.*"; SymTab's directory walk externs it). Owner-TU definition; length
+// NULL-TERMINATOR-PROVEN. extern "C" avoids the P/Q const-array mangling split.
+DATA(0x0021a0a0)
+extern "C" const char g_wildcard[] = "*.*";
+
 // The four cl-auto scalar-deleting destructors (vtable slot 1 of each class; the
 // compiler generates them from the virtual dtors - no source symbol to RVA()-pin,
 // so @rva-symbol pairs the retail copies with the auto-emitted base COMDATs).

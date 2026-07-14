@@ -104,12 +104,13 @@ void* g_projActName2; // 0x6bf45c
 // @data-symbol: ?g_containerName@@3PADA 0x002bf408
 // @data-symbol: ?g_defaultProjActSize@@3HA 0x0021ad28
 
-// The container OOM message the _zvec grow path reports (0x61adf4).
+// The container OOM message the _zvec grow path reports (0x61adf4). Owner-TU
+// definition: this TU is its only referencing unit, and the length is
+// NULL-TERMINATOR-PROVEN from the retail bytes ("out of memory\0" = 14 B; the
+// next literal follows separately) - not a gap guess. extern "C" so the array
+// binding avoids the const-array (?x@@3QBDB) mangling that drops DATA().
 DATA(0x0021adf4)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-extern const char s_out_of_memory[]; // 0x61adf4
+extern "C" const char s_out_of_memory[] = "out of memory";
 
 // The deeper-base ctor argument (a data tag global at 0x6bf468).
 
@@ -161,17 +162,19 @@ struct CKeyFinder {
 
 // The sorted key table: 12-byte records {key, value/fn, flag-word} @0x6bf498.
 // Find reads it as a flat i32[] (stride 3); Set dispatches through the value/fn
-// member at +4 (the g_varTable alias @0x6bf49c = &g_recs23[0].m_4); the count
-// @0x6bf618 doubles as Set's probe-enable gate (three names, one datum each).
+// member at +4; the count @0x6bf618 doubles as Set's probe-enable gate.
 SIZE_UNKNOWN(Rec23);
 struct Rec23 {
     i32 m_key; // +0x00  the key (CKeyFinder::Find subtracts the probe key from it)
-    void* m_4; // +0x04  value
-    short m_8; // flag
+    void* m_4; // +0x04  value, or the __cdecl set-fn Set dispatches (variant slot)
+    short m_8; // flag / word slot
     short m_a;
 };
+// Owner-TU definition (.bss). Capacity CODE-PROVEN, not gap-guessed: CKeyFinder::Add
+// refuses inserts at `count >= 0x20`, so the table is exactly 32 records (12 B x 32
+// = 0x180 = the 0x6bf498..0x6bf618 span up to the count cell - corroborating).
 DATA(0x002bf498)
-extern Rec23 g_recs23[];
+Rec23 g_recs23[32];
 // The live record count @0x6bf618. It had THREE names for the one datum (g_keyCount,
 // g_recCount23, g_varProbeEnabled) - and the DATA() sat on an `extern`, i.e. a
 // declaration, so none of them was actually a defined global. Defined once, here, in the
@@ -186,16 +189,9 @@ extern "C" {
 //  were two guaranteed unresolved externals. CKeyFinder::Find walks the real records: its
 //  stride-3 i32 scan IS g_recs23[mid].m_key, the array's 12-byte stride.)
 
-// The slot's resolved-index dispatch table (12-byte stride): a __cdecl fn at +0,
-// a word slot at +4. == (char*)g_recs23 + 4. Reloc-masked DATA extern.
-SIZE_UNKNOWN(CVarTableEntry);
-struct CVarTableEntry {
-    void(__cdecl* fn)(i32 a, i32 b); // +0x00
-    u16 w;                           // +0x04
-    char m_pad06[12 - 6];            // 12-byte stride
-};
-DATA(0x002bf49c)
-extern CVarTableEntry g_varTable[]; // 0x6bf49c
+// (The `CVarTableEntry g_varTable[]` view @0x6bf49c is GONE: it was an INTERIOR
+//  alias of this very table - &g_recs23[0].m_4, the +4 fn/word column read at a
+//  12-byte stride. Set now dispatches through the real record members.)
 
 // The slot label formatter (__cdecl(buf, value, cap)).
 extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
@@ -595,9 +591,9 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
         }
     } else {
         if (m_0c == 2) {
-            g_varTable[idx].fn(arg2, arg3);
+            ((void(__cdecl*)(i32, i32))g_recs23[idx].m_4)(arg2, arg3);
         } else if (m_0c == 1) {
-            g_varTable[idx].w = (u16)arg3;
+            g_recs23[idx].m_8 = (short)arg3;
         }
     }
 }
@@ -1249,9 +1245,13 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
+// The no-op per-value free-callback the ctor receives (0x16ea10; DEFINED below in
+// RVA order - it used to be the `void* g_buteTreeArg` DATA phantom).
+void ButeTreeNopFree(void*);
+
 RVA(0x0016e6a0, 0x26)
 void DynInitButeTree() {
-    g_buteTree.Construct(&g_buteTreeArg, 0);
+    g_buteTree.Construct((void*)&ButeTreeNopFree, 0);
 }
 
 // @early-stop
@@ -1369,3 +1369,10 @@ i32 Gap_16e7a0(void) {
 // ClearRecursive/~CButeMgr staying byte-exact (the +0x10 store-flag is a BYTE read;
 // zPTree's m_kind is i16 - a real byte-risk to the 100% ClearRecursive).
 // @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45
+
+// The zPTree per-value free-callback g_buteTree's ctor receives (retail 0x16ea10:
+// a bare `ret`, laid right after ??_GCButeTree - this TU's code). The bute tree's
+// values need no per-value teardown, so the callback is a no-op. It used to be
+// mis-modeled as a DATA global (`void* g_buteTreeArg`): a FUNCTION, not a datum.
+RVA(0x0016ea10, 0x1)
+void ButeTreeNopFree(void*) {}

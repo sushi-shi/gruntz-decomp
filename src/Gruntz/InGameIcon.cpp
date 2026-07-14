@@ -986,7 +986,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         owner->m_stateFlags |= 1;
         AnimWorkerObj* aux = m_objAux;
         m_prevAnimSetNode = aux->m_1c;
-        aux->m_1c = g_buteTree.Find(g_iconBute);
+        aux->m_1c = g_buteTree.Find(s_actKeyB);
         owner = m_38;
         m_driftPos = owner->m_120;
         m_driftPosHi = 0;

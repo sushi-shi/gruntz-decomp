@@ -62,11 +62,10 @@ struct CGruntPuddleSink {};
 extern "C" u32 g_engineFrameDelta;
 
 // The one-char bute key "B" (0x60d1bc) the place/set paths look up is the SAME
-// rdata as CInGameIcon.h's g_iconBute (DATA 0x0020d1bc) - reuse it (don't
+// rdata as CInGameIcon.h's s_actKeyB (DATA 0x0020d1bc) - reuse it (don't
 // re-declare the address; the duplicate-RVA guard would fire).
 
 // The lookup-geometry sprite key "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2" (0x60c1c0).
-DATA(0x0020c1c0)
 extern char g_puddleSpriteKey[]; // s_..._0060c1c0
 
 // ---------------------------------------------------------------------------

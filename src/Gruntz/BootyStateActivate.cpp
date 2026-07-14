@@ -46,6 +46,16 @@
 // by the BzGameReg / *0x24556c view-conflation between this TU's local Booty* views and
 // BzState.h's divergent Bz* shapes (a separate view-reconciliation task).
 
+// This TU's shared .data literals (the 0x60ba44 / 0x60c5b8 runs, whose following
+// bytes are this TU's "STATEZ_BOOTY" / "Cursez:" literals - owner-pool evidence).
+// Lengths NULL-TERMINATOR-PROVEN from the retail bytes. s_assetKeyGame is the "GAME"
+// asset-namespace root key GruntzMgr/Play/GameAssetNamespaces share; g_nameFmt is
+// the "%s" display-name format CustomWorldDialog/PortalPath/GameApp share.
+DATA(0x0020ba44)
+char s_assetKeyGame[] = "GAME"; // 0x60ba44
+DATA(0x0020c5b8)
+char g_nameFmt[] = "%s"; // 0x60c5b8
+
 // CMultiBootyState::Render's HUD line is drawn through the shared GlyphStringDraw.cpp
 // free function (0x115520); declared here (reloc-masked) so the call co-names with retail.
 struct HudMsgSink;

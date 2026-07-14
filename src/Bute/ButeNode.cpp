@@ -133,3 +133,13 @@ SIZE(CButeStoreCopy174d, 0x2c); // adds nothing to CButeStore
 // @data-symbol: ??_7zPTree@@6BCButeNodeEntry@@@ 0x001e949c 0x4
 RVA(0x00174d70, 0x70)
 CButeStoreCopy174d::~CButeStoreCopy174d() {}
+
+// The __cdecl -> __thiscall per-value teardown adapter the CBSecStream ctor passes
+// as zPTree's free-callback (retail 0x174de0: `mov ecx,[esp+4]; jmp 0x174d70`, laid
+// directly after the dtor above - this TU's code). It used to be mis-modeled as a
+// DATA global (`u8 g_streamTag`): a FUNCTION, not a datum. The qualified dtor call
+// keeps the dispatch direct (the tail-jmp), matching retail.
+RVA(0x00174de0, 0x9)
+void ButeStoreFreeAdapter(void* p) {
+    ((CButeStoreCopy174d*)p)->CButeStoreCopy174d::~CButeStoreCopy174d();
+}

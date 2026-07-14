@@ -72,17 +72,11 @@ extern CButeMgr g_buteMgr;        // ?g_buteMgr@@3VCButeMgr@@A
 extern char* g_wormholeSpawnKey;  // ?g_wormholeSpawnKey@@3PADA ("Wormhole" bute tag @0x60a7ac)
 extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
 
-// The geometry table (0x60b8fc, 0x10-byte rows): the effect sprites' x-position is
-// (row.a + row.c) / 2. The loop init/bound relocs land on &row[0].c / &row[8].c.
-SIZE_UNKNOWN(CEffGeomRow);
-struct CEffGeomRow {
-    i32 a;     // +0x00
-    i32 pad4;  // +0x04 (417, unused)
-    i32 c;     // +0x08
-    i32 pad12; // +0x0c (245, unused)
-};
-DATA(0x0020b8fc)
-extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
+// (The `CEffGeomRow g_effGeom[8]` view @0x60b8fc is GONE: it was a +4-SHIFTED alias
+//  of g_levelMsgRectsB @0x60b8f8 - its `a`/`c` members were rectsB[i].top/.bottom
+//  (its "unused" pads were .right and the NEXT rect's .left, straddling the rect
+//  boundary). The effect sprites' y-center is just the message rect's v-center.)
+extern RECT g_levelMsgRectsB[8]; // 0x60b8f8  (DEFINED in BootyMessages.cpp)
 
 // (the CEffLoaderSelf `this`-alias view is GONE - it WAS CBootyState. Every field it
 // modeled sits in a CBootyState pad at the same offset, and the three it duplicated agree
@@ -318,7 +312,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         bp->m_drawFillCmd = 0xa;
         bp->m_drawFillArg = handleA;
         m_bomb[i]->m_screenX = 0x2c6;
-        m_bomb[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        m_bomb[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
         m_bomb[i]->m_stateFlags |= 1;
 
         CGameObject* e = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
@@ -341,7 +335,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         gp->m_drawFillCmd = 0xa;
         gp->m_drawFillArg = handleB;
         m_gokart[i]->m_screenX = -70;
-        m_gokart[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        m_gokart[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
         m_gokart[i]->m_stateFlags |= 1;
     }
     return 1;
@@ -385,7 +379,6 @@ i32 g_levelMsgIconPos[16] = {
     0x1a8
 }; // 0x60b8b8
 extern RECT g_levelMsgRectsB[8]; // 0x60b8f8  (shared with BootyMessages - stays extern)
-DATA(0x00229ef8)
 extern CString g_levelMsgStrings[8]; // 0x629ef8
 extern i32 g_sndCueTag; // 0x61ab24
 extern i32 g_sndEnabled; // 0x61ab20
@@ -413,7 +406,8 @@ extern void ShowHudMessage(
 // retail's logic (all externs/strings/tables named). Residual is the documented /GX
 // EH-state numbering + the parallel-induction-pointer loop shape (retail hoists the
 // rectsA/rectsB/iconPos/strings/icon walks into 6 induction pointers with a data-address
-// bound `cmp ebp,offset g_effGeom`) that MSVC5 will not reproduce from counted C loops.
+// bound `cmp ebp,0x60b8fc` = &g_levelMsgRectsB[0].top) that MSVC5 will not reproduce
+// from counted C loops.
 // Final-sweep candidate (docs/patterns/big-seh-fuzzy-desync.md; jumptable-data-overlap.md).
 RVA(0x0001a700, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {

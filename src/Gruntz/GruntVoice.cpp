@@ -534,7 +534,7 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     m_5c = 0;
     m_playFlags = a2;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(g_iconBute);
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
     return 1;
 }
 

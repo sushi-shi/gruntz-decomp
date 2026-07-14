@@ -53,8 +53,9 @@ extern char g_typeDesc3[];
 extern char g_typeDesc1[];
 extern char g_typeDesc2[];
 extern i32 g_screenTag;
-extern void* g_buteTreeArg;
-extern u8 g_streamTag;
+// (g_buteTreeArg / g_streamTag are gone: both were CODE - the zPTree free-callbacks
+//  ButeTreeNopFree @0x56ea10 (TypeKeyColl.cpp) and ButeStoreFreeAdapter @0x574de0
+//  (ButeNode.cpp), reconstructed as real functions.)
 extern const i32 g_msgmap_CBattlezDlgColors;
 extern void* g_5e8e98;
 extern i32 g_idleSpriteIds[4];
@@ -93,7 +94,7 @@ extern float g_fxBias;
 extern float g_fxEps;
 extern char g_teleporterSpawnKey[];
 extern char g_wormholeSpawnKey[];
-extern i32 g_desc60aac8;
+extern char g_msgCaption[]; // "Gruntz" @0x60aac8 (def: WinMain.cpp; doubles as GameText's descriptor tag)
 extern u8 g_dat60b588;
 extern char s_codeP[];
 extern char k_60bebc[];
@@ -135,11 +136,6 @@ extern "C" i16 g_charClass[];
 // address of this table's [0][0][1] cell, i.e. the tokType word, not a separate
 // object. PeekState2 now indexes the owning table directly.)
 extern "C" i16 g_transTable[97][49][3];
-extern u16 g_modeTab_e8;
-extern u16 g_modeTab_ea;
-extern u16 g_modeTab_ec;
-extern u16 g_modeTab_ee;
-extern double g_scale6256f0;
 extern struct CVariantSlot* g_projRegColl2;
 extern i32 g_projRegLo;
 extern i32 g_projRegHi;
@@ -329,7 +325,6 @@ extern i32 g_buildNumber;
 extern u8 g_grayRamp[];
 extern "C" i32 g_helperRefCount;
 extern i32 g_6bf8dc;
-extern int(__stdcall* g_impFreeLibrary)(void*);
 
 extern "C" {
     extern i32 g_opt_22bd64;

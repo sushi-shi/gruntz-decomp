@@ -47,16 +47,14 @@ extern "C" u32 g_engineFrameDelta;
 
 // The lookup-geometry key "GAME_TELEPORTER" (VA 0x60bd38) the finalize applies to
 // the bound object via CGameObject::ApplyLookupGeometry (0x1505b0).
-DATA(0x0020bd38)
 extern char g_teleporterGeoKey[]; // s_GAME_TELEPORTER_0060bd38
 
 // The running game clock (g_frameTime .data int) stashed into the leaf's +0x58.
 extern "C" u32 g_frameTime; // VA 0x645588 (?g_clock@@3IA, unsigned)
 
-// The "B" bute key (0x60d1bc) - the SAME rdata as CInGameIcon.h's g_iconBute;
+// The "B" bute key (0x60d1bc) - the SAME rdata as CInGameIcon.h's s_actKeyB;
 // reuse the identical declaration so the reloc pairs.
-DATA(0x0020d1bc)
-extern char g_iconBute[]; // DAT_0060d1bc
+extern char s_actKeyB[]; // DAT_0060d1bc
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4).
 #include <Bute/ButeMgr.h>

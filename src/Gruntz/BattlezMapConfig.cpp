@@ -134,10 +134,10 @@ void* __stdcall ListNodeAdvance(void** pos);
 // unit's level geometry (m_object->m_5c, m_object->m_60) into an out coord pair.
 // Modeled as a method on CGrunt so the `mov ecx,unit; push &out; call` lowers
 // cleanly. External, reloc-masked (no body).
-// The coord-node free pool (?DAT_00645540): an intrusive-list allocator whose
+// The coord-node free pool (0x645540): an intrusive-list allocator whose
 // Push(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
-// freelist headed at this->m_04. Canonical <Gruntz/FreeNodePool.h>.
-DATA(0x00245540)
+// freelist headed at this->m_04. Canonical <Gruntz/FreeNodePool.h>; DEFINED in
+// src/Gruntz/GameText.cpp (whose obj tail holds its reset/clear pair).
 extern FreeNodePool g_coordPool;
 
 // The coord-list node-advance helper (RVA 0x29a30) is the free __stdcall

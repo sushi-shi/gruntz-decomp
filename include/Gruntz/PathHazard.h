@@ -75,9 +75,8 @@ DATA(0x001ea410)
 extern const double g_pathOne; // VA 0x5ea410
 
 // The "B" bute key the new-leg path query passes (0x60d1bc) - the SAME rdata as
-// CInGameIcon.h's g_iconBute; reuse the identical declaration so the reloc pairs.
-DATA(0x0020d1bc)
-extern char g_iconBute[]; // DAT_0060d1bc
+// CInGameIcon.h's s_actKeyB; reuse the identical declaration so the reloc pairs.
+extern char s_actKeyB[]; // DAT_0060d1bc
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4).
 // Owned by another TU; declared extern so `ecx=&g_buteTree; call Find` masks.

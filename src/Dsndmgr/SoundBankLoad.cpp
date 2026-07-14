@@ -12,11 +12,13 @@
 // (Global scalar operator new - the NAFXCW allocator at 0x1b9b46 - comes from the
 // real <Mfc.h> via CGruntzSoundZ.h; no local forward-decl needed.)
 
-// The name compare against the pooled ".." token (0x120090 strstr, __cdecl 2-arg;
-// _mbscmp). Reloc-masked rel32; the ".." is the shared $SG constant (0x5ee8ec) the
-// ButeMgr parser also references, so reach it by symbol so the DIR32 pairs.
+// The extension-dot probe token (0x120090 strstr, __cdecl 2-arg; _mbscmp).
+// Reloc-masked rel32; the "." is the shared constant @0x5ee8ec the ButeMgr parser
+// and SymTab's directory walk also reference, so reach it by symbol so the DIR32
+// pairs. (It was misnamed g_dotDot: the retail bytes are "." - the ".." literal is
+// the separate 0x60cf90 datum, CustomWorldDialog.cpp.)
 DATA(0x001ee8ec)
-char g_dotDot[] = "."; // 0x5ee8ec  ".."
+char g_dot[] = "."; // 0x5ee8ec
 
 // Load: the special ".." name forwards to the slot-15 handler (LoadSpecial); otherwise
 // open `name`, require >= 4 bytes, slurp it whole into m_loadBuffer, and run the
@@ -35,7 +37,7 @@ char g_dotDot[] = "."; // 0x5ee8ec  ".."
 // strstr/operator-new reloc operands diverge. Logic complete; final sweep.
 RVA(0x00138aa0, 0x175)
 i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
-    if (strstr(path, g_dotDot) != 0) {
+    if (strstr(path, g_dot) != 0) {
         CFile file;
         if (!file.Open(path, 0, 0)) {
             return 0;

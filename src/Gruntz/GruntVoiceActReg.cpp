@@ -21,7 +21,6 @@
 
 // The second activation key string "B" (0x60d1bc); "A" + g_typeCounter + the name
 // registry come from <Gruntz/ActNameRegistry.h>.
-DATA(0x0020d1bc)
 extern char s_actKeyB[];
 
 // CGruntVoice's per-class activation registry (untyped .data named by address, typed CActReg).

@@ -16,7 +16,7 @@
 #include <rva.h>
 #include <Mfc.h> // real CString members (ctor 0x1b9b93 / Empty 0x1b9c69 / ~CString 0x1b9cde)
 #include <Ints.h>
-#include <Globals.h>        // g_streamTag (0x574de0)
+#include <Globals.h>
 #include <Bute/PTreeNode.h> // the shared zPTree config-tree node family
 
 // The embedded CButeNode-family config-tree node (+0x18/+0x48/+0x74). REAL
@@ -25,16 +25,13 @@
 // most-derived vftables (primary @0x5f0510 at +0x00, second-base-in-derived
 // @0x5f0514 at +0x08) in the ctor. External non-trivial dtor so the enclosing
 // CButeSection ctor's /GX frame tracks it as a destructible member.
-// @identity-TODO: `g_streamTag` is a PHANTOM, the same kind as the old g_nodeDescriptor.
-// 0x174de0 is in .text and its 9 bytes are `mov ecx,[esp+4]; jmp 0x174d70` - a
-// __cdecl -> __thiscall ADAPTER THUNK onto the store destructor, i.e. this node's
-// per-value teardown callback (the CBSecStream analogue of ButeValueTeardown @0x174df0).
-// It is DATA()-bound (so the reference resolves), but it is a function, not a datum.
-// Reconstructing it needs a naked tail-jmp to a C++ destructor, which is not expressible
-// while ~CButeStore must stay inline (its three retail copies) - hence the cast here and
-// a follow-up rather than a fabricated shape.
+// The per-value teardown callback the ctor passes is ButeStoreFreeAdapter (0x174de0,
+// DEFINED in src/Bute/ButeNode.cpp): the __cdecl -> __thiscall adapter onto the store
+// destructor. It used to be mis-modeled as a DATA global (`u8 g_streamTag`, a phantom);
+// it is a FUNCTION, now reconstructed - the cast fell out with it.
+void ButeStoreFreeAdapter(void* p); // 0x174de0 (ButeNode.cpp)
 struct CBSecStream : zPTree {
-    CBSecStream() : zPTree((void(__cdecl*)(void*)) & g_streamTag, 2) {}
+    CBSecStream() : zPTree(&ButeStoreFreeAdapter, 2) {}
     virtual ~CBSecStream() OVERRIDE; // slot 0 zPTree dtor; external (reloc-masked /GX unwind)
 };
 VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00

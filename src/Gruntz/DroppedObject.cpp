@@ -125,7 +125,6 @@ struct CShadowActEntry {
 // ---------------------------------------------------------------------------
 extern i32 g_typeCounter;
 extern char s_codeA[]; // "A"
-DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
 struct CTypeNameEntry;   // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)

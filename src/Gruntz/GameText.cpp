@@ -6,7 +6,7 @@
 #include <Gruntz/GameText.h>
 #include <rva.h>
 #include <Wap32/ZDArrayDerived.h> // CZDArrayDerived::Construct (the 0x82aa0 register thunk)
-#include <Globals.h>              // g_desc60aac8 (the registered descriptor)
+#include <Globals.h>              // g_msgCaption (the registered descriptor tag = the "Gruntz" literal)
 #include <Bute/ButeSection.h>     // real CButeSection (the 0x82b20 in-place ctor)
 #include <Gruntz/FreeNodePool.h>  // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
 
@@ -52,7 +52,7 @@ DATA(0x002451a8)
 CMgr6451a8 g_mgr6451a8;
 RVA(0x00082aa0, 0x10)
 void Register82aa0() {
-    ((CZDArrayDerived*)&g_mgr6451a8)->Construct((i32)(void*)&g_desc60aac8, 0);
+    ((CZDArrayDerived*)&g_mgr6451a8)->Construct((i32)(void*)g_msgCaption, 0);
 }
 
 // ---------------------------------------------------------------------------

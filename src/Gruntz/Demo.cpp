@@ -52,13 +52,10 @@
 #include <Gruntz/Warlord.h>
 #include <Gruntz/Wormhole.h>
 
-// PostMessageA reached through the IAT slot (the engine's ff15 indirect); the exit
-// WM_COMMANDs (0x8023 / 0x8027). Symbol bound by Attract.cpp's DATA; extern here.
-typedef i32(WINAPI* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
-// extern "C" so the fn-ptr reloc emits the canonical `_g_pPostMessageA` (the single
-// name bound at 0x2c44c8 by sbi_rectonly); the C++-mangled spelling never bound and
-// shadowed gruntzmgrtransition's correct copy of the duplicate CDemo::Vslot15 (0x3c030).
-extern "C" PostMessageFn g_pPostMessageA;
+// (The old `PostMessageFn g_pPostMessageA` fn-ptr global is GONE: 0x2c44c8 is
+// USER32's PostMessageA IAT slot - retail's `ff 15 [0x6c44c8]` indirect IS the
+// dllimport call, and the "cached fn-ptr" load is the dllimport-CSE the compiler
+// emits when the call repeats. Plain ::PostMessageA calls are the honest source.)
 
 // The per-frame attract actor list (DAT_00645574; bound in Globals.cpp) and the
 // per-frame time delta (DAT_00645584; bound in Attract.cpp). Extern here (reloc-masked).
@@ -92,7 +89,7 @@ i32 CDemo::Vfunc1(i32 ctx, i32 a1, i32 a2) {
 // this obj's head run.)
 RVA(0x0003c030, 0x22)
 i32 CDemo::Vslot15() {
-    g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8027, 0);
+    PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8027, 0);
     return 1;
 }
 
@@ -160,12 +157,11 @@ i32 CWorldState::BuildWorldLevelKey(i32 unused) {
 RVA(0x0003c220, 0xa4)
 i32 CDemo::Render() {
     CPlay::Render();
-    PostMessageFn pm = g_pPostMessageA;
     AttractActorList* list = g_actorList;
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
         if (list->m_data[i]->m_2ac & 0x100) {
-            pm(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+            PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
             break;
         }
     }
@@ -175,7 +171,7 @@ i32 CDemo::Render() {
         m_520 -= g_frameDelta;
     }
     if (m_520 == 0) {
-        pm(m_4->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
+        PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
     }
     return 1;
 }
@@ -274,10 +270,19 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
 // (0x60d008 / 0x60d078) are the CW/CCW rotation transitions.
 // @orphan - identity genuinely unrecovered (no xref/RTTI); modeled on a local helper.
 // ---------------------------------------------------------------------------
+// Owner-TU definitions, TRANSCRIBED from retail .data. Extent CODE-PROVEN, not
+// gap-guessed: the index formula (m_0*3 + m_4)*3 + {0,1,2} with m_0,m_4 fed back
+// from the tables' own {facing,sub} columns (all values in 0..2 - closure) caps the
+// reach at 9 triples = 27 ints; the retail bytes confirm 27 values then zero padding.
+// (The old [30] extern over-declared by one unused triple.)
 DATA(0x0020d008)
-extern const i32 g_rotTableA_60d008[30]; // 10 * {facing, sub, dir}
+extern "C" const i32 g_rotTableA_60d008[27] = {
+    0, 1, 1, 0, 2, 2, 1, 2, 3, 0, 0, 8, 1, 1, 0, 2, 2, 4, 1, 0, 7, 2, 0, 6, 2, 1, 5,
+}; // CW transitions
 DATA(0x0020d078)
-extern const i32 g_rotTableB_60d078[30];
+extern "C" const i32 g_rotTableB_60d078[27] = {
+    1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
+}; // CCW transitions
 
 SIZE_UNKNOWN(Orient3);
 struct Orient3 {

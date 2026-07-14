@@ -54,12 +54,25 @@
 // The engine heap allocator (0x1b9b46) - Configure's explicit-blit RECT nodes.
 extern "C" void* RezAlloc(u32 size);
 
-// The dxguid GUID constants Init passes to QueryInterface by REFIID (retail .rdata
-// addresses, DATA()-pinned so the `push OFFSET` reloc-masks).
+// The dxguid GUID constants Init passes to QueryInterface by REFIID. DEFINED here
+// (the retail link pulled the dxguid.lib entries into .rdata for this referencing
+// obj); the byte values are the SDK's own {DA044E00-69B2-11D0-A1D5-00AA00B8DFBB} /
+// {B3A6F3E0-2B43-11CF-A2DE-00AA00B93356}, TRANSCRIBED and verified against the
+// retail bytes at 0x5ef848/0x5ef888.
 DATA(0x001ef848)
-extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
+extern "C" const GUID IID_IDirectDraw2 = {
+    0xB3A6F3E0,
+    0x2B43,
+    0x11CF,
+    {0xA2, 0xDE, 0x00, 0xAA, 0x00, 0xB9, 0x33, 0x56},
+}; // 0x5ef848
 DATA(0x001ef888)
-extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
+extern "C" const GUID IID_IDirectDrawSurface3 = {
+    0xDA044E00,
+    0x69B2,
+    0x11D0,
+    {0xA1, 0xD5, 0x00, 0xAA, 0x00, 0xB8, 0xDF, 0xBB},
+}; // 0x5ef888
 
 // The game's cached ShowCursor fn-ptr global (?::ShowCursor@@3P6GHH@ZA, def in
 // stateimages) the 0x17c3f0 command handler hides the cursor through.
