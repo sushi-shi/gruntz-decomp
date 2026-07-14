@@ -12,36 +12,58 @@ description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE 
 > fewer functions and report the rest as not-done — do NOT delegate. (A matcher that
 > fanned out once blew the whole session token limit.)**
 
-## SCOPE — SIMPLE VIEW DISSOLUTION, AND NOTHING ELSE (2026-07-13, current)
+## SCOPE — YOU ARE A FULL-CAPABILITY LANE. DO EVERYTHING YOURSELF. (2026-07-14, current)
 
-**Your entire job this phase:** take a fake view (a `.cpp`-local class/struct, or a
-placeholder class, that does not exist in retail), **prove by XREF which real class it
-actually is**, replace it with that real class, and **delete the view.** That is it.
+**There is no Fable lane to hand off to. You have the full licence and you finish what you
+start.** Vtables, virtual methods, `OVERRIDE`, inheritance, RTTI — all yours. If dissolving a
+view or matching a function needs one of them, you DO it; you do not defer it, you do not
+report it as someone else's problem. **A deferral comes straight back to you** — so there is
+no point deferring; just complete the work.
 
-**THE MECHANISM IS XREFS.** A view exists because someone needed a shape and did not know
-whose it was. The callers/callees/globals that touch the view tell you the owner: who else
-passes this pointer, what is called on it, which real class's methods take it, which global
-holds it. Follow those edges to a class that **already exists in the tree**, include its
-real header, use the real type. If the xrefs do not converge on an existing class, **that
-view is not simple — leave it and report it.**
+The common jobs, all yours:
+- **Dissolve fake views** (a `.cpp`-local class/struct or placeholder that does not exist in
+  retail): prove by XREF which real class it is, replace it, delete the view.
+- **Reconstruct function bodies** to byte-match retail.
+- **Realize vtables and inheritance**: make a class polymorphic, add the real base, bind the
+  real `??_7`, when the evidence demands it.
+- **Home globals / bind DATA / kill link defects** (PHANTOM / UNDEFINED-DATA / DIVERGENT) when
+  they cross your path.
 
-### HARD PROHIBITIONS — these belong to the Fable lane, not to you
+**THE MECHANISM IS XREFS + THE SLOT MAP.** A view exists because someone needed a shape and did
+not know whose it was. The callers/callees/globals tell you the owner. If the xrefs genuinely
+do not converge on a real class, that is the *rare* honest "unnameable" case — prove it and say
+so; do not fabricate an identity.
 
-Do **not**, for any reason, in any file:
+### THE VTABLE WORK YOU NOW OWN — the ONE rule that prevents the crash
 
-- **Vtables.** Do not add, remove, reorder, or re-length virtual method tables. Do not
-  touch `VTBL()` / `RELOC_VTBL` / vptr stamps.
-- **Virtual methods and overrides.** Do not add or delete `virtual`. Do not add or delete
-  `OVERRIDE`. Do not add placeholder/dummy slots — ever, for any reason.
-- **Inheritance.** Do not add a base class, remove a base class, or change a base class.
-- **RTTI.** Do not read, cite, derive from, or reason about RTTI / COL / hierarchy
-  descriptors. Not as evidence, not as a check. It is not your instrument this phase.
-- **Link-defect buckets.** PHANTOM / UNDEFINED-DATA / DIVERGENT / ODR are **not your work**
-  this phase. Do not chase them, do not report on them.
+When a fold needs vtables/virtuals/inheritance, **READ THE SLOT MAP. NEVER HAND-DERIVE IT.
+NEVER PAD.**
 
-**If dissolving a view appears to REQUIRE any of the above → STOP. Do not do it. Report it
-in one line as a Fable item and move to the next view.** A view you correctly leave alone is
-a success; a view you dissolve by inventing a vtable is the crash bug we already shipped once.
+    python -m gruntz.analysis.vtable_hierarchy --class <C>   # the slot map
+    python -m gruntz.analysis.vtable_hierarchy --csv
+
+It reads retail RTTI (COL at `vtable-4` → base-class array → the exact class graph), aligns each
+class against its primary base, and tags **every slot** `inherited` / `override` / `new` with
+its origin class. **Transcribe it mechanically:**
+
+- **inherited ⇒ declare NOTHING** (the base already has it)
+- **override ⇒ the `OVERRIDE` macro** (from `rva.h`; include it)
+- **new ⇒ a plain `virtual`**
+
+**NEVER pad a class with body-less placeholder virtuals** (`dummyN`, `vNN`, `SlotN`). That is
+the exact bug that shipped a live crash: fabricated placeholders made cl emit 60-byte vtables
+where RTTI proved 12–13 slots, and dispatch past the truncation ran off the end of the table.
+If the slot map and your reading disagree, the map wins — or you stop and prove it, but you do
+not invent a slot.
+
+**One class ⇒ ONE `??_7`.** A fold that leaves two vtable definitions for one retail vtable
+re-introduces a DIVERGENT defect (a whole campaign-run was spent killing those). Reconcile the
+slot maps before merging. A `g_*Vtbl` stamp realizes to a real `??_7` only inside a real
+ctor/dtor; a non-ctor stamp is a model wall, not a vtable.
+
+**Absence of an RTTI descriptor proves nothing** — RTTI is module-scoped (`/GR` on for the
+`Gruntz` project, off for the engine libs). Do not conclude a class is fake just because it has
+no COL.
 
 ### MAGIC NUMBERS: DECLARE A TYPED ENUM. A COMMENT IS NOT ENOUGH.
 
