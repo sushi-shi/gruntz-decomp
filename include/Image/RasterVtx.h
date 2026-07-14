@@ -15,6 +15,19 @@ struct ClipVtx {
     float x, y, a, b, c, d, e;
 };
 
+// The rotate-blit SOURCE image geometry: the object RotateRasterize (clipFlag==-1)
+// and ImageRotateBlit read the default clip box from - width @+0x18, height @+0x1c.
+// Shared by both rasterizer TUs (was the duplicated .cpp-local ClipImg / ImgRect
+// views). The concrete class of the rotate source is unrecovered (a3 flows opaquely
+// from ImageRotateBlit's surface arg; its w/h @0x18/0x1c do NOT match CDDSurface's
+// w/h @0x08/0x0c, so it is a distinct image representation); only the two offsets
+// are load-bearing. @identity-TODO: pin the source-image class.
+struct RotateSrcImage {
+    char p00[0x18];
+    i32 m_18; // +0x18  width
+    i32 m_1c; // +0x1c  height
+};
+
 // The rotated-image polygon clip + rasterize entry (0x146550). Sutherland-Hodgman
 // clips `verts` (n vertices) against a box, then hands the result to the span
 // rasterizer. When clipFlag is -1 the box defaults to the source image's own w/h.

@@ -11,12 +11,8 @@
 #include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl (shared with ImageRotate.cpp)
 #include <rva.h>
 
-// The source image (clip-default box): width @+0x18, height @+0x1c.
-struct ClipImg {
-    char p00[0x18];
-    i32 m_18; // +0x18 width
-    i32 m_1c; // +0x1c height
-};
+// The source image (clip-default box): RotateSrcImage (width @+0x18, height @+0x1c),
+// the shared rotate-blit source geometry in <Image/RasterVtx.h>.
 
 // The two ping-pong clip scratch buffers. The -28 "guard" slot before each
 // (g_rasterVtxA's at 0x6a16ec, g_rasterVtxB's at 0x6a21dc) is the prev-vertex base
@@ -67,7 +63,7 @@ i32 RotateRasterize(
 ) {
     float bound0, clip0, clip1, clip2;
     if (clipFlag == -1) {
-        ClipImg* img = (ClipImg*)(void*)a3;
+        RotateSrcImage* img = (RotateSrcImage*)(void*)a3;
         clip1 = 0.0f;
         clip0 = (float)img->m_1c;
         clip2 = (float)img->m_18;
@@ -190,5 +186,4 @@ i32 RotateRasterize(
     WarpTextureBlit((WarpVtx*)g_rasterVtxB, n, (CDDSurface*)a4, (CDDSurface*)a4, a5, a6);
     return 1;
 }
-SIZE_UNKNOWN(ClipImg);
 SIZE_UNKNOWN(ClipVtx);

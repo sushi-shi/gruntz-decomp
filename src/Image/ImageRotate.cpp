@@ -16,12 +16,8 @@
 #include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl
 #include <rva.h>
 
-// The source rect/image arg: width @+0x18, height @+0x1c.
-struct ImgRect {
-    char p0[0x18];
-    i32 m_18; // +0x18  width
-    i32 m_1c; // +0x1c  height
-};
+// The source image arg: RotateSrcImage (width @+0x18, height @+0x1c), the shared
+// rotate-blit source geometry in <Image/RasterVtx.h> (same view PolyClipRaster uses).
 
 // @early-stop
 // regalloc + x87-schedule wall (~36%, complete + correct - signature and structure
@@ -49,7 +45,7 @@ void ImageRotateBlit(
     i32 mode,
     i32 colorkey
 ) {
-    ImgRect* in = (ImgRect*)inp;
+    RotateSrcImage* in = (RotateSrcImage*)inp;
     i32 h = in->m_1c;
     i32 w = in->m_18;
 
@@ -108,4 +104,4 @@ void ImageRotateBlit(
     RotateRasterize(mtx, 4, (i32)a4, (i32)inp, mode, colorkey, -1, -1, -1, -1);
 }
 
-SIZE_UNKNOWN(ImgRect);
+SIZE_UNKNOWN(RotateSrcImage);
