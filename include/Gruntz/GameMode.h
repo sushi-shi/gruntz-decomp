@@ -155,7 +155,7 @@ extern "C" u32 g_frameDelta;    // (last-frame delta, fed to Step)
 // Single-type leaf-state sub-object views, defined in GameMode.cpp; forward-
 // declared so the leaf members below are typed to their real class (no per-site
 // cast). Each is a pointer slot, so the typing is codegen-neutral.
-struct CMenuMusic;  // CMenuState::m_1bc       - menu music controller
+struct LeafCue;     // CMenuState::m_1bc - the menu-music sound cue (Gruntz/LeafCue.h)
 class CMoviePlayer; // CCreditsState::m_videoHandle - real Smacker video player
 // (CBootyBonusState is GONE - there was never a "bonus state object": +0x2f8 holds the
 // BOOTY_PERFECT CGameObject sprite, and its "phase" is that sprite's own m_screenX.)
@@ -234,7 +234,7 @@ public:
     char m_pad1a8[0x1b4 - 0x1a8];
     CChatBox* m_1b4;   // +0x1b4 the menu UI object the scans drive (the real CChatBox)
     i32 m_1b8;         // +0x1b8 fade/poll duration
-    CMenuMusic* m_1bc; // +0x1bc menu music controller (player + draw-clock gate)
+    LeafCue* m_1bc;    // +0x1bc menu-music sound cue (LeafCue: DSoundCloneInst m_10 + m_14/m_18 clock gate)
     // ENDS AT 0x1c0 - the allocation-proven size (TransitionState @0x8be11:
     // `push 0x1c0; call ??2@YAPAXI@Z`, then the ??_7CMenuState (0x5e9e84) stamp).
     // The out-of-bounds `m_liveGame` @+0x1d0 (and its 0x1c0..0x1d0 pad) that used to sit

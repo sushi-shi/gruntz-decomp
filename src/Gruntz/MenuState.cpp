@@ -20,6 +20,7 @@
 // <Gruntz/GameMode.h>. Only offsets / control IDs / code bytes are load-bearing;
 // names are placeholders for the recovered engine identities.
 #include <Gruntz/GameMode.h>
+#include <Gruntz/LeafCue.h>         // canonical LeafCue (CMenuState::m_1bc menu-music cue)
 #include <Gruntz/BattlezData.h>     // the REAL stats object (was the CHudStats view)
 #include <Gruntz/GruntzMgr.h>       // CGruntzMgr (the game-manager singleton; one true shape)
 #include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (StartMusic/StopMusicChain ConfigureItem)
@@ -197,17 +198,12 @@ void operator delete(void*);
 // (<DDrawMgr/DDrawWorkerList.h> - the m_rendererB type; the stale local decl-only
 // shadow class is gone).
 
-// The menu music controller (CMenuState+0x1bc): a player @+0x10 (real DirectSoundMgr,
-// IsPlaying 0x1353f0 / CloneAndPlay 0x135660) with a draw-clock gate (last @+0x14,
-// interval @+0x18). ConfigureItem is dispatched via DSoundCloneInst.
-class DirectSoundMgr;
-SIZE_UNKNOWN(CMenuMusic);
-struct CMenuMusic {
-    char m_pad00[0x10];
-    DirectSoundMgr* m_10; // +0x10  player (real DirectSoundMgr)
-    i32 m_14;             // +0x14  last draw-clock
-    i32 m_18;             // +0x18  interval
-};
+// The menu music controller (CMenuState+0x1bc) IS the canonical LeafCue
+// (<Gruntz/LeafCue.h>) - the 0x1c leaf-scan sound-cue element: its DSoundCloneInst m_10
+// player (IsPlaying 0x1353f0 / CloneAndPlay 0x135660 inherited from DirectSoundMgr,
+// ConfigureItem 0x1360d0 its own) plus the draw-clock gate m_14 (last) / m_18 (interval).
+// The former CMenuMusic view is dissolved onto it; DSoundCloneInst : DSoundBaseSub :
+// DirectSoundMgr so m_10-> reaches every method cast-free.
 
 // The draw-clock mirror + the reentrancy gate the menu music poll save/restores.
 extern "C" u32 g_killCueClock; // draw-clock mirror
@@ -269,12 +265,12 @@ void CMenuState::StartMusic() {
         g_sndEnabled = 1;
     }
     i32 item = ((WwdGameReg*)g_gameReg)->m_11c;
-    CMenuMusic* mus = m_1bc;
+    LeafCue* mus = m_1bc;
     if (flag) {
         u32 clk = g_killCueClock;
         if (clk - mus->m_14 >= (u32)mus->m_18) {
             mus->m_14 = clk;
-            ((DSoundCloneInst*)mus->m_10)->ConfigureItem(item, 0, 0, 1);
+            mus->m_10->ConfigureItem(item, 0, 0, 1);
         }
     }
     if (!saved) {
@@ -289,8 +285,8 @@ void CMenuState::StopMusicChain() {
     if (m_1bc == 0) {
         return;
     }
-    CMenuMusic* mus = m_1bc;
-    if (!((DirectSoundMgr*)mus->m_10)->IsPlaying()) {
+    LeafCue* mus = m_1bc;
+    if (!mus->m_10->IsPlaying()) {
         return;
     }
     m_1bc->m_10->CloneAndPlay(0, 0x1f4, 1);

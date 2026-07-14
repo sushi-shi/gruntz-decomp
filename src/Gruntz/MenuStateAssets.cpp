@@ -10,6 +10,8 @@
 #include <Gruntz/ResMgr.h>       // canonical CImageRegistry (this->m_c->m_10) + CDrawTarget
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (m_4 owner) + WAP32::CGameWnd (m_gameWnd)
 #include <Gruntz/ChatBox.h>      // canonical CChatBox (this->m_1b4 menu UI object)
+#include <Gruntz/LeafCue.h>      // canonical LeafCue (m_1bc/m_1b8 sound-cue map value)
+#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (LeafCue::m_10 player; m_durationMs +0x28)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (HasKeyEqual_155550)
 // MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-
 // state asset loader.  Sibling of CHelpState::LoadAssets / GameLevelState loaders:
@@ -30,20 +32,11 @@
 // --- the sound-cue lookup ---
 // The MENU_ACTIVATE / MENU_MENU cues are looked up in the LeafScan cache's embedded
 // CMapStringToPtr (+0x10, Lookup @0x1b8438 - mfc_class-confirmed CMapStringToPtr, NOT
-// CMapStringToOb).  The map VALUE is the 0x1c-byte cache element the LeafScan factory
-// (CreateEntry @0x157d70) news - modeled as `LeafElementObj` in DDrawSubMgr.cpp, where
-// it is still a .cpp-local polymorphic view.  Until that element is hoisted to a shared
-// header it cannot be named from here, so the two resolve sites keep a minimal local
-// record for the `m_10->m_28` cached-DS-token read.
-// @identity-TODO: fold MenuSndEntry onto the LeafScan cache element (LeafElementObj).
-struct MenuSndEntryInner {
-    char m_pad00[0x28];
-    i32 m_28; // +0x28
-};
-struct MenuSndEntry {
-    char m_pad00[0x10];
-    MenuSndEntryInner* m_10; // +0x10
-};
+// CMapStringToOb).  The map VALUE is the canonical LeafCue (<Gruntz/LeafCue.h>, the
+// 0x1c-byte element the LeafScan factory CreateEntry @0x157d70 news): its DSoundCloneInst
+// m_10 player carries the cached DS-buffer duration at m_durationMs (+0x28).  The former
+// MenuSndEntry / MenuSndEntryInner views are dissolved onto LeafCue / DSoundCloneInst
+// (the map value's real identity - see the LeafCue.h header verdict).
 
 // The CState base facets are the ONE real classes (State.h) - this TU no longer keeps
 // per-TU views of any of them:
@@ -75,21 +68,10 @@ extern i32 g_resourceInstallActive;
 // FUN_00402fcc __cdecl: commit the menu UI object (ret BOOL).
 i32 MenuCommit(CChatBox* obj, i32 idx); // 0x402fcc
 
-// The menu-region seeder's `this` record (0x182ab0, __thiscall). It IS the CChatBox
-// LoadAssets just newed - PROVEN, but not yet foldable; see the full evidence + the
-// three blocking canonical changes at the RVA'd definition below.
-struct MenuRegion {
-    CSpriteFactoryHolder* m_0; // +0x00  == CChatBox::m_page (the resource holder)
-    i32 m_4;                   // +0x04  == CChatBox::m_4 (seeded with the HWND)
-    RECT m_8;                  // +0x08  region rect (left/top/right/bottom)
-    i32 m_18;                  // +0x18
-    i32 m_1c;                  // +0x1c
-    i32 m_20;                  // +0x20  == CChatBox::m_wrapFlag (stored as a DWORD)
-    char m_pad24[0x40 - 0x24];
-    i32 m_40; // +0x40  == CChatBox::m_activeNode (cleared)
-    i32 Init(CSpriteFactoryHolder* src, i32 a, RECT* rc, i32 d, i32 e, i32 f);
-};
-SIZE_UNKNOWN(MenuRegion);
+// The menu-region seeder's `this` record (0x182ab0) IS the CChatBox LoadAssets just
+// newed - now dissolved onto CChatBox::InitRegion (<Gruntz/ChatBox.h>). The three
+// canonical changes the old view was blocked on are all resolved in ChatBox.h now
+// (m_page is CSpriteFactoryHolder*, +0x08 is a real RECT m_rect8, m_wrapFlag is i32).
 
 // CMenuState is the canonical <Gruntz/GameMode.h> `CMenuState : CState`. The MENU
 // asset loader reaches the CState base region through the SAME facets the game-state
@@ -158,7 +140,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     // 0x182ab0 is __thiscall on the freshly-built CChatBox (retail: `mov [esi+0x1b4],ecx`
     // then `call 0x182ab0` with ecx still the new object; `ret 0x18` = callee-cleaned
     // 6 stack args).  It seeds the box from the resource holder + the game window's HWND.
-    if (!((MenuRegion*)m_1b4)->Init(m_c, (i32)m_4->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
+    if (!m_1b4->InitRegion(m_c, (i32)m_4->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 
@@ -168,11 +150,11 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     m_1b4->m_row0Key = "MENU_SELECT";
     m_1b4->m_row1Key = "MENU_ACTIVATE";
 
-    MenuSndEntry* e;
+    LeafCue* e;
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
     if (e != 0) {
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
-        m_1b8 = e->m_10->m_28;
+        m_1b8 = e->m_10->m_durationMs;
     } else {
         m_1b8 = 0;
     }
@@ -181,9 +163,9 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    MenuSndEntry* fm;
+    LeafCue* fm;
     ((CDDrawSubMgrLeafScan*)g_gameReg->m_world->m_28)->m_10.Lookup("MENU_MENU", (void*&)fm);
-    m_1bc = (CMenuMusic*)fm;
+    m_1bc = fm;
     return 1;
 }
 
@@ -197,43 +179,31 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
 //                                        in ResMgr.h) - the default RECT is (0,0,w-1,h-1).
 //   arg2 = m_4->m_gameWnd->m_hwnd     -> the game window's HWND (WAP32::CGameWnd +0x04).
 //
-// @identity-TODO: the `this` record is CChatBox (<Gruntz/ChatBox.h>) - PROVEN, not
-// dissolved. Retail does `mov [esi+0x1b4],ecx` immediately before `call 0x182ab0` with
-// ecx unchanged, so `this` IS the CChatBox just newed into m_1b4; and every store lands
-// on a CChatBox member (+0x00 m_page, +0x04 m_4, the RECT inside m_pad8, +0x20
-// m_wrapFlag, +0x40 m_activeNode=0). ChatBox.h even records the class as
-// "Trace-discovered as Region_182ab0". The fold is BLOCKED on three canonical changes
-// that ripple into ChatBox.cpp and are out of this lane's scope:
-//   (a) CChatBox::m_page is typed CChatPage* - a ChatBox.cpp-LOCAL view which is itself
-//       CSpriteFactoryHolder (m_page->m_10->m_10map is CImageRegistry's hash; +0x04
-//       render set = CDrawTarget; +0x28 = the sound registry). Folding CChatPage takes
-//       its 3 sub-views (CMenuRenderSet/CChatCatalog/CChatRoster) with it.
-//   (b) CChatBox::m_pad8[0x08..0x1f] must unroll into this RECT + the two ints.
-//   (c) CChatBox::m_wrapFlag is `char` at +0x20 but retail stores a DWORD here
-//       (`mov DWORD PTR [ecx+0x20],edx`) - the member has to widen to i32.
-// Until then this stays a named view OF CChatBox, and the call site casts.
+// The `this` IS the CChatBox LoadAssets just newed (retail `mov [esi+0x1b4],ecx` right
+// before `call 0x182ab0`, ecx unchanged) - now a real CChatBox method. Every store lands
+// on a CChatBox member (m_page/m_4/the m_rect8 RECT/m_18/m_1c/m_wrapFlag/m_activeNode);
+// the three ex-blockers (m_page CChatPage->CSpriteFactoryHolder, m_pad8->RECT, m_wrapFlag
+// char->i32) are all resolved in ChatBox.h, so the ex MenuRegion view is dissolved.
 RVA(0x00182ab0, 0x7b)
-i32 MenuRegion::Init(CSpriteFactoryHolder* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
+i32 CChatBox::InitRegion(CSpriteFactoryHolder* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
     if (!src) {
         return 0;
     }
-    m_0 = src;
+    m_page = src;
     m_4 = a;
-    m_20 = f;
+    m_wrapFlag = f;
     m_18 = d;
     m_1c = e;
-    m_40 = 0;
+    m_activeNode = 0;
     if (rc) {
-        CopyRect(&m_8, rc);
+        CopyRect(&m_rect8, rc);
         return 1;
     }
-    m_8.left = 0;
-    m_8.top = 0;
-    m_8.right = src->m_drawTarget->m_10->m_width - 1;
-    m_8.bottom = src->m_drawTarget->m_10->m_height - 1;
+    m_rect8.left = 0;
+    m_rect8.top = 0;
+    m_rect8.right = src->m_drawTarget->m_10->m_width - 1;
+    m_rect8.bottom = src->m_drawTarget->m_10->m_height - 1;
     return 1;
 }
 
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(MenuSndEntry);
-SIZE_UNKNOWN(MenuSndEntryInner);

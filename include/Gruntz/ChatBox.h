@@ -44,6 +44,10 @@ class CImage; // Image/CImage.h
 class CChatBox {
 public:
     void Init();                              // 0xa0280 - re-zero the rows (no list teardown)
+    // 0x182ab0 (__thiscall, defined in MenuStateAssets.cpp): seed the box from the
+    // resource holder + the game window's HWND, copy/derive the region rect. The ex
+    // MenuRegion view of this same `this` is dissolved onto CChatBox.
+    i32 InitRegion(CSpriteFactoryHolder* src, i32 a, RECT* rc, i32 d, i32 e, i32 f); // 0x182ab0
     void Reset();                             // 0x182b30 - free the node list, re-zero the rows
     void Clear();                             // 0x182b60 - free node payloads, empty the list
     i32 Find(const char* s);                  // 0x182be0 - find a node by string key
