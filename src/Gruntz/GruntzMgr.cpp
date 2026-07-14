@@ -510,8 +510,6 @@ extern "C" {
     char g_msgScratch[256]; // 0x6452d8
     // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
     // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
-    DATA(0x00245600)
-    u32 g_645600; // DAT_00245600 (owner-TU definition, .bss)
     DATA(0x002455a4)
     u32 g_gruntDestruction;
     DATA(0x002455a8)
@@ -520,6 +518,8 @@ extern "C" {
     u32 g_gooPuddlez;
     DATA(0x002455f8)
     u32 g_explosionz;
+    DATA(0x00245600)
+    u32 g_645600; // DAT_00245600 (owner-TU definition, .bss)
 }
 // The "Traitor Mode" cheat gate (0x6455b0; DEFINED in src/Gruntz/Grunt.cpp, C++
 // ?g_traitorMode@@3HA - GruntCombat/TriggerMgrGrid/GruntzMgrCmd read the same symbol).
