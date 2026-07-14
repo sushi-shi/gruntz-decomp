@@ -269,6 +269,67 @@ void CNetMgr::ClearGroupList() {
 }
 
 // ---------------------------------------------------------------------------
+// CNetMgr::PopulateGroupList (0x178470, __thiscall, /GX) - re-homed from the ex
+// LobbyGroupList.cpp holding TU (its CLobbyGroupMgr/LobbyNode/LobbyIface views were
+// fake facets of CNetMgr/CNetListNode/InterfaceObject - src-claim + mid-cluster RVA
+// proven). Fill the service-provider list box from the +0x1c group CObList: for each
+// InterfaceObject payload, unless the caller's filter rejects it (flag bit1 -> drop
+// IsInterface2, bit2 -> drop IsInterface1), add its GetName() text and stash the
+// object pointer as the item data. The +0x7c cursor (m_groupSelId) latches the walk
+// position (same slot Find reuses); the GetName CString temp gives the /GX EH frame.
+// @early-stop
+// regalloc/stack-slot coin-flip wall (docs/patterns/zero-register-pinning.md): every
+// instruction, offset, callee, EH state and the inlined-advance-at-two-sites structure
+// is faithful, but retail assigns this->edi/obj->esi and lays the CString/flags&1 temps
+// one slot apart from cl's colouring (the correlated swaps have no source lever; an
+// explicit flags&1 local made it WORSE). ~78.6%.
+RVA(0x00178470, 0x11e)
+void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
+    if (hList == 0) {
+        return;
+    }
+    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+
+    CNetListNode* node = (CNetListNode*)m_groups.GetHeadPosition();
+    m_groupSelId = node;
+    InterfaceObject* obj;
+    if (node != 0) {
+        m_groupSelId = node->m_next;
+        obj = (InterfaceObject*)node->m_data;
+    } else {
+        obj = 0;
+    }
+
+    while (obj != 0) {
+        if (((flag & 1) && obj->IsInterface2()) || ((flag & 2) && obj->IsInterface1())) {
+            CNetListNode* cur = m_groupSelId;
+            if (cur != 0) {
+                obj = (InterfaceObject*)cur->m_data;
+                m_groupSelId = cur->m_next;
+            } else {
+                obj = 0;
+            }
+        } else {
+            i32 idx;
+            {
+                CString name = obj->GetName();
+                idx = (i32)SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
+            }
+            if (idx != -1) {
+                SendMessageA(hList, LB_SETITEMDATA, idx, (LPARAM)obj);
+            }
+            CNetListNode* cur = m_groupSelId;
+            if (cur != 0) {
+                obj = (InterfaceObject*)cur->m_data;
+                m_groupSelId = cur->m_next;
+            } else {
+                obj = 0;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::ReadGroupSel  (__thiscall).
 // Reads the current selection of the supplied list box (Win32) and, if its item
 // data is a valid in-range index (< the +0x28 count), latches it into +0x70.

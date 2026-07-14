@@ -1337,7 +1337,7 @@ public:
     i32 m_groupSel;               // +0x070  group-list selected item data (ReadGroupSel)
     i32 m_playerSel;              // +0x074  player-list selected item data (ReadPlayerSel)
     i32 m_sessionSel;             // +0x078  session-list selected item data
-    i32 m_groupSelId;             // +0x07c  group selection id / Find() walk cursor
+    CNetListNode* m_groupSelId;   // +0x07c  group-list walk cursor (Find/PopulateGroupList) / sel id
     CNetListNode* m_playerSelId;  // +0x080  player-list walk cursor / selection id
     CNetListNode* m_sessionSelId; // +0x084  session-list walk cursor / selection id
     i32 m_88; // +0x088  (rounds the object to the observed RezAlloc/operator-new 0x8c size)
@@ -1379,11 +1379,12 @@ public:
     // __thiscall, CString by value); external/no-body so the call reloc-masks.
     void ApplyDynSetting(CString s); // 0xb76c0
 
-    // The setup dialog's helpers: PopulateGroupList fills the service-provider combo
-    // from the group list (0x1784be); SetServiceName records the entered service name
-    // (0xb7730, CString by value). Both external/no-body (reloc-masked).
-    void PopulateGroupList(void* hList, i32 flag); // 0x1784be
-    void SetServiceName(CString s);                // 0xb7730
+    // The setup dialog's helpers: PopulateGroupList (0x178470, defined in NetMgr.cpp)
+    // fills the service-provider combo from the +0x1c group list, filtering by the
+    // caller's flag (bit1 -> drop IsInterface2, bit2 -> drop IsInterface1); SetServiceName
+    // records the entered service name (0xb7730, CString by value, reloc-masked no-body).
+    void PopulateGroupList(HWND hList, i32 flag); // 0x178470
+    void SetServiceName(CString s);               // 0xb7730
 
     // The multiplayer connect/init driver (0xb5460, /GX, 18 EH states): runs the
     // whole "start a networked game" sequence - the peer CNetMgr, the CSBI_RectOnly

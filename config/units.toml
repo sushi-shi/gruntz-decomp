@@ -328,11 +328,6 @@ source = "src/Gruntz/MultiStartDlgRoster.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "lobbygrouplist"
-source = "src/Gruntz/LobbyGroupList.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "slotcombofill"
 source = "src/Gruntz/SlotComboFill.cpp"
 flags = "eh"
