@@ -40,15 +40,15 @@ public:
     // the target via deterministic @data-symbol/@rva-symbol in the .cpp.
     // slot 0 (thunk 0x1749) - the one-shot Setup virtual, body @0x1104f0. Its 8-arg
     // build signature is corroborated by CheckpointSwitchBuild.cpp's BaseBuild view.
-    // arg0 is the owning CONTAINER (Vf0 stamps it into m_owner - the same object
+    // arg0 is the owning CONTAINER (Setup stamps it into m_owner - the same object
     // LoadElement stamps there).
     virtual i32
-    Vf0(CTileTriggerContainer* owner, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+    Setup(CTileTriggerContainer* owner, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
     // slot 1 -> 0x0022e8 (body in an unmatched engine TU). Its real signature is recovered
     // from the ONE reconstructed override, CCheckpointTriggerSwitchLogic::BuildSmall
     // (0x112a50, `sema class` says slot 1, origin CTileTriggerSwitchLogic): 9 args, returns
     // i32. It was declared `void Vf1()` here, which silently emitted the BASE slot into the
-    // derived vtable instead of the override. arg0 chains straight into Vf0's owner slot.
+    // derived vtable instead of the override. arg0 chains straight into Setup's owner slot.
     virtual i32 BuildSmall(
         CTileTriggerContainer* owner,
         i32 a2,
@@ -60,8 +60,8 @@ public:
         i32 a8,
         i32 a9
     );
-    virtual i32 Vf2(); // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
-    virtual i32 Vf3(); // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
+    virtual i32 SwitchDown(); // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
+    virtual i32 SwitchUp(); // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
 
     CTileTriggerSwitchLogic();
     // Non-virtual dtor (the 4 vtable slots are all regular methods, no dtor slot).
@@ -112,14 +112,14 @@ public:
 
     // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
     i32 m_04;       // +0x04  type id (the factory switch id 1..8; LoadElement stamps it,
-                    //        Vf0 seeds it; CTileTriggerContainer::FindChild matches on it)
+                    //        Setup seeds it; CTileTriggerContainer::FindChild matches on it)
     i32 m_08;       // +0x08  (serialized in LoadState)
     i32 m_key0c;    // +0x0c  secondary key
     i32 m_key1;     // +0x10  primary key (the container's FindChild/RemoveByKeys match key)
     i32 m_linkGate; // +0x14  link-check gate (VerifyBlockLinks guard)
     i32 m_18;       // +0x18  (serialized in LoadState)
     i32 m_1c;       // +0x1c  (serialized in LoadState)
-    i32 m_20;       // +0x20  init gate (ctor + dtor zero it, Vf0 sets 1 - the 0x8c
+    i32 m_20;       // +0x20  init gate (ctor + dtor zero it, Setup sets 1 - the 0x8c
                     //        family's twin of CTileTriggerLogic::m_1c; the old
                     //        "ChildNode* child-list head" reading belonged to the
                     //        CONTAINER's +0x20 = m_list1 head, not to this class)
@@ -148,7 +148,7 @@ SIZE(CTileMultiTriggerSwitchLogic, 0x8c);
 VTBL(CTileMultiTriggerSwitchLogic, 0x001eaeb4);
 
 class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual i32 Vf2() OVERRIDE; // slot 2
+    virtual i32 SwitchDown() OVERRIDE; // slot 2
 public:
     CTileExclusiveTriggerSwitchLogic(); // 0x112050
 };
@@ -156,7 +156,7 @@ SIZE(CTileExclusiveTriggerSwitchLogic, 0x8c);
 VTBL(CTileExclusiveTriggerSwitchLogic, 0x001eaecc);
 
 class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual i32 Vf2() OVERRIDE; // slot 2
+    virtual i32 SwitchDown() OVERRIDE; // slot 2
 public:
     CTileSecretTriggerSwitchLogic(); // 0x112790
 };
@@ -164,8 +164,8 @@ SIZE(CTileSecretTriggerSwitchLogic, 0x8c);
 VTBL(CTileSecretTriggerSwitchLogic, 0x001eaf24);
 
 class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual i32 Vf2() OVERRIDE; // slot 2
-    virtual i32 Vf3() OVERRIDE; // slot 3
+    virtual i32 SwitchDown() OVERRIDE; // slot 2
+    virtual i32 SwitchUp() OVERRIDE; // slot 3
 public:
     CTileTimeTriggerSwitchLogic(); // 0x1127c0
 };
@@ -175,8 +175,8 @@ VTBL(CTileTimeTriggerSwitchLogic, 0x001eaf3c);
 // The 0x60-byte block BuildSmall `rep movsd`s into this+0x2c IS the base's m_block[24]
 // (24 dwords at +0x2c) - it is not a distinct "rect" member, and the class adds nothing.
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual i32 Vf2() OVERRIDE; // slot 2
-    virtual i32 Vf3() OVERRIDE; // slot 3
+    virtual i32 SwitchDown() OVERRIDE; // slot 2
+    virtual i32 SwitchUp() OVERRIDE; // slot 3
 public:
     CCheckpointTriggerSwitchLogic(); // 0x1127f0
     // slot 1 (0x112a50): the checkpoint build. Uses the BASE's m_20 gate (+0x20) and copies

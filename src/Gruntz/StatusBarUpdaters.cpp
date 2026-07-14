@@ -3,7 +3,7 @@
 #include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Gruntz/LeafCue.h>                // the canonical cue record (was the CStatusBarTab view)
 #include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host
-#include <Gruntz/TileTriggerSwitchLogic.h> // real owner of Vf2/Vf3 @0x110570/0x1106b0
+#include <Gruntz/TileTriggerSwitchLogic.h> // real owner of SwitchDown/SwitchUp @0x110570/0x1106b0
 
 // StatusBarUpdaters.cpp - the switch-tile sprite loaders (C:\Proj\Gruntz). The five
 // in-game status-bar updaters that used to live here (UpdateGruntOven/DestructButton/
@@ -37,7 +37,7 @@ DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 
 // ===========================================================================
-// CTileTriggerSwitchLogic::Vf2 @0x110570  (base vtable slot 2)
+// CTileTriggerSwitchLogic::SwitchDown @0x110570  (base vtable slot 2)
 // ===========================================================================
 //
 // The switch-logic slot-2 virtual: drives the switch tile into its DOWN state. It
@@ -46,7 +46,7 @@ extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 // if the switch tile is on-screen (its pixel rect inside the view bounds) and the
 // status bar surface is live - runs the GAME_SWITCHDOWN status-bar advance. Latches
 // the switch state (+0x14) = 1 (down). __thiscall, returns 1. The leaf overrides
-// (CTileSecretTriggerSwitchLogic/CTileTimeTriggerSwitchLogic::Vf2) call this base and
+// (CTileSecretTriggerSwitchLogic/CTileTimeTriggerSwitchLogic::SwitchDown) call this base and
 // normalize the result to a bool. Re-homed off the EngineLabelBacklog placeholder to
 // its real owner (the leaf callers at 0x112820/0x112840 bind here).
 // switch coords: m_08 == tile X, m_key0c == tile Y, m_linkGate (+0x14) == down/up state.
@@ -58,7 +58,7 @@ extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 // cascades from that CSE choice. No source spelling defeats MSVC5's CSE of the two
 // identical multi-level loads without an intervening store. Logic byte-correct.
 RVA(0x00110570, 0xfb)
-i32 CTileTriggerSwitchLogic::Vf2() {
+i32 CTileTriggerSwitchLogic::SwitchDown() {
     CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_world)->m_tileHolder->m_grid;
     i32 v = g->m_cellState[g->m_rowOffset[m_key0c] + m_08] + 1;
     CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_world)->m_tileHolder->m_grid;
@@ -87,18 +87,18 @@ i32 CTileTriggerSwitchLogic::Vf2() {
 }
 
 // ===========================================================================
-// CTileTriggerSwitchLogic::Vf3 @0x1106b0  (base vtable slot 3)
+// CTileTriggerSwitchLogic::SwitchUp @0x1106b0  (base vtable slot 3)
 // ===========================================================================
 //
-// The UP mirror of Vf2 (slot 3): decrements the cell-state counter, runs the
+// The UP mirror of SwitchDown (slot 3): decrements the cell-state counter, runs the
 // GAME_SWITCHUP advance, and latches the switch state (+0x14) = 0 (up). __thiscall,
-// returns 1. The leaf override (CTileTimeTriggerSwitchLogic::Vf3 @0x112860) calls this
+// returns 1. The leaf override (CTileTimeTriggerSwitchLogic::SwitchUp @0x112860) calls this
 // base and normalizes to a bool.
 // @early-stop
-// ~70% CSE/regalloc wall (same as Vf2): int(1) return now correct; residual is the
+// ~70% CSE/regalloc wall (same as SwitchDown): int(1) return now correct; residual is the
 // grid-chain CSE that pins grid instead of g_gameReg. Logic exact.
 RVA(0x001106b0, 0xf4)
-i32 CTileTriggerSwitchLogic::Vf3() {
+i32 CTileTriggerSwitchLogic::SwitchUp() {
     CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_world)->m_tileHolder->m_grid;
     i32 v = g->m_cellState[g->m_rowOffset[m_key0c] + m_08] - 1;
     CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_world)->m_tileHolder->m_grid;

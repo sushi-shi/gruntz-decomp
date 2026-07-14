@@ -87,19 +87,11 @@ struct CChatCatalog {
     i32 m_64; // current frame/index, read straight through the lookup result
 };
 
-// The font/sprite passed into Draw: anchor coords m_44/m_48 (0xeeeeeeee = "use the
-// caller's fallback coords") and a virtual Measure() at vtable slot +0x14 (index 5).
-struct CChatSprite {
-    virtual void Vf0();
-    virtual void Vf1();
-    virtual void Vf2();
-    virtual void Vf3();
-    virtual void Vf4();
-    virtual i32 Measure(); // slot +0x14
-    char pad4[0x44 - 0x4];
-    i32 m_44; // +0x44 anchor x
-    i32 m_48; // +0x48 anchor y
-};
+// DISSOLVED (Fable A2, 2026-07-14): the "CChatSprite" arg WAS the canonical
+// CMenuItem (<Gruntz/MenuItem.h>, via MenuPage.h): its "+0x44/+0x48 anchor with
+// the 0xeeeeeeee sentinel" is exactly m_fixedX/m_fixedY ("use the caller's
+// coords" placement override), and the "Measure" virtual at slot 5 (+0x14) is
+// GetFrameWidth (0x185520) - Draw centers each row's frame on the item.
 
 // The horizontal-scroll edge state read by the two scroll-step methods.
 extern i32 g_sndEnabled; // 0x61ab20
@@ -464,29 +456,29 @@ i32 CChatBox::Step(i32 delta) {
 
 // @early-stop
 // reloc-masked plateau: instruction stream byte-identical to retail; residual is
-// only the differently-named Blit extern (0x153790) + the virtual Measure slot.
+// only the differently-named Blit extern (0x153790) + the GetFrameWidth slot.
 // ~95%.
 // blit both rows' current frames, centered under the sprite anchor.
 RVA(0x00182f90, 0x92)
 i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
-    CChatSprite* sprite = (CChatSprite*)sprite_;
+    CMenuItem* sprite = (CMenuItem*)sprite_;
     if (!sprite) {
         return 0;
     }
     i32 anchorX, anchorY;
-    if (sprite->m_44 != (i32)0xeeeeeeee) {
-        anchorY = sprite->m_48;
-        anchorX = sprite->m_44;
+    if (sprite->m_fixedX != (i32)0xeeeeeeee) {
+        anchorY = sprite->m_fixedY;
+        anchorX = sprite->m_fixedX;
     } else {
         anchorY = arg3;
         anchorX = arg2;
     }
     if (m_row0Frame) {
-        i32 x = -(sprite->Measure() / 2) - m_row0Offset + anchorX;
+        i32 x = -(sprite->GetFrameWidth() / 2) - m_row0Offset + anchorX;
         m_row0Frame->RenderFrame((void*)arg2, (void*)x, (void*)anchorY, (void*)0);
     }
     if (m_row1Frame) {
-        i32 x = sprite->Measure() / 2 + m_row1Offset + anchorX;
+        i32 x = sprite->GetFrameWidth() / 2 + m_row1Offset + anchorX;
         m_row1Frame->RenderFrame((void*)arg2, (void*)x, (void*)anchorY, (void*)0);
     }
     return 1;
@@ -617,7 +609,6 @@ SIZE_UNKNOWN(CChatListNode);
 SIZE_UNKNOWN(CChatPage);
 SIZE_UNKNOWN(CChatPoker);
 SIZE_UNKNOWN(CChatRoster);
-SIZE_UNKNOWN(CChatSprite);
 SIZE_UNKNOWN(CChatTimer);
 SIZE_UNKNOWN(CMenuRenderSet);
 SIZE_UNKNOWN(CMenuSurf);

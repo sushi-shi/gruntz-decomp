@@ -98,7 +98,9 @@ public:
     virtual void Reset();                     // 0x184730  slot 3
     virtual i32 GetWidth();                   // 0x185550  slot 4  (frame[2] m_height)
     virtual i32 GetFrameWidth();              // 0x185520  slot 5  (frame[2] m_width)
-    virtual void Slot06_184650(i32);          // 0x184650  slot 6  (role unrecovered)
+    virtual void Disable(i32 mode);           // 0x184650  slot 6  (disable/state hook: the
+                                              // main-menu builder Disables gated items w/ 3;
+                                              // Configure chains it w/ 2)
     virtual void Detach();                    // 0x1855d0  slot 7  (declared-only)
     virtual i32 Notify(void* arg);            // 0x1855e0  slot 8  (declared-only)
     virtual i32 Place(i32 ctx, i32 x, i32 y); // 0x1855f0  slot 9

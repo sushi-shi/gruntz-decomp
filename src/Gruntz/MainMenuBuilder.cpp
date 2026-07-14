@@ -58,29 +58,16 @@ struct MenuList {
     char m_pad[0x1c];
 };
 
-// The per-item object AddItem/AddSubItem return: its vtable slot +0x18 disables
-// the item. Modeled with a typed vtable so `mov edx,[item]; call [edx+0x18]`
-// (a __thiscall PMF loaded from the vtable) falls out, no manual cast.
-struct MenuItem {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Disable(i32 z); // slot 6 (+0x18)
-    char m_pad04[0x58 - 0x4];
-    void* m_58; // +0x58  the movie/availability sub-object the FINAL gate probes
-};
-
-// The FINAL-movie availability probe (FUN_004031ac via the 0x31ac thunk): a
-// __thiscall on item->m_58 returning nonzero when the final movie is present.
-struct MovieProbe {
-    i32 IsAvailable();
-};
-static i32 FinalMovieAvailable(void* sub) {
-    return ((MovieProbe*)sub)->IsAvailable();
-}
+// The per-item object AddItem/AddSubItem return IS the canonical CMenuItem
+// (<Gruntz/MenuItem.h>, via MenuPage.h): the "+0x18 disable" dispatch is its
+// slot 6, Disable(i32) @0x184650 (name recovered HERE - the builder disables the
+// network-gated / progress-gated / FINAL items). The former 7-slot MenuItem view
+// is dissolved (Fable A2, 2026-07-14). The FINAL-movie probe (thunk 0x31ac) is
+// CSaveGame::CheckMagic run on g_gameReg->m_saveSink - NOT on any item field
+// (the old `it->m_58` receiver was a misreconstruction; retail:
+// `mov eax,ds:0x64556c; mov ecx,[eax+0x58]; call 0x31ac`).
+#include <Gruntz/MenuPage.h> // canonical CMenuItem (Disable [6], the AddItem product)
+#include <Io/SaveGame.h>     // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
 
 // The menu-page object (0x68 bytes): three CString fields (+8/+c/+10), a CPtrList
 // (+0x14), scalar state (+0/+4/+0x30/+0x60/+0x64). The builder methods are
@@ -91,9 +78,9 @@ struct MenuPage {
     MenuPage*
     Init(void* arg, const char* label, const char* key, const char* parent, i32 z); // 0x1832f0
     void Finalize();                                                                // 0x1833a0
-    MenuItem*
+    CMenuItem*
     AddItem(const char* label, const char* key, i32 flags, const char* label2, i32 z); // 0x183460
-    MenuItem* AddSub(
+    CMenuItem* AddSub(
         const char* label,
         const char* key,
         i32 flags,
@@ -130,14 +117,9 @@ struct MenuHost {
     i32 RegisterPage(MenuPage* page);
 };
 
-// The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A); its +0x58 host
-// carries the +0x1c area-progress counter the QUESTZ/AREAS gates read.
-struct MenuProgress {
-    char m_pad00[0x1c];
-    i32 m_1c; // +0x1c  area progress
-};
-// The canonical CGameRegistry view of the singleton (*0x24556c); its +0x58 host
-// (MenuProgress*) is cast locally at the deref sites.
+// The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A); its +0x58
+// save sink (the CSaveGame) carries the m_curLevel (+0x1c) area-progress counter
+// the QUESTZ/AREAS gates read. (The MenuProgress view of it is dissolved.)
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
@@ -252,7 +234,7 @@ void BuildMainMenuTree(void* arg) {
     }
 
     MenuPage* page;
-    MenuItem* it;
+    CMenuItem* it;
     i32 progress;
     // ---- page 1 ----
     page = new MenuPage();
@@ -315,11 +297,11 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     page->AddItem(s_LOGO, s_MENU_MOVIEZ_LOGO, 0x8170, 0, 0);
     page->AddItem(s_INTRO, s_MENU_MOVIEZ_INTRO, 0x8171, 0, 0);
     it = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, 0, 0);
-    if (FinalMovieAvailable(it->m_58) == 0) {
+    if (g_gameReg->m_saveSink->CheckMagic() == 0) {
         it->Disable(3);
     }
     page->AddItem(s_CREDITZ, s_MENU_MOVIEZ_CREDITZ, 0x8021, 0, 0);
@@ -334,7 +316,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     page->AddItem(s_TRAINING, s_MENU_QUESTZ_TRAINING, 0, s_TRAINING, 0);
     page->AddSub(s_AREA1, s_MENU_QUESTZ_AREA1, 0x8149, 0x1, 0, s_AREA1, 0);
     it = page->AddSub(s_AREA2, s_MENU_QUESTZ_AREA2, 0x8149, 0x2, 0, s_AREA2, 0);
@@ -376,7 +358,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x25, 0, 0, 0);
     page->AddSub(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x26, 0, 0, 0);
     page->AddSub(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x27, 0, 0, 0);
@@ -392,7 +374,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x1, 0, 0, 0);
     it = page->AddSub(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x2, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1) {
@@ -417,7 +399,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x5, 0, 0, 0);
     if (progress > 0x24 || progress < 0x4) {
         it->Disable(3);
@@ -445,7 +427,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x9, 0, 0, 0);
     if (progress > 0x24 || progress < 0x8) {
         it->Disable(3);
@@ -473,7 +455,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0xd, 0, 0, 0);
     if (progress > 0x24 || progress < 0xc) {
         it->Disable(3);
@@ -501,7 +483,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x11, 0, 0, 0);
     if (progress > 0x24 || progress < 0x10) {
         it->Disable(3);
@@ -529,7 +511,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x15, 0, 0, 0);
     if (progress > 0x24 || progress < 0x14) {
         it->Disable(3);
@@ -557,7 +539,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x19, 0, 0, 0);
     if (progress > 0x24 || progress < 0x18) {
         it->Disable(3);
@@ -585,7 +567,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = ((MenuProgress*)g_gameReg->m_saveSink)->m_1c;
+    progress = g_gameReg->m_saveSink->m_curLevel;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x1d, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1c) {
         it->Disable(3);
@@ -612,7 +594,6 @@ SIZE_UNKNOWN(MenuHost);
 SIZE_UNKNOWN(MenuItem);
 SIZE_UNKNOWN(MenuList);
 SIZE_UNKNOWN(MenuPage);
-SIZE_UNKNOWN(MenuProgress);
 SIZE_UNKNOWN(MenuStr);
 SIZE_UNKNOWN(MovieProbe);
 

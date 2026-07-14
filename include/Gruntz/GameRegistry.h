@@ -357,8 +357,12 @@ struct CGameRegistry {
                                   //         ambient TU's active-level facet, +0x24 m_active
                                   //         armed==playable gate, +0x08 CPtrList spatial voice
                                   //         list; see WorldSoundSet.h)
-    void* m_saveSink;             // +0x58  save-record sink (consumers read save-game progress:
-                                  //         MenuProgress->m_1c / final-movie availability)
+    // +0x58  the save-game record sink IS the CSaveGame (<Io/SaveGame.h>): the
+    // main-menu builder gates the AREAS pages on its m_curLevel (+0x1c) and the
+    // FINAL movie on CheckMagic (0xe5690, the +0x20 == 0x42a completed-game mark);
+    // the 0x8174 restart command reads its m_maxLevel (+0x18). (Was void* +
+    // the MenuProgress / SaveSink58 per-TU views.)
+    class CSaveGame* m_saveSink;
     char m_pad5c[0x60 - 0x5c];
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
                               //         GruntzMgr m_timer per-frame poll view)

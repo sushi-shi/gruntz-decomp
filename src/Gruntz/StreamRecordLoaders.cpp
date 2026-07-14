@@ -18,6 +18,7 @@
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (reader; Read @ vtable +0x2c)
 #include <Gruntz/SerialRecView.h> // CRegSub30 / CRegTypeTable (shared registry views)
+#include <DDrawMgr/DDrawWorkerCache.h> // the +0x14 worker cache - Find (0x9cab0) is its method
 #include <string.h>               // inline strlen (repne scasb) over the scratch buffer
 
 // The game registry singleton (0x64556c). The delinker's canonical symbol is the
@@ -190,22 +191,19 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
 SIZE_UNKNOWN(CEventLoadRec);
 
 // ---------------------------------------------------------------------------
-// 0x09cab0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp; adjacent to
-// CEventLoadRec at 0x09c650). Out-param wrapper: call the +0x10 name->ptr map's
-// Lookup (the real MFC CMapStringToOb::Lookup @0x1b8008) with a zeroed local and
-// return the filled local.  0x1b8008 is CMapStringToOb's, NOT CMapStringToPtr's:
-// there is no COMDAT fold (MSVC5 has no /OPT:ICF) - CMapStringToPtr::Lookup is a
-// separate body at 0x1b8438.  See `mfc_class 0x1b8008`.
-// @orphan (owning registry class unrecovered; only the +0x10 map is modeled).
-struct C9cab0 {
-    char pad0[0x10];
-    CMapStringToOb m_10; // +0x10  name->object map (real MFC; Lookup @0x1b8008)
-    i32 LookupPtr(i32 arg);
-};
+// CDDrawWorkerCache::Find (0x09cab0; spatially re-homed from src/Stub/
+// BoundaryLowerMethods.cpp, adjacent to CEventLoadRec at 0x09c650). Out-param
+// wrapper: call the +0x10 name->object map's Lookup (the real MFC
+// CMapStringToOb::Lookup @0x1b8008) with a zeroed local and return the filled
+// local. OWNER RECOVERED (Fable A2, 2026-07-14): the registry with the
+// CMapStringToOb @+0x10 and the virtual registrar at slot 9 (+0x24) IS the
+// canonical CDDrawWorkerCache (<DDrawMgr/DDrawWorkerCache.h>, vtbl 0x1efd00,
+// CreateWorker [9] @0x1652c0) - the CSpriteFactoryHolder/CDDrawSurfaceMgr +0x14
+// child; the tile-logic leaf ctors probe it via thunk 0x1703. (Was the C9cab0
+// placeholder.)
 RVA(0x0009cab0, 0x23)
-i32 C9cab0::LookupPtr(i32 arg) {
+i32 CDDrawWorkerCache::Find(const char* key) {
     i32 local = 0;
-    m_10.Lookup((const char*)arg, (CObject*&)local);
+    m_10.Lookup(key, (CObject*&)local);
     return local;
 }
-SIZE_UNKNOWN(C9cab0);

@@ -84,28 +84,19 @@ struct GzMgr {
 // modeled class in <Gruntz/SerialArchive.h> - the former local `GzStream` view is
 // folded away.
 
-// A queued command as the dispatcher serializes it: vtable slot +0x04 (index 1) =
-// Serialize(stream, mode, a, b) -> i32; slot +0x18 (index 6) = GetTag() -> i32.
-// Modeled independently of CGruntzCommand so this TU's serialize dispatch does not
-// disturb the matched CGruntzCommand vtable.
-SIZE_UNKNOWN(GzSerCmd);
-class GzSerCmd {
-public:
-    virtual void Slot0();
-    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a, i32 b); // +0x04 (index 1)
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual i32 GetTag(); // +0x18 (index 6)
-};
+// (The GzSerCmd 7-slot serialize lens is GONE too (Fable A2, 2026-07-14): it was
+// the SAME CGruntzCommand - Serialize IS slot 1 and GetTag slot 6 (+0x18) of the
+// canonical 11-slot table. The fork existed only because the canonical declared
+// GetTag as char while the queue serializer's retail bytes need the int-family
+// return (`and eax,0xff`, no extension insn); GetTag is now i32 on the canonical.)
+typedef CGruntzCommand GzSerCmd;
 
 // One node of the base CPtrList the write pass walks: next@+0x00, payload@+0x08.
 SIZE_UNKNOWN(GzCmdNode);
 struct GzCmdNode {
     GzCmdNode* m_0; // +0x00  next node
     char m_pad4[4];
-    GzSerCmd* m_8; // +0x08  payload command
+    CGruntzCommand* m_8; // +0x08  payload command
 };
 
 SIZE_UNKNOWN(CGruntzCmdMgr);

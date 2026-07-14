@@ -52,7 +52,7 @@ i32 CGruntzCommand::Save(CSerialArchive*) {
 i32 CGruntzCommand::Load(CSerialArchive*) {
     return 0;
 }
-char CGruntzCommand::GetTag() {
+i32 CGruntzCommand::GetTag() {
     return 0;
 }
 i32 CGruntzCommand::Parse(void*, i32) {
@@ -756,7 +756,7 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
             (GzCmdNode*)
                 m_base.GetHeadPosition(); // MFC-protected m_pNodeHead via the inline accessor
         while (node) {
-            GzSerCmd* cmd = node->m_8;
+            CGruntzCommand* cmd = node->m_8;
             node = node->m_0;
             i32 tag = cmd->GetTag() & 0xff;
             stream->Write(&tag, 4);
@@ -783,11 +783,11 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
     do {
         i32 tag;
         stream->Read(&tag, 4);
-        GzSerCmd* cmd;
+        CGruntzCommand* cmd;
         if (tag == 1) {
-            cmd = (GzSerCmd*)CGruntzSingleCommand::Allocate();
+            cmd = CGruntzSingleCommand::Allocate();
         } else if (tag == 2) {
-            cmd = (GzSerCmd*)CGruntzMultiCommand::Allocate();
+            cmd = CGruntzMultiCommand::Allocate();
         } else {
             return 0;
         }

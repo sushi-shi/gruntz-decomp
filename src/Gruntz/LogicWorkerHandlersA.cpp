@@ -103,7 +103,11 @@ struct DnnOwner;
 // set m_34/m_38/m_3c (the leaf does). Modeled as a non-polymorphic base class so
 // the leaf record chains it; the throwing link ctor inside forces the /GX EH frame.
 struct CUserLogicOOL {
-    virtual void Vf0();             // +0x00  declared-only vptr anchor (polymorphic base)
+    // +0x00 vptr anchor (declared-only): slot 0 of the REAL table (??_7CUserLogic
+    // family) is the scalar-deleting dtor - named so, not spelled as a C++ dtor,
+    // because a dtor here would add an EH unwind funclet the retail `new DnnRec`
+    // frame does not have (same plain-virtual spelling as CSpriteFactory's).
+    virtual void ScalarDtor();
     CUserLogicOOL(DnnOwner* owner); // 0x58cd0
     char m_pad04[0x34 - 0x04];      // +0x04..+0x33
     DnnOwner* m_34;                 // +0x34

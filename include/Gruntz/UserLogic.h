@@ -319,10 +319,15 @@ class CGameLevel; // fwd (the world owns the level; full class in <Gruntz/GameLe
 // and m_resolveSubMgr @+0x24 (== m_level, typed CGameLevel*). Kept as the game-
 // side walking view pending the fold (@identity-TODO).
 SIZE_UNKNOWN(CGameObjWorld);
+class CDDrawWorkerCache; // +0x14 (the canonical's m_workerCache; DDrawWorkerCache.h)
 struct CGameObjWorld {
     char m_pad00[0x08];
     CGameObjChain* m_objChain; // +0x08  the live object chain (BroadPhase/StepAxisAlt)
-    char m_pad0c[0x24 - 0x0c];
+    char m_pad0c[0x14 - 0x0c];
+    // +0x14  the string-keyed worker cache (== the canonical CDDrawSurfaceMgr's
+    // m_workerCache) - the logic-type registry BuildLogicTypeTable probes/registers.
+    CDDrawWorkerCache* m_workerCache;
+    char m_pad18[0x24 - 0x18];
     CGameLevel* m_level; // +0x24  the loaded level (CMovingLogic / WorldLevelPath hop)
 };
 
@@ -346,10 +351,10 @@ extern i32 g_logicTypesRegistered;
 
 // BuildLogicTypeTable (0x8a40, via the 0x39c2 thunk): registers the three
 // built-in logic types the first time any tile-logic object is built. It is a
-// __thiscall member that IGNORES `this` (its impl reads the ctx as its explicit
-// stack arg) - that is why the retail call carries `mov ecx,esi; push ctx`. See
-// thiscall-ignoring-this. Declared as a CUserLogic method below.
-struct CLogicTypeBuilder;
+// __thiscall member that IGNORES `this` (its impl reads the object as its explicit
+// stack arg) - that is why the retail call carries `mov ecx,esi; push obj`. See
+// thiscall-ignoring-this. Declared as a CUserLogic method below; the arg is the
+// bound CGameObject (the former `CLogicTypeBuilder` shell view of it is dissolved).
 
 // ---------------------------------------------------------------------------
 // CUserBase - root of the game-object hierarchy: just a vptr (3 virtuals,
@@ -449,7 +454,7 @@ public:
     // any tile-logic object is built. Inlined into the 1-arg ctor; its `this`
     // setup is why the retail call carries the dead `mov ecx,esi`.
     void RegisterLogicTypesOnce();
-    void BuildLogicTypeTable(CLogicTypeBuilder* ctx); // 0x8a40 (ignores this)
+    void BuildLogicTypeTable(CGameObject* obj); // 0x8a40 (ignores this)
 
     // __thiscall stub methods re-homed from src/Stub/ApiCallers.cpp; bodies in
     // src/Gruntz/UserLogic.cpp.
@@ -586,7 +591,7 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
     if (!g_logicTypesRegistered) {
-        BuildLogicTypeTable((CLogicTypeBuilder*)m_0c);
+        BuildLogicTypeTable(m_0c);
         g_logicTypesRegistered = 1;
     }
 }

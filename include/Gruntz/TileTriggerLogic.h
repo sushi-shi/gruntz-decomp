@@ -100,7 +100,7 @@ public:
     // its decrement sibling 0x112bf0 in slot 3), so both are overrides on the 0x8c
     // CTileTriggerSwitchLogic hierarchy. They touch only +0x08/+0x0c/+0x14 - offsets both
     // families share, which is why only the vtable could tell them apart. See
-    // CCheckpointTriggerSwitchLogic::Vf2/Vf3 in TileTriggerSwitchLogic.cpp.
+    // CCheckpointTriggerSwitchLogic::SwitchDown/SwitchUp in TileTriggerSwitchLogic.cpp.
 
     // Edits the tile grid according to a verb arg (set/clear/notify), then reports the move
     // into the in-game text log.

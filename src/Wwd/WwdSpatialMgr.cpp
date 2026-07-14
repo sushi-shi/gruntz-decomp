@@ -66,7 +66,7 @@ struct WwdBucketHead {
 struct WwdRegion; // canonical grid node type (== WwdGridNode); real Add/Clear param
 class CWwdGrid {
 public:
-    virtual void Slot00();
+    virtual void GetRuntimeClass(); // [0] CObject slot (0x1bef01; canonical CWwdGrid : CObject)
     virtual ~CWwdGrid(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     i32 Scroll_1918c0(WwdRect r, i32 flag);
     i32 Add(WwdRegion* region); // 0x191840 (real body in wwdgrid)

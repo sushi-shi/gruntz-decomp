@@ -25,60 +25,31 @@ extern "C" {
     void LogicBumpFactory();   // 0x56e4e0
 }
 
-// The logic-type registry reached through ctx->m_0c->m_14. This is a FOREIGN engine
-// class: its ??_7 and slots 0..8 are unreconstructed engine code, so the honest
-// model names only the ONE dispatched slot - its registrar at vtable slot +0x24
-// (__thiscall), modeled as a 4-byte member-function pointer loaded from the vtable
-// (`char m_pad00[0x24]` documents the un-recovered slots) so
-// `m_14->RegisterType(...)` emits `mov eax,[ecx]; call [eax+0x24]`. Its own Find
-// (the 0x1703 thunk) is a non-virtual __thiscall returning the found type (0 ==
-// absent). Class COMPLETE before the T::* typedef so the PMF stays 4 bytes
-// (docs/patterns/pmf-complete-class-4byte.md).
-// Real polymorphic view: RegisterType is slot 9 (+0x24), a real virtual (9 fillers).
-class CLogicTypeReg {
-public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void RegisterType(void* factoryFn, const char* key, i32 flags); // slot 9 (+0x24)
-    i32 Find(const char* key);  // 0x1703 thunk (__thiscall, returns found type or 0)
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
-};
+// REGISTRY IDENTITY RECOVERED (Fable A2, 2026-07-14): the logic-type registry at
+// world(+0x14) IS the canonical CDDrawWorkerCache (<DDrawMgr/DDrawWorkerCache.h>,
+// ??_7 @0x1efd00, 10 slots) - the CDDrawSurfaceMgr/CSpriteFactoryHolder +0x14
+// string-keyed worker cache. The dispatched "+0x24 registrar" is its slot 9
+// CreateWorker (0x1652c0); the "Find" probe (thunk 0x1703 -> 0x9cab0) is its
+// out-param wrapper over the +0x10 CMapStringToOb (Lookup @0x1b8008). The former
+// 16-slot CLogicTypeReg view (9 Slot fillers + 6 VtSlotFill pads) and the
+// CLogicTypeCtx / CLogicTypeBuilder chain shells are dissolved: the builder IS the
+// bound CGameObject (its +0xc world ctx), the ctx the CGameObjWorld view.
+#include <DDrawMgr/DDrawWorkerCache.h>
 
-// The intermediate object reached through ctx->m_0c: its +0x14 slot points at the
-// logic-type registry.
-struct CLogicTypeCtx {
-    char m_pad00[0x14];
-    CLogicTypeReg* m_14; // +0x14  the registry
-};
-
-// CLogicTypeBuilder (forward-declared in <Gruntz/UserLogic.h>): the ctor passes
-// (CLogicTypeBuilder*)m_0c, i.e. the bound CGameObject; +0xc reaches the ctx.
-struct CLogicTypeBuilder {
-    char m_pad00[0xc];
-    CLogicTypeCtx* m_0c; // +0xc
-};
-
-inline void CUserLogic::BuildLogicTypeTable(CLogicTypeBuilder* ctx) {
-    if (!ctx->m_0c->m_14->Find("LogicHit")) {
-        ctx->m_0c->m_14->RegisterType((void*)LogicHitFactory, "LogicHit", 2);
+inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
+    // Each block re-reads world->m_workerCache for BOTH the Find and the
+    // CreateWorker call (retail reloads the chain at each site - do not hoist).
+    if (!((CGameObjWorld*)obj->m_0c)->m_workerCache->Find("LogicHit")) {
+        ((CGameObjWorld*)obj->m_0c)
+            ->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
     }
-    if (!ctx->m_0c->m_14->Find("LogicAttack")) {
-        ctx->m_0c->m_14->RegisterType((void*)LogicAttackFactory, "LogicAttack", 2);
+    if (!((CGameObjWorld*)obj->m_0c)->m_workerCache->Find("LogicAttack")) {
+        ((CGameObjWorld*)obj->m_0c)
+            ->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
     }
-    if (!ctx->m_0c->m_14->Find("LogicBump")) {
-        ctx->m_0c->m_14->RegisterType((void*)LogicBumpFactory, "LogicBump", 2);
+    if (!((CGameObjWorld*)obj->m_0c)->m_workerCache->Find("LogicBump")) {
+        ((CGameObjWorld*)obj->m_0c)
+            ->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
     }
 }
 

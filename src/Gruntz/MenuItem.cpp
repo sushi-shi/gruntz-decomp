@@ -243,7 +243,7 @@ i32 CMenuItem::Configure(void* notify) {
     if (notify) {
         ((CChatBox*)m_host)->ScrollRow0();
     }
-    Slot06_184650(2);
+    Disable(2);
     return 1;
 }
 // trigger: scroll the host row, notify, then re-activate the host node.

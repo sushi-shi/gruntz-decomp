@@ -11,6 +11,7 @@
 #include <Rez/RezList.h>         // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
 #include <Gruntz/SerialObjRef.h> // CSerialArchive, CDDrawSubMgrLeaf (KeyOfValue), CSerialObj
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)
+#include <Gruntz/UserLogic.h>    // CGameObject (the resolved object; GetTypeId [8] + m_188)
 #include <string.h>              // inline strlen / strcpy over the scratch buffer
 
 // The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
@@ -63,31 +64,13 @@ struct CProjRegSub30 {
     CDDrawSubMgrLeaf* m_2c; // +0x2c
 };
 
-// The FOREIGN CMapPtrToPtr-resolved object whose type code (vtable slot +0x20) gates
-// the m_1fc latch; its default-int is read from +0x188 on the write path. Only that
-// one slot is dispatched (rest is unreconstructed engine code); pointer-only, never
-// constructed. Honest model = a manual vptr into a typed vtable struct naming ONLY
-// the used slot as a 4-byte thiscall PMF + char pad[], NO fake virtuals. The vptr
-// (m_vtbl) sits at +0x00 exactly where the fake virtuals' vptr did, so the object
-// layout (_24 pad, m_188) is byte-identical.
-// Real polymorphic view: GetTypeCode is slot 8 (+0x20), a real virtual (8 fillers).
-class CProjTypeObj {
-public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual i32 GetTypeCode(); // slot 8 (+0x20)
-    char _24[0x188 - 0x24];
-    i32 m_188; // +0x188
-    i32 CallGetTypeCode() {
-        return GetTypeCode();
-    }
-};
+// IDENTITY RECOVERED (Fable A2, 2026-07-14): the CMapPtrToPtr-resolved object IS
+// the CGameObject (<Gruntz/UserLogic.h>) - the +0x48 map is CSpriteFactory::
+// m_objMap, the serialize-time key->object map (the same one CTriggerMgr::Load
+// resolves, with the same `slot-8 GetTypeId() == 5` gate at +0x20), and the
+// "+0x188 default-int" the write path re-derives the key from is the canonical
+// m_188 archive-cue id. (The former CProjTypeObj shell - 8 Slot fillers + a
+// GetTypeCode alias of GetTypeId - is dissolved.)
 
 // One spliced freelist node: next at +0, payload pointer at +8.
 struct CProjNode {
@@ -125,7 +108,7 @@ struct CProjLoadRec {
     i32 m_1c8, m_1cc;               // +0x1c8 (8)
     i32 m_1d0, m_1d4, m_1d8, m_1dc; // +0x1d0
     void* m_1e0[7];                 // +0x1e0..+0x1f8  name refs (CMapStringToPtr entries)
-    CProjTypeObj* m_1fc;            // +0x1fc  type-5 latch
+    CGameObject* m_1fc;             // +0x1fc  type-5 latch (the resolved game object)
     i32 m_200;                      // +0x200
     CRezList m_204;                 // +0x204  AddTail target
     CProjNode* m_208;               // +0x208  write-path node list
@@ -198,9 +181,9 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (((CProjTypeObj*)found)->CallGetTypeCode() == 5) ? (i32)found : 0;
+                r = (((CGameObject*)found)->GetTypeId() == 5) ? (i32)found : 0;
             }
-            m_1fc = (CProjTypeObj*)r;
+            m_1fc = (CGameObject*)r;
             if (m_1fc == 0 && key != 0) {
                 return 0;
             }
@@ -308,4 +291,3 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
 SIZE_UNKNOWN(CProjLoadRec);
 SIZE_UNKNOWN(CProjNode);
 SIZE_UNKNOWN(CProjObjReg);
-SIZE_UNKNOWN(CProjTypeObj);

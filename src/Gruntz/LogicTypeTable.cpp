@@ -36,44 +36,16 @@ extern "C" {
 }
 
 // ---------------------------------------------------------------------------
-// The logic-type registry: its vtable (slot +0x24 = the registrar) lives at +0,
-// and a string-keyed lookup sub-object (CMapStringToOb, used by Lookup) is embedded at
-// +0x10. Modeled minimally so the `ecx=<registry+0x10>; call 0x1b8008` and
-// `call [vtbl+0x24]` shapes reloc-mask.
+// The logic-type registry IS the canonical CDDrawWorkerCache (Fable A2,
+// 2026-07-14; <DDrawMgr/DDrawWorkerCache.h>, ??_7 @0x1efd00): the "+0x24
+// registrar" is its slot-9 CreateWorker (0x1652c0) and the +0x10 lookup
+// sub-object its CMapStringToOb m_10 (Lookup @0x1b8008). The former
+// CLogicRegistry (10-slot filler view) / CLogicCtx / CLogicTypeBuilder chain
+// shells are dissolved: the builder arg is the bound CGameObject, whose +0xc
+// world ctx (the CGameObjWorld view, <Gruntz/UserLogic.h>) carries the cache at
+// +0x14 (== the canonical CDDrawSurfaceMgr's m_workerCache).
 // ---------------------------------------------------------------------------
-struct CLogicType;
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
-class CLogicRegistry {
-public:
-    // slot +0x24: install (factoryFn, key, flags) for a not-yet-present type.
-    virtual void m_00();                                                // +0x00
-    virtual void m_04();                                                // +0x04
-    virtual void m_08();                                                // +0x08
-    virtual void m_0c();                                                // +0x0c
-    virtual void m_10();                                                // +0x10
-    virtual void m_14();                                                // +0x14
-    virtual void m_18();                                                // +0x18
-    virtual void m_1c();                                                // +0x1c
-    virtual void m_20();                                                // +0x20
-    virtual void RegisterType(void* factoryFn, char* szKey, i32 flags); // +0x24
-
-    char m_pad04[0x10 - 4];
-    CMapStringToOb m_10map; // +0x10  lookup sub-object
-};
-
-// The intermediate object reached through this->m_c: its +0x14 slot points at the
-// logic-type registry (the Lookup map is at registry+0x10; the registrar is the
-// registry's own virtual).
-struct CLogicCtx {
-    char m_pad00[0x14];
-    CLogicRegistry* m_14; // +0x14  the registry (pointer)
-};
-
-struct CLogicTypeBuilder {
-    char m_pad00[0xc];
-    CLogicCtx* m_c; // +0xc
-};
+#include <DDrawMgr/DDrawWorkerCache.h>
 
 // ---------------------------------------------------------------------------
 // BuildLogicTypeTable - __stdcall: the builder object is the
@@ -84,29 +56,29 @@ struct CLogicTypeBuilder {
 // `mov edx,[esi+0xc]; mov ecx,[edx+0x14]` at each site), so the lookup expression
 // is repeated rather than hoisted into a local.
 RVA(0x00008a40, 0xc8)
-void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
+void __stdcall BuildLogicTypeTable(CGameObject* obj) {
     {
-        CObject* found_ob = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicHit", found_ob);
-        CLogicType* found = (CLogicType*)found_ob;
+        CObject* found = 0;
+        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicHit", found);
         if (!found) {
-            obj->m_c->m_14->RegisterType((void*)LogicHitFactory, "LogicHit", 2);
+            ((CGameObjWorld*)obj->m_0c)
+                ->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
         }
     }
     {
-        CObject* found_ob = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicAttack", found_ob);
-        CLogicType* found = (CLogicType*)found_ob;
+        CObject* found = 0;
+        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicAttack", found);
         if (!found) {
-            obj->m_c->m_14->RegisterType((void*)LogicAttackFactory, "LogicAttack", 2);
+            ((CGameObjWorld*)obj->m_0c)
+                ->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
-        CObject* found_ob = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicBump", found_ob);
-        CLogicType* found = (CLogicType*)found_ob;
+        CObject* found = 0;
+        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicBump", found);
         if (!found) {
-            obj->m_c->m_14->RegisterType((void*)LogicBumpFactory, "LogicBump", 2);
+            ((CGameObjWorld*)obj->m_0c)
+                ->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
         }
     }
 }
@@ -162,7 +134,5 @@ void CUserLogic::FinalizeStep(i32 /*unused*/) {
     m_28 = 0x3e9;
 }
 
-SIZE_UNKNOWN(CLogicCtx);
-SIZE_UNKNOWN(CLogicRegistry);
 
 // --- vtable catalog ---

@@ -113,7 +113,11 @@ public:
     // the five scalar params; returns 1. Inherited unchanged by both leaves.
     virtual i32 SetParams(char a0, char a1, char a2, i16 a3, i16 a4);
     virtual i32 Vslot05(); // slot 5 (+0x14) - base returns 1 (role unrecovered: P2), 0x24310
-    virtual char GetTag(); // slot 6 - the command's type/tag byte (Pack writes it first)
+    // slot 6 - the command's type/tag word (the tag byte, int-typed: the queue
+    // serializer's retail bytes are `call [vptr+0x18]; and eax,0xff` with NO
+    // sign-extension insn, so the compiler saw an int-family return; Pack stores
+    // its low byte first). Was declared char - which forked the GzSerCmd view.
+    virtual i32 GetTag();
     // slot 7 - parse a flat command buffer in place; the leaves (Single/Multi)
     // override it with real parsers, the base anchor is a no-op. Consumed-byte
     // count returned. (Recovered from NetCmdSlot.cpp's ProcessCmd dispatch.)
@@ -170,7 +174,7 @@ public:
     virtual i32 Save(CSerialArchive* s) OVERRIDE;
     virtual i32 Load(CSerialArchive* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE; // 0x24260
-    virtual char GetTag() OVERRIDE;
+    virtual i32 GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
     virtual i32 Vfunc8() OVERRIDE;
     virtual void Select(CState* state) OVERRIDE; // slot 9  (base is __purecall)
@@ -200,7 +204,7 @@ public:
     virtual i32 Save(CSerialArchive* s) OVERRIDE;
     virtual i32 Load(CSerialArchive* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE; // 0x243a0
-    virtual char GetTag() OVERRIDE;
+    virtual i32 GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
     virtual i32 Vfunc8() OVERRIDE;
     virtual void Select(CState* state) OVERRIDE; // slot 9  (base is __purecall)

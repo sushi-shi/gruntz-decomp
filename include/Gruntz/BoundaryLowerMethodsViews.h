@@ -125,19 +125,10 @@ SIZE_UNKNOWN(CTypeColl464);
 // views of CAreaMgr / CSpawnList / CSpawnEntry - dissolved onto the canonicals;
 // see <Gruntz/AreaMgr.h> + <Gruntz/SpawnList.h>.)
 
-// 0x09cab0 - out-param wrapper over the +0x10 sub's method (0x1b8008).
-struct CSub9cab0 {
-    // Get @0x1b8008 IS CMapStringToOb::Lookup (band [0x1b7e17,0x1b8247); mfc_class).
-    // This said CMapStringToPtr - inverted. CMapStringToPtr's Lookup is 0x1b8438, and
-    // retail never calls it here. => this empty view is a real ::CMapStringToOb.
-};
-SIZE_UNKNOWN(CSub9cab0);
-struct C9cab0 {
-    char pad0[0x10];
-    CSub9cab0 m_10; // +0x10
-    i32 M(i32 arg);
-};
-SIZE_UNKNOWN(C9cab0);
+// (0x09cab0 OWNER RECOVERED (Fable A2, 2026-07-14): it is CDDrawWorkerCache::Find
+// - the out-param wrapper over its +0x10 CMapStringToOb (Lookup @0x1b8008); body in
+// StreamRecordLoaders.cpp, class in <DDrawMgr/DDrawWorkerCache.h>. The C9cab0 /
+// CSub9cab0 shells here are dissolved.)
 
 // (0x0b4c40 C0b4c40::Handle re-homed to src/Gruntz/GameObjectCtors.cpp as the REAL
 // CUFO::SerializeMove - vtable slot 1 (thunk 0x3fb7). 0x3035 == CUFO::Serialize

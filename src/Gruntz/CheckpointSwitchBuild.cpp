@@ -49,7 +49,7 @@ char g_statzTabCfgTag[] = "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"; // Configur
 
 // The class itself now lives in <Gruntz/TileTriggerSwitchLogic.h> (real derived class, no
 // data members, sizeof 0x8c). BuildSmall is its slot-1 override; the base's slot-0 "build"
-// virtual (Vf0) is the 8-arg builder it chains to.
+// virtual (Setup) is the 8-arg builder it chains to.
 // @early-stop
 // tail-merge + prologue-scheduling wall (~62%). The LAYOUT is now byte-correct and verified
 // against retail: `mov ecx,[this+0x20]` (the m_20 gate), `lea edi,[this+0x2c]` (m_block) and
@@ -79,7 +79,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         return 0;
     }
     memcpy(m_block, rect, sizeof(m_block)); // rep movsd, ecx=0x18 -> this+0x2c
-    if (!Vf0(owner, a2, a3, a4, a5, a7, a8, a9)) {
+    if (!Setup(owner, a2, a3, a4, a5, a7, a8, a9)) {
         return 0;
     }
     i32 px = (a3 << 5) + 0x10;

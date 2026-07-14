@@ -234,7 +234,7 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
 // ??_7CTileTriggerSwitchLogic@@6B@ (0x1eae8c) slot 1 == 0x110460, and the checkpoint class's
 // vtable overrides that same slot with 0x112a50. The placeholder's shape maps exactly onto
 // this class: its "busy gate @+0x20" is m_20, its "0x60-byte record sink @+0x2c" is
-// m_block[24], and its "virtual Dispatch slot 0" is Vf0 - which independently confirms the
+// m_block[24], and its "virtual Dispatch slot 0" is Setup - which independently confirms the
 // 9-arg slot-1 signature recovered from the checkpoint override.
 // ---------------------------------------------------------------------------
 RVA(0x00110460, 0x64)
@@ -256,22 +256,22 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
         return 0;
     }
     memcpy(m_block, rect, sizeof(m_block));
-    return Vf0(owner, a2, a3, a4, a5, a7, a8, a9);
+    return Setup(owner, a2, a3, a4, a5, a7, a8, a9);
 }
 
-// Vf2/Vf3 stay DECLARED-ONLY on the base (bodies live in unmatched engine TUs); cl still
+// SwitchDown/SwitchUp stay DECLARED-ONLY on the base (bodies live in unmatched engine TUs); cl still
 // emits the ??_7 vftable (the ctor references it) with those slots as external
-// refs. Vf0 (slot 0, thunk 0x1749) IS reconstructed below.
+// refs. Setup (slot 0, thunk 0x1749) IS reconstructed below.
 
 // ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::Vf0 (slot 0) - the one-shot Setup virtual (0x1104f0,
+// CTileTriggerSwitchLogic::Setup (slot 0) - the one-shot Setup virtual (0x1104f0,
 // shared as slot 0 across the whole *TriggerSwitchLogic family). If already set up
 // (m_20 non-zero) returns 0; else scatters the 8 args into the object fields, sets
 // the init guard (m_20=1) + clears m_1c, returns 1. Re-homed from ReconBatch2
 // (was the Init8_1104f0 placeholder view; xref: vtable slot +0x0 via thunk 0x1749).
 // ---------------------------------------------------------------------------
 RVA(0x001104f0, 0x56)
-i32 CTileTriggerSwitchLogic::Vf0(
+i32 CTileTriggerSwitchLogic::Setup(
     CTileTriggerContainer* owner,
     i32 a1,
     i32 a2,
@@ -596,7 +596,7 @@ RVA(0x00112080, 0x138)
 i32 CTileTriggerSwitchLogic::Broadcast() {
     // retail: a DIRECT `call 0x2e0f` (the slot-2 body's ILT thunk) - a qualified,
     // devirtualized call, so spell it qualified.
-    CTileTriggerSwitchLogic::Vf2();
+    CTileTriggerSwitchLogic::SwitchDown();
     i32 counter = 0;
     i32* p = &m_block[0];
     i32 i = 0;
@@ -611,7 +611,7 @@ i32 CTileTriggerSwitchLogic::Broadcast() {
             return 0;
         }
         if (node->m_key1 != m_key1 && node->m_linkGate != 0) {
-            node->Vf3(); // virtual slot 3 (the old view's "Prepare")
+            node->SwitchUp(); // virtual slot 3 (the old view's "Prepare")
             i32 any = 0;
             for (TtcNode* it = TtcHead(m_owner->m_list1); it != 0; it = it->m_next) {
                 CTileTriggerLogic* o = (CTileTriggerLogic*)it->m_data;
@@ -859,31 +859,31 @@ CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}
 
 // The leaf slot overrides forward to the BASE slot-2/slot-3 virtuals (called
 // non-virtually on `this`) and normalize the int result to a bool. thunk 0x2e0f ==
-// CTileTriggerSwitchLogic::Vf2 @0x110570; thunk 0x37e2 == Vf3 @0x1106b0 (both defined
+// CTileTriggerSwitchLogic::SwitchDown @0x110570; thunk 0x37e2 == SwitchUp @0x1106b0 (both defined
 // in StatusBarUpdaters.cpp, reloc-masked to this TU).
 
-// CTileSecretTriggerSwitchLogic::Vf2 (slot 2 override, 0x112820) - `return base::Vf2() != 0`
+// CTileSecretTriggerSwitchLogic::SwitchDown (slot 2 override, 0x112820) - `return base::SwitchDown() != 0`
 // (int->bool neg/sbb/neg normalize).
 RVA(0x00112820, 0xc)
-i32 CTileSecretTriggerSwitchLogic::Vf2() {
-    return CTileTriggerSwitchLogic::Vf2() != 0;
+i32 CTileSecretTriggerSwitchLogic::SwitchDown() {
+    return CTileTriggerSwitchLogic::SwitchDown() != 0;
 }
 
 // ---------------------------------------------------------------------------
-// CTileTimeTriggerSwitchLogic::Vf2 (slot 2 override, 0x112840) - `return base::Vf2() != 0`
+// CTileTimeTriggerSwitchLogic::SwitchDown (slot 2 override, 0x112840) - `return base::SwitchDown() != 0`
 // (the int->bool neg/sbb/neg normalize). Re-homed from ReconBatch2 (was Probe_112840);
 // xref: ??_7CTileTimeTriggerSwitchLogic@@6B@+0x8 via thunk 0x2464.
 // ---------------------------------------------------------------------------
 RVA(0x00112840, 0xc)
-i32 CTileTimeTriggerSwitchLogic::Vf2() {
-    return CTileTriggerSwitchLogic::Vf2() != 0;
+i32 CTileTimeTriggerSwitchLogic::SwitchDown() {
+    return CTileTriggerSwitchLogic::SwitchDown() != 0;
 }
 
-// CTileTimeTriggerSwitchLogic::Vf3 (slot 3 override, 0x112860) - `return base::Vf3() != 0`
+// CTileTimeTriggerSwitchLogic::SwitchUp (slot 3 override, 0x112860) - `return base::SwitchUp() != 0`
 // against the base slot-3 virtual.
 RVA(0x00112860, 0xc)
-i32 CTileTimeTriggerSwitchLogic::Vf3() {
-    return CTileTriggerSwitchLogic::Vf3() != 0;
+i32 CTileTimeTriggerSwitchLogic::SwitchUp() {
+    return CTileTriggerSwitchLogic::SwitchUp() != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -962,7 +962,7 @@ ret1:
 // The checkpoint switch-logic's slot-2 / slot-3 overrides (the "bump cell" /
 // "decrement cell" pair). BOTH were misattributed; the retail VTABLE settles it.
 // Reading ??_7CCheckpointTriggerSwitchLogic@@6B@ (0x1eaf54) straight out of the image:
-//     slot 0 -> 0x1104f0  Vf0        (inherited from CTileTriggerSwitchLogic)
+//     slot 0 -> 0x1104f0  Setup        (inherited from CTileTriggerSwitchLogic)
 //     slot 1 -> 0x112a50  BuildSmall (override)
 //     slot 2 -> 0x112b70  <-- THIS   (override)
 //     slot 3 -> 0x112bf0  <-- THIS   (override)
@@ -985,7 +985,7 @@ ret1:
 // a scale-4 address mode (`[rowtbl+y*4]`), the recompile pre-shifts y (shl 2) and
 // uses scale-1, propagating through both cell accesses.
 RVA(0x00112b70, 0x5a)
-i32 CCheckpointTriggerSwitchLogic::Vf2() {
+i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
     CPlaneRender* layer = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] + 1;
@@ -1003,7 +1003,7 @@ i32 CCheckpointTriggerSwitchLogic::Vf2() {
 // scale-1 addressing where retail keeps the row in a scale-4 address mode in both cell
 // stores; the shift vs scaled-index pick is not steerable.
 RVA(0x00112bf0, 0x5e)
-i32 CCheckpointTriggerSwitchLogic::Vf3() {
+i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
     CPlaneRender* layer = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] - 1;

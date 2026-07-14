@@ -46,6 +46,14 @@ public:
     }
     virtual void* CreateWorker(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
 
+    // 0x9cab0 (body in StreamRecordLoaders.cpp - spatially adjacent at retail): the
+    // out-param wrapper over m_10.Lookup (CMapStringToOb::Lookup @0x1b8008); returns
+    // the found object (0 = absent). This is the logic-type registry's existence
+    // probe - the tile-logic leaf ctors call it via thunk 0x1703 before dispatching
+    // slot-9 CreateWorker to register a missing type (was the C9cab0::LookupPtr
+    // placeholder / the CLogicTypeReg::Find view).
+    i32 Find(const char* key); // 0x9cab0
+
     CMapStringToOb m_10; // +0x10  map (internal field at +0x1c seeds worker->m_04)
 };
 SIZE_UNKNOWN(CDDrawWorkerCache);

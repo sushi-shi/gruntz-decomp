@@ -60,53 +60,36 @@ extern "C" {
     void LogicAttackFactory(); // 0x56e4d0
     void LogicBumpFactory();   // 0x56e4e0
 }
-struct CLogicTypeRec;
-SIZE_UNKNOWN(CLogicTypeMap);
-class CLogicTypeMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
-SIZE_UNKNOWN(CLogicTypeRegistry);
-class CLogicTypeRegistry {
-public:
-    virtual void m_00();
-    virtual void m_04();
-    virtual void m_08();
-    virtual void m_0c();
-    virtual void m_10();
-    virtual void m_14();
-    virtual void m_18();
-    virtual void m_1c();
-    virtual void m_20();
-    virtual void RegisterType(void* factoryFn, char* szKey, i32 flags); // +0x24
-    char m_pad04[0x10 - 4];
-    CLogicTypeMap m_10map; // +0x10  string-keyed lookup sub-object
-};
-struct CLogicTypeCtx {
-    char m_pad00[0x14];
-    CLogicTypeRegistry* m_14; // +0x14  the registry
-};
-struct CLogicTypeBuilder {
-    char m_pad00[0xc];
-    CLogicTypeCtx* m_c; // +0xc
-};
-inline void CUserLogic::BuildLogicTypeTable(CLogicTypeBuilder* obj) {
+// REGISTRY = the canonical CDDrawWorkerCache (Fable A2, 2026-07-14; see
+// LogicTypeTable.cpp): the "+0x24 registrar" is its slot-9 CreateWorker and the
+// +0x10 lookup sub-object its real CMapStringToOb m_10 (Lookup @0x1b8008 - the
+// old CMapStringToPtr cast here bound the reloc to the WRONG library symbol,
+// 0x1b8438; the inverted-label pair struck again). The CLogicType* chain shells
+// are dissolved; the builder is the bound CGameObject.
+#include <DDrawMgr/DDrawWorkerCache.h>
+inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
-        CLogicTypeRec* found = 0;
-        ((CMapStringToPtr*)&obj->m_c->m_14->m_10map)->Lookup("LogicHit", (void*&)found);
+        CObject* found = 0;
+        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicHit", found);
         if (!found) {
-            obj->m_c->m_14->RegisterType((void*)LogicHitFactory, "LogicHit", 2);
+            ((CGameObjWorld*)obj->m_0c)
+                ->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
         }
     }
     {
-        CLogicTypeRec* found = 0;
-        ((CMapStringToPtr*)&obj->m_c->m_14->m_10map)->Lookup("LogicAttack", (void*&)found);
+        CObject* found = 0;
+        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicAttack", found);
         if (!found) {
-            obj->m_c->m_14->RegisterType((void*)LogicAttackFactory, "LogicAttack", 2);
+            ((CGameObjWorld*)obj->m_0c)
+                ->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
-        CLogicTypeRec* found = 0;
-        ((CMapStringToPtr*)&obj->m_c->m_14->m_10map)->Lookup("LogicBump", (void*&)found);
+        CObject* found = 0;
+        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicBump", found);
         if (!found) {
-            obj->m_c->m_14->RegisterType((void*)LogicBumpFactory, "LogicBump", 2);
+            ((CGameObjWorld*)obj->m_0c)
+                ->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
         }
     }
 }
