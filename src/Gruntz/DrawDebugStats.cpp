@@ -30,7 +30,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Play.h>              // the real CPlay : CState (the method owner)
 #include <Gruntz/View.h>              // the CSpriteFactoryHolder chain (render state, draw surface)
-#include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (m_count @+0x1c)
+#include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (m_list.GetCount @+0x1c)
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (the m_24 level + scroll origin)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (m_surface)
@@ -75,7 +75,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (g_debugDisplayFlags & 0x1) {
-        sprintf(scratch, " Objs = %i ", m_c->m_childGroup->m_count);
+        sprintf(scratch, " Objs = %i ", m_c->m_childGroup->m_list.GetCount());
         strcat(buf, scratch);
     }
     if (g_debugDisplayFlags & 0x4) {

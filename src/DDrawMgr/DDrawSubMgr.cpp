@@ -12,10 +12,6 @@
 //
 // Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing.
 
-// The CObject-like family grand-base: 5-slot vtable (masks 0x5e8cb4), header fields
-// +0x04..+0x0c, non-virtual ~ = the field resets + the implicit base ??_7 re-stamp.
-// Slot 1 is the (declared-only) ??_G scalar-deleting dtor. Same shape as
-// CDDrawSubMgrGrandBase / CDDrawWorkerCacheBase.
 #include <Gruntz/SoundCueMgr.h>
 #include <Gruntz/ParseSource.h>     // canonical CParseSource - MUST precede the Leaf headers
 #include <Dsndmgr/DirectSoundMgr.h> // real DSound types (MatchSub GetFormat/SetPrimaryFormat)
@@ -53,35 +49,12 @@
 #include <Dsndmgr/SoundResMap.h>          // CSoundResMap (RemoveByValue @0x157b00)
 #include <Wap32/WapObj.h>                 // CWapObj : CObject
 #include <Globals.h>
-struct FamilyMapBase {
-    virtual void s0();        // [0]
-    virtual ~FamilyMapBase(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void s2();        // [2]
-    virtual void s3();        // [3]
-    virtual void s4();        // [4]
-    i32 m_04;                 // +0x04
-    i32 m_08;                 // +0x08
-    i32 m_0c;                 // +0x0c
-    FamilyMapBase() {}
-};
-inline FamilyMapBase::~FamilyMapBase() {
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-}
-SIZE_UNKNOWN(FamilyMapBase);
-
-// 3-map sibling (vtable 0x5efdc0): member-teardown ~ at 0x157630; its ??_G scalar-dtor
-// (0x157610) lives in the mapsmall quartet and calls this ~.
-struct CDDrawChildGroupDtorHost : public FamilyMapBase {
-    ~CDDrawChildGroupDtorHost(); // 0x157630
-    void* ScalarDtor(u32 flags); // 0x157610 (the ??_G; runs ~ then RezFree)
-    CMapStringToPtr m_10;        // +0x10
-    CMapStringToPtr m_2c;        // +0x2c
-    CMapStringToPtr m_48;        // +0x48
-    i32 m_64;                    // +0x64
-};
-SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
+// (The FamilyMapBase fake grand-base + the CDDrawChildGroupDtorHost 3-map view are
+// DISSOLVED 2026-07-14: the ~ at 0x157630 stamps 0x5efdc0 = ??_7CDDrawChildGroup and
+// tears down the canonical layout member-for-member - ~CMapPtrToPtr @0x1b8665 on
+// +0x48/+0x2c and ~CObList @0x1b5a2b on +0x10 (mfc_class-verified; the view's THREE
+// "CMapStringToPtr" members were mislabeled). ~CDDrawChildGroup is defined below on
+// the canonical (<DDrawMgr/DDrawChildGroup.h>).)
 
 // (The 1-map sibling "CDDrawRegistryDtorHost" view is DISSOLVED 2026-07-14: its ~
 // (0x156e10) stamps 0x5efd28 = ??_7CDDrawWorkerRegistry and tears down a
@@ -853,31 +826,28 @@ StateId CDDrawChildGroup::GetStateId() {
     return STATE_CHILDGROUP; // 0x10
 }
 
-// 0x157610: the ??_G scalar-deleting destructor of the sibling
-// CDDrawChildGroupDtorHost (vtable 0x5efdc0). Runs the real member-teardown ~
-// (0x157630, above) then, under the low deleting-flag bit, RezFree(this).
-RVA(0x00157610, 0x1e)
-void* CDDrawChildGroupDtorHost::ScalarDtor(u32 flags) {
-    this->CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost();
-    if (flags & 1) {
-        ::operator delete(this);
-    }
-    return this;
-}
-
 // ---------------------------------------------------------------------------
-// 0x157630: member-teardown ~ of the 3-map sibling CDDrawChildGroupDtorHost
-// (vtable 0x5efdc0). Runs the cleanup helper (0x1591e0), then the three
-// CMapStringToPtr members and the FamilyMapBase grand-base auto-destruct (reverse
-// decl order + field resets + the grand-base ??_7 re-stamp). /GX frame.
+// 0x157630: ~CDDrawChildGroup (real ??1; the cl-generated ??_G @0x157610 calls it).
+// cl stamps ??_7CDDrawChildGroup (0x5efdc0) at entry, runs ForwardTo3C (slot 7,
+// devirtualized in the dtor to retail's direct `call 0x1591e0`), resets the three
+// header words, then the members auto-destruct in reverse decl order under the /GX
+// trylevels - ~m_map48/~m_map2c (CMapPtrToPtr @0x1b8665), ~m_list (CObList
+// @0x1b5a2b) - and ~CObject folds the grand-base re-stamp last.
 // @early-stop
-// vptr-position wall (~95%, family twin): every instruction matches retail except
-// the grand-base vptr re-stamp position (cl stamps at base-dtor entry, retail
-// sinks it after the field resets) + the reloc-masked EH-state/teardown names.
+// reset-position residual: retail sinks the three header resets AFTER the member
+// teardown (they lived in the devs' CLoadable-like base dtor); spelling them there
+// needs the : CLoadable re-base, which would untype m_parent (the typed hops in
+// WwdObjMgr/Play) into )m_ casts - the typed truth wins, resets stay in the body
+// (emitted before the member dtors). All instructions present, block order differs.
+// The cl-auto scalar-deleting destructor (vtable slot 1):
+// @rva-symbol: ??_GCDDrawChildGroup@@UAEPAXI@Z 0x00157610 0x1e
 RVA(0x00157630, 0x82)
-CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost() {
-    ((CDDrawChildGroup*)this)->CDDrawChildGroup::ForwardTo3C();
-    // implicit: ~m_48, ~m_2c, ~m_10, ~FamilyMapBase (resets + base restamp).
+CDDrawChildGroup::~CDDrawChildGroup() {
+    ForwardTo3C();
+    m_status = -1;
+    m_flags08 = 0;
+    m_parent = 0;
+    // implicit: ~m_map48, ~m_map2c, ~m_list, then the ~CObject grand-base re-stamp.
 }
 
 // CDDrawChildGroup::IsReady (0x1576c0, vtable slot 6 - the class compiles its OWN

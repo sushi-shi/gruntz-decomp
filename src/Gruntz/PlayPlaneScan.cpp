@@ -103,7 +103,7 @@ RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
     CSpriteFactoryHolder* v = m_c;
     // retail null-tests the +0x10 list-facet address then walks its head node
-    CObList* pl = (CObList*)&v->m_childGroup->m_pad10;
+    CObList* pl = &v->m_childGroup->m_list;
     if (pl == 0) {
         return 0;
     }
@@ -237,7 +237,7 @@ RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CSpriteFactoryHolder* v = m_c;
     // retail null-tests the +0x10 list-facet address then walks its head node
-    CObList* pl = (CObList*)&v->m_childGroup->m_pad10;
+    CObList* pl = &v->m_childGroup->m_list;
     if (pl == 0) {
         return 0;
     }

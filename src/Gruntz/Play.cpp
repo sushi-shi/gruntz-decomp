@@ -2507,7 +2507,7 @@ i32 CPlay::NotifyVisibleEntities() {
     CSpriteFactoryHolder* v = m_c;
     i32* vp = (i32*)&v->m_24->m_planeCtx;
     CDDrawSurfacePair* held = v->m_drawTarget->m_14;
-    CDDrawGroupNode* node = v->m_childGroup->m_head;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)v->m_childGroup->m_list.GetHeadPosition();
 
     RECT r;
     r.left = vp[0];
@@ -6729,7 +6729,7 @@ extern "C" i32 g_curPlayer; // 0x644c54 placeholder token
 // the 13-arg AddGrunt + CString-temp EH frame keep it reloc-fuzzy.
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
-    CDDrawGroupNode* node = m_c->m_childGroup->m_head;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_c->m_childGroup->m_list.GetHeadPosition();
     while (node != 0) {
         CGameObject* g = node->m_gameObj;
         node = node->m_next;
@@ -6915,11 +6915,11 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         return 1;
     }
     // (retail tests the list-head SUB-OBJECT address, group+0x10 - kept as-is)
-    char* head = (char*)&this->m_c->m_childGroup->m_pad10;
+    char* head = (char*)&this->m_c->m_childGroup->m_list;
     if (!head) {
         return 0;
     }
-    CDDrawGroupNode* node = this->m_c->m_childGroup->m_head;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)this->m_c->m_childGroup->m_list.GetHeadPosition();
     while (node) {
         CGameObject* obj = node->m_gameObj;
         CDDrawGroupNode* nxt = node->m_next;

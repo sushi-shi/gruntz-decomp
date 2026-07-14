@@ -146,7 +146,7 @@ void CDDrawChildGroup::DestroyChildren() {
             q->Prune_1628d0();
         }
     }
-    CDDrawGroupNode* n = m_head;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
     while (n != 0) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
@@ -155,7 +155,7 @@ void CDDrawChildGroup::DestroyChildren() {
             delete obj;
         }
     }
-    ((CObList*)((char*)this + 0x10))->RemoveAll();
+    m_list.RemoveAll();
     m_map2c.RemoveAll();
     m_map48.RemoveAll();
 }
@@ -565,7 +565,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
 // form tried; the register set, offsets, arg order, and CFG are byte-exact.
 RVA(0x00159c90, 0x23)
 void CDDrawChildGroup::WalkDispatch2C(i32 a1) {
-    CDDrawGroupNode* n = m_head;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -577,7 +577,7 @@ void CDDrawChildGroup::WalkDispatch2C(i32 a1) {
 
 RVA(0x00159cc0, 0x2a)
 void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
-    CDDrawGroupNode* n = m_head;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -589,7 +589,7 @@ void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
 
 RVA(0x00159cf0, 0x42)
 void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = m_head;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
     if (n != 0) {
         do {
             n->m_obj->BltDirtyEx((CDDrawSurfacePair*)a1, (CDDrawSurfacePair*)a2, a3);
@@ -601,7 +601,7 @@ void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
 
 RVA(0x00159d40, 0x42)
 void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = m_head;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
     if (n != 0) {
         do {
             n->m_obj->BltDirtyRegions((CDDrawSurfacePair*)a1, (CDDrawSurfacePair*)a2, a3);
@@ -615,7 +615,7 @@ void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
 // Walk the +0x14 list setting each child's field at +0xd8 to -1.
 RVA(0x00159d90, 0x1c)
 void CDDrawChildGroup::ResetChildD8() {
-    CDDrawGroupNode* n = m_head;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -721,7 +721,7 @@ i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2);
 // compiled fine in the smaller pre-split TU).
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
-    CDDrawGroupNode* outer = m_head;
+    CDDrawGroupNode* outer = (CDDrawGroupNode*)m_list.GetHeadPosition();
     while (outer != 0) {
         char* oi = (char*)outer->m_obj;
         CDDrawGroupNode* nextOuter = outer->m_next;
@@ -889,7 +889,7 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
     if (!(m_flags08 & 0x200000)) {
         return;
     }
-    CDDrawGroupNode* node = m_head;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
     CDDrawSurfacePair* drawHost = m_parent->m_pages->m_backPair;
     CPlaneRender* view = (CPlaneRender*)m_parent->m_resolveSubMgr->m_mainPlane;
     if (node == 0) {

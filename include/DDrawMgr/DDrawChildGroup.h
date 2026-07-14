@@ -64,7 +64,9 @@ struct CDDrawGroupNode {
 // ---------------------------------------------------------------------------
 class CDDrawChildGroup : public CWapObj {
 public:
-    virtual ~CDDrawChildGroup() OVERRIDE; // slot 1  scalar-deleting dtor (0x157610)
+    // slot 1: ??1 @0x157630 (defined in DDrawSubMgr.cpp, the family dtor pocket -
+    // the ex CDDrawChildGroupDtorHost view; ??_G @0x157610 is cl-generated there).
+    virtual ~CDDrawChildGroup() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;      // slot 5  0x1575e0 (parent set && status != -1)
     virtual i32 IsReady() OVERRIDE;       // slot 6  0x1576c0 (own `return 1` copy)
     virtual void ForwardTo3C();           // slot 7  0x1591e0 -> DestroyChildren
@@ -86,11 +88,13 @@ public:
     // +0x0c  the owning CDDrawSurfaceMgr (the world/display root; its +0x24 is the
     // CGameLevel and +0x04 the pages sub-manager).
     class CDDrawSurfaceMgr* m_parent;
-    char m_pad10[0x14 - 0x10]; // +0x10..0x13 (the +0x10 CObList's vptr)
-    CDDrawGroupNode* m_head;   // +0x14  the +0x10 CObList's node-head (intrusive walk)
-    char m_pad18[0x1c - 0x18]; // +0x18..0x1b (the CObList's pTail)
-    i32 m_count;               // +0x1c  the CObList's m_nCount (CPlay::DrawDebugStats "Objs = %i")
-    char m_pad20[0x2c - 0x20]; // +0x20..0x2b (rest of the +0x10 CObList)
+    // +0x10  the REAL CObList (0x1c bytes: vptr, pNodeHead@+0x14, pTail, nCount@+0x1c,
+    // free/blocks/blocksize). The intrusive walkers read the head via the inline
+    // GetHeadPosition() (same `mov reg,[this+0x14]` bytes) cast to CDDrawGroupNode
+    // (the CNode shape); DrawDebugStats reads GetCount() (inline m_nCount @+0x1c).
+    // Was pads + raw m_head/m_count fields; the real member makes ~CDDrawChildGroup
+    // emit the retail ~CObList teardown (0x1b5a2b) under its own /GX trylevel.
+    CObList m_list;
     CMapPtrToPtr m_map2c;      // +0x2c  (CMapPtrToPtr::Lookup 0x1b8760, FID-confirmed)
     CMapPtrToPtr m_map48;      // +0x48
 
