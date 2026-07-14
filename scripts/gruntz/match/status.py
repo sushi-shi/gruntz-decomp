@@ -637,11 +637,12 @@ def cmd_check(args) -> int:
         print(f"\n{kind} ({len(rows)}):")
         for u, f, p, b in sorted(rows, key=lambda r: (r[2] - r[3]) if (r[2] is not None and r[3] is not None) else 0):
             if p is None:
-                print(f"  {u:<16} {f}\n      was best {b:.4f}, now absent")
+                print(f"  {u:<16} {f}\n      MAX {b:.4f} (preserved)  now absent")
             elif b is None:
-                print(f"  {u:<16} {f}   {p:.4f}")
+                print(f"  {u:<16} {f}   now {p:.4f}")
             else:
-                print(f"  {u:<16} {f}\n      {b:.4f} {arrow} {p:.4f}   (Δ {p - b:+.4f})")
+                print(f"  {u:<16} {f}\n      MAX {b:.4f} (held) {arrow} now {p:.4f}   "
+                      f"(current Δ {p - b:+.4f})")
 
     show("REGRESS", regress, "->")
     show("LOST", lost, "->")
@@ -656,8 +657,10 @@ def cmd_check(args) -> int:
         # controls (matching one fn shifts a shared TU's codegen and nudges a
         # sibling; the target/delink side moves). This is a review signal, not a
         # build failure. Use --strict to opt into a non-zero exit (CI gate).
-        print(f"\n{n} regression(s) to review. If a drop is uncontrollable/intended, "
-              f"bless it: python -m gruntz.match.status update --accept-regressions")
+        print(f"\n{n} CURRENT-% dip(s) to review. The MAX fuzzy shown (best-ever) is the "
+              f"TRACKED metric and is PRESERVED for each one above - a current dip is fine "
+              f"unless it means a real body broke; do NOT revert clean/typed work to chase "
+              f"current %. Bless when reviewed: python -m gruntz.match.status update --accept-regressions")
     else:
         extra = ""
         if buckets.get("IMPROVE"):

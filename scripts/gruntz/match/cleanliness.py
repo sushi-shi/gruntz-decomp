@@ -94,6 +94,29 @@ def _count_nonstring_m_casts(code: str) -> int:
     return len(_M_CAST.findall(code)) - len(_STR_M_CAST.findall(code))
 
 
+# Offset-access cast-hiding macros: `#define F(p,o) (*(i32*)((char*)(p)+(o)))` (also P/PTR/I32/DBL/
+# M/W/WTS_*/PB_*/GREG_*/FEC_*/I32AT). Each expands to the raw-offset cast the ratchet counts but
+# HIDES every call-site (the define counts once as a `(char*)` cast; the N uses vanish at
+# preprocessing). Count each such macro's def + every call-site -> the true hidden-cast footprint.
+# Cast-ratchet EVASION; dissolve into real typed member access `p->m_field`.
+_OFFSET_MACRO_DEF = re.compile(
+    r"#define\s+(\w+)\s*\([^)]*\)\s*\(\s*\*\s*\(\s*\w[\w ]*\*\s*\)\s*\(\s*\(\s*char\s*\*\s*\)"
+)
+
+
+def _count_offset_macro_casts(code: str) -> int:
+    total = 0
+    for m in _OFFSET_MACRO_DEF.finditer(code):
+        total += len(re.findall(r"\b" + re.escape(m.group(1)) + r"\s*\(", code))
+    return total
+
+
+# Per-TU `extern` decls: a global/function re-declared in a consumer .cpp instead of living in its
+# OWNER's header (which consumers #include). extern "C" DATA-array globals that need it for mangling
+# are the residual; the rest belong in owner headers. .cpp-only (a header `extern` IS the owner decl).
+_CPP_EXTERN = re.compile(r"^\s*extern\b", re.MULTILINE)
+
+
 # (label, matcher, cpp_only). matcher = compiled regex (findall count) OR a callable
 # code->int for structural counts. Occurrences summed over stripped code.
 METRICS = (
@@ -115,6 +138,9 @@ METRICS = (
     ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
     ("(const char*) casts", re.compile(r"\(const char ?\*\)"), False),
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
+    # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
+    ("offset-cast macros", _count_offset_macro_casts, False),
+    ("cpp extern decls", _CPP_EXTERN, True),
 )
 
 
