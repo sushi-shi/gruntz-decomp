@@ -14,71 +14,26 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+#include <Gruntz/GameRegistry.h> // canonical *0x64556c singleton (CGameRegistry; m_68/m_world/view bounds)
+#include <Gruntz/TypeKeyColl.h>  // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h> // strcmp (inlined /O2)
 
-// The area-hit-test result chain (HitTestCell -> object -> type index).
-SIZE_UNKNOWN(HbF14);
-struct HbF14 {
-    char m_pad00[0x1c];
-    i32 m_1c; // +0x1c  type index fed to g_typeColl.IndexToPtr
-};
-SIZE_UNKNOWN(HbCellMgr);
-struct HbCellMgr { // g_gameReg->m_68
-    // FUN_004035f3 (thunk) __thiscall: hit-test a cell, returning the object +
-    // its (areaId, subId) out-params.
-};
 // The per-leaf anim sub-object embedded at CGameObject+0x1a0: its Advance @0x15c360 is
 // CAniAdvanceCursor::Advance_15c360 (header-less; the canonical class is a CLoadable,
 // see <Gruntz/AniAdvanceCursor.h>). Local minimal decl - only the non-virtual advance
 // call is reached here (via a cast), no fields/vtable.
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance_15c360)
-// The shared sound chain (the CBootyState ambient-cue idiom, reused here).
-SIZE_UNKNOWN(HbSndPlayer);
-struct HbSndPlayer {
-    // Play @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at the call.
-};
-SIZE_UNKNOWN(HbSndEntry);
-struct HbSndEntry {
-    char m_pad00[0x10];
-    HbSndPlayer* m_10; // +0x10
-    u32 m_14;          // +0x14  last-played stamp
-    u32 m_18;          // +0x18  interval
-};
-// (The ex-`HbSndTable` view is DISSOLVED: an empty phantom aliasing the MFC library map
-// Lookup at 0x1b8438 - the member below is the real map.)
-// THE MAP IS ::CMapStringToPtr, NOT CMapStringToOb (mfc_class + disasm, 2026-07-13):
-// CInGameText::Update (0x997c0) `call 0x1b8438`, and mfc_class names that band
-// [0x1b8247, 0x1b85b1) CMapStringToPtr (its ctor stamps ??_7CMapStringToPtr@B@ 0x1eb014).
-// CMapStringToOb is the SEPARATE band [0x1b7e17, 0x1b8247) whose Lookup is 0x1b8008. The
-// old CMapStringToOb decl bound the WRONG routine (reloc-masked -> objdiff saw nothing).
-SIZE_UNKNOWN(HbSndSet);
-struct HbSndSet {
-    char m_pad00[0x10];
-    CMapStringToPtr m_10; // +0x10  (Lookup 0x1b8438)
-    char m_pad11[0x30 - 0x11];
-    i32 m_30; // +0x30  active guard
-};
-SIZE_UNKNOWN(HbSndMgr);
-struct HbSndMgr {
-    char m_pad00[0x28];
-    HbSndSet* m_28; // +0x28
-};
-SIZE_UNKNOWN(HbMgr);
-struct HbMgr { // the *0x64556c singleton, this method's view
-    char m_pad00[0x30];
-    HbSndMgr* m_world; // +0x30  sound mgr
-    char m_pad34[0x68 - 0x34];
-    HbCellMgr* m_68; // +0x68  cell hit-tester
-    char m_pad6c[0x13c - 0x6c];
-    i32 m_13c; // +0x13c  area rect (x lo)
-    i32 m_140; // +0x140  (y lo)
-    i32 m_144; // +0x144  (x hi)
-    i32 m_148; // +0x148  (y hi)
-};
+#include <Gruntz/LeafCue.h>          // LeafCue (the looked-up sound cue: m_10/m_14/m_18)
+// The shared sound chain is fully canonical (same as Projectile/VideoConfig/BootyState):
+// g_gameReg->m_world->m_28 is the CSndHost (SoundCue.h, pulled by GameRegistry.h) whose
+// +0x10 CMapStringToPtr cue registry maps "GAME_HELPBOOK" to a LeafCue, whose +0x10
+// CSoundCueMgr plays it (ConfigureItem @0x1360d0). No per-TU view - the real types.
+// The *0x64556c singleton is the canonical CGameRegistry: m_cmdGrid the CTriggerMgr cell
+// hit-tester, m_world the resource holder (its +0x28 CSndHost is the cue host),
+// m_viewOriginL/T/R/B (+0x13c..+0x148) the on-screen view bounds.
 DATA(0x0024556c)
-extern "C" HbMgr* g_gameReg; // _g_mgrSettings (the *0x64556c singleton)
+extern "C" CGameRegistry* g_gameReg;
 // The 4-byte default-constructed CString cache nodes (FUN_001b9b93 == CString
 // default ctor; matched array-touch loop). g_typeColl.m_alloc is the base pointer.
 SIZE_UNKNOWN(EngStr4);
@@ -115,8 +70,8 @@ i32 CInGameText::Update() {
 
     i32 areaId;
     i32 subId;
-    CGrunt* found = (CGrunt*)((CTriggerMgr*)g_gameReg->m_68)
-                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
+    CGrunt* found = (CGrunt*)g_gameReg->m_cmdGrid->HitTestCell(
+        m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
     if (found == 0) {
         m_cachedSubId = -1;
         m_38->m_stateFlags &= ~1;
@@ -151,21 +106,21 @@ i32 CInGameText::Update() {
     CGameObject* o = m_object;
     i32 x = o->m_screenX;
     i32 y = o->m_screenY;
-    if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c && y < g_gameReg->m_148
-        && y >= g_gameReg->m_140) {
-        HbSndSet* set = g_gameReg->m_world->m_28;
+    if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
+        && y < g_gameReg->m_viewOriginB && y >= g_gameReg->m_viewOriginT) {
+        CSndHost* set = g_gameReg->m_world->m_28;
         if (set->m_30 == 0) {
             void* res_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
             set->m_10.Lookup("GAME_HELPBOOK", res_ob);
-            HbSndEntry* res = (HbSndEntry*)res_ob;
+            LeafCue* res = (LeafCue*)res_ob;
             if (res != 0) {
                 i32 enable = g_sndEnabled;
                 i32 token = g_sndCueTag;
                 if (enable != 0) {
                     u32 now = g_killCueClock;
-                    if (now - res->m_14 >= res->m_18) {
+                    if ((u32)(now - res->m_14) >= (u32)res->m_18) {
                         res->m_14 = now;
-                        ((CSoundCueMgr*)res->m_10)->ConfigureItem(token, 0, 0, 0);
+                        res->m_10->ConfigureItem(token, 0, 0, 0);
                     }
                 }
             }
