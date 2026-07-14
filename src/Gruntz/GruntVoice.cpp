@@ -17,7 +17,8 @@
 #include <Gruntz/VoiceTrigger.h>          // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/GameRegistry.h>          // g_gameReg / g_gameReg->m_world->m_8
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free); typedef CGrunt CTmCell
+#include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver @0x11b3b0)
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_13400 (CUFO fold-flat leaf dtor, RVA-homed here)
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Gruntz/TypeKeyColl.h>
@@ -65,13 +66,11 @@ extern "C" CGameRegistry* g_gameReg;
 // -> g_actCache, Insert 0x16d850) yielding g_vtrigCur. All BSS globals DATA-pinned
 // so the loads reloc-mask; the collection methods are external/no-body.
 // ---------------------------------------------------------------------------
-struct CVTrigEntry;        // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
-struct CVTrigEntry {
-    void (CVoiceTrigger::*m_fn)(); // [entry]
-};
-SIZE_UNKNOWN(CVTrigEntry);
+// (The registry Entry type CVTrigEntry - a CVoiceTrigger PMF at [entry] - is the
+// canonical <Gruntz/VoiceTrigger.h> type, mirroring GruntVoice.h's CVActEntry; no
+// per-TU view.)
 
 // SAME INTERIOR-OFFSET TRAP as the 0x6514d8 block above, and the old comment right here
 // spelled the shape out without drawing the conclusion: "the SAME range/cache shape as every
@@ -117,43 +116,16 @@ static inline char* ActNameLookup(i32 id) {
 // referenced by address so the DIR32 operand reloc-masks.
 extern i32 VTrigLogic_11a700();
 
-// The on-screen-cue receiver (g_gameReg->m_68). QueryAt (0x75c60, via the 0x32ce
-// thunk) resolves the entity whose screen rect overlaps the trigger; CueA
-// (0x11b3b0, via the 0x39f4 thunk) fires the voice cue on it. Both __thiscall,
-// modeled NO-body so the calls reloc-mask.
-struct CVoiceHit; // the entity FindGruntAt returns (a reduced view of CTmCell)
-class CGruntSpawnConfig {
-public:
-    i32 SpawnVoiceDriver(
-        i32 a,
-        i32 b,
-        i32 c,
-        i32 d,
-        i32 e,
-        i32 f
-    ); // real @0x11b3b0 = 6 args (ret 0x18)
-};
-struct CVoiceSink {
-    // FindGruntAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> entity* (or 0).
-    // The probe IS CTriggerMgr::FindGruntAt (m_cmdGrid), called cast-free.
-    // CueA(hit, m_object->m_124, m_object->m_128, 0, -1, -1) -> nonzero on fire.
-    // CueA IS CGruntSpawnConfig::SpawnVoiceDriver (padded); cast at the call.
-};
-SIZE_UNKNOWN(CVoiceSink);
-
-// The entity QueryAt returns: its bound sprite (+0x10) carries the screen x/y
-// (+0x5c/+0x60) the on-screen window test reads.
-struct CVoiceHitSprite {
-    char m_pad0[0x5c];
-    i32 m_screenX; // +0x5c screen x
-    i32 m_screenY; // +0x60 screen y
-};
-SIZE_UNKNOWN(CVoiceHitSprite);
-struct CVoiceHit {
-    char m_pad0[0x10];
-    CVoiceHitSprite* m_sprite; // +0x10 bound sprite
-};
-SIZE_UNKNOWN(CVoiceHit);
+// The on-screen cue path (Tick). FindGruntAt (0x75c60, via the 0x32ce thunk) is
+// CTriggerMgr::FindGruntAt and returns the placed grunt under the trigger's screen
+// rect as a CTmCell* == CGrunt* (typedef CGrunt CTmCell, <Gruntz/TriggerMgr.h>);
+// the cue fire (0x11b3b0, via the 0x39f4 thunk) is CGruntSpawnConfig::SpawnVoiceDriver
+// (canonical <Gruntz/GruntSpawnConfig.h>). Both __thiscall, reloc-masked.
+//   FindGruntAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> grunt* (or 0).
+//   SpawnVoiceDriver(hit, m_object->m_124, m_object->m_128, 0, -1, -1) -> nonzero on fire.
+// The returned grunt's own bound object sits at +0x10 (CUserLogic::m_object); its
+// screen x/y are read at +0x5c/+0x60 (CGameObject). The former CVoiceHit/
+// CVoiceHitSprite/CVoiceSink .cpp-local views are dissolved onto CGrunt/CGameObject.
 
 // Tick reads the bound object (m_10, CGameObject*) directly: +0x5c/+0x60 screen
 // x/y, +0x124/+0x128 the voice-cue ids passed to CueA, +0x134/+0x144 the probe rect
@@ -470,7 +442,7 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CVoiceHit* hit = (CVoiceHit*)g_gameReg->m_cmdGrid->FindGruntAt(
+    CTmCell* hit = g_gameReg->m_cmdGrid->FindGruntAt(
         m_object->m_screenX,
         m_object->m_screenY,
         (RECT*)&m_object->m_extentL,
@@ -479,7 +451,9 @@ i32 CVoiceTrigger::Tick() {
         (RECT*)&m_object->m_areaL
     );
     if (hit && outA == g_curPlayer) {
-        CVoiceHitSprite* hs = hit->m_sprite;
+        // hit is a CGrunt; its bound object sits at +0x10 (CUserLogic::m_object),
+        // reached by offset since CGrunt is only forward-declared in this TU.
+        CGameObject* hs = *(CGameObject**)((char*)hit + 0x10);
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
         if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL

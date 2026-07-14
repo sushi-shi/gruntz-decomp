@@ -42,4 +42,15 @@ public:
 };
 VTBL(CVoiceTrigger, 0x001e885c);
 
+// The activation-registry Entry: its first dword is a pointer-to-member-function of
+// CVoiceTrigger (single inheritance -> a 4-byte code pointer); FireActivation invokes
+// it on `this`, emitting `mov ecx,this; call [entry]`. Mirrors GruntVoice.h's
+// CVActEntry/VActHandler; the class must be COMPLETE above so MSVC sizes the PMF as a
+// bare 4-byte code pointer (an incomplete type forces the 8-byte general PMF).
+typedef void (CVoiceTrigger::*VTrigHandler)();
+SIZE_UNKNOWN(CVTrigEntry);
+struct CVTrigEntry {
+    VTrigHandler m_fn; // [entry]  the registered handler PMF
+};
+
 #endif // GRUNTZ_CVOICETRIGGER_H
