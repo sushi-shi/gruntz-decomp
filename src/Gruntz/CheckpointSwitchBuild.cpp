@@ -30,17 +30,10 @@
 // The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
 // CreateSprite @0x1597b0 returns the created CGameObject (ApplyLookupSprite @0x1504d0
 // configures it; the +0x7c AnimWorkerObj Init runs post-create; m_layer gates success).
-SIZE_UNKNOWN(CStatzFactoryHolder);
-struct CStatzFactoryHolder {
-    char m_pad0[0x8];
-    CSpriteFactory* m_8; // +0x08
-};
-struct CStatzGameReg {
-    char m_pad0[0x30];
-    CStatzFactoryHolder* m_world; // +0x30
-};
-// g_statzGameReg was a SECOND NAME for g_gameReg (0x24556c the game registry) - same address,
-// so nothing ever defined it. Unified onto the canonical.
+// g_statzGameReg was a SECOND NAME for g_gameReg (0x24556c the game registry) - same
+// address, so nothing ever defined it. Unified onto the canonical CGameRegistry; the
+// dead CStatzFactoryHolder/CStatzGameReg local views (m_world->m_8 == the canonical
+// CSpriteFactory) are dissolved.
 extern "C" CGameRegistry* g_gameReg;
 DATA(0x0020aa34)
 char g_statzTabSpriteName[] = "BehindCandy"; // CreateSprite name buffer

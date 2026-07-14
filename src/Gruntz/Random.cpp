@@ -4,8 +4,9 @@
 // (g_randSeeded/g_randSeed), the second generator's state (g_rng2*) is here.
 #include <Gruntz/Random.h>
 
-#include <Win32.h>
+#include <Mfc.h> // superset of Win32.h; GameRegistry.h pulls afx via SoundCue.h
 #include <rva.h>
+#include <Gruntz/GameRegistry.h> // g_gameReg canonical view (0x24556c)
 
 // Owner-TU definitions of this TU's generator/coin state (.bss zero), RVA-ascending.
 // The srand/rand LCG helpers live here, so the primary generator's state is homed to
@@ -27,15 +28,10 @@ char g_rng2Seeded; // bit0 set once seeded
 DATA(0x002c2798)
 i32 g_rng2State; // 32-bit LCG state
 
-// The game-registry singleton (0x24556c); only its replay-mode flags are read
-// here, so a minimal local view (canonical DATA in src/Stub/ApiCallers.cpp).
-SIZE_UNKNOWN(CoinGameReg);
-struct CoinGameReg {
-    char m_pad0[0x130];
-    i32 m_130; // +0x130
-    i32 m_134; // +0x134 replay-active flag
-};
-extern "C" CoinGameReg* g_gameReg;
+// The game-registry singleton (0x24556c); only its replay-mode flags (m_130/m_134)
+// are read here. The former CoinGameReg local view is dissolved onto the canonical
+// CGameRegistry (<Gruntz/GameRegistry.h>) - same object, same offsets.
+extern "C" CGameRegistry* g_gameReg;
 
 namespace Rng {
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
@@ -137,7 +133,7 @@ namespace Rng {
     SYMBOL(?GetAmbientId@CPlay@@QAEHXZ)
     RVA(0x000da200, 0x9b)
     i32 CoinFlip::Flip() {
-        CoinGameReg* gr = g_gameReg;
+        CGameRegistry* gr = g_gameReg;
         if (gr->m_134 == 1 && gr->m_130 == 0) {
             return (m_1c + 1) % 2;
         }
