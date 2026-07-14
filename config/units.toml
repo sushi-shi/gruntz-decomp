@@ -879,9 +879,9 @@ source = "src/Gruntz/SpawnEntry.cpp"
 flags = "eh"
 
 [[unit]]
-# ClassUnknown_43 per-tick manager Update re-homed from Discovered.cpp.
-unit = "obj0f7d90"
-source = "src/Gruntz/Obj0f7d90.cpp"
+# CObjectTracker per-tick game-object tracker (ex-"Obj0f7d90"); Update re-homed from Discovered.cpp.
+unit = "objecttracker"
+source = "src/Gruntz/ObjectTracker.cpp"
 flags = "base"
 
 [[unit]]

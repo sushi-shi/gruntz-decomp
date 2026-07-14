@@ -259,7 +259,7 @@ netmgrmisc	1	1
 netsession	1	1
 netsessionnode	3	2
 netthingdtor	1	0
-obj0f7d90	1	0
+objecttracker	1	0
 orphanleaves	3	3
 orphanmethods	3	0
 packetpool	2	2
@@ -3035,7 +3035,7 @@ netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	2	33d25a36956c	0x
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	3	3c2d70d366e0	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	3	92ace19fe500	0x1795a0
 netthingdtor	??1CNetThing@@UAE@XZ	91.5790	91.5790	1	efbf31726082	0xc5280
-obj0f7d90	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	5	bbe42fe5ba8a	0xf7d90
+objecttracker	?Update@CObjectTracker@@QAEHXZ	97.9915	97.9915	5	bbe42fe5ba8a	0xf7d90
 orphanleaves	?EndWaitCursorOnThread@@YAXXZ	100.0000	100.0000	2	2fe8c1810007	0x18430
 orphanleaves	?GetGlobal5e8e98@@YAPAXXZ	100.0000	100.0000	2	4173b2b46bf6	0x183d0
 orphanleaves	?PickIfSelected@DlgHost_183f0@@QAEXXZ	100.0000	100.0000	4	4f7eb408153c	0x183f0

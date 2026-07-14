@@ -6,7 +6,7 @@
 // they are pieces of ONE retail obj. All folded onto the canonical CGrunt
 // (<Gruntz/Grunt.h>), CGameRegistry singleton facet. Placeholder field names; only
 // offsets + code bytes are load-bearing. The retail obj ALSO contains the interleaved
-// helper-class bodies (Grunt::ChargeStep, CGruntScan::ScanNearestTarget, Obj0f7d90,
+// helper-class bodies (Grunt::ChargeStep, CGruntScan::ScanNearestTarget, CObjectTracker,
 // the MgrListFind free fn) + CGrunt's four Grunt.cpp arrival fns (ResolveArrivalReposition,
 // ResolveArrivalNeighbor, StepArrivalDefense, StepArrivalDefenseLean) - those stay in
 // their own files pending the WwdGameReg/CGameRegistry singleton dual-view reconciliation
