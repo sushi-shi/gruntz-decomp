@@ -40,7 +40,7 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance_15c360)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance)
 #include <Gruntz/RollingBall.h>      // CRollingBall : CUserLogic (+ the /GX CString temps)
 
 #include <rva.h>
@@ -332,7 +332,7 @@ void CRollingBall::RegisterActs() {
 // reconstruction (prologue, explosion/fall latches, action/direction/sink switches,
 // x87 interpolation tail). Two binary-proven structural fixes landed the prologue
 // exactly (36.4%->38.0%): the m_38+0x1a0 sub-update is the real CAniAdvanceCursor::
-// Advance_15c360(g_engineFrameDelta) __thiscall (was a fake free-fn RbSubUpdate + a dead
+// Advance(g_engineFrameDelta) __thiscall (was a fake free-fn RbSubUpdate + a dead
 // g_engineFrameDelta load), and g_gameReg is re-loaded per use (retail does not cache the game
 // registry in a callee-saved reg - ~15 fresh ds:0x64556c loads). Residual is the
 // documented wall: MSVC5's constant-materialization (test eax,eax vs cmp [mem],ebx),
@@ -342,7 +342,7 @@ RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
     void* self = this;
 
-    ((CAniAdvanceCursor*)((char*)PTR(self, 0x38) + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)PTR(self, 0x38) + 0x1a0))->Advance(g_engineFrameDelta);
 
     void* anim = PTR(self, 0x38);
     if (I32(anim, 0x1c8) != 0 && I32(anim, 0x1c0) == 0) {

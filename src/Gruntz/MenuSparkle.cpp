@@ -6,7 +6,7 @@
 // under the Grunt.h-world serialize view (documented dual-model; never coexist in a
 // TU). Only offsets / code bytes are load-bearing.
 #include <Gruntz/MenuSparkle.h>
-#include <Gruntz/AniAdvanceCursor.h> // the +0x1a0 anim sub-object (Advance_15c360)
+#include <Gruntz/AniAdvanceCursor.h> // the +0x1a0 anim sub-object (Advance)
 #include <Bute/ButeTree.h>           // CButeTree (the "A" animset key store)
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
 
@@ -62,7 +62,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         m_objAux->m_130 -= delta;
     }
     if (m_objAux->m_130 == 0) {
-        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     }
     CAniAdvanceCursor* anim = (CAniAdvanceCursor*)((char*)m_38 + 0x1a0);
     i32 active = m_38->m_1c8;

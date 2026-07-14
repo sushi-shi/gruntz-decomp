@@ -31,7 +31,7 @@
 #include <Image/CImage.h>             // the REAL CImage (was the local CFrameWorker stand-in)
 #include <DDrawMgr/DDrawShadeBlit.h>  // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
 #include <Image/ImageSet.h>           // CImageSet (sparse CImage-frame collection)
-#include <Gruntz/AniAdvanceCursor.h>  // canonical CAniAdvanceCursor (Advance_15c360)
+#include <Gruntz/AniAdvanceCursor.h>  // canonical CAniAdvanceCursor (Advance)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
@@ -147,7 +147,7 @@ struct WwdSnapshot {
 extern void* operator new(u32 size);
 extern void operator delete(void* p);
 
-// The per-frame draw-delta / advance-context global handed to Advance_15c360. Canonical
+// The per-frame draw-delta / advance-context global handed to Advance. Canonical
 // _g_6bf3bc, DATA-defined in the GruntCreationPoint (tilelogicpump) TU @ RVA 0x2bf3bc;
 // referenced by that name so the reloc binds (the former g_defaultGeo was a local misnomer).
 extern "C" u32 g_engineFrameDelta; // 0x2bf3bc
@@ -193,7 +193,7 @@ RVA(0x00058b60, 0x2d)
 void CGameObject::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
     ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Setup_15c2d0((CAniElement*)srcSprite);
     if (applyDefault) {
-        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance(g_engineFrameDelta);
     }
 }
 
@@ -251,7 +251,7 @@ void CGameObject::ApplyName(const char* name) {
 // CGameObject::ApplyLookupGeometry @0x1505b0 - look a named sprite-set up through
 // this->m_c->m_2c->map and, on a hit, drive the geometry sub-player @this+0x1a0:
 // Setup_15c2d0(spr); then, when the second arg is set, apply the global default
-// geometry source g_engineFrameDelta via Advance_15c360. __thiscall, ret 8.
+// geometry source g_engineFrameDelta via Advance. __thiscall, ret 8.
 // ===========================================================================
 RVA(0x001505b0, 0x5c)
 i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
@@ -263,7 +263,7 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
     ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Setup_15c2d0((CAniElement*)(i32)spr);
     if (applyDefault) {
-        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance(g_engineFrameDelta);
     }
     return 1;
 }

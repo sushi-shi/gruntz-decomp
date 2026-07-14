@@ -17,7 +17,7 @@
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>   // the +0x34 serialized-object-reference (Chain @0x8c00)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (the +0x1a0 sub-object sync)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (the +0x1a0 sub-object sync)
 
 // The per-frame draw-delta the anim-cursor sync carries (0x6bf3bc, BSS; the same view
 // the indicator sprites use). External/no-body so the load reloc-masks.
@@ -819,7 +819,7 @@ i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // this 390-byte body differs from retail's and is not source-steerable. Deferred.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     CGameObject* obj = m_object;
     i32 cmd = obj->m_124;
     if (cmd == 0x55) {
@@ -1025,7 +1025,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 // this 397-byte body differs from retail's and is not source-steerable. Deferred.
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_driftPos;
     if (delta >= *(i64*)&m_driftThresh) {
         CGameObject* r = m_38;

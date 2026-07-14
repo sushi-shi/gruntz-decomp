@@ -423,7 +423,7 @@ void CWormhole::SpawnPartners() {
     // The geo-call dereferences m_38 once (its own ecx); the gate block then
     // re-reads m_38 ONCE into a scratch and reuses it for all three field reads
     // (the target keeps this=esi live across both, loading [esi+0x38] twice).
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
 
     // Gate: only spawn partners when the object is "open" (m_1c8 set) and not
     // already paired (m_1c0 clear); then mark it paired-in-progress (m_08 |= 0x10000).
@@ -640,7 +640,7 @@ i32 CGruntPuddle::Remove() {
             }
         }
     }
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     CGameObject* o = m_38;
     if (o->m_1c8 != 0 && o->m_1c0 == 0) {
         if (m_placed != 0) {
@@ -905,7 +905,7 @@ void CTeleporter_RegisterActs() {
 // CGruntPuddle::Place / CPlay::ApplyGameOptions carry; no source lever flips it.
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
 
     if (((CTeleAnimSink*)((char*)m_38 + 0x1a0))->m_28 == 0) {
         return 0;
@@ -945,7 +945,7 @@ i32 CTeleporter::Begin() {
 // carry; not source-steerable. Logic + every offset/branch/call-arg byte-faithful.
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     CGameObject* a = m_38;
     if (a->m_1c8 != 0 && a->m_1c0 == 0) {
         if (m_object->m_124 == 1) {

@@ -330,8 +330,10 @@ struct CGameRegistry {
     //   +0x11c/+0x120 (mgr input flags vs consumer sound-volume); +0x14 (base
     //   m_musicEnabled vs GruntzMgr level-loaded gate); +0x150 m_focusSlots (per-player
     //   focus/round state) vs GruntzMgr m_options[4] (registry config records).
-    char m_pad0[0x4];   // +0x00  CGameMgr vptr slot (base ??_7CGameMgr@@6B@)
-    void* m_gameWnd;    // +0x04  bound game window (base CGameMgr::m_gameWnd; window/host)
+    char m_pad0[0x4]; // +0x00  CGameMgr vptr slot (base ??_7CGameMgr@@6B@)
+    // +0x04  bound game window (base CGameMgr::m_gameWnd - typed CGameWnd* there
+    // too, <Wap32/Wap32.h>; fwd-decl keeps this header MFC/afx-neutral).
+    class CGameWnd* m_gameWnd;
     void* m_owner;      // +0x08  owning app (base CGameMgr::m_owner)
     i32 m_frameGate;    // +0x0c  nonzero suppresses per-frame advance / busy-pause gate
                         //         (base CGameMgr::m_frameGate; toggled, CanQuickSave gate)

@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <Gruntz/Effect6b.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360) - +0x1a0 advance
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - +0x1a0 advance
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
@@ -44,7 +44,7 @@ void CEffect6b::Apply(i32 a, i32 b) {
     m_c = m_4->m_1b4;
     ((CAniAdvanceCursor*)anim)->Setup_15c2d0((CAniElement*)a);
     if (b != 0) {
-        ((CAniAdvanceCursor*)anim)->Advance_15c360((i32)g_engineFrameDelta);
+        ((CAniAdvanceCursor*)anim)->Advance((i32)g_engineFrameDelta);
     }
 }
 

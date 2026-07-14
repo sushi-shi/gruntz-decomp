@@ -300,9 +300,9 @@ SIZE_UNKNOWN(CEntranceAnimSub);
 class CEntranceAnimSub {
 public:
     void SetGeometry(i32 srcSprite); // FUN_0055c2d0 (this = player+0x1a0, ret 4)
-    // (`Advance_15c360` used to be declared HERE too, mangling to
-    // ?Advance_15c360@CEntranceAnimSub@@QAEHI@Z - a symbol nothing defines. The body at
-    // 0x15c360 is CAniAdvanceCursor::Advance_15c360, already reconstructed in
+    // (`Advance` used to be declared HERE too, mangling to
+    // ?Advance@CEntranceAnimSub@@QAEHI@Z - a symbol nothing defines. The body at
+    // 0x15c360 is CAniAdvanceCursor::Advance, already reconstructed in
     // wwdfactoryobject, and that is what retail's bytes call at every one of these sites.
     // The 13 call sites now cast &player->m_1a0 to CAniAdvanceCursor, exactly as the other
     // ~30 sites in the tree already did. The member cannot simply be RETYPED because a real
@@ -310,7 +310,7 @@ public:
     // The geometry-state setter LoadEntranceConfig calls on entry; returns 1 when
     // the player is ready (FUN_0055c360, __thiscall ret 4 = 1 stack arg). Same
     // engine fn as SpriteResource's SetGeoSource, but the int return is used here.
-    // SetGeoSourceR @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at each call.
+    // SetGeoSourceR @0x15c360 IS CAniAdvanceCursor::Advance; cast at each call.
     // Data-less view: the geometry sub-player's m_20/m_28 (abs CGrunt+0x154+0x1a0
     // +0x20/+0x28) live PAST the player's own m_1b4, so they are not modeled as
     // embedded data here (that would corrupt m_1b4's offset). LoadEntranceConfig's
@@ -325,6 +325,8 @@ class CGruntCell {
 public:
     // GetName @0x310f0 IS zDArray::IndexToPtr; cast at each call.
 };
+
+class CAniAdvanceCursor; // the +0x1a0 cursor sub-object (<Gruntz/AniAdvanceCursor.h>)
 
 SIZE_UNKNOWN(CEntranceAnimPlayer);
 class CEntranceAnimPlayer {
@@ -353,6 +355,17 @@ public:
     void CacheFrame(const char* key, i32 frame);          // 0x150540
     void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
     void ApplyGeometryDirect(i32 src, i32 flag);          // 0x58b60
+
+    // The +0x1a0 anim-advance cursor sub-object (Advance @0x15c360, the armed/
+    // running gates m_20/m_28). ONE accessor instead of the 13 per-site
+    // `(CAniAdvanceCursor*)&player->m_1a0` casts. The cursor's 0x3c extent
+    // OVERLAPS this class's m_1a4/m_1b4/m_1c0/m_1c8 (those ARE cursor fields:
+    // m_1b4 == cursor m_14 active descriptor, m_1c0/m_1c8 == cursor m_20/m_28);
+    // embedding the real 0x3c value member (and deleting the duplicates) is the
+    // full fold, deferred with the player==CGameObject view reconciliation.
+    CAniAdvanceCursor* Cursor() {
+        return (CAniAdvanceCursor*)&m_1a0;
+    }
 
     char m_pad0[0x8];
     i32 m_8;              // +0x08  state-flag word (death loader |= 1 / |= 0x10000)
@@ -1246,12 +1259,14 @@ public:
     i32 Dispatch(i32 kind, i32 a);
     virtual i32 Activate() OVERRIDE;        // slot 6  @0x5caa0
     virtual i32 UserLogicVfunc6() OVERRIDE; // slot 8  (0x62b40)
-    virtual i32 UserLogicVfunc7() OVERRIDE; // slot 9  @0x61cb0 (attack-fire step)
+    virtual i32 StepAttackFire() OVERRIDE; // slot 9  @0x61cb0 (attack-fire step)
     // slot 9 @0x61cb0 - the per-frame ATTACK-FIRE step (defined in
-    // ProjectileUpdate.cpp): ticks the attack anim; at the fire cue spawns the
-    // ranged projectile ("Projectile"/"Boomerang"/"TimeBomb" by tool kind) or
-    // delivers the melee hit to the neighbor-cell grunt, then applies the
-    // "AttackDowntime" timer. Returns 0.
+    // GruntEntranceArrival.cpp; ex the CGruntFireView::Update misbinding): ticks
+    // the attack anim; at the fire cue spawns the ranged projectile
+    // ("Projectile"/"Boomerang"/"TimeBomb" by tool kind) or delivers the melee
+    // hit to the neighbor-cell grunt, then applies the "AttackDowntime" timer.
+    // Returns 0. (Base CUserLogic slot 9 is a return-0 default; this is its one
+    // known override, hence the slot's name.)
     virtual i32 UserLogicVfunc9() OVERRIDE; // slot 11 @0x48360
     virtual void MovingSlot16() OVERRIDE;   // slot 16 @0x5f310
 
@@ -1808,6 +1823,17 @@ public:
     // (scratch form), re-latch on "D", create the HUD stat sprites on arrival, then
     // dispatch the +0x1a0 move mode.
     i32 RunEntranceMove();
+    // @0x64540 (ret 0) - the anim-code "C" act handler (PROVEN: RegisterActs_644af0
+    // @0x5be30 stores its ILT thunk 0x13cf into the g_reg_644af0 registry under the
+    // "C" key @0x60cc90; RunAct dispatches those PMFs on the grunt). Advance the
+    // entrance player's cursor; once arrived-and-idle: if the death kind is the
+    // warp (m_deathType == 0xc) and "WORLDZ\LEVEL%i" (level+100, the secret level)
+    // exists in the level bank, post the level-switch command (WM_COMMAND 0x807f)
+    // to the game window; then (unless m_36c suppresses) notify the owner tile
+    // cell and retire the entrance player. (Ex CUserLogic::winapi_064540_PostMessageA
+    // + the CWarpLeaf/CWarpM154/CWarpMgr/CWarpMgrWnd/CWarpLevelReg views - every
+    // offset is this layout: m_154/m_tileOwnerHi/Lo/m_tileMgr/m_deathType/m_36c.)
+    i32 StepWarpExit(); // @0x64540
 
     // The engine helpers these machines call (all external/no-body, reloc-masked;
     // modeled as __thiscall methods on the grunt so `mov ecx,this; ...; call`
@@ -1939,7 +1965,7 @@ public:
     //  CGrunt INHERITS. Its call site resolves to the base method, cast-free.)
 
     // --- entrance/arrival per-tick steps (RunAct-dispatched; GruntEntranceArrival.cpp) ---
-    // Each advances the entrance geometry sub-player (m_154->m_1a0.Advance_15c360),
+    // Each advances the entrance geometry sub-player (m_154->m_1a0.Advance),
     // and (once the sub-player is armed-but-not-running: m_1a0.m_28!=0 && m_1a0.m_20==0)
     // runs an arrival/entrance commit driven by the tile-mgr + tile-occupancy board.
     i32 StepEntranceRelatchA(); // @0x62840 (re-latch "A" anim, board-gated commit/HUD)

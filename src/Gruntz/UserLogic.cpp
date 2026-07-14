@@ -11,7 +11,7 @@
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Gruntz/TriggerMgr.h>       // CTriggerMgr::NotifyCell (winapi_064540 arrival anim)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (winapi_064540)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (winapi_064540)
 #include <Mfc.h>                     // CString / RECT / PostMessageA
 #include <Bute/SymTab.h>             // CSymTab::ResolveQualified (winapi_064540 level lookup)
 #include <Gruntz/LogicTypeId.h>      // LogicTypeId (CUserBase/CUserLogic GetTypeTag)
@@ -61,7 +61,7 @@ i32 CUserLogic::UserLogicVfunc5() {
 i32 CUserLogic::UserLogicVfunc6() {
     return 0;
 }
-i32 CUserLogic::UserLogicVfunc7() {
+i32 CUserLogic::StepAttackFire() {
     return 0;
 }
 i32 CUserLogic::UserLogicVfunc8() {
@@ -96,7 +96,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 // @rva-symbol: ?Activate@CUserLogic@@UAEHXZ 0x000033dc
 // @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x00002162
 // @rva-symbol: ?UserLogicVfunc6@CUserLogic@@UAEHXZ 0x000026b7
-// @rva-symbol: ?UserLogicVfunc7@CUserLogic@@UAEHXZ 0x00001361
+// @rva-symbol: ?StepAttackFire@CUserLogic@@UAEHXZ 0x00001361
 // @rva-symbol: ?UserLogicVfunc8@CUserLogic@@UAEHXZ 0x000023f6
 // @rva-symbol: ?UserLogicVfunc9@CUserLogic@@UAEHXZ 0x0000225c
 // @rva-symbol: ?UserLogicVfuncA@CUserLogic@@UAEHXZ 0x0000150a

@@ -23,7 +23,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360)
 #include <Gruntz/TriggerMgr.h>       // CTriggerMgr::NotifyCell (0x79fb0) + CellDispatch (0x6bcb0)
 #include <Gruntz/TileWireLogic.h>    // CTileWireLogic::WireTileSwitchLogic (0x6c130)
 #include <Gruntz/FreeNodePool.h>
@@ -214,7 +214,7 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // gate branch ordering, and the cross-arm regalloc. Deferred to the final sweep.
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance((u32)g_engineFrameDelta);
     // The geometry sub-player @m_154+0x1a0: m_20/m_28 live past its own m_1b4, so
     // read via raw offsets off &player->m_1a0 (keeps cl on one base).
     i32* sub = (i32*)((char*)m_154 + 0x1a0);
@@ -464,7 +464,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 // edx/ecx coin-flip; no source lever flips it (an explicit `int z=0;` did not pin).
 RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
-    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta) == 1) {
+    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance((u32)g_engineFrameDelta) == 1) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         CGruntHud* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
@@ -575,7 +575,7 @@ void CGrunt::LoadEntranceConfig() {
 // as ResetGeometry @0x616e0) - no source lever flips it. ~88.5%.
 RVA(0x00068370, 0x14c)
 void CGrunt::RearmEntranceDrop() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance((u32)g_engineFrameDelta);
 
     if (*(i32*)((char*)m_154 + 0x1a0 + 0x28) != 0 && *(i32*)((char*)m_154 + 0x1a0 + 0x20) == 0) {
         m_22c = 0;
@@ -882,7 +882,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // that whole referent set is a final-sweep task.
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance((u32)g_engineFrameDelta);
     char* sub = (char*)m_154 + 0x1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
@@ -1198,7 +1198,7 @@ finalize:
 // cascade (~87.4%). Logic complete; deferred to the final sweep.
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance((u32)g_engineFrameDelta);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
         if (m_freezeUnfrozen != 0) {
@@ -1242,14 +1242,14 @@ i32 CGrunt::LoadFreezeSpellAssets() {
 
 // ---------------------------------------------------------------------------
 // CGrunt::FinishEntranceMove()  @0x69fd0  (__thiscall, ret 0)
-// Arm the entrance geometry source ((CAniAdvanceCursor*)&(m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta)); when
+// Arm the entrance geometry source ((CAniAdvanceCursor*)&(m_154->m_1a0)->Advance((u32)g_engineFrameDelta)); when
 // the geometry sub-player is armed-but-not-running (sub+0x28 != 0 && sub+0x20 == 0):
 // unless m_36c is already set, notify the tile-mgr of the drop, then retire the
 // entrance player (m_154->m_8 |= 0x10000). Returns 0.
 RVA(0x00069fd0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
-    // 0x15c360 = CAniAdvanceCursor::Advance_15c360 (cast the m_1a0 geometry facet)
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    // 0x15c360 = CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance((u32)g_engineFrameDelta);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;

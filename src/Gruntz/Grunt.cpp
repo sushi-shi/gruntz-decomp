@@ -157,7 +157,7 @@ i32 g_movingSeed;
 #include <Bute/ButeMgr.h>
 // The former per-TU CDDrawBlitParam / CAniAdvanceCursor facet views (the +0x1a0
 // geometry sub-player setters/probe) are folded onto CEntranceAnimSub / CGruntAnimSub
-// (<Gruntz/Grunt.h>), reached as state->m_1a0.SetGeometry / .Advance_15c360.
+// (<Gruntz/Grunt.h>), reached as state->m_1a0.SetGeometry / .Advance.
 
 // The created HUD/lose-item sprite + the entrance player reach their CGameObject-base
 // name/sprite/geometry setters directly (CHudSprite / CEntranceAnimPlayer in

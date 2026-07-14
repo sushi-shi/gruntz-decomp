@@ -232,7 +232,7 @@ void CGruntCreationPoint::RegisterActs() {
 // return 0. Same archetype as CSimpleAnimation::AdvanceAnim (0x0abf70).
 RVA(0x0003ecc0, 0x17)
 i32 CGruntCreationPoint::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     return 0;
 }
 

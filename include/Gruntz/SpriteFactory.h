@@ -49,8 +49,11 @@ SIZE_UNKNOWN(GruntObjMap);
 // MFC CMapPtrToPtr (the serialize-time key->object map). Lookup @0x1b8760 is
 // declared-only (external, no body) so the __thiscall `lea ecx,[&map]; call` falls
 // out reloc-masked - the MFC-free consumers reach it without pulling <afx.h>.
+// The stored values ARE the created game sprites, so the out-param is typed
+// CGameObject*& (kills the per-site (CGameObject*) retrieval casts; the mangled
+// name shift is free - the symbol was reloc-masked/undefined either way).
 struct GruntObjMap {
-    i32 Lookup(void* key, void*& out); // 0x1b8760 (CMapPtrToPtr::Lookup)
+    i32 Lookup(void* key, CGameObject*& out); // 0x1b8760 (CMapPtrToPtr::Lookup)
 };
 class CSpriteFactory {
 public:

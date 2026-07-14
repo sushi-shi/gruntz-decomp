@@ -43,15 +43,15 @@
 
 // The CProjAnim/CProjRenderObj facet methods forward (out-of-line, defined here so the
 // shared Projectile.h stays light) to the canonical engine classes: the +0x1a0 anim
-// sub-object's SetGeometry/Advance_15c360 -> CDDrawBlitParam::Setup_15c2d0 /
-// CAniAdvanceCursor::Advance_15c360, and the render object's CacheFirstFrame/
+// sub-object's SetGeometry/Advance -> CDDrawBlitParam::Setup_15c2d0 /
+// CAniAdvanceCursor::Advance, and the render object's CacheFirstFrame/
 // ApplyLookupGeometry -> CGameObject::ApplyName / ApplyLookupGeometry. All calls
 // reloc-mask, so no phantom symbol is emitted and the sites stay cast-free.
 void CProjAnim::SetGeometry(void* src) {
     ((CAniAdvanceCursor*)this)->Setup_15c2d0((CAniElement*)src);
 }
-i32 CProjAnim::Advance_15c360(u32 clock) {
-    return ((CAniAdvanceCursor*)this)->Advance_15c360(clock);
+i32 CProjAnim::Advance(u32 clock) {
+    return ((CAniAdvanceCursor*)this)->Advance(clock);
 }
 void CProjRenderObj::CacheFirstFrame(const char* name) {
     ((CGameObject*)this)->ApplyName(name);
@@ -861,10 +861,10 @@ void CProjectile::MovingSlot16() {
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_sprite->m_40 &= ~1u;
-    // The +0x1a0 anim sub-object IS a CAniAdvanceCursor (Advance_15c360 @0x15c360); call
+    // The +0x1a0 anim sub-object IS a CAniAdvanceCursor (Advance @0x15c360); call
     // it directly (retail's DetachRenderObj rel32s straight to 0x15c360, not a forwarder),
     // matching the cast-at-use pattern of the sibling site below (~line 1322).
-    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance(g_engineFrameDelta);
     CProjRenderObj* r = m_sprite;
     if (r->m_1c8 != 0 && r->m_1c0 == 0) {
         r->m_08 |= 0x10000;
@@ -1328,7 +1328,7 @@ i32 CTimeBomb::LoadAttributes() {
         TBombGridClear(m_object);
         return 0;
     }
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     if ((i64)g_frameTime - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
         return 0;
     }

@@ -20,10 +20,10 @@
 #include <string.h> // strcmp (inlined /O2)
 
 // The per-leaf anim sub-object embedded at CGameObject+0x1a0: its Advance @0x15c360 is
-// CAniAdvanceCursor::Advance_15c360 (header-less; the canonical class is a CLoadable,
+// CAniAdvanceCursor::Advance (header-less; the canonical class is a CLoadable,
 // see <Gruntz/AniAdvanceCursor.h>). Local minimal decl - only the non-virtual advance
 // call is reached here (via a cast), no fields/vtable.
-#include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance_15c360)
+#include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance)
 #include <Gruntz/LeafCue.h>          // LeafCue (the looked-up sound cue: m_10/m_14/m_18)
 // The shared sound chain is fully canonical (same as Projectile/VideoConfig/BootyState):
 // g_gameReg->m_world->m_28 is the CSndHost (SoundCue.h, pulled by GameRegistry.h) whose
@@ -46,7 +46,7 @@ struct EngStr4 {
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
 DATA(0x002bf3bc)
-extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance_15c360
+extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
 DATA(0x00244c54)
@@ -66,7 +66,7 @@ char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal
 // See docs/patterns/pin-local-for-callee-saved-reg.md.
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360((i32)g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance((i32)g_engineFrameDelta);
 
     i32 areaId;
     i32 subId;

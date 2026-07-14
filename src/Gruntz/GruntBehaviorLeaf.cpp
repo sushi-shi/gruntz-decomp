@@ -32,7 +32,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
     if (m_gruntMode == 0) {
         return 0;
     }
-    if (m_drawState->m_1a0.Advance_15c360(g_engineFrameDelta) == 1) {
+    if (m_drawState->m_1a0.Advance(g_engineFrameDelta) == 1) {
         if (m_gruntSubState == 1 && m_gruntMode != 5) {
             ((CRockBreakMgr*)m_260)
                 ->BuildRockBreakParticles(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);

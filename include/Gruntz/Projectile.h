@@ -27,8 +27,8 @@ class CLightFx; // folded CProjShadowActivate
 #include <rva.h>
 
 // The animation sub-object embedded in a render object at +0x1a0. It bridges the two
-// canonical engine classes for this slot: Advance_15c360 (@0x15c360) IS
-// CAniAdvanceCursor::Advance_15c360 (advances the active animation by the draw clock -
+// canonical engine classes for this slot: Advance (@0x15c360) IS
+// CAniAdvanceCursor::Advance (advances the active animation by the draw clock -
 // every call site feeds g_engineFrameDelta - and returns the anim state: 2 = the fire/cue point
 // the grunt fire step gates on), and SetGeometry (@0x15c2d0) IS
 // CDDrawBlitParam::Setup_15c2d0 (installs the resolved frame-0 sprite). Both are
@@ -38,7 +38,7 @@ class CLightFx; // folded CProjShadowActivate
 // sub-object == m_1c0/m_1c8.
 struct CProjAnim {
     void SetGeometry(void* src);   // -> CDDrawBlitParam::Setup_15c2d0 (0x15c2d0)
-    i32 Advance_15c360(u32 clock); // -> CAniAdvanceCursor::Advance_15c360 (0x15c360)
+    i32 Advance(u32 clock); // -> CAniAdvanceCursor::Advance (0x15c360)
 };
 SIZE_UNKNOWN(CProjAnim);
 

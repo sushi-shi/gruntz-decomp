@@ -61,10 +61,45 @@ enum GruntType {
     GRUNT_SCROLL = 0x1e,       // SCROLLGRUNT
     GRUNT_SQUEAKTOY = 0x1f,    // SQUEAKTOYGRUNT
     GRUNT_YOYO = 0x20,         // YOYOGRUNT
+    // Powerup grunts (== the PickupType powerup band; docs/domain/powerupz.md ids
+    // 54..59). Cross-verified in the bodies: SUPERSPEED (0x37) halves TimePerTile
+    // (ReadConfigFromButeMgr; toolz.md speed table), INVULNERABILITY (0x38) gates
+    // the melee conversion-dispatch and ROIDZ (0x3b) zeroes the AttackDowntime
+    // (both in the attack-fire step @0x61cb0).
+    GRUNT_GHOST = 0x36,        // GHOST (invisibility)
+    GRUNT_SUPERSPEED = 0x37,   // SUPERSPEED (halved ms/tile)
+    GRUNT_INVULNERABLE = 0x38, // INVULNERABILITY
+    GRUNT_CONVERSION = 0x39,   // CONVERSION
+    GRUNT_DEATHTOUCH = 0x3a,   // DEATHTOUCH
+    GRUNT_ROIDZ = 0x3b,        // ROIDZ (no attack downtime)
     // Grunt-only appearances with NO recovered object-type id (no pickup/vehicle
     // equivalent traced): TOOBWATERGRUNT, REAPERGRUNT, HAREKRISHNAGRUNT. Left
     // unnumbered rather than fabricate an id that would collide with the space above.
 };
+
+/* ------------------------------------------------------------------ *
+ * GruntDeathKind - the grunt death/exit kind (CGrunt::m_deathType +0x360, the
+ * last LoadGruntDeathAnimations kind). Only the recovered id is enumerated -
+ * do NOT fill the range with guesses.
+ * ------------------------------------------------------------------ */
+typedef enum GruntDeathKind {
+    // Warped out: StepWarpExit (@0x64540) posts the secret-level switch
+    // ("WORLDZ\LEVEL%i", level+100) only on this kind.
+    GRUNT_DEATH_WARPOUT = 0xc,
+} GruntDeathKind;
+
+/* ------------------------------------------------------------------ *
+ * RezTypeTag - the multichar resource-TYPE tags the bute/rez symbol-table calls
+ * (CSymTab::ResolveQualified / the CVariantSlot::Insert flags arg) pass through
+ * their void* tag argument. Retail immediates; MSVC multichar literals
+ * ('WWD' == 0x575744). Proven: 0x575744 at the level lookups ("WORLDZ\LEVEL%i"
+ * - the .WWD world files; LevelRezPath's Insert flags), 0x574156 at the
+ * voice-sample lookup (VoiceSoundList - the .WAV samples).
+ * ------------------------------------------------------------------ */
+typedef enum RezTypeTag {
+    REZ_TAG_WWD = 0x575744, // 'WWD' - level world-data file
+    REZ_TAG_WAV = 0x574156, // 'WAV' - sound sample file
+} RezTypeTag;
 
 /* ------------------------------------------------------------------ *
  * Tool - 22 Toolz. Sprite namespace TOOLZ_<NAME>.
@@ -253,6 +288,10 @@ enum Resolution {
  * Commands - WM_COMMAND notification codes posted by the app.
  * ------------------------------------------------------------------ */
 enum Commands {
+    // Go to level <lParam>: the AREAS menu posts it with the stage's level index
+    // (MainMenuBuilder), StepWarpExit with the secret-level index (level+100);
+    // handled in CGruntzMgr's command switch (GruntzMgrCmd case 0x807f).
+    GOTOLEVEL = 0x807F,
     // Posted when the game is launched from a DirectPlay lobby (LOBBYLAUNCH).
     LOBBYLAUNCH = 0x80B7
 };

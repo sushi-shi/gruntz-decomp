@@ -11,7 +11,7 @@
 #include <Bute/ButeMgr.h>
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) + CGameObject::ApplyName (0x150540)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360) - the +0x1a0 sub-object
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - the +0x1a0 sub-object
 #include <Gruntz/Sprite.h>           // CSprite (frame-data value; the looked-up direction sprite)
 #include <Globals.h>
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
@@ -35,7 +35,7 @@
 // +0x194 and the cached first-frame trio at +0x190/+0x194/+0x198. It IS the bound
 // CGameObject (Anim() reinterprets m_38): the first-frame cache is CGameObject::
 // ApplyName (0x150540, cast at each call) and the +0x1a0 sub-object is the canonical
-// CAniAdvanceCursor (Advance_15c360 @0x15c360).
+// CAniAdvanceCursor (Advance @0x15c360).
 struct CSlimeAnimPlayer {
     char m_pad0[0x8];
     i32 m_8; // +0x08  status/flags word (Tick sets bit 0x10000 when stalled)
@@ -44,7 +44,7 @@ struct CSlimeAnimPlayer {
     CSprite* m_194;          // +0x194  the current direction sprite
     i32* m_198;              // +0x198  first frame pointer
     char m_pad19c[4];        // +0x19c
-    CAniAdvanceCursor m_1a0; // +0x1a0  per-frame advance cursor (Advance_15c360)
+    CAniAdvanceCursor m_1a0; // +0x1a0  per-frame advance cursor (Advance)
 };
 
 // The slime's resource/level holder (this->m_10). m_124 = travel direction
@@ -398,7 +398,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    Anim()->m_1a0.Advance_15c360((i32)g_engineFrameDelta);
+    Anim()->m_1a0.Advance((i32)g_engineFrameDelta);
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {

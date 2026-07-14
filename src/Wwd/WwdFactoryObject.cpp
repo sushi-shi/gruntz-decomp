@@ -444,7 +444,7 @@ void CAniAdvanceCursor::Recompute_15c320(i32 a1) {
 // final sweep per the big-function stop rule. docs/patterns/zero-register-pinning.md
 // + linked-list-walk-node-eax-rotation.md (the twin-copy idiom).
 RVA(0x0015c360, 0x555)
-i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
+i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_14 == 0) {
         return -1;
     }

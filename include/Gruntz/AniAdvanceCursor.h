@@ -55,7 +55,7 @@ public:
     i32 Serialize_15c970(CSerialArchive* ar);   // 0x15c970
     i32 Deserialize_15ca70(CSerialArchive* ar); // 0x15ca70
     i32 Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4); // 0x15c900
-    i32 Advance_15c360(u32 elapsed);                        // 0x15c360 (advance / set-geo-source)
+    i32 Advance(u32 elapsed);                        // 0x15c360 (advance / set-geo-source)
 
     // (+0x0c is the inherited CLoadable owner slot m_0c: the game object /
     // blit worker that owns this cursor - the ex "m_worker".)

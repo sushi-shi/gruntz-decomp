@@ -64,7 +64,7 @@ struct RbEffect {
 // steerable (a cached-pointer local didn't flip it). Logic + all relocs exact.
 RVA(0x000476b0, 0x69)
 i32 RbEffect::Update() {
-    if (m_38->cursor()->Advance_15c360(g_engineFrameDelta) == 1) {
+    if (m_38->cursor()->Advance(g_engineFrameDelta) == 1) {
         RbTarget* t = m_10;
         if (t->m_114 == 1) {
             ((CRockBreakMgr*)g_gameReg->m_cmdGrid)

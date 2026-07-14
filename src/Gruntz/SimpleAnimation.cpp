@@ -220,7 +220,7 @@ void RegisterSimpleAnimLogic() {
 // CProjectile::DetachRenderObj's SetAnim(g_engineFrameDelta).
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     return 0;
 }
 

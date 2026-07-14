@@ -421,7 +421,9 @@ public:
     virtual i32 Activate();
     virtual i32 UserLogicVfunc5();
     virtual i32 UserLogicVfunc6();
-    virtual i32 UserLogicVfunc7();
+    // slot 9: a return-0 default; the one known override is CGrunt's per-frame
+    // attack-fire step (@0x61cb0), which names the slot.
+    virtual i32 StepAttackFire();
     virtual i32 UserLogicVfunc8();
     virtual i32 UserLogicVfunc9();
     virtual i32 UserLogicVfuncA();
@@ -466,7 +468,8 @@ public:
     // __thiscall stub methods re-homed from src/Stub/ApiCallers.cpp; bodies in
     // src/Gruntz/UserLogic.cpp.
     i32 winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
-    i32 winapi_064540_PostMessageA();
+    // (winapi_064540_PostMessageA was XREF-recovered as CGrunt::StepWarpExit - the
+    //  anim-code "C" act handler; body in src/Gruntz/GruntEntranceArrival.cpp.)
     // (winapi_0ee800_IntersectRect_PtInRect was XREF-recovered as CGrunt::ArrivalReticleScan
     //  and re-homed to src/Gruntz/GruntReticle.cpp as a real CGrunt method.)
     void LoadGruntTypeTable(i32, i32, i32, i32);

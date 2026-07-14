@@ -26,7 +26,7 @@ i32 GameIconFlashEffect(CGameObject* obj) {
     if (state != 0) {
         if (state == 5) {
             CAniAdvanceCursor* a = (CAniAdvanceCursor*)((char*)obj + 0x1a0);
-            a->Advance_15c360(g_engineFrameDelta);
+            a->Advance(g_engineFrameDelta);
             if (a->m_28 != 0 && a->m_20 == 0) {
                 obj->m_flags |= 0x10000;
                 return 1;

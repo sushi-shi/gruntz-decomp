@@ -11,7 +11,7 @@
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 #include <Gruntz/SerialArchive.h>    // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>     // the +0x34 serialized-object-reference (Chain @0x8c00)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance_15c360)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
@@ -273,7 +273,7 @@ i32 CLightFx::RebindNode() {
 // ===========================================================================
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     if (m_38->m_1c8 && !m_38->m_1c0 && m_anchorB) {
         m_38->m_flags |= 0x10000;
     }

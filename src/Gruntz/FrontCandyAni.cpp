@@ -213,7 +213,7 @@ void CEyeCandyAni::RegisterActs() {
 // Byte-identical to CFrontCandyAni::AdvanceAnim (0x0ad510) save the call displacement.
 RVA(0x000acf10, 0x17)
 i32 CEyeCandyAni::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -309,7 +309,7 @@ void CFrontCandyAni::RegisterActs() {
 // Byte-identical to CBehindCandyAni::AdvanceAnim save the call displacement.
 RVA(0x000ad510, 0x17)
 i32 CFrontCandyAni::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     return 0;
 }
 

@@ -152,7 +152,7 @@ void CBehindCandyAni::RegisterActs() {
 // displacement.
 RVA(0x000adbb0, 0x17)
 i32 CBehindCandyAni::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     return 0;
 }
 

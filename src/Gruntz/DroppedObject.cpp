@@ -569,7 +569,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360((i32)g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance((i32)g_engineFrameDelta);
 
     double drift = (double)g_frameDelta * m_speed;
     if (m_travelDx > 0) {
@@ -805,7 +805,7 @@ void CDroppedObject::RegisterActs() {
 // sweep.
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     m_fallY = (double)g_frameDelta * m_timePerTile + m_fallY;
     i32 landed = (i32)(m_fallY - g_dropFallBias);
     if (landed > m_landY) {
@@ -884,7 +884,7 @@ i32 CDroppedObject::ActA() {
 // active (m_1c8) but idle (m_1c0 == 0).
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::UserLogicVfunc5() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
     if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
         m_38->m_flags |= 0x10000;
     }
@@ -1013,7 +1013,7 @@ void CDroppedObjectShadow::RegisterActs() {
 // (local/inline m_object + permute all identical). Parked for the final sweep.
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta) == 2) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) == 2) {
         CGameObject* o = m_object;
         g_gameReg->m_world->m_8
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);

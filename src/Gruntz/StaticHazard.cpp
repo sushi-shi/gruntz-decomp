@@ -463,7 +463,7 @@ i32 CStaticHazard::LoadAttributes() {
     }
 
 dispatch:
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_engineFrameDelta) == 2) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) == 2) {
         i32 a = 0, b = 0;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {

@@ -6,13 +6,13 @@
 // ONE-obj evidence:
 //   * grunt/gruntentrancearrival fns interleave A-B-A-B throughout the interval
 //     (impossible for separate objs at first link).
-//   * private .data extents in TU link order: Update@CGruntFireView @0x61cb0's
+//   * private .data extents in TU link order: CGrunt::StepAttackFire @0x61cb0's
 //     cell (0x20e180) HEADS the band, then 0x62110/0x62e10/0x63db0/0x641b0's
 //     cells, then RunMoveConfig/StartBombGruntRun's (0x20e264) and
 //     LoadWandGruntItemConfig @0x65a60's (0x20e27c-0x20e28c) INSIDE the band
 //     (before gruntpickupload's 0x20e29c) - so 0x61cb0 (ex ProjectileUpdate.cpp)
 //     and 0x65a60 (ex GruntBehaviorLeaf.cpp) belong to THIS obj, not their old
-//     units; winapi_064540 @0x64540 (ex UserLogic.cpp) is text-contained
+//     units; StepWarpExit @0x64540 (ex UserLogic.cpp) is text-contained
 //     (between 0x641b0 and 0x646b0, deep inside the weave).
 //   * 2 EH sites in the interval -> /GX; the unit's flags flip base->eh
 //     (TU_MIGRATION FLAGS mixed-group resolution).
@@ -23,6 +23,9 @@
 //
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
+#include <Gruntz/Enums.h>       // GruntType tool/powerup kinds + GruntDeathKind + RezTypeTag
+#include <Gruntz/State.h>       // CState (m_levelIndex/m_levelBank - StepWarpExit's level lookup)
+#include <Wap32/Wap32.h>        // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
@@ -38,23 +41,24 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.cpp)
+#include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (the reconciled singleton view)
+// The game-manager singleton (0x64556c). This TU used to declare it WwdGameReg*
+// (the grunt facet), but InGameIcon.h's CGameRegistry* decl clashes (extern "C"
+// cannot dual-type one symbol in one TU) - and CGameRegistry is the RICHER
+// reconciled view (every field this TU reads exists on it), so the TU is
+// CGameRegistry-native now and the ~20 per-site (CGameRegistry*) casts are gone.
+extern "C" CGameRegistry* g_gameReg;
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>
 
-// The tile-icon PlaceAt (@0x986b0, __thiscall(idx, gridBase); reloc-masked). Its
-// canonical class CInGameiCon lives in <Gruntz/InGameIcon.h>, but that header pulls
-// <Mfc.h> whose real MFC CString would replace CGrunt's lightweight String.h CString
-// bodies and shift CGrunt's layout - so the map-resolved icon is reached through this
-// minimal call-shape helper (only the reloc-masked `mov ecx,icon; call PlaceAt` shape
-// is load-bearing) instead of the MFC-pulling full class.
-SIZE_UNKNOWN(GruntTileIcon); // call-shape shim for CInGameiCon (unpinned; fold-target)
-struct GruntTileIcon {
-    i32 PlaceAt(i32 idx, i32 gridBase); // 0x0986b0
-};
+// The tile-icon PlaceAt (@0x986b0, __thiscall(idx, gridBase); reloc-masked) is the
+// real CInGameIcon's (<Gruntz/InGameIcon.h>). The old `GruntTileIcon` call-shape shim
+// justified itself with "InGameIcon.h pulls <Mfc.h>" - STALE: Grunt.h itself pulls
+// <Mfc.h> (its CPtrList value members), so the real class costs nothing.
+#include <Gruntz/InGameIcon.h>
 
 // The entrance geometry-source global (0x2bf3bc) each step arms the entrance
 // sub-player with is declared with its DATA() binding below as the tree-wide
@@ -121,7 +125,7 @@ static void GruntScratchTeardown();
 // inline the GruntSteps TU carries for StepCompassMove).
 
 // Read the tile-flag word at board cell (tx, ty); out-of-bounds -> 1 (blocking).
-static __inline i32 s_TileFlags(GruntBoard* b, i32 tx, i32 ty) {
+static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
     if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
         return 1;
     }
@@ -176,7 +180,6 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
                                   // It used to be DEFINED here too: six .cpp files each
@@ -188,8 +191,8 @@ extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
 // DATA-bound in src/Globals.cpp). They used to be re-DEFINED here - 14 external symbols
 // duplicated across 5 objs = a duplicate-symbol link defect.
 
-// ==== Update@CGruntFireView @0x61cb0 (ex ProjectileUpdate.cpp; its private .data cell 0x20e180
-// HEADS this TU's band) ====
+// ==== CGrunt::UserLogicVfunc7 @0x61cb0 (ex ProjectileUpdate.cpp; its private .data cell
+// 0x20e180 HEADS this TU's band) ====
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TerrainTileLoader.h> // the real owner of Load (the +0x260 slot)
 #include <Gruntz/TileWireLogic.h>     // CTileWireLogic::WireTileSwitchLogic (0x6c130)
@@ -198,7 +201,7 @@ extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
 #include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 // The entrance geometry-source global at 0x2bf3bc every step in this TU arms the
-// entrance sub-player with (fed to CAniAdvanceCursor::Advance_15c360). 0x2bf3bc is a
+// entrance sub-player with (fed to CAniAdvanceCursor::Advance). 0x2bf3bc is a
 // tree-wide name conflation: ~17 TUs bind it via this extern "C" `_g_6bf3bc` (the
 // keep-last DATA() winner), others as `g_slimeTick`/`g_defaultGeo` (unconfirmed
 // guesses). Bound here as the winner so all refs resolve to 0x2bf3bc (reloc-faithful).
@@ -213,78 +216,22 @@ extern "C" i32 g_engineFrameDelta;
 // generically typed on the canonical aux; proven-heterogeneous across classes).
 // The HUD sprite factory reached as g_gameReg->m_world->m_8 is the canonical
 // CSpriteFactory (shared <Gruntz/SpriteFactory.h>).
-// The game-registry singleton (0x64556c) is this TU's WwdGameReg-view g_gameReg
-// (declared above); the fire-view paths read it through the canonical
-// CGameRegistry view with a per-use cast (same load bytes).
+// The game-registry singleton (0x64556c) is the CGameRegistry-typed g_gameReg
+// (declared above) - the attack-fire paths read it natively, cast-free.
 
-// A target grunt occupying a tile cell (== CGrunt; fold deferred with the owner
-// view below). The 0x1bf9 thunk delivers this attack to it (8 args); m_toolKind
-// (+0x170, the same slot as the attacker's) is its kind, m_19c a fallback gate
-// (both slots exist on Grunt.h's CGrunt).
-// The grunt's path/occupancy tile manager (== CGruntTileMgr, <Gruntz/Grunt.h>
-// CGrunt::m_tileMgr +0x260; fold deferred - the canonical models methods only,
-// this +0x1c cell array is an additive member for the fold). The per-cell grunt
-// pointers live in a pointer array at +0x1c, indexed [row + col*15] (15-row
-// column-major grid); Cleanup (0x2e96 thunk) releases a slot (4 args).
-// The [Grunt]/attribute-tuning registry singleton (canonical CButeMgr):
-// GetDword (0x172240) is reloc-masked __thiscall.
-// g_buteMgr (0x6453d8) is declared above (Grunt.cpp preamble decls).
-
-// The attacking grunt (== CGrunt; the DEFERRED-fold view - member names mirror
-// <Gruntz/Grunt.h> so dissolving this view is mechanical once Grunt.h unlocks).
-class CGruntFireView {
-public:
-    i32 Update(); // 0x61cb0 == CGrunt vtable slot 9 (UserLogicVfunc7 override)
-
-    // helpers on `this` (CGrunt engine methods, reloc-masked thunks)
-    void GetSpawnPos(i32* out);                   // 0x1a73 thunk __thiscall
-    void ArmMode(i32 a1, i32 a2, i32 a3, i32 a4); // 0x3bd9 thunk
-    void Teardown3dd7();                          // 0x3dd7 thunk
-    void ArmFinish(i32 a1, i32 a2, i32 a3);       // 0x136b thunk
-    void Teardown22de();                          // 0x22de thunk
-
-    char m_pad00[0x10];
-    CGameObject* m_object; // +0x10  == CUserLogic::m_object (bound engine object)
-    char m_pad14[0x154 - 0x14];
-    // +0x154  the anim player (Grunt.h: CEntranceAnimPlayer* m_154 - the same
-    // engine class Projectile.h views as CProjRenderObj: anim sub @+0x1a0,
-    // state gates @+0x1c0/+0x1c8).
-    CProjRenderObj* m_154;
-    char m_pad158[0x170 - 0x158];
-    i32 m_toolKind; // +0x170  tool/attack kind (Grunt.h names this m_entranceReason - see hdr)
-    char m_pad174[0x1c0 - 0x174];
-    char* m_animSetName; // +0x1c0  == CGrunt::m_animSetName (CString payload; bute section)
-    i32 m_1c4;           // +0x1c4
-    char m_pad1c8[0x1e4 - 0x1c8];
-    i32 m_entranceActive; // +0x1e4  == CGrunt::m_entranceActive (here: impact latch 1 -> 0)
-    char m_pad1e8[0x1ec - 0x1e8];
-    i32 m_tileOwnerHi; // +0x1ec  == CGrunt::m_tileOwnerHi (launcher tile row)
-    i32 m_tileOwnerLo; // +0x1f0  == CGrunt::m_tileOwnerLo (launcher tile col)
-    char m_pad1f4[0x200 - 0x1f4];
-    i32 m_neighborCol; // +0x200  == CGrunt::m_neighborCol (melee target cell)
-    i32 m_neighborRow; // +0x204  == CGrunt::m_neighborRow
-    i32 m_208;         // +0x208  target pixel X (fed to LoadProjectileSprites' sx)
-    i32 m_20c;         // +0x20c  target pixel Y (sy)
-    char m_pad210[0x214 - 0x210];
-    i32 m_214;          // +0x214
-    i32 m_combatActive; // +0x218  == CGrunt::m_combatActive (cleared after impact)
-    char m_pad21c[0x220 - 0x21c];
-    i32 m_poweredUp; // +0x220  == CGrunt::m_poweredUp (teardown gate)
-    char m_pad224[0x258 - 0x224];
-    i32 m_gruntKind; // +0x258  == CGrunt::m_gruntKind (0x38/0x3b special-cases)
-    char m_pad25c[0x260 - 0x25c];
-    CTriggerMgr* m_tileMgr; // +0x260  == CGrunt::m_tileMgr (CGruntTileMgr*)
-    char m_pad264[0x3f0 - 0x264];
-    i32 m_3f0; // +0x3f0
-    char m_pad3f4[0x460 - 0x3f4];
-    i32 m_460; // +0x460
-    char m_pad464[0x860 - 0x464];
-    i32 m_860; // +0x860  == CGrunt::m_860 (attack-downtime timer record base)
-    i32 m_864; // +0x864
-    i32 m_868; // +0x868  downtime duration
-    i32 m_86c; // +0x86c
-};
-SIZE_UNKNOWN(CGruntFireView);
+// The attack target resolved from the neighbor grid cell is another CGrunt (the
+// 0x1bf9 TakeHit thunk delivers the attack; its m_entranceReason multiplexes the
+// tool kind, m_19c the fallback gate). The attacker `this` IS CGrunt - the old
+// `CGruntFireView` deferred-fold view is DISSOLVED: 0x61cb0 is the CGrunt vtable
+// slot-9 body (??_7CGrunt@@6B@+0x24 @0x1e8778 holds its ILT thunk 0x119f - the
+// only retail reference), i.e. the UserLogicVfunc7 override Grunt.h declares.
+// View->CGrunt member map: m_object == the CUserLogic +0x10 union arm (CGameObject),
+// m_154 == CEntranceAnimPlayer* (anim sub @+0x1a0, done-gates m_1c0/m_1c8),
+// m_toolKind == m_entranceReason, m_1c4 == m_healthSprite, m_3f0 == m_stamina
+// (reset to 0 at each impact), m_460 == m_lowStaminaCued, m_868/m_86c ==
+// m_attackDowntimeLo/Hi; ArmMode == SetMoveStateA (0x3bd9), Teardown3dd7 ==
+// FinishAttackPowered, ArmFinish == ReseedIdleReset (0x136b), Teardown22de ==
+// NotifyAttackImpact - all already declared on CGrunt.
 
 // ==== LoadWandGruntItemConfig @0x65a60 (ex GruntBehaviorLeaf.cpp; its private .data cells
 // 0x20e27c-0x20e28c sit INSIDE this TU's band, not the 0x612a0 behaviorleaf extent) ====
@@ -315,7 +262,7 @@ void CGrunt::FinalizeStep(i32 arg) {
         if (m_gruntKind == 0) {
             ClearSubB();
         } else {
-            CGameRegistry* g = (CGameRegistry*)g_gameReg;
+            CGameRegistry* g = g_gameReg;
             i32 x = m_10->m_5c;
             i32 y = m_10->m_60;
             if (!(x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
@@ -447,7 +394,7 @@ i32 CGrunt::UpdateGruntStatus() {
         return 0;
     }
 
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
 
     if (m_stamina >= 0x64) {
         if (m_neighborValid == 0) {
@@ -471,7 +418,7 @@ i32 CGrunt::UpdateGruntStatus() {
         return 0;
     }
 
-    CGameRegistry* g = (CGameRegistry*)g_gameReg;
+    CGameRegistry* g = g_gameReg;
     i32 x = m_10->m_5c;
     i32 y = m_10->m_60;
     i32* vr = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
@@ -544,7 +491,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     {
         CGruntHud* h = m_10;
-        WwdGameReg* g = g_gameReg;
+        CGameRegistry* g = g_gameReg;
         i32 yy = h->m_60;
         i32 xx = h->m_5c;
         i32* rect = (i32*)(*(i32*)(*(char**)((char*)g->m_world + 0x24) + 0x5c) + 0x40);
@@ -617,64 +564,28 @@ i32 CGrunt::RearmAttackAnim2() {
     return 0;
 }
 
-// ==== winapi_064540_PostMessageA @0x64540 (ex UserLogic.cpp; text-contained in this obj) ====
-// CSymTab::ResolveQualified comes from the BoundaryLowerMethodsViews view (the
-// real <Bute/SymTab.h> def ODR-conflicts with it in this TU).
-// winapi_064540 (0x64540): a per-frame "warp-to-level" trigger on a large grunt-logic
-// leaf (the `this` extends CUserLogic out to +0x360; the leaf isn't modeled, so its
-// fields are reached through a TU-local offset view). Poke the +0x1a0 arrival sub-object;
-// if it has arrived (m_28) and isn't busy (m_20), and this is warp-mode 0xc, format the
-// destination "WORLDZ\LEVEL%i" key and (if that level exists) PostMessage a WM_COMMAND
-// (0x807f) to the mgr's top-level window; then, unless suppressed (m_36c), fire the
-// arrival anim (m_260->Anim2a72), and latch the object dirty (m_154->m_8 |= 0x10000).
-// The CString + Format + the sub-object/anim/level-lookup callees all reloc-mask.
-SIZE_UNKNOWN(CWarpM154);
-struct CWarpM154 {
-    char m_pad00[0x8];
-    i32 m_8; // +0x08 dirty flags
-    char m_pad0c[0x1a0 - 0xc];
-    CAniAdvanceCursor m_1a0; // +0x1a0
-};
-SIZE_UNKNOWN(CWarpLevelReg);
-struct CWarpLevelReg {
-    char m_pad00[0x1c];
-    i32 m_baseLevel; // +0x1c base level number
-    char m_pad20[0x28 - 0x20];
-    CSymTab* m_28; // +0x28
-};
-SIZE_UNKNOWN(CWarpMgrWnd);
-struct CWarpMgrWnd {
-    char m_pad00[0x4];
-    void* m_4; // +0x04 top-level HWND
-};
-SIZE_UNKNOWN(CWarpMgr);
-struct CWarpMgr {
-    char m_pad00[0x4];
-    CWarpMgrWnd* m_4; // +0x04
-    char m_pad08[0x2c - 0x8];
-    CWarpLevelReg* m_curState; // +0x2c
-};
-SIZE_UNKNOWN(CWarpLeaf);
-struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
-    char m_pad000[0x154];
-    CWarpM154* m_drawState; // +0x154
-    char m_pad158[0x1ec - 0x158];
-    i32 m_animArg0; // +0x1ec anim arg 0
-    i32 m_animArg1; // +0x1f0 anim arg 1
-    char m_pad1f4[0x260 - 0x1f4];
-    CTriggerMgr* m_animObj; // +0x260
-    char m_pad264[0x360 - 0x264];
-    i32 m_warpMode; // +0x360 warp mode
-    char m_pad364[0x36c - 0x364];
-    i32 m_animSuppress; // +0x36c anim-suppress gate
-};
+// ==== CGrunt::StepWarpExit @0x64540 (ex CUserLogic::winapi_064540_PostMessageA;
+// text-contained in this obj) ====
+// The `this` is CGrunt, PROVEN two ways: (1) RegisterActs_644af0 @0x5be30 stores
+// its ILT thunk 0x13cf into the g_reg_644af0 act registry under the anim-code key
+// "C" @0x60cc90 - the registry CGrunt::RunAct dispatches as PMFs on the grunt;
+// (2) every offset is the CGrunt layout (m_154 entrance player + the identical
+// m_154->m_8 |= 0x10000 retire idiom as FinishEntranceMove, m_tileOwnerHi/Lo fed
+// to the tile-cell notify exactly as the attack step feeds CellDispatch, m_tileMgr
+// +0x260, the m_36c suppress gate FinishEntranceMove also reads). The five old
+// CWarp* views are DISSOLVED onto the canonicals: CWarpLeaf == CGrunt, CWarpM154
+// == CEntranceAnimPlayer, CWarpMgr == CGameRegistry (m_gameWnd +0x04 / m_curState
+// +0x2c), CWarpMgrWnd == CGameWnd (<Wap32/Wap32.h>, m_hwnd +0x04), CWarpLevelReg
+// == CState (<Gruntz/State.h>: m_levelIndex +0x1c, m_levelBank +0x28 - the level
+// asset bank the "WORLDZ\LEVEL%i" key resolves against, level+100 = the secret
+// level). CSymTab's definition here is BoundaryLowerMethodsViews.h's (the real
+// <Bute/SymTab.h> def would redefine it in this TU; same one mangled symbol).
 // The frame-clock snapshot fed to the arrival poke (ds:0x6bf3bc).
 extern "C" i32 g_engineFrameDelta;
 // The mgr singleton (same 0x64556c datum); the warp-dialog facet casts to CWarpMgr.
 // (The old `WarpPostFn g_pPostMessageA` fn-ptr global @0x2c44c8 is GONE: that
 // address is USER32's PostMessageA IAT slot - retail's `call [0x6c44c8]` is just
 // the dllimport call. A plain ::PostMessageA call is the honest source.)
-extern "C" WwdGameReg* g_gameReg;
 // @source: string-xref
 // @early-stop
 // jump-table-data-overlap wall (fuzzy % is an alignment artifact): logic complete
@@ -683,7 +594,8 @@ extern "C" WwdGameReg* g_gameReg;
 // flag-spill wall DISSOLVED with this model), the slot-17 virtual dispatch is the
 // exact retail shape (`mov edx,[edi]; mov ecx,edi; call [edx+0x44]`, then
 // `mov edi,[edi+0x154]; or [edi+0x8],0x10000`), and the 5-slot dense switch on
-// m_toolKind (bias 2, range 0x14) + the named "Projectile"/"Boomerang"/"TimeBomb"
+// m_entranceReason (the multiplexed tool kind; bias 2, range 0x14) + the named
+// "Projectile"/"Boomerang"/"TimeBomb"
 // /"AttackDowntime" DIR32 strings + g_gameReg/g_buteMgr/g_frameTime reproduce
 // retail. Residues: (1) DOMINANT - cl emits the byte index-table + dword
 // jump-table as $L COMDATs while the delinker INLINES the switchdataD_* tables
@@ -695,14 +607,16 @@ extern "C" WwdGameReg* g_gameReg;
 // source-steerable). Types 9-11 and 21-22 share one tail-merged "Projectile"
 // arm across two jump-table slots.
 RVA(0x00061cb0, 0x34a)
-i32 CGruntFireView::Update() {
+i32 CGrunt::StepAttackFire() {
     i32 flag = 0;
-    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((i32)g_engineFrameDelta) == 2) {
-        switch (m_toolKind) {
-            case 9:
-            case 10:
-            case 11: {
-                CGameObject* spr = ((CGameRegistry*)(void*)g_gameReg)
+    if (m_154->Cursor()->Advance(g_engineFrameDelta) == 2) {
+        // The +0x170 slot holds the grunt's current TOOL/attack kind here (the
+        // GruntType/PickupType id space, <Gruntz/Enums.h>); >0x16 kinds = melee.
+        switch (m_entranceReason) {
+            case GRUNT_GUNHAT:
+            case GRUNT_NERFGUN:
+            case GRUNT_ROCK: {
+                CGameObject* spr = g_gameReg
                                        ->m_world->m_8->CreateSprite(
                                            0,
                                            m_object->m_screenX,
@@ -714,7 +628,7 @@ i32 CGruntFireView::Update() {
                 spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
-                        m_toolKind,
+                        m_entranceReason,
                         m_tileOwnerHi,
                         m_tileOwnerLo,
                         m_208,
@@ -727,8 +641,8 @@ i32 CGruntFireView::Update() {
                 }
                 break;
             }
-            case 2: {
-                CGameObject* spr = ((CGameRegistry*)(void*)g_gameReg)
+            case GRUNT_BOOMERANG: {
+                CGameObject* spr = g_gameReg
                                        ->m_world->m_8->CreateSprite(
                                            0,
                                            m_object->m_screenX,
@@ -740,7 +654,7 @@ i32 CGruntFireView::Update() {
                 spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
-                        m_toolKind,
+                        m_entranceReason,
                         m_tileOwnerHi,
                         m_tileOwnerLo,
                         m_208,
@@ -753,7 +667,7 @@ i32 CGruntFireView::Update() {
                 }
                 break;
             }
-            case 17: {
+            case GRUNT_TIMEBOMB: {
                 i32 pos[2];
                 GetSpawnPos(pos);
                 CGameObject* spr = g_gameReg->m_world->m_8
@@ -763,9 +677,9 @@ i32 CGruntFireView::Update() {
                 spr->m_124 = m_tileOwnerHi;
                 break;
             }
-            case 21:
-            case 22: {
-                CGameObject* spr = ((CGameRegistry*)(void*)g_gameReg)
+            case GRUNT_WELDER:
+            case GRUNT_WINGZ: {
+                CGameObject* spr = g_gameReg
                                        ->m_world->m_8->CreateSprite(
                                            0,
                                            m_object->m_screenX,
@@ -777,7 +691,7 @@ i32 CGruntFireView::Update() {
                 spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
-                        m_toolKind,
+                        m_entranceReason,
                         m_tileOwnerHi,
                         m_tileOwnerLo,
                         m_208,
@@ -792,13 +706,13 @@ i32 CGruntFireView::Update() {
             }
             default: {
                 // melee: hit the grunt at the neighbor grid cell (15-row grid).
-                CGrunt* tgt = (CGrunt*)m_tileMgr->m_grid[m_neighborRow + m_neighborCol * 15];
+                CGrunt* tgt = m_tileMgr->m_grid[m_neighborCol][m_neighborRow];
                 if (tgt == 0) {
                     flag = 1;
                     break;
                 }
                 tgt->TakeHit(
-                    m_toolKind,
+                    m_entranceReason,
                     m_214,
                     m_tileOwnerHi,
                     m_tileOwnerLo,
@@ -811,8 +725,9 @@ i32 CGruntFireView::Update() {
                 if (t > 0x16) {
                     t = tgt->m_19c;
                 }
-                if (t == 1 && m_gruntKind != 0x38) {
-                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 0xb, m_neighborCol);
+                if (t == 1 && m_gruntKind != GRUNT_INVULNERABLE) {
+                    ((CTriggerMgr*)m_tileMgr)
+                        ->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 0xb, m_neighborCol);
                     return 0;
                 }
                 break;
@@ -821,29 +736,29 @@ i32 CGruntFireView::Update() {
 
         // impact tail (0x61f08)
         m_entranceActive = 1;
-        i32 dt = g_buteMgr.GetDword(m_animSetName, "AttackDowntime");
-        if (m_gruntKind == 0x3b) {
-            dt = 0;
+        i32 dt = g_buteMgr.GetDword(*(char**)&m_animSetName, "AttackDowntime");
+        if (m_gruntKind == GRUNT_ROIDZ) {
+            dt = 0; // Roidz grunt: no attack recovery time
         }
-        m_868 = dt;
-        m_86c = 0;
+        m_attackDowntimeLo = dt;
+        m_attackDowntimeHi = 0;
         m_860 = (i32)g_frameTime;
         m_864 = 0;
-        m_460 = 0;
-        m_3f0 = 0;
-        if (m_1c4 != 0) {
-            Teardown22de();
+        m_lowStaminaCued = 0;
+        m_stamina = 0; // stamina drains fully at each attack
+        if (m_healthSprite != 0) {
+            NotifyAttackImpact();
         }
         m_combatActive = 0;
     }
 
-    // finish tail (0x61f74)
-    CProjRenderObj* r = m_154;
-    if ((r->m_1c8 == 0 || r->m_1c0 != 0) && flag == 0) {
+    // finish tail (0x61f74): bail while the cursor is still un-armed or running.
+    CEntranceAnimPlayer* r = m_154;
+    if ((r->Cursor()->m_28 == 0 || r->Cursor()->m_20 != 0) && flag == 0) {
         return 0;
     }
-    if (m_toolKind == 2) {
-        ArmMode(0, 1, 0, 0);
+    if (m_entranceReason == GRUNT_BOOMERANG) {
+        SetMoveStateA(0, 1, 0, 0);
     }
     CGameObject* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
@@ -854,10 +769,10 @@ i32 CGruntFireView::Update() {
     i32 v220 = m_poweredUp;
     m_entranceActive = 0;
     if (v220 != 0) {
-        Teardown3dd7();
+        FinishAttackPowered();
         return 0;
     }
-    ArmFinish(1, 0, 0);
+    ReseedIdleReset(1, 0, 0);
     return 0;
 }
 
@@ -961,7 +876,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_154->CacheFrame(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
-            WwdGameReg* g = g_gameReg;
+            CGameRegistry* g = g_gameReg;
             i32 m380 = m_moveVariant;
             if (m380 != 0) {
                 i32 tier = cueTier + m380 - 1;
@@ -1067,7 +982,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     // The visible-bounds cue: probe the grunt's HUD point against the live view rect,
     // fire CueSpawn(this, 0xa|0xb, -1,-1,-1) when inside.
     CGruntHud* hud = m_10;
-    WwdGameReg* g = g_gameReg;
+    CGameRegistry* g = g_gameReg;
     i32 yy = hud->m_60;
     i32 xx = hud->m_5c;
     i32* rectBase = (i32*)(*(char**)((char*)g->m_world + 0x24) + 0x5c);
@@ -1103,9 +1018,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 // coord list / update the arrival.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
-    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
-    char* sub = (char*)&m_154->m_1a0;
-    if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
+    i32 ready = m_154->Cursor()->Advance((u32)g_engineFrameDelta);
+    CAniAdvanceCursor* sub = m_154->Cursor();
+    if (sub->m_28 != 0 && sub->m_20 == 0) {
         if (m_arrived != 0) {
             CreateHealthSprite();
             CreateStaminaSprite();
@@ -1115,7 +1030,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeA);
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         CTileGrid* grid = g->m_tileGrid;
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
@@ -1154,7 +1069,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         m_154->CacheFrameIndexed(nm, frame);
         m_entranceStamped = 1;
         CGruntHud* h = m_10;
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         i32 x = h->m_5c;
         i32 y = h->m_60;
         CCueRect* r = (CCueRect*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
@@ -1309,7 +1224,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         i32 count = (m_poseIdle[2] == 0) ? 1 : 2;
         i32 idx = GruntRand() % count + 1;
         if (cue != 0) {
-            CGameRegistry* g = (CGameRegistry*)g_gameReg;
+            CGameRegistry* g = g_gameReg;
             g->CuePrep();
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
@@ -1414,7 +1329,7 @@ latch:
 RVA(0x000633e0, 0x2ca)
 void CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != 0 && m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         CTileGrid* grid = g->m_tileGrid;
         i32 tx = m_10->m_5c >> 5;
         i32 ty = m_10->m_60 >> 5;
@@ -1429,10 +1344,10 @@ void CGrunt::ResolveEntranceArrival() {
         }
     }
 
-    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    i32 ready = m_154->Cursor()->Advance((u32)g_engineFrameDelta);
 
     if ((i64)(u32)g_frameTime - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         i32 mode = g->m_134;
         if (mode != 1) {
             CFocusSlot* slot = &g->m_focusSlots[m_tileOwnerHi];
@@ -1546,7 +1461,7 @@ i32 CGrunt::StepEntranceReinit() {
     // The head occupied-coord's tile is clear of the spawn-block bit -> re-latch a
     // fresh "D" anim set and re-stamp the first entrance-cell frame.
     GruntCoord* co = (GruntCoord*)m_31c.GetHead();
-    GruntBoard* b = g_gameReg->m_tileGrid;
+    CTileGrid* b = g_gameReg->m_tileGrid;
     i32 flag;
     if ((u32)co->m_x >= (u32)b->m_c || (u32)co->m_y >= (u32)b->m_10) {
         flag = 1;
@@ -1602,7 +1517,7 @@ i32 CGrunt::StepEntranceReinit() {
 // cue operands. Correct shape + control flow; a codegen wall.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
     i64 diff = (i64)(u32)g_frameTime - *(i64*)&m_8c0;
     u32 elapsed;
     if (diff >= 0) {
@@ -1657,7 +1572,7 @@ i32 CGrunt::StepArrivalReroll() {
     CGruntHud* h = m_10;
     i32 y = h->m_60;
     i32 xp = h->m_5c;
-    CGameRegistry* g = (CGameRegistry*)g_gameReg;
+    CGameRegistry* g = g_gameReg;
     CCueRect* r = (CCueRect*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
     if (pick > 0x19) {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
@@ -1728,10 +1643,10 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 // (the documented regalloc tail).
 RVA(0x00063db0, 0x32f)
 void CGrunt::LoadVehicleGruntAnimations() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
 
-    char* sub = (char*)&m_154->m_1a0;
-    if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
+    CAniAdvanceCursor* sub = m_154->Cursor();
+    if (sub->m_28 != 0 && sub->m_20 == 0) {
         if (m_arrived) {
             CreateHealthSprite();
             CreateStaminaSprite();
@@ -1742,7 +1657,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
 
-        CTileGrid* grid = (CTileGrid*)g_gameReg->m_tileGrid;
+        CTileGrid* grid = g_gameReg->m_tileGrid;
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
@@ -1776,7 +1691,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             m_154->CacheFrame(buf, elem[0x14 / 4]);
 
             CGruntHud* h = m_10;
-            CGameRegistry* g = (CGameRegistry*)g_gameReg;
+            CGameRegistry* g = g_gameReg;
             i32 x = h->m_5c;
             i32 y = h->m_60;
             i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
@@ -1793,7 +1708,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
     i64 elapsed2 = (i64)(u64)g_frameTime - *(i64*)&m_idleAnchorLo;
     if (elapsed2 >= *(i64*)&m_idleDelayLo) {
         CGruntHud* h = m_10;
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         i32 x = h->m_5c;
         i32 y = h->m_60;
         i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
@@ -1803,7 +1718,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
     }
 
     CGruntHud* h2 = m_10;
-    CGameRegistry* g2 = (CGameRegistry*)g_gameReg;
+    CGameRegistry* g2 = g_gameReg;
     i32 hx = h2->m_5c;
     i32 hy = h2->m_60;
     if (hx < g2->m_viewOriginR && hx >= g2->m_viewOriginL && hy < g2->m_viewOriginB
@@ -1892,7 +1807,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 (i32)&g->m_world->m_24->m_mainPlane->m_originX,
                 m_10->m_5c,
@@ -1902,7 +1817,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     } else if (r > 0xa0) {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 (i32)&g->m_world->m_24->m_mainPlane->m_originX,
                 m_10->m_5c,
@@ -1912,7 +1827,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     } else {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 (i32)&g->m_world->m_24->m_mainPlane->m_originX,
                 m_10->m_5c,
@@ -1930,32 +1845,31 @@ i32 CGrunt::BuildGruntExitAnimation() {
 }
 
 // @early-stop
-// 86.4%: logic byte-faithful. Residual is the leaf's offset-view register scheduling
-// (the m_drawState reloads) + the /GX CString unwind state ordering; not source-steerable.
+// 86.4%: logic byte-faithful. Residual is the register scheduling around the m_154
+// reloads + the /GX CString unwind state ordering; not source-steerable.
 RVA(0x00064540, 0x11c)
-i32 CUserLogic::winapi_064540_PostMessageA() {
-    CWarpLeaf* self = (CWarpLeaf*)this;
-    self->m_drawState->m_1a0.Advance_15c360(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &self->m_drawState->m_1a0;
+i32 CGrunt::StepWarpExit() {
+    m_154->Cursor()->Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = m_154->Cursor();
     if (sub->m_28 == 0) {
         return 0;
     }
     if (sub->m_20 != 0) {
         return 0;
     }
-    if (self->m_warpMode == 0xc) {
-        CWarpLevelReg* reg = ((CWarpMgr*)g_gameReg)->m_curState;
-        i32 lvl = reg->m_baseLevel + 0x64;
+    if (m_deathType == GRUNT_DEATH_WARPOUT) {
+        CState* st = g_gameReg->m_curState;
+        i32 lvl = st->m_levelIndex + 0x64; // secret level = level + 100
         CString s;
         s.Format("WORLDZ\\LEVEL%i", lvl);
-        if (reg->m_28->ResolveQualified((LPCTSTR)s, (void*)0x575744)) {
-            PostMessageA((HWND)((CWarpMgr*)g_gameReg)->m_4->m_4, 0x111, 0x807f, lvl);
+        if (st->m_levelBank->ResolveQualified((LPCTSTR)s, (void*)REZ_TAG_WWD)) {
+            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, GOTOLEVEL, lvl);
         }
     }
-    if (self->m_animSuppress == 0) {
-        self->m_animObj->NotifyCell(self->m_animArg0, self->m_animArg1, 1);
+    if (m_36c == 0) {
+        ((CTriggerMgr*)m_tileMgr)->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 1);
     }
-    self->m_drawState->m_8 |= 0x10000;
+    m_154->m_8 |= 0x10000;
     return 0;
 }
 
@@ -2203,9 +2117,9 @@ tail:
 // reset the geometry.
 RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
-    char* sub = (char*)&m_154->m_1a0;
-    if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
+    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
+    CAniAdvanceCursor* sub = m_154->Cursor();
+    if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }
     if (m_health <= 0) {
@@ -2214,7 +2128,7 @@ i32 CGrunt::StepArrivalCommitA() {
         return 0;
     }
     m_entranceActive = 0;
-    CGameRegistry* g = (CGameRegistry*)g_gameReg;
+    CGameRegistry* g = g_gameReg;
     CTileGrid* grid = g->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
@@ -2249,10 +2163,10 @@ i32 CGrunt::StepArrivalCommitA() {
 // reset the geometry).
 RVA(0x000654b0, 0x130)
 i32 CGrunt::StepArrivalCommitB() {
-    // 0x15c360 is CAniAdvanceCursor::Advance_15c360 (cast the m_1a0 geometry facet)
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
-    char* sub = (char*)&m_154->m_1a0;
-    if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
+    // 0x15c360 is CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
+    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
+    CAniAdvanceCursor* sub = m_154->Cursor();
+    if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }
     m_entranceActive = 0;
@@ -2265,7 +2179,7 @@ i32 CGrunt::StepArrivalCommitB() {
         ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
         return 0;
     }
-    CGameRegistry* g = (CGameRegistry*)g_gameReg;
+    CGameRegistry* g = g_gameReg;
     CTileGrid* grid = g->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
@@ -2317,7 +2231,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
             ->Load6(m_tileOwnerHi, m_tileOwnerLo, m_moveTileX, m_moveTileY, m_entranceReason, -1);
     } else {
         CGruntHud* h = m_10;
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
         if (GruntPointVisible((i32)rect, h->m_5c, h->m_60)) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
@@ -2367,7 +2281,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 
         i32 cueId = base + m_moveVariant - 1;
         CGruntHud* h = m_10;
-        CGameRegistry* g = (CGameRegistry*)g_gameReg;
+        CGameRegistry* g = g_gameReg;
         i32 x = h->m_5c;
         i32 y = h->m_60;
         i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
@@ -2406,12 +2320,12 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 // (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
 RVA(0x00065a60, 0x159)
 i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
-    i32 phase = m_drawState->m_1a0.Advance_15c360(g_engineFrameDelta);
+    i32 phase = m_drawState->m_1a0.Advance(g_engineFrameDelta);
     if (phase > 0) {
         if (phase == 0x63) {
             m_downtimeLatch = 1;
             u32 downtime = g_buteMgr.GetDword(m_gruntTypeTag, "ItemDowntime");
-            if (m_typeDisc == 0x3b) {
+            if (m_typeDisc == GRUNT_ROIDZ) { // Roidz: no item downtime either
                 downtime = 0;
             }
             m_wandDowntimeLo = downtime;
@@ -2459,7 +2373,7 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
 // PlaceAt / cue operands. A register-allocation/scheduling wall, not a shape error.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
-    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_engineFrameDelta);
+    i32 ready = m_154->Cursor()->Advance((u32)g_engineFrameDelta);
     if (ready > 0) {
         m_tileMgr->Load6(
             m_tileOwnerHi,
@@ -2470,8 +2384,8 @@ i32 CGrunt::StepEntranceRelatchB() {
             ready
         );
     }
-    char* sub = (char*)&m_154->m_1a0;
-    if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
+    CAniAdvanceCursor* sub = m_154->Cursor();
+    if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }
     m_entranceActive = 0;
@@ -2483,7 +2397,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeD);
     OnCoordCommit(m_coordToggle);
-    CGameRegistry* g = (CGameRegistry*)g_gameReg;
+    CGameRegistry* g = g_gameReg;
     CTileGrid* grid = g->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
@@ -2495,7 +2409,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     if (f1 & 0x2000000) {
         BuildGruntLoseItemAnimation();
-        g = (CGameRegistry*)g_gameReg;
+        g = g_gameReg;
     }
     grid = g->m_tileGrid;
     void* cellObj;
@@ -2507,18 +2421,20 @@ i32 CGrunt::StepEntranceRelatchB() {
     if (cellObj == 0) {
         return 0;
     }
-    void* found = 0;
-    void* result = 0;
+    CGameObject* found = 0;
+    CGameObject* result = 0;
     if (g->m_world->m_8->m_objMap.Lookup(cellObj, found)) {
         result = found;
     }
     if (result != 0) {
-        void* aux = *(void**)((char*)result + 0x7c);
-        GruntTileIcon* icon = *(GruntTileIcon**)((char*)aux + 0x18);
+        // The cell sprite's bound logic leaf (worker m_logic) IS the in-game tile
+        // icon here (the +2 grid slot only ever holds icon sprites) - the one
+        // base->leaf downcast the language forces.
+        CInGameIcon* icon = (CInGameIcon*)result->m_7c->m_logic;
         icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
         return 0;
     }
-    grid = (CTileGrid*)g_gameReg->m_tileGrid;
+    grid = g_gameReg->m_tileGrid;
     if ((u32)tx < (u32)grid->m_c && (u32)ty < (u32)grid->m_10) {
         ((i32*)grid->m_8[ty])[tx * 7 + 2] = 0;
         ((i32*)grid->m_8[ty])[tx * 7] &= ~0x40000;

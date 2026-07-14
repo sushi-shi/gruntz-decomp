@@ -161,9 +161,8 @@ i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             i32 key = 0;
             arc->Read(&key, 4);
             if (key != 0) {
-                void* found = 0;
-                CGameObject* obj =
-                    (CGameObject*)(holder->m_8->m_objMap.Lookup((void*)key, found) ? found : 0);
+                CGameObject* found = 0;
+                CGameObject* obj = holder->m_8->m_objMap.Lookup((void*)key, found) ? found : 0;
                 m_warlordLogic = obj->m_7c->m_logic;
                 if (m_warlordLogic == 0) {
                     return 0;
