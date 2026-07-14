@@ -111,8 +111,6 @@ extern "C" CNetCreateCtx* g_648cf4;
 //     idiom as the pmf-through-vtable dispatch below. (The m_4 game-mgr / m_5c chat-log
 //     helpers are now real methods on CNetGameMgr / CNetChatLog - those shadows folded
 //     away; CSymParser stays local, blocked by a header symbol-decl collision.)
-//   * TF(o)/MF(o) deliberate raw-offset macros: the ConnectDriver writes almost all
-//     unnamed padding, so the offset is the load-bearing fact (documented at the driver).
 //   * (char*)(const char*)aCString: MFC CString -> LPCTSTR (operator) -> char* to feed a
 //     char*-taking engine API; both casts are required.
 //   * (IDirectPlay4Z*)m_releaseIface etc.: DirectPlay COM downcast off the abstract
@@ -244,7 +242,7 @@ extern "C" void ServicesDispatchCb(); // 0x401a19
 extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
 extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
 extern "C" CNetMgr* g_groupEnumMgr;                                   // 0x648cf4
-extern "C" CMulti* g_connectRptMgr;                                  // 0x648cf8
+extern "C" CMulti* g_connectRptMgr;                                   // 0x648cf8
 // The channel-table base at CNetGameMgr+0x150 is m_4->m_channels[0] (CNetChannel);
 // JoinAndRegisterChannel seeds its name CString (+0x4) / id (m_8) directly.
 
@@ -632,10 +630,13 @@ struct CNetConnectSlotView {
 //     real teardown order) is now correct per drive-to-0.
 RVA(0x000b5460, 0x914)
 i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
-#define TF(o) (*(i32*)((char*)this + (o)))
-#define MF(o) (*(i32*)((char*)NetGameMgr() + (o)))
-
-    *(i32*)((char*)g_gameReg + 0x134) = 2;
+    // Connect-state fields reached cast-free through the real classes: `this` is a
+    // CMulti (its CPlay/CState base carries the 0x2c..0x4b8 connect-state members and
+    // CMulti owns 0x520..0x600), and NetGameMgr() is the CState::m_4 game-mgr's network
+    // facet (CNetGameMgr, the 0xac/0x110/0x114/0x12c guards). Both were the TF()/MF()
+    // offset-access macros; the offsets are now named members (see Multi.h/Play.h/State.h,
+    // NetMgr.h).
+    g_gameReg->m_134 = 2;
     if (a1 == 0) {
         return 0;
     }
@@ -645,46 +646,46 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     g_connectRptMgr = this;
 
     // --- zero the connect-state field block (disasm order) ---
-    TF(0x470) = 0;
-    TF(0x474) = 0;
-    TF(0x478) = 0;
-    TF(0x480) = 0;
-    TF(0x484) = 1;
-    TF(0x49c) = -1;
-    TF(0x4b0) = 0;
-    TF(0x4b4) = 0;
-    TF(0x4b8) = 0;
-    TF(0x530) = 0;
-    TF(0x534) = 0;
-    TF(0x52c) = 0;
-    TF(0x538) = 0;
-    TF(0x5ac) = 0;
-    TF(0x564) = 0;
-    TF(0x568) = 0;
-    TF(0x56c) = 0;
-    TF(0x574) = 0;
-    TF(0x40) = 0;
-    TF(0x1c0) = 0;
-    TF(0x578) = 0;
-    TF(0x580) = 0;
-    TF(0x57c) = 0;
-    TF(0x584) = 0;
-    TF(0x588) = 0;
-    TF(0x570) = 0;
-    TF(0x1c4) = 1;
-    TF(0x5bc) = 0;
-    TF(0x5c0) = 0;
-    TF(0x5a4) = 0;
-    TF(0x600) = 1;
-    TF(0x5a8) = 0;
-    TF(0x320) = 0;
-    TF(0x1cc) = 0;
-    TF(0x2d8) = (i32)::timeGetTime();
-    TF(0x58c) = 0;
-    TF(0x594) = 0;
+    m_region0Gate = 0;
+    m_region1Gate = 0;
+    m_region2Gate = 0;
+    m_viewMode = 0;
+    m_hudSuppressed = 1;
+    m_49c = -1;
+    m_snapshotActive = 0;
+    m_scrollEdgeActive = 0;
+    m_scrollEdgeLock = 0;
+    m_530 = 0;
+    m_534 = 0;
+    m_sessionTerminated = 0;
+    m_538 = 0;
+    m_5ac = 0;
+    m_pollAbort = 0;
+    m_568 = 0;
+    m_56c = 0;
+    m_574 = 0;
+    m_40 = 0;
+    m_1c0 = 0;
+    m_syncGate = 0;
+    m_connected = 0;
+    m_pumpGuard = 0;
+    m_584 = 0;
+    m_588 = 0;
+    m_570 = 0;
+    m_1c4 = 1;
+    m_5bc = 0;
+    m_hostIndex = 0;
+    m_5a4 = 0;
+    m_600 = 1;
+    m_drainReload = 0;
+    m_lightFx = 0;
+    m_savedClock = 0;
+    m_rngSeed = (i32)::timeGetTime();
+    m_58c = 0;
+    m_594 = 0;
 
     // m_channelLatency[0..3] + the four g_gameReg slots (+0x37c / +0x380)
-    i32* clat = (i32*)((char*)this + 0x5f0);
+    i32* clat = m_channelLatency;
     for (i32 k = 0; k < 0x8e0; k += 0x238) {
         *clat++ = 0;
         i32* slot = (i32*)((char*)g_gameReg + k + 0x37c);
@@ -692,7 +693,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         slot[1] = 0;
     }
 
-    MF(0x114) = 0;
+    NetGameMgr()->m_114 = 0;
     Mgr()->ResetClockGlobals();
     Mgr()->ClearOptionsSlots();
     ChannelSlots_InitAll();
@@ -702,26 +703,26 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     m_netGate = (CMultiReportGate*)peer;
     g_groupEnumMgr = peer;
 
-    MF(0xac) = 1;
+    NetGameMgr()->m_ac = 1;
     if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
         if (StartTitle() != 0) {
-            MF(0xac) = 0;
+            NetGameMgr()->m_ac = 0;
             ((this)->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
             return 0;
         }
     } else {
         if (Open() != 0) {
-            MF(0xac) = 0;
+            NetGameMgr()->m_ac = 0;
             while (::ShowCursor(0) >= 0) {
             }
             return 0;
         }
     }
 
-    if (TF(0x528) != 0) {
-        TF(0x58c) = 1;
+    if (m_isHost != 0) {
+        m_58c = 1;
     }
-    MF(0xac) = 0;
+    NetGameMgr()->m_ac = 0;
     // rep stos: zero 0x40 dwords from this+0x1d0
     {
         i32* p = (i32*)((char*)this + 0x1d0);
@@ -729,14 +730,14 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
             p[i] = 0;
         }
     }
-    TF(0x590) = MF(0x110);
-    MF(0x110) = 1;
+    m_590 = NetGameMgr()->m_110;
+    NetGameMgr()->m_110 = 1;
     if (((this)->*(((CNetConnectSlotView*)*(void**)this)->OnStart))() == 0) {
         return 0;
     }
     ((this)->*(((CNetConnectSlotView*)*(void**)this)->OnReady))();
-    TF(0x2c) = (i32)((CSymParser*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
-    if (TF(0x2c) == 0) {
+    m_2c = (CResSource*)((CSymParser*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
+    if (m_2c == 0) {
         return 0;
     }
     if (ShowMultiStartDlg() == 0) {
@@ -749,11 +750,11 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     // --- custom-level path ---
-    if (TF(0x5b0) != 0) {
-        MF(0x12c) = 0;
+    if (m_5b0 != 0) {
+        NetGameMgr()->m_12c = 0;
         *(CString*)((char*)NetGameMgr() + 0xc8) = "custom\\" + GetConfigNameB();
     } else {
-        MF(0x12c) = 1;
+        NetGameMgr()->m_12c = 1;
         *(CString*)((char*)NetGameMgr() + 0xc8) = GetConfigNameA();
     }
     if (Mgr()->GetWorldFileName().GetLength() == 0) {
@@ -762,7 +763,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 
     // (2) interface object - a CChatBoxOwner (the CNetIface view is gone)
     CChatBoxOwner* iface = new CChatBoxOwner();
-    TF(0x2e0) = (i32)iface;
+    m_hitTest = iface;
     // CChatBoxOwner::Attach RETURNS i32 (constant 1), and retail TESTS it here - VERIFIED
     // at 0xb5460+0x349: `call 0x3e77; test eax,eax; jne <continue>` with the same
     // Deactivate+RezFree+return-0 teardown CPlay::Vfunc1 has. The note that once stood
@@ -770,32 +771,32 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     // artifact") was exactly backwards: the guard is REAL - it was the void decl that
     // was wrong (see ChatBoxOwner.cpp).
     if (iface->Attach(m_c, NetGameMgr()->m_5c) == 0) {
-        CChatBoxOwner* io = (CChatBoxOwner*)TF(0x2e0);
+        CChatBoxOwner* io = m_hitTest;
         if (io == 0) {
             return 0;
         }
         io->Deactivate();
         ::operator delete(io);
-        TF(0x2e0) = 0;
+        m_hitTest = 0;
         return 0;
     }
-    ((CChatBoxOwner*)TF(0x2e0))->m_10 = 0;
-    ((CChatBoxOwner*)TF(0x2e0))->Configure(1);
+    m_hitTest->m_10 = 0;
+    m_hitTest->Configure(1);
 
     // (3) session - the 0x630 CStatusBarMgr (the CNetSess view is gone). The two
     // out-of-band stamps that used to sit here (m_barFrameGate = 0x1e0; m_544 = 1) are
     // GONE: they are ctor initialisers, and CStatusBarMgr now has its real inline ctor
     // (<Gruntz/StatusBarMgr.h>), which this `new` expands exactly as retail does.
     CStatusBarMgr* sess = new CStatusBarMgr;
-    TF(0x2dc) = (i32)sess;
+    m_guts = sess;
     if (sess->LoadBattlezItemConfig(m_c) == 0) {
-        CStatusBarMgr* so = (CStatusBarMgr*)TF(0x2dc);
+        CStatusBarMgr* so = m_guts;
         if (so == 0) {
             return 0;
         }
         so->Teardown(); // the view's ~CNetSess body; the members then tear down
         delete so;
-        TF(0x2dc) = 0;
+        m_guts = 0;
         return 0;
     }
 
@@ -804,14 +805,14 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     // `[+0x74]=0`; the old `new CTileTriggerSwitchLogic` was the wrong class AND
     // the wrong size, 0x8c vs 0x78).
     CTileTriggerContainer* cmd = new CTileTriggerContainer();
-    TF(0x2e4) = (i32)cmd;
+    m_beginMarker = cmd;
     if (cmd->GetFlag74() == 0) {
-        CTileTriggerContainer* co = (CTileTriggerContainer*)TF(0x2e4);
+        CTileTriggerContainer* co = m_beginMarker;
         if (co == 0) {
             return 0;
         }
         delete co;
-        TF(0x2e4) = 0;
+        m_beginMarker = 0;
         return 0;
     }
 
@@ -819,10 +820,10 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (((this)->*(((CNetConnectSlotView*)*(void**)this)->OnConnect))(1, 1) == 0) {
         return 0;
     }
-    TF(0x57c) = 1;
-    TF(0x534) = 0;
+    m_pumpGuard = 1;
+    m_534 = 0;
     i32 wr = WaitForOtherPlayers();
-    TF(0x57c) = 0;
+    m_pumpGuard = 0;
     if (wr == 0) {
         return 0;
     }
@@ -830,17 +831,14 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     PollSession();
-    srand(TF(0x2d8));
+    srand(m_rngSeed);
     g_frameDelta = 0;
     g_645580 = 0;
     g_frameTime = 0;
-    TF(0x1cc) = 0;
+    m_savedClock = 0;
     NetGameMgr()->m_5c->FreeNodes();
-    TF(0x580) = 1;
+    m_connected = 1;
     return 1;
-
-#undef TF
-#undef MF
 }
 
 // ---------------------------------------------------------------------------

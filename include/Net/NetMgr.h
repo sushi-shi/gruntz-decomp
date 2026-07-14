@@ -84,11 +84,11 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 // ---------------------------------------------------------------------------
 // Forward declarations (defined in the TU that dereferences them).
 // ---------------------------------------------------------------------------
-class GruntzPlayer;          // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
-class CGruntzCmdMgr;         // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
-class CNetMgr;               // defined below; the command slot caches one as its +0x1c owner
-class CMulti;                // <Gruntz/Multi.h> - the multiplayer game-state (owns CNetSession::Init a2)
-struct GruntRec;             // the lobby-sync grunt-state record (defined below CNetCmdSlot)
+class GruntzPlayer;  // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
+class CGruntzCmdMgr; // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
+class CNetMgr;       // defined below; the command slot caches one as its +0x1c owner
+class CMulti;        // <Gruntz/Multi.h> - the multiplayer game-state (owns CNetSession::Init a2)
+struct GruntRec;     // the lobby-sync grunt-state record (defined below CNetCmdSlot)
 struct CSpriteFactoryHolder; // <Gruntz/GameRegistry.h> - the +0xc world holder (CState::m_c mirror)
 
 // ---------------------------------------------------------------------------
@@ -504,16 +504,19 @@ struct CNetSession {
     // per offset, so each carries a single canonical (typed/semantic) name - the
     // former hex/command-view aliases (m_00/m_4/m_8/m_c/m_10/m_14/m_18/m_1c/m_1b0)
     // are folded onto them.
-    CNetCmdBuf* m_0;       // +0x00  base of the per-slot command-buffer array (Init a1); ResetSync clears it
-    CMulti* m_session;     // +0x04  owning CMulti (Init a2, kept as an i32 handle re-passed to CreateSlot)
-    CNetMgr* m_netMgr;     // +0x08  the DirectPlay CNetMgr peer (Init a3; endpoint at +0x18)
-    SlotInfo* m_localDesc; // +0x0c  local player descriptor
-    i32 m_tick;            // +0x10  sub-tick counter (also the lobby slot-count-id base)
-    i32 m_snapshotDone;    // +0x14  per-period snapshot-built flag
-    i32 m_seq;             // +0x18  reconcile-period sequence (Verify: (m_seq-2)%128)
-    i32 m_period;          // +0x1c  ticks per period / cached owner m_cmdDelay (the modulus)
+    CNetCmdBuf*
+        m_0; // +0x00  base of the per-slot command-buffer array (Init a1); ResetSync clears it
+    CMulti*
+        m_session; // +0x04  owning CMulti (Init a2, kept as an i32 handle re-passed to CreateSlot)
+    CNetMgr* m_netMgr;      // +0x08  the DirectPlay CNetMgr peer (Init a3; endpoint at +0x18)
+    SlotInfo* m_localDesc;  // +0x0c  local player descriptor
+    i32 m_tick;             // +0x10  sub-tick counter (also the lobby slot-count-id base)
+    i32 m_snapshotDone;     // +0x14  per-period snapshot-built flag
+    i32 m_seq;              // +0x18  reconcile-period sequence (Verify: (m_seq-2)%128)
+    i32 m_period;           // +0x1c  ticks per period / cached owner m_cmdDelay (the modulus)
     CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
-    CSyncObj* m_idMap[0x80]; // +0x1b0  synced-object ptr table (GetSlotPtr) / 0x200-byte resync scratch
+    CSyncObj*
+        m_idMap[0x80]; // +0x1b0  synced-object ptr table (GetSlotPtr) / 0x200-byte resync scratch
     union {
         CNetResyncEntry m_entries[0x80]; // +0x3b0  command: resync entries (signed-indexed)
         GruntRec m_records[0x80];        //        sync:    grunt-record table
@@ -534,7 +537,8 @@ struct CNetSession {
     // un-reset (m_resetGuard==0) slot whose latency exceeds key (unsigned).
     CNetCmdSlot* FindSlot(u32 key); // c0460
     // Wiring init (caches the owner pointers then Reset()s). a1=command-buffer array.
-    i32 Init(void* a1, class CMulti* a2, void* a3); // bef80  (a2 is the owning CMulti; reads a2->m_5a4)
+    i32
+    Init(void* a1, class CMulti* a2, void* a3); // bef80  (a2 is the owning CMulti; reads a2->m_5a4)
 
     // --- lobby-sync methods (ex-CLobbySync, folded onto the same object) ---
     ~CNetSession();      // b6220  ResetSync + vector-destroy the 4 slots [multi]
@@ -951,7 +955,14 @@ struct CNetGameMgr {
     CFontConfig* m_5c; // +0x5c  the chat/text display (the real class; ex-CNetChatLog view)
     char m_pad60[0x6c - 0x60];
     CGruntzCmdMgr* m_6c; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
-    char m_pad70[0x150 - 0x70];
+    char m_pad70[0xac - 0x70];
+    i32 m_ac; // +0xac  connect-in-progress guard (SetupMultiplayerSession toggles 1/0 per phase)
+    char m_padb0[0x110 - 0xb0];
+    i32 m_110; // +0x110  session-armed gate (Setup saves the old value into CMulti::m_590)
+    i32 m_114; // +0x114
+    char m_pad118[0x12c - 0x118];
+    i32 m_12c; // +0x12c  custom-vs-stock level flag (Setup sets 0 custom / 1 stock)
+    char m_pad130[0x150 - 0x130];
     CNetChannel m_channels[4]; // +0x150  the inline per-channel slot array (stride 0x238)
 };
 SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (+0x4/+0x5c/+0x6c/+0x150 pinned); retail size TBD
@@ -1115,9 +1126,9 @@ public:
     void PopulateSessionList(void* hList);   // 0x178d40  (/GX) fill a Win32 session list box
 
     // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
-    i32 DropChannelPlayer(i32 idx);        // 0xbb510  drop the player on channel[idx]
-    i32 LoadConfig(void* cfg);             // 0xbce80  copy the command-timing config in
-    void AutoTuneCmdDelay();               // 0xbcc10  derive m_cmdDelay/m_resend from the ping
+    i32 DropChannelPlayer(i32 idx); // 0xbb510  drop the player on channel[idx]
+    i32 LoadConfig(void* cfg);      // 0xbce80  copy the command-timing config in
+    void AutoTuneCmdDelay();        // 0xbcc10  derive m_cmdDelay/m_resend from the ping
 
     // AutoTuneCmdDelay's external probes (incremental-link thunks; no body here so
     // the call rel32 reloc-masks). MeasurePing samples the round-trip; ProbeLatency
