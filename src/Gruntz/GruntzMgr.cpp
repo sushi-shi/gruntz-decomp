@@ -2917,7 +2917,7 @@ i32 CGruntzMgr::Quicksave() {
         m_timer->Stop();
     }
     FillSaveInfo(m_saveInfoRec, 0);
-    if (((CSaveGame*)g_gameReg->m_saveSink)->Save((i32)m_saveInfoRec->m_serial, 0x81a7)) {
+    if (g_gameReg->m_saveSink->Save((i32)m_saveInfoRec->m_serial, 0x81a7)) {
         m_chatLog->AddItem("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
@@ -2943,7 +2943,7 @@ i32 CGruntzMgr::Quickload() {
         // The +0x58 sink IS CSaveGame; Check == CSaveGame::VerifySlot (0xe52c0) and
         // the record IS a SaveSlot (elsewhere this file casts g_gameReg->m_saveSink
         // to CSaveGame). Bind to the real callee so the reloc is faithful.
-        if (((CSaveGame*)m_saveSink)->VerifySlot((SaveSlot*)m_saveInfoRec) == 0) {
+        if (m_saveSink->VerifySlot((SaveSlot*)m_saveInfoRec) == 0) {
             return 1;
         }
         ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
@@ -3276,9 +3276,9 @@ void CGruntzMgr::UpdateScoreHud() {
 
     if (m_hudGuard->m_124 == 0) {
         m_scoreHud->FillRecord(sub->m_levelIndex, 0);
-        ((CSaveGame*)g_gameReg->m_saveSink)->SetCurLevel(sub->m_levelIndex);
-        ((CSaveGame*)g_gameReg->m_saveSink)->SetMaxLevel((sub->m_levelIndex % 0x28) + 1);
-        ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
+        g_gameReg->m_saveSink->SetCurLevel(sub->m_levelIndex);
+        g_gameReg->m_saveSink->SetMaxLevel((sub->m_levelIndex % 0x28) + 1);
+        g_gameReg->m_saveSink->Save(0, 0x81a6);
     }
     m_scoreHud->SetCount(sub->m_levelIndex);
     m_scoreHud->m_08 = 0;

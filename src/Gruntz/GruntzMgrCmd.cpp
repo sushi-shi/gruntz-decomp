@@ -19,7 +19,7 @@
 //   m_world->m_28   = CSndHost (SoundCue.h; CueLookup @0x05b7e0 was the fake
 //                     stdcall "CueLookup" free fn - it is a real CSndHost thiscall)
 //   m_sound         = CGruntzSoundZ (Restart 0x1388c0 / StopAll 0x1388f0)
-//   m_saveSink      = SaveSink58, m_saveInfoRec = SaveInfo (SaveInfo.h)
+//   m_saveSink      = the CSaveGame (Io/SaveGame.h), m_saveInfoRec = SaveInfo (SaveInfo.h)
 //   *0x64556c       = g_gameReg (CGameRegistry; the death cheat's key is
 //                     m_focusSlots[0].m_0c, its map CSpriteFactory::m_objMap)
 // Grid cells are CGrunt (m_tileOwnerHi/Lo @+0x1ec/+0x1f0, LoadPickupSprites
@@ -287,7 +287,10 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
         case 0x8174:
             m_strWorldFile.Empty();
             m_134 = 1;
-            if (!PassClickToPlayState(m_saveSink ? m_saveSink->m_curLevel : 0, 0, 1)) {
+            // retail: `mov eax,[esi+0x58]; mov ecx,[eax+0x18]` - NO null test, and the
+            // field is m_maxLevel (+0x18), not m_curLevel (the old view's ternary +
+            // offset were both wrong).
+            if (!PassClickToPlayState(m_saveSink->m_maxLevel, 0, 1)) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
@@ -625,7 +628,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         PLAYCUE("GAME_MAJORCHEAT");
                         if (m_saveSink) {
                             m_saveSink->SetCurLevel(0x20);
-                            m_saveSink->Set();
+                            m_saveSink->SetMagic(); // 0xe56b0 (the view's "Set")
                         }
                         AppendChatMessage(
                             "They should call you Cheat Cheatelson from "

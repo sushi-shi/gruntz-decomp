@@ -33,22 +33,15 @@ struct SaveInfo {
     i32 m_isWon; // +0xfc  "won" flag (FillSaveInfo writes m_134 == 3)
 };
 
-// The +0x58 manager save-record sink. FillSaveInfo forwards the record +
-// source-state ptr to Store; Quickload validates via Check; the warp cheats
-// (0x8240..0x8245, 0x81a9) SetCurLevel the target then (0x81a9) re-Set. All
-// reloc-masked thiscalls; +0x18 is the saved current-level id the 0x8174
-// command passes to PassClickToPlayState.
-SIZE_UNKNOWN(SaveSink58);
-struct SaveSink58 {
-    char m_pad0[0x18];
-    i32 m_curLevel;                       // +0x18  saved current-level id (0x8174 restart source;
-                                          //         SetCurLevel's target slot)
-    void Store(SaveInfo* dst, char* src); // (this, dst, src) reloc-masked
-    void Teardown();                      // (this) reloc-masked (Close)
-    i32 Check(SaveInfo* rec);             // (this, rec) reloc-masked (Quickload load; @0x0e52c0)
-    void SetCurLevel(i32 level);          // @0x0e5660 (thunk 0x4408; warp-cheat target)
-    void Set();                           // @0x0e56b0 (thunk 0x3463; ghidra "Set")
-};
+// DISSOLVED (Fable A2, 2026-07-14): the "+0x58 manager save-record sink" view
+// (SaveSink58) WAS the CSaveGame (<Io/SaveGame.h>) - every claimed method is
+// CSaveGame's (SetCurLevel @0xe5660, "Set" == SetMagic @0xe56b0, "Check" ==
+// VerifySlot @0xe52c0), and the "+0x18 m_curLevel" claim was WRONG BY 4:
+// SetCurLevel's body reads/writes +0x1c (CSaveGame::m_curLevel), while the
+// 0x8174 restart command's `mov ecx,[eax+0x18]` reads CSaveGame::m_maxLevel.
+// Its SaveInfo record is layout-identical to CSaveGame's SaveSlot (+0x04
+// levelId / +0x14 name / +0x35 path / +0x75 levelName / +0xf8/+0xfc) -
+// @fold-TODO SaveInfo == SaveSlot (the m_saveInfoRec consumers).
 
 // The manager's +0x44 HUD first-frame guard (only its +0x124 flag is touched:
 // seeded by the manager, cleared by the 0x81d7 "Cheatz cleared" command).
