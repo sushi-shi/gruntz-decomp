@@ -47,6 +47,7 @@
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeStoreLeafDtors.h> // the 0x21310/0x21570 zPTree/CBSecStream store dtors
+#include <Bute/ButeTextBuf.h>        // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
 #include <Globals.h>
 
@@ -783,13 +784,12 @@ extern "C" {
 // CStrings.
 extern "C" char g_emptyString[]; // 0x6293f4
 
-// The input source stream embedded at CButeMgr+0xa0. ReadByte pulls the next
-// byte position (an engine __thiscall, reloc-masked external/no-body).
-class CButeStream {
-public:
-    i32 ReadByte();
-};
-SIZE(CButeStream, 0x4); // receiver view of the +0xa0 input stream
+// The input source stream at CButeMgr+0xa0 is a real CRT istream (created as
+// `new ifstream(...)` in CButeMgr::Parse, or a custom istream-derived decode
+// stream in the .rez path - RezSync.cpp). NextChar reads the next char through
+// istream::get() (0x16a410, LIBCIMT carve-out, reloc-masked) and probes EOF
+// through ios::eof() (the vbptr-adjust to the virtual ios base + state&eofbit).
+// (The former CButeStream receiver view is dissolved onto the real istream.)
 
 // The big attribute-file line driver at 0x170750. Retail mangles ONLY this method
 // under `ButeMgr@@` (every sibling method is `CButeMgr@@`), so ParseAttributeFile
@@ -847,11 +847,8 @@ extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
 // misread of the constant.
 //
 // The accumulator is therefore a real ostream sub-object embedded at +0xc of the object
-// m_pText points at (Parse reaches it as `mov ecx,[esi+0xa4]; add ecx,0xc; call`).
-struct CButeTextBuf {
-    char m_pad00[0xc]; // +0x00
-    ostream accum;     // +0x0c  the value-text accumulator (the real CRT ostream)
-};
+// m_pText points at (Parse reaches it as `mov ecx,[esi+0xa4]; add ecx,0xc; call`). Its
+// shape now lives in the shared <Bute/ButeTextBuf.h> (included above), not per-TU here.
 SIZE_UNKNOWN(CButeTextBuf); // an embedded ostream - not the old fabricated 0x10
 
 // The token-length counter (file-scope signed WORD, read with movsx).
@@ -931,9 +928,15 @@ CButeStoreCopy21310::~CButeStoreCopy21310() {}
 // real virtual-base member read so it compiles to the vbtable access (load vbptr,
 // load the vbase displacement from vbtable[1], read [this+disp+4]) with no raw cast.
 // __thiscall. Re-homed from src/Stub/BoundaryLowerMethods.cpp (its RVA neighborhood).
-// @identity-TODO: the getter runs on g_gameReg->m_2c (the current state), reached
-// by CChatBoxOwner::ProcessCheatInput (xref); the state class holding the virtual base
-// is unrecovered, so the host class name is a placeholder.
+// @identity-TODO (techniques re-run 2026-07-14): xref -> the sole caller is
+// CChatBoxOwner::ProcessCheatInput @0x205c0 (via ILT thunk 0x272f, called at 0x2087e
+// with `mov ecx,esi`), itself reached from CPlay::DispatchKey. The `this` is `esi`
+// deep in ProcessCheatInput, NOT g_gameReg->m_2c as previously guessed - that field is
+// a CState* and CState is an RTTI ROOT with a real vtable at [this+0], whereas this
+// getter's `this` has a genuine vbptr at [this+0] (vtbl access `[[this]+4]` -> disp ->
+// [this+disp+4]). No modeled class with a virtual base sits on esi's dataflow without
+// reconstructing ProcessCheatInput's locals; callee return/param types, vtable DATA-ref,
+// operator new size and RTTI COL all dead-end here. Host stays a placeholder.
 struct VBaseState213 {
     i32 m_0;
     i32 m_4; // +0x04 (the returned field; role unproven)
@@ -2209,9 +2212,8 @@ void CButeMgr::SetErrCallback(ErrCallback cb) {
 // outparam-zeroinit-scheduling family); no source spelling flips it.
 RVA(0x00170390, 0x50)
 void CButeMgr::NextChar() {
-    i32 delta = ((CButeStream*)m_stream)->ReadByte() - m_streamBase;
-    char* bitmap = *(char**)((char*)*(void**)m_stream + 4);
-    if (bitmap[(i32)m_stream + 8] & 1) {
+    i32 delta = ((istream*)m_stream)->get() - m_streamBase;
+    if (((istream*)m_stream)->eof()) {
         m_curChar = 0;
         return;
     }
