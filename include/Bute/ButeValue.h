@@ -48,6 +48,12 @@ struct CButeValue {
     i32 type;     // +0x00  ButeType discriminant (kept i32-width for the ABI)
     void* pValue; // +0x04
 
+    // The "boxed value" 2-arg ctor (@0x1741b0, butemgr): tag `this` with `type`,
+    // op-new an 8-byte CButeValue, copy `src`'s {type, pValue} into it, and stow the
+    // boxed copy in this->pValue (0 on alloc failure). Used by the attribute-file
+    // store builder to wrap a parsed value.
+    CButeValue(i32 type, CButeValue* src);
+
     // Destructor: free the owned pValue storage, sized/typed by the type-tag via a
     // dense ButeType jump table (string destructs the CString first; all others are
     // a plain operator delete). The store fires the SAME teardown through its

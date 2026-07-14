@@ -820,22 +820,13 @@ extern "C" DWORD ButeRead_Dword(char* tok, char** end, i32 base); // 0x1240b0
 extern "C" double ButeRead_Float(char* tok);                      // 0x18d220
 extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
 
-// The stored value record ParseAttributeFile builds + inserts: a tagged head
-// `{ i32 type; void* pValue }` (CButeValue), pValue pointing at a heap copy of
-// the parsed value. For the int/dword/float cases pValue is `new`-d 4-byte
-// storage; double is 8-byte; the point/rect refs are 8/16/24-byte blocks. The
-// node is allocated via the global operator new, so the `push N; call ??2;
-// add esp,4; test eax,eax` shape reloc-masks. Modeled with the field offsets
-// the stores hit (type @+0, pValue @+4).
-struct CButeValueNode {
-    i32 type;     // +0x00
-    void* pValue; // +0x04
-
-    CButeValueNode() {}
-    // 0x1741b0 - box a copy of another value node (the two-arg "boxed value" ctor).
-    CButeValueNode(i32 valType, CButeValueNode* src);
-};
-SIZE(CButeValueNode, 0x8); // { type, pValue }
+// The stored value record ParseAttributeFile builds + inserts is the canonical
+// CButeValue (<Bute/ButeValue.h>, `{ i32 type; void* pValue }`) - the SAME record the
+// getters above read (see GetRef7 @0x1741f0) and the same class this TU already
+// implements CopyValue/~CButeValue/SetInt/SetDword/SetFloat/the box-ctor for. pValue
+// points at a heap copy of the parsed value (4-byte for int/dword/float, 8-byte
+// double, 8/16/24-byte point/rect refs), op-new'd so the `push N; call ??2; add esp,4;
+// test eax,eax` shape reloc-masks. (The former local CButeValue view is dissolved.)
 
 // (the ex-`CButeText` view is GONE. It was the statically-linked CRT **ostream**, and
 // its own comment already suspected as much - but it named the class MFC CString and
@@ -1395,8 +1386,8 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     return def;
 }
 
-// CButeValueNode::CButeValueNode (0x1741b0) - the two-arg "boxed value" ctor: tag
-// `this` with `type`, op-new an 8-byte CButeValueNode, copy `src`'s {type, pValue}
+// CButeValue::CButeValue (0x1741b0) - the two-arg "boxed value" ctor: tag
+// `this` with `type`, op-new an 8-byte CButeValue, copy `src`'s {type, pValue}
 // into it, and stow the boxed copy in this->pValue (or 0 on alloc failure). __thiscall
 // (type, src), returns this. Attributed via the 8-byte {type, pValue} receiver shape;
 // the only caller is the bute value-store builder 0x173dd0 (still a GapFunctions.cpp
@@ -1410,9 +1401,9 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
 // `this->pValue = n` form that would reuse the failed-new eax merges the two epilogues
 // and drops to 78%). Not source-steerable. Deferred to the final sweep.
 RVA(0x001741b0, 0x39)
-CButeValueNode::CButeValueNode(i32 type, CButeValueNode* src) {
+CButeValue::CButeValue(i32 type, CButeValue* src) {
     this->type = type;
-    CButeValueNode* n = (CButeValueNode*)operator new(8);
+    CButeValue* n = (CButeValue*)operator new(8);
     if (n) {
         n->type = src->type;
         n->pValue = src->pValue;
@@ -1581,7 +1572,7 @@ bool CButeMgr::Parse() {
 // m_str104, optionally probes the active store node (m_pNode) for a duplicate
 // key (reporting + flagging it), lexes the value-type token, then dispatches an
 // 11-way switch over the value-type token (m_tokType in 5..15) to either:
-//   - STORE mode (m_writeMode == 0, no duplicate): allocate a CButeValueNode, tag it,
+//   - STORE mode (m_writeMode == 0, no duplicate): allocate a CButeValue, tag it,
 //     `new` a heap copy of the parsed value, and Insert it under the key; or
 //   - WRITE-BACK mode (m_writeMode != 0): read the existing typed value back through
 //     the matching getter and append a formatted representation of it to the
@@ -1649,7 +1640,7 @@ bool ButeMgr::ParseAttributeFile() {
             if (m_writeMode) {
                 m_pText->accum << (int)GetInt(m_tagName, m_str104);
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 0;
                     i32* p = (i32*)operator new(4);
@@ -1673,7 +1664,7 @@ bool ButeMgr::ParseAttributeFile() {
                 m_pText->accum << s_strDword;
                 m_pText->accum << (unsigned long)GetDword(m_tagName, m_str104);
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 1;
                     DWORD* p = (DWORD*)operator new(4);
@@ -1696,7 +1687,7 @@ bool ButeMgr::ParseAttributeFile() {
             if (m_writeMode) {
                 (m_pText->accum << s_strFloat) << (double)GetFloat(m_tagName, m_str104);
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 3;
                     i32* p = (i32*)operator new(4);
@@ -1717,7 +1708,7 @@ bool ButeMgr::ParseAttributeFile() {
                 m_pText->accum << (double)GetFloat(m_tagName, m_str104);
                 m_pText->accum << s_strFloatSuffix;
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 3;
                     i32* p = (i32*)operator new(4);
@@ -1737,7 +1728,7 @@ bool ButeMgr::ParseAttributeFile() {
             if (m_writeMode) {
                 m_pText->accum << (double)GetDouble(m_tagName, m_str104);
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 2;
                     double* p = (double*)operator new(8);
@@ -1763,7 +1754,7 @@ bool ButeMgr::ParseAttributeFile() {
                 (m_pText->accum << s_strComma) << (long)r->d;
                 m_pText->accum << s_strClose;
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 5;
                     i32* p = (i32*)operator new(0x10);
@@ -1790,7 +1781,7 @@ bool ButeMgr::ParseAttributeFile() {
                 (m_pText->accum << s_strComma) << (long)r->b;
                 m_pText->accum << s_strClose;
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 6;
                     i32* p = (i32*)operator new(8);
@@ -1819,7 +1810,7 @@ bool ButeMgr::ParseAttributeFile() {
                 (m_pText->accum << s_strComma) << (double)dz;
                 m_pText->accum << s_strGt;
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 7;
                     double* p = (double*)operator new(0x18);
@@ -1847,7 +1838,7 @@ bool ButeMgr::ParseAttributeFile() {
                 (m_pText->accum << s_strComma) << (double)dy;
                 m_pText->accum << s_strRBrack;
             } else if (!bDup) {
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 8;
                     double* p = (double*)operator new(0x10);
@@ -1871,7 +1862,7 @@ bool ButeMgr::ParseAttributeFile() {
                 m_pText->accum << (unsigned char)0x22;
             } else if (!bDup) {
                 CString s(m_token);
-                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
                     n->type = 4;
                     n->pValue = new CString(s);
@@ -1917,12 +1908,12 @@ bool ButeMgr::ParseAttributeFile() {
 // (s_default) are DATA; the $E atexit thunk is a FUNCTION (obj-defined). cl's local
 // pool ids ($S190xx) are per-TU counters, stable while ButeMgr.cpp's string/local
 // set is; a drift surfaces as a build-time miss (authority-checked vs butemgr.obj).
-// @data-symbol: _?$S31@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4EA$S* 0x002bf688
+// @data-symbol: _?$S47@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4EA$S* 0x002bf688
 // @data-symbol: _?s_default@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4U3@A$S* 0x002bf6d0
-// @rva-symbol: _$E32 0x00173840
-// @data-symbol: _?$S33@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4EA$S* 0x002bf67c
+// @rva-symbol: _$E48 0x00173840
+// @data-symbol: _?$S49@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4EA$S* 0x002bf67c
 // @data-symbol: _?s_default@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4U3@A$S* 0x002bf690
-// @rva-symbol: _$E34 0x00173dc0
+// @rva-symbol: _$E50 0x00173dc0
 RVA(0x00173770, 0xc6)
 CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key) {
     static CButeRef5 s_default;
