@@ -18,6 +18,8 @@
 #include <Gruntz/UserLogic.h>       // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>           // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h>    // canonical *0x24556c singleton (color table via m_78)
+#include <Gruntz/LightFxMgr.h>  // CLightFxMgr - m_logicPump's real class (m_tables[10] @+0x14)
+#include <Gruntz/SpriteFactory.h> // CSpriteFactory - m_world->m_8 (embedded GruntObjMap m_objMap @+0x48)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
 #include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
@@ -37,14 +39,11 @@ const double g_spotRateNum = 3.1415927; // 0x5ea3f0
 DATA(0x001ea3f8)
 const double g_spotRateMul = -1.0; // 0x5ea3f8
 
-// The per-frame light-color table is the spotlight facet of the canonical
-// registry's reused +0x78 slot ((CSpotMgrTable*)g_gameReg->m_78; see
-// CGameRegistry.h): the ctor indexes it by m_object->m_11c (+0x14 base); the
-// alpha-blend gate is the registry's m_134 discriminator. Authentic downcast.
-struct CSpotMgrTable {
-    char m_pad00[0x14];
-    i32 m_arr[1]; // +0x14
-};
+// The per-frame light-color table is the canonical CLightFxMgr (g_gameReg->m_logicPump,
+// +0x78; <Gruntz/LightFxMgr.h>): the ctor indexes its m_tables[10] shade-table array
+// (+0x14) by m_object->m_11c and stores the CShadeTable* as the draw-fill arg; the
+// alpha-blend gate is the registry's m_134 discriminator. (The ex CSpotMgrTable view
+// is dissolved onto the real class.)
 extern "C" CGameRegistry* g_gameReg;
 
 // CSpotLight : CUserLogic is modeled in <Gruntz/SpotLight.h> (canonical header,
@@ -109,7 +108,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     } else {
         m_90 = 0;
     }
-    i32 looked = ((CSpotMgrTable*)g_gameReg->m_logicPump)->m_arr[m_object->m_11c];
+    i32 looked = (i32)g_gameReg->m_logicPump->m_tables[m_object->m_11c];
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;
@@ -152,9 +151,11 @@ i32 CSpotLight::RunAct(i32 id) {
 
 // SerializeMove's +0x98 focus slot is a serialized object reference. The referent
 // carries its id at +0x188 and a type tag via vtable slot 8 (+0x20). The Read path
-// resolves the id through the resource mgr's (g_gameReg->m_30) id->object map at
-// m_8 +0x48 (an MFC CMapPtrToPtr, Lookup @0x1b8760), keeping the object only when its
-// type tag is 5. The per-serialize round counter g_serialCounter bumps each pass.
+// resolves the id through the world sprite factory's embedded id->object map
+// (g_gameReg->m_world->m_8->m_objMap, the canonical GruntObjMap @+0x48, Lookup
+// @0x1b8760), keeping the object only when its type tag is 5. The per-serialize round
+// counter g_serialCounter bumps each pass. (The ex CSpotResMgr view is dissolved onto
+// the real CSpriteFactoryHolder / CSpriteFactory.)
 extern i32 g_serialCounter; // 0x629ad0
 struct CSpotFocus {
     virtual i32 s0();
@@ -168,11 +169,6 @@ struct CSpotFocus {
     virtual i32 GetType(); // slot 8 (+0x20): the type tag (5 == a valid focus)
     char m_pad04[0x188 - 0x04];
     i32 m_188; // +0x188  the serialized id
-};
-// The resource mgr (g_gameReg->m_30) holds its id->object map at m_8 + 0x48.
-struct CSpotResMgr {
-    char m_pad00[0x8];
-    char* m_8; // +0x08  the map holder (its +0x48 is the CMapPtrToPtr)
 };
 
 // CSpotLight::SerializeMove @0x0b2050 (vtable slot 1) - chain the base + the +0x34
@@ -196,7 +192,6 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
         return 0;
     }
     CGameRegistry* reg = g_gameReg;
-    CSpotResMgr* mgr = (CSpotResMgr*)reg->m_world;
     CSerialArchive* s = (CSerialArchive*)arc;
     switch (mode) {
         case 4: // Write
@@ -234,7 +229,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                 i32 id;
                 s->Read(&id, 4);
                 CSpotFocus* out = 0;
-                i32 resolved = ((CMapPtrToPtr*)(mgr->m_8 + 0x48))->Lookup((void*)id, (void*&)out);
+                i32 resolved = reg->m_world->m_8->m_objMap.Lookup((void*)id, (void*&)out);
                 if (resolved != 0) {
                     if (out == 0) {
                         resolved = 0;
@@ -253,7 +248,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
             break;
         case 8: { // re-apply the level draw-fill color
             CGameObject* o = m_object;
-            i32 fill = ((CSpotMgrTable*)reg->m_logicPump)->m_arr[o->m_11c];
+            i32 fill = (i32)reg->m_logicPump->m_tables[o->m_11c];
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
             o->m_drawFillCmd = 7;
@@ -379,9 +374,7 @@ i32 CSpotLight::Tick_0b1af0() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CSpotMgrTable);
 SIZE_UNKNOWN(CSpotActEntry);
 SIZE_UNKNOWN(CSpotFocus);
-SIZE_UNKNOWN(CSpotResMgr);
 SIZE_UNKNOWN(CSpotTarget);
 SIZE_UNKNOWN(CSpotLaser);

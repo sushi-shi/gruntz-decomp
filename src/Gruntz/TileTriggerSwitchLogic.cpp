@@ -76,38 +76,11 @@ public:
 // Only the offsets this cluster reaches are modeled; reloc-masked DIR32.
 // ---------------------------------------------------------------------------
 
-// The action-occupancy tile grid reached as g->m_30->m_24->m_5c is the shared
-// CPlaneRender (<Wwd/WwdFile.h>): cell = m_tileGrid[m_colOffsets[y] + x].
-struct WwdGrViewport {
-    char m_pad0[0x5c];
-    CPlaneRender* m_5c; // +0x5c
-};
-SIZE_UNKNOWN(WwdGrViewport);
-
-// The sprite factory the brick-break path spawns through (g->m_30->m_8) is the
-// canonical CSpriteFactory (<Gruntz/SpriteFactory.h>). Process also reads
-// g->m_30->m_28->m_30 (a one-shot impact-sound gate). External slots.
-struct CSpriteMakerSub {
-    char m_pad0[0x30];
-    i32 m_30; // +0x30  impact-sound already-played gate
-};
-SIZE_UNKNOWN(CSpriteMakerSub);
-struct WwdGrSprHolder {
-    char m_pad0[0x8];
-    CSpriteFactory* m_8; // +0x08  sprite factory (CreateSprite @0x1597b0)
-    char m_pad0c[0x24 - 0xc];
-    WwdGrViewport* m_24;   // +0x24  the SetActionCode grid viewport
-    CSpriteMakerSub* m_28; // +0x28  impact-gate holder
-};
-SIZE_UNKNOWN(WwdGrSprHolder);
-
-// The message/effect sink (g->m_68): PostTileEvent posts coordinate-tagged events
-// to the game; external/no-body so the dispatch reloc-masks.
-struct CTileEventSink {
-    // PostA @0x400c IS CGruntTileMgr::CombatCue; cast at the call.
-    // PostB @0x2fb3 IS EngineLabelBacklog::LoadExplosionSprites; cast at the call.
-};
-SIZE_UNKNOWN(CTileEventSink);
+// (The WwdGrViewport / CSpriteMakerSub / WwdGrSprHolder chain views are DISSOLVED:
+// g_gameReg->m_world is the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>),
+// whose m_8 is the CSpriteFactory, m_24 the CGameLevel and m_28 the CSndHost. The one
+// live read - the impact-sound gate - is g_gameReg->m_world->m_28->m_emitGate (CSndHost
+// +0x30). The CTileEventSink placeholder was dead - deleted.)
 
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed). Declared at the REAL class: its
 // ReportError (@0x8dc60) then emits a DEFINED symbol instead of the unlinkable phantom
@@ -151,15 +124,11 @@ SIZE_UNKNOWN(CBrickTile);
 // cache-state gate. (The former CBreakSprite view also mislaid m_8/m_198 at
 // offsets 0/4 - the canonical layout fixes that.)
 
-// The impact one-shot emitter vtable slot used on g->m_30->m_28->m_30==0.
-// CImpactSound::Play @0x25fe IS LeafCue::PlayIfElapsed_01f940 (header-less); local decl.
-struct CImpactSound {
-    // Play @0x25fe IS LeafCue::PlayIfElapsed_01f940; cast at the call.
-};
-SIZE_UNKNOWN(CImpactSound);
-
-// The sound-bank lookup by name (thunk_FUN_0045b7e0, __cdecl). External no-body.
-extern CImpactSound* Eng_FindSound(const char* name);
+// The impact-sound lookup by name is the canonical name->cue lookup on the world
+// CSndHost (g_gameReg->m_world->m_28): CDDrawSubMgrLeafScan::Lookup_05b7e0(name)
+// returns the CObject cache value (a LeafCue), then LeafCue::PlayIfElapsed_01f940
+// plays it. (The ex CImpactSound view + the fake `Eng_FindSound` free-function extern
+// are dissolved onto the real classes - same thiscall thunk 0x2cca as GruntCombat.)
 
 // TileGridCommand.cpp - Gruntz CTileTriggerLogic (C:\Proj\Gruntz).
 //
@@ -1281,10 +1250,11 @@ i32 CTileActionEvent::Process(i32 arg) {
             i32 py = (m_tileY << 5) + 0x10;
             if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
                 && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT
-                && ((WwdGrSprHolder*)g_gameReg->m_world)->m_28->m_30 == 0) {
-                CImpactSound* snd = (CImpactSound*)Eng_FindSound("GRUNTZ_NORMALGRUNT_IMPACTMM3");
+                && g_gameReg->m_world->m_28->m_emitGate == 0) {
+                LeafCue* snd =
+                    (LeafCue*)g_gameReg->m_world->m_28->Lookup_05b7e0("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 if (snd != 0) {
-                    ((LeafCue*)snd)->PlayIfElapsed_01f940((i32)g_sndCueTag, 0, 0, 0);
+                    snd->PlayIfElapsed_01f940((i32)g_sndCueTag, 0, 0, 0);
                 }
             }
             if (brick->m_1ec == 5) {
