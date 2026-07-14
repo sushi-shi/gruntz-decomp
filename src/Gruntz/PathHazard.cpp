@@ -65,7 +65,7 @@ extern i32 g_strikeThresh;  // 0x645598 (compared to 0x64)
 // +0x118/+0x134 are the window-mode gates.
 // The positional-sound cue idiom (shared with the menu-select handler, see
 // <Gruntz/SoundCue.h>): ArmStrike looks up "LEVEL_CLOUDHAZARDKILL" -> an emitter
-// (m_10 the CSoundCueMgr play-object, m_14 last-play clock, m_18 cooldown), then
+// (m_10 the DSoundCloneInst play-object, m_14 last-play clock, m_18 cooldown), then
 // plays it through the cue manager when the per-emitter cooldown has elapsed.
 
 // FABRICATED-SYMBOL FIX: this was a C++-linkage alias (?g_gameReg@@3PAUCGameRegistry@@A)

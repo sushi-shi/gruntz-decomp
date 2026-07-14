@@ -347,10 +347,10 @@ void EngStr_DrawText(
 // (CCueEmitter + CNetCueRec are gone too - see the two call sites. CNetCueRec was a
 // CONFLATION of two unrelated classes at one name: at ShowMultiStartDlg's first use it is
 // the GruntzPlayer that FindOptionsSlot returns (+0x08 / +0x20 = m_008 / m_020), and at
-// its second it is the LeafCue a CMapStringToOb::Lookup hands back (+0x10 CSoundCueMgr* /
+// its second it is the LeafCue a CMapStringToOb::Lookup hands back (+0x10 DSoundCloneInst* /
 // +0x14 clock / +0x18 interval - literally LeafCue's field set, which the OTHER cue site
 // in this very file already used the canonical LeafCue for). CCueEmitter was LeafCue::m_10,
-// i.e. CSoundCueMgr, whose ConfigureItem @0x1360d0 the comment already named.)
+// i.e. DSoundCloneInst, whose ConfigureItem @0x1360d0 the comment already named.)
 // The embedded registry/bute object at (m_c->m_28 + 0x10) is the REAL CSndHost
 // (<Gruntz/SoundCue.h>): its +0x10 IS that class's name->cue map and its +0x30 the
 // m_emitGate. The two shells that stood here (CNetCfg / CNetCfgSub) were CState::m_c

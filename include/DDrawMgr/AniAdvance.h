@@ -14,7 +14,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/Sprite.h> // CSprite - the active frame sequence (m_frameSeq)
 
-class CSoundCueMgr; // the +0x10 sound player of the trigger overlay
+class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
 
 // The sprite-render context the cursor drives (held at cursor+0x10). ClampFirst/
 // ClampLast (0x15cc50/0x15cc90) clamp its +0x190 cursor to the sequence ends and
@@ -80,7 +80,7 @@ public:
     // authentic: geometry context, reached only by raw offset (+0x24 -> +0x5c -> +0x84,
     // +0x4); its class is not modeled here - kept void*.
     void* m_ctx;                 // +0x0c geometry context
-    CSoundCueMgr* m_soundPlayer; // +0x10 sound player
+    DSoundCloneInst* m_soundPlayer; // +0x10 sound player
 };
 SIZE_UNKNOWN(CAniBlitTrigger);
 

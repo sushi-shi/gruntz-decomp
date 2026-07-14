@@ -26,7 +26,7 @@
 #include <Gruntz/WwdGameReg.h>            // g_gameReg (GenMenuRandPos Rand/RandRange)
 #include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (the real m_world class)
 #include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_8 factory)
-#include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/CSoundCueMgr (LevelMsgHudDriver cue)
+#include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
 #include <Gruntz/LeafCue.h>  // LeafCue (PlayIfElapsed_01f940 + m_10/m_14/m_18)
 #include <rva.h>
 

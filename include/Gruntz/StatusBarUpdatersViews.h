@@ -8,12 +8,12 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (ConfigureItem @0x1360d0)
+#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (ConfigureItem @0x1360d0)
 #include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CMapStringToOb
 #include <Gruntz/SoundCue.h> // the ONE +0x28 status/cue holder (CSndHost; folds the former CStatusBarHolder)
 
 // The status-bar item the named cue Lookup resolves IS the canonical LeafCue
-// (<Gruntz/LeafCue.h>): the CSoundCueMgr ConfigureItem pushes into at m_10 (+0x10,
+// (<Gruntz/LeafCue.h>): the DSoundCloneInst ConfigureItem pushes into at m_10 (+0x10,
 // == cueMgr), a draw-clock latch m_14 (+0x14, == drawClock) and a window width m_18
 // (+0x18, == window). The former CStatusBarTab view was a duplicate of it, folded away.
 

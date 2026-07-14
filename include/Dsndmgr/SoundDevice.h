@@ -30,6 +30,7 @@ class SoundDevice;
 // mapped to the same RVA as a DirectSoundMgr/DSoundCloneInst method). SoundBuf survives
 // only as this alias so the cross-cluster CDDrawSubMgrLeafScan.cpp (LeafElementObj,
 // owned by another worker) keeps compiling its `RemoveBuffer((SoundBuf*)m_10)`.
+class DSoundCloneInst; // the concrete per-buffer leaf the factories mint
 typedef DirectSoundMgr SoundBuf;
 
 // ParseFmt - the fmt-chunk descriptor ParseWaveChunks fills (its `out` param) and
@@ -64,15 +65,15 @@ public:
     i32 StartPrimary();               // 0x137200  (extern) reads +0x78/+0x84, primary
     i32 CreatePrimaryBuffer();        // 0x137260  (extern, defined elsewhere)
     IDirectSoundBuffer* GetPrimary(); // 0x137300  ensure (lazily create) + return primary
-    DirectSoundMgr* CreateBuffer(
+    DSoundCloneInst* CreateBuffer(
         WaveFormatX* fmt,
         u32 bytes,
         u32 flags
-    ); // 0x1366f0  CreateSoundBuffer + wrap
-    DirectSoundMgr*
+    ); // 0x1366f0  CreateSoundBuffer + wrap (mints the concrete DSoundCloneInst leaf)
+    DSoundCloneInst*
     AcquireFile(char* path, u32 flags, u32 reserved); // 0x136860  fopen whole file -> Acquire
-    DirectSoundMgr* Acquire(void* riff, u32, u32);    // 0x136910  parse RIFF + CreateBuffer + load
-    DirectSoundMgr* AcquireResource(
+    DSoundCloneInst* Acquire(void* riff, u32, u32); // 0x136910  parse RIFF + CreateBuffer + load
+    DSoundCloneInst* AcquireResource(
         const char* name,
         u32 flags,
         u32 reserved

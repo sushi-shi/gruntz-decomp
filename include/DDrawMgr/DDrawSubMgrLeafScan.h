@@ -31,12 +31,10 @@
 
 // Body-only dependency types (defined in the owning .cpp; only pointers/values in the
 // class declaration, so a forward decl suffices and keeps lean consumers lean).
-struct SoundStream;     // +0x2c held DSound stream (SoundStream : SoundDevice; Play stops it)
-struct LeafElementObj;  // 0x1c cache element (CreateEntry factory output)
-class CSymTab;          // <Bute/SymTab.h> - the scope node ScanTree walks (was the DirNode view)
-class LeafScanValue;    // a looked-up map value (scalar-dtor slot + held sound-arg)
-class LeafScanSoundArg; // MatchSub arg (its m_10 is the real DirectSoundMgr wrapper)
-class CParseSource;     // the element's draw-source (BeginParse/EndParse)
+struct SoundStream; // +0x2c held DSound stream (SoundStream : SoundDevice; Play stops it)
+struct LeafCue;     // the 0x1c cache element / map value (<Gruntz/LeafCue.h>)
+class CSymTab;      // <Bute/SymTab.h> - the scope node ScanTree walks (was the DirNode view)
+struct CParseSource; // the element's draw-source (BeginParse/EndParse; STRUCT key = the def)
 
 // ---------------------------------------------------------------------------
 // The shared CObject-like grand-base: vptr + status word at +0x04 + handle at +0x0c.
@@ -89,10 +87,10 @@ public:
     virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
 
     i32 RefreshAsset_114120(const char* key);
-    LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
-    LeafElementObj* CreateEntry2_157e00(const char* key, void* arg2);
-    LeafElementObj* AddFromSource_157e90(CParseSource* src);     // 0x157e90
-    void AddEntry_157ec0(LeafElementObj* elem, const char* key); // 0x157ec0
+    LeafCue* CreateEntry_157d70(const char* key, void* arg2);
+    LeafCue* CreateEntry2_157e00(const char* key, void* arg2);
+    LeafCue* AddFromSource_157e90(CParseSource* src);     // 0x157e90
+    void AddEntry_157ec0(LeafCue* elem, const char* key); // 0x157ec0
     // The recursive asset-tree walker. `tree` is a Bute CSymTab scope: the walker calls
     // FirstSub/NextSub (child scopes) and FirstSym/NextSym/NextSym2/NextSym3 (leaf parse
     // records) on it, and every subdir it recurses into is itself a CSymTab. The leaf
@@ -102,12 +100,12 @@ public:
     CObject* Lookup_05b7e0(const char* key);
     i32 RemoveKeysEqual_157c70(const char* base, const char* str);
     i32 SumField_1580b0(const char* str);
-    LeafScanValue* GetFirstValue_158210();
-    LeafScanValue* NextValueAfter_1582c0(LeafScanValue* target);
+    LeafCue* GetFirstValue_158210();
+    LeafCue* NextValueAfter_1582c0(LeafCue* target);
     i32 ProbeFirst_1584a0(i32 arg);
     i32 HasKeyEqual_1583c0(const char* str);
-    CString FindKeyOfValue_158570(LeafScanValue* target);
-    i32 MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2);
+    CString FindKeyOfValue_158570(LeafCue* target);
+    i32 MatchSub_1584f0(LeafCue* arg1, i32 arg2);
 
     // These two landed in the SIBLING CDDrawSubMgrLeaf.cpp (name-preserving union):
     void ClearMap(); // 0x157bc0 (non-virtual map teardown)

@@ -9,7 +9,7 @@
 #include <Gruntz/LevelSync.h>           // CLevelSync + its referents (was a TU-local view)
 #include <Gruntz/SpriteFactory.h>       // real CSpriteFactory::CreateSprite (0x1597b0); 0x104dd0
 #include <Gruntz/WarpStoneFly.h>
-#include <Gruntz/SoundCueMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Rez/RezList.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
@@ -68,7 +68,7 @@ extern "C" {
     i32 g_curPlayer = 0;
 }
 
-// CMapStringToOb/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
+// CMapStringToOb/CSbiCueRecord/DSoundCloneInst/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
 // CSbiTile*/CSbiActiveObj/CSbiLogger/CSbiWndHost/CGameReg moved to
 // <Gruntz/StatusBarMgr.h>.
 // 0x24556c: the game-mgr singleton, typed as the REAL class (CGruntzMgr, the RTTI-true
@@ -3673,7 +3673,7 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
                 if (found) {
                     CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_10;
                     if (f) {
-                        CSbiDisplayObj* obj = (CSbiDisplayObj*)((CSoundCueMgr*)f)->GetItem();
+                        CSbiDisplayObj* obj = (CSbiDisplayObj*)((DSoundCloneInst*)f)->GetItem();
                         m_destructButton = obj;
                         if (obj) {
                             ((DirectSoundMgr*)obj)->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);

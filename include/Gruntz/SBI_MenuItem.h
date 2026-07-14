@@ -16,7 +16,7 @@
 #define SBI_MENUITEM_H
 
 #include <Ints.h>
-#include <Gruntz/SoundCueMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <rva.h>
 
 #include <Gruntz/SBI_Image.h> // canonical chain base CSBI_Image : CSBI_RectOnly : CStatusBarItem
@@ -34,10 +34,10 @@ struct CSpriteFactoryHolder;
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval).
-struct CSoundCueMgr; // defined below
+class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
 struct CMiCue {
     char m_pad0[0x10];
-    CSoundCueMgr* m_10; // +0x10  player (ConfigureItem this)
+    DSoundCloneInst* m_10; // +0x10  player (ConfigureItem this)
     i32 m_14;           // +0x14  last draw-clock
     i32 m_18;           // +0x18  interval
 };

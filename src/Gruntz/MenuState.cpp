@@ -22,7 +22,7 @@
 #include <Gruntz/GameMode.h>
 #include <Gruntz/BattlezData.h>           // the REAL stats object (was the CHudStats view)
 #include <Gruntz/GruntzMgr.h>             // CGruntzMgr (the game-manager singleton; one true shape)
-#include <Gruntz/SoundCueMgr.h>           // CSoundCueMgr (StartMusic/StopMusicChain ConfigureItem)
+#include <Dsndmgr/DirectSoundMgr.h>           // DSoundCloneInst (StartMusic/StopMusicChain ConfigureItem)
 #include <Gruntz/WwdGameReg.h>            // g_gameReg (StartMusic music gate)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources leaf keys)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSubMgrPages (FrameSlot28 flush)
@@ -199,7 +199,7 @@ void operator delete(void*);
 
 // The menu music controller (CMenuState+0x1bc): a player @+0x10 (real DirectSoundMgr,
 // IsPlaying 0x1353f0 / CloneAndPlay 0x135660) with a draw-clock gate (last @+0x14,
-// interval @+0x18). ConfigureItem is dispatched via CSoundCueMgr.
+// interval @+0x18). ConfigureItem is dispatched via DSoundCloneInst.
 class DirectSoundMgr;
 SIZE_UNKNOWN(CMenuMusic);
 struct CMenuMusic {
@@ -274,7 +274,7 @@ void CMenuState::StartMusic() {
         u32 clk = g_killCueClock;
         if (clk - mus->m_14 >= (u32)mus->m_18) {
             mus->m_14 = clk;
-            ((CSoundCueMgr*)mus->m_10)->ConfigureItem(item, 0, 0, 1);
+            ((DSoundCloneInst*)mus->m_10)->ConfigureItem(item, 0, 0, 1);
         }
     }
     if (!saved) {

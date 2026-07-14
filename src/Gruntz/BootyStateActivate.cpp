@@ -16,7 +16,7 @@
 // Only the g_gameReg world sound set below stays a local facet view - a separate
 // object web from the +0x0c context (deferred canonical world-sound model). Only offsets
 // / code bytes are load-bearing; every helper is a reloc-masked external.
-#include <Gruntz/SoundCueMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>

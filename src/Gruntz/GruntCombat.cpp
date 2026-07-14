@@ -32,7 +32,7 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Effect6b.h>
-#include <Gruntz/SoundCueMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.cpp)
 #include <rva.h>

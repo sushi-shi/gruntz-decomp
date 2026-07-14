@@ -21,7 +21,7 @@
 #include <Gruntz/State.h>                 // the CState base this screen state derives (real vtable)
 #include <Gruntz/SoundCue.h>              // the ONE +0x28 cue holder (CSndHost / LeafCue)
 #include <Gruntz/StatusBarUpdatersViews.h> // the ONE CRegHolder (CState::m_c world holder)
-#include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Dsndmgr/DirectSoundMgr.h>            // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Globals.h>
 

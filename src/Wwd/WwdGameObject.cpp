@@ -560,7 +560,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         void* found = 0;
         WwdMgr* mgr = m_mgr;
         mgr->m_28->m_10.Lookup(name, found);
-        m_19c = (LeafScanValue*)found;
+        m_19c = (LeafCue*)found;
     }
     return 1;
 }

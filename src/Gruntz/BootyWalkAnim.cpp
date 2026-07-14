@@ -256,7 +256,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                             u32 clock = g_killCueClock;
                             if (clock - res->m_lastPlayed >= res->m_interval) {
                                 res->m_lastPlayed = clock;
-                                ((CSoundCueMgr*)res->m_player)->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                                ((DSoundCloneInst*)res->m_player)->ConfigureItem(g_sndCueTag, 0, 0, 0);
                             }
                         }
                     }

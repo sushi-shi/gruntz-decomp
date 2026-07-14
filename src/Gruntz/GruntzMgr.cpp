@@ -152,7 +152,7 @@ extern "C" {
 // DelayedQuit's menu lookup goes through the world's CSndHost (+0x28): the former
 // CWorldMenuMap/CMenuNode/CMenuNodeSub/CWorldMenuHolder views were the SoundCue.h
 // canonicals (FUN_005b8438 == RVA 0x1b8438 == CSndFinder::Lookup; the "menu node"
-// is the LeafCue whose m_10 CSoundCueMgr carries the +0x28 cue duration).
+// is the LeafCue whose m_10 DSoundCloneInst carries the +0x28 cue duration).
 
 // Close's teardown vocabulary. m_30/m_3c are torn down through vtable slot 1 - the MFC
 // CObject-family flagged scalar-deleting destructor (`delete p` on the polymorphic
@@ -4091,7 +4091,7 @@ void CGruntzMgr::DelayedQuit() {
     i32 base;
     if (out != 0) {
         ((CMapStringToPtr*)&m_world->m_28->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
-        base = out->m_10->m_28 + 0x1f4; // cue duration + 500ms: wait out the cue
+        base = out->m_10->m_durationMs + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;
     }

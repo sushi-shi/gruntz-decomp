@@ -22,7 +22,7 @@ class FreeNodePool; // folded GruntCoordPool
 
 class CDDrawSubMgrLeaf; // folded CGruntNameMap
 
-class CSoundCueMgr; // folded GruntSampleFactory
+class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
 
 class DirectSoundMgr; // folded GruntSoundSample
 
@@ -556,7 +556,7 @@ struct GruntSoundCat { // m_30: the sound-category / world-resource holder objec
 SIZE_UNKNOWN(GruntSoundEntry);
 struct GruntSoundEntry {
     char m_pad0[0x10];
-    CSoundCueMgr* m_10; // +0x10  the sample factory
+    DSoundCloneInst* m_10; // +0x10  the sample factory
 };
 // (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
 // CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)

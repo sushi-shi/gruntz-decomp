@@ -16,7 +16,7 @@
 //   * DSoundList::RemoveMatching (0x136f60) - the reaping list helper (the other
 //     five DSoundList primitives live at 0x1390e0+, OUTSIDE this obj's span, and
 //     stay in SoundVoiceList.cpp).
-//   * CSoundCueMgr::GetItem/ConfigureItem (0x135d70/0x1360d0) - the Dsndmgr UI
+//   * DSoundCloneInst::GetItem/ConfigureItem (0x135d70/0x1360d0) - the Dsndmgr UI
 //     sound-cue manager (dossier seam re-homes from statusbarmgrgetitem /
 //     spriteresource; both walk DirectSoundMgr voices).
 //   * ConvertVolumeToPercent (0x135110) - the centi-dB -> percent transfer curve
@@ -47,7 +47,6 @@
 
 #include <Globals.h> // c_volScale/c_volNum/c_acosNorm/c_powExp + g_panTable
 
-#include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (GetItem/ConfigureItem live in this obj)
 
 // __FILE__ every wrapper passes to GetErrorString (single $SG pooled constant).
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
@@ -682,12 +681,12 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
 }
 
 // ---------------------------------------------------------------------------
-// CSoundCueMgr::GetItem (0x135d70) - the Dsndmgr sound-cue manager's pooled-buffer
+// DSoundCloneInst::GetItem (0x135d70) - the pooled-clone cue-play path (the ex
 // resolver: walk the +0x58 item list for a live/finished DirectSound buffer,
 // reconfigure it (pan/pitch/volume from m_18/m_1c/m_20) and, when none is free,
 // Create() a fresh one, then unlink + re-append it to the +0x58 list. (Dossier
 // seam re-home from the statusbarmgrgetitem singleton unit; its owner
-// CSoundCueMgr was rtti-mislabeled "CStatusBarMgr" - see <Gruntz/SoundCueMgr.h>.)
+// "DSoundCloneInst" view of this class; it was also rtti-mislabeled "CStatusBarMgr".)
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @early-stop
@@ -696,41 +695,41 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
 // guard (the early-out restores just edi); cl pushes all three upfront. Not source-
 // steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
 RVA(0x00135d70, 0x92)
-CStatusBarItem2* CSoundCueMgr::GetItem() {
-    if (!m_10->m_78) {
+DirectSoundMgr* DSoundCloneInst::GetItem() {
+    if (!m_owner->m_initialized) {
         return 0;
     }
-    SBNode* node = m_58.m_head;
+    CloneNode* node = m_cloneList.m_head;
     if (node) {
         while (1) {
-            if (node->m_8->m_50 && ((DirectSoundMgr*)node->m_8)->IsPlaying() == 0) {
+            if (node->m_inst->m_playKey && node->m_inst->IsPlaying() == 0) {
                 break;
             }
-            node = node->m_0;
+            node = node->m_next;
             if (!node) {
                 break;
             }
         }
     }
-    CStatusBarItem2* found;
+    DirectSoundMgr* found;
     if (!node) {
         found = 0;
     } else {
-        found = node->m_8;
+        found = node->m_inst;
     }
     if (found) {
-        ((DirectSoundMgr*)found)->SetVolume(m_20);
-        ((DirectSoundMgr*)found)->SetPan(m_1c);
-        ((DirectSoundMgr*)found)->SetFrequency(m_18);
+        found->SetVolume(m_volume);
+        found->SetPan(m_pan);
+        found->SetFrequency(m_freq);
     }
     if (!found) {
-        found = Create(1);
+        found = Clone(1);
         if (!found) {
             return found;
         }
     }
-    ((DSoundList*)&m_58)->Unlink((DSoundLink*)&found->m_link44);
-    ((DSoundList*)&m_58)->InsertTail((DSoundLink*)&found->m_link44);
+    ((DSoundList*)&m_cloneList)->Unlink((DSoundLink*)&found->m_cloneNode);
+    ((DSoundList*)&m_cloneList)->InsertTail((DSoundLink*)&found->m_cloneNode);
     return found;
 }
 
@@ -842,33 +841,33 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
 }
 
 // ---------------------------------------------------------------------------
-// CSoundCueMgr::ConfigureItem (0x1360d0) - the shared cue-configuration helper the
+// DSoundCloneInst::ConfigureItem (0x1360d0) - the shared cue-configuration helper the
 // per-widget status-bar loaders funnel through. Guard on the surface being live
 // (m_10->m_78), resolve the pooled buffer via GetItem (0x135d70), then push the
 // four cue values through the DirectSoundMgr setters + Play, ANDing the checked
 // results (the 4th setter's result is ignored). __thiscall, ret 0x10. (Dossier
 // seam re-home from SpriteResource.cpp.)
 RVA(0x001360d0, 0x7c)
-i32 CSoundCueMgr::ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3) {
-    if (!m_10->m_78) {
+i32 DSoundCloneInst::ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop) {
+    if (!m_owner->m_initialized) {
         return 0;
     }
-    CStatusBarItem2* item = GetItem();
+    DirectSoundMgr* item = GetItem();
     if (!item) {
         return 0;
     }
     i32 ok = 1;
-    if (!((DirectSoundMgr*)item)->SetVolumeByIndex(a0)) {
+    if (!item->SetVolumeByIndex(vol)) {
         ok = 0;
     }
-    if (!((DirectSoundMgr*)item)->SetPanByIndex(a1)) {
+    if (!item->SetPanByIndex(pan)) {
         ok = 0;
     }
-    if (!((DirectSoundMgr*)item)->SetField2(a2)) {
+    if (!item->SetField2(freqPct)) {
         ok = 0;
     }
-    ((DirectSoundMgr*)item)->SetField3(a3);
-    if (!((DirectSoundMgr*)item)->Play()) {
+    item->SetField3(loop);
+    if (!item->Play()) {
         ok = 0;
     }
     return ok;
@@ -1136,7 +1135,7 @@ void SoundDevice::Shutdown() {
 // ctor-in-flight frame the RezAlloc+BaseInit path can't reproduce. Same wall as
 // SoundStream::CreateStreamBuffer.
 RVA(0x001366f0, 0x168)
-DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
+DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1198,7 +1197,7 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
 // AcquireFile: gated on init; fopen "rb", slurp whole file into a new'd buffer, Acquire
 // the RIFF blob, free + close. Returns the wrapper (0 on any I/O failure).
 RVA(0x00136860, 0xa9)
-DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
+DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1214,7 +1213,7 @@ DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
         return 0;
     }
     fclose(fp);
-    DirectSoundMgr* wrapper = Acquire(buf, flags, reserved);
+    DSoundCloneInst* wrapper = Acquire(buf, flags, reserved);
     operator delete(buf);
     return wrapper;
 }
@@ -1227,7 +1226,7 @@ DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
 // every code byte IDENTICAL; retail overlays the ParseFmt out-struct onto dead arg-home
 // slots (sub esp,8) while MSVC5 gives fresh stack (sub esp,0x18). Not source-steerable.
 RVA(0x00136910, 0x119)
-DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
+DSoundCloneInst* SoundDevice::Acquire(void* riff, u32, u32) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1259,7 +1258,7 @@ DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
         po.m_fmt->nBlockAlign >>= 1;
     }
 
-    DirectSoundMgr* wrapper = CreateBuffer(po.m_fmt, size, po.m_flags);
+    DSoundCloneInst* wrapper = CreateBuffer(po.m_fmt, size, po.m_flags);
     if (wrapper == 0) {
         return 0;
     }
@@ -1276,7 +1275,7 @@ DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
 // RIFF blob. (Dossier seam re-home: was ResLoaders::WaveHost_136a30::LoadWave;
 // the +0x78 gate IS m_initialized and the 0x136910 callee IS Acquire.)
 RVA(0x00136a30, 0x76)
-DirectSoundMgr* SoundDevice::AcquireResource(const char* name, u32 flags, u32 reserved) {
+DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 reserved) {
     if (m_initialized == 0) {
         return 0;
     }

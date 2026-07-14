@@ -1,7 +1,7 @@
 // SoundCue.h - the positional-sound cue subsystem (C:\Proj\Dsndmgr). A named-cue
 // registry (CSndFinder::Lookup @0x1b8438) embedded in a host (CSndHost) hung off a
 // sub-manager (CSndSubMgr); each looked-up cue (LeafCue) carries a per-emitter
-// cooldown gate and drives a CSoundCueMgr (ConfigureItem @0x1360d0, SoundCueMgr.h)
+// cooldown gate and drives a DSoundCloneInst (ConfigureItem @0x1360d0, SoundCueMgr.h)
 // to actually play the sound.
 //
 // Shared verbatim by the multiplayer menu-select handler (Net/NetMgrMenuSelect.cpp,
@@ -13,7 +13,6 @@
 #ifndef GRUNTZ_SOUNDCUE_H
 #define GRUNTZ_SOUNDCUE_H
 
-struct LeafCue; // folded CSndEmitter
 
 #include <Ints.h>
 #include <rva.h>
@@ -23,17 +22,17 @@ struct LeafCue; // folded CSndEmitter
 // Win32-umbrella TUs that reach this header transitively just switch umbrella - the
 // documented C1189 'wall' here was only 2 TUs deep, not the ~60 the old comment feared.
 #include <Mfc.h>
-#include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (the play-object; ConfigureItem @0x1360d0)
+#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (the play-object; ConfigureItem @0x1360d0)
 
 struct CSprite; // the frame-data value the +0x10 map ALSO yields (Sprite.h); the +0x28
                 // registry's CMapStringToPtr stores both cue emitters and sprites by key.
                 // Fwd-declared (not #included) to keep this light header (pulled into the
                 // ~60-TU GameRegistry.h) free of the sprite graph.
 
-// A looked-up cue: +0x10 the CSoundCueMgr that plays it, +0x14 last-play clock,
-// +0x18 cooldown interval (an unsigned `(now - m_14) >= m_18` gate). This IS the
-// former StatusBarCueHolder.h CueObj (identical value layout + role) - folded here.
-SIZE_UNKNOWN(LeafCue);
+// A looked-up cue: the canonical LeafCue (<Gruntz/LeafCue.h>; ex CSndEmitter /
+// StatusBarCueHolder.h CueObj): +0x10 the DSoundCloneInst that plays it, +0x14
+// last-play clock, +0x18 cooldown interval (an unsigned `(now-m_14) >= m_18` gate).
+#include <Gruntz/LeafCue.h>
 
 // The DirectSound stream hung off CSndHost+0x2c is a `SoundStream : SoundDevice`;
 // Stop() halts it, and PurgeVoiceList (0x136e20) is its SoundDevice base method - the

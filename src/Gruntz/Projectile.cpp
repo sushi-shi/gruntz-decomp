@@ -111,7 +111,7 @@ struct CHitKey {
 // The launch-sound lookup path is the canonical positional-cue subsystem
 // (<Gruntz/SoundCue.h>, pulled by GameRegistry.h): reg->m_world->m_28 is the
 // CSndHost, its embedded CSndFinder (m_10) Lookups the effect name to a LeafCue,
-// whose CSoundCueMgr (m_10) GetItem (0x135d70) clones the DirectSound buffer the
+// whose DSoundCloneInst (m_10) GetItem (0x135d70) clones the DirectSound buffer the
 // projectile owns as its CProjSample (m_sound).
 
 // The shared default-bound doubles the CMovingLogic ctor copies into the twelve
@@ -1422,7 +1422,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (entry->m_10 == 0) {
         return 0;
     }
-    // GetItem returns the pooled DirectSound buffer (CStatusBarItem2 in the cue-mgr
+    // GetItem returns the pooled DirectSound buffer (DirectSoundMgr in the cue-mgr
     // view); the projectile owns the same buffer as its CProjSample sound sample.
     m_sound = (CProjSample*)entry->m_10->GetItem();
     if (m_sound == 0) {

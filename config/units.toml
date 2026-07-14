@@ -1318,11 +1318,6 @@ source = "src/DDrawMgr/DDrawSubMgrLeaf.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "leafelementobj"
-source = "src/DDrawMgr/LeafElementObj.cpp"
-flags = "base"
-
-[[unit]]
 unit = "anirecord"
 source = "src/DDrawMgr/AniRecord.cpp"
 flags = "eh"

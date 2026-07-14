@@ -671,8 +671,8 @@ extern i32 g_sndEnabled;       // ?g_sndEnabled@@3HA @0x61ab20
 extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 
 // The sound-cue registry (g->m_world->m_28) + its Lookup result (the LeafCue cue
-// record whose m_14 last-play / m_18 cooldown rate-limit the CSoundCueMgr it plays) are
-// the canonical CSndHost/CSndFinder/LeafCue/CSoundCueMgr from <Gruntz/SoundCue.h>
+// record whose m_14 last-play / m_18 cooldown rate-limit the DSoundCloneInst it plays) are
+// the canonical CSndHost/CSndFinder/LeafCue/DSoundCloneInst from <Gruntz/SoundCue.h>
 // (included above); the former per-TU RbSoundReg/RbLookupTable/RbCueRec/RbCueSound views
 // are dissolved onto them (same offsets + RVAs, xref-confirmed: Lookup 0x1b8438,
 // ConfigureItem 0x1360d0).

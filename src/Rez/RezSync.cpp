@@ -854,7 +854,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     {
         void* mv = 0;
         m_30->m_28->m_10.Lookup("GAME_MOVIE", mv);
-        m_30->m_28->MatchSub_1584f0((LeafScanSoundArg*)mv, 0);
+        m_30->m_28->MatchSub_1584f0((LeafCue*)mv, 0);
     }
     Fn1ed8();
     if (!Fn2112()) {

@@ -198,6 +198,12 @@ public:
     DirectSoundMgr* Clone(i32 a);            // 0x135c20  new a clone, dup the buffer, link it
     void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink + delete one clone
     void StopAllClones();                    // 0x136150  StopAndRewind each clone
+    // The UI sound-cue play path (the ex "DSoundCloneInst" view of THIS class - its
+    // Create @0x135c20 was Clone, its m_58 SBList was m_cloneList, its m_10
+    // "CStatusBarSurface" was m_owner (SoundDevice, +0x78 = m_initialized); the
+    // "DirectSoundMgr" pooled items are the clones, i.e. DirectSoundMgr):
+    DirectSoundMgr* GetItem(); // 0x135d70  pull a keyed, non-playing pooled clone (or mint one)
+    i32 ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop); // 0x1360d0  set params + Play
     // BaseInit: the 2-arg ctor (0x135b10) reached as a method so CreateBuffer's
     // RezAlloc(0x60)+construct path lowers to a reloc-masked __thiscall instead of a
     // placement-new (which cl would frame differently). Same address as the ctor above;

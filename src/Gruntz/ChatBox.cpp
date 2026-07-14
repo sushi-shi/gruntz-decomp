@@ -12,7 +12,7 @@
 // load-bearing (rename is /O2 name-independent). The message-node accessor methods
 // (Configure/scroll-step/etc.) live in another TU and are modeled here as no-body
 // externs so their calls are reloc-masked.
-#include <Gruntz/SoundCueMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Image/CImage.h>
 #include <rva.h>
 
@@ -104,7 +104,7 @@ extern "C" u32 g_killCueClock; // 0x6bf3c0
 // target m_10, a last-tick m_14, and an interval m_18.
 struct CChatTimer {
     char pad0[0x10];
-    CSoundCueMgr* m_10; // +0x10 sprite poke target
+    DSoundCloneInst* m_10; // +0x10 sprite poke target
     i32 m_14;           // +0x14 last tick the row scrolled at
     i32 m_18;           // +0x18 scroll interval
 };

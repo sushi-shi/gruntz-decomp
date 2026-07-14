@@ -24,12 +24,12 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/SoundCueMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <rva.h>
 #include <Bute/ButeMgr.h>                // CButeMgr (g_buteMgr.GetDwordDef)
 #include <Gruntz/GameRegistry.h>         // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/ActionOptionsMenuBar.h> // the real +0x25c overlay (Activate @0x9300)
-#include <Gruntz/LeafCue.h>       // the name-map VALUE (its +0x10 CSoundCueMgr plays the cue)
+#include <Gruntz/LeafCue.h>       // the name-map VALUE (its +0x10 DSoundCloneInst plays the cue)
 #include <Gruntz/Multi.h>         // CMulti : CPlay - the +0x594 battlez gate is ITS member
 #include <Gruntz/Play.h>          // the real CPlay (EnterOverlayDrag / ClearPlacedObjects)
 #include <Gruntz/SoundCue.h>      // CSndHost - the world holder's +0x28 named-cue registry
@@ -59,7 +59,7 @@ extern CButeMgr g_buteMgr;
 //   CResHolder2  -> CSpriteFactory        (<Gruntz/SpriteFactory.h>): m_objMap @+0x48.
 //   CResMapInt   -> GruntObjMap           (same header; the MFC CMapPtrToPtr @+0x48).
 //   CLookObj     -> was a CONFLATION of the two maps' value types, which are different
-//        classes: the NAME map yields a LeafCue (+0x10 CSoundCueMgr, <Gruntz/LeafCue.h>),
+//        classes: the NAME map yields a LeafCue (+0x10 DSoundCloneInst, <Gruntz/LeafCue.h>),
 //        the ID map yields a GruntObjEntry (+0x7c inner, <Gruntz/SpriteFactory.h>).
 //   CObj7c       -> AnimWorkerObj (canonical): its m_logic is the bound
 //        CUserLogic leaf, downcast to CGrunt for the animation resolve.

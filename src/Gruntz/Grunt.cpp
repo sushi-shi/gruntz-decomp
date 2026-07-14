@@ -88,7 +88,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Effect6b.h>
-#include <Gruntz/SoundCueMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <rva.h>

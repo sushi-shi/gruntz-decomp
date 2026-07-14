@@ -6,7 +6,7 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/SoundCueMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/SBI_MenuItem.h>
@@ -36,7 +36,7 @@
 // (ResMgr.h): the draw surface context is m_drawTarget->m_drawContext (+0x04 ->
 // +0x14) and the config/name image registry is m_10 (its map embedded at +0x10).
 
-// CMiCue/CSoundCueMgr/CMapStringToOb/CMiMusicHost moved to <Gruntz/SBI_MenuItem.h>.
+// CMiCue/DSoundCloneInst/CMapStringToOb/CMiMusicHost moved to <Gruntz/SBI_MenuItem.h>.
 
 // The g_gameReg singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view
 // (<Gruntz/GruntzMgr.h>). Its +0x30 world slot (m_world) is the resource manager

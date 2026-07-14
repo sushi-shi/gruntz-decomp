@@ -55,7 +55,7 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
 #include <Gruntz/IconLoaderViews.h> // EngineLabelBacklog (the four icon loaders)
 #include <Gruntz/Brickz.h>          // CBrickzGrid (rock-break ComputeCellFlags)
-#include <Gruntz/SoundCueMgr.h>     // canonical CSoundCueMgr (ConfigureItem @0x1360d0)
+#include <Dsndmgr/DirectSoundMgr.h>     // canonical DSoundCloneInst (ConfigureItem @0x1360d0)
 #include <Gruntz/SoundCue.h>        // CSndHost (the finish-level cue holder)
 #include <Gruntz/LeafCue.h>         // LeafCue (the finish-level looked-up cue)
 #include <Gruntz/LightFx.h>         // CLightFx (resurrect flash Activate)
@@ -1659,7 +1659,7 @@ void FormatStr(CString* out, const char* fmt, ...);
 
 // Every object the rock-break driver walks is a REAL class already in the tree; the
 // eleven Rock* views were a second model of them (offsets identical field-for-field):
-//   RockSndPlayer    -> ::CSoundCueMgr   (Play @0x1360d0 IS its ConfigureItem)
+//   RockSndPlayer    -> ::DSoundCloneInst   (Play @0x1360d0 IS its ConfigureItem)
 //   RockSndEntry     -> ::LeafCue        (m_10 player, m_14 last clock, m_18 interval)
 //   RockSndSet       -> ::CSndHost       (m_10 CMapStringToOb name map, m_30 emit gate)
 //   RockGrid         -> ::BrickzGridDesc (m_20 flat id table, m_24 row-base table,
@@ -2200,8 +2200,8 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
 // (0x6eb80) calls this driver as its "Notify" on this same object. Ex-
 // `FinishLevelMgr` was the world holder m_level (its +0x28 CSndHost registry).
 // ===========================================================================
-// CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
-// modeled in <Gruntz/SoundCueMgr.h>). The +0x28 cue holder (name->cue map @+0x10,
+// DSoundCloneInst - ConfigureItem pushes a cue; +0x28 (DirectSoundMgr::m_durationMs)
+// carries the cue duration. The +0x28 cue holder (name->cue map @+0x10,
 // emit gate @+0x30) is the canonical CSndHost, its looked-up cue the LeafCue -
 // both in <Gruntz/SoundCue.h> (the former CueObj / CStatusBarHolder folded onto them).
 
@@ -2228,7 +2228,7 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
                 void* p_ob = 0;
                 m_level->m_28->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
                 LeafCue* p = (LeafCue*)p_ob;
-                m_timerWindow = (u32)(p->m_10->m_28 + 500);
+                m_timerWindow = (u32)(p->m_10->m_durationMs + 500);
                 m_timerBase = g_frameTime;
                 CSndHost* h28 = m_level->m_28;
                 if (h28->m_emitGate == 0) {

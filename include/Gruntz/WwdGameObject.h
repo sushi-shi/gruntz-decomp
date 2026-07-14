@@ -31,7 +31,7 @@ struct WwdMgr;
 struct CSprite;
 struct CGameObjLayer;
 class CDDrawSurfacePair; // slots 12-14 params (<DDrawMgr/DDrawSurfacePair.h>)
-class LeafScanValue;
+struct LeafCue; // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex LeafScanValue)
 
 // The +0x7c worker is the ONE canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>,
 // vtable 0x1efb80) - the 2026-07-13 worker unification dissolved the former
@@ -239,8 +239,8 @@ public:
     CSprite* m_194;       // +0x194  cached sprite (was void*)
     CGameObjLayer* m_198; // +0x198  cached frame / layer (half-extents; was i32)
     // +0x19c is the resolved sound-cue value: ReadState hands it straight to
-    // CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue*), which is its type.
-    LeafScanValue* m_19c;       // +0x19c  resolved leaf-scan value (was void*)
+    // CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafCue*), which is its type.
+    LeafCue* m_19c;             // +0x19c  resolved leaf-scan cue (was void*)
     CAniAdvanceCursor m_cmdMap; // +0x1a0  anim/command cursor sub-object (real class)
     CObList m_subList;          // +0x1dc  MFC CObList of owned sub-objects
 };
