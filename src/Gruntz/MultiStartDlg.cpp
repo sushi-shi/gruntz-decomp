@@ -24,9 +24,13 @@
 #include <Bute/SymTab.h>
 #include <Gruntz/NetDlgHost.h> // CMultiStartDlg::m_host (its +0x34 m_registry is a CSymParser)
 #include <Bute/SymParser.h>    // CSymParser::ResolvePath (0x13c030), the world name registry
+#include <Utils/RegistryHelper.h> // g_gameReg->m_settings (the config registry: GetValue*/SetValue*)
 #include <string.h>            // inline strcmp (empty-text WM_SETTEXT gate / name resync)
+#include <stdio.h>             // sprintf/fopen/fclose (DoDataExchange custom-level probe)
 #include <rva.h>
 #include <Globals.h>
+// NetLobby::g_curDlg_64557c, g_sharedFlag, and the USER32 fn-ptr globals
+// (g_pSendMessageA / g_pGetWindow) come from <Gruntz/Dialogs.h> above.
 
 // The global CGameRegistry the ctor snapshots: it copies g_gameReg->m_curState into
 // the file-scope multiplayer game-state sink g_64bd5c (both reloc-masked DIR32).
@@ -42,10 +46,17 @@ extern "C" char g_emptyString[];
 // A player-slot record in the m_host slot array (0x238 stride); only the +0x16c
 // occupancy field is read here.
 struct CMultiSlot {
-    char m_pad00[0x16c];
-    i32 m_16c; // +0x16c
+    char m_pad00[0x154];
+    CString m_154; // +0x154  player-name edit contents (DoDataExchange save pass)
+    char m_pad158[0x16c - 0x158];
+    i32 m_16c; // +0x16c  occupancy field
     char m_pad170[0x238 - 0x170];
 };
+
+// The dialog drives exactly four player slots (four kind combos / name edits /
+// slot records; retail's save loop walks the m_host CMultiSlot[] with stride
+// sizeof(CMultiSlot)==0x238 up to 4*0x238).
+enum { NUM_PLAYER_SLOTS = 4 };
 
 // GetCtrlE's per-case control fetch. The retail free-function body threads the
 // caller's dialog `this` straight through ecx into CWnd::GetDlgItem (0x1be27d)
@@ -261,7 +272,7 @@ i32 m4::MultiColorDlg::UpdateColorItems() {
 // all logic-faithful; the residual is the callee-saved register assignment for the
 // count/pi/selection values (ebp-vs-edi choice) cascading into push scheduling. ~89%.
 RVA(0x000c1e60, 0x115)
-void CMultiStartDlg::BuildSlotList() {
+i32 CMultiStartDlg::BuildSlotList() {
     m_slotList = new CLatencyList(0xa);
     CMulti* reg = g_64bd5c;
     i32 count = 5;
@@ -287,6 +298,7 @@ void CMultiStartDlg::BuildSlotList() {
     m_slotList->FillCombo(v, 0x527);
     m_slotList->SelectItem(v, 0x527, 0, 0);
     reg->m_600 = 1;
+    return 1;
 }
 
 // CMultiStartDlg::UpdateSlot (0xc1fd0): enable the team control by current-slot
@@ -323,14 +335,136 @@ i32 CMultiStartDlg::UpdateSlot() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stub (relocated from src/Stub/ - own this class here).
-// -------------------------------------------------------------------------
-// @confidence: med
-// @source: string-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CMultiStartDlg::DoDataExchange (0xc20a0, slot 35, /GX): the multiplayer-start
+// dialog's DDX - the retail vtable's slot-35 entry (was mislabeled the non-virtual
+// "InitPlayerSlots" backlog stub; xref-proven via ??_7CMultiStartDlg@@6B@+0x8c).
+//   LOAD  (m_bSaveAndValidate == 0): populate every control from the CMulti lobby
+//     game-state - the 0x512 game-name edit, the four kind combos (None/Computer
+//     easy|normal|difficult/Human), the four 9-char name edits, the 100-char chat
+//     input, and (host-side, when a saved custom map exists on disk) the world
+//     combo's read-only edit child + the CMulti custom-world name pair - then cache
+//     the log-edit HWND and re-drive the connect state.
+//   SAVE  (m_bSaveAndValidate != 0): read the world name (host: persist Last/Custom
+//     MultiMap) and each slot's name-edit text back into the m_host slot array.
+// SendMessageA is hoisted through the engine's cached USER32 fn-ptr global (pSend);
+// GetWindow is the uncached g_pGetWindow global. /GX EH frame for the CString temps.
+// @early-stop
+// ~95.6%: complete + correct (LOAD/SAVE both align by shape, arg-eval order matched
+// by pre-loading each control's HWND before the SendMessage constant args). Residual is
+// the zero-register-pinning wall (docs/patterns/zero-register-pinning.md): retail pins
+// the persistent 0 constant to ebx, our cl to esi - cascading through every null-compare
+// / ehstate store - plus the eax/ecx/edx colouring of the per-control HWND reads and the
+// save loop's induction-variable choice (typed slots[i] base-hoist vs retail's byte off).
+// Not source-steerable; g_pGetWindow/g_pSendMessageA reloc-mask UNBOUND (the whole
+// 0x2c44xx USER32 fn-ptr table is unbound infra, same as g_pPostMessageA).
 RVA(0x000c20a0, 0x45a)
-void CMultiStartDlg::InitPlayerSlots() {}
+void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
+    Utils::RegistryHelper* reg = (Utils::RegistryHelper*)g_gameReg->m_settings;
+    if (pDX->m_bSaveAndValidate == 0) {
+        GetDlgItem(0x512)->SetWindowTextA(g_64bd5c->GetString59c());
+        NetLobby::g_curDlg_64557c = (HWND__*)GetSafe1c();
+        if (!SetupWorldCombo()) {
+            return;
+        }
+        if (!BuildSlotList()) {
+            return;
+        }
+        WapSendMessageA pSend = g_pSendMessageA;
+        i32 i;
+        for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
+            HWND kc;
+            kc = KindCombo1929(i)->m_hWnd;
+            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "None");
+            kc = KindCombo1929(i)->m_hWnd;
+            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "Computer (easy)");
+            kc = KindCombo1929(i)->m_hWnd;
+            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "Computer (normal)");
+            kc = KindCombo1929(i)->m_hWnd;
+            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "Computer (difficult)");
+            kc = KindCombo1929(i)->m_hWnd;
+            pSend(kc, CB_ADDSTRING, 0, (LPARAM) "Human");
+        }
+        for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
+            CWnd* e = NameEdit298c(i);
+            if (e != 0) {
+                pSend(e->m_hWnd, EM_LIMITTEXT, 9, 0);
+            }
+        }
+        HWND chatEdit = GetDlgItem(0x42d)->m_hWnd;
+        pSend(chatEdit, EM_LIMITTEXT, 100, 0);
+        i32 customFlag = reg->GetValueDword("CustomMultiMap", 2);
+        if (g_64bd5c->m_isHost != 0 && customFlag != 2) {
+            char mapName[0x100];
+            u32 size = 0x100;
+            reg->GetValueString("LastMultiMap", mapName, &size, g_emptyString);
+            m_6c = customFlag;
+            if (customFlag != 0) {
+                char path[0x100];
+                sprintf(path, "custom\\%s", mapName);
+                FILE* f = fopen(path, "rb");
+                if (f != 0) {
+                    HWND worldCombo = GetDlgItem(0x4ff)->m_hWnd;
+                    CWnd* child = CWnd::FromHandle(g_pGetWindow(worldCombo, GW_CHILD));
+                    if (child == 0) {
+                        return;
+                    }
+                    child->SetWindowTextA(mapName);
+                    g_64bd5c->m_5b0 = 1;
+                    g_64bd5c->m_5b8 = mapName;
+                    g_64bd5c->m_5b4 = g_emptyString;
+                    fclose(f);
+                }
+            } else {
+                CWnd* child = CWnd::FromHandle(g_pGetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
+                if (child == 0) {
+                    return;
+                }
+                child->SetWindowTextA(mapName);
+                g_64bd5c->m_5b0 = 0;
+                g_64bd5c->m_5b8 = g_emptyString;
+                g_64bd5c->m_5b4 = mapName;
+            }
+        }
+        {
+            CWnd* w = GetDlgItem(0x511);
+            g_sharedFlag = (w == 0) ? 0 : (i32)w->m_hWnd;
+        }
+        g_64bd5c->m_netGate->m_78 = 0;
+        g_64bd5c->PollSession();
+        if (!Sync2c0c()) {
+            return;
+        }
+        if (!Sync38d2()) {
+            return;
+        }
+        if (!Sync16db(1)) {
+            return;
+        }
+    } else {
+        HWND worldCombo = GetDlgItem(0x4ff)->m_hWnd;
+        CWnd* child = CWnd::FromHandle(g_pGetWindow(worldCombo, GW_CHILD));
+        if (child == 0) {
+            return;
+        }
+        child->GetWindowTextA(m_70);
+        if (g_64bd5c->m_isHost != 0) {
+            reg->SetValueString("LastMultiMap", m_70);
+            reg->SetValueDword("CustomMultiMap", m_6c);
+        }
+        CMultiSlot* slots = (CMultiSlot*)m_host;
+        for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {
+            CWnd* e = NameEdit298c(i);
+            if (e != 0) {
+                CString temp;
+                e->GetWindowTextA(temp);
+                slots[i].m_154 = temp;
+            }
+        }
+        NetLobby::g_curDlg_64557c = 0;
+    }
+    FlashCtrlD();
+}
 
 // ---------------------------------------------------------------------------
 // GetCtrlE (0xc2640, free __stdcall): the fifth per-index combo getter over control

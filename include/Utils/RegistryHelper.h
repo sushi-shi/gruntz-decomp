@@ -59,7 +59,7 @@ namespace Utils {
             u32 defaultSize
         );
         DWORD GetValueDword(char* szValueName, DWORD valueDefault);
-        i32 SetValueString(char* szValueName, char* szValue);
+        i32 SetValueString(const char* szValueName, const char* szValue);
         i32 SetValueBinary(char* szValueName, void* pData, u32 dataSize);
         i32 SetValueDword(char* szValueName, DWORD value);
         i32 DeleteValue(char* szValueName); // 0x139620

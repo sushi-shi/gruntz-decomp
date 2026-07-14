@@ -40,6 +40,24 @@ struct tagMEASUREITEMSTRUCT; // windows.h owner-draw measure (CWnd::OnMeasureIte
 struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem arg)
 
 // ---------------------------------------------------------------------------
+// Shared dialog-plumbing globals (canonical DATA homes elsewhere; declared here so
+// the dialog TUs reference them from this header, not per-TU externs).
+// ---------------------------------------------------------------------------
+// The active modeless-dialog HWND cache (0x24557c).
+namespace NetLobby {
+    extern HWND g_curDlg_64557c;
+}
+// The chat-log child-window HWND cache (0x248ce0; DATA home Multi.cpp).
+extern "C" i32 g_sharedFlag;
+// The engine's cached USER32 fn-ptr table (the 0x2c44xx block of bare absolutes,
+// no import symbols - the same unbound-reloc pattern as g_pPostMessageA): the
+// dialogs call THESE, not the raw USER32 imports.
+typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);
+typedef HWND(WINAPI* WapGetWindow)(HWND, UINT);
+extern "C" WapSendMessageA g_pSendMessageA; // 0x2c44a4
+extern WapGetWindow g_pGetWindow;           // 0x2c44d8
+
+// ---------------------------------------------------------------------------
 // Minimal MFC base models. Only the exact mangled symbol + the calling
 // convention/arg shape are load-bearing; the bodies live in NAFXCW and are
 // never matched here (their `call rel32` displacements reloc-mask in objdiff).
@@ -300,12 +318,10 @@ public:
     virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog
     virtual void OnOK() OVERRIDE;                             // slot 51  OnOK
 
-    // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
-    void InitPlayerSlots();
-
     // BuildSlotList (0xc1e60): allocate the player-slot list, derive the player
-    // count from the game-registry snapshot, and seed the list.
-    void BuildSlotList();
+    // count from the game-registry snapshot, and seed the list. Returns 1 (tested
+    // by DoDataExchange's load pass).
+    i32 BuildSlotList();
     // UpdateSlot (0xc1fd0): enable a dialog control by slot occupancy, then push
     // the current selection into the slot list.
     i32 UpdateSlot();
@@ -364,10 +380,10 @@ public:
     // Roster helpers (own methods reached through ILT thunks; reloc-masked, RVAs
     // live in sibling units / ApiCaller stubs).
     void Drive();                  // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)
-    void Sync16db(i32);            // 0x016db
+    i32 Sync16db(i32);             // 0x016db  (DoDataExchange tests the result)
     void Sync227a();               // 0x0227a
-    void Sync2c0c();               // 0x02c0c
-    void Sync38d2();               // 0x038d2
+    i32 Sync2c0c();                // 0x02c0c  (DoDataExchange tests the result)
+    i32 Sync38d2();                // 0x038d2  (DoDataExchange tests the result)
     i32 LocalSlot2d4c();           // 0x02d4c  current local slot index
     CWnd* NameEdit298c(i32 idx);   // 0x0298c  name edit for slot idx
     CWnd* KindCombo1929(i32 idx);  // 0x01929  human/computer combo for slot idx

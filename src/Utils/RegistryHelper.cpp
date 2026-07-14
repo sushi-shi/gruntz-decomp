@@ -183,7 +183,7 @@ namespace Utils {
     // Writes szValue as a REG_SZ value (length includes the terminator).
     // Returns nonzero on success.
     RVA(0x001393b0, 0x58)
-    i32 RegistryHelper::SetValueString(char* szValueName, char* szValue) {
+    i32 RegistryHelper::SetValueString(const char* szValueName, const char* szValue) {
         if (!m_open) {
             return 0;
         }

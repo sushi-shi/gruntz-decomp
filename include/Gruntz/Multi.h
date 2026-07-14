@@ -171,6 +171,7 @@ public:
     char m_pad04[0x70 - 0x4];
     CMultiPlayerInfo* m_70; // +0x70  per-slot player-info sub-object (start-dialog probes)
     CMultiPlayer* m_player; // +0x74  the player StartTitle opened (OpenPlayer result)
+    i32 m_78;               // +0x78  reset to 0 by CMultiStartDlg::DoDataExchange (load pass)
 };
 
 // The +0x520 lobby-session object (m_session) and the +0x320 attract overlay: each
