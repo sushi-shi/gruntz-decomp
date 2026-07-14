@@ -50,26 +50,16 @@ RVA(0x00010730, 0x44)
 CGruntCreationPoint::~CGruntCreationPoint() {}
 
 // ---------------------------------------------------------------------------
-// The level sprite-ref table (g_gameReg->m_74). GetSel(i, bAlt) (via the 0x4165
-// GetByIndex thunk) returns the selected sprite handle for ref-row i; modeled
-// NO-body so the call reloc-masks.
-// One ref-index array slot (8-byte stride; first dword is the ref-row index).
-struct CreationRefSlot {
-    i32 m_idx; // +0x00  ref-row index
-    i32 m_04;  // +0x04  arm gate (the +0x18 probe reads slot[+3].m_idx)
-};
-// The global game registry (WwdGameReg, RVA 0x24556c; wwdfile owns the DATA
-// label). m_134 == 1 is the "direct selector" mode; otherwise the ref-index
-// array at +0x158 (row stride 71 slots) resolves the selector.
-struct CreationGameReg {
-    char m_pad0[0x74];
-    CSpriteRefTable* m_74; // +0x74  level sprite-ref table
-    char m_pad78[0x134 - 0x78];
-    i32 m_134; // +0x134 mode discriminator
-    char m_pad138[0x158 - 0x138];
-    CreationRefSlot m_158[1]; // +0x158 base of the ref-index array
-};
-extern "C" CreationGameReg* g_gameReg;
+// The game registry singleton (0x24556c) is the canonical CGameRegistry. The former
+// CreationGameReg/CreationRefSlot local views are dissolved onto it: the level
+// sprite-ref table is m_spriteFactory (+0x74; GetSel via the 0x4165 GetByIndex thunk,
+// NO-body so the call reloc-masks), the mode discriminator is m_134, and the +0x158
+// "ref-index grid" is the per-player focus-slot array reinterpreted (row stride 71
+// 8-byte slots == 0x238 == one CFocusSlot): m_158[key*71].m_idx == m_focusSlots[key].m_08
+// (the ref-row index feeding GetSel) and m_158[key*71+3].m_idx == m_focusSlots[key].m_20
+// (the +0x18-probe arm gate).
+#include <Gruntz/GameRegistry.h>
+extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
@@ -106,13 +96,13 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
     i32 idx;
     if (g_gameReg->m_134 == 1) {
         idx = key;
-    } else if (g_gameReg->m_158[key * 71 + 3].m_idx != 0) {
-        idx = g_gameReg->m_158[key * 71].m_idx;
+    } else if (g_gameReg->m_focusSlots[key].m_20 != 0) {
+        idx = g_gameReg->m_focusSlots[key].m_08;
     } else {
         m_38->m_flags |= 0x10000;
         idx = (i32)obj;
     }
-    i32 sel = g_gameReg->m_74->GetSel(idx, 0);
+    i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 0xa;
@@ -155,14 +145,14 @@ i32 CGruntCreationPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
         i32 idx;
         if (g_gameReg->m_134 == 1) {
             idx = m_object->m_124;
-        } else if (g_gameReg->m_158[m_object->m_124 * 71 + 3].m_idx != 0) {
-            idx = g_gameReg->m_158[m_object->m_124 * 71].m_idx;
+        } else if (g_gameReg->m_focusSlots[m_object->m_124].m_20 != 0) {
+            idx = g_gameReg->m_focusSlots[m_object->m_124].m_08;
         } else {
             idx = ChannelSlots_FindFree();
         }
-        i32 sel = g_gameReg->m_74->GetSel(idx, 0);
+        i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         if (sel == 0) {
-            sel = g_gameReg->m_74->GetSel(1, sel);
+            sel = g_gameReg->m_spriteFactory->GetSel(1, sel);
         }
         m_object->m_drawActive = 1;
         m_object->m_drawFillCmd = 0xa;
@@ -240,5 +230,3 @@ SIZE_UNKNOWN(CAnimSink);
 SIZE_UNKNOWN(CCreationPointActEntry);
 SIZE_UNKNOWN(CCreationPointActReg);
 SIZE_UNKNOWN(CCreationSpriteRefTable);
-SIZE_UNKNOWN(CreationGameReg);
-SIZE_UNKNOWN(CreationRefSlot);

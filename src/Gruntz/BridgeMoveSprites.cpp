@@ -15,24 +15,14 @@
 #include <rva.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/GameRegistry.h> // g_gameReg canonical view (0x24556c)
 
 // The booty/bridge sound chain on the *0x64556c game registry (the same shape the
-// BootyState/CHelpBookSprite cue idioms use).
-struct BmSndMgr {
-    char m_pad00[0x28];
-    CDDrawSubMgrLeafScan* m_28; // +0x28
-};
-struct BmGameReg {
-    char m_pad00[0x30];
-    BmSndMgr* m_30; // +0x30  sound mgr
-    char m_pad34[0x13c - 0x34];
-    i32 m_13c; // +0x13c  rect x-lo
-    i32 m_140; // +0x140  rect y-lo
-    i32 m_144; // +0x144  rect x-hi
-    i32 m_148; // +0x148  rect y-hi
-};
-extern "C" BmGameReg* g_gameReg; // _g_mgrSettings @0x64556c
-extern i32 g_sndCueTag;          // ?g_sndCueTag@@3HA @0x61ab24
+// BootyState/CHelpBookSprite cue idioms use). The former BmGameReg/BmSndMgr local
+// views are dissolved onto the canonical CGameRegistry: the rect is m_viewOrigin*
+// (+0x13c..+0x148) and the sound chain is m_world->m_28 (CSndHost == CDDrawSubMgrLeafScan).
+extern "C" CGameRegistry* g_gameReg; // 0x64556c
+extern i32 g_sndCueTag;              // ?g_sndCueTag@@3HA @0x61ab24
 
 class CPlayLevelLoad {
 public:
@@ -58,7 +48,7 @@ public:
 RVA(0x00110860, 0x25f)
 void CPlayLevelLoad::LoadBridgeMove(i32 type) {
     i32 px, py;
-    BmGameReg* r;
+    CGameRegistry* r;
     CDDrawSubMgrLeafScan* set;
     switch (type) {
         case 93:
@@ -78,8 +68,9 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
-                set = r->m_30->m_28;
+            if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
+                && py >= r->m_viewOriginT) {
+                set = r->m_world->m_28;
                 if (set->m_30 == 0) {
                     LeafCue* e = (LeafCue*)set->Lookup_05b7e0("GAME_PYRAMIDMOVE");
                     if (e) {
@@ -93,8 +84,9 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
-                set = r->m_30->m_28;
+            if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
+                && py >= r->m_viewOriginT) {
+                set = r->m_world->m_28;
                 if (set->m_30 == 0) {
                     LeafCue* e = (LeafCue*)set->Lookup_05b7e0("LEVEL_WATERBRIDGEMOVE");
                     if (e) {
@@ -108,8 +100,9 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
-                r->m_30->m_28->RefreshAsset_114120("LEVEL_WATERBRIDGEMOVE");
+            if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
+                && py >= r->m_viewOriginT) {
+                r->m_world->m_28->RefreshAsset_114120("LEVEL_WATERBRIDGEMOVE");
             }
             return;
         case 109:
@@ -117,8 +110,9 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
-                r->m_30->m_28->RefreshAsset_114120("LEVEL_DEATHBRIDGEMOVE");
+            if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
+                && py >= r->m_viewOriginT) {
+                r->m_world->m_28->RefreshAsset_114120("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case 115:
@@ -126,8 +120,9 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
-                r->m_30->m_28->RefreshAsset_114120("LEVEL_DEATHBRIDGEMOVE");
+            if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
+                && py >= r->m_viewOriginT) {
+                r->m_world->m_28->RefreshAsset_114120("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case 111:
@@ -135,15 +130,12 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
-                r->m_30->m_28->RefreshAsset_114120("LEVEL_CRUMBLE");
+            if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
+                && py >= r->m_viewOriginT) {
+                r->m_world->m_28->RefreshAsset_114120("LEVEL_CRUMBLE");
             }
             return;
     }
 }
 
-SIZE_UNKNOWN(BmGameReg);
-SIZE_UNKNOWN(BmSndEntry);
-SIZE_UNKNOWN(BmSndMgr);
-SIZE_UNKNOWN(BmSndSet);
 SIZE_UNKNOWN(CPlayLevelLoad);
