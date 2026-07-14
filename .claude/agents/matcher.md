@@ -29,6 +29,35 @@ The common jobs, all yours:
 - **Home globals / bind DATA / kill link defects** (PHANTOM / UNDEFINED-DATA / DIVERGENT) when
   they cross your path.
 
+## CLEANLINESS OVER CURRENT % — MAX FUZZY IS THE GATE (2026-07-14, governing)
+
+**We track MAX fuzzy% (best-ever per fn), not current fuzzy%. So a CURRENT-% dip NEVER matters —
+MAX preserves your best result forever.** Almost every ugly shortcut in this tree exists because a
+past lane feared a small % drop and took the hack instead of the clean shape. **That fear is now
+void.** Do the correct, clean, typed thing EVERYWHERE, even when it costs current %. Report the drop;
+do not revert it, do not avoid the work. (Example: consolidating the kTile `#define`s into a typed
+enum cost ~0.13% current fuzzy on one TU's scheduling wall — done anyway, MAX held.)
+
+**Banned constructs — each is a metric-evasion or placeholder hack; ELIMINATE, never create:**
+1. **Per-TU `extern` decls** (of globals OR functions). A symbol belongs in its real **owner's
+   header**, which consumers `#include`. No `extern CFoo* g_x;` / `extern "C" void H_<va>();`
+   scattered per-TU — declare once in the owner header, re-include. (extern "C" array/DATA globals
+   that MUST stay extern for mangling are the only survivors — flag, don't multiply them.)
+2. **Offset-access macros** — `#define F(p,o) (*(i32*)((char*)(p)+(o)))` / `P`/`PTR`/`I32`/`DBL`/`M`/`W`
+   etc. These EXPAND to exactly the raw-offset cast the ratchet counts, but hide every call-site from
+   the counter. They are casts. Replace with real typed member access `p->m_field` (type the member
+   on its true class).
+3. **Rename-alias `#define`s** — `#define g_lastNow g_645580`. Don't alias a hex name to a semantic
+   one; RENAME the underlying global itself (its name is our choice, DATA-reloc-masked → byte-neutral).
+4. **Magic-number `#define`s** — `#define kTileHard 3` / `#define IDC_DEFAULTS 0x426`. Use a typed
+   `enum` (values in int context are codegen-neutral; NEVER retype a fn PARAMETER — that changes
+   mangling). One shared enum in the owner header, not per-TU dupes.
+5. **Hex-placeholder references** — `H_<va>`/`FUN_<va>`/`m_<hex>`/`g_<hex>`/`Sub<va>`. These are
+   unreconstructed-symbol debt. Reconstruct + name + home the referent; don't reference by address.
+
+If eliminating one is blocked by another lane owning the target header, that's DEFERRED work you
+report with the evidence — not a reason to leave the hack.
+
 **THE MECHANISM IS XREFS + THE SLOT MAP.** A view exists because someone needed a shape and did
 not know whose it was. The callers/callees/globals tell you the owner. If the xrefs genuinely
 do not converge on a real class, that is the *rare* honest "unnameable" case — prove it and say
