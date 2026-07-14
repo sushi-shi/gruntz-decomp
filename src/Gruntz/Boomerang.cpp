@@ -18,9 +18,15 @@
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
-#include <Globals.h> // g_projPhase0, g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_frameTime
+#include <Globals.h>             // g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_frameTime
 #include <rva.h>
 #include <Io/FileMem.h> // CFileMemBase - the CGruntArchive stream (Read/Write dispatch)
+
+// pi - the boomerang's circular-flight phase constant. Owned here (Boomerang is its
+// sole referencer and 0x1eaae8 falls in this TU's data band); <Globals.h> keeps the
+// reference extern. Re-homed out of the generated src/Globals.cpp (2026-07-14).
+DATA(0x001eaae8)
+const double g_projPhase0 = 3.1415927;
 
 // @confidence: high
 // @source: rtti-vptr

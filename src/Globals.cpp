@@ -63,8 +63,9 @@ DATA(0x001e94b8)
 const i32 g_msgmap_CCheckpointDlg = 6205544;
 DATA(0x001ea3e0)
 const double g_slimeSpeedNum = 32.0;
-DATA(0x001eaae8)
-const double g_projPhase0 = 3.1415927;
+// g_projPhase0 (0x1eaae8, pi) DEFINED in src/Gruntz/Boomerang.cpp (owner TU: its sole
+// referencer - the boomerang circular-flight phase - and inside its data band); the
+// reference extern stays in <Globals.h>.
 DATA(0x001ef698)
 extern const double c_volScale = 100.0; // 0x5ef698  v / c_volScale, and the final * c_volScale
 DATA(0x001ef6a0)
