@@ -1026,9 +1026,11 @@ extern "C" i32 g_648cec; // 0x648cec  active-player refcount
 // The multiplayer-create context singleton (DAT_00648cf4): CreateSession reads
 // its +0x74 group-enumeration record and hands it to the peer's EnumGroupsRange.
 // External engine global pointer; DIR32 reloc-masked.
+struct InterfaceObject; // the DirectPlay service-provider node (IsInterface2 probe)
 struct CNetCreateCtx {
-    char m_pad0[0x74];
-    void* m_74; // +0x74  the group-enumeration record
+    char m_pad0[0x70];
+    InterfaceObject* m_serviceProvider; // +0x70  selected service-provider (IsInterface2 -> slow-link timeout)
+    void* m_74;                         // +0x74  the group-enumeration record
 };
 SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail size TBD
 // (g_648cf4 moved to its only user, Multi.cpp, so it can carry the DATA() binding a

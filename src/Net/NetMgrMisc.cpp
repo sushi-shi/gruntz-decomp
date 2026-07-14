@@ -20,9 +20,11 @@ extern CString g_assetRoot; // VA 0x64e25c
 
 // ---------------------------------------------------------------------------
 // Poll the file-scope net singleton (destruct the asset-root CString).
+// Retail is a tail-call thunk (`mov ecx,&g_assetRoot; jmp CString::~CString`);
+// a void body with the dtor in tail position lets MSVC5 /O2 emit the jmp
+// (a non-void `return 0` forces the call+xor eax+ret shape instead).
 // ---------------------------------------------------------------------------
 RVA(0x000f9710, 0xa)
-i32 NetPollE25c() {
+void NetPollE25c() {
     g_assetRoot.~CString();
-    return 0;
 }

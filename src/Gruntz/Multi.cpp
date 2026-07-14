@@ -267,6 +267,16 @@ extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
 extern "C" CGameRegistry* g_gameReg; // 0x64556c (the same *0x64556c object as m_4)
 
+// The MULTI_JOIN wait dialog's cached player listbox HWND (GetDlgItem(hDlg,0x3fc)).
+DATA(0x00248d00)
+extern "C" HWND g_netPlayerListHwnd; // 0x648d00
+// 0xb8af0: 1-byte no-op player-row refresh helper (cdecl(hDlg,hList)); rel32-masked call.
+extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList); // 0xb8af0
+// The DirectPlay player-enumeration list + its listbox filler (both defined later in
+// this TU at 0xb89e0); forward-declared so MultiJoinDlgProc (0xb8020) can call them.
+struct Session;
+void FillPlayerList(HWND hList, Session* sess); // 0x0b89e0
+
 // (CNetJoinPacket moved to <Net/NetPackets.h> - a fully-known wire struct has no
 // business being DEFINED in a .cpp.)
 
@@ -1879,14 +1889,119 @@ SIZE_UNKNOWN(PBSub320);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
+// ---------------------------------------------------------------------------
+// MultiJoinDlgProc (0x0b8020) - the MULTI_JOIN "wait for players" modeless dialog
+// proc (Win32 DialogProc, __stdcall; ret 0x10, 4 args). Its address is registered
+// through the MultiJoinHandler ILT thunk (0x222f) above. Runs the shared base proc
+// first (screensaver/monitor-power swallow); then:
+//   * WM_INITDIALOG (0x110): cache the player listbox (GetDlgItem 0x3fc), clear the
+//     create-context's player-sel latch (+0x74), arm a 2500 ms poll timer, and
+//     self-post the first WM_TIMER. Bails (EndDialog(0)) if the listbox or context
+//     is missing.
+//   * WM_COMMAND (0x111): Cancel(2) -> KillTimer + EndDialog(0); OK(1) -> KillTimer,
+//     confirm the join (OnJoinConfirm) -> EndDialog(1) on success, else beep + re-arm
+//     the poll timer and stay open.
+//   * WM_TIMER (0x113): re-enumerate the session players (EnumPlayersInto); on a
+//     lost/errored session close the dialog, else refresh the player list, restore
+//     the selection, and re-arm the timer (2000 ms, or 5000 ms on a slow-link
+//     provider - InterfaceObject::IsInterface2).
+// The g_pSendMessageA/GetDlgItem imports go through the engine's cached fn-ptr
+// globals (::SendMessageA / ::GetDlgItem); EndDialog/MessageBeep via g_p*; KillTimer/
+// SetTimer are direct USER32 imports. The re-arm-timeout probe (+0x70 IsInterface2)
+// recurs in the WM_TIMER and WM_COMMAND-OK-fail paths.
 // @early-stop
-// 0x0b8020 (559 B) = a multiplayer window/dialog proc (LRESULT CALLBACK, switch on the
-// message param with many `ret 0x10` case exits; drives g_gameReg net-session slots via
-// the *0x6c44xx import table). Homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
-// neighbourhood (this TU owns the 0xb7fe0 Multi block). Homed pending leaf-first reconstruction.
+// regalloc block-duplication wall (~76%; same family as the sibling NetSetupDlgProc
+// 0xb7b10 ~77%): logic byte-exact - the base-proc dispatch, the switch(msg) compare
+// chain (sub 0x110/je/dec/je/sub 2/jne, matching retail with the WM_TIMER body as the
+// fallthrough), the shared EndDialog(0)+return-1 tail (close:), the EnumPlayersInto/
+// FillPlayerList/SetCurSel refresh, the OnJoinConfirm join and both IsInterface2
+// slow-link timeout probes are all reproduced. Residual: retail SHARES one return-0
+// block (0xb81e3, two predecessors: switch-miss + wParam!=1) so both reach it via
+// `jne` (OK body fallthrough), while our MSVC5 /O2 DUPLICATES the 6-byte return-0
+// (inlining one copy at wParam!=1, `je OK`) and reuses known-value registers
+// (`push ebx`/`push eax` where we materialize immediates) - non-source-steerable
+// block-layout + register-reuse heuristics. Final sweep.
 RVA(0x000b8020, 0x22f)
-i32 Gap_0b8020(void) {
+i32 __stdcall MultiJoinDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
+    g_setupDlgHwnd = hDlg;
+    if (BaseDlgProc(hDlg, msg, wParam, lParam) != 0) {
+        goto ret_true;
+    }
+    switch (msg) {
+        case 0x110: // WM_INITDIALOG
+            g_netPlayerListHwnd = ::GetDlgItem(hDlg, 0x3fc);
+            if (g_netPlayerListHwnd == 0) {
+                goto close;
+            }
+            if (g_648cf4 == 0) {
+                goto close;
+            }
+            g_648cf4->m_74 = 0;
+            SetTimer(hDlg, 1, 0x9c4, 0);
+            ::SendMessageA(hDlg, 0x113, 0, 0);
+            return 1;
+        case 0x111: // WM_COMMAND
+            if (wParam == 2) {
+                KillTimer(hDlg, 1);
+                g_pEndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam != 1) {
+                goto ret_false;
+            }
+            KillTimer(hDlg, 1);
+            if (((CMulti*)g_connectRptMgr)->OnJoinConfirm(hDlg) != 0) {
+                g_pEndDialog(hDlg, 1);
+                return 1;
+            }
+            g_pMessageBeep(0);
+            {
+                i32 t = 0x7d0;
+                InterfaceObject* io = g_648cf4->m_serviceProvider;
+                if (io && io->IsInterface2()) {
+                    t = 0x1388;
+                }
+                SetTimer(hDlg, 1, t, 0);
+            }
+            return 0;
+        case 0x113: // WM_TIMER
+            KillTimer(hDlg, 1);
+            {
+                i32 sel = (i32)::SendMessageA(g_netPlayerListHwnd, 0x188, 0, 0); // LB_GETCURSEL
+                i32 hr = g_groupEnumMgr->EnumPlayersInto(0, 0);
+                if (hr == (i32)0x88770118) {
+                    goto close;
+                }
+                if (hr != 0) {
+                    if (g_connectRptMgr == 0) {
+                        goto close;
+                    }
+                    ((CMulti*)g_connectRptMgr)->ReportNetError(0);
+                    g_pEndDialog(hDlg, 0);
+                    return 1;
+                }
+                FillPlayerList(g_netPlayerListHwnd, (Session*)g_groupEnumMgr);
+                if (sel != -1) {
+                    ::SendMessageA(g_netPlayerListHwnd, 0x186, sel, 0); // LB_SETCURSEL
+                } else {
+                    ::SendMessageA(g_netPlayerListHwnd, 0x186, 0, 0);
+                }
+                RefreshPlayerRow(hDlg, g_netPlayerListHwnd);
+                i32 t = 0x7d0;
+                InterfaceObject* io = g_648cf4->m_serviceProvider;
+                if (io && io->IsInterface2()) {
+                    t = 0x1388;
+                }
+                SetTimer(hDlg, 1, t, 0);
+            }
+            return 1;
+    }
+ret_false:
     return 0;
+close:
+    g_pEndDialog(hDlg, 0);
+ret_true:
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
