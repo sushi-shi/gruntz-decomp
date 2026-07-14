@@ -18,7 +18,7 @@
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
 #include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
-#include <Net/NetThing.h> // THE shared CNetThing (its dtor 0xc5280 is virtual - CPtrList base)
+#include <Net/LatencyList.h> // CLatencyList : CKeyedList (m_slotList; its dtor is 0xc5280)
 #include <Net/NetMgr.h>   // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
@@ -1172,16 +1172,16 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
 // +0x60, reached via ILT thunk 0x218a; declared in Dialogs.h as the own CWnd override).
 // The former CCluster0c @orphan is DISSOLVED: the vtable DATA-ref proved this is
 // CMultiStartDlg's own DestroyWindow. It frees the +0x60 connection-latency slot list
-// (m_slotList, a CLatencyList : CKeyedList) via that container's CKeyedList/CPtrList
-// teardown at 0xc5280 - the symbol bound as ??1CNetThing@@UAE@XZ (NetThing.h notes
-// CNetThing == CKeyedList, a deferred cross-unit rename), then chains CWnd::DestroyWindow.
+// (m_slotList, a CLatencyList : CKeyedList) via the container's CKeyedList teardown at
+// 0xc5280 (the CNetThing == CKeyedList unification is now DONE - the dtor lives on
+// CKeyedList, so no cast is needed), then chains CWnd::DestroyWindow.
 // ---------------------------------------------------------------------------
 RVA(0x000c5240, 0x2c)
 i32 CMultiStartDlg::DestroyWindow() {
-    CNetThing* p = (CNetThing*)m_slotList; // +0x60 slot list, freed via its CKeyedList teardown
+    CLatencyList* p = m_slotList; // +0x60 connection-latency slot list
     if (p) {
-        p->CNetThing::~CNetThing(); // 0xc5280 (qualified, non-virtual - direct near call)
-        ::operator delete(p);       // 0x1b9b82 == ??3@YAXPAX@Z (reloc-masked/exempt)
+        p->CKeyedList::~CKeyedList(); // 0xc5280 (qualified, non-virtual - direct near call)
+        ::operator delete(p);         // 0x1b9b82 == ??3@YAXPAX@Z (reloc-masked/exempt)
         m_slotList = 0;
     }
     return CWnd::DestroyWindow(); // 0x1bbb7c ?DestroyWindow@CWnd@@UAEHXZ (base, eax passthrough)

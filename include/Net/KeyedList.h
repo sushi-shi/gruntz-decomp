@@ -32,6 +32,9 @@ public:
         m_mode = 0;
     }
 
+    // 0xc5280: Clear() + the ~CPtrList base chain (this IS the former CNetThing dtor).
+    ~CKeyedList();
+
     // 0x37a70: new a {key,a2,a3} CKeyedNode, assign it, AddTail it; returns the node.
     CKeyedNode* AddNode(const char* key, i32 a2, i32 a3);
 
