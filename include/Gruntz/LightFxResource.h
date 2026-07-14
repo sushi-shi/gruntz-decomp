@@ -1,19 +1,21 @@
 // LightFxResource.h - the object-owner-context resource sub-system CLightFx::Activate
 // walks (C:\Proj\Gruntz).
 //
-// @identity-TODO. The holder + the two stores are partial views of a REAL but
-// still-unconsolidated engine resource family: the holder IS the object's owner
-// context (CGameObjWorld, reached identically by AnimWorkerObj::m_0c and
-// CGameObject::m_0c - both point at the one context; its canonical in
-// <Gruntz/UserLogic.h> models +0x08/+0x14/+0x24 but not the +0x10/+0x2c store
-// pointers these probes read, and adding them there would drag <Mfc.h> into that
-// 66-TU MFC-free header). The store shape (a pad + an MFC string map at +0x10) is a
-// SHARED name->resource holder still modeled per-TU across ~8 headers (ResMgr /
-// DDrawWorkerCtx / CProjSpriteMgr / MenuItem / StatusBarMgr / ...); until that
-// family is consolidated into one canonical, these stay as minimal honest views
-// that wrap the REAL MFC maps. Kept in this header (not inline in the .cpp) so they
-// are not a per-TU divergent definition. The two store maps are DIFFERENT MFC types,
-// proven by disasm of CLightFx::Activate @0x9d520: the spec lookup is `call 0x1b8008`
+// Xref-recovered, partially. The holder IS the game object's owner context (obj->m_0c,
+// reached identically by AnimWorkerObj::m_0c and CGameObject::m_0c). That context is
+// itself a still-unconsolidated multi-view of ONE retail class: <Gruntz/UserLogic.h>
+// models it as CGameObjWorld (+0x08 obj-chain / +0x14 worker-cache / +0x24 level),
+// while src/Wwd/WwdGameObject.cpp reads the SAME obj->m_0c as CDDrawSurfaceMgr
+// (m_0c->m_flags) - the surface/plane manager that doubles as the object world/asset
+// context. Its +0x10 store is the name->CImageSet spec registry, +0x2c the
+// name->CAniElement effect registry; the store shape (a pad + an MFC string map at
+// +0x10) recurs per-TU across ~8 headers (ResMgr / DDrawWorkerCtx / CProjSpriteMgr /
+// MenuItem / StatusBarMgr / ...). @identity-TODO: fully folding the stores onto the
+// context needs that CGameObjWorld<->CDDrawSurfaceMgr conflation resolved into one
+// canonical first (+ its store fields, which drag <Mfc.h> into the 66-TU UserLogic.h).
+// Kept in this header (not inline in the .cpp) so they are not a per-TU divergent
+// definition. The two store maps are DIFFERENT MFC types, proven by disasm of
+// CLightFx::Activate @0x9d520: the spec lookup is `call 0x1b8008`
 // (CMapStringToOb::Lookup), the effect lookups are `call 0x1b8438`
 // (CMapStringToPtr::Lookup) - the labels used to be inverted here.
 #ifndef GRUNTZ_LIGHTFXRESOURCE_H

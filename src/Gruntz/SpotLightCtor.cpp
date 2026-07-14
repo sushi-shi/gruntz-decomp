@@ -25,6 +25,7 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/Loadable.h> // LoadableClassId - CLASSID_SERIALREF (the GetTypeId()==5 focus probe)
+#include <Gruntz/Grunt.h> // CGrunt - the Probe_32ce (CTriggerMgr::FindGruntAt) result (m_gruntKind)
 #include <math.h>                 // sin / cos (the Tick rotation)
 #include <rva.h>
 
@@ -249,9 +250,10 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
     return 1;
 }
 
-// The per-tick laser-update externs (all reloc-masked): the hit/spawn probe (0x32ce),
-// the per-cell sound-cue emitter (0x2e96, __thiscall on g_gameReg->m_68), the target's
-// activate (0x4322, __thiscall on the probed object), and the sound-play (0x1360d0).
+// The per-tick laser-update externs (all reloc-masked): the hit/spawn probe (0x32ce,
+// the ILT thunk to CTriggerMgr::FindGruntAt @0x75c60 -> CGrunt*), the per-cell
+// sound-cue emitter (0x2e96, __thiscall on g_gameReg->m_68), the grunt's activate
+// (0x4322, __thiscall on the probed CGrunt), and the sound-play (0x1360d0).
 extern "C" void* Probe_32ce(i32 x, i32 y, void* rect, i32* outA, i32* outB, i32 flag);
 extern "C" void Activate_4322(void* target, i32 f);
 extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
@@ -272,22 +274,14 @@ extern char s_actKeyB[]; // 0x60d1bc "B"
 extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 extern i32 g_sndEnabled;              // 0x61ab20
 extern i32 g_sndCueTag;               // 0x61ab24
-// The probed hit-target record Probe_32ce returns (QueryAt @0x75c60 on the command
-// grid). Genuinely-unrecovered engine identity (@identity-TODO): it is bigger than
-// any recovered class (its type tag lives at +0x258, past every wide-object kind's
-// size), so it is NOT a CGameObject - it is the spatial-query hit record that WRAPS
-// one. Only the two touched offsets are modeled; the wrapped object at +0x10 IS a
-// real CGameObject.
-//   +0x10  the target's bound CGameObject (coords at m_screenX/m_screenY)
-//   +0x258 a type tag (0x38 == self)
-struct CSpotTarget {
-    char m_pad00[0x10];
-    CGameObject* m_10; // +0x10  the target's bound object
-    char m_pad14[0x258 - 0x14];
-    i32 m_258; // +0x258  type tag
-};
-// (The ex CSpotLaser view of m_98 is dissolved onto CGameObject: its +0x5c/+0x60
-// "move-delta" are the focus object's m_screenX/m_screenY.)
+// The probe result IS a real CGrunt (<Gruntz/Grunt.h>): xref proves it -
+// Probe_32ce is the ILT thunk to CTriggerMgr::FindGruntAt @0x75c60, whose mangled
+// signature ?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@... returns CGrunt*. The tag
+// the Tick checks (!= 0x38) is CGrunt::m_gruntKind (+0x258); +0x10 is the grunt's
+// bound geometry source (a game object with screen coords at +0x5c/+0x60, undeclared
+// base padding on CGrunt so reached by documented offset). The ex CSpotTarget view
+// is dissolved onto CGrunt. (The ex CSpotLaser view of m_98 is likewise dissolved
+// onto CGameObject: its +0x5c/+0x60 "move-delta" are m_screenX/m_screenY.)
 
 // CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is
 // in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live
@@ -312,12 +306,13 @@ i32 CSpotLight::Tick_0b1af0() {
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || *(i32*)((char*)reg + 0x134) != 1) {
         char* o = (char*)m_object;
-        CSpotTarget* tgt = (CSpotTarget*)
+        CGrunt* tgt = (CGrunt*)
             Probe_32ce(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
-        if (tgt != 0 && tgt->m_258 != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
+        if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
-            char* t = (char*)tgt->m_10;
+            // CGrunt's +0x10 bound geometry source (undeclared base padding; by offset).
+            char* t = *(char**)((char*)tgt + 0x10);
             *(i32*)(o + 0x5c) = *(i32*)(t + 0x5c);
             *(i32*)(o + 0x60) = *(i32*)(t + 0x60);
             if (*(i32*)(o + 0x114) == 1) {
@@ -369,5 +364,5 @@ i32 CSpotLight::Tick_0b1af0() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CSpotActEntry);
-SIZE_UNKNOWN(CSpotTarget);
+// (CSpotTarget dissolved onto the real CGrunt; see the note above the Tick.)
 // (CSpotFocus + CSpotLaser dissolved onto the real CGameObject; see the notes above.)
