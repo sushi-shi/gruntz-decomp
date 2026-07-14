@@ -31,12 +31,12 @@
 #include <DDrawMgr/DDrawWorkerNode.h>     // CDDrawWorkerBase/A/B (Plot/helpers here)
 #include <DDrawMgr/DDrawWorkerCtx.h>      // shared CDDrawWorkerCtx (the +0x0c owner context)
 #include <DDrawMgr/DDrawWorkerCache.h>    // CDDrawWorkerCache (CreateWorker here)
-#include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (the registry map values, DestroyAll's delete)
-#include <DDrawMgr/AnimWorkerObj.h>       // AnimWorkerObj (the 0x17c worker CreateWorker news)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSurfaceChildA (SetGeom_1646b0 here)
-#include <Io/FileMem.h>                   // CFileMem/CFileMemBase (the runtime core here)
-#include <Gruntz/AniElement.h>            // CAniElement + CAniRecordView (the ANI section here)
-#include <Globals.h>                      // g_aniParsedNameLen (the record-parse cursor)
+#include <DDrawMgr/DDrawWorker.h>   // CDDrawWorker (the registry map values, DestroyAll's delete)
+#include <DDrawMgr/AnimWorkerObj.h> // AnimWorkerObj (the 0x17c worker CreateWorker news)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSurfaceChildA (SetGeom_1646b0 here)
+#include <Io/FileMem.h>                // CFileMem/CFileMemBase (the runtime core here)
+#include <Gruntz/AniElement.h>         // CAniElement + CAniRecordView (the ANI section here)
+#include <Globals.h>                   // g_aniParsedNameLen (the record-parse cursor)
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/String.h>
 #include <Mfc.h>

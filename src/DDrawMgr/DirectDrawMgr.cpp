@@ -90,9 +90,9 @@ void* g_ddCreateCtx = 0; // 0x683ee4
 // The RGB low-bit-position / 8-minus-bitcount pair tables ComputeColorMasks fills from
 // the back-buffer's pixel format. DEFINED in src/DDrawMgr/DDSurface.cpp (owner TU);
 // GruntzMgr.cpp's 16-bit pack reads the same six words. Reference externs only.
-extern i32 g_rUp; // red   low-bit shift
-extern i32 g_gUp; // green low-bit shift
-extern i32 g_bUp; // blue  low-bit shift
+extern i32 g_rUp;   // red   low-bit shift
+extern i32 g_gUp;   // green low-bit shift
+extern i32 g_bUp;   // blue  low-bit shift
 extern i32 g_rDown; // red   8-minus-count
 extern i32 g_gDown; // green 8-minus-count
 extern i32 g_bDown; // blue  8-minus-count

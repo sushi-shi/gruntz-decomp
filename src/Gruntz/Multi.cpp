@@ -50,9 +50,9 @@ DATA(0x002455fc)
 extern "C" i32 g_6455fc = 0;
 extern "C" i32 g_curPlayer; // 0x644c54  default cue wParam (= *host)
 DATA(0x00245580)
-extern "C" u32 g_645580; // 0x645580  draw clock
+extern "C" u32 g_645580;     // 0x645580  draw clock
 extern "C" u32 g_frameDelta; // 0x645584  delta cap
-extern "C" u32 g_frameTime; // 0x645588  accum clock
+extern "C" u32 g_frameTime;  // 0x645588  accum clock
 
 // The game-manager singleton + a divisor for the TITLE%d index.
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
@@ -373,7 +373,7 @@ void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
 // already-named CMulti methods: 0x1d70 -> BroadcastChannelTable (0xba810), 0x2e82 ->
 // SendStatFlag (0xb9240), 0x386e -> ApplyCmdDelayDefaults (0xb85a0).
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
-extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
+extern i32 g_sndCueTag;  // ?g_sndCueTag@@3HA
 // (g_killCueClock is declared with the CMulti PumpA externs above.)
 // The engine 3-arg keyed string-format helper at 0x0f9160 (__cdecl): formats a
 // value for `key` into `out` and returns nonzero when it produced a string (else
@@ -1239,7 +1239,7 @@ i32 CMulti::Tick() {
 
 // The global ambient/kill-cue clock state (retail .data addresses -> DIR32
 // operands reloc-mask).
-extern "C" u32 g_killCueClock; // 0x6bf3c0
+extern "C" u32 g_killCueClock;     // 0x6bf3c0
 extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 DATA(0x0024558c)
 extern "C" i32 g_64558c; // 0x64558c  ambient frame counter

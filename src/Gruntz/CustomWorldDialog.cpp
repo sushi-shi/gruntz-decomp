@@ -235,7 +235,7 @@ DATA(0x0020cf90)
 char g_dotDot[] = ".."; // 0x60cf90
 DATA(0x0020cf94)
 char g_customGlob[] = "*.WWD"; // 0x60cf94
-extern char g_nameFmt[]; // 0x60c5b8 "%s" (def: BootyStateActivate.cpp)
+extern char g_nameFmt[];       // 0x60c5b8 "%s" (def: BootyStateActivate.cpp)
 
 namespace m4 {
 

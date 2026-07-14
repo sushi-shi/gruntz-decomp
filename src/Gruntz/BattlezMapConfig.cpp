@@ -870,11 +870,29 @@ i32 CBattlezMapConfig::Method_026470(i32) {
     m_ctx->m_objList->m_view->m_5c->SnapToTileCenter((i32*)&screen, cand->m_x << 5, cand->m_y << 5);
     i32 cell;
     if (slot38 != 0) {
-        cell = m_ctx->m_triggerMgr
-                   ->ProbeCell(m_curCell, screen.m_x, (void*)0x186a0, 2, (void*)g_groupSentinel, 0, 0, 0, 0);
+        cell = m_ctx->m_triggerMgr->ProbeCell(
+            m_curCell,
+            screen.m_x,
+            (void*)0x186a0,
+            2,
+            (void*)g_groupSentinel,
+            0,
+            0,
+            0,
+            0
+        );
     } else {
-        cell = m_ctx->m_triggerMgr
-                   ->ProbeCell(m_curCell, screen.m_x, (void*)0x186a0, 0, (void*)g_groupSentinel, 0, 0, 0, 0);
+        cell = m_ctx->m_triggerMgr->ProbeCell(
+            m_curCell,
+            screen.m_x,
+            (void*)0x186a0,
+            0,
+            (void*)g_groupSentinel,
+            0,
+            0,
+            0,
+            0
+        );
     }
     if (cell == -1) {
         return 0;

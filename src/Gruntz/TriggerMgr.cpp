@@ -55,7 +55,7 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
 #include <Gruntz/IconLoaderViews.h> // EngineLabelBacklog (the four icon loaders)
 #include <Gruntz/Brickz.h>          // CBrickzGrid (rock-break ComputeCellFlags)
-#include <Dsndmgr/DirectSoundMgr.h>     // canonical DSoundCloneInst (ConfigureItem @0x1360d0)
+#include <Dsndmgr/DirectSoundMgr.h> // canonical DSoundCloneInst (ConfigureItem @0x1360d0)
 #include <Gruntz/SoundCue.h>        // CSndHost (the finish-level cue holder)
 #include <Gruntz/LeafCue.h>         // LeafCue (the finish-level looked-up cue)
 #include <Gruntz/LightFx.h>         // CLightFx (resurrect flash Activate)
@@ -1683,8 +1683,8 @@ void FormatStr(CString* out, const char* fmt, ...);
 // BrickzCellFlags_077790.cpp) is dissolved onto CGameLevel/CLevelPlane/CTileImageSet;
 // the rock-break sites below use the real classes.
 
-extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
-extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
+extern i32 g_sndEnabled;       // ?g_sndEnabled@@3HA
+extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA
 extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 
 // (CRockBreakMgr is the canonical <Gruntz/RockBreakMgr.h> class - was a .cpp-local view here.)

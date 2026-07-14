@@ -94,7 +94,8 @@ extern float g_fxBias;
 extern float g_fxEps;
 extern char g_teleporterSpawnKey[];
 extern char g_wormholeSpawnKey[];
-extern char g_msgCaption[]; // "Gruntz" @0x60aac8 (def: WinMain.cpp; doubles as GameText's descriptor tag)
+extern char
+    g_msgCaption[]; // "Gruntz" @0x60aac8 (def: WinMain.cpp; doubles as GameText's descriptor tag)
 extern u8 g_dat60b588;
 extern char s_codeP[];
 extern char k_60bebc[];
@@ -314,7 +315,8 @@ extern char* g_difficultyNames[];
 //  definition lives in src/Wwd/WwdObjMgr.cpp.)
 extern char g_mapNamePre[4];
 extern char g_mapNameBuf[0x200];
-extern i32 g_groupSentinel; // serialized with the trigger group/selection state (def: TriggerMgr.cpp)
+extern i32
+    g_groupSentinel; // serialized with the trigger group/selection state (def: TriggerMgr.cpp)
 extern char* g_areaNames[];
 extern CImagePool* g_previewMgr;
 extern void* g_previewImage;

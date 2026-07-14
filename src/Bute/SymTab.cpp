@@ -1437,8 +1437,8 @@ extern "C" const char g_wildcard[];
 // SWAPPED relative to the retail bytes: 0x5ee8ec is "." (a CRT .rdata literal in
 // the CRT band near the _y* strings; extern only) and 0x60cf90 is ".." (DEFINED in
 // src/Gruntz/CustomWorldDialog.cpp, whose .data literal run holds it).
-extern char g_dot[];           // 0x5ee8ec  "." (def: Dsndmgr/SoundBankLoad.cpp)
-extern char g_dotDot[];        // 0x60cf90  ".."
+extern char g_dot[];    // 0x5ee8ec  "." (def: Dsndmgr/SoundBankLoad.cpp)
+extern char g_dotDot[]; // 0x60cf90  ".."
 
 // @early-stop
 // 0x545 (1349 B) /GX recursive directory loader: enumerates `path` with

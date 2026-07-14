@@ -6,9 +6,9 @@
 #include <Gruntz/GameText.h>
 #include <rva.h>
 #include <Wap32/ZDArrayDerived.h> // CZDArrayDerived::Construct (the 0x82aa0 register thunk)
-#include <Globals.h>              // g_msgCaption (the registered descriptor tag = the "Gruntz" literal)
-#include <Bute/ButeSection.h>     // real CButeSection (the 0x82b20 in-place ctor)
-#include <Gruntz/FreeNodePool.h>  // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
+#include <Globals.h>          // g_msgCaption (the registered descriptor tag = the "Gruntz" literal)
+#include <Bute/ButeSection.h> // real CButeSection (the 0x82b20 in-place ctor)
+#include <Gruntz/FreeNodePool.h> // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.

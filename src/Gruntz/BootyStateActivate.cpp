@@ -111,7 +111,7 @@ extern "C" CGruntzMgr* g_gameReg;
 // Plain C++ extern: ?g_sndEnabled@@3HA is now the ONE name bound at 0x21ab20 (DEFINED in
 // GruntzMgr.cpp, the owner TU). The old extern "C" spelling here carried a DATA pin that
 // bound _g_sndEnabled and starved every C++-mangled reference in the tree.
-extern i32 g_sndEnabled; // BOOTY_LOOP enable gate (0x61ab20)
+extern i32 g_sndEnabled;       // BOOTY_LOOP enable gate (0x61ab20)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
 
 // The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).

@@ -58,7 +58,6 @@ struct CGameRegMapHolder {
 // CSpriteRefTable::GetSel(i, bAlt) - the icon paths call GetSel directly, cast-free
 // (thunk 0x4165 -> 0xe23c0 == CSpriteRefTable::GetSel).
 
-
 extern "C" i32 g_curPlayer; // DAT_00644c54  (the current local player index)
 
 extern i32 g_sndCueTag; // DAT_0061ab24  (the input/cmd-flush sink the place path posts to)

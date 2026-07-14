@@ -20,10 +20,10 @@
 // <Gruntz/GameMode.h>. Only offsets / control IDs / code bytes are load-bearing;
 // names are placeholders for the recovered engine identities.
 #include <Gruntz/GameMode.h>
-#include <Gruntz/BattlezData.h>           // the REAL stats object (was the CHudStats view)
-#include <Gruntz/GruntzMgr.h>             // CGruntzMgr (the game-manager singleton; one true shape)
-#include <Dsndmgr/DirectSoundMgr.h>           // DSoundCloneInst (StartMusic/StopMusicChain ConfigureItem)
-#include <Gruntz/WwdGameReg.h>            // g_gameReg (StartMusic music gate)
+#include <Gruntz/BattlezData.h>     // the REAL stats object (was the CHudStats view)
+#include <Gruntz/GruntzMgr.h>       // CGruntzMgr (the game-manager singleton; one true shape)
+#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (StartMusic/StopMusicChain ConfigureItem)
+#include <Gruntz/WwdGameReg.h>      // g_gameReg (StartMusic music gate)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources leaf keys)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSubMgrPages (FrameSlot28 flush)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was a GameMode.cpp local view)

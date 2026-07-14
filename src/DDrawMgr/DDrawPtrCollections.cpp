@@ -21,9 +21,9 @@
 // The RGB low-bit-position / 8-minus-bitcount pair tables InstallColorFormat fills
 // (the same six .data words ComputeColorMasks in the DDRAWMGR obj writes).
 // DEFINED in src/DDrawMgr/DDSurface.cpp (owner TU); reference externs only.
-extern i32 g_rUp; // red   low-bit shift
-extern i32 g_gUp; // green low-bit shift
-extern i32 g_bUp; // blue  low-bit shift
+extern i32 g_rUp;   // red   low-bit shift
+extern i32 g_gUp;   // green low-bit shift
+extern i32 g_bUp;   // blue  low-bit shift
 extern i32 g_rDown; // red   8-minus-count
 extern i32 g_gDown; // green 8-minus-count
 extern i32 g_bDown; // blue  8-minus-count

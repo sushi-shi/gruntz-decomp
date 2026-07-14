@@ -81,7 +81,6 @@ struct CGruntEntry {
 //   +0x78  m_78 : the bute lookup table the powerup setter indexes
 // ---------------------------------------------------------------------------
 
-
 // ---------------------------------------------------------------------------
 // A bound-object sub-object on the +0x38 game object: at +0x1a0 sits a helper
 // whose Sync(arg) (0x15c360, __thiscall ret 4) flushes/advances the indicator's

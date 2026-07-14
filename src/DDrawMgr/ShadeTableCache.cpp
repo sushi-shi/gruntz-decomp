@@ -19,8 +19,8 @@
 // The live screen RGB-format shift/mask table at 0x683ea0..0x683eb4 - already
 // named by CLightFxRender.cpp / CDDrawShadeBlit.cpp. The builders gate on the
 // RGB565 magic state (rUp=10, gUp=5, rDown/gDown/bDown=3). Reloc-masked.
-extern i32 g_rUp; // 0x683ea0
-extern i32 g_gUp; // 0x683ea4
+extern i32 g_rUp;   // 0x683ea0
+extern i32 g_gUp;   // 0x683ea4
 extern i32 g_rDown; // 0x683eac
 extern i32 g_gDown; // 0x683eb0
 extern i32 g_bDown; // 0x683eb4

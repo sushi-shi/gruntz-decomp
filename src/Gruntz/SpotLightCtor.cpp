@@ -276,7 +276,7 @@ extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
 extern "C" unsigned char g_randSeeded; // 0x6c127d
 extern "C" i32 g_randSeed;             // 0x6c1288
 extern u32 (*g_pTimeGetTime)();        // 0x6c4650
-extern "C" u32 g_frameDelta; // frame-time delta
+extern "C" u32 g_frameDelta;           // frame-time delta
 // The activation-key "B" the update re-resolves through the bute tree.
 extern char s_actKeyB[]; // 0x60d1bc "B"
 // The laser-sound format string + the sound-play gate globals.

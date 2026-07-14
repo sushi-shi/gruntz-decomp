@@ -72,7 +72,7 @@ public:
     ); // 0x1366f0  CreateSoundBuffer + wrap (mints the concrete DSoundCloneInst leaf)
     DSoundCloneInst*
     AcquireFile(char* path, u32 flags, u32 reserved); // 0x136860  fopen whole file -> Acquire
-    DSoundCloneInst* Acquire(void* riff, u32, u32); // 0x136910  parse RIFF + CreateBuffer + load
+    DSoundCloneInst* Acquire(void* riff, u32, u32);   // 0x136910  parse RIFF + CreateBuffer + load
     DSoundCloneInst* AcquireResource(
         const char* name,
         u32 flags,

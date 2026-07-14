@@ -15,8 +15,8 @@
 
 // The live screen RGB-format shift table at 0x683ea0..0x683eb4 - already named by
 // CLightFxRender.cpp / ShadeTableCache.cpp. Reloc-masked DIR32 data refs.
-extern i32 g_rUp; // 0x683ea0
-extern i32 g_gUp; // 0x683ea4
+extern i32 g_rUp;   // 0x683ea0
+extern i32 g_gUp;   // 0x683ea4
 extern i32 g_rDown; // 0x683eac
 extern i32 g_gDown; // 0x683eb0
 extern i32 g_bDown; // 0x683eb4

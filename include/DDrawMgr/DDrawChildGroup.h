@@ -67,10 +67,10 @@ public:
     // slot 1: ??1 @0x157630 (defined in DDrawSubMgr.cpp, the family dtor pocket -
     // the ex CDDrawChildGroupDtorHost view; ??_G @0x157610 is cl-generated there).
     virtual ~CDDrawChildGroup() OVERRIDE;
-    virtual i32 IsLoaded() OVERRIDE;      // slot 5  0x1575e0 (parent set && status != -1)
-    virtual i32 IsReady() OVERRIDE;       // slot 6  0x1576c0 (own `return 1` copy)
-    virtual void ForwardTo3C();           // slot 7  0x1591e0 -> DestroyChildren
-    virtual StateId GetStateId();         // slot 8  0x157600 (STATE_CHILDGROUP = 0x10)
+    virtual i32 IsLoaded() OVERRIDE; // slot 5  0x1575e0 (parent set && status != -1)
+    virtual i32 IsReady() OVERRIDE;  // slot 6  0x1576c0 (own `return 1` copy)
+    virtual void ForwardTo3C();      // slot 7  0x1591e0 -> DestroyChildren
+    virtual StateId GetStateId();    // slot 8  0x157600 (STATE_CHILDGROUP = 0x10)
     // slot 9 (+0x24) = the per-frame kill-cue tick (0x159a70, ret 4 = 1 arg; body on
     // CWwdObjMgr in WwdObjMgr.cpp - same class). CMulti/CPlay's frame pump dispatches
     // it here with the frame delta, then slot 16 below.
@@ -95,8 +95,8 @@ public:
     // Was pads + raw m_head/m_count fields; the real member makes ~CDDrawChildGroup
     // emit the retail ~CObList teardown (0x1b5a2b) under its own /GX trylevel.
     CObList m_list;
-    CMapPtrToPtr m_map2c;      // +0x2c  (CMapPtrToPtr::Lookup 0x1b8760, FID-confirmed)
-    CMapPtrToPtr m_map48;      // +0x48
+    CMapPtrToPtr m_map2c; // +0x2c  (CMapPtrToPtr::Lookup 0x1b8760, FID-confirmed)
+    CMapPtrToPtr m_map48; // +0x48
 
     // Engine-label backlog stub.
     void DrawObjectCounts_15a650(); // 0x15a650  per-object debug-count overlay

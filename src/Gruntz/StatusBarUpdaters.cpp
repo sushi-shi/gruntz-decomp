@@ -1,7 +1,7 @@
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>           // g_gameReg singleton (0x24556c) canonical view
-#include <Dsndmgr/DirectSoundMgr.h>            // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
-#include <Gruntz/LeafCue.h>                // the canonical cue record (was the CStatusBarTab view)
+#include <Gruntz/GameRegistry.h>    // g_gameReg singleton (0x24556c) canonical view
+#include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
+#include <Gruntz/LeafCue.h>         // the canonical cue record (was the CStatusBarTab view)
 #include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host
 #include <Gruntz/TileTriggerSwitchLogic.h> // real owner of SwitchDown/SwitchUp @0x110570/0x1106b0
 

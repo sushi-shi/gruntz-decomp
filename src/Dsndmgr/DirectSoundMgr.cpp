@@ -47,7 +47,6 @@
 
 #include <Globals.h> // c_volScale/c_volNum/c_acosNorm/c_powExp + g_panTable
 
-
 // __FILE__ every wrapper passes to GetErrorString (single $SG pooled constant).
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 

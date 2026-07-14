@@ -85,7 +85,7 @@ struct ChannelSlot {
 SIZE_UNKNOWN(ChannelSlot);
 
 extern "C" CGameRegistry* g_gameReg; // _g_mgrSettings (0x64556c)
-extern CString g_gruntNames[]; // 0x64bdb0 per-channel label table
+extern CString g_gruntNames[];       // 0x64bdb0 per-channel label table
 
 void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
 i32 ChannelSlots_FindFree();            // 0xdb280

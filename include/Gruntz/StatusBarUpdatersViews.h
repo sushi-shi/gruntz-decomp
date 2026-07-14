@@ -9,7 +9,7 @@
 #include <Ints.h>
 #include <rva.h>
 class DSoundCloneInst; // the pooled cue player (ConfigureItem @0x1360d0; Dsndmgr/DirectSoundMgr.h)
-#include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CMapStringToOb
+#include <Gruntz/Sprite.h> // CSprite (frame-data value) + CMapStringToOb
 #include <Gruntz/SoundCue.h> // the ONE +0x28 status/cue holder (CSndHost; folds the former CStatusBarHolder)
 
 // The status-bar item the named cue Lookup resolves IS the canonical LeafCue

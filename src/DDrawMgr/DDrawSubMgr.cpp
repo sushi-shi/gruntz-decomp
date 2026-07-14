@@ -42,7 +42,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>    // single-source CDDrawSubMgrPages (surface ops)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (the 3-map dtor-host twin)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (real polymorphic)
-#include <DDrawMgr/DDrawWorker.h>        // CDDrawWorker (the registry map values)
+#include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (the registry map values)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan
 #include <DDrawMgr/AniAdvance.h>          // CAniBlitTrigger (the per-frame sound trigger)
@@ -187,7 +187,6 @@ void operator delete(void* p);
 static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
     return *(const i32*)((const char*)p + 0x1c);
 }
-
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
@@ -571,13 +570,7 @@ i32 CDDrawWorkerBase::Unload() {
 
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4).
 RVA(0x00157330, 0xa5)
-void* CDDrawWorkerList::CreateWorkerB2C(
-    i32 a1,
-    i32 a2,
-    CDDrawWorker* a3,
-    i32 a4,
-    i32 addHead
-) {
+void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
     if (w->Vfunc30(a1, a2, a3, a4) == 0) {
         if (w != 0) {

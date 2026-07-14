@@ -11,7 +11,7 @@
 // return 0. 4 stack args (ret 0x10). Field names are placeholders.
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/LeafCue.h>     // LeafCue (the sound-cue leaf)
+#include <Gruntz/LeafCue.h>         // LeafCue (the sound-cue leaf)
 #include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst::ConfigureItem (0x1360d0)
 
 // The cue enable flag (0x61ab20) and the wrap-safe kill-cue draw-clock (0x6bf3c0,

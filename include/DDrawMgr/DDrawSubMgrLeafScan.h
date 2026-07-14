@@ -31,9 +31,9 @@
 
 // Body-only dependency types (defined in the owning .cpp; only pointers/values in the
 // class declaration, so a forward decl suffices and keeps lean consumers lean).
-struct SoundStream; // +0x2c held DSound stream (SoundStream : SoundDevice; Play stops it)
-struct LeafCue;     // the 0x1c cache element / map value (<Gruntz/LeafCue.h>)
-class CSymTab;      // <Bute/SymTab.h> - the scope node ScanTree walks (was the DirNode view)
+struct SoundStream;  // +0x2c held DSound stream (SoundStream : SoundDevice; Play stops it)
+struct LeafCue;      // the 0x1c cache element / map value (<Gruntz/LeafCue.h>)
+class CSymTab;       // <Bute/SymTab.h> - the scope node ScanTree walks (was the DirNode view)
 struct CParseSource; // the element's draw-source (BeginParse/EndParse; STRUCT key = the def)
 
 // ---------------------------------------------------------------------------

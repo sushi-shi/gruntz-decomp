@@ -685,8 +685,8 @@ class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/Dir
 struct CSbiCueRecord {
     char m_pad0[0x10];
     DSoundCloneInst* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;           // +0x14  last draw-clock
-    i32 m_18;           // +0x18  interval
+    i32 m_14;              // +0x14  last draw-clock
+    i32 m_18;              // +0x18  interval
 };
 SIZE_UNKNOWN(CSbiCueRecord);
 

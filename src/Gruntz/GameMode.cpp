@@ -27,7 +27,7 @@
 #include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (the real m_world class)
 #include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_8 factory)
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
-#include <Gruntz/LeafCue.h>  // LeafCue (PlayIfElapsed_01f940 + m_10/m_14/m_18)
+#include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed_01f940 + m_10/m_14/m_18)
 #include <rva.h>
 
 // (CState's ??_G scalar-deleting dtor - and the `operator delete` it reaches - moved to
@@ -378,11 +378,11 @@ i32 g_levelMsgIconPos[16] = {
     0xe9,
     0x1a8
 }; // 0x60b8b8
-extern RECT g_levelMsgRectsB[8]; // 0x60b8f8  (shared with BootyMessages - stays extern)
+extern RECT g_levelMsgRectsB[8];     // 0x60b8f8  (shared with BootyMessages - stays extern)
 extern CString g_levelMsgStrings[8]; // 0x629ef8
-extern i32 g_sndCueTag; // 0x61ab24
-extern i32 g_sndEnabled; // 0x61ab20
-extern "C" u32 g_killCueClock; // 0x6bf3c0
+extern i32 g_sndCueTag;              // 0x61ab24
+extern i32 g_sndEnabled;             // 0x61ab20
+extern "C" u32 g_killCueClock;       // 0x6bf3c0
 
 // ShowHudMessage (0x1154b0, glyphstr): draw a CString into a RECT via the render/HUD
 // sink (m_c). FormatHudText (0x1af70, shared with CMenuState; called on this): fill the

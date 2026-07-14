@@ -57,7 +57,7 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Gruntz/StateId.h> // StateId (GetStateId return type)
+#include <Gruntz/StateId.h>  // StateId (GetStateId return type)
 #include <Wap32/WapObj.h>    // CWapObj : CObject - the real 7-slot grand-base
 #include <Gruntz/Loadable.h> // CLoadable (the CDrawSubWorker family base)
 

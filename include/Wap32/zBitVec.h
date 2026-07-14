@@ -35,8 +35,8 @@
 // container OOM paths report through. Shared by every container ctor (zBitVec's,
 // CUserBaseLink's) - reloc-masked. (The "projAct" names predate the recovery that
 // this is the generic container error infrastructure.)
-extern char g_containerName[];   // 0x6bf408 (base ctor const char* arg)
-extern i32 g_defaultProjActSize; // 0x61ad28 (fallback capacity)
+extern char g_containerName[];    // 0x6bf408 (base ctor const char* arg)
+extern i32 g_defaultProjActSize;  // 0x61ad28 (fallback capacity)
 extern void* g_projActCache;      // 0x6bf464 (?g_projActCache@@3PAXA)
 extern void* g_retAddrBreadcrumb; // 0x6bf428 (?g_projActAllocResult; OOM record cell)
 extern void* g_projActName;       // 0x6bf454 (bad-arg diagnostic record cell)

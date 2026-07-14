@@ -44,7 +44,6 @@ struct CPathEntity {
 // CTriggerMgr*): QueryAt IS CTriggerMgr::FindGruntAt @0x75c60, Strike IS
 // CTriggerMgr::CellDispatch @0x6bcb0 (both via <Gruntz/TriggerMgr.h>).
 
-
 // The +0x1a0 sub-mgr the per-frame Tick advances once (SetGeoSource 0x15c360,
 // __thiscall ret 4, takes the g_engineFrameDelta frame counter as its int arg).
 struct CPathSubMgr {};

@@ -20,8 +20,8 @@
 // The live screen RGB-format shift table at RVA 0x283ea0..0x283eb4, DEFINED in
 // src/DDrawMgr/DDSurface.cpp (owner TU; the C++ ?g_rUp@@3HA family).
 // The mode-2 gate compares these against the magic 5/10/3/3/3 state. Reloc-masked.
-extern i32 g_rUp; // red   shift-up
-extern i32 g_gUp; // green shift-up
+extern i32 g_rUp;   // red   shift-up
+extern i32 g_gUp;   // green shift-up
 extern i32 g_rDown; // red   shift-down
 extern i32 g_gDown; // green shift-down
 extern i32 g_bDown; // blue  shift-down

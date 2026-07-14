@@ -30,10 +30,10 @@
 
 // Per-player idle-sprite id table (0x5e9068), the wand/flag cue tag + enable gate,
 // the wrap-safe draw clock, the "A" action-key string, and the inline-RNG state.
-extern i32 g_sndCueTag; // 0x61ab24
-extern i32 g_sndEnabled; // 0x61ab20
+extern i32 g_sndCueTag;        // 0x61ab24
+extern i32 g_sndEnabled;       // 0x61ab20
 extern "C" u32 g_killCueClock; // 0x6bf3c0
-extern char s_codeA[]; // "A" (0x60a454)
+extern char s_codeA[];         // "A" (0x60a454)
 
 // The per-player secret-letter table "WARP" (0x5e93a8); CString::Format @0x1b2cf5.
 DATA(0x001e93a8)
@@ -256,7 +256,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                             u32 clock = g_killCueClock;
                             if (clock - res->m_lastPlayed >= res->m_interval) {
                                 res->m_lastPlayed = clock;
-                                ((DSoundCloneInst*)res->m_player)->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                                ((DSoundCloneInst*)res->m_player)
+                                    ->ConfigureItem(g_sndCueTag, 0, 0, 0);
                             }
                         }
                     }

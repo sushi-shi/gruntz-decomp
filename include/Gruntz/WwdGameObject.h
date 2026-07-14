@@ -31,7 +31,7 @@ struct WwdMgr;
 struct CSprite;
 struct CGameObjLayer;
 class CDDrawSurfacePair; // slots 12-14 params (<DDrawMgr/DDrawSurfacePair.h>)
-struct LeafCue; // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex LeafScanValue)
+struct LeafCue;          // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex LeafScanValue)
 
 // The +0x7c worker is the ONE canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>,
 // vtable 0x1efb80) - the 2026-07-13 worker unification dissolved the former

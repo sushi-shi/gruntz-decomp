@@ -121,9 +121,9 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     CDDrawWorkerB(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) {
         m_78 = 0;
     }
-    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                         // [11] 0x1572f0
+    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                    // [11] 0x1572f0
     virtual i32 Vfunc30(i32 a1, i32 a2, CDDrawWorker* src, i32 a4); // [12] 0x1572b0
-    virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);                 // [13] 0x157280
+    virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);            // [13] 0x157280
 
     // Non-virtual: look up a named object in the owner map, fetch element[idx] when
     // in range, cache at m_78, return whether it is non-null.

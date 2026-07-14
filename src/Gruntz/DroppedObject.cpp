@@ -71,11 +71,11 @@ extern "C" CGameRegistry* g_gameReg;
 // (the convention across the gamemode units).
 extern "C" u32 g_frameTime; // 0x645588
 extern "C" {
-    extern u32 g_frameDelta; // 0x645584
+    extern u32 g_frameDelta;       // 0x645584
     extern u32 g_engineFrameDelta; // 0x6bf3bc
 }
 
-extern void* GetRetAddr(); // 0x16d990
+extern void* GetRetAddr();   // 0x16d990
 extern void* g_projActCache; // 0x2bf464 canonical (bound in GruntStartingPoint.cpp); the old
                              // g_actCache spelling was an unbound VA-typo alias of this global
 extern void* g_retAddrBreadcrumb;
@@ -124,7 +124,7 @@ struct CShadowActEntry {
 // CTimeBomb/CKitchenSlime use) + the running id counter and the two key strings.
 // ---------------------------------------------------------------------------
 extern i32 g_typeCounter;
-extern char s_codeA[]; // "A"
+extern char s_codeA[];   // "A"
 extern char s_actKeyB[]; // "B"
 struct CTypeNameEntry;   // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)

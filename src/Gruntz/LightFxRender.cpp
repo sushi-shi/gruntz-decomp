@@ -141,8 +141,8 @@ struct LfxTileBank {
 // per channel a right-shift (8-bit -> channel width) then a left-shift into the
 // channel's slot. B sits at bit 0, so it has no left-shift.
 // See docs/patterns/rgb-pack-variable-shift.md.
-extern i32 g_rUp; // red   up-shift (into position)
-extern i32 g_gUp; // green up-shift
+extern i32 g_rUp;   // red   up-shift (into position)
+extern i32 g_gUp;   // green up-shift
 extern i32 g_rDown; // red   down-shift (scale 8-bit -> width)
 extern i32 g_gDown; // green down-shift
 extern i32 g_bDown; // blue  down-shift

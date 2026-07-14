@@ -29,7 +29,8 @@
 #include <DDrawMgr/DDrawWorkerNode.h>  // CDDrawWorkerBase/A/B (the spawned elements)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair - PruneWorkers' two render targets
 
-class CDDrawWorker; // the frame-source (ex CDDrawFrameSource view) // the frame table view (def rides the workers G section)
+class
+    CDDrawWorker; // the frame-source (ex CDDrawFrameSource view) // the frame table view (def rides the workers G section)
 
 // (The former `CDDrawWorkerItem` dispatch view is DISSOLVED 2026-07-14: the real
 // CDDrawWorkerBase (<DDrawMgr/DDrawWorkerNode.h>, now : CResolveNode) carries the

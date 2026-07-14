@@ -51,9 +51,9 @@ public:
     // [1] ??1 @0x156e10 (DDrawSubMgr.cpp - the family dtor pocket; cl emits the
     // ??_G scalar-deleting dtor @0x156df0 + this vtable there).
     virtual ~CDDrawWorkerRegistry() OVERRIDE;
-    virtual i32 IsLoaded() OVERRIDE; // [ 5] 0x156dc0 (Ghidra size-0 gap; declared-only)
-    virtual i32 IsReady() OVERRIDE;  // [ 6] 0x154aa0 (re-seeds the 25-dword blt-fx scratch)
-    virtual i32 Unload() OVERRIDE;   // [ 7] 0x154ac0 (self-dispatch MapTeardown + clear flags)
+    virtual i32 IsLoaded() OVERRIDE;   // [ 5] 0x156dc0 (Ghidra size-0 gap; declared-only)
+    virtual i32 IsReady() OVERRIDE;    // [ 6] 0x154aa0 (re-seeds the 25-dword blt-fx scratch)
+    virtual i32 Unload() OVERRIDE;     // [ 7] 0x154ac0 (self-dispatch MapTeardown + clear flags)
     virtual i32 GetClassId() OVERRIDE; // [ 8] 0x156de0 (STATE_WORKERREGISTRY = 0x12)
     virtual i32 DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5); // [ 9] 0x154df0
     virtual i32 Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);  // [10] 0x154f60

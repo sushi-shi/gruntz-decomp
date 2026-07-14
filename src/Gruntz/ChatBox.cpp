@@ -94,8 +94,8 @@ struct CChatCatalog {
 // GetFrameWidth (0x185520) - Draw centers each row's frame on the item.
 
 // The horizontal-scroll edge state read by the two scroll-step methods.
-extern i32 g_sndEnabled; // 0x61ab20
-extern i32 g_sndCueTag;  // 0x61ab24
+extern i32 g_sndEnabled;       // 0x61ab20
+extern i32 g_sndCueTag;        // 0x61ab24
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // The sprite poke target hung off a scroll-timer's m_10 (0x1360d0). __thiscall.
@@ -105,8 +105,8 @@ extern "C" u32 g_killCueClock; // 0x6bf3c0
 struct CChatTimer {
     char pad0[0x10];
     DSoundCloneInst* m_10; // +0x10 sprite poke target
-    i32 m_14;           // +0x14 last tick the row scrolled at
-    i32 m_18;           // +0x18 scroll interval
+    i32 m_14;              // +0x14 last tick the row scrolled at
+    i32 m_18;              // +0x18 scroll interval
 };
 
 // The on-screen sprite roster reached via CChatPage::m_28: a key->timer map at

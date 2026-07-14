@@ -13,7 +13,6 @@
 #ifndef GRUNTZ_SOUNDCUE_H
 #define GRUNTZ_SOUNDCUE_H
 
-
 #include <Ints.h>
 #include <rva.h>
 // The +0x10 cue registry IS the MFC CMapStringToPtr (Lookup @0x1b8438 is the NAFXCW

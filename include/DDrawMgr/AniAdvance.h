@@ -79,7 +79,7 @@ public:
     char m_pad00[0x0c]; // +0x00..0x0b
     // authentic: geometry context, reached only by raw offset (+0x24 -> +0x5c -> +0x84,
     // +0x4); its class is not modeled here - kept void*.
-    void* m_ctx;                 // +0x0c geometry context
+    void* m_ctx;                    // +0x0c geometry context
     DSoundCloneInst* m_soundPlayer; // +0x10 sound player
 };
 SIZE_UNKNOWN(CAniBlitTrigger);

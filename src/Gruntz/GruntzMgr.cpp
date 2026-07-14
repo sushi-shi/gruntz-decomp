@@ -263,9 +263,9 @@ extern "C" {
     // The clock/scroll/warp globals SaveState streams through the archive.
     extern "C" i32 g_64558c; // DAT_0064558c
     extern i32 g_645590;     // DAT_00645590
-    extern i32 g_645598; // DAT_00645598
-    extern i32 g_64559c; // DAT_0064559c
-    extern i32 g_6455a0; // DAT_006455a0
+    extern i32 g_645598;     // DAT_00645598
+    extern i32 g_64559c;     // DAT_0064559c
+    extern i32 g_6455a0;     // DAT_006455a0
     DATA(0x002455e8)
     i32 g_monologoShown;
 }

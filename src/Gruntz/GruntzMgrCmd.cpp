@@ -75,15 +75,15 @@ extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA (mirrors m_soundEnabled)
 extern "C" u32 g_gruntDestruction; // "Grunt destruction"
 extern "C" u32 g_gruntCreation;    // "Grunt creation"
 extern "C" u32 g_gooPuddlez;       // "Goo puddlez"
-extern i32 g_traitorMode; // "Traitor Mode" (def: Grunt.cpp, C++)
-extern "C" i32 g_monologoShown; // the MONOLITH logo is on screen (LoadMonologoSprite)
+extern i32 g_traitorMode;          // "Traitor Mode" (def: Grunt.cpp, C++)
+extern "C" i32 g_monologoShown;    // the MONOLITH logo is on screen (LoadMonologoSprite)
 // The CD-prompt result gate (0x6455ec; def: StartUpPrompt.cpp). The old local
 // hex-named alias ("load/quicksave-UI suppress gate") was this same cell: no CD
 // present suppresses the save/load UI.
 extern "C" i32 g_cdPromptResult;
 extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
                                 // 0x20/0x400 ?, 0x40/0x100 brick text, 0x80 elapsed time
-extern "C" u32 g_explosionz; // "Explosionz"
+extern "C" u32 g_explosionz;    // "Explosionz"
 // the draw-clock mirror (here: the 0x8247 cue-cooldown throttle). Was a C++-mangled
 // ?g_time6bf3c0@@3HA - a divergent symbol for a cell 9 other TUs share.
 extern "C" u32 g_killCueClock;
