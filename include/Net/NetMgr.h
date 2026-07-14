@@ -449,8 +449,17 @@ struct GruntRec {
 SIZE(GruntRec, 0x410);
 
 // The synced game object stored in the +0x1b0 id-map (GetSlotPtr -> CSyncObj*). A
-// genuine external polymorphic class (>=9 vtable slots; slot 8 @+0x20 is its
-// serializer). @identity-TODO: concrete identity lives in the net-game insert path.
+// genuine external polymorphic class (>=9 vtable slots; slot 8 @+0x20 is a 2-arg
+// network serializer Serialize(char*,i32)->i32, distinct from the MFC CObject one).
+// @identity-TODO (xref chase FAILED, evidence preserved so the next pass doesn't re-run it):
+//   * m_idMap is NEVER written in the reconstructed tree (only cleared in Reset/ResetSync);
+//     the register that would name the concrete type is an UNRECONSTRUCTED retail function.
+//   * Not CGruntzCommand: that vtable puts a 4-arg CSerialArchive Serialize at slot 1 and
+//     a 0-arg Vfunc8 at slot 8 - CSyncObj's slot 8 is the 2-arg buffer serializer, a
+//     different shape.
+//   * GetSlotPtr @0xc0430 / NoopSync @0xbfb20 return no caller edges in the xref DB.
+//   So the identity is genuinely unrecovered until the m_idMap-insert function lands; this
+//   is a flagged TODO, NOT a silent placeholder.
 struct CSyncObj {
     virtual void v0();
     virtual void v1();
