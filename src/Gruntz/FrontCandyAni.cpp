@@ -117,12 +117,8 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
 // facet (ResolveEntry) so the loads reloc-mask against the correctly-bound 0x246060.
 extern LogicFnTable g_logicDispatch_646060; // 0x646060 (?g_logicDispatch_646060@@3ULogicFnTable@@A)
 
-// The handler entry the registry yields: its first dword receives the per-frame
-// handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance class).
-typedef i32 (CEyeCandyAni::*EyeCandyHandler)();
-struct CEyeCandyActEntry {
-    EyeCandyHandler m_fn;
-};
+// The activation registry entry (CEyeCandyActEntry, PMF holder) lives in
+// <Gruntz/EyeCandyAni.h> now (hoisted out of this .cpp).
 
 // CEyeCandyAni::CEyeCandyAni (0xac870) - fold the shared CUserLogic(obj) init, bind
 // the "A" bute node, apply the cycle geometry, then run the shared eyecandy z-clamp
@@ -234,22 +230,16 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
     }
 }
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class). FireActivation invokes it __thiscall on the trigger.
-typedef i32 (CFrontCandyAni::*FrontCandyHandler)();
-struct CFrontCandyActEntry {
-    FrontCandyHandler m_fn;
-};
+// The activation registry entry (CFrontCandyActEntry, PMF holder) lives in
+// <Gruntz/FrontCandyAni.h> now (hoisted out of this .cpp).
 
 // The class's activation-coordinate registry singleton (@0x6460b0), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). CFrontCandyActReg
-// is the shared <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its
-// layout + ResolveEntry); it keeps its own placeholder name so the DATA-pinned
-// global symbol is unchanged.
-struct CFrontCandyActReg : public CActReg {};
+// fixed [2000,2010] range by the shared registry ctor (0x408710). It IS the shared
+// CActReg (<Gruntz/ActReg.h>); the ex empty CFrontCandyActReg : CActReg subclass was a
+// naming-only alias (the variable name makes the mangled symbol unique + DATA() rebinds
+// it, so the archetype IS the type) - dissolved.
 DATA(0x002460b0)
-CFrontCandyActReg g_frontCandyActReg; // 0x6460b0
+CActReg g_frontCandyActReg; // 0x6460b0
 
 // CFrontCandyAni::InitActReg @0x0ad130 - construct the class's activation-
 // coordinate registry singleton (g_frontCandyActReg @0x6460b0) over the fixed
@@ -317,7 +307,4 @@ i32 CFrontCandyAni::AdvanceAnim() {
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-SIZE_UNKNOWN(CFrontCandyActEntry);
-SIZE_UNKNOWN(CFrontCandyActReg);
 SIZE_UNKNOWN(CFrontCandyAni);
-SIZE_UNKNOWN(CEyeCandyActEntry);

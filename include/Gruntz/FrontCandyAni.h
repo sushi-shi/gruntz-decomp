@@ -50,4 +50,14 @@ public:
 };
 VTBL(CFrontCandyAni, 0x1e83e4);
 
+// The per-coordinate activation registry entry (g_frontCandyActReg's element): its
+// first dword receives the per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on
+// this single-inheritance class). FireActivation/RegisterActs cast the CActReg entry
+// to this. A faithful 4-byte PMF record, hoisted out of FrontCandyAni.cpp.
+typedef i32 (CFrontCandyAni::*FrontCandyHandler)();
+struct CFrontCandyActEntry {
+    FrontCandyHandler m_fn;
+};
+SIZE_UNKNOWN(CFrontCandyActEntry);
+
 #endif // GRUNTZ_CFRONTCANDYANI_H
