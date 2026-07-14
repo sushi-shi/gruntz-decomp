@@ -36,9 +36,9 @@
 // and its +0x10 named-object map backs Helper_166040. Completed in HelperHost.cpp.
 struct CDDrawWorkerCtx;
 
-// Vfunc30's frame-source arg (int array @+0x14 bounded by +0x64/+0x68). Completed
-// in CDDrawWorkers.cpp where Vfunc30 reads its fields.
-struct CDDrawFrameSource;
+// Vfunc30's frame-source arg IS the canonical CDDrawWorker (m_items CObArray
+// m_pData@+0x14, windowed by m_64/m_68) - the ex CDDrawFrameSource view.
+class CDDrawWorker; // the frame-source (ex CDDrawFrameSource view)
 
 // The two surface-pair render targets slot 10 (RenderFrame) draws the worker onto.
 // Full def in <DDrawMgr/DDrawSurfacePair.h>, pulled by the method-body TUs.
@@ -122,7 +122,7 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
         m_78 = 0;
     }
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                         // [11] 0x1572f0
-    virtual i32 Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4); // [12] 0x1572b0
+    virtual i32 Vfunc30(i32 a1, i32 a2, CDDrawWorker* src, i32 a4); // [12] 0x1572b0
     virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);                 // [13] 0x157280
 
     // Non-virtual: look up a named object in the owner map, fetch element[idx] when

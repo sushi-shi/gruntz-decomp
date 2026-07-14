@@ -642,7 +642,10 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1644a0: create the DirectDraw mode surface. Cache {w,h,bpp}, build the device
+// 0x1644a0: CDDrawSurfaceChildA::SetGeometry (vtable slot-9 override; the raw
+// 0x1eff70[9] holds this rva - the old CDDrawSurfacePair binding contradicted the
+// pair's own vtable, whose [9] is the inherited 0x158fd0). Create the DirectDraw
+// mode surface: cache {w,h,bpp}, build the device
 // surface through the pool (mode 0x11 for w>320 else 0x51; fullscreen bit from
 // mgr->m_capsFlags), then attach + validate it. Each failure path stashes an error code
 // in mgr->m_lastError (only if not already set): 0x80e9..0x80ed for the five pool error
@@ -657,12 +660,8 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 // shifts the trailing success + 0xbba blocks. A block-merge/layout artifact, not a
 // source lever (the two paths are genuinely identical code). Logic byte-faithful.
 RVA(0x001644a0, 0x19b)
-i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
-    i32 w,
-    i32 h,
-    i32 bpp
-) {
-    CDDrawSurfaceMgrT* mgr = (CDDrawSurfaceMgrT*)m_mgr;
+i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
+    CDDrawSurfaceMgrT* mgr = (CDDrawSurfaceMgrT*)m_0c;
     m_width = w;
     m_height = h;
     m_bpp = bpp;
@@ -682,54 +681,54 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
         if (err != 0) {
             switch (err) {
                 case 0x3e9: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_mgr;
+                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80e9;
                     }
                     return 0;
                 }
                 case 0x3ea: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_mgr;
+                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ea;
                     }
                     return 0;
                 }
                 case 0x3eb: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_mgr;
+                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80eb;
                     }
                     return 0;
                 }
                 case 0x3ec: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_mgr;
+                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ec;
                     }
                     return 0;
                 }
                 case 0x3ed: {
-                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_mgr;
+                    CDDrawSurfaceMgrT* m = (CDDrawSurfaceMgrT*)m_0c;
                     if (m->m_lastError == 0) {
                         m->m_lastError = 0x80ed;
                     }
                     return 0;
                 }
             }
-            CDDrawSurfaceMgrT* md = (CDDrawSurfaceMgrT*)m_mgr;
+            CDDrawSurfaceMgrT* md = (CDDrawSurfaceMgrT*)m_0c;
             if (md->m_lastError == 0) {
                 md->m_lastError = 0xbb9;
             }
             return 0;
         }
-        CDDrawSurfaceMgrT* m4 = (CDDrawSurfaceMgrT*)m_mgr;
+        CDDrawSurfaceMgrT* m4 = (CDDrawSurfaceMgrT*)m_0c;
         if (m4->m_lastError == 0) {
             m4->m_lastError = 0xbb9;
         }
         return 0;
     }
-    CDDrawSurfaceMgrT* m2 = (CDDrawSurfaceMgrT*)m_mgr;
+    CDDrawSurfaceMgrT* m2 = (CDDrawSurfaceMgrT*)m_0c;
     i32 amode = 1;
     if (m2->m_capsFlags & 2) {
         amode = 2;
@@ -739,7 +738,7 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
     if (surf != 0 && surf->IsValid()) {
         return 1;
     }
-    CDDrawSurfaceMgrT* m3 = (CDDrawSurfaceMgrT*)m_mgr;
+    CDDrawSurfaceMgrT* m3 = (CDDrawSurfaceMgrT*)m_0c;
     if (m3->m_lastError == 0) {
         m3->m_lastError = 0xbba;
     }
@@ -780,7 +779,7 @@ void operator delete(void*);
 extern "C" void RezFree(void* p); // _RezFree @0x1b9b82
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfaceChildA::SetGeom_1646b0 (0x1646b0, vtable slot 10): re-set the child
+// CDDrawSurfaceChildA::SetGeom (0x1646b0, vtable slot 10 override): re-set the child
 // surface geometry to {w,h,bpp}. If the cached geometry already matches, return 1.
 // Otherwise drop the current surface from the parent manager's pool, reconfigure
 // the pool for {w,h,bpp}, then attach a mode surface (double-buffer bit from the
@@ -788,11 +787,11 @@ extern "C" void RezFree(void* p); // _RezFree @0x1b9b82
 // rect. __thiscall, 3 args (ret 0xc). (Pool/manager reached through this TU's
 // owner views; ConfigureSurface added to the local pool view.)
 RVA(0x001646b0, 0xde)
-i32 CDDrawSurfaceChildA::SetGeom_1646b0(i32 w, i32 h, i32 bpp) {
+i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
     }
-    CDDrawPtrCollections* pool = (CDDrawPtrCollections*)((CDDrawSurfaceMgrT*)m_mgr)->m_pool;
+    CDDrawPtrCollections* pool = (CDDrawPtrCollections*)((CDDrawSurfaceMgrT*)m_0c)->m_pool;
     if (pool == 0) {
         return 0;
     }
@@ -802,7 +801,7 @@ i32 CDDrawSurfaceChildA::SetGeom_1646b0(i32 w, i32 h, i32 bpp) {
         return 0;
     }
     i32 amode = 1;
-    if (((CDDrawSurfaceMgrT*)m_mgr)->m_capsFlags & 2) {
+    if (((CDDrawSurfaceMgrT*)m_0c)->m_capsFlags & 2) {
         amode = 2;
     }
     m_surface = pool->Createab8_24_3(amode);

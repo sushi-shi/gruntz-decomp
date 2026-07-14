@@ -420,16 +420,10 @@ void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerA/B dtors + frame-set virtuals (0x1570d0-0x1572f0).
-// The frame-source passed as Vfunc30's a3: an int array @+0x14 indexed by a4,
-// bounded by [m_lowerBound, m_upperBound].
-struct CDDrawFrameSource {
-    char _pad00[0x14];
-    i32* m_frameTable; // +0x14  frame table
-    char _pad18[0x64 - 0x18];
-    i32 m_lowerBound; // +0x64  lower bound
-    i32 m_upperBound; // +0x68  upper bound
-};
-SIZE_UNKNOWN(CDDrawFrameSource);
+// (The CDDrawFrameSource view of Vfunc30's a3 is DISSOLVED 2026-07-14: the
+// "frame table @+0x14 bounded by [+0x64,+0x68]" IS the canonical CDDrawWorker -
+// m_items (::CObArray, m_pData@+0x14) windowed by m_64/m_68, the very fields
+// MakeWorker seeds to 99999/0 and AddFrameAt_1521c0 widens.)
 
 // 0x157080 - CDDrawWorkerBase::SetPosition (the family slot-9 override; the SAME
 // RVA sits in BOTH the A (0x1efea0) and B (0x1efed0) vtables - one base
@@ -542,10 +536,10 @@ i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
 // 0x1572b0: store frame `src->m_frameTable[a4]` (0 if a4 out of bounds) into
 // m_78, set m_refCount=2, then forward (a1,a2) to the base SetPosition (0x164790).
 RVA(0x001572b0, 0x38)
-i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4) {
+i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, CDDrawWorker* src, i32 a4) {
     i32 frame;
-    if (a4 >= src->m_lowerBound && a4 <= src->m_upperBound) {
-        frame = src->m_frameTable[a4];
+    if (a4 >= src->m_64 && a4 <= src->m_68) {
+        frame = (i32)src->m_items[a4]; // CObArray operator[] inline = m_pData[a4]
     } else {
         frame = 0;
     }
@@ -580,7 +574,7 @@ RVA(0x00157330, 0xa5)
 void* CDDrawWorkerList::CreateWorkerB2C(
     i32 a1,
     i32 a2,
-    CDDrawFrameSource* a3,
+    CDDrawWorker* a3,
     i32 a4,
     i32 addHead
 ) {
@@ -1514,11 +1508,9 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
 // model stamps vptr-first. Logic/CFG/offsets/error-codes reproduced.
 RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
-    CDDrawSurfaceChildA* a = (CDDrawSurfaceChildA*)operator new(0x30);
-    if (a != 0) {
-        new (a) CDDrawSurfaceChildA((i32)m_0c, 0, 0);
-        a->m_surface = 0;
-    }
+    // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
+    // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
+    CDDrawSurfaceChildA* a = new CDDrawSurfaceChildA((i32)m_0c, 0, 0);
     m_frontPair = (CDDrawSurfacePair*)a;
 
     CDDrawSurfacePair* b = (CDDrawSurfacePair*)operator new(0x34);
@@ -1539,7 +1531,7 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     }
     m_overlayPair = c;
 
-    if (a->CreateModeSurface_1644a0(a1, a2, a3) == 0) {
+    if (a->SetGeometry(a1, a2, a3) == 0) { // slot-9 dispatch [vtbl+0x24] (the mode-surface creator)
         if (m_0c->m_lastError == 0) {
             m_0c->m_lastError = 0x7d1;
         }
@@ -1839,29 +1831,16 @@ i32 CDDrawSubMgrPages::Method_158ee0() {
 }
 
 // ===========================================================================
-// The CDrawSubWorker leaf (0x158f30-0x159020).
+// The CDrawSubWorker family head (0x158f30-0x159020): the 0x30 surface-holder
+// base + the CDDrawSurfaceChildA dtor pocket (defs in <DDrawMgr/DDrawSubMgrPages.h>;
+// the ex .cpp-local CDrawSubWorker/CDrawSubWorkerBase/WapObjBase views are
+// DISSOLVED - "CDrawSubWorkerBase::Init_158fb0" was ~CDrawSubWorker (its ??_G
+// @0x158f90 sits at 0x1effa0[1]) and "WapObjBase::BaseInit" was
+// ~CDDrawSurfaceChildA (its ??_G @0x159190 sits at 0x1eff70[1])).
 // ===========================================================================
 
-// 0x158f30: 3-arg leaf-worker ctor - store the three args at +0x4/+0x8/+0xc,
-// stamp the leaf vtable (cl-implicit vptr-first), zero +0x10. __thiscall, ret 0xc.
-struct CDrawSubWorker : public CObject { // CObject slots 0-4 inherited
-    virtual ~CDrawSubWorker() OVERRIDE;  // slot 1 (own dtor override; reloc-masked)
-    i32 m_04;                            // +0x04
-    i32 m_08;                            // +0x08
-    i32 m_0c;                            // +0x0c
-    i32 m_width;                         // +0x10 (zeroed in ctor)
-    i32 m_height;                        // +0x14
-    i32 m_bpp;                           // +0x18
-    i32 m_srcRect[4];                    // +0x1c..+0x28
-    CDrawSubWorker(i32 a1, i32 a2, i32 a3);
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // slot 9 (0x158fd0, ICF w/ CDDrawSurfacePair; declared-only)
-    virtual i32 SetGeom_159020(i32 w, i32 h, i32 bpp); // slot 10 (@0x28) 0x159020
-};
-SIZE_UNKNOWN(CDrawSubWorker);
+// 0x158f30: the base ctor - the CLoadable seed fused into the leaf ctor body
+// (the Loadable.h CResolveNode precedent) + m_width = 0; cl stamps ??_7CDrawSubWorker.
 RVA(0x00158f30, 0x27)
 CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
     m_04 = a2;
@@ -1869,31 +1848,11 @@ CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
     m_0c = a1;
     m_width = 0;
 }
-VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (was g_drawSubWorkerVtbl)
+// The inline ~CDrawSubWorker's linker-kept out-of-line COMDAT copy + its
+// cl-generated scalar-deleting dtor (vtable slot 1):
+// @rva-symbol: ??1CDrawSubWorker@@UAE@XZ 0x00158fb0 0x19
+// @rva-symbol: ??_GCDrawSubWorker@@UAEPAXI@Z 0x00158f90 0x1e
 
-// 0x158fb0: DDraw worker base re-init - +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
-// the base vtable. A void method (keeps `this` in ecx; not a ctor). ret 0.
-class CDrawSubWorkerBase : public CObject {
-public:
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c
-    i32 m_10; // +0x10
-    void Init_158fb0();
-};
-SIZE_UNKNOWN(CDrawSubWorkerBase);
-RVA(0x00158fb0, 0x19)
-void CDrawSubWorkerBase::Init_158fb0() {
-    m_04 = -1;
-    m_10 = 0;
-    m_08 = 0;
-    m_0c = 0;
-    // base vptr auto-stamped via CObject (manual stamp dropped, % ok)
-}
-
-// ---------------------------------------------------------------------------
-// CDDrawSurfacePair G-heads (0x158fd0-0x1590f0): the pair's quartet bits kept in
-// this obj; the pair's meat lives in the T obj.
 // 0x158fd0 (slot 9): SetGeometry - cache the {w,h,bpp} pixel geometry and a
 // {0,0,w,h} src rect. Shared body (ICF) with CDrawSubWorker slot 9.
 // @early-stop
@@ -1917,7 +1876,7 @@ i32 CDDrawSurfacePair::SetGeometry_158fd0(i32 w, i32 h, i32 bpp) {
 // 0x159020 (slot 10): SetGeom with bpp validation - cache {w,h,bpp} + a {0,0,w,h}
 // src rect; reject non-positive w/h and bpp not in {8,16,24,32}. __thiscall, ret 0xc.
 RVA(0x00159020, 0x55)
-i32 CDrawSubWorker::SetGeom_159020(i32 w, i32 h, i32 bpp) {
+i32 CDrawSubWorker::SetGeom(i32 w, i32 h, i32 bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
@@ -1973,29 +1932,19 @@ CDDrawSurfacePair::~CDDrawSurfacePair() {
 // a surface, has a positive width, a parent manager, and an active status word.
 RVA(0x00159150, 0x24)
 i32 CDDrawSurfaceChildA::IsLoaded() {
-    if (m_surface != 0 && m_width > 0 && m_mgr != 0 && m_status != -1) {
+    if (m_surface != 0 && m_width > 0 && m_0c != 0 && m_04 != -1) {
         return 1;
     }
     return 0;
 }
 
-// 0x1591b0 - a wap-object base re-init: seed m_4=-1, zero m_8/m_c/m_10. A
-// standalone void METHOD (not a ctor). The owning wap-object class identity is
-// unrecovered (@identity-TODO; only caller is an unmatched ??_G @0x159190).
-class WapObjBase : public CObject {
-public:
-    void BaseInit();
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    i32 m_10;
-};
-SIZE_UNKNOWN(WapObjBase);
+// 0x1591b0: ~CDDrawSurfaceChildA (the ex "WapObjBase::BaseInit" view; its ??_G
+// @0x159190 is 0x1eff70's slot 1). The out-of-line body is EMPTY - retail's four
+// resets (+0x04/-1, +0x10/0, +0x08/0, +0x0c/0) are the inlined ~CDrawSubWorker
+// (m_width = 0) + ~CLoadable (header resets), and the entry own-vptr stamp is
+// dead-stored into the final CObject grand-base re-stamp.
+// @rva-symbol: ??_GCDDrawSurfaceChildA@@UAEPAXI@Z 0x00159190 0x1e
 RVA(0x001591b0, 0x19)
-void WapObjBase::BaseInit() {
-    m_4 = -1;
-    m_10 = 0;
-    m_8 = 0;
-    m_c = 0;
-    // base vptr auto-stamped via CObject (retail manual stamp dropped, % ok)
+CDDrawSurfaceChildA::~CDDrawSurfaceChildA() {
+    // empty: ~CDrawSubWorker + ~CLoadable fold the resets + the grand-base stamp.
 }

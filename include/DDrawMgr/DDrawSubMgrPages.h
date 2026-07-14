@@ -58,7 +58,8 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
-#include <Wap32/WapObj.h>   // CWapObj : CObject - the real 7-slot grand-base
+#include <Wap32/WapObj.h>    // CWapObj : CObject - the real 7-slot grand-base
+#include <Gruntz/Loadable.h> // CLoadable (the CDrawSubWorker family base)
 
 class CDDrawSurfaceMgr;  // +0x0c root manager back-pointer
 class CDDSurface;        // the held surface (CDDrawSurfaceChildA::m_surface)
@@ -120,32 +121,73 @@ public:
 };
 VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
 
-// The "A" child built by CreateChildren (0x30 bytes, ctor 0x158f30, vtable
-// 0x5eff70). Real CWapObj-derived: slots 0..4 inherited, slot 5 the IsLoaded
-// override (0x159150, G obj); own slots 7..10 named from their retail slot RVAs
-// (SetGeom_1646b0 lives in the T obj). Hoisted from DDrawSubMgrPages.cpp
-// (wave4-L). IDENTITY: the ctor 0x158f30 is shared with the CDrawSubWorker view
-// (DDrawSubMgr.cpp) - one retail class, two method-set views (identity pass TODO).
-class CDDrawSurfaceChildA : public CWapObj {
+// ---------------------------------------------------------------------------
+// CDrawSubWorker - the 0x30 surface-holder BASE (vtable ??_7 @0x5effa0; ctor
+// 0x158f30, ??1 0x158fb0 / ??_G 0x158f90 - all in the G obj DDrawSubMgr.cpp): a
+// CLoadable leaf caching the {w,h,bpp} pixel geometry + a {0,0,w,h} src rect +
+// the held-surface slot (+0x2c). PROVEN base of CDDrawSurfaceChildA (retail
+// CreateChildren inlines the derived ctor: `call 0x158f30; mov [edi],0x5eff70;
+// mov [edi+0x2c],0`) AND - by the shared slot-9 body 0x158fd0 in BOTH raw
+// vtables (0x1eff30[9] == 0x1effa0[9]; MSVC5 has no ICF, so a shared slot IS
+// inheritance) - of CDDrawSurfacePair, whose flat model keeps its own slot-9
+// claim for now (pair re-base pass TODO; its inline ctor's `call 0x156cb0` +
+// m_width=0 is the base ctor per-site re-inlined by /Ob2). The class name is
+// scaffolding (@identity-TODO - no RTTI names this family).
+// ---------------------------------------------------------------------------
+class CDrawSubWorker : public CLoadable {
 public:
-    virtual ~CDDrawSurfaceChildA() OVERRIDE; // slot 1 (dtor 0x159190)
-    virtual i32 IsLoaded() OVERRIDE;         // slot 5 (@0x14) 0x159150 (G obj)
-    virtual i32 IsReady() OVERRIDE;          // slot 6 (@0x18) 0x001c08 (CWapObj default)
-    virtual void Slot07_1591d0();            // slot 7 (@0x1c) 0x1591d0
-    virtual void Slot08_159180();            // slot 8 (@0x20) 0x159180
-    virtual i32 CreateModeSurface_1644a0(i32 a1, i32 a2, i32 a3); // slot 9 (@0x24) 0x1644a0
-    virtual i32 SetGeom_1646b0(i32 w, i32 h, i32 bpp); // slot 10 (@0x28) 0x1646b0 (T obj)
-    CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3);   // 0x158f30
-    i32 m_status;                                      // +0x04  status word (-1 inactive)
-    char m_pad08[0x0c - 0x08];
-    CDDrawSurfaceMgr* m_mgr; // +0x0c  parent surface manager (its pool at +0x1c)
-    i32 m_width;             // +0x10
-    i32 m_height;            // +0x14
-    i32 m_bpp;               // +0x18
-    i32 m_srcRect[4];        // +0x1c  {x,y,w,h}
-    CDDSurface* m_surface;   // +0x2c  held surface
+    // Out-of-line @0x158f30: the CLoadable seed fused into the leaf ctor (the
+    // CResolveNode(i32,i32,i32) precedent in Loadable.h) + m_width = 0.
+    CDrawSubWorker(i32 a1, i32 a2, i32 a3);
+    virtual i32 IsLoaded() OVERRIDE;   // [5] 0x158f60 (declared-only, unreconstructed)
+    virtual i32 Unload() OVERRIDE;     // [7] 0x159080 (declared-only, unreconstructed)
+    virtual i32 GetClassId() OVERRIDE; // [8] 0x158f80 (declared-only, unreconstructed)
+    // [9] 0x158fd0: cache the {w,h,bpp} geometry + src rect. The BODY is bound as
+    // CDDrawSurfacePair::SetGeometry_158fd0 until the pair re-bases here (one
+    // claim per rva); this base decl + ChildA's override reloc-mask.
+    virtual i32 SetGeometry(i32 w, i32 h, i32 bpp); // [9] 0x158fd0
+    // [10] 0x159020: SetGeometry with bpp-in-{8,16,24,32} validation (G obj def).
+    virtual i32 SetGeom(i32 w, i32 h, i32 bpp); // [10] 0x159020
+    // slot-1 dtor: INLINE so the derived dtors fold these very resets (retail
+    // ~CDDrawSurfaceChildA @0x1591b0 is m_04/m_width/m_08/m_0c inline, no base
+    // call); the linker-kept out-of-line COMDAT copy is the retail ??1 @0x158fb0
+    // (bound by @rva-symbol in DDrawSubMgr.cpp).
+    virtual ~CDrawSubWorker() OVERRIDE {
+        m_width = 0;
+    }
+
+    i32 m_width;           // +0x10  (zeroed by ctor + dtor)
+    i32 m_height;          // +0x14
+    i32 m_bpp;             // +0x18
+    i32 m_srcRect[4];      // +0x1c..+0x2b  {0,0,w,h}
+    CDDSurface* m_surface; // +0x2c  held surface slot (the derived ctors zero it)
 }; // 0x30
+SIZE(CDrawSubWorker, 0x30);
+VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (11-slot CLoadable leaf)
+
+// The "A" child built by CreateChildren (0x30 bytes, vtable 0x5eff70): the
+// mode-surface leaf. : CDrawSubWorker (base proven above); overrides slots
+// 5/7/8/9/10, adds no fields. (The ex WapObjBase view of its dtor is dissolved.)
+class CDDrawSurfaceChildA : public CDrawSubWorker {
+public:
+    // Inline ctor - retail CreateChildren shows exactly this expansion:
+    // `call 0x158f30` (the out-of-line base ctor) + own ??_7 stamp + m_surface=0.
+    CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3) : CDrawSubWorker(handle, a2, a3) {
+        m_surface = 0;
+    }
+    // slot-1 ??1 @0x1591b0 / ??_G @0x159190 (DDrawSubMgr.cpp). The out-of-line
+    // body is EMPTY: retail's four resets are the inlined ~CDrawSubWorker +
+    // ~CLoadable.
+    virtual ~CDDrawSurfaceChildA() OVERRIDE;
+    virtual i32 IsLoaded() OVERRIDE;   // [5] 0x159150 (G obj def)
+    virtual i32 Unload() OVERRIDE;     // [7] 0x1591d0 (declared-only)
+    virtual i32 GetClassId() OVERRIDE; // [8] 0x159180 (declared-only)
+    // [9] 0x1644a0 (T obj def): create the display-mode surface + set geometry
+    // (the ex "CreateModeSurface_1644a0"; it IS the SetGeometry override).
+    virtual i32 SetGeometry(i32 a1, i32 a2, i32 a3) OVERRIDE;
+    virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE; // [10] 0x1646b0 (T obj def)
+}; // 0x30 (no own fields)
 SIZE(CDDrawSurfaceChildA, 0x30);
-VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11-slot CWapObj-derived)
+VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H

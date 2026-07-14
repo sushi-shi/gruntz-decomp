@@ -29,7 +29,7 @@
 #include <DDrawMgr/DDrawWorkerNode.h>  // CDDrawWorkerBase/A/B (the spawned elements)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair - PruneWorkers' two render targets
 
-struct CDDrawFrameSource; // the frame table view (def rides the workers G section)
+class CDDrawWorker; // the frame-source (ex CDDrawFrameSource view) // the frame table view (def rides the workers G section)
 
 // (The former `CDDrawWorkerItem` dispatch view is DISSOLVED 2026-07-14: the real
 // CDDrawWorkerBase (<DDrawMgr/DDrawWorkerNode.h>, now : CResolveNode) carries the
@@ -87,7 +87,7 @@ public:
     virtual void* CreateWorkerB2C(
         i32 a1,
         i32 a2,
-        CDDrawFrameSource* a3,
+        CDDrawWorker* a3,
         i32 a4,
         i32 addHead
     ); // slot 11 0x157330
