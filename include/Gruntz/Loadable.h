@@ -55,6 +55,7 @@
 // bare literal (matching-neutral: a named enumerator compiles to the same immediate).
 enum LoadableClassId {
     CLASSID_NONE = 0,         // base default @0x154a00 (xor eax,eax; ret)
+    CLASSID_WORKERNODE = 8,   // CDDrawWorkerBase::GetClassId @0x157210 (mov eax,8)
     CLASSID_IMAGE = 10,       // CImage::GetClassId @0xd5de0 (mov eax,0xa)
     CLASSID_WORKER = 14,      // CDDrawWorker::GetClassId @0x155770 (mov eax,0xe)
     CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)

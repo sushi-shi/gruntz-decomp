@@ -35,6 +35,13 @@ public:
 
     CResolveNode();                                    // 0x1549d0 (D pocket)
     CResolveNode(i32 owner, i32 field04, i32 field08); // 0x15b2c0 (I obj)
+    // No-seed tag-ctor for the worker leaves (CDDrawWorkerBase family): constructs
+    // the base WITHOUT the 0x1549d0 sentinel seeding - the leaf ctor spells its own
+    // fused seed set, matching the factories' single-stamp inline shape (retail
+    // 0x157150: one derived stamp, no base-ctor call). Inline + empty so the
+    // intermediate vptr stamp dies as a dead store under the derived stamp.
+    enum ENoSeed { NO_SEED };
+    CResolveNode(ENoSeed) {}
     i32 Init(i32 owner, i32 field04, i32 resolveX, i32 resolveY, i32 field40, i32 field08);
     // ^ 0x1647e0 (T obj)
 

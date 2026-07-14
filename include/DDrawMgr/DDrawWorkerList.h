@@ -31,32 +31,11 @@
 
 struct CDDrawFrameSource; // the frame table view (def rides the workers G section)
 
-// The worker element as the LIST sees it - the dispatch view of the
-// CDDrawWorkerBase family (<DDrawMgr/DDrawWorkerNode.h>): both concrete subtypes
-// (CDDrawWorkerA vtbl 0x1efea0 / CDDrawWorkerB vtbl 0x1efed0) share slots 5-9
-// (same body RVAs in both retail vtables - one base definition each) and agree on
-// slot 10's (CDDrawSurfacePair*, CDDrawSurfacePair*) render signature, so the list
-// dispatches them through this base-shaped view. It exists because the real
-// CDDrawWorkerBase deliberately declares NO virtuals (an own-slot base would emit
-// a ??_7CDDrawWorkerBase that retail does not have - see DDrawWorkerNode.h); slots
-// below carry the family's proven names/RVAs. CObject supplies slots [0..4].
-// Declarations only - never defined/instantiated, so no ??_7 is emitted here.
-class CDDrawWorkerItem : public CObject {
-public:
-    virtual ~CDDrawWorkerItem();  // slot 1 (each worker's own cl-emitted ??_G)
-    virtual void Slot05_157200(); // [5]  0x157200 (family-shared body)
-    virtual void IsValidImage();  // [6]  0x001c08 (shared engine thunk)
-    virtual void Slot07_157310(); // [7]  0x157310 (family-shared body)
-    virtual void Slot08_157210(); // [8]  0x157210 (family-shared body)
-    virtual void Slot09_157080(); // [9]  0x157080 (family-shared body)
-    // [10] the per-frame render onto the two surface pairs (A: PlotMarker_165fa0,
-    // B: Slot10_1660b0) - the slot PruneWorkers dispatches per element.
-    virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
-
-    char _pad04[0x74 - 0x04]; // +0x04..+0x73 (CDDrawWorkerBase's field block)
-    i32 m_refCount;           // +0x74  frames-remaining count (== CDDrawWorkerBase::m_74)
-};
-SIZE_UNKNOWN(CDDrawWorkerItem);
+// (The former `CDDrawWorkerItem` dispatch view is DISSOLVED 2026-07-14: the real
+// CDDrawWorkerBase (<DDrawMgr/DDrawWorkerNode.h>, now : CResolveNode) carries the
+// shared slot overrides + RenderFrame [10] + m_refCount itself, so the list
+// dispatches the elements as CDDrawWorkerBase* directly. The CObList element
+// downcast at the walk sites is the authentic MFC CObject*-container idiom.)
 
 // (The former `WorkNode` raw CNode view is gone: the walks use the real MFC
 // CObList POSITION/GetHeadPosition/GetNext idiom, whose afxcoll.inl inline IS the

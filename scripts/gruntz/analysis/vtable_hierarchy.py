@@ -934,8 +934,25 @@ def cmd_audit(aud):
         n_ovr_declared = min(n_ovr, max(0, n_virt - n_new))
         if n_ovr_declared and n_macro < n_ovr_declared:
             F["OVERRIDE"].append((name, "%d override slots, %d OVERRIDE macros: %d unmarked" % (n_ovr_declared, n_macro, n_ovr_declared - n_macro), loc))
-        if own and n_virt < own:
-            F["MISSING"].append((name, "%d own virtuals (ovr+new), source declares %d" % (own, n_virt), loc))
+        # MISSING credits virtuals declared on VTABLE-LESS src intermediates (e.g. the
+        # abstract CDDrawWorkerBase between CDDrawWorkerA/B and CResolveNode): their
+        # decls occupy the derived vtable's own/override slots but are spelled ONCE, on
+        # the intermediate (one shared body per slot - both leaf vtables hold the same
+        # RVA, so per-leaf redeclaration would fabricate divergent phantom symbols).
+        # Walk src bases up to the first class with its OWN cataloged vtable, summing
+        # non-dtor virtual decls (each class's slot-1 ~ is its own; never credited).
+        n_virt_inter, b, seen_b = 0, aud.src_base.get(name), set()
+        while b and b not in seen_b:
+            seen_b.add(b)
+            if aud.reg.get(b) and aud.reg[b].primary():
+                break  # a real vtable of its own - its slots are `inherited`, not credit
+            bv, _bm = _body_counts(aud.bodies.get(b, []))
+            bd = max((len(re.findall(r"~\s*%s\b" % re.escape(b), t)) for t in aud.bodies.get(b, [])),
+                     default=0)
+            n_virt_inter += max(0, bv - bd)
+            b = aud.src_base.get(b)
+        if own and n_virt + n_virt_inter < own:
+            F["MISSING"].append((name, "%d own virtuals (ovr+new), source declares %d (+%d on vtable-less intermediates)" % (own, n_virt, n_virt_inter), loc))
     print("# INHERITANCE / OVERRIDE AUDIT - our source vs the binary-proven vtable (one report)")
     for k in ("INHERIT", "RENAME", "REDECLARE", "OVERRIDE", "MISSING"):
         print("# %-9s : %d" % (k, len(F[k])))

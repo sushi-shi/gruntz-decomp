@@ -582,18 +582,33 @@ struct CDDrawFrameSource {
 };
 SIZE_UNKNOWN(CDDrawFrameSource);
 
+// 0x157080 - CDDrawWorkerBase::SetPosition (the family slot-9 override; the SAME
+// RVA sits in BOTH the A (0x1efea0) and B (0x1efed0) vtables - one base
+// definition, no ICF): re-arm the frame count then run the base 0x164790 re-seed.
+RVA(0x00157080, 0x19)
+i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
+    m_refCount = 2;
+    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
+}
+
 // ~CDDrawWorkerA (0x1570d0; ??_G wrapper 0x1570b0): poison the timing/marker
 // fields to their sentinels (the m_20/m_38 pair reset THREE times, via volatile
-// lvalues so cl keeps all three), null the header; cl stamps the CObject
-// grand-base at the tail via the implicit base teardown.
+// lvalues so cl keeps all three), null the header; retail then INLINES the whole
+// ~CResolveNode/~CLoadable chain down to the single CObject grand-base stamp.
 // @early-stop
-// constant-materialization scheduling wall: byte-faithful except a 2-instruction
-// swap (retail hoists `or eax,-1` ahead of the m_78 byte store).
+// (A)-form base-dtor wall (~59%, twin of ~CDDrawWorkerB): every poison/reset
+// store matches; the residual is (1) a tail `jmp ??1CResolveNode` where retail
+// inlined the base teardown (our ~CResolveNode is deliberately OUT-OF-LINE at
+// 0x154a50 - see ResolveNode.h; an extern base dtor cannot be inlined here), and
+// (2) the entry ??_7CDDrawWorkerA stamp the tail call keeps alive (retail's died
+// into the final CObject stamp). Fix = the family-wide inline/(B)-form dtor flip,
+// deferred with CLoadable's. Pre-rebase this was ~94% on a fake CObject base;
+// the CResolveNode truth is worth the drop (factories/Vfuncs all EXACT).
 RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
     volatile i32* pHi = &m_20;
     volatile i32* pLo = &m_38;
-    m_78 = 0;
+    m_78b = 0;
     *pHi = (i32)0x80000000;
     *pLo = -1;
     *pHi = (i32)0x80000000;
@@ -603,14 +618,14 @@ CDDrawWorkerA::~CDDrawWorkerA() {
     *pLo = -1;
     m_04 = -1;
     m_08 = 0;
-    m_ctx = 0;
+    m_0c = 0; // the owner-ctx handle
 }
 
 RVA(0x00157110, 0x20)
 i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
-    m_78 = (char)a3;
-    m_74 = 2;
-    return Helper_164790(a1, a2);
+    m_78b = (char)a3;
+    m_refCount = 2;
+    return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
 }
 
 // Int-flag worker; calls the worker's +0x34 virtual with (a1,a2,a3,a4).
@@ -631,10 +646,26 @@ void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addH
     return w;
 }
 
+// 0x157200 - CDDrawWorkerBase::IsLoaded (the family slot-5 override; same RVA in
+// both leaf vtables): loaded iff the frame slot is armed (the base reads the
+// union'd +0x78 as a dword regardless of A's byte kind).
+RVA(0x00157200, 0xb)
+i32 CDDrawWorkerBase::IsLoaded() {
+    return m_78 != 0;
+}
+
+// 0x157210 - CDDrawWorkerBase::GetClassId (the family slot-8 override; same RVA
+// in both leaf vtables): the worker-node class tag.
+RVA(0x00157210, 0x6)
+i32 CDDrawWorkerBase::GetClassId() {
+    return CLASSID_WORKERNODE; // 8
+}
+
 // ~CDDrawWorkerB (0x157240; ??_G wrapper 0x157220). Mirror of ~CDDrawWorkerA -
 // the int-frame worker's m_78 is a DWORD here (byte in A).
 // @early-stop
-// constant-materialization scheduling wall: same as ~CDDrawWorkerA.
+// (A)-form base-dtor wall (~59%): same residual as ~CDDrawWorkerA (tail
+// `jmp ??1CResolveNode` vs retail's inlined base teardown + the kept entry stamp).
 RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
     volatile i32* pHi = &m_20;
@@ -649,18 +680,18 @@ CDDrawWorkerB::~CDDrawWorkerB() {
     *pLo = -1;
     m_04 = -1;
     m_08 = 0;
-    m_ctx = 0;
+    m_0c = 0; // the owner-ctx handle
 }
 
 RVA(0x00157280, 0x30)
 i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
     Helper_166040(a3, a4);
-    m_74 = 2;
-    return Helper_164790(a1, a2);
+    m_refCount = 2;
+    return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
 }
 
 // 0x1572b0: store frame `src->m_frameTable[a4]` (0 if a4 out of bounds) into
-// m_78, set m_74=2, then forward (a1,a2) to Helper_164790.
+// m_78, set m_refCount=2, then forward (a1,a2) to the base SetPosition (0x164790).
 RVA(0x001572b0, 0x38)
 i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4) {
     i32 frame;
@@ -670,15 +701,29 @@ i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4) {
         frame = 0;
     }
     m_78 = frame;
-    m_74 = 2;
-    return Helper_164790(a1, a2);
+    m_refCount = 2;
+    return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
 }
 
 RVA(0x001572f0, 0x20)
 i32 CDDrawWorkerB::Vfunc2C(i32 a1, i32 a2, i32 a3) {
     m_78 = a3;
-    m_74 = 2;
-    return Helper_164790(a1, a2);
+    m_refCount = 2;
+    return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
+}
+
+// 0x157310 - CDDrawWorkerBase::Unload (the family slot-7 override; same RVA in
+// both leaf vtables): disarm the frame slot + the position/dirty-rect sentinels.
+RVA(0x00157310, 0x1a)
+i32 CDDrawWorkerBase::Unload() {
+    // retail returns the 0x80000000 sentinel residue in eax (the store source
+    // register doubles as the return value; the dev body was likely return-less).
+    i32 v = (i32)0x80000000;
+    m_78 = 0;
+    m_5c = v;
+    m_20 = v;
+    m_38 = -1;
+    return v;
 }
 
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4).

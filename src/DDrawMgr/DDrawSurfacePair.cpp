@@ -157,7 +157,7 @@ RVA(0x00163bc0, 0x2c)
 void CDDrawWorkerList::DestroyWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
-        CDDrawWorkerItem* child = (CDDrawWorkerItem*)m_workers.GetNext(pos);
+        CDDrawWorkerBase* child = (CDDrawWorkerBase*)m_workers.GetNext(pos);
         if (child) {
             delete child;
         }
@@ -174,7 +174,7 @@ void CDDrawWorkerList::PruneWorkers(CDDrawSurfacePair* a, CDDrawSurfacePair* b) 
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
         POSITION cur = pos;
-        CDDrawWorkerItem* child = (CDDrawWorkerItem*)m_workers.GetNext(pos);
+        CDDrawWorkerBase* child = (CDDrawWorkerBase*)m_workers.GetNext(pos);
         child->RenderFrame(a, b);
         child->m_refCount--;
         if ((b->m_surface != 0 && (b->m_flags & 0x20000) == 0) || child->m_refCount <= 0) {
@@ -191,7 +191,7 @@ RVA(0x00163c60, 0x2c)
 void CDDrawWorkerList::ClearWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
-        CDDrawWorkerItem* child = (CDDrawWorkerItem*)m_workers.GetNext(pos);
+        CDDrawWorkerBase* child = (CDDrawWorkerBase*)m_workers.GetNext(pos);
         if (child) {
             delete child;
         }
@@ -838,24 +838,28 @@ struct CDDrawWorkerObj {
 };
 SIZE_UNKNOWN(CDDrawWorkerObj);
 
-// reset/arm the helper from (a, b); seeds m_3c off the owner context.
+// CResolveNode::SetPosition (0x164790, vtable slot 9 of ??_7CResolveNode - the
+// datum holds this RVA at +0x24): set position + reset the draw state; seeds m_3c
+// off the +0x0c owner-ctx handle. Called directly (rel32) by the wide-object
+// Setup @0x150d60 AND by every worker Vfunc* (qualified base call) - the proof
+// that unmasked the ex "CDDrawWorkerBase::Helper_164790" label.
 // @early-stop
 // regalloc/scheduling wall (topic:regalloc): logic + every member store are
-// byte-exact, but retail parks the m_ctx context ptr in eax while cl parks it in
+// byte-exact, but retail parks the ctx handle in eax while cl parks it in
 // edx and reuses one `mov eax,1` for both m_50 and the return. ~90%.
 RVA(0x00164790, 0x41)
-i32 CDDrawWorkerBase::Helper_164790(i32 a, i32 b) {
-    m_5c = a;
+i32 CResolveNode::SetPosition(i32 x, i32 y) {
+    m_5c = x;
     m_10 = 0;
     m_14 = 0;
     m_40 = 0;
     m_44 = 0;
     m_4c = 0;
     m_58 = 0;
-    m_60 = b;
+    m_60 = y;
     m_48 = 0x32;
     m_50 = 1;
-    m_3c = m_ctx->m_24;
+    m_3c = ((CDDrawWorkerCtx*)m_0c)->m_24; // the CLoadable-family int owner handle
     return 1;
 }
 
@@ -1412,10 +1416,10 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 // ~89% spill-slot regalloc wall: the second block is byte-exact; the first
 // differs only in WHICH coordinate is spilled across the Lock call.
 RVA(0x00165fa0, 0x93)
-void CDDrawWorkerA::PlotMarker_165fa0(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     {
         i32 x = m_5c;
-        char c = m_78;
+        char c = m_78b;
         CDDSurface* s = b->m_surface;
         i32 y = m_60;
         char* base = (char*)s->Lock(0);
@@ -1425,7 +1429,7 @@ void CDDrawWorkerA::PlotMarker_165fa0(CDDrawSurfacePair* a, CDDrawSurfacePair* b
         }
     }
     {
-        char c = m_78;
+        char c = m_78b;
         i32 y = m_60;
         i32 x = m_5c;
         CDDSurface* s = a->m_surface;
@@ -1445,7 +1449,7 @@ void CDDrawWorkerA::PlotMarker_165fa0(CDDrawSurfacePair* a, CDDrawSurfacePair* b
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
     CObject* obj = 0;
-    m_ctx->m_10->m_10.Lookup((const char*)key, obj);
+    ((CDDrawWorkerCtx*)m_0c)->m_10->m_10.Lookup((const char*)key, obj);
     CDDrawWorkerObj* p = (CDDrawWorkerObj*)obj;
     i32 v;
     if (p != 0 && idx >= p->m_64 && idx <= p->m_68) {
@@ -1488,7 +1492,7 @@ SIZE_UNKNOWN(CDDrawFrameNode);
 // surface and is not flagged 0x20000 - onto `b` too. m_78 is the int-frame slot
 // reinterpreted as the frame-node pointer (authentic DWORD-stores-a-pointer).
 RVA(0x001660b0, 0x33)
-void CDDrawWorkerB::Slot10_1660b0(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CDDrawWorkerB::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     ((CDDrawFrameNode*)m_78)->RenderImage(this, a);
     if (b->m_surface != 0 && (b->m_flags & 0x20000) == 0) {
         ((CDDrawFrameNode*)m_78)->RenderImage(this, b);
