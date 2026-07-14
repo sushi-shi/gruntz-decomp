@@ -144,8 +144,15 @@ public:
     // Allocates a 0xc8-byte CGiantRockLogic (type tag 0x16 == factory id 22), fills
     // it (incl. the 9-dword rep-movs m_matrix block) and appends it to m_list1 (the
     // +0x1c list).  /GX.
-    CGiantRockLogic*
-    AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i32 a6, i32 a7); // 0x116cf0 (matrix = ARG 4, retail-proven)
+    CGiantRockLogic* AddToList1(
+        i32 a1,
+        i32 a2,
+        i32 a3,
+        i32* block9,
+        i32 a5,
+        i32 a6,
+        i32 a7
+    ); // 0x116cf0 (matrix = ARG 4, retail-proven)
 
     // Twin of AddToList3 (0x116a40): allocates+constructs a 0x28-byte event, and
     // (when its init flag is clear) fills it from the args plus four state flags

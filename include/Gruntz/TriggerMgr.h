@@ -575,9 +575,9 @@ public:
     i64 m_gooInterval;       // +0x2b8  goo respawn interval
     i64 m_resourceTimerBase; // +0x2c0  resource respawn timer base ("TimePerResource")
     i64 m_resourceInterval;  // +0x2c8  resource respawn interval
-    CPtrList m_selLists[10];          // +0x2d0  ten selection lists (stride 0x1c)
-    i32 m_selSentinel; // +0x3e8  selection-group latch (-1 when idle)
-    i32 m_3ec;         // +0x3ec  serialized scalar (LoadFinishLevelSprite: last state)
+    CPtrList m_selLists[10]; // +0x2d0  ten selection lists (stride 0x1c)
+    i32 m_selSentinel;       // +0x3e8  selection-group latch (-1 when idle)
+    i32 m_3ec;               // +0x3ec  serialized scalar (LoadFinishLevelSprite: last state)
     // +0x3f0..+0x3fc: the two looping-sound channels + their per-frame wanted flags.
     // Names PROVEN by the goo-well update's lookup keys: "LEVEL_ROLLINGBALL" plays
     // into +0x3f0 gated by +0x3f8, "GAME_TELEPORTLOOP" into +0x3f4 gated by +0x3fc.

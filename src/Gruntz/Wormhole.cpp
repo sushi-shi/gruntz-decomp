@@ -956,7 +956,8 @@ i32 CTeleporter::Update() {
         i32 x = o->m_screenX;
         if (x < mgr->m_viewOriginR && x >= mgr->m_viewOriginL && y < mgr->m_viewOriginB
             && y >= mgr->m_viewOriginT) {
-            ((CTriggerMgr*)mgr->m_cmdGrid)->m_teleportWanted = 1; // an on-screen wormhole keeps GAME_TELEPORTLOOP playing
+            ((CTriggerMgr*)mgr->m_cmdGrid)->m_teleportWanted =
+                1; // an on-screen wormhole keeps GAME_TELEPORTLOOP playing
         }
     }
     mgr = g_gameReg;

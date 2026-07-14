@@ -21,7 +21,7 @@
 #include <Io/FileStream.h> // CFileIO (the static MFC CFile global at 0x646778; 0x0b5400 ctor)
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/SoundStream.h> // SoundStream : SoundDevice - the REAL m_c->m_soundStream (+0x20)
-#include <Gruntz/SoundCue.h>      // CSndHost - the REAL m_c->m_28 (name->cue map + emit gate)
+#include <Gruntz/SoundCue.h>     // CSndHost - the REAL m_c->m_28 (name->cue map + emit gate)
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerList.h> // renderer B - the real CDDrawWorkerList (PruneWorkers)
 #include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_8 object manager (was the McObj/McHost views)

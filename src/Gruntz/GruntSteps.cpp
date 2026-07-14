@@ -856,7 +856,12 @@ i32 CGrunt::StepCompassMove() {
     }
 
 commit:
-    ((CTriggerMgr*)m_tileMgr)->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY); // real 0x6d300 (ex ApplyTileSwitch alias)
+    ((CTriggerMgr*)m_tileMgr)
+        ->ApplySwitch(
+            this,
+            m_lastTilePxX,
+            m_lastTilePxY
+        ); // real 0x6d300 (ex ApplyTileSwitch alias)
     PlaySound(0x3e8, voice);
     m_commitPxX = m_lastTilePxX;
     m_commitPxY = m_lastTilePxY;
@@ -954,7 +959,12 @@ i32 CGrunt::ClaimSwitchTile() {
         return 0;
     }
 
-    ((CTriggerMgr*)m_tileMgr)->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY); // real 0x6d300 (ex ApplyTileSwitch alias)
+    ((CTriggerMgr*)m_tileMgr)
+        ->ApplySwitch(
+            this,
+            m_lastTilePxX,
+            m_lastTilePxY
+        ); // real 0x6d300 (ex ApplyTileSwitch alias)
 
     // Release the grunt's old tile: clear bit 5 of the old tile's flag byte, set
     // its owner record to -1.

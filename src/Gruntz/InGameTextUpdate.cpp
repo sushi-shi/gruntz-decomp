@@ -15,7 +15,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x64556c singleton (CGameRegistry; m_68/m_world/view bounds)
-#include <Gruntz/TypeKeyColl.h>  // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+#include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h> // strcmp (inlined /O2)
 
@@ -70,8 +70,8 @@ i32 CInGameText::Update() {
 
     i32 areaId;
     i32 subId;
-    CGrunt* found = (CGrunt*)g_gameReg->m_cmdGrid->HitTestCell(
-        m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
+    CGrunt* found = (CGrunt*)g_gameReg->m_cmdGrid
+                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
     if (found == 0) {
         m_cachedSubId = -1;
         m_38->m_stateFlags &= ~1;

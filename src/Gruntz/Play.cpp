@@ -6488,7 +6488,9 @@ void CPlay::FreeListTeardown() {
     CTriggerMgr* tl68 = m_4w()->m_68;
     ((CPtrArray*)&tl68->m_byteArr)->SetSize(0, -1); // retail-proven CPtrArray::SetSize @0x1b52e8
     tl68->m_284 = 0;
-    m_4w()->m_68->m_baseList.RemoveAll(); // ?RemoveAll@CPtrList@@ @0x1b48a6 (+0 member; ex Reset1b48a6)
+    m_4w()
+        ->m_68->m_baseList
+        .RemoveAll(); // ?RemoveAll@CPtrList@@ @0x1b48a6 (+0 member; ex Reset1b48a6)
     m_4w()->m_68->m_pendingFx = 0;
     ((CDDrawWorkerList*)m_c->m_rendererB)->ClearWorkers();
     for (i = 0; i < markerCount(); i++) {

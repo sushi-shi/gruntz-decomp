@@ -19,7 +19,7 @@
 //      (m_resourceTimerBase/m_resourceInterval, "TimePerResource") respawn timers,
 //      reading the intervals from g_buteMgr.
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/TriggerMgr.h> // the canonical class this TU's method extends
+#include <Gruntz/TriggerMgr.h>       // the canonical class this TU's method extends
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -295,4 +295,3 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
 done:
     return 0;
 }
-

@@ -52,10 +52,10 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
 #include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130) - the arrival commit
-#include <Gruntz/GameRegistry.h>  // CSpriteFactoryHolder - the worker's m_0c owner-context facet
-#include <Gruntz/LeafCue.h>       // LeafCue - the launch-sound cue entries (ex CombatCue/ConvCue)
-#include <Gruntz/SoundCue.h>      // CSndHost (typedef of CDDrawSubMgrLeafScan) - the cue registry
-#include <Gruntz/TriggerMgr.h>    // CTriggerMgr - the CGrunt+0x260 board (ex CombatTileMgr)
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - the worker's m_0c owner-context facet
+#include <Gruntz/LeafCue.h>      // LeafCue - the launch-sound cue entries (ex CombatCue/ConvCue)
+#include <Gruntz/SoundCue.h>     // CSndHost (typedef of CDDrawSubMgrLeafScan) - the cue registry
+#include <Gruntz/TriggerMgr.h>   // CTriggerMgr - the CGrunt+0x260 board (ex CombatTileMgr)
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
 

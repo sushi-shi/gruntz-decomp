@@ -36,7 +36,7 @@
 #include <Gruntz/StateId.h>  // StateId (GetStateId return type)
 #include <Gruntz/Loadable.h> // CLoadable - the 9-slot loadable base (3-arg ctor def below)
 #include <Mfc.h>             // real MFC CMapStringToPtr / CString / POSITION
-#include <Bute/SymTab.h>    // CSymTab (ProbeWorkerKey's probe chain)
+#include <Bute/SymTab.h>     // CSymTab (ProbeWorkerKey's probe chain)
 #include <string.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>    // single-source CDDrawSurfacePair

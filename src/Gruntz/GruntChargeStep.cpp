@@ -227,9 +227,15 @@ i32 CGrunt::ChargeStep() {
                 StepArrivalDrop(t->m_lastTilePxX, t->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
-            if (m_poweredUp == 0 && m_stamina >= 100 && RectContains(t->m_10->m_5c, t->m_10->m_60) != 0
+            if (m_poweredUp == 0 && m_stamina >= 100
+                && RectContains(t->m_10->m_5c, t->m_10->m_60) != 0
                 && t->m_10->m_5c == t->m_lastTilePxX && t->m_10->m_60 == t->m_lastTilePxY) {
-                CommitNeighbor(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
+                CommitNeighbor(
+                    t->m_tileOwnerHi,
+                    t->m_tileOwnerLo,
+                    t->m_lastTilePxX,
+                    t->m_lastTilePxY
+                );
                 m_defenderState = 2;
                 return 1;
             }
@@ -255,7 +261,12 @@ i32 CGrunt::ChargeStep() {
                     m_dwell = 0x1f4;
                     return 1;
                 }
-                CommitNeighbor(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
+                CommitNeighbor(
+                    t->m_tileOwnerHi,
+                    t->m_tileOwnerLo,
+                    t->m_lastTilePxX,
+                    t->m_lastTilePxY
+                );
                 return 1;
             }
             m_defenderState = 1;

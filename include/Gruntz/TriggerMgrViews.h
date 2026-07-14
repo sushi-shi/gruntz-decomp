@@ -222,9 +222,9 @@ struct CTmLevel {
 // this+0xc its count. Each node carries the next ptr @+0 and the placed-object @+0x8.
 // (These are MFC CPtrList CNodes - next/prev/data - viewed with a typed data slot.)
 struct CTmRecNode {
-    CTmRecNode* m_next;   // +0x00
-    char p0[0x4];         // +0x04
-    CTmCandidate* m_obj;  // +0x08  placed object (the baseList candidate element)
+    CTmRecNode* m_next;  // +0x00
+    char p0[0x4];        // +0x04
+    CTmCandidate* m_obj; // +0x08  placed object (the baseList candidate element)
 };
 
 // (CTmPendingFx is GONE - the +0x2a0 object is the pending-fx GRUNT: its `Pulse()` was

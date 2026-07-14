@@ -1284,7 +1284,7 @@ public:
     // a scan/move/arrived machine over m_defenderState driving the trigger-mgr
     // grid + the wander fallback. (Ex the GruntChargeStep view family.)
     i32 ChargeStep();
-    i32 UpdateGruntStatus();                        // @0x617c0 (ret 0)
+    i32 UpdateGruntStatus(); // @0x617c0 (ret 0)
     // @0x51c00 (ret 0, /GX) - the per-tick compass-move driver: resolves the grunt's
     // next move tile by the 8-way direction code (m_444), tests/stamps the board
     // occupancy + owner, fires the matching compass grunt-voice record, and commits
@@ -1411,8 +1411,8 @@ public:
     //  m_118 / m_124) with recovered roles. The old CTmCell view conflated the SPRITE with
     //  the LOGIC, and this was a piece of that conflation leaking onto CGrunt.)
     char m_padb0[0x148 - 0xb0];
-    i32 m_148;                       // +0x148
-    i32 m_14c;                       // +0x14c
+    i32 m_148;                  // +0x148
+    i32 m_14c;                  // +0x14c
     void* m_150;                // +0x150
     CEntranceAnimPlayer* m_154; // +0x154 (entrance animation player)
     // +0x158: the sprite's worker record. IDENTITY PROVEN by the ctor tail

@@ -26,11 +26,11 @@
 #include <stdlib.h>     // engine rand (0x11fee0)
 #include <Globals.h>
 #include <Gruntz/FreeNodePool.h>
-#include <Gruntz/Brickz.h>          // canonical CBrickzGrid == CMapMgr (the board; was the CStepGrid view)
-#include <Gruntz/Grunt.h>           // real CGrunt (step grunt is a CGrunt); CGruntHud m_10 + CAnimLookupNode m_14
-#include <Gruntz/TriggerMgr.h>      // CTriggerMgr (the board's 4x15 CGrunt* grid; was the CStepBoard view)
+#include <Gruntz/Brickz.h> // canonical CBrickzGrid == CMapMgr (the board; was the CStepGrid view)
+#include <Gruntz/Grunt.h> // real CGrunt (step grunt is a CGrunt); CGruntHud m_10 + CAnimLookupNode m_14
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr (the board's 4x15 CGrunt* grid; was the CStepBoard view)
 #include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig - the step mgr `this` (was the CStepMgr view)
-#include <Gruntz/TypeColl.h>        // the shared type-name collection
+#include <Gruntz/TypeColl.h>         // the shared type-name collection
 #include <Gruntz/TypeKeyColl.h>
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
