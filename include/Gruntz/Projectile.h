@@ -37,8 +37,8 @@ class CLightFx; // folded CProjShadowActivate
 // two state gates the fire step's finish tail reads live at +0x20/+0x28 of this
 // sub-object == m_1c0/m_1c8.
 struct CProjAnim {
-    void SetGeometry(void* src);   // -> CDDrawBlitParam::Setup_15c2d0 (0x15c2d0)
-    i32 Advance(u32 clock); // -> CAniAdvanceCursor::Advance (0x15c360)
+    void SetGeometry(void* src); // -> CDDrawBlitParam::Setup_15c2d0 (0x15c2d0)
+    i32 Advance(u32 clock);      // -> CAniAdvanceCursor::Advance (0x15c360)
 };
 SIZE_UNKNOWN(CProjAnim);
 
@@ -185,5 +185,16 @@ public:
     // the derived CBoomerang (<Gruntz/Boomerang.h>), NOT here - see StepMotion.
 };
 VTBL(CProjectile, 0x1e798c);
+
+// The projectile activation entry: its first dword is the registered class handler,
+// stored by the registrar as a free-fn ptr but dispatched __thiscall on `this` - a
+// 4-byte single-inheritance PMF gives the plain `mov ecx,this; call [entry]` code.
+// (Was the .cpp-local CProjActEntry view; CProjectile is complete above so the PMF
+// stays 4 bytes - pmf-complete-class-4byte.)
+typedef i32 (CProjectile::*ProjActHandler)();
+struct CProjActEntry {
+    ProjActHandler m_fn;
+};
+SIZE_UNKNOWN(CProjActEntry); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_PROJECTILE_H

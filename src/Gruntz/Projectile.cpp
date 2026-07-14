@@ -89,24 +89,16 @@ extern "C" u32 g_engineFrameDelta;
 // the level-type descriptor (CState, +0x20 terrain-class id switch key).
 extern "C" CGameRegistry* g_gameReg;
 
-// A grunt in the hit-scan grid (g_gameReg->m_68 is a flat 15x15 cell table; each
-// cell holds a grunt ptr). Only the offsets ScanTargets touches are modeled: the
-// +0x10 owner (screen pos at +0x5c/+0x60), the +0x1fc live-projectile slot, the
-// +0x170 alt-state gate, and the (+0x1ec,+0x1f0) spawn-cell key. The two hit
-// handlers are out-of-line CGrunt methods (reloc-masked, reached via ILT thunks).
-SIZE_UNKNOWN(CGruntOwner);
-struct CGruntOwner {
-    char m_pad00[0x5c];
-    i32 m_5c; // +0x5c  screen X
-    i32 m_60; // +0x60  screen Y
-};
-// A {x, y} cell-key node recycled through the global free-list (the same 2-int
-// pair node BattlezMapConfig pulls). m_0 doubles as the free-list link.
-SIZE_UNKNOWN(CHitKey);
-struct CHitKey {
-    i32 m_0;
-    i32 m_4;
-};
+// A grunt in the hit-scan grid (g_gameReg->m_cmdGrid is a flat 15x15 cell table;
+// each cell holds a CGrunt ptr). ScanTargets reaches each grunt's bound object
+// (m_10, a CGameObject: screen pos +0x5c/+0x60), the spawn-cell key and the hit
+// handlers through the real CGrunt (<Gruntz/Grunt.h>) - no local view.
+//
+// The recycled {x,y} cell-key node is the canonical Coord payload of a
+// CoordPoolNode (<Gruntz/CoordNode.h> / FreeNodePool.h, pulled below): the raw pool
+// node's link is at +0x00 and the {x,y} payload it hands out at +0x04. The tracked-
+// hit CPtrList stores the Coord* payloads. Was the .cpp-local CGruntOwner (dead) +
+// CHitKey views.
 
 // The launch-sound lookup path is the canonical positional-cue subsystem
 // (<Gruntz/SoundCue.h>, pulled by GameRegistry.h): reg->m_world->m_28 is the
@@ -510,8 +502,8 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650
 // so nothing ever defined it. Unified onto the canonical.
 extern i32 g_typeCounter;
 
-// R2 - the projectile's per-coordinate activation table (@0x64c758).
-struct CProjActEntry;
+// R2 - the projectile's per-coordinate activation table (@0x64c758). CProjActEntry
+// (the per-class handler entry) is the canonical struct in <Gruntz/Projectile.h>.
 DATA(0x0024c758)
 CActColl g_projActColl;
 
@@ -576,12 +568,8 @@ void CProjectile::RegisterRange() {
     ((CZDArrayDerived*)&g_projActColl)->Construct(0x7d0, 0x7da);
 }
 
-// The projectile activation entry's leading slot is a __thiscall handler run on the
-// projectile (CProjectile is single-inheritance -> a 4-byte code-pointer PMF).
-struct CProjActEntry {
-    i32 (CProjectile::*m_fn)();
-};
-SIZE_UNKNOWN(CProjActEntry);
+// (CProjActEntry - the __thiscall handler entry, a 4-byte single-inheritance PMF of
+// CProjectile - is the canonical struct in <Gruntz/Projectile.h>.)
 
 // CProjectile::RunAct @0x0df9a0 - the class's vtable slot-4 (UserLogicVfunc2) body:
 // resolve the activation entry for `coord` (R2 lookup, inlined twice); if a handler
@@ -1006,21 +994,20 @@ void CProjectile::ScanTargets(i32 impact) {
             i32 keyX = g->m_tileOwnerHi;
             i32 keyY = g->m_tileOwnerLo;
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
-                // authentic: MFC CPtrList stores raw hit-key nodes; GetNext returns CObject*
-                CHitKey* k = (CHitKey*)m_hitList.GetNext(pos);
-                if (k->m_0 == keyX && k->m_4 == keyY) {
+                // MFC CPtrList stores the raw Coord payloads; GetNext returns void*
+                Coord* k = (Coord*)m_hitList.GetNext(pos);
+                if (k->m_x == keyX && k->m_y == keyY) {
                     return;
                 }
             }
             // fresh hit: pull a key node off the free-list, record + deliver.
-            CHitKey* slot = 0;
-            CHitKey* p = (CHitKey*)g_coordPool.m_freeHead; // authentic: freelist head is void*
-            if (p->m_0 != 0) {
-                slot =
-                    (CHitKey*)&p->m_4; // authentic: node payload overlays +4 (past the link word)
-                slot->m_0 = keyX;
-                slot->m_4 = keyY;
-                g_coordPool.m_freeHead = (void*)p->m_0;
+            Coord* slot = 0;
+            CoordPoolNode* p = (CoordPoolNode*)g_coordPool.m_freeHead; // freelist head is void*
+            if (p->m_next != 0) {
+                slot = &p->m_coord; // the {x,y} payload overlays +4 (past the link word)
+                slot->m_x = keyX;
+                slot->m_y = keyY;
+                g_coordPool.m_freeHead = (void*)p->m_next;
             }
             m_hitList.AddTail(slot);
             g->StepCombatReaction(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);
@@ -1054,7 +1041,8 @@ void CProjectile::ScanTargets(i32 impact) {
 // engine functions both registries call). The alloc-cache pair (g_actCache
 // 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME shared global both registries
 // write (already named by KitchenSlime.cpp - re-declared here, address-pinned).
-struct CTBombEntry;        // an entry: first dword is the registered handler
+// (CTBombEntry - the entry whose first dword is the registered handler - is the
+// canonical struct in <Gruntz/TimeBomb.h>.)
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024c780)
@@ -1086,15 +1074,9 @@ void ConstructTBombRange() {
 }
 // g_projActCache (0x2bf464) + g_retAddrBreadcrumb come from <Gruntz/ActColl.h>.
 
-// The entry's first dword is a pointer-to-member-function of CTimeBomb (single
-// inheritance -> 4-byte code pointer); FireActivation invokes it on `this`,
-// emitting `mov ecx,this; call [entry]`. CTimeBomb is defined COMPLETE in the
-// header above this typedef so the PMF stays 4 bytes (pmf-complete-class-4byte).
-typedef void (CTimeBomb::*TBombHandler)();
-struct CTBombEntry {
-    TBombHandler m_fn; // [entry]
-};
-SIZE_UNKNOWN(CTBombEntry);
+// (CTBombEntry / TBombHandler - the CTimeBomb PMF entry - are the canonical decls in
+// <Gruntz/TimeBomb.h>: FireActivation invokes the entry on `this`, emitting
+// `mov ecx,this; call [entry]`; CTimeBomb is complete there so the PMF stays 4 bytes.)
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
 static inline CTBombEntry* TBombLookup(i32 coord) {

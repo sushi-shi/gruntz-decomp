@@ -49,4 +49,14 @@ public:
 VTBL(CTimeBomb, 0x1e771c);
 SIZE(CTimeBomb, 0x68);
 
+// The timebomb activation entry: its first dword is the registered handler, stored
+// as a free-fn ptr but dispatched __thiscall on `this` (4-byte single-inheritance
+// PMF -> `mov ecx,this; call [entry]`). Was the .cpp-local CTBombEntry view;
+// CTimeBomb is complete above so the PMF stays 4 bytes (pmf-complete-class-4byte).
+typedef void (CTimeBomb::*TBombHandler)();
+struct CTBombEntry {
+    TBombHandler m_fn; // [entry]
+};
+SIZE_UNKNOWN(CTBombEntry);
+
 #endif // GRUNTZ_CTIMEBOMB_H
