@@ -88,7 +88,7 @@ CParseSource* CParseSource::Init() {
 // m_10) and +0x14 (the min/max accumulator key) back out. Field names are placeholders.
 struct CSymLeafBuilder {
     void Build(
-        void* owner,
+        CSymTab* owner,
         const char* name,
         void* f4,
         void* rec,
@@ -99,17 +99,18 @@ struct CSymLeafBuilder {
         void* f6,
         void* arr,
         void* stream
-    );                    // 0x139710
-    char* m_name;         // +0x00  strdup(name) (or null)
-    void* m_record;       // +0x04  rec
-    void* m_08;           // +0x08  f2
-    i32 m_0c;             // +0x0c  f3   (read by ApplyRange)
-    void* m_ownerScope;   // +0x10  owning scope
-    i32 m_14;             // +0x14  f1   (read by ApplyRange)
-    i32 m_18;             // +0x18  = 0
-    CHashElement m_node;  // +0x1c  hash-node prefix (m_node.m_record @0x30 = this)
-    void* m_sourceStream; // +0x34  source stream
-    i32 m_38;             // +0x38  = 0
+    );                     // 0x139710
+    void Teardown();       // 0x1397a0 (leaf-value teardown; called by ~CSymRec + AddNodeSubEntry)
+    char* m_name;          // +0x00  strdup(name) (or null)
+    void* m_record;        // +0x04  rec
+    void* m_08;            // +0x08  f2
+    i32 m_0c;              // +0x0c  f3   (read by ApplyRange)
+    CSymTab* m_ownerScope; // +0x10  owning scope (Teardown reads its m_buf48)
+    i32 m_14;              // +0x14  f1   (read by ApplyRange)
+    i32 m_18;              // +0x18  = 0
+    CHashElement m_node;   // +0x1c  hash-node prefix (m_node.m_record @0x30 = this)
+    void* m_sourceStream;  // +0x34  source stream
+    void* m_38;            // +0x38  = 0 in Build; the owned value buffer Teardown frees
 };
 SIZE(CSymLeafBuilder, 0x3c); // leaf-record parse slot (fields through m_38 @0x38)
 
@@ -125,7 +126,7 @@ SIZE(CSymLeafBuilder, 0x3c); // leaf-record parse slot (fields through m_38 @0x3
 // (RezAlloc) - the same documented scoring artifact the CSymTab ctor below carries.
 RVA(0x00139710, 0x8d)
 void CSymLeafBuilder::Build(
-    void* owner,
+    CSymTab* owner,
     const char* name,
     void* f4,
     void* rec,
@@ -157,41 +158,21 @@ void CSymLeafBuilder::Build(
 }
 
 // ---------------------------------------------------------------------------
-// 0x1397a0 - a Bute-symbol payload teardown (RVA-adjacent to CSymLeafBuilder::Build):
-// free m_0; then free m_38 unless the m_10 target is live (m_10 && m_10->m_48 != 0);
-// then clear nine fields. __thiscall, void (the two `if (m_38) free` arms tail-merge).
-// It is torn down from ~CSymRec via CSymListNode::m_14 but is NOT CSymRec (accesses
-// +0x38, past CSymRec's size 0x30); identity unrecovered (placeholder view) and the
-// Bute CSymRec/CSymList models still diverge, so it is not folded onto them here.
-// Re-homed from src/Stub/DiscoveredSmall.cpp.
-struct Obj49Target {
-    char m_pad[0x48];
-    i32 m_48;
-};
-SIZE_UNKNOWN(Obj49Target);
-class Obj1397a0 {
-public:
-    void Teardown();
-    void* m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    Obj49Target* m_10;
-    i32 m_14;
-    i32 m_18;
-    char m_pad1c[0x30 - 0x1c];
-    i32 m_30;
-    char m_pad34[0x38 - 0x34];
-    void* m_38;
-};
-SIZE_UNKNOWN(Obj1397a0);
+// CSymLeafBuilder::Teardown (0x1397a0, RVA-adjacent to CSymLeafBuilder::Build): the
+// leaf-VALUE-record teardown. Free the strdup'd name (m_name); then free the owned
+// value buffer (m_38) UNLESS the owning scope's shared buffer is live (m_ownerScope &&
+// m_ownerScope->m_buf48 != 0); then clear nine fields. __thiscall, void (the two
+// `if (m_38) free` arms tail-merge). Xref: called by ~CSymRec (0x139cf0) over each
+// m_valTable payload and by CSymTab::AddNodeSubEntry (0x13a530) when a stale value key
+// is re-scanned - proving the record is the leaf VALUE record CSymLeafBuilder::Build
+// fills (the former Obj1397a0/Obj49Target placeholder views are dissolved onto it).
 RVA(0x001397a0, 0x57)
-void Obj1397a0::Teardown() {
-    if (m_0) {
-        ::operator delete(m_0);
+void CSymLeafBuilder::Teardown() {
+    if (m_name) {
+        ::operator delete(m_name);
     }
-    if (m_10 != 0) {
-        if (m_10->m_48 == 0) {
+    if (m_ownerScope != 0) {
+        if (m_ownerScope->m_buf48 == 0) {
             if (m_38) {
                 ::operator delete(m_38);
             }
@@ -201,15 +182,15 @@ void Obj1397a0::Teardown() {
             ::operator delete(m_38);
         }
     }
-    m_0 = 0;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
+    m_name = 0;
+    m_record = 0;
+    m_08 = 0;
+    m_0c = 0;
     m_38 = 0;
-    m_10 = 0;
+    m_ownerScope = 0;
     m_14 = 0;
     m_18 = 0;
-    m_30 = 0;
+    m_node.m_record = 0;
 }
 
 // ===========================================================================
@@ -400,7 +381,7 @@ CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c) : m_keyTable(), m_valTable(c) {
 
 // ~CSymRec (0x139cf0): drain m_keyTable when the owning parser's m_6c flag is
 // set, then drain m_valTable - re-filing each node's payload (tearing it down
-// via Obj1397a0::Teardown @0x1397a0 above) back to the parser's free pool -
+// via CSymLeafBuilder::Teardown @0x1397a0 above) back to the parser's free pool -
 // then zero the key + the node payload. The two CHash members auto-
 // destruct after the body (reverse declaration order, /GX trylevels).
 RVA(0x00139cf0, 0xd7)
@@ -418,7 +399,7 @@ CSymRec::~CSymRec() {
         CHashElement* cur = n;
         n = cur->Next();
         m_valTable.Remove(cur);
-        ((Obj1397a0*)cur->m_record)->Teardown();
+        ((CSymLeafBuilder*)cur->m_record)->Teardown();
         m_scope->m_owner->AddNode(cur->m_record);
     }
     m_key = 0;
@@ -804,9 +785,8 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     return (i32)slot;
 }
 
-// The removed value-entry's teardown (0x1397a0 = Obj1397a0::Teardown, now defined in
-// full above in this TU; SymRec.cpp keeps its own local decl). `found`'s exact class is
-// unrecovered - identity-recovery TODO.
+// The removed value-entry's teardown (0x1397a0 = CSymLeafBuilder::Teardown, defined in
+// full above in this TU): `found` is the leaf VALUE record CSymLeafBuilder::Build fills.
 
 // CSymTab::AddNodeSubEntry (0x13a530, re-homed from src/Stub/BoundaryUpper2.cpp): the
 // leaf-merge helper ApplyRange calls when a value key already exists in a leaf record's
@@ -818,7 +798,7 @@ RVA(0x0013a530, 0x47)
 i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
     m_10 -= *(i32*)((char*)found + 0xc);
     ((CSymRec*)rec)->m_valTable.Remove((CHashElement*)((char*)found + 0x1c));
-    ((Obj1397a0*)found)->Teardown();
+    ((CSymLeafBuilder*)found)->Teardown();
     m_owner->AddNode(found);
     m_owner->m_08 = 0;
     return 1;
@@ -857,16 +837,12 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
     return ok;
 }
 
-// The parse stream ApplyRange reads each record block out of: stream->Read(pos, 0,
-// len, buf) (vtable slot 2 = +0x8) fills `len` bytes and returns the count read.
-// Reloc-masked virtual; modeled polymorphically so `mov eax,[a0]; call [eax+8]` falls
-// out with no cast.
-struct CSymRangeStream {
-    virtual void s0();
-    virtual void s1();
-    virtual i32 Read(i32 pos, i32 zero, i32 len, void* buf); // slot 2 (+0x8)
-};
-SIZE(CSymRangeStream, 0x4); // interface view (vptr only)
+// The parse stream ApplyRange reads each record block out of is the archive reader
+// node itself - a CRezDir/CRezItm (both `: CRezItmBase`, <Rez/RezMgr.h>): ApplyRecursive
+// forwards the reader (`(i32)node`/`(i32)reader`, LoadEntry/ParseBuffer) as `a0`, and
+// stream->Read(pos, 0, len, buf) is CRezItmBase::Read (slot 2 = +0x8). Reloc-masked
+// virtual; the `mov eax,[a0]; call [eax+8]` dispatch falls out of the base with no local
+// view. (The former CSymRangeStream interface shell is dissolved onto CRezItmBase.)
 
 // CSymLeafBuilder (the 11-arg leaf-record builder, 0x139710) is defined at the top
 // of this TU in retail-RVA order; ApplyRange below uses it.
@@ -891,7 +867,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (!buf) {
         return 0;
     }
-    CSymRangeStream* stream = (CSymRangeStream*)a0;
+    CRezItmBase* stream = (CRezItmBase*)a0;
     if (stream->Read(a1, 0, a2, buf) != a2) {
         ::operator delete(buf);
         return 0;
@@ -1302,30 +1278,14 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
-// The two archive-tree node classes LoadEntry builds. A directory node (ctor
-// 0x13c940 = CRezDir, size 0x38) and a file node (ctor 0x13c540 = CRezItm, size
-// 0x24). Both expose Read at vtable slot 2 (+0x08) and Open at slot 4 (+0x10) -
-// modeled as a shared local interface (ctors extern/reloc-masked, no vtable
-// emitted in this TU) so the `call [reg+8]` / `call [reg+0x10]` dispatches and
-// the `new X(...)` operator-new(size)+ctor sequences fall out.
-SIZE(CRezNode, 0x4); // abstract reader base (vptr only)
-struct CRezNode {
-    virtual void nv0();                                        // slot 0 (+0x00)
-    virtual void nv1();                                        // slot 1 (+0x04)
-    virtual i32 Read(i32 off, i32 base, u32 count, void* buf); // slot 2 (+0x08)
-    virtual void nv3();                                        // slot 3 (+0x0c)
-    virtual i32 Open(char* name, i32 flag, i32 x);             // slot 4 (+0x10)
-};
-SIZE(CRezDirNodeN, 0x38); // directory reader node (operator new 0x38)
-struct CRezDirNodeN : CRezNode {
-    CRezDirNodeN(void* parent, void* rezMgr); // 0x13c940 (extern)
-    char m_pad[0x38 - 0x04];
-};
-SIZE(CRezFileNodeN, 0x24); // file reader node (operator new 0x24)
-struct CRezFileNodeN : CRezNode {
-    CRezFileNodeN(void* parent); // 0x13c540 (extern)
-    char m_pad[0x24 - 0x04];
-};
+// The two archive-tree node classes LoadEntry builds are the REAL Rez archive
+// readers (<Rez/RezMgr.h>, included above), exactly as ParseBuffer above builds
+// them: the directory reader is CRezDir (ctor 0x13c940 (this, maxOpen), size 0x38)
+// and the file reader CRezItm (ctor 0x13c540 (this), size 0x24), both `: CRezItmBase`.
+// Read is CRezItmBase slot 2 (+0x08), Open slot 4 (+0x10); the `new X(...)` upcasts
+// to CRezItmBase* plainly (base @ offset 0) and every dispatch falls out of the
+// inherited base with no cast. (The former CRezNode/CRezDirNodeN/CRezFileNodeN local
+// interface shells are dissolved onto the canonicals.)
 
 // ---------------------------------------------------------------------------
 // LoadEntry (0x13b0c0) - mount one archive entry `name` into the scope tree.
@@ -1361,7 +1321,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     strcpy(buf, name);
 
     if (Classify(name)) {
-        CRezDirNodeN* node = new CRezDirNodeN(this, (void*)m_2c);
+        CRezItmBase* node = new CRezDir(this, m_2c);
         if (node == 0) {
             ::operator delete(m_cachedSourceBuffer);
             m_cachedSourceBuffer = 0;
@@ -1377,7 +1337,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
         return 1;
     }
 
-    CRezFileNodeN* node = new CRezFileNodeN(this);
+    CRezItmBase* node = new CRezItm(this);
     if (node == 0) {
         ::operator delete(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
@@ -1837,17 +1797,11 @@ i32 CRezDir::FindEntry(char* name) {
     return (*(i32*)(rec.raw + 6) & 0x4000) == 0x4000;
 }
 
-// A parse-slot record (0x3c bytes): a CParseSource whose hash-node prefix is at
-// +0x1c (stamped by Init) and whose self-ptr lives at +0x30 (= m_node.m_record).
-// Init (0x1396f0) stamps the node vtable + nulls the body; reloc-masked __thiscall,
-// no body here.
-struct CParseSlot {
-    char m_pad00[0x1c];
-    CHashElement m_node; // +0x1c  hash-node prefix (m_node.m_record @0x30 = self)
-    char m_pad34[0x3c - 0x34];
-    // Init @0x1396f0 IS CParseSource::Init; cast at the call.
-};
-SIZE(CParseSlot, 0x3c); // parse-slot record (RezAlloc n*0x3c)
+// A parse-slot record is the 0x3c CSymLeafBuilder leaf record (m_node @+0x1c, self-ptr
+// @+0x30 == m_node.m_record). A freshly-popped slot is init'd as a CParseSource parse
+// stream (Init @0x1396f0 stamps its node vtable + nulls the body; reloc-masked
+// __thiscall) and later repurposed by Build into a leaf value record - one 0x3c memory,
+// two views. (The former CParseSlot placeholder is dissolved onto CSymLeafBuilder.)
 
 // PopParseSlot (0x13c0c0): see SymParser.h. The /GX frame guards the freshly Rez-
 // alloc'd slot block while its elements are being initialized + registered.
@@ -1866,9 +1820,9 @@ void* CSymParser::PopParseSlot() {
             return 0;
         }
         i32 n = m_parseSlotBlockCount;
-        CParseSlot* arr = (CParseSlot*)RezAlloc(n * 0x3c);
+        CSymLeafBuilder* arr = (CSymLeafBuilder*)RezAlloc(n * 0x3c);
         if (arr) {
-            CParseSlot* p = arr;
+            CSymLeafBuilder* p = arr;
             i32 i = n;
             i--;
             if (i >= 0) {
@@ -1886,7 +1840,7 @@ void* CSymParser::PopParseSlot() {
             return 0;
         }
         for (i32 j = 0; (u32)j < (u32)m_parseSlotBlockCount; j++) {
-            CParseSlot* el = &node->m_buffer[j];
+            CSymLeafBuilder* el = &node->m_buffer[j];
             el->m_node.m_record = el;
             m_hash.Insert(&el->m_node);
         }
@@ -1895,7 +1849,7 @@ void* CSymParser::PopParseSlot() {
         rec = e->m_record;
     }
     if (rec) {
-        m_hash.Remove(&((CParseSlot*)rec)->m_node);
+        m_hash.Remove(&((CSymLeafBuilder*)rec)->m_node);
     }
     return rec;
 }
@@ -1905,7 +1859,7 @@ void* CSymParser::PopParseSlot() {
 RVA(0x0013c210, 0x1a)
 void CSymParser::AddNode(void* rec) {
     if (rec) {
-        m_hash.Insert(&((CParseSlot*)rec)->m_node);
+        m_hash.Insert(&((CSymLeafBuilder*)rec)->m_node);
     }
 }
 

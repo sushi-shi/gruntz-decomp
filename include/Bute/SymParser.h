@@ -85,16 +85,18 @@ struct CParserObjList : public CObjList {
 };
 SIZE(CParserObjList, 0x10); // { vptr, head, tail, count }
 
-// The parse-slot record block CSlotNode owns (an array of n*0x3c-byte slots);
-// full definition in SymParser.cpp.
-struct CParseSlot;
+// The parse-slot record block CSlotNode owns is an array of n*0x3c-byte leaf-record
+// slots - the same 0x3c CSymLeafBuilder record (m_node @+0x1c) the parser fills and
+// re-files; defined in SymTab.cpp. (A freshly-popped slot is init'd as a CParseSource
+// parse stream and later repurposed as a leaf value record - one 0x3c memory, two views.)
+struct CSymLeafBuilder;
 
 // A node owned by the +0x88 CHashSlotList: its intrusive chain link is at +0x00
 // (so the list head points straight at it) and it owns a buffer at +0x08; the
 // list uses the CHashSlotList::Link/Unlink (0x1390e0/0x1391e0) machinery from Hash.h.
 struct CSlotNode {
-    CHashLink m_link;     // +0x00  intrusive chain node { next, prev }
-    CParseSlot* m_buffer; // +0x08  owned parse-slot block (RezFree'd)
+    CHashLink m_link;          // +0x00  intrusive chain node { next, prev }
+    CSymLeafBuilder* m_buffer; // +0x08  owned parse-slot block (RezFree'd)
 };
 SIZE(CSlotNode, 0xc);
 
