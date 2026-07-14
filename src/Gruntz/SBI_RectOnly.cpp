@@ -1,3 +1,7 @@
+// Emit the retail INLINE SBI base-dtor bodies (stamp vftable + DtorStatus/ClearFrame/...)
+// so this /GX host TU's ??1/??_GCStatusBarItem match retail + the SBI leaf TUs instead of
+// the declared-only empty form that diverged across objs. Must precede any SBI include.
+#define SBI_DTOR_CHAIN
 #include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CPtrList consumers below)
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
@@ -150,7 +154,9 @@ void CStatusBarMgr::DtorMembers() {
     Tm_DestroyArray((char*)this + 0x2c, 0x1c, 8, (void*)&SbiList_Dtor);
 }
 
-CStatusBarItem::~CStatusBarItem() {}
+// ~CStatusBarItem is the SBI_DTOR_CHAIN inline body (stamp vftable + DtorStatus) now, so
+// this TU's ??1/??_GCStatusBarItem match retail + the SBI leaf TUs (was an empty-stub
+// COMDAT that diverged). SbiVfunc0 (slot 1 base default) still anchors the vftable here.
 i32 CStatusBarItem::SbiVfunc0() {
     return 0;
 }

@@ -15,6 +15,9 @@
 #include <rva.h>
 
 #define SBI_ITEM_OWN_CTOR
+#define SBI_DTOR_CHAIN // emit the retail inline base-dtor (stamp vptr + DtorStatus), so this
+                       // TU's ??1/??_GCStatusBarItem match retail (0x100780/0x100620) and the
+                       // SBI leaf TUs - not the empty-stub form (was a cross-obj DIVERGENT).
 #include <Gruntz/StatusBarItem.h>
 
 // ---------------------------------------------------------------------------
@@ -29,11 +32,12 @@ CStatusBarItem::CStatusBarItem() {
     m_28 = 0;
 }
 
-// Out-of-line stubs anchor the CStatusBarItem vftable in this TU (not matched).
-CStatusBarItem::~CStatusBarItem() {}
-// Scalar-deleting dtor (??_G, slot 0): compiler-generated thunk wrapping the real
-// ~CStatusBarItem cleanup (calls one base dtor; not reconstructed, so this only NAMES
-// the retail function). MSVC synthesizes ??_G from the virtual dtor above.
+// ~CStatusBarItem is now the SBI_DTOR_CHAIN inline body (stamp vftable + DtorStatus),
+// so MSVC synthesizes the retail ??1CStatusBarItem (0x100780: mov [ecx],vptr; jmp
+// DtorStatus) and ??_GCStatusBarItem (0x100620: stamp + call DtorStatus + delete),
+// byte-matching the SBI leaf TUs - no longer the empty-stub COMDAT that diverged.
+// This TU labels the cl-auto-generated ??_G at its retail RVA (it emits the vftable).
+// SbiVfunc0 (slot 1 base default) still anchors the vftable in this TU (not matched).
 // @rva-symbol: ??_GCStatusBarItem@@UAEPAXI@Z 0x00100620 0x24
 i32 CStatusBarItem::SbiVfunc0() {
     return 0;
