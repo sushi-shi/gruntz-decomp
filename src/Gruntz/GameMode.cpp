@@ -37,33 +37,17 @@
 // __thiscall helpers GenMenuRandPos calls (all reloc-masked).
 extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
 
-// The glitter/effect factory chain (CGlitterMgr view of g_gameReg, *0x24556c): the
-// selection source (m_74), the SecretColor->handle table (m_78), the sprite factory
-// (m_world->m_8), the letter-count set (m_7c), the attract frame counter (m_80).
-SIZE_UNKNOWN(CGlitterMgrM30);
-struct CGlitterMgrM30 {
-    char m_pad00[0x8];
-    CSpriteFactory* m_8; // +0x08 the animation factory (CreateSprite @0x1597b0)
-};
-SIZE_UNKNOWN(CGlitterMgrSet);
-struct CGlitterMgrSet {
-    char m_pad00[0x4];
-    i32 m_4; // +0x04 element count
-};
+// The SecretColor -> sprite-handle table hung off g_gameReg->m_78 (WwdGameReg types that
+// slot void*, since it is a genuinely heterogeneous reused slot - ~10 TUs cast it to the
+// type each needs, so it stays void* on the shared class). LoadGruntEffectSprites indexes
+// it by the "SecretColor" bute value to tint the wormhole. The former CGlitterMgr /
+// CGlitterMgrM30 / CGlitterMgrSet views are DISSOLVED: the sprite factory (m_world->m_8,
+// a CSpriteFactory via GruntSoundCat) and selection source (m_74, CSpriteRefTable) are the
+// real WwdGameReg fields, reached directly; only this local color table remains.
 SIZE_UNKNOWN(CGlitterColorTable);
 struct CGlitterColorTable {
     char m_pad00[0x14];
-    i32 m_arr14[1]; // +0x14  color->handle table
-};
-SIZE_UNKNOWN(CGlitterMgr);
-struct CGlitterMgr {
-    char m_pad00[0x30];
-    CGlitterMgrM30* m_world; // +0x30
-    char m_pad34[0x74 - 0x34];
-    CSpriteRefTable* m_74;    // +0x74  selection source
-    CGlitterColorTable* m_78; // +0x78  color->handle table
-    CGlitterMgrSet* m_7c;     // +0x7c
-    i32 m_80;                 // +0x80  attract frame counter (title rotation source)
+    i32 m_arr14[1]; // +0x14  SecretColor -> handle table
 };
 
 // LoadGruntEffectSprites externs: the CButeMgr text-config singleton + the wormhole
@@ -209,8 +193,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (wh == 0) {
         return 0;
     }
-    i32 tint = ((CGlitterMgr*)g_gameReg)
-                   ->m_78->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
+    i32 tint = ((CGlitterColorTable*)g_gameReg->m_78)
+                   ->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CGameObject* p318 = m_icons[7];
