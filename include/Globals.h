@@ -141,7 +141,7 @@ extern struct CVariantSlot* g_projRegColl2;
 extern i32 g_projRegLo;
 extern i32 g_projRegHi;
 extern char* g_projRegBase;
-extern struct R3Entry* g_projRegCur;
+extern struct CActionAreaActEntry* g_projRegCur;
 extern i32 g_projRegStride;
 extern i32 g_projRegScratch;
 extern i32 g_posSoundReq;

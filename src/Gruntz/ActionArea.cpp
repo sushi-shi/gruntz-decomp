@@ -21,6 +21,7 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/SerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30) + CSerialObjRef
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
+#include <Gruntz/HaznColl.h> // CCoordColl - the shared _zvec-based registry-collection address-view
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
@@ -34,16 +35,13 @@ extern CButeTree g_buteTree;
 // copies of one dtor - MSVC5 keeps one COMDAT per name - so the "folded twin" story was
 // wrong in the other direction: it is ONE dtor, and it belongs to CActionArea.)
 
-// The global registry object at VA 0x629388. SetActiveRange reaches it through an
-// ILT thunk (0x3742) -> modeled NO-body so the call reloc-masks. Find (0x16da80)
-// is the slow binary-search probe the coordinate->entry lookup falls back to.
-// SetActiveRange @0x3742 = CZDArrayDerived::Construct, Find @0x16da80 = _zvec::GrowTo (both from
-// the shared <Wap32/ZVec.h> + <Wap32/ZDArrayDerived.h> headers, added above); cast at each call.
-struct CProjReg {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (== _zvec::GrowTo; external, reloc-masked)
-};
+// The global registry object at VA 0x629388 - the shared _zvec-based registry
+// collection (canonical CCoordColl, <Gruntz/HaznColl.h>). SetActiveRange reaches it
+// as CZDArrayDerived::Construct (@0x3742 ILT thunk -> 0x8710) and the slow
+// coordinate probe as _zvec::GrowTo (@0x16da80), both through a cast at each call
+// (see below). Was the .cpp-local CProjReg view (its `Find` method was never called).
 DATA(0x00229388)
-extern CProjReg g_projReg;
+extern CCoordColl g_projReg;
 
 // The R3 per-coordinate activation table's field globals (the registry object IS
 // the collection; the lo/hi/base/cur/stride/scratch fields are separate BSS
@@ -51,42 +49,33 @@ extern CProjReg g_projReg;
 // projectile activation tables. Owned by (referenced only from) this TU, so the
 // real definitions live here (DATA-pinned); the single extern is in <Globals.h>.
 DATA(0x0022938c)
-CVariantSlot* g_projRegColl2; // 0x62938c (Insert dispatcher)
-i32 g_projRegLo;              // 0x629390
-i32 g_projRegHi;              // 0x629394
-char* g_projRegBase;          // 0x629398
-R3Entry* g_projRegCur;        // 0x62939c
-i32 g_projRegStride;          // 0x6293a0
-i32 g_projRegScratch;         // 0x6293a8
+CVariantSlot* g_projRegColl2;      // 0x62938c (Insert dispatcher)
+i32 g_projRegLo;                   // 0x629390
+i32 g_projRegHi;                   // 0x629394
+char* g_projRegBase;               // 0x629398
+CActionAreaActEntry* g_projRegCur; // 0x62939c
+i32 g_projRegStride;               // 0x6293a0
+i32 g_projRegScratch;              // 0x6293a8
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
 extern void* g_projActCache;      // 0x6bf464
 extern void* g_retAddrBreadcrumb; // 0x6bf428
 extern void* GetRetAddr();        // 0x16d990
 
-// The dispatch object FireActivation runs on. The R3 entry's first dword is a
-// registered handler invoked __thiscall on this; modeled as a 4-byte PMF (the
-// class is COMPLETE before the typedef so the PMF stays 4 bytes).
-class CProjActObj {
-public:
-    void FireActivation(i32 coord); // 0x80e0
-    static void RegisterType();     // 0x8240  (static: level-load registrar, no this;
-                                    //  called this-less by the game-object factory)
-};
-typedef void (CProjActObj::*ProjActHandler)();
-struct R3Entry {
-    ProjActHandler m_fn; // [entry] - the registered handler
-};
+// The dispatch object FireActivation runs on IS CActionArea (vtable_hierarchy:
+// ??_7CActionArea slot 4 == FireActivation @0x80e0). Its entry type
+// CActionAreaActEntry + the ProjActHandler PMF are the canonical decls in
+// <Gruntz/ActionArea.h>. (Was the .cpp-local CProjActObj + CActionAreaActEntry views.)
 
-// The inlined coordinate->R3Entry* lookup (fast-range / slow-Find / rebuild),
-// folded in twice by FireActivation and once by RegisterType.
-static inline R3Entry* R3Lookup(i32 coord) {
+// The inlined coordinate->CActionAreaActEntry* lookup (fast-range / slow-Find /
+// rebuild), folded in twice by FireActivation and once by RegisterType.
+static inline CActionAreaActEntry* R3Lookup(i32 coord) {
     g_projRegScratch = 0;
     if (coord >= g_projRegLo && coord <= g_projRegHi) {
-        return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
+        return (CActionAreaActEntry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
     if ((i32)((_zvec*)&g_projReg)->GrowTo(coord, 0)) {
-        return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
+        return (CActionAreaActEntry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -128,27 +117,14 @@ extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
 // The global millisecond tick (_g_645588). The DWORD load reloc-masks.
 extern "C" u32 g_frameTime;
 
-// The bound anim sink: m_38 -> anim, anim->m_194 -> sink, sink->Set(brightness).
-struct CPulseAnim {
-    char _00[0x194];
-    CImageSet* m_194; // +0x194
-};
-
-class CPulseHighlight : public CUserLogic {
-public:
-    TILE_LOGIC_TAIL
-public:
-    i32 Tick();                                               // 0x8440
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x8600
-
-    // Leaf pulse-timer fields past the CUserLogic base. Serialize transfers them
-    // as a raw byte stream (the +0x54..+0x67 block, kept as documented offset
-    // access); Tick reads them as scalars, so they are named here.
-    char m_pad40[0x54 - 0x40]; // +0x40..+0x53 (the +0x34/+0x38 base-region per-TU views)
-    i32 m_phase;               // +0x54 pulse phase flag (toggles every m_duration ms)
-    i64 m_timestamp;           // +0x58 last-toggle game clock
-    i64 m_duration;            // +0x60 current interval (ms)
-};
+// The per-frame brightness sink the pulse ramp drives is the bound object's image
+// set (CGameObject::m_194, a CImageSet at +0x194) - reached cast-at-use, exactly
+// like ApplyColor below. Was the .cpp-local CPulseAnim view. CPulseHighlight itself
+// is now the canonical class in <Gruntz/ActionArea.h>.
+// NOTE (hot header): CGameObject::m_194 is typed `char*` in UserLogic.h; it is really
+// the object's CImageSet (SetAllTypes/SetAllField18 @0x152480/0x1524d0). Retyping it
+// to CImageSet* would drop the two casts here + in ApplyColor - a UserLogic.h change
+// for the shared-base lane.
 
 // @early-stop
 // 0x7c60 = the CActionArea command dispatcher (FREE __cdecl(CGameObject* obj), /GX;
@@ -217,19 +193,19 @@ void ProjActRegisterDefaults() {
     ((CZDArrayDerived*)&g_projReg)->Construct(0x7d0, 0x7da);
 }
 
-// 0x80e0: CProjActObj::FireActivation - look the activation coordinate up in the
+// 0x80e0: CActionArea::FireActivation - look the activation coordinate up in the
 // R3 registry; if the entry has a registered handler, look it up again and
 // dispatch it __thiscall on this. Same archetype as CKitchenSlime::FireActivation.
 RVA(0x000080e0, 0x102)
-void CProjActObj::FireActivation(i32 coord) {
-    R3Entry* e = R3Lookup(coord);
+void CActionArea::FireActivation(i32 coord) {
+    CActionAreaActEntry* e = R3Lookup(coord);
     if (e->m_fn != 0) {
-        R3Entry* e2 = R3Lookup(coord);
+        CActionAreaActEntry* e2 = R3Lookup(coord);
         (this->*(e2->m_fn))();
     }
 }
 
-// 0x8240: CProjActObj::RegisterType - the level-load class registrar. Assign the
+// 0x8240: CActionArea::RegisterType - the level-load class registrar. Assign the
 // class a type-id via the global bute-tree (registering its name on first use),
 // record the name into the shared type-name table, then store the activation
 // handler (0x403517) into the per-class R3 table at that id. Same archetype as
@@ -241,7 +217,7 @@ void CProjActObj::FireActivation(i32 coord) {
 // ebp,[eax+1]` strength-reduced idiom (cl loads the count plainly) and pins the
 // type-id register differently. Not source-steerable; deferred to the final sweep.
 RVA(0x00008240, 0x18d)
-void CProjActObj::RegisterType() {
+void CActionArea::RegisterType() {
     i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
@@ -279,11 +255,11 @@ i32 CPulseHighlight::Tick() {
     if (*phase != 0) {
         i64 d2 = (i64)(u32)g_frameTime - *ts;
         double t = (double)(u32)(d2 < 0 ? 0 : (u32)d2);
-        ((CPulseAnim*)m_38)->m_194->SetAllField18((i32)((1.0 - t * 0.002) * 50.0 - (-155.0)));
+        ((CImageSet*)m_38->m_194)->SetAllField18((i32)((1.0 - t * 0.002) * 50.0 - (-155.0)));
     } else {
         i64 d2 = (i64)(u32)g_frameTime - *ts;
         double t = (double)(u32)(d2 < 0 ? 0 : (u32)d2);
-        ((CPulseAnim*)m_38)->m_194->SetAllField18((i32)(t * 0.1 - (-155.0)));
+        ((CImageSet*)m_38->m_194)->SetAllField18((i32)(t * 0.1 - (-155.0)));
     }
     return 0;
 }
@@ -347,10 +323,3 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(CProjActObj);
-SIZE_UNKNOWN(CProjReg);
-SIZE_UNKNOWN(R3Entry);
-SIZE_UNKNOWN(CPulseAnim);
-SIZE_UNKNOWN(CPulseHighlight);
-SIZE_UNKNOWN(CPulseSink);
