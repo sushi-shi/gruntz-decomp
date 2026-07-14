@@ -859,7 +859,10 @@ void ActiveWait(i32 ms);           // 0x13dfe0 busy-wait
 void* RezAlloc(i32 sz);            // 0x1b9b46 operator new
 void RezFree(void* p);             // 0x1b9b82 operator delete
 
-#define I32(p, off) (*(i32*)((char*)(p) + (off)))
+// PTR: reads a pointer member at a raw offset (double-star, not a counted cast).
+// Retained only for the 4 residual chains into UNMODELED sub-objects: CSndHost+0x2c,
+// CGameWnd+0x4 (HWND), CTriggerMgr+0x268 (byte-table count), and the m_c->m_4->m_10->m_2c
+// DDraw surface chain. Every I32 (single-star) site is dissolved to typed member access.
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
 
 // ---------------------------------------------------------------------------
@@ -888,8 +891,8 @@ void RezFree(void* p);             // 0x1b9b82 operator delete
 // ===========================================================================
 RVA(0x000ca200, 0xe34)
 i32 CPlay::LoadByMode(i32 level, i32) {
-    void* self = this;
-    void* gameReg;
+    CPlay* self = this;
+    CGruntzMgr* gameReg;
     void* set;
     i32 reload = 0; // [esp+0x20] warp-cache reload flag (-> the vtable +0xa4 arg)
     // one contiguous stack buffer: the AREA%i/Level%i name at +0x00, a 148-byte
@@ -897,7 +900,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     char nameBuf[0xb4]; // [esp+0x38]
 
     // ---- 1) reset prior-level scroll/area globals ----
-    I32(self, 0x484) = 1;
+    self->m_hudSuppressed = 1;
     g_frameDelta = 0;
     g_lastNow = 0;
     g_frameTime = 0;
@@ -907,35 +910,35 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         g_6455f0 = 1;
     }
 
-    // clear the m_3f4 worker's slots
-    void* worker = PTR(self, 0x3f4);
+    // clear the frame-marker timer's slots
+    CTimer* worker = self->m_frameMarker;
     if (worker != 0) {
-        I32(worker, 0x40) = 0;
-        I32(worker, 0x44) = 0;
-        I32(worker, 0x30) = 0;
-        I32(worker, 0x34) = 0;
-        I32(worker, 0x48) = 0;
-        I32(worker, 0x4c) = 0;
+        worker->m_40 = 0;
+        worker->m_44 = 0;
+        worker->m_accumLo = 0;
+        worker->m_accumHi = 0;
+        worker->m_running = 0;
+        worker->m_currentMs = 0;
     }
 
     // tear down the old grid (self->m_c->m_28->m_2c) / map / sound sub-objects
-    void* grid = PTR(PTR(PTR(self, 0xc), 0x28), 0x2c);
+    void* grid = PTR(self->m_c->m_28, 0x2c); // CSndHost+0x2c (unmodeled sub-object; deferred)
     if (grid != 0) {
         ((SoundStream*)grid)->Stop();
     }
-    ((CGruntzSoundZ*)PTR(PTR(self, 0x4), 0x48))->StopAndFlush();
-    ((CWorldSoundSet*)PTR(PTR(self, 0x4), 0x54))->Teardown();
-    ((CGruntSpawnConfig*)PTR(PTR(self, 0x4), 0x60))->DtorBody();
-    ((CGruntSpawnConfig*)PTR(PTR(self, 0x4), 0x60))->ClearSprites();
-    ((CGruntzMgr*)PTR(self, 0x4))->RestoreVideoMode(0);
+    self->m_4->m_sound->StopAndFlush();
+    self->m_4->m_inputState->Teardown();
+    self->m_4w()->m_60->DtorBody();
+    self->m_4w()->m_60->ClearSprites();
+    self->m_4->RestoreVideoMode(0);
 
-    gameReg = g_gameReg;
-    if (I32(gameReg, 0x134) != 2) {
+    gameReg = (CGruntzMgr*)g_gameReg;
+    if (gameReg->m_134 != 2) {
         g_curPlayer = 0;
-        if (I32(gameReg, 0xc) != 0) {
-            i32 v = I32(gameReg, 0xc) ^ 1;
-            I32(gameReg, 0xc) = v;
-            ((CGruntzMgr*)g_gameReg)->FinishLevel(v, 1);
+        if (gameReg->m_frameGate != 0) {
+            i32 v = gameReg->m_frameGate ^ 1;
+            gameReg->m_frameGate = v;
+            gameReg->FinishLevel(v, 1);
         }
     }
 
@@ -956,58 +959,59 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // reset the 4 team blocks at host->m_150 (stride 0x238): single-mode primes
     // team 0 ready, multi-mode zeroes the round counters.
     for (i32 t = 0; t < 4; ++t) {
-        void* hostBase = PTR(self, 0x4);
-        gameReg = g_gameReg;
-        void* team = (char*)hostBase + t * 0x48 * 8 - t * 8 + 0x150; // [edx+ecx*8+0x150]
-        if (I32(gameReg, 0x134) == 1) {
+        CGruntzMgr* hostBase = self->m_4;
+        gameReg = (CGruntzMgr*)g_gameReg;
+        GruntzPlayer* team =
+            (GruntzPlayer*)((char*)hostBase + t * 0x48 * 8 - t * 8 + 0x150); // [edx+ecx*8+0x150]
+        if (gameReg->m_134 == 1) {
             new ((void*)team) GruntzPlayer(0);
             if (t == 0) {
-                I32(team, 0x20) = 1;
-                I32(team, 0x28) = 1;
+                team->m_020 = 1;
+                team->m_028 = 1;
             }
         } else {
-            I32(team, 0x2c) = 0;
-            I32(team, 0x28) = I32(team, 0x20);
-            I32(team, 0x24) = 0;
+            team->m_02c = 0;
+            team->m_028 = team->m_020;
+            team->m_024 = 0;
         }
     }
 
     // ---- 2) mode/level-number resolve ----
     i32 modeFlag = ((i32)Update() == 0x11) ? 1 : 0;
     void* savedThis = modeFlag ? self : 0; // [esp+0x10] = (-modeFlag) & self
-    I32(self, 0x1c4) = 1;
-    I32(self, 0x1c) = level;
+    self->m_1c4 = 1;
+    self->m_levelIndex = level;
     {
         i32 r = (level - 1) % 0x24;
-        I32(self, 0x20) = r / 4 + 1; // ((level-1)%0x24)/4 + 1 (signed div-by-4)
+        self->m_levelType = r / 4 + 1; // ((level-1)%0x24)/4 + 1 (signed div-by-4)
     }
 
-    gameReg = g_gameReg;
+    gameReg = (CGruntzMgr*)g_gameReg;
     g_frameTime = 0;
-    if (I32(gameReg, 0x134) == 3) {
+    if (gameReg->m_134 == 3) {
         srand(timeGetTime());
     }
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
-    ((CBattlezData*)PTR(g_gameReg, 0x7c))->Init();
-    ((CPtrList*)((char*)PTR(g_gameReg, 0x6c) + 0x1c))->RemoveAll();
-    ((CGruntzCmdMgr*)PTR(g_gameReg, 0x6c))->DrainBase();
+    gameReg->m_scoreHud->Init();
+    ((CPtrList*)((char*)gameReg->m_cmdSubMgr + 0x1c))->RemoveAll();
+    gameReg->m_cmdSubMgr->DrainBase();
     g_frameTicks = 0;
-    I32(self, 0x1bc) = 0;
-    I32(PTR(self, 0x4), 0x130) = 0;
+    self->m_1bc = 0;
+    self->m_4->m_130 = 0;
 
-    // already-loaded guard: when host->m_c8[-2] == 0 skip the name-resolve.
-    void* host = PTR(self, 0x4);
-    if (I32(PTR(host, 0xc8), -8) != 0) {
-        if (I32(host, 0x128) != 0) {
+    // already-loaded guard: when host->m_strWorldFile length != 0 skip the name-resolve.
+    CGruntzMgr* host = self->m_4;
+    if (host->m_strWorldFile.GetLength() != 0) {
+        if (host->m_128 != 0) {
             // BATTLEZ: resolve the level number from the level name's digit run.
-            set = ((CSymParser*)PTR(host, 0x34))->ResolvePath("GAME_BATTLEZ");
+            set = host->m_recolorSurface->ResolvePath("GAME_BATTLEZ");
             if (set == 0) {
                 goto fail0;
             }
             i32 ins = ((CSymTab*)set)
                           ->Insert(
-                              (const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName(),
+                              (const char*)self->m_4->GetWorldFileName(),
                               g_emptyString
                           );
             if (ins == 0) {
@@ -1030,15 +1034,15 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             i32 num = atoi(p);
             ((CParseSource*)set)->EndParse();
             level = num;
-        } else if (I32(host, 0x12c) != 0) {
+        } else if (host->m_12c != 0) {
             // MULTI: same digit resolve off "GAME_MULTI".
-            set = ((CSymParser*)PTR(host, 0x34))->ResolvePath("GAME_MULTI");
+            set = host->m_recolorSurface->ResolvePath("GAME_MULTI");
             if (set == 0) {
                 goto fail0;
             }
             i32 ins = ((CSymTab*)set)
                           ->Insert(
-                              (const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName(),
+                              (const char*)self->m_4->GetWorldFileName(),
                               g_emptyString
                           );
             if (ins == 0) {
@@ -1064,29 +1068,29 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         } else {
             // default: bute-driven level number (ValidateMainBlock(CString)).
             level = ValidateMainBlock(
-                (void*)(const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName()
+                (void*)(const char*)self->m_4->GetWorldFileName()
             );
-            I32(self, 0x1bc) = 0;
-            I32(PTR(self, 0x4), 0x130) = 0;
+            self->m_1bc = 0;
+            self->m_4->m_130 = 0;
         }
 
         // recompute area page from the resolved level number
         i32 r = (level - 1) % 0x24;
-        I32(self, 0x1c) = level;
-        I32(self, 0x20) = r / 4 + 1;
+        self->m_levelIndex = level;
+        self->m_levelType = r / 4 + 1;
     }
 
     // ---- 3) build the level name + look it up ----
-    sprintf(nameBuf, "AREA%i", I32(self, 0x20));
-    set = ((CSymParser*)PTR(self, 0x8))->ResolvePath(nameBuf);
-    I32(self, 0x28) = (i32)set;
+    sprintf(nameBuf, "AREA%i", self->m_levelType);
+    set = ((CSymParser*)self->m_8)->ResolvePath(nameBuf);
+    self->m_levelBank = (CSymTab*)set;
     if (set == 0) {
         goto fail0;
     }
 
     // ---- 4) area-page jump table over (m_20 - 1) in 0..7 ----
     {
-        i32 page = I32(self, 0x20) - 1;
+        i32 page = self->m_levelType - 1;
         switch ((u32)page) {
             case 0:
                 g_areaPageSize = 4;
@@ -1128,13 +1132,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // m_2c = m_28 (the resolved area descriptor); refresh the host window
     {
-        i32 prevTiles = I32(self, 0x2c);
-        I32(self, 0x2c) = I32(self, 0x28);
-        UpdateWindow((HWND)PTR(PTR(PTR(self, 0x4), 0x4), 0x4));
+        CResSource* prevTiles = self->m_2c;
+        self->m_2c = (CResSource*)self->m_levelBank;
+        UpdateWindow((HWND)PTR(self->m_4->m_gameWnd, 0x4)); // CGameWnd+0x4 window handle (deferred)
 
-        host = PTR(self, 0x4);
-        if (I32(PTR(host, 0xc8), -8) != 0) {
-            if (I32(host, 0x128) == 0 && I32(host, 0x12c) == 0) {
+        host = self->m_4;
+        if (host->m_strWorldFile.GetLength() != 0) {
+            if (host->m_128 == 0 && host->m_12c == 0) {
                 sprintf(nameBuf, "CUSTOMLEVEL", 0);
             }
         } else if (level > 0x24) {
@@ -1149,7 +1153,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RetireScene(0x50, 0x3e8, 0, 1); // 0x1843 -> CState::RetireScene
     DrawLevelInfoText();            // 0x14b5 -> 0xd95f0
-    I32(self, 0x2c) = 0;
+    self->m_2c = 0;
     {
         i32* z = (i32*)((char*)nameBuf + 0x20);
         i32 n = 0x25;
@@ -1203,7 +1207,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (modeFlag != 0 && I32(g_gameReg, 0x134) == 1) {
+    if (modeFlag != 0 && ((CGruntzMgr*)g_gameReg)->m_134 == 1) {
         BuildWarlordNameTable((i32)savedThis);
     }
     BuildHelpReveal(0);
@@ -1284,12 +1288,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     RegisterInputBindings();
 
     // finalize the world planes
-    ((CGruntzMgr*)PTR(self, 0x4))->RecomputeViewScale();
-    if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-        ((CDDrawWorkerHost*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
+    self->m_4->RecomputeViewScale();
+    if (self->m_c->m_24->m_mainPlane != 0) {
+        ((CDDrawWorkerHost*)self->m_c->m_24->m_mainPlane)->GetSize_1633e0();
     }
-    if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-        ((CDDrawWorkerHost*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
+    if (self->m_c->m_24->m_mainPlane != 0) {
+        ((CDDrawWorkerHost*)self->m_c->m_24->m_mainPlane)->GetSize_1633e0();
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
@@ -1299,47 +1303,47 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // view setup off host->m_70
     {
-        void* g5c = PTR(PTR(PTR(self, 0xc), 0x24), 0x5c);
-        void* host70 = PTR(PTR(self, 0x4), 0x70);
-        if (!((CBrickz*)host70)->LoadAttributes(I32(g5c, 0x28), I32(g5c, 0x2c))) {
+        CDDrawWorkerHost* g5c = (CDDrawWorkerHost*)self->m_c->m_24->m_mainPlane;
+        CBrickz* host70 = (CBrickz*)self->m_4w()->m_70;
+        if (!host70->LoadAttributes(g5c->m_width, g5c->m_height)) {
             goto fail0;
         }
     }
-    if (!((CBrickzGrid*)PTR(PTR(self, 0x4), 0x70))->UpdateDiagonals((i32)PTR(self, 0x4))) {
+    if (!((CBrickzGrid*)self->m_4w()->m_70)->UpdateDiagonals((i32)self->m_4)) {
         goto fail0;
     }
 
     // lazily allocate the level context at +0x320
-    if (I32(self, 0x320) == 0) {
-        void* ctx = RezAlloc(0x43c);
+    if (self->m_lightFx == 0) {
+        CLightFxRender* ctx = (CLightFxRender*)RezAlloc(0x43c);
         if (ctx != 0) {
-            I32(ctx, 0) = 0;
-            I32(ctx, 0x4) = 0;
-            I32(ctx, 0x8) = 0;
-            I32(ctx, 0xc) = 0;
-            I32(ctx, 0x10) = 0;
-            I32(ctx, 0x48) = 0;
-            I32(ctx, 0x434) = 0;
-            I32(ctx, 0x438) = 0;
+            ctx->m_mgr = 0;
+            ctx->m_tileBank = 0;
+            ctx->m_grid = 0;
+            ctx->m_surfMgr = 0;
+            ctx->m_surface = 0;
+            ctx->m_handle = 0;
+            ctx->m_refreshInterval = 0;
+            ctx->m_refreshRemaining = 0;
         } else {
             ctx = 0;
         }
-        I32(self, 0x320) = (i32)ctx;
-        if (!((CLightFxRender*)ctx)->Init((LfxMgr*)PTR(self, 0x4), 0xfa)) {
+        self->m_lightFx = ctx;
+        if (!ctx->Init((LfxMgr*)self->m_4, 0xfa)) {
             goto fail0;
         }
     }
-    if (!((CLightFxRender*)PTR(self, 0x320))->BuildShape(I32(self, 0x20))) {
+    if (!self->m_lightFx->BuildShape(self->m_levelType)) {
         goto fail0;
     }
 
     // ---- the WarpStone bute scan (single-mode only) ----
-    gameReg = g_gameReg;
-    if (I32(gameReg, 0x134) != 1) {
+    gameReg = (CGruntzMgr*)g_gameReg;
+    if (gameReg->m_134 != 1) {
         CString warp; // [esp+0x14]
         i32 same = 0;
         if (warp.LoadString(0x81ab)) {
-            char* a = (char*)(const char*)((CGruntzMgr*)g_gameReg)->GetWorldFileName();
+            char* a = (char*)(const char*)gameReg->GetWorldFileName();
             char* b = (char*)(const char*)warp;
             i32 eq = 1;
             while (*b == *a) {
@@ -1360,44 +1364,42 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     // ---- area-name -> level-list build ----
-    if (I32(PTR(self, 0x4), 0x134) == 3) {
-        ((CGruntzMgr*)PTR(self, 0x4))->SyncOptionsState(); // 0x2e14, ecx=m_4
+    if (self->m_4->m_134 == 3) {
+        self->m_4->SyncOptionsState(); // 0x2e14, ecx=m_4
     }
-    ((CSaveGame*)PTR(PTR(self, 0x4), 0x58))
-        ->FillSlot2((SaveSlot*)((char*)self + 0x1d0), I32(self, 0x1c), 0);
+    self->m_4->m_saveSink->FillSlot2((SaveSlot*)&self->m_1d0, self->m_levelIndex, 0);
     {
         CString key; // [esp+0x18]
-        gameReg = g_gameReg;
-        I32(PTR(gameReg, 0x68), 0x2a0) = 0;
-        i32 count = I32(self, 0x1c);
+        gameReg = (CGruntzMgr*)g_gameReg;
+        gameReg->m_cmdGrid->m_pendingFx = 0;
+        i32 count = self->m_levelIndex;
         i32 i = count - ((count - 1) % 4); // round-down-to-4 idiom
         for (; i < count; ++i) {
             // key.Format("Level%i", i) -> wsprintf-into-CString (0x1b2cf5)
             key.Format("Level%i", i);
-            void* bm = PTR(g_gameReg, 0x68);
+            CTriggerMgr* bm = gameReg->m_cmdGrid;
             i32 v = g_buteMgr.GetInt((const char*)key, "WarpStone");
-            ((CByteArray*)((char*)bm + 0x260))->SetAtGrow((i32)PTR(bm, 0x268), (u8)v);
+            bm->m_byteArr.SetAtGrow((i32)PTR(bm, 0x268), (u8)v);
         }
     }
-    ((CStatusBarMgr*)PTR(self, 0x2dc))->LoadMultiplayerBattlezConfig(I32(self, 0x1c));
+    self->m_guts->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
     // ---- CursorSnapSprite registration (factory at [self+0xc]->m_8) ----
-    set = ((CSpriteFactory*)PTR(PTR(self, 0xc), 0x8))
-              ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
-    I32(self, 0x4e4) = (i32)set;
+    set = self->m_c->m_8->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
+    self->m_scrollSink = (CGameObject*)set;
     if (set != 0) {
-        void* host8 = PTR(PTR(self, 0xc), 0x8);
+        void* host8 = self->m_c->m_8;
         (*(void (**)(void*, i32))((char*)*(void**)host8 + 0x24))(host8, 0); // host8 vtable +0x24
         if (savedThis == 0) {
             // empty cursor-snap set -> reset the resource-install flag
-            void* tiles = PTR(self, 0x2dc);
-            i32 id = (I32(tiles, 0) == 0) ? 0x1a9 : 0x249;
-            if (!((CTimer*)PTR(self, 0x3f4))->LoadTimerSprite(id, 0x1ca)) {
-                void* spr = PTR(self, 0x3f4);
+            CStatusBarMgr* tiles = self->m_guts;
+            i32 id = (tiles->m_position == 0) ? 0x1a9 : 0x249;
+            if (!self->m_frameMarker->LoadTimerSprite(id, 0x1ca)) {
+                CTimer* spr = self->m_frameMarker;
                 if (spr != 0) {
-                    ((CTimer*)spr)->Reset();
+                    spr->Reset();
                     RezFree(spr);
-                    I32(self, 0x3f4) = 0;
+                    self->m_frameMarker = 0;
                 }
             }
         } else {
@@ -1405,18 +1407,18 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (LoadWarlordSprites((i32)savedThis, (i32*)((char*)nameBuf + 0x20)) /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
-                void* host8b = PTR(PTR(self, 0xc), 0x8);
+                void* host8b = self->m_c->m_8;
                 (*(void (**)(void*, i32))((char*)*(void**)host8b + 0x24))(host8b, 0);
-                ((CStatusBarMgr*)PTR(self, 0x2dc))->winapi_107d00_SetRect();
+                self->m_guts->winapi_107d00_SetRect();
                 ((DirectInputMgr2*)g_645570)->ReadAll();
                 while (ShowCursor(0) >= 0)
                     ;
-                ((CGruntzMgr*)PTR(self, 0x4))->CGruntzMgr::PerFrameTick();
-                if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-                    ((CDDrawWorkerHost*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
+                self->m_4->CGruntzMgr::PerFrameTick();
+                if (self->m_c->m_24->m_mainPlane != 0) {
+                    ((CDDrawWorkerHost*)self->m_c->m_24->m_mainPlane)->GetSize_1633e0();
                 }
-                if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-                    ((CDDrawWorkerHost*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
+                if (self->m_c->m_24->m_mainPlane != 0) {
+                    ((CDDrawWorkerHost*)self->m_c->m_24->m_mainPlane)->GetSize_1633e0();
                 }
                 BuildHelpReveal(0);
                 if (savedThis != 0) {
@@ -1443,18 +1445,18 @@ okContinue:
         ((CMulti*)savedThis)->AckJoinFailure();
     }
 
-    gameReg = g_gameReg;
-    if (I32(gameReg, 0x114) == 0) {
-        void* mapHost = PTR(PTR(PTR(PTR(self, 0xc), 0x4), 0x10), 0x2c);
+    gameReg = (CGruntzMgr*)g_gameReg;
+    if (gameReg->m_114 == 0) {
+        void* mapHost = PTR(PTR(self->m_c->m_drawTarget, 0x10), 0x2c); // m_c->m_4->m_10->m_2c (deferred)
         ((CDDSurface*)mapHost)->ShadeRect(0x32, 0);
-        gameReg = g_gameReg;
+        gameReg = (CGruntzMgr*)g_gameReg;
     }
 
     // ---- loading-screen blit (mode != 2 && m_114 == 0) ----
-    if (I32(gameReg, 0x134) != 2 && I32(gameReg, 0x114) == 0) {
+    if (gameReg->m_134 != 2 && gameReg->m_114 == 0) {
         CString scr; // [esp+0x14]
-        I32(self, 0x4f8) = 1;
-        I32(self, 0x484) = 0;
+        self->m_inGame = 1;
+        self->m_hudSuppressed = 0;
         i32 rect[4];
         rect[0] = 0;
         rect[1] = 0;
@@ -1462,7 +1464,7 @@ okContinue:
         rect[3] = 0x1e0;
         if (scr.LoadString(0x8128)) {
             EngStr_DrawText(
-                (EngStrRenderObj*)PTR(self, 0xc),
+                (EngStrRenderObj*)self->m_c,
                 (i32)rect,
                 (i32)((char*)nameBuf + 0x4),
                 0x78,
@@ -1474,36 +1476,36 @@ okContinue:
             );
         }
     } else {
-        I32(self, 0x484) = 1;
+        self->m_hudSuppressed = 1;
     }
 
     // ---- final state stamp ----
-    I32(self, 0x4b8) = 0;
-    I32(self, 0x4fc) = 0;
-    I32(self, 0x500) = 0;
-    I32(self, 0x4f0) = 0;
-    I32(self, 0x4f4) = 0;
-    I32(self, 0x400) = 0x1f4;
-    I32(self, 0x404) = 0;
-    I32(self, 0x3f8) = g_frameTime;
-    I32(self, 0x3fc) = 0;
-    I32(self, 0x408) = 1;
-    ((CString*)((char*)self + 0x410))->operator=(g_emptyString);
-    I32(self, 0x40c) = 0;
-    I32(self, 0x470) = 0;
-    I32(self, 0x474) = 0;
-    I32(self, 0x478) = 0;
-    I32(self, 0x47c) = 0;
-    I32(self, 0x4b0) = 0;
-    I32(self, 0x514) = 3;
-    I32(self, 0x4ec) = 1;
+    self->m_scrollEdgeLock = 0;
+    self->m_overlayDrag = 0;
+    self->m_paused = 0;
+    self->m_4f0 = 0;
+    self->m_winLoseBanner = 0;
+    self->m_cueInterval = 0x1f4;
+    self->m_cueIntervalHi = 0;
+    self->m_cueTimerLo = g_frameTime;
+    self->m_cueTimerHi = 0;
+    self->m_cueToggle = 1;
+    self->m_cueText = g_emptyString;
+    self->m_lastCueId = 0;
+    self->m_region0Gate = 0;
+    self->m_region1Gate = 0;
+    self->m_region2Gate = 0;
+    self->m_region3Gate = 0;
+    self->m_snapshotActive = 0;
+    self->m_514 = 3;
+    self->m_renderDisabled = 1;
     g_64e35c = 0;
     ResetViewport(); // 0x3d55 -> 0xd8c60
-    if (I32(g_gameReg, 0x134) == 2) {
+    if (((CGruntzMgr*)g_gameReg)->m_134 == 2) {
         g_64e35c = 1;
-        I32(self, 0x4ec) = 0;
-        ((CGruntzMgr*)PTR(self, 0x4))->CheckSavedMode();
-        ((CFontConfig*)PTR(PTR(self, 0x4), 0x5c))->FreeNodes();
+        self->m_renderDisabled = 0;
+        self->m_4->CheckSavedMode();
+        self->m_4->m_chatLog->FreeNodes();
     }
     return 1;
 
@@ -1513,7 +1515,6 @@ fail0:
     return 0;
 }
 
-#undef I32
 #undef PTR
 
 // @early-stop
