@@ -43,12 +43,8 @@ mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
 # registry/COM helper module (0x1bf*-0x1d5*) with ebp frames retained yet fully
 # register-allocated. docs/patterns/o2-optimizer-bailout-framed.md.
 framed = ["/nologo", "/c", "/O2", "/MT", "/Oy-"]
-framedeh = ["/nologo", "/c", "/O2", "/MT", "/Oy-", "/GX"]
-o1     = ["/nologo", "/c", "/O1", "/MT"]
-# unoptimized + intrinsics: full ebp frame, every local/arg through memory, plain
-# idiv (no strength reduction), yet pow/etc. via the __CIxxx FP intrinsic (/Oi).
-odi    = ["/nologo", "/c", "/Od", "/Oi", "/MT"]
-od     = ["/nologo", "/c", "/Od", "/MT"]
+# (framedeh / o1 / od / odi were pruned 2026-07-14: no unit selected them. Re-add the
+#  exact profile a TU needs when one first turns out to be /Od, /O1, or framed+EH.)
 
 [[unit]]
 unit = "adler32"
