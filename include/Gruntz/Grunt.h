@@ -614,156 +614,47 @@ struct GruntCoordNode {
 // The "focused grunt" sentinel the on-screen flag compares m_tileOwnerHi against
 // (DAT_00644c54, reloc-masked).
 
-// The level board-dimension path the area cues read off the tile-mgr's +0x22c
-// registry: m_22c -> m_24 -> m_5c -> {m_28 = width, m_2c = height}.
-SIZE_UNKNOWN(CTileBoardDims);
-struct CTileBoardDims {
-    char m_pad0[0x28];
-    i32 m_28; // +0x28  board width
-    i32 m_2c; // +0x2c  board height
-};
-SIZE_UNKNOWN(CTileRegMid);
-struct CTileRegMid {
-    char m_pad0[0x5c];
-    CTileBoardDims* m_5c; // +0x5c
-};
-SIZE_UNKNOWN(CTileReg);
-struct CTileReg {
-    char m_pad0[0x24];
-    CTileRegMid* m_24; // +0x24
-};
+// (The CTileReg -> CTileRegMid -> CTileBoardDims chain is GONE: it was the
+// board-dims read CombatCue makes off the trigger mgr's +0x22c level slot, i.e.
+// m_level -> m_24 (level view) -> m_5c (the plane) -> m_gridW/m_gridH - all
+// canonical shapes now; see CTriggerMgr::CombatCue in TriggerMgr.cpp.)
 
 // ---------------------------------------------------------------------------
-// The grunt's path/occupancy sub-manager (CGrunt+0x260). LoadEntranceConfig
-// drives it through four engine thunks (all external/no-body, reloc-masked):
-//   SetTile(a,b,c,d)     thunk_FUN_0046bcb0  (cell-owner mismatch notify; 4 args)
-//   ClaimTile(a,b,c,d)   thunk_FUN_0046bfd0  (claim the new tile; 4 args)
-//   ReleaseTile(a,b)     thunk_FUN_004784d0  (release on lookup miss; ret int)
-//   PostWire()           the 0-arg wire call after the grid stamp (WireTileSwitchLogic)
+// The grunt's path/occupancy board (CGrunt+0x260) IS the CTriggerMgr
+// (<Gruntz/TriggerMgr.h>) - the same object the registry holds at
+// g_gameReg->m_cmdGrid (+0x68). The former `CGruntTileMgr` view is DISSOLVED
+// (2026-07-14): every one of its ~24 method thunks resolves into CTriggerMgr's
+// method band on this receiver (each verified by chasing the caller's ILT jmp):
+//   ClaimTile        0x29cd -> 0x6bfd0  ResetCell
+//   ReleaseTile      0x33aa -> 0x784d0  RecordListHas
+//   LookupTile               -> 0x75af0  HitTestCell
+//   SetTileState4/ApplyCellEffect 0x2e96 -> 0x6bcb0  CellDispatch
+//   ArrivalNotify6 == Load6  0x3945 -> 0x75e90  LoadTileArrivalFx (ONE body)
+//   GetOccupant      0x253b -> 0x77df0  FindNearestEnemy
+//   CommitTileSlot   0x3030 -> 0x6e120  ApplyTriggerB
+//   CommitTileSlot2  0x14bf -> 0x6dae0  ApplyTriggerA
+//   NotifyEntranceDrop 0x2a72 -> 0x79fb0  NotifyCell
+//   CommitStruckTile 0x10eb -> 0x78260  RemoveCellRecord
+//   NotifyDeathTile  0x290a -> 0x79ea0  SpawnTileFx
+//   NotifyMoveAt     0x2fb3 -> 0x7b330  LoadExplosionSprites
+//   ProbeMoveTile    0x152d -> 0x7c620  FireCommand
+//   ResurrectCue     0x1fff -> 0x7be60  LoadGruntResurrectTuning
+//   NotifyArrival    0x275c/0x2c48 -> 0x6da60/0x6daa0  PostCellCommand6/7 (TWO fns)
+//   PostWire         0x3dfa -> 0x6c130  WireTileSwitchLogic(this,x,y) (3 args, not 0)
+//   CombatCue/FindAtPixel     -> 0x7b930/0x6e7e0 (bodies now CTriggerMgr methods)
+// The view's m_4 list head is m_baseList's node head (GetHeadPosition), its
+// m_grid[4][15] the flat m_grid[0x3c], its m_22c the m_level slot; the other
+// scalar fields it carried were dead (no m_tileMgr-> reader).
 // ---------------------------------------------------------------------------
-// The tile-mgr's live-grunt list entry (the CGruntTileMgr::m_4 chain payload): a
-// per-entry record whose tile col/row and busy flag the arrival scan reads (verified
-// from retail: [entry+0x54]=col, [entry+0x58]=row, [entry+0x5c]=busy, 0 = free). A
-// distinct record from CGrunt's own layout; modeled as a partial view (only the three
-// proven offsets are load-bearing; full identity of the record is still open).
-SIZE_UNKNOWN(CGruntTileEntry);
-struct CGruntTileEntry {
-    char m_pad0[0x54];
-    i32 m_col;  // +0x54  tile column
-    i32 m_row;  // +0x58  tile row
-    i32 m_busy; // +0x5c  occupancy flag (0 = free)
-};
-
-// A node of the tile-mgr's live-grunt list (CGruntTileMgr::m_4 chain): m_next @+0,
-// and @+8 the live-grunt entry (CGruntTileEntry: col/row/busy at +0x54/58/5c).
+// A node of the board's live-candidate list (CTriggerMgr::m_baseList's CPtrList
+// chain, walked raw through the recycled node shape): m_next @+0, and @+8 the
+// candidate payload (CTmCandidate: grid x/y/occupied at +0x54/58/5c).
+struct CTmCandidate; // <Gruntz/TriggerMgr.h> (the walk TUs include it)
 SIZE_UNKNOWN(CGruntLiveNode);
 struct CGruntLiveNode {
     CGruntLiveNode* m_next; // +0x00
     char m_pad4[0x8 - 0x4];
-    CGruntTileEntry* m_entry; // +0x08  live-grunt entry (col/row/busy at +0x54/58/5c)
-};
-
-// @identity-TODO: this view IS the real CTriggerMgr (<Gruntz/TriggerMgr.h>) - the same
-// object the registry holds at g_gameReg->m_68. PROVEN for two of its methods by reading
-// retail's own bytes at the call sites (assert_relocs --fake-targets): what this view
-// called `SetTile` is ?CellDispatch@CTriggerMgr@@QAEHHHHH@Z (0x6bcb0) and what it called
-// `CommitArrivalMove` is ?WireTileSwitchLogic@CTileWireLogic@@QAEHPAXHH@Z (0x6c130) - both
-// already reconstructed in triggermgrgrid. Those two fabricated declarations are GONE (they
-// were unresolved externals); their call sites now go through the real classes. The other
-// ~24 methods below still have no recovered identity, so the view (and m_tileMgr's type)
-// stays until each is traced - folding them onto CTriggerMgr now would only relabel 24
-// phantom symbols as "backlog" and hide them from link_defects.
-SIZE_UNKNOWN(CGruntTileMgr);
-class CGruntTileMgr {
-public:
-    void ClaimTile(i32 a, i32 b, i32 c, i32 d); // thunk_FUN_0046bfd0
-    i32 ReleaseTile(i32 a, i32 b);              // thunk_FUN_004784d0
-    void PostWire();                            // WireTileSwitchLogic (0-arg)
-    void NotifyArrival(i32 a, i32 b);           // thunk_FUN_0046da60 (2-arg)
-    CGrunt* GetOccupant(CGrunt* g);             // FUN_00477df0 (1-arg, returns grunt)
-    CGrunt* FindAtPixel(i32 x, i32 y);          // call 0x2b67 (grunt under a HUD pixel)
-    i32 LookupTile(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // FUN_00475af0 (ret 0x14)
-    // The grunt anim-dispatch state machines drive the tile-mgr through two more
-    // thunks (external/no-body, reloc-masked): a 6-arg arrival notify and a 4-arg
-    // tile state set.
-    void ArrivalNotify6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // thunk (ret 0x18)
-    void SetTileState4(i32 a, i32 b, i32 c, i32 d);                // thunk (ret 0x10)
-    i32 ProbeFreeTile(i32 a, i32 b, void* c, i32 d, void* e, i32 f, i32 g, i32 h, i32 i); // probe
-    // The grunt-step scan machines (WanderIdleStep / GruntArrivalScan / GruntUpdateStep)
-    // reach two more operations, both already modeled above under other names (same
-    // reloc-masked targets): FindGrunt (thunk 0x253b -> 0x477df0) IS GetOccupant, and
-    // Scatter (thunk 0x14bf -> 0x6dae0) IS CommitTileSlot2. No new methods needed.
-    // (UpdateEntranceAnim's arrival-commit at 0x6c130 used to be declared here as
-    // `CommitArrivalMove`. It IS CTileWireLogic::WireTileSwitchLogic - see the note above -
-    // so the call sites cast the tile-mgr to CTileWireLogic and call the real body.)
-    // (ClaimSwitchTile's tile-mgr apply, ex `ApplyTileSwitch`, IS the real
-    // ?ApplySwitch@CTriggerMgr@@ @0x6d300 (thunk 0x26df) - callers now cast to
-    // CTriggerMgr and call it; the alias decl is gone.)
-    // TryPowerupAtTile's tile-mgr probe (thunk_0x152d -> 0x7c620), 6 args ret 0x18.
-    void ProbeMoveTile(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
-    // The two big tile-mgr occupancy-commit helpers the arrival/update steps drive
-    // (the in-flight-arrival path commits the grunt's occupied slot to a settled
-    // position). thunk 0x3030 -> 0x6e120 (4-arg) and thunk 0x14bf -> 0x6dae0 (4-arg);
-    // external/no-body so the calls reloc-mask.
-    void CommitTileSlot(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6e120
-    // 0x6dae0 - returns -1 when the slot couldn't be committed (the reposition step
-    // @0xec670 gates on != -1); other callers discard the result.
-    i32 CommitTileSlot2(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6dae0
-    // FinishEntranceMove's tile-mgr drop notify (thunk_0x2a72 -> 0x79fb0), 3 args.
-    void NotifyEntranceDrop(i32 ownerHi, i32 ownerLo, i32 flag); // 0x79fb0
-    // The death/struck-reaction tile-mgr commit (thunk_0x10eb -> 0x78260), 3 args.
-    void CommitStruckTile(i32 ownerHi, i32 ownerLo, i32 flag); // 0x78260
-    // The DEATHZ finalize tile-notify at the grunt's HUD pos (thunk_0x290a -> 0x79ea0),
-    // 3 args (px, py, m_38c). External/no-body (reloc-masked).
-    void NotifyDeathTile(i32 px, i32 py, i32 c); // 0x79ea0
-    // The run-start drop notify at the grunt's HUD pos (thunk_0x2fb3 -> 0x7b330), 4 args.
-    void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
-    // RunMoveConfig's I-pose tile load (thunk_0x3945 -> 0x75e90), 6 args. External.
-    void Load6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x75e90
-    // The spell-ability area cues (LoadGruntAbilityTuning): the 5-arg combat-area cue
-    // (thunk 0x400c -> LoadGruntCombatTuning 0x7b930) + the 3-arg resurrect-area cue
-    // (thunk 0x1fff -> LoadGruntResurrectTuning). External/no-body (reloc-masked).
-    i32 CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag); // 0x400c (ret 0x14)
-    i32 ResurrectCue(i32 x, i32 y, i32 radius);                  // 0x1fff (ret 0xc)
-    // CombatCue's per-grid-cell effect for tiers 1/6/7 (thunk 0x2e96, __thiscall on
-    // the tile-mgr, ret 0x10): apply the (i,j) cell effect with the tier value + flag.
-    void ApplyCellEffect(i32 i, i32 j, i32 k, i32 flag); // 0x2e96
-
-    // The tile-mgr's live-grunt list head (+0x04): the WanderIdle/ArrivalScan seek
-    // walks it for the nearest targetable grunt. Its node is {next @+0, entry @+8};
-    // the entry's tile col/row/busy live at raw +0x54/+0x58/+0x5c (a per-entry view
-    // distinct from CGrunt's own layout), so the entry is left a raw pointer.
-    char m_pad0[0x4];
-    struct CGruntLiveNode* m_4; // +0x04  live-grunt list head
-    char m_pad8[0x1c - 0x8];
-    // CombatCue's grid (this+0x1c): a 4x15 grunt-pointer board scanned i=0..3, j=0..14
-    // (the address is monotonic, so retail strength-reduces it to a running pointer).
-    // Also the WanderIdle/UpdateStep move grid (indexed [col][row] = flat col*15+row).
-    CGrunt* m_grid[4][15]; // +0x1c
-    char m_pad10c[0x148 - 0x10c];
-    i32 m_148;   // +0x148
-    i32 m_14c;   // +0x14c
-    void* m_150; // +0x150
-    char m_pad154[0x18c - 0x154];
-    i32 m_18c; // +0x18c
-    char m_pad190[0x194 - 0x190];
-    i32 m_194;      // +0x194
-    i32 m_198;      // +0x198
-    i32 m_19c;      // +0x19c
-    i32 m_moveMode; // +0x1a0
-    i32 m_1a4;      // +0x1a4
-    char m_pad1a8[0x1dc - 0x1a8];
-    i32 m_1dc; // +0x1dc
-    i32 m_1e0; // +0x1e0
-    char m_pad1e4[0x208 - 0x1e4];
-    i32 m_208; // +0x208
-    i32 m_20c; // +0x20c
-    i32 m_210; // +0x210
-    i32 m_214; // +0x214
-    i32 m_218; // +0x218
-    char m_pad21c[0x228 - 0x21c];
-    i32 m_228;       // +0x228
-    CTileReg* m_22c; // +0x22c  the level registry (board dims)
+    CTmCandidate* m_entry; // +0x08  candidate (m_gridX/m_gridY/m_occupied at +0x54/58/5c)
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue
@@ -1530,7 +1421,11 @@ public:
     i32 m_254;             // +0x254 (serialized)
     i32 m_gruntKind;       // +0x258 (grunt type/kind; ==0x37 -> halve TimePerTile)
     i32 m_entranceArmed;   // +0x25c (entrance: set to 1)
-    CGruntTileMgr* m_tileMgr; // +0x260 (path/occupancy sub-manager)
+    // +0x260  the path/occupancy board == the ONE CTriggerMgr (same object as
+    // g_gameReg->m_cmdGrid; the ex-CGruntTileMgr view is dissolved - see the
+    // thunk-resolution table above). Fwd-declared via <Gruntz/GameRegistry.h>;
+    // TUs that dispatch on it include <Gruntz/TriggerMgr.h>.
+    class CTriggerMgr* m_tileMgr;
     i32 m_struckCount;        // +0x264 (struck-reaction counter; cue tier 5/0xa)
     i32 m_struckClockLo;      // +0x268 (= g_frameTime game clock at last struck)
     i32 m_struckClockHi;      // +0x26c (= 0)

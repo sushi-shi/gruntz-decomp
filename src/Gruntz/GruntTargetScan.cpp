@@ -36,7 +36,8 @@
 #include <string.h>
 
 #include <rva.h>
-#include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
+#include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
+#include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr (ex the CGruntTileMgr view)
 #include <Gruntz/GameRegistry.h> // CGameRegistry / CSpriteFactoryHolder
 #include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane (world->m_24->m_mainPlane->m_originX)
 #include <Gruntz/ScanGrid.h>     // CScanGrid (the shared board-grid dims view)
@@ -137,9 +138,9 @@ i32 CGrunt::ScanNearestTarget() {
         if (row == ownerHi) {
             continue;
         }
-        CGruntTileMgr* board = (CGruntTileMgr*)g_gameReg->m_cmdGrid;
+        CTriggerMgr* board = g_gameReg->m_cmdGrid;
         for (i32 col = 0; col < 15; col++) {
-            CGrunt* cand = board->m_grid[row][col];
+            CGrunt* cand = board->m_grid[row * TM_GRID_COLS + col];
             if (cand != 0 && cand->m_entranceCommitted != 0 && cand->m_gruntKind != 0x36) {
                 i32 pa;
                 PRIO(pa, m_entranceReason);
@@ -367,7 +368,7 @@ i32 CGrunt::ScanNearestTarget() {
             return 1;
         }
         case 1: {
-            CGrunt* sg = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            CGrunt* sg = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (best != 0 && best != sg) {
                 m_arrivalCol = -1;
                 m_defenderState = 0;
@@ -417,7 +418,7 @@ i32 CGrunt::ScanNearestTarget() {
         }
         case 2: {
             if (m_poweredUp != 0) {
-                CGrunt* sg = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+                CGrunt* sg = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
                 if (sg == 0) {
                     goto L_setLock;
                 }

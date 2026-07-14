@@ -1015,7 +1015,7 @@ i32 CGrunt::CommitArrival() {
     }
     if (m_tileClaimed != 0) {
         if (g_gameReg->m_134 == 2) {
-            m_tileMgr->NotifyArrival(m_tileOwnerHi, m_tileOwnerLo);
+            m_tileMgr->PostCellCommand7(m_tileOwnerHi, m_tileOwnerLo); // 0x2c48 -> 0x6daa0
         } else if (m_tileClaimed != 0) {
             m_arrivalRerollLo = 0;
             m_arrivalRerollWindowLo = 0;
@@ -1122,7 +1122,7 @@ void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     return;
 
 reachedTarget:
-    m_tileMgr->SetTileState4(a, b, c, d);
+    m_tileMgr->CellDispatch(a, b, c, d);
 }
 
 // ---------------------------------------------------------------------------
@@ -1387,7 +1387,7 @@ label_4c68b:
         } else {
             owner = -1;
         }
-        m_tileMgr->ApplyCellEffect((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
+        m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
     }
 
 label_4c6e4:

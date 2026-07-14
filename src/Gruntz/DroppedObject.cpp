@@ -862,7 +862,7 @@ i32 CDroppedObject::ActA() {
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
-        ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->CombatCue(m_object->m_screenX, m_landY, 1, 7, -1);
+        g_gameReg->m_cmdGrid->CombatCue(m_object->m_screenX, m_landY, 1, 7, -1);
         return 0;
     }
     m_object->m_screenY = landed;

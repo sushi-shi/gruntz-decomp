@@ -463,6 +463,34 @@ public:
     // (ILT 0x33aa / 0x3d1e) - both already reconstructed on THIS class.
     i32 CenterOnGroup(i32 doSelect);
 
+    // --- the ex-CGruntTileMgr method set (Grunt.h view, DISSOLVED 2026-07-14).
+    // CGrunt::m_tileMgr (+0x260) IS this class - every dispatch site loads
+    // ecx=[grunt+0x260] and its thunk lands in this class's method band; the view's
+    // ClaimTile/ReleaseTile/LookupTile/SetTileState4/ArrivalNotify6/... were alias
+    // names for ResetCell/RecordListHas/HitTestCell/CellDispatch/LoadTileArrivalFx.
+    // The four rows below are the targets the view carried that had NO decl here yet
+    // (each verified by resolving the caller's ILT thunk to its body):
+    // 0x75e90 (thunk 0x3945; 6 args, ret 0x18): the tile-arrival effect/switch
+    // driver (LEVEL_DIRT/GAME_DIRT/LEVEL_GAUNTLETROCK1 tile fx by reason). The
+    // grunt anim-dispatch machines fire it on settled arrival (ex ArrivalNotify6 ==
+    // ex Load6, one body). Declared-only (unreconstructed; reloc-masked).
+    i32 LoadTileArrivalFx(i32 ownerHi, i32 ownerLo, i32 tileX, i32 tileY, i32 reason, i32 sel);
+    // 0x79ea0 (thunk 0x290a; Ghidra SpawnTileFx): spawn the death/finalize tile fx
+    // at the grunt's HUD point. Declared-only (reloc-masked).
+    void SpawnTileFx(i32 px, i32 py, i32 kind);
+    // 0x6da60 / 0x6daa0 (thunks 0x275c / 0x2c48): post cell command 6 / 7 for the
+    // (hi,lo) cell - each forwards (1, hi, lo, N, 0,0,0,0) to the registry's
+    // command sub-manager (g_gameReg->m_6c, CGruntzCmdMgr). The bodies never touch
+    // `this`, but every retail caller dispatches them thiscall on this board.
+    void PostCellCommand6(i32 hi, i32 lo); // 0x6da60
+    void PostCellCommand7(i32 hi, i32 lo); // 0x6daa0
+    // 0x7b930: the 5-arg combat-area cue (radius scan over m_grid applying the
+    // per-cell tier effect); body in TriggerMgr.cpp (ex ?CombatCue@CGruntTileMgr@@).
+    i32 CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag); // 0x7b930 (ret 0x14)
+    // 0x6e7e0: the HUD/pixel grunt probe (5-byte always-0 stub); body in
+    // TriggerMgrGrid.cpp (ex ?FindAtPixel@CGruntTileMgr@@).
+    CGrunt* FindAtPixel(i32 x, i32 y); // 0x6e7e0
+
     // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
     // list arrays). Reconstructed to plateau (eh sibling TU).
     ~CTriggerMgr();

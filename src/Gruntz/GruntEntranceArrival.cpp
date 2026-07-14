@@ -401,7 +401,7 @@ i32 CGrunt::UpdateGruntStatus() {
             return 0;
         }
         m_neighborValid = 0;
-        CGrunt* n = m_tileMgr->m_grid[m_neighborCol][m_neighborRow];
+        CGrunt* n = m_tileMgr->m_grid[m_neighborCol * TM_GRID_COLS + m_neighborRow];
         if (n == 0 || n->m_entranceCommitted == 0) {
             return 0;
         }
@@ -706,7 +706,7 @@ i32 CGrunt::StepAttackFire() {
             }
             default: {
                 // melee: hit the grunt at the neighbor grid cell (15-row grid).
-                CGrunt* tgt = m_tileMgr->m_grid[m_neighborCol][m_neighborRow];
+                CGrunt* tgt = m_tileMgr->m_grid[m_neighborCol * TM_GRID_COLS + m_neighborRow];
                 if (tgt == 0) {
                     flag = 1;
                     break;
@@ -814,14 +814,14 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     if (a2 != 0) {
         ClearSubA();
         if (m_arrivalPhase == 3 && m_arrivalActive != 0) {
-            CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (occ != 0) {
                 CGruntHud* inner = occ->m_10;
                 i32 yMasked = (inner->m_60 & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_5c & ~0x1f) + 0x10;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
                     m_tileMgr
-                        ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                        ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
                 }
             }
         }
@@ -1354,7 +1354,7 @@ void CGrunt::ResolveEntranceArrival() {
             if (slot != 0 && slot->m_14 != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == 2
                     && g_curPlayer == m_tileOwnerHi && m_arrived == 0) {
-                    m_tileMgr->NotifyArrival(m_tileOwnerHi, m_tileOwnerLo);
+                    m_tileMgr->PostCellCommand6(m_tileOwnerHi, m_tileOwnerLo); // 0x275c -> 0x6da60
                     m_arrivalNotified = 1;
                     goto tail;
                 }
@@ -1437,7 +1437,7 @@ i32 CGrunt::StepEntranceReinit() {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
     if (eq) {
         // code "I": re-notify the tile mgr of the arrival.
-        m_tileMgr->ArrivalNotify6(
+        m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
             m_moveTileX,
@@ -1798,7 +1798,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     }
 
     m_entranceActive = 1;
-    m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
+    m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_exitKeyB);
@@ -1867,7 +1867,7 @@ i32 CGrunt::StepWarpExit() {
         }
     }
     if (m_36c == 0) {
-        ((CTriggerMgr*)m_tileMgr)->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 1);
+        m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 1);
     }
     m_154->m_8 |= 0x10000;
     return 0;
@@ -1917,7 +1917,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         if (m_entranceReason == 0x13) {
             g_gameReg->m_cueSink->Cue1(m_10->m_188);
         }
-        m_tileMgr->ArrivalNotify6(
+        m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
             m_moveTileX,
@@ -1942,7 +1942,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         goto tail;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeQ) == 0) {
-        ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 6, a2);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 6, a2);
         return 0;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeJ) == 0) {
@@ -2055,7 +2055,7 @@ tail:
         if (strcmp(rec->m_name, s_codeO) != 0) {
             m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeH);
-            void* cellObj = m_tileMgr->m_grid[a2][a3];
+            void* cellObj = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
             if (cellObj != 0) {
                 CGruntHud* oh = ((CGrunt*)cellObj)->m_10;
                 i32 cx = oh->m_5c;
@@ -2124,7 +2124,7 @@ i32 CGrunt::StepArrivalCommitA() {
     }
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
         return 0;
     }
     m_entranceActive = 0;
@@ -2176,7 +2176,7 @@ i32 CGrunt::StepArrivalCommitB() {
     ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic((void*)this, m_lastTilePxX, m_lastTilePxY);
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
         return 0;
     }
     CGameRegistry* g = g_gameReg;
@@ -2228,7 +2228,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
     if (eq) {
         m_tileMgr
-            ->Load6(m_tileOwnerHi, m_tileOwnerLo, m_moveTileX, m_moveTileY, m_entranceReason, -1);
+            ->LoadTileArrivalFx(m_tileOwnerHi, m_tileOwnerLo, m_moveTileX, m_moveTileY, m_entranceReason, -1);
     } else {
         CGruntHud* h = m_10;
         CGameRegistry* g = g_gameReg;
@@ -2375,7 +2375,7 @@ RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
     i32 ready = m_154->Cursor()->Advance((u32)g_engineFrameDelta);
     if (ready > 0) {
-        m_tileMgr->Load6(
+        m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
             m_moveTileX,

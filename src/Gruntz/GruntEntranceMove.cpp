@@ -292,7 +292,7 @@ i32 CGrunt::RunEntranceMove() {
 // grid-base-first / typed-grid all keep edx). Deferred to the final sweep.
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
-    CGrunt* other = m_tileMgr->m_grid[col][row];
+    CGrunt* other = m_tileMgr->m_grid[col * TM_GRID_COLS + row];
     if (other != 0 && other->m_entranceCommitted != 0 && other->m_gruntKind != 0x36) {
         i32 ox = other->m_lastTilePxX >> 5;
         i32 oy = other->m_lastTilePxY >> 5;
@@ -488,7 +488,7 @@ void CGrunt::LoadEntranceConfig() {
             i32 b = (owner >> 8) & 0xff;
             i32 a = owner & 0xff;
             if (m_tileOwnerHi != b || m_tileOwnerLo != a) {
-                ((CTriggerMgr*)m_tileMgr)->CellDispatch(b, a, 2, m_tileOwnerHi);
+                m_tileMgr->CellDispatch(b, a, 2, m_tileOwnerHi);
             }
         }
 
@@ -515,7 +515,7 @@ void CGrunt::LoadEntranceConfig() {
         }
         m_lastTilePxX = newPxX;
         m_lastTilePxY = newPxY;
-        m_tileMgr->PostWire();
+        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, newPxX, newPxY);
 
         h = m_10;
         m_entranceCommitted = 1;
@@ -533,7 +533,7 @@ void CGrunt::LoadEntranceConfig() {
             if (m_tileOwnerHi == g_curPlayer) {
                 g_gameReg->m_cueSink->CueA(this, 0x33f, -1, 0, -1, -1);
             }
-            m_tileMgr->ClaimTile(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
+            m_tileMgr->ResetCell(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
             m_entranceDropActive = 1;
             m_entranceSafeTimeLo = g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 5000);
             m_entranceSafeTimeHi = 0;
@@ -542,7 +542,7 @@ void CGrunt::LoadEntranceConfig() {
             m_858 = 0;
             m_85c = 0;
         } else {
-            if (m_tileMgr->ReleaseTile(m_tileOwnerHi, m_tileOwnerLo)) {
+            if (m_tileMgr->RecordListHas(m_tileOwnerHi, m_tileOwnerLo)) {
                 EntranceOnReleased();
             }
         }
@@ -600,9 +600,9 @@ void CGrunt::RearmEntranceDrop() {
         i32 a;
         i32 b;
         m_entranceCommitted = 0;
-        if (m_tileMgr->LookupTile(m_10->m_5c, m_10->m_60, &a, &b, 0) != 0) {
-            ((CTriggerMgr*)m_tileMgr)->CellDispatch(a, b, 0xb, -1);
-            ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        if (m_tileMgr->HitTestCell(m_10->m_5c, m_10->m_60, &a, &b, 0) != 0) {
+            m_tileMgr->CellDispatch(a, b, 0xb, -1);
+            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         } else {
             m_entranceCommitted = 1;
         }
@@ -668,12 +668,12 @@ i32 CGrunt::StartBombGruntRun() {
         ReseedIdleReset(1, 0, 0);
     }
     m_entranceActive = 1;
-    m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
+    m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
     ApplySetState1(1);
     SetEntrancePos(1, 1);
     if (SetMoveStateA(1, 1, 0, 1) == 0) {
         CGruntHud* h = m_10;
-        m_tileMgr->NotifyMoveAt(h->m_5c, h->m_60, -1, 0);
+        m_tileMgr->LoadExplosionSprites(h->m_5c, h->m_60, -1, 0);
         return 0;
     }
     i32 dx = GruntRand() % 3 - 1;
@@ -989,7 +989,7 @@ i32 CGrunt::StepArrivalCommit() {
         if (m_entranceReason == 0x13) {
             g_gameReg->m_cueSink->Cue1(m_10->m_188);
         }
-        m_tileMgr->ArrivalNotify6(
+        m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
             m_moveTileX,
@@ -1000,7 +1000,7 @@ i32 CGrunt::StepArrivalCommit() {
         if (m_entranceReason != 1) {
             goto finalize;
         }
-        ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         return 0;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeG) == 0);
@@ -1076,7 +1076,7 @@ i32 CGrunt::StepArrivalCommit() {
         GruntScratchTeardown();
         eq = (strcmp(prev, s_codeM) == 0);
         if (eq) {
-            ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
             return 0;
         }
         goto finalize;
@@ -1154,7 +1154,7 @@ finalize:
         ResetEntranceAnimation(1, 0, 0);
     }
     m_entranceActive = 1;
-    m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
+    m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeQ);
     {
@@ -1256,7 +1256,7 @@ i32 CGrunt::FinishEntranceMove() {
     }
     if (m_36c == 0) {
         // 0x79fb0 = CTriggerMgr::NotifyCell (the reused registry slot), not a CGruntTileMgr method
-        ((CTriggerMgr*)m_tileMgr)->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+        m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
     m_154->m_8 |= 0x10000;
     return 0;
@@ -1530,7 +1530,7 @@ i32 CGrunt::StepAnimDispatchB() {
         if (m_entranceReason == 0x13) {
             EmitMoveCueShort(m_10->m_188, 0, 0);
         }
-        m_tileMgr->ArrivalNotify6(
+        m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
             m_moveTileX,

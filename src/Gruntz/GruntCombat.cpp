@@ -577,7 +577,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
-            return m_tileMgr->ResurrectCue(
+            return m_tileMgr->LoadGruntResurrectTuning(
                 m_lastTilePxX,
                 m_lastTilePxY,
                 g_buteMgr.GetIntDef(s_Spellz, s_RessurectionRadius, 8)
@@ -799,7 +799,7 @@ i32 CGrunt::TryPowerupAtTile() {
     if ((flags & 0x939) || (flags & 2)) {
         return 0;
     }
-    m_tileMgr->ProbeMoveTile(reason, px, py, 0, 1, 0);
+    m_tileMgr->FireCommand(reason, px, py, 0, 1, 0);
     return 1;
 }
 
@@ -1281,7 +1281,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 
         i32 phase = m_arrivalPhase;
         if ((phase == 3 || phase == 2) && m_arrivalActive != 0) {
-            CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (occ != 0) {
                 CGruntHud* inner = occ->m_10;
                 i32 yMasked = (inner->m_60 & ~0x1f) + 0x10;
@@ -1297,10 +1297,10 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
                 }
                 if (phase == 3) {
                     m_tileMgr
-                        ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                        ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
                 } else {
                     m_tileMgr
-                        ->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                        ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
                 }
             }
         }
@@ -1901,7 +1901,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     m_combatClockHi = 0;
     m_358 = 1;
 
-    CGrunt* nb = m_tileMgr->m_grid[a][b];
+    CGrunt* nb = m_tileMgr->m_grid[a * TM_GRID_COLS + b];
     if (nb == 0 || nb->m_entranceCommitted == 0 || m_entranceCommitted == 0) {
         return 0;
     }
@@ -1922,7 +1922,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
     if (eq) {
-        m_tileMgr->ArrivalNotify6(
+        m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
             m_moveTileX,
@@ -2040,7 +2040,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         return 0;
     }
 
-    CGrunt* n = m_tileMgr->m_grid[m_neighborCol][m_neighborRow];
+    CGrunt* n = m_tileMgr->m_grid[m_neighborCol * TM_GRID_COLS + m_neighborRow];
     if (n != 0 && n->m_entranceCommitted != 0) {
         if (validate != 0) {
             if (n->m_10->m_5c != n->m_lastTilePxX) {

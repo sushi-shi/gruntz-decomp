@@ -12,7 +12,8 @@
 // their own files pending the WwdGameReg/CGameRegistry singleton dual-view reconciliation
 // (see the M2 report); they interleave this unit's span until then.
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
-#include <Gruntz/Grunt.h>     // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
+#include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
+#include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr (ex the CGruntTileMgr view)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24) + CLevelPlane visible rect
 #include <Wap32/ZVec.h>
 #include <Ints.h>
@@ -173,7 +174,7 @@ extern "C" u32 g_frameTime; // 0x645588 (second name for g_frameTime, reloc-mask
 // MSVC /O2 idiv scheduling + the ebx zero-register tail sharing. Final sweep.
 RVA(0x000ec670, 0x298)
 i32 CGrunt::ResolveArrivalReposition() {
-    CGrunt* occ = m_tileMgr->GetOccupant(this);
+    CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
     if (occ != 0 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
@@ -181,7 +182,7 @@ i32 CGrunt::ResolveArrivalReposition() {
             CGruntHud* oh = occ->m_10;
             if (TileSwitch6(oh->m_5c >> 5, oh->m_60 >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                 CGruntHud* oh2 = occ->m_10;
-                if (m_tileMgr->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, oh2->m_5c, oh2->m_60)
+                if (m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, oh2->m_5c, oh2->m_60)
                     == -1) {
                     m_dwell = 0;
                     if (m_390 != 0) {
@@ -279,7 +280,7 @@ i32 CGrunt::ArrivalScanA() {
     GetScreenPos((GruntTilePos*)c2);
     i32 cy = c2[1] >> 5;
 
-    CGrunt* g = m_tileMgr->GetOccupant(this);
+    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
     if (g != 0) {
         i32 x = g->m_10->m_5c;
@@ -384,7 +385,7 @@ L_ed153:
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
-            m_tileMgr->CommitTileSlot2(
+            m_tileMgr->ApplyTriggerA(
                 m_tileOwnerHi,
                 m_tileOwnerLo,
                 (col << 5) + 0x10,
@@ -459,7 +460,7 @@ L_ed153:
         i32 dr = bestRow - cy;
         IABS(dr);
         if (dc <= 1 && dr <= 1) {
-            m_tileMgr->CommitTileSlot2(
+            m_tileMgr->ApplyTriggerA(
                 m_tileOwnerHi,
                 m_tileOwnerLo,
                 (bestCol << 5) + 0x10,
@@ -496,7 +497,7 @@ i32 CGrunt::WanderStep() {
     m_defenderY = m_lastTilePxY;
 
     i32 flag = 0;
-    CGrunt* g = m_tileMgr->GetOccupant(this);
+    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     if (g != 0) {
         i32 gx = g->m_10->m_5c;
         if (gx == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
@@ -588,8 +589,8 @@ i32 CGrunt::WanderStep() {
             goto timeout;
 
         case 1: {
-            CGrunt* slot = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
-            CGrunt* active = m_tileMgr->GetOccupant(this);
+            CGrunt* slot = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
+            CGrunt* active = m_tileMgr->FindNearestEnemy(this);
             if (active != 0 && active != slot) {
                 m_arrivalCol = -1;
                 m_defenderState = 0;
@@ -650,7 +651,7 @@ i32 CGrunt::WanderStep() {
                 m_defenderState = 0;
                 return 1;
             }
-            CGrunt* slot = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            CGrunt* slot = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (slot == 0 || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
                 || slot->m_entranceCommitted == 0) {
                 goto ph1;
@@ -724,7 +725,7 @@ i32 CGrunt::WanderStep() {
             i32 px = GameRand() % 4 + (base->m_5c >> 5) - 2;
             if ((u32)m_arrivalCol < 4 && (u32)m_arrivalRow < 0xf) {
                 CGrunt* entry =
-                    ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[m_arrivalCol][m_arrivalRow];
+                    g_gameReg->m_cmdGrid->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
                 if (entry != 0) {
                     CGruntHud* e10 = entry->m_10;
                     RECT rc;
@@ -824,7 +825,7 @@ i32 CGrunt::ArrivalReticleScan() {
         return 1;
     }
 
-    CGrunt* occ = m_tileMgr->GetOccupant(this);
+    CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     i32 occOnTile = 0;
     if (occ) {
         CGameObject* oo = occ->m_object;
@@ -929,7 +930,7 @@ i32 CGrunt::UpdateArrival() {
     }
     this->m_defenderX = this->m_lastTilePxX;
     this->m_defenderY = this->m_lastTilePxY;
-    CGrunt* g = m_tileMgr->GetOccupant(this);
+    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     bool atTarget = false;
     if (g != 0) {
         i32 x = g->m_10->m_5c;
@@ -1068,9 +1069,9 @@ i32 CGrunt::UpdateArrival() {
             }
             break;
         case 1: {
-            CGrunt* slot = m_tileMgr->m_grid[this->m_arrivalCol][this->m_arrivalRow];
-            i32 cur = m_tileMgr->GetOccupant(this) ? 1 : 0;
-            CGrunt* found = m_tileMgr->GetOccupant(this);
+            CGrunt* slot = m_tileMgr->m_grid[this->m_arrivalCol * TM_GRID_COLS + this->m_arrivalRow];
+            i32 cur = m_tileMgr->FindNearestEnemy(this) ? 1 : 0;
+            CGrunt* found = m_tileMgr->FindNearestEnemy(this);
             (void)cur;
             if (found == 0 || found == slot) {
                 if (slot == 0 || slot->m_entranceCommitted == 0
@@ -1161,7 +1162,7 @@ i32 CGrunt::ArrivalScanB() {
     GetScreenPos((GruntTilePos*)c2);
     i32 cy = c2[1] >> 5;
 
-    CGrunt* g = m_tileMgr->GetOccupant(this);
+    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
     if (g != 0) {
         i32 x = g->m_10->m_5c;
@@ -1273,7 +1274,7 @@ L_scanb:
         i32 col = coord->x;
         i32 row = coord->y;
         if (CellTargetable(col, row) != 0) {
-            m_tileMgr->CommitTileSlot2(
+            m_tileMgr->ApplyTriggerA(
                 m_tileOwnerHi,
                 m_tileOwnerLo,
                 (col << 5) + 0x10,
@@ -1324,15 +1325,15 @@ L_scanb:
     i32 best = 0x7fffffff;
     i32 bestX = 0;
     i32 bestY = 0;
-    CGruntLiveNode* node = m_tileMgr->m_4;
+    CGruntLiveNode* node = (CGruntLiveNode*)m_tileMgr->m_baseList.GetHeadPosition();
     while (node != 0) {
-        CGruntTileEntry* gg = node->m_entry;
+        CTmCandidate* gg = node->m_entry;
         node = node->m_next;
-        if (gg->m_busy == 0) {
-            i32 gx = gg->m_col;
-            i32 gy = gg->m_row;
+        if (gg->m_occupied == 0) {
+            i32 gx = gg->m_gridX;
+            i32 gy = gg->m_gridY;
             if (RectContains((gx << 5) + 0x10, (gy << 5) + 0x10) != 0) {
-                m_tileMgr->CommitTileSlot2(
+                m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,
                     m_tileOwnerLo,
                     (gx << 5) + 0x10,
@@ -1363,7 +1364,7 @@ L_scanb:
         i32 dy = bestY - cy;
         IABS(dy);
         if (dx <= 1 && dy <= 1) {
-            m_tileMgr->CommitTileSlot2(
+            m_tileMgr->ApplyTriggerA(
                 m_tileOwnerHi,
                 m_tileOwnerLo,
                 (bestX << 5) + 0x10,
@@ -1394,7 +1395,7 @@ L_scanb:
 RVA(0x000f1c70, 0x60d)
 i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
-    CGrunt* occ = m_tileMgr->GetOccupant(this);
+    CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     i32 inRange = 0;
     if (occ != 0 && occ->m_10->m_5c == occ->m_lastTilePxX && occ->m_10->m_60 == occ->m_lastTilePxY
         && RectContains(occ->m_10->m_5c, occ->m_10->m_60) != 0) {
@@ -1443,7 +1444,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
 
     switch (m_defenderState) {
         case 0: {
-            CGrunt* o = m_tileMgr->GetOccupant(this);
+            CGrunt* o = m_tileMgr->FindNearestEnemy(this);
             if (o != 0) {
                 if (m_poweredUp != 0) {
                     goto tail;
@@ -1525,8 +1526,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
         }
 
         case 1: {
-            CGrunt* o = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
-            CGrunt* g = m_tileMgr->GetOccupant(this);
+            CGrunt* o = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
+            CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != 0 && g != o) {
                 m_arrivalCol = -1;
                 m_defenderState = 0;
@@ -1576,7 +1577,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 m_defenderState = 0;
                 return 1;
             }
-            CGrunt* o = m_tileMgr->GetOccupant(this);
+            CGrunt* o = m_tileMgr->FindNearestEnemy(this);
             if (o == 0) {
                 goto tail;
             }
@@ -1662,7 +1663,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
     }
 
     m_defenderState = 0;
-    CGrunt* occ = m_tileMgr->GetOccupant(this);
+    CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     if (occ == 0) {
         return 1;
     }
@@ -1716,7 +1717,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = 1;
                 return 1;
             }
-            occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (occ == 0) {
                 m_defenderState = 0;
                 return 1;
@@ -1746,8 +1747,8 @@ i32 CGrunt::StepArrivalDefense() {
                 goto c2_miss;
             }
             if (m_198 == 0x1e) {
-                ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
-                    ->CommitTileSlot(
+                g_gameReg->m_cmdGrid
+                    ->ApplyTriggerB(
                         m_tileOwnerHi,
                         m_tileOwnerLo,
                         occ->m_10->m_5c,
@@ -1782,8 +1783,8 @@ i32 CGrunt::StepArrivalDefense() {
             return 1;
 
         case 1: {
-            occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
-            CGrunt* g = m_tileMgr->GetOccupant(this);
+            occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
+            CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != 0 && g != occ) {
                 m_arrivalCol = -1;
                 m_defenderState = 0;
@@ -1816,8 +1817,8 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if (m_198 == 0x1e) {
-                ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
-                    ->CommitTileSlot(
+                g_gameReg->m_cmdGrid
+                    ->ApplyTriggerB(
                         m_tileOwnerHi,
                         m_tileOwnerLo,
                         occ->m_10->m_5c,
@@ -1839,7 +1840,7 @@ i32 CGrunt::StepArrivalDefense() {
         }
 
         case 0:
-            occ = m_tileMgr->GetOccupant(this);
+            occ = m_tileMgr->FindNearestEnemy(this);
             if (occ == 0) {
                 goto L_f308a;
             }
@@ -1847,8 +1848,8 @@ i32 CGrunt::StepArrivalDefense() {
                 && occ->m_10->m_60 == occ->m_lastTilePxY
                 && RectContains(occ->m_10->m_5c, occ->m_10->m_60) != 0) {
                 if (m_198 == 0x1e) {
-                    ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
-                        ->CommitTileSlot(
+                    g_gameReg->m_cmdGrid
+                        ->ApplyTriggerB(
                             m_tileOwnerHi,
                             m_tileOwnerLo,
                             occ->m_10->m_5c,
@@ -1979,7 +1980,7 @@ i32 CGrunt::ArrivalScanC() {
     GetScreenPos((GruntTilePos*)c2);
     i32 cy = c2[1] >> 5;
 
-    CGrunt* g = m_tileMgr->GetOccupant(this);
+    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
     if (g != 0) {
         i32 x = g->m_10->m_5c;
@@ -2076,7 +2077,7 @@ L_tailc:
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
-            m_tileMgr->CommitTileSlot2(
+            m_tileMgr->ApplyTriggerA(
                 m_tileOwnerHi,
                 m_tileOwnerLo,
                 (col << 5) + 0x10,
@@ -2147,7 +2148,7 @@ L_tailc:
             i32 dr = bestRow - cy;
             IABS(dr);
             if (dc <= 1 && dr <= 1) {
-                m_tileMgr->CommitTileSlot2(
+                m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,
                     m_tileOwnerLo,
                     (bestCol << 5) + 0x10,
@@ -2300,7 +2301,7 @@ build_tail: {
 }
 
 state0: {
-    CGrunt* nb = m_tileMgr->GetOccupant(this);
+    CGrunt* nb = m_tileMgr->FindNearestEnemy(this);
     if (nb == 0) {
         goto common;
     }
@@ -2366,8 +2367,8 @@ common: {
                 RECYCLE_COORDS(CoordHead());
                 m_31c.RemoveAll();
             }
-            ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
-                ->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, bx * 32 + 16, by * 32 + 16);
+            g_gameReg->m_cmdGrid
+                ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, bx * 32 + 16, by * 32 + 16);
             m_arrivalCol = bx;
             m_arrivalRow = by;
             m_defenderState = 0x19;
@@ -2412,7 +2413,7 @@ i32 CGrunt::SeekTarget() {
     this->m_defenderX = this->m_lastTilePxX;
     this->m_defenderY = this->m_lastTilePxY;
     if (this->CoordCount() != 0
-        && ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[0][this->m_arrivalCol] == 0) {
+        && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol] == 0) {
         void* p = (void*)this->CoordHead();
         while (p != 0) {
             void* next = *(void**)p;
@@ -2431,7 +2432,7 @@ i32 CGrunt::SeekTarget() {
         reason = this->m_19c;
     }
     if (reason == 0 && (reason = this->m_arrivalCol, reason >= 0) && reason < 0xf) {
-        CGrunt* slot = ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[0][reason];
+        CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
         if (slot == 0 || slot->m_entranceCommitted == 0) {
             if (this->CoordCount() != 0) {
                 void* p = (void*)this->CoordHead();
@@ -2499,7 +2500,7 @@ i32 CGrunt::SeekTarget() {
             }
             i32 best = 0x7fffffff;
             i32 bestIdx = -1;
-            CGrunt** slots = ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[0];
+            CGrunt** slots = g_gameReg->m_cmdGrid->m_grid; // row 0 (the flat 4x15 board)
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
@@ -2548,10 +2549,10 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         CGruntHud* base =
-            ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[0][this->m_arrivalCol]->m_10;
+            g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
         TileSwitch6(base->m_5c >> 5, base->m_60 >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
-        CGrunt* g = m_tileMgr->GetOccupant(this);
+        CGrunt* g = m_tileMgr->FindNearestEnemy(this);
         bool atTarget = false;
         if (g != 0) {
             i32 x = g->m_10->m_5c;
@@ -2675,7 +2676,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 m_defenderState = 1;
                 return 1;
             }
-            occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (occ == 0) {
                 m_defenderState = 0;
                 return 1;
@@ -2741,8 +2742,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
             return 1;
 
         case 1: {
-            occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
-            CGrunt* g = m_tileMgr->GetOccupant(this);
+            occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
+            CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != 0 && g != occ) {
                 m_arrivalCol = -1;
                 m_defenderState = 0;
@@ -2791,11 +2792,11 @@ i32 CGrunt::StepArrivalDefenseLean() {
         }
 
         case 0:
-            occ = m_tileMgr->GetOccupant(this);
+            occ = m_tileMgr->FindNearestEnemy(this);
             if (GruntRand() % 0x64 == 0 && m_health > 0x1a && occ != 0 && m_stamina >= 0x64
                 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
                 m_tileMgr
-                    ->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, m_lastTilePxX, m_lastTilePxY);
+                    ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, m_lastTilePxX, m_lastTilePxY);
                 return 1;
             }
             if (m_resetApplied != 0) {

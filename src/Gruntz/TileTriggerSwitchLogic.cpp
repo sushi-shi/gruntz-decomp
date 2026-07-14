@@ -1232,7 +1232,7 @@ i32 CTileActionEvent::Process(i32 arg) {
             brick->LoadGruntTypeTable(0, 1, 0, 0);
             brick->m_entranceActive = 0;
         } else if (effect == 0x138) {
-            ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
+            g_gameReg->m_cmdGrid
                 ->CombatCue((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
         } else if (effect == 0x13e) {
             i32 px = (m_tileX << 5) + 0x10;

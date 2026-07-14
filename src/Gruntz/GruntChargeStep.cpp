@@ -65,7 +65,7 @@ RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
-    CTmCell* g = ((CTriggerMgr*)m_tileMgr)->FindNearestEnemy(this);
+    CTmCell* g = m_tileMgr->FindNearestEnemy(this);
     i32 hitGate = 0;
     if (g != 0) {
         CGruntHud* gp = g->m_10;
@@ -209,8 +209,8 @@ i32 CGrunt::ChargeStep() {
         case 1: {
             // moving to the arrival tile
             CTmCell* t =
-                ((CTriggerMgr*)m_tileMgr)->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
-            CTmCell* cur = ((CTriggerMgr*)m_tileMgr)->FindNearestEnemy(this);
+                m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
+            CTmCell* cur = m_tileMgr->FindNearestEnemy(this);
             if (cur != 0 && cur != t) {
                 m_arrivalCol = -1;
                 m_defenderState = 0;
@@ -244,7 +244,7 @@ i32 CGrunt::ChargeStep() {
             // arrived: re-check target then hold
             if (m_poweredUp != 0) {
                 CTmCell* t =
-                    ((CTriggerMgr*)m_tileMgr)->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
+                    m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
                 if (t == 0 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
                     m_defenderState = 1;

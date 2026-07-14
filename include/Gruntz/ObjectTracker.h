@@ -14,17 +14,18 @@
 struct CGameObject; // <Gruntz/UserLogic.h> - the bound screen object (m_screenX/m_screenY)
 class CObjectTracker;
 
-// The peer getter reached through m_peerSource: the thunk 0x253b resolves to 0x477df0,
-// which is CGruntTileMgr::GetOccupant (Grunt.h). So m_peerSource IS a CGruntTileMgr* and
-// GetPeer IS its GetOccupant.
+// The peer getter reached through m_peerSource: the thunk 0x253b resolves to 0x477df0
+// == ?FindNearestEnemy@CTriggerMgr@@ (the ex-CGruntTileMgr view is dissolved, 2026-07-14:
+// CGrunt::m_tileMgr +0x260 IS the CTriggerMgr). So m_peerSource IS a CTriggerMgr* and
+// GetPeer IS FindNearestEnemy(CGrunt*)->CGrunt*.
 //
-// @identity-TODO / Fable hand-off: m_peerSource is PROVEN CGruntTileMgr*, but a cast-free
-// dissolution of this last shim is blocked by inheritance: CGruntTileMgr::GetOccupant is
-// typed (CGrunt* -> CGrunt*), while this tracker's `this`/peer are CObjectTracker. Binding
-// GetOccupant cast-free needs CObjectTracker to share the CGrunt/CGameObject base (an
-// inheritance change reserved for the Fable lane) - so rather than introduce a `(CGrunt*)
-// this` cast (a mis-modelled-class symptom), the 1-method getter shim stays until the base
-// is modeled.
+// @identity-TODO (stronger now): this tracker view is almost certainly ::CGrunt itself -
+// SEVEN of its fields land on CGrunt at the identical offset (m_display==m_10 CGruntHud,
+// m_posX/m_posY==m_lastTilePxX/Y @0x17c/0x180, m_areaId/m_subId==m_tileOwnerHi/Lo
+// @0x1ec/0x1f0, m_active==m_entranceCommitted @0x1fc, m_peerSource==m_tileMgr @0x260),
+// which also explains the CGrunt-typed FindNearestEnemy binding cast-free. Blocked only
+// on attributing Update @0x0f7d90 (whose vtable slot / owner is unverified); once that is
+// chased, fold the whole view onto CGrunt instead of introducing casts here.
 struct CPeerSource {
     CObjectTracker* GetPeer(CObjectTracker* self); // 0x253b thunk == CGruntTileMgr::GetOccupant
 };

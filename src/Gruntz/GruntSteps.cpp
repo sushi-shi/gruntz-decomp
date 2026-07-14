@@ -1074,7 +1074,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         if (m_entranceReason == 0x13) {
             EmitMoveCueShort(m_10->m_188, 0, 0);
         }
-        m_tileMgr->ArrivalNotify6(
+        m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
             m_moveTileX,
@@ -1085,7 +1085,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         if (m_entranceReason != 1) {
             goto applyTail;
         }
-        m_tileMgr->SetTileState4(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         goto applyTail;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeG) == 0);
@@ -1221,7 +1221,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             }
             break;
         case 8:
-            m_tileMgr = (CGruntTileMgr*)g_gameReg->m_68;
+            m_tileMgr = (CTriggerMgr*)g_gameReg->m_68; // WwdGameReg view keeps m_68 as i32
             break;
     }
     ((CTriRecord*)(&m_entranceCell))->Serialize((CSerialArchive*)ar, mode, a3, a4);

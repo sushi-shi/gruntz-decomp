@@ -50,7 +50,7 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/Play.h>         // CWorld::WorldTimeline (HudRect @0x78060) + CPlay
 #include <Gruntz/GameLevel.h>    // CLevelPlane (PositionUpdate @0x788d0 tail call)
 #include <Gruntz/GameRegistry.h> // canonical singleton view (icon/selection donors)
-#include <Gruntz/Grunt.h>        // CGruntTileMgr (CombatCue @0x7b930) + g_gameReg
+#include <Gruntz/Grunt.h>        // CGrunt (the board cells) + g_gameReg
 #include <Gruntz/String.h>
 #include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
 #include <Gruntz/IconLoaderViews.h> // EngineLabelBacklog (the four icon loaders)
@@ -1827,10 +1827,10 @@ SIZE_UNKNOWN(CRockBreakMgr);
 SIZE_UNKNOWN(CMapStringToOb);
 
 // ===========================================================================
-// CGruntTileMgr::CombatCue (0x7b930) - merged from GruntTileMgr.cpp per
-// dossier 10b (the grunt tile-mgr spell-area cue; embedded singleton, this TU
-// by retail position). CGruntTileMgr + g_gameReg come from
-// <Gruntz/Grunt.h>; the LightFx/flash key statics are the donor's.
+// CTriggerMgr::CombatCue (0x7b930) - merged from GruntTileMgr.cpp per
+// dossier 10b (the spell-area cue on the 4x15 board; embedded singleton, this
+// TU by retail position). The ex-CGruntTileMgr receiver view is dissolved:
+// this IS the trigger mgr (ecx = grunt->m_tileMgr == g_gameReg->m_cmdGrid).
 // ===========================================================================
 // The LightFx / flash key strings (reloc-masked .rodata literals).
 static const char s_LightFx[] = "LightFx";
@@ -1852,16 +1852,16 @@ static char s_CombatTimeout[] = "CombatTimeout";
 // one-slot shift that cascades displacement bytes through the whole prologue + loop
 // control. Source-invariant; deferred to the final sweep.
 RVA(0x0007b930, 0x3b7)
-i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
+i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
     i32 r = radius << 5;
     i32 xLo = x - r - 7;
     i32 yLo = y - r - 7;
     i32 xHi = x + r + 7;
     i32 yHi = y + r + 7;
-    i32 rangeA = m_22c->m_24->m_5c->m_28 - 2;
-    i32 rangeB = m_22c->m_24->m_5c->m_2c - 2;
+    i32 rangeA = m_level->m_24->m_5c->m_gridW - 2; // plane grid dims (ex the
+    i32 rangeB = m_level->m_24->m_5c->m_gridH - 2; //  CTileReg->CTileRegMid chain)
 
-    CGrunt** p = &m_grid[0][0];
+    CGrunt** p = m_grid; // the flat 4x15 board
     for (i32 i = 0; i < 4; i++) {
         for (i32 j = 0; j < 15; j++, p++) {
             CGrunt* g = *p;
@@ -1884,17 +1884,17 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                 switch (tier) {
                     case 1:
                         if (g->m_gruntKind != 0x38) {
-                            ApplyCellEffect(i, j, 0, flag);
+                            CellDispatch(i, j, 0, flag);
                         }
                         break;
                     case 6:
                         if (g->m_gruntKind != 0x38) {
-                            ApplyCellEffect(i, j, 0xb, flag);
+                            CellDispatch(i, j, 0xb, flag);
                         }
                         break;
                     case 7:
                         if (g->m_gruntKind != 0x38) {
-                            ApplyCellEffect(i, j, 2, flag);
+                            CellDispatch(i, j, 2, flag);
                         }
                         break;
                     case 2: { // teleport-scatter

@@ -34,7 +34,7 @@
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
 #include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (dims here)
-#include <Gruntz/Grunt.h>         // real CGrunt (the grid cells) + CGruntTileMgr (FindAtPixel)
+#include <Gruntz/Grunt.h>         // real CGrunt (the grid cells)
 #include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
@@ -652,7 +652,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
 // A real 5-byte leaf sitting in this grid obj's band; binds CGrunt's HudRect caller
 // (0x4a9f0) which reads m_tileMgr->FindAtPixel(m_10->m_5c, m_10->m_60).
 RVA(0x0006e7e0, 0x5)
-CGrunt* CGruntTileMgr::FindAtPixel(i32 x, i32 y) {
+CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
     return 0;
 }
 

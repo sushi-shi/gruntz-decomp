@@ -15,6 +15,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr (ex the CGruntTileMgr view)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/AniElement.h>
 #include <rva.h>
@@ -189,7 +190,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         m_poweredUp = 0;
         ResetEntranceAnimation(1, 0, 0); // 0x62e10
     }
-    m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1); // 0x78260
+    m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1); // 0x78260
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_dAnimKeyC);
@@ -220,7 +221,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
 
         case DEATH_DROP:
-            m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             m_154->m_8 |= 0x10000;
             goto tail;
 
@@ -230,7 +231,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
-            m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             Step6a060();
             goto tail;
 
@@ -292,7 +293,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
-            m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             Step6a060();
             goto tail;
         }
@@ -320,7 +321,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
-            m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             Step6a060();
             goto tail;
         }
@@ -429,12 +430,12 @@ pathA:
     goto tail;
 
 finalize:
-    m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+    m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
 
 tail:
     // block B: m_38c finalize cue
     if (m_entranceReason == 0x14 && g_gameReg->m_134 != 1) {
-        m_tileMgr->NotifyDeathTile(m_10->m_5c, m_10->m_60, m_38c);
+        m_tileMgr->SpawnTileFx(m_10->m_5c, m_10->m_60, m_38c);
     }
     if (m_arrivalState == 0xd) {
         TryPowerupAtTile();
