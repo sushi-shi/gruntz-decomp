@@ -16,7 +16,6 @@
 #define SBI_MENUITEM_H
 
 #include <Ints.h>
-#include <Dsndmgr/DirectSoundMgr.h>
 #include <rva.h>
 
 #include <Gruntz/SBI_Image.h> // canonical chain base CSBI_Image : CSBI_RectOnly : CStatusBarItem

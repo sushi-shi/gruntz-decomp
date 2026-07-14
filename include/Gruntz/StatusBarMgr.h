@@ -61,7 +61,6 @@ class CWarpStoneFly; // folded CSbiMode54c
 class CSBI_MenuItem;
 
 #include <Ints.h>
-#include <Dsndmgr/DirectSoundMgr.h>
 #include <rva.h>
 #include <Mfc.h>                  // CPtrList (the eight embedded tab lists) / CPtrArray
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)

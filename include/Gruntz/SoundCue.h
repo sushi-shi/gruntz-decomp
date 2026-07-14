@@ -22,7 +22,8 @@
 // Win32-umbrella TUs that reach this header transitively just switch umbrella - the
 // documented C1189 'wall' here was only 2 TUs deep, not the ~60 the old comment feared.
 #include <Mfc.h>
-#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (the play-object; ConfigureItem @0x1360d0)
+class DSoundCloneInst; // the pooled cue play-object (ConfigureItem @0x1360d0; the
+                       // caller TUs that dispatch it include <Dsndmgr/DirectSoundMgr.h>)
 
 struct CSprite; // the frame-data value the +0x10 map ALSO yields (Sprite.h); the +0x28
                 // registry's CMapStringToPtr stores both cue emitters and sprites by key.

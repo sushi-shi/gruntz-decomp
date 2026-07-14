@@ -159,10 +159,12 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
 // the frame's anchor fields) is register-schedule-sensitive to the TU's TOTAL
 // transitive file-scope fwd-decl count (SBI_MenuItem.cpp -> GruntzMgr.h chain):
 // crossing a threshold flips the two `a+b` loads pointee-first and craters this to
-// 74% (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md). Kept byte-
-// exact by pulling the +0x54/+0x74 sub-object DEFINITIONS (InputState.h/
-// SpriteRefTable.h) into GruntzMgr.h instead of fwd-declaring them, which holds the
-// count under the threshold while keeping those members typed with their real class.
+// 74% (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md). The old
+// under-threshold trick (definitions instead of fwd-decls in GruntzMgr.h) was
+// re-armed 2026-07-14 by the CSoundCueMgr==DSoundCloneInst identity fold (this TU
+// now pulls the real <Dsndmgr/DirectSoundMgr.h> for ConfigureItem); a header
+// fwd-decl diet did not get back under. @early-stop: 74% is the butterfly's
+// documented floor - the shape is byte-correct, final-sweep decl-census material.
 RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::DecCounter() {
     if (m_28 > 0) {
