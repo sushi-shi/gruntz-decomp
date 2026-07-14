@@ -41,7 +41,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (the reconciled singleton view)
+#include <Gruntz/GameRegistry.h> // canonical CGameRegistry (the reconciled singleton view)
 // The game-manager singleton (0x64556c). This TU used to declare it WwdGameReg*
 // (the grunt facet), but InGameIcon.h's CGameRegistry* decl clashes (extern "C"
 // cannot dual-type one symbol in one TU) - and CGameRegistry is the RICHER
@@ -180,11 +180,11 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
-                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                  // It used to be DEFINED here too: six .cpp files each
-                                  // defined it, i.e. six .bss objects for one global
-                                  // (LNK2005). Only the owner defines; everyone externs.
+extern FreeNodePool g_coordPool; // DAT_00645540 - DEFINED once, in
+                                 // src/Gruntz/GameText.cpp (the pool's owner TU).
+                                 // It used to be DEFINED here too: six .cpp files each
+                                 // defined it, i.e. six .bss objects for one global
+                                 // (LNK2005). Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -616,15 +616,14 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_GUNHAT:
             case GRUNT_NERFGUN:
             case GRUNT_ROCK: {
-                CGameObject* spr = g_gameReg
-                                       ->m_world->m_8->CreateSprite(
-                                           0,
-                                           m_object->m_screenX,
-                                           m_object->m_screenY,
-                                           0,
-                                           "Projectile",
-                                           0x40003
-                                       );
+                CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+                    0,
+                    m_object->m_screenX,
+                    m_object->m_screenY,
+                    0,
+                    "Projectile",
+                    0x40003
+                );
                 spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
@@ -642,15 +641,14 @@ i32 CGrunt::StepAttackFire() {
                 break;
             }
             case GRUNT_BOOMERANG: {
-                CGameObject* spr = g_gameReg
-                                       ->m_world->m_8->CreateSprite(
-                                           0,
-                                           m_object->m_screenX,
-                                           m_object->m_screenY,
-                                           0,
-                                           "Boomerang",
-                                           0x40003
-                                       );
+                CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+                    0,
+                    m_object->m_screenX,
+                    m_object->m_screenY,
+                    0,
+                    "Boomerang",
+                    0x40003
+                );
                 spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
@@ -679,15 +677,14 @@ i32 CGrunt::StepAttackFire() {
             }
             case GRUNT_WELDER:
             case GRUNT_WINGZ: {
-                CGameObject* spr = g_gameReg
-                                       ->m_world->m_8->CreateSprite(
-                                           0,
-                                           m_object->m_screenX,
-                                           m_object->m_screenY,
-                                           0,
-                                           "Projectile",
-                                           0x40003
-                                       );
+                CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+                    0,
+                    m_object->m_screenX,
+                    m_object->m_screenY,
+                    0,
+                    "Projectile",
+                    0x40003
+                );
                 spr->m_7c->m_notify(spr);
                 CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
@@ -820,8 +817,12 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 i32 yMasked = (inner->m_screenY & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_screenX & ~0x1f) + 0x10;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
-                    m_tileMgr
-                        ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, inner->m_screenX, inner->m_screenY);
+                    m_tileMgr->ApplyTriggerB(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        inner->m_screenX,
+                        inner->m_screenY
+                    );
                 }
             }
         }
@@ -1328,7 +1329,8 @@ latch:
 //     elapsed and the geometry source is ready, run ResetEntranceAnimation(0,1,1).
 RVA(0x000633e0, 0x2ca)
 void CGrunt::ResolveEntranceArrival() {
-    if (m_entranceActive != 0 && m_10->m_screenX == m_lastTilePxX && m_10->m_screenY == m_lastTilePxY) {
+    if (m_entranceActive != 0 && m_10->m_screenX == m_lastTilePxX
+        && m_10->m_screenY == m_lastTilePxY) {
         CGameRegistry* g = g_gameReg;
         CTileGrid* grid = g->m_tileGrid;
         i32 tx = m_10->m_screenX >> 5;
@@ -1675,7 +1677,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
 
     i64 elapsed = (i64)(u64)g_frameTime - *(i64*)&m_toyClockLo;
     if (elapsed >= *(i64*)&m_toyDurationLo) {
-        if (m_entranceStamped == 0 && m_10->m_screenX == m_lastTilePxX && m_10->m_screenY == m_lastTilePxY) {
+        if (m_entranceStamped == 0 && m_10->m_screenX == m_lastTilePxX
+            && m_10->m_screenY == m_lastTilePxY) {
             if (m_toyTimeSprite) {
                 m_toyTimeSprite->m_flags |= 0x10000;
                 m_toyTimeSprite = 0;
@@ -2227,8 +2230,14 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 
     i32 eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
     if (eq) {
-        m_tileMgr
-            ->LoadTileArrivalFx(m_tileOwnerHi, m_tileOwnerLo, m_moveTileX, m_moveTileY, m_entranceReason, -1);
+        m_tileMgr->LoadTileArrivalFx(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_moveTileX,
+            m_moveTileY,
+            m_entranceReason,
+            -1
+        );
     } else {
         CGruntHud* h = m_10;
         CGameRegistry* g = g_gameReg;

@@ -95,10 +95,10 @@ struct CGruntHud {
     char m_padc[0x40 - 0xc];
     i32 m_40; // +0x40   (sprite-state flag word; ExitAnim/RunConfig clears bit 8)
     char m_pad44[0x4c - 0x44];
-    i32 m_4c; // +0x4c   (SelectMoveIcon: = GetSel result)
-    i32 m_50; // +0x50   (SelectMoveIcon: = 0xa; CGrunt::Load: 0xa/0xb event kind)
-    i32 m_54; // +0x54   (CGrunt::Load: the 0xb event value - ghost transparency)
-    i32 m_58; // +0x58   (SelectMoveIcon: = 1)
+    i32 m_4c;      // +0x4c   (SelectMoveIcon: = GetSel result)
+    i32 m_50;      // +0x50   (SelectMoveIcon: = 0xa; CGrunt::Load: 0xa/0xb event kind)
+    i32 m_54;      // +0x54   (CGrunt::Load: the 0xb event value - ghost transparency)
+    i32 m_58;      // +0x58   (SelectMoveIcon: = 1)
     i32 m_screenX; // +0x5c
     i32 m_screenY; // +0x60
     char m_pad64[0x74 - 0x64];
@@ -1426,17 +1426,17 @@ public:
     // thunk-resolution table above). Fwd-declared via <Gruntz/GameRegistry.h>;
     // TUs that dispatch on it include <Gruntz/TriggerMgr.h>.
     class CTriggerMgr* m_tileMgr;
-    i32 m_struckCount;        // +0x264 (struck-reaction counter; cue tier 5/0xa)
-    i32 m_struckClockLo;      // +0x268 (= g_frameTime game clock at last struck)
-    i32 m_struckClockHi;      // +0x26c (= 0)
-    i32 m_struckTimerLo;      // +0x270 (= 0xfa0 struck cooldown window)
-    i32 m_struckTimerHi;      // +0x274 (= 0)
-    i32 m_278;                // +0x278
-    i32 m_27c;                // +0x27c
-    i32 m_280;                // +0x280
-    i32 m_284;                // +0x284
-    i32 m_288;                // +0x288 (serialized)
-    i32 m_28c;                // +0x28c (serialized)
+    i32 m_struckCount;   // +0x264 (struck-reaction counter; cue tier 5/0xa)
+    i32 m_struckClockLo; // +0x268 (= g_frameTime game clock at last struck)
+    i32 m_struckClockHi; // +0x26c (= 0)
+    i32 m_struckTimerLo; // +0x270 (= 0xfa0 struck cooldown window)
+    i32 m_struckTimerHi; // +0x274 (= 0)
+    i32 m_278;           // +0x278
+    i32 m_27c;           // +0x27c
+    i32 m_280;           // +0x280
+    i32 m_284;           // +0x284
+    i32 m_288;           // +0x288 (serialized)
+    i32 m_28c;           // +0x28c (serialized)
     // The grunt's reach/collision bounds rect (tile-space {left,top,right,bottom};
     // RectContains reads it via &m_reachRectLeft). m_reachRadius is the rect's right
     // edge AND a scalar reach radius (GruntInRadius radius-sum). GruntTubeAnim seeds
@@ -1666,13 +1666,13 @@ public:
     // same grunt (ex the CGameStateRecord owner view). Named LoadStateRecord -
     // plain `Load` is taken by the 0xd8060 body (Play.cpp).
     i32 LoadStateRecord(CGruntArchive* ar);
-    i32 Load(CGruntArchive* ar);            // @0xd8060 deserialize (Read inverse of Save)
-    void ClearAllSprites();                 // @0x4b240
-    i32 CommitArrival();                    // @0x4b130
-    void ClearSubA();                       // @0x57c10
-    void ClearSubB();                       // @0x57ce0
-    void ReapplyVoiceParams();              // @0x57d10 replay both voices on the registry gate
-    void DestroyAnims();                    // @0x57d80
+    i32 Load(CGruntArchive* ar); // @0xd8060 deserialize (Read inverse of Save)
+    void ClearAllSprites();      // @0x4b240
+    i32 CommitArrival();         // @0x4b130
+    void ClearSubA();            // @0x57c10
+    void ClearSubB();            // @0x57ce0
+    void ReapplyVoiceParams();   // @0x57d10 replay both voices on the registry gate
+    void DestroyAnims();         // @0x57d80
     // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
     // into the caller's {x,y} out slot and return it.
     struct GruntTilePos* GetTilePos(struct GruntTilePos* out); // 0x31c70 (out-of-line in Grunt.cpp)

@@ -32,13 +32,13 @@
                    // CDDSurface::m_8 (the pair's held surface)
 #include <Gruntz/LightFxRender.h>
 
-#include <Gruntz/GameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/TriggerMgr.h>   // CTriggerMgr (m_cmdGrid board; ResetGroup @0x79520)
-#include <Gruntz/Play.h>         // mgr->m_curState play state: CPlay::ResetGoals @0xd5f00
-#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (the ex-LfxMgr identity)
-#include <Gruntz/Grunt.h>        // canonical CGrunt (the board cells; ex LfxTileDesc)
-#include <Gruntz/Brickz.h>       // BrickzCell (the 0x1c map cell; ex LfxCell)
-#include <Gruntz/GameLevel.h>    // CGameLevel + CLevelPlane (ex LfxView/LfxWorldRect)
+#include <Gruntz/GameRegistry.h>       // the g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/TriggerMgr.h>         // CTriggerMgr (m_cmdGrid board; ResetGroup @0x79520)
+#include <Gruntz/Play.h>               // mgr->m_curState play state: CPlay::ResetGoals @0xd5f00
+#include <Gruntz/GruntzMgr.h>          // canonical CGruntzMgr (the ex-LfxMgr identity)
+#include <Gruntz/Grunt.h>              // canonical CGrunt (the board cells; ex LfxTileDesc)
+#include <Gruntz/Brickz.h>             // BrickzCell (the 0x1c map cell; ex LfxCell)
+#include <Gruntz/GameLevel.h>          // CGameLevel + CLevelPlane (ex LfxView/LfxWorldRect)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (ex LfxBorderCtx)
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer100 (detail threshold)

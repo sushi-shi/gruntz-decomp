@@ -21,7 +21,7 @@
 // (0x4b320), ReportObjectAt 0x3030 -> CTriggerMgr::ApplyTriggerB (0x6e120).
 #include <rva.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_tileMgr / registry m_cmdGrid)
-#include <Gruntz/Grunt.h> // canonical CGrunt (the ex-CObjectTracker identity) + CGameRegistry
+#include <Gruntz/Grunt.h>      // canonical CGrunt (the ex-CObjectTracker identity) + CGameRegistry
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24) + CLevelPlane (m_mainPlane +0x5c)
 
 // The CGameRegistry view of the 0x24556c singleton (the SAME object as WwdGameReg* g_gameReg,
@@ -62,7 +62,8 @@ i32 CGrunt::StepPeerTracking() {
     if (a->m_screenX == p->m_lastTilePxX && a->m_screenY == p->m_lastTilePxY
         && RectContainsGated(a->m_screenX, a->m_screenY)) {
         CGruntHud* b = p->m_10;
-        g_gameReg->m_cmdGrid->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, b->m_screenX, b->m_screenY);
+        g_gameReg->m_cmdGrid
+            ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, b->m_screenX, b->m_screenY);
         return 1;
     }
     if ((u32)m_dwell <= 0x3e8) {

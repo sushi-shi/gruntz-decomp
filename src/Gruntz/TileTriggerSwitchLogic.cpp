@@ -1232,16 +1232,16 @@ i32 CTileActionEvent::Process(i32 arg) {
             brick->LoadGruntTypeTable(0, 1, 0, 0);
             brick->m_entranceActive = 0;
         } else if (effect == 0x138) {
-            g_gameReg->m_cmdGrid
-                ->CombatCue((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
+            g_gameReg->m_cmdGrid->CombatCue((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
         } else if (effect == 0x13e) {
             i32 px = (m_tileX << 5) + 0x10;
             i32 py = (m_tileY << 5) + 0x10;
             if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
                 && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT
                 && g_gameReg->m_world->m_28->m_emitGate == 0) {
-                LeafCue* snd =
-                    (LeafCue*)g_gameReg->m_world->m_28->Lookup_05b7e0("GRUNTZ_NORMALGRUNT_IMPACTMM3");
+                LeafCue* snd = (LeafCue*)g_gameReg->m_world->m_28->Lookup_05b7e0(
+                    "GRUNTZ_NORMALGRUNT_IMPACTMM3"
+                );
                 if (snd != 0) {
                     snd->PlayIfElapsed((i32)g_sndCueTag, 0, 0, 0);
                 }
@@ -1258,9 +1258,8 @@ i32 CTileActionEvent::Process(i32 arg) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (effect == 0x144) {
-            g_gameReg->m_cmdGrid->LoadExplosionSprites(
-                (m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2
-            );
+            g_gameReg->m_cmdGrid
+                ->LoadExplosionSprites((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
         }
     }
 

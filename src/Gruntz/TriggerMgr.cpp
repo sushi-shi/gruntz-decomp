@@ -1959,9 +1959,14 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         }
                         g->FreezeApply();
                         CGruntHud* h = g->m_10;
-                        CGameObject* spr =
-                            g_gameReg->m_world->m_8
-                                ->CreateSprite(0, h->m_screenX, h->m_screenY, 0xf4240, s_LightFx, 0x40003);
+                        CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+                            0,
+                            h->m_screenX,
+                            h->m_screenY,
+                            0xf4240,
+                            s_LightFx,
+                            0x40003
+                        );
                         spr->m_7c->m_notify(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
                             ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 9, 1);

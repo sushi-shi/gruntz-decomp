@@ -1687,9 +1687,14 @@ i32 CGrunt::CreateHealthSprite() {
         return 0;
     }
 
-    m_healthSprite =
-        g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
+    m_healthSprite = g_gameReg->m_world->m_8->CreateSprite(
+        0,
+        m_10->m_screenX,
+        m_10->m_screenY - 0x19,
+        0xdbba0,
+        s_GruntHealthSprite,
+        0x40003
+    );
     m_healthSprite->m_7c->m_notify(m_healthSprite);
 
     AnimWorkerObj* inner = m_healthSprite->m_7c;
@@ -1712,9 +1717,14 @@ i32 CGrunt::CreateToySprite() {
         return 0;
     }
 
-    m_toySprite =
-        g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
+    m_toySprite = g_gameReg->m_world->m_8->CreateSprite(
+        0,
+        m_10->m_screenX,
+        m_10->m_screenY - 0x19,
+        0xdbba0,
+        s_GruntToySprite,
+        0x40003
+    );
     m_toySprite->m_7c->m_notify(m_toySprite);
 
     CGruntToySprite* reg = (CGruntToySprite*)m_toySprite->m_7c->m_logic;
@@ -1843,9 +1853,14 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
         return 0;
     }
 
-    m_powerupSprite =
-        g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY, 0x15, s_GruntPowerupSprite, 0x40003);
+    m_powerupSprite = g_gameReg->m_world->m_8->CreateSprite(
+        0,
+        m_10->m_screenX,
+        m_10->m_screenY,
+        0x15,
+        s_GruntPowerupSprite,
+        0x40003
+    );
     m_powerupSprite->m_7c->m_notify(m_powerupSprite);
 
     AnimWorkerObj* inner = m_powerupSprite->m_7c;
@@ -1868,9 +1883,14 @@ i32 CGrunt::CreateSelectedSprite() {
         return 0;
     }
 
-    m_selectedSprite =
-        g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY, 0x14, s_GruntSelectedSprite, 0x40003);
+    m_selectedSprite = g_gameReg->m_world->m_8->CreateSprite(
+        0,
+        m_10->m_screenX,
+        m_10->m_screenY,
+        0x14,
+        s_GruntSelectedSprite,
+        0x40003
+    );
     m_selectedSprite->m_7c->m_notify(m_selectedSprite);
 
     CGruntSelectedSprite* reg = (CGruntSelectedSprite*)m_selectedSprite->m_7c->m_logic;

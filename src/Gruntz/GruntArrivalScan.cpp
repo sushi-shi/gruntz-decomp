@@ -14,7 +14,7 @@
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
 #include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
 #include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr (ex the CGruntTileMgr view)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24) + CLevelPlane visible rect
+#include <Gruntz/GameLevel.h>  // canonical CGameLevel (m_world->m_24) + CLevelPlane visible rect
 #include <Wap32/ZVec.h>
 #include <Ints.h>
 #include <string.h> // inline strcmp of the grunt type name
@@ -182,7 +182,12 @@ i32 CGrunt::ResolveArrivalReposition() {
             CGruntHud* oh = occ->m_10;
             if (TileSwitch6(oh->m_screenX >> 5, oh->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                 CGruntHud* oh2 = occ->m_10;
-                if (m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, oh2->m_screenX, oh2->m_screenY)
+                if (m_tileMgr->ApplyTriggerA(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        oh2->m_screenX,
+                        oh2->m_screenY
+                    )
                     == -1) {
                     m_dwell = 0;
                     if (m_390 != 0) {
@@ -355,7 +360,8 @@ L_ed006:
     if (m_poweredUp != 0) {
         goto L_ed153;
     }
-    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
+    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX
+        && g->m_10->m_screenY == g->m_lastTilePxY
         && RectContains(g->m_10->m_screenX, g->m_10->m_screenY) != 0) {
         CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
         m_dwell = 0;
@@ -364,7 +370,8 @@ L_ed006:
     if (m_poweredUp != 0) {
         goto L_ed153;
     }
-    if (TileSwitch6(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
+    if (TileSwitch6(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+        == 0) {
         goto L_ed153;
     }
     if (m_390 != 0) {
@@ -385,12 +392,8 @@ L_ed153:
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
-            m_tileMgr->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
-                (col << 5) + 0x10,
-                (row << 5) + 0x10
-            );
+            m_tileMgr
+                ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
             SetEntrancePos(1, 1);
             m_dwell = 0;
         }
@@ -1069,7 +1072,8 @@ i32 CGrunt::UpdateArrival() {
             }
             break;
         case 1: {
-            CGrunt* slot = m_tileMgr->m_grid[this->m_arrivalCol * TM_GRID_COLS + this->m_arrivalRow];
+            CGrunt* slot =
+                m_tileMgr->m_grid[this->m_arrivalCol * TM_GRID_COLS + this->m_arrivalRow];
             i32 cur = m_tileMgr->FindNearestEnemy(this) ? 1 : 0;
             CGrunt* found = m_tileMgr->FindNearestEnemy(this);
             (void)cur;
@@ -1237,7 +1241,8 @@ L_ed006b:
     if (m_poweredUp != 0) {
         goto L_scanb;
     }
-    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
+    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX
+        && g->m_10->m_screenY == g->m_lastTilePxY
         && RectContains(g->m_10->m_screenX, g->m_10->m_screenY) != 0) {
         CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
     }
@@ -1274,12 +1279,8 @@ L_scanb:
         i32 col = coord->x;
         i32 row = coord->y;
         if (CellTargetable(col, row) != 0) {
-            m_tileMgr->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
-                (col << 5) + 0x10,
-                (row << 5) + 0x10
-            );
+            m_tileMgr
+                ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
             SetEntrancePos(1, 1);
             m_dwell = 0;
         }
@@ -1397,7 +1398,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     i32 inRange = 0;
-    if (occ != 0 && occ->m_10->m_screenX == occ->m_lastTilePxX && occ->m_10->m_screenY == occ->m_lastTilePxY
+    if (occ != 0 && occ->m_10->m_screenX == occ->m_lastTilePxX
+        && occ->m_10->m_screenY == occ->m_lastTilePxY
         && RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) != 0) {
         inRange = 1;
     }
@@ -1747,13 +1749,12 @@ i32 CGrunt::StepArrivalDefense() {
                 goto c2_miss;
             }
             if (m_198 == 0x1e) {
-                g_gameReg->m_cmdGrid
-                    ->ApplyTriggerB(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        occ->m_10->m_screenX,
-                        occ->m_10->m_screenY
-                    );
+                g_gameReg->m_cmdGrid->ApplyTriggerB(
+                    m_tileOwnerHi,
+                    m_tileOwnerLo,
+                    occ->m_10->m_screenX,
+                    occ->m_10->m_screenY
+                );
                 return 1;
             }
             CommitNeighbor(
@@ -1817,17 +1818,17 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if (m_198 == 0x1e) {
-                g_gameReg->m_cmdGrid
-                    ->ApplyTriggerB(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        occ->m_10->m_screenX,
-                        occ->m_10->m_screenY
-                    );
+                g_gameReg->m_cmdGrid->ApplyTriggerB(
+                    m_tileOwnerHi,
+                    m_tileOwnerLo,
+                    occ->m_10->m_screenX,
+                    occ->m_10->m_screenY
+                );
                 m_defenderState = 2;
                 return 1;
             }
-            if (occ->m_10->m_screenX == occ->m_lastTilePxX && occ->m_10->m_screenY == occ->m_lastTilePxY) {
+            if (occ->m_10->m_screenX == occ->m_lastTilePxX
+                && occ->m_10->m_screenY == occ->m_lastTilePxY) {
                 CommitNeighbor(
                     occ->m_tileOwnerHi,
                     occ->m_tileOwnerLo,
@@ -1848,13 +1849,12 @@ i32 CGrunt::StepArrivalDefense() {
                 && occ->m_10->m_screenY == occ->m_lastTilePxY
                 && RectContains(occ->m_10->m_screenX, occ->m_10->m_screenY) != 0) {
                 if (m_198 == 0x1e) {
-                    g_gameReg->m_cmdGrid
-                        ->ApplyTriggerB(
-                            m_tileOwnerHi,
-                            m_tileOwnerLo,
-                            occ->m_10->m_screenX,
-                            occ->m_10->m_screenY
-                        );
+                    g_gameReg->m_cmdGrid->ApplyTriggerB(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        occ->m_10->m_screenX,
+                        occ->m_10->m_screenY
+                    );
                     return 1;
                 }
                 if (occ->m_10->m_screenX != occ->m_lastTilePxX) {
@@ -2045,7 +2045,8 @@ i32 CGrunt::ArrivalScanC() {
     if (m_poweredUp != 0) {
         goto L_tailc;
     }
-    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX && g->m_10->m_screenY == g->m_lastTilePxY
+    if (m_stamina >= 100 && g->m_10->m_screenX == g->m_lastTilePxX
+        && g->m_10->m_screenY == g->m_lastTilePxY
         && RectContains(g->m_10->m_screenX, g->m_10->m_screenY) != 0) {
         CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
         m_dwell = 0;
@@ -2057,7 +2058,8 @@ i32 CGrunt::ArrivalScanC() {
     if ((u32)m_dwell <= 0x1f4) {
         goto L_tailc;
     }
-    if (TileSwitch6(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+    if (TileSwitch6(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+        != 0) {
         if (m_390 != 0) {
             CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
             i32 x = m_10->m_screenX;
@@ -2077,12 +2079,8 @@ L_tailc:
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
-            m_tileMgr->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
-                (col << 5) + 0x10,
-                (row << 5) + 0x10
-            );
+            m_tileMgr
+                ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
             SetEntrancePos(1, 1);
             m_dwell = 0;
         }
@@ -2323,7 +2321,8 @@ state0: {
     if (GruntInRadius(nb->m_tileOwnerHi, nb->m_tileOwnerLo) == 0) {
         goto s0_reset;
     }
-    if (TileSwitch6(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
+    if (TileSwitch6(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+        == 0) {
         m_24c |= 0x4020;
         TileSwitch6(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
         m_24c &= 0xffffbfdf;
@@ -2528,7 +2527,14 @@ i32 CGrunt::SeekTarget() {
             if (bestIdx != -1) {
                 this->m_arrivalCol = bestIdx;
                 CGruntHud* base = slots[bestIdx]->m_10;
-                if (TileSwitch6(base->m_screenX >> 5, base->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0)
+                if (TileSwitch6(
+                        base->m_screenX >> 5,
+                        base->m_screenY >> 5,
+                        0,
+                        this->m_arrivalFlags,
+                        1,
+                        0
+                    )
                     != 0) {
                     i32 by = this->m_10->m_screenY;
                     i32 bx = this->m_10->m_screenX;
@@ -2548,8 +2554,7 @@ i32 CGrunt::SeekTarget() {
         if ((u32)this->m_dwell < 0x3e9) {
             return 1;
         }
-        CGruntHud* base =
-            g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
+        CGruntHud* base = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
         TileSwitch6(base->m_screenX >> 5, base->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->FindNearestEnemy(this);
@@ -2623,7 +2628,14 @@ i32 CGrunt::SeekTarget() {
         if ((u32)this->m_dwell < 0x1f5) {
             return 1;
         }
-        if (TileSwitch6(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0)
+        if (TileSwitch6(
+                g->m_10->m_screenX >> 5,
+                g->m_10->m_screenY >> 5,
+                0,
+                this->m_arrivalFlags,
+                1,
+                0
+            )
             == 0) {
             return 1;
         }

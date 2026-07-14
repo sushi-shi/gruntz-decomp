@@ -36,8 +36,8 @@
 #include <string.h>
 
 #include <rva.h>
-#include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
-#include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr (ex the CGruntTileMgr view)
+#include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntCueSink / CGameRegistry
+#include <Gruntz/TriggerMgr.h>   // the ONE CTriggerMgr (ex the CGruntTileMgr view)
 #include <Gruntz/GameRegistry.h> // CGameRegistry / CSpriteFactoryHolder
 #include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane (world->m_24->m_mainPlane->m_originX)
 #include <Gruntz/ScanGrid.h>     // CScanGrid (the shared board-grid dims view)
@@ -248,7 +248,8 @@ i32 CGrunt::ScanNearestTarget() {
                 PRIO(pa, m_entranceReason);
                 i32 pb;
                 PRIO(pb, best->m_entranceReason);
-                if (pa <= pb && this->RectContains(best->m_10->m_screenX, best->m_10->m_screenY) != 0) {
+                if (pa <= pb
+                    && this->RectContains(best->m_10->m_screenX, best->m_10->m_screenY) != 0) {
                     CommitNeighbor(
                         best->m_tileOwnerHi,
                         best->m_tileOwnerLo,
@@ -401,7 +402,8 @@ i32 CGrunt::ScanNearestTarget() {
             if (this->RectContains(sg->m_10->m_screenX, sg->m_10->m_screenY) == 0) {
                 return 1;
             }
-            if (sg->m_10->m_screenX != sg->m_lastTilePxX || sg->m_10->m_screenY != sg->m_lastTilePxY) {
+            if (sg->m_10->m_screenX != sg->m_lastTilePxX
+                || sg->m_10->m_screenY != sg->m_lastTilePxY) {
                 return 1;
             }
             CommitNeighbor(
@@ -441,7 +443,8 @@ i32 CGrunt::ScanNearestTarget() {
                 if (this->RectContains(sg->m_10->m_screenX, sg->m_10->m_screenY) == 0) {
                     goto L_setLock;
                 }
-                if (sg->m_10->m_screenX != sg->m_lastTilePxX || sg->m_10->m_screenY != sg->m_lastTilePxY) {
+                if (sg->m_10->m_screenX != sg->m_lastTilePxX
+                    || sg->m_10->m_screenY != sg->m_lastTilePxY) {
                     goto L_setLock;
                 }
                 CommitNeighbor(

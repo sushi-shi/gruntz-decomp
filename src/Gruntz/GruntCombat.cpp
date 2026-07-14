@@ -746,9 +746,14 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         return 0;
     }
 
-    CGameObject* spr =
-        g_gameReg->m_world->m_8
-            ->CreateSprite(0, m_10->m_screenX, m_10->m_screenY, 0xcf850, s_SingleAnimation, 0x40003);
+    CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+        0,
+        m_10->m_screenX,
+        m_10->m_screenY,
+        0xcf850,
+        s_SingleAnimation,
+        0x40003
+    );
     spr->ApplyName(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
     spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
 
@@ -1296,11 +1301,19 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
                     OnReanchor(0);
                 }
                 if (phase == 3) {
-                    m_tileMgr
-                        ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, inner->m_screenX, inner->m_screenY);
+                    m_tileMgr->ApplyTriggerB(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        inner->m_screenX,
+                        inner->m_screenY
+                    );
                 } else {
-                    m_tileMgr
-                        ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, inner->m_screenX, inner->m_screenY);
+                    m_tileMgr->ApplyTriggerA(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        inner->m_screenX,
+                        inner->m_screenY
+                    );
                 }
             }
         }
@@ -1384,7 +1397,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CGrunt* enemy = ((CTriggerMgr*)P(this, 0x260))->m_grid[a2 * TM_GRID_COLS + a3];
         if (enemy != 0
             && ((CTriggerMgr*)P(this, 0x260))
-                       ->SpawnGrunt(this->m_tileOwnerHi, this->m_tileOwnerLo, a2, enemy->m_1f4_moveIcon)
+                       ->SpawnGrunt(
+                           this->m_tileOwnerHi,
+                           this->m_tileOwnerLo,
+                           a2,
+                           enemy->m_1f4_moveIcon
+                       )
                    != 0) {
             i32 h = enemy->m_health + 0x19;
             if (h >= 0x64) {
@@ -1439,7 +1457,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
     this->m_health = nh;
     if (this->m_entranceReason == 1) {
-        ((CTriggerMgr*)P(this, 0x260))->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 1, a2);
+        ((CTriggerMgr*)P(this, 0x260))
+            ->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 1, a2);
         return 0;
     }
     if (nh <= 0) {
@@ -1620,7 +1639,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_health > 0) {
             return 1;
         }
-        ((CTriggerMgr*)P(this, 0x260))->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 7, a2);
+        ((CTriggerMgr*)P(this, 0x260))
+            ->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 7, a2);
         return 0;
     }
 
@@ -1629,8 +1649,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Rebuild the active-anim-set type-name registry free list.
-    char** typeRec =
-        (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)(this->m_14->m_1c));
+    char** typeRec = (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)(this->m_14->m_1c));
     if (g_typeColl.m_grown != 0) {
         char* p = (char*)g_typeColl.m_alloc;
         i32 n = g_typeColl.m_grown;
@@ -1785,7 +1804,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         // Arrival commit + occupancy re-stamp + knockback trajectory tail.
         if (this->m_arrivalPending == 0) {
-            ((CTriggerMgr*)P(this, 0x260))->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
+            ((CTriggerMgr*)P(this, 0x260))
+                ->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
         }
         CBrickzGrid* g2 = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
         i32 ox = this->m_lastTilePxX >> 5;

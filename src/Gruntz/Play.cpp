@@ -820,7 +820,7 @@ DATA(0x00245270)
 extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
 // extern "C" to hit the definition's C-linkage name _g_645570 (GruntzMgr.cpp, typed
 // DirectInputMgr2*); a plain C++ extern emitted ?g_645570@@3PAXA - unresolved.
-extern "C" void* g_645570;          // DAT_00645570
+extern "C" void* g_645570; // DAT_00645570
 // g_frameTicks (0x24558c) comes from <Rez/FrameClock.h>.
 extern "C" i32 g_64e35c;            // DAT_0064e35c
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
@@ -1023,11 +1023,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (set == 0) {
                 goto fail0;
             }
-            i32 ins = ((CSymTab*)set)
-                          ->Insert(
-                              (const char*)self->m_4->GetWorldFileName(),
-                              g_emptyString
-                          );
+            i32 ins =
+                ((CSymTab*)set)->Insert((const char*)self->m_4->GetWorldFileName(), g_emptyString);
             if (ins == 0) {
                 return 0;
             }
@@ -1054,11 +1051,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (set == 0) {
                 goto fail0;
             }
-            i32 ins = ((CSymTab*)set)
-                          ->Insert(
-                              (const char*)self->m_4->GetWorldFileName(),
-                              g_emptyString
-                          );
+            i32 ins =
+                ((CSymTab*)set)->Insert((const char*)self->m_4->GetWorldFileName(), g_emptyString);
             if (ins == 0) {
                 return 0;
             }
@@ -1081,9 +1075,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             level = num;
         } else {
             // default: bute-driven level number (ValidateMainBlock(CString)).
-            level = ValidateMainBlock(
-                (void*)(const char*)self->m_4->GetWorldFileName()
-            );
+            level = ValidateMainBlock((void*)(const char*)self->m_4->GetWorldFileName());
             self->m_1bc = 0;
             self->m_4->m_130 = 0;
         }
@@ -1461,7 +1453,8 @@ okContinue:
 
     gameReg = (CGruntzMgr*)g_gameReg;
     if (gameReg->m_114 == 0) {
-        void* mapHost = PTR(PTR(self->m_c->m_drawTarget, 0x10), 0x2c); // m_c->m_4->m_10->m_2c (deferred)
+        void* mapHost =
+            PTR(PTR(self->m_c->m_drawTarget, 0x10), 0x2c); // m_c->m_4->m_10->m_2c (deferred)
         ((CDDSurface*)mapHost)->ShadeRect(0x32, 0);
         gameReg = (CGruntzMgr*)g_gameReg;
     }

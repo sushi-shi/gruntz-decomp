@@ -35,11 +35,11 @@
 #include <rva.h>
 #include <stdlib.h> // rand (0x11fee0), the per-grunt random nonce
 
-#include <Net/NetMgr.h>       // CNetSession (this; m_session)
-#include <Gruntz/Multi.h>     // CMulti (ReportVersionMsg, Mgr())
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (m_cmdGrid)
+#include <Net/NetMgr.h>        // CNetSession (this; m_session)
+#include <Gruntz/Multi.h>      // CMulti (ReportVersionMsg, Mgr())
+#include <Gruntz/GruntzMgr.h>  // CGruntzMgr (m_cmdGrid)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid; CTmCell == CGrunt)
-#include <Gruntz/Grunt.h>     // CGrunt + CGruntHud (the dumped fields)
+#include <Gruntz/Grunt.h>      // CGrunt + CGruntHud (the dumped fields)
 
 extern "C" char g_emptyString[]; // 0x6293f4 (== "")
 

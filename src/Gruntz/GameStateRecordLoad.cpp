@@ -21,8 +21,8 @@
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
 #include <Gruntz/GruntDataRecord.h>
-#include <Gruntz/Grunt.h>  // canonical CGrunt (this) + CGruntHud + CSpriteFactory
-#include <Gruntz/ResMgr.h> // CAnimRegistry (the name map host, holder +0x2c)
+#include <Gruntz/Grunt.h>            // canonical CGrunt (this) + CGruntHud + CSpriteFactory
+#include <Gruntz/ResMgr.h>           // CAnimRegistry (the name map host, holder +0x2c)
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE::GetClassId (the ==5 probe)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SpriteRefTable.h>
@@ -87,7 +87,6 @@ extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 void* operator new(u32 n);        // 0x1b9b46
 extern "C" void RezFree(void* p); // 0x1b9b82  (operator delete / free)
 
-
 // The three repeating block shapes, expanded inline + unrolled (retail unrolls
 // each and shares one 0x80 text buffer + the id/obj scratch locals - a helper
 // function with a 0x80 local won't inline under MSVC5's budget, so the blocks
@@ -100,7 +99,7 @@ extern "C" void RezFree(void* p); // 0x1b9b82  (operator delete / free)
         ar->Read(&id, 4);                                                                          \
         obj = 0;                                                                                   \
         void* r;                                                                                   \
-        if (dir->m_8->m_objMap.Lookup((void*)id, (CGameObject*&)obj) != 0 && obj != 0) {          \
+        if (dir->m_8->m_objMap.Lookup((void*)id, (CGameObject*&)obj) != 0 && obj != 0) {           \
             r = (((CWwdGameObjectE*)obj)->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
         } else {                                                                                   \
             r = 0;                                                                                 \
@@ -124,7 +123,7 @@ extern "C" void RezFree(void* p); // 0x1b9b82  (operator delete / free)
         ar->Read(buf, 0x80);                                                                       \
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
-            dir->m_animRegistry->m_10map.Lookup(buf, (CObject*&)obj);                             \
+            dir->m_animRegistry->m_10map.Lookup(buf, (CObject*&)obj);                              \
             *(void**)(p + (off)) = obj;                                                            \
         } else {                                                                                   \
             *(void**)(p + (off)) = 0;                                                              \

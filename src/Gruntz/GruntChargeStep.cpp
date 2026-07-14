@@ -208,8 +208,7 @@ i32 CGrunt::ChargeStep() {
         }
         case 1: {
             // moving to the arrival tile
-            CTmCell* t =
-                m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
+            CTmCell* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
             CTmCell* cur = m_tileMgr->FindNearestEnemy(this);
             if (cur != 0 && cur != t) {
                 m_arrivalCol = -1;
@@ -228,7 +227,8 @@ i32 CGrunt::ChargeStep() {
             }
             if (m_poweredUp == 0 && m_stamina >= 100
                 && RectContains(t->m_10->m_screenX, t->m_10->m_screenY) != 0
-                && t->m_10->m_screenX == t->m_lastTilePxX && t->m_10->m_screenY == t->m_lastTilePxY) {
+                && t->m_10->m_screenX == t->m_lastTilePxX
+                && t->m_10->m_screenY == t->m_lastTilePxY) {
                 CommitNeighbor(
                     t->m_tileOwnerHi,
                     t->m_tileOwnerLo,
@@ -243,8 +243,7 @@ i32 CGrunt::ChargeStep() {
         case 2: {
             // arrived: re-check target then hold
             if (m_poweredUp != 0) {
-                CTmCell* t =
-                    m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
+                CTmCell* t = m_tileMgr->m_grid[m_arrivalRow + m_arrivalCol * TM_GRID_COLS];
                 if (t == 0 || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
                     m_defenderState = 1;
@@ -255,7 +254,8 @@ i32 CGrunt::ChargeStep() {
                     return 1;
                 }
                 if (RectContains(t->m_10->m_screenX, t->m_10->m_screenY) == 0
-                    || t->m_10->m_screenX != t->m_lastTilePxX || t->m_10->m_screenY != t->m_lastTilePxY) {
+                    || t->m_10->m_screenX != t->m_lastTilePxX
+                    || t->m_10->m_screenY != t->m_lastTilePxY) {
                     m_defenderState = 1;
                     m_dwell = 0x1f4;
                     return 1;

@@ -22,12 +22,12 @@
 
 #include <rva.h>
 #include <Globals.h>
-#include <Gruntz/LeafCue.h>    // canonical LeafCue (PlayIfElapsed)
-#include <Gruntz/Grunt.h>      // canonical CGrunt (SetEntrancePos/SetArrivalTarget)
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (the mgr's m_cmdGrid grid)
-#include <Gruntz/Play.h>          // canonical CPlay (the ex-CCmdHandler identity)
-#include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (CPlay::m_4)
-#include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr::EnterHlRow (m_guts, +0x2dc)
+#include <Gruntz/LeafCue.h>      // canonical LeafCue (PlayIfElapsed)
+#include <Gruntz/Grunt.h>        // canonical CGrunt (SetEntrancePos/SetArrivalTarget)
+#include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (the mgr's m_cmdGrid grid)
+#include <Gruntz/Play.h>         // canonical CPlay (the ex-CCmdHandler identity)
+#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (CPlay::m_4)
+#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::EnterHlRow (m_guts, +0x2dc)
 
 // .rodata string literals (were bare (char*)0xADDR immediates; named so the operand
 // relocates like retail's `push offset` instead of an unrelocated `push imm32`).
@@ -95,22 +95,21 @@ i32 CPlay::ExecCommand(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8) {
 
         case 0: {
             // case 0 reuses the gate's cached mgr (eax) for the spawn probe.
-            i32 r = mgr->m_cmdGrid
-                        ->PlaceObject(
-                            a2 & 0xff,
-                            a5 & 0xffff,
-                            a6 & 0xffff,
-                            100000,
-                            2,
-                            g_groupSentinel,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        );
+            i32 r = mgr->m_cmdGrid->PlaceObject(
+                a2 & 0xff,
+                a5 & 0xffff,
+                a6 & 0xffff,
+                100000,
+                2,
+                g_groupSentinel,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            );
             if (r != -1) {
                 if ((a2 & 0xff) == (u32)g_curPlayer) {
                     // retail re-loads the grid from g_gameReg (0x64556c), not mgr.

@@ -16,7 +16,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr (ex the CGruntTileMgr view)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
+#include <Gruntz/GameLevel.h>  // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/AniElement.h>
 #include <rva.h>
 #include <string.h>
@@ -118,8 +118,8 @@ enum GruntDeathType {
         CGameRegistry* _g = g_gameReg;                                                             \
         if (GruntPointVisible(                                                                     \
                 (i32) & _g->m_world->m_24->m_mainPlane->m_originX,                                 \
-                m_10->m_screenX,                                                                        \
-                m_10->m_screenY                                                                         \
+                m_10->m_screenX,                                                                   \
+                m_10->m_screenY                                                                    \
             )) {                                                                                   \
             _g->m_cueSink->CueA(this, (tag), -1, 0, -1, -1);                                       \
         }                                                                                          \

@@ -496,7 +496,7 @@ public:
     // CGruntzCommand::ApplyOne/ApplyMask thunk 0x21e4 dispatches it on the
     // command target). Switches on (a4 & 0xff) over the mgr's m_cmdGrid board.
     i32 ExecCommand(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8);
-    i32 Flip();                   // 0x0da200
+    i32 Flip(); // 0x0da200
     // Level-lifecycle steps (ex the "CGameModeObj" view, GameModeObjLifecycle.cpp;
     // folded onto CPlay wave3-J - the +0x3a4/+0x2dc/+0x4fc/+0x1cc offsets pin it):
     i32 ReleaseLevelOverlay(i32 unused); // 0x0d6560  drop the overlay + restore the clock
@@ -777,9 +777,9 @@ struct StateMgrBZ {
 };
 
 extern "C" {
-    extern i32 g_lastNow;             // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
-    extern u32 g_frameDelta;          // 0x245584 (frame delta cap)
-    extern u32 g_frameTime;           // 0x245588 (the running game clock)
+    extern i32 g_lastNow;    // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
+    extern u32 g_frameDelta; // 0x245584 (frame delta cap)
+    extern u32 g_frameTime;  // 0x245588 (the running game clock)
     extern StateMgrBZ* g_spawnConfig; // the dev/render-state singleton (DispatchHudClick)
     extern "C" i32 g_curPlayer;       // a default cue/message wParam
     extern u32 g_killCueClock;        // draw-clock mirror

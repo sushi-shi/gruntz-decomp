@@ -636,8 +636,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
             return -1;
         }
     }
-    if (o->m_screenX == cell->m_lastTilePxX && o->m_screenY == cell->m_lastTilePxY && cell->m_198 != 0x1e
-        && g_traitorMode == 0) {
+    if (o->m_screenX == cell->m_lastTilePxX && o->m_screenY == cell->m_lastTilePxY
+        && cell->m_198 != 0x1e && g_traitorMode == 0) {
         return 0;
     }
     i32 by = (a2c & ~0x1f) + 0x10;
