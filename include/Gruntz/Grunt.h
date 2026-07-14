@@ -1299,6 +1299,11 @@ public:
     // a scan/move/arrived machine over m_defenderState driving the trigger-mgr
     // grid + the wander fallback. (Ex the GruntChargeStep view family.)
     i32 ChargeStep();
+    // @0xf42f0 (ret 0, /GX) - the per-tick nearest-enemy / arrival-target scan
+    // (GruntTargetScan.cpp): the ArrivalScan-family nested board scan + reason->priority
+    // gate + squared-distance min + PtInRect box + m_defenderState (0/1/2) dispatch +
+    // rand-driven idle wander. Big function; parked @early-stop (family regalloc wall).
+    i32 ScanNearestTarget();
     i32 UpdateGruntStatus(); // @0x617c0 (ret 0)
     // @0x51c00 (ret 0, /GX) - the per-tick compass-move driver: resolves the grunt's
     // next move tile by the 8-way direction code (m_444), tests/stamps the board
@@ -1316,6 +1321,13 @@ public:
     i32 BuildGruntExitAnimation();
     // @0x63db0 - (re)loads the vehicle-grunt (gokart/bigwheel) entrance animation set.
     void LoadVehicleGruntAnimations();
+    // @0x050a50 (ret 4) - the "toob" (pipe) grunt entrance-anim setup: reset the
+    // +0x290/+0x2a0 reach-rect blocks, latch m_coordToggle, pick the TOOB(WATER)GRUNT
+    // anim-set into m_animSetName + Register it, run the three reset helpers, gate the
+    // entrance re-init, clear the shared type-name registry, and (when the resolved
+    // type name is "D") cache the first entrance frame into m_154 + stamp its blit
+    // param/descriptor. Body in src/Gruntz/GruntTubeAnim.cpp.
+    i32 SetupTubeAnim(i32 isWater);
 
     // --- GruntAssetLoaders.cpp cluster (mechanical asset/sprite/tuning loaders) ---
     // @0x68880 (ret 4, /base) - (re)load the wingz-grunt's per-direction sprite

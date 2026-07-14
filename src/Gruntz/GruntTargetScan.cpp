@@ -1,35 +1,45 @@
-// GruntTargetScan.cpp - CGrunt's per-tick nearest-enemy / arrival-target scan
-// (0xf42f0), re-homed from src/Stub/ApiCallers.cpp. A direct sibling of
-// GruntArrivalScan.cpp's ArrivalScanA/B/C (0xecc90/0xf0e20/0xf36a0) - it sits one
-// slot after 0xf36a0 in retail and shares that family's whole idiom: a nested scan
-// over the tile-mgr's 4x15 grunt board (g_gameReg->m_68->m_grid), a reason->priority
-// switch (inlined 12x = 2 per compare site x 6 sites) that gates each candidate,
-// squared-distance min tracking, a PtInRect box gate, the m_2d4 mode dispatch
-// (0=wander/seek, 1=lock, 2=arrive), and a rand()-driven idle-wander tail
-// (idiv 0x7530 window + idiv m_13c/m_140 nearby jitter). All engine helpers + the
-// manager/grid globals are external (reloc-masked); the CGrunt field bag is addressed
-// by raw offset exactly as retail does (naming-independent-codegen exception).
+// GruntTargetScan.cpp - CGrunt::ScanNearestTarget (0xf42f0), re-homed from
+// src/Stub/ApiCallers.cpp. A direct sibling of GruntArrivalScan.cpp's ArrivalScanA/B/C
+// (0xecc90/0xf0e20/0xf36a0) - it sits one slot after 0xf36a0 in retail and shares that
+// family's whole idiom: a nested scan over the tile-mgr's 4x15 grunt board
+// (m_tileMgr->m_grid / g_gameReg->m_cmdGrid->m_grid, == CGruntTileMgr), a
+// reason->priority switch (inlined 12x = 2 per compare site x 6 sites) that gates each
+// candidate, squared-distance min tracking, a PtInRect box gate, the m_defenderState
+// mode dispatch (0=wander/seek, 1=lock, 2=arrive), and a rand()-driven idle-wander tail
+// (idiv 0x7530 window + idiv m_extentR/m_extentB nearby jitter). All engine helpers +
+// the manager/grid globals are external (reloc-masked); CGrunt fields not yet carrying a
+// semantic name are addressed by the F/P raw-offset macros exactly as GruntArrivalScan
+// does (naming-independent-codegen).
+//
+// The .cpp-local views are DISSOLVED onto the canonical classes (mirroring the sibling
+// GruntArrivalScan.cpp): CGruntScan IS CGrunt (this method's owner), CScanReg IS
+// CGameRegistry (g_gameReg), CScanTileMgr IS CGruntTileMgr (m_tileMgr / g_gameReg->
+// m_cmdGrid, the CGrunt* m_grid[4][15] board), CScanCueMgr's cue fire IS
+// CGruntCueSink::CueA (cast-free), CScanSub30/CScanSub24 are the m_world->m_24 chain
+// (CSpriteFactoryHolder -> CGameLevel, board base at +0x5c). CScanGrid stays the shared
+// <Gruntz/ScanGrid.h> board-grid view (dims).
 //
 // @early-stop
 // Logic reconstructed in full (every branch, the 12 inlined priority switches, the grid
-// scan, the m_2d4 dispatch, the wander tail). 2026-07-05: the m_2d4 dispatch is a
-// `switch` (converted from if/else) -> retail's exact `sub eax; je case0; dec; je case1;
-// dec; jne default(return 1); [case2 fall-through]` ladder with case2 nearest / case0
-// (seek+wander) farthest; +0.4% only, because the if/else already put mode2 first (unlike
+// scan, the m_defenderState dispatch, the wander tail). 2026-07-05: the m_defenderState
+// dispatch is a `switch` (converted from if/else) -> retail's exact `sub eax; je case0; dec;
+// je case1; dec; jne default(return 1); [case2 fall-through]` ladder with case2 nearest /
+// case0 (seek+wander) farthest; +0.4% only, because the if/else already put mode2 first (unlike
 // ChargeStep/UpdateArrival where the switch was worth +30%). Residual (base 1035 vs retail
 // 1238 insns) is the family wall of the ArrivalScan siblings: (1) this-register colored ebx
 // here vs edi in retail + frame 0x44 vs 0x40 + the scan-loop scheduling, (2) the case-2
 // powered-up recheck DCE (same artifact as ChargeStep/UpdateArrival - dead because the
-// switch runs only with m_220==0), (3) the shared-return tail-merge cl won't permute.
+// switch runs only with m_poweredUp==0), (3) the shared-return tail-merge cl won't permute.
 // Final-sweep candidate.
 #include <Mfc.h> // afx-first: <Gruntz/GruntSpawnConfig.h> pulls MFC; keep windows.h MFC-safe
 #include <Ints.h>
 #include <string.h>
 
 #include <rva.h>
-#include <Gruntz/ScanGrid.h>
-#include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver)
-#include <stdlib.h>                  // engine rand (0x11fee0)
+#include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
+#include <Gruntz/GameRegistry.h> // CGameRegistry / CSpriteFactoryHolder
+#include <Gruntz/ScanGrid.h>     // CScanGrid (the shared board-grid dims view)
+#include <stdlib.h>              // engine rand (0x11fee0)
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -108,65 +118,14 @@
             break;                                                                                 \
     }
 
-struct CGruntScan;
-
-// The tile-mgr's 4x15 grunt board (g_gameReg->m_68, == CGrunt+0x260): a grid of grunt
-// pointers at +0x1c (row stride 0x3c, col stride 4).
-struct CScanTileMgr {
-    char m_pad0[0x1c];
-    CGruntScan* m_grid[4][15]; // +0x1c
-};
-
-// The board grid (g_gameReg->m_tileGrid): dims at +0xc/+0x10.
-
-// The on-screen cue mgr (g_gameReg->m_cueSink): fires the grunt entrance cue (0x4039f4).
-// CScanCueMgr::PlayCue @0x39f4 IS CGruntSpawnConfig::SpawnVoiceDriver (header-less); local decl.
-struct CScanCueMgr {
-    // PlayCue @0x39f4 IS CGruntSpawnConfig::SpawnVoiceDriver; cast at the call.
-};
-struct CScanSub24 {
-    char m_pad0[0x5c];
-    char* m_5c; // +0x5c board base
-};
-struct CScanSub30 {
-    char m_pad0[0x24];
-    CScanSub24* m_24; // +0x24
-};
-struct CScanReg {
-    char m_pad0[0x30];
-    CScanSub30* m_world; // +0x30
-    char m_pad34[0x60 - 0x34];
-    CScanCueMgr* m_cueSink; // +0x60
-    char m_pad64[0x68 - 0x64];
-    CScanTileMgr* m_68; // +0x68 the tile-mgr grunt board
-    char m_pad6c[0x70 - 0x6c];
-    CScanGrid* m_tileGrid; // +0x70 the board grid (dims)
-};
-extern "C" CScanReg* g_gameReg; // _g_mgrSettings @0x64556c
-// g_clock was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
-// so nothing ever defined it. Unified onto the canonical.
-extern "C" u32 g_frameTime;
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" u32 g_frameTime;          // 0x245588 frame clock
 
 // __cdecl board rect predicate (0x401127): point-in-board-rect.
 extern "C" i32 BoardTest(char* board, i32 x, i32 y); // 0x401127
 
-struct CGruntScan {
-    i32 ScanNearestTarget(); // 0xf42f0
-
-    // reloc-masked CGrunt __thiscall helpers (called on this and on other grunts).
-    void ReadCenter(void* out);                                // 0x4036c0
-    i32 TileProbe(i32 x, i32 y);                               // 0x403c4c
-    i32 RunGate(i32 a);                                        // 0x403d5a
-    void ResetEntrance(i32 a, i32 b, i32 c);                   // 0x40136b
-    i32 OwnsTile(i32 a, i32 b);                                // 0x401014
-    void CommitMove(i32 a, i32 b, i32 c, i32 d);               // 0x40302b
-    i32 ProbeMove(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);   // 0x401640
-    void ProbeMoveB(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4014e2
-    void StampMove(i32 a, i32 b);                              // 0x401401
-};
-
 RVA(0x000f42f0, 0x1193)
-i32 CGruntScan::ScanNearestTarget() {
+i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = F(this, 0x1ec);
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
@@ -174,15 +133,15 @@ i32 CGruntScan::ScanNearestTarget() {
     i32 cy = F(this, 0x180) >> 5;
 
     // Scan the tile-mgr grunt board for the nearest higher-or-equal-priority target.
-    CGruntScan* best = 0;
+    CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
     for (i32 row = 0; row < 4; row++) {
         if (row == ownerHi) {
             continue;
         }
-        CScanTileMgr* board = g_gameReg->m_68;
+        CGruntTileMgr* board = (CGruntTileMgr*)g_gameReg->m_cmdGrid;
         for (i32 col = 0; col < 15; col++) {
-            CGruntScan* cand = board->m_grid[row][col];
+            CGrunt* cand = board->m_grid[row][col];
             if (cand != 0 && F(cand, 0x1fc) != 0 && F(cand, 0x258) != 0x36) {
                 i32 pa;
                 PRIO(pa, F(this, 0x170));
@@ -205,13 +164,13 @@ i32 CGruntScan::ScanNearestTarget() {
     // center falls outside it.
     i32 halfBox = F(this, 0x2dc) + F(this, 0x298) + 1;
     i32 pt[2];
-    ReadCenter(pt);
+    GetScreenPos((GruntTilePos*)pt);
     i32 by = pt[1] >> 5;
-    ReadCenter(pt);
+    GetScreenPos((GruntTilePos*)pt);
     i32 bx = pt[0] >> 5;
-    ReadCenter(pt);
+    GetScreenPos((GruntTilePos*)pt);
     i32 t3y = pt[1] >> 5;
-    ReadCenter(pt);
+    GetScreenPos((GruntTilePos*)pt);
     i32 t4x = pt[0] >> 5;
     RECT box;
     box.left = t4x - halfBox;
@@ -232,12 +191,12 @@ i32 CGruntScan::ScanNearestTarget() {
     if (best != 0) {
         i32 x = F(P(best, 0x10), 0x5c);
         if (x == F(best, 0x17c) && F(P(best, 0x10), 0x60) == F(best, 0x180)
-            && this->TileProbe(x, F(P(best, 0x10), 0x60)) != 0) {
+            && this->RectContains(x, F(P(best, 0x10), 0x60)) != 0) {
             atTarget = 1;
         }
     }
 
-    // Powered-up reset gate (identical to ArrivalScanB's m_220 path).
+    // Powered-up reset gate (identical to ArrivalScanB's m_poweredUp path).
     if (F(this, 0x220) != 0) {
         if (F(this, 0x21c) != 0) {
             F(this, 0x21c) = 0;
@@ -247,7 +206,7 @@ i32 CGruntScan::ScanNearestTarget() {
             return 1;
         }
         if (F(this, 0x3f0) >= 100) {
-            if (RunGate(1) != 0) {
+            if (FindGridNeighbor(1) != 0) {
                 return 1;
             }
             if (atTarget && best == 0) {
@@ -271,13 +230,13 @@ i32 CGruntScan::ScanNearestTarget() {
         F(this, 0x218) = 0;
         F(this, 0x21c) = 0;
         F(this, 0x220) = 0;
-        ResetEntrance(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
-    // m_2d4 mode dispatch (switch -> retail's sub/dec ladder: tests 0, 1, then 2 falls
-    // through; default (m_2d4 not 0/1/2) returns 1). Case bodies lay out case 2 nearest,
-    // case 0 (seek/wander) farthest, matching retail.
+    // m_defenderState mode dispatch (switch -> retail's sub/dec ladder: tests 0, 1, then 2
+    // falls through; default (m_defenderState not 0/1/2) returns 1). Case bodies lay out
+    // case 2 nearest, case 0 (seek/wander) farthest, matching retail.
     switch (F(this, 0x2d4)) {
         case 0: {
             // seek / commit toward `best`, else idle wander.
@@ -292,8 +251,8 @@ i32 CGruntScan::ScanNearestTarget() {
                 i32 pb;
                 PRIO(pb, F(best, 0x170));
                 if (pa <= pb
-                    && this->TileProbe(F(P(best, 0x10), 0x5c), F(P(best, 0x10), 0x60)) != 0) {
-                    CommitMove(F(best, 0x1ec), F(best, 0x1f0), F(best, 0x17c), F(best, 0x180));
+                    && this->RectContains(F(P(best, 0x10), 0x5c), F(P(best, 0x10), 0x60)) != 0) {
+                    CommitNeighbor(F(best, 0x1ec), F(best, 0x1f0), F(best, 0x17c), F(best, 0x180));
                     return 1;
                 }
             }
@@ -325,30 +284,28 @@ i32 CGruntScan::ScanNearestTarget() {
                     goto L_scanDone;
                 }
             }
-            if (this->OwnsTile(F(best, 0x1ec), F(best, 0x1f0)) == 0) {
+            if (this->GruntInRadius(F(best, 0x1ec), F(best, 0x1f0)) == 0) {
                 goto L_scanDone;
             }
             {
                 i32 cc[4];
-                best->ReadCenter(cc);
-                if (this->ProbeMove(cc[0] >> 5, cc[1] >> 5, 0, F(this, 0x248), 1, 0) == 0) {
+                best->GetScreenPos((GruntTilePos*)cc);
+                if (this->TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, F(this, 0x248), 1, 0) == 0) {
                     goto L_scanDone;
                 }
             }
-            StampMove(1, 1);
+            SetEntrancePos(1, 1);
             F(this, 0x2f0) = F(best, 0x1ec);
             F(this, 0x2f4) = F(best, 0x1f0);
             F(this, 0x2d4) = 1;
             {
-                CScanReg* mgr = g_gameReg;
                 if (BoardTest(
-                        mgr->m_world->m_24->m_5c + 0x40,
+                        P(g_gameReg->m_world->m_24, 0x5c) + 0x40,
                         F(P(this, 0x10), 0x5c),
                         F(P(this, 0x10), 0x60)
                     )
                     != 0) {
-                    ((CGruntSpawnConfig*)mgr->m_cueSink)
-                        ->SpawnVoiceDriver((i32)this, 0x366, -1, 0, -1, -1);
+                    g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
             }
         L_scanDone:
@@ -366,7 +323,7 @@ i32 CGruntScan::ScanNearestTarget() {
                 i32 winHi = F(this, 0x314);
                 if (hi > winHi || (hi == winHi && (u32)lo >= (u32)F(this, 0x310))) {
                     // window elapsed: re-arm the idle timer with a fresh rand()%0x7530+0x7530.
-                    ResetEntrance(1, 1, 0);
+                    ResetEntranceAnimation(1, 1, 0);
                     F(this, 0x308) = 0;
                     F(this, 0x310) = 0;
                     F(this, 0x30c) = 0;
@@ -390,16 +347,16 @@ i32 CGruntScan::ScanNearestTarget() {
                     if (spanY != 0) {
                         baseRow += rand() % spanY;
                     }
-                    CScanGrid* grid = g_gameReg->m_tileGrid;
+                    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
                     if ((u32)baseCol < (u32)grid->m_c && (u32)baseRow < (u32)grid->m_10) {
-                        this->ProbeMove(baseCol, baseRow, 0, F(this, 0x248), 1, 0);
+                        this->TileSwitch(baseCol, baseRow, 0, F(this, 0x248), 1, 0);
                     }
                     if (F(this, 0x328) != 0) {
                         if (spanX > spanY) {
                             spanX = spanY;
                         }
                         if (F(this, 0x328) > spanX) {
-                            StampMove(1, 1);
+                            SetEntrancePos(1, 1);
                         }
                     }
                 }
@@ -408,8 +365,7 @@ i32 CGruntScan::ScanNearestTarget() {
             return 1;
         }
         case 1: {
-            CGruntScan* sg =
-                ((CScanTileMgr*)P(this, 0x260))->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+            CGrunt* sg = m_tileMgr->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
             if (best != 0 && best != sg) {
                 F(this, 0x2f0) = -1;
                 F(this, 0x2d4) = 0;
@@ -429,23 +385,23 @@ i32 CGruntScan::ScanNearestTarget() {
             if (F(sg, 0x1fc) == 0) {
                 goto L_clearMode;
             }
-            if (this->OwnsTile(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
+            if (this->GruntInRadius(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
                 goto L_clearMode;
             }
             if ((u32)F(this, 0x2ec) > 0x1f4) {
-                ProbeMoveB(F(sg, 0x17c), F(sg, 0x180), F(this, 0x248), 0, 1, 0);
+                StepArrivalDrop(F(sg, 0x17c), F(sg, 0x180), F(this, 0x248), 0, 1, 0);
                 F(this, 0x2ec) = 0;
             }
             if (F(this, 0x220) != 0 || F(this, 0x3f0) < 100) {
                 return 1;
             }
-            if (this->TileProbe(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
+            if (this->RectContains(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
                 return 1;
             }
             if (F(P(sg, 0x10), 0x5c) != F(sg, 0x17c) || F(P(sg, 0x10), 0x60) != F(sg, 0x180)) {
                 return 1;
             }
-            CommitMove(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
+            CommitNeighbor(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
             F(this, 0x2d4) = 2;
             return 1;
         L_clearMode:
@@ -454,8 +410,7 @@ i32 CGruntScan::ScanNearestTarget() {
         }
         case 2: {
             if (F(this, 0x220) != 0) {
-                CGruntScan* sg =
-                    ((CScanTileMgr*)P(this, 0x260))->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+                CGrunt* sg = m_tileMgr->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
                 if (sg == 0) {
                     goto L_setLock;
                 }
@@ -466,7 +421,7 @@ i32 CGruntScan::ScanNearestTarget() {
                 if (pa > pb) {
                     goto L_setLock;
                 }
-                if (this->OwnsTile(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
+                if (this->GruntInRadius(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
                     goto L_setLock;
                 }
                 if (F(sg, 0x1fc) == 0) {
@@ -475,13 +430,13 @@ i32 CGruntScan::ScanNearestTarget() {
                 if (F(this, 0x21c) != 0 || F(this, 0x218) != 0 || F(this, 0x3f0) < 100) {
                     return 1;
                 }
-                if (this->TileProbe(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
+                if (this->RectContains(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
                     goto L_setLock;
                 }
                 if (F(P(sg, 0x10), 0x5c) != F(sg, 0x17c) || F(P(sg, 0x10), 0x60) != F(sg, 0x180)) {
                     goto L_setLock;
                 }
-                CommitMove(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
+                CommitNeighbor(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
                 F(this, 0x2d4) = 2;
                 return 1;
             L_setLock:
@@ -496,10 +451,3 @@ i32 CGruntScan::ScanNearestTarget() {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(CGruntScan);
-SIZE_UNKNOWN(CScanCueMgr);
-SIZE_UNKNOWN(CScanReg);
-SIZE_UNKNOWN(CScanSub24);
-SIZE_UNKNOWN(CScanSub30);
-SIZE_UNKNOWN(CScanTileMgr);
