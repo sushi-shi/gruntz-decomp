@@ -2868,12 +2868,12 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
-                 (i32)this,
+                 this,
                  (CSpriteFactoryHolder*)code,
                  1,
                  0,
-                 SbiRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
-                 (i32) "GAME_STATUSBAR_TABZ_STATZTAB",
+                 SbRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
+                 "GAME_STATUSBAR_TABZ_STATZTAB",
                  -1,
                  0
              )) {
@@ -2889,12 +2889,12 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
-                 (i32)this,
+                 this,
                  (CSpriteFactoryHolder*)code,
                  2,
                  0,
-                 SbiRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
-                 (i32) "GAME_STATUSBAR_TABZ_GRUNTZTAB",
+                 SbRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
+                 "GAME_STATUSBAR_TABZ_GRUNTZTAB",
                  -1,
                  0
              )) {
@@ -2910,12 +2910,12 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
-                 (i32)this,
+                 this,
                  (CSpriteFactoryHolder*)code,
                  3,
                  0,
-                 SbiRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
-                 (i32) "GAME_STATUSBAR_TABZ_RESOURCETAB",
+                 SbRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
+                 "GAME_STATUSBAR_TABZ_RESOURCETAB",
                  -1,
                  0
              )) {
@@ -2931,12 +2931,12 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
-                 (i32)this,
+                 this,
                  (CSpriteFactoryHolder*)code,
                  4,
                  0,
-                 SbiRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
-                 (i32) "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
+                 SbRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
+                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
                  -1,
                  0
              )) {
@@ -2966,12 +2966,12 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     it = new CSBI_MenuItem;
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
-                 (i32)this,
+                 this,
                  (CSpriteFactoryHolder*)code,
                  5,
                  0,
-                 SbiRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
-                 (i32) "GAME_STATUSBAR_TABZ_GAMETAB",
+                 SbRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
+                 "GAME_STATUSBAR_TABZ_GAMETAB",
                  -1,
                  0
              )) {

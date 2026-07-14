@@ -20,7 +20,8 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/SbiConfig.h>
-#include <Gruntz/StatusBarItem.h>
+#include <Gruntz/SBI_MenuItem.h> // the CANONICAL CSBI_MenuItem : CSBI_Image : CSBI_RectOnly
+                                 // : CStatusBarItem chain (pulls StatusBarItem.h)
 
 // (the CSbiTab base is GONE - it was never a type. It was a fabricated stand-in for the
 // canonical CStatusBarItem (already included above), and it declared THIRTEEN virtuals
@@ -76,57 +77,14 @@ public:
 };
 SIZE(CSbiRectSub, 0x30);
 
-// tag-2 menu item (0x3c). vtable 0x5eab4c -> auto-named ??_7CSBI_MenuItem@@6B@.
-// The dtor is declared OUT-OF-LINE (no body): an implicit one makes cl5 emit a
-// divergent 5-byte COMDAT `??1CSBI_MenuItem@@UAE@XZ = jmp ??1CSbiTab@@UAE@XZ`,
-// duplicating the real dtor (SBI_MenuItem.cpp 0x1007d0) and calling a base dtor no
-// obj defines (CSbiTab is a view) -> unresolved external at link. Declared-only =>
-// the reference binds to the one real body at its retail rva.
-class CSBI_MenuItem : public CStatusBarItem {
-public:
-    CSBI_MenuItem() {
-        m_8 = 2;
-        m_34 = 0;
-        m_30 = 0;
-        m_38 = 0;
-    }
-    // Retail vtable shape (sema class: vtbl@0x1eab4c, TWELVE slots; overrides 0/1/3/4/5
-    // and slot 11) - mirrored EXACTLY from the canonical CSBI_MenuItem in
-    // <Gruntz/SBI_MenuItem.h>, so every entry this TU emits binds to the same symbol the
-    // canonical does. Declared-only => the references bind to the one real body per rva.
-    virtual ~CSBI_MenuItem();         // slot 0  0x1007d0 (SBI_MenuItem.cpp)
-    virtual i32 SbiVfunc0() OVERRIDE; // slot 1
-    virtual void SbiSlot3() OVERRIDE; // slot 3
-    virtual void SbiSlot4() OVERRIDE; // slot 4
-    virtual void SbiSlot5() OVERRIDE; // slot 5
-    // slot 11 - the 11-arg image setup CSBI_Image introduces and this class overrides.
-    // It is what the old view called "Configure": the tab-configure call site pushes
-    // exactly these 11 dwords. Declared with the canonical signature so it mangles to the
-    // same ?SetupImage@CSBI_MenuItem@@ symbol (out-of-line body: InitItem @0xe80e0).
-    // slot 11 - args 5..8 are ONE by-value SbRect, the same 11 dwords the sibling
-    // builder view (SbiTabzDialogViews.h) already spelled correctly.
-    virtual i32 SetupImage(
-        i32 a1,
-        CSpriteFactoryHolder* host,
-        i32 a3,
-        i32 a4,
-        SbiRect rc,
-        i32 key,
-        i32 a10,
-        i32 a11
-    );
-    // The tab-widget drivers CSBI_RectOnly reaches through m_tabSprite* (non-virtual
-    // reloc-masked call rel32; bodies + rvas bound in SBI_MenuItem.cpp). These fold
-    // the former fake CSbiSprite view onto the real class: Release->Blit, Show->
-    // SetState, Hide->ProbeState, Configure->ResolveFrame (proven by shared rva).
-    i32 ResolveFrame(i32 key, i32 a); // 0xe81e0  (was CSbiSprite::Configure)
-    i32 SetState(i32 state, i32 a);   // 0xe8310  (was CSbiSprite::Show)
-    i32 ProbeState(i32 state);        // 0xe8480  (was CSbiSprite::Hide)
-    i32 Blit();                       // 0xe84f0  (was CSbiSprite::Release)
-    i32 m_30;                         // +0x30
-    i32 m_34;                         // +0x34
-    i32 m_38;                         // +0x38
-};
-SIZE(CSBI_MenuItem, 0x3c);
+// The tag-2 menu item is the CANONICAL CSBI_MenuItem (<Gruntz/SBI_MenuItem.h>,
+// included above): : CSBI_Image : CSBI_RectOnly : CStatusBarItem, vtable 0x5eab4c,
+// 12 slots (overrides 0/1/3/4/5/11). The former per-TU view here derived
+// CStatusBarItem DIRECTLY (skipping CSBI_RectOnly + CSBI_Image), so its emitted
+// ??_7CSBI_MenuItem carried CStatusBarItem's slot-2 Setup (0x443f) where retail has
+// CSBI_RectOnly's (0x2a2c) and mangled slot 11 with a void*/i32 SetupImage signature -
+// a DIVERGENT COMDAT vs sbi_menuitem/statusbargamemenu. Dissolved onto the canonical
+// (2026-07-14); the builders' `new CSBI_MenuItem` sites now call the canonical slot-11
+// SetupImage (arg1 CStatusBarMgr*, arg5 SbRect by value, arg6 const char* key).
 
 #endif // GRUNTZ_STATUSBARTABWIDGETS_H
