@@ -1,44 +1,33 @@
-// GlyphStringDraw.cpp - DrawGlyphString (0x115220), a __cdecl text helper: walks
-// a string, maps each char through a glyph font's [lo..hi] range table, and
-// dispatches a draw call per printable glyph onto the context's drawable.
+// GlyphStringDraw.cpp - DrawGlyphString (0x115220), a __cdecl text helper: walks a
+// string, maps each char through a CImageSet's [m_minIndex..m_maxIndex] frame range,
+// and creates a sprite worker per printable glyph on the holder's per-frame worker pump.
 #include <Ints.h>
 #include <rva.h>
 
 #include <string.h>             // strlen
 #include <DDrawMgr/DDSurface.h> // CDDSurface (BltFast) + RECT/SetRect (via Mfc.h) for the layer-blit helper
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
-#include <Gruntz/ResMgr.h> // CResMgr / CDrawTarget (SurfaceA/SurfaceB) - the 0x115300 blit host
-#include <Image/CImage.h>  // CImage - the 0x115300 blit source (was the CImageFrame view)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18 + m_surface@+0x2c)
+#include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList - the +0x0c worker pump (Draw@slot10 = CreateWorkerB28)
+#include <Gruntz/ResMgr.h> // CResMgr / CDrawTarget (SurfaceA/SurfaceB pages) - the 0x115300 blit host
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - the CState::m_c render/resource holder (ctx/sink)
+#include <Image/CImage.h> // CImage - the 0x115300 blit source + the CImageSet frame element
+#include <Image/ImageSet.h> // CImageSet - the glyph atlas (m_frames@+0x14, min/max frame index @+0x64/+0x68)
 
-struct Drawable {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void Draw(i32 x, i32 y, i32 glyph, i32 z); // slot +0x28
-};
-
-struct DrawCtx {
-    char pad00[0xc];
-    Drawable* m_0c; // +0x0c
-};
-
-struct GlyphFont {
-    char pad00[0x14];
-    i32* m_14; // +0x14 glyph table
-    char pad18[0x64 - 0x18];
-    i32 m_64; // +0x64 lo char
-    i32 m_68; // +0x68 hi char
-};
-
+// The drawable is CSpriteFactoryHolder::m_rendererB (a CDDrawWorkerList, +0x0c): each
+// printable glyph is a frame index into the CImageSet, and the per-glyph "draw" is really
+// CDDrawWorkerList::CreateWorkerB28 (vtable slot 10 / +0x28) - it spawns a text-sprite
+// worker at (x,y) rendering the CImage* frame (passed as an opaque i32 handle). The old
+// Drawable(10 placeholder virtuals)/DrawCtx/GlyphFont views are dissolved onto these
+// canonical classes.
 RVA(0x00115220, 0xa4)
-i32 DrawGlyphString(DrawCtx* ctx, i32 x, i32 y, const char* str, GlyphFont* font, i32 advance) {
+i32 DrawGlyphString(
+    CSpriteFactoryHolder* ctx,
+    i32 x,
+    i32 y,
+    const char* str,
+    CImageSet* font,
+    i32 advance
+) {
     if (!ctx) {
         return 0;
     }
@@ -55,22 +44,18 @@ i32 DrawGlyphString(DrawCtx* ctx, i32 x, i32 y, const char* str, GlyphFont* font
     for (i32 i = 0; i < len; i++) {
         i32 c = (signed char)str[i];
         i32 glyph;
-        if (c >= font->m_64 && c <= font->m_68) {
-            glyph = font->m_14[c];
+        if (c >= font->m_minIndex && c <= font->m_maxIndex) {
+            glyph = (i32)font->m_frames[c]; // the CImage* frame, as an opaque worker-factory handle
         } else {
             glyph = 0;
         }
         if (glyph) {
-            ctx->m_0c->Draw(x, y, glyph, 0);
+            ctx->m_rendererB->CreateWorkerB28(x, y, glyph, 0);
         }
         x += advance;
     }
     return 1;
 }
-
-SIZE_UNKNOWN(Drawable);
-SIZE_UNKNOWN(DrawCtx);
-SIZE_UNKNOWN(GlyphFont);
 
 // ---------------------------------------------------------------------------
 // LayerBlitFrame (0x115300) - blit a CImage frame into the active draw-target layer,
@@ -133,36 +118,20 @@ i32 LayerBlitFrame(CResMgr* host, CImage* src, i32 x, i32 y, i32 useFront, i32 m
 
 // ---------------------------------------------------------------------------
 // ShowHudMessage (0x1154b0) + its +0x14-slot twin (0x115520): the shared HUD
-// message-sprite helpers (re-homed from src/Stub/Discovered.cpp, where the this/ecx
-// trace mis-attributed them to a placeholder "tomalla-13"). Identity recovered
-// from GameMode.cpp / BootyMessages.cpp, which already call 0x1154b0 as
-// `ShowHudMessage` ("push a transient text sprite carrying `text` into `rect`");
-// Ghidra places both in this font/text-draw cluster (between EngStr_DrawText @0x115440
-// and the CopyRect/OffsetRect rect helper @0x115930 they forward to). Each reads a
-// handler off sink->m_4 (at +0x18 / +0x14) and, if non-null, forwards all 9 stack args
-// to the 10-arg __cdecl callee (0x115930 via the 0x1262 ILT), inserting the handler's
-// m_2c as the 4th argument. `sink` is a stack arg, NOT this - free __cdecl helpers.
-SIZE_UNKNOWN(HudMsgHandler);
-struct HudMsgHandler {
-    char m_pad00[0x2c];
-    i32 m_2c; // +0x2c
-};
-SIZE_UNKNOWN(HudMsgInner);
-struct HudMsgInner {
-    char m_pad00[0x14];
-    HudMsgHandler* m_14; // +0x14
-    HudMsgHandler* m_18; // +0x18
-};
-SIZE_UNKNOWN(HudMsgSink);
-struct HudMsgSink {
-    char m_pad00[4];
-    HudMsgInner* m_4; // +0x04
-};
+// message-sprite helpers (re-homed from src/Stub/Discovered.cpp). Identity recovered from
+// GameMode.cpp / BootyMessages.cpp, which call 0x1154b0 as `ShowHudMessage(m_c, ...)` where
+// m_c is the inherited CState render holder: `sink` IS CSpriteFactoryHolder. Each reads a
+// CDDrawSurfacePair page off the holder's CDrawTarget (+0x04) - the present page (m_18) for
+// ShowHudMessage, the draw page (m_14) for the twin - and if non-null forwards all 9 stack
+// args to the 10-arg __cdecl push helper (0x115930 via the 0x1262 ILT), inserting the page's
+// target surface (m_surface @+0x2c, a CDDSurface* - same field LayerBlitFrame blits into) as
+// the 4th argument. The former HudMsgSink/HudMsgInner/HudMsgHandler offset views are dissolved
+// onto CSpriteFactoryHolder / CDrawTarget / CDDrawSurfacePair.
 extern "C" void HudMsgPush(
-    HudMsgSink* sink,
+    CSpriteFactoryHolder* sink,
     i32 a2,
     i32 a3,
-    i32 m,
+    CDDSurface* surf,
     i32 a4,
     i32 a5,
     i32 a6,
@@ -172,14 +141,14 @@ extern "C" void HudMsgPush(
 ); // 0x115930
 
 // @early-stop
-// tail-merge / block-layout wall (~94.3%): the handler load + the 10-arg
+// tail-merge / block-layout wall (~94.3%): the page load + the 10-arg
 // `[esp+0x24]`-reload forwarding push chain + the call/`add esp` are byte-IDENTICAL;
 // the sole residual is the null guard, where retail emits `jne body; ret` (a separate
 // early ret, no tail-merge) but cl tail-merges the two rets to `je <shared end ret>`.
 // An MSVC5 block-ordering coin-flip; not source-steerable.
 RVA(0x001154b0, 0x45)
 void ShowHudMessage(
-    HudMsgSink* sink,
+    CSpriteFactoryHolder* sink,
     i32 a2,
     i32 a3,
     i32 a4,
@@ -189,17 +158,17 @@ void ShowHudMessage(
     i32 a8,
     i32 a9
 ) {
-    HudMsgHandler* h = sink->m_4->m_18;
-    if (h == 0) {
+    CDDrawSurfacePair* page = sink->m_drawTarget->m_18;
+    if (page == 0) {
         return;
     }
-    HudMsgPush(sink, a2, a3, h->m_2c, a4, a5, a6, a7, a8, a9);
+    HudMsgPush(sink, a2, a3, page->m_surface, a4, a5, a6, a7, a8, a9);
 }
 // @early-stop
-// same tail-merge wall as ShowHudMessage (twin; inner handler at +0x14 vs +0x18).
+// same tail-merge wall as ShowHudMessage (twin; draw page m_14 vs present page m_18).
 RVA(0x00115520, 0x45)
 void ShowHudMessageAlt(
-    HudMsgSink* sink,
+    CSpriteFactoryHolder* sink,
     i32 a2,
     i32 a3,
     i32 a4,
@@ -209,11 +178,11 @@ void ShowHudMessageAlt(
     i32 a8,
     i32 a9
 ) {
-    HudMsgHandler* h = sink->m_4->m_14;
-    if (h == 0) {
+    CDDrawSurfacePair* page = sink->m_drawTarget->m_14;
+    if (page == 0) {
         return;
     }
-    HudMsgPush(sink, a2, a3, h->m_2c, a4, a5, a6, a7, a8, a9);
+    HudMsgPush(sink, a2, a3, page->m_surface, a4, a5, a6, a7, a8, a9);
 }
 
 // --- vtable catalog ---
