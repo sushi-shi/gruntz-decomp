@@ -2107,8 +2107,8 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     if (oe == 0) {
         ve = 0;
     } else {
-        // GetClassId (slot 8) == 5: the serialize-map probe kind (id 5's class TBD)
-        ve = oe->GetClassId() == 5 ? (i32)oe : 0;
+        // GetClassId (slot 8) == CLASSID_SERIALREF (5): the serialize-map referent kind
+        ve = oe->GetClassId() == CLASSID_SERIALREF ? (i32)oe : 0;
     }
     m_cells[1].m_14 = ve;
     if (ve == 0 && entry2 != 0) {

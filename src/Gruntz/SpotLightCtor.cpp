@@ -24,6 +24,7 @@
 #include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/Loadable.h> // LoadableClassId - CLASSID_SERIALREF (the GetTypeId()==5 focus probe)
 #include <math.h>                 // sin / cos (the Tick rotation)
 #include <rva.h>
 
@@ -149,27 +150,17 @@ i32 CSpotLight::RunAct(i32 id) {
     return (i32)e;
 }
 
-// SerializeMove's +0x98 focus slot is a serialized object reference. The referent
-// carries its id at +0x188 and a type tag via vtable slot 8 (+0x20). The Read path
-// resolves the id through the world sprite factory's embedded id->object map
-// (g_gameReg->m_world->m_8->m_objMap, the canonical GruntObjMap @+0x48, Lookup
-// @0x1b8760), keeping the object only when its type tag is 5. The per-serialize round
-// counter g_serialCounter bumps each pass. (The ex CSpotResMgr view is dissolved onto
-// the real CSpriteFactoryHolder / CSpriteFactory.)
+// SerializeMove's +0x98 focus slot (m_98) holds a serialized object reference: a
+// REAL CGameObject (<Gruntz/UserLogic.h>). The Read path resolves the id through the
+// world sprite factory's embedded id->object map (g_gameReg->m_world->m_8->m_objMap,
+// the canonical GruntObjMap @+0x48, Lookup @0x1b8760), keeping the object only when
+// its GetTypeId() (slot 8, +0x20) is 5 - the SAME map+GetClassId==5 probe Play.cpp's
+// serialize Read uses. The Write path stores the object's id (CGameObject::m_188).
+// The per-serialize round counter g_serialCounter bumps each pass. (The ex CSpotFocus
+// view - a fabricated 9-virtual shell - is dissolved onto CGameObject: its "GetType"
+// was CGameObject's slot-8 GetTypeId and its +0x188 the object's archive-cue id;
+// the ex CSpotResMgr view is dissolved onto CSpriteFactory.)
 extern i32 g_serialCounter; // 0x629ad0
-struct CSpotFocus {
-    virtual i32 s0();
-    virtual i32 s1();
-    virtual i32 s2();
-    virtual i32 s3();
-    virtual i32 s4();
-    virtual i32 s5();
-    virtual i32 s6();
-    virtual i32 s7();
-    virtual i32 GetType(); // slot 8 (+0x20): the type tag (5 == a valid focus)
-    char m_pad04[0x188 - 0x04];
-    i32 m_188; // +0x188  the serialized id
-};
 
 // CSpotLight::SerializeMove @0x0b2050 (vtable slot 1) - chain the base + the +0x34
 // object-reference, then transfer the light's own state through the archive keyed on
@@ -180,7 +171,7 @@ struct CSpotFocus {
 // 99.96% - entropy-tail regalloc coin-flip (topic:regalloc): the whole body (the two
 // chains, the mode switch, all sixteen 8-byte double transfers, the g_serialCounter
 // bump, the mode-8 draw-fill, the Write serialize-id, and the Read MFC CMapPtrToPtr
-// Lookup + branchless `(GetType()==5)?obj:0` resolve) is byte-faithful. Sole residual:
+// Lookup + branchless `(GetTypeId()==5)?obj:0` resolve) is byte-faithful. Sole residual:
 // the Write-id load `id = m_98->m_188` uses ecx here vs eax in retail (a 1-byte
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
@@ -207,7 +198,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
             {
                 i32 id = 0;
                 if (m_98 != 0) {
-                    id = ((CSpotFocus*)m_98)->m_188;
+                    id = m_98->m_188;
                 }
                 s->Write(&id, 4);
             }
@@ -228,16 +219,16 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
             {
                 i32 id;
                 s->Read(&id, 4);
-                CSpotFocus* out = 0;
-                i32 resolved = reg->m_world->m_8->m_objMap.Lookup((void*)id, (CGameObject*&)out);
+                CGameObject* out = 0;
+                i32 resolved = reg->m_world->m_8->m_objMap.Lookup((void*)id, out);
                 if (resolved != 0) {
                     if (out == 0) {
                         resolved = 0;
                     } else {
-                        resolved = (out->GetType() == 5) ? (i32)out : 0;
+                        resolved = (out->GetTypeId() == CLASSID_SERIALREF) ? (i32)out : 0;
                     }
                 }
-                m_98 = resolved;
+                m_98 = (CGameObject*)resolved;
                 if (m_98 == 0 && id != 0) {
                     return 0;
                 }
@@ -281,19 +272,22 @@ extern char s_actKeyB[]; // 0x60d1bc "B"
 extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 extern i32 g_sndEnabled;              // 0x61ab20
 extern i32 g_sndCueTag;               // 0x61ab24
-// The probed hit-target: its +0x258 is a type tag (0x38 == self), +0x10 its object.
+// The probed hit-target record Probe_32ce returns (QueryAt @0x75c60 on the command
+// grid). Genuinely-unrecovered engine identity (@identity-TODO): it is bigger than
+// any recovered class (its type tag lives at +0x258, past every wide-object kind's
+// size), so it is NOT a CGameObject - it is the spatial-query hit record that WRAPS
+// one. Only the two touched offsets are modeled; the wrapped object at +0x10 IS a
+// real CGameObject.
+//   +0x10  the target's bound CGameObject (coords at m_screenX/m_screenY)
+//   +0x258 a type tag (0x38 == self)
 struct CSpotTarget {
     char m_pad00[0x10];
-    CGameObject* m_10; // +0x10  the target's bound object (coords at +0x5c/+0x60)
+    CGameObject* m_10; // +0x10  the target's bound object
     char m_pad14[0x258 - 0x14];
     i32 m_258; // +0x258  type tag
 };
-// The looked-up laser sound record: the update reads its move-delta at +0x5c/+0x60.
-struct CSpotLaser {
-    char m_pad00[0x5c];
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
-};
+// (The ex CSpotLaser view of m_98 is dissolved onto CGameObject: its +0x5c/+0x60
+// "move-delta" are the focus object's m_screenX/m_screenY.)
 
 // CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is
 // in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live
@@ -357,12 +351,12 @@ i32 CSpotLight::Tick_0b1af0() {
     double s = sin(m_90);
     double c = cos(m_90);
     double dt = (double)(i32)g_frameDelta;
-    CSpotLaser* mv = (CSpotLaser*)m_98;
+    CGameObject* mv = m_98; // the focus object (real CGameObject; ex CSpotLaser view)
     double rx = m_80 * c - m_88 * s;
     double ry = m_80 * s + m_88 * c;
     if (mv != 0) {
-        m_70 = (double)mv->m_5c;
-        m_78 = (double)mv->m_60;
+        m_70 = (double)mv->m_screenX;
+        m_78 = (double)mv->m_screenY;
     }
     m_60 = m_70 + rx;
     m_68 = m_78 + ry;
@@ -375,6 +369,5 @@ i32 CSpotLight::Tick_0b1af0() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CSpotActEntry);
-SIZE_UNKNOWN(CSpotFocus);
 SIZE_UNKNOWN(CSpotTarget);
-SIZE_UNKNOWN(CSpotLaser);
+// (CSpotFocus + CSpotLaser dissolved onto the real CGameObject; see the notes above.)

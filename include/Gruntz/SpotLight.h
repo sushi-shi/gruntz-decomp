@@ -37,9 +37,10 @@ public:
     double m_78; // +0x78
     double m_80; // +0x80
     double m_88; // +0x88
-    double m_90; // +0x90  pi or 0
-    i32 m_98;    // +0x98
-    i32 m_9c;    // +0x9c
+    double m_90;       // +0x90  pi or 0
+    CGameObject* m_98; // +0x98  the serialized focus object (GetTypeId()==5 gate; a
+                       //         real CGameObject - id at +0x188, coords at +0x5c/+0x60)
+    i32 m_9c;          // +0x9c
     i32 m_a0;    // +0xa0
     i32 m_a4;    // +0xa4
 };

@@ -59,9 +59,14 @@ enum LoadableClassId {
     CLASSID_IMAGE = 10,       // CImage::GetClassId @0xd5de0 (mov eax,0xa)
     CLASSID_WORKER = 14,      // CDDrawWorker::GetClassId @0x155770 (mov eax,0xe)
     CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
+    // Id 5 = the serialize-map REFERENT kind: the serialize Read probes
+    // (CSpotLight::SerializeMove focus resolve, CPlay::SerializeMove cell-entry
+    // resolve) keep a deserialized id->object only when GetClassId()==5. Named by
+    // role - the owning CWwdGameObject* kind is not yet recovered, but the value +
+    // role are proven by both probe sites (matching-neutral: same immediate).
+    CLASSID_SERIALREF = 5,
     // The wide game-object kinds (CWwdGameObject* family; slot-8 bodies are
-    // `mov eax,<id>; ret` at the cited RVAs). The serialize-map probes compare
-    // GetClassId()==5 - id 5's owning class is not yet recovered (no enumerator).
+    // `mov eax,<id>; ret` at the cited RVAs).
     CLASSID_WWDOBJ_C = 6,    // CWwdGameObjectC::GetClassId @0x15c020
     CLASSID_WWDOBJ_F = 0x16, // CWwdGameObjectF::GetClassId @0x15ba60
     CLASSID_WWDOBJ_B = 0x1b, // CWwdGameObjectB::GetClassId @0x15bce0

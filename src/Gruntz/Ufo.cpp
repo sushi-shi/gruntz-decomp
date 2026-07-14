@@ -65,8 +65,8 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->m_120 = m_object->m_130;
             sub->m_notify(sl);
             // The spotlight's bound logic leaf (CSpotLight): stash the UFO's owner
-            // game-object into its reused +0x98 slot (downcast at the site).
-            ((CSpotLight*)sl->m_7c->m_logic)->m_98 = (i32)m_object;
+            // game-object into its reused +0x98 focus slot (both CGameObject*).
+            ((CSpotLight*)sl->m_7c->m_logic)->m_98 = m_object;
         }
     }
     m_object->m_drawActive = 1;
