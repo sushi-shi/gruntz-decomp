@@ -65,4 +65,13 @@ public:
 VTBL(CLightFx, 0x1e7af4);
 SIZE(CLightFx, 0x5c);
 
+// The per-class activation-registry entry: its first dword receives the per-frame
+// handler PMF (AdvanceAnim; a 4-byte code ptr on this complete single-inheritance
+// class). Declared here (not .cpp-local) with the class it binds to.
+typedef i32 (CLightFx::*LightFxHandler)();
+struct CLightFxActEntry {
+    LightFxHandler m_fn;
+};
+SIZE_UNKNOWN(CLightFxActEntry);
+
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

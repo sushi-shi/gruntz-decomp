@@ -8,6 +8,8 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h>           // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
+#include <Image/ImageSet.h>              // CImageSet - the spec Lookup result (frames + index range)
+#include <Gruntz/LightFxResource.h>      // the object-context spec/effect resource stores (@identity-TODO)
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 #include <Gruntz/SerialArchive.h>    // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>     // the +0x34 serialized-object-reference (Chain @0x8c00)
@@ -29,32 +31,11 @@ extern "C" u32 g_engineFrameDelta;
 // so their call displacements reloc-mask. Field names are placeholders; only the
 // OFFSETS + code bytes are load-bearing.
 
-// ---------------------------------------------------------------------------
-// The CMap core embedded at +0x10 inside each spec/effect store. Lookup(key,
-// &out) fills *out with the mapped node and returns nonzero on hit. __thiscall,
-// ret 8 (2 args), matched in the engine map TU - NO-body so the call reloc-masks.
-struct LfxMapCore {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
-
-// A spec/effect store: the CMap core sits at +0x10 (the engine call is
-// `mov ecx,store; add ecx,0x10; Lookup`).
-struct LfxNodeMap {
-    char m_pad00[0x10];
-    LfxMapCore m_10; // +0x10  the CMap core
-};
-
-// The two store objects the lookup chains walk to. The bound object's holder
-// (m_3c->m_0c / m_38->m_0c) points at a record whose +0x10 holds the spec store
-// and +0x2c the effect store.
-struct LfxMapHolder {
-    char m_pad00[0x10];
-    LfxNodeMap* m_10; // +0x10  spec store
-    char m_pad14[0x2c - 0x14];
-    LfxNodeMap* m_2c; // +0x2c  effect store
-};
-struct LfxMapSource {
-    char m_pad00[0xc];
-    LfxMapHolder* m_0c; // +0xc
-};
+// The spec/effect resource stores + their owner-context holder (LfxSpecStore /
+// LfxEffectStore / LfxMapHolder) live in <Gruntz/LightFxResource.h> (included
+// above) - the two store maps are DIFFERENT real MFC types (CMapStringToOb for the
+// spec @0x1b8008, CMapStringToPtr for the effect @0x1b8438: proven by disasm of
+// CLightFx::Activate @0x9d520; the labels used to be inverted here).
 
 // The global game registry (?g_gameReg, *0x64556c); only the +0x78 logic pump is
 // read here. (Declared as the engine's CGameRegistry via the existing DATA label.)
@@ -67,54 +48,30 @@ extern "C" CGameRegistry* g_gameReg;
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-// The bound object's effect node (the Lookup result): +0x14 a value table indexed
-// by the clamped key, +0x64/+0x68 the key bounds.
-struct LfxEffectNode {
-    char m_pad00[0x14];
-    i32* m_14; // +0x14  value table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  key lo
-    i32 m_68; // +0x68  key hi
-};
+// (The ex LfxEffectNode view of the spec Lookup result is DISSOLVED onto the real
+// CImageSet (<Image/ImageSet.h>): its "value table @+0x14" is CImageSet::m_frames,
+// its "key bounds @+0x64/+0x68" are m_minIndex/m_maxIndex - the spec result IS a
+// CImageSet (pushed to the pump as one), read for the frame in its index range.)
 
-// The bound object's layer sub-descriptor (m_38+0x1a0): SetNode caches the
-// resolved effect node. __thiscall ret 4 (1 arg), 0x15c2d0; modeled NO-body.
+// The bound object (m_38) IS the real CGameObject (<Gruntz/UserLogic.h>): the ex
+// LfxObj view is DISSOLVED onto it. Its +0x08 flags = m_flags, +0x0c holder = m_0c
+// (the owner context), +0x190/m_194/m_layer(+0x198) are CGameObject's role-union
+// resolved-node fields (source-def/z-clamp descriptor, reinterpreted here per the
+// canonical's own note), +0x1a0 the per-leaf anim sub-object (CAniAdvanceCursor,
+// reached by address), +0x1b4 the m_geoId geometry descriptor. The alleged +0x198
+// "conflict" was the documented role-union, not a distinct field.
 
-// The bound object proper (m_38): +0x08 flags, +0x0c the map holder, +0x190..0x198
-// the resolved-node triple, +0x1a0 the layer sub-descriptor, +0x1b4 the layer base.
-// Kept as a per-TU concrete view (NOT folded into CGameObject): +0x198 here is an
-// i32 resolved-node value, conflicting with CGameObject's CGameObjLayer* z-clamp
-// descriptor at the same offset; +0x1a0 is the class-specific LfxLayerSink.
-struct LfxObj {
-    char m_pad00[0x8];
-    i32 m_08;           // +0x08  flag word (|= 2)
-    LfxMapHolder* m_0c; // +0x0c
-    char m_pad10[0x190 - 0x10];
-    i32 m_190; // +0x190 resolved key
-    i32 m_194; // +0x194 resolved node
-    i32 m_198; // +0x198 resolved value
-    char m_pad19c[0x1a0 - 0x19c];
-    i32 m_1a0; // +0x1a0 CDDrawBlitParam sub-descriptor (Setup_15c2d0)
-    char m_pad1a4[0x1b4 - 0x1a4];
-    i32 m_1b4; // +0x1b4 layer base
-};
-
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class).
-typedef i32 (CLightFx::*LightFxHandler)();
-struct CLightFxActEntry {
-    LightFxHandler m_fn;
-};
+// CLightFxActEntry (the registry entry's per-frame handler PMF) is declared with
+// the class in <Gruntz/LightFx.h> (included above).
 
 // The class's activation-coordinate registry singleton (@0x645ad0): the fixed
-// [2000,2010] range built by the shared registry ctor (0x408710). CLightFxActReg is
-// the shared <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its
-// layout + ResolveEntry); it keeps its own placeholder name so the DATA-pinned
-// global symbol is unchanged.
-struct CLightFxActReg : public CActReg {};
+// [2000,2010] range built by the shared registry ctor (0x408710). It IS the shared
+// <Gruntz/ActReg.h> CActReg archetype - the empty CLightFxActReg subclass (whose
+// only job was a distinct type name) is dissolved: the variable name already makes
+// the mangled symbol unique and DATA() rebinds it, so the archetype IS the type
+// (same fold TileLogicPump's ActReg globals use).
 DATA(0x00245ad0)
-CLightFxActReg g_lightFxActReg; // 0x645ad0
+CActReg g_lightFxActReg; // 0x645ad0
 
 // CLightFx::InitActReg @0x9d140 - construct the class's activation-coordinate
 // registry singleton (g_lightFxActReg @0x645ad0) over the fixed range
@@ -188,36 +145,40 @@ void CLightFx::RegisterActs() {
 RVA(0x0009d520, 0xfd)
 i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
-    ((CMapStringToPtr*)&((LfxMapSource*)m_3c)->m_0c->m_10->m_10)
-        ->Lookup((const char*)spec, (void*&)node);
+    // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
+    // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
+    ((LfxMapHolder*)m_3c->m_0c)->m_spec->m_map.Lookup((const char*)spec, (CObject*&)node);
     i32 found = node;
     g_gameReg->m_logicPump->Push((CImageSet*)found, anchorA, 7);
-    LfxObj* obj = (LfxObj*)m_38;
     if (found != 0) {
-        LfxEffectNode* en = (LfxEffectNode*)found;
-        i32 key = en->m_64;
-        obj->m_194 = found;
+        // The spec lookup result IS a CImageSet (it is pushed to the pump as one);
+        // read the lowest-indexed frame in its [m_minIndex, m_maxIndex] range.
+        CImageSet* en = (CImageSet*)found;
+        i32 key = en->m_minIndex;
+        // m_194/m_layer(+0x198) are CGameObject's role-union fields (source-def /
+        // z-clamp descriptor); LightFx overwrites them with the resolved set/frame.
+        m_38->m_194 = (char*)found;
         i32 val;
-        if (key < en->m_64 || key > en->m_68) {
+        if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;
         } else {
-            val = en->m_14[key];
+            val = (i32)en->m_frames[key];
         }
-        obj->m_198 = val;
-        obj->m_190 = key;
+        m_38->m_layer = (CGameObjLayer*)val;
+        m_38->m_190 = key;
     }
     node = 0;
-    ((LfxObj*)m_38)->m_08 |= 2;
+    m_38->m_flags |= 2;
     m_anchorA = anchorA;
     m_anchorB = anchorB;
-    ((CMapStringToPtr*)&((LfxObj*)m_38)->m_0c->m_2c->m_10)
-        ->Lookup((const char*)effect, (void*&)node);
+    // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
+    // context (CGameObject::m_0c @+0xc); out is void*&.
+    ((LfxMapHolder*)m_38->m_0c)->m_effect->m_map.Lookup((const char*)effect, (void*&)node);
     if (node != 0) {
         node = 0;
-        ((CMapStringToPtr*)&((LfxObj*)m_38)->m_0c->m_2c->m_10)
-            ->Lookup((const char*)effect, (void*&)node);
-        m_layerBase = ((LfxObj*)m_38)->m_1b4;
-        ((CAniAdvanceCursor*)&((LfxObj*)m_38)->m_1a0)->Setup_15c2d0((CAniElement*)node);
+        ((LfxMapHolder*)m_38->m_0c)->m_effect->m_map.Lookup((const char*)effect, (void*&)node);
+        m_layerBase = m_38->m_geoId;
+        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Setup_15c2d0((CAniElement*)node);
         RebindNode();
     }
     return 0;
@@ -280,17 +241,11 @@ i32 CLightFx::AdvanceAnim() {
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CLightFxActEntry);
-SIZE_UNKNOWN(CLightFxActReg);
-SIZE_UNKNOWN(LfxEffectNode);
-SIZE_UNKNOWN(LfxLayerSink);
-SIZE_UNKNOWN(LfxMapCore);
-SIZE_UNKNOWN(LfxMapHolder);
-SIZE_UNKNOWN(LfxMapSource);
-SIZE_UNKNOWN(LfxNodeMap);
-SIZE_UNKNOWN(LfxObj);
+// All of this TU's former per-TU view structs are now DISSOLVED onto real classes
+// or homed to headers: LfxObj -> CGameObject, LfxMapSource -> AnimWorkerObj::m_0c,
+// LfxEffectNode -> CImageSet, CLightFxActReg -> the CActReg archetype,
+// CLightFxActEntry -> <Gruntz/LightFx.h>, and LfxSpecStore/LfxEffectStore/
+// LfxMapHolder -> <Gruntz/LightFxResource.h>. No struct/class is defined in this .cpp.
 
 // ============================================================================
 // merged from LightFxEh.cpp (the /GX EH-frame sibling; unit flags -> eh)
