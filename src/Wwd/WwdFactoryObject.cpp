@@ -36,38 +36,36 @@ namespace Rng {
     i32 Next2();
 }
 
-// The sound-cue enable/tag globals + pan scale (DATA bindings owned by the G obj).
-extern i32 g_sndEnabled;    // 0x61ab20
+// g_sndEnabled (0x61ab20) is declared in the included <Globals.h> - no per-TU extern.
+// g_sndPanScale (0x5eff2c) + g_aniCueItem (0x61ab24, == <Globals.h>'s g_sndCueTag - same
+// address, name conflict) still need homing to Globals.h (deferred globals-consolidation).
 extern float g_sndPanScale; // 0x5eff2c
-extern i32 g_aniCueItem;    // 0x61ab24
+extern i32 g_aniCueItem;    // 0x61ab24 (== g_sndCueTag)
 
 // (The former CDDrawBlitParamSrc view of the resolved +0x14 source is DISSOLVED
 // onto the real CAniElement (<Gruntz/AniElement.h>): its "+0x0c elements/+0x10
 // count" are m_records.m_pData/m_nSize and its +0x20 the same float m_scale.)
 #include <Gruntz/AniElement.h>
 
-// The worker held at the cursor's +0x0c owner slot (CLoadable::m_0c): holds a
-// sub-object at +0x2c whose 0x152d30 method returns a CString (the label written
-// by Serialize). @identity-TODO: the owner's concrete class (CDDrawSurfaceMgr-
-// family) is not settled from these sites.
-class CDDrawBlitLabelSource;
+// The +0x2c label sub-object IS the real CDDrawSubMgrLeaf (<DDrawMgr/DDrawSubMgrLeaf.h>):
+// its GetLabel method is PROVEN to be ?KeyOfValue_152d30@CDDrawSubMgrLeaf@@ (the 0x152d30
+// mangled name, returns CString from a CObject* value), and its +0x10 label map is that
+// class's own CMapStringToPtr m_10 (Deserialize_15ca70's Lookup is `call 0x1b8438` =
+// CMapStringToPtr - disasm-confirmed; the ex-CDDrawBlitLabelSource view mistyped it as
+// CMapStringToOb @0x1b8008, a WRONG reloc that this fold corrects).
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+
+// The worker held at the cursor's +0x0c owner slot (CLoadable::m_0c): a manager holding a
+// CDDrawSubMgrLeaf at +0x2c. @deferred-fold: the owner is the CDDrawSurfaceMgr family (its
+// m_leaf sits at +0x2c), but the concrete owner class is not settled from these two sites
+// and DDrawSurfaceMgr.h is being rewritten by another lane this wave, so it is kept as a
+// minimal owner shell whose +0x2c is now the REAL CDDrawSubMgrLeaf (label source dissolved).
 class CDDrawBlitWorker {
 public:
-    char m_pad00[0x2c];                   // +0x00..0x2b
-    CDDrawBlitLabelSource* m_labelSource; // +0x2c sub-object (GetLabel_152d30 -> CString)
+    char m_pad00[0x2c];         // +0x00..0x2b
+    CDDrawSubMgrLeaf* m_leaf;    // +0x2c the label sub-manager (KeyOfValue_152d30 / m_10 map)
 };
 SIZE_UNKNOWN(CDDrawBlitWorker);
-// The label map embedded at +0x10 in the worker sub-object: Lookup(key, &out)
-// resolves a worker-label string to its worker pointer. 0x1b8438, reloc-masked.
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
-class CDDrawBlitLabelSource {
-public:
-    CString GetLabel_152d30(CAniElement* a);
-    char m_pad00[0x10];        // +0x00..+0x0f
-    CMapStringToOb m_labelMap; // +0x10 label -> worker map
-};
-SIZE_UNKNOWN(CDDrawBlitLabelSource);
 
 // ---------------------------------------------------------------------------
 // 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
@@ -879,8 +877,9 @@ i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
         ((i32*)buf)[i] = 0;
     }
     if (m_14 != 0) {
-        // the +0x0c owner (CLoadable::m_0c) carries the label source at +0x2c
-        CString label = ((CDDrawBlitWorker*)m_0c)->m_labelSource->GetLabel_152d30(m_14);
+        // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
+        // KeyOfValue_152d30 returns the label for the map VALUE m_14 (CAniElement : CObject).
+        CString label = ((CDDrawBlitWorker*)m_0c)->m_leaf->KeyOfValue_152d30(m_14);
         strcpy(buf, label);
     }
     ar->Write(buf, 0x80);
@@ -916,9 +915,9 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     if (strlen(buf) == 0) {
         m_14 = 0;
     } else {
-        CObject* out_ob = 0;
-        ((CDDrawBlitWorker*)m_0c)->m_labelSource->m_labelMap.Lookup(buf, out_ob);
-        void* out = (void*)out_ob;
+        // the leaf's +0x10 map is CMapStringToPtr (Lookup 0x1b8438), value-typed void*
+        void* out = 0;
+        ((CDDrawBlitWorker*)m_0c)->m_leaf->m_10.Lookup(buf, out);
         m_14 = (CAniElement*)out;
     }
     CAniElement* w = m_14;
