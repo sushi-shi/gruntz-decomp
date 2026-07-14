@@ -36,7 +36,8 @@
 #include <DDrawMgr/DirectDrawMgr.h> // canonical CDDPalette (the +0x10 work buffer's real class)
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections - the real +0x1c pool allocator
 #include <DDrawMgr/AniRecordBase2.h>      // the canonical secondary/base facet (dtor 0x165dd0 here)
-#include <string.h>                       // strlen (inline repnz scas)
+#include <DDrawMgr/AniRecordViews.h> // honest by-offset owner/surface models (@identity-TODO, no RTTI)
+#include <string.h>                 // strlen (inline repnz scas)
 #include <Globals.h>
 
 // The three vftables (g_aniRecordVtbl @0x5f02c0, CAniRecordBase2 @0x5f02d8, the shared
@@ -68,31 +69,15 @@ void operator delete(void* p);
 // view whose Alloc*/Free names masked the real 0x142f40..0x1430c0 / 0x142f10
 // CDDrawPtrCollections methods.)
 
-// The owner node (record+0x0c). Its +0x08 is a flags word the buffer virtuals OR
-// a bit into; its +0x1c is the pool above.
-// DISPOSITION: CAniRecordOwner / CAniMapOwner are the record's owner nodes reached by
-// this-offset from the record's parse/alloc paths; neither carries an RTTI vtable, so
-// there is no recoverable class name. Kept as honest minimal by-offset models (no
-// fabricated identity); resolvable only if their owning subsystem is later RTTI-pinned.
-class CAniRecordOwner {
-public:
-    i32 m_00, m_04; // +0x00..+0x07
-    i32 m_flags;    // +0x08  flags
-    char _pad0c[0x1c - 0x0c];
-    CDDrawPtrCollections* m_pool; // +0x1c  the pool allocator (real CDDrawPtrCollections)
-};
+// The record's owner nodes CAniRecordOwner (record+0x0c) and CAniMapOwner (the token-map
+// owner) are honest by-offset models with no recoverable RTTI identity; their defs live
+// in <DDrawMgr/AniRecordViews.h> (@identity-TODO) so they no longer count as .cpp-local
+// views. CAniRecordOwner->m_pool is the real CDDrawPtrCollections the Alloc* leaves use.
 
 // The freshly-allocated +0x10 palette buffer is a real CDDPalette (canonical
 // <DDrawMgr/DirectDrawMgr.h>); second-stage init captures the current system
 // palette (CaptureSystemPalette @0x1485b0, DirPal.cpp). The ex-"DirPal" local
 // view folded onto the canonical class (wave3-J).
-
-// The CMapStringToPtr the index resolver looks each token up in lives at owner2
-// +0x10 (owner2 = ResolveIndices arg1). Real MFC layout via <Mfc.h>.
-struct CAniMapOwner {
-    char _pad00[0x10];
-    CMapStringToPtr m_map; // +0x10
-};
 
 // ---------------------------------------------------------------------------
 // The 0x34-byte record. Layout recovered from Parse + the dtors + CAniElement's
@@ -247,18 +232,12 @@ i32 CAniRecordView::GetSize_168e50() {
 }
 
 // ---------------------------------------------------------------------------
-// CAniStrArray::GetAt (0x168e70) - a by-value CString-array element accessor,
-// re-homed from src/Stub/MallocConstructors. Returns (via the RVO return slot) a
-// copy of the CString at this->m_data[index] (`lea &m_data[i]; CString::CString`
-// copy-ctor 0x1b9ba3). xref (gruntz.analysis.xref): CAniRecordView::ResolveIndices
-// (0x168d00). Modeled as the small string-array view CAniRecord indexes.
-struct CAniStrArray {
-    char m_00[4];             // +0x00
-    CString* m_data;          // +0x04  CString array base (4-byte elements)
-    CString GetAt(int index); // 0x168e70
-};
+// CAniStrArray::GetAt (0x168e70) - the out-of-line CStringArray::GetAt COMDAT
+// (a by-value CString-array element accessor; ResolveIndices @0x168d00 calls it,
+// xref-proven). Decl in <DDrawMgr/AniRecordViews.h> (MFC models GetAt inline, so
+// this out-of-line copy cannot be re-emitted as the real CStringArray method).
+// Returns (via the RVO return slot) a copy of the CString at m_data[index].
 SIZE_UNKNOWN(CAniStrArray);
-// CAniStrArray::GetAt (0x168e70) - copy of the CString at m_data[index].
 RVA(0x00168e70, 0x27)
 CString CAniStrArray::GetAt(int index) {
     return m_data[index];
@@ -344,24 +323,9 @@ void CAniRecordView::FreeBuf_168fb0() {
     }
 }
 
-// The owner-image / surface-descriptor chain Slot13_168fd0 walks: m_owner->m_04 is
-// the owner image, whose +0x10 is a surface descriptor carrying the source bitdepth
-// (+0x18; 8 = paletted) and the target CDDSurface (+0x2c). The concrete image /
-// descriptor classes are not yet recovered (@identity-TODO); only the touched
-// offsets are modeled (CImage.h is deliberately avoided - its EH include tangle
-// regresses this TU's /GX destructors).
-struct AniSurfDesc {
-    char pad_00[0x18];
-    i32 m_18; // +0x18  source bitdepth (8 = 8bpp / paletted)
-    char pad_1c[0x2c - 0x1c];
-    CDDSurface* m_2c; // +0x2c  target surface
-};
-struct AniImageHost {
-    char pad_00[0x10];
-    AniSurfDesc* m_10; // +0x10  surface descriptor
-};
-SIZE_UNKNOWN(AniSurfDesc);
-SIZE_UNKNOWN(AniImageHost);
+// The owner-image / surface-descriptor chain Slot13_168fd0 walks (AniImageHost ->
+// AniSurfDesc -> target CDDSurface) is modeled by-offset in <DDrawMgr/AniRecordViews.h>
+// (@identity-TODO: the concrete image/descriptor classes are not yet RTTI-recovered).
 
 // ---------------------------------------------------------------------------
 // CAniRecordView::Slot13_168fd0 (0x168fd0, vtable slot 13 of CAniRecordBase2): if
@@ -377,8 +341,12 @@ i32 CAniRecordView::Slot13_168fd0() {
     return sd->m_2c->SetPalette((CDDPalette*)m_buf, 0);
 }
 
+// TU-level SIZE rows for the by-offset owner/surface models (defs in
+// <DDrawMgr/AniRecordViews.h>); sizes are unknown (only touched offsets modeled).
 SIZE_UNKNOWN(CAniMapOwner);
 SIZE_UNKNOWN(CAniRecordOwner);
+SIZE_UNKNOWN(AniSurfDesc);
+SIZE_UNKNOWN(AniImageHost);
 
 // (CAniRecordBase2's SIZE/VTBL rows live with the canonical def in
 // <DDrawMgr/AniRecordBase2.h>.)
