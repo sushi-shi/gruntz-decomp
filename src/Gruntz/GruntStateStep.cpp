@@ -34,19 +34,11 @@
 #include <Gruntz/TypeKeyColl.h>
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-struct CStepCoord {
-    i32 x, y;
-};
-struct CStepNode { // CGrunt::CoordHead() pending-coord node
-    CStepNode* m_next;
-    i32 _04;
-    void* m_8; // +0x08
-};
 // (CStepList was a third fake name for the REAL MFC CPtrList at g->m_31c - the same
 // fabrication Grunt.h records as GruntListSub.  Find1de8 @0x1de8 thunks to the free
 // __stdcall ListNodeAdvance @0x29a30; RemoveAll1b48a6 @0x1b48a6 IS CPtrList::RemoveAll.)
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
-// (the ex-CStepSub10 view of g->m_10 is GONE - it is the real CGruntHud (m_5c/m_60);
+// (the ex-CStepSub10 view of g->m_10 is GONE - it is the real CGruntHud (m_screenX/m_screenY);
 // the ex-CStepOwner view of g->m_14 is GONE - it is the real CAnimLookupNode (m_1c). Both
 // are CGrunt's already-typed sub-objects, so the local views were redundant casts.)
 // CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
@@ -67,9 +59,6 @@ extern char s_codeJ[];
 // m_width/m_height, +0x60..+0x6c the bound RECT, +0x70/+0x74 the clipped extents. It IS the
 // CBrickzGrid/CMapMgr board. Typing the member with the real class made both the shell and
 // the cast at the call fall out.)
-struct CStepGoal { // a goal-table element (the CPtrArray m_0f0's void* payloads)
-    i32 m_0, m_4;
-};
 // `this` (ebp) is the canonical CBattlezMapConfig (was the CStepMgr view): its board
 // is m_triggerMgr (CTriggerMgr, the 4x15 CGrunt* m_grid at +0x1c), the pathfinding grid
 // is m_board (CBrickzGrid/CMapMgr), the thresholds are m_08c/m_090/m_0a0/m_0a4, and the
@@ -86,7 +75,7 @@ extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles 
 // empty the list.
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
-        CStepNode* nd = (CStepNode*)(g)->CoordHead();                                              \
+        GruntCoordNode* nd = (g)->CoordHead();                                              \
         if (nd != 0) {                                                                             \
             do {                                                                                   \
                 void* r = ListNodeAdvance((void**)&nd);                                            \
@@ -140,33 +129,33 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
     }
     if (state != 2) {
         // ---- fresh: re-query the move grid ----
-        CStepCoord tp;
-        g->GetScreenPos((GruntTilePos*)&tp);
-        CGrunt* nb = QueryTile4098(tp.x >> 5, tp.y >> 5, m_08c, m_090);
+        GruntTilePos tp;
+        g->GetScreenPos(&tp);
+        CGrunt* nb = QueryTile4098(tp.m_x >> 5, tp.m_y >> 5, m_08c, m_090);
         if (nb != 0) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
             // board distance nb <-> g
-            CStepCoord np, gp, np2, gp2;
-            nb->GetScreenPos((GruntTilePos*)&np);
-            g->GetScreenPos((GruntTilePos*)&gp);
-            nb->GetScreenPos((GruntTilePos*)&np2);
-            g->GetScreenPos((GruntTilePos*)&gp2);
-            i32 dist = iabs((np2.y >> 5) - (gp2.y >> 5)) + iabs((np2.x >> 5) - (gp2.x >> 5));
+            GruntTilePos np, gp, np2, gp2;
+            nb->GetScreenPos(&np);
+            g->GetScreenPos(&gp);
+            nb->GetScreenPos(&np2);
+            g->GetScreenPos(&gp2);
+            i32 dist = iabs((np2.m_y >> 5) - (gp2.m_y >> 5)) + iabs((np2.m_x >> 5) - (gp2.m_x >> 5));
             if (dist <= 0xa) {
                 // dirty-rect box around the grunt
-                CStepCoord b0, b1, b2, b3;
-                g->GetScreenPos((GruntTilePos*)&b0);
-                g->GetScreenPos((GruntTilePos*)&b1);
-                g->GetScreenPos((GruntTilePos*)&b2);
-                g->GetScreenPos((GruntTilePos*)&b3);
+                GruntTilePos b0, b1, b2, b3;
+                g->GetScreenPos(&b0);
+                g->GetScreenPos(&b1);
+                g->GetScreenPos(&b2);
+                g->GetScreenPos(&b3);
                 CBrickzGrid* grid = m_board;
                 RECT box;
-                box.left = (b0.x >> 5) - 5;
-                box.top = (b1.y >> 5) - 5;
-                box.right = (b2.x >> 5) + 5;
-                box.bottom = (b3.y >> 5) + 5;
+                box.left = (b0.m_x >> 5) - 5;
+                box.top = (b1.m_y >> 5) - 5;
+                box.right = (b2.m_x >> 5) + 5;
+                box.bottom = (b3.m_y >> 5) + 5;
                 RECT gb;
                 (RECT*)new (&gb) CRect(0, 0, grid->m_width, grid->m_height);
                 if (!IntersectRect((RECT*)&grid->m_originX, &box, &gb)) {
@@ -175,9 +164,9 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 grid->m_gridW = grid->m_boundRight - grid->m_originX;
                 grid->m_gridH = grid->m_boundBottom - grid->m_originY;
             }
-            CStepCoord p;
-            nb->GetScreenPos((GruntTilePos*)&p);
-            if (CGrunt_TileSwitch(p.x >> 5, p.y >> 5, 0, 0x20000dc7, 0, 0)) {
+            GruntTilePos p;
+            nb->GetScreenPos(&p);
+            if (CGrunt_TileSwitch(p.m_x >> 5, p.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
                 g->m_defenderState = 2;
                 g->m_arrivalCol = nb->m_tileOwnerHi;
                 g->m_arrivalRow = nb->m_tileOwnerLo;
@@ -225,16 +214,16 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             goto tail;
         }
         // not arrived: reroute by Euclidean board distance
-        CStepCoord here, np;
-        g->GetTilePos((GruntTilePos*)&here);
-        cur->GetTilePos((GruntTilePos*)&np);
-        i32 dx = np.x - here.x;
-        i32 dy = np.y - here.y;
+        GruntTilePos here, np;
+        g->GetTilePos(&here);
+        cur->GetTilePos(&np);
+        i32 dx = np.m_x - here.m_x;
+        i32 dy = np.m_y - here.m_y;
         i32 dist = (i32)sqrt((double)(iabs(dx) * iabs(dx) + iabs(dy) * iabs(dy)));
         if (dist > m_0a4) {
             if (m_0f0.GetSize() != 0) {
-                CStepGoal* e = ((CStepGoal**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
-                CGrunt_TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
+                GruntCoord* e = ((GruntCoord**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
+                CGrunt_TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
             g->m_arrivalCol = -1;
             g->m_dwell = 0;
@@ -250,24 +239,24 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         if (g->CoordCount() != 0) {
             STEP_DRAIN(g);
         }
-        CStepCoord c0, c1, c2, c3;
-        cur->GetScreenPos((GruntTilePos*)&c0);
-        g->GetScreenPos((GruntTilePos*)&c1);
-        cur->GetScreenPos((GruntTilePos*)&c2);
-        g->GetScreenPos((GruntTilePos*)&c3);
-        i32 dist2 = iabs((c0.y >> 5) - (c1.y >> 5)) + iabs((c2.x >> 5) - (c3.x >> 5));
+        GruntTilePos c0, c1, c2, c3;
+        cur->GetScreenPos(&c0);
+        g->GetScreenPos(&c1);
+        cur->GetScreenPos(&c2);
+        g->GetScreenPos(&c3);
+        i32 dist2 = iabs((c0.m_y >> 5) - (c1.m_y >> 5)) + iabs((c2.m_x >> 5) - (c3.m_x >> 5));
         if (dist2 <= 0xa) {
-            CStepCoord d0, d1, d2, d3;
-            g->GetScreenPos((GruntTilePos*)&d0);
-            g->GetScreenPos((GruntTilePos*)&d1);
-            g->GetScreenPos((GruntTilePos*)&d2);
-            g->GetScreenPos((GruntTilePos*)&d3);
+            GruntTilePos d0, d1, d2, d3;
+            g->GetScreenPos(&d0);
+            g->GetScreenPos(&d1);
+            g->GetScreenPos(&d2);
+            g->GetScreenPos(&d3);
             CBrickzGrid* grid = m_board;
             RECT box;
-            box.left = (d0.x >> 5) - 5;
-            box.top = (d1.y >> 5) - 5;
-            box.right = (d2.x >> 5) + 5;
-            box.bottom = (d3.y >> 5) + 5;
+            box.left = (d0.m_x >> 5) - 5;
+            box.top = (d1.m_y >> 5) - 5;
+            box.right = (d2.m_x >> 5) + 5;
+            box.bottom = (d3.m_y >> 5) + 5;
             RECT gb;
             (RECT*)new (&gb) CRect(0, 0, grid->m_width, grid->m_height);
             if (!IntersectRect((RECT*)&grid->m_originX, &box, &gb)) {
@@ -276,9 +265,9 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             grid->m_gridW = grid->m_boundRight - grid->m_originX;
             grid->m_gridH = grid->m_boundBottom - grid->m_originY;
         }
-        CStepCoord cp;
-        cur->GetScreenPos((GruntTilePos*)&cp);
-        if (!CGrunt_TileSwitch(cp.x >> 5, cp.y >> 5, 0, 0x20000dc7, 0, 0)) {
+        GruntTilePos cp;
+        cur->GetScreenPos(&cp);
+        if (!CGrunt_TileSwitch(cp.m_x >> 5, cp.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
             g->m_arrivalCol = -1;
             g->m_arrivalRow = -1;
             g->m_defenderState = 0;
@@ -293,14 +282,11 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
 tail:
     if (Method_034460((i32)g)) {
         if (g->CoordCount() == 0 && (u32)g->m_dwell > (u32)m_0a0 && m_0f0.GetSize() != 0) {
-            CStepGoal* e = ((CStepGoal**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
-            CGrunt_TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
+            GruntCoord* e = ((GruntCoord**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
+            CGrunt_TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             g->m_dwell = 0;
         }
     }
     return 1;
 }
 
-SIZE_UNKNOWN(CStepCoord);
-SIZE_UNKNOWN(CStepGoal);
-SIZE_UNKNOWN(CStepNode);
