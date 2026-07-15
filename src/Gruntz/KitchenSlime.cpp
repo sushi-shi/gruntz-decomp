@@ -135,8 +135,6 @@ CKitchenSlime::~CKitchenSlime() {}
 
 // The global bute store the ctor binds the "A" node through (g_buteTree @0x6bf620;
 // Find 0x16d190). Declared here so the ctor's lookup reloc-masks.
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
 
 // The bound object the ctor reads IS the canonical CGameObject (m_object == m_38):
 // the screen position m_screenX/m_screenY (+0x5c/+0x60), the layer key
@@ -240,7 +238,6 @@ DATA(0x0021aea8)
 i32 g_typeCounter = 2000;
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
-extern CButeTree g_buteTree;
 
 // R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
 static inline CTypeNameEntry* TypeLookup(i32 key) {

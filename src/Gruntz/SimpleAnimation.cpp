@@ -59,7 +59,6 @@ CSimpleAnimation::~CSimpleAnimation() {}
 // ===========================================================================
 
 // The shared registration key store (?g_buteTree@@3VCButeTree@@A @ 0x6bf620).
-extern CButeTree g_buteTree;
 
 // The running registration index (0x61aea8) bumped on each fresh insert.
 extern i32 g_typeCounter;

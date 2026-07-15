@@ -31,8 +31,6 @@
 
 // The bute store the "A" activation node is resolved through (g_buteTree @0x6bf620,
 // Find @0x16d190); declared extern so the call reloc-masks (the Stub TU owns it).
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
 
 // The two .rdata scale doubles the per-tick rate folds in (0x5ea3f0 numerator /
 // 0x5ea3f8 multiplier). Reloc-masked; the literal value is irrelevant to the match.

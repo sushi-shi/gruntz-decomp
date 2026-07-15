@@ -26,8 +26,6 @@
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
 
 // (The CProjActOwner placeholder is GONE: the vtable-owner probe proves the dtor that
 // opens the projactregistry block IS ~CActionArea - ??_7CActionArea @0x1e7004 (RTTI-named)

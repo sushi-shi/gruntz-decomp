@@ -58,7 +58,6 @@
 // The global bute store (?g_buteTree@@3VCButeTree@@A @0x6bf620; Find 0x16d190 /
 // Insert 0x16db90) + the bute manager (g_buteMgr); named symbols so the calls
 // reloc-mask.
-extern CButeTree g_buteTree;
 // g_buteMgr comes from <Bute/ButeMgr.h>.
 
 // The game-registry singleton (0x64556c; the SAME instance every gamemode unit

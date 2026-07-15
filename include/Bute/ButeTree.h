@@ -73,6 +73,13 @@ public:
 SIZE_UNKNOWN(CButeTree);
 VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)
 
+// The engine's shared game-object type registry / keyed config trie singleton
+// (?g_buteTree@@3VCButeTree@@A @0x6bf620); dynamic-init'd by retail's initializer
+// @0x16e690, constructed/destructed in src/Gruntz/TypeKeyColl.cpp. Declared here (its
+// type's owner header) so consumers reach it via <Bute/ButeTree.h> (or <Bute/ButeMgr.h>,
+// which includes this) instead of a per-TU extern.
+extern CButeTree g_buteTree;
+
 // --- vtable catalog ---
 
 #endif // SRC_BUTE_BUTETREE_H

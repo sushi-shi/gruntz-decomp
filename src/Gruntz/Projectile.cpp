@@ -74,7 +74,6 @@ extern "C" i32 g_frameDelta;
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-extern FreeNodePool g_coordPool;
 
 // The draw-clock delta global fed to the render object's anim Tick on detach.
 extern "C" u32 g_engineFrameDelta;
@@ -291,7 +290,6 @@ CProjectile::~CProjectile() {
 // its DATA label, so the GetDwordDef call here reloc-masks against it. The global
 // bute-tree g_buteTree @0x6bf620 is defined in the registration section below.)
 // ===========================================================================
-extern CButeTree g_buteTree;
 
 // The shooter-grunt projectile kind LoadProjectileSprites dispatches on (kind);
 // each name is confirmed by its case's GRUNTZ_<NAME>GRUNT_PROJECTILE sprite key +
@@ -483,7 +481,6 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 // ===========================================================================
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
-extern CButeTree g_buteTree;
 
 // The activation-collection primitives are the shared CActColl/CVariantSlot
 // (<Gruntz/ActColl.h>): Find 0x16da80, RegisterRange 0x3742-thunk (-> 0x408710),
@@ -1113,7 +1110,6 @@ char s_codeA[] = "A";
 // The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A
 // @0x6bf620, pulled via UserLogic.h; named by mangled symbol so Find/Insert
 // reloc-mask).
-extern CButeTree g_buteTree;
 
 // The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {

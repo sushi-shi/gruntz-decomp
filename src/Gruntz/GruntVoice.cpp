@@ -96,7 +96,6 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
-extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;

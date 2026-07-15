@@ -11,7 +11,6 @@
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
 
 // The global bute store the ctor interns "A" in (?g_buteTree@@3VCButeTree@@A @0x6bf620).
-extern CButeTree g_buteTree;
 
 // (The local CDDrawBlitParam facet view is GONE: Recompute_15c320 lives on the
 // one CAniAdvanceCursor class - the ex dual-view is a single class now.)

@@ -12,7 +12,6 @@
 
 // The engine bute store the sprite ctor queries for its "A" animset node. wwdfile /
 // others own the DATA label (0x2bf620); declared extern so the address reloc-masks.
-extern CButeTree g_buteTree;
 
 // CGruntToyTimeSprite::CGruntToyTimeSprite @0x0007fbd0 - the /GX HUD sprite ctor.
 // Chains the CGruntHealthSprite base ctor (0x7eb00, via thunk 0x3224; declared-only

@@ -34,7 +34,6 @@ CExitTrigger::~CExitTrigger() {}
 // The global bute store the leaf interns "A" into (g_buteTree @0x6bf620; Find
 // 0x16d190 __thiscall ret 4). The "A" key (0x60a454).
 #include <Bute/ButeMgr.h>
-extern CButeTree g_buteTree;
 extern char s_codeA[]; // "A"
 
 // The active-area index (DAT_00644c54): the exit trigger pins the focused warlord

@@ -58,8 +58,6 @@ extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
 
 // CGruntCreationPoint::CGruntCreationPoint @0x3e520 - fold the shared
 // CUserLogic(obj) init, flag the sub-object (+0x08 bit 1 via m_74==5 init), bind

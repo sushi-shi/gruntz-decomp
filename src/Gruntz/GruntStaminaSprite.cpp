@@ -10,7 +10,6 @@
 // The engine bute store the sprite ctor queries for its "A" animset node. wwdfile /
 // others own the DATA label (0x2bf620); declared extern so `ecx=&g_buteTree; call Find`
 // reloc-masks by address.
-extern CButeTree g_buteTree;
 
 // CGruntStaminaSprite::GetTypeTag (0x00012020) is now an inline member in the class header.
 

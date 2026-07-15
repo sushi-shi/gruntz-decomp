@@ -14,7 +14,6 @@
 
 // The engine bute store the sprite ctor queries for its "A" animset node. wwdfile /
 // others own the DATA label (0x2bf620); declared extern so the address reloc-masks.
-extern CButeTree g_buteTree;
 
 // CGruntWingzTimeSprite::GetTypeTag (0x000121a0) is now an inline member in the class header.
 

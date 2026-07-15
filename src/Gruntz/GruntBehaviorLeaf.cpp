@@ -17,7 +17,6 @@
 extern "C" u32 g_frameTime;        // 0x645588  running game clock (ms)
 extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  per-frame draw-delta (arrival probe ctx)
 // g_buteMgr (0x6453d8, getters reloc-mask) comes from <Bute/ButeMgr.h>.
-extern CButeTree g_buteTree;
 extern char k_60bebc[]; // interned bute-node name "R"
 
 // LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle

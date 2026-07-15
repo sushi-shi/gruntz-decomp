@@ -96,8 +96,6 @@ static const char s_keyF[] = "F";
 // maps an action-key string to a 1-based type id (0 = absent, via Find/Insert);
 // g_typeColl is the parallel growable key collection; g_actionTable holds the
 // per-type action-handler pointer slots.
-DATA(0x002bf620)
-extern CButeTree g_buteTree; // 0x6bf620 (?g_buteTree@@3VCButeTree@@A)
 
 // CTypeKeyColl (SetAtGrow == grow + assign, inlined in retail) is the shared
 // <Gruntz/TypeKeyColl.h> shape.

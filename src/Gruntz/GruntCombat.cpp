@@ -269,7 +269,6 @@ extern "C" i32 g_curPlayer; // _g_644c54 handicap owner id
 
 // The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeColl.m_alloc[0..g_typeColl.m_grown) each get Reset.
-extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 // The bute-config manager (canonical CButeMgr, g_buteMgr from <Bute/ButeMgr.h>):
 // GetDwordDef (0x1721e0) is reloc-masked __thiscall.
 
@@ -401,7 +400,6 @@ void CGrunt::EntranceTileOffset(i32* out) {
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-extern FreeNodePool g_coordPool;
 
 // --- local grid view (the tile-plane's dirty-rect view is richer than GruntBoard) ---
 // The scratch list is the REAL MFC CPtrList (a stack instance forces the /GX EH frame).
@@ -694,7 +692,6 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
                                   // It used to be DEFINED here too: six .cpp files each
                                   // defined it, i.e. six .bss objects for one global
@@ -951,7 +948,6 @@ void CGrunt::DestroyAnims() {
 // The shared activation-name registry pieces (same shape <Gruntz/ActNameRegistry.h>
 // models; declared bare here because this TU's CGrunt world already carries its own
 // CString/bute decls). All reloc-masked.
-extern CButeTree g_buteTree; // 0x6bf620
 extern i32 g_typeCounter;    // 0x61aea8
 extern char s_codeA[];       // 0x60a454 "A"
 extern char s_actKeyB[];     // 0x60d1bc "B"

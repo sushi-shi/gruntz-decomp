@@ -1242,6 +1242,10 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 // hand-written construct (~71%): the CButeTree runtime vptr re-stamps are elided (they
 // need g_buteTree defined so cl auto-emits the ctor+vtables). Deferred to the coupled
 // emission (docs at ??_GCButeTree below).
+// Canonical name->RVA pin for the g_buteTree singleton (?g_buteTree@@3VCButeTree@@A
+// @0x6bf620): this is its construction owner (DynInitButeTree below). The type-complete
+// decl lives in <Bute/ButeTree.h> (included above); consumers reach it there. DATA() in
+// a header is ignored, so the reloc-name binding is pinned here, on the owner TU's decl.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 

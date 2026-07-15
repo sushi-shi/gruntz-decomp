@@ -2,11 +2,10 @@
 // Only the 1-arg ctor is reconstructed here (the shared CUserLogic(obj) prologue
 // + the per-class eyecandy tail).
 #include <Gruntz/ToyPeek.h>
+#include <Bute/ButeTree.h> // g_buteTree
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
 
 // The running game clock (g_frameTime .data int) stashed into the leaf's +0x58.
 extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical linkage)

@@ -45,8 +45,6 @@ extern "C" CGameRegistry* g_gameReg;
 // g_buteTree (0x6bf620) + CButeTree::Find (0x16d190) live in the bute TUs;
 // declared extern only so `g_buteTree.Find("A")` reloc-masks (CButeTree owns the
 // DATA label).
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
 
 // (The ex LfxEffectNode view of the spec Lookup result is DISSOLVED onto the real
 // CImageSet (<Image/ImageSet.h>): its "value table @+0x14" is CImageSet::m_frames,

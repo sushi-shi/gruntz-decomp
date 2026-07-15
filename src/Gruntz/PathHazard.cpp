@@ -81,7 +81,6 @@ extern i32 g_sndCueTag;        // 0x61ab24 (cue tag)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // The "A" bute key the new-leg re-bind looks up (DAT_0060a454 $SG literal).
-extern CButeTree g_buteTree;
 
 // --- CPathHazard no-arg ctor (0x013170) --- the deserialize-path ctor: base
 // prologue + link + leaf vptr stamp, then zero the eight leg/strike i64 lo/hi

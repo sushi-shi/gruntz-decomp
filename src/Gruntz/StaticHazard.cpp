@@ -28,7 +28,6 @@
 #include <Globals.h>
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190).
-extern CButeTree g_buteTree;
 
 // The running game clock (DAT_00645588; low 32 bits of the engine counter) and
 // the draw-clock delta the per-frame animation re-target reads (DAT_006bf3bc).

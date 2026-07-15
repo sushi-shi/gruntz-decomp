@@ -9,6 +9,7 @@
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/CursorSnapSprite.h>
+#include <Bute/ButeTree.h> // g_buteTree
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 
 #include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (Handler03a200)
@@ -16,8 +17,6 @@
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
 
 // CCursorSnapSprite::Serialize @0x011880 - chain the shared CUserLogic serialize
 // helper on `this`, and (only on success) the +0x34 sub-object's chain; both run

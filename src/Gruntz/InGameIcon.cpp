@@ -47,7 +47,6 @@ extern "C" {}
 
 // The global bute store the icon Setup queries (g_buteTree.Find). Owned by
 // another TU; declared extern so `ecx=&g_buteTree; call Find` reloc-masks.
-extern CButeTree g_buteTree;
 
 // The bute manager singleton the builder queries for the WarpStone target
 // (g_buteMgr.GetInt) - declared in <Gruntz/UserLogic.h> (pulled via the header).
