@@ -102,7 +102,6 @@ static const char s_keyF[] = "F";
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650 (?g_typeColl@@3UCKSlimeColl@@A)
 
-extern i32 g_typeCounter; // 0x61aea8 (next free type id)
 
 // g_actionTable (CActionTable @0x644610) is declared above, near InitActReg.
 

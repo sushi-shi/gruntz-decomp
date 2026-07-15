@@ -948,7 +948,6 @@ void CGrunt::DestroyAnims() {
 // The shared activation-name registry pieces (same shape <Gruntz/ActNameRegistry.h>
 // models; declared bare here because this TU's CGrunt world already carries its own
 // CString/bute decls). All reloc-masked.
-extern i32 g_typeCounter;    // 0x61aea8
 extern char s_codeA[];       // 0x60a454 "A"
 extern char s_actKeyB[];     // 0x60d1bc "B"
 // (g_typeColl.m_grown @0x6bf670 / g_typeColl.m_alloc @0x6bf66c declared canonically above)

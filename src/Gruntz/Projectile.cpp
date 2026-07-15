@@ -497,7 +497,6 @@ DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 // g_projTypeCounter was a SECOND NAME for g_typeCounter (0x21aea8 shared type counter) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern i32 g_typeCounter;
 
 // R2 - the projectile's per-coordinate activation table (@0x64c758). CProjActEntry
 // (the per-class handler entry) is the canonical struct in <Gruntz/Projectile.h>.
@@ -1102,7 +1101,6 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 // (0x60a454) is the "A" key. The id->name-slot resolve reuses the shared
 // Find/GetRetAddr/Insert + g_actCache/g_retAddrBreadcrumb collection methods.
 // ---------------------------------------------------------------------------
-extern i32 g_typeCounter;
 DATA(0x0020a454)
 char s_codeA[] = "A";
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)

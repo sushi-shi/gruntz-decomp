@@ -14,6 +14,7 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
+#include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>   // the +0x34 serialized-object-reference (Chain @0x8c00)
@@ -103,7 +104,6 @@ extern zDArray g_textDispatch;
 
 // g_iconRegCounter was a SECOND NAME for g_typeCounter (0x21aea8 shared type counter) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern i32 g_typeCounter;
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.

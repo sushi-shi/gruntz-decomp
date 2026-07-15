@@ -74,6 +74,13 @@ public:
     // initial allocation leaves in the vector's alloc/grown pair.
 };
 
+// The per-type id counter the type registry hands out (seeded 2000, ++'d on each new
+// game-object-type registration keyed into the collection above). ?g_typeCounter@@3HA
+// @0x61aea8; DEFINED + DATA-pinned in src/Gruntz/KitchenSlime.cpp. Declared here beside
+// the registry it counts for so consumers reach it via <Gruntz/TypeKeyColl.h> instead
+// of a per-TU extern.
+extern i32 g_typeCounter;
+
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

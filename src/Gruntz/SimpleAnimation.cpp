@@ -10,6 +10,7 @@
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
+#include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 
@@ -61,7 +62,6 @@ CSimpleAnimation::~CSimpleAnimation() {}
 // The shared registration key store (?g_buteTree@@3VCButeTree@@A @ 0x6bf620).
 
 // The running registration index (0x61aea8) bumped on each fresh insert.
-extern i32 g_typeCounter;
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.

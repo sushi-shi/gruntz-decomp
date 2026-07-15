@@ -88,7 +88,6 @@ CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 // (0x6bf620, mangled-named) doubles as the name->id map; g_typeCounter (0x61aea8)
 // is the running id counter; s_codeA (0x60a454) is the "A" key; the scratch
 // name registry is @0x6bf650 (same shape as g_vtrigColl).
-extern i32 g_typeCounter;
 // s_codeA is the "A" key byte-array @0x60a454 (RVA 0x20a454); the DATA binding lives
 // in toobspikez (?s_codeA@@3PADA), so this is a plain extern here.
 extern char s_codeA[];
