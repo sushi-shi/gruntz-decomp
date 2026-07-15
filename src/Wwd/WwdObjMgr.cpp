@@ -13,6 +13,7 @@
 //
 // Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
 #include <rva.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/WwdObjMgr.h>          // the shared object-collection manager class
@@ -42,7 +43,6 @@
 #include <Win32.h>                     // SetRect + RECT
 
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
-extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
 // The WWD object-id counter (0x61ab14; retail .data init = 1). Owner-TU definition:
 // this manager stamps it into every created object's +0x188 and post-increments it

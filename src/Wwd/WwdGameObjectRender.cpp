@@ -8,6 +8,7 @@
 // families) is BEYOND the wave4-L brief cap and was NOT boundary-mapped; this file
 // holds exactly the wwd fns as a correct partial until that zone's own dossier.
 #include <Mfc.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <rva.h>
 #include <Ints.h>
 #include <Win32.h> // windows.h base types (ddraw.h needs them first)
@@ -34,7 +35,6 @@ inline void* operator new(u32, void* p) {
 } // placement (factory base-object ctor)
 
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
-extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
 // The factory pair CreateObject_166640/CreateNamed_166780 are CWwdGameObjectB methods
 // (the former CWwdObjMgrL view is DISSOLVED onto the family class). PROVEN: `this`

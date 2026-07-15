@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------------
 
 #include <rva.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h> // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
 #include <Gruntz/ParseSource.h> // CParseSource (LoadImage's byte-reader arg: GetEntryTag/BeginParse/EndParse)
@@ -724,7 +725,6 @@ i32 CDDrawSurfacePair::Probe_164660() {
 // ===========================================================================
 
 void operator delete(void*);
-extern "C" void RezFree(void* p); // _RezFree @0x1b9b82
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceChildA::SetGeom (0x1646b0, vtable slot 10 override): re-set the child
@@ -902,7 +902,6 @@ void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
 // rel32 call is reloc-masked.
 void* operator new(u32 n);
 // The buffer is freed via _RezFree (@0x1b9b82, __cdecl).
-extern "C" void RezFree(void* p);
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerCache::FindKeyOfValue_165360 (0x165360): map scan - return (by
@@ -1029,8 +1028,6 @@ SIZE_UNKNOWN(CAniSource);
 // RezAlloc/RezFree are reloc-masked external __thiscall/__cdecl callees.
 
 // Engine heap alloc/free.  Reloc-masked __cdecl externs.
-extern "C" void* RezAlloc(u32 size); // 0x1b9b46
-extern "C" void RezFree(void* p);    // 0x1b9b82
 
 // (the ex-`CAniFileReader` view is GONE: it was MFC's CFile, proven against the real
 // NAFXCW .LIB export table -

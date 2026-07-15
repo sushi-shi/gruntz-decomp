@@ -176,7 +176,7 @@ struct CSpawnTree {
 
 // The Rez heap free (0x1b9b82 _RezFree) the array-entry teardown runs after the
 // element destructor. Reloc-masked.
-extern "C" void RezFree(void* p); // _RezFree @0x1b9b82
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // The picker tail builds a CString from the chosen entry then constructs a
 // result through owner->m_00->m_34 (a name->id resolver). Modeled opaque.

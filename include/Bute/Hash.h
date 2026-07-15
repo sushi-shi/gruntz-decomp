@@ -31,8 +31,7 @@
 
 // The Rez heap alloc/free (0x1b9b46 _RezAlloc = operator new / 0x1b9b82 _RezFree,
 // both __cdecl); reloc-masked.
-extern "C" void* RezAlloc(u32 size);
-extern "C" void RezFree(void* p);
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // (The `'eh vector destructor iterator'` (0x11f640 = ??_M) used to be declared here as a
 // hand-rolled `Tm_DestroyArray`, on the belief that ??_M is "un-spellable". It is not: it

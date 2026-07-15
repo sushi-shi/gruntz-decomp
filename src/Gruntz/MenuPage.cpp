@@ -12,6 +12,7 @@
 // names are placeholders. The /GX EH frame on the dtor + the FindByName helpers
 // comes from the destructible CString temps.
 #include <rva.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Gruntz/ChatBox.h>
 #include <Image/CImage.h>
 
@@ -19,7 +20,6 @@
 
 // The engine heap allocator (0x1b9b46), reached as the item's `operator new`.
 // Declared locally (not via RezMgr.h) to keep this TU's include set minimal.
-extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 
 // Placement new (MSVC5's <new.h> predates the standard declaration).
 inline void* operator new(size_t, void* p) {

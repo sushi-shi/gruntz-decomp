@@ -26,7 +26,7 @@
 // are the shared container infrastructure from <Wap32/zBitVec.h>.
 
 // The engine heap allocator (NAFXCW operator new replacement). _RezAlloc (named).
-extern "C" void* RezAlloc(u32 size); // 0x1b9b46
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // The first-differing-bit helper (__cdecl): the crit-bit index where two keys
 // diverge. Reloc-masked (the delinker's name for 0x16e480 is unrelated).

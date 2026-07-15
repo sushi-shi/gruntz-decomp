@@ -24,8 +24,7 @@
 // nothrow operator new / RezFree @0x1b9b82). ReadImageSet `new`s its variants
 // through RezAlloc, so each class models it as the class allocator: `new CImageSetN`
 // emits a direct `push size; call RezAlloc` instead of the global `??2`.
-extern "C" void* RezAlloc(u32 size); // 0x1b9b46
-extern "C" void RezFree(void* p);    // 0x1b9b82
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 struct CImageSet1 : CObject {
     virtual ~CImageSet1() OVERRIDE; // slot 1 (CObject dtor)

@@ -5,6 +5,7 @@
 // the unit of MSVC5's /O2 budget AND of its compiler flags, so merging distinct objs
 // makes their codegen mutually dependent. Restoring the boundary gives each its own.
 #include <Mfc.h> // real MFC CByteArray (the registry tab-state array's SetAtGrow @0x1b5485)
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/StatusBarMgr.h> // the 0x630 status-bar host (the fly's owner)
@@ -14,7 +15,6 @@
 #include <Gruntz/WarpStoneFly.h>
 
 extern "C" CGruntzMgr* g_gameReg;
-extern "C" void RezFree(void* p); // 0x1b9b82
 
 // 0x109bb0: constructor. Clears the sprite + owner back-pointer; returns this.
 RVA(0x00109bb0, 0xb)

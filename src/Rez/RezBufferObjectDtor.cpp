@@ -3,6 +3,7 @@
 // buffer, then (base subobject teardown) restamp the CObject base dtor vtable
 // (0x5e8cb4). The destructible base subobject forces the /GX EH frame.
 #include <Ints.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Wap32/Object.h> // CObject - the shared engine grand-base
 #include <rva.h>
 #include <Mfc.h>                 // CArchive (Serialize's arg)
@@ -27,7 +28,6 @@ static inline void ConstructRezElems(RezElem40* p, i32 n) {
 }
 
 // The Rez heap alloc/free (operator new/delete): 0x1b9b46 / 0x1b9b82.
-extern "C" void* RezAlloc(i32 n); // 0x1b9b46
 
 // The most-derived vtable (0x5f07d8) is now the cl-emitted ??_7CRezBufferObject
 // (VTBL below); the manual g_rezBufferObjectVtbl DATA-pin is gone. The CObject base

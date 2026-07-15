@@ -61,8 +61,7 @@
 
 // Raw heap alloc/free the container links in (alloc(size) returns a
 // pointer; free(ptr)). __cdecl, args on the stack.
-extern "C" void* RezAlloc(u32 size);
-extern "C" void RezFree(void* p);
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // The directory-entry "stat" reader: fills a 0x24-byte WIN32-find-style record
 // for `name`, returns 0 on success (FindFirstFileA + GetDriveTypeA + file-time

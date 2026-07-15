@@ -34,8 +34,6 @@ namespace modeinit {
     // CStatusBarMgr has its real inline ctor, the COMPILER emits those helpers itself
     // (??_L / ??_H / ??_M, the eh-vector-ctor / vector-ctor / eh-vector-dtor iterators,
     // all real NAFXCW symbols) with the real element ctor/dtor pointers.)
-    extern "C" void* RezAlloc(u32 sz); // 0x001b9b46
-    extern "C" void RezFree(void* p);  // 0x001b9b82
 
     // The 0x1c control block owned at this->m_2e0 IS the canonical CChatBoxOwner
     // (Attach @0x3e77->0x204e0 / Deactivate @0x285b->0x20510 / Configure @0x171c->
@@ -131,7 +129,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             return 0;
         }
 
-        CChatBoxOwner* ctl = (CChatBoxOwner*)modeinit::RezAlloc(0x1c);
+        CChatBoxOwner* ctl = (CChatBoxOwner*)RezAlloc(0x1c);
         if (ctl) {
             // the inline nothrow ctor (no EH state)
             ctl->m_18 = 0;
@@ -148,7 +146,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         if (m_hitTest->Attach(m_c, m_4->m_chatLog) == 0) {
             if (m_hitTest) {
                 m_hitTest->Deactivate();
-                modeinit::RezFree(m_hitTest);
+                RezFree(m_hitTest);
             }
             m_hitTest = 0;
             return 0;
@@ -176,7 +174,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             return 0;
         }
 
-        CTileTriggerContainer* r78 = (CTileTriggerContainer*)modeinit::RezAlloc(0x78);
+        CTileTriggerContainer* r78 = (CTileTriggerContainer*)RezAlloc(0x78);
         if (r78) {
             // the inline ctor: the four CPtrList(0xa) members + the m_74 gate
             new (&r78->m_base) CPtrList(0xa);
@@ -191,13 +189,13 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         if (m_beginMarker->GetFlag74() == 0) {
             if (m_beginMarker) {
                 m_beginMarker->~CTileTriggerContainer();
-                modeinit::RezFree(m_beginMarker);
+                RezFree(m_beginMarker);
             }
             m_beginMarker = 0;
             return 0;
         }
 
-        CTimer* r50 = (CTimer*)modeinit::RezAlloc(0x50);
+        CTimer* r50 = (CTimer*)RezAlloc(0x50);
         if (r50) {
             r50->Init();
         } else {

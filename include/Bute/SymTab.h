@@ -41,8 +41,7 @@
 // through the throwing global ::operator new (0x1b9b46) so the ctor's /GX state-1
 // member-cleanup transition falls out; RezAlloc is the nothrow C alias used elsewhere.
 void* operator new(u32 size);
-extern "C" void* RezAlloc(u32 size);
-extern "C" void RezFree(void* p);
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // The CRT string/path helpers the tokenizer/resolvers emit (strchr 0x120120 /
 // strncpy 0x120340 / inline strcpy/strlen / _splitpath 0x18c530 / _strupr 0x18d330)

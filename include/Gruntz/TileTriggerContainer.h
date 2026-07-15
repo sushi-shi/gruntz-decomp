@@ -27,8 +27,7 @@ class CTileTriggerSwitchLogic; // the 0x8c m_base element family (def in TileTri
 
 // The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);
 // reloc-masked rel32 callees.
-extern "C" void* RezAlloc(u32 n);
-extern "C" void RezFree(void* p);
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
 extern "C" u32 g_frameTime;

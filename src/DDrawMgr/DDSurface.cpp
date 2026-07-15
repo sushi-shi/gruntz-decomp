@@ -18,6 +18,7 @@
 // the DDRAWMGR TU (DirectDrawMgr.cpp); ~CDDSurface's kept COMDAT copy (0x141350)
 // is THIS obj's.
 #include <Io/FileStream.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette/pool context the decoders read
@@ -32,8 +33,6 @@
 
 // The engine logger (DDrawMgr-local) + Rez heap + operator new (reloc-masked).
 extern void __cdecl DDrawLogLine(char* fmt, ...); // 0x141cb0 (printf-style TRACE)
-extern "C" void* RezAlloc(unsigned int);          // 0x1b9b46
-extern "C" void RezFree(void* p);                 // 0x1b9b82
 void* operator new(u32);                          // engine allocator (reloc-masked rel32)
 
 // The live screen RGB-format shift table (same globals ShadeTableCache reads): the

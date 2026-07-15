@@ -36,6 +36,7 @@
 // Entropy-class; left per the campaign doctrine (the strides + link layout, the
 // deliverable here, are fully recovered).
 #include <Mfc.h>        // afx-first umbrella (windows.h: RECT + IntersectRect for AllocGrid)
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
@@ -48,7 +49,6 @@
 
 // The pool allocator the grid new's its cell pool + column table off
 // (0x1b9b46, __cdecl). Modeled no-body so the call reloc-masks.
-extern "C" void* __cdecl RezAlloc(u32 n); // 0x1b9b46
 
 // A recycled result record off the shared free-list: m_0 = next-free link,
 // m_4/m_8 = the path cell (col,row) handed to the result list.

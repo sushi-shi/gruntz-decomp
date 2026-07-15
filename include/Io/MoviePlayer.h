@@ -38,7 +38,7 @@ class CWnd;                // real MFC CWnd (<afxwin.h> in the dispatching TU)
 struct HWND__;             // strong HWND tag (windows.h STRICT)
 
 // The Rez heap free (reloc-masked rel32 callee, __cdecl 1 arg). 0x1b9b82.
-extern "C" void RezFree(void* p);
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // (The CMovieFile + CMovieDecodeStore VIEWS are DISSOLVED: the +0x540 decode store
 // is the ONE canonical CFecFile (<Crypto/FecCrypt.h>) - same +0x00 open gate,

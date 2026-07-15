@@ -22,7 +22,7 @@
 // The Rez heap free (0x1b9b82 RezFree, __cdecl); reloc-masked rel32. Reached
 // through PureSoundElem::operator delete (below) so a `delete (PureSoundElem*)e`
 // lowers to the retail "reset vptr to the pure base, then RezFree" teardown.
-extern "C" void RezFree(void* p);
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // A chain link as the list sees it: the biased `element+4` pointer.
 struct DSoundLink {

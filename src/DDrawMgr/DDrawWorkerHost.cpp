@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 // DDrawWorkerHost.cpp - the host's destructor (0x163af0), which retail birth-
 // positions PAST the plane/render TU boundary (0x163a00): the class's ctor
 // (0x1615a0), ReadPlaneBlock gap (0x161640) and RegisterNamed (0x161c50) are
@@ -20,7 +21,6 @@
 
 // The engine Rez heap free (_RezFree 0x1b9b82, cdecl C) used for the two owned
 // buffers (and, via CWwdSpatialMgr::operator delete, the worker).
-extern "C" void RezFree(void* p);
 
 // ===========================================================================
 // 0x163af0 - ~CDDrawWorkerHost: stamp own vtable; if the worker is live run its

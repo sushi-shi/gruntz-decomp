@@ -45,7 +45,6 @@ SIZE(CDDrawWorker, 0x6c);
 
 // operator delete + the engine free.
 void operator delete(void*);
-extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil)
 
 // IDENTITY: CDDrawSubMgrFar is the linker-kept COMDAT-copy pair of CLoadable's
 // (A)-form inline dtor - ??_G @0x155720 (this obj's span) calling ??1 @0xd5d70

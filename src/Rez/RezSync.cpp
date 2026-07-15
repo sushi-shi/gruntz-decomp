@@ -46,8 +46,6 @@
 // post-alloc null-check + ctor-in-flight EH-state store the retail body has.
 void* operator new(unsigned int);
 void operator delete(void*);
-extern "C" void* RezAlloc(unsigned int); // 0x1b9b46 (raw non-EH pool allocs)
-extern "C" void RezFree(void*);          // 0x1b9b82
 
 // ---------- reloc-masked engine globals ----------
 // The coord-node recycle pool - ONE 16-byte FreeNodePool object at 0x645540, NOT four

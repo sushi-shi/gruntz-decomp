@@ -52,7 +52,6 @@
 #include <Globals.h>
 
 // The engine heap allocator (0x1b9b46) - Configure's explicit-blit RECT nodes.
-extern "C" void* RezAlloc(u32 size);
 
 // The dxguid GUID constants Init passes to QueryInterface by REFIID. DEFINED here
 // (the retail link pulled the dxguid.lib entries into .rdata for this referencing

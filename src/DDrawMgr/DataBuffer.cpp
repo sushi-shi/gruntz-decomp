@@ -4,12 +4,11 @@
 // 0x1b9b82), modeled no-body so their `call rel32` displacements are
 // reloc-masked. Methods in ascending retail-RVA order.
 #include <Gruntz/DataBuffer.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 
 #include <rva.h>
 
 // Rez heap allocator/freer (external, reloc-masked).
-extern "C" void* RezAlloc(u32 size); // 0x1b9b46
-extern "C" void RezFree(void* p);    // 0x1b9b82
 
 // ctor: zero the valid flag, size and blob (id is left alone).
 RVA(0x00150180, 0xd)

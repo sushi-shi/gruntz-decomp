@@ -4,12 +4,12 @@
 // element buffer, stamp the CTypeCollRuntime vptr, destruct each CString, run the
 // ~zDArray base teardown (0x16df40, reloc-masked), then conditionally RezFree.
 #include <Gruntz/TypeCollRuntime.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <rva.h>
 
 #include <Mfc.h> // CString (element type; ~CString @0x1b9cde)
 
 // operator delete / RezFree (0x1b9b82, __cdecl one-arg); reloc-masked.
-extern "C" void RezFree(void* p);
 
 // ??_7CTypeCollRuntime@@6B@ (0x5f04e4) - the vtable the dtor re-stamps at entry
 // (reloc-masked address operand; the class's own virtuals live in unmatched TUs).

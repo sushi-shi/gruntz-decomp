@@ -416,8 +416,6 @@ extern i32 g_bDown; // 0x683eb4
 //   m_54: the input/state object (0x30 bytes; an embedded CPtrList at +8 ctor'd
 //         CPtrList(0xa); wired by InitInput(world->m_28, inputFlag); torn down by a
 //         state-flush (+0) + the embedded CPtrList dtor (+8)).
-extern "C" void* RezAlloc(u32 n); // operator new (reloc-masked, __cdecl)
-extern "C" void RezFree(void* p); // _RezFree (operator delete wrapper, __cdecl)
 // The +0x54 object is the real CWorldSoundSet (<Gruntz/WorldSoundSet.h>) - the same
 // object the ambient-sound TU reads; its +0x08 is that class's CPtrList voice list.
 

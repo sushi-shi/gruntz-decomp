@@ -43,6 +43,7 @@
 // docs/patterns/within-tu-order-vs-field-order.md); each section keeps its
 // original file's provenance comment.
 #include <Gruntz/Fader.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
 #include <Gruntz/FadeSink.h>      // IFadeSink (the CFader::RunFade fade-notify sink; P2)
@@ -880,8 +881,6 @@ void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
 
 // Rez heap for the buffer grow (reloc-masked). Param unified to i32 across the
 // merged sections (extern "C" cannot overload; 32-bit push is width-neutral).
-extern "C" void* RezAlloc(i32 n); // 0x1b9b46
-extern "C" void RezFree(void* p); // 0x1b9b82
 
 // ===========================================================================
 // 0x17ea00 - CFaderMesh::ApplyInit(desc): build the (m_54 x m_50) ellipse mesh
@@ -1116,7 +1115,6 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
 // CFaderFlat::v2 @0x17f950 reads back); `FaderArg` is the real CFxModeT5 (fader type 4
 // -> pInit id 5, whose m_10 default 0x19 IS the 25% duration scale v2 applies).
 
-extern "C" void* RezAlloc(i32 n); // 0x1b9b46
 
 // FaderSrc is the canonical <Gruntz/FaderSubtypes.h> struct (frameCount @+0x18).
 
@@ -1378,7 +1376,6 @@ CFaderShape::~CFaderShape() {
 // tables (m_pitchA/m_pitchB/m_pitchC) and a scratch line (m_scratchLine). Field names are placeholders;
 // offsets + code bytes are the load-bearing fact.
 
-extern "C" void* RezAlloc(i32 n);                   // 0x1b9b46
 extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 
 // DE-VIEW (2026-07-13): FShadeSurf -> CDDSurface (its +0x18/+0x1c are the
