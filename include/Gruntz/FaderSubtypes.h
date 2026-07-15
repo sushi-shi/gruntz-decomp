@@ -221,6 +221,12 @@ public:
     i32 ApplyInit(CFxModeDesc* src); // 0x1804a0 (apply the built default init)
     i32 CopyFrom(CFader* src);       // 0x1804a0 (same method; copy from the pInit descriptor)
     void SubFree180630();            // 0x180630 (dtor member teardown; reloc-masked)
+    // The radial shade-remap blit (ghidra "Render", CircleShadeBlit.cpp). Walks the
+    // circular light band and remaps boundary pixels through the 2D displacement table
+    // arg, reading m_surface/m_3c pitch, the centre and the surf w/h. Non-virtual,
+    // __thiscall, ret 0x18 (6 args). NOTE: Render works TRANSPOSED - it reads m_centerY
+    // where ApplyInit stores X and vice-versa, and m_surfHeight for its width bound.
+    void Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x180fb0
 
     // The light/shade effect state. ApplyInit (0x1804a0) captures the CFxModeT2
     // descriptor's surface/palette/centre, clips the centre to the surface rect and fills
@@ -230,7 +236,9 @@ public:
     // CDDrawPtrCollections*). (Was the Fader.cpp-local `CFaderLightApply` flat view; the
     // 0x206c size is exactly these fields.)
     CDDSurface* m_surface; // +0x38  active surface (desc +0x04, else base m_timerA)
-    i32 m_3c;              // +0x3c  desc +0x08 (else base m_timerB)
+    CDDSurface* m_3c;      // +0x3c  secondary/dst blit surface (desc +0x08, else base
+                           //        m_timerB; a dword holding a surface - Render 0x180fb0
+                           //        reads its m_pitch, ApplyInit null-checks it)
     CDDSurface* m_overlay; // +0x40  current pooled overlay surface (0 = none)
     CDDPalette* m_palette; // +0x44  palette (desc +0x0c) - its m_cacheA feeds HueRampTable
     i32 m_lightGate;       // +0x48  full-width-span gate (desc +0x10)

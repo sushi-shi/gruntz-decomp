@@ -511,9 +511,9 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
         s = (CDDSurface*)m_timerA; // the base's default-surface dword
     }
     m_surface = s;
-    i32 b = d->m_08;
+    CDDSurface* b = (CDDSurface*)d->m_08; // desc dword holds a surface (m_3c is CDDSurface*)
     if (b == 0) {
-        m_3c = m_timerB;
+        m_3c = (CDDSurface*)m_timerB;
     } else {
         m_3c = b;
     }
