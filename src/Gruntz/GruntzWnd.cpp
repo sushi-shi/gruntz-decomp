@@ -273,6 +273,26 @@ i32 CGruntzWnd::OnClose() {
     return CGameWnd::OnClose();
 }
 
+// -------------------------------------------------------------------------
+// CGruntzWnd::OnPaint (WM_PAINT, vtable slot 7). Re-homed 2026-07-16 from
+// TerrainTileLoader.cpp's `ValidateHost::Validate` view: the ILT thunk 0x24af that
+// jmp's 0x94bc0 is referenced ONLY from ??_7CGruntzWnd@@6B@+0x1c (slot 7), and the
+// view's m_4/m_8 are exactly CGameWnd::m_hwnd/m_owner. When the game manager is
+// live and its lobby-host poll reports ready, validate the window rect (suppress
+// the repaint) and report handled; else fall through to the default paint.
+// (RVA-contiguous with this obj: OnClose ends at 0x94bab.)
+RVA(0x00094bc0, 0x31)
+i32 CGruntzWnd::OnPaint() {
+    CGruntzMgr* mgr = GameMgr();
+    if (mgr && mgr->IsLobbyHostReady()) {
+        if (m_hwnd) {
+            ValidateRect(m_hwnd, 0);
+        }
+        return 1;
+    }
+    return 0;
+}
+
 // Out-of-line stubs so the CGruntzWnd vftable is emitted in this TU;
 // not matched / not @address-annotated.
 i32 CGruntzWnd::Wap32GameWndVfunc0() {

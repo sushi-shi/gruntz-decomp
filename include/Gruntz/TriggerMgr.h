@@ -481,7 +481,8 @@ public:
     // 0x75e90 (thunk 0x3945; 6 args, ret 0x18): the tile-arrival effect/switch
     // driver (LEVEL_DIRT/GAME_DIRT/LEVEL_GAUNTLETROCK1 tile fx by reason). The
     // grunt anim-dispatch machines fire it on settled arrival (ex ArrivalNotify6 ==
-    // ex Load6, one body). Declared-only (unreconstructed; reloc-masked).
+    // ex Load6, one body). Body in TerrainTileLoader.cpp (the ex-`CTerrainTileLoader`
+    // placeholder class was a view of THIS one: its +0x22c level holder IS m_level).
     i32 LoadTileArrivalFx(i32 ownerHi, i32 ownerLo, i32 tileX, i32 tileY, i32 reason, i32 sel);
     // 0x79ea0 (thunk 0x290a; Ghidra SpawnTileFx): spawn the death/finalize tile fx
     // at the grunt's HUD point. Declared-only (reloc-masked).

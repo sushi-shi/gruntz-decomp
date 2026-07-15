@@ -169,7 +169,7 @@ gruntzmgr2	1
 gruntzmgrcmd	1
 gruntzrandom	5
 gruntzsoundz	31
-gruntzwnd	16
+gruntzwnd	17
 guardpoint	4
 hash	6
 heapdiag	8
@@ -333,7 +333,7 @@ statusbarupdaters	2
 streamrecordloaders	2
 surfacepalette	1
 symtab	57
-terraintileloader	2
+terraintileloader	1
 tilelogicpump	57
 tilescan	1
 tileswitchlogic	43

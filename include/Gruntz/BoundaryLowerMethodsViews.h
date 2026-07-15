@@ -20,7 +20,7 @@
 //   C113e70  -> CTileTriggerSwitchLogic::DeserializeMatrix (thunk 0x3cd3).
 //   C104c80  -> CSBI_WellGoo::Free; ParseSerial/0xd210 -> GruntzMgrCmd.cpp.
 //   C77dc0   -> CLevelPlane::SetCell (BrickzCellFlags_077790.cpp): the flat grid-cell
-//                setter; CTerrainTileLoader::Load reaches it via loader->m_24
+//                setter; CTriggerMgr::LoadTileArrivalFx reaches it via m_level
 //                (the world holder) -> m_24 -> m_mainPlane. Same grid as C112bf0.
 //   Cfa150   -> CGameModeBase::BaseCleanup (src/Gruntz/GameModeBase.cpp, own .obj):
 //                caller graph = every state ReleaseResources; +0x1c allocator is the

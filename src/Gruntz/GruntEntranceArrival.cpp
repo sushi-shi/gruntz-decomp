@@ -190,7 +190,6 @@ static void GruntScratchTeardown() {
 // ==== CGrunt::UserLogicVfunc7 @0x61cb0 (ex ProjectileUpdate.cpp; its private .data cell
 // 0x20e180 HEADS this TU's band) ====
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/TerrainTileLoader.h> // the real owner of Load (the +0x260 slot)
 #include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
 #include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
 #include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -718,8 +717,7 @@ i32 CGrunt::StepAttackFire() {
                     t = tgt->m_19c;
                 }
                 if (t == 1 && m_gruntKind != GRUNT_INVULNERABLE) {
-                    ((CTriggerMgr*)m_tileMgr)
-                        ->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 0xb, m_neighborCol);
+                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 0xb, m_neighborCol);
                     return 0;
                 }
                 break;
@@ -2346,12 +2344,11 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
                 i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = hp < 0 ? 0 : hp;
                 if (m_health <= 0) {
-                    ((CTriggerMgr*)m_260)->CellDispatch(m_animArg0, m_animArg1, 1, -1);
+                    m_260->CellDispatch(m_animArg0, m_animArg1, 1, -1);
                 }
             }
         }
-        ((CTerrainTileLoader*)m_260)
-            ->Load(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
+        m_260->LoadTileArrivalFx(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
     }
     CAniAdvanceCursor* sub = &m_drawState->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
