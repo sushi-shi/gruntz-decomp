@@ -45,7 +45,7 @@ struct LevelRezData {
 // ds:0x64556c), and CGameRegistry::BuildLevelRezPath was the phantom name for it.
 //
 // @conflict: this body reads +0x34 as the rez-tree CSymParser*, while GruntzMgr.cpp's
-// Build/Apply/Teardown read the SAME +0x34 as a CRezSurface94* (m_recolorSurface). Both
+// Build/Apply/Teardown read the SAME +0x34 as a CRezSurface94* (m_symParser). Both
 // claims carry in-source evidence; one is a misattribution. Flagged with the cast rather
 // than silently re-typing either side - the cast is the symptom, the conflict is the bug.
 
@@ -86,7 +86,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
     // inline per sub-path (no factoring), so it is duplicated here to match.
     if (a1 != 0) {
         sprintf(scratch, "AREA%i_WORLDZ", ((a4 - 1) % 0x24) / 4 + 1);
-        CSymTab* node = (CSymTab*)((CSymParser*)m_recolorSurface)->ResolvePath(scratch);
+        CSymTab* node = (CSymTab*)m_symParser->ResolvePath(scratch);
         if (node == 0) {
             return 0;
         }
@@ -110,7 +110,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
         return buf.m_2ec;
     }
     if (a2 == 0) {
-        CSymTab* node = (CSymTab*)((CSymParser*)m_recolorSurface)->ResolvePath("GAME_MULTI");
+        CSymTab* node = (CSymTab*)m_symParser->ResolvePath("GAME_MULTI");
         if (node == 0) {
             return 0;
         }
@@ -127,7 +127,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
         sub->EndParse();
         return buf.m_2ec;
     }
-    CSymTab* node = (CSymTab*)((CSymParser*)m_recolorSurface)->ResolvePath("GAME_BATTLEZ");
+    CSymTab* node = (CSymTab*)m_symParser->ResolvePath("GAME_BATTLEZ");
     if (node == 0) {
         return 0;
     }

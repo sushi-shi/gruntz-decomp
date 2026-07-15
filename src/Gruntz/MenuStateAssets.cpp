@@ -100,7 +100,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     m_4->RestoreVideoMode(0);
-    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_MENU");
+    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_MENU");
     if (m_2c == 0) {
         return 0;
     }

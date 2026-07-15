@@ -107,7 +107,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_PREVIEW");
+    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_PREVIEW");
     if (m_2c == 0) {
         return 0;
     }

@@ -112,7 +112,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     m_1bc = 0;
     m_1c0 = 0;
     m_1c4 = 0;
-    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_CREDITZ");
+    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_CREDITZ");
     if (!m_2c) {
         return 0;
     }
@@ -375,7 +375,7 @@ i32 CCreditsState::InitAttractTitle() {
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
     void* saved = (void*)m_2c;
-    void* state = ((CSymParser*)m_8)->ResolvePath(stateName);
+    void* state = m_8->ResolvePath(stateName);
     m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;

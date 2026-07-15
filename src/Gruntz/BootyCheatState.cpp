@@ -114,15 +114,15 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
 
     m_4->RestoreVideoMode(0); // thunk 0x34ef -> CGruntzMgr::RestoreVideoMode (0x8ddd0)
 
-    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_BOOTY");
+    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_BOOTY");
     if (!m_2c) {
         goto fail;
     }
-    m_gameBank = (CSymTab*)((CSymParser*)m_8)->ResolvePath("GAME");
+    m_gameBank = (CSymTab*)m_8->ResolvePath("GAME");
     if (!m_gameBank) {
         goto fail;
     }
-    m_gruntzBank = (CSymTab*)((CSymParser*)m_8)->ResolvePath("GRUNTZ");
+    m_gruntzBank = (CSymTab*)m_8->ResolvePath("GRUNTZ");
     if (!m_gruntzBank) {
         goto fail;
     }

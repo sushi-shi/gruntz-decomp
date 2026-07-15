@@ -13,7 +13,7 @@
 // IDENTITY CONFLICT (flagged, not resolved here): 0x92e80 is reconstructed by matcher-2
 // as CGruntzMgr::FindOptionsSlot - which would make m_host a CGruntzMgr. But m_host+0x34
 // is a CSymParser here, while the CGruntzMgr header models +0x34 as CRezSurface94
-// (m_recolorSurface). Either m_host IS CGruntzMgr and that header's +0x34 is mis-modelled,
+// (m_symParser). Either m_host IS CGruntzMgr and that header's +0x34 is mis-modelled,
 // or m_host is a distinct class that shares FindOptionsSlot's `this` shape. The full fold
 // onto CGruntzMgr is DEFERRED: CGruntzMgr is matcher-2's reserved singleton domain. This
 // header is the honest union of the two observed facets in the meantime.

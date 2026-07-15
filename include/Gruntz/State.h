@@ -29,18 +29,22 @@
 struct CSpriteFactoryHolder; // +0x0c render/resource holder == CGameRegistry::m_world;
                              // defined in <Gruntz/GameRegistry.h> (its render sub-object
                              // facets CRenderer/CDrawSurface in <Gruntz/View.h>). Opaque here.
-struct CBankMgr;             // +0x08 asset-bank manager (resolves a "GRUNTZ"/"GAME"/level bank)
-struct CResSource;           // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
-class CSymTab;               // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
-class CMenuRoot;             // m_c's title/menu-root facet (the title-roll cluster's view)
-class CAttractScreenObj;     // m_2c's fade-screen-resolver facet (FadeInTitle's view)
-class CGruntzMgr;            // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
-                             // Forward-declared (MFC-free) so this widely-included header stays
-                             // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
-class CFaderMgr;             // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
-                             // RetireScene's Add/Remove target). Opaque here.
-struct FxResource;           // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
-                             // worker + gate RetireScene walks). Full shape in SoundFxEmitter.h.
+class CSymParser;  // +0x08 the level/rez symbol parser (<Bute/SymParser.h>) - the manager's
+                   // +0x34 m_symParser, cached here by LoadGameAssetNamespaces. The ex-CBankMgr
+                   // shell WAS this class: every consumer called ((CSymParser*)m_8)->ResolvePath
+                   // (@0x13c030), and the loader stores mgr->m_symParser here outright.
+class CDDSurface;  // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
+struct CResSource; // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
+class CSymTab;     // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
+class CMenuRoot;   // m_c's title/menu-root facet (the title-roll cluster's view)
+class CAttractScreenObj; // m_2c's fade-screen-resolver facet (FadeInTitle's view)
+class CGruntzMgr;        // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
+                         // Forward-declared (MFC-free) so this widely-included header stays
+                         // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
+class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
+                         // RetireScene's Add/Remove target). Opaque here.
+struct FxResource;       // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
+                         // worker + gate RetireScene walks). Full shape in SoundFxEmitter.h.
 
 // The base game-state vtable (RTTI ??_7CState@@6B@ @0x005ea21c, 26 slots); the retail
 // CState ctor @0x08c750 (reconstructed in GameMode.cpp) stamps it. Explicit VTBL()
@@ -200,7 +204,10 @@ public:
     // m_4->m_48 the same sound bank, m_4->m_8c..m_98 the same live video mode. The
     // gamemode/cplay TUs still downcast it to their local CGMOwner/CWorld facet views.
     CGruntzMgr* m_4;
-    CBankMgr* m_8; // +0x08  asset-bank manager (CPlay loaders: Lookup GRUNTZ/GAME banks)
+    // +0x08  the level/rez symbol parser (ResolvePath @0x13c030; == mgr->m_symParser,
+    // cached by LoadGameAssetNamespaces). Ex `CBankMgr*` - a shell type every consumer
+    // bridged with a ((CSymParser*)m_8) cast; typed for real, the casts are gone.
+    CSymParser* m_8;
     // +0x0c  render/resource context. VERIFIED (matcher-2, sema): the SAME object as
     // CGameRegistry::m_world (+0x30) == the canonical CSpriteFactoryHolder - non-polymorphic;
     // its +0x04 sub-object is the DDraw worker manager (CDDrawSubMgrPages::Method_158ee0
@@ -210,7 +217,9 @@ public:
     // shadows are folded away. (The former `CView`/`CSpriteFactoryHolder` render view is folded onto
     // CSpriteFactoryHolder; its render sub-object facets live in <Gruntz/View.h>.)
     CSpriteFactoryHolder* m_c; // +0x0c
-    CFaderMgr* m_faderMgr;     // +0x10  fader mgr (RetireScene's CSoundFxEmitter facet)
+    CFaderMgr* m_faderMgr;     // +0x10  fader mgr (RetireScene's Add/Remove target; the
+                               //         loader caches mgr->m_40 here - the +0x40 slot's
+                               //         CFaderMgr-vs-CTriggerMgr identity conflict is open)
     i32 m_14;                  // +0x14
     i32 m_18;                  // +0x18
     i32 m_levelIndex; // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
@@ -220,6 +229,8 @@ public:
     i32 m_24;         // +0x24
     // +0x28  level asset bank; a Bute CSymTab (LookupSet == CSymTab::ResolvePath
     // 0x13bae0), so every user reaches it as CSymTab* -> typed here (kills the casts).
+    // LoadGameAssetNamespaces stores the resolved "AREA%i" node here (the ex-CAssetLoader
+    // view's m_areaNode).
     CSymTab* m_levelBank; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
     // +0x2c  the resolved asset source a state loader caches (CBankMgr::Lookup
     // result): CSplashState/CHelpState store the "STATEZ_*" namespace here and
@@ -237,18 +248,26 @@ public:
     i32 m_ready;           // +0x3c  active/ready gate (Vfunc3 returns it)
     i32 m_40;              // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
                            //         menu transition)
-    char m_pad44[0x4c - 0x44];
-    char m_4c; // +0x4c (byte)
-    char m_pad4d[0x150 - 0x4d];
+    i32 m_44;              // +0x44  (LoadGameAssetNamespaces seeds -1; role unrecovered)
+    i32 m_48;              // +0x48  (LoadGameAssetNamespaces seeds -1; role unrecovered)
+    // +0x4c..+0x14b  the version-string buffer LoadGameAssetNamespaces sprintf's
+    // ("Alpha Version, Build %i, ..."); the state save serializers stream it raw as a
+    // 0x100 block (the MgrPersist view's m_4c[0x100]).
+    char m_versionString[0x100];
+    i32 m_14c;         // +0x14c  (LoadGameAssetNamespaces clears; role unrecovered)
     i32 m_cursorX;     // +0x150 live cursor X (ResetForMode GetCursorPos); BeginFrameClear arg
     i32 m_cursorY;     // +0x154 live cursor Y
     i32 m_snapOriginX; // +0x158 drag/select snap origin X
     i32 m_snapOriginY; // +0x15c drag/select snap origin Y
-    // +0x160..+0x1a4: the per-axis scroll/input state block StepInputA walks
-    // (two mirrored halves; four extents seeded to 0x40 by the ctor).
-    i32 m_160; // +0x160 first-half axis value
-    i32 m_164; // +0x164 second-half axis value
-    i32 m_168; // +0x168 first-half block (addr taken)
+    // +0x160/+0x164: the two 64x64 scratch blit surfaces (LoadGameAssetNamespaces
+    // creates them via m_c->m_ptrColl->MakeAndAddB(0x40,0x40,...); BaseCleanup
+    // RemoveItemA's them back to the pool; StepInputA BltFast's the selected half).
+    // The old "axis value" reading was wrong. +0x168..+0x1a4 is the per-half
+    // src-RECT/edge block StepInputA feeds (four extents seeded 0x40 by the ctor
+    // - the 64x64 rect dims).
+    CDDSurface* m_160; // +0x160 first-half scratch surface
+    CDDSurface* m_164; // +0x164 second-half scratch surface
+    i32 m_168;         // +0x168 first-half block (addr taken)
     i32 m_16c;
     i32 m_170; // +0x170 (= 0x40)
     i32 m_174; // +0x174 (= 0x40)

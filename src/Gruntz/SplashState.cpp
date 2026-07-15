@@ -74,7 +74,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
     SetCursor(0);
     m_4->RestoreVideoMode(0);
 
-    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_SPLASH");
+    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_SPLASH");
     if (!m_2c) {
         return 0;
     }

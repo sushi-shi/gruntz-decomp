@@ -349,7 +349,9 @@ struct CGameRegistry {
                                    //         two type-views (verified): the retail CResMgr resource
                                    //         facet (ResMgr.h) here, the CWorldZ world facet in
     //         GruntzMgr.h, and CState::m_c's CSpriteFactoryHolder world-holder (View.h)
-    char m_pad34[0x38 - 0x34];
+    // +0x34  the level/rez symbol parser (== GruntzMgr.h m_symParser, the REAL CSymParser;
+    // CState::LoadGameAssetNamespaces caches it into CState::m_8).
+    class CSymParser* m_symParser;
     void* m_settings; // +0x38  settings/registry writer (== GruntzMgr m_settings; consumers cast
     //         to RegistryHelper: SetValueDword/LogPos/QueryPos). void* -> cast at use.
     char m_pad3c[0x48 - 0x3c];

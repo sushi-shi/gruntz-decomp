@@ -30,9 +30,10 @@
 SIZE_UNKNOWN(CResSource);
 struct CResSource {};
 
-// The bank/namespace manager at CState::m_8. Lookup resolves a named bank into a
-// CResSource (the in-game loader caches the result in m_30/m_34).
-SIZE_UNKNOWN(CBankMgr);
-struct CBankMgr {};
+// (CBankMgr is GONE - DISSOLVED 2026-07-15: the +0x08 bank/namespace manager IS the
+//  Bute CSymParser (<Bute/SymParser.h>): its "Lookup"/"Register" is ResolvePath
+//  @0x13c030, every consumer bridged with a ((CSymParser*)m_8) cast, and
+//  LoadGameAssetNamespaces stores mgr->m_symParser (+0x34) there outright.
+//  CState::m_8 is typed CSymParser* in <Gruntz/State.h>.)
 
 #endif // GRUNTZ_GRUNTZ_CBANKMGR_H

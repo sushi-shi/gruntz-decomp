@@ -76,7 +76,7 @@
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr - the REAL +0x6c sub-manager (~ @0x85bd0)
 #include <DinMgr2/DirectInputMgr2.h> // the REAL g_645570 input singleton (was a local shell)
-#include <Bute/SymParser.h>          // CSymParser - the REAL m_recolorSurface (+0x34)
+#include <Bute/SymParser.h>          // CSymParser - the REAL m_symParser (+0x34)
 #include <Image/ImageSet.h>          // the REAL CImageSet (config/color rows: m_frames/+0x14,
 // m_minIndex/+0x64, GetAt). GameLevel.h no longer collides on this
 // name - its tile-collision record is CTileImageSet now.
@@ -407,7 +407,7 @@ extern i32 g_bDown; // 0x683eb4
 // LoadWorldMode's reloc-masked siblings (engine objects reached through the
 // manager's member pointers; all are __thiscall, so each is modeled as a method on
 // its object so `mov ecx,obj; call` falls out - the displacements reloc-mask).
-//   m_recolorSurface: the REAL CSymParser (<Bute/SymParser.h>). The old CRezSurface94
+//   m_symParser: the REAL CSymParser (<Bute/SymParser.h>). The old CRezSurface94
 //         shell's three "engine surface" methods were that class's ctor/dtor/parser at
 //         the SAME rvas - Build == CSymParser::CSymParser (0x13aa10), Apply ==
 //         CSymParser::ParseBuffer (0x13ad00), Teardown == ~CSymParser (0x13abc0) - and
@@ -2368,7 +2368,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
 // @early-stop
 // big /GX state-machine reload (~27%): the whole flow + per-stage error ladder
 // are reconstructed and the /GX frame + the head (world/mode/8|16 guards + the
-// m_54/m_recolorSurface two-stage teardowns) match. The low % is a big-SEH scoring desync:
+// m_54/m_symParser two-stage teardowns) match. The low % is a big-SEH scoring desync:
 // (a) the long chain of reloc-masked engine thiscalls (RezBuild/Apply/Teardown,
 // CPtrList ctor/dtor, the world mode-set vtable, MakeRezPath/ResolveRezRow) each
 // fuzzy-mismatch until their whole referent set is named; (b) the entry `push ecx`
@@ -2395,11 +2395,11 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
     m_inputState = 0;
 
-    CSymParser* surf = m_recolorSurface;
+    CSymParser* surf = m_symParser;
     if (surf) {
         delete surf; // ~CSymParser (0x13abc0) + operator delete
     }
-    m_recolorSurface = 0;
+    m_symParser = 0;
 
     m_colorDepth = mode;
     g_enableTrueColor = 0;
@@ -2425,19 +2425,19 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    CSymParser* old = m_recolorSurface;
+    CSymParser* old = m_symParser;
     if (old) {
         delete old; // ~CSymParser (0x13abc0) + operator delete
-        m_recolorSurface = 0;
+        m_symParser = 0;
     }
     // `new CSymParser` IS retail's `push 0x94; call ??2; test; mov ecx,eax; call 0x13aa10`
     // (SIZE(CSymParser) == 0x94 exactly - the old CRezSurface94 shell's "0x94-byte
     // recolor surface" was this class all along).
-    m_recolorSurface = new CSymParser;
+    m_symParser = new CSymParser;
 
     CString path;
     void** row = ResolveRezRow(&path);
-    if (m_recolorSurface->ParseBuffer(*row, 1, 0)) {
+    if (m_symParser->ParseBuffer(*row, 1, 0)) {
         ReportError(0x800b, 0x441);
         return 0;
     }
@@ -3972,9 +3972,9 @@ void CGruntzMgr::Close() {
         delete (CDDrawSurfaceMgr*)m_world; // virtual ~ -> the flagged slot-1 ??_G dispatch
         m_world = 0;
     }
-    if (m_recolorSurface) {
-        delete m_recolorSurface; // ~CSymParser (0x13abc0) + operator delete
-        m_recolorSurface = 0;
+    if (m_symParser) {
+        delete m_symParser; // ~CSymParser (0x13abc0) + operator delete
+        m_symParser = 0;
     }
     if (m_settings) {
         ((CTriggerMgr*)m_settings)->~CTriggerMgr();
@@ -4268,7 +4268,7 @@ RVA(0x00083030, 0x1b6)
 CGruntzMgr::CGruntzMgr() {
     m_curState = 0;
     m_world = 0;
-    m_recolorSurface = 0;
+    m_symParser = 0;
     m_settings = 0;
     m_scoreHud = 0;
     m_3c = 0;

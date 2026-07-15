@@ -425,7 +425,7 @@ public:
     CState* m_curState;                // +0x2c  current game-state (Update() -> state id)
     CSpriteFactoryHolder* m_world;     // +0x30  loaded world/map object (also a draw gate;
                                        //         == CGameRegistry::m_world, one singleton field)
-    CSymParser* m_recolorSurface;      // +0x34  the level/rez symbol parser (LoadWorldMode
+    CSymParser* m_symParser;           // +0x34  the level/rez symbol parser (LoadWorldMode
                                        //        new's it (0x94) + ParseBuffer's the rez row;
                                        //        LevelRezPath's ResolvePath runs on it)
     Utils::RegistryHelper* m_settings; // +0x38  settings/registry writer (SetValueDword)

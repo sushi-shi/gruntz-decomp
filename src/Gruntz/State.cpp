@@ -30,7 +30,7 @@ CState::CState() {
     m_18 = 0;
     m_38 = 0;
     m_ready = 0;
-    m_4c = 0;
+    m_versionString[0] = 0; // the +0x4c byte store (the buffer's lead NUL)
     m_24 = 0;
     m_160 = 0;
     m_164 = 0;

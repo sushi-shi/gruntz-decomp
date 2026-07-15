@@ -63,7 +63,7 @@ i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
     while (ShowCursor(0) >= 0)
         ;
-    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_HELP");
+    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_HELP");
     if (!m_2c) {
         return 0;
     }

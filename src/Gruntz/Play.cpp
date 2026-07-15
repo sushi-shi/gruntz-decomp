@@ -1018,7 +1018,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (host->m_strWorldFile.GetLength() != 0) {
         if (host->m_128 != 0) {
             // BATTLEZ: resolve the level number from the level name's digit run.
-            set = host->m_recolorSurface->ResolvePath("GAME_BATTLEZ");
+            set = host->m_symParser->ResolvePath("GAME_BATTLEZ");
             if (set == 0) {
                 goto fail0;
             }
@@ -1046,7 +1046,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             level = num;
         } else if (host->m_12c != 0) {
             // MULTI: same digit resolve off "GAME_MULTI".
-            set = host->m_recolorSurface->ResolvePath("GAME_MULTI");
+            set = host->m_symParser->ResolvePath("GAME_MULTI");
             if (set == 0) {
                 goto fail0;
             }
@@ -1087,7 +1087,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // ---- 3) build the level name + look it up ----
     sprintf(nameBuf, "AREA%i", self->m_levelType);
-    set = ((CSymParser*)self->m_8)->ResolvePath(nameBuf);
+    set = self->m_8->ResolvePath(nameBuf);
     self->m_levelBank = (CSymTab*)set;
     if (set == 0) {
         goto fail0;
@@ -2587,10 +2587,11 @@ i32 CPlay::SetCursorFrame(i32 item) {
 // On a hit it dispatches the probed control. Returns 1.
 // ===========================================================================
 // StepInputA is the per-frame CURSOR DRAW: BltFast the selected cursor-half
-// surface (m_160/m_164, retyped-at-use CDDSurface*) at the {x,y} edge feed, with
-// the half's source RECT (&m_168/&m_178) and colour-key flag 0x10; a nonzero
-// DDraw HRESULT goes to CDirectDrawMgr::GetErrorString. (The old __stdcall
-// "Eng_InputProbe/Eng_InputDispatch" pair was a fabricated shape.)
+// surface (m_160/m_164 - the two CState scratch surfaces LoadGameAssetNamespaces
+// creates) at the {x,y} edge feed, with the half's source RECT (&m_168/&m_178)
+// and colour-key flag 0x10; a nonzero DDraw HRESULT goes to
+// CDirectDrawMgr::GetErrorString. (The old __stdcall "Eng_InputProbe/
+// Eng_InputDispatch" pair was a fabricated shape.)
 RVA(0x000d11e0, 0x9b)
 i32 CPlay::StepInputA() {
     if (m_inputWarmup1 == 0) {
@@ -2602,15 +2603,15 @@ i32 CPlay::StepInputA() {
         return 1;
     }
 
-    i32 axisVal;
+    CDDSurface* half;
     Edge* edge;
     void* halfPtr;
     if (m_inputHalfSel == 0) {
-        axisVal = m_160;
+        half = m_160;
         edge = (Edge*)&m_188;
         halfPtr = &m_168;
     } else {
-        axisVal = m_164;
+        half = m_164;
         edge = (Edge*)&m_198;
         halfPtr = &m_178;
     }
@@ -2621,7 +2622,7 @@ i32 CPlay::StepInputA() {
         return 0;
     }
 
-    i32 r = probeTarget->BltFast(edge->m_0, edge->m_4, (CDDSurface*)axisVal, halfPtr, 0x10);
+    i32 r = probeTarget->BltFast(edge->m_0, edge->m_4, half, halfPtr, 0x10);
     if (r != 0) {
         CDirectDrawMgr::GetErrorString(0, 0, r); // 0x141400
     }
@@ -5274,9 +5275,9 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
 // Residual is MSVC's interleave of the geom pointer-chase (sx/sy loads) into the
 // float speed-computation FPU latency gaps (fild/fmul/fimul/fiadd/ftol) + the
 // trailing nop padding - not source-steerable (zero-register-pinning family).
-extern "C" u8 g_scrollLoadFlags;      // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
-extern "C" i32 g_scrollMinSpeed;      // 0x64c274  cached MinScrollSpeed
-extern "C" i32 g_scrollSpeedRange;    // 0x64c270  cached (Max - Min)
+extern "C" u8 g_scrollLoadFlags;   // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
+extern "C" i32 g_scrollMinSpeed;   // 0x64c274  cached MinScrollSpeed
+extern "C" i32 g_scrollSpeedRange; // 0x64c270  cached (Max - Min)
 // g_buteMgr (0x6453d8) comes from <Bute/ButeMgr.h>.
 extern "C" double g_scrollSpeedScale; // 0x5eaa10  (== 0.01)
 
@@ -5563,11 +5564,11 @@ i32 CPlay::LoadImageBanks() {
     if (!self->m_8) {
         return 0;
     }
-    self->m_gruntzBank = (CSymTab*)((CSymParser*)self->m_8)->ResolvePath("GRUNTZ");
+    self->m_gruntzBank = (CSymTab*)self->m_8->ResolvePath("GRUNTZ");
     if (!self->m_gruntzBank) {
         return 0;
     }
-    self->m_gameBank = (CSymTab*)((CSymParser*)self->m_8)->ResolvePath("GAME");
+    self->m_gameBank = (CSymTab*)self->m_8->ResolvePath("GAME");
     return self->m_gameBank != 0;
 }
 
