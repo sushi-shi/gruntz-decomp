@@ -118,8 +118,6 @@ struct CHaznEntry2 {
 // bute store and records each in the shared name registry (@0x6bf650, the SAME
 // instance CTimeBomb/CDroppedObject use), then resolves the id in CStaticHazard's
 // OWN registry (HaznLookup) and stores the per-key handler PMF.
-extern char s_codeA[];   // "A"
-extern char s_actKeyB[]; // "B"
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)

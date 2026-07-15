@@ -114,10 +114,8 @@ extern NameVec g_buteNameVec; // 0x6bf650
 // The two registration key strings (.data constants).
 // s_iconKeyA was a SECOND NAME for s_codeA (0x20a454) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern char s_codeA[];
 // s_iconKeyB was a SECOND NAME for s_actKeyB (0x20d1bc) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern char s_actKeyB[];
 
 // The handler member functions loaded into the dispatch slots (FUN_004023d3 /
 // 0x403c06 into the action table; 0x40370b into the state table). Referenced by

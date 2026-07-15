@@ -90,7 +90,6 @@ CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 // name registry is @0x6bf650 (same shape as g_vtrigColl).
 // s_codeA is the "A" key byte-array @0x60a454 (RVA 0x20a454); the DATA binding lives
 // in toobspikez (?s_codeA@@3PADA), so this is a plain extern here.
-extern char s_codeA[];
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650

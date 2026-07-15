@@ -15,6 +15,7 @@
 // the same WARP-letter jump-table CString build idiom.
 
 #include <Ints.h>
+#include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Gruntz/BattlezData.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -33,7 +34,6 @@
 extern i32 g_sndCueTag;        // 0x61ab24
 extern i32 g_sndEnabled;       // 0x61ab20
 extern "C" u32 g_killCueClock; // 0x6bf3c0
-extern char s_codeA[];         // "A" (0x60a454)
 
 // The per-player secret-letter table "WARP" (0x5e93a8); CString::Format @0x1b2cf5.
 DATA(0x001e93a8)

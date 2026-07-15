@@ -117,8 +117,6 @@ CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
 // The shared activation-NAME registry (@0x6bf650, the SAME shared instance
 // CTimeBomb/CKitchenSlime use) + the running id counter and the two key strings.
 // ---------------------------------------------------------------------------
-extern char s_codeA[];   // "A"
-extern char s_actKeyB[]; // "B"
 struct CTypeNameEntry;   // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650

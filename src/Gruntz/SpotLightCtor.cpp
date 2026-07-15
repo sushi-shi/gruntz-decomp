@@ -13,6 +13,7 @@
 // placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
 // CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
+#include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/UserLogic.h>       // CUserLogic / CGameObject base init + g_buteMgr
@@ -264,7 +265,6 @@ extern "C" i32 g_randSeed;             // 0x6c1288
 extern u32 (*g_pTimeGetTime)();        // 0x6c4650
 extern "C" u32 g_frameDelta;           // frame-time delta
 // The activation-key "B" the update re-resolves through the bute tree.
-extern char s_actKeyB[]; // 0x60d1bc "B"
 // The laser-sound format string + the sound-play gate globals.
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals

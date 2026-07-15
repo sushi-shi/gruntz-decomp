@@ -37,17 +37,12 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 #include <Gruntz/ActColl.h> // CActColl/CVariantSlot/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
 
 // g_buteTree (0x6bf620) doubles as the name->id map here: Find (0x16d190) returns
-// the id (0 == absent); Insert (0x16db90) maps a new key->id. Owned by the bute
-// TU; redeclared so the calls reloc-mask.
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
+// the id (0 == absent); Insert (0x16db90) maps a new key->id. g_buteTree is declared
+// canonically in <Bute/ButeTree.h> (reached via the <Bute/ButeMgr.h>/<Bute/ButeTree.h>
+// includes above), and g_typeCounter in <Gruntz/TypeKeyColl.h> (included above).
 
-// The running activation-id counter (0x61aea8): the next id handed out, bumped
-// after each new name is registered.
-extern i32 g_typeCounter;
-
-// The activation key string "A" (0x60a454) every RegisterActs registers under.
-extern char s_codeA[];
+// s_codeA (the "A" key string, 0x60a454) is declared canonically in
+// <Gruntz/TypeKeyColl.h>, included above beside g_typeCounter.
 
 // The shared coordinate-registry collection methods + alloc scratch (CActColl /
 // CVariantSlot / GetRetAddr + g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) come from

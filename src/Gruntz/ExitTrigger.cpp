@@ -8,6 +8,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GameRegistry.h>
@@ -34,7 +35,6 @@ CExitTrigger::~CExitTrigger() {}
 // The global bute store the leaf interns "A" into (g_buteTree @0x6bf620; Find
 // 0x16d190 __thiscall ret 4). The "A" key (0x60a454).
 #include <Bute/ButeMgr.h>
-extern char s_codeA[]; // "A"
 
 // The active-area index (DAT_00644c54): the exit trigger pins the focused warlord
 // HUD only for the active area.

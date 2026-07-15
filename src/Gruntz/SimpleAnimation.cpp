@@ -80,7 +80,6 @@ extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
 
 // The logic registration key (the .data string constant @ 0x60a454, the SAME key
 // string every per-class register thunk inserts).
-extern char s_codeA[];
 
 // The CSimpleAnimation-logic dispatch table (a zDArray<int (CUserLogic::*)(void)>
 // @ 0x646038). The 0x15 thunk constructs it over the index band [0x7d0, 0x7da].

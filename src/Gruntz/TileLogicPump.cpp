@@ -27,6 +27,7 @@
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA / g_typeCounter / g_typeColl* / ActNameLookup
+#include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
@@ -51,7 +52,6 @@
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char s_actKeyB[];
 
 // The game registry singleton the warp ctor polls for the play sub-mode (m_134).
 extern "C" CGameRegistry* g_gameReg;

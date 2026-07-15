@@ -27,7 +27,6 @@ DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A
 
 // The single-char anim-code key strings (reloc-masked .rodata).
-extern char s_codeA[]; // "A"
 
 // GruntPickupStats / MegaHolder / MegaCounter homed to a shared header (were
 // .cpp-local views). The per-owner pickup-stat block is WwdGameReg::m_7c; re-read the

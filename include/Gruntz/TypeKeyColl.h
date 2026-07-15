@@ -81,6 +81,15 @@ public:
 // of a per-TU extern.
 extern i32 g_typeCounter;
 
+// The two 1-char registration keys the type/act register thunks feed to
+// g_buteTree.Insert(key, (void*)g_typeCounter): s_codeA = "A" (the type-code node,
+// ?s_codeA@@3PADA @0x60a454, DEFINED in src/Gruntz/Projectile.cpp) and s_actKeyB = "B"
+// (the activation node, ?s_actKeyB@@3PADA @0x60d1bc, DEFINED in src/Gruntz/Wormhole.cpp).
+// Declared here beside g_typeCounter (the counter they register with) so consumers reach
+// them via <Gruntz/TypeKeyColl.h> instead of per-TU externs.
+extern char s_codeA[];
+extern char s_actKeyB[];
+
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

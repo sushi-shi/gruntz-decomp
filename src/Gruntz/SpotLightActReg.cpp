@@ -13,6 +13,7 @@
 // Bodies are owner-independent (every global is a reloc-masked DATA extern, every
 // callee external/no-body), so the byte match holds regardless.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (the [lo,hi] range static-init)
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
@@ -20,7 +21,6 @@
 
 // The second activation key string "B" (0x60d1bc); "A" + g_typeCounter + the name
 // registry come from <Gruntz/ActNameRegistry.h>.
-extern char s_actKeyB[];
 
 // CSpotLight's per-class activation registry (untyped .data named by address, typed CActReg).
 DATA(0x00246188)
