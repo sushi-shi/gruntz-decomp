@@ -447,10 +447,12 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
         result = false;
     }
 
-    // m_stream is a genuinely heterogeneous void* slot (NextChar reads it as
-    // CButeStream* / void** / int); the reload-through-cast here reproduces retail's
-    // two member reloads (using the typed local `s` would keep it in a register and
-    // diverge). Documented reinterpret of the multi-view slot, not a placeholder.
+    // m_stream is the base istream* member; here the concrete stream IS the ifstream `s`
+    // just constructed, so downcast to it to call ifstream::sync + run its dtor via delete
+    // (authentic downcast to the known concrete type, not a placeholder). Reloading THROUGH
+    // the member - not the typed local `s`, which cl would keep in a register - is what
+    // reproduces retail's two member reloads. The istream subobject sits at offset 0 of
+    // ifstream (MSVC5), so the downcast is zero-adjust: byte-neutral vs the old void* model.
     ((ifstream*)m_stream)->sync();
     delete (ifstream*)m_stream;
     return result;

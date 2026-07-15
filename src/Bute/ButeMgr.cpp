@@ -2218,8 +2218,8 @@ void CButeMgr::SetErrCallback(ErrCallback cb) {
 // outparam-zeroinit-scheduling family); no source spelling flips it.
 RVA(0x00170390, 0x50)
 void CButeMgr::NextChar() {
-    i32 delta = ((istream*)m_stream)->get() - m_streamBase;
-    if (((istream*)m_stream)->eof()) {
+    i32 delta = m_stream->get() - m_streamBase;
+    if (m_stream->eof()) {
         m_curChar = 0;
         return;
     }

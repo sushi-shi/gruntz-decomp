@@ -149,6 +149,11 @@ extern "C" i32 atexit(void (*func)(void));
 // message (cdecl, takes the formatted C string).
 typedef void(__cdecl* ErrCallback)(const char*);
 
+// The MSVC 5.0 <iostream.h> input stream (LIBCP/LIBCMT). Forward-declared for the
+// m_stream pointer member below; the complete type (via <fstream.h>) is only needed in
+// the defining TU (ButeMgr.cpp), which calls istream::get()/ios::eof() on it.
+class istream;
+
 // ---------------------------------------------------------------------------
 // CButeMgr - the attribute manager.
 // ---------------------------------------------------------------------------
@@ -258,12 +263,13 @@ public:
     CButeTree* m_pNode;           // +0x44  active store node (a CButeNode used as a keyed tree)
     CButeStore m_tree48;          // +0x48  second store sub-tree
     CButeStore m_tree74;          // +0x74  third store sub-tree
-    void* m_stream;               // +0xa0  input source stream: a real CRT istream*,
-                                  //         but a PROVEN-heterogeneous slot (Parse stores
-                                  //         an ifstream*; the .rez path stores a custom
-                                  //         istream-derived decode stream), so it stays
-                                  //         void* + per-path (istream*)/(ifstream*) casts.
-                                  //         NextChar reads it via istream::get()/ios::eof().
+    istream* m_stream;            // +0xa0  input source stream: a real CRT istream* (the
+                                  //         common base of the concrete streams stored -
+                                  //         Parse's `new ifstream(...)` and the .rez path's
+                                  //         custom istream-derived decode stream both adjust
+                                  //         to their istream subobject on store, which is
+                                  //         exactly what this base pointer holds). NextChar
+                                  //         reads it via istream::get()/ios::eof().
     struct CButeTextBuf* m_pText; // +0xa4  -> value-text accumulator host (+0xc)
     char m_curChar;               // +0xa8
     char m_pada9;                 // +0xa9

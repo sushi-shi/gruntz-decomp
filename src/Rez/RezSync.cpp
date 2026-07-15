@@ -767,7 +767,7 @@ i32 RezSync::Init(void* a1, char* a2) {
             void* snk = d1 ? d1->M1698c0(src, esz, 2, 1) : 0;
             BitStreamBlowfishDecode(snk, rdr);
             DecodeObj* d2 = new DecodeObj;
-            g_buteMgr.m_stream = (void*)d2; // m_stream is the manager's void* parse stream (+0xa0)
+            g_buteMgr.m_stream = (istream*)d2; // the custom decode stream (istream-derived) at +0xa0
             stream->EndParse();
             g_buteMgr.Init();
             g_store6453f0.ClearRecursive(0);
