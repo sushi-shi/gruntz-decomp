@@ -271,10 +271,11 @@ CTileTriggerLogic::CTileTriggerLogic() {
     m_1c = 0;
 }
 
-// The single slot-0 virtual (0x110c10, reached via ILT thunk 0x402072) is DECLARED
-// ONLY: its body lives in an unmatched engine TU, so the ctor-emitted ??_7 vftable
-// references it as an external reloc-masked slot (exactly retail's shared slot 0).
-// The derived logic classes (TileTriggerDerivedCtors.cpp) inherit this one slot.
+// The single slot-0 virtual (0x110c10, reached via ILT thunk 0x402072) is Tick -
+// DEFINED BELOW in this TU (it was never "an unmatched engine TU": 0x110c10 sits
+// inside THIS interval, and the old CPlayLevelLoad::LoadPyramidBridge shell at that
+// rva was the body wearing a fake receiver). The derived logic classes
+// (TileTriggerDerivedCtors.cpp) inherit this one slot.
 // (No virtual destructor: retail's derived vtables share this slot value, proving it
 // is a normal inherited virtual, not a per-class ??_G.)
 
@@ -302,54 +303,55 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 }
 
 // ===========================================================================
-// CPlayLevelLoad::LoadPyramidBridge (0x0110c10; re-homed from the former
-// pyramidbridgesprites unit, waveP - TU_MIGRATION MOVE row `0x110c10
-// LoadPyramidBridge@CPlayLevelLoad pyramidbridgesprites -> 0x110430 tileswitchlogic`;
-// this RVA is also the CTileTriggerLogic slot-0 vtable target referenced above). The
-// pyramid/bridge tile-transition dispatcher; `this` is the PLAY-state level object
-// (modeled as a standalone CPlayLevelLoad facet - byte-neutral, LoadPyramidBridge's
-// mangling is base-independent and the body is all raw this+offset). g_gameReg is this
-// TU's 0x64556c singleton. /GX (two CString sprite-key temps).
+// CTileTriggerLogic::Tick (0x0110c10) - the slot-0 virtual: the pyramid/bridge
+// tile-TRANSITION dispatcher, run on the trigger's OWN tile coords.
+//
+// RECEIVER SETTLED (F5 lane, 2026-07-15): `this` IS the CTileTriggerLogic. The
+// binary proof: (a) 0x110c10 is the one slot of ??_7CTileTriggerLogic (0x5eaea4,
+// ILT 0x402072) and every in-tree caller (Classify @0x112970, Broadcast
+// @0x112080) invokes it `mov ecx,<logic>; call [vtbl+0]` with NO args pushed;
+// (b) the body ends in a plain `ret` (0-arg __thiscall) - the former
+// `LoadPyramidBridge(i32 spriteType)` parameter was FABRICATED: the switch key
+// is the [esp+0x18] LOCAL holding the resolved cell id (0x110d42 reloads it, and
+// the per-arm up/down compares run on esi = that same local); (c) the only
+// `this` reads are [edi+0x8]/[edi+0xc] == m_08/m_0c, this class's tile coords.
+// The old CPlayLevelLoad facet ("the PLAY-state level object") is DISSOLVED.
+//
+// It: resolve the cell id at (m_08, m_0c); when the tile center is in the view
+// rect (and the id is not 0x67/0x68) spawn the TileTriggerTransition sprite and
+// latch its logic handle; then dispatch the 0x66-entry sprite-key jump table
+// (pyramid colors -> GAME_*PYRAMIDZ + UP/DOWN, bridges -> LEVEL_*BRIDGE*).
 // ===========================================================================
 // ("TileTriggerTransition" was NOT a global: it is the .rdata STRING LITERAL
 //  "TileTriggerTransition" - the CreateSprite lookup key - which a previous pass
 //  re-declared as an extern char[] that nothing defines. Written as the literal at
 //  its use site now; cl emits the same reloc-masked $SG entry.)
 
-// Engine helpers reached through reloc-masked __thiscall ILT thunks (no body).
-i32 PbCellClass(void* cell);                                // cell vtable +0x20 -> class id
-void PbShowTransition(void* mapHost, i32 id, i32 x, i32 y); // 0x33f0
-void PbStrCtor(void* str);                                  // 0x1b9b93 CString::CString
-void PbStrDtor(void* str);                                  // 0x1b9cde CString::~CString
-void PbAssignStr(void* str, const char* s);                 // 0x1b9e74 CString::operator=
-i32 PbScanLoopA(void* self, i32 a);                         // 0x25b8 (water-bridge inner)
-
-#define PB_I32(p, off) (*(i32*)((char*)(p) + (off)))
-#define PB_PTR(p, off) (*(void**)((char*)(p) + (off)))
-
-// Resolve a tile-cell id at (x, y): clamp to the map grid, index the row table into
-// the cell array, read the cell id, and when valid dispatch its class id.
-static i32 PbResolveCell(void* map, i32 x, i32 y) {
-    void* grid = PB_PTR(map, 0x5c);
+// Resolve a tile-cell id at (x, y): clamp into the main plane's tile grid, index
+// the column-offset table into the tile array, read the tile id, and (unless the
+// empty/clear sentinel) query the image set's collision kind at its origin.
+// Retail emits this block inline at the head of Tick (typed on the canonical
+// CGameLevel/CLevelPlane; the sentinels come from GameLevel.h).
+static i32 PbResolveCell(CGameLevel* level, i32 x, i32 y) {
+    CLevelPlane* plane = level->m_mainPlane;
     if (x < 0) {
         x = 0;
-    } else if (x >= PB_I32(grid, 0x28)) {
-        x = PB_I32(grid, 0x28) - 1;
+    } else if (x >= plane->m_gridW) {
+        x = plane->m_gridW - 1;
     }
     if (y < 0) {
         y = 0;
-    } else if (y >= PB_I32(grid, 0x2c)) {
-        y = PB_I32(grid, 0x2c) - 1;
+    } else if (y >= plane->m_gridH) {
+        y = plane->m_gridH - 1;
     }
-    grid = PB_PTR(map, 0x5c);
-    i32* rows = (i32*)PB_PTR(grid, 0x24);
-    i32* cells = (i32*)PB_PTR(grid, 0x20);
-    i32 cell = cells[rows[y] + x];
-    if (cell == (i32)0xeeeeeeee || cell == -1) {
+    plane = level->m_mainPlane;
+    i32 cell = plane->m_tileGrid[plane->m_colOffsets[y] + x];
+    if (cell == TILE_UNINIT || cell == TILE_CLEAR) {
         return 0;
     }
-    void* obj = (void*)((i32*)PB_PTR(map, 0x4c))[cell & 0xffff];
-    return PbCellClass(obj);
+    // CObArray stores CObject*; the element cast is the devs' own (GameLevel.h).
+    CTileImageSet* set = (CTileImageSet*)level->m_imageSets[cell & 0xffff];
+    return set->GetCollisionAt(0, 0);
 }
 
 enum PyramidSpriteType {
@@ -360,108 +362,76 @@ enum PyramidSpriteType {
     kPurplePyramidUp = 0x6a, // case 0x5b
 };
 
-class CPlayLevelLoad {
-public:
-    void LoadPyramidBridge(i32 spriteType); // ?LoadPyramidBridgeSprites@@ placeholder
-};
-
 // @early-stop
 // /GX nested-jump-table megafunction wall (~7%). The grid-cell resolve, the PtInRect
 // transition gate, the two CString sprite-key temps and the pyramid-color jump arms are
 // reconstructed and match retail's logic. The full 3647-byte body - the 0x66-case jump
-// table, the per-bridge inner grid-scan loops, and the descending /GX exception thread -
+// table (RED/WHITE/CHECKPOINT pyramidz + the LEVEL_*BRIDGE* arms are still to write),
+// the per-bridge inner grid-scan loops, and the descending /GX exception thread -
 // is the documented wall shared by the sibling /GX megafunctions. Deferred to the final
 // sweep (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md).
-// @interleaver CPlayLevelLoad::LoadPyramidBridge emitted-in <boundary:
+// @interleaver CTileTriggerLogic::Tick emitted-in <boundary:
 // BridgeMoveSprites.cpp LoadBridgeMove @0x110860 (before) + GruntzMgr2.cpp SetCellHeight
-// @0x111ec0 (after)>. A foreign-class (CPlayLevelLoad; home Play.cpp, cross-lane skip)
-// /Gy COMDAT the linker scattered between two OTHER units - not this TU's body run.
+// @0x111ec0 (after)>. A /Gy COMDAT the linker scattered between two OTHER units - not
+// this TU's body run.
 RVA(0x00110c10, 0xe3f)
-void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
-    void* desc = this;                   // edi
-    void* map = PB_PTR(g_gameReg, 0x30); // g_gameReg->m_world
-    void* grid = PB_PTR(map, 0x24);      // the level grid
-    i32 srcId = 0;                       // [esp+0x1c]
-    i32 transId = 0;                     // [esp+0x18] resolved id
-    void* upTemp;                        // [esp+0x14] CString GAME_PYRAMIDUP/DOWN
-    void* keyTemp;                       // [esp+0x18] CString GAME_<COLOR>PYRAMIDZ
+i32 CTileTriggerLogic::Tick() {
+    CSpriteFactoryHolder* world = g_gameReg->m_world; // ebx (spilled to [esp+0x24])
+    CGameLevel* level = world->m_24;                  // edx
+    i32 transId = 0;                                  // [esp+0x1c] transition logic handle
 
-    // ---- resolve the source cell at the descriptor's (x, y) ----
-    {
-        i32 x = PB_I32(desc, 0x8);
-        i32 y = PB_I32(desc, 0xc);
-        srcId = PbResolveCell((char*)grid + 0, x, y);
-    }
+    // ---- resolve the source cell id at this trigger's tile (the switch key) ----
+    i32 srcId = PbResolveCell(level, m_08, m_0c); // [esp+0x18]
 
-    // ---- the PtInRect trigger gate (rect = grid screen rect at +0x13c) ----
+    // ---- the PtInRect transition gate (rect = the view rect at +0x13c) ----
     {
-        i32 y = PB_I32(desc, 0xc);
-        i32 x = PB_I32(desc, 0x8);
-        i32 sy = (y << 5) + 0x10;
-        i32 sx = (x << 5) + 0x10;
+        i32 sy = (m_0c << 5) + 0x10;
+        i32 sx = (m_08 << 5) + 0x10;
         POINT pt;
         pt.x = sx;
         pt.y = sy;
-        if (!PtInRect((const RECT*)((char*)g_gameReg + 0x13c), pt) || srcId == 0x68
+        if (!PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt) || srcId == 0x68
             || srcId == 0x67) {
             transId = 0;
         } else {
-            CGameObject* trig = ((CSpriteFactory*)PB_PTR(map, 0x8))
-                                    ->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
+            CGameObject* trig =
+                world->m_8->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
             if (trig == 0) {
-                goto done;
+                return 0; // the pre-CString early exit (0x111140)
             }
             trig->m_7c->m_notify(trig);
             transId = (i32)trig->m_7c->m_logic;
         }
     }
 
-    // ---- build the two CString sprite-key temps ----
-    PbStrCtor(&upTemp);
-    PbStrCtor(&keyTemp);
-    transId = PB_I32(&transId, 0);
+    // ---- the two CString sprite-key temps (real locals -> the /GX dtor states) ----
+    CString upTemp;  // [esp+0x14] GAME_PYRAMIDUP/DOWN
+    CString keyTemp; // [esp+0x10] GAME_<COLOR>PYRAMIDZ
 
-    switch ((u32)(spriteType - kSpriteTypeBase)) {
+    switch ((u32)(srcId - kSpriteTypeBase)) {
         case kGreenPyramidUp - kSpriteTypeBase: // 0x57  GREENPYRAMIDZ
-            PbAssignStr(&keyTemp, "GAME_GREENPYRAMIDZ");
-            PbAssignStr(
-                &upTemp,
-                (spriteType == kGreenPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN"
-            );
+            keyTemp = "GAME_GREENPYRAMIDZ";
+            upTemp = (srcId == kGreenPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN";
             break;
         case kPurplePyramidUp - kSpriteTypeBase: // 0x5b  PURPLEPYRAMIDZ
-            PbAssignStr(&keyTemp, "GAME_PURPLEPYRAMIDZ");
-            PbAssignStr(
-                &upTemp,
-                (spriteType == kPurplePyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN"
-            );
+            keyTemp = "GAME_PURPLEPYRAMIDZ";
+            upTemp = (srcId == kPurplePyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN";
             break;
         case kOrangePyramidUp - kSpriteTypeBase: // 0x53  ORANGEPYRAMIDZ
-            PbAssignStr(&keyTemp, "GAME_ORANGEPYRAMIDZ");
-            PbAssignStr(
-                &upTemp,
-                (spriteType == kOrangePyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN"
-            );
+            keyTemp = "GAME_ORANGEPYRAMIDZ";
+            upTemp = (srcId == kOrangePyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN";
             break;
         case kBlackPyramidUp - kSpriteTypeBase: // 0x55  BLACKPYRAMIDZ
-            PbAssignStr(&keyTemp, "GAME_BLACKPYRAMIDZ");
-            PbAssignStr(
-                &upTemp,
-                (spriteType == kBlackPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN"
-            );
+            keyTemp = "GAME_BLACKPYRAMIDZ";
+            upTemp = (srcId == kBlackPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN";
             break;
         default:
             break;
     }
+    (void)transId; // consumed by the still-unreconstructed bridge arms
 
-    PbStrDtor(&keyTemp);
-    PbStrDtor(&upTemp);
-done:
-    return;
+    return 0;
 }
-
-#undef PB_I32
-#undef PB_PTR
 
 // --- CTileTriggerSwitchLogic family (base = 4 virtuals) --------------------
 // The five derived switch logics now live in <Gruntz/TileTriggerSwitchLogic.h> (they were

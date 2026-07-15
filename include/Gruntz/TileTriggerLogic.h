@@ -85,9 +85,12 @@ public:
     ~CTileTriggerLogic() {
         m_1c = 0;
     }
-    // slot 0 (0x110c10 via ILT thunk 0x402072): the duty-edge tick virtual. `Tick` is the
-    // name the folded CTileGridCommand view carried for this same slot-0 virtual; kept over
-    // the placeholder `TileLogicVfunc0` (name-preserving fold - best name wins).
+    // slot 0 (0x110c10 via ILT thunk 0x402072): the duty-edge tick virtual - the
+    // pyramid/bridge tile-transition dispatcher, run on this trigger's own (m_08, m_0c)
+    // coords. Defined in TileTriggerSwitchLogic.cpp (@early-stop megafunction; it was
+    // the old CPlayLevelLoad::LoadPyramidBridge shell - fake receiver + a fabricated
+    // spriteType arg; the switch key is really the locally-resolved cell id). `Tick` is
+    // the name the folded CTileGridCommand view carried for this same slot-0 virtual.
     virtual i32 Tick();
 
     // --- folded in from the INVENTED "CTileGridCommand" (see the note below) -------------
