@@ -21,8 +21,7 @@ extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // The CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8 -> RVA
 // 0x2453d8). GetDwordDef (0x1721e0) is on the canonical CButeMgr (include/Bute/ButeMgr.h).
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// g_buteMgr (canonical CButeMgr) comes from <Bute/ButeMgr.h>.
 
 // g_frameTime (the free-running clock global) comes from <Gruntz/Play.h>.
 

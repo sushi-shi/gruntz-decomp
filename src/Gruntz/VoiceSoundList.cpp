@@ -22,8 +22,7 @@
 
 // CButeMgr getter (g_buteMgr @ 0x6453d8): GetStringDef(tag, key, def) returns the
 // stored CString (or `def`) - 0x173180 __thiscall. On the canonical CButeMgr.
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// g_buteMgr (canonical CButeMgr) comes from <Bute/ButeMgr.h>.
 
 // @early-stop
 // /GX EH-state + regalloc wall (~79%): complete body - the n bounds guards, the four

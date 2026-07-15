@@ -113,7 +113,7 @@ static const char s_keyF[] = "F";
 //     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
 //     regalloc (tested-and-reverted; see the inline m_400 note).
 // numeric-conversion casts ((u32)m_dwell / (i32)m_14->m_1c / (double)...) document width and stay.
-extern CButeMgr g_buteMgr;
+// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -269,9 +269,8 @@ extern "C" i32 g_curPlayer; // _g_644c54 handicap owner id
 // The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeColl.m_alloc[0..g_typeColl.m_grown) each get Reset.
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
-// The bute-config manager (canonical CButeMgr): GetDwordDef (0x1721e0) is
-// reloc-masked __thiscall.
-extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
+// The bute-config manager (canonical CButeMgr, g_buteMgr from <Bute/ButeMgr.h>):
+// GetDwordDef (0x1721e0) is reloc-masked __thiscall.
 
 // (CombatCoordList is GONE - the CGrunt+0x31c occupied-coord recycle list is the
 //  REAL MFC CPtrList member m_31c (Grunt.h); its AddHead/RemoveAll @0x1b4967/

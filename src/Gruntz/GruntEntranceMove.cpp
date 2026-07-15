@@ -47,7 +47,7 @@ DATA(0x001e9a48)
 double g_wingzScale = 100.0; // 0x5e9a48
 DATA(0x001e9a50)
 double g_wingzBias = -0.5; // 0x5e9a50
-extern CButeMgr g_buteMgr;
+// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98

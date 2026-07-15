@@ -61,9 +61,7 @@ static inline CGMOwner* Owner(CState* s) {
 void operator delete(void*);
 
 // The CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8 ->
-// RVA 0x2453d8) - the canonical class (<Bute/ButeMgr.h>); was the CButeCfg shell.
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// RVA 0x2453d8) - the canonical class g_buteMgr from <Bute/ButeMgr.h>; was the CButeCfg shell.
 
 // The game-manager singleton (0x64556c). Its +0x80 launch counter (m_numRuns,
 // "Num_Runs") rotates the attract TITLE index; same object as CState::m_4. Spelled

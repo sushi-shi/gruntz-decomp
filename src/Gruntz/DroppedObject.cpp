@@ -59,7 +59,7 @@
 // Insert 0x16db90) + the bute manager (g_buteMgr); named symbols so the calls
 // reloc-mask.
 extern CButeTree g_buteTree;
-extern CButeMgr g_buteMgr;
+// g_buteMgr comes from <Bute/ButeMgr.h>.
 
 // The game-registry singleton (0x64556c; the SAME instance every gamemode unit
 // binds as g_gameReg / g_gameReg). The dropper family reaches its facets

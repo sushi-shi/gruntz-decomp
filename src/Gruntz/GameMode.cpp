@@ -52,7 +52,7 @@ struct CGlitterColorTable {
 
 // LoadGruntEffectSprites externs: the CButeMgr text-config singleton + the wormhole
 // SecretColor bute tag + the go-kart install byte flag.
-extern CButeMgr g_buteMgr;        // ?g_buteMgr@@3VCButeMgr@@A
+// g_buteMgr (?g_buteMgr@@3VCButeMgr@@A) comes from <Bute/ButeMgr.h>.
 extern char* g_wormholeSpawnKey;  // ?g_wormholeSpawnKey@@3PADA ("Wormhole" bute tag @0x60a7ac)
 extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
 

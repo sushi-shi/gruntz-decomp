@@ -180,7 +180,7 @@ i32 g_movingSeed;
 //     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
 //     regalloc (tested-and-reverted; see the inline m_400 note).
 // numeric-conversion casts ((u32)m_dwell / (i32)m_14->m_1c / (double)...) document width and stay.
-extern CButeMgr g_buteMgr;
+// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98

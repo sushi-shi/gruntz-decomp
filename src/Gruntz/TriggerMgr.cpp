@@ -2013,9 +2013,8 @@ void CTriggerMgr::StopPendingFx() {
 //        m_options @+0x150, m_world @+0x30, m_world->m_8 factory).
 // ===========================================================================
 // The resource-config manager @0x2453d8 IS the canonical CButeMgr singleton g_buteMgr
-// (?g_buteMgr@@3VCButeMgr@@A, DATA-bound tree-wide; the former ResButeMgr {} view + its
+// (?g_buteMgr@@3VCButeMgr@@A, from <Bute/ButeMgr.h>; the former ResButeMgr {} view + its
 // (CButeMgr*) cross-casts were a fake facet - dissolved onto the real class).
-extern CButeMgr g_buteMgr;
 
 // @early-stop
 // regalloc/frame-layout wall (~65%): instruction selection, calls, constants,

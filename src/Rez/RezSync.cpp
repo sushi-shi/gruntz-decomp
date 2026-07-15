@@ -222,8 +222,7 @@ struct H70 {
 // CButeStore (include/Bute/ButeMgr.h): SetErrCallback (0x170380), Init (0x170330),
 // GetDwordDef (0x1721e0), ParseGroup (0x171580), CButeStore::ClearRecursive
 // (0x16e070) are all reloc-masked __thiscall.
-// STILL EXTERN (g_buteMgr @0x6453d8): see the CRT-init note at the field block below.
-extern CButeMgr g_buteMgr;
+// g_buteMgr (@0x6453d8) comes from <Bute/ButeMgr.h>; its CRT-init note is at the field block below.
 // g_store6453f0 / g_store64544c are NOT separate objects: 0x6453f0 is g_buteMgr + 0x18
 // (== m_tree) and 0x64544c is g_buteMgr + 0x74 (== m_tree74) - two of the manager's three
 // EMBEDDED zPTrees, aliased here as standalone CButeStore globals. (CButeStore IS zPTree;

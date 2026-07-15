@@ -49,7 +49,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/TriggerMgr.h>           // CTriggerMgr::ApplySwitch
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-extern CButeMgr g_buteMgr;
+// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98

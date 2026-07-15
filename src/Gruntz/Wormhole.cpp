@@ -60,8 +60,7 @@
 
 // The global CButeMgr text-config tree (the singleton). The `ecx=&g_buteMgr;
 // call GetIntDef` shape reloc-masks against the matched CButeMgr::GetIntDef.
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// g_buteMgr (CButeMgr singleton) comes from <Bute/ButeMgr.h>.
 
 // The game-manager singleton (CGameRegistry* @ 0x64556c) comes typed from
 // <Gruntz/InGameIcon.h> (via GruntPuddle.h); SpawnPartners reaches the object list

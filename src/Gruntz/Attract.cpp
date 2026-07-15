@@ -60,10 +60,7 @@
 // External engine globals (reloc-masked DATA symbols).
 // ---------------------------------------------------------------------------
 
-// The CButeMgr text-config singleton (canonical CButeMgr, include/Bute/ButeMgr.h);
-// bound under a TU-local variable name (same 0x6453d8 datum as g_buteMgr).
-DATA(0x002453d8)
-extern CButeMgr g_attractButeMgr;
+// The CButeMgr text-config singleton g_buteMgr (0x6453d8) comes from <Bute/ButeMgr.h>.
 
 // The game registry singleton (canonical CGameRegistry, <Gruntz/GameRegistry.h>): its
 // +0x80 launch counter (m_numRuns, "Num_Runs") selects the TITLE state. The retail
@@ -170,13 +167,13 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
 
         CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
         ((CDDSurface*)tgt)
-            ->ShadeRect(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
+            ->ShadeRect(g_buteMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
         menuRoot()->m_04->TransTitle();
     } else {
         menuRoot()->m_04->TransEnter();
         CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_18->m_2c;
         ((CDDSurface*)tgt)
-            ->ShadeRect(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
+            ->ShadeRect(g_buteMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
         menuRoot()->m_04->TransExit();
     }
 
@@ -237,7 +234,7 @@ i32 CAttract::Activate() {
 
     CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
     ((CDDSurface*)tgt)
-        ->ShadeRect(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
+        ->ShadeRect(g_buteMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
     menuRoot()->m_04->TransTitle();
 
     RetireScene(

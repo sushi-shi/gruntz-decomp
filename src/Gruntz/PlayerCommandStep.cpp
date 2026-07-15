@@ -42,9 +42,7 @@ static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 //   0x6dae0, ApplyTriggerB 0x6e120, ResetAll 0x78430, ResetCell 0x6bfd0.
 
 // Bute-config manager (g_buteMgr @ VA 0x6453d8 -> RVA 0x2453d8): read the defender-radius
-// value via the canonical CButeMgr::GetIntDef (0x171aa0, include/Bute/ButeMgr.h).
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// value via the canonical CButeMgr::GetIntDef (0x171aa0); g_buteMgr from <Bute/ButeMgr.h>.
 
 // The missed-select complaint cue lives at 0x61ab24 (the engine ?g_sndCueTag@@3HA int;
 // its address is the LeafCue the Complain path fires).

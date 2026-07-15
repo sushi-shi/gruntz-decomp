@@ -780,6 +780,12 @@ extern "C" {
     };
 }
 
+// The global CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @0x6453d8) is
+// declared ONCE in <Bute/ButeMgr.h> (this owning bute TU + every consumer include it);
+// no per-TU extern. Its NAME is bound by Ghidra's RTTI recovery (reloc-faithful) - it is
+// runtime placement-constructed, so there is no static-storage definition to hang DATA()
+// on yet; a future data_home pass that defines the storage here adds the DATA() then.
+
 // The shared empty C string (0x6293f4); Init assigns it into the two scratch
 // CStrings.
 extern "C" char g_emptyString[]; // 0x6293f4

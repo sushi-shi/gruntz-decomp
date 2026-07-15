@@ -146,8 +146,7 @@ void CGruntSpawnConfig::ClearSprites() {
 }
 
 // The bute manager singleton (?g_buteMgr, RVA 0x2453d8); DATA label owned by the
-// bute TU, declared extern here so the `ecx=&g_buteMgr; call GetIntDef` reloc-masks.
-extern CButeMgr g_buteMgr;
+// bute TU, declared extern in <Bute/ButeMgr.h> so `ecx=&g_buteMgr; call GetIntDef` reloc-masks.
 
 // ===========================================================================
 // CGruntSpawnConfig::LoadGruntSpawnConfig  (0x11afb0)

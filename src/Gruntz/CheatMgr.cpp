@@ -25,9 +25,8 @@
 // The global empty C string the default CString temp copies from (0x6293f4).
 extern "C" char g_emptyString[];
 
-// The global CButeMgr instance (the config tree LoadCheatConfig reads cheats from).
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// The global CButeMgr instance (the config tree LoadCheatConfig reads cheats from),
+// g_buteMgr from <Bute/ButeMgr.h>.
 
 // The 19 built-in cheat-code string buffers - obfuscated .data byte arrays passed
 // to AddCheat by address as the map key. Each holds a cheat code obfuscated as

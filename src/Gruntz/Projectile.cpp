@@ -1135,7 +1135,7 @@ static inline char* ActNameLookup(i32 id) {
 // reloc-masks.
 extern i32 TBombLogic_e1e60();
 
-extern CButeMgr g_buteMgr;
+// g_buteMgr comes from <Bute/ButeMgr.h>.
 
 // The running game clock g_frameTime is DEFINED in RezMgr.cpp (referenced above).
 

@@ -95,7 +95,7 @@ static void GruntPosScratchTeardown() {
 // ==== the 13 CGrunt fns of this obj (ex Grunt.cpp) + their support decls ====
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-extern CButeMgr g_buteMgr;
+// g_buteMgr comes from <Bute/ButeMgr.h>.
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98

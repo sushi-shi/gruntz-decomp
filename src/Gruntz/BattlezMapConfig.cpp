@@ -267,8 +267,7 @@ extern "C" u32 g_frameTime;
 
 // The global CButeMgr text-config tree (the singleton), reloc-masked through the
 // already-matched CButeMgr getters (butemgr unit).
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// g_buteMgr (canonical CButeMgr getters, butemgr unit) comes from <Bute/ButeMgr.h>.
 
 // The per-map start-coord array's SetAtGrow appender (callee-cleanup engine free
 // fn; 2 args). The marker pair node is appended to the array handle (arr->m_8).

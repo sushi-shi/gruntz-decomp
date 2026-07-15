@@ -33,8 +33,7 @@
 // The game-manager singleton (g_gameReg, *0x64556c), canonical view.
 extern "C" CGameRegistry* g_gameReg;
 
-// The attribute manager (butemgr unit), reached as the g_buteMgr singleton.
-extern CButeMgr g_buteMgr;
+// The attribute manager (butemgr unit): g_buteMgr singleton from <Bute/ButeMgr.h>.
 
 // ===========================================================================
 // BuildBootyPerfectAnimation @0x01c070

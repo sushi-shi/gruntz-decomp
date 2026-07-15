@@ -166,8 +166,7 @@ extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 // TU -- the DATA(0x0024556c) binding below (which re-declares this same extern-"C"
 // entity) is unaffected.
 extern "C" CGameRegistry* g_gameReg;
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// g_buteMgr (canonical CButeMgr) comes from <Bute/ButeMgr.h>.
 
 // The shared engine text renderer (src/Wap32/EngStr.cpp, __cdecl). Forward-declared
 // with the exact struct/signature so the call reloc-masks against EngStr.cpp's symbol.
@@ -5278,7 +5277,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
 extern "C" u8 g_scrollLoadFlags;      // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
 extern "C" i32 g_scrollMinSpeed;      // 0x64c274  cached MinScrollSpeed
 extern "C" i32 g_scrollSpeedRange;    // 0x64c270  cached (Max - Min)
-extern CButeMgr g_buteMgr;            // 0x6453d8
+// g_buteMgr (0x6453d8) comes from <Bute/ButeMgr.h>.
 extern "C" double g_scrollSpeedScale; // 0x5eaa10  (== 0.01)
 
 // (ScrollGeom/ScrollWorld are GONE - the geom is the canonical CLevelPlane

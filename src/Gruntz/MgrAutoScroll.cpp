@@ -61,8 +61,7 @@ extern "C" {
 
 // Reloc-masked engine globals (DIR32 data operands).
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr; // VA 0x6453d8 -> RVA 0x2453d8
+// g_buteMgr (VA 0x6453d8) comes from <Bute/ButeMgr.h>.
 // g_frameTime was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
 // so nothing ever defined it. Unified onto the canonical.
 extern "C" u32 g_frameTime;

@@ -30,9 +30,7 @@
 
 // BcRegSet::Register @0x13c030 IS CSymParser::ResolvePath (canonical <Bute/SymParser.h>).
 
-// The global CButeMgr instance the cheat table reads from (0x6453d8).
-DATA(0x002453d8)
-extern CButeMgr g_buteMgr;
+// The global CButeMgr instance the cheat table reads from (0x6453d8, from <Bute/ButeMgr.h>).
 // The engine empty C-string the default text/desc temp copies from (0x6293f4).
 extern "C" char g_emptyString[];
 // The hardware-cursor hide fn-ptr (?::ShowCursor@@3P6GHH@ZA, 0x6c44c4); the

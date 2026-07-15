@@ -28,7 +28,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 // (<Gruntz/Grunt.h>), the geometry sub-player setter is CEntranceAnimSub::SetGeometry, and
 // the death-pose lookup is CEntranceSpriteMgr::LookupValue_06b2a0 - reached directly.
 
-extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A
+// g_buteMgr (?g_buteMgr@@3VCButeMgr@@A) comes from <Bute/ButeMgr.h>.
 
 // The wingz-duration FP constants (reloc-masked .rodata doubles).
 

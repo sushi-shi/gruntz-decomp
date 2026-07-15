@@ -75,7 +75,7 @@ extern "C" CGameRegistry* g_gameReg;
 
 // Strike config globals: the bute window source + the sound-enable flag / cue tag
 // pair the positional emit polls, plus the kill-cue clock.
-extern CButeMgr g_buteMgr;     // ?g_buteMgr@@3VCButeMgr@@A (butemgr unit)
+// g_buteMgr (?g_buteMgr@@3VCButeMgr@@A, butemgr unit) comes from <Bute/ButeMgr.h>.
 extern i32 g_sndEnabled;       // 0x61ab20 (sound-enable flag)
 extern i32 g_sndCueTag;        // 0x61ab24 (cue tag)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
