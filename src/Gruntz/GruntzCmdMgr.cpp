@@ -18,7 +18,8 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
-#include <Gruntz/State.h>             // CState::Update (slot 4) - the live state's id tag
+#include <Gruntz/State.h> // CState::Update (slot 4) - the live state's id tag
+#include <Gruntz/Play.h> // CPlay::ExecCommand - the ApplyOne/ApplyMask target (ex CGruntzCmdTarget)
 #include <Gruntz/SerialArchive.h>     // the shared archive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameReg.h>        // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/BoundaryTailViews.h> // CObj23d90 (fuzzy-identity 0x23d90 grid-snap blit)
@@ -432,13 +433,13 @@ i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
 // CPlay executor once with index slot = m_10. Returns its result (0 if p==0).
 // ---------------------------------------------------------------------------
 RVA(0x00024140, 0x35)
-i32 CGruntzCommand::ApplyOne(CGruntzCmdTarget* p) {
+i32 CGruntzCommand::ApplyOne(CPlay* p) {
     if (!p) {
         return 0;
     }
-    // Exec's narrow (char/i16) params reproduce retail's mov al/mov dx member
-    // loads; the ex-CCmdHandler view's u32 params made cl widen (movzx/movsx).
-    return p->Exec(m_4, m_10, m_5, m_8, m_a, m_11, m_6);
+    // ExecCommand's narrow (char/i16) params reproduce retail's mov al/mov dx
+    // member loads (the ex-CGruntzCmdTarget shim is dissolved; one signature).
+    return p->ExecCommand(m_4, m_10, m_5, m_8, m_a, m_11, m_6);
 }
 
 // ---------------------------------------------------------------------------
@@ -447,14 +448,14 @@ i32 CGruntzCommand::ApplyOne(CGruntzCmdTarget* p) {
 // (return 1 only if every call succeeded; 0 if p==0).
 // ---------------------------------------------------------------------------
 RVA(0x00024190, 0x6c)
-i32 CGruntzCommand::ApplyMask(CGruntzCmdTarget* p) {
+i32 CGruntzCommand::ApplyMask(CPlay* p) {
     if (!p) {
         return 0;
     }
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
         if (g_cmdBitTable[i] & *(u16*)&m_10) {
-            if (!p->Exec(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
+            if (!p->ExecCommand(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
                 ok = 0;
             }
         }

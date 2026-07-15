@@ -34,19 +34,13 @@ void* operator new(gz_size_t);
 // which nothing defines - 4 unresolved externals. Alias the real class (see GruntzCmdMgr.h).
 typedef CPtrList CGruntzCmdList;
 
-// The "apply" target each Apply*() passes the unpacked command params to: it IS
-// the CPlay play state, and 0x0d1b60 is now ?ExecCommand@CPlay@@ (ret 0x1c,
-// 7 __thiscall args; PlayerCommandStep.cpp - the ex-CCmdHandler view). This
-// caller-side shim is KEPT (documented arg-shape view): ApplyOne/ApplyMask push
-// the packed char/i16 command fields UNEXTENDED (`mov dl,[eax+6]; push edx`),
-// which only a char/short-param callee decl reproduces - calling the real u32
-// signature would force movzx widening at both call sites (a byte regression).
-// Dissolving it needs the executor's true param types settled (the unextended
-// pushes suggest the ORIGINAL Exec took char/i16 params).
-SIZE_UNKNOWN(CGruntzCmdTarget);
-struct CGruntzCmdTarget {
-    i32 Exec(char kind, char index, char a2, i16 a3, i16 a4, char a5, char a6);
-};
+// (The CGruntzCmdTarget caller-side shim is GONE - DISSOLVED 2026-07-15. The
+//  "apply" target IS the CPlay play state and its executor's TRUE param types are
+//  the packed char/i16 (settled empirically: MSVC5 reads a narrow stack param as
+//  the full dword slot + AND mask, exactly the retail body's pattern, so ONE
+//  honest signature now serves both the unextended caller pushes and the body).
+//  ApplyOne/ApplyMask call ?ExecCommand@CPlay@@ (<Gruntz/Play.h>) directly.)
+class CPlay;
 
 // The network (de)serialization stream the base command Save/Load drive: the shared
 // WAP32 archive interface (Read @+0x2c / Write @+0x30), forward-declared here.
@@ -140,9 +134,9 @@ public:
     // Non-virtual members of the base (called directly, not via the vtable):
     i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
     i32 SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i32 count,
-                        u8* buf);       // 0x023ed0
-    i32 ApplyOne(CGruntzCmdTarget* p);  // 0x024140
-    i32 ApplyMask(CGruntzCmdTarget* p); // 0x024190
+                        u8* buf); // 0x023ed0
+    i32 ApplyOne(CPlay* p);       // 0x024140
+    i32 ApplyMask(CPlay* p);      // 0x024190
 
     // Two out-of-line base-vftable stamps (0x0242f0 / 0x024430): each is a bare
     // `mov [this],&??_7CGruntzCommand; ret` (void __thiscall, no eax-return, no
