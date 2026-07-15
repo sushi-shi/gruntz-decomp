@@ -9,31 +9,13 @@
 // compressors). The "1.0.4" version string is the zlib $SG constant; the three
 // zlib entry points are reloc-masked rel32 externs.
 
-// The zlib z_stream (1.0.4 layout, sizeof 0x38) - modeled locally so the field
-// stores land at the retail offsets without pulling all of zlib.h.
-struct GzStream {
-    unsigned char* next_in;  // +0x00
-    unsigned int avail_in;   // +0x04
-    unsigned long total_in;  // +0x08
-    unsigned char* next_out; // +0x0c
-    unsigned int avail_out;  // +0x10
-    unsigned long total_out; // +0x14
-    char* msg;               // +0x18
-    void* state;             // +0x1c
-    void* zalloc;            // +0x20
-    void* zfree;             // +0x24
-    void* opaque;            // +0x28
-    int data_type;           // +0x2c
-    unsigned long adler;     // +0x30
-    unsigned long reserved;  // +0x34
-};
-SIZE(GzStream, 0x38);
-
-extern "C" {
-    int deflateInit_(GzStream* strm, int level, const char* version, int stream_size); // 0x186180
-    int deflate(GzStream* strm, int flush);                                            // 0x186620
-    int deflateEnd(GzStream* strm);                                                    // 0x186990
-}
+// The zlib z_stream (1.0.4 layout, sizeof 0x38) + the deflate entry points come from
+// the REAL vendored <zlib.h> (extern "C", EXPORT==empty==__cdecl since ZLIB_DLL is
+// unset) - the struct is byte-identical to the retail layout, so the field stores land
+// at the retail offsets. (Was a hand-rolled GzStream view + local extern "C" decls;
+// deflateInit_ 0x186180, deflate 0x186620, deflateEnd 0x186990 are the reloc-masked
+// rel32 externs the vendored zlib TUs anchor.)
+#include <zlib.h>
 
 // ===========================================================================
 // 0x1853b0 - deflate the source block into dest at Z_DEFAULT_COMPRESSION (-1); on
@@ -56,7 +38,7 @@ int WapUncompress(
     unsigned char* src,
     unsigned long srcLen
 ) {
-    GzStream s;
+    z_stream s;
     s.next_in = src;
     s.avail_in = (unsigned int)srcLen;
     s.next_out = dest;
@@ -64,7 +46,7 @@ int WapUncompress(
     s.zalloc = 0;
     s.zfree = 0;
     s.opaque = 0;
-    int err = deflateInit_(&s, -1, "1.0.4", sizeof(GzStream));
+    int err = deflateInit_(&s, -1, "1.0.4", sizeof(z_stream));
     if (err != 0) {
         return err;
     }
