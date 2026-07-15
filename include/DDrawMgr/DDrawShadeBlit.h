@@ -109,7 +109,7 @@ public:
     i32 Build(CImageBuildDesc* src, i32 size, i32 fmt);                // 0x1490d0
     void* Remap(void* pixels); // 0x1495d0  (palette-remap, external)
     void Teardown();           // 0x148d10
-    i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250 (external)
+    i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250 (body: ImageSaveBmp.cpp)
     i32 Rebuild(CString name, i32 a1, i32 a2);                  // 0x1493b0
     i32 Decompress(void* dest);                                 // 0x1494b0 (RLE expand)
 
