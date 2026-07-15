@@ -22,8 +22,7 @@
 // donor view - the canonical-CGameRegistry fold that unifies them is deferred
 // cleanup work.
 #include <Gruntz/TriggerMgr.h>
-#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (body below)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -132,14 +131,14 @@ extern "C" i32 g_curPlayer; // 0x644c54  local-player index
 // view->m_viewport once where retail reloads it per rect pair (a symmetric ebx<->ebp swap).
 // (ex ?HudRect@WorldTimeline@CWorld@@ - the dissolved Play.h view; the receiver IS
 // this CTriggerMgr: the "+0x1c grunt slots" are m_grid, "+0x22c viewHost" is
-// m_level, and the combat facets are the canonical CGrunt/CTmLevelView shapes.)
+// m_level, and the combat facets are the canonical CGrunt/CGameLevel shapes.)
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, i32 flag) {
-    CTmLevelView* view = m_level->m_24;
-    r.left += view->m_5c->m_originX - view->m_10;
-    r.top += view->m_5c->m_originY - view->m_14;
-    r.right += view->m_5c->m_originX - view->m_10;
-    r.bottom += view->m_5c->m_originY - view->m_14;
+    CGameLevel* view = m_level->m_24;
+    r.left += view->m_mainPlane->m_originX - view->m_planeCtx.minX;
+    r.top += view->m_mainPlane->m_originY - view->m_planeCtx.minY;
+    r.right += view->m_mainPlane->m_originX - view->m_planeCtx.minX;
+    r.bottom += view->m_mainPlane->m_originY - view->m_planeCtx.minY;
     for (i32 i = 0; i < 4; i++) {
         for (i32 j = 0; j < 15; j++) {
             CTmCell* g = m_grid[j];
@@ -442,7 +441,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src = m_grid[m_recX * TM_GRID_COLS + m_recY]->m_object;
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
-    CPlaneRender* t = m_level->m_24->m_5c;
+    CPlaneRender* t = m_level->m_24->m_mainPlane;
     float fy = (float)y;
     float fx = (float)x;
     if (!(t->m_flags & 1)) {
@@ -584,8 +583,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
     // Resolve the tile-cell's type object from the level viewport (result discarded:
     // the virtual GetTypeId dispatch is kept for its side effect).
-    CTmLevelView* view = m_level->m_24;
-    CPlaneRender* grid = view->m_5c;
+    CGameLevel* view = m_level->m_24;
+    CPlaneRender* grid = view->m_mainPlane;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 cx = tx;
@@ -602,8 +601,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
     i32 cval = grid->m_tileGrid[grid->m_colOffsets[cy] + cx];
     if (cval != (i32)0xeeeeeeee && cval != -1) {
-        void* tc = view->m_4c[cval & 0xffff];
-        (*(i32(**)(void*, i32, i32))(*(void***)tc + 8))(tc, 0, 0);
+        // the tile's collision image set (m_imageSets data @+0x4c); slot 8 = GetCollisionAt
+        CTileImageSet* tc = (CTileImageSet*)view->m_imageSets.GetAt(cval & 0xffff);
+        tc->GetCollisionAt(0, 0);
     }
     // Pending-fx dispatch.
     i32 pfk = m_pendingFxKind;
@@ -763,10 +763,10 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     if (this->PlaceCell(*(i32*)(cellp + 0x1f0), *(i32*)(cellp + 0x1ec), 0) == 0) {
         return 0;
     }
-    char* view = *(char**)((char*)m_level + 0x24);
-    char* sc = *(char**)(view + 0x5c) + 0x40;
-    i32 ox = *(i32*)(sc) - *(i32*)(view + 0x14) + row;
-    i32 oy = *(i32*)(sc + 0x4) - *(i32*)(view + 0x10) + col;
+    CGameLevel* view = m_level->m_24;
+    CPlaneRender* pl = view->m_mainPlane;
+    i32 ox = pl->m_originX - view->m_planeCtx.minY + row;
+    i32 oy = pl->m_originY - view->m_planeCtx.minX + col;
     this->PlaceCell(oy, ox, 1);
     return 1;
 }
@@ -825,10 +825,12 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         || hx >= *(i32*)((char*)g_gameReg + 0x148) || hx < *(i32*)((char*)g_gameReg + 0x140)) {
         ((CPlay*)lvl)->ResetGoals(hy, hx); // ILT 0x2e28 (was the 3-arg Place2 phantom)
     }
-    CTmGridHolder* plane = (CTmGridHolder*)*(char**)(*(char**)((char*)g_gameReg + 0x30) + 0x24);
+    // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
+    // receiver is level->m_mainPlane - the ex-CTmGridHolder::Snap fake name)
+    CGameLevel* plane = g_gameReg->m_world->m_24;
     i32 outR = col;
     i32 outC = row;
-    plane->Snap(&outR, &outC);
+    plane->m_mainPlane->WrapCoord(&outR, &outC);
     CStatusBarMgr* sbi = (CStatusBarMgr*)*(char**)((char*)lvl + 0x2dc);
     if (sbi->m_hlBusy == 0) {
         if (*(i32*)sbi == 2) {
@@ -1258,7 +1260,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CTmLevel* lvl = m_level;
+    CSpriteFactoryHolder* lvl = m_level;
     if (lvl == 0) {
         return 0;
     }
@@ -1643,19 +1645,21 @@ i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i3
 }
 
 // ===========================================================================
-// CRockBreakMgr::BuildRockBreakParticles (0x7b440) - merged from
+// CTriggerMgr::BuildRockBreakParticles (0x7b440) - merged from
 // RockBreakParticles.cpp per dossier 10b (rock-break FX spawned by triggers;
-// embedded singleton, this TU by retail position). @identity-TODO: the
-// CRockBreakMgr/Rock* identities are placeholders; the Rock* views below are
-// the donor's (RockMgr is the 0x64556c singleton under its extern-"C" csv name
-// g_gameReg - the name every unit's reloc matches).
+// this TU by retail position). The ex-`CRockBreakMgr` placeholder identity is
+// RESOLVED: it WAS this CTriggerMgr (its m_22c world holder IS m_level, its
+// Prepare thunk 0x400c IS CombatCue @0x7b930, and every dispatch site reaches
+// it through g_gameReg->m_cmdGrid / the grunt's m_260 board == this class).
+// The Rock* views below were the donor's (RockMgr is the 0x64556c singleton
+// under its extern-"C" csv name g_gameReg - the name every unit's reloc matches).
 // ===========================================================================
 // FUN_001b2cf5 __cdecl: format into a CString (the LoadBootyCheatState FormatStr).
 void FormatStr(CString* out, const char* fmt, ...);
 
 // The eye-candy sprite the factory returns is the shared CGameObject (ApplyName
 // @0x150540 / ApplyLookupGeometry @0x1505b0); the factory is the canonical
-// CSpriteFactory (m_22c->m_8; <Gruntz/SpriteFactory.h>).
+// CSpriteFactory (m_level->m_8; <Gruntz/SpriteFactory.h>).
 
 // Every object the rock-break driver walks is a REAL class already in the tree; the
 // eleven Rock* views were a second model of them (offsets identical field-for-field):
@@ -1687,8 +1691,6 @@ extern i32 g_sndEnabled;       // ?g_sndEnabled@@3HA
 extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA
 extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 
-// (CRockBreakMgr is the canonical <Gruntz/RockBreakMgr.h> class - was a .cpp-local view here.)
-
 // @source: string-xref
 // @early-stop
 // regalloc/loop-strength-reduction wall: the logic - the M400c prep call, the
@@ -1705,8 +1707,8 @@ extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 // docs/patterns/loop-invariant-multiply-strength-reduce-vs-memreread.md +
 // zero-register-pinning.md). Logic complete.
 RVA(0x0007b440, 0x3f0)
-i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
-    Prepare(cx, cy, r, 6, a4);
+i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
+    CombatCue(cx, cy, r, 6, a4); // thunk 0x400c -> 0x7b930 (was the `Prepare` alias)
 
     // The concrete game-state behind CGameRegistry::m_curState (the base CState is
     // proven <= 0x1c0, so a +0x2e4 read is a DERIVED state's field). Its shape here -
@@ -1725,7 +1727,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
-            CGameLevel* board = m_22c->m_24; // the holder's CGameLevel (ex BrickzAttrMgr)
+            CGameLevel* board = m_level->m_24; // the holder's CGameLevel (ex BrickzAttrMgr)
             CLevelPlane* grid = board->m_mainPlane;
             if (tx >= grid->m_wrapW || ty >= grid->m_wrapH) {
                 continue;
@@ -1797,14 +1799,15 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (!PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt)) {
                 continue;
             }
-            CGameObject* spr = m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
+            CGameObject* spr =
+                m_level->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
             if (spr == 0) {
                 continue;
             }
             spr->ApplyName("LEVEL_ROCKBREAK");
             spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
 
-            CSndHost* set = (CSndHost*)m_22c->m_28;
+            CSndHost* set = (CSndHost*)m_level->m_28;
             if (set->m_emitGate == 0) {
                 // CSndHost's name map is an MFC CMapStringToPtr (RTTI-proven), so its
                 // Lookup out-param is a void*& - the payload is the cue itself.
@@ -1823,7 +1826,6 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     }
     return 1;
 }
-SIZE_UNKNOWN(CRockBreakMgr);
 SIZE_UNKNOWN(CMapStringToOb);
 
 // ===========================================================================
@@ -1858,8 +1860,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
     i32 yLo = y - r - 7;
     i32 xHi = x + r + 7;
     i32 yHi = y + r + 7;
-    i32 rangeA = m_level->m_24->m_5c->m_gridW - 2; // plane grid dims (ex the
-    i32 rangeB = m_level->m_24->m_5c->m_gridH - 2; //  CTileReg->CTileRegMid chain)
+    i32 rangeA = m_level->m_24->m_mainPlane->m_gridW - 2; // plane grid dims (ex the
+    i32 rangeB = m_level->m_24->m_mainPlane->m_gridH - 2; //  CTileReg->CTileRegMid chain)
 
     CGrunt** p = m_grid; // the flat 4x15 board
     for (i32 i = 0; i < 4; i++) {

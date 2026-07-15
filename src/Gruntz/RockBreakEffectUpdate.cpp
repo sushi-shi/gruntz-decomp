@@ -17,7 +17,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>    // CGameObject (the target + effect sprite are both one)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_cmdGrid)
-#include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (was a duplicate .cpp-local view)
+#include <Gruntz/TriggerMgr.h> // BuildRockBreakParticles (ex CRockBreakMgr - dissolved onto CTriggerMgr)
 
 extern "C" u32 g_engineFrameDelta;   // 0x6bf3bc  per-frame draw delta (advance ctx)
 extern "C" CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton
@@ -51,8 +51,7 @@ i32 RbEffect::Update() {
     if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) == 1) {
         CGameObject* t = m_10;
         if (t->m_114 == 1) {
-            ((CRockBreakMgr*)g_gameReg->m_cmdGrid)
-                ->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_124);
+            g_gameReg->m_cmdGrid->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_124);
         }
     }
     if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {

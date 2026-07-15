@@ -8,11 +8,10 @@
 // __thiscall externs. g_frameTime = running ms clock. Only offsets / code bytes are
 // load-bearing.
 #include <Gruntz/GruntBehaviorLeaf.h>
-#include <Gruntz/TriggerMgr.h>   // the real owner of NotifyCell/SpawnPuddle (the +0x260 slot)
-#include <Gruntz/RockBreakMgr.h> // the real owner of BuildRockBreakParticles
-#include <Image/ImageSet.h>      // CImageSet::SetAllTypes (m_drawState->m_194)
-#include <Bute/ButeTree.h>       // CButeTree::Find (the "R" animset key)
-#include <Bute/ButeMgr.h>        // CButeMgr getters (Grunt/DecayTime, WANDGRUNT/HealthLoss)
+#include <Gruntz/TriggerMgr.h> // the real owner of NotifyCell/SpawnPuddle (the +0x260 slot)
+#include <Image/ImageSet.h>    // CImageSet::SetAllTypes (m_drawState->m_194)
+#include <Bute/ButeTree.h>     // CButeTree::Find (the "R" animset key)
+#include <Bute/ButeMgr.h>      // CButeMgr getters (Grunt/DecayTime, WANDGRUNT/HealthLoss)
 
 extern "C" u32 g_frameTime;        // 0x645588  running game clock (ms)
 extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  per-frame draw-delta (arrival probe ctx)
@@ -33,18 +32,16 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
     }
     if (m_drawState->m_1a0.Advance(g_engineFrameDelta) == 1) {
         if (m_gruntSubState == 1 && m_gruntMode != 5) {
-            ((CRockBreakMgr*)m_260)
-                ->BuildRockBreakParticles(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
+            m_260->BuildRockBreakParticles(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
         } else {
-            ((CTriggerMgr*)m_260)
-                ->SpawnPuddle(
-                    m_object->m_screenX,
-                    m_object->m_screenY,
-                    m_animArg0,
-                    m_animArg2,
-                    m_gruntMode != 5,
-                    0x19
-                );
+            m_260->SpawnPuddle(
+                m_object->m_screenX,
+                m_object->m_screenY,
+                m_animArg0,
+                m_animArg2,
+                m_gruntMode != 5,
+                0x19
+            );
         }
     }
     CAniAdvanceCursor* sub = &m_drawState->m_1a0;
@@ -59,7 +56,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find(k_60bebc);
         if (m_animSuppress == 0) {
-            ((CTriggerMgr*)m_260)->NotifyCell(m_animArg0, m_animArg1, 0);
+            m_260->NotifyCell(m_animArg0, m_animArg1, 0);
         }
         i32 dt = (i32)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8);
         if (m_object->m_drawFillCmd == 0xb) {
@@ -82,7 +79,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
         return 0;
     }
     if (m_animSuppress == 0) {
-        ((CTriggerMgr*)m_260)->NotifyCell(m_animArg0, m_animArg1, 0);
+        m_260->NotifyCell(m_animArg0, m_animArg1, 0);
     }
     m_drawState->m_8 |= 0x10000;
     return 0;
@@ -102,7 +99,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
         m_drawState->m_40 |= 1;
         m_drawState->m_194->SetAllTypes(1);
         if (m_animSuppress == 0) {
-            ((CTriggerMgr*)m_260)->NotifyCell(m_animArg0, m_animArg1, 0);
+            m_260->NotifyCell(m_animArg0, m_animArg1, 0);
         }
         m_drawState->m_8 |= 0x10000;
         return 0;

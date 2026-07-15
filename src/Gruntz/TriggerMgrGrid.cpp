@@ -12,12 +12,10 @@
 //   * in the init TABLE (link order) this obj sits right after the grunt
 //     region - the retail source neighborhood of Grunt.cpp.
 //
-// SEAM (not moved): ?WireTileSwitchLogic@CTileWireLogic@@QAEHPAXHH@Z @0x6c130
-// (0xd62 B) sits INSIDE this interval between ResetCell (0x6bfd0) and
-// ApplySwitch (0x6d300) - by first-link contiguity it belongs to this original
-// TU. It currently lives in src/Gruntz/TileSwitchLogic.cpp (tile-logic files
-// are owned by a parallel wave-2 worker); folding it here is deferred work for
-// the tile-logic owner.
+// (The former SEAM is CLOSED: ?WireTileSwitchLogic@CTriggerMgr@@ @0x6c130 lives
+// below, between ResetCell (0x6bfd0) and ApplySwitch (0x6d300), as first-link
+// contiguity demands - and its ex-`CTileWireLogic` view is dissolved onto this
+// class; see the dissolve note at the body.)
 //
 // Functions in retail-RVA order; shared views/externs in
 // <Gruntz/TriggerMgrViews.h>. /GX unit (ApplySwitch owns a CString temp).
@@ -29,12 +27,15 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/BattlezData.h> // CBattlezData - the REAL +0x7c HUD/score board (was CTmScoreBoard)
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
-#include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
-#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (dims here)
-#include <Gruntz/Grunt.h>         // real CGrunt (the grid cells)
+#include <Gruntz/SpriteFactory.h>        // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>            // canonical CUserLogic (switch/trigger logic virtuals)
+#include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (CPlay::m_beginMarker; FindChild)
+#include <Gruntz/TileTriggerSwitchLogic.h> // the 0x8c switch element (SwitchDown/m_key1)
+#include <Gruntz/TileTriggerLogic.h>       // the 0x9c logic child (FindIndexByKey/RecordMove)
+#include <Gruntz/TileGrid.h>               // canonical CTileGrid (the registry's +0x70 tile grid)
+#include <Bute/ButeMgr.h>                  // canonical CButeMgr (one shape)
+#include <Wwd/WwdFile.h>                   // CPlaneRender - the canonical plane (dims here)
+#include <Gruntz/Grunt.h>                  // real CGrunt (the grid cells)
 #include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
@@ -44,10 +45,10 @@
 // ReportError @0x08dc60 (it used to emit ?ReportError@CTmGameReg@@, which nothing defines).
 extern "C" CGruntzMgr* g_gameReg;
 
-// 0x6b640: SetLevel - store the supplied level at +0x22c, clear m_armed + m_pendingFx
-// and raise m_countdownActive; returns 1 (0 when arg is null).
+// 0x6b640: SetLevel - store the supplied world holder at +0x22c, clear m_armed +
+// m_pendingFx and raise m_countdownActive; returns 1 (0 when arg is null).
 RVA(0x0006b640, 0x2f)
-i32 CTriggerMgr::SetLevel(CTmLevel* lvl) {
+i32 CTriggerMgr::SetLevel(CSpriteFactoryHolder* lvl) {
     if (lvl == 0) {
         return 0;
     }
@@ -272,9 +273,9 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
 // (`(sx-view10)+scroll0`) - same value, swapped operand order. topic:wall topic:scheduling.
 RVA(0x0006be30, 0x47)
 void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
-    CTmLevelView* view = m_level->m_24;
-    i32 px = view->m_5c->m_originX - view->m_10 + sx;
-    i32 py = view->m_5c->m_originY - view->m_14 + sy;
+    CGameLevel* view = m_level->m_24;
+    i32 px = view->m_mainPlane->m_originX - view->m_planeCtx.minX + sx;
+    i32 py = view->m_mainPlane->m_originY - view->m_planeCtx.minY + sy;
     return CellHitTest(px, py, outRow, outCol, startRow);
 }
 
@@ -376,120 +377,112 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
 }
 
 // ===========================================================================
-// CTileWireLogic::WireTileSwitchLogic (0x6c130; re-homed from the former
+// CTriggerMgr::WireTileSwitchLogic (0x6c130; re-homed from the former
 // tilewireswitchlogic unit, waveP - the documented SEAM: by first-link contiguity
 // it belongs to THIS obj, sitting between ResetCell (0x6bfd0) and ApplySwitch
-// (0x6d300)). The tile-switch/plate "wire" dispatcher; g_gameReg is the 0x64556c
-// singleton, `this` is a tile/switch-logic owner (level @+0x22c). CString diagnostic
-// temp -> /GX frame. Only offsets / code bytes load-bearing; callees reloc-masked.
+// (0x6d300)). The tile-switch/plate "wire" dispatcher. The ex-`CTileWireLogic`
+// .cpp-local view is DISSOLVED (2026-07-15): every retail dispatch site loads
+// ecx = [grunt+0x260] == CGrunt::m_tileMgr == THIS CTriggerMgr, and the view's
+// m_level@+0x22c IS m_level (the head is the same inlined LookupTileType walk as
+// the sibling ApplySwitch). The view's "m_triggerContainer @+0x2e4" was a
+// MIS-BASED read: retail reads +0x2e4 off the spilled g_gameReg->m_curState
+// (CPlay::m_beginMarker, the CTileTriggerContainer ModeObjInit 0xc7ec0 builds) -
+// NOT off `this` (where +0x2e4 would collide with m_selLists[0]).
+// CString diagnostic temps -> /GX frame. Callees reloc-masked; thunk proof:
+// 0x1c21 -> ?FindChild@CTileTriggerContainer@@ @0x116ee0, 0x1fa5 ->
+// ?FindIndexByKey@CTileTriggerLogic@@ @0x110820, 0x19dd -> ?RecordMove@
+// CTileTriggerLogic@@ @0x112880, 0x417e -> ?EnterModalUI@CGruntzMgr@@ @0x8ef10,
+// 0x346d -> ?ReportError@CGruntzMgr@@ @0x8dc60.
 // ===========================================================================
-
-// Engine helpers reached through reloc-masked thunks (no body).
-void* TsLookupSwitch(void* container, i32 key);                 // 0x1c21 resolve switch by id
-i32 TsStrCmp(void* str, i32 key);                               // 0x1fa5 name/key compare
-void TsApply(void* node);                                       // 0x19dd apply a switch effect
-i32 TsToggle(void* node);                                       // 0x3e63 toggle secret switch
-i32 TsIsCrumble(void* node);                                    // 0x2289 crumble check
-void TsTrigger(void* obj, i32 a, i32 b, i32 c, i32 tag, i32 d); // 0x39f4 fire a trigger
-void TsActivate(void* obj, i32 a, i32 b, i32 c, i32 d, i32 e);  // 0x14e2 activate effect
-void* TsAlloc(void* mgr, i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x3265 allocate
-i32 TsGetDword(const char* sec, const char* key);             // 0x172240 CButeMgr::GetDword
-i32 TsLookupRegistry(void* reg, const char* name, void* out); // 0x1b8438 registry lookup
-void TsFree(void* sink, i32 a, i32 b, i32 c);                 // 0x25fe free a set
-void TsAck(void* gr, i32 a, i32 b);                           // 0x346d ack a switch fire
-void TsRemove(void* gr, i32 a);                               // 0x417e remove from queue
-
-// Vtable slot +0x20 (the cell -> object-id resolver): mov edx,[node]; call [edx+0x20].
-static i32 WtsVtblResolve(void* node) {
-    void* vtbl = *(void**)node;
-    return (*(i32(**)(void*))((char*)vtbl + 0x20))(node);
-}
-
-// The tile/switch-logic owner that hosts WireTileSwitchLogic (`this`, ecx). NOT the
-// CGruntzMgr game manager (loaded separately as g_gameReg): its level lives at
-// +0x22c and its trigger container at +0x2e4 (both typed members below). Only these
-// two offsets are reached on `this`; the level/plane graph the level points at is
-// unmodeled engine structure walked with raw casts (like the sibling ApplySwitch).
-SIZE_UNKNOWN(CTileWireLogic);
-class CTileWireLogic {
-public:
-    i32 WireTileSwitchLogic(void* trigger, i32 x, i32 y); // __thiscall (callee cleans 0xc)
-    char m_pad0[0x22c];
-    void* m_level; // +0x22c  the level object (its +0x24 is the action plane)
-    char m_pad230[0x2e4 - 0x230];
-    void* m_triggerContainer; // +0x2e4  the switch/trigger container (TsLookupSwitch host)
-    char m_pad2e8[0x2f0 - 0x2e8];
-};
 
 // @early-stop
 // /GX branchy nested-jump-table megafunction wall (~10%): validated top reconstructed
-// (prologue, grid clamp, cell-tag resolve, primary switch + first diagnostic arm); the
-// 20-way + nested 7-way dispatch, the twelve near-identical list-walk/CString-format arms
+// (prologue, grid clamp, cell-tag resolve, primary switch + first arm: FindChild(key,7),
+// SwitchDown, the m_list2/m_list1 claim walks and both diagnostic stanzas); the 20-way +
+// nested 7-way dispatch, the twelve near-identical list-walk/CString-format arms
 // and the /GX EH-state thread across 3426 B are the documented wall. Final-sweep.
 // docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md; eh-state-numbering-base.md.
 RVA(0x0006c130, 0xd62)
-i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
-    char* gr = (char*)g_gameReg;
-    i32 areaGm = *(i32*)(gr + 0x2c);
+i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
+    // retail loads the play state early and spills it ([esp+0x10]); the switch
+    // container walks below read it back per arm.
+    CPlay* state = (CPlay*)g_gameReg->m_curState;
 
-    if (trigger != 0) {
-        *(i32*)((char*)trigger + 0x358) = 1;
+    if (g != 0) {
+        g->m_358 = 1;
     }
 
-    // Resolve the tile cell from the level's action plane and clamp (x, y). The
-    // level/plane/geom graph below is unmodeled engine structure walked with raw
-    // casts - the same murky level-graph the sibling ApplySwitch/RollingBall walk.
-    char* lvl = (char*)m_level;
-    char* plane = *(char**)(lvl + 0x24);
+    // Inlined LookupTileType(m_level->m_24, x, y): clamp (x,y) to the main plane,
+    // resolve the tile cell, ask its image set the collision kind at (subX, subY).
+    CGameLevel* level = m_level->m_24;
+    CPlaneRender* plane = level->m_mainPlane;
     i32 cx = x;
     i32 cy = y;
     if (cx < 0) {
         cx = 0;
-    } else {
-        i32 w = *(i32*)(*(char**)(plane + 0x5c) + 0x30);
-        if (cx >= w) {
-            cx = w - 1;
-        }
+    } else if (cx >= plane->m_wrapW) {
+        cx = plane->m_wrapW - 1;
     }
     if (cy < 0) {
         cy = 0;
-    } else {
-        i32 h = *(i32*)(*(char**)(plane + 0x5c) + 0x34);
-        if (cy >= h) {
-            cy = h - 1;
-        }
+    } else if (cy >= plane->m_wrapH) {
+        cy = plane->m_wrapH - 1;
     }
-    char* p5c = *(char**)(plane + 0x5c);
-    i32 sx = *(i32*)(p5c + 0x8c);
-    i32 sy = *(i32*)(p5c + 0x90);
-    i32 col = (cx >> sx);
-    i32 row = (cy >> sy);
-    i32 base = *(i32*)(*(char**)(p5c + 0x24) + row * 4) + col;
-    i32 raw = *(i32*)(*(char**)(p5c + 0x20) + base * 4);
+    i32 tx = cx >> plane->m_shiftX;
+    i32 ty = cy >> plane->m_shiftY;
+    i32 subX = cx - (tx << plane->m_shiftX);
+    i32 subY = cy - (ty << plane->m_shiftY);
+    i32 raw = plane->m_tileGrid[plane->m_colOffsets[ty] + tx];
     i32 tag = 0;
     if (raw != (i32)0xeeeeeeee && raw != -1) {
-        char* tbl = *(char**)(plane + 0x4c);
-        void* node = *(void**)(tbl + (raw & 0xffff) * 4);
-        tag = WtsVtblResolve(node);
+        CTileImageSet* ts = (CTileImageSet*)level->m_imageSets.GetAt(raw & 0xffff);
+        tag = ts->GetCollisionAt(subX, subY);
     }
 
-    i32 id = tag - 0xb;
-    if ((u32)id > 0x65) {
+    if ((u32)(tag - 0xb) > 0x65) {
         return 0;
     }
 
-    void* trig = m_triggerContainer;
-    void* sw = TsLookupSwitch(trig, (x >> 5) + ((y >> 5) << 8) + 0x700);
+    // The 20-way per-kind switch (byte dispatch table on tag-0xb). First arm
+    // reconstructed: resolve the (tile,kind-7) switch element in the play state's
+    // trigger container, fire it, then run every 0x9c logic child claiming its key.
+    CTileTriggerContainer* trig = state->m_beginMarker;
+    CTileTriggerSwitchLogic* sw = trig->FindChild((y >> 5) + ((x >> 5) << 8), 7);
     if (sw == 0) {
         CString msg; // [esp+0x30] diagnostic temp
         msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
-        TsRemove(gr, *(i32*)((char*)&msg + 0));
-        TsAck(gr, 0x80dd, 0x3eb);
+        g_gameReg->EnterModalUI((const char*)msg);
+        g_gameReg->ReportError(0x80dd, 0x3eb);
         return 0;
     }
+    sw->SwitchDown(); // virtual slot 2 on the found switch element
 
-    (void)areaGm;
-    (void)sw;
+    // Run every m_list2 then m_list1 logic child that claims the switch's key.
+    i32 anyHit = 0;
+    TtcNode* n;
+    trig = state->m_beginMarker;
+    for (n = TtcHead(trig->m_list2); n != 0; n = n->m_next) {
+        CTileTriggerLogic* el = (CTileTriggerLogic*)n->m_data;
+        if (el->FindIndexByKey(sw->m_key1) != 0) {
+            anyHit = 1; // retail branches into the shared success tail (0x6cc7e)
+            break;
+        }
+    }
+    trig = state->m_beginMarker;
+    for (n = TtcHead(trig->m_list1); n != 0; n = n->m_next) {
+        CTileTriggerLogic* el = (CTileTriggerLogic*)n->m_data;
+        if (el->FindIndexByKey(sw->m_key1) != 0) {
+            el->RecordMove();
+            anyHit = 1;
+        }
+    }
+    if (anyHit == 0) {
+        CString msg;
+        msg.Format("No trigger logic found for switch at: x=%d, y=%d", x, y);
+        g_gameReg->EnterModalUI((const char*)msg);
+        g_gameReg->ReportError(0x80de, 0x3ec);
+        return 0;
+    }
     return 1;
 }
 

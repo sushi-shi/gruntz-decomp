@@ -31,7 +31,6 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/GameStateRecord.h> // CSerialObjRef::Chain (0x8c00)
-#include <Gruntz/TileWireLogic.h>   // CTileWireLogic::WireTileSwitchLogic (0x6c130)
 #include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -198,19 +197,18 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
 
 // CGrunt::LoadTypeTableClearMove(typeId) @0x50ca0 - reload the grunt type table for
 // `typeId` (the inherited CUserLogic driver, thunk 0x3bd9 -> 0x4dd50) then reset the
-// move-mode pair at +0x1a0/+0x1a4. Called at RunEntranceMove's tail. __thiscall.
+// move-mode pair (m_moveMode/m_1a4). Called at RunEntranceMove's tail. __thiscall.
 // Re-homed from src/Stub/BoundaryLowerMethods.cpp (was C50ca0::M).
-// NOTE: the named CGrunt::m_moveMode (+0x1a0 per Grunt.h) currently compiles to +0x2c0
-// (the modeled base chain is ~0x120 oversized before it) - so this reset uses explicit
-// this+offset access to hit retail's real +0x1a0/+0x1a4 (documented naming-independent
-// codegen; see the layout-gap TODO on CGrunt::m_moveMode).
+// (The old "+0x1a0 compiles to +0x2c0 layout gap" note is STALE: the header pass fixed
+// the base chain - offsetof(CGrunt, m_moveMode)==0x1a0 verified 2026-07-15 - so the
+// raw this+offset stores are replaced with the named members, byte-identical.)
 RVA(0x00050ca0, 0x2b)
 void CGrunt::LoadTypeTableClearMove(i32 typeId) {
     // the real callee is the inherited CUserLogic::LoadGruntTypeTable (0x4dd50), not
     // CGrunt's i32-returning shadow (which InGameIcon still needs for its result read)
     CUserLogic::LoadGruntTypeTable(typeId, 0, 0, 0);
-    *(i32*)((char*)this + 0x1a0) = -1;
-    *(i32*)((char*)this + 0x1a4) = 0;
+    m_moveMode = -1;
+    m_1a4 = 0;
 }
 
 // ===========================================================================
@@ -241,43 +239,19 @@ extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 // duplicated across 5 objs = a duplicate-symbol link defect.
 
 // ==== LoadVehicleGruntSprites @0x50ce0 (ex VehicleGruntSprites.cpp; text-contained) ====
-// CTileWireLogic::WireTileSwitchLogic (0x6c130) now comes from the shared header.
-
 // The game registry singleton (*0x24556c): this TU declares it as the
 // WwdGameReg view (Grunt.cpp style); the vehicle path reads it through the
 // MFC-side CGruntzMgr view with a per-use cast (same load bytes).
 
-// The grunt-command object's follow-up registrar (this->m_260).
-struct CGruntCmdObj;
-struct CGruntRegistrar {
-    // RegisterA @0x26df IS CTriggerMgr::ApplySwitch (recv-this dropped); cast at the call.
-    // RegisterB @0x3dfa IS CTileWireLogic::WireTileSwitchLogic; cast at the call.
-};
-// The grunt's current-tile anchor (this->m_10): m_5c/m_60 are its committed coords.
-struct CGruntAnchor {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
-};
-
-struct CGruntCmdObj {
-    i32 LoadVehicleGruntSprites(i32 kind);
-
-    char m_pad0[0x10];
-    CGruntAnchor* m_10; // +0x10
-    char m_pad14[0x17c - 0x14];
-    i32 m_17c; // +0x17c  tile X (pixels)
-    i32 m_180; // +0x180  tile Y (pixels)
-    char m_pad184[0x198 - 0x184];
-    i32 m_198; // +0x198  requested kind
-    char m_pad19c[0x1a0 - 0x19c];
-    i32 m_1a0; // +0x1a0
-    char m_pad1a4[0x260 - 0x1a4];
-    CGruntRegistrar* m_260; // +0x260
-    char m_pad264[0x2b0 - 0x264];
-    i32 m_region0[4]; // +0x2b0
-    i32 m_region1[4]; // +0x2c0
-};
+// (The CGruntCmdObj / CGruntAnchor / CGruntRegistrar views are GONE - DISSOLVED
+//  2026-07-15 onto the canonicals. CGruntCmdObj WAS ::CGrunt: m_10 == m_10
+//  (CGruntHud*), m_17c/m_180 == m_lastTilePxX/m_lastTilePxY, m_198 == m_198,
+//  m_1a0 == m_moveMode, m_260 == m_tileMgr, m_region0/m_region1 == m_2b0../m_2c0..
+//  (the same 8-dword block RectContainsGated + the serializer already read on
+//  CGrunt). CGruntAnchor WAS CGruntHud (m_5c/m_60 == m_screenX/m_screenY - the
+//  same pair every other consumer reads). CGruntRegistrar WAS CTriggerMgr: its
+//  RegisterA/RegisterB thunks (0x26df / 0x3dfa) ARE ApplySwitch @0x6d300 /
+//  WireTileSwitchLogic @0x6c130, both CTriggerMgr methods on m_tileMgr.)
 
 // The toy/vehicle-grunt kind LoadVehicleGruntSprites dispatches on (kind, 0x17..0x20)
 // is the toy band of PickupType, the shared object/pickup/grunt-kind id space in
@@ -304,21 +278,21 @@ struct CGruntCmdObj {
 // the tail's callee-saved coloring, which cl build-8034 assigns opposite to retail and
 // which no source spelling of the tail expression reorders. Deferred to the final sweep.
 RVA(0x00050ce0, 0x399)
-i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
+i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     m_198 = kind;
-    m_1a0 = -1;
+    m_moveMode = -1;
 
     CString name;
     // Region init is copy-pasted into every arm (retail repeats it 10x, byte-identical):
     // region0 = {-1,-1,1,1}, region1 = {0,0,0,0}, in address order.
 #define REGION_INIT()                                                                              \
     do {                                                                                           \
-        i32* r0 = m_region0;                                                                       \
+        i32* r0 = &m_2b0;                                                                          \
         r0[0] = -1;                                                                                \
         r0[1] = -1;                                                                                \
         r0[2] = 1;                                                                                 \
         r0[3] = 1;                                                                                 \
-        r0 = m_region1;                                                                            \
+        r0 = &m_2c0;                                                                               \
         r0[0] = 0;                                                                                 \
         r0[1] = 0;                                                                                 \
         r0[2] = 0;                                                                                 \
@@ -373,14 +347,14 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     ((CNamespaceLoader*)((CGruntzMgr*)(void*)g_gameReg)->m_curState)
         ->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
-    i32 code =
-        ((i32*)((CGruntzMgr*)(void*)g_gameReg)->m_tileGrid->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
+    i32 code = ((i32*)((CGruntzMgr*)(void*)g_gameReg)
+                    ->m_tileGrid->m_8[m_lastTilePxY >> 5])[(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
-        if (m_10->m_5c == m_17c && m_10->m_60 == m_180) {
+        if (m_10->m_screenX == m_lastTilePxX && m_10->m_screenY == m_lastTilePxY) {
             // retail pushes (this, x, y) - ret 0xc; the old 2-arg spelling had dropped
             // the receiver arg ("recv-this dropped" note above).
-            ((CTriggerMgr*)m_260)->ApplySwitch((CGrunt*)this, m_17c, m_180);
-            ((CTileWireLogic*)m_260)->WireTileSwitchLogic((void*)this, m_17c, m_180);
+            m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
+            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         }
     }
     return 1;
@@ -499,10 +473,8 @@ void CGrunt::SnapToLastTile(i32 a) {
     }
     SetEntrancePos(a, 1);
     if (m_arrivalPending != 0) {
-        // 0x6c130 is CTileWireLogic::WireTileSwitchLogic (the settled-move commit),
-        // not a CGruntTileMgr method - cast at the call (as m_260's site above does).
-        ((CTileWireLogic*)m_tileMgr)
-            ->WireTileSwitchLogic((void*)this, m_lastTilePxX, m_lastTilePxY);
+        // 0x6c130 = CTriggerMgr::WireTileSwitchLogic (the settled-move commit).
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         m_arrivalPending = 0;
     }
 }
@@ -1633,8 +1605,5 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     return 1;
 }
 
-SIZE_UNKNOWN(CGruntAnchor);
-SIZE_UNKNOWN(CGruntCmdObj);
-SIZE_UNKNOWN(CGruntRegistrar);
 SIZE_UNKNOWN(CSpriteSetReg);
 SIZE_UNKNOWN(CTileCell);

@@ -69,7 +69,15 @@ struct CGameObject; // <Gruntz/UserLogic.h> - what CSpriteFactory::CreateSprite 
 // SelectMoveIcon @0x57800 reads [this+0x1f4] / [this+0x170] / [this+0x10] - exactly the
 // view's offsets. A +0x120 shift would have produced zero such matches.)
 typedef CGrunt CTmCell;
-struct CTmLevel;
+// The +0x22c level object IS the world/resource holder CSpriteFactoryHolder
+// (<Gruntz/GameRegistry.h>) - the ex-`CTmLevel` view (TriggerMgrViews.h) is DISSOLVED
+// 2026-07-15: all three of its members land on the canonical holder at the identical
+// offsets and names (m_8 CSpriteFactory* / m_24 the level / m_28 CSndHost*), and the
+// finish-level driver reaches the SAME +0x28 cue registry through g_gameReg->m_world.
+// The blocking "CTmLevelView vs CGameLevel" reconciliation is DONE: the view's m_10/m_14
+// were CGameLevel::m_planeCtx.minX/minY, its m_4c was m_imageSets' data pointer and its
+// m_5c is m_mainPlane (CLevelPlane == CPlaneRender == CDDrawWorkerHost, one typedef).
+struct CSpriteFactoryHolder;
 class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
 struct CTmNode;
 struct CTmRecNode;
@@ -148,9 +156,9 @@ public:
     // out-slot and return it (ret 4 -> callee cleans the out-ptr arg).
     CTrigPoint* GetOriginXY(CTrigPoint* out); // 0x759e0
 
-    // 0x6b640: store the supplied level at +0x22c, clear m_armed + m_pendingFx and
-    // raise m_countdownActive; returns 1 (0 when arg is null).
-    i32 SetLevel(CTmLevel* lvl); // 0x6b640
+    // 0x6b640: store the supplied world holder at +0x22c, clear m_armed + m_pendingFx
+    // and raise m_countdownActive; returns 1 (0 when arg is null).
+    i32 SetLevel(CSpriteFactoryHolder* lvl); // 0x6b640
 
     // 0x788d0 (ILT 0x1398): centre the active plane's scroll origin on the selected
     // record cell's bound object (parallax-scaled unless the plane is origin-fixed).
@@ -487,9 +495,28 @@ public:
     // 0x7b930: the 5-arg combat-area cue (radius scan over m_grid applying the
     // per-cell tier effect); body in TriggerMgr.cpp (ex ?CombatCue@CGruntTileMgr@@).
     i32 CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag); // 0x7b930 (ret 0x14)
+    // 0x7b440: the rock-break particle spawner (radius tile scan; body in
+    // TriggerMgr.cpp). Ex ?BuildRockBreakParticles@CRockBreakMgr@@ - that class was
+    // a placeholder view of THIS one: its only member m_22c (the world holder) IS
+    // m_level, its Prepare thunk 0x400c IS CombatCue @0x7b930, it was "reached
+    // through the registry's +0x68 slot" (m_cmdGrid == this class) and the body
+    // sits inside this class's own TU band. Dissolved 2026-07-15.
+    i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4); // 0x7b440
     // 0x6e7e0: the HUD/pixel grunt probe (5-byte always-0 stub); body in
     // TriggerMgrGrid.cpp (ex ?FindAtPixel@CGruntTileMgr@@).
     CGrunt* FindAtPixel(i32 x, i32 y); // 0x6e7e0
+
+    // 0x6c130: the settled-move tile-switch/plate commit (__thiscall ret 0xc; body in
+    // TriggerMgrGrid.cpp - by first-link contiguity it sits between ResetCell and
+    // ApplySwitch inside this class's own obj). Ex the `CTileWireLogic` .cpp-local view,
+    // DISSOLVED 2026-07-15: every retail dispatch site is `ecx = [grunt+0x260]`
+    // (CGrunt::m_tileMgr == THIS class), and the view's only own member, m_level@+0x22c,
+    // IS m_level (identical level->plane clamp walk as the sibling ApplySwitch). The
+    // "m_triggerContainer @+0x2e4" the view carried was NOT on this class at all: retail
+    // reads it off the spilled g_gameReg->m_curState (CPlay::m_beginMarker, the
+    // CTileTriggerContainer) - the +0x2e4 coincidence with m_selLists[0]'s CPlex slot
+    // was a mis-based read in the ~10% reconstruction.
+    i32 WireTileSwitchLogic(CGrunt* g, i32 x, i32 y); // 0x6c130
 
     // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
     // list arrays). Reconstructed to plateau (eh sibling TU).
@@ -563,14 +590,15 @@ public:
     // their member teardown: 2 scalar ??1CObList CALLs (m_baseList/m_recList) + the
     // m_selLists[10] array teardown, whose __ehvec_dtor takes ??1CObList as a function
     // POINTER (that is ~CTriggerMgr's DATA reloc), + 1 ??1CByteArray CALL. No casts remain.
-    CPtrList m_baseList;   // +0x000  base object-list (holds CTmRecNode payloads)
-    CTmCell* m_grid[0x3c]; // +0x01c  the 4x15 placed grid-object cells (stride 4)
-    i32 m_rowCount[4];     // +0x10c  per-row placed count (bumped/serialized 0x10 B)
-    i32 m_cellFlag[0x3c];  // +0x11c  parallel 4x15 per-cell flag grid; also holds the
-                           //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
-    i32 m_rowStateB[4];    // +0x20c  per-row state band B
-    i32 m_rowStateC[4];    // +0x21c  per-row state band C
-    CTmLevel* m_level;     // +0x22c  the active level object (SetLevel)
+    CPtrList m_baseList;           // +0x000  base object-list (holds CTmRecNode payloads)
+    CTmCell* m_grid[0x3c];         // +0x01c  the 4x15 placed grid-object cells (stride 4)
+    i32 m_rowCount[4];             // +0x10c  per-row placed count (bumped/serialized 0x10 B)
+    i32 m_cellFlag[0x3c];          // +0x11c  parallel 4x15 per-cell flag grid; also holds the
+                                   //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
+    i32 m_rowStateB[4];            // +0x20c  per-row state band B
+    i32 m_rowStateC[4];            // +0x21c  per-row state band C
+    CSpriteFactoryHolder* m_level; // +0x22c  the active world/resource holder (SetLevel);
+                                   //         ex-CTmLevel view - see the dissolve note above
     // +0x230: the multiplayer armed gate (ex-CMultiSub68 view's m_armed) ==
     // the companion state word cleared by SetLevel; serialized at 0x1339/0x1545.
     i32 m_armed;                      // +0x230

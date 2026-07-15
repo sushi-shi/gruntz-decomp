@@ -51,7 +51,6 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
-#include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130) - the arrival commit
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - the worker's m_0c owner-context facet
 #include <Gruntz/LeafCue.h>      // LeafCue - the launch-sound cue entries (ex CombatCue/ConvCue)
 #include <Gruntz/SoundCue.h>     // CSndHost (typedef of CDDrawSubMgrLeafScan) - the cue registry
@@ -1975,7 +1974,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 
     // The shared combat finalize.
     if (m_arrivalPending != 0) {
-        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_10->m_screenX, m_10->m_screenY);
+        m_tileMgr->WireTileSwitchLogic(this, m_10->m_screenX, m_10->m_screenY);
         m_arrivalPending = 0;
     }
     m_poweredUp = 1;

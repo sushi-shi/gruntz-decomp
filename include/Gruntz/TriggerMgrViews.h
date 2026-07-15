@@ -18,8 +18,10 @@
 
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint (+ <Mfc.h> CPtrList/CByteArray)
 
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - m_level's REAL class (ex CTmLevel)
+#include <Gruntz/GameLevel.h> // CGameLevel - the holder's +0x24 level (ex CTmLevelView/CTmGridHolder)
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
-#include <Gruntz/SoundCue.h>      // CSndHost (a typedef - never fwd-declare it): CTmLevel::m_28
+#include <Gruntz/SoundCue.h>      // CSndHost (a typedef - never fwd-declare it): holder m_28
 #include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the world's +0x2dc status-bar item)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
@@ -126,18 +128,10 @@ struct CTmWorld {
     char p3f8[0x504 - 0x3f8];
     i32 m_504; // +0x504  pending-fx flag (only null-tested)
 };
-// The level/plane grid the active-selection center reads its dims from: the chain
-// g_gameReg->m_world->m_24->m_5c lands on the shared CPlaneRender
-// (<Wwd/WwdFile.h>) whose m_wrapW/m_wrapH are the (cols,rows) read here.
-struct CTmGridHolder {
-    void Snap(i32* outR, i32* outC); // ReinitGroup snap-to-cell (reloc-masked)
-    char p0[0x5c];
-    CPlaneRender* m_5c; // +0x5c  the grid object
-};
-struct CTmRegSub30 {
-    char p0[0x24];
-    CTmGridHolder* m_24; // +0x24
-};
+// (CTmGridHolder / CTmRegSub30 are GONE - they were g_gameReg->m_world (the canonical
+//  CSpriteFactoryHolder) and its +0x24 CGameLevel; the "+0x5c grid object" is
+//  m_mainPlane, and the ReinitGroup "Snap(&r,&c)" was ?WrapCoord@CDDrawWorkerHost@@
+//  @0xa000 (thunk 0x295a) on that plane - already reconstructed in WwdFile.cpp.)
 // The tile occupancy grid at g_gameReg->m_tileGrid (+0x70) is the canonical CTileGrid
 // (<Gruntz/TileGrid.h>): a row-pointer table (m_8), width (m_c), height (m_10).
 // The fx/target sub-mgr at g_gameReg->m_68 (a reused per-mode slot; the fx TUs' "light-fx
@@ -176,35 +170,15 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 //  AnimWorkerObj::m_logic as the bound logic leaf. CreateSprite RETURNS CGameObject*, so the
 //  (CTmCell*) casts on its result were wrong outright: the deleted CTmCell view had
 //  conflated the SPRITE with the LOGIC the sprite carries.)
-// The level view at level->m_24: ScreenToCell biases the input by its scroll origin - the
-// view holds the origin (m_10/m_14) and the scroll object (m_5c), whose +0x40/+0x44 is the
-// current scroll (x,y).
-struct CTmLevelView {
-    char p0[0x10];
-    i32 m_10; // +0x10  view origin x
-    i32 m_14; // +0x14  view origin y
-    char p18[0x4c - 0x18];
-    void** m_4c; // +0x4c  tile-class object table (cell id -> type object; PlaceObjectFull)
-    char p50[0x5c - 0x50];
-    CPlaneRender*
-        m_5c; // +0x5c  the plane viewport (real CPlaneRender: tile grid + edge/scroll origin)
-};
-
-// The level object stored at CTriggerMgr+0x22c (set by SetLevel): its +0x8 is the sprite
-// factory the spawners create from, +0x24 the level view, +0x28 the named-cue registry.
-// IDENTITY: this IS the world holder CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) -
-// all three members land on it exactly (m_8 CSpriteFactory* / m_24 the level object /
-// m_28 CSndHost*), and the finish-level driver reaches the SAME +0x28 registry through
-// g_gameReg->m_world in GooWellMgr.cpp. Fold deferred only because m_24's CTmLevelView
-// must first reconcile with the canonical CGameLevel (m_10/m_14 == m_planeCtx ints,
-// m_5c == m_mainPlane as CLevelPlane-vs-CPlaneRender) - a cross-header pass.
-struct CTmLevel {
-    char p0[0x8];
-    CSpriteFactory* m_8; // +0x08  sprite/object factory + live-object list holder
-    char pc[0x24 - 0xc];
-    CTmLevelView* m_24; // +0x24  the level view (scroll origin)
-    CSndHost* m_28;     // +0x28  named-cue registry (== CSpriteFactoryHolder::m_28)
-};
+// (CTmLevel / CTmLevelView are GONE - DISSOLVED 2026-07-15 onto the canonicals.
+//  CTmLevel WAS the world holder CSpriteFactoryHolder (<Gruntz/GameRegistry.h>): all
+//  three members land on it at identical offsets AND names (m_8 CSpriteFactory* /
+//  m_24 the level / m_28 CSndHost*). CTmLevelView WAS the canonical CGameLevel
+//  (<Gruntz/GameLevel.h>): its "m_10/m_14 view origin" is m_planeCtx.minX/minY (the
+//  LevelCoordRect at +0x10), its "+0x4c tile-class table" is m_imageSets' CObArray
+//  data pointer (reach it via GetAt), and its m_5c is m_mainPlane (CLevelPlane ==
+//  CPlaneRender == CDDrawWorkerHost - one typedef, so no cast). CTriggerMgr::m_level
+//  is typed CSpriteFactoryHolder* in <Gruntz/TriggerMgr.h>.)
 
 // The level's display-object list (level->m_8->m_liveObjects, the canonical
 // CSpriteListNode chain): each node carries the next ptr @+0 and the bound object
@@ -278,15 +252,10 @@ SIZE_UNKNOWN(CTmOverlay);
 SIZE_UNKNOWN(CTmGoal);
 SIZE_UNKNOWN(CTmWorld);
 SIZE_UNKNOWN(CTmScoreSub);
-SIZE_UNKNOWN(CTmGridHolder);
-SIZE_UNKNOWN(CTmRegSub30);
 SIZE_UNKNOWN(CTmNameReg);
-SIZE_UNKNOWN(CTmLevel);
 SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CTmCell);
 SIZE_UNKNOWN(CTmOverlaySrc);
 SIZE_UNKNOWN(CTmCursorMgr);
-SIZE_UNKNOWN(CTmScroll);
-SIZE_UNKNOWN(CTmLevelView);
 
 #endif // GRUNTZ_TRIGGERMGR_VIEWS_H

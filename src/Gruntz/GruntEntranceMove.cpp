@@ -25,7 +25,6 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360)
 #include <Gruntz/TriggerMgr.h>       // CTriggerMgr::NotifyCell (0x79fb0) + CellDispatch (0x6bcb0)
-#include <Gruntz/TileWireLogic.h>    // CTileWireLogic::WireTileSwitchLogic (0x6c130)
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -514,7 +513,7 @@ void CGrunt::LoadEntranceConfig() {
         }
         m_lastTilePxX = newPxX;
         m_lastTilePxY = newPxY;
-        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, newPxX, newPxY);
+        m_tileMgr->WireTileSwitchLogic(this, newPxX, newPxY);
 
         h = m_10;
         m_entranceCommitted = 1;
@@ -932,7 +931,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
-        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         return 0;
     }
 
@@ -1017,7 +1016,7 @@ i32 CGrunt::StepArrivalCommit() {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeO) == 0);
     if (eq) {
         SnapToLastTile(1);
-        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         goto finalize;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeJ) == 0);
@@ -1207,8 +1206,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             LoadAnimNameTable(0, 0);
             ResetEntranceAnimation(1, 0, 0);
             if (s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePxX >> 5, m_lastTilePxY >> 5) & 0x80) {
-                ((CTileWireLogic*)m_tileMgr)
-                    ->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+                m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
             }
             return 0;
         }

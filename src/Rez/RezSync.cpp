@@ -733,7 +733,7 @@ i32 RezSync::Init(void* a1, char* a2) {
             *(i32*)((char*)m_74 + 0x4c + k * 4) = 0;
         }
     }
-    if (!((CTriggerMgr*)m_74)->SetLevel((CTmLevel*)m_50)) {
+    if (!((CTriggerMgr*)m_74)->SetLevel((CSpriteFactoryHolder*)m_50)) {
         Error2(0x800a, 0x416);
         return 0;
     }
@@ -799,7 +799,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_5c = new CFontConfig;
     m_5c->LoadFontConfig(0x1388, 0xbb8);
     m_68 = new CTriggerMgr;
-    if (!m_68->SetLevel((CTmLevel*)m_30)) {
+    if (!m_68->SetLevel((CSpriteFactoryHolder*)m_30)) {
         Error2(0x800a, 0x41b);
         return 0;
     }

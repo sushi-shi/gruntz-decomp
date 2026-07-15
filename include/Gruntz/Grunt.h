@@ -1932,6 +1932,13 @@ public:
     // Battlez arrival resolver's neighbour-pick trigger (CGrunt_TileSwitch).
     i32 TileSwitch(i32 col, i32 row, i32 flags, i32 a4, i32 a5, i32 a6); // thunk 0x1640
 
+    // @0x50ce0 (GruntSteps.cpp; ex the CGruntCmdObj .cpp-local view, dissolved
+    // 2026-07-15): the toy/vehicle grunt sprite loader - latch the kind (m_198),
+    // reset m_moveMode, seed the m_2b0/m_2c0 region blocks per toy kind, build the
+    // "<NAME>GRUNT" namespace, and on a switch tile (0x41/0x42) at the committed
+    // tile re-fire ApplySwitch + WireTileSwitchLogic on m_tileMgr.
+    i32 LoadVehicleGruntSprites(i32 kind); // 0x50ce0
+
     // @0xee800 (ret 4, /GX) - the arrival/defender reticle scan (mis-homed under
     // ?winapi_0ee800_IntersectRect_PtInRect@CUserLogic before xref recovery: this
     // is CGrunt - the this-object extends to +0x3f0 and the caller (0x5d210, CGrunt

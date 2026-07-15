@@ -4,7 +4,7 @@
 // VERIFIED against the retail MSVC switch jump tables to AGREE byte-for-byte:
 //   - CGrunt::LoadPickupSprites        @0x65e80  (entrance cue, GRUNTZ_PICKUPS_*)
 //   - EngineLabelBacklog::LoadPowerupIconSprites @0x7c620 (map icon, GAME_INGAMEICONZ_*)
-//   - CGruntCmdObj::LoadVehicleGruntSprites @0x50ce0 (toy-grunt sprite, <NAME>GRUNT)
+//   - CGrunt::LoadVehicleGruntSprites @0x50ce0 (toy-grunt sprite, <NAME>GRUNT)
 // The same id is stored in CGrunt::m_gruntKind (+0x258): a grunt "kind" IS an object
 // type - VERIFIED 0x37=SUPERSPEED halves TimePerTile, 0x36=GHOST, and
 // 0x38=INVULNERABILITY / 0x39=CONVERSION / 0x3a=DEATHTOUCH gate combat/tile logic.

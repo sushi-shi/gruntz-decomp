@@ -194,7 +194,6 @@ extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 // 0x20e180 HEADS this TU's band) ====
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TerrainTileLoader.h> // the real owner of Load (the +0x260 slot)
-#include <Gruntz/TileWireLogic.h>     // CTileWireLogic::WireTileSwitchLogic (0x6c130)
 #include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
 #include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
 #include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -1042,7 +1041,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
-            ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
             return 0;
         }
         CGruntHud* h = m_10;
@@ -1669,7 +1668,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
-            ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         }
         return;
     }
@@ -1940,7 +1939,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeO) == 0) {
         ApplySetState1(1);
-        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         goto tail;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeQ) == 0) {
@@ -2142,7 +2141,7 @@ i32 CGrunt::StepArrivalCommitA() {
     }
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
-        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         return 0;
     }
     if (m_358 == 0 && m_35c != 0) {
@@ -2174,8 +2173,8 @@ i32 CGrunt::StepArrivalCommitB() {
     m_entranceActive = 0;
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
-    // reused registry slot: 0x6c130 = CTileWireLogic::WireTileSwitchLogic, 0x6bcb0 = CTriggerMgr::CellDispatch
-    ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic((void*)this, m_lastTilePxX, m_lastTilePxY);
+    // 0x6c130 = CTriggerMgr::WireTileSwitchLogic, 0x6bcb0 = CTriggerMgr::CellDispatch
+    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
     if (m_health <= 0) {
         m_entranceCommitted = 0;
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
