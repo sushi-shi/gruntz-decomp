@@ -124,7 +124,6 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
 // re-arm the local player's grunt (Method_36ed/ResetCell29cd on g_curPlayer)
 // or arm a foe's combat state (health sprite + CombatTimeout clock).
 
-extern "C" i32 g_curPlayer; // 0x644c54  local-player index
 // @early-stop
 // regalloc/CSE wall (~80% - and 0x78060 is not play's .obj, so the frame is re-scored):
 // logic + instruction selection match, but cl pins `this`->ebx (retail ebp) and CSEs

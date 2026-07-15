@@ -48,7 +48,6 @@ static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 // its address is the LeafCue the Complain path fires).
 extern i32 g_sndCueTag;
 
-extern "C" i32 g_curPlayer;
 extern "C" CGameRegistry* g_gameReg; // ->m_134 / ->m_cmdGrid
 
 // Free engine helpers (reloc-masked).

@@ -101,7 +101,6 @@ static void GruntScratchTeardown();
 
 // The global free-list pool the name caches recycle into (head @0x645544, base
 // subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt

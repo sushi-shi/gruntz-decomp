@@ -12,6 +12,7 @@
 // Functions in strictly ascending retail-RVA order. Field names are placeholders;
 // only the OFFSETS + the per-method call/branch structure are load-bearing.
 #include <rva.h>
+#include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Rez/FrameClock.h> // the frame-clock/timer band the session loop reads/pumps
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -49,7 +50,6 @@
 // ---------------------------------------------------------------------------
 DATA(0x002455fc)
 extern "C" i32 g_6455fc = 0;
-extern "C" i32 g_curPlayer; // 0x644c54  default cue wParam (= *host)
 // g_lastNow (0x245580 draw clock) comes from <Rez/FrameClock.h>.
 extern "C" u32 g_frameDelta; // 0x645584  delta cap
 extern "C" u32 g_frameTime;  // 0x645588  accum clock

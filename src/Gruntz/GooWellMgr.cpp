@@ -40,7 +40,6 @@
 extern "C" u32 g_frameTime;
 
 // The local player index (DAT_00644c54): selects this client's row.
-extern "C" i32 g_curPlayer;
 
 // The bute attribute store (?g_buteMgr@@3VCButeMgr@@A, from <Bute/ButeMgr.h>): the respawn intervals.
 

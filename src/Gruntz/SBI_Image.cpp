@@ -1,6 +1,7 @@
 #define SBI_DTOR_CHAIN     // enable the inline base-dtor bodies (see StatusBarItem.h)
 #define SBI_OWN_IMAGE_DTOR // this TU supplies the out-of-line ~CSBI_Image (0x100870)
 #include <rva.h>
+#include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Mfc.h>
 #include <Ints.h>
@@ -87,7 +88,6 @@ i32 CSBI_Image::SetupImage(
 
 // The g_gameReg singleton (*0x24556c) + the per-serialize round counter.
 extern "C" CGameRegistry* g_gameReg;
-extern i32 g_serialCounter;
 
 // ---------------------------------------------------------------------------
 // CSBI_Image::ClearFrame (0xe6d90): drop the resolved frame. The vtable slot-3 body

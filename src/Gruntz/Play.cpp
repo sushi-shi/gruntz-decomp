@@ -1811,7 +1811,6 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
 // placeholder; only the +0x30 slot offset is load-bearing. g_serialCounter /
 // g_lastLevelNum reuse this TU's decls; the record views are local.
 // ===========================================================================
-extern i32 g_serialCounter; // ?g_serialCounter@@3HA @0x629ad0 (bumped per string field)
 
 // The last-loaded level number (.data, init -1; compared/assigned by the level loader
 // above and streamed after m_40c here). Owner-TU definition; extern in <Globals.h>.
@@ -3474,7 +3473,6 @@ i32 CPlay::PostHudRect() {
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter,
 // = ?g_serialCounter@@3HA @0x229ad0). Reloc-masked DATA.
-extern i32 g_serialCounter;
 
 // The MFC empty C string (the afxEmptyString data buffer @0x6293f4); the name
 // CString members default-init to it. Reloc-masked DATA (also declared by the
@@ -6754,7 +6752,6 @@ extern "C" char
 // AgNode/AgListHdr==CWarlordListNode/CWarlordListHead (View.h), AgWorld==CWorld,
 // AgResMgr==CSpriteFactoryHolder, AgThis==CPlay. The bare `0x4024a5` type-marker
 // immediate (a reloc-less VA!) is now the CreateGruntStartingPoint symbol.)
-extern "C" i32 g_curPlayer; // 0x644c54 placeholder token
 
 // @early-stop
 // /GX list-walk wall: the registration loop + CString error log are faithful, but

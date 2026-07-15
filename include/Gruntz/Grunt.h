@@ -423,7 +423,7 @@ void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
 // and DEFINE the same cell as "g_focusedGruntSentinel" (five .bss objects, LNK2005): every
 // use compares it against m_tileOwnerHi (the grunt's owner), i.e. "is this grunt mine",
 // which is exactly how Wormhole/StatusBar use g_curPlayer. One cell, one name.
-extern "C" i32 g_curPlayer; // 0x644c54 (DATA-pinned in StatusBarMgr.cpp)
+#include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
 // g_buteTree + CButeTree are declared canonically in <Bute/ButeTree.h>, reached here
 // via <Gruntz/UserLogic.h> -> <Bute/ButeMgr.h> -> <Bute/ButeTree.h> (included above).
@@ -693,9 +693,9 @@ struct CGruntTypeCatalog {
     CDDrawSubMgrLeaf* m_c; // +0x0c  owner -> name-id map
 };
 
-// The global serialize counter Save bumps before each variable-length record
-// (DAT_00629ad0). TU-local (reloc-masked); shared in retail.
-extern i32 g_serialCounter;
+// g_serialCounter (the serialize counter Save bumps before each variable-length
+// record) is declared canonically in <Gruntz/SerialCounter.h>.
+#include <Gruntz/SerialCounter.h>
 
 // The linked-list node Save's tail walks (m_33c head): {next @+0, data @+0x8}.
 SIZE_UNKNOWN(CGruntListNode);

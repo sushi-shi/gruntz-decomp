@@ -198,7 +198,6 @@ void CTimer::Reset() {
 extern "C" {
     extern u32 g_frameTime;
 }
-extern "C" i32 g_curPlayer;
 // g_timer500 (0x2455a0 draw-throttle counter) comes from <Rez/FrameClock.h>.
 
 // The grunt the expiry / under-attack notify fires target (external, reloc-masked).
@@ -456,7 +455,6 @@ i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter,
 // = ?g_serialCounter@@3HA @0x229ad0). The frame-name reverse-lookup helper (0x155630)
 // lives on the sprite registry (g_gameReg->m_world->m_10); modeled with NO body -> reloc-masks.
-extern i32 g_serialCounter;
 // The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10);
 // the former CStrReader view is gone (wave 3).
 

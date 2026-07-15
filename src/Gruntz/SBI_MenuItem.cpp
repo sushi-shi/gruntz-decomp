@@ -5,6 +5,7 @@
 //   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem (canonical chain).
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Mfc.h>
@@ -55,7 +56,6 @@ extern "C" u32 g_killCueClock;
 // (<Gruntz/SbiConfig.h>): CSpriteFactoryHolder / CSbiConfigMap / CSbiConfigRecord.
 
 // Per-serialize round counter the CString archive helpers bump (DAT_00629ad0).
-extern i32 g_serialCounter;
 
 // The frame-name reverse-lookup is CImageRegistry::ReadField (mgr->m_10,
 // <Gruntz/ResMgr.h>); the former CMiNameReg view is gone. The archive is CSerialArchive.

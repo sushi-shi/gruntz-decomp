@@ -10,6 +10,7 @@
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Mfc.h>                    // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
+#include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <rva.h>
 
@@ -136,7 +137,6 @@ extern "C" CGameRegistry* g_gameReg;
 // The current-area index (DAT_00644c54, VA 0x644c54 / RVA 0x244c54); the trigger
 // only fires for the active area. extern "C" so the load reloc-masks against the
 // already-named global.
-extern "C" i32 g_curPlayer;
 
 // @early-stop
 // @flag: MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::

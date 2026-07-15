@@ -27,7 +27,6 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once
 // per string field read.
-extern i32 g_serialCounter;
 
 // ===========================================================================
 // CEventLoadRec::Load (0x09c650) - the HandleEvent-path serialized record. Same

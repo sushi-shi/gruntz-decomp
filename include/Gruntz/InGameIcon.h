@@ -58,7 +58,7 @@ struct CGameRegMapHolder {
 // CSpriteRefTable::GetSel(i, bAlt) - the icon paths call GetSel directly, cast-free
 // (thunk 0x4165 -> 0xe23c0 == CSpriteRefTable::GetSel).
 
-extern "C" i32 g_curPlayer; // DAT_00644c54  (the current local player index)
+#include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
 extern i32 g_sndCueTag; // DAT_0061ab24  (the input/cmd-flush sink the place path posts to)
 
@@ -66,7 +66,7 @@ extern char s_actKeyB[]; // DAT_0060d1bc  (the bute key string the place path qu
 
 extern "C" u32 g_frameTime; // DAT_00645588  (the running game clock stamped into +0x58)
 
-extern i32 g_serialCounter; // DAT_00629ad0  (the serialize sequence counter)
+#include <Gruntz/SerialCounter.h> // g_serialCounter (the serialize sequence counter)
 
 // ---------------------------------------------------------------------------
 // CButeTree::Find on the global g_buteTree - the bute store the Setup path

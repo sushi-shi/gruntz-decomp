@@ -64,7 +64,6 @@ extern "C" CGameRegistry* g_gameReg;
 //   g_curPlayer - the current area / world index
 //   g_timer100 - a frame-quality / detail threshold (>=0x32 picks the live color)
 extern "C" u32 g_frameTime; // canonical ?g_clock@@3IA (unsigned; <Gruntz/TriggerMgr.h> et al.)
-extern "C" i32 g_curPlayer;
 // g_timer100 (0x245594, C++ linkage) comes from <Rez/FrameClock.h>.
 
 // Pack an 8-bit (r,g,b) constant triple into a screen-native 16-bit pixel.

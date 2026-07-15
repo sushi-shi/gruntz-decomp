@@ -16,6 +16,8 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <ddraw.h>      // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
@@ -246,7 +248,6 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 // layout offsets + call shapes are load-bearing; the displacements reloc-mask.
 // The serialize sequence counter is C++-linkage (?g_serialCounter@@3HA @0x229ad0),
 // the canonical name folded in wave5-R4 - kept OUT of the extern "C" block below.
-extern i32 g_serialCounter;
 // SaveState/LoadState stream these; their canonical C++-linkage (?g_...@@3HA)
 // bindings live in the globals/lightfxrender units - reference those directly so the
 // DIR32 reloc pairs (an extern "C" _g_* twin would collide on the same RVA).
@@ -268,7 +269,6 @@ extern "C" {
 }
 
 extern "C" {
-    extern "C" i32 g_curPlayer; // DAT_00644c54  (active player/world index)
 }
 
 // The two shared sound globals, DEFINED here (owner TU: CGruntzMgr::SetRunState mirrors

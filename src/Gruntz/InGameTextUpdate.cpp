@@ -49,9 +49,7 @@ DATA(0x002bf3bc)
 extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
-DATA(0x00244c54)
-extern "C" i32 g_curPlayer; // current area index
-extern i32 g_sndEnabled;    // cue enable gate
+extern i32 g_sndEnabled; // cue enable gate
 extern i32 g_sndCueTag;     // ?g_sndCueTag@@3HA (HELPBOOK sound token)
 DATA(0x0020d7f8)
 char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal

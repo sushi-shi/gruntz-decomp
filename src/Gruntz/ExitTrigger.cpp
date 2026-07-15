@@ -8,6 +8,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
@@ -19,7 +21,6 @@
 
 // The per-serialize round counter the archive helpers bump (DAT_00629ad0); the
 // DATA label is owned by spriteloaders - reference-only here.
-extern i32 g_serialCounter; // 0x629ad0
 
 // CExitTrigger::GetTypeTag (0x00010870) is now an inline member in the class header.
 
@@ -38,7 +39,6 @@ CExitTrigger::~CExitTrigger() {}
 
 // The active-area index (DAT_00644c54): the exit trigger pins the focused warlord
 // HUD only for the active area.
-extern "C" i32 g_curPlayer;
 
 // The level-exit "Warlord" entity is a fresh CSpriteFactory::CreateSprite result
 // (the canonical 0x1597b0 factory entry on g_gameReg->m_world->m_8; the former

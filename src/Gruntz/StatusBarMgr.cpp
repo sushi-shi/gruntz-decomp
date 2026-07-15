@@ -26,6 +26,7 @@
 //   m_activeTab==1 -> Statz   m_activeTab==2 -> Gruntz   m_activeTab==3 -> Resource
 //   m_activeTab==4 -> Multiplayer   m_activeTab==5 -> Game
 #include <rva.h>
+#include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Image/ImageSet.h>
 #include <Gruntz/GameRegistry.h>
 
@@ -42,7 +43,6 @@
 // (stride for the per-player block: 71*8; per-icon stride inside it: 0x238).
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
-extern "C" i32 g_curPlayer; // DAT_00644c54
 
 // CSbConfigItem::SetDirection (0x0ea0f0) / SetDirectionAlt (0x0ea170) re-homed to
 // src/Gruntz/StatusBarTabBuilders.cpp (interval dossier 0x0e8a70: the config-item

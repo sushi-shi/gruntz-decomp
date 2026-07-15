@@ -44,8 +44,8 @@ struct CMgrActiveHolder {
     CDDrawWorkerRegistry* m_10; // +0x10
 };
 
-// Per-serialize round counter the archive bumps.
-extern i32 g_serialCounter;
+// Per-serialize round counter the archive bumps - declared in <Gruntz/SerialCounter.h>.
+#include <Gruntz/SerialCounter.h>
 
 // The settings record itself.
 SIZE_UNKNOWN(CMgrSettings);

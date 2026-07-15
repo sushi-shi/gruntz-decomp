@@ -92,7 +92,6 @@ extern i32 g_sndCueTag;
 extern "C" u32 g_killCueClock;
 
 // Global serialize-sequence counter (bumped once per Serialize).
-extern i32 g_serialCounter;
 
 // The engine free-list head + the node-pointer bias (raw subtrahend), shared with
 // Projectile/TriggerMgr. The teardown returns each pooled element to this list.

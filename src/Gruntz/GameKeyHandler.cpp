@@ -30,6 +30,7 @@
 // Every callee body is external (reloc-masked rel32). Only offsets / code bytes are load-bearing.
 
 #include <Wap32/Object.h> // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
+#include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Gruntz/BoundaryTailViews.h> // CObj23d90 (fuzzy-identity 0x23d90 grid-snap blit)
 #include <rva.h>
 
@@ -42,7 +43,6 @@ extern i32 g_sndCueTag; // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
 // <Gruntz/Play.h> (included below); the M(g_spawnConfig,...) raw reads still mask.
 // g_areaIdx was a SECOND NAME for g_curPlayer (0x244c54 current player index) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern "C" i32 g_curPlayer;
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 // The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not

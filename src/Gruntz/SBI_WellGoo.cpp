@@ -1,5 +1,7 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Mfc.h>
 #include <Ints.h>
@@ -104,8 +106,6 @@ i32 CSBI_WellGoo::Tick() {
 
 // The serialize record counter (bumped before each name+index frame slot) + the
 // focused-grunt sentinel keying the mode-8 selector table.
-extern i32 g_serialCounter;
-extern "C" i32 g_curPlayer;
 
 // CSBI_WellGoo::Serialize (0xe64c0) - vtable slot 1. Bail on a null archive / no
 // game manager; chain the base CSBI_Image serialize; then mode 4/7 round-trip the

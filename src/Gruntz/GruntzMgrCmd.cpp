@@ -87,7 +87,6 @@ extern "C" u32 g_explosionz;    // "Explosionz"
 // the draw-clock mirror (here: the 0x8247 cue-cooldown throttle). Was a C++-mangled
 // ?g_time6bf3c0@@3HA - a divergent symbol for a cell 9 other TUs share.
 extern "C" u32 g_killCueClock;
-extern "C" i32 g_curPlayer; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
 extern i32 g_isHost_648cf0;
 extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 

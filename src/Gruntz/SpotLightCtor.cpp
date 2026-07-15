@@ -160,7 +160,6 @@ i32 CSpotLight::RunAct(i32 id) {
 // view - a fabricated 9-virtual shell - is dissolved onto CGameObject: its "GetType"
 // was CGameObject's slot-8 GetTypeId and its +0x188 the object's archive-cue id;
 // the ex CSpotResMgr view is dissolved onto CSpriteFactory.)
-extern i32 g_serialCounter; // 0x629ad0
 
 // CSpotLight::SerializeMove @0x0b2050 (vtable slot 1) - chain the base + the +0x34
 // object-reference, then transfer the light's own state through the archive keyed on

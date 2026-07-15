@@ -251,7 +251,6 @@ enum SpellzEffect {
 //  merged into <Gruntz/WwdGameReg.h>) and the +0x70 board, reached as the
 //  canonical CBrickzGrid via a facet cast (GruntBoard == CBrickzGrid == CMapMgr,
 //  a pending unification).)
-extern "C" i32 g_curPlayer; // _g_644c54 handicap owner id
 
 // (CombatTileMgr is GONE - the CGrunt+0x260 "tile-mgr grunt board" is the real
 //  CTriggerMgr (<Gruntz/TriggerMgr.h>): its m_grid 4x15 grid at +0x1c, and its
@@ -685,7 +684,6 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
 // The global free-list pool the name caches recycle into (head @0x645544, base
 // subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt

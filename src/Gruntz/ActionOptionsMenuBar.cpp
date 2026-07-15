@@ -56,7 +56,6 @@ struct CMenuBarFrame {
 };
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter).
-extern i32 g_serialCounter;
 
 // The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10,
 // <Gruntz/ResMgr.h>); the former CStrReader view is gone (wave 3).

@@ -18,7 +18,6 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once per
 // string field read.
-extern i32 g_serialCounter;
 
 // ===========================================================================
 // CGruntStateRec::Load (0x0ea990) - the dual-mode grunt-state record loader. A

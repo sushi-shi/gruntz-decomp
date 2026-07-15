@@ -22,7 +22,6 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once per
 // string field read.
-extern i32 g_serialCounter;
 
 // ===========================================================================
 // CTriggerLoadRec::Load (0x009bb0) - a serialized trigger sub-record CTriggerMgr

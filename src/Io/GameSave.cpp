@@ -5,6 +5,7 @@
 // (CDDrawSurfaceMgr::SnapshotChildren) over the "Gruntz Save Game" stream. Field
 // names are placeholders; only OFFSETS + code bytes matter.
 #include <rva.h>
+#include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <string.h>                   // strlen / memset inline to repne scasb / rep stos
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (SnapshotChildren @0x156020)
 
@@ -31,7 +32,6 @@ struct CGameSaveHost {
 // sequence counter (shared with Grunt.cpp's per-record counter).
 DATA(0x00229930) // extern "C": C++ array-global mangling diverges clang vs MSVC5 (as g_mapCurve)
 extern "C" i32 g_saveBuf[0x24]; // 0x229930
-extern i32 g_serialCounter;     // 0x229ad0 - DEFINED (and DATA-pinned) in Grunt.cpp
 
 // SaveGame(host, name) - bail on a null host/name or an empty name; reset the
 // sequence counter + scratch buffer (buf[0]=1 marks it live); then, when the host

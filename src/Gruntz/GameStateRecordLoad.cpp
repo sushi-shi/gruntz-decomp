@@ -35,7 +35,6 @@
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
 // Engine globals (reloc-masked; names match the delinked symbols).
-extern i32 g_serialCounter;      // 0x629ad0  per-object load serial
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 // The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
