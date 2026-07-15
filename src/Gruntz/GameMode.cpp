@@ -61,7 +61,7 @@ extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte fl
 //  of g_levelMsgRectsB @0x60b8f8 - its `a`/`c` members were rectsB[i].top/.bottom
 //  (its "unused" pads were .right and the NEXT rect's .left, straddling the rect
 //  boundary). The effect sprites' y-center is just the message rect's v-center.)
-extern RECT g_levelMsgRectsB[8]; // 0x60b8f8  (DEFINED in BootyMessages.cpp)
+// g_levelMsgRectsB (0x60b8f8) is declared in <Gruntz/GameMode.h> (included above).
 
 // (the CEffLoaderSelf `this`-alias view is GONE - it WAS CBootyState. Every field it
 // modeled sits in a CBootyState pad at the same offset, and the three it duplicated agree
@@ -363,7 +363,6 @@ i32 g_levelMsgIconPos[16] = {
     0xe9,
     0x1a8
 }; // 0x60b8b8
-extern RECT g_levelMsgRectsB[8];     // 0x60b8f8  (shared with BootyMessages - stays extern)
 extern CString g_levelMsgStrings[8]; // 0x629ef8
 extern "C" u32 g_killCueClock;       // 0x6bf3c0
 

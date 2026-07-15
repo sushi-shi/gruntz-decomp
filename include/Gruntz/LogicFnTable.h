@@ -15,4 +15,9 @@ struct LogicFnTable : public zDArray {
     LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710 (zDArray<T> ctor, returns this)
 };
 
+// The eye-candy per-coordinate dispatch table (0x646060; DATA home + construction in
+// src/Gruntz/LogicDispatchInit.cpp). Declared here so FrontCandyAni references it from
+// this owner header, not a per-TU extern.
+extern LogicFnTable g_eyeCandyDispatch;
+
 #endif // GRUNTZ_GRUNTZ_LOGICFNTABLE_H

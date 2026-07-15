@@ -40,8 +40,8 @@ void CNoTrackObjectStamp::Stamp() {
 // --- 0x1155b0 : construct the g_largeFont global -----------------------------
 // A dynamic-initializer thunk that constructs the global font in place via the
 // explicit-ctor-call tail-jmp (mov ecx,&g_largeFont; jmp ??0Font@@QAE@XZ 0x179700 -
-// no placement-new null-guard). Font is the real engine font class (<Font/Font.h>).
-extern Font g_largeFont; // ?g_largeFont@@3VFont@@A (0x64eac0)
+// no placement-new null-guard). Font is the real engine font class (<Font/Font.h>);
+// g_largeFont is declared there.
 // @interleaver Unmatched_1155b0 (g_largeFont dyn-init thunk) emitted-in <boundary: fonts?>
 // (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are glyphstr ShowHudMessageAlt
 // @0x115520 (before) + fonts Forward_115630 @0x115630 (after), NOT one host both sides. This is

@@ -33,11 +33,10 @@
 // (g_pSendMessageA / g_pGetWindow) come from <Gruntz/Dialogs.h> above.
 
 // The global CGameRegistry the ctor snapshots: it copies g_gameReg->m_curState into
-// the file-scope multiplayer game-state sink g_64bd5c (both reloc-masked DIR32).
+// the file-scope multiplayer game-state sink g_multiState (both reloc-masked DIR32).
 extern "C" CGameRegistry* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 // 0x64bd5c holds the multiplayer game-state singleton (a CMulti, xref-proven); the
-// ctor snapshots it from g_gameReg->m_curState (+0x2c). (DATA also bound in ReconBatch2.)
-extern CMulti* g_64bd5c;
+// ctor snapshots it from g_gameReg->m_curState (+0x2c). Declared in <Gruntz/Multi.h>.
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 
 // A player-slot record in the m_host slot array (0x238 stride). DEFERRED-FOLD onto the
@@ -88,7 +87,7 @@ struct MpSymItem {
 // CMultiStartDlg::GetSlotIndex (0xc4b30), its m_5c is CMultiStartDlg::m_host (+0x5c,
 // the 0x238-stride slot table) and its m_6c the cached selection (+0x6c), and all
 // three UpdateColorItems callers (DoDataExchange/Watchdog/ToggleReady) are CMultiStartDlg
-// methods. The lobby game-state singleton g_64bd5c (0x64bd5c) is a CMulti (xref-proven):
+// methods. The lobby game-state singleton g_multiState (0x64bd5c) is a CMulti (xref-proven):
 // m_isHost (+0x528) gates the active branch, m_5b0 the current selection, Name42ff/
 // Name31d4 return the current-slot / default name (CString by value).
 
@@ -126,7 +125,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
     m_host = a0;
     m_6c = 0;
     m_slotList = 0;
-    g_64bd5c = (CMulti*)g_gameReg->m_curState;
+    g_multiState = (CMulti*)g_gameReg->m_curState;
 }
 
 // ---------------------------------------------------------------------------
@@ -196,7 +195,7 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 // - plus the demangled-vs-mangled MFC/CString reloc names - not steerable.
 RVA(0x000c1aa0, 0x2f8)
 i32 CMultiStartDlg::UpdateColorItems() {
-    if (g_64bd5c->m_isHost != 0) {
+    if (g_multiState->m_isHost != 0) {
         CWnd* it4ff = GetDlgItem(0x4ff);
         CWnd* itChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
         CWnd* it42b = GetDlgItem(0x42b);
@@ -237,15 +236,15 @@ i32 CMultiStartDlg::UpdateColorItems() {
         return 0;
     }
     ::SendMessageA(it4ff->m_hWnd, 0x14e, (WPARAM)-1, 0);
-    m_6c = g_64bd5c->m_5b0;
-    if (g_64bd5c->m_5b0 != 0) {
-        CString name = g_64bd5c->Name42ff();
+    m_6c = g_multiState->m_5b0;
+    if (g_multiState->m_5b0 != 0) {
+        CString name = g_multiState->Name42ff();
         itChild->SetWindowTextA(name);
     } else {
         CString cur;
         itChild->GetWindowTextA(cur);
-        if (strcmp(cur, g_64bd5c->Name31d4()) != 0) {
-            itChild->SetWindowTextA(g_64bd5c->Name31d4());
+        if (strcmp(cur, g_multiState->Name31d4()) != 0) {
+            itChild->SetWindowTextA(g_multiState->Name31d4());
         }
     }
     it4ff->EnableWindow(0);
@@ -266,7 +265,7 @@ i32 CMultiStartDlg::UpdateColorItems() {
 RVA(0x000c1e60, 0x115)
 i32 CMultiStartDlg::BuildSlotList() {
     m_slotList = new CLatencyList(0xa);
-    CMulti* reg = g_64bd5c;
+    CMulti* reg = g_multiState;
     i32 count = 5;
     CMultiPlayerInfo* pi = reg->m_netGate->m_70;
     if (reg->m_588) {
@@ -300,7 +299,7 @@ i32 CMultiStartDlg::BuildSlotList() {
 // regalloc coin-flip wall (docs/patterns/zero-register-pinning.md): GetDlgItem gate,
 // the 0x238-stride slot probe, the inlined GetSafe1c, and the committed/color
 // Method3396 branch are byte-faithful; the inlined GetSafe1c result lands in ecx
-// (retail keeps it in eax), cascading into the g_64bd5c register + the final push
+// (retail keeps it in eax), cascading into the g_multiState register + the final push
 // schedule. A pure allocator choice, no source lever. ~92%.
 RVA(0x000c1fd0, 0x99)
 i32 CMultiStartDlg::UpdateSlot() {
@@ -308,7 +307,7 @@ i32 CMultiStartDlg::UpdateSlot() {
     if (w == 0) {
         return 0;
     }
-    CMulti* reg = g_64bd5c;
+    CMulti* reg = g_multiState;
     i32 enable;
     if (reg->m_isHost) {
         i32 idx = GetSlotIndex();
@@ -318,7 +317,7 @@ i32 CMultiStartDlg::UpdateSlot() {
     }
     w->EnableWindow(enable);
     i32 v = GetSafe1c();
-    CMulti* reg2 = g_64bd5c;
+    CMulti* reg2 = g_multiState;
     if (reg2->m_600) {
         m_slotList->SelectItem(v, 0x527, 0, 0);
     } else {
@@ -354,7 +353,7 @@ RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = (Utils::RegistryHelper*)g_gameReg->m_settings;
     if (pDX->m_bSaveAndValidate == 0) {
-        GetDlgItem(0x512)->SetWindowTextA(g_64bd5c->GetString59c());
+        GetDlgItem(0x512)->SetWindowTextA(g_multiState->GetString59c());
         NetLobby::g_curDlg_64557c = (HWND__*)GetSafe1c();
         if (!SetupWorldCombo()) {
             return;
@@ -386,7 +385,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         HWND chatEdit = GetDlgItem(0x42d)->m_hWnd;
         pSend(chatEdit, EM_LIMITTEXT, 100, 0);
         i32 customFlag = reg->GetValueDword("CustomMultiMap", 2);
-        if (g_64bd5c->m_isHost != 0 && customFlag != 2) {
+        if (g_multiState->m_isHost != 0 && customFlag != 2) {
             char mapName[0x100];
             u32 size = 0x100;
             reg->GetValueString("LastMultiMap", mapName, &size, g_emptyString);
@@ -402,9 +401,9 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                         return;
                     }
                     child->SetWindowTextA(mapName);
-                    g_64bd5c->m_5b0 = 1;
-                    g_64bd5c->m_5b8 = mapName;
-                    g_64bd5c->m_5b4 = g_emptyString;
+                    g_multiState->m_5b0 = 1;
+                    g_multiState->m_5b8 = mapName;
+                    g_multiState->m_5b4 = g_emptyString;
                     fclose(f);
                 }
             } else {
@@ -413,17 +412,17 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                     return;
                 }
                 child->SetWindowTextA(mapName);
-                g_64bd5c->m_5b0 = 0;
-                g_64bd5c->m_5b8 = g_emptyString;
-                g_64bd5c->m_5b4 = mapName;
+                g_multiState->m_5b0 = 0;
+                g_multiState->m_5b8 = g_emptyString;
+                g_multiState->m_5b4 = mapName;
             }
         }
         {
             CWnd* w = GetDlgItem(0x511);
             g_sharedFlag = (w == 0) ? 0 : (i32)w->m_hWnd;
         }
-        g_64bd5c->m_netGate->m_78 = 0;
-        g_64bd5c->PollSession();
+        g_multiState->m_netGate->m_78 = 0;
+        g_multiState->PollSession();
         if (!UpdateColorItems()) {
             return;
         }
@@ -440,7 +439,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             return;
         }
         child->GetWindowTextA(m_70);
-        if (g_64bd5c->m_isHost != 0) {
+        if (g_multiState->m_isHost != 0) {
             reg->SetValueString("LastMultiMap", m_70);
             reg->SetValueDword("CustomMultiMap", m_6c);
         }

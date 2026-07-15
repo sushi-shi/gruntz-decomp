@@ -43,7 +43,7 @@ public:
 VTBL(CEyeCandyAni, 0x001e8334);
 SIZE(CEyeCandyAni, 0x54);
 
-// The per-coordinate activation registry entry (g_logicDispatch_646060's element): its
+// The per-coordinate activation registry entry (g_eyeCandyDispatch's element): its
 // first dword receives the per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this
 // single-inheritance class). RunAct/RegisterActs cast the CActReg entry to this. A
 // faithful 4-byte PMF record, hoisted out of FrontCandyAni.cpp.

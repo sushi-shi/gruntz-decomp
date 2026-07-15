@@ -315,7 +315,7 @@ public:
     // (was SendNetStat3; the NetMgr.h-side name/signature, same RVA).
     void SendNetStat(i32 id, u32 value, i32 flag); // 0x0b9290 (__thiscall, 3 args)
     // The multiplayer net-game / lobby-watchdog dialog helpers reach these on the
-    // g_64bd5c singleton (Ghidra labels them CNetMgr::, the same-object dual-view).
+    // g_multiState singleton (Ghidra labels them CNetMgr::, the same-object dual-view).
     // Folded here from the former per-TU CNetSession / WatchSess lens types.
     void DropPlayer(i32 id);        // 0x0bb510 (roster-side declared-only alias)
     i32 DropChannelPlayer(i32 idx); // 0x0bb510
@@ -331,7 +331,7 @@ public:
     i32 RebindHost();    // 0x0bc750  (also CNetMgr-shared)
     i32 RebindHostAlt(); // 0x0bc460
     // The connect-drive helpers the Net-side coordinator (NetMgrMisc.cpp) reaches
-    // off the g_64bd5c singleton. In the 0xb6110-0xbc420 lobby cluster; Ghidra labels
+    // off the g_multiState singleton. In the 0xb6110-0xbc420 lobby cluster; Ghidra labels
     // them CNetMgr:: (Broadcast*), a heuristic mis-attribution of this CMulti cluster.
     i32 BroadcastChannelTable(CNetPlayerEntry* recipient); // 0x0ba810
     i32 BroadcastOneChannel(i32 chan);                     // 0x0baf00
@@ -506,5 +506,12 @@ public:
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+
+// Shared network/lobby globals (canonical DATA homes in the .cpp defs; declared here
+// so consumers reference them from this owner header, not per-TU externs).
+// The active multiplayer game-state singleton (0x64bd5c; DATA home NetCmdMgr.cpp).
+extern CMulti* g_multiState;
+// The DirectPlay session-name CString (0x6473d8; DATA home Multi.cpp).
+extern CString g_sessionName;
 
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

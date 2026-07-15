@@ -61,7 +61,7 @@ extern "C" i32 g_attractStateCount; // 0x645534  title-index modulus
 
 // The DirectPlay session-name CString global (assigned in StartTitle).
 DATA(0x002473d8)
-extern CString g_6473d8; // 0x6473d8
+extern CString g_sessionName; // 0x6473d8
 
 // ===========================================================================
 // (former NetMgrGame.cpp preamble - the game-side CNetMgr protocol context)
@@ -490,11 +490,11 @@ CMulti::~CMulti() {
 }
 
 // InitStr6473d8 @0x0b5380 - the dynamic initializer that default-constructs the global
-// CString g_6473d8 in place (explicit-ctor-call tail-jmp). Re-homed from
+// CString g_sessionName in place (explicit-ctor-call tail-jmp). Re-homed from
 // src/Stub/BoundaryLowerThunks.cpp (was StrFreeb5380).
 RVA(0x000b5380, 0xa)
 void InitStr6473d8() {
-    g_6473d8.CString::CString();
+    g_sessionName.CString::CString();
 }
 
 // -------------------------------------------------------------------------
@@ -4230,12 +4230,12 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
 // CMulti::DropTimeout  @ 0x0bc2d0  - /GX: if a player has been silent past the
 // throttle deadline, run the join-failure ack (rate-limited via g_648d14), then
 // look up the long-timeout slot, copy its host name into the session-name global
-// (g_6473d8), and push the drop stat + OnDropPlayer.
+// (g_sessionName), and push the drop stat + OnDropPlayer.
 // ===========================================================================
 // @early-stop
 // /GX EH + regalloc wall: the body is the complete, correct reconstruction (the
 // throttle gate off g_648d14/timeGetTime, the two FindSlot lookups, the slot host
-// name copied into g_6473d8 via the CString temp, then SendNetStat + OnDropPlayer).
+// name copied into g_sessionName via the CString temp, then SendNetStat + OnDropPlayer).
 // Retail keeps the 2nd FindSlot result live in eax across the CString-temp
 // construction while our /O2 spills it to edi, and the EH-state funclet store order
 // differs - structure + the call/branch chain match, register/EH scheduling does
@@ -4255,7 +4255,7 @@ void CMulti::DropTimeout() {
     }
     g_611d88 = *(i32*)((char*)slot->m_desc + 0x18);
     CString nm;
-    g_6473d8 = *slot->BuildHostName(&nm); // slot->FUN_004bc3f0(&nm) -> &nm; g_6473d8 = nm
+    g_sessionName = *slot->BuildHostName(&nm); // slot->FUN_004bc3f0(&nm) -> &nm; g_sessionName = nm
     SendNetStat(0x40c, g_611d88, 1);
     OnDropPlayer();
 }

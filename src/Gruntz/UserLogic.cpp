@@ -201,7 +201,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 // src/Gruntz/SecretTeleporterTrigger.cpp. (g_frontCandyActReg @0x646060 was the
 // mis-attributed CEyeCandyAni registry - it re-homed to src/Gruntz/EyeCandyAni.cpp
 // as g_eyeCandyActReg; 0x646060's DATA symbol is pinned in
-// src/Gruntz/LogicDispatchInit.cpp as g_logicDispatch_646060.)
+// src/Gruntz/LogicDispatchInit.cpp as g_eyeCandyDispatch.)
 
 // CSecretLevelTrigger (no-arg ctor 0x10b20 + 1-arg ctor 0x424b0 + dtor anchor)
 // re-homed to src/Gruntz/SecretLevelTrigger.cpp.

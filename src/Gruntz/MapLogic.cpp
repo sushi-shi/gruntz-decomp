@@ -31,7 +31,7 @@
 // with the real g_scrollAccum at the same RVA and won the per-RVA keep-last dedup,
 // leaving cmdscrollapply's `?g_scrollAccum@@3_JA` reference UNBOUND. Anchored on the
 // real g_scrollAccum now - its DATA binding lives in MgrAutoScroll.cpp.)
-extern i64 g_scrollAccum; // 0x24cfb0 (bound in MgrAutoScroll.cpp)
+#include <Gruntz/ScrollState.h> // g_scrollAccum (bound in MgrAutoScroll.cpp)
 
 // ===========================================================================
 // CMapLogic::~CMapLogic  (0x0113c0)

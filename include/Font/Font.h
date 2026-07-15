@@ -88,6 +88,14 @@ public:
 SIZE(Font, 0x18); // the four global Font instances are laid out 0x18 apart
                   // (g_mediumFont 0x24eae8 -> g_smallFont 0x24eb00, adjacent)
 
+// The four size-selected global Font instances (VFont in retail). DATA homes in
+// src/Gruntz/Fonts.cpp; declared here so consumers reference them from this owner
+// header, not per-TU externs.
+extern Font g_largeFont;  // 0x24eac0
+extern Font g_mediumFont; // 0x24eae8
+extern Font g_smallFont;  // 0x24eb00
+extern Font g_tinyFont;   // 0x24ea58
+
 // ---------------------------------------------------------------------------
 // The pixel extent of a measured run of text: {total advance width, line
 // height}. Returned by value (sret) from FontRenderer::MeasureText - a plain

@@ -302,7 +302,7 @@ public:
 // CMultiStartDlg
 //   base CDialog(0xc5, pParent); m_host = a0; m_slotList = 0; m_6c = 0;
 //   (m_host: heterogeneous handle - CNetDlgHost host-facet + slot-array base; see below.)
-//   CString @+0x70; CStringList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
+//   CString @+0x70; CStringList(0xa) @+0x74; then g_multiState = g_gameReg->m_curState.
 //   m_74 is a CStringList, NOT a CObList: the ctor @0xc1750 calls the band-C ctor
 //   0x1b5d04 and ~CMultiStartDlg @0xb8960 does `lea ecx,[esi+0x74]; call 0x1b5d78`
 //   - the CStringList dtor (band C = ctor 0x1b5d04 / dtor 0x1b5d78, whose vtable

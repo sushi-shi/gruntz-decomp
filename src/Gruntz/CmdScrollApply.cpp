@@ -5,10 +5,9 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Globals.h>
+#include <Gruntz/ScrollState.h> // g_scrollAccum / g_scrollClock (auto-scroll state block)
 
 extern "C" i32 g_frameTime; // per-frame sync salt
-extern u32 g_scrollClock;   // 0x64cfc0
-extern i64 g_scrollAccum;   // 0x64cfb0 (64-bit)
 
 RVA(0x000ec1c0, 0x43)
 void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {

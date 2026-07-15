@@ -14,11 +14,8 @@
 #include <rva.h>
 #include <Font/Font.h> // canonical FontRenderer + CRect (RenderText IS DrawWrapped @0x17a460)
 
-// The size-selected fonts (g_largeFont..g_tinyFont = VFont in retail). Defined in Fonts.cpp.
-extern Font g_largeFont;
-extern Font g_mediumFont;
-extern Font g_smallFont;
-extern Font g_tinyFont;
+// The size-selected fonts (g_largeFont..g_tinyFont = VFont in retail). Defined in
+// Fonts.cpp; declared in <Font/Font.h> (included above).
 
 // The former WapRect view is DISSOLVED onto the canonical CRect (<Wap32/Rect.h>, pulled in
 // by <Font/Font.h>): 16 bytes {left,top,right,bottom}. Its "0x115b30 converting ctor" is

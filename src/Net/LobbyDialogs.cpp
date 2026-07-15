@@ -43,8 +43,7 @@ extern "C" CGameRegistry* g_gameReg;
 extern "C" i32 g_sharedFlag;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 // The DirectPlay session/client-status CString global (0x6473d8; canonical home
-// g_6473d8 in Multi.cpp). Referenced by its home name so the read relocs.
-extern CString g_6473d8;
+// g_sessionName in Multi.cpp). Declared in <Gruntz/Multi.h> (included above).
 
 // BlockScreenSaver (0x1192d0, GLOBAL scope; home Utils/TimeSplit.cpp): the shared
 // WM_SYSCOMMAND screensaver/monitor-power swallow each lobby DlgProc runs first. 4-arg
@@ -409,8 +408,8 @@ namespace NetLobby {
     void NetDlgInitDropWait(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             CString banner;
-            if (g_6473d8.GetLength() != 0) {
-                banner.Format("Not Receiving Data From Client: %s", (LPCTSTR)g_6473d8);
+            if (g_sessionName.GetLength() != 0) {
+                banner.Format("Not Receiving Data From Client: %s", (LPCTSTR)g_sessionName);
                 SetDlgItemTextA(hWnd, 0x44b, (LPCTSTR)banner);
             }
             Init_be3e0(hWnd, ctx);
