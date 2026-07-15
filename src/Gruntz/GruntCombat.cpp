@@ -56,6 +56,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
 #include <Gruntz/LeafCue.h>      // LeafCue - the launch-sound cue entries (ex CombatCue/ConvCue)
 #include <Gruntz/SoundCue.h>     // CSndHost (typedef of CDDrawSubMgrLeafScan) - the cue registry
 #include <Gruntz/TriggerMgr.h>   // CTriggerMgr - the CGrunt+0x260 board (ex CombatTileMgr)
+#include <Gruntz/GruntBehaviorLeaf.h> // CGruntBehaviorLeaf - 3 of the 19 act handlers (decay/wand AI leaves)
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
 
@@ -499,7 +500,8 @@ SIZE_UNKNOWN(CombatTypeNode);
             ((CString*)slot)->operator=(key);                                                      \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        *(void**)(char*)((_zvec*)&g_reg_644af0)->IndexToPtr(id) = (void*)(handler);                \
+        ((CGruntActEntry*)(char*)((_zvec*)&g_reg_644af0)->IndexToPtr(id))->m_fn =                  \
+            (GruntActHandler)(handler);                                                            \
     }
 
 // @early-stop
@@ -974,26 +976,32 @@ extern char s_codeJ[];
 // so nothing ever defined it. Unified onto the canonical.
 extern char s_codeK[];
 
-// The 19 per-action handler entries (ILT thunks), referenced by address.
-extern "C" void H_402ac2();
-extern "C" void H_4013cf();
-extern "C" void H_402888();
-extern "C" void H_402491();
-extern "C" void H_403de6();
-extern "C" void H_402211();
-extern "C" void H_403bc5();
-extern "C" void H_4040f2();
-extern "C" void H_403e3b();
-extern "C" void H_401005();
-extern "C" void H_403edb();
-extern "C" void H_40165e();
-extern "C" void H_40321a();
-extern "C" void H_4030f3();
-extern "C" void H_403fe9();
-extern "C" void H_403f21();
-extern "C" void H_401195();
-extern "C" void H_403e18();
-extern "C" void H_4036f2();
+// The 19 per-action handler bodies are the CGrunt / CGruntBehaviorLeaf entrance /
+// arrival / decay state-step methods, already reconstructed in GruntEntranceArrival.cpp
+// / GruntEntranceMove.cpp / GruntBehaviorLeaf.cpp. Each retail `&H_<va>` reference was
+// the function's ILT jmp-thunk (e.g. H_402ac2 @0x402ac2 -> jmp 0x4633e0 ==
+// ?ResolveEntranceArrival@CGrunt@@); RegisterActs stores a 4-byte member-function
+// pointer to the real body into the entry's m_fn PMF slot (thunk-following makes the
+// reloc bind to the real symbol). Mapping (act key -> real handler, RVA):
+//   A(s_codeA)   ResolveEntranceArrival        0x633e0 (CGrunt)
+//   B(s_actKeyB) StepWarpExit                  0x64540 (CGrunt)
+//   C(k_60cc90)  LoadGruntDecayConfig          0x612a0 (CGruntBehaviorLeaf)
+//   D(s_codeD)   StepArrivalReroll             0x63b60 (CGrunt)
+//   E(s_codeE)   UpdateGruntStatus             0x617c0 (CGrunt)
+//   F(s_codeF)   DispatchVtbl24                0x6b260 (CGrunt)
+//   G(s_codeG)   StepEntranceRelatchA          0x62840 (CGrunt)
+//   H(s_codeH)   StepArrivalCommitA            0x65300 (CGrunt)
+//   I(s_codeI)   LoadWandGruntItemConfig       0x65a60 (CGruntBehaviorLeaf)
+//   J(s_codeJ)   RunEntranceMove               0x67850 (CGrunt)
+//   K(s_codeK)   LoadEntranceConfig            0x67f80 (CGrunt)
+//   L(s_codeL)   LoadVehicleGruntAnimations    0x63db0 (CGrunt)
+//   M(s_codeM)   RearmEntranceDrop             0x68370 (CGrunt)
+//   N(s_codeN)   StepEntranceRelatchB          0x65c20 (CGrunt)
+//   O(s_codeO)   StepArrivalCommitB            0x654b0 (CGrunt)
+//   P(s_codeP)   UpdateEntranceAnim            0x690a0 (CGrunt)
+//   Q(s_codeQ)   LoadFreezeSpellAssets         0x69d60 (CGrunt)
+//   (k_60bebc)   LoadGruntDecayConfig2         0x61570 (CGruntBehaviorLeaf)
+//   (k_60df94)   FinishEntranceMove            0x69fd0 (CGrunt)
 
 // @early-stop
 // large grunt path-cell scan reconstruction (final-sweep candidate): the /GX EH frame
@@ -2162,25 +2170,25 @@ i32 CGrunt::RunAct(i32 id) {
 // slot-vs-id callee-saved coloring repeated per block. Not source-steerable.
 RVA(0x0005be30, 0x9e5)
 void RegisterActs_644af0() {
-    REGISTER_KEY_644AF0(s_codeA, &H_402ac2);
-    REGISTER_KEY_644AF0(s_actKeyB, &H_4013cf);
-    REGISTER_KEY_644AF0(k_60cc90, &H_402888);
-    REGISTER_KEY_644AF0(s_codeD, &H_402491);
-    REGISTER_KEY_644AF0(s_codeE, &H_403de6);
-    REGISTER_KEY_644AF0(s_codeF, &H_402211);
-    REGISTER_KEY_644AF0(s_codeG, &H_403bc5);
-    REGISTER_KEY_644AF0(s_codeH, &H_4040f2);
-    REGISTER_KEY_644AF0(s_codeI, &H_403e3b);
-    REGISTER_KEY_644AF0(s_codeJ, &H_401005);
-    REGISTER_KEY_644AF0(s_codeK, &H_403edb);
-    REGISTER_KEY_644AF0(s_codeL, &H_40165e);
-    REGISTER_KEY_644AF0(s_codeM, &H_40321a);
-    REGISTER_KEY_644AF0(s_codeN, &H_4030f3);
-    REGISTER_KEY_644AF0(s_codeO, &H_403fe9);
-    REGISTER_KEY_644AF0(s_codeP, &H_403f21);
-    REGISTER_KEY_644AF0(s_codeQ, &H_401195);
-    REGISTER_KEY_644AF0(k_60bebc, &H_403e18);
-    REGISTER_KEY_644AF0(k_60df94, &H_4036f2);
+    REGISTER_KEY_644AF0(s_codeA, &CGrunt::ResolveEntranceArrival);
+    REGISTER_KEY_644AF0(s_actKeyB, &CGrunt::StepWarpExit);
+    REGISTER_KEY_644AF0(k_60cc90, &CGruntBehaviorLeaf::LoadGruntDecayConfig);
+    REGISTER_KEY_644AF0(s_codeD, &CGrunt::StepArrivalReroll);
+    REGISTER_KEY_644AF0(s_codeE, &CGrunt::UpdateGruntStatus);
+    REGISTER_KEY_644AF0(s_codeF, &CGrunt::DispatchVtbl24);
+    REGISTER_KEY_644AF0(s_codeG, &CGrunt::StepEntranceRelatchA);
+    REGISTER_KEY_644AF0(s_codeH, &CGrunt::StepArrivalCommitA);
+    REGISTER_KEY_644AF0(s_codeI, &CGruntBehaviorLeaf::LoadWandGruntItemConfig);
+    REGISTER_KEY_644AF0(s_codeJ, &CGrunt::RunEntranceMove);
+    REGISTER_KEY_644AF0(s_codeK, &CGrunt::LoadEntranceConfig);
+    REGISTER_KEY_644AF0(s_codeL, &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_KEY_644AF0(s_codeM, &CGrunt::RearmEntranceDrop);
+    REGISTER_KEY_644AF0(s_codeN, &CGrunt::StepEntranceRelatchB);
+    REGISTER_KEY_644AF0(s_codeO, &CGrunt::StepArrivalCommitB);
+    REGISTER_KEY_644AF0(s_codeP, &CGrunt::UpdateEntranceAnim);
+    REGISTER_KEY_644AF0(s_codeQ, &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_KEY_644AF0(k_60bebc, &CGruntBehaviorLeaf::LoadGruntDecayConfig2);
+    REGISTER_KEY_644AF0(k_60df94, &CGrunt::FinishEntranceMove);
 }
 // ---------------------------------------------------------------------------
 // CGrunt::Activate()   @0x5caa0   (__thiscall, ret 0)
