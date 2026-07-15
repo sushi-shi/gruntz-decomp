@@ -138,7 +138,6 @@ void* __stdcall ListNodeAdvance(void** pos);
 // Push(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
 // freelist headed at this->m_04. Canonical <Gruntz/FreeNodePool.h>; DEFINED in
 // src/Gruntz/GameText.cpp (whose obj tail holds its reset/clear pair).
-extern FreeNodePool g_coordPool;
 
 // The coord-list node-advance helper (RVA 0x29a30) is the free __stdcall
 // ListNodeAdvance declared at the top (the empty `CoordListWalk` shell that used to
@@ -179,7 +178,6 @@ i32 __stdcall CGrunt_TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5)
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-extern FreeNodePool g_coordPool;
 
 // The element<->node bias subtracted from a stored element pointer to recover its
 // freelist node header (the allocator hands out node + bias; recycle reverses it).

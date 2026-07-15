@@ -52,7 +52,6 @@ extern "C" CGameRegistry* g_gameReg;
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-extern FreeNodePool g_coordPool;
 extern "C" u32 g_frameTime; // 0x245588  running game clock (return-record base)
 
 // The boomerang return-trajectory constants (.rdata doubles). DATA-pinned here (the

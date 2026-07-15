@@ -48,7 +48,6 @@ extern "C" i32 g_curPlayer;
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-extern FreeNodePool g_coordPool;
 // g_cheatA was a SECOND NAME for g_gruntDestruction (0x2455a4 cheat toggle) - same address,
 // so nothing ever defined it. Unified onto the canonical.
 extern "C" i32 g_gruntDestruction;

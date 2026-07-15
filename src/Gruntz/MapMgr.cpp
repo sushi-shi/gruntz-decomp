@@ -65,7 +65,6 @@ struct BrickzFreeRec {
 // symbol for a field. The head is genuinely void* (the pool recycles several node types),
 // so BrickzFreeRec is a cast at the use sites.
 #include <Gruntz/FreeNodePool.h>
-extern FreeNodePool g_coordPool;
 
 // ===========================================================================
 // CMapArrayA (embedded at CMapMgr+0x30; element stride 0x24).

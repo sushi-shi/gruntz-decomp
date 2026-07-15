@@ -578,7 +578,6 @@ i32 g_serialCounter;
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern FreeNodePool g_coordPool;  // DAT_00645540 - DEFINED once, in
                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
                                   // It used to be DEFINED here too: six .cpp files each
                                   // defined it, i.e. six .bss objects for one global

@@ -55,7 +55,6 @@ extern "C" void RezFree(void*);          // 0x1b9b82
 // former per-field globals (g_coordPool/g_coordFreeList/g_coordCount/g_freeBias) were
 // separate fabricated symbols at 0x645540/44/48/4c - interior addresses of this object,
 // so they could never resolve at link. Defined in src/Gruntz/GameText.cpp (owner TU).
-extern FreeNodePool g_coordPool; // 0x645540
 // 0x24556c is the game-registry singleton g_gameReg (DEFINED in GruntzMgr.cpp). The
 // assignment below is CGruntzMgr::Init SELF-REGISTERING - which is exactly what proves
 // the cell holds this manager. Spelling it `g_mgrPtr` with C++ linkage made a second,

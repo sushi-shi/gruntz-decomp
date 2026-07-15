@@ -47,7 +47,6 @@ extern "C" u32 g_frameTime;
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-extern FreeNodePool g_coordPool;
 
 // The former `g_dropList` was a SECOND name for 0x245540 - the same FreeNodePool the
 // rest of the tree calls g_coordPool (<Gruntz/Grunt.h>); its DATA pin here was the one
