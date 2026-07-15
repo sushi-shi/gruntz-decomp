@@ -77,11 +77,10 @@ extern const double g_pathOne; // VA 0x5ea410
 // CInGameIcon.h's s_actKeyB; reuse the identical declaration so the reloc pairs.
 extern char s_actKeyB[]; // DAT_0060d1bc
 
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4).
-// Owned by another TU; declared extern so `ecx=&g_buteTree; call Find` masks.
+// g_buteTree (the global bute store) is declared canonically in <Bute/ButeTree.h>,
+// reached here transitively via <Bute/ButeMgr.h>.
 #include <Bute/ButeMgr.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
-extern CButeTree g_buteTree;
 
 // sqrt lowers inline (d9 fa); __ftol (0x11f570) lowers the (int) casts.
 extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed)

@@ -29,9 +29,8 @@ struct CVariantSlot; // folded CVActColl2 (struct tag = canonical PAU mangling, 
 #include <Gruntz/InGameIcon.h> // s_actKeyB ("B" @0x60d1bc), g_frameTime (@0x645588)
 
 // The bute store the setup/reset paths query (mov ecx,&g_buteTree; call Find).
-// CButeTree is declared in <Bute/ButeMgr.h> (pulled via UserLogic.h); g_buteTree
-// is owned by another TU - redeclared here so the Find call reloc-masks.
-extern CButeTree g_buteTree;
+// g_buteTree + CButeTree are declared canonically in <Bute/ButeTree.h>, reached here
+// via UserLogic.h -> <Bute/ButeMgr.h> -> <Bute/ButeTree.h>.
 
 // The idle-anim bute key "A" (0x60a454) the reset path looks up is the canonical
 // s_codeA (bound in toobspikez, declared locally in GruntVoice.cpp); the former

@@ -31,9 +31,8 @@ class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
 // The bute store the place/set paths query (mov ecx,&g_buteTree; call Find).
-// Declared extern in <Gruntz/InGameIcon.h>'s sibling; redeclared here so the
-// Find call reloc-masks. g_buteTree is owned by another TU.
-extern CButeTree g_buteTree;
+// g_buteTree + CButeTree are declared canonically in <Bute/ButeTree.h>, reached here
+// via UserLogic.h -> <Bute/ButeMgr.h> -> <Bute/ButeTree.h>.
 
 // The intrusive object list reached as g_gameReg->m_68 (cast from the void* the
 // shared CGameReg models). Remove040d20 walks it for the node whose +0x8 data

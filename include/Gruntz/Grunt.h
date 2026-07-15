@@ -425,8 +425,8 @@ void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
 // which is exactly how Wormhole/StatusBar use g_curPlayer. One cell, one name.
 extern "C" i32 g_curPlayer; // 0x644c54 (DATA-pinned in StatusBarMgr.cpp)
 
-class CButeTree;
-extern CButeTree g_buteTree; // 0x6bf620 (dynamic-init'd by retail's initializer @0x16e690)
+// g_buteTree + CButeTree are declared canonically in <Bute/ButeTree.h>, reached here
+// via <Gruntz/UserLogic.h> -> <Bute/ButeMgr.h> -> <Bute/ButeTree.h> (included above).
 #define EntranceLookupAnimSet(k) (g_buteTree.Find(k))
 
 // The grunt's current-anim-name resolver is the shared global g_typeColl @0x6bf650

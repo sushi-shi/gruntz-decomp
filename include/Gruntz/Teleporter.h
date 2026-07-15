@@ -56,9 +56,9 @@ extern "C" u32 g_frameTime; // VA 0x645588 (?g_clock@@3IA, unsigned)
 // reuse the identical declaration so the reloc pairs.
 extern char s_actKeyB[]; // DAT_0060d1bc
 
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4).
+// g_buteTree (the global bute store) is declared canonically in <Bute/ButeTree.h>,
+// reached here transitively via <Bute/ButeMgr.h>.
 #include <Bute/ButeMgr.h>
-extern CButeTree g_buteTree;
 
 // ---------------------------------------------------------------------------
 // CTeleporter : CUserLogic - the teleporter tile-logic leaf. The inherited
