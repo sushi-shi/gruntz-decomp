@@ -50,4 +50,14 @@ public:
 };
 VTBL(CWormhole, 0x1e817c);
 
+// The per-class activation-registry entry: its first dword receives the per-frame
+// handler PMF (AdvanceAnim; a 4-byte code ptr on this single-inheritance class).
+// Declared here (not .cpp-local) with the class it binds to (same pattern as
+// CLightFxActEntry / CTeleporterActEntry).
+typedef i32 (CWormhole::*WormholeHandler)();
+struct CWormholeActEntry {
+    WormholeHandler m_fn;
+};
+SIZE_UNKNOWN(CWormholeActEntry);
+
 #endif // GRUNTZ_CWORMHOLE_H

@@ -24,22 +24,16 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class).
-typedef i32 (CWormhole::*WormholeHandler)();
-struct CWormholeActEntry {
-    WormholeHandler m_fn;
-};
+// CWormholeActEntry (the handler entry the per-class registry yields; its first dword
+// receives the per-frame handler PMF) is the shared <Gruntz/Wormhole.h> shape.
 
 // The class's activation-coordinate registry singleton (@0x6445c0), built over the
-// fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
-// duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
-// derives from it, keeping its own placeholder name so the DATA-pinned global is
-// unchanged.
-struct CWormholeActReg : public CActReg {};
+// fixed [2000,2010] range by the shared registry ctor (0x408710). The shared
+// <Gruntz/ActReg.h> CActReg archetype, named by address (same as SpotLightActReg's
+// g_actReg_646188) - the old CWormholeActReg empty subclass was a view; the global's
+// name is our choice (DATA-reloc-masked), so CActReg is used directly.
 DATA(0x002445c0)
-CWormholeActReg g_wormholeActReg; // 0x6445c0
+CActReg g_wormholeActReg; // 0x6445c0
 
 // CWormhole::InitActReg @0x03f210 - construct the class's activation-coordinate
 // registry singleton (g_wormholeActReg @0x6445c0) over the fixed range
@@ -93,8 +87,5 @@ void CWormhole::RegisterActs() {
     ((CWormholeActEntry*)g_wormholeActReg.ResolveEntry(id))->m_fn = &CWormhole::AdvanceAnim;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-// (CWormhole's SIZE_UNKNOWN now rides <Gruntz/Wormhole.h>.)
-SIZE_UNKNOWN(CWormholeActEntry);
-SIZE_UNKNOWN(CWormholeActReg);
+// (CWormhole's SIZE_UNKNOWN + CWormholeActEntry now ride <Gruntz/Wormhole.h>;
+// g_wormholeActReg is a plain CActReg named by address - no per-TU view left.)
