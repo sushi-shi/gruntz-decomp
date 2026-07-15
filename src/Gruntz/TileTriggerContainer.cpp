@@ -99,9 +99,27 @@ void CTileTriggerContainer::DtorBase() {
 // The AddSwitchLogic factory: news a 0x8c CTileTriggerSwitchLogic (`push 0x8c;
 // call ??2; call ??0CTileTriggerSwitchLogic` @0x115f96 - the rtti-vptr signal was
 // the BUILT object's ctor stamp, not the receiver's). The receiver is this
-// container (same m_2e4 object every sibling here runs on).
+// container (same m_2e4 object every sibling here runs on). Full 13-arg signature
+// from the seven CPlay::ValidateLevelTiles call sites (ret 0x7c; ex the
+// TriggerRegistrar::RegisterSwitchLogic view).
 RVA(0x00115f60, 0x2de)
-void CTileTriggerContainer::AddSwitchLogic_115f60() {}
+i32 CTileTriggerContainer::AddSwitchLogic(
+    i32 tag,
+    i32 col,
+    i32 row,
+    i32 key,
+    RECT r134,
+    RECT r144,
+    RECT r154,
+    RECT r64,
+    RECT rF0,
+    RECT r100,
+    i32 isMatch,
+    i32 m120,
+    i32 zero
+) {
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // CTileTriggerContainer::RemoveByKeys

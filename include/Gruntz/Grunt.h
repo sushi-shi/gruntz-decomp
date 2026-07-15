@@ -709,60 +709,11 @@ struct CGruntListNode {
 // in the .cpp; the Save serialize loop's name-table lookup helper.
 class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 
-// ---------------------------------------------------------------------------
-// CGrunt::Load(ar) @0xd8060 support - the symmetric inverse of Save (each member
-// read back via ar->Read, vtable slot +0x2c). It rebuilds the grunt's owned
-// node-collections from the global coord free-list and re-resolves anim/object
-// names through the resource manager (g_gameReg->m_world).
-//
-// The CObArray-family collections it rebuilds (this+0x370, the 4x stride-0x14
-// group at this+0x3a4, this+0x488). Each is the engine CObArray {vtbl, m_data,
-// m_count, m_max, m_grow} (0x14 bytes); SetSize/SetAtGrow are external (reloc-
-// masked). The recycled nodes ride the same g_coordPool.m_freeHead pool as the movement
-// machines (node usable area = head+4; head[0] = next).
-SIZE_UNKNOWN(GruntLoadColl);
-// SetSize @0x1b4f75 / SetAtGrow @0x1b5144 ARE MFC CPtrArray's; cast at each call.
-struct GruntLoadColl {
-    void SetSize(i32 n, i32 grow);    // 0x1b4f75
-    void SetAtGrow(i32 idx, void* p); // 0x1b5144
-    char _vft0[4]; // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    void** m_data; // +0x04
-    i32 m_count;   // +0x08
-    i32 m_max;     // +0x0c
-    i32 m_grow;    // +0x10
-};
-
-// The CString member the load streams a 0x200-byte buffer into (this+0x410);
-// operator=(const char*) is external (0x1b9e74, reloc-masked).
-SIZE_UNKNOWN(GruntLoadStr);
-struct GruntLoadStr {
-    // Assign @0x1b9e74 IS CString::operator=; cast at the call.
-};
-
-// The anim-name id table entry resolved through res->m_10's CMapStringToOb (+0x10,
-// Lookup 0x1b8008): a range [m_64..m_68] and the id array at +0x14.
-SIZE_UNKNOWN(GruntIdEntry);
-struct GruntIdEntry {
-    char m_pad0[0x14];
-    i32* m_14; // +0x14  id array
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  lo index
-    i32 m_68; // +0x68  hi index
-};
-SIZE_UNKNOWN(GruntNameIdMap);
-// GruntObjEntry / GruntObjMap moved above CSpriteFactory (the map is its +0x48
-// embedded member); the declarations stay canonical there.
-// The resource manager (g_gameReg->m_world): m_8 owns the object map, m_10 the
-// sprite/name manager (with the CMapStringToOb at +0x10).
-SIZE_UNKNOWN(GruntResMgr);
-struct GruntResMgr {
-    char m_pad0[0x8];
-    char* m_8; // +0x08
-    char m_pad0c[0x10 - 0xc];
-    char* m_10; // +0x10
-};
-// The global DAT_00612618 dword the load streams a record into (reloc-masked).
-extern i32 g_load612618;
+// (The `CGrunt::Load @0xd8060 support` views are GONE - that body is
+// CPlay::SyncRead2f7c (Play.cpp). GruntLoadColl was the raw CPtrArray facet of
+// CPlay's m_startMarkers/m_3a4[4]/m_488; `GruntIdEntry` IS ::CImageSet
+// (m_14 == m_frames, m_64/m_68 == m_minIndex/m_maxIndex); GruntResMgr was the
+// canonical CSpriteFactoryHolder; `g_load612618` was g_lastLevelNum.)
 
 // A small owned sub-object the grunt destroys on teardown (slots +0x424/+0x428).
 // Free() is __thiscall, no args, reloc-masked.
@@ -1663,16 +1614,17 @@ public:
     i32 Save(CGruntArchive* ar);            // @0x53f90 serialize
     // @0x555e0 (4856 B; body in GameStateRecordLoad.cpp) - the game-state-record
     // load counterpart of Save: SerializeMove's mode-7 arm, dispatched on this
-    // same grunt (ex the CGameStateRecord owner view). Named LoadStateRecord -
-    // plain `Load` is taken by the 0xd8060 body (Play.cpp).
+    // same grunt (ex the CGameStateRecord owner view).
+    // (The `Load @0xd8060` decl is GONE - that body is CPlay::SyncRead2f7c, the
+    //  play-state read serializer; SyncState calls it on the PLAY state. The
+    //  CGrunt attribution was a same-offsets overlay; see Play.cpp.)
     i32 LoadStateRecord(CGruntArchive* ar);
-    i32 Load(CGruntArchive* ar); // @0xd8060 deserialize (Read inverse of Save)
-    void ClearAllSprites();      // @0x4b240
-    i32 CommitArrival();         // @0x4b130
-    void ClearSubA();            // @0x57c10
-    void ClearSubB();            // @0x57ce0
-    void ReapplyVoiceParams();   // @0x57d10 replay both voices on the registry gate
-    void DestroyAnims();         // @0x57d80
+    void ClearAllSprites();    // @0x4b240
+    i32 CommitArrival();       // @0x4b130
+    void ClearSubA();          // @0x57c10
+    void ClearSubB();          // @0x57ce0
+    void ReapplyVoiceParams(); // @0x57d10 replay both voices on the registry gate
+    void DestroyAnims();       // @0x57d80
     // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
     // into the caller's {x,y} out slot and return it.
     struct GruntTilePos* GetTilePos(struct GruntTilePos* out); // 0x31c70 (out-of-line in Grunt.cpp)

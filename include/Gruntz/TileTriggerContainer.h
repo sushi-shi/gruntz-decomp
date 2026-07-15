@@ -175,8 +175,28 @@ public:
     // 3x3 neighborhood probe around (x,y): FindInLists12((x'<<8)+y', 0x16) per
     // cell - tag 0x16 is the giant rock, so a hit IS a CGiantRockLogic.
     CGiantRockLogic* ScanNeighborhood(i32 x, i32 y); // 0x117ec0
-    // The AddSwitchLogic factory stub (news a 0x8c CTileTriggerSwitchLogic; backlog).
-    void AddSwitchLogic_115f60(); // 0x115f60
+    // The switch-logic registrar/factory (0x115f60, thunk 0x1131; ex the stub
+    // `AddSwitchLogic_115f60` + LevelTileValidation's `TriggerRegistrar::
+    // RegisterSwitchLogic` view - CPlay::ValidateLevelTiles calls it on
+    // m_beginMarker, `mov ecx,[this+0x2e4]`, with the per-tag id {1..8} + the six
+    // by-value RECTs + isMatch). News the 0x8c CTileTriggerSwitchLogic at 0x115f96,
+    // fills it, appends to m_base. __thiscall ret 0x7c (31 dword-args incl. the six
+    // 4-dword RECTs). Body still a stub (backlog).
+    i32 AddSwitchLogic(
+        i32 tag,
+        i32 col,
+        i32 row,
+        i32 key,
+        RECT r134,
+        RECT r144,
+        RECT r154,
+        RECT r64,
+        RECT rF0,
+        RECT r100,
+        i32 isMatch,
+        i32 m120,
+        i32 zero
+    ); // 0x115f60
 
     // The big save/load serialize walk (0x117280).  op 4 = save: writes each list's
     // count and serialize-applies every element across m_base/m_list1/m_list2/m_list3

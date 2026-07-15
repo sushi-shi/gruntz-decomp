@@ -35,6 +35,10 @@
 #include <Mfc.h> // CString (Format / ctor / dtor), RECT
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (m_beginMarker: AddSwitchLogic/
+                                         // FindInLists12/AddToList3 - ex the TriggerRegistrar view)
+#include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic/CGiantRockLogic (the FindInLists12 hits)
+#include <Gruntz/StatusBarMgr.h>     // CStatusBarMgr::InsertPtr @0x108410 (m_guts)
 
 #include <Gruntz/ChatBoxOwner.h>  // CChatBoxOwner (this->m_2e0; Configure @0x20530)
 #include <Gruntz/Play.h>          // ::CPlay - the REAL class of this TU's CLevelValidator view
@@ -100,39 +104,19 @@
 // CLevelPlane (GameLevel.h) and CPlaneRender (WwdFile.h) are the same object under two
 // names - m_mainPlane is cast to the render facet that owns GetTileHandle.
 // ---------------------------------------------------------------------------
-// The trigger registrar reached through this->m_2e4 (a CTileTriggerSwitchLogic):
-// RegisterSwitchLogic (0x115f60) builds the appropriate switch logic for a tag.
-// The Register3 family (0x1131-thunked 0x115f60 entry) carries the same args.
-// All __thiscall, reloc-masked.
+// (The TriggerRegistrar / PlayfieldMgr views are GONE - DISSOLVED 2026-07-15 onto
+//  the canonicals, every thunk chased:
+//    RegisterSwitchLogic @0x115f60 (thunk 0x1131) IS CTileTriggerContainer::
+//      AddSwitchLogic on m_beginMarker (retail: mov ecx,[this+0x2e4]);
+//    LookupKind @0x21df IS CTileTriggerContainer::FindInLists12 @0x116f20;
+//    LookupRange @0x10ff was AddLogic @0x116610 - and UNUSED here (deleted);
+//    "SpawnPuddle" @0x3580 IS CTileTriggerContainer::AddToList3 @0x116a40, ALSO
+//      on m_beginMarker (the 0x4019bf tile-event arm);
+//    PlacePuddle @0x35fd IS CTriggerMgr::PlacePuddle @0x7a240 on m_4->m_cmdGrid;
+//    "Bridge1d2f" @0x1d2f IS CStatusBarMgr::InsertPtr @0x108410 on m_guts;
+//    the 0x401b09 arm's timer call (thunk 0x2de7) IS CTimer::SetTime @0x9c090
+//      (100% EXACT) on m_frameMarker.)
 // ---------------------------------------------------------------------------
-struct TriggerRegistrar {
-    // tag, col, row, key, the six rects, isMatch, m_120, 0 (124B; ret 0x7c).
-    i32 RegisterSwitchLogic(
-        i32 tag,
-        i32 col,
-        i32 row,
-        i32 key,
-        RECT r134,
-        RECT r144,
-        RECT r154,
-        RECT r64,
-        RECT rF0,
-        RECT r100,
-        i32 isMatch,
-        i32 m120,
-        i32 zero
-    );                                                    // 0x115f60
-    void* LookupKind(i32 key, i32 kind);                  // 0x21df  (ret 8)
-    void* LookupRange(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x10ff
-};
-
-// CTriggerMgr-family helpers reached through this->m_2dc (the playfield grid
-// manager): SpawnPuddle (0x116a40 via 0x3580), PlacePuddle (0x47a240 via 0x35fd).
-struct PlayfieldMgr {
-    void* SpawnPuddle(i32 a, i32 b, i32 c, i32 d, RECT r134); // 0x116a40
-    void PlacePuddle(void* obj, i32 z);                       // 0x47a240
-    void Bridge1d2f(i32 a, i32 b);                            // 0x508410 (via 0x1d2f)
-};
 
 // The game-manager singleton, at its RTTI-true type. The three views this TU used to
 // reach it through are all canonical members now:
@@ -167,24 +151,19 @@ static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
 // the trigger registrar. (m_gameReg is also viewed as an LvWorld in
 // PositionBridgeToggle - the same +0x4 pointer, a second model of that object.)
 // ---------------------------------------------------------------------------
-struct LvBridgePoint; // this+0x3f4  bridge-toggle screen point (defined below)
-
 // The fake class CLevelValidator is GONE - it WAS ::CPlay, and all three of its methods are
 // now CPlay's (PositionBridgeToggle @0x0d5b20 landed last batch; PlaceStartGruntz @0x0d2b20 and
 // ValidateLevelTiles @0x0d2dd0 land here). The identity is proven, not assumed:
 //   - CPlay::ResetPlayState @0x0d60b0 calls PlaceStartGruntz with `mov ecx,esi` - the SAME
 //     `this` it writes at +0x4f8 (`gruntz sema xref --tree`);
 //   - every field lines up at the same offset, and +0x2e0 is CChatBoxOwner* in BOTH models.
-// CPlay's canonical names for the slots this TU used:
+// CPlay's canonical names for the slots this TU used (the residual per-body alias
+// locals are GONE with the TriggerRegistrar/PlayfieldMgr dissolve - the bodies now
+// run on the canonical members directly):
 //     m_gameReg (+0x04) == CState::m_4 (CGruntzMgr*)      m_playMgr  (+0x0c)  == CState::m_c
-//     m_playfieldMgr (+0x2dc) == CPlay::m_guts            m_2e0 (+0x2e0) == CPlay::m_hitTest
-//     m_triggerRegistrar (+0x2e4) == CPlay::m_beginMarker m_bridgePoint (+0x3f4) == m_frameMarker
-// The two bodies below open with same-named local aliases for the four slots whose CANONICAL
-// type is a different (still-unreconciled) view of the same sub-object - PlayMgr/PlayfieldMgr/
-// TriggerRegistrar/WwdGameReg. That keeps this fold byte-honest and confines the residual view
-// casts to one line each, instead of scattering them through 200 lines of body. Reconciling
-// those four sub-object classes with CState::m_c / CPlay::m_guts / CPlay::m_beginMarker is the
-// remaining @identity-TODO here; the OWNER class is no longer in doubt.
+//     m_playfieldMgr (+0x2dc) == CPlay::m_guts (CStatusBarMgr - InsertPtr @0x108410)
+//     m_triggerRegistrar (+0x2e4) == CPlay::m_beginMarker (CTileTriggerContainer)
+//     m_bridgePoint (+0x3f4) == m_frameMarker (CTimer - SetTime @0x9c090)
 
 // The +0x24 slot of the CState::m_c resource holder IS the CGameLevel (its +0x4c image-set
 // array data pointer and its +0x5c main plane are what this TU reads). GameRegistry.h now
@@ -243,10 +222,6 @@ static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
 // the whole body. Same EH/regalloc wall ValidateLevelTiles (this TU) hits. topic:wall.
 RVA(0x000d2b20, 0x21f)
 i32 CPlay::PlaceStartGruntz() {
-    // CPlay slot aliases (see the fold note above): SAME names, so the body below is unchanged.
-    PlayfieldMgr* m_playfieldMgr = (PlayfieldMgr*)m_guts;                    // +0x2dc
-    TriggerRegistrar* m_triggerRegistrar = (TriggerRegistrar*)m_beginMarker; // +0x2e4
-    CTimer* m_bridgePoint = m_frameMarker;                                   // +0x3f4
     // Retail lea's the live-object CPtrList embedded at factory+0x10 and null-tests it (a
     // vacuous guard). CSpriteFactory exposes only that list's HEAD node (m_liveObjects,
     // +0x14), so the guard addresses the head; folding the real CPtrList into the factory
@@ -330,10 +305,6 @@ i32 CPlay::PlaceStartGruntz() {
 // ===========================================================================
 RVA(0x000d2dd0, 0x1de4)
 i32 CPlay::ValidateLevelTiles() {
-    // CPlay slot aliases (see the fold note above): SAME names, so the body below is unchanged.
-    PlayfieldMgr* m_playfieldMgr = (PlayfieldMgr*)m_guts;                    // +0x2dc
-    TriggerRegistrar* m_triggerRegistrar = (TriggerRegistrar*)m_beginMarker; // +0x2e4
-    CTimer* m_bridgePoint = m_frameMarker;                                   // +0x3f4
     i32 validCount = 0; // [esp+0x10]  count of objects validated
     i32 counts[4];      // per-kind pressure-pad tallies (0x40164f arm)
     counts[0] = 0;
@@ -380,7 +351,7 @@ i32 CPlay::ValidateLevelTiles() {
                         break;
                     }
                     while (row < obj->m_168 + 2) {
-                        void* r = m_triggerRegistrar->LookupKind(row + colOff, 0x16);
+                        void* r = m_beginMarker->FindInLists12(row + colOff, 0x16);
                         if (r != 0) {
                             hit = r;
                         }
@@ -399,7 +370,8 @@ i32 CPlay::ValidateLevelTiles() {
                     return 0;
                 }
                 i32 rel = (obj->m_168 - row) * 3 - col + obj->m_164;
-                i32 tcidx = *(i32*)((char*)hit + rel * 4 + 0xac);
+                // the tag-0x16 hit IS a CGiantRockLogic; +0xac = m_matrix[rel + 4]
+                i32 tcidx = ((CGiantRockLogic*)hit)->m_matrix[rel + 4];
                 if (tcidx == 0) {
                     return 0;
                 }
@@ -408,11 +380,11 @@ i32 CPlay::ValidateLevelTiles() {
             if (type == 0x1e || type == 0x1f || type == 0x22 || type == 0x23) {
                 // toy tile: re-resolve the underlying tile-class type through the
                 // trigger registrar's tag-0x1a record (+0x34 = tile-class index).
-                void* r = m_triggerRegistrar->LookupKind(obj->m_04, 0x1a);
+                CTileTriggerLogic* r = m_beginMarker->FindInLists12(obj->m_04, 0x1a);
                 if (r == 0) {
                     return 0;
                 }
-                i32 tcidx = *(i32*)((char*)r + 0x34);
+                i32 tcidx = r->m_34;
                 if (tcidx == 0) {
                     return 0;
                 }
@@ -421,7 +393,7 @@ i32 CPlay::ValidateLevelTiles() {
             switch (type - 0x33) {
                 case 4: // 0x37
                 case 5: // 0x38
-                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                    if (!m_beginMarker->AddSwitchLogic(
                             3,
                             obj->m_164,
                             obj->m_168,
@@ -448,7 +420,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case 8: // 0x3b
                 case 9: // 0x3c
-                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                    if (!m_beginMarker->AddSwitchLogic(
                             4,
                             obj->m_164,
                             obj->m_168,
@@ -475,7 +447,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case 0xa: // 0x3d (retail also increments (*0x64556c)->m_7c->+0x3c here)
                 case 0xb: // 0x3e
-                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                    if (!m_beginMarker->AddSwitchLogic(
                             6,
                             obj->m_164,
                             obj->m_168,
@@ -502,7 +474,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case 0xc: // 0x3f
                 case 0xd: // 0x40
-                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                    if (!m_beginMarker->AddSwitchLogic(
                             7,
                             obj->m_164,
                             obj->m_168,
@@ -529,7 +501,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case 0xe: // 0x41
                 case 0xf: // 0x42
-                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                    if (!m_beginMarker->AddSwitchLogic(
                             8,
                             obj->m_164,
                             obj->m_168,
@@ -556,7 +528,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case 0: // 0x33
                 case 1: // 0x34
-                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                    if (!m_beginMarker->AddSwitchLogic(
                             1,
                             obj->m_164,
                             obj->m_168,
@@ -583,7 +555,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case 2: // 0x35
                 case 3: // 0x36
-                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                    if (!m_beginMarker->AddSwitchLogic(
                             2,
                             obj->m_164,
                             obj->m_168,
@@ -610,7 +582,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case 6: // 0x39
                 case 7: // 0x3a
-                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                    if (!m_beginMarker->AddSwitchLogic(
                             5,
                             obj->m_164,
                             obj->m_168,
@@ -647,7 +619,10 @@ i32 CPlay::ValidateLevelTiles() {
             (void)type;
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x401b09) {
-            if (m_bridgePoint != 0 && obj->m_124 != 2 && g_gameReg->m_isEasyMode != 0
+            // seed the on-screen level timer from the marker's (min,sec) pair; the
+            // callee is ?SetTime@CTimer@@ @0x9c090 (thunk 0x2de7) on m_frameMarker,
+            // gated on the manager's m_134 mode (retail: cmp [this->m_4+0x134],2).
+            if (m_frameMarker != 0 && m_4->m_134 != 2 && g_gameReg->m_isEasyMode != 0
                 && g_gameReg->m_134 == ok) {
                 i32 a = obj->m_118;
                 i32 b = obj->m_114;
@@ -657,12 +632,13 @@ i32 CPlay::ValidateLevelTiles() {
                     b++;
                     a -= 0x3c;
                 }
-                m_playfieldMgr->Bridge1d2f(a, b);
+                m_frameMarker->SetTime(b, a);
             }
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x40288d) {
             if (obj->m_124 == 0x32) {
-                m_playfieldMgr->PlacePuddle(obj, 0);
+                // ?InsertPtr@CStatusBarMgr@@ @0x108410 (thunk 0x1d2f) on m_guts
+                m_guts->InsertPtr(obj->m_118, obj->m_114);
             }
         } else if (who == (void*)0x4017e4) {
             if (obj->m_124 == g_tileKindMagic) {
@@ -678,11 +654,31 @@ i32 CPlay::ValidateLevelTiles() {
                 }
             }
         } else if (who == (void*)0x4019bf) {
-            i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
-            (void)type;
-            obj->m_flags |= 0x10000;
+            // resolve the raw tile handle at the object's grid cell (inlined
+            // GetTileHandle - no collision query); tile ids 0x12f..0x149 register
+            // a tile-action event with the extent rect (AddToList3 @0x116a40,
+            // thunk 0x3580, on m_beginMarker - the ex-"SpawnPuddle" alias).
+            CPlaneRender* pl = m_c->m_24->m_mainPlane;
+            i32 tile = pl->m_tileGrid[pl->m_colOffsets[obj->m_168] + obj->m_164];
+            if (tile >= 0x12f && tile <= 0x149) {
+                if (m_beginMarker->AddToList3(
+                        tile,
+                        obj->m_164,
+                        obj->m_168,
+                        obj->m_04,
+                        obj->m_extentL,
+                        obj->m_extentT,
+                        obj->m_extentR,
+                        obj->m_extentB
+                    )
+                    != 0) {
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                }
+            }
         } else if (who == (void*)0x402a68) {
-            m_playfieldMgr->PlacePuddle(obj, 0);
+            // ?PlacePuddle@CTriggerMgr@@ @0x7a240 (thunk 0x35fd) on the command grid
+            m_4->m_cmdGrid->PlacePuddle(obj, 0);
         } else if (who == (void*)0x40164f) {
             // 3x3 coarse-grid pressure-pad stamp into g_gameReg->m_tileGrid: for each
             // of the 3 rows and 3 columns around the object's coarse cell, bounds-
@@ -845,8 +841,5 @@ done:
     }
     return 1;
 }
-
-SIZE_UNKNOWN(PlayfieldMgr);
-SIZE_UNKNOWN(TriggerRegistrar);
 
 // --- vtable catalog ---

@@ -1953,68 +1953,71 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
 }
 
 // ===========================================================================
-// CGrunt::Load (0x0d8060; re-homed from Grunt.cpp wave3-J - the retail body's
-// birth position is inside THIS TU's 0xd5960 interval, TU_MIGRATION MOVE row
-// `0x0d8060 Load@CGrunt grunt -> 0xd5960 play`; the wave3-I Grunt.h header wall
-// is gone). g_gameReg (the CGameRegistry* view, via <Io/SaveGame.h>) is the same
-// 0x24556c singleton Grunt.cpp reaches as its WwdGameReg view; m_world is the
-// same +0x30 slot, so the GruntResMgr cast is unchanged.
+// CPlay::SyncRead2f7c (0x0d8060) - the mode-7 (read) play-state serializer, the
+// symmetric inverse of SyncWrite19fb above. OWNER SETTLED (2026-07-15): retail's
+// CPlay::SyncState (0xd7520, 100% EXACT) calls it `mov ecx,edi(=this); push ar`
+// through thunk 0x2f7c, and BroadcastCmd hands SyncState the play state from
+// PickPlayOrPausedState (thunk 0x355d -> 0x92990) - the receiver is the PLAY
+// STATE, not a grunt. The old `CGrunt::Load` reconstruction was the WRONG overlay:
+// its "CGrunt fields" (m_toySprite@+0x1bc etc.) coincided numerically, but every
+// offset it reads is a CPlay field the Write twin already names (m_1bc, m_1c0,
+// m_savedClock@+0x1cc, m_rngSeed@+0x2d8, ... m_514) - one field map, two
+// serializers. The Grunt.h Load-support views (GruntLoadColl/GruntResMgr/
+// GruntLoadStr/g_load612618) die with it: the collections are the real
+// m_startMarkers/m_3a4[4]/m_488 CPtrArrays, the "GruntIdEntry" IS ::CImageSet
+// (m_14==m_frames, m_64/m_68==m_minIndex/m_maxIndex), the resource manager is
+// the canonical CSpriteFactoryHolder, "g_load612618" is g_lastLevelNum, and the
+// +0x410 CString is m_cueText.
 // ---------------------------------------------------------------------------
-// CGrunt::Load(ar)  @0xd8060  (__thiscall, ret 4) - the Read inverse of Save.
-// Bails (return 0) if the archive or the resource manager (g_gameReg->m_world) is
-// null. Reads back the sprite-id + arrival fields, rebuilds the owned node
-// collections (this+0x370, the four at this+0x3a4, this+0x488) by recycling each
-// existing node back onto the global coord free-list, clearing the array, then
-// re-popping fresh nodes for each streamed record. Resolves the two anim-name id
-// records (this+0x4d0/0x4cc) + the object record (this+0x4e4, validated by the
-// engine kind() vtable slot 0x20 == 5; a found-but-invalid record fails the load),
-// streams the ~70 plain fields, then rebuilds the trailing collection.
+// Bails (return 0) if the archive or the world holder (g_gameReg->m_world) is
+// null. Reads back the scalar block, rebuilds the marker/placed-object/488
+// collections by recycling each node onto the global coord free-list and
+// re-popping fresh ones per streamed record, resolves the grid frame by
+// (name,index) through the image registry, the frame grid by name, and the
+// scroll-sink game object through the factory's serialize map (validated by
+// GetClassId == CLASSID_SERIALREF), then streams the remaining scalars.
 // @early-stop
-// reloc-masked-extern plateau (Save's symmetric pair): the field/record Read
-// stream, the freelist recycle + CObArray SetSize/SetAtGrow rebuild loops, the
-// resource-mgr name/object lookups and the load-fail bail are reconstructed in
-// shape/order. Residue is the ~90 archive-Read + collection + map-lookup call
-// operands pairing to differently named retail symbols (the whole referent set
-// is external). Final sweep.
-// reloc-fidelity: 0xd8060 IS CPlay::SyncRead2f7c - CPlay::SyncState (0xd7520) calls it
-// __thiscall (mov ecx,edi=this; push ar) as the mode-7 (read) play-state serializer.
-// SYMBOL exports it under the canonical CPlay name so that call binds; the CGrunt::Load
-// view is the recovered-symbol placeholder for CPlay's Read serializer (body-fold deferred).
-SYMBOL(?SyncRead2f7c@CPlay@@QAEHPAUCSerialArchive@@@Z)
+// reloc-masked-extern plateau (SyncWrite19fb's symmetric pair): the field/record
+// Read stream, the freelist recycle + CPtrArray SetSize/SetAtGrow rebuild loops,
+// the registry/map lookups and the load-fail bail are reconstructed in shape/
+// order. Residue is the ~90 archive-Read + collection + map-lookup call operands
+// pairing to differently named retail symbols (the whole referent set is
+// external). Final sweep.
 RVA(0x000d8060, 0x6ce)
-i32 CGrunt::Load(CGruntArchive* ar) {
+i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    GruntResMgr* res = (GruntResMgr*)g_gameReg->m_world;
+    CSpriteFactoryHolder* res = g_gameReg->m_world;
     if (res == 0) {
         return 0;
     }
 
-    ar->Read(&m_toySprite, 4);
-    ar->Read(&m_animSetName, 4);
-    ar->Read(&m_toyTimeSprite, 4);
-    ar->Read(&m_2d8, 4);
-    ar->Read(&m_dwell, 4);
-    ar->Read(&m_arrivalCol, 4);
-    ar->Read(&m_arrivalRow, 4);
-    ar->Read(&m_2f8, 4);
+    ar->Read(&m_1bc, 4);
+    ar->Read(&m_1c0, 4);
+    ar->Read(&m_savedClock, 4);
+    ar->Read(&m_rngSeed, 4);
+    ar->Read(&m_dragInProgress, 4);
+    ar->Read(&m_2f0, 4);
+    ar->Read(&m_cursorFrame, 4);
+    ar->Read(&m_levelId, 4);
     ar->Read(&m_2fc, 8);
-    ar->Read(&m_deathType, 8);
-    ar->Read(&m_deathAnimStarted, 4);
-    ar->Read(&m_36c, 4);
+    ar->Read(&m_tileClickX, 8);
+    ar->Read(&m_dragInhibit1, 4);
+    ar->Read(&m_dragInhibit2, 4);
 
     {
-        GruntLoadColl* coll = (GruntLoadColl*)(&m_370);
-        for (i32 i = 0; i < coll->m_count; i++) {
-            void* node = coll->m_data[i];
+        // rebuild the start-marker array: recycle the old nodes onto the coord
+        // pool, then pop + fill one fresh node per streamed record.
+        for (i32 i = 0; i < markerCount(); i++) {
+            void* node = markerData()[i];
             if (node) {
-                void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-                *p = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = p;
+                void** q = (void**)((char*)node - g_coordPool.m_linkOffset);
+                *q = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = q;
             }
         }
-        ((CPtrArray*)coll)->SetSize(0, -1);
+        m_startMarkers.SetSize(0, -1);
         i32 n;
         ar->Read(&n, 4);
         for (u32 j = 0; j < (u32)n; j++) {
@@ -2026,28 +2029,32 @@ i32 CGrunt::Load(CGruntArchive* ar) {
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
-            ((CPtrArray*)coll)->SetAtGrow(coll->m_count, node);
+            m_startMarkers.SetAtGrow(markerCount(), node);
         }
     }
 
-    ar->Read(&m_coordRetryCount, 8);
-    ar->Read(&m_38c, 8);
-    ar->Read(&m_poseWalk, 8);
-    ar->Read(&m_poseAttack2, 8);
+    {
+        // the four 8-byte fx-anchor pairs at +0x384 (raw block, as the Write twin).
+        char* q = m_pad384;
+        for (i32 k = 4; k != 0; k--) {
+            ar->Read(q, 8);
+            q += 8;
+        }
+    }
 
     {
-        GruntLoadColl* coll = (GruntLoadColl*)(&m_poseStruck1);
-        i32 k = 4;
-        do {
-            for (i32 i = 0; i < coll->m_count; i++) {
-                void* node = coll->m_data[i];
+        // rebuild the four placed-object arrays (+0x3a4, stride 0x14).
+        for (i32 k = 0; k < 4; k++) {
+            CPtrArray* coll = &m_3a4[k];
+            for (i32 i = 0; i < arrCount(k); i++) {
+                void* node = arrData(k)[i];
                 if (node) {
-                    void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-                    *p = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = p;
+                    void** q = (void**)((char*)node - g_coordPool.m_linkOffset);
+                    *q = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = q;
                 }
             }
-            ((CPtrArray*)coll)->SetSize(0, -1);
+            coll->SetSize(0, -1);
             i32 n;
             ar->Read(&n, 4);
             for (u32 j = 0; j < (u32)n; j++) {
@@ -2059,111 +2066,117 @@ i32 CGrunt::Load(CGruntArchive* ar) {
                     g_coordPool.m_freeHead = next;
                 }
                 ar->Read(node, 8);
-                ((CPtrArray*)coll)->SetAtGrow(coll->m_count, node);
+                coll->SetAtGrow(arrCount(k), node);
             }
-            coll = (GruntLoadColl*)((char*)coll + 0x14);
-        } while (--k);
+        }
     }
 
-    ar->Read(&m_408, 4);
+    ar->Read(&m_cueToggle, 4);
     g_serialCounter++;
-    char buf512[0x200];
-    ar->Read(buf512, 0x200);
-    ((CString*)(&m_410))->operator=(buf512);
-    ar->Read((char*)&m_408 + 4, 4);
-    ar->Read(&g_load612618, 4);
+    {
+        char buf512[0x200];
+        ar->Read(buf512, 0x200);
+        m_cueText = buf512;
+    }
+    ar->Read(&m_lastCueId, 4);
+    ar->Read(&g_lastLevelNum, 4);
 
+    // resolve the current grid frame by (set name, frame index) through the image
+    // registry's name map: the record IS a ::CImageSet (frames @+0x14, populated
+    // range m_minIndex/m_maxIndex) - the inverse of the Write twin's
+    // AnyValueMatches_155630 reverse lookup.
     g_serialCounter++;
     char buf80a[0x80];
     ar->Read(buf80a, 0x80);
     i32 idx;
     ar->Read(&idx, 4);
     if (strlen(buf80a) == 0) {
-        *(i32*)&m_cells[1].m_attack = 0;
+        m_gridCurFrame = 0;
     } else {
-        GruntIdEntry* entry = 0;
-        ((CMapStringToPtr*)(res->m_10 + 0x10))->Lookup((const char*)buf80a, (void*&)entry);
-        if (entry == 0 || idx < entry->m_64 || idx > entry->m_68) {
-            *(i32*)&m_cells[1].m_attack = 0;
+        CImageSet* set = 0;
+        ((CMapStringToPtr*)&res->m_10->m_10map)->Lookup((const char*)buf80a, (void*&)set);
+        if (set == 0 || idx < set->m_minIndex || idx > set->m_maxIndex) {
+            m_gridCurFrame = 0;
         } else {
-            *(i32*)&m_cells[1].m_attack = entry->m_14[idx];
+            m_gridCurFrame = (i32)set->m_frames[idx];
         }
     }
 
+    // resolve the frame grid by name through the same registry map.
     g_serialCounter++;
     char buf80b[0x80];
     ar->Read(buf80b, 0x80);
-    void* entry2 = 0;
-    // +0x4cc: the serialize path streams a raw 4-byte slice over m_cells[0].m_stepY's
-    // high half (the same (char*)+4 raw-slice style as the m_408/m_410 reads).
+    void* gridObj = 0;
     if (strlen(buf80b) == 0) {
-        *(i32*)((char*)&m_cells[0].m_stepY + 4) = 0;
+        m_grid = 0;
     } else {
-        ((CMapStringToPtr*)(res->m_10 + 0x10))->Lookup(buf80b, entry2);
-        *(i32*)((char*)&m_cells[0].m_stepY + 4) = (i32)entry2;
+        ((CMapStringToPtr*)&res->m_10->m_10map)->Lookup(buf80b, gridObj);
+        m_grid = (CFrameGrid*)gridObj;
     }
 
-    ar->Read(&m_cells[1].m_walk, 4);
-    ar->Read(&m_cells[1].m_idle, 4);
-    ar->Read(&m_cells[1].m_item, 4);
+    ar->Read(&m_gridDelayBase, 4);
+    ar->Read(&m_gridDelayCount, 4);
+    ar->Read(&m_gridRow, 4);
     g_serialCounter++;
     i32 v;
     ar->Read(&v, 4);
-    CWwdGameObjectE* oe = 0;
-    ((CMapPtrToPtr*)(res->m_8 + 0x48))->Lookup((void*)entry2, (void*&)oe);
-    i32 ve;
+    // resolve the scroll-sink object through the factory's serialize map, gated on
+    // the serialize-referent class tag (retail keys the lookup off the spilled
+    // grid-resolve slot; data flow preserved from the byte-validated shape).
+    CGameObject* oe = 0;
+    res->m_8->m_objMap.Lookup(gridObj, oe);
+    CGameObject* sink;
     if (oe == 0) {
-        ve = 0;
+        sink = 0;
     } else {
         // GetClassId (slot 8) == CLASSID_SERIALREF (5): the serialize-map referent kind
-        ve = oe->GetClassId() == CLASSID_SERIALREF ? (i32)oe : 0;
+        sink = ((CWwdGameObjectE*)oe)->GetClassId() == CLASSID_SERIALREF ? oe : 0;
     }
-    m_cells[1].m_14 = ve;
-    if (ve == 0 && entry2 != 0) {
+    m_scrollSink = sink;
+    if (sink == 0 && gridObj != 0) {
         return 0;
     }
 
-    ar->Read(&m_cells[1].m_18, 4);
-    ar->Read(&m_cells[1].m_1c, 4);
-    ar->Read(&m_cells[1].m_24, 4);
-    ar->Read(&m_healthSprite, 4);
-    ar->Read(&m_cells[0].m_1c, 4);
-    ar->Read(&m_cells[1].m_28, 4);
-    ar->Read(&m_cells[1].m_2c, 4);
-    ar->Read(&m_cells[1].m_30, 4);
-    ar->Read(&m_cells[1].m_20, 4);
-    ar->Read(&m_cells[1].m_34, 4);
-    ar->Read((char*)&m_410 + 4, 4);
+    ar->Read(&m_gridWalkActive, 4);
+    ar->Read(&m_renderDisabled, 4);
+    ar->Read(&m_winLoseBanner, 4);
+    ar->Read(&m_1c4, 4);
+    ar->Read(&m_hudSuppressed, 4);
+    ar->Read(&m_inGame, 4);
+    ar->Read(&m_overlayDrag, 4);
+    ar->Read(&m_paused, 4);
+    ar->Read(&m_4f0, 4);
+    ar->Read(&m_dragEndNotify, 4);
+    ar->Read(&m_drewThisFrame, 4);
     ar->Read(&m_418, 4);
-    ar->Read(&m_timePerTile, 4);
-    ar->Read(&m_tileClaimed, 4);
+    ar->Read(&m_41c, 4);
+    ar->Read(&m_420, 4);
     ar->Read(&m_424, 4);
     ar->Read(&m_428, 2);
-    ar->Read(&m_cells[0].m_walk, 4);
-    ar->Read(&m_cells[0].m_idle, 4);
-    ar->Read(&m_cells[0].m_item, 4);
-    ar->Read(&m_cells[0].m_14, 4);
-    ar->Read(&m_cells[0].m_18, 4);
-    ar->Read(&m_cells[0].m_dirX, 4); // raw low half of the +0x48 dir-vector double
-    ar->Read(&m_cells[1].m_struck, 4);
-    ar->Read(&m_cells[0].m_34, 4);
-    m_cells[1].m_40 = 2;
-    ar->Read(&m_cells[1].m_44, 4);
+    ar->Read(&m_region0Gate, 4);
+    ar->Read(&m_region1Gate, 4);
+    ar->Read(&m_region2Gate, 4);
+    ar->Read(&m_region3Gate, 4);
+    ar->Read(&m_viewMode, 4);
+    ar->Read(&m_snapshotActive, 4);
+    ar->Read(&m_gridHasSprite, 4);
+    ar->Read(&m_49c, 4);
+    m_stepCountdown = 2; // retail forces the post-load step countdown ([ebx+0x510] = 2)
+    ar->Read(&m_514, 4);
 
     i32 n488;
     ar->Read(&n488, 4);
     {
-        GruntLoadColl* coll = (GruntLoadColl*)((char*)this + 0x488);
-        for (i32 i = 0; i < coll->m_count; i++) {
-            void* node = coll->m_data[i];
+        for (i32 i = 0; i < arr488Count(); i++) {
+            void* node = arr488Data()[i];
             if (node) {
-                void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-                *p = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = p;
+                void** q = (void**)((char*)node - g_coordPool.m_linkOffset);
+                *q = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = q;
             }
         }
-        ((CPtrArray*)coll)->SetSize(0, -1);
-        ((CPtrArray*)coll)->SetSize(n488, -1);
+        m_488.SetSize(0, -1);
+        m_488.SetSize(n488, -1);
         for (u32 j = 0; j < (u32)n488; j++) {
             void* node = 0;
             void** head = (void**)g_coordPool.m_freeHead;
@@ -2173,7 +2186,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
-            coll->m_data[j] = node;
+            arr488Data()[j] = node;
         }
     }
     return 1;
