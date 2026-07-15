@@ -69,7 +69,6 @@
 #include <Rez/FrameClock.h> // g_lastNow / g_frameTicks (frame-clock band)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/AreaMgr.h> // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode, waveP)
-#include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader (BuildAssetNamespacePrefixes, waveP)
 // The GRUNTZ_/GAME image worker registry (owner+0x10): 18 vtable slots then the
 // virtual LoadTree at +0x48; plus the non-virtual key probe + direct-load (same shape
 // as <DDrawMgr/DDrawAssetRegistryViews.h>, augmented here with the RVA-tagged names
@@ -5422,7 +5421,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
 // BuildGruntTypeNameTable (0xdc6d0): map a grunt-type id to its bute namespace key
 // via a 58-case jump table (NORMALGRUNT default), then register it through the shared
-// namespace-loader tail (BindWarlordName == the 0x2bc1 CNamespaceLoader thunk). The
+// namespace-loader tail (BindWarlordName == the 0x2bc1 BuildAssetNamespacePrefixes thunk). The
 // TOOB case is special: it registers TOOBGRUNT first and, only if that succeeds, ALSO
 // registers TOOBWATERGRUNT (a separate `return`, not a `break`, so a2/a3/a4 stay in
 // edi/ebx/ebp local to the TOOB block instead of being hoisted for the whole fn). The
@@ -5492,11 +5491,11 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
             break;
         case GRUNT_TYPE_TOOB:
             name = "TOOBGRUNT";
-            if (((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(name, a2, a3, a4) == 0) {
+            if (BuildAssetNamespacePrefixes(name, a2, a3, a4) == 0) {
                 return 0;
             }
             name = "TOOBWATERGRUNT";
-            return ((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(name, a2, a3, a4);
+            return BuildAssetNamespacePrefixes(name, a2, a3, a4);
         case GRUNT_TYPE_WAND:
             name = "WANDGRUNT";
             break;
@@ -5546,7 +5545,7 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
             name = "REAPERGRUNT";
             break;
     }
-    return ((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(name, a2, a3, a4);
+    return BuildAssetNamespacePrefixes(name, a2, a3, a4);
 }
 
 // ===========================================================================
@@ -5937,15 +5936,17 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     return 1;
 }
 // ===========================================================================
-// CNamespaceLoader::BuildAssetNamespacePrefixes (0x0dca70; re-homed from the former
+// CState::BuildAssetNamespacePrefixes (0x0dca70; re-homed from the former
 // assetnamespaceprefixes unit, waveP - TU_MIGRATION MOVE row `0x0dca70 -> 0xd5960 play`).
-// The GRUNTZ_ per-object asset-namespace loader (/GX). The three worker-registry views
-// (m_c->m_10/m_28/m_2c) reuse THIS TU's CDDrawWorkerRegistry / canonical CDDrawSubMgrLeafScan
-// / CDDrawSubMgrAni (augmented above with LoadTree/HasKeyEqual/... ). g_gameReg is the
-// 0x64556c singleton, g_resourceInstallActive is reused. Callees reloc-masked.
+// The GRUNTZ_ per-object asset-namespace loader (/GX), a base game-state method: the
+// ex-`CNamespaceLoader` view was this method wearing a fake-view owner (RTTI proves
+// CState is a root and CPlay's only base is CState). m_c is CState::m_c, m_gruntzBank
+// the CState symbol bank. The three worker-registry views (m_c->m_10/m_28/m_2c) reuse
+// THIS TU's CDDrawWorkerRegistry / canonical CDDrawSubMgrLeafScan / CDDrawSubMgrAni.
+// g_gameReg is the 0x64556c singleton, g_resourceInstallActive is reused. Reloc-masked.
 // ===========================================================================
 
-// (AssetRoot is GONE - CNamespaceLoader::m_c is the typed CSpriteFactoryHolder.
+// (AssetRoot is GONE - CState::m_c is the typed CSpriteFactoryHolder.
 // GRAssetMgr is GONE - the preview rect source is m_world->m_24 (CGameLevel) and
 // "DrawPreview" (thunk 0x1c5d) IS EngStr_DrawText @0x115440. "FinishAssetLoad"
 // (thunk 0x35e4) IS CMulti::AckJoinFailure @0xbc420 with ecx = the finishGate
@@ -5966,7 +5967,7 @@ extern "C" CGameRegistry* g_gameReg; // *0x64556c (def: GruntzMgr.cpp)
 // (differently-named externs, the __except handler-index push, __imp__CopyRect vs the
 // 0x6c44bc pointer). Verified llvm-objdump -dr, base main body vs delinked target.
 RVA(0x000dca70, 0x4a4)
-i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
+i32 CState::BuildAssetNamespacePrefixes(
     const CString& name,
     i32 mode,
     i32 lightGate,
@@ -5996,7 +5997,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
                 );
             }
             g_resourceInstallActive = 1;
-            void* tree = m_30->ResolvePath("IMAGEZ_" + name);
+            void* tree = m_gruntzBank->ResolvePath("IMAGEZ_" + name);
             if (tree == 0) {
                 result = 0;
                 goto done;
@@ -6008,7 +6009,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
             }
         }
         if (((CDDrawSubMgrLeafScan*)m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_" + name) == 0) {
-            void* tree = m_30->ResolvePath("SOUNDZ_" + name);
+            void* tree = m_gruntzBank->ResolvePath("SOUNDZ_" + name);
             if (tree != 0) {
                 // the m_28 cast stays until the CSndHost/CDDrawSubMgrLeafScan conflation is settled (Fable);
                 // `tree` is the real CSymTab - DirNode was a view of it.
@@ -6017,7 +6018,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
             }
         }
         if (((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_" + name) == 0) {
-            void* tree = m_30->ResolvePath("ANIZ_" + name);
+            void* tree = m_gruntzBank->ResolvePath("ANIZ_" + name);
             if (tree == 0) {
                 result = 0;
                 goto done;
@@ -6815,31 +6816,31 @@ RVA(0x000dd050, 0x24b)
 i32 CPlay::BuildGruntNamespaceList(i32 arg) {
     CString s;
     s = "NORMALGRUNT";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "DEATHZ";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "ENTRANCEZ";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "EXITZ";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "GRUNTPUDDLE";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "PICKUPS";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "BOMBGRUNT";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     return 1;
@@ -6863,15 +6864,15 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
         return 0;
     }
     CString s("WARLORDZ_NAPOLEAN");
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
         return 0;
     }
     s = "WARLORDZ_VIKING";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
         return 0;
     }
     s = "WARLORDZ_PATTON";
-    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
         return 0;
     }
     return 1;
@@ -6920,7 +6921,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             loaded[0x22] = 1;
         }
         CString s("WARLORDZ_NAPOLEAN");
-        if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x23] == 0) {
@@ -6928,7 +6929,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             loaded[0x23] = 1;
         }
         s = "WARLORDZ_VIKING";
-        if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x24] == 0) {
@@ -6936,7 +6937,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             loaded[0x24] = 1;
         }
         s = "WARLORDZ_PATTON";
-        if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
+        if (!BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x25] == 0) {

@@ -28,7 +28,7 @@
 #include <Gruntz/AniElement.h>     // full CAniElement (ResolveIdleAnimation's desc walk)
 #include <Gruntz/TriggerMgr.h>     // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable::GetSel (g_gameReg->m_spriteFactory)
-#include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader::BuildAssetNamespacePrefixes (m_curState)
+#include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
 
 #include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
 
@@ -101,7 +101,6 @@ static const char s_keyF[] = "F";
 // <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650 (?g_typeColl@@3UCKSlimeColl@@A)
-
 
 // g_actionTable (CActionTable @0x644610) is declared above, near InitActReg.
 
@@ -295,7 +294,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
     }
 
     // Register the warlord's asset namespace, then resolve every per-state handle.
-    ((CNamespaceLoader*)g_gameReg->m_curState)->BuildAssetNamespacePrefixes(m_54, 1, 0, 0);
+    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_54, 1, 0, 0);
 
     WARLORD_ANIM_LOOKUP(m_animIdle1, s__IDLE1);
     WARLORD_ANIM_LOOKUP(m_animIdle2, s__IDLE2);

@@ -45,6 +45,7 @@ class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fad
                          // RetireScene's Add/Remove target). Opaque here.
 struct FxResource;       // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
                          // worker + gate RetireScene walks). Full shape in SoundFxEmitter.h.
+class CString;           // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
 
 // The base game-state vtable (RTTI ??_7CState@@6B@ @0x005ea21c, 26 slots); the retail
 // CState ctor @0x08c750 (reconstructed in GameMode.cpp) stamps it. Explicit VTBL()
@@ -197,6 +198,14 @@ public:
     CAttractScreenObj* screenObj() {
         return (CAttractScreenObj*)m_2c;
     }
+
+    // Register/unregister a "GRUNTZ_<name>" asset namespace across the state's three
+    // resource registries (m_c->m_10/m_28/m_animRegistry) from the m_gruntzBank symbol
+    // tree (0xdca70). Non-virtual __thiscall on the base state; every caller reaches it
+    // on the active game-state (g_gameReg->m_curState, a CState* -> its concrete CPlay).
+    // (Ex the CNamespaceLoader fake-view facet - RTTI proves CState is a root and CPlay's
+    // only base is CState, so that "class" was this method wearing a view owner.)
+    i32 BuildAssetNamespacePrefixes(const CString& name, i32 mode, i32 lightGate, i32 finishGate);
 
     // --- scalar members, at the offsets CState::CState pins ---
     // +0x04  owner back-ptr == the game-manager singleton (*g_gameReg). PROVEN one

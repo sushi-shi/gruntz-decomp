@@ -368,8 +368,8 @@ public:
     void DrawMessageFrame(i32 index, i32 useFront); // 0x0d1650
     void LoadSBITextEdges(char* name);              // 0x0d1710 (THIS TU)
     i32 BuildGruntNamespaceList(i32 arg);           // 0x0dd050 (THIS TU)
-    // The namespace-register op IS CNamespaceLoader::BuildAssetNamespacePrefixes
-    // (0xdca70, AssetNamespaceLoader.h) - reached via ((CNamespaceLoader*)this)->...
+    // The namespace-register op IS CState::BuildAssetNamespacePrefixes
+    // (0xdca70, State.h) - reached directly (CPlay inherits it from CState).
     void PostHud(i32 wParam);
     // (MarkerBegin is GONE - it is m_beginMarker->FilterList2 (0x1170b0, a
     // CTileTriggerContainer sub-object thiscall), not a CPlay-this method.)
@@ -580,7 +580,7 @@ public:
     void Teardown1780(); // 0x1780 thunk  (this) early teardown step
     // BuildWarlordNameTable/LoadWarlordSprites leaves: ProbeWarlord IS
     // CPlay::BuildGruntTypeNameTable (0xdc6d0); BindWarlordName IS
-    // CNamespaceLoader::BuildAssetNamespacePrefixes (0xdca70, reached via cast).
+    // CState::BuildAssetNamespacePrefixes (0xdca70, inherited from CState).
     // LoadWarlordSprites (0x0d65d0): ensure every sprite set a placed warlord needs is
     // loaded - full campaign preload (registry m_134 != 1) or the in-level walk of the
     // placed-object display list (renderer A's m_10). Re-homed from the ApiCaller

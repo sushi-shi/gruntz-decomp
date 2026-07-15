@@ -19,11 +19,11 @@
 #include <Mfc.h> // afx-first: CString + <windows.h>; keep before any Win32 header
 #include <rva.h>
 
-#include <Gruntz/Grunt.h>               // canonical CGrunt (+ CEntranceAnimPlayer/CGruntCellRec/etc.)
-#include <Gruntz/AniAdvanceCursor.h>    // CAniAdvanceCursor::Setup_15c2d0 (the +0x1a0 blit param)
-#include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader::BuildAssetNamespacePrefixes
-#include <Gruntz/TypeKeyColl.h>         // g_typeColl (+ CAnimNameRecord, _zvec::IndexToPtr)
-#include <Gruntz/GameRegistry.h>        // g_gameReg
+#include <Gruntz/Grunt.h>            // canonical CGrunt (+ CEntranceAnimPlayer/CGruntCellRec/etc.)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (the +0x1a0 blit param)
+#include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
+#include <Gruntz/TypeKeyColl.h>  // g_typeColl (+ CAnimNameRecord, _zvec::IndexToPtr)
+#include <Gruntz/GameRegistry.h> // g_gameReg
 
 #include <Wap32/ZVec.h> // _zvec
 #include <string.h>     // intrinsic strcmp ("D")
@@ -56,8 +56,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     m_2a8 = 0;
     m_2ac = 0;
     m_animSetName = isWater ? "TOOBWATERGRUNT" : "TOOBGRUNT";
-    ((CNamespaceLoader*)g_gameReg->m_curState)
-        ->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
+    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
@@ -69,8 +68,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         ResetEntranceAnimation(0, 0, 1);
     }
 
-    CAnimNameRecord* node =
-        (CAnimNameRecord*)((_zvec*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c);
+    CAnimNameRecord* node = (CAnimNameRecord*)((_zvec*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c);
     void* p = (void*)g_typeColl.m_alloc; // m_alloc is the i32-typed slot base (the _zvec spelling)
     i32 count = g_typeColl.m_grown;
     for (i32 i = count; i != 0; i--) {

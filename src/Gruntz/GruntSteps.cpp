@@ -41,11 +41,10 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <stdlib.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>
-#include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader (vehicle sprite-set registration)
-#include <Gruntz/TileGrid.h>             // the registry +0x70 tile occupancy grid
-#include <Gruntz/GruntzMgr.h>            // the MFC-side registry view (vehicle path)
-#include <Gruntz/PickupType.h>           // the toy/vehicle grunt-kind id band
-#include <Gruntz/TriggerMgr.h>           // CTriggerMgr::ApplySwitch
+#include <Gruntz/TileGrid.h>   // the registry +0x70 tile occupancy grid
+#include <Gruntz/GruntzMgr.h>  // the MFC-side registry view (vehicle path)
+#include <Gruntz/PickupType.h> // the toy/vehicle grunt-kind id band
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr::ApplySwitch
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
 // g_buteMgr comes from <Bute/ButeMgr.h>.
@@ -344,8 +343,7 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     }
 #undef REGION_INIT
 
-    ((CNamespaceLoader*)((CGruntzMgr*)(void*)g_gameReg)->m_curState)
-        ->BuildAssetNamespacePrefixes(name, 1, 1, 0);
+    ((CGruntzMgr*)(void*)g_gameReg)->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
     i32 code = ((i32*)((CGruntzMgr*)(void*)g_gameReg)
                     ->m_tileGrid->m_8[m_lastTilePxY >> 5])[(m_lastTilePxX >> 5) * 7 + 4];
