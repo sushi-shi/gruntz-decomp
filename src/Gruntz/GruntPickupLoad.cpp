@@ -25,11 +25,12 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses 
 
 // The single-char anim-code key strings (reloc-masked .rodata).
 
-// GruntPickupStats / MegaHolder / MegaCounter homed to a shared header (were
-// .cpp-local views). The per-owner pickup-stat block is WwdGameReg::m_7c; re-read the
-// typed member each use (matching retail's reload of g_gameReg + [+0x7c]).
-#include <Gruntz/GruntPickupStats.h>
-#define STATS ((GruntPickupStats*)g_gameReg->m_7c)
+// The per-owner pickup-stat block is the real CBattlezData (g_gameReg->m_scoreHud,
+// +0x7c): the stat bands are its m_*Pickupz arrays (the PickupType id base folds into
+// the retail displacement; see BattlezData.h). Re-read the member each use (matching
+// retail's reload of g_gameReg + [+0x7c]). The former GruntPickupStats view is GONE.
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/GruntPickupStats.h> // MegaHolder / MegaCounter (the MEGAPHONE count path)
 
 // The looked-up sprite handle lands in the (otherwise dead) arg4 slot: taking its
 // address pins a4 to its incoming stack slot, exactly as retail reuses [esp+0x20].
@@ -110,16 +111,16 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     if (a5 != 0) {
         if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ && type != PICKUP_WARPSTONE) {
-            STATS->m_weaponCount++;
-            ((i32*)((char*)STATS + 0xd4))[type + 22 * m_tileOwnerHi]++;
+            g_gameReg->m_scoreHud->m_weaponCount++;
+            g_gameReg->m_scoreHud->m_weaponPickupz[type - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_BABYWALKER && type <= PICKUP_YOYO) {
-            STATS->m_toyzCount++;
-            ((i32*)((char*)STATS + 0x1dc))[type + 10 * m_tileOwnerHi]++;
+            g_gameReg->m_scoreHud->m_toyzCount++;
+            g_gameReg->m_scoreHud->m_toyPickupz[type - PICKUP_BABYWALKER + 10 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_GHOST && type <= PICKUP_REACTIVEARMOR) {
-            STATS->m_powerupCount++;
-            ((i32*)((char*)STATS + 0x200))[type + 7 * m_tileOwnerHi]++;
+            g_gameReg->m_scoreHud->m_powerupCount++;
+            g_gameReg->m_scoreHud->m_powerupPickupz[type - PICKUP_GHOST + 7 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_RANDOMCOLORZ && type <= PICKUP_MINICAM) {
-            ((i32*)((char*)STATS + 0x254))[type + 4 * m_tileOwnerHi]++;
+            g_gameReg->m_scoreHud->m_miscPickupz[type - PICKUP_RANDOMCOLORZ + 4 * m_tileOwnerHi]++;
         }
     }
 
@@ -247,11 +248,11 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             i32 n = mh->m_2dc->M();
             if (a5 != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
-                    STATS->m_weaponCount++;
-                    ((i32*)((char*)STATS + 0xd4))[n + 22 * m_tileOwnerHi]++;
+                    g_gameReg->m_scoreHud->m_weaponCount++;
+                    g_gameReg->m_scoreHud->m_weaponPickupz[n - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
                 } else if (n >= PICKUP_BABYWALKER && n <= PICKUP_YOYO) {
-                    STATS->m_toyzCount++;
-                    ((i32*)((char*)STATS + 0x1dc))[n + 10 * m_tileOwnerHi]++;
+                    g_gameReg->m_scoreHud->m_toyzCount++;
+                    g_gameReg->m_scoreHud->m_toyPickupz[n - PICKUP_BABYWALKER + 10 * m_tileOwnerHi]++;
                 }
             }
             switch (n) {

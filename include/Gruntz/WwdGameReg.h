@@ -31,6 +31,7 @@ struct GruntSoundCat;  // +0x30  grunt sound-category / resource holder facet
 class CGruntCueSink;   // +0x60  on-screen cue receiver
 struct GruntBoard;     // +0x70  level tile board
 class CSpriteRefTable; // +0x74  sprite/animation ref table (GetSel)
+class CBattlezData;    // +0x7c  HUD/score + pickup-stat accumulator (<Gruntz/BattlezData.h>)
 struct tagRECT;        // GetMessageBounds in/out (== Win32 RECT)
 
 SIZE(WwdGameReg, 0xa30);
@@ -57,7 +58,9 @@ struct WwdGameReg {
     GruntBoard* m_tileGrid; // +0x70  level tile board (grunt facet; cast: WwdGameGrid*)
     CSpriteRefTable* m_74;  // +0x74  sprite/animation ref table (GetSel)
     void* m_78;             // +0x78
-    void* m_7c; // +0x7c  reused slot (cast: WwdGameRegInner* / WwdGameRegAux* / CBzData*)
+    CBattlezData* m_scoreHud; // +0x7c  (same slot/name as the CGameRegistry sibling view;
+                              //  the former GruntPickupStats/WwdGameRegInner/Aux views of it
+                              //  are dissolved - the pickup-stat bands are its +0xd8.. arrays)
     char m_pad80[0x118 - 0x80];
     i32 m_isEasyMode; // +0x118  "Easy_Mode"
     i32 m_11c;        // +0x11c  sound-channel / configure-item param

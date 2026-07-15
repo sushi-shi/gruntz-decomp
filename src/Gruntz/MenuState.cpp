@@ -88,9 +88,11 @@ extern "C" {
 // CTeleMgrSub*) was never a conflict - CTeleMgrSub was a one-field view of THIS object,
 // its m_28 being CBattlezData::m_28 (+0x28), the teleporter counter this very function
 // reads back as its case-7 stat. Both casts were pointing at the same class all along.
-#define STATS (g_gameReg->m_scoreHud)
+// One HUD stat read, inlined per site as retail does (the typed g_gameReg->m_scoreHud
+// CBattlezData reloaded at each use).
 #define STAT(getter, field)                                                                        \
-    ((m_initOnce != 0 && STATS->m_allDone != 0) ? STATS->getter() : STATS->field)
+    ((m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0) ? g_gameReg->m_scoreHud->getter() \
+                                                                : g_gameReg->m_scoreHud->field)
 
 // CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
 // 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
@@ -121,7 +123,7 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
         case 3: {
             i32 total = STAT(SumGroupField30, m_34);
             i32 cap = STAT(SumGroupField30, m_34);
-            i32 cur = STAT(SumGroupField10, m_18);
+            i32 cur = STAT(SumGroupField10, m_weaponCount);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -131,7 +133,7 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
         case 4: {
             i32 total = STAT(SumGroupField2c, m_30);
             i32 cap = STAT(SumGroupField2c, m_30);
-            i32 cur = STAT(SumGroupField0c, m_14);
+            i32 cur = STAT(SumGroupField0c, m_toyzCount);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -141,7 +143,7 @@ void CBootyState::FormatHudText(CString* buf, i32 sel) {
         case 5: {
             i32 total = STAT(SumGroupField34, m_38);
             i32 cap = STAT(SumGroupField34, m_38);
-            i32 cur = STAT(SumGroupField1c, m_24);
+            i32 cur = STAT(SumGroupField1c, m_powerupCount);
             if (cur >= cap) {
                 cur = cap;
             }

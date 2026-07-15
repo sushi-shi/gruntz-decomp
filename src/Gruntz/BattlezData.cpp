@@ -40,11 +40,11 @@ void CBattlezData::Init() {
     m_08 = 0;
     m_allDone = 0;
     m_score = 0;
-    m_14 = 0;
-    m_18 = 0;
+    m_toyzCount = 0;
+    m_weaponCount = 0;
     m_1c = 0;
     m_20 = 0;
-    m_24 = 0;
+    m_powerupCount = 0;
     m_28 = 0;
     m_2c = 0;
     m_scoreValue = 0;
@@ -61,16 +61,16 @@ void CBattlezData::Init() {
     m_counts[3] = 0;
     i32 i;
     for (i = 0; i < 88; i++) {
-        m_band_d8[i] = 0;
+        m_weaponPickupz[i] = 0;
     }
     for (i = 0; i < 40; i++) {
-        m_band_238[i] = 0;
+        m_toyPickupz[i] = 0;
     }
     for (i = 0; i < 28; i++) {
-        m_band_2d8[i] = 0;
+        m_powerupPickupz[i] = 0;
     }
     for (i = 0; i < 16; i++) {
-        m_band_348[i] = 0;
+        m_miscPickupz[i] = 0;
     }
 }
 
@@ -199,20 +199,20 @@ i32 CBattlezData::AllRecordsInBounds() {
 }
 
 // 0xfcd70 - gated "within bounds" test: only meaningful when m_scoreValue is set; then
-// the m_30..m_40 band must each stay <= the m_14..m_2c band. Takes one (unused)
+// the m_30..m_40 band must each stay <= the m_toyzCount..m_2c band. Takes one (unused)
 // stack argument (retail cleans 4 bytes on return).
 RVA(0x000fcd70, 0x61)
 i32 CBattlezData::InBounds(i32 unused) {
     if (m_scoreValue == 0) {
         return 0;
     }
-    if (m_30 > m_14) {
+    if (m_30 > m_toyzCount) {
         return 0;
     }
-    if (m_34 > m_18) {
+    if (m_34 > m_weaponCount) {
         return 0;
     }
-    if (m_38 > m_24) {
+    if (m_38 > m_powerupCount) {
         return 0;
     }
     if (m_3c > m_28) {
@@ -419,11 +419,11 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
     if (phase == 0) {
         rec[0] = 1;
         rec[2] = m_score;
-        rec[3] = m_14;
-        rec[4] = m_18;
+        rec[3] = m_toyzCount;
+        rec[4] = m_weaponCount;
         rec[5] = m_1c;
         rec[6] = m_20;
-        rec[7] = m_24;
+        rec[7] = m_powerupCount;
         rec[8] = m_28;
         rec[9] = m_2c;
         rec[10] = m_scoreValue;
@@ -461,11 +461,11 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
             s->Read(&m_08, 4);
             s->Read(&m_allDone, 4);
             s->Read(&m_score, 4);
-            s->Read(&m_14, 4);
-            s->Read(&m_18, 4);
+            s->Read(&m_toyzCount, 4);
+            s->Read(&m_weaponCount, 4);
             s->Read(&m_1c, 4);
             s->Read(&m_20, 4);
-            s->Read(&m_24, 4);
+            s->Read(&m_powerupCount, 4);
             s->Read(&m_28, 4);
             s->Read(&m_2c, 4);
             s->Read(&m_30, 4);
@@ -489,25 +489,25 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
                     s->Read(p, 4);
                 }
             }
-            p = m_band_d8;
+            p = m_weaponPickupz;
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 22; c++, p++) {
                     s->Read(p, 4);
                 }
             }
-            p = m_band_238;
+            p = m_toyPickupz;
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 10; c++, p++) {
                     s->Read(p, 4);
                 }
             }
-            p = m_band_2d8;
+            p = m_powerupPickupz;
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 7; c++, p++) {
                     s->Read(p, 4);
                 }
             }
-            p = m_band_348;
+            p = m_miscPickupz;
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 4; c++, p++) {
                     s->Read(p, 4);
@@ -520,11 +520,11 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
     s->Write(&m_08, 4);
     s->Write(&m_allDone, 4);
     s->Write(&m_score, 4);
-    s->Write(&m_14, 4);
-    s->Write(&m_18, 4);
+    s->Write(&m_toyzCount, 4);
+    s->Write(&m_weaponCount, 4);
     s->Write(&m_1c, 4);
     s->Write(&m_20, 4);
-    s->Write(&m_24, 4);
+    s->Write(&m_powerupCount, 4);
     s->Write(&m_28, 4);
     s->Write(&m_2c, 4);
     s->Write(&m_30, 4);
@@ -548,25 +548,25 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
             s->Write(p, 4);
         }
     }
-    p = m_band_d8;
+    p = m_weaponPickupz;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 22; c++, p++) {
             s->Write(p, 4);
         }
     }
-    p = m_band_238;
+    p = m_toyPickupz;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 10; c++, p++) {
             s->Write(p, 4);
         }
     }
-    p = m_band_2d8;
+    p = m_powerupPickupz;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 7; c++, p++) {
             s->Write(p, 4);
         }
     }
-    p = m_band_348;
+    p = m_miscPickupz;
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 4; c++, p++) {
             s->Write(p, 4);

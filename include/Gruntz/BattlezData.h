@@ -18,8 +18,10 @@
 //                      y!=x; 0fccb0 sums row y; 0fcc90 clears it.
 //   +0x98  m_flags[16]: 4x4 flag matrix. 0fcb50 sets [y][x]=1; 0fcbc0 sums all
 //                      16; 0fcc10 reads [x][y]; 0fcb90 clears it.
-//   +0xd8  m_band_d8[88], +0x238 m_band_238[40], +0x2d8 m_band_2d8[28],
-//          +0x348 m_band_348[16] : large zeroed/serialized scalar bands.
+//   +0xd8  m_weaponPickupz[88], +0x238 m_toyPickupz[40], +0x2d8 m_powerupPickupz[28],
+//          +0x348 m_miscPickupz[16] : per-owner x per-pickup-type counters
+//          (LoadPickupSprites bumps them; the former GruntPickupStats view of this
+//          same +0x7c object is dissolved onto these).
 //
 // Non-polymorphic (no vptr, no RTTI). Field names are placeholders; only the
 // offsets + code bytes are load-bearing.
@@ -88,16 +90,25 @@ public:
     i32 m_allDone;            // +0x0c
     // +0x10 / +0x48: names migrated from the now-deleted CTmScoreBoard fake view
     // (TriggerMgrViews.h), which modeled this same +0x7c object at the same offsets.
-    i32 m_score; // +0x10  score accumulator
-    i32 m_14, m_18, m_1c, m_20, m_24;
+    i32 m_score;        // +0x10  score accumulator
+    i32 m_toyzCount;    // +0x14  toyz picked up (LoadPickupSprites bumps; HUD stat)
+    i32 m_weaponCount;  // +0x18  weaponz picked up (WARPSTONE excluded)
+    i32 m_1c, m_20;
+    i32 m_powerupCount; // +0x24  powerupz picked up
     i32 m_28, m_2c, m_30, m_34, m_38, m_3c, m_40, m_scoreValue;
-    i32 m_counts[4];    // +0x48  per-row placed-object counters
-    i32 m_wins[16];     // +0x58  4x4
-    i32 m_flags[16];    // +0x98  4x4
-    i32 m_band_d8[88];  // +0xd8
-    i32 m_band_238[40]; // +0x238
-    i32 m_band_2d8[28]; // +0x2d8
-    i32 m_band_348[16]; // +0x348
+    i32 m_counts[4]; // +0x48  per-row placed-object counters
+    i32 m_wins[16];  // +0x58  4x4
+    i32 m_flags[16]; // +0x98  4x4
+    // Per-owner x per-pickup-type counters (LoadPickupSprites bumps
+    // [N*owner + (type - band-base-type)]; Serialize round-trips each as 4 x N).
+    // The retail displacements fold the PickupType id base into the array base:
+    // 0xd8 == 0xd4 + 4*PICKUP_BOMB, 0x238 == 0x1dc + 4*PICKUP_BABYWALKER,
+    // 0x2d8 == 0x200 + 4*PICKUP_GHOST, 0x348 == 0x254 + 4*PICKUP_RANDOMCOLORZ,
+    // and 0x348 + 4*4*4 == 0x388 == sizeof(CBattlezData) (the `new` size) exactly.
+    i32 m_weaponPickupz[88];  // +0xd8   [22*owner + (type - PICKUP_BOMB)]
+    i32 m_toyPickupz[40];     // +0x238  [10*owner + (type - PICKUP_BABYWALKER)]
+    i32 m_powerupPickupz[28]; // +0x2d8  [7*owner + (type - PICKUP_GHOST)]
+    i32 m_miscPickupz[16];    // +0x348  [4*owner + (type - PICKUP_RANDOMCOLORZ)]
 };
 
 #endif // GRUNTZ_BATTLEZDATA_H
