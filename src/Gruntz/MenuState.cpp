@@ -207,7 +207,6 @@ void operator delete(void*);
 
 // The draw-clock mirror + the reentrancy gate the menu music poll save/restores.
 extern "C" u32 g_killCueClock; // draw-clock mirror
-extern i32 g_sndEnabled;       // DAT_0061ab20 reentrancy gate
 
 // StartMusic reads the game registry through its WwdGameReg view (m_10 presence gate,
 // m_11c configured item); same 0x24556c singleton as g_gameReg, typed WwdGameReg.

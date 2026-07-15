@@ -19,6 +19,7 @@
 // Flags: eh (/GX) - the interval carries EH-registration evidence
 // (TU_MIGRATION hard error: 0x110430-0x1140e2, 1 EH site).
 #include <string.h>     // memcpy -> the /Oi `rep movsd` in BuildSmall
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Mfc.h>
 #include <rva.h>
@@ -94,7 +95,6 @@ extern i32 g_tileKindMagic;
 // through it (Play(sink, 0,0,0)). Already named g_sndCueTag by the chatbox unit;
 // reuse that name so the DIR32 reloc pairs by symbol (no competing DATA - chatbox
 // owns the address; Process is deferred so its pairing is non-critical anyway).
-extern i32 g_sndCueTag;
 
 // (The CActionGridMgr::RefreshTile view is DISSOLVED: the method the action-set path
 // runs after stamping a tile is CMapMgr::ComputeCellFlags(x, y, code) @0x77790 - a
@@ -625,8 +625,6 @@ CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
 // Kill-cue clock + sound flags (named so the DIR32 datum reloc-masks).
 extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
-extern i32 g_sndEnabled;       // ?g_sndEnabled@@3HA @0x61ab20
-extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 
 // The sound-cue registry (g->m_world->m_28) + its Lookup result (the LeafCue cue
 // record whose m_14 last-play / m_18 cooldown rate-limit the DSoundCloneInst it plays) are

@@ -60,7 +60,7 @@ struct CGameRegMapHolder {
 
 #include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
-extern i32 g_sndCueTag; // DAT_0061ab24  (the input/cmd-flush sink the place path posts to)
+#include <Gruntz/SoundState.h> // g_sndCueTag (the cue-item id) + g_sndEnabled
 
 extern char s_actKeyB[]; // DAT_0060d1bc  (the bute key string the place path queries)
 

@@ -29,8 +29,6 @@
 // live on those definitions). They used to be pinned HERE as `extern "C"`, which bound
 // _g_sndEnabled/_g_sndCueTag at 0x21ab20/24 and left the C++-mangled ?g_snd*@@3HA
 // references of ~20 other TUs UNBOUND; plain C++ externs now, so every reference agrees.
-extern i32 g_sndEnabled;
-extern i32 g_sndCueTag;
 extern "C" {
     extern u32 g_killCueClock;
 }

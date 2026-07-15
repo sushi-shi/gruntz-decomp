@@ -185,7 +185,6 @@ static void GruntScratchTeardown() {
 
 // The launch-sound cue tag (reloc-masked global).
 // DEFINED in GruntzMgr.cpp (owner TU); plain C++ extern here.
-extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA @0x61ab24
 // (The flat `extern "C" PlayIfElapsed` alias is GONE: thunk 0x25fe IS
 // ?PlayIfElapsed@LeafCue@@ - retail loads the looked-up cue into ecx and
 // __thiscalls it; callers now call the real method on the cue.)
@@ -280,7 +279,6 @@ extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 // C++ linkage: ?g_sndEnabled@@3HA is now the ONE name bound at 0x61ab20 (defined in
 // GruntzMgr.cpp); the old extern "C" spelling emitted _g_sndEnabled, a second name for
 // the same storage.
-extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA @0x61ab20
 // g_sndCueTag is declared above (LoadGruntAbilityTuning section).
 
 // The 8 octant direction-vector triples (16-byte stride) copied into CGrunt+0x43c.

@@ -17,6 +17,7 @@
 //   CGameModeBase::ResetPreview @0x0de140 (@interleaver -> levelpreview) / ::Reset
 //     @0x0f9840 (@interleaver -> scattered COMDAT) - the base cleanup pair, out-of-line.
 #include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (CGameModeBase::ResetPreview)
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
 #include <Gruntz/GameMode.h>              // CState / CGameModeBase / CSpriteFactoryHolder
@@ -364,8 +365,6 @@ i32 g_levelMsgIconPos[16] = {
 }; // 0x60b8b8
 extern RECT g_levelMsgRectsB[8];     // 0x60b8f8  (shared with BootyMessages - stays extern)
 extern CString g_levelMsgStrings[8]; // 0x629ef8
-extern i32 g_sndCueTag;              // 0x61ab24
-extern i32 g_sndEnabled;             // 0x61ab20
 extern "C" u32 g_killCueClock;       // 0x6bf3c0
 
 // ShowHudMessage (0x1154b0, glyphstr): draw a CString into a RECT via the render/HUD

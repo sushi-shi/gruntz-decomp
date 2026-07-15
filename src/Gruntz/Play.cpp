@@ -3962,7 +3962,6 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
 // g_gameReg singleton!), SbiMgr68==CTriggerMgr (m_rowCount/m_groupFlag),
 // SbiCfgEntry==CFocusSlot (m_228). "SbiPointInChild" (a fabricated __stdcall)
 // is m_guts->HitTestLayer (thunk 0x1c44 -> 0xfe8a0).)
-extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA (HandleMousePress tab cue tag)
 
 // @early-stop
 // 4-byte stack-coalesce wall (~84%, body byte-exact). Return-epilogue tail-merge

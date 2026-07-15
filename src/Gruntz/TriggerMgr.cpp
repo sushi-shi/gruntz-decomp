@@ -1686,8 +1686,6 @@ void FormatStr(CString* out, const char* fmt, ...);
 // BrickzCellFlags_077790.cpp) is dissolved onto CGameLevel/CLevelPlane/CTileImageSet;
 // the rock-break sites below use the real classes.
 
-extern i32 g_sndEnabled;       // ?g_sndEnabled@@3HA
-extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA
 extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 
 // @source: string-xref

@@ -46,8 +46,7 @@ struct ShadeDescr;
 
 // The two shared sound globals (DEFINED in src/Gruntz/GruntzMgr.cpp - the run-state /
 // cue-tag owner). C++ linkage: ?g_sndEnabled@@3HA @0x61ab20, ?g_sndCueTag@@3HA @0x61ab24.
-extern i32 g_sndEnabled; // sound-on gate (mirrors CGruntzMgr::m_soundEnabled)
-extern i32 g_sndCueTag;  // cue-item id played through LeafCue::PlayIfElapsed
+#include <Gruntz/SoundState.h> // g_sndEnabled (sound-on gate) + g_sndCueTag (cue-item id)
 
 extern char g_typeDesc3[];
 extern char g_typeDesc1[];

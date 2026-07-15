@@ -29,6 +29,7 @@
 // (UpdateDestructButton @0x10bc30 / AdvanceGauge @0x105750) - the member retype
 // is deferred to the Play.cpp reconciliation.
 #include <Ints.h>
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/LeafCue.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Mfc.h>
@@ -68,8 +69,6 @@ struct CTmNode {
 // IS. The two sites below that need the CGameRegistry facet (m_focusSlots /
 // m_modeW) bridge-cast; the WwdGameReg->CGameRegistry view unification is a
 // deferred Grunt.h-scale fold.
-extern i32 g_sndCueTag;
-extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA (mirrors m_soundEnabled)
 // Cheat toggles (named from their own ShowToggleMessage strings; DEFINED extern "C"
 // in GruntzMgr.cpp with their .bss band).
 extern "C" u32 g_gruntDestruction; // "Grunt destruction"

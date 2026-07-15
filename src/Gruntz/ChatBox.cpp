@@ -13,6 +13,7 @@
 // (Configure/scroll-step/etc.) live in another TU and are modeled here as no-body
 // externs so their calls are reloc-masked.
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Image/CImage.h>
 #include <Image/ImageSet.h> // CImageSet - the per-row animation record (m_page->m_10 map value)
 #include <rva.h>
@@ -66,8 +67,6 @@
 // GetFrameWidth (0x185520) - Draw centers each row's frame on the item.
 
 // The horizontal-scroll edge state read by the two scroll-step methods.
-extern i32 g_sndEnabled;       // 0x61ab20
-extern i32 g_sndCueTag;        // 0x61ab24
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // ===========================================================================

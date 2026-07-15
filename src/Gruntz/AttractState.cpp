@@ -73,7 +73,6 @@ extern "C" {
 DATA(0x0020b5bc)
 char s_dat60b5bc[] = "2";
 extern char g_emptyString[];
-extern i32 g_sndEnabled;
 
 // Source string literals (objdiff matches these .data relocations by value).
 #define s_STATEZ_ATTRACT "STATEZ_ATTRACT"

@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/GameRegistry.h>    // g_gameReg singleton (0x24556c) canonical view
 #include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
 #include <Gruntz/LeafCue.h>         // the canonical cue record (was the CStatusBarTab view)
@@ -26,8 +27,6 @@ extern "C" u32 g_killCueClock; // draw-clock mirror
 
 // The two paired status-bar globals the advance tail reads (external delinked
 // DATA symbols, reloc-masked): g_sndEnabled gates the push, g_sndCueTag is the value.
-extern i32 g_sndEnabled; // DAT_0061ab20
-extern i32 g_sndCueTag;  // DAT_0061ab24
 
 // The canonical CGameRegistry view of the singleton (*0x24556c). The resource
 // holder (+0x30 -> CRegHolder) is cast locally at the deref sites; the tile

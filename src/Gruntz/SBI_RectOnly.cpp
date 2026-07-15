@@ -86,8 +86,6 @@ extern "C" {
 extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight handlers play through.
-extern i32 g_sndEnabled;
-extern i32 g_sndCueTag;
 // The draw-clock mirror (g_killCueClock), unsigned for the wrap-safe gate compare.
 extern "C" u32 g_killCueClock;
 

@@ -369,8 +369,6 @@ void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
 // +0x538 == m_538, +0x5c0 == m_hostIndex - and its three "self-call" thunks are
 // already-named CMulti methods: 0x1d70 -> BroadcastChannelTable (0xba810), 0x2e82 ->
 // SendStatFlag (0xb9240), 0x386e -> ApplyCmdDelayDefaults (0xb85a0).
-extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
-extern i32 g_sndCueTag;  // ?g_sndCueTag@@3HA
 // (g_killCueClock is declared with the CMulti PumpA externs above.)
 // The engine 3-arg keyed string-format helper at 0x0f9160 (__cdecl): formats a
 // value for `key` into `out` and returns nonzero when it produced a string (else
@@ -2609,7 +2607,6 @@ extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f94
 // The cached USER32 PostMessageA pointer (the game's own function-pointer global,
 // distinct from the IAT import) + the modal chat-sink handle. DIR32 reloc-masked.
 // (g_sharedFlag @0x648ce0 is declared+defined once, at the top of this TU)
-extern i32 g_sndCueTag; // 0x61ab24
 
 // The received-message view: a bit7 flag byte, the message id, then a payload the
 // arms read as a word / channel byte / chat text depending on the id.

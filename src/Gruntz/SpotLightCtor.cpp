@@ -13,6 +13,7 @@
 // placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
 // CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
@@ -269,8 +270,6 @@ extern "C" u32 g_frameDelta;           // frame-time delta
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
 extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
-extern i32 g_sndEnabled;              // 0x61ab20
-extern i32 g_sndCueTag;               // 0x61ab24
 // The probe result IS a real CGrunt (<Gruntz/Grunt.h>): xref proves it -
 // Probe_32ce is the ILT thunk to CTriggerMgr::FindGruntAt @0x75c60, whose mangled
 // signature ?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@... returns CGrunt*. The tag

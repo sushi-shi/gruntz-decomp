@@ -13,6 +13,7 @@
 // masked externals/$SG literals on the same singleton (*0x64556c) as its siblings.
 
 #include <rva.h>
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg canonical view (0x24556c)
@@ -22,7 +23,6 @@
 // views are dissolved onto the canonical CGameRegistry: the rect is m_viewOrigin*
 // (+0x13c..+0x148) and the sound chain is m_world->m_28 (CSndHost == CDDrawSubMgrLeafScan).
 extern "C" CGameRegistry* g_gameReg; // 0x64556c
-extern i32 g_sndCueTag;              // ?g_sndCueTag@@3HA @0x61ab24
 
 class CPlayLevelLoad {
 public:

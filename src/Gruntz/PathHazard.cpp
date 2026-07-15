@@ -12,6 +12,7 @@
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/PathHazard.h>
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/RainCloud.h> // CRainCloud (its dtor 0x13340 lives in this obj)
 #include <Gruntz/ActReg.h>    // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/LeafCue.h>
@@ -76,8 +77,6 @@ extern "C" CGameRegistry* g_gameReg;
 // Strike config globals: the bute window source + the sound-enable flag / cue tag
 // pair the positional emit polls, plus the kill-cue clock.
 // g_buteMgr (?g_buteMgr@@3VCButeMgr@@A, butemgr unit) comes from <Bute/ButeMgr.h>.
-extern i32 g_sndEnabled;       // 0x61ab20 (sound-enable flag)
-extern i32 g_sndCueTag;        // 0x61ab24 (cue tag)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // The "A" bute key the new-leg re-bind looks up (DAT_0060a454 $SG literal).

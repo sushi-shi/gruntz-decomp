@@ -60,7 +60,6 @@ void operator delete(void*);
 extern "C" void* g_gameReg; // 0x64556c (typed CGruntzMgr* in its owner TU)
 // g_lastNow (0x245580, the frame-clock "now" cell) is declared in <Rez/FrameClock.h>;
 // Init seeds it with the boot timeGetTime().
-extern i32 g_sndEnabled; // 0x61ab20
 // 0x645584 is extern-"C" tree-wide (RezMgr's g_frameDelta, the frame delta); a plain
 // C++ `extern` here emitted the divergent ?g_frameDelta@@3HA.
 extern "C" i32 g_frameDelta; // 0x645584

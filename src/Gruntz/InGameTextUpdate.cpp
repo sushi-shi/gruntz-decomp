@@ -11,6 +11,7 @@
 // Only offsets / code bytes are load-bearing; the engine sub-object helpers below
 // (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
 #include <Gruntz/InGameText.h> // the canonical CInGameText : CUserLogic model
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
@@ -49,8 +50,6 @@ DATA(0x002bf3bc)
 extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
-extern i32 g_sndEnabled; // cue enable gate
-extern i32 g_sndCueTag;     // ?g_sndCueTag@@3HA (HELPBOOK sound token)
 DATA(0x0020d7f8)
 char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal
 

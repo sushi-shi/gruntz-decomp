@@ -30,6 +30,7 @@
 // Every callee body is external (reloc-masked rel32). Only offsets / code bytes are load-bearing.
 
 #include <Wap32/Object.h> // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Gruntz/BoundaryTailViews.h> // CObj23d90 (fuzzy-identity 0x23d90 grid-snap blit)
 #include <rva.h>
@@ -37,7 +38,6 @@
 // ---------------------------------------------------------------------------
 // Named globals (so their DIR32 operands reloc-mask in objdiff).
 // ---------------------------------------------------------------------------
-extern i32 g_sndCueTag; // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
 // g_devState was a SECOND NAME for g_spawnConfig (0x245578) - same address,
 // so nothing ever defined it. The canonical `StateMgrBZ* g_spawnConfig` comes from
 // <Gruntz/Play.h> (included below); the M(g_spawnConfig,...) raw reads still mask.

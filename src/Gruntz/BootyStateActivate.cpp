@@ -17,6 +17,7 @@
 // object web from the +0x0c context (deferred canonical world-sound model). Only offsets
 // / code bytes are load-bearing; every helper is a reloc-masked external.
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -111,7 +112,6 @@ extern "C" CGruntzMgr* g_gameReg;
 // Plain C++ extern: ?g_sndEnabled@@3HA is now the ONE name bound at 0x21ab20 (DEFINED in
 // GruntzMgr.cpp, the owner TU). The old extern "C" spelling here carried a DATA pin that
 // bound _g_sndEnabled and starved every C++-mangled reference in the tree.
-extern i32 g_sndEnabled;       // BOOTY_LOOP enable gate (0x61ab20)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
 
 // The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).

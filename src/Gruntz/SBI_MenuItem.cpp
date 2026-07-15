@@ -5,6 +5,7 @@
 //   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem (canonical chain).
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -46,8 +47,6 @@ extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight cue plays through, and the
 // draw-clock mirror (wrap-safe gate compare).
-extern i32 g_sndEnabled;
-extern i32 g_sndCueTag;
 extern "C" u32 g_killCueClock;
 
 // CMiTabHost/CMiSelf moved to <Gruntz/SBI_MenuItem.h>.
