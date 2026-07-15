@@ -30,26 +30,11 @@ extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A
 // The single-char anim-code key strings (reloc-masked .rodata).
 extern char s_codeA[]; // "A"
 
-// The per-owner pickup-stat block hung off g_gameReg+0x7c (reloc-masked). Reloaded
-// through the global each use (matches retail: it reloads g_gameReg + [+0x7c]).
-struct GruntPickupStats {
-    char m_pad0[0x14];
-    i32 m_14; // toyz counter
-    i32 m_18; // weapon counter
-    char m_pad1c[0x24 - 0x1c];
-    i32 m_24; // powerup counter
-};
-#define STATS (*(GruntPickupStats**)((char*)g_gameReg + 0x7c))
-
-// The MEGAPHONE announce path resolves a unit-type count through g_gameReg->m_curState
-// (+0x2dc), a __thiscall counter (thunk 0x15fa -> 0x10bbe0). Reloc-masked (header-less).
-struct MegaCounter {
-    i32 M(); // 0x10bbe0  the unit-type count getter
-};
-struct MegaHolder {
-    char m_pad0[0x2dc];
-    MegaCounter* m_2dc; // +0x2dc
-};
+// GruntPickupStats / MegaHolder / MegaCounter homed to a shared header (were
+// .cpp-local views). The per-owner pickup-stat block is WwdGameReg::m_7c; re-read the
+// typed member each use (matching retail's reload of g_gameReg + [+0x7c]).
+#include <Gruntz/GruntPickupStats.h>
+#define STATS ((GruntPickupStats*)g_gameReg->m_7c)
 
 // The looked-up sprite handle lands in the (otherwise dead) arg4 slot: taking its
 // address pins a4 to its incoming stack slot, exactly as retail reuses [esp+0x20].
@@ -130,13 +115,13 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     if (a5 != 0) {
         if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ && type != PICKUP_WARPSTONE) {
-            STATS->m_18++;
+            STATS->m_weaponCount++;
             ((i32*)((char*)STATS + 0xd4))[type + 22 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_BABYWALKER && type <= PICKUP_YOYO) {
-            STATS->m_14++;
+            STATS->m_toyzCount++;
             ((i32*)((char*)STATS + 0x1dc))[type + 10 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_GHOST && type <= PICKUP_REACTIVEARMOR) {
-            STATS->m_24++;
+            STATS->m_powerupCount++;
             ((i32*)((char*)STATS + 0x200))[type + 7 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_RANDOMCOLORZ && type <= PICKUP_MINICAM) {
             ((i32*)((char*)STATS + 0x254))[type + 4 * m_tileOwnerHi]++;
@@ -260,17 +245,17 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             PICKUP("GRUNTZ_PICKUPS_BLACKBRICK", 0x3e0);
             break;
         case PICKUP_MEGAPHONE: {
-            MegaHolder* mh = *(MegaHolder**)((char*)g_gameReg + 0x2c);
+            MegaHolder* mh = (MegaHolder*)g_gameReg->m_2c;
             a4 = 0;
             m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (CObject*&)a4);
             m_pickupGeoSrc = a4;
             i32 n = mh->m_2dc->M();
             if (a5 != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
-                    STATS->m_18++;
+                    STATS->m_weaponCount++;
                     ((i32*)((char*)STATS + 0xd4))[n + 22 * m_tileOwnerHi]++;
                 } else if (n >= PICKUP_BABYWALKER && n <= PICKUP_YOYO) {
-                    STATS->m_14++;
+                    STATS->m_toyzCount++;
                     ((i32*)((char*)STATS + 0x1dc))[n + 10 * m_tileOwnerHi]++;
                 }
             }
@@ -502,6 +487,3 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
 }
 
 SIZE_UNKNOWN(CTypeKeyColl);
-SIZE_UNKNOWN(GruntPickupStats);
-SIZE_UNKNOWN(MegaCounter);
-SIZE_UNKNOWN(MegaHolder);

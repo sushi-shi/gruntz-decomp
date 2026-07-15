@@ -43,7 +43,9 @@ struct WwdGameReg {
 
     char m_pad0[0x10];
     i32 m_10; // +0x10  presence gate
-    char m_pad14[0x30 - 0x14];
+    char m_pad14[0x2c - 0x14];
+    void* m_2c; // +0x2c  current game state (curState; the MEGAPHONE unit-count path
+                //         reads its +0x2dc sub-object; == GameRegistry m_curState)
     GruntSoundCat* m_world; // +0x30  resource/sound-category holder (grunt facet;
                             //         other TUs downcast: CTeleResHolder / active gate)
     char m_pad34[0x60 - 0x34];
