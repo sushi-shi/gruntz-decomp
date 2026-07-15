@@ -15,6 +15,7 @@
 // +0x4b4 array, the +0x93c..+0x944 tail are the same cells) - flagged for a
 // canonical-class unification pass; the physical TU is already one file.
 #include <Io/FileStream.h>
+#include <EmptyString.h> // g_emptyString
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawPtrCollections.h> // the pool half of this obj's manager (+ CPoolItem*)
@@ -58,7 +59,6 @@ DATA(0x00283edc)
 i32 (*g_restoreHandler)() = 0; // 0x683edc
 
 // Empty mutable string in .data copied into the working buffer up front.
-extern "C" char g_emptyString[]; // 0x6293f4
 
 // The engine logger that consumes the formatted line (DDrawMgr-local helper).
 extern void __cdecl DDrawLogLine(char* fmt, ...); // 0x141cb0 (printf-style TRACE)

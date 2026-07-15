@@ -43,6 +43,7 @@
 // docs/patterns/within-tu-order-vs-field-order.md); each section keeps its
 // original file's provenance comment.
 #include <Gruntz/Fader.h>
+#include <EmptyString.h> // g_emptyString
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
@@ -148,7 +149,6 @@ CFxModeDesc::CFxModeDesc() {
 // 0x17e7c0 - CFxModeT1(): the type-1 variant ctor (base + CString member ctor, stamp
 // type=1/m_10=0x32/m_14=1/m_18=1, assign the empty string to the +0x24 CString). The
 // destructible CString member forces the /GX frame.
-extern "C" char g_emptyString[]; // 0x6293f4
 RVA(0x0017e7c0, 0x7a)
 CFxModeT1::CFxModeT1() {
     m_type = 1;

@@ -20,6 +20,7 @@
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
+#include <EmptyString.h> // g_emptyString
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 #include <Globals.h>
@@ -120,7 +121,6 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 // @rva-symbol: ??1CBattlezDlgCustom@@UAE@XZ 0x00017140 0x47
 
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
-extern "C" char g_emptyString[];
 // The saved original window-proc of the edit child this subclass wraps (reloc-masked
 // DATA; the installer snapshots it via GetWindowLongA). Twin of MultiStartDlgWorld's
 // g_64bdc0.

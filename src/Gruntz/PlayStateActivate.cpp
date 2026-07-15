@@ -17,6 +17,7 @@
 // asset root's m_4/m_c/m_24 are m_drawTarget/m_rendererB/m_24 with their real
 // classes). "Present" IS CDDrawWorkerList::PruneWorkers, slot 13.)
 #include <Mfc.h>         // ShowCursor (afx-first)
+#include <EmptyString.h> // g_emptyString
 #include <Bute/SymTab.h> // canonical CSymTab (ResolvePath @0x13bae0)
 
 #include <Gruntz/Play.h>       // the real CPlay : CState (method owner)
@@ -38,7 +39,6 @@
 // (the shared state-timer arm, inherited by CPlay - called cast-free below).
 
 // The global empty C string (0x6293f4).
-extern "C" char g_emptyString[];
 
 // The +0xc4 reset manager is the DirectInputMgr2 input singleton g_645570
 // (DAT_00245570, bound extern "C" in GruntzMgr.cpp): ReadAll (@0x133110) polls devices.

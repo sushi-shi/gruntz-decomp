@@ -37,6 +37,7 @@
 // DIERR_* name + "DirectInputMgr2"); names of locals are placeholders, the
 // switch case VALUES and string contents are load-bearing.
 #include <DinMgr2/DirectInputMgr2.h>
+#include <EmptyString.h> // g_emptyString
 #include <Gruntz/FixedPtrArray32.h>
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
@@ -103,7 +104,6 @@ DATA(0x00253ab0)
 i32 g_dinputThirdEnabled; // 0x653ab0
 
 // Empty mutable string in .data copied into the working buffer up front.
-extern "C" char g_emptyString[]; // 0x6293f4
 
 // The global operator new / delete (the engine allocator) are the language's
 // implicitly-declared allocation functions - no local re-declaration needed; their

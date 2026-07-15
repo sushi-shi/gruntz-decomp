@@ -23,6 +23,7 @@
 //     past the 0x137330 boundary, so they belong to this obj (dossier: weak - could
 //     also be a third small reporting TU; kept here as the simplest 2-file model).
 #include <Dsndmgr/SoundStream.h>
+#include <EmptyString.h> // g_emptyString
 #include <Dsndmgr/StreamVoice.h>  // canonical StreamVoice + StreamVoiceFeeder
 #include <Dsndmgr/StreamFeeder.h> // the embedded feeder/pump (StreamVoice+0x6c)
 #include <Rez/RezMgr.h>           // RezAlloc - the engine heap allocator (reloc-masked)
@@ -53,7 +54,6 @@ extern "C" {
 }
 
 // Empty mutable string in .data copied into the working buffer up front.
-extern "C" char g_emptyString[]; // 0x6293f4
 
 // The retail game-global timeGetTime fn-ptr (_g_pTimeGetTime @ 0x6c4650), NOT the
 // WINMM import; TickSubManagers reaches the clock through PurgeVoiceList's sibling

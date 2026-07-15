@@ -32,7 +32,6 @@
 
 // The global CButeMgr instance the cheat table reads from (0x6453d8, from <Bute/ButeMgr.h>).
 // The engine empty C-string the default text/desc temp copies from (0x6293f4).
-extern "C" char g_emptyString[];
 // The hardware-cursor hide fn-ptr (?::ShowCursor@@3P6GHH@ZA, 0x6c44c4); the
 // `mov edi,ds:g_ShowCursor; call edi` cached-ptr loop idiom (AppHelpers.cpp).
 // The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0) + its end

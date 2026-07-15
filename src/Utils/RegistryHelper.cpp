@@ -3,6 +3,7 @@
 // reads/writes values from the deepest one (GetValue*/SetValue*), and closes the
 // chain (Close). GetRegistryKey is the shared create-or-open primitive.
 #include <Utils/RegistryHelper.h>
+#include <EmptyString.h> // g_emptyString
 #include <rva.h>
 #include <string.h>
 
@@ -256,7 +257,6 @@ namespace Utils {
 
     // lpClass is the shared empty mutable global string in .data (0x6293f4); bound
     // to the canonical extern "C" _g_emptyString (the tree-wide keep-last winner).
-    extern "C" char g_emptyString[]; // 0x6293f4
 
     // -------------------------------------------------------------------------
     // RegistryHelper::GetRegistryKey  (static __stdcall)

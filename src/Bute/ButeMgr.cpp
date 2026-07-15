@@ -46,6 +46,7 @@
 // engine calls (reloc-masked). ParseTagLine constructs a store node + carries a
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
 #include <Bute/ButeMgr.h>
+#include <EmptyString.h> // g_emptyString
 #include <Bute/ButeStoreLeafDtors.h> // the 0x21310/0x21570 zPTree/CBSecStream store dtors
 #include <Bute/ButeTextBuf.h>        // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
@@ -788,7 +789,6 @@ extern "C" {
 
 // The shared empty C string (0x6293f4); Init assigns it into the two scratch
 // CStrings.
-extern "C" char g_emptyString[]; // 0x6293f4
 
 // The input source stream at CButeMgr+0xa0 is a real CRT istream (created as
 // `new ifstream(...)` in CButeMgr::Parse, or a custom istream-derived decode

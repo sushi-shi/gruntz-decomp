@@ -221,7 +221,6 @@ enum {
 // host-vs-join branch; g_serviceId is the selected service id (0x3e7 == "none").
 extern "C" i32 g_hostServicesMode; // 0x648cf0
 extern "C" i32 g_serviceId;        // 0x611d8c
-extern "C" char g_emptyString[];   // 0x6293f4 (shared empty-string literal)
 // The multiplayer-command dispatch fired with a services callback (0xbc250,
 // __thiscall) + that callback (address-taken -> reloc-masked).
 extern "C" void ServicesDispatchCb(); // 0x401a19
@@ -4399,7 +4398,6 @@ i32 CMulti::CreateLocalPlayer() {
 
 // The shared MFC empty-string literal (0x6293f4); the empty group name handed to
 // CreatePlayer. Home elsewhere; extern-only pin.
-extern "C" char g_emptyString[];
 
 // ===========================================================================
 // CMulti::OpenHostChannel  @ 0x0bc910  - /GX: latch the session params (m_5a4 /
@@ -4540,7 +4538,6 @@ extern "C" CMulti* g_connectRptMgr; // 0x648cf8
 
 // The shared empty-string literal CreateLocalPlayer hands to the peer's player
 // factory (0x6293f4; DIR32 reloc-masked).
-extern "C" char g_emptyString[]; // 0x6293f4
 
 // The 0x11c-byte command-timing config blob SaveConfig builds and ships as stat
 // 0x416 (the inverse of LoadConfig): a flag byte, the stat id, the config word,

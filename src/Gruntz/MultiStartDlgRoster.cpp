@@ -13,6 +13,7 @@
 // (GameRegistry.h) and the canonical CMulti game-state (Multi.h). Field names are
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
+#include <EmptyString.h> // g_emptyString
 #include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/NetDlgHost.h> // CNetDlgHost (m_host +0x5c facet)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
@@ -43,7 +44,6 @@ extern "C" CGameRegistry* g_gameReg;
 // m_hostIndex off it. DATA reloc-masks against ReconBatch2's home.
 extern CMulti* g_64bd5c;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
-extern "C" char g_emptyString[];
 // USER32 entry points reached through the game's own IAT-style function pointers
 // (ff 15 [ptr]); UpdatePlayers drives its listboxes/redraws through them.
 // More USER32 entry points via the game's own IAT-style pointers.

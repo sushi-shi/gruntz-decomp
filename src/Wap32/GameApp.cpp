@@ -3,6 +3,7 @@
 // counter is a file-scope global here - same store sequence, the
 // reloc just names a different symbol than the Ghidra DAT_ at that address).
 #include <Wap32/Wap32.h>
+#include <EmptyString.h> // g_emptyString
 #include <rva.h>
 #include <string.h>
 #include <stdio.h>
@@ -24,7 +25,6 @@
 // CGameApp::InitDefault (vtbl +0x0c) - the one-name convenience overload: forward
 // to the virtual Init using `szName` for BOTH the window name and the game
 // identifier, an empty command line, no flags, and default (CW_USEDEFAULT) size.
-extern "C" char g_emptyString[]; // 0x6293f4 (empty command-line default)
 
 RVA(0x00080d20, 0x24)
 i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {

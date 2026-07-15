@@ -33,6 +33,7 @@
 // <Mfc.h> brings <windows.h> (GDI32: CreateFontA / DeleteObject; USER32
 // DrawTextA) and the MFC CPtrList / CString collection types from <afxcoll.h>.
 #include <Mfc.h>
+#include <EmptyString.h> // g_emptyString
 // Real MFC CDC / CPen / CGdiObject (the caret stroke below). Skip the afxwin*.inl
 // bodies for the CLANG LABEL STEP only (implicit-int inlines clang rejects); wine cl
 // keeps the inlines. docs/patterns/afxwin-clang-label-step-skip-inl.md.
@@ -47,7 +48,6 @@
 #include <string.h> // strlen (the m4 draw helpers)
 
 // The global empty C string the input-reset assigns into m_inputText (0x6293f4).
-extern "C" char g_emptyString[];
 
 // The global CButeMgr instance (?g_buteMgr@@3VCButeMgr@@A @0x6453d8) comes from
 // <Bute/ButeMgr.h>; its `mov ecx, offset g_buteMgr` loads reloc-match the engine.

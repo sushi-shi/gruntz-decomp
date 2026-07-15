@@ -39,7 +39,6 @@ extern "C" CGameRegistry* g_gameReg; // the CGameRegistry pointer (reloc-masked 
 // ctor snapshots it from g_gameReg->m_curState (+0x2c). (DATA also bound in ReconBatch2.)
 extern CMulti* g_64bd5c;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
-extern "C" char g_emptyString[];
 
 // A player-slot record in the m_host slot array (0x238 stride). DEFERRED-FOLD onto the
 // canonical CFocusSlot (<Gruntz/GameRegistry.h>, the g_gameReg->m_focusSlots[4] element

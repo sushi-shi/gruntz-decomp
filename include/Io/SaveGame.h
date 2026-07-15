@@ -37,7 +37,7 @@
 
 // The shared empty C string global (RVA 0x2293f4 / VA 0x6293f4), referenced by
 // Register's name-fallback path (reloc-masked DIR32).
-extern "C" char g_emptyString[];
+#include <EmptyString.h> // g_emptyString (the shared "" constant)
 
 // ---------------------------------------------------------------------------
 // A single 0x100-byte saved-game slot record.

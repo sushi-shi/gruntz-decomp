@@ -3480,7 +3480,6 @@ extern i32 g_serialCounter;
 // The MFC empty C string (the afxEmptyString data buffer @0x6293f4); the name
 // CString members default-init to it. Reloc-masked DATA (also declared by the
 // later render-tail section - same extern).
-extern "C" char g_emptyString[]; // 0x6293f4
 #include <string.h>              // inlined memset / strcpy in Serialize (rep stos / rep movs)
 
 // The dialog-combobox fillers below are __cdecl FREE functions physically in this
@@ -5565,7 +5564,6 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 // casts `this` to the self-contained CPlayRes view below (a struct-view-of-this
 // overlay - matching-neutral, keeps Render untouched).
 
-extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 
 // CResSource (the named-set source: this->m_levelBank / m_gameBank, the banks cached
 // in m_gruntzBank/m_gameBank; LookupSet 0x13bae0) and CBankMgr (the bank manager at

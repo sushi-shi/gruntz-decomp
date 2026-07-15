@@ -16,7 +16,7 @@
 #include <rva.h>
 
 // The global empty C string the link's name field is seeded from (0x6293f4).
-extern "C" char g_emptyString[];
+#include <EmptyString.h> // g_emptyString (the shared "" constant)
 
 SIZE_UNKNOWN(CUserBaseLink);
 struct CUserBaseLink {

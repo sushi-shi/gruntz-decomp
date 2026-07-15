@@ -35,7 +35,7 @@
 // The shared empty-string literal the root scope is named with (0x6293f4; homed in
 // NetMgrReportError.cpp as extern "C" - the majority convention across the tree; the
 // DATA reference reloc-masks so the C linkage is matching-neutral).
-extern "C" char g_emptyString[]; // 0x6293f4
+#include <EmptyString.h> // g_emptyString (the shared "" constant)
 
 // CSymParser's own primary vtable (0x5ef750) is REAL POLYMORPHIC (??_7CSymParser@@6B@,
 // 3-slot, non-virtual dtor) - see the class below. The +0x10 CObjList sub-object is

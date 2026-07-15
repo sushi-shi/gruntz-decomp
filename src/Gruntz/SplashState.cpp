@@ -40,7 +40,6 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
 
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
-extern "C" char g_emptyString[]; // 0x6293f4
 
 // The global asset-root CString whose emptiness gates the load (0x24e25c).
 DATA(0x0024e25c)

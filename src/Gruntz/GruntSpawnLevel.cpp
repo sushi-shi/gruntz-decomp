@@ -14,12 +14,12 @@
 //     span. It is a typed member of GruntzPlayer now.
 // Both are folded; this TU declares no types at all.
 #include <Mfc.h> // CString (MFC TU - precedes <windows.h>)
+#include <EmptyString.h> // g_emptyString
 
 #include <Gruntz/GruntzPlayer.h>
 #include <rva.h>
 
 // The global empty C string the CString member is seeded from (0x6293f4).
-extern "C" char g_emptyString[];
 
 // ===========================================================================
 // GruntzPlayer::GruntzPlayer()  (0x0da790) - THE default constructor

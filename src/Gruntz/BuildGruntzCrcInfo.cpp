@@ -32,6 +32,7 @@
 // thunk band), so the owner was not caller-recoverable - it was recovered from the
 // +0x04 CMulti receiver and the RVA neighbourhood instead.
 #include <Mfc.h> // real MFC CString + <windows.h> wsprintfA (afx-first)
+#include <EmptyString.h> // g_emptyString
 #include <rva.h>
 #include <stdlib.h> // rand (0x11fee0), the per-grunt random nonce
 
@@ -41,7 +42,6 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid; CTmCell == CGrunt)
 #include <Gruntz/Grunt.h>      // CGrunt + CGruntHud (the dumped fields)
 
-extern "C" char g_emptyString[]; // 0x6293f4 (== "")
 
 // @source: decomp-xref
 // @early-stop

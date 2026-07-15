@@ -17,13 +17,13 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
 // load-bearing. See include/Gruntz/CheatMgr.h for the recovered layout.
 #include <Gruntz/CheatMgr.h>
+#include <EmptyString.h> // g_emptyString
 
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
 
 // The global empty C string the default CString temp copies from (0x6293f4).
-extern "C" char g_emptyString[];
 
 // The global CButeMgr instance (the config tree LoadCheatConfig reads cheats from),
 // g_buteMgr from <Bute/ButeMgr.h>.

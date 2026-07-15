@@ -23,6 +23,7 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS, control IDs, and code
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h> // real MFC CString (status/drop banners) + windows.h (dialog API) via afx.h
+#include <EmptyString.h> // g_emptyString
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (g_gameReg->m_curState @ +0x2c)
@@ -41,7 +42,6 @@ extern "C" CGameRegistry* g_gameReg;
 // (extern "C" g_sharedFlag, DATA @0x248ce0 in Multi.cpp) so the store relocs.
 extern "C" i32 g_sharedFlag;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
-extern "C" char g_emptyString[];
 // The DirectPlay session/client-status CString global (0x6473d8; canonical home
 // g_6473d8 in Multi.cpp). Referenced by its home name so the read relocs.
 extern CString g_6473d8;
