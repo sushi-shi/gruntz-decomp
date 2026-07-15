@@ -82,10 +82,6 @@ extern "C" void WormholeTypeMarker();
 
 // The "Wormhole" config group + the three color keys (the original source string
 // literals; objdiff matches these .data relocations by value against the target).
-#define s_Wormhole "Wormhole"
-#define s_SecretColor "SecretColor"
-#define s_SingleUseColor "SingleUseColor"
-#define s_NormalColor "NormalColor"
 
 // ---------------------------------------------------------------------------
 // The game-object registry list SpawnPartners walks IS the world's object chain:
@@ -730,17 +726,17 @@ void CWormhole::LoadColors() {
     if (m_object->m_124 == 2) {
         // SECRET: fixed color id 1; falls through to the shared cache/index tail.
         if (m_object->m_placeMode == 0) {
-            m_object->m_placeMode = g_buteMgr.GetIntDef(s_Wormhole, s_SecretColor, 1);
+            m_object->m_placeMode = g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1);
         }
     } else if (m_object->m_124 == 1) {
         // SINGLE-USE.
         if (m_object->m_placeMode == 0) {
-            m_object->m_placeMode = g_buteMgr.GetIntDef(s_Wormhole, s_SingleUseColor, 2);
+            m_object->m_placeMode = g_buteMgr.GetIntDef("Wormhole", "SingleUseColor", 2);
         }
     } else {
         // NORMAL (default).
         if (m_object->m_placeMode == 0) {
-            m_object->m_placeMode = g_buteMgr.GetIntDef(s_Wormhole, s_NormalColor, 4);
+            m_object->m_placeMode = g_buteMgr.GetIntDef("Wormhole", "NormalColor", 4);
         }
     }
 

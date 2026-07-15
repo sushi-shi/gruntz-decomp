@@ -84,12 +84,6 @@ i32 g_suppress_64e360 = 0; // 0x24e360
 // ShowCursor is the real USER32 import (<Mfc.h>); its IAT slot @0x6c44c4.
 
 // Source string literals (objdiff matches these .data relocations by value).
-#define s_STATEZ_ATTRACT "STATEZ_ATTRACT"
-#define s_TITLE_d "TITLE%d"
-#define s_TITLE "TITLE"
-#define s_Menu "Menu"
-#define s_BrightnessPercent "BrightnessPercent"
-#define s_SCREENZ_PCT_S "\\SCREENZ\\%s"
 
 // FadeInTitle's resolved-state object (m_2c re-typed) is the CAttractScreenObj
 // facet (full model in <Gruntz/Attract.h>); its ResolveScreen (FUN_00520120) maps
@@ -132,8 +126,8 @@ RVA(0x00039160, 0x46)
 i32 CAttract::RefreshTitle(i32 unused) {
     ((CGruntzSoundZ*)video()->m_48)->IsPlaying();
     ((CGruntzSoundZ*)video()->m_48)->StopAndFlush();
-    m_2c = (CResSource*)stateMgr()->ResolvePath(s_STATEZ_ATTRACT);
-    RunTitleSeq(s_TITLE, 0, 0, 1, 0);
+    m_2c = (CResSource*)stateMgr()->ResolvePath("STATEZ_ATTRACT");
+    RunTitleSeq("TITLE", 0, 0, 1, 0);
     return 1;
 }
 
@@ -149,8 +143,8 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
 
     if (mode != 2) {
         i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-        sprintf(stateName, s_STATEZ_ATTRACT);
-        sprintf(titleName, s_TITLE_d, idx);
+        sprintf(stateName, "STATEZ_ATTRACT");
+        sprintf(titleName, "TITLE%d", idx);
 
         CSymTab* saved = attractState();
         CSymTab* state = (CSymTab*)stateMgr()->ResolvePath(stateName);
@@ -167,13 +161,13 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
 
         CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
         ((CDDSurface*)tgt)
-            ->ShadeRect(g_buteMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
+            ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), (tagRECT*)0);
         menuRoot()->m_04->TransTitle();
     } else {
         menuRoot()->m_04->TransEnter();
         CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_18->m_2c;
         ((CDDSurface*)tgt)
-            ->ShadeRect(g_buteMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
+            ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), (tagRECT*)0);
         menuRoot()->m_04->TransExit();
     }
 
@@ -216,8 +210,8 @@ i32 CAttract::Activate() {
     ((CMenuBrightnessReset*)menuRoot()->m_04->m_14->m_2c)->Reset(0);
 
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    sprintf(stateName, s_STATEZ_ATTRACT);
-    sprintf(titleName, s_TITLE_d, idx);
+    sprintf(stateName, "STATEZ_ATTRACT");
+    sprintf(titleName, "TITLE%d", idx);
 
     CSymTab* saved = attractState();
     CSymTab* state = (CSymTab*)stateMgr()->ResolvePath(stateName);
@@ -234,7 +228,7 @@ i32 CAttract::Activate() {
 
     CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
     ((CDDSurface*)tgt)
-        ->ShadeRect(g_buteMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
+        ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), (tagRECT*)0);
     menuRoot()->m_04->TransTitle();
 
     RetireScene(
@@ -281,7 +275,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
         return 0;
     }
     char buf[0x34];
-    sprintf(buf, s_SCREENZ_PCT_S, name);
+    sprintf(buf, "\\SCREENZ\\%s", name);
     void* page = screenObj()->ResolveScreen(buf, &g_screenTag);
     if (page == 0) {
         return 0;

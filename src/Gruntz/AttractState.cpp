@@ -75,13 +75,6 @@ char s_dat60b5bc[] = "2";
 extern char g_emptyString[];
 
 // Source string literals (objdiff matches these .data relocations by value).
-#define s_STATEZ_ATTRACT "STATEZ_ATTRACT"
-#define s_TITLE_d "TITLE%d"
-#define s_TITLE "TITLE"
-#define s_SOUNDZ "SOUNDZ"
-#define s_ATTRACT "ATTRACT"
-#define s_UNDERSCORE "_"
-#define s_ATTRACT_TITLE_s "ATTRACT_TITLE%s"
 
 // ===========================================================================
 // The CAttract 0x13fb0 core band.
@@ -109,19 +102,19 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
 
     owner()->RestoreVideoMode(0);
 
-    CSymTab* state = (CSymTab*)stateMgr()->ResolvePath(s_STATEZ_ATTRACT);
+    CSymTab* state = (CSymTab*)stateMgr()->ResolvePath("STATEZ_ATTRACT");
     m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;
     }
 
-    void* sound = state->FindSub(s_SOUNDZ);
+    void* sound = state->FindSub("SOUNDZ");
     if (sound == 0) {
         return 0;
     }
 
     ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)
-        ->ScanTree_157ee0((CSymTab*)sound, s_ATTRACT, s_UNDERSCORE);
+        ->ScanTree_157ee0((CSymTab*)sound, "ATTRACT", "_");
 
     if (ShowCursor(0) >= 0) {
         do {
@@ -148,7 +141,7 @@ void CAttract::ReleaseResources() {
     if (reg->m_2c) {
         ((SoundStream*)reg->m_2c)->Stop();
     }
-    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->RemoveKeysEqual_157c70(s_ATTRACT, s_UNDERSCORE);
+    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->RemoveKeysEqual_157c70("ATTRACT", "_");
     // The base teardown is CGameModeBase::BaseCleanup (0xfa150), not a distinct
     // CState::ReleaseResources body - same (CGameModeBase*)this bridge the CState dtor uses.
     ((CGameModeBase*)this)->BaseCleanup();
@@ -181,7 +174,7 @@ i32 CAttract::Vslot09(i32 arg) {
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
-    s.Format(s_TITLE_d, idx);
+    s.Format("TITLE%d", idx);
     RunTitleSeq(s, 0, 0, 1, 0);
     CDDrawSubMgrPages* page = (CDDrawSubMgrPages*)menuRoot()->m_04;
     page->Method_158c70(page->m_backPair);
@@ -198,7 +191,7 @@ i32 CAttract::Vslot09(i32 arg) {
     const char* pick = (r % 2) ? s_dat60b5bc : g_emptyString;
 
     char buf[0x40];
-    ::wsprintfA(buf, s_ATTRACT_TITLE_s, pick);
+    ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
     CMapStringToOb* map = (CMapStringToOb*)((char*)menuRoot()->m_28 + 0x10);
     CObject* found = 0;
@@ -319,7 +312,7 @@ i32 CAttract::InputVirtual() {
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
-    s.Format(s_TITLE_d, idx);
+    s.Format("TITLE%d", idx);
     return RunTitleSeq(s, 0, 0, 1, 0);
 }
 
@@ -338,7 +331,7 @@ i32 CAttract::Vslot06() {
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
-    s.Format(s_TITLE_d, idx);
+    s.Format("TITLE%d", idx);
     return RunTitleSeq(s, 0, 0, 1, 0);
 }
 

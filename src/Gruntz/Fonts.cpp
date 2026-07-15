@@ -32,10 +32,6 @@ Font g_tinyFont;
 DATA(0x0024eb14)
 i32 g_loadedFlag = 0; // 0x24eb14  Fonts::EnsureLoaded once-gate
 
-#define s_large_fnt "large.fnt"
-#define s_medium_fnt "medium.fnt"
-#define s_small_fnt "small.fnt"
-#define s_tiny_fnt "tiny.fnt"
 
 // ---------------------------------------------------------------------------
 // The compiler-generated dynamic initializer for the g_mediumFont global (the
@@ -89,16 +85,16 @@ i32 InitializeFonts() {
     // an eax-routed one): the flag-set lives INSIDE the not-yet-loaded block so it
     // emits `mov dword[flag],1` (eax not yet live) before the shared `mov eax,1`.
     if (!g_loadedFlag) {
-        if (!g_largeFont.LoadFont(s_large_fnt)) {
+        if (!g_largeFont.LoadFont("large.fnt")) {
             return 0;
         }
-        if (!g_mediumFont.LoadFont(s_medium_fnt)) {
+        if (!g_mediumFont.LoadFont("medium.fnt")) {
             return 0;
         }
-        if (!g_smallFont.LoadFont(s_small_fnt)) {
+        if (!g_smallFont.LoadFont("small.fnt")) {
             return 0;
         }
-        if (!g_tinyFont.LoadFont(s_tiny_fnt)) {
+        if (!g_tinyFont.LoadFont("tiny.fnt")) {
             return 0;
         }
 

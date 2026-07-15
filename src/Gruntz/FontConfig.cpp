@@ -55,14 +55,6 @@
 // The font config strings - the original source literals (the "Font" tag-group
 // + per-font keys). objdiff matches these relocations by value against the
 // target's .data string constants.
-#define s_Font "Font"
-#define s_ARIAL "ARIAL"
-#define s_TrainingFont "TrainingFont"
-#define s_TrainingFontWidth "TrainingFontWidth"
-#define s_TrainingFontHeight "TrainingFontHeight"
-#define s_MessageFont "MessageFont"
-#define s_MessageFontWidth "MessageFontWidth"
-#define s_MessageFontHeight "MessageFontHeight"
 
 // ---------------------------------------------------------------------------
 // A single font-config record stored in the list (0xc bytes). `name` is the
@@ -154,22 +146,22 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     m_inputActive = 0;
 
     // --- ARIAL UI font (fixed 12x8 bold ANSI) -------------------------------
-    m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
+    m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, "ARIAL");
     if (!m_arialFont) {
-        m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
+        m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, "ARIAL");
     }
 
     // The ARIAL default-face CString temp - constructed here (just-in-time, after
     // the first CreateFontA), passed by address as the GetStringDef default for
     // both the Training and Message font face lookups; torn down at the tail.
-    CString arial(s_ARIAL);
+    CString arial("ARIAL");
 
     // --- TrainingFont (face/dims from config, default ARIAL / 14x28) --------
     const char* faceTF =
-        (const char*)*g_buteMgr.GetStringDef(s_Font, s_TrainingFont, (CString*)&arial);
+        (const char*)*g_buteMgr.GetStringDef("Font", "TrainingFont", (CString*)&arial);
     m_trainingFont = CreateFontA(
-        g_buteMgr.GetIntDef(s_Font, s_TrainingFontHeight, 0x1c),
-        g_buteMgr.GetIntDef(s_Font, s_TrainingFontWidth, 0xe),
+        g_buteMgr.GetIntDef("Font", "TrainingFontHeight", 0x1c),
+        g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0xe),
         0,
         0,
         0x2bc,
@@ -185,8 +177,8 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     );
     if (!m_trainingFont) {
         m_trainingFont = CreateFontA(
-            g_buteMgr.GetIntDef(s_Font, s_TrainingFontHeight, 0x18),
-            g_buteMgr.GetIntDef(s_Font, s_TrainingFontWidth, 0x10),
+            g_buteMgr.GetIntDef("Font", "TrainingFontHeight", 0x18),
+            g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0x10),
             0,
             0,
             0x2bc,
@@ -204,10 +196,10 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
 
     // --- MessageFont (face/dims from config, default ARIAL / 24x42) ---------
     const char* faceMF =
-        (const char*)*g_buteMgr.GetStringDef(s_Font, s_MessageFont, (CString*)&arial);
+        (const char*)*g_buteMgr.GetStringDef("Font", "MessageFont", (CString*)&arial);
     m_messageFont = CreateFontA(
-        g_buteMgr.GetIntDef(s_Font, s_MessageFontHeight, 0x2a),
-        g_buteMgr.GetIntDef(s_Font, s_MessageFontWidth, 0x18),
+        g_buteMgr.GetIntDef("Font", "MessageFontHeight", 0x2a),
+        g_buteMgr.GetIntDef("Font", "MessageFontWidth", 0x18),
         0,
         0,
         0x2bc,
@@ -223,8 +215,8 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     );
     if (!m_messageFont) {
         m_messageFont = CreateFontA(
-            g_buteMgr.GetIntDef(s_Font, s_MessageFontHeight, 0x2a),
-            g_buteMgr.GetIntDef(s_Font, s_MessageFontWidth, 0x18),
+            g_buteMgr.GetIntDef("Font", "MessageFontHeight", 0x2a),
+            g_buteMgr.GetIntDef("Font", "MessageFontWidth", 0x18),
             0,
             0,
             0x2bc,
