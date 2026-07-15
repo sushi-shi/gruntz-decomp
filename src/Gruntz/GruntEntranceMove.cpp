@@ -194,10 +194,8 @@ static const char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
 static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
 static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 
-// The entrance-cell record's WALK/IDLE anim-name CStrings (m_cells[k] at +0x08/+0x0c).
-#define CELL_WALK(k) (m_cells[(k)].m_walk)
-#define CELL_IDLE(k) (m_cells[(k)].m_idle)
-#define WLOOKUP(key) (m_154->m_c->m_2c->m_10map.Lookup((key), (CObject*&)_out))
+// (The entrance-cell WALK/IDLE anim-name CStrings are m_cells[k].m_walk / .m_idle,
+// +0x08/+0x0c of each record; the sprite lookup runs on m_154->m_c->m_2c->m_10map.)
 
 // ---------------------------------------------------------------------------
 // CGrunt::RunEntranceMove()   @0x67850   (ret 0)
@@ -739,30 +737,30 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_wingzClockHi = 0;
         CreateWingzTimeSprite();
 
-        CELL_IDLE(0) = s_NW_ITEM;
-        CELL_IDLE(1) = s_N_ITEM;
-        CELL_IDLE(2) = s_NE_ITEM;
-        CELL_IDLE(3) = s_W_ITEM;
-        CELL_IDLE(4) = s_N_ITEM;
-        CELL_IDLE(5) = s_E_ITEM;
-        CELL_IDLE(6) = s_SW_ITEM;
-        CELL_IDLE(7) = s_S_ITEM;
-        CELL_IDLE(8) = s_SE_ITEM;
-        CELL_WALK(0) = s_NW_ITEM;
-        CELL_WALK(1) = s_N_ITEM;
-        CELL_WALK(2) = s_NE_ITEM;
-        CELL_WALK(3) = s_W_ITEM;
-        CELL_WALK(4) = s_N_ITEM;
-        CELL_WALK(5) = s_E_ITEM;
-        CELL_WALK(6) = s_SW_ITEM;
-        CELL_WALK(7) = s_S_ITEM;
-        CELL_WALK(8) = s_SE_ITEM;
+        m_cells[0].m_idle = s_NW_ITEM;
+        m_cells[1].m_idle = s_N_ITEM;
+        m_cells[2].m_idle = s_NE_ITEM;
+        m_cells[3].m_idle = s_W_ITEM;
+        m_cells[4].m_idle = s_N_ITEM;
+        m_cells[5].m_idle = s_E_ITEM;
+        m_cells[6].m_idle = s_SW_ITEM;
+        m_cells[7].m_idle = s_S_ITEM;
+        m_cells[8].m_idle = s_SE_ITEM;
+        m_cells[0].m_walk = s_NW_ITEM;
+        m_cells[1].m_walk = s_N_ITEM;
+        m_cells[2].m_walk = s_NE_ITEM;
+        m_cells[3].m_walk = s_W_ITEM;
+        m_cells[4].m_walk = s_N_ITEM;
+        m_cells[5].m_walk = s_E_ITEM;
+        m_cells[6].m_walk = s_SW_ITEM;
+        m_cells[7].m_walk = s_S_ITEM;
+        m_cells[8].m_walk = s_SE_ITEM;
 
         _out = 0;
-        WLOOKUP(s_WG_ITEM);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (CObject*&)_out);
         m_poseWalk = (i32)_out;
         _out = 0;
-        WLOOKUP(s_WG_ITEM);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (CObject*&)_out);
         m_poseIdle[2] = 0;
         m_poseIdle[0] = (i32)_out;
         m_poseIdle[1] = (i32)_out;
@@ -785,42 +783,42 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             m_wingzTimeSprite = 0;
         }
 
-        CELL_WALK(0) = s_NW_WALK;
-        CELL_WALK(1) = s_N_WALK;
-        CELL_WALK(2) = s_NE_WALK;
-        CELL_WALK(3) = s_W_WALK;
-        CELL_WALK(4) = s_N_WALK;
-        CELL_WALK(5) = s_E_WALK;
-        CELL_WALK(6) = s_SW_WALK;
-        CELL_WALK(7) = s_S_WALK;
-        CELL_WALK(8) = s_SE_WALK;
-        CELL_IDLE(0) = s_NW_IDLE;
-        CELL_IDLE(1) = s_N_IDLE;
-        CELL_IDLE(2) = s_NE_IDLE;
-        CELL_IDLE(3) = s_W_IDLE;
-        CELL_IDLE(4) = s_N_IDLE;
-        CELL_IDLE(5) = s_E_IDLE;
-        CELL_IDLE(6) = s_SW_IDLE;
-        CELL_IDLE(7) = s_S_IDLE;
-        CELL_IDLE(8) = s_SE_IDLE;
+        m_cells[0].m_walk = s_NW_WALK;
+        m_cells[1].m_walk = s_N_WALK;
+        m_cells[2].m_walk = s_NE_WALK;
+        m_cells[3].m_walk = s_W_WALK;
+        m_cells[4].m_walk = s_N_WALK;
+        m_cells[5].m_walk = s_E_WALK;
+        m_cells[6].m_walk = s_SW_WALK;
+        m_cells[7].m_walk = s_S_WALK;
+        m_cells[8].m_walk = s_SE_WALK;
+        m_cells[0].m_idle = s_NW_IDLE;
+        m_cells[1].m_idle = s_N_IDLE;
+        m_cells[2].m_idle = s_NE_IDLE;
+        m_cells[3].m_idle = s_W_IDLE;
+        m_cells[4].m_idle = s_N_IDLE;
+        m_cells[5].m_idle = s_E_IDLE;
+        m_cells[6].m_idle = s_SW_IDLE;
+        m_cells[7].m_idle = s_S_IDLE;
+        m_cells[8].m_idle = s_SE_IDLE;
 
         _out = 0;
-        WLOOKUP(s_WG_WALK);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_WALK, (CObject*&)_out);
         m_poseWalk = (i32)_out;
         _out = 0;
-        WLOOKUP(s_WG_IDLE1);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE1, (CObject*&)_out);
         m_poseIdle[0] = (i32)_out;
         _out = 0;
-        WLOOKUP(s_WG_IDLE2);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE2, (CObject*&)_out);
         m_poseIdle[1] = (i32)_out;
         _out = 0;
-        WLOOKUP(s_WG_IDLE3);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE3, (CObject*&)_out);
         m_poseIdle[2] = (i32)_out;
         _out = 0;
-        WLOOKUP(s_WG_IDLE4);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE4, (CObject*&)_out);
         m_poseIdle4 = (i32)_out;
         _out = 0;
-        WLOOKUP(s_WG_IDLE5);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE5, (CObject*&)_out);
         m_poseIdle5 = (i32)_out;
     }
 

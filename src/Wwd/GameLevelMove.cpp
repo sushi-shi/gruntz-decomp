@@ -32,8 +32,6 @@
 
 // LookupTile's empty-cell sentinels: 0xeeeeeeee is the uninitialized-heap fill
 // (no tile placed); -1 is the explicit "clear" marker.
-static const i32 TILE_UNINIT = (i32)0xeeeeeeee;
-static const i32 TILE_CLEAR = -1;
 
 // The +0x134 axis-low bracket's "unset" sentinel (INT_MIN): BroadPhase tests it
 // before treating an object's AABB as a live box.
@@ -46,46 +44,6 @@ static const i32 AXIS_UNSET = (i32)0x80000000;
 // literal method-call form (92.61%) - see ApplyMove's @early-stop note.
 extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c); // @0x1671c0
 
-// PROBE_TILE - the inlined per-coord tile probe (== AxisProbe @0x161270, defined in
-// GameLevel.cpp). Written as a do/while macro so each of the (up to four) copies in a
-// single function schedules locally, exactly like the retail copy-paste
-// (docs/patterns/x87-copypaste-vs-inline-fp-block.md). Duplicated file-local from
-// GameLevel.cpp (the steppers below inline the same probe textually).
-#define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
-    do {                                                                                           \
-        i32 px_ = (X);                                                                             \
-        i32 py_ = (Y);                                                                             \
-        if (px_ < 0) {                                                                             \
-            px_ = 0;                                                                               \
-        } else {                                                                                   \
-            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
-            if (px_ >= pc_->m_wrapW) {                                                             \
-                px_ = pc_->m_wrapW - 1;                                                            \
-            }                                                                                      \
-        }                                                                                          \
-        if (py_ < 0) {                                                                             \
-            py_ = 0;                                                                               \
-        } else {                                                                                   \
-            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
-            if (py_ >= pc_->m_wrapH) {                                                             \
-                py_ = pc_->m_wrapH - 1;                                                            \
-            }                                                                                      \
-        }                                                                                          \
-        CLevelPlane* pl_ = (LVL)->m_mainPlane;                                                     \
-        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
-        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
-        i32 col_ = qx_;                                                                            \
-        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
-        i32 idx_ = pl_->m_colOffsets[qy_] + col_;                                                  \
-        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
-        i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
-        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
-            (RESULT) = kTilePassable;                                                              \
-        } else {                                                                                   \
-            CTileImageSet* set_ = (CTileImageSet*)m_imageSets[tile_ & 0xffff];                     \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
-        }                                                                                          \
-    } while (0)
 
 // ---------------------------------------------------------------------------
 // ApplyMove: drive the +0xe4 edit-state machine. editKind <= 0: nothing; kind 7

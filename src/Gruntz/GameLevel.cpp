@@ -104,11 +104,6 @@
 // readiness predicate (IsLoaded) tests for it and Unload restores it.
 static const i32 LEVEL_COORD_UNSET = (i32)0x80000000;
 
-// LookupTile's empty-cell sentinels: 0xeeeeeeee is the uninitialized-heap fill
-// (no tile placed); -1 is the explicit "clear" marker.
-static const i32 TILE_UNINIT = (i32)0xeeeeeeee;
-static const i32 TILE_CLEAR = -1;
-
 // The +0x134 axis-low bracket's "unset" sentinel (INT_MIN): WalkColumnDown and
 // BroadPhase test it before treating an object's AABB as a live box.
 static const i32 AXIS_UNSET = (i32)0x80000000;
@@ -712,47 +707,6 @@ CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5
 // (+0x8c/+0x90), the column-offset table m_colOffsets (+0x24) and the tile grid
 // m_tileGrid (+0x20).
 
-// PROBE_TILE - the inlined per-coord tile probe (== AxisProbe @0x161270). Written as
-// a do/while macro so each of the (up to four) copies in a single function schedules
-// locally, exactly like the retail copy-paste (docs/patterns/x87-copypaste-vs-inline-fp-block.md).
-// Clamps (X,Y) into the plane's tile grid, splits each into a tile index + sub-offset
-// via the +0x8c/+0x90 shift, fetches the tile id, and (unless the empty/clear
-// sentinel) dispatches the image set's slot +0x20 with the sub-offsets.
-#define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
-    do {                                                                                           \
-        i32 px_ = (X);                                                                             \
-        i32 py_ = (Y);                                                                             \
-        if (px_ < 0) {                                                                             \
-            px_ = 0;                                                                               \
-        } else {                                                                                   \
-            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
-            if (px_ >= pc_->m_wrapW) {                                                             \
-                px_ = pc_->m_wrapW - 1;                                                            \
-            }                                                                                      \
-        }                                                                                          \
-        if (py_ < 0) {                                                                             \
-            py_ = 0;                                                                               \
-        } else {                                                                                   \
-            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
-            if (py_ >= pc_->m_wrapH) {                                                             \
-                py_ = pc_->m_wrapH - 1;                                                            \
-            }                                                                                      \
-        }                                                                                          \
-        CLevelPlane* pl_ = (LVL)->m_mainPlane;                                                     \
-        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
-        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
-        i32 col_ = qx_;                                                                            \
-        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
-        i32 idx_ = pl_->m_colOffsets[qy_] + col_;                                                  \
-        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
-        i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
-        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
-            (RESULT) = kTilePassable;                                                              \
-        } else {                                                                                   \
-            CTileImageSet* set_ = (CTileImageSet*)m_imageSets[tile_ & 0xffff];                     \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
-        }                                                                                          \
-    } while (0)
 
 // AxisProbe - 0x161270 (__thiscall, ret 8). The standalone tile probe the editor
 // loops call as a reloc-masked leaf: clamp (coord, limit) into the main plane's tile

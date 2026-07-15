@@ -54,6 +54,57 @@ typedef enum {
     kTileSpecial = 4,  // special (folds the target's 0x400000 flag)
 } TileCollision;
 
+// LookupTile's empty-cell sentinels: 0xeeeeeeee is the uninitialized-heap fill
+// (no tile placed); -1 is the explicit "clear" marker. (Consolidated here from
+// per-TU copies in GameLevel.cpp / GameLevelMove.cpp, like the enum above.)
+static const i32 TILE_UNINIT = (i32)0xeeeeeeee;
+static const i32 TILE_CLEAR = -1;
+
+// PROBE_TILE - the inlined per-coord tile probe (== AxisProbe @0x161270, defined in
+// GameLevel.cpp). Written as a do/while macro so each of the (up to four) copies in a
+// single function schedules locally, exactly like the retail copy-paste
+// (docs/patterns/x87-copypaste-vs-inline-fp-block.md). ONE definition here for both
+// expander TUs (GameLevel.cpp / GameLevelMove.cpp); expands only inside CGameLevel
+// methods (it reads the implicit this->m_imageSets).
+// Clamps (X,Y) into the plane's tile grid, splits each into a tile index + sub-offset
+// via the +0x8c/+0x90 shift, fetches the tile id, and (unless the empty/clear
+// sentinel) dispatches the image set's slot +0x20 with the sub-offsets.
+#define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
+    do {                                                                                           \
+        i32 px_ = (X);                                                                             \
+        i32 py_ = (Y);                                                                             \
+        if (px_ < 0) {                                                                             \
+            px_ = 0;                                                                               \
+        } else {                                                                                   \
+            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
+            if (px_ >= pc_->m_wrapW) {                                                             \
+                px_ = pc_->m_wrapW - 1;                                                            \
+            }                                                                                      \
+        }                                                                                          \
+        if (py_ < 0) {                                                                             \
+            py_ = 0;                                                                               \
+        } else {                                                                                   \
+            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
+            if (py_ >= pc_->m_wrapH) {                                                             \
+                py_ = pc_->m_wrapH - 1;                                                            \
+            }                                                                                      \
+        }                                                                                          \
+        CLevelPlane* pl_ = (LVL)->m_mainPlane;                                                     \
+        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
+        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
+        i32 col_ = qx_;                                                                            \
+        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
+        i32 idx_ = pl_->m_colOffsets[qy_] + col_;                                                  \
+        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
+        i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
+        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
+            (RESULT) = kTilePassable;                                                              \
+        } else {                                                                                   \
+            CTileImageSet* set_ = (CTileImageSet*)m_imageSets[tile_ & 0xffff];                     \
+            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
+        }                                                                                          \
+    } while (0)
+
 // ---------------------------------------------------------------------------
 // CTileImageSet - the per-tile COLLISION-DESCRIPTOR record the level builds from the
 // WWD tile-description block. A dispatch-only base: never instantiated (the factory
