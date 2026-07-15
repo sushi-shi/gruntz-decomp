@@ -25,7 +25,7 @@
 //        FindGridNeighbor @0x5b6f0 (0x3d5a), "StopMove"=ResetEntranceAnimation
 //        @0x62e10 (0x136b), "CanReach"=GruntInRadius @0x67b00 (0x1014),
 //        "FaceTarget"=CommitNeighbor @0x5b050 (0x302b), "MoveTo6"=
-//        StepArrivalDrop @0x4b370 (0x14e2), "Attack"=CGrunt_TileSwitch @0x4b320
+//        StepArrivalDrop @0x4b370 (0x14e2), "Attack"=CGrunt::TileSwitch @0x4b320
 //        (0x1640, the free __stdcall), "Snap"=SetEntrancePos @0x4d060 (0x1401),
 //        "Notify"=CGruntSpawnConfig::SpawnVoiceDriver @0x11b3b0 (0x39f4),
 //        "GruntLos1127"=CGameLevel::PointInBounds @0x6b330 (0x1127, static).
@@ -144,7 +144,7 @@ i32 CGrunt::ChargeStep() {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
                         return 1;
                     }
-                    if (CGrunt_TileSwitch(
+                    if (TileSwitch(
                             g->m_10->m_screenX >> 5,
                             g->m_10->m_screenY >> 5,
                             0,
@@ -192,7 +192,7 @@ i32 CGrunt::ChargeStep() {
                 WwdGameReg* mgr = g_gameReg;
                 if ((u32)baseX < (u32)mgr->m_tileGrid->m_c
                     && (u32)baseY < (u32)mgr->m_tileGrid->m_10) {
-                    CGrunt_TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
+                    TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
                 if (m_31c.GetCount() != 0) {
                     if (spanX <= spanY) {

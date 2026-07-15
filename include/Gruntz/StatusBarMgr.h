@@ -733,19 +733,11 @@ SIZE_UNKNOWN(CSbiGameMgr);
 // PostWarn->ArmSnapshot (0xd9240), HiToggle->EnterOverlayDrag (0xd6440), SetState (0xd5b20),
 // HiRefresh (0xd6560), and the +0x4f0 highlight-busy gate (CPlay::m_4f0).
 
-// A resolved tile-grid entry (m_grid[]): carries a sub-object at +0x10 whose
-// +0x5c/+0x60 are the tile origin pair forwarded to ScrollTo.
-struct CSbiTileSub {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
-};
-SIZE_UNKNOWN(CSbiTileSub);
-struct CSbiTileEntry {
-    char m_pad0[0x10];
-    CSbiTileSub* m_10; // +0x10
-};
-SIZE_UNKNOWN(CSbiTileEntry);
+// (CSbiTileEntry / CSbiTileSub are GONE - DISSOLVED 2026-07-15: the m_grid[] cell
+//  is the real ::CGrunt (the CTmCell typedef in TriggerMgr.h) and its +0x10
+//  sub-object the real CGruntHud, whose m_screenX/m_screenY (+0x5c/+0x60) are the
+//  origin pair PlaceCursorTarget forwards to ResetGoals - the same pair every
+//  other CGruntHud consumer reads. SBI_RectOnly.cpp reaches them cast-free.)
 
 // REMOVED (was `struct CSbiActiveObj`): the single-player active object at
 // g_gameReg->m_68 (+0x68) is the real CTriggerMgr (TriggerMgr.h), reached via

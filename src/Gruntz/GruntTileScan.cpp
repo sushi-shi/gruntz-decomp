@@ -155,7 +155,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
             SCAN_RECT_BOUNDS(grid);
             if (m_f8 != 0) {
                 CScanGoal* e = m_f4[rand() % m_f8];
-                CGrunt_TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
+                g->TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
             }
             g->m_dwell = 0;
         }

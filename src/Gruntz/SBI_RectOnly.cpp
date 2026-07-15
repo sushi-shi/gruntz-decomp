@@ -23,7 +23,8 @@
 // single-player trigger grid (CTriggerMgr) and the registry writer (RegistryHelper).
 #include <Gruntz/Play.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GruntzMgr.h>    // the REAL *0x24556c singleton class (ReportError @0x08dc60)
+#include <Gruntz/Grunt.h>     // real CGrunt (the m_grid cells; ex CSbiTileEntry/CSbiTileSub views)
+#include <Gruntz/GruntzMgr.h> // the REAL *0x24556c singleton class (ReportError @0x08dc60)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::LoadTabSprites @0x102250 (SetTab's real callee)
 #include <Utils/RegistryHelper.h>
 #include <Globals.h>
@@ -249,11 +250,13 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
         return 0;
     }
-    CSbiTileEntry* entry = (CSbiTileEntry*)g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
+    // the grid cell is the real CGrunt (CTmCell typedef); its m_10 HUD carries the
+    // on-screen origin pair (ex the CSbiTileEntry/CSbiTileSub views, dissolved).
+    CGrunt* entry = g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
     if (entry == 0) {
         return 0;
     }
-    ((CPlay*)g_gameReg->m_curState)->ResetGoals(entry->m_10->m_5c, entry->m_10->m_60);
+    ((CPlay*)g_gameReg->m_curState)->ResetGoals(entry->m_10->m_screenX, entry->m_10->m_screenY);
     if (commit != 0) {
         CTriggerMgr* obj = g_gameReg->m_cmdGrid;
         if (obj->RecordListHas(col, row)) {

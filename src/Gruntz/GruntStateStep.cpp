@@ -74,7 +74,7 @@ extern char s_codeJ[];
 // empty the list.
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
-        GruntCoordNode* nd = (g)->CoordHead();                                              \
+        GruntCoordNode* nd = (g)->CoordHead();                                                     \
         if (nd != 0) {                                                                             \
             do {                                                                                   \
                 void* r = ListNodeAdvance((void**)&nd);                                            \
@@ -141,7 +141,8 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             g->GetScreenPos(&gp);
             nb->GetScreenPos(&np2);
             g->GetScreenPos(&gp2);
-            i32 dist = iabs((np2.m_y >> 5) - (gp2.m_y >> 5)) + iabs((np2.m_x >> 5) - (gp2.m_x >> 5));
+            i32 dist =
+                iabs((np2.m_y >> 5) - (gp2.m_y >> 5)) + iabs((np2.m_x >> 5) - (gp2.m_x >> 5));
             if (dist <= 0xa) {
                 // dirty-rect box around the grunt
                 GruntTilePos b0, b1, b2, b3;
@@ -165,7 +166,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
             }
             GruntTilePos p;
             nb->GetScreenPos(&p);
-            if (CGrunt_TileSwitch(p.m_x >> 5, p.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
+            if (g->TileSwitch(p.m_x >> 5, p.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
                 g->m_defenderState = 2;
                 g->m_arrivalCol = nb->m_tileOwnerHi;
                 g->m_arrivalRow = nb->m_tileOwnerLo;
@@ -222,7 +223,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         if (dist > m_0a4) {
             if (m_0f0.GetSize() != 0) {
                 GruntCoord* e = ((GruntCoord**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
-                CGrunt_TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
+                g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
             g->m_arrivalCol = -1;
             g->m_dwell = 0;
@@ -266,7 +267,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         }
         GruntTilePos cp;
         cur->GetScreenPos(&cp);
-        if (!CGrunt_TileSwitch(cp.m_x >> 5, cp.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
+        if (!g->TileSwitch(cp.m_x >> 5, cp.m_y >> 5, 0, 0x20000dc7, 0, 0)) {
             g->m_arrivalCol = -1;
             g->m_arrivalRow = -1;
             g->m_defenderState = 0;
@@ -282,10 +283,9 @@ tail:
     if (Method_034460((i32)g)) {
         if (g->CoordCount() == 0 && (u32)g->m_dwell > (u32)m_0a0 && m_0f0.GetSize() != 0) {
             GruntCoord* e = ((GruntCoord**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
-            CGrunt_TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
+            g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             g->m_dwell = 0;
         }
     }
     return 1;
 }
-

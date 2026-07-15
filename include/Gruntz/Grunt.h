@@ -1854,7 +1854,7 @@ public:
     // type name (g_typeColl.Lookup(m_14->m_1c) vs "F"); drives the m_defenderState
     // machine (0/2/4/0x19/0x1a) recomputing the target tile, building the 16 border
     // cells of the 5x5 block into a point accumulator, random-picking a free cell to
-    // relocate/arrive on (m_tileMgr TileSwitch6 / CommitTileSlot2), and recycling the
+    // relocate/arrive on (m_tileMgr TileSwitch / CommitTileSlot2), and recycling the
     // visited-coord nodes onto the shared free list.
     i32 PhaseStep();
     // The grunt per-tick arrival/scan/wander step machines (ex-CGruntStep/CGruntWander
@@ -1870,10 +1870,8 @@ public:
     // CUserLogic::GetScreenPos (0x29a50) reached on the occupant grunt: copies its
     // m_10->{m_5c,m_60} into the out point. External/reloc-masked.
     void GetScreenPos(struct GruntTilePos* out); // 0x29a50
-    // The 0x4b320 tile-switch entry reached __thiscall here (this in ecx, 6 stack args,
-    // ret 0x18; returns nonzero on success). Same engine fn as the free CGrunt_TileSwitch
-    // passthrough; modeled as a method so `mov ecx,this; ...; call` falls out.
-    i32 TileSwitch6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (thiscall view)
+    // (TileSwitch6 is GONE - it was a SECOND name for TileSwitch @0x4b320, declared
+    //  below; the convention conflation is settled __thiscall - see that decl.)
     // @0x6a060 (ret 0) - the SINK/FALL death-finalize step the death-anim loader runs
     // after the entrance-drop notify. External/no-body (reloc-masked here).
     void Step6a060();
@@ -1929,8 +1927,14 @@ public:
     );                                                 // call 0x1451
     i32 IsInCombatRange(i32 x, i32 y);                 // call 0x3c4c (2-arg predicate)
     void CommitCombatMove(i32 a, i32 b, i32 c, i32 d); // call 0x302b (4-arg)
-    // Battlez arrival resolver's neighbour-pick trigger (CGrunt_TileSwitch).
-    i32 TileSwitch(i32 col, i32 row, i32 flags, i32 a4, i32 a5, i32 a6); // thunk 0x1640
+    // The tile-switch trigger @0x4b320 (thunk 0x1640): scale the (col,row) grid pair
+    // to tile-pixel centres (*0x20+0x10) and forward all six args to the engine
+    // helper. CONVENTION SETTLED (2026-07-15): __thiscall on the grunt - the body
+    // never reads `this`, but EVERY retail call site (58 through the thunk) loads a
+    // grunt into ecx first (`mov ecx,esi/ebx/ebp` / `mov ecx,[esp+..]`), which only a
+    // thiscall member reproduces; the old free-__stdcall spelling dropped that mov at
+    // ~25 reconstructed sites. Body in Grunt.cpp (callee-cleans 0x18 either way).
+    i32 TileSwitch(i32 col, i32 row, i32 flags, i32 a4, i32 a5, i32 a6); // 0x4b320 (thunk 0x1640)
 
     // @0x50ce0 (GruntSteps.cpp; ex the CGruntCmdObj .cpp-local view, dissolved
     // 2026-07-15): the toy/vehicle grunt sprite loader - latch the kind (m_198),
@@ -1990,14 +1994,12 @@ i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2
 // (a->m_8 == b->m_8). Not a member (reads both args off the stack).
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
 
-// CGrunt::TileSwitch(...) @0x4b320 - a 6-arg (__stdcall, ret 0x18) passthrough
-// that scales the first two args to tile pixel coords (*0x20+0x10) and forwards
-// all six to an engine helper. External callee reloc-masks.
+// (The free `CGrunt_TileSwitch` spelling is GONE - the 0x4b320 body is
+//  CGrunt::TileSwitch, __thiscall; see the member decl above.)
 // The free-function spelling of the same 0x343f0 coord-recycle (the receiver is loaded
 // into ecx but the free-form call sites drop it); the __thiscall body is
 // CGrunt::RecycleCoords, defined at that rva in BattlezMapConfig.cpp.
 void GruntRecycleCoords(CGrunt* g); // 0x343f0
-i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 // The engine tile-switch helper TileSwitch forwards to (__stdcall ret 0x18).
 i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 

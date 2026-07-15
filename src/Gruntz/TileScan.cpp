@@ -11,9 +11,8 @@
 #include <Gruntz/Grunt.h>    // CGrunt (the scanned arg) + CGameRegistry/CFocusSlot (this->m_4)
 #include <Gruntz/ScanGrid.h> // CScanGrid (this->m_c tile board)
 
-// The tile-switch notify (0x1640 thunk -> 0x4b320) is the free __stdcall CGrunt_TileSwitch
-// (6 args: a=tileX, b=tileY, ...); the CGrunt receiver is loaded into ecx but ignored.
-i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+// The tile-switch notify (0x1640 thunk -> 0x4b320) is CGrunt::TileSwitch - __thiscall
+// (retail loads the grunt into ecx at every site; the convention conflation is settled).
 
 // The scanned arg is a real CGrunt: m_2e8 the focus-slot id, m_dwell (+0x2ec) the
 // dwell timer compared to the threshold, m_10 the bound HUD/object (screen x/y @
@@ -31,7 +30,7 @@ struct CTileScan {
     char _08[0xc - 8];
     CScanGrid* m_c; // +0x0c  tile board (dims + row table)
     char _10[0xc8 - 0x10];
-    i32 m_c8;             // +0xc8  dwell threshold
+    i32 m_c8;              // +0xc8  dwell threshold
     i32 Scan(CGrunt* arg); // 0x35f10
 };
 
@@ -90,7 +89,7 @@ i32 CTileScan::Scan(CGrunt* arg) {
                 continue;
             }
             if ((flags & 2) == 0) {
-                CGrunt_TileSwitch(b, a, 0, 0xd87, 0, 0);
+                arg->TileSwitch(b, a, 0, 0xd87, 0, 0);
                 arg->m_dwell = 0; // reset the dwell timer on the tile switch
                 return 1;
             }

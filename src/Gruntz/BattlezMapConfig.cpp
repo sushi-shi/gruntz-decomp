@@ -156,9 +156,8 @@ void* __stdcall ListNodeAdvance(void** pos);
 // The per-unit spawn/place hook (RVA 0x04b320, thunk 0x01640): a __thiscall on the
 // CGrunt taking (x, y, a2, flags, a4, a5); nonzero on a successful placement.
 // External, reloc-masked (no body).
-// Place @0x04b320 (thunk 0x1640) is the free __stdcall CGrunt_TileSwitch(6 args: x/y = tile
+// Place @0x04b320 (thunk 0x1640) is CGrunt::TileSwitch - __thiscall on the grunt (6 args: x/y = tile
 // coords); the unit receiver is loaded into ecx but ignored, so it is dropped at each site.
-i32 __stdcall CGrunt_TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5);
 
 // The level itself: `m_ctx` (CBattlezMapConfig+0x04) IS the CLevelInfo LoadConfig was
 // handed - retail Method_035210 walks `[this+4] -> [+0x68] -> [+0x4]`, i.e.
@@ -958,7 +957,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 //   IntersectRect/PtInRect family), GetScreenPos, IndexToPtr (CTypeKeyColl, x52),
 //   CRect (x15), ListNodeAdvance, g_coordPool.Push, CPtrList::RemoveAll, RectContains,
 //   FindGridNeighbor, ResolveArrival, Step/Step33520, Scan/ScanRegion32ce0,
-//   Method_030530/02ed90/0350d0/034c70/0358a0, CGrunt_TileSwitch, ApplyTriggerA,
+//   Method_030530/02ed90/0350d0/034c70/0358a0, CGrunt::TileSwitch, ApplyTriggerA,
 //   ResetEntranceAnimation, StepEntranceReinit, rand, CButeMgr::GetIntDef.
 // ===========================================================================
 // @early-stop
@@ -3005,7 +3004,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
                 flag = 1;
             }
         }
-        CGrunt_TileSwitch(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
+        unit->TileSwitch(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
         if (flag != 0) {
             unit->m_entrancePxX = savedX;
             unit->m_entrancePxY = savedY;
@@ -4611,7 +4610,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             nb->GetScreenPos((GruntTilePos*)&c1);
             c1.m_x >>= 5;
             c1.m_y >>= 5;
-            if (CGrunt_TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
+            if (g->TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
             g->m_arrivalCol = nb->m_tileOwnerHi;
@@ -4673,7 +4672,7 @@ inflight: {
         g->m_dwell = 0;
         {
             CGameObject* s = (CGameObject*)nb->m_10;
-            if (CGrunt_TileSwitch(s->m_screenX >> 5, s->m_screenY >> 5, 0xd87, 0, 0, 0) == 0) {
+            if (g->TileSwitch(s->m_screenX >> 5, s->m_screenY >> 5, 0xd87, 0, 0, 0) == 0) {
                 return 1;
             }
         }
@@ -4720,7 +4719,7 @@ inflight: {
             MOVE_RECYCLE(g);
         }
         CGameObject* s = cur->m_object;
-        if (CGrunt_TileSwitch(s->m_screenX >> 5, s->m_screenY >> 5, 0xd87, 0, 0, 0) != 0) {
+        if (g->TileSwitch(s->m_screenX >> 5, s->m_screenY >> 5, 0xd87, 0, 0, 0) != 0) {
             g->m_dwell = 0;
             return 1;
         }
@@ -4827,7 +4826,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                 i32 flags = unit->m_250;
                 unit->m_254 = 0x4268;
                 CGameObject* tl = target->m_object;
-                CGrunt_TileSwitch(tl->m_screenX >> 5, tl->m_screenY >> 5, 0, flags, 0, 0x4268);
+                unit->TileSwitch(tl->m_screenX >> 5, tl->m_screenY >> 5, 0, flags, 0, 0x4268);
                 unit->m_dwell = 0;
             }
             return 1;
@@ -5104,7 +5103,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                 }
             }
         }
-        if (CGrunt_TileSwitch(gx, gy, 0, cfg, 0, flags) != 0) {
+        if (unit->TileSwitch(gx, gy, 0, cfg, 0, flags) != 0) {
             unit->m_250 = g_spawnCfg;
             unit->m_254 = g_spawnState;
             unit->m_dwell = 0;
@@ -5172,7 +5171,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             }
         }
     }
-    if (CGrunt_TileSwitch(rx, ry, 0, 0x987, 1, flags) != 0) {
+    if (unit->TileSwitch(rx, ry, 0, 0x987, 1, flags) != 0) {
         unit->m_250 = g_spawnCfg;
         unit->m_254 = g_spawnState;
         unit->m_dwell = 0;
@@ -5402,7 +5401,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
         if (unit->m_dwell <= m_reserveBudget) {
             return 1;
         }
-        if (CGrunt_TileSwitch(unit->m_arrivalCol, unit->m_arrivalRow, 0, 0xd87, 0, 0) != 0) {
+        if (unit->TileSwitch(unit->m_arrivalCol, unit->m_arrivalRow, 0, 0xd87, 0, 0) != 0) {
             unit->m_dwell = 0;
             return 1;
         }
@@ -5597,7 +5596,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
                 x = pair->m_x;
                 y = pair->m_y;
             }
-            if (CGrunt_TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
+            if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
                 unit->m_arrivalCol = band;
                 unit->m_arrivalRow = 0;
                 ((CBattlezMapConfig*)this)->Method_02c080((i32)unit);
@@ -5614,7 +5613,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
         }
         i32 y = *(i32*)(recB + 0xd4);
         i32 x = *(i32*)(recB + 0xd0);
-        CGrunt_TileSwitch(x, y, 0, 0x987, 0, 0x4068);
+        unit->TileSwitch(x, y, 0, 0x987, 0, 0x4068);
         unit->m_dwell = 0;
         return 1;
     }

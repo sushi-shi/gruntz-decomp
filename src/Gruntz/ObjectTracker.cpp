@@ -17,7 +17,7 @@
 // m_cueArmed==m_390. Its helper thunks are the already-reconstructed bodies:
 // GetPeer 0x253b -> CTriggerMgr::FindNearestEnemy (0x77df0), CheckScreenPos
 // 0x1e97 -> CGrunt::RectContainsGated (0x51a20), CheckOwnerCell 0x1014 ->
-// CGrunt::GruntInRadius (0x67b00), PlaceAtTile 0x1640 -> CGrunt_TileSwitch
+// CGrunt::GruntInRadius (0x67b00), PlaceAtTile 0x1640 -> CGrunt::TileSwitch
 // (0x4b320), ReportObjectAt 0x3030 -> CTriggerMgr::ApplyTriggerB (0x6e120).
 #include <rva.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_tileMgr / registry m_cmdGrid)
@@ -35,7 +35,7 @@ extern "C" CGameRegistry* g_gameReg;
 // (m_originX/m_originY/m_extentX/m_extentY).
 
 // @early-stop
-// ~95%: logic byte-exact except (1) the CGrunt_TileSwitch (0x1640) arg-setup: retail
+// ~95%: logic byte-exact except (1) the TileSwitch (0x1640) arg-setup: retail
 // loads ecx=this before the call (a thiscall-shaped dispatch whose body ignores ecx)
 // while the shared free-__stdcall model emits no receiver load - one dead mov; and
 // (2) the on-screen clip-rect check's addressing mode (reading the CLevelPlane
@@ -71,7 +71,7 @@ i32 CGrunt::StepPeerTracking() {
     }
     if (GruntInRadius(p->m_tileOwnerHi, p->m_tileOwnerLo)) {
         CGruntHud* b = p->m_10;
-        CGrunt_TileSwitch(b->m_screenX >> 5, b->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
+        TileSwitch(b->m_screenX >> 5, b->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
         if (m_390 == 0) {
             return 1;

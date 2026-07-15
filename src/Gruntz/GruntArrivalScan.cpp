@@ -179,7 +179,7 @@ i32 CGrunt::ResolveArrivalReposition() {
     if (occ != 0 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
         if ((u32)m_dwell > 0xfa) {
             CGruntHud* oh = occ->m_10;
-            if (TileSwitch6(oh->m_screenX >> 5, oh->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+            if (TileSwitch(oh->m_screenX >> 5, oh->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                 CGruntHud* oh2 = occ->m_10;
                 if (m_tileMgr->ApplyTriggerA(
                         m_tileOwnerHi,
@@ -229,7 +229,7 @@ i32 CGrunt::ResolveArrivalReposition() {
             if (spanY != 0) {
                 outY += GruntRand() % spanY;
             }
-            TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
+            TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
             i32 m328 = CoordCount();
             if (m328 != 0) {
                 i32 mx = spanX > spanY ? spanX : spanY;
@@ -369,7 +369,7 @@ L_ed006:
     if (m_poweredUp != 0) {
         goto L_ed153;
     }
-    if (TileSwitch6(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+    if (TileSwitch(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
         == 0) {
         goto L_ed153;
     }
@@ -470,7 +470,7 @@ L_ed153:
             );
             SetEntrancePos(1, 1);
         } else {
-            TileSwitch6(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
+            TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
         }
     }
     GRID_RECT_INLINE(grid);
@@ -569,7 +569,7 @@ i32 CGrunt::WanderStep() {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         i32 c[4];
                         g->GetScreenPos((GruntTilePos*)c);
-                        if (TileSwitch6(c[0] >> 5, c[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+                        if (TileSwitch(c[0] >> 5, c[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                             SetEntrancePos(1, 1);
                             m_arrivalCol = g->m_tileOwnerHi;
                             m_arrivalRow = g->m_tileOwnerLo;
@@ -753,7 +753,7 @@ i32 CGrunt::WanderStep() {
             if ((u32)py >= (u32)grid->m_10) {
                 return 1;
             }
-            TileSwitch6(px, py, 0, m_arrivalFlags, 1, 0);
+            TileSwitch(px, py, 0, m_arrivalFlags, 1, 0);
             return 1;
         }
 
@@ -792,7 +792,7 @@ timeout:
             }
             if (lx < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_c
                 && ly < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_10) {
-                TileSwitch6((i32)lx, (i32)ly, 0, m_arrivalFlags, 1, 0);
+                TileSwitch((i32)lx, (i32)ly, 0, m_arrivalFlags, 1, 0);
             }
             if (CoordCount() != 0) {
                 if (ax <= ay) {
@@ -1004,7 +1004,7 @@ i32 CGrunt::UpdateArrival() {
                     if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         i32 c[4];
                         GetScreenPos((GruntTilePos*)c);
-                        if (TileSwitch6(c[1] >> 5, c[0] >> 5, 0, this->m_arrivalFlags, 0, 0x20)
+                        if (TileSwitch(c[1] >> 5, c[0] >> 5, 0, this->m_arrivalFlags, 0, 0x20)
                             != 0) {
                             SetEntrancePos(1, 1);
                             this->m_arrivalCol = g->m_tileOwnerHi;
@@ -1056,7 +1056,7 @@ i32 CGrunt::UpdateArrival() {
                     }
                     if (lo < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_c
                         && lo2 < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_10) {
-                        TileSwitch6((i32)lo, (i32)lo2, 0, this->m_arrivalFlags, 1, 0);
+                        TileSwitch((i32)lo, (i32)lo2, 0, this->m_arrivalFlags, 1, 0);
                     }
                     if (this->CoordCount() != 0) {
                         if (ax <= ay) {
@@ -1254,7 +1254,7 @@ L_ed006b:
     {
         i32 cc[4];
         g->GetScreenPos((GruntTilePos*)cc);
-        if (TileSwitch6(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+        if (TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
             if (m_390 != 0) {
                 i32 x = m_10->m_screenX;
                 i32 y = m_10->m_screenY;
@@ -1372,7 +1372,7 @@ L_scanb:
             );
             SetEntrancePos(1, 1);
         } else {
-            TileSwitch6(bestX, bestY, 0, m_arrivalFlags, 1, 0);
+            TileSwitch(bestX, bestY, 0, m_arrivalFlags, 1, 0);
         }
     }
     GRID_RECT_INLINE(grid);
@@ -1882,7 +1882,7 @@ i32 CGrunt::StepArrivalDefense() {
             {
                 GruntTilePos sp;
                 occ->GetScreenPos(&sp);
-                if (TileSwitch6(sp.m_x >> 5, sp.m_y >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
+                if (TileSwitch(sp.m_x >> 5, sp.m_y >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
                     goto L_f318a;
                 }
                 SetEntrancePos(1, 1);
@@ -1940,7 +1940,7 @@ i32 CGrunt::StepArrivalDefense() {
                 }
                 if (outX < ((GruntBoard*)g_gameReg->m_tileGrid)->m_c
                     && outY < ((GruntBoard*)g_gameReg->m_tileGrid)->m_10) {
-                    TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
+                    TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 m328 = CoordCount();
                 if (m328 != 0) {
@@ -2057,7 +2057,7 @@ i32 CGrunt::ArrivalScanC() {
     if ((u32)m_dwell <= 0x1f4) {
         goto L_tailc;
     }
-    if (TileSwitch6(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+    if (TileSwitch(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
         != 0) {
         if (m_390 != 0) {
             CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
@@ -2153,7 +2153,7 @@ L_tailc:
                 );
                 SetEntrancePos(1, 1);
             } else {
-                TileSwitch6(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
+                TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
             }
         }
         GRID_RECT_INLINE(grid);
@@ -2167,7 +2167,7 @@ L_tailc:
 // CGrunt: the type-name gate (inline strcmp of g_typeColl.Lookup(m_14->m_1c) vs "F"),
 // the m_defenderState state dispatch (0x19/0x1a re-mark, 0/2/4), the 5x5-border
 // 16-point accumulator build + random-free-cell relocation with tile marking
-// (TileSwitch6), the state-0 neighbour resolve (GetOccupant + RectContains/CommitNeighbor/
+// (TileSwitch), the state-0 neighbour resolve (GetOccupant + RectContains/CommitNeighbor/
 // GruntInRadius + m_cueSink->CueA on-screen cue), and the common tail's coord recycle +
 // CommitTileSlot2 arrival commit all align by shape (llvm-objdump -dr). Residual: MSVC5
 // pins the tile coords/loop indices across esi/edi/ebp/ebx and schedules the 16 unrolled
@@ -2195,7 +2195,7 @@ i32 CGrunt::PhaseStep() {
         i32 ay = pa.m_y >> 5;
         GetScreenPos(&pb);
         i32 gy = (pb.m_y >> 5) - m_arrivalRow + ay;
-        TileSwitch6(gx, gy, 0, m_arrivalFlags, 1, 0);
+        TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
         m_defenderState = 4;
     }
@@ -2208,7 +2208,7 @@ i32 CGrunt::PhaseStep() {
         i32 ay = pa.m_x >> 5;
         GetScreenPos(&pb);
         i32 gy = (pb.m_y >> 5) - m_arrivalRow + ay;
-        TileSwitch6(gx, gy, 0, m_arrivalFlags, 1, 0);
+        TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
         m_defenderState = 0;
         return 1;
     }
@@ -2281,7 +2281,7 @@ state2: {
             flag = 1;
         }
         if ((flag & 0x939) == 0) {
-            if (TileSwitch6(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
+            if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
                 m_defenderState = 4;
                 m_dwell = 0;
                 goto build_tail;
@@ -2320,10 +2320,10 @@ state0: {
     if (GruntInRadius(nb->m_tileOwnerHi, nb->m_tileOwnerLo) == 0) {
         goto s0_reset;
     }
-    if (TileSwitch6(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
+    if (TileSwitch(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
         == 0) {
         m_24c |= 0x4020;
-        TileSwitch6(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
+        TileSwitch(nb->m_10->m_screenX >> 5, nb->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
         m_24c &= 0xffffbfdf;
     }
     m_dwell = 0;
@@ -2526,7 +2526,7 @@ i32 CGrunt::SeekTarget() {
             if (bestIdx != -1) {
                 this->m_arrivalCol = bestIdx;
                 CGruntHud* base = slots[bestIdx]->m_10;
-                if (TileSwitch6(
+                if (TileSwitch(
                         base->m_screenX >> 5,
                         base->m_screenY >> 5,
                         0,
@@ -2554,7 +2554,7 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         CGruntHud* base = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
-        TileSwitch6(base->m_screenX >> 5, base->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0);
+        TileSwitch(base->m_screenX >> 5, base->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->FindNearestEnemy(this);
         bool atTarget = false;
@@ -2627,7 +2627,7 @@ i32 CGrunt::SeekTarget() {
         if ((u32)this->m_dwell < 0x1f5) {
             return 1;
         }
-        if (TileSwitch6(
+        if (TileSwitch(
                 g->m_10->m_screenX >> 5,
                 g->m_10->m_screenY >> 5,
                 0,
@@ -2845,7 +2845,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 }
                 GruntBoard* bd = (GruntBoard*)g_gameReg->m_tileGrid;
                 if ((u32)outX < (u32)bd->m_c && (u32)outY < (u32)bd->m_10) {
-                    TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
+                    TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 m328 = CoordCount();
                 if (m328 != 0) {

@@ -1077,11 +1077,14 @@ void CGrunt::ClearAllSprites() {
 // passthrough args (c..f) through one saved esi (push esi; mov esi,[..]; push
 // esi x4) while MSVC here pre-loads them into eax/ecx/edx. Pure arg-marshalling
 // schedule coin-flip; no source lever flips it (entropy-class).
-// CGrunt::TileSwitch(a, b, c, d, e, f) @0x4b320 - a __stdcall passthrough that
-// scales the first two grid coords to tile-pixel centers (*0x20 + 0x10) and
-// forwards all six args to the engine tile-switch helper.
+// CGrunt::TileSwitch(a, b, c, d, e, f) @0x4b320 - scale the two grid coords to
+// tile-pixel centers (*0x20 + 0x10) and forward all six args to the engine
+// tile-switch helper. CONVENTION SETTLED __thiscall (ex the free __stdcall
+// `CGrunt_TileSwitch` conflation): the body never reads `this` (byte-identical
+// either way, ret 0x18), but every retail caller loads a grunt into ecx - which
+// only the member spelling reproduces at the ~25 reconstructed sites.
 RVA(0x0004b320, 0x34)
-i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+i32 CGrunt::TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     return GruntTileSwitchImpl(a * 0x20 + 0x10, b * 0x20 + 0x10, c, d, e, f);
 }
 
