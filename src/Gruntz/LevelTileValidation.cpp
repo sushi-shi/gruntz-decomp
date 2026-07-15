@@ -20,11 +20,13 @@
 // STRUCTURE are load-bearing. Field names are placeholders (m_<hexoffset>);
 // engine callees are external no-body fns (reloc-masked `call rel32`/virtual).
 //
-// @early-stop  (16.9% -> 52.7%: fixed the node layout [pNext@+0/data@+8], the
+// @early-stop  (16.9% -> 52.7% -> 54.2%: fixed the node layout [pNext@+0/data@+8], the
 // 2-load direct-field identity read [was a wrong 3-load vtable model], the grid
 // path [m_playMgr->m_24, was renderer->m_10], and rebuilt the switch to dispatch
 // on the RESOLVED tile-type with all 8 arms + the 0x21 neighbour scan + the toy
-// re-resolve, so ~half the body now aligns.) Residual is the documented big /GX
+// re-resolve, so ~half the body now aligns; 2026-07-15 the TriggerRegistrar/
+// PlayfieldMgr views dissolved and the 0x401b09/0x40288d/0x402a68/0x4019bf arms
+// re-targeted to their thunk-proven callees.) Residual is the documented big /GX
 // megafunction wall: (a) a 4-byte frame-size delta (0x38 vs retail 0x34) shifts
 // every [esp+X] spill slot; (b) retail homes `this` in edx and spills/reloads it
 // where our cl keeps it enregistered - a systematic register rename across 2358
