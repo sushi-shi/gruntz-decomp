@@ -1,5 +1,24 @@
-// CircleShadeBlit.cpp - the radial shade-remap blit @0x180fb0 (sits in the fader
-// effect cluster near CFaderSine/CFaderRadial). __thiscall, ret 0x18 (6 args).
+// CircleShadeBlit.cpp - the radial shade-remap blit @0x180fb0 (ghidra "Render").
+// __thiscall, ret 0x18 (6 args).
+//
+// IDENTITY (proven): `this` IS a CFaderLight (<Gruntz/FaderSubtypes.h>). The view's
+// size 0x206c (m_destWidth @+0x2068, +4) is EXACTLY CFaderLight's SIZE 0x206c - the
+// only fader subtype of that size (CFaderSine 0x7d5c, CFaderRadial 0x5c, CFaderShape
+// 0x494, CFaderMesh 0x6c, CFaderFlat 0x50) - and this method sits in the fader
+// cluster. So this is CFaderLight::Render (0x180fb0), a slot the canonical has not
+// modeled yet; the surface members are real CDDSurface (m_pitch @+0x20; ex CsbSurf).
+//
+// DEFERRED-FOLD (home onto CFaderLight::Render) blocked on a layout reconciliation
+// with the canonical - both hops need a disasm cross-check of CFaderLight's OTHER
+// methods (ApplyInit 0x1804a0 / v2 0x1814f0) before the canonical can be edited:
+//   (1) @+0x3c: Render dereferences it as a CDDSurface* (m_dstSurface->m_pitch, like
+//       sibling CFaderRadial's m_dstSurface @+0x3c), but the canonical types it
+//       `i32 m_3c` (used elsewhere in Fader.cpp) - retyping ripples into that TU.
+//   (2) centre: Render reads the X centre @+0x50 and the Y centre @+0x4c, but the
+//       canonical (desc-backed defaults 0x140/0xf0) labels centerX @+0x4c / centerY
+//       @+0x50 - the opposite. ApplyInit's stores must arbitrate which is right.
+// Kept as a correctly-attributed structural view (offsets load-bearing) until that
+// reconciliation lands with the Fader-lane canonical.
 //
 // For the circular band centered at (m_centerX, m_centerY) in a m_destWidth-wide dest, walk each
 // scanline row from the top (cy - sqrt(R2 - dx^2) + 1) down to the center, compute
@@ -11,21 +30,18 @@
 // compiler specializes the single source loop into four near-identical variants by
 // the left/right in-bounds clip + the mirror sign. Field names are placeholders;
 // offsets + code bytes are the load-bearing fact.
+#include <DDrawMgr/DDSurface.h> // the real CDDSurface (m_pitch @+0x20) the blit reads
 #include <Ints.h>
 #include <math.h> // (double)int -> fild ; sqrt -> fsqrt ; (int) -> __ftol
 #include <rva.h>
 
-// The blit surfaces (this->m_srcSurface src, this->m_dstSurface dst): row pitch at +0x20.
-struct CsbSurf {
-    char p0[0x20];
-    i32 m_rowPitch; // +0x20  row pitch
-};
-
+// The blit surfaces (this->m_srcSurface src, this->m_dstSurface dst) are real
+// CDDSurface wrappers; the blit reads only their row pitch (m_pitch @+0x20).
 struct CircleShadeBlit {
     void Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5);
     char p0[0x38];
-    CsbSurf* m_srcSurface; // +0x38  source surface
-    CsbSurf* m_dstSurface; // +0x3c  dest surface
+    CDDSurface* m_srcSurface; // +0x38  source surface
+    CDDSurface* m_dstSurface; // +0x3c  dest surface
     char p40[0x4c - 0x40];
     i32 m_centerY; // +0x4c  center y
     i32 m_centerX; // +0x50  center x
@@ -59,10 +75,10 @@ void CircleShadeBlit::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     i32 row = cy - (i32)sqrt((double)(a1 - dx2)) + 1;
     i32 len = (i32)sqrt((double)((row - cy) * (row - cy) + dx2));
 
-    i32 srcpitch = m_srcSurface->m_rowPitch;
+    i32 srcpitch = m_srcSurface->m_pitch;
     i32 srcCol = a0 * srcpitch;
     i32 rowLsrc = a4 + row + srcCol;
-    i32 dstpitch = m_dstSurface->m_rowPitch;
+    i32 dstpitch = m_dstSurface->m_pitch;
     i32 dstCol = a0 * dstpitch;
     i32 rowLdst = a5 + row + dstCol;
     i32 rowRsrc = (a4 - row) + srcCol + 2 * cy;
@@ -203,4 +219,3 @@ void CircleShadeBlit::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 }
 
 SIZE_UNKNOWN(CircleShadeBlit);
-SIZE_UNKNOWN(CsbSurf);

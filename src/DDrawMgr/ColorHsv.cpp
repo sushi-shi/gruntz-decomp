@@ -7,16 +7,11 @@
 // sextant biases, and a -360 wrap). Field names are placeholders; only the
 // byte layout + emitted code bytes are load-bearing.
 #include <Ints.h>
+#include <DDrawMgr/ColorHsv.h> // the shared ColorHSV record + RgbToHsv decl
 #include <rva.h>
 
 #define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
-
-struct ColorHSV {
-    float h;
-    float s;
-    float v;
-};
 
 // @early-stop
 // regalloc + x87-schedule wall (~46.7%): body logic + min/max macro + channel
@@ -27,7 +22,7 @@ struct ColorHSV {
 // materialization). None is source-steerable; verified base-vs-target with
 // `gruntz sema disasm 0x0014fcc0 --diff`. docs/patterns/zero-register-pinning.md.
 RVA(0x0014fcc0, 0x16d)
-void RgbToHsv(ColorHSV* out, u32 color) {
+ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     u16 lo = (u16)color;
     u8 b0 = (u8)lo;
     u8 b1 = (u8)(lo >> 8);
@@ -61,6 +56,8 @@ void RgbToHsv(ColorHSV* out, u32 color) {
     out->h = h;
     out->s = s;
     out->v = v;
+    return out;
 }
 
+// ColorHSV SIZE lives with its definition (include/DDrawMgr/ColorHsv.h -> ColorHsv.cpp).
 SIZE_UNKNOWN(ColorHSV);

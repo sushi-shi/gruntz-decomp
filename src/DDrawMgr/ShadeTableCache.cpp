@@ -9,6 +9,7 @@
 // external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <DDrawMgr/ColorHsv.h>  // the shared ColorHSV record + RgbToHsv (ex-.cpp-local Hsv view)
 #include <Gruntz/DataBuffer.h> // the real CDataBuffer (CShadeTable's dual-view): Free/Reset bind here
 
 #include <math.h> // pow (__CIpow) in HsvShiftTable
@@ -31,17 +32,13 @@
 DATA(0x002bf224)
 PalEntry* g_pal = 0; // 0x6bf224  (owner-TU definition)
 
-// A {h,s,v} float triple produced by RgbToHsv (0x14fcc0). The comparator and the
-// HSV builder read .h (.s/.v populated but only .h drives the hue sort).
-struct Hsv {
-    float h, s, v;
-};
-
-// External helpers (sibling TU, reloc-masked). 0x14fcc0 converts a packed
-// b<<16|g<<8|r color to its Hsv (returning out); 0x14fbf0 finds the nearest
-// palette index for an (r,g,b) triple (sum-of-squares). 0x14ed10 is the sibling
-// luma comparator referenced by address by the luma-sort builder.
-extern "C" Hsv* RgbToHsv(Hsv* out, i32 packedRgb);                     // 0x14fcc0
+// The {h,s,v} triple RgbToHsv fills is the shared ColorHSV (0x14fcc0 returns out);
+// declared in <DDrawMgr/ColorHsv.h>. The comparator and the HSV builder read .h
+// (.s/.v populated but only .h drives the hue sort).
+//
+// External helper (sibling TU, reloc-masked): 0x14fbf0 finds the nearest palette
+// index for an (r,g,b) triple (sum-of-squares). 0x14ed10 is the sibling luma
+// comparator referenced by address by the luma-sort builder.
 extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0
 
 // The engine heap is the NAFXCW global operator new/delete (??2@YAPAXI@Z @0x1b9b46,
@@ -831,7 +828,7 @@ RVA(0x0014fa60, 0xd7)
 i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     u8 ia = *(const u8*)a;
     u8 ib = *(const u8*)b;
-    Hsv ha, hb, tmp;
+    ColorHSV ha, hb, tmp;
     PalEntry* pa = &g_pal[ia];
     ha = *RgbToHsv(&tmp, (pa->b << 0x10) | (pa->g << 8) | pa->r);
     PalEntry* pb = &g_pal[ib];
@@ -1071,5 +1068,4 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
 
 // SIZE tracking for this TU's modeling-view locals (placed at EOF: any
 // mid-file typedef reschedules the /O2 codegen of CompareHue/GammaTable).
-SIZE_UNKNOWN(Hsv);
 SIZE_UNKNOWN(CStr);
