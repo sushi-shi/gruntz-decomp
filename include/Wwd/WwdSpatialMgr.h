@@ -27,6 +27,9 @@
 #include <rva.h>
 #include <Gruntz/WwdGridIter.h> // CWwdGridIter - the embedded cursor member (+0x70)
 
+struct tagRECT;             // the Init grid rect (Win32 RECT; completed via <Mfc.h>/<Win32.h> in the .cpp)
+typedef struct tagRECT RECT;
+
 class CWwdObjMgr;     // the master object manager (+0x00)
 class CWwdGrid;       // one plane's spatial bucket index (each TU supplies its own def)
 class CWwdGameObject; // the engine sprite the grids hold (the canonical managed object)
@@ -62,8 +65,13 @@ struct CWwdSpatialMgr {
     // retail's INLINED copy explicitly (see DDrawWorkerHost.cpp).
     ~CWwdSpatialMgr();
 
-    // Bring-up: init from (src, the six geometry-pair pointers) - RebuildPlanes.
-    i32 Init(void* src, i32* p0, i32* p1, i32* p2, i32* p3, i32* p4, i32* p5); // 0x168080
+    // Bring-up (0x168080, ret 0x20 = 8 args): allocate the three grids and two-phase-
+    // construct each (raw SubWidget_168080 alloc -> CWwdGrid ctor via Setup), then seed the
+    // per-grid rects (0,0,dim-1) + origins (dim/2) from p6/p7/p8, the bbox from `rc`, and
+    // park the cached scroll at -22222. `src`->m_mgr, `rc` is the shared grid rect (used in
+    // all three Setups + the bbox), p3/p4/p5 are the three Setup size pairs, p6/p7/p8 the
+    // three rect/origin dim pairs. Called by CDDrawWorkerHost::RebuildPlanes.
+    i32 Init(void* src, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6, i32* p7, i32* p8); // 0x168080
     i32 SetTargetA(i32 a, i32 b); // 0x168340  (the plane's CenterScrollA target)
     i32 SetTargetB(i32 a, i32 b); // 0x168500  (the plane's CenterScrollB target)
     void FreeGrids();             // 0x1682f0

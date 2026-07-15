@@ -752,6 +752,14 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
         worker = 0;
     }
 
+    // The shared grid rect Init hands each grid ctor: (0, 0, m_wrapW-1, m_wrapH-1)
+    // from this worker host's own plane extents.
+    RECT rc;
+    rc.left = 0;
+    rc.top = 0;
+    rc.right = m_wrapW - 1;
+    rc.bottom = m_wrapH - 1;
+
     CPlaneMapData* reg = m_mapData;
     void* src = reg->m_8;
     if (src == 0) {
@@ -762,6 +770,8 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
         return 0;
     }
 
+    // The six geometry pairs Init reads: the three Setup cell-size pairs (m_pairA/B/C
+    // @0xb0/0xb8/0xc0) then the three grid rect/origin dim pairs (m_rectA/B/C @0xc8/0xd0/0xd8).
     i32 p0[2] = {hdr->m_pairA[0], hdr->m_pairA[1]};
     i32 p1[2] = {hdr->m_pairB[0], hdr->m_pairB[1]};
     i32 p2[2] = {hdr->m_pairC[0], hdr->m_pairC[1]};
@@ -781,7 +791,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
         *(i32*)((char*)nw + 0xb4) = 0;
     }
     worker = nw;
-    if (nw->Init(src, p0, p1, p2, p3, p4, p5) == 0) {
+    if (nw->Init(src, &rc, p0, p1, p2, p3, p4, p5) == 0) {
         CWwdSpatialMgr* w = m_scroll;
         if (w) {
             w->FreeGrids();

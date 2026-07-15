@@ -12,13 +12,15 @@
 //   CGameLevel::ResolveRightX/LeftX        0x00167a20/b40
 //   CGameLevel::ResolveBottomY/TopY        0x00167c60/d80
 //   CGameLevel::BroadPhase                 0x00167ea0
-//   Builder_168080::Init                   0x00168080
+//   CWwdSpatialMgr::Init                   0x00168080
 //
-// The class definitions stay canonical (<Gruntz/GameLevel.h> / <Gruntz/UserLogic.h>);
-// this TU only hosts the bodies (strictly RVA-ascending). The tile-probe macro +
-// tile-code defines are duplicated file-local from GameLevel.cpp (both TUs inline
-// the same retail copy-paste probe).
-#include <Wwd/SubWidget168080.h> // the 0x44 sub-widget (dtor in WwdGrid.cpp)
+// The class definitions stay canonical (<Gruntz/GameLevel.h> / <Gruntz/UserLogic.h> /
+// <Wwd/WwdSpatialMgr.h>); this TU only hosts the bodies (strictly RVA-ascending). The
+// tile-probe macro + tile-code defines are duplicated file-local from GameLevel.cpp
+// (both TUs inline the same retail copy-paste probe).
+#include <Wwd/SubWidget168080.h> // the 0x44 grid alloc-view (transient vtable; dtor in WwdGrid.cpp)
+#include <Wwd/WwdSpatialMgr.h>    // canonical CWwdSpatialMgr (the plane grid/scroll worker; Init 0x168080)
+#include <Gruntz/WwdGrid.h>       // CWwdGrid (the grids' final type; Setup == CWwdGrid::CWwdGrid @0x1915c0)
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
 #include <Wap32/Object.h>     // CObject grand-base (SubWidget_168080's base)
@@ -690,107 +692,70 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 }
 
 // ===========================================================================
-// 0x168080 - a compound-widget builder (RVA-adjacent to this TU). __thiscall(a1, rc,
-// p3..p8): allocate three same-typed sub-widgets (operator new + vtable stamp), lay
-// each out over the RECT *rc with its own size-pair, then derive the widget's own
-// extents (min-1 + half-centers) from three more size-pairs and finish with a SetRect
-// over rc's corners.
+// CWwdSpatialMgr::Init (0x168080, __thiscall, ret 0x20 = 8 args): bring up the
+// 0xb8-byte plane grid/scroll worker. Allocate the three per-plane grids and
+// two-phase-construct each - a raw SubWidget_168080 alloc (its inline default ctor
+// stamps a transient ??_7SubWidget_168080 @0x1f0310 + zeroes m_4), then Setup ==
+// CWwdGrid::CWwdGrid(rc.left, rc.top, rc.right, rc.bottom, cellW, cellH) @0x1915c0,
+// which re-stamps ??_7CWwdGrid @0x1f0328 and fills the grid over `*rc` with p3/p4/p5's
+// cell sizes. Then seed each grid's world rect (0,0,dim-1) + scroll origin (dim/2) from
+// p6/p7/p8, the world bbox from `rc`, and park the cached scroll at -22222. `a1`->m_mgr.
 //
-// ATTRIBUTION (proven, sema xref + disasm): this IS CWwdSpatialMgr::Init - the 0xb8-byte
-// plane-render worker's init, and its ONLY caller is WwdFile::RebuildPlanes (@0x1628f0,
-// src/Wwd/WwdFile.cpp). Builder_168080 (+0x00..+0x6c) is a partial view of
-// grid/scroll worker; SubWidget_168080 (0x44 B, vtable 0x5f0310) is the sub-render-object it
-// allocates x3. DEFERRED fold onto CWwdSpatialMgr::Init: the real Init takes 8 args
-// (this ret 0x20) with a RECT* + 6 Pt*, but RebuildPlanes' @early-stop reconstruction
-// passes 7 args with a simplified geo mapping - folding would force rewriting
-// RebuildPlanes' scrambled arg-build (risks regressing its match). Left as the placeholder
-// view here (spatial home). Re-homed from src/Stub/ApiHiCallers.cpp.
-extern "C" int(WINAPI* g_pSetRect_6c44b8)(RECT*, int, int, int, int);
-
-struct Pt_168080 {
-    i32 m_0; // +0x00
-    i32 m_4; // +0x04
-};
-SIZE_UNKNOWN(Pt_168080);
-// SubWidget_168080 is the shared canonical <Wwd/SubWidget168080.h> (its dtor body lives
-// in the WwdGrid obj - the vtable-owner probe binds ??_7 @0x1f0310 slot 1 to 0x1682a0).
-struct Builder_168080 {
-    void* m_0;             // +0x00
-    SubWidget_168080* m_4; // +0x04
-    SubWidget_168080* m_8; // +0x08
-    SubWidget_168080* m_c; // +0x0c
-    i32 m_10;              // +0x10
-    i32 m_14;              // +0x14
-    i32 m_18;              // +0x18
-    i32 m_1c;              // +0x1c
-    i32 m_20;              // +0x20
-    i32 m_24;              // +0x24
-    i32 m_28;              // +0x28
-    i32 m_2c;              // +0x2c
-    i32 m_30;              // +0x30
-    i32 m_34;              // +0x34
-    i32 m_38;              // +0x38
-    i32 m_3c;              // +0x3c
-    i32 m_40;              // +0x40
-    i32 m_44;              // +0x44
-    i32 m_48;              // +0x48
-    i32 m_4c;              // +0x4c
-    i32 m_50;              // +0x50
-    i32 m_54;              // +0x54
-    RECT m_58;             // +0x58
-    i32 m_68;              // +0x68
-    i32 m_6c;              // +0x6c
-    i32 Init(
-        void* a1,
-        RECT* rc,
-        Pt_168080* p3,
-        Pt_168080* p4,
-        Pt_168080* p5,
-        Pt_168080* p6,
-        Pt_168080* p7,
-        Pt_168080* p8
-    );
-};
-SIZE_UNKNOWN(Builder_168080);
+// (Former per-TU views dissolved: `Builder_168080` was CWwdSpatialMgr [+0x00..+0x6c map
+// 1:1 - m_0=m_mgr, m_4/8/c=grids, rects @0x10/0x30/0x20, origins @0x40/0x48/0x50, bbox
+// @0x58, scroll @0x68]; the fake `?Init@Builder_168080@@` name also left RebuildPlanes'
+// Init call unresolved. `Pt_168080` was a plain i32[2] size pair.)
+//
+// The grids: SubWidget_168080 is the CONCRETE grid actually allocated (its own vtable
+// ??_7SubWidget_168080 @0x1f0310 implements the pure OnFound @0x168060 that the ABSTRACT
+// CWwdGrid @0x1f0328 leaves __purecall). The two are byte-faithfully modeled as
+// layout-sharing siblings [both :CObject - ~SubWidget @0x1682a0 does NOT emit CWwdGrid's
+// 0x1f0328 base stamp, proving it is not a CWwdGrid subobject], so storing the concrete
+// grid into the polymorphic CWwdGrid* field WwdSpatialMgr.cpp drives is a reinterpret of
+// two layout-identical siblings - the same honest residue as ~SubWidget's FreeBuckets
+// call. Setup @0x1915c0 (== CWwdGrid::CWwdGrid run as a re-init on the raw object; the
+// two-phase construction is not expressible in clean MSVC5 C++ - see WwdGrid.cpp 0x191770).
+//
+// @early-stop
+// regalloc residue (~92%, was 99.51% as the `Builder_168080` view): the view kept the
+// grids in fields it re-read through a SubWidget_168080-view cast (a fake view of the
+// CWwdGrid* fields); modeling the concrete grid honestly with typed locals keeps cl's
+// grid pointers in registers where retail re-reads them from [this+4/8/c]. A register-
+// vs-memory scheduling coin-flip on the null/Setup `this`, not source-steerable without
+// re-introducing the fake-view field cast. Logic + offsets + the 8-arg ABI byte-exact.
 RVA(0x00168080, 0x1f6)
-i32 Builder_168080::Init(
-    void* a1,
-    RECT* rc,
-    Pt_168080* p3,
-    Pt_168080* p4,
-    Pt_168080* p5,
-    Pt_168080* p6,
-    Pt_168080* p7,
-    Pt_168080* p8
-) {
+i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6, i32* p7, i32* p8) {
     if (a1) {
-        m_4 = new SubWidget_168080;
-        m_8 = new SubWidget_168080;
-        m_c = new SubWidget_168080;
-        if (m_4 && m_8 && m_c && m_4->Setup(*rc, p3->m_0, p3->m_4)
-            && m_8->Setup(*rc, p4->m_0, p4->m_4) && m_c->Setup(*rc, p5->m_0, p5->m_4)) {
-            m_10 = 0;
-            m_14 = 0;
-            m_18 = p6->m_0 - 1;
-            m_1c = p6->m_4 - 1;
-            m_40 = p6->m_0 / 2;
-            m_44 = p6->m_4 / 2;
-            m_30 = 0;
-            m_34 = 0;
-            m_38 = p7->m_0 - 1;
-            m_3c = p7->m_4 - 1;
-            m_48 = p7->m_0 / 2;
-            m_4c = p7->m_4 / 2;
-            m_20 = 0;
-            m_24 = 0;
-            m_28 = p8->m_0 - 1;
-            m_2c = p8->m_4 - 1;
-            m_50 = p8->m_0 / 2;
-            m_54 = p8->m_4 / 2;
-            m_0 = a1;
-            g_pSetRect_6c44b8(&m_58, rc->left, rc->top, rc->right, rc->bottom);
-            m_68 = 0xffffa932;
-            m_6c = 0xffffa932;
+        SubWidget_168080* g0 = new SubWidget_168080;
+        m_grid0 = (CWwdGrid*)g0;
+        SubWidget_168080* g1 = new SubWidget_168080;
+        m_grid1 = (CWwdGrid*)g1;
+        SubWidget_168080* g2 = new SubWidget_168080;
+        m_grid2 = (CWwdGrid*)g2;
+        if (g0 && g1 && g2 && g0->Setup(*rc, p3[0], p3[1]) && g1->Setup(*rc, p4[0], p4[1])
+            && g2->Setup(*rc, p5[0], p5[1])) {
+            m_rect0Left = 0;
+            m_rect0Top = 0;
+            m_rect0Right = p6[0] - 1;
+            m_rect0Bottom = p6[1] - 1;
+            m_org0x = p6[0] / 2;
+            m_org0y = p6[1] / 2;
+            m_rect1Left = 0;
+            m_rect1Top = 0;
+            m_rect1Right = p7[0] - 1;
+            m_rect1Bottom = p7[1] - 1;
+            m_org1x = p7[0] / 2;
+            m_org1y = p7[1] / 2;
+            m_rect2Left = 0;
+            m_rect2Top = 0;
+            m_rect2Right = p8[0] - 1;
+            m_rect2Bottom = p8[1] - 1;
+            m_org2x = p8[0] / 2;
+            m_org2y = p8[1] / 2;
+            m_mgr = (CWwdObjMgr*)a1;
+            SetRect((RECT*)&m_bbMinX, rc->left, rc->top, rc->right, rc->bottom);
+            m_scrollX = (i32)0xffffa932;
+            m_scrollY = (i32)0xffffa932;
             return 1;
         }
     }
