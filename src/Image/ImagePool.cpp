@@ -156,7 +156,7 @@ void CImagePool::Free(CRezImage* node) {
         B(0, 0, 0);
     }
     if (node->m_listPosition) {
-        m_surfaces.RemoveAt((POSITION)node->m_listPosition);
+        m_surfaces.RemoveAt(node->m_listPosition);
     }
     node->Free();
     ::operator delete(node);

@@ -27,6 +27,8 @@
 
 #include <rva.h>
 
+#include <Mfc.h> // POSITION (CRezImage::m_listPosition, the pool's cached list-node handle)
+                 // + <windows.h> (BITMAPINFOHEADER / HBITMAP the DIB fields use)
 #include <DDrawMgr/DDSurface.h> // IDirectDrawSurface (the held COM surface interface) + the
                                 // CDDSurface wrapper vtable (IsValid/BlitIntoDesc dispatch)
 #include <Io/FileStream.h>
@@ -129,7 +131,7 @@ public:
     i32 m_bitCount;               // +0x440  bits per pixel
     i32 m_stride;                 // +0x444  aligned destination row stride (bytes per row)
     i32 m_rowPad;                 // +0x448  destination padding = m_stride - m_width
-    void* m_listPosition;         // +0x44c  pool: cached AddTail POSITION (surface list node)
+    POSITION m_listPosition;      // +0x44c  pool: cached AddTail POSITION (surface list node)
     i32 m_transparent;            // +0x450  flag (1 = transparent/RLE plane)
     i32 m_paletteScalar;          // +0x454  associated palette scalar (SetPalette 2nd arg)
     void* m_paletteNode;          // +0x458  palette node / SaveBmp default palette object
