@@ -13,7 +13,7 @@
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <Image/Image.h>            // the single-source CDDSurface (the DIRSURF surface)
-#include <Image/FileImageRecords.h> // DecodeSrc / BmpFileHeader / TgaHeader / ResHdr_144270
+#include <Image/FileImageRecords.h> // DecodeSrc / BmpFileHeader / TgaHeader / RtBitmapResHeader
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette-context (m_palBpp/m_palette/m_hasPalette) `info` points at
 
 #include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock in the exporters)
@@ -267,7 +267,7 @@ i32 CDDSurface::Load(i32 a, char* name, i32 c) {
     if (!hg) {
         return 0;
     }
-    ResHdr_144270* p = (ResHdr_144270*)LockResource(hg);
+    RtBitmapResHeader* p = (RtBitmapResHeader*)LockResource(hg);
     if (!p) {
         return 0;
     }

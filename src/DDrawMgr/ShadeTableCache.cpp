@@ -46,16 +46,12 @@ extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fb
 // inlined SetSize in the AddFrom* loaders is (de)allocated through it. reloc-masked.
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
-// The CString temp AddFromArray builds over the name (ctor 0x1b9ba3 / dtor
-// 0x1b9cde external, reloc-masked). Modeled as a tiny holder so the __thiscall
-// ctor/dtor calls and the element Load call bind by shape. (AddFromFile builds no
-// such temp: its LoadFile -> CDataBuffer::LoadFromMem wraps the raw buffer in its
-// own CMemFile internally, so no client-side CMemFile is constructed here.)
-struct CStr {
-    char* m_p;
-    CStr(const char* s); // 0x1b9ba3
-    ~CStr();             // 0x1b9cde
-};
+// AddFromArray builds a real MFC CString temp over the name (ctor 0x1b9ba3 ==
+// CString::CString(const char*), dtor 0x1b9cde == ~CString - confirmed via the ghidra
+// export table; both reloc-masked NAFXCW helpers). (AddFromFile builds no such temp:
+// its LoadFile -> CDataBuffer::LoadFromMem wraps the raw buffer in its own CMemFile
+// internally, so no client-side CMemFile is constructed here.)
+// (Was a hand-rolled `struct CStr { char* m_p; ... }` view of exactly this CString.)
 
 // ===========================================================================
 // CShadeTableArray - the embedded element-array subobject. Its inline ctor/dtor
@@ -743,8 +739,10 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
         m_arr.m_nMaxSize = newMax;
     }
     m_arr.m_pData[oldSize] = t;
-    CStr cstr(name);
-    if (!t->LoadFromFile(cstr.m_p, 0)) {
+    CString cstr(name);
+    // CString -> LPCTSTR is the implicit operator (inline: returns m_pchData @+0), so
+    // this lowers to the same `mov reg,[cstr]` the ex-CStr view's `cstr.m_p` did.
+    if (!t->LoadFromFile(cstr, 0)) {
         FindRemove(t);
         return 0;
     }
@@ -1068,4 +1066,4 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
 
 // SIZE tracking for this TU's modeling-view locals (placed at EOF: any
 // mid-file typedef reschedules the /O2 codegen of CompareHue/GammaTable).
-SIZE_UNKNOWN(CStr);
+// (The ex-CStr view is dissolved onto the real MFC CString - no SIZE needed.)

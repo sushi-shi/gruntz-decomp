@@ -118,7 +118,7 @@ public:
     char m_desc[0xac - 0x9c]; // +0x9c  DDSURFACEDESC head (Lock's out-param)
     i32 m_lPitch;             // +0xac  desc.lPitch (surface stride)
     char _b0[0xc0 - 0xb0];
-    void* m_lpSurface; // +0xc0  desc.lpSurface (locked pixel base)
+    LPVOID m_lpSurface; // +0xc0  desc.lpSurface (locked pixel base; the SDK's own LPVOID)
     char _c4[0x508 - 0xc4];
     void* m_directSound; // +0x508  DirectSound
     i32 m_50c;           // +0x50c  frame-locked flag
