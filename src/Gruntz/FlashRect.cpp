@@ -28,6 +28,7 @@
 // out-of-line ??1CBrush copy is kept from Dialogs.cpp - see the pins there):
 // @rva-symbol: ??_GCBrush@@UAEPAXI@Z 0x000164d0 0x1e
 #include <Gruntz/Dialogs.h> // pulls <Mfc.h>/afxwin (CWnd/CDialog/CBrush/CPaintDC)
+#include <Gruntz/Random.h> // g_randSeed/g_randSeeded
 
 #include <Ints.h>
 #include <rva.h>
@@ -35,8 +36,6 @@
 // MS-CRT-style LCG RNG state (shared with the ApiCaller stubs); reached by
 // address -> reloc-masked. timeGetTime seeds it lazily. Retail names per
 // symbol_names: ?g_randSeeded@@3EA / ?g_randSeed@@3HA / _g_pTimeGetTime.
-extern unsigned char g_randSeeded; // 0x006c127d  bit0 = seeded
-extern i32 g_randSeed;             // 0x006c1288  32-bit LCG state
 
 // Advance the shared LCG one step (lazily seeded); returns 15-bit value.
 // Retail inlines this three times per colour, so force it inline.

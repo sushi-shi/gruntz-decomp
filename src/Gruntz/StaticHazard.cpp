@@ -118,8 +118,6 @@ struct CHaznEntry2 {
 // OWN registry (HaznLookup) and stores the per-key handler PMF.
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // 0x6bf650
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.

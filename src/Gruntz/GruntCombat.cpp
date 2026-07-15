@@ -1,4 +1,5 @@
 #include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
+#include <Gruntz/TraitorMode.h> // g_traitorMode
 // GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):
 // the grunt combat / struck-voice / attack / ability-tuning / spawn family,
 // carved out of the conflated Grunt.cpp (wave3-I grunt-region partition).
@@ -46,7 +47,6 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/ScanRectInit.h>  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h>        // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
-extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
@@ -123,7 +123,6 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 
 // A global enable flag the neighbor-combat gate reads when the candidate IS self
 // (DAT_006455b0, reloc-masked).
-extern i32 g_traitorMode; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
 extern "C" u32 g_frameTime;
@@ -482,7 +481,7 @@ SIZE_UNKNOWN(CombatTypeNode);
         if (id == 0) {                                                                             \
             g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id = g_typeCounter;                                                                    \
-            char* slot = (char*)((_zvec*)&g_nameRegColl)->IndexToPtr(id);                          \
+            char* slot = (char*)((_zvec*)&g_typeColl)->IndexToPtr(id);                          \
             i32 n = g_typeColl.m_grown;                                                            \
             void** list = (void**)g_typeColl.m_alloc;                                              \
             while (n-- != 0) {                                                                     \
@@ -944,8 +943,6 @@ void CGrunt::DestroyAnims() {
 // models; declared bare here because this TU's CGrunt world already carries its own
 // CString/bute decls). All reloc-masked.
 // (g_typeColl.m_grown @0x6bf670 / g_typeColl.m_alloc @0x6bf66c declared canonically above)
-DATA(0x002bf650)
-extern CLookupColl g_nameRegColl; // 0x6bf650  (name registry)
 DATA(0x00244af0)
 CLookupColl g_reg_644af0;
 

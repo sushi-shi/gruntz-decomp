@@ -489,12 +489,10 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 // bodies (g_typeColl @0x6bf650, g_projActColl @0x64c758) around those coll objects.
 
 // R1 - the shared type-name table (@0x6bf650).
-DATA(0x002bf650)
 // (was `extern CActColl g_typeColl;` - a SIXTH spelling of this one object, as the empty
 // CActColl view. The real class is CTypeKeyColl; the g_projType* scalars around it were its
 // fields, not globals.)
 #include <Gruntz/TypeKeyColl.h>
-extern CTypeKeyColl g_typeColl; // 0x6bf650
 // g_projTypeCounter was a SECOND NAME for g_typeCounter (0x21aea8 shared type counter) - same address,
 // so nothing ever defined it. Unified onto the canonical.
 

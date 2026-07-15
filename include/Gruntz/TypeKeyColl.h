@@ -74,6 +74,17 @@ public:
     // initial allocation leaves in the vector's alloc/grown pair.
 };
 
+// The shared game-object type/name registry singleton (?g_typeColl@@3VCTypeKeyColl@@A
+// @0x6bf650): the RTTI-real CTypeKeyColl object every registration path funnels through.
+// Constructed by DynInitTypeColl in src/Bute/TypeKeyColl.cpp (its one canonical DATA pin).
+// The former per-TU facet views of this SAME 0x6bf650 datum - `NameVec g_buteNameVec`
+// (the zDArray<CString> name-cache view) and `CLookupColl g_nameRegColl` (the outlined
+// name-registry view) - are dissolved onto it: they were distinct C++ type names for one
+// object, which made 0x6bf650 bind under three conflicting mangled names (only one could
+// win the delink). Now every reference is g_typeColl, reached through the zDArray/_zvec
+// base for the CString-vector / index-to-ptr access facets.
+extern CTypeKeyColl g_typeColl;
+
 // The per-type id counter the type registry hands out (seeded 2000, ++'d on each new
 // game-object-type registration keyed into the collection above). ?g_typeCounter@@3HA
 // @0x61aea8; DEFINED + DATA-pinned in src/Gruntz/KitchenSlime.cpp. Declared here beside

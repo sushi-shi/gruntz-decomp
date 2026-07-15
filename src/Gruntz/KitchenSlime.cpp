@@ -226,8 +226,6 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
 // it into R1's entry (after freeing any CString nodes the slot held), and bumping
 // the global type counter. All globals are BSS (DATA-pinned so the loads
 // reloc-mask); the collection / CString helpers are external/no-body.
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl;
 
 // The global type counter (0x61aea8; retail .data init = 2000). The class-name bute
 // key is the shared "A" string literal (DAT_0060a454, the same $SG constant

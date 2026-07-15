@@ -299,8 +299,7 @@ extern "C" i32 g_hr;
 extern "C" i32 g_code;
 extern "C" char g_szCode[];
 extern "C" char g_szMsg[];
-extern u8 g_randSeeded;
-extern i32 g_randSeed;
+#include <Gruntz/Random.h> // g_randSeeded + g_randSeed (the primary LCG state)
 extern float g_zeroF;
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];

@@ -44,7 +44,6 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 // CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
 // DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
-extern CTypeKeyColl g_typeColl; // 0x6bf650
 
 // The single-char type keys pooled in .rdata (named in Globals.cpp).
 // k_60cc94 was a SECOND NAME for s_codeJ (0x20cc94) - same address,

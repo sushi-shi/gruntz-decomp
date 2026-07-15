@@ -99,8 +99,6 @@ static const char s_keyF[] = "F";
 
 // CTypeKeyColl (SetAtGrow == grow + assign, inlined in retail) is the shared
 // <Gruntz/TypeKeyColl.h> shape.
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // 0x6bf650 (?g_typeColl@@3UCKSlimeColl@@A)
 
 // g_actionTable (CActionTable @0x644610) is declared above, near InitActReg.
 

@@ -32,8 +32,6 @@
 extern "C" CGameRegistry* g_gameReg;
 
 // The shared type-name registry (0x6bf650/0x6bf66c/0x6bf670).
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl;
 
 // @early-stop
 // const-materialize-into-reg wall (docs/patterns/const-materialize-into-reg-vs-

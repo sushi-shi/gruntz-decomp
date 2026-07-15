@@ -10,7 +10,6 @@
 // reached by raw offset (the documented naming-independent-codegen exception).
 #include <Bute/ButeTree.h>
 #include <Gruntz/TypeKeyColl.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
-extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/BattlezData.h>

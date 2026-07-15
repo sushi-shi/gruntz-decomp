@@ -33,6 +33,7 @@
 // 0x7d810 interval next to the gruntselectedsprite frag run; it stays in
 // GruntPuddle.cpp with an @identity-TODO note.)
 #include <Gruntz/Wormhole.h> // the shared CWormhole class (object logic + acts)
+#include <Gruntz/TypeKeyColl.h> // g_typeColl (the shared type/name registry)
 #include <Io/FileMem.h>      // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GruntPuddle.h>     // CGruntPuddle (+ InGameIcon.h: CGameRegistry/g_gameReg)
@@ -42,7 +43,6 @@
 #include <Gruntz/UserLogic.h>
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <Gruntz/LogicFnTable.h>   // the shared LogicFnTable dispatch-table shape
-#include <Gruntz/NameVec.h>        // g_buteNameVec's scratch zDArray<CString> view
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialObjRef.h>   // CSerialArchive (Read/Write) + the +0x34 sub-object chain
 #include <Gruntz/Grunt.h>          // CGrunt (Teleporter::Update's hit-test target)
@@ -134,10 +134,8 @@ char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-// NameVec is the shared def in <Gruntz/NameVec.h>. (The address is DATA-bound as
 // g_typeColl by <Gruntz/ActNameRegistry.h>; this field-modeled alias stays a bare
 // extern so the loads reloc-mask.)
-extern NameVec g_buteNameVec;
 
 // The CWormhole-logic dispatch table (a zDArray<int (CUserLogic::*)(void)> @
 // 0x644660). The 0x15 thunk constructs it over the index band [0x7d0, 0x7da].
@@ -173,7 +171,7 @@ extern "C" void Handler_403846(); // 0x403846 (teleporter "B")
 
 // The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
 // the freshly-grown region (the zDArray::IndexToPtr body).
-static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
+static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
     i32 r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
@@ -383,7 +381,7 @@ void RegisterWormholeLogic() {
     i32 idx = (i32)g_buteTree.Find(s_codeA);
     if (idx == 0) {
         g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *(CString*)slot = s_codeA;
         g_typeCounter++;
     }

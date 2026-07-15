@@ -29,7 +29,8 @@
 // (UpdateDestructButton @0x10bc30 / AdvanceGauge @0x105750) - the member retype
 // is deferred to the Play.cpp reconciliation.
 #include <Ints.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Gruntz/SoundState.h>  // g_sndEnabled/g_sndCueTag
+#include <Gruntz/TraitorMode.h> // g_traitorMode
 #include <Gruntz/LeafCue.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Mfc.h>
@@ -74,7 +75,6 @@ struct CTmNode {
 extern "C" u32 g_gruntDestruction; // "Grunt destruction"
 extern "C" u32 g_gruntCreation;    // "Grunt creation"
 extern "C" u32 g_gooPuddlez;       // "Goo puddlez"
-extern i32 g_traitorMode;          // "Traitor Mode" (def: Grunt.cpp, C++)
 extern "C" i32 g_monologoShown;    // the MONOLITH logo is on screen (LoadMonologoSprite)
 // The CD-prompt result gate (0x6455ec; def: StartUpPrompt.cpp). The old local
 // hex-named alias ("load/quicksave-UI suppress gate") was this same cell: no CD

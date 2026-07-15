@@ -28,8 +28,6 @@ extern "C" u32 g_engineFrameDelta;
 // The MS-CRT-style LCG rand PeekCycle inlines to roll a random peek sprite (the same
 // generator src/Globals.cpp binds + BootyWalkAnim inlines): lazy-seed from timeGetTime,
 // advance the 214013/2531011 recurrence, take the top 15 bits.
-extern u8 g_randSeeded; // 0x6c127d (bit 0 = seeded)
-extern i32 g_randSeed;  // 0x6c1288 (32-bit LCG state)
 extern "C" {}
 
 #include <rva.h>
@@ -38,7 +36,6 @@ extern "C" {}
 #include <Bute/ButeMgr.h>         // CButeTree (the bute store Setup queries)
 #include <Wap32/ZVec.h>           // zDArray (the command-dispatch tables)
 #include <Gruntz/LogicFnTable.h>  // the shared LogicFnTable dispatch-table shape
-#include <Gruntz/NameVec.h>       // g_buteNameVec's scratch zDArray<CString> view
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Globals.h>
 #include <Wap32/ZDArrayDerived.h>
@@ -106,9 +103,6 @@ extern zDArray g_textDispatch;
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-// NameVec is the shared def in <Gruntz/NameVec.h>.
-DATA(0x002bf650)
-extern NameVec g_buteNameVec; // 0x6bf650
 
 // The two registration key strings (.data constants).
 // s_iconKeyA was a SECOND NAME for s_codeA (0x20a454) - same address,
@@ -125,7 +119,7 @@ extern i32 IconState_40370b();
 
 // The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
 // the freshly-grown region (the zDArray::IndexToPtr body).
-static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
+static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
     i32 r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
@@ -664,7 +658,7 @@ void RegisterIconActions() {
     i32 idxA = (i32)g_buteTree.Find(s_codeA);
     if (idxA == 0) {
         g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *(CString*)slot = s_codeA;
         g_typeCounter++;
     }
@@ -674,7 +668,7 @@ void RegisterIconActions() {
     i32 idxB = (i32)g_buteTree.Find(s_actKeyB);
     if (idxB == 0) {
         g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *(CString*)slot = s_actKeyB;
         g_typeCounter++;
     }
@@ -722,7 +716,7 @@ void RegisterIconState() {
     i32 idx = (i32)g_buteTree.Find(s_codeA);
     if (idx == 0) {
         g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *(CString*)slot = s_codeA;
         g_typeCounter++;
     }
@@ -1212,7 +1206,7 @@ void RegisterTextLogic() {
     i32 idx = (i32)g_buteTree.Find(s_codeA);
     if (idx == 0) {
         g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *(CString*)slot = s_codeA;
         g_typeCounter++;
     }
@@ -1276,6 +1270,5 @@ SIZE_UNKNOWN(CIconRecord);
 SIZE_UNKNOWN(CInGameIcon);
 SIZE_UNKNOWN(IconSpriteFactory);
 SIZE_UNKNOWN(LogicFnTable);
-SIZE_UNKNOWN(NameVec);
 SIZE_UNKNOWN(CInGameText);
 SIZE_UNKNOWN(CTextActReg);

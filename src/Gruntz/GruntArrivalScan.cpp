@@ -36,8 +36,6 @@ extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 // Anim-name registry (g_typeColl @0x6bf650, RTTI ?g_typeColl@@3VCTypeKeyColl@@A):
 // GetNameRecord(m_14->m_1c) -> char**; *rec = the grunt-type name char* (retail call
 // 0x437c -> zDArray::IndexToPtr @0x310f0). Canonical CTypeKeyColl model, no casts.
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl;
 
 // g_clock was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
 // so nothing ever defined it. Unified onto the canonical.

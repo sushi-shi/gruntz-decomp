@@ -7,6 +7,12 @@
 // a second state (g_rng2*) used by the 0x15cbe0 helper.
 #include <Ints.h>
 
+// The primary generator's state (DEFINED in src/Gruntz/Random.cpp): the seeded flag and
+// the 32-bit LCG value. Declared here (the random subsystem's owner header) so consumers
+// stop re-`extern`-ing them per-TU.
+extern u8 g_randSeeded; // 0x6c127d  bit0 set once seeded
+extern i32 g_randSeed;  // 0x6c1288  32-bit LCG state
+
 namespace Rng {
     // 0xcd00: lazily seed the primary generator from timeGetTime, advance it, and
     // return the top 15 bits (the classic MS rand()).

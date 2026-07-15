@@ -22,8 +22,6 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses 
 // The id->name-slot type registry @0x6bf650: Resolve(id) returns a slot whose +0 is
 // the interned anim-code name string (reloc-masked; Resolve is thunk 0x437c).
 // CTypeKeyColl is the shared <Gruntz/TypeKeyColl.h> shape.
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A
 
 // The single-char anim-code key strings (reloc-masked .rodata).
 

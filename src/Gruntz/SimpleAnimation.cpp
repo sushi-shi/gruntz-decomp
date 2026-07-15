@@ -19,7 +19,6 @@
 #include <Mfc.h>                 // CString (the scratch name-vec element)
 #include <Wap32/ZVec.h>          // zDArray<member-fn-ptr> dispatch table + zvec accessors
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
-#include <Gruntz/NameVec.h>      // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
@@ -66,9 +65,6 @@ CSimpleAnimation::~CSimpleAnimation() {}
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-// NameVec is the shared def in <Gruntz/NameVec.h>.
-DATA(0x002bf650)
-extern NameVec g_buteNameVec;
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
 // bounds miss (the same set ZVec.cpp models). The OOM/overflow error token the
@@ -92,7 +88,7 @@ extern i32 SimpleAnimLogic_4028b0();
 
 // The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
 // the freshly-grown region (the zDArray::IndexToPtr body).
-static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
+static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
     i32 r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
@@ -203,7 +199,7 @@ void RegisterSimpleAnimLogic() {
     i32 idx = (i32)g_buteTree.Find(s_codeA);
     if (idx == 0) {
         g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *(CString*)slot = s_codeA;
         g_typeCounter++;
     }

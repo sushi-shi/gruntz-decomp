@@ -44,8 +44,6 @@ struct EngStr4 {
 };
 // CTypeKeyColl (IndexToPtr == thunk 0x403864 -> node) is the shared
 // <Gruntz/TypeKeyColl.h> shape.
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl;
 DATA(0x002bf3bc)
 extern "C" i32 g_engineFrameDelta; // sub-logic clock fed to CAniAdvanceCursor::Advance
 DATA(0x002bf3c0)

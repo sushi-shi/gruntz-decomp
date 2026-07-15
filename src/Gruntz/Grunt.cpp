@@ -74,7 +74,6 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>  // CTriggerMgr::ApplySwitch @0x6d300 (the ex-ApplyTileSwitch alias)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/GruntHealthSprite.h> // CGruntHealthSprite::SetHealthGlyph (health/stamina/toytime/wingz)

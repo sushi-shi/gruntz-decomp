@@ -19,6 +19,7 @@
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <DDrawMgr/PixelShift.h>  // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <Gruntz/TraitorMode.h>   // g_traitorMode
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <ddraw.h> // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
 // The REAL MFC CDialog (ExitModalUI's argument - proof in <Gruntz/GruntzMgr.h>). afx.h
@@ -512,7 +513,6 @@ extern "C" {
 }
 // The "Traitor Mode" cheat gate (0x6455b0; DEFINED in src/Gruntz/Grunt.cpp, C++
 // ?g_traitorMode@@3HA - GruntCombat/TriggerMgrGrid/GruntzMgrCmd read the same symbol).
-extern i32 g_traitorMode;
 // The debug-overlay display-flags word (0x6455f4). PROVEN i32, not u8: the cheat
 // switch (0x862f0) xors/ands it with 0x100/0x400 masks through full DWORD loads and
 // stores. The old `u8 g_debugFlags` model (with a documented `*(u32*)&` over-wide

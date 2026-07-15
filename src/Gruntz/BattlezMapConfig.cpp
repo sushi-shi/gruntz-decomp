@@ -193,8 +193,6 @@ extern "C" CGameRegistry* g_gameReg;
 // Lookup2 (RVA 0x0312a0, thunk 0x03864) resolves into the g_typeColl.m_alloc CString
 // array. Probe (0x016da80) / Reserve (0x034960, thunk 0x02685) back the second
 // dispatch. External, reloc-masked (no body).
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view)
 
 // The second-resolver scratch CString[] (data @ g_6bf66c, count @ g_6bf670) plus
 // the candidate-index bounds (g_6bf658/65c lo/hi, g_6bf660 base, g_6bf668 stride,

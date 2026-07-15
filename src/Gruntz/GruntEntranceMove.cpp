@@ -18,7 +18,6 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry

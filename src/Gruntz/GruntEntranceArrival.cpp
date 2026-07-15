@@ -22,13 +22,13 @@
 // TU is unrecovered (@identity-TODO), it stays here pending that partition.
 //
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
+#include <Gruntz/Random.h> // g_randSeed/g_randSeeded
 #include <Gruntz/Grunt.h>
 #include <Gruntz/Enums.h>       // GruntType tool/powerup kinds + GruntDeathKind + RezTypeTag
 #include <Gruntz/State.h>       // CState (m_levelIndex/m_levelBank - StepWarpExit's level lookup)
 #include <Wap32/Wap32.h>        // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
@@ -66,8 +66,6 @@ extern "C" CGameRegistry* g_gameReg;
 // g_frameTime (the running game clock) is declared by MovingLogic.h via Grunt.h.
 
 // The primary MS-CRT LCG generator state (inlined by the re-roll step; reloc-masked).
-extern u8 g_randSeeded; // 0x6c127d (bit 0 = seeded)
-extern i32 g_randSeed;  // 0x6c1288 (32-bit LCG state)
 
 // The per-tick draw-clock delta the position interpolation scales by (reloc-masked).
 extern "C" u32 g_frameDelta; // 0x645584
