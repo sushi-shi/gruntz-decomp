@@ -92,42 +92,15 @@ extern "C" i32 g_curPlayer;
 // and frees its retab notifier (m_retabNotify @0x54c). The former CTmStatusItem flat view is
 // gone - m_2dc is typed CStatusBarMgr* so the method calls need no per-site cast.
 
-// The booty/score sub-object at world->m_3f4 (booty & trigger modes): a running i64 score
-// tally (m_38) plus the per-column status counters HitTestApply zeroes.
-struct CTmScoreSub {
-    char p0[0x30];
-    i32 m_30; // +0x30
-    i32 m_34; // +0x34
-    i64 m_38; // +0x38  score tally (i64)
-    i32 m_40; // +0x40
-    i32 m_44; // +0x44
-    i32 m_48; // +0x48
-    i32 m_4c; // +0x4c
-};
-
-// The active game-state (g_gameReg->m_curState) FIELD view. METHOD-FREE: every method
-// once declared here was a phantom alias of a real CPlay method (each call site's rel32
-// read through its ILT): LoadCursorSprites==CPlay::LoadCursorSprites @0xd0120 (and the
-// "StopFx2 @0xd0b3a" decl was the SAME callee - 0xd0b3a was never a function start);
-// SetStat==CPlay::ArmSnapshot @0xd9240; Center==CPlay::ResetGoals @0xd5f00; the 3-arg
-// "Place2" was ALSO ResetGoals - the view had fabricated a third arg (retail pushes 2);
-// OnRegion4==CPlay::OnRegion4 @0xd8bc0; Refresh==CPlay::FlushPendingOps @0xda2d0.
-// Callers now cast to the canonical CPlay (<Gruntz/Play.h>) and call the real names.
-// Folding these FIELDS onto CPlay (m_2dc==m_guts, +0x384 anchors into m_pad384,
-// m_3f4 vs m_frameMarker/CTimer, m_504 vs m_dragEndNotify) is the remaining fold-TODO.
-struct CTmWorld {
-    char p0[0x2dc];
-    CStatusBarMgr* m_2dc; // +0x2dc  status-bar item (real class, no per-site cast)
-    char p2e0[0x384 - 0x2e0];
-    struct Anchor {
-        i32 m_x;
-        i32 m_y;
-    } m_anchors[4]; // +0x384  fx anchors (stride 8)
-    char p3a4[0x3f4 - 0x3a4];
-    CTmScoreSub* m_3f4; // +0x3f4  booty/score sub-object
-    char p3f8[0x504 - 0x3f8];
-    i32 m_504; // +0x504  pending-fx flag (only null-tested)
-};
+// (The `CTmWorld` FIELD view of g_gameReg->m_curState and its `CTmScoreSub` m_3f4
+//  sub-object view are DISSOLVED, 2026-07-15: m_curState IS the canonical CPlay
+//  (<Gruntz/Play.h>) - its methods were already folded (LoadCursorSprites/ArmSnapshot/
+//  ResetGoals/OnRegion4/FlushPendingOps), and its FIELDS map member-for-member:
+//  m_2dc==CPlay::m_guts (CStatusBarMgr), +0x384==CPlay::m_anchors[4], m_3f4==CPlay::
+//  m_frameMarker (CTimer - the "score sub" was the frame-marker timer: m_30/m_34==
+//  m_accumLo/Hi, m_38:m_3c==the i64 start stamp, m_48/m_4c==m_running/m_currentMs),
+//  m_504==CPlay::m_dragEndNotify. Consumers cast m_curState to CPlay* and use the real
+//  members cast-free.)
 // (CTmGridHolder / CTmRegSub30 are GONE - they were g_gameReg->m_world (the canonical
 //  CSpriteFactoryHolder) and its +0x24 CGameLevel; the "+0x5c grid object" is
 //  m_mainPlane, and the ReinitGroup "Snap(&r,&c)" was ?WrapCoord@CDDrawWorkerHost@@
@@ -250,8 +223,6 @@ SIZE_UNKNOWN(CTmDisplay);
 SIZE_UNKNOWN(CTmCellConfig);
 SIZE_UNKNOWN(CTmOverlay);
 SIZE_UNKNOWN(CTmGoal);
-SIZE_UNKNOWN(CTmWorld);
-SIZE_UNKNOWN(CTmScoreSub);
 SIZE_UNKNOWN(CTmNameReg);
 SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CTmCell);

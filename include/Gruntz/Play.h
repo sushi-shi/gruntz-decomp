@@ -207,15 +207,21 @@ typedef CFileMemBase CSerialArchive;
 // ?...@CGameRegistry@@ symbol that NOTHING defines (an unbound reloc -> link
 // failure). Each TU now declares the singleton itself, with the type it actually
 // needs; MFC TUs use the real `extern "C" CGruntzMgr* g_gameReg;`.
+// The frame image class (each grid/set row is a CImage*; full class in <Image/CImage.h>).
+// Pointer-only here, so a forward decl keeps this widely-included header light.
+class CImage;
+
 // The level/tile frame grid (CPlay::m_grid @+0x4cc) GrabTile/AdvanceTile walk. Top-level
 // so the CState::m_c->m_10 image-registry map can return it typed (CMapStringToOb::Lookup
-// frame-grid overload), cast-free.
+// frame-grid overload), cast-free. (Its m_rowTable @+0x14 / m_firstRow/m_lastRow @+0x64/+0x68
+// match CImageSet::m_frames / m_minIndex / m_maxIndex - CFrameGrid IS very likely CImageSet,
+// which its SetDelay/SetSprite==SetAllTypes/SetAllFormats already say; a wider fold-TODO.)
 SIZE_UNKNOWN(CFrameGrid);
 struct CFrameGrid {
     // SetDelay @0x152480 IS CImageSet::SetAllTypes; cast at each call.
     // SetSprite @0x152520 IS CImageSet::SetAllFormats; cast at each call.
     char p0[0x14];
-    i32* m_rowTable; // +0x14  row/frame table
+    CImage** m_rowTable; // +0x14  frame table (indexed by row; each entry a CImage*)
     char p18[0x24 - 0x18];
     char m_name24[0x64 - 0x24]; // +0x24  inline set/config name (SyncWrite streams it)
     i32 m_firstRow;             // +0x64  first frame index
@@ -674,7 +680,14 @@ public:
     // MFC array classes are byte-identical, so every FID row there is AMBIG.
     //     python -m gruntz.analysis.mfc_class 0x1b4f3e
     CPtrArray m_startMarkers; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
-    char m_pad384[0x3a4 - 0x384];
+    // +0x384: the 4 world fx-spawn anchors (stride 8). SpawnTileFx (0x79ea0) maps the
+    // (a3-1) tile-effect id into m_anchors[idx] and spawns at {m_x, m_y}. (Ex the
+    // TriggerMgrViews.h `CTmWorld::Anchor` view; m_curState IS this CPlay.)
+    struct Anchor {
+        i32 m_x;
+        i32 m_y;
+    };
+    Anchor m_anchors[4]; // +0x384  (4 * 8 = 0x20)
     // +0x3a4: the 4 placed-object record arrays. CPtrArray (not CByteArray):
     // ClearPlacedObjects (0xda030) reads the elements as CPlacedObj* and retail
     // calls RemoveAt with ecx = this+0x3a4+idx*0x14 (the ARRAY base, vptr-ful
@@ -717,12 +730,12 @@ public:
     // +0x4c0  reveal-strip cap sprite objects (passed by-ptr to the HUD-strip draw).
     void *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
     // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (CFrameGrid, above)
-    CFrameGrid* m_grid;   // +0x4cc  level grid object
-    i32 m_gridCurFrame;   // +0x4d0  current tile/frame id
-    i32 m_gridHasSprite;  // +0x4d4  has-grid-sprite flag
-    i32 m_gridDelayBase;  // +0x4d8  step-delay base
-    i32 m_gridDelayCount; // +0x4dc  step-delay countdown
-    i32 m_gridRow;        // +0x4e0  current row index
+    CFrameGrid* m_grid;     // +0x4cc  level grid object
+    CImage* m_gridCurFrame; // +0x4d0  current tile/frame image (CFrameGrid/CImageSet row)
+    i32 m_gridHasSprite;    // +0x4d4  has-grid-sprite flag
+    i32 m_gridDelayBase;    // +0x4d8  step-delay base
+    i32 m_gridDelayCount;   // +0x4dc  step-delay countdown
+    i32 m_gridRow;          // +0x4e0  current row index
     // +0x4e4: the CursorSnapSprite GAME OBJECT (LoadByMode stores the
     // CreateSprite(..., "CursorSnapSprite", ...) result here) - the real
     // CGameObject (<Gruntz/UserLogic.h>): its m_stateFlags (+0x40) bit0 is the

@@ -869,19 +869,19 @@ void CTriggerMgr::ResetSpawnState() {
     if (m_284 == 0) {
         return;
     }
-    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
-    CStatusBarMgr* st = world->m_2dc;
+    CPlay* world = (CPlay*)g_gameReg->m_curState;
+    CStatusBarMgr* st = world->m_guts;
     if (st->m_retabNotify != 0) {
         operator delete(st->m_retabNotify);
         st->m_retabNotify = 0;
     }
-    world->m_2dc->m_hlBusy = 0;
+    world->m_guts->m_hlBusy = 0;
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);
-        CStatusBarMgr* ctx = world->m_2dc;
+        CStatusBarMgr* ctx = world->m_guts;
         if (*(i32*)ctx != 2 && ctx->m_activeTab == 5) {
             Eng_BuildNotifyA(0);
-            world->m_2dc->TryActivate();
+            world->m_guts->TryActivate();
         }
     }
     if (g_gameReg->m_134 == 1) {
@@ -923,9 +923,9 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
         Eng_SpawnFx(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
         return 1;
     }
-    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
+    CPlay* world = (CPlay*)g_gameReg->m_curState;
     i32 idx = a3 - 1;
-    CTmWorld::Anchor* rec = ((u32)idx < 4) ? &world->m_anchors[idx] : 0;
+    CPlay::Anchor* rec = ((u32)idx < 4) ? &world->m_anchors[idx] : 0;
     if (rec != 0) {
         Eng_SpawnFx(0x14, rec->m_x, rec->m_y, 0, a3, 0);
     }
@@ -2642,7 +2642,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 //   CSelGrunt     -> CGruntHud (m_5c/m_60).
 //   CMapHolderA/B -> already-canonical g_gameReg->m_world->m_24->m_mainPlane.
 // GroupOps.cpp keeps CGroupBroadcast::Broadcast (0x112080, a different interval).
-// Reached as ((CTmWorld*)g_gameReg->m_curState)->Center(x, y) (0x2e28 thunk) and
+// Reached as ((CPlay*)g_gameReg->m_curState)->Center(x, y) (0x2e28 thunk) and
 // from GameKeyHandler.cpp on g_gameReg+0x68.
 // ===========================================================================
 

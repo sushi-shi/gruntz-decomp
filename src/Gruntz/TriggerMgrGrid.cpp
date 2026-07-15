@@ -20,7 +20,8 @@
 // Functions in retail-RVA order; shared views/externs in
 // <Gruntz/TriggerMgrViews.h>. /GX unit (ApplySwitch owns a CString temp).
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Play.h> // canonical CPlay (m_curState real class: ArmSnapshot et al.)
+#include <Gruntz/Play.h>  // canonical CPlay (m_curState real class: ArmSnapshot et al.)
+#include <Gruntz/Timer.h> // CTimer - CPlay::m_frameMarker (the ex-CTmScoreSub @+0x3f4)
 
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -720,20 +721,23 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (k != 0x14) {
         return;
     }
-    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
-    CTmScoreSub* sub = world->m_3f4;
-    i64 diff = (i64)(u32)g_frameTime - sub->m_38;
+    CPlay* world = (CPlay*)g_gameReg->m_curState;
+    // world->m_3f4 IS CPlay::m_frameMarker (the CTimer): read its i64 start stamp
+    // (m_38:m_3c) as the elapsed accumulator, credit the HUD score, then zero the
+    // timer's accum/lap/running/current block (ex the CTmScoreSub view).
+    CTimer* sub = world->m_frameMarker;
+    i64 diff = (i64)(u32)g_frameTime - *(i64*)&sub->m_38;
     if (diff < 0) {
         diff = 0;
     }
     g_gameReg->m_scoreHud->m_score += (i32)diff;
     sub->m_40 = 0;
     sub->m_44 = 0;
-    sub->m_30 = 0;
-    sub->m_34 = 0;
-    sub->m_48 = 0;
-    sub->m_4c = 0;
-    ((CPlay*)world)->ArmSnapshot(0, 0xbb7); // 0xd9240 (was the SetStat phantom)
-    world->m_2dc->SetMode(1);
+    sub->m_accumLo = 0;           // +0x30
+    sub->m_accumHi = 0;           // +0x34
+    sub->m_running = 0;           // +0x48
+    sub->m_currentMs = 0;         // +0x4c
+    world->ArmSnapshot(0, 0xbb7); // 0xd9240 (was the SetStat phantom)
+    world->m_guts->SetMode(1);
     this->ClearMagic(g_curPlayer);
 }

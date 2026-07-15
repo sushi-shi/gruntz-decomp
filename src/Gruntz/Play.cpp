@@ -1866,7 +1866,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
         s->Write(markerData()[i0], 8);
     }
 
-    char* p = m_pad384;
+    char* p = (char*)m_anchors; // the four 8-byte fx-anchor pairs at +0x384 (raw block)
     for (i32 k0 = 4; k0 != 0; k0--) {
         s->Write(p, 8);
         p += 8;
@@ -1900,7 +1900,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
         i32 v = 0;
         if (m_gridCurFrame != 0) {
             ((CDDrawWorkerRegistry*)mc->m_10)
-                ->AnyValueMatches_155630(m_gridCurFrame, (i32)buf, (i32)&v);
+                ->AnyValueMatches_155630((i32)m_gridCurFrame, (i32)buf, (i32)&v);
         }
         s->Write(buf, 0x80);
         s->Write(&v, 4);
@@ -2050,7 +2050,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
 
     {
         // the four 8-byte fx-anchor pairs at +0x384 (raw block, as the Write twin).
-        char* q = m_pad384;
+        char* q = (char*)m_anchors;
         for (i32 k = 4; k != 0; k--) {
             ar->Read(q, 8);
             q += 8;
@@ -2113,7 +2113,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
         if (set == 0 || idx < set->m_minIndex || idx > set->m_maxIndex) {
             m_gridCurFrame = 0;
         } else {
-            m_gridCurFrame = (i32)set->m_frames[idx];
+            m_gridCurFrame = set->m_frames[idx];
         }
     }
 
@@ -3896,7 +3896,7 @@ i32 CPlay::StepGridWalk(i32 dt) {
     m_gridRow = m_gridRow + 1;
     i32 idx = m_gridRow;
     CFrameGrid* g = m_grid;
-    i32 frame;
+    CImage* frame;
     if (idx >= g->m_firstRow && idx <= g->m_lastRow) {
         frame = g->m_rowTable[idx];
     } else {
@@ -4101,7 +4101,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
         ((CImageSet*)m_grid)->SetAllFormats((i32)spr);
     }
     CFrameGrid* g = m_grid;
-    i32 frame;
+    CImage* frame;
     if (index >= g->m_firstRow && index <= g->m_lastRow) {
         frame = g->m_rowTable[index];
     } else {
