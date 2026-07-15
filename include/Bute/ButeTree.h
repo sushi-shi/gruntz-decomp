@@ -39,6 +39,37 @@ struct CVariantSlot {
     char* m_14;                                  // +0x14 label / format text
 };
 
+// The sorted key table's 12-byte record {key, value/fn, flag-word} @0x6bf498. Find
+// reads it as a flat i32[] (stride 3); CVariantSlot::Set dispatches through the value/fn
+// member at +4; the count @0x6bf618 doubles as Set's probe-enable gate. Owned by
+// TypeKeyColl.cpp (g_recs23[32] + g_recCount23).
+SIZE_UNKNOWN(Rec23);
+struct Rec23 {
+    i32 m_key; // +0x00  the key (CKeyFinder::Find subtracts the probe key from it)
+    void* m_4; // +0x04  value, or the __cdecl set-fn Set dispatches (variant slot)
+    short m_8; // flag / word slot
+    short m_a;
+};
+
+// CKeyFinder - the binary-search cursor over the sorted global key table (the 12-byte-
+// stride record array @0x6bf498 with its count @0x6bf618). CVariantSlot::Set drives it
+// as a cursor over its own +0x04 slot (the probe index), and ~CContainerErr reaches Add
+// through the error-sink; both are CVariantSlot-family objects reinterpreted through this
+// cursor facet (the +0x04 index slot is shared). Bodies in TypeKeyColl.cpp.
+SIZE_UNKNOWN(CKeyFinder);
+struct CKeyFinder {
+    char _vft0[4];                   // +0x00 base object vptr (reduced view; not owned/dispatched)
+    i32 m_index;                     // +0x04  found index / insertion point (the ex-Reg23 m_4)
+    u16 m_08;                        // +0x08
+    u16 m_0a;                        // +0x0a  (padding)
+    i32 m_0c;                        // +0x0c  = 2
+    i32 m_10;                        // +0x10  = 2
+    void* m_owner;                   // +0x14
+    CKeyFinder(void* owner);         // 0x16e1a0
+    i32 Find(i32 key);               // 0x16e1d0
+    void* Add(void* key, void* val); // 0x16e360
+};
+
 // One crit-bit trie node (20 bytes).
 SIZE(CButeTreeNode, 0x14);
 struct CButeTreeNode {

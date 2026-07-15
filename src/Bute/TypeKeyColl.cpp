@@ -139,37 +139,11 @@ extern void* GetRetAddr(); // 0x16d990 (the _ReturnAddress breadcrumb capture)
 i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
 // ===========================================================================
-// CKeyFinder - the binary-search cursor over the sorted global key table (the
-// 12-byte-stride record array @0x6bf498 with its count @0x6bf618). Its ctor
-// (0x16e1a0) seeds the two small constant fields and stows the owner; Find
-// (0x16e1d0) bisects for `key`, recording the found index (or the insertion
-// point) into +0x04; Add (0x16e360, the ex-"Reg23" facet - same class, same
-// +0x04 slot, same Find) inserts/updates/removes a record at the cursor.
+// CKeyFinder (the binary-search cursor over the sorted global key table @0x6bf498)
+// and its 12-byte Rec23 record are the shared <Bute/ButeTree.h> shapes (same
+// CVariantSlot family - Set drives the cursor over its own +0x04 index slot). Their
+// ctor (0x16e1a0) / Find (0x16e1d0) / Add (0x16e360) bodies live here.
 // ===========================================================================
-SIZE_UNKNOWN(CKeyFinder);
-struct CKeyFinder {
-    char _vft0[4];           // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    i32 m_index;             // +0x04  found index / insertion point (the ex-Reg23 m_4)
-    u16 m_08;                // +0x08
-    u16 m_0a;                // +0x0a  (padding)
-    i32 m_0c;                // +0x0c  = 2
-    i32 m_10;                // +0x10  = 2
-    void* m_owner;           // +0x14
-    CKeyFinder(void* owner); // 0x16e1a0
-    i32 Find(i32 key);       // 0x16e1d0
-    void* Add(void* key, void* val); // 0x16e360
-};
-
-// The sorted key table: 12-byte records {key, value/fn, flag-word} @0x6bf498.
-// Find reads it as a flat i32[] (stride 3); Set dispatches through the value/fn
-// member at +4; the count @0x6bf618 doubles as Set's probe-enable gate.
-SIZE_UNKNOWN(Rec23);
-struct Rec23 {
-    i32 m_key; // +0x00  the key (CKeyFinder::Find subtracts the probe key from it)
-    void* m_4; // +0x04  value, or the __cdecl set-fn Set dispatches (variant slot)
-    short m_8; // flag / word slot
-    short m_a;
-};
 // Owner-TU definition (.bss). Capacity CODE-PROVEN, not gap-guessed: CKeyFinder::Add
 // refuses inserts at `count >= 0x20`, so the table is exactly 32 records (12 B x 32
 // = 0x180 = the 0x6bf498..0x6bf618 span up to the count cell - corroborating).
@@ -1277,19 +1251,13 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// g_typeColl's RUNTIME-PHASE type. After DynInitTypeColl builds g_typeColl through
-// the CTypeKeyColl ctor (construction vtable ??_7CTypeKeyColl @0x5f04d0), retail
-// re-stamps this live 1-slot runtime vtable @0x5f04e4 over it - slot 0 is 0x16ea20,
-// the CContainerErr error-drain tail the collection shares by COMDAT fold. Because
-// CTypeKeyColl is single-inheritance, cl emits NO ??_7 for this phase (no secondary),
-// so the runtime type is modeled as its own minimal real class and its vtable named
-// directly with VTBL - the only binding mechanism available for a symbol-less datum
-// (chosen over a DATA() manual-vtbl or leaving it in AnalysisVtables).
-struct CTypeCollRuntime {
-    virtual void Slot00_16ea20(); // [0] 0x16ea20 (shared CContainerErr drain tail)
-};
-SIZE_UNKNOWN(CTypeCollRuntime);
-VTBL(CTypeCollRuntime, 0x001f04e4); // g_typeColl runtime-phase vtable @0x5f04e4
+// g_typeColl's RUNTIME-PHASE type is the canonical CTypeCollRuntime (a zDArray<CString>
+// collection; <Gruntz/TypeCollRuntime.h>) whose ??_7 @0x5f04e4 + ScalarDelete (0x16ea20)
+// are owned by src/Bute/TypeCollRuntime.cpp. After DynInitTypeColl builds g_typeColl
+// through the CTypeKeyColl ctor (construction vtable ??_7CTypeKeyColl @0x5f04d0), retail
+// re-stamps that live 1-slot runtime vtable @0x5f04e4 over it. The former .cpp-local
+// `struct CTypeCollRuntime` view (a duplicate binding of 0x1f04e4 that clashed with
+// TypeCollRuntime.cpp's) is dissolved.
 
 // ===========================================================================
 // `dynamic initializer for g_typeColl' (0x16e730) - construct the shared key
