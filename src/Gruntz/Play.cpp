@@ -321,13 +321,12 @@ typedef enum {
 // CPlay::Update (0x0008c910) is now an inline member in the header.
 
 // The shared HUD message-sprite helper - the CANONICAL decl (GlyphStringDraw.cpp
-// defines it at 0x1154b0 as ShowHudMessage(HudMsgSink*, i32 x8); the former local
-// (void*, CString*, RECT*, ...) re-declaration was a PHANTOM: it mangled to a
-// symbol nothing defines). The sink is the CState::m_c holder viewed as the HUD
-// message sink (HudMsgSink - GlyphStringDraw's facet of the same holder).
-struct HudMsgSink;
+// defines it at 0x1154b0 as ShowHudMessage(CSpriteFactoryHolder*, i32 x8)). The sink
+// IS the CState::m_c holder (a CSpriteFactoryHolder - the def reads sink->m_drawTarget
+// ->m_18); the ex-`HudMsgSink` forward-decl view is dissolved (2026-07-15), so the two
+// call sites pass m_c cast-free.
 void ShowHudMessage(
-    HudMsgSink* sink,
+    CSpriteFactoryHolder* sink,
     i32 text,
     i32 rect,
     i32 dur,
@@ -339,7 +338,7 @@ void ShowHudMessage(
 ); // 0x1154b0
 // Its +0x14-slot twin (PlayCueAt's a3!=0 cue renderer).
 void ShowHudMessageAlt(
-    HudMsgSink* sink,
+    CSpriteFactoryHolder* sink,
     i32 text,
     i32 rect,
     i32 dur,
@@ -381,7 +380,7 @@ i32 CPlay::FrameSlot28(i32 arg) {
     r.bottom = m_4w()->m_90;
     r.left = 0;
     r.top = 0;
-    ShowHudMessage((HudMsgSink*)m_c, (i32)&s, (i32)&r, 0x78, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessage(m_c, (i32)&s, (i32)&r, 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     if (m_4w() && m_4w()->m_68) {
         m_4w()->m_68->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
@@ -2730,7 +2729,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     }
 
     if (a3 != 0) {
-        ShowHudMessageAlt((HudMsgSink*)m_c, (i32)&m_cueText, (i32)&rect, a2, 1, a4, a5, a6, a7);
+        ShowHudMessageAlt(m_c, (i32)&m_cueText, (i32)&rect, a2, 1, a4, a5, a6, a7);
     } else {
         EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&m_cueText, (i32)&rect, a2, 1, a4, a5, a6, a7);
     }
