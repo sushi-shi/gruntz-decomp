@@ -10,6 +10,8 @@
 #include <Gruntz/ResMgr.h> // CImageRegistry (m_18->m_10) + its m_10map
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
+#include <DDrawMgr/DDrawSurfacePair.h> // the real render-target class LoadChatBoxSprite's arg is
+#include <DDrawMgr/DDSurface.h> // CDDSurface (m_surface): its m_8 IDirectDrawSurface is the DC host
 
 // (The `m4::PwdHost` view is DISSOLVED: RenderInputText @0x22160 is a real CFontConfig
 // method - <Gruntz/FontConfig.h>, already included above. The CChatBoxTextHost view of
@@ -40,14 +42,14 @@ struct CChatBoxFrame {
 // (+0x44), ReleaseDC slot 26 (+0x68); both __stdcall with the surface as the hidden
 // `this`, so `surf->GetDC(&hdc)` lowers to `push &hdc; push surf; mov reg,[surf];
 // call [reg+slot]` - pointer-only, no vtable emitted in this TU.
-struct CChatBoxDcHost { // arg1->m_2c points here
-    char m_pad00[0x8];
-    IDirectDrawSurface* m_8; // +0x08
-};
-struct CChatBoxCtx { // arg1 points here
-    char m_pad00[0x2c];
-    CChatBoxDcHost* m_2c; // +0x2c
-};
+// (The `CChatBoxDcHost` / `CChatBoxCtx` .cpp-local views are DISSOLVED, 2026-07-15:
+// LoadChatBoxSprite's arg1 is the world holder's back draw-target, proven by the
+// CMulti::PumpB call site `arg1 = m_c->m_drawTarget->m_backPair`
+// (CSpriteFactoryHolder::m_drawTarget is CDDrawSubMgrPages, its +0x14 m_backPair is a
+// CDDrawSurfacePair). CChatBoxCtx == CDDrawSurfacePair (its +0x2c m_surface CDDSurface
+// matches member-for-member, and CDDrawSurfacePair::DrawCount/DrawLabel run the
+// identical +0x2c->m_8 GetDC/ReleaseDC pattern), CChatBoxDcHost == CDDSurface (its +0x8
+// m_8 is the DC-capable IDirectDrawSurface). Typed with the real classes below.)
 // 0x153790 (__stdcall): renders the chatbox frame into the looked-up set.
 void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z);
 
@@ -238,8 +240,8 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         return 1;
     }
 
-    CChatBoxCtx* ctx = (CChatBoxCtx*)arg1;
-    CChatBoxDcHost* host = ctx->m_2c;
+    CDDrawSurfacePair* ctx = (CDDrawSurfacePair*)arg1;
+    CDDSurface* host = ctx->m_surface;
     if (!host) {
         return 0;
     }
@@ -293,6 +295,4 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
 
 // SIZE metadata for the .cpp-local engine views (CChatBoxOwner lives in
 // ChatBoxOwner.h; its SIZE 0x1c is proven by the two alloc sites).
-SIZE_UNKNOWN(CChatBoxCtx);
-SIZE_UNKNOWN(CChatBoxDcHost);
 SIZE_UNKNOWN(CChatBoxFrame);

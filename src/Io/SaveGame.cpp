@@ -1091,46 +1091,12 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
 }
 
 // ---------------------------------------------------------------------------
-// 0x0d00a0 is CPlay::Show - vtable slot 37 (a NEW virtual on CPlay, RVA-thunk 0x3b4d).
-// IDENTITY RECOVERED (2026-07-14) via the vtable DATA-ref technique: the same address
-// is bound at +0x94 (slot 37 * 4) in THREE vtables - ??_7CPlay@@6B@, ??_7CDemo@@6B@,
-// ??_7CMulti@@6B@ (CDemo/CMulti : CPlay, so all inherit CPlay's slot 37); vtable_hierarchy
-// --class CPlay names slot 37 "Show". `this` is therefore a CPlay*: m_4 (+0x04) and m_c
-// (+0x0c) are CPlay members, and the +0x5c draw-sink hangs off m_4. The method copies the
-// source RECT ([m_c->m_24 + 0x10]) into a stack rect and blits it (mode 8, flags 0x10).
-// DEFERRED-FOLD: dissolving BlitHost onto the real CPlay (declare `virtual Show(int)` slot
-// 37 in CPlay's header + type CPlay's +0x04/+0x0c members + home this body to Play.cpp)
-// requires CPlay's header (UserLogic.h) and Play.cpp, both owned by other lanes - so the
-// placeholder views persist here until that fold lands. (The `play` .text neighbourhood -
-// CPlay::Vslot1c @0x0d0050 precedes, CPlay::LoadCursorSprites @0x0d0120 follows - already
-// pointed at CPlay; the 3-vtable data-ref now proves the exact slot.)
-struct BlitDrawOwner {
-    char m_pad0[0x5c];
-    CFontConfig* m_5c; // +0x5c
-};
-struct BlitRectSrc {
-    char m_pad0[0x24];
-    char* m_24; // +0x24 (its [+0x10] is the source RECT)
-};
-struct BlitHost { // == CPlay (deferred: fold onto CPlay when UserLogic.h/Play.cpp free)
-    char m_pad0[4];
-    BlitDrawOwner* m_4; // +0x04
-    char m_pad8[0xc - 8];
-    BlitRectSrc* m_c; // +0x0c
-    void Show(i32 arg);
-};
-SIZE_UNKNOWN(BlitDrawSink);
-SIZE_UNKNOWN(BlitDrawOwner);
-SIZE_UNKNOWN(BlitRectSrc);
-SIZE_UNKNOWN(BlitHost);
-// @interleaver BlitHost emitted-in play  (CPlay::Show slot 37; home to Play.cpp on fold)
-RVA(0x000d00a0, 0x5a)
-void BlitHost::Show(i32 arg) {
-    RECT src = *(RECT*)(m_c->m_24 + 0x10);
-    RECT dst;
-    CopyRect(&dst, &src);
-    m_4->m_5c->DrawTextLines(8, (HDC)arg, &dst, 0x10);
-}
+// (The `BlitHost`/`BlitDrawOwner`/`BlitRectSrc` interleaver views are DISSOLVED,
+// 2026-07-15: 0x0d00a0 was CPlay::PostSetup - vtable slot 37 (+0x94), the NEW virtual
+// bound at that slot in ??_7CPlay / ??_7CDemo / ??_7CMulti. The body is now a real
+// CPlay method homed to Play.cpp; `this` is a CPlay* (m_c -> CGameLevel::m_planeCtx
+// rect, m_4 -> CWorld::m_5c CFontConfig draw sink). This `play` interleaver no longer
+// lives in the savegame TU.)
 
 // Class-metadata annotations (EOF-hosted).
 SIZE(SaveSlot, 0x100);   // 0x100-byte slot record (m_slots[] array stride)

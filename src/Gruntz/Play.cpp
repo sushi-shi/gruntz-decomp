@@ -1684,6 +1684,22 @@ i32 CPlay::Vslot1c(i32 category) {
     return count;
 }
 
+// CPlay::PostSetup (0xd00a0, slot 37 / +0x94) - present the level's plane-context
+// rect through the chat/key text layer. Copies the source rect (CGameLevel::m_planeCtx,
+// the level view's +0x10 coord/extent record) into a stack rect and hands it to the
+// world's CFontConfig text host (DrawTextLines mode 8, flags 0x10) with the live HDC.
+// (Dissolved from the SaveGame.cpp `BlitHost` interleaver view, 2026-07-15: the same
+// 0xd00a0 is bound at slot 37 in ??_7CPlay / ??_7CDemo / ??_7CMulti - a CPlay* this;
+// m_c->m_24 is the canonical CGameLevel, m_4 the CWorld back-ptr whose +0x5c is the
+// CFontConfig draw sink.)
+RVA(0x000d00a0, 0x5a)
+void CPlay::PostSetup(void* dc) {
+    RECT src = *(RECT*)&m_c->m_24->m_planeCtx;
+    RECT dst;
+    CopyRect(&dst, &src);
+    m_4w()->m_5c->DrawTextLines(8, (HDC)dc, &dst, 0x10);
+}
+
 // ===========================================================================
 // CPlay::SyncState  (0x0d7520; re-homed from the former playsync unit, waveP - its
 // retail birth position is inside THIS TU's 0xd5960 interval, TU_MIGRATION MOVE row

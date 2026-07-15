@@ -257,7 +257,7 @@ palettecopy	1
 palettesnapshot	1
 pathhazard	12
 pathhazardactreg	2
-play	111
+play	112
 playercommandstep	1
 playmessageimage	2
 playplanescan	2
@@ -279,7 +279,7 @@ rezmgr	3
 rezsync	4
 rockbreakeffectupdate	1
 rollingball	8
-savegame	34
+savegame	33
 savescreenshot	1
 sbi_image	5
 sbi_imageset	5
