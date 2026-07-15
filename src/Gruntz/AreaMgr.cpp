@@ -17,6 +17,7 @@
 // <Gruntz/SpawnList.h>). Field names are placeholders (m_<hexoffset>); only the
 // OFFSETS + the emitted code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Image/CImage.h> // g_resourceInstallActive
 #include <Mfc.h>
 #include <Gruntz/AreaMgr.h>
 #include <Bute/SymTab.h>
@@ -360,7 +361,6 @@ void CSpawnList::DeleteAllEntries() {
 // / code bytes are load-bearing; helpers are reloc-masked engine externs.
 // ===========================================================================
 
-extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA (Image install bracket)
 
 // (The old CObjResNode / CObjResListNode / CObjResBuilder / CObjResTree views
 // were folded onto the canonicals: the "child entry" is CSpawnEntry (GetSpriteName

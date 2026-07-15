@@ -822,7 +822,6 @@ extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
 extern "C" void* g_645570; // DAT_00645570
 // g_frameTicks (0x24558c) comes from <Rez/FrameClock.h>.
 extern "C" i32 g_64e35c;            // DAT_0064e35c
-extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
 // (0x612618 - the last-loaded level number, init -1 - is DEFINED below as
 // g_lastLevelNum; the old `void* g_lastLevelCache` view here was the same cell.)
 // 0x61139c: the CAreaMgr singleton pointer, statically initialized to &g_areaMgr
@@ -5567,7 +5566,6 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 // casts `this` to the self-contained CPlayRes view below (a struct-view-of-this
 // overlay - matching-neutral, keeps Render untouched).
 
-extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c (mangled-name match)
 extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 
 // CResSource (the named-set source: this->m_levelBank / m_gameBank, the banks cached
@@ -5949,7 +5947,6 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
 // / CDDrawSubMgrAni (augmented above with LoadTree/HasKeyEqual/... ). g_gameReg is the
 // 0x64556c singleton, g_resourceInstallActive is reused. Callees reloc-masked.
 // ===========================================================================
-extern i32 g_resourceInstallActive; // 0x6bf37c
 
 // (AssetRoot is GONE - CNamespaceLoader::m_c is the typed CSpriteFactoryHolder.
 // GRAssetMgr is GONE - the preview rect source is m_world->m_24 (CGameLevel) and

@@ -24,6 +24,7 @@
 //       same RVAs 0x152c50/0x152ad0).
 #include <Mfc.h> // afx-first umbrella (GruntzMgr.h/ResMgr.h need the MFC classes)
 #include <rva.h>
+#include <Image/CImage.h> // g_resourceInstallActive
 
 #include <stdio.h>
 #include <Bute/SymParser.h>   // the shared CSymParser (ResolvePath 0x13c030)
@@ -37,7 +38,6 @@
 #include <Gruntz/FaderMgr.h>              // CFaderMgr - CState::m_faderMgr's real class
 #include <Globals.h>
 
-extern i32 g_resourceInstallActive;
 
 // The build number the version string embeds (owner-TU def; .bss, VA 0x651614).
 DATA(0x00251614)
