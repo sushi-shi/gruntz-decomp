@@ -199,7 +199,6 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view)
 // The second-resolver scratch CString[] (data @ g_6bf66c, count @ g_6bf670) plus
 // the candidate-index bounds (g_6bf658/65c lo/hi, g_6bf660 base, g_6bf668 stride,
 // g_6bf664 fallback record, g_6bf464 a default record). Reloc-masked DATA.
-extern void* g_projActCache;
 
 // CString::Release-style teardown (RVA 0x1b9b93), a __thiscall on a CString slot.
 // A CString is a single char* (4 B), so the scratch walk strides by 4. External,

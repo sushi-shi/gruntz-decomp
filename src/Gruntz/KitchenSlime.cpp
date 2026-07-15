@@ -1,4 +1,5 @@
 #include <Mfc.h>        // real MFC CString (direction-name match temp; reloc-masked)
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/TypeKeyColl.h>
@@ -100,7 +101,6 @@ extern "C" u32 g_engineFrameDelta;
 // external/no-body (shared with the trigger registry's engine functions). The
 // alloc-cache pair (g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the
 // SAME shared global both registries write.
-extern void* GetRetAddr(); // 0x16d990
 
 // SHREDDED-OBJECT FIX: g_kslimeColl is ONE 0x24-byte CActReg object, not eight globals -
 // 0x64622c..0x646248 are its INTERIOR FIELDS (m_coll2/m_lo/m_hi/m_base/m_cur/m_stride/
@@ -112,8 +112,6 @@ extern void* GetRetAddr(); // 0x16d990
 // ctors it in place at runtime; hence the (_zvec*) cast at the engine call sites.
 DATA(0x00246228)
 CActReg g_kslimeColl;
-extern void* g_projActCache;
-extern void* g_retAddrBreadcrumb;
 
 // The entry record (KSlimeHandler/CKSlimeEntry, the PMF slot) is defined in
 // <Gruntz/KitchenSlime.h> after the complete class.

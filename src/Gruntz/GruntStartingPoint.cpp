@@ -10,6 +10,7 @@
 // Serialize/dtor pair (0x105d0/0x10670) are COMDAT-pool exiles riding the class
 // file.
 #include <Gruntz/GruntStartingPoint.h>
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 
@@ -103,8 +104,6 @@ DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;   // 0x6bf650
 DATA(0x002bf464)
 void* g_projActCache;
-extern void* g_retAddrBreadcrumb;
-extern void* GetRetAddr(); // 0x16d990
 
 // The R4 handler stored into the per-class table (LAB_004040a2, an ILT thunk).
 extern "C" void ActReg4Handler(); // 0x4040a2

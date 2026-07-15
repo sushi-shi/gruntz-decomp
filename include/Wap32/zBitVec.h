@@ -41,8 +41,11 @@ extern void* g_projActCache;      // 0x6bf464 (?g_projActCache@@3PAXA)
 extern void* g_retAddrBreadcrumb; // 0x6bf428 (?g_projActAllocResult; OOM record cell)
 extern void* g_projActName;       // 0x6bf454 (bad-arg diagnostic record cell)
 
-// _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where the
-// failing allocation was requested. Reloc-masked (no body).
+// _ReturnAddress()-style helpers (mov eax,[ebp+4]; ret) - record where the failing
+// allocation was requested. Reloc-masked (no body). GetRetAddr (0x16d990, DEFINED in
+// src/Bute/GetRetAddr.cpp) is the one the ActColl registry + the zvec/zBitVec grow paths
+// stamp into g_retAddrBreadcrumb; GetCallerRetAddr (0x16e0f0) is the container-ctor twin.
+void* GetRetAddr();       // 0x16d990
 void* GetCallerRetAddr(); // 0x16e0f0
 
 // The +0x04 error sink: the container reports sizing/argument failures through it

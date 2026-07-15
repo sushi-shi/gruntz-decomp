@@ -27,6 +27,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ObjectDropper.h> // CObjectDropper : CUserLogic (ctor 0xc59f0)
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/DroppedObject.h>   // CDroppedObject : CUserLogic (ctor 0xc68b0)
@@ -74,10 +75,7 @@ extern "C" {
     extern u32 g_engineFrameDelta; // 0x6bf3bc
 }
 
-extern void* GetRetAddr();   // 0x16d990
-extern void* g_projActCache; // 0x2bf464 canonical (bound in GruntStartingPoint.cpp); the old
                              // g_actCache spelling was an unbound VA-typo alias of this global
-extern void* g_retAddrBreadcrumb;
 
 // The drop-motion .rdata FP constants (owner-TU defs; VA 0x5ea9f0/0x5eaa00).
 DATA(0x001ea9f0)

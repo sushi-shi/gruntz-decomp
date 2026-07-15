@@ -12,6 +12,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>      // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
@@ -83,7 +84,6 @@ extern "C" CGruntzMgr* g_gameReg;
 // reloc-mask); the collection methods are external/no-body.
 // ===========================================================================
 struct CHaznEntry;         // an entry: first dword is the registered handler
-extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e3d0)
 CCoordColl g_haznColl;
@@ -95,8 +95,6 @@ RVA(0x000fbb70, 0x15)
 void ConstructHaznRange() {
     ((CZDArrayDerived*)&g_haznColl)->Construct(0x7d0, 0x7da);
 }
-extern void* g_projActCache;
-extern void* g_retAddrBreadcrumb;
 
 // The entry's first dword is a pointer-to-member-function of CStaticHazard
 // (single inheritance -> 4-byte code pointer); FireActivation invokes it on

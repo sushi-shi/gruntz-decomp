@@ -131,7 +131,6 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650
 
 // The engine heap alloc/free ARE the global operator new (0x1b9b46 = ??2) / operator
 // delete (0x1b9b82 = ??3); called as ::operator new/delete (no decl needed).
-extern void* GetRetAddr(); // 0x16d990 (the _ReturnAddress breadcrumb capture)
 
 // The first-differing-bit (crit-bit index) of two keys (__cdecl). The name
 // matches the delinker's symbol for 0x16e480 so the `call` reloc pairs; defined

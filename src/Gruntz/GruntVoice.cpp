@@ -52,7 +52,6 @@ extern "C" u32 g_frameTime;
 // GruntVoiceActReg.cpp, so 0x2514d8 carried TWO competing DATA() claims under two names.
 // Subsumed: one object, one definition, one name; the per-field scalars are gone.
 extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
-extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA), bound in GruntStartingPoint.cpp
 
 // The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
 // alias of g_gameReg below; the 0x24556c DATA binding lives on the C++ name).
@@ -66,7 +65,6 @@ extern "C" CGameRegistry* g_gameReg;
 // -> g_actCache, Insert 0x16d850) yielding g_vtrigCur. All BSS globals DATA-pinned
 // so the loads reloc-mask; the collection methods are external/no-body.
 // ---------------------------------------------------------------------------
-extern void* GetRetAddr(); // 0x16d990
 
 // (The registry Entry type CVTrigEntry - a CVoiceTrigger PMF at [entry] - is the
 // canonical <Gruntz/VoiceTrigger.h> type, mirroring GruntVoice.h's CVActEntry; no

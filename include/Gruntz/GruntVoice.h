@@ -22,6 +22,7 @@ struct CVariantSlot; // folded CVActColl2 (struct tag = canonical PAU mangling, 
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+#include <Wap32/zBitVec.h> // GetRetAddr + g_projActCache/g_retAddrBreadcrumb (canonical owner)
 
 #include <Mfc.h> // CObject base + <windows.h>
 
@@ -63,7 +64,6 @@ struct CVActColl {
     void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8: build the registry)
     i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
 };
-extern void* GetRetAddr(); // 0x16d990
 
 // CGruntVoice's own activation-registry statics (@0x2514xx). The DATA bindings
 // live in GruntVoice.cpp (a header DATA() is not scanned by labels.py).
@@ -76,12 +76,9 @@ extern i32 g_vactScratch;            // 0x2514f8
 extern CVActColl g_vactColl;         // 0x2514d8
 extern CVariantSlot* g_vactColl2;    // 0x2514dc
 
-// The cache/alloc scratch globals shared with the trigger registry (reused
-// verbatim - 0x6bf464 / 0x6bf428; owned by UserLogic.cpp, declared extern here
-// so the loads reloc-mask against the already-matched symbols).
-extern void* g_projActCache; // 0x2bf464 canonical (?g_projActCache@@3PAXA); use this
-extern void* g_actCache;     // unbound VA-typo alias of g_projActCache (legacy includers)
-extern void* g_retAddrBreadcrumb;
+// The cache/alloc scratch globals shared with the trigger registry (g_projActCache
+// 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) are declared canonically in <Wap32/zBitVec.h>
+// (included above) - the low-level container-error breadcrumb owner.
 
 // ---------------------------------------------------------------------------
 // CGruntVoice : CUserLogic. Its own state begins at +0x40. The dtor (0x119ae0)

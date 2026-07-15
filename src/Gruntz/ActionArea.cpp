@@ -6,6 +6,7 @@
 // 0x8600; the interval's flags row is uniformly /GX). Field names are placeholders;
 // only OFFSETS + code bytes are load-bearing.
 #include <Mfc.h>        // real MFC CString (the type-name record's +0x00 member)
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActionArea.h>
@@ -57,9 +58,6 @@ i32 g_projRegStride;               // 0x6293a0
 i32 g_projRegScratch;              // 0x6293a8
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
-extern void* g_projActCache;      // 0x6bf464
-extern void* g_retAddrBreadcrumb; // 0x6bf428
-extern void* GetRetAddr();        // 0x16d990
 
 // The dispatch object FireActivation runs on IS CActionArea (vtable_hierarchy:
 // ??_7CActionArea slot 4 == FireActivation @0x80e0). Its entry type

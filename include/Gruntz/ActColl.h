@@ -21,6 +21,8 @@
 #include <rva.h>
 #include <Wap32/ZVec.h>           // real _zvec (Find @0x16da80 = _zvec::GrowTo)
 #include <Wap32/ZDArrayDerived.h> // real CZDArrayDerived (Construct/RegisterRange @0x8710)
+#include <Wap32/zBitVec.h>        // GetRetAddr + g_projActCache/g_retAddrBreadcrumb (the
+                                  // container-error breadcrumb trio, the low-level owner)
 
 // The coordinate collection itself: its first dword is the collection object (a
 // zDArray-family vtable/base). Every registry IS-A CActColl at +0x00 (CActReg
@@ -30,13 +32,7 @@
 struct CActColl {
     void* m_coll; // +0x00  the collection object (its first dword)
 };
-extern void* GetRetAddr(); // 0x16d990
-
-// The shared act-node alloc-scratch cache. g_projActCache is the canonical bound name
-// (@0x2bf464, GruntStartingPoint.cpp); g_actCache is a same-global alias kept declared
-// (unbound) for the .cpp bodies that still spell it that way.
-extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
-extern void* g_actCache;     // alias of g_projActCache (unbound; use g_projActCache)
-extern void* g_retAddrBreadcrumb;
+// GetRetAddr / g_projActCache / g_retAddrBreadcrumb are declared canonically in
+// <Wap32/zBitVec.h> (included above) - the low-level container-error breadcrumb owner.
 
 #endif // GRUNTZ_GRUNTZ_ACTCOLL_H

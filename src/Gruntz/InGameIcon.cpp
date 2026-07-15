@@ -10,6 +10,7 @@
 // the game-manager singleton (g_gameReg) + the icon factory/records from the
 // class header. Engine callees are reloc-masked (no body).
 #include <Mfc.h>        // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/InGameIcon.h>
@@ -81,12 +82,10 @@ extern LogicFnTable g_iconStateTable;
 
 // --- the shared registration infrastructure (mirror of CInGameText's) --------
 // The zvec error globals the inlined accessors touch on a bounds miss.
-extern void* GetRetAddr(); // 0x16d990
 
 // The shared alloc-scratch cache the zvec IndexToPtr slow path passes to Set: the
 // canonical g_projActCache @0x2bf464 (retail's reloc target; the old
 // g_zvecErrSentinel @0x1f0464 was a WRONG global - a real but unrelated rva).
-extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
 
 // The running game clock (0x245588). The old g_frameTime C++ name lost the
 // keep-last dedup at this rva to the canonical extern-C _g_645588; use that so

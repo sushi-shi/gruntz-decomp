@@ -9,6 +9,7 @@
 // ctor-boundary wall), so it stays as an explicit `*(void**)this` store of the
 // reloc-masked live-vtable datum.
 #include <Wap32/ZVec.h>
+#include <Wap32/zBitVec.h> // GetRetAddr / g_projActCache / g_retAddrBreadcrumb (grow-fail breadcrumb)
 #include <rva.h>
 #include <Mfc.h> // CString (0x1b9b93 default ctor)
 #include <new>   // placement CString ctor
@@ -25,14 +26,12 @@
 extern void* const zDArrayLiveTable; // 0x5e70fc
 
 // Engine return-address capture helper that seeds the error token.
-extern void* GetRetAddr(); // 0x16d990 (pop eax;push eax;ret: the call-site return addr)
 
 // The container OOM/overflow error token the accessor passes to Set() on the
 // can't-grow path (VA 0x6bf464). Bound as ?g_projActCache@@3PAXA in <Wap32/zBitVec.h>
 // (reloc-correct); the Globals.h `g_zvecErrSentinel` is the SAME cell under a second
 // reconstruction name whose Globals.cpp DATA is mis-addressed (0x1f0464, a typo) -
 // referencing the correctly-bound g_projActCache keeps this fn's DATA reloc faithful.
-extern void* g_projActCache; // 0x6bf464 (== the mislabeled g_zvecErrSentinel)
 
 // Per-element relocation applied to each freshly-grown member-pointer slot
 // (a __thiscall on the slot: ecx=slot, no stack cleanup). 0x1b9b93.

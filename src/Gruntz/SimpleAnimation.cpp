@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
+#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
 #include <Wap32/ZDArrayDerived.h>
@@ -75,8 +76,6 @@ extern NameVec g_buteNameVec;
 // reloc target); the Globals.h `g_zvecErrSentinel` is the SAME cell under a
 // mis-addressed (0x1f0464) reconstruction name - reference the correctly-bound
 // g_projActCache so this fn's DATA reloc stays faithful.
-extern void* GetRetAddr();   // 0x16d990
-extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
 
 // The logic registration key (the .data string constant @ 0x60a454, the SAME key
 // string every per-class register thunk inserts).

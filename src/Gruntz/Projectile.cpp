@@ -1039,7 +1039,6 @@ void CProjectile::ScanTargets(i32 impact) {
 // write (already named by KitchenSlime.cpp - re-declared here, address-pinned).
 // (CTBombEntry - the entry whose first dword is the registered handler - is the
 // canonical struct in <Gruntz/TimeBomb.h>.)
-extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024c780)
 CCoordColl g_tbombColl;
