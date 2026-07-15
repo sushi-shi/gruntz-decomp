@@ -50,17 +50,15 @@
 // __FILE__ every wrapper passes to GetErrorString (single $SG pooled constant).
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
-// DSOUND SDK magics (real values, defined locally like DirectInputMgr2.cpp).
-#define DSB_RETAIL_LOOPBIT                                                                         \
-    0x02 // retail IsLooping mask; DX6 dsound.h DSB_RETAIL_LOOPBIT is 0x04, this game used the DX5-era 0x02 (byte-proven, load-bearing)
+// DSOUND DX5-era SDK magics the retail build compiled against (the vendored DX6
+// dsound.h disagrees on both - byte-proven, load-bearing):
+typedef enum DSoundDx5Magic {
+    DSB_RETAIL_LOOPBIT = 0x02, // retail IsLooping status mask (DX6 DSBSTATUS_LOOPING is 0x04)
+    DSBUFFERDESC_SIZE = 0x14,  // retail sizeof(DSBUFFERDESC) (DX6 grew the struct)
+} DSoundDx5Magic;
 
-// DSBUFFERDESC.dwSize (the 0x14-byte sound-buffer descriptor).
-#define DSBUFFERDESC_SIZE 0x14
-
-// A little-endian RIFF FourCC as a u32 (compile-time constant -> the same immediate
-// the retail chunk-tag compares use).
-#define WAVE_FOURCC(a, b, c, d)                                                                    \
-    ((u32)(u8)(a) | ((u32)(u8)(b) << 8) | ((u32)(u8)(c) << 16) | ((u32)(u8)(d) << 24))
+// RIFF FourCC chunk tags via the real <mmsystem.h> mmioFOURCC (identical expansion
+// -> the same immediate the retail chunk-tag compares use).
 
 // DSOUND.dll ordinal #1 device creator; no dllimport -> direct `e8 rel32` thunk (retail).
 
@@ -1649,10 +1647,10 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
     u32 waveTag = *p;
     p++;
     char* end = (char*)p + riffSize - 4;
-    if (*(u32*)riff != WAVE_FOURCC('R', 'I', 'F', 'F')) {
+    if (*(u32*)riff != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
-    if (waveTag != WAVE_FOURCC('W', 'A', 'V', 'E')) {
+    if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
         return 0;
     }
     out->m_fmt = 0;
@@ -1661,9 +1659,9 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
         u32 id = p[0];
         u32 size = p[1];
         p += 2;
-        if (id == WAVE_FOURCC('f', 'm', 't', ' ')) {
+        if (id == mmioFOURCC('f', 'm', 't', ' ')) {
             out->m_fmt = (WaveFormatX*)p;
-        } else if (id == WAVE_FOURCC('d', 'a', 't', 'a')) {
+        } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
             *dataOut = p;
             *sizeOut = size;
             return out->m_fmt != 0;

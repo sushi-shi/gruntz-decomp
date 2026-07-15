@@ -35,7 +35,10 @@
 #include <Gruntz/Enums.h>
 #include <rva.h>
 
-#define VK_DOLLAR 0x24 // == VK_HOME (the developer hot-key's third key)
+// The developer hot-key's third key (no SDK VK_ name for '$'; == VK_HOME's code).
+typedef enum GruntzHotKey {
+    VK_DOLLAR = 0x24,
+} GruntzHotKey;
 
 // ---------------------------------------------------------------------------
 // Engine callees (unmatched; modeled as external no-body functions so the

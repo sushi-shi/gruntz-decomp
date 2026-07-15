@@ -66,16 +66,22 @@
 // / MAKEDIPROP(5) magic-pointer GUIDs, passed by REFGUID to SetProperty.
 
 // DirectInputMgr2::Create flags: each bit, when SET, SKIPS one sub-initializer.
-#define DIDF_NO_DEVICE_B 2    // skip InitB (device B)
-#define DIDF_NO_DEVICE_A 4    // skip InitA (device A)
-#define DIDF_NO_CONTROLLERS 8 // skip EnumGameControllers
+typedef enum DinCreateFlags {
+    DIDF_NO_DEVICE_B = 2,    // skip InitB (device B)
+    DIDF_NO_DEVICE_A = 4,    // skip InitA (device A)
+    DIDF_NO_CONTROLLERS = 8, // skip EnumGameControllers
+} DinCreateFlags;
 
 // CInputDevice mode (m_modeFlags bit 0): set => async GetAsyncKeyState path,
 // clear => buffered DInput GetDeviceState path.
-#define MODE_ASYNC 1
+typedef enum DinDeviceMode {
+    MODE_ASYNC = 1,
+} DinDeviceMode;
 
 // GetDeviceState snapshot buffer: 256 bytes (one per keyboard scan code).
-#define STATE_BUFFER_SIZE 0x100
+typedef enum DinBufferSize {
+    STATE_BUFFER_SIZE = 0x100,
+} DinBufferSize;
 
 // The __FILE__ strings the wrappers pass to GetErrorString - two source-path
 // $SG pooled constants ($SG at 0x6199bc / 0x619ed8) referenced across the run.
@@ -1122,14 +1128,16 @@ i32 CDeviceConfigB::IsReady() {
 
 // The packed mouse-flag bits PollMouse computes into m_currentKeys: the four
 // button-down bits (low nibble) + the four direction bits (the top nibble).
-#define MOUSE_BTN0 0x00000001
-#define MOUSE_BTN1 0x00000002
-#define MOUSE_BTN2 0x00000004
-#define MOUSE_BTN3 0x00000008
-#define MOUSE_LEFT 0x10000000  // lX < 0
-#define MOUSE_RIGHT 0x20000000 // lX > 0
-#define MOUSE_UP 0x40000000    // lY < 0
-#define MOUSE_DOWN 0x80000000  // lY > 0
+typedef enum MouseKeyFlags {
+    MOUSE_BTN0 = 0x00000001,
+    MOUSE_BTN1 = 0x00000002,
+    MOUSE_BTN2 = 0x00000004,
+    MOUSE_BTN3 = 0x00000008,
+    MOUSE_LEFT = 0x10000000,  // lX < 0
+    MOUSE_RIGHT = 0x20000000, // lX > 0
+    MOUSE_UP = 0x40000000,    // lY < 0
+    MOUSE_DOWN = 0x80000000,  // lY > 0
+} MouseKeyFlags;
 
 // One bit's edge reconcile: m_edgeKeys holds this frame's raw flags (snapshot of
 // m_currentKeys), m_latchedKeys the persistent "already counted" latch. A bit set

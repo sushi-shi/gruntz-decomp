@@ -5783,7 +5783,10 @@ i32 CPlay::LoadGameAnims(i32 force) {
 // (CMusicOwner is GONE - the destination is m_4w()->m_48, the typed
 // CGruntzSoundZ on the canonical CWorld view.)
 
-#define MUSIC_TAG_XMI 0x584d49 // 'XMI'
+// The 'XMI' file-format tag CSymTab::Insert stores as the entry's kind value.
+typedef enum MusicFormatTag {
+    MUSIC_TAG_XMI = 0x584d49, // 'XMI'
+} MusicFormatTag;
 
 RVA(0x000dba30, 0x1ca)
 i32 CPlay::BuildMusicCategoryTable(i32) {

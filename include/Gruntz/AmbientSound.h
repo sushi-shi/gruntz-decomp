@@ -26,7 +26,9 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 // left == AMBIENT_BOX_UNBOUNDED in either box means "no box / always in range":
 // the listener test for that box is skipped and the source is treated as audible
 // everywhere (the ctors seed the boxes with it).
-#define AMBIENT_BOX_UNBOUNDED ((i32)0x80000000)
+typedef enum AmbientBoxSentinel {
+    AMBIENT_BOX_UNBOUNDED = 0x80000000, // INT_MIN sentinel (same immediate)
+} AmbientBoxSentinel;
 
 // An axis-aligned region the listener (x,y) must be inside for the sound to play.
 // left == AMBIENT_BOX_UNBOUNDED is the "no box / always pass" sentinel. Same shape
