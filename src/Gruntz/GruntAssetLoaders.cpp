@@ -311,7 +311,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_10->m_screenX = (m_10->m_screenX & ~0x1f) + 0x10;
                 m_10->m_screenY = (m_10->m_screenY & ~0x1f) + 0x10;
             } else {
-                CObject* out_ob = 0;
+                void* out_ob = 0;
                 m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_FALL2, out_ob);
                 CSprite* out = (CSprite*)out_ob;
                 m_poseDeath = (i32)out;
@@ -326,7 +326,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         }
 
         case DEATH_ELECTROCUTE: { // GRUNTZ_DEATHZ_ELECTROCUTE
-            CObject* out_ob = 0;
+            void* out_ob = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_ELECTROCUTE, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
@@ -339,7 +339,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_MELT: {     // GRUNTZ_DEATHZ_MELT
             ApplySetState1(1); // 0x4322
-            CObject* out_ob = 0;
+            void* out_ob = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_MELT, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
@@ -351,7 +351,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         }
 
         case DEATH_KAROKE: { // GRUNTZ_DEATHZ_KAROKE
-            CObject* out_ob = 0;
+            void* out_ob = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_KAROKE, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
@@ -368,7 +368,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_154->m_1a0.SetGeometry(m_poseDeath);
                 goto pathA;
             }
-            CObject* out_ob = 0;
+            void* out_ob = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_EXPLODE, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
@@ -380,7 +380,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         }
 
         case DEATH_DRAIN: { // GRUNTZ_EXITZ_DRAIN (apply EXITZ), re-latch "B"
-            CObject* out_ob = 0;
+            void* out_ob = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_EXITZ_DRAIN, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;

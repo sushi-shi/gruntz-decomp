@@ -277,7 +277,7 @@ struct CAnimSetNode {
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CSprite* _out = 0;                                                                         \
-        m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_" + m_animSetName + (sfx), (CObject*&)_out);      \
+        m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out);      \
         (dst) = (int)_out;                                                                         \
     } while (0)
 

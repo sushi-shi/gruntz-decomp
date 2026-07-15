@@ -271,8 +271,10 @@ i32 CueVisible(i32 viewport, i32 x, i32 y);
 // ---------------------------------------------------------------------------
 struct CSprite; // opaque looked-up sprite
 
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom whose only "method" was a fake
-// alias of the MFC library CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
+// (The ex-`CMapStringToOb` view is DISSOLVED - the member is the real map. It is a
+// CMapStringToPtr: every retail Lookup on it calls 0x1b8438, the CMapStringToPtr band
+// (mfc_class arbitration; verified in 0x49c60 / 0x65e80 / 0x68880 disasm + Warlord's
+// FID note). The old CMapStringToOb typing bound the WRONG library body, 0x1b8008.)
 
 SIZE_UNKNOWN(CEntranceSpriteMgr);
 struct CEntranceSpriteMgr {
@@ -282,7 +284,7 @@ struct CEntranceSpriteMgr {
     void* LookupValue_06b2a0(const char* key); // 0x6b2a0 (external/reloc-masked)
 
     char m_pad0[0x10];
-    CMapStringToOb m_10map; // +0x10
+    CMapStringToPtr m_10map; // +0x10 (Ptr band 0x1b8438 - see note above)
 };
 
 // The grunt's exit-animation holder at CGrunt+0x150 (a 4-byte member just before

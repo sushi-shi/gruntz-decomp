@@ -189,20 +189,17 @@ typedef enum WarlordBattleTag {
     WARLORD_TAG_VIKING = 0x445,
 } WarlordBattleTag;
 
-// The bound object's embedded animation name->handle map: the object's generically-
-// typed world/resource slot (CGameObject::m_0c, +0xc; cast at the deref site per the
-// UserLogic.h convention) -> +0x2c sprite manager -> +0x10 map. The map's Lookup is
-// the FID-proven CMapStringToPtr::Lookup @0x1b8438 (the shared CEntranceSpriteMgr
-// models the embedded map as CMapStringToOb; corrected to CMapStringToPtr here). Kept
+// One unrolled anim-key lookup on the bound object's embedded animation
+// name->handle map: the object's generically-typed world/resource slot
+// (CGameObject::m_0c, +0xc; cast at the deref site per the UserLogic.h convention)
+// -> +0x2c sprite manager -> its CMapStringToPtr m_10map (Grunt.h; retail Lookup
+// 0x1b8438). Build "GRUNTZ_" + m_54 + suffix (two CString temps), look it up
+// (out-param zeroed first so a miss stores 0), stash the handle. The chain stays
 // in the macro (not a cached local) so cl reloads m_38 per unrolled lookup, as retail.
-#define WARLORD_ANIM_MAP() ((CMapStringToPtr*)&((CEntranceResMgr*)m_38->m_0c)->m_2c->m_10map)
-
-// One unrolled anim-key lookup: build "GRUNTZ_" + m_54 + suffix (two CString temps),
-// look it up (out-param zeroed first so a miss stores 0), stash the handle.
 #define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
         void* h = 0;                                                                               \
-        WARLORD_ANIM_MAP()->Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                                \
+        ((CEntranceResMgr*)m_38->m_0c)->m_2c->m_10map.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);      \
         dst = h;                                                                                   \
     }
 
@@ -314,7 +311,6 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
     ((CGrunt*)this)->ResolveMovingAnimation();
 }
 #undef WARLORD_ANIM_LOOKUP
-#undef WARLORD_ANIM_MAP
 
 // @early-stop  (STUB - kept at 0% rather than regress; see the FRAME WALL below)
 // 0x43670 = CWarlord::SerializeMove (vtable slot 1, +0x4; origin CUserBase). Homed

@@ -390,29 +390,29 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     if (mode == 1) {
         i32 r = GruntRand() % 0x1e1;
         if (r > 0x140) {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, (CObject*&)found);
+            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37a, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, (CObject*&)found);
+            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37b, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, (CObject*&)found);
+            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37c, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         }
     } else if (mode == 2) {
-        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (CObject*&)found);
+        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (void*&)found);
         base = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
-        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, (CObject*&)found);
+        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, (void*&)found);
         base = s_GRUNTZ_DEATHZ_MELT;
     }
 
@@ -519,7 +519,7 @@ void CGrunt::LoadEntranceConfig() {
         }
 
         CEntranceAnimPlayer* p = m_154;
-        CObject* found_ob = 0;
+        void* found_ob = 0;
         void* cached = p->m_1b4;
         p->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, found_ob);
         CSprite* found = (CSprite*)found_ob;
@@ -757,10 +757,10 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[8].m_walk = s_SE_ITEM;
 
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (CObject*&)_out);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (void*&)_out);
         m_poseWalk = (i32)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (CObject*&)_out);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (void*&)_out);
         m_poseIdle[2] = 0;
         m_poseIdle[0] = (i32)_out;
         m_poseIdle[1] = (i32)_out;
@@ -803,22 +803,22 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[8].m_idle = s_SE_IDLE;
 
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_WALK, (CObject*&)_out);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_WALK, (void*&)_out);
         m_poseWalk = (i32)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE1, (CObject*&)_out);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE1, (void*&)_out);
         m_poseIdle[0] = (i32)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE2, (CObject*&)_out);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE2, (void*&)_out);
         m_poseIdle[1] = (i32)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE3, (CObject*&)_out);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE3, (void*&)_out);
         m_poseIdle[2] = (i32)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE4, (CObject*&)_out);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE4, (void*&)_out);
         m_poseIdle4 = (i32)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE5, (CObject*&)_out);
+        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE5, (void*&)_out);
         m_poseIdle5 = (i32)_out;
     }
 
