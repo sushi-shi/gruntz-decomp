@@ -88,15 +88,15 @@ void ImageRotateBlit(
         }
     }
 
-    // Pass 2: rotate + translate into the screen x/y, texel coords into a/b.
+    // Pass 2: rotate + translate into the screen x/y, texel coords into u/v.
     ClipVtx mtx[4];
     k = 0;
     for (iy = 0; iy < 2; iy++) {
         for (ix = 0; ix < 2; ix++) {
             mtx[k].x = prod[k].x * cs - prod[k].y * sn + tx;
             mtx[k].y = prod[k].x * sn + prod[k].y * cs + ty;
-            mtx[k].a = (float)sq[ix != 0 ? 3 : 0];
-            mtx[k].b = (float)sq[iy != 0 ? 2 : 1];
+            mtx[k].u = (float)sq[ix != 0 ? 3 : 0];
+            mtx[k].v = (float)sq[iy != 0 ? 2 : 1];
             k++;
         }
     }

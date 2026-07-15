@@ -14,6 +14,7 @@
 // load-bearing fact.
 #include <Ints.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Image/RasterVtx.h> // ClipVtx (the shared raster vertex) + WarpTextureBlit decl
 #include <rva.h>
 #include <Globals.h>
 
@@ -37,14 +38,8 @@ i32 WarpIsPow2(i32 x) {
     return c == 1;
 }
 
-// A polygon vertex (0x1c bytes): x, y, u, v as floats.
-struct WarpVtx {
-    float x; // +0x00
-    float y; // +0x04
-    float u; // +0x08
-    float v; // +0x0c
-    char pad[0x1c - 0x10];
-};
+// The polygon vertex is the shared 28-byte ClipVtx (x,y screen; u,v texel coords;
+// the c/d/e attrs unused here). Definition in <Image/RasterVtx.h>.
 
 // The locked surface (src texture + dest): m_8 = the lock object (vtable slot 0x80
 // = Unlock), m_1c = width, m_20 = row pitch.
@@ -101,7 +96,7 @@ static i32 warpFtol(double v) {
 // source-steerable from clean C. The three inner pixel loops (copy/skip-zero/skip-
 // colorkey), the surface lock/unlock and the span u/v interpolation match by shape.
 RVA(0x00146a20, 0x5b7)
-i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
+i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
     i32 minY = 0x1001;
     i32 maxY = -1;
     if (WarpIsPow2(src->m_width) == 0) {
@@ -122,16 +117,16 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         }
     }
 
-    WarpVtx* prev = (WarpVtx*)((char*)va + (7 * n) * 4 - 0x1c); // last vertex
+    ClipVtx* prev = (ClipVtx*)((char*)va + (7 * n) * 4 - 0x1c); // last vertex
     if (n > 0) {
-        WarpVtx* cur = va;
+        ClipVtx* cur = va;
         i32 count = n;
         do {
             i32 prevYi = warpFtol(prev->y);
             i32 curYi = warpFtol(cur->y);
             if (prevYi != curYi) {
-                WarpVtx* top;
-                WarpVtx* bot;
+                ClipVtx* top;
+                ClipVtx* bot;
                 i32* table;
                 if (prev->y >= cur->y) {
                     top = prev;
@@ -176,7 +171,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 maxY = vy;
             }
             prev = cur;
-            cur = (WarpVtx*)((char*)cur + 0x1c);
+            cur = (ClipVtx*)((char*)cur + 0x1c);
         } while (--count);
     }
 
@@ -300,4 +295,3 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     (*(void (**)(void*, i32))(*(void***)dst->m_8 + 0x80 / 4))(dst->m_8, 0);
     return 1;
 }
-SIZE_UNKNOWN(WarpVtx);

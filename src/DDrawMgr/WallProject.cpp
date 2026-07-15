@@ -14,11 +14,11 @@
 #include <Ints.h>
 #include <math.h>
 #include <Globals.h>
-
-// The static draw workspace (0x6a21f8..). Four vertex records, 0x1c stride; the
-// helpers take &g_rasterVtxB[0].
-DATA(0x002a21f8)
-extern "C" float g_rasterVtxB[];
+// The shared 28-byte-vertex workspace (g_rasterVtxB), its published clipped count
+// (g_rasterVtxCount) and the clip/fill spine (ImagePolyClipRect @0x1461b0,
+// FillPolygon @0x146fe0). ProjectWallQuad builds four ClipVtx records in g_rasterVtxB,
+// clips them, then fills; p0 is the dest surface. Owner DATA() bindings elsewhere.
+#include <Image/RasterVtx.h>
 
 // Read-only float constants the rotation uses (0x5efb10/0x5efb20/0x5efb24).
 DATA(0x001efb10)
@@ -27,20 +27,6 @@ DATA(0x001efb20)
 extern float g_c20;
 DATA(0x001efb24)
 float g_c24 = -3.1415927f; // 0x5efb24  -pi (owner-TU def; len = sqrt(dx*dx+dy*dy - g_c24))
-
-// A draw param the draw helper consumes (0x6becf8).
-DATA(0x002becf8)
-extern "C" i32 g_rasterVtxCount;
-
-// The clip + fill helpers the quad is handed to (reloc-masked __cdecl free fns):
-// the 4-edge polygon clipper ImagePolyClipRect (0x1461b0, ImagePolyClip.cpp) and the
-// scanline polygon fill FillPolygon (0x146fe0, DDrawPolyFill.cpp). g_rasterVtxB is
-// the shared 28-byte-vertex workspace (PolyVtx == FillVert); p0 is the dest surface.
-struct PolyVtx;
-struct FillVert;
-class CDDSurface;
-i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5); // 0x1461b0
-i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color);    // 0x146fe0
 
 // @early-stop
 // intrinsic-FPU wall: retail inlined fpatan/fsin/fcos/fsqrt (/Oi) into one fxch-
@@ -73,13 +59,15 @@ i32 ProjectWallQuad(
     double c = cos(ang);
     double hw = (double)p5;
 
-    g_rasterVtxB[0] = (float)(-s);
-    g_rasterVtxB[1] = (float)len;
-    g_rasterVtxB[5] = (float)c;
-    g_rasterVtxB[6] = (float)(c + len);
+    // The workspace is written as a flat float grid (7 floats == one ClipVtx record).
+    float* w = (float*)g_rasterVtxB;
+    w[0] = (float)(-s);
+    w[1] = (float)len;
+    w[5] = (float)c;
+    w[6] = (float)(c + len);
 
     // rotate the four base corners through (c, -s) into the workspace records.
-    float* v = &g_rasterVtxB[1];
+    float* v = &w[1];
     for (i32 i = 0; i < 4; i++) {
         double bx = (double)v[-1];
         double by = -(double)v[0];
@@ -93,8 +81,8 @@ i32 ProjectWallQuad(
         v += 7;
     }
 
-    if (ImagePolyClipRect((PolyVtx*)g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
-        FillPolygon((FillVert*)g_rasterVtxB, g_rasterVtxCount, (CDDSurface*)p0, (i16)p6);
+    if (ImagePolyClipRect(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
+        FillPolygon(g_rasterVtxB, g_rasterVtxCount, (CDDSurface*)p0, (i16)p6);
     }
     return 1;
 }

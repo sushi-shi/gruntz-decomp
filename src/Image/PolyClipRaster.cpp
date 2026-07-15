@@ -11,30 +11,11 @@
 #include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl (shared with ImageRotate.cpp)
 #include <rva.h>
 
-// The source image (clip-default box): RotateSrcImage (width @+0x18, height @+0x1c),
-// the shared rotate-blit source geometry in <Image/RasterVtx.h>.
-
-// The two ping-pong clip scratch buffers. The -28 "guard" slot before each
-// (g_rasterVtxA's at 0x6a16ec, g_rasterVtxB's at 0x6a21dc) is the prev-vertex base
-// (&buf[count-1]); only their addresses (reloc-masked) are load-bearing.
-DATA(0x002a1708)
-extern "C" ClipVtx g_rasterVtxA[]; // 0x6a1708
-DATA(0x002a21f8)
-extern "C" ClipVtx g_rasterVtxB[]; // 0x6a21f8
-
-// The span rasterizer the clipped polygon is handed to: the textured-polygon
-// rasterizer WarpTextureBlit (0x146a20, WarpTextureBlit.cpp). ClipVtx == WarpVtx
-// (both the 28-byte {x,y,+attrs} raster vertex); a4 is the dst/src surface.
-struct WarpVtx;
-class CDDSurface;
-i32 WarpTextureBlit(
-    WarpVtx* va,
-    i32 n,
-    CDDSurface* dst,
-    CDDSurface* src,
-    i32 mode,
-    i32 colorkey
-); // 0x146a20
+// The source image (clip-default box, RotateSrcImage: width @+0x18, height @+0x1c),
+// the two ping-pong clip scratch buffers (g_rasterVtxA/g_rasterVtxB), and the span
+// rasterizer WarpTextureBlit (0x146a20) the clipped polygon is handed to (a4 is the
+// dst/src surface) all live in the shared spine header <Image/RasterVtx.h>. The DATA()
+// bindings for the scratch buffers are owned by ImagePolyClip.cpp.
 
 // @early-stop
 // x87 scheduling wall (~53%, complete + correct; RE-PROVEN 2026-07-05 - the old
@@ -89,8 +70,8 @@ i32 RotateRasterize(
                 float t = (bound0 - prev->x) / (cur->x - prev->x);
                 out->x = bound0;
                 out->y = prev->y + (cur->y - prev->y) * t;
-                out->a = prev->a + (cur->a - prev->a) * t;
-                out->b = prev->b + (cur->b - prev->b) * t;
+                out->u = prev->u + (cur->u - prev->u) * t;
+                out->v = prev->v + (cur->v - prev->v) * t;
                 out++;
             }
             prev = cur;
@@ -116,8 +97,8 @@ i32 RotateRasterize(
                 float t = (clip0 - cur->x) / (prev->x - cur->x);
                 out->x = clip0;
                 out->y = cur->y + (prev->y - cur->y) * t;
-                out->a = cur->a + (prev->a - cur->a) * t;
-                out->b = cur->b + (prev->b - cur->b) * t;
+                out->u = cur->u + (prev->u - cur->u) * t;
+                out->v = cur->v + (prev->v - cur->v) * t;
                 out++;
             }
             prev = cur;
@@ -143,8 +124,8 @@ i32 RotateRasterize(
                 float t = (clip1 - cur->y) / (prev->y - cur->y);
                 out->y = clip1;
                 out->x = cur->x + (prev->x - cur->x) * t;
-                out->a = cur->a + (prev->a - cur->a) * t;
-                out->b = cur->b + (prev->b - cur->b) * t;
+                out->u = cur->u + (prev->u - cur->u) * t;
+                out->v = cur->v + (prev->v - cur->v) * t;
                 out++;
             }
             prev = cur;
@@ -170,8 +151,8 @@ i32 RotateRasterize(
                 float t = (clip2 - cur->y) / (prev->y - cur->y);
                 out->y = clip2;
                 out->x = cur->x + (prev->x - cur->x) * t;
-                out->a = cur->a + (prev->a - cur->a) * t;
-                out->b = cur->b + (prev->b - cur->b) * t;
+                out->u = cur->u + (prev->u - cur->u) * t;
+                out->v = cur->v + (prev->v - cur->v) * t;
                 out++;
             }
             prev = cur;
@@ -183,7 +164,7 @@ i32 RotateRasterize(
         return 0;
     }
 
-    WarpTextureBlit((WarpVtx*)g_rasterVtxB, n, (CDDSurface*)a4, (CDDSurface*)a4, a5, a6);
+    WarpTextureBlit(g_rasterVtxB, n, (CDDSurface*)a4, (CDDSurface*)a4, a5, a6);
     return 1;
 }
-SIZE_UNKNOWN(ClipVtx);
+SIZE(ClipVtx, 0x1c);

@@ -11,22 +11,16 @@
 // load-bearing. See <DDrawMgr/DDrawShadeBlit.h> family for the surrounding blit.
 #include <Ints.h>
 
+#include <Image/RasterVtx.h> // ClipVtx + g_rasterVtx* + ImagePolyClipRect decl
 #include <rva.h>
 #include <string.h> // inline rep-movs struct copy
 
-// A clip-buffer vertex: x,y (clipped) + 5 carried attribute floats (copied
-// verbatim for inside vertices, left as-is for new intersection vertices).
-struct PolyVtx {
-    float x;
-    float y;
-    float attr[5];
-};
-
-// The two ping-pong clip output buffers and the published result count.
+// The two ping-pong clip output buffers and the published result count. This TU owns
+// their DATA() bindings (shared decls in <Image/RasterVtx.h>).
 DATA(0x002a1708)
-extern "C" PolyVtx g_rasterVtxA[]; // 0x6a1708
+extern "C" ClipVtx g_rasterVtxA[]; // 0x6a1708
 DATA(0x002a21f8)
-extern "C" PolyVtx g_rasterVtxB[]; // 0x6a21f8
+extern "C" ClipVtx g_rasterVtxB[]; // 0x6a21f8
 DATA(0x002becf8)
 extern "C" i32 g_rasterVtxCount = 0;
 
@@ -45,13 +39,13 @@ extern "C" i32 g_rasterVtxCount = 0;
 // product (v0.x kept on the FP stack, v0.y spilled to a temp) is not source-steerable.
 // docs/patterns/x87-fp-stack-schedule.md.
 RVA(0x00145e30, 0x125)
-i32 PolyIsConvexCW(PolyVtx* verts, i32 count) {
+i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     i32 sign = 0;
     i32 dir = 0;
     for (i32 i = 0; i <= count; i++) {
-        PolyVtx* v0 = &verts[i % count];
-        PolyVtx* v1 = &verts[(i + 1) % count];
-        PolyVtx* v2 = &verts[(i + 2) % count];
+        ClipVtx* v0 = &verts[i % count];
+        ClipVtx* v1 = &verts[(i + 1) % count];
+        ClipVtx* v2 = &verts[(i + 2) % count];
         float dx1 = v1->x - v0->x;
         float dy1 = v1->y - v0->y;
         float dx2 = v2->x - v0->x;
@@ -87,7 +81,7 @@ i32 PolyIsConvexCW(PolyVtx* verts, i32 count) {
 // Clip topology, edge selection, the ping-pong buffers and the /28 vertex-count
 // magic divide are all correct; the FP scheduling parks it. Final-sweep candidate.
 RVA(0x001461b0, 0x399)
-i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
+i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     float left = (float)a2;
     float right = (float)a4;
     float top = (float)a3;
@@ -95,10 +89,10 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     i32 i;
 
     // Pass 1: keep x >= left. poly -> bufA.
-    PolyVtx* out = g_rasterVtxA;
+    ClipVtx* out = g_rasterVtxA;
     {
-        PolyVtx* prev = &poly[n - 1];
-        PolyVtx* cur = poly;
+        ClipVtx* prev = &poly[n - 1];
+        ClipVtx* cur = poly;
         for (i = n; i > 0; i--) {
             if (!(prev->x < left)) {
                 *out++ = *prev;
@@ -126,8 +120,8 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     // Pass 2: keep x < right. bufA -> bufB.
     out = g_rasterVtxB;
     {
-        PolyVtx* prev = &g_rasterVtxA[n1 - 1];
-        PolyVtx* cur = g_rasterVtxA;
+        ClipVtx* prev = &g_rasterVtxA[n1 - 1];
+        ClipVtx* cur = g_rasterVtxA;
         for (i = n1; i > 0; i--) {
             if (prev->x < right) {
                 *out++ = *prev;
@@ -155,8 +149,8 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     // Pass 3: keep y >= top. bufB -> bufA.
     out = g_rasterVtxA;
     {
-        PolyVtx* prev = &g_rasterVtxB[n2 - 1];
-        PolyVtx* cur = g_rasterVtxB;
+        ClipVtx* prev = &g_rasterVtxB[n2 - 1];
+        ClipVtx* cur = g_rasterVtxB;
         for (i = n2; i > 0; i--) {
             if (!(prev->y < top)) {
                 *out++ = *prev;
@@ -184,8 +178,8 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     // Pass 4: keep y < bottom. bufA -> bufB.
     out = g_rasterVtxB;
     {
-        PolyVtx* prev = &g_rasterVtxA[n3 - 1];
-        PolyVtx* cur = g_rasterVtxA;
+        ClipVtx* prev = &g_rasterVtxA[n3 - 1];
+        ClipVtx* cur = g_rasterVtxA;
         for (i = n3; i > 0; i--) {
             if (prev->y < bottom) {
                 *out++ = *prev;
@@ -213,4 +207,4 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     return 1;
 }
 
-SIZE(PolyVtx, 0x1c); // clip-buffer vertex {x,y,attr[5]} (g_polyBuf* array element)
+// ClipVtx SIZE lives with its definition owner (PolyClipRaster.cpp).

@@ -9,16 +9,12 @@
 // are reloc-masked DATA externs; CDDSurface::Lock and the IDirectDrawSurface Unlock
 // vtable slot are reloc-masked calls (the DX6 vtable supplies the slot layout).
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <Image/RasterVtx.h> // ClipVtx (the shared raster vertex) + FillPolygon decl
 #include <Win32.h> // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h> // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
 #include <rva.h>
 
-// A polygon vertex (stride 0x1c): float x@+0, float y@+4 (the rest unused here).
-struct FillVert {
-    float m_0; // x
-    float m_4; // y
-    char p[0x1c - 8];
-};
+// The polygon vertex is the shared 28-byte ClipVtx (x@+0, y@+4; the rest unused here).
 // A per-scanline edge record (stride 0x1c); the interpolated fixed-point x lands at
 // +0x10. The two active-edge tables hold the left/right span endpoints per row.
 struct FillEdgeRow {
@@ -52,19 +48,19 @@ extern "C" float g_rasterScaleNeg; // 0x5efb1c -fixed-point scale
 // fresh negative locals, and the x87 endpoint evaluation + edge-slope idiv schedule
 // differently. Not source-steerable; deferred to the final sweep. topic:wall.
 RVA(0x00146fe0, 0x1e2)
-i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
-    FillVert* prev = (FillVert*)((char*)verts + count * 0x1c - 0x1c);
-    FillVert* cur = verts;
+i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
+    ClipVtx* prev = (ClipVtx*)((char*)verts + count * 0x1c - 0x1c);
+    ClipVtx* cur = verts;
     i32 minYi = 0x1001;
     i32 maxYi = -1;
     if (count > 0) {
         i32 n = count;
         do {
-            if ((i32)prev->m_4 != (i32)cur->m_4) {
-                FillVert* top = prev;
+            if ((i32)prev->y != (i32)cur->y) {
+                ClipVtx* top = prev;
                 FillEdgeRow* table;
-                FillVert* bottom;
-                if (prev->m_4 > cur->m_4) {
+                ClipVtx* bottom;
+                if (prev->y > cur->y) {
                     bottom = cur;
                     table = g_rasterEdgeL;
                 } else {
@@ -72,14 +68,14 @@ i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
                     bottom = prev;
                     table = g_rasterEdgeR;
                 }
-                i32 topX = (i32)(top->m_0 * g_rasterScale);
-                i32 topYi = (i32)(top->m_4 * g_rasterScale);
-                i32 botYi = (i32)(bottom->m_4 * g_rasterScale);
+                i32 topX = (i32)(top->x * g_rasterScale);
+                i32 topYi = (i32)(top->y * g_rasterScale);
+                i32 botYi = (i32)(bottom->y * g_rasterScale);
                 i32 topRow = topYi >> 0xe;
                 FillEdgeRow* entry = &table[topRow];
                 i32 botRow = botYi >> 0xe;
                 i32 height = botRow - topRow;
-                i32 botX = (i32)(bottom->m_0 * g_rasterScaleNeg);
+                i32 botX = (i32)(bottom->x * g_rasterScaleNeg);
                 i32 xSlope = (-topX - botX) / height;
                 if (topRow < botRow) {
                     i32 x = topX;
@@ -90,7 +86,7 @@ i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
                     } while (--height != 0);
                 }
             }
-            i32 py = (i32)prev->m_4;
+            i32 py = (i32)prev->y;
             if (py < minYi) {
                 minYi = py;
             }
@@ -139,5 +135,4 @@ i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
     return 1;
 }
 
-SIZE_UNKNOWN(FillVert);
 SIZE_UNKNOWN(FillEdgeRow);
