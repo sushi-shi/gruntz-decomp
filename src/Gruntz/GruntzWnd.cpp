@@ -1,51 +1,20 @@
 // GruntzWnd.cpp - CGruntzWnd, the Gruntz main window (a CGameWnd subclass).
 // CGruntzWnd adds no fields (size 0x10 = the CGameWnd base). The ctor chains the
-// matched CGameWnd ctor and installs the CGruntzWnd vftable.
+// matched CGameWnd ctor and installs the CGruntzWnd vftable. The class's ONE
+// definition is <Gruntz/GruntzWnd.h> (ex .cpp-local here + a reduced `new`-site
+// view in GruntzApp.cpp).
 //
-// CGruntzWnd overrides several CGameWnd message handlers (vtable 0x5ea2d4); each
+// CGruntzWnd overrides the CGameWnd message handlers (vtable 0x5ea2d4); each
 // override forwards the message to the running CGruntzMgr (reached through the
-// owning CGameApp: this->m_owner == CGameApp owner, owner->m_8 == the CGruntzMgr) and
-// chains the CGameWnd base handler. The forwarders are declared as plain methods
-// (not OVERRIDE) so the partial vftable below - whose remaining derived slots are
-// still out-of-line stubs - is left undisturbed; the vtable thunk is each
-// forwarder's only caller and is reloc-masked, so the mangling is match-neutral.
+// owning CGameApp: this->m_owner == CGameApp owner, owner->m_gameMgr) and chains
+// the CGameWnd base handler where retail does.
 //
 // (The full SEH-framed ~CGruntzWnd + the vector-deleting dtor are partially
-// reconstructed; the remaining out-of-line virtual stubs only exist to emit the
-// vftable that the ctor stores.)
+// reconstructed; slot 2 is still declared-only - the vftable reloc masks it.)
 #include <Wap32/Wap32.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzWnd.h>
 #include <rva.h>
-
-class CGruntzWnd : public CGameWnd {
-public:
-    CGruntzWnd();
-    virtual ~CGruntzWnd() OVERRIDE;
-    virtual i32 PreDispatchMessage(UINT, WPARAM, LPARAM) OVERRIDE; // slot 1
-    virtual i32 Wap32GameWndVfunc2(i32, i32, i32) OVERRIDE;        // slot 2
-    virtual i32 OnPaint() OVERRIDE;                                // slot 7
-    virtual i32 OnChar(WPARAM, LPARAM) OVERRIDE;                   // slot 8
-    virtual i32 OnKeyDown(WPARAM, LPARAM) OVERRIDE;                // slot 9
-    virtual i32 OnLButtonDown(WPARAM, i32, i32) OVERRIDE;          // slot 14
-    virtual i32 OnLButtonUp(WPARAM, i32, i32) OVERRIDE;            // slot 16
-    virtual i32 OnMouseMove(WPARAM, i32, i32) OVERRIDE;            // slot 18
-    virtual i32 OnLButtonDblClk(WPARAM, i32, i32) OVERRIDE;        // slot 19
-    i32 Wap32GameWndVfunc0(); // non-virtual: vftable now emitted by the 16 real overrides
-
-    // Message-handler overrides (vtable 0x5ea2d4), reconstructed below. Declared
-    // non-virtual on purpose (see file header); each forwards to the CGruntzMgr.
-    virtual i32 OnClose() OVERRIDE;                                   // slot 4  @0x094b90
-    virtual i32 OnKeyUp(WPARAM wParam, LPARAM lParam) OVERRIDE;       // slot 10 @0x094920
-    virtual i32 OnActivateApp(WPARAM wParam, LPARAM lParam) OVERRIDE; // slot 12 @0x094b20
-    virtual i32 OnRButtonDown(WPARAM keys, i32 x, i32 y) OVERRIDE;    // slot 15 @0x094a20
-    virtual i32 OnRButtonUp(WPARAM keys, i32 x, i32 y) OVERRIDE;      // slot 17 @0x094a60
-    virtual i32 OnRButtonDblClk(WPARAM keys, i32 x, i32 y) OVERRIDE;  // slot 20 @0x094ae0
-
-    // Reaches the running game manager through the owning CGameApp.
-    CGruntzMgr* GameMgr() {
-        return (CGruntzMgr*)m_owner->m_gameMgr;
-    }
-};
 
 RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
@@ -307,5 +276,5 @@ i32 CGruntzWnd::Wap32GameWndVfunc0() {
 // @rva-symbol: ??_GCGruntzWnd@@UAEPAXI@Z 0x00094670 0x1e
 
 // size 0x10 recovered from operator-new sites (gruntz.analysis.news)
-SIZE(CGruntzWnd, 0x10);
+// (SIZE(CGruntzWnd, 0x10) lives with the class in <Gruntz/GruntzWnd.h>.)
 VTBL(CGruntzWnd, 0x001ea2d4); // vtable_names -> code (RTTI game class)

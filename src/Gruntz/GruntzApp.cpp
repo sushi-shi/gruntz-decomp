@@ -17,6 +17,7 @@
 // ShowCursor / DialogBoxParamA), INT_PTR, and the WM_INITDIALOG / WM_COMMAND ids.
 #include <Mfc.h>
 #include <Wap32/Wap32.h>
+#include <Gruntz/GruntzWnd.h> // the real CGruntzWnd (CreateU10O news it)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strlen/strcpy/strcat (rep movs/scas)
@@ -241,15 +242,9 @@ void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
 // Free function `void *CreateU10O()`: `return new CGruntzWnd;` - operator
 // new(0x10) then the throwing CGruntzWnd ctor (0x94640, ??0CGruntzWnd@@QAE@XZ -
 // stamps ??_7CGruntzWnd@@6B@) under a C++ EH frame, returning the raw pointer.
-// The object is the real CGruntzWnd (the game window, a CGameWnd subclass that
-// adds no fields, so sizeof == the 0x10 CGameWnd base = the `new` size operand).
-// Its canonical definition is .cpp-local in GruntzWnd.cpp (no shared header yet);
-// a reduced forward view here gives `new CGruntzWnd` the size + ctor call, binds
-// the ctor reloc to 0x94640, and (deriving CGameWnd) keeps the RTTI hierarchy
-// honest for the vtable-audit. The ctor is external (no body here).
-struct CGruntzWnd : public CGameWnd {
-    CGruntzWnd();
-};
+// The object is the real CGruntzWnd (<Gruntz/GruntzWnd.h> - the game window, a
+// CGameWnd subclass that adds no fields, so sizeof == the 0x10 CGameWnd base =
+// the `new` size operand). The ctor is external (body in GruntzWnd.cpp).
 RVA(0x000809a0, 0x57)
 void* CreateU10O() {
     CGruntzWnd* p = new CGruntzWnd;
