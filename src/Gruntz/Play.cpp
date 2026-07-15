@@ -181,7 +181,6 @@ void EngStr_DrawText(
     i32 a7,
     i32 a8
 );
-#define g_buteText (&g_buteMgr)
 
 // ---- Render-carcass leaf callees still unresolved (free fns / reloc-masked). ----
 // (Eng_SurfaceFlush/Eng_BeginScene are GONE - CDDSurface::Flip @0x13e850 / Fill
@@ -2673,10 +2672,10 @@ void CPlay::LoadSBITextEdges(char* name) {
     RECT rect;
     LevelCoordRect& vp = m_c->m_24->m_planeCtx;
     i32 l = vp.minX, t = vp.minY, r = vp.maxX, b = vp.maxY;
-    i32 bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
-    i32 right = r - g_buteText->GetInt("Font", "TextRightEdge");
-    i32 top = t + g_buteText->GetInt("Font", "TextTopEdge");
-    i32 left = l + g_buteText->GetInt("Font", "TextLeftEdge");
+    i32 bottom = b - g_buteMgr.GetInt("Font", "TextBottomEdge");
+    i32 right = r - g_buteMgr.GetInt("Font", "TextRightEdge");
+    i32 top = t + g_buteMgr.GetInt("Font", "TextTopEdge");
+    i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
     SetRect(&rect, left, top, right, bottom);
 
     EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s, (i32)&rect, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -2709,20 +2708,20 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
 
     if (rectSrc != 0) {
         i32* src = (i32*)rectSrc;
-        i32 bottom = src[3] - g_buteText->GetInt("Font", "TextBottomEdge");
-        i32 right = src[2] - g_buteText->GetInt("Font", "TextRightEdge");
-        i32 top = src[1] + g_buteText->GetInt("Font", "TextTopEdge");
-        i32 left = src[0] + g_buteText->GetInt("Font", "TextLeftEdge");
+        i32 bottom = src[3] - g_buteMgr.GetInt("Font", "TextBottomEdge");
+        i32 right = src[2] - g_buteMgr.GetInt("Font", "TextRightEdge");
+        i32 top = src[1] + g_buteMgr.GetInt("Font", "TextTopEdge");
+        i32 left = src[0] + g_buteMgr.GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     } else {
         // the viewport rect (m_c->m_24->m_viewport) ptr (edx) does not survive
         // the GetInt calls, so all 4 corners are read up front.
         LevelCoordRect& vp = m_c->m_24->m_planeCtx;
         i32 l = vp.minX, t = vp.minY, r = vp.maxX, b = vp.maxY;
-        i32 bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
-        i32 right = r - g_buteText->GetInt("Font", "TextRightEdge");
-        i32 top = t + g_buteText->GetInt("Font", "TextTopEdge");
-        i32 left = l + g_buteText->GetInt("Font", "TextLeftEdge");
+        i32 bottom = b - g_buteMgr.GetInt("Font", "TextBottomEdge");
+        i32 right = r - g_buteMgr.GetInt("Font", "TextRightEdge");
+        i32 top = t + g_buteMgr.GetInt("Font", "TextTopEdge");
+        i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     }
 

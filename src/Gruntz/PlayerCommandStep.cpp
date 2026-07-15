@@ -84,7 +84,6 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
 // callee-saved reg and re-reads m_4 inside each case (only case 0 reuses the
 // gate's cached `mgr` in eax); caching it across the whole switch would pin it
 // in a callee-saved reg and spill `this`. CSE collapses the repeats within a case.
-#define grid (m_4->m_cmdGrid)
     switch ((u8)a4) {
         default:
             return 1;
@@ -123,11 +122,11 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
 
         case 2: {
             u32 player = (u8)a2;
-            CGrunt* g = grid->m_grid[(u8)a3 + player * 0xf];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a3 + player * 0xf];
             if (g != 0 && g->m_entranceCommitted != 0) {
                 g->m_arrivalActive = 0;
             }
-            res = grid->ClearCell(player, (u8)a3, (u16)a5, (u16)a6, 0);
+            res = m_4->m_cmdGrid->ClearCell(player, (u8)a3, (u16)a5, (u16)a6, 0);
             if (res != 0) {
                 if (player != (u32)g_curPlayer) {
                     return 1;
@@ -152,7 +151,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             // switch selector `a4 & 0xff` (which would spill the selector + add a frame).
             i32 isB = a4 & 4;
             u32 player = (u8)a2;
-            CGrunt* g = grid->m_grid[(u8)a3 + player * 0xf];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a3 + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -171,14 +170,14 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             u32 px = (u16)a5;
             u32 py = (u16)a6;
-            CGrunt* node = (CGrunt*)grid->CellHitTest(px, py, (i32*)&a4, (i32*)&a8, 5);
+            CGrunt* node = (CGrunt*)m_4->m_cmdGrid->CellHitTest(px, py, (i32*)&a4, (i32*)&a8, 5);
             if (node == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
             } else {
                 g->SetArrivalTarget((i32)player, px, node->m_10->m_screenX, node->m_10->m_screenY);
             }
-            res = (isB == 0) ? grid->ApplyTriggerA(player, *(i32*)&a4, *(i32*)&a8, 0)
-                             : grid->ApplyTriggerB(player, *(i32*)&a4, *(i32*)&a8, 0);
+            res = (isB == 0) ? m_4->m_cmdGrid->ApplyTriggerA(player, *(i32*)&a4, *(i32*)&a8, 0)
+                             : m_4->m_cmdGrid->ApplyTriggerB(player, *(i32*)&a4, *(i32*)&a8, 0);
             if (res != 0) {
                 if (res != -1) {
                     if (player != (u32)g_curPlayer) {
@@ -189,7 +188,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     }
                     return 1;
                 }
-                res = grid->ClearCell(player, *(i32*)&a4, *(i32*)&a8, 0, (isB == 0) ? 2 : 3);
+                res = m_4->m_cmdGrid->ClearCell(player, *(i32*)&a4, *(i32*)&a8, 0, (isB == 0) ? 2 : 3);
                 if (res != 0) {
                     if (player != (u32)g_curPlayer) {
                         return 1;
@@ -217,7 +216,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 5: {
-            CGrunt* g = grid->m_grid[(u8)a2 * 0xf + (u8)a3];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a2 * 0xf + (u8)a3];
             if (g == 0 || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -236,7 +235,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 6: {
-            CGrunt* g = grid->m_grid[(u8)a2 * 0xf + (u8)a3];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a2 * 0xf + (u8)a3];
             if (g != 0) {
                 if (g->m_tileClaimed != 1) {
                     g->m_arrivalRerollLo = 0;
@@ -277,7 +276,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 7: {
-            CGrunt* g = grid->m_grid[(u8)a2 * 0xf + (u8)a3];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a2 * 0xf + (u8)a3];
             if (g == 0 || g->m_tileClaimed == 0) {
                 return 1;
             }
@@ -298,7 +297,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 m_4f0 = 0;
             }
             i32 idx = (u8)a3 + player * 0xf;
-            CGrunt* g = grid->m_grid[idx];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[idx];
             if (g != 0 && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
                 g->m_arrivalRerollLo = 0;
                 g->m_arrivalRerollWindowLo = 0;
@@ -321,7 +320,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 sel = 0;
             } else {
                 if (player == (u32)g_curPlayer) {
-                    grid->ResetCell(player, (u8)a3, 0, 0);
+                    m_4->m_cmdGrid->ResetCell(player, (u8)a3, 0, 0);
                 }
                 sel = 1;
             }
@@ -335,7 +334,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
 
         case 9: {
             u32 player = (u8)a2;
-            CGrunt* g = grid->m_grid[(u8)a3 + player * 0xf];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a3 + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -357,10 +356,10 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             CGruntHud* m10 = g2->m_10;
             g->SetArrivalTarget(row, col, m10->m_screenX, m10->m_screenY);
-            res = grid->ApplyTriggerA(player, *(i32*)&a7, row, 0);
+            res = m_4->m_cmdGrid->ApplyTriggerA(player, *(i32*)&a7, row, 0);
             if (res != 0) {
                 if (res == -1) {
-                    res = grid->ClearCell(player, *(i32*)&a8, *(i32*)&a2, 0, 2);
+                    res = m_4->m_cmdGrid->ClearCell(player, *(i32*)&a8, *(i32*)&a2, 0, 2);
                     if (res == 0) {
                         if ((u32)g_curPlayer != player || g->m_entranceCommitted == 0) {
                             return 0;
@@ -397,7 +396,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
 
         case 10: {
             u32 player = (u8)a2;
-            CGrunt* g = grid->m_grid[(u8)a3 + player * 0xf];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a3 + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -419,7 +418,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             CGruntHud* m10 = g2->m_10;
             g->SetArrivalTarget(row, col, m10->m_screenX, m10->m_screenY);
-            res = grid->ApplyTriggerB(player, *(i32*)&a7, row, 0);
+            res = m_4->m_cmdGrid->ApplyTriggerB(player, *(i32*)&a7, row, 0);
             if (res != 0) {
                 if (res != -1) {
                     if ((u8)a2 != (u32)g_curPlayer) {
@@ -430,7 +429,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     }
                     return 1;
                 }
-                res = grid->ClearCell(player, *(i32*)&a8, *(i32*)&a2, 0, 3);
+                res = m_4->m_cmdGrid->ClearCell(player, *(i32*)&a8, *(i32*)&a2, 0, 3);
                 if (res != 0) {
                     if ((u8)a2 != (u32)g_curPlayer) {
                         return 1;
@@ -459,4 +458,3 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
     }
     return 0;
 }
-#undef grid

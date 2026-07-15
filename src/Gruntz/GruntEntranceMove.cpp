@@ -233,7 +233,7 @@ i32 CGrunt::RunEntranceMove() {
         }
         m_35c = 0;
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeD);
+        m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         GruntEntranceCell cell = m_entranceCell;
@@ -343,7 +343,7 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(i32 mode) {
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyK);
+    m_14->m_1c = (void*)g_buteTree.Find(s_animKeyK);
 
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
@@ -686,7 +686,7 @@ i32 CGrunt::StartBombGruntRun() {
     m_moveTileX = dx;
     m_moveTileY = dy;
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeM);
+    m_14->m_1c = (void*)g_buteTree.Find(s_codeM);
     m_timePerTile = g_buteMgr.GetIntDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
     m_22c = 1;
     {
@@ -912,7 +912,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     }
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeA);
+    m_14->m_1c = (void*)g_buteTree.Find(s_codeA);
     SetMoveStateA(m_19c, 1, 0, 0);
     m_entranceActive = 0;
 
@@ -1033,7 +1033,7 @@ i32 CGrunt::StepArrivalCommit() {
             }
             m_35c = 0;
             m_prevAnimSetNode = m_14->m_1c;
-            m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeD);
+            m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseWalk);
             GruntEntranceCell cell = m_entranceCell;
@@ -1062,7 +1062,7 @@ i32 CGrunt::StepArrivalCommit() {
         SnapToLastTile(1);
         if (redo) {
             m_prevAnimSetNode = m_14->m_1c;
-            m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeD);
+            m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
             OnCoordCommit(m_coordToggle);
         }
         goto finalize;
@@ -1152,7 +1152,7 @@ finalize:
     m_entranceActive = 1;
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeQ);
+    m_14->m_1c = (void*)g_buteTree.Find(s_codeQ);
     {
         i32 z = m_10->m_screenY + 0x186a0;
         if (m_10->m_74 != z) {
@@ -1562,7 +1562,7 @@ i32 CGrunt::StepAnimDispatchB() {
         }
         m_35c = 0;
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeD);
+        m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         // by-value cell copy dead-spills `reason` (esp+0x24) -> sub esp frame, then

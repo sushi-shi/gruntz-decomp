@@ -420,10 +420,6 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 // reconstructed in src/Gruntz/BrickzClip_02b340.cpp). Typing the pointer with the real class
 // dropped the views, the shell and the cast together.)
 
-// The this+0x31c CObList reinterpreted as the scratch-list view (same object as the
-// canonical GruntListSub m_31c; one reinterpret at the address, no cast at the uses).
-#define SCAN_LIST() (&m_31c) // m_31c IS the grunt's real CPtrList member (Grunt.h)
-
 // Recompute the plane dirty rect (m_60) as {0,0,w,h} intersected with a copy.
 #define SCAN_BOUNDS(grid)                                                                          \
     {                                                                                              \
@@ -1080,7 +1076,7 @@ i32 CGrunt::PathScan57db0() {
                 fn[0] = (void*)co->m_x;
                 fn[1] = (void*)co->m_y;
                 g_coordPool.m_freeHead = *fn;
-                SCAN_LIST()->AddTail(fn);
+                m_31c.AddTail(fn);
             }
         }
         if (CoordCount() != 0) {
@@ -1091,13 +1087,13 @@ i32 CGrunt::PathScan57db0() {
                     g_coordPool.Push((void*)*(i32*)r);
                 }
             }
-            SCAN_LIST()->RemoveAll();
+            m_31c.RemoveAll();
         }
-        void* elem = SCAN_LIST()->RemoveHead();
+        void* elem = m_31c.RemoveHead();
         if (elem != 0) {
             FREELIST_PUSH(elem);
         }
-        SCAN_LIST()->RemoveAll();
+        m_31c.RemoveAll();
         SCAN_BOUNDS(grid);
         return 1;
     }
@@ -1957,7 +1953,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             SnapToLastTile(1);
             if (redo) {
                 m_prevAnimSetNode = m_14->m_1c;
-                m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeD);
+                m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
                 OnCoordCommit(m_coordToggle);
             }
         }

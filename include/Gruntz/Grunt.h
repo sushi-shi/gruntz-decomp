@@ -427,7 +427,6 @@ void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
 
 // g_buteTree + CButeTree are declared canonically in <Bute/ButeTree.h>, reached here
 // via <Gruntz/UserLogic.h> -> <Bute/ButeMgr.h> -> <Bute/ButeTree.h> (included above).
-#define EntranceLookupAnimSet(k) (g_buteTree.Find(k))
 
 // The grunt's current-anim-name resolver is the shared global g_typeColl @0x6bf650
 // (RTTI CTypeKeyColl, <Gruntz/TypeKeyColl.h>). The former CAnimNameResolver /
