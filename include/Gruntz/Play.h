@@ -211,22 +211,15 @@ typedef CFileMemBase CSerialArchive;
 // Pointer-only here, so a forward decl keeps this widely-included header light.
 class CImage;
 
-// The level/tile frame grid (CPlay::m_grid @+0x4cc) GrabTile/AdvanceTile walk. Top-level
-// so the CState::m_c->m_10 image-registry map can return it typed (CMapStringToOb::Lookup
-// frame-grid overload), cast-free. (Its m_rowTable @+0x14 / m_firstRow/m_lastRow @+0x64/+0x68
-// match CImageSet::m_frames / m_minIndex / m_maxIndex - CFrameGrid IS very likely CImageSet,
-// which its SetDelay/SetSprite==SetAllTypes/SetAllFormats already say; a wider fold-TODO.)
-SIZE_UNKNOWN(CFrameGrid);
-struct CFrameGrid {
-    // SetDelay @0x152480 IS CImageSet::SetAllTypes; cast at each call.
-    // SetSprite @0x152520 IS CImageSet::SetAllFormats; cast at each call.
-    char p0[0x14];
-    CImage** m_rowTable; // +0x14  frame table (indexed by row; each entry a CImage*)
-    char p18[0x24 - 0x18];
-    char m_name24[0x64 - 0x24]; // +0x24  inline set/config name (SyncWrite streams it)
-    i32 m_firstRow;             // +0x64  first frame index
-    i32 m_lastRow;              // +0x68  last frame index
-};
+// CPlay::m_grid (@+0x4cc, the level/tile frame grid the GrabTile/AdvanceTile walk drives)
+// IS the canonical CImageSet (<Image/ImageSet.h>). The ex-`CFrameGrid` view is DISSOLVED
+// (2026-07-15): the SAME image-registry map (m_c->m_10->m_10map) yields both the buf80a
+// image SET (typed CImageSet*) and the buf80b GRID (typed CFrameGrid*) - a CMapStringToPtr
+// stores one value type, so they are one class - and every field lines up: m_rowTable @+0x14
+// == m_frames, m_name24 @+0x24 == m_name, m_firstRow/m_lastRow @+0x64/+0x68 == m_minIndex/
+// m_maxIndex, size 0x6c; its SetDelay/SetSprite ARE SetAllTypes/SetAllFormats. Pointer-only
+// here (consumers include ImageSet.h), so a forward decl suffices.
+class CImageSet;
 
 // ===========================================================================
 // CPlay - the in-game PLAY state. Extends CState from +0x1a8. The per-frame
@@ -729,9 +722,9 @@ public:
     i32 m_revealFrame;      // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
     // +0x4c0  reveal-strip cap sprite objects (passed by-ptr to the HUD-strip draw).
     void *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
-    // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (CFrameGrid, above)
-    CFrameGrid* m_grid;     // +0x4cc  level grid object
-    CImage* m_gridCurFrame; // +0x4d0  current tile/frame image (CFrameGrid/CImageSet row)
+    // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (canonical CImageSet)
+    CImageSet* m_grid;      // +0x4cc  level tile/frame grid (canonical CImageSet)
+    CImage* m_gridCurFrame; // +0x4d0  current tile/frame image (a CImageSet row)
     i32 m_gridHasSprite;    // +0x4d4  has-grid-sprite flag
     i32 m_gridDelayBase;    // +0x4d8  step-delay base
     i32 m_gridDelayCount;   // +0x4dc  step-delay countdown

@@ -23,7 +23,7 @@
 struct CSprite;
 class CImage; // the frame element IS the real CImage (Image/CImage.h)
 struct CObject;
-struct CFrameGrid; // the frame-grid value the image registry's map yields (CPlay::m_grid)
+// (the ex-`CFrameGrid` map value IS the canonical CImageSet - CPlay::m_grid; see Play.h)
 
 // The engine string-keyed sprite-set hash table embedded at a registry's +0x10
 // (the `add ecx,0x10` before the call addresses it). Lookup() hashes the class-name

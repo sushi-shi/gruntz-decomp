@@ -1825,7 +1825,7 @@ i32 g_lastLevelNum = -1;
 // CPlay::SyncWrite19fb, SyncState's mode-4 serializer, called `mov ecx,edi; push ar`),
 // its "manager" CArchiveMgr was the CState::m_c holder (the +0x10 registry probe is
 // CDDrawWorkerRegistry::AnyValueMatches_155630 - the frame-name reverse lookup over
-// m_gridCurFrame), its "+0x24 inline name" object was CPlay::m_grid (CFrameGrid's
+// m_gridCurFrame), its "+0x24 inline name" object was CPlay::m_grid (the CImageSet's
 // config name), the "+0x188 default-int" object was the CursorSnapSprite game object
 // (CGameObject::m_188, the archive-cue id) and the element arrays are the
 // m_startMarkers / m_3a4[4] / m_488 MFC arrays read raw. Body folded below.)
@@ -1911,7 +1911,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
         char buf[0x80];
         memset(buf, 0, sizeof(buf));
         if (m_grid != 0) {
-            strcpy(buf, m_grid->m_name24);
+            strcpy(buf, m_grid->m_name);
         }
         s->Write(buf, 0x80);
     }
@@ -2126,7 +2126,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
         m_grid = 0;
     } else {
         ((CMapStringToPtr*)&res->m_10->m_10map)->Lookup(buf80b, gridObj);
-        m_grid = (CFrameGrid*)gridObj;
+        m_grid = (CImageSet*)gridObj;
     }
 
     ar->Read(&m_gridDelayBase, 4);
@@ -3895,17 +3895,17 @@ i32 CPlay::StepGridWalk(i32 dt) {
     m_gridDelayCount = m_gridDelayBase;
     m_gridRow = m_gridRow + 1;
     i32 idx = m_gridRow;
-    CFrameGrid* g = m_grid;
+    CImageSet* g = m_grid;
     CImage* frame;
-    if (idx >= g->m_firstRow && idx <= g->m_lastRow) {
-        frame = g->m_rowTable[idx];
+    if (idx >= g->m_minIndex && idx <= g->m_maxIndex) {
+        frame = g->m_frames[idx];
     } else {
         frame = 0;
     }
     m_gridCurFrame = frame;
     if (frame == 0) {
-        m_gridCurFrame = g->m_rowTable[g->m_firstRow];
-        m_gridRow = g->m_firstRow;
+        m_gridCurFrame = g->m_frames[g->m_minIndex];
+        m_gridRow = g->m_minIndex;
     }
     return 1;
 }
@@ -4082,7 +4082,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     if (m_c == 0) {
         return 1;
     }
-    CFrameGrid* grid = 0;
+    CImageSet* grid = 0;
     // frame-grid probe into the image registry's name->object map (frame-grid Lookup overload).
     m_c->m_10->m_10map.Lookup(key, (CObject*&)grid);
     m_grid = grid;
@@ -4097,13 +4097,13 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
         if (spr == 0) {
             spr = g_gameReg->m_spriteFactory->LoadSprite(spr, 1);
         }
-        ((CImageSet*)m_grid)->SetAllTypes(0xa);
-        ((CImageSet*)m_grid)->SetAllFormats((i32)spr);
+        m_grid->SetAllTypes(0xa);
+        m_grid->SetAllFormats((i32)spr);
     }
-    CFrameGrid* g = m_grid;
+    CImageSet* g = m_grid;
     CImage* frame;
-    if (index >= g->m_firstRow && index <= g->m_lastRow) {
-        frame = g->m_rowTable[index];
+    if (index >= g->m_minIndex && index <= g->m_maxIndex) {
+        frame = g->m_frames[index];
     } else {
         frame = 0;
     }
