@@ -168,24 +168,12 @@ extern CButeMgr g_buteMgr;
 // retail's state ids differ). Logic complete; deferred to the final sweep.
 // g_gameReg viewed for the LCG rand (__thiscall, ecx = the registry) + the master
 // volume the duck halves.
-// The bute config gate (param_1): m_10->m_188 is the currently-active voice id.
-struct CSpawnGateInner {
-    char m_pad00[0x188];
-    i32 m_188; // +0x188
-};
-struct CSpawnGate {
-    char m_pad00[0x10];
-    CSpawnGateInner* m_10; // +0x10
-};
-// One owned voice stream (m_10/m_14): a DirectSoundMgr with a +0x6c releasable
-// sub-sprite, plus the source/configure/volume setters.
-struct CSpawnStream {
-    // SetSource @? IS StreamVoice::SetSource; cast at the call.
-    // Configure @? IS StreamVoice::Configure; cast at the call.
-    // SetVolumeByIndex @? IS DirectSoundMgr::SetVolumeByIndex; cast at each call.
-    char m_pad00[0x6c];
-    CSpriteReleasable m_6c; // +0x6c  (Release, 0x137f00)
-};
+// The bute config gate (param_1) is a CSpawnButeConfig: its +0x10 active-voice
+// sub-object holds the currently-active voice id at +0x188 (folded into the header;
+// the former CSpawnGate/CSpawnGateInner .cpp-local views are dissolved). The two owned
+// voice streams (m_10/m_14) are real Dsndmgr StreamVoices (SetSource 0x1374c0 /
+// Configure 0x137520 / the embedded StreamVoiceFeeder at +0x6c) - the former
+// CSpawnStream .cpp-local view is dissolved onto <Dsndmgr/StreamVoice.h>.
 // (OpenStream lives on the unified CSpawnRemoveColl at m_04->m_20; see the header.)
 
 // The game registry pointer at *0x64556c (reloc-masked DATA; DATA label owned by
@@ -245,8 +233,8 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 b = v0c->m_playFlags;
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
-    CSpawnStream** streams = &m_10;
-    CSpawnGate* gate = (CSpawnGate*)param_1;
+    StreamVoice** streams = &m_10;
+    CSpawnButeConfig* gate = (CSpawnButeConfig*)param_1;
     i32 chosen;
     if (b < a) {
         chosen = 1;
@@ -270,17 +258,17 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] = (CSpawnStream*)((SoundStream*)m_04->m_20)
+        streams[chosen] = ((SoundStream*)m_04->m_20)
                               ->OpenStream((CParseSource*)src, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }
     }
-    CSpawnStream* stream = streams[chosen];
+    StreamVoice* stream = streams[chosen];
     i32 vol = m_2c;
-    ((StreamFeeder*)&stream->m_6c)->Pause();
-    if (((StreamVoice*)stream)->SetSource((CParseSource*)src) != 0) {
-        ((StreamVoice*)stream)->Configure(vol, 0, 0, 0);
+    stream->m_feeder.Pause();
+    if (stream->SetSource((CParseSource*)src) != 0) {
+        stream->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = voices[chosen];
     return voice->Setup(gate->m_10->m_188, (void*)stream, param_4, 0) != 0;
@@ -504,14 +492,14 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
     i32 tag0c = m_0c->m_source;
     if (tag08 == id) {
         if (m_10 != 0) {
-            ((StreamFeeder*)&m_10->m_6c)->Pause();
+            m_10->m_feeder.Pause();
         }
         if (m_08 != 0) {
             m_08->Reset();
         }
     } else if (tag0c == id) {
         if (m_14 != 0) {
-            ((StreamFeeder*)&m_14->m_6c)->Pause();
+            m_14->m_feeder.Pause();
         }
         if (m_0c != 0) {
             m_0c->Reset();
@@ -530,7 +518,7 @@ void CGruntSpawnConfig::DtorBody() {
     void** p = (void**)&m_08;
     for (i32 k = 0; k < 2; k++) {
         if (p[2] != 0) {
-            ((StreamFeeder*)&((CSpawnStream*)p[2])->m_6c)->Pause();
+            ((StreamVoice*)p[2])->m_feeder.Pause();
         }
         if (p[0] != 0) {
             ((CGruntVoice*)p[0])->Reset();
@@ -564,13 +552,10 @@ BOOL CGruntSpawnConfig::IsReady() {
 }
 
 SIZE_UNKNOWN(CGruntSpawnConfig);
+SIZE_UNKNOWN(CSpawnActiveVoice);
 SIZE_UNKNOWN(CSpawnButeConfig);
 SIZE_UNKNOWN(CSpawnButeTarget);
-SIZE_UNKNOWN(CSpawnGate);
-SIZE_UNKNOWN(CSpawnGateInner);
 SIZE_UNKNOWN(CSpawnOwner);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CSpawnRemoveColl);
-SIZE_UNKNOWN(CSpawnStream);
 SIZE_UNKNOWN(CSpawnTree);
-SIZE_UNKNOWN(CSpriteReleasable);

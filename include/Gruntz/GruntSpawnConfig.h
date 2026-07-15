@@ -36,7 +36,7 @@
 // the .cpp). m_04 is ONE config tree (its +0x08 sprite factory + +0x20 collection),
 // m_08/m_0c hold voice sprites, m_10/m_14 owned voice streams.
 class CGruntVoice; // folded CGruntVoice
-struct CSpawnStream;
+struct StreamVoice; // m_10/m_14 owned voice streams (the real <Dsndmgr/StreamVoice.h>)
 struct CSpawnTree;
 
 // ---------------------------------------------------------------------------
@@ -57,8 +57,18 @@ struct CSpawnTree;
 // plus two early specials on config->m_258. `target` is a flat bag of i32 slots
 // the switch indexes by byte offset; modeled as a raw byte bag so each case is a
 // `lea eax,[target+N]`.
+// param_1's +0x10 sub-object: LoadGruntSpawnConfig reads +0x188 as the currently-active
+// voice id (compared to each voice's m_source; passed to CGruntVoice::Setup).
+// @identity-TODO: the exact class of this active-voice holder is unrecovered (candidate
+// CGruntHud, whose m_188 sits at the same offset), so it stays a modeled sub-object.
+struct CSpawnActiveVoice {
+    char m_00[0x188];
+    i32 m_188; // +0x188  currently-active voice id
+};
 struct CSpawnButeConfig {
-    char m_00[0x170];
+    char m_00[0x10];
+    CSpawnActiveVoice* m_10; // +0x10  the active-voice sub-object (was the CSpawnGate view)
+    char m_14[0x170 - 0x14];
     i32 m_170; // +0x170  the switch selector
     char m_174[0x234 - 0x174];
     i32 m_234; // +0x234  a "has-slot" flag tested by case fallthrough
@@ -121,8 +131,8 @@ public:
     CSpawnTree* m_04;   // +0x04  = owner->m_30 (config tree)
     CGruntVoice* m_08;  // +0x08  voice-sprite pair
     CGruntVoice* m_0c;  // +0x0c
-    CSpawnStream* m_10; // +0x10  owned voice-stream pair
-    CSpawnStream* m_14; // +0x14
+    StreamVoice* m_10; // +0x10  owned voice-stream pair (the real Dsndmgr StreamVoice)
+    StreamVoice* m_14; // +0x14
     // ::CPtrArray, not CDWordArray: retail's ctor/SetSize calls land in [0x1b4f0b,
     // 0x1b527e), whose head stamps ??_7CPtrArray@@6B@ (mfc_class --audit).
     CPtrArray m_18; // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
@@ -161,9 +171,8 @@ struct CSpawnTree {
     CSpawnRemoveColl* m_20; // +0x20  the remove/stream collection
 };
 
-// The sprite-release helper (FUN_00537f00) is __thiscall on the sub-object at
-// (object + 0x6c); modeled as a method so `lea ecx,[obj+0x6c]; call` falls out.
-struct CSpriteReleasable {};
+// (The voice stream's +0x6c release is now the real StreamVoiceFeeder::Pause -
+// stream->m_feeder.Pause(); the old CSpriteReleasable placeholder is dissolved.)
 
 // The Rez heap free (0x1b9b82 _RezFree) the array-entry teardown runs after the
 // element destructor. Reloc-masked.
