@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <ddraw.h>      // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
 // The REAL MFC CDialog (ExitModalUI's argument - proof in <Gruntz/GruntzMgr.h>). afx.h
@@ -375,11 +376,6 @@ extern "C" {
 // reads: the live RGB565 pixel-format ints, DEFINED in their owner TU
 // src/DDrawMgr/DDSurface.cpp (g_rUp/g_gUp/g_rDown/g_gDown/g_bDown). Reference
 // externs only here (the old extern "C" _g_683eaX shadow definitions are gone).
-extern i32 g_rUp;   // 0x683ea0
-extern i32 g_gUp;   // 0x683ea4
-extern i32 g_rDown; // 0x683eac
-extern i32 g_gDown; // 0x683eb0
-extern i32 g_bDown; // 0x683eb4
 
 // The world's +0x10 slot is the game's IMAGE/NAME registry: the REAL CImageRegistry
 // (<Gruntz/ResMgr.h>) - the ex-CWorldLookupHolder view is DISSOLVED. Its "+0x10

@@ -8,6 +8,7 @@
 // 0x150180 / 0x150190 / 0x1501a0 / 0x1503c0) and operator new/delete are
 // external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Gruntz/DataBuffer.h> // the real CDataBuffer (CShadeTable's dual-view): Free/Reset bind here
 
 #include <math.h> // pow (__CIpow) in HsvShiftTable
@@ -19,11 +20,6 @@
 // The live screen RGB-format shift/mask table at 0x683ea0..0x683eb4 - already
 // named by CLightFxRender.cpp / CDDrawShadeBlit.cpp. The builders gate on the
 // RGB565 magic state (rUp=10, gUp=5, rDown/gDown/bDown=3). Reloc-masked.
-extern i32 g_rUp;   // 0x683ea0
-extern i32 g_gUp;   // 0x683ea4
-extern i32 g_rDown; // 0x683eac
-extern i32 g_gDown; // 0x683eb0
-extern i32 g_bDown; // 0x683eb4
 
 // ALL-VTABLES phase: the array vtable (0x5efb28) + the CObject grand-base dtor
 // vtable (0x5e8cb4) are now cl-emitted from the real CObject/CShadeTableArray

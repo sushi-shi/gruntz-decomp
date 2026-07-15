@@ -22,6 +22,7 @@
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h>
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Gruntz/GameLevel.h> // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
 #include <Gruntz/UserLogic.h> // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
 #include <Image/CImage.h>     // CImage m_width/m_height (SetTileSizeFromImageSet)
@@ -1194,11 +1195,6 @@ void CDDrawWorkerHost::InitScrollRects() {
 // ---------------------------------------------------------------------------
 // The live screen RGB-format shift table at 0x683ea0.. (already named by
 // SpriteRef.cpp / CLightFxRender.cpp). Reloc-masked DIR32 data refs.
-extern i32 g_rUp;   // 0x683ea0
-extern i32 g_gUp;   // 0x683ea4
-extern i32 g_rDown; // 0x683eac
-extern i32 g_gDown; // 0x683eb0
-extern i32 g_bDown; // 0x683eb4
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerHost::ValidateTiles (__thiscall, ret 0x4). When the plane is loaded

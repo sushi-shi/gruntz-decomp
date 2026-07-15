@@ -10,16 +10,12 @@
 // count stream, m_outputSize out size, m_palette palette); the real home is the
 // CFileImage/CImage save family. Offsets + bytes are load-bearing.
 #include <rva.h>
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <Ints.h>
 #include <Rez/RezMgr.h> // RezAlloc (_RezAlloc 0x1b9b46)
 
 // The live screen RGB-format unpack/pack shift table (0x683ea0..0x683eb4).
-extern i32 g_rUp;
-extern i32 g_gUp;
-extern i32 g_rDown;
-extern i32 g_gDown;
-extern i32 g_bDown;
 
 struct CImageRle16 {
     void* EncodeRle16(const u8* src); // 0x1495d0

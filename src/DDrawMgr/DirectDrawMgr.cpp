@@ -16,6 +16,7 @@
 // canonical-class unification pass; the physical TU is already one file.
 #include <Io/FileStream.h>
 #include <EmptyString.h> // g_emptyString
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawPtrCollections.h> // the pool half of this obj's manager (+ CPoolItem*)
@@ -90,12 +91,6 @@ void* g_ddCreateCtx = 0; // 0x683ee4
 // The RGB low-bit-position / 8-minus-bitcount pair tables ComputeColorMasks fills from
 // the back-buffer's pixel format. DEFINED in src/DDrawMgr/DDSurface.cpp (owner TU);
 // GruntzMgr.cpp's 16-bit pack reads the same six words. Reference externs only.
-extern i32 g_rUp;   // red   low-bit shift
-extern i32 g_gUp;   // green low-bit shift
-extern i32 g_bUp;   // blue  low-bit shift
-extern i32 g_rDown; // red   8-minus-count
-extern i32 g_gDown; // green 8-minus-count
-extern i32 g_bDown; // blue  8-minus-count
 
 // The post-mask surface-format apply (BuildColorChannelTables @0x13f740, the
 // DDSurface.cpp obj); free-fn decl so the bare `call rel32` reloc-masks.

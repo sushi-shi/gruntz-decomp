@@ -10,6 +10,7 @@
 // former ResLoaders::ResLoad_144270 view, RVA-proven to be this surface class).
 // ---------------------------------------------------------------------------
 #include <Mfc.h> // CFile (the export path slurps through the real MFC CFile) - afx-first
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <Image/Image.h>            // the single-source CDDSurface (the DIRSURF surface)
 #include <Image/FileImageRecords.h> // DecodeSrc / BmpFileHeader / TgaHeader / ResHdr_144270
@@ -414,11 +415,6 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 // VA 0x683ea0..). SaveRle16 uses them to expand a screen-native 16bpp pixel into
 // an 8-bit-per-channel BGR triple (the inverse of the CLightFxRender Pack). Same
 // differently-named symbols as elsewhere; reloc-masked.
-extern i32 g_rUp;   // red   up-shift   (channel position in the 16bpp word)
-extern i32 g_gUp;   // green up-shift
-extern i32 g_rDown; // red   down-shift (scale 5/6-bit -> 8-bit)
-extern i32 g_gDown; // green down-shift
-extern i32 g_bDown; // blue  down-shift
 
 // ---------------------------------------------------------------------------
 // CDDSurface::SaveRle16 (0x144640, ret 0xc) - the 16bpp surface -> 24bpp BMP file

@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <DDrawMgr/DDSurface.h>
 // LightFxRender.cpp - software light/glow/overlay renderer (ex tracer placeholder
 // tomalla-68), a non-polymorphic helper in the lighting module. Methods in
@@ -57,11 +58,6 @@ extern "C" CGameRegistry* g_gameReg;
 // per channel a right-shift (8-bit -> channel width) then a left-shift into the
 // channel's slot. B sits at bit 0, so it has no left-shift.
 // See docs/patterns/rgb-pack-variable-shift.md.
-extern i32 g_rUp;   // red   up-shift (into position)
-extern i32 g_gUp;   // green up-shift
-extern i32 g_rDown; // red   down-shift (scale 8-bit -> width)
-extern i32 g_gDown; // green down-shift
-extern i32 g_bDown; // blue  down-shift
 
 // Engine globals the resize repaint path reads (reloc-masked DIR32 loads):
 //   g_frameTime - the running game clock (low 32 bits of the engine ms counter)

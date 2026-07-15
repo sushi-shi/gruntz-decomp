@@ -9,6 +9,7 @@
 // other mode-loop callees (0x149950/0x149d00/0x14b770) and the surface Lock are
 // external/reloc-masked. See <DDrawMgr/DDrawShadeBlit.h> for the layout.
 #include <DDrawMgr/DDSurface.h> // CDDSurface src arg (m_pitch/m_b0/Lock; m_8->Unlock COM)
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Win32.h>              // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>              // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -20,11 +21,6 @@
 // The live screen RGB-format shift table at RVA 0x283ea0..0x283eb4, DEFINED in
 // src/DDrawMgr/DDSurface.cpp (owner TU; the C++ ?g_rUp@@3HA family).
 // The mode-2 gate compares these against the magic 5/10/3/3/3 state. Reloc-masked.
-extern i32 g_rUp;   // red   shift-up
-extern i32 g_gUp;   // green shift-up
-extern i32 g_rDown; // red   shift-down
-extern i32 g_gDown; // green shift-down
-extern i32 g_bDown; // blue  shift-down
 
 // The per-scanline RLE-decode scratch (owner-TU def; .bss, VA 0x6bed08). The shaded
 // blit memcpy's the source run here, then indexes it through the palette LUT.

@@ -20,6 +20,7 @@
 // CFile::*, CArchive::*, CString::~CString) are external/no-body so their
 // `call rel32` displacements reloc-mask in objdiff.
 #include <DDrawMgr/DDSurface.h> // CDDSurface - the draw family's surface arg (m_height in DrawLine)
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Font/Font.h>
 #include <ddraw.h> // IDirectDrawSurface::Unlock (surf->m_8 COM dispatch in DrawGlyphRun)
 #include <rva.h>
@@ -28,11 +29,6 @@
 // already named by SpriteRef.cpp / FileImage.cpp / LightFxRender.cpp. DrawGlyphRun packs
 // m_color into the screen 16bpp format and (in the blend path) unpacks the dest pixel
 // through these. Reloc-masked DIR32 data refs.
-extern i32 g_rUp;   // 0x683ea0  red   up-shift   (channel position in the 16bpp word)
-extern i32 g_gUp;   // 0x683ea4  green up-shift
-extern i32 g_rDown; // 0x683eac  red   down-shift (scale 8-bit -> 5/6-bit)
-extern i32 g_gDown; // 0x683eb0  green down-shift
-extern i32 g_bDown; // 0x683eb4  blue  down-shift
 
 // The FontInterfaceObject::IsInterface1-5 GUID predicates (0x1794b0-0x179570), their
 // g_guid1-5 tables, and CWapNodeB::FreeStrings (0x179680) are re-homed to the

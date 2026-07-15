@@ -6,6 +6,7 @@
 // <DDrawMgr/ShadeTableCache.h>; CShadeTableCache::FindRemove is modeled NO-body so
 // Free()'s `call` reloc-masks.
 #include <Mfc.h> // afx-first (superset of Win32.h; the includes below pull MFC collections)
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <Gruntz/SpriteRefTable.h>
 #include <DDrawMgr/ShadeTableCache.h> // canonical CShadeTableCache (FindRemove @0x14fb80)
@@ -15,11 +16,6 @@
 
 // The live screen RGB-format shift table at 0x683ea0..0x683eb4 - already named by
 // CLightFxRender.cpp / ShadeTableCache.cpp. Reloc-masked DIR32 data refs.
-extern i32 g_rUp;   // 0x683ea0
-extern i32 g_gUp;   // 0x683ea4
-extern i32 g_rDown; // 0x683eac
-extern i32 g_gDown; // 0x683eb0
-extern i32 g_bDown; // 0x683eb4
 
 // The shade cache that owns m_alphaKey; Free() hands the table back via FindRemove
 // (0x14fb80). Modeled NO-body so the `call` reloc-masks.

@@ -9,6 +9,7 @@
 // 0x143c20 pool/factory methods moved to DirectDrawMgr.cpp (the DDRAWMGR.CPP
 // obj, dossier #14H).
 #include <Mfc.h> // real MFC types (NAFXCW, reloc-masked) - afx-first
+#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Ints.h>
 #include <rva.h>
 
@@ -21,12 +22,6 @@
 // The RGB low-bit-position / 8-minus-bitcount pair tables InstallColorFormat fills
 // (the same six .data words ComputeColorMasks in the DDRAWMGR obj writes).
 // DEFINED in src/DDrawMgr/DDSurface.cpp (owner TU); reference externs only.
-extern i32 g_rUp;   // red   low-bit shift
-extern i32 g_gUp;   // green low-bit shift
-extern i32 g_bUp;   // blue  low-bit shift
-extern i32 g_rDown; // red   8-minus-count
-extern i32 g_gDown; // green 8-minus-count
-extern i32 g_bDown; // blue  8-minus-count
 
 // The post-mask surface-format apply (BuildColorChannelTables @0x13f740, DDSurface.cpp
 // obj); free-fn decl so the bare `call rel32` reloc-masks.
