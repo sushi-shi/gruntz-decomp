@@ -44,8 +44,8 @@
 #include <Gruntz/ResolveNode.h>           // canonical CResolveNode (Init here, 0x1647e0)
 #include <Image/ImageSet.h>               // CImageSet (FindKeyOfValue_165360's target)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (2 teardown fns here)
-#include <DDrawMgr/DDrawSurfaceMgr.h>      // canonical CDDrawSurfaceMgr (m_mgr / m_0c parent)
-#include <DDrawMgr/DDrawPtrCollections.h>  // canonical CDDrawPtrCollections (the +0x1c surface pool)
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (m_mgr / m_0c parent)
+#include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
@@ -298,13 +298,7 @@ i32 CDDrawSurfacePair::LoadImage_163e50(CParseSource* src) {
     if (buf == 0) {
         return 0;
     }
-    i32 r = m_surface->Resolve(
-        (void*)m_mgr->m_ptrColl,
-        (void*)buf,
-        type,
-        src->m_length,
-        0
-    );
+    i32 r = m_surface->Resolve((void*)m_mgr->m_ptrColl, (void*)buf, type, src->m_length, 0);
     src->EndParse();
     return r;
 }
@@ -511,9 +505,8 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
         m_surface = 0;
         if (m_status == 1) {
             CDDrawSurfaceMgr* mgr = m_mgr;
-            m_surface =
-                (CDDSurface*)((CDirectDrawMgr*)mgr->m_ptrColl)
-                    ->CreatePoolItem((void*)mgr->m_pages->m_frontPair->m_surface, (void*)4);
+            m_surface = (CDDSurface*)((CDirectDrawMgr*)mgr->m_ptrColl)
+                            ->CreatePoolItem((void*)mgr->m_pages->m_frontPair->m_surface, (void*)4);
             if (m_surface == 0) {
                 return 0;
             }

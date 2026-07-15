@@ -32,7 +32,7 @@
 //   0x0470e0 CExplosion ctor  0x0472d0 InitLogicDispatch_6447f8
 //   0x047350 E::FireActivation  0x0474b0 RegisterXLogic_6447f8
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>

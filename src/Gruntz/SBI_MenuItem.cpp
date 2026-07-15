@@ -5,9 +5,9 @@
 //   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem (canonical chain).
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Gruntz/SoundState.h>    // g_sndEnabled/g_sndCueTag
 #include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)

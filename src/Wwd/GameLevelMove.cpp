@@ -19,8 +19,8 @@
 // tile-probe macro + tile-code defines are duplicated file-local from GameLevel.cpp
 // (both TUs inline the same retail copy-paste probe).
 #include <Wwd/SubWidget168080.h> // the 0x44 grid alloc-view (transient vtable; dtor in WwdGrid.cpp)
-#include <Wwd/WwdSpatialMgr.h>    // canonical CWwdSpatialMgr (the plane grid/scroll worker; Init 0x168080)
-#include <Gruntz/WwdGrid.h>       // CWwdGrid (the grids' final type; Setup == CWwdGrid::CWwdGrid @0x1915c0)
+#include <Wwd/WwdSpatialMgr.h> // canonical CWwdSpatialMgr (the plane grid/scroll worker; Init 0x168080)
+#include <Gruntz/WwdGrid.h> // CWwdGrid (the grids' final type; Setup == CWwdGrid::CWwdGrid @0x1915c0)
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
 #include <Wap32/Object.h>     // CObject grand-base (SubWidget_168080's base)

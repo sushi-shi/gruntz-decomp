@@ -8,10 +8,10 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ExitTrigger.h>
-#include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/TypeKeyColl.h>   // s_codeA/s_actKeyB registration keys
+#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>

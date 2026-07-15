@@ -19,14 +19,14 @@
 // e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
 // note was wrong - afx.h pulls windows.h the afx-first way, so no C1189.
 #include <Mfc.h>
-#include <Wap32/Object.h>              // CObject - the shared engine grand-base
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // THE canonical CDDrawSurfaceMgr class shape
-#include <Gruntz/Loadable.h>           // CLoadable - the shared child base (slot-1 scalar-delete)
+#include <Wap32/Object.h>             // CObject - the shared engine grand-base
+#include <DDrawMgr/DDrawSurfaceMgr.h> // THE canonical CDDrawSurfaceMgr class shape
+#include <Gruntz/Loadable.h>          // CLoadable - the shared child base (slot-1 scalar-delete)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // real +0x10 child type (m_surfaceDesc; virtual-dtor delete)
 #include <DDrawMgr/DDrawWorkerCache.h> // real +0x14 child type (m_workerCache; virtual-dtor delete)
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // real +0x18 child type (m_workerMap; slot-1 scalar-delete)
-#include <DDrawMgr/DDrawSubMgrPages.h> // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
-#include <DDrawMgr/DDrawChildGroup.h>  // real +0x08 child type (m_childGroup)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
+#include <DDrawMgr/DDrawChildGroup.h>     // real +0x08 child type (m_childGroup)
 #include <Gruntz/WwdObjMgr.h> // CWwdObjMgr (Snapshot/RestoreChildren blit-op target, waveP)
 #include <Gruntz/GameLevel.h> // CGameLevel (m_resolveSubMgr child; EditDispatch/MainPlaneQueryB)
 #include <Globals.h>          // g_wwdObjIdCounter (serialized header id)

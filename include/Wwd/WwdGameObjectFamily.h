@@ -43,10 +43,11 @@
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - A's +0x1a0 member
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj - the owned +0x7c..+0x90 workers
 
-class CDDrawSurfacePair; // slots 11-14 params (render ctx + blit pairs; <DDrawMgr/DDrawSurfacePair.h>)
-                         // (slot 11's ctx WAS the WwdRenderCtx view - offset-exact m_width/
-                         //  m_height/m_surface, now the real class)
-class CWwdGameObject;    // the flat dispatch model (CWwdGameObjectB factory pair return type)
+class
+    CDDrawSurfacePair; // slots 11-14 params (render ctx + blit pairs; <DDrawMgr/DDrawSurfacePair.h>)
+                       // (slot 11's ctx WAS the WwdRenderCtx view - offset-exact m_width/
+                       //  m_height/m_surface, now the real class)
+class CWwdGameObject;  // the flat dispatch model (CWwdGameObjectB factory pair return type)
 
 // Manual scalar-delete of an owned worker pointer (the retail idiom).
 #define WORKER_FREE(p)                                                                             \
@@ -94,7 +95,7 @@ public:
     virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60
     // slots 11-14 - per-object render + dirty-rect blit hooks: PURE in this base
     // (retail table holds __purecall @0x11fec0); every concrete kind overrides.
-    virtual void Render(CDDrawSurfacePair* ctx) = 0;                                          // slot 11
+    virtual void Render(CDDrawSurfacePair* ctx) = 0;                                     // slot 11
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) = 0;               // slot 12
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0;      // slot 13
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0; // slot 14
@@ -155,7 +156,7 @@ public:
     }
     virtual i32 GetClassId() OVERRIDE;                            // slot 8  @0x15b760 (0x1c)
     virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
-    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;              // slot 11 @0x15ba20 (ret 4)
+    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;         // slot 11 @0x15ba20 (ret 4)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 13 @0x1506b0
@@ -198,7 +199,7 @@ public:
     virtual i32 GetClassId() OVERRIDE; // slot 8  0x15bce0 (0x1b)
     // slot 10/11-14 overrides (bodies in WwdGameObjectRender.cpp).
     virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 0x1665e0
-    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;              // slot 11 0x1668b0 (broadcast)
+    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;         // slot 11 0x1668b0 (broadcast)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 0x1668e0
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 13 0x166910
@@ -212,8 +213,7 @@ public:
     i32 WalkChildWorkers_166880();                  // 0x166880 (per-child worker cb + count)
     // The child-object factory pair (bodies in WwdGameObjectRender.cpp; the ex-CWwdObjMgrL
     // view is dissolved): build a child CWwdGameObjectA and publish it into m_1dc.
-    CWwdGameObject*
-    CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6); // 0x166640
+    CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6); // 0x166640
     CWwdGameObject*
     CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
 
@@ -236,7 +236,7 @@ public:
     virtual i32 Unload() OVERRIDE {
         return CWwdGameObjectE::Unload(); // a full inline copy of the E pass in retail
     }
-    virtual i32 GetClassId() OVERRIDE;               // slot 8  @0x15ba60 (0x16)
+    virtual i32 GetClassId() OVERRIDE;                    // slot 8  @0x15ba60 (0x16)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE; // slot 11 @0x15ba70 (ret 4 - empty)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x15ba80
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
@@ -263,7 +263,7 @@ public:
         m_dotColor = 0;
         return CWwdGameObjectE::Unload();
     }
-    virtual i32 GetClassId() OVERRIDE;               // slot 8  @0x15c020 (6)
+    virtual i32 GetClassId() OVERRIDE;                    // slot 8  @0x15c020 (6)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE; // slot 11 @0x1660f0 (RenderDot)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x1661d0
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)

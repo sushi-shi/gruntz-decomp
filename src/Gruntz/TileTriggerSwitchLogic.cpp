@@ -18,9 +18,9 @@
 //
 // Flags: eh (/GX) - the interval carries EH-registration evidence
 // (TU_MIGRATION hard error: 0x110430-0x1140e2, 1 EH site).
-#include <string.h>     // memcpy -> the /Oi `rep movsd` in BuildSmall
+#include <string.h>            // memcpy -> the /Oi `rep movsd` in BuildSmall
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>        // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Mfc.h>
 #include <rva.h>
 

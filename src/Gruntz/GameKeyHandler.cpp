@@ -29,9 +29,9 @@
 // rect base `g`, the CWorld+0xc frame-gate reinterpret `M(h,0xc)`, the CTmGoal `n`).
 // Every callee body is external (reloc-masked rel32). Only offsets / code bytes are load-bearing.
 
-#include <Wap32/Object.h> // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
+#include <Wap32/Object.h>      // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
-#include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/CurPlayer.h>  // g_curPlayer
 #include <Gruntz/BoundaryTailViews.h> // CObj23d90 (fuzzy-identity 0x23d90 grid-snap blit)
 #include <rva.h>
 

@@ -9,7 +9,7 @@
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/CursorSnapSprite.h>
-#include <Bute/ButeTree.h> // g_buteTree
+#include <Bute/ButeTree.h>          // g_buteTree
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 
 #include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (Handler03a200)

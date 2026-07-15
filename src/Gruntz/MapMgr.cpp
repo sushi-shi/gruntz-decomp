@@ -35,9 +35,9 @@
 // (valid) ecx-relative codegen - no source lever flips the induction register.
 // Entropy-class; left per the campaign doctrine (the strides + link layout, the
 // deliverable here, are fully recovered).
-#include <Mfc.h>        // afx-first umbrella (windows.h: RECT + IntersectRect for AllocGrid)
+#include <Mfc.h>          // afx-first umbrella (windows.h: RECT + IntersectRect for AllocGrid)
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/Brickz.h>        // CBrickzGrid (the pathfinding core homed here)

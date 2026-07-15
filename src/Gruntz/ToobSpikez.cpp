@@ -14,9 +14,9 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
-#include <Gruntz/XferArchive.h>       // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
-#include <Gruntz/ActReg.h>            // CActReg (g_toobColl); ResolveEntry + GetRetAddr/g_projActCache
-#include <Gruntz/ActNameRegistry.h>  // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
+#include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
+#include <Gruntz/ActReg.h>      // CActReg (g_toobColl); ResolveEntry + GetRetAddr/g_projActCache
+#include <Gruntz/ActNameRegistry.h> // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
 #include <Globals.h>
 
 // ===========================================================================

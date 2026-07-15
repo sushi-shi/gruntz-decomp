@@ -15,7 +15,7 @@
 // +0x4b4 array, the +0x93c..+0x944 tail are the same cells) - flagged for a
 // canonical-class unification pass; the physical TU is already one file.
 #include <Io/FileStream.h>
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>         // g_emptyString
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <DDrawMgr/DirectDrawMgr.h>

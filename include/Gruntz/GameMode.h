@@ -232,9 +232,10 @@ public:
     // Base namespace loader (0xf9ea0) inherited from CState (called cast-free).
 
     char m_pad1a8[0x1b4 - 0x1a8];
-    CChatBox* m_1b4;   // +0x1b4 the menu UI object the scans drive (the real CChatBox)
-    i32 m_1b8;         // +0x1b8 fade/poll duration
-    LeafCue* m_1bc;    // +0x1bc menu-music sound cue (LeafCue: DSoundCloneInst m_10 + m_14/m_18 clock gate)
+    CChatBox* m_1b4; // +0x1b4 the menu UI object the scans drive (the real CChatBox)
+    i32 m_1b8;       // +0x1b8 fade/poll duration
+    LeafCue*
+        m_1bc; // +0x1bc menu-music sound cue (LeafCue: DSoundCloneInst m_10 + m_14/m_18 clock gate)
     // ENDS AT 0x1c0 - the allocation-proven size (TransitionState @0x8be11:
     // `push 0x1c0; call ??2@YAPAXI@Z`, then the ??_7CMenuState (0x5e9e84) stamp).
     // The out-of-bounds `m_liveGame` @+0x1d0 (and its 0x1c0..0x1d0 pad) that used to sit

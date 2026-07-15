@@ -407,10 +407,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(
-            (const char*)((WwdWorldHolder*)g_gameReg->m_world)->m_24,
-            header
-        )
+    if (WwdFile_CheckHeader((const char*)((WwdWorldHolder*)g_gameReg->m_world)->m_24, header)
         == 0) {
         return -1;
     }
@@ -588,4 +585,3 @@ CString WwdFile::GetMapBaseName(CString path) {
     }
     return result;
 }
-

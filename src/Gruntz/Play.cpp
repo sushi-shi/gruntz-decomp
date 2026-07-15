@@ -819,7 +819,7 @@ extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
 // DirectInputMgr2*); a plain C++ extern emitted ?g_645570@@3PAXA - unresolved.
 extern "C" void* g_645570; // DAT_00645570
 // g_frameTicks (0x24558c) comes from <Rez/FrameClock.h>.
-extern "C" i32 g_64e35c;            // DAT_0064e35c
+extern "C" i32 g_64e35c; // DAT_0064e35c
 // (0x612618 - the last-loaded level number, init -1 - is DEFINED below as
 // g_lastLevelNum; the old `void* g_lastLevelCache` view here was the same cell.)
 // 0x61139c: the CAreaMgr singleton pointer, statically initialized to &g_areaMgr
@@ -3477,7 +3477,7 @@ i32 CPlay::PostHudRect() {
 // The MFC empty C string (the afxEmptyString data buffer @0x6293f4); the name
 // CString members default-init to it. Reloc-masked DATA (also declared by the
 // later render-tail section - same extern).
-#include <string.h>              // inlined memset / strcpy in Serialize (rep stos / rep movs)
+#include <string.h> // inlined memset / strcpy in Serialize (rep stos / rep movs)
 
 // The dialog-combobox fillers below are __cdecl FREE functions physically in this
 // TU; they call the same-TU CString accessors (defined further down, so forward-
@@ -5559,7 +5559,6 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 // m_8->Lookup) that Render's matched member typing models differently, so each
 // casts `this` to the self-contained CPlayRes view below (a struct-view-of-this
 // overlay - matching-neutral, keeps Render untouched).
-
 
 // CResSource (the named-set source: this->m_levelBank / m_gameBank, the banks cached
 // in m_gruntzBank/m_gameBank; LookupSet 0x13bae0) and CBankMgr (the bank manager at

@@ -398,12 +398,12 @@ public:
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2);                            // 0x0ba1a0
     i32 OnPlayerLeft(i32 playerId);                                              // 0x0ba3b0
     void AckDropPlayer(i32 id);                                                  // 0x0ba590
-    void WriteTag(const char* tag);                                              // 0x0bd4a0 (reloc-masked)
+    void WriteTag(const char* tag); // 0x0bd4a0 (reloc-masked)
     // Drop/wait helpers (moved off the conflated CNetMgr in the netmgr-vs-cmulti
     // split): both run on `this`==CMulti (they read the +0x520 session, the +0x604
     // drop-id CDWordArray, m_534, m_hostIndex).
-    void RecordDropPlayer2(i32 a, i32 id); // 0x0bb5e0
-    i32 WaitForOtherPlayers();             // 0x0bb700
+    void RecordDropPlayer2(i32 a, i32 id);                                       // 0x0bb5e0
+    i32 WaitForOtherPlayers();                                                   // 0x0bb700
     i32 LoadMenuSelectSprite(void* evp);                                         // 0x0ba620
     i32 ParseChannelTable(void* packet);                                         // 0x0ba980
     i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e); // 0x0baac0

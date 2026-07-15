@@ -10,7 +10,7 @@
 // Serialize/dtor pair (0x105d0/0x10670) are COMDAT-pool exiles riding the class
 // file.
 #include <Gruntz/GruntStartingPoint.h>
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 

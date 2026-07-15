@@ -17,8 +17,8 @@
 #include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h) // wsprintfA
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections (MakeAndAddB/RemoveItemA) + CDDSurface
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (BltEx 0x13eef0, SaveFile 0x13f910)
-#include <Gruntz/GameRegistry.h>          // CGameRegistry (m_world @+0x30, m_modeW/H) + CSpriteFactoryHolder
-#include <Utils/RegistryHelper.h>         // Utils::RegistryHelper (GetValueDword/SetValueDword)
+#include <Gruntz/GameRegistry.h> // CGameRegistry (m_world @+0x30, m_modeW/H) + CSpriteFactoryHolder
+#include <Utils/RegistryHelper.h> // Utils::RegistryHelper (GetValueDword/SetValueDword)
 
 // The global game/manager settings singleton (*0x64556c); m_modeW/m_modeH = the screen
 // capture width/height.

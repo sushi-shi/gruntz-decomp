@@ -5,7 +5,7 @@
 // (CDDrawSurfaceMgr::SnapshotChildren) over the "Gruntz Save Game" stream. Field
 // names are placeholders; only OFFSETS + code bytes matter.
 #include <rva.h>
-#include <Gruntz/SerialCounter.h> // g_serialCounter
+#include <Gruntz/SerialCounter.h>     // g_serialCounter
 #include <string.h>                   // strlen / memset inline to repne scasb / rep stos
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (SnapshotChildren @0x156020)
 

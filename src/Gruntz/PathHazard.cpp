@@ -13,8 +13,8 @@
 // identities.
 #include <Gruntz/PathHazard.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
-#include <Gruntz/RainCloud.h> // CRainCloud (its dtor 0x13340 lives in this obj)
-#include <Gruntz/ActReg.h>    // CActReg coordinate registry (ResolveEntry) for RunAct
+#include <Gruntz/RainCloud.h>  // CRainCloud (its dtor 0x13340 lives in this obj)
+#include <Gruntz/ActReg.h>     // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
@@ -23,7 +23,7 @@
 #include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_cmdGrid): FindGruntAt @0x75c60, CellDispatch @0x6bcb0
 
-#include <math.h> // sqrt - inlines to fsqrt at /O2; the (int)double casts lower to __ftol
+#include <math.h>           // sqrt - inlines to fsqrt at /O2; the (int)double casts lower to __ftol
 #include <Rez/FrameClock.h> // g_timer200 (strike/leg deadline threshold)
 
 // CPathHazard's own Tick / ForwardTick now dispatch its added virtuals directly

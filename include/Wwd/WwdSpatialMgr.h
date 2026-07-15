@@ -27,7 +27,7 @@
 #include <rva.h>
 #include <Gruntz/WwdGridIter.h> // CWwdGridIter - the embedded cursor member (+0x70)
 
-struct tagRECT;             // the Init grid rect (Win32 RECT; completed via <Mfc.h>/<Win32.h> in the .cpp)
+struct tagRECT; // the Init grid rect (Win32 RECT; completed via <Mfc.h>/<Win32.h> in the .cpp)
 typedef struct tagRECT RECT;
 
 class CWwdObjMgr;     // the master object manager (+0x00)

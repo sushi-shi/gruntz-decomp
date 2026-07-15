@@ -9,9 +9,9 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
-#include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
+#include <Gruntz/TypeKeyColl.h>     // g_typeCounter (the shared type-id counter)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 

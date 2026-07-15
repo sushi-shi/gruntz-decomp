@@ -179,10 +179,10 @@ static void GruntScratchTeardown() {
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-                                 // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                 // It used to be DEFINED here too: six .cpp files each
-                                 // defined it, i.e. six .bss objects for one global
-                                 // (LNK2005). Only the owner defines; everyone externs.
+// src/Gruntz/GameText.cpp (the pool's owner TU).
+// It used to be DEFINED here too: six .cpp files each
+// defined it, i.e. six .bss objects for one global
+// (LNK2005). Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,

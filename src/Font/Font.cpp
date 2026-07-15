@@ -452,7 +452,14 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 // the 4-int {x0,top,right,bottom} arg tuple via `sub esp,0x10`+stores; cl emits
 // pushes). Verified base-vs-target with llvm-objdump -dr.
 RVA(0x0017a460, 0x7ec)
-void FontRenderer::DrawWrapped(CString text, CDDSurface* surf, CRect rc, i32 z, i32 hcenter, i32 spacing) {
+void FontRenderer::DrawWrapped(
+    CString text,
+    CDDSurface* surf,
+    CRect rc,
+    i32 z,
+    i32 hcenter,
+    i32 spacing
+) {
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
         TextExtent m = MeasureWrapped(text, rc.left, rc.top, rc.right, rc.bottom);

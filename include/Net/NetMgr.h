@@ -1334,11 +1334,11 @@ public:
     CObList m_sessions; // +0x054  session / player-object list  (head +0x58, count +0x60)
     // The three list-box selection latches + their walk-cursor ids. Each ReadXxxSel
     // reader writes the selected item's data here in range; the clear-loops zero them.
-    i32 m_groupSel;               // +0x070  group-list selected item data (ReadGroupSel)
-    i32 m_playerSel;              // +0x074  player-list selected item data (ReadPlayerSel)
-    i32 m_sessionSel;             // +0x078  session-list selected item data
-    CNetListNode* m_groupSelId;   // +0x07c  group-list walk cursor (Find/PopulateGroupList) / sel id
-    CNetListNode* m_playerSelId;  // +0x080  player-list walk cursor / selection id
+    i32 m_groupSel;              // +0x070  group-list selected item data (ReadGroupSel)
+    i32 m_playerSel;             // +0x074  player-list selected item data (ReadPlayerSel)
+    i32 m_sessionSel;            // +0x078  session-list selected item data
+    CNetListNode* m_groupSelId;  // +0x07c  group-list walk cursor (Find/PopulateGroupList) / sel id
+    CNetListNode* m_playerSelId; // +0x080  player-list walk cursor / selection id
     CNetListNode* m_sessionSelId; // +0x084  session-list walk cursor / selection id
     i32 m_88; // +0x088  (rounds the object to the observed RezAlloc/operator-new 0x8c size)
 

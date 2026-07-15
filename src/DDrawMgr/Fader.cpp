@@ -43,7 +43,7 @@
 // docs/patterns/within-tu-order-vs-field-order.md); each section keeps its
 // original file's provenance comment.
 #include <Gruntz/Fader.h>
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>  // g_emptyString
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
@@ -1114,7 +1114,6 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
 // FaderSubtypes.h declares for it, and its m_3c/m_44 are the m_src/m_percent that
 // CFaderFlat::v2 @0x17f950 reads back); `FaderArg` is the real CFxModeT5 (fader type 4
 // -> pInit id 5, whose m_10 default 0x19 IS the 25% duration scale v2 applies).
-
 
 // FaderSrc is the canonical <Gruntz/FaderSubtypes.h> struct (frameCount @+0x18).
 

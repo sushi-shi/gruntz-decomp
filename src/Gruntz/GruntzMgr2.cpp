@@ -5,7 +5,7 @@
 // separate retail object. Split here (same class, same "eh" flags) so each src TU
 // maps to one contiguous retail .text region. Byte-neutral TU cut.
 #include <Gruntz/GruntzMgr.h>
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree
+#include <Rez/RezAlloc.h>        // RezAlloc/RezFree
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (m_world's real class)
 #include <Gruntz/GameLevel.h> // CGameLevel (m_world->m_24) + CLevelPlane // CGruntzMgr / CWorldZ / CGameLevel (m_world->m_24) / CGruntzMapMgr
 #include <Wwd/WwdFile.h> // CPlaneRender (the world plane; m_tileGrid / m_colOffsets height grid)

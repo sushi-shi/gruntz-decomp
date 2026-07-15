@@ -31,7 +31,7 @@
 // BuildGruntzCrcInfo has NO rel32 caller (a debug/CRC-sync dump reached only via the
 // thunk band), so the owner was not caller-recoverable - it was recovered from the
 // +0x04 CMulti receiver and the RVA neighbourhood instead.
-#include <Mfc.h> // real MFC CString + <windows.h> wsprintfA (afx-first)
+#include <Mfc.h>         // real MFC CString + <windows.h> wsprintfA (afx-first)
 #include <EmptyString.h> // g_emptyString
 #include <rva.h>
 #include <stdlib.h> // rand (0x11fee0), the per-grunt random nonce
@@ -41,7 +41,6 @@
 #include <Gruntz/GruntzMgr.h>  // CGruntzMgr (m_cmdGrid)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid; CTmCell == CGrunt)
 #include <Gruntz/Grunt.h>      // CGrunt + CGruntHud (the dumped fields)
-
 
 // @source: decomp-xref
 // @early-stop

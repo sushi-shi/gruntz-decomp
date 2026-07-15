@@ -14,7 +14,7 @@
 // Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
 #include <rva.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/WwdObjMgr.h>          // the shared object-collection manager class
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_pages->m_backPair)

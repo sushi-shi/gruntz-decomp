@@ -7,9 +7,9 @@
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h>           // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
-#include <Image/ImageSet.h>              // CImageSet - the spec Lookup result (frames + index range)
-#include <Gruntz/LightFxResource.h>      // the object-context spec/effect resource stores (@identity-TODO)
+#include <Gruntz/LightFxMgr.h>      // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
+#include <Image/ImageSet.h>         // CImageSet - the spec Lookup result (frames + index range)
+#include <Gruntz/LightFxResource.h> // the object-context spec/effect resource stores (@identity-TODO)
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 #include <Gruntz/SerialArchive.h>    // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>     // the +0x34 serialized-object-reference (Chain @0x8c00)

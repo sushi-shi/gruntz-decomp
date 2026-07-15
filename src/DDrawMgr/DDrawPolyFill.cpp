@@ -10,8 +10,8 @@
 // vtable slot are reloc-masked calls (the DX6 vtable supplies the slot layout).
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <Image/RasterVtx.h> // ClipVtx (the shared raster vertex) + FillPolygon decl
-#include <Win32.h> // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h> // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
+#include <Win32.h>           // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>           // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
 #include <rva.h>
 
 // The polygon vertex is the shared 28-byte ClipVtx (x@+0, y@+4; the rest unused here).

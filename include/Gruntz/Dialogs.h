@@ -379,16 +379,16 @@ public:
     void EchoLatencySettings(); // 0xc52f0
     // Roster helpers (own methods reached through ILT thunks; reloc-masked, RVAs
     // live in sibling units / ApiCaller stubs).
-    void Drive();                  // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)
-    i32 Sync16db(i32);             // 0x016db  (DoDataExchange tests the result)
-    void Sync227a();               // 0x0227a
-    i32 UpdateColorItems();        // 0xc1aa0 (color-item refresh; via 0x02c0c thunk; ex m4::MultiColorDlg)
-    i32 Sync38d2();                // 0x038d2  (DoDataExchange tests the result)
-    i32 LocalSlot2d4c();           // 0x02d4c  current local slot index
-    CWnd* NameEdit298c(i32 idx);   // 0x0298c  name edit for slot idx
-    CWnd* KindCombo1929(i32 idx);  // 0x01929  human/computer combo for slot idx
-    CWnd* ReadyCheck1159(i32 idx); // 0x01159  ready checkbox for slot idx
-    CWnd* ColourBtn1753(i32 idx);  // 0x01753  colour button for slot idx
+    void Drive();           // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)
+    i32 Sync16db(i32);      // 0x016db  (DoDataExchange tests the result)
+    void Sync227a();        // 0x0227a
+    i32 UpdateColorItems(); // 0xc1aa0 (color-item refresh; via 0x02c0c thunk; ex m4::MultiColorDlg)
+    i32 Sync38d2();         // 0x038d2  (DoDataExchange tests the result)
+    i32 LocalSlot2d4c();    // 0x02d4c  current local slot index
+    CWnd* NameEdit298c(i32 idx);         // 0x0298c  name edit for slot idx
+    CWnd* KindCombo1929(i32 idx);        // 0x01929  human/computer combo for slot idx
+    CWnd* ReadyCheck1159(i32 idx);       // 0x01159  ready checkbox for slot idx
+    CWnd* ColourBtn1753(i32 idx);        // 0x01753  colour button for slot idx
     void SyncColour3a5d(i32 idx, i32 v); // 0x03a5d
 
     // --- Net-game-config facet (folded from CNetGameDlg / CNetConnCoord; bodies

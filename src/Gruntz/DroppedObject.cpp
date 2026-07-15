@@ -27,7 +27,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ObjectDropper.h> // CObjectDropper : CUserLogic (ctor 0xc59f0)
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/DroppedObject.h>   // CDroppedObject : CUserLogic (ctor 0xc68b0)
@@ -75,7 +75,7 @@ extern "C" {
     extern u32 g_engineFrameDelta; // 0x6bf3bc
 }
 
-                             // g_actCache spelling was an unbound VA-typo alias of this global
+// g_actCache spelling was an unbound VA-typo alias of this global
 
 // The drop-motion .rdata FP constants (owner-TU defs; VA 0x5ea9f0/0x5eaa00).
 DATA(0x001ea9f0)
@@ -115,7 +115,7 @@ CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
 // The shared activation-NAME registry (@0x6bf650, the SAME shared instance
 // CTimeBomb/CKitchenSlime use) + the running id counter and the two key strings.
 // ---------------------------------------------------------------------------
-struct CTypeNameEntry;   // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 

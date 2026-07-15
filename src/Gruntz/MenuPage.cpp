@@ -57,7 +57,8 @@ struct CMenuListNode {
 // CImageRegistry in ResMgr.h. Kept as minimal, correctly-attributed structural views until
 // then (offsets + code bytes load-bearing); the polymorphic leaf IS the real CMapStringToOb.
 SIZE_UNKNOWN(CMapStringToOb);
-struct CMenuCatalog { // == CImageRegistry (opaque tree-wide; modeling it in ResMgr.h unblocks the fold)
+struct
+    CMenuCatalog { // == CImageRegistry (opaque tree-wide; modeling it in ResMgr.h unblocks the fold)
     char pad0[0x10];
     CMapStringToOb m_map; // +0x10 the name->page map base (real MFC CMapStringToOb)
 };

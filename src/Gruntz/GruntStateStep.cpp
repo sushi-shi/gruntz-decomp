@@ -69,7 +69,6 @@ extern char s_codeJ[];
 // FID: ??0CRect@@QAE@HHHH@Z), out-of-line so it is CALLed here. Modeled by the
 // canonical CRect (<Wap32/Rect.h>); the old local QuadIntRecord view folded onto it.
 
-
 // Drain the pending-coord list onto g_coordPool via the CObList Find walk, then
 // empty the list.
 #define STEP_DRAIN(g)                                                                              \

@@ -9,8 +9,8 @@
 #include <Win32.h>
 
 #include <Gruntz/SpriteRefTable.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>      // m_spriteMgrHolder's canonical CDDrawSurfaceMgr
-#include <DDrawMgr/DDrawWorkerMapSmall.h>  // its +0x18 m_workerMap (the sprite/palette registry)
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // m_spriteMgrHolder's canonical CDDrawSurfaceMgr
+#include <DDrawMgr/DDrawWorkerMapSmall.h> // its +0x18 m_workerMap (the sprite/palette registry)
 
 #include <rva.h>
 

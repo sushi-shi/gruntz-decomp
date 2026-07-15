@@ -22,6 +22,8 @@ public:
     // vptr, destructs the m_base CString array, runs ~zDArray, conditionally frees.
     void* ScalarDelete(u32 flags);
 };
-SIZE_UNKNOWN(CTypeCollRuntime); // zDArray base (0x24) + no own fields; size not independently pinned
+SIZE_UNKNOWN(
+    CTypeCollRuntime
+); // zDArray base (0x24) + no own fields; size not independently pinned
 
 #endif // GRUNTZ_GRUNTZ_TYPECOLLRUNTIME_H

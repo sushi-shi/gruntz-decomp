@@ -22,10 +22,10 @@
 #include <Gruntz/LeafCue.h>   // LeafCue (the config-cue leaf: m_10/m_14/m_18) for ScrollDialog
 #include <Net/NetMgr.h>
 #include <Gruntz/Multi.h> // CMulti::SendChannelStat422/423 (dispatched on m_curState; netmgr-vs-cmulti split)
-#include <Gruntz/Wnd.h>       // the minimal MFC CWnd view (FromHandle; m_hWnd @+0x1c)
-#include <Gruntz/Enums.h>     // RES_640x480/RES_800x600/RES_1024x768
-#include <Globals.h>          // the g_opt_* staging globals
-#include <string.h>           // strcat (inline repnz scasb + rep movs under /O2 /Oi)
+#include <Gruntz/Wnd.h>   // the minimal MFC CWnd view (FromHandle; m_hWnd @+0x1c)
+#include <Gruntz/Enums.h> // RES_640x480/RES_800x600/RES_1024x768
+#include <Globals.h>      // the g_opt_* staging globals
+#include <string.h>       // strcat (inline repnz scasb + rep movs under /O2 /Oi)
 
 // Control-ID literal (kept local, not from <windows.h>). Enum VALUE lowers to the same
 // immediate in int context (the GetDlgItem control-id arg); the enum TYPE is not used as

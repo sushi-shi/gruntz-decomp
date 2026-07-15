@@ -17,7 +17,7 @@
 //   CGameModeBase::ResetPreview @0x0de140 (@interleaver -> levelpreview) / ::Reset
 //     @0x0f9840 (@interleaver -> scattered COMDAT) - the base cleanup pair, out-of-line.
 #include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Gruntz/SoundState.h>            // g_sndEnabled/g_sndCueTag
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (CGameModeBase::ResetPreview)
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
 #include <Gruntz/GameMode.h>              // CState / CGameModeBase / CSpriteFactoryHolder

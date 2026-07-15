@@ -13,7 +13,7 @@
 // only the OFFSETS + the per-method call/branch structure are load-bearing.
 #include <rva.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
-#include <Rez/FrameClock.h> // the frame-clock/timer band the session loop reads/pumps
+#include <Rez/FrameClock.h>   // the frame-clock/timer band the session loop reads/pumps
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (CWorld::m_68; ClearGridRange)

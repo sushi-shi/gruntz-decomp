@@ -1,5 +1,5 @@
 #include <Mfc.h>            // CPtrList/CString machinery (reloc-masked); /GX EH frame
-#include <Image/CImage.h> // g_resourceInstallActive
+#include <Image/CImage.h>   // g_resourceInstallActive
 #include <Bute/SymParser.h> // canonical CSymParser + CSymTab (ResolvePath @0x13c030/0x13bae0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>

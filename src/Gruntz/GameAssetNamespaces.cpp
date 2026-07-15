@@ -38,7 +38,6 @@
 #include <Gruntz/FaderMgr.h>              // CFaderMgr - CState::m_faderMgr's real class
 #include <Globals.h>
 
-
 // The build number the version string embeds (owner-TU def; .bss, VA 0x651614).
 DATA(0x00251614)
 i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)

@@ -115,7 +115,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
     if (m_world->m_28->m_emitGate == 0) {                                                          \
         LeafCue* _c = (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_28)->Lookup_05b7e0(TAG);        \
         if (_c)                                                                                    \
-            _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                        \
+            _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
 // Cue via the host's finder (m_10, CSndFinder) with a stack out-ptr; used by a
 // handful of cheats instead of CueLookup.
@@ -124,7 +124,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
         LeafCue* _c = 0;                                                                           \
         m_world->m_28->m_10.Lookup(TAG, (void*&)_c); /* CMapStringToPtr (0x1b8438) */              \
         if (_c)                                                                                    \
-            _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                        \
+            _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
 #define ITEMCHEAT(N, MSG)                                                                          \
     {                                                                                              \

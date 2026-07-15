@@ -12,7 +12,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>   // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>      // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
@@ -83,7 +83,7 @@ extern "C" CGruntzMgr* g_gameReg;
 // a slow Find/rebuild. All globals are unnamed BSS (DATA-pinned so the loads
 // reloc-mask); the collection methods are external/no-body.
 // ===========================================================================
-struct CHaznEntry;         // an entry: first dword is the registered handler
+struct CHaznEntry; // an entry: first dword is the registered handler
 
 DATA(0x0024e3d0)
 CCoordColl g_haznColl;
@@ -385,7 +385,8 @@ i32 CStaticHazard::LoadAttributes() {
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = (CAniElement*)m_38->m_geoId;
-                CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+                CAniRecordView* e =
+                    d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             if (m_object->m_latchedAnimId != 0) {
@@ -404,7 +405,8 @@ i32 CStaticHazard::LoadAttributes() {
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             CAniElement* d = (CAniElement*)m_38->m_geoId;
-            CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+            CAniRecordView* e =
+                d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_latchedAnimId != 0) {
@@ -426,7 +428,8 @@ i32 CStaticHazard::LoadAttributes() {
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             CAniElement* d = (CAniElement*)m_38->m_geoId;
-            CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+            CAniRecordView* e =
+                d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
         }
         if (m_object->m_latchedAnimId != 0) {
@@ -469,7 +472,8 @@ dispatch:
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = (CAniElement*)m_38->m_geoId;
-                CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
+                CAniRecordView* e =
+                    d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;

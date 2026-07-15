@@ -9,7 +9,7 @@
 // external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
-#include <DDrawMgr/ColorHsv.h>  // the shared ColorHSV record + RgbToHsv (ex-.cpp-local Hsv view)
+#include <DDrawMgr/ColorHsv.h>   // the shared ColorHSV record + RgbToHsv (ex-.cpp-local Hsv view)
 #include <Gruntz/DataBuffer.h> // the real CDataBuffer (CShadeTable's dual-view): Free/Reset bind here
 
 #include <math.h> // pow (__CIpow) in HsvShiftTable

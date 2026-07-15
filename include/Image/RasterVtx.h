@@ -70,7 +70,14 @@ i32 RotateRasterize(
 // The textured-polygon span rasterizer (0x146a20): scanline-fills the clipped quad
 // into `dst`, sampling `src` (texel u,v walked per span). mode/colorkey select the
 // per-pixel copy/skip-zero/skip-colorkey inner loop.
-i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey); // 0x146a20
+i32 WarpTextureBlit(
+    ClipVtx* va,
+    i32 n,
+    CDDSurface* dst,
+    CDDSurface* src,
+    i32 mode,
+    i32 colorkey
+); // 0x146a20
 
 // The wall-quad 4-edge clipper (0x1461b0): four inlined Sutherland-Hodgman passes
 // clip `poly` (n verts) to the rect [a2..a4] x [a3..a5], ping-ponging bufA<->bufB,

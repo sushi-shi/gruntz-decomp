@@ -12,7 +12,7 @@
 //       M_c1230 == GetRange, M_c12b0 == FindCmd, M_c11b0 == RemoveCmd, M_c0c70 ==
 //       ProcessCmd, M_c00a0 == FindCmdSlot, M_c0290 == Verify(i32)).
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing.
-#include <Net/NetMgr.h>           // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
+#include <Net/NetMgr.h>   // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
 #include <Gruntz/Multi.h> // CMulti - the real owner of the LoadMenuSelectSprite/OnPlayerLeft/... game-mgr methods (netmgr-vs-cmulti split); Init a2 is a CMulti
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - CMulti::m_4's real type (its +0x6c m_cmdSubMgr is the CGruntzCmdMgr command manager)
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr::EnqueueCommand (the +0x6c command manager)

@@ -24,17 +24,17 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // THE canonical CDDrawWorkerRegistry (was shadowed here)
 #include <Gruntz/Sprite.h>                // CSprite (frame-data), CMapStringToOb, CFrameArray
 // (LogicRecord.h dissolved: CLogicRecord IS AnimWorkerObj - one 0x17c class)
-#include <DDrawMgr/AnimWorkerObj.h>   // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
-#include <DDrawMgr/DDrawWorker.h>     // CDDrawWorker (frame collection; slots 10/14/15/16)
-#include <Bute/SymTab.h>              // CSymTab iteration (FirstSym/NextSym{,2,3})
-#include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c owner (m_flags bit 0x100 = single-frame)
+#include <DDrawMgr/AnimWorkerObj.h>    // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
+#include <DDrawMgr/DDrawWorker.h>      // CDDrawWorker (frame collection; slots 10/14/15/16)
+#include <Bute/SymTab.h>               // CSymTab iteration (FirstSym/NextSym{,2,3})
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // m_0c owner (m_flags bit 0x100 = single-frame)
 #include <DDrawMgr/DDrawSubMgrPages.h> // m_mgr->m_pages->m_frontPair (Test cull extent)
 #include <DDrawMgr/DDrawWorkerCache.h> // m_mgr->m_workerCache (FindKeyOfValue_165360 / m_10)
 #include <Gruntz/GameLevel.h>          // m_mgr->m_resolveSubMgr->m_mainPlane (Test camera cull)
-#include <Image/CImage.h>             // the REAL CImage (was the local CFrameWorker stand-in)
-#include <DDrawMgr/DDrawShadeBlit.h>  // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
-#include <Image/ImageSet.h>           // CImageSet (sparse CImage-frame collection)
-#include <Gruntz/AniAdvanceCursor.h>  // canonical CAniAdvanceCursor (Advance)
+#include <Image/CImage.h>              // the REAL CImage (was the local CFrameWorker stand-in)
+#include <DDrawMgr/DDrawShadeBlit.h>   // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
+#include <Image/ImageSet.h>            // CImageSet (sparse CImage-frame collection)
+#include <Gruntz/AniAdvanceCursor.h>   // canonical CAniAdvanceCursor (Advance)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
@@ -569,7 +569,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     // its +0x10 is the notify fn passed to the worker's Init, its +0x08 the frame stamp.
     // The offset access is the deliberate foreign-object read (only the offsets are load-bearing).
     char* src = (char*)a4;
-    if (w->Init((GameObjNotifyFn)*(i32*)(src + 0x10), *(i32*)(src + 0x08)) == 0) {
+    if (w->Init((GameObjNotifyFn) * (i32*)(src + 0x10), *(i32*)(src + 0x08)) == 0) {
         return 0;
     }
     m_80 = 0;
@@ -831,7 +831,8 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
                 if (m_mgr->m_childGroup->m_map48.Lookup((void*)node, found) == 0) {
                     m_98 = 0;
                 } else {
-                    m_98 = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
+                    m_98 =
+                        (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
                 }
             } else {
                 m_98 = 0;

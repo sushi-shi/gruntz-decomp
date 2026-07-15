@@ -5,9 +5,9 @@
 // the projactregistry block and BETWEEN PulseHighlight's Tick@0x8440 / Serialize@
 // 0x8600; the interval's flags row is uniformly /GX). Field names are placeholders;
 // only OFFSETS + code bytes are load-bearing.
-#include <Mfc.h>        // real MFC CString (the type-name record's +0x00 member)
+#include <Mfc.h>           // real MFC CString (the type-name record's +0x00 member)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActionArea.h>
 #include <Image/ImageSet.h> // CImageSet::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
@@ -15,7 +15,7 @@
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
 #include <Globals.h>
-#include <Gruntz/TypeNameEntry.h>   // the shared type-name-registry record (CString m_name)
+#include <Gruntz/TypeNameEntry.h>     // the shared type-name-registry record (CString m_name)
 #include <Gruntz/ObjTypeRegistrars.h> // CProjActObj registrar-shell decl (RegisterType @0x8240)
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>

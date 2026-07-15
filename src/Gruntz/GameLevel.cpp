@@ -2738,5 +2738,4 @@ SIZE_UNKNOWN(CTileImageSet);
 // m_maxIndex/GetAt/SetAll* grafted onto it, which cannot even fit in a 0x10/0x18/0x24-byte
 // collision record. Renamed CTileImageSet + stripped; the two headers are now co-includable.
 
-
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

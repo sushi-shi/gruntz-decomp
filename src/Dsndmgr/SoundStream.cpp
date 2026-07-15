@@ -23,7 +23,7 @@
 //     past the 0x137330 boundary, so they belong to this obj (dossier: weak - could
 //     also be a third small reporting TU; kept here as the simplest 2-file model).
 #include <Dsndmgr/SoundStream.h>
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>          // g_emptyString
 #include <Dsndmgr/StreamVoice.h>  // canonical StreamVoice + StreamVoiceFeeder
 #include <Dsndmgr/StreamFeeder.h> // the embedded feeder/pump (StreamVoice+0x6c)
 #include <Rez/RezMgr.h>           // RezAlloc - the engine heap allocator (reloc-masked)

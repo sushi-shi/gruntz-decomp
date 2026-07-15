@@ -42,7 +42,6 @@ struct CScanMgr {                                                      // this (
     i32 ScanRegion32ce0(CGrunt* g);
 };
 
-
 // Recompute the grid dirty rect (m_60) as the {0,0,w,h} box intersected with a
 // copy of itself; m_70/m_74 = the resulting size. Inlined at each exit.
 #define SCAN_RECT_BOUNDS(grid)                                                                     \

@@ -10,7 +10,7 @@
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Mfc.h>                    // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
-#include <Gruntz/CurPlayer.h> // g_curPlayer
+#include <Gruntz/CurPlayer.h>       // g_curPlayer
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <rva.h>
 
@@ -92,7 +92,6 @@ CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
-
 
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;

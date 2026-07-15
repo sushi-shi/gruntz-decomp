@@ -2,7 +2,7 @@
 #define SBI_OWN_IMAGE_DTOR // this TU supplies the out-of-line ~CSBI_Image (0x100870)
 #include <rva.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)

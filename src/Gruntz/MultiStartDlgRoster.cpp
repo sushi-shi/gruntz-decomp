@@ -13,14 +13,14 @@
 // (GameRegistry.h) and the canonical CMulti game-state (Multi.h). Field names are
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>       // g_emptyString
 #include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/NetDlgHost.h> // CNetDlgHost (m_host +0x5c facet)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
 #include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
-#include <Net/LatencyList.h> // CLatencyList : CKeyedList (m_slotList; its dtor is 0xc5280)
-#include <Net/NetMgr.h>   // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
+#include <Net/LatencyList.h>     // CLatencyList : CKeyedList (m_slotList; its dtor is 0xc5280)
+#include <Net/NetMgr.h>          // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
 

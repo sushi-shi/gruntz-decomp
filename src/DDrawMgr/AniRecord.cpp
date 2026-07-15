@@ -37,7 +37,7 @@
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections - the real +0x1c pool allocator
 #include <DDrawMgr/AniRecordBase2.h>      // the canonical secondary/base facet (dtor 0x165dd0 here)
 #include <DDrawMgr/AniRecordViews.h> // honest by-offset owner/surface models (@identity-TODO, no RTTI)
-#include <string.h>                 // strlen (inline repnz scas)
+#include <string.h>                  // strlen (inline repnz scas)
 #include <Globals.h>
 
 // The three vftables (g_aniRecordVtbl @0x5f02c0, CAniRecordBase2 @0x5f02d8, the shared

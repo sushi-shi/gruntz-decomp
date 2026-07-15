@@ -21,7 +21,7 @@
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
 #include <Gruntz/GruntDataRecord.h>
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree
+#include <Rez/RezAlloc.h>            // RezAlloc/RezFree
 #include <Gruntz/Grunt.h>            // canonical CGrunt (this) + CGruntHud + CSpriteFactory
 #include <Gruntz/ResMgr.h>           // CAnimRegistry (the name map host, holder +0x2c)
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE::GetClassId (the ==5 probe)
@@ -83,7 +83,7 @@ extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // A 0x68-byte sub-record (3x3 grid) with its own loader (0x3ee0).
 
 // Global operator new / free (engine NAFXCW; reloc-masked).
-void* operator new(u32 n);        // 0x1b9b46
+void* operator new(u32 n); // 0x1b9b46
 
 // The three repeating block shapes, expanded inline + unrolled (retail unrolls
 // each and shares one 0x80 text buffer + the id/obj scratch locals - a helper

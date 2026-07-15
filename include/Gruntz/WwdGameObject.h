@@ -151,20 +151,20 @@ public:
     // through a CGameObject* cast, no fake local placeholders.
 
     // +0x00 is the CObject base vptr (the 17-slot table); m_04 at +0x04.
-    i32 m_04;         // +0x04
-    i32 m_flags;      // +0x08  bit flags (|=0x800000 / 0x1000000)
+    i32 m_04;                // +0x04
+    i32 m_flags;             // +0x08  bit flags (|=0x800000 / 0x1000000)
     CDDrawSurfaceMgr* m_mgr; // +0x0c  owning manager (the canonical CDDrawSurfaceMgr)
-    i32 m_10;         // +0x10
-    i32 m_14;         // +0x14
-    i32 m_lastX;      // +0x18  last-drawn column (cached by RenderDot)
-    i32 m_lastY;      // +0x1c  last-drawn row
-    i32 m_20;         // +0x20
-    i32 m_24;         // +0x24
-    i32 m_28;         // +0x28
-    i32 m_2c;         // +0x2c
-    i32 m_30;         // +0x30  set 1 on a successful plot
-    i32 m_34;         // +0x34  set 1 on a successful plot
-    i32 m_clipResult; // +0x38  clip result (0 plotted / -1 rejected)
+    i32 m_10;                // +0x10
+    i32 m_14;                // +0x14
+    i32 m_lastX;             // +0x18  last-drawn column (cached by RenderDot)
+    i32 m_lastY;             // +0x1c  last-drawn row
+    i32 m_20;                // +0x20
+    i32 m_24;                // +0x24
+    i32 m_28;                // +0x28
+    i32 m_2c;                // +0x2c
+    i32 m_30;                // +0x30  set 1 on a successful plot
+    i32 m_34;                // +0x34  set 1 on a successful plot
+    i32 m_clipResult;        // +0x38  clip result (0 plotted / -1 rejected)
     char m_pad3c[0x40 - 0x3c];
     i32 m_40; // +0x40
     i32 m_44; // +0x44
@@ -186,12 +186,12 @@ public:
     // +0x7c  the owned 0x17c worker/logic record - ONE class, ONE api
     // (the ex-CLogicRecord kill-cue view is folded onto AnimWorkerObj).
     AnimWorkerObj* m_worker;
-    void* m_80; // +0x80  object ref (serialized by name)
-    i32 m_84;   // +0x84
-    void* m_88; // +0x88  object ref
-    i32 m_8c;   // +0x8c
-    void* m_90; // +0x90  object ref
-    i32 m_94;   // +0x94
+    void* m_80;           // +0x80  object ref (serialized by name)
+    i32 m_84;             // +0x84
+    void* m_88;           // +0x88  object ref
+    i32 m_8c;             // +0x8c
+    void* m_90;           // +0x90  object ref
+    i32 m_94;             // +0x94
     CWwdGameObject* m_98; // +0x98  linked object (Play case 3 reads its +0x188 object id)
     // +0x9c  the embedded spatial-grid region node (<Gruntz/WwdGridIter.h>): its
     // m_x/m_y (+0xac/+0xb0) are the position copies Setup refreshes and its

@@ -23,7 +23,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawGroupNode (the broadcast child-list node)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // the CWwdGameObjectB owner (m_0c) real class
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
-#include <Wwd/WwdGameObjCtor.h> // CWwdGameObj15b390 - the shared 0x15b390 base-object ctor
+#include <Wwd/WwdGameObjCtor.h>        // CWwdGameObj15b390 - the shared 0x15b390 base-object ctor
 
 // The render context RenderDot (0x1660f0) plots into IS the real CDDrawSurfacePair
 // (<DDrawMgr/DDrawSurfacePair.h>, already included): its clip extent m_10/m_14 ARE
@@ -288,7 +288,8 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
 // ===========================================================================
 RVA(0x00166640, 0x13b)
-CWwdGameObject* CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
+CWwdGameObject*
+CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = (char*)RezAlloc(0x1dc);
     CWwdGameObjectA* result;
     if (obj != 0) {

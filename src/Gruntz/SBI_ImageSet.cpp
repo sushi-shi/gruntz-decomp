@@ -2,7 +2,7 @@
 #define SBI_OWN_IMAGESET_DTOR // this TU supplies the out-of-line ~CSBI_ImageSet (0x102000)
 #include <rva.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h> // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
+#include <Io/FileMem.h>           // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CImageRegistry + CSprite)

@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Gruntz/SoundState.h>      // g_sndEnabled/g_sndCueTag
 #include <Gruntz/GameRegistry.h>    // g_gameReg singleton (0x24556c) canonical view
 #include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
 #include <Gruntz/LeafCue.h>         // the canonical cue record (was the CStatusBarTab view)

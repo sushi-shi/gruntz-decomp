@@ -13,7 +13,7 @@
 //     ??1CBattlezMapConfig@@QAE@XZ - the real 0x1e8-byte bundle, exactly the 0x38..0x220
 //     span. It is a typed member of GruntzPlayer now.
 // Both are folded; this TU declares no types at all.
-#include <Mfc.h> // CString (MFC TU - precedes <windows.h>)
+#include <Mfc.h>         // CString (MFC TU - precedes <windows.h>)
 #include <EmptyString.h> // g_emptyString
 
 #include <Gruntz/GruntzPlayer.h>

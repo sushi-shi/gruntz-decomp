@@ -23,9 +23,9 @@
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
-#include <Gruntz/GameLevel.h> // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
-#include <Gruntz/UserLogic.h> // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
-#include <Image/CImage.h>     // CImage m_width/m_height (SetTileSizeFromImageSet)
+#include <Gruntz/GameLevel.h>    // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
+#include <Gruntz/UserLogic.h>    // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
+#include <Image/CImage.h>        // CImage m_width/m_height (SetTileSizeFromImageSet)
 #include <Image/ImageSet.h> // the REAL CImageSet (0x6c frame collection): SetTileSizeFromImageSet's
                             // arg. Was the GameLevel.h tile-descriptor class of the same NAME,
 // which had these frame fields grafted on; that class is CTileImageSet now.

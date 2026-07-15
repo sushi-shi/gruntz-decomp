@@ -8,7 +8,7 @@
 // keeps the ddrawptrcollections name (delinker packing); the in-band 0x141cc0-
 // 0x143c20 pool/factory methods moved to DirectDrawMgr.cpp (the DDRAWMGR.CPP
 // obj, dossier #14H).
-#include <Mfc.h> // real MFC types (NAFXCW, reloc-masked) - afx-first
+#include <Mfc.h>                 // real MFC types (NAFXCW, reloc-masked) - afx-first
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Ints.h>
 #include <rva.h>

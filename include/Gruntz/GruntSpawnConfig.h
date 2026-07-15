@@ -35,7 +35,7 @@
 // Forward decls so the manager's typed slots need no view-casts (defs below / in
 // the .cpp). m_04 is ONE config tree (its +0x08 sprite factory + +0x20 collection),
 // m_08/m_0c hold voice sprites, m_10/m_14 owned voice streams.
-class CGruntVoice; // folded CGruntVoice
+class CGruntVoice;  // folded CGruntVoice
 struct StreamVoice; // m_10/m_14 owned voice streams (the real <Dsndmgr/StreamVoice.h>)
 struct CSpawnTree;
 
@@ -127,10 +127,10 @@ public:
     ~CGruntSpawnConfig();    // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---
-    CSpawnOwner* m_00;  // +0x00
-    CSpawnTree* m_04;   // +0x04  = owner->m_30 (config tree)
-    CGruntVoice* m_08;  // +0x08  voice-sprite pair
-    CGruntVoice* m_0c;  // +0x0c
+    CSpawnOwner* m_00; // +0x00
+    CSpawnTree* m_04;  // +0x04  = owner->m_30 (config tree)
+    CGruntVoice* m_08; // +0x08  voice-sprite pair
+    CGruntVoice* m_0c; // +0x0c
     StreamVoice* m_10; // +0x10  owned voice-stream pair (the real Dsndmgr StreamVoice)
     StreamVoice* m_14; // +0x14
     // ::CPtrArray, not CDWordArray: retail's ctor/SetSize calls land in [0x1b4f0b,

@@ -111,9 +111,9 @@ public:
 
     CShadeTableCache* m_factory;         // +0x00  Init arg0 (the alpha/shade-table factory)
     CDDrawSurfaceMgr* m_spriteMgrHolder; // +0x04  Init arg1 (holder->m_workerMap = the sprite mgr)
-    CSpriteRef* m_refA[0x11];     // +0x08  bucket A nodes (17 slots)
-    CSpriteRef* m_refB[0x11];     // +0x4c  bucket B nodes (17 slots)
-    i32 m_built;                  // +0x90  count/flag (reset to 0 on Init/Clear)
+    CSpriteRef* m_refA[0x11];            // +0x08  bucket A nodes (17 slots)
+    CSpriteRef* m_refB[0x11];            // +0x4c  bucket B nodes (17 slots)
+    i32 m_built;                         // +0x90  count/flag (reset to 0 on Init/Clear)
 };
 
 #endif // GRUNTZ_SPRITEREFTABLE_H

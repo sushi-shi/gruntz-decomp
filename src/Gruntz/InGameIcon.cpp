@@ -9,13 +9,13 @@
 // CUserLogic / CUserBase / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
 // the game-manager singleton (g_gameReg) + the icon factory/records from the
 // class header. Engine callees are reloc-masked (no body).
-#include <Mfc.h>        // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
+#include <Mfc.h>           // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
-#include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
+#include <Gruntz/TypeKeyColl.h>    // g_typeCounter (the shared type-id counter)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>   // the +0x34 serialized-object-reference (Chain @0x8c00)

@@ -43,7 +43,6 @@
 // (stride for the per-player block: 71*8; per-icon stride inside it: 0x238).
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
-
 // CSbConfigItem::SetDirection (0x0ea0f0) / SetDirectionAlt (0x0ea170) re-homed to
 // src/Gruntz/StatusBarTabBuilders.cpp (interval dossier 0x0e8a70: the config-item
 // setters sit inside the tab-builders TU, between the side-tab block and

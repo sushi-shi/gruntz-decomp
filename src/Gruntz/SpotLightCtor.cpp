@@ -13,9 +13,9 @@
 // placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
 // CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
-#include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
+#include <Gruntz/SoundState.h>  // g_sndEnabled/g_sndCueTag
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/UserLogic.h>       // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>           // CButeTree / CButeMgr

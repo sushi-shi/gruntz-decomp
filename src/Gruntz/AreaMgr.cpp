@@ -361,7 +361,6 @@ void CSpawnList::DeleteAllEntries() {
 // / code bytes are load-bearing; helpers are reloc-masked engine externs.
 // ===========================================================================
 
-
 // (The old CObjResNode / CObjResListNode / CObjResBuilder / CObjResTree views
 // were folded onto the canonicals: the "child entry" is CSpawnEntry (GetSpriteName
 // == GetTail @0x9a830, GetAssetName == GetName @0x9a260, the +4 wanted flag ==

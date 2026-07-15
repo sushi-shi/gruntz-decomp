@@ -37,11 +37,11 @@
 // stack objects in the file loaders carry dtors -> C++ EH frames -> this TU
 // builds with /GX. Field names are placeholders; only OFFSETS + code bytes are
 // load-bearing.
-#include <Mfc.h>             // CPtrList / POSITION / CFile + <windows.h> PALETTEENTRY
-#include <Image/Image.h>          // CRezImage - the shared DIB-surface class (the pool's surface node)
+#include <Mfc.h>         // CPtrList / POSITION / CFile + <windows.h> PALETTEENTRY
+#include <Image/Image.h> // CRezImage - the shared DIB-surface class (the pool's surface node)
 #include <Image/ImagePaletteNode.h> // the canonical CImagePaletteNode (this TU owns most bodies)
-#include <Image/ImagePool.h>      // the canonical CImagePool (this TU owns its bodies)
-#include <Rez/RezMgr.h>      // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
+#include <Image/ImagePool.h>        // the canonical CImagePool (this TU owns its bodies)
+#include <Rez/RezMgr.h>             // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
 // <string.h>: strrchr (find the ext dot) / _stricmp (the case-insensitive ext
 // compare) + memset/memcpy in the RLE decoders.
@@ -1244,8 +1244,8 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
         }
     }
 
-    BITMAPFILEHEADER fileHdr;  // real 0xe-byte packed file header ([esp+0x10])
-    char info[0x428];          // BITMAPINFOHEADER + 256-entry RGBQUAD table ([esp+0x34])
+    BITMAPFILEHEADER fileHdr; // real 0xe-byte packed file header ([esp+0x10])
+    char info[0x428];         // BITMAPINFOHEADER + 256-entry RGBQUAD table ([esp+0x34])
     BITMAPINFOHEADER* bih = (BITMAPINFOHEADER*)info;
     memset(info, 0, 0x428);
     bih->biSize = 0x28;
