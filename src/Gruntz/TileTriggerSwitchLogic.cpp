@@ -822,6 +822,49 @@ void CTileTriggerLogic::RecordMove() {
 }
 
 // ---------------------------------------------------------------------------
+// CTileSecretTriggerLogic::Tick (slot-0 override, 0x1128b0; re-homed from the
+// deleted one-fn MgrSlotSwap.cpp where it lived as `CSlotHolder::DoSwap` - the
+// vtable slot map proved the identity: ??_7CTileSecretTriggerLogic@0x1eaf14
+// slot 0 holds this body via ILT thunk 0x18d4, and the "CSlotHolder" fields were
+// the base CTileTriggerLogic's m_08/m_0c coords + m_34 token).
+// The secret trigger's duty tick: swap this trigger's parked tile token with the
+// one in the MAIN plane's tile grid at (m_08, m_0c), recompute the cell flags,
+// and adopt the previously-parked token. An empty token reports the 0x8009/0x451
+// diagnostic and returns 0.
+// ---------------------------------------------------------------------------
+// @early-stop
+// Register-naming wall (~88%, structure byte-exact). Retail has higher register
+// pressure: it keeps mgr(edi)/idx/grp live, spills newTok to a stack local
+// ([esp+0x1c]/[esp+0x10]) and RE-WALKS the m_world->m_24->m_mainPlane->cells
+// chain for the write instead of CSE-ing the cell address. Two levers reproduced
+// that shape (54.9 -> 88): (1) cache g_gameReg in a local `mgr`; (2) idx/grp
+// read-once locals shared between the cell index and the ComputeCellFlags args;
+// (3) crucially, WRITE the cell through the un-cached global g_gameReg while
+// READING via mgr - this defeats MSVC's read/write address-CSE, forcing the
+// spill+rewalk (62 -> 88). Residual is pure regalloc naming (retail mgr=edi/
+// idx=eax/grp=ecx vs base mgr=ecx/idx=edx/grp=eax, plus the idx leaf-read
+// scheduled after W/L vs hoisted before) - an unsteerable allocator coin-flip at
+// identical instruction count. See docs/patterns/cse-defeat-uncached-global-rewalk.md.
+RVA(0x001128b0, 0x88)
+i32 CTileSecretTriggerLogic::Tick() {
+    i32 oldTok = m_34;
+    if (oldTok == 0) {
+        g_gameReg->ReportError(0x8009, 0x451);
+        return 0;
+    }
+    CGruntzMgr* mgr = g_gameReg;
+    i32 grp = m_08;
+    i32 idx = m_0c;
+    i32 newTok = mgr->m_world->m_24->m_mainPlane
+                     ->m_tileGrid[mgr->m_world->m_24->m_mainPlane->m_colOffsets[idx] + grp];
+    g_gameReg->m_world->m_24->m_mainPlane
+        ->m_tileGrid[g_gameReg->m_world->m_24->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
+    mgr->m_tileGrid->ComputeCellFlags(grp, idx, oldTok);
+    m_34 = newTok;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CTileTriggerLogic::Classify
 // Drives the command's on/off duty cycle off the running game clock: while the
 // elapsed time is within the lead-in (m_2c) it stays active (+1); past it, the
@@ -832,9 +875,10 @@ void CTileTriggerLogic::RecordMove() {
 // @early-stop
 // entropy-tail (~96%): logic + the single-ret1 convergence match; only the last
 // type==0x17 case's ret1 is tail-duplicated instead of merged into the shared tail.
-// @interleaver CTileTriggerLogic::Classify emitted-in <boundary: MgrSlotSwap.cpp DoSwap
-// @0x1128b0 (before) + CheckpointSwitchBuild.cpp BuildSmall @0x112a50 (after)>. A /Gy
-// first-use COMDAT the linker scattered between two OTHER units.
+// @interleaver CTileTriggerLogic::Classify emitted-in <boundary:
+// CTileSecretTriggerLogic::Tick @0x1128b0 (before, now THIS TU) +
+// CheckpointSwitchBuild.cpp BuildSmall @0x112a50 (after)>. A /Gy first-use
+// COMDAT the linker scattered inside the band.
 RVA(0x00112970, 0xad)
 i32 CTileTriggerLogic::Classify(i32 arg) {
     u32 elapsed = g_frameTime - m_24;
