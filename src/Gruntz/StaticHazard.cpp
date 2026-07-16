@@ -189,7 +189,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimNode = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
-        CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
+        CAniElement* d = m_38->m_1a0.m_14;
         CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
@@ -334,7 +334,7 @@ i32 CStaticHazard::LoadAttributes2() {
     m_prevAnimNode = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
-        CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
+        CAniElement* d = m_38->m_1a0.m_14;
         CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
@@ -371,7 +371,7 @@ i32 CStaticHazard::LoadAttributes() {
             m_prevAnimNode = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
+                CAniElement* d = m_38->m_1a0.m_14;
                 CAniRecordView* e =
                     d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
@@ -391,7 +391,7 @@ i32 CStaticHazard::LoadAttributes() {
         m_prevAnimNode = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
+            CAniElement* d = m_38->m_1a0.m_14;
             CAniRecordView* e =
                 d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
@@ -414,7 +414,7 @@ i32 CStaticHazard::LoadAttributes() {
         m_prevAnimNode = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
+            CAniElement* d = m_38->m_1a0.m_14;
             CAniRecordView* e =
                 d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
@@ -458,7 +458,7 @@ dispatch:
             m_prevAnimNode = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
+                CAniElement* d = m_38->m_1a0.m_14;
                 CAniRecordView* e =
                     d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);

@@ -825,7 +825,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     if (m_38->ApplyLookupGeometry(geom, 0) == 0) {
         return 0;
     }
-    CAniElement* desc = (CAniElement*)m_38->m_1a0.m_14;
+    CAniElement* desc = m_38->m_1a0.m_14;
     CAniDesc* elem = desc->m_records.m_nSize > 0 ? (CAniDesc*)*desc->m_records.m_pData : 0;
     m_38->ApplyLookupSprite(sprite, elem->m_param);
     m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
