@@ -54,10 +54,9 @@ struct CAniRecordBase2 : public CObject {
     virtual i32 Alloc168f60(i32 a, i32 size, i32 flag); // [12] 0x168f60
     virtual i32 Slot13_168fd0();                        // [13] 0x168fd0
 
-    // The dtor's member teardown (frees m_10 through the owner pool); the inline
-    // forwarding shim lives in AniRecord.cpp (it reaches the CAniRecordView-bound
-    // body 0x168fb0).
-    void FreeBuf_168fb0();
+    // (The dtor's member teardown - free m_10 through the owner pool - is the
+    // CAniRecordView-bound body 0x168fb0; the dtor reaches it directly through
+    // the facet cast, so no forwarding shim / shadow decl lives here.)
 };
 SIZE(CAniRecordBase2, 0x14);       // standalone map-worker allocation size (`new` 0x14)
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)

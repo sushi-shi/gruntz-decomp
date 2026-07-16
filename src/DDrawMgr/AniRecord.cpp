@@ -106,12 +106,6 @@ void operator delete(void* p);
 // Alloc168f60). The class def is the SHARED canonical <DDrawMgr/AniRecordBase2.h>
 // (also the CDDrawWorkerMapSmall keyed "map worker" - one class, one vtable).
 
-// The dtor's member teardown reaches the CAniRecordView-bound body 0x168fb0.
-// Inline (odr-used only by the dtor below, folds into it - no extra symbol).
-inline void CAniRecordBase2::FreeBuf_168fb0() {
-    ((CAniRecordView*)this)->FreeBuf_168fb0();
-}
-
 // ---------------------------------------------------------------------------
 // 0x1657a0: the PRIMARY base (g_aniRecordVtbl @0x5f02c0, 5 slots == the grand-base
 // layout, no extra slots) destructor. /GX. Real virtual: cl stamps ??_7 (masks 0x5f02c0)
@@ -131,7 +125,10 @@ CAniRecordView::~CAniRecordView() {
 
 RVA(0x00165dd0, 0x5b)
 CAniRecordBase2::~CAniRecordBase2() {
-    FreeBuf_168fb0();
+    // The +0x10 work-buffer teardown is the CAniRecordView-bound body 0x168fb0
+    // (the documented primary/secondary facet split - see AniRecordView.h); the
+    // direct call emits the resolvable ?FreeBuf_168fb0@CAniRecordView@@ symbol.
+    reinterpret_cast<CAniRecordView*>(this)->FreeBuf_168fb0();
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
