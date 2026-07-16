@@ -25,7 +25,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/BattlezData.h> // CBattlezData - the REAL +0x7c HUD/score board (was CTmScoreBoard)
+#include <Gruntz/BattlezData.h>          // CBattlezData - the REAL +0x7c HUD/score board
 #include <DDrawMgr/DDrawChildGroup.h>    // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>            // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (CPlay::m_beginMarker; FindChild)
@@ -720,7 +720,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     CPlay* world = (CPlay*)g_gameReg->m_curState;
     // world->m_3f4 IS CPlay::m_frameMarker (the CTimer): read its i64 start stamp
     // (m_38:m_3c) as the elapsed accumulator, credit the HUD score, then zero the
-    // timer's accum/lap/running/current block (ex the CTmScoreSub view).
+    // timer's accum/lap/running/current block.
     CTimer* sub = world->m_frameMarker;
     i64 diff = (i64)(u32)g_frameTime - *(i64*)&sub->m_38;
     if (diff < 0) {
@@ -733,7 +733,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     sub->m_accumHi = 0;           // +0x34
     sub->m_running = 0;           // +0x48
     sub->m_currentMs = 0;         // +0x4c
-    world->ArmSnapshot(0, 0xbb7); // 0xd9240 (was the SetStat phantom)
+    world->ArmSnapshot(0, 0xbb7); // 0xd9240
     world->m_guts->SetMode(1);
     this->ClearMagic(g_curPlayer);
 }

@@ -30,7 +30,7 @@
 #include <Globals.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
-// CTimeBomb's TU folds in below (ex TimeBomb.cpp, wave3-J).
+// CTimeBomb's TU folds in below (ex TimeBomb.cpp).
 #include <Gruntz/StatusBarUpdatersViews.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -997,7 +997,7 @@ void CProjectile::ScanTargets(i32 impact) {
 }
 
 // ===========================================================================
-// CTimeBomb (ex TimeBomb.cpp, merged wave3-J): the 0x0dec60-0x0e2213 interval is
+// CTimeBomb (ex TimeBomb.cpp): the 0x0dec60-0x0e2213 interval is
 // ONE original TU - the text is a P-T-P sandwich (projectile x10 | timebomb x6 |
 // projectile @0xe2190 LaunchSound), and the private initialized-.data extents
 // are contiguous (projectile 0x213624..0x213838, timebomb 0x213860..0x2138b4).
@@ -1045,7 +1045,7 @@ i32 g_tbombScratch;
 
 // ConstructTBombRange @0x0e17b0 - the static initializer that builds g_tbombColl's fast
 // [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
-// src/Stub/BoundaryLowerThunks.cpp (was RegRangee17b0).
+// src/Stub/BoundaryLowerThunks.cpp.
 RVA(0x000e17b0, 0x15)
 void ConstructTBombRange() {
     ((CZDArrayDerived*)&g_tbombColl)->Construct(0x7d0, 0x7da);

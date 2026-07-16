@@ -29,7 +29,7 @@
 #include <Gruntz/Brickz.h> // canonical CBrickzGrid == CMapMgr (the board; was the CStepGrid view)
 #include <Gruntz/Grunt.h>  // real CGrunt (step grunt is a CGrunt); m_10 + CAnimLookupNode m_14
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (the board's 4x15 CGrunt* grid; was the CStepBoard view)
-#include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig - the step mgr `this` (was the CStepMgr view)
+#include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig - the step mgr `this`
 #include <Gruntz/TypeColl.h>         // the shared type-name collection
 #include <Gruntz/TypeKeyColl.h>
 

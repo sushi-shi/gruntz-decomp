@@ -16,7 +16,7 @@
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
-#include <Gruntz/TriggerMgr.h>        // the ONE CTriggerMgr (ex the CGruntTileMgr view)
+#include <Gruntz/TriggerMgr.h>        // the ONE CTriggerMgr
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)
 #include <Gruntz/AniElement.h>
 #include <rva.h>

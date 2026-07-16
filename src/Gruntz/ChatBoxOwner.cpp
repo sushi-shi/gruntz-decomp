@@ -9,7 +9,7 @@
 #include <ddraw.h> // real IDirectDrawSurface (the chatbox DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry (m_18->m_imageRegistry) + its m_10map
-#include <Gruntz/Sprite.h> // the "GAME_CHATBOX" map value IS the canonical CSprite
+#include <Gruntz/Sprite.h>            // the "GAME_CHATBOX" map value IS the canonical CSprite
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
 #include <DDrawMgr/DDrawSurfacePair.h> // the real render-target class LoadChatBoxSprite's arg is
@@ -33,8 +33,8 @@ extern "C" CGameRegistry* g_gameReg;
 // CChatBoxFrame .cpp-local view is dissolved onto it.
 // The m_18 chain is the WORLD HOLDER (dissolved 2026-07-13, Fable lane): the
 // former CChatBoxRegRoot was CDDrawSurfaceMgr (Attach receives CState::m_c,
-// the g_gameReg->m_world object), its +0x10 "registry" (ex-CChatBoxRegistry) is
-// the holder's CImageRegistry, and the embedded +0x10 hash (ex-CChatBoxHash) is
+// the g_gameReg->m_world object), its +0x10 "registry" is
+// the holder's CImageRegistry, and the embedded +0x10 hash is
 // CImageRegistry::m_10map (::CMapStringToOb, Lookup 0x1b8008 - see mfc_class).
 // arg1->m_2c->m_8: the game's real IDirectDrawSurface (<ddraw.h>). GetDC is slot 17
 // (+0x44), ReleaseDC slot 26 (+0x68); both __stdcall with the surface as the hidden

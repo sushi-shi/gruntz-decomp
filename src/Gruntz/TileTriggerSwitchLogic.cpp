@@ -50,7 +50,7 @@
 // they are CTileTriggerLogic::Serialize / ::Deserialize, __thiscall on `this` - see
 // ValidateByType below.)
 
-// methods on the +0x68 registry m_cmdGrid - LoadPowerupIconSprites (was also decl-aliased as FireCommand)
+// methods on the +0x68 registry m_cmdGrid - LoadPowerupIconSprites
 // (0x7c620), LoadExplosionSprites (0x7b330) is its sibling. Both declared on the real
 // CTriggerMgr (<Gruntz/TriggerMgr.h>), so the calls run cast-free on m_cmdGrid.)
 
@@ -781,7 +781,7 @@ i32 CTileSecretTriggerSwitchLogic::SwitchDown() {
 
 // ---------------------------------------------------------------------------
 // CTileTimeTriggerSwitchLogic::SwitchDown (slot 2 override, 0x112840) - `return base::SwitchDown() != 0`
-// (the int->bool neg/sbb/neg normalize). Re-homed from ReconBatch2 (was Probe_112840);
+// (the int->bool neg/sbb/neg normalize). Re-homed from ReconBatch2;
 // xref: ??_7CTileTimeTriggerSwitchLogic@@6B@+0x8 via thunk 0x2464.
 // ---------------------------------------------------------------------------
 RVA(0x00112840, 0xc)

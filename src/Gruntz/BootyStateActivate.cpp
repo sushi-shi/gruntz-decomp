@@ -8,8 +8,8 @@
 // per-TU CBootyState/CMultiBootyState views (with BootyAssetRoot @+0x0c, BootyRegistrar,
 // BootyNamespace @+0x2c/+0x28/+0x30) are folded away here onto the CState + CDDrawSurfaceMgr facets:
 //   - m_c (+0x0c)  == CDDrawSurfaceMgr (the shared render/resource context - see <Gruntz/View.h>).
-//     The +0x04 loader (was CGruntDataLoader::Load) is CDDrawSurfaceMgr's m_renderState->Flush
-//     (0x158ee0); the +0x10 registrar (was BootyRegistrar::CallRegister) is CDDrawSurfaceMgr's
+//     The +0x04 loader is CDDrawSurfaceMgr's m_renderState->Flush
+//     (0x158ee0); the +0x10 registrar is CDDrawSurfaceMgr's
 //     m_imageRegistry->LoadNamespace (vtable slot +0x4c).
 //   - the +0x2c/+0x28/+0x30 asset sources are CState::m_2c /
 //     m_levelBank / m_gruntzBank (CResSource; LookupSet 0x13bae0).

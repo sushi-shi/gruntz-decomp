@@ -58,7 +58,7 @@
 // WHAT THE VALIDATOR ACTUALLY WALKS (the whole object web, xref-recovered):
 //
 //   CState::m_c            == CDDrawSurfaceMgr   (the resource holder; was `PlayMgr`)
-//     ->m_8                == CDDrawChildGroup          (was `PlayMgrRenderer`)
+//     ->m_8                == CDDrawChildGroup
 //        ->m_list (head)   == CDDrawGroupNode*        (was `TileObjNode`/`StartNode`; the
 //                                                      head of the CPtrList embedded at
 //                                                      factory+0x10, head node @+0x14 - the
@@ -70,7 +70,7 @@
 //                                                      +0x134/+0x144/+0x154/+0x164/+0x168) is
 //                                                      a declared CGameObject member, and the
 //                                                      list's element type says so outright)
-//              ->m_7c      == AnimWorkerObj*            (was `GameObjAux7c`)
+//              ->m_7c      == AnimWorkerObj*
 //                 ->Init   == the +0x10 FN-PTR        (was the `m_id` "identity fn-address":
 //                                                      it IS AnimWorkerObj::Init, the per-leaf
 //                                                      post-create driver the creating TUs
@@ -268,7 +268,7 @@ i32 CPlay::PlaceStartGruntz() {
                         (obj->m_screenX & ~0x1f) + 0x10,
                         (obj->m_screenY & ~0x1f) + 0x10
                     );
-                    g_gameReg->EnterModalUI((const char*)(LPCSTR)s); // 0x8ef10 (was LogTileError)
+                    g_gameReg->EnterModalUI((const char*)(LPCSTR)s); // 0x8ef10
                     return 0;
                 }
                 obj->m_flags |= 0x10000;
@@ -407,9 +407,7 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(
-                            (LPCSTR)s
-                        );
+                        g_gameReg->EnterModalUI((LPCSTR)s);
                         return 0;
                     }
                     validCount++;
@@ -434,9 +432,7 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(
-                            (LPCSTR)s
-                        );
+                        g_gameReg->EnterModalUI((LPCSTR)s);
                         return 0;
                     }
                     validCount++;
@@ -461,9 +457,7 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(
-                            (LPCSTR)s
-                        );
+                        g_gameReg->EnterModalUI((LPCSTR)s);
                         return 0;
                     }
                     validCount++;
@@ -488,9 +482,7 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(
-                            (LPCSTR)s
-                        );
+                        g_gameReg->EnterModalUI((LPCSTR)s);
                         return 0;
                     }
                     validCount++;
@@ -515,9 +507,7 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(
-                            (LPCSTR)s
-                        );
+                        g_gameReg->EnterModalUI((LPCSTR)s);
                         return 0;
                     }
                     validCount++;
@@ -542,9 +532,7 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(
-                            (LPCSTR)s
-                        );
+                        g_gameReg->EnterModalUI((LPCSTR)s);
                         return 0;
                     }
                     validCount++;
@@ -569,9 +557,7 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(
-                            (LPCSTR)s
-                        );
+                        g_gameReg->EnterModalUI((LPCSTR)s);
                         return 0;
                     }
                     validCount++;
@@ -596,9 +582,7 @@ i32 CPlay::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(
-                            (LPCSTR)s
-                        );
+                        g_gameReg->EnterModalUI((LPCSTR)s);
                         return 0;
                     }
                     validCount++;

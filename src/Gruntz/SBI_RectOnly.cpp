@@ -2,11 +2,11 @@
 // so this /GX host TU's ??1/??_GCStatusBarItem match retail + the SBI leaf TUs instead of
 // the declared-only empty form that diverged across objs. Must precede any SBI include.
 #define SBI_DTOR_CHAIN
-#include <Mfc.h> // afx-first umbrella (CByteArray/CPtrList consumers below)
+#include <Mfc.h>                 // afx-first umbrella (CByteArray/CPtrList consumers below)
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
-#include <Gruntz/LevelSync.h>           // CLevelSync + its referents (was a TU-local view)
+#include <Gruntz/LevelSync.h>           // CLevelSync + its referents
 #include <DDrawMgr/DDrawChildGroup.h>   // real CDDrawChildGroup::CreateSprite (0x1597b0); 0x104dd0
 #include <Gruntz/WarpStoneFly.h>
 #include <Dsndmgr/DirectSoundMgr.h>

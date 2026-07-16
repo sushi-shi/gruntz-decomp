@@ -67,12 +67,12 @@
 #include <Gruntz/CheatMgr.h>          // CCheatMgr (m_cheatMgr @+0x44; m_124 flag)
 #include <Gruntz/FaderMgr.h>          // CFaderMgr (m_faderMgr @+0x40; Close dtor-tears it)
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTableCache (m_shadeCache @+0x50)
-#include <Rez/RezAlloc.h>          // RezAlloc/RezFree (the global allocator pair)
-#include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid)
-#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
-#include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
-#include <Gruntz/WorldSoundSet.h>  // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
-#include <Gruntz/FontConfig.h>     // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
+#include <Rez/RezAlloc.h>             // RezAlloc/RezFree (the global allocator pair)
+#include <Gruntz/TriggerMgr.h>        // the ONE CTriggerMgr (m_cmdGrid)
+#include <Gruntz/SpriteRefTable.h>    // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
+#include <Gruntz/LightFxMgr.h>        // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
+#include <Gruntz/WorldSoundSet.h> // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
+#include <Gruntz/FontConfig.h>    // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
@@ -88,9 +88,9 @@
 #include <Image/ImageSet.h>          // the REAL CImageSet (config/color rows: m_frames/+0x14,
 // m_minIndex/+0x64, GetAt). GameLevel.h no longer collides on this
 // name - its tile-collision record is CTileImageSet now.
-#include <Net/NetMgr.h>          // the ONE CNetMgr (ReportError is its static member)
-#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry - the REAL m_world->m_imageRegistry (was CWorldLookupHolder)
+#include <Net/NetMgr.h>                   // the ONE CNetMgr (ReportError is its static member)
+#include <Gruntz/StatusBarMgr.h>          // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // CImageRegistry - the REAL m_world->m_imageRegistry
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the class that OWNS the registry key helpers (0x1554xx)
 #include <Globals.h>
 
@@ -1225,7 +1225,7 @@ RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         CDDrawSubMgrPages* pages = m_world->m_drawTarget;
-        pages->Method_158c70(pages->m_backPair);         // pause the back pair (ex "PausePages")
+        pages->Method_158c70(pages->m_backPair);         // pause the back pair
         m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
     i32 wasShown = ShowCursor(1);

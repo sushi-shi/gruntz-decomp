@@ -13,7 +13,7 @@
 // (see the M2 report); they interleave this unit's span until then.
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
 #include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
-#include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr (ex the CGruntTileMgr view)
+#include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr
 #include <Gruntz/GameLevel.h>  // canonical CGameLevel (m_world->m_level) + CLevelPlane visible rect
 #include <Wap32/ZVec.h>
 #include <Ints.h>
