@@ -61,15 +61,18 @@ struct CRandomAmbientWorld {
     SoundDevice* m_soundDev; // +0x2c  the world's SoundDevice sub-object
 };
 
+enum { kSoundVolumeMax = 100 }; // 0x64 - full volume on the 0-100 "Sound Volume" slider
+
 class CWorldSoundSet {
 public:
     i32 Init(void* world, i32 a2); // 0x00b5e0
     void Teardown();               // 0x00b660
-    void Restart(void* a1);        // 0x00bc30
+    void Restart(i32 a1);          // 0x00bc30
     void Stop();                   // 0x00bc80
     void Resume();                 // 0x00bcf0
     void Retune(i32 x, i32 y);     // 0x00bd60  push the listener position to every channel
     void Deactivate();             // 0x00b620
+    CWorldSoundSet();              // inline: m_list(0xa), m_world=0, m_04=0x64 (::operator new = RezAlloc)
     ~CWorldSoundSet();             // 0x085ed0
 
     // Factories: allocate + seed a sound channel (the real RTTI channel classes),
@@ -87,7 +90,7 @@ public:
     CreateRandomBox_ba00(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
 
     CRandomAmbientWorld* m_world; // +0x00
-    void* m_04;                   // +0x04
+    i32 m_volume;                 // +0x04  sound volume (0-100) threaded to each channel (ctor default kSoundVolumeMax)
     CPtrList m_list;              // +0x08  MFC CPtrList (head at +0x0c)
     i32 m_active;                 // +0x24  active flag
     // +0x28/+0x2c: the pending LISTENER position (not pan/vol - Play/Multi push the
@@ -96,6 +99,13 @@ public:
     i32 m_listenerX; // +0x28
     i32 m_listenerY; // +0x2c
 };
+
+// Inline ctor: cl inlines it at the sole `new CWorldSoundSet()` site (::operator new
+// == RezAlloc). m_list constructs first (member-init), then the body seeds +0/+4.
+inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
+    m_world = 0;
+    m_volume = kSoundVolumeMax;
+}
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

@@ -105,7 +105,7 @@ i32 CWorldSoundSet::Init(void* world, i32 a2) {
         return 0;
     }
     m_world = (CRandomAmbientWorld*)world;
-    m_04 = (void*)a2;
+    m_volume = a2;
     m_active = 1;
     m_listenerX = 0;
     m_listenerY = 0;
@@ -153,7 +153,7 @@ void CWorldSoundSet::Teardown() {
 // list node in m_listNode) and returns it.
 // ===========================================================================
 
-// CAmbientSound (0x40), 6-arg Init (m_world + the owner's m_04 threaded in).
+// CAmbientSound (0x40), 6-arg Init (m_world + the owner's m_volume threaded in).
 RVA(0x0000b6a0, 0x83)
 CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     void* raw = RezAlloc(0x40);
@@ -170,7 +170,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, a0, a1, m_04, a2, a3) == 0) {
+    if (obj->Init6(m_world, a0, a1, m_volume, a2, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -208,7 +208,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(a0, a1, m_04, a2, a3) == 0) {
+    if (obj->Init5(a0, a1, m_volume, a2, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -233,7 +233,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, a0, a1, m_04, a2, a3) == 0) {
+    if (obj->Init6(m_world, a0, a1, m_volume, a2, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -269,7 +269,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(a0, a1, m_04, a2, a3) == 0) {
+    if (obj->Init5(a0, a1, m_volume, a2, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -309,7 +309,7 @@ CRandomAmbientSound* CWorldSoundSet::
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, a0, a1, m_04, a2, a3) == 0) {
+    if (obj->Init6(m_world, a0, a1, m_volume, a2, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -346,7 +346,7 @@ CRandomAmbientSound* CWorldSoundSet::
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(a0, a1, m_04, a2, a3) == 0) {
+    if (obj->Init5(a0, a1, m_volume, a2, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -360,8 +360,8 @@ CRandomAmbientSound* CWorldSoundSet::
 // every live channel to recompute against the new frame.
 // ---------------------------------------------------------------------------
 RVA(0x0000bc30, 0x3a)
-void CWorldSoundSet::Restart(void* a1) {
-    m_04 = a1;
+void CWorldSoundSet::Restart(i32 a1) {
+    m_volume = a1;
     if (m_world->m_soundDev != 0) {
         m_world->m_soundDev->FreeSamples();
     }

@@ -2381,21 +2381,12 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CWorldSoundSet* in2 = m_inputState;
     if (in2) {
         in2->Deactivate();
-        ((CPtrList*)((char*)in2 + 8))->CPtrList::~CPtrList();
+        in2->m_list.CPtrList::~CPtrList();
         RezFree(in2);
     }
     m_inputState = 0;
 
-    void* no = RezAlloc(0x30);
-    CWorldSoundSet* ni;
-    if (no) {
-        new ((char*)no + 8) CPtrList(0xa);
-        *(i32*)no = 0;
-        *(i32*)((char*)no + 4) = 0x64;
-        ni = (CWorldSoundSet*)no;
-    } else {
-        ni = 0;
-    }
+    CWorldSoundSet* ni = new CWorldSoundSet();
     m_inputState = ni;
     if (ni->Init(m_world->m_soundRegistry, m_soundVolume) == 0) {
         ReportError(0x800a, 0x442);
@@ -2653,7 +2644,7 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
     if (m_sound->m_pCurrent == 0) {
         return;
     }
-    m_sound->m_pCurrent->SetVolume(0x64, ms);
+    m_sound->m_pCurrent->SetVolume(kSoundVolumeMax, ms);
 }
 
 // -------------------------------------------------------------------------
@@ -3656,7 +3647,7 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
     }
     CWorldSoundSet* in = m_inputState;
     if (in) {
-        in->Restart((void*)v); // "StoreFlag" IS CWorldSoundSet::Restart @0xbc30 (stores v at +0x04)
+        in->Restart(v); // "StoreFlag" IS CWorldSoundSet::Restart @0xbc30 (stores v at +0x04)
     }
 }
 

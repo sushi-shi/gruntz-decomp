@@ -160,6 +160,38 @@ def _is_scaffolding(path) -> bool:
     return "/Stub/" in path.as_posix() or path.name.endswith("Views.h")
 
 
+# The caller_callee reconciliation metric: retail call-graph edges (reconstructed->reconstructed)
+# our source FAILS to reproduce - it reaches the real callee through a fake-view / wrong-signature
+# name (FAKE-VIEW), or omits the edge (MISSING). NOT a text scan (reads clang IR + the retail
+# graph), so it needs a build; shelled here so the SAME baseline tracks + ratchets it to 0 like
+# the source metrics. Gracefully absent (rows omitted) when no build IR is available.
+_CALLER_CALLEE_LABELS = ("caller-callee unreconciled", "caller-callee FAKE-VIEW")
+
+
+def _caller_callee_counts() -> dict[str, int]:
+    import subprocess
+    try:
+        out = subprocess.run(
+            [sys.executable, "-m", "gruntz.analysis.caller_callee", "--metric"],
+            capture_output=True, text=True, timeout=600, cwd=str(REPO),
+        ).stdout
+    except Exception:
+        return {}
+    res: dict[str, int] = {}
+    for line in out.splitlines():
+        m = re.search(r"UNRECONCILED.*:\s*(\d+)", line)  # "... drive to 0): 2366" -> 2366
+        if m:
+            res["caller-callee unreconciled"] = int(m.group(1))
+        m = re.search(r"(\d+)\s+FAKE-VIEW", line)
+        if m:
+            res["caller-callee FAKE-VIEW"] = int(m.group(1))
+    return res
+
+
+# Ratchet set: metrics that only go DOWN. The caller_callee edges join the view/cast metrics.
+_RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS)
+
+
 def count() -> list[tuple[str, int]]:
     totals = {label: 0 for label, _, _ in METRICS}
     for root in ROOTS:
@@ -181,7 +213,12 @@ def count() -> list[tuple[str, int]]:
                 if scaffold and label in _VIEW_METRICS:
                     continue
                 totals[label] += matcher(code) if callable(matcher) else len(matcher.findall(code))
-    return [(label, totals[label]) for label, _, _ in METRICS]
+    rows = [(label, totals[label]) for label, _, _ in METRICS]
+    cc = _caller_callee_counts()  # build-derived; omitted if no IR
+    for lbl in _CALLER_CALLEE_LABELS:
+        if lbl in cc:
+            rows.append((lbl, cc[lbl]))
+    return rows
 
 
 def load_baseline() -> dict[str, int]:
@@ -212,7 +249,7 @@ def merge_baseline_downonly(rows: list[tuple[str, int]]) -> list[tuple[str, int]
     base = load_baseline()
     out = []
     for label, n in rows:
-        if label in _VIEW_METRICS and label in base:
+        if label in _RATCHET and label in base:
             out.append((label, min(n, base[label])))
         else:
             out.append((label, n))

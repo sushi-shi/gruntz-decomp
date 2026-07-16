@@ -93,8 +93,8 @@ public:
 
     // One-time inits run by the CWorldSoundSet::Create* factories right after
     // construction (unreconstructed; declared NO-body so the `call` reloc-masks).
-    i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
-    i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
+    i32 Init6(void* world, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5);
+    i32 Init5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
 
     // +0x00  vptr provided by CUserBase base
     DirectSoundMgr* m_voice; // +0x04  the sound-mgr voice handle it drives
