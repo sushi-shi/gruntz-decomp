@@ -295,6 +295,13 @@ public:
         i32 a7,
         i32 rectSrc
     ); // (THIS TU)
+    // PostActionCue (0x0d7220): pause-and-post a cue by string-resource id - load
+    // the cue text (m_cueText.LoadStringA), latch the id (m_lastCueId), freeze the
+    // step pump (m_stepCountdown=2, m_paused=1), post WM_COMMAND 0x816e to the
+    // game window and force the scroll-sink sprite visible. (Ex the .cpp-local
+    // `ActionBeginHost` view - the +0x40c/+0x410/+0x4e4/+0x500/+0x510 fields ARE
+    // m_lastCueId/m_cueText/m_scrollSink/m_paused/m_stepCountdown.)
+    i32 PostActionCue(i32 cueId); // 0x0d7220 (THIS TU)
     // DrawMessageFrame (0x0d1650): look up the GAME_MESSAGEZ image set, fetch frame
     // `index`, and blit it centered in the active viewport (LayerBlitFrame @0x115300).
     // Body in PlayMessageImage.cpp.

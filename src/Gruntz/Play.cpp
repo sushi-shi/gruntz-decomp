@@ -4249,6 +4249,37 @@ rearm:
 }
 
 // ===========================================================================
+// CPlay::PostActionCue (0x0d7220) - pause-and-post a cue by string-resource id
+// (decl in Play.h). Re-homed from the deleted one-fn ActionBeginHost.cpp, where
+// it lived as `ActionBeginHost::Begin` behind four offset views: the host IS
+// CPlay (five-field alignment: +0x40c m_lastCueId / +0x410 m_cueText, the
+// LoadStringA de-dupe pair PlayCueAt reads; +0x4e4 m_scrollSink whose
+// m_stateFlags bit0 arm is the exact `rearm:` idiom above; +0x500 m_paused;
+// +0x510 m_stepCountdown), and the window chain is the typed
+// m_4->m_gameWnd->m_hwnd this TU already posts 0x816e through. Its only caller
+// is the unreconstructed CUserLogic::LoadGruntTypeTable (0x4dd50).
+// ===========================================================================
+RVA(0x000d7220, 0x7b)
+i32 CPlay::PostActionCue(i32 cueId) {
+    if (m_paused) {
+        return 0;
+    }
+    if (!m_cueText.LoadStringA(cueId)) {
+        return 0;
+    }
+    m_lastCueId = cueId;
+    m_stepCountdown = 2;
+    m_paused = 1;
+    // retail reads the g_gameReg GLOBAL here (not this->m_4 like the other 0x816e
+    // posts in this TU - `a1 6c 55 64` in the bytes): same manager, global path.
+    PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x816e, 0);
+    if (m_scrollSink) {
+        m_scrollSink->m_stateFlags |= 1;
+    }
+    return 1;
+}
+
+// ===========================================================================
 // CPlay::BuildHelpReveal (0x0d72c0) - the per-frame help-overlay "wipe" animation.
 // Bails if there is no view (m_c->m_4->m_14). On the first frame (m_revealFrame==1) draws
 // the two static end-cap strips. Each frame computes the wipe column from the
