@@ -4,9 +4,6 @@
 //
 // RTTI cannot attribute these COMDAT-folded methods, so the owning class names are
 // placeholders; only OFFSETS + emitted code bytes are load-bearing (campaign
-// doctrine). Formerly per-TU inline views; consolidating them here is pure code
-// motion (matching-neutral) and gives the /GX EH-frame sibling (BoundaryTailEh.cpp) /
-// a final sweep one definition to reuse.
 #ifndef GRUNTZ_BOUNDARYTAILVIEWS_H
 #define GRUNTZ_BOUNDARYTAILVIEWS_H
 
@@ -41,17 +38,13 @@ struct Entry_bdd0 {
     void* m_10; // 0x10
 };
 SIZE_UNKNOWN(Entry_bdd0);
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToPtr::Lookup @0x1b8438 - the member is the real map. The class named here
-// was inverted; 0x1b8438 is CMapStringToPtr's, 0x1b8008 is CMapStringToOb's. The
-// declaration below was already right.)
+// (m_10 is the real ::CMapStringToPtr; its Lookup is 0x1b8438 - 0x1b8008 is
+// CMapStringToOb's, a pair the tree labels commonly invert.)
 struct Arg1_bdd0 {
     char _0[0x10];
     CMapStringToPtr m_10; // 0x10  ::CMapStringToPtr (its Lookup is 0x1b8438; mfc_class)
 };
 SIZE_UNKNOWN(Arg1_bdd0);
-// (CObj_bdd0 dissolved: its Dispatch (0xbdd0) is CRandomAmbientSound::Dispatch and
-//  its DispatchEntry tail call binds to CRandomAmbientSound::Setup @0xbe50.)
 
 // 0x118330 - populate an output record from three successive iterator reads.
 struct Node118330 {

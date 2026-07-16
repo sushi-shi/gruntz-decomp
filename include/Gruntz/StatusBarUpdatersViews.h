@@ -1,7 +1,6 @@
 // StatusBarUpdatersViews.h - engine-referent views the HUD status-bar updater TU
-// (StatusBarUpdaters.cpp) drives. Moved here from the per-TU inline defs so each
-// shape carries a single shared definition (matching-neutral: only touched
-// members/methods are load-bearing; every call through them is reloc-masked).
+// (StatusBarUpdaters.cpp) drives. Only touched members/methods are load-bearing;
+// every call through them is reloc-masked.
 #ifndef GRUNTZ_STATUSBAR_UPDATERS_VIEWS_H
 #define GRUNTZ_STATUSBAR_UPDATERS_VIEWS_H
 
@@ -9,7 +8,7 @@
 #include <rva.h>
 class DSoundCloneInst; // the pooled cue player (ConfigureItem @0x1360d0; Dsndmgr/DirectSoundMgr.h)
 #include <Gruntz/Sprite.h> // CSprite (frame-data value) + CMapStringToOb
-#include <Gruntz/SoundCue.h> // the ONE +0x28 status/cue holder (CSndHost; folds the former CStatusBarHolder)
+#include <Gruntz/SoundCue.h> // the ONE +0x28 status/cue holder (CSndHost)
 
 // The status-bar item the named cue Lookup resolves IS the canonical LeafCue
 // (<Gruntz/LeafCue.h>): the DSoundCloneInst ConfigureItem pushes into at m_10 (+0x10,

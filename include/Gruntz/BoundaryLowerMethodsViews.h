@@ -3,41 +3,8 @@
 //
 // RTTI cannot attribute these COMDAT-folded methods, so the owning class names are
 // placeholders; only the OFFSETS + emitted code bytes are load-bearing (campaign
-// doctrine). These were per-TU inline views; consolidating them into this shared
-// header is pure code motion (matching-neutral: identical layouts/sizes/vtable
-// counts -> identical codegen) and gives a sibling/final-sweep TU one definition to
-// reuse. The serialize/archive object folds to the canonical CSerialArchive (Read
-// @ +0x2c / Write @ +0x30).
-// AXE WORKLIST (user mandate 2026-07-05: every struct here is a fake view to be
-// CSpawnList, C8e880/C915d0 -> CGruntzMgr.
-//
-// HOMED (matcher-1 re-home passes, raw-vtable/thunk-verified):
-//   Cd5e20   -> CImage::Slot17 (src/Image/CImage.cpp): vtbl slot 17 (+0x44) thunk
-//                0x1d1b jmps to 0xd5e20; forwards arg to Slot15/Slot16.
-//   Gate113860 -> src/Gruntz/TileTriggerContainer.cpp (the __stdcall mode-gate).
-//   Fwd114ec0 -> src/Gruntz/GruntzMgrCmd.cpp (the __cdecl 6-arg toolbar forwarder).
-//   C113e70  -> CTileTriggerSwitchLogic::DeserializeMatrix (thunk 0x3cd3).
-//   C104c80  -> CSBI_WellGoo::Free; ParseSerial/0xd210 -> GruntzMgrCmd.cpp.
-//   C77dc0   -> CLevelPlane::SetCell (BrickzCellFlags_077790.cpp): the flat grid-cell
-//                setter; CTriggerMgr::LoadTileArrivalFx reaches it via m_level
-//                (the world holder) -> m_24 -> m_mainPlane. Same grid as C112bf0.
-//   Cfa150   -> CGameModeBase::BaseCleanup (src/Gruntz/GameModeBase.cpp, own .obj):
-//                caller graph = every state ReleaseResources; +0x1c allocator is the
-//                real CDDrawPtrCollections::RemoveItemA. 94.5% (cmp-order wall).
-//   Ceb970   -> CSBI_WarlordHead::Serialize (SBI_WarlordHead.cpp): vtbl slot 1
-//                (thunk 0x3cd8 -> 0xeb970) is authoritative. CONFLICT RESOLVED - the
-//                0xe7cd0 formerly mis-named CSBI_WarlordHead::Serialize is actually
-//                CSBI_ImageSetAni::Serialize (slot 1, thunk 0x2829, shared with
-//                CSBI_StatzTabArrow) -> re-homed to src/Gruntz/SBI_ImageSetAni.cpp.
-//   C50ca0   -> CGrunt::LoadTypeTableClearMove (src/Gruntz/Grunt.cpp): this==CGrunt
-//                (RunEntranceMove mov ecx,esi), m_1a0==CGrunt::m_moveMode, Method@0x3bd9
-//                == inherited CUserLogic::LoadGruntTypeTable.
-//
-// HOMED (matcher-7): C0b4c40 -> CUFO::SerializeMove (src/Gruntz/GameObjectCtors.cpp),
-//   vtbl slot 1 (thunk 0x3fb7 -> 0xb4c40). The base slot-1 re-signature
-//   (CUserBase::SerializeMove 4-arg) that blocked it is now done; the 0x3035 chain
-//   resolves to CUFO::Serialize (0xb4d30), m_10 == the bound CGameObject.
-//
+// doctrine). The serialize/archive object folds to the canonical CSerialArchive
+// (Read @ +0x2c / Write @ +0x30).
 // BLOCKED - vtable-attributed but the home needs a base-model/conflict fix a follow-up
 // must do (each stays @early-stop in place):
 //   C112bf0  IS CCheckpointTriggerSwitchLogic::M (vtbl slot 3, thunk 0x36fc); home
@@ -107,30 +74,6 @@ struct CTypeColl464 {
 };
 SIZE_UNKNOWN(CTypeColl464);
 
-// (0x050ca0 C50ca0::M re-homed to src/Gruntz/Grunt.cpp as
-// CGrunt::LoadTypeTableClearMove - this==CGrunt, m_1a0==m_moveMode.)
-
-// (0x077dc0 C77dc0::Set re-homed as CLevelPlane::SetCell (BrickzCellFlags_077790.cpp)
-// - the flat grid-cell setter; reached via holder->m_24 -> m_mainPlane.)
-
-// (C8e880/CState8e [0x8e880] and C915d0/CMid915 + the duplicate CGruntzSoundInnerZ
-// [0x915d0/0x91620] were views of CGruntzMgr - m_2c == m_curState (slot +0x10 ==
-// CState::Update, the state id), m_14 == the level-loaded gate, m_48 == m_sound
-// (RegisterSetSkillDebugCmd / MuteMusicIfActive / RestoreMusicVolumeIfActive) +
-// <Dsndmgr/GruntzSoundZ.h>.)
-
-// (C99ba0/CSub99ba0 [0x99ba0] and C9a420/CNode9a420/CBack9a420 [0x9a420] were
-// see <Gruntz/AreaMgr.h> + <Gruntz/SpawnList.h>.)
-
-// (0x09cab0 OWNER RECOVERED (Fable A2, 2026-07-14): it is CDDrawWorkerCache::Find
-// - the out-param wrapper over its +0x10 CMapStringToOb (Lookup @0x1b8008); body in
-// StreamRecordLoaders.cpp, class in <DDrawMgr/DDrawWorkerCache.h>. The C9cab0 /
-
-// (0x0b4c40 C0b4c40::Handle re-homed to src/Gruntz/GameObjectCtors.cpp as the REAL
-// CUFO::SerializeMove - vtable slot 1 (thunk 0x3fb7). 0x3035 == CUFO::Serialize
-// (0xb4d30); m_10 == the bound CGameObject, +0x58/+0x50/+0x54 ==
-// m_drawActive/m_drawFillCmd/m_fillFraction. See <Gruntz/Ufo.h>.)
-
 // 0x0bd450 - init: run the base ctor (0x3625) then open the "c:\gruntz.log" log.
 struct Cbd450 {
     void Base3625();                 // 0x3625
@@ -163,9 +106,6 @@ struct Ccef50 {
     i32 M();
 };
 SIZE_UNKNOWN(Ccef50);
-
-// (0x0d5e20 Cd5e20 re-homed to src/Image/CImage.cpp as CImage::Slot17 - vtable
-// slot-17 thunk 0x1d1b jmps to 0xd5e20. See <Image/CImage.h>.)
 
 // 0x0db200 - swap the +0x08 holder to `arg` (validate + toggle old/new).
 struct Cdb200 {
@@ -214,17 +154,6 @@ struct Cea170 {
     void M(i32 a1, i32 a2);
 };
 SIZE_UNKNOWN(Cea170);
-
-// (0x0eb970 Ceb970::Serialize re-homed to src/Gruntz/SBI_WarlordHead.cpp as the REAL
-// CSBI_WarlordHead::Serialize (vtable slot 1, thunk 0x3cd8). The conflicting 0xe7cd0
-// is CSBI_ImageSetAni::Serialize -> src/Gruntz/SBI_ImageSetAni.cpp. Conflict RESOLVED.)
-
-// (0x0fa150 Cfa150::Cleanup re-homed to src/Gruntz/GameModeBase.cpp as
-// CGameModeBase::BaseCleanup - the mode-holder's +0x1c allocator is the real
-// CDDrawPtrCollections (RemoveItemA @0x142160). See <Gruntz/GameModeBase.h>.)
-
-// (0x104c80 C104c80 re-homed to src/Gruntz/SBI_WellGoo.cpp as CSBI_WellGoo::Free -
-// vtable slot-3 thunk 0x30b7 jmps to 0x104c80. See <Gruntz/SBI_WellGoo.h>.)
 
 // 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build) through
 // the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>; the former local
@@ -289,13 +218,6 @@ struct C112bf0 {
     i32 M();
 };
 SIZE_UNKNOWN(C112bf0);
-
-// (0x113e70 C113e70 re-homed to src/Gruntz/TileTriggerSwitchLogic.cpp as
-// CTileTriggerSwitchLogic::DeserializeMatrix. See <Gruntz/TileTriggerSwitchLogic.h>.)
-
-// (0x114f00 forwarder re-homed to src/Gruntz/GruntzMgrCmd.cpp with its CArg114f/
-
-// (0x1181d0 bounds-grow re-homed to src/Gruntz/NameRecord.cpp with its CBox118/
 
 // 0x118260 - copy-if-grow (copy the 7-dword box in + stash +0xd4).
 struct CRect118 {
