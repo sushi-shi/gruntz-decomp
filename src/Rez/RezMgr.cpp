@@ -22,9 +22,9 @@
 // GameApp.cpp's CGameMgr::InitializeTimeGlobal seeds and the base
 // CGameMgr::PerFrameTick (0x13ddc0, GameApp.cpp) advances. The per-second
 // accumulators below are the SHARED band this override owns.
+// g_wap32Now/g_wap32FrameDelta (0x253c70/0x253c74) come from <Globals.h> (already
+// included above) - the canonical WAP32 clock cells.
 // ---------------------------------------------------------------------------
-extern i32 g_wap32Now;        // 0x253c70 (last timeGetTime sample)
-extern i32 g_wap32FrameDelta; // 0x253c74 (ms since previous frame)
 
 // The base class, aliased at file scope: MSVC 5.0 rejects the namespace-qualified
 // base-call spelling `WAP32::CGameMgr::PerFrameTick()` inside a member (C2352,
