@@ -91,6 +91,12 @@ Gotchas baked in from reading the delinker source:
 - **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over
   `docs/reference/gooroosgruntz/` (mirrored community docs); the +0x114 union is
   Score/Points/Powerup/Damage/Smarts/Health.
+- **Cleanliness endgame + cast policy** (`docs/cast-metric-policy.md`): drive EVERY
+  `config/cleanliness-baseline.tsv` metric to 0. Mis-model casts (views, `)this`) are ELIMINATED by
+  real typing; a genuinely-needed cast uses a **C++ named cast** (`static_cast` for math/numeric,
+  `reinterpret_cast`/`const_cast`/`dynamic_cast` otherwise) so the C-style-pattern metrics slide to 0;
+  **offset-casts `(char*)x + N` are BANNED outright** (named member `&x->m_field`, never even a C++
+  cast). `m_<hex>` naming is last.
 - **Function-state markers (comments, ignored by tooling):** `// @stub` = empty/backlog
   body in `src/Stub/`; `// @early-stop` (reason on the next line) = a complete
   reconstruction parked below 100% match. A reconstructed method is either ~100%
