@@ -1130,9 +1130,7 @@ CSymParser::~CSymParser() {
 // 0x13c940 (this, m_2c) stamps ??_7CRezDir @0x5ef7a8, 0x38 B) and the binary
 // reader CRezItm (ctor 0x13c540 (this) stamps ??_7CRezItm @0x5ef788, 0x24 B) -
 // both `: CRezItmBase`, so `new T(...)` upcasts plainly (base @ offset 0) and the
-// list-Link / Open / Read dispatches fall out of the inherited base. (The former
-// CTextReaderInit/CBinReaderInit local shells + the CSymObjNode view are
-// dissolved - see <Bute/SymParser.h>.)
+// list-Link / Open / Read dispatches fall out of the inherited base.
 
 // @early-stop
 // 0x3b8 (952 B) /GX text/binary loader. The body reproduces the buffer recache
@@ -1256,8 +1254,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 // and the file reader CRezItm (ctor 0x13c540 (this), size 0x24), both `: CRezItmBase`.
 // Read is CRezItmBase slot 2 (+0x08), Open slot 4 (+0x10); the `new X(...)` upcasts
 // to CRezItmBase* plainly (base @ offset 0) and every dispatch falls out of the
-// inherited base with no cast. (The former CRezNode/CRezDirNodeN/CRezFileNodeN local
-// interface shells are dissolved onto the canonicals.)
+// inherited base with no cast.
 
 // ---------------------------------------------------------------------------
 // LoadEntry (0x13b0c0) - mount one archive entry `name` into the scope tree.
@@ -1268,7 +1265,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 // runs the root scope's ApplyRecursive over it. The two `new X(...)` sites carry
 // the MSVC5 nothrow-new null check + /GX ctor-throw cleanup (trylevel 0 for the
 // dir new, 1 for the file new). Called by RezSync::Init to mount GRUNTZ.VRZ/.ZZZ/
-// .XXX. Ghidra-mislabeled CRezDir::Stub_13b0c0 (re-homed from src/Rez/RezMgr.cpp).
+// .XXX. Ghidra-mislabeled CRezDir::Stub_13b0c0.
 // @early-stop
 // 98.3% - STRUCTURALLY byte-exact (verified llvm-objdump -dr base vs target): every
 // opcode/ModRM, both nothrow-new null checks AND all three /GX ctor-throw state
@@ -1571,8 +1568,7 @@ i32 CSymParser::CheckNodes() {
 // 0x13ba70 - CSymParser::MakeSeed: the ButeMgr clock seed builder ParseBuffer/
 // ParseRecords use (returns time(&t); ignores `this`). It is genuinely __thiscall
 // (every caller loads ecx=parser before the call - proven by AddNodeEntry's byte-exact
-// `mov ecx,m_owner; call`), so it is modeled as a real CSymParser method, not the old
-// free `MakeSymSeed` dual-view whose thiscall-view relocs went UNBOUND (wave5-R8).
+// `mov ecx,m_owner; call`), so it is modeled as a real CSymParser method.
 // 0x120210 == CRT time(). Byte-exact.
 RVA(0x0013ba70, 0x10)
 i32 CSymParser::MakeSeed() {
@@ -1773,7 +1769,7 @@ i32 CRezDir::FindEntry(char* name) {
 // @+0x30 == m_node.m_record). A freshly-popped slot is init'd as a CParseSource parse
 // stream (Init @0x1396f0 stamps its node vtable + nulls the body; reloc-masked
 // __thiscall) and later repurposed by Build into a leaf value record - one 0x3c memory,
-// two views. (The former CParseSlot placeholder is dissolved onto CSymLeafBuilder.)
+// two views.
 
 // PopParseSlot (0x13c0c0): see SymParser.h. The /GX frame guards the freshly Rez-
 // alloc'd slot block while its elements are being initialized + registered.
@@ -1835,12 +1831,12 @@ void CSymParser::AddNode(void* rec) {
     }
 }
 
-// CObjList::Remove (0x1852e0) moved to src/Rez/RezList.cpp (wave1-E: its retail
+// CObjList::Remove (0x1852e0) moved to src/Rez/RezList.cpp (its retail
 // emission sits at the rezlist obj's tail in the 0x1832d0 engine-util pocket, far
 // from this TU's 0x13axxx core; callers here reference it externally).
 
-// CHashBase::Construct (0x184960, ex-CSymList::Construct) + CHash::CHash() (0x184950)
-// + the 0x184900 hash reverse-iterator gap live in src/Rez/RezColl.cpp (wave1-E: the
+// CHashBase::Construct (0x184960) + CHash::CHash() (0x184950)
+// + the 0x184900 hash reverse-iterator gap live in src/Rez/RezColl.cpp (the
 // 0x1832d0-pocket rez/sym/hash utility obj is ONE original TU; this file keeps the
 // 0x139xxx/0x13axxx CSymTab core).
 // All SIZE()s are annotated atop their class definitions (this TU's .cpp-local

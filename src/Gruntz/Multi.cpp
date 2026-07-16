@@ -27,14 +27,14 @@
 #include <Gruntz/SoundCue.h> // CSndHost - the REAL m_c->m_soundRegistry (name->cue map + emit gate)
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerList.h> // renderer B - the real CDDrawWorkerList (PruneWorkers)
-#include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_childGroup object manager (was the McObj/McHost views)
+#include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_childGroup object manager
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/Attract.h> // g_attractStateCount (attract-title-index divisor)
 
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr - the REAL CState::m_4 game mgr
+#include <Gruntz/GruntzMgr.h>        // CGruntzMgr - the REAL CState::m_4 game mgr
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; DtorBody)
 #include <Gruntz/Dialogs.h> // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
 #include <Gruntz/LightFxRender.h> // CLightFxRender (the +0x320 attract overlay; teardown Ctor @0xa3360)
@@ -105,8 +105,8 @@ extern "C" CNetCreateCtx* g_netCreateCtx;
 //     ->M(): external reloc-masked __thiscall engine methods (own RVA) / vtable-slot PMFs;
 //     the view is the modeling mechanism (see the defs near the connection driver), same
 //     idiom as the pmf-through-vtable dispatch below. (The m_4 game-mgr / m_5c chat-log
-//     helpers are now real methods on CNetGameMgr / CNetChatLog - those shadows folded
-//     away; CSymParser stays local, blocked by a header symbol-decl collision.)
+//     helpers are real methods on CNetGameMgr / CNetChatLog; CSymParser stays local,
+//     blocked by a header symbol-decl collision.)
 //   * (char*)(const char*)aCString: MFC CString -> LPCTSTR (operator) -> char* to feed a
 //     char*-taking engine API; both casts are required.
 //   * (IDirectPlay4Z*)m_releaseIface etc.: DirectPlay COM downcast off the abstract
@@ -461,8 +461,7 @@ CMulti::~CMulti() {
 }
 
 // InitStr6473d8 @0x0b5380 - the dynamic initializer that default-constructs the global
-// CString g_sessionName in place (explicit-ctor-call tail-jmp). Re-homed from
-// src/Stub/BoundaryLowerThunks.cpp (was StrFreeb5380).
+// CString g_sessionName in place (explicit-ctor-call tail-jmp).
 RVA(0x000b5380, 0xa)
 void InitStr6473d8() {
     g_sessionName.CString::CString();
@@ -536,9 +535,8 @@ struct CNetConnectSlotView {
 //   ShowMultiStartDlg IS CMulti::ShowMultiStartDlg (called cast-free).
 //   LoadCursorSprites IS CPlay::LoadCursorSprites; cast at the call.
 // The m_4 game-mgr lobby helpers (ResetClockGlobals/ClearOptionsSlots/
-// InitLobbySettings/GetWorldFileName) and the chat-log FreeNodes are now declared
-// directly on their real classes (CNetGameMgr / CNetChatLog in NetMgr.h) - the
-// former per-TU CNetGameMgrView / CFreeNodesView method-only shadows are folded away.
+// InitLobbySettings/GetWorldFileName) and the chat-log FreeNodes are declared
+// directly on their real classes (CNetGameMgr / CNetChatLog in NetMgr.h).
 //
 // CSymParser (the +8 CSymParser::ResolvePath thunk) stays a local method-only
 // view: the real class lives in <Bute/SymParser.h>, but that header re-declares the
@@ -551,9 +549,8 @@ struct CNetConnectSlotView {
 // at 0xb560e byte-for-byte: cl stamps the CObject base vptr (0x5e8cb4), runs the
 // three by-value CObList member ctors (m_groups/m_players/m_sessions, nBlockSize 10),
 // stamps the derived CNetMgr vptr (0x5ea42c), then the inline ctor body zeroes
-// +0x14/+0x18. The former CNetPeer placeholder view (`: public CObject` + a manual
-// terminal stamp) is gone - the class is realized in <Net/NetMgr.h> at its true 0x8c
-// size with its real base and cl-emitted vtable.
+// +0x14/+0x18. CNetPeer is realized in <Net/NetMgr.h> at its true 0x8c size with its
+// real base and cl-emitted vtable.
 
 // (2) the 0x1c interface object IS a CChatBoxOwner (<Gruntz/ChatBoxOwner.h>):
 // same size, same seven fields in the same store order (retail inlines its
@@ -1036,7 +1033,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_curSlotId = m_session->m_tick - 1;
     m_574 = 0;
     Mgr()->m_chatLog->FreeNodes();
-    m_session->Reset(); // 0xbf150  (was StartTick view)
+    m_session->Reset(); // 0xbf150
     Mgr()->m_timer->DtorBody();
     return 1;
 }
@@ -1117,7 +1114,7 @@ i32 CMulti::Tick() {
     if ((u32)dt >= g_frameDelta) {
         dt = (i32)g_frameDelta;
     }
-    m_packetsRcvd = m_session->Poll(dt); // 0xbf5a0  (was Step view)
+    m_packetsRcvd = m_session->Poll(dt); // 0xbf5a0
     m_packetsSent = 0;
     if ((u32)m_frameDelta < (u32)m_drainTimer) {
         m_drainTimer = m_drainTimer - m_frameDelta;
@@ -1125,11 +1122,11 @@ i32 CMulti::Tick() {
         m_drainTimer = 0;
     }
     if (m_drainTimer == 0) {
-        m_packetsSent = m_session->Tick(); // 0xbf9e0  (was Drain view)
+        m_packetsSent = m_session->Tick(); // 0xbf9e0
         m_drainTimer = m_drainReload;
     }
     i32 fin = 0;
-    if (m_session->Advance() && m_pollAbort == 0) { // 0xc01d0  (was IsBusy view)
+    if (m_session->Advance() && m_pollAbort == 0) { // 0xc01d0
         fin = 1;
     }
     vtbl()->PostRedraw(this);
@@ -1138,7 +1135,7 @@ i32 CMulti::Tick() {
         ((CPlaneRender*)sub)->CenterScrollA(); // 0x163300, the level main plane
     }
     if (fin == 0) {
-        if (m_session->Verify() == 0 && m_574 == 0) { // 0xc04f0  (was IsStalled view)
+        if (m_session->Verify() == 0 && m_574 == 0) { // 0xc04f0
             if (m_isHost != 0) {
                 SendStatFlag(0x404, 1);
                 OnOutOfSync();
@@ -1188,7 +1185,7 @@ extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 // (0x159f00, ret 0). Both bodies already exist in the tree. No new slot was needed
 // (the earlier "CRenderer has no slot 16" blocker read the dispatch off the WRONG
 // member - it is the object-manager at +0x08, not the renderer at +0x0c).
-// The 3-way conflation is RESOLVED (2026-07-16): the ex CSpriteFactory / ex
+// The 3-way conflation is RESOLVED: the ex CSpriteFactory / ex
 // CWwdObjMgr twins are merged onto the one CDDrawChildGroup, and m_8 is typed to
 // it - the cast is gone.]
 
@@ -1322,7 +1319,6 @@ i32 CMulti::PumpA() {
 //       names; CDDrawSurfaceMgr's slot map says +0x24 is the level. Same fold.]
 
 // The output sink hung off CGruntzMgr::m_inputState (+0x54; thiscall 2-arg blit).
-// (The +0x68 FX-driver view PBSub68 is folded into CMultiSub68 above.)
 // CLightFxRender::Resize @0xa3460 / ComputeRect @0xa3820, dispatched on the
 // typed m_lightFx below - same receiver, same thunks 0x1fa0/0x14dd.)
 // The compositor refresh helper (__cdecl free fn). 0x00002356
@@ -3068,9 +3064,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     }
     void* node = Peer()->GetPlayerData(ev->m_id);
     if (node == 0) {
-        node =
-            (void*)Peer()
-                ->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, (i32)node);
+        node = (void*)Peer()->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, (i32)node);
         if (node == 0) {
             return 0;
         }
@@ -4481,7 +4475,7 @@ void CMulti::AutoTuneCmdDelay() {
 }
 
 // The game-settings singleton (_g_mgrSettings @0x64556c) - the same *0x64556c object
-// modeled as CNetGameMgr (BuildRezPath/ShowModal/FindPlayer folded onto it). External;
+// modeled as CNetGameMgr (BuildRezPath/ShowModal/FindPlayer). External;
 // the `call rel32` reloc-masks.
 
 // The active net session the verify path polls (DAT_00648cf8, a CNetMgr*).
