@@ -40,7 +40,7 @@
 
 #include <Gruntz/GameRegistry.h>     // CGameRegistry (g_gameReg) + CSpriteFactoryHolder
 #include <Gruntz/GruntzMgr.h>        // the real CGruntzMgr (this) + SaveInfo.h + SoundCue.h
-#include <Gruntz/CheatMgr.h> // CCheatMgr (m_cheatMgr->m_124 - the "Cheatz cleared" flag)
+#include <Gruntz/CheatMgr.h>         // CCheatMgr (m_cheatMgr->m_124 - the "Cheatz cleared" flag)
 #include <Gruntz/Play.h>             // CPlay (the cheat receiver) + CTimer (m_frameMarker)
 #include <Gruntz/GameMode.h>         // CMenuState (StopMusicChain/StartMusic; state 5)
 #include <Gruntz/Multi.h>            // CMulti (Connect; state 0x11)

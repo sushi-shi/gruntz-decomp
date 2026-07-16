@@ -41,8 +41,8 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/Brickz.h>        // CBrickzGrid (the pathfinding core homed here)
-#include <Gruntz/GameMode.h>      // canonical CGMVerRect g_versionRect (SetVersionRect's version RECT)
-#include <Rez/RezList.h>          // CRezList::AddHead (Search's result hand-off)
+#include <Gruntz/GameMode.h> // canonical CGMVerRect g_versionRect (SetVersionRect's version RECT)
+#include <Rez/RezList.h>     // CRezList::AddHead (Search's result hand-off)
 #include <rva.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
 #include <string.h> // memset (/Oi intrinsic: shr/rep stosd/and/rep stosb)

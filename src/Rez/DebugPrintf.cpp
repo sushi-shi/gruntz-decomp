@@ -235,7 +235,8 @@ extern "C" {
     SYMBOL(_RezAssertFail)
     void RezAssertFail(char* fmt, ...) {
         char buf[256];
-        if (g_debugPrintMode != 1 && g_debugPrintMode != 0 && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
+        if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+            && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
         }
@@ -246,7 +247,8 @@ extern "C" {
     SYMBOL(_RezDebugPrintfXY)
     void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
         char buf[256];
-        if (g_debugPrintMode != 1 && g_debugPrintMode != 0 && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
+        if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+            && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
             DebugSetCursorXY(x, y);
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
@@ -258,7 +260,8 @@ extern "C" {
     SYMBOL(_RezDebugPrintfCh)
     void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
         char buf[256];
-        if (g_debugPrintMode != 1 && g_debugPrintMode != 0 && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
+        if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+            && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
         }
@@ -269,7 +272,8 @@ extern "C" {
     SYMBOL(_RezDebugPrintfChXY)
     void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
         char buf[256];
-        if (g_debugPrintMode != 1 && g_debugPrintMode != 0 && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
+        if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+            && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
             DebugSetCursorXY(x, y);
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);

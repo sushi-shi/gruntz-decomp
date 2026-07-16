@@ -668,7 +668,8 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         }
         i32 outA = 0;
         i32 outB = 0;
-        i32 r = (i32)host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5);
+        i32 r =
+            (i32)host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5);
         if (r == 0) {
             return 1;
         }

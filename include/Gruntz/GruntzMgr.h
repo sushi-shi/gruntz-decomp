@@ -135,11 +135,11 @@ class CWorldSoundSet;
 // per-method facet views of the SAME object into its one real class (defined in
 // GruntzMgr.cpp): the teardown-only slots share EngObj (Teardown()), and the
 // multi-facet slots carry all their facets' fields + methods.
-struct EngObj;     // teardown-only sub-object (Teardown())
-class CFaderMgr;   // +0x40 the DDraw fader manager (Run news it; SetConfig @0x17d980 -
-                   //       the REAL src/DDrawMgr/FaderMgr.cpp method; ex EngObj)
-class CCheatMgr;   // +0x44 cheat-code dictionary (<Gruntz/CheatMgr.h>; Run news it:
-                   //       Init(hwnd) @0x22ad0 + RegisterCheats @0x22c80; ex HudGuard44)
+struct EngObj;          // teardown-only sub-object (Teardown())
+class CFaderMgr;        // +0x40 the DDraw fader manager (Run news it; SetConfig @0x17d980 -
+                        //       the REAL src/DDrawMgr/FaderMgr.cpp method; ex EngObj)
+class CCheatMgr;        // +0x44 cheat-code dictionary (<Gruntz/CheatMgr.h>; Run news it:
+                        //       Init(hwnd) @0x22ad0 + RegisterCheats @0x22c80; ex HudGuard44)
 class CShadeTableCache; // +0x50 shade-table cache (<DDrawMgr/ShadeTableCache.h>;
                         //       SpriteRefTable's shade feed; ex EngObj)
 // CSpriteRefTable (+0x74 sprite/animation ref table; Reset teardown @0xe2290) is
@@ -454,12 +454,12 @@ public:
     // the sweep found are red herrings: the 0x44-byte CFontConfig sub-object's inline
     // ctor in RezSync's Init, and TransitionState's zero-init of a NEW state object.)
     CObject* m_3c;
-    CFaderMgr* m_faderMgr;  // +0x40  fader manager (Run: new + SetConfig(0,0,0) @0x17d980)
-    CCheatMgr* m_cheatMgr;  // +0x44  cheat-code dictionary; its m_124 "a cheat was used"
-                            //        flag gates the HUD warning + the 0x81d7 "Cheatz
-                            //        cleared" command (ex the HudGuard44 view)
-    CGruntzSoundZ* m_sound; // +0x48  sound/bank object (StopBank/StopAll)
-    i32 m_4c;               // +0x4c
+    CFaderMgr* m_faderMgr;          // +0x40  fader manager (Run: new + SetConfig(0,0,0) @0x17d980)
+    CCheatMgr* m_cheatMgr;          // +0x44  cheat-code dictionary; its m_124 "a cheat was used"
+                                    //        flag gates the HUD warning + the 0x81d7 "Cheatz
+                                    //        cleared" command (ex the HudGuard44 view)
+    CGruntzSoundZ* m_sound;         // +0x48  sound/bank object (StopBank/StopAll)
+    i32 m_4c;                       // +0x4c
     CShadeTableCache* m_shadeCache; // +0x50  shade-table cache (fed to the sprite table)
     // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):

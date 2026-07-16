@@ -20,8 +20,8 @@
 #include <Wap32/Wap32.h>                  // CGameWnd::PumpMessages (0x13d4e0)
 #include <Gruntz/State.h>                 // the CState base this screen state derives (real vtable)
 #include <Gruntz/SoundCue.h>              // the ONE +0x28 cue holder (CSndHost / LeafCue)
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the typed CState::m_c holder)
-#include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
+#include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (the typed CState::m_c holder)
+#include <Dsndmgr/DirectSoundMgr.h>       // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Globals.h>
 
@@ -112,8 +112,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     if (g_disableAudio == 0 && g_disableSound == 0) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
-            m_c->m_28
-                ->ScanTree_157ee0((CSymTab*)set, "PREVIEW", (const char*)&g_dat60b588);
+            m_c->m_28->ScanTree_157ee0((CSymTab*)set, "PREVIEW", (const char*)&g_dat60b588);
         }
     }
     m_1bc = "PREVIEW0";

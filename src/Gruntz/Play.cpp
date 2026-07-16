@@ -489,7 +489,7 @@ i32 CPlay::Render() {
     {
         CGruntzMgr* w = m_4;
         m_frameMarker->Tick((i32)g_frameDelta); // m_frameMarker begin
-        Eng_FrameTimerStep(w->m_cmdSubMgr, 0);         // m_4->m_6c step (carcass; unresolved callee)
+        Eng_FrameTimerStep(w->m_cmdSubMgr, 0);  // m_4->m_6c step (carcass; unresolved callee)
 
         if (m_levelId == CURSOR_FLAILINGGRUNT) { // booty/flailing-grunt one-shot
             u32 elapsed = g_frameTime - (u32)m_bootyTimerLo;
@@ -5011,8 +5011,8 @@ i32 CPlay::Vslot15() {
             stream->Stop();
         }
         m_4->m_sound->StopAndFlush();
-        m_4->m_inputState->Teardown();     // 0x28ab -> CWorldSoundSet::Teardown @0xb660
-        m_4->m_timer->ClearSprites(); // 0x244b -> CGruntSpawnConfig::ClearSprites @0x11af90
+        m_4->m_inputState->Teardown(); // 0x28ab -> CWorldSoundSet::Teardown @0xb660
+        m_4->m_timer->ClearSprites();  // 0x244b -> CGruntSpawnConfig::ClearSprites @0x11af90
         ::PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }

@@ -46,9 +46,9 @@
 // engine calls (reloc-masked). ParseTagLine constructs a store node + carries a
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
 #include <Bute/ButeMgr.h>
-#include <EmptyString.h>             // g_emptyString
+#include <EmptyString.h>              // g_emptyString
 #include <Bute/ButeStoreDtorCopies.h> // the 0x21310/0x21570 zPTree store-dtor anchors
-#include <Bute/ButeTextBuf.h>        // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
+#include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
 #include <Globals.h>
 

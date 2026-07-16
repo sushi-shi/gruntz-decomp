@@ -411,7 +411,7 @@ struct CGameRegistry {
     i32 m_isHighDetail;     // +0x10c  "High_Detail"
     i32 m_isEffectsEnabled; // +0x110  "Effects"
     char m_pad114[0x118 - 0x114];
-    i32 m_isEasyMode; // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
+    i32 m_isEasyMode;  // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
     i32 m_soundVolume; // +0x11c  "Sound Volume" slider value (RETAIL-PROVEN: Run @0x83898
                        //         stores the registry read; SetSoundVolume @0x919d0 the setter;
                        //         consumers feed it to ApplyAndPlay - the old "input flag"
@@ -419,7 +419,7 @@ struct CGameRegistry {
     i32 m_voiceVolume; // +0x120  "Voice Volume" slider value (SetVoiceVolume @0x91a10;
                        //         GruntSpawnConfig streams take it /2 - grunt speech)
     i32 m_scrollSpeed; // +0x124  "Scroll Speed" slider value (0..100 percent)
-    i32 m_128;           // +0x128  per-frame play word (CPlay::OnExit clears it on state exit)
+    i32 m_128;         // +0x128  per-frame play word (CPlay::OnExit clears it on state exit)
     char m_pad12c[0x130 - 0x12c];
     // +0x130  play-sub-mode gate within active play (m_134==1). Proven behavior: when 0,
     // the RNG runs deterministic/replay-style (CoinFlip), secret-level triggers initialize

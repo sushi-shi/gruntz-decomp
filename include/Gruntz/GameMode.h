@@ -134,7 +134,7 @@ struct CGMVerRect {
     i32 a, b, c, d;
 };
 extern "C" CGMVerRect g_versionRect; // (the 4-int source @c8/cc/d0/d4)
-extern "C" u32 g_frameDelta;    // (last-frame delta, fed to Step)
+extern "C" u32 g_frameDelta;         // (last-frame delta, fed to Step)
 // The 8 booty-message layout RECTs (0x60b8f8; DATA home BootyMessages.cpp). Shared
 // by CBootyState/CMultiBootyState layout code here (declared, not per-TU extern).
 extern RECT g_levelMsgRectsB[8];

@@ -3814,7 +3814,17 @@ i32 CMulti::WaitForOtherPlayers() {
     rc.top = 0;
     rc.right = g->m_modeW;
     rc.bottom = g->m_modeH;
-    EngStr_DrawText((EngStrRenderObj*)g->m_world, (i32)&waitStr, (i32)&rc, 0x82, 1, 0xff, 0xff, 0, 1);
+    EngStr_DrawText(
+        (EngStrRenderObj*)g->m_world,
+        (i32)&waitStr,
+        (i32)&rc,
+        0x82,
+        1,
+        0xff,
+        0xff,
+        0,
+        1
+    );
 
     i32 resend = 0x1388;
     i32 abort = 0x1d4c0;

@@ -22,7 +22,7 @@
 #include <Rez/FrameClock.h> // g_lastNow (the frame-clock now cell Init seeds)
 #include <rva.h>
 #include <Ints.h>
-#include <Mfc.h>    // CString + the MFC collection ctors/dtors (reloc-masked)
+#include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
 // AfxWinInit (the boot MFC init Run calls @0x1d3eff). The afxwin*.inl bodies are
 // skipped for the clang LABEL step only (implicit-int CMenu::operator== that clang
 // rejects, wine cl accepts) - docs/patterns/afxwin-clang-label-step-skip-inl.md.

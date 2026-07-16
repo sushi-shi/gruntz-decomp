@@ -956,7 +956,7 @@ struct CGruntMotionBand {
 extern const double g_movingLogicMin;  // 0x5f04b0 (-2147483647.0)
 extern const double g_movingLogicMax;  // 0x5f04b8 (2147483646.0)
 extern const double g_gruntSpawnScale; // 0x5e9738 (spawn-seed velocity scale)
-extern u32 g_defaultZ;                   // 0x5f04e8 (default-Z int)
+extern u32 g_defaultZ;                 // 0x5f04e8 (default-Z int)
 extern u32 g_gruntSpawnClock;          // 0x645588 (spawn-seed clock; reloc-masked)
 
 // ---------------------------------------------------------------------------

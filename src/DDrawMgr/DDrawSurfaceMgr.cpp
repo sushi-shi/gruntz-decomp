@@ -435,9 +435,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     }
     g_wwdObjIdCounter = *(u32*)(header + 0x114);
     m_childGroup->DestroyChildren_159ef0();
-    if (((CWwdObjMgr*)m_childGroup)
-            ->LoadObjects(&S, *(unsigned int*)(header + 0x110), arg3)
-        == 0) {
+    if (((CWwdObjMgr*)m_childGroup)->LoadObjects(&S, *(unsigned int*)(header + 0x110), arg3) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 6, arg3, (i32)header) == 0) {
@@ -452,8 +450,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)
-            ->Deserialize_15b0e0(&S, *(unsigned int*)(header + 0x110), arg3)
+    if (((CWwdObjMgr*)m_childGroup)->Deserialize_15b0e0(&S, *(unsigned int*)(header + 0x110), arg3)
         == 0) {
         return 0;
     }

@@ -25,7 +25,7 @@
 #include <Gruntz/HelpState.h>    // canonical CHelpState (was defined locally here)
 #include <Gruntz/SplashState.h>  // CSplashState (the 0x8d000 /GX out-of-line dtor)
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the typed CState::m_c holder)
-#include <Gruntz/Attract.h>     // CMenuRoot chain (m_c): Render's busy surface + attract registrar
+#include <Gruntz/Attract.h>      // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
 #include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
 #include <Globals.h>            // g_titleBuf (RunTitleSeq title buffer)
@@ -84,8 +84,7 @@ i32 CHelpState::Vslot09(i32 arg) {
     m_4->RestoreVideoMode(0);
     // The pages ptr is re-read at each call (retail does NOT cache it in a reg across
     // the Method_158d20 call - a caching local would pin it in edi and mismatch).
-    if (m_c->m_pages->Method_158d20() == 0
-        && m_c->m_pages->Method_158cb0(0, 0x30000) == 0) {
+    if (m_c->m_pages->Method_158d20() == 0 && m_c->m_pages->Method_158cb0(0, 0x30000) == 0) {
         return 0;
     }
     if (FadeInTitle((const char*)&g_titleBuf, 0, 0, 0, 0, 1) == 0) {

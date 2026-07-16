@@ -25,9 +25,9 @@
 // is included RIGHT BELOW, and the local CButeStoreCopy174d DERIVES from that same canonical
 // CButeStore. Adding #include <Bute/ButeMgr.h> here compiles clean under the real MSVC 5.0.
 #include <Bute/ButeValue.h>
-#include <Bute/ButeStore.h>          // the canonical CButeStore (real bases; INLINE dtor)
+#include <Bute/ButeStore.h>           // the canonical CButeStore (real bases; INLINE dtor)
 #include <Bute/ButeStoreDtorCopies.h> // CButeStoreCopy174d anchor (0x174d70 ~ copy)
-#include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
+#include <Gruntz/String.h>            // CString - the kButeString payload the teardown destructs
 
 // ===========================================================================
 // ButeValueTeardown (0x174df0) - the keyed store's __cdecl per-value teardown

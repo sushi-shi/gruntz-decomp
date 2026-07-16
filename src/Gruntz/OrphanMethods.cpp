@@ -3,7 +3,7 @@
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
 #include <Gruntz/Effect6b.h>
-#include <Gruntz/Grunt.h> // CEntranceAnimPlayer (the m_player pointee; Cursor()/m_1b4)
+#include <Gruntz/Grunt.h>            // CEntranceAnimPlayer (the m_player pointee; Cursor()/m_1b4)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - +0x1a0 advance
 #include <DDrawMgr/DDrawSubMgrPages.h>

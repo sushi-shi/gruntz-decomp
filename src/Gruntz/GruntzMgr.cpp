@@ -64,15 +64,15 @@
 #include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/CheatMgr.h> // CCheatMgr (m_cheatMgr @+0x44; the ex-HudGuard44 m_124 flag)
-#include <Gruntz/FaderMgr.h> // CFaderMgr (m_faderMgr @+0x40; Close dtor-tears it)
+#include <Gruntz/CheatMgr.h>          // CCheatMgr (m_cheatMgr @+0x44; the ex-HudGuard44 m_124 flag)
+#include <Gruntz/FaderMgr.h>          // CFaderMgr (m_faderMgr @+0x40; Close dtor-tears it)
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTableCache (m_shadeCache @+0x50)
-#include <Rez/RezMgr.h> // RezMgr - the pending facet-fold view (MakeRezPath @0x91670)
-#include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
-#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
-#include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
-#include <Gruntz/WorldSoundSet.h>  // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
-#include <Gruntz/FontConfig.h>     // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
+#include <Rez/RezMgr.h>               // RezMgr - the pending facet-fold view (MakeRezPath @0x91670)
+#include <Gruntz/TriggerMgr.h>        // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
+#include <Gruntz/SpriteRefTable.h>    // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
+#include <Gruntz/LightFxMgr.h>        // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
+#include <Gruntz/WorldSoundSet.h> // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
+#include <Gruntz/FontConfig.h>    // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
