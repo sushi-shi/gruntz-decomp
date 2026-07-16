@@ -52,7 +52,23 @@ CLASSIFICATION
 Library vtables (config/library_vtables.csv) are exempt, as in the sibling gates.
 Pure-virtual slots (``__purecall``) are correct-by-construction and pass.
 
-    python -m gruntz.match.vtable_slot_binding           # the gate (a)+(b) fail-closed
+THE RATCHET (why this is not simply fail-closed today)
+------------------------------------------------------
+The first run found 259 pre-existing violations, so a bare fail-closed gate would brick
+the build for everyone rather than protect anything. Instead the known backlog is frozen
+in ``config/vtable-slot-binding-baseline.tsv`` and the gate is fail-closed on ANYTHING
+NOT IN IT - so no NEW wiring defect can ever land, while the backlog drains. When the
+baseline reaches 0 rows it is a pure fail-closed gate with no special case, exactly as
+briefed.
+
+The baseline is a SET, not a count (the campaign's "measure SETS, not counts" rule): it
+is keyed on (vtable_rva, slot, symbol), so fixing one defect and introducing another
+cannot net out to "still 259" and slip through - the new row simply is not in the set.
+Fixing a defect makes its row stale, which ``--update`` prunes and the gate reports.
+
+    python -m gruntz.match.vtable_slot_binding           # the gate (fail-closed vs baseline)
+    python -m gruntz.match.vtable_slot_binding --strict  # ignore the baseline: ALL violations
+    python -m gruntz.match.vtable_slot_binding --update  # bless the current set as baseline
     python -m gruntz.match.vtable_slot_binding --list    # every slot, every vtable
     python -m gruntz.match.vtable_slot_binding --info    # ... plus the (c) UNBOUND table
 """
@@ -68,6 +84,7 @@ from gruntz.match.vtable_virtuality import _index_classes
 
 REPO = vs.REPO
 LIB_CSV = REPO / "config" / "library_vtables.csv"
+BASELINE = REPO / "config" / "vtable-slot-binding-baseline.tsv"
 IB = vs.IMAGEBASE
 
 # MSVC access+storage codes, taken at the char after the `@@` that terminates the
@@ -232,6 +249,52 @@ def analyse():
     return violations, unbound, n_vt, n_slots
 
 
+def key_of(v):
+    """The baseline identity of a violation: (vtable_rva, slot, symbol).
+
+    Deliberately NOT the count and NOT the body rva: keyed this way, fixing one defect
+    while introducing another cannot cancel out - the new (vtable, slot, symbol) triple
+    simply is not in the frozen set, so it fails. Re-spelling a symbol at a slot is a
+    NEW row too, which is correct: it is a different binding claim.
+    """
+    _kind, rva_v, _cls, slot, _r, sym, _unit, _why, _path, _ln = v
+    return (rva_v, slot, sym)
+
+
+def load_baseline():
+    """{(vtable_rva, slot, symbol)} - the frozen, known backlog. Missing file = empty
+    set = a pure fail-closed gate."""
+    out = set()
+    if not BASELINE.exists():
+        return out
+    with BASELINE.open() as f:
+        # Strip the `#` banner first: csv.DictReader would take a comment line as the
+        # header row and every lookup below would silently miss (the whole baseline
+        # would read as empty, and the gate would flag the entire frozen backlog).
+        rows = [ln for ln in f if not ln.lstrip().startswith("#")]
+    for row in csv.DictReader(rows, delimiter="\t"):
+        try:
+            out.add((int(row["vtable_rva"], 16), int(row["slot"]), row["symbol"]))
+        except (ValueError, KeyError, TypeError):
+            pass
+    return out
+
+
+def write_baseline(violations):
+    BASELINE.parent.mkdir(parents=True, exist_ok=True)
+    with BASELINE.open("w", newline="") as f:
+        f.write("# gruntz.match.vtable_slot_binding - the FROZEN backlog of vtable slots whose\n"
+                "# body is bound under a non-virtual / wrong-class name (see the module docstring).\n"
+                "# The gate fails on any violation NOT listed here, so no NEW wiring defect can land.\n"
+                "# Drive these to 0 by wiring each body to its class's declared virtual; re-bless\n"
+                "# with `python -m gruntz.match.vtable_slot_binding --update`.\n")
+        w = csv.writer(f, delimiter="\t")
+        w.writerow(["kind", "vtable_rva", "class", "slot", "body_rva", "symbol", "unit"])
+        for v in sorted(violations, key=lambda x: (x[1], x[3])):
+            kind, rva_v, cls, slot, r, sym, unit, _why, _path, _ln = v
+            w.writerow([kind, f"0x{rva_v:06x}", cls, slot, f"0x{r:06x}", sym, unit])
+
+
 def _print_list():
     symbols = load_symbols()
     lib = load_lib_rvas()
@@ -255,6 +318,12 @@ def _print_list():
             print(f"  slot[{k:2}] 0x{r:06x}  {kind:<14} {sym}{via}")
 
 
+def _report(violations, stream=sys.stderr):
+    for kind, rva_v, cls, k, r, sym, unit, why, path, ln in violations:
+        print(f"  [{kind:8}] 0x{r:06x}  {cls}[{k}]  {sym}  ({unit})\n"
+              f"             {why}   vtable 0x{rva_v:06x}  ({rel(path)}:{ln})", file=stream)
+
+
 def main() -> int:
     if "--list" in sys.argv:
         _print_list()
@@ -262,27 +331,48 @@ def main() -> int:
 
     violations, unbound, n_vt, n_slots = analyse()
 
+    if "--update" in sys.argv:
+        write_baseline(violations)
+        print(f"vtable-slot-binding: blessed {len(violations)} known violation(s) -> "
+              f"{rel(BASELINE)}")
+        return 0
+
     if "--info" in sys.argv and unbound:
         print(f"vtable-slot-binding: {len(unbound)} slot(s) UNBOUND (unreconstructed - info only):")
         for rva_v, cls, k, r, path, ln in unbound:
             print(f"  0x{r:06x}  {cls}[{k}]  {vs.fn_label(r)}   ({rel(path)}:{ln})")
         print()
 
-    if violations:
-        wiring = [v for v in violations if v[0] == "WIRING"]
-        mis = [v for v in violations if v[0] == "MISBOUND"]
-        print(f"vtable-slot-binding: {len(violations)} slot(s) NOT wired to a real virtual "
+    strict = "--strict" in sys.argv
+    base = set() if strict else load_baseline()
+    fresh = [v for v in violations if key_of(v) not in base]
+    known = [v for v in violations if key_of(v) in base]
+    stale = base - {key_of(v) for v in violations}   # baselined rows now fixed
+
+    if fresh:
+        wiring = [v for v in fresh if v[0] == "WIRING"]
+        mis = [v for v in fresh if v[0] == "MISBOUND"]
+        print(f"vtable-slot-binding: {len(fresh)} NEW slot(s) NOT wired to a real virtual "
               f"({len(wiring)} WIRING DEFECT, {len(mis)} MISBOUND) "
               f"across {n_vt} vtable(s) / {n_slots} slot(s):", file=sys.stderr)
-        for kind, rva_v, cls, k, r, sym, unit, why, path, ln in violations:
-            print(f"  [{kind:8}] 0x{r:06x}  {cls}[{k}]  {sym}  ({unit})\n"
-                  f"             {why}   vtable 0x{rva_v:06x}  ({rel(path)}:{ln})",
-                  file=sys.stderr)
-        print("\n  A WIRING DEFECT means the body EXISTS but is not the class's virtual:\n"
-              "  make it the declared virtual method of the class at that slot (byte-neutral\n"
-              "  when the body is unchanged). Never fabricate a virtual for an unproven slot.",
-              file=sys.stderr)
+        _report(fresh)
+        print("\n  A WIRING DEFECT means the body EXISTS but is not the class's virtual: the\n"
+              "  class declares the slot and the body sits beside it under a non-virtual name,\n"
+              "  so the vtable's reloc dangles onto a symbol that is not the override. Make the\n"
+              "  body the class's declared virtual at that slot (byte-neutral when the body is\n"
+              "  unchanged). NEVER fabricate a virtual for a slot you have not proven - read the\n"
+              "  slot map (gruntz.analysis.vtable_scan --dump / --holds) instead.\n"
+              f"  If a row here is a deliberate, proven exception, bless it into {rel(BASELINE)}\n"
+              "  with --update (and say why in the commit).", file=sys.stderr)
         return 1
+
+    if stale:
+        print(f"vtable-slot-binding: {len(stale)} baselined violation(s) FIXED - re-bless with "
+              f"`python -m gruntz.match.vtable_slot_binding --update` to keep the ratchet tight")
+    if known:
+        print(f"vtable-slot-binding: no new wiring defects; {len(known)} known violation(s) "
+              f"remain in the frozen backlog ({rel(BASELINE)})")
+        return 0
 
     print(f"vtable-slot-binding: all {n_slots} bound slot(s) across {n_vt} vtable(s) "
           f"wired to real virtuals ({len(unbound)} unbound/unreconstructed)")

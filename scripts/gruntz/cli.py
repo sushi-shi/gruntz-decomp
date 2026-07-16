@@ -433,6 +433,27 @@ def cmd_build(args) -> None:
             "(python -m gruntz.match.vtable_virtuality --list)")
     else:
         log((rv.stdout + rv.stderr).strip().splitlines()[-1])
+    # Vtable SLOT BINDING: coverage says the vtable is bound; virtuality says the class
+    # declares ENOUGH virtuals. Neither joins a SLOT to the body our source puts at its
+    # rva - so a body bound under a NON-virtual name (a free fn / Gap_*, or a non-virtual
+    # method sitting beside the declared virtual) satisfies both while the slot's reloc
+    # dangles onto a symbol that is not the override. That is a real wrong-dispatch bug
+    # (GO1's 4 Fader RenderFrames). This gate does the per-slot join: retail slot ->
+    # chase_thunk -> the symbol src emits there -> must be a virtual of the class or a
+    # base. FATAL for any violation NOT in config/vtable-slot-binding-baseline.tsv (the
+    # frozen backlog), so no NEW wiring defect can land while the known set drains to 0.
+    rb = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_slot_binding"],
+                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rb.returncode != 0:
+        for ln in (rb.stdout + rb.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("vtable-slot-binding: a vtable slot's body is bound under a non-virtual or "
+            "wrong-class name - wire it to the class's declared virtual "
+            "(python -m gruntz.match.vtable_slot_binding)")
+    else:
+        out_sb = (rb.stdout + rb.stderr).strip()
+        if out_sb:
+            log(out_sb.splitlines()[-1])
     # View debt: the UNGAMEABLE fake-view metric (reloc-masking hides fake calls from
     # objdiff %, but the phantom method's undefined symbol can't hide). REPORT until it
     # reaches 0 (all views folded onto real classes), then flip to a fatal run(...).
