@@ -31,9 +31,9 @@
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-// The engine logger (DDrawMgr-local) + Rez heap + operator new (reloc-masked).
-extern void __cdecl DDrawLogLine(char* fmt, ...); // 0x141cb0 (printf-style TRACE)
-void* operator new(u32);                          // engine allocator (reloc-masked rel32)
+// The engine logger DDrawLogLine (0x141cb0) is declared in <DDrawMgr/DirectDrawMgr.h>
+// (included below). Rez heap + operator new (reloc-masked):
+void* operator new(u32); // engine allocator (reloc-masked rel32)
 
 // The live screen RGB-format shift table (same globals ShadeTableCache reads): the
 // per-channel "up" shifts (ea0/ea4/ea8 = R/G/B) and the device "down" widths

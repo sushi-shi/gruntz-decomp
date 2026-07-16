@@ -61,8 +61,8 @@ i32 (*g_restoreHandler)() = 0; // 0x683edc
 
 // Empty mutable string in .data copied into the working buffer up front.
 
-// The engine logger that consumes the formatted line (DDrawMgr-local helper).
-extern void __cdecl DDrawLogLine(char* fmt, ...); // 0x141cb0 (printf-style TRACE)
+// DDrawLogLine (the DDrawMgr-local TRACE logger, defined below @0x141cb0) is declared
+// in <DDrawMgr/DirectDrawMgr.h> (included above).
 
 // Heap alloc/free are ::operator new @0x1b9b46 / ::operator delete @0x1b9b82
 // (NAFXCW), declared by <Mfc.h> - reloc-masked library calls (was RezAlloc/RezFree).

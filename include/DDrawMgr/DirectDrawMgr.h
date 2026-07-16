@@ -54,6 +54,10 @@ struct IDirectDraw;        // <ddraw.h>: the raw device (m_dd1)
 struct IDirectDraw2;       // <ddraw.h>: the QI'd device (m_device)
 struct IDirectDrawPalette; // <ddraw.h>: the held palette
 
+// The DDrawMgr-local printf-style TRACE logger (0x141cb0; RELEASE body compiled out to
+// a bare ret). Defined in DirectDrawMgr.cpp, referenced by the DDraw TUs (DDSurface).
+void __cdecl DDrawLogLine(char* fmt, ...);
+
 // The pool-item / mode-list array (m_poolItems @+0x4b4) is a real MFC CPtrArray -
 // stored void* CDdMode* records; SetSize(0,-1) clears, SetAtGrow appends. <Mfc.h> is
 // already pulled via <DDrawMgr/DDSurface.h> (CDDSurface's own +0x94 CPtrArray member),
