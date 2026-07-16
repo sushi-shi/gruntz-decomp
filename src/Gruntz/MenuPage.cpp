@@ -805,9 +805,12 @@ i32 CMenuPage::SelectBackward() {
 // retail /GX EH frame (push -1/fs:0 + descending trylevel writes) that the raw
 // placement form could not emit: EXACT.
 RVA(0x00183460, 0x13d)
-CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CMenuItem*
+CMenuPage::AddItem(const char* label, const char* spriteKey, i32 cmdId, const char* key, i32 flags) {
     CMenuItem* item = new CMenuItem();
-    if (item->Init((i32)this, a0, a1, a2, a3, a4) == 0) {
+    // Init keeps its mangling-pinned i32 slots (virtual); the string args cast at
+    // the forward (same 4-byte pushes).
+    if (item->Init((i32)this, (i32)label, (i32)spriteKey, cmdId, (i32)key, flags) == 0) {
         if (item) {
             delete item;
         }
@@ -819,16 +822,24 @@ CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
 // like AddItem, but also links the new item to its parent context. `new CMenuItem()`
 // folded from the split RezAlloc+placement-new (see AddItem); ~exact (entropy tail).
 RVA(0x001835a0, 0x14b)
-CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
+CMenuItem* CMenuPage::AddSubItem(
+    const char* label,
+    const char* spriteKey,
+    i32 cmdId,
+    i32 cmdParam,
+    i32 tag,
+    const char* key,
+    i32 flags
+) {
     CMenuItem* item = new CMenuItem();
-    if (item->Init((i32)this, a0, a1, a2, a5, a6) == 0) {
+    if (item->Init((i32)this, (i32)label, (i32)spriteKey, cmdId, (i32)key, flags) == 0) {
         if (item) {
             delete item;
         }
         return 0;
     }
-    item->m_1c = a4;
-    item->m_cmdParam = a3;
+    item->m_1c = tag;
+    item->m_cmdParam = cmdParam;
     return Append(item) ? item : 0;
 }
 

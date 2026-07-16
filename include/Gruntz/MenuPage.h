@@ -60,13 +60,25 @@ public:
     i32 ResolveSubPage(const char* key); // 0x1833f0  catalog Lookup -> cache m_subPage
     void* Append(CMenuItem* item);       // 0x183430  AddTail(item) -> item->m_2c
     // 0x183460 (ret 0x14 = 5 args, __thiscall): alloc + construct a CMenuItem,
-    // Init(this, a0..a4), append. Args = (label, key, flags, label2, z); Init
-    // also receives the owning page (`this`). Arg count binary-proven by the
-    // caller (MainMenuBuilder BuildMainMenuTree pushes 5) and the callee ret 0x14.
-    CMenuItem* AddItem(i32, i32, i32, i32, i32); // 0x183460
+    // Init(this, a0..a4), append. Semantic sig (binary-proven: BuildMainMenuTree's
+    // pushes are $SG string relocs; Init routes label -> m_name, spriteKey -> the
+    // catalog Lookup, key -> m_key CStrings). Byte-neutral vs the old i32 x5
+    // typing (5 4-byte pushes either way); CMenuItem::Init itself keeps the
+    // mangling-pinned i32 slots (it is a virtual - retyping its params would
+    // rewrite the slot's mangled name), so the defs cast at the forward.
+    CMenuItem*
+    AddItem(const char* label, const char* spriteKey, i32 cmdId, const char* key, i32 flags);
     // 0x1835a0 (ret 0x1c = 7 args): like AddItem but two extra params seed the new
-    // item's m_1c (a4) and m_cmdParam/+0x30 (a3); Init gets (this, a0,a1,a2,a5,a6).
-    CMenuItem* AddSubItem(i32, i32, i32, i32, i32, i32, i32); // 0x1835a0
+    // item's m_1c (tag) and m_cmdParam/+0x30 (cmdParam); Init gets (this, a0,a1,a2,a5,a6).
+    CMenuItem* AddSubItem(
+        const char* label,
+        const char* spriteKey,
+        i32 cmdId,
+        i32 cmdParam,
+        i32 tag,
+        const char* key,
+        i32 flags
+    ); // 0x1835a0
     i32 ReleaseAll();                                         // 0x183990  release focus + items
     i32 RestoreFocus();                        // 0x1839d0  focus saved name / first focusable
     i32 SetFocus(CMenuItem* item, i32 notify); // 0x183ad0
