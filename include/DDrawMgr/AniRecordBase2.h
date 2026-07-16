@@ -43,16 +43,17 @@ struct CAniRecordBase2 : public CObject {
     virtual ~CAniRecordBase2() OVERRIDE; // [1] 0x165dd0 (AniRecord.cpp); ??_G 0x165db0
     virtual void Slot05_165d90();        // [5] 0x165d90
     virtual void IsValidImage();         // [6] 0x001c08 (CWapObj-family marker slot)
-    virtual void Slot07_168fb0();        // [7] 0x168fb0 (FreeBuf, bound as CAniRecordView method)
+    virtual void FreeBuf();              // [7] 0x168fb0 (bound as CAniRecordView::FreeBuf)
     virtual void Slot08_165da0();        // [8] 0x165da0
-    virtual void Slot09_168f20();        // [9] 0x168f20
+    virtual void AllocBufCreate();       // [9] 0x168f20 (bound as CAniRecordView::AllocBufCreate)
     // Slots 10/11/12: the buffer (de)allocation virtuals; bodies are the
     // CAniRecordView non-virtual leaves bound at these RVAs (declared-only here,
-    // reloc-masked). Call shapes: 2/2/3 args, callee-clean, i32-tested results.
-    virtual i32 Alloc168ee0(i32 size, i32 flag);        // [10] 0x168ee0
-    virtual i32 Alloc168ea0(i32 size, i32 flag);        // [11] 0x168ea0
-    virtual i32 Alloc168f60(i32 a, i32 size, i32 flag); // [12] 0x168f60
-    virtual i32 Slot13_168fd0();                        // [13] 0x168fd0
+    // reloc-masked). Call shapes: 2/2/3 args, callee-clean, i32-tested results. Named
+    // by the CDDrawPtrCollections pool entrypoint each wraps (MakeB/MakeB2/MakeB3).
+    virtual i32 AllocBufMakeB(i32 size, i32 flag);         // [10] 0x168ee0 (pool MakeB)
+    virtual i32 AllocBufMakeB2(i32 size, i32 flag);        // [11] 0x168ea0 (pool MakeB2)
+    virtual i32 AllocBufMakeB3(i32 a, i32 size, i32 flag); // [12] 0x168f60 (pool MakeB3)
+    virtual i32 PushPalette();                             // [13] 0x168fd0
 
     // (The dtor's member teardown - free m_10 through the owner pool - is the
     // CAniRecordView-bound body 0x168fb0; the dtor reaches it directly through

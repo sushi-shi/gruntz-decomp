@@ -32,7 +32,7 @@
 // ---------------------------------------------------------------------------
 #include <Mfc.h>                    // real MFC CStringArray / CMapStringToPtr / CString / CObject
 #include <Gruntz/AniRecordView.h>   // the primary-facet class (CAniRecordView : CObject)
-#include <DDrawMgr/DDSurface.h>     // CDDSurface::SetPalette (Slot13_168fd0, reloc-masked)
+#include <DDrawMgr/DDSurface.h>     // CDDSurface::SetPalette (PushPalette, reloc-masked)
 #include <DDrawMgr/DirectDrawMgr.h> // canonical CDDPalette (the +0x10 work buffer's real class)
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections - the real +0x1c pool allocator
 #include <DDrawMgr/AniRecordBase2.h>      // the canonical secondary/base facet (dtor 0x165dd0 here)
@@ -102,8 +102,8 @@ void operator delete(void* p);
 // +0x10 work buffer (FreeBuf), resets the CObject header (m_04=-1, m_08=0, m_0c=0), then
 // the implicit grand-base re-stamp (masks 0x5e8cb4) folds LAST. The 9 extra slots (5..13)
 // are declared-only (reloc-masked); the buffer (de)allocation virtuals live as the regular
-// CAniRecordView methods below (slots 7/10/11/12 = FreeBuf/Alloc168ee0/Alloc168ea0/
-// Alloc168f60). The class def is the SHARED canonical <DDrawMgr/AniRecordBase2.h>
+// CAniRecordView methods below (slots 7/10/11/12 = FreeBuf/AllocBufMakeB/AllocBufMakeB2/
+// AllocBufMakeB3). The class def is the SHARED canonical <DDrawMgr/AniRecordBase2.h>
 // (also the CDDrawWorkerMapSmall keyed "map worker" - one class, one vtable).
 
 // ---------------------------------------------------------------------------
@@ -127,8 +127,8 @@ RVA(0x00165dd0, 0x5b)
 CAniRecordBase2::~CAniRecordBase2() {
     // The +0x10 work-buffer teardown is the CAniRecordView-bound body 0x168fb0
     // (the documented primary/secondary facet split - see AniRecordView.h); the
-    // direct call emits the resolvable ?FreeBuf_168fb0@CAniRecordView@@ symbol.
-    reinterpret_cast<CAniRecordView*>(this)->FreeBuf_168fb0();
+    // direct call emits the resolvable ?FreeBuf@CAniRecordView@@ symbol.
+    reinterpret_cast<CAniRecordView*>(this)->FreeBuf();
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
@@ -142,7 +142,7 @@ CAniRecordBase2::~CAniRecordBase2() {
 // the "has name" bit (0x2) strlen the trailing name -> g_aniParsedNameLen and
 // resolve the indices from it. Returns 1. Frameless leaf.
 RVA(0x00168c60, 0xa0)
-i32 CAniRecordView::Parse_168c60(void* ctx, const i16* src) {
+i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
     m_08 = *p++;
@@ -160,7 +160,7 @@ i32 CAniRecordView::Parse_168c60(void* ctx, const i16* src) {
     if (m_flags & 0x2) {
         const char* name = (const char*)p;
         g_aniParsedNameLen = static_cast<i32>(strlen(name)) + 1;
-        ResolveIndices_168d00((CAniMapOwner*)ctx, name);
+        ResolveIndices((CAniMapOwner*)ctx, name);
     }
     return 1;
 }
@@ -178,7 +178,7 @@ i32 CAniRecordView::Parse_168c60(void* ctx, const i16* src) {
 // cl flips them - not decl-order-steerable) + reloc operand names. Documented
 // regalloc/slot wall - parked for the final sweep.
 RVA(0x00168d00, 0x14c)
-void CAniRecordView::ResolveIndices_168d00(CAniMapOwner* owner, const char* str) {
+void CAniRecordView::ResolveIndices(CAniMapOwner* owner, const char* str) {
     if (owner == 0 || str == 0) {
         return;
     }
@@ -218,9 +218,9 @@ void CAniRecordView::ResolveIndices_168d00(CAniMapOwner* owner, const char* str)
     }
 }
 
-// CAniRecordView::GetSize_168e50 (0x168e50) - packed byte size of the frame table.
+// CAniRecordView::GetSize (0x168e50) - packed byte size of the frame table.
 RVA(0x00168e50, 0x1e)
-i32 CAniRecordView::GetSize_168e50() {
+i32 CAniRecordView::GetSize() {
     i32 n = m_frameCount;
     if (n <= 0) {
         return 0x16;
@@ -249,7 +249,7 @@ CString CAniStrArray::GetAt(int index) {
 // owner's +0x08 flags and run the buffer's second-stage init. Returns 1.
 // Frameless leaf.
 RVA(0x00168ea0, 0x40)
-void* CAniRecordView::Alloc168ea0(i32 size, i32 flag) {
+void* CAniRecordView::AllocBufMakeB2(i32 size, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->MakeB2(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
@@ -266,7 +266,7 @@ void* CAniRecordView::Alloc168ea0(i32 size, i32 flag) {
 // 0x168ee0: as 0x168ea0 but through CDDrawPtrCollections::MakeB (the canonical 0x44 allocator).
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
-void* CAniRecordView::Alloc168ee0(i32 size, i32 flag) {
+void* CAniRecordView::AllocBufMakeB(i32 size, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->MakeB((void*)size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
@@ -282,7 +282,7 @@ void* CAniRecordView::Alloc168ee0(i32 size, i32 flag) {
 // ---------------------------------------------------------------------------
 // 0x168f20 (slot 9): as 0x168ea0 but through CDDrawPtrCollections::Create. Frameless leaf.
 RVA(0x00168f20, 0x40)
-void* CAniRecordView::Alloc168f20(i32 handle, i32 flag) {
+void* CAniRecordView::AllocBufCreate(i32 handle, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->Create(handle, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
@@ -298,7 +298,7 @@ void* CAniRecordView::Alloc168f20(i32 handle, i32 flag) {
 // ---------------------------------------------------------------------------
 // 0x168f60: the three-arg buffer allocator (CDDrawPtrCollections::MakeB3, ret 0xc). Frameless leaf.
 RVA(0x00168f60, 0x45)
-void* CAniRecordView::Alloc168f60(i32 a, i32 size, i32 flag) {
+void* CAniRecordView::AllocBufMakeB3(i32 a, i32 size, i32 flag) {
     CDDPalette* buf = m_owner->m_pool->MakeB3(a, size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
@@ -315,7 +315,7 @@ void* CAniRecordView::Alloc168f60(i32 a, i32 size, i32 flag) {
 // 0x168fb0: free the +0x10 work buffer back to the owner's pool (CDDrawPtrCollections::RemoveItemB) and
 // clear it. Frameless leaf.
 RVA(0x00168fb0, 0x1f)
-void CAniRecordView::FreeBuf_168fb0() {
+void CAniRecordView::FreeBuf() {
     i32 buf = m_buf;
     if (buf != 0) {
         m_owner->m_pool->RemoveItemB((CDDPalette*)buf);
@@ -323,17 +323,17 @@ void CAniRecordView::FreeBuf_168fb0() {
     }
 }
 
-// The owner-image / surface-descriptor chain Slot13_168fd0 walks (AniImageHost ->
+// The owner-image / surface-descriptor chain PushPalette walks (AniImageHost ->
 // AniSurfDesc -> target CDDSurface) is modeled by-offset in <DDrawMgr/AniRecordViews.h>
 // (@identity-TODO: the concrete image/descriptor classes are not yet RTTI-recovered).
 
 // ---------------------------------------------------------------------------
-// CAniRecordView::Slot13_168fd0 (0x168fd0, vtable slot 13 of CAniRecordBase2): if
+// CAniRecordView::PushPalette (0x168fd0, vtable slot 13 of CAniRecordBase2): if
 // the owner image is 8bpp (surfDesc->m_18 == 8), push this record's palette buffer
 // (m_buf) onto the owner's target surface via CDDSurface::SetPalette and return its
 // result; otherwise return 1. __thiscall, no args (ret).
 RVA(0x00168fd0, 0x24)
-i32 CAniRecordView::Slot13_168fd0() {
+i32 CAniRecordView::PushPalette() {
     AniSurfDesc* sd = ((AniImageHost*)m_owner->m_04)->m_10;
     if (sd->m_18 != 8) {
         return 1;
@@ -348,20 +348,16 @@ SIZE_UNKNOWN(CAniRecordOwner);
 SIZE_UNKNOWN(AniSurfDesc);
 SIZE_UNKNOWN(AniImageHost);
 
-// (CAniRecordBase2's SIZE/VTBL rows live with the canonical def in
+// (Both facets' VTBL rows live with their canonical class defs in the headers:
+// CAniRecordView in <Gruntz/AniRecordView.h>, CAniRecordBase2 in
 // <DDrawMgr/AniRecordBase2.h>.)
-VTBL(CAniRecordView, 0x001f02c0); // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)
 
-// @identity-TODO (matcher-5): 0x16b230 (503 B, __thiscall, ret 0x20, 8 args) == a PLANE
-// geometry Init on a CLevelPlane/CPlaneRender (the RecomputePlaneCoords @0x161c90 CLevelPlane
-// call on ecx=this proves it - NOT CDDrawWorkerHost). Stores the 8 args into the plane's
-// tile/wrap/origin fields, derives wrap/grid dims + log2 shift amounts, strcpy's a name into
-// +0xb4, calls a global coord transform [0x6c44bc] when arg-struct[0] != 0x80000000, fills
-// m_24[i]=i*m_28, tail-calls RecomputePlaneCoords(). Homed here from GapFunctions.cpp by RVA
-// neighbourhood (nearest-below named TU; sits in an unowned 0x168fd0..0x16cdd0 stretch - the
-// plane object's methods are spread across DDrawWorkerHost/LevelPlane/GameLevel, none of which
-// bracket this RVA). Homed pending the +0x6c44bc fn-ptr named + ~30 CPlaneRender fields modelled.
-RVA(0x0016b230, 0xe1)
-i32 Gap_16b230(void) {
-    return 0;
-}
+// 0x16b230 was a mis-homed, mis-identified "gap orphan" here. The old @identity-TODO
+// guessed a CLevelPlane plane-geometry Init, but the retail disasm disproves that: it is
+// the MSVC C++ iostreams library method streambuf::xsgetn(char*, int) - a bulk get that
+// reads byte-at-a-time via the virtual underflow (slot 8, off 0x20) when m_08 != 0, else
+// rep-movs block-copies from the get-area [m_28,m_2c). It is referenced ONLY as slot 6
+// (off 0x18) of the streambuf / filebuf / strstreambuf vtables (0x1f042c / 0x1f03fc /
+// 0x1f0344 - inherited unchanged), i.e. it belongs to the CRT iostream cluster, not to
+// AniRecord. Evicted from this TU and carved into config/library_labels.csv
+// (iostream-cluster-bail), alongside its siblings streambuf::xsputn/setbuf/pbackfail.

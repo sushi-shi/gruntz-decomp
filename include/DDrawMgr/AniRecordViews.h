@@ -41,7 +41,7 @@ struct CAniMapOwner {
 };
 
 // @identity-TODO (full xref chase, dead-ends at RTTI-less descriptors): the owner-image /
-// surface-descriptor chain Slot13_168fd0 walks. sema xref 0x168fd0 proves Slot13 has no
+// surface-descriptor chain PushPalette (0x168fd0) walks. sema xref 0x168fd0 proves it has no
 // direct caller - it is CAniRecordBase2 vtable slot 13 (0x1f030c) only, dispatched on the
 // map-worker. m_owner->m_04 is the owner image (AniImageHost), whose +0x10 is a surface
 // descriptor (AniSurfDesc) carrying the source bitdepth (+0x18; 8 = paletted) and the

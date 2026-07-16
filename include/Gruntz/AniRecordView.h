@@ -14,7 +14,7 @@
 //   * `new CAniRecordView`  - the ctor stamps the vptr + seeds m_owner/m_count/
 //     m_indices; cl auto-emits ??_7CAniRecordView (reloc-masks 0x5f02c0), no manual
 //     `m_vptr = &g_aniRecordVtbl` store (the ALL-VTABLES-real model).
-//   * `rec->Parse_168c60(...)` / `rec->GetSize_168e50()` - non-virtual leaf entries.
+//   * `rec->Parse(...)` / `rec->GetSize()` - non-virtual leaf entries.
 //   * `delete rec` - the slot-1 scalar-deleting dtor dispatched as
 //     `mov edx,[ecx]; call [edx+4]`. Modeled as an explicit named virtual (NOT a
 //     C++ `~dtor` + `delete`) precisely to emit that call WITHOUT the compiler's
@@ -40,17 +40,17 @@ class CAniRecordOwner;
 struct CAniRecordView : public CObject {
     virtual ~CAniRecordView() OVERRIDE; // [1] 0x1657a0 real primary-facet teardown dtor
 
-    i32 Parse_168c60(void* ctx, const i16* src);                      // 0x168c60
-    i32 GetSize_168e50();                                             // 0x168e50
-    void ResolveIndices_168d00(CAniMapOwner* owner, const char* str); // 0x168d00
-    void* Alloc168ee0(i32 size, i32 flag);                            // 0x168ee0
-    void* Alloc168f20(i32 handle, i32 flag);                          // 0x168f20 (slot 9)
-    void* Alloc168ea0(i32 size, i32 flag);                            // 0x168ea0
-    void* Alloc168f60(i32 a, i32 size, i32 flag);                     // 0x168f60
-    void FreeBuf_168fb0();                                            // 0x168fb0
+    i32 Parse(void* ctx, const i16* src);                      // 0x168c60
+    i32 GetSize();                                             // 0x168e50
+    void ResolveIndices(CAniMapOwner* owner, const char* str); // 0x168d00
+    void* AllocBufMakeB(i32 size, i32 flag);                   // 0x168ee0  (pool MakeB)
+    void* AllocBufCreate(i32 handle, i32 flag);                // 0x168f20  (pool Create, slot 9)
+    void* AllocBufMakeB2(i32 size, i32 flag);                  // 0x168ea0  (pool MakeB2)
+    void* AllocBufMakeB3(i32 a, i32 size, i32 flag);           // 0x168f60  (pool MakeB3)
+    void FreeBuf();                                            // 0x168fb0
     // 0x168fd0 (vtable slot 13): when the owner image is 8bpp, push the record's
     // palette buffer (m_buf) onto the owner's surface; else return 1.
-    i32 Slot13_168fd0();
+    i32 PushPalette();
 
     inline CAniRecordView() {
         m_count = 0;
@@ -75,6 +75,11 @@ struct CAniRecordView : public CObject {
     i32* m_indices;           // +0x30  resolved-index array
 };
 
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+// --- vtable catalog ---
+// The primary 5-slot CObject-derived facet vtable. [vtbl-4]=NULL (verified) -> no RTTI
+// COL, so the retail class name is UNRECOVERABLE: neither "CAniRecordView" nor the guessed
+// "CAniRecordPrimary" is provable, so the reconstruction name CAniRecordView stands (not
+// renamed - unprovable). @identity-TODO: real retail class name unrecoverable (no RTTI).
+VTBL(CAniRecordView, 0x001f02c0);
 
 #endif // GRUNTZ_CANIRECORDVIEW_H

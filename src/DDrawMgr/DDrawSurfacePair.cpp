@@ -956,12 +956,12 @@ i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
     i32 i;
     for (i = 0; i < src->m_count; i++) {
         rec = new CAniRecordView;
-        if (rec->Parse_168c60(ctx, (const i16*)cursor) == 0) {
+        if (rec->Parse(ctx, (const i16*)cursor) == 0) {
             goto fail;
         }
         m_records.SetAtGrow(m_records.m_nSize, (::CObject*)rec);
         cursor += g_aniParsedNameLen + 0x14;
-        m_total += rec->GetSize_168e50();
+        m_total += rec->GetSize();
     }
     return 1;
 
@@ -1128,7 +1128,7 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
         return 0;
     }
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
-    if (w->Alloc168ee0(data, a3) == 0) {
+    if (w->AllocBufMakeB(data, a3) == 0) {
         ((CParseSource*)a1)->EndParse();
         if (w != 0) {
             delete w;
@@ -1151,7 +1151,7 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
 RVA(0x00165990, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
-    if (w->Alloc168ee0(a1, a3) == 0) {
+    if (w->AllocBufMakeB(a1, a3) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1168,7 +1168,7 @@ void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
 RVA(0x00165a10, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
-    if (w->Alloc168ea0(a1, a3) == 0) {
+    if (w->AllocBufMakeB2(a1, a3) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1194,7 +1194,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
     }
     const char* keyHandle = a1->m_0c;
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_0c);
-    if (w->Alloc168f60(data, (i32)a1, a3) == 0) {
+    if (w->AllocBufMakeB3(data, (i32)a1, a3) == 0) {
         if (w != 0) {
             delete w;
         }

@@ -1917,6 +1917,7 @@ rva,name,lib,confidence,source
 0x16aea0,?seekoff@filebuf@@UAEJJW4seek_dir@ios@@H@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
 0x16b0e0,msc_streambuf_ctor_16b0e0,LIBCIMT,LOW,iostream-cluster-bail
 0x16b190,?setbuf@streambuf@@UAEPAV1@PADH@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
+0x16b230,?xsgetn@streambuf@@UAEHPADH@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
 0x169c70,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16ab90,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16b0c0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
