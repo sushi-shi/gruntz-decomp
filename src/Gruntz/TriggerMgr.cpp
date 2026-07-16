@@ -1796,7 +1796,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             spr->ApplyName("LEVEL_ROCKBREAK");
             spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
 
-            CSndHost* set = (CSndHost*)m_world->m_soundRegistry;
+            CSndHost* set = m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
                 // CSndHost's name map is an MFC CMapStringToPtr (RTTI-proven), so its
                 // Lookup out-param is a void*& - the payload is the cue itself.
