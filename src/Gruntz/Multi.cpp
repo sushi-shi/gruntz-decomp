@@ -96,17 +96,17 @@ extern "C" CNetCreateCtx* g_netCreateCtx;
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 #include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c command manager (ResetPlayerCommands Dispatch)
 #include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
+#include <Bute/SymParser.h>      // the REAL CSymParser (CState::m_8; ResolvePath @0x13c030)
 // (The former local CGruntzMgr shadow is gone: m_4's game-mgr methods are now declared
 // directly on CNetGameMgr in <Net/NetMgr.h>, so m_4->Method() needs no cross-cast.)
 // LoadGameAssetNamespaces (0xf9ea0) is now CState::LoadGameAssetNamespaces; CMulti
 // (: CPlay : CState) inherits it and calls it cast-free (the CAssetLoader this-view
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * tiny-method-view over this - ((CNetConnectThis/CNetConnectSlotView/CSymParserView*)obj)
-//     ->M(): external reloc-masked __thiscall engine methods (own RVA) / vtable-slot PMFs;
-//     the view is the modeling mechanism (see the defs near the connection driver), same
-//     idiom as the pmf-through-vtable dispatch below. (The m_4 game-mgr / m_5c chat-log
-//     helpers are real methods on CNetGameMgr / CNetChatLog; CSymParser stays local,
-//     blocked by a header symbol-decl collision.)
+//   (The m_4 game-mgr / m_5c chat-log helpers are now real methods on CNetGameMgr /
+//     CNetChatLog; CSymParser is the real <Bute/SymParser.h> class (m_8 typed);
+//     the CNetConnectThis shell and the CNetConnectSlotView PMF vtable-slot view are
+//     DISSOLVED - the four connect-driver dispatches are the real CState/CPlay-chain
+//     virtuals, see SetupMultiplayerSession.)
 //   * (char*)(const char*)aCString: MFC CString -> LPCTSTR (operator) -> char* to feed a
 //     char*-taking engine API; both casts are required.
 //   * (IDirectPlay4Z*)m_releaseIface etc.: DirectPlay COM downcast off the abstract
@@ -374,7 +374,7 @@ extern void ActiveWait(i32 phase);
 // ---------------------------------------------------------------------------
 // The CState sub-object dtor-view the most-derived ~CMulti walks: a virtual dtor
 // whose auto vptr-restore stamps ??_7CState@@6B@ (0x5ea21c, name-matching
-// config/vtable_names.csv) then runs the CState base teardown (BaseCleanup). ~CMulti
+// config/vtable_names.csv) then runs the CState base teardown (CState::ReleaseResources). ~CMulti
 // keeps the explicit member teardown in retail order. (The CPlay sub-object teardown
 // is CMulti's own CPlayDtorBody() - the ONE canonical CPlay <Gruntz/Play.h> can't be
 // used as a sub-object dtor-view here because its ~CPlay would double-tear the CPlay
@@ -401,8 +401,8 @@ extern void ActiveWait(i32 phase);
 // The engine's global free (0x1b9b82) IS MFC's ::operator delete (??3@YAXPAX@Z,
 // library-labelled); call it directly so the reloc binds (no fake RezFree view).
 
-// (CMultiStateBase is gone - a DEAD view with zero uses left. Its "BaseCleanup
-// @0x403f53" is the ILT thunk 0x3f53 -> 0x0fa150 == ?BaseCleanup@CGameModeBase@@QAEXXZ,
+// (CMultiStateBase is gone - a DEAD view with zero uses left. Its "base-cleanup
+// @0x403f53" is the ILT thunk 0x3f53 -> 0x0fa150 == ?ReleaseResources@CState@@UAEXXZ,
 // the canonical <Gruntz/GameModeBase.h> method CState's inline dtor already calls.)
 
 // MFC member sub-object destructors (out-of-line NAFXCW; reloc-masked). Declared
@@ -436,7 +436,7 @@ extern void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 // EH-dtor wall (docs/patterns/eh-dtor-needs-base-subobject.md): the body is the
 // correct, complete reconstruction - Teardown(), then the member CString/CByteArray
 // teardown run in retail order while the CMulti->CPlay->CState vtable stamps and
-// the CState BaseCleanup tail land at the right points. Retail emits a FLAT 0x124
+// the CState::ReleaseResources tail land at the right points. Retail emits a FLAT 0x124
 // dtor (the CByteArray[4] at +0x3a4 torn via a single ??_M vector-dtor call, light
 // register use), while our /GX lowering unrolls the array loop, saves ebx/ebp/edi,
 // and splits the per-member cleanup into trailing EH unwind funclets - so the main
@@ -497,35 +497,17 @@ void ConstructFileIOGlobal() {
 // (g_lastNow is in <Rez/FrameClock.h>; g_frameDelta/g_frameTime are declared in the CMulti preamble above.)
 extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
-// VTABLE CATALOGUE (read from GRUNTZ.EXE .rdata @0x1ea42c): CNetMgr's own
-// vtable ??_7CNetMgr@@ (0x5ea42c) is the small 5-slot CObject vtable and NOTHING more -
-// [0]0x1bef01 [1]0x00260d(override) [2]0x0028ec [3]0x00106e [4]0x004034, then slots 5-6
-// are NULL and +0x14 onward is unrelated .rdata. So the CNetConnectSlotView slots the driver
-// dispatches (+0x08 Abort, +0x74 OnStart, +0x78 OnConnect, +0x90 OnReady) are NOT on
-// 0x5ea42c - they live on the DRIVER `this`'s own, much larger vtable. That `this` (used
-// by CNetMgr::SetupMultiplayerSession: a CSymParser @+0x08, host flag @+0x528, g_gameReg, m_4
-// game-mgr, m_peer) is the CMulti-shaped multiplayer state, NOT the 0x8c DirectPlay
-// CNetMgr the peer stamps. CONVERTING these PMFs to real virtuals is DEFERRED WORK (not
-// done here): it requires modeling that driver class polymorphic over its full CPlay/
-// CState/CMulti vtable chain - a task <Gruntz/Multi.h> explicitly holds for the final
-// sweep ("real-chain modeling stays a final-sweep task") and which also reaches the
-// reserved g_gameReg (0x64556c) domain. Until then the slots stay pointers-to-member
-// loaded from the vtable (MSVC5 forbids the __thiscall fn-ptr keyword; PMFs of the
-// complete, non-polymorphic class are 4 bytes and emit `mov edx,[this]; call [edx+off]`
-// - see docs/patterns/pmf-complete-class-4byte.md).
-typedef i32 (CMulti::*NmSlotRet)();
-typedef i32 (CMulti::*NmConnFn)(i32, i32);
-typedef void (CMulti::*NmSlotVoid)();
-SIZE_UNKNOWN(CNetConnectSlotView);
-struct CNetConnectSlotView {
-    char m_pad0[8];
-    NmSlotRet Abort; // +0x08  abort/close on start failure
-    char m_padc[0x74 - 0xc];
-    NmSlotRet OnStart;  // +0x74
-    NmConnFn OnConnect; // +0x78
-    char m_pad7c[0x90 - 0x7c];
-    NmSlotVoid OnReady; // +0x90
-};
+// The four connect-driver vtable dispatches (+0x08 / +0x74 / +0x78 / +0x90 off the
+// `this` vptr) are the REAL CState/CPlay-chain virtual slots - CMulti is polymorphic
+// over the full chain now, so the ex-CNetConnectSlotView PMF view is DISSOLVED
+// (2026-07-16). Slot identities read from retail ??_7CMulti @0x1e9fe4 (RTTI
+// .?AVCMulti@@ : CPlay : CState, 43 slots):
+//   +0x08 slot  2 = ReleaseResources (ex "Abort"; CMulti overrides it, ILT 0x2ef5)
+//   +0x74 slot 29 = LoadImageBanks   (ex "OnStart"; inherited CPlay, ILT 0x1a41 -> 0x0cffe0)
+//   +0x78 slot 30 = LoadByMode       (ex "OnConnect"; CMulti overrides it, ILT 0x449e)
+//   +0x90 slot 36 = Vslot24          (ex "OnReady"; inherited CPlay, ILT 0x1d9d)
+// A plain unqualified virtual call on `this` lowers to the identical
+// `mov reg,[this]; mov ecx,this; call [reg+off]` dispatch the PMF loads emitted.
 
 // The external `this`-methods the driver calls (all resolved to real classes;
 // the empty CNetConnectThis shell is gone):
@@ -538,11 +520,10 @@ struct CNetConnectSlotView {
 // InitLobbySettings/GetWorldFileName) and the chat-log FreeNodes are declared
 // directly on their real classes (CNetGameMgr / CNetChatLog in NetMgr.h).
 //
-// CSymParser (the +8 CSymParser::ResolvePath thunk) stays a local method-only
-// view: the real class lives in <Bute/SymParser.h>, but that header re-declares the
-// shared g_emptyString literal (const char[]) which collides with this TU's own
-// `extern "C" char g_emptyString[]` decl (C2373) - so the real include cannot be
-// pulled in here. Reloc-masked either way (same 0x13c030 CSymParser::ResolvePath).
+// CSymParser is the REAL <Bute/SymParser.h> class now (included above): m_8 is the
+// typed CState::m_8 CSymParser*, so ResolvePath ("STATEZ_MULTI") is a plain member
+// call. (The old "g_emptyString C2373 collision" that blocked the include is dead -
+// the shared decl was unified into <EmptyString.h>, which SymParser.h itself pulls.)
 // (1) the 0x8c-byte peer object: the REAL CNetMgr (netmgr-vs-cmulti split DONE). It
 // is the small DirectPlay wrapper (RTTI CNetMgr : CObject, ??_7 @0x5ea42c/0x1ea42c,
 // ??1 @0xb6000) CMulti holds at +0x524. `new CNetMgr()` reproduces the inlined ctor
@@ -670,7 +651,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
         if (StartTitle() != 0) {
             NetGameMgr()->m_ac = 0;
-            ((this)->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
+            ReleaseResources(); // slot 2 (+0x08) virtual dispatch, ex "Abort"
             return 0;
         }
     } else {
@@ -695,11 +676,11 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
     m_590 = NetGameMgr()->m_110;
     NetGameMgr()->m_110 = 1;
-    if (((this)->*(((CNetConnectSlotView*)*(void**)this)->OnStart))() == 0) {
+    if (LoadImageBanks() == 0) { // slot 29 (+0x74) virtual dispatch, ex "OnStart"
         return 0;
     }
-    ((this)->*(((CNetConnectSlotView*)*(void**)this)->OnReady))();
-    m_2c = (CResSource*)((CSymParser*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
+    Vslot24(); // slot 36 (+0x90) virtual dispatch, ex "OnReady"
+    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_MULTI");
     if (m_2c == 0) {
         return 0;
     }
@@ -777,7 +758,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     // --- kick off the connect wait + first poll ---
-    if (((this)->*(((CNetConnectSlotView*)*(void**)this)->OnConnect))(1, 1) == 0) {
+    if (LoadByMode(1, 1) == 0) { // slot 30 (+0x78) virtual dispatch, ex "OnConnect"
         return 0;
     }
     m_pumpGuard = 1;
@@ -1085,7 +1066,7 @@ i32 CMulti::Connect(i32 mode) {
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Tick() {
     m_drewThisFrame = 0;
-    vtbl()->Redraw(this, 0, m_cursorX, m_cursorY);
+    HandleDragMove(0, m_cursorX, m_cursorY); // slot 31 (+0x7c) virtual dispatch
     i32 oldT = m_lastTime;
     i32 t = timeGetTime();
     m_lastTime = t;
@@ -1129,10 +1110,10 @@ i32 CMulti::Tick() {
     if (m_session->Advance() && m_pollAbort == 0) { // 0xc01d0
         fin = 1;
     }
-    vtbl()->PostRedraw(this);
-    void* sub = *(void**)((char*)*(void**)((char*)m_c + 0x24) + 0x5c);
-    if (sub) {
-        ((CPlaneRender*)sub)->CenterScrollA(); // 0x163300, the level main plane
+    TickStateMgrs(); // slot 38 (+0x98) virtual dispatch (ex the view's "PostRedraw")
+    CLevelPlane* mainPlane = m_c->m_level->m_mainPlane; // the level MAIN plane
+    if (mainPlane) {
+        mainPlane->CenterScrollA(); // 0x163300
     }
     if (fin == 0) {
         if (m_session->Verify() == 0 && m_574 == 0) { // 0xc04f0
@@ -1797,7 +1778,6 @@ SIZE_UNKNOWN(CSlotConfig);
 SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiReportGate);
-SIZE_UNKNOWN(CMultiSlotView);
 SIZE_UNKNOWN(CRefresh21bd0);
 SIZE_UNKNOWN(PBListSink);
 

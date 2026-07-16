@@ -189,18 +189,13 @@ public:
 // the full <Net/NetMgr.h>). The +0x320 overlay's teardown is CLightFxRender::Ctor
 // @0xa3360 - bound directly in CMulti::Teardown.
 
-// CMulti's own (manually-stamped) vtable. Only the two slots the per-frame Tick
-// dispatches through are typed; the rest are opaque. The slots are thiscall in
-// retail (ecx = this); modeled COM-style (explicit this arg) so MSVC 5.0 accepts
-// the function-pointer types - the exact convention is part of Tick's documented
-// codegen wall, so this expresses intent without perturbing a matched function.
+// (The ex-CMultiSlotView fn-ptr view of Tick's two +0x7c/+0x98 dispatches is
+// DISSOLVED 2026-07-16: those are the real CPlay-chain vtable slots 31
+// (HandleDragMove) and 38 (Vslot26, CMulti-overridden) - retail ??_7CMulti
+// @0x1e9fe4 slot 31 = ILT 0x3756, slot 38 = ILT 0x331e - and Tick calls them as
+// plain virtuals now, which also restores the retail thiscall dispatch the
+// COM-style explicit-this fn-ptrs could not express.)
 class CMulti;
-struct CMultiSlotView {
-    char m_pad00_7c[0x7c];
-    void(__stdcall* Redraw)(CMulti*, i32 a, i32 b, i32 c); // +0x7c
-    char m_pad80_98[0x98 - 0x80];
-    void(__stdcall* PostRedraw)(CMulti*); // +0x98
-};
 
 class CMulti : public CPlay {
 public:
@@ -210,8 +205,6 @@ public:
     // stamp is dropped so cl's implicit entry vptr-store survives (a leading manual
     // stamp would dead-store-eliminate the implicit one -> no ??_7). The mid-dtor
     // CPlay/CState restamps are realized via local dtor-view classes in CMulti.cpp.
-    // Tick dispatches through vtbl() (reads the vptr as a CMultiSlotView*), preserving
-    // its +0x7c/+0x98 indirect-call bytes.
     // Constructed by CGruntzMgr::TransitionState (`new CMulti`, state id 17, `push 0x660`);
     // defined out-of-line in GruntzMgr.cpp, the only TU that builds one.
     CMulti();
@@ -231,10 +224,7 @@ public:
     virtual i32 GetFrame() OVERRIDE;            // slot 27 (CPlay)
     virtual i32 LoadByMode(i32, i32) OVERRIDE;  // slot 30 (CPlay; the per-mode level loader)
     virtual void OnExit() OVERRIDE;             // slot 32 (CPlay; ex "Vslot20")
-    virtual void Vslot26() OVERRIDE;            // slot 38 (CPlay)
-    CMultiSlotView* vtbl() {
-        return *(CMultiSlotView**)this;
-    }
+    virtual void TickStateMgrs() OVERRIDE;      // slot 38 (CPlay; 0x0bd3c0, ex "Vslot26")
     // The owner back-ptr (CState::m_4) IS the real CGruntzMgr - the game-manager
     // singleton the lobby methods drive. No downcast: LogLine/RunDialog/... resolve to
     // the canonical

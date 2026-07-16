@@ -225,7 +225,11 @@ public:
     // slot 37 (+0x94): per-draw text-attr setup (debug HUD hands it the live HDC;
     // void* keeps this widely-included header windows.h-neutral).
     virtual void PostSetup(void* dc);
-    virtual void Vslot26();
+    // slot 38 (+0x98): the per-frame state-manager tick forwarder - the default body
+    // (0x0cfbb0, this TU) tail-forwards to m_4->TickStateMgrs(); CMulti overrides it
+    // (retail ??_7CMulti slot 38 = ILT 0x331e -> 0x0bd3c0, unreconstructed).
+    // (ex "Vslot26"; the Multi lobby-pump view called the slot "PostRedraw".)
+    virtual void TickStateMgrs();
     // Slots 39/40: the same duplicate-declaration defect (RTTI names them DrawWorldFrame
     // / DrawWorldFrames; the vtable's ILT thunks 0x15eb / 0x311b jmp to 0xc9c20 /
     // 0xc9cc0, which are exactly those two methods' bodies in this TU).

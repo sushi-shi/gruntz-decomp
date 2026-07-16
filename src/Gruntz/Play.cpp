@@ -2706,7 +2706,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
 // Step-call setup differ; see docs/patterns/zero-register-pinning.md.
 RVA(0x000c9c20, 0x79)
 void CPlay::DrawWorldFrame() {
-    Vslot26(); // this->vtbl[+0x98]()  (begin-frame virtual, thiscall)
+    TickStateMgrs(); // slot 38, this->vtbl[+0x98]() (begin-frame virtual, thiscall; ex "Vslot26")
     if (m_c->m_level->m_mainPlane != 0) {
         m_c->m_level->m_mainPlane->CenterScrollA();
     }
@@ -2762,7 +2762,7 @@ i32 CPlay::DrawWorldFrames() {
                     m_c->m_level->m_mainPlane->CenterScrollB();
                 }
             }
-            Vslot26(); // this->vtbl[+0x98]()
+            TickStateMgrs(); // slot 38, this->vtbl[+0x98]()
             if (m_c->m_level->m_mainPlane != 0) {
                 m_c->m_level->m_mainPlane->CenterScrollA();
             }
@@ -2883,7 +2883,7 @@ i32 CPlay::ProfileInputFrame() {
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
 
     u32 t1 = tg();
-    Vslot26(); // this->vtbl[+0x98]
+    TickStateMgrs(); // slot 38, this->vtbl[+0x98]
     i32 activateMs = (i32)(tg() - t1);
 
     u32 t3 = tg();
@@ -4988,10 +4988,10 @@ i32 CPlay::QuitToMenu() {
     return 1;
 }
 
-// CPlay::Vslot26 (0x0cfbb0) - vtable slot 38. Tail-forward to the game manager's
-// per-frame state-manager tick (m_4->TickStateMgrs).
+// CPlay::TickStateMgrs (0x0cfbb0, ex "Vslot26") - vtable slot 38, the per-frame
+// state-manager tick forwarder (m_4->TickStateMgrs).
 RVA(0x000cfbb0, 0x8)
-void CPlay::Vslot26() {
+void CPlay::TickStateMgrs() {
     m_4->TickStateMgrs();
 }
 
@@ -5565,7 +5565,7 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 // codegen-neutral for this TU.
 #include <Gruntz/BankMgr.h>
 // (0xfa8f0 is CState::RetireScene - inherited by CPlay.
-// 0xfa150 cleanup is CGameModeBase::BaseCleanup - reached via the CState<->CGameModeBase
+// 0xfa150 cleanup is CState::ReleaseResources (the base slot-2 default body) - reached via the
 // reinterpret at offset 0, the same pattern CState.h uses; no local view needed.)
 // The loader family reaches its resource state directly through `this` (a CPlay):
 // the bank manager (CState::m_8), the level/GRUNTZ/GAME banks (CState::m_levelBank/
@@ -6635,7 +6635,7 @@ void CPlay::CPlayDtorBody() {
     }
     m_49c = -1;
     m_488.SetSize(0, -1); // CPtrArray::SetSize @0x1b52e8
-    ((CGameModeBase*)this)->BaseCleanup();
+    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
 // ---------------------------------------------------------------------------
