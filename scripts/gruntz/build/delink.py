@@ -112,10 +112,18 @@ def main() -> None:
     # objdiff cannot score; with it each definition lands in its owning target object
     # with its real storage class, and references to it become externals.
     # See scripts/gruntz/build/data_manifest.py + docs/data-attribution.md.
+    #
+    # The companion --data-section-manifest rebuilds the target's data sections in
+    # the CANDIDATE's shape (one COMDAT per cl.exe string literal, rather than one
+    # packed blob per unit). objdiff scores data all-or-nothing per SECTION, so a
+    # packed target section can never reach the 100.0 that `matched_data` requires
+    # even though every payload is present - see data_manifest.section_rows().
     data_manifest = names.parent / "delink_data_manifest.tsv"
-    log("Generating the DATA manifest ...")
+    section_manifest = names.parent / "delink_data_section_manifest.tsv"
+    log("Generating the DATA manifests ...")
     subprocess.run(
-        [sys.executable, str(SCRIPT_DIR / "data_manifest.py"), "-o", str(data_manifest)],
+        [sys.executable, str(SCRIPT_DIR / "data_manifest.py"), "-o", str(data_manifest),
+         "--section-output", str(section_manifest)],
         check=True,
     )
 
@@ -131,6 +139,7 @@ def main() -> None:
          "--output-path", str(delink_dir),
          "--engine-path", "c:\\proj\\",
          "--data-manifest", str(data_manifest),
+         "--data-section-manifest", str(section_manifest),
          # Safety net only. The manifest now covers enough that the STRICT path
          # succeeds on its own (measured: byte-identical results either way), but a
          # future DATA() edit could leave a writable RVA uncovered, and strict turns

@@ -63,9 +63,16 @@ from gruntz.analysis.data_audit import read_pe, classify_pe_storage  # noqa: E40
 SYMBOLS = REPO / "build/gen/symbol_names.csv"
 EXE = REPO / "build/exe/GRUNTZ.EXE"
 OUTPUT = REPO / "build/gen/delink_data_manifest.tsv"
+SECTION_OUTPUT = REPO / "build/gen/delink_data_section_manifest.tsv"
 
+# The delinker accepts a 9- or 10-column data manifest; the 10-column form adds
+# `section_ordinal`, which places the definition in a candidate section declared by
+# the --data-section-manifest. Both headers are read out of the delinker binary.
 HEADER = ("name", "object", "rva", "size", "storage", "alignment",
-          "section_offset", "scope", "provenance")
+          "section_ordinal", "section_offset", "scope", "provenance")
+SECTION_HEADER = ("object", "ordinal", "name", "rva", "size", "alignment",
+                  "characteristics", "comdat_selection", "associative_ordinal",
+                  "storage", "provenance")
 # retail PE storage class -> the delinker's storage keyword
 STORAGE = {"rdata": "rdata", "data-initialized": "data", "data-loader-zero-tail": "bss"}
 
@@ -220,13 +227,116 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     return final, withheld, overlaps
 
 
+def section_rows(rows, base_dir=None):
+    """Candidate COMDAT sections for the enrolled string literals + the withheld.
+
+    cl.exe emits every `??_C@` literal as its OWN COMDAT section holding just that
+    one symbol at offset 0. The delinked target instead PACKS a unit's literals into
+    a single `.data` blob, so `objdiff-cli report generate` (which runs with
+    combine_data_sections=true) diffs a packed target section against the base's
+    combined-COMDAT layout: the payloads are all present but at shifted offsets, so
+    the section lands ~99% and NEVER at the 100.0 that `matched_data` requires
+    (report.rs credits a section's bytes all-or-nothing).
+
+    Handing the delinker these rows makes it rebuild the target in the CANDIDATE's
+    shape - one COMDAT per literal - so both sides combine to the same layout.
+
+    Nothing here is invented: `rva`/`size` stay the PROVEN retail extent from
+    string_rows(), and name/alignment/characteristics/COMDAT selection are read out
+    of the candidate COFF that cl.exe actually emitted.
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
+    from coff_oracle import _Coff  # noqa: E402
+
+    base_dir = Path(base_dir or REPO / "build/objdiff/base")
+    secs, withheld = [], []
+    by_obj = {}
+    for r in rows:
+        # Only cl.exe's string literals own a whole COMDAT. The DATA() globals share
+        # one `.bss`/`.data` per object, so they keep the legacy allocation form.
+        if r.get("provenance") == "candidate-COFF-string":
+            by_obj.setdefault(r["object"], []).append(r)
+
+    for obj, rs in sorted(by_obj.items()):
+        path = base_dir / (obj[:-2] + ".obj")       # "foo.c" -> foo.obj
+        if not path.exists():
+            withheld += [(r["rva"], r["name"], "no candidate obj %s" % path.name)
+                         for r in rs]
+            continue
+        c = _Coff(path)
+        # The candidate section that defines each literal, keyed by symbol name.
+        owner = {}
+        for sec in c.section_table:
+            members = c.defined_symbols(sec["index"])
+            if len(members) == 1 and members[0][0] == 0 \
+                    and members[0][1].startswith("??_C@"):
+                owner[members[0][1]] = sec
+        for r in rs:
+            sec = owner.get(r["name"])
+            if sec is None:
+                withheld.append((r["rva"], r["name"],
+                                 "no single-literal COMDAT in the candidate obj"))
+                continue
+            if sec["size"] != r["size"]:
+                # The candidate's own payload disagrees with the retail extent that
+                # named it - a real contradiction, so neither side is enrolled.
+                withheld.append((r["rva"], r["name"],
+                                 "candidate section 0x%x != retail extent 0x%x"
+                                 % (sec["size"], r["size"])))
+                continue
+            r["section"] = sec
+            secs.append({"object": obj, "index": sec["index"], "name": sec["name"],
+                         "rva": r["rva"], "size": sec["size"],
+                         "alignment": sec["alignment"],
+                         "characteristics": sec["characteristics"],
+                         "comdat": sec["comdat"], "assoc": sec["assoc"],
+                         "storage": r["storage"],
+                         "provenance": "candidate-COFF-section"})
+
+    # Manifest ordinals are per-object and must be CONTIGUOUS FROM ONE. Number them
+    # in the candidate COFF's own section order: objdiff stable-sorts same-named
+    # sections when combining, so section order decides the combined layout and must
+    # agree on both sides.
+    for obj in {s["object"] for s in secs}:
+        mine = sorted([s for s in secs if s["object"] == obj], key=lambda s: s["index"])
+        remap = {s["index"]: i for i, s in enumerate(mine, 1)}
+        for s in mine:
+            s["ordinal"] = remap[s["index"]]
+        for r in by_obj.get(obj, []):
+            if "section" in r:
+                r["section_ordinal"] = remap[r["section"]["index"]]
+    secs.sort(key=lambda s: (s["object"], s["ordinal"]))
+    return secs, withheld
+
+
 def manifest_bytes(rows):
+    """The --data-manifest. A row placed in a candidate section carries its
+    (section_ordinal, section_offset); the rest keep the legacy `-` allocation
+    form, which lets the delinker pack them itself."""
     out = ["\t".join(HEADER)]
     for r in rows:
+        placed = "section_ordinal" in r
         out.append("\t".join([
             r["name"], r["object"], "0x%x" % r["rva"], "0x%x" % r["size"],
-            r["storage"], "0x%x" % r["alignment"], "-", "external",
-            r.get("provenance", "src-DATA-sizeof")]))
+            r["storage"],
+            "0x%x" % (r["section"]["alignment"] if placed else r["alignment"]),
+            str(r["section_ordinal"]) if placed else "-",
+            # A literal owns its whole COMDAT, so it always sits at offset 0 - the
+            # value cl.exe gives it in the candidate obj.
+            "0x0" if placed else "-",
+            "external", r.get("provenance", "src-DATA-sizeof")]))
+    return ("\n".join(out) + "\n").encode("utf-8")
+
+
+def section_manifest_bytes(secs):
+    out = ["\t".join(SECTION_HEADER)]
+    for s in secs:
+        out.append("\t".join([
+            s["object"], str(s["ordinal"]), s["name"], "0x%x" % s["rva"],
+            "0x%x" % s["size"], "0x%x" % s["alignment"],
+            "0x%x" % s["characteristics"], str(s["comdat"]),
+            str(s["assoc"]) if s["assoc"] else "-", s["storage"], s["provenance"]]))
     return ("\n".join(out) + "\n").encode("utf-8")
 
 
@@ -234,16 +344,24 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("-o", "--output", type=Path, default=OUTPUT)
+    ap.add_argument("--section-output", type=Path, default=SECTION_OUTPUT)
     ap.add_argument("--report", action="store_true", help="print withheld + overlaps")
     args = ap.parse_args(argv)
 
     enrolled, withheld, overlaps = candidates()
+    secs, sec_withheld = section_rows(enrolled)
+    withheld += sec_withheld
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(manifest_bytes(enrolled))
+    args.section_output.parent.mkdir(parents=True, exist_ok=True)
+    args.section_output.write_bytes(section_manifest_bytes(secs))
     from collections import Counter
     print("[data-manifest] enrolled %d row(s) -> %s" % (len(enrolled), args.output))
     print("[data-manifest] storage: " + ", ".join(
         "%s=%d" % kv for kv in sorted(Counter(r["storage"] for r in enrolled).items())))
+    print("[data-manifest] %d row(s) placed in %d candidate section(s) -> %s"
+          % (sum(1 for r in enrolled if "section_ordinal" in r), len(secs),
+             args.section_output))
     print("[data-manifest] withheld %d (never guessed): %s" % (
         len(withheld), ", ".join("%s=%d" % kv for kv in sorted(
             Counter(w[2].split("(")[0].strip() for w in withheld).items()))))

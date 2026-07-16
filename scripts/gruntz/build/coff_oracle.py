@@ -47,8 +47,20 @@ class Exe:
         return None
 
 
+def section_alignment(characteristics: int) -> int:
+    """The IMAGE_SCN_ALIGN_* nibble decoded to a byte count (1 when unset)."""
+    a = (characteristics & 0x00F00000) >> 20
+    return 1 << (a - 1) if a else 1
+
+
 class _Coff:
-    """Minimal read-only i386 COFF object reader (symbols + section bytes)."""
+    """Minimal read-only i386 COFF object reader (symbols + section bytes).
+
+    `sections` keeps the raw (rawptr, rawsize) tuples the string oracle needs;
+    `section_table` carries the full per-section topology (name, characteristics,
+    COMDAT selection/associate, the aux `scnlen` that is authoritative for .bss)
+    that the candidate section manifest is derived from.
+    """
 
     def __init__(self, path: Path):
         self.buf = path.read_bytes()
@@ -59,10 +71,35 @@ class _Coff:
         opt = struct.unpack_from("<H", b, 16)[0]
         self.strtab_off = self.symptr + self.nsym * 18
         self.sections = []
+        self.section_table = []
         for i in range(self.nsec):
             o = 20 + opt + i * 40
-            rawsize, rawptr = struct.unpack_from("<II", b, o + 16)
+            name = b[o:o + 8].split(b"\0")[0].decode("latin1")
+            if name.startswith("/"):        # long name -> string table offset
+                off = int(name[1:])
+                end = b.index(b"\0", self.strtab_off + off)
+                name = b[self.strtab_off + off:end].decode("latin1")
+            vsize, _vaddr, rawsize, rawptr = struct.unpack_from("<IIII", b, o + 8)
+            chars = struct.unpack_from("<I", b, o + 36)[0]
             self.sections.append((rawptr, rawsize))
+            self.section_table.append({
+                "index": i + 1, "name": name, "characteristics": chars,
+                "alignment": section_alignment(chars),
+                "size": rawsize or vsize, "comdat": 0, "assoc": 0,
+            })
+        # The section-definition aux record carries the authoritative length
+        # (.bss has rawsize 0) plus the COMDAT selection/associate.
+        for idx, _value, secnum in self.iter_symbols():
+            base = self.symptr + idx * 18
+            _scl, naux = struct.unpack_from("<BB", b, base + 16)
+            if _scl != 3 or not naux or not (1 <= secnum <= self.nsec):
+                continue
+            a = self.symptr + (idx + 1) * 18
+            scnlen, _nr, _nl, _ck, assoc, sel = struct.unpack_from("<IHHIHB", b, a)
+            sec = self.section_table[secnum - 1]
+            sec["size"] = scnlen
+            sec["comdat"] = sel
+            sec["assoc"] = assoc
 
     def sym_name(self, idx: int) -> str:
         base = self.symptr + idx * 18
@@ -79,6 +116,18 @@ class _Coff:
             value, secnum, _typ, _scl, naux = struct.unpack_from("<IhHBB", self.buf, base + 8)
             yield i, value, secnum
             i += 1 + naux
+
+    def defined_symbols(self, secnum: int):
+        """[(offset, name)] of the class-EXTERNAL symbols defined in one section."""
+        out = []
+        for idx, value, sn in self.iter_symbols():
+            if sn != secnum:
+                continue
+            scl = struct.unpack_from("<B", self.buf, self.symptr + idx * 18 + 16)[0]
+            if scl == 2:                      # IMAGE_SYM_CLASS_EXTERNAL
+                out.append((value, self.sym_name(idx)))
+        out.sort()
+        return out
 
     def cstring(self, secnum: int, value: int, limit: int = 512):
         if secnum < 1 or secnum > self.nsec:
