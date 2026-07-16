@@ -30,6 +30,7 @@
                                       // (the five Resolve*Animation bodies below)
 #include <Gruntz/AniElement.h>        // full CAniElement (ResolveIdleAnimation's desc walk)
 #include <Gruntz/TriggerMgr.h>     // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
+#include <Gruntz/GruntzMgr.h>      // CGruntzMgr (the RTTI-true singleton; ReportError @0x8dc60)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable::GetSel (g_gameReg->m_spriteFactory)
 #include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
 
@@ -286,7 +287,10 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
             break;
         default:
             // 0x8009 / 0x3e9 = the status-bar report id/tag (meaning unproven, kept literal).
-            g_gameReg->ReportError(0x8009, 0x3e9);
+            // Dual-view bridge: the singleton IS the RTTI-true CGruntzMgr, whose
+            // ReportError @0x8dc60 (WPARAM,LPARAM) is the real symbol the rel32 binds
+            // (the CGameRegistry facet's (i32,i32) name resolved to nothing).
+            ((CGruntzMgr*)g_gameReg)->ReportError(0x8009, 0x3e9);
             return;
     }
 

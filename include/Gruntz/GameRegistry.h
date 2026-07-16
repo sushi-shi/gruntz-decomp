@@ -205,10 +205,12 @@ struct CGameRegistry {
     // The status-bar HUD reaches these score/level methods on the singleton (== the
     // MFC-side CGruntzMgr view of *0x24556c; reloc-masked, the same-object dual-view).
     // Re-homed here from the former per-TU SBI CGameReg facet's Fn29aa/HiPump/SetToggle.
-    void UpdateScoreHud();             // 0x0860b0 (== CGruntzMgr::UpdateScoreHud)
-    void AccrueScoreTime();            // 0x0861e0 (== CGruntzMgr::AccrueScoreTime)
-    i32 FinishLevel(i32 a, i32 b);     // 0x08e980 (== CGruntzMgr::FinishLevel)
-    void ReportError(i32 id, i32 tag); // status-bar activation-fail report (i32,i32 overload)
+    void UpdateScoreHud();         // 0x0860b0 (== CGruntzMgr::UpdateScoreHud)
+    void AccrueScoreTime();        // 0x0861e0 (== CGruntzMgr::AccrueScoreTime)
+    i32 FinishLevel(i32 a, i32 b); // 0x08e980 (== CGruntzMgr::FinishLevel)
+    // (ReportError(i32,i32) is GONE from this facet: every caller reaches the real
+    //  ?ReportError@CGruntzMgr@@QAEXIJ@Z @0x8dc60 - via a CGruntzMgr-typed singleton
+    //  decl or the dual-view bridge cast; the facet name resolved to nothing.)
     // Same-object methods (== CGruntzMgr's, reloc-masked to the shared RVAs): declared on
     // the canonical view so a TU whose local singleton-view is folded here calls
     // g_gameReg->M() directly instead of cross-casting to an unrelated CGruntzMgr* (the
