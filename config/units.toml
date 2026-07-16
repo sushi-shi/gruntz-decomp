@@ -1986,10 +1986,6 @@ unit = "packetpool"
 source = "src/Net/PacketPool.cpp"
 flags = "base"
 [[unit]]
-unit = "glyphtable"
-source = "src/Gruntz/GlyphTable.cpp"
-flags = "base"
-[[unit]]
 # CTitleApp::OnStart (0xf9880) - title-sequence starter, split out of the ex
 # AppHelpers.cpp holding TU. Its orphan-mates re-homed to their real objs: Handle
 # (0xb4cb0) -> CUFO::Method_b4cb0 in Ufo.cpp; Unmatched_be030 (0xbe030) ->

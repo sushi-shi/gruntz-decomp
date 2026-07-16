@@ -550,13 +550,13 @@ struct CNetSession {
     i32 SendOne(CNetCmdSlot* s, i32 v);      // bfeb0
     void Reconcile();                        // c00f0
     i32 Advance();                           // c01d0
-    CSyncObj* GetSlotPtr(i32 v);             // c0430
+    CSyncObj* GetSlotPtr(i32 v);          // c0430  id-map fetch (ex "GlyphTable::Get")
+    void ArmSlot(void* node, i32 parity); // c03f0  id-map store (ex "GlyphTable::Set")
     // Declared-only lobby-sync siblings (their calls reloc-mask): Checksum @0xc0590
-    // resolves to CGameSyncSig::ComputeSignature, ArmSlot / Step2437 are per-frame
-    // pokes with no bound RVA, kept declared so the CMulti dispatch compiles.
-    i32 Checksum();                       // c0590 (== CGameSyncSig::ComputeSignature)
-    void ArmSlot(void* node, i32 parity); // per-frame arm (reloc-masked)
-    void Step2437();                      // per-frame poke (reloc-masked)
+    // resolves to CGameSyncSig::ComputeSignature, Step2437 is a per-frame
+    // poke with no bound RVA, kept declared so the CMulti dispatch compiles.
+    i32 Checksum(); // c0590 (== CGameSyncSig::ComputeSignature)
+    void Step2437(); // per-frame poke (reloc-masked)
     // 0xbf1d0 (/GX): a CRC/sync-diagnostic dump - walk the level's 4x15 placed-grunt
     // roster (m_session->Mgr()->m_cmdGrid->m_grid) and report a per-grunt CRC line
     // through m_session->ReportVersionMsg. Defined out-of-line in BuildGruntzCrcInfo.cpp.

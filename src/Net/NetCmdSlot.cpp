@@ -673,6 +673,32 @@ void CNetSession::RaiseAllSlotsMax(i32 v) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// CNetSession::ArmSlot (0xc03f0, __thiscall) - store `node` at the (tick-biased)
+// wrapped slot of the +0x1b0 synced-object id-map. The setter biases the parity
+// by +m_tick, abs's it, masks to 7 bits, abs's again - MSVC emits a single cdq
+// feeding both branchless-abs pairs around the `% 128` (see
+// docs/patterns/signed-modulo-pow2-abs-restore.md). Ex fake view "GlyphTable"
+// (was 100% in its own base-flags TU).
+// @early-stop
+// regalloc wall (topic:wall topic:regalloc): eax/edx role swap on the two loads
+// ([esp+8]/[ecx+0x10]) under this TU's /GX flags; add is commutative so retail's
+// operand roles aren't source-steerable (tried both add orders + a temp), ~98.85%.
+// ---------------------------------------------------------------------------
+RVA(0x000c03f0, 0x29)
+void CNetSession::ArmSlot(void* node, i32 parity) {
+    m_idMap[(m_tick + (parity & 0xff)) % 128] = static_cast<CSyncObj*>(node);
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::GetSlotPtr (0xc0430, __thiscall) - the id-map entry for a wrapped
+// sequence id (same signed-modulo idiom, unbiased).
+// ---------------------------------------------------------------------------
+RVA(0x000c0430, 0x1f)
+CSyncObj* CNetSession::GetSlotPtr(i32 v) {
+    return m_idMap[(v & 0xff) % 128];
+}
+
 // Scan the four inline command slots for the first active (m_state==3), un-reset
 // (m_resetGuard==0) slot whose latency exceeds key (unsigned).
 // @early-stop
