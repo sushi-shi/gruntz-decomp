@@ -174,6 +174,15 @@ gaps.
   (`CPtrArray` 0x14 swallows `g_imageCacheIndex`). A real defect worklist:
   `python -m gruntz.build.data_manifest --report`.
 
+**Contribution ranges are BLOCKED (measured).** Placing definitions at candidate
+`section_offset`s, and attributing the withheld COMDAT strings / `$T` pools, both need
+per-compiland contribution intervals. GRUNTZ.EXE has no NB09, so they must come from our
+TU partition — which does not hold: only **8 of 86** per-(unit,storage) bands overlap no
+other band (rdata 2/15, data 5/17, bss 1/54; aggregates excluded), and **0 of 296**
+ambiguous COMDAT copies are attributable by band containment. Measure overlap
+**all-pairs**, never adjacent-only — that error reports ~70–80% clean where the truth is
+~9%. See **`docs/tu-partition-brief.md`**.
+
 **Ordering + gate.** (a) → re-delink → gate `code exact >= 2385`; then (b) incrementally,
 enrolling reviewed extents in batches and re-gating each time. Also available, already in
 `/nix/store`: homm2's objdiff-cli 3.7.1 + `objdiff-data-symbol-details.patch` (per-symbol
