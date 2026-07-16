@@ -495,7 +495,7 @@ i32 CWarlord::LoadAttributes2() {
             return 0;
         }
     } else {
-        if (((CWarlordMission*)reg->m_curState)->m_3f4->m_4c == 0) {
+        if (((CWarlordMission*)reg->m_curState)->m_objective->m_4c == 0) {
             ((CGrunt*)this)->ResolveMovingAnimation();
             return 0;
         }

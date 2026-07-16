@@ -1024,7 +1024,7 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
         i32 handle = m_hlGrid[row].m_handle;
         i32* slot = &m_hlGrid[row].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -1060,7 +1060,7 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
         i32 handle = m_hlGrid[row + 4].m_handle;
         i32* slot = &m_hlGrid[row + 4].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -1095,7 +1095,7 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
         i32 handle = m_hlGrid[row + 8].m_handle;
         i32* slot = &m_hlGrid[row + 8].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -1154,7 +1154,7 @@ noChange:;
     if (changed) {
         if (m_gaugeSink && m_gaugeNotify) {
             m_gaugeNotify->Refresh();
-            m_gaugeSink->m_44 = m_gauge;
+            m_gaugeSink->m_gaugeReading = m_gauge;
             m_gaugeSink->Refresh();
         }
     }
@@ -2367,7 +2367,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     i32 cmd = r->m_cmd;
     if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
         && cmd >= 0x13b && cmd <= 0x149) {
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
         if (host->m_30 == 0) {
             void* found = 0;
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -2402,7 +2402,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         r->m_enabled = 0;
         if (m_activeTab == 1) {
             ((CStatusBarMgr*)m_statObj[idx])->ResetGroupA();
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -2490,7 +2490,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         if (!ResolveHandle(0x66)) {
             return 0;
         }
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
         if (host->m_30 == 0) {
             void* found = 0;
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -2520,7 +2520,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     if (!ResolveHandle(0x66)) {
         return 0;
     }
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
     if (host->m_30 == 0) {
         void* found = 0;
         CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -2684,7 +2684,7 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
 RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CSbiRenderObj* r = (CSbiRenderObj*)m_8;
-    CSbiLayer* L = r->m_198;
+    CSbiLayer* L = r->m_layer;
     i32 xlo = r->m_5c - L->m_18;
     i32 ylo = r->m_60 - L->m_1c;
     i32 xhi = L->m_10 + xlo;
@@ -3278,7 +3278,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             m_rect14.m_c--;
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
-                CSbiMainSetup* tgt = ((CSbiGameMgr*)g_gameReg->m_world)->m_4->m_14->m_2c;
+                CSbiMainSetup* tgt = ((CSbiGameMgr*)g_gameReg->m_world)->m_4->m_14->m_mainSetup;
                 struct {
                     i32 a, b, c, d;
                 } rc;
@@ -3342,7 +3342,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 // Play GAME_TABHIGHLIGHT1 immediately (no clock gate) - variant 1: the record is
 // resolved by a direct FindCue on the host (returns the record) and played.
 static __inline void HiCueFind() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
     if (host->m_30 == 0) {
         void* obj = ((CDDrawSubMgrLeafScan*)host)->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
         if (obj) {
@@ -3353,7 +3353,7 @@ static __inline void HiCueFind() {
 
 // Variant 2: resolve via the +0x10 string map (Lookup out-param) then play now.
 static __inline void HiCueLookup() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
     if (host->m_30 == 0) {
         void* out = 0;
         ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)out);
@@ -3365,7 +3365,7 @@ static __inline void HiCueLookup() {
 
 // Variant 3: the standard draw-clock-gated cue play (like LoadGooCookingSprite).
 static __inline void HiCueTimed() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
     if (host->m_30 == 0) {
         void* found = 0;
         ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
@@ -3657,11 +3657,11 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     if (g_gameReg->m_soundEnabled != 0) {
         if (m_destructWarnActive != 0 && m_modeArmed == 0) {
             if (m_destructButton == 0) {
-                CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                 void* found = 0;
                 ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_DESTRUCT", (CObject*&)found);
                 if (found) {
-                    CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_10;
+                    CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_spriteFactory;
                     if (f) {
                         CSbiDisplayObj* obj = (CSbiDisplayObj*)((DSoundCloneInst*)f)->GetItem();
                         m_destructButton = obj;
@@ -3777,7 +3777,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     g->m_state = g_frameTime;
     g->m_value = 0;
     if (m_activeTab == 2 && m_position != 2) {
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
         if (host->m_30 == 0) {
             void* found = 0;
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -3870,7 +3870,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case 6:
                 if ((i64)(u32)g_frameTime - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                         if (host->m_30 == 0) {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
@@ -3891,7 +3891,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case 7:
                 if ((i64)(u32)g_frameTime - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                         if (host->m_30 == 0) {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
@@ -3997,7 +3997,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = (u32)g_frameTime;
                     if (m_activeTab == 3 && m_position != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                         if (host->m_30 == 0) {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
@@ -4055,7 +4055,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g[col].m_state = 4;
                         g[col].m_counter = 0x13;
                         if (m_activeTab == 3 && m_position != 2) {
-                            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
                                 ((CMapStringToOb*)&host->m_map10)
@@ -4074,7 +4074,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g[col].m_state = 2;
                         g[col].m_counter = 0xa;
                         if (m_activeTab == 3 && m_position != 2) {
-                            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
                                 ((CMapStringToOb*)&host->m_map10)
@@ -4108,8 +4108,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
             break;
     }
 
-    if (m_348) {
-        ((CSBI_GruntMachine*)m_348)->SetFrames(pB->m_counter, pA->m_counter);
+    if (m_machineDisplay) {
+        ((CSBI_GruntMachine*)m_machineDisplay)->SetFrames(pB->m_counter, pA->m_counter);
     }
 }
 
@@ -4121,8 +4121,8 @@ RVA(0x00106660, 0x68)
 void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     SetHudRectA(1, 1, g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 100));
     SetHudRectB(0x2b, 0, 0x7fffffff);
-    if (m_348) {
-        ((CSBI_GruntMachine*)m_348)->SetFrames(m_hudRectA_y, m_hudRectB_y);
+    if (m_machineDisplay) {
+        ((CSBI_GruntMachine*)m_machineDisplay)->SetFrames(m_hudRectA_y, m_hudRectB_y);
     }
     m_rezActive = 0;
     m_rezTick = 0;
@@ -4176,7 +4176,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if ((i64)(u32)g_frameTime - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
                 if (m_activeTab == 3 && m_position != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                     if (host->m_30 == 0) {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)
@@ -4207,7 +4207,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRectT = 0x104;
                 rectFlag = 1;
                 if (m_activeTab == 3 && m_position != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                     if (host->m_30 == 0) {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)
@@ -4278,7 +4278,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             }
             if (m_itemRectT >= row * 0x20 + 0x13e) {
                 if (m_activeTab == 3 && m_position != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
+                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                     if (host->m_30 == 0) {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)

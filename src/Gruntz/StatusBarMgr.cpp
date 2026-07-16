@@ -551,7 +551,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 }
                 return 0;
             }
-            m_348 = (CSbiMachineDisplay*)mach;
+            m_machineDisplay = (CSbiMachineDisplay*)mach;
             m_tabLists[3].AddTail(mach);
             // Machine foreground: a CSBI_Image whose retail ctor is inlined at the site.
             it = new CSBI_Image;

@@ -171,7 +171,7 @@ public:
     // returns the player record pointer (0 = fail). Reloc-masked.
     i32 CreatePlayer(void* name, i32 b, i32 c); // 0x178cb0
     char m_pad04[0x70 - 0x4];
-    CMultiPlayerInfo* m_70; // +0x70  per-slot player-info sub-object (start-dialog probes)
+    CMultiPlayerInfo* m_playerInfo; // +0x70  per-slot player-info sub-object (start-dialog probes)
     CMultiPlayer* m_player; // +0x74  the player StartTitle opened (OpenPlayer result)
     i32 m_78;               // +0x78  reset to 0 by CMultiStartDlg::DoDataExchange (load pass)
 };

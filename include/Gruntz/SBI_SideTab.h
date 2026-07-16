@@ -51,7 +51,7 @@ struct CSideTabGameReg {
     char m_pad00[0x30];
     CResMgr* m_world; // +0x30  resource manager
     char m_pad34[0x68 - 0x34];
-    CSideTabUnitTable* m_68; // +0x68  per-frame unit-record table
+    CSideTabUnitTable* m_unitTable; // +0x68  per-frame unit-record table
 };
 SIZE_UNKNOWN(CSideTabGameReg);
 

@@ -251,7 +251,7 @@ struct CSbiDisplayObj {};
 SIZE_UNKNOWN(CSbiDisplayObj);
 struct CSbiSpriteCfg {
     char m_pad0[0x10];
-    CSbiSpriteFactory* m_10; // +0x10
+    CSbiSpriteFactory* m_spriteFactory; // +0x10
 };
 SIZE_UNKNOWN(CSbiSpriteCfg);
 
@@ -290,7 +290,7 @@ public:
     virtual void HitHandlerD(); // slot 9
     virtual void Refresh();     // +0x28 (slot 10) refresh
     char m_pad4[0x44 - 0x4];
-    i32 m_44; // +0x44  latched gauge reading
+    i32 m_gaugeReading; // +0x44  latched gauge reading
 };
 SIZE_UNKNOWN(CSbiGaugeNotify);
 
@@ -617,7 +617,7 @@ public:
     i32 m_hudRectA_clockHi;    // +0x33c
     i32 m_hudRectA_z;          // +0x340
     i32 m_hudRectA_zHi;        // +0x344
-    CSbiMachineDisplay* m_348; // +0x348  rez-machine snooze display object
+    CSbiMachineDisplay* m_machineDisplay; // +0x348  rez-machine snooze display object
     i32 m_34c;                 // +0x34c
     i32 m_350;                 // +0x350
     i32 m_hitTestDisabled;     // +0x354  hit-test disable flag
@@ -731,7 +731,7 @@ struct CSbiGameMgr {
     char m_pad0[0x4];
     CSbiMainL1* m_4; // +0x04  main-status-bar draw chain (m_4->m_14->m_2c setup)
     char m_pad8[0x28 - 0x8];
-    CSbiMusicHost* m_28; // +0x28  music host (CResMgr::m_28 cue facet)
+    CSbiMusicHost* m_musicHost; // +0x28  music host (CResMgr::m_28 cue facet)
 };
 SIZE_UNKNOWN(CSbiGameMgr);
 
@@ -836,7 +836,7 @@ struct CSbiRenderObj {
     char m_pad0[0x5c];
     i32 m_5c, m_60; // +0x5c/+0x60  screen position
     char m_pad64[0x198 - 0x64];
-    CSbiLayer* m_198; // +0x198  layer descriptor
+    CSbiLayer* m_layer; // +0x198  layer descriptor
 };
 SIZE_UNKNOWN(CSbiRenderObj);
 
@@ -877,7 +877,7 @@ struct CSbiMainSetup {};
 SIZE_UNKNOWN(CSbiMainSetup);
 struct CSbiMainL2 {
     char m_pad0[0x2c];
-    CSbiMainSetup* m_2c; // +0x2c
+    CSbiMainSetup* m_mainSetup; // +0x2c
 };
 SIZE_UNKNOWN(CSbiMainL2);
 struct CSbiMainL1 {
@@ -1019,7 +1019,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_notify1 = 0;
     m_extraNotify0 = 0; // +0x4e0
     m_extraNotify1 = 0; // +0x500
-    m_348 = 0;          // +0x348
+    m_machineDisplay = 0;          // +0x348
     m_modeNotify = 0;   // +0x570
     m_gaugeNotify = 0;  // +0x218
     m_gaugeSink = 0;    // +0x21c

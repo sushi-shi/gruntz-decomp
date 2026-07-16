@@ -267,7 +267,7 @@ i32 CMultiStartDlg::BuildSlotList() {
     m_slotList = new CLatencyList(0xa);
     CMulti* reg = g_multiState;
     i32 count = 5;
-    CMultiPlayerInfo* pi = reg->m_netGate->m_70;
+    CMultiPlayerInfo* pi = reg->m_netGate->m_playerInfo;
     if (reg->m_588) {
         count = 2;
     } else if (pi) {

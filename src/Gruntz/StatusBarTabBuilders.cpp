@@ -368,7 +368,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == 0) {
         return 0;
     }
-    CSideTabGruntRec* unit = g_gameReg->m_68->m_units[m_40 + 15 * m_3c];
+    CSideTabGruntRec* unit = g_gameReg->m_unitTable->m_units[m_40 + 15 * m_3c];
     if (unit == 0) {
         ((CStatusBarMgr*)m_2c)->ClearStat(m_40);
         return 0;

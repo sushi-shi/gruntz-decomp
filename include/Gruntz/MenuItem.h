@@ -66,7 +66,7 @@ struct CMenuItemCatalog {
 SIZE_UNKNOWN(CMenuItemCatalog);
 struct CMenuItemHostOwner {
     char pad0[0x10];
-    CMenuItemCatalog* m_10; // +0x10 -> the catalog
+    CMenuItemCatalog* m_catalog; // +0x10 -> the catalog
 };
 SIZE_UNKNOWN(CMenuItemHostOwner);
 

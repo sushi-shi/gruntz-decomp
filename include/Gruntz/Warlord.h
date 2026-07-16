@@ -80,7 +80,7 @@ struct CWarlordObjective {
 };
 struct CWarlordMission {
     char m_pad00[0x3f4];
-    CWarlordObjective* m_3f4; // +0x3f4  objective tracker
+    CWarlordObjective* m_objective; // +0x3f4  objective tracker
 };
 
 // ---------------------------------------------------------------------------
