@@ -1271,7 +1271,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // view setup off host->m_70
     {
         CDDrawWorkerHost* g5c = (CDDrawWorkerHost*)self->m_c->m_level->m_mainPlane;
-        CBrickz* host70 = (CBrickz*)self->m_4->m_tileGrid;
+        CGruntzMapMgr* host70 = self->m_4->m_tileGrid;
         if (!host70->LoadAttributes(g5c->m_width, g5c->m_height)) {
             goto fail0;
         }
