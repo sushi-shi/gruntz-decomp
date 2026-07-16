@@ -11,6 +11,7 @@
 // registrar (0x14dcf0), and the CImageSet frame accessors are external/no-body so
 // their calls reloc-mask. No destructible stack locals -> plain /O2 (base flags).
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/GameRegistry.h> // the singleton Init binds (m_world/m_shadeCache)
 
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Image/ImageSet.h>
@@ -18,16 +19,9 @@
 
 #include <string.h> // memset -> inline rep stosd in Reset
 
-// The registry fields Init reads: the sprite-factory holder (+0x30) and the
-// shade-table cache (+0x50). Modeled as a tiny view so the loads reloc-mask
-// cleanly without depending on the full CGameRegistry layout.
-struct LfxReg {
-    char m_pad00[0x30];
-    void* m_30; // +0x30  sprite-factory holder
-    char m_pad34[0x50 - 0x34];
-    CShadeTableCache* m_50; // +0x50  shade-table cache
-};
-
+// The registry fields Init reads are the canonical CGameRegistry members:
+// m_world (+0x30, the loaded world/resource holder) and m_shadeCache (+0x50).
+// (The ex "LfxReg" tiny view of the same singleton is dissolved.)
 // The global shade-descriptor setter (SetShadeDescr @0x14dcf0, __cdecl, defined in
 // DDrawMgr/ShadeDescrTable.cpp): store `v` into one of the seven global ShadeDescr*
 // slots keyed by `mode` (key 9 = g_blendDescr). External/no-body -> reloc-masked.
@@ -42,14 +36,13 @@ void SetShadeDescr(ShadeDescr* v, int mode); // 0x14dcf0
 // ===========================================================================
 RVA(0x0009dad0, 0x14a)
 i32 CLightFxMgr::Init(CGameRegistry* reg, void* owner) {
-    LfxReg* r = (LfxReg*)reg;
-    if (!r) {
+    if (!reg) {
         return 0;
     }
     m_reg = reg;
     m_owner = owner;
-    m_spriteFactory = r->m_30;
-    m_cache = r->m_50;
+    m_world = reg->m_world;
+    m_cache = reg->m_shadeCache;
     // Re-read m_cache per builder call (don't cache it in a local) so the compiler
     // reloads [this+0xc] before each call rather than pinning the cache in a
     // callee-saved reg + an extra push. See reread-member-view-pointer.md.
@@ -110,7 +103,7 @@ i32 CLightFxMgr::Init(CGameRegistry* reg, void* owner) {
 RVA(0x0009dc80, 0x1d)
 void CLightFxMgr::Reset() {
     m_reg = 0;
-    m_spriteFactory = 0;
+    m_world = 0;
     m_cache = 0;
     m_greyTable = 0;
     memset(m_tables, 0, sizeof(m_tables));
@@ -137,4 +130,3 @@ i32 CLightFxMgr::Push(CImageSet* imgSet, i32 anchor, i32 slot) {
     return 1;
 }
 
-SIZE_UNKNOWN(LfxReg);

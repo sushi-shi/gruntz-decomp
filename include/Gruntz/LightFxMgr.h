@@ -22,6 +22,7 @@
 class CShadeTableCache;
 struct CShadeTable;
 struct CGameRegistry; // canonical is `struct` (<Gruntz/GameRegistry.h>); keyword must match for Init's PAU mangling
+class CDDrawSurfaceMgr; // reg->m_world (+0x30) - the loaded world/resource holder
 class CImageSet;
 
 class CLightFxMgr {
@@ -40,8 +41,9 @@ public:
 
     void* m_owner;             // +0x00  owner (Init arg1)
     CGameRegistry* m_reg;      // +0x04  the game registry (Init arg0)
-    void* m_spriteFactory;     // +0x08  reg->m_30 (sprite-factory holder)
-    CShadeTableCache* m_cache; // +0x0c  reg->m_50 (the shade-table cache)
+    CDDrawSurfaceMgr* m_world; // +0x08  reg->m_world (+0x30 loaded world/resource holder;
+                               //        ex `void* m_spriteFactory` - misnamed)
+    CShadeTableCache* m_cache; // +0x0c  reg->m_shadeCache (+0x50)
     CShadeTable* m_greyTable;  // +0x10  the identity "grey" table (registered key 9)
     CShadeTable* m_tables[10]; // +0x14  the 10 color tables (1 add + 9 sub)
 };

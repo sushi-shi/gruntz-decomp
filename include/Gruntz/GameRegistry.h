@@ -176,6 +176,7 @@ struct CFocusSlot {
 // and go the same way as their callers convert; see the matcher report for the blocker
 // (the sub-object views - CWorldZ vs CDDrawSurfaceMgr, CGruntzMapMgr vs CTileGrid -
 // must be folded first for the field-heavy TUs).
+class CShadeTableCache; // +0x50 shade-table cache (<DDrawMgr/ShadeTableCache.h>)
 struct CGameRegistry {
     // The entrance-reset cue-prep call (thunk_FUN_0040cd00, __thiscall ret 0): run
     // once before the focused-grunt cue test. External/no-body (reloc-masked).
@@ -282,7 +283,9 @@ struct CGameRegistry {
     //         to RegistryHelper: SetValueDword/LogPos/QueryPos). void* -> cast at use.
     char m_pad3c[0x48 - 0x3c];
     void* m_sound; // +0x48  sound/bank object (== GruntzMgr m_sound, CGruntzSoundZ*)
-    char m_pad4c[0x54 - 0x4c];
+    char m_pad4c[0x50 - 0x4c];
+    CShadeTableCache* m_shadeCache; // +0x50  shade-table cache (== GruntzMgr.h m_shadeCache;
+                                    //        CLightFxMgr::Init reads it to build its tables)
     CWorldSoundSet* m_inputState; // +0x54  active-level input/spatial-sound object (ONE
                                   //         object, proven: the mgr's input facet == the
                                   //         ambient TU's active-level facet, +0x24 m_active
