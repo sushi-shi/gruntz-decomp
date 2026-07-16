@@ -23,7 +23,7 @@
 #include <Gruntz/LeafCue.h>   // LeafCue (the config-cue leaf: m_10/m_14/m_18) for ScrollDialog
 #include <Net/NetMgr.h>
 #include <Gruntz/Multi.h> // CMulti::SendChannelStat422/423 (dispatched on m_curState; netmgr-vs-cmulti split)
-#include <Gruntz/Wnd.h>   // the minimal MFC CWnd view (FromHandle; m_hWnd @+0x1c)
+#include <Gruntz/Wnd.h>   // the real MFC CWnd via <afxwin.h> (FromHandle; m_hWnd @+0x1c)
 #include <Gruntz/Enums.h> // RES_640x480/RES_800x600/RES_1024x768
 #include <Globals.h>      // the g_opt_* staging globals
 #include <string.h>       // strcat (inline repnz scasb + rep movs under /O2 /Oi)
@@ -45,18 +45,18 @@ DATA(0x0020ccc4)
 i32 g_videoResolutionMode = 1; // retail .data initial value 1
 
 // ---------------------------------------------------------------------------
-// MFC controls reached by call-rel32 (external/no-body so the call displacements
+// MFC controls reached by call-rel32 (library fns, so the call displacements
 // reloc-mask). The combo is wrapped through MFC's CWnd::FromHandle (a static
-// __stdcall permanent/temporary-map lookup that returns a CWnd*), then driven as a
-// CSliderCtrl: SetRange (__thiscall) seeds the (min,max,redraw) range, and the
-// engine 0x405/0x400 messages are exchanged with the wrapped HWND (CWnd+0x1c).
+// __stdcall permanent/temporary-map lookup that returns a CWnd*), then driven as
+// the REAL <afxcmn.h> CSliderCtrl: SetRange(min,max,redraw) is genuinely
+// OUT-OF-LINE in MFC 4.2 (not in AFXCMN.INL - retail calls the NAFXCW copy
+// @0x11e0f9), and the engine 0x405/0x400 messages are exchanged with the
+// wrapped HWND (CWnd::m_hWnd @+0x1c). The ex .cpp-local CSliderCtrl view (a CWnd
+// + 1 method shell over vtable 0x5ecb24 - the MFC lib one) is dissolved.
+// _AFX_ENABLE_INLINES is already #undef'd for the clang label step by
+// <Gruntz/Wnd.h> above, so AFXCMN.INL is skipped there like afxwin*.inl.
 // ---------------------------------------------------------------------------
-VTBL(CSliderCtrl, 0x001ecb24);
-class CSliderCtrl : public CWnd {
-public:
-    virtual ~CSliderCtrl() OVERRIDE; // slot 1
-    void SetRange(i32 nMin, i32 nMax, i32 bRedraw);
-};
+#include <afxcmn.h>
 
 // The game-manager settings singleton (g_gameReg), typed as what it IS: CGruntzMgr
 // (canonical <Gruntz/GruntzMgr.h>). It used to be typed CGameRegistry* - a second,
@@ -558,7 +558,7 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
         return;
     }
 
-    CSliderCtrl* pCtrl = (CSliderCtrl*)CWnd::FromHandle((HWND__*)hCombo);
+    CSliderCtrl* pCtrl = static_cast<CSliderCtrl*>(CWnd::FromHandle(hCombo));
     if (!pCtrl) {
         return;
     }
