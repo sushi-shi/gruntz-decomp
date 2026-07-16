@@ -123,7 +123,11 @@ METRICS = (
     ("m_<hex> fields", re.compile(r"\bm_[0-9a-f]{2,}\b"), False),
     ("Unknown ids", re.compile(r"\b\w*[Uu]nknown\w*\b"), False),
     ("g_<hex> globals", re.compile(r"\bg_[0-9a-f]{4,}\b"), False),
-    ("Method/Stub/FUN", re.compile(r"\b(?:Method[0-9a-f]{3,}|Stub_[0-9a-f]+|vfunc_[0-9]+|FUN_[0-9a-f]+)\b"), False),
+    # Placeholder/orphan function names (identity not recovered). Covers BOTH the underscore
+    # (Method_c2a50, Gap_184900, Sub_c3e30) and no-underscore (Method0a90) forms, and the
+    # proximity-homed Gap_/Ghidra FUN_ orphans that the old regex missed entirely.
+    ("Method/Stub/FUN/Gap",
+     re.compile(r"\b(?:(?:Method|Gap|Sub|Stub|Fwd|Func|FUN|Nullsub)_?[0-9a-f]{4,}|vfunc_[0-9]+)\b"), False),
     ("placeholder classes", _count_placeholders, False),
     (".cpp-local views", _count_cpp_local_defs, True),
     # --- manual-vtable residue (the de-hack / vtable-review targets) ---
