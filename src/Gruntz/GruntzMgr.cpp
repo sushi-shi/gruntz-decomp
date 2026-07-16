@@ -1019,7 +1019,10 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     CObList* list = &m_world->m_childGroup->m_list;
-    CDDrawGroupNode* node = list ? (CDDrawGroupNode*)list->GetHeadPosition() : 0;
+    if (list == 0) { // retail's dead null-guard on the lea (je exit)
+        return;
+    }
+    CDDrawGroupNode* node = (CDDrawGroupNode*)list->GetHeadPosition();
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
