@@ -298,6 +298,17 @@ public:
 };
 SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 
+// The big attribute-file line driver (0x170750) is the ONLY method retail mangles under
+// `ButeMgr@@` (every sibling is `CButeMgr@@`), so ParseAttributeFile lives on a real `ButeMgr`
+// class that single-inherits CButeMgr at offset 0 (CButeMgr is non-polymorphic -> no vptr), so
+// `this` is a ButeMgr* == its CButeMgr* sub-object and every member is reached through
+// inheritance with no cast. Body in ButeMgr.cpp. (Was a .cpp-local decl.)
+class ButeMgr : public CButeMgr {
+public:
+    bool ParseAttributeFile(); // 0x170750
+};
+SIZE(ButeMgr, 0x110); // == sizeof(CButeMgr): the single base, no added members
+
 // (The store's two vtables are zPTree's - CButeStore IS zPTree, see <Bute/ButeStore.h> -
 //  and they are pinned on their real emitted names in src/Bute/ButeNode.cpp. The old
 //  VTBL(CButeStore, 0x1e949c) here bound them to a class that no longer exists, and the

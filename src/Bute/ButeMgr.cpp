@@ -797,17 +797,8 @@ extern "C" {
 // through ios::eof() (the vbptr-adjust to the virtual ios base + state&eofbit).
 // (The former CButeStream receiver view is dissolved onto the real istream.)
 
-// The big attribute-file line driver at 0x170750. Retail mangles ONLY this method
-// under `ButeMgr@@` (every sibling method is `CButeMgr@@`), so ParseAttributeFile
-// lives on a `ButeMgr` class that single-inherits CButeMgr: the base sits at offset
-// 0 (CButeMgr is non-polymorphic -> no vptr), so `this` is a `ButeMgr*` == its
-// `CButeMgr*` sub-object and every data member / method is reached DIRECTLY through
-// inheritance with no cast.
-class ButeMgr : public CButeMgr {
-public:
-    bool ParseAttributeFile();
-};
-SIZE(ButeMgr, 0x110); // == sizeof(CButeMgr): the single base, no added members
+// (The `ButeMgr : public CButeMgr` class - the host of the 0x170750 attribute-file line
+//  driver, the only method retail mangles under `ButeMgr@@` - now lives in <Bute/ButeMgr.h>.)
 
 // ParseGroup's recursive node-walk callback (the engine apply-fn passed to the
 // tree walker at 0x193340). Reloc-masked file-scope address.
