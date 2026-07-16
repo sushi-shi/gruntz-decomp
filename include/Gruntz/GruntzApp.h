@@ -19,7 +19,7 @@ public:
     CGruntzApp();                                      // ctor
     virtual ~CGruntzApp() OVERRIDE;                    // vtbl +0x00
     virtual void CloseResources() OVERRIDE;            // slot 4 (declared-only)
-    virtual CGameWnd* InitializeGameWindow() OVERRIDE; // slot 13 (declared-only)
+    virtual CGameWnd* InitializeGameWindow() OVERRIDE; // slot 13 (0x0809a0, GruntzApp.cpp)
     // Override of the base init virtual (CGameApp slot +0x08): forwards all 7
     // launch args to CGameApp::Init and normalises the result
     // to a bool. WinMain calls this as the app "Init".

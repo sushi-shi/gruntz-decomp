@@ -17,7 +17,7 @@
 // ShowCursor / DialogBoxParamA), INT_PTR, and the WM_INITDIALOG / WM_COMMAND ids.
 #include <Mfc.h>
 #include <Wap32/Wap32.h>
-#include <Gruntz/GruntzWnd.h> // the real CGruntzWnd (CreateU10O news it)
+#include <Gruntz/GruntzWnd.h> // the real CGruntzWnd (InitializeGameWindow news it)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strlen/strcpy/strcat (rep movs/scas)
@@ -236,15 +236,20 @@ void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
 }
 
 // ---------------------------------------------------------------------------
-// CreateU10O
-// Free function `void *CreateU10O()`: `return new CGruntzWnd;` - operator
-// new(0x10) then the throwing CGruntzWnd ctor (0x94640, ??0CGruntzWnd@@QAE@XZ -
-// stamps ??_7CGruntzWnd@@6B@) under a C++ EH frame, returning the raw pointer.
-// The object is the real CGruntzWnd (<Gruntz/GruntzWnd.h> - the game window, a
-// CGameWnd subclass that adds no fields, so sizeof == the 0x10 CGameWnd base =
-// the `new` size operand). The ctor is external (body in GruntzWnd.cpp).
+// CGruntzApp::InitializeGameWindow (0x0809a0) - ??_7CGruntzApp (0x1e9ab4) slot 13,
+// +0x34: the app's game-window factory. `return new CGruntzWnd;` - operator new(0x10)
+// then the throwing CGruntzWnd ctor (0x94640, ??0CGruntzWnd@@QAE@XZ - stamps
+// ??_7CGruntzWnd@@6B@) under a C++ EH frame, returning the raw pointer. The object is
+// the real CGruntzWnd (<Gruntz/GruntzWnd.h> - a CGameWnd subclass that adds no fields,
+// so sizeof == the 0x10 CGameWnd base = the `new` size operand). Ctor is external.
+// WIRED (VT1): was the free fn `CreateU10O` returning void*, while the class's own
+// `virtual CGameWnd* InitializeGameWindow() OVERRIDE` was marked "declared-only" - the
+// slot was known and the body was sitting right here, unjoined (vtable_scan --dump
+// 0x1e9ab4 slot[13] -> 0x0809a0). Byte-neutral: a __thiscall virtual that never touches
+// `this` (ecx) with no args emits the same bytes as the __cdecl free fn, and CGruntzWnd
+// derives from CGameWnd at offset 0, so the typed return needs no pointer adjustment.
 RVA(0x000809a0, 0x57)
-void* CreateU10O() {
+CGameWnd* CGruntzApp::InitializeGameWindow() {
     CGruntzWnd* p = new CGruntzWnd;
     return p;
 }

@@ -70,20 +70,24 @@ CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
 // @confidence: low
 // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
 // @early-stop
-// BattlezSetupDlgInit @0x14d00 (RVA-homed from src/Stub/ApiCallers.cpp) - the Battlez
-// multiplayer-setup dialog init (GAME code, 2664 B). Reads config via g_buteMgr
-// ("Battlez_Setup" section: LastMaxGruntz%d / LastDiff%d / LastColour%d,
+// CBattlezDlg::DoDataExchange @0x14d00 - ??_7CBattlezDlg (0x1e8bac) slot 35, +0x8c:
+// the MFC DDX of the Battlez multiplayer-setup dialog (GAME code, 2664 B). Reads config
+// via g_buteMgr ("Battlez_Setup" section: LastMaxGruntz%d / LastDiff%d / LastColour%d,
 // DefaultMaxGruntz) + g_gameReg, populates the dialog controls (the "Computer
-// (easy/normal/difficult)", "Human", "Player", "Serra", "Jebediah" combo/list
-// strings) and drives them via the ::SendMessageA / PTR_GetWindow / PTR_GetWindowLongA
-// / PTR_SetWindowLongA function-pointer trampolines. Deferred to the leaf-first final
-// sweep: a >512B body over ~20 CButeMgr/CString/CGameReg callees + a subclass window
-// trampoline that must be modeled first; a partial under-counts AND diverges its
-// regalloc, so the return-0 normalization artifact is kept per the >512B REVERT rule.
+// (easy/normal/difficult)", "Human", "Player", "Serra", "Jebediah" combo/list strings)
+// and drives them via the ::SendMessageA / PTR_GetWindow / PTR_GetWindowLongA /
+// PTR_SetWindowLongA function-pointer trampolines - which is exactly what a DDX does.
+// WIRED (VT1): was the free fn `BattlezSetupDlgInit` (a Ghidra name guess, RVA-homed
+// from src/Stub/ApiCallers.cpp) while THIS class's own `virtual void DoDataExchange
+// (CDataExchange*) OVERRIDE // slot 35` had no definition - the two sat unjoined in the
+// same file. Slot identity is unambiguous: both sibling dialogs put their real
+// DoDataExchange at slot 35 (CBattlezDlgColors 0x179b0, CBattlezDlgCustom 0x180e0), and
+// retail 0x14d00 ends `ret 0x4` == a __thiscall with one pointer arg, i.e. CDataExchange*.
+// Body still parked (>512B leaf-first: ~20 CButeMgr/CString/CGameReg callees + a
+// subclass window trampoline must be modeled first) - the BINDING is fixed, not the
+// byte-match.
 RVA(0x00014d00, 0xa68)
-i32 __stdcall BattlezSetupDlgInit(i32) {
-    return 0;
-}
+void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {}
 
 // ---------------------------------------------------------------------------
 // The MFC GDI COMDAT pool this TU emits (its code lands between the CBattlezDlg
