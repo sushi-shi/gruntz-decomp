@@ -1033,6 +1033,16 @@ SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail 
 // (g_netCreateCtx moved to its only user, Multi.cpp, so it can carry the DATA() binding a
 //  header cannot - declared here it was bound to no retail address at all.)
 
+// One node of the +0x1c service-provider group CObList (MFC CNode shape: next@+0,
+// prev@+4, payload@+8). Find() walks this chain, caching the running POSITION at
+// CNetMgr+0x7c. Sibling to CNetListNode/CNetCmdNode/CNetPlayerNode.
+struct CGroupNode {
+    CGroupNode* m_next;      // +0x00  CObList CNode pNext
+    CGroupNode* m_prev;      // +0x04  CObList CNode pPrev (not walked here)
+    InterfaceObject* m_data; // +0x08  payload service-provider node
+};
+SIZE_UNKNOWN(CGroupNode); // traversal view of the +0x1c group list node
+
 // CNetMgr derives from the shared CObject grand-base (Wap32/Object.h): its own
 // vtable (??_7CNetMgr@@6B@, 0x1ea42c) overrides only slot 1 (the dtor); slots 0/2/3/4
 // come from inheritance. cl auto-emits the own vptr stamp at ~CNetMgr entry AND folds
@@ -1337,7 +1347,7 @@ public:
     i32 m_groupSel;              // +0x070  group-list selected item data (ReadGroupSel)
     i32 m_playerSel;             // +0x074  player-list selected item data (ReadPlayerSel)
     i32 m_sessionSel;            // +0x078  session-list selected item data
-    CNetListNode* m_groupSelId;  // +0x07c  group-list walk cursor (Find/PopulateGroupList) / sel id
+    CGroupNode* m_groupSelId;    // +0x07c  group-list walk cursor (Find/PopulateGroupList)
     CNetListNode* m_playerSelId; // +0x080  player-list walk cursor / selection id
     CNetListNode* m_sessionSelId; // +0x084  session-list walk cursor / selection id
     i32 m_88; // +0x088  (rounds the object to the observed RezAlloc/operator-new 0x8c size)

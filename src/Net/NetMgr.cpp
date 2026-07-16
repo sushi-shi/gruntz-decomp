@@ -290,21 +290,21 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
     }
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
-    CNetListNode* node = (CNetListNode*)m_groups.GetHeadPosition();
+    CGroupNode* node = (CGroupNode*)m_groups.GetHeadPosition();
     m_groupSelId = node;
     InterfaceObject* obj;
     if (node != 0) {
         m_groupSelId = node->m_next;
-        obj = (InterfaceObject*)node->m_data;
+        obj = node->m_data;
     } else {
         obj = 0;
     }
 
     while (obj != 0) {
         if (((flag & 1) && obj->IsInterface2()) || ((flag & 2) && obj->IsInterface1())) {
-            CNetListNode* cur = m_groupSelId;
+            CGroupNode* cur = m_groupSelId;
             if (cur != 0) {
-                obj = (InterfaceObject*)cur->m_data;
+                obj = cur->m_data;
                 m_groupSelId = cur->m_next;
             } else {
                 obj = 0;
@@ -318,9 +318,9 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
             if (idx != -1) {
                 SendMessageA(hList, LB_SETITEMDATA, idx, (LPARAM)obj);
             }
-            CNetListNode* cur = m_groupSelId;
+            CGroupNode* cur = m_groupSelId;
             if (cur != 0) {
-                obj = (InterfaceObject*)cur->m_data;
+                obj = cur->m_data;
                 m_groupSelId = cur->m_next;
             } else {
                 obj = 0;
@@ -1072,16 +1072,10 @@ i32 CNetMgr::EnumSessions2(void* ctx) {
 // next@+0, data@+8). For each payload, the service-provider class `kind` selects
 // one of the GUID predicates (Font.cpp InterfaceObject::IsInterfaceX, reloc-
 // masked): kind 1 -> IsInterface2, kind 2 -> IsInterface1, kind 5 -> IsInterface5;
-// return the first payload that matches. The running POSITION is cached at +0x7c
-// (the m_groupSelId slot, reused as the GetNext cursor). Raw +0x20/+0x7c offset
-// access keeps the codegen independent of the dual-purpose field names.
+// return the first payload that matches. The running POSITION is cached in the
+// typed m_groupSelId cursor (+0x7c) as the GetNext walk position.
 // ---------------------------------------------------------------------------
-struct CGroupNode {
-    CGroupNode* m_next;      // +0x00  CPtrList CNode pNext
-    CGroupNode* m_prev;      // +0x04  CPtrList CNode pPrev (not walked here)
-    InterfaceObject* m_data; // +0x08
-};
-SIZE_UNKNOWN(CGroupNode); // traversal view of the +0x1c group list node
+// CGroupNode (the +0x1c group-list node view) is declared in <Net/NetMgr.h>.
 
 // @early-stop
 // linked-list advance regalloc wall (~94.9%): the head-load + the kind switch +
@@ -1093,10 +1087,10 @@ SIZE_UNKNOWN(CGroupNode); // traversal view of the +0x1c group list node
 RVA(0x00179270, 0x89)
 InterfaceObject* CNetMgr::Find(i32 kind) {
     CGroupNode* node = (CGroupNode*)m_groups.GetHeadPosition();
-    *(CGroupNode**)((char*)this + 0x7c) = node;
+    m_groupSelId = node;
     InterfaceObject* item;
     if (node) {
-        *(CGroupNode**)((char*)this + 0x7c) = node->m_next;
+        m_groupSelId = node->m_next;
         item = node->m_data;
     } else {
         item = 0;
@@ -1119,10 +1113,10 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
                 }
                 break;
         }
-        CGroupNode* cur = *(CGroupNode**)((char*)this + 0x7c);
+        CGroupNode* cur = m_groupSelId;
         if (cur) {
             item = cur->m_data;
-            *(CGroupNode**)((char*)this + 0x7c) = cur->m_next;
+            m_groupSelId = cur->m_next;
         } else {
             item = 0;
         }
