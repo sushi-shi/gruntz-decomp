@@ -410,6 +410,121 @@ void CMultiBootyState::MoveLettersByDir() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// CBootyState::FormatHudText (0x1af70) - homed here from the former MenuState.cpp.
+// It is a CBootyState method (not CMenuState), and 0x1af70 sits INSIDE this TU's
+// own 0x18c90..0x1f928 .text block, between 0x19b90 and CheckPerfectBonus
+// (0x1c0f0) - the same block the comment above attributes it to.
+// ---------------------------------------------------------------------------
+// FormatHudText's stats source IS the real CBattlezData (g_gameReg->m_scoreHud, the
+// +0x7c HUD/score accumulator). The CHudStats view that used to sit here is GONE: its
+// 13 GetC10..GetC40 "getters" were placeholder names for CBattlezData's own
+// SumGroupField* methods - PHANTOMS (declared-only, no body, no rva) that no obj and no
+// .LIB could ever define. Each was resolved from the binary by following the ILT thunk
+// FormatHudText actually calls to its target rva, every one of which is an
+// already-reconstructed, rva-bound CBattlezData method in the `battlezdata` unit:
+//     GetC10 -> SumGroupField08 (0xfd2e0)   GetC38 -> SumGroupField34 (0xfd0b0)
+//     GetC1c -> SumGroupField14 (0xfd290)   GetC24 -> SumGroupField1c (0xfd060)
+//     GetC20 -> SumGroupField18 (0xfd240)   GetC40 -> SumGroupField3c (0xfd1f0)
+//     GetC34 -> SumGroupField30 (0xfd010)   GetC2c -> SumGroupField24 (0xfd1a0)
+//     GetC18 -> SumGroupField10 (0xfcfc0)   GetC3c -> SumGroupField38 (0xfd150)
+//     GetC30 -> SumGroupField2c (0xfcf70)   GetC28 -> SumGroupField20 (0xfd100)
+//     GetC14 -> SumGroupField0c (0xfcf20)
+// The view's cached fields were the same object's: its m_c gate is CBattlezData's
+// m_allDone (+0x0c) and its m_10 is m_score (+0x10).
+// The (CBattlezData*) cast that used to sit here is GONE: CGameRegistry::m_scoreHud is
+// TYPED now. The apparent conflict with Wormhole.cpp (which cast the SAME member to a
+// CTeleMgrSub*) was never a conflict - CTeleMgrSub was a one-field view of THIS object,
+// its m_28 being CBattlezData::m_28 (+0x28), the teleporter counter this very function
+// reads back as its case-7 stat. Both casts were pointing at the same class all along.
+// One HUD stat read, inlined per site as retail does (the typed g_gameReg->m_scoreHud
+// CBattlezData reloaded at each use).
+#define STAT(getter, field)                                                                        \
+    ((m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0) ? g_gameReg->m_scoreHud->getter()  \
+                                                                : g_gameReg->m_scoreHud->field)
+
+// CBootyState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
+// 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
+// divide-by-1000 then /60), score, and "%d of %d" progress into `buf`. Every stat is
+// read via STAT(getter, field). The default case writes "???".
+// @early-stop
+// jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md): the
+// 960-byte switch body is CODE-BYTE-EXACT (verified llvm-objdump -dr base vs retail:
+// every stat sibling-guard block, the MM:SS unsigned /1000-then-/60 divide magic, the
+// "%d of %d" clamp, the 13 stats-thiscall getters, and the sprintf pushes all match;
+// the ~24 g_gameReg loads are the retail A1 moffs32 form). Residual ~2.5% is the
+// inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
+// operands, neither source-steerable. ~97.5%.
+RVA(0x0001af70, 0x3c0)
+void CBootyState::FormatHudText(CString* buf, i32 sel) {
+    switch (sel) {
+        case 0: {
+            u32 secs = static_cast<u32>((STAT(SumGroupField08, m_score) / 1000));
+            buf->Format("%d:%2.2d", secs / 60, secs % 60);
+            return;
+        }
+        case 1:
+            buf->Format("%d", STAT(SumGroupField14, m_1c));
+            return;
+        case 2:
+            buf->Format("%d", STAT(SumGroupField18, m_20));
+            return;
+        case 3: {
+            i32 total = STAT(SumGroupField30, m_34);
+            i32 cap = STAT(SumGroupField30, m_34);
+            i32 cur = STAT(SumGroupField10, m_weaponCount);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            buf->Format("%d of %d", cur, total);
+            return;
+        }
+        case 4: {
+            i32 total = STAT(SumGroupField2c, m_30);
+            i32 cap = STAT(SumGroupField2c, m_30);
+            i32 cur = STAT(SumGroupField0c, m_toyzCount);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            buf->Format("%d of %d", cur, total);
+            return;
+        }
+        case 5: {
+            i32 total = STAT(SumGroupField34, m_38);
+            i32 cap = STAT(SumGroupField34, m_38);
+            i32 cur = STAT(SumGroupField1c, m_powerupCount);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            buf->Format("%d of %d", cur, total);
+            return;
+        }
+        case 6: {
+            i32 total = STAT(SumGroupField3c, m_40);
+            i32 cap = STAT(SumGroupField3c, m_40);
+            i32 cur = STAT(SumGroupField24, m_2c);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            buf->Format("%d of %d", cur, total);
+            return;
+        }
+        case 7: {
+            i32 total = STAT(SumGroupField38, m_3c);
+            i32 cap = STAT(SumGroupField38, m_3c);
+            i32 cur = STAT(SumGroupField20, m_28);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            buf->Format("%d of %d", cur, total);
+            return;
+        }
+        default:
+            *buf = "???";
+            return;
+    }
+}
+
 // CBootyState::CheckPerfectBonus() (0x1c0f0): once the frame-ready gate fires, SCROLL the
 // BOOTY_PERFECT sprite across the screen - it is not a "bonus state" with a "phase" at all.
 // RE-HOMED from CMultiBootyState, which is allocation-proven 0x244 while this body reads

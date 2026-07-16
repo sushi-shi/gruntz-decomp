@@ -23,6 +23,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <EmptyString.h> // g_emptyString
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
 #include <rva.h>
 #include <Globals.h>
 #include <string.h> // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
@@ -106,10 +107,12 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {}
 // @rva-symbol: ??_GCGdiObject@@UAEPAXI@Z 0x00016430 0x1e
 // @rva-symbol: ??1CGdiObject@@UAE@XZ 0x00016460 0x46
 // @rva-symbol: ??1CBrush@@UAE@XZ 0x00016500 0x46
-// (??_GCBrush @0x164d0 + ??_7CBrush @0x1e8cf4 are pinned in FlashRect.cpp: they
-// are forced by the INLINE CBrush default ctor, which in this split of the retail
-// TU lives in FlashRect160f0's scratch brush - our CBrush(COLORREF) ctor here is
-// the out-of-line MFC one, so this obj emits ??1CBrush but not the ??_G/??_7.)
+// ??_GCBrush @0x164d0 + ??_7CBrush @0x1e8cf4 are forced by the INLINE CBrush
+// default ctor in FlashCtrlD's scratch brush (0x160f0, below) - which is part of
+// THIS retail .obj. (It used to be split out into a FlashRect.cpp; that split was
+// artificial - 0x160f0 sits inside this TU's own 0x14b30..0x18086 block - and has
+// been reunited here, so this obj emits the ??_G/??_7 pair as retail's did.)
+// @rva-symbol: ??_GCBrush@@UAEPAXI@Z 0x000164d0 0x1e
 
 // ---------------------------------------------------------------------------
 RVA(0x00018030, 0x56)
@@ -612,6 +615,74 @@ RVA(0x000160d0, 0xb)
 i32 CBattlezDlg::OnInitDialog() {
     CDialog::OnInitDialog();
     return 1;
+}
+
+// Advance the shared LCG one step (lazily seeded); returns 15-bit value.
+// Retail inlines this three times per colour, so force it inline.
+static __inline i32 GameRand() {
+    i32 seed;
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        seed = static_cast<i32>(::timeGetTime());
+    } else {
+        seed = g_randSeed;
+    }
+    g_randSeed = seed * 214013 + 2531011;
+    return (g_randSeed >> 0x10) & 0x7fff;
+}
+
+// @early-stop
+// EH frame-size + regalloc wall (~84%). Complete correct reconstruction: the
+// /GX EH frame, the 4-slot loop, the child->host rect map, the 3x inlined LCG
+// colour, the inline CBrush ctor + inline vptr-stamp dtor chain, the rect-deflate
+// and the NULL-guarded operator HBRUSH select all match by shape
+// (llvm-objdump -dr). Residual is MSVC5 reserving a 0x70 frame vs ours
+// (so dc/EH-state slots shift) and swapping the ecx/edx scratch regs in the
+// strength-reduced *214013 LCG - not steerable from source. The CMultiStartDlg
+// twin (no deflate) lives in MultiStartDlgRoster.cpp and reaches ~95%.
+//
+// The scratch object is a REAL MFC `CBrush` - proven by RTTI: the vtable its
+// inline ctor stamps (0x1e8cf4) carries the COL .?AVCBrush@@, and the dtor chain
+// stamps .?AVCGdiObject@@ (0x1e8cd4) / .?AVCObject@@ (0x1e8cb4). This INLINE
+// default ctor is what forces this obj's ??_GCBrush/??_7CBrush COMDATs (pinned
+// above). Check1be68c was CWnd::IsWindowEnabled (0x1be68c); the "FlashHost" view
+// was the dialog itself (GetItem2c52 -> CBattlezDlg::GetCtrlD @0x15c40 via thunk
+// 0x2c52). The g_p* "Win32 pointer table" externs were the plain dllimport IAT
+// slots - `&::ClientToScreen` loads __imp__ClientToScreen@8 exactly as retail's
+// cached `mov ebp/ebx, ds:[imp]`.
+RVA(0x000160f0, 0x245)
+void CBattlezDlg::FlashCtrlD() {
+    CPaintDC dc(this);
+    BOOL(WINAPI * cts)(HWND, LPPOINT) = ::ClientToScreen;
+    BOOL(WINAPI * stc)(HWND, LPPOINT) = ::ScreenToClient;
+    for (i32 i = 0; i < 4; i++) {
+        CWnd* it = GetCtrlD(i);
+        if (it == 0) {
+            continue;
+        }
+        RECT rc;
+        ::GetClientRect(it->m_hWnd, &rc);
+        cts(it->m_hWnd, (LPPOINT)&rc);
+        cts(it->m_hWnd, (LPPOINT)&rc + 1);
+        stc(m_hWnd, (LPPOINT)&rc);
+        stc(m_hWnd, (LPPOINT)&rc + 1);
+        CBrush scratch;
+        i32 color;
+        if (it->IsWindowEnabled()) {
+            GameRand();
+            GameRand();
+            i32 v = (GameRand() % 0xff) & 0xff;
+            color = (v << 8 | v) << 8 | v;
+        } else {
+            color = 0x808080;
+        }
+        scratch.Attach(::CreateSolidBrush(color));
+        rc.left += 2;
+        rc.top += 2;
+        rc.right -= 2;
+        rc.bottom -= 2;
+        ::FillRect(dc.m_hDC, &rc, scratch);
+    }
 }
 
 // WM_MEASUREITEM (0x16570): forward (nIDCtl, lpmis) to the CWnd default owner-draw

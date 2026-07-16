@@ -73,18 +73,45 @@ extern "C" u32 g_killCueClock; // 0x6bf3c0
 // CChatBox
 // ===========================================================================
 
-// re-zero both rows (no list teardown; Reset minus the Clear()).
-RVA(0x000a0280, 0x2b)
-void CChatBox::Init() {
-    m_page = 0;
-    m_4 = 0;
+// CChatBox::Init (0xa0280) is NOT in this TU's block: it sits inside the menu
+// state's contiguous 0x9fe50..0xa0d80 run, so it is homed in
+// src/Gruntz/MenuState.cpp (the obj that contributes that byte).
+
+// ---------------------------------------------------------------------------
+// The menu-region seeder (0x0182ab0). The three SOURCE-side views are gone: the retail
+// call proves the arg chain is entirely canonical classes -
+//   arg1 = CMenuState::m_c            -> CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>)
+//          holder->m_drawTarget       -> CDDrawSubMgrPages          (<Gruntz/ResMgr.h>)
+//          drawTarget->m_10           -> CDDrawSubMgrPages::SurfaceA (its +0x10/+0x14 pixel
+//                                        extent is now named there; see the disasm cited
+//                                        in ResMgr.h) - the default RECT is (0,0,w-1,h-1).
+//   arg2 = m_4->m_gameWnd->m_hwnd     -> the game window's HWND (WAP32::CGameWnd +0x04).
+//
+// The `this` IS the CChatBox LoadAssets just newed (retail `mov [esi+0x1b4],ecx` right
+// before `call 0x182ab0`, ecx unchanged) - now a real CChatBox method. Every store lands
+// on a CChatBox member (m_page/m_4/the m_rect8 RECT/m_headGap/m_rowSpacing/m_wrapFlag/m_activeNode);
+// the three ex-blockers (m_page CChatPage->CDDrawSurfaceMgr, m_pad8->RECT, m_wrapFlag
+// char->i32) are all resolved in ChatBox.h, so the ex MenuRegion view is dissolved.
+RVA(0x00182ab0, 0x7b)
+i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
+    if (!src) {
+        return 0;
+    }
+    m_page = src;
+    m_4 = a;
+    m_wrapFlag = f;
+    m_headGap = d;
+    m_rowSpacing = e;
     m_activeNode = 0;
-    m_row0Anim = 0;
-    m_row1Anim = 0;
-    m_row0Frame = 0;
-    m_row1Frame = 0;
-    m_row0Key.Empty();
-    m_row1Key.Empty();
+    if (rc) {
+        CopyRect(&m_rect8, rc);
+        return 1;
+    }
+    m_rect8.left = 0;
+    m_rect8.top = 0;
+    m_rect8.right = src->m_drawTarget->m_frontPair->m_width - 1;
+    m_rect8.bottom = src->m_drawTarget->m_frontPair->m_height - 1;
+    return 1;
 }
 
 // destructor lives in ChatBoxDtor.cpp (the /GX EH-frame TU; it is the

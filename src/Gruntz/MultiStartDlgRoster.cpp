@@ -13,6 +13,7 @@
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegPtr.h>
+#include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
 #include <EmptyString.h>       // g_emptyString
 #include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/NetDlgHost.h> // CNetDlgHost (m_host +0x5c facet)
@@ -254,6 +255,62 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     strcat(buf, str);
     ::SendMessageA(edit, 0xc2, 0, (LPARAM)buf);
     ::SendMessageA(edit, 0xb6, 0, 0x270f);
+}
+
+// Advance the shared LCG one step (lazily seeded); returns 15-bit value.
+// Retail inlines this three times per colour, so force it inline.
+static __inline i32 GameRand() {
+    i32 seed;
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        seed = static_cast<i32>(::timeGetTime());
+    } else {
+        seed = g_randSeed;
+    }
+    g_randSeed = seed * 214013 + 2531011;
+    return (g_randSeed >> 0x10) & 0x7fff;
+}
+
+// @early-stop
+// EH frame-size wall (~95%). Complete correct reconstruction (the twin of
+// CBattlezDlg::FlashCtrlD @0x160f0 in Dialogs.cpp, minus the rect-deflate,
+// returning 1): walks the 4-entry GetCtrlD swatch family, maps each child's
+// client rect into the host dialog's client coords, builds a random-gray
+// (enabled) or fixed 0x808080 (disabled) solid brush and FillRects it. Residual
+// is MSVC5's 0x70 vs 0x20 frame reservation shifting the dc-handle / EH-state
+// stack slots - not steerable from source. (Formerly split out into a
+// name-grouped FlashRect.cpp; 0xc2e20 sits inside THIS TU's 0xc2980..0xc5333
+// block, so it is reunited here.)
+RVA(0x000c2e20, 0x21d)
+i32 CMultiStartDlg::FlashCtrlD() {
+    CPaintDC dc(this);
+    BOOL(WINAPI * cts)(HWND, LPPOINT) = ::ClientToScreen;
+    BOOL(WINAPI * stc)(HWND, LPPOINT) = ::ScreenToClient;
+    for (i32 i = 0; i < 4; i++) {
+        CWnd* it = GetCtrlD(i);
+        if (it == 0) {
+            continue;
+        }
+        RECT rc;
+        ::GetClientRect(it->m_hWnd, &rc);
+        cts(it->m_hWnd, (LPPOINT)&rc);
+        cts(it->m_hWnd, (LPPOINT)&rc + 1);
+        stc(m_hWnd, (LPPOINT)&rc);
+        stc(m_hWnd, (LPPOINT)&rc + 1);
+        CBrush scratch;
+        i32 color;
+        if (it->IsWindowEnabled()) {
+            GameRand();
+            GameRand();
+            i32 v = (GameRand() % 0xff) & 0xff;
+            color = (v << 8 | v) << 8 | v;
+        } else {
+            color = 0x808080;
+        }
+        scratch.Attach(::CreateSolidBrush(color));
+        ::FillRect(dc.m_hDC, &rc, scratch);
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

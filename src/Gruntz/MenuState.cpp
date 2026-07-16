@@ -4,15 +4,21 @@
 // GameMode.cpp, the sibling states (CCreditsState/CBootyState/CMultiBootyState) in
 // their own TUs. The ~CMenuState `??1` (with the CState ctor) is the class's vtable +
 // inline-virtual (Update) emission anchor - it stays in this TU with the rest of
-// CMenuState. Its MENU asset loader (LoadAssets @0x9fe50) lives in MenuStateAssets.cpp.
+// CMenuState.
+//
+// This obj's ordinary .text contribution is the CONTIGUOUS run 0x9fe50..0xa0e57.
+// The former MenuStateAssets.cpp was an artificial split of it (0x9fe50 sits at the
+// run's head) and has been dissolved back in, along with CChatBox::Init (0xa0280) -
+// which is bracketed on both sides by CMenuState methods inside this very run, so
+// retail's menu compiland is what contributes that byte (every other CChatBox
+// method lives in the chat box's own block 0xe2000 away at 0x182ab0..0x183246).
 //
 // Functions, ascending retail-RVA order:
-//   CMenuState::FormatHudText @0x01af70 - the 960-B HUD-text formatter switch.
-//   LoadGameOptionsToDialog   @0x036860 - free __cdecl options-dialog writer.
-//   ReadMenuOptionsDialog     @0x036a30 - free __cdecl options-dialog reader.
-//   OnToggle*Option           @0x036d00.. - per-checkbox WM_COMMAND handlers.
-//   ~CMenuState / ReleaseResources / StartMusic / StopMusicChain / FrameSlot28 /
-//   Render / Vslot0c / Vslot0e / Vslot10  @0x08ce60.. - teardown + per-frame draw.
+//   CMenuState::~CMenuState   @0x08ce60 - COMDAT-pooled dtor (outside the run).
+//   CMenuState::LoadGameAssetNamespaces @0x09fe50 - the MENU asset loader.
+//   CChatBox::Init            @0x0a0280 - the menu UI object's field-zeroing init.
+//   ReleaseResources / StartMusic / StopMusicChain / FrameSlot28 /
+//   Render / Vslot0c / Vslot0e / Vslot10  @0x0a02c0.. - teardown + per-frame draw.
 //   CMenuState::ReadyGate     @0x0a0d40 - the &&-chained ready/transition probe.
 //   CMenuState::BuildVersionString @0x0a0d80 - the on-screen version banner.
 //
@@ -33,6 +39,10 @@
 #include <DDrawMgr/DDSurface.h>           // CDDSurface Flip (FrameSlot28)
 
 #include <rva.h>
+#include <Bute/SymParser.h> // canonical CSymParser + CSymTab (LoadGameAssetNamespaces ResolvePath)
+#include <Image/CImage.h>   // g_resourceInstallActive
+#include <Gruntz/ChatBox.h> // canonical CChatBox (m_1b4 menu UI object; Init lives here)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CImageRegistry (m_c->m_imageRegistry)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
 #include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
@@ -68,114 +78,9 @@ extern "C" {
 // emission in this TU.
 // ===========================================================================
 
-// FormatHudText's stats source IS the real CBattlezData (g_gameReg->m_scoreHud, the
-// +0x7c HUD/score accumulator). The CHudStats view that used to sit here is GONE: its
-// 13 GetC10..GetC40 "getters" were placeholder names for CBattlezData's own
-// SumGroupField* methods - PHANTOMS (declared-only, no body, no rva) that no obj and no
-// .LIB could ever define. Each was resolved from the binary by following the ILT thunk
-// FormatHudText actually calls to its target rva, every one of which is an
-// already-reconstructed, rva-bound CBattlezData method in the `battlezdata` unit:
-//     GetC10 -> SumGroupField08 (0xfd2e0)   GetC38 -> SumGroupField34 (0xfd0b0)
-//     GetC1c -> SumGroupField14 (0xfd290)   GetC24 -> SumGroupField1c (0xfd060)
-//     GetC20 -> SumGroupField18 (0xfd240)   GetC40 -> SumGroupField3c (0xfd1f0)
-//     GetC34 -> SumGroupField30 (0xfd010)   GetC2c -> SumGroupField24 (0xfd1a0)
-//     GetC18 -> SumGroupField10 (0xfcfc0)   GetC3c -> SumGroupField38 (0xfd150)
-//     GetC30 -> SumGroupField2c (0xfcf70)   GetC28 -> SumGroupField20 (0xfd100)
-//     GetC14 -> SumGroupField0c (0xfcf20)
-// The view's cached fields were the same object's: its m_c gate is CBattlezData's
-// m_allDone (+0x0c) and its m_10 is m_score (+0x10).
-// The (CBattlezData*) cast that used to sit here is GONE: CGameRegistry::m_scoreHud is
-// TYPED now. The apparent conflict with Wormhole.cpp (which cast the SAME member to a
-// CTeleMgrSub*) was never a conflict - CTeleMgrSub was a one-field view of THIS object,
-// its m_28 being CBattlezData::m_28 (+0x28), the teleporter counter this very function
-// reads back as its case-7 stat. Both casts were pointing at the same class all along.
-// One HUD stat read, inlined per site as retail does (the typed g_gameReg->m_scoreHud
-// CBattlezData reloaded at each use).
-#define STAT(getter, field)                                                                        \
-    ((m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0) ? g_gameReg->m_scoreHud->getter()  \
-                                                                : g_gameReg->m_scoreHud->field)
-
-// CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
-// 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
-// divide-by-1000 then /60), score, and "%d of %d" progress into `buf`. Every stat is
-// read via STAT(getter, field). The default case writes "???".
-// @early-stop
-// jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md): the
-// 960-byte switch body is CODE-BYTE-EXACT (verified llvm-objdump -dr base vs retail:
-// every stat sibling-guard block, the MM:SS unsigned /1000-then-/60 divide magic, the
-// "%d of %d" clamp, the 13 stats-thiscall getters, and the sprintf pushes all match;
-// the ~24 g_gameReg loads are the retail A1 moffs32 form). Residual ~2.5% is the
-// inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
-// operands, neither source-steerable. ~97.5%.
-RVA(0x0001af70, 0x3c0)
-void CBootyState::FormatHudText(CString* buf, i32 sel) {
-    switch (sel) {
-        case 0: {
-            u32 secs = static_cast<u32>((STAT(SumGroupField08, m_score) / 1000));
-            buf->Format("%d:%2.2d", secs / 60, secs % 60);
-            return;
-        }
-        case 1:
-            buf->Format("%d", STAT(SumGroupField14, m_1c));
-            return;
-        case 2:
-            buf->Format("%d", STAT(SumGroupField18, m_20));
-            return;
-        case 3: {
-            i32 total = STAT(SumGroupField30, m_34);
-            i32 cap = STAT(SumGroupField30, m_34);
-            i32 cur = STAT(SumGroupField10, m_weaponCount);
-            if (cur >= cap) {
-                cur = cap;
-            }
-            buf->Format("%d of %d", cur, total);
-            return;
-        }
-        case 4: {
-            i32 total = STAT(SumGroupField2c, m_30);
-            i32 cap = STAT(SumGroupField2c, m_30);
-            i32 cur = STAT(SumGroupField0c, m_toyzCount);
-            if (cur >= cap) {
-                cur = cap;
-            }
-            buf->Format("%d of %d", cur, total);
-            return;
-        }
-        case 5: {
-            i32 total = STAT(SumGroupField34, m_38);
-            i32 cap = STAT(SumGroupField34, m_38);
-            i32 cur = STAT(SumGroupField1c, m_powerupCount);
-            if (cur >= cap) {
-                cur = cap;
-            }
-            buf->Format("%d of %d", cur, total);
-            return;
-        }
-        case 6: {
-            i32 total = STAT(SumGroupField3c, m_40);
-            i32 cap = STAT(SumGroupField3c, m_40);
-            i32 cur = STAT(SumGroupField24, m_2c);
-            if (cur >= cap) {
-                cur = cap;
-            }
-            buf->Format("%d of %d", cur, total);
-            return;
-        }
-        case 7: {
-            i32 total = STAT(SumGroupField38, m_3c);
-            i32 cap = STAT(SumGroupField38, m_3c);
-            i32 cur = STAT(SumGroupField20, m_28);
-            if (cur >= cap) {
-                cur = cap;
-            }
-            buf->Format("%d of %d", cur, total);
-            return;
-        }
-        default:
-            *buf = "???";
-            return;
-    }
-}
+// CBootyState::FormatHudText (0x1af70) is NOT a CMenuState method and 0x1af70 is
+// not in this TU's block - it is homed in its own class's TU,
+// src/Gruntz/BootyStateActivate.cpp (inside that obj's 0x18c90..0x1f928 run).
 
 // The options-dialog helper family (LoadGameOptionsToDialog @0x36860,
 // ReadMenuOptionsDialog @0x36a30, the OnToggle* handlers @0x36d00.., and the
@@ -214,11 +119,201 @@ extern "C" u32 g_killCueClock; // draw-clock mirror
 // StartMusic reads the game registry through its WwdGameReg view (m_10 presence gate,
 // m_11c configured item); same 0x24556c singleton as g_gameReg, typed WwdGameReg.
 
+// The COMDAT-pooled deleting dtor: 0x8ce60 is not in this TU's own 0x9fe50..
+// 0xa0e57 run - the linker groups the ??1/??_G COMDATs into the 0x8xxxx pool,
+// away from the obj's ordinary .text. Listed first so file order still ascends.
 // CMenuState::~CMenuState() (`??1`, 0x8ce60): run the menu teardown then chain the base.
 // ReleaseResources/the base ~CState are statically bound in the dtor.
 RVA(0x0008ce60, 0x55)
 CMenuState::~CMenuState() {
     ReleaseResources();
+}
+
+// -------------------------------------------------------------------------
+// The MENU asset loader + the chat-box init it news, homed from the former
+// MenuStateAssets.cpp: 0x9fe50 and 0xa0280 sit in this TU's own contiguous
+// 0x9fe50..0xa0d80 .text run, ahead of ReleaseResources (0xa02c0) below.
+// -------------------------------------------------------------------------
+// FUN_00402fcc __cdecl: commit the menu UI object (ret BOOL).
+i32 MenuCommit(CChatBox* obj, i32 idx); // 0x402fcc
+
+// CMenuState::LoadGameAssetNamespaces (0x09fe50, 835 B; the
+// slot-1 override, ex "LoadAssets"), the MENU game-
+// state asset loader.  Sibling of the CHelpState / GameLevelState slot-1 loaders:
+// chains the base namespace loader, registers the "MENU" IMAGEZ+SOUNDZ namespaces
+// through the m_c->m_imageRegistry (vtable +0x48) / m_c->m_soundRegistry registries, primes the state
+// core (m_c->m_4 IsReady/Init), then heap-allocates the menu HUD object (CPtrList +
+// two CString members) and wires its MENU_CURSOR/SELECT/ACTIVATE/MENU keys + the
+// MENU_ACTIVATE / MENU_MENU sound cues.  The destructible CPtrList/CString members
+// of the heap object give the routine its /GX exception frame.
+//
+// Only offsets / code bytes are load-bearing; every engine callee is a reloc-
+// masked external (no body).
+
+// The image registry reached through this->m_c->m_imageRegistry is the canonical CImageRegistry
+// (<Gruntz/ResMgr.h>): non-virtual Has + the vtable-slot-18 (+0x48) Install. Shared,
+// so no local view.
+
+// --- the sound-cue lookup ---
+// The MENU_ACTIVATE / MENU_MENU cues are looked up in the LeafScan cache's embedded
+// CMapStringToPtr (+0x10, Lookup @0x1b8438 - mfc_class-confirmed CMapStringToPtr, NOT
+// CMapStringToOb).  The map VALUE is the canonical LeafCue (<Gruntz/LeafCue.h>, the
+// 0x1c-byte element the LeafScan factory CreateEntry @0x157d70 news): its DSoundCloneInst
+// m_10 player carries the cached DS-buffer duration at m_durationMs (+0x28). The map
+// values are LeafCue / DSoundCloneInst (see the LeafCue.h header verdict).
+
+// The CState base facets are the ONE real classes (State.h) - this TU no longer keeps
+// per-TU views of any of them:
+//   * m_4  (CGruntzMgr)            - RestoreVideoMode; its CGameMgr base carries
+//                                    m_gameWnd (+0x04), whose m_hwnd (+0x04) is the
+//                                    HWND the menu layout is seeded with.
+//   * m_8  (CBankMgr)              - reached as CSymParser for ResolvePath.
+//   * m_c  (CDDrawSurfaceMgr)  - the resource holder: m_drawTarget (+0x04) page
+//                                    pump, m_10 image registry, m_28 sound registry.
+//   * m_2c (CResSource)            - the registered STATEZ_MENU object.
+//   * m_1b4 (CChatBox)             - the heap menu-UI object this routine builds.
+
+// The global mgr singleton (*0x24556c): its resource holder's +0x28 sound registry
+// carries the shared cue map the MENU_MENU cue is resolved from. That holder slot
+// (CDDrawSurfaceMgr::m_28) is a genuinely heterogeneous void* - other TUs view it
+// as a sound-set (HbSndSet) or a mute gate - so it is cast to the sound-registry view
+// at this one use-site (the authentic proven-heterogeneous-slot cast).
+
+// The heap-allocated MENU UI object (0x7c bytes) IS the canonical CChatBox
+// (<Gruntz/ChatBox.h>): its CPtrList m_nodeList (+0x24), m_activeNode (+0x40) and the
+// two CString row keys (+0x44/+0x48) are exactly the members this routine constructs
+// and writes, and GameMode.h already types the receiving slot `CChatBox* m_1b4`.  The
+// destructible CPtrList/CString members give LoadAssets its /GX EH frame.  The former
+// MenuHudObj view is gone; its own comments already named every method as CChatBox's
+// (Init 0xa0280 via thunk 0x10c8, AdvanceRow0 0x182df0, AdvanceRow1 0x182e60).
+
+// FUN_00402fcc __cdecl: commit the menu UI object (ret BOOL).
+i32 MenuCommit(CChatBox* obj, i32 idx); // 0x402fcc
+
+// The menu-region seeder's `this` record (0x182ab0) IS the CChatBox LoadAssets just
+// newed - now dissolved onto CChatBox::InitRegion (<Gruntz/ChatBox.h>). The three
+// canonical changes the old view was blocked on are all resolved in ChatBox.h now
+// (m_page is CDDrawSurfaceMgr*, +0x08 is a real RECT m_rect8, m_wrapFlag is i32).
+
+// CMenuState is the canonical <Gruntz/GameMode.h> `CMenuState : CState`. The MENU
+// asset loader reaches the CState base region through the SAME facets the game-state
+// hierarchy documents (CState.h: the +0x04 owner and +0x0c CDDrawSurfaceMgr holder are downcast
+// to each TU's local facet views): m_4 (CGruntzMgr owner) -> MenuRoot cursor gate,
+// m_8 (CBankMgr) -> MenuRegSet, m_c (CDDrawSurfaceMgr) -> MenuAssetMgr resource holder, m_2c
+// (CResSource) -> the STATEZ_MENU MenuRegObj. m_1b4 (CGMMenuUI) is the heap MenuHudObj
+// the routine builds. Only offsets / code bytes are load-bearing.
+
+// @early-stop
+// frame-layout / regalloc wall: complete + correct body - instruction
+// selection, the guarded registry-call chain, the heap CChatBox CPtrList+2 CString
+// construction + EH trylevel, the MENU_CURSOR/SELECT/ACTIVATE keys and the two sound
+// finds all match retail (verified instruction-by-instruction; the ARG_MISMATCH
+// rows are the reloc-name scoring artifact).  Residual: retail frame-allocates 0x10
+// of locals while this /O2 recompile allocates 0x14 (one extra slot), yielding a +4
+// cascade across every [esp+N] operand, plus the base-loader arg push scheduling and
+// the new-obj-vs-EH-state interleave - all allocator choices, not source-steerable.
+// See docs/patterns/zero-register-pinning.md + identical-return-epilogue-tailmerge.md.
+RVA(0x0009fe50, 0x343)
+i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
+    if (a3 == 0) {
+        return 0;
+    }
+    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+    if (!CState::LoadGameAssetNamespaces(a2, a3, a3)) {
+        return 0;
+    }
+    m_4->RestoreVideoMode(0);
+    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_MENU");
+    if (m_2c == 0) {
+        return 0;
+    }
+
+    if (!m_c->m_imageRegistry->HasKeyEqual_155550("MENU")) {
+        void* set = SymTab2c()->ResolvePath("IMAGEZ");
+        if (set == 0) {
+            return 0;
+        }
+        g_resourceInstallActive = 1;
+        m_c->m_imageRegistry->InstallTree(set, "MENU", "_");
+        g_resourceInstallActive = 0;
+    }
+
+    if (!m_c->m_soundRegistry->HasKeyEqual_1583c0("MENU")) {
+        void* set = SymTab2c()->ResolvePath("SOUNDZ");
+        if (set == 0) {
+            return 0;
+        }
+        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)set, "MENU", "_");
+    }
+
+    if (!m_c->m_drawTarget->Method_158d20()) {
+        if (!m_c->m_drawTarget->Method_158cb0(0, 0x30000)) {
+            return 0;
+        }
+    }
+
+    RECT rc;
+    rc.left = 0;
+    rc.top = 8;
+    rc.right = 0x27f;
+    rc.bottom = 0x1df;
+    m_1b4 = new CChatBox;
+    m_1b4->Init();
+
+    // 0x182ab0 is __thiscall on the freshly-built CChatBox (retail: `mov [esi+0x1b4],ecx`
+    // then `call 0x182ab0` with ecx still the new object; `ret 0x18` = callee-cleaned
+    // 6 stack args).  It seeds the box from the resource holder + the game window's HWND.
+    if (!m_1b4->InitRegion(m_c, (i32)m_4->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
+        return 0;
+    }
+
+    if (m_1b4->AdvanceRow0((void*)"MENU_CURSOR", 0x64, 0x20)) {
+        m_1b4->AdvanceRow1((void*)"MENU_CURSOR", 0x64, 0x20);
+    }
+    m_1b4->m_row0Key = "MENU_SELECT";
+    m_1b4->m_row1Key = "MENU_ACTIVATE";
+
+    LeafCue* e;
+    m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
+    if (e != 0) {
+        m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
+        m_1b8 = e->m_10->m_durationMs;
+    } else {
+        m_1b8 = 0;
+    }
+
+    if (!MenuCommit(m_1b4, -1)) {
+        return 0;
+    }
+
+    LeafCue* fm;
+    ((CDDrawSubMgrLeafScan*)g_gameReg->m_world->m_soundRegistry)
+        ->m_10.Lookup("MENU_MENU", (void*&)fm);
+    m_1bc = fm;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CChatBox::Init (0xa0280) - homed here, not in ChatBox.cpp. 0xa0280 sits INSIDE
+// this TU's own 0x9fe50..0xa0d80 .text run, bracketed on both sides by CMenuState
+// methods (LoadGameAssetNamespaces 0x9fe50+0x343=0xa0193, then 0xa0280, then
+// ReleaseResources 0xa02c0), while every other CChatBox method lives in the chat
+// box's own block 0xe2000 away at 0x182ab0..0x183246. A compiland's .text run is
+// contiguous, so the byte at 0xa0280 is contributed by THIS obj - retail's menu TU
+// defines the chat box's field-zeroing init.
+// ---------------------------------------------------------------------------
+// re-zero both rows (no list teardown; Reset minus the Clear()).
+RVA(0x000a0280, 0x2b)
+void CChatBox::Init() {
+    m_page = 0;
+    m_4 = 0;
+    m_activeNode = 0;
+    m_row0Anim = 0;
+    m_row1Anim = 0;
+    m_row0Frame = 0;
+    m_row1Frame = 0;
+    m_row0Key.Empty();
+    m_row1Key.Empty();
 }
 
 // CMenuState::ReleaseResources() (slot 2 / +0x8): release the MENU resource set
