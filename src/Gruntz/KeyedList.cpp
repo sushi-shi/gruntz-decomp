@@ -18,7 +18,7 @@ CKeyedNode::~CKeyedNode() {
     m_8 = 0;
 }
 
-// 0x379a0: free every node's owned payload (dtor + operator delete), then RemoveAll
+// 0x379a0: delete every node's owned payload, then RemoveAll
 // the backing CPtrList and zero the mode.
 RVA(0x000379a0, 0x3d)
 void CKeyedList::Clear() {
