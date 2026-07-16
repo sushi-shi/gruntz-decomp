@@ -26,6 +26,7 @@
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA / g_typeCounter / g_typeColl* / ActNameLookup
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
@@ -54,7 +55,6 @@
 // in between get swallowed). Inline the literal at its use site instead.
 
 // The game registry singleton the warp ctor polls for the play sub-mode (m_134).
-extern "C" CGameRegistry* g_gameReg;
 
 // --- The per-class activation-coordinate registry singletons + handler-entry views.
 // Each ActReg is the shared <Gruntz/ActReg.h> CActReg archetype (distinct instance);

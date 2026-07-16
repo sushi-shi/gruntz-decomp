@@ -16,6 +16,7 @@
 // asset root's m_4/m_c/m_24 are m_drawTarget/m_workerList/m_24 with their real
 // classes). "Present" IS CDDrawWorkerList::PruneWorkers, slot 13.)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Gruntz/GameRegPtr.h>
 #include <Mfc.h>                          // ShowCursor (afx-first)
 #include <EmptyString.h>                  // g_emptyString
 #include <Bute/SymTab.h>                  // canonical CSymTab (ResolvePath @0x13bae0)
@@ -47,7 +48,6 @@ extern "C" DirectInputMgr2* g_inputMgr;
 // The game-manager singleton (0x64556c). Declared here (it used to arrive from
 // <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.
-extern "C" CGameRegistry* g_gameReg;
 // The camera auto-scroll/clamp update (MgrAutoScroll.cpp @0xebd70, cdecl 3-arg),
 // called with (g_gameReg, this->m_guts, this->m_region0Gate).
 class CGruntzMgr;

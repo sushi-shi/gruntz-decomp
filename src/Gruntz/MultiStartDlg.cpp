@@ -17,6 +17,7 @@
 // load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Net/InterfaceObject.h>
 #include <Gruntz/GameRegistry.h> // the real CGameRegistry (g_gameReg; m_curState @+0x2c)
 #include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
@@ -34,7 +35,6 @@
 
 // The global CGameRegistry the ctor snapshots: it copies g_gameReg->m_curState into
 // the file-scope multiplayer game-state sink g_multiState (both reloc-masked DIR32).
-extern "C" CGameRegistry* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 // 0x64bd5c holds the multiplayer game-state singleton (a CMulti, xref-proven); the
 // ctor snapshots it from g_gameReg->m_curState (+0x2c). Declared in <Gruntz/Multi.h>.
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).

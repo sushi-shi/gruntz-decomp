@@ -16,5 +16,5 @@ m_vtbl/m_vptr members	0
 C-style numeric casts	882
 void* m_ members	121
 offset-cast macros	0
-cpp extern decls	596
+cpp extern decls	525
 caller-callee FAKE-VIEW	11

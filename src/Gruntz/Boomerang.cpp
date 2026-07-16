@@ -16,6 +16,7 @@
 // its `call` reloc-masks to 0xdec60 via thunk 0x37d8). Replaces the old fabricated
 // `CProjectileBase` stand-in.
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <Globals.h>             // g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_frameTime
@@ -43,7 +44,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 }
 
 // The game registry singleton (the m_world resource gate + m_cmdGrid launcher grid).
-extern "C" CGameRegistry* g_gameReg;
 
 // Shared free-list globals (recycle the launcher grunt's occupied-coord payloads);
 // DATA-pinned in Projectile.cpp, so extern-only here (no duplicate DATA binding).

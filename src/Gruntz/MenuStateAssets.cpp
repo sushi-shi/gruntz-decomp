@@ -1,4 +1,5 @@
 #include <Mfc.h>            // CPtrList/CString machinery (reloc-masked); /GX EH frame
+#include <Gruntz/GameRegPtr.h>
 #include <Image/CImage.h>   // g_resourceInstallActive
 #include <Bute/SymParser.h> // canonical CSymParser + CSymTab (ResolvePath @0x13c030/0x13bae0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -55,7 +56,6 @@
 // (CDDrawSurfaceMgr::m_28) is a genuinely heterogeneous void* - other TUs view it
 // as a sound-set (HbSndSet) or a mute gate - so it is cast to the sound-registry view
 // at this one use-site (the authentic proven-heterogeneous-slot cast).
-extern "C" CGameRegistry* g_gameReg; // *0x64556c canonical singleton (def: GruntzMgr.cpp)
 
 // The heap-allocated MENU UI object (0x7c bytes) IS the canonical CChatBox
 // (<Gruntz/ChatBox.h>): its CPtrList m_nodeList (+0x24), m_activeNode (+0x40) and the

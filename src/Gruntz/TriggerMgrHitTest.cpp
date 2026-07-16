@@ -20,13 +20,13 @@
 // <Gruntz/TriggerMgrViews.h>. /GX profile kept from the parent unit (no EH
 // temps in these leaves; byte-neutral).
 #include <Gruntz/Grunt.h> // CTmCell IS CGrunt (folded) - the cells are dereferenced here
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/TriggerMgr.h>
 
 #include <Gruntz/TileGrid.h> // canonical CTileGrid (FindGruntAt's packed owner grid)
 #include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h>  // the shared CTm* views + singleton externs
-extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton
 
 // 0x759e0: GetOriginXY - copy the cached origin pair (m_cellFlag[0x16],[0x17] ==
 // +0x174,+0x178) into the caller's out-slot and return it.

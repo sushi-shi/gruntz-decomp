@@ -1,4 +1,5 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <Gruntz/GameRegPtr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Image/CImage.h> // CImage::RenderFrameClipped (0x153810) - m_frame's clipped blit
@@ -49,7 +50,6 @@
 // The canonical CGameRegistry view of the singleton (*0x24556c): the resource mgr
 // (+0x30, typed CDDrawSurfaceMgr) is reached without a cast; the grid object
 // table (+0x68) is a genuinely reused slot cast locally (see below).
-extern "C" CGameRegistry* g_gameReg;
 
 // The menu-bar frame (this->m_frame) IS the canonical CImage drawable that paints the
 // bar/chips; its clipped blit is CImage::RenderFrameClipped (0x153810), reloc-masked.

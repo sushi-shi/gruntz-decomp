@@ -3,6 +3,7 @@
 // active viewport (g_gameReg->m_modeW/m_90, the viewport X/Y). Only offsets / code
 // bytes are load-bearing; helpers are reloc-masked externals.
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Gruntz/GameRegPtr.h>
 #include <rva.h>
 
 #include <Mfc.h> // MFC (afx brings windows.h the controlled way) - MUST precede <ddraw.h> (ChatBoxOwner.h is an MFC header)
@@ -22,7 +23,6 @@
 // ChatBoxOwner.h - and its +0x34 dirty flag is CFontConfig::m_34, so the downcasts at
 // the two render sites fell out with it.)
 
-extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // Engine views the sprite renderer (LoadChatBoxSprite, 0x20f40) reaches through.

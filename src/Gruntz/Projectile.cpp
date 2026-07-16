@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/LeafCue.h>
@@ -71,7 +72,6 @@ extern "C" u32 g_engineFrameDelta;
 // reg->m_tileGrid the terrain grid (CTileGrid, cell dword 0 = the terrain flags
 // MovingSlot16 tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
 // the level-type descriptor (CState, +0x20 terrain-class id switch key).
-extern "C" CGameRegistry* g_gameReg;
 
 // A grunt in the hit-scan grid (g_gameReg->m_cmdGrid is a flat 15x15 cell table;
 // each cell holds a CGrunt ptr). ScanTargets reaches each grunt's bound object

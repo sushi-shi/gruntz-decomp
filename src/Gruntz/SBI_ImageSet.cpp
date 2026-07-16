@@ -1,6 +1,7 @@
 #define SBI_DTOR_CHAIN        // enable the inline base-dtor bodies (see StatusBarItem.h)
 #define SBI_OWN_IMAGESET_DTOR // this TU supplies the out-of-line ~CSBI_ImageSet (0x102000)
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
 #include <Mfc.h>
@@ -30,7 +31,6 @@
 // registry's embedded m_10map (CSpriteHashTable, Lookup 0x1b8008) - the same map
 // shape SetupImage uses, reached as reg->m_imageRegistry->m_10map.
 
-extern "C" CGameRegistry* g_gameReg;
 
 // The serialize-sequence counter bumped once per non-trivial pass.
 

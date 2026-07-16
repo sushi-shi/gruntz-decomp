@@ -25,6 +25,7 @@
 // a shared header first (it is that TU's local class); deferred.
 // Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/String.h> // MFC CString (the title-roll formats into one); MFC-first
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h>
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
@@ -66,7 +67,6 @@
 // reads it off the canonical g_gameReg pointer at ds:0x64556c (verified in InputVirtual/
 // Activate/LoadTitleConfig: mov ecx,ds:0x64556c; mov eax,[ecx+0x80]). Canonical DATA at
 // 0x24556c (the CMgrPersistObj::Save m_world gate is the same object).
-extern "C" CGameRegistry* g_gameReg;
 
 // The attract-state count divisor (DAT_00645534) is declared in <Gruntz/Attract.h>
 // (included above); DATA home + producer is src/Rez/RezSync.cpp.

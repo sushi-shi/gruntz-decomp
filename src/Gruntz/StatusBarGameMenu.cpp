@@ -43,6 +43,7 @@
 // Both are documented codegen walls (docs/patterns/gx-frame-outofline-ctor.md);
 // re-attack in the final sweep.
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 
 #include <Mfc.h>
 #include <Gruntz/GameRegistry.h>
@@ -58,7 +59,6 @@
 // CSBI_MenuItem), the registry factory view CGmFactory and the CGameMenuMgr class
 // moved to <Gruntz/GameMenuMgrBuilders.h>.
 // ---------------------------------------------------------------------------
-extern "C" CGameRegistry* g_gameReg;
 
 // ===========================================================================
 // CGameMenuMgr::BuildGameMenu  @0x101580

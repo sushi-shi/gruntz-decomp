@@ -1,4 +1,5 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
+#include <Gruntz/GameRegPtr.h>
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer500 (draw-throttle counter)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -70,7 +71,6 @@
 // CDDrawChildGroup here). The current-state (+0x2c) is typed CState*; the notify target
 // (+0x68) is a genuinely reused slot cast locally; the per-player timer-slot array
 // at +0x150 (stride 0x238) and the m_15c sub-object are reached via raw offsets.
-extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CPlay::LoadLoadingBarSprite (ex the `CLoadingBar` view - the receiver IS CPlay:

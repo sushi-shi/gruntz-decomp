@@ -13,6 +13,7 @@
 // dominant-unit heuristic only. Left in its own unit pending stronger evidence
 // (@identity-TODO).
 #include <Ints.h>
+#include <Gruntz/GameRegPtr.h>
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>    // CGameObject (the target + effect sprite are both one)
@@ -20,7 +21,6 @@
 #include <Gruntz/TriggerMgr.h> // BuildRockBreakParticles (ex CRockBreakMgr - dissolved onto CTriggerMgr)
 
 extern "C" u32 g_engineFrameDelta;   // 0x6bf3bc  per-frame draw delta (advance ctx)
-extern "C" CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton
 
 // The effect leaf: its bound target (m_10, +0x114 state gates the spawn) and its
 // effect sprite (m_38, CAniAdvanceCursor @+0x1a0, +0x1c0/+0x1c8 gates) are BOTH real

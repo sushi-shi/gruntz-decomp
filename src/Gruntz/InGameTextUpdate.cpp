@@ -11,6 +11,7 @@
 // Only offsets / code bytes are load-bearing; the engine sub-object helpers below
 // (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
 #include <Gruntz/InGameText.h> // the canonical CInGameText : CUserLogic model
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h>
@@ -34,7 +35,6 @@
 // hit-tester, m_world the resource holder (its +0x28 CSndHost is the cue host),
 // m_viewOriginL/T/R/B (+0x13c..+0x148) the on-screen view bounds.
 // g_gameReg: plain extern; its one canonical DATA(0x0024556c) definition lives in GruntzMgr.cpp
-extern "C" CGameRegistry* g_gameReg;
 // The array-touch loop default-constructs a run of CString cache nodes (each 4 bytes,
 // so `p++` advances by 4; the ctor is ??0CString@@QAE@XZ @0x1b9b93, reloc-masked). The
 // former EngStr4 view IS the real MFC CString (m_pszData@+0 == CString's LPTSTR); used

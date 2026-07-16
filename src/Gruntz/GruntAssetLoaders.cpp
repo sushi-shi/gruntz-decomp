@@ -9,6 +9,7 @@
 // CString fields each (+0 and +4). They predate the named m_474 member, so they are
 // reached by raw offset (the documented naming-independent-codegen exception).
 #include <Bute/ButeTree.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/TypeKeyColl.h> // CButeTree::Find - g_buteTree @0x6bf620
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
@@ -35,7 +36,6 @@
 
 // The global running game clock (reloc-masked).
 // The global manager pointer (the object at *0x64556c; reloc-masked).
-extern "C" CGameRegistry* g_gameReg;
 // The scratch CString[] the ScratchResolve reject paths tear down (reloc-masked).
 
 static void GruntScratchTeardown() {

@@ -19,6 +19,7 @@
 //      (m_resourceTimerBase/m_resourceInterval, "TimePerResource") respawn timers,
 //      reading the intervals from g_buteMgr.
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/TriggerMgr.h>       // the canonical class this TU's method extends
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
 #include <Gruntz/Grunt.h>
@@ -90,7 +91,6 @@
 //          the CTriggerMgr goo-well step in battlez) - a real per-mode object.
 // The m_10/m_11c/m_134 scalars match, and the per-player slot array at +0x150
 // (stride 0x238) is reached via raw offset.
-extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // 0x6eb80 (__thiscall, ret 4) - the per-frame goo-well / win-condition update.

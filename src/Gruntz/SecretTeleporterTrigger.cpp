@@ -11,6 +11,7 @@
 // coordinate registry (g_actColl @0x644688 / g_secretActReg @0x644598) + the
 // SHARED activation-name registry (<Gruntz/ActNameRegistry.h>, @0x6bf650; the
 #include <Bute/ButeTree.h>          // CVariantSlot::Set (0x16d850)
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
 #include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (0x408710)
@@ -37,7 +38,6 @@
 // CGameRegistry view of *0x64556c; the ex-teleporter-side WwdGameReg extern is
 // unified onto it - same offsets: m_world +0x30, m_cueSink +0x60, m_cmdGrid
 // +0x68, m_scoreHud +0x7c).
-extern "C" CGameRegistry* g_gameReg;
 
 // The +0x7c aux facet g_gameReg->m_scoreHud IS the canonical CBattlezData
 // (<Gruntz/BattlezData.h>): the teleporter ctor bumps its +0x3c "teleporter armed"

@@ -9,6 +9,7 @@
 // (this method's fields m_558..m_56c and SetMode all live there); the former per-TU
 // minimal `class CStatusBarMgr {}` view was folded onto it (P1 view fold).
 #include <Bute/ButeMgr.h>        // canonical CButeMgr (one shape)
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/Play.h>         // canonical CPlay (one shape; ArmSnapshot is reached here)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr big host
 #include <rva.h>
@@ -17,7 +18,6 @@
 
 // The game-manager singleton is the canonical CGameRegistry (*0x64556c, via
 // CPlay.h); its +0x2c current game-state downcasts to the active CPlay.
-extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // The CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8 -> RVA
 // 0x2453d8). GetDwordDef (0x1721e0) is on the canonical CButeMgr (include/Bute/ButeMgr.h).

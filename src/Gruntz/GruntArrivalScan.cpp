@@ -12,6 +12,7 @@
 // their own files pending the WwdGameReg/CGameRegistry singleton dual-view reconciliation
 // (see the M2 report); they interleave this unit's span until then.
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
 #include <Gruntz/TriggerMgr.h>  // the ONE CTriggerMgr
 #include <Gruntz/GruntPuddle.h> // CGruntPuddle (the live-candidate list element)
@@ -32,7 +33,6 @@
 #define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31)) // MSVC cdq/xor/sub abs
 
 // The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry.
-extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
 // Anim-name registry (g_typeColl @0x6bf650, RTTI ?g_typeColl@@3VCTypeKeyColl@@A):
 // GetNameRecord(m_14->m_1c) -> char**; *rec = the grunt-type name char* (retail call

@@ -12,6 +12,7 @@
 // (GameRegistry.h) and the canonical CMulti game-state (Multi.h). Field names are
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/GameRegPtr.h>
 #include <EmptyString.h>       // g_emptyString
 #include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/NetDlgHost.h> // CNetDlgHost (m_host +0x5c facet)
@@ -38,7 +39,6 @@
 // The game-manager singleton (VA 0x64556c); the SelHost/roster handlers cache each
 // player-slot's combo value into its m_focusSlots[] record. Reference-only (undefined
 // external, reloc-masks) as in LobbyDialogs.cpp.
-extern "C" CGameRegistry* g_gameReg;
 // The multiplayer game-state (a CMulti, xref-proven); the roster reads m_isHost /
 // m_hostIndex off it. Declared in <Gruntz/Multi.h>.
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
@@ -84,7 +84,6 @@ struct ChannelSlot {
 };
 SIZE_UNKNOWN(ChannelSlot);
 
-extern "C" CGameRegistry* g_gameReg; // _g_mgrSettings (0x64556c)
 extern CString g_gruntNames[];       // 0x64bdb0 per-channel label table
 
 void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0

@@ -4,6 +4,7 @@
 // two 4x4 int grids (a head-to-head win matrix and a flag matrix) and an array
 // of per-map records, plus a flat Serialize.
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
@@ -16,7 +17,6 @@ float g_zeroF = 0.0f; // 0x5eab40
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local
 // view: FillRecord folds reg->m_118 into each record. The DATA pin reloc-masks
 // the `mov ds:g_gameReg` load against the already-named symbol.
-extern "C" CGameRegistry* g_gameReg;
 
 // 0xfc9c0 - the (re)initialize-with-records entry: run Init() on this, then bind
 // the record array. (The object is raw-`operator new`d by the game manager and

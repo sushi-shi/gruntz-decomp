@@ -31,6 +31,7 @@
 // switch runs only with m_poweredUp==0), (3) the shared-return tail-merge cl won't permute.
 // Final-sweep candidate.
 #include <Mfc.h> // afx-first: <Gruntz/GruntSpawnConfig.h> pulls MFC; keep windows.h MFC-safe
+#include <Gruntz/GameRegPtr.h>
 #include <Ints.h>
 #include <string.h>
 
@@ -116,7 +117,6 @@
             break;                                                                                 \
     }
 
-extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 
 // __cdecl board rect predicate (0x401127): point-in-board-rect (the visible CCueRect).
 extern "C" i32 BoardTest(CCueRect* board, i32 x, i32 y); // 0x401127

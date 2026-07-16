@@ -33,6 +33,7 @@
 // trylevel-slot threading can be reproduced, then re-attack.
 
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegPtr.h>
 #include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs the
                  // real CMapStringToOb. Still supplies RECT (credits-text rect @0x645d88).
 #include <rva.h>
@@ -105,7 +106,6 @@ inline MenuPage::MenuPage() {
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A); its +0x58
 // save sink (the CSaveGame) carries the m_curLevel (+0x1c) area-progress counter
 // the QUESTZ/AREAS gates read.
-extern "C" CGameRegistry* g_gameReg;
 
 // The multiplayer-availability gate (DAT_006455ec): nonzero disables the
 // multiplayer/network-gated items.

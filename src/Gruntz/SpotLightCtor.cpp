@@ -13,6 +13,7 @@
 // placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
 // CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/SoundState.h>  // g_sndEnabled/g_sndCueTag
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -45,7 +46,6 @@ const double g_spotRateMul = -1.0; // 0x5ea3f8
 // +0x78; <Gruntz/LightFxMgr.h>): the ctor indexes its m_tables[10] shade-table array
 // (+0x14) by m_object->m_11c and stores the CShadeTable* as the draw-fill arg; the
 // alpha-blend gate is the registry's m_134 discriminator. (The ex CSpotMgrTable view
-extern "C" CGameRegistry* g_gameReg;
 
 // CSpotLight : CUserLogic is modeled in <Gruntz/SpotLight.h> (canonical header,
 // included below). The light eyecandy logic: own fields begin past the CUserLogic

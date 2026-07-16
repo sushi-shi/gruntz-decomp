@@ -19,6 +19,7 @@
 // CGrunt::GruntInRadius (0x67b00), PlaceAtTile 0x1640 -> CGrunt::TileSwitch
 // (0x4b320), ReportObjectAt 0x3030 -> CTriggerMgr::ApplyTriggerB (0x6e120).
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_tileMgr / registry m_cmdGrid)
 #include <Gruntz/Grunt.h>      // canonical CGrunt (the ex-CObjectTracker identity) + CGameRegistry
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CLevelPlane (m_mainPlane +0x5c)
@@ -26,7 +27,6 @@
 // The CGameRegistry view of the 0x24556c singleton (the SAME object as WwdGameReg* g_gameReg,
 // the 0x24556c dual-view): typed CGameRegistry so its m_cmdGrid (CTriggerMgr) / m_cueSink
 // (CGruntCueSink) slots are reached cast-free. Bound here (Win32 dual-view convention).
-extern "C" CGameRegistry* g_gameReg;
 
 // The registry's viewport-bounds path is the canonical chain g_gameReg->m_world
 // (CDDrawSurfaceMgr) ->m_24 (CGameLevel) ->m_mainPlane (CLevelPlane, +0x5c); the

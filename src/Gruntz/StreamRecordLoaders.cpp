@@ -13,6 +13,7 @@
 // load-bearing. The shared registry views (CRegSub30 / CRegTypeTable) live in
 // <Gruntz/SerialRecView.h>.
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (the name map at g_gameReg->m_world +0x10)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world)
@@ -23,7 +24,6 @@
 
 // The game registry singleton (0x64556c). The delinker's canonical symbol is the
 // extern "C" _g_mgrSettings (the cplay unit owns it); reloc-masked DIR32.
-extern "C" CGameRegistry* g_gameReg;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once
 // per string field read.

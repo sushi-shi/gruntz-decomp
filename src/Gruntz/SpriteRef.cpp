@@ -6,6 +6,7 @@
 // <DDrawMgr/ShadeTableCache.h>; CShadeTableCache::FindRemove is modeled NO-body so
 // Free()'s `call` reloc-masks.
 #include <Mfc.h> // afx-first (superset of Win32.h; the includes below pull MFC collections)
+#include <Gruntz/GameRegPtr.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <Gruntz/SpriteRefTable.h>
@@ -254,7 +255,6 @@ void CSpriteRef::Free() {
 // registry; WM_COMMAND handles Cancel / the shared save-menu draw. The two callees
 // and the selection global are the canonical savegame symbols (DrawSaveGameMenu
 // @0xe3f40, FillSaveDialog @0xe3c60, g_savedMenuCmd @0x213a9c), reloc-masked.
-extern "C" CGameRegistry* g_gameReg;
 DATA(0x0024c86c)
 i32 g_dlg64c86c = 0;       // DAT_0064c86c (the active save-sink; owner-TU definition)
 extern i32 g_savedMenuCmd; // 0x213a9c (canonical, DATA-bound in savegame)

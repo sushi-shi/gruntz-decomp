@@ -28,6 +28,7 @@
 // (UpdateDestructButton @0x10bc30 / AdvanceGauge @0x105750) - the member retype
 // is deferred to the Play.cpp reconciliation.
 #include <Ints.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/SoundState.h>  // g_sndEnabled/g_sndCueTag
 #include <Gruntz/TraitorMode.h> // g_traitorMode
 #include <Gruntz/LeafCue.h>
@@ -54,7 +55,6 @@
 // The *0x24556c game-manager singleton. Declared here (it used to arrive from
 // <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.
-extern "C" CGameRegistry* g_gameReg;
 
 // node IS the MFC CPtrList CNode, and `((CTmNode*)GetHeadPosition())->m_pt` is
 // spelled with the real accessor `(CTrigPoint*)m_recList.GetHead()` below - the

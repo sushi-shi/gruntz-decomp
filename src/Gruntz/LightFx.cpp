@@ -1,4 +1,5 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
@@ -42,7 +43,6 @@ extern "C" u32 g_engineFrameDelta;
 
 // The global game registry (?g_gameReg, *0x64556c); only the +0x78 logic pump is
 // read here. (Declared as the engine's CGameRegistry via the existing DATA label.)
-extern "C" CGameRegistry* g_gameReg;
 
 // The global bute store RebindNode re-points the object map at ("A" section).
 // g_buteTree (0x6bf620) + CButeTree::Find (0x16d190) live in the bute TUs;

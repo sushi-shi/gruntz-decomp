@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Gruntz/GameRegPtr.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <DDrawMgr/DDSurface.h>
 // LightFxRender.cpp - software light/glow/overlay renderer (ex tracer placeholder
@@ -52,7 +53,6 @@
 // g_gameReg singleton (*0x64556c) - the canonical CGameRegistry view. The global
 // apply path blits through g_gameReg->m_cmdGrid (+0x68), the real CTriggerMgr
 // (<Gruntz/TriggerMgr.h>): CTriggerMgr::ResetGroup @0x79520.
-extern "C" CGameRegistry* g_gameReg;
 
 // The live screen RGB-format shift table (VA 0x683ea0..0x683eb4 = RVA 0x283ea0..):
 // per channel a right-shift (8-bit -> channel width) then a left-shift into the

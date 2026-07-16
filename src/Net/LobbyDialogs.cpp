@@ -23,6 +23,7 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS, control IDs, and code
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h> // real MFC CString (status/drop banners) + windows.h (dialog API) via afx.h
+#include <Gruntz/GameRegPtr.h>
 #include <Net/NetLobby.h> // NetLobby::g_curDlg (defined below; DATA home is this TU)
 #include <EmptyString.h>  // g_emptyString
 #include <Ints.h>
@@ -37,7 +38,6 @@
 // --- shared globals (canonical home elsewhere; extern-only pins here) ---
 // The CGameRegistry singleton: the lobby DlgProcs read its current game-state
 // (m_curState, +0x2c) which - while a network game is open - IS the CMulti.
-extern "C" CGameRegistry* g_gameReg;
 // GetDlgItem(hWnd, 0x4b6) cache (0x248ce0; the modeless dialog's cached child HWND,
 // stored raw as i32), shared by the timer wrappers. Bound to the DATA home name
 // (extern "C" g_sharedFlag, DATA @0x248ce0 in Multi.cpp) so the store relocs.

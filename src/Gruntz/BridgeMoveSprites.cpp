@@ -13,6 +13,7 @@
 // masked externals/$SG literals on the same singleton (*0x64556c) as its siblings.
 
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/LeafCue.h>
@@ -23,7 +24,6 @@
 // BootyState/CHelpBookSprite cue idioms use). It reads the canonical CGameRegistry:
 // the rect is m_viewOrigin* (+0x13c..+0x148) and the sound chain is m_world->m_soundRegistry
 // (CSndHost == CDDrawSubMgrLeafScan).
-extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // The receiver IS the canonical CTileTriggerLogic (<Gruntz/TileTriggerLogic.h>): its
 // slot-0 Tick (0x110c10) calls this helper on itself, and the tile coords m_08/m_0c

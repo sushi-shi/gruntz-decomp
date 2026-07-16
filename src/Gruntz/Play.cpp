@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Rez/FrameClock.h> // g_lastNow / g_frameTicks (frame-clock band)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/AreaMgr.h> // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode)
@@ -160,7 +161,6 @@ extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 // pointer to the real class without an extern "C" type clash). Type unchanged for this
 // TU -- the DATA(0x0024556c) binding below (which re-declares this same extern-"C"
 // entity) is unaffected.
-extern "C" CGameRegistry* g_gameReg;
 // g_buteMgr (canonical CButeMgr) comes from <Bute/ButeMgr.h>.
 
 // The shared engine text renderer (src/Wap32/EngStr.cpp, __cdecl): the ONE canonical
@@ -5952,7 +5952,6 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
 // "DrawPreview" (thunk 0x1c5d) IS EngStr_DrawText @0x115440. "FinishAssetLoad"
 // (thunk 0x35e4) IS CMulti::AckJoinFailure @0xbc420 with ecx = the finishGate
 // notify object - the same dropped-`this` pattern as the loaders.)
-extern "C" CGameRegistry* g_gameReg; // *0x64556c (def: GruntzMgr.cpp)
 
 // @source: decomp-xref
 // @early-stop

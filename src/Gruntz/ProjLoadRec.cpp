@@ -7,6 +7,7 @@
 //
 // Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Rez/RezList.h>          // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
@@ -18,7 +19,6 @@
 #include <string.h>           // inline strlen / strcpy over the scratch buffer
 
 // The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
-extern "C" CGameRegistry* g_gameReg;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once per
 // string field read.

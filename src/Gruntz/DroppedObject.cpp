@@ -27,6 +27,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ObjectDropper.h> // CObjectDropper : CUserLogic (ctor 0xc59f0)
+#include <Gruntz/GameRegPtr.h>
 #include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
@@ -64,7 +65,6 @@
 // The game-registry singleton (0x64556c; the SAME instance every gamemode unit
 // binds as g_gameReg / g_gameReg). The dropper family reaches its facets
 // through the reused per-mode slots (authentic downcasts, see CGameRegistry.h).
-extern "C" CGameRegistry* g_gameReg;
 
 // The per-frame game clock (g_frameTime) + frame delta (g_frameDelta) + draw-clock
 // delta (g_engineFrameDelta). C linkage so the symbols pair with the targets' _g_* names

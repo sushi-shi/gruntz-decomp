@@ -12,6 +12,7 @@
 // Functions in strictly ascending retail-RVA order. Field names are placeholders;
 // only the OFFSETS + the per-method call/branch structure are load-bearing.
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Gruntz/GameRegPtr.h>
 #include <rva.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Rez/FrameClock.h>   // the frame-clock/timer band the session loop reads/pumps
@@ -56,7 +57,6 @@ extern "C" i32 g_optionsCursor = 0;
 // g_lastNow (0x245580 draw clock) comes from <Rez/FrameClock.h>.
 
 // The game-manager singleton + a divisor for the TITLE%d index.
-extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 // g_attractStateCount (0x645534) is declared in <Gruntz/Attract.h> (included below).
 
 // The DirectPlay session-name CString global (assigned in StartTitle).
@@ -113,7 +113,6 @@ extern "C" CNetCreateCtx* g_netCreateCtx;
 //     offset dtors are documented terminal @early-stop walls (vtbl un-catalogued / member-
 //     by-value modeling deferred to the final sweep).
 
-extern "C" CGameRegistry* g_gameReg;
 
 // Owner-TU global DEFINITIONS (this multiplayer TU owns them). Each is referenced
 // only from this TU (data_home: private); the single reference extern lives in
@@ -251,7 +250,6 @@ extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam); // 0x1192d0
 extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                   // 0x6c44ac
 extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
-extern "C" CGameRegistry* g_gameReg; // 0x64556c (the same *0x64556c object as m_4)
 
 // The MULTI_JOIN wait dialog's cached player listbox HWND (GetDlgItem(hDlg,0x3fc)).
 DATA(0x00248d00)

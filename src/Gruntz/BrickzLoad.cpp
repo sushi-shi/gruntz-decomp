@@ -1,4 +1,5 @@
 #include <Mfc.h> // real ::CPtrArray (CGruntzMapMgr::m_arr) - MFC umbrella kept first
+#include <Gruntz/GameRegPtr.h>
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/GruntzMapMgr.h>      // CGruntzMapMgr : CMapMgr (the +0x70 grid container)
@@ -51,7 +52,6 @@
 // 1 => test). g_gameReg is a divergent-view singleton (CGruntzMgr* / WwdGameReg* /
 // CGameRegistry* across TUs, three distinct structs), so its extern stays local -
 // a shared-header decl would collide with the other views' TUs.
-extern "C" CGameRegistry* g_gameReg;
 
 // A weighted colour selector: rolls rand()%total (+1) or rand()&1 when total==0,
 // walks the four cumulative thresholds t1..t4 and returns the picked tile id.

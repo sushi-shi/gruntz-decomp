@@ -15,6 +15,7 @@
 // canonical CSpotLight (SpotLight.h). The SpotM10/SpotM14/SpotM98 views were CGameObject/
 // AnimWorkerObj/CGameObject facets and MgrObj68 was CTriggerMgr::m_grid - all dissolved.)
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Mfc.h>
 #include <math.h>
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA (the "A" name->node bute map)
@@ -23,7 +24,6 @@
 #include <Gruntz/TriggerMgr.h>      // CTriggerMgr::m_grid (+0x1c 4x15 placed-cell grid)
 
 extern "C" unsigned g_frameDelta;    // 0x645584 frame delta (canonical ?n@@3HA; reloc-masked)
-extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // @early-stop
 // x87 fp-stack scheduling wall (docs/patterns/x87-fp-stack-schedule.md, topic:wall):

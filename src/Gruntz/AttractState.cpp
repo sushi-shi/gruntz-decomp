@@ -26,6 +26,7 @@
 //   Vslot07()            0x0147b0  slot 7  host/paint poll
 // Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/String.h> // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Attract.h>
 #include <Bute/SymParser.h> // CSymParser (m_8: ResolvePath 0x13c030) + CSymTab (m_2c: FindSub 0x13a230)
@@ -48,7 +49,6 @@
 
 // The game registry singleton (canonical CGameRegistry): its +0x80 launch counter
 // (m_numRuns) selects the TITLE state. Canonical DATA at 0x24556c.
-extern "C" CGameRegistry* g_gameReg;
 
 // The attract-state count divisor (DAT_00645534, a writable global int). extern "C"
 // g_attractStateCount (0x245534) is declared in <Gruntz/Attract.h> (included above).

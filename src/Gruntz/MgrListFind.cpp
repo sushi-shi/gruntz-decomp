@@ -12,9 +12,9 @@
 //     reads m_pNodeHead @+4, byte-identical to the old (MgrFindList*)cmdGrid->m_4 read.
 #include <Gruntz/TriggerMgrViews.h> // CTriggerMgr + CTmRecNode (MFC-first)
 #include <Gruntz/GruntPuddle.h>      // CGruntPuddle (the baseList element; m_tileX/m_tileY/m_pending)
+#include <Gruntz/GameRegPtr.h>
 #include <rva.h>
 
-extern "C" CGameRegistry* g_gameReg; // ?g_gameReg (VA 0x64556c)
 
 // ---------------------------------------------------------------------------
 // 0xf0db0 (__cdecl) - true if a live (m_occupied==0) candidate matches (a1,a2).

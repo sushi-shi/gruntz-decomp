@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
@@ -53,7 +54,6 @@ CGruntCreationPoint::~CGruntCreationPoint() {}
 // (the ref-row index feeding GetSel) and m_158[key*71+3].m_idx == m_focusSlots[key].m_20
 // (the +0x18-probe arm gate).
 #include <Gruntz/GameRegistry.h>
-extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.

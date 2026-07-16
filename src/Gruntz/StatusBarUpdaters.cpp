@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/SoundState.h>      // g_sndEnabled/g_sndCueTag
 #include <Gruntz/GameRegistry.h>    // g_gameReg singleton (0x24556c) canonical view
 #include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
@@ -33,7 +34,6 @@ extern "C" u32 g_killCueClock; // draw-clock mirror
 // holder (+0x30) is the typed CDDrawSurfaceMgr (GameRegistry.h); the tile
 // notifier (+0x70) is the canonical CTileGrid (Notify facet), reached without a
 // cast, and the view-bounds rectangle scalars (+0x13c..+0x148) match directly.
-extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 
 // ===========================================================================
 // CTileTriggerSwitchLogic::SwitchDown @0x110570  (base vtable slot 2)

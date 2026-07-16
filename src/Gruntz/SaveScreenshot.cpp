@@ -13,6 +13,7 @@
 // code bytes are load-bearing; the surface/pool/config callees are reloc-masked
 // __thiscall externals declared-only in their canonical headers.
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 
 #include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h) // wsprintfA
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections (MakeAndAddB/RemoveItemA) + CDDSurface
@@ -22,7 +23,6 @@
 
 // The global game/manager settings singleton (*0x64556c); m_modeW/m_modeH = the screen
 // capture width/height.
-extern "C" CGameRegistry* g_gameReg;
 
 // @source: decomp-xref
 // @early-stop

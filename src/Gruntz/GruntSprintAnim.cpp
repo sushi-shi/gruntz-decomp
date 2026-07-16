@@ -20,6 +20,7 @@
 // offsets / code bytes are load-bearing (campaign doctrine).
 
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
@@ -39,7 +40,6 @@
 // returns the entry at [this + idx*4 + (flag ? 0x4c : 0x08)], 0 if idx >= 0x11.
 // The handle it returns is stored into the sprite's i32 draw-fill arg, so it is
 // i32-typed here (no cast at the store).
-extern "C" CGameRegistry* g_gameReg; // *0x64556c (canonical _g_mgrSettings view)
 
 // The created SimpleAnimation sprite is the shared CGameObject: ApplyName (0x150540)
 // caches the named first frame; ApplyLookupGeometry (0x1505b0) resolves its cycle

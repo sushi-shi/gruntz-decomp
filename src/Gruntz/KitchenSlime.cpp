@@ -1,4 +1,5 @@
 #include <Mfc.h>           // real MFC CString (direction-name match temp; reloc-masked)
+#include <Gruntz/GameRegPtr.h>
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
@@ -52,7 +53,6 @@
 
 // The canonical CGameRegistry view of the singleton; m_posY (cue gate) and m_dirX
 // (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
-extern "C" CGameRegistry* g_gameReg;
 
 // The entity FindGruntAt returns IS a CGrunt (retail signature
 // ?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@..., returns CGrunt*; the header still

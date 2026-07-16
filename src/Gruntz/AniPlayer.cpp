@@ -6,6 +6,7 @@
 // SBI_ImageSetAni.cpp); the 0xe6020 stub to SBI_WellGoo.cpp (slot 2). Only the
 // four timed-play leaf methods remain - see <Gruntz/AniPlayer.h> (@identity-TODO).
 #include <Gruntz/AniPlayer.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawSubMgrPages)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
@@ -18,7 +19,6 @@
 #include <Gruntz/SbiConfig.h>    // CDDrawSurfaceMgr / CSbiConfigRecord (the record views)
 
 // The g_gameReg singleton (*0x24556c); DATA-pinned elsewhere (canonical extern).
-extern "C" CGameRegistry* g_gameReg;
 
 // The running game clock the timed-play start is stamped from (DAT_00645588).
 extern "C" u32 g_frameTime;

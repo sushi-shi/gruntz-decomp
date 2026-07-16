@@ -8,6 +8,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Gruntz/TypeKeyColl.h>   // s_codeA/s_actKeyB registration keys
@@ -61,7 +62,6 @@ CExitTrigger::~CExitTrigger() {}
 // The game registry singleton (g_gameReg @0x64556c): +0x30 the probe-sink
 // holder, +0x68 the cue receiver, the per-area focus slots at +0x150.
 SIZE_UNKNOWN(CGameRegistry);
-extern "C" CGameRegistry* g_gameReg; // *0x64556c canonical singleton (def: GruntzMgr.cpp)
 
 // CExitTrigger::CExitTrigger(CGameObject*) @0x03ecf0 - the 1-arg leaf ctor: the
 // standard CUserLogic(obj) init (folded inline) plus the exit tail - cl emits the

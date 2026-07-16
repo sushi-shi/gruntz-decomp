@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/String.h>
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup + CDDrawGroupNode shape
@@ -30,7 +31,6 @@
 #include <Gruntz/GameMode.h> // CBootyState - the REAL owner of BuildBootyPerfectAnimation
 
 // The game-manager singleton (g_gameReg, *0x64556c), canonical view.
-extern "C" CGameRegistry* g_gameReg;
 
 // The attribute manager (butemgr unit): g_buteMgr singleton from <Bute/ButeMgr.h>.
 

@@ -1,5 +1,6 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
@@ -22,7 +23,6 @@
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
 // game-manager chain Render reads is modeled.
-extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 

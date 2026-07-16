@@ -17,6 +17,7 @@
 // m_arrivalReroll* / m_tileClaimed / m_arrivalState / mask m_arrivalFlags)
 // repeats across most cases. All engine helpers are external (reloc-masked).
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Gruntz/GameRegPtr.h>
 #include <Ints.h>
 
 #include <rva.h>
@@ -46,7 +47,6 @@ static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 // The missed-select complaint cue lives at 0x61ab24 (the engine ?g_sndCueTag@@3HA int;
 // its address is the LeafCue the Complain path fires).
 
-extern "C" CGameRegistry* g_gameReg; // ->m_134 / ->m_cmdGrid
 
 // Free engine helpers (reloc-masked).
 extern "C" {

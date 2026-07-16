@@ -3,6 +3,7 @@
 // reached through ILT jmp-thunks; the primary state lives in src/Globals.cpp
 // (g_randSeeded/g_randSeed), the second generator's state (g_rng2*) is here.
 #include <Gruntz/Random.h>
+#include <Gruntz/GameRegPtr.h>
 
 #include <Mfc.h> // superset of Win32.h; GameRegistry.h pulls afx via SoundCue.h
 #include <rva.h>
@@ -31,7 +32,6 @@ i32 g_rng2State; // 32-bit LCG state
 // The game-registry singleton (0x24556c); only its replay-mode flags (m_130/m_134)
 // are read here. The former CoinGameReg local view is dissolved onto the canonical
 // CGameRegistry (<Gruntz/GameRegistry.h>) - same object, same offsets.
-extern "C" CGameRegistry* g_gameReg;
 
 namespace Rng {
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.

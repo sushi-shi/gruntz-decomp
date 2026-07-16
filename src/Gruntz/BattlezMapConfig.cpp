@@ -42,6 +42,7 @@
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
 #include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileActionEvent.h> // CTileActionEvent - FindByField0C's real return type
@@ -176,7 +177,6 @@ void* __stdcall ListNodeAdvance(void** pos);
 // freelist node header (the allocator hands out node + bias; recycle reverses it).
 
 // The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
-extern "C" CGameRegistry* g_gameReg;
 
 // A render-context object the cell-probe call site passes through (DAT_00644ca4 @
 // VA 0x644ca4). Reloc-masked DATA.

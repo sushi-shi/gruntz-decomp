@@ -37,6 +37,7 @@
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
@@ -64,7 +65,6 @@ CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
 // ---------------------------------------------------------------------------
 // Shared singletons (named so their DIR32 datum reloc-masks).
 // ---------------------------------------------------------------------------
-extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
                                      // (Update reaches its sub-objects cast-free through the
                                      //  canonical members: m_tileGrid/m_world/m_cmdGrid +
                                      //  the m_viewOrigin* bounds; the deep level-plane graph
