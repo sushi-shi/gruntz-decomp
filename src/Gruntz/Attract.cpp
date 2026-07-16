@@ -1,13 +1,10 @@
 // Attract.cpp - the attract state-services interval TU at retail .text
-// [0x0fa1f0 .. 0x0fb328]: one WOVEN original obj (TU_MIGRATION 0x0fa1f0, weave
+// [0x0fa1f0 .. 0x0fb328]: one WOVEN original obj (weave
 // 0.36) that interleaves function-by-function the CAttract title/fade services
 // (FadeInTitle/RunTitle/RunTitleSeq), the CSoundFxEmitter screen-transition
 // emitters, the CState draw/shade/paint helpers (Vslot17/Vslot07/ShadeScreen) and
-// the CMgrPersistObj serialize family (ex soundfxemitter + statedrawtext +
-// mgrobjserialize units). The former standalone SaveRecordLoad.cpp's SaveRecord
-// (0xfaff0) was a SECOND view of the same CMgrPersistObj (identical +0x0c..+0x1b0
-// layout; its Load is the read-side twin of Save @0xfb1c0) - folded onto the one
-// struct here.
+// the CMgrPersistObj serialize family. SaveRecord (0xfaff0)'s Load is the read-side
+// twin of Save @0xfb1c0.
 //
 // REHOME/holding-TU drain (D5): the CAttract state-machine CORE obj (the 0x13fb0
 // band of CState vtable-slot overrides + the ??1 dtor @0x08cd90) was a SEPARATE
@@ -103,8 +100,8 @@ i32 g_suppress_64e360 = 0; // 0x24e360
 // __stdcall self-on-stack) on the flip surface's held DirectDraw COM interface
 // (CDDSurface::m_8) to see whether the page still needs a restore.
 
-// AttractActor / AttractActorList (the per-frame g_actorList view) now live in the
-// shared <Gruntz/AttractActor.h> (folded out of this TU; also used by CDemo/CHelpState).
+// AttractActor / AttractActorList (the per-frame g_actorList view) live in the
+// shared <Gruntz/AttractActor.h> (also used by CDemo/CHelpState).
 
 // (The band-A-only externs - g_frameDelta, g_pPostMessageA, s_dat60b5bc,
 // g_emptyString, g_sndEnabled, g_pTimeGetTime, g_pwsprintfA, the AttractWndHolder
@@ -177,9 +174,9 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         0x3e8,
         0,
         1
-    ); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
+    ); // 0xfa8f0 CState::RetireScene
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    // slot in a reg.
     if (ShowCursor(1) < 0) {
         do {
         } while (ShowCursor(1) < 0);
@@ -237,9 +234,9 @@ i32 CAttract::Activate() {
         0x3e8,
         0,
         1
-    ); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
+    ); // 0xfa8f0 CState::RetireScene
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    // slot in a reg.
     if (ShowCursor(1) < 0) {
         do {
         } while (ShowCursor(1) < 0);
@@ -511,7 +508,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
 
 // CState::RetireScene(a1,a2,a3,a4) (0xfa8f0): two-channel type-3 screen-transition
 // emitter; channel B chosen via a4 + CDDrawWorkerMgr::Method_158d20. No bank-stop
-// bracketing on this variant. HOISTED onto CState (was CSoundFxEmitter::Method_fa8f0):
+// bracketing on this variant. On CState:
 // the retail caller graph shows every screen state (CPreviewState/CAttract/CBootyState/
 // CCreditsState/CMulti/CPlay/...) invokes it on its OWN `this`, and the body reads only
 // the CState resource-chain facet - so it IS a CState-level helper. m_faderMgr is the
@@ -606,8 +603,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
 
 // ---------------------------------------------------------------------------
 // CState::Vslot07 (slot 7 / +0x1c, 0x0fac70): the base-state top-window paint poll.
-// RECOVERED IDENTITY (was the StatePaintHost placeholder homed at CAttract): its
-// .rdata data-ref is ??_7CState@@6B@+0x1c, and CCreditsState/CSplashState/CHelpState/
+// Its .rdata data-ref is ??_7CState@@6B@+0x1c, and CCreditsState/CSplashState/CHelpState/
 // CDemo/CMulti/CPlay all inherit this slot; the callers CAttract::Vslot07 (0x147b0),
 // CMultiBootyState::ReadyAndPaint (0x1ce30) and CGuardedDispatch::Run (0x1f870) each
 // call CState::Vslot07() on their own `this`. If the owner's game window is present, it
@@ -629,9 +625,7 @@ i32 CState::Vslot07() {
 }
 
 // ===========================================================================
-// CMgrPersistObj - the persisted game-mgr object (ex MgrObjSerialize.cpp +
-// SaveRecordLoad.cpp; the two files carried DUPLICATE views of this one object
-// - identical +0x0c..+0x1b0 layouts - now one struct). Its Save/Load stream the
+// CMgrPersistObj - the persisted game-mgr object. Its Save/Load stream the
 // fields through the shared WAP32 CSerialArchive slots (Read @+0x2c / Write
 // @+0x30); Init drives the "loading imagez" splash + GAME_IMAGEZ load. Offsets
 // + code bytes are load-bearing; field/class names are best-guess placeholders.
@@ -676,7 +670,7 @@ i32 CMgrPersistObj::Init() {
         return 0;
     }
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    // slot in a reg.
     while (ShowCursor(0) >= 0)
         ;
     if (m_levelData->m_drawTarget->Method_158bc0() == 0) {
@@ -718,7 +712,7 @@ i32 CMgrPersistObj::Init() {
 }
 
 // -------------------------------------------------------------------------
-// 0x0faec0 (spatially re-homed from src/Stub/ReconBatch2.cpp). Per-frame
+// 0x0faec0. Per-frame
 // present/refresh of the bound view: if the suppress latch is set, clear it and
 // return; else Refresh the back pair, ShadeRect the back surface with arg0, Flip
 // the front surface, then Refresh again. @orphan: reached from CGruntzMgr::
@@ -759,7 +753,7 @@ i32 CState::ShadeScreen(i32 pct) {
 }
 
 // -------------------------------------------------------------------------
-// 0x0fafa0 (spatially re-homed from src/Stub/ReconBatch2.cpp). __stdcall(4)
+// 0x0fafa0. __stdcall(4)
 // validity gate: returns 0 if arg0 is null; for kind 4 / 7 validates arg0 through
 // a per-kind checker (return 0 on fail); otherwise (and on success) returns 1.
 i32 __stdcall Check4_2ce8(i32 h); // 0x0faff0 (kind 4)

@@ -47,7 +47,7 @@
 #include <Gruntz/TileActionEvent.h> // CTileActionEvent - FindByField0C's real return type
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
+#include <Gruntz/TypeKeyColl.h> // g_typeColl (anim registry)
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Wwd/WwdFile.h>
@@ -69,7 +69,7 @@
 #include <Globals.h>
 
 #include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
-#include <math.h>   // sqrt (CBattlezMapConfig::Step board-distance, waveP)
+#include <math.h>   // sqrt (CBattlezMapConfig::Step board-distance)
 #pragma intrinsic(sqrt)
 #include <string.h>     // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
 #include <new>          // placement new (CRect in-place ctor)
@@ -93,10 +93,8 @@ void* __stdcall ListNodeAdvance(void** pos);
 // The unit's type/anim sub-object (grunt->m_objAux, +0x14) is the real AnimWorkerObj
 // (<Gruntz/UserLogic.h>): its +0x1c is the anim-name index g_typeColl resolves. The
 
-// The grid units ARE ::CGrunt (<Gruntz/Grunt.h>, included above) - the former
-// `CGrunt` view was a 40-field second model of it, and the file already had to cast
-// `((CGrunt*)unit)->RectContains(...)` to reach the real class. Every one of the view's
-// offsets lands on a CGrunt field at the IDENTICAL offset (m_entranceReason +0x170,
+// The grid units ARE ::CGrunt (<Gruntz/Grunt.h>, included above). The CGrunt fields it
+// reach sit at the IDENTICAL offset (m_entranceReason +0x170,
 // m_entrancePxX/Y +0x174/+0x178, m_lastTilePxX/Y +0x17c/+0x180, m_tileOwnerHi/Lo
 // +0x1ec/+0x1f0, m_gruntKind +0x258, m_defenderState +0x2d4, m_arrivalCol/Row
 // +0x2f0/+0x2f4, and the occupied-coord list at +0x31c), and its +0x10/+0x14 "level
@@ -144,8 +142,7 @@ void* __stdcall ListNodeAdvance(void** pos);
 // fills a RECT (left/top/right/bottom from the four args) and returns it. Ghidra/
 // FID attests ??0CRect@@QAE@HHHH@Z; it IS the engine CRect(l,t,r,b) direct-store
 // ctor (out-of-line, so the board-clamp idiom below CALLs it rather than inlining
-// four stores). Modeled by the canonical CRect (<Wap32/Rect.h>); the old local
-// QuadIntRecord/RectInit view folded onto it. External, reloc-masked.
+// four stores). Modeled by the canonical CRect (<Wap32/Rect.h>). External, reloc-masked.
 
 // A coord-occupancy query (RVA 0x051850, thunk 0x03c4c): a __thiscall on a unit
 // taking a packed (x,y) pair; nonzero => the cell is occupied. Used by the grid
@@ -162,16 +159,15 @@ void* __stdcall ListNodeAdvance(void** pos);
 // +0x08. So the `CLevelInfo` view was a second model of CLevelInfo; its +0x30
 // "scene" is CLevelInfo::m_objList (CLevelList: m_coll = the walked object collection,
 // m_view->m_5c = the world->screen mapper), and its +0x10 is the level's active
-// CGameObject. All folded into <Gruntz/LevelInfo.h>. (The view's "m_cellResolver"
-// @+0x14 was a PHANTOM - see the receiver note in BattlezMapConfig.h.)
+// CGameObject. All modeled in <Gruntz/LevelInfo.h>.
 
 // ---- Reloc-masked engine globals --------------------------------------------
 // The intrusive freelist head: a singly-linked list of recycled coord-pair nodes
 // (node->next at +0). Shared with CBattlezMapConfig's allocator (which pulls nodes
 // off it); FreeArrays pushes them back. Referenced as data (DIR32).
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
-// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
+// fields of g_coordPool, which are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
@@ -242,7 +238,7 @@ extern "C" u32 g_frameTime;
 
 // ===========================================================================
 // The remaining cluster giants - logic NOT yet reconstructed. Each owns its RVA
-// here (moved out of src/Stub/) and links so its sibling callers resolve; the
+// here and links so its sibling callers resolve; the
 // bodies are placeholders for the final sweep. They share the I/G/L/P/J/C/R
 // anim-name dispatch (g_typeColl) + the g_coordPool.m_freeHead/coord recycling +
 // FindPath/CPtrList path-swap idioms already modeled above.
@@ -281,8 +277,7 @@ extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 // (lvl->m_objList->m_coll, <Gruntz/QueueDrainHost.h>): cells are CQueueProbeNode
 // {next@+0, data@+8}, payloads are real ::CGameObject (m_flags +0x08, m_screenX/Y
 // +0x5c/+0x60, m_7c the AnimWorkerObj whose +0x10 holds the object's FACTORY fn-ptr -
-// the type key the filters compare - and m_124 the per-map id). The former CQueueProbeNode
-// onto those real classes (CBrickzGrid was the CBrickzGrid; its "+0xc" is m_width).
+// the type key the filters compare - and m_124 the per-map id). CBrickzGrid's +0xc is m_width.
 // ---------------------------------------------------------------------------
 // The +0x7c aux's +0x10 slot holds the object type's registered FACTORY function
 // pointer (RegisterType stores the create-fn there), so each marker loop's type test is
@@ -2297,10 +2292,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
 // the visited bit + a 0xc0000/0x9a passability test), then loops on g_stepRun.
 // ===========================================================================
 // ===========================================================================
-// CBattlezMapConfig::ResolveArrival (0x02c690; re-homed from the former gruntarriveresolve
-// unit, waveP - TU_MIGRATION MOVE row `0x02c690 ResolveArrival@CBattlezMapConfig
-// gruntarriveresolve -> 0x29a30 battlezmapconfig`; CBattlezMapConfig IS CBattlezMapConfig's
-// run-phase reinterpretation, xref-proven). The grunt arrival/tile-effect resolver;
+// CBattlezMapConfig::ResolveArrival (0x02c690). The grunt arrival/tile-effect resolver;
 // g_coordPool.m_freeHead / g_coordPool.m_linkOffset / g_coordPool reuse this TU's decls, CTriggerMgr is
 // this TU's local view (ApplyTriggerA added). The CArrive* sub-object views are local.
 // ===========================================================================
@@ -2348,7 +2340,7 @@ static __inline i32 arrCell(CBrickzGrid* grid, i32 col, i32 row) {
 }
 
 // @early-stop
-// RECONSTRUCTED 23.7%->54.8% (2026-07-05). The whole COMMON path is now complete + logic-
+// The whole COMMON path is complete + logic-
 // correct (verified vs `sema disasm --diff`): Gate1a14(g) gate; the list-cached m_328 latch
 // (esi=&g->m_31c, read [esi+0xc]); the double-GetTilePos dest cell grid[gy][bx] AND the own
 // cell grid[fcy][fcx] (fcy = coord->y, was wrongly fcx twice) with the 0x01010101 OOB self-
@@ -4527,9 +4519,7 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Step (0x031610; re-homed from the former gruntmovestep unit, waveP -
-// TU_MIGRATION MOVE row `0x031610 Step@CBattlezMapConfig gruntmovestep -> 0x29a30
-// battlezmapconfig`). The per-tick grunt move-resolution step; g_coordPool reuses
+// CBattlezMapConfig::Step (0x031610). The per-tick grunt move-resolution step; g_coordPool reuses
 // this TU's decl, the move-grid views are local. (Sibling 0x29af0 TileSwitch29af0
 // stays in gruntmovestep - a COMDAT leaf, out of scope this batch.)
 // ===========================================================================
@@ -4553,8 +4543,8 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
     }
 
 // @early-stop
-// CRACKED 18%->72% (2026-07-05). The 18% park was STRUCTURAL, not a wall: my source
-// laid the in-flight path first, but retail lays the FRESH path as the fall-through.
+// The block order matters: my source laid the in-flight path first, but retail lays the
+// FRESH path as the fall-through.
 // Fixes applied, each verified against llvm-objdump -dr:
 //   * block order: wrap fresh in `if(m_328==0){...}` so cl emits `jne handle328` and
 //     falls into fresh (was `if(m_328!=0)goto` which cl inverted to fall into the short
@@ -4721,10 +4711,8 @@ L_clear:
 #undef MOVE_RECYCLE
 
 // CGrunt::GetTilePos (0x31c70) - write the HUD tile coords (m_10->m_5c/m_60 >> 5)
-// into the caller's {x,y} out slot and return it. Re-homed from Grunt.cpp
-// (wave3-I): its retail body's birth position is inside this TU's 0x29a30
-// interval (TU_MIGRATION MOVE row); a tiny leaf, likely COMDAT-at-usage emitted
-// by this obj.
+// into the caller's {x,y} out slot and return it. Its retail body's birth position is
+// inside this TU's 0x29a30 interval; a tiny leaf, likely COMDAT-at-usage emitted by this obj.
 // @early-stop
 // return-pointer regalloc wall (~58.9%): logic byte-faithful, but retail keeps `out`
 // in edx across the two stores and materializes the return via a trailing `mov eax,edx`,
@@ -5163,8 +5151,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
 }
 
 // ===========================================================================
-// CGrunt::RecycleCoords  @0x0343f0  (re-homed off the CBattlezMapConfig cluster;
-// __thiscall on a CGrunt). Recycle each occupied-coord node's payload onto g_coordPool.m_freeHead (head
+// CGrunt::RecycleCoords  @0x0343f0  (__thiscall on a CGrunt). Recycle each occupied-coord node's payload onto g_coordPool.m_freeHead (head
 // cached in a register across the loop, written each iteration), then tail into the
 // +0x31c CPtrList's RemoveAll. Skips everything when the list's count is zero.
 // ===========================================================================
@@ -5333,8 +5320,8 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
 }
 
 // ===========================================================================
-// ZErrTarget::Report - the _zvec error-report wrapper  @0x034960  (re-homed off the
-// CBattlezMapConfig cluster; __thiscall on a _zvec/zErrHandling-bearing object, ret
+// ZErrTarget::Report - the _zvec error-report wrapper  @0x034960  (__thiscall on a
+// _zvec/zErrHandling-bearing object, ret
 // 0x8 => 2 args). Capture
 // the return address into the global error token, then dispatch the error reporter
 // (((CVariantSlot*)this->m_err)->Set((void*)this, sentinel, code)). This is the inlined zvec overflow

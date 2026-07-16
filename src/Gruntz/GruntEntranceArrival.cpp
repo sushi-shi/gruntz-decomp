@@ -1,7 +1,7 @@
 // GruntEntranceArrival.cpp - the FOURTH original grunt TU (retail text
 // 0x616e0-0x65df5, the WOVEN grunt+gruntentrancearrival interval): the CGrunt
 // entrance/arrival step machine + the attack-rearm/status/fire-view family
-// (wave3-I grunt-region partition; TU_MIGRATION weave 0.38 = single TU).
+// (grunt-region partition; weave 0.38 = single TU).
 //
 // ONE-obj evidence:
 //   * grunt/gruntentrancearrival fns interleave A-B-A-B throughout the interval
@@ -10,18 +10,16 @@
 //     cell (0x20e180) HEADS the band, then 0x62110/0x62e10/0x63db0/0x641b0's
 //     cells, then RunMoveConfig/StartBombGruntRun's (0x20e264) and
 //     LoadWandGruntItemConfig @0x65a60's (0x20e27c-0x20e28c) INSIDE the band
-//     (before gruntpickupload's 0x20e29c) - so 0x61cb0 (ex ProjectileUpdate.cpp)
-//     and 0x65a60 (ex GruntBehaviorLeaf.cpp) belong to THIS obj, not their old
-//     units; StepWarpExit @0x64540 (ex UserLogic.cpp) is text-contained
-//     (between 0x641b0 and 0x646b0, deep inside the weave).
-//   * 2 EH sites in the interval -> /GX; the unit's flags flip base->eh
-//     (TU_MIGRATION FLAGS mixed-group resolution).
+//     (before gruntpickupload's 0x20e29c) - so 0x61cb0 and 0x65a60 belong to THIS obj;
+//     StepWarpExit @0x64540 is text-contained (between 0x641b0 and 0x646b0, deep inside
+//     the weave).
+//   * 2 EH sites in the interval -> /GX; the unit's flags flip base->eh.
 // NOT this TU: CGrunt::FinalizeStep @0x5ecd0 (kept below with a note) - its
 // birth interval is the lone 0x5ecd0-0x5f1c3 block between the 0x5d210 userlogic
 // single and MovingSlot16 @0x5f310, OUTSIDE this obj's text; the owning original
 // TU is unrecovered (@identity-TODO), it stays here pending that partition.
 //
-#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
+#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record)
@@ -46,11 +44,9 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (the reconciled singleton view)
-// The game-manager singleton (0x64556c). This TU used to declare it WwdGameReg*
-// (the grunt facet), but InGameIcon.h's CGameRegistry* decl clashes (extern "C"
-// cannot dual-type one symbol in one TU) - and CGameRegistry is the RICHER
-// reconciled view (every field this TU reads exists on it), so the TU is
-// CGameRegistry-native now and the ~20 per-site (CGameRegistry*) casts are gone.
+// The game-manager singleton (0x64556c), declared CGameRegistry* (InGameIcon.h's decl;
+// extern "C" cannot dual-type one symbol in one TU). CGameRegistry is the RICHER
+// reconciled view (every field this TU reads exists on it).
 extern "C" CGameRegistry* g_gameReg;
 #include <rva.h>
 #include <math.h>
@@ -94,7 +90,7 @@ static void GruntPosScratchTeardown() {
     }
 }
 
-// ==== the 13 CGrunt fns of this obj (ex Grunt.cpp) + their support decls ====
+// ==== the 13 CGrunt fns of this obj + their support decls ====
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
 // g_buteMgr comes from <Bute/ButeMgr.h>.
@@ -182,17 +178,14 @@ static void GruntScratchTeardown() {
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 // src/Gruntz/GameText.cpp (the pool's owner TU).
-// It used to be DEFINED here too: six .cpp files each
-// defined it, i.e. six .bss objects for one global
-// (LNK2005). Only the owner defines; everyone externs.
+// Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
-// DATA-bound in src/Globals.cpp). They used to be re-DEFINED here - 14 external symbols
-// duplicated across 5 objs = a duplicate-symbol link defect.
+// DATA-bound in src/Globals.cpp).
 
-// ==== CGrunt::UserLogicVfunc7 @0x61cb0 (ex ProjectileUpdate.cpp; its private .data cell
-// 0x20e180 HEADS this TU's band) ====
+// ==== CGrunt::UserLogicVfunc7 @0x61cb0 (its private .data cell 0x20e180 HEADS this
+// TU's band) ====
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
 #include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
@@ -586,7 +579,7 @@ extern "C" i32 g_engineFrameDelta;
 // @early-stop
 // jump-table-data-overlap wall (fuzzy % is an alignment artifact): logic complete
 // and byte-verified vs retail (`sema disasm 0x61cb0 --diff`): the prologue is
-// exact (`sub esp,8`; the retry flag in callee-saved ebx - the old view's
+// exact (`sub esp,8`; the retry flag in callee-saved ebx - the
 // exact retail shape (`mov edx,[edi]; mov ecx,edi; call [edx+0x44]`, then
 // `mov edi,[edi+0x154]; or [edi+0x8],0x10000`), and the 5-slot dense switch on
 // m_entranceReason (the multiplexed tool kind; bias 2, range 0x14) + the named
@@ -768,7 +761,7 @@ i32 CGrunt::StepAttackFire() {
 }
 
 // ===========================================================================
-// The arrival/update dispatch trio (ex-CUserLogic_* stubs @0x59230 / 0x5caa0 /
+// The arrival/update dispatch trio (@0x59230 / 0x5caa0 /
 // 0x62110). RTTI/this-layout IDENTIFY them as CGrunt methods, NOT CUserLogic:
 // every member offset they touch (m_arrivalState 0x2d0, m_arrivalCol/m_arrivalRow, m_arrivalPhase
 // 0x450, m_tileMgr 0x260, m_tileOwnerHi/Lo 0x1ec/0x1f0, m_14, m_154, the +0x470
