@@ -998,8 +998,8 @@ void CUserLogic::GetScreenPos(ScreenPoint* out) {
     CGameObject* o = m_object;
     i32 y = o->m_screenY;
     i32 x = o->m_screenX;
-    out->x = x;
-    out->y = y;
+    out->m_x = x;
+    out->m_y = y;
 }
 
 RVA(0x00029a80, 0x29)

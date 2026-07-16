@@ -50,6 +50,7 @@
 struct CGameObject;  // fwd (the worker's collide callback takes the object)
 class CUserLogic;    // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
 class CSerialObjRef; // fwd (the +0x34 serialize-ref facet; <Gruntz/SerialObjRef.h>)
+struct GruntTilePos; // fwd (the {m_x,m_y} screen-pos out-point; <Gruntz/Grunt.h>)
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
 // 0x17c-byte anim worker AnimWorkerHandlers.cpp models): foreign vtable
@@ -394,11 +395,9 @@ public:
     }
 
     // Copies the bound object's screen position into the out point (m_object->m_5c
-    // = x, m_object->m_60 = y). 0x29a50, __thiscall ret 4.
-    struct ScreenPoint {
-        i32 x;
-        i32 y;
-    };
+    // = x, m_object->m_60 = y). 0x29a50, __thiscall ret 4. The out-point is the
+    // shared {m_x,m_y} GruntTilePos (CGrunt reaches this same method inherited).
+    typedef GruntTilePos ScreenPoint;
     void GetScreenPos(ScreenPoint* out); // 0x29a50 (out-of-line in BattlezMapConfig.cpp)
 
     // True when the bound object's current screen pos (m_object->m_5c/m_60) still

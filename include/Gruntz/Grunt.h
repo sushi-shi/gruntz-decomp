@@ -1612,9 +1612,9 @@ public:
     i32 ArrivalScanA();  // @0xecc90  (GruntArrivalScan.cpp) grid-cell box scan
     i32 ArrivalScanB();  // @0xf0e20  (GruntArrivalScan.cpp) live-grunt-list scan
     i32 ArrivalScanC();  // @0xf36a0  (GruntArrivalScan.cpp) 0x10000-flag box scan
-    // CUserLogic::GetScreenPos (0x29a50) reached on the occupant grunt: copies its
-    // m_10->{m_5c,m_60} into the out point. External/reloc-masked.
-    void GetScreenPos(struct GruntTilePos* out); // 0x29a50
+    // GetScreenPos (0x29a50, copies m_10->{m_5c,m_60} into the out point) is
+    // CUserLogic's own leaf accessor, inherited here - no CGrunt re-declaration
+    // (a shadow would emit ?GetScreenPos@CGrunt@@ which does not resolve to 0x29a50).
     // (TileSwitch6 is GONE - it was a SECOND name for TileSwitch @0x4b320, declared
     //  below; the convention conflation is settled __thiscall - see that decl.)
     // @0x6a060 (ret 0) - the SINK/FALL death-finalize step the death-anim loader runs
