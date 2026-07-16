@@ -152,7 +152,7 @@ void CImagePool::Free(CRezImage* node) {
         return;
     }
     if (node->m_paletteNode && node->m_paletteScalar) {
-        RemovePalette((CImagePaletteNode*)node->m_paletteNode);
+        RemovePalette(node->m_paletteNode);
         B(0, 0, 0);
     }
     if (node->m_listPosition) {
@@ -589,7 +589,7 @@ i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, void* 
 RVA(0x00175780, 0x3f)
 void CImagePool::B(CRezImage* node, i32 a, i32 b) {
     if (node->m_paletteNode && node->m_paletteScalar) {
-        RemovePalette((CImagePaletteNode*)node->m_paletteNode);
+        RemovePalette(node->m_paletteNode);
         node->SetPalette(0, 0);
     }
     node->SetPalette((void*)a, b);
@@ -1187,7 +1187,9 @@ void CRezImage::FlipVertical() {
 // CRezImage::SetPalette (0x176ad0) - store the palette node + scalar.
 RVA(0x00176ad0, 0x17)
 void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
-    m_paletteNode = paletteNode;
+    // The generic setter takes the node as void* (CImagePool::B threads it through as an
+    // int handle); store it typed so the reads in Free/B are cast-free.
+    m_paletteNode = (CImagePaletteNode*)paletteNode;
     m_paletteScalar = scalar;
 }
 

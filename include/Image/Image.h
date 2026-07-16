@@ -39,6 +39,14 @@
 // (and its MFC container members) out of the widely-included consumers of this header.
 class CDDrawPtrCollections;
 
+// The palette list node CRezImage::m_paletteNode holds (+0x458). Pointer-only here, so a
+// forward decl in its home namespace (the full shape + bodies are <Image/ImagePaletteNode.h>,
+// owned by ImagePool.cpp). CImagePool::Free reads m_paletteNode as this type (it was a
+// `void*` cast to CImagePaletteNode* at every read).
+namespace ApiCallerStubs {
+    struct CImagePaletteNode;
+}
+
 // ---------------------------------------------------------------------------
 // CRezImage - the image-resolution dispatcher.
 // LoadFromRez is __thiscall, ret 0xc (this + name + two opaque pass-through
@@ -134,7 +142,7 @@ public:
     POSITION m_listPosition;      // +0x44c  pool: cached AddTail POSITION (surface list node)
     i32 m_transparent;            // +0x450  flag (1 = transparent/RLE plane)
     i32 m_paletteScalar;          // +0x454  associated palette scalar (SetPalette 2nd arg)
-    void* m_paletteNode;          // +0x458  palette node / SaveBmp default palette object
+    ApiCallerStubs::CImagePaletteNode* m_paletteNode; // +0x458  the pool's palette list node
 };
 
 // ---------------------------------------------------------------------------
