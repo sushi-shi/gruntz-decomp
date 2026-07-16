@@ -35,10 +35,10 @@ struct CWsfOwner {
     void* m_warpStoneFly; // +0x54c  this overlay (freed + nulled on arrival)
 };
 
-// The sprite (m_sprite) drawn by the overlay: a __thiscall Draw(ctx, x, y, flag) with
-// callee cleanup (ret 0x10). External/no-body (reloc-masked).
-SIZE_UNKNOWN(CWsfSprite);
-struct CWsfSprite {};
+// The sprite (m_sprite) drawn by the overlay IS a CImage: Draw is CImage::RenderFrame
+// (0x153790, ctx/x/y/flag, ret 0x10) - see CWarpStoneFly::Draw. (The former empty
+// CWsfSprite placeholder view is dissolved.)
+class CImage; // <Image/CImage.h> - the drawn sprite frame
 
 SIZE_UNKNOWN(CWarpStoneFly);
 class CWarpStoneFly {
@@ -61,7 +61,7 @@ public:
     double m_velocityScale; // +0x20  velocity scale
     double m_xDirection;    // +0x28  x direction/sign gate
     double m_yDirection;    // +0x30  y direction/sign gate
-    CWsfSprite* m_sprite;   // +0x38  the drawn sprite
+    CImage* m_sprite;       // +0x38  the drawn sprite frame (CImage::RenderFrame)
     CWsfOwner* m_owner;     // +0x3c  back-pointer to the owning CStatusBarMgr
 };
 

@@ -1661,7 +1661,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     CSprite* spr = (CSprite*)spr_ob;
     i32* frame =
         (spr && n >= spr->m_firstFrame && n <= spr->m_lastFrame) ? spr->m_frames.m_pData[n] : 0;
-    m_sprite = (CWsfSprite*)frame;
+    m_sprite = (CImage*)frame;
     if (frame == 0) {
         return 1;
     }

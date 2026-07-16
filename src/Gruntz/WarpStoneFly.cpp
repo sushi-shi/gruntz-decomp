@@ -81,8 +81,7 @@ i32 CWarpStoneFly::Tick(i32 dt) {
 // 0x10a2f0: blit the overlay sprite at the rounded current position with flag 0.
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
-    ((CImage*)m_sprite)
-        ->RenderFrame(
+    m_sprite->RenderFrame(
             (void*)((CWsfGameMgr*)g_gameReg->m_world)->m_drawable->m_context,
             (void*)(i32)m_currentX,
             (void*)(i32)m_currentY,
