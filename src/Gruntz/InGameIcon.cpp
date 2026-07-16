@@ -20,6 +20,7 @@
 #include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>   // the +0x34 serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (the +0x1a0 sub-object sync)
+#include <Gruntz/Play.h>             // CPlay - g_gameReg->m_curState's concrete play state
 
 // The per-frame draw-delta the anim-cursor sync carries (0x6bf3bc, BSS; the same view
 // the indicator sprites use). External/no-body so the load reloc-masks.
@@ -54,16 +55,11 @@ extern "C" {}
 // CSpriteFactory (shared <Gruntz/SpriteFactory.h>); CreateSprite (0x1597b0, __thiscall)
 // builds a "SimpleAnimation" glitter sprite (returned as the created CGameObject).
 
-// The current game-state (g_gameReg->m_curState) viewed by the icon-setup path as
-// the per-level warp holder: +0x1c the level number, +0x384.. four (x,y) WarpStone
-// target pairs the tool-icon dispatch stores. (Per-mode downcast of CState*.)
-struct IconLevelState {
-    char m_pad00[0x1c];
-    i32 m_levelNum; // +0x1c  the current level number
-    char m_pad20[0x384 - 0x20];
-    i32 m_warpTarget[8]; // +0x384  four (x,y) WarpStone target pairs
-};
-SIZE_UNKNOWN(IconLevelState);
+// The current game-state (g_gameReg->m_curState) IS the canonical CPlay during play;
+// the icon-setup path reads its level index (CState::m_levelIndex @+0x1c) and stores the
+// four WarpStone target pairs into CPlay::m_anchors[4] (@+0x384, stride 8, {m_x, m_y}).
+// The former IconLevelState .cpp-local view is DISSOLVED onto CPlay (a per-mode downcast
+// of the CState* base - single inheritance, address-identical).
 
 // ===========================================================================
 // The two file-scope command-dispatch tables (zDArray<member-fn-ptr>) the icon
@@ -323,30 +319,30 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_object->m_124 = 0x14;
             m_object->m_placeMode = 1;
-            IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[0] = m_object->m_screenX;
-            lvl->m_warpTarget[1] = m_object->m_screenY;
+            CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+            lvl->m_anchors[0].m_x = m_object->m_screenX;
+            lvl->m_anchors[0].m_y = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->m_124 = 0x14;
             m_object->m_placeMode = 2;
-            IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[2] = m_object->m_screenX;
-            lvl->m_warpTarget[3] = m_object->m_screenY;
+            CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+            lvl->m_anchors[1].m_x = m_object->m_screenX;
+            lvl->m_anchors[1].m_y = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->m_124 = 0x14;
             m_object->m_placeMode = 3;
-            IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[4] = m_object->m_screenX;
-            lvl->m_warpTarget[5] = m_object->m_screenY;
+            CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+            lvl->m_anchors[2].m_x = m_object->m_screenX;
+            lvl->m_anchors[2].m_y = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->m_124 = 0x14;
             m_object->m_placeMode = 4;
-            IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[6] = m_object->m_screenX;
-            lvl->m_warpTarget[7] = m_object->m_screenY;
+            CPlay* lvl = (CPlay*)g_gameReg->m_curState;
+            lvl->m_anchors[3].m_x = m_object->m_screenX;
+            lvl->m_anchors[3].m_y = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
             m_object->m_124 = 0x15;
@@ -482,9 +478,9 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // WarpStone test-mode: re-apply the per-level warp target sprite name.
     if (m_object->m_124 == 0x14 && g_gameReg->m_134 == 1) {
-        IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
+        CPlay* lvl = (CPlay*)g_gameReg->m_curState;
         CString levelStr;
-        levelStr.Format("Level%i", lvl->m_levelNum);
+        levelStr.Format("Level%i", lvl->m_levelIndex);
         CString warpName;
         i32 target = g_buteMgr.GetInt("WarpStone", levelStr);
         warpName.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
