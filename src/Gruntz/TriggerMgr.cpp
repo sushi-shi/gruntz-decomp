@@ -1675,7 +1675,6 @@ void FormatStr(CString* out, const char* fmt, ...);
 // slots then GetTypeCode @+0x20") is CTileImageSet (GetCollisionAt @+0x20) itself.
 // The rock-break sites below use the real Brickz* classes (Brickz.h, MapMgr.h::m_attrMgr).
 
-extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 
 // @source: string-xref
 // @early-stop

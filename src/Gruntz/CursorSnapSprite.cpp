@@ -103,7 +103,6 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj) {
 
 // The class dispatch table filled by RegisterXLogic_62bfa0 (LogicActReg.cpp);
 // referenced here for the slot-4 lookup.
-extern CLogicActTable g_logicActReg_62bfa0;
 
 // CCursorSnapSprite::FireActivation @0x03a5b0 - slot-4 (UserLogicVfunc2) override:
 // resolve `id` in the class dispatch table; if the entry carries a handler,

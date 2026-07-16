@@ -47,7 +47,6 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 // The single-char type keys pooled in .rdata (named in Globals.cpp).
 // k_60cc94 was a SECOND NAME for s_codeJ (0x20cc94) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern char s_codeJ[];
 
 // (the ApiMisc::ClipHost_02b340 shell + the CStepGrid view are GONE - XREF-settled, both of
 // them, and they were the same object. The 0x43ea thunk lands on

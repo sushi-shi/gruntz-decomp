@@ -230,7 +230,6 @@ i32 g_spawnState;
 
 // The global step timer (?g_frameTime, DAT_00645588 @ VA 0x645588): the 32-bit
 // tick counter the m_390 latch debounces against the bundle's m_scratch78..m_084 pair.
-extern "C" u32 g_frameTime;
 
 // The scene-hit dispatcher reached via g_gameReg->m_cueSink (RVA 0x11b3b0, thunk
 // 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-

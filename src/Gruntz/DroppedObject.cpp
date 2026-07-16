@@ -69,7 +69,6 @@ extern "C" CGameRegistry* g_gameReg;
 // The per-frame game clock (g_frameTime) + frame delta (g_frameDelta) + draw-clock
 // delta (g_engineFrameDelta). C linkage so the symbols pair with the targets' _g_* names
 // (the convention across the gamemode units).
-extern "C" u32 g_frameTime; // 0x645588
 extern "C" {
     extern u32 g_frameDelta;       // 0x645584
     extern u32 g_engineFrameDelta; // 0x6bf3bc

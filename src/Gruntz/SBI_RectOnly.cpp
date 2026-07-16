@@ -59,7 +59,6 @@
 // This TU used to declare the SAME cell twice - here as a C++ `g_frameTime` and again
 // below as the extern-"C" `g_frameTime` - i.e. two symbols for one address, neither with
 // storage. One declaration now; it is DEFINED in Projectile.cpp.
-extern "C" u32 g_frameTime;
 
 // The current local-player / area index (PlaceCursorTarget's tile-grid column).
 // DEFINED HERE - this TU already held the canonical binding and 11 TUs referenced it
@@ -87,7 +86,6 @@ extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight handlers play through.
 // The draw-clock mirror (g_killCueClock), unsigned for the wrap-safe gate compare.
-extern "C" u32 g_killCueClock;
 
 // Global serialize-sequence counter (bumped once per Serialize).
 

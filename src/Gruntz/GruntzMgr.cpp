@@ -249,10 +249,6 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 // bindings live in the globals/lightfxrender units - reference those directly so the
 // DIR32 reloc pairs (an extern "C" _g_* twin would collide on the same RVA).
 // (g_timer100 @0x245594, also C++-linkage and streamed here, now comes from <Rez/FrameClock.h>.)
-extern i32 g_jitterX; // ?g_jitterX@@3HA @0x2452a4
-extern i32 g_jitterY; // ?g_jitterY@@3HA @0x2452cc
-extern i32 g_panMinX; // ?g_panMinX@@3HA @0x245508
-extern i32 g_panMaxX; // ?g_panMaxX@@3HA @0x24550c
 // 0x64557c - the active modeless dialog HWND (cleared on both modal-dialog exits);
 // DEFINED in src/Net/LobbyDialogs.cpp (namespace NetLobby), where the dialog procs
 // cache it.
@@ -276,7 +272,6 @@ DATA(0x0021ab20)
 i32 g_sndEnabled = 1; // 0x61ab20  sound-on gate (retail .data init = 1)
 DATA(0x0021ab24)
 i32 g_sndCueTag = 100;         // 0x61ab24  the cue-item id (retail .data init = 100)
-extern "C" u32 g_killCueClock; // DAT_006bf3c0 (wrap-safe draw clock)
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A).
 // DEFINED here (owner = the class TU of the object it points at). ~50 TUs reference this
@@ -473,9 +468,6 @@ CString RunCustomWorldDialog(i32 hwnd, CString* out);
 // draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
 extern "C" {
     // g_lastNow (game-side now mirror, 0x245580) comes from <Rez/FrameClock.h>.
-    extern u32 g_frameDelta;       // game-side delta mirror (DAT_00645584)
-    extern u32 g_frameTime;        // game-side abs clock (DAT_00645588)
-    extern u32 g_engineFrameDelta; // draw-clock delta (cleared) - g_killCueClock is g_killCueClock
     // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
     // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_resolutionChanged below.
     char g_msgScratch[256]; // 0x6452d8

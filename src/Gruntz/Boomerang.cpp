@@ -51,7 +51,6 @@ extern "C" CGameRegistry* g_gameReg;
 // The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
 // fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-extern "C" u32 g_frameTime; // 0x245588  running game clock (return-record base)
 
 // The boomerang return-trajectory constants (.rdata doubles). DATA-pinned here (the
 // only referencing TU) so the fmul/fdivr loads reloc-mask against the named symbols.

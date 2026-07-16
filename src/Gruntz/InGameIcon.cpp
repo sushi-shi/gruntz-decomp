@@ -24,7 +24,6 @@
 
 // The per-frame draw-delta the anim-cursor sync carries (0x6bf3bc, BSS; the same view
 // the indicator sprites use). External/no-body so the load reloc-masks.
-extern "C" u32 g_engineFrameDelta;
 
 // The MS-CRT-style LCG rand PeekCycle inlines to roll a random peek sprite (the same
 // generator src/Globals.cpp binds + BootyWalkAnim inlines): lazy-seed from timeGetTime,
@@ -82,7 +81,6 @@ extern LogicFnTable g_iconStateTable;
 // The running game clock (0x245588). The old g_frameTime C++ name lost the
 // keep-last dedup at this rva to the canonical extern-C _g_645588; use that so
 // the drift/seed loads bind (it IS the clock, not an "icon default").
-extern "C" u32 g_frameTime;
 
 // CInGameText's member-fn-ptr dispatch table (folded into this TU, wave3-J). The
 // DATA binding lives here in the .cpp (a header DATA() is not scanned by labels.py);

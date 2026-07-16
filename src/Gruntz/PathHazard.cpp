@@ -72,7 +72,6 @@ extern "C" u32 g_frameTime; // 0x645588  running game clock (strike/leg deadline
 
 // FABRICATED-SYMBOL FIX: this was a C++-linkage alias (?g_gameReg@@3PAUCGameRegistry@@A)
 // of the SAME datum the tree already binds as the extern-"C" g_gameReg - nothing defined it.
-extern "C" CGameRegistry* g_gameReg;
 
 // Strike config globals: the bute window source + the sound-enable flag / cue tag
 // pair the positional emit polls, plus the kill-cue clock.
@@ -548,7 +547,6 @@ void CPathHazard::ForwardTick() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CPathEntity);
 SIZE_UNKNOWN(CPathSubMgr);

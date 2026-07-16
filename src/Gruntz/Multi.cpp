@@ -54,8 +54,6 @@
 DATA(0x002455fc)
 extern "C" i32 g_optionsCursor = 0;
 // g_lastNow (0x245580 draw clock) comes from <Rez/FrameClock.h>.
-extern "C" u32 g_frameDelta; // 0x645584  delta cap
-extern "C" u32 g_frameTime;  // 0x645588  accum clock
 
 // The game-manager singleton + a divisor for the TITLE%d index.
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
@@ -1161,8 +1159,6 @@ i32 CMulti::Render() {
 
 // The global ambient/kill-cue clock state (retail .data addresses -> DIR32
 // operands reloc-mask).
-extern "C" u32 g_killCueClock;     // 0x6bf3c0
-extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 // The 0x24558c..0x2455a0 countdown band (g_frameTicks/g_timer32/g_timer100/g_timer200/
 // g_timer400/g_timer500) comes from <Rez/FrameClock.h>. NOTE: the pump below proves
 // 0x245598 == g_timer200 (seed 0xc8 countdown).

@@ -75,7 +75,6 @@ static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-extern "C" u32 g_frameTime;
 
 // The entrance geometry-source global at 0x2bf3bc the geometry-state setter consumes.
 // 0x2bf3bc is a tree-wide name conflation: ~17 TUs bind it as the placeholder

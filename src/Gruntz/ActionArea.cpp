@@ -109,7 +109,6 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
 
 // The global millisecond tick (_g_645588). The DWORD load reloc-masks.
-extern "C" u32 g_frameTime;
 
 // The per-frame brightness sink the pulse ramp drives is the bound object's image
 // set (CGameObject::m_194, a CImageSet at +0x194) - reached cast-at-use, exactly

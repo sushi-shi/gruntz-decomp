@@ -40,7 +40,6 @@ extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
 // g_clock was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern "C" u32 g_frameTime;
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 // The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
 // fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
@@ -151,7 +150,6 @@ extern "C" {
         m_31c.RemoveAll();                                                                         \
     }
 
-extern "C" u32 g_frameTime; // 0x645588 (second name for g_frameTime, reloc-masked)
 
 // ---------------------------------------------------------------------------
 // CGrunt::ResolveArrivalReposition()   @0xec670   (__thiscall, ret 0 -> 1)

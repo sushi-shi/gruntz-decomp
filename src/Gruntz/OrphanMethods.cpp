@@ -68,9 +68,7 @@ void CEffect6b::Apply(i32 a, i32 b) {
 // The lightning-strike flash: while armed, pick flash frame 5 (or 0 once the
 // g_timer200 threshold passes) unless the strike window elapsed (disarm), seed
 // the bound object's draw-fill, then run the base Tick; returns 0.
-extern "C" u32 g_frameTime; // tick
 // g_timer200 (0x245598 countdown timer, compared to 0x64) comes from <Rez/FrameClock.h>.
-extern "C" CGameRegistry* g_gameReg; // 0x64556c
 #include <Gruntz/RainCloud.h>        // the real owner (CPathHazard strike state + m_object)
 #include <Gruntz/UserLogic.h>        // CGameObject (the bound object's draw-fill triple)
 

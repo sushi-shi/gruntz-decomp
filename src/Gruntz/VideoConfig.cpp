@@ -80,7 +80,6 @@ extern "C" {
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 
 // The CD-prompt result gate (@0x6455ec); DEFINED in StartUpPrompt.cpp (its writer).
-extern "C" i32 g_cdPromptResult;
 
 // Mode-lock gates (@0x6455b4/bc/c0): when set they grey out option groups AND gate the
 // option commits. FABRICATED-SYMBOL FIX (assert_relocs --fake-targets): these were declared
@@ -145,7 +144,6 @@ HWND g_optHwndCk7 = 0; // IDC 0x470
 DATA(0x0022bdf4)
 HWND g_optHwndCk8 = 0; // IDC 0x476
 // The scroll-cue throttle globals ScrollDialog's config-cue chain reads.
-extern "C" u32 g_killCueClock; // 0x6bf3c0 (_g_killCueClock; u32 - the wrap-safe gate)
 
 // Forward decls for the in-TU definitions below (callers precede them in RVA order).
 void LoadGameOptionsToDialog(HWND hDlg);                           // 0x036860

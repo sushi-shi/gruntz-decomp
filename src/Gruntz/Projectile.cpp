@@ -172,7 +172,6 @@ void CMovingLogic::FinalizeStep(i32) {
 
 // The running game clock g_frameTime (0x245588) is DEFINED in RezMgr.cpp (RezMgr
 // is the sole writer + owner of the 0x245580-0x2455a0 frame-timer band); only read here.
-extern "C" u32 g_frameTime;
 DATA(0x001eaa88)
 const double g_motionZScale = 0.0;
 DATA(0x001eab00)

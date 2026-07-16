@@ -47,7 +47,6 @@
 // The game-manager singleton (0x64556c), declared CGameRegistry* (InGameIcon.h's decl;
 // extern "C" cannot dual-type one symbol in one TU). CGameRegistry is the RICHER
 // reconciled view (every field this TU reads exists on it).
-extern "C" CGameRegistry* g_gameReg;
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
@@ -112,7 +111,6 @@ static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-extern "C" u32 g_frameTime;
 
 // The scratch CString teardown the GetNameRecords reject paths run (defined with the
 // dispatch-machine cluster below); forward-declared for the two entrance-step

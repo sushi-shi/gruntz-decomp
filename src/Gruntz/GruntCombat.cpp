@@ -127,7 +127,6 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 // (DAT_006455b0, reloc-masked).
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
-extern "C" u32 g_frameTime;
 
 // The scratch CString teardown the GetNameRecords reject paths run (defined with the
 // dispatch-machine cluster below); forward-declared for the two entrance-step
@@ -932,16 +931,12 @@ CLookupColl g_reg_644af0;
 // constants named by address, declared in <Globals.h> or here).
 // k_60cca4 was a SECOND NAME for s_codeD (0x20cca4) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern char s_codeD[];
 // k_60d2ec was a SECOND NAME for s_codeE (0x20d2ec) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern char s_codeE[];
 // k_60cc94 was a SECOND NAME for s_codeJ (0x20cc94) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern char s_codeJ[];
 // k_60d7f8 was a SECOND NAME for s_codeK (0x20d7f8) - same address,
 // so nothing ever defined it. Unified onto the canonical.
-extern char s_codeK[];
 
 // The 19 per-action handler bodies are the CGrunt / CGruntBehaviorLeaf entrance /
 // arrival / decay state-step methods, already reconstructed in GruntEntranceArrival.cpp
