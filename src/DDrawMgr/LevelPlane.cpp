@@ -86,7 +86,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(CPlaneMapData* mapData, i32 field04, i32 flag
 }
 
 // 0x161640 (930 B) = the plane-block reader, CDDrawWorkerHost vtable slot 10
-// (??_7CDDrawWorkerHost @0x1f0270+0x28) - the slot CGameLevelPlanes::ReadPlane
+// (??_7CDDrawWorkerHost @0x1f0270+0x28) - the slot CGameLevel::ReadPlane
 // dispatches. __thiscall(planeData record, blockBase, LevelCoordRect* bounds), ret 0xc.
 //
 // DECODED STRUCTURE (retail-verified 2026-07-13; every callee named):

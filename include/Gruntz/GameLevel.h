@@ -405,10 +405,17 @@ public:
     // members destruct and ~CLoadable restores the base subobject. Non-virtual;
     // (~CGameLevel is the slot-1 virtual dtor, declared above; its ??_G is pinned in the .cpp.)
 
+public:
+    // ReadObjectPlane (@0x15d9a0, GameLevel.cpp): ReadPlane's object-plane sibling -
+    // `new CPlane(m_0c, count, 0)` driven through the +0x24 object-block reader
+    // virtual; appends/records identically. Public: CGruntzMgr::LoadMonologoSprite
+    // builds the "MONOLITH" plane through it. (Ex ?ReadObjectPlane@CGameLevelPlanes@@
+    // - that WwdFile.h view of THIS class is dissolved.)
+    CPlane* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+
 private:
-    // The per-plane reader (WwdFile::ReadPlane). Same body as the one in
-    // the wwdfile TU; declared here so the call resolves (its definition lives in
-    // src/Wwd/WwdFile.cpp via CGameLevelPlanes::ReadPlane). External to this TU.
+    // The per-plane reader (@0x15d8d0, GameLevel.cpp; LoadWwd drives it per WWD
+    // plane record). (Ex ?ReadPlane@CGameLevelPlanes@@ - view dissolved.)
     CPlane* ReadPlane(void* planeData, void* blockBase, void* unused);
 
     // The image-set factory (CGameLevel::ReadImageSet) - external.

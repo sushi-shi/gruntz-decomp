@@ -610,19 +610,28 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevelPlanes::ReadPlane (__thiscall ret 0xc).
-// Build one plane: `new CPlane(this->m_field0c, this->m_planeCount, 0)` (operator
+// CGameLevel::ReadPlane (__thiscall ret 0xc). [The ex "CGameLevelPlanes" view is
+// dissolved: LoadWwd's this->ReadPlane call and this body are the SAME class -
+// the view's m_field0c/m_planeCtx/m_planes/m_planeCount/m_mainPlane/m_mainIndex
+// are CGameLevel's m_0c/+0x10/+0x34 CObArray (whose m_nSize IS the plane count,
+// read via the inline GetSize())/+0x5c/+0x60.]
+// Build one plane: `new CPlane(this->m_0c, plane count, 0)` (operator
 // new(0x158) under the C++ EH frame), then invoke the plane's block reader
 // (vtable +0x28) on (planeData, blockBase, &this->m_planeCtx). On reader failure,
 // delete the plane (scalar-deleting dtor, vtable +0x4) and return 0. On success,
-// append the plane to m_planes (CArray::SetAtGrow) at index
-// m_planeCount, and if it is the MAIN plane (m_flags bit0) cache it as m_mainPlane
-// with m_mainIndex = m_planeCount - 1. Returns the new plane.
+// append the plane to m_planes (SetAtGrow) at the pre-append count, and if it is
+// the MAIN plane (m_flags bit0) cache it as m_mainPlane with m_mainIndex =
+// (post-append count) - 1. Returns the new plane.
+//
+// The (CPlaneMapData*)m_0c bridge: the plane ctor's arg1 type is the WwdFile.h
+// CPlaneMapData view, but the object IS this level's CDDrawSurfaceMgr world root
+// (+0x08 m_8/"worker source" == m_childGroup, +0x24 m_geometry == m_level) -
+// the CPlaneMapData==CDDrawSurfaceMgr fold is deferred (ctor-mangling ripple).
 //
 // The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
 RVA(0x0015d8d0, 0xc3)
-CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
-    CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
+CPlane* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
+    CPlane* plane = new CPlane((CPlaneMapData*)m_0c, m_planes.GetSize(), 0);
 
     if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
         if (plane) {
@@ -631,26 +640,26 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
         return 0;
     }
 
-    ((CObArray*)&m_planes)->SetAtGrow(m_planeCount, (CObject*)plane);
+    m_planes.SetAtGrow(m_planes.GetSize(), (CObject*)plane);
 
     if (plane->m_flags & 1) // MAIN plane
     {
         m_mainPlane = plane;
-        m_mainIndex = m_planeCount - 1;
+        m_mainIndex = m_planes.GetSize() - 1;
     }
 
     return plane;
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevelPlanes::ReadObjectPlane - the object-plane sibling of
-// ReadPlane: `new CPlane(m_field0c, m_planeCount, 0)`, then drive the plane's
+// CGameLevel::ReadObjectPlane - the object-plane sibling of
+// ReadPlane: `new CPlane(m_0c, plane count, 0)`, then drive the plane's
 // +0x24 object-block reader with the six forwarded args, &m_planeCtx (7th), and
 // the trailing arg (8th). Append/record/delete identically to ReadPlane.
 // The CPlane ctor + virtuals are UNMATCHED engine code -> reloc-masked calls.
 RVA(0x0015d9a0, 0xdc)
-CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
-    CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
+CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    CPlane* plane = new CPlane((CPlaneMapData*)m_0c, m_planes.GetSize(), 0);
 
     if (plane->InitGeometry_1619f0(a1, a2, a3, a4, a5, a6, &m_planeCtx, (char*)a7) == 0) {
         if (plane) {
@@ -659,12 +668,12 @@ CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5
         return 0;
     }
 
-    ((CObArray*)&m_planes)->SetAtGrow(m_planeCount, (CObject*)plane);
+    m_planes.SetAtGrow(m_planes.GetSize(), (CObject*)plane);
 
     if (plane->m_flags & 1) // MAIN plane
     {
         m_mainPlane = plane;
-        m_mainIndex = m_planeCount - 1;
+        m_mainIndex = m_planes.GetSize() - 1;
     }
 
     return plane;

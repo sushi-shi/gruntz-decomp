@@ -210,43 +210,11 @@ class CFileMemBase;
 // [plane+0x9c]), the +0xb0 scroll worker and the +0xf4 blit scratch/color key all
 // live on the canonical class; CPlaneRender is a typedef of it now.)
 
-// ---------------------------------------------------------------------------
-// CGameLevel - the level-load orchestrator (a.k.a. CDDrawLevelData). ReadPlane is a
-// __thiscall member on it. Only the members ReadPlane touches are pinned here
-// (the rest of the class is reconstructed in src/Gruntz/GameLevel.{cpp,h}):
-//   +0x0C m_field0c   - 1st CPlane ctor arg (the owning context the planes share)
-//   +0x10 m_planeCtx  - &this->m_planeCtx is the 3rd arg to CPlane::Read
-//   +0x34 m_planes    - MFC CArray<CPlane*> (SetAtGrow grows + stores)
-//   +0x3C m_planeCount- current plane index / count (the running loop counter)
-//   +0x5C m_mainPlane - cached pointer to the MAIN plane
-//   +0x60 m_mainIndex - index of the MAIN plane (m_planeCount - 1 at capture)
-// ---------------------------------------------------------------------------
-class CGameLevelPlanes {
-public:
-    // ReadPlane: new CPlane; if its block reader
-    // succeeds, append it to m_planes and record the MAIN plane; else delete it.
-    CPlane* ReadPlane(void* planeData, void* blockBase, void* unused);
-    // ReadObjectPlane (0x15d9a0): same shape as ReadPlane but the plane is built
-    // via the +0x24 object-block reader (6 forwarded args + &m_planeCtx + a7).
-    CPlane* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
-
-    u8 pad_0[0x0c];
-    CPlaneMapData* m_field0c;  // +0x0C  (the plane ctor's 1st arg - the shared map-data owner)
-    LevelCoordRect m_planeCtx; // +0x10  (&m_planeCtx -> CPlane::Read / InitGeometry bounds)
-    u8 pad_20[0x34 - 0x20];    // +0x20
-    u8 m_planes[0x3c - 0x34];  // +0x34  CArray<CPlane*>
-    i32 m_planeCount;          // +0x3C
-    u8 pad_40[0x5c - 0x40];
-    CPlane* m_mainPlane; // +0x5C
-    i32 m_mainIndex;     // +0x60
-};
-
-// MFC CArray<CPlane*>::SetAtGrow(index, value).
-// Grows the backing store to fit `index` then stores value at [index].
-// authentic: the +0x34 CArray sub-object is an embedded member reached by address
-// (`&m_planes`), not a typed pointer; the cast targets that embedded array's method
-// set (binary-proven CArray<CPlane*> shape). A typed member here shifted GameLevel's
-// ctor 89.5%->72% in a prior probe, so the by-address method view is retained.
+// (The former "CGameLevelPlanes" plane-reader view of CGameLevel is DISSOLVED:
+// ReadPlane @0x15d8d0 / ReadObjectPlane @0x15d9a0 are real CGameLevel methods
+// (<Gruntz/GameLevel.h>, bodies in GameLevel.cpp) - the view's m_field0c/
+// m_planeCtx/m_planes/m_planeCount/m_mainPlane/m_mainIndex were CGameLevel's
+// m_0c/+0x10/the +0x34 CObArray (m_nSize == the plane count)/+0x5c/+0x60.)
 
 // Global operator new (NAFXCW new-handler loop) / delete.
 extern void* operator new(u32 size);

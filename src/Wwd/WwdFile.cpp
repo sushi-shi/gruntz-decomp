@@ -11,7 +11,7 @@
 //
 // The level-load core was re-homed by retail .text birth position (interval
 // dossier 0x15ccd0, wave1-C): IsValidWwd/CheckHeader/InflateMainBlock/
-// CompressMainBlock + CGameLevelPlanes::ReadPlane/ReadObjectPlane are GameLevel.cpp
+// CompressMainBlock + CGameLevel::ReadPlane/ReadObjectPlane are GameLevel.cpp
 // content (the wwdfile pockets inside [0x15ccd0..0x161322]); the plane/render
 // bodies (SetTileSize(FromImageSet)/Draw/CenterScrollA+B/InitScrollRects/
 // ValidateTiles/ResolveColorKey/Save/Load/RebuildPlanes/ReadPlaneObjects + the
@@ -127,5 +127,4 @@ SIZE_UNKNOWN(CPlanePalArr);
 SIZE_UNKNOWN(CPlanePalOwner);
 SIZE_UNKNOWN(CPlanePalHost);
 SIZE_UNKNOWN(CPlaneMapData);
-SIZE_UNKNOWN(CGameLevelPlanes);
 SIZE_UNKNOWN(WwdFile); // namespace-class (method-only)

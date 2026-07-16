@@ -1906,8 +1906,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     CPlaneRender* found = (CPlaneRender*)m_world->m_level->FindPlaneByName("MONOLITH");
     if (found == 0) {
         CPlaneRender* spr =
-            (CPlaneRender*)((CGameLevelPlanes*)m_world->m_level)
-                ->ReadObjectPlane(0x20, 0x20, geoA, geoB, -0x19, -0x19, (i32) "MONOLITH");
+            m_world->m_level->ReadObjectPlane(0x20, 0x20, geoA, geoB, -0x19, -0x19, (i32) "MONOLITH");
         if (spr == 0) {
             return 0;
         }

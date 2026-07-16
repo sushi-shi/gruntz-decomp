@@ -3,7 +3,7 @@
 // that was reconstructed as FIVE views, now unified here (name-preserving union of
 // every view's proven members):
 //   * CDDrawWorkerHost      - the ctor/dtor/RegisterNamed shape (this header)
-//   * CPlane     (WwdFile.h)   - CGameLevelPlanes::ReadPlane's product (kept as a typedef)
+//   * CPlane     (WwdFile.h)   - CGameLevel::ReadPlane's product (kept as a typedef)
 //   * CPlaneRender (WwdFile.h) - the render facet (Draw/SetTileSize/scroll; typedef)
 //   * CLevelPlane (GameLevel.h)- the level's typed facet (geometry/probes; typedef)
 //   * "CImageSet3" grid-owner  - the ex-LevelPlane.cpp local pocket (Cleanup/Prune/
@@ -56,7 +56,7 @@ class CDDrawWorkerHost : public CObject {
 public:
     CDDrawWorkerHost(CPlaneMapData* mapData, i32 field04, i32 flags); // 0x1615a0
     virtual ~CDDrawWorkerHost() OVERRIDE; // slot 1 (scalar-deleting dtor) 0x163af0
-    // `new CPlane` (CGameLevelPlanes::ReadPlane/ReadObjectPlane) needs an accessible
+    // `new CPlane` (CGameLevel::ReadPlane/ReadObjectPlane) needs an accessible
     // operator new; MFC CObject's PASCAL one is not usable under MSVC5, so forward to
     // global new (byte-identical: the same `push 0x158; call ??2@YAPAXI@Z`).
     void* operator new(size_t n) {
@@ -73,7 +73,7 @@ public:
     virtual void Cleanup_161bf0();
     virtual void VtSlot8_163ab0(); // slot 8  (+0x20) 0x163ab0 (role unrecovered)
     // slot 9 (+0x24) 0x1619f0 - the geometry init / object-plane reader
-    // CGameLevelPlanes::ReadObjectPlane dispatches: seed tile/wrap/origin/shift
+    // CGameLevel::ReadObjectPlane dispatches: seed tile/wrap/origin/shift
     // fields from the 8 args, log2 the tile shifts, strcpy the name, alloc the tile
     // grid + column-offset table, tail-call RecomputePlaneCoords.
     virtual i32 InitGeometry_1619f0(
@@ -87,7 +87,7 @@ public:
         char* name
     );
     // slot 10 (+0x28) 0x161640 - the 3-arg plane-block reader
-    // CGameLevelPlanes::ReadPlane dispatches (parses one WwdPlaneHeader, fans out to
+    // CGameLevel::ReadPlane dispatches (parses one WwdPlaneHeader, fans out to
     // the tile/imageset/object sub-readers). Stub body in LevelPlane.cpp (ex Gap_161640).
     virtual i32 Read(void* planeData, void* blockBase, void* bounds);
     virtual void VtSlot11_163ac0(); // slot 11 (+0x2c) 0x163ac0 (role unrecovered)
