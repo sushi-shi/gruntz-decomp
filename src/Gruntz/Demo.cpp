@@ -1,5 +1,5 @@
 // Demo.cpp - the demo/attract-mode feature file (C:\Proj\Gruntz): ONE original obj
-// `[0x3bfa0 .. 0x3dee1]` (dossier #16, waveM-judgment). Holds the CDemo playback
+// `[0x3bfa0 .. 0x3dee1]` (dossier #16). Holds the CDemo playback
 // methods (slot 1 / Render / the slot-21 re-post), the demo actor seeding, the
 // world-level key resolver, the auto-scroll camera director, the Orient3 rotation
 // steppers, the two bute-config debug editor DialogProcs + their record/teardown
@@ -71,8 +71,8 @@ extern "C" u32 g_frameDelta;
 
 // 0x3bfa0 - CDemo::Vfunc1 (slot 1): clear the manager's pending world-file name,
 // run the CPlay base slot-1 (CPlay::Vfunc1 == the mode/object initializer at
-// 0xc7ec0); on failure return 0, else latch m_520 and return 1. (The ex-
-// `CDemoEnterCtx` view is GONE: the ctx arg IS the CGruntzMgr - its +0xc8 CString
+// 0xc7ec0); on failure return 0, else latch m_520 and return 1. (The ctx arg
+// IS the CGruntzMgr - its +0xc8 CString
 // is the canonical m_strWorldFile "world file name", which demo mode blanks.)
 RVA(0x0003bfa0, 0x42)
 i32 CDemo::Vfunc1(i32 ctx, i32 a1, i32 a2) {
@@ -167,8 +167,8 @@ i32 CDemo::Render() {
 
 // ---------------------------------------------------------------------------
 // 0x3c300 - the demo/attract auto-scroll camera director (__cdecl(owner)) - an
-// anim-worker handler like the 0x3d2b0.. family below. THE Scroll* VIEWS ARE
-// DISSOLVED (2026-07-14): the owner is the canonical CGameObject (its +0x7c IS
+// anim-worker handler like the 0x3d2b0.. family below. The owner is the canonical
+// CGameObject (its +0x7c IS
 // m_7c, the AnimWorkerObj), the worker's +0xc IS m_0c (the owner/world context ==
 // the CDDrawSurfaceMgr facet), its +0x24 the canonical CGameLevel whose
 // +0x38/+0x3c "plane array + count" are the INTERIOR of the m_planes CObArray
@@ -399,11 +399,10 @@ void COwnerWithSubs::DtorSub8() {
 // state & (failbit|badbit)), resets the three keyed stores, runs the recursive
 // group parse, then syncs + deletes the stream. /GX EH-framed.
 //
-// THE ButeIos/ButeFileStream VIEWS ARE DISSOLVED (2026-07-14): the stream IS the
-// CRT `ifstream` (<fstream.h>, this toolchain's own header - the class that BUILT
+// The stream IS the CRT `ifstream` (<fstream.h>, this toolchain's own header - the
+// class that BUILT
 // retail): the ctor @0x169fb0 is ??0ifstream@@QAE@PBDHH@Z (filename, 0x21 =
-// ios::in|ios::nocreate, filebuf::openprot - the third arg was the fake
-// "g_pButeDefaults" global; 0x5f03e0 is ?openprot@filebuf@@2HB == 0x1a4), Sync
+// ios::in|ios::nocreate, filebuf::openprot; 0x5f03e0 is ?openprot@filebuf@@2HB == 0x1a4), Sync
 // @0x16a3b0 is istream::sync, the "+0x14 state" is the ios virtual base's state
 // word behind the +0xc vbase adjustment, and `delete` runs the real virtual dtor.
 // (The old RELOC_VTBL(ButeFileStream, 0x001f03c4) masked nothing - 0x1f03c4 is

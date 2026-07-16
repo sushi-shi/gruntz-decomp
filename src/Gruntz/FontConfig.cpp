@@ -69,11 +69,10 @@ struct FontItem {
 };
 
 // ---------------------------------------------------------------------------
-// THE THREE m4 DRAW-HELPER HOSTS ARE DISSOLVED (2026-07-13). DrawHost / PwdHost /
-// TextHost were all CFontConfig - the interval dossier had ALREADY proven it by
+// The m4 draw-helper hosts (DrawHost / PwdHost / TextHost) ARE CFontConfig by
 // member-layout identity (their +0x1c is m_inputText, +0x38/+0x3c/+0x40 are the
-// three cached HFONTs) and parked them as "@identity-TODO ... fold in a follow-up".
-// Their four methods are now real CFontConfig methods (<Gruntz/FontConfig.h>).
+// three cached HFONTs). Their four methods are real CFontConfig methods
+// (<Gruntz/FontConfig.h>).
 //
 // Two more views went with them:
 //   PwdStr  -> ::CString. Its ctor/dtor/SetAt are the NAFXCW library routines
@@ -84,8 +83,7 @@ struct FontItem {
 //              its "RECT* m_rect" re-read the copied string's data pointer as a rect.
 //              See MeasureLabel's note: retail passes the RECT in as arg2.
 //
-// DISSOLVED (2026-07-13, Fable lane): SevWorker2 / ImgHolder2 / DrawScratch /
-// TextRenderer / CImageList were hand-rolled stand-ins for the REAL MFC GDI classes
+// The caret scratch classes are the REAL MFC GDI classes
 // (<afxwin.h>, statically-linked NAFXCW): the caret scratch pen IS a stack ::CPen
 // (ctor 0x1c6a72 == ??0CPen@@QAE@HHK@Z, HIGH FID; its destruction is the standard
 // MSVC inlined ~CPen chain - vptr restamps to ??_7CGdiObject @0x1e8cd4 then
@@ -108,8 +106,8 @@ struct FontItem {
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// This TU's own file-scope globals - HOMED HERE (2026-07-13), because this is the only
-// TU that touches them, and BOUND to the RVAs their old hex names asserted.
+// This TU's own file-scope globals - homed here because this is the only TU that
+// touches them, bound to their RVAs.
 //
 // They were four `extern` declarations inside a `namespace m4 {}` with NO DATA()
 // anywhere, which is three defects at once: (a) an extern with no definition in the
@@ -276,8 +274,7 @@ void CFontConfig::FreeNodes() {
 // ---------------------------------------------------------------------------
 // FontItem::~FontItem (0x21c40) - the out-of-line record dtor: destroy the +8
 // CString name member (add ecx,8; jmp ~CString). Referenced by FreeNodes/AddItem's
-// `delete item` and Scroll's explicit `item->FontItem::~FontItem()`. Re-homed from
-// src/Stub/DiscoveredSmall.cpp (was the CU35Host::DestroyStr view).
+// `delete item` and Scroll's explicit `item->FontItem::~FontItem()`.
 // ---------------------------------------------------------------------------
 RVA(0x00021c40, 0x8)
 FontItem::~FontItem() {}
@@ -421,16 +418,12 @@ void CFontConfig::EndInput() {
 // (DrawTextA, DT_CALCRECT|DT_SINGLELINE flags 0x420), clamp the used width into
 // g_caretOffsetX, then stroke the 12px insertion caret at that offset with a 2px pen.
 //
-// THE ARGS WERE SWAPPED (fixed 2026-07-13). The old m4::DrawHost view declared this
-// `(HDC, const char* text)` and manufactured the rect out of the copied CString via
-// a fake `RectSrc`. Retail (0x21f20) does the opposite: `add ecx,0x1c` + the CString
-// COPY CTOR (0x1b9ba3) makes a temp of THIS->m_inputText - that is the text, whose
-// length it reads at [eax-8] and pushes to DrawTextA - while arg2 (esi) is the RECT*
-// it reads left/top/right/bottom from at [ecx]..[ecx+0xc]. The old "~72% regalloc
-// wall" was this wrong shape, not regalloc: fixing the swap took it 72.46 -> 85.98.
+// Retail (0x21f20): `add ecx,0x1c` + the CString COPY CTOR (0x1b9ba3) makes a temp of
+// THIS->m_inputText - that is the text, whose length it reads at [eax-8] and pushes to
+// DrawTextA - while arg2 (esi) is the RECT* it reads left/top/right/bottom from at
+// [ecx]..[ecx+0xc].
 // @early-stop
-// The caret tail is now the REAL MFC CDC/CPen (views dissolved 2026-07-13, Fable
-// lane; 85.98 -> 86.86). The residual is the DT_CALCRECT measure block's RECT-copy
+// The caret tail is the REAL MFC CDC/CPen. The residual is the DT_CALCRECT measure block's RECT-copy
 // + argument scheduling (retail interleaves `push 0x420` with the four field copies
 // and walks them through one register; cl copies then pushes - same instruction
 // multiset, /O2 scheduling) - a codegen residual for the final sweep, no view left.
@@ -478,7 +471,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
 // toggling g_caretBlinkOn; then (unless blinked-off + empty) selects m_arialFont,
 // DrawTextA-measures the masked text, right-aligns it if it overflows maxWidth, and
 // renders it into the rect. thiscall member, /GX (destructible CString).
-// (ex m4::PwdHost - dissolved onto CFontConfig; PwdStr was an MFC CString.)
+// (PwdStr is an MFC CString.)
 // @early-stop
 // regalloc/EH-state wall. Complete correct reconstruction: the /GX frame, the
 // arg-null gate before the CString copy, the Ctrl-held '*'-mask loop, the
@@ -510,14 +503,14 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         g_caretBlinkOn ^= 1;
     }
     if (g_caretBlinkOn != 0 && text.GetLength() == 0) {
-        MeasureLabel(hdc, rect); // via ILT 0x258b (ex the phantom "Draw258b" duplicate decl)
+        MeasureLabel(hdc, rect); // via ILT 0x258b
     } else {
         HGDIOBJ prev = 0;
         if (m_arialFont) {
             prev = ::SelectObject(hdc, m_arialFont);
         }
         if (g_caretBlinkOn) {
-            MeasureLabel(hdc, rect); // via ILT 0x258b (ex the phantom "Draw258b" duplicate decl)
+            MeasureLabel(hdc, rect); // via ILT 0x258b
         }
         int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
         RECT rc;
@@ -738,7 +731,6 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
 // CFontConfig::DrawWithFont (0x22770): draw a plain C string with the ARIAL UI
 // font. Null-guard hdc/text/rect, select m_arialFont (saving the prior), DrawTextA
 // the strlen(text) into rect with the caller's format, then restore the font. ret 1.
-// (ex m4::PwdHost.)
 RVA(0x00022770, 0x7d)
 i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) {
     if (hdc == 0) {
@@ -767,7 +759,7 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
 // measures it centered in the dst rect, and draws it centered - first a black
 // shadow pass offset by (dx,dy) when the shadow flag is set, then the RGB(r,g,b)
 // main pass. thiscall member, 10 args, /GX (destructible CString).
-// (ex m4::TextHost - its m_3c/m_40 are m_trainingFont/m_messageFont.)
+// (its m_3c/m_40 are m_trainingFont/m_messageFont.)
 // @early-stop
 // regalloc/scheduling wall. Complete correct reconstruction: the /GX frame, the
 // three arg-null gates before the CString copy, the two-font SelectObject, the

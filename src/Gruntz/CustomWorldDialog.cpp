@@ -1,5 +1,5 @@
 // CustomWorldDialog.cpp - the custom-world picker feature file (C:\Proj\Gruntz):
-// ONE original obj `[0x3ac30 .. 0x3bc78]` (dossier #16, waveM-judgment). Holds the
+// ONE original obj `[0x3ac30 .. 0x3bc78]` (dossier #16). Holds the
 // CUSTOM_WORLD modal launcher + its DlgProc, the level-list filler, the level-info
 // pane filler, the CUSTOM_WORLDINFO popup + its loader, the custom-path builder,
 // and the two WwdFile static helpers (ValidateMainBlock / GetMapBaseName) whose
@@ -9,17 +9,15 @@
 // is shared by FillLevelInfoDialog + CustomWorldInfoDlgProc; 0x20cfbc by
 // LoadCustomWorldSelection + LoadCustomWorldInfo + BuildCustomWwdPath; 0x20cfc4 by
 // LoadCustomWorldSelection + LoadCustomWorldInfo; the adjacent .bss static band
-// 0x22c25c-0x22c274 is read intermixed by the ex-customworlddialog and
-// ex-customworldinfodlg fns. The ex units customworldinfodlg / customlevellist /
-// customwwdpath dissolved here; wwdfile's two in-block statics moved in.
+// 0x22c25c-0x22c274 is read intermixed by the customworlddialog and
+// customworldinfodlg fns.
 // /GX per the EH prologues at 0x3b470 / 0x3b940 / 0x3bb50.
 //
 // The head statics: g_pathStr @0x62c25c (frag i513 + atexit-style reset 0x3ac30),
 // g_str62c264 @0x62c264 (frag i514 -> InitStr62c264 0x3acb0), g_levelStr @0x62c260
-// (frag i515 -> FreeLevelStr 0x3ad30). All three are MFC CStrings: the ex-GameKeyStr
-// view's methods were the real CString entry points (Set=??4 0x1b9e74,
+// (frag i515 -> FreeLevelStr 0x3ad30). All three are MFC CStrings (Set=??4 0x1b9e74,
 // Append=?+= 0x1ba0c8, Reset=?Empty 0x1b9c69, Free1b9b93=??0 0x1b9b93 -
-// config/library_labels.csv, all anchored), so GameKeyStr dissolved to CString.
+// config/library_labels.csv, all anchored).
 #include <Mfc.h> // afx-first: CString + the dialog API
 
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdWorldHolder/WwdLevelInfoSrc (IsValidWwd receiver)
@@ -97,14 +95,13 @@ extern "C" CGruntzMgr* g_gameReg;
 
 // The "game root dir" the loaders resolve is just the current working directory:
 // 0x11fc10 is the CRT _getcwd (LIBCMT __getcwd), the same routine BuildCustomWwdPath
-// (below) and FecCrypt call; the former GetGameDir decl was a fake alias of it.
+// (below) and FecCrypt call.
 // The OpenFile(OF_EXIST) existence probe (FUN_00004282) is reloc-masked.
 i32 FileExists(char* path); // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a thunk to it)
 
 // FreeGlobal62c25c @0x03ac30 - reset the g_pathStr global in place (the
 // explicit-ctor-call tail-jmp to ??0CString@@QAE@XZ; the file's leading static,
-// frag i513). Re-homed from OrphanLeaves.cpp (the unit split was an aggregation
-// artifact - dossier #16).
+// frag i513). The unit split was an aggregation artifact (dossier #16).
 RVA(0x0003ac30, 0xa)
 void FreeGlobal62c25c() {
     g_pathStr.CString::CString();
@@ -133,9 +130,7 @@ void FreeLevelStr() {
 // when present; return the selected-world path by value.
 // ===========================================================================
 // @early-stop
-// ~95.7% under this obj's real /GX profile (the old ~73% "extra dead stack dword"
-// residual was the missing EH-adjacent frame slot - resolved by the merged unit's
-// eh flags, dossier #16). Remaining residual is the cross-TU reloc-name tail:
+// ~95.7% under this obj's real /GX profile. Remaining residual is the cross-TU reloc-name tail:
 // the CString::Empty/operator=/copy-ctor + RunModalDialog relocs resolve to the
 // delinker's Ghidra simple-labels which a foreign TU cannot name-match; they go
 // exact once those library/manager functions are reconstructed. Logic complete.
@@ -220,8 +215,7 @@ extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wPara
 
 // This TU's .data literal run (0x60cf90.. "..", "*.WWD", "Custom", "Bad Level
 // File"...): owner-TU definitions, lengths NULL-TERMINATOR-PROVEN from the retail
-// bytes. g_dotDot doubles as SymTab's directory-walk skip-name (it externs it);
-// the old `g_customDone` name here was a second alias of the same ".." literal.
+// bytes. g_dotDot doubles as SymTab's directory-walk skip-name (it externs it).
 DATA(0x0020cf90)
 char g_dotDot[] = ".."; // 0x60cf90
 DATA(0x0020cf94)
