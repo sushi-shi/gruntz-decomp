@@ -1562,22 +1562,26 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 // regalloc coin-flip, not source-steerable; deferred to the final sweep.
 RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
-    i32* m = (i32*)this;
-    if (m[0x4e8 / 4] == 0) {
+    // Typed 2026-07-16 (ex the (i32*)this word soup + the CGrinderRect view of the
+    // +0x500 widget): every offset is the canonical member - the grinder conveyor
+    // is the m_fall* band and the rect-target widget is m_extraNotify1's own
+    // +0x14 screen rect (CSbiSlotPtr::m_rect14 - the same slot-map rect band
+    // CSbiRect carries as m_xLo..m_yHi).
+    if (m_fallActive == 0) {
         return;
     }
 
     i32 stepped = 0;
-    if (m[0x4e8 / 4] == 1 || m[0x4e8 / 4] == 2) {
+    if (m_fallActive == 1 || m_fallActive == 2) {
         u32 delay = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
         i32 speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 4);
 
-        if (m[0x508 / 4] >= 0x1c7) {
-            m[0x4e8 / 4] = 0;
-            m[0x4ec / 4] = 0;
-        } else if (m[0x510 / 4] >= 0x1bf) {
-            if (m[0x4e8 / 4] != 2) {
-                if (m[0x10c / 4] == 3 && m[0] != 2) {
+        if (m_fallRectT >= 0x1c7) {
+            m_fallActive = 0;
+            m_extraNotifyArg1 = 0;
+        } else if (m_fallRectB >= 0x1bf) {
+            if (m_fallActive != 2) {
+                if (m_activeTab == 3 && m_position != 2) {
                     CSndHost* h = g_gameReg->m_world->m_28;
                     if (h->m_emitGate == 0) {
                         void* spr_ob = 0;
@@ -1591,37 +1595,37 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                         }
                     }
                 }
-                m[0x4e8 / 4] = 2;
+                m_fallActive = 2;
             }
             delay = g_buteMgr.GetDwordDef("StatusBar", "FallingItemShredderDelay", 0x64);
             speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        i64 d = (i64)(u32)g_frameTime - *(i64*)&m[0x4f0 / 4];
-        if (d >= *(i64*)&m[0x4f8 / 4]) {
-            i32 newLo = m[0x508 / 4] + speed;
-            m[0x508 / 4] = newLo;
-            i32 newHi = m[0x510 / 4] + speed;
-            m[0x510 / 4] = newHi;
-            CGrinderRect* w = (CGrinderRect*)m[0x500 / 4];
+        i64 d = (i64)(u32)g_frameTime - *(i64*)&m_fallLast;
+        if (d >= *(i64*)&m_fallDelay) {
+            i32 newLo = m_fallRectT + speed;
+            m_fallRectT = newLo;
+            i32 newHi = m_fallRectB + speed;
+            m_fallRectB = newHi;
+            CSbiSlotPtr* w = m_extraNotify1;
             if (w) {
-                i32 sx = m[0x10 / 4];
-                i32 sy = m[0x14 / 4];
-                i32* p = &w->m_left;
-                p[0] = m[0x504 / 4] + sx;
+                i32 sx = m_10;
+                i32 sy = m_rect14.m_0;
+                i32* p = w->m_rect14;
+                p[0] = m_fallRectL + sx;
                 p[1] = sy + newLo;
-                p[2] = m[0x50c / 4] + sx;
+                p[2] = m_fallRectR + sx;
                 p[3] = sy + newHi;
             }
-            m[0x4f8 / 4] = delay;
-            m[0x4fc / 4] = 0;
-            m[0x4f0 / 4] = g_frameTime;
-            m[0x4f4 / 4] = 0;
+            m_fallDelay = (i32)delay;
+            m_fallDelayHi = 0;
+            m_fallLast = (i32)g_frameTime;
+            m_fallLastHi = 0;
             stepped = 1;
         }
     }
 
-    if (m[0x500 / 4] != 0 && stepped) {
+    if (m_extraNotify1 != 0 && stepped) {
         ChipGrinderFinishStep();
     }
 }

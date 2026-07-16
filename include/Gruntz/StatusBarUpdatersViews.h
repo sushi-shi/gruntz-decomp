@@ -38,16 +38,10 @@ class DSoundCloneInst; // the pooled cue player (ConfigureItem @0x1360d0; Dsndmg
 // (its +0x1c slot array is m_grid), the +0x150 toggle item IS CSbiRect, and the
 // +0x18c toggle sub IS CSbiStatObj (StatusBarMgr.h).)
 
-// The chip-grinder rect-target widget at m_500: its +0x14..+0x20 screen rect is
-// stamped each step from the scroll origin (m_10/m_14) and the grinder extents.
-struct CGrinderRect {
-    char m_pad00[0x14];
-    i32 m_left;   // +0x14  left
-    i32 m_top;    // +0x18  top
-    i32 m_right;  // +0x1c  right
-    i32 m_bottom; // +0x20  bottom
-};
-SIZE_UNKNOWN(CGrinderRect);
+// (CGrinderRect is DISSOLVED, 2026-07-16: the chip-grinder rect-target widget at
+// CStatusBarMgr::m_extraNotify1 (+0x500) is a CSbiSlotPtr, and the +0x14..+0x20
+// screen rect it stamps IS that class's m_rect14 - the same status-bar-item rect
+// band CSbiRect carries as m_xLo..m_yHi (StatusBarMgr.h).)
 
 // --- vtable catalog ---
 
