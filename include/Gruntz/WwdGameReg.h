@@ -28,6 +28,7 @@
 #include <rva.h> // SIZE class-metadata macro
 
 // Pointer-member facet types (each consumer completes the ones it dereferences).
+class CState;           // +0x2c  current game state (== GameRegistry m_curState; State.h)
 class CDDrawSurfaceMgr; // +0x30  the ONE world/resource holder (<DDrawMgr/DDrawSurfaceMgr.h>)
 class CGruntCueSink;    // +0x60  on-screen cue receiver
 struct GruntBoard;      // +0x70  level tile board
@@ -46,7 +47,7 @@ struct WwdGameReg {
     char m_pad0[0x10];
     i32 m_10; // +0x10  presence gate
     char m_pad14[0x2c - 0x14];
-    void* m_2c;                // +0x2c  current game state (curState; the MEGAPHONE unit-count path
+    CState* m_2c;              // +0x2c  current game state (curState; the MEGAPHONE unit-count path
                                //         reads its +0x2dc sub-object; == GameRegistry m_curState)
     CDDrawSurfaceMgr* m_world; // +0x30  the ONE world/resource holder (canonical;
                                //         ex the GruntSoundCat/CTeleResHolder facet views)
