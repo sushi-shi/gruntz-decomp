@@ -81,13 +81,8 @@ Gotchas baked in from reading the delinker source:
   `gruntz build` (incremental) is faster. Just run them in the foreground and
   verify changes with a real build — don't background out of fear, avoid clean
   builds, or skip verification.
-- **`src/Stub/` is the labeled-but-unmatched backlog** (the `engine_label_stubs`
-  unit, aggregated by `All.cpp`). These stubs ARE delinked and diffed like any
-  unit — they show in objdiff (initially ~0%) as the matching worklist, count in
-  the started-units denominator, and are covered by the duplicate-RVA guard +
-  `gruntz.match.verify_stubs`' stub-vs-matched cross-check. The goal is to **move
-  each stub into its real class's TU** and reconstruct it there; `src/Stub/`
-  shrinks toward empty. See `src/Stub/All.cpp`.
+- **Every body lives in its real owner TU** — owner proven by xref / vtable-slot, never by RVA
+  proximity (`docs/tu-partition-brief.md`; a contribution must be contiguous).
 - **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over
   `docs/reference/gooroosgruntz/` (mirrored community docs); the +0x114 union is
   Score/Points/Powerup/Damage/Smarts/Health.
@@ -97,7 +92,8 @@ Gotchas baked in from reading the delinker source:
   `reinterpret_cast`/`const_cast`/`dynamic_cast` otherwise) so the C-style-pattern metrics slide to 0;
   **offset-casts `(char*)x + N` are BANNED outright** (named member `&x->m_field`, never even a C++
   cast). `m_<hex>` naming is last.
-- **Function-state markers (comments, ignored by tooling):** `// @stub` = empty/backlog
-  body in `src/Stub/`; `// @early-stop` (reason on the next line) = a complete
-  reconstruction parked below 100% match. A reconstructed method is either ~100%
-  (unmarked) or `@early-stop`; the final-sweep worklist is `rg '@early-stop' src`.
+- **Function-state markers (comments, ignored by tooling):** `// @stub` = an empty, not-yet-
+  reconstructed body; `// @early-stop` (reason on the next line) = a complete reconstruction
+  parked below 100% match; `// @identity-TODO` = an unproven class/owner identity — leave it,
+  never fabricate. A reconstructed method is either ~100% (unmarked) or `@early-stop`; the
+  final-sweep worklist is `rg '@early-stop' src`.
