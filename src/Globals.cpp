@@ -134,7 +134,7 @@ char k_60df94[] = "S";
 // prior DATA(0x0020dfff..0x0020e002) here MISBOUND them to 0x60dfff (inside a string
 // literal "...NTZ_DEAT..."), 0x6000 low - the "613dff" name suffix is the real home.
 // Reference externs stay in <Globals.h>.
-// g_dplayAppGuid (0x20fab8) / g_611d88 (0x211d88) / s_GameKey (0x211ec4) DEFINED in
+// g_dplayAppGuid (0x20fab8) / g_dropPlayerId (0x211d88) / s_GameKey (0x211ec4) DEFINED in
 // src/Gruntz/Multi.cpp (owner TU). Reference externs stay in <Globals.h> / <Net/NetMgr.h>.
 DATA(0x002111b0)
 u8 g_6111b0 = 72;
@@ -173,9 +173,9 @@ extern "C" i32 g_6455f0 = 0;
 // `g_sharedFlag` - one cell, two symbols, no storage. Folded onto g_sharedFlag, which
 // Multi.cpp (owner) now DEFINES. Binding + declaration removed together.
 DATA(0x00248cec)
-extern "C" i32 g_648cec = 0;
-// g_648d14 (0x248d14) DEFINED in src/Gruntz/Multi.cpp (owner TU); ref extern in <Globals.h>.
-// g_649858 (0x249858) + gA_*/gB_* command-slot fields (0x24a058.., 0x24a8a8..)
+extern "C" i32 g_activePlayerCount = 0;
+// g_ackThrottleDeadline (0x248d14) DEFINED in src/Gruntz/Multi.cpp (owner TU); ref extern in <Globals.h>.
+// g_lobbyRecvBuf (0x249858) + gA_*/gB_* command-slot fields (0x24a058.., 0x24a8a8..)
 // DEFINED in src/Net/NetCmdSlot.cpp (owner TU). Reference externs stay in <Globals.h>.
 DATA(0x0024acb4)
 i32 g_poolCount;
@@ -224,13 +224,13 @@ void* g_projActName;
 // g_colorNames / g_difficultyNames DEFINED in src/Gruntz/Play.cpp (owner TU).
 // (g_61ab14 was a SECOND symbol for g_wwdObjIdCounter @0x61ab14 - folded onto it;
 //  the one definition lives in src/Wwd/WwdObjMgr.cpp.)
-// g_645570 (the DirectInputMgr2 reset singleton @0x245570) is bound canonically in
+// g_inputMgr (the DirectInputMgr2 reset singleton @0x245570) is bound canonically in
 // GruntzMgr.cpp; the former g_glsResetMgr view (VA-typo'd 0x645570, mis-typed
-// GLSResetMgr*) was folded onto it (PlayStateActivate uses g_645570 directly).
+// GLSResetMgr*) was folded onto it (PlayStateActivate uses g_inputMgr directly).
 // g_buildNumber (0x651614) DEFINED in src/Gruntz/GameAssetNamespaces.cpp (owner TU).
 DATA(0x002bf400)
 extern "C" i32 g_helperRefCount; // 0x6bf400
-// g_6bf8dc (debug-output mode word, VA 0x6bf8dc) is DEFINED in its owning TU
+// g_debugPrintMode (debug-output mode word, VA 0x6bf8dc) is DEFINED in its owning TU
 // src/Rez/DebugPrintf.cpp (debugprintf.obj's .bss); the reference extern stays in
 // <Globals.h>.
 // (g_impFreeLibrary is GONE: 0x6c3fdc is KERNEL32's FreeLibrary IAT slot - import

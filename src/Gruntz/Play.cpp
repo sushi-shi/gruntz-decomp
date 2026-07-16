@@ -814,9 +814,9 @@ extern "C" {
 
 DATA(0x00245270)
 extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
-// extern "C" to hit the definition's C-linkage name _g_645570 (GruntzMgr.cpp, typed
-// DirectInputMgr2*); a plain C++ extern emitted ?g_645570@@3PAXA - unresolved.
-extern "C" void* g_645570; // DAT_00645570
+// extern "C" to hit the definition's C-linkage name _g_inputMgr (GruntzMgr.cpp, typed
+// DirectInputMgr2*); a plain C++ extern emitted ?g_inputMgr@@3PAXA - unresolved.
+extern "C" void* g_inputMgr; // DAT_00645570
 // g_frameTicks (0x24558c) comes from <Rez/FrameClock.h>.
 extern "C" i32 g_64e35c; // DAT_0064e35c
 // (0x612618 - the last-loaded level number, init -1 - is DEFINED below as
@@ -1412,7 +1412,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 void* host8b = self->m_c->m_8;
                 (*(void (**)(void*, i32))((char*)*(void**)host8b + 0x24))(host8b, 0);
                 self->m_guts->winapi_107d00_SetRect();
-                ((DirectInputMgr2*)g_645570)->ReadAll();
+                ((DirectInputMgr2*)g_inputMgr)->ReadAll();
                 while (ShowCursor(0) >= 0)
                     ;
                 self->m_4->CGruntzMgr::PerFrameTick();

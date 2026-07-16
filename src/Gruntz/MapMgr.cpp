@@ -41,7 +41,7 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/Brickz.h>        // CBrickzGrid (the pathfinding core homed here)
-#include <Gruntz/GameMode.h>      // canonical CGMVerRect g_645cc8 (SetVersionRect's version RECT)
+#include <Gruntz/GameMode.h>      // canonical CGMVerRect g_versionRect (SetVersionRect's version RECT)
 #include <Rez/RezList.h>          // CRezList::AddHead (Search's result hand-off)
 #include <rva.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
@@ -967,15 +967,15 @@ SIZE_UNKNOWN(BrickzFreeRec);
 // (the gap between MapMgr's last method @0x9f9a0 and MenuStateAssets @0x9fe50);
 // homed here as the offset-0-safe adjacent unit (extends MapMgr's top). The four
 // consecutive DWORDs @0x245cc8..d4 ARE the single CGMVerRect that MenuState reads by
-// value (canonical `g_645cc8` in <Gruntz/GameMode.h>); write its fields so all four
-// stores bind through the one `_g_645cc8` symbol + addend (0/4/8/c). This ends the
+// value (canonical `g_versionRect` in <Gruntz/GameMode.h>); write its fields so all four
+// stores bind through the one `_g_versionRect` symbol + addend (0/4/8/c). This ends the
 // per-rva conflation (the ex-four `g_versionRect{L,T,R,B}` i32 externs collided with
-// _g_645cc8 at 0x245cc8 and lost the keep-last dedup -> UNBOUND). The DIR32 stores are
+// _g_versionRect at 0x245cc8 and lost the keep-last dedup -> UNBOUND). The DIR32 stores are
 // reloc-masked so single-sourcing onto the RECT is byte-neutral.
 RVA(0x0009fe10, 0x29)
 void SetVersionRect() {
-    g_645cc8.a = 5;
-    g_645cc8.b = 0x1c5;
-    g_645cc8.c = 0x27b;
-    g_645cc8.d = 0x1de;
+    g_versionRect.a = 5;
+    g_versionRect.b = 0x1c5;
+    g_versionRect.c = 0x27b;
+    g_versionRect.d = 0x1de;
 }

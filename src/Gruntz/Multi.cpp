@@ -84,7 +84,7 @@ extern CString g_sessionName; // 0x6473d8
 // a header cannot carry a DATA() binding, so it had none. Name kept honest - the only
 // proven fact is its TYPE (CNetCreateCtx*, +0x74 pinned); its role is unrecovered.
 DATA(0x00248cf4)
-extern "C" CNetCreateCtx* g_648cf4;
+extern "C" CNetCreateCtx* g_netCreateCtx;
 #include <Net/NetPackets.h> // the fixed-layout stat-0x3f9 / stat-0x416 wire structs
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
@@ -144,7 +144,7 @@ i32 g_dplayAppGuid[4] = {
     0x1ea89f97
 }; // 0x20fab8  DirectPlay app GUID / net-bind template
 DATA(0x00211d88)
-i32 g_611d88 = -999; // 0x211d88  saved dropped-player id (sentinel -999)
+i32 g_dropPlayerId = -999; // 0x211d88  saved dropped-player id (sentinel -999)
 DATA(0x00211ec4)
 char s_GameKey[] = "GAME_KEY"; // 0x211ec4  registry value-name literal
 DATA(0x00246378)
@@ -168,7 +168,7 @@ i32 g_syncToggle; // 0x248d0c  FrameSyncWait alternating low-bit flag
 DATA(0x00248d10)
 i32 g_dropGuard; // 0x248d10  OnDropPlayer reentrancy guard
 DATA(0x00248d14)
-u32 g_648d14; // 0x248d14  drop-throttle deadline
+u32 g_ackThrottleDeadline; // 0x248d14  drop-throttle deadline
 
 // Non-worklist siblings referenced here (shared / homed elsewhere): kept as plain
 // extern refs carrying their DATA fallback (no private definition of them here).
@@ -1022,7 +1022,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     }
     g_curPlayer = *host;
     srand(m_rngSeed);
-    g_648cec = 0;
+    g_activePlayerCount = 0;
     g_frameDelta = 0;
     g_lastNow = 0;
     g_frameTime = 0;
@@ -1883,10 +1883,10 @@ i32 __stdcall MultiJoinDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             if (g_netPlayerListHwnd == 0) {
                 goto close;
             }
-            if (g_648cf4 == 0) {
+            if (g_netCreateCtx == 0) {
                 goto close;
             }
-            g_648cf4->m_74 = 0;
+            g_netCreateCtx->m_74 = 0;
             SetTimer(hDlg, 1, 0x9c4, 0);
             ::SendMessageA(hDlg, 0x113, 0, 0);
             return 1;
@@ -1907,7 +1907,7 @@ i32 __stdcall MultiJoinDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             g_pMessageBeep(0);
             {
                 i32 t = 0x7d0;
-                InterfaceObject* io = g_648cf4->m_serviceProvider;
+                InterfaceObject* io = g_netCreateCtx->m_serviceProvider;
                 if (io && io->IsInterface2()) {
                     t = 0x1388;
                 }
@@ -1938,7 +1938,7 @@ i32 __stdcall MultiJoinDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                 }
                 RefreshPlayerRow(hDlg, g_netPlayerListHwnd);
                 i32 t = 0x7d0;
-                InterfaceObject* io = g_648cf4->m_serviceProvider;
+                InterfaceObject* io = g_netCreateCtx->m_serviceProvider;
                 if (io && io->IsInterface2()) {
                     t = 0x1388;
                 }
@@ -2681,7 +2681,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             }
             if (player->m_030 == 0) {
                 player->m_030 = 1;
-                g_648cec++;
+                g_activePlayerCount++;
             }
             OnMultiOptions();
             break;
@@ -2699,7 +2699,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 break;
             }
             player->m_030 = 0;
-            g_648cec--;
+            g_activePlayerCount--;
             break;
         }
 
@@ -3019,7 +3019,7 @@ i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
 // in the peer (GetPlayerData); ignores the local player. Resolves the player's
 // slot (m_4->FindPlayer); requires its +0x20 / +0x14 gates set. Releases the
 // slot's global flag (g_netSlotTable[slot->m_008] via SetNetSlot, decrement
-// the active-player refcount g_648cec if armed), clears its list link, builds "<name> has left the
+// the active-player refcount g_activePlayerCount if armed), clears its list link, builds "<name> has left the
 // game." and appends it to the chat log (m_4->m_5c->AddItem, type 0x20 data
 // 0x11), and unlinks the blob (RemovePlayerObj). If the channel selector is set
 // and not yet connected, fires the rejoin finalizer and sets g_playerLeftFlag.
@@ -3044,7 +3044,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
 
     if (slot->m_030 != 0) {
         slot->m_030 = 0;
-        g_648cec--;
+        g_activePlayerCount--;
     }
     slot->m_020 = 0;
     ChannelSlots_Set(slot->m_008, 1);
@@ -3999,7 +3999,7 @@ i32 CMulti::Poll(i32 token) {
 // register shuffle around the m_session->m_c store. Final sweep.
 RVA(0x000bbc90, 0x1b8)
 i32 CMulti::CreateSession() {
-    void* rec = g_648cf4->m_74;
+    void* rec = g_netCreateCtx->m_74;
     if (rec == 0) {
         return 0;
     }
@@ -4197,13 +4197,13 @@ void CMulti::OnDropPlayer() {
             break;
         }
         case DISPATCH_PLAYERLEFT:
-            if (g_611d88 != -999) {
-                if (Peer()->FindPlayerById(g_611d88)) {
-                    SendStat3(g_611d88, STAT_PLAYERLEFT_LOCAL, 1);
+            if (g_dropPlayerId != -999) {
+                if (Peer()->FindPlayerById(g_dropPlayerId)) {
+                    SendStat3(g_dropPlayerId, STAT_PLAYERLEFT_LOCAL, 1);
                 }
             }
-            SendNetStat(STAT_PLAYERLEFT, g_611d88, 1);
-            AckDropPlayer(g_611d88);
+            SendNetStat(STAT_PLAYERLEFT, g_dropPlayerId, 1);
+            AckDropPlayer(g_dropPlayerId);
             Session()->ResetCmdBuffers();
             break;
     }
@@ -4228,13 +4228,13 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
 
 // ===========================================================================
 // CMulti::DropTimeout  @ 0x0bc2d0  - /GX: if a player has been silent past the
-// throttle deadline, run the join-failure ack (rate-limited via g_648d14), then
+// throttle deadline, run the join-failure ack (rate-limited via g_ackThrottleDeadline), then
 // look up the long-timeout slot, copy its host name into the session-name global
 // (g_sessionName), and push the drop stat + OnDropPlayer.
 // ===========================================================================
 // @early-stop
 // /GX EH + regalloc wall: the body is the complete, correct reconstruction (the
-// throttle gate off g_648d14/timeGetTime, the two FindSlot lookups, the slot host
+// throttle gate off g_ackThrottleDeadline/timeGetTime, the two FindSlot lookups, the slot host
 // name copied into g_sessionName via the CString temp, then SendNetStat + OnDropPlayer).
 // Retail keeps the 2nd FindSlot result live in eax across the CString-temp
 // construction while our /O2 spills it to edi, and the EH-state funclet store order
@@ -4245,18 +4245,18 @@ void CMulti::DropTimeout() {
     if (m_session->FindSlot(0x1388) == 0) {
         return;
     }
-    if (g_648d14 < (u32)timeGetTime()) {
+    if (g_ackThrottleDeadline < (u32)timeGetTime()) {
         AckJoinFailure();
-        g_648d14 = timeGetTime() + 0x3e8;
+        g_ackThrottleDeadline = timeGetTime() + 0x3e8;
     }
     CNetCmdSlot* slot = m_session->FindSlot(0x2710);
     if (slot == 0) {
         return;
     }
-    g_611d88 = *(i32*)((char*)slot->m_desc + 0x18);
+    g_dropPlayerId = *(i32*)((char*)slot->m_desc + 0x18);
     CString nm;
     g_sessionName = *slot->BuildHostName(&nm); // slot->FUN_004bc3f0(&nm) -> &nm; g_sessionName = nm
-    SendNetStat(0x40c, g_611d88, 1);
+    SendNetStat(0x40c, g_dropPlayerId, 1);
     OnDropPlayer();
 }
 

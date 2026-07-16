@@ -123,7 +123,7 @@ extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
 
 // LINKAGE FIX: 0x245570/0x245578 are extern-"C" tree-wide (GruntzMgr owns and DEFINES
 // them, typed DirectInputMgr2*/StateMgrBZ*). Declaring them with C++ linkage here
-// emitted ?g_645570@@3PAXA - a divergent symbol for the same address, unresolved on both
+// emitted ?g_inputMgr@@3PAXA - a divergent symbol for the same address, unresolved on both
 // sides. Same names, one linkage. (This TU's void* view of them contradicts GruntzMgr's
 // types - RezSync casts 0x245578 to CGruntSpawnConfig* and 0x245570 to CSpawnOwner*.
 // extern "C" carries no type, so it links either way; the disagreement is REAL and
@@ -135,7 +135,7 @@ extern "C" {
     // stays void* and the `(CSpawnOwner*)` cast at the call site STAYS: the cast is
     // telling the truth - the type above it is still unresolved. Settle the conflation
     // (one object, two class names) and the cast falls out on its own.
-    extern void* g_645570;
+    extern void* g_inputMgr;
     // 0x645578 IS the CGruntSpawnConfig singleton - PROVEN in this very function:
     // RezAlloc(0x28) (its exact size), then ->Init(CSpawnOwner*), then RezFree on the
     // failure path. Typed, so the `(CGruntSpawnConfig*)` cast at the Init call is gone.
@@ -698,7 +698,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         i32* z = (i32*)g_spawnConfig;
         z[0] = z[1] = z[2] = z[4] = z[5] = 0;
     }
-    if (!g_spawnConfig->Init((CSpawnOwner*)g_645570)) {
+    if (!g_spawnConfig->Init((CSpawnOwner*)g_inputMgr)) {
         if (g_spawnConfig) {
             i32* z = (i32*)g_spawnConfig;
             z[0] = z[1] = z[2] = z[4] = z[5] = 0;

@@ -80,7 +80,7 @@
 #include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr - the REAL +0x6c sub-manager (~ @0x85bd0)
-#include <DinMgr2/DirectInputMgr2.h> // the REAL g_645570 input singleton (was a local shell)
+#include <DinMgr2/DirectInputMgr2.h> // the REAL g_inputMgr input singleton (was a local shell)
 #include <Bute/SymParser.h>          // CSymParser - the REAL m_symParser (+0x34)
 #include <Image/ImageSet.h>          // the REAL CImageSet (config/color rows: m_frames/+0x14,
 // m_minIndex/+0x64, GetAt). GameLevel.h no longer collides on this
@@ -522,7 +522,7 @@ i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
                          // 0x20/0x400 ?, 0x40/0x100 brick text, 0x80 elapsed time
 
 // The two engine input/state singletons TickStateMgrs drives once per call
-// (DAT_00645570/DAT_00645578; reloc-masked DATA refs). g_645570 is the REAL
+// (DAT_00645570/DAT_00645578; reloc-masked DATA refs). g_inputMgr is the REAL
 // DirectInputMgr2 (<DinMgr2/DirectInputMgr2.h>) - the local 4-method shell that
 // stood here was a duplicate of that class: PollAll == 0x133080 (100% EXACT in
 // the directinputmgr2 unit), and BOTH of its invented re-arm entry points (Flush /
@@ -536,7 +536,7 @@ i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
 // symbol for the same memory) - so neither name had storage. .bss, zero-init.
 extern "C" {
     DATA(0x00245570)
-    DirectInputMgr2* g_645570 = 0; // DAT_00245570
+    DirectInputMgr2* g_inputMgr = 0; // DAT_00245570
     DATA(0x00245578)
     StateMgrBZ* g_spawnConfig = 0; // DAT_00245578 (canonical binding; also decl'd in Play.h)
 }
@@ -678,7 +678,7 @@ void ForceEmitCStateDtor() {
 // CGruntzMgr::TransitionState (0x08b960; re-homed from the former gruntzmgrtransition
 // unit, waveP -> 0x8b8c0 gruntzmgr). The /GX game-state factory; the CState leaf views
 // are reduced local layouts stamping the retail vtables by hand, CPlay is the canonical
-// Play.h class, g_645570 reuses this TU's local DirectInputMgr2 (ReadAll added).
+// Play.h class, g_inputMgr reuses this TU's local DirectInputMgr2 (ReadAll added).
 // The state object the factory drives IS the canonical CState (<Gruntz/State.h>, already
 // included). The `CTsState` shell that stood here - a 43-slot re-declaration of CState's
 // vtable with 32 nameless `VtSlotFill` placeholder slots and a `m_1c` twin of
@@ -905,7 +905,7 @@ install:
         }
         st->Vslot09(local10);
         *(i32*)(*(char**)((char*)this + 0x8) + 0x244) = 1;
-        g_645570->ReadAll();
+        g_inputMgr->ReadAll();
         PerFrameTick();
         return 1;
     }
@@ -2730,10 +2730,10 @@ i32 CGruntzMgr::StoreInputState(i32 v) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::TickStateMgrs (0x0920b0). Drives the two engine state singletons
-// (g_645570/g_spawnConfig) once and reports success.
+// (g_inputMgr/g_spawnConfig) once and reports success.
 RVA(0x000920b0, 0x1c)
 i32 CGruntzMgr::TickStateMgrs() {
-    g_645570->PollAll();
+    g_inputMgr->PollAll();
     g_spawnConfig->Flush();
     return 1;
 }
@@ -3483,7 +3483,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         }
     }
     m_curState->Vslot19();
-    g_645570->ReadAll();
+    g_inputMgr->ReadAll();
     CGruntzMgr::PerFrameTick();
     return 1;
 }
@@ -3923,10 +3923,10 @@ void CGruntzMgr::Close() {
         operator delete(v);
         g_spawnConfig = 0;
     }
-    if (g_645570) {
+    if (g_inputMgr) {
         // `delete` IS retail's leg: ~DirectInputMgr2 (ILT 0x2969 -> 0x85fc0) + operator delete.
-        delete g_645570;
-        g_645570 = 0;
+        delete g_inputMgr;
+        g_inputMgr = 0;
     }
     if (m_hudGuard) {
         m_hudGuard->Teardown();

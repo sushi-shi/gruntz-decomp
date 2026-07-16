@@ -8,7 +8,7 @@
 // through the set - same file. Strict retail-RVA order.
 //
 // InitFromEnv (0x185000) reads %DPRINTF%, upper-cases it, and maps the first
-// matching device keyword to the global mode word (g_6bf8dc); the parsed string is
+// matching device keyword to the global mode word (g_debugPrintMode); the parsed string is
 // then handed to the debug-channel set. Field names are placeholders; only offsets
 // + code bytes are load-bearing.
 #include <rva.h>
@@ -19,7 +19,7 @@
 #include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
 
 // The debug config's free-global state, DEFINED here (this TU owns the .bss block).
-// g_6bf8dc keeps its reference `extern` in <Globals.h>; the rest are TU-local. All
+// g_debugPrintMode keeps its reference `extern` in <Globals.h>; the rest are TU-local. All
 // zero-init .bss; the DATA() binding now rides these definitions (was extern-only in
 // the Globals.cpp pool). Listed in ascending retail RVA.
 
@@ -30,7 +30,7 @@ char* g_monoBuffer = 0;
 // The debug-output sink object (the debug-channel range set); its first dword is
 // reset, then it is configured from the parsed keyword string. (VA 0x6bf850.)
 DATA(0x002bf850)
-CRangeSet g_6bf850 = {0};
+CRangeSet g_debugChannels = {0};
 // The MONO console's current row (0..24) and column.
 DATA(0x002bf8d4)
 i32 g_monoRow = 0;
@@ -38,10 +38,10 @@ DATA(0x002bf8d8)
 i32 g_monoCol = 0;
 // The debug-output mode word (g_debugConfig +0x94); reference extern in <Globals.h>.
 DATA(0x002bf8dc)
-i32 g_6bf8dc = 0;
+i32 g_debugPrintMode = 0;
 // The open debug-output FILE handle (mode 5/8/9/10); DebugClose fcloses it.
 DATA(0x002bf8e0)
-void* g_6bf8e0 = 0;
+void* g_debugLogFile = 0;
 
 // The cursor-position forwarder (0x184fb0 -> 0x184fd0(0, x, y), defined below - the
 // RezDebugPrintf*XY variants position the cursor through it) and the CRT fclose
@@ -61,7 +61,7 @@ public:
 };
 
 // The debug-config singleton (VA 0x6bf848 -> RVA 0x2bf848); InitFromEnv drives its
-// members g_6bf850 (the +0x8 CRangeSet) and g_6bf8dc (the +0x94 mode word), which this
+// members g_debugChannels (the +0x8 CRangeSet) and g_debugPrintMode (the +0x94 mode word), which this
 // TU also reaches as free globals.
 DATA(0x002bf848)
 CDebugConfig g_debugConfig;
@@ -222,8 +222,8 @@ void MonoClear() {
 
 // ---------------------------------------------------------------------------
 // 0x184e00 - debug-gated assert/printf (re-homed from src/Stub/EngineExternFns.cpp):
-// when the debug mode (g_6bf8dc) is armed and channel 0 is enabled in the debug-
-// channel set (g_6bf850), vsprintf the varargs into a 256-byte stack buffer and
+// when the debug mode (g_debugPrintMode) is armed and channel 0 is enabled in the debug-
+// channel set (g_debugChannels), vsprintf the varargs into a 256-byte stack buffer and
 // hand it to the sink (0x184df0). Body byte-identical (the vsprintf / sink call
 // relocs are reloc-masked). va_list is spelled `(char*)(&fmt+1)` to avoid <stdarg.h>.
 // ---------------------------------------------------------------------------
@@ -235,7 +235,7 @@ extern "C" {
     SYMBOL(_RezAssertFail)
     void RezAssertFail(char* fmt, ...) {
         char buf[256];
-        if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(0)) {
+        if (g_debugPrintMode != 1 && g_debugPrintMode != 0 && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
         }
@@ -246,7 +246,7 @@ extern "C" {
     SYMBOL(_RezDebugPrintfXY)
     void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
         char buf[256];
-        if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(0)) {
+        if (g_debugPrintMode != 1 && g_debugPrintMode != 0 && !((CRangeSet*)&g_debugChannels)->Contains(0)) {
             DebugSetCursorXY(x, y);
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
@@ -258,7 +258,7 @@ extern "C" {
     SYMBOL(_RezDebugPrintfCh)
     void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
         char buf[256];
-        if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(channel)) {
+        if (g_debugPrintMode != 1 && g_debugPrintMode != 0 && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
         }
@@ -269,7 +269,7 @@ extern "C" {
     SYMBOL(_RezDebugPrintfChXY)
     void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
         char buf[256];
-        if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(channel)) {
+        if (g_debugPrintMode != 1 && g_debugPrintMode != 0 && !((CRangeSet*)&g_debugChannels)->Contains(channel)) {
             DebugSetCursorXY(x, y);
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
@@ -292,42 +292,42 @@ void DebugSetCursor(i32, i32, i32) {}
 RVA(0x00185000, 0x1a6)
 CDebugConfig* CDebugConfig::InitFromEnv() {
     char buf[256];
-    g_6bf850.m_count = 0;
-    g_6bf8dc = 1;
+    g_debugChannels.m_count = 0;
+    g_debugPrintMode = 1;
     char* env = getenv("DPRINTF");
     if (env != 0) {
         strcpy(buf, env);
         _strupr(buf);
         if (strstr(buf, "MONO")) {
-            g_6bf8dc = 2;
+            g_debugPrintMode = 2;
         }
         if (strstr(buf, "FILE")) {
-            g_6bf8dc = 5;
+            g_debugPrintMode = 5;
         }
         if (strstr(buf, "FILEAPPEND")) {
-            g_6bf8dc = 6;
+            g_debugPrintMode = 6;
         }
         if (strstr(buf, "COM1")) {
-            g_6bf8dc = 3;
+            g_debugPrintMode = 3;
         }
         if (strstr(buf, "COM2")) {
-            g_6bf8dc = 4;
+            g_debugPrintMode = 4;
         }
         if (strstr(buf, "STDOUT")) {
-            g_6bf8dc = 7;
+            g_debugPrintMode = 7;
         }
         if (strstr(buf, "LPT1")) {
-            g_6bf8dc = 8;
+            g_debugPrintMode = 8;
         }
         if (strstr(buf, "LPT2")) {
-            g_6bf8dc = 8;
+            g_debugPrintMode = 8;
         }
         if (strstr(buf, "PRN")) {
-            g_6bf8dc = 10;
+            g_debugPrintMode = 10;
         }
-        g_6bf850.AddFromString(buf);
+        g_debugChannels.AddFromString(buf);
     }
-    g_6bf8dc = 2;
+    g_debugPrintMode = 2;
     return this;
 }
 
@@ -335,7 +335,7 @@ CDebugConfig* CDebugConfig::InitFromEnv() {
 // (mode 5 = FILE, or 8/9/10 = LPT1/LPT2/PRN).
 RVA(0x001851b0, 0x23)
 void DebugClose() {
-    if (g_6bf8dc == 5 || (g_6bf8dc > 7 && g_6bf8dc <= 10)) {
-        fclose(g_6bf8e0);
+    if (g_debugPrintMode == 5 || (g_debugPrintMode > 7 && g_debugPrintMode <= 10)) {
+        fclose(g_debugLogFile);
     }
 }

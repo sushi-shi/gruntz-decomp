@@ -36,7 +36,7 @@
 // The gA_*/gB_* fields are packed consecutively in retail but retail emits each as
 // its OWN disp-0 .data symbol - so they stay SEPARATE globals (a single struct would
 // emit base+disp and mis-encode the displacement bytes; see NetMgr.h chanStat note).
-char g_649858[0x800]; // 0x249858
+char g_lobbyRecvBuf[0x800]; // 0x249858
 DATA(0x0024a058)
 unsigned char gB_flag; // 0x24a058
 DATA(0x0024a059)
@@ -240,7 +240,7 @@ i32 CNetSession::Poll(i32 delta) {
         i32 len = 0x800;
         i32 chan = m_localDesc->m_playerId;
         IDirectPlay4* ep = (*(IDirectPlay4**)((char*)m_netMgr + 0x18));
-        i32 st = ep->Receive((LPDPID)&a, (LPDPID)&chan, 1, g_649858, (LPDWORD)&len);
+        i32 st = ep->Receive((LPDPID)&a, (LPDPID)&chan, 1, g_lobbyRecvBuf, (LPDWORD)&len);
         if (st != 0) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
             if (st != 0) {
@@ -250,7 +250,7 @@ i32 CNetSession::Poll(i32 delta) {
         received++;
         avail--;
         if (a != m_localDesc->m_playerId) {
-            Dispatch(a, (LobbyMsg*)g_649858, len);
+            Dispatch(a, (LobbyMsg*)g_lobbyRecvBuf, len);
         }
     }
     return received;

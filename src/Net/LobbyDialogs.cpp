@@ -56,7 +56,7 @@ extern "C" i32 g_sharedFlag;
 i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 // DAT_00648cec: the "connection established / abort" latch the join-wait timer polls
 // (nonzero = keep waiting, skip the timeout EndDialog). Home elsewhere; extern-only pin.
-extern "C" i32 g_648cec;
+extern "C" i32 g_activePlayerCount;
 
 namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
@@ -171,7 +171,7 @@ namespace NetLobby {
     void Init_bda50(HWND, void*) {}
 
     // __stdcall DlgProc: the join-wait dialog. WM_TIMER services the session then, if
-    // the connection latch (g_648cec) has cleared, kills the timer and ends with 0x4d2;
+    // the connection latch (g_activePlayerCount) has cleared, kills the timer and ends with 0x4d2;
     // WM_COMMAND cancels on 0x4c6.
     RVA(0x000bda70, 0xda)
     i32 CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -194,7 +194,7 @@ namespace NetLobby {
             case 0x113:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 Init_bdbe0(hWnd, g_curMulti);
-                if (g_648cec) {
+                if (g_activePlayerCount) {
                     return 1;
                 }
                 KillTimer(hWnd, 1);

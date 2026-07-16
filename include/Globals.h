@@ -119,7 +119,7 @@ extern "C" char g_id2_613e01;
 extern "C" char g_id3_613e02;
 extern i32 g_dplayAppGuid[4]; // 0x60fab8  DirectPlay app GUID (DEFINED in src/Gruntz/Multi.cpp)
 extern u8 g_6111b0;
-// g_611d88 DEFINED in src/Gruntz/Multi.cpp; single reference extern in <Net/NetMgr.h>.
+// g_dropPlayerId DEFINED in src/Gruntz/Multi.cpp; single reference extern in <Net/NetMgr.h>.
 extern char s_GameMessagez[];
 extern char s_GameKey[];
 extern i32 g_warpX;
@@ -180,9 +180,9 @@ extern i32 g_debugDisplayFlags; // 0x6455f4 debug-overlay flags word (def: Grunt
 // (g_kslimeColl @0x646228 is ONE 0x24 CActReg object, DEFINED in src/Gruntz/KitchenSlime.cpp
 //  and private to it; 0x64622c..0x646248 are its interior fields, not globals.)
 extern i32 g_dlgResultSink;
-extern "C" i32 g_648cec;
-extern u32 g_648d14; // 0x648d14  DEFINED in src/Gruntz/Multi.cpp (owner TU)
-extern char g_649858[0x800];
+extern "C" i32 g_activePlayerCount;
+extern u32 g_ackThrottleDeadline; // 0x648d14  DEFINED in src/Gruntz/Multi.cpp (owner TU)
+extern char g_lobbyRecvBuf[0x800];
 extern unsigned char gB_flag;
 extern i32 gB_val;
 extern i32 gB_m14;
@@ -319,7 +319,7 @@ extern i32 g_buildNumber;
 // TUs, matching the pre-fold convention). (DD-G)
 extern u8 g_grayRamp[];
 extern "C" i32 g_helperRefCount;
-extern i32 g_6bf8dc;
+extern i32 g_debugPrintMode;
 
 extern "C" {
     extern i32 g_opt_22bd64;

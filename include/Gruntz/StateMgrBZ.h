@@ -1,6 +1,6 @@
 // StateMgrBZ.h - the engine input/control state singleton (*g_spawnConfig). The game's
 // Init (0x83450) new's a 0x28 (40-byte) object, stores it in g_spawnConfig, and inits
-// it from the DirectInputMgr2 (*g_645570) with control mode 6. Per frame
+// it from the DirectInputMgr2 (*g_inputMgr) with control mode 6. Per frame
 // CGruntzMgr::TickStateMgrs (0x920b0) calls Flush(); CPlay/GameKeyHandler read its
 // +0x18 edge-key word (the `& 0x20` control/cheat bit).
 //

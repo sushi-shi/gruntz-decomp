@@ -119,7 +119,7 @@ extern "C" void MultiDropPlayerCallback(); // OnDropPlayer (MULTI_DROPPLAYER)
 
 // The pending drop's player id (-999 == none). Owned + DEFINED in src/Gruntz/Multi.cpp
 // (private to that TU); this is the single reference extern (canonical, one per RVA).
-extern i32 g_611d88; // 0x611d88  saved dropped-player id
+extern i32 g_dropPlayerId; // 0x611d88  saved dropped-player id
 
 // ---------------------------------------------------------------------------
 // Reentrancy guards (file-scope globals).
@@ -1017,7 +1017,7 @@ extern "C" char g_chatPacket_buf; // 0x6473ec  (strcpy dest)
 // engine globals; DIR32 reloc-masked.
 extern "C" i32 g_playerLeftFlag; // 0x648ce4
 // CANONICAL name (shared with CMulti.cpp / Globals.cpp): one symbol per RVA.
-extern "C" i32 g_648cec; // 0x648cec  active-player refcount
+extern "C" i32 g_activePlayerCount; // 0x648cec  active-player refcount
 
 // The multiplayer-create context singleton (DAT_00648cf4): CreateSession reads
 // its +0x74 group-enumeration record and hands it to the peer's EnumGroupsRange.
@@ -1030,7 +1030,7 @@ struct CNetCreateCtx {
     void* m_74;            // +0x74  the group-enumeration record
 };
 SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail size TBD
-// (g_648cf4 moved to its only user, Multi.cpp, so it can carry the DATA() binding a
+// (g_netCreateCtx moved to its only user, Multi.cpp, so it can carry the DATA() binding a
 //  header cannot - declared here it was bound to no retail address at all.)
 
 // CNetMgr derives from the shared CObject grand-base (Wap32/Object.h): its own

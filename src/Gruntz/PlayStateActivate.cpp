@@ -40,9 +40,9 @@
 
 // The global empty C string (0x6293f4).
 
-// The +0xc4 reset manager is the DirectInputMgr2 input singleton g_645570
+// The +0xc4 reset manager is the DirectInputMgr2 input singleton g_inputMgr
 // (DAT_00245570, bound extern "C" in GruntzMgr.cpp): ReadAll (@0x133110) polls devices.
-extern "C" DirectInputMgr2* g_645570;
+extern "C" DirectInputMgr2* g_inputMgr;
 // The game-manager singleton (0x64556c). Declared here (it used to arrive from
 // <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.
@@ -85,7 +85,7 @@ i32 CPlay::OnActivate() {
         return 0;
     }
 
-    g_645570->ReadAll();
+    g_inputMgr->ReadAll();
     while (ShowCursor(FALSE) >= 0)
         ;
 

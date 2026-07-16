@@ -115,7 +115,7 @@ struct FontItem {
 // anywhere, which is three defects at once: (a) an extern with no definition in the
 // whole tree is an unresolvable symbol at link; (b) with no DATA() the delinker has no
 // retail address to bind the references to; and (c) the C++ namespace MANGLED them
-// (?g_62b434@m4@@3HA) into names retail never had. All three are gone: real definitions,
+// (?g_caretOffsetX@m4@@3HA) into names retail never had. All three are gone: real definitions,
 // real bindings, extern "C" linkage, and names that say what they do.
 //
 // Names are evidenced by the two functions that use them (MeasureLabel 0x21f20 and
@@ -419,7 +419,7 @@ void CFontConfig::EndInput() {
 // ---------------------------------------------------------------------------
 // CFontConfig::MeasureLabel - measure m_inputText into the caller's rect
 // (DrawTextA, DT_CALCRECT|DT_SINGLELINE flags 0x420), clamp the used width into
-// g_62b434, then stroke the 12px insertion caret at that offset with a 2px pen.
+// g_caretOffsetX, then stroke the 12px insertion caret at that offset with a 2px pen.
 //
 // THE ARGS WERE SWAPPED (fixed 2026-07-13). The old m4::DrawHost view declared this
 // `(HDC, const char* text)` and manufactured the rect out of the copied CString via
@@ -474,15 +474,15 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
 
 // ---------------------------------------------------------------------------
 // CFontConfig::RenderInputText - the edit-control render path. Copies m_inputText and,
-// when Ctrl is held, masks every char with '*'; runs a blink countdown (g_62b438)
-// toggling g_62b43c; then (unless blinked-off + empty) selects m_arialFont,
+// when Ctrl is held, masks every char with '*'; runs a blink countdown (g_caretBlinkTimer)
+// toggling g_caretBlinkOn; then (unless blinked-off + empty) selects m_arialFont,
 // DrawTextA-measures the masked text, right-aligns it if it overflows maxWidth, and
 // renders it into the rect. thiscall member, /GX (destructible CString).
 // (ex m4::PwdHost - dissolved onto CFontConfig; PwdStr was an MFC CString.)
 // @early-stop
 // regalloc/EH-state wall. Complete correct reconstruction: the /GX frame, the
 // arg-null gate before the CString copy, the Ctrl-held '*'-mask loop, the
-// g_frameDelta/g_62b438 countdown + g_62b43c toggle, the blink-off-empty caret branch,
+// g_frameDelta/g_caretBlinkTimer countdown + g_caretBlinkOn toggle, the blink-off-empty caret branch,
 // the font SelectObject save/restore, the DT_CALCRECT measure + overflow
 // right-align, and both DrawTextA renders align by shape (llvm-objdump -dr).
 // Residual is MSVC5 pinning the shared zero in edi + reusing dead arg slots for the
