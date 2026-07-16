@@ -36,7 +36,7 @@
 // "*.*"; SymTab's directory walk externs it). Owner-TU definition; length
 // NULL-TERMINATOR-PROVEN. extern "C" avoids the P/Q const-array mangling split.
 DATA(0x0021a0a0)
-extern "C" const char g_wildcard[] = "*.*";
+const char g_wildcard[] = "*.*"; // decl in RezFile.h
 
 // The four cl-auto scalar-deleting destructors (vtable slot 1 of each class; the
 // compiler generates them from the virtual dtors - no source symbol to RVA()-pin,

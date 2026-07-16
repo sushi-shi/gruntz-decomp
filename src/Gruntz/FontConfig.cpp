@@ -119,16 +119,16 @@ struct FontItem {
 // Names are evidenced by the two functions that use them (MeasureLabel 0x21f20 and
 // RenderInputText 0x22160 - the chat/edit text layer):
 DATA(0x0022b434)
-extern "C" i32 g_chatTextWidth = 0; // 0x62b434: DT_CALCRECT-measured text width, clamped
+i32 g_chatTextWidth = 0; // 0x62b434: DT_CALCRECT-measured text width, clamped
                                     // to the provided rect; the caret's x offset reads it
 DATA(0x0022b438)
-extern "C" i32 g_caretBlinkMs = 0; // 0x62b438: caret blink countdown in ms - the frame
+i32 g_caretBlinkMs = 0; // 0x62b438: caret blink countdown in ms - the frame
                                    // delta is subtracted each render, and on reaching 0 it
                                    // re-arms to 200 (0xc8) and toggles g_caretBlinkOn
 DATA(0x0022b43c)
-extern "C" i32 g_caretBlinkOn = 0; // 0x62b43c: caret blink phase (XOR 1 each expiry)
+i32 g_caretBlinkOn = 0; // 0x62b43c: caret blink phase (XOR 1 each expiry)
 DATA(0x0020c7a8)
-extern "C" i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
+i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
 
 // The shared frame-delta clock (defined in its own owner TU; one extern, no DATA here).
 extern "C" i32 g_frameDelta; // 0x00645584 elapsed-time delta (ms)

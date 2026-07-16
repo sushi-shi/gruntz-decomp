@@ -79,4 +79,11 @@ SIZE(CFader, 0x38);
 // the base slot name (v1/v2), so those slot names are C++-mandated, not anonymous.
 VTBL(CFader, 0x001f07a8);
 
+// NOTE: the fade-math .rdata constants (g_faderScale_5f085c/g_faderPowK/g_faderHalf/
+// g_faderScale/g_faderBiasR/g_faderBiasFade/g_faderOne) stay defined as `extern const
+// T = val;` inline in Fader.cpp - NOT moved header-ward. They are constant-propagation
+// load-bearing: MSVC /O2 folds the visible initializer at the use sites (CFaderSine::
+// ApplyInit etc.), so a header decl (no initializer, seen first) loses value visibility
+// and regresses the fade math (-1.98% on ApplyInit). Verified 2026-07-16.
+
 #endif // GRUNTZ_GRUNTZ_CFADER_H

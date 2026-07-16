@@ -22,7 +22,7 @@ extern "C" ClipVtx g_rasterVtxA[]; // 0x6a1708
 DATA(0x002a21f8)
 extern "C" ClipVtx g_rasterVtxB[]; // 0x6a21f8
 DATA(0x002becf8)
-extern "C" i32 g_rasterVtxCount = 0;
+i32 g_rasterVtxCount = 0; // decl in Image/RasterVtx.h
 
 // ===========================================================================
 // PolyIsConvexCW (0x145e30, __cdecl) - winding-consistency test over a `count`-

@@ -53,9 +53,9 @@ extern "C" i32 g_rasterEdgeR[]; // 0x6856f8
 
 // The rasterizer global scratch (all reloc-masked DATA).
 DATA(0x002a2ce8)
-extern "C" i32 g_rasterDestRow = 0;
+i32 g_rasterDestRow = 0; // decl in Image/RasterVtx.h
 DATA(0x002becf4)
-extern "C" i32 g_rasterDestPtr = 0;
+i32 g_rasterDestPtr = 0; // decl in Image/RasterVtx.h
 
 // The per-span texture-walk accumulators/steps. Owned by this TU; DEFINED here
 // (warptextureblit.obj's .bss, zero-init), DATA()-pinned; reference externs kept in

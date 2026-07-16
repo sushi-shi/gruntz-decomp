@@ -42,4 +42,10 @@ public:
     i32 m_524; // +0x524
 };
 
+// The CW/CCW rotation-transition .rdata tables owned by Demo.cpp (each DATA()-bound
+// there). Declared here (C linkage) so the definitions can drop `extern "C"` while
+// keeping the exact symbol + binding. Emit no code -> matching-neutral.
+extern "C" const i32 g_rotTableA_60d008[27]; // 0x60d008  CW transitions
+extern "C" const i32 g_rotTableB_60d078[27]; // 0x60d078  CCW transitions
+
 #endif // GRUNTZ_GRUNTZ_CDEMO_H

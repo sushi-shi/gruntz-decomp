@@ -105,4 +105,8 @@ extern char s_actKeyB[];
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
+// (s_out_of_memory moved to the narrow, owner-only header <Gruntz/TypeKeyCollStr.h> -
+//  keeping this file-private literal out of this 38-includer header avoids a decl-count-
+//  butterfly regalloc ripple in unrelated TypeKeyColl.h includers.)
+
 #endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

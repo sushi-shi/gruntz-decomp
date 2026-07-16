@@ -314,4 +314,10 @@ public:
 };
 SIZE(CSymTab, 0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
 
+// The "\" path separator literal owned by SymTab.cpp (DATA()-bound there; extern "C"
+// avoids the P/Q const-array mangling split). Declared here (C linkage) so the
+// definition can drop `extern "C"` while keeping the exact symbol. Used as a pointer
+// (strcpy/strcat) - no scalar constant-propagation, so header-ward is byte-neutral.
+extern "C" const char g_sepSlash[]; // 0x60cff0  "\"  (CSymTab directory-path builder)
+
 #endif // SRC_BUTE_SYMTAB_H

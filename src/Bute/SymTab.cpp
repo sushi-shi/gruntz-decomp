@@ -1357,7 +1357,7 @@ void SymBindRecord(void* rec, char* name, i32 h);             // 0x13cac0
 // customworlddialog share it). Length NULL-TERMINATOR-PROVEN ("\\" + NUL = 2 B),
 // not a gap guess. extern "C" avoids the const-array mangling that drops DATA().
 DATA(0x0020cff0)
-extern "C" const char g_sepSlash[] = "\\";
+const char g_sepSlash[] = "\\"; // decl in <Bute/SymTab.h>
 // The find-all glob (0x61a0a0 "*.*"; DEFINED in src/Rez/RezFile.cpp - its .data
 // run continues with that TU's "r+b"/"w+b" fopen-mode literals).
 extern "C" const char g_wildcard[];

@@ -264,11 +264,11 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
 // reach at 9 triples = 27 ints; the retail bytes confirm 27 values then zero padding.
 // (The old [30] extern over-declared by one unused triple.)
 DATA(0x0020d008)
-extern "C" const i32 g_rotTableA_60d008[27] = {
+const i32 g_rotTableA_60d008[27] = {
     0, 1, 1, 0, 2, 2, 1, 2, 3, 0, 0, 8, 1, 1, 0, 2, 2, 4, 1, 0, 7, 2, 0, 6, 2, 1, 5,
 }; // CW transitions
 DATA(0x0020d078)
-extern "C" const i32 g_rotTableB_60d078[27] = {
+const i32 g_rotTableB_60d078[27] = {
     1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
 }; // CCW transitions
 

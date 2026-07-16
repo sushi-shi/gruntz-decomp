@@ -78,4 +78,12 @@ public:
     HFONT m_messageFont;       // +0x40  the MessageFont
 };
 
+// The chat/caret .bss state globals owned by FontConfig.cpp (each DATA()-bound there).
+// Declared here (C linkage) so the definitions can drop `extern "C"` while keeping the
+// exact symbol + binding. Emit no code -> matching-neutral.
+extern "C" i32 g_chatTextWidth;      // 0x62b434: DT_CALCRECT-measured text width
+extern "C" i32 g_caretBlinkMs;       // 0x62b438: caret blink countdown in ms
+extern "C" i32 g_caretBlinkOn;       // 0x62b43c: caret blink phase
+extern "C" i32 g_lastDrawTextFormat; // 0x60c7a8: last DrawTextA format flags
+
 #endif // GRUNTZ_GRUNTZ_FONTCONFIG_H

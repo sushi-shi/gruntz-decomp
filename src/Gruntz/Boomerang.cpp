@@ -55,13 +55,13 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 // The boomerang return-trajectory constants (.rdata doubles). DATA-pinned here (the
 // only referencing TU) so the fmul/fdivr loads reloc-mask against the named symbols.
 DATA(0x001eaad8)
-extern const double g_boomHalf = 0.5; // midpoint scale (0.5)
+const double g_boomHalf = 0.5; // midpoint scale (0.5) (decl in Boomerang.h)
 DATA(0x001eaae0)
-extern const double g_boomTimeScale = 0.03125;
+const double g_boomTimeScale = 0.03125;
 DATA(0x001eaaf0)
-extern const double g_boomRetC3 = 0.0625;
+const double g_boomRetC3 = 0.0625;
 DATA(0x001eaaf8)
-extern const double g_boomRetC4 = -500.0;
+const double g_boomRetC4 = -500.0;
 
 // CBoomerang::LoadProjectileSprites @0xe0690 - vtable slot 17. Forward to the base
 // CProjectile loader (bail on failure); then compute the boomerang RETURN trajectory:

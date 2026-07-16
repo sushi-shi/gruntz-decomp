@@ -45,6 +45,7 @@
 
 #include <Gruntz/StringNode.h>    // the type-name teardown slot
 #include <Gruntz/TypeKeyColl.h>   // CZErrSink/CZArrayRoot/CZArray2D/CTypeKeyColl (one shape)
+#include <Gruntz/TypeKeyCollStr.h> // s_out_of_memory (owner-only decl header)
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/XferArchive.h>   // canonical CXferArchive/CXferField (ProjTypeXfer arg)
 #include <Globals.h>
@@ -110,7 +111,7 @@ void* g_projActName2; // 0x6bf45c
 // next literal follows separately) - not a gap guess. extern "C" so the array
 // binding avoids the const-array (?x@@3QBDB) mangling that drops DATA().
 DATA(0x0021adf4)
-extern "C" const char s_out_of_memory[] = "out of memory";
+const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>
 
 // The deeper-base ctor argument (a data tag global at 0x6bf468).
 

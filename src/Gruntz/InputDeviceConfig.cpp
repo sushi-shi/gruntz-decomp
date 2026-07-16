@@ -26,12 +26,10 @@
 // ---------------------------------------------------------------------------
 #include <Gruntz/String.h>
 #include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2 (g_inputMgr; controller count @ m_devices.m_size)
+#include <DinMgr2/InputMgrPtr.h>     // g_inputMgr (DirectInputMgr2* view; the one decl)
 
-// The DirectInput manager singleton (DAT_00645570, owned by GruntzMgrTransition.cpp);
+// The DirectInput manager singleton (DAT_00645570, owned by GruntzMgr.cpp);
 // its m_devices array element count is the enumerated game-controller/joystick count.
-// extern "C" to emit the bound `_g_inputMgr` (the definition's C-linkage name @0x245570);
-// a plain C++ extern mangles to ?g_inputMgr@@3PAVDirectInputMgr2@@A and leaves the DIR32 UNBOUND.
-extern "C" DirectInputMgr2* g_inputMgr;
 
 // ---------------------------------------------------------------------------
 // CInputConfig - the input-device option holder. Only the device-id discriminator

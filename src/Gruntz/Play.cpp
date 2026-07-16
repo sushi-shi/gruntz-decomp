@@ -128,6 +128,7 @@
 #include <Gruntz/ParseSource.h>       // CParseSource::BeginParse/EndParse
 #include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize_1633e0 (the plane/grid-owner)
 #include <DinMgr2/DirectInputMgr2.h>  // DirectInputMgr2::ReadAll
+#include <DinMgr2/InputMgrPtr.h>      // g_inputMgr (DirectInputMgr2* view; the one decl)
 #include <Globals.h>
 
 // Placement new: the team-slot "reset" at 0x40a7 is retail RE-CONSTRUCTING a GruntzPlayer
@@ -803,9 +804,8 @@ extern "C" {
 
 DATA(0x00245270)
 extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
-// extern "C" to hit the definition's C-linkage name _g_inputMgr (GruntzMgr.cpp, typed
-// DirectInputMgr2*); a plain C++ extern emitted ?g_inputMgr@@3PAXA - unresolved.
-extern "C" void* g_inputMgr; // DAT_00645570
+// g_inputMgr (DAT_00645570) decl comes from <DinMgr2/InputMgrPtr.h> (DirectInputMgr2*
+// view; the ReadAll site casts DirectInputMgr2*->DirectInputMgr2*, a harmless no-op).
 // g_frameTicks (0x24558c) comes from <Rez/FrameClock.h>.
 extern "C" i32 g_playActive; // DAT_0064e35c
 // (0x612618 - the last-loaded level number, init -1 - is DEFINED below as

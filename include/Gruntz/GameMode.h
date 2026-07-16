@@ -692,6 +692,10 @@ public:
 };
 VTBL(CMultiBootyState, 0x001e9bdc);
 
+// (g_versionMajor/g_versionMid/g_versionMinor moved to the narrow, owner-only header
+//  <Gruntz/MenuVersion.h> - keeping them out of this widely-shared header avoids a
+//  decl-count-butterfly regalloc ripple in unrelated GameMode.h includers.)
+
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

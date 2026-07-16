@@ -23,6 +23,7 @@
 // DPERR_* name + "Net Manager"); names of locals/globals are placeholders, the
 // switch case VALUES and string contents are load-bearing.
 #include <Net/NetMgr.h> // the single shared CNetMgr (ReportError is a static member)
+#include <Net/EmptyString.h> // g_emptyString (owner-only decl header)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy (rep movs / repne scasb)
@@ -75,7 +76,7 @@ extern "C" {
 // import-table VAs read through the section boundary) and would have linked wrong-
 // sized. Only the terminator is proven; define exactly that.
 DATA(0x002293f4)
-extern "C" char g_emptyString[] = "";
+char g_emptyString[] = ""; // decl in <Net/EmptyString.h>
 
 // ---------------------------------------------------------------------------
 // CNetMgr::SetReportMode (0x177670) - latch the four reporting-mode gates.

@@ -20,6 +20,7 @@
 // <Gruntz/GameMode.h>. Only offsets / control IDs / code bytes are load-bearing;
 // names are placeholders for the recovered engine identities.
 #include <Gruntz/GameMode.h>
+#include <Gruntz/MenuVersion.h> // g_versionMajor/Mid/Minor (owner-only decl header)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LeafCue.h>         // canonical LeafCue (CMenuState::m_1bc menu-music cue)
 #include <Gruntz/BattlezData.h>     // the REAL stats object (was the CHudStats view)
@@ -452,11 +453,11 @@ i32 CMenuState::ReadyGate() {
 // caller-supplied RECT (the 4 args form the RECT by value). The build/patch field
 // g_versionMid selects the two- vs three-number version format.
 DATA(0x00251608)
-extern "C" i32 g_versionMajor = 0;
+i32 g_versionMajor = 0; // decl in <Gruntz/GameMode.h>
 DATA(0x0025160c)
-extern "C" i32 g_versionMid = 0;
+i32 g_versionMid = 0; // decl in <Gruntz/GameMode.h>
 DATA(0x00251610)
-extern "C" i32 g_versionMinor = 0;
+i32 g_versionMinor = 0; // decl in <Gruntz/GameMode.h>
 // The shared HUD message-sprite helper (0x1154b0, glyphstr): push a transient text
 // sprite carrying a CString into a RECT. Canonical signature is
 // ?ShowHudMessage@@YAXPAUHudMsgSink@@HHHHHHHH@Z (1 sink ptr + 8 int words) - the

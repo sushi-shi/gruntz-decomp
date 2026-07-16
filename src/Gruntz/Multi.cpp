@@ -53,7 +53,7 @@
 // retail .data addresses so the DIR32 operands reloc-mask).
 // ---------------------------------------------------------------------------
 DATA(0x002455fc)
-extern "C" i32 g_optionsCursor = 0;
+i32 g_optionsCursor = 0; // decl in Multi.h
 // g_lastNow (0x245580 draw clock) comes from <Rez/FrameClock.h>.
 
 // The game-manager singleton + a divisor for the TITLE%d index.

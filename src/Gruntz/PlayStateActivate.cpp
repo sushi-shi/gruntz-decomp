@@ -29,6 +29,7 @@
 #include <Globals.h>                   // g_gameReg / shared globals
 #include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
 #include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
+#include <DinMgr2/InputMgrPtr.h>       // g_inputMgr (DirectInputMgr2* view; the one decl)
 #include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (m_surface Fill target)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B (PruneWorkers - the "present")
@@ -43,8 +44,7 @@
 // The global empty C string (0x6293f4).
 
 // The +0xc4 reset manager is the DirectInputMgr2 input singleton g_inputMgr
-// (DAT_00245570, bound extern "C" in GruntzMgr.cpp): ReadAll (@0x133110) polls devices.
-extern "C" DirectInputMgr2* g_inputMgr;
+// (DAT_00245570, decl in <DinMgr2/InputMgrPtr.h>): ReadAll (@0x133110) polls devices.
 // The game-manager singleton (0x64556c). Declared here (it used to arrive from
 // <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.

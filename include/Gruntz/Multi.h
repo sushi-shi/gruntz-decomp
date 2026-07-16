@@ -509,5 +509,7 @@ public:
 extern CMulti* g_multiState;
 // The DirectPlay session-name CString (0x6473d8; DATA home Multi.cpp).
 extern CString g_sessionName;
+// The round-robin options cursor (0x6455fc; DATA home Multi.cpp; C linkage).
+extern "C" i32 g_optionsCursor;
 
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

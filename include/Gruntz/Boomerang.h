@@ -46,4 +46,12 @@ public:
 };
 VTBL(CBoomerang, 0x1e792c);
 
+// The boomerang return-trajectory .rdata constants owned by Boomerang.cpp (each DATA()-
+// bound there). Declared here (external linkage) so the definitions can drop `extern`
+// while keeping the exact symbol + binding. Emit no code -> matching-neutral.
+extern const double g_boomHalf;      // 0x5eaad8  midpoint scale
+extern const double g_boomTimeScale; // 0x5eaae0
+extern const double g_boomRetC3;     // 0x5eaaf0
+extern const double g_boomRetC4;     // 0x5eaaf8
+
 #endif // GRUNTZ_BOOMERANG_H

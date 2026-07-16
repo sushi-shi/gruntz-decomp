@@ -108,4 +108,9 @@ public:
 };
 SIZE(CRezFile, 0x1c); // verified: CSymParser::ParseRecords `push 0x1c; new; ctor 0x13cac0`
 
+// The "*.*" wildcard literal owned by RezFile.cpp (DATA()-bound there; extern "C" avoids
+// the P/Q const-array mangling split). Declared here (C linkage) so the definition can
+// drop `extern "C"` while keeping the exact symbol + binding. Emits no code.
+extern "C" const char g_wildcard[]; // 0x61a0a0  "*.*"
+
 #endif // SRC_REZ_REZFILE_H
