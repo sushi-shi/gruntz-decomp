@@ -62,7 +62,7 @@ i32 CSlotHolder::DoSwap() {
                      ->m_tileGrid[mgr->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp];
     g_gameReg->m_world->m_level->m_mainPlane
         ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
-    ((CBrickzGrid*)mgr->m_tileGrid)->ComputeCellFlags(grp, idx, oldTok);
+    (mgr->m_tileGrid)->ComputeCellFlags(grp, idx, oldTok);
     this->m_34 = newTok;
     return 1;
 }

@@ -1719,7 +1719,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     // Tile-to-tile occupancy + diagonal-corner move check.
     {
         i32 flags = this->m_arrivalFlags | 0x20000000;
-        CBrickzGrid* grid = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
+        CBrickzGrid* grid = g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
         i32 nyt = newY >> 5;
         i32 nxt = newX >> 5;
         i32 oxt = this->m_lastTilePxX >> 5;
@@ -1784,7 +1784,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_arrivalPending == 0) {
             m_tileMgr->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
         }
-        CBrickzGrid* g2 = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
+        CBrickzGrid* g2 = g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
         i32 ox = this->m_lastTilePxX >> 5;
         i32 oy = this->m_lastTilePxY >> 5;
         i32* oc = g2->m_8[oy] + ox * 7;

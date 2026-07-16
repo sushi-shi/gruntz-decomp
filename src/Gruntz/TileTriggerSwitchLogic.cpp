@@ -717,7 +717,7 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
         CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
         L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = m_34;
         v = m_34;
-        ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
+        (reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
     } else {
         switch (verb) {
             case 0x22: {
@@ -726,21 +726,21 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
                 v = L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] + 1;
                 CPlaneRender* L2 = reg->m_world->m_level->m_mainPlane;
                 L2->m_tileGrid[L2->m_colOffsets[m_0c] + m_08] = v;
-                ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
+                (reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
                 break;
             }
             case 0x1f: {
                 CGruntzMgr* reg = g_gameReg;
                 CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
                 L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = 0x5b;
-                ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5b);
+                (reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5b);
                 break;
             }
             case 0x1e: {
                 CGruntzMgr* reg = g_gameReg;
                 CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
                 L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = 0x5a;
-                ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5a);
+                (reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5a);
                 break;
             }
             default:
@@ -952,7 +952,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] + 1;
     CPlaneRender* layer2 = reg->m_world->m_level->m_mainPlane;
     layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
-    ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
+    (reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 1;
     return 1;
 }
@@ -970,7 +970,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] - 1;
     CPlaneRender* layer2 = reg->m_world->m_level->m_mainPlane;
     layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
-    ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
+    (reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 0;
     return 1;
 }

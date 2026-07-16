@@ -1779,10 +1779,10 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                 i32 off = wg->m_colOffsets[ty];
                 if (type == 0x1e) {
                     wg->m_tileGrid[off + tx] = 0x5a;
-                    ((CBrickzGrid*)g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
+                    (g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 } else {
                     wg->m_tileGrid[off + tx] = 0x5b;
-                    ((CBrickzGrid*)g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
+                    (g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
                 }
             }
 
