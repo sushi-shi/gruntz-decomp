@@ -2593,15 +2593,8 @@ extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f94
 // The received-message view: a bit7 flag byte, the message id, then a payload the
 // arms read as a word / channel byte / chat text depending on the id.
 SIZE_UNKNOWN(CNetMsg);
-struct CNetMsg {
-    u8 m_0; // +0x00  flag byte (bit7 => "process me")
-    char m_pad1[3];
-    i32 m_4;     // +0x04  message id (switch tag)
-    i32 m_8;     // +0x08  payload word (id / value / timestamp; byte +0x09 = channel)
-    char m_c[4]; // +0x0c  chat text start / channel payload (byte +0x0d)
-    i32 m_10;    // +0x10
-    i32 m_14;    // +0x14  player id (channel-assign path)
-};
+// CNetMsg (the DispatchRecvMsg wire packet) is a fully-known sibling of the send structs
+// in <Net/NetPackets.h> (included above) - a wire struct has no business in a .cpp.
 
 // @early-stop
 // tail-merge + regalloc wall (~78%): the whole dispatcher is byte-faithful - the

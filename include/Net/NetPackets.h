@@ -48,4 +48,18 @@ struct CNetConfigBlob {
     i32 m_118;          // +0x118  m_2d8
 };
 
+// The RECEIVE-side message CMulti::DispatchRecvMsg reinterprets an incoming DirectPlay
+// data buffer as (0xb9750). Sibling of the send structs above: the same flag-byte@+0x00
+// (bit7 => "process me") + message-id@+0x04 prologue, then a payload word, an inline chat
+// text run, and the channel-assign player id. A fully-known wire struct.
+struct CNetMsg {
+    u8 m_0; // +0x00  flag byte (bit7 => "process me")
+    char m_pad1[3];
+    i32 m_4;     // +0x04  message id (switch tag)
+    i32 m_8;     // +0x08  payload word (id / value / timestamp; byte +0x09 = channel)
+    char m_c[4]; // +0x0c  chat text start / channel payload (byte +0x0d)
+    i32 m_10;    // +0x10
+    i32 m_14;    // +0x14  player id (channel-assign path)
+};
+
 #endif // GRUNTZ_NET_NETPACKETS_H
