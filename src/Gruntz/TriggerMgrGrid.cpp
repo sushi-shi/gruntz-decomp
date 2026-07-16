@@ -376,10 +376,9 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
 }
 
 // ===========================================================================
-// CTriggerMgr::WireTileSwitchLogic (0x6c130; re-homed from the former
-// tilewireswitchlogic unit, waveP - the documented SEAM: by first-link contiguity
+// CTriggerMgr::WireTileSwitchLogic (0x6c130; the documented SEAM: by first-link contiguity
 // it belongs to THIS obj, sitting between ResetCell (0x6bfd0) and ApplySwitch
-// (0x6d300)). The tile-switch/plate "wire" dispatcher. The ex-`CTileWireLogic`
+// (0x6d300)). The tile-switch/plate "wire" dispatcher.
 // ecx = [grunt+0x260] == CGrunt::m_tileMgr == THIS CTriggerMgr, and the view's
 // m_level@+0x22c IS m_level (the head is the same inlined LookupTileType walk as
 // the sibling ApplySwitch). The view's "m_triggerContainer @+0x2e4" was a

@@ -11,8 +11,8 @@
 //     The +0x04 loader (was CGruntDataLoader::Load) is CDDrawSurfaceMgr's m_renderState->Flush
 //     (0x158ee0); the +0x10 registrar (was BootyRegistrar::CallRegister) is CDDrawSurfaceMgr's
 //     m_imageRegistry->LoadNamespace (vtable slot +0x4c).
-//   - the +0x2c/+0x28/+0x30 asset sources (were BootyNamespace) are CState::m_2c /
-//     m_levelBank / m_gruntzBank (CResSource; LookupSet == the old Lookup, 0x13bae0).
+//   - the +0x2c/+0x28/+0x30 asset sources are CState::m_2c /
+//     m_levelBank / m_gruntzBank (CResSource; LookupSet 0x13bae0).
 // Only the g_gameReg world sound set below stays a local facet view - a separate
 // object web from the +0x0c context (deferred canonical world-sound model). Only offsets
 // / code bytes are load-bearing; every helper is a reloc-masked external.
@@ -75,9 +75,7 @@ void ShowHudMessageAlt(
 // ---------------------------------------------------------------------------
 // The game-manager singleton (*0x24556c) is the RTTI-true CGruntzMgr (<Gruntz/
 // GruntzMgr.h>), and every object this TU reaches through it already has a canonical
-// class - so the THREE local views of the singleton (BzGameReg / CGlitterMgr /
-// CBootyGameReg) and their sub-object shells are dissolved onto the real classes,
-// offset for offset:
+// class - so its objects map to the real classes, offset for offset:
 //     BzGameReg / CGlitterMgr / CBootyGameReg  -> CGruntzMgr
 //     BzGameWnd        (+0x04, HWND @+0x04)    -> CGameWnd     (WAP32::CGameMgr::m_gameWnd,
 //                                                               <Wap32/Wap32.h>: m_hwnd @+0x04)
@@ -125,7 +123,7 @@ void operator delete(void*);
 DATA(0x001e8fe8)
 extern "C" i32 g_bootyLetterCoords[];
 
-// THE OTHER FOUR "g_" NAMES HERE WERE NOT GLOBALS (2026-07-13). g_5e93b4/b8/c0/c8 are
+// g_5e93b4/b8/c0/c8 are
 // MSVC's FLOATING-POINT LITERAL POOL entries - the .rdata constants cl emits for the fp
 // immediates in this very expression - which a previous pass mistook for game data and
 // re-declared as extern "C" symbols that NOTHING defines (unresolvable at link, and
@@ -417,8 +415,8 @@ void CMultiBootyState::MoveLettersByDir() {
 // RE-HOMED from CMultiBootyState, which is allocation-proven 0x244 while this body reads
 // [this+0x2f8] off its OWN `this` three times (`mov ebx,ecx` at 0x1c0f9) - 0xb4 bytes past
 // that class's end. Its ONLY caller is CBootyState::Render (slot 5, 0x1c210), which invokes
-// it with `mov ecx,esi` - its own `this`. CBootyState (0x320) holds +0x2f8. Same bound that
-// re-homed FormatHudText, LevelMsgHudDriver and the slot-1 build chain; this is the fourth.
+// it with `mov ecx,esi` - its own `this`. CBootyState (0x320) holds +0x2f8. The same
+// evidence attributed FormatHudText, LevelMsgHudDriver and the slot-1 build chain; this is the fourth.
 //
 // And the object AT +0x2f8 is just the sprite: the "bonus state (m_5c phase / m_8 flags)"
 // view was CGameObject all along - m_5c is m_screenX, m_8 is m_flags. The proof is the
@@ -610,9 +608,7 @@ i32 CMultiBootyState::QueryGruntSlots() {
 }
 
 // ===========================================================================
-// CMultiBootyState::DrawBattleStats (0x1ed30; re-homed from the former drawbattlestats
-// unit, waveP - TU_MIGRATION MOVE row `0x01ed30 DrawBattleStats@CBattleStatsView
-// drawbattlestats -> 0x1c0f0 bootystateactivate`; called here as OnActivated). The
+// CMultiBootyState::DrawBattleStats (0x1ed30; called here as OnActivated). The
 // in-game BATTLE-STATZ scoreboard renderer (sibling of DrawDebugStats): 6 numeric
 // stat columns per active player, 7 category labels, per-player team-colour name, the
 // title. The reused CString + colour-name temp give it the /GX frame. The per-player
@@ -954,7 +950,7 @@ i32 CMultiBootyState::Vslot06() {
 // virtual (Vfunc3); when ready run the non-virtual paint (Paint, 0xfac70) and return
 // its normalized result, else 0. (Was the @orphan CGuardedDispatch1f870 view; the
 // vtable slot-7 attribution -- find_holding(0x1f870) == CMultiBootyState:7 -- recovers
-// its real identity, dissolving the view.)
+// its real identity.)
 // ---------------------------------------------------------------------------
 RVA(0x0001f870, 0x1d)
 i32 CMultiBootyState::Vslot07() {

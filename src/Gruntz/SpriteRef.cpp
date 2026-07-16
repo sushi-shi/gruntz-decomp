@@ -249,7 +249,7 @@ void CSpriteRef::Free() {
 }
 
 // -------------------------------------------------------------------------
-// 0x0e35f0 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
+// 0x0e35f0. __stdcall dialog
 // proc: WM_INITDIALOG seeds the selection index + active save-sink from the game
 // registry; WM_COMMAND handles Cancel / the shared save-menu draw. The two callees
 // and the selection global are the canonical savegame symbols (DrawSaveGameMenu

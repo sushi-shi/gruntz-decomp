@@ -38,7 +38,7 @@ void CFileLog::ReopenSharedFile(char* path) {
 }
 
 // -------------------------------------------------------------------------
-// 0x0bd430 (spatially re-homed from src/Stub/BoundaryLowerThunks.cpp). Tail-
+// 0x0bd430. Tail-
 // forward CFile::Close (0x1bf426) onto the static CFileIO global, devirtualized
 // on the concrete-typed global.
 RVA(0x000bd430, 0xa)

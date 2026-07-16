@@ -201,7 +201,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 }
 
 // -------------------------------------------------------------------------
-// 0x0e3a40 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
+// 0x0e3a40. __stdcall dialog
 // proc: OK closes; Cancel runs the save-confirm sub-object (CloseTempFile then
 // CSaveGame::Save); WM_INITDIALOG fills the info line via the 0x0e4850 helper.
 RVA(0x000e3a40, 0xb0)
@@ -231,7 +231,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
 }
 
 // -------------------------------------------------------------------------
-// 0x0e3b20 (spatially re-homed from src/Stub/ApiCallers.cpp; twin of 0x0e3a40).
+// 0x0e3b20.
 // __stdcall dialog proc: WM_INITDIALOG fills the info line via the 0x0e4850 helper;
 // WM_COMMAND OK/Cancel just close the dialog (no save-confirm sub-object).
 RVA(0x000e3b20, 0x86)
@@ -259,7 +259,7 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 // ---------------------------------------------------------------------------
-// 0x0e3be0 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
+// 0x0e3be0. __stdcall dialog
 // proc: WM_COMMAND OK/Cancel end the dialog; self-contained (no info line).
 RVA(0x000e3be0, 0x52)
 i32 CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -613,7 +613,7 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
 }
 
 // -------------------------------------------------------------------------
-// 0x0e4850 (spatially re-homed from src/Stub/ApiCallers.cpp). __cdecl helper:
+// 0x0e4850. __cdecl helper:
 // SetDlgItemTextA(hWnd, 0x40d, &item->text) when all three pointers are non-null.
 RVA(0x000e4850, 0x29)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
