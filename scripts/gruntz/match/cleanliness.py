@@ -137,6 +137,9 @@ METRICS = (
     (")m_ casts", _count_nonstring_m_casts, False),  # string-cast-excluded; ratcheted
     ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
     ("(const char*) casts", re.compile(r"\(const char ?\*\)"), False),
+    # C-style NUMERIC/math value casts -> static_cast<T>(...) (byte-neutral; un-matches this regex).
+    ("C-style numeric casts",
+     re.compile(r"\((?:i8|i16|i32|i64|u8|u16|u32|u64|float|double|char|short|int|long|unsigned)\)"), False),
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
@@ -192,8 +195,9 @@ def _caller_callee_counts() -> dict[str, int]:
     return res
 
 
-# Ratchet set: metrics that only go DOWN. The caller_callee edges join the view/cast metrics.
-_RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS)
+# Ratchet set: metrics that only go DOWN. The caller_callee edges + the C-style numeric-cast
+# sweep join the view/cast metrics.
+_RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {"C-style numeric casts"}
 
 
 def count() -> list[tuple[str, int]]:
