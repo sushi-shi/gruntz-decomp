@@ -186,11 +186,14 @@ public:
     // +0x7c  the owned 0x17c worker/logic record - ONE class, ONE api
     // (the ex-CLogicRecord kill-cue view is folded onto AnimWorkerObj).
     AnimWorkerObj* m_worker;
-    void* m_80;                     // +0x80  object ref (serialized by name)
+    // The three lazily-built Hit/Attack/Bump handler workers (== CGameObject::m_80/
+    // m_88/m_90 in UserLogic.h + WwdGameObjectFamily.h, both AnimWorkerObj*): each is
+    // set up with the AnimWorkerObj field block + StampWorkerVtbl, then ->Init/->Clear'd.
+    AnimWorkerObj* m_80;            // +0x80  Hit handler worker (serialized by name)
     i32 m_84;                       // +0x84
-    void* m_88;                     // +0x88  object ref
+    AnimWorkerObj* m_88;            // +0x88  Attack handler worker
     i32 m_8c;                       // +0x8c
-    void* m_90;                     // +0x90  object ref
+    AnimWorkerObj* m_90;            // +0x90  Bump handler worker
     i32 m_94;                       // +0x94
     CWwdGameObject* m_linkedObject; // +0x98  linked object (Play case 3 reads its +0x188 object id)
     // +0x9c  the embedded spatial-grid region node (<Gruntz/WwdGridIter.h>): its
