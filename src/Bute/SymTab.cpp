@@ -1063,11 +1063,10 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 // sub-object vtable. The +0x80 CHashBase auto-destructs after the body.
 // 99.99% (ALL-VTABLES phase): making CSymParser real-polymorphic lets cl auto-stamp
 // the vptr @+0 at dtor entry (into EH-state 0, early) - which is exactly the retail
-// schedule. Code bytes are byte-identical;
-// the sole 0.009% residual is a reloc-NAME artifact: the +0x88 node-list Unlink is now
-// the cast-free m_nodes.Unlink (CHashSlotList's own op) instead of the old cross-module
-// (DSoundList*) reinterpret, and the delinker had 0x1391e0 blessed under the DSoundList
-// name - the operand is reloc-masked, so this is a scoring artifact, not a code diff.
+// schedule. Code bytes are byte-identical. (The old 0.009% reloc-NAME residual is
+// GONE: m_nodes is the shared DSoundList itself now - the ex-CHashSlotList twin was
+// a fake view - so the +0x88 node-list Unlink emits ?Unlink@DSoundList@@, exactly
+// the name 0x1391e0 is blessed under.)
 RVA(0x0013abc0, 0x13f)
 CSymParser::~CSymParser() {
     // cl auto-stamps ??_7CSymParser @+0 at dtor entry (polymorphic class).
@@ -1812,7 +1811,7 @@ CSymLeafBuilder* CSymParser::PopParseSlot() {
             el->m_node.m_record = el;
             m_hash.Insert(&el->m_node);
         }
-        m_nodes.Link(&node->m_link);
+        m_nodes.InsertHead(&node->m_link);
         e = m_hash.First();
         rec = e->m_record;
     }

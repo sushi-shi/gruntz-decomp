@@ -171,16 +171,16 @@ void CHashBase::Insert(CHashElement* node) {
     node->m_owner = this;
     u32 idx = node->Hash();
     node->m_bucket = idx;
-    CHashLink* biased = node ? &node->m_link : 0;
-    ((DSoundList*)&m_buckets[idx].m_chain)->InsertHead((DSoundLink*)biased);
+    DSoundLink* biased = node ? &node->m_link : 0;
+    m_buckets[idx].m_chain.InsertHead(biased);
 }
 
 // Remove (0x184ab0): unlink `entry` (its chain node = &entry->m_link) from the
 // owning bucket's intrusive {head,tail} chain.
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
-    CHashLink* node = entry ? &entry->m_link : 0;
-    ((DSoundList*)&m_buckets[entry->m_bucket].m_chain)->Unlink((DSoundLink*)node);
+    DSoundLink* node = entry ? &entry->m_link : 0;
+    m_buckets[entry->m_bucket].m_chain.Unlink(node);
 }
 
 // The first element: the chain head of the first occupied bucket.

@@ -48,30 +48,17 @@
 // CHashSlot::CHashSlot and 0x184a30 is CHashSlot::~CHashSlot - see the class below.)
 
 // The intrusive doubly-linked chain node threaded through each stored element at
-// element+0x04 (next@+0, prev@+4). Chains store &element->m_link; the element is
-// recovered via container_of (link - offsetof(CHashElement, m_link) == link - 4).
-struct CHashLink {
-    CHashLink* m_next; // +0x00 (element+0x04)
-    CHashLink* m_prev; // +0x04 (element+0x08)
-};
-SIZE(CHashLink, 0x8);
+// element+0x04 (next@+0, prev@+4), and the {head,tail} chain-head embedded at
+// each bucket slot's +0x08 (also standalone as CSymParser::m_nodes), are the ONE
+// shared WAP32 intrusive list - DSoundLink / DSoundList
+// (<Dsndmgr/SoundVoiceList.h>, which owns the RVA claims: InsertHead 0x1390e0,
+// Unlink 0x1391e0). The former Bute-local CHashLink/CHashSlotList twins were
+// fake views of it (their Link/Unlink decls resolved to nothing while every
+// retail call lands on the DSoundList bodies). Chains store &element->m_link;
+// the element is recovered via container_of (link - 4).
+#include <Dsndmgr/SoundVoiceList.h>
 
 class CHashBase;
-
-// The intrusive {head,tail} chain-head embedded at each bucket slot's +0x08, and
-// used standalone as CSymParser::m_nodes. Link splices `node` in (0x1390e0),
-// Unlink removes it (0x1391e0); both __thiscall on the {head,tail} pair.
-struct CHashSlotList {
-    CHashLink* m_head; // +0x00  (slot+0x08)
-    CHashLink* m_tail; // +0x04  (slot+0x0c)
-
-    // The intrusive-list splice/unsplice ops (reloc-masked engine __thiscall on the
-    // {head,tail} pair). Own methods so standalone m_nodes users reach them cast-free
-    // (the old (DSoundList*) reinterpret was a cross-module fake view of this list).
-    void Link(CHashLink* node);   // 0x1390e0  (== the InsertHead splice)
-    void Unlink(CHashLink* node); // 0x1391e0
-};
-SIZE(CHashSlotList, 0x8);
 
 // A 16-byte bucket slot: two opaque words then the intrusive chain head. Its
 // per-element destructor (0x584a30) is a bare `ret` (the slot owns nothing).
@@ -88,7 +75,7 @@ struct CHashSlot {
     ~CHashSlot();
 
     char m_pad00[0x8];     // +0x00
-    CHashSlotList m_chain; // +0x08  { head, tail }
+    DSoundList m_chain; // +0x08  { head, tail }
 };
 SIZE(CHashSlot, 0x10);
 
@@ -117,7 +104,7 @@ public:
     // former RezNode::Next view folded onto this (wave5-F1). Body in RezColl.cpp.
     CHashElement* Next(); // 0x1848b0
 
-    CHashLink m_link;   // +0x04  intrusive chain node { next, prev }
+    DSoundLink m_link;   // +0x04  intrusive chain node { next, prev }
     CHashBase* m_owner; // +0x0c  owning table back-ptr (Insert stamps this)
     u32 m_bucket;       // +0x10  computed bucket (Insert stamps this)
     void* m_record;     // +0x14  the stored (key,value) payload (key first);
@@ -156,7 +143,7 @@ public:
 
     // Recover the containing element from a chain link (container_of, -4). Genuine
     // intrusive-list back-cast: the chain stores &element->m_link.
-    static CHashElement* FromLink(CHashLink* link) {
+    static CHashElement* FromLink(DSoundLink* link) {
         return link ? (CHashElement*)((char*)link - 4) : 0;
     }
 

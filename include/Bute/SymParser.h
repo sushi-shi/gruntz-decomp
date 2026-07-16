@@ -91,11 +91,11 @@ SIZE(CParserObjList, 0x10); // { vptr, head, tail, count }
 // parse stream and later repurposed as a leaf value record - one 0x3c memory, two views.)
 struct CSymLeafBuilder;
 
-// A node owned by the +0x88 CHashSlotList: its intrusive chain link is at +0x00
+// A node owned by the +0x88 DSoundList m_nodes: its intrusive chain link is at +0x00
 // (so the list head points straight at it) and it owns a buffer at +0x08; the
-// list uses the CHashSlotList::Link/Unlink (0x1390e0/0x1391e0) machinery from Hash.h.
+// list uses the shared DSoundList::InsertHead/Unlink (0x1390e0/0x1391e0) ops.
 struct CSlotNode {
-    CHashLink m_link;          // +0x00  intrusive chain node { next, prev }
+    DSoundLink m_link;         // +0x00  intrusive chain node { next, prev }
     CSymLeafBuilder* m_buffer; // +0x08  owned parse-slot block (RezFree'd)
 };
 SIZE(CSlotNode, 0xc);
@@ -238,7 +238,7 @@ public:
     i32 m_subTabBucketCount;    // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
     i32 m_symbolBucketCount;    // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
     CParserHash m_hash;         // +0x80
-    CHashSlotList m_nodes;      // +0x88  { head, tail }
+    DSoundList m_nodes;         // +0x88  { head, tail }
     i32 m_parseSlotBlockCount;  // +0x90  number of parse-slot records per allocated block
 };
 SIZE(CSymParser, 0x94); // fields through m_parseSlotBlockCount @0x90
