@@ -409,8 +409,8 @@ public:
     // The WM_COMMAND / accelerator + cheat-code dispatcher (the binary's single
     // largest function; body in GruntzMgrCmd.cpp).
     virtual i32 HandleCommand(i32 p1, i32 nID, i32 p3) OVERRIDE; // @0x0862f0 slot 5
-    // Shell-launch the given URL in the default browser (0x8038 handler sibling).
-    void LaunchWebBrowser(const char* url); // @0x08f120 (thunk 0x235b)
+    // (LaunchWebBrowser @0x8f120 is a free __stdcall function, not a CGruntzMgr method -
+    //  declared at namespace scope below the class.)
 
     // Sound/level-loaded sync (@0x0923b0): set the base level-loaded flag (m_14)
     // and, when it changes and a sound bank is bound, drive the bank.
@@ -552,5 +552,9 @@ public:
     char m_pad14c[0x150 - 0x14c]; // +0x14c..+0x150 gap
     GruntzPlayer m_options[4];    // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
 };
+
+// Shell-launch the given URL in the default browser. A free __stdcall function
+// (?LaunchWebBrowser@@YGHPAD@Z, body in GruntzMgr.cpp), NOT a CGruntzMgr method.
+i32 __stdcall LaunchWebBrowser(char* url); // @0x08f120 (thunk 0x235b)
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

@@ -486,9 +486,8 @@ public:
     // ex Load6, one body). Body in TerrainTileLoader.cpp (the ex-`CTerrainTileLoader`
     // placeholder class was a view of THIS one: its +0x22c level holder IS m_level).
     i32 LoadTileArrivalFx(i32 ownerHi, i32 ownerLo, i32 tileX, i32 tileY, i32 reason, i32 sel);
-    // 0x79ea0 (thunk 0x290a; Ghidra SpawnTileFx): spawn the death/finalize tile fx
-    // at the grunt's HUD point. Declared-only (reloc-masked).
-    void SpawnTileFx(i32 px, i32 py, i32 kind);
+    // (SpawnTileFx @0x79ea0 is a free __stdcall function, not a CTriggerMgr method -
+    //  declared at namespace scope below the class.)
     // 0x6da60 / 0x6daa0 (thunks 0x275c / 0x2c48): post cell command 6 / 7 for the
     // (hi,lo) cell - each forwards (1, hi, lo, N, 0,0,0,0) to the registry's
     // command sub-manager (g_gameReg->m_6c, CGruntzCmdMgr). The bodies never touch
@@ -657,5 +656,10 @@ public:
     i32 m_groupFlag;                   // +0x400  magic-group active flag
 };
 SIZE_UNKNOWN(CTriggerMgr);
+
+// 0x79ea0 (thunk 0x290a; Ghidra SpawnTileFx): spawn the death/finalize tile fx at the
+// grunt's HUD point. A free __stdcall function (?SpawnTileFx@@YGHHHH@Z, body in
+// TriggerMgr.cpp), NOT a CTriggerMgr method - callers invoke it directly.
+i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 
 #endif

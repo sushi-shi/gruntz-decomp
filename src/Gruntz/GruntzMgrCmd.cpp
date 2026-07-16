@@ -909,7 +909,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 || m_curState->Update() == GAMESTATE_ATTRACT) {
                 while (::ShowCursor(1) < 0) {
                 }
-                LaunchWebBrowser("http://www.gruntzgoo.com/");
+                LaunchWebBrowser((char*)"http://www.gruntzgoo.com/");
             }
             return 1;
         case 0x80d2:

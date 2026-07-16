@@ -448,7 +448,7 @@ finalize:
 tail:
     // block B: m_38c finalize cue
     if (m_entranceReason == 0x14 && g_gameReg->m_134 != 1) {
-        m_tileMgr->SpawnTileFx(m_10->m_screenX, m_10->m_screenY, m_38c);
+        SpawnTileFx(m_10->m_screenX, m_10->m_screenY, m_38c);
     }
     if (m_arrivalState == 0xd) {
         TryPowerupAtTile();
