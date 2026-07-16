@@ -34,35 +34,10 @@ SIZE_UNKNOWN(Obj85500);
 // 0x148250 - CDDPalette::Flush: RE-HOMED to the directdrawmgr unit
 // (src/DDrawMgr/DirectDrawMgr.cpp, real CDDPalette in DirectDrawMgr.h).
 
-// 0x23d90 - snap a draw rectangle to the 0x20 grid and dispatch a blit.
-struct R23d90 {
-    char _0[0x40];
-    i32 m_40, m_44; // 0x40,0x44
-};
-SIZE_UNKNOWN(R23d90);
-struct P23d90 {
-    char _0[0x10];
-    i32 m_10, m_14; // 0x10,0x14 origin
-    char _18[0x5c - 0x18];
-    R23d90* m_5c; // 0x5c bounds
-};
-SIZE_UNKNOWN(P23d90);
-struct Mid23d90 {
-    char _0[0x24];
-    P23d90* m_24; // 0x24
-};
-SIZE_UNKNOWN(Mid23d90);
-struct Outer23d90 {
-    char _0[0x30];
-    Mid23d90* m_30; // 0x30
-};
-SIZE_UNKNOWN(Outer23d90);
-struct CObj23d90 {
-    char _0[0x38];
-    Outer23d90* m_38; // 0x38
-    void Blit(i32 a1, i32 a2, i32 x, i32 y, i32 a5);
-};
-SIZE_UNKNOWN(CObj23d90);
+// (The 0x23d90 grid-snap blit view chain - CObj23d90/Outer23d90/Mid23d90/P23d90/
+// R23d90 - is DISSOLVED 2026-07-16: 0x23d90 IS CGruntzCmdMgr::BlitTileMarker
+// (<Gruntz/GruntzCmdMgr.h>), dispatched on [CGruntzMgr+0x6c] == m_cmdSubMgr; the
+// chain was m_38(CGruntzMgr)->m_world->m_24(CGameLevel)'s m_planeCtx/m_mainPlane.)
 
 // 0xbdd0 - look a key up in arg1's embedded map (at +0x10) then dispatch.
 struct Entry_bdd0 {

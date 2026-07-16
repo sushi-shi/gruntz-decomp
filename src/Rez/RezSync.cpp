@@ -711,7 +711,9 @@ i32 RezSync::Init(void* a1, char* a2) {
 
     // --- Phase 13: fader list (m_6c) --------------------------------
     m_6c = new CGruntzCmdMgr;
-    if (!m_6c->SetMgr((GzMgr*)this)) {
+    // (the cross-cast documents the open RezSync==CGruntzMgr fold: this whole Init
+    // runs on the 0xa30 CGruntzMgr singleton; see the TU header dossier.)
+    if (!m_6c->SetMgr((CGruntzMgr*)this)) {
         Error2(0x800a, 0x414);
         return 0;
     }

@@ -82,9 +82,6 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj) {
 // sits past .data's raw extent, so the loader zero-fills it.
 DATA(0x002446d8)
 CActReg g_actReg4;
-struct R4Entry {
-    void* m_fn;
-};
 
 // 0x3e120: register the default activation-id range [0x7d0, 0x7da] on the class
 // registry via the shared SetActiveRange ILT thunk (0x3742). (Ex OrphanLeaves;
@@ -121,17 +118,18 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 }
 
 // The R4 dispatch entry carries the per-coord handler PMF (a 4-byte code pointer on
-// the complete single-inheritance CGruntStartingPoint). Same shape as R4Entry.
+// the complete single-inheritance CGruntStartingPoint).
 typedef i32 (CGruntStartingPoint::*StartActHandler)();
 struct StartActEntry {
     StartActHandler m_fn;
 };
 SIZE_UNKNOWN(StartActEntry);
 
-// The coordinate->R4Entry* lookup: the shared archetype inline (the seven g_actReg4*
-// scalars it used to run over ARE g_actReg4's fields).
-static inline R4Entry* R4Lookup(i32 coord) {
-    return (R4Entry*)g_actReg4.ResolveEntry(coord);
+// The coordinate->entry lookup: the shared archetype inline (the seven g_actReg4*
+// scalars it used to run over ARE g_actReg4's fields). (The ex-`R4Entry { void* m_fn; }`
+// twin of StartActEntry is GONE - one entry shape, the PMF slot.)
+static inline StartActEntry* R4Lookup(i32 coord) {
+    return (StartActEntry*)g_actReg4.ResolveEntry(coord);
 }
 
 // CGruntStartingPoint::UserLogicVfunc2 / FireActivation (0x3e1a0), vtable slot 4 -
@@ -141,9 +139,9 @@ static inline R4Entry* R4Lookup(i32 coord) {
 // CTileTriggerTransition::FireActivation, driving the R4 (g_actReg4) table.
 RVA(0x0003e1a0, 0x102)
 void CGruntStartingPoint::FireActivation(i32 coord) {
-    StartActEntry* e = (StartActEntry*)R4Lookup(coord);
+    StartActEntry* e = R4Lookup(coord);
     if (e->m_fn != 0) {
-        StartActEntry* e2 = (StartActEntry*)R4Lookup(coord);
+        StartActEntry* e2 = R4Lookup(coord);
         (this->*(e2->m_fn))();
     }
 }
@@ -179,9 +177,10 @@ void ActReg4RegisterType() {
         slot->m_name = "A";
         g_typeCounter++;
     }
+    // raw-slot store: a plain fn ptr into the PMF slot (the registrar's own idiom;
+    // MSVC5 has no fn-ptr->PMF conversion, so the write goes through the raw slot).
     *(void**)R4Lookup(id) = (void*)&ActReg4Handler;
 }
 
 SIZE_UNKNOWN(CActReg4);
 SIZE_UNKNOWN(CTypeColl2);
-SIZE_UNKNOWN(R4Entry);

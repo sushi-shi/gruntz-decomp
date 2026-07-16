@@ -10,11 +10,11 @@
 //   +0x1c  nested CPtrList - a second 0x1c-byte CPtrList (the +0x1c "selected
 //                           subset" queue). Enqueue (0x023d10) adds to BOTH this
 //                           and the base; its head is torn down in the dtor.
-//   +0x38  m_38           - a manager pointer (a CGameMgr-family object whose
-//                           +0x2c sub-object's vtable slot +0x10 reports the
-//                           current game-state id: 0x11 / 0x3 / 0x4). The setter
-//                           (0x0239d0) installs it; ClearAndReset (0x0239f0)
-//                           nulls it then drains.
+//   +0x38  m_38           - the CGruntzMgr singleton back-ptr (its m_curState's
+//                           vtable slot +0x10 [CState::Update] reports the current
+//                           game-state id: 0x11 / 0x3 / 0x4). The setter (0x0239d0)
+//                           installs it (RezSync::Init passes `this`); ClearAndReset
+//                           (0x0239f0) nulls it then drains.
 //
 // Non-polymorphic (no vptr of its own; the base CPtrList is not virtual). Field
 // names are placeholders; only the OFFSETS + code bytes are load-bearing. The
@@ -65,19 +65,13 @@ SIZE_UNKNOWN(GzTargetObj);
 // canonical m_4 / m_6 / m_submitted at the same offsets.)
 typedef CGruntzCommand GzTargetObj;
 
-// The +0x38 manager pointer's state sub-object: ->GetStateId() (vtable slot +0x10)
-// reports the current game-state id (compared against 0x11 / 0x3 / 0x4). Modeled
-// polymorphically; the 4 leading virtuals fix GetStateId at slot 4 (+0x10).
-SIZE_UNKNOWN(GzStateProvider);
 // (The GzStateProvider 5-slot view is GONE: its "GetStateId at slot 4 (+0x10)" IS
 // CState::Update - the same slot 4 the state hierarchy uses to report its id, and
-// ScanTargets compares it against 0x11, the PLAY id CGruntzMgr::PerFrameTick gates on.)
-typedef CState GzStateProvider;
-SIZE_UNKNOWN(GzMgr);
-struct GzMgr {
-    char m_pad0[0x2c];
-    GzStateProvider* m_2c; // +0x2c  state provider
-};
+// ScanTargets compares it against 0x11, the PLAY id CGruntzMgr::PerFrameTick gates on.
+// The GzMgr view is GONE too (2026-07-16): the +0x38 "state-providing manager" IS the
+// CGruntzMgr singleton - RezSync::Init (a CGruntzMgr method by its own dossier) passes
+// `this` to SetMgr, and GzMgr's m_2c state slot IS CGruntzMgr::m_curState (+0x2c).)
+class CGruntzMgr; // consumers that deref m_38 include <Gruntz/GruntzMgr.h>
 
 // The serialization stream the dispatcher reads/writes the command queue through is
 // the shared WAP32 CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one
@@ -108,7 +102,7 @@ public:
     // and remove+deselect it.
     void RemoveMatchingTarget(char indexByte, char typeByte);
     // 0x0239d0 - install the manager pointer; returns 1. Out-of-line.
-    i32 SetMgr(GzMgr* mgr); // 0x0239d0
+    i32 SetMgr(CGruntzMgr* mgr); // 0x0239d0
     // 0x0239f0 - null the manager then drain everything (tail-calls Clear). Out-of-line.
     void ClearAndReset(); // 0x0239f0
     // 0x023a10 - the state-filtered target scan/select pass.
@@ -137,12 +131,18 @@ public:
     i32 Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4);
     // 0x024a90 - predicate: is the registry's multiplayer slot active?
     i32 IsActive(i32 enable);
+    // 0x023d90 - snap the cursor rect to the 0x20 tile grid and dispatch the
+    // command-target tile-marker blit (thunk 0x2095). Body in GruntzCmdMgr.cpp
+    // (ex `CObj23d90::Blit`, a placeholder view of THIS class: its receiver is
+    // [CGruntzMgr+0x6c] == m_cmdSubMgr, and its m_38 chain IS this class's m_38
+    // manager back-ptr - m_38->m_world->m_24->m_planeCtx/m_mainPlane).
+    void BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5); // 0x023d90
     // 0x085bd0 - the /GX destructor.
     ~CGruntzCmdMgr();
 
     GzObList m_base; // +0x00  primary target queue
     GzObList m_1c;   // +0x1c  nested subset queue
-    GzMgr* m_38;     // +0x38  state-providing manager
+    CGruntzMgr* m_38; // +0x38  the game-manager singleton (RezSync::Init self-registers)
 };
 
 // --- vtable catalog ---

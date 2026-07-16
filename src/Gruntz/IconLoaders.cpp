@@ -25,9 +25,8 @@
 // LoadToyBoxIcon 0x7a3f0, LoadExplosionSprites 0x7b330, LoadPowerupIconSprites
 // 0x7c620) are merged into src/Gruntz/TriggerMgr.cpp - the iconloaders unit's
 // fns in [0x77f80..0x7d7ca] belong to that ONE original TU (dossier 10b,
-// docs/exe-map/interval-dossiers.md). The EngineLabelBacklog holder view they
-// share now lives in <Gruntz/IconLoaderViews.h>.
-#include <Gruntz/IconLoaderViews.h>
+// docs/exe-map/interval-dossiers.md). All four are ::CTriggerMgr methods (the
+// ex-`EngineLabelBacklog` holder view + IconLoaderViews.h are dissolved).
 #include <Gruntz/GameMode.h> // CBootyState - the REAL owner of BuildBootyPerfectAnimation
 
 // The game-manager singleton (g_gameReg, *0x64556c), canonical view.

@@ -57,12 +57,8 @@ SIZE_UNKNOWN(TgcGameMgr);
 struct TgcRedraw {};
 SIZE_UNKNOWN(TgcRedraw);
 
-// A pixel-region dirty helper (g_gameReg->m_68): MarkRect flags a screen rect for
-// repaint.  __thiscall engine callee, reloc-masked.
-struct TgcRegion {
-    // MarkRect @0x152d IS EngineLabelBacklog::LoadPowerupIconSprites; cast at the call.
-};
-SIZE_UNKNOWN(TgcRegion);
+// (The TgcRegion "pixel-region dirty helper" shell is GONE: its MarkRect thunk
+// 0x152d IS CTriggerMgr::LoadPowerupIconSprites @0x7c620 on the same +0x68 grid.)
 
 // The WwdGameReg singleton (g_gameReg, RVA 0x64556c); +0x30 is the active game
 // manager, +0x68 the rect-dirty helper, +0x70 the redraw helper.

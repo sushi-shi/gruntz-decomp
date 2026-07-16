@@ -638,7 +638,7 @@ struct GruntCoordNode {
 //   CommitStruckTile 0x10eb -> 0x78260  RemoveCellRecord
 //   NotifyDeathTile  0x290a -> 0x79ea0  SpawnTileFx
 //   NotifyMoveAt     0x2fb3 -> 0x7b330  LoadExplosionSprites
-//   ProbeMoveTile    0x152d -> 0x7c620  FireCommand
+//   ProbeMoveTile    0x152d -> 0x7c620  LoadPowerupIconSprites
 //   ResurrectCue     0x1fff -> 0x7be60  LoadGruntResurrectTuning
 //   NotifyArrival    0x275c/0x2c48 -> 0x6da60/0x6daa0  PostCellCommand6/7 (TWO fns)
 //   PostWire         0x3dfa -> 0x6c130  WireTileSwitchLogic(this,x,y) (3 args, not 0)

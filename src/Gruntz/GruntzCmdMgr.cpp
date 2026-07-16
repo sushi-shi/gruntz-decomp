@@ -14,15 +14,16 @@
 //
 // The manager destructor (0x085bd0) carries a /GX EH frame (the inline CPtrList
 // teardown is the destructible sub-object); this TU is built flags="eh".
-#include <Mfc.h> // afx-first umbrella (windows.h for the 0x92ab0 DialogProc; BoundaryTailViews needs MFC)
+#include <Mfc.h> // afx-first umbrella (windows.h for the 0x92ab0 DialogProc)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/State.h> // CState::Update (slot 4) - the live state's id tag
 #include <Gruntz/Play.h> // CPlay::ExecCommand - the ApplyOne/ApplyMask target (ex CGruntzCmdTarget)
 #include <Gruntz/SerialArchive.h>     // the shared archive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/WwdGameReg.h>        // the canonical WwdGameReg singleton (g_gameReg)
-#include <Gruntz/BoundaryTailViews.h> // CObj23d90 (fuzzy-identity 0x23d90 grid-snap blit)
+#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
+#include <Gruntz/GruntzMgr.h>  // the m_38 manager back-ptr (CGruntzMgr) + m_world chain
+#include <Gruntz/GameLevel.h>  // CGameLevel (m_world->m_24: m_planeCtx + m_mainPlane)
 #include <rva.h>
 
 // The game registry singleton (canonical <Gruntz/WwdGameReg.h>). The command
@@ -65,7 +66,7 @@ i32 CGruntzCommand::Parse(void*, i32) {
 
 // 0x0239d0 - install the manager pointer; returns 1. Homed out-of-line (matcher-5).
 RVA(0x000239d0, 0xf)
-i32 CGruntzCmdMgr::SetMgr(GzMgr* mgr) {
+i32 CGruntzCmdMgr::SetMgr(CGruntzMgr* mgr) {
     m_38 = mgr;
     return 1;
 }
@@ -92,7 +93,7 @@ void CGruntzCmdMgr::ClearAndReset() {
 // table index ordering. Deferred to the final sweep.
 RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ScanTargets(i32 param) {
-    GzStateProvider* sp = m_38->m_2c;
+    CState* sp = m_38->m_curState;
     // slot 4 (+0x10): the state reports its own id tag. 0x11 IS GAMESTATE_NONE (the
     // PerFrameTick sentinel), not the PLAY id - the local's historical name is kept.
     i32 isPlay = (sp->Update() == GAMESTATE_NONE);
@@ -233,9 +234,9 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
         return;
     }
     if (flag) {
-        if (m_38->m_2c->Update() == GAMESTATE_PLAY) {
+        if (m_38->m_curState->Update() == GAMESTATE_PLAY) {
             ((CGruntzCommand*)cmd)->m_submitted = 2; // submit-context = playing
-        } else if (m_38->m_2c->Update() == GAMESTATE_NONE) {
+        } else if (m_38->m_curState->Update() == GAMESTATE_NONE) {
             ((CGruntzCommand*)cmd)->m_submitted = 4; // submit-context = ready
         }
         m_1c.AddTail(cmd);
@@ -246,11 +247,12 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 // ---------------------------------------------------------------------------
 // 0x23d90 (dossier seam: gamekeyhandler -> this TU; sits inside the sandwich):
 // snap a draw rectangle to the 0x20 tile grid and dispatch a blit - the command-
-// target tile marker. Called by CGamePlayInput::DispatchKey (0xcbcc0, a remote
-// TU, so not COMDAT-at-usage); `this` is a graphics/blit object of genuinely
-// unrecovered identity (kept placeholder CObj23d90 in BoundaryTailViews.h;
-// @identity-TODO). The blit primitive reached through ILT thunk 0x2095
-// (__stdcall, callee-clean).
+// target tile marker. IDENTITY RESOLVED (2026-07-16, ex `CObj23d90`): `this` IS
+// this TU's CGruntzCmdMgr - CPlay::DispatchKey dispatches it on [CGruntzMgr+0x6c]
+// == m_cmdSubMgr, and the view's m_38->m_30->m_24 chain IS m_38 (the manager
+// back-ptr EnqueueCommand already walks) ->m_world->m_24 - the same
+// m_planeCtx/m_mainPlane walk as the DispatchKey P/x cheat keys. The blit
+// primitive reached through ILT thunk 0x2095 (__stdcall, callee-clean).
 void __stdcall Func2095(i32, i32, i32, i32, i32, i32, i32, i32);
 // @early-stop
 // scheduling wall (~50%): logic exact, but retail interleaves the sx/sy compute
@@ -258,11 +260,11 @@ void __stdcall Func2095(i32, i32, i32, i32, i32, i32, i32, i32);
 // vs our full `and eax,~0x1f`; our /O2 evaluates sy fully then sx and pushes args
 // eagerly. Pure x86 instruction scheduling/regalloc.
 RVA(0x00023d90, 0x64)
-void CObj23d90::Blit(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
-    P23d90* p = m_38->m_30->m_24;
-    R23d90* r = p->m_5c;
-    i32 sx = ((r->m_40 - p->m_10 + (x & 0xffff)) & ~0x1f) + 0x10;
-    i32 sy = ((r->m_44 - p->m_14 + (y & 0xffff)) & ~0x1f) + 0x10;
+void CGruntzCmdMgr::BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
+    CGameLevel* p = m_38->m_world->m_24;
+    CLevelPlane* r = p->m_mainPlane;
+    i32 sx = ((r->m_originX - p->m_planeCtx.minX + (x & 0xffff)) & ~0x1f) + 0x10;
+    i32 sy = ((r->m_originY - p->m_planeCtx.minY + (y & 0xffff)) & ~0x1f) + 0x10;
     Func2095(a1, a2, 0, 0, sx, sy, 0, a5);
 }
 

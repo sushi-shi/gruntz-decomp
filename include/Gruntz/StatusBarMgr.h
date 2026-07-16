@@ -160,7 +160,7 @@ public:
     virtual void Click1c(i32 a, i32 b, i32 c); // +0x1c (slot 7)
     virtual void HitHandlerC();                // slot 8
     virtual void Click24(i32 a, i32 b, i32 c); // +0x24 (slot 9)
-    i32 m_enabled;                             // +0x04 enabled
+    i32 m_enabled;                             // +0x04 enabled (== the toggle "active" flag)
     i32 m_kind;                                // +0x08 widget kind tag
     i32 m_cmd;                                 // +0x0c command id
     i32 m_tab;                                 // +0x10 owning tab index
@@ -168,6 +168,9 @@ public:
     i32 m_yLo;                                 // +0x18 y lo
     i32 m_xHi;                                 // +0x1c x hi
     i32 m_yHi;                                 // +0x20 y hi
+    char m_pad24[0x44 - 0x24];                 // +0x24
+    i32 m_toggleValue; // +0x44  latched statz-toggle value (LoadStatzTabToggleSprite;
+                       //        ex the CStatzTabItem view of this same +0x150 element)
 };
 SIZE_UNKNOWN(CSbiRect);
 
@@ -179,6 +182,8 @@ SIZE_UNKNOWN(CSbiRect);
 // notifier; the call is reloc-masked, so only the arg shape is load-bearing.
 struct CSbiStatObj {
     // Notify2 @0x27f7 IS CSBI_RectOnly::ResetGroupA (args reloc-masked); cast at the call.
+    // The (stateId, on) toggle notifier (thunk FUN_004ea170; ex CStatzTabSub::Toggle).
+    void Toggle(i32 stateId, i32 on);
 };
 SIZE_UNKNOWN(CSbiStatObj);
 
@@ -430,7 +435,8 @@ public:
     // ----- sibling methods called by the reconstructed bodies (declared so the
     // ILT call targets resolve; bodies live elsewhere / are stubbed) -----
     void ResetGroupA();
-    void LoadStatzTabToggleSprite(i32, i32);
+    i32 LoadStatzTabToggleSprite(i32 value, i32 idx); // 0x104e60 (body in SBI_RectOnly.cpp;
+                                                      // ex the EngineLabelBacklog placeholder)
     void UpdateGruntOvenStatusBar();
     void TickGauge();
     i32 GaugeComplete();   // call 0x3e2c - gauge-at-100 completion test

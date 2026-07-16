@@ -25,7 +25,10 @@ SIZE_UNKNOWN(CWsfOwner);
 struct CWsfOwner {
     // mode-3 tab-switch helpers, both __thiscall (ILT-reloc-masked):
     i32 m_mode; // +0x000  mode discriminator (!=2 gates the tab switch)
-    char m_pad4[0x10c - 0x4];
+    char m_pad4[0x10 - 0x4];
+    i32 m_tabBaseX; // +0x010  tab base x (== CStatusBarMgr::m_10; Init's fly target base)
+    i32 m_tabBaseY; // +0x014  tab base y (== CStatusBarMgr::m_rect14.m_0)
+    char m_pad18[0x10c - 0x18];
     i32 m_activeTabId; // +0x10c  active-tab id (==5 arms the tab switch)
     char m_pad110[0x548 - 0x110];
     i32 m_busy;           // +0x548  busy flag, cleared on arrival
@@ -41,7 +44,10 @@ SIZE_UNKNOWN(CWarpStoneFly);
 class CWarpStoneFly {
 public:
     CWarpStoneFly();                            // 0x109bb0  clears m_sprite/m_owner, returns this
-    i32 Init(void* owner, i32 a, i32 b, i32 c); // (was CSbiMode54c::Init; init owner+target)
+    // 0x109bd0 (body in SBI_RectOnly.cpp, its own RVA band): record the owner, resolve
+    // the warp-tab fly frame + per-phase screen target, seed the fly velocity. Ex the
+    // EngineLabelBacklog::UpdateWarpStoneStatusBar placeholder def (was CSbiMode54c::Init).
+    i32 Init(void* owner, i32 phase, i32 srcX, i32 srcY);
     i32 Tick(i32 dt); // 0x10a0f0  integrate toward target, snap, notify on arrival
     i32 Draw();       // 0x10a2f0  blit the sprite at the rounded position
 

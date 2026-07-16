@@ -546,20 +546,25 @@ public:
     i32 PlaceB(i32 a, i32 b, i32 c);
     void Fx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 
-    // 0x7c620: FireCommand(cmd,x,y,slot,a5,a6) - the /GX cell-effect command dispatcher
-    // (jump table on `cmd`, ids 1..99). Called on the +0x68 registry m_cmdGrid by the tile
-    // effect loaders (TileTriggerSwitchLogic::BuildRockBreakInGameText, the tile-grid command
-    // region). UNRECONSTRUCTED (mislabeled ?LoadPowerupIconSprites@EngineLabelBacklog in the
-    // iconloaders unit); declared-only here so consumer self/method calls mangle onto this
-    // class and reloc-mask. No body/RVA in this TU.
-    i32 FireCommand(i32 cmd, i32 x, i32 y, i32 slot, i32 a5, i32 a6);
+    // 0x7c620: LoadPowerupIconSprites(type, geoB, geoA, m130, warpIdx, m120) - the big
+    // in-game-icon loader (PickupType jump-table switch selecting the GAME_INGAMEICONZ_*
+    // sprite-set key). Called on the +0x68 registry m_cmdGrid by the tile effect loaders
+    // (TileTriggerSwitchLogic, GruntCombat) and the grunt ProbeMoveTile thunk 0x152d.
+    // Body in TriggerMgr.cpp (the ex-`FireCommand` decl here and the ex-
+    // ?LoadPowerupIconSprites@EngineLabelBacklog def were TWO NAMES for this one method;
+    // unified 2026-07-16).
+    i32 LoadPowerupIconSprites(i32 type, i32 geoB, i32 geoA, i32 m130, i32 warpIdx, i32 m120);
 
     // 0x7b330: the brick-break explosion-sprite loader (x, y, id, kind), the sibling of
-    // FireCommand fired on this same +0x68 registry m_cmdGrid by CTileActionEvent::Process
-    // (effect 0x144). Was the other half of the fake EngineLabelBacklog host (mislabeled
-    // ?LoadExplosionSprites@EngineLabelBacklog); declared-only here so the consumer call
-    // mangles onto this class and reloc-masks. No body/RVA in this TU.
+    // LoadPowerupIconSprites fired on this same +0x68 registry m_cmdGrid by
+    // CTileActionEvent::Process (effect 0x144) and the K/x cheat keys. Body in
+    // TriggerMgr.cpp (was ?LoadExplosionSprites@EngineLabelBacklog - the fake host's
+    // m_factoryHolder @+0x22c IS m_level).
     i32 LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind);
+
+    // 0x7a3f0: the lazy "GAME_TOYBOX" in-game-icon loader (bails when an icon already
+    // sits on the tile). Body in TriggerMgr.cpp (ex ?LoadToyBoxIcon@EngineLabelBacklog).
+    i32 LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5);
 
     // 0x46b6d0: the screen-coord -> cell-index probe the battlez spawn machine fires on
     // this grid (two arg shapes at the same body; Ghidra leaves it class-unattributed).

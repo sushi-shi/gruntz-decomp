@@ -868,11 +868,9 @@ void ActiveWait(i32 ms);           // 0x13dfe0 busy-wait
 void* RezAlloc(i32 sz);            // 0x1b9b46 operator new
 void RezFree(void* p);             // 0x1b9b82 operator delete
 
-// PTR: reads a pointer member at a raw offset (double-star, not a counted cast).
-// Retained only for the 4 residual chains into UNMODELED sub-objects: CSndHost+0x2c,
-// CGameWnd+0x4 (HWND), CTriggerMgr+0x268 (byte-table count), and the m_c->m_4->m_10->m_2c
-// DDraw surface chain. Every I32 (single-star) site is dissolved to typed member access.
-#define PTR(p, off) (*(void**)((char*)(p) + (off)))
+// (The PTR offset-cast macro is GONE, 2026-07-16: its 4 residual chains are typed -
+// CSndHost::m_2c (the held SoundStream), CGameWnd::m_hwnd, CTriggerMgr::m_byteArr's
+// inline GetSize(), and CDrawTarget::m_10->m_surface (the CDDSurface ShadeRect target).)
 
 // ---------------------------------------------------------------------------
 // The PLAY-state level loader (`this`). Its own init-chain steps are __thiscall
@@ -931,9 +929,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     // tear down the old grid (self->m_c->m_28->m_2c) / map / sound sub-objects
-    void* grid = PTR(self->m_c->m_28, 0x2c); // CSndHost+0x2c (unmodeled sub-object; deferred)
+    SoundStream* grid = self->m_c->m_28->m_2c; // the CSndHost-held DSound stream
     if (grid != 0) {
-        ((SoundStream*)grid)->Stop();
+        grid->Stop();
     }
     self->m_4->m_sound->StopAndFlush();
     self->m_4->m_inputState->Teardown();
@@ -1135,7 +1133,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     {
         CResSource* prevTiles = self->m_2c;
         self->m_2c = (CResSource*)self->m_levelBank;
-        UpdateWindow((HWND)PTR(self->m_4->m_gameWnd, 0x4)); // CGameWnd+0x4 window handle (deferred)
+        UpdateWindow(self->m_4->m_gameWnd->m_hwnd);
 
         host = self->m_4;
         if (host->m_strWorldFile.GetLength() != 0) {
@@ -1380,7 +1378,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             key.Format("Level%i", i);
             CTriggerMgr* bm = gameReg->m_cmdGrid;
             i32 v = g_buteMgr.GetInt((const char*)key, "WarpStone");
-            bm->m_byteArr.SetAtGrow((i32)PTR(bm, 0x268), (u8)v);
+            bm->m_byteArr.SetAtGrow(bm->m_byteArr.GetSize(), (u8)v); // inline GetSize == the +0x268 m_nSize load
         }
     }
     self->m_guts->LoadMultiplayerBattlezConfig(self->m_levelIndex);
@@ -1448,9 +1446,8 @@ okContinue:
 
     gameReg = (CGruntzMgr*)g_gameReg;
     if (gameReg->m_114 == 0) {
-        void* mapHost =
-            PTR(PTR(self->m_c->m_drawTarget, 0x10), 0x2c); // m_c->m_4->m_10->m_2c (deferred)
-        ((CDDSurface*)mapHost)->ShadeRect(0x32, 0);
+        CDDSurface* mapHost = self->m_c->m_drawTarget->m_10->m_surface;
+        mapHost->ShadeRect(0x32, 0);
         gameReg = (CGruntzMgr*)g_gameReg;
     }
 

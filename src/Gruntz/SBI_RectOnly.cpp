@@ -1419,7 +1419,7 @@ i32 CStatusBarMgr::Activate() {
 // __stdcall RECT copier called `call ds:[::CopyRect]` (ex SBI_TabzDialogEh.cpp).
 
 // ===========================================================================
-// EngineLabelBacklog::LoadStatzTabToggleSprite @0x104e60
+// CStatusBarMgr::LoadStatzTabToggleSprite @0x104e60
 // ===========================================================================
 //
 // Toggles the per-statz-tab indicator `idx` to `value`: a no-op if it already
@@ -1428,7 +1428,6 @@ i32 CStatusBarMgr::Activate() {
 // is 3, runs the STATZTABTOGGLE status-bar advance, and latches the new value.
 // __thiscall ret 8. Always returns 1.
 
-// RegUnitTable moved to <Gruntz/StatusBarUpdatersViews.h>.
 // @early-stop
 // ~80.8%: logic + offsets + the advance-tail are byte-faithful. Residual is a
 // constant/register-pinning coin-flip: retail keeps a 4th callee-saved reg (ebp) live
@@ -1437,33 +1436,31 @@ i32 CStatusBarMgr::Activate() {
 // registers and emits the 1 as inline immediates instead. Already spelled with a
 // shared `i32 one=1` local, which MSVC5 declines to keep in a register - a regalloc
 // pressure coin-flip, not source-steerable; deferred to the final sweep.
-// reloc-fidelity: 0x104e60 IS CStatusBarMgr::LoadStatzTabToggleSprite (ToggleStat calls
-// it unqualified on `this`); SYMBOL exports it under the canonical name so that call
-// binds. The EngineLabelBacklog view is the recovered-symbol placeholder (fold deferred).
-SYMBOL(?LoadStatzTabToggleSprite@CStatusBarMgr@@QAEXHH@Z)
+// FOLDED (2026-07-16): the ex-EngineLabelBacklog def is now the real
+// CStatusBarMgr method (0x104e60 - ToggleStat calls it unqualified on `this`);
+// the raw (i32*)this word soup is typed against the canonical layout
+// (m_statFlags @+0x114, m_hitRects @+0x150, m_statObj @+0x18c, m_activeTab,
+// m_position) and the +0x150 element's toggle facet (ex CStatzTabItem) is the
+// same CSbiRect (m_enabled/+0x44 m_toggleValue). The +0x68 "unit-record table"
+// (ex RegUnitTable) IS CTriggerMgr - its +0x1c slot array is m_grid.
 RVA(0x00104e60, 0xed)
-i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
-    i32* m = (i32*)this;
-    if (m[idx + 0x114 / 4] == value) {
+i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
+    if (m_statFlags[idx] == value) {
         return 1;
     }
 
     i32 slot = idx + 15 * g_curPlayer;
-    // m_68 is the registry's poly per-mode slot (void* in the shared view); in the
-    // in-game status-bar context it is always the unit-record table. One authentic
-    // downcast to the concrete view, then cast-free field access.
-    RegUnitTable* units = (RegUnitTable*)g_gameReg->m_cmdGrid;
-    if (units->m_slots[slot] == 0) {
+    if (g_gameReg->m_cmdGrid->m_grid[slot] == 0) {
         return 0;
     }
 
-    CStatzTabItem* item = (CStatzTabItem*)m[idx + 0x150 / 4];
+    CSbiRect* item = m_hitRects[idx];
     i32 one = 1;
     if (item) {
         item->m_toggleValue = value;
-        item->m_active = one;
-        if (m[0x10c / 4] == one) {
-            ((CStatzTabSub*)m[idx + 0x18c / 4])->Toggle(m[0], one);
+        item->m_enabled = one;
+        if (m_activeTab == one) {
+            m_statObj[idx]->Toggle(m_position, one);
             CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
             if (h->m_emitGate == 0) {
                 void* spr_ob = 0;
@@ -1478,12 +1475,12 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
             }
         }
     }
-    m[idx + 0x114 / 4] = value;
+    m_statFlags[idx] = value;
     return 1;
 }
 
 // ===========================================================================
-// EngineLabelBacklog::UpdateGruntOvenStatusBar @0x105310
+// CStatusBarMgr::UpdateGruntOvenStatusBar @0x105310
 // ===========================================================================
 //
 // Walks the 5 grunt-oven cooking tabs: while a tab is COOKING (m_state==1) it derives
@@ -1544,7 +1541,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 }
 
 // ===========================================================================
-// EngineLabelBacklog::UpdateChipGrinderStatusBar @0x1076a0
+// CStatusBarMgr::UpdateChipGrinderStatusBar @0x1076a0
 // ===========================================================================
 //
 // Drives the rez chip-grinder conveyor while it is RUNNING (m_4e8 != 0): it pulls
@@ -1629,7 +1626,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 }
 
 // ===========================================================================
-// EngineLabelBacklog::UpdateWarpStoneStatusBar @0x109bd0
+// CWarpStoneFly::Init @0x109bd0 (ex EngineLabelBacklog::UpdateWarpStoneStatusBar)
 // ===========================================================================
 //
 // Sets up the warp-stone "fly" animation toward the warp tab. It records arg0 at
@@ -1646,15 +1643,13 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 // temp (eax) and branch-selects into edi in retail, where this toolchain fuses the
 // load directly into edi (`mov edi,[ecx+4*edi]`). Same select-register-fusion family
 // as the 64-bit clamp; not source-steerable; deferred to the final sweep.
-// reloc-fidelity: 0x109bd0 IS CWarpStoneFly::Init - CStatusBarMgr::EnsureSub news a
-// CWarpStoneFly and calls o->Init(this,a,b,c) on it; SYMBOL exports it under the
-// canonical CWarpStoneFly::Init name so that call binds (a0 is the CStatusBarMgr owner).
-// The EngineLabelBacklog view is the recovered-symbol placeholder (fold deferred).
-SYMBOL(?Init@CWarpStoneFly@@QAEHPAXHHH@Z)
+// FOLDED (2026-07-16): 0x109bd0 IS CWarpStoneFly::Init - CStatusBarMgr::EnsureSub
+// news a CWarpStoneFly and calls o->Init(this,a,b,c) on it (the void* owner is the
+// CStatusBarMgr back-ptr). The ex-EngineLabelBacklog def + its (i32*)this word soup
+// are typed against the canonical <Gruntz/WarpStoneFly.h> layout.
 RVA(0x00109bd0, 0x1b5)
-i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i32 srcY) {
-    i32* m = (i32*)this;
-    m[0x3c / 4] = a0;
+i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
+    m_owner = (CWsfOwner*)owner;
 
     void* spr_ob = 0;
     i32 n = phase + 1;
@@ -1663,12 +1658,12 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     CSprite* spr = (CSprite*)spr_ob;
     i32* frame =
         (spr && n >= spr->m_firstFrame && n <= spr->m_lastFrame) ? spr->m_frames.m_pData[n] : 0;
-    m[0x38 / 4] = (i32)frame;
+    m_sprite = (CWsfSprite*)frame;
     if (frame == 0) {
         return 1;
     }
 
-    m[0] = phase;
+    m_arrivalMode = phase;
     i32 cx, dy;
     switch (phase) {
         case 2:
@@ -1689,11 +1684,11 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
             break;
     }
 
-    i32* base = (i32*)m[0x3c / 4];
-    i32 tx = base[0x10 / 4] + cx;
-    m[0x4 / 4] = tx;
-    i32 ty = base[0x14 / 4] + dy;
-    m[0x8 / 4] = ty;
+    CWsfOwner* base = m_owner;
+    i32 tx = base->m_tabBaseX + cx;
+    m_targetX = tx;
+    i32 ty = base->m_tabBaseY + dy;
+    m_targetY = ty;
 
     i32 dxv = tx - srcX;
     i32 dyv = ty - srcY;
@@ -1701,9 +1696,9 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     double dist = sqrt((double)dist2);
     u32 flyTime = g_buteMgr.GetDwordDef("WarpStone", "FlyTime", 0x5dc);
 
-    *(double*)&m[0x20 / 4] = (double)flyTime / dist;
-    *(double*)&m[0x28 / 4] = (double)dist2 / dist;
-    *(double*)&m[0x30 / 4] = (double)dxv / dist;
+    m_velocityScale = (double)flyTime / dist;
+    m_xDirection = (double)dist2 / dist;
+    m_yDirection = (double)dxv / dist;
 
     CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
     if (h->m_emitGate == 0) {
@@ -1718,8 +1713,8 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
         }
     }
 
-    *(double*)&m[0x10 / 4] = (double)dxv;
-    *(double*)&m[0x18 / 4] = (double)dyv;
+    m_currentX = (double)dxv;
+    m_currentY = (double)dyv;
     return 1;
 }
 
@@ -1729,7 +1724,7 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
 // Un-merging is what lets both be right; see that file's banner.)
 
 // ===========================================================================
-// EngineLabelBacklog::UpdateDestructButtonStatusBar @0x10b320
+// CStatusBarMgr::UpdateDestructButtonStatusBar @0x10b320
 // ===========================================================================
 //
 // The destruct-button warning blinker: in state 1 it counts the warning frame UP

@@ -52,7 +52,6 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/Grunt.h>        // CGrunt (the board cells) + g_gameReg
 #include <Gruntz/String.h>
 #include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
-#include <Gruntz/IconLoaderViews.h> // EngineLabelBacklog (the four icon loaders)
 #include <Gruntz/Brickz.h>          // CBrickzGrid (rock-break ComputeCellFlags)
 #include <Dsndmgr/DirectSoundMgr.h> // canonical DSoundCloneInst (ConfigureItem @0x1360d0)
 #include <Gruntz/SoundCue.h>        // CSndHost (the finish-level cue holder)
@@ -454,12 +453,13 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
 }
 
 // ===========================================================================
-// The four EngineLabelBacklog icon/sprite loaders (0x78960 / 0x7a3f0 / 0x7b330
-// / 0x7c620) - the iconloaders unit, merged wholesale per dossier 10b (its 4
-// fns are embedded between the CTriggerMgr runs; the unit's other two fns
-// 0x1c070/0x1e720 stay in IconLoaders.cpp). Holder view + factory chain in
-// <Gruntz/IconLoaderViews.h>; the singleton is the canonical CGameRegistry
-// via g_gameReg (<Gruntz/Grunt.h>).
+// The four icon/sprite loaders (0x78960 / 0x7a3f0 / 0x7b330 / 0x7c620) - the
+// ex-iconloaders unit, merged wholesale per dossier 10b (its 4 fns are embedded
+// between the CTriggerMgr runs; the unit's other two fns 0x1c070/0x1e720 stay in
+// IconLoaders.cpp). ALL FOUR are ::CTriggerMgr methods (the ex-`EngineLabelBacklog`
+// placeholder host is DISSOLVED 2026-07-16: its m_factoryHolder @+0x22c IS m_level,
+// its m_cameraSprite @+0x23c IS m_goal - see the LoadCameraSprite proof below);
+// the singleton is the canonical CGameRegistry via g_gameReg (<Gruntz/Grunt.h>).
 // ===========================================================================
 // Two icon-class init-slot fns the toybox de-dup test compares an existing
 // icon's m_7c->Init against (the in-game-icon / in-game-text classes).
@@ -1082,7 +1082,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
 // ===========================================================================
 //
 // Lazily creates the "GAME_TOYBOX" in-game icon at tile (x>>5, y>>5): first walks
-// the factory's live-icon list (m_factoryHolder->m_8->m_liveObjects) and bails (return 0) if an
+// the factory's live-icon list (m_level->m_8->m_liveObjects) and bails (return 0) if an
 // existing icon of one of the two icon classes already sits on that tile;
 // otherwise CreateSprite("InGameIcon"), cache its frame, stamp the four config
 // slots and the +0x40 visible bit.  __thiscall, ret 0x14 (5 args).
@@ -1092,8 +1092,8 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
 // retail thunk_FUN_004bf150 / CSingleAnimation; code bytes match).
 
 RVA(0x0007a3f0, 0xd7)
-i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
-    CSpriteFactory* fac = m_factoryHolder->m_8;
+i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
+    CSpriteFactory* fac = m_level->m_8;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
 
@@ -1626,8 +1626,8 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
 // this+0x124 with the loaded flag at this+0x114. __thiscall ret 0x10 (4 args).
 
 RVA(0x0007b330, 0xc6)
-i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
-    CSpriteFactory* fac = m_factoryHolder->m_8;
+i32 CTriggerMgr::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
+    CSpriteFactory* fac = m_level->m_8;
     CGameObject* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         i32 v = variant;
@@ -2304,7 +2304,7 @@ Lab_56b:
 // PICKUP_COVEREDTIMEBOMB = 99.)
 
 RVA(0x0007c620, 0x3c5)
-i32 EngineLabelBacklog::LoadPowerupIconSprites(
+i32 CTriggerMgr::LoadPowerupIconSprites(
     i32 type,
     i32 geoB,
     i32 geoA,
@@ -2377,9 +2377,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             break;
         case PICKUP_WARPSTONE:
             if (g_gameReg->m_134 == 1) {
-                CResourceTracker* rt = (CResourceTracker*)g_gameReg->m_curState;
                 CString lvl;
-                lvl.Format("Level%i", rt->m_levelNumber);
+                lvl.Format("Level%i", g_gameReg->m_curState->m_levelIndex);
                 name.Format(
                     "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i",
                     g_buteMgr.GetInt("WarpStone", (const char*)lvl)

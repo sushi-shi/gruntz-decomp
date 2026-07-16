@@ -217,16 +217,10 @@ enum SpellzEffect {
 // ==== LoadGruntCombatAnimations @0x597a0 (ex GruntCombatAnim.cpp; its 15 private .data cells + the
 // i324-i332 frag run sit in this TU) ====
 
-// P: reads a pointer member at a raw offset (double-star char**, not a counted cast).
-// The F (single-star i32) offset-macro is GONE - every field access it hid is now a
-// typed CGrunt/CGameObject/CAnimLookupNode member (Grunt.h/UserLogic.h). P is retained
-// only for two DIVERGENT/internal reaches whose clean typing is a deferred fold:
-//   * +0x260: the path/occupancy board. Grunt.h types m_tileMgr as CGruntTileMgr* but
-//     the combat paths use it as CTriggerMgr* (m_grid / SpawnGrunt / CellDispatch /
-//     ApplySwitch) - a pending CGruntTileMgr==CTriggerMgr unification (do not retype
-//     Grunt.h here). The cast sits on P(...), so it is not a counted this/member cast.
-//   * +0x320: the m_31c CPtrList head node (freelist recycle; no public MFC accessor).
-#define P(base, o) (*(char**)((char*)(base) + (o)))
+// (The P offset-cast macro is GONE, 2026-07-16: its two residual reaches are typed -
+// +0x260 IS Grunt.h's m_tileMgr, now canonically CTriggerMgr* (the CGruntTileMgr
+// view it was waiting on dissolved 2026-07-14), and the +0x320 m_31c head walk uses
+// GetHeadPosition() + the shared CoordNode (<Gruntz/CoordNode.h>).)
 
 // (CombatCue is GONE - it was LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem
 //  owner, m_14 last-fire clock, m_18 cooldown - and its throttled fire is the real
@@ -792,7 +786,7 @@ i32 CGrunt::TryPowerupAtTile() {
     if ((flags & 0x939) || (flags & 2)) {
         return 0;
     }
-    m_tileMgr->FireCommand(reason, px, py, 0, 1, 0);
+    m_tileMgr->LoadPowerupIconSprites(reason, px, py, 0, 1, 0);
     return 1;
 }
 
@@ -1382,9 +1376,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     // a7 == 0x39: conversion hit - heal the struck enemy, fire GAME_CONVERSIONHIT.
     if (a7 == 0x39) {
-        CGrunt* enemy = ((CTriggerMgr*)P(this, 0x260))->m_grid[a2 * TM_GRID_COLS + a3];
+        CGrunt* enemy = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
         if (enemy != 0
-            && ((CTriggerMgr*)P(this, 0x260))
+            && m_tileMgr
                        ->SpawnGrunt(
                            this->m_tileOwnerHi,
                            this->m_tileOwnerLo,
@@ -1424,7 +1418,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     } else if (this->m_gruntKind == 0x3c) {
         hit = (i32)((float)hit * g_dtScale);
         if (a6 == 0) {
-            CGrunt* enemy = ((CTriggerMgr*)P(this, 0x260))->m_grid[a2 * TM_GRID_COLS + a3];
+            CGrunt* enemy = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
             if (enemy != 0 && enemy->m_entranceCommitted != 0) {
                 i32 nh = enemy->m_health - hit * 3;
                 if (nh < 0) {
@@ -1432,7 +1426,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 }
                 enemy->m_health = nh;
                 if (nh <= 0) {
-                    ((CTriggerMgr*)P(this, 0x260))->CellDispatch(a2, a3, 1, -1);
+                    m_tileMgr->CellDispatch(a2, a3, 1, -1);
                 }
             }
         }
@@ -1445,7 +1439,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
     this->m_health = nh;
     if (this->m_entranceReason == 1) {
-        ((CTriggerMgr*)P(this, 0x260))
+        m_tileMgr
             ->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 1, a2);
         return 0;
     }
@@ -1627,7 +1621,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_health > 0) {
             return 1;
         }
-        ((CTriggerMgr*)P(this, 0x260))
+        m_tileMgr
             ->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 7, a2);
         return 0;
     }
@@ -1792,7 +1786,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         // Arrival commit + occupancy re-stamp + knockback trajectory tail.
         if (this->m_arrivalPending == 0) {
-            ((CTriggerMgr*)P(this, 0x260))
+            m_tileMgr
                 ->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
         }
         CBrickzGrid* g2 = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
@@ -1833,16 +1827,17 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_410 = (double)(this->m_object->m_screenY);
 
         if (m_31c.GetCount() != 0) {
-            void** node = (void**)P(this, 0x320);
+            CoordNode* node = (CoordNode*)m_31c.GetHeadPosition();
             if (node != 0) {
                 void* fl = g_coordPool.m_freeHead;
                 do {
-                    void** cur = node;
-                    node = (void**)*node;
-                    void* data = *(void**)((char*)cur + 8);
+                    CoordNode* cur = node;
+                    node = cur->m_next;
+                    Coord* data = cur->m_coord;
                     if (data != 0) {
-                        void** slot = (void**)((char*)data - g_coordPool.m_linkOffset);
-                        *slot = fl;
+                        CoordPoolNode* slot =
+                            (CoordPoolNode*)((char*)data - g_coordPool.m_linkOffset);
+                        slot->m_next = (CoordPoolNode*)fl;
                         fl = slot;
                         g_coordPool.m_freeHead = fl;
                     }

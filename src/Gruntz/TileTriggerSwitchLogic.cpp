@@ -52,7 +52,7 @@
 // ValidateByType below.)
 
 // (The EngineLabelBacklog host is DISSOLVED: its two "loaders" are CTriggerMgr
-// methods on the +0x68 registry m_cmdGrid - LoadPowerupIconSprites IS FireCommand
+// methods on the +0x68 registry m_cmdGrid - LoadPowerupIconSprites (was also decl-aliased as FireCommand)
 // (0x7c620), LoadExplosionSprites (0x7b330) is its sibling. Both declared on the real
 // CTriggerMgr (<Gruntz/TriggerMgr.h>), so the calls run cast-free on m_cmdGrid.)
 
@@ -667,7 +667,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     // (3) fire the command-grid effect at the tile center (cx/cy reused by step 4).
     i32 cx = (m_08 << 5) + 0x10;
     i32 cy = (m_0c << 5) + 0x10;
-    g_gameReg->m_cmdGrid->FireCommand(m_c0, cx, cy, (i32)m_30, 1, 0);
+    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(m_c0, cx, cy, (i32)m_30, 1, 0);
 
     // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
     if (m_c4 != 0) {
@@ -759,7 +759,7 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     CGruntzMgr* reg = g_gameReg;
     i32 py = (m_0c << 5) + 0x10;
     i32 px = (m_08 << 5) + 0x10;
-    reg->m_cmdGrid->FireCommand(m_28, px, py, m_30, 1, 0);
+    reg->m_cmdGrid->LoadPowerupIconSprites(m_28, px, py, m_30, 1, 0);
     if (m_2c != 0) {
         CGameObject* rec = reg->m_world->m_8->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != 0) {
