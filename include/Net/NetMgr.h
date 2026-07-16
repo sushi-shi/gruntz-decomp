@@ -552,10 +552,11 @@ struct CNetSession {
     i32 Advance();                           // c01d0
     CSyncObj* GetSlotPtr(i32 v);          // c0430  id-map fetch (ex "GlyphTable::Get")
     void ArmSlot(void* node, i32 parity); // c03f0  id-map store (ex "GlyphTable::Set")
-    // Declared-only lobby-sync siblings (their calls reloc-mask): Checksum @0xc0590
-    // resolves to CGameSyncSig::ComputeSignature, Step2437 is a per-frame
-    // poke with no bound RVA, kept declared so the CMulti dispatch compiles.
-    i32 Checksum(); // c0590 (== CGameSyncSig::ComputeSignature)
+    // Checksum @0xc0590: the game-state signature accumulator over the 4x15
+    // placed-grunt roster (defined in src/Gruntz/GameChecksum.cpp; ex the
+    // "CGameSyncSig" view). Step2437 is a per-frame poke with no bound RVA,
+    // kept declared so the CMulti dispatch compiles.
+    i32 Checksum(); // c0590
     void Step2437(); // per-frame poke (reloc-masked)
     // 0xbf1d0 (/GX): a CRC/sync-diagnostic dump - walk the level's 4x15 placed-grunt
     // roster (m_session->Mgr()->m_cmdGrid->m_grid) and report a per-grunt CRC line
