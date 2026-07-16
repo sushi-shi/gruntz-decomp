@@ -137,8 +137,11 @@ public:
     i32 m_1c;                      // +0x1c  secondary cmd / sub-index (role dual; unproven)
     i32 m_flags;                   // +0x20  flags: bit0 -> disabled state, 0x10000 -> loop
     i32 m_state;                   // +0x24  visual state: 1 normal, 2 selected, 3 disabled
-    void* m_sprite;                // +0x28  resolved sprite/placer (catalog Lookup result)
-    void* m_listPos;               // +0x2c  cached POSITION in the page's item list
+    CObject* m_sprite;             // +0x28  resolved sprite/placer: the CMapStringToOb
+                                   //        catalog Lookup value (a CObject*; consumers
+                                   //        downcast to CMenuSprite / the placer page)
+    POSITION m_listPos;            // +0x2c  cached POSITION in the page's item list
+                                   //        (= CMenuPage::m_items.AddTail return)
     i32 m_cmdParam;                // +0x30  WM_COMMAND lParam (NotifyCmd)
     i32 m_hitLeft;                 // +0x34  placed hit rect left (sentinel 0xeeeeeeee = unplaced)
     i32 m_hitTop;                  // +0x38  placed hit rect top
