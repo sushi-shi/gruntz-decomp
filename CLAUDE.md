@@ -88,6 +88,10 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   builds, or skip verification.
 - **Every body lives in its real owner TU** — owner proven by xref / vtable-slot, never by RVA
   proximity (`docs/tu-partition-brief.md`; a contribution must be contiguous).
+- **NEVER `gruntz clean` in a `.claude/worktrees/` pool worktree.** Ghidra's `ProjectLocator`
+  rejects path elements starting with `.`, so `init` can never rebuild the DB there — the pool
+  runs on `build/ghidra-enrich/exports/{functions,symbols}.csv` **seeded from main**, and `clean`
+  deletes them unrecoverably. (Delink needs only those CSVs; re-seed from main to recover.)
 - **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over
   `docs/reference/gooroosgruntz/` (mirrored community docs); the +0x114 union is
   Score/Points/Powerup/Damage/Smarts/Health.
