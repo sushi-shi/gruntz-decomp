@@ -69,7 +69,6 @@ extern "C" CGruntzMgr* g_gameReg;
 // The group sentinel this TU serializes with its group/selection state (Save writes
 // it between m_groupFlag and m_pendingFxKind; Load reads it back); BattlezMapConfig
 // feeds it to ProbeCell and PlayerCommandStep passes it down the command chain.
-// (`g_renderCtx` was a second, weaker-evidenced alias of this same cell - folded.)
 // Owner-TU definition (this TU is its reader AND writer through the save/load pair).
 DATA(0x00244ca4)
 i32 g_groupSentinel;
@@ -660,8 +659,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         } else if (hit == cell) {
             // toggle off the pending-fx and rewind
             m_pendingFxKind = 0;
-            ((CPlay*)g_gameReg->m_curState)
-                ->LoadCursorSprites(0, 0);
+            ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
             CGameObject* o = hit->m_10;
             this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
             return 1;
@@ -819,7 +817,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         ((CPlay*)lvl)->ResetGoals(hy, hx);
     }
     // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
-    // receiver is level->m_mainPlane - the ex-CTmGridHolder::Snap fake name)
+    // receiver is level->m_mainPlane)
     CGameLevel* plane = g_gameReg->m_world->m_level;
     i32 outR = col;
     i32 outC = row;
@@ -1366,8 +1364,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
 // +0x2c); see <Gruntz/SerialArchive.h> (pulled via TriggerMgr.h).
 // The map-resolved placed object is the canonical CGameObject (<Gruntz/UserLogic.h>): its
 // slot-8 virtual GetTypeId (+0x20) yields the serialize type-id, its +0x7c AnimWorkerObj holds
-// the bound logic (aux->m_logic @+0x18). (Former CTmSerMapObj/CTmSerMapObjVtbl PMF-vtable +
-// CTmSerAux views folded onto the real class + real virtual.)
+// the bound logic (aux->m_logic @+0x18).
 // The serialize key->object map is the CDDrawChildGroup's embedded m_map48 (@factory+0x48,
 // see <Gruntz/SpriteFactory.h>); reached through the typed member, no this+offset cast.
 // The manager's embedded list nodes (base list @this+0, record @+0x240, the ten
@@ -1675,8 +1672,7 @@ void FormatStr(CString* out, const char* fmt, ...);
 // CGameLevel's m_imageSets CObArray data ptr (+0x48 array -> +0x4c m_pData of
 // CTileImageSet*), its grid desc @+0x5c is m_mainPlane - and BrickzButeObj ("8 filler
 // slots then GetTypeCode @+0x20") is CTileImageSet (GetCollisionAt @+0x20) itself.
-// FOLDED (Fable lane 2026-07-13): the Brickz* family (Brickz.h / MapMgr.h::m_attrMgr /
-// the rock-break sites below use the real classes.
+// The rock-break sites below use the real Brickz* classes (Brickz.h, MapMgr.h::m_attrMgr).
 
 extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 
@@ -1716,7 +1712,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
-            CGameLevel* board = m_world->m_level; // the holder's CGameLevel (ex BrickzAttrMgr)
+            CGameLevel* board = m_world->m_level; // the holder's CGameLevel
             CLevelPlane* grid = board->m_mainPlane;
             if (tx >= grid->m_wrapW || ty >= grid->m_wrapH) {
                 continue;
@@ -1848,8 +1844,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
     i32 yLo = y - r - 7;
     i32 xHi = x + r + 7;
     i32 yHi = y + r + 7;
-    i32 rangeA = m_world->m_level->m_mainPlane->m_gridW - 2; // plane grid dims (ex the
-    i32 rangeB = m_world->m_level->m_mainPlane->m_gridH - 2; //  CTileReg->CTileRegMid chain)
+    i32 rangeA = m_world->m_level->m_mainPlane->m_gridW - 2; // plane grid dims
+    i32 rangeB = m_world->m_level->m_mainPlane->m_gridH - 2;
 
     CGrunt** p = m_grid; // the flat 4x15 board
     for (i32 i = 0; i < 4; i++) {
@@ -2077,7 +2073,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
 // The sprite's bound logic (sprite desc +0x18) is the canonical CUserLogic
 // (<Gruntz/UserLogic.h>): its multi-arg Place driver (@0x4c1c4) and target-cursor Arm
-// (@0x4e517) are reached through the base pointer (former CTmUserLogic view folded away).
+// (@0x4e517) are reached through the base pointer.
 
 // 0x7c110: SpawnGrunt(col, row, a18, a1c) - find the first free column of grid row `row`;
 // if full ret 0. Snap the source cell[col]'s display pos to a tile, run a prep self-call,
@@ -2601,7 +2597,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
             ->ResetGoals(
                 minX + (maxX - minX) / 2,
                 minY + (maxY - minY) / 2
-            ); // 0xd5f00 (was Center)
+            ); // 0xd5f00
         m_selSentinel = -1;
         return 1;
     }
@@ -2612,7 +2608,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 // ===========================================================================
 // CTriggerMgr::CenterOnGroup (0x7cf40) - merged from GroupOps.cpp per dossier
 // 10b (directly abuts ?CenterSelectionGroup@CTriggerMgr @0x7cd40, same
-// (2026-07-14) - the whole donor family was CTriggerMgr + its canonicals:
+// The whole donor family was CTriggerMgr + its canonicals:
 //   CGroupSel     -> CTriggerMgr: +0x1c grid == m_grid, +0x230/0x234/0x238 ==
 //        m_armed/m_recX/m_recY, +0x244/+0x24c == m_recList's head/count (the MFC
 //        CPtrList public inlines). Its `TrySelect` (ILT 0x33aa) is RecordListHas

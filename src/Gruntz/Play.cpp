@@ -68,15 +68,14 @@
 #include <Gruntz/Play.h>
 #include <Rez/FrameClock.h> // g_lastNow / g_frameTicks (frame-clock band)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/AreaMgr.h> // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode, waveP)
+#include <Gruntz/AreaMgr.h> // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode)
 // The GRUNTZ_/GAME image worker registry (owner+0x10): 18 vtable slots then the
 // virtual LoadTree at +0x48; plus the non-virtual key probe + direct-load (same shape
 // as <DDrawMgr/DDrawAssetRegistryViews.h>, augmented here with the RVA-tagged names
 // this TU's other callers use - HasKeyEqual_155550 / RemoveKeysEqual_155360 /
 // AnyValueMatches_155630 - since Play already carries a local view of it).
 // The image worker registry (holder m_10), the anim registry leaf (holder m_2c)
-// and the worker list are the CANONICAL DDrawMgr classes - the former .cpp-local
-// CDDrawWorkerRegistry / CDDrawSubMgrLeaf / CDDrawWorkerList
+// and the worker list are the CANONICAL DDrawMgr classes.
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry (InstallTree slot 18, +0x48)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (0x152xxx leaf API incl. the ANI set)
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (renderer B: PruneWorkers/ClearWorkers)
@@ -94,7 +93,7 @@
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GruntzCmdMgr.h> // CGruntzCmdMgr::Spawn (HandleMousePress, waveP)
+#include <Gruntz/GruntzCmdMgr.h> // CGruntzCmdMgr::Spawn (HandleMousePress)
 #include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed (HandleMousePress tab cue)
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -117,17 +116,17 @@
 #include <DDrawMgr/DDSurface.h>          // the real CDDSurface (render-flip surface: Fill/Restore)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (m_beginMarker: Serialize/FilterList2)
 #include <Gruntz/LevelSync.h>            // CLevelSync (the +0x2dc guts child-sync @0x1084d0)
-#include <Gruntz/UserLogic.h> // CGameObject/AnimWorkerObj
+#include <Gruntz/UserLogic.h>            // CGameObject/AnimWorkerObj
 
 // The zoned sound-bank manager (CGruntzMgr::m_sound); RegionEnter/RegionLeave pause +
 // resume the currently-playing zoned sound via its real (named) methods.
 #include <Dsndmgr/GruntzSoundZ.h>
-#include <Gruntz/Multi.h>       // CMulti::AckJoinFailure
-#include <Gruntz/CBrickz.h>     // CBrickz::LoadAttributes
-#include <Gruntz/Brickz.h>      // CBrickzGrid::UpdateDiagonals
-#include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse
+#include <Gruntz/Multi.h>             // CMulti::AckJoinFailure
+#include <Gruntz/CBrickz.h>           // CBrickz::LoadAttributes
+#include <Gruntz/Brickz.h>            // CBrickzGrid::UpdateDiagonals
+#include <Gruntz/ParseSource.h>       // CParseSource::BeginParse/EndParse
 #include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize_1633e0 (the plane/grid-owner)
-#include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2::ReadAll
+#include <DinMgr2/DirectInputMgr2.h>  // DirectInputMgr2::ReadAll
 #include <Globals.h>
 
 // Placement new: the team-slot "reset" at 0x40a7 is retail RE-CONSTRUCTING a GruntzPlayer
@@ -185,8 +184,7 @@ extern "C" {
 // LayerBlitFrame(resMgr, frameImage, x, w, one, zero).
 class CImage;
 i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
-// The manager auto-scroll step (0xebd70, MgrAutoScroll.cpp; the former local
-// `ProfReport`/`EmRegWorldStep` duplicate decls of the same fn are gone).
+// The manager auto-scroll step (0xebd70, MgrAutoScroll.cpp).
 void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag); // 0x0ebd70
 
 // OnRegion3's scroll-region re-arm cue (CmdScrollApply.cpp @0x0ec1c0, cdecl 5-arg).
@@ -416,7 +414,7 @@ i32 CPlay::Render() {
         // =================================================================
         StepInputA();                    // cursor draw (BltFast)
         StepWorldB();                    // world/camera sub-step B
-        StepGridWalk((i32)g_frameDelta); // 0x2e2d  frame-grid advance (was fake "PreStep")
+        StepGridWalk((i32)g_frameDelta); // 0x2e2d  frame-grid advance
 
         g_killCueClock = g_lastNow; // mirror the draw clock
         g_engineFrameDelta = g_frameDelta;
@@ -463,8 +461,8 @@ i32 CPlay::Render() {
         m_frameMarker->Draw(0, (i32)g_frameDelta);          // 0x27a2  CTimer::Draw
         m_c->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
         UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0x2356
-        winapi_0d0b30_CopyRect((i32)m_c->m_drawTarget->m_backPair); // 0x1519 (was fake "PostStep")
-        return 1;                                                   // -> draw tail
+        winapi_0d0b30_CopyRect((i32)m_c->m_drawTarget->m_backPair);           // 0x1519
+        return 1;                                                             // -> draw tail
     }
 
     // m_inGame == 0
@@ -570,9 +568,8 @@ i32 CPlay::Render() {
 
         // On-screen overlay/banner: the retail block (0xc91b7..0xc9259) is the same
         // shape as CMulti::PumpB's - place the 120x120 overlay rect by HUD position,
-        // decay-tick then blit+border via the draw page. (The ex Overlay1/Overlay2
-        // phantom CPlay wrappers dispatched these two calls on the WRONG receiver;
-        // retail runs both on m_lightFx: thunks 0x1fa0=Resize / 0x14dd=ComputeRect.)
+        // decay-tick then blit+border via the draw page. Both calls run on
+        // m_lightFx: thunks 0x1fa0=Resize / 0x14dd=ComputeRect.
         if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
             RECT rc;
             if (m_guts->m_position == 1) {
@@ -820,10 +817,8 @@ DATA(0x0021139c)
 CAreaMgr* g_pAreaMgr = &g_areaMgr;
 
 // ---------------------------------------------------------------------------
-// RESIDUAL carcass (9 classes already folded onto their real canonical headers:
-// CGruntzMgr/CGruntSpawnConfig/CButeMgr/CAreaMgr/CSymTab/CSymParser/CSaveGame/
-// CFontConfig/CWorldSoundSet). The methods below are the DEFERRED remainder,
-// grouped by why they aren't folded yet (all reloc-masked, so byte-neutral):
+// The methods below are the DEFERRED remainder, grouped by why they aren't
+// folded onto their canonical headers yet (all reloc-masked, so byte-neutral):
 //   (a) cross-module canonical header + retype (SoundStream Dsndmgr[Teardown/grid];
 //       CGruntzSoundZ Dsndmgr[Reset0]; CGruntzCmdMgr Net[ClearList]; DirectInputMgr2
 //       StateMgrBZ[HideMenu]; CDDSurface ResMgr[ShadeRect]; CStatusBarMgr SBI_Image
@@ -837,20 +832,6 @@ CAreaMgr* g_pAreaMgr = &g_areaMgr;
 //   (d) @identity-TODO - genuinely unrecovered (no xref/header): ObListInit 0x1b48a6,
 //       ButeStore 0x1b5485, GetBool 0x1bedde, CDDrawWorkerHost::GetSize 0x1633e0.
 // ---------------------------------------------------------------------------
-// (`struct Eng` is GONE - it was a CONFLATION, not a class: 21 fabricated methods
-// standing in for 21 functions on ~15 DIFFERENT real classes, every one of which was
-// already reconstructed and RVA-bound elsewhere in the tree. Every call went through
-// `E(p)` - a cast of some unrelated pointer to the fake type - so all 21 symbols were
-// PHANTOM (?Xxx@Eng@@...): referenced by `play`, owned by a class with no retail
-// address, and therefore unlinkable. Worse, ONE fake name covered TWO different real
-// functions (Eng::Teardown was used both for SoundStream::Stop @0x137a80 and for
-// CMulti::AckJoinFailure @0xbc420), so even a hypothetical binding could only ever have
-// been right for one of them. Each call site now names its real class + real method, so
-// the rel32 binds to the symbol retail actually calls. Resolved by chasing each ILT
-// thunk to its body and reading the name off symbol_names (gruntz.analysis.vtable_owner
-// / sema disasm). The two still-unresolved ones are marked below.)
-
-// ---------------------------------------------------------------------------
 // Genuine __cdecl engine helpers (reloc-masked rel32).
 // ---------------------------------------------------------------------------
 void Cmd_ResetScroll();            // 0x2bd0  YAXXZ
@@ -859,10 +840,6 @@ i32 ValidateMainBlock(void* cstr); // 0x2c8e  static WwdFile (CString byval)
 void ActiveWait(i32 ms);           // 0x13dfe0 busy-wait
 void* RezAlloc(i32 sz);            // 0x1b9b46 operator new
 void RezFree(void* p);             // 0x1b9b82 operator delete
-
-// (The PTR offset-cast macro is GONE, 2026-07-16: its 4 residual chains are typed -
-// CSndHost::m_2c (the held SoundStream), CGameWnd::m_hwnd, CTriggerMgr::m_byteArr's
-// inline GetSize(), and CDDrawSubMgrPages::m_10->m_surface (the CDDSurface ShadeRect target).)
 
 // ---------------------------------------------------------------------------
 // The PLAY-state level loader (`this`). Its own init-chain steps are __thiscall
@@ -874,9 +851,8 @@ void RezFree(void* p);             // 0x1b9b82 operator delete
 // modeled on this thin CPlay-derived facet (its two big methods aren't yet in the
 // canonical Play.h owned by another unit); the init-chain steps are declared here
 // as reloc-masked leaves (real CPlay/CLevelValidator targets in comments).
-// (The `CPlayLevelLoad : CPlay` facet class is GONE - `this` IS the canonical
-// CPlay, and every one of its ~20 fabricated leaf decls resolved (thunk-decode,
-// 2026-07-13) to a CPlay/CState/CGruntzMgr method DEFINED in this tree:
+// The init-chain leaf decls resolve to these CPlay/CState/CGruntzMgr methods
+// DEFINED in this tree (thunk offset == real method):
 //   BuildHelpReveal(0x1019)==CPlay::BuildHelpReveal (the loading-bar tick),
 //   RegisterInputBindings(0x3a71)==CPlay's own, SoundStep(0x1843)==CState::
 //   RetireScene, InfoTextStep(0x14b5)==CPlay::DrawLevelInfoText, ZeroBlock
@@ -1154,7 +1130,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     LoadLoadingBarSprite(); // 0x32d3 -> 0xd7440
     BuildHelpReveal(0);
-    FreeListTeardown(); // vtable +0x84 (CPlay slot 33; ex the "Vslot21" placeholder)
+    FreeListTeardown(); // vtable +0x84 (CPlay slot 33)
     if (savedThis != 0) {
         ((CMulti*)savedThis)->AckJoinFailure(); // AckJoinFailure placeholder (0x35e4 on saved obj)
     }
@@ -1320,7 +1296,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             ctx = 0;
         }
         self->m_lightFx = ctx;
-        if (!ctx->Init(self->m_4, 0xfa)) { // m_4 IS the CGruntzMgr (ex the LfxMgr view)
+        if (!ctx->Init(self->m_4, 0xfa)) { // m_4 IS the CGruntzMgr
             goto fail0;
         }
     }
@@ -1652,7 +1628,7 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
 // whose collision-category word (CGameObject +0xe8) equals `category`. Retail lea's
 // the embedded CObList (m_c->m_childGroup+0x10, the real m_list member) behind a vacuous
 // null-guard, then walks head (+4) / next (+0) / object (+8) - the typed
-// &m_list + GetHeadPosition() spelling (ex a raw `(char*)+0x10` offset walk).
+// &m_list + GetHeadPosition() spelling.
 RVA(0x000d0050, 0x3a)
 i32 CPlay::CountObjectsByCategory(i32 category) {
     CObList* container = &m_c->m_childGroup->m_list;
@@ -1713,8 +1689,7 @@ void CPlay::PostSetup(void* dc) {
 // canonical, included above. NB the same 0x1084d0 runs with ecx == m_guts (a
 // CStatusBarMgr, its 0x630 alloc proven) -> CLevelSync is very likely ANOTHER fake
 // name for CStatusBarMgr; the ((CLevelSync*)m_guts) cast below is the honest
-// symptom of that pending reconciliation (LevelSync.cpp was just un-merged by a
-// parallel lane - not folded here).
+// symptom of that pending reconciliation.
 // The +0x2e4 begin-marker child-sync is the canonical CTileTriggerContainer
 // (<Gruntz/TileTriggerContainer.h>, included above); m_beginMarker is typed so the
 // calls below are cast-free.
@@ -2289,9 +2264,9 @@ i32 CPlay::ClampViewport(i32 inset) {
         return 0;
     }
 
-    m_c->m_level->BuildAllPlanes((LevelCoordRect*)&r); // 0x15da80 (was the fake "SetClipRect")
+    m_c->m_level->BuildAllPlanes((LevelCoordRect*)&r); // 0x15da80
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-    m_guts->Deactivate(); // 0x125d -> CStatusBarMgr::Deactivate @0x100cb0 (was "ClampApply")
+    m_guts->Deactivate(); // 0x125d -> CStatusBarMgr::Deactivate @0x100cb0
     m_4->RecomputeViewScale();
     return 1;
 }
@@ -2580,7 +2555,7 @@ void CPlay::StepScroll() {
 }
 
 // ===========================================================================
-// CPlay::SetCursorFrame (0x0d1b30; ex "CGameModeObj" view, folded wave3-J) -
+// CPlay::SetCursorFrame (0x0d1b30) -
 // cache the cursor sprite set for `item` and latch it as the active cursor
 // frame (m_cursorFrame). Returns 1.
 RVA(0x000d1b30, 0x20)
@@ -2742,8 +2717,7 @@ void CPlay::DrawWorldFrame() {
         (i32)g_frameDelta
     ); // 0x3017 -> 0x6eb80 per-frame grid step
     if (g_gameReg->m_134 == 3) {
-        // 0x933e0 == CGruntzMgr::AdvanceOptionsCycle (rel32 via ILT 0x2d33; was the
-        // `PerFrameCue` phantom - same object, RTTI-true name).
+        // 0x933e0 == CGruntzMgr::AdvanceOptionsCycle (rel32 via ILT 0x2d33).
         ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle();
     }
     m_guts->LoadDestructButtonSprite((i32)g_frameDelta); // guts step @0xffb20
@@ -2781,11 +2755,8 @@ i32 CPlay::DrawWorldFrames() {
             i32 dt = (i == last && rem != 0) ? rem : FIXED_SUBSTEP_MS;
             accum += dt;
             now += dt;
-            m_4->SetGameClock(
-                now,
-                dt,
-                accum
-            ); // 0x3404 -> @0x8f7b0 (retail ecx=m_4)
+            m_4->SetGameClock(now, dt,
+                              accum); // 0x3404 -> @0x8f7b0 (retail ecx=m_4)
             if (i > 0 && i < last) {
                 if (m_c->m_level->m_mainPlane != 0) {
                     m_c->m_level->m_mainPlane->CenterScrollB();
@@ -2798,7 +2769,7 @@ i32 CPlay::DrawWorldFrames() {
             m_c->m_childGroup->TickKillCues_159a70(0);
             m_4->m_cmdGrid->LoadTeleporterGooConfig((i32)g_frameDelta);
             if (g_gameReg->m_134 == 3) {
-                ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle(); // 0x933e0 (was PerFrameCue)
+                ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle(); // 0x933e0
             }
             m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
             i++;
@@ -3317,7 +3288,7 @@ i32 CPlay::DrawLevelInfoText() {
 // threads the restart `edi` flag through the block advance in a way the C source
 // can't steer (zero-register-pinning.md). Deferred to the final sweep.
 //
-// CPlay::ClearPlacedObjects (0x0da030; ex "CGameModeObj" view, folded wave3-J) -
+// CPlay::ClearPlacedObjects (0x0da030) -
 // sweep the 4 placed-object arrays (m_3a4); for each still-occupied grid cell
 // whose map entry is gone (or not type 0x14), clear the cell, remove the object
 // from its array (RemoveAt on the ARRAY base - retail lea ecx,[this+idx*0x14+
@@ -3387,7 +3358,7 @@ i32 CPlay::ClearPlacedObjects() {
 }
 
 // ===========================================================================
-// CPlay::FlushPendingOps (0x0da2d0; ex "CGameModeObj" view, folded wave3-J) - if
+// CPlay::FlushPendingOps (0x0da2d0) - if
 // the highlight-busy gate (m_4f0) is clear, flush the two deferred guts ops gated
 // by m_dragInhibit1/m_dragInhibit2 (each running a guts step + a cursor-frame
 // reset), then clear the trigger grid's pending overlay-fx kind and reset the
@@ -3844,7 +3815,7 @@ i32 ChannelSlots_Get(i32 i) {
 
 // ===========================================================================
 // GruntzPlayer::Deactivate (0x0db2f0; ex the "Cdb2f0::Finalize" orphan view,
-// folded wave3-J - offsets m_014/m_020/m_038 + the CBattlezMapConfig::Clear_02ade0
+// offsets m_014/m_020/m_038 + the CBattlezMapConfig::Clear_02ade0
 // call pin it to this class). If the slot is active (m_020), clear the embedded
 // board bundle (unless m_014 is set) and deactivate. Returns 1/0.
 RVA(0x000db2f0, 0x2b)
@@ -4580,7 +4551,7 @@ drag_path: {
         FlushPendingOps();
         return m_guts->UpdateStatusBarTabHighlight(a, xr, y);
     }
-    if (m_hitTest->HitTest(xr, y)) { // via ILT 0x43e0 (ex the thunk-alias dup decl "HitTest43e0")
+    if (m_hitTest->HitTest(xr, y)) { // via ILT 0x43e0
         return 1;
     }
 }
@@ -4777,10 +4748,10 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
         m_tileClickY = snapY;
         CTriggerMgr* w = m_4->m_cmdGrid;
         if (w->m_overlay != 0 && w->m_overlay->m_active != 0) {
-            w->OverlayTick(); // 0x1514 -> @0x78a30 (was "CancelMarker")
+            w->OverlayTick(); // 0x1514 -> @0x78a30
             return 1;
         }
-        w->ResetGroup(snapX, snapY, rawX, rawY, 1, 0, 1); // 0x3044 -> @0x79520 (was "PlaceMarker")
+        w->ResetGroup(snapX, snapY, rawX, rawY, 1, 0, 1); // 0x3044 -> @0x79520
     }
     return 1;
 }
@@ -4934,7 +4905,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
 }
 
 // ===========================================================================
-// CPlay::ReleaseLevelOverlay (0x0d6560; ex "CGameModeObj" view, folded wave3-J) -
+// CPlay::ReleaseLevelOverlay (0x0d6560) -
 // if the overlay is live (m_overlayDrag), exit the guts overlay mode, clear the
 // flag, and (unless multiplayer, g_gameReg->m_134 == 2) publish the saved level
 // clock (m_savedClock) back to the running game clock. Returns 1. The single
@@ -5031,7 +5002,7 @@ void CPlay::Vslot26() {
 // (m_4->m_54/m_60), then PostMessageA WM_COMMAND 0x8023. Otherwise re-post 0x8023 while
 // the m_1bc gate is set, else advance via the manager (m_4->Post, level index + 1). The
 // PostMessageA calls go through the cached ::PostMessageA fn-ptr (bare 0x6c44c8, no
-// import symbol). Re-homed from the ApiCaller stubs (was Dispatcher_0cfbd0::Dispatch).
+// import symbol).
 // @early-stop
 // regalloc-rotation wall (98.4%): logic, instruction selection, hop counts and
 // order are byte-identical (llvm-objdump -dr / sema disasm --diff). The only
@@ -6600,7 +6571,7 @@ void CPlay::CPlayDtorBody() {
         ::operator delete(m_lightFx);
         m_lightFx = 0;
     }
-    OnExit(); // slot 32 (+0x80) - the real CPlay virtual (ex the "Vslot20" placeholder)
+    OnExit(); // slot 32 (+0x80) - the real CPlay virtual
     if (m_4) {
         m_4->m_128 = 0;
         m_4->m_strWorldFile.Empty(); // 0x1b9c69 CString::Empty (world-file name clear)
@@ -6926,7 +6897,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
     if (g_gameReg->m_134 != 1) {
         for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {
             if (loaded[id] == 0) {
-                BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                BuildHelpReveal(0);
                 loaded[id] = 1;
             }
             if (!BuildGruntTypeNameTable(id, 1, 0, ctx)) {
@@ -6937,14 +6908,14 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             return 0;
         }
         if (loaded[0x21] == 0) {
-            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+            BuildHelpReveal(0);
             loaded[0x21] = 1;
         }
         if (!BuildGruntTypeNameTable(GRUNT_TYPE_REAPER, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x22] == 0) {
-            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+            BuildHelpReveal(0);
             loaded[0x22] = 1;
         }
         CString s("WARLORDZ_NAPOLEAN");
@@ -6952,7 +6923,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             return 0;
         }
         if (loaded[0x23] == 0) {
-            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+            BuildHelpReveal(0);
             loaded[0x23] = 1;
         }
         s = "WARLORDZ_VIKING";
@@ -6960,7 +6931,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             return 0;
         }
         if (loaded[0x24] == 0) {
-            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+            BuildHelpReveal(0);
             loaded[0x24] = 1;
         }
         s = "WARLORDZ_PATTON";
@@ -6968,7 +6939,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             return 0;
         }
         if (loaded[0x25] == 0) {
-            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+            BuildHelpReveal(0);
             loaded[0x25] = 1;
         }
         return 1;
@@ -6991,7 +6962,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[v] = 1;
                     }
                 }
@@ -7001,7 +6972,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[v] = 1;
                     }
                 }
@@ -7011,7 +6982,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[1] == 0) {
-                            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                            BuildHelpReveal(0);
                             loaded[1] = 1;
                         }
                         break;
@@ -7020,7 +6991,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[3] == 0) {
-                            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                            BuildHelpReveal(0);
                             loaded[3] = 1;
                         }
                         break;
@@ -7029,7 +7000,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[5] == 0) {
-                            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                            BuildHelpReveal(0);
                             loaded[5] = 1;
                         }
                         break;
@@ -7038,7 +7009,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[7] == 0) {
-                            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                            BuildHelpReveal(0);
                             loaded[7] = 1;
                         }
                         break;
@@ -7047,7 +7018,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[0xd] == 0) {
-                            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                            BuildHelpReveal(0);
                             loaded[0xd] = 1;
                         }
                         break;
@@ -7056,7 +7027,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[0x11] == 0) {
-                            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                            BuildHelpReveal(0);
                             loaded[0x11] = 1;
                         }
                         break;
@@ -7065,7 +7036,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[0x13] == 0) {
-                            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                            BuildHelpReveal(0);
                             loaded[0x13] = 1;
                         }
                         break;
@@ -7074,7 +7045,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                             return 0;
                         }
                         if (loaded[0x1e] == 0) {
-                            BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                            BuildHelpReveal(0);
                             loaded[0x1e] = 1;
                         }
                         break;
@@ -7096,7 +7067,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->m_124] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[obj->m_124] = 1;
                     }
                 } else if (d == GRUNT_TYPE_HAREKRISHNA) {
@@ -7104,7 +7075,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[0x21] = 1;
                     }
                 } else if (d == GRUNT_TYPE_REAPER) {
@@ -7112,7 +7083,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[0x22] = 1;
                     }
                 } else if (d == 0x55 || d == 0x32) {
@@ -7120,7 +7091,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->m_118] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[obj->m_118] = 1;
                     }
                 }
@@ -7141,7 +7112,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->m_11c] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[obj->m_11c] = 1;
                     }
                 } else if (obj->m_124 == GRUNT_TYPE_HAREKRISHNA) {
@@ -7149,7 +7120,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[0x21] = 1;
                     }
                 } else if (obj->m_124 == GRUNT_TYPE_REAPER) {
@@ -7157,7 +7128,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[0x22] = 1;
                     }
                 } else if (e == 0x55 || e == 0x32) {
@@ -7165,7 +7136,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         return 0;
                     }
                     if (loaded[obj->m_118] == 0) {
-                        BuildHelpReveal(0); // (was "WarlordLoadTick" - same 0x1019 thunk)
+                        BuildHelpReveal(0);
                         loaded[obj->m_118] = 1;
                     }
                 }
