@@ -9,12 +9,20 @@
 // IDENTITY recovered by string-xref ("Gruntz.REZ", "%s\\%s", the two MessageBox
 // prompts) + the IsGruntzCDInAnyDrive / FileExists engine helpers. Only offsets /
 // code bytes are load-bearing; modeled with real <Mfc.h> CString so cl emits the
-// same ctors/dtors + the AfxGetModuleState->app->BeginWaitCursor/EndWaitCursor
-// frame (afxwin.h's CWinApp won't parse under the label-pass clang, so the app is
-// reached through AfxGetModuleState()->m_pCurrentWinApp and the wait-cursor pair
-// is modeled as two __thiscall slots).
+// same ctors/dtors + the real MFC CWaitCursor scope guard: its ctor/dtor are
+// AfxGetApp()->BeginWaitCursor()/EndWaitCursor() (afxwin2.inl), i.e. exactly
+// AfxGetModuleState()->m_pCurrentWinApp->Begin/EndWaitCursor - byte-identical to the
+// former hand-modeled WaitApp/WaitScope views, now dissolved.
 
 #include <Mfc.h>
+// Real MFC CWinApp / CWaitCursor (BeginWaitCursor @0x1beafb). afxwin*.inl is skipped
+// for the clang label step only (implicit-int CMenu::op==); wine cl keeps the inlines
+// so `CWaitCursor wait;` inlines BeginWaitCursor exactly as retail does. See
+// docs/patterns/afxwin-clang-label-step-skip-inl.md.
+#ifdef __clang__
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h>
 #include <string.h> // inline strcpy intrinsic (/O2 /Oi)
 
 #include <rva.h>
@@ -36,25 +44,8 @@ extern "C" {
 extern "C" i32 IsGruntzCDInAnyDrive();    // 0x402540
 extern "C" i32 FileExists(const char* p); // 0x404282
 
-// The current app's wait-cursor slots (CCmdTarget::Begin/EndWaitCursor), reached
-// via AfxGetModuleState()->m_pCurrentWinApp.
-struct WaitApp {
-    void BeginWaitCursor(); // 0x1beafb
-    void EndWaitCursor();   // 0x1beb10
-};
-// A scoped hourglass: ctor begins the wait cursor, dtor ends it - the third
-// destructible local that (with the two CStrings) shapes the /GX unwind states.
-struct WaitScope {
-    WaitScope() {
-        ((WaitApp*)AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
-    }
-    ~WaitScope() {
-        ((WaitApp*)AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
-    }
-};
-
 // @early-stop
-// ~98%: body byte-exact incl. the /GX frame, both CString temps + the WaitScope
+// ~98%: body byte-exact incl. the /GX frame, both CString temps + the CWaitCursor
 // dtor states. Residual is the return/EH-cleanup tail-merge wall
 // (docs/patterns/identical-return-epilogue-tailmerge.md): retail emits the
 // EndWaitCursor dtor inline at each loop break AND `mov eax,1` inline at the early
@@ -90,7 +81,7 @@ int StartUpPrompt(HWND hWnd) {
                 return 0;
             }
             {
-                WaitScope wait;
+                CWaitCursor wait;
                 if (IsGruntzCDInAnyDrive()) {
                     break;
                 }
@@ -115,5 +106,3 @@ int StartUpPrompt(HWND hWnd) {
     }
     return 0;
 }
-SIZE_UNKNOWN(WaitApp);
-SIZE_UNKNOWN(WaitScope);
