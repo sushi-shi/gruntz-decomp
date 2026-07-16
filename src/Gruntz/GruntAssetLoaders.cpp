@@ -108,7 +108,7 @@ enum GruntDeathType {
 
 // Resolve the active-anim descriptor's first-element frame number.
 #define DEATH_FRAME()                                                                              \
-    (m_154->m_1b4->m_records.m_nSize > 0 ? ((i32*)*m_154->m_1b4->m_records.m_pData)[0x14 / 4]      \
+    (m_154->m_1a0.m_14->m_records.m_nSize > 0 ? ((i32*)*m_154->m_1a0.m_14->m_records.m_pData)[0x14 / 4]      \
                                          : ((i32*)0)[0x14 / 4])
 
 // Fire the on-screen death cue (CueA) when the grunt point is visible.
@@ -208,12 +208,12 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     switch (deathType) {
         case DEATH_SQUASH: // GRUNTZ_DEATHZ_SQUASH
             if (m_entranceReason == 1) {
-                m_prevEntranceDesc = m_154->m_1b4;
+                m_prevEntranceDesc = m_154->m_1a0.m_14;
                 m_154->ApplyGeometryDirect(m_poseDeath, 0);
                 goto pathA;
             }
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SQUASH);
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_SQUASH, DEATH_FRAME());
             DEATH_CUE(0x35b);
@@ -226,7 +226,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_SINK: // GRUNTZ_DEATHZ_SINK
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SINK);
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
@@ -236,7 +236,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_HOLE: // GRUNTZ_DEATHZ_HOLE
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_HOLE);
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_HOLE, DEATH_FRAME());
             DEATH_CUE(0x357);
@@ -244,7 +244,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_SHATTER: // GRUNTZ_DEATHZ_SHATTER (apply FREEZE)
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SHATTER);
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_FREEZE, DEATH_FRAME());
             DEATH_CUE(0x354);
@@ -252,7 +252,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_BURN: // GRUNTZ_DEATHZ_BURN
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_BURN);
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_BURN, DEATH_FRAME());
             DEATH_CUE(0x352);
@@ -262,7 +262,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_10->m_screenX = (m_10->m_screenX & ~0x1f) + 0x10;
             m_10->m_screenY = (m_10->m_screenY & ~0x1f) + 0x10;
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_QUICKFALL);
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_FALL, DEATH_FRAME());
             if (m_10->m_74 != -1) {
@@ -288,7 +288,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             } else {
                 m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_FALL);
             }
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
@@ -316,7 +316,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 CSprite* out = (CSprite*)out_ob;
                 m_poseDeath = (i32)out;
             }
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
@@ -330,7 +330,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_ELECTROCUTE, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
             DEATH_CUE(0x353);
@@ -343,7 +343,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_MELT, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_MELT, DEATH_FRAME());
             DEATH_CUE(0x359);
@@ -355,7 +355,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_KAROKE, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_KAROKE, DEATH_FRAME());
             DEATH_CUE(0x358);
@@ -364,16 +364,16 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_EXPLODE: { // GRUNTZ_DEATHZ_EXPLODE
             if (m_entranceReason == 1) {
-                m_prevEntranceDesc = m_154->m_1b4;
-                m_154->m_1a0.SetGeometry(m_poseDeath);
+                m_prevEntranceDesc = m_154->m_1a0.m_14;
+                m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseDeath);
                 goto pathA;
             }
             void* out_ob = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_EXPLODE, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = m_154->m_1b4;
-            m_154->m_1a0.SetGeometry(m_poseDeath);
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
+            m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseDeath);
             m_154->CacheFrame(s_DEATHZ_EXPLODE, DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
@@ -384,8 +384,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->m_c->m_2c->m_10map.Lookup(s_EXITZ_DRAIN, out_ob);
             CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = m_154->m_1b4;
-            m_154->m_1a0.SetGeometry(m_poseDeath);
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
+            m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseDeath);
             m_154->CacheFrame(s_dEXITZ, DEATH_FRAME());
             m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)g_buteTree.Find(s_dExitKeyB);
@@ -393,8 +393,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         }
 
         default:
-            m_prevEntranceDesc = m_154->m_1b4;
-            m_154->m_1a0.SetGeometry(m_poseDeath);
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
+            m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseDeath);
             m_154->CacheFirstFrame(*(char**)&m_44c);
             {
                 CGameRegistry* g = g_gameReg;

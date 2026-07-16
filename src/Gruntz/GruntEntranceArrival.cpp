@@ -350,10 +350,10 @@ void CGrunt::FinalizeStep(i32 arg) {
 // node (g_entranceAnimSrc.LookupAnimSet) into m_14->m_1c. __thiscall, ret 0.
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
-    m_prevEntranceDesc = m_154->m_1b4;
-    m_154->m_1a0.SetGeometry(m_poseAttackIdle);
+    m_prevEntranceDesc = m_154->m_1a0.m_14;
+    m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseAttackIdle);
 
-    CAniElement* desc = m_154->m_1b4;
+    CAniElement* desc = m_154->m_1a0.m_14;
     i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = elem[0x14 / 4];
 
@@ -504,10 +504,10 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     }
 
     CEntranceAnimPlayer* p = m_154;
-    m_prevEntranceDesc = p->m_1b4;
-    p->m_1a0.SetGeometry((&m_poseAttack1)[idx]);
+    m_prevEntranceDesc = p->m_1a0.m_14;
+    p->m_1a0.Setup_15c2d0((CAniElement*)(&m_poseAttack1)[idx]);
 
-    CAniElement* desc = m_154->m_1b4;
+    CAniElement* desc = m_154->m_1a0.m_14;
     i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = el[0x14 / 4];
 
@@ -540,10 +540,10 @@ i32 CGrunt::RearmAttackAnim2() {
     m_14->m_1c = (void*)g_buteTree.Find(s_codeF);
 
     CEntranceAnimPlayer* p = m_154;
-    m_prevEntranceDesc = p->m_1b4;
-    p->m_1a0.SetGeometry(m_poseAttack2);
+    m_prevEntranceDesc = p->m_1a0.m_14;
+    p->m_1a0.Setup_15c2d0((CAniElement*)m_poseAttack2);
 
-    CAniElement* desc = m_154->m_1b4;
+    CAniElement* desc = m_154->m_1a0.m_14;
     i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = el[0x14 / 4];
 
@@ -860,10 +860,10 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)g_buteTree.Find(s_codeP);
             i32 toyIdx = rand() % 2;
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect((&m_poseToy1)[toyIdx], 0);
 
-            CAniElement* desc = m_154->m_1b4;
+            CAniElement* desc = m_154->m_1a0.m_14;
             i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             i32 frame = el[0x14 / 4];
             char* buf = ((CString*)&m_448)->GetBuffer(0);
@@ -913,8 +913,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         }
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeL);
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseWalk);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
         GruntEntranceCell cell = m_entranceCell;
         i32 colv = cell.row + cell.col * 2;
         i32 basev = cell.col + colv;
@@ -961,12 +961,12 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         sel = (r >= m_toyBlendPct) ? 1 : 0;
     }
 
-    CAniElement* cur = m_154->m_1b4;
+    CAniElement* cur = m_154->m_1a0.m_14;
     i32 want = (&m_poseToy1)[sel];
     if ((i32)cur != want) {
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(want);
-        CAniElement* desc = m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)want);
+        CAniElement* desc = m_154->m_1a0.m_14;
         i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = el[0x14 / 4];
         char* buf = ((CString*)&m_448)->GetBuffer(0);
@@ -1054,9 +1054,9 @@ i32 CGrunt::StepEntranceRelatchA() {
             m_toyTimeSprite->m_flags |= 0x10000;
             m_toyTimeSprite = 0;
         }
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseToyBreak);
-        CAniElement* desc = m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseToyBreak);
+        CAniElement* desc = m_154->m_1a0.m_14;
         CAnimElem* elem = desc->m_records.m_nSize > 0 ? (CAnimElem*)*desc->m_records.m_pData : 0;
         i32 frame = elem->m_14;
         char* nm = ((CString*)&m_448)->GetBuffer(0);
@@ -1182,8 +1182,8 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
 
     if (notIdle && cycle == 0) {
         // Re-anchor the idle timer to a randomized IdleDelay window.
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseIdle[0]);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseIdle[0]);
         m_idleWindowLo = 0x3a98;
         m_idleWindowHi = 0;
         m_idleTimerLo = (i32)g_frameTime;
@@ -1196,15 +1196,15 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         applied = 1;
     } else if (m_poseIdle[1] == 0) {
         // Single geometry source: re-arm it (no flag set).
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseIdle[0]);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseIdle[0]);
     } else if (cycle == 0) {
         // Already on this source? nothing to do.
-        if ((void*)m_154->m_1b4 == (void*)m_poseIdle[0]) {
+        if ((void*)m_154->m_1a0.m_14 == (void*)m_poseIdle[0]) {
             goto latch;
         }
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseIdle[0]);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseIdle[0]);
         {
             i32 d = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530);
             applied = 1;
@@ -1249,8 +1249,8 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                 }
             }
         }
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseIdle[idx]);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseIdle[idx]);
         m_resetApplied = 1;
         applied = 1;
     }
@@ -1269,7 +1269,7 @@ latch:
     i32 col = m_entranceCell.col;
     i32 row = m_entranceCell.row;
     i32 reason = m_entranceCell.reason;
-    if ((void*)m_154->m_1b4 != (void*)m_poseIdle[0]) {
+    if ((void*)m_154->m_1a0.m_14 != (void*)m_poseIdle[0]) {
         switch (reason) {
             case 2:
             case 3:
@@ -1294,7 +1294,7 @@ latch:
 
     CString key = (const char*)&m_cells[3 * col + row].m_idle;
 
-    CAniElement* desc = m_154->m_1b4;
+    CAniElement* desc = m_154->m_1a0.m_14;
     i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     EntranceApplyFrame(key, elem[0x14 / 4]);
 }
@@ -1317,7 +1317,7 @@ latch:
 //     defender block (m_defenderX..m_arrivalRerollWindowHi, m_arrivalState/m_defenderState/
 //     m_defenderRadius/m_arrivalCol/m_arrivalRow, m_arrivalFlags |= 0x18040402),
 //     clear m_10's view-cull rect, run the arrival hook.
-//   * tail: if the entrance anim is done (m_154->m_1b4 != m_poseIdle[0]) run
+//   * tail: if the entrance anim is done (m_154->m_1a0.m_14 != m_poseIdle[0]) run
 //     ResetEntranceAnimation(0,0,0) on the lookup-miss flags; else, when the idle window has
 //     elapsed and the geometry source is ready, run ResetEntranceAnimation(0,1,1).
 RVA(0x000633e0, 0x2ca)
@@ -1389,8 +1389,8 @@ void CGrunt::ResolveEntranceArrival() {
     }
 
 tail:
-    if ((void*)m_154->m_1b4 != (void*)m_poseIdle[0]) {
-        if (m_154->m_1c8 == 0 && m_154->m_1c0 != 0) {
+    if ((void*)m_154->m_1a0.m_14 != (void*)m_poseIdle[0]) {
+        if (m_154->m_1a0.m_28 == 0 && m_154->m_1a0.m_20 != 0) {
             ResetEntranceAnimation(0, 0, 0);
         }
         return;
@@ -1466,8 +1466,8 @@ i32 CGrunt::StepEntranceReinit() {
     if (!(flag & 0x20000000)) {
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseWalk);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
     } else {
         // The grunt's own HUD point is unobstructed (the 0x80 walkable bit).
         i32 tx = m_10->m_screenX >> 5;
@@ -1484,8 +1484,8 @@ i32 CGrunt::StepEntranceReinit() {
         m_entranceActive = 1;
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseWalk);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
     }
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
@@ -1678,10 +1678,10 @@ void CGrunt::LoadVehicleGruntAnimations() {
             }
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
-            m_prevEntranceDesc = m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseToyBreak, 0);
 
-            CAniElement* desc = m_154->m_1b4;
+            CAniElement* desc = m_154->m_1a0.m_14;
             i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             char* buf = ((CString*)&m_448)->GetBuffer(0);
             m_154->CacheFrame(buf, elem[0x14 / 4]);
@@ -1834,7 +1834,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     }
 
     ((CEffect6b*)(&m_150))->Apply((i32)found, 0);
-    i32* elem = (i32*)m_154->m_1b4->AtChecked_06b270(0);
+    i32* elem = (i32*)m_154->m_1a0.m_14->AtChecked_06b270(0);
     i32 frame = elem[0x14 / 4];
     m_154->CacheFrame(s_GRUNTZ_EXITZ, frame);
     return 0;
@@ -1954,8 +1954,8 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             m_35c = 0;
             m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
-            m_prevEntranceDesc = m_154->m_1b4;
-            m_154->m_1a0.SetGeometry(m_poseWalk);
+            m_prevEntranceDesc = m_154->m_1a0.m_14;
+            m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
             GruntEntranceCell cell = m_entranceCell;
             i32 col = cell.row + cell.col * 2;
             i32 base = cell.col + col;
@@ -2068,11 +2068,11 @@ tail:
 
     m_combatActive = 0;
     i32 pose = (&m_poseStruck1)[a1];
-    m_prevEntranceDesc = m_154->m_1b4;
-    m_154->m_1a0.SetGeometry(pose);
+    m_prevEntranceDesc = m_154->m_1a0.m_14;
+    m_154->m_1a0.Setup_15c2d0((CAniElement*)pose);
     i32 frame;
     {
-        CAniElement* desc = m_154->m_1b4;
+        CAniElement* desc = m_154->m_1a0.m_14;
         i32* elem;
         if (desc->m_records.m_nSize > 0) {
             elem = (i32*)desc->m_records.m_pData[0];
@@ -2301,8 +2301,8 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         SetEntrancePos(1, 1);
     }
 
-    m_prevEntranceDesc = m_154->m_1b4;
-    m_154->m_1a0.SetGeometry((&m_poseItem)[poseIdx]);
+    m_prevEntranceDesc = m_154->m_1a0.m_14;
+    m_154->m_1a0.Setup_15c2d0((CAniElement*)(&m_poseItem)[poseIdx]);
 
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;

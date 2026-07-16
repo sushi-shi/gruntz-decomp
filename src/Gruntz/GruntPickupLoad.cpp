@@ -477,8 +477,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
-    m_prevEntranceDesc = m_154->m_1b4;
-    m_154->m_1a0.SetGeometry(m_pickupGeoSrc);
+    m_prevEntranceDesc = m_154->m_1a0.m_14;
+    m_154->m_1a0.Setup_15c2d0((CAniElement*)m_pickupGeoSrc);
     m_154->CacheFirstFrame("GRUNTZ_PICKUPS");
     return 1;
 }

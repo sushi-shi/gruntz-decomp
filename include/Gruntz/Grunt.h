@@ -262,64 +262,6 @@ public:
 // the viewport rect. External/no-body (reloc-masked).
 i32 CueVisible(i32 viewport, i32 x, i32 y);
 
-// ---------------------------------------------------------------------------
-// The entrance-animation sub-object @CGrunt+0x154: a per-grunt animation player.
-// BuildEntranceAnimation reaches a name->sprite-set lookup table through
-// player->m_c (a resource object) +0x2c +0x10 (the embedded map) and drives the
-// geometry sub-player @+0x1a0 with the resolved sprite. The map Lookup, the
-// geometry setter, and the frame helper are all external/no-body (reloc-masked).
-// ---------------------------------------------------------------------------
-struct CSprite; // opaque looked-up sprite
-
-// (The ex-`CMapStringToOb` view is DISSOLVED - the member is the real map. It is a
-// CMapStringToPtr: every retail Lookup on it calls 0x1b8438, the CMapStringToPtr band
-// (mfc_class arbitration; verified in 0x49c60 / 0x65e80 / 0x68880 disasm + Warlord's
-// FID note). The old CMapStringToOb typing bound the WRONG library body, 0x1b8008.)
-
-SIZE_UNKNOWN(CEntranceSpriteMgr);
-struct CEntranceSpriteMgr {
-    // 1-arg lookup returning the resolved sprite directly (the EXIT/RUN loaders
-    // use this form; the 2-arg m_10map.Lookup writes through an out-param instead).
-    // (Formerly reached by a per-TU CDDrawSubMgrLeaf facet cast; folded here.)
-    void* LookupValue_06b2a0(const char* key); // 0x6b2a0 (external/reloc-masked)
-
-    char m_pad0[0x10];
-    CMapStringToPtr m_10map; // +0x10 (Ptr band 0x1b8438 - see note above)
-};
-
-// The grunt's exit-animation holder at CGrunt+0x150 (a 4-byte member just before
-// the entrance player pointer). BuildGruntExitAnimation drives its Apply (0x6b2e0,
-// 2-arg __thiscall) with the resolved sprite. External/no-body (reloc-masked).
-SIZE_UNKNOWN(CEntranceResMgr);
-struct CEntranceResMgr {
-    char m_pad0[0x2c];
-    CEntranceSpriteMgr* m_2c; // +0x2c
-};
-
-// The active-anim descriptor the entrance player exposes (its first element's
-// +0x14 frame number is the 2nd arg the frame helper consumes).
-SIZE_UNKNOWN(CEntranceAnimSub);
-class CEntranceAnimSub {
-public:
-    void SetGeometry(i32 srcSprite); // FUN_0055c2d0 (this = player+0x1a0, ret 4)
-    // (`Advance` used to be declared HERE too, mangling to
-    // ?Advance@CEntranceAnimSub@@QAEHI@Z - a symbol nothing defines. The body at
-    // 0x15c360 is CAniAdvanceCursor::Advance, already reconstructed in
-    // wwdfactoryobject, and that is what retail's bytes call at every one of these sites.
-    // The 13 call sites now cast &player->m_1a0 to CAniAdvanceCursor, exactly as the other
-    // ~30 sites in the tree already did. The member cannot simply be RETYPED because a real
-    // CAniAdvanceCursor is 0x3c bytes and would overrun this player's own m_1a4/m_1b4.)
-    // The geometry-state setter LoadEntranceConfig calls on entry; returns 1 when
-    // the player is ready (FUN_0055c360, __thiscall ret 4 = 1 stack arg). Same
-    // engine fn as SpriteResource's SetGeoSource, but the int return is used here.
-    // SetGeoSourceR @0x15c360 IS CAniAdvanceCursor::Advance; cast at each call.
-    // Data-less view: the geometry sub-player's m_20/m_28 (abs CGrunt+0x154+0x1a0
-    // +0x20/+0x28) live PAST the player's own m_1b4, so they are not modeled as
-    // embedded data here (that would corrupt m_1b4's offset). LoadEntranceConfig's
-    // tail and UpdateEntranceAnim's armed-but-not-running gate read them via raw
-    // offsets off &player->m_1a0 instead (keeps cl on one `add eax,0x1a0` base).
-};
-
 // A per-cell entrance record (0x68-byte stride at CGrunt+0x474). GetName(flag)
 // resolves the cell's frame name (__thiscall, 1 arg). External (reloc-masked).
 SIZE_UNKNOWN(CGruntCell);
@@ -328,74 +270,10 @@ public:
     // GetName @0x310f0 IS zDArray::IndexToPtr; cast at each call.
 };
 
-class CAniAdvanceCursor; // the +0x1a0 cursor sub-object (<Gruntz/AniAdvanceCursor.h>)
-
-SIZE_UNKNOWN(CEntranceAnimPlayer);
-class CEntranceAnimPlayer {
-public:
-    // Geometry setter that forwards to m_1a0.SetGeometry(src) then, if flag!=0,
-    // a 2nd setter (FUN_00458b60, ret 8). PlaySound's IDLE arm drives it directly.
-    // A 1-arg setter the WALK/E arms call on the player itself (FUN_00550540,
-    // FUN_005504d0 is the 2-arg form). Takes the resolved cell name.
-    // The death/freeze finalize 2-arg geometry setter (FUN_005505b0); takes the
-    // resolved key string + a flag. External/reloc-masked.
-    // The combat-reaction dispatch (@0x646b0) drives the player through its
-    // CGameObject base name/sprite setters (0x150540 / 0x1504d0, not the 0x55xxxx
-    // entrance forms). External/no-body so the call rel32 reloc-masks.
-    // The CGameObject-base lookup-geometry setter (same 0x1505b0 slot CHudSprite
-    // uses) the death/freeze finalize drives with the DEATHZ_SPARKLE/UNFREEZE keys.
-    //
-    // The CGameObject-base name/sprite/geometry setters the asset loaders drive on the
-    // player directly (external/reloc-masked so the call rel32 masks; the former per-TU
-    // CGruntSprite/CGruntAnimPlayer facet views are folded here). The player IS the
-    // created game object.
-    void CacheFirstFrame(const char* name); // 0x1504d0
-    // The 2-arg frame-cache form at the same 0x1504d0 slot (the CGameObject-base
-    // ApplyLookupSprite(key, flag); the entrance re-stamp steps drive it with the
-    // built cell-name buffer + the active descriptor's first-element frame index).
-    void CacheFrameIndexed(const char* key, i32 frame);   // 0x1504d0 (2-arg)
-    void CacheFrame(const char* key, i32 frame);          // 0x150540
-    void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
-    void ApplyGeometryDirect(i32 src, i32 flag);          // 0x58b60
-
-    // The +0x1a0 anim-advance cursor sub-object (Advance @0x15c360, the armed/
-    // running gates m_20/m_28). ONE accessor instead of the 13 per-site
-    // `(CAniAdvanceCursor*)&player->m_1a0` casts. The cursor's 0x3c extent
-    // OVERLAPS this class's m_1a4/m_1b4/m_1c0/m_1c8 (those ARE cursor fields:
-    // m_1b4 == cursor m_14 active descriptor, m_1c0/m_1c8 == cursor m_20/m_28);
-    // embedding the real 0x3c value member (and deleting the duplicates) is the
-    // full fold, deferred with the player==CGameObject view reconciliation.
-    CAniAdvanceCursor* Cursor() {
-        return (CAniAdvanceCursor*)&m_1a0;
-    }
-
-    char m_pad0[0x8];
-    i32 m_8;              // +0x08  state-flag word (death loader |= 1 / |= 0x10000)
-    CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
-    char m_pad10[0xe8 - 0x10];
-    i32 m_e8; // +0xe8  (ctor = 0x100000)
-    i32 m_ec; // +0xec  (ctor = 0x3d1)
-    i32 m_f0; // +0xf0  (ctor = 1)
-    i32 m_f4; // +0xf4  (ctor |= 0x103f)
-    char m_padf8[0x148 - 0xf8];
-    i32 m_148;   // +0x148
-    i32 m_14c;   // +0x14c
-    void* m_150; // +0x150
-    char m_pad154[0x18c - 0x154];
-    i32 m_18c; // +0x18c
-    char m_pad190[0x194 - 0x190];
-    i32 m_194;              // +0x194
-    i32 m_198;              // +0x198
-    i32 m_19c;              // +0x19c
-    CEntranceAnimSub m_1a0; // +0x1a0 geometry sub-player
-    i32 m_1a4;              // +0x1a4
-    char m_pad1a8[0x1b4 - 0x1a8];
-    CAniElement* m_1b4; // +0x1b4 active-anim descriptor
-    char m_pad1b8[0x1c0 - 0x1b8];
-    i32 m_1c0; // +0x1c0 (entrance-done flag B: 0 -> run reset)
-    char m_pad1c4[0x1c8 - 0x1c4];
-    i32 m_1c8; // +0x1c8 (entrance-done flag A: nonzero -> bail)
-};
+// The entrance-animation player @CGrunt+0x154 (== CGruntBehaviorLeaf::m_drawState,
+// the ex "CDecayMgr"): CEntranceAnimPlayer + its CEntranceResMgr/CEntranceSpriteMgr
+// resource views, extracted to their own header so the leaf shares the ONE shape.
+#include <Gruntz/EntranceAnimPlayer.h>
 
 // CString::GetBuffer(int) the entrance-anim update (@0x690a0) calls to hand the
 // grunt's +0x448 name CString raw to SetAnimFrame. __thiscall (this = &CString),

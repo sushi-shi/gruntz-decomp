@@ -10,22 +10,14 @@
 
 #include <rva.h>
 
-#include <Gruntz/UserLogic.h>        // CUserLogic base + CGameObject
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (the +0x1a0 arrival probe, value member)
+#include <Gruntz/UserLogic.h>          // CUserLogic base + CGameObject
+#include <Gruntz/EntranceAnimPlayer.h> // CEntranceAnimPlayer - the +0x154 draw-state object
 
-class CImageSet; // <Image/ImageSet.h> (m_194->SetAllTypes; full def only in the .cpp)
-
-SIZE_UNKNOWN(CDecayMgr);
-struct CDecayMgr { // m_154 - the bound draw-state manager
-    char m_pad00[0x8];
-    i32 m_8; // +0x08 dirty flags
-    char m_pad0c[0x40 - 0xc];
-    i32 m_40; // +0x40 flags
-    char m_pad44[0x194 - 0x44];
-    CImageSet* m_194; // +0x194
-    char m_pad198[0x1a0 - 0x198];
-    CAniAdvanceCursor m_1a0; // +0x1a0
-};
+// (The ex-`CDecayMgr` struct here is DISSOLVED (2026-07-16): it was a four-field
+// slice of CEntranceAnimPlayer (<Gruntz/EntranceAnimPlayer.h>) - the SAME +0x154
+// object CGrunt reaches as m_154: m_8 "dirty flags" == the player's +0x08 state
+// flags, m_40 == the +0x40 visible bit, m_194 the CImageSet*, and the +0x1a0
+// embedded CAniAdvanceCursor. m_drawState below is now the one real type.)
 
 // (the ex-`CDecayAnim` view is GONE. It was not an anim controller at all - it was five
 // fabricated method names standing in for functions on THREE DIFFERENT REAL CLASSES, all
@@ -58,7 +50,8 @@ public:
 
     // Members beyond CUserLogic's 0x40 base.
     char m_pad40[0x154 - 0x40];
-    CDecayMgr* m_drawState; // +0x154 bound draw-state manager
+    CEntranceAnimPlayer* m_drawState; // +0x154 bound draw-state / entrance-anim player
+                                      //        (== CGrunt::m_154; ex the CDecayMgr view)
     char m_pad158[0x170 - 0x158];
     i32 m_gruntSubState; // +0x170 grunt sub-state
     char m_pad174[0x1c0 - 0x174];

@@ -924,10 +924,10 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     if (eq) {
         // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
         // latched m_entranceCell triple (cell table base 0x468).
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseAttackIdle);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseAttackIdle);
         {
-            CAniElement* desc = m_154->m_1b4;
+            CAniElement* desc = m_154->m_1a0.m_14;
             i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             i32 frame = elem[0x14 / 4];
             i32 col = m_entranceCell.col;
@@ -953,18 +953,18 @@ codeI:
     m_entranceCell.col = rec.m_0;
     m_entranceCell.row = rec.m_4;
     m_entranceCell.reason = rec.m_8;
-    m_prevEntranceDesc = m_154->m_1b4;
-    m_154->m_1a0.SetGeometry(m_poseIdle[1]);
+    m_prevEntranceDesc = m_154->m_1a0.m_14;
+    m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseIdle[1]);
     ReseedIdleReset(1, 0, 0);
     return;
 
 idle:
     // codes "A"/"K": drive the IDLE1 geometry (the forwarding setter), stamp the
     // cell frame from the incoming record (cell table base 0x474).
-    m_prevEntranceDesc = m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1a0.m_14;
     m_154->ApplyGeometryDirect(m_poseIdle[0], 0);
     {
-        CAniElement* desc = m_154->m_1b4;
+        CAniElement* desc = m_154->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
         i32 col = rec.m_0;
@@ -978,8 +978,8 @@ idle:
 walk:
     // codes "D"/"M" (and the default): drive the WALK geometry, stamp the cell name
     // from the incoming record (cell table base 0x470), set it by name only.
-    m_prevEntranceDesc = m_154->m_1b4;
-    m_154->m_1a0.SetGeometry(m_poseWalk);
+    m_prevEntranceDesc = m_154->m_1a0.m_14;
+    m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
     {
         i32 col = rec.m_0;
         i32 row = rec.m_4;
@@ -1628,8 +1628,8 @@ label_4cb4b:
         return 1;
     }
     if (reason0e) {
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseWalk);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
         return 1;
     }
     goto label_ret1;

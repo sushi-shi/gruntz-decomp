@@ -38,7 +38,7 @@ extern "C" u32 g_engineFrameDelta;
 RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
     CAniAdvanceCursor* anim = m_player->Cursor(); // (CAniAdvanceCursor*)&m_1a0
-    m_prevDesc = m_player->m_1b4;
+    m_prevDesc = m_player->m_1a0.m_14;
     anim->Setup_15c2d0((CAniElement*)a);
     if (b != 0) {
         anim->Advance((i32)g_engineFrameDelta);

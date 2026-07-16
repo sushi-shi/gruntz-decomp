@@ -1090,8 +1090,8 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_35c = 0;
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseWalk);
+        m_prevEntranceDesc = m_154->m_1a0.m_14;
+        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
         // Stamp the first entrance-cell frame from m_cells[base].m_walk. The by-value
         // cell copy dead-spills `reason` (esp+0x1c) -> `sub esp,0xc`; base = 3*col+row.
         GruntEntranceCell cell = m_entranceCell;
