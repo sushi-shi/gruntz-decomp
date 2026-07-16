@@ -76,7 +76,7 @@ extern "C" CGameRegistry* g_gameReg; // *0x64556c (canonical _g_mgrSettings view
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
 i32 CBootyState::BuildGruntSprintAnimation() {
-    i32 h = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(0, 0);
+    i32 h = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (!h) {
         return 0;
     }

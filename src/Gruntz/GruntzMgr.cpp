@@ -2345,15 +2345,14 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         g_enableHiColor = 1;
     }
 
-    ((CDDrawSurfaceMgr*)m_world)->Cleanup_155e20(); // slot 7: pre-mode-change teardown
+    m_world->Cleanup_155e20(); // slot 7: pre-mode-change teardown
     i32 kind = (g_disableAudio == 0) ? 1 : 5;
-    if (((CDDrawSurfaceMgr*)m_world)->Init(m_gameWnd->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind)
-        == 0) {
+    if (m_world->Init(m_gameWnd->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind) == 0) {
         ReportWorldStatus(0x43f);
         return 0;
     }
 
-    ((CDDrawSurfaceMgr*)m_world)->SetHwnd((void*)ModeResetCallback);
+    m_world->SetHwnd((void*)ModeResetCallback);
     CGameLevel* view = m_world->m_level;
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
@@ -3797,7 +3796,7 @@ i32 CGruntzMgr::SyncOptionsState() {
 RVA(0x000855e0, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
-        ((CDDrawSurfaceMgr*)m_world)->SetHwnd(0);
+        m_world->SetHwnd(0);
     }
     OpenSettingsStore();
     Utils::RegistryHelper* cfg = m_settings;
@@ -3916,7 +3915,7 @@ void CGruntzMgr::Close() {
         m_timer = 0;
     }
     if (m_world) {
-        delete (CDDrawSurfaceMgr*)m_world; // virtual ~ -> the flagged slot-1 ??_G dispatch
+        delete m_world; // virtual ~ -> the flagged slot-1 ??_G dispatch
         m_world = 0;
     }
     if (m_symParser) {
