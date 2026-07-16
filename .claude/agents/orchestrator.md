@@ -210,6 +210,20 @@ once — main has a single `build/` and a single HEAD):
    the matcher ran `gruntz format` and swept unrelated files, copy ONLY its real
    targets (confirm each is unchanged in main since the worktree's base:
    `git diff --quiet <base> HEAD -- <file>`). Touch only that matcher's file(s).
+   **Strip stale comments from the files you just applied** (integration is where
+   the tree gets its comment hygiene — matchers are told to edit only their code,
+   not clean history). In each applied file, DELETE comments that narrate
+   *superseded* state: view-dissolution / `DISSOLVED` markers, "the former X view",
+   "used to be m_X / a void\* / N globals", "ex-`g_hex`", "re-homed from unit Y",
+   `TU_MIGRATION` rows, dated `(Fable A2, 2026-07-14)` process stamps, "was an
+   inverted-polarity bug (fixed)". KEEP comments stating something TRUE about the
+   code *as it is now*: current offset/RVA/identity evidence, why-not / faithful-
+   model reasons (the N-COMDAT-copy explanation, C-linkage exceptions),
+   `@early-stop` reasons, open `@identity-TODO`, the RVA()/DATA()/SIZE()/VTBL()
+   macro-line comments. The comment-only `DISSOLVED` sweep is mechanizable
+   (`sed -i -E '/^[[:space:]]*\/\/.*([Dd]issolv|DISSOLV)/d' <file>`); the rest is a
+   quick eyeball of the applied diff. Byte-neutral, so it never affects the build
+   result — but re-confirm the file still compiles if you trimmed inside a `/* */`.
 3. **Build + measure** in main: `nix develop .#build --command gruntz build`.
    Confirm the target hit its reported %, and read the before→after exact count.
 4. **Bless** the baseline: `gruntz` status `update` (records new best% + handles
