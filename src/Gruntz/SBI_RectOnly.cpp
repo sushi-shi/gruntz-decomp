@@ -3647,19 +3647,19 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
                 void* found = 0;
                 ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_DESTRUCT", (CObject*&)found);
                 if (found) {
-                    CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_spriteFactory;
+                    DSoundCloneInst* f = ((CSbiSpriteCfg*)found)->m_playFactory;
                     if (f) {
-                        CSbiDisplayObj* obj = (CSbiDisplayObj*)((DSoundCloneInst*)f)->GetItem();
+                        DirectSoundMgr* obj = f->GetItem();
                         m_destructButton = obj;
                         if (obj) {
-                            ((DirectSoundMgr*)obj)->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+                            obj->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                         }
                     }
                 }
             }
         } else {
             if (m_destructButton) {
-                ((DirectSoundMgr*)m_destructButton)->StopAndRewind();
+                m_destructButton->StopAndRewind();
                 m_destructButton = 0;
             }
         }
@@ -4095,7 +4095,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
     }
 
     if (m_machineDisplay) {
-        ((CSBI_GruntMachine*)m_machineDisplay)->SetFrames(pB->m_counter, pA->m_counter);
+        m_machineDisplay->SetFrames(pB->m_counter, pA->m_counter);
     }
 }
 
@@ -4108,7 +4108,7 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     SetHudRectA(1, 1, g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 100));
     SetHudRectB(0x2b, 0, 0x7fffffff);
     if (m_machineDisplay) {
-        ((CSBI_GruntMachine*)m_machineDisplay)->SetFrames(m_hudRectA_y, m_hudRectB_y);
+        m_machineDisplay->SetFrames(m_hudRectA_y, m_hudRectB_y);
     }
     m_rezActive = 0;
     m_rezTick = 0;

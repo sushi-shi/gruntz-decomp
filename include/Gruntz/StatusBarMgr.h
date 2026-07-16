@@ -58,6 +58,9 @@ class CWarpStoneFly;
 // declared: the real chain class lives in <Gruntz/SBI_MenuItem.h>, and the host TU's
 // widget-builder view is <Gruntz/StatusBarTabWidgets.h>.
 class CSBI_MenuItem;
+class CSBI_GruntMachine; // <Gruntz/SBI_GruntMachine.h> - m_machineDisplay's real type
+class DSoundCloneInst;   // <Dsndmgr/DirectSoundMgr.h> - pooled cue play-factory
+class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the DirectSound clone (destruct-button voice)
 
 #include <Ints.h>
 #include <rva.h>
@@ -242,15 +245,14 @@ public:
 };
 SIZE_UNKNOWN(CSbiNotifyPayload);
 
-// A GAME_DESTRUCT-style sprite-config record: +0x10 is a factory whose no-arg
-// __thiscall builds the display object (returned, then Configure'd / Release'd).
-struct CSbiSpriteFactory {};
-SIZE_UNKNOWN(CSbiSpriteFactory);
-struct CSbiDisplayObj {};
-SIZE_UNKNOWN(CSbiDisplayObj);
+// The GAME_DESTRUCT sound-cue config record (looked up in the music-host cue map): +0x10
+// is the pooled cue play-factory DSoundCloneInst, whose GetItem() mints/pulls a
+// DirectSoundMgr clone that ApplyAndPlay's the warning tone. (The ex CSbiSpriteFactory /
+// CSbiDisplayObj empty views were the real Dsndmgr types - proven by the ApplyAndPlay /
+// StopAndRewind / GetItem calls in LoadDestructButtonSprite.)
 struct CSbiSpriteCfg {
     char m_pad0[0x10];
-    CSbiSpriteFactory* m_spriteFactory; // +0x10
+    DSoundCloneInst* m_playFactory; // +0x10  pooled cue play-factory (GetItem -> DirectSoundMgr)
 };
 SIZE_UNKNOWN(CSbiSpriteCfg);
 
@@ -297,11 +299,6 @@ SIZE_UNKNOWN(CSbiGaugeNotify);
 // (include/Bute/ButeMgr.h); the reloc-masked __thiscall object's DIR32 name is
 // load-bearing (mangles ...@@3VCButeMgr@@A). Extern only (bound by another TU).
 extern CButeMgr g_buteMgr;
-
-// The rez-machine snooze display object at +0x348 (Update sets it from the HUD-rect
-// A/B y-coords). Reloc-masked __thiscall.
-struct CSbiMachineDisplay {};
-SIZE_UNKNOWN(CSbiMachineDisplay);
 
 // A phase-timer record overlaid on a 24-byte slot (m_groupSlots element / the HUD-
 // rect blocks reused as timers by the rez-machine/conveyor state machines): a phase
@@ -600,29 +597,29 @@ public:
     CSbiHlRow m_groupSlots[3];     // +0x2c0
     CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
-    i32 m_hudRectB_x;                     // +0x318  HUD-rect group B (x0)
-    i32 m_hudRectB_y;                     // +0x31c  (y0)
-    i32 m_hudRectB_clock;                 // +0x320  (latched dword from g_dat645588)
-    i32 m_hudRectB_clockHi;               // +0x324
-    i32 m_hudRectB_z;                     // +0x328
-    i32 m_hudRectB_zHi;                   // +0x32c
-    i32 m_hudRectA_x;                     // +0x330  HUD-rect group A (x0)
-    i32 m_hudRectA_y;                     // +0x334  (y0)
-    i32 m_hudRectA_clock;                 // +0x338
-    i32 m_hudRectA_clockHi;               // +0x33c
-    i32 m_hudRectA_z;                     // +0x340
-    i32 m_hudRectA_zHi;                   // +0x344
-    CSbiMachineDisplay* m_machineDisplay; // +0x348  rez-machine snooze display object
-    i32 m_34c;                            // +0x34c
-    i32 m_350;                            // +0x350
-    i32 m_hitTestDisabled;                // +0x354  hit-test disable flag
-    i32 m_tabsBuilt;                      // +0x358  tab-widgets-built flag
-    i32 m_activeSlot;                     // +0x35c  active-slot index (-1 = none)
-    i32 m_pendingHlRow;                   // +0x360  pending highlight row index (-1 none)
-    CSbiSlotPtr* m_notify0;               // +0x364  notify targets (slot 0x28)
-    CSbiSlotPtr* m_notify1;               // +0x368
-    CSbiSlotPtr* m_notify2;               // +0x36c
-    CSbiSlotPtr* m_notify3;               // +0x370
+    i32 m_hudRectB_x;                    // +0x318  HUD-rect group B (x0)
+    i32 m_hudRectB_y;                    // +0x31c  (y0)
+    i32 m_hudRectB_clock;                // +0x320  (latched dword from g_dat645588)
+    i32 m_hudRectB_clockHi;              // +0x324
+    i32 m_hudRectB_z;                    // +0x328
+    i32 m_hudRectB_zHi;                  // +0x32c
+    i32 m_hudRectA_x;                    // +0x330  HUD-rect group A (x0)
+    i32 m_hudRectA_y;                    // +0x334  (y0)
+    i32 m_hudRectA_clock;                // +0x338
+    i32 m_hudRectA_clockHi;              // +0x33c
+    i32 m_hudRectA_z;                    // +0x340
+    i32 m_hudRectA_zHi;                  // +0x344
+    CSBI_GruntMachine* m_machineDisplay; // +0x348  the Resource-tab MACHINE widget (SetFrames)
+    i32 m_34c;                           // +0x34c
+    i32 m_350;                           // +0x350
+    i32 m_hitTestDisabled;               // +0x354  hit-test disable flag
+    i32 m_tabsBuilt;                     // +0x358  tab-widgets-built flag
+    i32 m_activeSlot;                    // +0x35c  active-slot index (-1 = none)
+    i32 m_pendingHlRow;                  // +0x360  pending highlight row index (-1 none)
+    CSbiSlotPtr* m_notify0;              // +0x364  notify targets (slot 0x28)
+    CSbiSlotPtr* m_notify1;              // +0x368
+    CSbiSlotPtr* m_notify2;              // +0x36c
+    CSbiSlotPtr* m_notify3;              // +0x370
     char m_pad374[0x378 - 0x374];
     CSbiHlRow m_hlGrid[12];      // +0x378  3 groups x 4 highlight rows (24B each)
     CSbiSlotPtr* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
@@ -670,9 +667,10 @@ public:
     i32 m_578;                    // +0x578  (cleared on multiplayer/battlez reset)
     i32 m_battlezPct[38];         // +0x57c  running-sum item-percent table (battlez cfg)
     i32 m_barFrameGate;           // +0x614  main-status-bar frame gate
-    CSbiDisplayObj* m_destructButton; // +0x618  destruct-button display object
-    i32 m_61c[4];                     // +0x61c  trailing dword block (cleared on reset)
-    i32 m_tabCycle;                   // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
+    DirectSoundMgr*
+        m_destructButton; // +0x618  destruct-button warning voice (ApplyAndPlay/StopAndRewind)
+    i32 m_61c[4];         // +0x61c  trailing dword block (cleared on reset)
+    i32 m_tabCycle;       // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
 // 0x630 - the allocation site, not an inference: CPlay::Vfunc1 @0xc7fea does
 // `push 0x630; call ??2@YAPAXI@Z` and stores the result at CPlay+0x2dc.
@@ -682,8 +680,7 @@ SIZE(CStatusBarMgr, 0x630);
 // (The member is the real MFC CMapStringToOb; Lookup @0x1b8438.)
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
-// +0x18 interval). Same shape as GameMode's CBootyFound.
-class DSoundCloneInst; // the pooled cue player (Dsndmgr/DirectSoundMgr.h)
+// +0x18 interval). Same shape as GameMode's CBootyFound. (DSoundCloneInst fwd-declared above.)
 struct CSbiCueRecord {
     char m_pad0[0x10];
     DSoundCloneInst* m_10; // +0x10  player (ConfigureItem this)
