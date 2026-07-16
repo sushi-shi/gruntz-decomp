@@ -3,18 +3,18 @@ Unknown ids	0
 g_<hex> globals	0
 Method/Stub/FUN	0
 placeholder classes	7
-.cpp-local views	63
+.cpp-local views	62
 placeholder vtable slots	0
 *Vtbl structs	0
 ->vtbl accesses	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
 )this casts	233
-)m_ casts	1012
+)m_ casts	1016
 (char*) casts	783
 (const char*) casts	173
 C-style numeric casts	3456
-void* m_ members	122
+void* m_ members	121
 offset-cast macros	0
 cpp extern decls	665
-caller-callee FAKE-VIEW	98
+caller-callee FAKE-VIEW	66
