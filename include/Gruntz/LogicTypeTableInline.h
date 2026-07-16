@@ -32,7 +32,6 @@ extern "C" {
 // CreateWorker (0x1652c0); the "Find" probe (thunk 0x1703 -> 0x9cab0) is its
 // out-param wrapper over the +0x10 CMapStringToOb (Lookup @0x1b8008). The former
 // 16-slot CLogicTypeReg view (9 Slot fillers + 6 VtSlotFill pads) and the
-// CLogicTypeCtx / CLogicTypeBuilder chain shells are dissolved: the builder IS the
 // bound CGameObject (its +0xc world ctx, the typed CDDrawSurfaceMgr).
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>

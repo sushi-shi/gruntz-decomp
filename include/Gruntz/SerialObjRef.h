@@ -38,7 +38,6 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 
 // (The former CSerialRegHolder / CSerialNameHolder / CSerialObj shell chain is
-// DISSOLVED (2026-07-16): the referenced object is the canonical CGameObject,
 // its +0x7c the AnimWorkerObj, the worker's m_0c the CDDrawSurfaceMgr, and the
 // +0x2c registry its m_leaf - obj->m_7c->m_0c->m_leaf, all typed.)
 #include <DDrawMgr/DDrawSurfaceMgr.h>

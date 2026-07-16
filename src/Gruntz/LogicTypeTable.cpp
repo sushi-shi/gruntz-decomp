@@ -41,7 +41,6 @@ extern "C" {
 // registrar" is its slot-9 CreateWorker (0x1652c0) and the +0x10 lookup
 // sub-object its CMapStringToOb m_10 (Lookup @0x1b8008). The former
 // CLogicRegistry (10-slot filler view) / CLogicCtx / CLogicTypeBuilder chain
-// shells are dissolved: the builder arg is the bound CGameObject, whose +0xc
 // world ctx (the typed CDDrawSurfaceMgr at m_0c) carries the cache at
 // +0x14 (== the canonical CDDrawSurfaceMgr's m_workerCache).
 // ---------------------------------------------------------------------------
@@ -90,7 +89,6 @@ void __stdcall BuildLogicTypeTable(CGameObject* obj) {
 // IDENTITY RECOVERED (2026-07-13, Fable lane; found by gruntz.analysis.thunk_alias_dups):
 // this ONE body had THREE source names, two of them phantoms.
 //   * `CFinalize8b90::Finalize` - the fake class it was defined under here, with an
-//     invented PMF-holder layout. DISSOLVED: its m_0/m_4/m_8/m_14/m_28 land EXACTLY on
 //     CUserLogic's m_00/m_04/m_08/m_14/m_28 (the m_14 union is already the
 //     CAnimLookupNode* whose +0x1c this guards against m_28).
 //   * `CGrunt::FinalizeStep` (Grunt.h) - a decl with NO definition anywhere, i.e. a

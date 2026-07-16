@@ -4,7 +4,6 @@
 // relay its screen position to the trigger grid or (dwell-throttled) re-place at
 // its tile and fire the on-screen cue 0x366.
 //
-// IDENTITY (ex the CObjectTracker/CPeerSource view, DISSOLVED 2026-07-14): `this`
 // IS ::CGrunt - the one retail caller (thunk 0x2806 from LoadGruntTuningConstants
 // @0x5d210, a method data-ref'd inside ??_7CGrunt@@6B@) dispatches it as
 // `mov ecx,esi` on its own grunt `this` (0x5dd4e), and every field lands on a

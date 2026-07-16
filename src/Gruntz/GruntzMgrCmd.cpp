@@ -6,7 +6,6 @@
 // FULLY CANONICAL: the former `namespace GruntzMgrCmd` view-world (a namespaced
 // CGruntzMgr shadow + the GZ* per-TU views: GZLogic/GZBoard/GZGrunt/GZGruntLevel/
 // GZLevel/GZInput/GZSoundZ/GZMgrSettings/GZDeath*/GZPtrMap/GZSel/GZCell/GZStr/
-// GZSaveInfo/GZObj58/GZWndSub/GZM44) is DISSOLVED onto the one true classes:
 //   this            = ::CGruntzMgr (GruntzMgr.h; base WAP32::CGameMgr gives
 //                     m_gameWnd/m_frameGate/m_soundEnabled/m_musicEnabled)
 //   m_curState      = CState (Update() slot 4 == the old vf10; Vslot15 == vf54);
@@ -56,7 +55,6 @@
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.
 extern "C" CGameRegistry* g_gameReg;
 
-// (The former local CTmNode record-list-node view is DISSOLVED (2026-07-16): the
 // node IS the MFC CPtrList CNode, and `((CTmNode*)GetHeadPosition())->m_pt` is
 // spelled with the real accessor `(CTrigPoint*)m_recList.GetHead()` below - the
 // identical two loads (m_pNodeHead, then ->data), byte-proven.)

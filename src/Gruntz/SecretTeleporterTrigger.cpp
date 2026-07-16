@@ -10,7 +10,6 @@
 // Both classes share the activation-registry archetype: a per-class
 // coordinate registry (g_actColl @0x644688 / g_secretActReg @0x644598) + the
 // SHARED activation-name registry (<Gruntz/ActNameRegistry.h>, @0x6bf650; the
-// ex TU-local duplicate decl block is dissolved onto the shared header).
 #include <Bute/ButeTree.h>          // CVariantSlot::Set (0x16d850)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
@@ -43,10 +42,8 @@ extern "C" CGameRegistry* g_gameReg;
 // The +0x7c aux facet g_gameReg->m_scoreHud IS the canonical CBattlezData
 // (<Gruntz/BattlezData.h>): the teleporter ctor bumps its +0x3c "teleporter armed"
 // counter directly on the singleton's typed member (the ex WwdGameRegAux view is
-// dissolved). The on-screen viewport rect the spawn cue tests is the bound level's
 // main plane (g_gameReg->m_world->m_24->m_mainPlane): its near-origin/far-extent
 // pair {m_originX,m_originY,m_extentX,m_extentY} IS the {left,top,right,bottom}
-// window (the ex CViewRect reinterpret is dissolved onto CLevelPlane).
 
 // ---------------------------------------------------------------------------
 // The teleporter's per-coordinate activation registry FireActivation (0x042150)
@@ -102,7 +99,6 @@ static inline CActEntry* ActLookup(i32 coord) {
 // The secret-level trigger's activation-coordinate registry singleton (@0x644598):
 // the fixed [2000,2010] range built by the shared registry ctor (0x408710). It is
 // the shared <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
-// CSecretActReg view is dissolved); the DATA-pinned global symbol is unchanged.
 DATA(0x00244598)
 CActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
                         // fields 0x24459c..0x2445b8 are this object's members)
@@ -350,7 +346,6 @@ i32 CSecretLevelTrigger::Tick() {
 // hit grunt is on-screen) fire the 6-arg cue. Always closes by marking the
 // trigger sub-object hidden (m_38->m_08 |= 0x10000). The sprite factory is the
 // canonical g_gameReg->m_world->m_8 CSpriteFactory (the ex CTeleResHolder/
-// CTeleSpriteFactory views are dissolved onto the canonical holder).
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;

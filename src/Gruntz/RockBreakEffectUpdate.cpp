@@ -25,7 +25,6 @@ extern "C" CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton
 // The effect leaf: its bound target (m_10, +0x114 state gates the spawn) and its
 // effect sprite (m_38, CAniAdvanceCursor @+0x1a0, +0x1c0/+0x1c8 gates) are BOTH real
 // CGameObjects (world pos @+0x5c/+0x60, flags @+0x08 - proven: the ex RbTarget/RbSprite
-// .cpp-local views are the same class at the same offsets, now dissolved onto
 // CGameObject <Gruntz/UserLogic.h>). @identity-TODO: this owning leaf's own class name
 // is unrecovered (orphan COMDAT @0x476b0 - no caller/new-site/RTTI/vtable-dispatch; the
 // applicable techniques - caller xref, callee sigs (CAniAdvanceCursor::Advance +

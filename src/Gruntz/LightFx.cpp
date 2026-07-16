@@ -49,13 +49,11 @@ extern "C" CGameRegistry* g_gameReg;
 // declared extern only so `g_buteTree.Find("A")` reloc-masks (CButeTree owns the
 // DATA label).
 
-// (The ex LfxEffectNode view of the spec Lookup result is DISSOLVED onto the real
 // CImageSet (<Image/ImageSet.h>): its "value table @+0x14" is CImageSet::m_frames,
 // its "key bounds @+0x64/+0x68" are m_minIndex/m_maxIndex - the spec result IS a
 // CImageSet (pushed to the pump as one), read for the frame in its index range.)
 
 // The bound object (m_38) IS the real CGameObject (<Gruntz/UserLogic.h>): the ex
-// LfxObj view is DISSOLVED onto it. Its +0x08 flags = m_flags, +0x0c holder = m_0c
 // (the owner context), +0x190/m_194/m_layer(+0x198) are CGameObject's role-union
 // resolved-node fields (source-def/z-clamp descriptor, reinterpreted here per the
 // canonical's own note), +0x1a0 the per-leaf anim sub-object (CAniAdvanceCursor,
@@ -68,7 +66,6 @@ extern "C" CGameRegistry* g_gameReg;
 // The class's activation-coordinate registry singleton (@0x645ad0): the fixed
 // [2000,2010] range built by the shared registry ctor (0x408710). It IS the shared
 // <Gruntz/ActReg.h> CActReg archetype - the empty CLightFxActReg subclass (whose
-// only job was a distinct type name) is dissolved: the variable name already makes
 // the mangled symbol unique and DATA() rebinds it, so the archetype IS the type
 // (same fold TileLogicPump's ActReg globals use).
 DATA(0x00245ad0)
@@ -242,10 +239,8 @@ i32 CLightFx::AdvanceAnim() {
     return 0;
 }
 
-// All of this TU's former per-TU view structs are now DISSOLVED onto real classes
 // or homed to headers: LfxObj -> CGameObject, LfxMapSource -> AnimWorkerObj::m_0c,
 // LfxEffectNode -> CImageSet, CLightFxActReg -> the CActReg archetype,
-// CLightFxActEntry -> <Gruntz/LightFx.h>; the Lfx store views are dissolved onto
 // the canonical CDDrawSurfaceMgr members. No struct/class is defined in this .cpp.
 
 // ============================================================================

@@ -752,7 +752,6 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     return set->GetCollisionAt(subX, subY);
 }
 
-// (The ex `EditSink` 13-slot view of EditDispatch's serializer arg is DISSOLVED:
 // it IS the one engine stream, CSerialArchive == CFileMemBase - its "+0x2c read a
 // name / +0x30 write a name" are the stream's Read @slot 11 / Write @slot 12.)
 typedef CSerialArchive EditSink;

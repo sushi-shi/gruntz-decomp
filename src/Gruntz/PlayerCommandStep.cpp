@@ -6,7 +6,6 @@
 // pre-pass (8). a2 = player id (== g_curPlayer is "local"), a3 = column, a5/a6 =
 // pixel target or a second grid cell, a7/a8 spare.
 //
-// IDENTITY (ex the .cpp-local CCmdHandler view, DISSOLVED 2026-07-15): `this` IS
 // ::CPlay - the two retail callers (CGruntzCommand::ApplyOne/ApplyMask via thunk
 // 0x21e4) hand it the CGruntzCmdTarget, and the body's own fields prove the play
 // state: m_4 the CGruntzMgr (its +0x0c frameGate / +0x68 cmdGrid), m_c the world

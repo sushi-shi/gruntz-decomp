@@ -220,7 +220,6 @@ extern "C" i32 g_engineFrameDelta;
 // The attack target resolved from the neighbor grid cell is another CGrunt (the
 // 0x1bf9 TakeHit thunk delivers the attack; its m_entranceReason multiplexes the
 // tool kind, m_19c the fallback gate). The attacker `this` IS CGrunt - the old
-// `CGruntFireView` deferred-fold view is DISSOLVED: 0x61cb0 is the CGrunt vtable
 // slot-9 body (??_7CGrunt@@6B@+0x24 @0x1e8778 holds its ILT thunk 0x119f - the
 // only retail reference), i.e. the UserLogicVfunc7 override Grunt.h declares.
 // View->CGrunt member map: m_object == the CUserLogic +0x10 union arm (CGameObject),
@@ -571,7 +570,6 @@ i32 CGrunt::RearmAttackAnim2() {
 // m_154->m_flags |= 0x10000 retire idiom as FinishEntranceMove, m_tileOwnerHi/Lo fed
 // to the tile-cell notify exactly as the attack step feeds CellDispatch, m_tileMgr
 // +0x260, the m_36c suppress gate FinishEntranceMove also reads). The five old
-// CWarp* views are DISSOLVED onto the canonicals: CWarpLeaf == CGrunt, CWarpM154
 // == CEntranceAnimPlayer, CWarpMgr == CGameRegistry (m_gameWnd +0x04 / m_curState
 // +0x2c), CWarpMgrWnd == CGameWnd (<Wap32/Wap32.h>, m_hwnd +0x04), CWarpLevelReg
 // == CState (<Gruntz/State.h>: m_levelIndex +0x1c, m_levelBank +0x28 - the level
@@ -589,7 +587,6 @@ extern "C" i32 g_engineFrameDelta;
 // jump-table-data-overlap wall (fuzzy % is an alignment artifact): logic complete
 // and byte-verified vs retail (`sema disasm 0x61cb0 --diff`): the prologue is
 // exact (`sub esp,8`; the retry flag in callee-saved ebx - the old view's
-// flag-spill wall DISSOLVED with this model), the slot-17 virtual dispatch is the
 // exact retail shape (`mov edx,[edi]; mov ecx,edi; call [edx+0x44]`, then
 // `mov edi,[edi+0x154]; or [edi+0x8],0x10000`), and the 5-slot dense switch on
 // m_entranceReason (the multiplexed tool kind; bias 2, range 0x14) + the named

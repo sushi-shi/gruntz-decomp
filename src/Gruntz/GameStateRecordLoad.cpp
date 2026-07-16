@@ -1,7 +1,6 @@
 // GameStateRecordLoad.cpp - CGrunt::LoadStateRecord @0x555e0 (4856 B), the grunt's
 // game-state-record deserializer (mode-7 arm of CGrunt::SerializeMove @0x53b80,
 // its ONLY caller, dispatched on the grunt `this` - the ex-CGameStateRecord
-// owner view is dissolved; the raw offsets below ARE CGrunt's layout AND the
 // on-disk record spec). Reads an entire saved record off the stream:
 //   - 7 serial-id object refs (read a 4-byte serial, look it up in the engine
 //     object directory's serial map, type-tag-check (==5), store the pointer;

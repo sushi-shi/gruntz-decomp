@@ -77,7 +77,6 @@
 // The image worker registry (holder m_10), the anim registry leaf (holder m_2c)
 // and the worker list are the CANONICAL DDrawMgr classes - the former .cpp-local
 // CDDrawWorkerRegistry / CDDrawSubMgrAni / CDDrawSubMgrLeaf / CDDrawWorkerList
-// duplicate views are dissolved onto them.
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry (InstallTree slot 18, +0x48)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf / CDDrawSubMgrAni (0x152xxx leaf API)
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (renderer B: PruneWorkers/ClearWorkers)
@@ -302,7 +301,6 @@ typedef enum {
 
 // CPlay::ApplyGameOptions (0x036be0) lives in its home TU per the interval
 // dossier (#10c seam): src/Gruntz/VideoConfig.cpp (the options-dialogs TU).
-// Its former CGameMgrSettings local view dissolved with it (the canonical
 // CGruntzMgr shape serves there).
 
 // CPlay::Update (0x0008c910) is now an inline member in the header.
@@ -310,7 +308,6 @@ typedef enum {
 // The shared HUD message-sprite helper - the CANONICAL decl (GlyphStringDraw.cpp
 // defines it at 0x1154b0 as ShowHudMessage(CSpriteFactoryHolder*, i32 x8)). The sink
 // IS the CState::m_c holder (a CSpriteFactoryHolder - the def reads sink->m_drawTarget
-// ->m_18); the ex-`HudMsgSink` forward-decl view is dissolved (2026-07-15), so the two
 // call sites pass m_c cast-free.
 void ShowHudMessage(
     CSpriteFactoryHolder* sink,
@@ -767,7 +764,6 @@ alt2:
 // the slot-21 notify, refresh renderer A, then clear the registry's per-frame word
 // (+0x128), drop its mode back to 0 if it was 3, and run the +0x70 tile grid's
 // slot-0 Reset (CMapMgr's real virtual @0x9ec30). (The former CRegExit view of the
-// singleton is dissolved onto the canonical CGameRegistry.)
 // ===========================================================================
 // ===========================================================================
 // CPlayLevelLoad::LoadByMode (0x0ca200; re-homed from the former loadlevelbymode unit,
@@ -1673,7 +1669,6 @@ i32 CPlay::Vslot1c(i32 category) {
 // rect through the chat/key text layer. Copies the source rect (CGameLevel::m_planeCtx,
 // the level view's +0x10 coord/extent record) into a stack rect and hands it to the
 // world's CFontConfig text host (DrawTextLines mode 8, flags 0x10) with the live HDC.
-// (Dissolved from the SaveGame.cpp `BlitHost` interleaver view, 2026-07-15: the same
 // 0xd00a0 is bound at slot 37 in ??_7CPlay / ??_7CDemo / ??_7CMulti - a CPlay* this;
 // m_c->m_24 is the canonical CGameLevel, m_4 the CGruntzMgr back-ptr whose +0x5c is the
 // CFontConfig draw sink.)
@@ -3939,7 +3934,6 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
 // are modeled minimally as this-facet views; only offsets / code bytes load-bearing,
 // every helper reloc-masked external.
 // ===========================================================================
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
 // CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 // (The 13 Sbi* views are GONE - every one was a facet of an already-canonical
 // class: SbiSndSet==CSndHost (m_10 map / m_emitGate), SbiCoordSrc==CLevelPlane
@@ -5587,7 +5581,6 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 // codegen-neutral for this TU.
 #include <Gruntz/BankMgr.h>
 // (0xfa8f0 is CState::RetireScene - inherited by CPlay; the former local CSoundFxEmitter
-//  view is dissolved, the loader calls it cast-free on the CPlay `self`.)
 // (0xfa150 cleanup is CGameModeBase::BaseCleanup - reached via the CState<->CGameModeBase
 // reinterpret at offset 0, the same pattern CState.h uses; no local view needed.)
 // The loader family reaches its resource state directly through `this` (a CPlay):
@@ -5794,7 +5787,6 @@ i32 CPlay::LoadGameAnims(i32 force) {
 // ===========================================================================
 // The resolved music-category entry (CSymTab::Insert result) IS the canonical
 // CParseSource (<Gruntz/ParseSource.h>) - the entry IS the parse source, and its
-// BeginParse @0x139960 loads it. The local re-declaration is dissolved; its "+0xc install
 // key" was a MIS-NAMING of the canonical m_length: the call it feeds is
 // CreateBank(buffer, LENGTH, name), so +0x0c is the byte length, exactly as the stream
 // methods (SetPos/Read) already read it.
@@ -5881,7 +5873,6 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 // posts a progress message. External/reloc-masked.
 // The load-notify sink IS a CMulti (OnLoaded @0xbc420 = CMulti::AckJoinFailure); the
 // canonical class comes from <Gruntz/Multi.h>, now included at the top - the minimal
-// local re-declaration is dissolved.
 
 RVA(0x000dd830, 0x1e3)
 i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {

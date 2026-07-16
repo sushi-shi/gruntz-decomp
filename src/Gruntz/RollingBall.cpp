@@ -56,7 +56,6 @@
 // The class's activation-coordinate registry singleton (@0x6461b0): the fixed
 // [2000,2010] range built by the shared registry ctor (0x408710). It is the shared
 // <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
-// CRollingBallActReg view is dissolved); the DATA-pinned global symbol is unchanged.
 DATA(0x002461b0)
 CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
                              // CActReg extent covers the interior fields
@@ -123,12 +122,10 @@ CRollingBall::~CRollingBall() {}
 // The direction-name match builds an MFC CString temp (static-linked helpers,
 // reloc-masked: CString() = 0x1b9b93, operator=(LPCSTR) = 0x1b9e74, ~CString() =
 // 0x1b9cde). The real CString (via <Mfc.h> from RollingBall.h) makes MSVC emit the
-// temp's /GX cleanup state like retail (the ex CRbMiniStr view is dissolved - the
 // same real-CString spelling KitchenSlime's ctor uses).
 
 // The ctor's bound object (m_object == m_38) IS the canonical CGameObject and the
 // game registry IS the canonical CGameRegistry (g_gameReg, typed above): the ex
-// CRbCtorObj / CRbCtorSub / CRbReg views are dissolved onto them - m_screenX/m_screenY
 // (+0x5c/+0x60), m_latchedAnimId (+0x74), m_7c->m_bc (AnimWorkerObj per-tile time),
 // m_118/m_124/m_12c, m_areaL..m_areaB (+0x144..+0x150), m_194, and the registry's
 // m_isEasyMode/m_134 all read cast-free through the canonical members.
@@ -594,6 +591,5 @@ i32 CRollingBall::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-// (CRbCtorObj/CRbCtorSub/CRbMiniStr/CRbReg/CRollingBallActReg are dissolved onto
 //  CGameObject/AnimWorkerObj/CString/CGameRegistry/CActReg; CRollingBallActEntry's
 //  SIZE_UNKNOWN lives in <Gruntz/RollingBall.h> beside its definition.)

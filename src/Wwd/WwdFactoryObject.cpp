@@ -16,14 +16,12 @@
 #include <string.h>                  // strcpy/strlen (blit-param label buffer)
 #include <Wwd/WwdGameObjectFamily.h> // the CWwdGameObjectE/A/F/B/C dtor-family hierarchy
 #include <Gruntz/WwdGameObject.h>    // canonical CWwdGameObject (Init/Setup* out-of-lines)
-// (LogicRecord.h dissolved: the record IS AnimWorkerObj - Consume @0x15b340 below)
 #include <Gruntz/Sprite.h>           // CSprite (GetFrame @0x15cc30 + the Clamp pair)
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (the 0x17c worker; 3-arg ctor @0x15b300)
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (ctor/dtor/Advance)
 #include <DDrawMgr/AniAdvance.h>     // CAniRenderCtx/CAniDesc/CAniBlitTrigger satellites
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
-// (DDrawBlitParam.h dissolved onto <Gruntz/AniAdvanceCursor.h>, included above)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read/Write)
 #include <Wwd/WwdFactoryObject.h> // CWwdFactoryObject/CDDrawRect
 #include <Wwd/WwdGameObjCtor.h>   // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker
@@ -42,7 +40,6 @@ namespace Rng {
 extern float g_sndPanScale; // 0x5eff2c
 extern i32 g_aniCueItem;    // 0x61ab24 (== g_sndCueTag)
 
-// (The former CDDrawBlitParamSrc view of the resolved +0x14 source is DISSOLVED
 // onto the real CAniElement (<Gruntz/AniElement.h>): its "+0x0c elements/+0x10
 // count" are m_records.m_pData/m_nSize and its +0x20 the same float m_scale.)
 #include <Gruntz/AniElement.h>
@@ -61,7 +58,6 @@ extern i32 g_aniCueItem;    // 0x61ab24 (== g_sndCueTag)
 // serialize reaches is CDDrawSurfaceMgr::m_leaf (a CDDrawSubMgrLeaf, KeyOfValue_152d30 /
 // +0x10 map). The m_leaf@+0x2c layout is unique to the CDDrawSurfaceMgr family, and fold #1
 // this wave typed CDDrawSurfaceMgr::m_leaf as CDDrawSubMgrLeaf*, so the former per-TU
-// CDDrawBlitWorker shell is DISSOLVED onto it - the two serialize sites cast the int owner
 // to the real class, exactly as WwdObjMgr / WwdGameObjectRender already do.
 
 // ---------------------------------------------------------------------------
@@ -215,7 +211,6 @@ void CWwdGameObjectE::Notify_15b650(void* p) {
 // derived ??_7CAniAdvanceCursor (0x5f0128, bound), run the CLoadable slot-7 Unload/Reset
 // (0x15c2c0; the (CDDrawBlitParam*) cast reloc-masks CAniAdvanceCursor's own Reset there),
 // reset the CLoadable header (m_04/m_08/m_0c), then fold the grand base (??_7CObject
-// 0x5e8cb4 @0x15b71b, disasm-verified). Dissolved from the ex-C15b6d0 : CObject placeholder
 // onto the real class so the vptr stamp binds to ??_7CAniAdvanceCursor@@6B@ (was RELOC_VTBL).
 RVA(0x0015b6d0, 0x5b)
 CAniAdvanceCursor::~CAniAdvanceCursor() {

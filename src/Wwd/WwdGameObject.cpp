@@ -23,7 +23,6 @@
 #include <Gruntz/ResMgr.h>                // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // THE canonical CDDrawWorkerRegistry (was shadowed here)
 #include <Gruntz/Sprite.h>                // CSprite (frame-data), CMapStringToOb, CFrameArray
-// (LogicRecord.h dissolved: CLogicRecord IS AnimWorkerObj - one 0x17c class)
 #include <DDrawMgr/AnimWorkerObj.h>    // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
 #include <DDrawMgr/DDrawWorker.h>      // CDDrawWorker (frame collection; slots 10/14/15/16)
 #include <Bute/SymTab.h>               // CSymTab iteration (FirstSym/NextSym{,2,3})
@@ -56,7 +55,6 @@
 // 0x150540, below) reach the very same +0x0c pointer as `((CResMgr*)m_0c)->m_10->m_10map`
 // - the identical mgr->m_10->map hop the former `WwdMgr`+`WwdMgrSub10` view pair
 // re-modelled privately. The six private views that described its sub-objects are
-// DISSOLVED (2026-07-13) onto the real classes they always were:
 //
 //   view (deleted)      real class (offset in CResMgr)        what proved it
 //   ------------------  ------------------------------------  ---------------------------
@@ -80,7 +78,6 @@
 // The "spatial grid" was never a grid: it is the draw surface, and Test()'s non-camera
 // branch culls against the surface's width/height.
 //
-// The WwdMgr + WwdCamHolder views are DISSOLVED (given-back deferral, this wave) onto
 // the canonical CDDrawSurfaceMgr (m_mgr, typed in <Gruntz/WwdGameObject.h>) and CGameLevel:
 //   WwdMgr member      -> CDDrawSurfaceMgr member (same offset)
 //   -----------------     -------------------------------------
@@ -106,7 +103,6 @@
 // the canonical <Gruntz/WwdGameObject.h> - it is CWwdGameObject's snapshot format,
 // not a per-TU view.)
 
-// (The former WorkerSub view of the worker's +0x18 sub-object is DISSOLVED: the
 // object is the bound logic leaf - CUserBase/CUserLogic (<Gruntz/UserLogic.h>;
 // AnimWorkerObj::m_logic types the same slot) - and its "+0x8 virtual" is
 // CUserBase slot 2 = GetTypeTag, exactly the type tag the snapshot stores.)

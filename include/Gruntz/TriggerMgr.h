@@ -75,7 +75,6 @@ struct CGameObject; // <Gruntz/UserLogic.h> - what CSpriteFactory::CreateSprite 
 // view's offsets. A +0x120 shift would have produced zero such matches.)
 typedef CGrunt CTmCell;
 // The +0x22c level object IS the world/resource holder CSpriteFactoryHolder
-// (<Gruntz/GameRegistry.h>) - the ex-`CTmLevel` view (TriggerMgrViews.h) is DISSOLVED
 // 2026-07-15: all three of its members land on the canonical holder at the identical
 // offsets and names (m_8 CSpriteFactory* / m_24 the level / m_28 CSndHost*), and the
 // finish-level driver reaches the SAME +0x28 cue registry through g_gameReg->m_world.
@@ -432,7 +431,6 @@ public:
 
     // 0x78060: HudRect (TriggerMgr.cpp) - the combat-region scan CPlay's
     // DispatchHudClick/PostHudRect drive on the world's +0x68 slot (== this mgr;
-    // ex ?HudRect@WorldTimeline@CWorld@@, the dissolved Play.h view). Screen-
     // transform the world rect via m_level's view, then (re)arm combat state on
     // every grunt slot whose 30x30 box hits it.
     void HudRect(RECT r, i32 flag);
@@ -476,7 +474,6 @@ public:
     // (ILT 0x33aa / 0x3d1e) - both already reconstructed on THIS class.
     i32 CenterOnGroup(i32 doSelect);
 
-    // --- the ex-CGruntTileMgr method set (Grunt.h view, DISSOLVED 2026-07-14).
     // CGrunt::m_tileMgr (+0x260) IS this class - every dispatch site loads
     // ecx=[grunt+0x260] and its thunk lands in this class's method band; the view's
     // ClaimTile/ReleaseTile/LookupTile/SetTileState4/ArrivalNotify6/... were alias
@@ -506,7 +503,6 @@ public:
     // a placeholder view of THIS one: its only member m_22c (the world holder) IS
     // m_level, its Prepare thunk 0x400c IS CombatCue @0x7b930, it was "reached
     // through the registry's +0x68 slot" (m_cmdGrid == this class) and the body
-    // sits inside this class's own TU band. Dissolved 2026-07-15.
     i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4); // 0x7b440
     // 0x6e7e0: the HUD/pixel grunt probe (5-byte always-0 stub); body in
     // TriggerMgrGrid.cpp (ex ?FindAtPixel@CGruntTileMgr@@).
@@ -515,7 +511,6 @@ public:
     // 0x6c130: the settled-move tile-switch/plate commit (__thiscall ret 0xc; body in
     // TriggerMgrGrid.cpp - by first-link contiguity it sits between ResetCell and
     // ApplySwitch inside this class's own obj). Ex the `CTileWireLogic` .cpp-local view,
-    // DISSOLVED 2026-07-15: every retail dispatch site is `ecx = [grunt+0x260]`
     // (CGrunt::m_tileMgr == THIS class), and the view's only own member, m_level@+0x22c,
     // IS m_level (identical level->plane clamp walk as the sibling ApplySwitch). The
     // "m_triggerContainer @+0x2e4" the view carried was NOT on this class at all: retail
@@ -576,7 +571,6 @@ public:
     // Declared-only (reloc-masked). These two are all that BattlezMapConfig.cpp's
     // DUPLICATE `class CTriggerMgr` added - a second, divergent definition of THIS class
     // inside a .cpp (its "m_objListHead @+0x04" is m_baseList's list head, its
-    // "m_grid[0x3c] @+0x1c" is m_grid). That view is dissolved.
     i32 Probe(
         i32 cell,
         i32 sx,
@@ -609,7 +603,6 @@ public:
     i32 m_rowStateB[4];            // +0x20c  per-row state band B
     i32 m_rowStateC[4];            // +0x21c  per-row state band C
     CSpriteFactoryHolder* m_level; // +0x22c  the active world/resource holder (SetLevel);
-                                   //         ex-CTmLevel view - see the dissolve note above
     // +0x230: the multiplayer armed gate (ex-CMultiSub68 view's m_armed) ==
     // the companion state word cleared by SetLevel; serialized at 0x1339/0x1545.
     i32 m_armed;                      // +0x230

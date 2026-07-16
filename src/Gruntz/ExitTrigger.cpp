@@ -52,7 +52,6 @@ CExitTrigger::~CExitTrigger() {}
 // element (<Gruntz/GameRegistry.h>), indexed by the bound object's area index
 // m_124: m_20 the live gate, m_0c the stored id, m_220/m_224 the snapped position.
 
-// (The former CExitCueSink view of g_gameReg->m_68 is DISSOLVED (2026-07-16):
 // the "+0x68 cue receiver" IS the CTriggerMgr at m_cmdGrid, and its +0x2a0 IS
 // the canonical m_pendingFx tracked-grunt-logic slot (multi-writer: the fx
 // deserializer stores the spawned fx sprite's m_7c->m_logic there; this ctor

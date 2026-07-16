@@ -240,7 +240,6 @@ CDroppedObjectShadow::~CDroppedObjectShadow() {}
 // ===========================================================================
 
 // EXACT since the merge: the old "throwing-operator-new /GX frame wall" (~32%
-// under the base-flags ObjectLogicPump.cpp parking) dissolved - this TU's true
 // /GX profile raises the operator-delete-on-ctor-throw frame retail has - and
 // the UNSIGNED switch key emits the retail ja/jbe range checks
 // (docs/patterns/switch-key-unsigned-ja-vs-jg.md).

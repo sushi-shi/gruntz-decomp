@@ -49,7 +49,6 @@ typedef CFileMemBase CSerialArchive;
 // The arrays link their blocks in with the global ::operator new (??2@YAPAXI@Z
 // @0x1b9b46) / ::operator delete (??3@YAXPAX@Z @0x1b9b82) - the real NAFXCW CRT
 // allocators (called cast-free via <Mfc.h>); the former MapAlloc/MapFree fake
-// externs (which only reloc-masked) are dissolved.
 
 // ---------------------------------------------------------------------------
 // CMapArrayA - a small growable array embedded in CMapMgr at +0x30 (0x0c bytes).

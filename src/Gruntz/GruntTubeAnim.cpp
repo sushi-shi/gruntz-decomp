@@ -8,7 +8,6 @@
 // player and stamps its +0x1a0 blit param + +0x15c descriptor.
 //
 // This IS a CGrunt method on the canonical CGrunt (<Gruntz/Grunt.h>): the offset-
-// faithful local CGruntTube view is DISSOLVED - m_14 is CGrunt::m_14 (CAnimLookupNode),
 // m_154 is CEntranceAnimPlayer, m_1c0 is m_animSetName, m_394 is m_poseWalk, m_43c is
 // m_entranceCell (GruntEntranceCell), m_470 is the m_cells[9] entrance-record table
 // (the record's +8 CString is m_walk). The four reset helpers were reloc-masked thunk

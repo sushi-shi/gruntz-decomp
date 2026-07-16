@@ -42,7 +42,6 @@
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
 
-// (The CProjAnim/CProjRenderObj facet forwarders are DISSOLVED (2026-07-16): the
 // render object IS the canonical CGameObject and the +0x1a0 sub-object its
 // embedded CAniAdvanceCursor - the sites call Setup_15c2d0/Advance/ApplyName/
 // ApplyLookupGeometry directly.)
@@ -105,7 +104,6 @@ const double g_movingLogicMax = 2147483646.0;
 // this TU so the inline ctors emit their vptr stores. Bodies are not matched.
 // (slot 16 Update is defined in MovingLogicUpdate.cpp, referenced externally.
 // CProjectile's slot-17 anchor is the real LoadProjectileSprites body below -
-// the old `ProjectileVfunc` placeholder is dissolved into it.)
 // ---------------------------------------------------------------------------
 CMovingLogic::~CMovingLogic() {}
 

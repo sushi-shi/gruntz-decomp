@@ -242,7 +242,6 @@ extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 // WwdGameReg view (Grunt.cpp style); the vehicle path reads it through the
 // MFC-side CGruntzMgr view with a per-use cast (same load bytes).
 
-// (The CGruntCmdObj / CGruntAnchor / CGruntRegistrar views are GONE - DISSOLVED
 //  2026-07-15 onto the canonicals. CGruntCmdObj WAS ::CGrunt: m_10 == m_10
 //  (CGameObject*), m_17c/m_180 == m_lastTilePxX/m_lastTilePxY, m_198 == m_198,
 //  m_1a0 == m_moveMode, m_260 == m_tileMgr, m_region0/m_region1 == m_2b0../m_2c0..

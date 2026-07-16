@@ -176,7 +176,6 @@ static void GruntScratchTeardown() {
 // the 4-direction rolling-ball sprites.
 //
 // The ability-sound resource chain (m_158 -> m_0c -> m_28) IS the canonical facet
-// web (views dissolved 2026-07-14): m_158 is the sprite's AnimWorkerObj (Grunt.h,
 // ctor-proven), its m_0c the owner/world context == the CSpriteFactoryHolder facet
 // (<Gruntz/GameRegistry.h>), whose m_28 is the CSndHost cue registry
 // (<Gruntz/SoundCue.h>: emit gate m_emitGate @+0x30, CMapStringToPtr map @+0x10,
@@ -221,7 +220,6 @@ enum SpellzEffect {
 
 // (The P offset-cast macro is GONE, 2026-07-16: its two residual reaches are typed -
 // +0x260 IS Grunt.h's m_tileMgr, now canonically CTriggerMgr* (the CGruntTileMgr
-// view it was waiting on dissolved 2026-07-14), and the +0x320 m_31c head walk uses
 // GetHeadPosition() + the shared CoordNode (<Gruntz/CoordNode.h>).)
 
 // (CombatCue is GONE - it was LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem

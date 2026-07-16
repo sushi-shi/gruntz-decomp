@@ -88,7 +88,6 @@ extern "C" void WormholeTypeMarker();
 // ---------------------------------------------------------------------------
 // The game-object registry list SpawnPartners walks IS the world's object chain:
 // g_gameReg->m_world (the world CDDrawSurfaceMgr; the CSpriteFactoryHolder/
-// CGameObjWorld views are dissolved) -> m_childGroup (+0x08) is the canonical
 // CDDrawChildGroup (== CWwdObjMgr); its CObList @+0x10 heads at +0x14 and each
 // CDDrawGroupNode chains via m_next with the CGameObject at +0x08 - the SAME
 // canonical shape CGameLevel::VisitVisible walks (<DDrawMgr/DDrawChildGroup.h>).
@@ -96,7 +95,6 @@ extern "C" void WormholeTypeMarker();
 // (the CTeleporter selection-record node holder at mgr->m_cmdGrid->m_recList's head
 // is the real MFC CPtrList node - its +0x8 data (the {row,col} index pair) is reached
 // through the inline CPtrList::GetHead() accessor; the former CTeleSelHolder view is
-// dissolved.)
 // (the CTeleMgrSub view at mgr->m_7c is GONE - that object is the CBattlezData score
 // accumulator, and its "+0x28 bumped on a teleport" is CBattlezData::m_28, the
 // wormhole/teleporter use counter FormatHudText reads back as its case-7 stat.

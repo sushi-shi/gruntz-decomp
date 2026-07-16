@@ -53,20 +53,17 @@ extern "C" u32 g_engineFrameDelta;
 // The active-anim descriptor is the resolved geometry element (m_38->m_1a0.m_14, a
 // CAniElement): the SetAnimEx idiom reads its first frame record's (CAniRecordView)
 // seed frame (m_seedFrame). Same idiom TileLogicPump uses. (The former HazAnimElem/
-// HazAnimDesc .cpp-local views are dissolved onto <Gruntz/AniElement.h>.)
 #include <Gruntz/AniElement.h> // CAniElement + CAniRecordView (the SetAnimEx idiom)
 
 // ---------------------------------------------------------------------------
 // The game registry singleton (0x64556c) is the CGruntzMgr view here; its sub-object
 // slots ARE real modeled classes, so the static-hazard paths reach them cast-free
-// (the ex-HazSwitchSrc/HazSndRoot/HazSndCat views were dissolved, 2026-07-14):
 //   m_curState -> CState               (the ctor switches on CState::m_levelType @+0x20)
 //   m_world    -> CSpriteFactoryHolder (m_animRegistry @+0x2c is CAnimRegistry, whose
 //                 m_10map @+0x10 is the CMapStringToOb the "GO" cue resolves in).
 // The map's VALUE record is a CAniElement (the anim registry's 'ANI' element - the
 // SAME value type the geometry lookup / m_geoId resolves to, and read here as an int
 // at +0x24 == CAniElement::m_total, the accumulated frame total used as the per-effect
-// AniPad bias). (The former HazLookupEntry .cpp-local view is dissolved onto CAniElement.)
 // ---------------------------------------------------------------------------
 #include <Gruntz/ResMgr.h> // CAnimRegistry (m_world->m_animRegistry->m_10map cue lookup)
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at

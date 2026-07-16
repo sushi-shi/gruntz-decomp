@@ -11,7 +11,6 @@
 // reached through its real typed member on the canonical class (the old F/P raw-offset
 // cast-hiding macros are gone; only offsets + code bytes are load-bearing).
 //
-// The .cpp-local views are DISSOLVED onto the canonical classes (mirroring the sibling
 // GruntArrivalScan.cpp): CGruntScan IS CGrunt (this method's owner), CScanReg IS
 // CGameRegistry (g_gameReg), CScanTileMgr IS CGruntTileMgr (m_tileMgr / g_gameReg->
 // m_cmdGrid, the CGrunt* m_grid[4][15] board), CScanCueMgr's cue fire IS

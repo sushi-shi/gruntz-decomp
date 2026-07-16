@@ -45,7 +45,6 @@ const double g_spotRateMul = -1.0; // 0x5ea3f8
 // +0x78; <Gruntz/LightFxMgr.h>): the ctor indexes its m_tables[10] shade-table array
 // (+0x14) by m_object->m_11c and stores the CShadeTable* as the draw-fill arg; the
 // alpha-blend gate is the registry's m_134 discriminator. (The ex CSpotMgrTable view
-// is dissolved onto the real class.)
 extern "C" CGameRegistry* g_gameReg;
 
 // CSpotLight : CUserLogic is modeled in <Gruntz/SpotLight.h> (canonical header,
@@ -156,9 +155,7 @@ i32 CSpotLight::RunAct(i32 id) {
 // its GetTypeId() (slot 8, +0x20) is 5 - the SAME map+GetClassId==5 probe Play.cpp's
 // serialize Read uses. The Write path stores the object's id (CGameObject::m_188).
 // The per-serialize round counter g_serialCounter bumps each pass. (The ex CSpotFocus
-// view - a fabricated 9-virtual shell - is dissolved onto CGameObject: its "GetType"
 // was CGameObject's slot-8 GetTypeId and its +0x188 the object's archive-cue id;
-// the ex CSpotResMgr view is dissolved onto CSpriteFactory.)
 
 // CSpotLight::SerializeMove @0x0b2050 (vtable slot 1) - chain the base + the +0x34
 // object-reference, then transfer the light's own state through the archive keyed on
@@ -274,7 +271,6 @@ extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 // the Tick checks (!= 0x38) is CGrunt::m_gruntKind (+0x258); +0x10 is the grunt's
 // bound geometry source (a game object with screen coords at +0x5c/+0x60, undeclared
 // base padding on CGrunt so reached by documented offset). The ex CSpotTarget view
-// is dissolved onto CGrunt. (The ex CSpotLaser view of m_focus is likewise dissolved
 // onto CGameObject: its +0x5c/+0x60 "move-delta" are m_screenX/m_screenY.)
 
 // CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is
@@ -358,5 +354,3 @@ i32 CSpotLight::Tick_0b1af0() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CSpotActEntry);
-// (CSpotTarget dissolved onto the real CGrunt; see the note above the Tick.)
-// (CSpotFocus + CSpotLaser dissolved onto the real CGameObject; see the notes above.)

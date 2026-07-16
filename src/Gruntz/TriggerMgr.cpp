@@ -127,7 +127,6 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
 // regalloc/CSE wall (~80% - and 0x78060 is not play's .obj, so the frame is re-scored):
 // logic + instruction selection match, but cl pins `this`->ebx (retail ebp) and CSEs
 // view->m_viewport once where retail reloads it per rect pair (a symmetric ebx<->ebp swap).
-// (ex ?HudRect@WorldTimeline@CWorld@@ - the dissolved Play.h view; the receiver IS
 // this CTriggerMgr: the "+0x1c grunt slots" are m_grid, "+0x22c viewHost" is
 // m_level, and the combat facets are the canonical CGrunt/CGameLevel shapes.)
 RVA(0x00078060, 0x18d)
@@ -423,7 +422,6 @@ void CTriggerMgr::ClearRecords() {
 // parallax scale unless the plane is origin-fixed (m_flags bit0), store it as the
 // plane's scroll origin and recompute the plane coords. Called by CMulti::PumpB
 // (when m_armed) and CPlay::Render. The ex-CSnd788d0 "sound-emitter" placeholder
-// view is DISSOLVED: the field walk was CTriggerMgr's own (m_grid[m_recX*15+
 // m_recY]->m_object, m_level->m_24->m_5c the level-view -> plane chain), and its
 // "Emitter788d0" was the canonical plane (CPlaneRender == CDDrawWorkerHost:
 // m_flags/m_scaledX/m_scaledY/m_scaleX/m_scaleY + RecomputePlaneCoords).
@@ -457,7 +455,6 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
 // ex-iconloaders unit, merged wholesale per dossier 10b (its 4 fns are embedded
 // between the CTriggerMgr runs; the unit's other two fns 0x1c070/0x1e720 stay in
 // IconLoaders.cpp). ALL FOUR are ::CTriggerMgr methods (the ex-`EngineLabelBacklog`
-// placeholder host is DISSOLVED 2026-07-16: its m_factoryHolder @+0x22c IS m_level,
 // its m_cameraSprite @+0x23c IS m_goal - see the LoadCameraSprite proof below);
 // the singleton is the canonical CGameRegistry via g_gameReg (<Gruntz/Grunt.h>).
 // ===========================================================================
@@ -1683,7 +1680,6 @@ void FormatStr(CString* out, const char* fmt, ...);
 // CTileImageSet*), its grid desc @+0x5c is m_mainPlane - and BrickzButeObj ("8 filler
 // slots then GetTypeCode @+0x20") is CTileImageSet (GetCollisionAt @+0x20) itself.
 // FOLDED (Fable lane 2026-07-13): the Brickz* family (Brickz.h / MapMgr.h::m_attrMgr /
-// BrickzCellFlags_077790.cpp) is dissolved onto CGameLevel/CLevelPlane/CTileImageSet;
 // the rock-break sites below use the real classes.
 
 extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
@@ -1828,7 +1824,6 @@ SIZE_UNKNOWN(CMapStringToOb);
 // ===========================================================================
 // CTriggerMgr::CombatCue (0x7b930) - merged from GruntTileMgr.cpp per
 // dossier 10b (the spell-area cue on the 4x15 board; embedded singleton, this
-// TU by retail position). The ex-CGruntTileMgr receiver view is dissolved:
 // this IS the trigger mgr (ecx = grunt->m_tileMgr == g_gameReg->m_cmdGrid).
 // ===========================================================================
 // The LightFx / flash key strings (reloc-masked .rodata literals).
@@ -1994,7 +1989,6 @@ void CTriggerMgr::StopPendingFx() {
 // CTriggerMgr::LoadGruntResurrectTuning (0x7be60) - merged from
 // GruntResurrectRadius.cpp per dossier 10b (the resurrect-radius pass, sibling
 // of the rock-break scan; called by CGrunt::LoadGruntAbilityTuning @0x57100 via
-// ILT 0x1fff). THE Res* VIEWS ARE DISSOLVED (2026-07-14) - the whole donor
 // family was CTriggerMgr + its canonicals, proven by the methods it masked:
 //   CGruntResurrector           -> CTriggerMgr: its `Resurrect` (ILT 0x40bb) is
 //        ?PlaceObject@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z @0x6b6d0 and its `Notify`
@@ -2013,7 +2007,6 @@ void CTriggerMgr::StopPendingFx() {
 // ===========================================================================
 // The resource-config manager @0x2453d8 IS the canonical CButeMgr singleton g_buteMgr
 // (?g_buteMgr@@3VCButeMgr@@A, from <Bute/ButeMgr.h>; the former ResButeMgr {} view + its
-// (CButeMgr*) cross-casts were a fake facet - dissolved onto the real class).
 
 // @early-stop
 // regalloc/frame-layout wall (~65%): instruction selection, calls, constants,
@@ -2195,7 +2188,6 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
 // animation. g_sndEnabled/g_sndCueTag/g_killCueClock are declared in the
 // rock-break section above; g_frameTime in <Gruntz/TriggerMgrViews.h>.
 //
-// THE VIEWS ARE DISSOLVED (2026-07-14): ex-`CFinishLevelState` was CTriggerMgr
 // itself - m_22c==m_level, m_288==m_phase, the +0x290 pair==m_timerBase/
 // m_timerWindow (written as lo,hi=0 - the u32 zero-extend spelling), m_2a0==
 // m_pendingFx (the SAME CGrunt* + ResolveDeathAnimation the +0x2a0 slot's other
@@ -2626,7 +2618,6 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 // ===========================================================================
 // CTriggerMgr::CenterOnGroup (0x7cf40) - merged from GroupOps.cpp per dossier
 // 10b (directly abuts ?CenterSelectionGroup@CTriggerMgr @0x7cd40, same
-// selection feature). THE CSel*/CMapHolder*/CGroupSel VIEWS ARE DISSOLVED
 // (2026-07-14) - the whole donor family was CTriggerMgr + its canonicals:
 //   CGroupSel     -> CTriggerMgr: +0x1c grid == m_grid, +0x230/0x234/0x238 ==
 //        m_armed/m_recX/m_recY, +0x244/+0x24c == m_recList's head/count (the MFC

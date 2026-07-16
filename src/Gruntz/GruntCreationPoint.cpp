@@ -46,7 +46,6 @@ CGruntCreationPoint::~CGruntCreationPoint() {}
 
 // ---------------------------------------------------------------------------
 // The game registry singleton (0x24556c) is the canonical CGameRegistry. The former
-// CreationGameReg/CreationRefSlot local views are dissolved onto it: the level
 // sprite-ref table is m_spriteFactory (+0x74; GetSel via the 0x4165 GetByIndex thunk,
 // NO-body so the call reloc-masks), the mode discriminator is m_134, and the +0x158
 // "ref-index grid" is the per-player focus-slot array reinterpreted (row stride 71

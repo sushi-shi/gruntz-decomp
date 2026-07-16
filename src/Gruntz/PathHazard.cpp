@@ -120,7 +120,6 @@ CPathHazard::CPathHazard() {
 RVA(0x00013340, 0x44)
 CRainCloud::~CRainCloud() {}
 
-// (The former CPathCtorObj/CPathCtorSub ctor views are DISSOLVED (2026-07-16):
 // the bound object is the canonical CGameObject (screen pos m_screenX/Y, z-key
 // m_latchedAnimId, flags m_flags; the WWD record stores the raw waypoint tile
 // coords in the extent/area/m_154.. slots - a per-kind ROLE of the same fields)

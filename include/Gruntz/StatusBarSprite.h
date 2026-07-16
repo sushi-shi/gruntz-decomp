@@ -38,5 +38,6 @@ typedef i32 (CStatusBarSprite::*StatusBarSpriteHandler)();
 struct CStatusBarSpriteActEntry {
     StatusBarSpriteHandler m_fn;
 };
+SIZE_UNKNOWN(CStatusBarSpriteActEntry); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CSTATUSBARSPRITE_H

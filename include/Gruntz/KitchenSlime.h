@@ -35,7 +35,6 @@ public:
     // The bound CGameObject IS the slime's level/anim data (inherited m_object == m_38,
     // the same object). The two accessors keep the two distinct base-member loads
     // retail emits (level state read through m_object, the anim/frame-cache facet
-    // through m_38); both dissolve to the canonical CGameObject - the slime reads its
     // fields (m_screenX/m_screenY, m_124, m_12c, m_extentL..m_extentB, m_areaL, m_7c->
     // m_bc via AnimWorkerObj) cast-free, and reaches the leaf-embedded +0x1a0
     // CAniAdvanceCursor / the +0x190.. frame-cache role-union by documented address.

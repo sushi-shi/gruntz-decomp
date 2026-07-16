@@ -4,7 +4,6 @@
 // over the trigger-mgr grunt grid, issuing move/attack commands and re-arming a
 // random-wander fallback. /base - no destructible locals.
 //
-// THE VIEWS ARE DISSOLVED (2026-07-14). The whole "self-contained CGrunt view"
 // family was the canonical model, and every "reloc-masked engine callee" was a
 // phantom alias of an ALREADY-RECONSTRUCTED method (each read off its ILT thunk):
 //   Grunt        -> CGrunt (every field already carries the same canonical name:

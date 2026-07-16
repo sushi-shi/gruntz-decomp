@@ -61,7 +61,6 @@
 // The class's activation-coordinate registry singleton (@0x644638), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). It is the shared
 // <Gruntz/ActReg.h> CActReg archetype directly (the ex empty-derived
-// CFortressFlagActReg view is dissolved); the DATA-pinned global symbol is unchanged.
 DATA(0x00244638)
 CActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
                               // interior fields 0x24463c..0x244658 are members)
@@ -624,7 +623,6 @@ void RegisterXLogic_6447f8() {
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 // (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
-//  definitions in FortressFlag.h/Particlez.h; CFortressFlagActReg is dissolved to
 //  CActReg.) WwdRefSlot stays a flagged .cpp view - it is a genuine element of the
 //  unmodeled CGameRegistry m_focusSlots ref-index sub-array (@identity-TODO).
 SIZE_UNKNOWN(WwdRefSlot);

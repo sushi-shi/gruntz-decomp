@@ -41,7 +41,6 @@ class DirectSoundMgr; // folded GruntSoundSample
 // The grunt HUD/indicator sprites (health/stamina/toy/toytime/wingz/powerup/
 // selected) are plain CGameObject instances built by the factory (CreateSprite
 // -> CGameObject*). The former CHudSprite / CSpriteRegistrar / CSpriteRegRecord
-// views are DISSOLVED onto the real classes: the created object IS a CGameObject
 // (m_flags @+0x08 is the retire-flag word; m_118/m_124 the rolling-ball fields);
 // its +0x7c inner object is AnimWorkerObj (Init @+0x10, bound logic leaf m_logic
 // @+0x18); the per-kind registration receiver is that leaf's CONCRETE class -
@@ -53,7 +52,6 @@ class DirectSoundMgr; // folded GruntSoundSample
 // directly, cast-free.)
 // ---------------------------------------------------------------------------
 // (The former CSpriteInner view of GruntObjEntry's +0x7c inner object is
-// DISSOLVED onto the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>): its
 // m_init/m_18/m_bc are m_notify/m_logic/m_bc on the one 0x17c worker class.)
 
 // The on-screen cue gate's visibility rect, reached as
@@ -88,7 +86,6 @@ struct CCueRect {
 // (run-phase view; offsets +0x08/+0x0c/+0x10(->+0x2e4)/+0x14/+0x18/+0x5c/+0x60 match
 // BattlezMapConfig.h exactly) - it folds there, NOT onto CGruntHud.
 // ---------------------------------------------------------------------------
-// (The CGruntHud view is DISSOLVED (2026-07-16): the +0x10 bound object IS the
 // canonical CGameObject - m_8==m_flags, m_40==m_stateFlags, m_4c..m_58 the
 // drawFill quad, m_5c/m_60==m_screenX/Y, m_74==m_latchedAnimId (the 0xcf850
 // z-key), m_e4==m_moveMode (ctor stamps 7=direct then 1), m_134..m_140 the
@@ -141,7 +138,6 @@ CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 // ---------------------------------------------------------------------------
-// (The former CGruntAnimState / CGruntAnimSub / CAnimElem views are DISSOLVED
 // (2026-07-16): the per-grunt "animation player" at CGrunt::m_38 IS the bound
 // CGameObject (the tile-leaf m_38 == obj convention), and the resolvers drive
 // its real methods: SetAnim(key) == ApplyName (0x150540, ret 4), SetAnimEx(key,
@@ -215,7 +211,6 @@ public:
 
 // (The entrance-animation player @CGrunt+0x154 (== CGruntBehaviorLeaf::m_drawState,
 // the ex "CDecayMgr"/"CEntranceAnimPlayer") is a plain CGameObject - the created
-// entrance sprite; <Gruntz/EntranceAnimPlayer.h> is dissolved (2026-07-16). Its
 // method RVAs were CGameObject's own bodies (CacheFirstFrame == ApplyName 0x150540,
 // CacheFrame/CacheFrameIndexed == ApplyLookupSprite 0x1504d0, ApplyLookupGeometry
 // 0x1505b0, ApplyGeometryDirect 0x58b60), its ctor-seeded m_e8/m_f4 are
@@ -259,7 +254,6 @@ void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
 
 // The grunt's current-anim-name resolver is the shared global g_typeColl @0x6bf650
 // (RTTI CTypeKeyColl, <Gruntz/TypeKeyColl.h>). The former CAnimNameResolver /
-// g_animNameResolver view (a duplicate of this global) is DISSOLVED: its methods
 // (GetNameRecord/GetNameRecords/ScratchResolve/Probe/Reserve/MapCell*) now live on
 // the canonical CTypeKeyColl, and the consuming grunt TUs reference `g_typeColl`
 // (extern CTypeKeyColl, DATA 0x002bf650) directly. GetNameRecord (thunk 0x4310f0)
@@ -399,7 +393,6 @@ struct GruntSoundEntry {
     char m_pad0[0x10];
     DSoundCloneInst* m_10; // +0x10  the sample factory
 };
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
 // CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 SIZE_UNKNOWN(GruntSoundInner);
 struct GruntSoundInner {
@@ -450,7 +443,6 @@ struct GruntCoordNode {
 // ---------------------------------------------------------------------------
 // The grunt's path/occupancy board (CGrunt+0x260) IS the CTriggerMgr
 // (<Gruntz/TriggerMgr.h>) - the same object the registry holds at
-// g_gameReg->m_cmdGrid (+0x68). The former `CGruntTileMgr` view is DISSOLVED
 // (2026-07-14): every one of its ~24 method thunks resolves into CTriggerMgr's
 // method band on this receiver (each verified by chasing the caller's ILT jmp):
 //   ClaimTile        0x29cd -> 0x6bfd0  ResetCell
@@ -502,7 +494,6 @@ i32 __stdcall GruntDropReady029b40(CGrunt* g);
 // its +0x14 gate.
 
 // (The serialization sink CGrunt::Save drives - the ex 13-slot `CGruntArchive`
-// stream view - is DISSOLVED: it IS the one engine stream, CSerialArchive ==
 // CFileMemBase (Read @slot 11 +0x2c / Write @slot 12 +0x30 - the same slots this
 // view modeled). `CGruntArchive` is now a typedef in <Gruntz/UserLogic.h>; the
 // dispatching TUs include <Io/FileMem.h> for the complete type.)
@@ -742,7 +733,6 @@ struct GruntTilePos {
 //     TU including UserLogic.h + the CGrunt-HUD sprite headers compiles clean under the real
 //     MSVC 5.0.
 // The split cost real structure: it was the stated reason for the AnimWorkerSpriteLeaves.h
-// size-views and the GruntIndicatorWorkerHandlers.cpp TU split (both now dissolved).
 //
 // The +0x18 EngStr link is the SHARED CUserBaseLink (<Gruntz/UserBaseLink.h>), torn down via
 // the identical ~EngStr (0x16d2a0).
@@ -1209,7 +1199,6 @@ public:
     i32 m_gruntKind;       // +0x258 (grunt type/kind; ==0x37 -> halve TimePerTile)
     i32 m_entranceArmed;   // +0x25c (entrance: set to 1)
     // +0x260  the path/occupancy board == the ONE CTriggerMgr (same object as
-    // g_gameReg->m_cmdGrid; the ex-CGruntTileMgr view is dissolved - see the
     // thunk-resolution table above). Fwd-declared via <Gruntz/GameRegistry.h>;
     // TUs that dispatch on it include <Gruntz/TriggerMgr.h>.
     class CTriggerMgr* m_tileMgr;
@@ -1724,7 +1713,6 @@ public:
     // ~25 reconstructed sites. Body in Grunt.cpp (callee-cleans 0x18 either way).
     i32 TileSwitch(i32 col, i32 row, i32 flags, i32 a4, i32 a5, i32 a6); // 0x4b320 (thunk 0x1640)
 
-    // @0x50ce0 (GruntSteps.cpp; ex the CGruntCmdObj .cpp-local view, dissolved
     // 2026-07-15): the toy/vehicle grunt sprite loader - latch the kind (m_198),
     // reset m_moveMode, seed the m_2b0/m_2c0 region blocks per toy kind, build the
     // "<NAME>GRUNT" namespace, and on a switch tile (0x41/0x42) at the committed

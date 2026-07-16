@@ -236,7 +236,6 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
 // fixed [2000,2010] range by the shared registry ctor (0x408710). It IS the shared
 // CActReg (<Gruntz/ActReg.h>); the ex empty CFrontCandyActReg : CActReg subclass was a
 // naming-only alias (the variable name makes the mangled symbol unique + DATA() rebinds
-// it, so the archetype IS the type) - dissolved.
 DATA(0x002460b0)
 CActReg g_frontCandyActReg; // 0x6460b0
 

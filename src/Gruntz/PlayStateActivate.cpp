@@ -11,7 +11,6 @@
 //
 // (2026-07-14: the former PlayActivate/GLS* view nest - PlayActivate, GLSAssetRoot,
 // GLSSubA, GLSSub14, GLSSub2c, GLSObj24, GLSNamespace, GLSMapMgr, plus the local
-// CStatusBarMgr/CDDSurface decl-only shadows - is DISSOLVED: every field was a
 // CPlay/CState/CSpriteFactoryHolder member that already existed under its real name
 // (m_levelBank/m_gruntzBank/m_guts/m_region0Gate/m_region1Gate/m_stepCountdown; the
 // asset root's m_4/m_c/m_24 are m_drawTarget/m_rendererB/m_24 with their real

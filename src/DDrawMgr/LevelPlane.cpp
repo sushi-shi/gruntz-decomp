@@ -48,11 +48,9 @@
 // The +0xb0 spatial grid is a CWwdSpatialMgr (canonical, <DDrawMgr/DDrawWorkerHost.h>).
 // CDDrawWorkerHost::Cleanup_161bf0 prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX
 // complete dtor (~CWwdSpatialMgr @0x163a40, body in WwdSpatialMgr.cpp; the ex-C163a40
-// placeholder identity is dissolved), then ::operator delete (0x1b9b82) frees it.
 // GetSize (0x168430) is the serialized-size accessor (WwdSpatialMgr.cpp defines it).
 // All reloc-masked __thiscall callees (no body).
 
-// [The local "CImageSet3" grid-owner view that sat here is DISSOLVED 2026-07-13:
 // the identity was CDDrawWorkerHost all along - the three bodies read +0x20/+0x24/
 // +0xb0 = m_buffer0/m_buffer1/m_spatialWorker, and 0x161bf0 IS CDDrawWorkerHost's
 // vtable slot 7 per the retail slot map @0x1f0270. The "@identity-TODO name-
@@ -671,14 +669,12 @@ struct CStringAssign {
 };
 
 // The +0x1a0 embedded sub-object is a CLoadable (base ctor 0x156cb0; the former
-// ctor-only `CDDrawSubMgr` view is DISSOLVED - that name was CLoadable's second
 // identity, see <Gruntz/Loadable.h>).
 #include <Gruntz/Loadable.h>
 inline void* operator new(u32, void* p) {
     return p;
 } // placement (embedded sub-object ctor)
 
-// (The WwdObjAnimInit stampable view is DISSOLVED (2026-07-16): the +0x1a0
 // sub-object is CGameObject::m_1a0, the embedded CAniAdvanceCursor; the three
 // zeroed DWORDs are its m_10/m_14/m_element source-binding fields.)
 

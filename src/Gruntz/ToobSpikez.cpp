@@ -131,7 +131,6 @@ typedef void (CToobSpikez::*ToobHandler)();
 // (the ILT to the logic method @0x114bc0). g_buteTree/g_typeCounter/s_codeA/g_typeColl
 // and the shared id->name-slot resolve ActNameLookup all come from <Gruntz/ActNameRegistry.h>
 // (included above) - the SAME shared name registry every per-class RegisterActs uses; the
-// former per-TU copies (local externs + a verbatim ActNameLookup) are dissolved onto it.
 // ---------------------------------------------------------------------------
 
 // The logic handler bound into the registry slot (the ILT to the toob-spikez logic

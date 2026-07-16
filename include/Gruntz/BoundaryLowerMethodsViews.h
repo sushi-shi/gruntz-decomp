@@ -9,7 +9,6 @@
 // reuse. The serialize/archive object folds to the canonical CSerialArchive (Read
 // @ +0x2c / Write @ +0x30).
 // AXE WORKLIST (user mandate 2026-07-05: every struct here is a fake view to be
-// dissolved onto its real class). Folded so far: C99ba0/C9a420 -> CAreaMgr/
 // CSpawnList, C8e880/C915d0 -> CGruntzMgr.
 //
 // HOMED (matcher-1 re-home passes, raw-vtable/thunk-verified):
@@ -117,18 +116,15 @@ SIZE_UNKNOWN(CTypeColl464);
 // (C8e880/CState8e [0x8e880] and C915d0/CMid915 + the duplicate CGruntzSoundInnerZ
 // [0x915d0/0x91620] were views of CGruntzMgr - m_2c == m_curState (slot +0x10 ==
 // CState::Update, the state id), m_14 == the level-loaded gate, m_48 == m_sound
-// (canonical CGruntzSoundZ, m_1c == m_pCurrent). Dissolved onto <Gruntz/GruntzMgr.h>
 // (RegisterSetSkillDebugCmd / MuteMusicIfActive / RestoreMusicVolumeIfActive) +
 // <Dsndmgr/GruntzSoundZ.h>.)
 
 // (C99ba0/CSub99ba0 [0x99ba0] and C9a420/CNode9a420/CBack9a420 [0x9a420] were
-// views of CAreaMgr / CSpawnList / CSpawnEntry - dissolved onto the canonicals;
 // see <Gruntz/AreaMgr.h> + <Gruntz/SpawnList.h>.)
 
 // (0x09cab0 OWNER RECOVERED (Fable A2, 2026-07-14): it is CDDrawWorkerCache::Find
 // - the out-param wrapper over its +0x10 CMapStringToOb (Lookup @0x1b8008); body in
 // StreamRecordLoaders.cpp, class in <DDrawMgr/DDrawWorkerCache.h>. The C9cab0 /
-// CSub9cab0 shells here are dissolved.)
 
 // (0x0b4c40 C0b4c40::Handle re-homed to src/Gruntz/GameObjectCtors.cpp as the REAL
 // CUFO::SerializeMove - vtable slot 1 (thunk 0x3fb7). 0x3035 == CUFO::Serialize
@@ -298,10 +294,8 @@ SIZE_UNKNOWN(C112bf0);
 // CTileTriggerSwitchLogic::DeserializeMatrix. See <Gruntz/TileTriggerSwitchLogic.h>.)
 
 // (0x114f00 forwarder re-homed to src/Gruntz/GruntzMgrCmd.cpp with its CArg114f/
-// CObj114f command-context view chain; dissolved here.)
 
 // (0x1181d0 bounds-grow re-homed to src/Gruntz/NameRecord.cpp with its CBox118/
-// C1181d0 view; dissolved here.)
 
 // 0x118260 - copy-if-grow (copy the 7-dword box in + stash +0xd4).
 struct CRect118 {

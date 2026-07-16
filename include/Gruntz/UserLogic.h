@@ -90,7 +90,6 @@ struct CGameObjLayer {
 };
 
 // (The former CLogicHandlerMap shell + the LogicMap() offset-hop accessor are
-// DISSOLVED (2026-07-16): the logic-handler name map IS the world context's
 // worker cache map - m_0c (the CDDrawSurfaceMgr) -> m_workerCache (+0x14, the
 // CDDrawWorkerCache) -> m_10 (its +0x10 CMapStringToOb; retail Lookup 0x1b8008,
 // which the old `(CMapStringToPtr*)` cast at the AddLogic* sites mis-bound to
@@ -276,7 +275,6 @@ struct CGameObject {
 };
 
 // (The former CGameObjWorld / CGameObjChain / CGameObjNode walking views are
-// DISSOLVED (2026-07-16) onto their proven canonicals: the world IS the
 // CDDrawSurfaceMgr now typed at CGameObject::m_0c (its +0x08 m_objChain ==
 // m_childGroup, +0x14 m_workerCache, +0x24 m_level == m_resolveSubMgr), the
 // chain IS CDDrawChildGroup (17-slot vtable 0x1efdc0; CObList @+0x10, head node
@@ -284,7 +282,6 @@ struct CGameObject {
 // The walkers read the head as `(CDDrawGroupNode*)group->m_list.GetHeadPosition()`
 // - the same `mov reg,[grp+0x14]` bytes.)
 
-// (The former AnimWorkerObj view of the +0x7c sub-object is DISSOLVED onto the
 // canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>, the 0x17c worker/logic
 // record, vtable 0x1efb80): its "Init @+0x10 post-create driver" IS the worker's
 // m_notify fire callback, and m_logic/m_08/m_1c/m_2c/m_30/m_bc/m_f0../m_130 are
@@ -307,7 +304,6 @@ extern i32 g_logicTypesRegistered;
 // __thiscall member that IGNORES `this` (its impl reads the object as its explicit
 // stack arg) - that is why the retail call carries `mov ecx,esi; push obj`. See
 // thiscall-ignoring-this. Declared as a CUserLogic method below; the arg is the
-// bound CGameObject (the former `CLogicTypeBuilder` shell view of it is dissolved).
 
 // ---------------------------------------------------------------------------
 // CUserBase - root of the game-object hierarchy: just a vptr (3 virtuals,
@@ -315,7 +311,6 @@ extern i32 g_logicTypesRegistered;
 // ---------------------------------------------------------------------------
 // The slot-1 serialize archive IS the one engine stream - CSerialArchive ==
 // CFileMemBase (<Gruntz/SerialArchive.h>: Read @slot 11 +0x2c, Write @slot 12
-// +0x30). The old `struct CGruntArchive` 13-slot view (Grunt.h) is dissolved;
 // the name stays as a typedef so every SerializeMove override keeps its spelling.
 // (Do NOT fwd-declare `struct CGruntArchive` anywhere - an elaborated fwd decl
 // silently out-ranks this typedef under MSVC5.)

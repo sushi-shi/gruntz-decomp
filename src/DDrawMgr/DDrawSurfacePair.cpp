@@ -54,7 +54,6 @@
 // The parent manager m_mgr (pair +0x0c) / m_0c (child +0x0c) points at IS the
 // canonical CDDrawSurfaceMgr; its surface pool IS m_ptrColl (+0x1c,
 // CDDrawPtrCollections). The former per-TU views (CDDrawSurfaceMgrT / CDDrawSurfacePool
-// / CDDrawSurfChainA/B, and the method-only CDDrawPtrCollections re-decl) are DISSOLVED
 // onto them (2026-07-14): pool +0x1c = m_ptrColl, caps +0x34 = m_flags, hWnd/device
 // +0x30 = m_hWnd, mgr-err +0x38 = m_lastError, pool-err +0x944 = m_944, and the fake
 // pixel-format chain +0x04 -> +0x10 -> +0x2c is m_pages -> m_frontPair -> m_surface.
@@ -544,7 +543,6 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
 // [SETTLED (was @identity-TODO): the ResLoaders::DrawHost views WERE this class -
 // their +0x2c "counter window" is m_surface (CDDSurface*), whose +0x08 (m_8) is the
 // DC-capable IDirectDrawSurface; GetDC (slot 17, +0x44) / ReleaseDC (slot 26, +0x68)
-// are the standard __stdcall COM slots. The views are dissolved.]
 // __thiscall(rc, n): print n centred into rc using the held surface's DC.
 RVA(0x00164380, 0x98)
 void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {

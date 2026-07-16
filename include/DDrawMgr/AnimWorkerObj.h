@@ -3,7 +3,6 @@
 
 // AnimWorkerObj.h - THE 0x17c-byte per-object logic/anim worker record (vtable
 // ??_7AnimWorkerObj @0x1efb80 / VA 0x5efb80). ONE class: the 2026-07-13 worker
-// unification dissolved every other view of this object onto it -
 //   CLogicRecord      (LogicRecord.h)       - the kill-cue/serialize record API
 //   CGameObjAux       (UserLogic.h)         - the gameplay "+0x7c aux" view
 //   CDDrawChildWorker (DDrawChildGroup.h)   - the walk-broadcast callback view
@@ -31,7 +30,6 @@
 // CUserLogic (<Gruntz/UserLogic.h>). Its "slot-0 Destroy(1)" teardown is the
 // CUserBase virtual scalar-deleting dtor (slot 0), i.e. plain `delete`; its
 // "slot-1 Step(a,mode,c,d)" is CUserBase::SerializeMove. The former
-// AnimWorkerKillable/LogicSub/WorkerSub views of it are dissolved.
 class CUserLogic;
 class CFileMemBase; // the serialize stream (CSerialArchive == CFileMemBase)
 typedef CFileMemBase CSerialArchive;
@@ -47,7 +45,6 @@ struct CGameObject; // the owning wide game object (<Gruntz/UserLogic.h>)
 // Zero = "no callback".
 typedef i32(__cdecl* GameObjNotifyFn)(CGameObject* obj);
 
-// (The former LogicContext owner-context view is DISSOLVED (2026-07-16): the
 // m_0c owner context IS the CDDrawSurfaceMgr (== the owning object's m_0c, now
 // typed in <Gruntz/UserLogic.h>). Its "+0x08 grid/key-table with the id->object
 // resolver map at +0x48" is the canonical m_childGroup (CDDrawChildGroup) with
@@ -55,7 +52,6 @@ typedef i32(__cdecl* GameObjNotifyFn)(CGameObject* obj);
 // reaches. LogicRecord.cpp reads the typed path.)
 class CDDrawSurfaceMgr;
 
-// The 0x17c-byte worker layout (the union of the dissolved views' knowledge).
 // Real polymorphic: `new AnimWorkerObj` makes cl auto-emit ??_7AnimWorkerObj
 // (masks the retail vtable 0x5efb80) and stamp the vptr in the ctor - no manual
 // vptr store (ALL-VTABLES mandate).

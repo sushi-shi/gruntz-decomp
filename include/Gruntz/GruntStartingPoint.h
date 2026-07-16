@@ -32,5 +32,6 @@ typedef i32 (CGruntStartingPoint::*StartActHandler)();
 struct StartActEntry {
     StartActHandler m_fn;
 };
+SIZE_UNKNOWN(StartActEntry); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

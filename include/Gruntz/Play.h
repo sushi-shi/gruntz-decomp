@@ -87,7 +87,6 @@ struct CHitMarker {
 // PostMessageA HWND directly - retail (e.g. 0xcbb74) loads [[this+4]+4]+4:
 // this->m_4 (the mgr) -> m_gameWnd -> m_hwnd, three loads, not four.)
 
-// (The CWorld facet view of the m_4 owner back-ptr is DISSOLVED (2026-07-16):
 // it was the CGruntzMgr singleton itself - as its own comments proved three
 // times over - re-declared per-header. Every field is the canonical
 // <Gruntz/GruntzMgr.h> member: m_4==m_gameWnd (base CGameMgr; its former
@@ -147,7 +146,6 @@ typedef CFileMemBase CSerialArchive;
 class CImage;
 
 // CPlay::m_grid (@+0x4cc, the level/tile frame grid the GrabTile/AdvanceTile walk drives)
-// IS the canonical CImageSet (<Image/ImageSet.h>). The ex-`CFrameGrid` view is DISSOLVED
 // (2026-07-15): the SAME image-registry map (m_c->m_10->m_10map) yields both the buf80a
 // image SET (typed CImageSet*) and the buf80b GRID (typed CFrameGrid*) - a CMapStringToPtr
 // stores one value type, so they are one class - and every field lines up: m_rowTable @+0x14
@@ -565,7 +563,6 @@ public:
     // EnterHlRow/HitTestLayer/PlaceCursorTarget/UpdateStatusBarTabHighlight/
     // ClickToggle/ClearTabSprites/Deactivate/SetSpritePos/LoadDestructButtonSprite/
     // LoadMainStatusBarSprite/winapi_0fe520_SetRect/RefreshA/HideRect). The former
-    // `GutsSubsystem` view is DISSOLVED; field map: m_state==m_position,
     // m_rect10=={m_10,m_rect14.m_0/m_4/m_8}, m_mode==m_activeTab, m_548==m_hlBusy,
     // m_busyA/m_busyB==m_toggleActive/m_toggleHandle, m_snapPostSel==m_modeArmed,
     // m_614==m_barFrameGate.

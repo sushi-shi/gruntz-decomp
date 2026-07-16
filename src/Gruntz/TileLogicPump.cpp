@@ -23,7 +23,6 @@
 //     pump is LogicDispatchB.
 //   - logicrecorddispatch's LogicDispatchB@0x10d3d0: CBrickz's state pump (its state-0 news a
 //     CBrickz via ILT thunk 0x3701 -> ctor 0x10e800). Modeled on the real CBrickz (the ex
-//     LogicSubRecB view dissolved), identical shape to the 6 sibling pumps.
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA / g_typeCounter / g_typeColl* / ActNameLookup
@@ -63,14 +62,12 @@ extern "C" CGameRegistry* g_gameReg;
 
 // CWarpStonePad's registry (@0x64e6a0, range [2000,2010]); the ActEntry record
 // lives with the class (<Gruntz/WarpStonePad.h>).
-// (CWarpStonePadActReg dissolved: it was an EMPTY subclass of CActReg whose only job was
 // to give this global a distinct type name. The variable name already makes the mangled
 // symbol unique, and DATA() rebinds it - so the archetype IS the type.)
 DATA(0x0024e6a0)
 CActReg g_warpStonePadActReg; // 0x64e6a0
 
 // CTileTriggerSwitch's registry (@0x64e798); ActEntry in <Gruntz/TileTriggerSwitch.h>.
-// (CTileTriggerSwitchActReg dissolved - empty CActReg alias, see above.)
 DATA(0x0024e798)
 CActReg g_tileTriggerSwitchActReg; // 0x64e798
 
@@ -79,7 +76,6 @@ DATA(0x0024e7c0)
 CCheckpointActReg g_checkpointActReg; // 0x64e7c0
 
 // CTileTrigger / CTileSecretTrigger's registries (@0x64e810 / @0x64e7e8).
-// (CLeafActReg dissolved - empty CActReg alias, see above.)
 DATA(0x0024e810)
 CActReg g_tileTriggerActReg; // 0x64e810
 DATA(0x0024e7e8)
@@ -95,7 +91,6 @@ extern "C" u32 g_engineFrameDelta;
 // [0x7d0, 0x7da] (== [2000, 2010]) range built by the shared registry ctor (0x408710).
 // TileActReg is the shared <Gruntz/ActReg.h> CActReg archetype; it keeps its own placeholder
 // name so the DATA-pinned global symbol is unchanged.
-// (TileActReg dissolved - empty CActReg alias, see above.)
 DATA(0x0024e720)
 CActReg g_tileActReg;
 
@@ -341,7 +336,6 @@ i32 CheckpointTriggerStep(CGameObject* obj) {
 
 // LogicDispatchB @0x10d3d0 (the logicrecorddispatch stray, folded waveM-strays) - CBrickz's
 // state pump: state 0 news a CBrickz (0x54; retail calls it through ILT thunk 0x3701 ->
-// ctor 0x10e800). Same pump shape as the sibling steps; the ex LogicSubRecB view dissolved
 // onto the real CBrickz. Was ?LogicDispatchB@@YAHPAULogicDispatchOwner@@@Z (the placeholder
 // owner view); its owner is a CGameObject like every other pump.
 RVA(0x0010d3d0, 0xf1)

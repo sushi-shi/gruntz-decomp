@@ -51,7 +51,6 @@
 // they are CTileTriggerLogic::Serialize / ::Deserialize, __thiscall on `this` - see
 // ValidateByType below.)
 
-// (The EngineLabelBacklog host is DISSOLVED: its two "loaders" are CTriggerMgr
 // methods on the +0x68 registry m_cmdGrid - LoadPowerupIconSprites (was also decl-aliased as FireCommand)
 // (0x7c620), LoadExplosionSprites (0x7b330) is its sibling. Both declared on the real
 // CTriggerMgr (<Gruntz/TriggerMgr.h>), so the calls run cast-free on m_cmdGrid.)
@@ -73,7 +72,6 @@
 // Only the offsets this cluster reaches are modeled; reloc-masked DIR32.
 // ---------------------------------------------------------------------------
 
-// (The WwdGrViewport / CSpriteMakerSub / WwdGrSprHolder chain views are DISSOLVED:
 // g_gameReg->m_world is the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>),
 // whose m_8 is the CSpriteFactory, m_24 the CGameLevel and m_28 the CSndHost. The one
 // live read - the impact-sound gate - is g_gameReg->m_world->m_28->m_emitGate (CSndHost
@@ -95,12 +93,10 @@ extern "C" CGruntzMgr* g_gameReg;
 // reuse that name so the DIR32 reloc pairs by symbol (no competing DATA - chatbox
 // owns the address; Process is deferred so its pairing is non-critical anyway).
 
-// (The CActionGridMgr::RefreshTile view is DISSOLVED: the method the action-set path
 // runs after stamping a tile is CMapMgr::ComputeCellFlags(x, y, code) @0x77790 - a
 // 3-arg terrain cell-flag recompute on g_gameReg->m_tileGrid (CGruntzMapMgr : CMapMgr),
 // NOT a 0-arg "RefreshTile". The RVA neighbour ComputeCellFlags calls confirm it.)
 
-// (The CBrickTile view is DISSOLVED: the tile-object Process acts on is the placed
 // grid CELL, and CTmCell IS CGrunt (proven, <Gruntz/TriggerMgr.h>). It reaches beyond
 // +0x1f0 (m_1e4/m_1ec), so it can only be the large CGrunt (0x8d8); the touched offsets
 // ARE CGrunt members - LoadGruntTypeTable is the inherited CUserLogic method, m_1e4 is
@@ -116,7 +112,6 @@ extern "C" CGruntzMgr* g_gameReg;
 // CSndHost (g_gameReg->m_world->m_28): CDDrawSubMgrLeafScan::Lookup_05b7e0(name)
 // returns the CObject cache value (a LeafCue), then LeafCue::PlayIfElapsed
 // plays it. (The ex CImpactSound view + the fake `Eng_FindSound` free-function extern
-// are dissolved onto the real classes - same thiscall thunk 0x2cca as GruntCombat.)
 
 // TileGridCommand.cpp - Gruntz CTileTriggerLogic (C:\Proj\Gruntz).
 //
@@ -314,7 +309,6 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 // is the [esp+0x18] LOCAL holding the resolved cell id (0x110d42 reloads it, and
 // the per-arm up/down compares run on esi = that same local); (c) the only
 // `this` reads are [edi+0x8]/[edi+0xc] == m_08/m_0c, this class's tile coords.
-// The old CPlayLevelLoad facet ("the PLAY-state level object") is DISSOLVED.
 //
 // It: resolve the cell id at (m_08, m_0c); when the tile center is in the view
 // rect (and the id is not 0x67/0x68) spawn the TileTriggerTransition sprite and
@@ -510,7 +504,6 @@ CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 // link-gated, run its slot-3 virtual, then Tick every m_list1 logic child that
 // claims it (FindIndexByKey), acking 0x450 if none does.
 // RE-HOMED from GroupOps.cpp (the whole `CGroupBroadcast`/`CFindNode`/
-// `CBcastMember`/`CBcastListNode` view cluster is dissolved onto the real
 // classes: same layout field-for-field, and this RVA sits inside THIS TU's
 // interval 0x110430..0x1140e2 - first-link contiguity says it was defined here).
 // ---------------------------------------------------------------------------
@@ -599,7 +592,6 @@ extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 // record whose m_14 last-play / m_18 cooldown rate-limit the DSoundCloneInst it plays) are
 // the canonical CSndHost/CSndFinder/LeafCue/DSoundCloneInst from <Gruntz/SoundCue.h>
 // (included above); the former per-TU RbSoundReg/RbLookupTable/RbCueRec/RbCueSound views
-// are dissolved onto them (same offsets + RVAs, xref-confirmed: Lookup 0x1b8438,
 // ConfigureItem 0x1360d0).
 
 // `this` stays in esi; the tile coords are re-read from m_08/m_0c at each use
@@ -621,7 +613,6 @@ extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 RVA(0x001122a0, 0x241)
 void CGiantRockLogic::BuildRockBreakInGameText() {
     // The world holder: the ex-CWorldZ view IS CSpriteFactoryHolder (one object at +0x30;
-    // now dissolved tree-wide). The two fields this fn reads - the sprite factory at +0x08
     // and the sound host at +0x28 - were declared identically on both.
     CSpriteFactoryHolder* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
 

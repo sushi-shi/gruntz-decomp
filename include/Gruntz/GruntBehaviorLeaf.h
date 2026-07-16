@@ -12,11 +12,9 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic base + CGameObject (the +0x154 draw-state object)
 
-// (The ex-`CDecayMgr` struct here is DISSOLVED (2026-07-16): it was a four-field
 // slice of the created draw-state CGameObject - the SAME +0x154 object CGrunt
 // reaches as m_154: m_8 "dirty flags" == m_flags, m_40 == m_stateFlags (visible
 // bit), m_194 the CImageSet* role-union arm, and the +0x1a0 embedded
-// CAniAdvanceCursor. The interim "CEntranceAnimPlayer" view is dissolved too -
 // m_drawState below is the one real type.)
 
 // (the ex-`CDecayAnim` view is GONE. It was not an anim controller at all - it was five
@@ -32,7 +30,6 @@
 // eax retail's callers consume. The old "PROVEN-heterogeneous slot" reading of +0x260 is
 // OVERTURNED (2026-07-15): all five targets are CTriggerMgr methods - the "CRockBreakMgr"
 // and "CTileWireLogic" receivers were themselves placeholder views of CTriggerMgr (both
-// dissolved), so the slot is HOMOGENEOUS and typed CTriggerMgr* below (== CGrunt::m_tileMgr,
 // the same +0x260 board).)
 
 SIZE_UNKNOWN(CGruntBehaviorLeaf);

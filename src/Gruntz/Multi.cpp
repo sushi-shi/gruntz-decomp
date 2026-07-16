@@ -99,7 +99,6 @@ extern "C" CNetCreateCtx* g_netCreateCtx;
 // directly on CNetGameMgr in <Net/NetMgr.h>, so m_4->Method() needs no cross-cast.)
 // LoadGameAssetNamespaces (0xf9ea0) is now CState::LoadGameAssetNamespaces; CMulti
 // (: CPlay : CState) inherits it and calls it cast-free (the CAssetLoader this-view
-// is dissolved).
 // (The former local CPlay/CMulti/NetSessionOpener/CNetMgrLite this-cast view
 // classes are gone: the REAL CMulti/CPlay come via <Gruntz/Multi.h>, and the
 // NetSessionOpener/CNetMgrLite hosts are defined below with their re-homed
@@ -282,7 +281,6 @@ void FillPlayerList(HWND hList, Session* sess); // 0x0b89e0
 DATA(0x00248cf0)
 i32 g_isHost_648cf0;
 
-// (The former NetSessionHolder / NetSessionOpener this-cast views are dissolved: Open is
 //  CMulti::Open @0xb77a0, and its +0xc holder is the inherited CState::m_c
 //  (CSpriteFactoryHolder), +0x524 the real CNetMgr via Peer().)
 // The menu-select event the handler is handed (edi): +0x4 the "armed" gate (==1),
@@ -321,7 +319,6 @@ extern "C" i32 g_scoreTimeBase; // 0x648ce8
 // former TU-local (void*, CString*, RECT*) spelling mangled to a symbol the
 // definition never emits, leaving this unit's call reloc UNBOUND.)
 
-// --- WaitForOtherPlayers' three views are dissolved onto real classes ---
 //   * WaitDWordArr (this+0x604, "SetSize @0x1b4bad / SetAtGrow @0x1b4d7c") IS the MFC
 //     CDWordArray it always said it was. Its two declared-only methods mangled as
 //     ?SetSize@WaitDWordArr@@... - PHANTOMS no obj and no .LIB defines; the real
@@ -608,7 +605,6 @@ struct CNetConnectSlotView {
 //     FINAL stamp 0x5ea42c stays manual (it is CNetMgr's own, un-catalogued vtable
 //     that cl cannot re-emit here). A residual /GX state-numbering delta remains
 //     around that manual final stamp until CNetMgr's own vtable is catalogued.
-//  3. The 0x630 session IS the canonical CStatusBarMgr now (view dissolved), but its
 //     ~400-byte scalar ctor init (3 stride-0x18 sub-loops + 3 rep-stos regions) is
 //     still unrecovered - retail inlines that (header-inline) ctor here, ours emits
 //     only the member ctors + the two site stamps. Likewise the iface/session/cmd-mgr
@@ -687,7 +683,6 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     Mgr()->ClearOptionsSlots();
     ChannelSlots_InitAll();
 
-    // (1) peer CNetMgr - the real small DirectPlay wrapper (CNetPeer view dissolved).
     CNetMgr* peer = new CNetMgr();
     m_netGate = (CMultiReportGate*)peer;
     g_groupEnumMgr = peer;
@@ -1207,7 +1202,6 @@ extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 // g_timer400/g_timer500) comes from <Rez/FrameClock.h>. NOTE: the pump below proves
 // 0x245598 == g_timer200 (seed 0xc8 countdown), NOT the old "g_timer200" guess.
 
-// [McObj (17 padded slots) + McHost DISSOLVED 2026-07-13. The per-frame pump
 // dispatches m_c->m_8's slot 9 (+0x24, ONE arg = the frame delta) then slot 16
 // (+0x40, no arg). The class whose RTTI slot map (vtbl 0x1efdc0, 17 slots) carries
 // BOTH - at those exact offsets, with those exact arities - is CDDrawChildGroup ==
@@ -1222,10 +1216,8 @@ extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
 // CGruntzMgr::m_sound (+0x48) IS the real CGruntzSoundZ (<Dsndmgr/GruntzSoundZ.h>): the former
-// CMultiSoundZ view is dissolved - PlayByName (0x138840) / FindBank (0x138730) and
 // the +0x1c inner (m_pCurrent) are CGruntzSoundZ's own members.
 //
-// [CMultiSub68 + CMultiSubDC DISSOLVED 2026-07-13: the +0x68 facet was
 // CTriggerMgr itself (m_cmdGrid's declared type) - its "Step3017" is
 // LoadTeleporterGooConfig (ILT 0x3017 -> 0x6eb80), "Fire1398" is
 // ScrollToActiveRecord (ILT 0x1398 -> 0x788d0), "Reset2b85" is OverlayRelease
@@ -1332,7 +1324,6 @@ i32 CMulti::PumpA() {
 // CMulti.h are reached through dedicated view structs / documented offsets.
 // ---------------------------------------------------------------------------
 
-// [PBVfnHost / PBSub4 / PBMgr DISSOLVED 2026-07-13 onto the canonical classes:
 //   PBMgr      == CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) - it IS CState::m_c,
 //                 already typed there; every member lines up (m_4 draw target, m_8
 //                 object factory/manager, m_c renderer B, m_24 level/view).
@@ -1354,7 +1345,6 @@ i32 CMulti::PumpA() {
 
 // The output sink hung off CGruntzMgr::m_inputState (+0x54; thiscall 2-arg blit).
 // (The +0x68 FX-driver view PBSub68 is folded into CMultiSub68 above.)
-// (The PBSub320 view is DISSOLVED: its Tick1fa0/Render14dd thunks are the real
 // CLightFxRender::Resize @0xa3460 / ComputeRect @0xa3820, dispatched on the
 // typed m_lightFx below - same receiver, same thunks 0x1fa0/0x14dd.)
 // The compositor refresh helper (__cdecl free fn). 0x00002356
@@ -3103,7 +3093,6 @@ void CMulti::AckDropPlayer(i32 id) {
 // switched to <Mfc.h> and the member is now the real CMapStringToOb.) The
 // out-value is CObject* because that is what the MFC container's own API types it.
 // (RELOC-Multi follow-up: CSndHost::m_10 is now TYPED CMapStringToOb in <Gruntz/SoundCue.h>
-// - the ex-CSndFinder view is dissolved - so this call is cast-free.)
 RVA(0x000ba620, 0x14a)
 i32 CMulti::LoadMenuSelectSprite(void* evp) {
     MenuSelectEvent* ev = (MenuSelectEvent*)evp;

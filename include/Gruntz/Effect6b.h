@@ -7,7 +7,6 @@
 //
 // IDENTITY (2026-07-16, RESOLVED): the pointee of m_player is the plain
 // CGameObject - the ex CEntranceAnimPlayer / CDecayMgr / CAnimOwner6b views are
-// all dissolved (<Gruntz/UserLogic.h>; the +0x1a0 tail is the embedded
 // CAniAdvanceCursor, whose +0x14 is the active descriptor Apply caches).
 #ifndef GRUNTZ_EFFECT6B_H
 #define GRUNTZ_EFFECT6B_H

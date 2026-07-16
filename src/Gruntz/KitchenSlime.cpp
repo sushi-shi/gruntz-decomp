@@ -34,7 +34,6 @@
 
 // The slime's bound object (Level() == m_object, Anim() == m_38) IS the canonical
 // CGameObject; the ex CSlimeLevel / CSlimeAnimPlayer / CSlimeTiming views are
-// dissolved onto it (KitchenSlime.h). The level state reads m_screenX/m_screenY
 // (+0x5c/+0x60), m_124 (travel dir), m_12c (lock-dir), m_extentL..m_extentB
 // (+0x134..+0x140, the on-screen tile window), m_areaL (+0x144, the cue-gate rect
 // base), and m_7c->m_bc (the AnimWorkerObj per-tile-time override) - all cast-free.
@@ -59,7 +58,6 @@ extern "C" CGameRegistry* g_gameReg;
 // ?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@..., returns CGrunt*; the header still
 // types it CTmCell* pending the deferred cross-lane retype, so cast at the site).
 // Its +0x258 is CGrunt::m_gruntKind (the object-kind id); 0x38 is the slime's own
-// kind, so its own footprint is skipped. The ex CSlimeEntity view is dissolved onto
 // the canonical CGrunt (<Gruntz/Grunt.h>), exactly as SpotLightCtor does.
 #include <Gruntz/Grunt.h>
 
@@ -83,7 +81,6 @@ extern "C" u32 g_engineFrameDelta;
 // CKitchenSlime : CUserLogic is modeled in <Gruntz/KitchenSlime.h> (canonical
 // header, included below). The CUserLogic base gives the +0x18 destructible link,
 // so ~CKitchenSlime folds the shared teardown (the /GX leaf-dtor archetype, see
-// UserLogic.cpp 0x10ab0). The slime's level/anim views are dissolved onto CGameObject.
 #include <Gruntz/KitchenSlime.h>
 
 // ---------------------------------------------------------------------------
@@ -139,7 +136,6 @@ CKitchenSlime::~CKitchenSlime() {}
 // m_latchedAnimId (+0x74), the flags m_flags (+0x08), the on-screen travel window
 // m_extentL..m_extentB (+0x134..+0x140) clamped from the raw target tile m_164/m_168,
 // the direction name at m_194+0x24, and the re-seeded rect m_areaL..m_areaB
-// (+0x144..+0x150) all read cast-free (the ex CSlimeCtorObj view is dissolved).
 
 // CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,
 // snap the bound object to the tile grid (m_posX/m_posY doubles + m_74 layer key +
@@ -615,7 +611,5 @@ i32 CKitchenSlime::LoadSprites() {
 // size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
 
 // (CKSlimeEntry SIZE_UNKNOWN lives in KitchenSlime.h; CSlimeAnimPlayer/CSlimeLevel/
-//  CSlimeTiming/CSlimeCtorObj are dissolved onto CGameObject/AnimWorkerObj.)
-// (CSlimeEntity is dissolved onto the canonical CGrunt - FindGruntAt's real return.)
 SIZE_UNKNOWN(CSprite);
 SIZE_UNKNOWN(CStringNode);

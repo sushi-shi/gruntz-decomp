@@ -659,7 +659,6 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 // cell sizes. Then seed each grid's world rect (0,0,dim-1) + scroll origin (dim/2) from
 // p6/p7/p8, the world bbox from `rc`, and park the cached scroll at -22222. `a1`->m_mgr.
 //
-// (Former per-TU views dissolved: `Builder_168080` was CWwdSpatialMgr [+0x00..+0x6c map
 // 1:1 - m_0=m_mgr, m_4/8/c=grids, rects @0x10/0x30/0x20, origins @0x40/0x48/0x50, bbox
 // @0x58, scroll @0x68]; the fake `?Init@Builder_168080@@` name also left RebuildPlanes'
 // Init call unresolved. `Pt_168080` was a plain i32[2] size pair.)

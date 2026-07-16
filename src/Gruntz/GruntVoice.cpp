@@ -118,7 +118,6 @@ extern i32 VTrigLogic_11a700();
 //   SpawnVoiceDriver(hit, m_object->m_124, m_object->m_128, 0, -1, -1) -> nonzero on fire.
 // The returned grunt's own bound object sits at +0x10 (CUserLogic::m_object); its
 // screen x/y are read at +0x5c/+0x60 (CGameObject). The former CVoiceHit/
-// CVoiceHitSprite/CVoiceSink .cpp-local views are dissolved onto CGrunt/CGameObject.
 
 // Tick reads the bound object (m_10, CGameObject*) directly: +0x5c/+0x60 screen
 // x/y, +0x124/+0x128 the voice-cue ids passed to CueA, +0x134/+0x144 the probe rect

@@ -65,7 +65,6 @@ extern "C" {
 // +0x10 lookup sub-object its real CMapStringToOb m_10 (Lookup @0x1b8008 - the
 // old CMapStringToPtr cast here bound the reloc to the WRONG library symbol,
 // 0x1b8438; the inverted-label pair struck again). The CLogicType* chain shells
-// are dissolved; the builder is the bound CGameObject.
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {

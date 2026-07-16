@@ -27,7 +27,6 @@
 // source-steerable (every operand/declaration reorder reproduced the same coloring).
 extern "C" u32 g_engineFrameDelta;
 
-// (CAnimOwner6b is DISSOLVED, 2026-07-16: the m_player pointee is the canonical
 // CGameObject (<Gruntz/UserLogic.h>) - the +0x1a0 embedded cursor and its m_14
 // active descriptor; see <Gruntz/Effect6b.h>.)
 

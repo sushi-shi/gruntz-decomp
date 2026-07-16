@@ -170,11 +170,9 @@ public:
 // and RecomputePlaneCoords are the engine __thiscall leaves the level drives per
 // plane (RecomputePlaneCoords is matched in GameLevel.cpp; the rest reloc-mask).
 // (The CLevelPlane level-facet class that stood here - the geometry/probe view over
-// the same +0x08..+0xb4 layout - is DISSOLVED onto the canonical CDDrawWorkerHost
 // (<DDrawMgr/DDrawWorkerHost.h>, via the WwdFile.h include above); CLevelPlane is a
 // typedef of it. Its duplicate method names for already-defined bodies (Sync ==
 // Draw @0x162010, Refresh == ResolveColorKey @0x163670, QueryA/B == CenterScrollA/B
-// @0x163300/70, Notify == InitScrollRects @0x163420 - five phantoms) are dissolved;
 // Build/RecomputePlaneCoords/ValidateTiles/InitGeometry_1619f0 and all the member
 // names carried over (m_originX/... became the canonical m_originX/... family;
 // its +0x84/+0x88 "integer snapped scaledX/Y" pair is m_snappedX/m_snappedY).

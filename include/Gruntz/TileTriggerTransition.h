@@ -23,12 +23,10 @@
 // data layout (CGameObject/AnimWorkerObj/CUserLogic) is modeled there too.
 #include <Gruntz/UserLogic.h>
 
-// (The former CAnimElem "+0x14 seed frame" element view is DISSOLVED
 // (2026-07-16): the m_1a0.m_14 descriptor's record element is the canonical
 // CAniDesc (<DDrawMgr/AniAdvance.h>; m_param @+0x14 is the seed frame).)
 
 // (The former CTileTransitionController/CTileTransitionState pump views are
-// DISSOLVED (2026-07-13 worker fold): the controller IS the canonical
 // AnimWorkerObj (m_state == m_logic, m_stateId == m_1c) and the state object a
 // 16-slot lens of the real CUserLogic vtable (Activate slot 6, the 0x1d/0x1e/
 // 0x50..0x53 states = UserLogicVfunc9/8/C/B/A/D at slots 11/10/14/13/12/15).
