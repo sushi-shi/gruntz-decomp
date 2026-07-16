@@ -35,9 +35,8 @@
 // CMapStringToPtr (+0x10, Lookup @0x1b8438 - mfc_class-confirmed CMapStringToPtr, NOT
 // CMapStringToOb).  The map VALUE is the canonical LeafCue (<Gruntz/LeafCue.h>, the
 // 0x1c-byte element the LeafScan factory CreateEntry @0x157d70 news): its DSoundCloneInst
-// m_10 player carries the cached DS-buffer duration at m_durationMs (+0x28).  The former
-// MenuSndEntry / MenuSndEntryInner views are dissolved onto LeafCue / DSoundCloneInst
-// (the map value's real identity - see the LeafCue.h header verdict).
+// m_10 player carries the cached DS-buffer duration at m_durationMs (+0x28). The map
+// values are LeafCue / DSoundCloneInst (see the LeafCue.h header verdict).
 
 // The CState base facets are the ONE real classes (State.h) - this TU no longer keeps
 // per-TU views of any of them:

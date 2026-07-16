@@ -16,8 +16,8 @@
 #include <DDrawMgr/DDSurface.h> // CDDSurface (m_surface): its m_8 IDirectDrawSurface is the DC host
 
 // (The `m4::PwdHost` view is DISSOLVED: RenderInputText @0x22160 is a real CFontConfig
-// method - <Gruntz/FontConfig.h>, already included above. The CChatBoxTextHost view of
-// m_14 is dissolved too (2026-07-13): m_14 IS the CFontConfig - typed so in
+// method - <Gruntz/FontConfig.h>, already included above. m_14 IS the CFontConfig - typed
+// so in
 // ChatBoxOwner.h - and its +0x34 dirty flag is CFontConfig::m_34, so the downcasts at
 // the two render sites fell out with it.)
 
@@ -40,8 +40,7 @@ extern "C" CGameRegistry* g_gameReg;
 // (+0x44), ReleaseDC slot 26 (+0x68); both __stdcall with the surface as the hidden
 // `this`, so `surf->GetDC(&hdc)` lowers to `push &hdc; push surf; mov reg,[surf];
 // call [reg+slot]` - pointer-only, no vtable emitted in this TU.
-// (The `CChatBoxDcHost` / `CChatBoxCtx` .cpp-local views are DISSOLVED, 2026-07-15:
-// LoadChatBoxSprite's arg1 is the world holder's back draw-target, proven by the
+// (LoadChatBoxSprite's arg1 is the world holder's back draw-target, proven by the
 // CMulti::PumpB call site `arg1 = m_c->m_drawTarget->m_backPair`
 // (CDDrawSurfaceMgr::m_drawTarget is CDDrawSubMgrPages, its +0x14 m_backPair is a
 // CDDrawSurfacePair). CChatBoxCtx == CDDrawSurfacePair (its +0x2c m_surface CDDSurface
