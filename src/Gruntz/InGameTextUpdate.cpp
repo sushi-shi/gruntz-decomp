@@ -35,13 +35,10 @@
 // m_viewOriginL/T/R/B (+0x13c..+0x148) the on-screen view bounds.
 // g_gameReg: plain extern; its one canonical DATA(0x0024556c) definition lives in GruntzMgr.cpp
 extern "C" CGameRegistry* g_gameReg;
-// The 4-byte default-constructed CString cache nodes (FUN_001b9b93 == CString
-// default ctor; matched array-touch loop). g_typeColl.m_alloc is the base pointer.
-SIZE_UNKNOWN(EngStr4);
-struct EngStr4 {
-    char* m_pszData; // +0x00 (4 bytes so the loop's `p++` advances by 4)
-    void Ctor();     // FUN_001b9b93 __thiscall (CString default ctor)
-};
+// The array-touch loop default-constructs a run of CString cache nodes (each 4 bytes,
+// so `p++` advances by 4; the ctor is ??0CString@@QAE@XZ @0x1b9b93, reloc-masked). The
+// former EngStr4 view IS the real MFC CString (m_pszData@+0 == CString's LPTSTR); used
+// directly (CString comes from <Gruntz/Grunt.h>'s <Mfc.h>).
 // CTypeKeyColl (IndexToPtr == thunk 0x403864 -> node) is the shared
 // <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf3bc)
@@ -80,12 +77,12 @@ i32 CInGameText::Update() {
     }
 
     char** node = (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)found->m_14->m_1c);
-    EngStr4* p =
-        (EngStr4*)g_typeColl.m_alloc; // m_alloc is the i32-typed slot base (the _zvec spelling)
+    CString* p =
+        (CString*)g_typeColl.m_alloc; // m_alloc is the i32-typed slot base (the _zvec spelling)
     i32 n = g_typeColl.m_grown;
     while (n-- != 0) {
         if (p != 0) {
-            p->Ctor();
+            p->CString::CString();
         }
         p++;
     }
