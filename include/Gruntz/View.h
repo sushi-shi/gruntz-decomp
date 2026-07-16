@@ -1,5 +1,5 @@
-// View.h - the dissolution record of the CState::m_c holder's render facets (no
-// classes remain here; every facet now lives on its real canonical class).
+// View.h - documents the CState::m_c holder's render facets (each on its real
+// canonical class).
 //
 // The holder at CState::m_c (+0x0c) is the canonical `CDDrawSurfaceMgr`
 // (<Gruntz/GameRegistry.h>) - the SAME object as CGameRegistry::m_world (+0x30), verified
@@ -34,7 +34,7 @@
 
 // (The per-frame "input object" the credits poll reaches (m_4->m_10->m_2c->m_8) is
 // the real IDirectDrawSurface - the poll is IsLost, COM slot 24; the dispatching TUs
-// pull <ddraw.h>. The former CGMInputObj fake-vtable view is dissolved.)
+// pull <ddraw.h>.)
 
 // The render-flip surface at each CDDrawSubMgrPages page's m_surface: the real CDDSurface
 // (<DDrawMgr/DDSurface.h>; Fill @0x13e760, Restore @0x13e7d0 - ret 8, two args -
@@ -43,7 +43,7 @@
 // views are dissolved onto CDDrawSurfacePair - see ResMgr.h.)
 class CDDSurface;
 
-// THE `CRenderer` VIEW IS DISSOLVED (2026-07-14). It conflated TWO real classes:
+// The `CRenderer` conflation is TWO real classes:
 //   * renderer A (holder->m_8)  IS the canonical CDDrawChildGroup
 //     (<DDrawMgr/DDrawChildGroup.h>, 17-slot vtable 0x1efdc0): proven by
 //     CDDrawSurfaceMgr::Init @0x155900, which news the 0x6c-byte object (ctor
@@ -58,8 +58,7 @@ class CDDSurface;
 //     0x2c-byte object and stores it at +0x0c. "Present(a, b)" was its slot 13,
 //     PruneWorkers(CDDrawSurfacePair*, CDDrawSurfacePair*) - same slot, same
 //     arity. "DisposeWorkers" (0x163c60) is its non-virtual ClearWorkers.
-// The view's 12 filler slots (v00..v08/v10..v12) were fabrications anchoring
-// those two offsets; both real classes carry every slot evidence-backed.
+// Both real classes carry every slot evidence-backed.
 
 // The draw-surface object at m_c->m_level is the ONE real CGameLevel
 // (<Gruntz/GameLevel.h>) - the former per-TU CDrawSurface render-facet view AND the
@@ -68,9 +67,7 @@ class CDDSurface;
 // @0x15da80; the "+0x10 viewport rect" is CGameLevel::m_planeCtx, the "+0x5c camera
 // geom" is CGameLevel::m_mainPlane, a CLevelPlane). No separate view here.
 
-// (The old @identity-TODO here - "recover the renderer's real class by chasing the
-// writer of holder m_8/m_c to its ctor" - is DONE, exactly by that recipe:
-// CDDrawSurfaceMgr::Init @0x155900 IS the writer; it news both objects with their
+// (CDDrawSurfaceMgr::Init @0x155900 is the writer; it news both objects with their
 // inline ctors stamping 0x5efdc0 (A, CDDrawChildGroup) and 0x5efd88 (B,
 // CDDrawWorkerList) - both from the old slot-scan shortlist. The other two
 // shortlist vtables were CGameLevel's (0x1f0150, ctor 0x15ccd0) and
