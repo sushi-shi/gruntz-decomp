@@ -116,7 +116,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                 if (out && out->m_10) {
                     m_rollingballLoop = (DirectSoundMgr*)out->m_10->GetItem();
                     if (m_rollingballLoop) {
-                        m_rollingballLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
+                        m_rollingballLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                     }
                 }
             }
@@ -133,7 +133,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                 if (out && out->m_10) {
                     m_teleportLoop = (DirectSoundMgr*)out->m_10->GetItem();
                     if (m_teleportLoop) {
-                        m_teleportLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
+                        m_teleportLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                     }
                 }
             }

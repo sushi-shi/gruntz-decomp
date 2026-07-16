@@ -22,14 +22,10 @@
 // the walk was m_grid/m_recX/m_recY/m_level and the "emitter" the canonical
 // CPlaneRender/CDDrawWorkerHost plane.)
 
-// 0x85500 - return a CString member BY VALUE (offset 0xec). (0x38120 was folded onto
-// the real CLatencyItem::GetName in src/Gruntz/SlotComboFill.cpp - view removed.)
-struct Obj85500 {
-    char _0[0xec];
-    CString m_ec; // 0xec
-    CString GetName();
-};
-SIZE_UNKNOWN(Obj85500);
+// (Obj85500 is DISSOLVED, 2026-07-16: 0x85500 IS CGruntzMgr::GetRezPath - both
+// callers (Run @0x83450 + LoadWorldMode) invoke it on the manager `this`, and the
+// +0xec CString is the mgr's m_strRezPath. 0x38120 was folded onto the real
+// CLatencyItem::GetName in src/Gruntz/SlotComboFill.cpp.)
 
 // 0x148250 - CDDPalette::Flush: RE-HOMED to the directdrawmgr unit
 // (src/DDrawMgr/DirectDrawMgr.cpp, real CDDPalette in DirectDrawMgr.h).

@@ -181,7 +181,7 @@ i32 CBootyState::Vslot09(i32) {
 
     CGruntzMgr* reg = g_gameReg;
     CSndHost* set = reg->m_world->m_28;
-    i32 token = reg->m_inputFlag; // +0x11c (the ambient sound token this facet reads)
+    i32 token = reg->m_soundVolume; // +0x11c (the ambient sound token this facet reads)
     if (set->m_emitGate == 0) {
         LeafCue* res = 0;
         set->m_10.Lookup("BOOTY_LOOP", (void*&)res);
@@ -431,7 +431,7 @@ i32 CBootyState::CheckPerfectBonus() {
     i32 phase = st->m_screenX;
     if (phase == (i32)0xffffff7e) {
         CSpriteFactoryHolder* host = g_gameReg->m_world;
-        i32 item = g_gameReg->m_inputFlag; // +0x11c (configured music item, this facet)
+        i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
         CSndHost* m28 = host->m_28;
         if (m28->m_emitGate == 0) {
             void* found = 0;
@@ -544,7 +544,7 @@ i32 CMultiBootyState::Vslot09(i32) {
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     CSpriteFactoryHolder* host = g_gameReg->m_world;
-    i32 item = g_gameReg->m_inputFlag; // +0x11c (configured music item, this facet)
+    i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
     CSndHost* m28 = host->m_28;
     if (m28->m_emitGate == 0) {
         void* found = 0;

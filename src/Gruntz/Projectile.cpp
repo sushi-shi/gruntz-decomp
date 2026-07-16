@@ -1400,7 +1400,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (m_sound == 0) {
         return 0;
     }
-    ((DirectSoundMgr*)m_sound)->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
+    ((DirectSoundMgr*)m_sound)->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     return 1;
 }
 

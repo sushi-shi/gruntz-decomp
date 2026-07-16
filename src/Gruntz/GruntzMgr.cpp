@@ -64,6 +64,10 @@
 #include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/CheatMgr.h> // CCheatMgr (m_cheatMgr @+0x44; the ex-HudGuard44 m_124 flag)
+#include <Gruntz/FaderMgr.h> // CFaderMgr (m_faderMgr @+0x40; Close dtor-tears it)
+#include <DDrawMgr/ShadeTableCache.h> // CShadeTableCache (m_shadeCache @+0x50)
+#include <Rez/RezMgr.h> // RezMgr - the pending facet-fold view (MakeRezPath @0x91670)
 #include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
@@ -271,7 +275,7 @@ extern "C" {
 extern "C" {}
 
 // The two shared sound globals, DEFINED here (owner TU: CGruntzMgr::SetRunState mirrors
-// the run-state into g_sndEnabled and StoreInputFlag latches the cue tag; ~20 TUs read
+// the run-state into g_sndEnabled and SetSoundVolume latches the cue tag; ~20 TUs read
 // them). C++ linkage, so every `extern i32 g_snd*` reference tree-wide binds to
 // ?g_sndEnabled@@3HA / ?g_sndCueTag@@3HA. (They were previously only DATA-pinned on
 // `extern "C"` DECLARATIONS in LevelPreview.cpp, which bound _g_sndEnabled/_g_sndCueTag
@@ -307,8 +311,8 @@ extern "C" {
 // The +0x7c HUD/score accumulator object (CGruntzMgr::m_scoreHud). One object: the
 // score/refresh fields + Refresh/Seed (UpdateScoreHud/AccrueScoreTime), the 4-arg
 // command sink (BroadcastCmd), and the shared Teardown (Close).
-// HudGuard44 (+0x44 one-shot guard) now comes from <Gruntz/SaveInfo.h> (via
-// GruntzMgr.h) - shared with the WM_COMMAND dispatcher TU.
+// The +0x44 object (ex the HudGuard44 view) is the canonical CCheatMgr
+// (<Gruntz/CheatMgr.h>); its m_124 is the "a cheat was used" flag.
 
 // The archive/serializer object SaveState/LoadState stream every clock/scroll/warp
 // field through: the shared WAP32 CSerialArchive stream interface (Read @ vtbl +0x2c,
@@ -328,7 +332,7 @@ void RedrawMapIndex(i32 idx); // FUN_00558c70
 i32 CmdHook(i32 a, i32 b, i32 c, i32 d); // FUN @ 0x17da thunk
 
 // The +0x60 timer/poll object (CGruntzMgr::m_timer; reloc-masked thiscalls).
-// StoreInputState mirrors the latest input-state value into its +0x2c field; Stop
+// SetVoiceVolume mirrors the latest input-state value into its +0x2c field; Stop
 // pauses it (Quicksave/AdvanceFrame/UnloadSoundChain); Tick fires it during a cmd-4/7
 // broadcast (BroadcastCmd); Teardown + operator delete tear it down (Close).
 
@@ -2362,7 +2366,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
 // are reconstructed and the /GX frame + the head (world/mode/8|16 guards + the
 // m_54/m_symParser two-stage teardowns) match. The low % is a big-SEH scoring desync:
 // (a) the long chain of reloc-masked engine thiscalls (RezBuild/Apply/Teardown,
-// CPtrList ctor/dtor, the world mode-set vtable, MakeRezPath/ResolveRezRow) each
+// CPtrList ctor/dtor, the world mode-set vtable, MakeRezPath/GetRezPath) each
 // fuzzy-mismatch until their whole referent set is named; (b) the entry `push ecx`
 // local-slot reservation + the CString-temp EH-state numbering on the fail chain
 // (gx-state-machine + eh-state-numbering walls). Logic-complete; deferred to the
@@ -2413,7 +2417,10 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
     CreateWorldObjects(m_world);
-    if (MakeRezPath() == 0) {
+    // MakeRezPath @0x91670 is DEFINED as ?MakeRezPath@RezMgr@@QAEHXZ (RezMgr.cpp);
+    // RezMgr is a facet view of this class (fold pending, see <Rez/RezMgr.h>) -
+    // the cast binds the call to the one real definition.
+    if (((RezMgr*)this)->MakeRezPath() == 0) {
         return 0;
     }
 
@@ -2427,9 +2434,8 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     // recolor surface" was this class all along).
     m_symParser = new CSymParser;
 
-    CString path;
-    void** row = ResolveRezRow(&path);
-    if (m_symParser->ParseBuffer(*row, 1, 0)) {
+    CString path = GetRezPath();
+    if (m_symParser->ParseBuffer(*(void**)&path, 1, 0)) {
         ReportError(0x800b, 0x441);
         return 0;
     }
@@ -2455,7 +2461,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         ni = 0;
     }
     m_inputState = ni;
-    if (ni->Init(m_world->m_28, m_inputFlag) == 0) {
+    if (ni->Init(m_world->m_28, m_soundVolume) == 0) {
         ReportError(0x800a, 0x442);
         return 0;
     }
@@ -2472,7 +2478,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
             cur->Stop();
         }
     }
-    StoreInputFlag(m_inputFlag);
+    SetSoundVolume(m_soundVolume);
     return 1;
 }
 
@@ -2716,11 +2722,11 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::StoreInputState (0x091a10; ret 4). Stores v at +0x120, and when the
+// CGruntzMgr::SetVoiceVolume (0x091a10; ret 4). Stores v at +0x120, and when the
 // +0x60 sub-object is present mirrors it into that object's +0x2c.
 RVA(0x00091a10, 0x17)
-i32 CGruntzMgr::StoreInputState(i32 v) {
-    m_inputStateVal = v;
+i32 CGruntzMgr::SetVoiceVolume(i32 v) {
+    m_voiceVolume = v;
     CGruntSpawnConfig* timer = m_timer;
     if (timer) {
         timer->m_2c = v;
@@ -2861,7 +2867,7 @@ i32 CGruntzMgr::RunLoadGameDialog() {
 // -------------------------------------------------------------------------
 // CGruntzMgr::Quicksave (0x092530; __thiscall; /GX EH; ret). Quicksaves the game.
 // Bails (0) with no save sink (m_saveSink) or when not in the PLAY state (id 3).
-// When the first-frame guard (m_hudGuard->m_124) is already set, it pops a localized
+// When the first-frame guard (m_cheatMgr->m_124) is already set, it pops a localized
 // message (resource 0x81aa) through a modal and returns 1. Otherwise, on a valid
 // save record (m_saveInfoRec with bit 0 set) and a live save source
 // (m_curState + 0x1d0), it stops the timer, fills the save info, then commits the
@@ -2881,7 +2887,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_curState->Update() != 3) {
         return 0;
     }
-    if (m_hudGuard->m_124 != 0) {
+    if (m_cheatMgr->m_124 != 0) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
@@ -3081,7 +3087,7 @@ i32 CGruntzMgr::ChangeState_8fab0(i32 /*arg*/) {
 // -------------------------------------------------------------------------
 // CGruntzMgr::~CGruntzMgr  (virtual; vtable slot 0; own vftable @0x5e9b64)
 // The own body just runs Close(); the compiler then destructs the five
-// destructible members (m_options, m_strMoviePath, m_strEC, m_stateStack, m_strWorldFile, in
+// destructible members (m_options, m_strMoviePath, m_strRezPath, m_stateStack, m_strWorldFile, in
 // reverse-construction order) and chains the base ~CGameMgr - all under the /GX
 // C++ EH frame (per-member unwind states 4..0).
 RVA(0x00083360, 0xb2)
@@ -3229,7 +3235,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
 // world's score/time deltas (m_cmdGrid's +0x20c/+0x21c tables, indexed by the active
 // world g_curPlayer) into the +0x7c HUD accumulators. If a level name is loaded
 // (m_strWorldFile non-empty) it just refreshes the HUD with 1 and marks it dirty;
-// otherwise, on the first frame (m_hudGuard->m_124 == 0) it seeds the HUD from the
+// otherwise, on the first frame (m_cheatMgr->m_124 == 0) it seeds the HUD from the
 // registry's cumulative score and fires the score-bump / tick / notify chain,
 // then refreshes the HUD with the live score and clears the dirty flag.
 // @early-stop
@@ -3254,7 +3260,7 @@ void CGruntzMgr::UpdateScoreHud() {
         return;
     }
 
-    if (m_hudGuard->m_124 == 0) {
+    if (m_cheatMgr->m_124 == 0) {
         m_scoreHud->FillRecord(sub->m_levelIndex, 0);
         g_gameReg->m_saveSink->SetCurLevel(sub->m_levelIndex);
         g_gameReg->m_saveSink->SetMaxLevel((sub->m_levelIndex % 0x28) + 1);
@@ -3287,7 +3293,7 @@ i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     ar->Write(buf, 0x80);
 
     ar->Write(&m_114, 4);
-    ar->Write(&m_inputFlag, 4);
+    ar->Write(&m_soundVolume, 4);
     ar->Write(&m_128, 4);
     ar->Write(&m_12c, 4);
     ar->Write(&m_130, 4);
@@ -3342,7 +3348,7 @@ i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     m_strWorldFile = buf;
 
     ar->Read(&m_114, 4);
-    ar->Read(&m_inputFlag, 4);
+    ar->Read(&m_soundVolume, 4);
     ar->Read(&m_128, 4);
     ar->Read(&m_12c, 4);
     ar->Read(&m_130, 4);
@@ -3689,12 +3695,12 @@ void CGruntzMgr::UnloadSoundChain() {
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::StoreInputFlag (0x0919d0; ret 4). Records the input flag at +0x11c;
+// CGruntzMgr::SetSoundVolume (0x0919d0; ret 4). Records the input flag at +0x11c;
 // when the loaded world's +0x28 sub-object is present it also mirrors the flag
 // into the g_sndCueTag global; finally forwards the flag to the +0x54 input object.
 RVA(0x000919d0, 0x30)
-void CGruntzMgr::StoreInputFlag(i32 v) {
-    m_inputFlag = v;
+void CGruntzMgr::SetSoundVolume(i32 v) {
+    m_soundVolume = v;
     if (m_world && m_world->m_28) {
         g_sndCueTag = v;
     }
@@ -3928,10 +3934,10 @@ void CGruntzMgr::Close() {
         delete g_inputMgr;
         g_inputMgr = 0;
     }
-    if (m_hudGuard) {
-        m_hudGuard->Teardown();
-        operator delete(m_hudGuard);
-        m_hudGuard = 0;
+    if (m_cheatMgr) {
+        m_cheatMgr->~CCheatMgr(); // 0x85e60 (the ex-HudGuard44 "Teardown")
+        operator delete(m_cheatMgr);
+        m_cheatMgr = 0;
     }
     if (m_sound) {
         m_sound->Shutdown();
@@ -3943,10 +3949,10 @@ void CGruntzMgr::Close() {
         operator delete(m_inputState);
         m_inputState = 0;
     }
-    if (m_40) {
-        ((CTriggerMgr*)m_40)->~CTriggerMgr();
-        operator delete(m_40);
-        m_40 = 0;
+    if (m_faderMgr) {
+        m_faderMgr->~CFaderMgr();
+        operator delete(m_faderMgr);
+        m_faderMgr = 0;
     }
     if (m_chatLog) {
         m_chatLog->~CFontConfig();
@@ -3975,10 +3981,10 @@ void CGruntzMgr::Close() {
         delete m_3c; // CObject-derived: virtual ~ -> the flagged slot-1 ??_G dispatch
         m_3c = 0;
     }
-    if (m_50) {
-        ((CTriggerMgr*)m_50)->~CTriggerMgr();
-        operator delete(m_50);
-        m_50 = 0;
+    if (m_shadeCache) {
+        m_shadeCache->~CShadeTableCache();
+        operator delete(m_shadeCache);
+        m_shadeCache = 0;
     }
     if (m_saveSink) {
         ((CTriggerMgr*)m_saveSink)->~CTriggerMgr();
@@ -4199,12 +4205,12 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::LoadSaveMessageSprite (0x092420; /GX EH; ret 1). The save-feedback
-// path Quicksave falls into: when the first-frame guard (m_hudGuard->m_124) is set it pops a
+// path Quicksave falls into: when the first-frame guard (m_cheatMgr->m_124) is set it pops a
 // localized message (resource 0x81aa) through a modal; otherwise it runs the GAME_SAVE
 // dialog and, on success, the GAME_SAVEMSG dialog. Returns 1.
 RVA(0x00092420, 0xa4)
 i32 CGruntzMgr::LoadSaveMessageSprite() {
-    if (m_hudGuard->m_124 != 0) {
+    if (m_cheatMgr->m_124 != 0) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
@@ -4249,7 +4255,7 @@ i32 CGruntzMgr::SaveGameAs() {
 // -------------------------------------------------------------------------
 // CGruntzMgr::CGruntzMgr (0x083030; /GX EH; returns this). Constructs the base
 // CGameMgr, then the four destructible members in declaration order (m_strWorldFile
-// CString state 0, m_stateStack CByteArray state 1, m_strEC CString state 2,
+// CString state 0, m_stateStack CByteArray state 1, m_strRezPath CString state 2,
 // m_strMoviePath CString state 3, the 4-slot m_options array via __ehvec_ctor state
 // 4), stamps the derived vftable, and seeds the flat scalar field block. The field
 // stores are written in retail's exact (non-offset-sorted) source order so the
@@ -4262,11 +4268,11 @@ CGruntzMgr::CGruntzMgr() {
     m_settings = 0;
     m_scoreHud = 0;
     m_3c = 0;
-    m_40 = 0;
-    m_hudGuard = 0;
+    m_faderMgr = 0;
+    m_cheatMgr = 0;
     m_sound = 0;
     m_4c = 0;
-    m_50 = 0;
+    m_shadeCache = 0;
     m_64 = 0;
     m_lobby = 0;
     m_inputState = 0;

@@ -80,7 +80,7 @@ extern "C" {
 // ReportError @0x08dc60, and going through the view emitted a call to
 // ?ReportError@CGameRegistry@@QAEXHH@Z, a symbol NOTHING defines (an unbound reloc that
 // would fail at link). Every member this TU reads off the singleton (m_curState/m_world/
-// m_cmdGrid/m_settings/m_134/m_modeW/m_modeH/m_inputFlag + the CGameMgr base's
+// m_cmdGrid/m_settings/m_134/m_modeW/m_modeH/m_soundVolume + the CGameMgr base's
 // m_gameWnd/m_frameGate/m_soundEnabled) exists on CGruntzMgr at the same offsets.
 // Its canonical symbol is _g_mgrSettings (extern-C, bound via DATA in userlogic);
 // referencing it by that name pairs the DIR32 relocs.
@@ -3662,7 +3662,7 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
                         CSbiDisplayObj* obj = (CSbiDisplayObj*)((DSoundCloneInst*)f)->GetItem();
                         m_destructButton = obj;
                         if (obj) {
-                            ((DirectSoundMgr*)obj)->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
+                            ((DirectSoundMgr*)obj)->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                         }
                     }
                 }

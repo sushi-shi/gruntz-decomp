@@ -327,7 +327,9 @@ struct CGameRegistry {
     //   +0x60 m_cueSink (cue
     //   receiver, 60+ grunt sites) vs GruntzMgr m_timer (per-frame tick + Voice_Volume);
     //   +0x70 m_tileGrid (tile board) vs GruntzMgr m_cmdNotify (cmd sink + cell-height);
-    //   +0x11c/+0x120 (mgr input flags vs consumer sound-volume); +0x14 (base
+    //   +0x11c/+0x120 RESOLVED 2026-07-16: they ARE the sound/voice volumes
+    //   (retail Run @0x83898 stores the registry "Sound Volume"/"Voice Volume"
+    //   reads there; the old "input flag/state" names are dead); +0x14 (base
     //   m_musicEnabled vs GruntzMgr level-loaded gate); +0x150 m_focusSlots (per-player
     //   focus/round state) vs GruntzMgr m_options[4] (registry config records).
     char m_pad0[0x4]; // +0x00  CGameMgr vptr slot (base ??_7CGameMgr@@6B@)
@@ -410,9 +412,13 @@ struct CGameRegistry {
     i32 m_isEffectsEnabled; // +0x110  "Effects"
     char m_pad114[0x118 - 0x114];
     i32 m_isEasyMode; // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
-    i32 m_inputFlag; // +0x11c  StoreInputFlag target (FLAG: some consumers read it as sound volume)
-    i32 m_inputStateVal; // +0x120  StoreInputState target (FLAG: consumer-side role diverges)
-    i32 m_scrollSpeed;   // +0x124  "Scroll_Speed"
+    i32 m_soundVolume; // +0x11c  "Sound Volume" slider value (RETAIL-PROVEN: Run @0x83898
+                       //         stores the registry read; SetSoundVolume @0x919d0 the setter;
+                       //         consumers feed it to ApplyAndPlay - the old "input flag"
+                       //         reading is dead)
+    i32 m_voiceVolume; // +0x120  "Voice Volume" slider value (SetVoiceVolume @0x91a10;
+                       //         GruntSpawnConfig streams take it /2 - grunt speech)
+    i32 m_scrollSpeed; // +0x124  "Scroll Speed" slider value (0..100 percent)
     i32 m_128;           // +0x128  per-frame play word (CPlay::OnExit clears it on state exit)
     char m_pad12c[0x130 - 0x12c];
     // +0x130  play-sub-mode gate within active play (m_134==1). Proven behavior: when 0,

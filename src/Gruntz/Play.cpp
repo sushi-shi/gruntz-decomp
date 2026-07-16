@@ -830,7 +830,7 @@ CAreaMgr* g_pAreaMgr = &g_areaMgr;
 //       UpdateDiagonals]; CLightFxRender[InstallLightFx/BuildLightShape]; CTimer
 //       [TimerEqSet/TimerReset]; CBattlezData[BattlezInit=Init]);
 //   (c) Teardown-on-savedThis is CMulti::AckJoinFailure (a cross-cast of the CPlay
-//       `this`); WorkerReset is the GruntzPlayer(int) ctor (placement-new);
+//       `this`); WorkerReset is GruntzPlayer::SeedForSlot;
 //   (d) @identity-TODO - genuinely unrecovered (no xref/header): ObListInit 0x1b48a6,
 //       ButeStore 0x1b5485, GetBool 0x1bedde, CDDrawWorkerHost::GetSize 0x1633e0.
 // ---------------------------------------------------------------------------
@@ -960,7 +960,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         GruntzPlayer* team =
             (GruntzPlayer*)((char*)hostBase + t * 0x48 * 8 - t * 8 + 0x150); // [edx+ecx*8+0x150]
         if (gameReg->m_134 == 1) {
-            new ((void*)team) GruntzPlayer(0);
+            team->SeedForSlot(0);
             if (t == 0) {
                 team->m_020 = 1;
                 team->m_028 = 1;
@@ -3474,21 +3474,20 @@ CString GetColorName(i32 colorIdx, i32 upper);
 CString GetDifficultyName(i32 diffIdx, i32 upper);
 
 // ===========================================================================
-// GruntzPlayer::GruntzPlayer(i32)  @0x0da870  (/GX EH frame)
+// GruntzPlayer::SeedForSlot(i32)  @0x0da870  (/GX EH frame; ex the ??0(H) int-ctor
+// misbinding - the retail tail is `mov eax,1; ret 4`, a success return, not `this`)
 // Seed the name with "Player" (the temp from GetDefaultName() assigned into the
 // member) and the scalar config block from the index. The /GX frame comes from
 // the destructible "Player" temp.
 // ===========================================================================
 // @early-stop
-// MFC-version wall (cstring-empty-init-version-divergence.md): the field stores +
-// GetDefaultName call + op= are byte-correct, but the packaged MFC's
-// CString::CString() is out-of-line, so our base emits an extra ??0CString@@QAE@XZ
-// default-ctor call before the m_name = g_emptyString op= where retail elides it
-// (its inline CString() folds + dead-store-eliminates). Retail also reads fs:0
-// before push -1 in the /GX prologue where ours pushes first. Both are static-MFC
-// build artifacts, not source-steerable. Deferred to the final sweep.
+// ~53%: the ctor-vs-method misbinding is FIXED (retail returns 1, so this is a
+// plain method - no member CString ctor is emitted now), but the /GX frame shape
+// + the g_emptyString/GetDefaultName CString traffic still diverge (static-MFC
+// packaged-inline artifacts; see cstring-empty-init-version-divergence.md).
+// Deferred to the final sweep.
 RVA(0x000da870, 0xb8)
-GruntzPlayer::GruntzPlayer(i32 index) {
+i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_name = g_emptyString;
     m_playerIndex = index;
     m_018 = -2;
@@ -3505,6 +3504,7 @@ GruntzPlayer::GruntzPlayer(i32 index) {
     m_030 = 0;
     m_22c = 0;
     m_230 = 0;
+    return 1;
 }
 
 // ===========================================================================

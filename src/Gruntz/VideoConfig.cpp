@@ -61,11 +61,11 @@ public:
 // (canonical <Gruntz/GruntzMgr.h>). It used to be typed CGameRegistry* - a second,
 // fake header view of this same object - which forced a CGruntzMgr cast at every
 // site whose method only the canonical declares, and routed the two
-// remaining ones (StoreInputFlag/StoreInputState) to CGameRegistry:: declarations
-// that NOTHING defines: ?StoreInputFlag@CGameRegistry@@QAEXH@Z /
-// ?StoreInputState@CGameRegistry@@QAEXH@Z were guaranteed unresolved externals, while
-// retail's calls there go to ?StoreInputFlag@CGruntzMgr@@QAEXH@Z (0x0919d0) and
-// ?StoreInputState@CGruntzMgr@@QAEHH@Z (0x091a10) - which gruntzmgr already defines.
+// remaining ones (SetSoundVolume/SetVoiceVolume) to CGameRegistry:: declarations
+// that NOTHING defines: ?SetSoundVolume@CGameRegistry@@QAEXH@Z /
+// ?SetVoiceVolume@CGameRegistry@@QAEXH@Z were guaranteed unresolved externals, while
+// retail's calls there go to ?SetSoundVolume@CGruntzMgr@@QAEXH@Z (0x0919d0) and
+// ?SetVoiceVolume@CGruntzMgr@@QAEHH@Z (0x091a10) - which gruntzmgr already defines.
 // Typing the pointer correctly binds both calls to the real bodies and the casts fall
 // out on their own. Every member this TU touches is on CGruntzMgr or its WAP32::CGameMgr
 // base at the same offsets (m_soundEnabled +0x10, m_musicEnabled +0x14, m_savedModeW/H
@@ -330,9 +330,9 @@ void LoadGameOptionsToDialog(HWND hDlg) {
         return;
     }
     g_opt_22bd70 = g_gameReg->m_isEasyMode;
-    g_opt_22bd6c = g_gameReg->m_inputFlag;
+    g_opt_22bd6c = g_gameReg->m_soundVolume;
     g_opt_22bd84 = g_gameReg->m_soundEnabled;
-    g_opt_22bdc4 = g_gameReg->m_inputStateVal;
+    g_opt_22bdc4 = g_gameReg->m_voiceVolume;
     g_opt_22bdd4 = g_gameReg->m_isVoiceEnabled;
     g_opt_22bdcc = g_gameReg->m_sound->GetXMidiVolume();
     g_opt_22bdd0 = g_gameReg->m_musicEnabled;
@@ -347,14 +347,14 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
         hDlg,
         0x470,
-        g_gameReg->m_inputFlag,
+        g_gameReg->m_soundVolume,
         0x50
     );
     CheckDlgButton(hDlg, 0x475, g_gameReg->m_isVoiceEnabled);
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
         hDlg,
         0x476,
-        g_gameReg->m_inputStateVal,
+        g_gameReg->m_voiceVolume,
         0x50
     );
     CheckDlgButton(hDlg, 0x471, g_gameReg->m_musicEnabled);
@@ -402,12 +402,12 @@ void ReadMenuOptionsDialog(HWND hDlg) {
             g_gameReg->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
             i32 mv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x470);
             if (mv >= 0 && mv <= 100) {
-                g_gameReg->StoreInputFlag(mv);
+                g_gameReg->SetSoundVolume(mv);
             }
             g_gameReg->m_isVoiceEnabled = IsDlgButtonChecked(hDlg, 0x475);
             i32 sv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x476);
             if (sv >= 0 && sv <= 100) {
-                g_gameReg->StoreInputState(sv);
+                g_gameReg->SetVoiceVolume(sv);
             }
         }
         if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
@@ -450,9 +450,9 @@ void CPlay::ApplyGameOptions() {
     if (g_disableAudio == 0) {
         if (g_disableSound == 0) {
             g_gameReg->SetRunState(g_opt_22bd84);
-            g_gameReg->StoreInputFlag(g_opt_22bd6c);
+            g_gameReg->SetSoundVolume(g_opt_22bd6c);
             g_gameReg->m_isVoiceEnabled = g_opt_22bdd4;
-            g_gameReg->StoreInputState(g_opt_22bdc4);
+            g_gameReg->SetVoiceVolume(g_opt_22bdc4);
         }
         if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
             g_gameReg->SetSoundLevelState(g_opt_22bdd0);
@@ -715,7 +715,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x476)) {
-        g_gameReg->StoreInputState(newpos);
+        g_gameReg->SetVoiceVolume(newpos);
         if (code == 5) {
             return;
         }
@@ -740,7 +740,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
-        g_gameReg->StoreInputFlag(newpos);
+        g_gameReg->SetSoundVolume(newpos);
         if (code == 5) {
             return;
         }

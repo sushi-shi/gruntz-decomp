@@ -40,6 +40,7 @@
 
 #include <Gruntz/GameRegistry.h>     // CGameRegistry (g_gameReg) + CSpriteFactoryHolder
 #include <Gruntz/GruntzMgr.h>        // the real CGruntzMgr (this) + SaveInfo.h + SoundCue.h
+#include <Gruntz/CheatMgr.h> // CCheatMgr (m_cheatMgr->m_124 - the "Cheatz cleared" flag)
 #include <Gruntz/Play.h>             // CPlay (the cheat receiver) + CTimer (m_frameMarker)
 #include <Gruntz/GameMode.h>         // CMenuState (StopMusicChain/StartMusic; state 5)
 #include <Gruntz/Multi.h>            // CMulti (Connect; state 0x11)
@@ -632,7 +633,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     case 0x81d7:
                         PLAYCUE("GAME_MAJORCHEAT");
-                        m_hudGuard->m_124 = 0;
+                        m_cheatMgr->m_124 = 0;
                         AppendChatMessage("Cheatz cleared");
                         return 1;
                     case 0x8240:

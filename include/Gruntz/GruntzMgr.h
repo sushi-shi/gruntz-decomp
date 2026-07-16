@@ -36,7 +36,7 @@
 // SBI_MenuItem TU's transitive fwd-decl count under the DecCounter regalloc-butterfly
 // threshold (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
-#include <Gruntz/SaveInfo.h>       // SaveInfo (m_saveInfoRec) + HudGuard44 (+0x44)
+#include <Gruntz/SaveInfo.h>       // SaveInfo (m_saveInfoRec)
 #include <Io/SaveGame.h>           // CSaveGame - the +0x58 save sink (ex the SaveSink58 view)
 // +0x70 is the REAL RTTI class CGruntzMapMgr (: CMapMgr, vtbl 0x1e9bb4). PROVEN by the
 // teardown legs of retail Close() @0x0855e0: the +0x68 leg calls ILT thunk 0x3b1b ->
@@ -135,7 +135,13 @@ class CWorldSoundSet;
 // per-method facet views of the SAME object into its one real class (defined in
 // GruntzMgr.cpp): the teardown-only slots share EngObj (Teardown()), and the
 // multi-facet slots carry all their facets' fields + methods.
-struct EngObj; // teardown-only sub-object (Teardown())
+struct EngObj;     // teardown-only sub-object (Teardown())
+class CFaderMgr;   // +0x40 the DDraw fader manager (Run news it; SetConfig @0x17d980 -
+                   //       the REAL src/DDrawMgr/FaderMgr.cpp method; ex EngObj)
+class CCheatMgr;   // +0x44 cheat-code dictionary (<Gruntz/CheatMgr.h>; Run news it:
+                   //       Init(hwnd) @0x22ad0 + RegisterCheats @0x22c80; ex HudGuard44)
+class CShadeTableCache; // +0x50 shade-table cache (<DDrawMgr/ShadeTableCache.h>;
+                        //       SpriteRefTable's shade feed; ex EngObj)
 // CSpriteRefTable (+0x74 sprite/animation ref table; Reset teardown @0xe2290) is
 // defined by the <Gruntz/SpriteRefTable.h> include above.
 class CGruntSpawnConfig;
@@ -149,8 +155,8 @@ class CSymParser;
 namespace Utils {
     class RegistryHelper;
 }
-// HudGuard44 (+0x44 HUD first-frame guard) and CSaveGame (+0x58 save-record
-// sink) are defined by the <Gruntz/SaveInfo.h> include above.
+// CSaveGame (+0x58 save-record sink) is defined by the <Gruntz/SaveInfo.h>
+// include above. (The +0x44 HudGuard44 view is dissolved onto CCheatMgr.)
 class CFontConfig; // +0x5c chat/message log (was view CChatLog; AddItem @0x21c60 - FontConfig.h)
 struct TimerObj;   // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
 // +0x68: the world command/trigger grid is the ONE CTriggerMgr (TriggerMgr.h) -
@@ -296,8 +302,12 @@ public:
     // GAMESTATE_PLAY, register the DEBUG_SETSKILL command (via ILT thunk 0x2bb7).
     i32 RegisterSetSkillDebugCmd(); // @0x08e880 (calls RunModalDialog(DEBUG_SETSKILL,...))
 
-    i32 StoreInputState(i32 v); // @0x091a10 (store m_inputStateVal, forward to m_timer)
-    void StoreInputFlag(i32 v); // @0x0919d0 (store m_inputFlag, mirror to g_61ab24 + m_inputState)
+    // The two options-slider setters (ex StoreInputState/StoreInputFlag - the retail
+    // callers are the options dialog sliders + Run's registry-load; see the
+    // m_soundVolume/m_voiceVolume members below for the byte proof).
+    i32 SetVoiceVolume(i32 v);  // @0x091a10 (store m_voiceVolume, mirror to m_timer->m_2c)
+    void SetSoundVolume(i32 v); // @0x0919d0 (store m_soundVolume, mirror to the 0x61ab24
+                                //  live global + push into the m_inputState sound set)
     void UnloadSoundChain();    // @0x08f740 (m_world->m_28->m_2c teardown + StopBank2)
     void ClearOptionsSlots();   // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
     RVA(0x000928c0, 0x23)
@@ -355,10 +365,13 @@ public:
     // PerFrameTick (0x8f620); GetSaveSource == PickPlayOrPausedState (0x92990);
     // SwitchModeState == TransitionState (0x8b960).
 
-    // Reloc-masked CGruntzMgr siblings reached from LoadWorldMode (the rez-path
-    // builder + the rez-row resolver that fills a CString and returns the row ptr).
-    i32 MakeRezPath();                  // FUN_0049???? (this) -> path-built ok
-    void** ResolveRezRow(CString* out); // thunk_FUN_00485500 (this, &out) -> row
+    // (MakeRezPath @0x91670 is NOT re-declared here: RezMgr.cpp DEFINES it as
+    // ?MakeRezPath@RezMgr@@QAEHXZ - RezMgr being another facet view of THIS class
+    // (see the fold note in <Rez/RezMgr.h>); a second decl here was a phantom the
+    // definition never emits. Callers cast to RezMgr* until that fold lands.)
+    // By-value getter of the assembled Gruntz.REZ path (m_strRezPath); ex the
+    // manual-retptr "ResolveRezRow(CString*)" ABI model AND the Obj85500 view.
+    CString GetRezPath(); // 0x085500 (body in RezSync.cpp)
 
     // Clock / global helpers.
     void SetGameClock(i32 now, i32 delta, i32 abs); // @0x08f7b0 (mirror the 5 clock globals)
@@ -441,11 +454,13 @@ public:
     // the sweep found are red herrings: the 0x44-byte CFontConfig sub-object's inline
     // ctor in RezSync's Init, and TransitionState's zero-init of a NEW state object.)
     CObject* m_3c;
-    EngObj* m_40;           // +0x40  engine sub-object (teardown-only)
-    HudGuard44* m_hudGuard; // +0x44  HUD first-frame seed guard (+0x124)
+    CFaderMgr* m_faderMgr;  // +0x40  fader manager (Run: new + SetConfig(0,0,0) @0x17d980)
+    CCheatMgr* m_cheatMgr;  // +0x44  cheat-code dictionary; its m_124 "a cheat was used"
+                            //        flag gates the HUD warning + the 0x81d7 "Cheatz
+                            //        cleared" command (ex the HudGuard44 view)
     CGruntzSoundZ* m_sound; // +0x48  sound/bank object (StopBank/StopAll)
     i32 m_4c;               // +0x4c
-    EngObj* m_50;           // +0x50  engine sub-object (teardown-only)
+    CShadeTableCache* m_shadeCache; // +0x50  shade-table cache (fed to the sprite table)
     // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
     CWorldSoundSet* m_inputState; // +0x54  active-level sound object (Deactivate/Resume/
@@ -490,7 +505,8 @@ public:
     i32 m_driveLetterProbed;          // +0xd4  drive-letter probed flag
     CPtrArray m_stateStack; // +0xd8  CState* push-down stack (0x14 B; EH state 1). CPtrArray,
                             //        not CByteArray - see the note above.
-    CString m_strEC;        // +0xec  (EH state 2)
+    CString m_strRezPath;   // +0xec  assembled Gruntz.REZ archive path (EH state 2;
+                            //        RezMgr.h "m_pathA"; GetRezPath returns it)
     CString m_strMoviePath; // +0xf0  resolved movie path (EH state 3)
     i32 m_f4;               // +0xf4  (=1 in ctor)
     i32 m_f8, m_fc;         // +0xf8, +0xfc
@@ -500,10 +516,18 @@ public:
     i32 m_isHighDetail;     // +0x10c  "High_Detail" flag (=1 in ctor)
     i32 m_isEffectsEnabled; // +0x110  "Effects"    enable (=1 in ctor)
     i32 m_114;              // +0x114
-    i32 m_isEasyMode;       // +0x118  "Easy_Mode" flag
-    i32 m_inputFlag;        // +0x11c  StoreInputFlag target
-    i32 m_inputStateVal;    // +0x120  StoreInputState target
-    i32 m_scrollSpeed;      // +0x124  "Scroll_Speed"
+    i32 m_isEasyMode;       // +0x118  "Easy Mode" flag (Run also stores the registry
+                            //         "Resolution" index (1/2/3) through this slot)
+    // The three options-dialog slider values (RETAIL-PROVEN, Run @0x83898-0x838a4
+    // stores the registry "Sound Volume"/"Voice Volume"/"Scroll Speed" reads here;
+    // the options dialog sliders 0x470/0x476/0x478 write them back; music volume is
+    // NOT a mgr scalar - it lives on m_sound via Set/GetXMidiVolume):
+    i32 m_soundVolume; // +0x11c  "Sound Volume" (SetSoundVolume @0x919d0 also mirrors
+                       //         it to the live global 0x61ab24 + the m_inputState set)
+    i32 m_voiceVolume; // +0x120  "Voice Volume" (SetVoiceVolume @0x91a10 also mirrors
+                       //         it to m_timer->m_2c - the grunt-speech volume)
+    i32 m_scrollSpeed; // +0x124  "Scroll Speed" (CPlay::LoadScrollSpeedOptions scales
+                       //         it (0..100) into the Min..MaxScrollSpeed range)
     i32 m_128, m_12c, m_130, m_134; // +0x128..+0x134  (m_134==3 -> "won"; FillSaveInfo)
     i32 m_optionsCount;             // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
     i32 m_viewOriginL, m_viewOriginT, m_viewOriginR,

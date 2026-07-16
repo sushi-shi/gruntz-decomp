@@ -43,13 +43,11 @@ struct SaveInfo {
 // levelId / +0x14 name / +0x35 path / +0x75 levelName / +0xf8/+0xfc) -
 // @fold-TODO SaveInfo == SaveSlot (the m_saveInfoRec consumers).
 
-// The manager's +0x44 HUD first-frame guard (only its +0x124 flag is touched:
-// seeded by the manager, cleared by the 0x81d7 "Cheatz cleared" command).
-SIZE_UNKNOWN(HudGuard44);
-struct HudGuard44 {
-    char m_pad0[0x124];
-    i32 m_124;       // +0x124
-    void Teardown(); // (this) reloc-masked (Close)
-};
+// (HudGuard44 is DISSOLVED, 2026-07-16: the manager's +0x44 object IS the
+// canonical CCheatMgr (<Gruntz/CheatMgr.h>) - the layouts coincide exactly
+// (i32 m_124 at +0x124, the "a cheat was used" flag the HUD warning + the
+// 0x81d7 "Cheatz cleared" command touch), CGruntzMgr::Run news it with
+// Init(hwnd) @0x22ad0 + RegisterCheats @0x22c80, and the "Teardown" was
+// ~CCheatMgr @0x85e60.)
 
 #endif // GRUNTZ_GRUNTZ_SAVEINFO_H

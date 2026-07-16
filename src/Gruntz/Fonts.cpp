@@ -14,6 +14,7 @@
 // unwind and emits no exception frame.
 // ---------------------------------------------------------------------------
 #include <Font/Font.h>
+#include <Gruntz/Fonts.h> // the shared InitializeFonts decl (Run boot-calls it)
 #include <rva.h>
 #include <Globals.h>
 

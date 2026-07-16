@@ -6,6 +6,7 @@
 // registration helper. Frameless __cdecl. Only offsets + code bytes are
 // load-bearing; every create-fn / follow-up helper is a reloc-masked external
 // (an unnamed ILT jmp-thunk to the real ctor/helper).
+#include <Gruntz/GameObjectFactory.h> // the shared RegisterGameObjectTypes decl
 #include <rva.h>
 #include <Gruntz/ObjTypeRegistrars.h> // real per-type registrar entry points (reloc fidelity)
 

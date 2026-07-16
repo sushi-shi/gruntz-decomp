@@ -11,6 +11,7 @@
 // reloc-masked __cdecl callees.
 
 #include <rva.h>
+#include <Gruntz/SoundFont.h> // shared decls (CGruntzMgr::Run boot audio path)
 
 #include <Win32.h>  // LoadLibraryA / GetProcAddress / FreeLibrary
 #include <stdio.h>  // sprintf (0x11f890)

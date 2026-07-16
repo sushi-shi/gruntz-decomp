@@ -9,6 +9,7 @@
 // exists, falling back to the MUSIC-dir copy. The newer build (g_sfVer >= 0x37115c)
 // prefers the "Gruntz4" variant. All state lives in module globals; frameless.
 #include <rva.h>
+#include <Gruntz/SoundFont.h> // shared decls (CGruntzMgr::Run boot audio path)
 
 #include <Win32.h> // GetCurrentDirectoryA / FreeLibrary
 

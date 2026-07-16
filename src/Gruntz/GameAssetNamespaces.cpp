@@ -57,9 +57,9 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     m_4 = mgr;
     m_8 = mgr->m_symParser;
     m_c = mgr->m_world;
-    // +0x40's identity is still disputed (RezSync's CFaderMgr view vs the GruntzMgr
-    // teardown's (CTriggerMgr*) cast); the cast documents the open conflict.
-    m_faderMgr = (CFaderMgr*)mgr->m_40;
+    // +0x40 SETTLED (2026-07-16): the mgr's m_faderMgr is the real CFaderMgr
+    // (Run news it + SetConfig @0x17d980, the src/DDrawMgr/FaderMgr.cpp method).
+    m_faderMgr = mgr->m_faderMgr;
     m_levelIndex = areaArg;
     i32 t = (areaArg - 1) % 0x24;
     m_44 = -1;
