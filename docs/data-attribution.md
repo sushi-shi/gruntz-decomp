@@ -61,29 +61,89 @@ This is the retail oracle a real data-byte loop gates against: once source data
 initializers relink (or the delinked target carries typed data), compare candidate bytes
 (relocs normalized) to these digests.
 
-## 3. Staged: per-symbol data delink + full data loop
+## 2b. Link-side DATA static-storage audit — `gruntz exe-diff` §E (wired)
 
-The needle-mover for `matched_data` is a delinker that emits **each DATA() global as its own
-named COFF symbol** with real storage class + interior relocs→externals, so objdiff pairs
-data by name. Enablers are already present:
+`gruntz link` (Phase 2, VC5 link.exe 5.10.7303, `/FORCE`) links the base objs into a
+candidate `GRUNTZ.EXE` + `.map`. `gruntz exe-diff` already audits `.text` layout/bytes; it
+now also runs a **DATA static-storage** audit (§E), ported from homm2's
+`link_exe.py: static_symbol_diagnostics` + `classify_pe_storage`. It joins each retail data
+symbol to its candidate `.map` entry, classifies `.rdata` / initialized `.data` /
+loader-zero storage on both sides, and reports the absolute RVA delta **and** the
+**section-relative delta** (whole-section drift subtracted, so a section shift is not
+mistaken for a contribution error), listing the first divergence per section — the earliest
+credible contribution cause to fix, exactly as homm2's method prescribes (fix the earliest,
+relink; later rows are cumulative consequences).
 
-- **Delinker**: homm2's data-topology `vostok-delinker` (`--data-manifest`,
-  `--data-section-manifest`, `--contribution-manifest`, `--reloc-alias-manifest`) is a
-  superset of Gruntz's current CLI and is **already built in `/nix/store`**. Bump
-  `flake.nix`'s `vostok-delinker-src` to that revision. It changes the delinker's default
-  symbol identities across all target objs, so it is a validated migration: re-delink the
-  whole tree, then gate on exact-match ≥ 2366 before adopting.
-- **DATA() sizes**: extend `labels.py` to emit each `DATA()` global's `sizeof` (homm2
-  `annotated_data.py` VarDecl inventory; Gruntz already has clang record layouts in
-  `structs.json`). Feed `reviewed_data.py`-style extents into the `--data-manifest`.
-  Substitute Gruntz's candidate `.map` (`link_order.py`) for homm2's NB09 as the
-  contribution-range source (GRUNTZ.EXE has no debug stream).
-- **Patched objdiff**: homm2's objdiff-cli 3.7.1 + `objdiff-data-symbol-details.patch`
-  (adds per-`DiffSymbol` `section` + `data_relocations` JSON rows) is **already in
-  `/nix/store`**; it unlocks the project-neutral `strict_allocation_diff.py` for
-  byte+reloc-exact per-allocation audits.
-- **Reloc canonicalization**: adopt a `delink_reloc_aliases.tsv` + `--reloc-alias-manifest`
-  for array-index/negative-addend spellings (pairs with the `assert_relocs` work).
+This is the DATA analog of the `.text` layout levers: it verifies each global lands at its
+retail offset *within its section after a real link* — something no per-object diff can see.
+Retail data owners come from Ghidra + `DATA()` (`symbol_names.csv`), substituting for
+homm2's CodeView `sstModule` inventory (GRUNTZ.EXE has no debug stream).
+
+Measured on the first real candidate link (392 objs, 4886 unresolved externs under
+`/FORCE`):
+
+```
+retail data symbols (DATA()/Ghidra) : 925   rdata=306 data-init=115 bss-tail=409 other=95
+DEFINED + placed by candidate link  : 771/925 (83.4%)   (rest extern/unresolved)
+at CORRECT absolute retail RVA      : 0/771             (needs link order + full coverage)
+at CORRECT section-relative offset  : 0/771             (the real contribution signal)
+storage-class (.rdata/.data) matches: 715/771
+first divergence: ??_7CActionArea@@6B@ rdata ret 0x1e7004 cand 0x101000 Doff -0x4
+```
+
+## 3. Why `matched_data` is ~0, and what it actually costs to fix (MEASURED)
+
+Current: `matched_data` = **4 / 69184 bytes (0.006%)** vs homm2's **305328/305328 = 100%**.
+
+**Root cause (measured, not naming).** The delinked target objs already carry REAL data
+names — `??_7CActionArea@@6B@` in `.rdata`, `_g_gameReg`, `?g_buteMgr@@3VCButeMgr@@A`. The
+problem is that **objdiff compares data at SECTION granularity**: our base `.rdata` has the
+MSVC pool layout (vtable + `$T` float pool + literals) while the delinked target `.rdata`
+holds only the pieces vostok extracted. The two sections do not align, so almost nothing
+matches regardless of symbol names. Content-addressing names (§1) therefore cannot move
+`matched_data` on its own. homm2 reaches 100% only because its delinker REBUILDS
+**candidate-shaped** target sections (`--data-section-manifest`) and places each definition
+at the candidate's own `section_offset` (`--data-manifest`).
+
+**The bump is NOT just a flake-input change.** Measured by running homm2's data-topology
+`vostok-delinker` (`/nix/store/5pc398fq…`, all four manifest flags) directly on Gruntz's
+existing synth PDB + retail EXE:
+
+1. Default (canonical) mode → `Error: no candidate writable identity can represent retail
+   RVA 0x229328`, 0 objs. It is fail-closed: every writable RVA must be covered by a
+   data/section manifest.
+2. With the bootstrap escape hatch `--recover-data-relocs-from-pdb` (± `--coalesce-common-functions`)
+   → `Error: IAT relocation target 0x2c44ac has no exact PDB symbol`, 0 objs.
+
+So there are **two hard prerequisites** before the new delinker emits anything:
+
+- **(a) IAT symbols in the synth PDB.** `.idata` is retail section 4 (RVA `0x2c3000`,
+  vsize `0x3b41`); `synth_pdb.py` maps only `.text`/`.rdata`/`.data` → segments 1/2/3 and
+  emits no `.idata` symbols. The new vostok reconstructs `__imp__…` COFF relocations from
+  CodeView-backed `.idata` symbols and errors without them. Fix: add `.idata` as segment 4
+  and emit an `__imp__` data symbol per IAT slot. Exact decorations are available as
+  evidence — the base objs already carry **150** real MSVC5 spellings
+  (`__imp__AIL_init_sequence@12`, …); join them to the retail import table by undecorated
+  name, and take the remainder from the MSVC import libs (`$MSVC_DIR/lib/*.LIB`), which
+  carry the authoritative `@N`. Do NOT invent `@N`.
+- **(b) Candidate data + section manifests.** The delinker needs each definition's owning
+  object, storage, alignment, **`section_offset`**, and scope, plus a candidate section
+  table — homm2 derives these from the candidate COFFs (`candidate_data_manifest.py`) and
+  constrains owner resolution with a contribution manifest. Gruntz has no NB09, so the
+  contribution ranges must come from the candidate `.map` (`gruntz link` / `link_order.py`)
+  or Ghidra, not `sstModule`.
+
+**Extents are now in place (step 1 of that work is done).** `labels.py` resolves each
+`DATA()` global's exact `sizeof` from its declared type (§2) — **532/925** data rows carry a
+real extent, so the `--data-manifest` has bounded sizes to enroll instead of next-symbol
+gaps.
+
+**Ordering + gate.** (a) → re-delink → gate `code exact >= 2366`; then (b) incrementally,
+enrolling reviewed extents in batches and re-gating each time. Also available, already in
+`/nix/store`: homm2's objdiff-cli 3.7.1 + `objdiff-data-symbol-details.patch` (per-symbol
+`section` + `data_relocations` JSON rows) which unlocks the project-neutral
+`strict_allocation_diff.py`; and `--reloc-alias-manifest` for array-index/negative-addend
+spellings (pairs with `assert_relocs`).
 
 What does NOT port: homm2's NB09/`sstModule`-sourced ordering, contribution ranges, and
 `cv-public-data` inventory (no debug stream in GRUNTZ.EXE — use Ghidra + candidate `.map` +

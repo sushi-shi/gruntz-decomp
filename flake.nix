@@ -10,10 +10,16 @@
     };
 
     vostok-delinker-src = {
-      # PR srp-survarium/vostok-delinker#11 (fix/absolute-data-relocs): emit DIR32
-      # for absolute data/code refs, keep REL32 for branches. Pinned to the branch
-      # commit until it lands on master.
-      url = "github:srp-survarium/vostok-delinker/8a42a0ba6f6b90651d62d1911eb97b80a5faa149";
+      # The reviewed-data-topology branch (the one homm2-decomp pins): a SUPERSET of
+      # the old PR#11 pin (fix/absolute-data-relocs - DIR32 for absolute data/code
+      # refs, REL32 for branches), plus the data/section/contribution/reloc-alias
+      # manifests the DATA-match loop needs, and it retains REAL PDB identities for
+      # byte-identical function groups instead of coalescing them to synthetic names
+      # (the legacy behaviour is now opt-in behind --coalesce-common-functions).
+      # Measured on our own tree, same base objs: exact 2366 -> 2385 (+19).
+      # Needs .idata IAT symbols in the synth PDB (synth_pdb.py emits all 456) or it
+      # hard-errors on the first IAT relocation target.
+      url = "github:srp-survarium/vostok-delinker/81d34b204a0384a92cf3b4c641a8430256b2922e";
       flake = false;
     };
   };

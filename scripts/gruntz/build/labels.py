@@ -356,12 +356,124 @@ def collect_vars(ast, main_file):
                 loc = node.get("loc") or {}
                 off = loc.get("offset")
                 if off is not None:
-                    qt = (node.get("type") or {}).get("qualType") or ""
-                    out.append((node["mangledName"], off, qt))
+                    ty = node.get("type") or {}
+                    qt = ty.get("qualType") or ""
+                    # clang's own desugaring of a typedef (HWND -> HWND__ *), used
+                    # only to SIZE the global; the sugar type stays the reported one.
+                    out.append((node["mangledName"], off, qt,
+                                ty.get("desugaredQualType") or ""))
             for c in node.get("inner", []) or []:
                 visit(c)
     visit(ast)
     return out
+
+
+# --- DATA() sizeof: the EXACT extent of a matched global from its declared type
+# A CodeView data record carries no length and the retail EXE has no symbol sizes,
+# so the DECLARED C++ TYPE is the only authority for a global's byte extent (the
+# same role homm2's libclang VarDecl inventory plays; see docs/data-attribution.md).
+# Without it every extent degrades to the next-symbol GAP, which is only an upper
+# bound (it swallows padding and any unlabelled neighbour) and is useless as a
+# delinker data-manifest extent.
+#
+# SAFETY: a WRONG size would make the delinker materialize the wrong bytes, so this
+# resolver is deliberately conservative - it returns a size ONLY for shapes it can
+# prove (i386/MSVC5 scalars, any pointer/reference, a sized array of a resolvable
+# element, or a record whose clang-computed layout is in structs.json) and None for
+# everything else. None simply leaves the column empty = today's behaviour.
+_SCALAR_SIZES = {
+    # Rust-style aliases (include/Ints.h) - Gruntz's own, unambiguous.
+    "i8": 1, "u8": 1, "i16": 2, "u16": 2, "i32": 4, "u32": 4,
+    "i64": 8, "u64": 8, "f32": 4, "f64": 8,
+    # C/C++ scalars, i386 / MSVC 5.0 ABI.
+    "char": 1, "signed char": 1, "unsigned char": 1, "bool": 1,
+    "short": 2, "short int": 2, "unsigned short": 2, "unsigned short int": 2,
+    "wchar_t": 2,
+    "int": 4, "signed int": 4, "unsigned int": 4, "unsigned": 4,
+    "long": 4, "long int": 4, "unsigned long": 4, "unsigned long int": 4,
+    "float": 4,
+    "double": 8, "long double": 8, "__int64": 8, "unsigned __int64": 8,
+}
+_ARRAY_RE = re.compile(r"^(.*?)\s*\[(\d+)\]$")
+_RECORD_SIZES_CACHE = {}
+
+
+def record_sizes(path=None):
+    """{record name: byte size} from the generated clang record layouts.
+
+    build/gen/structs.json is produced by ghidra_metadata_generate with the same
+    i386/MSVC target as the build, so its sizes ARE the MSVC layout. Absent file =>
+    no record sizes (scalars/pointers still resolve); never fatal."""
+    path = str(path or (REPO / "build/gen/structs.json"))
+    if path not in _RECORD_SIZES_CACHE:
+        out = {}
+        try:
+            for rec in json.loads(Path(path).read_text()):
+                name, size = rec.get("name"), rec.get("size")
+                if name and isinstance(size, int) and size > 0:
+                    # Same record from several TUs must agree; a disagreement means
+                    # the layout is TU-dependent -> refuse to size it.
+                    if out.get(name, size) != size:
+                        out[name] = None
+                    else:
+                        out.setdefault(name, size)
+        except (OSError, json.JSONDecodeError, TypeError):
+            pass
+        _RECORD_SIZES_CACHE[path] = {k: v for k, v in out.items() if v}
+    return _RECORD_SIZES_CACHE[path]
+
+
+# Trailing/leading cv-qualifier, with or without a separating space ("void *const").
+_CV_TRAIL_RE = re.compile(r"\s*\b(?:const|volatile)\s*$")
+_CV_LEAD_RE = re.compile(r"^\s*\b(?:const|volatile)\b\s*")
+
+
+def _strip_cv(t):
+    t = t.strip()
+    for _ in range(4):
+        before = t
+        t = _CV_LEAD_RE.sub("", t)
+        t = _CV_TRAIL_RE.sub("", t)
+        t = t.strip()
+        if t == before:
+            break
+    return t
+
+
+def sizeof_qualtype(qt, records=None, desugared=None):
+    """Exact sizeof for a clang qualType, or None when not provable.
+
+    `desugared` is clang's own desugaredQualType for the same declaration. Win32/MFC
+    typedefs (HWND, WORD, HINSTANCE, ...) are resolved through it rather than a
+    hand-rolled typedef table, so the REAL headers stay the authority (see CLAUDE.md).
+    """
+    for cand in (qt, desugared):
+        size = _sizeof_one(cand, records)
+        if size:
+            return size
+    return None
+
+
+def _sizeof_one(qt, records=None):
+    if not qt:
+        return None
+    t = _strip_cv(qt)
+    if not t or "(" in t:          # function / function-pointer types: not sized here
+        return None
+    if t.endswith(("*", "&")):     # any pointer/reference is 4 on i386
+        return 4
+    m = _ARRAY_RE.match(t)
+    if m:
+        elem = _sizeof_one(m.group(1), records)
+        n = int(m.group(2))
+        return elem * n if elem else None
+    if t.endswith("[]"):           # incomplete array: extent unknown
+        return None
+    if t in _SCALAR_SIZES:
+        return _SCALAR_SIZES[t]
+    recs = record_sizes() if records is None else records
+    key = re.sub(r"^(struct|class|union|enum)\s+", "", t)
+    return recs.get(key)
 
 
 def clang_ast(clang, tu, flags, cl_flags=None):
@@ -439,8 +551,8 @@ def data_labels(text, ast, main_file):
     with functions, so a non-matched global cannot steal a function's address.
     """
     off2line = line_index(text)
-    var_defs = sorted((off2line(off), mn, qt)
-                      for (mn, off, qt) in collect_vars(ast, main_file))
+    var_defs = sorted((off2line(off), mn, qt, dq)
+                      for (mn, off, qt, dq) in collect_vars(ast, main_file))
     out = []
     line_no = 1
     for m in re.finditer(r"[^\n]*\n", blank_comments(text)):
@@ -448,9 +560,9 @@ def data_labels(text, ast, main_file):
         dm = DATA_MACRO_RE.search(seg)
         if dm:
             rva = int(dm.group(1), 16)
-            cand = next(((mn, qt) for (dl, mn, qt) in var_defs if dl >= line_no),
-                        (None, None))
-            out.append((rva, cand[0], cand[1]))
+            cand = next(((mn, qt, dq) for (dl, mn, qt, dq) in var_defs if dl >= line_no),
+                        (None, None, None))
+            out.append((rva, cand[0], cand[1], cand[2]))
         line_no += 1
     return out
 
@@ -1146,7 +1258,7 @@ def main():
 
         # --- DATA via AST (IR drops the extern's annotation) ---
         if ast is not None and DATA_MACRO_RE.search(text):
-            for rva, cand, qtype in data_labels(text, ast, tu):
+            for rva, cand, qtype, dqtype in data_labels(text, ast, tu):
                 if cand is None:
                     misses.append((rva, None, unit, "no VarDecl below DATA()"))
                     continue
@@ -1154,9 +1266,15 @@ def main():
                 # never referenced in its own base obj, so bypass the authority
                 # check (the names came pre-checked from the matched TUs).
                 if obj_syms is None or cand in all_syms or unit == GLOBALS_UNIT:
-                    rows.append((rva, cand, unit, None, "data"))
+                    # The declared type is the ONLY authority for a global's extent
+                    # (no CodeView length, no retail symbol sizes) - see
+                    # sizeof_qualtype. Unprovable types stay None => empty column =>
+                    # the consumer falls back to the next-symbol gap, as before.
+                    dsize = sizeof_qualtype(qtype, desugared=dqtype)
+                    rows.append((rva, cand, unit, dsize, "data"))
                     # remember the declared type so apply.py can type the global
-                    global_meta[rva] = {"name": cand, "type": qtype, "unit": unit}
+                    global_meta[rva] = {"name": cand, "type": qtype, "unit": unit,
+                                        "size": dsize}
                 else:
                     misses.append((rva, cand, unit,
                                    "data candidate not in base obj"))
@@ -1298,12 +1416,18 @@ def main():
     globals_out = []
     for rva, name, unit, size, kind in sorted(last_data.values()):
         gm = global_meta.get(rva) or {}
-        globals_out.append({"rva": f"0x{rva:06x}", "name": name,
-                            "type": gm.get("type") or "", "unit": unit})
+        row = {"rva": f"0x{rva:06x}", "name": name,
+               "type": gm.get("type") or "", "unit": unit}
+        # The type-derived exact extent (sizeof_qualtype); omitted when unprovable
+        # so a consumer can tell "no evidence" from a real size.
+        if size:
+            row["size"] = f"0x{size:x}"
+        globals_out.append(row)
     globals_out.sort(key=lambda d: d["rva"])
     n_typed = sum(1 for g in globals_out if g["type"])
+    n_sized = sum(1 for g in globals_out if g.get("size"))
     _write_json_if_changed(globals_out, args.globals_out,
-                           f"global(s) ({n_typed} typed)")
+                           f"global(s) ({n_typed} typed, {n_sized} sized)")
     return 0
 
 

@@ -34,6 +34,7 @@ Section -> (1-based PE/object-crate section index, section base RVA):
 import argparse
 import csv
 import os
+import re
 import struct
 import subprocess
 import sys
@@ -48,19 +49,22 @@ import sys
 TEXT_BASE = TEXT_END = 0
 RDATA_BASE = RDATA_END = 0
 DATA_BASE = DATA_END = 0
+IDATA_BASE = IDATA_END = 0
 
 SEG_TEXT = 1
 SEG_RDATA = 2
 SEG_DATA = 3
+SEG_IDATA = 4
 
 
 def read_sections(exe_path):
-    """Read .text/.rdata/.data RVA bounds (virtual size) from the PE.
+    """Read .text/.rdata/.data/.idata RVA bounds (virtual size) from the PE.
 
     Sets the module-level *_BASE / *_END globals so the rest of the generator
     classifies symbols against the real section layout.
     """
     global TEXT_BASE, TEXT_END, RDATA_BASE, RDATA_END, DATA_BASE, DATA_END
+    global IDATA_BASE, IDATA_END
     with open(exe_path, "rb") as f:
         data = f.read()
     pe_off = struct.unpack_from("<I", data, 0x3C)[0]
@@ -76,6 +80,246 @@ def read_sections(exe_path):
     TEXT_BASE, TEXT_END = bounds[".text"]
     RDATA_BASE, RDATA_END = bounds[".rdata"]
     DATA_BASE, DATA_END = bounds[".data"]
+    # .idata is retail PE section 4 -> segment 4 (1-based PE order, like the rest).
+    IDATA_BASE, IDATA_END = bounds.get(".idata", (0, 0))
+
+
+# --- IAT (.idata) import symbols -------------------------------------------
+# The data-topology delinker reconstructs `__imp__...` COFF relocations from the
+# PDB's .idata symbols and hard-errors ("IAT relocation target 0x... has no exact
+# PDB symbol") when a relocation lands on an IAT slot we did not name. Retail has
+# 456 slots (449 by name, 7 by ordinal) in .idata @0x2c3000.
+#
+# The decorated spelling is NEVER invented: a wrong stdcall @N is silent
+# corruption. It is sourced only from real artifacts, via the two REAL conventions:
+#   * vendor DLLs (mss32/smackw32) export an ALREADY-decorated name
+#     ("_AIL_init_sequence@12") -> the COFF symbol is "__imp_" + that export name;
+#   * Win32 DLLs export undecorated ("CreateFileA") -> the COFF symbol carries the
+#     arg size ("__imp__CreateFileA@28"), recovered by normalizing the candidates.
+# Evidence: our own base objs (the compiler's real spellings) + the MSVC 5.0 / DX
+# import libraries. An ambiguous or unfound name is SKIPPED and reported.
+_IMP_RE = re.compile(r"\b(__imp_[@_]?[^\s]+)")
+
+
+def _imp_normalize(dec):
+    """`__imp__CreateFileA@28` -> `CreateFileA` (the undecorated export name)."""
+    b = dec[len("__imp_"):]
+    if b[:1] in ("_", "@"):
+        b = b[1:]
+    return re.sub(r"@\d+$", "", b)
+
+
+def collect_imp_decorations(paths, nm="llvm-nm"):
+    """(exact-set, {undecorated: decorated}) of every `__imp_` symbol in `paths`.
+
+    A name that maps to two different decorations is dropped from the normalized
+    index (ambiguous => we refuse to choose).
+    """
+    exact = set()
+    for p in paths:
+        try:
+            # errors="replace": an import .LIB carries raw non-UTF8 bytes in its
+            # archive members; only the ASCII symbol names matter here.
+            r = subprocess.run([nm, p], capture_output=True, text=True,
+                               errors="replace", timeout=120)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        exact.update(_IMP_RE.findall(r.stdout))
+    by_norm = {}
+    for dec in exact:
+        n = _imp_normalize(dec)
+        if n in by_norm and by_norm[n] != dec:
+            by_norm[n] = None
+        else:
+            by_norm.setdefault(n, dec)
+    return exact, {k: v for k, v in by_norm.items() if v}
+
+
+def _ar_members(path):
+    """Yield (member-name, body) for each member of a `!<arch>` library."""
+    try:
+        d = open(path, "rb").read()
+    except OSError:
+        return
+    if d[:8] != b"!<arch>\n":
+        return
+    i = 8
+    while i + 60 <= len(d):
+        name = d[i:i + 16].decode("latin1").strip()
+        try:
+            size = int(d[i + 48:i + 58].decode("latin1").strip() or 0)
+        except ValueError:
+            return
+        yield name, d[i + 60:i + 60 + size]
+        i += 60 + size + (size & 1)
+
+
+def _coff_import_ordinal_and_imp(body):
+    """(ordinal, `__imp_` symbol) for one long-format import-library member.
+
+    An MSVC 5.0 import lib member is a real i386 COFF. For an ORDINAL import its
+    `.idata$4` ILT entry holds the ordinal with the high bit set (a by-name import
+    instead carries a relocation to `.idata$6`), and the member defines the
+    `__imp__...` symbol. That pairing is the library's OWN ordinal->decoration
+    binding: authoritative, so no `@N` is ever guessed.
+    """
+    if len(body) < 20 or struct.unpack_from("<H", body, 0)[0] != 0x014C:
+        return None, None
+    nsec = struct.unpack_from("<H", body, 2)[0]
+    symoff = struct.unpack_from("<I", body, 8)[0]
+    nsym = struct.unpack_from("<I", body, 12)[0]
+    optsz = struct.unpack_from("<H", body, 16)[0]
+    stroff = symoff + nsym * 18
+    ordinal = None
+    for s in range(nsec):
+        o = 20 + optsz + s * 40
+        nm = body[o:o + 8].rstrip(b"\0").decode("latin1", "replace")
+        rawsz, rawptr = struct.unpack_from("<II", body, o + 16)
+        if nm == ".idata$4" and rawsz >= 4 and rawptr:
+            v = struct.unpack_from("<I", body, rawptr)[0]
+            if v & 0x80000000:
+                ordinal = v & 0xFFFF
+    imp = None
+    k = 0
+    while k < nsym:
+        o = symoff + k * 18
+        raw = body[o:o + 8]
+        zero, stro = struct.unpack("<II", raw)
+        if zero == 0:
+            try:
+                nm = body[stroff + stro:body.index(b"\0", stroff + stro)].decode("latin1")
+            except ValueError:
+                nm = ""
+        else:
+            nm = raw.rstrip(b"\0").decode("latin1", "replace")
+        if nm.startswith("__imp_"):
+            imp = nm
+        k += 1 + body[o + 17]
+    return ordinal, imp
+
+
+def collect_ordinal_decorations(lib_paths):
+    """{(dll-lowercase, ordinal): `__imp__...`} from the import libraries.
+
+    Retail imports 7 slots by ORDINAL (COMCTL32 #13/#14/#17, DPLAYX #1/#2/#4,
+    DSOUND #1), which carry no name in the PE. The import lib binds each ordinal to
+    its decorated symbol, which is the only exact source. Conflicting bindings are
+    dropped rather than chosen between.
+    """
+    table = {}
+    for p in lib_paths:
+        for name, body in _ar_members(p):
+            dll = name.rstrip("/").lower()
+            if not dll.endswith(".dll"):
+                continue
+            ordinal, imp = _coff_import_ordinal_and_imp(body)
+            if ordinal is None or not imp:
+                continue
+            key = (dll, ordinal)
+            if key in table and table[key] != imp:
+                table[key] = None
+            else:
+                table.setdefault(key, imp)
+    return {k: v for k, v in table.items() if v}
+
+
+def read_imports(exe_path):
+    """[(iat_slot_rva, import_name_or_None, dll, ordinal_or_None)] from the PE."""
+    with open(exe_path, "rb") as f:
+        data = f.read()
+    pe_off = struct.unpack_from("<I", data, 0x3C)[0]
+    coff = pe_off + 4
+    num_sec = struct.unpack_from("<H", data, coff + 2)[0]
+    opt_size = struct.unpack_from("<H", data, coff + 16)[0]
+    opt = coff + 20
+    sec_off = opt + opt_size
+    secs = []
+    for i in range(num_sec):
+        b = sec_off + i * 40
+        vsize, vaddr, rawsz, rawptr = struct.unpack_from("<IIII", data, b + 8)
+        secs.append((vaddr, max(vsize, rawsz), rawptr))
+
+    def raw(rva):
+        for va, sz, ptr in secs:
+            if va <= rva < va + sz:
+                return ptr + (rva - va)
+        raise ValueError("RVA 0x%x outside PE sections" % rva)
+
+    def cstr(off):
+        return data[off:data.index(0, off)].decode("ascii", "replace")
+
+    imp_rva = struct.unpack_from("<II", data, opt + 96 + 1 * 8)[0]
+    if not imp_rva:
+        return []
+    out = []
+    d = raw(imp_rva)
+    while True:
+        lookup, _ts, _fw, name_rva, addr_rva = struct.unpack_from("<IIIII", data, d)
+        if not any((lookup, _ts, _fw, name_rva, addr_rva)):
+            break
+        dll = cstr(raw(name_rva))
+        thunk = raw(lookup or addr_rva)
+        i = 0
+        while True:
+            v = struct.unpack_from("<I", data, thunk + i * 4)[0]
+            if not v:
+                break
+            slot = addr_rva + i * 4
+            if v & 0x80000000:
+                out.append((slot, None, dll, v & 0xFFFF))
+            else:
+                out.append((slot, cstr(raw(v) + 2), dll, None))
+            i += 1
+        d += 20
+    return out
+
+
+def read_iat_symbols(exe_path, base_dir=None, lib_dirs=(), nm="llvm-nm"):
+    """[(rva, `__imp__...`)] for every IAT slot whose decoration is PROVEN.
+
+    Unresolvable slots (ordinal-only imports, or a name absent/ambiguous in every
+    evidence source) are skipped and reported - never guessed.
+    """
+    import glob as _glob
+    libs = []
+    for d in lib_dirs:
+        if d and os.path.isdir(d):
+            for pat in ("*.LIB", "*.lib"):
+                # Non-recursive on purpose: the DX SDK ships a Borland/ subdir whose
+                # libraries use a different toolchain's conventions.
+                libs += sorted(_glob.glob(os.path.join(d, pat)))
+    sources = []
+    if base_dir and os.path.isdir(base_dir):
+        sources += sorted(_glob.glob(os.path.join(base_dir, "*.obj")))
+    sources += libs
+    exact, by_norm = collect_imp_decorations(sources, nm=nm)
+    by_ordinal = collect_ordinal_decorations(libs)
+
+    syms, unresolved = [], []
+    for slot, name, dll, ordinal in read_imports(exe_path):
+        dec = None
+        if name is None:
+            # Imported by ordinal: the PE carries no name; the import lib's own
+            # ordinal->symbol binding is the exact source.
+            dec = by_ordinal.get((dll.lower(), ordinal))
+            label = "%s ordinal #%s" % (dll, ordinal)
+        else:
+            if "__imp_" + name in exact:   # vendor: the export IS the decoration
+                dec = "__imp_" + name
+            elif name in by_norm:          # win32: undecorated export -> @N spelling
+                dec = by_norm[name]
+            label = "%s!%s" % (dll, name)
+        if dec:
+            syms.append((slot, dec))
+        else:
+            unresolved.append((slot, label))
+    syms.sort()
+    print("[synth_pdb] .idata: named %d/%d IAT slot(s) from %d evidence file(s)"
+          % (len(syms), len(syms) + len(unresolved), len(sources)), file=sys.stderr)
+    for slot, label in unresolved:
+        print("[synth_pdb] .idata SKIP 0x%06x %s: no exact __imp_ decoration in the base "
+              "objs or import libs (never guessing @N)" % (slot, label), file=sys.stderr)
+    return syms
 
 
 def sanitize_name(name: str) -> str:
@@ -247,7 +491,7 @@ def func_source_file(rva, bucket_shift, names_map=None):
 
 
 def emit_yaml(funcs, rdata_syms, data_syms, module_path, out, bucket_shift=0,
-              names_map=None):
+              names_map=None, iat_syms=()):
     """Write the yaml2pdb description to file object `out`.
 
     If bucket_shift > 0, emit C13 line info (FileChecksums + Lines subsections
@@ -366,6 +610,18 @@ def emit_yaml(funcs, rdata_syms, data_syms, module_path, out, bucket_shift=0,
         w("              Type:            0\n")
         w("              Offset:          %d\n" % off)
         w("              Segment:         %d\n" % SEG_DATA)
+        w("              DisplayName:     '%s'\n" % sanitize_name(name))
+
+    # .idata IAT slots -> S_LDATA32 (segment 4). Each is the `__imp__...` symbol a
+    # call through the import table resolves to; the delinker rebuilds the COFF
+    # relocation from these and errors on any IAT target it cannot name.
+    for rva, name in iat_syms:
+        off = rva - IDATA_BASE
+        w("          - Kind:            S_LDATA32\n")
+        w("            DataSym:\n")
+        w("              Type:            0\n")
+        w("              Offset:          %d\n" % off)
+        w("              Segment:         %d\n" % SEG_IDATA)
         w("              DisplayName:     '%s'\n" % sanitize_name(name))
 
     # Top-level PDB string table: the source paths referenced by line info.
@@ -571,13 +827,24 @@ def main():
         nstr = apply_string_names(rdata_syms, data_syms, args.exe, args.base_dir)
         print("[synth_pdb] renamed %d string constant(s) to MSVC ??_C@ names" % nstr,
               file=sys.stderr)
-    print("[synth_pdb] functions: %d  rdata: %d  data: %d  named: %d"
-          % (len(funcs), len(rdata_syms), len(data_syms), len(names_map)),
+    # .idata IAT symbols: proven `__imp__...` decorations only (base objs + the
+    # MSVC 5.0 / DX import libs). Required by the data-topology delinker; harmless
+    # to the current one (extra records it does not read).
+    lib_dirs = [os.path.join(d, "lib") for d in
+                (os.environ.get("MSVC_DIR"), os.environ.get("DXSDK_DIR")) if d]
+    lib_dirs += [os.path.join(d, "Lib") for d in
+                 (os.environ.get("DXSDK_DIR"),) if d]
+    iat_syms = read_iat_symbols(args.exe, args.base_dir, lib_dirs)
+
+    print("[synth_pdb] functions: %d  rdata: %d  data: %d  idata: %d  named: %d"
+          % (len(funcs), len(rdata_syms), len(data_syms), len(iat_syms),
+             len(names_map)),
           file=sys.stderr)
 
     with open(args.out_yaml, "w") as out:
         emit_yaml(funcs, rdata_syms, data_syms, args.module_path, out,
-                  bucket_shift=args.bucket_shift, names_map=names_map)
+                  bucket_shift=args.bucket_shift, names_map=names_map,
+                  iat_syms=iat_syms)
     print("[synth_pdb] wrote YAML -> %s (%d bytes)"
           % (args.out_yaml, os.path.getsize(args.out_yaml)), file=sys.stderr)
 

@@ -116,7 +116,16 @@ def main() -> None:
          "--pdb-path", str(named_pdb),
          "--exe-path", str(exe),
          "--output-path", str(delink_dir),
-         "--engine-path", "c:\\proj\\"],
+         "--engine-path", "c:\\proj\\",
+         # Compatibility mode: recover uncovered DATA relocations with the
+         # permissive nearest-PDB-symbol heuristic (what the old pinned delinker
+         # always did). The strict path instead demands a candidate data/section
+         # manifest for every writable RVA and currently hard-errors with
+         # "no candidate writable identity can represent retail RVA 0x229328".
+         # Dropping this flag is the NEXT step (the data/section manifests), which
+         # is also what finally moves matched_data off ~0 - see
+         # docs/data-attribution.md.
+         "--recover-data-relocs-from-pdb"],
         check=True,
     )
 
