@@ -595,14 +595,17 @@ public:
     // their member teardown: 2 scalar ??1CObList CALLs (m_baseList/m_recList) + the
     // m_selLists[10] array teardown, whose __ehvec_dtor takes ??1CObList as a function
     // POINTER (that is ~CTriggerMgr's DATA reloc), + 1 ??1CByteArray CALL. No casts remain.
-    CPtrList m_baseList;       // +0x000  base object-list (holds CTmRecNode payloads)
-    CTmCell* m_grid[0x3c];     // +0x01c  the 4x15 placed grid-object cells (stride 4)
-    i32 m_rowCount[4];         // +0x10c  per-row placed count (bumped/serialized 0x10 B)
-    i32 m_cellFlag[0x3c];      // +0x11c  parallel 4x15 per-cell flag grid; also holds the
-                               //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
-    i32 m_rowStateB[4];        // +0x20c  per-row state band B
-    i32 m_rowStateC[4];        // +0x21c  per-row state band C
-    CDDrawSurfaceMgr* m_level; // +0x22c  the active world/resource holder (SetLevel);
+    CPtrList m_baseList;   // +0x000  base object-list (holds CTmRecNode payloads)
+    CTmCell* m_grid[0x3c]; // +0x01c  the 4x15 placed grid-object cells (stride 4)
+    i32 m_rowCount[4];     // +0x10c  per-row placed count (bumped/serialized 0x10 B)
+    i32 m_cellFlag[0x3c];  // +0x11c  parallel 4x15 per-cell flag grid; also holds the
+                           //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
+    i32 m_rowStateB[4];    // +0x20c  per-row state band B
+    i32 m_rowStateC[4];    // +0x21c  per-row state band C
+    // +0x22c  the active world/resource holder (SetLevel). Renamed m_level->m_world:
+    // it is the CDDrawSurfaceMgr WORLD HOLDER, not the board - consumers reach the real
+    // CGameLevel via m_world->m_level (and the child-group factory via m_world->m_childGroup).
+    CDDrawSurfaceMgr* m_world;
     // +0x230: the multiplayer armed gate (ex-CMultiSub68 view's m_armed) ==
     // the companion state word cleared by SetLevel; serialized at 0x1339/0x1545.
     i32 m_armed;                      // +0x230

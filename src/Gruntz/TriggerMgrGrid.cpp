@@ -51,7 +51,7 @@ i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
     if (lvl == 0) {
         return 0;
     }
-    m_level = lvl;
+    m_world = lvl;
     m_armed = 0;
     m_pendingFx = 0;
     m_countdownActive = 1;
@@ -104,7 +104,7 @@ i32 CTriggerMgr::PlaceObject(
     (void)a24;
     (void)a28;
     (void)a2c;
-    if (m_level == 0) {
+    if (m_world == 0) {
         return -1;
     }
     i32 special = 0;
@@ -145,7 +145,7 @@ i32 CTriggerMgr::PlaceObject(
     if (free >= 15) {
         return -1;
     }
-    CDDrawChildGroup* fac = m_level->m_childGroup;
+    CDDrawChildGroup* fac = m_world->m_childGroup;
     CGameObject* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
     if (sprite == 0) {
         return -1;
@@ -272,7 +272,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
 // (`(sx-view10)+scroll0`) - same value, swapped operand order. topic:wall topic:scheduling.
 RVA(0x0006be30, 0x47)
 void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
-    CGameLevel* view = m_level->m_level;
+    CGameLevel* view = m_world->m_level;
     i32 px = view->m_mainPlane->m_originX - view->m_planeCtx.minX + sx;
     i32 py = view->m_mainPlane->m_originY - view->m_planeCtx.minY + sy;
     return CellHitTest(px, py, outRow, outCol, startRow);
@@ -411,7 +411,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
     // Inlined LookupTileType(m_level->m_level, x, y): clamp (x,y) to the main plane,
     // resolve the tile cell, ask its image set the collision kind at (subX, subY).
-    CGameLevel* level = m_level->m_level;
+    CGameLevel* level = m_world->m_level;
     CPlaneRender* plane = level->m_mainPlane;
     i32 cx = x;
     i32 cy = y;
@@ -501,7 +501,7 @@ RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     (void)g;
     char* plane = (char*)g_gameReg->m_curState;
-    char* view = *(char**)((char*)m_level + 0x24);
+    char* view = *(char**)((char*)m_world + 0x24);
     i32 x = sx;
     i32 y = sy;
     if (x < 0) {

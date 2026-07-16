@@ -131,7 +131,7 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
 // m_level, and the combat facets are the canonical CGrunt/CGameLevel shapes.)
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, i32 flag) {
-    CGameLevel* view = m_level->m_level;
+    CGameLevel* view = m_world->m_level;
     r.left += view->m_mainPlane->m_originX - view->m_planeCtx.minX;
     r.top += view->m_mainPlane->m_originY - view->m_planeCtx.minY;
     r.right += view->m_mainPlane->m_originX - view->m_planeCtx.minX;
@@ -437,7 +437,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src = m_grid[m_recX * TM_GRID_COLS + m_recY]->m_object;
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
-    CPlaneRender* t = m_level->m_level->m_mainPlane;
+    CPlaneRender* t = m_world->m_level->m_mainPlane;
     float fy = (float)y;
     float fx = (float)x;
     if (!(t->m_flags & 1)) {
@@ -504,7 +504,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
         cx = vy - 0x28;
     }
 
-    CDDrawChildGroup* fac = m_level->m_childGroup;
+    CDDrawChildGroup* fac = m_world->m_childGroup;
     CGameObject* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_goal = (CTmGoal*)spr;
     spr->m_7c->m_notify(spr);
@@ -576,7 +576,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
     // Resolve the tile-cell's type object from the level viewport (result discarded:
     // the virtual GetTypeId dispatch is kept for its side effect).
-    CGameLevel* view = m_level->m_level;
+    CGameLevel* view = m_world->m_level;
     CPlaneRender* grid = view->m_mainPlane;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
@@ -690,14 +690,14 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         if (*(i32*)((char*)this + 0x2c) == 0) { // placeholder gate (see raw)
             return 0;
         }
-        CDDrawChildGroup* fac = m_level->m_childGroup;
+        CDDrawChildGroup* fac = m_world->m_childGroup;
         sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
         kindArg = 3;
         logicArg = 1;
     } else {
         // sel==2: place-and-report variant -> WarpStone factory
         this->PlaceB(a14, a18, 1);
-        CDDrawChildGroup* fac = m_level->m_childGroup;
+        CDDrawChildGroup* fac = m_world->m_childGroup;
         sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
         kindArg = 2;
         logicArg = 1;
@@ -756,7 +756,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     if (this->PlaceCell(*(i32*)(cellp + 0x1f0), *(i32*)(cellp + 0x1ec), 0) == 0) {
         return 0;
     }
-    CGameLevel* view = m_level->m_level;
+    CGameLevel* view = m_world->m_level;
     CPlaneRender* pl = view->m_mainPlane;
     i32 ox = pl->m_originX - view->m_planeCtx.minY + row;
     i32 oy = pl->m_originY - view->m_planeCtx.minX + col;
@@ -996,7 +996,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
 // stash the placement fields (+0x124/+0x114/+0x118) and tail into PlacePuddle. (ret 0x18.)
 RVA(0x0007a180, 0x86)
 i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
-    CDDrawChildGroup* fac = m_level->m_childGroup;
+    CDDrawChildGroup* fac = m_world->m_childGroup;
     CGameObject* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
         // The *0x24556c singleton IS a CGruntzMgr; ReportError @0x08dc60 is ITS method.
@@ -1087,7 +1087,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
 
 RVA(0x0007a3f0, 0xd7)
 i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
-    CDDrawChildGroup* fac = m_level->m_childGroup;
+    CDDrawChildGroup* fac = m_world->m_childGroup;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
 
@@ -1253,7 +1253,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CDDrawSurfaceMgr* lvl = m_level;
+    CDDrawSurfaceMgr* lvl = m_world;
     if (lvl == 0) {
         return 0;
     }
@@ -1389,7 +1389,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    if (m_level == 0) {
+    if (m_world == 0) {
         return 0;
     }
     m_rollingballLoop = 0;
@@ -1399,7 +1399,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
 
     // The factory's embedded serialize map is the real MFC CMapPtrToPtr at +0x48
     // (Lookup @0x1b8760); documented embedded-member offset (see SpriteFactory.h).
-    CMapPtrToPtr* map = (CMapPtrToPtr*)((char*)m_level->m_childGroup + 0x48);
+    CMapPtrToPtr* map = (CMapPtrToPtr*)((char*)m_world->m_childGroup + 0x48);
 
     // the 4x15 placed-object grid (this[7..66], byte offsets +0x1c..+0x108)
     for (i32 base = 7; base < 0x43; base += 0xf) {
@@ -1621,7 +1621,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
 
 RVA(0x0007b330, 0xc6)
 i32 CTriggerMgr::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
-    CDDrawChildGroup* fac = m_level->m_childGroup;
+    CDDrawChildGroup* fac = m_world->m_childGroup;
     CGameObject* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         i32 v = variant;
@@ -1716,7 +1716,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
-            CGameLevel* board = m_level->m_level; // the holder's CGameLevel (ex BrickzAttrMgr)
+            CGameLevel* board = m_world->m_level; // the holder's CGameLevel (ex BrickzAttrMgr)
             CLevelPlane* grid = board->m_mainPlane;
             if (tx >= grid->m_wrapW || ty >= grid->m_wrapH) {
                 continue;
@@ -1789,14 +1789,14 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                 continue;
             }
             CGameObject* spr =
-                m_level->m_childGroup->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
+                m_world->m_childGroup->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
             if (spr == 0) {
                 continue;
             }
             spr->ApplyName("LEVEL_ROCKBREAK");
             spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
 
-            CSndHost* set = (CSndHost*)m_level->m_soundRegistry;
+            CSndHost* set = (CSndHost*)m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
                 // CSndHost's name map is an MFC CMapStringToPtr (RTTI-proven), so its
                 // Lookup out-param is a void*& - the payload is the cue itself.
@@ -1848,8 +1848,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
     i32 yLo = y - r - 7;
     i32 xHi = x + r + 7;
     i32 yHi = y + r + 7;
-    i32 rangeA = m_level->m_level->m_mainPlane->m_gridW - 2; // plane grid dims (ex the
-    i32 rangeB = m_level->m_level->m_mainPlane->m_gridH - 2; //  CTileReg->CTileRegMid chain)
+    i32 rangeA = m_world->m_level->m_mainPlane->m_gridW - 2; // plane grid dims (ex the
+    i32 rangeB = m_world->m_level->m_mainPlane->m_gridH - 2; //  CTileReg->CTileRegMid chain)
 
     CGrunt** p = m_grid; // the flat 4x15 board
     for (i32 i = 0; i < 4; i++) {
@@ -2111,7 +2111,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     }
     i32 vis = src->m_198;
     this->Reset3(col, k, vis); // prep self-call 0x7ec96
-    CDDrawChildGroup* fac = m_level->m_childGroup;
+    CDDrawChildGroup* fac = m_world->m_childGroup;
     CGameObject* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == 0) {
         return 0;
@@ -2215,11 +2215,11 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
         case 1:
             if (m_phase != 2) {
                 void* p_ob = 0;
-                m_level->m_soundRegistry->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
+                m_world->m_soundRegistry->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
                 LeafCue* p = (LeafCue*)p_ob;
                 m_timerWindow = (u32)(p->m_10->m_durationMs + 500);
                 m_timerBase = g_frameTime;
-                CSndHost* h28 = m_level->m_soundRegistry;
+                CSndHost* h28 = m_world->m_soundRegistry;
                 if (h28->m_emitGate == 0) {
                     p = 0;
                     h28->m_10.Lookup("GAME\\FINISHLEVEL", (void*&)p);
@@ -2834,7 +2834,7 @@ void CTriggerMgr::DestroyAllAnims() {
         r--;
     } while (r != 0);
 
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_level->m_childGroup->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_childGroup->m_list.GetHeadPosition();
     while (node != 0) {
         CTmCell* obj = (CTmCell*)node->m_gameObj;
         node = node->m_next;

@@ -90,7 +90,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     (void)ownerLo;
     CString diag; // the "No giant rock logic found" temp - forces the /GX EH frame
 
-    CDDrawSurfaceMgr* level = m_level;
+    CDDrawSurfaceMgr* level = m_world;
     CPlay* state = (CPlay*)g_gameReg->m_curState; // retail reads [g_gameReg+0x2c]
     CGameLevel* grid = level->m_level;
     CPlaneRender* g = grid->m_mainPlane;
