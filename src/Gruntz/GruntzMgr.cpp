@@ -46,7 +46,7 @@
 #include <Rez/FrameClock.h> // the frame-clock/timer band SaveState/LoadState/PerFrameTick stream
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (CPlay::m_guts; SetVideoMode resize hooks)
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
-#include <Gruntz/Attract.h>  // canonical CAttract (was a reduced local ODR-landmine twin)
+#include <Gruntz/Attract.h>  // canonical CAttract
 #include <Gruntz/GameMode.h> // canonical CMenuState / CCreditsState / CBootyState / CMultiBootyState
 #include <Gruntz/SplashState.h> // canonical CSplashState
 #include <Gruntz/Multi.h>       // canonical CMulti (: CPlay : CState)
@@ -61,14 +61,14 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_soundRegistry (CSndHost == the leaf-scan registry)
 #include <DDrawMgr/DDrawPtrCollections.h> // m_world->m_ptrColl (GetCapsChecked / the held IDirectDraw2)
 #include <Gruntz/GameRegistry.h>
-#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (was local CWorldLayer)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/CheatMgr.h>          // CCheatMgr (m_cheatMgr @+0x44; the ex-HudGuard44 m_124 flag)
+#include <Gruntz/CheatMgr.h>          // CCheatMgr (m_cheatMgr @+0x44; m_124 flag)
 #include <Gruntz/FaderMgr.h>          // CFaderMgr (m_faderMgr @+0x40; Close dtor-tears it)
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTableCache (m_shadeCache @+0x50)
-#include <Rez/RezAlloc.h>          // RezAlloc/RezFree (the global allocator pair; ex via RezMgr.h)
-#include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
+#include <Rez/RezAlloc.h>          // RezAlloc/RezFree (the global allocator pair)
+#include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
 #include <Gruntz/WorldSoundSet.h>  // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
@@ -76,15 +76,14 @@
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
-// Brings the full windows.h/objbase.h COM chain (STDMETHOD_/HRESULT/CLSID)
-// - so the old hand-rolled COM mirror is not needed here (it starved cguid.h of CLSID);
+// Brings the full windows.h/objbase.h COM chain (STDMETHOD_/HRESULT/CLSID).
 // Mfc.h already provides the STDMETHODs the CWorldDispatch view uses.
 #include <rva.h>
 #include <stdio.h>                // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr - the REAL +0x6c sub-manager (~ @0x85bd0)
-#include <DinMgr2/DirectInputMgr2.h> // the REAL g_inputMgr input singleton (was a local shell)
+#include <DinMgr2/DirectInputMgr2.h> // the REAL g_inputMgr input singleton
 #include <Bute/SymParser.h>          // CSymParser - the REAL m_symParser (+0x34)
 #include <Image/ImageSet.h>          // the REAL CImageSet (config/color rows: m_frames/+0x14,
 // m_minIndex/+0x64, GetAt). GameLevel.h no longer collides on this
@@ -128,8 +127,7 @@ i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
 // NAFXCW-style operator-delete helper (out-of-line, reloc-masked); a plain free fn.
 
 // CNetMgr::ReportError is the REAL static member of the ONE CNetMgr (<Net/NetMgr.h>,
-// included above) - the local 1-method twin that stood here was an ODR duplicate with
-// the identical signature.
+// included above).
 
 void* operator new(u32);
 void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
@@ -158,9 +156,8 @@ extern "C" {
 //     (<Gruntz/Timer.h>) - read 64-bit the way the timer's other clock pairs already are.
 // (m_cmdGrid's scored flag +0x288 is CTriggerMgr::m_288.)
 
-// DelayedQuit's menu lookup goes through the world's CSndHost (+0x28): the former
-// CWorldMenuMap/CMenuNode/CMenuNodeSub/CWorldMenuHolder views were the SoundCue.h
-// canonicals (FUN_005b8438 == RVA 0x1b8438 == CSndFinder::Lookup; the "menu node"
+// DelayedQuit's menu lookup goes through the world's CSndHost (+0x28), a SoundCue.h
+// canonical (FUN_005b8438 == RVA 0x1b8438 == CSndFinder::Lookup; the "menu node"
 // is the LeafCue whose m_10 DSoundCloneInst carries the +0x28 cue duration).
 
 // Close's teardown vocabulary. m_30/m_3c are torn down through vtable slot 1 - the MFC
@@ -169,7 +166,6 @@ extern "C" {
 // ??_G override @1), m_3c an unidentified CObject-derived engine sub-object. m_settings
 // is the settings/registry writer (WriteInt per named key), and g_spawnConfig is zeroed
 // field-by-field before delete. Each engine entrypoint is out-of-line / reloc-masked.
-// (The former CWorldDelete 2-slot placeholder view is retired.)
 // The settings store open/close brackets around the WriteInt block (reloc-masked
 // __cdecl free fns; no this).
 void OpenSettingsStore();  // FUN_005158f0
@@ -179,10 +175,10 @@ void CloseSettingsStore(); // FUN_004f8e20
 // FUN_004234a0(this, 0) and torn down by FUN_005ba51d, handed to ExitModalUI as a
 // CModalScreen. Its ctor/dtor reloc-mask; only the size + destructibility (the /GX
 // frame) are load-bearing.
-// It IS a real MFC CDialog subclass: the "dtor" the old shell declared at 0x1ba51d is
+// It IS a real MFC CDialog subclass: the dtor at 0x1ba51d is
 // CDialog::~CDialog itself, and its 0x5c body is exactly sizeof(CDialog). Deriving from the
-// real base binds that teardown to ??1CDialog@@UAE@XZ in NAFXCW.LIB (it used to be an
-// UNBOUND ??1CCheckpointDlg) and lets it reach ExitModalUI CAST-FREE. The dtor stays
+// real base binds that teardown to ??1CDialog@@UAE@XZ in NAFXCW.LIB
+// and lets it reach ExitModalUI CAST-FREE. The dtor stays
 // IMPLICIT so retail's inlined stack-local teardown still falls out.
 class CCheckpointDlg : public CDialog {
 public:
@@ -199,12 +195,8 @@ public:
 // keeps an implicit-dtor twin - a per-TU dtor-emission split, not a conflation. The
 // ctor is declared-only, so its call reloc-binds to the real 0x14b30; CSaveDlgBase
 // stands in for CDialog's reloc-masked virtual dtor (0x1ba51d).
-// RESOLVED: the base is the REAL MFC CDialog (0x5c) now. The old CSaveDlgBase shell -
-// whose ??1CSaveDlgBase@@UAE@XZ was a PHANTOM that no obj and no .LIB could ever define -
-// is deleted, and the same reloc-masked dtor call binds to ??1CDialog@@UAE@XZ in
-// NAFXCW.LIB (0x1ba51d). BOTH "measured blockers" recorded here were wrong: the C2011 was
-// OUR OWN class named CModalDialog being macro-rewritten by afxwin.h's
-// `#define CModalDialog CDialog`, and this TU never included <Gruntz/Dialogs.h> at all.
+// The base is the REAL MFC CDialog (0x5c); the same reloc-masked dtor call binds to
+// ??1CDialog@@UAE@XZ in NAFXCW.LIB (0x1ba51d).
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent); // 0x14b30  ??0CBattlezDlg@@QAE@HPAVCWnd@@@Z
@@ -252,18 +244,18 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 // method is a reloc-masked __thiscall (`mov ecx,obj; call rel32`), so only the
 // layout offsets + call shapes are load-bearing; the displacements reloc-mask.
 // The serialize sequence counter is C++-linkage (?g_serialCounter@@3HA @0x229ad0),
-// the canonical name folded in wave5-R4 - kept OUT of the extern "C" block below.
+// kept OUT of the extern "C" block below.
 // SaveState/LoadState stream these; their canonical C++-linkage (?g_...@@3HA)
 // bindings live in the globals/lightfxrender units - reference those directly so the
 // DIR32 reloc pairs (an extern "C" _g_* twin would collide on the same RVA).
 // (g_timer100 @0x245594, also C++-linkage and streamed here, now comes from <Rez/FrameClock.h>.)
-extern i32 g_jitterX; // ?g_jitterX@@3HA @0x2452a4 (was g_6452a4)
-extern i32 g_jitterY; // ?g_jitterY@@3HA @0x2452cc (was g_6452cc)
-extern i32 g_panMinX; // ?g_panMinX@@3HA @0x245508 (was g_645508)
-extern i32 g_panMaxX; // ?g_panMaxX@@3HA @0x24550c (was g_64550c)
+extern i32 g_jitterX; // ?g_jitterX@@3HA @0x2452a4
+extern i32 g_jitterY; // ?g_jitterY@@3HA @0x2452cc
+extern i32 g_panMinX; // ?g_panMinX@@3HA @0x245508
+extern i32 g_panMaxX; // ?g_panMaxX@@3HA @0x24550c
 // 0x64557c - the active modeless dialog HWND (cleared on both modal-dialog exits);
 // DEFINED in src/Net/LobbyDialogs.cpp (namespace NetLobby), where the dialog procs
-// cache it. The old `g_modalBusy` alias here was the same cell.
+// cache it.
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 extern "C" {
     // The clock/scroll/warp timer globals SaveState streams live in <Rez/FrameClock.h>.
@@ -286,11 +278,7 @@ DATA(0x0021ab24)
 i32 g_sndCueTag = 100;         // 0x61ab24  the cue-item id (retail .data init = 100)
 extern "C" u32 g_killCueClock; // DAT_006bf3c0 (wrap-safe draw clock)
 
-// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). The `ScoreSub2c` view that
-// used to sit here (a +0x1c slice of g_gameReg->m_curState) was the SAME field as
-// StateScoreView's - CState::m_levelIndex (<Gruntz/State.h>, +0x1c) - reached through the
-// canonical CState* member; the "cumulative score" name it carried was wrong (every use
-// below feeds it to a "Level %i ..." sprintf / the level spinner). Both views are gone.
+// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A).
 // DEFINED here (owner = the class TU of the object it points at). ~50 TUs reference this
 // singleton and NONE defined it. Its producer is CGruntzMgr::Init (RezSync.cpp), which
 // self-registers with `g_gameReg = this` - that is what proves 0x24556c holds the
@@ -309,13 +297,13 @@ extern "C" {
 // The +0x7c HUD/score accumulator object (CGruntzMgr::m_scoreHud). One object: the
 // score/refresh fields + Refresh/Seed (UpdateScoreHud/AccrueScoreTime), the 4-arg
 // command sink (BroadcastCmd), and the shared Teardown (Close).
-// The +0x44 object (ex the HudGuard44 view) is the canonical CCheatMgr
+// The +0x44 object is the canonical CCheatMgr
 // (<Gruntz/CheatMgr.h>); its m_124 is the "a cheat was used" flag.
 
 // The archive/serializer object SaveState/LoadState stream every clock/scroll/warp
 // field through: the shared WAP32 CSerialArchive stream interface (Read @ vtbl +0x2c,
 // the Load read path; Write @ +0x30, the Save write path), now the one modeled class
-// in <Gruntz/SerialArchive.h> - the former local `CSerializerZ` view is folded away.
+// in <Gruntz/SerialArchive.h>.
 // Return values are unused; only the +0x2c/+0x30 dispatch bytes bind.
 
 // The engine reaches the USER32 cursor through a stored function pointer at
@@ -354,19 +342,18 @@ struct CPlayStateView {
 // The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
 // the CRT __strncpy at 0x120340 (`push n; push src; push dst; call; add esp,0xc`).
 
-// CModalScreen is GONE: it WAS MFC's CDialog. Binary proof (see GruntzMgr.h): ExitModalUI
+// CModalScreen IS MFC's CDialog. Binary proof (see GruntzMgr.h): ExitModalUI
 // (0x903f0) dispatches `call [vtbl+0xc0]` = slot 48, and CDialog's retail vtable (0x1eb174)
 // holds 0x1ba9d2 = CDialog::DoModal at slot 48 (slots 49/51 likewise = OnInitDialog 0x1bac5e
-// / OnOK 0x1bacc3). So the invented Run()@slot-48 was DoModal all along.
+// / OnOK 0x1bacc3).
 
 // The "active object" the two modal runners finalize on the way out is the live
-// PLAY/paused state: `GetActiveObj` was an alias of PickPausedThenPlayState (both
+// PLAY/paused state (reached via PickPausedThenPlayState; both
 // call sites go through ILT 0x4278 -> 0x929b0), the object IS a CPlay, its +0x2dc
 // sub-object IS CPlay::m_guts (the CStatusBarMgr), and the two "reloc-masked
 // thiscalls" resolve to real matched methods:
 //     Release()  == CStatusBarMgr::Deactivate  (ILT 0x125d -> 0x100cb0)
 //     Finalize() == CPlay::PostHudRect         (ILT 0x2c9d -> 0x0da440, 100% EXACT)
-// so both CActiveObj and CActiveSub2dc are gone.
 
 extern "C" {
     extern i32 g_optionsCursor; // DAT_006455fc  (round-robin options cursor)
@@ -376,7 +363,7 @@ extern "C" {
 // The packed-color global SetColorDepth writes + the RGB shift/size globals it
 // reads: the live RGB565 pixel-format ints, DEFINED in their owner TU
 // src/DDrawMgr/DDSurface.cpp (g_rUp/g_gUp/g_rDown/g_gDown/g_bDown). Reference
-// externs only here (the old extern "C" _g_683eaX shadow definitions are gone).
+// externs only here.
 
 // The world's +0x10 slot is the game's IMAGE/NAME registry: the REAL CImageRegistry
 // embedded lookup" IS that class's CMapStringToOb m_10map, and every value it resolves
@@ -385,12 +372,10 @@ extern "C" {
 //     m_14 == CImageSet::m_frames (CImage**)   m_64/m_68 == m_minIndex/m_maxIndex,
 // and SetGruntColor's in-range index test IS CImageSet::GetAt()'s.
 //
-// The "map-type contradiction" that used to keep the holder alive was a TREE LABEL BUG,
-// not a binary one: 0x1b8008 IS CMapStringToOb::Lookup (its band [0x1b7e17, 0x1b8247)'s
+// Map-type labels: 0x1b8008 IS CMapStringToOb::Lookup (its band [0x1b7e17, 0x1b8247)'s
 // ctor stamps ??_7CMapStringToOb@@6B@); CMapStringToPtr::Lookup is the SEPARATE body at
-// 0x1b8438 (no COMDAT fold - MSVC5 has no /OPT:ICF). The header said CMapStringToOb, the
-// calls land on 0x1b8008, and 0x1b8008 IS CMapStringToOb - consistent all along. The map
-// is CMapStringToOb, so its out-param is a CObject*& (the values ARE CObject-derived).
+// 0x1b8438 (no COMDAT fold - MSVC5 has no /OPT:ICF). The map is CMapStringToOb, so its
+// out-param is a CObject*& (the values ARE CObject-derived).
 //
 // CImageRegistry's key helpers are the CDDrawWorkerRegistry bodies (the class pair is
 // still unreconciled), so the level-asset RegisterKey (0x155460) casts at the call the
@@ -415,7 +400,7 @@ extern "C" {
 // The +0x54 object is the real CWorldSoundSet (<Gruntz/WorldSoundSet.h>) - the same
 // object the ambient-sound TU reads; its +0x08 is that class's CPtrList voice list.
 
-// [The former CWorldModeIface 8-slot placeholder view is retired: the world IS the
+// [The world IS the
 // polymorphic CDDrawSurfaceMgr (slot 6 +0x18 = the 5-arg Init "SetVideoMode",
 // slot 7 +0x1c = Cleanup_155e20 the pre-Init "Notify" teardown) - the same class
 // this TU already reaches via the SetHwnd casts. The full CWorldZ==CDDrawSurfaceMgr
@@ -436,13 +421,9 @@ void BeginWaitCursor(); // 0x1beafb
 void EndWaitCursor();   // 0x1beb10
 
 // The 4-entry options array embedded at CGruntzMgr +0x150 (each 0x238 bytes) is
-// GruntzPlayer m_options[4] (<Gruntz/GruntzPlayer.h> via GruntzMgr.h). The `OptionsSlot`
-// view that stood here was the fifth name for that one class - its every field lined up
-// (m_name @+0x04, m_010 config id, m_014 arm, m_018 key, m_020 loaded, the +0x38
-// CBattlezMapConfig) and its declared-only `Reset() // 0xda9e0` was a PHANTOM
-// (?Reset@OptionsSlot@@QAEHXZ, a name no obj and no .LIB defines) standing in for the
-// real ?Reset@GruntzPlayer@@QAEHXZ at that very rva. The methods below now call it
-// directly, so the reference binds.
+// GruntzPlayer m_options[4] (<Gruntz/GruntzPlayer.h> via GruntzMgr.h): m_name @+0x04,
+// m_010 config id, m_014 arm, m_018 key, m_020 loaded, +0x38 CBattlezMapConfig. The
+// methods below call ?Reset@GruntzPlayer@@QAEHXZ (0xda9e0) directly, so the reference binds.
 
 // The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
 // +0x68 grid (CTriggerMgr), the live source object (via GetSaveSource), the +0x6c
@@ -524,12 +505,10 @@ i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
 
 // The two engine input/state singletons TickStateMgrs drives once per call
 // (DAT_00645570/DAT_00645578; reloc-masked DATA refs). g_inputMgr is the REAL
-// DirectInputMgr2 (<DinMgr2/DirectInputMgr2.h>) - the local 4-method shell that
-// stood here was a duplicate of that class: PollAll == 0x133080 (100% EXACT in
-// the directinputmgr2 unit), and BOTH of its invented re-arm entry points (Flush /
-// ReadAll) disassemble to the SAME 0x133110 == DirectInputMgr2::ReadAll, while its
-// "Teardown" is the real ~DirectInputMgr2 (Close's ILT thunk 0x2969 -> 0x85fc0),
-// so the teardown leg is a plain `delete`. g_spawnConfig is a second mgr (Flush @0x4385e0).
+// DirectInputMgr2 (<DinMgr2/DirectInputMgr2.h>): PollAll == 0x133080 (100% EXACT in
+// the directinputmgr2 unit), ReadAll == 0x133110, and its "Teardown" is the real
+// ~DirectInputMgr2 (Close's ILT thunk 0x2969 -> 0x85fc0), so the teardown leg is a
+// plain `delete`. g_spawnConfig is a second mgr (Flush @0x4385e0).
 // The +0x578 state manager (g_spawnConfig). One object: TickStateMgrs drives its Flush;
 // Close zeroes its field block (+0x00..+0x14) before delete.
 // DEFINED here (this TU already held the canonical binding). Both were extern-only
@@ -583,9 +562,9 @@ DATA(0x00212614)
 i32 g_warpY = -1;
 
 // The game-manager singleton (*0x64556c). Declared at its REAL type here - this is
-// CGruntzMgr's OWN TU, and declaring it as the CGameRegistry view was what made this file
-// emit the phantom ?ReportError@CGameRegistry@@QAEXHH@Z (an unlinkable name) AND cast its
-// own class back out of it (`(CGruntzMgr*)g_gameReg`) three times below.
+// CGruntzMgr's OWN TU. Declaring it as a CGameRegistry view would emit the phantom
+// ?ReportError@CGameRegistry@@QAEXHH@Z (an unlinkable name) and force `(CGruntzMgr*)g_gameReg`
+// casts back to its own class.
 extern "C" CGruntzMgr* g_gameReg;
 
 // -------------------------------------------------------------------------
@@ -631,7 +610,7 @@ i32 PumpIdleFrame() {
 }
 
 // ---------------------------------------------------------------------------
-// The CPlay/CDemo /GX destructors (ex PlayDtor.cpp; merged wave3-J - the FLAGS
+// The CPlay/CDemo /GX destructors (the FLAGS
 // table's 0x08b8c0-0x093ce7 group gruntzmgr+playdtor+appdialogs is ONE obj,
 // GruntzMgr.cpp, __FILE__-anchored). Uses the ONE canonical CPlay
 // (<Gruntz/Play.h>): its five destructible MFC members are typed there (CString
@@ -676,18 +655,10 @@ void ForceEmitCStateDtor() {
 }
 #pragma inline_depth()
 // ===========================================================================
-// CGruntzMgr::TransitionState (0x08b960; re-homed from the former gruntzmgrtransition
-// unit, waveP -> 0x8b8c0 gruntzmgr). The /GX game-state factory; the CState leaf views
-// are reduced local layouts stamping the retail vtables by hand, CPlay is the canonical
-// Play.h class, g_inputMgr reuses this TU's local DirectInputMgr2 (ReadAll added).
-// The state object the factory drives IS the canonical CState (<Gruntz/State.h>, already
-// included). The `CTsState` shell that stood here - a 43-slot re-declaration of CState's
-// vtable with 32 nameless `VtSlotFill` placeholder slots and a `m_1c` twin of
-// CState::m_levelIndex - was a pure duplicate; every one of its 14 call sites cast a
-// CState* to it and back. Its five "Call*" trampolines map 1:1 onto the real virtuals:
-//   CallDtor(1) = slot 0  -> `delete st` (the scalar-deleting dtor, flag 1)
-//   CallActivate = slot 1 -> Vfunc1      CallId  = slot 4 -> Update()
-//   CallSlot9    = slot 9 -> Vslot09     CallSlot10 = slot 10 -> FrameSlot28
+// CGruntzMgr::TransitionState (0x08b960). The /GX game-state factory; CPlay is the
+// canonical Play.h class, g_inputMgr reuses this TU's local DirectInputMgr2 (ReadAll
+// added). The state object the factory drives IS the canonical CState (<Gruntz/State.h>,
+// already included).
 // OPEN DEFECT (handed off, not fixed here): CState::Vfunc1's FIRST parameter is typed
 // i32 but is really a CGruntzMgr* - proven twice, (a) retail's TransitionState passes
 // `this` into it, and (b) CPlay::Vfunc1 (ModeObjInit.cpp) casts that arg to a view whose
@@ -697,46 +668,18 @@ void ForceEmitCStateDtor() {
 
 // The minimal destructible MFC members that force the per-object EH-state ladder;
 // their ctors/dtors are the reloc-masked NAFXCW bodies (0x1b9b93 / 0x1b4f0b ...).
-// (MfcStr / MfcBytes are GONE: they were fake views of the REAL MFC CString and
-// CByteArray. Identical layout - CString is one LPTSTR; CByteArray is a CObject vptr +
-// m_pData + m_nSize/m_nMaxSize/m_nGrowBy - and the same reloc-masked NAFXCW ctor/dtor
-// calls. But the real types RESOLVE at link out of NAFXCW.LIB, whereas ??0MfcStr@@QAE@XZ
-// / ??1MfcStr@@QAE@XZ / ??0MfcBytes / ??1MfcBytes were PHANTOMS: mangled names that no
-// obj and no .LIB defines. <Mfc.h> is already included above.)
-
 // The two out-of-line base ctors (0x8c750 = CState base; 0x8c9d0 = CPlay base for
 // the multiplayer/param-7 states). Declared no-body -> reloc-masked base calls. Both
 // are NON-polymorphic sized layouts: +0x00 is an explicit vptr slot the derived leaf
 // stamps by hand from its g_st<Class>Vtbl extern (no compiler-emitted ??_7 here).
 
-// (CTsSub45 and Ts_Set are gone. CTsSub45 - "a small ctor @0x8c3b0" - was the credits
-// state's REAL MFC CRgn member (RTTI .?AVCRgn@@; 0x8c3b0 IS the ??0CRgn COMDAT), which the
-// canonical CCreditsState already types. The 4-arg Set @0x8c380 on its two rect
-// sub-objects moved to <Gruntz/GameMode.h> next to the ctor that calls it.)
-
 // ---- the CState-derived game states this factory builds ------------------------
 // ALL SIX are the CANONICAL classes now (<Gruntz/GameMode.h> CMenuState / CCreditsState /
 // CBootyState / CMultiBootyState, <Gruntz/SplashState.h> CSplashState, <Gruntz/Multi.h>
-// CMulti - alongside CAttract / CDemo / CHelpState / CPlay / CState, which already were).
-// The six "reduced local layouts" that stood here are gone.
-//
-// They were the single worst thing in this file: a SECOND, ODR-divergent DEFINITION of six
-// real classes (the file's own note admitted "cl5 keeps ONE vtable COMDAT per name and picks
-// arbitrarily, so the linker could bind every CMenuState/CBootyState/... to a vtable that
-// dispatches straight to CState: a silent, shipping-severity mis-dispatch that costs 0% in
-// objdiff"). Re-declaring the overrides made the duplicate benign; DELETING the duplicate
-// makes it impossible. The claimed "Bucket-C base-fold wall" (that including the canonical
-// would make cl emit + stamp a local ??_7CMenuState here and fight gamemode for the retail
-// vtable rva) is REFUTED by construction: the shells were already polymorphic and already
-// emitted those vtable COMDATs - the include changes nothing about which obj emits what, it
-// only removes the divergent second definition.
-//
-// Each leaf's ctor moved to its canonical header (inline, as retail has it: cl folds it into
-// the new-expression at the new-site), and the field knowledge the shells carried was merged
-// into the canonicals - CCreditsState gained its two +0x1c8/+0x1d8 screen rects and the
-// +0x1f4..+0x20c scroll block, CSplashState its +0x1b4 gate. The shells' `CTsSub45 m_1e8`
-// (ctor 0x8c3b0) is the canonical's REAL MFC CRgn (RTTI .?AVCRgn@@) - same ctor COMDAT.
-// The dtors stay declared-only in the canonicals, so each `delete state` still binds to the
+// CMulti - alongside CAttract / CDemo / CHelpState / CPlay / CState). Each leaf's ctor is
+// inline in its canonical header (cl folds it into the factory's new-expression); the
+// `CTsSub45 m_1e8` (ctor 0x8c3b0) is the canonical's REAL MFC CRgn (RTTI .?AVCRgn@@).
+// The dtors stay declared-only in the canonicals, so each `delete state` binds to the
 // one real /GX body in the leaf's own TU.
 
 // Field-heavy leaf ctors defined out-of-line for readability (still inline-folded
@@ -1048,8 +991,8 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     if (w == 0) {
         return;
     }
-    // 0x155460 is CDDrawWorkerRegistry::SumSizesEqual_155460 - the registry key helper the
-    // ex-CWorldLookupHolder called "RegisterKey". CImageRegistry and CDDrawWorkerRegistry
+    // 0x155460 is CDDrawWorkerRegistry::SumSizesEqual_155460 - the registry key helper.
+    // CImageRegistry and CDDrawWorkerRegistry
     // are the same object under two unreconciled names (ResMgr.h already casts this way for
     // its Has/Register/Release siblings), so the call binds to the symbol retail enters.
     w->m_imageRegistry->SumSizesEqual_155460(0, 1);
@@ -1267,7 +1210,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 //   * Poly08 == CWorldDispatch (same object, same slot 10 (+0x28) dispatch).
 // The 0x158c70 callee is a __thiscall on the world's +0x04 sub-object taking that
 // object's OWN +0x14 page handle (retail: `mov ecx,[eax+4]; mov eax,[ecx+0x14];
-// push eax; call`) - modeled as CWorldSub4::PausePages, not the old free __stdcall.
+// push eax; call`) - modeled as CWorldSub4::PausePages.
 // The shared "Gruntz" app-name caption (0x60aac8) passed as the MessageBoxA title;
 // DEFINED in src/Gruntz/WinMain.cpp (the app TU whose .data run holds it, next to
 // the "1.0" version literal).
@@ -1836,8 +1779,8 @@ i32 CGruntzMgr::IsMoviePathValid() {
 // -------------------------------------------------------------------------
 // CGruntzMgr::Post (0x090220; thiscall(code), ret 4). Clamp `code` into (0,0x29]
 // and PostMessageA WM_COMMAND 0x807f to the game window (wParam = code, or 1 when
-// code == 0x29). Re-homed from the ApiCaller stubs (was CmdHost_090220::Post): the
-// receiver is the CGruntzMgr singleton, reached by CPlay::Dispatch (0xcfbd0) as
+// code == 0x29). The receiver is the CGruntzMgr singleton, reached by CPlay::Dispatch
+// (0xcfbd0) as
 // m_4->Post via the CState owner back-ptr.
 RVA(0x00090220, 0x2f)
 void CGruntzMgr::Post(i32 code) {
@@ -1997,12 +1940,10 @@ i32 CGruntzMgr::LoadMonologoSprite() {
 // populated, then - when `idx` is inside the sink's own [minIndex, maxIndex] range
 // (== CImageSet::GetAt) - copy the sink's frame into it. Returns 1 on a hit.
 //
-// The two 0x14/0x64/0x68 "color row" views were CImageSet, and the "__stdcall
-// RecolorCell(cell)" free function is CImage::CopyFrom (0x1532b0, __thiscall): retail
+// The two 0x14/0x64/0x68 "color row" views are CImageSet, and the "RecolorCell(cell)"
+// call is CImage::CopyFrom (0x1532b0, __thiscall): retail
 // keeps the resolved row frame LIVE in ecx across the range test and calls with it as
-// `this` (`mov ecx,[edx+ecx*4]; test ecx,ecx; je; ... push eax; call 0x1532b0`). The
-// old fake-free-fn model let MSVC fold the row-frame test to `cmp [mem],0` and drop
-// the register - the whole of that method's ex-"regalloc tiebreak" @early-stop.
+// `this` (`mov ecx,[edx+ecx*4]; test ecx,ecx; je; ... push eax; call 0x1532b0`).
 RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
     if (sink && key) {
@@ -2427,8 +2368,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         m_symParser = 0;
     }
     // `new CSymParser` IS retail's `push 0x94; call ??2; test; mov ecx,eax; call 0x13aa10`
-    // (SIZE(CSymParser) == 0x94 exactly - the old CRezSurface94 shell's "0x94-byte
-    // recolor surface" was this class all along).
+    // (SIZE(CSymParser) == 0x94 exactly).
     m_symParser = new CSymParser;
 
     CString path = GetRezPath();
@@ -3946,7 +3886,7 @@ void CGruntzMgr::Close() {
         g_inputMgr = 0;
     }
     if (m_cheatMgr) {
-        m_cheatMgr->~CCheatMgr(); // 0x85e60 (the ex-HudGuard44 "Teardown")
+        m_cheatMgr->~CCheatMgr();
         operator delete(m_cheatMgr);
         m_cheatMgr = 0;
     }
@@ -4414,9 +4354,8 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 // 0x8e3a0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(out): default to the
 // full 0x280x0x1e0 screen rect, or the active viewport's rect (m_30->m_24 + 0x10) when
 // one is set; write it to *out.
-// OWNER RECOVERED: the "divergent this" was an illusion - every caller runs it on the
-// 0x64556c singleton (DrawDebugStats loaded it from ds:0x64556c; CGameRegistry::GetRect
-// was the phantom name for the same call). The view's `m_30` IS CGruntzMgr::m_world
+// OWNER RECOVERED: every caller runs it on the 0x64556c singleton (DrawDebugStats
+// loaded it from ds:0x64556c). The view's `m_30` IS CGruntzMgr::m_world
 // (+0x30) and its `m_24` is CWorldZ::m_24 (the active CGameLevel view, whose +0x10 is
 RVA(0x0008e3a0, 0x94)
 RECT* CGruntzMgr::GetRect(RECT* out) {
@@ -4432,10 +4371,9 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
 }
 
 // ---------------------------------------------------------------------------
-// The developer option-dialog Win32 DialogProc callbacks (ex AppDialogs.cpp;
-// merged wave3-J - the FLAGS table's 0x08b8c0-0x093ce7 group gruntzmgr+playdtor+
-// appdialogs is ONE obj, GruntzMgr.cpp; the ex-"appdialogs" base profile unifies
-// to this TU's /GX). Free __stdcall INT_PTR CALLBACK(HWND, UINT, WPARAM, LPARAM)
+// The developer option-dialog Win32 DialogProc callbacks (the FLAGS table's
+// 0x08b8c0-0x093ce7 group gruntzmgr+playdtor+appdialogs is ONE obj, GruntzMgr.cpp).
+// Free __stdcall INT_PTR CALLBACK(HWND, UINT, WPARAM, LPARAM)
 // procs the engine hands to the USER32 dialog manager.
 //
 // WarpDialogProc backs the developer "warp" cheat dialog: on WM_INITDIALOG it
@@ -4448,8 +4386,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
 //   g_gameReg->m_curState->m_levelIndex - the CURRENT LEVEL NUMBER (the "Level %i
 //                        Warp X/Y" registry key + the go-to-level seed). RECONCILED:
 //                        UpdateScoreHud reads the SAME +0x1c slot, and this is what it
-//                        is - a level index, not the "score accumulator" the old
-//                        ScoreSub2c view called it (it is fed to FillRecord /
+//                        is - a level index (fed to FillRecord /
 //                        SetCurLevel / `% 0x28 + 1` MaxLevel).
 //   g_gameReg->m_settings->SetValueDword(...)
 //   g_gameReg->m_world->m_level->m_mainPlane->m_originX / ->m_originY  seed X/Y (the
@@ -4640,13 +4577,13 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             }
         }
     }
-    RecomputeViewScale(); // 0x8f7f0 (thunk 0x1db6; ex the Step1db6 phantom)
-    RefreshGameClock();   // 0x8f620 (thunk 0x3d23; ex the Step3d23 phantom)
+    RecomputeViewScale(); // 0x8f7f0 (thunk 0x1db6)
+    RefreshGameClock();   // 0x8f620 (thunk 0x3d23)
     if (g_resolutionChanged != 0) {
         g_resolutionChanged = 0;
         char buf[0x70];
         sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
-        AppendChatMessage(buf); // 0x8f9c0 (thunk 0x1b54; ex the LogLine phantom)
+        AppendChatMessage(buf); // 0x8f9c0 (thunk 0x1b54)
     }
     return 1;
 }
