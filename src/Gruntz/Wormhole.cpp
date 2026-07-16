@@ -66,7 +66,7 @@
 
 // The game-manager singleton (CGameRegistry* @ 0x64556c) comes typed from
 // <Gruntz/InGameIcon.h> (via GruntPuddle.h); SpawnPartners reaches the object list
-// through its real m_world (CSpriteFactoryHolder) -> m_8 (object factory/manager).
+// through its real m_world (CDDrawSurfaceMgr) -> m_8 (object factory/manager).
 
 // 0x2bf3bc is NOT a "default geometry source": it is the per-frame DRAW-DELTA mirror
 // (Play.cpp sets it every frame from g_frameDelta == g_lastDelta), and what the calls below
@@ -87,7 +87,7 @@ extern "C" void WormholeTypeMarker();
 
 // ---------------------------------------------------------------------------
 // The game-object registry list SpawnPartners walks IS the world's object chain:
-// g_gameReg->m_world (the world CDDrawSurfaceMgr; the CSpriteFactoryHolder/
+// g_gameReg->m_world (the world CDDrawSurfaceMgr; the CDDrawSurfaceMgr/
 // CDDrawChildGroup (== CDDrawChildGroup); its CObList @+0x10 heads at +0x14 and each
 // CDDrawGroupNode chains via m_next with the CGameObject at +0x08 - the SAME
 // canonical shape CGameLevel::VisitVisible walks (<DDrawMgr/DDrawChildGroup.h>).
@@ -420,7 +420,7 @@ void CWormhole::SpawnPartners() {
         return;
     }
 
-    CObList* list = &((CDDrawSurfaceMgr*)g_gameReg->m_world)->m_childGroup->m_list;
+    CObList* list = &g_gameReg->m_world->m_childGroup->m_list;
     if (list == 0) {
         return;
     }
@@ -979,7 +979,7 @@ i32 CTeleporter::Update() {
         m_savedGeoId = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_object;
-        CGameObject* spawned = g_gameReg->m_world->m_8->CreateSprite(
+        CGameObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             s->m_11c * 32 + 16,
             s->m_120 * 32 + 16,
@@ -996,7 +996,7 @@ i32 CTeleporter::Update() {
         }
     } else {
         CGameObject* s = m_object;
-        CGameObject* spawned = g_gameReg->m_world->m_8->CreateSprite(
+        CGameObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             s->m_164 * 32 + 16,
             s->m_168 * 32 + 16,

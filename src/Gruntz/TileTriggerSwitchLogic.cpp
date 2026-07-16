@@ -72,9 +72,9 @@
 // Only the offsets this cluster reaches are modeled; reloc-masked DIR32.
 // ---------------------------------------------------------------------------
 
-// g_gameReg->m_world is the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>),
+// g_gameReg->m_world is the canonical CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>),
 // whose m_8 is the CDDrawChildGroup, m_24 the CGameLevel and m_28 the CSndHost. The one
-// live read - the impact-sound gate - is g_gameReg->m_world->m_28->m_emitGate (CSndHost
+// live read - the impact-sound gate - is g_gameReg->m_world->m_soundRegistry->m_emitGate (CSndHost
 // +0x30). The CTileEventSink placeholder was dead - deleted.)
 
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed). Declared at the REAL class: its
@@ -109,7 +109,7 @@ extern "C" CGruntzMgr* g_gameReg;
 // offsets 0/4 - the canonical layout fixes that.)
 
 // The impact-sound lookup by name is the canonical name->cue lookup on the world
-// CSndHost (g_gameReg->m_world->m_28): CDDrawSubMgrLeafScan::Lookup_05b7e0(name)
+// CSndHost (g_gameReg->m_world->m_soundRegistry): CDDrawSubMgrLeafScan::Lookup_05b7e0(name)
 // returns the CObject cache value (a LeafCue), then LeafCue::PlayIfElapsed
 // plays it. (The ex CImpactSound view + the fake `Eng_FindSound` free-function extern
 
@@ -369,9 +369,9 @@ enum PyramidSpriteType {
 // this TU's body run.
 RVA(0x00110c10, 0xe3f)
 i32 CTileTriggerLogic::Tick() {
-    CSpriteFactoryHolder* world = g_gameReg->m_world; // ebx (spilled to [esp+0x24])
-    CGameLevel* level = world->m_24;                  // edx
-    i32 transId = 0;                                  // [esp+0x1c] transition logic handle
+    CDDrawSurfaceMgr* world = g_gameReg->m_world; // ebx (spilled to [esp+0x24])
+    CGameLevel* level = world->m_level;           // edx
+    i32 transId = 0;                              // [esp+0x1c] transition logic handle
 
     // ---- resolve the source cell id at this trigger's tile (the switch key) ----
     i32 srcId = PbResolveCell(level, m_08, m_0c); // [esp+0x18]
@@ -388,7 +388,7 @@ i32 CTileTriggerLogic::Tick() {
             transId = 0;
         } else {
             CGameObject* trig =
-                world->m_8->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
+                world->m_childGroup->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
             if (trig == 0) {
                 return 0; // the pre-CString early exit (0x111140)
             }
@@ -588,7 +588,7 @@ CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 // Kill-cue clock + sound flags (named so the DIR32 datum reloc-masks).
 extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 
-// The sound-cue registry (g->m_world->m_28) + its Lookup result (the LeafCue cue
+// The sound-cue registry (g->m_world->m_soundRegistry) + its Lookup result (the LeafCue cue
 // record whose m_14 last-play / m_18 cooldown rate-limit the DSoundCloneInst it plays) are
 // the canonical CSndHost/CSndFinder/LeafCue/DSoundCloneInst from <Gruntz/SoundCue.h>
 // (included above); the former per-TU RbSoundReg/RbLookupTable/RbCueRec/RbCueSound views
@@ -612,9 +612,9 @@ extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 // inside the hottest block. Deferred to the final sweep.
 RVA(0x001122a0, 0x241)
 void CGiantRockLogic::BuildRockBreakInGameText() {
-    // The world holder: the ex-CWorldZ view IS CSpriteFactoryHolder (one object at +0x30;
+    // The world holder: the ex-CWorldZ view IS CDDrawSurfaceMgr (one object at +0x30;
     // and the sound host at +0x28 - were declared identically on both.
-    CSpriteFactoryHolder* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
+    CDDrawSurfaceMgr* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
 
     // (1) in-rect gate: is the tile center inside the view rect (+0x13c)?
     i32 inRect = 0;
@@ -633,11 +633,11 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
             i32 value = *cursor;
             i32 px = i + m_08 - 1;
             i32 py = j + m_0c - 1;
-            CPlaneRender* plane = (CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane;
+            CPlaneRender* plane = (CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane;
             plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
             g_gameReg->m_tileGrid->Notify(px, py, value);
             if (inRect) {
-                CGameObject* spr = gameMgr->m_8->CreateSprite(
+                CGameObject* spr = gameMgr->m_childGroup->CreateSprite(
                     0,
                     ((i + m_08) << 5) - 0x10,
                     ((j + m_0c) << 5) - 0x10,
@@ -661,8 +661,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
 
     // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
     if (m_c4 != 0) {
-        CGameObject* txt =
-            g_gameReg->m_world->m_8->CreateSprite(0, cx, cy, 0x17318, "InGameText", 0x40003);
+        CGameObject* txt = g_gameReg->m_world->m_childGroup
+                               ->CreateSprite(0, cx, cy, 0x17318, "InGameText", 0x40003);
         if (txt == 0) {
             return;
         }
@@ -676,7 +676,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         || (m_0c << 5) + 0x10 < g_gameReg->m_viewOriginT) {
         return;
     }
-    CSndHost* sreg = gameMgr->m_28; // m_28 typed CSndHost* on the canonical holder (GameRegistry.h)
+    CSndHost* sreg =
+        gameMgr->m_soundRegistry; // m_28 typed CSndHost* on the canonical holder (GameRegistry.h)
     if (sreg->m_emitGate != 0) {
         return;
     }
@@ -713,7 +714,7 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     i32 v;
     if (m_34 != 0) {
         CGruntzMgr* reg = g_gameReg;
-        CPlaneRender* L = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+        CPlaneRender* L = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
         L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = m_34;
         v = m_34;
         ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
@@ -721,23 +722,23 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
         switch (verb) {
             case 0x22: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
                 v = L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] + 1;
-                CPlaneRender* L2 = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+                CPlaneRender* L2 = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
                 L2->m_tileGrid[L2->m_colOffsets[m_0c] + m_08] = v;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
                 break;
             }
             case 0x1f: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
                 L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = 0x5b;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5b);
                 break;
             }
             case 0x1e: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
                 L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = 0x5a;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5a);
                 break;
@@ -751,7 +752,8 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     i32 px = (m_08 << 5) + 0x10;
     reg->m_cmdGrid->LoadPowerupIconSprites(m_28, px, py, m_30, 1, 0);
     if (m_2c != 0) {
-        CGameObject* rec = reg->m_world->m_8->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
+        CGameObject* rec =
+            reg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != 0) {
             rec->m_124 = m_2c;
         }
@@ -826,7 +828,7 @@ void CTileTriggerLogic::RecordMove() {
 // @early-stop
 // Register-naming wall (~88%, structure byte-exact). Retail has higher register
 // pressure: it keeps mgr(edi)/idx/grp live, spills newTok to a stack local
-// ([esp+0x1c]/[esp+0x10]) and RE-WALKS the m_world->m_24->m_mainPlane->cells
+// ([esp+0x1c]/[esp+0x10]) and RE-WALKS the m_world->m_level->m_mainPlane->cells
 // chain for the write instead of CSE-ing the cell address. Two levers reproduced
 // that shape (54.9 -> 88): (1) cache g_gameReg in a local `mgr`; (2) idx/grp
 // read-once locals shared between the cell index and the ComputeCellFlags args;
@@ -846,10 +848,10 @@ i32 CTileSecretTriggerLogic::Tick() {
     CGruntzMgr* mgr = g_gameReg;
     i32 grp = m_08;
     i32 idx = m_0c;
-    i32 newTok = mgr->m_world->m_24->m_mainPlane
-                     ->m_tileGrid[mgr->m_world->m_24->m_mainPlane->m_colOffsets[idx] + grp];
-    g_gameReg->m_world->m_24->m_mainPlane
-        ->m_tileGrid[g_gameReg->m_world->m_24->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
+    i32 newTok = mgr->m_world->m_level->m_mainPlane
+                     ->m_tileGrid[mgr->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp];
+    g_gameReg->m_world->m_level->m_mainPlane
+        ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
     mgr->m_tileGrid->ComputeCellFlags(grp, idx, oldTok);
     m_34 = newTok;
     return 1;
@@ -946,9 +948,9 @@ ret1:
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
-    CPlaneRender* layer = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+    CPlaneRender* layer = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] + 1;
-    CPlaneRender* layer2 = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+    CPlaneRender* layer2 = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
     layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
     ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 1;
@@ -964,9 +966,9 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
 RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
-    CPlaneRender* layer = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+    CPlaneRender* layer = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] - 1;
-    CPlaneRender* layer2 = (CPlaneRender*)reg->m_world->m_24->m_mainPlane;
+    CPlaneRender* layer2 = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
     layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
     ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 0;
@@ -1094,7 +1096,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
         }
     }
     {
-        CPlaneRender* grid = (CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane;
+        CPlaneRender* grid = (CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane;
         i32* cell = &grid->m_tileGrid[grid->m_colOffsets[m_tileY] + m_tileX];
         if (*cell == code) {
             return 0;
@@ -1240,8 +1242,8 @@ i32 CTileActionEvent::Process(i32 arg) {
             i32 py = (m_tileY << 5) + 0x10;
             if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
                 && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT
-                && g_gameReg->m_world->m_28->m_emitGate == 0) {
-                LeafCue* snd = (LeafCue*)g_gameReg->m_world->m_28->Lookup_05b7e0(
+                && g_gameReg->m_world->m_soundRegistry->m_emitGate == 0) {
+                LeafCue* snd = (LeafCue*)g_gameReg->m_world->m_soundRegistry->Lookup_05b7e0(
                     "GRUNTZ_NORMALGRUNT_IMPACTMM3"
                 );
                 if (snd != 0) {
@@ -1269,8 +1271,8 @@ i32 CTileActionEvent::Process(i32 arg) {
     i32 py = (m_tileY << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
-        CGameObject* spr =
-            g_gameReg->m_world->m_8->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+        CGameObject* spr = g_gameReg->m_world->m_childGroup
+                               ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
         if (spr != 0) {
             spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
             // Inner dense byte-mapped switch on (effect - 0x132) -> the colored break

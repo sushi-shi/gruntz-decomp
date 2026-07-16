@@ -48,7 +48,7 @@ extern "C" u32 g_frameTime;
 // private struct already had a canonical class, and three sibling TUs write the
 // IDENTICAL chains through them:
 //
-//   CMgrHolderX  -> CSpriteFactoryHolder  (<Gruntz/GameRegistry.h>). Its "m_idMap"
+//   CMgrHolderX  -> CDDrawSurfaceMgr  (<Gruntz/GameRegistry.h>). Its "m_idMap"
 //        (+0x08) is the typed CDDrawChildGroup* m_8 and its "m_nameMap" (+0x28) is the
 //        typed CSndHost* m_28. g_gameReg->m_world was ALREADY declared as this class -
 //        the lateral view was re-deriving two members the canonical holder had.
@@ -70,7 +70,7 @@ extern "C" u32 g_frameTime;
 //   CPlay / CActionOptionsMenuBar (TU-local decl-only shadows) -> the real headers.
 //
 // The id->object lookup below is verbatim the chain GruntzMgrCmd.cpp's 0x8106 cheat
-// already writes cast-free through the canonicals (m_world->m_8->m_map48 ->
+// already writes cast-free through the canonicals (m_world->m_childGroup->m_map48 ->
 // GruntObjEntry::m_7c->m_18 -> CGrunt::ResolveDeathAnimation).
 //
 // THE MAP CLASS WAS INVERTED: the +0x10 registry's Lookup @0x1b8438 is
@@ -111,7 +111,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
                 void* out_v = 0;
-                g_gameReg->m_world->m_28->m_10.Lookup("LEVEL_ROLLINGBALL", out_v);
+                g_gameReg->m_world->m_soundRegistry->m_10.Lookup("LEVEL_ROLLINGBALL", out_v);
                 LeafCue* out = (LeafCue*)out_v;
                 if (out && out->m_10) {
                     m_rollingballLoop = (DirectSoundMgr*)out->m_10->GetItem();
@@ -128,7 +128,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
                 void* out_v = 0;
-                g_gameReg->m_world->m_28->m_10.Lookup("GAME_TELEPORTLOOP", out_v);
+                g_gameReg->m_world->m_soundRegistry->m_10.Lookup("GAME_TELEPORTLOOP", out_v);
                 LeafCue* out = (LeafCue*)out_v;
                 if (out && out->m_10) {
                     m_teleportLoop = (DirectSoundMgr*)out->m_10->GetItem();
@@ -210,7 +210,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
                             slot->m_24 = 1;
                             CWwdGameObjectE* out = 0;
-                            if (g_gameReg->m_world->m_8->m_map48
+                            if (g_gameReg->m_world->m_childGroup->m_map48
                                     .Lookup((void*)slot->m_0c, (void*&)out)
                                 && out) {
                                 if (out->m_7c->m_logic) {
@@ -225,7 +225,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
                             CWwdGameObjectE* out = 0;
-                            if (g_gameReg->m_world->m_8->m_map48
+                            if (g_gameReg->m_world->m_childGroup->m_map48
                                     .Lookup((void*)lastSlot->m_0c, (void*&)out)
                                 && out) {
                                 if (out->m_7c->m_logic) {

@@ -1,23 +1,24 @@
 // StateImages.cpp - two state-family vfunc-8 image-namespace loaders, folded onto the
-// canonical CState/CSpriteFactoryHolder facets (<Gruntz/State.h> + <Gruntz/View.h>):
+// canonical CState/CDDrawSurfaceMgr facets (<Gruntz/State.h> + <Gruntz/View.h>):
 //   - CImageState::LoadStateImages (0xa09a0): a CState-derived "MENU" image loader.
 //   - CBootyState::InputVirtual   (0x1c8a0): the REAL CBootyState (vtbl 0x5e9cec) slot 8
 //     (GameMode.h declares this slot @0x01c8a0 declared-only; homed here) - the booty
 //     "bg"/secret-bonus activation loader; NOT its sibling CMultiBootyState (0x5e9bdc).
 //
 // Both resolve an "IMAGEZ" tree off the state's asset source (CState::m_2c/m_gruntzBank,
-// CResSource::LookupSet == 0x13bae0) and register it through the CSpriteFactoryHolder image registry
-// (m_c->m_10->LoadNamespace, vtable slot +0x4c). The old per-TU StateMgr /
+// CResSource::LookupSet == 0x13bae0) and register it through the CDDrawSurfaceMgr image registry
+// (m_c->m_imageRegistry->LoadNamespace, vtable slot +0x4c). The old per-TU StateMgr /
 // WorkerReg / CSymTab shadows of the +0x0c/+0x2c facets are folded away. Field names are
 // placeholders; only offsets + code bytes are load-bearing.
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Mfc.h> // GameMode.h needs the afx umbrella (WINAPI/windows.h come with it)
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 
 #include <rva.h>
-#include <Gruntz/BankMgr.h> // CResSource::LookupSet (the state's +0x2c/+0x30 asset source)
-#include <Gruntz/GameMode.h> // canonical CBootyState : CState + the shared CSpriteFactoryHolder facet
+#include <Gruntz/BankMgr.h>  // CResSource::LookupSet (the state's +0x2c/+0x30 asset source)
+#include <Gruntz/GameMode.h> // canonical CBootyState : CState + the shared CDDrawSurfaceMgr facet
 
 // 0xface0 is CState's slot-8 base virtual (the shared image-load/activate gate every
 // state override calls first via CState::InputVirtual(); def SYMBOL-bound in Attract.cpp).
@@ -30,7 +31,7 @@
 // CImageState - a CState-derived front-end state whose slot-8 loader installs the "MENU"
 // image namespace. Its concrete RTTI name is unrecovered (the 0xa09a0 body is reached
 // non-virtually via an ILT thunk), so it is modeled as a minimal CState subclass: the
-// +0x0c view (m_c) and +0x2c source (m_2c) are the inherited CSpriteFactoryHolder/CResSource facets, and
+// +0x0c view (m_c) and +0x2c source (m_2c) are the inherited CDDrawSurfaceMgr/CResSource facets, and
 // the per-state image hook is CState's slot 6 (Vslot06).
 SIZE_UNKNOWN(CImageState);
 class CImageState : public CState {
@@ -47,7 +48,7 @@ i32 CImageState::LoadStateImages() {
     if (tree == 0) {
         return 0;
     }
-    if (m_c->m_10->LoadNamespace(tree, "MENU", "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
         return 0;
     }
     if (Vslot06() == 0) { // the per-state image hook (slot 6, +0x18)
@@ -80,14 +81,14 @@ i32 CBootyState::InputVirtual() {
     if (booty == 0) {
         return 0;
     }
-    if (m_c->m_10->LoadNamespace(booty, "BOOTY", "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
     void* gruntz = ((CSymTab*)m_gruntzBank)->ResolvePath("IMAGEZ");
     if (gruntz == 0) {
         return 0;
     }
-    if (m_c->m_10->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
     if (m_activation != 200) {
@@ -98,7 +99,7 @@ i32 CBootyState::InputVirtual() {
     } else {
         ShowSecretBonusMessage();
     }
-    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
+    m_c->m_drawTarget->Method_158ee0();
     RetireScene(
         0x50,
         0x3e8,

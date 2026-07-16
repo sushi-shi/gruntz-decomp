@@ -21,9 +21,9 @@
 #include <Gruntz/SBI_Image.h> // canonical chain base CSBI_Image : CSBI_RectOnly : CStatusBarItem
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
-// The +0x24 config host is the shared canonical CSpriteFactoryHolder (SbiConfig.h, pulled
+// The +0x24 config host is the shared canonical CDDrawSurfaceMgr (SbiConfig.h, pulled
 // in the .cpp); only a pointer is needed here, so forward-declare it.
-struct CSpriteFactoryHolder;
+class CDDrawSurfaceMgr;
 
 // ---------------------------------------------------------------------------
 // Engine-referent views the reconstructed CSBI_MenuItem methods drive (modeled
@@ -47,10 +47,10 @@ SIZE_UNKNOWN(CMiCue);
 // (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
 // CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 
-// The music host reached as g_gameReg->m_world->m_28 viewed as its cue facet: a
+// The music host reached as g_gameReg->m_world->m_soundRegistry viewed as its cue facet: a
 // non-null +0x30 gate suppresses the cue play; the cue map is the sub-object at
 // host+0x10 (documented sub-object offset). This is the SAME +0x28 sound object as
-// CResMgr::m_28 (CSoundRegistry, the install facet); its cue map's Lookup (0x1b8438)
+// CDDrawSurfaceMgr::m_28 (CDDrawSubMgrLeafScan, the install facet); its cue map's Lookup (0x1b8438)
 // differs from the install facet's (0x1b8008), so the cue view is reached by a
 // documented multi-view cast on m_28 - the cross-TU merge with SBI_RectOnly's
 // identical CSbiMusicHost is deferred (see report).
@@ -104,7 +104,7 @@ SIZE_UNKNOWN(CMiSelf);
 // CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem. The inherited base
 // region carries: m_4 active flag, m_8 subtype tag (=2), m_c command/tab id, m_10
 // arg0, m_rect14 the rect block (x0/y0/x1/y1; .m_4/.m_8 double as the frame draw
-// origin), m_24 the config host (CSpriteFactoryHolder*, i32 slot - cast at the deref like
+// origin), m_24 the config host (CDDrawSurfaceMgr*, i32 slot - cast at the deref like
 // the sibling leaves), m_28 the counter, m_2c the owning tab host (CMiTabHost view
 // at the deref), m_30 the resolved frame handle (CImage* stored as DWORD, the
 // CSBI_Image slot). Adds the menu state tag (+0x34) and the resolved cue/config
@@ -133,7 +133,7 @@ public:
     // exactly as the base and CSBI_ImageSet have it. One function, one slot.
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
-        CSpriteFactoryHolder* host,
+        CDDrawSurfaceMgr* host,
         i32 cmd,
         i32 a4,
         SbRect rc,

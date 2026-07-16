@@ -175,7 +175,7 @@ public:
 SIZE_UNKNOWN(CSbiRect);
 
 // The ConfigureRect host (its arg2), its lookup map + record come from the shared
-// canonical family (<Gruntz/SbiConfig.h>): CSpriteFactoryHolder / CSbiConfigMap /
+// canonical family (<Gruntz/SbiConfig.h>): CDDrawSurfaceMgr / CSbiConfigMap /
 // CSbiConfigRecord (host->m_10 carries the CMapWordToOb map at its +0x10).
 
 // A per-stat widget object (m_statObj[]): a sibling thunk drives its (tag,on)
@@ -407,7 +407,7 @@ public:
     i32 Probe2e69(); // 0x2e69 (post-build validity probe)
     i32 Probe41a1(); // 0x41a1 (post-build validity probe)
     i32 winapi_107d00_SetRect();
-    i32 LoadBattlezItemConfig(CSpriteFactoryHolder* world); // stores the world holder into m_c
+    i32 LoadBattlezItemConfig(CDDrawSurfaceMgr* world); // stores the world holder into m_c
     i32 LoadMainStatusBarSprite();
     i32 UpdateStatusBarTabHighlight(i32, i32, i32);
     i32 LoadDestructButtonSprite(i32);
@@ -467,7 +467,7 @@ public:
 
     i32 ConfigureRect(
         i32 sub,
-        CSpriteFactoryHolder* host,
+        CDDrawSurfaceMgr* host,
         i32 cmd,
         i32 obj,
         i32 r0,
@@ -537,9 +537,9 @@ public:
     // +0x0c: the config host every widget-setup call takes as arg2. Typed from the retail
     // callee: CSBI_Image::SetupImage (0xe6c80) DEREFERENCES this arg at +0x10
     // (`mov eax,[esp+8]` ... `mov ecx,[eax+0x10]`) to reach the lookup map - it is a
-    // CSpriteFactoryHolder*, not the `i32 code` the builders used to pass it as.
-    CSpriteFactoryHolder* m_c; // +0x0c
-    i32 m_10;                  // +0x10  tab base x
+    // CDDrawSurfaceMgr*, not the `i32 code` the builders used to pass it as.
+    CDDrawSurfaceMgr* m_c; // +0x0c
+    i32 m_10;              // +0x10  tab base x
     // +0x14..0x23: a 4-int block. The tab builder reads m_rect14.m_0 as the tab base y.
     SbiRect m_rect14; // +0x14
     i32 m_24;         // +0x24
@@ -702,19 +702,19 @@ SIZE_UNKNOWN(CSbiCueRecord);
 // The cue player (ConfigureItem == FUN_005360d0, __thiscall, ret 0x10).
 
 // CONSOLIDATION NOTE (g_gameReg->m_world world/resource-mgr views): CSbiGameMgr is the
-// canonical CResMgr (<Gruntz/ResMgr.h>) - g_gameReg->m_world, whose m_8 (CKeyTable, the
+// canonical CDDrawSurfaceMgr (<Gruntz/ResMgr.h>) - g_gameReg->m_world, whose m_8 (CDDrawChildGroup, the
 // Deserialize seq map @+0x48) and m_28 (the sound object) were verified as the same
-// slots CResMgr models. CSbiMusicHost is the +0x28 sound object viewed as its CUE
+// slots CDDrawSurfaceMgr models. CSbiMusicHost is the +0x28 sound object viewed as its CUE
 // facet (the same shape as SBI_MenuItem's CMiMusicHost: +0x30 gate, cue map @+0x10),
-// a SIBLING of CResMgr::m_28 (CSoundRegistry, the install facet). The fold to CResMgr
+// a SIBLING of CDDrawSurfaceMgr::m_28 (CDDrawSubMgrLeafScan, the install facet). The fold to CDDrawSurfaceMgr
 // is DEFERRED here (documented, not fabricated): this 4469-line, mostly-@early-stop TU
 // reaches m_30 through its own CGameReg singleton, so pulling in <Gruntz/ResMgr.h>
 // risks broad codegen shifts across its ~70 functions, and the m_28 cue access needs a
-// multi-view cast at ~7 sites (the CSoundRegistry-vs-cue-host facet split is not
+// multi-view cast at ~7 sites (the CDDrawSubMgrLeafScan-vs-cue-host facet split is not
 // settled by the delinked bytes). Kept as the per-TU view for the final sweep.
 
-// The music host chain: g_gameReg->m_world->m_28->{m_30 gate, Lookup map @+0x10}
-// (== CResMgr::m_28 viewed as its cue facet; see the consolidation note above).
+// The music host chain: g_gameReg->m_world->m_soundRegistry->{m_30 gate, Lookup map @+0x10}
+// (== CDDrawSurfaceMgr::m_28 viewed as its cue facet; see the consolidation note above).
 struct CSbiMusicHost {
     char m_pad0[0x10];         // +0x00..0x0f
     CMapStringToOb m_map10;    // +0x10  cue lookup map (CMapStringToOb view)
@@ -723,15 +723,15 @@ struct CSbiMusicHost {
 };
 SIZE_UNKNOWN(CSbiMusicHost);
 
-// The active game manager (g_gameReg->m_world == CResMgr): carries the main
+// The active game manager (g_gameReg->m_world == CDDrawSurfaceMgr): carries the main
 // status-bar draw chain at +0x04 and the sound object / music host at +0x28. See
-// the consolidation note above (fold to CResMgr deferred).
+// the consolidation note above (fold to CDDrawSurfaceMgr deferred).
 struct CSbiMainL1; // +0x04 draw chain (defined below); the main-bar sprite path
 struct CSbiGameMgr {
     char m_pad0[0x4];
     CSbiMainL1* m_4; // +0x04  main-status-bar draw chain (m_4->m_14->m_2c setup)
     char m_pad8[0x28 - 0x8];
-    CSbiMusicHost* m_musicHost; // +0x28  music host (CResMgr::m_28 cue facet)
+    CSbiMusicHost* m_musicHost; // +0x28  music host (CDDrawSurfaceMgr::m_28 cue facet)
 };
 SIZE_UNKNOWN(CSbiGameMgr);
 
@@ -784,14 +784,14 @@ SIZE_UNKNOWN(CSbiWndHost);
 //   m_68 (+0x68)       -> (CTriggerMgr*)          the single-player trigger grid (TriggerMgr.h)
 // Two slots keep a small TU-local facet view (documented, honest): m_gameWnd (+0x4) ->
 // (CSbiWndHost*) (a 1-field window-host shell) and m_world (+0x30) -> (CSbiGameMgr*) (the
-// resource mgr / CResMgr; its fold is DEFERRED - a deep CResMgr sub-object cascade, see
+// resource mgr / CDDrawSurfaceMgr; its fold is DEFERRED - a deep CDDrawSurfaceMgr sub-object cascade, see
 // the CSbiMusicHost/CSbiMainL1 note above and GameRegistry.h's m_world typing).
 // The three TU-specific methods re-homed to CGameRegistry as the real CGruntzMgr methods
 // they are: Fn29aa->UpdateScoreHud (0x860b0), HiPump->AccrueScoreTime (0x861e0),
 // SetToggle->FinishLevel (0x8e980); ReportError(i32,i32) added as the i32,i32 overload.
 // The dead inline ViewSize() (unused - 0xfe520 reads m_modeW/m_modeH directly) is dropped.
 
-// The seq-keyed object map at (g_gameReg->m_world->m_8 + 0x48): Lookup(key, &out)
+// The seq-keyed object map at (g_gameReg->m_world->m_childGroup + 0x48): Lookup(key, &out)
 // returns found (CMapWordToOb::Lookup-style; reloc-masked sibling).
 struct CSbiSeqMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
 SIZE_UNKNOWN(CSbiSeqMap);

@@ -27,7 +27,7 @@
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance)
 #include <Gruntz/LeafCue.h>          // LeafCue (the looked-up sound cue: m_10/m_14/m_18)
 // The shared sound chain is fully canonical (same as Projectile/VideoConfig/BootyState):
-// g_gameReg->m_world->m_28 is the CSndHost (SoundCue.h, pulled by GameRegistry.h) whose
+// g_gameReg->m_world->m_soundRegistry is the CSndHost (SoundCue.h, pulled by GameRegistry.h) whose
 // +0x10 CMapStringToPtr cue registry maps "GAME_HELPBOOK" to a LeafCue, whose +0x10
 // CSoundCueMgr plays it (ConfigureItem @0x1360d0). No per-TU view - the real types.
 // The *0x64556c singleton is the canonical CGameRegistry: m_cmdGrid the CTriggerMgr cell
@@ -100,7 +100,7 @@ i32 CInGameText::Update() {
     i32 y = o->m_screenY;
     if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
         && y < g_gameReg->m_viewOriginB && y >= g_gameReg->m_viewOriginT) {
-        CSndHost* set = g_gameReg->m_world->m_28;
+        CSndHost* set = g_gameReg->m_world->m_soundRegistry;
         if (set->m_30 == 0) {
             void* res_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
             set->m_10.Lookup("GAME_HELPBOOK", res_ob);

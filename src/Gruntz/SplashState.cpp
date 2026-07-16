@@ -8,10 +8,10 @@
 //   * m_4  (CGruntzMgr*)  - RestoreVideoMode (re-assert the 640x480 display mode).
 //   * m_8  (CBankMgr*)    - Lookup the "STATEZ_SPLASH" bank -> CResSource.
 //   * m_2c (CResSource*)  - the cached splash bank; LoadGroup its "SOUNDZ" set.
-//   * m_c  (CSpriteFactoryHolder*)       - its +0x28 sound registry Install()s the loaded set.
+//   * m_c  (CDDrawSurfaceMgr*)       - its +0x28 sound registry Install()s the loaded set.
 // The 0x48ddd0/0x53c030/0x53a230/0x557ee0 call targets are the VA form (RVA +
 // 0x400000 image base) of CGruntzMgr::RestoreVideoMode (0x08ddd0), CBankMgr::Lookup
-// (0x13c030), CResSource::LoadGroup (0x13a230) and CSoundRegistry::Install
+// (0x13c030), CResSource::LoadGroup (0x13a230) and CDDrawSubMgrLeafScan::Install
 // (0x157ee0) - the SAME engine methods the in-game CPlay resource facet
 // already models; here they are reloc-masked externals.
 //
@@ -30,13 +30,13 @@
 #include <Gruntz/GameMode.h>     // CGMEntity/CGMEntityList/g_actorList/GM_SimpleAnim (Render spine)
 #include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
 #include <Gruntz/View.h>         // CState::m_c render sub-object facets
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the m_c holder)
-#include <Gruntz/ResMgr.h>       // CSoundRegistry (m_c->m_28 Install facet)
-#include <Gruntz/GruntzMgr.h>    // CGruntzMgr::RestoreVideoMode (m_4 facet) + m_gameWnd->m_hwnd
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the m_c holder)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrLeafScan (m_c->m_soundRegistry Install facet)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr::RestoreVideoMode (m_4 facet) + m_gameWnd->m_hwnd
 #include <Gruntz/Attract.h> // CSymParser (m_8 facet; ResolvePath). RunTitleSeq @0xfa350 is now a CState base method.
 #include <Gruntz/SplashState.h> // CSplashState (shared def; dtor emitted in HelpState.cpp)
 #include <rva.h>
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
 
@@ -79,7 +79,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
 
     void* soundz = SymTab2c()->FindSub("SOUNDZ");
     if (soundz) {
-        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)soundz, g_emptyString, "_");
+        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)soundz, g_emptyString, "_");
     }
     return 1;
 }
@@ -92,7 +92,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
 // (m_1b8==0), post WM_COMMAND 0x8023 to the game window and clear the app run gate.
 //
 // @early-stop
-// Byte-exact except the cursor-anim gate `if(((CSoundRegistry*)m_c->m_28)->m_2c)`:
+// Byte-exact except the cursor-anim gate `if(m_c->m_soundRegistry->m_2c)`:
 // retail materializes the chain reusing eax (`mov eax,[eax+0x28]; mov ecx,[eax+0x2c];
 // cmp ecx,esi`), cl keeps m_c in eax and folds the m_2c load into the cmp
 // (`mov ecx,[eax+0x28]; cmp [ecx+0x2c],esi`) - the reread-member-view-pointer
@@ -102,7 +102,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
 // byte-exact; final sweep.
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
-    IDirectDrawSurface* in = m_c->m_drawTarget->m_10->m_surface->m_8;
+    IDirectDrawSurface* in = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             m_4->ReportError(0x8006, 0x447);
@@ -110,7 +110,7 @@ i32 CSplashState::Render() {
         }
     }
 
-    if (((CSoundRegistry*)m_c->m_28)->m_2c) {
+    if (m_c->m_soundRegistry->m_2c) {
         GM_SimpleAnim(-1);
     }
 
@@ -151,7 +151,7 @@ post:
 // current asset-root name, return its result.
 RVA(0x000f9a80, 0x44)
 i32 CSplashState::InputVirtual() {
-    if (m_c->m_pages->Method_158bc0() == 0) {
+    if (m_c->m_drawTarget->Method_158bc0() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

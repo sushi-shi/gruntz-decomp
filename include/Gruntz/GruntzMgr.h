@@ -103,13 +103,13 @@ typedef CDDrawSubMgrLeafScan CSndHost;
 class CDDrawWorkerRegistry;
 typedef CDDrawWorkerRegistry CImageRegistry;
 // [The CWorldZ view is DISSOLVED (Fable lane, 2026-07-13): the loaded-world object
-// at +0x30 IS the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) == the
+// at +0x30 IS the canonical CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>) == the
 // polymorphic CDDrawSurfaceMgr (see the settled-identity note there). The old
-// facets resolved: m_4 == m_drawTarget/m_pages (CWorldSub4 was CDDrawSubMgrPages;
+// facets resolved: m_4 == m_drawTarget/m_drawTarget (CWorldSub4 was CDDrawSubMgrPages;
 // "PausePages" @0x158c70 IS its Method_158c70(CDDrawSurfacePair*)); m_1c ==
 // m_ptrColl (the "*m_1c slot-10 dispatch" is m_ptrColl->m_surf0 IDirectDraw2::
 // FlipToGDISurface, slot 10 +0x28); m_38 == m_lastError.]
-struct CSpriteFactoryHolder;
+class CDDrawSurfaceMgr;
 
 // Minimal IDirectPlayLobby-shaped COM surface used by
 // InitializeLobbyConnectionSettings (Release slot 2 / GetConnectionSettings slot 8,
@@ -200,7 +200,7 @@ public:
     i32 SaveGameAs();    // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     // @0x08dc20 (ret 4) - XOR the flag bits (m_stateFlags) on every live world
-    // sprite-factory object (m_world->m_8->m_list).
+    // sprite-factory object (m_world->m_childGroup->m_list).
     void XorLiveObjectFlags(i32 mask);
     // @0x08dc90 (ret 0) - (re)register the level asset-namespace keys ("GRUNTZ" /
     // "LEVEL" / "ACTION") into the world's lookup holder (m_10) and sound host (m_28),
@@ -278,14 +278,14 @@ public:
     i32 GoToPrevLevel();     // @0x08d910 (PLAY: retreat current level index, wrap)
     i32 ToggleObjectLayer(); // @0x08efe0 (toggle the "current" object layer visible bit)
     i32
-    ToggleHeightLayer(); // @0x08f060 (toggle the height sub-layer (m_world->m_24->m_5c) visible bit)
+    ToggleHeightLayer(); // @0x08f060 (toggle the height sub-layer (m_world->m_level->m_5c) visible bit)
     i32 ToggleBaseLayer();            // @0x08f0b0 (toggle layer[0]'s visible bit)
     i32 PollUnlessIdle();             // @0x08f2f0 (CheckPlayState() unless state idle (5); ret 0)
     i32 AppendChatMessage(char* msg); // @0x08f9c0 (-> m_chatLog insert)
     i32 ShowToggleMessage(char* itemName, i32 on); // @0x08f9f0 ("<item> is ON/OFF")
 
     i32 IsMoviePathValid();        // @0x0901d0 (bool-normalized FileExists(m_strMoviePath))
-    void ReportWorldStatus(i32 a); // @0x090ac0 (map m_world->m_38 status to ReportError)
+    void ReportWorldStatus(i32 a); // @0x090ac0 (map m_world->m_lastError status to ReportError)
     i32 LoadMonologoSprite();      // @0x090d10 (PLAY-only: find/toggle/create the MONOLITH logo)
     i32 CheatRevealTreasures();    // @0x090f10 (PLAY-only: color all treasure/collectible rows)
     // x0910d0 - blit one frame of `sink` over the same-named frame of the image set
@@ -322,7 +322,7 @@ public:
     i32 SetVoiceVolume(i32 v);  // @0x091a10 (store m_voiceVolume, mirror to m_timer->m_2c)
     void SetSoundVolume(i32 v); // @0x0919d0 (store m_soundVolume, mirror to the 0x61ab24
                                 //  live global + push into the m_inputState sound set)
-    void UnloadSoundChain();    // @0x08f740 (m_world->m_28->m_2c teardown + StopBank2)
+    void UnloadSoundChain();    // @0x08f740 (m_world->m_soundRegistry->m_2c teardown + StopBank2)
     void ClearOptionsSlots();   // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
     RVA(0x000928c0, 0x23)
     CString GetWorldFileName() {
@@ -353,7 +353,7 @@ public:
     i32 SaveState(CSerialArchive* ar);               // @0x093620 (shared CSerialArchive)
     i32 LoadState(CSerialArchive* ar);               // @0x093920 (deserialize counterpart)
     // @0x08e3a0 - the level/viewport text rect (default 640x480, else the active
-    // world view's rect at m_world->m_24 + 0x10) written to *out. Was the fake
+    // world view's rect at m_world->m_level + 0x10) written to *out. Was the fake
     // `RectQuery_08e3a0` view in GruntzMgr.cpp AND the phantom CGameRegistry::GetRect:
     // both are this ONE method - the callers run it on the 0x64556c singleton.
     RECT* GetRect(RECT* out);
@@ -456,7 +456,7 @@ public:
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
     CState* m_curState;                // +0x2c  current game-state (Update() -> state id)
-    CSpriteFactoryHolder* m_world;     // +0x30  loaded world/map object (also a draw gate;
+    CDDrawSurfaceMgr* m_world;         // +0x30  loaded world/map object (also a draw gate;
                                        //         == CGameRegistry::m_world, one singleton field)
     CSymParser* m_symParser;           // +0x34  the level/rez symbol parser (LoadWorldMode
                                        //        new's it (0x94) + ParseBuffer's the rez row;

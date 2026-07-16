@@ -5,30 +5,31 @@
 // CPlay::PresentAndFlush @0x0cba10), so the real owner is CPlay (<Gruntz/Play.h>).
 //
 // It chains the base activate, hides the cursor, registers the TILEZ/IMAGEZ(LEVEL)/
-// IMAGEZ(GRUNTZ) namespaces through the m_c->m_10 registrar (vtable slot +0x4c),
+// IMAGEZ(GRUNTZ) namespaces through the m_c->m_imageRegistry registrar (vtable slot +0x4c),
 // then runs the level-specific init chain (m_guts status bar, m_c sub-objects) and
 // kicks the state timer. __thiscall; every callee is a reloc-masked external.
 //
 // (2026-07-14: the former PlayActivate/GLS* view nest - PlayActivate, GLSAssetRoot,
 // GLSSubA, GLSSub14, GLSSub2c, GLSObj24, GLSNamespace, GLSMapMgr, plus the local
-// CPlay/CState/CSpriteFactoryHolder member that already existed under its real name
+// CPlay/CState/CDDrawSurfaceMgr member that already existed under its real name
 // (m_levelBank/m_gruntzBank/m_guts/m_region0Gate/m_region1Gate/m_stepCountdown; the
-// asset root's m_4/m_c/m_24 are m_drawTarget/m_rendererB/m_24 with their real
+// asset root's m_4/m_c/m_24 are m_drawTarget/m_workerList/m_24 with their real
 // classes). "Present" IS CDDrawWorkerList::PruneWorkers, slot 13.)
-#include <Mfc.h>         // ShowCursor (afx-first)
-#include <EmptyString.h> // g_emptyString
-#include <Bute/SymTab.h> // canonical CSymTab (ResolvePath @0x13bae0)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Mfc.h>                          // ShowCursor (afx-first)
+#include <EmptyString.h>                  // g_emptyString
+#include <Bute/SymTab.h>                  // canonical CSymTab (ResolvePath @0x13bae0)
 
 #include <Gruntz/Play.h>
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (the VisitVisible chain arg)       // the real CPlay : CState (method owner)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
-#include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar) + CDrawTarget
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CImageRegistry (+0x10 image registrar) + CDDrawSubMgrPages
 #include <rva.h>
 #include <Globals.h>                   // g_gameReg / shared globals
 #include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
 #include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
 #include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90)
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (m_surface Fill target)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (m_surface Fill target)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B (PruneWorkers - the "present")
 #include <DDrawMgr/DDSurface.h>        // CDDSurface::Fill (0x13e760)
 #include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (m_guts Deactivate/Load...)
@@ -65,7 +66,7 @@ i32 CPlay::OnActivate() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_10->LoadNamespace(h, g_emptyString, "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(h, g_emptyString, "_") == -1) {
         return 0;
     }
 
@@ -73,7 +74,7 @@ i32 CPlay::OnActivate() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_10->LoadNamespace(h, "LEVEL", "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(h, "LEVEL", "_") == -1) {
         return 0;
     }
 
@@ -81,7 +82,7 @@ i32 CPlay::OnActivate() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_10->LoadNamespace(h, "GRUNTZ", "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -89,20 +90,23 @@ i32 CPlay::OnActivate() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    m_c->m_drawTarget->m_14->m_surface->Fill(0);
+    m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
     UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate);
 
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
-        m_c->m_24->VisitVisible((void*)m_c->m_drawTarget->m_14, m_c->m_8);
-        m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
+        m_c->m_level->VisitVisible((void*)m_c->m_drawTarget->m_backPair, m_c->m_childGroup);
+        m_c->m_workerList->PruneWorkers(
+            m_c->m_drawTarget->m_backPair,
+            m_c->m_drawTarget->m_overlayPair
+        );
     }
 
     m_guts->Deactivate();
     m_guts->LoadMainStatusBarSprite();
     m_stepCountdown = 2;
-    m_c->m_pages->Method_158e90();
+    m_c->m_drawTarget->Method_158e90();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited by CPlay, cast-free)
     return 1;
 }

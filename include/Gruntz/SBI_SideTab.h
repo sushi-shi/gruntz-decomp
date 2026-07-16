@@ -17,10 +17,10 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/ResMgr.h>        // canonical g_gameReg->m_world (CResMgr + draw chain)
-#include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base
-#include <Gruntz/SbiConfig.h>     // canonical CSpriteFactoryHolder (the configure's arg2)
-#include <Image/CImage.h>         // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical g_gameReg->m_world (CDDrawSurfaceMgr + draw chain)
+#include <Gruntz/StatusBarItem.h>     // canonical frameless CStatusBarItem base
+#include <Gruntz/SbiConfig.h>         // canonical CDDrawSurfaceMgr (the configure's arg2)
+#include <Image/CImage.h> // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 
 // A sampled grunt record (an element of the registry unit table at g_gameReg+0x68).
 // Only the stat fields BuildHandle reads are modeled.
@@ -44,12 +44,12 @@ struct CSideTabUnitTable {
 SIZE_UNKNOWN(CSideTabUnitTable);
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c) viewed by the
-// SideTab paths: m_30 is the canonical resource manager (CResMgr), m_68 the per-frame
+// SideTab paths: m_30 is the canonical resource manager (CDDrawSurfaceMgr), m_68 the per-frame
 // unit-record table the sampled grunt record is indexed out of. Both slots are typed
 // here so the render/glyph and sampling paths reach them with no reinterpret cast.
 struct CSideTabGameReg {
     char m_pad00[0x30];
-    CResMgr* m_world; // +0x30  resource manager
+    CDDrawSurfaceMgr* m_world; // +0x30  resource manager
     char m_pad34[0x68 - 0x34];
     CSideTabUnitTable* m_unitTable; // +0x68  per-frame unit-record table
 };
@@ -85,7 +85,7 @@ public:
     // CSBI_SideTab view: two mangled names, so the call resolved to no definition at link.
     i32 BuildStatzTabStatusBar(
         CStatzTabBuilder* parent,
-        CSpriteFactoryHolder* host,
+        CDDrawSurfaceMgr* host,
         i32 p3,
         i32 p4,
         i32 p5,

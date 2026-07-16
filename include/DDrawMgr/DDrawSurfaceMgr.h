@@ -9,7 +9,7 @@
 // 0x155840 stamps ??_7CDDrawSurfaceMgr, the dtor 0x1558b0 restamps the grand base).
 //
 // Field/offset provenance (union of the six former per-TU views, name-preserving):
-//   +0x04  m_pages       CDDrawSubMgrPages*  - PROVEN by the Init store 0x15596a:
+//   +0x04  m_drawTarget       CDDrawSubMgrPages*  - PROVEN by the Init store 0x15596a:
 //                        `new(0x1c)` whose vtable is stamped ??_7CDDrawSubMgrPages
 //                        (0x5efe08) at 0x15594e, then `mov [this+4],edi`. The former
 //                        "CDDrawWorkerMgr" view (0x158b40..0x159ef0 surface ops) and
@@ -18,16 +18,16 @@
 //   +0x08  m_childGroup  CDDrawChildGroup*   (Serialize's m_08 blit-op target;
 //                        <DDrawMgr/DDrawChildGroup.h>)
 //   +0x0c  m_workerList  CDDrawWorkerList
-//   +0x10  m_surfaceDesc CDDrawSurfaceDesc submgr (static DDSURFACEDESC)
+//   +0x10  m_imageRegistry CDDrawSurfaceDesc submgr (static DDSURFACEDESC)
 //   +0x14  m_workerCache CDDrawWorkerCache
 //   +0x18  m_workerMap   CDDrawWorkerMapSmall
 //   +0x1c  m_ptrColl     CDDrawPtrCollections - the surface pool (SurfacePair's m_pool);
 //                        heap object, ctor 0x141cc0 / dtor 0x141d50, ~0x948 B.
 //   +0x20  m_soundStream foreign Dsndmgr SoundStream
-//   +0x24  m_resolveSubMgr CDDrawResolveSubMgr / CGameLevel (RezSync m_24 BuildAllPlanes;
+//   +0x24  m_level CDDrawResolveSubMgr / CGameLevel (RezSync m_24 BuildAllPlanes;
 //                        Serialize m_24 blit target)
-//   +0x28  m_leafScan    CDDrawSubMgrLeafScan (RezSync m_28 ScanTree/HasKeyEqual/MatchSub)
-//   +0x2c  m_leaf        CDDrawSubMgrLeaf
+//   +0x28  m_soundRegistry    CDDrawSubMgrLeafScan (RezSync m_28 ScanTree/HasKeyEqual/MatchSub)
+//   +0x2c  m_animRegistry        CDDrawSubMgrLeaf
 //   +0x30  m_hWnd        bound window handle (Init arg1; SurfacePair reads it as the
 //                        "device" handle it hands the pool)
 //   +0x34  m_flags       Init arg5 / caps flags (SurfacePair: bit4 fullscreen, bit1
@@ -61,6 +61,7 @@ typedef struct HWND__* HWND;
 // at 5-8; <Gruntz/Loadable.h>, the ex "CDDrawSubMgr" identity). Pointer members only.
 class CLoadable;
 class CDDrawSubMgrPages;    // +0x04 the page/child factory (front/back/overlay surfaces)
+class CDDrawWorkerList;     // +0x0c the per-frame worker pump (vtbl 0x1efd88; slot-13 PruneWorkers)
 class CDDrawChildGroup;     // +0x08 the broadcast child-group (intrusive list + 2 maps)
 class CDDrawWorkerRegistry; // +0x10 the name->sprite registry (: CLoadable, vtbl 0x5efd28, m_10map)
 class CDDrawWorkerCache;    // +0x14 the string-keyed worker cache (its +0x10 map is the
@@ -114,23 +115,31 @@ public:
     i32 SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32 arg3); // 0x156020
     i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);            // 0x156530
 
-    CDDrawSubMgrPages* m_pages;          // +0x04  page/child factory (front/back/overlay)
-    CDDrawChildGroup* m_childGroup;      // +0x08  broadcast child-group
-    CLoadable* m_workerList;             // +0x0c  CDDrawWorkerList
-    CDDrawWorkerRegistry* m_surfaceDesc; // +0x10  name->sprite registry (m_10map; vtbl 0x5efd28)
-    CDDrawWorkerCache* m_workerCache;    // +0x14  the string-keyed worker cache (real type)
-    CDDrawWorkerMapSmall* m_workerMap;   // +0x18  the sprite/palette registry (real type)
-    CDDrawPtrCollections* m_ptrColl;     // +0x1c  surface pool
-    SoundStream* m_soundStream;          // +0x20  foreign Dsndmgr sound stream
+    // +0x04  the page/child factory (front/back/overlay surfaces) - the game-side
+    // draw target (the ex CDDrawSubMgrPages/StateMgrBZ views; every CState::m_c consumer
+    // reaches the flip pump + the three CDDrawSurfacePair pages through it).
+    CDDrawSubMgrPages* m_drawTarget;
+    CDDrawChildGroup* m_childGroup; // +0x08  broadcast child-group
+    CDDrawWorkerList* m_workerList; // +0x0c  the per-frame worker pump (real type; ex "renderer B")
+    CDDrawWorkerRegistry* m_imageRegistry; // +0x10  name->sprite/image registry (m_10map; vtbl
+                                           //        0x5efd28; ex "m_imageRegistry" - it is a
+                                           //        worker/name registry, not a DDSURFACEDESC)
+    CDDrawWorkerCache* m_workerCache;      // +0x14  the string-keyed worker cache (real type)
+    CDDrawWorkerMapSmall* m_workerMap;     // +0x18  the sprite/palette registry (real type)
+    CDDrawPtrCollections* m_ptrColl;       // +0x1c  surface pool
+    SoundStream* m_soundStream;            // +0x20  foreign Dsndmgr sound stream
     // +0x24: "CDDrawResolveSubMgr" IS the canonical CGameLevel - PROVEN: Init news
     // it with new(0x6d4) + ctor 0x15ccd0 == SIZE(CGameLevel, 0x6d4) + ??0CGameLevel.
-    class CGameLevel* m_resolveSubMgr;
-    CDDrawSubMgrLeafScan* m_leafScan; // +0x28  CDDrawSubMgrLeafScan
-    CDDrawSubMgrLeaf* m_leaf;         // +0x2c  CDDrawSubMgrLeaf (label sub-mgr; KeyOfValue_152d30)
-    HWND m_hWnd;                      // +0x30  bound window / device handle
-    i32 m_flags;                      // +0x34  caps flags
-    i32 m_lastError;                  // +0x38  last-error code
-    HP_Callback m_callback;           // +0x3c  run/config callback
+    class CGameLevel* m_level;             // (ex "m_level" - the canonical CGameLevel)
+    CDDrawSubMgrLeafScan* m_soundRegistry; // +0x28  sound/cue registry (CSndHost typedef;
+                                           //        ex "m_soundRegistry")
+    CDDrawSubMgrLeaf*
+        m_animRegistry;     // +0x2c  the ANI catalog / anim registry (ex "m_animRegistry";
+                            //        KeyOfValue_152d30 + the ANI factory set)
+    HWND m_hWnd;            // +0x30  bound window / device handle
+    i32 m_flags;            // +0x34  caps flags
+    i32 m_lastError;        // +0x38  last-error code
+    HP_Callback m_callback; // +0x3c  run/config callback
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

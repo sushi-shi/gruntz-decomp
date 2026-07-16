@@ -14,9 +14,12 @@
 #include <Ints.h>
 #include <Gruntz/SBI_ImageSetAni.h>
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (m_world liveness gate)
-#include <Gruntz/ResMgr.h>       // canonical g_gameReg->m_world view (CResMgr + CDrawTarget)
-#include <Gruntz/SbiConfig.h>    // canonical config-host family (Init's map lookup)
-#include <Image/CImage.h>        // the resolved frame record (Tick's blit)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)       // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawSubMgrPages)
+#include <Gruntz/SbiConfig.h>          // canonical config-host family (Init's map lookup)
+#include <Image/CImage.h>              // the resolved frame record (Tick's blit)
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 extern "C" CGameRegistry* g_gameReg;
@@ -35,7 +38,7 @@ extern "C" CGameRegistry* g_gameReg;
 RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(
     CStatusBarMgr* owner,
-    CSpriteFactoryHolder* host,
+    CDDrawSurfaceMgr* host,
     i32 a2,
     i32 a3,
     SbRect rc,
@@ -59,7 +62,7 @@ i32 CSBI_ImageSetAni::Init(
         m_c = a2;
         if (key != 0) {
             CSbiConfigRecord* tbl = 0;
-            ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup(key, (void*&)tbl);
+            ((CMapStringToPtr*)&host->m_imageRegistry->m_10map)->Lookup(key, (void*&)tbl);
             m_34 = (CSprite*)tbl;
             if (tbl != 0) {
                 m_3c = b2;
@@ -103,7 +106,7 @@ i32 CSBI_ImageSetAni::Tick() {
         }
         m_30 = (i32)cel;
         if (cel != 0) {
-            i32 surfaceCtx = (i32)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_14;
+            i32 surfaceCtx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
             cel->RenderFrame(
                 (void*)surfaceCtx,
                 (void*)(cel->m_anchorX + m_rect14.m_0),

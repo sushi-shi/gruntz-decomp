@@ -47,8 +47,8 @@ struct CWhConfig {
 SIZE_UNKNOWN(CWhConfig);
 
 // The active surface context Render passes into RenderFrame is reached through the
-// canonical resource manager: g_gameReg->m_world (CSpriteFactoryHolder) ->
-// m_drawTarget (CDrawTarget, +0x04) -> m_drawContext (+0x14). Modeled by the shared
+// canonical resource manager: g_gameReg->m_world (CDDrawSurfaceMgr) ->
+// m_drawTarget (CDDrawSubMgrPages, +0x04) -> m_drawContext (+0x14). Modeled by the shared
 // <Gruntz/GameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_WarlordHead.cpp); no
 // per-TU game-manager facet is kept.
 
@@ -90,11 +90,11 @@ public:
     virtual void SbiSlot5() OVERRIDE;     // slot 5 (the Render below)
     // slot 11 (0xeb6b0), the CSBI_Image::SetupImage override. This USED to be split in
     // two: a body-less `virtual` declared purely to pin the slot, plus the real body as a
-    // separate NON-virtual overload distinguished only by `i32 host` vs `CSpriteFactoryHolder*`.
+    // separate NON-virtual overload distinguished only by `i32 host` vs `CDDrawSurfaceMgr*`.
     // One function, one slot - the real body IS the override.
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
-        CSpriteFactoryHolder* host,
+        CDDrawSurfaceMgr* host,
         i32 a3,
         i32 a4,
         SbRect rc,

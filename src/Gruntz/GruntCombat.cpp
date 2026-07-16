@@ -25,9 +25,9 @@
 // @0x58cd0 (userlogicctoremit), CPairRecord::Serialize @0x58ee0
 // (trirecordserialize), Lookup_05b7e0 @0x5b7e0 (ddrawsubmgrleafscan).
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)
 #include <Gruntz/ActReg.h>    // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
@@ -53,7 +53,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - the worker's m_0c owner-context facet
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the worker's m_0c owner-context facet
 #include <Gruntz/LeafCue.h>      // LeafCue - the launch-sound cue entries (ex CombatCue/ConvCue)
 #include <Gruntz/SoundCue.h>     // CSndHost (typedef of CDDrawSubMgrLeafScan) - the cue registry
 #include <Gruntz/TriggerMgr.h>   // CTriggerMgr - the CGrunt+0x260 board (ex CombatTileMgr)
@@ -176,7 +176,7 @@ static void GruntScratchTeardown() {
 // the 4-direction rolling-ball sprites.
 //
 // The ability-sound resource chain (m_158 -> m_0c -> m_28) IS the canonical facet
-// ctor-proven), its m_0c the owner/world context == the CSpriteFactoryHolder facet
+// ctor-proven), its m_0c the owner/world context == the CDDrawSurfaceMgr facet
 // (<Gruntz/GameRegistry.h>), whose m_28 is the CSndHost cue registry
 // (<Gruntz/SoundCue.h>: emit gate m_emitGate @+0x30, CMapStringToPtr map @+0x10,
 // Lookup_05b7e0). The ex-CGruntSndSlot/CGruntSndRes/CGruntSndResMgr re-modeled
@@ -225,7 +225,7 @@ enum SpellzEffect {
 // (CombatCue is GONE - it was LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem
 //  owner, m_14 last-fire clock, m_18 cooldown - and its throttled fire is the real
 //  ?PlayIfElapsed@LeafCue@@. CombatSprInner/CombatSprCat are GONE - the
-//  world holder + cue host are the canonical CSpriteFactoryHolder / CSndHost, and
+//  world holder + cue host are the canonical CDDrawSurfaceMgr / CSndHost, and
 //  the launch-sound map is CMapStringToPtr: every LK Lookup in 0x597a0 calls
 //  0x1b8438 (the Ptr band) - the old `CMapStringToOb m_10` bound the WRONG library
 //  body, 0x1b8008.)
@@ -311,7 +311,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
-        g_gameReg->m_world->m_28->m_10.Lookup((key), (void*&)out);                                 \
+        g_gameReg->m_world->m_soundRegistry->m_10.Lookup((key), (void*&)out);                      \
         cue = out;                                                                                 \
     } while (0)
 
@@ -512,8 +512,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
     }
 
-    // the sprite's worker -> owner context (CSpriteFactoryHolder facet) -> cue host
-    CSndHost* slot = ((CSpriteFactoryHolder*)m_158->m_0c)->m_28;
+    // the sprite's worker -> owner context (CDDrawSurfaceMgr facet) -> cue host
+    CSndHost* slot = ((CDDrawSurfaceMgr*)m_158->m_0c)->m_soundRegistry;
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
         slot->m_10.Lookup(s_GAME_ATTACK, (void*&)sout); // CMapStringToPtr @0x1b8438
@@ -526,7 +526,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     switch (idx) {
         case SPELLZ_FREEZE: { // freeze
             CGameObject* spr =
-                g_gameReg->m_world->m_8
+                g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
@@ -541,7 +541,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_HEALTH: { // health
             CGameObject* spr =
-                g_gameReg->m_world->m_8
+                g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
@@ -556,7 +556,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_RESURRECTION: { // resurrection
             CGameObject* spr =
-                g_gameReg->m_world->m_8
+                g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
@@ -569,7 +569,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_TOYZ: { // toyz
             CGameObject* spr =
-                g_gameReg->m_world->m_8
+                g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
@@ -584,7 +584,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_TELEPORT: { // teleport
             CGameObject* spr =
-                g_gameReg->m_world->m_8
+                g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             ((CLightFx*)spr->m_7c->m_logic)
@@ -598,7 +598,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_ROLLINGBALL: { // rolling ball (4 directions)
-            CGameObject* n = g_gameReg->m_world->m_8->CreateSprite(
+            CGameObject* n = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY - 0x20,
@@ -612,7 +612,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->m_124 = 0;
             n->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CGameObject* e = g_gameReg->m_world->m_8->CreateSprite(
+            CGameObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX + 0x20,
                 m_lastTilePxY,
@@ -626,7 +626,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->m_124 = 0;
             e->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CGameObject* s = g_gameReg->m_world->m_8->CreateSprite(
+            CGameObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY + 0x20,
@@ -640,7 +640,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->m_124 = 0;
             s->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CGameObject* w = g_gameReg->m_world->m_8->CreateSprite(
+            CGameObject* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePxX - 0x20,
                 m_lastTilePxY,
@@ -728,7 +728,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         return 0;
     }
 
-    CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+    CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY,
@@ -742,7 +742,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     CGameRegistry* g = (CGameRegistry*)g_gameReg;
     i32 x = m_10->m_screenX;
     i32 y = m_10->m_screenY;
-    CCueRect* rc = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_originX;
+    CCueRect* rc = (CCueRect*)&g->m_world->m_level->m_mainPlane->m_originX;
     if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
         g->m_cueSink->CueSpawn(this, 0xe, -1, -1, -1);
     }
@@ -794,7 +794,7 @@ i32 CGrunt::TryPowerupAtTile() {
 // EnsureStruckVoice (+0x428): lazily build + play a grunt sound sample for `key`.
 // Bails if the +0x424 slot is already filled, or if the registry's m_10 gate is
 // unset. Otherwise looks `key` up in the global sound table
-// (g_gameReg->m_world->m_28->m_10), clones a sample from the entry's factory (GetItem),
+// (g_gameReg->m_world->m_soundRegistry->m_10), clones a sample from the entry's factory (GetItem),
 // stores it into +0x424, and plays it on the registry sound channel (m_11c).
 // __thiscall, ret 4. Same lookup shape as EnsureStruckVoice / CProjectile::LaunchSound.
 //
@@ -815,7 +815,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
         return;
     }
     void* entry_ob = 0;
-    g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob); // CMapStringToPtr (void*& out)
+    g_gameReg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob); // CMapStringToPtr (void*& out)
     GruntSoundEntry* entry = (GruntSoundEntry*)entry_ob;
     if (entry == 0) {
         return;
@@ -842,7 +842,7 @@ void CGrunt::ClearSubA() {
 
 // CGrunt::EnsureStruckVoice(key) @0x57c40 - lazily build + play the grunt's
 // struck-voice sound sample. Bails if already created (the +0x428 slot ClearSubB
-// frees). Looks `key` up in the global sound table (g_gameReg->m_world->m_28->m_10),
+// frees). Looks `key` up in the global sound table (g_gameReg->m_world->m_soundRegistry->m_10),
 // clones a sample from the entry's factory (GetItem), stores it into +0x428, and
 // plays it on the sound channel (g_gameReg->m_11c). __thiscall, ret 4. Same
 // sound-lookup shape as CProjectile::LaunchSound (0xe2190).
@@ -862,7 +862,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
         return;
     }
     void* entry_ob = 0;
-    g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob); // CMapStringToPtr (void*& out)
+    g_gameReg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob); // CMapStringToPtr (void*& out)
     GruntSoundEntry* entry = (GruntSoundEntry*)entry_ob;
     if (entry == 0) {
         return;
@@ -1143,7 +1143,7 @@ i32 CGrunt::PathScan57db0() {
 // CGrunt::OnStruck(wasHit) @0x588f0 - the struck/damage reaction step. Re-arm the
 // struck cooldown (m_270=0xfa0 window, m_268=game clock now), bump the struck
 // counter (m_struckCount), and - if the grunt is on-screen (the registry
-// visible-bounds rect at g->m_world->m_24->m_5c+0x40) - fire an escalating struck
+// visible-bounds rect at g->m_world->m_level->m_5c+0x40) - fire an escalating struck
 // grunt-voice cue (CueA) keyed by whether it was a real hit and the running count.
 // __thiscall, ret 4, frameless.
 // @early-stop
@@ -1168,14 +1168,14 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_10->m_screenY;
         if (c < 5) {
             CGameRegistry* g = (CGameRegistry*)g_gameReg;
-            i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
+            i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
             if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
                 g->m_cueSink->CueA(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
+        i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x371, -1, 0, -1, -1);
         } else {
@@ -1188,7 +1188,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_screenX;
         i32 y = m_10->m_screenY;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
+        i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x320, -1, 0, -1, -1);
         }
@@ -1198,7 +1198,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_screenX;
         i32 y = m_10->m_screenY;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
+        i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x321, -1, 0, -1, -1);
         }
@@ -1209,7 +1209,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_10->m_screenY;
         m_struckCount = 0;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
+        i32* vr = &g->m_world->m_level->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x322, -1, 0, -1, -1);
         }
@@ -1391,7 +1391,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             enemy->m_health = h;
             // worker -> owner context (the world holder facet) -> cue host; retail
             // keeps the host in ecx from the gate test into the Lookup __thiscall.
-            CSndHost* host = ((CSpriteFactoryHolder*)m_158->m_0c)->m_28;
+            CSndHost* host = ((CDDrawSurfaceMgr*)m_158->m_0c)->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 LeafCue* cc = (LeafCue*)host->Lookup_05b7e0(s_CONVERSIONHIT);
                 if (cc != 0) {

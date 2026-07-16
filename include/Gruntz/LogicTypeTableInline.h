@@ -27,7 +27,7 @@ extern "C" {
 
 // REGISTRY IDENTITY RECOVERED (Fable A2, 2026-07-14): the logic-type registry at
 // world(+0x14) IS the canonical CDDrawWorkerCache (<DDrawMgr/DDrawWorkerCache.h>,
-// ??_7 @0x1efd00, 10 slots) - the CDDrawSurfaceMgr/CSpriteFactoryHolder +0x14
+// ??_7 @0x1efd00, 10 slots) - the CDDrawSurfaceMgr/CDDrawSurfaceMgr +0x14
 // string-keyed worker cache. The dispatched "+0x24 registrar" is its slot 9
 // CreateWorker (0x1652c0); the "Find" probe (thunk 0x1703 -> 0x9cab0) is its
 // out-param wrapper over the +0x10 CMapStringToOb (Lookup @0x1b8008). The former

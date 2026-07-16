@@ -66,13 +66,13 @@ SIZE(CSBI_MenuItemDlg, 0x3c);
 // reason code (m_68->m_3ec), the test-mode gate (m_134) and the 4-player active
 // table at +0x174 (stride 0x238).
 //
-// SPLIT VERDICT (conflation check vs the g_gameReg->m_world resource manager, CResMgr):
+// SPLIT VERDICT (conflation check vs the g_gameReg->m_world resource manager, CDDrawSurfaceMgr):
 // TabzGmFactory is reached through TabzGameReg::m_68 (+0x68), NOT +0x30, and reads
 // FAR-out fields (+0x288 mission-complete selector, +0x3ec reason code) well beyond
-// CResMgr's ~0x30 span. It is the g_gameReg->m_68 ACTIVE-LEVEL / mission object (the
+// CDDrawSurfaceMgr's ~0x30 span. It is the g_gameReg->m_68 ACTIVE-LEVEL / mission object (the
 // same +0x68 object SBI_RectOnly models as CSbiActiveObj, m_288 == its MISSIONSTATUS
 // selector), a genuinely DIFFERENT class from the m_30 resource manager. It is
-// therefore kept DISTINCT (NOT folded into CResMgr) - the name "TabzGmFactory" is a
+// therefore kept DISTINCT (NOT folded into CDDrawSurfaceMgr) - the name "TabzGmFactory" is a
 // placeholder for that +0x68 active-level object, not a resource/game-manager factory.
 struct TabzGmFactory {
     char _00[0x288];

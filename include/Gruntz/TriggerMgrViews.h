@@ -18,7 +18,7 @@
 
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint (+ <Mfc.h> CPtrList/CByteArray)
 
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - m_level's REAL class (ex CTmLevel)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - m_level's REAL class (ex CTmLevel)
 #include <Gruntz/GameLevel.h> // CGameLevel - the holder's +0x24 level (ex CTmLevelView/CTmGridHolder)
 #include <Gruntz/GruntzCmdMgr.h>      // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
 #include <Gruntz/SoundCue.h>          // CSndHost (a typedef - never fwd-declare it): holder m_28
@@ -101,7 +101,7 @@ struct CTmDisplay {
 //  m_504==CPlay::m_dragEndNotify. Consumers cast m_curState to CPlay* and use the real
 //  members cast-free.)
 // (CTmGridHolder / CTmRegSub30 are GONE - they were g_gameReg->m_world (the canonical
-//  CSpriteFactoryHolder) and its +0x24 CGameLevel; the "+0x5c grid object" is
+//  CDDrawSurfaceMgr) and its +0x24 CGameLevel; the "+0x5c grid object" is
 //  m_mainPlane, and the ReinitGroup "Snap(&r,&c)" was ?WrapCoord@CDDrawWorkerHost@@
 //  @0xa000 (thunk 0x295a) on that plane - already reconstructed in WwdFile.cpp.)
 // The tile occupancy grid at g_gameReg->m_tileGrid (+0x70) is the canonical CTileGrid
@@ -142,14 +142,14 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 //  AnimWorkerObj::m_logic as the bound logic leaf. CreateSprite RETURNS CGameObject*, so the
 //  (CTmCell*) casts on its result were wrong outright: the deleted CTmCell view had
 //  conflated the SPRITE with the LOGIC the sprite carries.)
-//  CTmLevel WAS the world holder CSpriteFactoryHolder (<Gruntz/GameRegistry.h>): all
+//  CTmLevel WAS the world holder CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>): all
 //  three members land on it at identical offsets AND names (m_8 CDDrawChildGroup* /
 //  m_24 the level / m_28 CSndHost*). CTmLevelView WAS the canonical CGameLevel
 //  (<Gruntz/GameLevel.h>): its "m_10/m_14 view origin" is m_planeCtx.minX/minY (the
 //  LevelCoordRect at +0x10), its "+0x4c tile-class table" is m_imageSets' CObArray
 //  data pointer (reach it via GetAt), and its m_5c is m_mainPlane (CLevelPlane ==
 //  CPlaneRender == CDDrawWorkerHost - one typedef, so no cast). CTriggerMgr::m_level
-//  is typed CSpriteFactoryHolder* in <Gruntz/TriggerMgr.h>.)
+//  is typed CDDrawSurfaceMgr* in <Gruntz/TriggerMgr.h>.)
 
 // The level's display-object list (level->m_8->m_list, the canonical
 // CDDrawGroupNode chain): each node carries the next ptr @+0 and the bound object

@@ -23,8 +23,8 @@
 // The owning manager reached through CWwdGameObject+0x0c IS the canonical
 // CDDrawSurfaceMgr (<DDrawMgr/DDrawSurfaceMgr.h>): PROVEN by the ctor chain (the
 // factories' m_0c is a CDDrawSurfaceMgr*) and by the members the methods reach -
-// +0x04 m_pages, +0x08 m_childGroup, +0x10 m_surfaceDesc (sprite registry), +0x14
-// m_workerCache, +0x24 m_resolveSubMgr (CGameLevel), +0x28 m_leafScan - which are
+// +0x04 m_drawTarget, +0x08 m_childGroup, +0x10 m_imageRegistry (sprite registry), +0x14
+// m_workerCache, +0x24 m_level (CGameLevel), +0x28 m_soundRegistry - which are
 // exactly CDDrawSurfaceMgr's fields. The ex WwdMgr / WwdCamHolder views are dissolved.
 class CDDrawSurfaceMgr;
 

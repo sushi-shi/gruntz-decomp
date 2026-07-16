@@ -1,3 +1,4 @@
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer500 (draw-throttle counter)
 #include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -8,9 +9,9 @@
 #include <Gruntz/Play.h>         // canonical CPlay (m_curState game-state; level-timer expiry)
 #include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (g_gameReg->m_cmdGrid; ClearRowAndRefresh)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
-#include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CMapStringToOb
-#include <Gruntz/Timer.h>         // CTimer + CImage (canonical; def was local here)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr (m_8 key table, m_10 image registry) + CDDrawChildGroup
+#include <Gruntz/Sprite.h>                // CSprite (frame-data value) + CMapStringToOb
+#include <Gruntz/Timer.h>                 // CTimer + CImage (canonical; def was local here)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (AnyValueMatches_155630)
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
 // out of the engine's string-keyed sprite-set hash table and cache individual
@@ -43,7 +44,7 @@
 // shape reloc-masks against the matched lookup helper.
 // ---------------------------------------------------------------------------
 // CSprite (frame-data value) + CMapStringToOb come from <Gruntz/Sprite.h>;
-// CResMgr (image registry at m_10, key table at m_8) + CKeyTable from ResMgr.h.
+// CDDrawSurfaceMgr (image registry at m_10, key table at m_8) + CDDrawChildGroup from ResMgr.h.
 // The registry's embedded name->sprite hash table is <registry>->m_10map.
 
 // The state hung off g_gameReg->m_curState is the canonical CPlay (<Gruntz/Play.h>);
@@ -61,25 +62,25 @@
 // (<Gruntz/GameRegistry.h>); the expiry path sets its m_24 = 1, and slot 0's m_0c
 // holds the level/entity key.
 
-// The loading bar reaches the resource object through this->m_resMgr (its own CResMgr).
+// The loading bar reaches the resource object through this->m_resMgr (its own CDDrawSurfaceMgr).
 // The canonical CGameRegistry view of the singleton (*0x24556c). The resource mgr
-// (+0x30, typed CSpriteFactoryHolder) is reached without a cast; its +0x08 factory
+// (+0x30, typed CDDrawSurfaceMgr) is reached without a cast; its +0x08 factory
 // exposes both CreateSprite (grunt cluster) and the key-lookup facet (cast to
-// CKeyTable here). The current-state (+0x2c) is typed CState*; the notify target
+// CDDrawChildGroup here). The current-state (+0x2c) is typed CState*; the notify target
 // (+0x68) is a genuinely reused slot cast locally; the per-player timer-slot array
 // at +0x150 (stride 0x238) and the m_15c sub-object are reached via raw offsets.
 extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CPlay::LoadLoadingBarSprite (ex the `CLoadingBar` view - the receiver IS CPlay:
-// its +0x0c "own CResMgr" is CState::m_c and its +0x4bc..+0x4c8 block is exactly
+// its +0x0c "own CDDrawSurfaceMgr" is CState::m_c and its +0x4bc..+0x4c8 block is exactly
 // m_revealFrame + the three m_revealCap* loading-bar frame slots BuildHelpReveal
 // (the loading-bar wipe tick) blits).
 // ---------------------------------------------------------------------------
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
     CObject* spr_ob = 0;
-    ((CResMgr*)m_c)->m_10->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
+    m_c->m_imageRegistry->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
     if (!spr) {
         return 0;
@@ -138,7 +139,7 @@ CTimer* CTimer::Init() {
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CObject* spr_ob = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_TIMER", spr_ob);
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_TIMER", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
     m_sprite = spr;
     if (!spr) {
@@ -256,8 +257,11 @@ i32 CTimer::Tick(i32 dt) {
         i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
         if (key != 0) {
             i32 found = 0;
-            CTimerNotifyObj* obj = (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)
-                                       ->FindByKey((i32)key, &found);
+            // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
+            // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
+            void* fv = 0;
+            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup((void*)key, fv);
+            CTimerNotifyObj* obj = (CTimerNotifyObj*)fv;
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->ResolveDeathAnimation();
@@ -270,8 +274,11 @@ i32 CTimer::Tick(i32 dt) {
         i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
         if (key != 0) {
             i32 found = 0;
-            CTimerNotifyObj* obj = (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)
-                                       ->FindByKey((i32)key, &found);
+            // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
+            // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
+            void* fv = 0;
+            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup((void*)key, fv);
+            CTimerNotifyObj* obj = (CTimerNotifyObj*)fv;
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->NotifyFortUnderAttack();
@@ -454,7 +461,7 @@ i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter,
 // = ?g_serialCounter@@3HA @0x229ad0). The frame-name reverse-lookup helper (0x155630)
-// lives on the sprite registry (g_gameReg->m_world->m_10); modeled with NO body -> reloc-masks.
+// lives on the sprite registry (g_gameReg->m_world->m_imageRegistry); modeled with NO body -> reloc-masks.
 // The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10);
 // the former CStrReader view is gone (wave 3).
 
@@ -475,7 +482,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CSpriteFactoryHolder* mgr = g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
     if (mgr == 0) {
         return 0;
     }
@@ -499,8 +506,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinTens) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)
-                ->AnyValueMatches_155630((i32)m_frameMinTens, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameMinTens, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -511,8 +517,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinOnes) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)
-                ->AnyValueMatches_155630((i32)m_frameMinOnes, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameMinOnes, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -523,8 +528,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecTens) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)
-                ->AnyValueMatches_155630((i32)m_frameSecTens, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameSecTens, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -535,8 +539,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecOnes) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)
-                ->AnyValueMatches_155630((i32)m_frameSecOnes, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameSecOnes, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -547,8 +550,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameColon) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)
-                ->AnyValueMatches_155630((i32)m_frameColon, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameColon, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -558,6 +560,6 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     ar->Write(&m_currentMs, 4);
     return 1;
 }
-SIZE_UNKNOWN(CKeyTable);
+SIZE_UNKNOWN(CDDrawChildGroup);
 SIZE_UNKNOWN(CLoadingBar);
 SIZE_UNKNOWN(CTimerNotifyObj);

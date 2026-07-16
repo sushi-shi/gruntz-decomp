@@ -13,7 +13,7 @@
 // CGruntzMgr* back-ptr), and the three cached pointers are the manager's own
 // +0x68/+0x70/+0x30 slots: m_cmdGrid (CTriggerMgr, the 4x15 grunt board whose
 // cells the repaint colors), m_tileGrid (CGruntzMapMgr, the tile grid walked
-// cell-by-cell) and m_world (CSpriteFactoryHolder, whose +0x1c surface pool
+// cell-by-cell) and m_world (CDDrawSurfaceMgr, whose +0x1c surface pool
 // allocs/frees the work surface). The border-draw context handed to ComputeRect/
 // DrawBorder is the draw target's back CDDrawSurfacePair (m_c->m_drawTarget->
 // m_14 at both retail call sites, CPlay::Render @0xc9255 and CMulti::PumpB).
@@ -39,12 +39,12 @@ struct LfxRect {
 
 // The real manager family (pointer members only - fwd decls keep this header
 // afx-neutral; the deref TUs include the canonical headers).
-class CGruntzMgr;            // the game-manager singleton (Init's arg / m_mgr)
-class CTriggerMgr;           // mgr->m_cmdGrid: the 4x15 grunt board (cells = CGrunt)
-class CGruntzMapMgr;         // mgr->m_tileGrid: the tile grid (CMapMgr row table)
-struct CSpriteFactoryHolder; // mgr->m_world: the world/resource holder (+0x1c pool)
-class CDDSurface;            // the alloc'd DirectDraw work surface (m_surface)
-class CDDrawSurfacePair;     // the border-draw ctx (its +0x2c CDDSurface is drawn on)
+class CGruntzMgr;        // the game-manager singleton (Init's arg / m_mgr)
+class CTriggerMgr;       // mgr->m_cmdGrid: the 4x15 grunt board (cells = CGrunt)
+class CGruntzMapMgr;     // mgr->m_tileGrid: the tile grid (CMapMgr row table)
+class CDDrawSurfaceMgr;  // mgr->m_world: the world/resource holder (+0x1c pool)
+class CDDSurface;        // the alloc'd DirectDraw work surface (m_surface)
+class CDDrawSurfacePair; // the border-draw ctx (its +0x2c CDDSurface is drawn on)
 
 class CLightFxRender {
 public:
@@ -96,11 +96,11 @@ public:
     i32 ClampRect(i32 x, i32 y, i32* out, i32 margin);
 
     // ----- layout (member names mirror the CGruntzMgr slots they cache) -----
-    CGruntzMgr* m_mgr;             // +0x00 the game-manager singleton (set by Init)
-    CTriggerMgr* m_cmdGrid;        // +0x04 = mgr->m_cmdGrid (+0x68 grunt board)
-    CGruntzMapMgr* m_tileGrid;     // +0x08 = mgr->m_tileGrid (+0x70 tile grid)
-    CSpriteFactoryHolder* m_world; // +0x0c = mgr->m_world (+0x30 world holder)
-    CDDSurface* m_surface;         // +0x10 the alloc'd work surface
+    CGruntzMgr* m_mgr;         // +0x00 the game-manager singleton (set by Init)
+    CTriggerMgr* m_cmdGrid;    // +0x04 = mgr->m_cmdGrid (+0x68 grunt board)
+    CGruntzMapMgr* m_tileGrid; // +0x08 = mgr->m_tileGrid (+0x70 tile grid)
+    CDDrawSurfaceMgr* m_world; // +0x0c = mgr->m_world (+0x30 world holder)
+    CDDSurface* m_surface;     // +0x10 the alloc'd work surface
     char m_pad14[0x10];
     i32 m_srcL;             // +0x24 source rect L
     i32 m_srcT;             // +0x28 source rect T

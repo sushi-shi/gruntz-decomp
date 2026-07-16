@@ -31,7 +31,7 @@
 #include <Mfc.h>                 // CPtrList (embedded tab lists in CStatusBarMgr)
 #include <Gruntz/SbRect.h>       // the by-value geometry rect the setup virtuals take
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr
-#include <Gruntz/SbiConfig.h>    // canonical CSpriteFactoryHolder (the setup virtuals' arg2)
+#include <Gruntz/SbiConfig.h>    // canonical CDDrawSurfaceMgr (the setup virtuals' arg2)
 
 // The canonical SBI leaves the tab builder instantiates. Each carries its own type tag in
 // its ctor (3/4/5/6/7/8/9/0xb) over the out-of-line CSBI_RectOnly base ctor (0x101fa0)

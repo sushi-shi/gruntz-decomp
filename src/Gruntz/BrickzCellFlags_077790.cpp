@@ -18,7 +18,7 @@
 #include <Mfc.h> // CObArray (CGameLevel::m_imageSets) + RECT/POINT/PtInRect (FindNearest)
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane / CTileImageSet (ex Brickz* views)
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (CBrickzGrid::m_attrMgr's real type)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (CBrickzGrid::m_attrMgr's real type)
 
 // ---------------------------------------------------------------------------
 // CBrickzGrid::ComputeCellFlags (0x077790) - terrain-grid cell-flag compute.
@@ -43,7 +43,7 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     // The target cell pointer is computed first and held in a callee-saved register
     // across the whole body (retail's esi).
     BrickzCell* cell = &m_rows[y][x];
-    CGameLevel* level = m_attrMgr->m_24; // the world holder's CGameLevel (ex BrickzAttrMgr)
+    CGameLevel* level = m_attrMgr->m_level; // the world holder's CGameLevel (ex BrickzAttrMgr)
     // Clamp the lookup coordinate into the main plane's extent.
     i32 cx = x;
     if (x < 0) {

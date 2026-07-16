@@ -182,7 +182,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
 //                  (<Gruntz/TriggerMgr.h>); its +0x10 is CUserLogic::m_object, the bound
 //                  CGameObject - so `found->m_obj` is just `found->m_object`.
 //   DropperBox   -> RECT             FindGruntAt already takes `RECT* span, RECT* src`.
-//   DropperMgr   -> CSpriteFactoryHolder  g_gameReg->m_world is ALREADY declared as it
+//   DropperMgr   -> CDDrawSurfaceMgr  g_gameReg->m_world is ALREADY declared as it
 //                  (GameRegistry.h); its m_8 is the canonical CDDrawChildGroup. The Update
 //                  path called CreateSprite through the view while the ActA path (0xc7090)
 //                  already called it cast-free off the real type.
@@ -537,7 +537,7 @@ i32 CObjectDropper::Update() {
                             flags = (u32)((BrickzCell*)plane->m_8[cy])[cx].m_0;
                         }
                         if ((flags & 2) == 0) {
-                            g_gameReg->m_world->m_8
+                            g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, fx, fy, 0, "DroppedObjectShadow", 0x40003);
                             m_lastDropTileX = tx;
                             m_lastDropTileY = ty;
@@ -556,7 +556,7 @@ i32 CObjectDropper::Update() {
     double drift = (double)g_frameDelta * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
-        if (m_posX >= (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapW) {
+        if (m_posX >= (double)g_gameReg->m_world->m_level->m_mainPlane->m_wrapW) {
             m_posX = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -564,14 +564,14 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDx < 0) {
         m_posX -= drift;
         if (m_posX < 0.0) {
-            m_posX = (double)(g_gameReg->m_world->m_24->m_mainPlane->m_wrapW - 1);
+            m_posX = (double)(g_gameReg->m_world->m_level->m_mainPlane->m_wrapW - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }
     }
     if (m_travelDy > 0) {
         m_posY += drift;
-        if (m_posY > (double)g_gameReg->m_world->m_24->m_mainPlane->m_wrapH) {
+        if (m_posY > (double)g_gameReg->m_world->m_level->m_mainPlane->m_wrapH) {
             m_posY = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -579,7 +579,7 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDy < 0) {
         m_posY -= drift;
         if (m_posY < 0.0) {
-            m_posY = (double)(g_gameReg->m_world->m_24->m_mainPlane->m_wrapH - 1);
+            m_posY = (double)(g_gameReg->m_world->m_level->m_mainPlane->m_wrapH - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }
@@ -819,7 +819,7 @@ i32 CDroppedObject::ActA() {
                             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
                                 && m_landY < g_gameReg->m_viewOriginB
                                 && m_landY >= g_gameReg->m_viewOriginT) {
-                                CGameObject* s = g_gameReg->m_world->m_8->CreateSprite(
+                                CGameObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                                     0,
                                     x,
                                     m_landY,
@@ -841,7 +841,7 @@ i32 CDroppedObject::ActA() {
         } else {
             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
                 && m_landY < g_gameReg->m_viewOriginB && m_landY >= g_gameReg->m_viewOriginT) {
-                CGameObject* s = g_gameReg->m_world->m_8
+                CGameObject* s = g_gameReg->m_world->m_childGroup
                                      ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
                 if (s != 0) {
                     s->ApplyName("GAME_WATER");
@@ -997,7 +997,7 @@ RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) == 2) {
         CGameObject* o = m_object;
-        g_gameReg->m_world->m_8
+        g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);
     }
     if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {

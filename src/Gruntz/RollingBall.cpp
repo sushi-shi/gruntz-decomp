@@ -368,11 +368,11 @@ i32 CRollingBall::Update() {
             CString fall;      // [esp+0x14]
             CString explosion; // [esp+0x10]
             // Resolve the action id from the level's main-plane tile/object graph
-            // (g_gameReg->m_world->m_24 is the CGameLevel). The plane +0x5c geom /
+            // (g_gameReg->m_world->m_level is the CGameLevel). The plane +0x5c geom /
             // +0x20 attr array / +0x4c object table below stay raw-offset: this is
             // the same murky level-graph the sibling ApplySwitch/WireTileSwitchLogic
             // walk with raw casts (its interior classes are unmodeled).
-            char* lvl = (char*)g_gameReg->m_world->m_24;
+            char* lvl = (char*)g_gameReg->m_world->m_level;
             i32 ax = m_targetY >> 5;
             i32 ay = m_targetX >> 5;
             if (ax < 0) {

@@ -8,7 +8,7 @@
 // shows the callers are ?Render@CPlay (0xc8cf0) and CMulti::PumpB (CMulti : CPlay
 // per RTTI), Play.h already declared the SAME RVA as its reloc-masked
 // "ProfFlushTail", and every deref maps onto the canonical shapes: m_4/m_c are
-// CState's CGruntzMgr*/CSpriteFactoryHolder*, the fps is CGameMgr::m_fps (+0x18), the object
+// CState's CGruntzMgr*/CDDrawSurfaceMgr*, the fps is CGameMgr::m_fps (+0x18), the object
 // count CRenderer::m_1c (renderer A), the position CDrawSurface::m_5c->CameraGeom
 // {m_84,m_88}, the DC host the render-flip CDDSurface (RenderState::m_14->m_2c)
 // whose +0x08 holds the real IDirectDrawSurface (GetDC slot 17 +0x44 / ReleaseDC
@@ -29,11 +29,12 @@
 #include <ddraw.h> // real IDirectDrawSurface (the debug-overlay DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Play.h>              // the real CPlay : CState (the method owner)
-#include <Gruntz/View.h>              // the CSpriteFactoryHolder chain (render state, draw surface)
+#include <Gruntz/View.h>              // the CDDrawSurfaceMgr chain (render state, draw surface)
 #include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (m_list.GetCount @+0x1c)
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (the m_24 level + scroll origin)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (m_surface)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (m_surface)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
 #include <Gruntz/GruntzMgr.h>          // CGruntzMgr (base CGameMgr::m_fps @+0x18)
 #include <stdio.h>                     // engine sprintf (reloc-masked)
 #include <string.h>                    // inline strcat/strlen intrinsics (/O2)
@@ -79,7 +80,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (g_debugDisplayFlags & 0x4) {
-        CLevelPlane* p = m_c->m_24->m_mainPlane;
+        CLevelPlane* p = m_c->m_level->m_mainPlane;
         sprintf(scratch, " Pos = %i,%i", p->m_originX, p->m_originY);
         strcat(buf, scratch);
     }
@@ -104,7 +105,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* host = m_c->m_drawTarget->m_14->m_surface;
+    CDDSurface* host = m_c->m_drawTarget->m_backPair->m_surface;
     HDC hdc = 0;
     host->m_8->GetDC(&hdc);
     if (hdc == 0) {

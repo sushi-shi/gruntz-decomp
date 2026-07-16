@@ -6,14 +6,16 @@
 // SBI_ImageSetAni.cpp); the 0xe6020 stub to SBI_WellGoo.cpp (slot 2). Only the
 // four timed-play leaf methods remain - see <Gruntz/AniPlayer.h> (@identity-TODO).
 #include <Gruntz/AniPlayer.h>
-#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CDrawTarget)
-#include <Image/CImage.h>  // the cel/frame record (RenderFrame @0x153790)
-#include <Mfc.h>           // CMapStringToPtr (the config-host lookup)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CDDrawSubMgrPages)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <Image/CImage.h>                 // the cel/frame record (RenderFrame @0x153790)
+#include <Mfc.h>                          // CMapStringToPtr (the config-host lookup)
 #include <rva.h>
 
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton
-#include <Gruntz/SbiConfig.h>    // CSpriteFactoryHolder / CSbiConfigRecord (the record views)
+#include <Gruntz/SbiConfig.h>    // CDDrawSurfaceMgr / CSbiConfigRecord (the record views)
 
 // The g_gameReg singleton (*0x24556c); DATA-pinned elsewhere (canonical extern).
 extern "C" CGameRegistry* g_gameReg;
@@ -36,7 +38,7 @@ extern "C" u32 g_frameTime;
 RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(
     CStatusBarMgr* owner,
-    CSpriteFactoryHolder* host,
+    CDDrawSurfaceMgr* host,
     i32 a2,
     i32 a3,
     SbRect rc,
@@ -98,7 +100,7 @@ i32 CAniPlayer::RenderCel_0e5c10() {
     }
     m_30 = (i32)cel;
     if (cel != 0) {
-        i32 surfaceCtx = (i32)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_14;
+        i32 surfaceCtx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
         cel->RenderFrame(
             (void*)surfaceCtx,
             (void*)(cel->m_anchorX + m_rect14.m_0),

@@ -22,9 +22,12 @@
 
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
 #include <Globals.h>
-#include <Gruntz/ResMgr.h>    // canonical CImageRegistry (the +0x10 image registrar)
-#include <Gruntz/GameMode.h>  // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
-#include <Gruntz/GruntzMgr.h> // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h> // CImageRegistry (InstallTree)
+#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)    // canonical CImageRegistry (the +0x10 image registrar)
+#include <Gruntz/GameMode.h>           // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
+#include <Gruntz/GruntzMgr.h>          // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - holder+0x08 (DestroyChildren_159ef0)
 
@@ -55,18 +58,18 @@ extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical
 //                     (m_gameWnd), and its "Pump" is CGameWnd::PumpMessages (0x13d4e0).
 //    BcRegSet      -> CState::m_8 is CBankMgr*; its Register @0x13c030 IS
 //                     CSymParser::ResolvePath.
-//    BcAssetRoot   -> CState::m_c is CSpriteFactoryHolder*, whose +0x08/+0x10/+0x28 are
+//    BcAssetRoot   -> CState::m_c is CDDrawSurfaceMgr*, whose +0x08/+0x10/+0x28 are
 //    BcAssetCore /  the sprite factory, the CImageRegistry and the CSndHost.
 //    BcSoundRegistry
-// The casts that remain below are the honest ones: those three CSpriteFactoryHolder slots
+// The casts that remain below are the honest ones: those three CDDrawSurfaceMgr slots
 // are genuinely multi-faceted (the header already documents the render facet reaching m_8
-// as CRenderer and m_28 as CSoundRegistry), and CBankMgr-vs-CSymParser is unproven.)
+// as CRenderer and m_28 as CDDrawSubMgrLeafScan), and CBankMgr-vs-CSymParser is unproven.)
 
 // (the CBootyCheatState `this`-view is GONE - it WAS CBootyState, and "CBootyCheatState"
 // is not a type at all: 0x18830 is DATA-REFERENCED at ??_7CBootyState@@6B@+0x4, i.e. it is
 // CBootyState's own vtable SLOT 1 (CState::Vfunc1, the asset/state loader). Every field the
 // view modeled is a CState or CBootyState member at the same offset - m_4/m_8/m_c are
-// CState's own +0x04/+0x08/+0x0c (CGruntzMgr / CBankMgr / CSpriteFactoryHolder), m_2c/m_30/
+// CState's own +0x04/+0x08/+0x0c (CGruntzMgr / CBankMgr / CDDrawSurfaceMgr), m_2c/m_30/
 // m_34 its three bank slots, and m_1b8 / m_1c0..m_1cc land in CBootyState pads. The whole
 // Bc* sub-view nest went with it. See <Gruntz/GameMode.h> for the proof.)
 
@@ -133,20 +136,19 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
         if (!soundz) {
             goto fail;
         }
-        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)soundz, "BOOTY", "_");
+        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)soundz, "BOOTY", "_");
 
         void* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             goto fail;
         }
-        ((CDDrawSubMgrLeafScan*)m_c->m_28)
-            ->ScanTree_157ee0((CSymTab*)wand, "GRUNTZ_WANDGRUNT", "_");
+        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)wand, "GRUNTZ_WANDGRUNT", "_");
 
         void* imagez = SymTab2c()->FindSub("IMAGEZ");
         if (!imagez) {
             goto fail;
         }
-        m_c->m_10->InstallTree(imagez, "BOOTY", "_");
+        m_c->m_imageRegistry->InstallTree(imagez, "BOOTY", "_");
     }
 
     {

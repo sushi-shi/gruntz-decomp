@@ -59,7 +59,7 @@ extern "C" u32 g_engineFrameDelta;
 // The game registry singleton (0x64556c) is the CGruntzMgr view here; its sub-object
 // slots ARE real modeled classes, so the static-hazard paths reach them cast-free
 //   m_curState -> CState               (the ctor switches on CState::m_levelType @+0x20)
-//   m_world    -> CSpriteFactoryHolder (m_animRegistry @+0x2c is the canonical
+//   m_world    -> CDDrawSurfaceMgr (m_animRegistry @+0x2c is the canonical
 //                 CDDrawSubMgrLeaf, whose m_10 @+0x10 is the CMapStringToPtr the
 //                 "GO" cue resolves in - retail calls 0x1b8438, the Ptr band).
 // The map's VALUE record is a CAniElement (the anim registry's 'ANI' element - the

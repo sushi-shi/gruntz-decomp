@@ -33,7 +33,7 @@ public:
     // the outgoing frame (see the note on the body).
     i32 Start(
         CStatusBarMgr* owner,
-        CSpriteFactoryHolder* host,
+        CDDrawSurfaceMgr* host,
         i32 a2,
         i32 a3,
         SbRect rc,

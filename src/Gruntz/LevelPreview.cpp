@@ -20,7 +20,7 @@
 #include <Wap32/Wap32.h>                  // CGameWnd::PumpMessages (0x13d4e0)
 #include <Gruntz/State.h>                 // the CState base this screen state derives (real vtable)
 #include <Gruntz/SoundCue.h>              // the ONE +0x28 cue holder (CSndHost / LeafCue)
-#include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (the typed CState::m_c holder)
+#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (the typed CState::m_c holder)
 #include <Dsndmgr/DirectSoundMgr.h>       // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Globals.h>
@@ -50,7 +50,7 @@ extern "C" {
 // unlocated). Every reconstructed sibling overrides slot 8, so it likely does too, but
 // that is an inference - not asserted here as a declared-only phantom method.
 //
-// The +0x0c holder is the typed CState CSpriteFactoryHolder (m_c; the CRegHolder
+// The +0x0c holder is the typed CState CDDrawSurfaceMgr (m_c; the CRegHolder
 // view is DISSOLVED 2026-07-16). The +0x2c slot stays a dual-view (CSymTab vs
 // CResSource), reached with a view-cast at each site until that fold lands.
 //
@@ -112,7 +112,8 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     if (g_disableAudio == 0 && g_disableSound == 0) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
-            m_c->m_28->ScanTree_157ee0((CSymTab*)set, "PREVIEW", (const char*)&g_dat60b588);
+            m_c->m_soundRegistry
+                ->ScanTree_157ee0((CSymTab*)set, "PREVIEW", (const char*)&g_dat60b588);
         }
     }
     m_1bc = "PREVIEW0";
@@ -145,14 +146,14 @@ i32 CPreviewState::NextScreenCmd_0de190(i32 param) {
 // Logic + control flow + all externs byte-exact. Final sweep.
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
-    IDirectDrawSurface* surf = m_c->m_pages->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* surf = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (surf == 0 || surf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_4->ReportError(0x8006, 0xfa0);
             return 0;
         }
     }
-    SoundStream* snd = m_c->m_28->m_2c;
+    SoundStream* snd = m_c->m_soundRegistry->m_2c;
     if (snd != 0) {
         snd->PurgeVoiceList(-1);
     }
@@ -170,7 +171,7 @@ i32 CPreviewState::Tick() {
 // result (0 when the page gate fails).
 RVA(0x000de2c0, 0x5c)
 i32 CPreviewState::Refade_0de2c0() {
-    if (m_c->m_pages->Method_158bc0() == 0) {
+    if (m_c->m_drawTarget->Method_158bc0() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {
@@ -225,7 +226,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     if (FadeInTitle((char*)(const char*)m_1bc, 0, 0, 0, 0, 1) == 0) {
         failed = 1;
     } else {
-        CSndHost* h = m_c->m_28;
+        CSndHost* h = m_c->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* p_ob = 0;
             h->m_10.Lookup("GAME_TELEPORTEROPEN", p_ob);
@@ -277,11 +278,11 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     if (sym == 0) {
         return 0;
     }
-    if (m_c->m_pages->Method_158b40(sym, 1) == 0) {
+    if (m_c->m_drawTarget->Method_158b40(sym, 1) == 0) {
         return 0;
     }
     if (doFlip != 0) {
-        m_c->m_pages->m_frontPair->m_surface->Flip(0);
+        m_c->m_drawTarget->m_frontPair->m_surface->Flip(0);
     }
     return 1;
 }

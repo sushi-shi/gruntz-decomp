@@ -5,9 +5,12 @@
 #include <Io/FileMem.h>           // CFileMemBase - the CSerialArchive stream (Read/Write dispatch)
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CImageRegistry + CSprite)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CImageRegistry + CSprite)
 #include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CImageSetStream (the frameless method view)
-#include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (CSpriteFactoryHolder m_world)
+#include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (CDDrawSurfaceMgr m_world)
 #include <Gruntz/SbiConfig.h>    // canonical config-host family (SetupImage's map lookup)
 #include <Image/CImage.h>        // the resolved frame record (TickRenderFrame's blit)
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
@@ -25,7 +28,7 @@
 // The resolved config record (Lookup result) is the CSprite the image registry
 // yields; its config name string lives at record+0x24. The config map is the image
 // registry's embedded m_10map (CSpriteHashTable, Lookup 0x1b8008) - the same map
-// shape SetupImage uses, reached as reg->m_10->m_10map.
+// shape SetupImage uses, reached as reg->m_imageRegistry->m_10map.
 
 extern "C" CGameRegistry* g_gameReg;
 
@@ -48,7 +51,7 @@ extern "C" CGameRegistry* g_gameReg;
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,
-    CSpriteFactoryHolder* host,
+    CDDrawSurfaceMgr* host,
     i32 cmd,
     i32 obj,
     SbRect rect,
@@ -75,7 +78,7 @@ i32 CSBI_ImageSet::SetupImage(
         return 0;
     }
     CSbiConfigRecord* rec = 0;
-    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup(key, (void*&)rec);
+    ((CMapStringToPtr*)&host->m_imageRegistry->m_10map)->Lookup(key, (void*&)rec);
     m_34 = (CSprite*)rec;
     if (rec == 0) {
         return 0;
@@ -126,7 +129,7 @@ i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
         m_30 = (i32)cel;
         if (cel != 0) {
             cel->RenderFrame(
-                (void*)(i32)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_14,
+                (void*)(i32)g_gameReg->m_world->m_drawTarget->m_backPair,
                 (void*)(cel->m_anchorX + m_rect14.m_0),
                 (void*)(cel->m_anchorY + m_rect14.m_4),
                 (void*)0
@@ -153,7 +156,7 @@ i32 CSBI_ImageSet::Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
-    CSpriteFactoryHolder* reg = g_gameReg->m_world;
+    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -165,7 +168,7 @@ i32 CSBI_ImageSet::Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
             s->Read(buf, 0x80);
             if (strlen(buf)) {
                 CSprite* out;
-                reg->m_10->m_10map.Lookup(buf, (CObject*&)out);
+                reg->m_imageRegistry->m_10map.Lookup(buf, (CObject*&)out);
                 m_34 = out;
             } else {
                 m_34 = 0;

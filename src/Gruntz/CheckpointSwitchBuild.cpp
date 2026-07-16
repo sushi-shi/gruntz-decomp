@@ -27,12 +27,12 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 
 // (CStatzRect60 is gone: the 0x60 block is the base's m_block[24] at +0x2c.)
-// The factory (m_world->m_8) is the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>);
+// The factory (m_world->m_childGroup) is the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>);
 // CreateSprite @0x1597b0 returns the created CGameObject (ApplyLookupSprite @0x1504d0
 // configures it; the +0x7c AnimWorkerObj Init runs post-create; m_layer gates success).
 // g_statzGameReg was a SECOND NAME for g_gameReg (0x24556c the game registry) - same
 // address, so nothing ever defined it. Unified onto the canonical CGameRegistry; the
-// dead CStatzFactoryHolder/CStatzGameReg local views (m_world->m_8 == the canonical
+// dead CStatzFactoryHolder/CStatzGameReg local views (m_world->m_childGroup == the canonical
 // CDDrawChildGroup) are dissolved.
 extern "C" CGameRegistry* g_gameReg;
 DATA(0x0020aa34)
@@ -81,7 +81,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         return 1;
     }
     CGameObject* spr =
-        g_gameReg->m_world->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
     if (!spr) {
         return 0;
     }

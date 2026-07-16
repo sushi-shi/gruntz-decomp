@@ -2007,7 +2007,7 @@ i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
 // constructed (no destructor on those paths); the stream's ctor runs only after both
 // guards, so its dtor unwinds the remaining exits. The method IGNORES its `this` (reads
 // only the two args), so it is byte-identical to a __stdcall free fn - the caller
-// (CustomWorldInfoDlgProc, `m_world->m_24->IsValidWwd(...)`) still loads ecx=this
+// (CustomWorldInfoDlgProc, `m_world->m_level->IsValidWwd(...)`) still loads ecx=this
 // (the R57 "thiscall-ignoring-this"). Modeled as the real WwdLevelInfoSrc method (not a
 // SYMBOL-renamed free-fn view) so the caller's mangled reference binds naturally.
 RVA(0x00160530, 0x125)

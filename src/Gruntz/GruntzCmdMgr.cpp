@@ -23,7 +23,7 @@
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/GruntzMgr.h>     // the m_38 manager back-ptr (CGruntzMgr) + m_world chain
-#include <Gruntz/GameLevel.h>     // CGameLevel (m_world->m_24: m_planeCtx + m_mainPlane)
+#include <Gruntz/GameLevel.h>     // CGameLevel (m_world->m_level: m_planeCtx + m_mainPlane)
 #include <rva.h>
 
 // The game registry singleton (canonical <Gruntz/WwdGameReg.h>). The command
@@ -250,7 +250,7 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 // target tile marker. IDENTITY RESOLVED (2026-07-16, ex `CObj23d90`): `this` IS
 // this TU's CGruntzCmdMgr - CPlay::DispatchKey dispatches it on [CGruntzMgr+0x6c]
 // == m_cmdSubMgr, and the view's m_38->m_30->m_24 chain IS m_38 (the manager
-// back-ptr EnqueueCommand already walks) ->m_world->m_24 - the same
+// back-ptr EnqueueCommand already walks) ->m_world->m_level - the same
 // m_planeCtx/m_mainPlane walk as the DispatchKey P/x cheat keys. The blit
 // primitive reached through ILT thunk 0x2095 (__stdcall, callee-clean).
 void __stdcall Func2095(i32, i32, i32, i32, i32, i32, i32, i32);
@@ -261,7 +261,7 @@ void __stdcall Func2095(i32, i32, i32, i32, i32, i32, i32, i32);
 // eagerly. Pure x86 instruction scheduling/regalloc.
 RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
-    CGameLevel* p = m_38->m_world->m_24;
+    CGameLevel* p = m_38->m_world->m_level;
     CLevelPlane* r = p->m_mainPlane;
     i32 sx = ((r->m_originX - p->m_planeCtx.minX + (x & 0xffff)) & ~0x1f) + 0x10;
     i32 sy = ((r->m_originY - p->m_planeCtx.minY + (y & 0xffff)) & ~0x1f) + 0x10;

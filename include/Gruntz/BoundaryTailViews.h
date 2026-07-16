@@ -33,7 +33,7 @@
 // (The 0x23d90 grid-snap blit view chain - CObj23d90/Outer23d90/Mid23d90/P23d90/
 // R23d90 - is DISSOLVED 2026-07-16: 0x23d90 IS CGruntzCmdMgr::BlitTileMarker
 // (<Gruntz/GruntzCmdMgr.h>), dispatched on [CGruntzMgr+0x6c] == m_cmdSubMgr; the
-// chain was m_38(CGruntzMgr)->m_world->m_24(CGameLevel)'s m_planeCtx/m_mainPlane.)
+// chain was m_38(CGruntzMgr)->m_world->m_level(CGameLevel)'s m_planeCtx/m_mainPlane.)
 
 // 0xbdd0 - look a key up in arg1's embedded map (at +0x10) then dispatch.
 struct Entry_bdd0 {

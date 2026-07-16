@@ -452,7 +452,7 @@ i32 CPathHazard::ArmStrike(i32 a, i32 b) {
     i32 x = obj->m_screenX;
     if (x < reg->m_viewOriginR && x >= reg->m_viewOriginL && y < reg->m_viewOriginB
         && y >= reg->m_viewOriginT) {
-        CSndHost* host = (CSndHost*)reg->m_world->m_28;
+        CSndHost* host = (CSndHost*)reg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* out_ob = 0;
             host->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", out_ob);

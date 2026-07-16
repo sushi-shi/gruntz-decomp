@@ -1,7 +1,7 @@
 // GruntSprintAnim.cpp - BuildGruntSprintAnimation @0x019920 (graduated from
 // src/Stub/Backlog.cpp). The per-direction grunt "sprint" animation builder: for
 // each of the 8 compass directions it asks the HUD sprite factory
-// (g_gameReg->m_world->m_8) for a "SimpleAnimation" sprite, caches its first frame
+// (g_gameReg->m_world->m_childGroup) for a "SimpleAnimation" sprite, caches its first frame
 // from the directional walk-cycle name "GRUNTZ_NORMALGRUNT_<DIR>_WALK", applies
 // the "GAME_GRUNTSPRINT" cycle geometry, stamps a few fixed fields (the
 // g_gameReg->m_74 sound handle at +0x4c, rate 10 at +0x50, the active flag 1 at
@@ -29,10 +29,10 @@
 
 #include <rva.h>
 
-// The HUD sprite factory reached via g_gameReg->m_world->m_8 is the canonical
+// The HUD sprite factory reached via g_gameReg->m_world->m_childGroup is the canonical
 // CDDrawChildGroup (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0) looks the template
 // up by class-NAME (the 5th arg; __thiscall ret 0x18) and returns the created
-// CGameObject. The world holder is the canonical CSpriteFactoryHolder
+// CGameObject. The world holder is the canonical CDDrawSurfaceMgr
 // (<Gruntz/GameRegistry.h>) - no local holder view.
 
 // The g_gameReg->m_74 lookup table (0xe23c0, thunk 0x4165): Lookup(idx, flag)
@@ -83,7 +83,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 
     for (i32 i = 1; i <= 8; i++) {
         m_sprintSprites[i - 1] =
-            g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         if (m_sprintSprites[i - 1] == 0) {
             return 0;
         }

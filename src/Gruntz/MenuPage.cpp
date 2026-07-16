@@ -17,8 +17,11 @@
 #include <Image/CImage.h>
 
 #include <Gruntz/MenuPage.h>
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (m_owner) - its m_10 CImageRegistry
-#include <Gruntz/ResMgr.h>       // CImageRegistry (== CDDrawWorkerRegistry): its m_10map catalog
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_owner) - its m_10 CImageRegistry
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)       // CImageRegistry (== CDDrawWorkerRegistry): its m_10map catalog
 
 // The engine heap allocator (0x1b9b46), reached as the item's `operator new`.
 // Declared locally (not via RezMgr.h) to keep this TU's include set minimal.
@@ -43,7 +46,7 @@ struct CMenuListNode {
 
 // The name->page catalog is reached cast-free through the canonicals (the former
 // it is now the real CDDrawWorkerRegistry typedef in ResMgr.h):
-//   * m_owner IS CSpriteFactoryHolder (== CState::m_c / CChatBox::m_page; GameRegistry.h);
+//   * m_owner IS CDDrawSurfaceMgr (== CState::m_c / CChatBox::m_page; GameRegistry.h);
 //   * m_owner->m_10 IS CImageRegistry (the image/name registry @+0x10);
 //   * CImageRegistry->m_10map IS the name->page CMapStringToOb (@+0x10; Lookup @0x1b8008,
 //     mfc_class-verified). Configure disasm (0x1832f0): `mov edx,[this]` (m_owner @+0) ->
@@ -99,7 +102,7 @@ i32 CMenuPage::Configure(
         return 0;
     }
     i32* t = (i32*)tmpl;
-    m_owner = (CSpriteFactoryHolder*)t[0];
+    m_owner = (CDDrawSurfaceMgr*)t[0];
     m_host = (CChatBox*)tmpl;
     m_key = label;
     m_switchKey = parent;
@@ -112,7 +115,7 @@ i32 CMenuPage::Configure(
     m_offsetX = 0;
     m_offsetY = 0;
     CObject* slot_ob = 0;
-    m_owner->m_10->m_10map.Lookup(key, slot_ob);
+    m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
     void* slot = (void*)slot_ob;
     m_subPage = (CMenuPage*)slot;
     return slot != 0;
@@ -154,7 +157,7 @@ void CMenuPage::Clear() {
 RVA(0x001833f0, 0x38)
 i32 CMenuPage::ResolveSubPage(const char* key) {
     CObject* slot_ob = 0;
-    m_owner->m_10->m_10map.Lookup(key, slot_ob);
+    m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
     void* slot = (void*)slot_ob;
     m_subPage = (CMenuPage*)slot;
     return slot != 0;

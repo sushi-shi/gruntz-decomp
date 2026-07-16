@@ -76,7 +76,7 @@ struct BrickzCell {
 //   BrickzGridDesc -> ::CLevelPlane    (m_20/m_24/m_28/m_2c/m_30/m_34 ==
 //                     m_tileGrid/m_colOffsets/m_width/m_height/m_wrapW/m_wrapH;
 //                     SetCell @0x77dc0 is now CLevelPlane::SetCell)
-//   BrickzAttrMgr  -> the CSpriteFactoryHolder world holder chained to its
+//   BrickzAttrMgr  -> the CDDrawSurfaceMgr world holder chained to its
 //                     ::CGameLevel (+0x24): the "bute table @+0x4c" is CGameLevel's
 //                     m_imageSets CObArray data ptr (+0x48 array -> +0x4c m_pData of
 //                     CTileImageSet*), the "grid desc @+0x5c" its m_mainPlane.

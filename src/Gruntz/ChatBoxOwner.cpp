@@ -2,12 +2,13 @@
 // place/clear/configure/hit-test/render helpers. The box origin comes from the
 // active viewport (g_gameReg->m_modeW/m_90, the viewport X/Y). Only offsets / code
 // bytes are load-bearing; helpers are reloc-masked externals.
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <rva.h>
 
 #include <Mfc.h> // MFC (afx brings windows.h the controlled way) - MUST precede <ddraw.h> (ChatBoxOwner.h is an MFC header)
 #include <ddraw.h> // real IDirectDrawSurface (the chatbox DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/ResMgr.h> // CImageRegistry (m_18->m_10) + its m_10map
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry (m_18->m_imageRegistry) + its m_10map
 #include <Gruntz/Sprite.h> // the "GAME_CHATBOX" map value IS the canonical CSprite
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
@@ -31,7 +32,7 @@ extern "C" CGameRegistry* g_gameReg;
 // gating mode!=3 / mode==3 are m_firstFrame (+0x64) / m_lastFrame (+0x68). The former
 // CChatBoxFrame .cpp-local view is dissolved onto it.
 // The m_18 chain is the WORLD HOLDER (dissolved 2026-07-13, Fable lane): the
-// former CChatBoxRegRoot was CSpriteFactoryHolder (Attach receives CState::m_c,
+// former CChatBoxRegRoot was CDDrawSurfaceMgr (Attach receives CState::m_c,
 // the g_gameReg->m_world object), its +0x10 "registry" (ex-CChatBoxRegistry) is
 // the holder's CImageRegistry, and the embedded +0x10 hash (ex-CChatBoxHash) is
 // CImageRegistry::m_10map (::CMapStringToOb, Lookup 0x1b8008 - see mfc_class).
@@ -42,7 +43,7 @@ extern "C" CGameRegistry* g_gameReg;
 // (The `CChatBoxDcHost` / `CChatBoxCtx` .cpp-local views are DISSOLVED, 2026-07-15:
 // LoadChatBoxSprite's arg1 is the world holder's back draw-target, proven by the
 // CMulti::PumpB call site `arg1 = m_c->m_drawTarget->m_backPair`
-// (CSpriteFactoryHolder::m_drawTarget is CDDrawSubMgrPages, its +0x14 m_backPair is a
+// (CDDrawSurfaceMgr::m_drawTarget is CDDrawSubMgrPages, its +0x14 m_backPair is a
 // CDDrawSurfacePair). CChatBoxCtx == CDDrawSurfacePair (its +0x2c m_surface CDDSurface
 // matches member-for-member, and CDDrawSurfacePair::DrawCount/DrawLabel run the
 // identical +0x2c->m_8 GetDC/ReleaseDC pattern), CChatBoxDcHost == CDDSurface (its +0x8
@@ -56,7 +57,7 @@ void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z);
 // the `ret` - CPlay::Vfunc1 (0xc7ec0) TESTs it. `return m_c = 1;` is the retail shape
 // (materialize into a reg, store, keep it in eax).
 RVA(0x000204e0, 0x19)
-i32 CChatBoxOwner::Attach(CSpriteFactoryHolder* world, CFontConfig* host) {
+i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
     m_18 = world;
     m_14 = host;
     return m_c = 1;
@@ -244,7 +245,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     CSprite* spr = 0;
-    self->m_18->m_10->m_10map.Lookup("GAME_CHATBOX", (CObject*&)spr);
+    self->m_18->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", (CObject*&)spr);
     if (!spr) {
         return 0;
     }

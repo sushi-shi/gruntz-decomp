@@ -23,10 +23,10 @@
 // (m_activeNode, a CMenuPage - the same class the node-walks dispatch into) and
 // blit the menu surface set (CDDSurface) hung off the owner.
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>    // m_page->m_pages: front/back/overlay CDDrawSurfacePair
-#include <DDrawMgr/DDrawSurfacePair.h>    // each pair's +0x2c CDDSurface + +0x1c src RECT
+#include <DDrawMgr/DDrawSubMgrPages.h> // m_page->m_drawTarget: front/back/overlay CDDrawSurfacePair
+#include <DDrawMgr/DDrawSurfacePair.h> // each pair's +0x2c CDDSurface + +0x1c src RECT
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_page->m_10: CImageRegistry (CMapStringToOb catalog)
-#include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (m_page) + CSndHost + LeafCue
+#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (m_page) + CSndHost + LeafCue
 #include <Gruntz/MenuPage.h>
 
 // ---------------------------------------------------------------------------
@@ -38,11 +38,11 @@
 // 0x1840a0, SelectForward 0x1843f0, SelectBackward 0x1844d0, SelectFwd2 0x184230,
 // SelectBack2 0x184310, GetKey 0x1832d0) are the same RVAs. __thiscall.
 //
-// The owner reached through m_page is the canonical CSpriteFactoryHolder
+// The owner reached through m_page is the canonical CDDrawSurfaceMgr
 // (GameRegistry.h). Its three facets this box drives are all real engine classes
 // (the ex CChatPage/CMenuRenderSet/CChatCatalog/CChatRoster/CChatAnim/CChatListNode
 // views are DISSOLVED, 2026-07-14):
-//   +0x04 m_pages : CDDrawSubMgrPages   - the menu surface set (Flip/BltFast in Post).
+//   +0x04 m_drawTarget : CDDrawSubMgrPages   - the menu surface set (Flip/BltFast in Post).
 //                   Its +0x10/+0x14/+0x18 are front/back/overlay CDDrawSurfacePair,
 //                   each carrying a CDDSurface @+0x2c and the source's src RECT @+0x1c.
 //   +0x10 m_10    : CImageRegistry (== CDDrawWorkerRegistry) - the key->record catalog.
@@ -182,7 +182,7 @@ i32 CChatBox::Pre() {
     if (!m_activeNode) {
         return 0;
     }
-    i32 ctx = (i32)m_page->m_pages->m_backPair;
+    i32 ctx = (i32)m_page->m_drawTarget->m_backPair;
     if (!ctx) {
         return ctx;
     }
@@ -192,7 +192,7 @@ i32 CChatBox::Pre() {
 // flip the menu back buffer, then blit the source onto the target.
 RVA(0x00182ce0, 0x36)
 i32 CChatBox::Post() {
-    CDDrawSubMgrPages* s = m_page->m_pages;
+    CDDrawSubMgrPages* s = m_page->m_drawTarget;
     s->m_frontPair->m_surface->Flip(0);
     s->m_backPair->m_surface
         ->BltFast(0, 0, s->m_overlayPair->m_surface, &s->m_overlayPair->m_srcRect, 0x10);
@@ -294,7 +294,7 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
         return 0;
     }
     CObject* a_ob = 0;
-    m_page->m_10->m_10map.Lookup((const char*)key, a_ob);
+    m_page->m_imageRegistry->m_10map.Lookup((const char*)key, a_ob);
     CImageSet* a = (CImageSet*)a_ob;
     m_row0Anim = a;
     if (!a) {
@@ -319,7 +319,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
         return 0;
     }
     CObject* a_ob = 0;
-    m_page->m_10->m_10map.Lookup((const char*)key, a_ob);
+    m_page->m_imageRegistry->m_10map.Lookup((const char*)key, a_ob);
     CImageSet* a = (CImageSet*)a_ob;
     m_row1Anim = a;
     if (!a) {
@@ -426,7 +426,7 @@ i32 CChatBox::ScrollRow0() {
     if (m_row0Key.GetLength() == 0) {
         return 0;
     }
-    CSndHost* roster = m_page->m_28;
+    CSndHost* roster = m_page->m_soundRegistry;
     if (roster->m_emitGate) {
         return 0;
     }
@@ -459,7 +459,7 @@ i32 CChatBox::ScrollRow1() {
     if (m_row1Key.GetLength() == 0) {
         return 0;
     }
-    CSndHost* roster = m_page->m_28;
+    CSndHost* roster = m_page->m_soundRegistry;
     if (roster->m_emitGate) {
         return 0;
     }
@@ -534,6 +534,6 @@ i32 CChatBox::HitTest4() {
 }
 
 // All the .cpp-local engine views are DISSOLVED onto their canonical classes
-// (CSpriteFactoryHolder / CDDrawSubMgrPages / CDDrawSurfacePair / CImageRegistry /
+// (CDDrawSurfaceMgr / CDDrawSubMgrPages / CDDrawSurfacePair / CImageRegistry /
 // CImageSet / CSndHost / LeafCue), which carry their own SIZE metadata in their
 // headers. CChatBox itself lives in ChatBox.h.

@@ -48,7 +48,7 @@ public:
     virtual void SbiSlot4() OVERRIDE;  // slot 4
     virtual void SbiSlot5() OVERRIDE;  // slot 5
     virtual i32
-    SetupImage(CStatusBarMgr*, CSpriteFactoryHolder*, i32, i32, SbRect, const char*, i32, i32)
+    SetupImage(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, SbRect, const char*, i32, i32)
         OVERRIDE; // slot 11
     // slot 12 (new), body 0x0e74c0 (a Ghidra recovery gap - not yet reconstructed). It takes
     // ONE arg: the game-menu builder calls it as `Activate(7)` on the DESTRUCT item.

@@ -51,7 +51,7 @@ extern "C" {}
 // The bute manager singleton the builder queries for the WarpStone target
 // (g_buteMgr.GetInt) - declared in <Gruntz/UserLogic.h> (pulled via the header).
 
-// The sprite/animation factory reached as g_gameReg->m_world->m_8 is the canonical
+// The sprite/animation factory reached as g_gameReg->m_world->m_childGroup is the canonical
 // CDDrawChildGroup (shared <Gruntz/SpriteFactory.h>); CreateSprite (0x1597b0, __thiscall)
 // builds a "SimpleAnimation" glitter sprite (returned as the created CGameObject).
 
@@ -489,7 +489,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // glitter overlay sprite for the powerup / curse groups
     if (glitter != 0) {
-        CGameObject* fx = g_gameReg->m_world->m_8->CreateSprite(
+        CGameObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             m_object->m_screenX,
             m_object->m_screenY,
@@ -1031,7 +1031,8 @@ i32 CInGameIcon::Reposition() {
         }
         if (cellVal != 0) {
             void* found = 0;
-            if (((CMapPtrToPtr*)((char*)reg->m_world->m_8 + 0x48))->Lookup((void*)cellVal, found)
+            if (((CMapPtrToPtr*)((char*)reg->m_world->m_childGroup + 0x48))
+                    ->Lookup((void*)cellVal, found)
                 && found != 0) {
                 ((CGameObject*)found)->m_flags |= 0x10000;
             }
@@ -1241,7 +1242,7 @@ i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
 // ===========================================================================
 // CInGameIcon::SetField54  (0x099b10)
 // ===========================================================================
-// When v != 0, look it up in the registry's CMap (g_gameReg->m_world->m_28, Lookup
+// When v != 0, look it up in the registry's CMap (g_gameReg->m_world->m_soundRegistry, Lookup
 // at +0x10) into a local, then store the located value (or 0) into +0x54.
 // @interleaver CInGameIcon::SetField54 emitted-in <boundary: InGameTextUpdate.cpp
 // Update@CInGameText @0x997c0 (before) + AreaMgr.cpp TokenMgrReset99b80 @0x99b80

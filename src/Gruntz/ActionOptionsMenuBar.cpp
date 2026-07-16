@@ -1,9 +1,11 @@
+#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/Grunt.h>
 #include <Wwd/WwdFile.h>
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24: planeCtx bar rect + main plane)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level: planeCtx bar rect + main plane)
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / repne scas + rep movs)
 
 // ActionOptionsMenuBar.cpp - CActionOptionsMenuBar, the in-game action/option
@@ -24,27 +26,27 @@
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
 #include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (world->screen transform)
-#include <Gruntz/ResMgr.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>
 
 // (The 5th local CDDrawWorkerRegistry duplicate is GONE - the canonical class comes in
 // via <Gruntz/ResMgr.h> -> <DDrawMgr/DDrawWorkerRegistry.h>, and this view's
 // "Method_155630" is its AnyValueMatches_155630 at the SAME rva.)
 
-// CPlaneRender (world->screen transform, g_gameReg->m_world->m_24->m_5c) is the shared
+// CPlaneRender (world->screen transform, g_gameReg->m_world->m_level->m_5c) is the shared
 // <Wwd/WwdFile.h> class: m_wrapW (+0x30) clamps the bar position;
 // WrapCoord is NO-body so its __thiscall `call 0xa000` reloc-masks
 // (WwdFile::WwdFile_00a000).
 
-// The level/view object (g_gameReg->m_world->m_24) is the canonical CGameLevel
+// The level/view object (g_gameReg->m_world->m_level) is the canonical CGameLevel
 // (<Gruntz/GameLevel.h>): +0x10 the m_planeCtx rect (read as the on-screen bar RECT),
 // +0x5c the main plane (the world->screen transform base).
-// CDrawTarget + CImageRegistry (the m_10 image registry) come from <Gruntz/ResMgr.h>.
+// CDDrawSubMgrPages + CImageRegistry (the m_10 image registry) come from <Gruntz/ResMgr.h>.
 
 // The grunt/logic record stored in the level grid object table (g_gameReg->m_gridObjects);
 // the bar polls a handful of its fields to pick which mode-chip to light.
 // The canonical CGameRegistry view of the singleton (*0x24556c): the resource mgr
-// (+0x30, typed CSpriteFactoryHolder) is reached without a cast; the grid object
+// (+0x30, typed CDDrawSurfaceMgr) is reached without a cast; the grid object
 // table (+0x68) is a genuinely reused slot cast locally (see below).
 extern "C" CGameRegistry* g_gameReg;
 
@@ -100,7 +102,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     CObject* spr_ob = 0;
 
     m_active = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", spr_ob);
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
     m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1)
                   ? (CMenuBarFrame*)spr->m_frames.m_pData[1]
@@ -110,21 +112,30 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", (CObject*&)spr);
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+        "GAME_INGAMEICONZ_NORMCHIPZ",
+        (CObject*&)spr
+    );
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", (CObject*&)spr);
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+        "GAME_INGAMEICONZ_HIGHCHIPZ",
+        (CObject*&)spr
+    );
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", (CObject*&)spr);
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+        "GAME_INGAMEICONZ_GREYCHIPZ",
+        (CObject*&)spr
+    );
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
@@ -146,7 +157,7 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = ((CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane)->m_wrapW;
+        i32 limit = ((CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane)->m_wrapW;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -271,11 +282,11 @@ i32 CActionOptionsMenuBar::Render() {
     }
     i32 sx = m_screenX;
     i32 sy = m_screenY;
-    ((CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane)->WrapCoord(&sx, &sy);
+    ((CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
 
     i32 r[4];
-    i32* src = (i32*)&g_gameReg->m_world->m_24->m_planeCtx;
-    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
+    i32* src = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
+    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
     r[0] = src[0];
     r[1] = src[1];
     r[2] = src[2];
@@ -283,7 +294,7 @@ i32 CActionOptionsMenuBar::Render() {
     m_frame->Draw(ctx, sy, sx, r, 0);
 
     if (m_button0Frame) {
-        i32* src2 = (i32*)&g_gameReg->m_world->m_24->m_planeCtx;
+        i32* src2 = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
         r[0] = src2[0];
         r[1] = src2[1];
         r[2] = src2[2];
@@ -291,7 +302,7 @@ i32 CActionOptionsMenuBar::Render() {
         m_frame->Draw(ctx, sy - 0xc, sx + 2, r, 0);
     }
     if (m_button1Frame) {
-        i32* src3 = (i32*)&g_gameReg->m_world->m_24->m_planeCtx;
+        i32* src3 = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
         r[0] = src3[0];
         r[1] = src3[1];
         r[2] = src3[2];
@@ -394,7 +405,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     if (reg == 0) {
         return 0;
     }
-    CSpriteFactoryHolder* mgr = reg->m_world;
+    CDDrawSurfaceMgr* mgr = reg->m_world;
     if (mgr == 0) {
         return 0;
     }
@@ -435,8 +446,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frame) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)
-                ->AnyValueMatches_155630((i32)m_frame, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frame, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -447,8 +457,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_button0Frame) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)
-                ->AnyValueMatches_155630((i32)m_button0Frame, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_button0Frame, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -460,8 +469,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
         i32 v20 = m_button1Frame;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
-            ((CDDrawWorkerRegistry*)mgr->m_10)
-                ->AnyValueMatches_155630((i32)v20, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630((i32)v20, (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -470,7 +478,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
 }
 
 SIZE_UNKNOWN(CActionOptionsMenuBar);
-SIZE_UNKNOWN(CDrawTarget);
+SIZE_UNKNOWN(CDDrawSubMgrPages);
 SIZE_UNKNOWN(CMenuBarFrame);
 SIZE_UNKNOWN(CSpriteMgr);
 SIZE_UNKNOWN(CPlaneRender);

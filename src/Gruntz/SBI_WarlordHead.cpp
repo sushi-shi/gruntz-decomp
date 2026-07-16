@@ -5,8 +5,10 @@
 #include <Ints.h>
 #include <Gruntz/SBI_WarlordHead.h>
 #include <DDrawMgr/DDrawShadeBlit.h> // full CImage::m_owned (CDDrawShadeBlit) for the +0x1c latch
-#include <Gruntz/GameRegistry.h>     // canonical g_gameReg singleton + CSpriteFactoryHolder m_world
-#include <Gruntz/ResMgr.h>           // CDrawTarget (m_world->m_drawTarget->m_14)
+#include <Gruntz/GameRegistry.h>     // canonical g_gameReg singleton + CDDrawSurfaceMgr m_world
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/Sprite.h>             // CSprite (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)           // CDDrawSubMgrPages (m_world->m_drawTarget->m_backPair)
 // SBI_WarlordHead.cpp - Gruntz CSBI_WarlordHead (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_WarlordHead@@; the most-derived leaf of the SBI image
 // chain CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly :
@@ -48,7 +50,7 @@ extern "C" CGameRegistry* g_gameReg;
 RVA(0x000eb6b0, 0x67)
 i32 CSBI_WarlordHead::SetupImage(
     CStatusBarMgr* owner,
-    CSpriteFactoryHolder* host,
+    CDDrawSurfaceMgr* host,
     i32 a3,
     i32 a4,
     SbRect rc,
@@ -131,7 +133,7 @@ i32 CSBI_WarlordHead::Render(i32 z) {
         return 1;
     }
     m_28--;
-    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
+    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
 
     CWhConfig* cfg = (CWhConfig*)m_34;
     CImage* f;

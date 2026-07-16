@@ -14,7 +14,7 @@
 // (gruntz sema xref 0x3945: StepAnimDispatchA/B, CommitNeighbor, StepArrivalCommit,
 // ... + CTriggerMgr::ApplyTriggerB/ClearCell self-calls); (2) the view's only own
 // member - the level holder at +0x22c - IS CTriggerMgr::m_level (the identical
-// m_level->m_24->m_mainPlane clamp walk as the siblings WireTileSwitchLogic /
+// m_level->m_level->m_mainPlane clamp walk as the siblings WireTileSwitchLogic /
 // ApplySwitch); (3) GruntEntranceArrival's two other call sites already bound the
 // same thunk as m_tileMgr->LoadTileArrivalFx.
 //
@@ -36,7 +36,7 @@
 //
 // @early-stop  (1.1% -> 7.9%: return type corrected to int [retail materialises
 // eax=1 before each ret]; reconstructed the always-run prologue - the action
-// descriptor, the grid-cell type resolve [m_level->m_24->m_mainPlane clamp +
+// descriptor, the grid-cell type resolve [m_level->m_level->m_mainPlane clamp +
 // cells[rowBase[y]+x] + tile-class GetCollisionAt], the pixel snap - the 0x4771bc
 // byte-indexed outer switch mapped to actionTypes {3,5,7,0xd,0xf,0x12}, and the
 // DIRT arm [actionType 0xd] with its a5 {-1,2,0x63} sub-dispatch + Particlez
@@ -54,10 +54,10 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h> // this TU's class (LoadTileArrivalFx is a CTriggerMgr method)
 
-#include <Gruntz/GameLevel.h>    // CGameLevel (m_level->m_24) + CTileImageSet (GetCollisionAt)
-#include <Gruntz/GameRegistry.h> // CGameRegistry / CSpriteFactoryHolder (the *0x24556c singleton)
-#include <Gruntz/Play.h>         // CPlay (g_gameReg->m_curState) - m_beginMarker @+0x2e4
-#include <DDrawMgr/DDrawChildGroup.h>    // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/GameLevel.h>         // CGameLevel (m_level->m_24) + CTileImageSet (GetCollisionAt)
+#include <Gruntz/GameRegistry.h>      // CGameRegistry / CDDrawSurfaceMgr (the *0x24556c singleton)
+#include <Gruntz/Play.h>              // CPlay (g_gameReg->m_curState) - m_beginMarker @+0x2e4
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (FindInLists12/DelFromList1)
 #include <Gruntz/TileTriggerLogic.h>     // CTileTriggerLogic (ApplyMove tags the found set)
 #include <Gruntz/UserLogic.h>            // CGameObject (the created Particlez sprite)
@@ -71,7 +71,7 @@ extern "C" CGameRegistry* g_gameReg;
 // ===========================================================================
 // CTriggerMgr::LoadTileArrivalFx (0x075e90) - the per-tile terrain-action loader.
 // Prologue (always run): resolve the tile cell's type id from the level grid
-// (m_level->m_24->m_mainPlane: clamp tile coords, cells[rowBase[y]+x], tile-class
+// (m_level->m_level->m_mainPlane: clamp tile coords, cells[rowBase[y]+x], tile-class
 // GetCollisionAt), snap (tileX,tileY) to a pixel centre, then dispatch on
 // (reason - 3) through the 0x4771bc byte-indexed jump table. The DIRT arm
 // (reason 0xd) registers the "Particlez"/LEVEL_DIRT/GAME_DIRT eye-candy set
@@ -90,9 +90,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     (void)ownerLo;
     CString diag; // the "No giant rock logic found" temp - forces the /GX EH frame
 
-    CSpriteFactoryHolder* level = m_level;
+    CDDrawSurfaceMgr* level = m_level;
     CPlay* state = (CPlay*)g_gameReg->m_curState; // retail reads [g_gameReg+0x2c]
-    CGameLevel* grid = level->m_24;
+    CGameLevel* grid = level->m_level;
     CPlaneRender* g = grid->m_mainPlane;
 
     // clamp the tile coords to the grid (tile-space bounds at +0x28/+0x2c)
@@ -134,7 +134,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.y = py;
                 if (PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt)) {
                     CGameObject* set =
-                        level->m_8->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                        level->m_childGroup->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
                     if (set != 0) {
                         set->ApplyName("LEVEL_DIRT");
                         set->ApplyLookupGeometry("GAME_DIRT", 0);

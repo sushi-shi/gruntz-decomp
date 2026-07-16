@@ -74,14 +74,14 @@ struct CGameObject; // <Gruntz/UserLogic.h> - what CDDrawChildGroup::CreateSprit
 // SelectMoveIcon @0x57800 reads [this+0x1f4] / [this+0x170] / [this+0x10] - exactly the
 // view's offsets. A +0x120 shift would have produced zero such matches.)
 typedef CGrunt CTmCell;
-// The +0x22c level object IS the world/resource holder CSpriteFactoryHolder
+// The +0x22c level object IS the world/resource holder CDDrawSurfaceMgr
 // 2026-07-15: all three of its members land on the canonical holder at the identical
 // offsets and names (m_8 CDDrawChildGroup* / m_24 the level / m_28 CSndHost*), and the
 // finish-level driver reaches the SAME +0x28 cue registry through g_gameReg->m_world.
 // The blocking "CTmLevelView vs CGameLevel" reconciliation is DONE: the view's m_10/m_14
 // were CGameLevel::m_planeCtx.minX/minY, its m_4c was m_imageSets' data pointer and its
 // m_5c is m_mainPlane (CLevelPlane == CPlaneRender == CDDrawWorkerHost, one typedef).
-struct CSpriteFactoryHolder;
+class CDDrawSurfaceMgr;
 class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
 struct CTmNode;
 struct CTmRecNode;
@@ -162,7 +162,7 @@ public:
 
     // 0x6b640: store the supplied world holder at +0x22c, clear m_armed + m_pendingFx
     // and raise m_countdownActive; returns 1 (0 when arg is null).
-    i32 SetLevel(CSpriteFactoryHolder* lvl); // 0x6b640
+    i32 SetLevel(CDDrawSurfaceMgr* lvl); // 0x6b640
 
     // 0x788d0 (ILT 0x1398): centre the active plane's scroll origin on the selected
     // record cell's bound object (parallax-scaled unless the plane is origin-fixed).
@@ -595,14 +595,14 @@ public:
     // their member teardown: 2 scalar ??1CObList CALLs (m_baseList/m_recList) + the
     // m_selLists[10] array teardown, whose __ehvec_dtor takes ??1CObList as a function
     // POINTER (that is ~CTriggerMgr's DATA reloc), + 1 ??1CByteArray CALL. No casts remain.
-    CPtrList m_baseList;           // +0x000  base object-list (holds CTmRecNode payloads)
-    CTmCell* m_grid[0x3c];         // +0x01c  the 4x15 placed grid-object cells (stride 4)
-    i32 m_rowCount[4];             // +0x10c  per-row placed count (bumped/serialized 0x10 B)
-    i32 m_cellFlag[0x3c];          // +0x11c  parallel 4x15 per-cell flag grid; also holds the
-                                   //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
-    i32 m_rowStateB[4];            // +0x20c  per-row state band B
-    i32 m_rowStateC[4];            // +0x21c  per-row state band C
-    CSpriteFactoryHolder* m_level; // +0x22c  the active world/resource holder (SetLevel);
+    CPtrList m_baseList;       // +0x000  base object-list (holds CTmRecNode payloads)
+    CTmCell* m_grid[0x3c];     // +0x01c  the 4x15 placed grid-object cells (stride 4)
+    i32 m_rowCount[4];         // +0x10c  per-row placed count (bumped/serialized 0x10 B)
+    i32 m_cellFlag[0x3c];      // +0x11c  parallel 4x15 per-cell flag grid; also holds the
+                               //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
+    i32 m_rowStateB[4];        // +0x20c  per-row state band B
+    i32 m_rowStateC[4];        // +0x21c  per-row state band C
+    CDDrawSurfaceMgr* m_level; // +0x22c  the active world/resource holder (SetLevel);
     // +0x230: the multiplayer armed gate (ex-CMultiSub68 view's m_armed) ==
     // the companion state word cleared by SetLevel; serialized at 0x1339/0x1545.
     i32 m_armed;                      // +0x230

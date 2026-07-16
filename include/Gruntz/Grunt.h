@@ -103,7 +103,7 @@ struct CCueRect {
 // 0x1b8760). Validated by a virtual kind() at vtable slot +0x20 (== 5 -> keep).
 // +0x7c is the same inner-object slot CHudSprite carries (CSpriteInner: its
 // +0x18 receiver takes the death resolve in HandleCommand's 0x8106 cheat).
-// CSpriteFactoryHolder (the registry +0x30 holder) lives in <Gruntz/GameRegistry.h>.
+// CDDrawSurfaceMgr (the registry +0x30 holder) lives in <Gruntz/GameRegistry.h>.
 
 class CGruntCueSink; // defined below (the 5-arg on-screen cue receiver)
 
@@ -353,35 +353,23 @@ struct GruntEntranceCell {
     i32 row;
     i32 reason;
 };
-// The per-effect sound-table object reached via g_gameReg->m_world (the sound
-// category), whose m_28 holds a CMapStringToOb at +0x10 (the launch-sound lookup
-// the struck-voice creator @0x57c40 queries). Same shape Projectile's LaunchSound
-// reaches. All external (reloc-masked).
+// The per-effect sound-table object reached via g_gameReg->m_world->m_soundRegistry
+// (the canonical CDDrawSubMgrLeafScan; its +0x10 CMapStringToPtr is the launch-sound
+// lookup the struck-voice creator @0x57c40 queries). Same shape Projectile's
+// LaunchSound reaches. All external (reloc-masked).
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
-struct GruntSoundInner; // m_30->m_28: holds the lookup map at +0x10
-// The on-screen viewport the movement-step spawn-cue gate reaches through the
-// sound category: (world->m_24->m_5c + 0x40) is the visible CCueRect (m_5c is a
-// base address, so +0x40 is a cast - the same CCueRect pattern).
-SIZE_UNKNOWN(CGruntViewMid);
-struct CGruntViewMid {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c  base address of the visible rect (-0x40)
-};
-SIZE_UNKNOWN(GruntSoundCat);
-struct GruntSoundCat { // m_30: the sound-category / world-resource holder object
-    char m_pad0[0x8];
-    // +0x08  the sprite/object factory (CreateSprite @0x1597b0, <Gruntz/
-    // SpriteFactory.h>) - the attack-fire step (UserLogicVfunc7, ProjectileUpdate.cpp)
-    // spawns the projectile eye-candy sprites through it. Same slot GameRegistry.h's
-    // CSpriteFactoryHolder models (this holder object is that facet's grunt view).
-    class CDDrawChildGroup* m_8;
-    char m_padc[0x24 - 0xc];
-    CGruntViewMid* m_24;   // +0x24  -> the visible-viewport gate (movement spawn cue)
-    GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
-};
+// [DISSOLVED 2026-07-16: the grunt-facet "GruntSoundCat" view of g_gameReg->m_world
+// was the ONE canonical CDDrawSurfaceMgr (its m_8 == m_childGroup the CreateSprite
+// factory, m_24 == m_level the CGameLevel, m_28 == m_soundRegistry). Its "CGruntViewMid"
+// (+0x24 sub-view whose m_5c based the visible CCueRect at +0x40) was the CGameLevel:
+// m_5c IS m_mainPlane, and the +0x40 rect is the plane's tile-origin block - the
+// spawn-cue gate now reads (char*)world->m_level->m_mainPlane + 0x40, the same
+// authentic int-read of the plane pointer 40+ Grunt.cpp sites use. Its
+// "GruntSoundInner" (+0x28, map @+0x10) was the CDDrawSubMgrLeafScan (m_10, the
+// same CMapStringToPtr band 0x1b8438).]
 // WwdGameReg (the g_gameReg singleton) is the canonical <Gruntz/WwdGameReg.h>;
-// its grunt-facet slot types (m_world=GruntSoundCat, m_cueSink=CGruntCueSink,
-// m_tileGrid=GruntBoard, m_74=CSpriteRefTable) are completed by the defs above.
+// its m_world is the canonical CDDrawSurfaceMgr; m_cueSink=CGruntCueSink,
+// m_tileGrid=GruntBoard, m_74=CSpriteRefTable are completed by the defs above.
 // g_gameReg decl moved to consumers (was WwdGameReg*; clashes with CGameRegistry* view) - include WwdGameReg.h + declare locally where needed
 
 // The struck-voice sound model (creator @0x57c40). The lookup returns a
@@ -392,15 +380,6 @@ SIZE_UNKNOWN(GruntSoundEntry);
 struct GruntSoundEntry {
     char m_pad0[0x10];
     DSoundCloneInst* m_10; // +0x10  the sample factory
-};
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
-SIZE_UNKNOWN(GruntSoundInner);
-struct GruntSoundInner {
-    char m_pad0[0x10];
-    // ::CMapStringToPtr - retail's Lookup is 0x1b8438, in [0x1b8247, 0x1b85b1), the band
-    // whose ctor stamps ??_7CMapStringToPtr@@6B@.  CMapStringToOb's Lookup is 0x1b8008,
-    // a separate body (no COMDAT fold - MSVC5 has no /OPT:ICF).  `mfc_class 0x1b8438`.
-    CMapStringToPtr m_10; // +0x10  the lookup map (call this->m_10.Lookup)
 };
 
 // The intrusive coord-node freelist the grunt machines recycle occupied-coord
@@ -532,7 +511,7 @@ class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 // CPlay::SyncRead2f7c (Play.cpp). GruntLoadColl was the raw CPtrArray facet of
 // CPlay's m_startMarkers/m_3a4[4]/m_488; `GruntIdEntry` IS ::CImageSet
 // (m_14 == m_frames, m_64/m_68 == m_minIndex/m_maxIndex); GruntResMgr was the
-// canonical CSpriteFactoryHolder; `g_load612618` was g_lastLevelNum.)
+// canonical CDDrawSurfaceMgr; `g_load612618` was g_lastLevelNum.)
 
 // A small owned sub-object the grunt destroys on teardown (slots +0x424/+0x428).
 // Free() is __thiscall, no args, reloc-masked.
@@ -1090,7 +1069,7 @@ public:
         return *(CString*)&m_typeName;
     }
     // +0x58..+0x7c: the resolved per-anim geometry sources - CAniElement* handles
-    // looked up from m_0c->m_leaf->m_10 (the Ptr-band catalog); fed to the cursor's
+    // looked up from m_0c->m_animRegistry->m_10 (the Ptr-band catalog); fed to the cursor's
     // Setup_15c2d0. (Were i32; the map is void*-valued so the fill sites cast at
     // the container edge.)
     CAniElement* m_idleGeoSrc[(0x68 - 0x58) / 4];      // +0x58  (Idle geometry sources)
@@ -1127,7 +1106,7 @@ public:
     // (Grunt.cpp): `m_158 = obj->m_7c` - the bound object's AnimWorkerObj. The
     // ex-`CGruntSndResMgr` view (GruntCombat.cpp) modeled its hop chain
     // m_0c->m_28->m_30: worker->m_0c is the owner/world context (the
-    // CSpriteFactoryHolder facet) whose +0x28 is the CSndHost cue registry
+    // CDDrawSurfaceMgr facet) whose +0x28 is the CSndHost cue registry
     // (emit gate +0x30, CMapStringToPtr map +0x10).
     AnimWorkerObj* m_158;            // +0x158 (the bound object's worker record)
     CAniElement* m_prevEntranceDesc; // +0x15c (= m_154->m_1a0.m_14 cache)

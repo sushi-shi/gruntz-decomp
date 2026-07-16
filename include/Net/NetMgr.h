@@ -84,12 +84,12 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 // ---------------------------------------------------------------------------
 // Forward declarations (defined in the TU that dereferences them).
 // ---------------------------------------------------------------------------
-class GruntzPlayer;  // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
-class CGruntzCmdMgr; // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
-class CNetMgr;       // defined below; the command slot caches one as its +0x1c owner
-class CMulti;        // <Gruntz/Multi.h> - the multiplayer game-state (owns CNetSession::Init a2)
-struct GruntRec;     // the lobby-sync grunt-state record (defined below CNetCmdSlot)
-struct CSpriteFactoryHolder; // <Gruntz/GameRegistry.h> - the +0xc world holder (CState::m_c mirror)
+class GruntzPlayer;     // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
+class CGruntzCmdMgr;    // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
+class CNetMgr;          // defined below; the command slot caches one as its +0x1c owner
+class CMulti;           // <Gruntz/Multi.h> - the multiplayer game-state (owns CNetSession::Init a2)
+struct GruntRec;        // the lobby-sync grunt-state record (defined below CNetCmdSlot)
+class CDDrawSurfaceMgr; // <Gruntz/GameRegistry.h> - the +0xc world holder (CState::m_c mirror)
 
 // ---------------------------------------------------------------------------
 // The game-manager singleton - only its +0x38 RegistryHelper is
@@ -1341,9 +1341,9 @@ public:
     // CObject base vptr stamp (0x5e8cb4), the three CObList ctors (nBlockSize 10),
     // the derived vptr stamp (0x5ea42c), then zero +0x14/+0x18.
     // (vptr implicit at +0x000)
-    CNetGameMgr* m_4;          // +0x004  game-manager sub-object (window/HWND, +0x6c cmd mgr)
-    CString m_8;               // +0x008  a name CString (GetName returns a copy by value)
-    CSpriteFactoryHolder* m_c; // +0x00c  the world holder (CState::m_c mirror)
+    CNetGameMgr* m_4;      // +0x004  game-manager sub-object (window/HWND, +0x6c cmd mgr)
+    CString m_8;           // +0x008  a name CString (GetName returns a copy by value)
+    CDDrawSurfaceMgr* m_c; // +0x00c  the world holder (CState::m_c mirror)
     char m_pad10[0x14 - 0x10];
     INetReleasable* m_releaseIface; // +0x014  secondary COM interface Destroy releases (slot 2)
     IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)

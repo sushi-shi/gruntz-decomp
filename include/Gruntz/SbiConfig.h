@@ -18,8 +18,8 @@
 #define GRUNTZ_SBICONFIG_H
 
 #include <rva.h>
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - the real config-host class
-#include <Gruntz/ResMgr.h>       // CImageRegistry (host->m_10) + its m_10map
+#include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr - the real config-host class
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry (host->m_10) + its m_10map
 
 struct CSbiConfigRecord; // the value the lookup yields (defined below)
 
@@ -40,7 +40,7 @@ struct CSbiConfigRecord; // the value the lookup yields (defined below)
 // is why every FID row there is AMBIG.  Ask the binary:
 //     python -m gruntz.analysis.mfc_class 0x1b8008
 // FOLDED (2026-07-13, Fable lane): the "config host" IS the world holder
-// CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) - the tree itself already cast
+// CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>) - the tree itself already cast
 // `(host)g_gameReg->m_world` at two StatusBarTabBuilders sites, and its +0x10
 // "registry" is the holder's CImageRegistry (<Gruntz/ResMgr.h>), whose embedded
 // name map is the SAME m_10map at the SAME +0x10. The former CSbiConfigHost /

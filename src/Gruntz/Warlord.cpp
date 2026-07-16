@@ -25,7 +25,7 @@
 #include <Gruntz/TypeKeyColl.h>       // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <Gruntz/Grunt.h>             // CGrunt + CGruntHud/g_animLookupTree/GruntRand
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_38->m_0c (the world root)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog; Lookup 0x1b8438)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog; Lookup 0x1b8438)
 #include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record; ex CAnimElem)
                                       // (the five Resolve*Animation bodies below)
 #include <Gruntz/AniElement.h>        // full CAniElement (ResolveIdleAnimation's desc walk)
@@ -194,14 +194,14 @@ typedef enum WarlordBattleTag {
 
 // One unrolled anim-key lookup on the bound object's embedded animation
 // name->handle map: the object's typed world slot (CGameObject::m_0c, the
-// CDDrawSurfaceMgr) -> m_leaf (+0x2c, CDDrawSubMgrLeaf) -> its CMapStringToPtr
+// CDDrawSurfaceMgr) -> m_animRegistry (+0x2c, CDDrawSubMgrLeaf) -> its CMapStringToPtr
 // m_10 (retail Lookup 0x1b8438). Build "GRUNTZ_" + m_54 + suffix (two CString temps), look it up
 // (out-param zeroed first so a miss stores 0), stash the handle. The chain stays
 // in the macro (not a cached local) so cl reloads m_38 per unrolled lookup, as retail.
 #define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
         void* h = 0;                                                                               \
-        m_38->m_0c->m_leaf->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                           \
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                   \
         dst = (CAniElement*)h;                                                                     \
     }
 
@@ -339,7 +339,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
 //        mode 8 POST : re-derive the draw-fill selector (the ctor GetSel path, UNCLAMPED).
 //   5. tail: the two i64 timers m_88/m_90 then m_98/m_a0, Read (7) / Write (4), ret 1.
 //   The registry is the canonical CSerialObjRef.h chain: a4->m_7c (CSerialNameHolder)
-//   ->m_0c (CDDrawSurfaceMgr) ->m_leaf (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_10
+//   ->m_0c (CDDrawSurfaceMgr) ->m_animRegistry (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_10
 //   forward-Lookups a key (0x1b8438) and KeyOfValue_152d30 (RVO CString) reverses it.
 //   Every callee/field/mode/chain above was verified against the retail disasm.
 //

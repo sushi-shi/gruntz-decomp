@@ -4,7 +4,7 @@
 #include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
 #include <Gruntz/LeafCue.h>         // the canonical cue record (was the CStatusBarTab view)
 #include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host
-#include <Gruntz/GameLevel.h>              // CGameLevel (m_world->m_24) -> m_mainPlane tile grid
+#include <Gruntz/GameLevel.h>              // CGameLevel (m_world->m_level) -> m_mainPlane tile grid
 #include <Gruntz/TileTriggerSwitchLogic.h> // real owner of SwitchDown/SwitchUp @0x110570/0x1106b0
 
 // StatusBarUpdaters.cpp - the switch-tile sprite loaders (C:\Proj\Gruntz). The five
@@ -30,7 +30,7 @@ extern "C" u32 g_killCueClock; // draw-clock mirror
 // DATA symbols, reloc-masked): g_sndEnabled gates the push, g_sndCueTag is the value.
 
 // The canonical CGameRegistry view of the singleton (*0x24556c). The resource
-// holder (+0x30) is the typed CSpriteFactoryHolder (GameRegistry.h); the tile
+// holder (+0x30) is the typed CDDrawSurfaceMgr (GameRegistry.h); the tile
 // notifier (+0x70) is the canonical CTileGrid (Notify facet), reached without a
 // cast, and the view-bounds rectangle scalars (+0x13c..+0x148) match directly.
 extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
@@ -51,16 +51,16 @@ extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 // switch coords: m_08 == tile X, m_key0c == tile Y, m_linkGate (+0x14) == down/up state.
 // @early-stop
 // ~72% CSE/regalloc wall: the int(1) return (was void) is now correct, but retail
-// RE-DERIVES `g_gameReg->m_world->m_24->m_mainPlane` for the store leg (pinning
+// RE-DERIVES `g_gameReg->m_world->m_level->m_mainPlane` for the store leg (pinning
 // g_gameReg in edi), while our cl CSEs the two identical grid chains into one eax
 // (keeping grid, not g_gameReg, in a callee-saved reg). The whole register layout
 // cascades from that CSE choice. No source spelling defeats MSVC5's CSE of the two
 // identical multi-level loads without an intervening store. Logic byte-correct.
 RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
-    CLevelPlane* g = g_gameReg->m_world->m_24->m_mainPlane;
+    CLevelPlane* g = g_gameReg->m_world->m_level->m_mainPlane;
     i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_08] + 1;
-    CLevelPlane* g2 = g_gameReg->m_world->m_24->m_mainPlane;
+    CLevelPlane* g2 = g_gameReg->m_world->m_level->m_mainPlane;
     g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_08] = v;
     g_gameReg->m_tileGrid->Notify(m_08, m_key0c, v);
 
@@ -68,7 +68,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     i32 py = (m_key0c << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
-        CSndHost* h = g_gameReg->m_world->m_28;
+        CSndHost* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
             h->m_10.Lookup("GAME_SWITCHDOWN", spr_ob);
@@ -98,9 +98,9 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 // grid-chain CSE that pins grid instead of g_gameReg. Logic exact.
 RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
-    CLevelPlane* g = g_gameReg->m_world->m_24->m_mainPlane;
+    CLevelPlane* g = g_gameReg->m_world->m_level->m_mainPlane;
     i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_08] - 1;
-    CLevelPlane* g2 = g_gameReg->m_world->m_24->m_mainPlane;
+    CLevelPlane* g2 = g_gameReg->m_world->m_level->m_mainPlane;
     g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_08] = v;
     g_gameReg->m_tileGrid->Notify(m_08, m_key0c, v);
 
@@ -108,7 +108,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     i32 py = (m_key0c << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
-        CSndHost* h = g_gameReg->m_world->m_28;
+        CSndHost* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
             h->m_10.Lookup("GAME_SWITCHUP", spr_ob);

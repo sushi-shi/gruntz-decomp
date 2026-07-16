@@ -23,16 +23,16 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive typedef (== CFileMemBase); NEVER fwd-decl
                                   // it under an elaborated struct name (see that header)
 
-struct CSpriteFactoryHolder; // m_levelData @+0x0c: the world/resource holder (== CState::m_c;
-                             // its +0x04 CDDrawSubMgrPages worker + +0x10 CImageRegistry)
-class CGruntzMgr;            // m_displayMgr @+0x04: the game-manager (== CState::m_4; its
-                             // +0x8c/+0x90 live video mode feed the splash block)
-class CSymParser;            // m_rezLocator @+0x08: the rez path resolver (ResolvePath)
+class CDDrawSurfaceMgr; // m_levelData @+0x0c: the world/resource holder (== CState::m_c;
+                        // its +0x04 CDDrawSubMgrPages worker + +0x10 CImageRegistry)
+class CGruntzMgr;       // m_displayMgr @+0x04: the game-manager (== CState::m_4; its
+                        // +0x8c/+0x90 live video mode feed the splash block)
+class CSymParser;       // m_rezLocator @+0x08: the rez path resolver (ResolvePath)
 
 // The on-screen splash params block built on the stack for EngStr_DrawText; its
 // leading slot is the loaded caption CString (its dtor forces Init's /GX frame).
 // (EngStr_DrawText itself: the ONE canonical lean decl in <Wap32/EngStr.h> - the
-// former (CSpriteFactoryHolder*, SplashParams*, i32*) spelling here mangled to a
+// former (CDDrawSurfaceMgr*, SplashParams*, i32*) spelling here mangled to a
 // symbol the definition never emits, leaving the caller's reloc UNBOUND.)
 struct SplashParams {
     CString text; // +0x00
@@ -44,10 +44,10 @@ struct SplashParams {
 // method names are recovered-symbol placeholders; the archive object drives the
 // actual transfer direction, only the +0x2c/+0x30 slot offsets are load-bearing.
 struct CMgrPersistObj {
-    i32 m_00;                          // +0x00
-    CGruntzMgr* m_displayMgr;          // +0x04  == CState::m_4 (m_8c/m_90 video mode)
-    CSymParser* m_rezLocator;          // +0x08  rez path resolver
-    CSpriteFactoryHolder* m_levelData; // +0x0c  == CState::m_c (world/resource holder)
+    i32 m_00;                      // +0x00
+    CGruntzMgr* m_displayMgr;      // +0x04  == CState::m_4 (m_8c/m_90 video mode)
+    CSymParser* m_rezLocator;      // +0x08  rez path resolver
+    CDDrawSurfaceMgr* m_levelData; // +0x0c  == CState::m_c (world/resource holder)
     char m_pad10[0x1c - 0x10];
     i32 m_1c, m_20, m_24;
     char m_pad28[0x38 - 0x28];

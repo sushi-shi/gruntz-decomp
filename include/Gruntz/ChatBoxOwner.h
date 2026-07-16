@@ -10,7 +10,7 @@
 
 #include <Mfc.h> // CString, HDC
 
-struct CSpriteFactoryHolder; // the world holder latched at m_18 (<Gruntz/GameRegistry.h>)
+class CDDrawSurfaceMgr; // the world holder latched at m_18 (<Gruntz/GameRegistry.h>)
 
 // The text host at m_14 IS the canonical CFontConfig (the ex-CChatBoxTextHost view is
 // DISSOLVED, 2026-07-13): TypeChar/GetInputText/ClearInput already ran on it, its +0x34
@@ -44,7 +44,7 @@ public:
     // `ret` and CPlay::Vfunc1 (0xc7ec0) TESTs it. The old `void` decl is what produced
     // the bogus "@early-stop constant-materialization wall" on this 25-byte function -
     // it was a wrong RETURN TYPE, not codegen.
-    i32 Attach(CSpriteFactoryHolder* world, CFontConfig* host);
+    i32 Attach(CDDrawSurfaceMgr* world, CFontConfig* host);
     // Lower the active flag.
     void Deactivate(); // 0x00020510
     // Configure the box origin from the current viewport for the given mode and
@@ -64,14 +64,14 @@ public:
     // real HitTest @0x21140 above - CPlay's OnMouseUp probe reaches it that way. One
     // function, two source names, one of them an unresolvable symbol.)
 
-    i32 m_0;                    // +0x00  box origin X (or 0/0xa0 by mode)
-    i32 m_4;                    // +0x04  box origin Y (viewport-relative)
-    i32 m_8;                    // +0x08  mode (1/2/3)
-    i32 m_c;                    // +0x0c  active flag
-    i32 m_10;                   // +0x10  enabled flag (hit-test gate)
-    CFontConfig* m_14;          // +0x14  text host (the real CFontConfig; TypeChar /
-                                //        GetInputText / ClearInput / RenderInputText run on it)
-    CSpriteFactoryHolder* m_18; // +0x18  the world holder (name registry source)
+    i32 m_0;                // +0x00  box origin X (or 0/0xa0 by mode)
+    i32 m_4;                // +0x04  box origin Y (viewport-relative)
+    i32 m_8;                // +0x08  mode (1/2/3)
+    i32 m_c;                // +0x0c  active flag
+    i32 m_10;               // +0x10  enabled flag (hit-test gate)
+    CFontConfig* m_14;      // +0x14  text host (the real CFontConfig; TypeChar /
+                            //        GetInputText / ClearInput / RenderInputText run on it)
+    CDDrawSurfaceMgr* m_18; // +0x18  the world holder (name registry source)
 };
 
 #endif // GRUNTZ_GRUNTZ_CHATBOXOWNER_H

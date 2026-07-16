@@ -25,7 +25,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Grunt.h>     // real CGrunt (the m_grid cells; ex CSbiTileEntry/CSbiTileSub views)
 #include <Gruntz/GruntzMgr.h> // the REAL *0x24556c singleton class (ReportError @0x08dc60)
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (m_world def; +0x28 CSndHost)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_world def; +0x28 CSndHost)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::LoadTabSprites @0x102250 (SetTab's real callee)
 #include <Utils/RegistryHelper.h>
 #include <Globals.h>
@@ -1400,8 +1400,7 @@ i32 CStatusBarMgr::Activate() {
     if (m_28 > d - 9) {
         m_28 = d - 0x22;
     }
-    m_8 = (i32)((CSpriteFactoryHolder*)m_c)
-              ->m_8->CreateSprite(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1);
+    m_8 = (i32)(m_c)->m_childGroup->CreateSprite(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1);
     return m_8 != 0;
 }
 
@@ -1462,7 +1461,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
         item->m_enabled = one;
         if (m_activeTab == one) {
             m_statObj[idx]->Toggle(m_position, one);
-            CSndHost* h = g_gameReg->m_world->m_28;
+            CSndHost* h = g_gameReg->m_world->m_soundRegistry;
             if (h->m_emitGate == 0) {
                 void* spr_ob = 0;
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
@@ -1515,7 +1514,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
             if (frame >= 0x1a) {
                 tab->m_state = 2;
                 frame = 0x1a;
-                CSndHost* h = g_gameReg->m_world->m_28;
+                CSndHost* h = g_gameReg->m_world->m_soundRegistry;
                 if (h->m_emitGate == 0) {
                     void* spr_ob = 0;
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
@@ -1582,7 +1581,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         } else if (m_fallRectB >= 0x1bf) {
             if (m_fallActive != 2) {
                 if (m_activeTab == 3 && m_position != 2) {
-                    CSndHost* h = g_gameReg->m_world->m_28;
+                    CSndHost* h = g_gameReg->m_world->m_soundRegistry;
                     if (h->m_emitGate == 0) {
                         void* spr_ob = 0;
                         h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
@@ -1658,7 +1657,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
 
     void* spr_ob = 0;
     i32 n = phase + 1;
-    g_gameReg->m_world->m_28->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
+    g_gameReg->m_world->m_soundRegistry->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
     i32* frame =
         (spr && n >= spr->m_firstFrame && n <= spr->m_lastFrame) ? spr->m_frames.m_pData[n] : 0;
@@ -1704,7 +1703,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     m_xDirection = (double)dist2 / dist;
     m_yDirection = (double)dxv / dist;
 
-    CSndHost* h = g_gameReg->m_world->m_28;
+    CSndHost* h = g_gameReg->m_world->m_soundRegistry;
     if (h->m_emitGate == 0) {
         void* fly_ob = 0;
         h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);
@@ -2800,7 +2799,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     i32 bx = m_10;
     i32 by = m_rect14.m_0;
-    CSpriteFactoryHolder* code = m_c;
+    CDDrawSurfaceMgr* code = m_c;
     CStatusBarItem* it;
 
     // ---- rect-only sub-widget A (id 0x259) ----
@@ -2862,7 +2861,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  this,
-                 (CSpriteFactoryHolder*)code,
+                 (CDDrawSurfaceMgr*)code,
                  1,
                  0,
                  SbRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
@@ -2883,7 +2882,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  this,
-                 (CSpriteFactoryHolder*)code,
+                 (CDDrawSurfaceMgr*)code,
                  2,
                  0,
                  SbRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
@@ -2904,7 +2903,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  this,
-                 (CSpriteFactoryHolder*)code,
+                 (CDDrawSurfaceMgr*)code,
                  3,
                  0,
                  SbRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
@@ -2925,7 +2924,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  this,
-                 (CSpriteFactoryHolder*)code,
+                 (CDDrawSurfaceMgr*)code,
                  4,
                  0,
                  SbRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
@@ -2960,7 +2959,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  this,
-                 (CSpriteFactoryHolder*)code,
+                 (CDDrawSurfaceMgr*)code,
                  5,
                  0,
                  SbRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
@@ -3168,7 +3167,7 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
 // (ff 15 -> __imp_SetRect vs PTR_SetRect) + g_gameReg DIR32 naming. Not source-
 // steerable under /O2; deferred to the final sweep.
 RVA(0x000fdc00, 0x5c2)
-i32 CStatusBarMgr::LoadBattlezItemConfig(CSpriteFactoryHolder* world) {
+i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_c = world;
     m_4 = 0;
     m_position = 0;

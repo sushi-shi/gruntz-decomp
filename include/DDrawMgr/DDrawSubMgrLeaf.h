@@ -47,7 +47,7 @@ public:
     i32 m_04; // +0x04  -1 when inactive
     i32 m_08; // +0x08
     // +0x0c  the owning CDDrawSurfaceMgr (the world/display root). Typed (was an
-    // i32 "parent/root handle"): the ANI factory reads its +0x28 m_leafScan as the
+    // i32 "parent/root handle"): the ANI factory reads its +0x28 m_soundRegistry as the
     // element Configure ctx, the same owner every family sibling binds at +0x0c.
     class CDDrawSurfaceMgr* m_0c;
     CDDrawSubMgrGrandBase() {}
@@ -83,7 +83,7 @@ public:
     // The ANI catalog method set (the ex `CDDrawSubMgrAni` twin class, MERGED
     // 2026-07-16 - it was this class wearing a second name). Proof of identity:
     //  (1) one receiver: every dispatch site reads the SAME holder +0x2c slot
-    //      (CDDrawSurfaceMgr::m_leaf) and calls both method sets on it -
+    //      (CDDrawSurfaceMgr::m_animRegistry) and calls both method sets on it -
     //      retail CCreditsState::ReleaseResources @0x38f00 does
     //      `mov ecx,[edx+0x2c]; call 0x1527d0` (a "Leaf" method) while
     //      CPlay::BuildAnizKeyTable pairs 0x152c50 probes with 0x152ad0 scans on

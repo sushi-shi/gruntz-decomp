@@ -114,10 +114,10 @@ extern "C" BzGameReg* g_gameReg; // *0x24556c (Booty view of the singleton)
 SIZE_UNKNOWN(BzGameReg);
 
 // DISSOLVED (Fable A2, 2026-07-14): the "BzSink" HUD message-sink view WAS the
-// canonical CSpriteFactoryHolder (CState::m_c == g_gameReg->m_30) - proven by the
+// canonical CDDrawSurfaceMgr (CState::m_c == g_gameReg->m_30) - proven by the
 // call site's own address chain (BootyMessages 0x1ce60 reads `[0x64556c]+0x30`):
-//   BzSink               == CSpriteFactoryHolder      (<Gruntz/GameRegistry.h>)
-//   BzSink::m_loader+04  == m_pages (CDDrawSubMgrPages; Method_158ee0/158e90)
+//   BzSink               == CDDrawSurfaceMgr      (<Gruntz/GameRegistry.h>)
+//   BzSink::m_loader+04  == m_drawTarget (CDDrawSubMgrPages; Method_158ee0/158e90)
 //   BzLoader::m_data+14  == CDDrawSubMgrPages::m_backPair (CDDrawSurfacePair*)
 //   BzSink::m_notify+08  == m_8/m_childGroup (CDDrawChildGroup, vtbl 0x1efdc0);
 //                           its "OnLoaded" slot 10 (+0x28) IS WalkDispatch2C
@@ -131,7 +131,7 @@ SIZE_UNKNOWN(BzGameReg);
 // object IS the canonical CBootyState (<Gruntz/GameMode.h>): the booty members
 // (m_initGate/m_activation/m_trailSprites/m_visSprites/m_animSprites/m_stepIndex/...)
 // now live on CBootyState; the HUD message sink the toasts read at +0xc IS the
-// inherited CState::m_c holder (the canonical CSpriteFactoryHolder - the former
+// inherited CState::m_c holder (the canonical CDDrawSurfaceMgr - the former
 // BzSink view of it is dissolved, see the note above).
 // The overlay/tick bodies (BootyMessages.cpp, BootyWalkAnim.cpp) are real
 // CBootyState:: methods; RegisterMultiNamespaces folds onto CState::FadeInTitle

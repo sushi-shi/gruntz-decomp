@@ -1059,7 +1059,7 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
             obj->m_20 = this;
             obj->m_typeTag = id;
             // resolve the board tile under the object; latch on a 0x67/0x68 tile.
-            CGameLevel* level = g_gameReg->m_world->m_24;
+            CGameLevel* level = g_gameReg->m_world->m_level;
             i32 x = obj->m_08;
             i32 y = obj->m_0c;
             CLevelPlane* geo = level->m_mainPlane;

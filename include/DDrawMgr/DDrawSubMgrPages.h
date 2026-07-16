@@ -2,7 +2,7 @@
 #define GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H
 
 // DDrawSubMgrPages.h - THE single-source shape of CDDrawSubMgrPages, the DDraw
-// surface-manager child held at CDDrawSurfaceMgr+0x04 (m_pages). It owns the three
+// surface-manager child held at CDDrawSurfaceMgr+0x04 (m_drawTarget). It owns the three
 // front/back/overlay surface elements at +0x10/+0x14/+0x18 and back-points at the
 // root manager at +0x0c. Retail RTTI ??_7CDDrawSubMgrDraco @0x5efe08 (23 slots).
 //
@@ -15,12 +15,12 @@
 //     status-bar +0x04 / FxResource+0x04 / CLevelData+0x04.
 // PROVEN the same class: the WorkerMgr `this` uses the SAME +0x10/+0x14/+0x18
 // front/back/overlay layout and +0x0c parent back-pointer, and the game holds it at
-// CDDrawSurfaceMgr+0x04 (== m_pages). The old WorkerMgr view under-declared a 10-slot
+// CDDrawSurfaceMgr+0x04 (== m_drawTarget). The old WorkerMgr view under-declared a 10-slot
 // vtable; the real ??_7 @0x5efe08 carries 23 slots (dump below), so the missing
 // 13 slots are declared here.
 //
 // The +0x0c back-pointer (former WorkerMgr m_worker) is the ROOT CDDrawSurfaceMgr
-// (its m_lastError @+0x38, m_pages @+0x04 == this, m_childGroup @+0x08, m_flags
+// (its m_lastError @+0x38, m_drawTarget @+0x04 == this, m_childGroup @+0x08, m_flags
 // @+0x34); the "m_worker: CDDrawWorkerNode" naming was a mis-derived view (the
 // pointed-to object is the parent, not a standalone worker node) - not migrated.
 //

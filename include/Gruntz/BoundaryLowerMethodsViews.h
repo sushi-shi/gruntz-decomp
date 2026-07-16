@@ -41,7 +41,7 @@
 // BLOCKED - vtable-attributed but the home needs a base-model/conflict fix a follow-up
 // must do (each stays @early-stop in place):
 //   C112bf0  IS CCheckpointTriggerSwitchLogic::M (vtbl slot 3, thunk 0x36fc); home
-//                needs the grid-access chain (g_reg->m_world->m_24->m_5c ==
+//                needs the grid-access chain (g_reg->m_world->m_level->m_5c ==
 //                holder->CGameLevel->m_mainPlane, C77dc0's grid) modeled on the
 //                CheckpointSwitchBuild g_statzGameReg view + 0x24556c dual-view fold.
 //   C104dd0  this == an unmodeled +0x2c status-bar-sprite holder (CSBI_RectOnly's m_2c;

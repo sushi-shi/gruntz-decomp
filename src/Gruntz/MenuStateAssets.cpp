@@ -3,21 +3,21 @@
 #include <Bute/SymParser.h> // canonical CSymParser + CSymTab (ResolvePath @0x13c030/0x13bae0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (m_width/m_height extent)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (m_width/m_height extent)
 
 #include <rva.h>
-#include <Gruntz/GameRegistry.h> // canonical CSpriteFactoryHolder (this->m_c) + CGameRegistry
+#include <Gruntz/GameRegistry.h> // canonical CDDrawSurfaceMgr (this->m_c) + CGameRegistry
 #include <Gruntz/GameMode.h>     // canonical CMenuState : CState (the one true shape)
-#include <Gruntz/ResMgr.h>       // canonical CImageRegistry (this->m_c->m_10) + CDrawTarget
-#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (m_4 owner) + WAP32::CGameWnd (m_gameWnd)
-#include <Gruntz/ChatBox.h>      // canonical CChatBox (this->m_1b4 menu UI object)
-#include <Gruntz/LeafCue.h>      // canonical LeafCue (m_1bc/m_1b8 sound-cue map value)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CImageRegistry (this->m_c->m_imageRegistry) + CDDrawSubMgrPages
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (m_4 owner) + WAP32::CGameWnd (m_gameWnd)
+#include <Gruntz/ChatBox.h>   // canonical CChatBox (this->m_1b4 menu UI object)
+#include <Gruntz/LeafCue.h>   // canonical LeafCue (m_1bc/m_1b8 sound-cue map value)
 #include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (LeafCue::m_10 player; m_durationMs +0x28)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (HasKeyEqual_155550)
 // MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-
 // state asset loader.  Sibling of CHelpState::LoadAssets / GameLevelState loaders:
 // chains the base namespace loader, registers the "MENU" IMAGEZ+SOUNDZ namespaces
-// through the m_c->m_10 (vtable +0x48) / m_c->m_28 registries, primes the state
+// through the m_c->m_imageRegistry (vtable +0x48) / m_c->m_soundRegistry registries, primes the state
 // core (m_c->m_4 IsReady/Init), then heap-allocates the menu HUD object (CPtrList +
 // two CString members) and wires its MENU_CURSOR/SELECT/ACTIVATE/MENU keys + the
 // MENU_ACTIVATE / MENU_MENU sound cues.  The destructible CPtrList/CString members
@@ -26,7 +26,7 @@
 // Only offsets / code bytes are load-bearing; every engine callee is a reloc-
 // masked external (no body).
 
-// The image registry reached through this->m_c->m_10 is the canonical CImageRegistry
+// The image registry reached through this->m_c->m_imageRegistry is the canonical CImageRegistry
 // (<Gruntz/ResMgr.h>): non-virtual Has + the vtable-slot-18 (+0x48) Install. Shared,
 // so no local view.
 
@@ -45,14 +45,14 @@
 //                                    m_gameWnd (+0x04), whose m_hwnd (+0x04) is the
 //                                    HWND the menu layout is seeded with.
 //   * m_8  (CBankMgr)              - reached as CSymParser for ResolvePath.
-//   * m_c  (CSpriteFactoryHolder)  - the resource holder: m_drawTarget (+0x04) page
+//   * m_c  (CDDrawSurfaceMgr)  - the resource holder: m_drawTarget (+0x04) page
 //                                    pump, m_10 image registry, m_28 sound registry.
 //   * m_2c (CResSource)            - the registered STATEZ_MENU object.
 //   * m_1b4 (CChatBox)             - the heap menu-UI object this routine builds.
 
 // The global mgr singleton (*0x24556c): its resource holder's +0x28 sound registry
 // carries the shared cue map the MENU_MENU cue is resolved from. That holder slot
-// (CSpriteFactoryHolder::m_28) is a genuinely heterogeneous void* - other TUs view it
+// (CDDrawSurfaceMgr::m_28) is a genuinely heterogeneous void* - other TUs view it
 // as a sound-set (HbSndSet) or a mute gate - so it is cast to the sound-registry view
 // at this one use-site (the authentic proven-heterogeneous-slot cast).
 extern "C" CGameRegistry* g_gameReg; // *0x64556c canonical singleton (def: GruntzMgr.cpp)
@@ -71,13 +71,13 @@ i32 MenuCommit(CChatBox* obj, i32 idx); // 0x402fcc
 // The menu-region seeder's `this` record (0x182ab0) IS the CChatBox LoadAssets just
 // newed - now dissolved onto CChatBox::InitRegion (<Gruntz/ChatBox.h>). The three
 // canonical changes the old view was blocked on are all resolved in ChatBox.h now
-// (m_page is CSpriteFactoryHolder*, +0x08 is a real RECT m_rect8, m_wrapFlag is i32).
+// (m_page is CDDrawSurfaceMgr*, +0x08 is a real RECT m_rect8, m_wrapFlag is i32).
 
 // CMenuState is the canonical <Gruntz/GameMode.h> `CMenuState : CState`. The MENU
 // asset loader reaches the CState base region through the SAME facets the game-state
-// hierarchy documents (CState.h: the +0x04 owner and +0x0c CSpriteFactoryHolder holder are downcast
+// hierarchy documents (CState.h: the +0x04 owner and +0x0c CDDrawSurfaceMgr holder are downcast
 // to each TU's local facet views): m_4 (CGruntzMgr owner) -> MenuRoot cursor gate,
-// m_8 (CBankMgr) -> MenuRegSet, m_c (CSpriteFactoryHolder) -> MenuAssetMgr resource holder, m_2c
+// m_8 (CBankMgr) -> MenuRegSet, m_c (CDDrawSurfaceMgr) -> MenuAssetMgr resource holder, m_2c
 // (CResSource) -> the STATEZ_MENU MenuRegObj. m_1b4 (CGMMenuUI) is the heap MenuHudObj
 // the routine builds. Only offsets / code bytes are load-bearing.
 
@@ -105,26 +105,26 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    if (!((CDDrawWorkerRegistry*)m_c->m_10)->HasKeyEqual_155550("MENU")) {
+    if (!m_c->m_imageRegistry->HasKeyEqual_155550("MENU")) {
         void* set = SymTab2c()->ResolvePath("IMAGEZ");
         if (set == 0) {
             return 0;
         }
         g_resourceInstallActive = 1;
-        m_c->m_10->InstallTree(set, "MENU", "_");
+        m_c->m_imageRegistry->InstallTree(set, "MENU", "_");
         g_resourceInstallActive = 0;
     }
 
-    if (!((CDDrawSubMgrLeafScan*)m_c->m_28)->HasKeyEqual_1583c0("MENU")) {
+    if (!m_c->m_soundRegistry->HasKeyEqual_1583c0("MENU")) {
         void* set = SymTab2c()->ResolvePath("SOUNDZ");
         if (set == 0) {
             return 0;
         }
-        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)set, "MENU", "_");
+        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)set, "MENU", "_");
     }
 
-    if (!((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158d20()) {
-        if (!((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158cb0(0, 0x30000)) {
+    if (!m_c->m_drawTarget->Method_158d20()) {
+        if (!m_c->m_drawTarget->Method_158cb0(0, 0x30000)) {
             return 0;
         }
     }
@@ -151,9 +151,9 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     m_1b4->m_row1Key = "MENU_ACTIVATE";
 
     LeafCue* e;
-    ((CDDrawSubMgrLeafScan*)m_c->m_28)->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
+    m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
     if (e != 0) {
-        ((CDDrawSubMgrLeafScan*)m_c->m_28)->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
+        m_c->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
         m_1b8 = e->m_10->m_durationMs;
     } else {
         m_1b8 = 0;
@@ -164,7 +164,8 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     LeafCue* fm;
-    ((CDDrawSubMgrLeafScan*)g_gameReg->m_world->m_28)->m_10.Lookup("MENU_MENU", (void*&)fm);
+    ((CDDrawSubMgrLeafScan*)g_gameReg->m_world->m_soundRegistry)
+        ->m_10.Lookup("MENU_MENU", (void*&)fm);
     m_1bc = fm;
     return 1;
 }
@@ -172,9 +173,9 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
 // ---------------------------------------------------------------------------
 // The menu-region seeder (0x0182ab0). The three SOURCE-side views are gone: the retail
 // call proves the arg chain is entirely canonical classes -
-//   arg1 = CMenuState::m_c            -> CSpriteFactoryHolder (<Gruntz/GameRegistry.h>)
-//          holder->m_drawTarget       -> CDrawTarget          (<Gruntz/ResMgr.h>)
-//          drawTarget->m_10           -> CDrawTarget::SurfaceA (its +0x10/+0x14 pixel
+//   arg1 = CMenuState::m_c            -> CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>)
+//          holder->m_drawTarget       -> CDDrawSubMgrPages          (<Gruntz/ResMgr.h>)
+//          drawTarget->m_10           -> CDDrawSubMgrPages::SurfaceA (its +0x10/+0x14 pixel
 //                                        extent is now named there; see the disasm cited
 //                                        in ResMgr.h) - the default RECT is (0,0,w-1,h-1).
 //   arg2 = m_4->m_gameWnd->m_hwnd     -> the game window's HWND (WAP32::CGameWnd +0x04).
@@ -182,10 +183,10 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
 // The `this` IS the CChatBox LoadAssets just newed (retail `mov [esi+0x1b4],ecx` right
 // before `call 0x182ab0`, ecx unchanged) - now a real CChatBox method. Every store lands
 // on a CChatBox member (m_page/m_4/the m_rect8 RECT/m_18/m_1c/m_wrapFlag/m_activeNode);
-// the three ex-blockers (m_page CChatPage->CSpriteFactoryHolder, m_pad8->RECT, m_wrapFlag
+// the three ex-blockers (m_page CChatPage->CDDrawSurfaceMgr, m_pad8->RECT, m_wrapFlag
 // char->i32) are all resolved in ChatBox.h, so the ex MenuRegion view is dissolved.
 RVA(0x00182ab0, 0x7b)
-i32 CChatBox::InitRegion(CSpriteFactoryHolder* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
+i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
     if (!src) {
         return 0;
     }
@@ -201,8 +202,8 @@ i32 CChatBox::InitRegion(CSpriteFactoryHolder* src, i32 a, RECT* rc, i32 d, i32 
     }
     m_rect8.left = 0;
     m_rect8.top = 0;
-    m_rect8.right = src->m_drawTarget->m_10->m_width - 1;
-    m_rect8.bottom = src->m_drawTarget->m_10->m_height - 1;
+    m_rect8.right = src->m_drawTarget->m_frontPair->m_width - 1;
+    m_rect8.bottom = src->m_drawTarget->m_frontPair->m_height - 1;
     return 1;
 }
 

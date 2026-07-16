@@ -1,6 +1,6 @@
 // PlayPlaneScan.cpp - two CPlay per-frame plane-list sub-steps re-homed from
 // src/Stub/Discovered.cpp (trace-attributed to CPlay: this->m_view at +0xc is the
-// CSpriteFactoryHolder, m_view->m_renderer the renderer that owns the plane list, m_view->m_drawSurf the draw
+// CDDrawSurfaceMgr, m_view->m_renderer the renderer that owns the plane list, m_view->m_drawSurf the draw
 // surface). Both walk the renderer's embedded plane list (a CPtrList-style
 // {pNext,pPrev,data} node chain rooted at renderer+0x14) and dispatch on the
 // plane descriptor's type field (m_desc->m_typeId, a reloc-masked fn-ptr compare).
@@ -82,7 +82,7 @@ extern "C" {
 }
 
 // CPlay's plane-scan sub-objects live on the canonical CState/CPlay members,
-// reached through this TU's local facet views: m_c (+0x0c) is the CSpriteFactoryHolder the plane
+// reached through this TU's local facet views: m_c (+0x0c) is the CDDrawSurfaceMgr the plane
 // list hangs off; the guts sink at +0x2dc (m_guts) receives the extra pointer
 // insert, the begin-marker sink at +0x2e4 (m_beginMarker) the rebuilt records.
 
@@ -101,7 +101,7 @@ extern "C" {
 // struct-copy and array spellings both still hoist. All logic/relocs byte-match.
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
-    CSpriteFactoryHolder* v = m_c;
+    CDDrawSurfaceMgr* v = m_c;
     // retail null-tests the +0x10 list-facet address then walks its head node
     CObList* pl = &v->m_childGroup->m_list;
     if (pl == 0) {
@@ -152,7 +152,7 @@ i32 CPlay::ScanBuildTiles() {
             }
             p->m_flags |= 0x10000;
         } else if ((void*)vf == (void*)PlaneType_Covered) {
-            CGameLevel* ds = v->m_24;
+            CGameLevel* ds = v->m_level;
             i32 x = p->m_screenX;
             i32 y = p->m_screenY;
             if (x < 0) {
@@ -235,7 +235,7 @@ i32 CPlay::ScanBuildTiles() {
 // RNG-helper idiom is deferred to the final sweep.
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
-    CSpriteFactoryHolder* v = m_c;
+    CDDrawSurfaceMgr* v = m_c;
     // retail null-tests the +0x10 list-facet address then walks its head node
     CObList* pl = &v->m_childGroup->m_list;
     if (pl == 0) {

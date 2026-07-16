@@ -6,10 +6,10 @@
 //   0x1f6f0 = CMultiBootyState slot 8 (+0x20)  vtbl 0x5e9bdc  (InputVirtual / OnActivate2)
 // The two are CONFIRMED-distinct siblings over CState (<Gruntz/GameMode.h>). The old
 // per-TU CBootyState/CMultiBootyState views (with BootyAssetRoot @+0x0c, BootyRegistrar,
-// BootyNamespace @+0x2c/+0x28/+0x30) are folded away here onto the CState + CSpriteFactoryHolder facets:
-//   - m_c (+0x0c)  == CSpriteFactoryHolder (the shared render/resource context - see <Gruntz/View.h>).
-//     The +0x04 loader (was CGruntDataLoader::Load) is CSpriteFactoryHolder's m_renderState->Flush
-//     (0x158ee0); the +0x10 registrar (was BootyRegistrar::CallRegister) is CSpriteFactoryHolder's
+// BootyNamespace @+0x2c/+0x28/+0x30) are folded away here onto the CState + CDDrawSurfaceMgr facets:
+//   - m_c (+0x0c)  == CDDrawSurfaceMgr (the shared render/resource context - see <Gruntz/View.h>).
+//     The +0x04 loader (was CGruntDataLoader::Load) is CDDrawSurfaceMgr's m_renderState->Flush
+//     (0x158ee0); the +0x10 registrar (was BootyRegistrar::CallRegister) is CDDrawSurfaceMgr's
 //     m_imageRegistry->LoadNamespace (vtable slot +0x4c).
 //   - the +0x2c/+0x28/+0x30 asset sources (were BootyNamespace) are CState::m_2c /
 //     m_levelBank / m_gruntzBank (CResSource; LookupSet == the old Lookup, 0x13bae0).
@@ -24,21 +24,21 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (Booty/MultiBooty ReleaseResources)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // RemoveKeysEqual_155360 (CBootyState::ReleaseResources)
 #include <DDrawMgr/DDSurface.h> // CMultiBootyState::Render: CDDSurface Flip/BltFast on the frame surfaces
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <Mfc.h>   // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 #include <ddraw.h> // CMultiBootyState::Render: real IDirectDrawSurface::IsLost dispatch (slot 24)
 #include <math.h>  // sin/cos (StepGlitterAnim sine spiral)
 
 #include <rva.h>
 #include <Gruntz/BankMgr.h> // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
-#include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CSpriteFactoryHolder facet
+#include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CDDrawSurfaceMgr facet
 #include <Gruntz/GruntzMgr.h>         // CMultiBootyState::Render: CState::m_4 owner (ReportError)
-#include <DDrawMgr/DDrawChildGroup.h> // CMultiBootyState::Render: m_c->m_8 frame-worker slots 9/10
+#include <DDrawMgr/DDrawChildGroup.h> // CMultiBootyState::Render: m_c->m_childGroup frame-worker slots 9/10
 #include <Gruntz/LeafCue.h>           // LeafCue (Booty/MultiBooty FrameSlot28 BOOTY_LOOP cue)
 #include <Gruntz/UserLogic.h>   // CGameObject (glitter/letter sprites; StepGlitterAnim/BuildWarp)
 #include <Gruntz/BattlezData.h> // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
 #include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder / CSndHost (CState::m_c draw+cue context)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CSndHost (CState::m_c draw+cue context)
 #include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 // (FadeInTitle @0xfa1f0 and RetireScene @0xfa8f0 are now CState base methods via
 //  <Gruntz/State.h>, called cast-free on the CBootyState/CMultiBootyState `this`.)
@@ -148,14 +148,14 @@ static const double kGlitterStartRadius = 350.0; // was g_5e93c8
 // (m_10) releases two named sprite sets. Also reached directly from ~CBootyState.
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
-    SoundStream* r = m_c->m_28->m_2c; // CSndHost::m_2c is already the real SoundStream*
+    SoundStream* r = m_c->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
-    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
-    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
-    ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("BOOTY", "_");
-    ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
+    m_c->m_soundRegistry->RemoveKeysEqual_157c70("BOOTY", "_");
+    m_c->m_soundRegistry->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
+    m_c->m_imageRegistry->RemoveKeysEqual_155360("BOOTY", "_");
+    m_c->m_imageRegistry->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
@@ -166,7 +166,7 @@ void CBootyState::ReleaseResources() {
 // enabled by g_sndEnabled) re-trigger it on a rate-limited timer keyed off the
 // g_killCueClock frame counter vs the entry's last-played stamp + interval.
 // @early-stop
-// regalloc wall (~95%): retail holds `set` (reg->m_world->m_28) in eax and the play entry
+// regalloc wall (~95%): retail holds `set` (reg->m_world->m_soundRegistry) in eax and the play entry
 // `res` live in eax with no reload; the /O2 recompile pins `set` in ecx and spills/reloads
 // `res` at the Play call. Logic + all externs/strings named/folded.
 RVA(0x00018d30, 0xcd)
@@ -176,11 +176,11 @@ i32 CBootyState::Vslot09(i32) {
     if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) { // 0xfa1f0 (CState base method)
         return 0;
     }
-    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
+    m_c->m_drawTarget->Method_158ee0();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     CGruntzMgr* reg = g_gameReg;
-    CSndHost* set = reg->m_world->m_28;
+    CSndHost* set = reg->m_world->m_soundRegistry;
     i32 token = reg->m_soundVolume; // +0x11c (the ambient sound token this facet reads)
     if (set->m_emitGate == 0) {
         LeafCue* res = 0;
@@ -208,13 +208,16 @@ i32 CBootyState::Vslot09(i32) {
 RVA(0x00018e40, 0x81)
 i32 CBootyState::FrameSlot28(i32) {
     void* obj = 0;
-    m_c->m_28->m_10.Lookup("BOOTY_LOOP", obj); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
+    m_c->m_soundRegistry->m_10.Lookup(
+        "BOOTY_LOOP",
+        obj
+    ); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
     LeafCue* found = (LeafCue*)obj;
     if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
         ((DirectSoundMgr*)found->m_10)->CloneAndPlay(0, 0x1f4, 1);
         while (((DirectSoundMgr*)found->m_10)->IsPlaying()) {
-            if (m_c->m_28->m_2c != 0) {
-                m_c->m_28->m_2c->PurgeVoiceList(-1);
+            if (m_c->m_soundRegistry->m_2c != 0) {
+                m_c->m_soundRegistry->m_2c->PurgeVoiceList(-1);
             }
         }
     }
@@ -223,7 +226,7 @@ i32 CBootyState::FrameSlot28(i32) {
 
 // CBootyState::BuildWarpStoneGlitterAnimation (0x19540): build 4 "DoNothing" warp-
 // letter animations through the glitter factory (g_gameReg viewed as CGlitterMgr:
-// m_world->m_8), stash them in the +0x1ec sprite array, set/clear their active bit, then
+// m_world->m_childGroup), stash them in the +0x1ec sprite array, set/clear their active bit, then
 // build the trailing "SimpleAnimation" glitter sprite.
 // RE-HOMED from CMultiBootyState, which is a SIBLING of CBootyState (both derive from
 // CState) - so it could never have been called, as it is, on a CBootyState's own `this`.
@@ -243,7 +246,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     m_scratchX = 0;
     m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
-        CGameObject* a = g_gameReg->m_world->m_8
+        CGameObject* a = g_gameReg->m_world->m_childGroup
                              ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
@@ -255,7 +258,8 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     for (i32 k = 0; k <= m_letterIdx; k++) {
         slot[k]->m_stateFlags &= ~1;
     }
-    CGameObject* g = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 4, "SimpleAnimation", 3);
+    CGameObject* g =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 4, "SimpleAnimation", 3);
     m_cursorLetter = g;
     if (g == 0) {
         return 0;
@@ -430,9 +434,9 @@ i32 CBootyState::CheckPerfectBonus() {
     CGameObject* st = m_bootyPerfectSprite;
     i32 phase = st->m_screenX;
     if (phase == (i32)0xffffff7e) {
-        CSpriteFactoryHolder* host = g_gameReg->m_world;
+        CDDrawSurfaceMgr* host = g_gameReg->m_world;
         i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
-        CSndHost* m28 = host->m_28;
+        CSndHost* m28 = host->m_soundRegistry;
         if (m28->m_emitGate == 0) {
             void* found = 0;
             m28->m_10.Lookup("BOOTY_PERFECT", found); // ::CMapStringToPtr::Lookup @0x1b8438
@@ -518,11 +522,11 @@ void CBootyState::StateOnEnter() {}
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    SoundStream* r = m_c->m_28->m_2c; // CSndHost::m_2c is already the real SoundStream*
+    SoundStream* r = m_c->m_soundRegistry->m_2c; // CSndHost::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
-    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
+    m_c->m_soundRegistry->RemoveKeysEqual_157c70("BOOTY", "_");
     // m_4 (CState::m_4) IS the CGruntzMgr singleton; the sub-object it tears down here is
     // its +0x60 slot. GruntzMgr.h types that slot TimerObj* (m_timer) while this teardown
     // runs ~CMoviePlayer on it - a real substance divergence on ONE field, flagged (the
@@ -540,12 +544,12 @@ i32 CMultiBootyState::Vslot09(i32) {
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
+    m_c->m_drawTarget->Method_158ee0();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
-    CSpriteFactoryHolder* host = g_gameReg->m_world;
+    CDDrawSurfaceMgr* host = g_gameReg->m_world;
     i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
-    CSndHost* m28 = host->m_28;
+    CSndHost* m28 = host->m_soundRegistry;
     if (m28->m_emitGate == 0) {
         void* found = 0;
         m28->m_10.Lookup("BOOTY_LOOP", found); // ::CMapStringToPtr::Lookup @0x1b8438
@@ -568,13 +572,16 @@ i32 CMultiBootyState::Vslot09(i32) {
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::FrameSlot28(i32) {
     void* obj = 0;
-    m_c->m_28->m_10.Lookup("BOOTY_LOOP", obj); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
+    m_c->m_soundRegistry->m_10.Lookup(
+        "BOOTY_LOOP",
+        obj
+    ); // CSndHost::m_10 (::CMapStringToPtr @0x1b8438)
     LeafCue* found = (LeafCue*)obj;
     if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
         ((DirectSoundMgr*)found->m_10)->CloneAndPlay(0, 0x1f4, 1);
         while (((DirectSoundMgr*)found->m_10)->IsPlaying()) {
-            if (m_c->m_28->m_2c != 0) {
-                m_c->m_28->m_2c->PurgeVoiceList(-1);
+            if (m_c->m_soundRegistry->m_2c != 0) {
+                m_c->m_soundRegistry->m_2c->PurgeVoiceList(-1);
             }
         }
     }
@@ -659,7 +666,7 @@ RECT g_labelRects[7] = {
 // SumWinRow (0x1230) folds the win-row totals for a player.
 //
 // The CBattleStatsView view is GONE: its only field was `void* m_c` at +0x0c, which is
-// CState::m_c (the CSpriteFactoryHolder draw context) at the SAME offset, and both call
+// CState::m_c (the CDDrawSurfaceMgr draw context) at the SAME offset, and both call
 // sites (CMultiBootyState::Render @0x1f480 and ::InputVirtual @0x1f6f0, in this TU) invoke
 // 0x1ed30 with `mov ecx,this` on their own CMultiBootyState `this` - no this-adjustment, no
 // other caller anywhere (`sema xref 0x1ed30` finds only its ILT thunk). So DrawBattleStats
@@ -846,7 +853,7 @@ void CMultiBootyState::DrawBattleStats() {
 // the target, and purge finished sound voices. /GX (the CString temp).
 RVA(0x0001f480, 0x1e9)
 i32 CMultiBootyState::Render() {
-    IDirectDrawSurface* frameSurf = m_c->m_drawTarget->m_10->m_surface->m_8;
+    IDirectDrawSurface* frameSurf = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (frameSurf == 0 || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_4->ReportError(0x8006, 0x459);
@@ -857,8 +864,8 @@ i32 CMultiBootyState::Render() {
         DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
         m_1b8 = 0xc7;
     }
-    m_c->m_8->TickKillCues_159a70(1);
-    m_c->m_8->WalkDispatch2C(m_c->m_drawTarget->m_14);
+    m_c->m_childGroup->TickKillCues_159a70(1);
+    m_c->m_childGroup->WalkDispatch2C(m_c->m_drawTarget->m_backPair);
 
     // +0x7c->+0x10: the booty countdown's elapsed-millisecond source. The SAME field the
     // battlez scoreboard reads as its score accumulator (CBattlezData::m_score) - one
@@ -874,11 +881,12 @@ i32 CMultiBootyState::Render() {
     }
     ShowHudMessageAlt((HudMsgSink*)m_c, (i32)&s, (i32)&rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 
-    CDrawTarget* dt = m_c->m_drawTarget;
-    dt->m_10->m_surface->Flip(0);
-    dt->m_14->m_surface->BltFast(0, 0, dt->m_18->m_surface, &dt->m_18->m_srcRect, 0x10);
-    if (m_c->m_28->m_2c != 0) {
-        m_c->m_28->m_2c->PurgeVoiceList(-1); // SoundDevice base method (inherited)
+    CDDrawSubMgrPages* dt = m_c->m_drawTarget;
+    dt->m_frontPair->m_surface->Flip(0);
+    dt->m_backPair->m_surface
+        ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
+    if (m_c->m_soundRegistry->m_2c != 0) {
+        m_c->m_soundRegistry->m_2c->PurgeVoiceList(-1); // SoundDevice base method (inherited)
     }
     return 1;
 }
@@ -886,7 +894,7 @@ i32 CMultiBootyState::Render() {
 // ---------------------------------------------------------------------------
 // CMultiBootyState::InputVirtual (slot 8, 0x1f6f0) - on state activation: chain the base
 // image-load gate, hide the cursor, resolve+register the BOOTY/GRUNTZ/LEVEL "IMAGEZ" sets
-// through the CSpriteFactoryHolder image registry (LoadNamespace +0x4c), fade in the "multi" title, run
+// through the CDDrawSurfaceMgr image registry (LoadNamespace +0x4c), fade in the "multi" title, run
 // the post-activate hook, then kick the render worker apply + the page timer.
 RVA(0x0001f6f0, 0x10b)
 i32 CMultiBootyState::InputVirtual() {
@@ -901,7 +909,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    CImageRegistry* reg = m_c->m_10;
+    CImageRegistry* reg = m_c->m_imageRegistry;
     if (reg->LoadNamespace(tree, "BOOTY", "_") == -1) {
         return 0;
     }
@@ -910,7 +918,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    reg = m_c->m_10;
+    reg = m_c->m_imageRegistry;
     if (reg->LoadNamespace(tree, "GRUNTZ", "_") == -1) {
         return 0;
     }
@@ -919,7 +927,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    reg = m_c->m_10;
+    reg = m_c->m_imageRegistry;
     if (reg->LoadNamespace(tree, "LEVEL", "_") == -1) {
         return 0;
     }
@@ -929,7 +937,7 @@ i32 CMultiBootyState::InputVirtual() {
     }
 
     DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
-    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
+    m_c->m_drawTarget->Method_158ee0();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     return 1;
 }

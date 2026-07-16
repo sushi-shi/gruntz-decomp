@@ -29,7 +29,7 @@ class CLightFx; // folded CProjShadowActivate
 // The animation sub-object embedded in a render object at +0x1a0. It bridges the two
 // (The former CProjAnim / CProjSpriteMgr / CProjResMgr / CProjRenderObj views are
 // ARE canonical CGameObjects (<Gruntz/UserLogic.h>) - m_08==m_flags, m_c==m_0c
-// (the CDDrawSurfaceMgr; the frame map is m_0c->m_leaf->m_10, the mfc_class-proven
+// (the CDDrawSurfaceMgr; the frame map is m_0c->m_animRegistry->m_10, the mfc_class-proven
 // CMapStringToPtr band 0x1b8438), m_40==m_stateFlags, m_5c/m_60==m_screenX/Y,
 // +0x1a0 the embedded CAniAdvanceCursor (SetGeometry==Setup_15c2d0, Advance
 // @0x15c360), m_1b4==m_1a0.m_14 and the +0x1c0/+0x1c8 gates its m_20/m_28.)

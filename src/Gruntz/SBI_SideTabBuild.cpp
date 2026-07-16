@@ -39,7 +39,7 @@ i32 CStatzTabBuilder::Build() {
         // cross-cast of a CStatzTabBuilder to an unrelated class.
         i32 ok = newobj->BuildStatzTabStatusBar(
             this,
-            (CSpriteFactoryHolder*)g_gameReg->m_world,
+            g_gameReg->m_world,
             i + 0xb,
             0,
             geomBase,

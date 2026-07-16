@@ -37,7 +37,7 @@ i32 CUFO::Tick() {
 // @source: rtti-vptr
 // @early-stop
 // dead-spill frame-size wall (~81%): logic/offsets/CFG/the spotlight loop/CreateSprite
-// arg marshaling all match retail (registry path is the canonical m_world->m_8, byte-
+// arg marshaling all match retail (registry path is the canonical m_world->m_childGroup, byte-
 // verified against 0x000b4a90). The single non-steerable /O2 residue: retail loads
 // sy = o->m_screenY and spills it to [esp+0x30] but NEVER reloads it - a DEAD load+spill
 // MSVC5 keeps in retail yet our recompile (same compiler) DCEs, so retail's frame
@@ -53,7 +53,8 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CGameObject* sl = g_gameReg->m_world->m_8->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
+        CGameObject* sl =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
         if (sl != 0) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
             AnimWorkerObj* sub = sl->m_7c;

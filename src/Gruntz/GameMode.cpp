@@ -16,17 +16,19 @@
 //   CState::LevelMsgHudDriver @0x01a700 - the per-frame level-message HUD + explosion driver.
 //   CGameModeBase::ResetPreview @0x0de140 (@interleaver -> levelpreview) / ::Reset
 //     @0x0f9840 (@interleaver -> scattered COMDAT) - the base cleanup pair, out-of-line.
+#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
 #include <Gruntz/SoundState.h>            // g_sndEnabled/g_sndCueTag
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (CGameModeBase::ResetPreview)
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
-#include <Gruntz/GameMode.h>              // CState / CGameModeBase / CSpriteFactoryHolder
+#include <Gruntz/GameMode.h>              // CState / CGameModeBase / CDDrawSurfaceMgr
 #include <Bute/ButeMgr.h>                 // CButeMgr g_buteMgr (SecretColor wormhole tint)
-#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (m_world->m_8 CreateSprite)
+#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (m_world->m_childGroup CreateSprite)
 #include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
 #include <Gruntz/WwdGameReg.h>            // g_gameReg (GenMenuRandPos Rand/RandRange)
-#include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (the real m_world class)
-#include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_8 factory)
+#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (the real m_world class)
+#include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_childGroup factory)
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
 #include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed + m_10/m_14/m_18)
 #include <rva.h>
@@ -147,7 +149,7 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 // ===========================================================================
 // CState::LoadGruntEffectSprites (0x1a040): preload the in-game effect/icon animation
 // set. Really a CPlay-layout method (the trace homed it on the CState base); it walks
-// the g_gameReg->m_world->m_8 SimpleAnimation factory and stores ~15 named effect
+// the g_gameReg->m_world->m_childGroup SimpleAnimation factory and stores ~15 named effect
 // sprites into the +0x2fc.. block plus three parallel 8-element sprite arrays at
 // +0x224/+0x244/+0x264, positioned from the geometry table.
 // @confidence: med
@@ -171,9 +173,9 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (img == 0) {
         return 0;
     }
-    m_c->m_10->InstallTree(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
+    m_c->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
-    CDDrawChildGroup* f = g_gameReg->m_world->m_8;
+    CDDrawChildGroup* f = g_gameReg->m_world->m_childGroup;
 
     CGameObject* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[0] = sw;
@@ -184,7 +186,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[0]->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_icons[0]->m_stateFlags |= 1;
 
-    CGameObject* wh = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* wh =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[7] = wh;
     if (wh == 0) {
         return 0;
@@ -198,7 +201,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     p318->m_drawFillCmd = 7;
     p318->m_drawFillArg = tint;
 
-    CGameObject* ex = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* ex =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[1] = ex;
     if (ex == 0) {
         return 0;
@@ -211,7 +215,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     p300->m_drawFillArg = handleA;
     m_icons[1]->m_stateFlags |= 1;
 
-    CGameObject* dt = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* dt =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[2] = dt;
     if (dt == 0) {
         return 0;
@@ -224,7 +229,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     p304->m_drawFillArg = handleA;
     m_icons[2]->m_stateFlags |= 1;
 
-    CGameObject* gl = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* gl =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[3] = gl;
     if (gl == 0) {
         return 0;
@@ -237,7 +243,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     p308->m_drawFillArg = handleA;
     m_icons[3]->m_stateFlags |= 1;
 
-    CGameObject* bb = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* bb =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[4] = bb;
     if (bb == 0) {
         return 0;
@@ -250,7 +257,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     p30c->m_drawFillArg = handleA;
     m_icons[4]->m_stateFlags |= 1;
 
-    CGameObject* rz = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* rz =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[5] = rz;
     if (rz == 0) {
         return 0;
@@ -263,7 +271,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     p310->m_drawFillArg = handleA;
     m_icons[5]->m_stateFlags |= 1;
 
-    CGameObject* cn = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* cn =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[6] = cn;
     if (cn == 0) {
         return 0;
@@ -280,7 +289,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
     // parallel array walks + the geom walk into single induction pointers.
     for (i32 i = 0; i < 8; i++) {
-        CGameObject* b = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* b =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_bomb[i] = b;
         if (b == 0) {
             return 0;
@@ -295,7 +305,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
         m_bomb[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
         m_bomb[i]->m_stateFlags |= 1;
 
-        CGameObject* e = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* e =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_expl[i] = e;
         if (e == 0) {
             return 0;
@@ -303,7 +314,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
         e->ApplyName("GAME_EXPLOSION");
         m_expl[i]->m_stateFlags |= 1;
 
-        CGameObject* g = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* g =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         m_gokart[i] = g;
         if (g == 0) {
             return 0;
@@ -365,7 +377,7 @@ extern "C" u32 g_killCueClock;       // 0x6bf3c0
 // sink (m_c). FormatHudText (0x1af70, shared with CMenuState; called on this): fill the
 // CString with the slot's formatted stat line. Both external, reloc-masked.
 extern void ShowHudMessage(
-    CSpriteFactoryHolder* sink,
+    CDDrawSurfaceMgr* sink,
     RECT* box,
     CString* text,
     i32 a,
@@ -428,7 +440,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                 if (shown == 0) {
                     // the +0x30 holder cast to its REAL class (this TU's g_gameReg is
                     // the WwdGameReg facet whose m_world is still a glitter-view type)
-                    CSndHost* host = ((CSpriteFactoryHolder*)g_gameReg->m_world)->m_28;
+                    CSndHost* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* cue_ob = 0;
                         host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
@@ -496,7 +508,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_bomb[i]->m_stateFlags |= 1;
             m_gokart[i]->m_stateFlags |= 1;
             m_slot++;
-            CSndHost* host = ((CSpriteFactoryHolder*)g_gameReg->m_world)->m_28;
+            CSndHost* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 void* cue_ob = 0;
                 host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
@@ -528,7 +540,7 @@ i32 CBootyState::LevelMsgHudDriver() {
 // ===========================================================================
 // CGameModeBase cleanup pair (the base the game-state classes chain their teardown to).
 // Stop the owned sound (SoundStream::Stop), clear/prune the sub-manager map, then
-// BaseCleanup. m_c->m_28 is re-read each statement (retail does not cache it).
+// BaseCleanup. m_c->m_soundRegistry is re-read each statement (retail does not cache it).
 // ===========================================================================
 
 // 0x0de140 - ResetPreview: prune the PREVIEW-prefixed keys instead of clearing.
@@ -543,10 +555,10 @@ i32 CBootyState::LevelMsgHudDriver() {
 extern char s_PREVIEW_6135e8[]; // "PREVIEW" (bound in Globals.cpp; reloc-masked)
 RVA(0x000de140, 0x33)
 void CGameModeBase::ResetPreview() {
-    if (m_c->m_28->m_2c != 0) {
-        ((SoundStream*)m_c->m_28->m_2c)->Stop();
+    if (m_c->m_soundRegistry->m_2c != 0) {
+        ((SoundStream*)m_c->m_soundRegistry->m_2c)->Stop();
     }
-    m_c->m_28->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
+    m_c->m_soundRegistry->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
     BaseCleanup();
 }
 
@@ -560,9 +572,9 @@ void CGameModeBase::ResetPreview() {
 // ~98.7% - same m_28-intermediate regalloc wall as ResetPreview.
 RVA(0x000f9840, 0x29)
 void CGameModeBase::Reset() {
-    if (m_c->m_28->m_2c != 0) {
-        ((SoundStream*)m_c->m_28->m_2c)->Stop();
+    if (m_c->m_soundRegistry->m_2c != 0) {
+        ((SoundStream*)m_c->m_soundRegistry->m_2c)->Stop();
     }
-    m_c->m_28->ClearMap();
+    m_c->m_soundRegistry->ClearMap();
     BaseCleanup();
 }

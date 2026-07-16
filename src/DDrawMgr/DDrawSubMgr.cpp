@@ -1635,7 +1635,7 @@ void CDDrawSubMgrPages::Method_158b90() {
     m_frontPair->m_surface->Flip(0);
     CDDrawSurfaceMgr* n = m_0c;
     CDDrawChildGroup* c = n->m_childGroup;
-    CDDrawSubMgrPages* s = n->m_pages;
+    CDDrawSubMgrPages* s = n->m_drawTarget;
     c->WalkDispatch30((i32)s->m_backPair, (i32)s->m_overlayPair);
 }
 

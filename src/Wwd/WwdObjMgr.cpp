@@ -16,8 +16,8 @@
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
 
-#include <DDrawMgr/DDrawChildGroup.h>  // the shared object-collection manager class
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_pages->m_backPair)
+#include <DDrawMgr/DDrawChildGroup.h> // the shared object-collection manager class
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_drawTarget->m_backPair)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (level reader, Read @+0x2c)
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_map2c/m_map48 layout)
 #include <Globals.h>
@@ -37,7 +37,7 @@
                                        // BoxesOverlap_15a130 tests (was the CWwdBox view)
 #include <Wwd/WwdFile.h>               // CPlaneRender (m_parent->m_24->m_5c world transform)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (DrawCount - ex the DrawHost_164380 view)
-#include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_resolveSubMgr) + CLevelPlane
+#include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_level) + CLevelPlane
 #include <Win32.h>                     // SetRect + RECT
 
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
@@ -136,7 +136,7 @@ void CDDrawChildGroup::ForwardTo3C() {
 // destructor, then RemoveAll the +0x10 list and the +0x2c / +0x48 collections.
 RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
-    CGameLevel* p = m_parent->m_resolveSubMgr;
+    CGameLevel* p = m_parent->m_level;
     if (p != 0) {
         // m_mainPlane IS the plane/grid-owner CDDrawWorkerHost (the plane-family
         // unification: slots 9/10 of ??_7CDDrawWorkerHost are CLevelPlane methods).
@@ -903,8 +903,8 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
         return;
     }
     CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
-    CDDrawSurfacePair* drawHost = m_parent->m_pages->m_backPair;
-    CPlaneRender* view = (CPlaneRender*)m_parent->m_resolveSubMgr->m_mainPlane;
+    CDDrawSurfacePair* drawHost = m_parent->m_drawTarget->m_backPair;
+    CPlaneRender* view = (CPlaneRender*)m_parent->m_level->m_mainPlane;
     if (node == 0) {
         return;
     }

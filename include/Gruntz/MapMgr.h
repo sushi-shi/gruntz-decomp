@@ -37,7 +37,7 @@
 // pointers only here, so a forward declaration is all the fold needs).
 struct BrickzCell;
 struct BrickzNode;
-struct CSpriteFactoryHolder; // the +0x78 world/asset holder (ex the BrickzAttrMgr view)
+class CDDrawSurfaceMgr; // the +0x78 world/asset holder (ex the BrickzAttrMgr view)
 struct tagRECT;
 
 // The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
@@ -234,14 +234,14 @@ public:
     // (This header is included tree-wide and deliberately does NOT pull windows.h, so the
     // rect stays spelled as its four edges; the Win32 IntersectRect / rect-assign sites
     // reinterpret &m_originX as the RECT* it authentically is.)
-    i32 m_originX;                   // +0x60  bound rect left   (grid origin x)
-    i32 m_originY;                   // +0x64  bound rect top    (grid origin y)
-    i32 m_boundRight;                // +0x68  bound rect right
-    i32 m_boundBottom;               // +0x6c bound rect bottom
-    i32 m_gridW;                     // +0x70  clipped grid width extent (cells)
-    i32 m_gridH;                     // +0x74  clipped grid height extent (cells)
-    CSpriteFactoryHolder* m_attrMgr; // +0x78  the world/asset holder (its m_24 is the
-                                     //        CGameLevel; ex the BrickzAttrMgr view)
+    i32 m_originX;               // +0x60  bound rect left   (grid origin x)
+    i32 m_originY;               // +0x64  bound rect top    (grid origin y)
+    i32 m_boundRight;            // +0x68  bound rect right
+    i32 m_boundBottom;           // +0x6c bound rect bottom
+    i32 m_gridW;                 // +0x70  clipped grid width extent (cells)
+    i32 m_gridH;                 // +0x74  clipped grid height extent (cells)
+    CDDrawSurfaceMgr* m_attrMgr; // +0x78  the world/asset holder (its m_24 is the
+                                 //        CGameLevel; ex the BrickzAttrMgr view)
 };
 
 // CBrickzGrid IS this class - RTTI .?AVCMapMgr@@ (vtable 0x1ea3b4), proven three ways:

@@ -14,7 +14,7 @@
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
 #include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
 #include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr (ex the CGruntTileMgr view)
-#include <Gruntz/GameLevel.h>  // canonical CGameLevel (m_world->m_24) + CLevelPlane visible rect
+#include <Gruntz/GameLevel.h>  // canonical CGameLevel (m_world->m_level) + CLevelPlane visible rect
 #include <Wap32/ZVec.h>
 #include <Ints.h>
 #include <string.h> // inline strcmp of the grunt type name
@@ -372,7 +372,7 @@ L_ed006:
         goto L_ed153;
     }
     if (m_390 != 0) {
-        CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
+        CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX;
         i32 x = m_10->m_screenX;
         i32 y = m_10->m_screenY;
         if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
@@ -573,7 +573,7 @@ i32 CGrunt::WanderStep() {
                             m_arrivalRow = g->m_tileOwnerLo;
                             m_defenderState = 1;
                             if (GruntPointVisible(
-                                    (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
+                                    (i32)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
                                     m_10->m_screenX,
                                     m_10->m_screenY
                                 )
@@ -1009,7 +1009,7 @@ i32 CGrunt::UpdateArrival() {
                             this->m_arrivalRow = g->m_tileOwnerLo;
                             this->m_defenderState = 1;
                             i32 r = GruntPointVisible(
-                                (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
+                                (i32)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
                                 this->m_10->m_screenX,
                                 this->m_10->m_screenY
                             );
@@ -1257,7 +1257,7 @@ L_ed006b:
                 i32 x = m_10->m_screenX;
                 i32 y = m_10->m_screenY;
                 if (GruntPointVisible(
-                        (i32)((CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX),
+                        (i32)((CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
                         x,
                         y
                     )
@@ -1602,7 +1602,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 i32 x = h->m_screenX;
                 i32 y = h->m_screenY;
                 i32* rect =
-                    &g_gameReg->m_world->m_24->m_mainPlane->m_originX; // the +0x40 visible rect
+                    &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
                 if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
@@ -2058,7 +2058,7 @@ i32 CGrunt::ArrivalScanC() {
     if (TileSwitch(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
         != 0) {
         if (m_390 != 0) {
-            CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
+            CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX;
             i32 x = m_10->m_screenX;
             i32 y = m_10->m_screenY;
             if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
@@ -2329,7 +2329,7 @@ state0: {
         goto common;
     }
     if (GruntPointVisible(
-            (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
+            (i32)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
             m_10->m_screenX,
             m_10->m_screenY
         )
@@ -2535,7 +2535,8 @@ i32 CGrunt::SeekTarget() {
                     != 0) {
                     i32 by = this->m_10->m_screenY;
                     i32 bx = this->m_10->m_screenX;
-                    CCueRect* board = (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
+                    CCueRect* board =
+                        (CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX;
                     if (bx < board->right && board->left <= bx && by < board->bottom
                         && board->top <= by) {
                         g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
@@ -2639,7 +2640,7 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_390 != 0) {
             i32 r = GruntPointVisible(
-                (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
+                (i32)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
                 this->m_10->m_screenX,
                 this->m_10->m_screenY
             );

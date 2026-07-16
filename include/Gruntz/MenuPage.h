@@ -38,10 +38,10 @@
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItem2.h>
 
-// The owning menu system (catalog holder) IS the canonical CSpriteFactoryHolder
+// The owning menu system (catalog holder) IS the canonical CDDrawSurfaceMgr
 // (== CState::m_c / CChatBox::m_page; GameRegistry.h): the catalog is its +0x10
 // m_10 CImageRegistry, whose +0x10 m_10map is the name->page CMapStringToOb.
-struct CSpriteFactoryHolder;
+class CDDrawSurfaceMgr;
 class CChatBox; // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
 
 class CMenuPage {
@@ -93,26 +93,26 @@ public:
     i32 SelectFwd2();        // 0x184230  /GX  m_focus GetField4c -> FindByName
     i32 SelectBack2();       // 0x184310  /GX  m_focus GetField50 -> FindByName
 
-    CSpriteFactoryHolder* m_owner; // +0x00 owning holder (catalog via ->m_10->m_10map)
-    CChatBox* m_host;     // +0x04 render host (Draw/ReplaceNode/ScrollRow1; wrap flag @+0x20)
-    CString m_switchKey;  // +0x08 page-switch target key (Switch -> host SwitchToPage)
-    CString m_key;        // +0x0c this page/item key (GetKey)
-    CString m_focusName;  // +0x10 saved focus item name (RestoreFocus)
-    CPtrList m_items;     // +0x14 child items (m_pNodeHead @+0x18; node {next,prev,data@+8})
-    i32 m_flags;          // +0x30 flag bits: 0x1 wrap-on, 0x2 wrap-off, 0x4 grid, 0x8 no-draw
-    i32 m_rectLeft;       // +0x34  page rect (block-copied from template +0x8): left
-    i32 m_rectTop;        // +0x38  top (initial y = m_offsetY + m_rectTop)
-    i32 m_rectRight;      // +0x3c  right (x center = (right-left+1)/2 + m_offsetX + left)
-    i32 m_rectBottom;     // +0x40  bottom
-    i32 m_headGap;        // +0x44  gap after sub-page head item (template +0x18)
-    i32 m_rowSpacing;     // +0x48  per-item vertical advance (template +0x1c)
-    i32 m_colWidth;       // +0x4c  column width (grid wrap step)
-    i32 m_rowsPerCol;     // +0x50  rows per column / focus stride
-    i32 m_colOffset;      // +0x54  column x-offset
-    i32 m_offsetX;        // +0x58  layout x-offset (added to centered column x)
-    i32 m_offsetY;        // +0x5c  layout y-offset (added to initial row y)
-    CMenuPage* m_subPage; // +0x60 sub-page/name-cache (catalog Lookup result)
-    CMenuItem* m_focus;   // +0x64 current focused child item
+    CDDrawSurfaceMgr* m_owner; // +0x00 owning holder (catalog via ->m_10->m_10map)
+    CChatBox* m_host;          // +0x04 render host (Draw/ReplaceNode/ScrollRow1; wrap flag @+0x20)
+    CString m_switchKey;       // +0x08 page-switch target key (Switch -> host SwitchToPage)
+    CString m_key;             // +0x0c this page/item key (GetKey)
+    CString m_focusName;       // +0x10 saved focus item name (RestoreFocus)
+    CPtrList m_items;          // +0x14 child items (m_pNodeHead @+0x18; node {next,prev,data@+8})
+    i32 m_flags;               // +0x30 flag bits: 0x1 wrap-on, 0x2 wrap-off, 0x4 grid, 0x8 no-draw
+    i32 m_rectLeft;            // +0x34  page rect (block-copied from template +0x8): left
+    i32 m_rectTop;             // +0x38  top (initial y = m_offsetY + m_rectTop)
+    i32 m_rectRight;           // +0x3c  right (x center = (right-left+1)/2 + m_offsetX + left)
+    i32 m_rectBottom;          // +0x40  bottom
+    i32 m_headGap;             // +0x44  gap after sub-page head item (template +0x18)
+    i32 m_rowSpacing;          // +0x48  per-item vertical advance (template +0x1c)
+    i32 m_colWidth;            // +0x4c  column width (grid wrap step)
+    i32 m_rowsPerCol;          // +0x50  rows per column / focus stride
+    i32 m_colOffset;           // +0x54  column x-offset
+    i32 m_offsetX;             // +0x58  layout x-offset (added to centered column x)
+    i32 m_offsetY;             // +0x5c  layout y-offset (added to initial row y)
+    CMenuPage* m_subPage;      // +0x60 sub-page/name-cache (catalog Lookup result)
+    CMenuItem* m_focus;        // +0x64 current focused child item
 };
 SIZE_UNKNOWN(CMenuPage);
 

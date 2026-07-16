@@ -105,7 +105,7 @@ void ShowHudMessage(
 ); // 0x1154b0
 
 // The booty HUD message sink IS the inherited CState::m_c holder (the canonical
-// CSpriteFactoryHolder): m_pages (+0x04) the page sub-manager, m_8 (+0x08) the
+// CDDrawSurfaceMgr): m_drawTarget (+0x04) the page sub-manager, m_8 (+0x08) the
 // object-group render broadcaster, m_28 (+0x28) the cue host whose m_2c is the
 // held SoundStream. (The former BzSink view + its BzSink8 placeholder vtable are
 
@@ -360,9 +360,9 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 return 0;
             }
             ShowLevelCompleteMessage();
-            m_c->m_pages->Method_158ee0();
-            m_c->m_8->WalkDispatch2C(m_c->m_pages->m_backPair);
-            m_c->m_pages->Method_158e90();
+            m_c->m_drawTarget->Method_158ee0();
+            m_c->m_childGroup->WalkDispatch2C(m_c->m_drawTarget->m_backPair);
+            m_c->m_drawTarget->Method_158e90();
             BuildPage(0x50, 0x3e8, 0, 1);
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
@@ -375,7 +375,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
-            m_c->m_pages->Method_158ee0();
+            m_c->m_drawTarget->Method_158ee0();
             BuildPage(0x50, 0x3e8, 0, 1);
             m_activation = 0xfffffffe;
             return 1;
@@ -389,14 +389,14 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (!ShowSecretBonusMessage()) {
             return 0;
         }
-        m_c->m_pages->Method_158ee0();
+        m_c->m_drawTarget->Method_158ee0();
         BuildPage(0x50, 0x3e8, 0, 1);
         return 1;
     }
 
     BzLevelRecord* rec2 = g_gameReg->m_levelRecord;
     if (rec2->m_levelIndex == 0x20) {
-        SoundStream* sub = m_c->m_28->m_2c;
+        SoundStream* sub = m_c->m_soundRegistry->m_2c;
         if (sub != 0) {
             sub->Stop();
         }

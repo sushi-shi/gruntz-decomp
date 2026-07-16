@@ -15,7 +15,7 @@
 // game-side created-sprite role: CreateSprite/AttachSprite + the live-object
 // list) are method-sets of THIS one class. Both twins are dissolved here:
 //  - one object: every holder reaches it at CDDrawSurfaceMgr+0x08 (m_childGroup
-//    == the ex m_world->m_8 / m_c->m_8), new'd 0x6c by Init @0x155900 with the
+//    == the ex m_world->m_childGroup / m_c->m_childGroup), new'd 0x6c by Init @0x155900 with the
 //    ctor stamping ??_7CDDrawChildGroup (0x5efdc0);
 //  - one TU: WwdObjMgr.cpp (0x159250..0x15b2xx) defines all three "classes'"
 //    methods interleaved on the same receiver;
@@ -48,7 +48,7 @@ class CWwdGameObjectE;
 // CWwdGameObjectA - one class): the DDraw walkers dispatch it as the real family
 // (CWwdGameObjectE), the WWD collection walkers as CWwdGameObject, the game-side
 // warlord/grunt loaders (Play.cpp) read it as CGameObject - same pointer, union'd
-// (the CSpriteFactoryHolder pattern). The former View.h CWarlordListHead/
+// (the CDDrawSurfaceMgr pattern). The former View.h CWarlordListHead/
 // CWarlordListNode duplicate is dissolved here (2026-07-14); the former
 // SpriteFactory.h "CSpriteListNode" (next/m_sprite) and WwdObjMgr.h "CWwdNode"
 // (m_next/m_prev/m_obj) duplicates are dissolved here (2026-07-16).

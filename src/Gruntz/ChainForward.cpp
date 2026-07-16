@@ -1,6 +1,6 @@
 // ChainForward.cpp - 0x114fa0 / 0x114f50: the two null-guarded pre-forwarders in
 // front of SaveScreenshot (0x114ff0). Each resolves the active capture surface off
-// the game registry - g_gameReg->m_world->m_pages->{overlay,back}Pair->m_surface -
+// the game registry - g_gameReg->m_world->m_drawTarget->{overlay,back}Pair->m_surface -
 // and, if it (and every link) is intact, forwards it + all six pass-through args to
 // SaveScreenshot.
 //
@@ -8,8 +8,8 @@
 // `Chain2c` view chain; it is the real DDraw resource spine:
 //   * arg2 is forwarded unchanged to SaveScreenshot's 3rd param, whose retail mangling
 //     is PAUCGameRegistry -> arg2 IS CGameRegistry* (owner).
-//   * +0x30  = CGameRegistry::m_world      (CSpriteFactoryHolder*)
-//   * +0x04  = CSpriteFactoryHolder::m_pages(CDDrawSubMgrPages*)
+//   * +0x30  = CGameRegistry::m_world      (CDDrawSurfaceMgr*)
+//   * +0x04  = CDDrawSurfaceMgr::m_drawTarget(CDDrawSubMgrPages*)
 //   * +0x18/+0x14 = CDDrawSubMgrPages::m_overlayPair / m_backPair (CDDrawSurfacePair*)
 //   * +0x2c  = CDDrawSurfacePair::m_surface (CDDSurface* = SaveScreenshot's 1st param).
 // The six forwarded params map 1:1 onto SaveScreenshot's (bute, owner, arg4, arg5,
@@ -20,7 +20,7 @@
 
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (m_backPair/m_overlayPair)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair::m_surface (CDDSurface*)
-#include <Gruntz/GameRegistry.h>       // CGameRegistry::m_world -> CSpriteFactoryHolder::m_pages
+#include <Gruntz/GameRegistry.h>       // CGameRegistry::m_world -> CDDrawSurfaceMgr::m_drawTarget
 #include <Gruntz/SaveScreenshot.h>     // SaveScreenshot (0x114ff0) owner decl
 #include <Utils/RegistryHelper.h>      // Utils::RegistryHelper (forwarded bute param)
 
@@ -38,7 +38,7 @@ void ChainForward14(
     char* p5,
     void* p6
 ) {
-    CDDrawSurfacePair* pair = p2->m_world->m_pages->m_backPair;
+    CDDrawSurfacePair* pair = p2->m_world->m_drawTarget->m_backPair;
     if (pair) {
         CDDSurface* leaf = pair->m_surface;
         if (leaf) {
@@ -63,7 +63,7 @@ void ChainForward(
     char* p5,
     void* p6
 ) {
-    CDDrawSurfacePair* pair = p2->m_world->m_pages->m_overlayPair;
+    CDDrawSurfacePair* pair = p2->m_world->m_drawTarget->m_overlayPair;
     if (pair) {
         CDDSurface* leaf = pair->m_surface;
         if (leaf) {

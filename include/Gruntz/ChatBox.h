@@ -26,12 +26,12 @@
 class CMenuPage;
 
 // The on-screen "page"/owner object reached through m_page IS the canonical
-// CSpriteFactoryHolder (the CState::m_c render/resource holder, <Gruntz/GameRegistry.h>):
-// its +0x04 render set (m_pages, CDDrawSubMgrPages), +0x10 image registry (m_10,
+// CDDrawSurfaceMgr (the CState::m_c render/resource holder, <Gruntz/GameRegistry.h>):
+// its +0x04 render set (m_drawTarget, CDDrawSubMgrPages), +0x10 image registry (m_10,
 // CImageRegistry == CDDrawWorkerRegistry) and +0x28 sound/cue host (m_28, CSndHost ==
 // CDDrawSubMgrLeafScan) are exactly the render/catalog/roster facets this box drives.
 // ChatBox.cpp includes GameRegistry.h + the three facet headers.
-struct CSpriteFactoryHolder;
+class CDDrawSurfaceMgr;
 
 // Per-row animation record: the canonical CImageSet (<Image/ImageSet.h>) - each advance
 // caches m_frames[m_minIndex]; Step clamps the frame index to [m_minIndex, m_maxIndex].
@@ -47,7 +47,7 @@ public:
     // 0x182ab0 (__thiscall, defined in MenuStateAssets.cpp): seed the box from the
     // resource holder + the game window's HWND, copy/derive the region rect. The ex
     // MenuRegion view of this same `this` is dissolved onto CChatBox.
-    i32 InitRegion(CSpriteFactoryHolder* src, i32 a, RECT* rc, i32 d, i32 e, i32 f); // 0x182ab0
+    i32 InitRegion(CDDrawSurfaceMgr* src, i32 a, RECT* rc, i32 d, i32 e, i32 f); // 0x182ab0
     void Reset();                             // 0x182b30 - free the node list, re-zero the rows
     void Clear();                             // 0x182b60 - free node payloads, empty the list
     i32 Find(const char* s);                  // 0x182be0 - find a node by string key
@@ -82,11 +82,11 @@ public:
     i32 OnFlag10000000(); // 0x183130  page FocusBackwardN
     i32 OnFlag20000000(); // 0x183150  page FocusForwardN
 
-    CSpriteFactoryHolder* m_page; // +0x00 parent/page back pointer == the CState::m_c
-                                  //       resource holder (MenuRegion::Init @0x182ab0 stores
-                                  //       a CSpriteFactoryHolder*): the box drives its +0x04
-                                  //       render set, +0x10 image registry, +0x28 cue host.
-    i32 m_4;                      // +0x04  (Init seeds it with the HWND; otherwise only zeroed)
+    CDDrawSurfaceMgr* m_page; // +0x00 parent/page back pointer == the CState::m_c
+                              //       resource holder (MenuRegion::Init @0x182ab0 stores
+                              //       a CDDrawSurfaceMgr*): the box drives its +0x04
+                              //       render set, +0x10 image registry, +0x28 cue host.
+    i32 m_4;                  // +0x04  (Init seeds it with the HWND; otherwise only zeroed)
     // +0x08..+0x1f: the region rect + 2 scalars (retail Init @0x182ab0 CopyRects the
     // rect arg into +0x08 and stores the two i32 args at +0x18/+0x1c).
     RECT m_rect8; // +0x08  region rect (left/top/right/bottom)

@@ -41,7 +41,7 @@ public:
     // ARE the virtuals.
     virtual i32 Init( // slot 13 (new)  0xe7980
         CStatusBarMgr* owner,
-        CSpriteFactoryHolder* host,
+        CDDrawSurfaceMgr* host,
         i32 a3,
         i32 a4,
         SbRect rc,

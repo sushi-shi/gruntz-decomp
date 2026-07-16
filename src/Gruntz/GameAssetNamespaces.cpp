@@ -17,7 +17,7 @@
 //   AssetMgr      == the CGruntzMgr singleton (m_workerHolder@+0x30 == m_world,
 //       m_symParser@+0x34 == m_symParser (ex m_recolorSurface), m_40 == m_40,
 //       m_spriteRefTable@+0x74 == m_spriteFactory).
-//   WorkerHolder  == CSpriteFactoryHolder (m_imageReg@+0x10 == m_10 CImageRegistry,
+//   WorkerHolder  == CDDrawSurfaceMgr (m_imageReg@+0x10 == m_10 CImageRegistry,
 //       m_ptrCollections@+0x1c == m_ptrColl, m_soundScan@+0x28 == m_28 (CSndHost ==
 //       CDDrawSubMgrLeafScan, one typedef), m_aniScan@+0x2c == m_animRegistry -
 //       the canonical CDDrawSubMgrLeaf ANI set (HasKeyPrefix_152c50/ScanTree_152ad0;
@@ -30,7 +30,7 @@
 #include <Bute/SymParser.h>   // the shared CSymParser (ResolvePath 0x13c030)
 #include <Gruntz/State.h>     // CState: the real owner of the loader (all leaf states inherit it)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the manager arg (m_world/m_symParser/m_40/...)
-#include <Gruntz/GameRegistry.h>      // CSpriteFactoryHolder (m_10/m_ptrColl/m_28/m_animRegistry)
+#include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr (m_10/m_ptrColl/m_28/m_animRegistry)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (HasKeyPrefix_152c50 / ScanTree_152ad0)
 #include <Gruntz/SpriteRefTable.h>    // the shared CSpriteRefTable (g_gameReg->m_74)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CImageRegistry == CDDrawWorkerRegistry (InstallTree)
@@ -75,21 +75,21 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     if (node == 0) {
         return 0;
     }
-    if (m_c->m_10->HasKeyEqual_155550("GAME") == 0) {
+    if (m_c->m_imageRegistry->HasKeyEqual_155550("GAME") == 0) {
         void* img = m_8->ResolvePath("GAME_IMAGEZ");
         if (img == 0) {
             return 0;
         }
         g_resourceInstallActive = 1;
-        m_c->m_10->InstallTree(img, "GAME", "_");
+        m_c->m_imageRegistry->InstallTree(img, "GAME", "_");
         g_resourceInstallActive = 0;
     }
-    if (m_c->m_28->HasKeyEqual_1583c0("GAME") == 0) {
+    if (m_c->m_soundRegistry->HasKeyEqual_1583c0("GAME") == 0) {
         void* snd = m_8->ResolvePath("GAME_SOUNDZ");
         if (snd == 0) {
             return 0;
         }
-        m_c->m_28->ScanTree_157ee0((CSymTab*)snd, "GAME", "_");
+        m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)snd, "GAME", "_");
     }
     if (m_c->m_animRegistry->HasKeyPrefix_152c50("GAME") == 0) {
         void* aniz = m_8->ResolvePath("GAME_ANIZ");

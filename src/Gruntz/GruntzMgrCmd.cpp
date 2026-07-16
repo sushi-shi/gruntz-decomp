@@ -15,7 +15,7 @@
 //                     (SetCursorFrame/Flip/OnRegion1-3/CanQuickSave/m_frameMarker)
 //   m_cmdGrid       = CTriggerMgr (ClearRowAndRefresh 0x18e3, CycleMoveIcons 0x3616,
 //                     m_grid/m_recHead/m_recCount)
-//   m_world->m_28   = CSndHost (SoundCue.h; CueLookup @0x05b7e0 was the fake
+//   m_world->m_soundRegistry   = CSndHost (SoundCue.h; CueLookup @0x05b7e0 was the fake
 //                     stdcall "CueLookup" free fn - it is a real CSndHost thiscall)
 //   m_sound         = CGruntzSoundZ (Restart 0x1388c0 / StopAll 0x1388f0)
 //   m_saveSink      = the CSaveGame (Io/SaveGame.h), m_saveInfoRec = SaveInfo (SaveInfo.h)
@@ -37,7 +37,7 @@
 #include <rva.h>
 #include <string.h>
 
-#include <Gruntz/GameRegistry.h>     // CGameRegistry (g_gameReg) + CSpriteFactoryHolder
+#include <Gruntz/GameRegistry.h>     // CGameRegistry (g_gameReg) + CDDrawSurfaceMgr
 #include <Gruntz/GruntzMgr.h>        // the real CGruntzMgr (this) + SaveInfo.h + SoundCue.h
 #include <Gruntz/CheatMgr.h>         // CCheatMgr (m_cheatMgr->m_124 - the "Cheatz cleared" flag)
 #include <Gruntz/Play.h>             // CPlay (the cheat receiver) + CTimer (m_frameMarker)
@@ -106,17 +106,18 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 // host's CueLookup (a real CSndHost __thiscall @0x05b7e0 - ecx is the host at
 // every retail site because the m_emitGate gate test just loaded it).
 #define PLAYCUE(TAG)                                                                               \
-    if (m_world->m_28->m_emitGate == 0) {                                                          \
-        LeafCue* _c = (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_28)->Lookup_05b7e0(TAG);        \
+    if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
+        LeafCue* _c =                                                                              \
+            (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)->Lookup_05b7e0(TAG);       \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
 // Cue via the host's finder (m_10, CSndFinder) with a stack out-ptr; used by a
 // handful of cheats instead of CueLookup.
 #define PLAYCUE_MAP(TAG)                                                                           \
-    if (m_world->m_28->m_emitGate == 0) {                                                          \
+    if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c = 0;                                                                           \
-        m_world->m_28->m_10.Lookup(TAG, (void*&)_c); /* CMapStringToPtr (0x1b8438) */              \
+        m_world->m_soundRegistry->m_10.Lookup(TAG, (void*&)_c); /* CMapStringToPtr (0x1b8438) */   \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
@@ -286,9 +287,10 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             if (m_curState->Update() == GAMESTATE_PLAY) {
                 switch (nID & 0xffff) {
                     case 0x803b: {
-                        if (m_world->m_28->m_emitGate == 0) {
-                            LeafCue* _c = (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_28)
-                                              ->Lookup_05b7e0("GAME_MINORCHEAT");
+                        if (m_world->m_soundRegistry->m_emitGate == 0) {
+                            LeafCue* _c =
+                                (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)
+                                    ->Lookup_05b7e0("GAME_MINORCHEAT");
                             if (_c) {
                                 _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                             }
@@ -437,7 +439,8 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         void* _key = (void*)_s->m_focusSlots[0].m_0c; // death/monologo sprite key
                         if (_key) {
                             CWwdGameObjectE* _dr = 0;
-                            if (_s->m_world->m_8->m_map48.Lookup((void*)_key, (void*&)_dr) && _dr) {
+                            if (_s->m_world->m_childGroup->m_map48.Lookup((void*)_key, (void*&)_dr)
+                                && _dr) {
                                 // the entry's inner receiver is the grunt logic (thunk
                                 // 0x3a1c -> CGrunt::ResolveDeathAnimation @0x455f0);
                                 // AnimWorkerObj::m_logic holds the bound grunt logic leaf
@@ -547,9 +550,10 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case 0x8175:
-                        if (m_world->m_28->m_emitGate == 0) {
-                            LeafCue* _c = (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_28)
-                                              ->Lookup_05b7e0("GAME_WAWA");
+                        if (m_world->m_soundRegistry->m_emitGate == 0) {
+                            LeafCue* _c =
+                                (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)
+                                    ->Lookup_05b7e0("GAME_WAWA");
                             if (_c) {
                                 _c->PlayIfElapsed(0x64, 0, 0, 0);
                             }
@@ -657,9 +661,9 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     case 0x8247: {
                         g_explosionz ^= 1;
-                        if (m_world->m_28->m_emitGate == 0) {
+                        if (m_world->m_soundRegistry->m_emitGate == 0) {
                             void* _c_ob = 0;
-                            m_world->m_28->m_10.Lookup("GAME_MAJORCHEAT", _c_ob);
+                            m_world->m_soundRegistry->m_10.Lookup("GAME_MAJORCHEAT", _c_ob);
                             LeafCue* _c = (LeafCue*)_c_ob;
                             if (_c && g_sndEnabled) {
                                 i32 now = g_killCueClock;
@@ -1126,7 +1130,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
         }
         case 0x8009: { // 0x89f08  world-position display toggle
             if (m_world) {
-                SoundStream* p = m_world->m_28->m_2c;
+                SoundStream* p = m_world->m_soundRegistry->m_2c;
                 if (p) {
                     p->Stop();
                 }

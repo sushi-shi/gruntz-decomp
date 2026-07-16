@@ -34,8 +34,9 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/GameRegistry.h> // the ONE game-registry shape (CGameRegistry / g_gameReg)
 #include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view (also used by CDemo/CHelpState)
-#include <Gruntz/ResMgr.h>       // CDrawTarget (m_10 frame surface / m_14 draw surface)
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c: Flip + m_8)
@@ -444,7 +445,7 @@ i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == 0) {
         return 0;
     }
-    CDDSurface* s = m_c->m_drawTarget->m_10->m_surface;
+    CDDSurface* s = m_c->m_drawTarget->m_frontPair->m_surface;
     if (s == 0) {
         return 0;
     }
@@ -646,7 +647,7 @@ i32 g_playActive;
 // activators (CBootyState/CMenuState/CPlay slot-8 loaders) already reach.)
 
 // CLevelData / CDisplayMgr are DISSOLVED (2026-07-14): m_levelData IS the canonical
-// CSpriteFactoryHolder (<Gruntz/GameRegistry.h>; its +0x04 CDDrawSubMgrPages worker ==
+// CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>; its +0x04 CDDrawSubMgrPages worker ==
 // the old m_ready, its +0x10 CImageRegistry == the old m_imageSet) and m_displayMgr IS
 // the canonical CGruntzMgr (<Gruntz/GruntzMgr.h>; its +0x8c/+0x90 m_modeW/m_modeH ==
 // the old m_8c/m_90 video mode). Both are the CState m_c / m_4 prefix. The persisted
@@ -678,7 +679,7 @@ i32 CMgrPersistObj::Init() {
     // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
     while (ShowCursor(0) >= 0)
         ;
-    if (m_levelData->m_pages->Method_158bc0() == 0) {
+    if (m_levelData->m_drawTarget->Method_158bc0() == 0) {
         return 0;
     }
     if (g_playActive == 0) {
@@ -707,7 +708,7 @@ i32 CMgrPersistObj::Init() {
     if (path == 0) {
         return 0;
     }
-    if (m_levelData->m_10->LoadNamespace(path, "GAME", "_") == -1) {
+    if (m_levelData->m_imageRegistry->LoadNamespace(path, "GAME", "_") == -1) {
         return 0;
     }
     m_1a8 = 0;
@@ -754,7 +755,7 @@ i32 CState::ShadeScreen(i32 pct) {
         g_suppress_64e360 = 0;
         return v;
     }
-    return m_c->m_drawTarget->m_14->m_surface->ShadeRect(pct, 0);
+    return m_c->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, 0);
 }
 
 // -------------------------------------------------------------------------

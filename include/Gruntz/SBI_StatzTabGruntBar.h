@@ -25,7 +25,7 @@
 
 // BuildMultiplayerTabStatusBar's owner/config-host pair (pointers only - fwd-decl).
 class CStatusBarMgr;
-struct CSpriteFactoryHolder;
+class CDDrawSurfaceMgr;
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -157,7 +157,7 @@ public:
     // CSbConfigItem base, so the call resolved to NO definition.
     i32 BuildMultiplayerTabStatusBar(
         CStatusBarMgr* owner,
-        CSpriteFactoryHolder* host,
+        CDDrawSurfaceMgr* host,
         i32 p3,
         i32 p4,
         SbRect g,

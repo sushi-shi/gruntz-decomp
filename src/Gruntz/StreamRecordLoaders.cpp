@@ -195,7 +195,7 @@ SIZE_UNKNOWN(CEventLoadRec);
 // local. OWNER RECOVERED (Fable A2, 2026-07-14): the registry with the
 // CMapStringToOb @+0x10 and the virtual registrar at slot 9 (+0x24) IS the
 // canonical CDDrawWorkerCache (<DDrawMgr/DDrawWorkerCache.h>, vtbl 0x1efd00,
-// CreateWorker [9] @0x1652c0) - the CSpriteFactoryHolder/CDDrawSurfaceMgr +0x14
+// CreateWorker [9] @0x1652c0) - the CDDrawSurfaceMgr/CDDrawSurfaceMgr +0x14
 // child; the tile-logic leaf ctors probe it via thunk 0x1703. (Was the C9cab0
 // placeholder.)
 RVA(0x0009cab0, 0x23)

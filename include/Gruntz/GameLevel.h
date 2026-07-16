@@ -232,7 +232,7 @@ public:
     i32 m_04, m_08;         // +0x04..0x0b (merged from CLoadable base)
     CDDrawSurfaceMgr* m_0c; // +0x0c  the owning world/display root (the CLoadable
                             //        owner slot; BroadPhase/StepAxisAlt walk its
-                            //        m_childGroup, MovingLogic hops m_resolveSubMgr)
+                            //        m_childGroup, MovingLogic hops m_level)
     // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is
     // the real method (RVA-bound in GameLevel.cpp), so cl emits ??_7CGameLevel@@6B@
     // with those slots pointing at the matched functions; the engine-thunk base

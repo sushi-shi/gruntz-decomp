@@ -6,25 +6,19 @@
 
 #include <rva.h>
 
-class CDDrawSubMgrLeafScan; // m_28 sub-manager (full type in DDrawSubMgrLeafScan.h)
-class CDDrawPtrCollections; // m_1c surface pool (full type in DDrawPtrCollections.h)
-class CDDSurface;           // the owned blit surfaces BaseCleanup returns to the pool
+class CDDSurface; // the owned blit surfaces BaseCleanup returns to the pool
 
-// The mode's context holder (CGameModeBase::m_c). Identity unrecovered (the
-// _f9840 suffix is a placeholder); the +0x1c surface pool (BaseCleanup returns the
-// owned blits there) and the +0x28 leafscan sub-manager (Reset/ResetPreview) modeled.
-SIZE_UNKNOWN(Holder_f9840);
-struct Holder_f9840 {
-    char m_pad0[0x1c];
-    CDDrawPtrCollections* m_1c; // +0x1c  surface pool (RemoveItemA @0x142160)
-    char m_pad20[0x28 - 0x20];
-    CDDrawSubMgrLeafScan* m_28; // +0x28  map sub-manager (ClearMap / RemoveKeysEqual_157c70)
-};
+// The mode's +0x0c context holder is the ONE canonical CDDrawSurfaceMgr (the ex
+// `Holder_f9840` placeholder view is DISSOLVED 2026-07-16: its "+0x1c surface
+// pool" was m_ptrColl and its "+0x28 map sub-manager" m_soundRegistry - the same
+// slots every CState::m_c consumer reads; CGameModeBase::m_c IS CState::m_c, the
+// same +0x0c field of the same state object).
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 
 SIZE_UNKNOWN(CGameModeBase);
 struct CGameModeBase {
     char m_pad0[0xc];
-    Holder_f9840* m_c; // +0x0c
+    CDDrawSurfaceMgr* m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
     CDDSurface* m_14; // +0x14  owned blit surface
     CDDSurface* m_18; // +0x18  owned blit surface

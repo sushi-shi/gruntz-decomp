@@ -23,19 +23,19 @@ RVA(0x000fa150, 0x74)
 void CGameModeBase::BaseCleanup() {
     if (m_c != 0) {
         if (m_160 != 0) {
-            m_c->m_1c->RemoveItemA(m_160);
+            m_c->m_ptrColl->RemoveItemA(m_160);
             m_160 = 0;
         }
         if (m_164 != 0) {
-            m_c->m_1c->RemoveItemA(m_164);
+            m_c->m_ptrColl->RemoveItemA(m_164);
             m_164 = 0;
         }
         if (m_14 != 0) {
-            m_c->m_1c->RemoveItemA(m_14);
+            m_c->m_ptrColl->RemoveItemA(m_14);
             m_14 = 0;
         }
         if (m_18 != 0) {
-            m_c->m_1c->RemoveItemA(m_18);
+            m_c->m_ptrColl->RemoveItemA(m_18);
             m_18 = 0;
         }
     }

@@ -7,7 +7,7 @@
 // scalar list and seeds four fields to 0x40). The two reconstructions modeled
 // the same owner/view sub-objects under different names: the +0x04 owner back-
 // ptr is the game-manager singleton `CGruntzMgr *` (gamemode/cplay downcast it to
-// their local CGMOwner/CWorld facet views); the +0x0c holder is `CSpriteFactoryHolder *`
+// their local CGMOwner/CWorld facet views); the +0x0c holder is `CDDrawSurfaceMgr *`
 // (cplay dereferences it directly, gamemode casts to CGMView). Both are 4-byte
 // pointer slots, so the casts are codegen-neutral.
 //
@@ -26,17 +26,17 @@
 #include <Gruntz/GameModeBase.h>
 #include <Gruntz/GameStateId.h> // Update()'s per-state id return type
 
-struct CSpriteFactoryHolder; // +0x0c render/resource holder == CGameRegistry::m_world;
-                             // defined in <Gruntz/GameRegistry.h> (its render sub-object
-                             // facets CRenderer/CDrawSurface in <Gruntz/View.h>). Opaque here.
-class CSymParser;  // +0x08 the level/rez symbol parser (<Bute/SymParser.h>) - the manager's
-                   // +0x34 m_symParser, cached here by LoadGameAssetNamespaces. The ex-CBankMgr
-                   // shell WAS this class: every consumer called ((CSymParser*)m_8)->ResolvePath
-                   // (@0x13c030), and the loader stores mgr->m_symParser here outright.
-class CDDSurface;  // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
-struct CResSource; // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
-class CSymTab;     // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
-class CMenuRoot;   // m_c's title/menu-root facet (the title-roll cluster's view)
+class CDDrawSurfaceMgr; // +0x0c render/resource holder == CGameRegistry::m_world;
+                        // defined in <Gruntz/GameRegistry.h> (its render sub-object
+                        // facets CRenderer/CDrawSurface in <Gruntz/View.h>). Opaque here.
+class CSymParser;       // +0x08 the level/rez symbol parser (<Bute/SymParser.h>) - the manager's
+// +0x34 m_symParser, cached here by LoadGameAssetNamespaces. The ex-CBankMgr
+// shell WAS this class: every consumer called ((CSymParser*)m_8)->ResolvePath
+// (@0x13c030), and the loader stores mgr->m_symParser here outright.
+class CDDSurface;        // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
+struct CResSource;       // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
+class CSymTab;           // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
+class CMenuRoot;         // m_c's title/menu-root facet (the title-roll cluster's view)
 class CAttractScreenObj; // m_2c's fade-screen-resolver facet (FadeInTitle's view)
 class CGruntzMgr;        // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
                          // Forward-declared (MFC-free) so this widely-included header stays
@@ -149,7 +149,7 @@ public:
 
     // ShadeScreen (0x0fa6b0's sibling @0x0faf50): the once-suppressed screen dim. On the
     // first call after the g_suppress latch is armed it consumes the latch (returns it);
-    // otherwise it shades the draw surface (m_c->m_drawTarget->m_14->m_2c->ShadeRect(pct,0)).
+    // otherwise it shades the draw surface (m_c->m_drawTarget->m_backPair->m_2c->ShadeRect(pct,0)).
     i32 ShadeScreen(i32 pct); // 0x0faf50 (reloc-masked; defined in StateDrawText.cpp)
 
     // The title-roll cluster (0xfa1f0/0xfa300/0xfa350). Each body reads ONLY CState
@@ -200,7 +200,7 @@ public:
     }
 
     // Register/unregister a "GRUNTZ_<name>" asset namespace across the state's three
-    // resource registries (m_c->m_10/m_28/m_animRegistry) from the m_gruntzBank symbol
+    // resource registries (m_c->m_imageRegistry/m_28/m_animRegistry) from the m_gruntzBank symbol
     // tree (0xdca70). Non-virtual __thiscall on the base state; every caller reaches it
     // on the active game-state (g_gameReg->m_curState, a CState* -> its concrete CPlay).
     // (Ex the CNamespaceLoader fake-view facet - RTTI proves CState is a root and CPlay's
@@ -218,24 +218,24 @@ public:
     // bridged with a ((CSymParser*)m_8) cast; typed for real, the casts are gone.
     CSymParser* m_8;
     // +0x0c  render/resource context. VERIFIED (matcher-2, sema): the SAME object as
-    // CGameRegistry::m_world (+0x30) == the canonical CSpriteFactoryHolder - non-polymorphic;
+    // CGameRegistry::m_world (+0x30) == the canonical CDDrawSurfaceMgr - non-polymorphic;
     // its +0x04 sub-object is the DDraw worker manager (CDDrawSubMgrPages::Method_158ee0
     // @0x158ee0) and its +0x10 registrar is CImageRegistry (Install/LoadTree +0x48,
     // LoadNamespace +0x4c). The state activators (CBootyState/CMultiBootyState/CImageState
     // slot-8 loaders) reach it through this one holder; their old per-TU StateMgr/BootyAssetRoot
-    // shadows are folded away. (The former `CView`/`CSpriteFactoryHolder` render view is folded onto
-    // CSpriteFactoryHolder; its render sub-object facets live in <Gruntz/View.h>.)
-    CSpriteFactoryHolder* m_c; // +0x0c
-    CFaderMgr* m_faderMgr;     // +0x10  fader mgr (RetireScene's Add/Remove target; the
-                               //         loader caches mgr->m_40 here - the +0x40 slot's
-                               //         CFaderMgr-vs-CTriggerMgr identity conflict is open)
-    i32 m_14;                  // +0x14
-    i32 m_18;                  // +0x18
-    i32 m_levelIndex; // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
-    i32 m_levelType;  // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
-                      //         switches on it (4/5/8 land-death, 6 no-death) to pick the
-                      //         level death effect
-    i32 m_24;         // +0x24
+    // shadows are folded away. (The former `CView`/`CDDrawSurfaceMgr` render view is folded onto
+    // CDDrawSurfaceMgr; its render sub-object facets live in <Gruntz/View.h>.)
+    CDDrawSurfaceMgr* m_c; // +0x0c
+    CFaderMgr* m_faderMgr; // +0x10  fader mgr (RetireScene's Add/Remove target; the
+                           //         loader caches mgr->m_40 here - the +0x40 slot's
+                           //         CFaderMgr-vs-CTriggerMgr identity conflict is open)
+    i32 m_14;              // +0x14
+    i32 m_18;              // +0x18
+    i32 m_levelIndex;      // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
+    i32 m_levelType;       // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
+                           //         switches on it (4/5/8 land-death, 6 no-death) to pick the
+                           //         level death effect
+    i32 m_24;              // +0x24
     // +0x28  level asset bank; a Bute CSymTab (LookupSet == CSymTab::ResolvePath
     // 0x13bae0), so every user reaches it as CSymTab* -> typed here (kills the casts).
     // LoadGameAssetNamespaces stores the resolved "AREA%i" node here (the ex-CAssetLoader

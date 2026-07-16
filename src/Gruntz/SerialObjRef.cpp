@@ -49,7 +49,7 @@ i32 CSerialObjRef::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject*
             return 1;
         }
         void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-        m_08->m_0c->m_leaf->m_10.Lookup(name, val);
+        m_08->m_0c->m_animRegistry->m_10.Lookup(name, val);
         m_value = (CObject*)val; // the map stores void*; KeyOfValue_152d30 takes CObject*
         return 1;
     }
@@ -59,7 +59,7 @@ i32 CSerialObjRef::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject*
             ((i32*)name)[i] = 0;
         }
         if (m_value != 0) {
-            CString nm = m_08->m_0c->m_leaf->KeyOfValue_152d30(m_value);
+            CString nm = m_08->m_0c->m_animRegistry->KeyOfValue_152d30(m_value);
             strcpy(name, (const char*)nm);
         }
         arc->Write(name, 0x80);

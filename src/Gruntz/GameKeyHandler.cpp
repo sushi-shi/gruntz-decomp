@@ -25,7 +25,7 @@
 // dev=StateMgrBZ (g_spawnConfig), rec=CChatBoxOwner (m_hitTest), g_gameReg=CGruntzMgr,
 // area=GruntzPlayer (g_gameReg->m_options[]). The M()/P() offset-cast macros are GONE
 // (2026-07-16): every residual site is typed - the render context is
-// m_c->m_24(CGameLevel)->m_mainPlane(CPlaneRender) with m_planeCtx/m_originX/m_snappedX,
+// m_c->m_level(CGameLevel)->m_mainPlane(CPlaneRender) with m_planeCtx/m_originX/m_snappedX,
 // the frame gate is CGameMgr::m_frameGate (+0xc), the goal is CTmGoal, the recorder ring
 // nodes are CoordPoolNode, and the 0x23d90 blit is CGruntzCmdMgr::BlitTileMarker on
 // m_cmdSubMgr (the ex-CObj23d90 view).
@@ -171,19 +171,19 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             // dialog mode (cbd3b)
             if (key == 0x59 || key == 0xd) {
                 if (g_gameReg->m_134 == 1) {
-                    CLEAR_TAB_HINT(host->m_world->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
                     }
                     PostMessageA(host->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
                     return 1;
                 }
-                CLEAR_TAB_HINT(host->m_world->m_28);
+                CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 ((CGruntzMgr*)(host))->AccrueScoreTime();
                 return 1;
             }
             if (key == 0x4e || key == 0x1b) {
-                CLEAR_TAB_HINT(host->m_world->m_28);
+                CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 this->ReleaseLevelOverlay(0);
                 return 1;
             }
@@ -192,7 +192,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             // paused mode (cbe51)
             if (key == 0x51) {
                 if (g_gameReg->m_134 == 1) {
-                    CLEAR_TAB_HINT(host->m_world->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
                     }
@@ -202,12 +202,12 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             }
             // paused-only cheats S/R/N/O (cbee0)
             if (key == 0x53 && g_gameReg->m_134 == 1) {
-                CLEAR_TAB_HINT(host->m_world->m_28);
+                CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 ((CGruntzMgr*)(host))->AccrueScoreTime();
             }
             if (key == 0x52) {
                 if (host->m_134 == 1 && g_gameReg->m_cmdGrid->m_phase != 1) {
-                    CLEAR_TAB_HINT(host->m_world->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->m_hwnd, 0x111, 0x806b, 0);
                 }
@@ -215,14 +215,14 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             }
             if (key == 0x4e) {
                 if (host->m_134 == 1 && g_gameReg->m_cmdGrid->m_phase == 1) {
-                    CLEAR_TAB_HINT(host->m_world->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     ((CGruntzMgr*)(host))->AccrueScoreTime();
                 }
                 return 1;
             }
             if (key == 0x4f) {
                 if (host->m_134 != 1 && self->m_guts->m_578 != 0) {
-                    CLEAR_TAB_HINT(host->m_world->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     this->ReleaseLevelOverlay(0);
                 }
                 return 1;
@@ -262,7 +262,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (this->FlushPendingOps() != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(g_gameReg->m_world->m_28);
+        CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
         if (g_gameReg->m_frameGate != 0) {
             g_gameReg->m_frameGate ^= 1;
             g_gameReg->FinishLevel(g_gameReg->m_frameGate, 1);
@@ -342,7 +342,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             h->m_frameGate ^= 1;
             self->m_4->FinishLevel(h->m_frameGate, 1);
         }
-        CSndHost* s = self->m_4->m_world->m_28;
+        CSndHost* s = self->m_4->m_world->m_soundRegistry;
         if (s->m_emitGate == 0) {
             void* found = 0;
             s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);
@@ -377,7 +377,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
     // Space (cc46d): recorder step / recycle node churn
     if (key == 0x20) {
         if (dev->m_18 & 0x20) {
-            CPlaneRender* obj = self->m_c->m_24->m_mainPlane;
+            CPlaneRender* obj = self->m_c->m_level->m_mainPlane;
             i32 v0 = obj->m_snappedX;
             i32 v1 = obj->m_snappedY;
             i32* slot;
@@ -470,7 +470,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
         CStatusBarMgr* lv = self->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -495,7 +495,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
         CStatusBarMgr* lv = self->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -516,7 +516,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
         CStatusBarMgr* lv = self->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -540,7 +540,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (g_gameReg->m_134 == 1) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
         self->m_guts->AdvanceTab(g_spawnConfig->m_18 & 1);
         return 1;
     }
@@ -549,7 +549,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
         CStatusBarMgr* lv = self->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -609,7 +609,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = self->m_4;
         i32 my = self->m_cursorY;
-        LevelCoordRect* r = &h->m_world->m_24->m_planeCtx;
+        LevelCoordRect* r = &h->m_world->m_level->m_planeCtx;
         i32 x0 = r->minX;
         i32 y0 = r->minY;
         i32 x1 = r->maxX;
@@ -633,7 +633,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = self->m_4;
         i32 mx = self->m_cursorX;
-        CGameLevel* q = h->m_world->m_24;
+        CGameLevel* q = h->m_world->m_level;
         LevelCoordRect* r = &q->m_planeCtx;
         i32 x0 = r->minX;
         i32 y0 = r->minY;
@@ -654,7 +654,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = self->m_4;
         i32 my = self->m_cursorY;
-        CGameLevel* q = h->m_world->m_24;
+        CGameLevel* q = h->m_world->m_level;
         CPlaneRender* g = q->m_mainPlane;
         i32 by = ((g->m_originY - q->m_planeCtx.minY + my) & ~0x1f) + 0x10;
         i32 bx = ((self->m_cursorX - q->m_planeCtx.minX + g->m_originX) & ~0x1f) + 0x10;

@@ -72,8 +72,9 @@
 // return 0; else return 1.
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
+#include <Gruntz/GameLevel.h> // CGameLevel + CLevelPlane (m_world->m_level->m_mainPlane rect)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/TriggerMgr.h>  // CTriggerMgr::ApplySwitch @0x6d300 (the ex-ApplyTileSwitch alias)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
                                 // WERE the fake g_animScratch / g_animScratchCount
@@ -236,7 +237,7 @@ static void GruntScratchTeardown();
 // CGrunt::LoadAnimNameTable(int kind, int toyOnly)   @0x49c60
 // Fills the per-pose animation-name index table (m_poseWalk..m_poseItem2) by looking up
 // "GRUNTZ_" + this->m_animSetName + "_<POSE>" in the entrance player's
-// name->animset hash (m_154->m_0c->m_leaf->m_10map). __thiscall, ret 8 (/GX - the
+// name->animset hash (m_154->m_0c->m_animRegistry->m_10map). __thiscall, ret 8 (/GX - the
 // two operator+ CString temporaries per block carry a C++ EH frame).
 //
 //   * kind==0  : load the full grunt pose set (WALK/ATTACK*/STRUCK*/IDLE1..5/
@@ -279,7 +280,7 @@ struct CAnimSetNode {
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
-        m_154->m_0c->m_leaf->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out);         \
+        m_154->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out); \
         (dst) = _out;                                                                              \
     } while (0)
 
@@ -1465,7 +1466,7 @@ label_4c6e4:
         }
         i32 hudY = m_10->m_screenY;
         i32 hudX = m_10->m_screenX;
-        CCueRect* rr = (CCueRect*)(g_gameReg->m_world->m_24->m_5c + 0x40);
+        CCueRect* rr = (CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX;
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
             g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }
@@ -1690,7 +1691,7 @@ i32 CGrunt::CreateHealthSprite() {
         return 0;
     }
 
-    m_healthSprite = g_gameReg->m_world->m_8->CreateSprite(
+    m_healthSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY - 0x19,
@@ -1720,7 +1721,7 @@ i32 CGrunt::CreateToySprite() {
         return 0;
     }
 
-    m_toySprite = g_gameReg->m_world->m_8->CreateSprite(
+    m_toySprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY - 0x19,
@@ -1749,7 +1750,7 @@ i32 CGrunt::CreateStaminaSprite() {
         return 0;
     }
 
-    m_staminaSprite = g_gameReg->m_world->m_8->CreateSprite(
+    m_staminaSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY - 0x20,
@@ -1790,7 +1791,7 @@ i32 CGrunt::CreateToyTimeSprite() {
         m_wingzTimeSprite = 0;
     }
 
-    m_toyTimeSprite = g_gameReg->m_world->m_8->CreateSprite(
+    m_toyTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY - 0x20,
@@ -1826,7 +1827,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
         m_toyTimeSprite = 0;
     }
 
-    m_wingzTimeSprite = g_gameReg->m_world->m_8->CreateSprite(
+    m_wingzTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY - 0x26,
@@ -1856,7 +1857,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
         return 0;
     }
 
-    m_powerupSprite = g_gameReg->m_world->m_8->CreateSprite(
+    m_powerupSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY,
@@ -1886,7 +1887,7 @@ i32 CGrunt::CreateSelectedSprite() {
         return 0;
     }
 
-    m_selectedSprite = g_gameReg->m_world->m_8->CreateSprite(
+    m_selectedSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_10->m_screenX,
         m_10->m_screenY,

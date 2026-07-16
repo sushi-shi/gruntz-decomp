@@ -17,11 +17,11 @@
 #include <Mfc.h>                          // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan (sibling class)
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // the +0x0c owner (m_leafScan = the ANI Configure ctx)
-#include <Gruntz/AniElement.h>            // canonical CAniElement (the 0x28 'ANI' element)
-#include <Bute/SymTab.h>                  // CSymTab - the directory/scope tree the walker iterates
-#include <stdio.h>                        // sprintf (the %s%s%s path-join, 0x11f890)
-#include <string.h>                       // strcpy inline CRT (rep movs / repnz scas)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner (m_soundRegistry = the ANI Configure ctx)
+#include <Gruntz/AniElement.h>        // canonical CAniElement (the 0x28 'ANI' element)
+#include <Bute/SymTab.h>              // CSymTab - the directory/scope tree the walker iterates
+#include <stdio.h>                    // sprintf (the %s%s%s path-join, 0x11f890)
+#include <string.h>                   // strcpy inline CRT (rep movs / repnz scas)
 
 // The %s%s%s path-join format the walker sprintf's through (reloc-masked DIR32).
 // @data-symbol, not DATA: clang mangles the const-char[] extern with a `Q` storage
@@ -47,7 +47,7 @@ void operator delete(void*);
 
 // (The ex `CDDrawSubMgrAni` twin class is MERGED onto CDDrawSubMgrLeaf - one
 // receiver, one TU, one layout; proof in <DDrawMgr/DDrawSubMgrLeaf.h>. The ANI
-// factory reads the owner's +0x28 m_leafScan as the element Configure ctx - a
+// factory reads the owner's +0x28 m_soundRegistry as the element Configure ctx - a
 // real typed hop now, not the ex raw-offset AniMgrSubObject helper.)
 
 // ---------------------------------------------------------------------------
@@ -178,7 +178,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry_1528d0(const char* key, void* entr
     if (el == 0) {
         return 0;
     }
-    if (el->Configure_1655c0(m_0c->m_leafScan, entry, 0) == 0) {
+    if (el->Configure_1655c0(m_0c->m_soundRegistry, entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -200,7 +200,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2_1529b0(const char* key, void* ent
     if (el == 0) {
         return 0;
     }
-    if (el->LoadFile_165620(m_0c->m_leafScan, entry, 0) == 0) {
+    if (el->LoadFile_165620(m_0c->m_soundRegistry, entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;

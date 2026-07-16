@@ -11,6 +11,7 @@
 //
 // Functions in strictly ascending retail-RVA order. Field names are placeholders;
 // only the OFFSETS + the per-method call/branch structure are load-bearing.
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <rva.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Rez/FrameClock.h>   // the frame-clock/timer band the session loop reads/pumps
@@ -23,10 +24,10 @@
 #include <Io/FileStream.h> // CFileIO (the static MFC CFile global at 0x646778; 0x0b5400 ctor)
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/SoundStream.h> // SoundStream : SoundDevice - the REAL m_c->m_soundStream (+0x20)
-#include <Gruntz/SoundCue.h>     // CSndHost - the REAL m_c->m_28 (name->cue map + emit gate)
+#include <Gruntz/SoundCue.h> // CSndHost - the REAL m_c->m_soundRegistry (name->cue map + emit gate)
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerList.h> // renderer B - the real CDDrawWorkerList (PruneWorkers)
-#include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_8 object manager (was the McObj/McHost views)
+#include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_childGroup object manager (was the McObj/McHost views)
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
@@ -40,10 +41,10 @@
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/ResMgr.h>       // CDrawTarget (m_c->m_drawTarget->m_18->m_surface Fill)
-#include <Wap32/EngStr.h>        // THE canonical EngStr_DrawText (0x115440) lean decl
-#include <stdio.h>               // engine sprintf (reloc-masked)
-#include <stdlib.h>              // srand (reloc-masked)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrPages (m_c->m_drawTarget->m_overlayPair->m_surface Fill)
+#include <Wap32/EngStr.h>             // THE canonical EngStr_DrawText (0x115440) lean decl
+#include <stdio.h>                    // engine sprintf (reloc-masked)
+#include <stdlib.h>                   // srand (reloc-masked)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -281,7 +282,7 @@ DATA(0x00248cf0)
 i32 g_isHost_648cf0;
 
 //  CMulti::Open @0xb77a0, and its +0xc holder is the inherited CState::m_c
-//  (CSpriteFactoryHolder), +0x524 the real CNetMgr via Peer().)
+//  (CDDrawSurfaceMgr), +0x524 the real CNetMgr via Peer().)
 // The menu-select event the handler is handed IS the received control message
 // (MenuSelectEvent, now in <Net/NetMgr.h> - xref-proven the CNetCtrlMsg passed by
 // HandleControlMsg @0xba1ed).
@@ -327,10 +328,10 @@ extern "C" i32 g_scoreTimeBase; // 0x648ce8
 // +0x14 clock / +0x18 interval - literally LeafCue's field set, which the OTHER cue site
 // in this very file already used the canonical LeafCue for). CCueEmitter was LeafCue::m_10,
 // i.e. DSoundCloneInst, whose ConfigureItem @0x1360d0 the comment already named.)
-// The embedded registry/bute object at (m_c->m_28 + 0x10) is the REAL CSndHost
+// The embedded registry/bute object at (m_c->m_soundRegistry + 0x10) is the REAL CSndHost
 // (<Gruntz/SoundCue.h>): its +0x10 IS that class's name->cue map and its +0x30 the
 // m_emitGate. The two shells that stood here (CNetCfg / CNetCfgSub) were CState::m_c
-// (the canonical CSpriteFactoryHolder) and its m_28.
+// (the canonical CDDrawSurfaceMgr) and its m_28.
 //
 // That map is a ::CMapStringToPtr, NOT a CMapStringToOb - every call from a CSndHost
 // enters 0x1b8438, and `mfc_class 0x1b8438` names its band [0x1b8247, 0x1b85b1) (ctor
@@ -367,12 +368,12 @@ extern "C" void* RegistryFind(void* reg, char* key); // FUN_0053c030 (__cdecl-is
 // The "sub-window" at m_c->+0x20 is the REAL SoundStream (<Dsndmgr/SoundStream.h>,
 // `class SoundStream : public SoundDevice`): its two per-frame ticks are
 // SoundDevice::PurgeVoiceList (0x136e20) and SoundStream::TickSubManagers (0x137ac0),
-// BOTH already 100%% EXACT in the tree. CSpriteFactoryHolder::m_frameProfiler now
+// BOTH already 100%% EXACT in the tree. CDDrawSurfaceMgr::m_frameProfiler now
 // carries that type, so the calls are cast-free.
 // Tick's present-finish wait (cdecl free fn). 0x0013dfe0
 extern void ActiveWait(i32 phase);
 
-// The render-sub object reached via m_c->m_24->m_5c is the level's MAIN PLANE, and
+// The render-sub object reached via m_c->m_level->m_5c is the level's MAIN PLANE, and
 // its "SubTick" (0x163300) is CPlaneRender::CenterScrollA - the same class + rva
 // GameLevel.cpp already drives on m_mainPlane.
 
@@ -962,7 +963,7 @@ i32 CMulti::FrameSlot28(i32 arg) {
         return 1;
     }
     RECT r;
-    m_c->m_drawTarget->m_18->m_surface->Fill(0);
+    m_c->m_drawTarget->m_overlayPair->m_surface->Fill(0);
     CString s;
     s.LoadString(0x81a9);
     r.right = m_4->m_modeW;
@@ -1189,7 +1190,7 @@ extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 // g_timer400/g_timer500) comes from <Rez/FrameClock.h>. NOTE: the pump below proves
 // 0x245598 == g_timer200 (seed 0xc8 countdown), NOT the old "g_timer200" guess.
 
-// dispatches m_c->m_8's slot 9 (+0x24, ONE arg = the frame delta) then slot 16
+// dispatches m_c->m_childGroup's slot 9 (+0x24, ONE arg = the frame delta) then slot 16
 // (+0x40, no arg). The class whose RTTI slot map (vtbl 0x1efdc0, 17 slots) carries
 // BOTH - at those exact offsets, with those exact arities - is the one
 // CDDrawChildGroup: slot 9 = TickKillCues_159a70 (0x159a70, ret 4) and slot 16 = Slot40
@@ -1310,22 +1311,22 @@ i32 CMulti::PumpA() {
 // CMulti.h are reached through dedicated view structs / documented offsets.
 // ---------------------------------------------------------------------------
 
-//   PBMgr      == CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) - it IS CState::m_c,
+//   PBMgr      == CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>) - it IS CState::m_c,
 //                 already typed there; every member lines up (m_4 draw target, m_8
 //                 object factory/manager, m_c renderer B, m_24 level/view).
 //   PBVfnHost  == CRenderer (<Gruntz/View.h>) - its "Blit34" (+0x34) IS CRenderer::
 //                 Present, slot 13, already modeled at that offset with the same
 //                 2-arg thiscall shape.
-//   PBSub4     == CDrawTarget (<Gruntz/ResMgr.h>) - the +0x10/+0x14/+0x18 page triple.
+//   PBSub4     == CDDrawSubMgrPages (<Gruntz/ResMgr.h>) - the +0x10/+0x14/+0x18 page triple.
 // TWO CONFLATIONS remain visible as casts at the sites below, and they are REAL
 // (do not paper over them):
-//   (1) CDrawTarget types +0x10/+0x14/+0x18 as its own SurfaceA*/SurfaceB* nested
+//   (1) CDDrawSubMgrPages types +0x10/+0x14/+0x18 as its own SurfaceA*/SurfaceB* nested
 //       pages, while this TU's uses (->m_surface Flip/Fill, the VisitVisible target)
 //       are CDDrawSurfacePair* operations. Both readings agree on the OFFSETS and on
 //       a +0x2c CDDSurface; they disagree on the page CLASS. Settling that needs the
 //       page ctor/new-site (unreconstructed), so the pages keep the pair type here
 //       via cast and the disagreement is reported, not guessed away.
-//   (2) CSpriteFactoryHolder::m_24 is typed CGameViewport there but is used as
+//   (2) CDDrawSurfaceMgr::m_24 is typed CGameViewport there but is used as
 //       CGameLevel here (VisitVisible / m_mainPlane) - the same +0x24 slot, two
 //       names; CDDrawSurfaceMgr's slot map says +0x24 is the level. Same fold.]
 
@@ -1346,25 +1347,28 @@ extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 // - not steerable from source. Sibling of the PumpA (~88%) wall.
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
-    CSpriteFactoryHolder* mgr = m_c;
+    CDDrawSurfaceMgr* mgr = m_c;
     if (m_594 == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
-        ((CGameLevel*)mgr->m_24)->VisitVisible(mgr->m_drawTarget->m_14, mgr->m_8);
-        mgr->m_rendererB->PruneWorkers(mgr->m_drawTarget->m_14, mgr->m_drawTarget->m_18);
+        mgr->m_level->VisitVisible(mgr->m_drawTarget->m_backPair, mgr->m_childGroup);
+        mgr->m_workerList->PruneWorkers(
+            mgr->m_drawTarget->m_backPair,
+            mgr->m_drawTarget->m_overlayPair
+        );
         m_guts->LoadMainStatusBarSprite();
-        CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
+        CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_backPair;
         if (h == 0) {
             return;
         }
         StepGridWalk(g_frameDelta);
         CopyRect(h);
-        ((CDDrawSurfacePair*)mgr->m_drawTarget->m_10)->m_surface->Flip(0);
+        ((CDDrawSurfacePair*)mgr->m_drawTarget->m_frontPair)->m_surface->Flip(0);
         return;
     }
     StepInputA();
     StepC();
     if (m_region0Gate != 0) {
-        ((CDDrawSurfacePair*)mgr->m_drawTarget->m_14)->m_surface->Fill(0);
+        ((CDDrawSurfacePair*)mgr->m_drawTarget->m_backPair)->m_surface->Fill(0);
         m_guts->Deactivate();
     }
     if (m_worldReady == 0) {
@@ -1376,14 +1380,17 @@ void CMulti::PumpB() {
     }
     StepScroll();
     Mgr()->m_inputState->Retune(
-        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->m_snappedX,
-        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->m_snappedY
+        ((CPlaneRender*)mgr->m_level->m_mainPlane)->m_snappedX,
+        ((CPlaneRender*)mgr->m_level->m_mainPlane)->m_snappedY
     );
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
     } else {
-        ((CGameLevel*)mgr->m_24)->VisitVisible(mgr->m_drawTarget->m_14, mgr->m_8);
-        mgr->m_rendererB->PruneWorkers(mgr->m_drawTarget->m_14, mgr->m_drawTarget->m_18);
+        mgr->m_level->VisitVisible(mgr->m_drawTarget->m_backPair, mgr->m_childGroup);
+        mgr->m_workerList->PruneWorkers(
+            mgr->m_drawTarget->m_backPair,
+            mgr->m_drawTarget->m_overlayPair
+        );
     }
     m_guts->LoadMainStatusBarSprite();
     if (m_lightFx != 0) {
@@ -1399,11 +1406,14 @@ void CMulti::PumpB() {
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
             m_lightFx->Resize((i32)g_frameDelta, 0);
-            m_lightFx->ComputeRect((CDDrawSurfacePair*)mgr->m_drawTarget->m_14, (LfxRect*)&rc);
+            m_lightFx->ComputeRect(
+                (CDDrawSurfacePair*)mgr->m_drawTarget->m_backPair,
+                (LfxRect*)&rc
+            );
         }
     }
     Mgr()->m_chatLog->Scroll(g_frameDelta);
-    CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
+    CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_backPair;
     if (h == 0) {
         return;
     }
@@ -1415,10 +1425,10 @@ void CMulti::PumpB() {
     if (m_worldReady != 0) {
         h->DrawBox((i32*)&m_hudRect, 0xff);
     }
-    ((CDDrawSurfacePair*)mgr->m_drawTarget->m_10)->m_surface->Flip(0);
+    ((CDDrawSurfacePair*)mgr->m_drawTarget->m_frontPair)->m_surface->Flip(0);
     PumpBRefresh2356(g_gameReg, m_guts, m_region0Gate);
-    if (((CGameLevel*)mgr->m_24)->m_mainPlane != 0) {
-        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->CenterScrollB();
+    if (mgr->m_level->m_mainPlane != 0) {
+        ((CPlaneRender*)mgr->m_level->m_mainPlane)->CenterScrollB();
     }
     if (m_region0Gate != 0) {
         if ((i64)g_frameTime - *(i64*)&m_region0TimerLo >= *(i64*)&m_region0Interval) {
@@ -1469,7 +1479,7 @@ i32 CMulti::StartTitle() {
     }
     // m_c->m_drawTarget IS a CDDrawSubMgrPages (its 0x158dc0 leaf is that class's
     // Method_158dc0); retail loads the VALUE at [m_c+4], not its address.
-    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158dc0();
+    m_c->m_drawTarget->Method_158dc0();
     void* vobj = *(void**)(*(void**)((char*)m_c + 0x1c));
     (*(void(__stdcall**)(void*))((char*)*(void**)vobj + 0x28))(vobj); // vfn +0x28(vobj)
     m_2c = saved;
@@ -1547,9 +1557,9 @@ i32 CMulti::Open() {
     if (!Peer()) {
         return 0;
     }
-    RunTitleSeq("BACKGND", 0, 0, 1, 0);                       // 0xfa350 (CState base)
-    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158dc0(); // m_c->m_4
-    i32 descriptor = SetupServices();                         // 0xb78b0
+    RunTitleSeq("BACKGND", 0, 0, 1, 0); // 0xfa350 (CState base)
+    m_c->m_drawTarget->Method_158dc0(); // m_c->m_4
+    i32 descriptor = SetupServices();   // 0xb78b0
     if (!descriptor) {
         return 0;
     }
@@ -2035,9 +2045,9 @@ i32 CMulti::ShowMultiStartDlg() {
     if (m_isHost != 0) {
         ApplyCmdDelayDefaults(); // 0xb85a0 (ILT 0x386e)
     } else {
-        if (m_c->m_28->m_emitGate == 0) {
+        if (m_c->m_soundRegistry->m_emitGate == 0) {
             void* rec_ob = 0; // CMapStringToPtr::Lookup takes a void*& out-param
-            m_c->m_28->m_10.Lookup(s_GameKey, rec_ob);
+            m_c->m_soundRegistry->m_10.Lookup(s_GameKey, rec_ob);
             LeafCue* rec = (LeafCue*)rec_ob;
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
@@ -2661,7 +2671,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 1;
             }
             ((CFontConfig*)NetGameMgr()->m_5c)->AddItem(msg->m_c, 0x30, player->m_008);
-            CSndHost* host = m_c->m_28;
+            CSndHost* host = m_c->m_soundRegistry;
             if (host->m_emitGate != 0) {
                 break;
             }
@@ -3084,7 +3094,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
                 AnnounceVersion((i32)node);
             }
         }
-        CSndHost* host = m_c->m_28;
+        CSndHost* host = m_c->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* out = 0;
             host->m_10.Lookup("GAME_MENUS_SELECT", out);

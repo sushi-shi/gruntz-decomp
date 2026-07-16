@@ -9,17 +9,18 @@
 // BacklogStateLoaders). No sane dev writes one class seven ways: they are all the
 // same object, unified here.
 //
-// The slots at 0x30/0x60/0x68/0x6c/0x70/0x74/0x7c genuinely hold a *different
-// concrete object per game-mode/facet*. The grunt facet (Grunt.cpp, by far the
-// heaviest consumer) types them (m_world=GruntSoundCat, m_cueSink=CGruntCueSink,
-// m_tileGrid=GruntBoard, m_74=CSpriteRefTable, m_68=int-cast-to-CGruntTileMgr), so
-// those types are kept here; the other TUs reach their own facet with an authentic
-// per-mode downcast (e.g. UserLogic: (CTeleResHolder*)m_world, (CTeleCueSink*)
-// m_cueSink, (CTriggerProbe*)m_68). The 0x150.. region is the CGruntzMgr
-// m_options[4] block (4 x 0x238 -> 0xa30); the TUs that reach it (per-player start
-// records @0x150, ref-index array @0x158, ...) index it by raw (char*)g_gameReg +
-// offset - the established idiom (see Grunt.cpp / GameMode). The reconciled MFC/
-// Win32 sibling view is <Gruntz/GameRegistry.h> (CGruntzMgr / g_gameReg).
+// The old claim that the 0x30 slot holds "a different concrete object per
+// game-mode/facet" is CONTRADICTED and dead (2026-07-16): +0x30 is the ONE
+// canonical CDDrawSurfaceMgr (the world/resource holder) - the grunt facet's
+// "GruntSoundCat" (+0x08 factory == m_childGroup, +0x24 == m_level the CGameLevel,
+// +0x28 == m_soundRegistry the CDDrawSubMgrLeafScan) and UserLogic's ex
+// "CTeleResHolder" were per-TU views of it, all dissolved onto the canonical.
+// The genuinely-reused slots (0x60/0x68/0x6c/0x70/0x7c) keep their facet notes
+// below. The 0x150.. region is the CGruntzMgr m_options[4] block (4 x 0x238 ->
+// 0xa30); the TUs that reach it (per-player start records @0x150, ref-index array
+// @0x158, ...) index it by raw (char*)g_gameReg + offset - the established idiom
+// (see Grunt.cpp / GameMode). The reconciled MFC/Win32 sibling view is
+// <Gruntz/GameRegistry.h> (CGruntzMgr / g_gameReg).
 #ifndef GRUNTZ_GRUNTZ_WWDGAMEREG_H
 #define GRUNTZ_GRUNTZ_WWDGAMEREG_H
 
@@ -27,12 +28,12 @@
 #include <rva.h> // SIZE class-metadata macro
 
 // Pointer-member facet types (each consumer completes the ones it dereferences).
-struct GruntSoundCat;  // +0x30  grunt sound-category / resource holder facet
-class CGruntCueSink;   // +0x60  on-screen cue receiver
-struct GruntBoard;     // +0x70  level tile board
-class CSpriteRefTable; // +0x74  sprite/animation ref table (GetSel)
-class CBattlezData;    // +0x7c  HUD/score + pickup-stat accumulator (<Gruntz/BattlezData.h>)
-struct tagRECT;        // GetMessageBounds in/out (== Win32 RECT)
+class CDDrawSurfaceMgr; // +0x30  the ONE world/resource holder (<DDrawMgr/DDrawSurfaceMgr.h>)
+class CGruntCueSink;    // +0x60  on-screen cue receiver
+struct GruntBoard;      // +0x70  level tile board
+class CSpriteRefTable;  // +0x74  sprite/animation ref table (GetSel)
+class CBattlezData;     // +0x7c  HUD/score + pickup-stat accumulator (<Gruntz/BattlezData.h>)
+struct tagRECT;         // GetMessageBounds in/out (== Win32 RECT)
 
 SIZE(WwdGameReg, 0xa30);
 struct WwdGameReg {
@@ -45,10 +46,10 @@ struct WwdGameReg {
     char m_pad0[0x10];
     i32 m_10; // +0x10  presence gate
     char m_pad14[0x2c - 0x14];
-    void* m_2c;             // +0x2c  current game state (curState; the MEGAPHONE unit-count path
-                            //         reads its +0x2dc sub-object; == GameRegistry m_curState)
-    GruntSoundCat* m_world; // +0x30  resource/sound-category holder (grunt facet;
-                            //         other TUs downcast: CTeleResHolder / active gate)
+    void* m_2c;                // +0x2c  current game state (curState; the MEGAPHONE unit-count path
+                               //         reads its +0x2dc sub-object; == GameRegistry m_curState)
+    CDDrawSurfaceMgr* m_world; // +0x30  the ONE world/resource holder (canonical;
+                               //         ex the GruntSoundCat/CTeleResHolder facet views)
     char m_pad34[0x60 - 0x34];
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (grunt facet; UserLogic
                               //         downcasts to CTeleCueSink)

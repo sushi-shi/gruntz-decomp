@@ -35,7 +35,7 @@
 #include <afxwin.h>
 #include <new>
 #include <Gruntz/LeafCue.h>
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (m_world->m_8 live-object list)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (m_world->m_childGroup live-object list)
 #include <Gruntz/UserLogic.h> // CGameObject (the scanned live objects: m_screenX/Y, m_collCategory)
 #include <Image/CImage.h>     // the "Gruntz" set's frames the cheats read ARE CImages
 #include <DDrawMgr/DDrawShadeBlit.h> // CImage::m_owned - the shaded sprite the cheats retype/relight
@@ -57,8 +57,8 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>    // m_world->m_pages (ex CWorldSub4; Method_158c70 pause)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_28 (CSndHost == the leaf-scan registry)
+#include <DDrawMgr/DDrawSubMgrPages.h> // m_world->m_drawTarget (ex CWorldSub4; Method_158c70 pause)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_soundRegistry (CSndHost == the leaf-scan registry)
 #include <DDrawMgr/DDrawPtrCollections.h> // m_world->m_ptrColl (GetCapsChecked / the held IDirectDraw2)
 #include <Gruntz/GameRegistry.h>
 #include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (was local CWorldLayer)
@@ -91,7 +91,7 @@
 // name - its tile-collision record is CTileImageSet now.
 #include <Net/NetMgr.h>          // the ONE CNetMgr (ReportError is its static member)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
-#include <Gruntz/ResMgr.h>       // CImageRegistry - the REAL m_world->m_10 (was CWorldLookupHolder)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry - the REAL m_world->m_imageRegistry (was CWorldLookupHolder)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the class that OWNS the registry key helpers (0x1554xx)
 #include <Globals.h>
 
@@ -419,8 +419,8 @@ extern "C" {
 // polymorphic CDDrawSurfaceMgr (slot 6 +0x18 = the 5-arg Init "SetVideoMode",
 // slot 7 +0x1c = Cleanup_155e20 the pre-Init "Notify" teardown) - the same class
 // this TU already reaches via the SetHwnd casts. The full CWorldZ==CDDrawSurfaceMgr
-// field-view fold (m_4==m_pages, m_8==m_childGroup, m_24==m_resolveSubMgr/CGameLevel,
-// m_28==m_leafScan, m_38==m_lastError) is the deferred reconciliation.]
+// field-view fold (m_4==m_drawTarget, m_8==m_childGroup, m_24==m_level/CGameLevel,
+// m_28==m_soundRegistry, m_38==m_lastError) is the deferred reconciliation.]
 // The mode-reset callback registration reached during LoadWorldMode: a non-virtual
 // thiscall on the world with a code-address callback (LAB_00403193) handed in. The
 // callback is an external function whose pushed address reloc-masks.
@@ -467,7 +467,7 @@ void EndWaitCursor();   // 0x1beb10
 // (+0x30/+0x34) and edge origins (+0x40..+0x4c) all live in the folded CPlaneRender - each
 // caller reads only the facet it needs.
 
-// The active world view held at m_world->m_24. One object; each manager method reads a
+// The active world view held at m_world->m_level. One object; each manager method reads a
 // different facet: the tile rect (+0x10..+0x1c) + the three scaled-extent output pairs
 // (+0xc8..+0xdc) RecomputeViewScale fills, the layer array (+0x38 base / +0x3c count),
 // the distinguished layer/plane (+0x5c), and the mode-reload extent pair (+0x64/+0x68
@@ -611,11 +611,11 @@ i32 PumpIdleFrame() {
     if (mgr == 0) {
         return 0;
     }
-    CSpriteFactoryHolder* world = mgr->m_world;
+    CDDrawSurfaceMgr* world = mgr->m_world;
     if (world == 0) {
         return 0;
     }
-    if (world->m_10 == 0) {
+    if (world->m_imageRegistry == 0) {
         return 0;
     }
     if (mgr->m_curState == 0) {
@@ -1018,7 +1018,7 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 // could not produce the +0x10 intermediate; that 87.6% wall dissolves with it).
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
-    CObList* list = &m_world->m_8->m_list;
+    CObList* list = &m_world->m_childGroup->m_list;
     CDDrawGroupNode* node = list ? (CDDrawGroupNode*)list->GetHeadPosition() : 0;
     while (node) {
         CDDrawGroupNode* cur = node;
@@ -1041,7 +1041,7 @@ extern char s_assetKeyGame[];
 // dispatch (m_1c) twice in between. No-op with no world loaded.
 RVA(0x0008dc90, 0xb1)
 void CGruntzMgr::RegisterLevelAssetKeys() {
-    CSpriteFactoryHolder* w = m_world;
+    CDDrawSurfaceMgr* w = m_world;
     if (w == 0) {
         return;
     }
@@ -1049,19 +1049,19 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     // ex-CWorldLookupHolder called "RegisterKey". CImageRegistry and CDDrawWorkerRegistry
     // are the same object under two unreconciled names (ResMgr.h already casts this way for
     // its Has/Register/Release siblings), so the call binds to the symbol retail enters.
-    ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(0, 1);
-    w->m_28->SumField_1580b0(0);
+    w->m_imageRegistry->SumSizesEqual_155460(0, 1);
+    w->m_soundRegistry->SumField_1580b0(0);
     w->m_ptrColl->GetCapsChecked();
     w->m_ptrColl->GetCapsChecked();
-    ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(0, 1);
-    ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("GRUNTZ", 1);
-    ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460(s_assetKeyGame, 1);
-    ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("LEVEL", 1);
-    ((CDDrawWorkerRegistry*)w->m_10)->SumSizesEqual_155460("ACTION", 1);
-    w->m_28->SumField_1580b0(0);
-    w->m_28->SumField_1580b0("GRUNTZ");
-    w->m_28->SumField_1580b0(s_assetKeyGame);
-    w->m_28->SumField_1580b0("LEVEL");
+    w->m_imageRegistry->SumSizesEqual_155460(0, 1);
+    w->m_imageRegistry->SumSizesEqual_155460("GRUNTZ", 1);
+    w->m_imageRegistry->SumSizesEqual_155460(s_assetKeyGame, 1);
+    w->m_imageRegistry->SumSizesEqual_155460("LEVEL", 1);
+    w->m_imageRegistry->SumSizesEqual_155460("ACTION", 1);
+    w->m_soundRegistry->SumField_1580b0(0);
+    w->m_soundRegistry->SumField_1580b0("GRUNTZ");
+    w->m_soundRegistry->SumField_1580b0(s_assetKeyGame);
+    w->m_soundRegistry->SumField_1580b0("LEVEL");
 }
 
 // -------------------------------------------------------------------------
@@ -1278,7 +1278,7 @@ extern char g_msgCaption[];
 RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
-        CDDrawSubMgrPages* pages = m_world->m_pages;
+        CDDrawSubMgrPages* pages = m_world->m_drawTarget;
         pages->Method_158c70(pages->m_backPair);         // pause the back pair (ex "PausePages")
         m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
@@ -1295,7 +1295,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ToggleObjectLayer (0x08efe0; ret). Debug visibility toggle for the
-// world view's (m_world->m_24) "current" object layer: only when the manager is
+// world view's (m_world->m_level) "current" object layer: only when the manager is
 // active (base slot-3 gate) and a world+view are loaded. The layer index is
 // count-1, biased down one more when the count is exactly 4; once bounds-checked
 // and unlocked (bit 0 clear) it flips the layer's visible bit (m_8 ^= 2) and
@@ -1312,7 +1312,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        CGameLevel* view = m_world->m_24;
+        CGameLevel* view = m_world->m_level;
         if (view) {
             i32 count = view->m_planes.GetSize();
             // (count==4 ? count-1 : count) - 1: best-scoring spelling (96.7%); it
@@ -1335,12 +1335,12 @@ i32 CGruntzMgr::ToggleObjectLayer() {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ToggleHeightLayer (0x08f060; ret). Visibility toggle for the world
-// view's distinguished sub-layer ((CPlaneRender*)m_world->m_24->m_mainPlane) - flipped unconditionally
+// view's distinguished sub-layer ((CPlaneRender*)m_world->m_level->m_mainPlane) - flipped unconditionally
 // (no lock check). Active-gated + world/view guarded like ToggleObjectLayer.
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        CGameLevel* view = m_world->m_24;
+        CGameLevel* view = m_world->m_level;
         if (view) {
             CPlaneRender* layer = (CPlaneRender*)view->m_mainPlane;
             if (layer) {
@@ -1354,12 +1354,12 @@ i32 CGruntzMgr::ToggleHeightLayer() {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ToggleBaseLayer (0x08f0b0; ret). Visibility toggle for the world
-// view's first layer (m_world->m_24->m_38[0], present only when the count is
+// view's first layer (m_world->m_level->m_38[0], present only when the count is
 // positive); unlocked-checked (bit 0) then m_8 ^= 2. Active-gated + guarded.
 RVA(0x0008f0b0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        CGameLevel* view = m_world->m_24;
+        CGameLevel* view = m_world->m_level;
         if (view) {
             CPlaneRender* layer =
                 (view->m_planes.GetSize() > 0) ? (CPlaneRender*)view->m_planes[0] : 0;
@@ -1846,7 +1846,7 @@ void CGruntzMgr::Post(i32 code) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ReportWorldStatus (0x090ac0; ret 4). Surfaces the loaded world's
-// status code (m_world->m_38) as a (msgId, statusCode) error. Bails to the
+// status code (m_world->m_lastError) as a (msgId, statusCode) error. Bails to the
 // generic (0x800a) error first when there is no world or no status, then maps the
 // known status codes to their message ids via a switch; the near-consecutive
 // 0x80ea..0x80ed band becomes a dense jump table, the rest a cmp/je tree, and the
@@ -1864,7 +1864,7 @@ void CGruntzMgr::ReportWorldStatus(i32 a) {
     if (m_world == 0) {
         ReportError(0x800a, a);
     }
-    u32 status = m_world->m_38;
+    u32 status = m_world->m_lastError;
     if (status == 0) {
         ReportError(0x800a, a);
     }
@@ -1916,8 +1916,8 @@ void CGruntzMgr::ReportWorldStatus(i32 a) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::LoadMonologoSprite (0x090d10). PLAY-state only (m_curState->Update()
-// == 3): look "GAME_MONOLITH" up in the world config map (m_world->m_10), then
-// find-or-create the "MONOLITH" logo sprite in the world view (m_world->m_24). An
+// == 3): look "GAME_MONOLITH" up in the world config map (m_world->m_imageRegistry), then
+// find-or-create the "MONOLITH" logo sprite in the world view (m_world->m_level). An
 // existing sprite TOGGLES its visible bit (m_flags & 2) + the g_monologoShown shown-flag; a
 // fresh sprite gets its cell grid checkerboard-seeded with the config index / -1 and
 // the flag set to 1. No destructible local -> no /GX frame (the sprite-grid loop).
@@ -1942,7 +1942,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     }
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
     CObject* out = 0;
-    m_world->m_10->m_10map.Lookup("GAME_MONOLITH", out);
+    m_world->m_imageRegistry->m_10map.Lookup("GAME_MONOLITH", out);
     CImageSet* rec = (CImageSet*)out;
     if (rec == 0) {
         return 0;
@@ -1954,10 +1954,10 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     }
     i32 geoA = e->m_width;
     i32 geoB = e->m_height;
-    CPlaneRender* found = (CPlaneRender*)m_world->m_24->FindPlaneByName("MONOLITH");
+    CPlaneRender* found = (CPlaneRender*)m_world->m_level->FindPlaneByName("MONOLITH");
     if (found == 0) {
         CPlaneRender* spr =
-            (CPlaneRender*)((CGameLevelPlanes*)m_world->m_24)
+            (CPlaneRender*)((CGameLevelPlanes*)m_world->m_level)
                 ->ReadObjectPlane(0x20, 0x20, geoA, geoB, -0x19, -0x19, (i32) "MONOLITH");
         if (spr == 0) {
             return 0;
@@ -2004,7 +2004,7 @@ RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
     if (sink && key) {
         CObject* out = 0; // CMapStringToOb::Lookup (0x1b8008) takes a CObject&
-        m_world->m_10->m_10map.Lookup(key, out);
+        m_world->m_imageRegistry->m_10map.Lookup(key, out);
         CImageSet* row = (CImageSet*)out;
         if (row) {
             CImage* dst = row->m_frames[row->m_minIndex];
@@ -2073,7 +2073,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
         return 0;
     }
     CObject* found = 0;
-    m_world->m_10->m_10map.Lookup("GAME_DEVHEADS", found);
+    m_world->m_imageRegistry->m_10map.Lookup("GAME_DEVHEADS", found);
     CImageSet* out = (CImageSet*)found;
     if (out == 0) {
         return 0;
@@ -2116,7 +2116,7 @@ RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == 3 && m_world) {
         CObject* found = 0;
-        m_world->m_10->m_10map.Lookup("Gruntz", found);
+        m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
             CImage* fr = set->m_frames[set->m_minIndex];
@@ -2131,7 +2131,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                         set->SetAllTypes(1);
                         AppendChatMessage((char*)"Back from the dead?");
                     }
-                    CSndHost* host = m_world->m_28;
+                    CSndHost* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         // CSndHost::m_10 is a CMapStringToPtr (Lookup 0x1b8438) - void&, unlike
                         // the image registry's CMapStringToOb above.
@@ -2175,7 +2175,7 @@ RVA(0x00091390, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->Update() == 3 && m_world) {
         CObject* found = 0;
-        m_world->m_10->m_10map.Lookup("Gruntz", found);
+        m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
             CImage* fr = set->m_frames[set->m_minIndex];
@@ -2191,7 +2191,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                         set->SetAllTypes(1);
                         AppendChatMessage((char*)"Where did the sun go?");
                     }
-                    CSndHost* host = m_world->m_28;
+                    CSndHost* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         // CSndHost::m_10 is a CMapStringToPtr (Lookup 0x1b8438) - void&, unlike
                         // the image registry's CMapStringToOb above.
@@ -2223,7 +2223,7 @@ typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ScanObjectsInRadius (0x092180; __thiscall; ret 0x18). Walks the live
-// game-object list (m_world->m_8->m_list) and, for each object whose
+// game-object list (m_world->m_childGroup->m_list) and, for each object whose
 // collision-category bits (m_collCategory) intersect `mask`, tests a game-space reach
 // metric (|dx|^2 + 2*|dy|) against radius^2. Every in-range object is counted and
 // passed to cb(obj, user); the walk stops early if cb returns 0. Returns the hit
@@ -2235,7 +2235,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, 
     }
     i32 r2 = radius * radius;
     i32 count = 0;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_8->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_childGroup->m_list.GetHeadPosition();
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -2281,7 +2281,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb
     i32 loY = r->top + offY;
     i32 hiY = r->bottom + offY;
     i32 count = 0;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_8->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_childGroup->m_list.GetHeadPosition();
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -2410,7 +2410,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
 
     ((CDDrawSurfaceMgr*)m_world)->SetHwnd((void*)ModeResetCallback);
-    CGameLevel* view = m_world->m_24;
+    CGameLevel* view = m_world->m_level;
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
     CreateWorldObjects(m_world);
@@ -2455,7 +2455,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         ni = 0;
     }
     m_inputState = ni;
-    if (ni->Init(m_world->m_28, m_soundVolume) == 0) {
+    if (ni->Init(m_world->m_soundRegistry, m_soundVolume) == 0) {
         ReportError(0x800a, 0x442);
         return 0;
     }
@@ -2741,7 +2741,7 @@ i32 CGruntzMgr::TickStateMgrs() {
 // CGruntzMgr::SetRunState (0x092340; __thiscall; ret 4). Sets the base run-state
 // flag (CGameMgr::m_10) and, when it changes AND a world is loaded, runs the
 // transition side-effects: tear down the world's inner controller
-// (m_world->m_28->m_2c, guarded), mirror the new state into the g_sndEnabled gate,
+// (m_world->m_soundRegistry->m_2c, guarded), mirror the new state into the g_sndEnabled gate,
 // then flush the +0x54 input object - Arm (thunk 0x18e8) when entering the run
 // state (m_10 != 0), Disarm (thunk 0x29b9) when leaving it. A no-op when the value is unchanged, and
 // the whole side-effect chain is skipped when no world is loaded.
@@ -2760,7 +2760,7 @@ void CGruntzMgr::SetRunState(i32 v) {
     if (m_world == 0) {
         return;
     }
-    SoundStream* sub = m_world->m_28->m_2c;
+    SoundStream* sub = m_world->m_soundRegistry->m_2c;
     if (sub) {
         sub->Stop();
     }
@@ -3142,7 +3142,7 @@ void CGruntzMgr::RecomputeViewScale() {
     if (m_world == 0) {
         return;
     }
-    CGameLevel* view = m_world->m_24;
+    CGameLevel* view = m_world->m_level;
     float fw = (float)(view->m_planeCtx.maxX - view->m_planeCtx.minX + 1);
     float fh = (float)(view->m_planeCtx.maxY - view->m_planeCtx.minY + 1);
 
@@ -3150,24 +3150,24 @@ void CGruntzMgr::RecomputeViewScale() {
     view->m_cc = (i32)(fh * 1.4f);
     view->MainPlaneNotify();
 
-    view = m_world->m_24;
+    view = m_world->m_level;
     view->m_d0 = (i32)(fw * 5.3f);
     view->m_d4 = (i32)(fh * 5.3f);
     view->MainPlaneNotify();
 
-    view = m_world->m_24;
+    view = m_world->m_level;
     view->m_d8 = (i32)(fw * 1.12f);
     view->m_dc = (i32)(fh * 1.12f);
     view->MainPlaneNotify();
 
-    CGameLevel* v = m_world->m_24;
+    CGameLevel* v = m_world->m_level;
     if (v->m_mainPlane == 0) {
         return;
     }
     m_viewOriginL = ((CPlaneRender*)v->m_mainPlane)->m_originX - 0x60;
-    m_viewOriginT = ((CPlaneRender*)m_world->m_24->m_mainPlane)->m_originY - 0x60;
-    m_viewOriginR = ((CPlaneRender*)m_world->m_24->m_mainPlane)->m_extentX + 0x60;
-    m_viewOriginB = ((CPlaneRender*)m_world->m_24->m_mainPlane)->m_extentY + 0x60;
+    m_viewOriginT = ((CPlaneRender*)m_world->m_level->m_mainPlane)->m_originY - 0x60;
+    m_viewOriginR = ((CPlaneRender*)m_world->m_level->m_mainPlane)->m_extentX + 0x60;
+    m_viewOriginB = ((CPlaneRender*)m_world->m_level->m_mainPlane)->m_extentY + 0x60;
 }
 
 // -------------------------------------------------------------------------
@@ -3471,7 +3471,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
             m_inputState->Stop();
         }
         if (m_world) {
-            CSndHost* sub = m_world->m_28;
+            CSndHost* sub = m_world->m_soundRegistry;
             if (sub && sub->m_2c) {
                 sub->m_2c->Stop();
             }
@@ -3532,7 +3532,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         m_timer->Stop();
     }
     if (m_world) {
-        RedrawMapIndex((i32)m_world->m_pages->m_backPair);
+        RedrawMapIndex((i32)m_world->m_drawTarget->m_backPair);
         m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
@@ -3683,12 +3683,12 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::UnloadSoundChain (0x08f740; ret). Tears down the loaded world's
-// inner controller object (m_world->m_28->m_2c->Teardown(), each guarded) then, if
+// inner controller object (m_world->m_soundRegistry->m_2c->Teardown(), each guarded) then, if
 // the sound object's inner busy-poll reports busy, stops the bank via StopBank2.
 RVA(0x0008f740, 0x46)
 void CGruntzMgr::UnloadSoundChain() {
     if (m_world) {
-        CSndHost* sub = m_world->m_28;
+        CSndHost* sub = m_world->m_soundRegistry;
         if (sub) {
             SoundStream* obj = sub->m_2c;
             if (obj) {
@@ -3709,7 +3709,7 @@ void CGruntzMgr::UnloadSoundChain() {
 RVA(0x000919d0, 0x30)
 void CGruntzMgr::SetSoundVolume(i32 v) {
     m_soundVolume = v;
-    if (m_world && m_world->m_28) {
+    if (m_world && m_world->m_soundRegistry) {
         g_sndCueTag = v;
     }
     CWorldSoundSet* in = m_inputState;
@@ -3875,7 +3875,7 @@ void CGruntzMgr::Close() {
         if (m_timer) {
             cfg->SetValueDword("Voice_Volume", m_timer->m_gruntPercent);
         }
-        if (m_world && m_world->m_28) {
+        if (m_world && m_world->m_soundRegistry) {
             cfg->SetValueDword("Sound_Volume", g_sndCueTag);
         }
         cfg->SetValueDword("Scroll_Speed", m_scrollSpeed);
@@ -4087,10 +4087,10 @@ void CGruntzMgr::DelayedQuit() {
     }
     m_a4 = 1;
     LeafCue* out = 0;
-    ((CMapStringToPtr*)&m_world->m_28->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
+    ((CMapStringToPtr*)&m_world->m_soundRegistry->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
     i32 base;
     if (out != 0) {
-        ((CMapStringToPtr*)&m_world->m_28->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
+        ((CMapStringToPtr*)&m_world->m_soundRegistry->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
         base = out->m_10->m_durationMs + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;
@@ -4423,7 +4423,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
         *out = local;
         return out;
     }
-    local = *(RECT*)((char*)m_world->m_24 + 0x10);
+    local = *(RECT*)((char*)m_world->m_level + 0x10);
     *out = local;
     return out;
 }
@@ -4449,7 +4449,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
 //                        ScoreSub2c view called it (it is fed to FillRecord /
 //                        SetCurLevel / `% 0x28 + 1` MaxLevel).
 //   g_gameReg->m_settings->SetValueDword(...)
-//   g_gameReg->m_world->m_24->m_mainPlane->m_originX / ->m_originY  seed X/Y (the
+//   g_gameReg->m_world->m_level->m_mainPlane->m_originX / ->m_originY  seed X/Y (the
 //     ex-CGameRegWarp view: CGameLevel::m_mainPlane is already a typed CLevelPlane*,
 //     and that class carries the +0x84/+0x88 pair under its real names).
 
@@ -4462,7 +4462,7 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
         case WM_INITDIALOG: {
             // the view's `m_24->m_5c` IS CGameLevel::m_mainPlane (+0x5c) - the field exists
             // on the real class under its real name; only the fake view lacked it.
-            CLevelPlane* warp = g_gameReg->m_world->m_24->m_mainPlane;
+            CLevelPlane* warp = g_gameReg->m_world->m_level->m_mainPlane;
             i32 seedX = warp->m_originX;
             i32 seedY = warp->m_originY;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);
@@ -4548,7 +4548,7 @@ INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, 
 // CGruntzMgr::SetVideoMode (0x08df00; ret 0xc). Switch the display to (w,h) at
 // the current bit depth (m_colorDepth). No-op if already at (w,h). When the live state is
 // playable (Update() in {3,0x11}) and the new size exceeds the loaded map's
-// playable field (((CPlaneRender*)m_world->m_24->m_mainPlane)->{m_30,m_34}), it refuses: pokes the HUD
+// playable field (((CPlaneRender*)m_world->m_level->m_mainPlane)->{m_30,m_34}), it refuses: pokes the HUD
 // guts subsystem (m_2dc) and surfaces the "map too small" modal, returning 0.
 // Otherwise it applies the mode through the engine, re-hides the cursor, stamps
 // m_modeW/m_modeH (+ the saved pair when arg3 is set), re-pokes the guts, runs the
@@ -4556,7 +4556,7 @@ INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, 
 //
 // The SetVideoMode symbol pairs the @early-stop CheckDisplayBoundsA/B and the
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
-// The loaded map's playable extent ((CPlaneRender*)m_world->m_24->m_mainPlane) is the shared CPlaneRender;
+// The loaded map's playable extent ((CPlaneRender*)m_world->m_level->m_mainPlane) is the shared CPlaneRender;
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
 // The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
 extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
@@ -4580,8 +4580,8 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         return 0;
     }
     if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
-        if (m_world->m_24 != 0) {
-            CPlaneRender* f = (CPlaneRender*)m_world->m_24->m_mainPlane;
+        if (m_world->m_level != 0) {
+            CPlaneRender* f = (CPlaneRender*)m_world->m_level->m_mainPlane;
             if (f != 0) {
                 if (w > f->m_wrapW || h > f->m_wrapH) {
                     CPlay* st = (CPlay*)m_curState;

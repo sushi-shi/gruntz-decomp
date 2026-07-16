@@ -63,11 +63,11 @@ struct CHitMarker {
     i32 m_4; // +0x04  center y
 };
 
-// The CState +0x0c view/render/resource context (the canonical CSpriteFactoryHolder) and
+// The CState +0x0c view/render/resource context (the canonical CDDrawSurfaceMgr) and
 // its render sub-objects (CRenderer, CDrawSurface, the placed-object warlord list)
 // now live in the shared <Gruntz/View.h> so the leaf-state TUs share the one shape.
 #include <Gruntz/View.h>
-#include <Gruntz/ResMgr.h> // the real CState::m_c sub-object classes (CDrawTarget / CImageRegistry / CSoundRegistry)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the real CState::m_c sub-object classes (CDDrawSubMgrPages / CImageRegistry / CDDrawSubMgrLeafScan)
 // (CWarlordCounters is GONE - the +0x7c counter block IS the canonical
 // CBattlezData (BattlezData.h m_30/m_34/m_38/m_40 band; FillRecord/Init are its
 // real methods) - the score/HUD sink, one object under two former view names.)
@@ -146,7 +146,7 @@ typedef CFileMemBase CSerialArchive;
 class CImage;
 
 // CPlay::m_grid (@+0x4cc, the level/tile frame grid the GrabTile/AdvanceTile walk drives)
-// (2026-07-15): the SAME image-registry map (m_c->m_10->m_10map) yields both the buf80a
+// (2026-07-15): the SAME image-registry map (m_c->m_imageRegistry->m_10map) yields both the buf80a
 // image SET (typed CImageSet*) and the buf80b GRID (typed CFrameGrid*) - a CMapStringToPtr
 // stores one value type, so they are one class - and every field lines up: m_rowTable @+0x14
 // == m_frames, m_name24 @+0x24 == m_name, m_firstRow/m_lastRow @+0x64/+0x68 == m_minIndex/
@@ -354,7 +354,7 @@ public:
     void WorldSubstep();
     // (Overlay1/Overlay2 are GONE - they were phantom CPlay wrappers of the two
     // CLightFxRender thunks 0x1fa0/0x14dd, which retail dispatches straight on
-    // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_14, &rc).)
+    // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_backPair, &rc).)
     void InputSubStep(void* in);         // (m_4->m_70)
     void RegCue(void* sink, i32 wParam); // (reg->m_60)
     void SnapWalk();

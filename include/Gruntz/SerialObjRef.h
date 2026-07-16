@@ -12,7 +12,7 @@
 // CString temp on the write path is inner-scoped + RVO so /GX elides the EH frame
 // (the function is frameless in retail).
 //
-// The registry is the canonical CDDrawSubMgrLeaf reached via obj->m_7c->m_0c->m_leaf: its name
+// The registry is the canonical CDDrawSubMgrLeaf reached via obj->m_7c->m_0c->m_animRegistry: its name
 // map (a ::CMapStringToPtr at +0x10) resolves the key (m_10.Lookup), and its
 // KeyOfValue_152d30 turns a value pointer back into its key CString. Both are the
 // real symbols in CDDrawSubMgrLeaf.cpp; modeled here so the reloc-masked calls pair
@@ -39,7 +39,7 @@
 
 // (The former CSerialRegHolder / CSerialNameHolder / CSerialObj shell chain is
 // its +0x7c the AnimWorkerObj, the worker's m_0c the CDDrawSurfaceMgr, and the
-// +0x2c registry its m_leaf - obj->m_7c->m_0c->m_leaf, all typed.)
+// +0x2c registry its m_animRegistry - obj->m_7c->m_0c->m_animRegistry, all typed.)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/UserLogic.h>
 

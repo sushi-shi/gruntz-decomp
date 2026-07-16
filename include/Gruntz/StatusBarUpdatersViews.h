@@ -21,8 +21,8 @@ class DSoundCloneInst; // the pooled cue player (ConfigureItem @0x1360d0; Dsndmg
 // + the +0x30 emit gate; the cue TUs additionally read its +0x2c sound stream).
 
 // (CRegHolder + CMapTileGrid are DISSOLVED, 2026-07-16: CRegHolder was
-// g_gameReg->m_world == CState::m_c - the ONE CSpriteFactoryHolder
-// (<Gruntz/GameRegistry.h>): m_04==m_pages, m_statusBar==m_28 (CSndHost), and
+// g_gameReg->m_world == CState::m_c - the ONE CDDrawSurfaceMgr
+// (<Gruntz/GameRegistry.h>): m_04==m_drawTarget, m_statusBar==m_28 (CSndHost), and
 // m_tileHolder==m_24 (the canonical CGameLevel). CMapTileGrid was
 // m_24->m_mainPlane - the canonical CLevelPlane/CDDrawWorkerHost
 // (<DDrawMgr/DDrawWorkerHost.h>): m_cellState==m_tileGrid (+0x20),

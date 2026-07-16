@@ -53,7 +53,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_Image* areYouSure = new CSBI_Image;
         if (!areYouSure->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x321,
                 6,
                 SbRect(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
@@ -69,7 +69,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_MenuItemDlg* yes = new CSBI_MenuItemDlg;
         if (!yes->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x327,
                 6,
                 SbRect(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
@@ -86,7 +86,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_MenuItemDlg* no = new CSBI_MenuItemDlg;
         if (!no->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x328,
                 6,
                 SbRect(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
@@ -106,7 +106,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
     CSBI_Image* dialog = new CSBI_Image;
     if (!dialog->SetupImage(
             (CStatusBarMgr*)this,
-            (CSpriteFactoryHolder*)m_c,
+            (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
             0x321,
             6,
             SbRect(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
@@ -126,7 +126,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x322,
                 6,
                 SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
@@ -142,7 +142,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_ImageSet* rsn = new CSBI_ImageSet;
         if (!rsn->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x326,
                 6,
                 SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
@@ -159,7 +159,8 @@ i32 CTabzBuilder::BuildTabzDialog() {
             CSBI_MenuItemDlg* next = new CSBI_MenuItemDlg;
             if (!next->SetupImage(
                     (CStatusBarMgr*)this,
-                    (CSpriteFactoryHolder*)m_c,
+                    (CDDrawSurfaceMgr*)
+                        m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                     0x324,
                     6,
                     SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -176,7 +177,8 @@ i32 CTabzBuilder::BuildTabzDialog() {
             CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
             if (!quit->SetupImage(
                     (CStatusBarMgr*)this,
-                    (CSpriteFactoryHolder*)m_c,
+                    (CDDrawSurfaceMgr*)
+                        m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                     0x325,
                     6,
                     SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -193,7 +195,8 @@ i32 CTabzBuilder::BuildTabzDialog() {
             CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
             if (!statz->SetupImage(
                     (CStatusBarMgr*)this,
-                    (CSpriteFactoryHolder*)m_c,
+                    (CDDrawSurfaceMgr*)
+                        m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                     0x325,
                     6,
                     SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
@@ -214,7 +217,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
     CSBI_ImageSet* status = new CSBI_ImageSet;
     if (!status->SetupImage(
             (CStatusBarMgr*)this,
-            (CSpriteFactoryHolder*)m_c,
+            (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
             0x322,
             6,
             SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
@@ -230,7 +233,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
     CSBI_ImageSet* rsn = new CSBI_ImageSet;
     if (!rsn->SetupImage(
             (CStatusBarMgr*)this,
-            (CSpriteFactoryHolder*)m_c,
+            (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
             0x326,
             6,
             SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
@@ -247,7 +250,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_MenuItemDlg* replay = new CSBI_MenuItemDlg;
         if (!replay->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x324,
                 6,
                 SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -264,7 +267,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
         if (!quit->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x325,
                 6,
                 SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -294,7 +297,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_MenuItemDlg* observe = new CSBI_MenuItemDlg;
         if (!observe->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x324,
                 6,
                 SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -312,7 +315,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
         if (!statz->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x325,
                 6,
                 SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -330,7 +333,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
         if (!statz->SetupImage(
                 (CStatusBarMgr*)this,
-                (CSpriteFactoryHolder*)m_c,
+                (CDDrawSurfaceMgr*)m_c, // TabzSub cross-view (status-bar lane; unresolved facet)
                 0x325,
                 6,
                 SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),

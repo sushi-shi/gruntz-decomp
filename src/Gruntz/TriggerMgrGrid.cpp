@@ -47,7 +47,7 @@ extern "C" CGruntzMgr* g_gameReg;
 // 0x6b640: SetLevel - store the supplied world holder at +0x22c, clear m_armed +
 // m_pendingFx and raise m_countdownActive; returns 1 (0 when arg is null).
 RVA(0x0006b640, 0x2f)
-i32 CTriggerMgr::SetLevel(CSpriteFactoryHolder* lvl) {
+i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
     if (lvl == 0) {
         return 0;
     }
@@ -145,7 +145,7 @@ i32 CTriggerMgr::PlaceObject(
     if (free >= 15) {
         return -1;
     }
-    CDDrawChildGroup* fac = m_level->m_8;
+    CDDrawChildGroup* fac = m_level->m_childGroup;
     CGameObject* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
     if (sprite == 0) {
         return -1;
@@ -272,7 +272,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
 // (`(sx-view10)+scroll0`) - same value, swapped operand order. topic:wall topic:scheduling.
 RVA(0x0006be30, 0x47)
 void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
-    CGameLevel* view = m_level->m_24;
+    CGameLevel* view = m_level->m_level;
     i32 px = view->m_mainPlane->m_originX - view->m_planeCtx.minX + sx;
     i32 py = view->m_mainPlane->m_originY - view->m_planeCtx.minY + sy;
     return CellHitTest(px, py, outRow, outCol, startRow);
@@ -410,9 +410,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         g->m_358 = 1;
     }
 
-    // Inlined LookupTileType(m_level->m_24, x, y): clamp (x,y) to the main plane,
+    // Inlined LookupTileType(m_level->m_level, x, y): clamp (x,y) to the main plane,
     // resolve the tile cell, ask its image set the collision kind at (subX, subY).
-    CGameLevel* level = m_level->m_24;
+    CGameLevel* level = m_level->m_level;
     CPlaneRender* plane = level->m_mainPlane;
     i32 cx = x;
     i32 cy = y;

@@ -20,21 +20,21 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (mgr+0x28 reader)
 #include <Wwd/WwdGameObjectFamily.h>      // the CWwdGameObjectE/A/F/B/C dtor-family hierarchy
 #include <Gruntz/UserLogic.h>             // CGameObject (the sprite-resource/worker leaves)
-#include <Gruntz/ResMgr.h>                // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr + the three registries (m_10/m_14/m_28/m_2c)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // THE canonical CDDrawWorkerRegistry (was shadowed here)
 #include <Gruntz/Sprite.h>                // CSprite (frame-data), CMapStringToOb, CFrameArray
 #include <DDrawMgr/AnimWorkerObj.h>       // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
 #include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (frame collection; slots 10/14/15/16)
 #include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // m_mgr->m_pages->m_frontPair (Test cull extent)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // m_mgr->m_drawTarget->m_frontPair (Test cull extent)
 #include <DDrawMgr/DDrawWorkerCache.h>    // m_mgr->m_workerCache (FindKeyOfValue_165360 / m_10)
-#include <Gruntz/GameLevel.h>             // m_mgr->m_resolveSubMgr->m_mainPlane (Test camera cull)
+#include <Gruntz/GameLevel.h>             // m_mgr->m_level->m_mainPlane (Test camera cull)
 #include <Image/CImage.h>                 // the REAL CImage (was the local CFrameWorker stand-in)
 #include <DDrawMgr/DDrawShadeBlit.h>      // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
 #include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
 #include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>     // m_0c->m_leaf (the +0x2c geometry-source catalog)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the +0x2c geometry-source catalog)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
@@ -50,20 +50,20 @@
 // Fields are typed named members at their retail offsets (matching-neutral); only
 // the OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 
-// The owning manager at CWwdGameObject+0x0c IS the game's CResMgr (<Gruntz/ResMgr.h>,
+// The owning manager at CWwdGameObject+0x0c IS the game's CDDrawSurfaceMgr (<Gruntz/ResMgr.h>,
 // included above). THIS FILE ALREADY KNEW: ApplyLookupSprite/ApplyName (0x1504d0 /
-// 0x150540, below) reach the very same +0x0c pointer as `((CResMgr*)m_0c)->m_10->m_10map`
+// 0x150540, below) reach the very same +0x0c pointer as `((CDDrawSurfaceMgr*)m_0c)->m_10->m_10map`
 // - the identical mgr->m_10->map hop the former `WwdMgr`+`WwdMgrSub10` view pair
 // re-modelled privately. The six private views that described its sub-objects are
 //
-//   view (deleted)      real class (offset in CResMgr)        what proved it
+//   view (deleted)      real class (offset in CDDrawSurfaceMgr)        what proved it
 //   ------------------  ------------------------------------  ---------------------------
-//   WwdGridHolder       CDrawTarget*        (+0x04)           its m_limits@+0x10 IS
-//   WwdGridLim          CDrawTarget::SurfaceA (@+0x10)        CDrawTarget::m_10, whose
+//   WwdGridHolder       CDDrawSubMgrPages*        (+0x04)           its m_limits@+0x10 IS
+//   WwdGridLim          CDDrawSubMgrPages::SurfaceA (@+0x10)        CDDrawSubMgrPages::m_10, whose
 //                                                             m_10/m_14 ARE the surface
 //                                                             width/height Test() culls on
-//   WwdMgrSub08         CKeyTable*          (+0x08)           map@+0x48, Lookup 0x1b8760 -
-//   CMapStringToObLite  MFC CMapPtrToPtr    (@+0x48)          CKeyTable's own documented
+//   WwdMgrSub08         CDDrawChildGroup*          (+0x08)           map@+0x48, Lookup 0x1b8760 -
+//   CMapStringToObLite  MFC CMapPtrToPtr    (@+0x48)          CDDrawChildGroup's own documented
 //                                                             probe offset + rva
 //   WwdMgrSub10         CImageRegistry*     (+0x10)           m_10map@+0x10; the hop this
 //                                                             file already makes at 0x1504d0
@@ -81,12 +81,12 @@
 // the canonical CDDrawSurfaceMgr (m_mgr, typed in <Gruntz/WwdGameObject.h>) and CGameLevel:
 //   WwdMgr member      -> CDDrawSurfaceMgr member (same offset)
 //   -----------------     -------------------------------------
-//   m_drawTarget +0x04    m_pages         (CDDrawSubMgrPages*, ->m_frontPair = cull extent)
+//   m_drawTarget +0x04    m_drawTarget         (CDDrawSubMgrPages*, ->m_frontPair = cull extent)
 //   m_8          +0x08    m_childGroup    (CDDrawChildGroup*,  ->m_map48 kill-cue map)
-//   m_10         +0x10    m_surfaceDesc   (CDDrawWorkerRegistry*, ->m_10map name->sprite)
+//   m_10         +0x10    m_imageRegistry   (CDDrawWorkerRegistry*, ->m_10map name->sprite)
 //   m_14         +0x14    m_workerCache   (CDDrawWorkerCache*, ->FindKeyOfValue_165360 / ->m_10)
-//   m_camera     +0x24    m_resolveSubMgr (CGameLevel*, ->m_mainPlane = the +0x5c cull object)
-//   m_28         +0x28    m_leafScan      (CDDrawSubMgrLeafScan*, ->FindKeyOfValue_158570 / ->m_10)
+//   m_camera     +0x24    m_level (CGameLevel*, ->m_mainPlane = the +0x5c cull object)
+//   m_28         +0x28    m_soundRegistry      (CDDrawSubMgrLeafScan*, ->FindKeyOfValue_158570 / ->m_10)
 // Byte-neutral (every access is the same offset read). The +0x14 conflation the prior note
 // flagged is RESOLVED: FindKeyOfValue_165360 was xref-proven to belong to CDDrawWorkerCache
 // (its only callers reverse-look-up a worker in THIS +0x14 cache), so it was re-homed off
@@ -94,9 +94,9 @@
 // DDrawWorkerCache.h / DDrawSurfacePair.cpp). The +0x24 camera holder IS CGameLevel::m_mainPlane
 // (CLevelPlane), whose +0x40 Win32 RECT is the off-screen cull rect Test compares against.
 // (CGameObject::Apply* below now read the typed m_0c (CDDrawSurfaceMgr*) directly -
-// the CResMgr cast is gone (2026-07-16); the per-slot retail Lookup bands corroborate:
-// 0x1504d0 -> 0x1b8008 (Ob, m_surfaceDesc->m_10map), 0x150610/0x1505b0 -> 0x1b8438
-// (Ptr, m_leafScan->m_10 / m_leaf->m_10). The old (CMapStringToOb*) casts on the two
+// the CDDrawSurfaceMgr cast is gone (2026-07-16); the per-slot retail Lookup bands corroborate:
+// 0x1504d0 -> 0x1b8008 (Ob, m_imageRegistry->m_10map), 0x150610/0x1505b0 -> 0x1b8438
+// (Ptr, m_soundRegistry->m_10 / m_animRegistry->m_10). The old (CMapStringToOb*) casts on the two
 // Ptr-band maps mis-bound the 0x1b8008 library body - a reloc defect this fixes.)
 
 // (The 0xa0-byte WwdSnapshot record WriteSnapshot assembles on the stack lives in
@@ -164,7 +164,7 @@ void CGameObject::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) 
 
 // ===========================================================================
 // CGameObject::ApplyLookupSprite @0x1504d0 - look the named sprite up through
-// m_c->m_10, cache it + the caller-supplied frame number/frame ptr.
+// m_c->m_imageRegistry, cache it + the caller-supplied frame number/frame ptr.
 // (Role-union note: CGameObject's m_0c/+0x190/+0x194/+0x198/+0x19c are ROLE-UNION -
 // for a WwdFile-loaded object they are world/source-def/layer/stamp; for a
 // CreateSprite'd sprite they are the resource holder / cached CSprite / frame ptr /
@@ -178,7 +178,7 @@ void CGameObject::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) 
 RVA(0x001504d0, 0x6c)
 void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
     CSprite* spr = 0;
-    m_0c->m_surfaceDesc->m_10map.Lookup(name, (CObject*&)spr);
+    m_0c->m_imageRegistry->m_10map.Lookup(name, (CObject*&)spr);
     m_sprite = spr; // +0x194 union: cached sprite
     if (spr) {
         if (frame >= spr->m_firstFrame && frame <= spr->m_lastFrame) {
@@ -199,7 +199,7 @@ void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
 RVA(0x00150540, 0x65)
 void CGameObject::ApplyName(const char* name) {
     CSprite* spr = 0;
-    m_0c->m_surfaceDesc->m_10map.Lookup(name, (CObject*&)spr);
+    m_0c->m_imageRegistry->m_10map.Lookup(name, (CObject*&)spr);
     m_sprite = spr; // +0x194 role-union: the cached sprite (vs a trigger source-def)
     if (spr) {
         i32 n = spr->m_firstFrame;
@@ -221,7 +221,7 @@ void CGameObject::ApplyName(const char* name) {
 RVA(0x001505b0, 0x5c)
 i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CSprite* spr = 0;
-    m_0c->m_leaf->m_10.Lookup(name, (void*&)spr);
+    m_0c->m_animRegistry->m_10.Lookup(name, (void*&)spr);
     if (!spr) {
         return 0;
     }
@@ -235,7 +235,7 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 
 // ===========================================================================
 // CGameObject::LookupAnimSprite @0x150610 - look the named sprite-set up through
-// this->m_c->m_28->map; on a hit cache it at +0x19c and return 1. __thiscall, ret 4.
+// this->m_c->m_soundRegistry->map; on a hit cache it at +0x19c and return 1. __thiscall, ret 4.
 // ===========================================================================
 // @early-stop
 // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
@@ -244,7 +244,7 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 RVA(0x00150610, 0x41)
 i32 CGameObject::LookupAnimSprite(const char* name) {
     CSprite* spr = 0;
-    m_0c->m_leafScan->m_10.Lookup(name, (void*&)spr);
+    m_0c->m_soundRegistry->m_10.Lookup(name, (void*&)spr);
     if (spr != 0) {
         m_19c = (i32)spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
         return 1;
@@ -382,7 +382,7 @@ i32 CWwdGameObject::Test() {
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CLevelPlane == the former WwdCamHolder->m_5c camera object).
-        RECT* r = (RECT*)((char*)m_mgr->m_resolveSubMgr->m_mainPlane + 0x40);
+        RECT* r = (RECT*)((char*)m_mgr->m_level->m_mainPlane + 0x40);
         if (right < r->left) {
             return 0;
         }
@@ -396,7 +396,7 @@ i32 CWwdGameObject::Test() {
     } else {
         // The non-camera cull bounds are the DRAW SURFACE's extent (front pair's
         // m_width/m_height) - the former "grid limits" view.
-        CDDrawSurfacePair* g = m_mgr->m_pages->m_frontPair;
+        CDDrawSurfacePair* g = m_mgr->m_drawTarget->m_frontPair;
         if (right < 0) {
             return 0;
         }
@@ -470,7 +470,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
 
     memset(tmp, 0, 0x80);
     {
-        CString str = m_mgr->m_leafScan->FindKeyOfValue_158570(m_19c);
+        CString str = m_mgr->m_soundRegistry->FindKeyOfValue_158570(m_19c);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -505,7 +505,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // F(found,0x64/0x68/0x14) offset reads ARE m_firstFrame / m_lastFrame / m_frames.
         CSprite* found = 0;
         CDDrawSurfaceMgr* mgr = m_mgr;
-        mgr->m_surfaceDesc->m_10map.Lookup(name, (CObject*&)found);
+        mgr->m_imageRegistry->m_10map.Lookup(name, (CObject*&)found);
         m_sprite = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
@@ -526,7 +526,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         // element cast is authentic (it is the map's own interface, not a missing type).
         void* found = 0;
         CDDrawSurfaceMgr* mgr = m_mgr;
-        mgr->m_leafScan->m_10.Lookup(name, found);
+        mgr->m_soundRegistry->m_10.Lookup(name, found);
         m_19c = (LeafCue*)found;
     }
     return 1;

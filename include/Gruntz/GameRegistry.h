@@ -27,7 +27,7 @@
 //
 // The SINGLE-TYPE sub-object pointers are typed here so their consumers reach them
 // WITHOUT a per-site cast: m_2c (CState* current game-state), m_30 (the resource
-// manager - CSpriteFactoryHolder, the retail CResMgr: draw target + sprite factory
+// manager - CDDrawSurfaceMgr, the retail CDDrawSurfaceMgr: draw target + sprite factory
 // + image registry + view + sound/anim), m_60 (cue sink), m_70 (tile grid). Sub-
 // object TYPES defined in <Gruntz/ResMgr.h>/<Wwd/WwdFile.h> are forward-
 // declared (not included) to keep this ~60-TU-wide header light.
@@ -80,7 +80,7 @@ class CBattlezData; // +0x7c the HUD/score accumulator (BattlezData.h completes 
 // Sub-objects of the +0x30 resource manager, defined in <Gruntz/ResMgr.h> /
 // <Wwd/WwdFile.h> (CPlaneRender); forward-declared here so consumers reach them typed
 // (no per-site cast) without pulling those headers into this ~60-TU-wide view.
-struct CDrawTarget; // +0x30->+0x04 active draw surface (m_drawContext at +0x14)
+struct CDDrawSubMgrPages; // +0x30->+0x04 active draw surface (m_drawContext at +0x14)
 // The image/name registry IS the canonical CDDrawWorkerRegistry
 // (<DDrawMgr/DDrawWorkerRegistry.h>, real polymorphic; ex CWorkerVtableView).
 class CDDrawWorkerRegistry;
@@ -95,98 +95,19 @@ class CSpriteRefTable;
 // array consumers index. `new`'d in the bootstrap (0x83450), torn down by Close
 // (CLightFxMgr::Reset @0x9dc80). Forward-declared to keep this ~60-TU view light.
 class CLightFxMgr;
-// Render-facet sub-object types (defined in <Gruntz/View.h>, MFC). This holder is ALSO
-// CState::m_c (verified same object; the former `CView`/`CSpriteFactoryHolder` render view is now
-// folded here). Its 3 render-only slots below point to these; the MFC state TUs reach the
-// 5 SHARED slots (+0x04/+0x08/+0x10/+0x24/+0x28) by casting the canonical members to the
-// other View.h facet types (StateMgrBZ/CGameImageRegistry/CDrawSurface/CViewSoundRegistry)
-// - the deferred int-vs-pointer sub-object reconciliation (see View.h). Forward-declared so
-// this ~60-TU MFC-free header never pulls View.h; the ~60 pure-Win32 m_world consumers
-// never touch these render-only slots.
-// +0x0c renderer B IS the real CDDrawWorkerList (<DDrawMgr/DDrawWorkerList.h>,
-// vtable 0x1efd88): CDDrawSurfaceMgr::Init (0x155900) news it (0x2c B) and stores
-// it at +0x0c; the play states' per-frame "Present" is its slot 13, PruneWorkers.
-// (The former View.h `CRenderer` view - and its 12 fabricated filler slots - is
-// dissolved 2026-07-14; renderer A at +0x08 was a SECOND class all along, the
-// already-canonical CDDrawChildGroup.)
-class CDDrawWorkerList;
-class CDDrawSubMgrLeaf; // +0x2c  the ANI catalog / anim registry (canonical
-                        // <DDrawMgr/DDrawSubMgrLeaf.h>; ex the CAnimRegistry view)
-
-// The level/view object reached as g->m_30->m_24 (== CState::m_c holder's +0x24) IS
-// the canonical CGameLevel (<Gruntz/GameLevel.h>) - the former `CGameViewport` facet
-// here was a FAKE NAME for it, proven by the retail call targets: "PushView" is
-// ?VisitVisible@CGameLevel@@ @0x15dc90, "SetClipRect" is ?BuildAllPlanes@CGameLevel@@
-// @0x15da80 (both direct rel32, GameLevel.cpp), the "+0x10 viewport rect" is
-// CGameLevel::m_planeCtx (the LevelCoordRect the plane rebuild consumes) and the
-// "+0x5c camera geom" is CGameLevel::m_mainPlane (a CLevelPlane: tile origin at
-// +0x40/+0x44, integer scroll origin at +0x84/+0x88). The two fabricated
-// PreStep/PostStep methods (phantoms - no retail address) are gone with it.
-// Forward-declared: the deref TUs include <Gruntz/GameLevel.h>.
-class CGameLevel;
-
-// The +0x30 game resource/level manager (the retail CResMgr; ResMgr.h models the
-// same object for the loaders and CPlay). Every view of *0x24556c reaches its
-// resources through this one holder: the draw surface (+0x04), the sprite/object
-// factory (+0x08, CreateSprite + key lookup), the image registry (+0x10), the
-// level/view object (+0x24) and the sound/anim registry (+0x28).
-class SoundStream; // +0x20 (Dsndmgr; the per-frame sound tick)
-// [SETTLED IDENTITY (Fable lane, 2026-07-13): this class IS CDDrawSurfaceMgr
-// (<DDrawMgr/DDrawSurfaceMgr.h>, ??_7 @0x1efc58, SIZE 0x40) - the two canonicals
-// agree member-for-member: +0x20 both named m_soundStream, +0x24 both CGameLevel,
-// +0x28 CSndHost==CDDrawSubMgrLeafScan (settled), and the pairs m_drawTarget==
-// m_pages / m_8(CDDrawChildGroup)==m_childGroup / m_10(CImageRegistry)==m_surfaceDesc /
-// m_animRegistry==m_leaf are per-slot identities of the same children. The CLASS
-// merge (one definition) is deferred - it must not emit two vtables for the one
-// retail ??_7; this game-side view stays vptr-padded (m_pad0) until then.]
-struct CSpriteFactoryHolder {
-    char m_pad0[0x4]; // the vptr (the real class is polymorphic - see the note above)
-    // +0x04: one child, two established names (CDrawTarget the game-side reading;
-    // CDDrawSubMgrPages the DDraw-side canonical - Method_158c70 pause, m_backPair).
-    union {
-        CDrawTarget* m_drawTarget;
-        struct CDDrawSubMgrPages* m_pages;
-    };
-    // +0x08: the sprite/object factory == the DDraw child-group == CDDrawChildGroup (the
-    // three-way class identity is documented in SpriteFactory.h / WwdObjMgr.cpp).
-    union {
-        CDDrawChildGroup* m_8;
-        CDDrawChildGroup* m_childGroup;
-    };
-    // +0x0c  renderer B: the real CDDrawWorkerList (per-frame worker pump; "Present"
-    // == its slot-13 PruneWorkers; ClearWorkers is the leaf-state teardown).
-    CDDrawWorkerList* m_rendererB;
-    CImageRegistry* m_10; // +0x10  image/name registry (real ResMgr.h class: Install/Has/
-                          //         Register/Release/LoadNamespace + the m_10map hash)
-    // +0x14..+0x1c: the DDraw-side children (names from the CDDrawSurfaceMgr
-    // canonical; the Init decode 0x155900 news each).
-    struct CDDrawWorkerCache* m_workerCache; // +0x14  string-keyed worker cache
-    class CLoadable* m_workerMap;            // +0x18  CDDrawWorkerMapSmall (CLoadable child)
-    struct CDDrawPtrCollections* m_ptrColl;  // +0x1c  device/surface pool (m_surf0 =
-                                             //        the IDirectDraw2; GetCapsChecked)
-    // +0x20  the REAL SoundStream (<Dsndmgr/SoundStream.h>). Was "m_frameProfiler": the
-    // two per-frame `(obj, timeGetTime())` calls on it are SoundDevice::PurgeVoiceList
-    // (0x136e20) + SoundStream::TickSubManagers (0x137ac0), BOTH 100%% EXACT in the tree -
-    // a sound tick, not a profiler.
-    SoundStream* m_soundStream;
-    CGameLevel* m_24; // +0x24  the level object (canonical CGameLevel: planeCtx rect,
-                      //         main plane, VisitVisible/BuildAllPlanes render steps)
-    CSndHost* m_28;   // +0x28  sound registry (CSndHost cue facet <Gruntz/SoundCue.h>; the
-                      //         render/resource facet reaches it as CSoundRegistry, cast).
-                      //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
-    CDDrawSubMgrLeaf* m_animRegistry; // +0x2c  the ANI catalog / anim registry
-                                      //         (== CDDrawSurfaceMgr::m_leaf)
-    void* m_hWnd30; // +0x30  bound window / device handle (CDDrawSurfaceMgr::m_hWnd)
-    i32 m_flags34;  // +0x34  caps flags
-    // +0x38  last-error / world load-status code (ReportWorldStatus maps it to a
-    // message id; Init stores 0x3e9..0x3f1). u32 alias = the old CWorldZ::m_38.
-    union {
-        i32 m_lastError;
-        u32 m_38;
-    };
-    void* m_callback3c; // +0x3c  run/config callback (HP_Callback)
-};
-SIZE(CSpriteFactoryHolder, 0x40); // == SIZE(CDDrawSurfaceMgr, 0x40)
+// The +0x30 game resource/level manager (the retail "CDDrawSurfaceMgr"/world holder) IS the
+// canonical CDDrawSurfaceMgr - one definition, included below. [FOLDED 2026-07-16:
+// the game-side "CSpriteFactoryHolder" view (this header) and the loader-side
+// "CDDrawSurfaceMgr" view (ResMgr.h) were the settled 2026-07-13 identity's two remaining
+// shadows; the view members map 1:1 onto the canonical (renamed to the union of
+// both sides' best names: m_drawTarget/m_childGroup/m_workerList/m_imageRegistry/
+// m_workerCache/m_level/m_soundRegistry/m_animRegistry/m_hWnd/m_flags/m_lastError/
+// m_callback).
+// The old "must not emit two vtables" deferral is void: one class, one ??_7.
+// Its +0x24 level object is the canonical CGameLevel (the ex `CGameViewport` facet:
+// "PushView" was ?VisitVisible@CGameLevel@@ @0x15dc90, "SetClipRect"
+// ?BuildAllPlanes@CGameLevel@@ @0x15da80; +0x10 is m_planeCtx, +0x5c m_mainPlane).]
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 
 // The tile occupancy grid (*g_gameReg+0x70) is CTileGrid, in
 // <Gruntz/TileGrid.h>. CGrunt::LoadEntranceConfig stamps the grunt's footprint
@@ -253,7 +174,7 @@ struct CFocusSlot {
 // any TU (GruntzMgr.h already includes THIS header, and extern "C" gives the pointer one
 // C symbol whatever type a TU picks). The rest of this view's methods are the same defect
 // and go the same way as their callers convert; see the matcher report for the blocker
-// (the sub-object views - CWorldZ vs CSpriteFactoryHolder, CGruntzMapMgr vs CTileGrid -
+// (the sub-object views - CWorldZ vs CDDrawSurfaceMgr, CGruntzMapMgr vs CTileGrid -
 // must be folded first for the field-heavy TUs).
 struct CGameRegistry {
     // The entrance-reset cue-prep call (thunk_FUN_0040cd00, __thiscall ret 0): run
@@ -345,13 +266,13 @@ struct CGameRegistry {
     i32 m_14;           // +0x14  base names it m_musicEnabled ("Music"); GruntzMgr uses it as a
                         //         level-loaded gate (StopBankIfActive) - role unresolved, kept m_14
     char m_pad18[0x2c - 0x18];
-    CState* m_curState;            // +0x2c  current game-state (concrete states
-                                   //         downcast to their play/level view)
-    CSpriteFactoryHolder* m_world; // +0x30  world/map resource holder (grunt reaches
-                                   //         the sprite factory via m_world->m_8). ONE object,
-                                   //         two type-views (verified): the retail CResMgr resource
-                                   //         facet (ResMgr.h) here, the CWorldZ world facet in
-    //         GruntzMgr.h, and CState::m_c's CSpriteFactoryHolder world-holder (View.h)
+    CState* m_curState;        // +0x2c  current game-state (concrete states
+                               //         downcast to their play/level view)
+    CDDrawSurfaceMgr* m_world; // +0x30  world/map resource holder (grunt reaches
+                               //         the sprite factory via m_world->m_childGroup). ONE object,
+    //         two type-views (verified): the retail CDDrawSurfaceMgr resource
+    //         facet (ResMgr.h) here, the CWorldZ world facet in
+    //         GruntzMgr.h, and CState::m_c's CDDrawSurfaceMgr world-holder (View.h)
     // +0x34  the level/rez symbol parser (== GruntzMgr.h m_symParser, the REAL CSymParser;
     // CState::LoadGameAssetNamespaces caches it into CState::m_8).
     class CSymParser* m_symParser;

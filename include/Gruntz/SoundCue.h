@@ -79,11 +79,11 @@ struct CSprite; // the frame-data value the +0x10 map ALSO yields (Sprite.h); th
 // emit/busy gate. The class IS polymorphic (LeafScanBase : CObject; the old
 // "non-polymorphic so RTTI gives no names" note was wrong - it simply has no RTTI).
 // This one class is: the +0x28 world sound/cue registry, the status-bar cue holder,
-// AND CDDrawSurfaceMgr's m_leafScan child (new(0x38) @Init, vtbl 0x5efca0).
+// AND CDDrawSurfaceMgr's m_soundRegistry child (new(0x38) @Init, vtbl 0x5efca0).
 typedef CDDrawSubMgrLeafScan CSndHost;
 
 // (The ex-`CSndSubMgr` facet is DISSOLVED (Fable lane, 2026-07-13): the "+0x28 cue host"
-// object is the world holder CSpriteFactoryHolder itself (<Gruntz/GameRegistry.h>), whose
+// object is the world holder CDDrawSurfaceMgr itself (<Gruntz/GameRegistry.h>), whose
 // m_28 is already the CSndHost typedef'd above. It was never a separate class.)
 
 #endif // GRUNTZ_SOUNDCUE_H

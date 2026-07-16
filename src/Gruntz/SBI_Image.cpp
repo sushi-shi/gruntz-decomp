@@ -9,10 +9,12 @@
 #include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image (: CSBI_RectOnly : CStatusBarItem)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches_155630 (SerializeChain's reverse lookup)
 #include <Gruntz/GameRegistry.h>          // canonical g_gameReg singleton
-#include <Gruntz/ResMgr.h>        // canonical g_gameReg->m_world view (CResMgr + CImageRegistry)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Image/CImage.h>         // the resolved frame record (TickRenderCurrent's blit)
-#include <string.h>               // strlen / memset (inline repne-scas / rep-stos)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/Sprite.h>             // CSprite (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget)        // canonical g_gameReg->m_world view (CDDrawSurfaceMgr + CImageRegistry)
+#include <Gruntz/SerialArchive.h>      // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Image/CImage.h>              // the resolved frame record (TickRenderCurrent's blit)
+#include <string.h>                    // strlen / memset (inline repne-scas / rep-stos)
 // SBI_Image.cpp - Gruntz CSBI_Image (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_Image@@; in the SBI family
 //   CSBI_Image : CSBI_RectOnly : CStatusBarItem  (CSBI_ImageSet derives from this).
@@ -28,7 +30,7 @@
 // load-bearing; every call through them is reloc-masked).
 
 // The config host + its lookup map + record now come from the shared canonical
-// family (<Gruntz/SbiConfig.h>): CSpriteFactoryHolder / CSbiConfigMap / CSbiConfigRecord.
+// family (<Gruntz/SbiConfig.h>): CDDrawSurfaceMgr / CSbiConfigMap / CSbiConfigRecord.
 
 // CSBI_Image (+ its CSBI_RectOnly intermediate) now come from the canonical
 // frameless header <Gruntz/SBI_Image.h>. SetupImage is defined below.
@@ -47,7 +49,7 @@
 RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(
     CStatusBarMgr* owner,
-    CSpriteFactoryHolder* host,
+    CDDrawSurfaceMgr* host,
     i32 a3,
     i32 a4,
     SbRect rc,
@@ -76,7 +78,7 @@ i32 CSBI_Image::SetupImage(
         return 0 != 0;
     }
     CSbiConfigRecord* rec = 0;
-    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup(key, (void*&)rec);
+    ((CMapStringToPtr*)&host->m_imageRegistry->m_10map)->Lookup(key, (void*&)rec);
     if (rec == 0 || rec->m_64 > 1 || rec->m_68 < 1) {
         m_30 = 0;
         return 0 != 0;
@@ -115,7 +117,7 @@ i32 CSBI_Image::TickRenderCurrent_0e6dd0() {
         CImage* cel = (CImage*)m_30;
         if (cel != 0) {
             cel->RenderFrame(
-                (void*)(i32)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_14,
+                (void*)(i32)g_gameReg->m_world->m_drawTarget->m_backPair,
                 (void*)(m_rect14.m_0 + cel->m_anchorX),
                 (void*)(m_rect14.m_4 + cel->m_anchorY),
                 (void*)0
@@ -143,7 +145,7 @@ i32 CSBI_Image::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CResMgr* mgr = (CResMgr*)g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
     if (mgr == 0) {
         return 0;
     }
@@ -159,7 +161,7 @@ i32 CSBI_Image::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             ar->Read(&idx, 4);
             if (strlen(name) != 0) {
                 CObject* r_ob = 0;
-                mgr->m_10->m_10map.Lookup(name, r_ob);
+                mgr->m_imageRegistry->m_10map.Lookup(name, r_ob);
                 CSprite* r = (CSprite*)r_ob;
                 if (r && idx >= r->m_firstFrame && idx <= r->m_lastFrame) {
                     m_30 = (i32)r->m_frames.m_pData[idx];
@@ -177,8 +179,7 @@ i32 CSBI_Image::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_30) {
-                ((CDDrawWorkerRegistry*)mgr->m_10)
-                    ->AnyValueMatches_155630(m_30, (i32)name, (i32)&idx);
+                mgr->m_imageRegistry->AnyValueMatches_155630(m_30, (i32)name, (i32)&idx);
             }
             ar->Write(name, 0x80);
             ar->Write(&idx, 4);

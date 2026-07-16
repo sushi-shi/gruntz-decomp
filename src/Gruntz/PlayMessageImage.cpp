@@ -1,7 +1,7 @@
 // PlayMessageImage.cpp - the two CPlay "GAME_MESSAGEZ" overlay renderers.
 //
 // Both look up the GAME_MESSAGEZ image set in the image registry
-// (m_c->m_10->m_10map, an MFC CMapStringToOb name->object map), pull a frame out
+// (m_c->m_imageRegistry->m_10map, an MFC CMapStringToOb name->object map), pull a frame out
 // of the set by a signed index, and blit it centered:
 //   * DrawMessageFrame (0x0d1650, non-virtual): index + useFront are caller args;
 //     the frame is blit into the active viewport via the shared 0x115300 layer
@@ -12,19 +12,21 @@
 //
 // Kept in its own TU so the CImageSet/CImage/CDDSurface includes do not perturb the
 // matched Play.cpp regalloc. Only offsets + code bytes are load-bearing.
+#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/Play.h>
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_24: planeCtx viewport rect) // CPlay + CSpriteFactoryHolder/CImageRegistry/CDrawTarget (m_c->m_10/m_24/m_drawTarget)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_24: planeCtx viewport rect) // CPlay + CDDrawSurfaceMgr/CImageRegistry/CDDrawSubMgrPages (m_c->m_imageRegistry/m_24/m_drawTarget)
 #include <Image/ImageSet.h>   // CImageSet::GetAt (m_frames/m_minIndex/m_maxIndex) + CImageFrame
 #include <Image/CImage.h>     // CImage::RenderFrame (0x153790)
 #include <DDrawMgr/DDSurface.h>        // CDDSurface::Flip (0x13e850)
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <Globals.h>                   // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
 
 // The shared __cdecl layer-blit helper (0x115300, in src/Gruntz/GlyphStringDraw.cpp):
-// blit a CImage frame into the active draw-target layer. `m_c` is a CSpriteFactoryHolder,
-// the same real class ResMgr.h models as CResMgr (the helper's host param), so the cast
+// blit a CImage frame into the active draw-target layer. `m_c` is a CDDrawSurfaceMgr,
+// the same real class ResMgr.h models as CDDrawSurfaceMgr (the helper's host param), so the cast
 // documents that conflation; `frame` is a CImage (passed as-is).
-i32 LayerBlitFrame(CResMgr*, CImage*, i32, i32, i32, i32); // 0x115300
+i32 LayerBlitFrame(CDDrawSurfaceMgr*, CImage*, i32, i32, i32, i32); // 0x115300
 
 // (the PresentHost_faec0 placeholder is GONE - identity RECOVERED. 0xfaec0 is
 // CState::Present (declared in <Gruntz/State.h>, defined in Attract.cpp): its only other
@@ -48,15 +50,15 @@ i32 LayerBlitFrame(CResMgr*, CImage*, i32, i32, i32, i32); // 0x115300
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CObject* set_ob = 0;
-    m_c->m_10->m_10map.Lookup(s_GameMessagez, set_ob);
+    m_c->m_imageRegistry->m_10map.Lookup(s_GameMessagez, set_ob);
     CImageSet* set = (CImageSet*)set_ob;
     if (set != 0) {
         CImage* frame = set->GetAt(index);
         if (frame != 0) {
-            LevelCoordRect& vp = m_c->m_24->m_planeCtx;
+            LevelCoordRect& vp = m_c->m_level->m_planeCtx;
             i32 cx = vp.minX + (vp.maxX - vp.minX) / 2;
             i32 cy = vp.minY + (vp.maxY - vp.minY) / 2;
-            LayerBlitFrame((CResMgr*)m_c, frame, cx, cy, useFront, 1);
+            LayerBlitFrame(m_c, frame, cx, cy, useFront, 1);
         }
     }
 }
@@ -77,7 +79,7 @@ i32 CPlay::Vslot23() {
     Present(0x3c);
 
     CObject* lookup_ob = 0;
-    m_c->m_10->m_10map.Lookup(s_GameMessagez, lookup_ob);
+    m_c->m_imageRegistry->m_10map.Lookup(s_GameMessagez, lookup_ob);
     CImageSet* lookup = (CImageSet*)lookup_ob;
     CImageSet* set = lookup;
     if (set == 0) {
@@ -93,11 +95,11 @@ i32 CPlay::Vslot23() {
         return 0;
     }
 
-    CDDrawSurfacePair* surf = m_c->m_drawTarget->m_14;
+    CDDrawSurfacePair* surf = m_c->m_drawTarget->m_backPair;
     if (surf == 0) {
         return 0;
     }
     ((CImage*)frame)->RenderFrame(surf, (void*)(surf->m_width / 2), (void*)(surf->m_height / 2), 0);
-    m_c->m_drawTarget->m_10->m_surface->Flip((CDDSurface*)0);
+    m_c->m_drawTarget->m_frontPair->m_surface->Flip((CDDSurface*)0);
     return 1;
 }

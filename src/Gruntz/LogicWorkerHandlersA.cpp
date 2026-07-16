@@ -122,7 +122,7 @@ struct CUserLogicOOL {
 // (after the base ctor) rather than after the member stores - an accepted codegen
 // shift (see the @early-stop).
 struct DnnRec : CUserLogicOOL {
-    char m_leaf[0x54 - 0x40]; // +0x40..+0x53
+    char m_animRegistry[0x54 - 0x40]; // +0x40..+0x53
     DnnRec(DnnOwner* owner);
 };
 

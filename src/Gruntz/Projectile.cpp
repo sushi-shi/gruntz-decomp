@@ -67,7 +67,7 @@ extern "C" u32 g_engineFrameDelta;
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). The DATA pin
 // reloc-masks the `mov ecx,ds:g_gameReg` load against the already-named symbol.
 // The projectile sound/hit-scan/effects paths reach the canonical sub-objects
-// through it: reg->m_world (CSpriteFactoryHolder) -> m_8 the HUD sprite factory
+// through it: reg->m_world (CDDrawSurfaceMgr) -> m_8 the HUD sprite factory
 // (CDDrawChildGroup) + m_28 the sound-cue host (CSndHost, <Gruntz/SoundCue.h>);
 // reg->m_tileGrid the terrain grid (CTileGrid, cell dword 0 = the terrain flags
 // MovingSlot16 tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
@@ -86,7 +86,7 @@ extern "C" CGameRegistry* g_gameReg;
 // CHitKey views.
 
 // The launch-sound lookup path is the canonical positional-cue subsystem
-// (<Gruntz/SoundCue.h>, pulled by GameRegistry.h): reg->m_world->m_28 is the
+// (<Gruntz/SoundCue.h>, pulled by GameRegistry.h): reg->m_world->m_soundRegistry is the
 // CSndHost, its embedded CSndFinder (m_10) Lookups the effect name to a LeafCue,
 // whose DSoundCloneInst (m_10) GetItem (0x135d70) clones the DirectSound buffer the
 // projectile owns as its CProjSample (m_sound).
@@ -375,7 +375,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     }
 
     // Resolve the six numbered frame sprites; frame "1" is required.
-    CMapStringToPtr& map = m_sprite->m_0c->m_leaf->m_10; // Lookup 0x1b8438 -> void& out-param
+    CMapStringToPtr& map =
+        m_sprite->m_0c->m_animRegistry->m_10; // Lookup 0x1b8438 -> void& out-param
     void* out;
     out = 0;
     map.Lookup(key + "1", out);
@@ -440,7 +441,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_arrived = 0;
 
     // Spawn the LightFx shadow companion + activate its two frames.
-    CDDrawChildGroup* factory = g_gameReg->m_world->m_8;
+    CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
     m_shadow =
         (CGameObject*)factory
             ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
@@ -766,7 +767,7 @@ void CProjectile::MovingSlot16() {
             if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                 && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
                 CGameObject* fx =
-                    reg->m_world->m_8
+                    reg->m_world->m_childGroup
                         ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
                     fx->ApplyName("GAME_WATER");
@@ -792,7 +793,7 @@ void CProjectile::MovingSlot16() {
                         // level death tile: spill the death-splash then hide
                         if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                             && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                            CGameObject* fx = reg->m_world->m_8->CreateSprite(
+                            CGameObject* fx = reg->m_world->m_childGroup->CreateSprite(
                                 0,
                                 m_targetX,
                                 m_targetY,
@@ -1370,7 +1371,7 @@ i32 CProjectile::LaunchSound(const char* key) {
         return 0;
     }
     void* entry_ob = 0;
-    reg->m_world->m_28->m_10.Lookup(key, entry_ob);
+    reg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob);
     LeafCue* entry = (LeafCue*)entry_ob;
     if (entry == 0) {
         return 0;

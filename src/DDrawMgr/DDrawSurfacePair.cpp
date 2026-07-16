@@ -56,7 +56,7 @@
 // CDDrawPtrCollections). The former per-TU views (CDDrawSurfaceMgrT / CDDrawSurfacePool
 // onto them (2026-07-14): pool +0x1c = m_ptrColl, caps +0x34 = m_flags, hWnd/device
 // +0x30 = m_hWnd, mgr-err +0x38 = m_lastError, pool-err +0x944 = m_944, and the fake
-// pixel-format chain +0x04 -> +0x10 -> +0x2c is m_pages -> m_frontPair -> m_surface.
+// pixel-format chain +0x04 -> +0x10 -> +0x2c is m_drawTarget -> m_frontPair -> m_surface.
 // CreatePoolItem/CreateDevice remain (CDirectDrawMgr*) casts on m_ptrColl (the
 // documented CDDrawPtrCollections==CDirectDrawMgr manager-unification @identity-TODO).
 
@@ -194,8 +194,9 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     rect[3] = h;
     if (m_status == 1) {
         CDDrawSurfaceMgr* mgr = m_mgr;
-        m_surface = (CDDSurface*)((CDirectDrawMgr*)mgr->m_ptrColl)
-                        ->CreatePoolItem((void*)mgr->m_pages->m_frontPair->m_surface, (void*)4);
+        m_surface =
+            (CDDSurface*)((CDirectDrawMgr*)mgr->m_ptrColl)
+                ->CreatePoolItem((void*)mgr->m_drawTarget->m_frontPair->m_surface, (void*)4);
         if (m_surface == 0) {
             if (m_mgr->m_lastError == 0) {
                 m_mgr->m_lastError = 0xfa3;
@@ -504,8 +505,9 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
         m_surface = 0;
         if (m_status == 1) {
             CDDrawSurfaceMgr* mgr = m_mgr;
-            m_surface = (CDDSurface*)((CDirectDrawMgr*)mgr->m_ptrColl)
-                            ->CreatePoolItem((void*)mgr->m_pages->m_frontPair->m_surface, (void*)4);
+            m_surface =
+                (CDDSurface*)((CDirectDrawMgr*)mgr->m_ptrColl)
+                    ->CreatePoolItem((void*)mgr->m_drawTarget->m_frontPair->m_surface, (void*)4);
             if (m_surface == 0) {
                 return 0;
             }

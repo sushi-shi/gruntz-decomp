@@ -135,7 +135,7 @@ public:
     // command-target tile-marker blit (thunk 0x2095). Body in GruntzCmdMgr.cpp
     // (ex `CObj23d90::Blit`, a placeholder view of THIS class: its receiver is
     // [CGruntzMgr+0x6c] == m_cmdSubMgr, and its m_38 chain IS this class's m_38
-    // manager back-ptr - m_38->m_world->m_24->m_planeCtx/m_mainPlane).
+    // manager back-ptr - m_38->m_world->m_level->m_planeCtx/m_mainPlane).
     void BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5); // 0x023d90
     // 0x085bd0 - the /GX destructor.
     ~CGruntzCmdMgr();

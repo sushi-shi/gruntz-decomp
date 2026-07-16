@@ -41,7 +41,7 @@ CExitTrigger::~CExitTrigger() {}
 // HUD only for the active area.
 
 // The level-exit "Warlord" entity is a fresh CDDrawChildGroup::CreateSprite result
-// (the canonical 0x1597b0 factory entry on g_gameReg->m_world->m_8; the former
+// (the canonical 0x1597b0 factory entry on g_gameReg->m_world->m_childGroup; the former
 // "Probe" reading was a mislabel - it CREATES the warlord head sprite at the bound
 // screen pos). The created instance is the shared CGameObject: +0x7c AnimWorkerObj
 // carries the Init driver (+0x10, the finalize fn-ptr here) and the per-class
@@ -108,7 +108,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     slot->m_220 = m_object->m_screenX;
     slot->m_224 = m_object->m_screenY;
     CGameObject* e =
-        g_gameReg->m_world->m_8
+        g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
     if (e != 0) {
         e->m_124 = m_object->m_124;
@@ -153,7 +153,7 @@ i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
 
-    CSpriteFactoryHolder* holder = g_gameReg->m_world;
+    CDDrawSurfaceMgr* holder = g_gameReg->m_world;
     switch (mode) {
         case 7: {
             arc->Read(&m_resolved, 4);
@@ -162,7 +162,7 @@ i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             if (key != 0) {
                 CGameObject* found = 0;
                 CGameObject* obj =
-                    holder->m_8->m_map48.Lookup((void*)key, (void*&)found) ? found : 0;
+                    holder->m_childGroup->m_map48.Lookup((void*)key, (void*&)found) ? found : 0;
                 m_warlordLogic = obj->m_7c->m_logic;
                 if (m_warlordLogic == 0) {
                     return 0;

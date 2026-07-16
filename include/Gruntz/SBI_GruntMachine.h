@@ -25,7 +25,7 @@
 // BuildResourceTabStatusBar's owner/config-host pair (pointers only - fwd-decl).
 // `class` vs `struct` is load-bearing for the mangling; both match their real defs.
 class CStatusBarMgr;
-struct CSpriteFactoryHolder;
+class CDDrawSurfaceMgr;
 
 #include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
 
@@ -51,8 +51,8 @@ struct CGmConfig {
 SIZE_UNKNOWN(CGmConfig);
 
 // The active surface context Render passes into RenderFrame is reached through the
-// canonical resource manager: g_gameReg->m_world (CSpriteFactoryHolder) ->
-// m_drawTarget (CDrawTarget, +0x04) -> m_drawContext (+0x14). Modeled by the shared
+// canonical resource manager: g_gameReg->m_world (CDDrawSurfaceMgr) ->
+// m_drawTarget (CDDrawSubMgrPages, +0x04) -> m_drawContext (+0x14). Modeled by the shared
 // <Gruntz/GameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_GruntMachine.cpp); no
 // per-TU game-manager facet is kept.
 
@@ -89,7 +89,7 @@ public:
     // CSbConfigItem base, so the call resolved to NO definition (an unresolved external).
     i32 BuildResourceTabStatusBar(
         CStatusBarMgr* owner,
-        CSpriteFactoryHolder* host,
+        CDDrawSurfaceMgr* host,
         i32 p3,
         i32 p4,
         SbRect g,

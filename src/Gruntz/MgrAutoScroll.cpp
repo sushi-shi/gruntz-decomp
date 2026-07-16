@@ -1,22 +1,24 @@
 // MgrAutoScroll.cpp - the CGruntzMgr camera auto-scroll / clamp update (0x0ebd70).
 // __cdecl helper called from the render path (CPlay::Render etc., via the ILT
 // thunk at 0x2356) with arg0 = g_gameReg (the CGruntzMgr singleton). Walks the
-// active view (pm->m_world->m_24->m_view), runs a timeGetTime-driven random auto-pan
+// active view (pm->m_world->m_level->m_view), runs a timeGetTime-driven random auto-pan
 // when the countdown timer (g_64cfc4) expires, clamps the scroll to the view
 // bounds (centered on g_gameReg->m_modeW/m_modeH), publishes the scaled scroll to the
 // view (m_scrollX/m_scrollY) + a second "back plane" view (g_64c27c) eased by 0.05*delta plus
 // the ButeMgr [BackPlane] ScrollDist offsets on a 64-bit ScrollTime cadence, then
 // writes the four scroll-bound fields (pm->m_viewOriginL..0x148). Field names are
 // placeholders; offsets + code bytes are the load-bearing fact.
-#include <Bute/ButeMgr.h>     // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
+#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Bute/ButeMgr.h>                 // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (game-manager singleton; one true shape)
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24; its m_mainPlane)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level; its m_mainPlane)
 #include <Wwd/WwdFile.h>      // canonical CLevelPlane (== CDDrawWorkerHost) - the scroll plane
 #include <Ints.h>
 #include <rva.h>
 #include <Globals.h>
 
-// The active scroll "view" (pm->m_world->m_24->m_mainPlane, and the back-plane g_64c27c)
+// The active scroll "view" (pm->m_world->m_level->m_mainPlane, and the back-plane g_64c27c)
 // IS the canonical CLevelPlane (CDDrawWorkerHost): the former MgrSub/MgrSub2/ScrollView
 // +0x24 CGameLevel, and every ScrollView field maps to an already-named plane member:
 //   m_flags@08, m_scrollX/Y@10/14 -> m_scaledX/Y, m_scaleX/Y@18/1c, m_clampX/Y@30/34 ->
@@ -89,7 +91,7 @@ static i32 RandRange(i32 lo, i32 hi) {
 RVA(0x000ebd70, 0x366)
 // __cdecl 3-arg (retail callers push 3; the former 4th `unused` param was spurious).
 void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
-    CLevelPlane* v = pm->m_world->m_24->m_mainPlane;
+    CLevelPlane* v = pm->m_world->m_level->m_mainPlane;
     i32 scrollX = v->m_snappedX;
     i32 scrollY = v->m_snappedY;
 
@@ -119,7 +121,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    CLevelPlane* v2 = pm->m_world->m_24->m_mainPlane;
+    CLevelPlane* v2 = pm->m_world->m_level->m_mainPlane;
     if (scrollX > v2->m_wrapW - cx) {
         scrollX = v2->m_wrapW - cx;
     }
@@ -135,7 +137,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    CLevelPlane* v3 = pm->m_world->m_24->m_mainPlane;
+    CLevelPlane* v3 = pm->m_world->m_level->m_mainPlane;
     {
         float sx = (float)scrollX;
         float sy = (float)scrollY;
@@ -174,9 +176,9 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
         }
     }
 
-    CSpriteFactoryHolder* o = pm->m_world;
-    pm->m_viewOriginL = o->m_24->m_mainPlane->m_originX - 0x60;
-    pm->m_viewOriginT = o->m_24->m_mainPlane->m_originY - 0x60;
-    pm->m_viewOriginR = o->m_24->m_mainPlane->m_extentX + 0x60;
-    pm->m_viewOriginB = o->m_24->m_mainPlane->m_extentY + 0x60;
+    CDDrawSurfaceMgr* o = pm->m_world;
+    pm->m_viewOriginL = o->m_level->m_mainPlane->m_originX - 0x60;
+    pm->m_viewOriginT = o->m_level->m_mainPlane->m_originY - 0x60;
+    pm->m_viewOriginR = o->m_level->m_mainPlane->m_extentX + 0x60;
+    pm->m_viewOriginB = o->m_level->m_mainPlane->m_extentY + 0x60;
 }

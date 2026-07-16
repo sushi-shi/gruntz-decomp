@@ -31,7 +31,7 @@
 #include <Bute/SymParser.h> // CSymParser (m_8: ResolvePath 0x13c030) + CSymTab (m_2c: FindSub 0x13a230)
 #include <Gruntz/GameRegistry.h> // CGameRegistry / g_gameReg (+ SoundCue chain: DirectSoundMgr/SoundDevice/SoundStream)
 #include <Gruntz/AttractActor.h>       // the shared per-frame g_actorList view
-#include <Gruntz/ResMgr.h>             // CDrawTarget (m_10 frame surface / m_14 draw surface)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (Vslot09 Method_158c70)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface)
 #include <DDrawMgr/DDSurface.h>        // CDDSurface (Vslot07 Flip; m_10->m_2c)

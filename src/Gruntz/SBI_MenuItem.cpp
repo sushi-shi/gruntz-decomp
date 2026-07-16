@@ -12,10 +12,13 @@
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/SBI_MenuItem.h>
-#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world (m_world) view (CResMgr + CDrawTarget + CImageRegistry + CSprite)
-#include <Gruntz/SbiConfig.h>    // canonical config-host family (one shape)
-#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (LoadTabSprites)
-#include <Image/CImage.h>        // canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
+#include <Gruntz/Sprite.h>                // CSprite (fold: ex via ResMgr.h)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world (m_world) view (CDDrawSurfaceMgr + CDDrawSubMgrPages + CImageRegistry + CSprite)
+#include <Gruntz/SbiConfig.h>          // canonical config-host family (one shape)
+#include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (LoadTabSprites)
+#include <Image/CImage.h> // canonical frame-record class (CImage::RenderFrame @0x153790)
 // The former per-TU `class CSBI_RectOnly { ClearTabGroup; Deactivate; }` view is
 // folded onto the canonical chain CSBI_RectOnly (SBI_Image.h) - same mangled symbols.
 
@@ -34,7 +37,7 @@
 // ResolveFrame is the shared CSbiConfigRecord (<Gruntz/SbiConfig.h>), a same-shaped
 // but distinct object reached through the m_24 config host, not through m_30.
 
-// The owning game manager held at g_gameReg->m_world is the canonical CResMgr
+// The owning game manager held at g_gameReg->m_world is the canonical CDDrawSurfaceMgr
 // (ResMgr.h): the draw surface context is m_drawTarget->m_drawContext (+0x04 ->
 // +0x14) and the config/name image registry is m_10 (its map embedded at +0x10).
 
@@ -42,7 +45,7 @@
 
 // The g_gameReg singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view
 // (<Gruntz/GruntzMgr.h>). Its +0x30 world slot (m_world) is the resource manager
-// here, cast locally to CResMgr at the deref sites.
+// here, cast locally to CDDrawSurfaceMgr at the deref sites.
 extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight cue plays through, and the
@@ -52,7 +55,7 @@ extern "C" u32 g_killCueClock;
 // CMiTabHost/CMiSelf moved to <Gruntz/SBI_MenuItem.h>.
 
 // The config host + its lookup map + record come from the shared canonical family
-// (<Gruntz/SbiConfig.h>): CSpriteFactoryHolder / CSbiConfigMap / CSbiConfigRecord.
+// (<Gruntz/SbiConfig.h>): CDDrawSurfaceMgr / CSbiConfigMap / CSbiConfigRecord.
 
 // Per-serialize round counter the CString archive helpers bump (DAT_00629ad0).
 
@@ -75,7 +78,7 @@ extern "C" u32 g_killCueClock;
 RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
     CStatusBarMgr* owner,
-    CSpriteFactoryHolder* host,
+    CDDrawSurfaceMgr* host,
     i32 cmd,
     i32 a4,
     SbRect rc,
@@ -91,7 +94,7 @@ i32 CSBI_MenuItem::SetupImage(
         return 0;
     }
     m_2c = (i32)owner; // owning tab host (CMiTabHost view at the deref sites)
-    m_24 = (i32)host;  // config host (CSpriteFactoryHolder, cast at the deref sites)
+    m_24 = (i32)host;  // config host (CDDrawSurfaceMgr, cast at the deref sites)
     m_10 = a4;
     m_8 = 2;
     m_30 = 0;
@@ -129,8 +132,8 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     }
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
     CObject* rec_v = 0;
-    CSpriteFactoryHolder* host = (CSpriteFactoryHolder*)m_24;
-    host->m_10->m_10map.Lookup((const char*)key, rec_v);
+    CDDrawSurfaceMgr* host = (CDDrawSurfaceMgr*)m_24;
+    host->m_imageRegistry->m_10map.Lookup((const char*)key, rec_v);
     CSbiConfigRecord* rec = (CSbiConfigRecord*)rec_v;
     m_38 = rec;
     if (rec == 0) {
@@ -171,7 +174,7 @@ i32 CSBI_MenuItem::DecCounter() {
         CImage* f = (CImage*)m_30;
         if (f) {
             f->RenderFrame(
-                (void*)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_14,
+                (void*)g_gameReg->m_world->m_drawTarget->m_backPair,
                 (void*)(m_rect14.m_0 + f->m_anchorX),
                 (void*)(m_rect14.m_4 + f->m_anchorY),
                 0
@@ -208,8 +211,8 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
         ((CStatusBarMgr*)host)->Deactivate();
     } else if (state == 2 && a) {
         // The +0x28 sound object viewed as its cue host (multi-view cast on m_28; the
-        // cue facet's map @+0x10 differs from CSoundRegistry's install map).
-        CMiMusicHost* mh = (CMiMusicHost*)((CResMgr*)g_gameReg->m_world)->m_28;
+        // cue facet's map @+0x10 differs from CDDrawSubMgrLeafScan's install map).
+        CMiMusicHost* mh = (CMiMusicHost*)g_gameReg->m_world->m_soundRegistry;
         if (mh->m_30 == 0) {
             CMiCue* found = 0;
             ((CMapStringToOb*)((char*)mh + 0x10))->Lookup("GAME_TABHIGHLIGHT2", (CObject*&)found);
@@ -279,7 +282,7 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CResMgr* mgr = (CResMgr*)g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
     if (mgr == 0) {
         return 0;
     }
@@ -292,7 +295,7 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
             ar->Read(tmp, 0x80);
             if (strlen(tmp) != 0) {
                 CObject* found_ob = 0;
-                mgr->m_10->m_10map.Lookup(tmp, found_ob);
+                mgr->m_imageRegistry->m_10map.Lookup(tmp, found_ob);
                 CSprite* found = (CSprite*)found_ob;
                 m_38 = found;
             } else {
@@ -351,7 +354,7 @@ i32 CStatusBarItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CResMgr* mgr = (CResMgr*)g_gameReg->m_world;
+    CDDrawSurfaceMgr* mgr = g_gameReg->m_world;
     if (mgr == 0) {
         return 0;
     }

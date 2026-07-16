@@ -159,9 +159,9 @@ struct CGameObject {
     // +0x0c  the owning world/display root: the ONE CDDrawSurfaceMgr
     // (<DDrawMgr/DDrawSurfaceMgr.h>). Every former view of this slot's pointee -
     // CGameObjWorld (+0x08 obj-chain == m_childGroup / +0x14 worker-cache ==
-    // m_workerCache / +0x24 level == m_resolveSubMgr), CEntranceResMgr (+0x2c ==
-    // m_leaf), CResMgr (+0x04/+0x08/+0x10/+0x28/+0x2c), LfxMapHolder (+0x10 spec
-    // store == m_surfaceDesc / +0x2c effect store == m_leaf) - reads the same
+    // m_workerCache / +0x24 level == m_level), CEntranceResMgr (+0x2c ==
+    // m_animRegistry), CDDrawSurfaceMgr (+0x04/+0x08/+0x10/+0x28/+0x2c), LfxMapHolder (+0x10 spec
+    // store == m_imageRegistry / +0x2c effect store == m_animRegistry) - reads the same
     // object; the retail map-Lookup bands corroborate per-slot (0x1504d0 ->
     // 0x1b8008 via +0x10, 0x150610/0x1505b0 -> 0x1b8438 via +0x28/+0x2c).
     class CDDrawSurfaceMgr* m_0c;
@@ -276,7 +276,7 @@ struct CGameObject {
 
 // (The former CGameObjWorld / CGameObjChain / CGameObjNode walking views are
 // CDDrawSurfaceMgr now typed at CGameObject::m_0c (its +0x08 m_objChain ==
-// m_childGroup, +0x14 m_workerCache, +0x24 m_level == m_resolveSubMgr), the
+// m_childGroup, +0x14 m_workerCache, +0x24 m_level == m_level), the
 // chain IS CDDrawChildGroup (17-slot vtable 0x1efdc0; CObList @+0x10, head node
 // @+0x14) and the node IS CDDrawGroupNode - both <DDrawMgr/DDrawChildGroup.h>.
 // The walkers read the head as `(CDDrawGroupNode*)group->m_list.GetHeadPosition()`

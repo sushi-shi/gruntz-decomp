@@ -10,13 +10,13 @@
 // each passing their OWN register-sourced object - no single concrete class fits, and no
 // method is ever dispatched on it (it is read purely by offset:
 // obj->m_sub->m_cfg->m_drawFn). So the honest type is this opaque interface, NOT
-// CSpriteFactoryHolder (that was one caller's guess that its m_levelData's declared type
+// CDDrawSurfaceMgr (that was one caller's guess that its m_levelData's declared type
 // IS the parameter type). Layout is the only load-bearing fact; field names are
 // placeholders.
 //
 // This is THE ONE lean signature (EngStrRenderObj*, i32 x8) every caller should share so
 // the C++-mangled call reloc binds to the single definition. Divergent per-TU decls (a
-// `void*, CString*, RECT*` in Multi.cpp; a `CSpriteFactoryHolder*, SplashParams*, i32*`
+// `void*, CString*, RECT*` in Multi.cpp; a `CDDrawSurfaceMgr*, SplashParams*, i32*`
 // in MgrPersist.h/Attract.cpp) mangle to DIFFERENT symbols the definition never emits ->
 // the reloc-fidelity defects on those units. Fix = include THIS header + cast the args.
 #ifndef GRUNTZ_WAP32_ENGSTR_H

@@ -61,7 +61,7 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
 // (string key). Modeled directly as the MFC classes at the use sites (Mfc.h), so no
 // per-TU map view is needed.
 
-// The engine object directory IS the canonical CSpriteFactoryHolder
+// The engine object directory IS the canonical CDDrawSurfaceMgr
 // (g_gameReg->m_world): the serial map is its m_8 factory's embedded key->object
 // CMapPtrToPtr (+0x48, GruntObjMap in <Gruntz/SpriteFactory.h>), the name map
 // its m_animRegistry's +0x10 CMapStringToPtr (canonical CDDrawSubMgrLeaf::m_10;
@@ -98,7 +98,7 @@ void* operator new(u32 n); // 0x1b9b46
         ar->Read(&id, 4);                                                                          \
         obj = 0;                                                                                   \
         void* r;                                                                                   \
-        if (dir->m_8->m_map48.Lookup((void*)id, obj) != 0 && obj != 0) {                           \
+        if (dir->m_childGroup->m_map48.Lookup((void*)id, obj) != 0 && obj != 0) {                  \
             r = (((CWwdGameObjectE*)obj)->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
         } else {                                                                                   \
             r = 0;                                                                                 \
@@ -154,7 +154,7 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CSpriteFactoryHolder* dir = g_gameReg->m_world;
+    CDDrawSurfaceMgr* dir = g_gameReg->m_world;
     if (dir == 0) {
         return 0;
     }

@@ -31,7 +31,7 @@
 #include <DDrawMgr/DDSurface.h>           // CDDSurface Flip (FrameSlot28)
 
 #include <rva.h>
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
 #include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
 #include <Globals.h>
@@ -197,7 +197,7 @@ static inline CGMOwner* Owner(CState* s) {
 void operator delete(void*);
 
 // The renderer's ClearWorkers @0x163c60 comes from the real CDDrawWorkerList
-// (<DDrawMgr/DDrawWorkerList.h> - the m_rendererB type; the stale local decl-only
+// (<DDrawMgr/DDrawWorkerList.h> - the m_workerList type; the stale local decl-only
 // shadow class is gone).
 
 // The menu music controller (CMenuState+0x1bc) IS the canonical LeafCue
@@ -227,16 +227,16 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
-    ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("MENU", "_");
-    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("MENU", "_");
+    m_c->m_imageRegistry->RemoveKeysEqual_155360("MENU", "_");
+    m_c->m_soundRegistry->RemoveKeysEqual_157c70("MENU", "_");
     if (m_c) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
-        CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
+        SoundStream* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             ((SoundStream*)r)->Stop();
         }
-        m_c->m_rendererB->ClearWorkers();
+        m_c->m_workerList->ClearWorkers();
     }
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CChatBox* ui = m_1b4;
@@ -295,7 +295,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
+        SoundStream* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             ((SoundDevice*)r)->PurgeVoiceList(-1);
         }
@@ -306,8 +306,8 @@ void CMenuState::StopMusicChain() {
 // view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
-    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    m_c->m_drawTarget->m_10->m_surface->Flip(0);
+    m_c->m_drawTarget->Method_158ee0();
+    m_c->m_drawTarget->m_frontPair->m_surface->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_1b8)

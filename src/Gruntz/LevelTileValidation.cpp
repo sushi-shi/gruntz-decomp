@@ -58,7 +58,7 @@
 // WHAT THE VALIDATOR ACTUALLY WALKS (the whole object web, xref-recovered - every
 // former local view here is dissolved onto the real class):
 //
-//   CState::m_c            == CSpriteFactoryHolder   (the resource holder; was `PlayMgr`)
+//   CState::m_c            == CDDrawSurfaceMgr   (the resource holder; was `PlayMgr`)
 //     ->m_8                == CDDrawChildGroup          (was `PlayMgrRenderer`)
 //        ->m_list (head)   == CDDrawGroupNode*        (was `TileObjNode`/`StartNode`; the
 //                                                      head of the CPtrList embedded at
@@ -99,7 +99,7 @@
 //                                                      0x238 - the `WwdStartPlayer` view) are
 //                                                      all canonical members)
 //
-// NOTE: CSpriteFactoryHolder::m_24 is now typed CGameLevel* in GameRegistry.h (the former
+// NOTE: CDDrawSurfaceMgr::m_24 is now typed CGameLevel* in GameRegistry.h (the former
 // CGameViewport facet was a FAKE NAME for the level - PushView IS VisitVisible @0x15dc90,
 // SetClipRect IS BuildAllPlanes @0x15da80), matching CWorldZ::m_24 in GruntzMgr.h; the
 // +0x4c/+0x5c reads here are plain member reads. Likewise
@@ -172,8 +172,8 @@ static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
 // array data pointer and its +0x5c main plane are what this TU reads). GameRegistry.h now
 // types that slot CGameLevel* (the former CGameViewport facet is dissolved), so this is a
 // plain accessor.
-static inline CGameLevel* LevelOf(CSpriteFactoryHolder* holder) {
-    return holder->m_24;
+static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
+    return holder->m_level;
 }
 
 // The level tile-id lookup: clamp (x,y) to the plane bounds, shift to tile coords,
@@ -227,7 +227,7 @@ RVA(0x000d2b20, 0x21f)
 i32 CPlay::PlaceStartGruntz() {
     // Retail lea's the live-object CObList embedded at manager+0x10 (the real m_list
     // member) and null-tests it (a vacuous guard), then reads its head (+4).
-    CObList* list = &m_c->m_8->m_list;
+    CObList* list = &m_c->m_childGroup->m_list;
     if (list == 0) {
         return 0;
     }
@@ -314,7 +314,7 @@ i32 CPlay::ValidateLevelTiles() {
     counts[3] = 0;
 
     // The live-object list (the CObList embedded at manager+0x10; head node 191880x14).
-    CObList* list = &m_c->m_8->m_list;
+    CObList* list = &m_c->m_childGroup->m_list;
     if (list == 0) {
         return 0;
     }
@@ -659,7 +659,7 @@ i32 CPlay::ValidateLevelTiles() {
             // GetTileHandle - no collision query); tile ids 0x12f..0x149 register
             // a tile-action event with the extent rect (AddToList3 @0x116a40,
             // thunk 0x3580, on m_beginMarker - the ex-"SpawnPuddle" alias).
-            CPlaneRender* pl = m_c->m_24->m_mainPlane;
+            CPlaneRender* pl = m_c->m_level->m_mainPlane;
             i32 tile = pl->m_tileGrid[pl->m_colOffsets[obj->m_168] + obj->m_164];
             if (tile >= 0x12f && tile <= 0x149) {
                 if (m_beginMarker->AddToList3(

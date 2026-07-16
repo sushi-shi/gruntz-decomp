@@ -65,7 +65,7 @@ extern "C" CGameRegistry* g_gameReg;
 // ===========================================================================
 RVA(0x00101580, 0x806)
 void CStatusBarMgr::BuildGameMenu() {
-    CSpriteFactoryHolder* code = m_c; // the setup arg2 config host
+    CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host
     i32 bx = m_10;
     i32 by = m_rect14.m_0;
     CSBI_Image* it;

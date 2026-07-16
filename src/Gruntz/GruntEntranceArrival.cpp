@@ -26,12 +26,12 @@
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record)
 #include <Bute/SymTab.h>              // CSymTab (ResolveQualified)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/Enums.h>             // GruntType tool/powerup kinds + GruntDeathKind + RezTypeTag
 #include <Gruntz/State.h>       // CState (m_levelIndex/m_levelBank - StepWarpExit's level lookup)
 #include <Wap32/Wap32.h>        // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
-#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
+#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_level visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
@@ -212,7 +212,7 @@ extern "C" i32 g_engineFrameDelta;
 // per-class setup slot m_18 (+0x18) - for "Projectile"/"Boomerang"/"TimeBomb"
 // the bound setup/logic object IS a CProjectile (downcast per site; the slot is
 // generically typed on the canonical aux; proven-heterogeneous across classes).
-// The HUD sprite factory reached as g_gameReg->m_world->m_8 is the canonical
+// The HUD sprite factory reached as g_gameReg->m_world->m_childGroup is the canonical
 // CDDrawChildGroup (shared <Gruntz/SpriteFactory.h>).
 // The game-registry singleton (0x64556c) is the CGameRegistry-typed g_gameReg
 // (declared above) - the attack-fire paths read it natively, cast-free.
@@ -418,7 +418,7 @@ i32 CGrunt::UpdateGruntStatus() {
     CGameRegistry* g = g_gameReg;
     i32 x = m_10->m_screenX;
     i32 y = m_10->m_screenY;
-    i32* vr = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
+    i32* vr = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
     if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
         g->m_cueSink->CueSpawn(this, 2, -1, -1, -1);
     }
@@ -611,7 +611,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_GUNHAT:
             case GRUNT_NERFGUN:
             case GRUNT_ROCK: {
-                CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -636,7 +636,7 @@ i32 CGrunt::StepAttackFire() {
                 break;
             }
             case GRUNT_BOOMERANG: {
-                CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -663,7 +663,7 @@ i32 CGrunt::StepAttackFire() {
             case GRUNT_TIMEBOMB: {
                 i32 pos[2];
                 GetSpawnPos(pos);
-                CGameObject* spr = g_gameReg->m_world->m_8
+                CGameObject* spr = g_gameReg->m_world->m_childGroup
                                        ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_120 = 0;
                 spr->m_7c->m_notify(spr);
@@ -672,7 +672,7 @@ i32 CGrunt::StepAttackFire() {
             }
             case GRUNT_WELDER:
             case GRUNT_WINGZ: {
-                CGameObject* spr = g_gameReg->m_world->m_8->CreateSprite(
+                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_object->m_screenX,
                     m_object->m_screenY,
@@ -1067,7 +1067,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        CCueRect* r = (CCueRect*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
+        CCueRect* r = (CCueRect*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
         }
@@ -1224,7 +1224,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
                 if (CueVisible(
-                        (i32)&g->m_world->m_24->m_mainPlane->m_originX,
+                        (i32)&g->m_world->m_level->m_mainPlane->m_originX,
                         m_10->m_screenX,
                         m_10->m_screenY
                     )) {
@@ -1233,7 +1233,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
                     if (CueVisible(
-                            (i32)&g->m_world->m_24->m_mainPlane->m_originX,
+                            (i32)&g->m_world->m_level->m_mainPlane->m_originX,
                             m_10->m_screenX,
                             m_10->m_screenY
                         )) {
@@ -1241,7 +1241,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                     }
                 } else if (idx == 2) {
                     if (CueVisible(
-                            (i32)&g->m_world->m_24->m_mainPlane->m_originX,
+                            (i32)&g->m_world->m_level->m_mainPlane->m_originX,
                             m_10->m_screenX,
                             m_10->m_screenY
                         )) {
@@ -1569,7 +1569,7 @@ i32 CGrunt::StepArrivalReroll() {
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;
     CGameRegistry* g = g_gameReg;
-    CCueRect* r = (CCueRect*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
+    CCueRect* r = (CCueRect*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
     if (pick > 0x19) {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueEvent(this, 0x15d, -1, 0, -1, -1);
@@ -1691,7 +1691,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             CGameRegistry* g = g_gameReg;
             i32 x = h->m_screenX;
             i32 y = h->m_screenY;
-            i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
+            i32* rect = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
             if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
                 g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
                 ClearSubA();
@@ -1708,7 +1708,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
+        i32* rect = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->CueSpawn(this, 0xd, -1, -1, -1);
         }
@@ -1803,30 +1803,30 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CSprite* found;
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
-        found = (CSprite*)m_154->m_0c->m_leaf->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
+        found = (CSprite*)m_154->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
-                (i32)&g->m_world->m_24->m_mainPlane->m_originX,
+                (i32)&g->m_world->m_level->m_mainPlane->m_originX,
                 m_10->m_screenX,
                 m_10->m_screenY
             )) {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = (CSprite*)m_154->m_0c->m_leaf->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
+        found = (CSprite*)m_154->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
-                (i32)&g->m_world->m_24->m_mainPlane->m_originX,
+                (i32)&g->m_world->m_level->m_mainPlane->m_originX,
                 m_10->m_screenX,
                 m_10->m_screenY
             )) {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = (CSprite*)m_154->m_0c->m_leaf->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
+        found = (CSprite*)m_154->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
-                (i32)&g->m_world->m_24->m_mainPlane->m_originX,
+                (i32)&g->m_world->m_level->m_mainPlane->m_originX,
                 m_10->m_screenX,
                 m_10->m_screenY
             )) {
@@ -2235,7 +2235,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     } else {
         CGameObject* h = m_10;
         CGameRegistry* g = g_gameReg;
-        i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
+        i32* rect = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
         if (GruntPointVisible((i32)rect, h->m_screenX, h->m_screenY)) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }
@@ -2287,7 +2287,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         CGameRegistry* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_originX);
+        i32* rect = (i32*)((i32)&g->m_world->m_level->m_mainPlane->m_originX);
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->CueA(this, cueId, -1, 0, -1, -1);
         }
@@ -2425,7 +2425,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     CGameObject* found = 0;
     CGameObject* result = 0;
-    if (g->m_world->m_8->m_map48.Lookup(cellObj, (void*&)found)) {
+    if (g->m_world->m_childGroup->m_map48.Lookup(cellObj, (void*&)found)) {
         result = found;
     }
     if (result != 0) {

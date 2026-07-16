@@ -55,9 +55,9 @@ extern i32 g_aniCueItem;    // 0x61ab24 (== g_sndCueTag)
 
 // The manager held at the cursor's +0x0c owner slot (CLoadable::m_0c, a generic i32 owner
 // handle) IS the canonical CDDrawSurfaceMgr: the +0x2c label sub-object the blit-param
-// serialize reaches is CDDrawSurfaceMgr::m_leaf (a CDDrawSubMgrLeaf, KeyOfValue_152d30 /
-// +0x10 map). The m_leaf@+0x2c layout is unique to the CDDrawSurfaceMgr family, and fold #1
-// this wave typed CDDrawSurfaceMgr::m_leaf as CDDrawSubMgrLeaf*, so the former per-TU
+// serialize reaches is CDDrawSurfaceMgr::m_animRegistry (a CDDrawSubMgrLeaf, KeyOfValue_152d30 /
+// +0x10 map). The m_animRegistry@+0x2c layout is unique to the CDDrawSurfaceMgr family, and fold #1
+// this wave typed CDDrawSurfaceMgr::m_animRegistry as CDDrawSubMgrLeaf*, so the former per-TU
 // to the real class, exactly as WwdObjMgr / WwdGameObjectRender already do.
 
 // ---------------------------------------------------------------------------
@@ -871,7 +871,7 @@ i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
     if (m_14 != 0) {
         // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
         // KeyOfValue_152d30 returns the label for the map VALUE m_14 (CAniElement : CObject).
-        CString label = ((CDDrawSurfaceMgr*)m_0c)->m_leaf->KeyOfValue_152d30(m_14);
+        CString label = ((CDDrawSurfaceMgr*)m_0c)->m_animRegistry->KeyOfValue_152d30(m_14);
         strcpy(buf, label);
     }
     ar->Write(buf, 0x80);
@@ -909,7 +909,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     } else {
         // the leaf's +0x10 map is CMapStringToPtr (Lookup 0x1b8438), value-typed void*
         void* out = 0;
-        ((CDDrawSurfaceMgr*)m_0c)->m_leaf->m_10.Lookup(buf, out);
+        ((CDDrawSurfaceMgr*)m_0c)->m_animRegistry->m_10.Lookup(buf, out);
         m_14 = (CAniElement*)out;
     }
     CAniElement* w = m_14;

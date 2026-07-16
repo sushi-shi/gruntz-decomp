@@ -21,7 +21,7 @@
 #include <rva.h>
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_tileMgr / registry m_cmdGrid)
 #include <Gruntz/Grunt.h>      // canonical CGrunt (the ex-CObjectTracker identity) + CGameRegistry
-#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24) + CLevelPlane (m_mainPlane +0x5c)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level) + CLevelPlane (m_mainPlane +0x5c)
 
 // The CGameRegistry view of the 0x24556c singleton (the SAME object as WwdGameReg* g_gameReg,
 // the 0x24556c dual-view): typed CGameRegistry so its m_cmdGrid (CTriggerMgr) / m_cueSink
@@ -29,7 +29,7 @@
 extern "C" CGameRegistry* g_gameReg;
 
 // The registry's viewport-bounds path is the canonical chain g_gameReg->m_world
-// (CSpriteFactoryHolder) ->m_24 (CGameLevel) ->m_mainPlane (CLevelPlane, +0x5c); the
+// (CDDrawSurfaceMgr) ->m_24 (CGameLevel) ->m_mainPlane (CLevelPlane, +0x5c); the
 // on-screen clip bounds are the plane's +0x40..+0x4c origin/extent block
 // (m_originX/m_originY/m_extentX/m_extentY).
 
@@ -79,7 +79,7 @@ i32 CGrunt::StepPeerTracking() {
         CGameRegistry* g = g_gameReg;
         i32 y = c->m_screenY;
         i32 x = c->m_screenX;
-        CLevelPlane* r = g->m_world->m_24->m_mainPlane;
+        CLevelPlane* r = g->m_world->m_level->m_mainPlane;
         if (x < r->m_extentX && x >= r->m_originX && y < r->m_extentY && y >= r->m_originY) {
             g->m_cueSink->CueEvent(this, 0x366, -1, 0, -1, -1);
         }

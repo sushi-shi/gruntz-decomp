@@ -21,7 +21,7 @@
 #include <Bute/ButeMgr.h>           // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h>    // canonical *0x24556c singleton (color table via m_78)
 #include <Gruntz/LightFxMgr.h>      // CLightFxMgr - m_logicPump's real class (m_tables[10] @+0x14)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - m_world->m_8 (embedded GruntObjMap m_map48 @+0x48)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - m_world->m_childGroup (embedded GruntObjMap m_map48 @+0x48)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
 #include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
@@ -150,7 +150,7 @@ i32 CSpotLight::RunAct(i32 id) {
 
 // SerializeMove's +0x98 focus slot (m_focus) holds a serialized object reference: a
 // REAL CGameObject (<Gruntz/UserLogic.h>). The Read path resolves the id through the
-// world sprite factory's embedded id->object map (g_gameReg->m_world->m_8->m_map48,
+// world sprite factory's embedded id->object map (g_gameReg->m_world->m_childGroup->m_map48,
 // the canonical GruntObjMap @+0x48, Lookup @0x1b8760), keeping the object only when
 // its GetTypeId() (slot 8, +0x20) is 5 - the SAME map+GetClassId==5 probe Play.cpp's
 // serialize Read uses. The Write path stores the object's id (CGameObject::m_188).
@@ -215,7 +215,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
                 i32 id;
                 s->Read(&id, 4);
                 CGameObject* out = 0;
-                i32 resolved = reg->m_world->m_8->m_map48.Lookup((void*)id, (void*&)out);
+                i32 resolved = reg->m_world->m_childGroup->m_map48.Lookup((void*)id, (void*&)out);
                 if (resolved != 0) {
                     if (out == 0) {
                         resolved = 0;
@@ -318,7 +318,7 @@ i32 CSpotLight::Tick_0b1af0() {
                 i32 laser = (((g_randSeed >> 16) & 0x7fff) & 1) + 1;
                 CString name;
                 name.Format(s_LEVEL_UFOHAZARDLASER, laser);
-                CSndHost* obj = reg->m_world->m_28; // the name->cue map host
+                CSndHost* obj = reg->m_world->m_soundRegistry; // the name->cue map host
                 if (obj->m_emitGate == 0) {
                     void* out = 0;
                     if (obj->m_10.Lookup(name, out) && out != 0 && g_sndEnabled != 0) {

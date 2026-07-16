@@ -654,7 +654,7 @@ namespace ApiCallerStubs {
 // config cue if the kill-cue clock has elapsed. A free __cdecl(hDlg, hCtrl, code, pos)
 // helper GameOptionsDlgProc's WM_HSCROLL dispatches to.
 //
-// The config-cue chain matches PathHazard's: the CSndHost at m_world->m_28 gates on
+// The config-cue chain matches PathHazard's: the CSndHost at m_world->m_soundRegistry gates on
 // m_emitGate, CSndFinder::Lookup resolves the named LeafCue, the g_sndEnabled/kill-
 // clock cooldown gate throttles, then LeafCue::m_10->ConfigureItem plays it.
 //
@@ -719,7 +719,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == 5) {
             return;
         }
-        CSndHost* host = g_gameReg->m_world->m_28;
+        CSndHost* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate) {
             return;
         }
@@ -744,7 +744,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == 5) {
             return;
         }
-        CSndHost* host = g_gameReg->m_world->m_28;
+        CSndHost* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate) {
             return;
         }

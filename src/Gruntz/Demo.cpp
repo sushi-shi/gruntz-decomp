@@ -101,8 +101,8 @@ i32 CDemo::Vslot15() {
 // ("DemoMover", "DemoSign") through the bound world's sprite factory.
 RVA(0x0003c070, 0x47)
 i32 CDemoSetup::SetupDemoActors() {
-    m_c->m_8->CreateSprite(1, 0, 0, 0, "DemoMover", 0x40003);
-    m_c->m_8->CreateSprite(1, 0, 0, 0x270f, "DemoSign", 0x40003);
+    m_c->m_childGroup->CreateSprite(1, 0, 0, 0, "DemoMover", 0x40003);
+    m_c->m_childGroup->CreateSprite(1, 0, 0, 0x270f, "DemoSign", 0x40003);
     return 1;
 }
 
@@ -170,7 +170,7 @@ i32 CDemo::Render() {
 // anim-worker handler like the 0x3d2b0.. family below. THE Scroll* VIEWS ARE
 // DISSOLVED (2026-07-14): the owner is the canonical CGameObject (its +0x7c IS
 // m_7c, the AnimWorkerObj), the worker's +0xc IS m_0c (the owner/world context ==
-// the CSpriteFactoryHolder facet), its +0x24 the canonical CGameLevel whose
+// the CDDrawSurfaceMgr facet), its +0x24 the canonical CGameLevel whose
 // +0x38/+0x3c "plane array + count" are the INTERIOR of the m_planes CObArray
 // (GetSize/GetAt inlines emit the same loads) and +0x5c is m_mainPlane. The
 // worker's +0x1c is the m_1c state tag (int|ptr role-union; int here) and
@@ -187,7 +187,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
     switch ((i32)st->m_1c) {
         case 1: {
             // step the current scroll position one unit toward the target.
-            CGameLevel* gh = ((CSpriteFactoryHolder*)st->m_0c)->m_24;
+            CGameLevel* gh = ((CDDrawSurfaceMgr*)st->m_0c)->m_level;
             i32 curX = gh->m_mainPlane->m_originX;
             i32 curY = gh->m_mainPlane->m_originY;
             if (curX < st->m_scrollTargetX) {
@@ -233,9 +233,9 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
         }
         case 0: {
             // pick a fresh random per-axis target within the main plane's wrap range.
-            i32 rx = ((CSpriteFactoryHolder*)st->m_0c)->m_24->m_mainPlane->m_wrapW;
+            i32 rx = ((CDDrawSurfaceMgr*)st->m_0c)->m_level->m_mainPlane->m_wrapW;
             st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
-            i32 ry = ((CSpriteFactoryHolder*)st->m_0c)->m_24->m_mainPlane->m_wrapH;
+            i32 ry = ((CDDrawSurfaceMgr*)st->m_0c)->m_level->m_mainPlane->m_wrapH;
             st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
             st->m_1c = (void*)1;
             break;

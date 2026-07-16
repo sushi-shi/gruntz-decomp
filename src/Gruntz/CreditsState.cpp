@@ -9,7 +9,7 @@
 // DE-VIEW PASS (2026-07-13): the 23 .cpp-local view structs this TU carried are GONE.
 // Every one of them was a per-hop shadow of a class the tree already models, and the
 // SAME FILE proved it: CCreditsState::Render already walked the real chain
-// (m_c->m_drawTarget->m_10->m_surface->m_8, CSpriteFactoryHolder -> CDrawTarget ->
+// (m_c->m_drawTarget->m_frontPair->m_surface->m_8, CDDrawSurfaceMgr -> CDDrawSubMgrPages ->
 // SurfaceA/B -> CDDSurface -> IDirectDrawSurface) while its neighbours re-modelled the
 // identical hops as CreditsScrollView/CreditsView4/CreditsView4M14/CreditsHdcProv,
 // CMenuRootA/CMenuPageA/CMenuBrightHolder and CCreditsDrawRoot/CCreditsDrawView/
@@ -39,7 +39,7 @@
 #include <Win32.h>                // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h> // real IDirectDrawSurface (credits-scroll DC + Render input surface)
 #include <rva.h>
-#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <stdio.h>                     // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
 // Real MFC CRgn/CGdiObject for the credits clip region (CCreditsState::m_1e8).
 // GameMode.h pulled <Mfc.h>->afx.h (defines _AFX_ENABLE_INLINES); skip afxwin*.inl for
@@ -123,7 +123,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     if (!sounds) {
         return 0;
     }
-    ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)sounds, "CREDITZ", "_");
+    m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)sounds, "CREDITZ", "_");
 
     CSymTab* midiz = (CSymTab*)SymTab2c()->ResolvePath("MIDIZ");
     if (midiz) {
@@ -148,8 +148,8 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
         }
     }
 
-    if (!((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158d20()) {
-        if (!((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158cb0(0, 0x30000)) {
+    if (!m_c->m_drawTarget->Method_158d20()) {
+        if (!m_c->m_drawTarget->Method_158cb0(0, 0x30000)) {
             return 0;
         }
     }
@@ -169,12 +169,12 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_c) {
-        CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
+        SoundStream* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             ((SoundStream*)r)->Stop();
         }
-        ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("CREDITZ", "_");
-        ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("CREDITZ", "_");
+        m_c->m_soundRegistry->RemoveKeysEqual_157c70("CREDITZ", "_");
+        m_c->m_imageRegistry->RemoveKeysEqual_155360("CREDITZ", "_");
         // retail: `mov ecx,[edx+0x2c]; call 0x1527d0` - the Leaf's own remove (the old
         // (CDDrawWorkerRegistry*) cast MISBOUND this call to the +0x10 twin's 0x155360).
         m_c->m_animRegistry->RemoveKeysEqual_1527d0("CREDITZ", "_");
@@ -206,7 +206,7 @@ i32 CCreditsState::Vslot09(i32 /*unused*/) {
 // two latched one-shot FX).
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
-    IDirectDrawSurface* in = m_c->m_drawTarget->m_10->m_surface->m_8;
+    IDirectDrawSurface* in = m_c->m_drawTarget->m_frontPair->m_surface->m_8;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             Owner(this)->Post(0x8006, 0xfa0);
@@ -214,7 +214,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    if (((CSoundRegistry*)m_c->m_28)->m_2c) {
+    if (m_c->m_soundRegistry->m_2c) {
         GM_SimpleAnim(-1);
     }
 
@@ -249,10 +249,10 @@ i32 CCreditsState::Render() {
     Sub2();
 
     // draw: cache m_c->m_drawTarget (the target keeps it in esi for the three derefs).
-    CDrawTarget* v4 = m_c->m_drawTarget;
-    v4->m_10->m_surface->Draw(0);
-    v4->m_14->BltSelf(
-        v4->m_18
+    CDDrawSubMgrPages* v4 = m_c->m_drawTarget;
+    v4->m_frontPair->m_surface->Draw(0);
+    v4->m_backPair->BltSelf(
+        v4->m_overlayPair
     ); // SurfaceB::Blit WAS CDDrawSurfacePair::BltSelf @0x3a1d0 (thunk 0x1564)
 
     if (!m_1b4 && Owner(this)->m_14) {
@@ -278,7 +278,7 @@ i32 CCreditsState::InputVirtual() {
     // the page pump at m_c->m_drawTarget is CDDrawSubMgrPages; the ready gate is
     // Method_158bc0 (0x158bc0) - NOT CParseSource::BeginParse (0x139960); same page gate
     // the sibling states (CHelpState/CSplashState) poll.
-    if (((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158bc0() == 0) {
+    if (m_c->m_drawTarget->Method_158bc0() == 0) {
         return 0;
     }
     if (ShowCursor(0) >= 0) {
@@ -365,12 +365,12 @@ i32 CCreditsState::Vslot0e(i32 x, i32 unused, i32 y) {
 // on the FadeInTitle fail return-0 + the sprintf stack-buffer slot layout. Not steerable.
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
-    CSpriteFactoryHolder* root = m_c;
+    CDDrawSurfaceMgr* root = m_c;
     if (m_videoPlaying != 0) {
         ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158dc0();
         ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158e90();
         ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158d50(0);
-        root->m_drawTarget->m_18->m_surface->Fill(0);
+        root->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         return 1;
     }
     char stateName[0x20];
@@ -389,7 +389,7 @@ i32 CCreditsState::InitAttractTitle() {
     if (faded == 0) {
         return 0;
     }
-    CDDSurface* tgt = root->m_drawTarget->m_14->m_surface;
+    CDDSurface* tgt = root->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
     ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158e90();
     BuildMenuPage(0x50, 0x3e8, 0, 1);
@@ -415,9 +415,9 @@ i32 CCreditsState::DrawScrollingCredits() {
         return 0;
     }
     // The credits scroll paints through the draw-surface page's real CDDSurface
-    // (m_c->m_drawTarget->m_14->m_surface) and its held IDirectDrawSurface (m_8): GetDC is
+    // (m_c->m_drawTarget->m_backPair->m_surface) and its held IDirectDrawSurface (m_8): GetDC is
     // COM slot 17 (+0x44), ReleaseDC slot 26 (+0x68).
-    CDDSurface* prov = m_c->m_drawTarget->m_14->m_surface;
+    CDDSurface* prov = m_c->m_drawTarget->m_backPair->m_surface;
 
     if (g_frameDelta >= m_1f4) {
         m_1f4 = 0;
@@ -507,7 +507,7 @@ i32 CCreditsState::SetupTitle() {
         operator delete(buf);
     }
     m_1e8.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
-    CDDSurface* prov = m_c->m_drawTarget->m_14->m_surface;
+    CDDSurface* prov = m_c->m_drawTarget->m_backPair->m_surface;
     HDC hdc = 0;
     prov->m_8->GetDC(&hdc);
     if (hdc) {
@@ -535,7 +535,7 @@ i32 CCreditsState::FinishState() {
 // CCreditsState::StepVideo() (0x39c60): if the credits aren't playing return 1. Else
 // advance the Smacker movie one frame; when the last frame is reached, Close() the handle
 // and FinishState(). Either way, if both surfaces are live, blit the current frame.
-// The draw chain is the real one: m_c->m_drawTarget (CDrawTarget) -> the +0x14 / +0x18
+// The draw chain is the real one: m_c->m_drawTarget (CDDrawSubMgrPages) -> the +0x14 / +0x18
 // surface pages -> their CDDSurface (m_2c) and the page's own BltFast source RECT (m_1c).
 // @early-stop
 // scheduling coin-flip wall (~95%): 49/51 instructions byte-identical; the sole residual
@@ -548,9 +548,9 @@ i32 CCreditsState::StepVideo() {
     }
     i32 ret = 0;
     if (m_videoHandle) {
-        CDrawTarget* v = m_c->m_drawTarget;
-        CDDrawSurfacePair* dst = v->m_18;
-        CDDrawSurfacePair* src = v->m_14;
+        CDDrawSubMgrPages* v = m_c->m_drawTarget;
+        CDDrawSurfacePair* dst = v->m_overlayPair;
+        CDDrawSurfacePair* src = v->m_backPair;
         if (!Eng_SmackStep(dst->m_surface->m_8, -1)) {
             m_videoHandle->CloseSmacker();
             ret = FinishState();

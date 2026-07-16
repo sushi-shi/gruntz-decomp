@@ -24,7 +24,7 @@
 #include <Gruntz/GameModeBase.h> // CGameModeBase::Reset (the 0x8d000 dtor teardown body)
 #include <Gruntz/HelpState.h>    // canonical CHelpState (was defined locally here)
 #include <Gruntz/SplashState.h>  // CSplashState (the 0x8d000 /GX out-of-line dtor)
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the typed CState::m_c holder)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the typed CState::m_c holder)
 #include <Gruntz/Attract.h>      // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
 #include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
@@ -77,14 +77,15 @@ i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
 // Returns 1 on the full path, 0 on either early-out. Homed from OrphanMethods.cpp
 // (was the CState95 placeholder view); identity proven by the ??_7CHelpState@@6B@+0x24
 // slot-9 data-ref (via thunk 0x3b43). m_c's +0x04 DDraw pages are the typed
-// m_pages (GameRegistry.h coexists with GruntzMgr.h - the old ODR-clash note was
+// m_drawTarget (GameRegistry.h coexists with GruntzMgr.h - the old ODR-clash note was
 // stale; SplashState.cpp already included both).
 RVA(0x00095140, 0x6e)
 i32 CHelpState::Vslot09(i32 arg) {
     m_4->RestoreVideoMode(0);
     // The pages ptr is re-read at each call (retail does NOT cache it in a reg across
     // the Method_158d20 call - a caching local would pin it in edi and mismatch).
-    if (m_c->m_pages->Method_158d20() == 0 && m_c->m_pages->Method_158cb0(0, 0x30000) == 0) {
+    if (m_c->m_drawTarget->Method_158d20() == 0
+        && m_c->m_drawTarget->Method_158cb0(0, 0x30000) == 0) {
         return 0;
     }
     if (FadeInTitle((const char*)&g_titleBuf, 0, 0, 0, 0, 1) == 0) {
@@ -151,7 +152,7 @@ i32 CHelpState::Render() {
 // again, return the sequence result.
 RVA(0x00095320, 0x56)
 i32 CHelpState::InputVirtual() {
-    if (m_c->m_pages->Method_158bc0() == 0) {
+    if (m_c->m_drawTarget->Method_158bc0() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

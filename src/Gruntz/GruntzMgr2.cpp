@@ -6,8 +6,8 @@
 // maps to one contiguous retail .text region. Byte-neutral TU cut.
 #include <Gruntz/GruntzMgr.h>
 #include <Rez/RezAlloc.h>        // RezAlloc/RezFree
-#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (m_world's real class)
-#include <Gruntz/GameLevel.h> // CGameLevel (m_world->m_24) + CLevelPlane // CGruntzMgr / CWorldZ / CGameLevel (m_world->m_24) / CGruntzMapMgr
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_world's real class)
+#include <Gruntz/GameLevel.h> // CGameLevel (m_world->m_level) + CLevelPlane // CGruntzMgr / CWorldZ / CGameLevel (m_world->m_level) / CGruntzMapMgr
 #include <Wwd/WwdFile.h> // CPlaneRender (the world plane; m_tileGrid / m_colOffsets height grid)
 #include <rva.h>
 
@@ -19,7 +19,7 @@
 // Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
-    CPlaneRender* grid = (CPlaneRender*)m_world->m_24->m_mainPlane;
+    CPlaneRender* grid = (CPlaneRender*)m_world->m_level->m_mainPlane;
     i32 idx = grid->m_colOffsets[col] + row;
     grid->m_tileGrid[idx] = value;
     RezFree((void*)m_tileGrid);

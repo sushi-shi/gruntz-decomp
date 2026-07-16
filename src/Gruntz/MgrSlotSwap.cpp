@@ -7,14 +7,14 @@
 // are reloc-masked.
 #include <Gruntz/Brickz.h>
 #include <Ints.h>
-#include <Gruntz/GruntzMgr.h> // the REAL singleton class (+ CSpriteFactoryHolder via GameRegistry.h)
-#include <Gruntz/GameLevel.h> // CGameLevel - m_world->m_24 (the level; its m_mainPlane)
+#include <Gruntz/GruntzMgr.h> // the REAL singleton class (+ CDDrawSurfaceMgr via GameRegistry.h)
+#include <Gruntz/GameLevel.h> // CGameLevel - m_world->m_level (the level; its m_mainPlane)
 #include <Wwd/WwdFile.h>      // CLevelPlane/CPlaneRender - the canonical plane (the registry plane)
 #include <rva.h>
 
-// The registry plane table (g_gameReg->m_world->m_24->m_mainPlane) is the shared
+// The registry plane table (g_gameReg->m_world->m_level->m_mainPlane) is the shared
 // world-plane CLevelPlane: value plane m_tileGrid indexed by offset plane m_colOffsets.
-// canonical CSpriteFactoryHolder, its +0x24 m_24 IS CGameLevel, and CGameLevel::m_mainPlane
+// canonical CDDrawSurfaceMgr, its +0x24 m_24 IS CGameLevel, and CGameLevel::m_mainPlane
 // @+0x5c IS the plane - all reached cast-free.)
 
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
@@ -38,7 +38,7 @@ struct CSlotHolder {
 // @early-stop
 // Register-naming wall (~88%, structure byte-exact). Retail has higher register
 // pressure: it keeps mgr(edi)/idx/grp live, spills newTok to a stack local
-// ([esp+0x1c]/[esp+0x10]) and RE-WALKS the m_world->m_24->m_5c->cells chain for the
+// ([esp+0x1c]/[esp+0x10]) and RE-WALKS the m_world->m_level->m_5c->cells chain for the
 // write instead of CSE-ing the cell address. Two levers reproduced that shape and
 // took this 54.9 -> 88: (1) cache g_gameReg in a local `mgr` (raises pressure);
 // (2) idx/grp read-once locals shared between the cell index and the Notify args;
@@ -58,10 +58,10 @@ i32 CSlotHolder::DoSwap() {
     CGruntzMgr* mgr = g_gameReg;
     i32 grp = this->m_08;
     i32 idx = this->m_0c;
-    i32 newTok = mgr->m_world->m_24->m_mainPlane
-                     ->m_tileGrid[mgr->m_world->m_24->m_mainPlane->m_colOffsets[idx] + grp];
-    g_gameReg->m_world->m_24->m_mainPlane
-        ->m_tileGrid[g_gameReg->m_world->m_24->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
+    i32 newTok = mgr->m_world->m_level->m_mainPlane
+                     ->m_tileGrid[mgr->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp];
+    g_gameReg->m_world->m_level->m_mainPlane
+        ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
     ((CBrickzGrid*)mgr->m_tileGrid)->ComputeCellFlags(grp, idx, oldTok);
     this->m_34 = newTok;
     return 1;

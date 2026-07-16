@@ -111,7 +111,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 }
                 return 1;
             }
-            if (m_c->m_28->m_30 == 0) { // the sound host's busy/emit gate
+            if (m_c->m_soundRegistry->m_30 == 0) { // the sound host's busy/emit gate
                 if (BadSelect(s_gameBadSelect) != 0) {
                     ((LeafCue*)&g_sndCueTag)->PlayIfElapsed(0, 0, 0, 0);
                 }

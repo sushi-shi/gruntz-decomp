@@ -19,8 +19,8 @@
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)            // canonical CGrunt (+ CEntranceAnimPlayer/CGruntCellRec/etc.)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)            // canonical CGrunt (+ CEntranceAnimPlayer/CGruntCellRec/etc.)
 #include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor::Setup_15c2d0 (the +0x1a0 blit param)
 #include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
 #include <Gruntz/TypeKeyColl.h>  // g_typeColl (+ CAnimNameRecord, _zvec::IndexToPtr)

@@ -6,7 +6,7 @@
 // Fwd114ec0 @0x114ec0 - straight 6-arg forwarder to the guarded forwarder Fwd114f00.
 // Fwd114f00 @0x114f00 - the SCREENSHOT dispatch: arg2 IS the CGruntzMgr `this`
 // (HandleCommand's case-0x8070 passes it), the chain is m_world
-// (CSpriteFactoryHolder) -> m_pages (+0x4) -> m_frontPair (+0x10, the FRONT
+// (CDDrawSurfaceMgr) -> m_drawTarget (+0x4) -> m_frontPair (+0x10, the FRONT
 // CDDrawSurfacePair) -> m_surface (+0x2c, its held CDDSurface), and the callee
 // thunk 0x267b IS ?SaveScreenshot@@ @0x114ff0 (the very next fn in this band) -
 // so the six args are SaveScreenshot's own tail (settings helper, owner, mode
@@ -15,8 +15,8 @@
 #include <Ints.h>
 
 #include <Gruntz/GruntzMgr.h>          // the real CGruntzMgr (arg2's true class) + m_world chain
-#include <Gruntz/GameRegistry.h>       // CSpriteFactoryHolder (m_world's real class)
-#include <DDrawMgr/DDrawSubMgrPages.h> // m_pages (the ex-CWorldSub4 +0x4 child)
+#include <Gruntz/GameRegistry.h>       // CDDrawSurfaceMgr (m_world's real class)
+#include <DDrawMgr/DDrawSubMgrPages.h> // m_drawTarget (the ex-CWorldSub4 +0x4 child)
 #include <DDrawMgr/DDrawSurfacePair.h> // m_frontPair (CDDrawSurfacePair: m_surface @+0x2c)
 #include <Gruntz/SaveScreenshot.h>     // the real callee (thunk 0x267b -> 0x114ff0)
 
@@ -37,7 +37,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 // chain + 6-arg re-push forward are byte-faithful.
 RVA(0x00114f00, 0x3e)
 void Fwd114f00(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7) {
-    CDDrawSurfacePair* pair = mgr->m_world->m_pages->m_frontPair;
+    CDDrawSurfacePair* pair = mgr->m_world->m_drawTarget->m_frontPair;
     if (pair == 0) {
         return;
     }

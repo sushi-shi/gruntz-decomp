@@ -21,8 +21,8 @@
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/TypeKeyColl.h>       // g_typeColl (folded CAnimNameResolver anim registry)
                                       // WERE the fake g_animScratch / g_animScratchCount
                                       // globals (defined in 5 TUs each; LNK2005)

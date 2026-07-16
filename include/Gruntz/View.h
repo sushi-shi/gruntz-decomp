@@ -1,19 +1,19 @@
 // View.h - the dissolution record of the CState::m_c holder's render facets (no
 // classes remain here; every facet now lives on its real canonical class).
 //
-// The holder at CState::m_c (+0x0c) is the canonical `CSpriteFactoryHolder`
+// The holder at CState::m_c (+0x0c) is the canonical `CDDrawSurfaceMgr`
 // (<Gruntz/GameRegistry.h>) - the SAME object as CGameRegistry::m_world (+0x30), verified
 // NON-polymorphic (offset 0 is padding, no vtable on the object itself). The former fake
 // `CView` name (a MISATTRIBUTION: `sema class CView` shows 0x5ee1c4 is the *real MFC*
 // `CView : CWnd` vtable, an unrelated library class that collided with MFC's CView and
 // blocked pulling <afxwin.h> for CRgn) is GONE - CView is folded onto
-// CSpriteFactoryHolder, and its sub-object facets onto the ONE real classes:
-//   * +0x04 render-pump / draw target  -> CDrawTarget      (<Gruntz/ResMgr.h>)
+// CDDrawSurfaceMgr, and its sub-object facets onto the ONE real classes:
+//   * +0x04 render-pump / draw target  -> CDDrawSubMgrPages      (<Gruntz/ResMgr.h>)
 //   * +0x08 renderer A / factory       -> CDDrawChildGroup (<DDrawMgr/DDrawChildGroup.h>)
 //   * +0x0c renderer B / worker pump   -> CDDrawWorkerList (<DDrawMgr/DDrawWorkerList.h>)
 //   * +0x10 image/name registry        -> CImageRegistry   (<Gruntz/ResMgr.h>)
 //   * +0x24 draw surface / level       -> CGameLevel       (<Gruntz/GameLevel.h>)
-//   * +0x28 sound registry (+0x2c res) -> CSoundRegistry    (<Gruntz/ResMgr.h>)
+//   * +0x28 sound registry (+0x2c res) -> CDDrawSubMgrLeafScan    (<Gruntz/ResMgr.h>)
 //   * +0x2c anim registry              -> CDDrawSubMgrLeaf  (<DDrawMgr/DDrawSubMgrLeaf.h>)
 //
 // REMAINING CASTS (binary-authentic dual-use, NOT removable views - the doctrine's
@@ -21,8 +21,8 @@
 // the canonical holder members by cast because the field is genuinely used two ways:
 //   * (CDrawSurface*)holder->m_24 - +0x24's m_5c is an int for `m_5c+0x40` pointer-arith in
 //                                 40+ Grunt.cpp sites but a CameraGeom* here (int-vs-pointer).
-//   * (CSoundRegistry*)holder->m_28 - +0x28 is CSndHost (cue: m_10 CSndFinder, m_2c stream)
-//                                 AND CSoundRegistry (named-set: m_10map hash, m_2c pooled).
+//   * (CDDrawSubMgrLeafScan*)holder->m_28 - +0x28 is CSndHost (cue: m_10 CSndFinder, m_2c stream)
+//                                 AND CDDrawSubMgrLeafScan (named-set: m_10map hash, m_2c pooled).
 //
 // This header is pulled by the MFC state TUs (CPlay.h, GameMode.h) AFTER <Mfc.h>;
 // CState.h keeps only a forward decl so the ~60 pure-Win32 TUs stay afx-neutral.
@@ -36,10 +36,10 @@
 // the real IDirectDrawSurface - the poll is IsLost, COM slot 24; the dispatching TUs
 // pull <ddraw.h>. The former CGMInputObj fake-vtable view is dissolved.)
 
-// The render-flip surface at each CDrawTarget page's m_surface: the real CDDSurface
+// The render-flip surface at each CDDrawSubMgrPages page's m_surface: the real CDDSurface
 // (<DDrawMgr/DDSurface.h>; Fill @0x13e760, Restore @0x13e7d0 - ret 8, two args -
 // held IDirectDrawSurface at its +0x08). Pointer-only here; the dispatching TUs
-// include the real header. (The former nested CDrawTarget::SurfaceA/SurfaceB page
+// include the real header. (The former nested CDDrawSubMgrPages::SurfaceA/SurfaceB page
 // views are dissolved onto CDDrawSurfacePair - see ResMgr.h.)
 class CDDSurface;
 
@@ -53,7 +53,7 @@ class CDDSurface;
 //     The placed-object list head/count ("CWarlordListHead/Node", "+0x10/+0x1c")
 //     are its +0x10 CObList facet - m_head @+0x14 / m_count @+0x1c, node =
 //     CDDrawGroupNode (whose union carries the game-side CGameObject reading).
-//   * renderer B (holder->m_rendererB, +0x0c) IS the canonical CDDrawWorkerList
+//   * renderer B (holder->m_workerList, +0x0c) IS the canonical CDDrawWorkerList
 //     (<DDrawMgr/DDrawWorkerList.h>, 14-slot vtable 0x1efd88): Init news the
 //     0x2c-byte object and stores it at +0x0c. "Present(a, b)" was its slot 13,
 //     PruneWorkers(CDDrawSurfacePair*, CDDrawSurfacePair*) - same slot, same
@@ -61,7 +61,7 @@ class CDDSurface;
 // The view's 12 filler slots (v00..v08/v10..v12) were fabrications anchoring
 // those two offsets; both real classes carry every slot evidence-backed.
 
-// The draw-surface object at m_c->m_24 is the ONE real CGameLevel
+// The draw-surface object at m_c->m_level is the ONE real CGameLevel
 // (<Gruntz/GameLevel.h>) - the former per-TU CDrawSurface render-facet view AND the
 // former GameRegistry.h `CGameViewport` facet are both folded onto it ("PushView" IS
 // ?VisitVisible@CGameLevel@@ @0x15dc90, "SetClipRect" IS ?BuildAllPlanes@CGameLevel@@

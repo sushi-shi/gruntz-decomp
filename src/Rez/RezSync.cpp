@@ -189,7 +189,8 @@ void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
 // m_strWorldFile, and D_1b48c6 == ~CPtrList on the sound set's m_list.)
 
 // <DDrawMgr/DDrawSurfaceMgr.h>: VInit was the slot-6 Init, VMethod155f50 is
-// SetHwnd, m_04/m_24/m_28 are m_pages/m_resolveSubMgr/m_leafScan. The local
+// SetHwnd, m_04/m_24/m_28 are m_drawTarget/m_level/m_soundRegistry. The local
+// CSymParser/CFaderMgr re-declarations resolve to <Bute/SymParser.h> /
 // <Gruntz/FaderMgr.h>, and the 0x94-byte H70 (m_tileGrid) IS the canonical
 // CGruntzMapMgr - the RTTI-proven +0x70 board whose teardown thunk 0x35b7 is
 // ~CGruntzMapMgr @0x85d10. m_sound is the audio host = canonical CGruntzSoundZ
@@ -466,10 +467,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     ::AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1); // 0x1d3eff (NAFXCW)
     m_strWorldFile.Empty(); // 0x1b9c69 (?Empty@CString@@ - the ex "Mfc" C_1b9c69)
     // ONE new-site, TWO header names: the world/surface manager (the settled
-    // CDDrawSurfaceMgr == CSpriteFactoryHolder dual view; the DDraw side carries the
+    // CDDrawSurfaceMgr == CDDrawSurfaceMgr dual view; the DDraw side carries the
     // boot Init/SetHwnd virtuals, the game side is what m_world is typed as).
     CDDrawSurfaceMgr* world = new CDDrawSurfaceMgr;
-    m_world = (CSpriteFactoryHolder*)world;
+    m_world = (CDDrawSurfaceMgr*)world;
     i32 flags = (g_disableAudio || g_disableSound) ? 0xe5 : 0xe1;
     if (g_enableEmulation) {
         flags |= 0x10;
@@ -487,12 +488,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         rect[3] = 0x1df;
         m_modeW = 0x280;
         m_modeH = 0x1e0;
-        world->m_resolveSubMgr->BuildAllPlanes((LevelCoordRect*)rect);
+        world->m_level->BuildAllPlanes((LevelCoordRect*)rect);
     }
     world->SetHwnd((void*)&cb_403193);
-    world->m_resolveSubMgr->m_maxStepX = 0xe;
-    world->m_resolveSubMgr->m_maxStepY = 0xe;
-    world->m_pages->Method_158cb0(0, 0x30000);
+    world->m_level->m_maxStepX = 0xe;
+    world->m_level->m_maxStepY = 0xe;
+    world->m_drawTarget->Method_158cb0(0, 0x30000);
     RecomputeViewScale();
     RegisterGameObjectTypes(world); // 0xa3b0 (the ctx IS this world holder)
     if (!MakeRezPath()) {           // 0x91670 (RezMgr.cpp; ex the RezMgr facet cast)
@@ -564,7 +565,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_inputState = 0;
     }
     m_inputState = new CWorldSoundSet;
-    if (!m_inputState->Init(world->m_leafScan, vSndVol)) {
+    if (!m_inputState->Init(world->m_soundRegistry, vSndVol)) {
         ReportError(0x800a, 0x40d);
         return 0;
     }
@@ -655,7 +656,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             *(i32*)((char*)m_spriteFactory + 0x4c + k * 4) = 0;
         }
     }
-    if (!((CTriggerMgr*)m_spriteFactory)->SetLevel((CSpriteFactoryHolder*)m_shadeCache)) {
+    if (!((CTriggerMgr*)m_spriteFactory)->SetLevel((CDDrawSurfaceMgr*)m_shadeCache)) {
         ReportError(0x800a, 0x416);
         return 0;
     }
@@ -740,17 +741,17 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_isInterlaced = vInterlaced;
     m_isHighDetail = vHigh1;
     m_isEffectsEnabled = vEasy;
-    if (!m_world->m_28->HasKeyEqual_1583c0("GAME")) {
+    if (!m_world->m_soundRegistry->HasKeyEqual_1583c0("GAME")) {
         void* sz = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
-        m_world->m_28->ScanTree_157ee0((CSymTab*)sz, "GAME", "_");
+        m_world->m_soundRegistry->ScanTree_157ee0((CSymTab*)sz, "GAME", "_");
     }
     {
         void* mv = 0;
-        m_world->m_28->m_10.Lookup("GAME_MOVIE", mv);
-        m_world->m_28->MatchSub_1584f0((LeafCue*)mv, 0);
+        m_world->m_soundRegistry->m_10.Lookup("GAME_MOVIE", mv);
+        m_world->m_soundRegistry->MatchSub_1584f0((LeafCue*)mv, 0);
     }
     CheckMovieFileExists();
     if (!InitializeLobbyConnectionSettings()) {

@@ -16,11 +16,11 @@
 //                                     m_1f4_moveIcon/m_combatClock*/m_combatTimeout*)
 //   LfxGrid       == CGruntzMapMgr   (mgr+0x70; CMapMgr m_rows/m_width/m_height)
 //   LfxCell       == BrickzCell      (the 0x1c-stride map cell; m_4 id / m_c color)
-//   LfxSurfMgr    == CSpriteFactoryHolder (mgr+0x30; m_ptrColl pool + m_24 level)
+//   LfxSurfMgr    == CDDrawSurfaceMgr (mgr+0x30; m_ptrColl pool + m_24 level)
 //   LfxView       == CGameLevel      (holder+0x24; m_mainPlane @+0x5c)
 //   LfxWorldRect  == CLevelPlane     (the world rect IS m_originX..m_extentY @+0x40)
 //   LfxBorderCtx  == CDDrawSurfacePair (both retail callers - CPlay::Render
-//                    @0xc9255 and CMulti::PumpB - pass m_c->m_drawTarget->m_14,
+//                    @0xc9255 and CMulti::PumpB - pass m_c->m_drawTarget->m_backPair,
 //                    the back pair; the +0x2c "work surface" IS its m_surface)
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
@@ -143,7 +143,7 @@ i32 CLightFxRender::AllocSurface() {
     }
     FreeSurface();
     CGruntzMapMgr* info = m_tileGrid;
-    CSpriteFactoryHolder* mgr = m_world;
+    CDDrawSurfaceMgr* mgr = m_world;
     m_surface = mgr->m_ptrColl->MakeAndAddB(info->m_width, info->m_height, 0, 0, -1);
     if (m_surface == 0) {
         return 0;
@@ -326,7 +326,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, LfxRect* src) {
     }
     // The live world rect is the main plane's origin/extent quad (+0x40..+0x4c);
     // >>5 converts world pixels to tile units.
-    CLevelPlane* world = m_world->m_24->m_mainPlane;
+    CLevelPlane* world = m_world->m_level->m_mainPlane;
     i32 l = world->m_originX >> 5;
     i32 t = world->m_originY >> 5;
     i32 rr = world->m_extentX >> 5;

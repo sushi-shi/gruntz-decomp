@@ -14,8 +14,8 @@
 // GruntArrivalScan.cpp): CGruntScan IS CGrunt (this method's owner), CScanReg IS
 // CGameRegistry (g_gameReg), CScanTileMgr IS CGruntTileMgr (m_tileMgr / g_gameReg->
 // m_cmdGrid, the CGrunt* m_grid[4][15] board), CScanCueMgr's cue fire IS
-// CGruntCueSink::CueA (cast-free), CScanSub30/CScanSub24 are the m_world->m_24 chain
-// (CSpriteFactoryHolder -> CGameLevel, board base at +0x5c). CScanGrid stays the shared
+// CGruntCueSink::CueA (cast-free), CScanSub30/CScanSub24 are the m_world->m_level chain
+// (CDDrawSurfaceMgr -> CGameLevel, board base at +0x5c). CScanGrid stays the shared
 // <Gruntz/ScanGrid.h> board-grid view (dims).
 //
 // @early-stop
@@ -37,7 +37,7 @@
 #include <rva.h>
 #include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntCueSink / CGameRegistry
 #include <Gruntz/TriggerMgr.h>   // the ONE CTriggerMgr (ex the CGruntTileMgr view)
-#include <Gruntz/GameRegistry.h> // CGameRegistry / CSpriteFactoryHolder
+#include <Gruntz/GameRegistry.h> // CGameRegistry / CDDrawSurfaceMgr
 #include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane (world->m_24->m_mainPlane->m_originX)
 #include <Gruntz/ScanGrid.h>     // CScanGrid (the shared board-grid dims view)
 #include <stdlib.h>              // engine rand (0x11fee0)
@@ -302,7 +302,7 @@ i32 CGrunt::ScanNearestTarget() {
             m_defenderState = 1;
             {
                 if (BoardTest(
-                        (CCueRect*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
+                        (CCueRect*)&g_gameReg->m_world->m_level->m_mainPlane->m_originX,
                         m_10->m_screenX,
                         m_10->m_screenY
                     )

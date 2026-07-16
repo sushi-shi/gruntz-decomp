@@ -5,7 +5,7 @@
 // DDraw surface-manager family (14-slot vtable ??_7CDDrawWorkerList @0x1efd88).
 // It is "renderer B": the object CDDrawSurfaceMgr::Init (0x155900) news (0x2c B,
 // base ctor 0x156cb0(mgr,0,0), CObList ctor at +0x10, vptr stamp 0x5efd88) and
-// stores at holder+0x0c (CSpriteFactoryHolder::m_rendererB). The per-frame
+// stores at holder+0x0c (CDDrawSurfaceMgr::m_workerList). The per-frame
 // "present" the play states dispatch on it IS slot 13, PruneWorkers.
 //
 // SLOT-BODY PROOF (xref, 2026-07-13): slots 9-13 (the factories + PruneWorkers)
