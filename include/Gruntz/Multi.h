@@ -344,20 +344,11 @@ public:
     // mode-driven level loader (StartSession) and the title-screen loader (StartTitle).
     i32 LoadLevelByMode(i32 mode, i32 flags);                          // 0x000ca200
     i32 LoadTitleScreen(const char* name, i32 a, i32 b, i32 c, i32 d); // 0x004fa350
-    // Inherited CPlay per-frame helpers PumpB dispatches to (CMulti : public
-    // CPlay). CMulti.cpp is modeled self-contained (no CPlay.h), so the helpers
-    // are re-declared here; all thiscall on `this`, out-of-line -> reloc-masked.
-    // Names + RVAs are the canonical CPlay bodies (src/Gruntz/Play.cpp).
-    void StepInputA();             // 0x0d11e0  latch the per-axis scroll/input block
-    void StepC();                  // 0x0d8d90  m_480-driven region-flip step
-    void LoadScrollSpeedOptions(); // 0x0d12b0  butemgr Min/MaxScrollSpeed "Optionz"
-    void StepScroll();             // 0x0d1ac0  recompute the scroll origin (m_4e4)
-    void NotifyVisibleEntities();  // 0x0d9050  push the visible-clip rect to entities
-    void StepGridWalk(u32 clock);  // 0x0d0a60  advance the grid-walk countdown
+    // PumpB dispatches to the inherited CPlay per-frame helpers directly (CMulti :
+    // public CPlay, <Gruntz/Play.h> included above) - StepInputA/StepC/StepScroll/
+    // LoadScrollSpeedOptions/NotifyVisibleEntities/StepGridWalk/DrawDebugStats/
+    // OnRegion1/OnRegion2/GetAmbientId are CPlay's own bodies, no re-declaration.
     void CopyRect(void* h);        // 0x0d0b30  compute+clamp the pane copy rect (g_pCopyRect)
-    void DrawDebugStats();         // 0x0cf770  Fps/Objs/Pos/Timing/Sent debug overlay
-    void OnRegion2(i32 v); // 0x0d8a00  arm overlay-A (m_overlayAActive, deadline m_430/+0x438)
-    void OnRegion1(i32 v); // 0x0d8aa0  arm overlay-B (m_overlayBActive, deadline m_440/+0x448)
 
     // ---- The 0xb5xxx-0xbdxxx network/lobby method cluster ----
     // Recovered from the Frankenstein <Net/NetMgr.h> CNetMgr onto their true owner
@@ -429,7 +420,6 @@ public:
     i32 DispatchServices(const char* cmd, i32 flag, void* cb);              // 0xbc250 (external)
     CString GetGameName();                         // 0xb7a90 (external; == GetString59c)
     void ApplyDynSetting(CString s);               // 0xb76c0 (external)
-    i32 GetAmbientId();                            // 0xda200 (external)
     void SetServiceName(CString s);                // 0xb7730 (external)
     void PopulateGroupList(void* hList, i32 flag); // 0x1784be (external)
     static void ReportError(char* file, i32 line, i32 hr, void* hWnd);   // netmgrerror (static)
