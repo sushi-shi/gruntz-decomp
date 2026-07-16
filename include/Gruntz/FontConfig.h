@@ -86,4 +86,16 @@ extern "C" i32 g_caretBlinkMs;       // 0x62b438: caret blink countdown in ms
 extern "C" i32 g_caretBlinkOn;       // 0x62b43c: caret blink phase
 extern "C" i32 g_lastDrawTextFormat; // 0x60c7a8: last DrawTextA format flags
 
+// ---------------------------------------------------------------------------
+// A single font-config record stored in the list (0xc bytes). `name` is the
+// face/text string; `type`/`data` are the packed flags+payload. The list owns
+// these (FreeNodes/Scroll delete them). Ex FontConfig.cpp-local.
+// ---------------------------------------------------------------------------
+struct FontItem {
+    i32 type;     // +0x00
+    i32 data;     // +0x04
+    CString name; // +0x08
+    ~FontItem();  // 0x21c40  out-of-line member dtor (destroys name; add ecx,8; jmp ~CString)
+};
+
 #endif // GRUNTZ_GRUNTZ_FONTCONFIG_H

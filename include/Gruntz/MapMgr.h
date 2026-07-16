@@ -253,4 +253,28 @@ public:
 // real class's. @fold-TODO: rename the consumers, then drop this alias.
 typedef CMapMgr CBrickzGrid;
 
+// --- the embedded-array element records (ex MapMgr.cpp-local) -------------------
+// A 0x24-byte element of CMapArrayA's block: next link @+0x14, prev link @+0x18.
+struct MapElemA {
+    char m_pad0[0x14];
+    MapElemA* m_next; // +0x14
+    MapElemA* m_prev; // +0x18
+    char m_pad1c[0x24 - 0x1c];
+};
+
+// A 0x0c-byte element of CMapArrayB's block: data @+0x00, prev @+0x04, next @+0x08.
+struct MapElemB {
+    void* m_0;        // +0x00
+    MapElemB* m_prev; // +0x04
+    MapElemB* m_next; // +0x08
+};
+
+// A recycled result record off the shared free-list (g_coordPool): m_0 = next-free
+// link, m_4/m_8 = the path cell (col,row) handed to the result list.
+struct BrickzFreeRec {
+    i32 m_0; // +0x00  next-free link
+    i32 m_4; // +0x04  path col
+    i32 m_8; // +0x08  path row
+};
+
 #endif // SRC_GRUNTZ_MAPMGR_H

@@ -19,14 +19,6 @@
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class). FireActivation invokes it __thiscall on the trigger.
-typedef i32 (CBehindCandyAni::*BehindCandyHandler)();
-struct CBehindCandyActEntry {
-    BehindCandyHandler m_fn;
-};
-
 // The class's activation-coordinate registry singleton (@0x645f98), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). CBehindCandyActReg
 // is the shared <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its

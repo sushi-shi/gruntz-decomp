@@ -50,14 +50,6 @@
 // The pool allocator the grid new's its cell pool + column table off
 // (0x1b9b46, __cdecl). Modeled no-body so the call reloc-masks.
 
-// A recycled result record off the shared free-list: m_0 = next-free link,
-// m_4/m_8 = the path cell (col,row) handed to the result list.
-struct BrickzFreeRec {
-    i32 m_0; // +0x00  next-free link
-    i32 m_4; // +0x04  path col
-    i32 m_8; // +0x08  path row
-};
-
 // The intrusive free-list the search nodes recycle into when a goal node is reached.
 // 0x645544 is NOT a global of its own: it is m_freeHead (+0x04) of the coord-node pool
 // g_coordPool @0x645540 (DEFINED in src/Gruntz/GameText.cpp). This TU used to redeclare
@@ -81,14 +73,6 @@ CMapArrayA::CMapArrayA() {
 // CMapArrayA::Allocate(count): allocate count*0x24
 // bytes, then carve the block into a doubly-linked free list (next @elem+0x14,
 // prev @elem+0x18). Returns 0 on alloc failure, else 1.
-// A 0x24-byte element of CMapArrayA's block: next link @+0x14, prev link @+0x18.
-struct MapElemA {
-    char m_pad0[0x14];
-    MapElemA* m_next; // +0x14
-    MapElemA* m_prev; // +0x18
-    char m_pad1c[0x24 - 0x1c];
-};
-
 // @early-stop
 // ~71% loop strength-reduction / regalloc wall (the loop-induction family, cf.
 // docs/patterns/loop-invariant-multiply-strength-reduce-vs-memreread.md): the
@@ -152,13 +136,6 @@ CMapArrayB::CMapArrayB() {
 // CMapArrayB::Allocate(count): allocate count*0x0c
 // bytes, then carve the block into a doubly-linked free list (next @elem+0x08,
 // prev @elem+0x04). Returns 0 on alloc failure, else 1.
-// A 0x0c-byte element of CMapArrayB's block: data @+0x00, prev @+0x04, next @+0x08.
-struct MapElemB {
-    void* m_0;        // +0x00
-    MapElemB* m_prev; // +0x04
-    MapElemB* m_next; // +0x08
-};
-
 // @early-stop
 // ~62% loop strength-reduction / regalloc wall (same family as CMapArrayA::Allocate
 // above): the alloc (count*0xc), header stores, pre-loop block->m_prev=0, and the

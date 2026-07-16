@@ -42,4 +42,12 @@ public:
 VTBL(CSingleAnimation, 0x1e745c);
 SIZE(CSingleAnimation, 0x54);
 
+// The handler entry the per-class registry yields: its first dword receives the
+// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
+// class). Defined after the complete class (the FortressFlag.h record pattern).
+typedef i32 (CSingleAnimation::*SingleAnimHandler)();
+struct CSingleAnimActEntry {
+    SingleAnimHandler m_fn;
+};
+
 #endif // GRUNTZ_CSINGLEANIMATION_H

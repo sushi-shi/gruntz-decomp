@@ -166,4 +166,10 @@ public:
 SIZE(CPathHazard, 0x130);
 VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)
 
+// The activation-registry handler entry (the PMF slot RunAct resolves; defined
+// after the complete class, the FortressFlag.h record pattern).
+struct CPathHazardActEntry {
+    i32 (CPathHazard::*m_fn)();
+};
+
 #endif // GRUNTZ_CPATHHAZARD_H

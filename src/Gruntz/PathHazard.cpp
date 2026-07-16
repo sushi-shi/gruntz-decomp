@@ -223,10 +223,6 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
 // CPathHazard's activation-dispatch registry (the untyped .data CActReg @0x646250,
 // declared in LogicActRegistrars.cpp; extern here so the loads reloc-mask).
 extern CActReg g_actReg_646250; // 0x646250
-struct CPathHazardActEntry {
-    i32 (CPathHazard::*m_fn)();
-};
-
 // CPathHazard::RunAct @0x0b3b60 - the class's vtable slot-4 (UserLogicVfunc2) body
 // (shared by CUFO / CRainCloud via inheritance): resolve the registry entry for id
 // and, if a handler is bound, re-resolve and run it as a PMF on this, else return

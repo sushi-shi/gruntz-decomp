@@ -16,13 +16,6 @@
 #include <Gruntz/SingleAnimation.h>
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance class).
-typedef i32 (CSingleAnimation::*SingleAnimHandler)();
-struct CSingleAnimActEntry {
-    SingleAnimHandler m_fn;
-};
-
 // The class's activation-coordinate registry singleton (@0x645f70), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). CSingleAnimActReg
 // is the shared <Gruntz/ActReg.h> CActReg archetype; keeps its placeholder name so

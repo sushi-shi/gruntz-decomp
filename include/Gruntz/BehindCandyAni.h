@@ -57,4 +57,13 @@ public:
 VTBL(CBehindCandyAni, 0x001e838c);
 SIZE(CBehindCandyAni, 0x54);
 
+// The handler entry the per-class registry yields: its first dword receives the
+// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
+// class). FireActivation invokes it __thiscall on the trigger. Defined after the
+// complete class (the FortressFlag.h record pattern).
+typedef i32 (CBehindCandyAni::*BehindCandyHandler)();
+struct CBehindCandyActEntry {
+    BehindCandyHandler m_fn;
+};
+
 #endif // GRUNTZ_CBEHINDCANDYANI_H

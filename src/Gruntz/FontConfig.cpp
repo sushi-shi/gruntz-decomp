@@ -57,18 +57,6 @@
 // target's .data string constants.
 
 // ---------------------------------------------------------------------------
-// A single font-config record stored in the list (0xc bytes). `name` is the
-// face/text string; `type`/`data` are the packed flags+payload. The list owns
-// these (FreeNodes/Scroll delete them).
-// ---------------------------------------------------------------------------
-struct FontItem {
-    i32 type;     // +0x00
-    i32 data;     // +0x04
-    CString name; // +0x08
-    ~FontItem();  // 0x21c40  out-of-line member dtor (destroys name; add ecx,8; jmp ~CString)
-};
-
-// ---------------------------------------------------------------------------
 // The m4 draw-helper hosts (DrawHost / PwdHost / TextHost) ARE CFontConfig by
 // member-layout identity (their +0x1c is m_inputText, +0x38/+0x3c/+0x40 are the
 // three cached HFONTs). Their four methods are real CFontConfig methods
