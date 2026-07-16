@@ -24,7 +24,7 @@
 // 2-load direct-field identity read [was a wrong 3-load vtable model], the grid
 // path [m_playMgr->m_24, was renderer->m_10], and rebuilt the switch to dispatch
 // on the RESOLVED tile-type with all 8 arms + the 0x21 neighbour scan + the toy
-// re-resolve, so ~half the body now aligns; 2026-07-15 the TriggerRegistrar/
+// re-resolve, so ~half the body now aligns; the TriggerRegistrar/
 // PlayfieldMgr views dissolved and the 0x401b09/0x40288d/0x402a68/0x4019bf arms
 // re-targeted to their thunk-proven callees.) Residual is the documented big /GX
 // megafunction wall: (a) a 4-byte frame-size delta (0x38 vs retail 0x34) shifts

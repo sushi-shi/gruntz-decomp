@@ -18,8 +18,8 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
-#include <Gruntz/State.h> // CState::Update (slot 4) - the live state's id tag
-#include <Gruntz/Play.h> // CPlay::ExecCommand - the ApplyOne/ApplyMask target
+#include <Gruntz/State.h>         // CState::Update (slot 4) - the live state's id tag
+#include <Gruntz/Play.h>          // CPlay::ExecCommand - the ApplyOne/ApplyMask target
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/GruntzMgr.h>     // the m_38 manager back-ptr (CGruntzMgr) + m_world chain
@@ -247,7 +247,7 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 // ---------------------------------------------------------------------------
 // 0x23d90 (dossier seam: gamekeyhandler -> this TU; sits inside the sandwich):
 // snap a draw rectangle to the 0x20 tile grid and dispatch a blit - the command-
-// target tile marker. IDENTITY RESOLVED (2026-07-16, ex `CObj23d90`): `this` IS
+// target tile marker. `this` IS
 // this TU's CGruntzCmdMgr - CPlay::DispatchKey dispatches it on [CGruntzMgr+0x6c]
 // == m_cmdSubMgr, and the view's m_38->m_30->m_24 chain IS m_38 (the manager
 // back-ptr EnqueueCommand already walks) ->m_world->m_level - the same

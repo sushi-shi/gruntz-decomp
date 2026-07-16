@@ -140,7 +140,7 @@ typedef CFileMemBase CSerialArchive;
 class CImage;
 
 // CPlay::m_grid (@+0x4cc, the level/tile frame grid the GrabTile/AdvanceTile walk drives)
-// (2026-07-15): the SAME image-registry map (m_c->m_imageRegistry->m_10map) yields both the buf80a
+// The SAME image-registry map (m_c->m_imageRegistry->m_10map) yields both the buf80a
 // image SET (typed CImageSet*) and the buf80b GRID (typed CFrameGrid*) - a CMapStringToPtr
 // stores one value type, so they are one class - and every field lines up: m_rowTable @+0x14
 // == m_frames, m_name24 @+0x24 == m_name, m_firstRow/m_lastRow @+0x64/+0x68 == m_minIndex/

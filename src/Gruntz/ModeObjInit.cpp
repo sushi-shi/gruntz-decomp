@@ -50,7 +50,7 @@ namespace modeinit {
     // Peer the CGameObject m_scrollSink (m_stateFlags bit0), Ctl1c the CChatBoxOwner,
     // Rec78 the CTileTriggerContainer, Rec50 the CTimer.
     //
-    // THE LAST VIEW IS GONE TOO (2026-07-13): `Worker630` (and its Sub530) was the
+    // `Worker630` (and its Sub530) was the
     // hand-inlined CStatusBarMgr ctor - ~100 raw `*(i32*)(p + 0xNN)` stores plus manual
     // EhVecCtor/VecCtor/CPtrArray-ctor calls. CStatusBarMgr now carries its REAL inline
     // ctor + dtor (<Gruntz/StatusBarMgr.h>), so this TU is view-free: `new

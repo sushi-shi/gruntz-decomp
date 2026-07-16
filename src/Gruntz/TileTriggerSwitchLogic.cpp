@@ -564,7 +564,7 @@ CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 // ---------------------------------------------------------------------------
 // BuildRockBreakInGameText - the rock-break tile-effect loader (RVA 0x1122a0).
 //
-// OWNER SETTLED (2026-07-13, Fable lane): `this` is the 0xc8 CGiantRockLogic - the
+// `this` is the 0xc8 CGiantRockLogic - the
 // +0x8/+0xc tile (x, y) are its m_08/m_0c coords, the +0x9c 9-cell value block is
 // its m_matrix[9], +0xc0/+0xc4 its m_c0/m_c4 - every touched offset is a
 // CGiantRockLogic member, and the receiver TriggerMgr's rock-break driver passes is

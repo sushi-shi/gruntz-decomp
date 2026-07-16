@@ -31,7 +31,7 @@ extern "C" CGameRegistry* g_gameReg;
 // the frame-entry table is CSprite::m_frames.m_pData (+0x14) and the two frame indices
 // gating mode!=3 / mode==3 are m_firstFrame (+0x64) / m_lastFrame (+0x68). The former
 // CChatBoxFrame .cpp-local view is dissolved onto it.
-// The m_18 chain is the WORLD HOLDER (dissolved 2026-07-13, Fable lane): the
+// The m_18 chain is the WORLD HOLDER: the
 // former CChatBoxRegRoot was CDDrawSurfaceMgr (Attach receives CState::m_c,
 // the g_gameReg->m_world object), its +0x10 "registry" is
 // the holder's CImageRegistry, and the embedded +0x10 hash is

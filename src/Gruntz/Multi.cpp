@@ -497,7 +497,7 @@ void ConstructFileIOGlobal() {
 // (g_lastNow is in <Rez/FrameClock.h>; g_frameDelta/g_frameTime are declared in the CMulti preamble above.)
 extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
-// VTABLE CATALOGUE (2026-07-05, read from GRUNTZ.EXE .rdata @0x1ea42c): CNetMgr's own
+// VTABLE CATALOGUE (read from GRUNTZ.EXE .rdata @0x1ea42c): CNetMgr's own
 // vtable ??_7CNetMgr@@ (0x5ea42c) is the small 5-slot CObject vtable and NOTHING more -
 // [0]0x1bef01 [1]0x00260d(override) [2]0x0028ec [3]0x00106e [4]0x004034, then slots 5-6
 // are NULL and +0x14 onward is unrelated .rdata. So the CNetConnectSlotView slots the driver

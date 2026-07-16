@@ -20,11 +20,11 @@
 // recorder/teleport keys, alt-modified arrows), ending in a two-level jump-table
 // switch over the F-keys / numpad debug keys (key-0xC in 0..0x84).
 //
-// De-hacked (2026-07-14): `this` and its sub-objects are now TYPED against the real
-// engine classes - self=CPlay, host=CGruntzMgr (the m_4 owner), level/lv=CStatusBarMgr (m_guts),
+// `this` and its sub-objects are TYPED against the real engine classes - self=CPlay,
+// host=CGruntzMgr (the m_4 owner), level/lv=CStatusBarMgr (m_guts),
 // dev=StateMgrBZ (g_spawnConfig), rec=CChatBoxOwner (m_hitTest), g_gameReg=CGruntzMgr,
-// area=GruntzPlayer (g_gameReg->m_options[]). The M()/P() offset-cast macros are GONE
-// (2026-07-16): every residual site is typed - the render context is
+// area=GruntzPlayer (g_gameReg->m_options[]). Every offset-cast site is typed - the
+// render context is
 // m_c->m_level(CGameLevel)->m_mainPlane(CPlaneRender) with m_planeCtx/m_originX/m_snappedX,
 // the frame gate is CGameMgr::m_frameGate (+0xc), the goal is CTmGoal, the recorder ring
 // nodes are CoordPoolNode, and the 0x23d90 blit is CGruntzCmdMgr::BlitTileMarker on
