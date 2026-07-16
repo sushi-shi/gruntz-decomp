@@ -42,7 +42,6 @@
 #include <rva.h>
 #include <Globals.h>
 
-extern "C" u32 g_frameTime; // a wrap-safe draw/elapsed counter (FormatElapsed arg + %lu)
 
 // FUN_001190f0 __cdecl: format the counter as "%i:%02i:%02i" into a returned
 // CString (copy-construct into the caller's hidden return slot).

@@ -874,7 +874,6 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 extern "C" i32 g_watchBusy;      // 0x64bdc4
 extern "C" i32 g_watchBlinkA;    // 0x64bdc8
 extern "C" i32 g_watchBlinkB;    // 0x64bdcc
-extern "C" i32 g_playerLeftFlag; // 0x648ce4
 
 // @early-stop
 // ~94% regalloc-coloring wall (all control flow + calls + the DIR32 globals pair):

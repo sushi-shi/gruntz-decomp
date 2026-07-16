@@ -177,7 +177,6 @@ void CGruntSpawnConfig::ClearSprites() {
 
 // The game registry pointer at *0x64556c (reloc-masked DATA; DATA label owned by
 // another TU, but a fresh decl here is byte-neutral - the reference is by address).
-extern "C" CGameRegistry* g_gameReg;
 
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(

@@ -40,23 +40,18 @@ u16 g_sfCfgB12 = 0; // config block B +0xc
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char g_sfMusic4[]; // "<drive>:\MUSIC\Gruntz4.SF2"
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char g_sfLocal4[]; // "<dir>\Gruntz4.SF2"
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char g_sfMusic[]; // "<drive>:\MUSIC\Gruntz.SF2"
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char g_sfLocal[]; // "<dir>\Gruntz.SF2"
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char g_sfDir[]; // current-directory scratch (0xff)
 
 // 0xf8ec0: re-seed the music device key table (defined below, in RVA order between
 // CloseSoundFontDevice and BuildSoundFontPath; forward-declared here for Close).

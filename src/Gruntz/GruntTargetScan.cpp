@@ -117,7 +117,6 @@
     }
 
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern "C" u32 g_frameTime;          // 0x245588 frame clock
 
 // __cdecl board rect predicate (0x401127): point-in-board-rect (the visible CCueRect).
 extern "C" i32 BoardTest(CCueRect* board, i32 x, i32 y); // 0x401127

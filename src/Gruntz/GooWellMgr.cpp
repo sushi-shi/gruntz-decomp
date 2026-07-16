@@ -37,7 +37,6 @@
 
 // The free-running game clock (DAT_00645588), read as an unsigned 32-bit tick and
 // zero-extended into the 64-bit countdown subtracts.
-extern "C" u32 g_frameTime;
 
 // The local player index (DAT_00644c54): selects this client's row.
 

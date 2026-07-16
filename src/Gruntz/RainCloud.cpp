@@ -11,7 +11,6 @@
 #include <Gruntz/RainCloud.h> // CRainCloud : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
 #include <Gruntz/LightFxMgr.h> // reg->m_logicPump (+0x78): the shade-table pump the fill arg reads
 #include <rva.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // The game registry / settings singleton (*0x24556c) is modeled by PathHazard.h as
 // g_gameReg (CGameRegistry*): the rain cloud reads its draw-fill argument out of

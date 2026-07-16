@@ -16,7 +16,6 @@
 #include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference facet
 #include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
 #include <rva.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // The game registry / settings singleton (*0x24556c). Modeled by PathHazard.h as
 // g_gameReg (CGameRegistry*): the UFO spawns its spotlights through the world

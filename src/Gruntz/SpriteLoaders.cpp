@@ -194,13 +194,8 @@ void CTimer::Reset() {
     m_active = 0;
 }
 
-// The clock + frame-gate globals the Tick/Draw paths read (external delinked
-// DATA, reloc-masked). g_frameTime is the running game clock; g_curPlayer a level
-// base index; g_timer500 a draw-throttle frame counter; g_frameTime the start clock.
-extern "C" {
-    extern u32 g_frameTime;
-}
-// g_timer500 (0x2455a0 draw-throttle counter) comes from <Rez/FrameClock.h>.
+// The clock/frame-gate globals the Tick/Draw paths read come from headers:
+// g_frameTime (running game clock) and g_timer500 (0x2455a0 draw-throttle counter).
 
 // The logic leaf the expiry / under-attack notify fires on (external, reloc-masked).
 // ResolveDeathAnimation = "time up" (a CGrunt); NotifyFortUnderAttack = "<60s

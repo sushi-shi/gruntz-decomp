@@ -130,7 +130,6 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
 // 2026-07-16), i.e. it is linked-in dead code, so it is a plain non-virtual here -
 // NOT asserted as this class's slot-2 override (CPreviewState's vtable is unlocated).
 // m_c->m_soundRegistry is re-read each statement (retail does not cache it).
-extern char s_PREVIEW_6135e8[]; // "PREVIEW" (bound in Globals.cpp; reloc-masked)
 // @early-stop
 // ~98.8% - m_28-intermediate regalloc wall (retail reuses eax->eax->ecx; cl picks
 // fresh ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.

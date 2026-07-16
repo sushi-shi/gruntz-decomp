@@ -33,7 +33,6 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // The global running game clock (DAT_00645588); the value-load reloc-masks.
-extern "C" u32 g_frameTime;
 
 // Reloc-fidelity bindings for the registry statics whose plain externs live in
 // GruntVoice.h (labels.py does not scan a header's DATA(), so they are bound here
@@ -56,7 +55,6 @@ extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
 
 // The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
 // alias of g_gameReg below; the 0x24556c DATA binding lives on the C++ name).
-extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
@@ -128,7 +126,6 @@ extern i32 VTrigLogic_11a700();
 // label). The on-screen window bounds are at +0x13c/+0x140/+0x144/+0x148; the
 // cue receiver at +0x60 (CueA's `this`) and the probe sink at +0x68 (QueryAt's
 // `this`).
-extern "C" CGameRegistry* g_gameReg;
 
 // The current-area index (DAT_00644c54, VA 0x644c54 / RVA 0x244c54); the trigger
 // only fires for the active area. extern "C" so the load reloc-masks against the

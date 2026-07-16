@@ -60,7 +60,6 @@
 
 // The per-frame attract actor list (DAT_00645574; bound in Globals.cpp) and the
 // per-frame time delta (DAT_00645584; bound in Attract.cpp). Extern here (reloc-masked).
-extern "C" u32 g_frameDelta;
 
 // (The fake `g_pButeDefaults = (void*)0x1a4` global def @0x5f03e0 is GONE: that
 // cell is the CRT's own ?openprot@filebuf@@2HB - filebuf::openprot == 0x1a4 (0644),

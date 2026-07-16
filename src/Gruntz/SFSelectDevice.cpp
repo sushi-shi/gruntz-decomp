@@ -47,11 +47,9 @@ i32 g_factoryRc_64da88 = 0;
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char g_traceBuf_64da90[]; // sprintf scratch
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char g_ratingBuf_64dbe0[];
 DATA(0x0024df30)
 u16 g_caps_64df30 = 0; // caps query buffer base / size field
 DATA(0x0024df36)
@@ -59,7 +57,6 @@ u32 g_capsFlags_64df36 = 0; // caps flags (caps + 6)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
-extern char g_capsName_64df46[]; // caps name (caps + 0x16)
 DATA(0x0024df98)
 u16 g_remaining_64df98 = 0;
 DATA(0x0024df9c)
