@@ -5,7 +5,7 @@
 // re-declare a distinct class and silently out-rank the typedef (MSVC5).
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
-class CMenuBarFrame;
+class CImage; // the menu-bar drawable (m_frame; RenderFrameClipped 0x153810)
 struct CSprite;
 
 class CActionOptionsMenuBar {
@@ -30,7 +30,7 @@ public:
     i32 m_gridY;               // +0x04  grid Y
     i32 m_screenX;             // +0x08  screen X (clamped)
     i32 m_screenY;             // +0x0c  screen Y (adjusted)
-    CMenuBarFrame* m_frame;    // +0x10  menu-bar frame 1 (the drawable)
+    CImage* m_frame;           // +0x10  menu-bar frame 1 (the drawable)
     i32 m_button0State;        // +0x14  button[0] state
     i32 m_button1State;        // +0x18  button[1] state
     i32 m_button0Frame;        // +0x1c  button[0] resolved frame

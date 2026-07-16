@@ -1,7 +1,8 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/ActionOptionsMenuBar.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Image/CImage.h> // CImage::RenderFrameClipped (0x153810) - m_frame's clipped blit
+#include <Io/FileMem.h>   // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/Grunt.h>
 #include <Wwd/WwdFile.h>
@@ -50,12 +51,8 @@
 // table (+0x68) is a genuinely reused slot cast locally (see below).
 extern "C" CGameRegistry* g_gameReg;
 
-// The menu-bar frame (this->m_frame) doubles as the engine drawable that paints the
-// bar/chips; +0x10 is its draw entry. NO-body so `call 0x153810` reloc-masks
-// (tomalla-31::Ctor_153810).
-struct CMenuBarFrame {
-    void Draw(i32 ctx, i32 x, i32 y, i32* rect, i32 flag);
-};
+// The menu-bar frame (this->m_frame) IS the canonical CImage drawable that paints the
+// bar/chips; its clipped blit is CImage::RenderFrameClipped (0x153810), reloc-masked.
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter).
 
@@ -105,7 +102,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
     m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1)
-                  ? (CMenuBarFrame*)spr->m_frames.m_pData[1]
+                  ? (CImage*)spr->m_frames.m_pData[1]
                   : 0;
     if (!m_frame) {
         return 0;
@@ -291,7 +288,7 @@ i32 CActionOptionsMenuBar::Render() {
     r[1] = src[1];
     r[2] = src[2];
     r[3] = src[3];
-    m_frame->Draw(ctx, sy, sx, r, 0);
+    m_frame->RenderFrameClipped((void*)ctx, (void*)sy, (void*)sx, r, 0);
 
     if (m_button0Frame) {
         i32* src2 = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
@@ -299,7 +296,7 @@ i32 CActionOptionsMenuBar::Render() {
         r[1] = src2[1];
         r[2] = src2[2];
         r[3] = src2[3];
-        m_frame->Draw(ctx, sy - 0xc, sx + 2, r, 0);
+        m_frame->RenderFrameClipped((void*)ctx, (void*)(sy - 0xc), (void*)(sx + 2), r, 0);
     }
     if (m_button1Frame) {
         i32* src3 = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;
@@ -307,7 +304,7 @@ i32 CActionOptionsMenuBar::Render() {
         r[1] = src3[1];
         r[2] = src3[2];
         r[3] = src3[3];
-        m_frame->Draw(ctx, sy + 0x10, sx + 2, r, 0);
+        m_frame->RenderFrameClipped((void*)ctx, (void*)(sy + 0x10), (void*)(sx + 2), r, 0);
     }
     return 1;
 }
@@ -479,6 +476,5 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
 
 SIZE_UNKNOWN(CActionOptionsMenuBar);
 SIZE_UNKNOWN(CDDrawSubMgrPages);
-SIZE_UNKNOWN(CMenuBarFrame);
 SIZE_UNKNOWN(CSpriteMgr);
 SIZE_UNKNOWN(CPlaneRender);
