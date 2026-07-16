@@ -43,8 +43,8 @@ struct CVariantSlot {
 // reads it as a flat i32[] (stride 3); CVariantSlot::Set dispatches through the value/fn
 // member at +4; the count @0x6bf618 doubles as Set's probe-enable gate. Owned by
 // TypeKeyColl.cpp (g_recs23[32] + g_recCount23).
-SIZE_UNKNOWN(Rec23);
-struct Rec23 {
+SIZE_UNKNOWN(TypeKeyRec);
+struct TypeKeyRec {
     i32 m_key; // +0x00  the key (CKeyFinder::Find subtracts the probe key from it)
     void* m_4; // +0x04  value, or the __cdecl set-fn Set dispatches (variant slot)
     short m_8; // flag / word slot

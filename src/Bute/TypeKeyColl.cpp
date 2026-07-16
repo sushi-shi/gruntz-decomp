@@ -139,7 +139,7 @@ i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
 // ===========================================================================
 // CKeyFinder (the binary-search cursor over the sorted global key table @0x6bf498)
-// and its 12-byte Rec23 record are the shared <Bute/ButeTree.h> shapes (same
+// and its 12-byte TypeKeyRec record are the shared <Bute/ButeTree.h> shapes (same
 // CVariantSlot family - Set drives the cursor over its own +0x04 index slot). Their
 // ctor (0x16e1a0) / Find (0x16e1d0) / Add (0x16e360) bodies live here.
 // ===========================================================================
@@ -147,7 +147,7 @@ i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 // refuses inserts at `count >= 0x20`, so the table is exactly 32 records (12 B x 32
 // = 0x180 = the 0x6bf498..0x6bf618 span up to the count cell - corroborating).
 DATA(0x002bf498)
-Rec23 g_recs23[32];
+TypeKeyRec g_recs23[32];
 // The live record count @0x6bf618. It had THREE names for the one datum (g_keyCount,
 // g_recCount23, g_varProbeEnabled) - and the DATA() sat on an `extern`, i.e. a
 // declaration, so none of them was actually a defined global. Defined once, here, in the
@@ -1097,7 +1097,7 @@ void* CKeyFinder::Add(void* key, void* val) {
         memmove(
             &g_recs23[m_index],
             &g_recs23[m_index + 1],
-            (g_recCount23 - m_index - 1) * sizeof(Rec23)
+            (g_recCount23 - m_index - 1) * sizeof(TypeKeyRec)
         );
         g_recCount23 = g_recCount23 - 1;
         return old;
@@ -1109,7 +1109,7 @@ void* CKeyFinder::Add(void* key, void* val) {
         memmove(
             &g_recs23[m_index + 1],
             &g_recs23[m_index],
-            (g_recCount23 - m_index) * sizeof(Rec23)
+            (g_recCount23 - m_index) * sizeof(TypeKeyRec)
         );
     }
     g_recs23[m_index].m_4 = val;

@@ -918,7 +918,7 @@ static const char s_strRBrack[] = "]";
 // 0x16da60). __thiscall, /GX.
 // ===========================================================================
 RVA(0x00021310, 0x70)
-CButeStoreCopy21310::~CButeStoreCopy21310() {}
+CButeStoreDtorCopyMgrA::~CButeStoreDtorCopyMgrA() {}
 
 // ---------------------------------------------------------------------------
 // 0x0213a0 - getter that returns the +0x04 field of its VIRTUAL base. Modeled as a
@@ -985,7 +985,7 @@ CButeMgr::~CButeMgr() {}
 // 0x021570 - the THIRD copy of ~CButeStore (see 0x21310 above and
 // <Bute/ButeStoreDtorCopies.h>). Same inline body, same two base folds. __thiscall, /GX.
 RVA(0x00021570, 0x70)
-CButeStoreCopy21570::~CButeStoreCopy21570() {}
+CButeStoreDtorCopyMgrB::~CButeStoreDtorCopyMgrB() {}
 
 // ---------------------------------------------------------------------------
 // CButeMgr::ReportError
@@ -1112,7 +1112,7 @@ CButeValue* CButeValue::CopyValue(CButeValue* other) {
             ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
             break;
         case kButeRef7:
-            *(ButeRef24*)pValue = *(ButeRef24*)other->pValue;
+            *(ButeRefLarge*)pValue = *(ButeRefLarge*)other->pValue;
             break;
         case kButeRef8:
             ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
@@ -2145,26 +2145,26 @@ CButeValue* CButeValue::SetString(i32 type, const CString& src) {
 
 // SetRef5 (0x173c60): box a 16-byte struct copy (four memberwise dword stores).
 RVA(0x00173c60, 0x49)
-CButeValue* CButeValue::SetRef5(i32 type, const ButeRef16* src) {
+CButeValue* CButeValue::SetRef5(i32 type, const ButeRefSmall* src) {
     this->type = type;
-    this->pValue = new ButeRef16(*src);
+    this->pValue = new ButeRefSmall(*src);
     return this;
 }
 
 // SetRef7 (0x174730): box a 24-byte struct copy (rep movsd, 6 dwords).
 RVA(0x00174730, 0x3c)
-CButeValue* CButeValue::SetRef7(i32 type, const ButeRef24* src) {
+CButeValue* CButeValue::SetRef7(i32 type, const ButeRefLarge* src) {
     this->type = type;
-    this->pValue = new ButeRef24(*src);
+    this->pValue = new ButeRefLarge(*src);
     return this;
 }
 
 // SetRef8 (0x174cb0): box a 16-byte struct copy (twin of SetRef5; distinct call
 // sites use the kButeRef8 type-tag). Same codegen as SetRef5.
 RVA(0x00174cb0, 0x49)
-CButeValue* CButeValue::SetRef8(i32 type, const ButeRef16* src) {
+CButeValue* CButeValue::SetRef8(i32 type, const ButeRefSmall* src) {
     this->type = type;
-    this->pValue = new ButeRef16(*src);
+    this->pValue = new ButeRefSmall(*src);
     return this;
 }
 

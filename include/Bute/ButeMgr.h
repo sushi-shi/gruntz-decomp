@@ -42,7 +42,7 @@
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
 #include <Gruntz/String.h>
 
-// ButeType / CButeValue / ButeRef16 / ButeRef24 - the typed value record every key
+// ButeType / CButeValue / ButeRefSmall / ButeRefLarge - the typed value record every key
 // maps to. Canonical (one shape) in <Bute/ButeValue.h>, shared with src/Bute/ButeNode.cpp
 // (which reproduces the store's __cdecl per-value teardown callback over the same type).
 #include <Bute/ButeValue.h>

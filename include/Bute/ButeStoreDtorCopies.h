@@ -19,8 +19,10 @@
 // (stamp both vptrs, ClearRecursive(0) == the real ?ClearRecursive@CButeStore@@ 0x16e070, then
 // fold the +0x08 base ~CButeNodeEntry 0x16dfc0 and the +0x00 base ~CContainerErr 0x16da60).
 //
-// The hex in each name is the copy's RVA (documentation), not an unrecovered identity - the
-// class IS CButeStore. Bodies live in the owning TUs (RVA-bound); this header is decl-only.
+// Each anchor name reflects its owning TU (Node/MgrA/MgrB/Clear), not an unrecovered identity -
+// the class IS CButeStore. Bodies live in the owning TUs (RVA-bound); this header is decl-only.
+// (Ex CButeStoreCopy<rva>: the hex was RVA-documentation that needlessly tripped the placeholder
+// regex; the copies are faithful MSVC5-required anchors, so the metric hit was a false positive.)
 #ifndef SRC_BUTE_BUTESTOREDTORCOPIES_H
 #define SRC_BUTE_BUTESTOREDTORCOPIES_H
 
@@ -28,26 +30,26 @@
 #include <rva.h>
 
 // 0x174d70 - the butenode copy of ~CButeStore (body + free-adapter in ButeNode.cpp).
-struct CButeStoreCopy174d : public CButeStore {
-    ~CButeStoreCopy174d();
+struct CButeStoreDtorCopyNode : public CButeStore {
+    ~CButeStoreDtorCopyNode();
 };
-SIZE(CButeStoreCopy174d, 0x2c); // adds nothing to CButeStore
+SIZE(CButeStoreDtorCopyNode, 0x2c); // adds nothing to CButeStore
 
 // 0x21310 / 0x21570 - the two butemgr copies of ~CButeStore (bodies in ButeMgr.cpp).
-struct CButeStoreCopy21310 : public CButeStore {
-    ~CButeStoreCopy21310();
+struct CButeStoreDtorCopyMgrA : public CButeStore {
+    ~CButeStoreDtorCopyMgrA();
 };
-SIZE(CButeStoreCopy21310, 0x2c);
+SIZE(CButeStoreDtorCopyMgrA, 0x2c);
 
-struct CButeStoreCopy21570 : public CButeStore {
-    ~CButeStoreCopy21570();
+struct CButeStoreDtorCopyMgrB : public CButeStore {
+    ~CButeStoreDtorCopyMgrB();
 };
-SIZE(CButeStoreCopy21570, 0x2c);
+SIZE(CButeStoreDtorCopyMgrB, 0x2c);
 
 // 0x212a0 - the butestoreclear copy of CButeStore::Reset (body in ButeStoreClear.cpp).
-struct CButeStoreResetCopy212a0 : public CButeStore {
+struct CButeStoreResetCopyClear : public CButeStore {
     void ResetCopy(); // 0x212a0
 };
-SIZE(CButeStoreResetCopy212a0, 0x2c);
+SIZE(CButeStoreResetCopyClear, 0x2c);
 
 #endif // SRC_BUTE_BUTESTOREDTORCOPIES_H

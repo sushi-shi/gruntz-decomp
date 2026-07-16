@@ -10,7 +10,7 @@
 // STALE CLAIM REMOVED (2026-07-13): the reason given used to be "(whose
 // <Bute/ButeStore.h> CButeStore would clash with butenode's own store class)". That clash is
 // imaginary - ButeNode.cpp ALREADY includes <Bute/ButeStore.h> directly, and its "own store
-// class" (CButeStoreCopy174d) DERIVES from that same canonical CButeStore. Verified: adding
+// class" (CButeStoreDtorCopyNode) DERIVES from that same canonical CButeStore. Verified: adding
 // #include <Bute/ButeMgr.h> to ButeNode.cpp compiles clean under the real MSVC 5.0. Keeping
 // this header separate is fine (it is a shared canonical header, not a view) - but it is a
 // convenience, NOT a wall, so do not cite a C2011 to justify anything else.
@@ -71,9 +71,9 @@ struct CButeValue {
     // SetRef5/SetRef8 a 16-byte struct (kButeRef5/kButeRef8), SetRef7 a 24-byte
     // struct (kButeRef7).
     CButeValue* SetString(i32 type, const CString& src);
-    CButeValue* SetRef5(i32 type, const struct ButeRef16* src);
-    CButeValue* SetRef7(i32 type, const struct ButeRef24* src);
-    CButeValue* SetRef8(i32 type, const struct ButeRef16* src);
+    CButeValue* SetRef5(i32 type, const struct ButeRefSmall* src);
+    CButeValue* SetRef7(i32 type, const struct ButeRefLarge* src);
+    CButeValue* SetRef8(i32 type, const struct ButeRefSmall* src);
 
     // CopyValue (@0x172040): copy `other`'s payload into this value's storage,
     // sized by THIS value's type-tag (a jump-table switch over ButeType). Returns this.
@@ -83,17 +83,17 @@ SIZE(CButeValue, 0x8); // { type @0, pValue @4 }
 
 // The 16-byte (kButeRef5 / kButeRef8) payload, copied as a struct so MSVC lowers
 // it to four memberwise dword stores (SetRef5/SetRef8's op-new'd copy).
-struct ButeRef16 {
+struct ButeRefSmall {
     i32 w[4];
 };
-SIZE(ButeRef16, 0x10); // 16-byte kButeRef5/kButeRef8 payload
+SIZE(ButeRefSmall, 0x10); // 16-byte kButeRef5/kButeRef8 payload
 
 // The 24-byte (kButeRef7) payload, copied as a struct so MSVC lowers it to the
 // retail `rep movsd` (6 dwords).
-struct ButeRef24 {
+struct ButeRefLarge {
     i32 w[6];
 };
-SIZE(ButeRef24, 0x18); // 24-byte kButeRef7 payload
+SIZE(ButeRefLarge, 0x18); // 24-byte kButeRef7 payload
 
 // The keyed store's per-value teardown callback (0x174df0, butenode): __cdecl, so it
 // fits the store's generic `void(__cdecl*)(void*)` callback slot, which

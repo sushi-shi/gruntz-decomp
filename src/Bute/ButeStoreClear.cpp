@@ -7,6 +7,6 @@
 #include <rva.h>
 
 RVA(0x000212a0, 0x21)
-void CButeStoreResetCopy212a0::ResetCopy() {
+void CButeStoreResetCopyClear::ResetCopy() {
     Reset();
 }
