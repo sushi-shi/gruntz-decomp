@@ -10,6 +10,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry (m_18->m_imageRegistry) + its m_10map
 #include <Gruntz/Sprite.h>            // the "GAME_CHATBOX" map value IS the canonical CSprite
+#include <Image/CImage.h>             // CImage::RenderFrame (0x153790) - the looked-up frame blit
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
 #include <DDrawMgr/DDrawSurfacePair.h> // the real render-target class LoadChatBoxSprite's arg is
@@ -47,9 +48,6 @@ extern "C" CGameRegistry* g_gameReg;
 // matches member-for-member, and CDDrawSurfacePair::DrawCount/DrawLabel run the
 // identical +0x2c->m_8 GetDC/ReleaseDC pattern), CChatBoxDcHost == CDDSurface (its +0x8
 // m_8 is the DC-capable IDirectDrawSurface). Typed with the real classes below.)
-// 0x153790 (__stdcall): renders the chatbox frame into the looked-up set.
-void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z);
-
 // Attach - latch the world holder + text host, raise active, return TRUE.
 // The old "constant-materialization wall" (retail's `mov eax,1` register-materialized
 // and stored last) was a misread WRONG RETURN TYPE: eax=1 is the RETURN VALUE, live at
@@ -259,17 +257,17 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     if (self->m_8 == 3) {
-        void* frame = spr->m_frames.m_pData[spr->m_lastFrame];
+        CImage* frame = (CImage*)spr->m_frames.m_pData[spr->m_lastFrame];
         if (!frame) {
             return 0;
         }
-        RenderChatBoxFrame(arg1, (void*)(self->m_0 + 0x140), (void*)(self->m_4 + 0x20), 0);
+        frame->RenderFrame((void*)arg1, (void*)(self->m_0 + 0x140), (void*)(self->m_4 + 0x20), 0);
     } else {
-        void* frame = spr->m_frames.m_pData[spr->m_firstFrame];
+        CImage* frame = (CImage*)spr->m_frames.m_pData[spr->m_firstFrame];
         if (!frame) {
             return 0;
         }
-        RenderChatBoxFrame(arg1, (void*)(self->m_0 + 0xf0), (void*)(self->m_4 + 0x20), 0);
+        frame->RenderFrame((void*)arg1, (void*)(self->m_0 + 0xf0), (void*)(self->m_4 + 0x20), 0);
     }
 
     HDC hdc = 0;
