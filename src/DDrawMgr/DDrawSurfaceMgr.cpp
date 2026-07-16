@@ -8,12 +8,10 @@
 // Names are tomalla placeholders. Offsets, store order, vtable slots, and global
 // addresses are load-bearing for matching.
 //
-// VIEW-FREE: every type this TU dereferences is the canonical header class - the
-// former local views (CDDrawSubMgr 6-slot, SoundStream 3-method, CDDrawSubMgrLeafScan,
-// CDDrawResolveSubMgr, CDDrawPtrCollections{Dtor}) are dissolved onto
-// <Gruntz/Loadable.h> (the child base, ex "CDDrawSubMgr"), <Dsndmgr/SoundStream.h>,
-// <DDrawMgr/DDrawSubMgrLeafScan.h>, <Gruntz/GameLevel.h> (the +0x24 child, ex
-// "CDDrawResolveSubMgr"), <DDrawMgr/DDrawPtrCollections.h>.
+// VIEW-FREE: every type this TU dereferences is the canonical header class -
+// <Gruntz/Loadable.h> (the child base), <Dsndmgr/SoundStream.h>,
+// <DDrawMgr/DDrawSubMgrLeafScan.h>, <Gruntz/GameLevel.h> (the +0x24 child),
+// <DDrawMgr/DDrawPtrCollections.h>.
 
 // <Mfc.h> FIRST (superset of Win32.h: same <windows.h> for HWND + the MFC classes,
 // e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
@@ -27,10 +25,10 @@
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // real +0x18 child type (m_workerMap; slot-1 scalar-delete)
 #include <DDrawMgr/DDrawSubMgrPages.h> // real +0x04 child type (m_drawTarget: IsLoaded, m_frontPair)
 #include <DDrawMgr/DDrawChildGroup.h>  // real +0x08 child type (m_childGroup)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (Snapshot/RestoreChildren blit-op target, waveP)
-#include <Gruntz/GameLevel.h>         // CGameLevel (m_level child; EditDispatch/MainPlaneQueryB)
-#include <Globals.h>                  // g_wwdObjIdCounter (serialized header id)
-#include <string.h>                   // strcpy/memset (inline header build)
+#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (Snapshot/RestoreChildren blit-op target)
+#include <Gruntz/GameLevel.h>          // CGameLevel (m_level child; EditDispatch/MainPlaneQueryB)
+#include <Globals.h>                   // g_wwdObjIdCounter (serialized header id)
+#include <string.h>                    // strcpy/memset (inline header build)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // real +0x28 child type (m_2c held stream, ClearMap)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // real +0x2c child type (m_animRegistry; virtual-dtor delete)
 #include <DDrawMgr/DDrawSurfacePair.h>    // m_drawTarget->m_frontPair geometry (m_width/m_height)
@@ -298,16 +296,15 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 }
 // ===========================================================================
 // CDDrawSurfaceMgr::SnapshotChildren (0x156020) / RestoreChildren (0x156530) - the /GX
-// child blit-param serializer pair, re-homed from the former ddrawsurfacemgrserialize
-// unit (waveP): the split-out /GX tail of THIS obj. The canonical class already declares
-// both (DDrawSurfaceMgr.h); member access uses m_childGroup (cast CDDrawChildGroup* for the
-// blit-op calls) / m_level (cast CGameLevel*) / m_callback; the local view + its
-// SnapRunCallback dissolve onto the canonical HP_Callback. Engine callees reloc-masked.
+// child blit-param serializer pair, the split-out /GX tail of THIS obj. The canonical
+// class already declares both (DDrawSurfaceMgr.h); member access uses m_childGroup (cast
+// CDDrawChildGroup* for the blit-op calls) / m_level (cast CGameLevel*) / m_callback (the
+// canonical HP_Callback). Engine callees reloc-masked.
 // ===========================================================================
 // The stack serializer is the ONE canonical <Io/FileMem.h> CFileMem (0x28 B; a CFileMemBase
 // stream + a CFileIO m_file @+0x10). DISASM PROOF (retail 0x156020 prologue): `CFileMem S;`
 // lowers EXACTLY to `call 0x157850` (CFileMemBase ctor) + `call 0x1befd7` (CFile m_file ctor)
-// + `mov [S],0x5efe30` (the derived-vtable stamp - the old Serializer view was MISSING it),
+// + `mov [S],0x5efe30` (the derived-vtable stamp),
 // then the methods are DIRECT devirtualized calls on the known-type local (Reset 0x157a50 /
 // SetName 0x165e30 / Open 0x165e60 / Write 0x165f50 / Read 0x165f00 / Ready 0x165ef0), and the
 // object auto-destructs (~CFileMem 0x157980, inlined at each /GX unwind) at every return - so

@@ -49,33 +49,26 @@
 #include <Dsndmgr/SoundResMap.h>          // CSoundResMap (RemoveByValue @0x157b00)
 #include <Wap32/WapObj.h>                 // CWapObj : CObject
 #include <Globals.h>
-// (The FamilyMapBase fake grand-base + the CDDrawChildGroupDtorHost 3-map view are
-// DISSOLVED 2026-07-14: the ~ at 0x157630 stamps 0x5efdc0 = ??_7CDDrawChildGroup and
-// tears down the canonical layout member-for-member - ~CMapPtrToPtr @0x1b8665 on
-// +0x48/+0x2c and ~CObList @0x1b5a2b on +0x10 (mfc_class-verified; the view's THREE
-// "CMapStringToPtr" members were mislabeled). ~CDDrawChildGroup is defined below on
-// the canonical (<DDrawMgr/DDrawChildGroup.h>).)
+// The ~ at 0x157630 stamps 0x5efdc0 = ??_7CDDrawChildGroup and tears down the canonical
+// layout member-for-member - ~CMapPtrToPtr @0x1b8665 on +0x48/+0x2c and ~CObList
+// @0x1b5a2b on +0x10 (mfc_class-verified). ~CDDrawChildGroup is defined below on the
+// canonical (<DDrawMgr/DDrawChildGroup.h>).
 
-// (The 1-map sibling "CDDrawRegistryDtorHost" view is DISSOLVED 2026-07-14: its ~
-// (0x156e10) stamps 0x5efd28 = ??_7CDDrawWorkerRegistry and tears down a
+// The ~ at 0x156e10 stamps 0x5efd28 = ??_7CDDrawWorkerRegistry and tears down a
 // CMapStringToOb at +0x10 (mfc_class 0x1b7ef2) - it IS ~CDDrawWorkerRegistry,
-// defined below on the canonical (<DDrawMgr/DDrawWorkerRegistry.h>, now real
-// polymorphic : CLoadable). Its "CMapStringToPtr" member claim was wrong.)
+// defined below on the canonical (<DDrawMgr/DDrawWorkerRegistry.h>, real
+// polymorphic : CLoadable).
 
 // operator delete (NAFXCW ??3@YAXPAX@Z @0x1b9b82) - the scalar-dtor free path.
 void operator delete(void*);
 
-// (The local CDDrawSubMgrBase/CDDrawSubMgr pair is DISSOLVED 2026-07-14: the ctor
-// 0x156cb0 stamps 0x5efc30 - CLoadable's OWN vtable - so "CDDrawSubMgr" was CLoadable
-// under a second name (<Gruntz/Loadable.h> records the proof). The 3-arg CLoadable
-// base ctor is defined below at its retail RVA.)
+// The ctor 0x156cb0 stamps 0x5efc30 - CLoadable's OWN vtable - so CDDrawSubMgr IS
+// CLoadable under a second name (<Gruntz/Loadable.h> records the proof). The 3-arg
+// CLoadable base ctor is defined below at its retail RVA.
 // 0x155720 is CLoadable's ??_G scalar-deleting-dtor COMDAT copy (member-teardown ~ at
 // 0xd5d70, the CImage-band pool) - both are cl auto-emitted, byte-identical to
 // retail, and @rva-symbol-bound as the REAL ??_GCLoadable/??1CLoadable in
-// DDrawWorkerRegistry.cpp (the ex-CDDrawSubMgrFar scaffold, dissolved).
-
-// (The former CDDrawBlitParamSrc source view is DISSOLVED onto the real
-// CAniElement - see <Gruntz/AniAdvanceCursor.h>.)
+// DDrawWorkerRegistry.cpp.
 
 // The sound-cue enable flag, a float pan/volume scale constant, and the cue tag.
 // g_sndEnabled / g_sndCueTag are DEFINED in src/Gruntz/GruntzMgr.cpp (the owner TU);
@@ -125,13 +118,10 @@ extern "C" u32 g_killCueClock; // 0x2bf3c0
 // Real DSound types so MatchSub_1584f0's GetFormat / SetPrimaryFormat calls
 // mangle to the retail names (the relocs pair instead of staying fuzzy).
 
-// (The LeafScanValue / LeafSumSource / LeafScanSoundArg per-method readings of the
-// cache's map values are DISSOLVED 2026-07-14: the ONLY insert paths are the
-// CreateEntry factories, so every value IS the canonical LeafCue
-// (<Gruntz/LeafCue.h>). LeafScanValue's "held sound-arg" m_10, MatchSub's
-// GetFormat receiver, and LeafSumSource's +0x2c count source are all the
-// LeafCue's m_10 pooled buffer (DSoundCloneInst : DirectSoundMgr - GetFormat
-// @0x135ac0, m_sampleCount @+0x2c).)
+// Every value in the cache's map IS the canonical LeafCue (<Gruntz/LeafCue.h>) - the
+// ONLY insert paths are the CreateEntry factories. The held sound-arg m_10, the
+// GetFormat receiver, and the +0x2c count source are all the LeafCue's m_10 pooled
+// buffer (DSoundCloneInst : DirectSoundMgr - GetFormat @0x135ac0, m_sampleCount @+0x2c).
 // The sub-manager's OWN vtable (0x5efca0) is no longer an extern: CDDrawSubMgrLeafScan
 // is real-polymorphic, so cl emits ??_7CDDrawSubMgrLeafScan + the implicit grand-base
 // re-stamp. The 0x1c cache element is the canonical LeafCue (real-polymorphic
@@ -149,19 +139,13 @@ extern "C" u32 g_killCueClock; // 0x2bf3c0
 // on success links it into the map and stamps the redraw arg (this+0x34). The
 // element's draw-source is the canonical CParseSource (included above): BeginParse
 // (0x139960 -> the parsed RIFF/WAVE blob, or 0) and EndParse (0x1399d0).
-// (The former LeafElementObj/.cpp-local def + the never-instantiated
-// LeafElementBase intermediate + the LeafRootHandle owner view are DISSOLVED
-// 2026-07-14: the class IS the canonical LeafCue - a CLoadable leaf - and the
-// owner handle in CLoadable::m_0c IS the CDDrawSurfaceMgr, whose +0x20
-// m_soundStream is the SoundDevice the loaders acquire/release through. The
-// splinter TU LeafElementObj.cpp (LoadSoundA/B @0x1586e0/0x158720 - INSIDE this
-// obj's RVA span) is folded back here.)
+// The cache element class IS the canonical LeafCue - a CLoadable leaf - and the
+// owner handle in CLoadable::m_0c IS the CDDrawSurfaceMgr, whose +0x20 m_soundStream
+// is the SoundDevice the loaders acquire/release through. LoadSoundA/B
+// (@0x1586e0/0x158720) sit INSIDE this obj's RVA span.
 
 // ----- The recursive directory walker (ScanTree_157ee0) -----
-// The former `DirNode` view is DISSOLVED (2026-07-13). Its own comment block already
-// named every method it "declared" as a CSymTab method, and the body cast `(CSymTab*)
-// tree` at all six call sites - the view was a shape nobody had connected to its owner.
-// It also CONFLATED two classes at one name:
+// The `ScanTree` node types are two real classes CONFLATED at one name:
 //   - the scope nodes (tree / the FirstSub-NextSub subdir chain) are Bute CSymTab
 //     (<Bute/SymTab.h>): m_name @+0x00, and each subdir is recursed into AS a tree.
 //   - the leaf records (the NextSym2/NextSym3 chain) are CParseSource
@@ -381,9 +365,7 @@ StateId CDDrawWorkerList::GetStateId() {
 // run the DestroyWorkers slot body (direct call 0x163bc0 - the just-stamped vptr
 // constant-folds the dispatch), destruct the CObList member @+0x10, then the
 // inlined intermediate-base dtor resets the header fields + restamps the
-// grand-base vtable. (The former `CDDrawWorkerListSib` was a fake sibling view of
-// THIS class - same vtable, same layout; its cross-cast dtor chained to the
-// misbound 0x163bc0 "dtor". Identity folded 2026-07-13.)
+// grand-base vtable.
 RVA(0x00156f50, 0x68)
 CDDrawWorkerList::~CDDrawWorkerList() {
     DestroyWorkers();
@@ -418,10 +400,9 @@ void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerA/B dtors + frame-set virtuals (0x1570d0-0x1572f0).
-// (The CDDrawFrameSource view of Vfunc30's a3 is DISSOLVED 2026-07-14: the
-// "frame table @+0x14 bounded by [+0x64,+0x68]" IS the canonical CDDrawWorker -
-// m_items (::CObArray, m_pData@+0x14) windowed by m_64/m_68, the very fields
-// MakeWorker seeds to 99999/0 and AddFrameAt_1521c0 widens.)
+// Vfunc30's a3 frame table @+0x14 bounded by [+0x64,+0x68] IS the canonical
+// CDDrawWorker - m_items (::CObArray, m_pData@+0x14) windowed by m_64/m_68, the very
+// fields MakeWorker seeds to 99999/0 and AddFrameAt_1521c0 widens.
 
 // 0x157080 - CDDrawWorkerBase::SetPosition (the family slot-9 override; the SAME
 // RVA sits in BOTH the A (0x1efea0) and B (0x1efed0) vtables - one base
@@ -818,9 +799,7 @@ CFileMemBase::CFileMemBase() {
 // EH-dtor virtual-dispatch wall (~89%): the base teardown logic is byte-faithful,
 // but retail dispatches Reset as an absolute indirect through the base vtable
 // slot 3 - a virtual dispatch inside a dtor that MSVC5 devirtualizes to a direct
-// call from clean C++. (NOTE: homed into this multi-fn obj per the wave4-L
-// partition; the old FileMemBaseDtor.cpp isolation note predicted a ~CFileMem
-// re-pack crater - accepted, rehome doctrine.)
+// call from clean C++.
 RVA(0x001578b0, 0x51)
 CFileMemBase::~CFileMemBase() {
     Reset();
@@ -1171,10 +1150,9 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
 // 0x1581b0: fire the named CAniBlitTrigger from the cache, gated on the parent being
 // live and the sub-manager not busy.
 //
-// The placeholder `CAniTriggerMap_1581b0` view is GONE - `this` is the canonical
-// CDDrawSubMgrLeafScan. The old note said the owning class was "unrecovered" because
-// 0x1581b0 has no caller in the image (dead/inlined-away), but the caller graph was
-// never the evidence that mattered:
+// `this` is the canonical CDDrawSubMgrLeafScan. 0x1581b0 has no caller in the image
+// (dead/inlined-away), so caller-graph evidence is unavailable - but the retail bytes
+// settle it:
 //   - the retail bytes read `[ecx+0x0c]` (LeafScanBase::m_0c, the parent/root handle),
 //     `[ecx+0x30]` (m_30, the busy guard) and `add ecx,0x10; call 0x1b8438` - the
 //     CMapStringToPtr::Lookup on m_10, at the very rva mfc_class pins to
@@ -1905,11 +1883,6 @@ i32 CDrawSubWorker::SetGeom(i32 w, i32 h, i32 bpp) {
     return 1;
 }
 
-// ===========================================================================
-// wave4-L CP3b: the G-obj take-ins from the dissolved per-class files
-// (mapsmall/list/workers/cache/pages/leafscan/filemem quartets + pocket +
-// the surface-pair heads). Ordering pass follows (CP3c).
-// ===========================================================================
 // The engine block allocator + placement-new (child spawns / path buffers).
 void* operator new(u32 n);
 inline void* operator new(u32, void* p) {
