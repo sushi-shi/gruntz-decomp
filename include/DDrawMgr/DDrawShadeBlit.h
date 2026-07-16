@@ -107,7 +107,10 @@ public:
     // the surface's own width/height/pitch, then unlock it. Returns BuildRle's result.
     i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette); // 0x148f50
     i32 Build(CImageBuildDesc* src, i32 size, i32 fmt);                // 0x1490d0
-    void* Remap(void* pixels); // 0x1495d0  (palette-remap, external)
+    // 0x1495d0 (body: src/Image/ImageRle16Encode.cpp; ex the fake CImageRle16 view).
+    // Two-pass RLE re-encode: expands the 8bpp token stream through a palette->16bpp
+    // table into a fresh 16bpp RLE buffer. Build uses it as the srcBpp==2 remap.
+    void* EncodeRle16(const u8* src);
     void Teardown();           // 0x148d10
     i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250 (body: ImageSaveBmp.cpp)
     i32 Rebuild(CString name, i32 a1, i32 a2);                  // 0x1493b0

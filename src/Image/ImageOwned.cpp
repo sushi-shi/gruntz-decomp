@@ -283,7 +283,7 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
     memcpy(m_rleData, src->m_frameData, m_rleLen);
 
     if (m_srcBpp == 2) {
-        void* remapped = Remap(m_rleData);
+        void* remapped = EncodeRle16(m_rleData);
         ::operator delete(m_rleData);
         m_rleData = (u8*)remapped;
         ::operator delete(m_palette);
