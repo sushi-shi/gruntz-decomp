@@ -1,6 +1,6 @@
 // GruntSteps.cpp - the SECOND original grunt TU (retail text 0x50ca0-0x55160):
 // the grunt movement-step / move-sound / tile-claim / serialize family, carved
-// out of the conflated Grunt.cpp (wave3-I grunt-region partition).
+// out of the conflated Grunt.cpp (grunt-region partition).
 //
 // original TU: filename unknown (@identity-TODO; named for the dominant
 // movement-step family). Evidence this is its OWN obj:
@@ -14,11 +14,11 @@
 //   * gamestaterecordload (0x555e0) + gruntdatarecord (0x56da0) sit between
 //     this interval and 0x56f80 in text - one obj spanning both would have to
 //     contain them (no evidence does).
-// In-interval fold: LoadVehicleGruntSprites @0x50ce0 (ex VehicleGruntSprites.cpp)
-// is text-contained (between 0x50ca0 and 0x511b0 - contiguity-forced).
+// In-interval fold: LoadVehicleGruntSprites @0x50ce0 is text-contained
+// (between 0x50ca0 and 0x511b0 - contiguity-forced).
 // GruntTubeAnim.cpp (0x50a50, gap 139 before 0x50ca0) is a PROBABLE head of this
 // TU but stays split (no privates/frags to prove it; noted there).
-#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
+#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
@@ -198,10 +198,6 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
 // CGrunt::LoadTypeTableClearMove(typeId) @0x50ca0 - reload the grunt type table for
 // `typeId` (the inherited CUserLogic driver, thunk 0x3bd9 -> 0x4dd50) then reset the
 // move-mode pair (m_moveMode/m_1a4). Called at RunEntranceMove's tail. __thiscall.
-// Re-homed from src/Stub/BoundaryLowerMethods.cpp (was C50ca0::M).
-// (The old "+0x1a0 compiles to +0x2c0 layout gap" note is STALE: the header pass fixed
-// the base chain - offsetof(CGrunt, m_moveMode)==0x1a0 verified 2026-07-15 - so the
-// raw this+offset stores are replaced with the named members, byte-identical.)
 RVA(0x00050ca0, 0x2b)
 void CGrunt::LoadTypeTableClearMove(i32 typeId) {
     // the real callee is the inherited CUserLogic::LoadGruntTypeTable (0x4dd50), not
@@ -228,21 +224,18 @@ void CGrunt::LoadTypeTableClearMove(i32 typeId) {
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                  // It used to be DEFINED here too: six .cpp files each
-                                  // defined it, i.e. six .bss objects for one global
-                                  // (LNK2005). Only the owner defines; everyone externs.
+                                  // Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
-// DATA-bound in src/Globals.cpp). They used to be re-DEFINED here - 14 external symbols
-// duplicated across 5 objs = a duplicate-symbol link defect.
+// DATA-bound in src/Globals.cpp).
 
-// ==== LoadVehicleGruntSprites @0x50ce0 (ex VehicleGruntSprites.cpp; text-contained) ====
+// ==== LoadVehicleGruntSprites @0x50ce0 (text-contained) ====
 // The game registry singleton (*0x24556c): this TU declares it as the
 // WwdGameReg view (Grunt.cpp style); the vehicle path reads it through the
 // MFC-side CGruntzMgr view with a per-use cast (same load bytes).
 
-//  2026-07-15 onto the canonicals. CGruntCmdObj WAS ::CGrunt: m_10 == m_10
+//  CGruntCmdObj WAS ::CGrunt: m_10 == m_10
 //  (CGameObject*), m_17c/m_180 == m_lastTilePxX/m_lastTilePxY, m_198 == m_198,
 //  m_1a0 == m_moveMode, m_260 == m_tileMgr, m_region0/m_region1 == m_2b0../m_2c0..
 //  (the same 8-dword block RectContainsGated + the serializer already read on
@@ -260,7 +253,7 @@ extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 // @early-stop
 // ~37%: COMPLETE + correct (prologue/dispatch/jump-table/common CString-tail/
 // tile-A-B gate + the two registrations all model retail). Residual is a GLOBAL
-// register-COLORING wall, re-proven 2026-07-05 with llvm-objdump -dr base vs target:
+// register-COLORING wall, proven with llvm-objdump -dr base vs target:
 //   * The A/B tile-code tail computes `code = grid->m_8[m_180>>5][(m_17c>>5)*7+4]`.
 //     RETAIL colors its temps into callee-saved ebp ((x>>5)*7 via shl3/sub) and ebx
 //     (grid->m_8 row table); THIS cl colors the same temps into volatile edi/edx and
@@ -348,8 +341,7 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
                     ->m_tileGrid->m_8[m_lastTilePxY >> 5])[(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_screenX == m_lastTilePxX && m_10->m_screenY == m_lastTilePxY) {
-            // retail pushes (this, x, y) - ret 0xc; the old 2-arg spelling had dropped
-            // the receiver arg ("recv-this dropped" note above).
+            // retail pushes (this, x, y) - ret 0xc.
             m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         }
@@ -537,8 +529,6 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 // query point (x>>5, y>>5) against them via IsRectEmpty + the 4-way bounds compare.
 // Residue: identical to RectContains - cl interleaves the two CRect builds and the
 // [esp+N] temp-slot reuse in an unpinnable order. Deferred to the final sweep.
-// (wave5-R7: the SerializeMove/SnapToLastTile CALL-target rebindings in this TU
-// nudged the shared temp-slot/regalloc schedule here ~62->59.5%; body unchanged.)
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     i32 px = x >> 5;
@@ -829,7 +819,7 @@ commit:
             this,
             m_lastTilePxX,
             m_lastTilePxY
-        ); // real 0x6d300 (ex ApplyTileSwitch alias)
+        ); // real 0x6d300
     PlaySound(0x3e8, voice);
     m_commitPxX = m_lastTilePxX;
     m_commitPxY = m_lastTilePxY;
@@ -932,7 +922,7 @@ i32 CGrunt::ClaimSwitchTile() {
             this,
             m_lastTilePxX,
             m_lastTilePxY
-        ); // real 0x6d300 (ex ApplyTileSwitch alias)
+        ); // real 0x6d300
 
     // Release the grunt's old tile: clear bit 5 of the old tile's flag byte, set
     // its owner record to -1.

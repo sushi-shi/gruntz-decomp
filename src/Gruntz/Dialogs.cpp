@@ -96,7 +96,7 @@ i32 __stdcall BattlezSetupDlgInit(i32) {
 // this obj emits the ??_7 COMDATs). Byte-proof: a scratch /GX+/O2 TU with a stack
 // CBrush reproduces every body below exactly (mod relocs). The former fake
 // CImgHolderBase/CImgHolder2/CImgHolder hierarchy (+ the "CImageList holder"
-// story) is dissolved - it was RTTI-refuted (see the header note above).
+// story) is RTTI-refuted (see the header note above).
 // @rva-symbol: ??_GCObject@@UAEPAXI@Z 0x000163e0 0x1e
 // @rva-symbol: ??1CObject@@UAE@XZ 0x00016410 0x7
 // @rva-symbol: ??_GCGdiObject@@UAEPAXI@Z 0x00016430 0x1e
@@ -116,7 +116,7 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 // (see <Gruntz/Dialogs.h>), so there is no definition to hang an RVA() on: retail's body
 // carries no `mov [esi],??_7CBattlezDlgCustom` re-stamp, and cl only emits that for a
 // user-written dtor body. Declaring it (even `inline ... {}`) added exactly that stamp -
-// the old "vptr-restamp-presence wall" that capped both this body (~94.4%) and the copy
+// a "vptr-restamp-presence wall" that capped both this body (~94.4%) and the copy
 // ShowCustomDlg inlines (~92.9%).
 // @rva-symbol: ??1CBattlezDlgCustom@@UAE@XZ 0x00017140 0x47
 
@@ -624,8 +624,7 @@ void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 // 0x1c6b18), and a direct ::FillRect import call (FF15 through the IAT). Passing
 // `brush` to the HBRUSH parameter runs the inline CBrush::operator HBRUSH() -
 // MFC's `this == NULL ? NULL : m_hObject` guard is exactly retail's neg/sbb/and
-// select (the former fake CDlgDC/CDrawBrush views reproduced these same bytes
-// under invented names; the real classes make this TU emit the real CBrush/
+// select (the real classes make this TU emit the real CBrush/
 // CGdiObject/CObject COMDAT families pinned above).
 
 // CBattlezDlg::OnDrawItem (0x165a0): owner-draw the four team-color swatch static
@@ -924,8 +923,7 @@ i32 CBattlezDlg::UnusedMsgHandler() {
 }
 
 // Four button trampolines (0x172c0/0x172e0/0x17300/0x17320): each forwards its
-// fixed index 0..3 to ReadCtrlBText (0x17340; the retail reloc target - the
-// former "Sub01c340" placeholder misnamed 0x17340 as an external 0x1c340 body).
+// fixed index 0..3 to ReadCtrlBText (0x17340; the retail reloc target).
 RVA(0x000172c0, 0x8)
 void CBattlezDlg::OnActionBtn0() {
     ReadCtrlBText(0);

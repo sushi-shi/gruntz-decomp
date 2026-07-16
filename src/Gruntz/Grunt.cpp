@@ -70,7 +70,7 @@
 // grunt's sprite collection (sprite->m_7c->m_18 . Add*(args)). On a failed
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
-#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
+#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GameLevel.h> // CGameLevel + CLevelPlane (m_world->m_level->m_mainPlane rect)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
@@ -100,7 +100,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses 
 #include <string.h>
 
 // CGrunt's RTTI vtable (??_7CGrunt@@6B@ @0x1e8754): catalogued here, CGrunt's real
-// home (was bound in the now-deleted src/Stub/ApiWrappers.cpp). Grunt.h omits VTBL(
+// home. Grunt.h omits VTBL(
 // CGrunt) because it's referenced by scored CGrunt/CSpotLight code; the binding is
 // pre-existing (moved, not new), so the catalogue state is unchanged.
 VTBL(CGrunt, 0x001e8754);
@@ -158,13 +158,12 @@ i32 g_movingSeed;
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
 #include <Bute/ButeMgr.h>
-// The former per-TU CDDrawBlitParam / CAniAdvanceCursor facet views (the +0x1a0
-// geometry sub-player setters/probe) are folded onto CEntranceAnimSub / CGruntAnimSub
+// The +0x1a0 geometry sub-player setters/probe are on CEntranceAnimSub / CGruntAnimSub
 // (<Gruntz/Grunt.h>), reached as state->m_1a0.SetGeometry / .Advance.
 
 // The created HUD/lose-item sprite + the entrance player reach their CGameObject-base
 // name/sprite/geometry setters directly (CHudSprite / CEntranceAnimPlayer in
-// <Gruntz/Grunt.h>); the former per-TU CGruntSprite / CGruntAnimPlayer facet views are gone.
+// <Gruntz/Grunt.h>).
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
@@ -229,7 +228,7 @@ static void GruntScratchTeardown();
 // CGrunt::GetTilePos (0x00031c70) is now an inline member in the header.
 
 // The five CGrunt::Resolve*Animation methods (0x45100/0x455f0/0x457b0/0x45960/
-// 0x45b60) were re-homed to Warlord.cpp (wave3-I): their retail bodies are
+// 0x45b60) live in Warlord.cpp: their retail bodies are
 // text-woven into the warlord obj (0x42d40-0x45cc1) and share its private
 // .data band - see Warlord.cpp's header for the evidence.
 
@@ -445,7 +444,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     m_150 = obj;
     m_154 = obj; // the owner object doubles as the entrance player
     m_158 =
-        obj->m_7c; // the bound object's AnimWorkerObj (typed; the ex-CGruntSndResMgr cast fell out)
+        obj->m_7c; // the bound object's AnimWorkerObj (typed)
     m_struckClockLo = 0;
     m_struckTimerLo = 0;
     m_struckClockHi = 0;
@@ -581,14 +580,11 @@ i32 g_serialCounter;
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                  // It used to be DEFINED here too: six .cpp files each
-                                  // defined it, i.e. six .bss objects for one global
-                                  // (LNK2005). Only the owner defines; everyone externs.
+                                  // Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
-// DATA-bound in src/Globals.cpp). They used to be re-DEFINED here - 14 external symbols
-// duplicated across 5 objs = a duplicate-symbol link defect.
+// DATA-bound in src/Globals.cpp).
 
 // @early-stop
 // reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
@@ -1081,8 +1077,7 @@ void CGrunt::ClearAllSprites() {
 // schedule coin-flip; no source lever flips it (entropy-class).
 // CGrunt::TileSwitch(a, b, c, d, e, f) @0x4b320 - scale the two grid coords to
 // tile-pixel centers (*0x20 + 0x10) and forward all six args to the engine
-// tile-switch helper. CONVENTION SETTLED __thiscall (ex the free __stdcall
-// `CGrunt_TileSwitch` conflation): the body never reads `this` (byte-identical
+// tile-switch helper. __thiscall: the body never reads `this` (byte-identical
 // either way, ret 0x18), but every retail caller loads a grunt into ecx - which
 // only the member spelling reproduces at the ~25 reconstructed sites.
 RVA(0x0004b320, 0x34)
@@ -1582,7 +1577,7 @@ label_4cb4b:
             this,
             m_lastTilePxX,
             m_lastTilePxY
-        ); // real 0x6d300 (ex ApplyTileSwitch alias)
+        ); // real 0x6d300
     m_coordRetryCount = 0;
     PlaySound(0x3e8, rec);
     {
@@ -1907,7 +1902,7 @@ i32 CGrunt::CreateSelectedSprite() {
 }
 
 // ===========================================================================
-// TAIL ORPHANS (wave3-I partition note): the five fns below are NOT part of the
+// TAIL ORPHANS: the five fns below are NOT part of the
 // grunt-main obj (0x47a10-0x4d7c6). Each sits in its own single-fn retail
 // interval with no dominant foreign unit and no private-.data / init-frag
 // anchor, so their owning original TUs are unrecovered:

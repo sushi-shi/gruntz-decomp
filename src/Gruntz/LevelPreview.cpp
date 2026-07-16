@@ -26,9 +26,7 @@
 #include <Globals.h>
 
 // g_sndEnabled / g_sndCueTag are C++ globals DEFINED in GruntzMgr.cpp (the DATA pins
-// live on those definitions). They used to be pinned HERE as `extern "C"`, which bound
-// _g_sndEnabled/_g_sndCueTag at 0x21ab20/24 and left the C++-mangled ?g_snd*@@3HA
-// references of ~20 other TUs UNBOUND; plain C++ externs now, so every reference agrees.
+// live on those definitions). Plain C++ externs here, so every reference agrees.
 extern "C" {
     extern u32 g_killCueClock;
 }
@@ -57,9 +55,8 @@ extern "C" {
 // FadeInTitle (0xfa1f0) and RetireScene (0xfa8f0) are SHARED CState base methods, not
 // CPreviewState's own: the retail caller graph shows 8+ CState-derived siblings
 // (CBootyState/CCreditsState/CMulti/CAttract/...) invoke each on their own `this`.
-// BOTH are now re-homed onto CState (<Gruntz/State.h>) and inherited here (the cast-free
-// calls below bind to them); RetireScene's former CSoundFxEmitter::Method_fa8f0 view is
-// dissolved.
+// BOTH are on CState (<Gruntz/State.h>) and inherited here (the cast-free
+// calls below bind to them).
 SIZE_UNKNOWN(CPreviewState);
 class CPreviewState : public CState {
 public:
@@ -293,8 +290,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
 // it on the CPreviewState `this` (xref-confirmed). When the global gate (g_flag64c69c)
 // is set it delegates to the game mgr's delayed-quit (m_4 == CGruntzMgr, DelayedQuit
 // @0x8f530); otherwise it posts WM_COMMAND 0x8027 to the mgr's top window
-// (m_4->m_gameWnd->m_hwnd). The old PreviewCancelHost/PreviewCancelWnd placeholders were a
-// second view of CPreviewState + CGruntzMgr; dissolved onto the real ones.
+// (m_4->m_gameWnd->m_hwnd).
 DATA(0x0024c69c)
 i32 g_flag64c69c = 0; // DAT_0064c69c  (owner-TU definition)
 RVA(0x000de590, 0x2e)

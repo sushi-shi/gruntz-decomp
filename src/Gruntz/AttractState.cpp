@@ -5,7 +5,7 @@
 // its 12 CState-slot overrides live in this one contiguous obj run, and the ??_G
 // scalar-deleting dtor + the ??1 destructor anchor the vtable emission here.
 //
-// Carved out of the former conflated Attract.cpp (REHOME/holding-TU drain, D5):
+// Carved out of the conflated Attract.cpp:
 // that file wove TWO separate original objs - this CAttract state core (0x13fb0
 // band) and the attract state-services interval (0x0fa1f0 band, CAttract title/
 // fade + CSoundFxEmitter + CState helpers + CMgrPersistObj serialize), which now
@@ -57,7 +57,7 @@ extern "C" CGameRegistry* g_gameReg;
 
 // PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
 // extern "C" so the reloc emits `_g_pPostMessageA` - the canonical name bound at
-// 0x2c44c8 (home `sbi_rectonly`); the C++-mangled view was the dedup loser.
+// 0x2c44c8 (home `sbi_rectonly`).
 
 // The per-frame time delta (countdown source for m_idleTimer). C linkage so the
 // symbol pairs with the target's _g_645584 (the convention across the gamemode units).
@@ -92,7 +92,7 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
     }
 
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    // slot in a reg.
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -164,7 +164,7 @@ void CAttract::ReleaseResources() {
 RVA(0x00014120, 0x1a9)
 i32 CAttract::Vslot09(i32 arg) {
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    // slot in a reg.
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -302,7 +302,7 @@ i32 CAttract::InputVirtual() {
         return 0;
     }
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    // slot in a reg.
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -321,7 +321,7 @@ i32 CAttract::Vslot06() {
         return 0;
     }
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    // slot in a reg.
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -367,7 +367,7 @@ i32 CAttract::Vslot07() {
         return 0;
     }
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
-    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    // slot in a reg.
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);

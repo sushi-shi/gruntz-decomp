@@ -2,7 +2,7 @@
 #include <Gruntz/TraitorMode.h> // g_traitorMode
 // GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):
 // the grunt combat / struck-voice / attack / ability-tuning / spawn family,
-// carved out of the conflated Grunt.cpp (wave3-I grunt-region partition).
+// carved out of the conflated Grunt.cpp (grunt-region partition).
 //
 // original TU: filename unknown (@identity-TODO; named for the dominant combat
 // family). ONE-obj evidence:
@@ -19,8 +19,8 @@
 // PathScan57db0 @0x57db0 (ex GruntPathScan.cpp), LoadGruntCombatAnimations
 // @0x597a0 (ex GruntCombatAnim.cpp), GruntSpawnPump @0x5baf0 (ex
 // GruntSpawnPump.cpp), ConstructActRange_644af0 @0x5bc50 + RegisterActs_644af0
-// @0x5be30 (ex LogicActRegistrars.cpp). NOT folded (COMDAT-at-usage emissions,
-// per the TU_MIGRATION legend): ApplyGeometryDirect @0x58b60 (spriteresource),
+// @0x5be30 (LogicActRegistrars). NOT folded (COMDAT-at-usage emissions):
+// ApplyGeometryDirect @0x58b60 (spriteresource),
 // CMotionState::SetParams/SetZ @0x58bc0/0x58ca0 (motionstate), ??0CUserLogic
 // @0x58cd0 (userlogicctoremit), CPairRecord::Serialize @0x58ee0
 // (trirecordserialize), Lookup_05b7e0 @0x5b7e0 (ddrawsubmgrleafscan).
@@ -56,7 +56,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the worker's m_0c owner-context facet
 #include <Gruntz/LeafCue.h>      // LeafCue - the launch-sound cue entries (ex CombatCue/ConvCue)
 #include <Gruntz/SoundCue.h>     // CSndHost (typedef of CDDrawSubMgrLeafScan) - the cue registry
-#include <Gruntz/TriggerMgr.h>   // CTriggerMgr - the CGrunt+0x260 board (ex CombatTileMgr)
+#include <Gruntz/TriggerMgr.h>   // CTriggerMgr - the CGrunt+0x260 board
 #include <Gruntz/GruntBehaviorLeaf.h> // CGruntBehaviorLeaf - 3 of the 19 act handlers (decay/wand AI leaves)
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
@@ -166,7 +166,7 @@ static void GruntScratchTeardown() {
     }
 }
 
-// ==== LoadGruntAbilityTuning @0x57100 (ex GruntAssetLoaders.cpp; its 8 private .data cells sit in this TU's band) ====
+// ==== LoadGruntAbilityTuning @0x57100 (its 8 private .data cells sit in this TU's band) ====
 // ---------------------------------------------------------------------------
 // CGrunt::LoadGruntAbilityTuning(int forced)   @0x57100   (ret 4)
 // Fire the grunt's spell-ability effect for the given (or randomly-rolled)
@@ -179,8 +179,7 @@ static void GruntScratchTeardown() {
 // ctor-proven), its m_0c the owner/world context == the CDDrawSurfaceMgr facet
 // (<Gruntz/GameRegistry.h>), whose m_28 is the CSndHost cue registry
 // (<Gruntz/SoundCue.h>: emit gate m_emitGate @+0x30, CMapStringToPtr map @+0x10,
-// Lookup_05b7e0). The ex-CGruntSndSlot/CGruntSndRes/CGruntSndResMgr re-modeled
-// those three hops; the map here really is CMapStringToPtr - retail's GAME_ATTACK
+// Lookup_05b7e0). The map here really is CMapStringToPtr - retail's GAME_ATTACK
 // Lookup is 0x1b8438 (the Ptr band), NOT CMapStringToOb's 0x1b8008.
 
 // The launch-sound cue tag (reloc-masked global).
@@ -215,20 +214,18 @@ enum SpellzEffect {
     SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
 };
 
-// ==== LoadGruntCombatAnimations @0x597a0 (ex GruntCombatAnim.cpp; its 15 private .data cells + the
+// ==== LoadGruntCombatAnimations @0x597a0 (its 15 private .data cells + the
 // i324-i332 frag run sit in this TU) ====
 
-// (The P offset-cast macro is GONE, 2026-07-16: its two residual reaches are typed -
-// +0x260 IS Grunt.h's m_tileMgr, now canonically CTriggerMgr* (the CGruntTileMgr
+// (+0x260 IS Grunt.h's m_tileMgr, now canonically CTriggerMgr* (the CGruntTileMgr
 // GetHeadPosition() + the shared CoordNode (<Gruntz/CoordNode.h>).)
 
-// (CombatCue is GONE - it was LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem
+// (CombatCue IS LeafCue (<Gruntz/LeafCue.h>): m_10 ConfigureItem
 //  owner, m_14 last-fire clock, m_18 cooldown - and its throttled fire is the real
 //  ?PlayIfElapsed@LeafCue@@. CombatSprInner/CombatSprCat are GONE - the
 //  world holder + cue host are the canonical CDDrawSurfaceMgr / CSndHost, and
 //  the launch-sound map is CMapStringToPtr: every LK Lookup in 0x597a0 calls
-//  0x1b8438 (the Ptr band) - the old `CMapStringToOb m_10` bound the WRONG library
-//  body, 0x1b8008.)
+//  0x1b8438 (the Ptr band).)
 
 // (the CombatGrid view is GONE - it was a THIRD name in this one TU for the board at
 // g_gameReg+0x70, alongside CScanPlane and the GruntBoard the canonical g_gameReg already
@@ -246,7 +243,7 @@ enum SpellzEffect {
 
 // (CombatTileMgr is GONE - the CGrunt+0x260 "tile-mgr grunt board" is the real
 //  CTriggerMgr (<Gruntz/TriggerMgr.h>): its m_grid 4x15 grid at +0x1c, and its
-//  three "engine ops" were phantom aliases of already-reconstructed CTriggerMgr
+//  three "engine ops" are already-reconstructed CTriggerMgr
 //  methods, read off the thunks: `CheckSpawn` (ILT 0x14a1) == ?SpawnGrunt@
 //  CTriggerMgr@@ @0x7c110, `ApplyCellEffect` (ILT 0x2e96) == ?CellDispatch@
 //  CTriggerMgr@@ @0x6bcb0, `ApplySwitch` (ILT 0x26df) == ?ApplySwitch@CTriggerMgr@@
@@ -270,8 +267,7 @@ enum SpellzEffect {
 // The kill-clock + sound-enable + cue-tag globals.
 extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 // C++ linkage: ?g_sndEnabled@@3HA is now the ONE name bound at 0x61ab20 (defined in
-// GruntzMgr.cpp); the old extern "C" spelling emitted _g_sndEnabled, a second name for
-// the same storage.
+// GruntzMgr.cpp).
 // g_sndCueTag is declared above (LoadGruntAbilityTuning section).
 
 // The 8 octant direction-vector triples (16-byte stride) copied into CGrunt+0x43c.
@@ -381,13 +377,12 @@ void CGrunt::EntranceTileOffset(i32* out) {
     out[1] = y;
 }
 
-// ==== PathScan57db0 @0x57db0 (ex GruntPathScan.cpp) ====
+// ==== PathScan57db0 @0x57db0 ====
 // (g_gameReg is the WwdGameReg* view declared at the top of this TU; byte-view uses cast it)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
-// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
-// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
+// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
 // --- local grid view (the tile-plane's dirty-rect view is richer than GruntBoard) ---
@@ -677,14 +672,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                  // It used to be DEFINED here too: six .cpp files each
-                                  // defined it, i.e. six .bss objects for one global
-                                  // (LNK2005). Only the owner defines; everyone externs.
+                                  // Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
-// DATA-bound in src/Globals.cpp). They used to be re-DEFINED here - 14 external symbols
-// duplicated across 5 objs = a duplicate-symbol link defect.
+// DATA-bound in src/Globals.cpp).
 
 // ---------------------------------------------------------------------------
 // CGrunt::SelectMoveIcon(a)   @0x57800   (__thiscall, ret 4)
@@ -925,8 +917,8 @@ void CGrunt::DestroyAnims() {
     ClearSubB();
 }
 
-// ==== ConstructActRange_644af0 @0x5bc50 + RegisterActs_644af0 @0x5be30 (ex
-// LogicActRegistrars.cpp; the i342 frag + both bodies are text-contained in this
+// ==== ConstructActRange_644af0 @0x5bc50 + RegisterActs_644af0 @0x5be30 (the i342
+// frag + both bodies are text-contained in this
 // TU, between GruntSpawnPump and RunAct/Activate) ====
 
 // The shared activation-name registry pieces (same shape <Gruntz/ActNameRegistry.h>
@@ -2073,7 +2065,7 @@ CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
     return (CObject*)val;
 }
 
-// ==== GruntSpawnPump @0x5baf0 (ex GruntSpawnPump.cpp; a worker-pump handler whose leaf is CGrunt) ====
+// ==== GruntSpawnPump @0x5baf0 (a worker-pump handler whose leaf is CGrunt) ====
 RVA(0x0005baf0, 0xf4)
 i32 GruntSpawnPump(Owner* owner) {
     Worker* rec = owner->m_7c;
