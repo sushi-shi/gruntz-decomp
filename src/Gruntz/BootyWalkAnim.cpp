@@ -67,7 +67,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_levelRecord->m_levelIndex > 0x24) {
         return 1;
     }
-    i32 sel = ((CSpriteRefTable*)g_gameReg->m_selSource)->GetSel(0, 0);
+    i32 sel = g_gameReg->m_selSource->GetSel(0, 0);
     if (sel == 0) {
         return 0;
     }
@@ -243,7 +243,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     letter = "P";
                     break;
             }
-            i32 sel = ((CSpriteRefTable*)g_gameReg->m_selSource)->GetSel(0, 0);
+            i32 sel = g_gameReg->m_selSource->GetSel(0, 0);
             if (sel != 0) {
                 if (((CBattlezData*)g_gameReg->m_levelRecord)->GetRecordValue(m_stepIndex) != 0) {
                     BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
@@ -274,7 +274,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         x = g_randSeed;
                     }
                     g_randSeed = x * 214013 + 2531011;
-                    ((CGruntSpawnConfig*)g_gameReg->m_cuePlayer)
+                    g_gameReg->m_cuePlayer
                         ->SpawnVoiceDriver(
                             0,
                             0x3bf,
@@ -293,7 +293,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     m_stepIndex++;
-                    ((CGruntSpawnConfig*)g_gameReg->m_cuePlayer)
+                    g_gameReg->m_cuePlayer
                         ->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
                     if (m_stepIndex == g_gameReg->m_levelRecord->m_levelIndex % 4) {
                         m_stepIndex = 4;

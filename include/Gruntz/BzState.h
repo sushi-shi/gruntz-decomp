@@ -80,13 +80,11 @@ struct BzSoundHolder {
 };
 SIZE_UNKNOWN(BzSoundHolder);
 
-// g_gameReg->m_cuePlayer - fires a positional sound cue.
-struct BzCuePlayer {};
-SIZE_UNKNOWN(BzCuePlayer);
-
-// g_gameReg->m_selSource - resolves the active selection handle.
-struct BzSelSource {};
-SIZE_UNKNOWN(BzSelSource);
+// g_gameReg->m_cuePlayer IS the CGruntSpawnConfig positional sound-cue player;
+// g_gameReg->m_selSource IS the CSpriteRefTable selection resolver (GetSel). (The
+// former empty BzCuePlayer/BzSelSource placeholder views are dissolved.)
+class CGruntSpawnConfig; // <Gruntz/GruntSpawnConfig.h>
+class CSpriteRefTable;   // <Gruntz/SpriteRefTable.h>
 
 // The game registry singleton (*0x64556c). m_levelRecord is the per-level record;
 // m_soundHolder the ambient sound holder; m_cuePlayer the sound-cue player;
@@ -97,9 +95,9 @@ struct BzGameReg {
     char m_pad08[0x30 - 0x8];
     BzSoundHolder* m_soundHolder; // +0x30
     char m_pad34[0x60 - 0x34];
-    BzCuePlayer* m_cuePlayer; // +0x60
+    CGruntSpawnConfig* m_cuePlayer; // +0x60  positional sound-cue player
     char m_pad64[0x74 - 0x64];
-    BzSelSource* m_selSource; // +0x74
+    CSpriteRefTable* m_selSource; // +0x74  selection resolver (GetSel)
     char m_pad78[0x7c - 0x78];
     BzLevelRecord* m_levelRecord; // +0x7c
     // *g_gameReg's own game-mgr method (== CGruntzMgr::ChangeState_8fab0, reloc-masked)
