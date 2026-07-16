@@ -45,6 +45,7 @@
 #include <Bute/SymParser.h>            // CSymParser (CMgrPersistObj::m_rezLocator ResolvePath)
 #include <Gruntz/SerialArchive.h>      // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
 #include <Gruntz/MgrPersist.h>         // CMgrPersistObj / SplashParams (the persisted settings obj)
+#include <Wap32/EngStr.h>              // THE canonical EngStr_DrawText (0x115440) lean decl
 #include <rva.h>
 #include <Globals.h>
 
@@ -687,7 +688,7 @@ i32 CMgrPersistObj::Init() {
         sp.m_0c = m_displayMgr->m_modeH;
         sp.m_10 = 0;
         sp.m_14 = 0;
-        EngStr_DrawText(m_levelData, &sp, &sp.m_04, 0x78, 1, 0xff, 0, 0xff, 1);
+        EngStr_DrawText((EngStrRenderObj*)m_levelData, (i32)&sp, (i32)&sp.m_04, 0x78, 1, 0xff, 0, 0xff, 1);
     }
     while (ShowCursor(0) >= 0)
         ;

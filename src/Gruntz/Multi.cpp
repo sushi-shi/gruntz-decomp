@@ -41,6 +41,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/ResMgr.h>       // CDrawTarget (m_c->m_drawTarget->m_18->m_surface Fill)
+#include <Wap32/EngStr.h>        // THE canonical EngStr_DrawText (0x115440) lean decl
 #include <stdio.h>               // engine sprintf (reloc-masked)
 #include <stdlib.h>              // srand (reloc-masked)
 #include <Globals.h>
@@ -316,18 +317,9 @@ enum {
 // The frame-clock base stamp WaitForOtherPlayers republishes on exit (0x648ce8).
 extern "C" i32 g_scoreTimeBase; // 0x648ce8
 
-// The engine text renderer (__cdecl, 0x115440): obj, string, rect + six style args.
-void EngStr_DrawText(
-    void* obj,
-    const CString* str,
-    const RECT* rc,
-    i32 a3,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7,
-    i32 a8
-); // 0x115440
+// (EngStr_DrawText comes from <Wap32/EngStr.h> - the ONE canonical lean decl; the
+// former TU-local (void*, CString*, RECT*) spelling mangled to a symbol the
+// definition never emits, leaving this unit's call reloc UNBOUND.)
 
 // --- WaitForOtherPlayers' three views are dissolved onto real classes ---
 //   * WaitDWordArr (this+0x604, "SetSize @0x1b4bad / SetAtGrow @0x1b4d7c") IS the MFC
@@ -3822,7 +3814,7 @@ i32 CMulti::WaitForOtherPlayers() {
     rc.top = 0;
     rc.right = g->m_modeW;
     rc.bottom = g->m_modeH;
-    EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)g->m_world, (i32)&waitStr, (i32)&rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
     i32 resend = 0x1388;
     i32 abort = 0x1d4c0;

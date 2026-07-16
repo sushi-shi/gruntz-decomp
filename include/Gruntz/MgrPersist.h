@@ -31,22 +31,14 @@ class CSymParser;            // m_rezLocator @+0x08: the rez path resolver (Reso
 
 // The on-screen splash params block built on the stack for EngStr_DrawText; its
 // leading slot is the loaded caption CString (its dtor forces Init's /GX frame).
+// (EngStr_DrawText itself: the ONE canonical lean decl in <Wap32/EngStr.h> - the
+// former (CSpriteFactoryHolder*, SplashParams*, i32*) spelling here mangled to a
+// symbol the definition never emits, leaving the caller's reloc UNBOUND.)
 struct SplashParams {
     CString text; // +0x00
     i32 m_04;     // +0x04
     i32 m_08, m_0c, m_10, m_14;
 };
-void EngStr_DrawText(
-    CSpriteFactoryHolder* lvl,
-    SplashParams* a,
-    i32* b,
-    i32 size,
-    i32 e,
-    i32 f,
-    i32 g,
-    i32 h,
-    i32 i
-); // 0x115440
 
 // The persisted object. Only the serialized fields are named. NB the Save/Load
 // method names are recovered-symbol placeholders; the archive object drives the

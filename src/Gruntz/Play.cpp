@@ -167,20 +167,9 @@ extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 extern "C" CGameRegistry* g_gameReg;
 // g_buteMgr (canonical CButeMgr) comes from <Bute/ButeMgr.h>.
 
-// The shared engine text renderer (src/Wap32/EngStr.cpp, __cdecl). Forward-declared
-// with the exact struct/signature so the call reloc-masks against EngStr.cpp's symbol.
-struct EngStrRenderObj;
-void EngStr_DrawText(
-    EngStrRenderObj* obj,
-    i32 a1,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7,
-    i32 a8
-);
+// The shared engine text renderer (src/Wap32/EngStr.cpp, __cdecl): the ONE canonical
+// lean decl comes from <Wap32/EngStr.h> so the call reloc binds EngStr.cpp's symbol.
+#include <Wap32/EngStr.h>
 
 // ---- Render-carcass leaf callees still unresolved (free fns / reloc-masked). ----
 // (Eng_SurfaceFlush/Eng_BeginScene are GONE - CDDSurface::Flip @0x13e850 / Fill
