@@ -34,7 +34,6 @@
 #include <Bute/ButeMgr.h>             // canonical CButeMgr / CButeStore (one shape)
 #include <Bute/SymParser.h>           // the ONE CSymParser (m_symParser; ParseBuffer/...)
 #include <Gruntz/GruntzMgr.h>         // CGruntzMgr - the class this whole TU implements
-#include <Rez/RezMgr.h>               // RezMgr - the pending facet-fold view (MakeRezPath)
 #include <Gruntz/GruntzMapMgr.h>      // CGruntzMapMgr (m_tileGrid; the 0x94-byte board)
 #include <Gruntz/FaderMgr.h>          // CFaderMgr (m_faderMgr; SetConfig @0x17d980)
 #include <Gruntz/GruntzPlayer.h>      // GruntzPlayer (m_options[4]; SeedForSlot @0xda870)
@@ -265,7 +264,7 @@ i32 g_645210;
 //   Fn2db0  -> 0x115810 InitializeFonts     Fn4214 -> 0x8fa70 GetGruntzDriveLetter
 //   Fn2112  -> 0x8eca0 InitializeLobbyConnectionSettings
 //   Fn1db6  -> 0x8f7f0 RecomputeViewScale (the "Step1db6" duplicate id)
-//   Fn1c12  -> 0x91670 MakeRezPath (defined as RezMgr:: - the pending facet fold)
+//   Fn1c12  -> 0x91670 MakeRezPath (CGruntzMgr's own; RezMgr.cpp - facet fold DONE)
 //   Fn1df7  -> 0x91170 SetColorDepth        Fn262b -> 0xf8970 SFManager_SelectBestDevice
 //   Fn129e  -> 0xf8e20 CloseSoundFontDevice Fn2423 -> 0xf8f30 BuildSoundFontPath
 //   Fn2cc5  -> 0x90200 RunFromState         Fn201d -> 0x8fab0 ChangeState_8fab0
@@ -404,7 +403,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         g_enableEmulation = 1;
     }
     m_modalBusy = 0;
-    m_b0 = 0;
+    m_renderGate = 0;
     m_driveLetterProbed = 0;
     m_driveLetter = 0;
     GetGruntzDriveLetter();
@@ -501,10 +500,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     world->m_resolveSubMgr->m_maxStepY = 0xe;
     world->m_pages->Method_158cb0(0, 0x30000);
     RecomputeViewScale();
-    RegisterGameObjectTypes((GameObjFactoryCtx*)world); // 0xa3b0 (the ctx IS this world holder)
-    // MakeRezPath @0x91670 is defined as ?MakeRezPath@RezMgr@@QAEHXZ (the pending
-    // RezMgr==CGruntzMgr facet fold); the cast binds the one real definition.
-    if (!((RezMgr*)this)->MakeRezPath()) {
+    RegisterGameObjectTypes(world); // 0xa3b0 (the ctx IS this world holder)
+    if (!MakeRezPath()) {           // 0x91670 (RezMgr.cpp; ex the RezMgr facet cast)
         return 0;
     }
 
@@ -810,8 +807,8 @@ void __stdcall RezFreeStdcall(void* a) {
 // 0x85500 - CGruntzMgr::GetRezPath: return the +0xec assembled-REZ-path CString BY
 // VALUE. IDENTITY RECOVERED (ex the Obj85500 placeholder): both callers - Run above
 // and LoadWorldMode - invoke it with ecx == the manager `this`, and +0xec is the
-// mgr's m_strRezPath (RezMgr.h's "m_pathA - assembled archive path #1", the slot
-// MakeRezPath fills). 100% EXACT once folded onto the real class - the old "/O2
+// mgr's m_strRezPath (ex the RezMgr view's "m_pathA - assembled archive path #1",
+// the slot MakeRezPath fills). 100% EXACT once folded onto the real class - the old "/O2
 // dead-local wall" (~74%) was the misattributed Obj85500 view's artifact, not a wall.
 RVA(0x00085500, 0x23)
 CString CGruntzMgr::GetRezPath() {

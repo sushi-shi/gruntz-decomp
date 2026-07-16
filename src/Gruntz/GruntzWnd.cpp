@@ -43,7 +43,7 @@ extern void __stdcall Sub_138940(WPARAM, LPARAM); // 0x138940 (empty hook)
 // dispatched on three messages: WM_ERASEBKGND(0x14) is swallowed (1); WM_SYSCOMMAND
 // (0x112) blocks the screensaver / monitor-power sys-commands while the window is not
 // iconic and re-routes the rest to the active NetLobby dialog; the private 0x3b9 tick
-// pumps a manager PerFrameTick when the game manager + its sound chain are live. All
+// pumps the manager RefreshGameClock when the game manager + its sound chain are live. All
 // other messages fall through as not-handled here (0 = keep dispatching).
 // @early-stop
 // 73%: complete + correct logic/control-flow (the 3-message compare ladder aligns via
@@ -92,7 +92,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (wParam != 1) {
                 return 1;
             }
-            GameMgr()->PerFrameTick();
+            GameMgr()->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
             return wParam;
         }
     }

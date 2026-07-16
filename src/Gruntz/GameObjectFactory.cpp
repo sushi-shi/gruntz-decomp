@@ -1,35 +1,26 @@
 // GameObjectFactory.cpp - RegisterGameObjectTypes (RVA 0x000a3b0).
 //
 // The level/object-type factory registrar: walks one uniform list registering
-// each named game-object type with the type registry (ctx->m_14, virtual slot
-// +0x24) under a class-id flag, and (for most types) calls a per-type follow-up
-// registration helper. Frameless __cdecl. Only offsets + code bytes are
-// load-bearing; every create-fn / follow-up helper is a reloc-masked external
-// (an unnamed ILT jmp-thunk to the real ctor/helper).
+// each named game-object type with the type registry (the world's +0x14
+// m_workerCache, virtual slot 9 / +0x24) under a class-id flag, and (for most
+// types) calls a per-type follow-up registration helper. Frameless __cdecl. Only
+// offsets + code bytes are load-bearing; every create-fn / follow-up helper is a
+// reloc-masked external (an unnamed ILT jmp-thunk to the real ctor/helper).
+//
+// IDENTITY (the ex "GameObjFactoryCtx"/"GameObjTypeRegistry" views, dissolved
+// 2026-07-16): the ctx is the world CDDrawSurfaceMgr itself - the one caller
+// (CGruntzMgr::Run, RezSync.cpp) passes the freshly-new'd world manager - and the
+// "+0x14 registry" is its m_workerCache, the canonical CDDrawWorkerCache
+// (<DDrawMgr/DDrawWorkerCache.h>). The "RegisterType" slot is CreateWorker: SAME
+// vtable slot (9, +0x24), SAME 3-arg shape, and the body (0x1652c0,
+// DDrawSurfacePair.cpp) consumes a1 as the factory fn-ptr (w->Init((GameObjNotifyFn)
+// a1, a3)) keyed by the type name - exactly what the tile-logic registrars
+// (LogicTypeTable.cpp / UserLogicCtorEmit.cpp) already dispatch on the same member.
 #include <Gruntz/GameObjectFactory.h> // the shared RegisterGameObjectTypes decl
 #include <rva.h>
-#include <Gruntz/ObjTypeRegistrars.h> // real per-type registrar entry points (reloc fidelity)
-
-typedef void* (*ObjCreateFn)();
-
-// The object-type registry reached through ctx->m_14. RegisterType is virtual
-// slot 9 (+0x24): record one named type + its create-fn under a class-id flag.
-struct GameObjTypeRegistry {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void RegisterType(ObjCreateFn create, const char* name, i32 flags); // +0x24
-};
-struct GameObjFactoryCtx {
-    char m_pad00[0x14];
-    GameObjTypeRegistry* m_14; // +0x14
-};
+#include <Gruntz/ObjTypeRegistrars.h>   // real per-type registrar entry points (reloc fidelity)
+#include <DDrawMgr/DDrawSurfaceMgr.h>   // CDDrawSurfaceMgr - the ctx (m_workerCache @+0x14)
+#include <DDrawMgr/DDrawWorkerCache.h>  // CDDrawWorkerCache::CreateWorker (slot 9, 0x1652c0)
 
 // Reloc-masked externals: per-type object create-fns (ILT thunks to the real
 // ctors) and the per-type follow-up registration helpers (by ILT-thunk RVA).
@@ -208,142 +199,137 @@ extern "C" {
 
 // @source: string-xref
 RVA(0x0000a3b0, 0x6e2)
-void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
-    ctx->m_14->RegisterType(CreateAniCycle, "AniCycle", 2);
+void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
+    ctx->m_workerCache->CreateWorker((i32)CreateAniCycle, "AniCycle", 2);
     CAniCycle::RegisterActs();
-    ctx->m_14->RegisterType(CreateDoNothingNormal, "DoNothingNormal", 0);
-    ctx->m_14->RegisterType(CreateDoNothing, "DoNothing", 2);
-    ctx->m_14->RegisterType(CreateSimpleAnimation, "SimpleAnimation", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateDoNothingNormal, "DoNothingNormal", 0);
+    ctx->m_workerCache->CreateWorker((i32)CreateDoNothing, "DoNothing", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateSimpleAnimation, "SimpleAnimation", 2);
     RegisterSimpleAnimLogic();
-    ctx->m_14->RegisterType(CreateMenuSparkle, "MenuSparkle", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateMenuSparkle, "MenuSparkle", 2);
     RegisterXLogic_646010();
-    ctx->m_14->RegisterType(CreateFrontCandy, "FrontCandy", 2);
-    ctx->m_14->RegisterType(CreateBehindCandy, "BehindCandy", 2);
-    ctx->m_14->RegisterType(CreateFrontCandyAni, "FrontCandyAni", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateFrontCandy, "FrontCandy", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateBehindCandy, "BehindCandy", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateFrontCandyAni, "FrontCandyAni", 2);
     CFrontCandyAni::RegisterActs();
-    ctx->m_14->RegisterType(CreateBehindCandyAni, "BehindCandyAni", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateBehindCandyAni, "BehindCandyAni", 2);
     CBehindCandyAni::RegisterActs();
-    ctx->m_14->RegisterType(CreateEyeCandy, "EyeCandy", 2);
-    ctx->m_14->RegisterType(CreateEyeCandyAni, "EyeCandyAni", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateEyeCandy, "EyeCandy", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateEyeCandyAni, "EyeCandyAni", 2);
     CEyeCandyAni::RegisterActs();
-    ctx->m_14->RegisterType(CreateGrunt, "Grunt", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateGrunt, "Grunt", 4);
     RegisterActs_644af0();
-    ctx->m_14->RegisterType(CreateGlobalAmbientSound, "GlobalAmbientSound", 4);
-    ctx->m_14->RegisterType(CreateAmbientSound, "AmbientSound", 1);
-    ctx->m_14->RegisterType(CreateAmbientPosSound, "AmbientPosSound", 0);
-    ctx->m_14->RegisterType(CreateSpotAmbientSound, "SpotAmbientSound", 0);
-    ctx->m_14->RegisterType(CreateActionArea, "ActionArea", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateGlobalAmbientSound, "GlobalAmbientSound", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateAmbientSound, "AmbientSound", 1);
+    ctx->m_workerCache->CreateWorker((i32)CreateAmbientPosSound, "AmbientPosSound", 0);
+    ctx->m_workerCache->CreateWorker((i32)CreateSpotAmbientSound, "SpotAmbientSound", 0);
+    ctx->m_workerCache->CreateWorker((i32)CreateActionArea, "ActionArea", 4);
     CProjActObj::RegisterType();
-    ctx->m_14->RegisterType(CreateStatusBarSprite, "StatusBarSprite", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateStatusBarSprite, "StatusBarSprite", 2);
     CStatusBarSprite::RegisterActs();
-    ctx->m_14->RegisterType(CreateParticlez, "Particlez", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateParticlez, "Particlez", 4);
     CParticlez::RegisterActs();
-    ctx->m_14->RegisterType(CreateExplosion, "Explosion", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateExplosion, "Explosion", 4);
     RegisterXLogic_6447f8();
-    ctx->m_14->RegisterType(CreateGruntSelectedSprite, "GruntSelectedSprite", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntSelectedSprite, "GruntSelectedSprite", 2);
     CGruntSelectedSprite::RegisterActs();
-    ctx->m_14->RegisterType(CreateGruntHealthSprite, "GruntHealthSprite", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntHealthSprite, "GruntHealthSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_14->RegisterType(CreateGruntStaminaSprite, "GruntStaminaSprite", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntStaminaSprite, "GruntStaminaSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_14->RegisterType(CreateGruntToySprite, "GruntToySprite", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntToySprite, "GruntToySprite", 2);
     CGruntToySprite::RegisterActs();
-    ctx->m_14->RegisterType(CreateGruntToyTimeSprite, "GruntToyTimeSprite", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntToyTimeSprite, "GruntToyTimeSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_14->RegisterType(CreateGruntWingzTimeSprite, "GruntWingzTimeSprite", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntWingzTimeSprite, "GruntWingzTimeSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_14->RegisterType(CreateGruntPowerupSprite, "GruntPowerupSprite", 2);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntPowerupSprite, "GruntPowerupSprite", 2);
     CGruntPowerupSprite::RegisterActs();
-    ctx->m_14->RegisterType(CreateToyPeek, "ToyPeek", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateToyPeek, "ToyPeek", 4);
     RegisterIconState();
-    ctx->m_14->RegisterType(CreateTileTriggerSwitch, "TileTriggerSwitch", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateTileTriggerSwitch, "TileTriggerSwitch", 4);
     CTileTriggerSwitch::RegisterActs();
-    ctx->m_14->RegisterType(CreateTileTrigger, "TileTrigger", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateTileTrigger, "TileTrigger", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateTileSecretTrigger, "TileSecretTrigger", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateTileSecretTrigger, "TileSecretTrigger", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateBrickz, "Brickz", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateBrickz, "Brickz", 4);
     CCheckpointTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateTileTriggerTransition, "TileTriggerTransition", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateTileTriggerTransition, "TileTriggerTransition", 4);
     CTileTriggerTransition::RegisterActs();
-    ctx->m_14->RegisterType(CreateGruntStartingPoint, "GruntStartingPoint", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntStartingPoint, "GruntStartingPoint", 4);
     ActReg4RegisterType();
-    ctx->m_14->RegisterType(CreateGruntCreationPoint, "GruntCreationPoint", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntCreationPoint, "GruntCreationPoint", 4);
     CGruntCreationPoint::RegisterActs();
-    ctx->m_14->RegisterType(CreateFortressFlag, "FortressFlag", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateFortressFlag, "FortressFlag", 4);
     CFortressFlag::RegisterActs();
-    ctx->m_14->RegisterType(CreateExitTrigger, "ExitTrigger", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateExitTrigger, "ExitTrigger", 4);
     CWormhole::RegisterActs();
-    ctx->m_14->RegisterType(CreateGiantRock, "GiantRock", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateGiantRock, "GiantRock", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateCoveredPowerup, "CoveredPowerup", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateCoveredPowerup, "CoveredPowerup", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateInGameIcon, "InGameIcon", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateInGameIcon, "InGameIcon", 4);
     RegisterIconActions();
-    ctx->m_14->RegisterType(CreateInGameText, "InGameText", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateInGameText, "InGameText", 4);
     RegisterTextLogic();
-    ctx->m_14->RegisterType(CreateWormhole, "Wormhole", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateWormhole, "Wormhole", 4);
     RegisterWormholeLogic();
-    ctx->m_14->RegisterType(CreateGruntPuddle, "GruntPuddle", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntPuddle, "GruntPuddle", 4);
     RegisterLogic_6445e8();
-    ctx->m_14->RegisterType(CreateRollingBall, "RollingBall", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateRollingBall, "RollingBall", 4);
     CRollingBall::RegisterActs();
-    ctx->m_14->RegisterType(CreateObjectDropper, "ObjectDropper", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateObjectDropper, "ObjectDropper", 4);
     CObjectDropper::RegisterActs();
-    ctx->m_14->RegisterType(CreateDroppedObject, "DroppedObject", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateDroppedObject, "DroppedObject", 4);
     CDroppedObject::RegisterActs();
-    ctx->m_14->RegisterType(CreateDroppedObjectShadow, "DroppedObjectShadow", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateDroppedObjectShadow, "DroppedObjectShadow", 4);
     CDroppedObjectShadow::RegisterActs();
-    ctx->m_14->RegisterType(CreateCheckpointTrigger, "CheckpointTrigger", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateCheckpointTrigger, "CheckpointTrigger", 4);
     CTileSecretTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateTeleporter, "Teleporter", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateTeleporter, "Teleporter", 4);
     CTeleporter_RegisterActs();
-    ctx->m_14->RegisterType(CreateSecretTeleporterTrigger, "SecretTeleporterTrigger", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateSecretTeleporterTrigger, "SecretTeleporterTrigger", 4);
     CSecretTeleporterTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateSecretLevelTrigger, "SecretLevelTrigger", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateSecretLevelTrigger, "SecretLevelTrigger", 4);
     CSecretLevelTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateProjectile, "Projectile", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateProjectile, "Projectile", 4);
     CProjectile::RegisterType();
-    ctx->m_14->RegisterType(CreateBoomerang, "Boomerang", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateBoomerang, "Boomerang", 4);
     CProjectile::RegisterType();
-    ctx->m_14->RegisterType(CreateStaticHazard, "StaticHazard", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateStaticHazard, "StaticHazard", 4);
     CStaticHazard::RegisterActs();
-    ctx->m_14->RegisterType(CreateToobSpikez, "ToobSpikez", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateToobSpikez, "ToobSpikez", 4);
     CToobSpikez::RegisterActs();
-    ctx->m_14->RegisterType(CreateTimeBomb, "TimeBomb", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateTimeBomb, "TimeBomb", 4);
     CTimeBomb::RegisterActs();
-    ctx->m_14->RegisterType(CreateSpotLight, "SpotLight", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateSpotLight, "SpotLight", 4);
     RegisterActs_646188();
-    ctx->m_14->RegisterType(CreateKitchenSlime, "KitchenSlime", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateKitchenSlime, "KitchenSlime", 4);
     CKitchenSlime::RegisterType();
-    ctx->m_14->RegisterType(CreateSingleAnimation, "SingleAnimation", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateSingleAnimation, "SingleAnimation", 4);
     CSingleAnimation::RegisterActs();
-    ctx->m_14->RegisterType(CreateWayPoint, "WayPoint", 4);
-    ctx->m_14->RegisterType(CreateWarlord, "Warlord", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateWayPoint, "WayPoint", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateWarlord, "Warlord", 4);
     RegisterWarlordActions();
-    ctx->m_14->RegisterType(CreatePathHazard, "PathHazard", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreatePathHazard, "PathHazard", 4);
     RegisterActs_646250();
-    ctx->m_14->RegisterType(CreateRainCloud, "RainCloud", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateRainCloud, "RainCloud", 4);
     RegisterActs_646250();
-    ctx->m_14->RegisterType(CreateUFO, "UFO", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateUFO, "UFO", 4);
     RegisterActs_646250();
-    ctx->m_14->RegisterType(CreateGruntVoice, "GruntVoice", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateGruntVoice, "GruntVoice", 4);
     RegisterActs_6514d8();
-    ctx->m_14->RegisterType(CreateWarpStonePad, "WarpStonePad", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateWarpStonePad, "WarpStonePad", 4);
     CWarpStonePad::RegisterActs();
-    ctx->m_14->RegisterType(CreateGuardPoint, "GuardPoint", 4);
-    ctx->m_14->RegisterType(CreateVoiceTrigger, "VoiceTrigger", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateGuardPoint, "GuardPoint", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateVoiceTrigger, "VoiceTrigger", 4);
     CVoiceTrigger::RegisterActs();
-    ctx->m_14->RegisterType(CreateLevelTime, "LevelTime", 4);
-    ctx->m_14->RegisterType(CreateCursorSnapSprite, "CursorSnapSprite", 1);
+    ctx->m_workerCache->CreateWorker((i32)CreateLevelTime, "LevelTime", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateCursorSnapSprite, "CursorSnapSprite", 1);
     RegisterXLogic_62bfa0();
-    ctx->m_14->RegisterType(CreateLightFx, "LightFx", 4);
+    ctx->m_workerCache->CreateWorker((i32)CreateLightFx, "LightFx", 4);
     CLightFx::RegisterActs();
-    ctx->m_14->RegisterType(CreateDemoMover, "DemoMover", 0);
-    ctx->m_14->RegisterType(CreateDemoSign, "DemoSign", 0);
+    ctx->m_workerCache->CreateWorker((i32)CreateDemoMover, "DemoMover", 0);
+    ctx->m_workerCache->CreateWorker((i32)CreateDemoSign, "DemoSign", 0);
 }
-
-SIZE_UNKNOWN(GameObjFactoryCtx);
-SIZE_UNKNOWN(GameObjTypeRegistry);
-
-// --- vtable catalog ---

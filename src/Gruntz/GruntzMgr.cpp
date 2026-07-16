@@ -67,12 +67,12 @@
 #include <Gruntz/CheatMgr.h>          // CCheatMgr (m_cheatMgr @+0x44; the ex-HudGuard44 m_124 flag)
 #include <Gruntz/FaderMgr.h>          // CFaderMgr (m_faderMgr @+0x40; Close dtor-tears it)
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTableCache (m_shadeCache @+0x50)
-#include <Rez/RezMgr.h>               // RezMgr - the pending facet-fold view (MakeRezPath @0x91670)
-#include <Gruntz/TriggerMgr.h>        // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
-#include <Gruntz/SpriteRefTable.h>    // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
-#include <Gruntz/LightFxMgr.h>        // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
-#include <Gruntz/WorldSoundSet.h> // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
-#include <Gruntz/FontConfig.h>    // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair; ex via RezMgr.h)
+#include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
+#include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
+#include <Gruntz/WorldSoundSet.h>  // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
+#include <Gruntz/FontConfig.h>     // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
@@ -595,10 +595,10 @@ extern "C" CGruntzMgr* g_gameReg;
 // PumpIdleFrame (0x08b8c0; ret) - the deferred per-frame pump. When the pending flag is
 // set, clear it and, if the game manager + its world/lookup + live state are all up,
 // poll the state (InputVirtual): on idle (0) surface an idle error (0x8006/0x435) and
-// bail; else run PerFrameTick and re-arm the pending flag. A free function (reads the
+// bail; else run RefreshGameClock (direct call 0x3d23, byte-verified) and re-arm the pending flag. A free function (reads the
 // singleton, no `this`).
 // @early-stop
-// 88%: complete + correct (structure/branches/singleton re-reads all aligned; PerFrameTick
+// 88%: complete + correct (structure/branches/singleton re-reads all aligned; RefreshGameClock
 // called non-virtually). Residual is a pure regalloc coin-flip: retail pins the g_gameReg
 // pointer chain (mgr -> m_world / m_curState) in ecx so the InputVirtual thiscall's `this`
 // is already there; our cl pins it in eax and copies (`mov ecx,eax`) into the thiscall - a
@@ -628,7 +628,7 @@ i32 PumpIdleFrame() {
         g_gameReg->ReportError(0x8006, 0x435);
         return 0;
     }
-    g_gameReg->PerFrameTick();
+    g_gameReg->RefreshGameClock();
     g_pendingFrame = 1;
     return 1;
 }
@@ -895,7 +895,7 @@ install:
         *(i32*)(*(char**)((char*)this + 0x8) + 0x244) = 0;
         return 0;
     }
-    PerFrameTick();
+    RefreshGameClock();
     {
         CState* st = m_curState;
         i32 ok = st->Vfunc1((i32)this, a2, local10);
@@ -910,7 +910,7 @@ install:
         st->Vslot09(local10);
         *(i32*)(*(char**)((char*)this + 0x8) + 0x244) = 1;
         g_inputMgr->ReadAll();
-        PerFrameTick();
+        RefreshGameClock();
         return 1;
     }
 }
@@ -1467,15 +1467,18 @@ i32 CGruntzMgr::CaptureWorldFile() {
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::PerFrameTick  (__thiscall; `ret`)
-// The per-frame draw-clock tick. If the active state's Update() reports the
-// "paused/hold" id (0x11) the tick is skipped; otherwise it refreshes the engine
+// CGruntzMgr::RefreshGameClock  (__thiscall; `ret`; ex "PerFrameTick" - it was
+// NEVER vtable slot 4: retail ??_7CGruntzMgr slot 4 = thunk 0x1c7b -> 0x8b740,
+// the real PerFrameTick override in RezMgr.cpp; every retail caller of THIS body
+// is a direct `call 0x3d23`, byte-verified.)
+// The per-frame draw-clock refresh. If the active state's Update() reports the
+// "paused/hold" id (0x11) the refresh is skipped; otherwise it refreshes the engine
 // clock (CGameMgr::InitializeTimeGlobal), optionally re-stamps the
 // draw clock (g_killCueClock = timeGetTime(), g_engineFrameDelta = 0) when the draw gate m_world is
 // set, and finally mirrors the freshly-refreshed engine clock into the game-side
 // pair (g_lastNow/g_frameDelta).
 RVA(0x0008f620, 0x51)
-void CGruntzMgr::PerFrameTick() {
+void CGruntzMgr::RefreshGameClock() {
     if (m_curState && m_curState->Update() == 0x11) {
         return;
     }
@@ -1512,7 +1515,7 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
     }
 
     if (doDraw) {
-        PerFrameTick();
+        RefreshGameClock();
         if (m_frameGate != 0) {
             return;
         }
@@ -2417,10 +2420,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
     CreateWorldObjects(m_world);
-    // MakeRezPath @0x91670 is DEFINED as ?MakeRezPath@RezMgr@@QAEHXZ (RezMgr.cpp);
-    // RezMgr is a facet view of this class (fold pending, see <Rez/RezMgr.h>) -
-    // the cast binds the call to the one real definition.
-    if (((RezMgr*)this)->MakeRezPath() == 0) {
+    if (MakeRezPath() == 0) { // 0x91670 (RezMgr.cpp; ex the RezMgr facet cast)
         return 0;
     }
 
@@ -2513,7 +2513,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
 
     CState* s = m_curState;
     m_modalBusy = 1;
-    m_b0 = 1;
+    m_renderGate = 1;
     if (s) {
         delete s;
         m_curState = 0;
@@ -2543,7 +2543,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
     }
     TransitionState(stateId, 1, 0, 0);
     m_modalBusy = 0;
-    m_b0 = 0;
+    m_renderGate = 0;
     EndWaitCursor();
     return 1;
 }
@@ -3102,6 +3102,22 @@ i32 WAP32::CGameMgr::Wap32GameMgrVfunc3() {
     return m_gameWnd != 0;
 }
 
+// CGruntzMgr::Wap32GameMgrVfunc3 (0x83300, own vtable 0x5e9b64 slot 3 via thunk
+// 0x40d9 - byte-verified): the derived "active?" gate - nonzero iff a world is
+// loaded AND a state is live. (Was a declared-only phantom; the 0x17-byte body is
+// a Ghidra recovery gap - no functions.csv boundary - reconstructed from the raw
+// bytes: mov eax,[ecx+0x30]; test; je; mov eax,[ecx+0x2c]; test; je; mov eax,1;
+// ret; xor eax,eax; ret.)
+RVA(0x00083300, 0x17)
+i32 CGruntzMgr::Wap32GameMgrVfunc3() {
+    if (m_world) {
+        if (m_curState) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // WAP32::CGameMgr::HandleCommand (0x85580, base vtable 0x5e9b8c slot 5): the base
 // no-op command sink (CGruntzMgr overrides it at 0x862f0). Returns 0 (unhandled).
 RVA(0x00085580, 0x5)
@@ -3490,7 +3506,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     }
     m_curState->Vslot19();
     g_inputMgr->ReadAll();
-    CGruntzMgr::PerFrameTick();
+    RefreshGameClock();
     return 1;
 }
 
@@ -3589,7 +3605,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
         }
     }
 
-    CGruntzMgr::PerFrameTick();
+    RefreshGameClock();
     // The freshly-activated object IS the live PLAY/paused state (a CPlay).
     CPlay* o = (CPlay*)PickPausedThenPlayState();
     if (o) {
@@ -3636,7 +3652,7 @@ i32 CGruntzMgr::SwitchToNextState() {
         return 0;
     }
     m_owner->m_running = 1;
-    CGruntzMgr::PerFrameTick();
+    RefreshGameClock();
     return 1;
 }
 
@@ -4192,7 +4208,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         }
     }
 
-    PerFrameTick();
+    RefreshGameClock();
     CPlay* o = (CPlay*)PickPausedThenPlayState();
     if (o) {
         if (o->m_guts) {
@@ -4289,7 +4305,7 @@ CGruntzMgr::CGruntzMgr() {
     m_a4 = 0;
     m_a8 = 0;
     m_modalBusy = 0;
-    m_b0 = 0;
+    m_renderGate = 0;
     m_b4 = 0;
     m_114 = 0;
     m_isCheckpointPrompts = 1;
@@ -4301,9 +4317,9 @@ CGruntzMgr::CGruntzMgr() {
     m_modeW = 0;
     m_modeH = 0;
     m_colorDepth = 0x10;
-    m_f4 = 1;
-    m_f8 = 0;
-    m_fc = 0;
+    m_inGameDir = 1;
+    m_haveRez = 0;
+    m_haveMoviez = 0;
     m_musicEnabled = 1;
     m_soundEnabled = 1;
     m_isVoiceEnabled = 1;
@@ -4584,7 +4600,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                         if (st->m_guts->m_position == 0) {
                             st->m_guts->RefreshA();
                             st->m_guts->winapi_0fe520_SetRect();
-                            ReportMapTooSmall(
+                            EnterModalUI(
                                 "This map is too small to be displayed under your "
                                 "desired video resolution. Default resolution will "
                                 "be used."
@@ -4596,7 +4612,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                             st->m_guts->RefreshA();
                         }
                     }
-                    ReportMapTooSmall(
+                    EnterModalUI(
                         "This map is too small to be displayed under your desired "
                         "video resolution. Default resolution will be used."
                     );
@@ -4630,13 +4646,13 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             }
         }
     }
-    Step1db6();
-    Step3d23();
+    RecomputeViewScale(); // 0x8f7f0 (thunk 0x1db6; ex the Step1db6 phantom)
+    RefreshGameClock(); // 0x8f620 (thunk 0x3d23; ex the Step3d23 phantom)
     if (g_645600 != 0) {
         g_645600 = 0;
         char buf[0x70];
         sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
-        LogLine(buf);
+        AppendChatMessage(buf); // 0x8f9c0 (thunk 0x1b54; ex the LogLine phantom)
     }
     return 1;
 }

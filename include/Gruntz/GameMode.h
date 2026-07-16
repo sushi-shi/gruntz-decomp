@@ -1,11 +1,11 @@
 // GameMode.h - the game-state ("mode") hierarchy that the per-frame tick drives.
 //
-// CGruntzMgr/RezMgr::PerFrameTick (matched in the `rezmgr` unit) holds
-// the active game-state object at RezMgr+0x2c (m_mode) and each frame calls:
-//     int  m_mode->vtbl[+0x10]()   (slot 4) = Update()  -> a state-ID/status int
-//     int  m_mode->vtbl[+0x14]()   (slot 5) = Render()  -> the per-frame step+draw
-// (PerFrameTick gates timing on `Update() != 0x11` and gates Render on a render
-// flag.) This file reconstructs that state hierarchy.
+// CGruntzMgr::PerFrameTick (0x8b740, matched in the `rezmgr` unit) holds
+// the active game-state object at CGruntzMgr+0x2c (m_curState) and each frame calls:
+//     int  m_curState->vtbl[+0x10]()   (slot 4) = Update()  -> a state-ID/status int
+//     int  m_curState->vtbl[+0x14]()   (slot 5) = Render()  -> the per-frame step+draw
+// (PerFrameTick gates timing on `Update() != 0x11` and gates Render on
+// m_renderGate.) This file reconstructs that state hierarchy.
 //
 // THE HIERARCHY (recovered from RTTI + the vtables, ImageBase 0x400000):
 //   CState           base game-state class.

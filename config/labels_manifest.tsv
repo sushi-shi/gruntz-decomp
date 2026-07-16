@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 380  functions: 4068
+# units: 380  functions: 4069
 actionarea	11
 actionbeginhost	1
 actionoptionsmenubar	11
@@ -164,7 +164,7 @@ gruntwingztimesprite	4
 gruntzapp	9
 gruntzcmdmgr	40
 gruntzmapmgr	1
-gruntzmgr	151
+gruntzmgr	152
 gruntzmgr2	1
 gruntzmgrcmd	1
 gruntzrandom	5

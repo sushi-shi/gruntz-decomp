@@ -332,127 +332,16 @@ extern "C" void RezFormat(CString* dst, const char* fmt, ...);
 // to test each candidate archive path. Returns nonzero if the file exists.
 extern "C" i32 RezFileExists(const char* szPath);
 
-// A runtime "low-detail / front-end-class" selector global:
-// when nonzero the FEC archive lookup uses the GruntzLo.FEC variant path.
-extern i32 g_rezLowDetail;
-
-// ---------------------------------------------------------------------------
-// CGameMode - the active game-state/mode object the manager drives once per
-// frame (RezMgr+0x2c). It is polymorphic; the per-frame tick calls TWO of its
-// virtuals: slot +0x10 (index 4) = Update() -> a frame-delta/status int, and
-// slot +0x14 (index 5) = Render()/PostUpdate() (void). The placeholder slots
-// 0..3 keep the slot indices correct; modeled external/no-body so the
-// `mov eax,[ecx]; call [eax+0x10]` / `call [edx+0x14]` indirect-virtual call
-// shapes fall out, reloc-masked.
-// ---------------------------------------------------------------------------
-class CGameMode {
-public:
-    virtual void v0();     // +0x00
-    virtual void v1();     // +0x04
-    virtual void v2();     // +0x08
-    virtual void v3();     // +0x0c
-    virtual i32 Update();  // +0x10  (slot 4) - per-frame state step
-    virtual void Render(); // +0x14  (slot 5) - per-frame post-step
-};
-
-// ---------------------------------------------------------------------------
-// The per-frame global frame-clock state the tick + the clock-update helper
-// (RezMgr::UpdateClock) maintain. File-scope ints (reloc-masked):
-//   g_now        : last timeGetTime() sample
-//   g_frameDelta : ms elapsed since the previous frame
-// and the per-second frame-timing accumulators the tick advances:
-//   g_lastNow    g_lastDelta (clamped <= 0x64)
-//   g_accumMs    : running accumulated frame-time
-//   g_frameTicks : per-frame tick counter
-//   five interval countdown timers (seeds
-//                           0x32/0x64/0xc8/0x190/0x1f4 ms), each decremented
-//                           by the clamped delta and reseeded when it expires.
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// RezMgr - the engine game manager (CGameApp::m_8, the WAP32 CGameMgr; engine
-// label CGruntzMgr - names are placeholders, only offsets + code bytes are
-// load-bearing). Allocated 0xa30 bytes and constructed via the ctor;
-// the per-frame idle (CGameApp slot +0x20) tail-calls this object's vtable slot
-// +0x10 = PerFrameTick() every frame (BYTE-EXACT, the heart of the game
-// loop). Its vftable has slot 0 dtor / +0x10 PerFrameTick /
-// +0x14 .. / +0x38 UpdateClock. The ctor (new 0xa30 in
-// InitializeGameManager) installs that vftable + the +0xec/+0xf0 path
-// CStrings + the +0x150 sub-object - see docs/match-learnings.md for its full map
-// (deferred; store-order entropy). Pinned members:
-//   +0x2c  m_mode      : the active CGameMode* the tick drives (null => no-op)
-//   +0xb0  m_renderGate: when nonzero the tick SKIPS the post-step Render()
-//   +0xec  m_pathA     : a CString scratch buffer (assembled archive path #1)
-//   +0xf0  m_pathB     : a CString scratch buffer (assembled archive path #2)
-//   +0xf4  m_inGameDir : 1 if the CD drive letter == the current dir's drive
-//   +0xf8  m_haveRez   : the Gruntz.REZ / DATA-path archive was found
-//   +0xfc  m_haveMoviez: the MOVIEZ-path archive was found
-// It is polymorphic (vptr @+0). MakeImageKey dispatches a resource load by file
-// extension to the BMP/PCX/PID loaders; MakeRezPath assembles candidate archive
-// paths and probes them with FileExists.
-// ---------------------------------------------------------------------------
-// The owning window holder reached at RezMgr+0x04; its +0x04 is the HWND that
-// HandleDebugPosition posts the WM_COMMAND to.
-struct RezMgrOwner {
-    char p0[4];
-    HWND m_hWnd;
-}; // +0x04 -> +0x04 = HWND
-
-class RezMgr {
-public:
-    // The per-frame game tick (vtable slot +0x10 / index 4).
-    virtual i32 PerFrameTick();
-
-    i32 MakeRezPath();
-
-    // The frame-clock advance helper (a non-virtual member; also
-    // installed at vtable slot +0x38). Reconstructed in RezMgr.cpp (0x13ddc0);
-    // returns int (the retail symbol is ?UpdateClock@RezMgr@@QAEHXZ).
-    i32 UpdateClock();
-    // The busy-wait pacing limiter (0x13dec0), reconstructed in src/Wap32/GameApp.cpp.
-    void SpinWaitUntil(i32 target); // 0x13dec0
-    // (`InitTimeFields` used to be declared here too. It never existed as a RezMgr method:
-    // 0x13de70 is WAP32::CGameMgr::InitTimeFields, and this duplicate declaration emitted a
-    // ?InitTimeFields@RezMgr@@QAEXH@Z reference that no definition could ever satisfy.
-    // UpdateClock now calls the real base method. See the @identity-TODO in GameApp.cpp:
-    // RezMgr IS CGruntzMgr : WAP32::CGameMgr, a fold owned by the GruntzMgr lane.)
-
-    // Frame-rate config: SetFrameRate stores `fps` in the pacing gate (+0x1c) and
-    // derives the ms-per-frame budget (+0x28 = 1000/fps); TrySetFrameRate installs it
-    // only when pacing is not already active (else clears it and fails).
-    void SetFrameRate(i32 fps);   // 0x13dee0
-    i32 TrySetFrameRate(i32 fps); // 0x13df00
-
-    // CD/install helpers on the manager (external, reloc-masked).
-    char GetGruntzDriveLetter();
-    void ReportError(i32 msgId, i32 code);
-
-    // The debug-position keyboard probe: when the active mode reports state 3,
-    // looks up the "DEBUG_POSITION" debug value and (if set) posts a WM_COMMAND
-    // to the owning window. CheckDbgVal is the external (reloc-masked) debug-value
-    // lookup helper its call site dispatches to.
-    i32 HandleDebugPosition();
-    i32 CheckDbgVal(const char* key, i32 defVal, i32 flag);
-
-    // --- layout (vptr occupies +0x00) ---------------------------------------
-    RezMgrOwner* m_4;         // +0x04  owning window holder (m_4->m_hWnd = HWND)
-    char m_pad8[0x18 - 0x08]; // +0x08..+0x17
-    i32 m_smoothedFrameCount; // +0x18  smoothed frame count (UpdateClock: m_frameCounter>>1 window)
-    i32 m_pacingGate;         // +0x1c  active gate (>0 enables per-frame pacing)
-    i32 m_frameCounter;       // +0x20  frame counter (incremented each tick)
-    i32 m_windowStartTick;    // +0x24  window-start tick
-    i32 m_frameBudgetMs;      // +0x28  target ms-per-frame (pacing budget)
-    CGameMode* m_mode;        // +0x2c  (active game-mode driven per frame)
-    char m_pad30[0xb0 - 0x30]; // +0x30..+0xaf
-    i32 m_renderGate;          // +0xb0  (nonzero => skip the post-step)
-    char m_padb4[0xec - 0xb4]; // +0xb4..+0xeb
-    CString m_pathA;           // +0xec  (CString)
-    CString m_pathB;           // +0xf0  (CString)
-    i32 m_inGameDir;           // +0xf4
-    i32 m_haveRez;             // +0xf8
-    i32 m_haveMoviez;          // +0xfc
-};
-
-// --- vtable catalog ---
+// (The former `RezMgr` manager class here - with its `CGameMode`/`RezMgrOwner`
+// satellite views and the `CheckDbgVal`/`g_rezLowDetail` phantoms - is DISSOLVED
+// (2026-07-16). RezMgr WAS CGruntzMgr (<Gruntz/GruntzMgr.h>), byte-verified:
+// retail ??_7CGruntzMgr @0x5e9b64 slot 4 = thunk 0x1c7b -> 0x8b740 PerFrameTick,
+// and the base ??_7CGameMgr @0x5e9b8c slot 4 = 0x13ddc0, the base
+// WAP32::CGameMgr::PerFrameTick (ex "UpdateClock"; frame-pacing family declared in
+// <Wap32/Wap32.h>, bodies in src/Wap32/GameApp.cpp). CGameMode was CState,
+// RezMgrOwner the base's m_gameWnd (CGameWnd), CheckDbgVal == RunModalDialog
+// (thunk 0x2bb7 -> 0x90260), g_rezLowDetail a divergent duplicate of
+// g_disableHqMovie @0x2455d4. Methods 0x8b740/0x8e470/0x91670 live on in
+// src/Rez/RezMgr.cpp as CGruntzMgr's own.)
 
 #endif // SRC_REZ_REZMGR_H

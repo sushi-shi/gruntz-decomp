@@ -2,8 +2,8 @@
 // concrete CState subclass whose Render() (vtable slot +0x14) is the
 // per-frame heart of the running game: input -> per-entity step -> draw -> the
 // HUD/scroll/FX overlays. See GameMode.{h,cpp} for the state hierarchy this
-// extends (CState base) and RezMgr::PerFrameTick (the
-// caller of m_mode->Render(), matched in `rezmgr`).
+// extends (CState base) and CGruntzMgr::PerFrameTick @0x8b740 (the
+// caller of m_curState->Render(), matched in `rezmgr`).
 //
 // CARCASS doctrine: only the member OFFSETS and the per-frame call/branch
 // STRUCTURE are load-bearing. Field names are placeholders (m_<hexoffset>);
@@ -93,7 +93,7 @@ struct CHitMarker {
 // <Gruntz/GruntzMgr.h> member: m_4==m_gameWnd (base CGameMgr; its former
 // "ClampApply @0x8f7f0 / ManagerTick @0x8f620 / RestoreVideoMode @0x8df00 /
 // ReportError @0x346d" notes are already the real RecomputeViewScale /
-// PerFrameTick / SetVideoMode / ReportError methods there), m_c==m_frameGate,
+// RefreshGameClock / SetVideoMode / ReportError methods there), m_c==m_frameGate,
 // m_10==m_soundEnabled, m_14==m_musicEnabled, m_30==m_world, m_48==m_sound,
 // m_54==m_inputState, m_5c==m_chatLog, m_60==m_timer, m_68==m_cmdGrid,
 // m_6c==m_cmdSubMgr, m_70==m_tileGrid, m_74==m_spriteFactory, m_7c==m_scoreHud,

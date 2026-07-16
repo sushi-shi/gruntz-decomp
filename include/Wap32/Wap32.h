@@ -130,12 +130,24 @@ namespace WAP32 {
         virtual i32 Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
         virtual void Close();                                 // +0x08 idx2
         virtual i32 Wap32GameMgrVfunc3();                     // +0x0c idx3 (active? gate)
-        virtual void PerFrameTick();                          // +0x10 idx4  per-frame tick
-        virtual i32 HandleCommand(i32, i32, i32);             // +0x14 idx5
+        // +0x10 idx4 - the base per-frame tick (body @0x13ddc0, base vtable slot 4
+        // holds it DIRECTLY - verified against retail ??_7CGameMgr @0x5e9b8c): sample
+        // timeGetTime into the g_wap32Now/g_wap32FrameDelta clock pair, run down the
+        // run-state countdown, busy-wait to the ms budget when pacing is armed, and
+        // fold the 2s frame-count window into m_fps. CGruntzMgr overrides it (slot 4
+        // thunk 0x1c7b -> 0x8b740) with the game tick, which calls this base body
+        // first. (Ex "RezMgr::UpdateClock" - the RezMgr view is dissolved.)
+        virtual i32 PerFrameTick();               // +0x10 idx4  @0x13ddc0
+        virtual i32 HandleCommand(i32, i32, i32); // +0x14 idx5
 
         // Non-virtual ctor helpers (called directly from the ctor / Run).
         void InitTimeFields(i32 reset); // @0x13de70
         void InitializeTimeGlobal();    // @0x13dea0
+        // Frame-pacing helpers (bodies in GameApp.cpp, inside CGameMgr's own
+        // contiguous retail method block 0x13dd10..0x13df30; ex RezMgr::):
+        void SpinWaitUntil(i32 ms);   // @0x13dec0  busy-wait to the pacing budget
+        void SetFrameRate(i32 fps);   // @0x13dee0  arm m_pacingGate + derive m_frameBudgetMs
+        i32 TrySetFrameRate(i32 fps); // @0x13df00  install only when pacing inactive
 
         CGameWnd* m_gameWnd; // +0x04  bound game window (set by Run)
         CGameApp* m_owner;   // +0x08  owning app (pGameWnd->m_owner; set by Run)
@@ -143,18 +155,20 @@ namespace WAP32 {
         i32 m_soundEnabled;  // +0x10  sound-on flag (=1 in ctor; WriteInt "Sound")
         i32 m_musicEnabled;  // +0x14  music-on flag (=1 in ctor; WriteInt "Music")
         i32 m_fps;           // +0x18  measured frames-per-second (debug HUD "Fps = %i"; =-1 on
-                             //        frame-clock reset = no measurement yet)
-        i32 m_pauseFlag;     // +0x1c  run-state companion (cleared by ctor/Run; inferred)
-        i32 m_elapsedMs;     // +0x20  frame-clock accumulator (cleared by InitTimeFields)
-        i32 m_startTick;     // +0x24  start tick (timeGetTime, by InitTimeFields)
+                             //        frame-clock reset = no measurement yet; PerFrameTick
+                             //        stores count>>1 over each 2000 ms window)
+        i32 m_pacingGate;    // +0x1c  frame-pacing gate: the target fps SetFrameRate stores
+                             //        (>0 arms PerFrameTick's busy-wait; cleared by ctor/Run;
+                             //        ex "m_pauseFlag (inferred)")
+        i32 m_frameCounter;  // +0x20  frames-this-window counter (PerFrameTick ++ per frame;
+                             //        zeroed by InitTimeFields; a COUNT - ex "m_elapsedMs")
+        i32 m_windowStartTick; // +0x24  fps-window start tick (timeGetTime, by InitTimeFields)
+        i32 m_frameBudgetMs;   // +0x28  target ms-per-frame (SetFrameRate: 1000/fps)
 
         // (The former `vector_deleting_destructor` stub @0x133380 is gone: it was never
         // a CGameMgr method at all - it is CInputDevRoot's scalar-deleting destructor
         // ??_GCInputDevRoot@@UAEPAXI@Z, now named at its real rva in src/DinMgr2/DinMgr2.cpp
         // where cl already emits that COMDAT.)
-
-    private:
-        char m_pad28[0x2c - 0x28];
     };
 } // namespace WAP32
 

@@ -9,11 +9,10 @@
 #include <stdio.h>
 #include <Globals.h>
 // timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
-// The "RezMgr" manager view (== WAP32::CGameMgr/CGruntzMgr; RezMgr.h) - receiver of
-// the four frame-clock methods 0x13ddc0-0x13df00 whose text is A-B-A-woven into THIS
-// obj (wave4-K, dossier #14E). Folding the RezMgr view onto CGameMgr proper is
-// deferred to the gruntzmgr package (its other methods live at 0x8b740+).
-#include <Rez/RezMgr.h>
+// (The former "RezMgr" manager view is DISSOLVED: its four frame-clock methods
+// 0x13ddc0-0x13df00 are WAP32::CGameMgr's own - declared in <Wap32/Wap32.h>,
+// defined below inside CGameMgr's contiguous retail method block. 0x13ddc0 is the
+// base PerFrameTick: retail ??_7CGameMgr @0x5e9b8c slot 4 holds it directly.)
 
 // Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
 
@@ -466,7 +465,7 @@ WAP32::CGameMgr::CGameMgr() {
     m_gameWnd = 0;
     m_owner = 0;
     m_frameGate = 0;
-    m_pauseFlag = 0;
+    m_pacingGate = 0;
     InitTimeFields(1);
     InitializeTimeGlobal();
 }
@@ -507,7 +506,7 @@ i32 WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_gameWnd = pGameWnd;
     m_owner = pGameWnd->m_owner;
-    m_pauseFlag = 0;
+    m_pacingGate = 0;
     InitTimeFields(1);
     InitializeTimeGlobal();
     g_wap32Run80 = 0x64;
@@ -529,47 +528,25 @@ void WAP32::CGameMgr::Close() {
 // in cplay/globals) and calls through it (ff 15). extern "C" so the reloc binds the
 // canonical one-symbol-per-RVA at whole-game link (was the raw __imp__timeGetTime@0).
 
-// The real 0x2c engine base, aliased at file scope: MSVC 5.0 cannot look up the WAP32
-// namespace from inside a member of a class named CGameMgr (same idiom as RezSync.cpp).
-typedef WAP32::CGameMgr CGameMgrBase;
-
 // -------------------------------------------------------------------------
-// RezMgr::UpdateClock() (0x13ddc0; moved from RezMgr.cpp in wave4-K - its text
-// sits between CGameMgr::Close and InitTimeFields in THIS obj) - the frame-clock
-// advance helper PerFrameTick calls. Sample timeGetTime, derive the per-frame
-// delta into the canonical g_wap32Now/g_wap32FrameDelta cells, run down the
-// run-state countdown, then (when the pacing gate m_pacingGate is armed)
-// busy-wait to the ms budget and, every ~2s window, fold the frame count into
-// m_smoothedFrameCount and rearm the window.
+// CGameMgr::PerFrameTick() (0x13ddc0; vtable +0x10 idx4 - retail ??_7CGameMgr
+// @0x5e9b8c slot 4 holds this body DIRECTLY, byte-verified) - the base per-frame
+// tick. Sample timeGetTime, derive the per-frame delta into the canonical
+// g_wap32Now/g_wap32FrameDelta cells, run down the run-state countdown, then
+// (when the pacing gate m_pacingGate is armed) busy-wait to the ms budget and,
+// every ~2s window, fold the frame count into m_fps and rearm the window.
+// CGruntzMgr overrides it (its slot 4 = thunk 0x1c7b -> 0x8b740, the game tick
+// in src/Rez/RezMgr.cpp) and calls this base body first - the direct
+// `call 0x13ddc0` there is the qualified base-call.
 //
-// @identity-TODO  RezMgr IS the derived game manager (SIZE 0xa30 == CGruntzMgr), and the
-// receiver region it touches here IS its WAP32::CGameMgr base subobject at this@+0. That
-// is proven three ways, not guessed:
-//   (1) RVA interleave - 0x13ddc0 (this fn), 0x13dec0 SpinWaitUntil, 0x13dee0 SetFrameRate
-//       and 0x13df00 TrySetFrameRate sit INSIDE CGameMgr's own contiguous method block
-//       (0x13dd10 ctor / 0x13dd50 Run / 0x13ddb0 Close / 0x13de70 InitTimeFields /
-//       0x13dea0 InitializeTimeGlobal / 0x13df30 WaitKeyEdge) - one obj, one class.
-//   (2) field-for-field slot identity with CGameMgr, each confirmed by both readers:
-//         +0x18 m_smoothedFrameCount == m_fps   (InitTimeFields(reset) arms it to -1;
-//               this fn stores count>>1 over a 2000 ms window == frames per second)
-//         +0x1c m_pacingGate         == m_pauseFlag  (ctor/Run clear it; SetFrameRate
-//               stores the target fps; >0 arms the busy-wait)
-//         +0x20 m_frameCounter       == m_elapsedMs  (InitTimeFields zeroes it; this fn
-//               increments it once per frame -> a COUNT, not ms: m_frameCounter wins)
-//         +0x24 m_windowStartTick    == m_startTick  (InitTimeFields samples timeGetTime;
-//               this fn measures now - it >= 0x7d0)
-//         +0x28 m_frameBudgetMs      == the base's m_pad28 tail (SetFrameRate: 1000/fps)
-//   (3) CGameRegistry (<Gruntz/GameRegistry.h>) models the SAME 0x2c region under a THIRD
-//       set of names (its m_frameGate is annotated "base CGameMgr::m_frameGate").
-// So `RezMgr` / `CGruntzMgr` / `CGameRegistry` are three views of one class hierarchy.
-// Collapsing them into `class CGruntzMgr : public WAP32::CGameMgr` is the project's
-// deferred CGameRegistry==CGruntzMgr fold (owned by the GruntzMgr lane, C1189-gated); it
-// is NOT in this lane's scope. Until it lands, the base-subobject call below is spelled
-// through the real base type so it BINDS to the real ?InitTimeFields@CGameMgr@WAP32@@ at
-// 0x13de70 - RezMgr's own `InitTimeFields` declaration was a duplicate of it that could
-// never resolve at link, and has been deleted from <Rez/RezMgr.h>.
+// (Ex "RezMgr::UpdateClock". The RezMgr view is DISSOLVED: the identity proof -
+// RVA interleave inside CGameMgr's contiguous method block, field-for-field slot
+// identity at +0x18..+0x28, and the CGameRegistry third view - lives on in the
+// <Wap32/Wap32.h> member comments. Its own duplicate `InitTimeFields` decl is long
+// deleted; the call below is a plain same-class member call that binds to the
+// real ?InitTimeFields@CGameMgr@WAP32@@ at 0x13de70.)
 RVA(0x0013ddc0, 0xaa)
-i32 RezMgr::UpdateClock() {
+i32 WAP32::CGameMgr::PerFrameTick() {
     // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
     // reuses it across the three samples (call edi), exactly as retail does.
     DWORD(WINAPI * pTGT)(void) = ::timeGetTime;
@@ -599,24 +576,19 @@ i32 RezMgr::UpdateClock() {
     u32 count = m_frameCounter + 1;
     m_frameCounter = count;
     if ((u32)g_wap32Now - (u32)m_windowStartTick >= 0x7d0) {
-        m_smoothedFrameCount = count >> 1;
-        // The real WAP32::CGameMgr::InitTimeFields (0x13de70, defined below) on this@+0 -
-        // the base subobject (see the @identity-TODO above). Non-virtual, so this is the
-        // same direct `call rel32` as before; the difference is that it now binds to a
-        // symbol that EXISTS. (Spelled through the file-scope alias: MSVC 5.0 cannot look
-        // up the WAP32 namespace from inside a member of a class of the same name.)
-        ((CGameMgrBase*)this)->InitTimeFields(0);
+        m_fps = count >> 1;
+        InitTimeFields(0); // 0x13de70 (defined below; direct call rel32)
     }
     return 1;
 }
 
 // -------------------------------------------------------------------------
 // CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
-// Zeroes m_elapsedMs, samples the start tick into m_startTick, and (when reset) arms m_fps.
+// Zeroes the frame counter, samples the fps-window start tick, and (when reset) arms m_fps.
 RVA(0x0013de70, 0x23)
 void WAP32::CGameMgr::InitTimeFields(i32 reset) {
-    m_elapsedMs = 0;
-    m_startTick = timeGetTime();
+    m_frameCounter = 0;
+    m_windowStartTick = timeGetTime();
     if (reset) {
         m_fps = -1;
     }
@@ -633,17 +605,17 @@ void WAP32::CGameMgr::InitializeTimeGlobal() {
 }
 
 // -------------------------------------------------------------------------
-// RezMgr::SpinWaitUntil(ms) (0x13dec0; moved from RezMgr.cpp in wave4-K) -
-// the ms frame-pacing busy-wait UpdateClock calls: sample timeGetTime through the
-// game-owned fn-ptr and spin until `now` passes `start + ms` (unsigned, overflow-
-// guarded). `this` is unused (ecx ignored); the fn-ptr is cached in a callee-save.
+// CGameMgr::SpinWaitUntil(ms) (0x13dec0; ex RezMgr::) - the ms frame-pacing
+// busy-wait PerFrameTick calls: sample timeGetTime through the game-owned fn-ptr
+// and spin until `now` passes `start + ms` (unsigned, overflow-guarded). `this`
+// is unused (ecx ignored); the fn-ptr is cached in a callee-save.
 // @early-stop
 // ~83.9% regalloc wall: body byte-exact, but retail pins the cached fn-ptr in edi
 // and the deadline in esi (pushing both callee-saves upfront), while MSVC5 swaps
 // them (fn-ptr in esi, deadline in edi, edi shrink-wrapped). No source spelling
 // flips the esi/edi pair; logic complete.
 RVA(0x0013dec0, 0x20)
-void RezMgr::SpinWaitUntil(i32 ms) {
+void WAP32::CGameMgr::SpinWaitUntil(i32 ms) {
     DWORD(WINAPI * fn)(void) = ::timeGetTime;
     u32 now = fn();
     u32 end = now + (u32)ms;
@@ -655,23 +627,23 @@ void RezMgr::SpinWaitUntil(i32 ms) {
 }
 
 // ---------------------------------------------------------------------------
-// RezMgr::SetFrameRate(fps) (0x13dee0; moved from RezMgr.cpp in wave4-K): store
-// the frame rate in the pacing gate (m_pacingGate @+0x1c) and, when positive,
-// derive the per-frame budget (m_frameBudgetMs @+0x28 = 1000/fps). __thiscall, 1 arg.
+// CGameMgr::SetFrameRate(fps) (0x13dee0; ex RezMgr::): store the frame rate in
+// the pacing gate (m_pacingGate @+0x1c) and, when positive, derive the per-frame
+// budget (m_frameBudgetMs @+0x28 = 1000/fps). __thiscall, 1 arg.
 RVA(0x0013dee0, 0x1b)
-void RezMgr::SetFrameRate(i32 fps) {
+void WAP32::CGameMgr::SetFrameRate(i32 fps) {
     m_pacingGate = fps;
     if (fps > 0) {
         m_frameBudgetMs = 1000 / fps;
     }
 }
 
-// RezMgr::TrySetFrameRate(fps) (0x13df00; moved from RezMgr.cpp in wave4-K):
-// install the rate only when pacing is not already active (m_pacingGate > 0 ->
-// clear it via SetFrameRate(0) and fail with 0); otherwise configure to fps and
-// succeed (return 1). __thiscall, 1 arg.
+// CGameMgr::TrySetFrameRate(fps) (0x13df00; ex RezMgr::): install the rate only
+// when pacing is not already active (m_pacingGate > 0 -> clear it via
+// SetFrameRate(0) and fail with 0); otherwise configure to fps and succeed
+// (return 1). __thiscall, 1 arg.
 RVA(0x0013df00, 0x25)
-i32 RezMgr::TrySetFrameRate(i32 fps) {
+i32 WAP32::CGameMgr::TrySetFrameRate(i32 fps) {
     if (m_pacingGate > 0) {
         SetFrameRate(0);
         return 0;

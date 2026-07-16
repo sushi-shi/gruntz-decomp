@@ -930,7 +930,7 @@ i32 CMulti::Vslot09(i32 arg) {
     if (ResetForMode(arg) == 0) {
         return 0;
     }
-    m_4->CGruntzMgr::PerFrameTick();
+    m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
     g_frameTime = m_savedClock;
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
     m_drainTimer = 0;

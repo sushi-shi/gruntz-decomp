@@ -176,7 +176,8 @@ public:
     CGruntzMgr();
     virtual ~CGruntzMgr() OVERRIDE;             // vtbl slot 0 (own vftable 0x5e9b64)
     virtual i32 Run(CGameWnd*, char*) OVERRIDE; // slot 1 (declared-only)
-    virtual i32 Wap32GameMgrVfunc3() OVERRIDE;  // slot 3
+    virtual i32 Wap32GameMgrVfunc3() OVERRIDE;  // slot 3 @0x083300 (thunk 0x40d9):
+                                                // m_world && m_curState (ex phantom)
     // The ??_G scalar-deleting destructor (vtable slot 0 entry the retail vtable
     // holds): run the dtor body, then operator delete when the low flag bit is set;
     // returns this. Modeled by hand (MSVC's own ??_G mangling differs from the retail
@@ -218,9 +219,22 @@ public:
     // @0x08f480 - CaptureWorldFile's counterpart: on a playable state id (5/2/3),
     // clear m_strWorldFile and post WM_COMMAND 0x8005; ret 1 (else 0).
     i32 ClearWorldFile();
-    i32 InitializeLobbyConnectionSettings();   // @0x08eca0 (DirectPlay lobby connect)
-    CString BuildMoviePath(i32 movie);         // @0x08ff30 (per-movie path on the CD)
-    virtual void PerFrameTick() OVERRIDE;      // @0x08f620 slot 4 (per-frame draw-clock tick)
+    i32 InitializeLobbyConnectionSettings(); // @0x08eca0 (DirectPlay lobby connect)
+    CString BuildMoviePath(i32 movie);       // @0x08ff30 (per-movie path on the CD)
+    // THE per-frame game tick (vtable slot 4: retail ??_7CGruntzMgr @0x5e9b64 slot 4
+    // = thunk 0x1c7b -> 0x8b740, byte-verified; body in src/Rez/RezMgr.cpp). Calls the
+    // base CGameMgr::PerFrameTick (the clock advance @0x13ddc0), steps the live state
+    // (m_curState->Update()), accumulates the FrameClock.h timer band, then runs the
+    // state's Render() unless m_renderGate suppresses it. CGameApp's idle dispatches
+    // it every frame. (The 0x8f620 body that USED to claim this slot is the
+    // NON-virtual RefreshGameClock below - thunk 0x3d23, never in any vtable.)
+    virtual i32 PerFrameTick() OVERRIDE; // @0x0008b740 slot 4 (THE game tick)
+    // @0x08f620 (thunk 0x3d23) - the per-frame draw-clock refresh: unless the live
+    // state reports GAMESTATE_NONE, re-seed the engine clock (InitializeTimeGlobal),
+    // re-stamp the draw clock when a world is loaded, and mirror the engine clock
+    // into the game-side g_lastNow/g_frameDelta pair. Non-virtual (direct callers:
+    // AdvanceFrame, SetVideoMode, the state-switch hooks); ex mis-slotted "PerFrameTick".
+    void RefreshGameClock();                   // @0x08f620
     void AdvanceFrame(i32 doDraw, i32 unused); // @0x08f6a0 (the per-frame advance gate)
     i32 CheckPlayState();                      // @0x08ec50 (m_curState->Update()==3||==0x11)
     i32 RestoreVideoMode(i32 save);            // @0x08ddd0 (re-assert 640x480; save on hit)
@@ -253,11 +267,11 @@ public:
     i32 CheckMovieFileExists();     // @0x090aa0 (FileExists(m_strMoviePath))
     CState* FindStateById(i32 id);  // @0x092900 (live + stack search by Update id)
 
-    // SetVideoMode (0x08df00) reloc-masked CGruntzMgr siblings (all thiscall):
-    void Step1db6();                 // @0x1db6 thunk  post-mode resync
-    void Step3d23();                 // @0x3d23 thunk  post-mode resync
-    void ReportMapTooSmall(char* s); // @0x417e thunk  surface the modal text
-    void LogLine(char* s);           // @0x1b54 thunk  log the resolution line
+    // (SetVideoMode's four "Step1db6/Step3d23/ReportMapTooSmall/LogLine" phantom
+    // thunk decls are DISSOLVED - each ILT thunk chases to an already-declared
+    // method: 0x1db6 -> RecomputeViewScale (0x8f7f0), 0x3d23 -> RefreshGameClock
+    // (0x8f620), 0x417e -> EnterModalUI (0x8ef10), 0x1b54 -> AppendChatMessage
+    // (0x8f9c0). The call sites bind the real symbols; reloc-masked.)
 
     // Level cycle + debug layer toggles (proximity-attributed, reconstructed).
     i32 GoToNextLevel();     // @0x08d850 (PLAY: advance current level index, wrap)
@@ -362,13 +376,19 @@ public:
     i32 ChangeToPlayState(i32 a, i32 b, i32 c, i32 d);
     // SwitchToNextState's helpers fold onto the real bound methods: MakeNextState ==
     // TopState (0x90980), ActivateState == PopTopIfMatches (0x909e0), PostSwitchHook ==
-    // PerFrameTick (0x8f620); GetSaveSource == PickPlayOrPausedState (0x92990);
+    // RefreshGameClock (0x8f620); GetSaveSource == PickPlayOrPausedState (0x92990);
     // SwitchModeState == TransitionState (0x8b960).
 
-    // (MakeRezPath @0x91670 is NOT re-declared here: RezMgr.cpp DEFINES it as
-    // ?MakeRezPath@RezMgr@@QAEHXZ - RezMgr being another facet view of THIS class
-    // (see the fold note in <Rez/RezMgr.h>); a second decl here was a phantom the
-    // definition never emits. Callers cast to RezMgr* until that fold lands.)
+    // @0x91670 (body in RezMgr.cpp; ex ?MakeRezPath@RezMgr@@QAEHXZ - the RezMgr
+    // facet view is dissolved): assemble the candidate archive paths (Gruntz.REZ
+    // into m_strRezPath, the Gruntz[Lo].FEC front-end into m_strMoviePath), probe
+    // them with FileExists and record m_inGameDir/m_haveRez/m_haveMoviez; report
+    // 0x800b/0x43e and return 0 when nothing was found.
+    i32 MakeRezPath(); // @0x091670
+    // @0x8e470 (body in RezMgr.cpp): when the live state is GAMESTATE_PLAY, run the
+    // DEBUG_POSITION modal (RunModalDialog -> WarpDialogProc) and, on a hit, post
+    // WM_COMMAND 0x805c to the game window.
+    i32 HandleDebugPosition(); // @0x0008e470
     // By-value getter of the assembled Gruntz.REZ path (m_strRezPath); ex the
     // manual-retptr "ResolveRezRow(CString*)" ABI model AND the Obj85500 view.
     CString GetRezPath(); // 0x085500 (body in RezSync.cpp)
@@ -491,9 +511,11 @@ public:
     i32 m_savedModeW, m_savedModeH;   // +0x94, +0x98  saved/last-good mode (w, h)
     i32 m_lobbyResult;                // +0x9c  lobby-connect success flag (1/0)
     i32 m_lobbyProbed;                // +0xa0  one-shot lobby-connect guard
-    i32 m_a4, m_a8;                   // +0xa4, +0xa8
-    i32 m_modalBusy;                  // +0xac  modal-UI/cursor-busy gate
-    i32 m_b0, m_b4;                   // +0xb0, +0xb4
+    i32 m_a4, m_a8;  // +0xa4, +0xa8
+    i32 m_modalBusy; // +0xac  modal-UI/cursor-busy gate
+    i32 m_renderGate; // +0xb0  nonzero suppresses PerFrameTick's post-step Render()
+                      //        (LoadWorldMode arms it around the mode-switch teardown)
+    i32 m_b4;         // +0xb4
     i32 m_isCheckpointPrompts;        // +0xb8  "Checkpoint_Prompts" enable (=1 in ctor)
     SaveInfo* m_saveInfoRec;          // +0xbc  last FillSaveInfo dst record
     struct IDirectPlayLobby* m_lobby; // +0xc0  the DirectPlay lobby interface (Released/recreated)
@@ -506,10 +528,11 @@ public:
     CPtrArray m_stateStack; // +0xd8  CState* push-down stack (0x14 B; EH state 1). CPtrArray,
                             //        not CByteArray - see the note above.
     CString m_strRezPath;   // +0xec  assembled Gruntz.REZ archive path (EH state 2;
-                            //        RezMgr.h "m_pathA"; GetRezPath returns it)
+                            //        MakeRezPath fills it; GetRezPath returns it)
     CString m_strMoviePath; // +0xf0  resolved movie path (EH state 3)
-    i32 m_f4;               // +0xf4  (=1 in ctor)
-    i32 m_f8, m_fc;         // +0xf8, +0xfc
+    i32 m_inGameDir;        // +0xf4  (=1 in ctor) MakeRezPath: CD drive == cwd drive
+    i32 m_haveRez;          // +0xf8  MakeRezPath: found via the <drive>:\DATA fallback
+    i32 m_haveMoviez;       // +0xfc  MakeRezPath: front-end archive found on the CD
     i32 m_isVoiceEnabled;   // +0x100  "Voice"      enable (=1 in ctor)
     i32 m_isAmbientEnabled; // +0x104  "Ambient"    enable (=1 in ctor)
     i32 m_isInterlaced;     // +0x108  "Interlaced" flag

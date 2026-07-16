@@ -1,7 +1,7 @@
 // GameStateId.h - the per-state "which state am I" id returned by
 // CState::Update() (vtable slot 4 / +0x10). Each concrete game state overrides
-// Update() to `return` its own id constant; the per-frame tick (RezMgr::
-// PerFrameTick) and CGruntzMgr's state predicates gate on these ids.
+// Update() to `return` its own id constant; the per-frame tick (CGruntzMgr::
+// PerFrameTick @0x8b740) and the manager's state predicates gate on these ids.
 //
 // GAMESTATE_NONE (0x11) is the PerFrameTick sentinel: a state that suppresses
 // timing (the "paused/hold" id) - PerFrameTick skips the frame-clock advance

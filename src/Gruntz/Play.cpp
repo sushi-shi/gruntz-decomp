@@ -6,7 +6,7 @@
 // layout + helper-method map.
 //
 // =====================  THE PER-FRAME CARCASS (the deliverable)  ============
-// CPlay::Render runs once per game frame (RezMgr::PerFrameTick -> m_mode->
+// CPlay::Render runs once per game frame (CGruntzMgr::PerFrameTick @0x8b740 -> m_curState->
 // vtbl[+0x14]). It is a 3-way dispatch on two state words (m_renderDisabled the hard
 // early-out, m_inGame the primary mode) wrapped in a C++ SEH/EH frame (a stack
 // CString temp in the alt path -> /GX). The three paths share one WORLD-DRAW
@@ -1404,7 +1404,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 ((DirectInputMgr2*)g_inputMgr)->ReadAll();
                 while (ShowCursor(0) >= 0)
                     ;
-                self->m_4->CGruntzMgr::PerFrameTick();
+                self->m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
                 if (self->m_c->m_24->m_mainPlane != 0) {
                     ((CDDrawWorkerHost*)self->m_c->m_24->m_mainPlane)->GetSize_1633e0();
                 }
@@ -4814,7 +4814,7 @@ i32 CPlay::DrawWorldPresent() {
     m_c->m_childGroup->TickKillCues_159a70(1);
     m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
     m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
-    m_4->PerFrameTick();
+    m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
     return 1;
 }
 
@@ -6653,7 +6653,7 @@ i32 CPlay::EnterMode(i32 mode) {
     ((CGruntzMgr*)g_gameReg)->CheckSavedMode();
     m_guts->Deactivate();
     m_guts->LoadDestructButtonSprite(0);
-    m_4->PerFrameTick();
+    m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
 
     if (m_1c4 != 0) {
         m_1c4 = 0;
@@ -6699,7 +6699,7 @@ finish:
     if (m_c->m_24->m_mainPlane != 0) {
         ((CPlaneRender*)m_c->m_24->m_mainPlane)->CenterScrollB();
     }
-    m_4->PerFrameTick();
+    m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
     m_inputWarmup1 = 0;
     m_inputWarmup2 = 0;
     m_inputHalfSel = 0;

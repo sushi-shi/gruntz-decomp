@@ -624,12 +624,12 @@ i32 CRezFile::CloseFile() {
 RVA(0x0013cef0, 0x1)
 void CRezFile::Slot00_13c530() {}
 
-// (RezMgr::UpdateClock @0x13ddc0, SpinWaitUntil @0x13dec0, SetFrameRate
-// @0x13dee0, TrySetFrameRate @0x13df00 and ::WaitKeyEdge @0x13df30 moved to
-// src/Wap32/GameApp.cpp in wave4-K: their text is A-B-A-woven into the GameApp
-// obj between CGameMgr::Close/InitTimeFields - dossier #14E. RezMgr::MakeImageKey
-// @0x13e5d0 moved to src/DDrawMgr/DDSurface.cpp - text-contained in the DIRSURF
-// obj, dossier #14G.)
+// (WAP32::CGameMgr::PerFrameTick @0x13ddc0 (ex "RezMgr::UpdateClock"; the base
+// vtable slot 4), SpinWaitUntil @0x13dec0, SetFrameRate @0x13dee0, TrySetFrameRate
+// @0x13df00 and ::WaitKeyEdge @0x13df30 live in src/Wap32/GameApp.cpp (wave4-K):
+// their text is A-B-A-woven into the GameApp obj between CGameMgr::Close/
+// InitTimeFields - dossier #14E. MakeImageKey @0x13e5d0 moved to
+// src/DDrawMgr/DDSurface.cpp - text-contained in the DIRSURF obj, dossier #14G.)
 
 // (CRezDir::FindEntry @0x13c080 and CRezDirNode::Load @0x13a0f0 moved to
 // src/Bute/SymTab.cpp in wave4-K: both are text-contained in the ButeMgr sym
