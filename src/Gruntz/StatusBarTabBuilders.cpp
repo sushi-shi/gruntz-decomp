@@ -292,7 +292,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     } else {
         m_4 = 1;
     }
-    m_3c = p10;
+    m_rowIndex = p10;
     m_40 = p11;
     m_54 = onLeft;
     if (onLeft == 0) {
@@ -305,7 +305,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         } else {
             v = (CImage*)n->m_14[1];
         }
-        m_30 = v;
+        m_topFrame = v;
         m_50 = -1;
         m_48 = (p7 - p5) / 2 + parent->m_18;
     } else {
@@ -318,16 +318,16 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         } else {
             v = (CImage*)n->m_14[1];
         }
-        m_30 = v;
+        m_topFrame = v;
         m_50 = 1;
         m_48 = parent->m_10 - (p7 - p5) / 2;
     }
     m_4c = p11 * 0x12 + 0xd1;
-    if (m_30 == 0) {
+    if (m_topFrame == 0) {
         return 0;
     }
     m_44 = p12;
-    m_38 = -1;
+    m_sampledValue = -1;
     m_58 = BuildHandle();
     return 1;
 }
@@ -336,8 +336,8 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
 // CSBI_SideTab::Reset (0xe9800): drop the resolved config + frame. Out-of-line (matcher-5).
 RVA(0x000e9800, 0x9)
 void CSBI_SideTab::Reset() {
-    m_30 = 0;
-    m_34 = 0;
+    m_topFrame = 0;
+    m_bottomFrame = 0;
 }
 
 // vslot 4: (re)build the +0x58 draw gate from a sibling builder (BuildHandle, now
@@ -368,7 +368,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == 0) {
         return 0;
     }
-    CSideTabGruntRec* unit = g_gameReg->m_unitTable->m_units[m_40 + 15 * m_3c];
+    CSideTabGruntRec* unit = g_gameReg->m_unitTable->m_units[m_40 + 15 * m_rowIndex];
     if (unit == 0) {
         ((CStatusBarMgr*)m_2c)->ClearStat(m_40);
         return 0;
@@ -403,7 +403,7 @@ i32 CSBI_SideTab::BuildHandle() {
             val = (hp <= 0 ? 1 : 0) + 0x26;
         }
     }
-    if (m_38 == val) {
+    if (m_sampledValue == val) {
         return 1;
     }
     CObject* gm_ob = 0;
@@ -415,8 +415,8 @@ i32 CSBI_SideTab::BuildHandle() {
     } else {
         glyph = (i32)gm->m_frames.m_pData[val];
     }
-    m_38 = val;
-    m_34 = (CImage*)glyph;
+    m_sampledValue = val;
+    m_bottomFrame = (CImage*)glyph;
     return 1;
 }
 
@@ -432,8 +432,8 @@ RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render(i32 z) {
     if (m_58) {
         i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
-        m_30->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);
-        m_34->RenderFrame((void*)ctx, (void*)(m_48 + m_50), (void*)m_4c, 0);
+        m_topFrame->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);
+        m_bottomFrame->RenderFrame((void*)ctx, (void*)(m_48 + m_50), (void*)m_4c, 0);
     }
     return 1;
 }

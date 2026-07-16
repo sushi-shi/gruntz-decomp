@@ -50,7 +50,7 @@ class CDDrawShadeBlit;
 // BltEx receiver (ctx->m_2c), so the shared local below re-derives nothing.
 struct CGooRenderCtx {
     char m_pad0[0x2c];
-    CDDSurface* m_2c; // +0x2c  back-buffer surface (BltEx `this`)
+    CDDSurface* m_backBuffer; // +0x2c  back-buffer surface (BltEx `this`)
 };
 SIZE_UNKNOWN(CGooRenderCtx);
 
@@ -58,7 +58,7 @@ SIZE_UNKNOWN(CGooRenderCtx);
 // context (RenderFrame arg + the back-buffer holder above).
 struct CGooDrawable {
     char m_pad0[0x14];
-    CGooRenderCtx* m_14; // +0x14  render context
+    CGooRenderCtx* m_renderCtx; // +0x14  render context
 };
 SIZE_UNKNOWN(CGooDrawable);
 
@@ -76,7 +76,7 @@ class CSpriteRefTable;      // <Gruntz/SpriteRefTable.h>
 SIZE_UNKNOWN(CSbiFrameSet);
 struct CSbiFrameSet {
     char m_pad0[0x14];
-    CImage** m_14; // +0x14  frame pointer array (indexed by the serialized frame index)
+    CImage** m_frames; // +0x14  frame pointer array (indexed by the serialized frame index)
     char m_pad18[0x64 - 0x18];
     i32 m_64; // +0x64  low frame index
     i32 m_68; // +0x68  high frame index
@@ -84,18 +84,18 @@ struct CSbiFrameSet {
 
 struct CGooGameMgr {
     char m_pad0[0x4];
-    CGooDrawable* m_4; // +0x04  active drawable
+    CGooDrawable* m_drawable; // +0x04  active drawable
     char m_pad8[0x10 - 0x8];
-    CDDrawWorkerRegistry* m_10; // +0x10  name->frame-set registry (Serialize)
+    CDDrawWorkerRegistry* m_frameSetRegistry; // +0x10  name->frame-set registry (Serialize)
     char m_pad14[0x1c - 0x14];
-    CDDrawPtrCollections* m_1c; // +0x1c  surface pool (Serialize mode-8 MakeAndAddB)
+    CDDrawPtrCollections* m_surfacePool; // +0x1c  surface pool (Serialize mode-8 MakeAndAddB)
 };
 SIZE_UNKNOWN(CGooGameMgr);
 struct CGooGameReg {
     char m_pad0[0x30];
-    CGooGameMgr* m_30; // +0x30  active game manager
+    CGooGameMgr* m_gameMgr; // +0x30  active game manager
     char m_pad34[0x74 - 0x34];
-    CSpriteRefTable* m_74; // +0x74  sprite/animation ref table (Serialize mode-8 GetSel)
+    CSpriteRefTable* m_refTable; // +0x74  sprite/animation ref table (Serialize mode-8 GetSel)
     // +0x158  the g_focusedGruntSentinel-keyed selector table (mode-8; raw offset access)
 };
 SIZE_UNKNOWN(CGooGameReg);

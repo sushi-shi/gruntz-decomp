@@ -66,9 +66,9 @@ public:
     // The field init retail's inline ctor did at the CStatzTabBuilder::Build new-site (the
     // base CStatusBarItem ctor already zeroes m_4/m_8/m_24/m_28).
     CSBI_SideTab() {
-        m_30 = 0;
-        m_34 = 0;
-        m_38 = -1;
+        m_topFrame = 0;
+        m_bottomFrame = 0;
+        m_sampledValue = -1;
         m_44 = -1;
     }
     virtual ~CSBI_SideTab() OVERRIDE; // slot 0
@@ -108,10 +108,10 @@ public:
     // base region m_0..0x2f comes from CStatusBarItem (incl. m_2c, the owner slot that
     // inherited slot-2 Setup fills - BuildHandle reads it as the empty-slot fallback
     // notify target via ((CSBI_RectOnly*)m_2c)); leaf fields start at +0x30.
-    CImage* m_30; // +0x30  top frame handle
-    CImage* m_34; // +0x34  bottom frame handle (resolved glyph)
-    i32 m_38;     // +0x38  tracked sampled value
-    i32 m_3c;     // +0x3c  unit-table row index (stride 15)
+    CImage* m_topFrame; // +0x30  top frame handle
+    CImage* m_bottomFrame; // +0x34  bottom frame handle (resolved glyph)
+    i32 m_sampledValue;     // +0x38  tracked sampled value
+    i32 m_rowIndex;     // +0x3c  unit-table row index (stride 15)
     i32 m_40;     // +0x40  unit-table column index
     i32 m_44;     // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
     i32 m_48;     // +0x48  draw x

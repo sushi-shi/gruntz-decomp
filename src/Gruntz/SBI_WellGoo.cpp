@@ -76,7 +76,7 @@ i32 CSBI_WellGoo::Tick() {
         return 1;
     }
 
-    CGooRenderCtx* ctx = g_gameReg->m_30->m_4->m_14;
+    CGooRenderCtx* ctx = g_gameReg->m_gameMgr->m_drawable->m_renderCtx;
     m_baseFrame->RenderFrame((void*)ctx, (void*)m_drawX, (void*)(m_rect14.m_c + 3), 0);
 
     // Goo fill height: a fraction of the (m_rect14.m_c - m_rect14.m_4) progress,
@@ -93,7 +93,7 @@ i32 CSBI_WellGoo::Tick() {
 
     m_drawGuard++;
     m_blitGuard++;
-    ctx->m_2c->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, 0);
+    ctx->m_backBuffer->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, 0);
     m_blitGuard--;
     m_drawGuard--;
 
@@ -127,7 +127,7 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
-    CGooGameMgr* mgr = g_gameReg->m_30; // cached across the calls (retail spills it @[esp+0x14])
+    CGooGameMgr* mgr = g_gameReg->m_gameMgr; // cached across the calls (retail spills it @[esp+0x14])
     if (mgr == 0) {
         return 0;
     }
@@ -147,7 +147,7 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             memset(buf, 0, 0x80);
             idx = 0;
             if (m_fgFrame != 0) {
-                mgr->m_10->AnyValueMatches_155630((i32)m_fgFrame, (i32)buf, (i32)&idx);
+                mgr->m_frameSetRegistry->AnyValueMatches_155630((i32)m_fgFrame, (i32)buf, (i32)&idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -155,7 +155,7 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             memset(buf, 0, 0x80);
             idx = 0;
             if (m_baseFrame != 0) {
-                mgr->m_10->AnyValueMatches_155630((i32)m_baseFrame, (i32)buf, (i32)&idx);
+                mgr->m_frameSetRegistry->AnyValueMatches_155630((i32)m_baseFrame, (i32)buf, (i32)&idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -174,9 +174,9 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 CSbiFrameSet* set = 0;
-                ((CMapStringToPtr*)((char*)mgr->m_10 + 0x10))->Lookup(buf, (void*&)set);
+                ((CMapStringToPtr*)((char*)mgr->m_frameSetRegistry + 0x10))->Lookup(buf, (void*&)set);
                 if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
-                    m_fgFrame = set->m_14[idx];
+                    m_fgFrame = set->m_frames[idx];
                 } else {
                     m_fgFrame = 0;
                 }
@@ -188,9 +188,9 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 CSbiFrameSet* set = 0;
-                ((CMapStringToPtr*)((char*)mgr->m_10 + 0x10))->Lookup(buf, (void*&)set);
+                ((CMapStringToPtr*)((char*)mgr->m_frameSetRegistry + 0x10))->Lookup(buf, (void*&)set);
                 if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
-                    m_baseFrame = set->m_14[idx];
+                    m_baseFrame = set->m_frames[idx];
                 } else {
                     m_baseFrame = 0;
                 }
@@ -201,14 +201,14 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         }
         case 8: {
             // RESOLVE (post-load): remake the goo surface + rebind each frame's shade node.
-            m_gooSrc = mgr->m_1c->MakeAndAddB(0x14, 5, 0x10, 0, -1);
+            m_gooSrc = mgr->m_surfacePool->MakeAndAddB(0x14, 5, 0x10, 0, -1);
             if (m_gooSrc == 0) {
                 return 0;
             }
             i32 sel = *(i32*)((char*)g_gameReg + 0x158 + (g_curPlayer * 71) * 8);
-            i32 node = g_gameReg->m_74->GetSel(sel, 0);
+            i32 node = g_gameReg->m_refTable->GetSel(sel, 0);
             if (node == 0) {
-                node = g_gameReg->m_74->GetSel(1, 0);
+                node = g_gameReg->m_refTable->GetSel(1, 0);
             }
             CImage* fr = (CImage*)m_30;
             if (fr->m_owned != 0) {
@@ -246,7 +246,7 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_gooSrc != 0) {
-        ((CGooGameMgr*)m_24)->m_1c->RemoveItemA(m_gooSrc);
+        ((CGooGameMgr*)m_24)->m_surfacePool->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;
     }
 }
@@ -261,7 +261,7 @@ CSBI_WellGoo::~CSBI_WellGoo() {
 RVA(0x00104c80, 0x1f)
 void CSBI_WellGoo::Free() {
     if (m_gooSrc != 0) {
-        ((CGooGameMgr*)m_24)->m_1c->RemoveItemA(m_gooSrc);
+        ((CGooGameMgr*)m_24)->m_surfacePool->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;
     }
 }
