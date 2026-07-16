@@ -108,7 +108,6 @@ void ShowHudMessage(
 // CSpriteFactoryHolder): m_pages (+0x04) the page sub-manager, m_8 (+0x08) the
 // object-group render broadcaster, m_28 (+0x28) the cue host whose m_2c is the
 // held SoundStream. (The former BzSink view + its BzSink8 placeholder vtable are
-// dissolved - see <Gruntz/BzState.h>.)
 
 // ===========================================================================
 // ShowLevelCompleteMessage @0x1c9d0 - draws the per-slot ready/template overlays,

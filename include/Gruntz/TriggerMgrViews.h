@@ -93,7 +93,6 @@ struct CTmDisplay {
 // gone - m_2dc is typed CStatusBarMgr* so the method calls need no per-site cast.
 
 // (The `CTmWorld` FIELD view of g_gameReg->m_curState and its `CTmScoreSub` m_3f4
-//  sub-object view are DISSOLVED, 2026-07-15: m_curState IS the canonical CPlay
 //  (<Gruntz/Play.h>) - its methods were already folded (LoadCursorSprites/ArmSnapshot/
 //  ResetGoals/OnRegion4/FlushPendingOps), and its FIELDS map member-for-member:
 //  m_2dc==CPlay::m_guts (CStatusBarMgr), +0x384==CPlay::m_anchors[4], m_3f4==CPlay::
@@ -143,7 +142,6 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 //  AnimWorkerObj::m_logic as the bound logic leaf. CreateSprite RETURNS CGameObject*, so the
 //  (CTmCell*) casts on its result were wrong outright: the deleted CTmCell view had
 //  conflated the SPRITE with the LOGIC the sprite carries.)
-// (CTmLevel / CTmLevelView are GONE - DISSOLVED 2026-07-15 onto the canonicals.
 //  CTmLevel WAS the world holder CSpriteFactoryHolder (<Gruntz/GameRegistry.h>): all
 //  three members land on it at identical offsets AND names (m_8 CSpriteFactory* /
 //  m_24 the level / m_28 CSndHost*). CTmLevelView WAS the canonical CGameLevel

@@ -42,7 +42,6 @@ extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked
 // slot void*, since it is a genuinely heterogeneous reused slot - ~10 TUs cast it to the
 // type each needs, so it stays void* on the shared class). LoadGruntEffectSprites indexes
 // it by the "SecretColor" bute value to tint the wormhole. The former CGlitterMgr /
-// CGlitterMgrM30 / CGlitterMgrSet views are DISSOLVED: the sprite factory (m_world->m_8,
 // a CSpriteFactory via GruntSoundCat) and selection source (m_74, CSpriteRefTable) are the
 // real WwdGameReg fields, reached directly; only this local color table remains.
 // CGlitterColorTable is declared in <Gruntz/GameMode.h> (included above).

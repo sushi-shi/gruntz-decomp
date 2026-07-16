@@ -18,7 +18,6 @@
 
 // The active scroll "view" (pm->m_world->m_24->m_mainPlane, and the back-plane g_64c27c)
 // IS the canonical CLevelPlane (CDDrawWorkerHost): the former MgrSub/MgrSub2/ScrollView
-// .cpp-local views are DISSOLVED - MgrSub is m_world (CSpriteFactoryHolder), MgrSub2 its
 // +0x24 CGameLevel, and every ScrollView field maps to an already-named plane member:
 //   m_flags@08, m_scrollX/Y@10/14 -> m_scaledX/Y, m_scaleX/Y@18/1c, m_clampX/Y@30/34 ->
 //   m_wrapW/H, m_boundL/T/R/B@40/44/48/4c -> m_originX/originY/extentX/extentY,

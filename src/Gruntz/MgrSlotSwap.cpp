@@ -14,7 +14,6 @@
 
 // The registry plane table (g_gameReg->m_world->m_24->m_mainPlane) is the shared
 // world-plane CLevelPlane: value plane m_tileGrid indexed by offset plane m_colOffsets.
-// (The RegM30 / RegLevel .cpp-local views are DISSOLVED: g_gameReg->m_world IS the
 // canonical CSpriteFactoryHolder, its +0x24 m_24 IS CGameLevel, and CGameLevel::m_mainPlane
 // @+0x5c IS the plane - all reached cast-free.)
 

@@ -42,7 +42,6 @@ struct CMenuListNode {
 };
 
 // The name->page catalog is reached cast-free through the canonicals (the former
-// CMenuHost / CMenuCatalog views are DISSOLVED - the CImageRegistry blocker is resolved,
 // it is now the real CDDrawWorkerRegistry typedef in ResMgr.h):
 //   * m_owner IS CSpriteFactoryHolder (== CState::m_c / CChatBox::m_page; GameRegistry.h);
 //   * m_owner->m_10 IS CImageRegistry (the image/name registry @+0x10);

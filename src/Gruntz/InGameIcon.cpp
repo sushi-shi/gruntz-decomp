@@ -58,7 +58,6 @@ extern "C" {}
 // The current game-state (g_gameReg->m_curState) IS the canonical CPlay during play;
 // the icon-setup path reads its level index (CState::m_levelIndex @+0x1c) and stores the
 // four WarpStone target pairs into CPlay::m_anchors[4] (@+0x384, stride 8, {m_x, m_y}).
-// The former IconLevelState .cpp-local view is DISSOLVED onto CPlay (a per-mode downcast
 // of the CState* base - single inheritance, address-identical).
 
 // ===========================================================================

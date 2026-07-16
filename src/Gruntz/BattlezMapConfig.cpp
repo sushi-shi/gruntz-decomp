@@ -89,11 +89,9 @@ void* __stdcall ListNodeAdvance(void** pos);
 // and +0x30 (index 12) - are exactly that interface's Read (mode 7) / Write (mode 4),
 // and the two kind validators it gates on are this class's own Deserialize_02b950
 // (kind 7) / Serialize_02b420 (kind 4). The former `CSerialArchive` view (11 nameless filler
-// virtuals + Emit2c/Emit30) was a second, identical model of it - dissolved.
 
 // The unit's type/anim sub-object (grunt->m_objAux, +0x14) is the real AnimWorkerObj
 // (<Gruntz/UserLogic.h>): its +0x1c is the anim-name index g_typeColl resolves. The
-// former `AnimWorkerObj` view is dissolved onto it.
 
 // The grid units ARE ::CGrunt (<Gruntz/Grunt.h>, included above) - the former
 // `CGrunt` view was a 40-field second model of it, and the file already had to cast
@@ -103,7 +101,6 @@ void* __stdcall ListNodeAdvance(void** pos);
 // +0x1ec/+0x1f0, m_gruntKind +0x258, m_defenderState +0x2d4, m_arrivalCol/Row
 // +0x2f0/+0x2f4, and the occupied-coord list at +0x31c), and its +0x10/+0x14 "level
 // geometry"/"anim" sub-objects are CUserLogic::m_object (CGameObject) / m_objAux
-// (AnimWorkerObj). Dissolved. The view's four hand-declared list fields
 // (m_31c/m_320/m_324/m_coordCount) are the INTERIOR of CGrunt's real MFC CPtrList
 // m_31c, so they are gone: this TU now reads the list through the real member and
 // through main's inline accessors (CoordHead/CoordTail/CoordCount).
@@ -116,7 +113,6 @@ void* __stdcall ListNodeAdvance(void** pos);
 // The {x,y} pair is the canonical Coord (<Gruntz/CoordNode.h>); the tile record is
 // the canonical BrickzCell (<Gruntz/Brickz.h>, the 0x1c-byte cell: m_0 flags word,
 // m_10 bute type code). The four identical local pair views (Coord / Candidate /
-// CCoordXY / ProbePair) and the two tile views (Tile / CArriveCell) are dissolved.
 //
 // The trigger-mgr's candidate list is m_baseList - a real MFC CPtrList (RTTI-proven:
 // the [0x1b4867, 0x1b4b43) band's ctor stamps ??_7CPtrList@@6B@). Its cells are walked
@@ -286,7 +282,6 @@ extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 // {next@+0, data@+8}, payloads are real ::CGameObject (m_flags +0x08, m_screenX/Y
 // +0x5c/+0x60, m_7c the AnimWorkerObj whose +0x10 holds the object's FACTORY fn-ptr -
 // the type key the filters compare - and m_124 the per-map id). The former CQueueProbeNode
-// / CGameObject / AnimWorkerObj / CLevelList / CBrickzGrid / CLevelSpawnInfo views are dissolved
 // onto those real classes (CBrickzGrid was the CBrickzGrid; its "+0xc" is m_width).
 // ---------------------------------------------------------------------------
 // The +0x7c aux's +0x10 slot holds the object type's registered FACTORY function
@@ -2317,10 +2312,8 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
 // FindChild/FindByField0C receiver; the band index is m_curCell. That IS the head of
 // CBattlezMapConfig's run view (+0x08/+0x0c/+0x14/+0x18), so `CBattlezMapConfig` was a view of
 // THIS class - ResolveArrival is now its method and the seven CArrive* sub-views are
-// dissolved. (CRect was the canonical CRect; CArriveFinder was empty.)
 
 // The former CTileTriggerRecord view conflated the TWO finders' distinct return types
-// and is DISSOLVED onto the canonicals each really returns (both already declared in
 // <Gruntz/TileTriggerContainer.h>, so the casts vanish):
 //   * FindChild (0x116ee0) returns CTileTriggerSwitchLogic* - the r->m_04 read is its
 //     type-id field (identical to the existing FindChild use at ResolveArrival ~0x1129);
@@ -4545,7 +4538,6 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
 // and +0x0c the width/height grid (that is CBrickzGrid == CMapMgr) - the same two head
 // slots as CBattlezMapConfig and as this class's run view. Step is now its method; the four
 // sub-views (CGameObject = the grunt's CGameObject, Coord = Coord, CBrickzGrid =
-// CMapMgr, CTriggerMgr = CTriggerMgr) are dissolved.
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
@@ -5351,7 +5343,6 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
 // The receiver IS CContainerErr (<Wap32/zBitVec.h>): vptr @+0x00, CVariantSlot*
 // m_errSink @+0x04 - exactly the `ZErrTarget` view's two slots, and the body is the
 // verbatim tail of the inlined grow-on-miss path (CActReg::ResolveEntry). View
-// dissolved; the CVariantSlot cast falls out with it.
 RVA(0x00034960, 0x24)
 void CContainerErr::Report(i32 sentinel, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();

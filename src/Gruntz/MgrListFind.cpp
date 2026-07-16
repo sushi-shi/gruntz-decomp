@@ -3,7 +3,6 @@
 // m_gridY) matches the two query coordinates. Self-contained; g_gameReg is a reloc-masked
 // DATA load.
 //
-// The former MgrFindPayload / MgrFindNode / MgrFindList .cpp-local views are DISSOLVED
 // onto the canonicals (xref-proven, byte-identical shape):
 //   * MgrFindPayload IS CTmCandidate (<Gruntz/TriggerMgr.h>) - m_54/m_58/m_5c ARE
 //     m_gridX/m_gridY/m_occupied at the same offsets;

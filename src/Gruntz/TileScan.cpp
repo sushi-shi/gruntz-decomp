@@ -16,7 +16,6 @@
 
 // The scanned arg is a real CGrunt: m_2e8 the focus-slot id, m_dwell (+0x2ec) the
 // dwell timer compared to the threshold, m_10 the bound HUD/object (screen x/y @
-// +0x5c/+0x60). (The former CScanArg/CScanPos .cpp-local views are dissolved onto
 // CGrunt/CGruntHud - m_dwell @+0x2ec is the proven CGrunt signature.)
 //
 // CTileScan (the orphan-COMDAT scan owner, @identity-TODO) is declared in

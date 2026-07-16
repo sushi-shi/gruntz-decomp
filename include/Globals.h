@@ -251,7 +251,6 @@ extern char* g_haznBase;
 extern CHaznEntry* g_haznCur;
 extern i32 g_haznStride;
 extern i32 g_haznScratch;
-// (the ex-`g_toob*` registry-field globals are DISSOLVED: g_toobColl @0x24e978 is one
 // CActReg whose fields ARE those seven addresses; see src/Gruntz/ToobSpikez.cpp)
 extern i32 g_loadedFlag;
 extern CVariantSlot* g_vtrigColl2;

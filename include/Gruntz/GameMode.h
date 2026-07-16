@@ -273,7 +273,6 @@ VTBL(CMenuState, 0x1e9e84);
 // CGdiObject::DeleteObject (0x1c6a5c - the former "CImageList::DeleteImageList"
 // misname; its Detach calls afxMapHGDIOBJ and the indirect call goes through the
 // GDI32 DeleteObject IAT slot), restamp ??_7CObject (0x1e8cb4). The former fake
-// `CImgHolder : CObject` view + its local CImageList decl are dissolved.
 
 // CCreditsState - the credits state. Render
 // is the canonical Render spine: input poll -> input-virtual bail -> cursor anim
