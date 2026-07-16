@@ -283,14 +283,14 @@ public:
 
 // ---------------------------------------------------------------------------
 // The embedded sub-object records the CDDrawChildGroup factories placement-construct
-// (ctor bodies at 0x15b270/0x15b2a0/0x15b2b0 in WwdObjMgr.cpp). Obj15b270 is the
+// (ctor bodies at 0x15b270/0x15b2a0/0x15b2b0 in WwdObjMgr.cpp). CWwdShadowRec is the
 // E-level SHADOW dirty-rect block at +0xb8: its m_8 (abs +0xc0) seeds the INT_MIN
 // sentinel the family dtors re-clear as m_c0, and its m_20 (abs +0xd8) the -1
-// disarm flag (m_d8). The +0x9c pair (CWwdSlot9c for the C/F kinds, Obj15b2b0
+// disarm flag (m_d8). The +0x9c pair (CWwdSlot9c for the C/F kinds, CWwdSlot9cA
 // for the A kind) is the sibling record at +0x9c.. (== the WwdGridNode region).
 // Kept as placement-ctor record views of E's member ranges: folding them into E
 // as real members requires inline member-ctor modeling of the 0x15b390 ctor
-// (deferred with that ctor's CWwdGameObj15b390 view).
+// (deferred with that ctor's CWwdGameObjBaseCtor view).
 // ---------------------------------------------------------------------------
 class CWwdSlot9c {
 public:
@@ -302,25 +302,25 @@ public:
     CWwdSlot9c(); // 0x15b2a0
 };
 SIZE_UNKNOWN(CWwdSlot9c);
-class Obj15b270 { // the E-level shadow dirty-rect block (+0xb8)
+class CWwdShadowRec { // the E-level shadow dirty-rect block (+0xb8)
 public:
-    Obj15b270(); // 0x15b270
+    CWwdShadowRec(); // 0x15b270
     char m_pad0[0x8];
     i32 m_8; // abs +0xc0 == CWwdGameObjectE::m_c0 (INT_MIN sentinel)
     char m_pad0c[0x20 - 0xc];
     i32 m_20; // abs +0xd8 == CWwdGameObjectE::m_d8 (-1 == disarmed)
 };
-SIZE_UNKNOWN(Obj15b270);
-class Obj15b2b0 { // the A kind's +0x9c sibling record
+SIZE_UNKNOWN(CWwdShadowRec);
+class CWwdSlot9cA { // the A kind's +0x9c sibling record
 public:
-    Obj15b2b0(); // 0x15b2b0
+    CWwdSlot9cA(); // 0x15b2b0
     char m_pad0[0x8];
     i32 m_8;
     i32 m_c;
     char m_pad10[0x18 - 0x10];
     i32 m_18;
 };
-SIZE_UNKNOWN(Obj15b2b0);
+SIZE_UNKNOWN(CWwdSlot9cA);
 
 // Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
 // A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).

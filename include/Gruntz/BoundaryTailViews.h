@@ -28,19 +28,10 @@
 // [CGruntzMgr+0x6c] == m_cmdSubMgr; the grid-snap blit chain is
 // m_38(CGruntzMgr)->m_world->m_level(CGameLevel)'s m_planeCtx/m_mainPlane.
 
-// 0xbdd0 - look a key up in arg1's embedded map (at +0x10) then dispatch.
-struct Entry_bdd0 {
-    char _0[0x10];
-    void* m_10; // 0x10
-};
-SIZE_UNKNOWN(Entry_bdd0);
-// (m_10 is the real ::CMapStringToPtr; its Lookup is 0x1b8438 - 0x1b8008 is
-// CMapStringToOb's, a pair the tree labels commonly invert.)
-struct Arg1_bdd0 {
-    char _0[0x10];
-    CMapStringToPtr m_10; // 0x10  ::CMapStringToPtr (its Lookup is 0x1b8438; mfc_class)
-};
-SIZE_UNKNOWN(Arg1_bdd0);
+// (The ex Arg1_bdd0/Entry_bdd0 pair for the 0xbdd0 Dispatch is DISSOLVED: they
+// were the canonical AmbSoundMapHolder/AmbSoundRecord
+// (<Gruntz/RandomAmbientSound.h>) - the same +0x10 ::CMapStringToPtr holder and
+// +0x10 DirectSoundMgr* record the SetupFromMap path already used.)
 
 // 0x118330 - populate an output record from three successive iterator reads.
 struct Node118330 {

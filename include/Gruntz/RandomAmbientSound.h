@@ -56,23 +56,21 @@ struct AmbientPoint {
     i32 y; // +0x04
 };
 
-// A CMapPtrToPtr-style table (the lookup at 0x1b8438, __thiscall ret 8). The
-// SetupFromMap path resolves the mgr record by key out of the holder's table
-// embedded at +0x10, so `add ecx,0x10; call Lookup` falls out.
-struct AmbSoundMap {
-    i32 Lookup(void* key, void** out); // 0x1b8438 (real map method; devs shape)
-};
+// The keyed sound-map holder both resolve paths (Dispatch @0xbdd0 and
+// SetupFromMap @0xc4b0) look records up in: its +0x10 is the REAL MFC
+// ::CMapStringToPtr (Lookup 0x1b8438, `add ecx,0x10; call Lookup` falls out;
+// the ex hand-rolled AmbSoundMap Lookup-decl view and the ex Arg1_bdd0
+// placeholder twin - BoundaryTailViews.h - are both dissolved onto this).
 struct AmbSoundMapHolder {
     char m_pad00[0x10];
-    AmbSoundMap m_map; // +0x10  the lookup table
+    CMapStringToPtr m_map; // +0x10  the key -> AmbSoundRecord* table
 };
 // The mgr record the map resolves to; its +0x10 is the DirectSoundMgr handle.
+// (== the ex Entry_bdd0 view.)
 struct AmbSoundRecord {
     char m_pad00[0x10];
     DirectSoundMgr* m_mgr; // +0x10
 };
-
-struct Arg1_bdd0; // the keyed-map holder Dispatch resolves against (<Gruntz/BoundaryTailViews.h>)
 
 VTBL(CRandomAmbientSound, 0x001e713c);
 class CRandomAmbientSound : public CAmbientSound {
@@ -85,13 +83,21 @@ public:
     // then Setup(record->m_10, a3, a4, box, a6). Null return on a miss. (This is the
     // real home of the old CObj_bdd0::Dispatch placeholder - `this` is a CRandomAmbientSound,
     // proven by the tail-call into Setup @0xbe50.)
-    void* Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, AmbientBox* box, i32 a6);
+    void*
+    Dispatch(AmbSoundMapHolder* a1, const char* key, i32 a3, i32 a4, AmbientBox* box, i32 a6);
     // Update(playFlag, pos, kind): start or stop the sound this frame. 0x00c2a0.
     virtual void Update(i32 playFlag, i32 pos, i32 kind) OVERRIDE; // slot 3 (0x00c2a0)
     // The positional variant's entry points (same CAmbientSound base layout, but
     // m_40/m_44 hold an anchor position instead of the interval roller):
     void
-    SetupFromMap(AmbSoundMapHolder* holder, void* key, i32 a3, i32 a4, AmbientPoint* pos, i32 a5);
+    SetupFromMap(
+        AmbSoundMapHolder* holder,
+        const char* key,
+        i32 a3,
+        i32 a4,
+        AmbientPoint* pos,
+        i32 a5
+    );
     i32 SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5);
     void UpdateAt(i32 x, i32 y, i32 force); // 0x00c5b0  position-driven volume/pan
     void StopPos(i32 obj);                  // 0x00c9d0  request stop via slot 2

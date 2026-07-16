@@ -18,12 +18,12 @@
 // <Wwd/WwdSpatialMgr.h>); this TU only hosts the bodies (strictly RVA-ascending). The
 // tile-probe macro + tile-code defines are duplicated file-local from GameLevel.cpp
 // (both TUs inline the same retail copy-paste probe).
-#include <Wwd/SubWidget168080.h> // the 0x44 grid alloc-view (transient vtable; dtor in WwdGrid.cpp)
+#include <Wwd/WwdGridShell.h> // the 0x44 grid alloc-view (transient vtable; dtor in WwdGrid.cpp)
 #include <Wwd/WwdSpatialMgr.h> // canonical CWwdSpatialMgr (the plane grid/scroll worker; Init 0x168080)
 #include <Gruntz/WwdGrid.h> // CWwdGrid (the grids' final type; Setup == CWwdGrid::CWwdGrid @0x1915c0)
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Wap32/Object.h>             // CObject grand-base (SubWidget_168080's base)
+#include <Wap32/Object.h>             // CObject grand-base (CWwdGridShell's base)
 #include <Gruntz/UserLogic.h>         // canonical CGameObject (the movement target)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (the chain owner)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
@@ -652,8 +652,8 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 // ===========================================================================
 // CWwdSpatialMgr::Init (0x168080, __thiscall, ret 0x20 = 8 args): bring up the
 // 0xb8-byte plane grid/scroll worker. Allocate the three per-plane grids and
-// two-phase-construct each - a raw SubWidget_168080 alloc (its inline default ctor
-// stamps a transient ??_7SubWidget_168080 @0x1f0310 + zeroes m_4), then Setup ==
+// two-phase-construct each - a raw CWwdGridShell alloc (its inline default ctor
+// stamps a transient ??_7CWwdGridShell @0x1f0310 + zeroes m_4), then Setup ==
 // CWwdGrid::CWwdGrid(rc.left, rc.top, rc.right, rc.bottom, cellW, cellH) @0x1915c0,
 // which re-stamps ??_7CWwdGrid @0x1f0328 and fills the grid over `*rc` with p3/p4/p5's
 // cell sizes. Then seed each grid's world rect (0,0,dim-1) + scroll origin (dim/2) from
@@ -663,19 +663,19 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 // @0x58, scroll @0x68]; the fake `?Init@Builder_168080@@` name also left RebuildPlanes'
 // Init call unresolved. `Pt_168080` was a plain i32[2] size pair.)
 //
-// The grids: SubWidget_168080 is the CONCRETE grid actually allocated (its own vtable
-// ??_7SubWidget_168080 @0x1f0310 implements the pure OnFound @0x168060 that the ABSTRACT
+// The grids: CWwdGridShell is the CONCRETE grid actually allocated (its own vtable
+// ??_7CWwdGridShell @0x1f0310 implements the pure OnFound @0x168060 that the ABSTRACT
 // CWwdGrid @0x1f0328 leaves __purecall). The two are byte-faithfully modeled as
-// layout-sharing siblings [both :CObject - ~SubWidget @0x1682a0 does NOT emit CWwdGrid's
+// layout-sharing siblings [both :CObject - ~CWwdGridShell @0x1682a0 does NOT emit CWwdGrid's
 // 0x1f0328 base stamp, proving it is not a CWwdGrid subobject], so storing the concrete
 // grid into the polymorphic CWwdGrid* field WwdSpatialMgr.cpp drives is a reinterpret of
-// two layout-identical siblings - the same honest residue as ~SubWidget's FreeBuckets
+// two layout-identical siblings - the same honest residue as ~CWwdGridShell's FreeBuckets
 // call. Setup @0x1915c0 (== CWwdGrid::CWwdGrid run as a re-init on the raw object; the
 // two-phase construction is not expressible in clean MSVC5 C++ - see WwdGrid.cpp 0x191770).
 //
 // @early-stop
 // regalloc residue (~92%, was 99.51% as the `Builder_168080` view): the view kept the
-// grids in fields it re-read through a SubWidget_168080-view cast (a fake view of the
+// grids in fields it re-read through a CWwdGridShell-view cast (a fake view of the
 // CWwdGrid* fields); modeling the concrete grid honestly with typed locals keeps cl's
 // grid pointers in registers where retail re-reads them from [this+4/8/c]. A register-
 // vs-memory scheduling coin-flip on the null/Setup `this`, not source-steerable without
@@ -683,11 +683,11 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 RVA(0x00168080, 0x1f6)
 i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6, i32* p7, i32* p8) {
     if (a1) {
-        SubWidget_168080* g0 = new SubWidget_168080;
+        CWwdGridShell* g0 = new CWwdGridShell;
         m_grid0 = (CWwdGrid*)g0;
-        SubWidget_168080* g1 = new SubWidget_168080;
+        CWwdGridShell* g1 = new CWwdGridShell;
         m_grid1 = (CWwdGrid*)g1;
-        SubWidget_168080* g2 = new SubWidget_168080;
+        CWwdGridShell* g2 = new CWwdGridShell;
         m_grid2 = (CWwdGrid*)g2;
         if (g0 && g1 && g2 && g0->Setup(*rc, p3[0], p3[1]) && g1->Setup(*rc, p4[0], p4[1])
             && g2->Setup(*rc, p5[0], p5[1])) {

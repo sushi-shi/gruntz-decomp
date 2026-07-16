@@ -144,8 +144,8 @@ extern "C" {
         while (n != 0) {                                                                           \
             CScanListNode* cur = n;                                                                \
             n = cur->m_next;                                                                       \
-            if (cur->m_8 != 0) {                                                                   \
-                g_coordPool.Push((void*)(cur->m_8));                                               \
+            if (cur->m_coord != 0) {                                                               \
+                g_coordPool.Push(cur->m_coord);                                                    \
             }                                                                                      \
         }                                                                                          \
         m_31c.RemoveAll();                                                                         \
@@ -384,7 +384,7 @@ L_ed006:
 
 L_ed153:
     if (CoordCount() != 0) {
-        CScanCoord* coord = ((CScanNode324*)m_31c.GetHeadPosition())->m_8;
+        CScanCoord* coord = ((CScanListNode*)m_31c.GetHeadPosition())->m_coord;
         i32 col = coord->x;
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
@@ -1272,7 +1272,7 @@ L_ed006b:
 
 L_scanb:
     if (CoordCount() != 0) {
-        CScanCoord* coord = ((CScanNode324*)m_31c.GetHeadPosition())->m_8;
+        CScanCoord* coord = ((CScanListNode*)m_31c.GetHeadPosition())->m_coord;
         i32 col = coord->x;
         i32 row = coord->y;
         if (CellTargetable(col, row) != 0) {
@@ -2071,7 +2071,7 @@ i32 CGrunt::ArrivalScanC() {
 
 L_tailc:
     if (CoordCount() != 0) {
-        CScanCoord* coord = ((CScanNode324*)m_31c.GetHeadPosition())->m_8;
+        CScanCoord* coord = ((CScanListNode*)m_31c.GetHeadPosition())->m_coord;
         i32 col = coord->x;
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];

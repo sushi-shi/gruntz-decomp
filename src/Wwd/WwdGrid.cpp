@@ -5,7 +5,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/WwdGrid.h>
-#include <Wwd/SubWidget168080.h> // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
+#include <Wwd/WwdGridShell.h> // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
 #include <Gruntz/WwdGridIter.h>  // CWwdGridIter cursor - Start/Init/GetNext bodies live
                                  // here (0x191ad0..0x191c30, same obj as CWwdGrid); shared
                                  // with WwdSpatialMgr.cpp (its GetFirst/GetNext API driver)
@@ -35,8 +35,8 @@ extern "C" double pow(double, double);
 // ENTRY state (stamp-first, == retail), then FreeBuckets, then the ~CObject
 // grand-base re-stamp folds in. /GX frame from the destructible base subobject.
 // (eh-dtor-implicit-vptr-stamp-first.md.)
-// SubWidget_168080::~SubWidget_168080 @0x1682a0 - the SIBLING grid class's dtor (its own
-// 6-slot vtable ??_7SubWidget_168080 @0x1f0310; class in <Wwd/SubWidget168080.h>). Same
+// CWwdGridShell::~CWwdGridShell @0x1682a0 - the SIBLING grid class's dtor (its own
+// 6-slot vtable ??_7CWwdGridShell @0x1f0310; class in <Wwd/WwdGridShell.h>). Same
 // shape as ~CWwdGrid: stamp own vptr, free the bucket array, fold the CObject grand-base.
 // IDENTITY (vtable-owner probe): ??_7 @0x1f0310 slot 1 -> the sdd 0x168280 -> THIS body.
 // It was misbound as CWwdGrid::~CWwdGrid, which pushed the REAL ~CWwdGrid (0x168c10) onto
@@ -45,7 +45,7 @@ extern "C" double pow(double, double);
 // The FreeBuckets cast is the honest residue of the sibling's still-unmodelled layout
 // (it runs the same bucket-array teardown on the same offsets).
 RVA(0x001682a0, 0x46)
-SubWidget_168080::~SubWidget_168080() {
+CWwdGridShell::~CWwdGridShell() {
     ((CWwdGrid*)this)->FreeBuckets();
 }
 

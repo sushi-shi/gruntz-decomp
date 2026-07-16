@@ -71,7 +71,7 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
 // ===========================================================================
 RVA(0x001396f0, 0x1a)
 CParseSource* CParseSource::Init() {
-    new (&m_node1c) HashNode1396f0;
+    new (&m_node1c) CParseSlotHashNode;
     m_selfLink = 0;
     m_reader = 0;
     m_mapped = 0;

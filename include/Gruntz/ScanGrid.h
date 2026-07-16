@@ -85,19 +85,14 @@ struct CScanCoord {
 };
 SIZE_UNKNOWN(CScanCoord);
 
-// The grunt's current path node (grunt->m_324): +0x08 -> the {col,row} coord pair.
-struct CScanNode324 {
-    char _00[8];
-    CScanCoord* m_8; // +0x08 -> {col,row}
-};
-SIZE_UNKNOWN(CScanNode324);
-
-// A pending-coord list node (grunt->m_320 chain): +0x08 is the recycled coord-node
-// handle fed to the coord recycle pool's Drop.
+// A pending-coord list node (the m_31c chain): +0x08 owns the {col,row} coord
+// pair, recycled to the coord pool on drain. (The ex `CScanNode324` "current
+// path node" twin was THIS same node type - both casts target the SAME
+// m_31c.GetHeadPosition() - with +0x08 typed as the coord; one node, one shape.)
 struct CScanListNode {
     CScanListNode* m_next; // +0x00
     i32 _04;
-    i32 m_8; // +0x08 recycled coord-node handle
+    CScanCoord* m_coord; // +0x08  owned {col,row} pair (g_coordPool.Push on drain)
 };
 SIZE_UNKNOWN(CScanListNode);
 

@@ -53,13 +53,18 @@ public:
 // the parse-slot table hashes on this node. Init placement-constructs it (stamping the
 // vptr); its data slots are otherwise untouched. Real polymorphic (2 declared-only slots,
 // reloc-masked); VTBL binds the cl-emitted ??_7 to the delinked datum.
-SIZE_UNKNOWN(HashNode1396f0);
-struct HashNode1396f0 {
+// IDENTITY NOTE: this is the CHashElement shape (<Bute/Hash.h> - vptr + link pair +
+// owner + bucket; CSymLeafBuilder::m_node is the SAME +0x1c member of the SAME 0x3c
+// parse-slot memory) wearing the concrete parse-slot key-hash vtable; basing it on
+// CHashElement is the deferred deep fold (layout check: CHashElement's +0x14
+// m_record vs CParseSource's +0x30 field).
+SIZE_UNKNOWN(CParseSlotHashNode);
+struct CParseSlotHashNode {
     virtual void v0(); // slot 0
     virtual void v1(); // slot 1
     i32 m_data[4];     // node payload (+0x04..+0x13); untouched by Init
 };
-VTBL(HashNode1396f0, 0x001ef740);
+VTBL(CParseSlotHashNode, 0x001ef740);
 
 // struct (not class): the retail Init return mangles PAU (?Init@CParseSource@@QAEPAU1@XZ),
 // i.e. CParseSource is a struct, so the SymParser call site pairs by name.
@@ -87,7 +92,7 @@ struct CParseSource {
     ParseMappedSource* m_mapped;       // +0x10 mapped source
     i32 m_base;                        // +0x14 source base ptr
     i32 m_cursor;                      // +0x18 read cursor
-    HashNode1396f0 m_node1c;           // +0x1c embedded parse-slot hash-node (vptr @0x5ef740)
+    CParseSlotHashNode m_node1c;           // +0x1c embedded parse-slot hash-node (vptr @0x5ef740)
     CParseSource* volatile m_selfLink; // +0x30 self back-pointer (Init: 0 then this; volatile
                                        // pins the dead store the retail store-order depends on)
     ParseVReader* m_reader;            // +0x34 virtual reader

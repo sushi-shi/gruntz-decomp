@@ -23,7 +23,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawGroupNode (the broadcast child-list node)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // the CWwdGameObjectB owner (m_0c) real class
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
-#include <Wwd/WwdGameObjCtor.h>        // CWwdGameObj15b390 - the shared 0x15b390 base-object ctor
+#include <Wwd/WwdGameObjCtor.h>        // CWwdGameObjBaseCtor - the shared 0x15b390 base-object ctor
 
 // The render context RenderDot (0x1660f0) plots into IS the real CDDrawSurfacePair
 // (<DDrawMgr/DDrawSurfacePair.h>, already included): its clip extent m_10/m_14 ARE
@@ -294,7 +294,7 @@ CWwdGameObjectB::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int
     CWwdGameObjectA* result;
     if (obj != 0) {
         int root = m_0c; // the CLoadable owner int handle (== this->m_0c, the CDDrawSurfaceMgr)
-        new (obj) CWwdGameObj15b390(root, a1, a6);
+        new (obj) CWwdGameObjBaseCtor(root, a1, a6);
         result = (CWwdGameObjectA*)obj;
         // the embedded +0x1a0 CAniAdvanceCursor(owner=root, field04=a1, field08=a6): retail
         // INLINES the ctor here (no call), spelled out so the store shape matches; its 0x5f0128

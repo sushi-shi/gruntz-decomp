@@ -1,6 +1,6 @@
 // WwdFactoryObject.cpp - the 0x15b2c0-0x15ccc8 original TU (wave4-L dossier #15,
 // block I): the wwd object-lifecycle obj - the base-object ctors (CResolveNode
-// 3-arg / AnimWorkerObj 3-arg / CWwdGameObj15b390 / CAniAdvanceCursor), the five
+// 3-arg / AnimWorkerObj 3-arg / CWwdGameObjBaseCtor / CAniAdvanceCursor), the five
 // ??1CWwdGameObject[A-F] /GX destructors, the CWwdFactoryObject Release/Reset
 // pass + Notify, CDDrawBlitParam (init/setup/serialize), the animation Advance
 // cursor + its Clamp pair, and the Init/SetupDeferred/SetupFlagged out-of-lines.
@@ -24,7 +24,7 @@
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
 #include <Gruntz/SerialArchive.h>    // the shared CSerialArchive stream (Read/Write)
 #include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
-#include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker
+#include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObjBaseCtor/WwdAnimWorker
 #include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed - Advance's sound cue)
 #include <Globals.h>
 
@@ -122,7 +122,7 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 }
 
 // ---------------------------------------------------------------------------
-// CWwdGameObj15b390::Construct (0x15b390) - the shared CWwdGameObject base-object
+// CWwdGameObjBaseCtor::Construct (0x15b390) - the shared CWwdGameObject base-object
 // ctor the wide-object factories call (CreateObject_1598d0/166640; also
 // WwdFile::ReadPlaneObjects 0x162af0). A REAL /GX ctor: the CResolveNode base
 // subobject stamps ??_7CResolveNode (0x5efbc0) + its +0x04..+0xd8 fields, then the
@@ -137,7 +137,7 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 // out-of-lining the worker ctor would mismatch retail's inline stores.
 // docs/patterns/eh-state-numbering-base.md + throwing-operator-new-eh-state-transition.md.
 RVA(0x0015b390, 0x128)
-CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c) {
+CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(int a, int b, int c) : WwdCtorBase(a, b, c) {
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     m_5c = static_cast<int>(0x80000000);
     m_78 = 0;

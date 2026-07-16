@@ -30,7 +30,7 @@
 #include <Rez/RezMgr.h>      // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 #include <Gruntz/UserLogic.h>         // CUserBase (real base of CAmbientSound)
-#include <Gruntz/BoundaryTailViews.h> // Arg1_bdd0/Entry_bdd0 (0xbdd0 Dispatch arg views)
+#include <Gruntz/BoundaryTailViews.h> // Iter118330/Node118330 (boundary-tail iterator views)
 #include <Globals.h>                  // g_posSoundReq
 
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
@@ -461,7 +461,7 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
 // PROVES `this` is a CRandomAmbientSound. 100% EXACT.
 RVA(0x0000bdd0, 0x53)
 void* CRandomAmbientSound::Dispatch(
-    Arg1_bdd0* a1,
+    AmbSoundMapHolder* a1,
     const char* key,
     i32 a3,
     i32 a4,
@@ -469,12 +469,12 @@ void* CRandomAmbientSound::Dispatch(
     i32 a6
 ) {
     void* out_ob = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
-    a1->m_10.Lookup(key, out_ob);
-    Entry_bdd0* out = (Entry_bdd0*)out_ob;
+    a1->m_map.Lookup(key, out_ob);
+    AmbSoundRecord* out = (AmbSoundRecord*)out_ob;
     if (out == 0) {
         return (void*)out;
     }
-    return (void*)Setup((DirectSoundMgr*)out->m_10, a3, a4, box, a6);
+    return (void*)Setup(out->m_mgr, a3, a4, box, a6);
 }
 
 // ---------------------------------------------------------------------------
@@ -808,14 +808,14 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
 RVA(0x0000c4b0, 0x53)
 void CRandomAmbientSound::SetupFromMap(
     AmbSoundMapHolder* holder,
-    void* key,
+    const char* key,
     i32 a3,
     i32 a4,
     AmbientPoint* pos,
     i32 a5
 ) {
     void* found = 0;
-    holder->m_map.Lookup(key, &found);
+    holder->m_map.Lookup(key, found);
     if (found != 0) {
         SetupPos(((AmbSoundRecord*)found)->m_mgr, a3, a4, pos, a5);
     }
@@ -1198,7 +1198,6 @@ CWorldSoundSet::~CWorldSoundSet() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 // (CAmbientSound/CAmbientPosSound/CRandomAmbientSound carry SIZE/VTBL in their
 // canonical headers.)
-SIZE_UNKNOWN(AmbSoundMap);
 SIZE_UNKNOWN(AmbSoundMapHolder);
 SIZE_UNKNOWN(AmbSoundRecord);
 SIZE_UNKNOWN(AmbientPoint);

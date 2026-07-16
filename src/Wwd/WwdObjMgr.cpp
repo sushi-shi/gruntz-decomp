@@ -26,7 +26,7 @@
 #include <Gruntz/ResolveNode.h>        // canonical CResolveNode (the factory base sub-object)
 #include <Gruntz/AniAdvanceCursor.h>   // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
 #include <Wwd/WwdFactoryObject.h>      // CWwdFactoryObject/CWwdNotifier/CDDrawRect/RectsOverlap
-#include <Wwd/WwdGameObjCtor.h>        // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker (ctor cluster)
+#include <Wwd/WwdGameObjCtor.h>        // WwdCtorBase/CWwdGameObjBaseCtor/WwdAnimWorker (ctor cluster)
 #include <Gruntz/WwdGameObject.h>      // canonical flat CWwdGameObject (the managed objects)
 #include <Wwd/WwdGameObjectFamily.h>   // the concrete kinds A/B/C/F + the embedded records
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (the walk dispatchers; IDENTITY == this)
@@ -102,7 +102,7 @@ inline void* operator new(u32, void* p) {
 // SetupDeferredV). The ex-CWwdFactoryA/CWwdFactoryB dispatch views are gone.
 
 // (The three embedded sub-object record types - the +0x9c pair CWwdSlot9c /
-// Obj15b2b0 and the +0xb8 shadow record Obj15b270 - are hoisted to
+// CWwdSlot9cA and the +0xb8 shadow record CWwdShadowRec - are hoisted to
 // <Wwd/WwdGameObjectFamily.h>: they are member-range records of the family kinds
 // (the +0xb8 one IS the E-level shadow dirty-rect block whose m_c0/m_d8 sentinels
 // the family dtors clear). Their ctor bodies stay below at their retail RVAs.)
@@ -176,7 +176,7 @@ CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, in
         CWwdSlot9c* s9c = (CWwdSlot9c*)(obj + 0x9c);
         new (s9c) CWwdSlot9c();
         s9c->m_18 = 0;
-        new (obj + 0xb8) Obj15b270();
+        new (obj + 0xb8) CWwdShadowRec();
         new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = static_cast<int>(0x80000000);
@@ -248,7 +248,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, in
         CWwdSlot9c* s9c = (CWwdSlot9c*)(obj + 0x9c);
         new (s9c) CWwdSlot9c();
         s9c->m_18 = 0;
-        new (obj + 0xb8) Obj15b270();
+        new (obj + 0xb8) CWwdShadowRec();
         new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = static_cast<int>(0x80000000);
@@ -315,8 +315,8 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     if (obj != 0) {
         i32 root = (i32)m_parent;
         new (obj) CResolveNode(root, a1, flags);
-        new (obj + 0x9c) Obj15b2b0();
-        new (obj + 0xb8) Obj15b270();
+        new (obj + 0x9c) CWwdSlot9cA();
+        new (obj + 0xb8) CWwdShadowRec();
         new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)(obj + 0x5c) = static_cast<i32>(0x80000000);
@@ -442,7 +442,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, in
     CWwdGameObjectB* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
         int root = (int)m_parent;
-        new (obj) CWwdGameObj15b390(root, a1, a6);
+        new (obj) CWwdGameObjBaseCtor(root, a1, a6);
         new (obj + 0x1a0) CLoadable(root, a1, a6); // the embedded loadable (ctor 0x156cb0)
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x1b0) = 0;
@@ -1569,7 +1569,7 @@ i32 CDDrawChildGroup::PruneOrphans_15b1d0() {
 // Stamps no vtable of its own -> the concrete member class has no recoverable
 // RTTI name (identity-TODO).
 RVA(0x0015b270, 0x11)
-Obj15b270::Obj15b270() {
+CWwdShadowRec::CWwdShadowRec() {
     m_8 = static_cast<i32>(0x80000000);
     m_20 = -1;
 }
@@ -1584,7 +1584,7 @@ CWwdSlot9c::CWwdSlot9c() {
 // 0x15b2b0 - a sibling embedded sub-object ctor (placement-new'd at obj+0x9c);
 // zero +0x0c, +0x08, +0x18. Stamps no vtable of its own (identity-TODO).
 RVA(0x0015b2b0, 0xe)
-Obj15b2b0::Obj15b2b0() {
+CWwdSlot9cA::CWwdSlot9cA() {
     m_c = 0;
     m_8 = 0;
     m_18 = 0;

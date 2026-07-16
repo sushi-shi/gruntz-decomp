@@ -3,7 +3,7 @@
 
 // WwdGameObjCtor.h - the shared CWwdGameObject base-object ctor cluster (hoisted
 // from WwdObjMgrFactories.cpp, wave4-L): the CResolveNode-shaped inline ctor base
-// (WwdCtorBase), the 0x15b390 /GX base-object ctor class (CWwdGameObj15b390), and
+// (WwdCtorBase), the 0x15b390 /GX base-object ctor class (CWwdGameObjBaseCtor), and
 // the +0x7c anim worker's inline-construction view (WwdAnimWorker). The factories
 // (H obj, src/Wwd/WwdObjMgr.cpp) placement-construct these; the ctor body itself
 // (0x15b390) lives in the I obj (src/Wwd/WwdFactoryObject.cpp).
@@ -67,13 +67,13 @@ struct WwdCtorBase {
 };
 SIZE_UNKNOWN(WwdCtorBase); // CResolveNode base subobject (+0x00..+0xd8)
 
-struct CWwdGameObj15b390 : public WwdCtorBase {
+struct CWwdGameObjBaseCtor : public WwdCtorBase {
     CString m_label; // +0xdc  ??0CString (0x1b9b93)
     char _pe0[0x188 - 0xe0];
     int m_188;                              // +0x188  object id
-    CWwdGameObj15b390(int a, int b, int c); // 0x15b390 (I obj)
+    CWwdGameObjBaseCtor(int a, int b, int c); // 0x15b390 (I obj)
 };
-SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
+SIZE_UNKNOWN(CWwdGameObjBaseCtor); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 
 // (The former WwdAnimWorkerInit inline-construction view of the +0x7c worker is
 // DISSOLVED onto the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>): the
