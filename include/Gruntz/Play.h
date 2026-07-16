@@ -35,7 +35,7 @@ class CGruntzSoundZ;
 class CGruntzSoundInnerZ;
 class CBattlezData;  // CWorld::m_7c score/HUD sink (BattlezData.h; the per-kind counters)
 class CChatBoxOwner; // +0x2e0 hit-test/region sink (real type; deref TUs include ChatBoxOwner.h)
-// Real classes of the retyped CWorld/CPlay slots (thunk-target proven, 2026-07-13;
+// Real classes of the retyped CWorld/CPlay slots (thunk-target proven;
 // forward-declared so this header stays lean - the deref TUs include the real headers):
 class CFontConfig;           // CWorld::m_5c  (TypeChar @0x21e20 - the chat/key text layer)
 class CWorldSoundSet;        // CWorld::m_54  (Teardown @0xb660 / Resume @0xbcf0 / Retune @0xbd60)
@@ -80,19 +80,13 @@ struct CHitMarker {
 // the chat/key text layer). CPlayPlaneGeom is GONE - a fake view of the canonical
 // CLevelPlane (<Gruntz/GameLevel.h>: m_flags/m_scaledX/m_scaledY/m_scaleX/m_scaleY).)
 
-// (CInputDispatch is GONE (2026-07-16) - a fake view of the WAP32 CGameWnd at
-// mgr+0x04 (CGameMgr::m_gameWnd): its "Bind" @0x53d4e0 (RVA 0x13d4e0) IS
-// CGameWnd::PumpMessages (a declared-only duplicate identity), and its nested
-// WndHost added a phantom indirection where CGameWnd::m_hwnd (+0x04) is the
-// PostMessageA HWND directly - retail (e.g. 0xcbb74) loads [[this+4]+4]+4:
-// this->m_4 (the mgr) -> m_gameWnd -> m_hwnd, three loads, not four.)
+// (The mgr+0x04 CGameWnd (CGameMgr::m_gameWnd): its "Bind" @0x53d4e0 (RVA 0x13d4e0) IS
+// CGameWnd::PumpMessages, and CGameWnd::m_hwnd (+0x04) is the PostMessageA HWND directly
+// - retail (e.g. 0xcbb74) loads [[this+4]+4]+4: this->m_4 (the mgr) -> m_gameWnd ->
+// m_hwnd, three loads, not four.)
 
-// it was the CGruntzMgr singleton itself - as its own comments proved three
-// times over - re-declared per-header. Every field is the canonical
-// <Gruntz/GruntzMgr.h> member: m_4==m_gameWnd (base CGameMgr; its former
-// "ClampApply @0x8f7f0 / ManagerTick @0x8f620 / RestoreVideoMode @0x8df00 /
-// ReportError @0x346d" notes are already the real RecomputeViewScale /
-// RefreshGameClock / SetVideoMode / ReportError methods there), m_c==m_frameGate,
+// The mgr IS the CGruntzMgr singleton. Every field is the canonical
+// <Gruntz/GruntzMgr.h> member: m_4==m_gameWnd (base CGameMgr), m_c==m_frameGate,
 // m_10==m_soundEnabled, m_14==m_musicEnabled, m_30==m_world, m_48==m_sound,
 // m_54==m_inputState, m_5c==m_chatLog, m_60==m_timer, m_68==m_cmdGrid,
 // m_6c==m_cmdSubMgr, m_70==m_tileGrid, m_74==m_spriteFactory, m_7c==m_scoreHud,
@@ -205,11 +199,8 @@ public:
     // body in Play.cpp; ex the .cpp-local `CPlayLevelLoad : CPlay` facet - `this` IS
     // this CPlay). PROVEN virtual: retail slot 30 -> ILT 0x3337 -> 0x0ca200.
     virtual i32 LoadByMode(i32 level, i32 unused);
-    // Slots 31..34 were each declared TWICE: once as a body-less placeholder virtual
-    // holding the slot, and once as the real non-virtual method carrying the body. The
-    // RTTI slot map (vtable_hierarchy) names each slot's real function, and the ILT
-    // thunk in the vtable jmps straight to it - so the placeholder name was a phantom
-    // (nothing defined it) AND a duplicate identity. Merged 2026-07-13:
+    // Slots 31..34: the RTTI slot map (vtable_hierarchy) names each slot's real function,
+    // and the ILT thunk in the vtable jmps straight to it:
     //   slot 31 (+0x7c) BeginFrameClear -> HandleDragMove   (ILT 0x3756 -> 0x0d0db0)
     //   slot 32 (+0x80) Vslot20         -> OnExit           (ILT 0x3f30 -> 0x0cb400)
     //   slot 33 (+0x84) Vslot21         -> FreeListTeardown (ILT 0x36ca -> 0x0cb480)
@@ -238,7 +229,7 @@ public:
     // Slots 39/40: the same duplicate-declaration defect (RTTI names them DrawWorldFrame
     // / DrawWorldFrames; the vtable's ILT thunks 0x15eb / 0x311b jmp to 0xc9c20 /
     // 0xc9cc0, which are exactly those two methods' bodies in this TU).
-    virtual void DrawWorldFrame();            // slot 39 (+0x9c) 0x0c9c20 (ex "RenderSlow")
+    virtual void DrawWorldFrame();            // slot 39 (+0x9c) 0x0c9c20
     virtual i32 DrawWorldFrames();            // slot 40 (+0xa0) 0x0c9cc0 (ex "RenderFast")
     virtual i32 BuildMusicCategoryTable(i32); // slot 41 (+0xa4) 0x0dba30 (== the MIDIZ installer)
     virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) -> CWorldState::BuildWorldLevelPath
@@ -248,7 +239,7 @@ public:
 
     // The start-point marker array (m_startMarkers) is a real CByteArray/CPtrArray whose
     // data(+0x374)/count(+0x378) FindStartPointAt walks directly (byte-identical to
-    // the old raw m_markerData/m_markerCount fields).
+    // the raw m_markerData/m_markerCount fields).
     CHitMarker** markerData() {
         return *(CHitMarker***)((char*)&m_startMarkers + 4);
     }
@@ -274,9 +265,7 @@ public:
     // with `mov ecx,esi`). External no-body -> reloc-masked.
     // StepInputA (0x0d11e0): the per-frame CURSOR DRAW - BltFast the selected
     // cursor-half surface at the edge-fed {x,y}, error-logged via
-    // CDirectDrawMgr::GetErrorString (thunk-target proven; the old "input probe"
-    // reading with the fabricated __stdcall Eng_InputProbe/Eng_InputDispatch pair
-    // was a fake shape).
+    // CDirectDrawMgr::GetErrorString (thunk-target proven).
     i32 StepInputA(); // (THIS TU)
     void StepWorldB();
     // The PLAY-state keyboard/cheat dispatcher (0xcbcc0, GameKeyHandler.cpp). Routes a
@@ -385,31 +374,29 @@ public:
     // it repositions the game-timer HUD widget (+0x3f4 CTimer) at a fixed inset from the
     // screen size (m_4->m_modeW/m_modeH) with the mode + X inset chosen by `mode`.
     i32 PositionBridgeToggle(i32 mode, i32 unused); // 0x0d5b20 (body: LevelTileValidation.cpp)
-    // The other two ex-CLevelValidator methods, homed here for the same reason (that fake class
-    // IS CPlay - see the fold note in LevelTileValidation.cpp, where all three bodies live).
+    // The other two methods on this class (CLevelValidator IS CPlay - see the fold note in
+    // LevelTileValidation.cpp, where all three bodies live).
     i32 PlaceStartGruntz();   // 0x0d2b20 (called by ResetPlayState @0x0d60b0 on this same `this`)
     i32 ValidateLevelTiles(); // 0x0d2dd0
     i32 HiRefresh(i32 a);     // 0x0d6560  highlight-cursor refresh
     // BuildHelpReveal (0x0d72c0, THIS TU): the LOADING-BAR wipe tick - retail rets
-    // 0x4, so it takes ONE i32 (the old no-arg decl had a DROPPED PARAMETER; every
-    // caller pushes 0, the LoadByMode finale pushes 1). Its m_revealFrame/m_revealCap*
+    // 0x4, so it takes ONE i32 (every caller pushes 0, the LoadByMode finale pushes 1). Its m_revealFrame/m_revealCap*
     // members are the loading-bar counter + frame sprites (LoadLoadingBarSprite).
     i32 BuildHelpReveal(i32 final); // 0x0d72c0 (THIS TU)
     i32 RegisterInputBindings();    // 0x0d9160 (THIS TU)
     // (LoadByMode moved up to its PROVEN vtable slot 30.)
     // LoadLevelAnims (0x0db750, THIS TU): the LEVEL-namespace anim loader - the
-    // missing sibling of LoadLevelSounds/LoadLevelImages (ex the .cpp-local
-    // `Cdb750::SyncLevelKey` orphan view: its +0x0c holder is CState::m_c and its
-    // +0x28 symtab is CState::m_levelBank).
+    // missing sibling of LoadLevelSounds/LoadLevelImages (its +0x0c holder is
+    // CState::m_c and its +0x28 symtab is CState::m_levelBank).
     i32 LoadLevelAnims(i32 force); // 0x0db750
     // DrawLevelInfoText (0x0d95f0, THIS TU): the full-screen level/grunt info-text
-    // panel painter (ex the `GruntInfoTextHost` placeholder view - its +0x0c render
-    // surface is CState::m_c, +0x1c is m_levelIndex, +0x20 is m_levelType).
+    // panel painter (its +0x0c render surface is CState::m_c, +0x1c is m_levelIndex,
+    // +0x20 is m_levelType).
     i32 DrawLevelInfoText(); // 0x0d95f0
     // LoadLoadingBarSprite (0x0d7440; body in SpriteLoaders.cpp): cache the
-    // GAME_LOADINGBAR frames 1..3 into m_revealCap* + set m_revealFrame=1 (ex the
-    // `CLoadingBar` view - its +0x0c resmgr is CState::m_c and its +0x4bc..+0x4c8
-    // block is exactly m_revealFrame/m_revealCapMid/End/Start).
+    // GAME_LOADINGBAR frames 1..3 into m_revealCap* + set m_revealFrame=1 (its +0x0c
+    // resmgr is CState::m_c and its +0x4bc..+0x4c8 block is exactly
+    // m_revealFrame/m_revealCapMid/End/Start).
     i32 LoadLoadingBarSprite(); // 0x0d7440
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
     i32 ForwardReady(); // 0x0cee70 (out-of-line: tail-call the slot-3 ready gate Vfunc3)
@@ -432,19 +419,17 @@ public:
     // AMBIENT%d variant index for the 0x8086 Monolith cheat (thunk 0x1df2).
     i32 SetCursorFrame(i32 item); // 0x0d1b30
     // 0x0d1b60 (ret 0x1c; body in PlayerCommandStep.cpp) - the player-command
-    // executor (ex ?Dispatch@CCmdHandler@@ - that view WAS this play state; the
-    // CGruntzCommand::ApplyOne/ApplyMask thunk 0x21e4 dispatches it on this play
+    // executor (the CGruntzCommand::ApplyOne/ApplyMask thunk 0x21e4 dispatches it on
+    // this play
     // state). Switches on (u8)a4 over the mgr's m_cmdGrid board.
-    // PACKED param types (char/i16), settled 2026-07-15 (ex the CGruntzCmdTarget
-    // caller-side shim): the Apply* callers push the command's byte/word fields
+    // PACKED param types (char/i16): the Apply* callers push the command's byte/word fields
     // UNEXTENDED (mov dl,[eax+6]; push edx), which only a narrow-param decl
     // reproduces - and MSVC5 reads a narrow stack param as its full dword slot +
     // AND mask ((u8)aN => `mov reg,[esp+N]; and reg,0xff`), which is exactly the
     // retail body's read pattern, so ONE honest signature serves both sides.
     i32 ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char a8);
     i32 Flip(); // 0x0da200
-    // Level-lifecycle steps (ex the "CGameModeObj" view, GameModeObjLifecycle.cpp;
-    // folded onto CPlay wave3-J - the +0x3a4/+0x2dc/+0x4fc/+0x1cc offsets pin it):
+    // Level-lifecycle steps (the +0x3a4/+0x2dc/+0x4fc/+0x1cc offsets pin them to CPlay):
     i32 ReleaseLevelOverlay(i32 unused); // 0x0d6560  drop the overlay + restore the clock
     i32 ClearPlacedObjects();            // 0x0da030  sweep the 4 placed-object arrays
     i32 FlushPendingOps();               // 0x0da2d0  flush the deferred guts ops
@@ -708,7 +693,7 @@ public:
     // m_hitTest / m_4 / m_c which that TU casts to its local facet views.
     i32 HandleMousePress(i32 msg, i32 x, i32 y); // 0x0ce660
 
-    // The two per-frame plane-list sub-steps re-homed from CPlayPlaneScan.cpp: walk
+    // The two per-frame plane-list sub-steps (bodies in CPlayPlaneScan.cpp): walk
     // the renderer's embedded plane list (m_c->renderer+0x10) and dispatch on each
     // plane descriptor's type. Both take a stack MFC temp -> /GX.
     i32 ScanBuildTiles();   // 0x0d53d0

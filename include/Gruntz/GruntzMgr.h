@@ -37,7 +37,7 @@
 // threshold (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
 #include <Gruntz/SaveInfo.h>       // SaveInfo (m_saveInfoRec)
-#include <Io/SaveGame.h>           // CSaveGame - the +0x58 save sink (ex the SaveSink58 view)
+#include <Io/SaveGame.h>           // CSaveGame - the +0x58 save sink
 // +0x70 is the REAL RTTI class CGruntzMapMgr (: CMapMgr, vtbl 0x1e9bb4). PROVEN by the
 // teardown legs of retail Close() @0x0855e0: the +0x68 leg calls ILT thunk 0x3b1b ->
 // ~CTriggerMgr @0x85c50, and the +0x70 leg calls a DIFFERENT thunk 0x35b7 ->
@@ -50,8 +50,8 @@ class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declare
                      // m_cmdSubMgr include <Gruntz/GruntzCmdMgr.h> themselves.
 
 // The 0x238-byte per-player options record embedded four times at +0x150 IS the real
-// GruntzPlayer (<Gruntz/GruntzPlayer.h>). The `CGruntzMgrOptions` shell that stood here
-// is folded away: CGruntzMgr's ctor/dtor hand the __ehvec iterators this element's ctor
+// GruntzPlayer (<Gruntz/GruntzPlayer.h>). CGruntzMgr's ctor/dtor hand the __ehvec
+// iterators this element's ctor
 // and dtor through ILT thunks 0x2a7c / 0x1465, and those chase to 0x0da790 / 0x083260 -
 // GruntzPlayer's default ctor + dtor (see the proof block in GruntzPlayer.h). m_comboSel
 // (+0x228) is carried over onto the real class.
@@ -84,7 +84,6 @@ typedef CFileMemBase CSerialArchive;
 // CWorld view). Reached as `m_world->...`; every method is reloc-masked. +0x24 is
 // the active world view (the scroll/camera holder the FP scaler reads); +0x28 the
 // sound/anim cue host (the CSndHost of <Gruntz/SoundCue.h>, included above):
-// the former CWorldSub28/CWorldSub2c "sub-controller + teardown" views were IT -
 // FUN_00537a80 == RVA 0x137a80 == SoundStream::Stop, and the +0x10 keyed map ==
 // CSndFinder (Lookup 0x1b8438). +0x520 is a 4-slot status array the paused-state
 // poll walks (status id at each slot's +0x20).
@@ -95,11 +94,10 @@ class CDDrawSubMgrLeafScan;
 typedef CDDrawSubMgrLeafScan CSndHost;
 // The world+0x10 image/name registry: the REAL CImageRegistry (<Gruntz/ResMgr.h>), whose
 // own +0x10 is the embedded CMapStringToOb name->object hash. A pointer here, so a fwd
-// decl suffices (GruntzMgr.cpp includes the real header). The ex-CWorldLookupHolder view
-// is dissolved: its "map-type contradiction" was an inverted tree label (0x1b8008 IS
-// CMapStringToOb::Lookup), not a binary fact.
+// decl suffices (GruntzMgr.cpp includes the real header). (Label note: 0x1b8008 IS
+// CMapStringToOb::Lookup.)
 // The image/name registry IS the canonical CDDrawWorkerRegistry
-// (<DDrawMgr/DDrawWorkerRegistry.h>, real polymorphic; ex CWorkerVtableView).
+// (<DDrawMgr/DDrawWorkerRegistry.h>, real polymorphic).
 class CDDrawWorkerRegistry;
 typedef CDDrawWorkerRegistry CImageRegistry;
 // [The CWorldZ view is DISSOLVED (Fable lane, 2026-07-13): the loaded-world object
@@ -126,7 +124,7 @@ struct IDirectPlayLobby;
 // that class: Flush=Deactivate, Arm=Resume, Disarm=Stop, InitInput=Init,
 // StoreFlag=Restart, Teardown=Teardown; its +0x24 active flag is the mgr's armed gate.
 // A pointer member here, so a forward declaration suffices (GruntzMgr.cpp includes the
-// real header). The former per-TU CInput54 view is dissolved.
+// real header).
 class CWorldSoundSet;
 
 // The manager's owned engine sub-objects, each a real class reached only through a
@@ -156,11 +154,11 @@ namespace Utils {
     class RegistryHelper;
 }
 // CSaveGame (+0x58 save-record sink) is defined by the <Gruntz/SaveInfo.h>
-// include above. (The +0x44 HudGuard44 view is dissolved onto CCheatMgr.)
-class CFontConfig; // +0x5c chat/message log (was view CChatLog; AddItem @0x21c60 - FontConfig.h)
+// include above.
+class CFontConfig; // +0x5c chat/message log (AddItem @0x21c60 - FontConfig.h)
 struct TimerObj;   // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
 // +0x68: the world command/trigger grid is the ONE CTriggerMgr (TriggerMgr.h) -
-// the former CCmdGrid view is dtor-proven the same object (Close's teardown thunk
+// dtor-proven the same object (Close's teardown thunk
 // 0x3b1b IS ~CTriggerMgr; the +0x20c/+0x21c delta tables == m_rowStateB/C, the
 // +0x288 scored flag == m_288).
 class CTriggerMgr;
@@ -177,7 +175,7 @@ public:
     virtual ~CGruntzMgr() OVERRIDE;             // vtbl slot 0 (own vftable 0x5e9b64)
     virtual i32 Run(CGameWnd*, char*) OVERRIDE; // slot 1 (declared-only)
     virtual i32 Wap32GameMgrVfunc3() OVERRIDE;  // slot 3 @0x083300 (thunk 0x40d9):
-                                                // m_world && m_curState (ex phantom)
+                                                // m_world && m_curState
     // The ??_G scalar-deleting destructor (vtable slot 0 entry the retail vtable
     // holds): run the dtor body, then operator delete when the low flag bit is set;
     // returns this. Modeled by hand (MSVC's own ??_G mangling differs from the retail
@@ -267,9 +265,8 @@ public:
     i32 CheckMovieFileExists();     // @0x090aa0 (FileExists(m_strMoviePath))
     CState* FindStateById(i32 id);  // @0x092900 (live + stack search by Update id)
 
-    // (SetVideoMode's four "Step1db6/Step3d23/ReportMapTooSmall/LogLine" phantom
-    // thunk decls are DISSOLVED - each ILT thunk chases to an already-declared
-    // method: 0x1db6 -> RecomputeViewScale (0x8f7f0), 0x3d23 -> RefreshGameClock
+    // (SetVideoMode's four thunks chase to already-declared methods:
+    // 0x1db6 -> RecomputeViewScale (0x8f7f0), 0x3d23 -> RefreshGameClock
     // (0x8f620), 0x417e -> EnterModalUI (0x8ef10), 0x1b54 -> AppendChatMessage
     // (0x8f9c0). The call sites bind the real symbols; reloc-masked.)
 
@@ -308,15 +305,15 @@ public:
     // @0x092060: set the global asset-root path CString (g_assetRoot @0x64e25c) and
     // post WM_COMMAND 0x80ab to the game window; ret 1 (0 when path is null).
     i32 SetAssetRoot(char* path);
-    // Music-volume guards on the same m_sound/m_14 gate (BoundaryLowerMethods.cpp;
-    // the former C915d0 view): fade the CURRENT bank to 0 / back to 100 over `ms`.
+    // Music-volume guards on the same m_sound/m_14 gate (BoundaryLowerMethods.cpp):
+    // fade the CURRENT bank to 0 / back to 100 over `ms`.
     void MuteMusicIfActive(i32 ms);          // @0x0915d0 (m_pCurrent->SetVolume(0, ms))
     void RestoreMusicVolumeIfActive(i32 ms); // @0x091620 (m_pCurrent->SetVolume(100, ms))
-    // Debug-command hook (the former C8e880 view): when the current state is
+    // Debug-command hook: when the current state is
     // GAMESTATE_PLAY, register the DEBUG_SETSKILL command (via ILT thunk 0x2bb7).
     i32 RegisterSetSkillDebugCmd(); // @0x08e880 (calls RunModalDialog(DEBUG_SETSKILL,...))
 
-    // The two options-slider setters (ex StoreInputState/StoreInputFlag - the retail
+    // The two options-slider setters (the retail
     // callers are the options dialog sliders + Run's registry-load; see the
     // m_soundVolume/m_voiceVolume members below for the byte proof).
     i32 SetVoiceVolume(i32 v);  // @0x091a10 (store m_voiceVolume, mirror to m_timer->m_2c)
@@ -345,8 +342,7 @@ public:
     // Takes the REAL MFC CDialog. BINARY-PROVEN, not assumed: ExitModalUI (0x903f0)
     // dispatches `call [vtbl+0xc0]` = slot 48, and MFC CDialog's vtable (0x1eb174)
     // holds 0x1ba9d2 at slot 48 - CDialog::DoModal. Slots 49/51 likewise hold
-    // OnInitDialog (0x1bac5e) / OnOK (0x1bacc3). The old CModalScreen placeholder
-    // with its `Run()` at slot 48 WAS CDialog all along.
+    // OnInitDialog (0x1bac5e) / OnOK (0x1bacc3).
     i32 ExitModalUI(class CDialog* dlg, i32 notify); // @0x0903f0
     i32 FinishLevel(i32 full, i32 stopBank);         // @0x08e980
     i32 FillSaveInfo(SaveInfo* dst, void* snapshot); // @0x0927b0
@@ -357,9 +353,8 @@ public:
     // `RectQuery_08e3a0` view in GruntzMgr.cpp AND the phantom CGameRegistry::GetRect:
     // both are this ONE method - the callers run it on the 0x64556c singleton.
     RECT* GetRect(RECT* out);
-    // @0x093d40 - resolve+checksum the level rez path for a save slot. Was the fake
-    // `LevelRezLoader` class in LevelRezPath.cpp AND the phantom
-    // CGameRegistry::BuildLevelRezPath: one method, run on the 0x64556c singleton.
+    // @0x093d40 - resolve+checksum the level rez path for a save slot; run on the
+    // 0x64556c singleton.
     // The 5th arg is the level-name CString BY VALUE (callee-destroyed) - the old
     // 4-arg CGameRegistry decl dropped it, which is why CSaveGame::Register's local
     // CString looked like an unexplained un-destroyed temp (its ~45% "EH-frame wall").
@@ -379,8 +374,7 @@ public:
     // RefreshGameClock (0x8f620); GetSaveSource == PickPlayOrPausedState (0x92990);
     // SwitchModeState == TransitionState (0x8b960).
 
-    // @0x91670 (body in RezMgr.cpp; ex ?MakeRezPath@RezMgr@@QAEHXZ - the RezMgr
-    // facet view is dissolved): assemble the candidate archive paths (Gruntz.REZ
+    // @0x91670 (body in RezMgr.cpp): assemble the candidate archive paths (Gruntz.REZ
     // into m_strRezPath, the Gruntz[Lo].FEC front-end into m_strMoviePath), probe
     // them with FileExists and record m_inGameDir/m_haveRez/m_haveMoviez; report
     // 0x800b/0x43e and return 0 when nothing was found.
@@ -463,8 +457,8 @@ public:
                                        //        LevelRezPath's ResolvePath runs on it)
     Utils::RegistryHelper* m_settings; // +0x38  settings/registry writer (SetValueDword)
     // +0x3c  CObject-derived engine sub-object, torn down via `delete` (vtable slot 1).
-    // @identity-TODO - the NEW-SITE DOES NOT EXIST IN THE RECONSTRUCTED CODE. Searched
-    // (2026-07-13): every one of the 131 RVA-bound CGruntzMgr-family functions
+    // @identity-TODO - the NEW-SITE DOES NOT EXIST IN THE RECONSTRUCTED CODE. Searched:
+    // every one of the 131 RVA-bound CGruntzMgr-family functions
     // (GruntzMgr/GruntzMgr2/GruntzMgrCmd/RezSync) disassembled and scanned for a
     // `mov [this+0x3c], <reg>` store - the ONLY two writes in the whole family are the
     // ctor's zero (0x083030) and Close's zero (0x0855e0). RezSync's Init news every
@@ -477,7 +471,7 @@ public:
     CFaderMgr* m_faderMgr;          // +0x40  fader manager (Run: new + SetConfig(0,0,0) @0x17d980)
     CCheatMgr* m_cheatMgr;          // +0x44  cheat-code dictionary; its m_124 "a cheat was used"
                                     //        flag gates the HUD warning + the 0x81d7 "Cheatz
-                                    //        cleared" command (ex the HudGuard44 view)
+                                    //        cleared" command
     CGruntzSoundZ* m_sound;         // +0x48  sound/bank object (StopBank/StopAll)
     i32 m_4c;                       // +0x4c
     CShadeTableCache* m_shadeCache; // +0x50  shade-table cache (fed to the sprite table)

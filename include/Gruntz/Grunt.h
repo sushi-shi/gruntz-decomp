@@ -16,15 +16,15 @@
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 
-class CAniElement; // folded CEntranceAnimDescColl
+class CAniElement;
 
-class FreeNodePool; // folded GruntCoordPool
+class FreeNodePool;
 
-class CDDrawSubMgrLeaf; // folded CGruntNameMap
+class CDDrawSubMgrLeaf;
 
-class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
+class DSoundCloneInst; // the pooled cue player (Dsndmgr/DirectSoundMgr.h)
 
-class DirectSoundMgr; // folded GruntSoundSample
+class DirectSoundMgr;
 
 #include <Mfc.h> // the REAL MFC CPtrList (m_31c/m_338 are value members) + POSITION
 #include <Ints.h>
@@ -138,7 +138,7 @@ CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 // ---------------------------------------------------------------------------
-// (2026-07-16): the per-grunt "animation player" at CGrunt::m_38 IS the bound
+// The per-grunt "animation player" at CGrunt::m_38 IS the bound
 // CGameObject (the tile-leaf m_38 == obj convention), and the resolvers drive
 // its real methods: SetAnim(key) == ApplyName (0x150540, ret 4), SetAnimEx(key,
 // frame) == ApplyLookupSprite (0x1504d0, ret 8), the +0x1a0 "geometry
@@ -215,8 +215,8 @@ public:
 // CacheFrame/CacheFrameIndexed == ApplyLookupSprite 0x1504d0, ApplyLookupGeometry
 // 0x1505b0, ApplyGeometryDirect 0x58b60), its ctor-seeded m_e8/m_f4 are
 // m_collCategory/m_collMask, and its +0x1a0 cursor tail ends at +0x1dc ==
-// SIZE(CGameObject). Its "CEntranceResMgr" m_c was the typed CGameObject::m_0c
-// (CDDrawSurfaceMgr) and "CEntranceSpriteMgr" (+0x2c, LookupValue_06b2a0) the
+// SIZE(CGameObject). m_c is CGameObject::m_0c (CDDrawSurfaceMgr) and +0x2c
+// (LookupValue_06b2a0) the
 // canonical CDDrawSubMgrLeaf.)
 
 // CString::GetBuffer(int) the entrance-anim update (@0x690a0) calls to hand the
@@ -396,7 +396,7 @@ SIZE_UNKNOWN(GruntCoordPool);
 // FOUR names for TWO slots - g_freePoolHead/g_gruntFreeList both 0x645544 and
 // g_freePoolBase/g_gruntFreeListBias both 0x64554c - in all five grunt TUs, i.e. 20 .bss
 // objects for two fields (LNK2005; caught by link_defects' new MULTIPLY-DEFINED bucket).
-extern FreeNodePool g_coordPool; // DAT_00645540 (folded GruntCoordPool)
+extern FreeNodePool g_coordPool; // DAT_00645540
 
 // A grunt occupied-coord list node: ->next at +0, ->coord at +8 (an {x,y} pair).
 SIZE_UNKNOWN(GruntCoord);
@@ -422,7 +422,7 @@ struct GruntCoordNode {
 // ---------------------------------------------------------------------------
 // The grunt's path/occupancy board (CGrunt+0x260) IS the CTriggerMgr
 // (<Gruntz/TriggerMgr.h>) - the same object the registry holds at
-// (2026-07-14): every one of its ~24 method thunks resolves into CTriggerMgr's
+// Every one of its ~24 method thunks resolves into CTriggerMgr's
 // method band on this receiver (each verified by chasing the caller's ILT jmp):
 //   ClaimTile        0x29cd -> 0x6bfd0  ResetCell
 //   ReleaseTile      0x33aa -> 0x784d0  RecordListHas
@@ -507,8 +507,8 @@ struct CGruntListNode {
 // in the .cpp; the Save serialize loop's name-table lookup helper.
 class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 
-// (The `CGrunt::Load @0xd8060 support` views are GONE - that body is
-// CPlay::SyncRead2f7c (Play.cpp). GruntLoadColl was the raw CPtrArray facet of
+// (CGrunt::Load @0xd8060 is CPlay::SyncRead2f7c (Play.cpp). GruntLoadColl is the raw
+// CPtrArray facet of
 // CPlay's m_startMarkers/m_3a4[4]/m_488; `GruntIdEntry` IS ::CImageSet
 // (m_14 == m_frames, m_64/m_68 == m_minIndex/m_maxIndex); GruntResMgr was the
 // canonical CDDrawSurfaceMgr; `g_load612618` was g_lastLevelNum.)
@@ -592,8 +592,8 @@ struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
     }
 };
 // GruntListSub was a fake view of the REAL MFC CPtrList (m_31c/m_338); its six
-// declared-only methods (CtorImpl/Dtor/RemoveAll/Find1de8/RemoveHead/AddHead) were
-// phantom externals for bodies that already exist - the MFC list slots and, for
+// declared-only methods (CtorImpl/Dtor/RemoveAll/Find1de8/RemoveHead/AddHead) are
+// the MFC list slots and, for
 // Find1de8, the free __stdcall ListNodeAdvance(void**) @0x29a30 (BattlezMapConfig.cpp).
 // Both members are now plain CPtrList; see the member block below.
 //
@@ -618,8 +618,7 @@ public:
 };
 
 // (CGruntColl / CGruntList were views of the CGrunt +0x31c / +0x338 collections that
-// UserLogicVfunc9 drains. Both are the real MFC CPtrList - see the member block below -
-// so the placeholder names are gone.)
+// UserLogicVfunc9 drains. Both are the real MFC CPtrList - see the member block below.)
 // __cdecl node deleter (operator delete-style; push p; call; add esp,4).
 void GruntNode_Delete(void* p);
 
@@ -670,7 +669,7 @@ struct GruntTilePos {
 // as a tiny CByteArray-style object {?, data@+4, count@+8} so the /GX-framed local
 // + the SetAtGrow/RemoveAt/dtor calls fall out (all engine, external/reloc-masked).
 // ---------------------------------------------------------------------------
-// (CToyTileBag is GONE: it WAS MFC ::CByteArray - same NAFXCW cluster; note its
+// (The toy-tile bag is MFC ::CByteArray - same NAFXCW cluster; note its
 //  SetAtGrow second arg is a BYTE (?SetAtGrow@CByteArray@@QAEXHE@Z), not an int.)
 
 // ---------------------------------------------------------------------------
@@ -701,9 +700,7 @@ struct GruntTilePos {
 // masked). CUserLogic's base boundary is its TRUE 0x30: the base ctor 0x58cd0 inits only
 // through +0x2c, and CGrunt's own byte-exact members start at +0x30.
 //
-// THE "TWO-WORLD ODR SPLIT" IS DEAD (2026-07-13) - do not re-inherit it. This note used to
-// end: "The two CUserLogic class views still never coexist in one TU". There are no longer
-// TWO views to keep apart, and they demonstrably DO coexist:
+// CUserLogic is ONE class; there is no ODR split to keep apart:
 //   * CUserLogic is defined in exactly ONE place in the tree - <Gruntz/UserLogic.h>, at
 //     SIZE(CUserLogic, 0x30). The "fat 0x40" view the note warned about no longer exists.
 //   * This very header ALREADY #includes <Gruntz/UserLogic.h> (see the include block above),
@@ -862,8 +859,7 @@ inline CGruntMovingBase::CGruntMovingBase(CGameObject* owner) : CUserLogic(owner
 // GROUND TRUTH from the allocation site: GruntSpawnPump @0x5baf0 does
 //   push 0x8d8 ; call ??2@YAPAXI@Z ; mov ecx,eax ; call <CGrunt ctor>
 // so sizeof(CGrunt) is 0x8d8 - measured from the binary, not inferred. Our reconstruction
-// already computes exactly 0x8d8, which is what falsified the long-standing claim that
-// CGrunt carried a phantom +0x120 gap (see <Gruntz/TriggerMgr.h>).
+// already computes exactly 0x8d8 (no +0x120 gap; see <Gruntz/TriggerMgr.h>).
 SIZE(CGrunt, 0x8d8);
 class CGrunt : public CGruntMovingBase {
 public:
@@ -884,7 +880,7 @@ public:
     // entry pointer. Same archetype as CPathHazard::RunAct.
     i32 RunAct(i32 id);
 
-    // ---- the trigger/switch leaves' per-kind hooks (folded in from the CTmCell view) ----
+    // ---- the trigger/switch leaves' per-kind hooks ----
     // These are the methods ApplyTriggerA and friends dispatch on a placed grid grunt. Ten
     // of them are the REAL bodies already declared elsewhere in this class (ClearAllSprites
     // 0x4b240, BuildGruntExitAnimation 0x641b0, LoadGruntDeathAnimations 0x60150,
@@ -1103,8 +1099,8 @@ public:
                         //         CEntranceAnimPlayer view - the player IS the
                         //         created CGameObject; see UserLogic.h's tail note)
     // +0x158: the sprite's worker record. IDENTITY PROVEN by the ctor tail
-    // (Grunt.cpp): `m_158 = obj->m_7c` - the bound object's AnimWorkerObj. The
-    // ex-`CGruntSndResMgr` view (GruntCombat.cpp) modeled its hop chain
+    // (Grunt.cpp): `m_158 = obj->m_7c` - the bound object's AnimWorkerObj. Its
+    // hop chain
     // m_0c->m_28->m_30: worker->m_0c is the owner/world context (the
     // CDDrawSurfaceMgr facet) whose +0x28 is the CSndHost cue registry
     // (emit gate +0x30, CMapStringToPtr map +0x10).
@@ -1135,7 +1131,7 @@ public:
     i32 m_1ac;                      // +0x1ac (serialized)
     i32 m_1b0;                      // +0x1b0 (serialized)
     i32 m_1b4;                      // +0x1b4 (serialized)
-    CGameObject* m_selectedSprite;  // +0x1b8  (folded CHudSprite -> CGameObject)
+    CGameObject* m_selectedSprite;  // +0x1b8
     CGameObject* m_toySprite;       // +0x1bc
     CString m_animSetName;          // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
     CGameObject* m_healthSprite;    // +0x1c4
@@ -1234,7 +1230,7 @@ public:
     // The two owned lists are REAL MFC CPtrLists (0x1c B each), not views: the ctor
     // calls 0x1b4867 and ~CGrunt calls 0x1b48c6 - the band whose vtable (0x1eb054)
     // slot-0 GetRuntimeClass returns the CRuntimeClass naming "CPtrList". Their
-    // interior IS the old hand-declared field run, so those "members" are gone:
+    // interior IS the CPtrList field run:
     //   m_31c: vptr@31c  head@320  tail@324  count@328  free@32c blocks@330 blk@334
     //   m_338: vptr@338  head@33c  tail@340  count@344  free@348 blocks@34c blk@350
     // Read them through the public inline accessors (GetCount/GetHeadPosition/
@@ -1409,7 +1405,7 @@ public:
     void EntranceOnReleased();              // thunk_FUN_0044b130 (0-arg)
     void EntranceArrivalHook(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 
-    // ---- migrated CGrunt cluster (ex-CUserLogic_*) ----
+    // ---- the CGrunt method cluster ----
     // (~CGrunt / SerializeMove / Activate / UserLogicVfunc9 / MovingSlot16
     // are the vtable slots declared at the top of the class.)
     void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
@@ -1418,8 +1414,8 @@ public:
     i32 Save(CGruntArchive* ar);            // @0x53f90 serialize
     // @0x555e0 (4856 B; body in GameStateRecordLoad.cpp) - the game-state-record
     // load counterpart of Save: SerializeMove's mode-7 arm, dispatched on this
-    // same grunt (ex the CGameStateRecord owner view).
-    // (The `Load @0xd8060` decl is GONE - that body is CPlay::SyncRead2f7c, the
+    // same grunt.
+    // (Load @0xd8060 is CPlay::SyncRead2f7c, the
     //  play-state read serializer; SyncState calls it on the PLAY state. The
     //  CGrunt attribution was a same-offsets overlay; see Play.cpp.)
     i32 LoadStateRecord(CGruntArchive* ar);
@@ -1436,7 +1432,7 @@ public:
     // given sound key (stored into the +0x428 slot ClearSubB frees).
     void EnsureStruckVoice(const char* key);
     // DestroyAnims' two teardown steps ARE ClearSubA/ClearSubB (0x57c10/0x57ce0),
-    // declared above - no separate AnimTeardownA/B shadow (those were unbound fakes).
+    // declared above - no separate AnimTeardownA/B shadow.
     // Legacy placeholder decls retained: CommitArrival now calls the real creators +
     // SetEntrancePos, but dropping these shifts the unit's symbol set and drifts an
     // unrelated function's fuzzy score (matching-patterns.md symbol-set sensitivity).
@@ -1469,22 +1465,21 @@ public:
     // (SerializeMove is the vtable slot-1 override, declared at the top of CGrunt.)
     // The head sub-serializer is CMovingLogicBase::Serialize (0x16e7f0); the mode-4/7
     // pre-steps are CGrunt::Save (0x53f90) / CGrunt::Load (0x555e0) - all
-    // real bound callees now, so the former SerializeAnimState/SerPreStep4/SerPreStep7
-    // fake decls are gone.
+    // real bound callees now.
 
     // ---- grunt movement / anim-name dispatch state machines (this TU) ----
     // The 5 big per-pose/anim-name resolution state machines: each resolves the
     // grunt's current anim name (via g_typeColl) and dispatches on its
     // single-letter type code (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's
     // movement/arrival state + occupied-coord recycle + a re-latch of m_14->m_1c.
-    // The arrival/update dispatch trio (ex-CUserLogic_* stubs; really CGrunt - every
-    // member offset they touch is in this layout). All three drive the grunt's
+    // The arrival/update dispatch trio (CGrunt methods - every member offset they
+    // touch is in this layout). All three drive the grunt's
     // arrival/entrance bookkeeping + the occupied-slot recycle.
     i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e); // @0x59230 (ret 0x14)
     // @0x597a0 (ret 0x20) - the combat-hit megahandler (GruntCombat.cpp): conversion
     // hit / death-touch damage, the hit/block launch-cue resolve, the knockback
-    // direction-octant resolver + occupied-coord recycle. (Was the ex-`CGruntCombat`
-    // view's method; every offset it touches is this layout - m_31c, m_400..m_410.)
+    // direction-octant resolver + occupied-coord recycle. (Every offset it touches is
+    // this layout - m_31c, m_400..m_410.)
     i32 LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
     // (Activate is the vtable slot-6 override, declared at the top of CGrunt.)
     i32 UpdateArrival(i32 a1, i32 a2); // @0x62110 (ret 0x8)
@@ -1567,7 +1562,7 @@ public:
     // this grunt to it is within the (radius-sum)^2 threshold.
     i32 GruntInRadius(i32 col, i32 row); // @0x67b00
     // @0x0f7d90 (body in ObjectTracker.cpp) - the per-tick peer-tracking behavior
-    // step (ex ?Update@CObjectTracker@@ - that view WAS this grunt: the one retail
+    // step (this grunt's; the one retail
     // caller, LoadGruntTuningConstants @0x5d210 - itself data-ref'd in
     // ??_7CGrunt@@6B@ - dispatches thunk 0x2806 on its own `this` @0x5dd4e, and
     // all 12 fields land on CGrunt members at identical offsets). Publish the
@@ -1599,8 +1594,8 @@ public:
     // state-0 path commits the occupant's tile slot on a rand%100 roll + re-rolls a
     // random in-region target / resets the idle timer.
     i32 StepArrivalDefenseLean();
-    // @0xf1c70 (ret 0 -> 1) - the powered-up arrival-defender variant (trace
-    // mis-attributed to "tomalla-42"; every offset/helper proves CGrunt). Sets
+    // @0xf1c70 (ret 0 -> 1) - the powered-up arrival-defender variant
+    // (every offset/helper proves CGrunt). Sets
     // m_arrivalFlags |= 0x40000, then either runs the powered-up release gate
     // (m_poweredUp!=0: FindGridNeighbor + clear-state) or the m_2d4 (0/1/2/3) defender
     // dispatch: GetOccupant/grid-occupant settle + CommitNeighbor, the 4-way
@@ -1613,8 +1608,8 @@ public:
     // relocate/arrive on (m_tileMgr TileSwitch / CommitTileSlot2), and recycling the
     // visited-coord nodes onto the shared free list.
     i32 PhaseStep();
-    // The grunt per-tick arrival/scan/wander step machines (ex-CGruntStep/CGruntWander
-    // per-TU aliases; every offset they touch is a CGrunt member, every helper a CGrunt
+    // The grunt per-tick arrival/scan/wander step machines (every offset they touch is a
+    // CGrunt member, every helper a CGrunt
     // method - so they are CGrunt methods). All __thiscall ret 4, drive the tile-to-tile
     // move via the tile-mgr grid + the on-screen CueA cue.
     i32 UpdateArrival(); // @0xf0130  (GruntUpdateStep.cpp) "I"-grunt arrival update
@@ -1685,14 +1680,13 @@ public:
     void CommitCombatMove(i32 a, i32 b, i32 c, i32 d); // call 0x302b (4-arg)
     // The tile-switch trigger @0x4b320 (thunk 0x1640): scale the (col,row) grid pair
     // to tile-pixel centres (*0x20+0x10) and forward all six args to the engine
-    // helper. CONVENTION SETTLED (2026-07-15): __thiscall on the grunt - the body
+    // helper. __thiscall on the grunt - the body
     // never reads `this`, but EVERY retail call site (58 through the thunk) loads a
     // grunt into ecx first (`mov ecx,esi/ebx/ebp` / `mov ecx,[esp+..]`), which only a
-    // thiscall member reproduces; the old free-__stdcall spelling dropped that mov at
-    // ~25 reconstructed sites. Body in Grunt.cpp (callee-cleans 0x18 either way).
+    // thiscall member reproduces. Body in Grunt.cpp (callee-cleans 0x18 either way).
     i32 TileSwitch(i32 col, i32 row, i32 flags, i32 a4, i32 a5, i32 a6); // 0x4b320 (thunk 0x1640)
 
-    // 2026-07-15): the toy/vehicle grunt sprite loader - latch the kind (m_198),
+    // The toy/vehicle grunt sprite loader - latch the kind (m_198),
     // reset m_moveMode, seed the m_2b0/m_2c0 region blocks per toy kind, build the
     // "<NAME>GRUNT" namespace, and on a switch tile (0x41/0x42) at the committed
     // tile re-fire ApplySwitch + WireTileSwitchLogic on m_tileMgr.

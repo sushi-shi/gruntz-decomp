@@ -4,9 +4,8 @@
 // CPlay owns through its +0x2dc pointer, plus every engine-referent view its ~70
 // reconstructed methods drive.
 //
-// THE SPLIT THAT PRODUCED THIS FILE (2026-07-12). This header used to be
-// <Gruntz/SBI_RectOnly.h> and its main class was called `CSBI_RectOnly` - a
-// CONFLATION of two genuinely different classes that the binary separates:
+// This file models a CONFLATION the binary separates into two genuinely different
+// classes:
 //
 //   * the REAL CSBI_RectOnly: a 0x30-byte POLYMORPHIC sub-widget (RTTI
 //     .?AVCSBI_RectOnly@@, vtable 0x1eab8c, ctor 0x101fa0, dtor 0x100700), the
@@ -36,7 +35,7 @@
 //      called `((CStatusBarMgr*)this)->LoadTabSprites()` - a cross-cast of `this`.
 //   5. Offset 0 is WRITTEN (`*(i32*)this = state`) and persisted to the registry as
 //      "StatusBar Position". A polymorphic class cannot have its vptr overwritten;
-//      the old view's `virtual` base was fabricated. +0x00 is the i32 m_position -
+//      +0x00 is the i32 m_position -
 //      which is what the CStatusBarMgr view independently called "m_00, status-bar
 //      side/mode selector".
 // Both reconstructions also agree, offset for offset, at 0x10c / 0x218 / 0x21c /
@@ -54,7 +53,7 @@
 #ifndef GRUNTZ_CSTATUSBARMGR_H
 #define GRUNTZ_CSTATUSBARMGR_H
 
-class CWarpStoneFly; // folded CSbiMode54c
+class CWarpStoneFly;
 // The per-tab menu-item widget. Only pointers are needed here, so it is forward-
 // declared: the real chain class lives in <Gruntz/SBI_MenuItem.h>, and the host TU's
 // widget-builder view is <Gruntz/StatusBarTabWidgets.h>.
@@ -83,8 +82,8 @@ class CSBI_MenuItem;
 // (CSbiSlot) is distinct from the one whose ctor is out-of-line (CSbiHlRow) - even
 // though their LAYOUTS are identical.
 //
-// THE FOLD 0xc86d0 PROVES (2026-07-13): m_groupSlots and m_hlGrid are ONE class - they
-// share that single out-of-line ctor. m_groupSlots was CSbiSlot here; it is CSbiHlRow.
+// The fold at 0xc86d0 proves m_groupSlots and m_hlGrid are ONE class - they share that
+// single out-of-line ctor; m_groupSlots is CSbiHlRow.
 // (m_slots is NOT part of this fold - see the ctor-linkage evidence above.)
 
 // m_state: 0 = armed, 2 = ready (see kSlotArmed/kSlotReady).
@@ -101,7 +100,7 @@ struct CSbiSlot {
     i32 m_value; // +0x04 (rel +0x20c)  the value handed to the slot's notify sink
     i32 m_8;     // +0x08 (gauge-span lo / the 64-bit timer with m_c)
     i32 m_c;     // +0x0c
-    i32 m_10;    // +0x10 (was pad; the ctor zeroes it)
+    i32 m_10;    // +0x10 (the ctor zeroes it)
     i32 m_14;    // +0x14 (was pad; the ctor zeroes it)
 };
 
@@ -127,7 +126,7 @@ struct CSbiHlRow {
 
 // The CSBI serialization stream (archive) is the shared WAP32 CSerialArchive (Read @
 // vtable +0x2c / Write @ +0x30 - the store/transfer slot), now the one modeled class in
-// <Gruntz/SerialArchive.h> - the former local `CSbiStream` view is folded away.
+// <Gruntz/SerialArchive.h>.
 
 // The +0x8 object carries a sequence id at +0x188 (read during serialize).
 struct CSbiSeqHolder {
@@ -141,8 +140,8 @@ SIZE_UNKNOWN(CSbiSeqHolder);
 // SetTabState shows the selected tab via SetState(state,1) (0xe8310) and hides the
 // rest via ProbeState(state) (0xe8480), the game-tab button builders resolve the
 // asset frame via ResolveFrame(key,on) (0xe81e0), and Refresh() is the slot-10
-// virtual (CSbiTab). The former fake `class CSbiSprite` view is folded away; the
-// four non-virtual methods are declared on CSBI_MenuItem below (reloc-masked
+// virtual (CSbiTab). The four non-virtual methods are declared on CSBI_MenuItem below
+// (reloc-masked
 // call rel32 to the real rvas bound in SBI_MenuItem.cpp).
 
 // A hit-test rect widget held in m_hitRects[] / the hit-test lists: a polymorphic
@@ -257,11 +256,10 @@ SIZE_UNKNOWN(CSbiSpriteCfg);
 
 // The lazily-created 0x40-byte object at CSBI_RectOnly+0x54c: EnsureSub `new`s and
 // Init()s it on first use; the retab teardown drives Refresh()/Notify0() and frees it.
-// One object, one type (former SBI_RectOnlyEh.cpp `CSbiLazySub` folded in - same
-// offset, same lazy-create/free-on-retab lifecycle).
+// One object, one type (same offset, same lazy-create/free-on-retab lifecycle).
 SIZE(CWarpStoneFly, 0x40);
 
-// (the ex-`CSbiPtrList` view is GONE: the eight lists at +0x2c are real MFC CPtrLists -
+// (the eight lists at +0x2c are real MFC CPtrLists -
 // the EH-vector-ctor's 8 x 0x1c is sizeof(CPtrList) - so the host walks them through
 // CPtrList::GetHeadPosition()/GetNext(), and RemoveAll() needs no cast.)
 
@@ -375,7 +373,7 @@ public:
         Teardown();
     }
 
-    // ----- the per-tab widget builders (the ex-"CStatusBarMgr" view's own methods) ---
+    // ----- the per-tab widget builders ---
     i32 LoadTabSprites(); // 0x102250
     void BuildGameMenu(); // 0x101580 (the GAMETAB menu builder; called at the Game-tab tail)
 
@@ -435,11 +433,10 @@ public:
     // ----- sibling methods called by the reconstructed bodies (declared so the
     // ILT call targets resolve; bodies live elsewhere / are stubbed) -----
     void ResetGroupA();
-    // 0x10bbe0: the rez-machine active-value getter (ex the C10bbe0 placeholder; body
-    // in SBI_RectOnly.cpp - m_extraNotifyArg0 / m_ptrPool active cell).
+    // 0x10bbe0: the rez-machine active-value getter (body in SBI_RectOnly.cpp -
+    // m_extraNotifyArg0 / m_ptrPool active cell).
     i32 GetActiveValue();
-    i32 LoadStatzTabToggleSprite(i32 value, i32 idx); // 0x104e60 (body in SBI_RectOnly.cpp;
-                                                      // ex the EngineLabelBacklog placeholder)
+    i32 LoadStatzTabToggleSprite(i32 value, i32 idx); // 0x104e60 (body in SBI_RectOnly.cpp)
     void UpdateGruntOvenStatusBar();
     void TickGauge();
     i32 GaugeComplete();   // call 0x3e2c - gauge-at-100 completion test
@@ -529,8 +526,7 @@ public:
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     // +0x00 is a DATA member, not a vptr: this class has no vtable, and the code both
     // reads it (`*(i32*)this == 2` subtype gate) and WRITES it (SetState), then persists
-    // it to the registry under "StatusBar Position". The ex-CStatusBarMgr view called it
-    // m_00 ("status-bar side/mode selector") - same slot, same role.
+    // it to the registry under "StatusBar Position".
     i32 m_position; // +0x00  status-bar side/position selector (registry "StatusBar Position")
     i32 m_4;        // +0x04
     i32 m_8;        // +0x08
@@ -549,8 +545,7 @@ public:
     // [1]..[5] are the per-tab widget lists the tab selector (m_activeTab, 1..5) picks:
     // [1] Statz  [2] Gruntz  [3] Resource  [4] Multiplayer  [5] Game.
     // [0] is the always-present widget list BuildStatusBarTabs appends to; [6]/[7] are
-    // the trailing notify/hit-test lists. (This array is what the old view could only
-    // reach by casting `((CRezList*)((char*)this + 0x2c))` - the cast fell out with it.)
+    // the trailing notify/hit-test lists.
     CPtrList m_tabLists[8];       // +0x2c .. +0x10c
     i32 m_activeTab;              // +0x10c  active tab index (1..5)
     i32 m_itemKind;               // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
@@ -656,8 +651,7 @@ public:
     i32 m_rezActive;             // +0x528  rez-machine snooze/wake active flag
     i32 m_rezTick;               // +0x52c  rez-machine wake tick counter
     // +0x530  the pooled-ptr collection: a REAL MFC ::CPtrArray (0x14 -> +0x530..+0x543).
-    // Its internals are the fields this header used to name by hand: m_pData @+0x534 (was
-    // m_ptrTable), m_nSize @+0x538 (was m_ptrCount), m_nMaxSize @+0x53c, m_nGrowBy @+0x540.
+    // Its internals: m_pData @+0x534, m_nSize @+0x538, m_nMaxSize @+0x53c, m_nGrowBy @+0x540.
     ::CPtrArray m_ptrPool;
     i32 m_544;    // +0x544  stamped 1 at the session new-site (CMulti::SetupMultiplayerSession
                   //         0xb5460, with m_barFrameGate = 0x1e0); role unrecovered
@@ -685,12 +679,11 @@ public:
 SIZE(CStatusBarMgr, 0x630);
 
 // The cue-lookup string map embedded at host->m_28 + 0x10 (CMapStringToOb).
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
+// (The member is the real MFC CMapStringToOb; Lookup @0x1b8438.)
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval). Same shape as GameMode's CBootyFound.
-class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
+class DSoundCloneInst; // the pooled cue player (Dsndmgr/DirectSoundMgr.h)
 struct CSbiCueRecord {
     char m_pad0[0x10];
     DSoundCloneInst* m_10; // +0x10  player (ConfigureItem this)
@@ -735,28 +728,28 @@ struct CSbiGameMgr {
 };
 SIZE_UNKNOWN(CSbiGameMgr);
 
-// REMOVED (was `struct CSbiSubMgr`): the current play-state at g_gameReg->m_curState
+// The current play-state at g_gameReg->m_curState
 // (+0x2c) is the real CPlay (Play.h). Its highlight methods are CPlay methods, reached
 // via ((CPlay*)g_gameReg->m_curState) - a genuine CState->CPlay downcast (m_curState is
 // canonically CState*): ScrollTo->ResetGoals (0xd5f00), Refresh->ResetViewport (0xd8c60),
 // PostWarn->ArmSnapshot (0xd9240), HiToggle->EnterOverlayDrag (0xd6440), SetState (0xd5b20),
 // HiRefresh (0xd6560), and the +0x4f0 highlight-busy gate (CPlay::m_4f0).
 
-// (CSbiTileEntry / CSbiTileSub are GONE - DISSOLVED 2026-07-15: the m_grid[] cell
+// (the m_grid[] cell
 //  is the real ::CGrunt (the CTmCell typedef in TriggerMgr.h) and its +0x10
 //  sub-object the real CGruntHud, whose m_screenX/m_screenY (+0x5c/+0x60) are the
 //  origin pair PlaceCursorTarget forwards to ResetGoals - the same pair every
 //  other CGruntHud consumer reads. SBI_RectOnly.cpp reaches them cast-free.)
 
-// REMOVED (was `struct CSbiActiveObj`): the single-player active object at
+// The single-player active object at
 // g_gameReg->m_68 (+0x68) is the real CTriggerMgr (TriggerMgr.h), reached via
 // ((CTriggerMgr*)g_gameReg->m_68) - a genuine per-mode-reused void* slot (grid/goo-
 // well/light-fx in other modes). ProbeXY->ResetCell (0x46bfd0), ScrollProbe->
 // RecordListHas (0x4784d0), LoadCameraSprite (0x478960); the placed-cursor latch trio
 // is CTriggerMgr m_230/m_recX/m_recY, m_288 == m_288, m_400 == m_groupFlag. The grid
-// element type is CTmCell (still an unmatched engine cell), viewed here as CSbiTileEntry.
+// element type is CTmCell (still an unmatched engine cell).
 
-// REMOVED (was `struct CSbiLogger`): the settings/registry writer at
+// The settings/registry writer at
 // g_gameReg->m_settings (+0x38) is the real Utils::RegistryHelper (RegistryHelper.h),
 // reached via ((Utils::RegistryHelper*)g_gameReg->m_settings). LogPos->SetValueDword,
 // QueryPos->GetValueDword (0x1395d0). (m_settings stays void* in the canonical header -
@@ -771,8 +764,7 @@ struct CSbiWndHost {
 };
 SIZE_UNKNOWN(CSbiWndHost);
 
-// CONSOLIDATED (was the per-TU `struct CGameReg`, an offset-0 SAME-MEMORY ALIAS of the
-// *0x24556c singleton): dissolved into the canonical CGameRegistry (<Gruntz/GameRegistry.h>).
+// The *0x24556c singleton is the canonical CGameRegistry (<Gruntz/GameRegistry.h>).
 // The scalar slots are canonical members reached cast-free (m_c -> m_frameGate +0xc,
 // m_10 -> m_soundEnabled +0x10, m_modeW/m_modeH/m_11c/m_134); the pointer slots are the
 // canonical sub-object members reached through evidence-backed downcasts to the REAL
@@ -786,8 +778,8 @@ SIZE_UNKNOWN(CSbiWndHost);
 // (CSbiWndHost*) (a 1-field window-host shell) and m_world (+0x30) -> (CSbiGameMgr*) (the
 // resource mgr / CDDrawSurfaceMgr; its fold is DEFERRED - a deep CDDrawSurfaceMgr sub-object cascade, see
 // the CSbiMusicHost/CSbiMainL1 note above and GameRegistry.h's m_world typing).
-// The three TU-specific methods re-homed to CGameRegistry as the real CGruntzMgr methods
-// they are: Fn29aa->UpdateScoreHud (0x860b0), HiPump->AccrueScoreTime (0x861e0),
+// The three TU-specific methods are the real CGruntzMgr methods: Fn29aa->UpdateScoreHud
+// (0x860b0), HiPump->AccrueScoreTime (0x861e0),
 // SetToggle->FinishLevel (0x8e980); ReportError(i32,i32) added as the i32,i32 overload.
 // The dead inline ViewSize() (unused - 0xfe520 reads m_modeW/m_modeH directly) is dropped.
 
@@ -923,8 +915,7 @@ public:
 SIZE_UNKNOWN(CSbiHiWidget);
 
 // ---------------------------------------------------------------------------
-// CStatusBarMgr::CStatusBarMgr - the real inline default ctor, transplanted from the
-// hand-rolled ~100-store block the two `new`-sites used to open-code (2026-07-13).
+// CStatusBarMgr::CStatusBarMgr - the real inline default ctor.
 //
 // The MEMBER CONSTRUCTIONS the compiler now emits are exactly retail's, in declaration
 // (== ascending offset) order:
