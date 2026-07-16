@@ -14,6 +14,7 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
@@ -106,13 +107,13 @@ i32 CGruntToySprite::SetCell(i32 x, i32 y) {
 // -0x20) into the bound renderable. Returns 0.
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGruntEntry* e = ((CGruntEntry**)((char*)g_gameReg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = ((CGrunt**)((char*)g_gameReg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }
-    i32 layer = e->m_layerIndex;
+    i32 layer = e->m_198;
     if (m_lastLayer != layer) {
-        CGruntRenderable* r = (CGruntRenderable*)m_object;
+        CGameObject* r = m_object;
         m_lastLayer = layer;
         CGruntLayerHolder* h = r->m_layerHolder;
         if (h != 0) {
@@ -126,8 +127,8 @@ i32 CGruntToySprite::Update() {
             r->m_resolvedLayer = layer;
         }
     }
-    m_object->m_screenX = e->m_renderable->m_screenX;
-    m_object->m_screenY = e->m_renderable->m_screenY - 0x20;
+    m_object->m_screenX = e->m_object->m_screenX;
+    m_object->m_screenY = e->m_object->m_screenY - 0x20;
     return 0;
 }
 

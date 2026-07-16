@@ -39,38 +39,25 @@ struct CGruntLayerHolder {
 };
 
 // ---------------------------------------------------------------------------
-// CGruntRenderable - the visible sprite the indicator binds to (CUserLogic::m_10
-// AND each grunt entry's +0x10). The updaters read/copy its screen position
-// (+0x5c/+0x60) and, for the Toy sprite, its layer fields (+0x190/+0x194/+0x198).
+// CGruntEntry / CGruntRenderable: FOLDED (VT1) onto their real classes - they were
+// views, not classes. One grunt slot in the registry's grunt table (base
+// g_gameReg->m_cmdGrid + 0x1c, indexed by m_cellX*15 + m_cellY) is a `CGrunt*`, and
+// the "renderable" it hangs at +0x10 is the plain `CGameObject*` every CUserLogic
+// already calls m_object. Proof:
+//   CGruntEntry == CGrunt      - the table slot was documented as "a dword pointer to
+//     a grunt"; +0x10 is CUserLogic::m_object (inherited), +0x198/+0x1d8 are CGrunt's
+//     m_198/m_arrived, and the slot-16 stat getters read +0x3f0/+0x3f4/+0x3f8 =
+//     CGrunt's m_stamina/m_toyTime/m_wingzTime (identical offsets AND names).
+//   CGruntRenderable == CGameObject - identical names at identical offsets
+//     (m_screenX +0x5c, m_screenY +0x60) plus +0x4c/+0x50/+0x58 =
+//     m_drawFillArg/m_drawFillCmd/m_drawActive, which the same TUs ALREADY spell the
+//     CGameObject way; and every use site reached it by casting `(CGruntRenderable*)
+//     m_object` - a CGameObject* - which is the cast that proves the type.
+// The three role-fields the view carried (+0x190/+0x194/+0x198) are now named union
+// members on CGameObject in <Gruntz/UserLogic.h>. CGruntLayerHolder above STAYS: its
+// +0x14/+0x64/+0x68 shape matches no existing class (it is NOT CGameObjLayer, whose
+// +0x10/+0x14 z-clamps disagree), so it is a real distinct type, not a view.
 // ---------------------------------------------------------------------------
-struct CGruntRenderable {
-    char m_pad00[0x4c];
-    i32 m_buteRec;      // +0x4c  bute-set record (powerup setter)
-    i32 m_displayState; // +0x50  display state (== 7)
-    char m_pad54[0x58 - 0x54];
-    i32 m_visible; // +0x58  visibility flag (== 1)
-    i32 m_screenX; // +0x5c  screen x
-    i32 m_screenY; // +0x60  screen y
-    char m_pad64[0x190 - 0x64];
-    i32 m_resolvedLayer;              // +0x190  resolved layer index
-    CGruntLayerHolder* m_layerHolder; // +0x194  layer-clamp holder
-    i32 m_mappedLayer;                // +0x198  mapped layer value
-};
-
-// ---------------------------------------------------------------------------
-// CGruntEntry - one grunt slot in the registry's grunt table. The table base is
-// g_gameReg->m_68 + 0x1c, indexed by (m_54*15 + m_58); each slot is a dword
-// pointer to a grunt. The updaters read the grunt's renderable (+0x10), a "drawn"
-// gate (+0x1d8) and a layer index (+0x198).
-// ---------------------------------------------------------------------------
-struct CGruntEntry {
-    char m_pad00[0x10];
-    CGruntRenderable* m_renderable; // +0x10  the grunt's renderable
-    char m_pad14[0x198 - 0x14];
-    i32 m_layerIndex; // +0x198  the grunt's current layer index
-    char m_pad19c[0x1d8 - 0x19c];
-    i32 m_drawn; // +0x1d8  the grunt's "drawn/visible" gate
-};
 
 // ---------------------------------------------------------------------------
 // CGameRegistry - the minimal game-registry view the indicator updaters use.

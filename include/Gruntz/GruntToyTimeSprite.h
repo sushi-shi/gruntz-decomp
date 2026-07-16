@@ -26,15 +26,9 @@ public:
         return LOGIC_GRUNTTOYTIMESPRITE;
     }
     virtual ~CGruntToyTimeSprite() OVERRIDE;          // 0x012130 (folds the CUserLogic teardown)
-    virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
+    virtual i32 Vslot16(CGrunt* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
 VTBL(CGruntToyTimeSprite, 0x001e79ec);
 SIZE(CGruntToyTimeSprite, 0x64); // recovered from operator-new sites (gruntz.analysis.news)
-
-// GetToyTime (0x07fca0): free __stdcall accessor (ret 4) reading the bound CGrunt's
-// m_toyTime (+0x3f4), the sibling of GetStaminaTime (+0x3f0) / GetWingzTime (+0x3f8).
-// Standalone helper, not a sprite member - stale-ecx trace mis-homing (the __stdcall
-// callee reads a foreign CGrunt, no fn-pointer storage). Declared free below.
-i32 __stdcall GetToyTime(CGrunt* o);
 
 #endif // GRUNTZ_CGRUNTTOYTIMESPRITE_H

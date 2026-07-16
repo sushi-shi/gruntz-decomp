@@ -54,12 +54,14 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
 RVA(0x00012070, 0x44)
 CGruntStaminaSprite::~CGruntStaminaSprite() {}
 
-// GetStaminaTime @0x0007fbb0 - free __stdcall accessor: read the bound grunt's
-// +0x3f0 stamina-timer field and return it (single stack arg, callee cleanup -
-// `mov eax,[esp+4]; mov eax,[eax+0x3f0]; ret 4`). Not a sprite member: the ecx
-// trace mis-homed this __stdcall callee (stale-ecx owner); it reads a foreign
-// CGrunt and is never stored as a fn pointer.
+// CGruntStaminaSprite::Vslot16 (0x0007fbb0) - the leaf's slot-16 stat-time getter:
+// read the bound grunt's +0x3f0 stamina-timer (`mov eax,[esp+4]; mov eax,[eax+0x3f0];
+// ret 4`).
+// WIRED (VT1): was the free fn `GetStaminaTime`, whose comment claimed it "is never
+// stored as a fn pointer" - refuted by vtable_scan --holds 0x07fbb0 (this class's slot
+// 16) while the declared `virtual Vslot16 OVERRIDE` had no definition. Byte-neutral -
+// see the CGruntWingzTimeSprite::Vslot16 sibling for the ABI argument.
 RVA(0x0007fbb0, 0xd)
-i32 __stdcall GetStaminaTime(CGrunt* o) {
-    return o->m_stamina;
+i32 CGruntStaminaSprite::Vslot16(CGrunt* grunt) {
+    return grunt->m_stamina;
 }

@@ -10,6 +10,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/GruntHealthSprite.h>
+#include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SerialObjRef.h> // (moved from header; +0x34 serialized-object-ref, .cpp-only)
@@ -127,7 +128,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_cellX = x;
     m_cellY = y;
     i32 slot = 0x15 - static_cast<i32>((static_cast<double>(health) * 0.2 + 0.5));
-    CGruntRenderable* obj = (CGruntRenderable*)m_object;
+    CGameObject* obj = m_object;
     CGruntLayerHolder* map = obj->m_layerHolder;
     if (map) {
         i32 glyph;
@@ -165,14 +166,14 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
 RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
     CGameRegistry* reg = g_gameReg;
-    CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    CGrunt* e = ((CGrunt**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }
     i32 result = Vslot16(e);
     if (m_health != result) {
         i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
-        CGruntRenderable* obj = (CGruntRenderable*)m_object;
+        CGameObject* obj = m_object;
         CGruntLayerHolder* holder = obj->m_layerHolder;
         if (holder != 0) {
             i32 glyph;
@@ -186,8 +187,8 @@ i32 CGruntHealthSprite::HealthUpdate() {
         }
         m_health = result;
     }
-    m_object->m_screenX = e->m_renderable->m_screenX;
-    m_object->m_screenY = m_60 + e->m_renderable->m_screenY;
+    m_object->m_screenX = e->m_object->m_screenX;
+    m_object->m_screenY = m_60 + e->m_object->m_screenY;
     return 0;
 }
 

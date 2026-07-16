@@ -17,6 +17,7 @@
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
@@ -126,11 +127,11 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGameRegistry* reg = g_gameReg;
-    CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
-    if (e != 0 && e->m_drawn != 0) {
+    CGrunt* e = ((CGrunt**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    if (e != 0 && e->m_arrived != 0) {
         m_38->m_1a0.Advance(g_engineFrameDelta);
-        m_object->m_screenX = e->m_renderable->m_screenX;
-        m_object->m_screenY = e->m_renderable->m_screenY;
+        m_object->m_screenX = e->m_object->m_screenX;
+        m_object->m_screenY = e->m_object->m_screenY;
     }
     return 0;
 }

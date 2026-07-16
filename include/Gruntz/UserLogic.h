@@ -253,7 +253,10 @@ struct CGameObject {
     char m_pad17c[0x188 - 0x17c];
     i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
     i32 m_18c; // +0x18c  (WwdFile stamp: -1; CWwdGameObject low byte = dot color / setup flag)
-    i32 m_190; // +0x190  (WwdFile stamp: -1; sprite role: the cached frame number)
+    union { // +0x190  role-union
+        i32 m_190;           // (WwdFile stamp: -1; sprite role: the cached frame number)
+        i32 m_resolvedLayer; // grunt-indicator role: the layer index the glyph resolved from
+    };
     union {    // +0x194  role-union: a WwdFile-loaded object keeps its source-def
                //         record; a CreateSprite'd object caches the looked-up sprite
                //         (ApplyName/ApplyLookupSprite) / its CImageSet (ActionArea's
@@ -261,8 +264,15 @@ struct CGameObject {
         char* m_194;                 // source-def record (class-name string at +0x24)
         struct CSprite* m_sprite;    // cached sprite (frame-cache role)
         class CImageSet* m_imageSet; // cached image set (color/brightness role)
+        // grunt-indicator role: the layer-clamp/glyph table the Grunt*Sprite updaters
+        // walk (m_layerLo/m_layerHi bounds + m_layerTable). Was the CGruntRenderable
+        // view's own +0x194 member before that view was folded onto this class.
+        struct CGruntLayerHolder* m_layerHolder;
     };
-    CGameObjLayer* m_layer; // +0x198  (sprite role: the cached frame ptr)
+    union {                     // +0x198  role-union
+        CGameObjLayer* m_layer; // (sprite role: the cached frame ptr)
+        i32 m_mappedLayer;      // grunt-indicator role: the glyph the layer mapped to
+    };
     i32 m_19c;              // +0x19c  (WwdFile stamp: 0)
     // +0x1a0..+0x1db: the embedded CAniAdvanceCursor (one real 0x3c member; vptr
     // @+0x1a0, end +0x1dc == SIZE(CGameObject)). The former per-leaf sink views

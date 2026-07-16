@@ -53,12 +53,18 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
 RVA(0x000121f0, 0x44)
 CGruntWingzTimeSprite::~CGruntWingzTimeSprite() {}
 
-// GetWingzTime @0x07fd90 - free __stdcall accessor: read the bound grunt's +0x3f8
-// wingz-timer field and return it (single stack arg, callee cleanup -
-// `mov eax,[esp+4]; mov eax,[eax+0x3f8]; ret 4`). Not a sprite member: the ecx
-// trace mis-homed this __stdcall callee (stale-ecx owner); it reads a foreign
-// CGrunt and is never stored as a fn pointer.
+// CGruntWingzTimeSprite::Vslot16 (0x07fd90) - ??_7CGruntWingzTimeSprite (0x1e77cc)
+// slot 16, +0x40: the leaf's stat-time getter. Reads the bound grunt's +0x3f8
+// wingz-timer and returns it (`mov eax,[esp+4]; mov eax,[eax+0x3f8]; ret 4`).
+// WIRED (VT1): was the free fn `GetWingzTime`, whose comment claimed it "is never
+// stored as a fn pointer" - refuted by vtable_scan --holds 0x07fd90, which puts it in
+// this class's slot 16 while the declared `virtual Vslot16 OVERRIDE` had no definition.
+// The old note reasoned from the ecx/this trace, which is unreliable for non-__thiscall
+// (see the archived trace-owner memo) - vtable_scan is the authority.
+// Byte-neutral: a __thiscall virtual that never touches `this` (ecx) emits exactly the
+// __stdcall bytes above - `grunt` is the sole stack arg at [esp+4] and cleanup is ret 4.
+// That codegen coincidence is precisely what let the wiring defect hide.
 RVA(0x0007fd90, 0xd)
-i32 __stdcall GetWingzTime(CGrunt* o) {
-    return o->m_wingzTime;
+i32 CGruntWingzTimeSprite::Vslot16(CGrunt* grunt) {
+    return grunt->m_wingzTime;
 }

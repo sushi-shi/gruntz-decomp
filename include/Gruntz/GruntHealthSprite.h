@@ -21,14 +21,18 @@
 #define GRUNTZ_CGRUNTHEALTHSPRITE_H
 
 #include <rva.h>
-// The health glyph resolve reads its bound game object (CUserLogic::m_10) through
-// the SAME shared views the indicator sprites use: CGruntRenderable (the bound
-// grunt renderable) and its +0x194 gated lookup table CGruntLayerHolder
-// (table @+0x14, [m_64..m_68] index gate - the shared gated-lookup archetype,
-// also seen as CStatzGlyphMap). No health-local duplicate view is kept.
-#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg + CGruntRenderable/CGruntLayerHolder
+// The health glyph resolve reads its bound game object (CUserLogic::m_object) directly
+// - the object IS a CGameObject (the CGruntRenderable view was folded onto it) - through
+// its +0x194 gated lookup table CGruntLayerHolder (table @+0x14, [m_64..m_68] index gate
+// - the shared gated-lookup archetype, also seen as CStatzGlyphMap).
+#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg + CGruntLayerHolder
 #include <Gruntz/UserLogic.h>     // CUserLogic base (CGruntHealthSprite : CUserLogic)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive (Read +0x2c / Write +0x30)
+
+// The bound grunt the slot-16 stat getter reads (a registry grunt-table slot). A pointer
+// param needs no definition; `class` (not `struct`) is required - <Gruntz/Grunt.h> defines
+// `class CGrunt`, and the keyword picks the mangling (PAVCGrunt@@ vs PAUCGrunt@@).
+class CGrunt;
 
 SIZE_UNKNOWN(CGruntHealthSprite);
 class CGruntHealthSprite : public CUserLogic {
@@ -50,7 +54,7 @@ public:
     i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4); // 0x07f270
     // slot 16 (new): the per-class stat-time getter (leaf overrides read the bound
     // grunt's stamina/wingz/toy timer); HealthUpdate dispatches it with the grunt entry.
-    virtual i32 Vslot16(CGruntEntry* grunt);
+    virtual i32 Vslot16(CGrunt* grunt);
     CGruntHealthSprite();                   // 0x011ef0 (no-arg ctor; body in GruntHealthSprite.cpp)
     CGruntHealthSprite(CGameObject* obj);   // 0x07eb00 (1-arg ctor; body in GruntHealthSprite.cpp)
     virtual ~CGruntHealthSprite() OVERRIDE; // 0x011fb0 (folds the CUserLogic teardown; out-of-line

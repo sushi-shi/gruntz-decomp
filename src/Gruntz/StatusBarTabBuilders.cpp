@@ -241,12 +241,15 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 }
 
 // @early-stop
-// 0x0e8e00 (1.0 KB) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
-// neighbourhood (this TU owns the 0xe8cb0 SBI_GruntMachine block). __thiscall(4 args,
-// 0x88-byte frame) status-bar grunt-machine tab worker over g_gameReg->m_30. Homed
-// pending leaf-first reconstruction (>512 B).
+// 0x0e8e00 (1.0 KB) = CSBI_GruntMachine::SbiVfunc0 - ??_7CSBI_GruntMachine (0x1eadbc)
+// slot 1, +0x4. A status-bar grunt-machine tab worker over g_gameReg->m_30. Homed from
+// src/Stub/GapFunctions.cpp (matcher-5); body pending leaf-first reconstruction (>512 B).
+// WIRED (VT1): was the free fn `Gap_0e8e00` while the class's `virtual i32 SbiVfunc0()
+// OVERRIDE // slot 1` had no definition - the slot's reloc dangled onto a __cdecl free
+// symbol. Signature is the base CStatusBarItem::SbiVfunc0 `i32()` (StatusBarItem.h:69);
+// the old "__thiscall(4 args)" note was a Ghidra arity guess, not the declared slot.
 RVA(0x000e8e00, 0x41a)
-i32 Gap_0e8e00(void) {
+i32 CSBI_GruntMachine::SbiVfunc0() {
     return 0;
 }
 
@@ -453,11 +456,14 @@ i32 CSBI_SideTab::Render(i32 z) {
 }
 
 // @early-stop
-// 0x0e9a30 (798 B) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
-// neighbourhood (this TU owns the 0xe9820/0xe99c0/0xe9850 SBI_SideTab block).
-// A status-bar side-tab worker; homed pending leaf-first reconstruction (>512 B).
+// 0x0e9a30 (798 B) = CSBI_SideTab::SbiVfunc0 - ??_7CSBI_SideTab slot 1, +0x4. A
+// status-bar side-tab worker. Homed from src/Stub/GapFunctions.cpp (matcher-5); body
+// pending leaf-first reconstruction (>512 B).
+// WIRED (VT1): was the free fn `Gap_0e9a30` while the class's `virtual i32 SbiVfunc0()
+// OVERRIDE // slot 1` had no definition. Signature is the base CStatusBarItem::SbiVfunc0
+// `i32()` (StatusBarItem.h:69).
 RVA(0x000e9a30, 0x31e)
-i32 Gap_0e9a30(void) {
+i32 CSBI_SideTab::SbiVfunc0() {
     return 0;
 }
 

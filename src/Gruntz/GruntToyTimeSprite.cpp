@@ -40,11 +40,14 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CGameObject* obj) : CGruntHealthSprite(
     m_60 = -0x20; // +0x60  toy-time icon screen-offset Y (drawn above the grunt)
 }
 
-// GetToyTime @0x0007fca0 - free __stdcall accessor: read the bound grunt's +0x3f4
-// toy-timer field and return it (`mov eax,[esp+4]; mov eax,[eax+0x3f4]; ret 4`).
+// CGruntToyTimeSprite::Vslot16 (0x0007fca0) - the leaf's slot-16 stat-time getter:
+// read the bound grunt's +0x3f4 toy-timer (`mov eax,[esp+4]; mov eax,[eax+0x3f4]; ret 4`).
+// WIRED (VT1): was the free fn `GetToyTime` while the declared `virtual Vslot16
+// OVERRIDE` had no definition (vtable_scan --holds 0x07fca0 -> this class's slot 16).
+// Byte-neutral - see the CGruntWingzTimeSprite::Vslot16 sibling for the ABI argument.
 RVA(0x0007fca0, 0xd)
-i32 __stdcall GetToyTime(CGrunt* o) {
-    return o->m_toyTime;
+i32 CGruntToyTimeSprite::Vslot16(CGrunt* grunt) {
+    return grunt->m_toyTime;
 }
 
 // ~CGruntToyTimeSprite @0x012130 - the /GX leaf dtor. Folds the bare CUserLogic

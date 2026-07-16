@@ -322,6 +322,10 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
 // 0x43670 = CWarlord::SerializeMove (vtable slot 1, +0x4; origin CUserBase). Homed
 // from src/Stub/GapFunctions.cpp (matcher-5); attribution vtable-proven (??_7CWarlord
 // +0x4). A 3104-byte archive save/load round-trip.
+// WIRED (VT1): was the free fn `Gap_043670` - the identity above was already proven but
+// never joined to the slot, so ??_7CWarlord+0x4's reloc dangled onto a __cdecl free
+// symbol while the class's own `virtual SerializeMove OVERRIDE` had no definition.
+// Now the real override (gruntz.match.vtable_slot_binding).
 //
 // FULLY DECODED (R3, this session) - the complete body is understood; it is NOT a
 // blind stub. Signature: i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
@@ -361,7 +365,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
 // committing it would regress. Needs a dedicated frame-exact pass that can reproduce
 // the per-temp slot allocation (or a permuter run seeded with the decode above).
 RVA(0x00043670, 0xc20)
-i32 Gap_043670(void) {
+i32 CWarlord::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     return 0;
 }
 
