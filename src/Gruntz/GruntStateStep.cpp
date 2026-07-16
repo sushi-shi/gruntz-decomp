@@ -38,9 +38,8 @@
 // fabrication Grunt.h records as GruntListSub.  Find1de8 @0x1de8 thunks to the free
 // __stdcall ListNodeAdvance @0x29a30; RemoveAll1b48a6 @0x1b48a6 IS CPtrList::RemoveAll.)
 void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
-// (the ex-CStepSub10 view of g->m_10 is GONE - it is the real CGruntHud (m_screenX/m_screenY);
-// the ex-CStepOwner view of g->m_14 is GONE - it is the real CAnimLookupNode (m_1c). Both
-// are CGrunt's already-typed sub-objects, so the local views were redundant casts.)
+// (g->m_10 is the real CGruntHud (m_screenX/m_screenY); g->m_14 is the real
+// CAnimLookupNode (m_1c) - both are CGrunt's already-typed sub-objects.)
 // CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
 // DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
@@ -58,7 +57,7 @@ extern char s_codeJ[];
 // m_width/m_height, +0x60..+0x6c the bound RECT, +0x70/+0x74 the clipped extents. It IS the
 // CBrickzGrid/CMapMgr board. Typing the member with the real class made both the shell and
 // the cast at the call fall out.)
-// `this` (ebp) is the canonical CBattlezMapConfig (was the CStepMgr view): its board
+// `this` (ebp) is the canonical CBattlezMapConfig: its board
 // is m_triggerMgr (CTriggerMgr, the 4x15 CGrunt* m_grid at +0x1c), the pathfinding grid
 // is m_board (CBrickzGrid/CMapMgr), the thresholds are m_08c/m_090/m_0a0/m_0a4, and the
 // random-goal "table" is the CPtrArray m_0f0 (data @ +0xf4 via GetData, count @ +0xf8

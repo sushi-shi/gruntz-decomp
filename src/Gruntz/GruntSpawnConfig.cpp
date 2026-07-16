@@ -172,8 +172,7 @@ void CGruntSpawnConfig::ClearSprites() {
 // sub-object holds the currently-active voice id at +0x188 (folded into the header;
 // the former CSpawnGate/CSpawnGateInner .cpp-local views are dissolved). The two owned
 // voice streams (m_10/m_14) are real Dsndmgr StreamVoices (SetSource 0x1374c0 /
-// Configure 0x137520 / the embedded StreamVoiceFeeder at +0x6c) - the former
-// CSpawnStream .cpp-local view is dissolved onto <Dsndmgr/StreamVoice.h>.
+// Configure 0x137520 / the embedded StreamVoiceFeeder at +0x6c).
 // (OpenStream lives on the unified CSpawnRemoveColl at m_04->m_20; see the header.)
 
 // The game registry pointer at *0x64556c (reloc-masked DATA; DATA label owned by
@@ -442,8 +441,7 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
 // copy construct the /GX frame. EXACT once the flag is passed through (the
 // earlier "frame-size wall" was really the dropped 2nd ctor arg - a `push flag`).
 // The list is a CPtrList (retail calls 0x1b4867/0x1b4991, the CPtrList band - see
-// SpawnList.h), so AddTail takes the record straight: the old `(CObject*)` cast was
-// forced by the WRONG container type, not by the language.
+// SpawnList.h), so AddTail takes the record straight - no `(CObject*)` cast needed.
 RVA(0x0011c560, 0x91)
 void CSpawnList::AddVoiceSound(CString s, i32 flag) {
     CSpawnEntry* node = new CSpawnEntry(s, flag);
