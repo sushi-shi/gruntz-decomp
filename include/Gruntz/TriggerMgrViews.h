@@ -7,11 +7,10 @@
 // over UNMATCHED engine classes (the fold worklist is in each struct's comment);
 // only offsets + code bytes are load-bearing.
 //
-// The 0x64556c singleton is the REAL ::CGruntzMgr (its extern is declared per-TU). The
-// former CTmGameReg / CTmScoreBoard fake views are DELETED: +0x6c is the real
-// CGruntzCmdMgr, +0x70 the real CGruntzMapMgr, +0x7c the real CBattlezData (whose m_score/
-// m_counts names were migrated off CTmScoreBoard). TileGridCommand.h no longer declares
-// g_gameReg, so each TU picks the type it needs.
+// The 0x64556c singleton is the REAL ::CGruntzMgr (its extern is declared per-TU): +0x6c
+// is the real CGruntzCmdMgr, +0x70 the real CGruntzMapMgr, +0x7c the real CBattlezData
+// (m_score/m_counts). TileGridCommand.h no longer declares g_gameReg, so each TU picks
+// the type it needs.
 
 #ifndef GRUNTZ_TRIGGERMGR_VIEWS_H
 #define GRUNTZ_TRIGGERMGR_VIEWS_H
@@ -65,14 +64,9 @@ struct CTmDisplay {
     i32 m_198; // +0x198  clickable/hit gate
 };
 
-// (The CTmCell view is GONE. It was a second model of ::CGrunt - identity long proven -
-//  and it is now a typedef in <Gruntz/TriggerMgr.h>, so every method the leaves dispatch
-//  on a placed grid grunt binds to the REAL ?X@CGrunt@@ body instead of a phantom
-//  ?X@CTmCell@@ that nothing on earth defines. What blocked this fold was believed to be a
-//  "+0x120 phantom-gap layout bug" in CGrunt; that bug does not exist - see the note in
-//  <Gruntz/TriggerMgr.h>. The view's proven-but-unnamed offsets (0x114/0x118/0x124,
-//  0x884/0x888/0x88c) were migrated onto CGrunt, and its sub-object views folded onto
-//  CGrunt's real typed members.)
+// (CTmCell is a typedef for ::CGrunt in <Gruntz/TriggerMgr.h>, so the leaves dispatch on
+//  a placed grid grunt through the real ?X@CGrunt@@ bodies. Its proven-but-unnamed
+//  offsets (0x114/0x118/0x124, 0x884/0x888/0x88c) are CGrunt members.)
 
 // The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
 
@@ -89,12 +83,10 @@ struct CTmDisplay {
 // The status-bar item at world->m_2dc is the real CStatusBarMgr (<Gruntz/StatusBarMgr.h>,
 // included above): SetMode @0x10bb90, TryActivate/Reset/Place/Run; the reset path reads its
 // offset-0 subtype tag (*(i32*)), sub-state (m_activeTab @0x10c), busy flag (m_hlBusy @0x548)
-// and frees its retab notifier (m_retabNotify @0x54c). The former CTmStatusItem flat view is
-// gone - m_2dc is typed CStatusBarMgr* so the method calls need no per-site cast.
+// and frees its retab notifier (m_retabNotify @0x54c). m_2dc is typed CStatusBarMgr* so
+// the method calls need no per-site cast.
 
-// (The `CTmWorld` FIELD view of g_gameReg->m_curState and its `CTmScoreSub` m_3f4
-//  (<Gruntz/Play.h>) - its methods were already folded (LoadCursorSprites/ArmSnapshot/
-//  ResetGoals/OnRegion4/FlushPendingOps), and its FIELDS map member-for-member:
+// (g_gameReg->m_curState is CPlay (<Gruntz/Play.h>); its fields map member-for-member:
 //  m_2dc==CPlay::m_guts (CStatusBarMgr), +0x384==CPlay::m_anchors[4], m_3f4==CPlay::
 //  m_frameMarker (CTimer - the "score sub" was the frame-marker timer: m_30/m_34==
 //  m_accumLo/Hi, m_38:m_3c==the i64 start stamp, m_48/m_4c==m_running/m_currentMs),
@@ -160,9 +152,8 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 // (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
 // masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
 
-// (CTmPuddleTarget is GONE - it was a SECOND view of the baseList element the canonical
-//  CTmCandidate (<Gruntz/TriggerMgr.h>) already models: same +0x38 bound/goal object,
-//  same +0x54/+0x58 grid pair, same +0x5c occupied gate. Its Place @0x9c3f0 moved there.)
+// (The baseList element is the canonical CTmCandidate (<Gruntz/TriggerMgr.h>): +0x38
+//  bound/goal object, +0x54/+0x58 grid pair, +0x5c occupied gate; Place @0x9c3f0.)
 // The cell record nodes PlacePuddle walks: this+0x4 is the intrusive CPtrList head node,
 // this+0xc its count. Each node carries the next ptr @+0 and the placed-object @+0x8.
 // (These are MFC CPtrList CNodes - next/prev/data - viewed with a typed data slot.)
@@ -172,7 +163,7 @@ struct CTmRecNode {
     CTmCandidate* m_obj; // +0x08  placed object (the baseList candidate element)
 };
 
-// (CTmPendingFx is GONE - the +0x2a0 object is the pending-fx GRUNT: its `Pulse()` was
+// (The +0x2a0 object is the pending-fx GRUNT: its Pulse() is
 //  ?ResolveDeathAnimation@CGrunt@@QAEHXZ @0x455f0 through ILT 0x3a1c at both call sites,
 //  and the deserializer stores the looked-up sprite's m_7c->m_logic there. The member is
 //  typed CTmCell* (== CGrunt) in <Gruntz/TriggerMgr.h>.)
