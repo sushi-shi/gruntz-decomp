@@ -64,6 +64,16 @@ struct CRezFillRect {
 };
 SIZE(CRezFillRect, 0x10);
 
+// The foreign 8bpp palette object CRezImage::Convert8To16 reads through its void* pal
+// arg (retail's `PAX...0` signature; the pool hands it around as an i32 handle): an
+// 8-byte header then the 256-entry RGB table indexed by the source pixel. Only the
+// table is touched here - a partial reader view of the (unmodeled) engine palette.
+struct ScanlinePalette {
+    char m_pad0[8];    // +0x00  header
+    u32 m_colors[256]; // +0x08  RGB table (indexed by the 8bpp pixel)
+};
+SIZE_UNKNOWN(ScanlinePalette);
+
 SIZE_UNKNOWN(CRezImage);
 class CRezImage {
 public:

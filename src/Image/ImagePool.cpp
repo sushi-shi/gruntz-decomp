@@ -98,11 +98,8 @@ char g_bmpHeaderTemplate[4] = "BM"; // 0x61aabc  = 42 4d 00 00
 
 // The palette object handed to Convert8To16: an 8-byte header then the 256-entry
 // RGB table (one u32 per palette index) the 8bpp pixels look up.
-struct ScanlinePalette {
-    char m_pad0[8];    // +0x00  header
-    u32 m_colors[256]; // +0x08  RGB table (indexed by the 8bpp pixel)
-};
-SIZE_UNKNOWN(ScanlinePalette); // partial view of the foreign palette object (pointer-passed)
+// ScanlinePalette (the foreign 8bpp palette reader Convert8To16 uses) now lives in
+// <Image/Image.h> (included above) - the type belongs in the module header.
 
 // SaveBmp writes through a plain destructible MFC CFile stack temp (ctor 0x1befd7,
 // Open 0x1bf200, Write 0x1bf362, dtor 0x1bf121 - all NAFXCW, reloc-masked via <Mfc.h>).
