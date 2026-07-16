@@ -492,9 +492,18 @@ public:
     // resolutions. NO read site exists in any matched TU (write-only here), so
     // the individual roles are unprovable - left as offset names per the
     // wrong-name-is-worse-than-neutral rule.
-    i32 m_b0, m_b4, m_b8, m_bc; // +0xB0
-    i32 m_c0, m_c4, m_c8, m_cc; // +0xC0
-    i32 m_d0, m_d4, m_d8, m_dc; // +0xD0
+    // +0xB0..+0xDC  the default-extents block: three (x,y) rate pairs then three
+    // (width,height) canvas extents. Names migrated from the ex CPlaneGeom view
+    // (<Wwd/WwdFile.h>), which is THIS class seen through the plane host's +0x24 -
+    // CDDrawWorkerHost::InitScrollRects builds its three scroll rects out of the
+    // rect pairs. The ctor seeds (500,250)/(1000,1000)/(250,125) and 1600x1200 /
+    // 2560x1920, which is what fixes the two readings as rates + extents.
+    i32 m_pairA[2]; // +0xB0  (500, 250)
+    i32 m_pairB[2]; // +0xB8  (1000, 1000)
+    i32 m_pairC[2]; // +0xC0  (250, 125)
+    i32 m_rectAWidth, m_rectAHeight; // +0xC8  (1600, 1200)
+    i32 m_rectBWidth, m_rectBHeight; // +0xD0  (2560, 1920)
+    i32 m_rectCWidth, m_rectCHeight; // +0xD8
     WwdHeader m_header;         // +0xE0  (1524 B copy)
 };
 

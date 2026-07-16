@@ -146,14 +146,65 @@ struct CPlaneDrawCtx {
 // +0x18 = bitdepth 8/16), a palette host (+0x18 -> +0x64 -> +0x10 -> +0xc =
 // RGB888 array), and a plane geometry block (+0x24, with the six dim fields the
 // scroll-rect setup reads). Only the offsets are load-bearing.
-struct CPlaneSurfDesc {
-    u8 pad_0[0x18];
-    i32 m_format; // +0x18  8 or 16 (bpp)
-};
-struct CPlaneSurf {
-    u8 pad_0[0x10];
-    CPlaneSurfDesc* m_desc; // +0x10
-};
+// ---------------------------------------------------------------------------
+// THE PLANE "MAP DATA" CASCADE IS DISSOLVED (VW3 2026-07-17). CPlaneMapData was a
+// facet view of the canonical CDDrawSurfaceMgr (<DDrawMgr/DDrawSurfaceMgr.h>) - the
+// level's world/display root - and its four pointee "facets" were views of that
+// root's real members. GameLevel.cpp already carried the identity in a comment
+// ("the object IS this level's CDDrawSurfaceMgr world root"); these are the bytes
+// that close it:
+//
+//   view field            was        IS (CDDrawSurfaceMgr member)
+//   m_0        +0x00      void*      the CObject vptr
+//   m_surface  +0x04      CPlaneSurf*      m_drawTarget (CDDrawSubMgrPages*)
+//   m_8        +0x08      void*            m_childGroup (CDDrawChildGroup*)
+//   (n/a)      +0x10                       m_imageRegistry -> m_10map  [see below]
+//   (n/a)      +0x14                       m_workerCache   -> m_10     [see below]
+//   m_paletteHost +0x18   CPlanePalHost*   m_workerMap  (CDDrawWorkerMapSmall*)
+//   m_geometry +0x24      CPlaneGeom*      m_level      (CGameLevel*)
+//
+// PROOFS (each read off retail, not inferred from names):
+//  * +0x10 / +0x14 ARE the registry/cache map chain. ReadPlaneObjects @0x162af0 does
+//        mov eax,[ecx+0x0c]   ; the plane's m_mapData
+//        mov ecx,[eax+0x14]   ; -> m_workerCache            (a DEREF at +0x14)
+//        add ecx,0x10         ; -> &m_workerCache->m_10     (CMapStringToOb)
+//        call 0x1b8008        ; CMapStringToOb::Lookup
+//    which is exactly CDDrawSurfaceMgr::m_workerCache->m_10.Lookup. (Our source had
+//    mis-transcribed this as address arithmetic `(char*)m_mapData + 0x14 + 0x10`,
+//    i.e. m_mapData+0x24 with NO deref, and called CMapStringToPtr::Lookup @0x1b8438
+//    - the wrong map class. Both are fixed by the fold.) The sibling chain at +0x10
+//    (Helper_166040 / RegisterNamed) is m_imageRegistry->m_10map, same shape.
+//  * +0x04 -> CDDrawSubMgrPages: the view read m_surface->m_desc (+0x10) ->
+//    m_format (+0x18), "8 or 16". CDDrawSubMgrPages::m_frontPair IS at +0x10 and
+//    CDDrawSurfacePair::m_bpp IS at +0x18, "bits-per-pixel (8/16/24/32)".
+//  * +0x24 -> CGameLevel: already PROVEN in DDrawSurfaceMgr.h (Init news it with
+//    new(0x6d4) + ctor 0x15ccd0 == SIZE(CGameLevel,0x6d4) + ??0CGameLevel), and the
+//    ex CPlaneGeom's +0xb0..+0xdc block overlays CGameLevel's m_b0..m_dc dword for
+//    dword - the block CGameLevel's own ctor seeds with (500,250)/(1000,1000)/
+//    (250,125) rate pairs and the (1600,1200)/(2560,1920) extents.
+//  * +0x18 -> CDDrawWorkerMapSmall: the +0x64 slot. Its canonical name was "m_64
+//    entry counter cleared by the teardown", but it is a POINTER: RemoveByValue
+//    @0x165c40 compares it against the CObject* worker being removed and nulls it on
+//    a hit (a counter is neither compared to a worker pointer nor dereferenced), and
+//    the plane's palette walk dereferences it (+0x64 -> +0x10 -> +0xc RGB triples).
+//    Both readers agree it caches one of m_map1's workers -> m_cachedWorker (CObject*).
+// ---------------------------------------------------------------------------
+
+// The palette tail hanging off CDDrawWorkerMapSmall::m_cachedWorker (+0x64).
+// @identity-TODO: these two are the ONLY links of the cascade still unproven - the
+// cached worker is a CObject* out of the map (RemoveByValue proves that much), but
+// WHICH palette-bearing worker class it is, no caller/new-site the xref DB can reach
+// names (its only reader is the plane's ResolveColorKey). Kept as honest named
+// records rather than a fabricated identity; the RGB888 table at +0xc is what is
+// load-bearing.
+//
+// LEAD for whoever closes it (do not treat as proof): CDDrawWorkerMapSmall's own
+// methods treat every m_map1 value as a CAniRecordBase2 (DestroyAll `delete
+// ((CAniRecordBase2*)val)`, RemoveByKey's cast), and +0x64 caches a map value - so
+// the cached worker is very likely a CAniRecordBase2, whose +0x10 "owned work
+// buffer" would then BE this palette array. What is missing is a byte that ties
+// that generic work buffer to the RGB888 layout; until one turns up this stays a
+// lead, and the slot keeps the map's own element type (CObject*).
 struct CPlanePalArr {
     u8 pad_0[0xc];
     u8* m_rgb; // +0xc  RGB888 triples (4 bytes/entry)
@@ -162,32 +213,6 @@ struct CPlanePalOwner {
     u8 pad_0[0x10];
     CPlanePalArr* m_palette; // +0x10
 };
-struct CPlanePalHost {
-    u8 pad_0[0x64];
-    CPlanePalOwner* m_owner; // +0x64
-};
-struct CPlaneGeom {
-    u8 pad_0[0xb0];
-    // +0xb0..+0xc4: the first three geometry pairs (ex the WwdPlaneHdr view's
-    // geo[0..5]); with the three rect-dim pairs below they are the SIX pairs
-    // RebuildPlanes hands the spatial worker's Init.
-    i32 m_pairA[2]; // +0xb0
-    i32 m_pairB[2]; // +0xb8
-    i32 m_pairC[2]; // +0xc0
-    i32 m_rectAWidth, m_rectAHeight, m_rectBWidth, m_rectBHeight, m_rectCWidth,
-        m_rectCHeight; // +0xc8..+0xdc
-};
-struct CPlaneMapData {
-    void* m_0;
-    CPlaneSurf* m_surface; // +0x4  pixel-format chain
-    void* m_8;             // +0x08  worker source (RebuildPlanes hands it to the grid Init;
-                           //        ex the WwdRegOwner view's m_8)
-    u8 pad_c[0x18 - 0xc];
-    CPlanePalHost* m_paletteHost; // +0x18  palette host
-    u8 pad_1c[0x24 - 0x1c];
-    CPlaneGeom* m_geometry; // +0x24  plane geometry (ex the WwdRegOwner view's m_24)
-};
-
 // The serialize stream CPlaneRender::Save/Load drive is the REAL abstract stream
 // base CFileMemBase (<Io/FileMem.h>, VTBL 0x1efe68): its slot-11 (+0x2c) Read /
 // slot-12 (+0x30) Write are exactly the "+0x2c Read / +0x30 Write" this header's

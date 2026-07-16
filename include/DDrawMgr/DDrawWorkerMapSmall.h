@@ -57,7 +57,15 @@ public:
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)
     CMapStringToOb m_map2; // +0x2c  worker-by-key map 2 (0x2c..0x47)
     CMapStringToOb m_map3; // +0x48  worker-by-key map 3 (0x48..0x63)
-    i32 m_64;              // +0x64  entry counter cleared by the teardown
+    // +0x64  the cached/current worker out of m_map1. NOT the "entry counter" this
+    // was typed as (i32 m_64): RemoveByValue @0x165c40 compares it against the
+    // CObject* worker being removed and nulls it on a hit, and the teardown nulls it
+    // too - a counter is neither compared to a worker pointer nor dereferenced.
+    // The plane host's ResolveColorKey reads THIS slot's +0x10 palette -> +0x0c RGB888
+    // triples, so the pointee is a palette-bearing worker; its concrete class is the
+    // one link of that chain still unproven (@identity-TODO, see <Wwd/WwdFile.h>), so
+    // the slot keeps the map's element type and that one reader casts.
+    CObject* m_cachedWorker;
 
     // Non-vtable teardown/remove helpers (T obj).
     void ResetSlots();                // 0x165b90

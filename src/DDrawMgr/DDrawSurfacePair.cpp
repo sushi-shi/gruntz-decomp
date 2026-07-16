@@ -833,7 +833,7 @@ i32 CResolveNode::Init(
 // CDDrawWorkerRegistry::DestroyAll (0x165210): map teardown - iterate all entries
 // in m_map via GetNextAssoc, destroying each CObject* value via its scalar-deleting
 // destructor (vtbl +0x4 arg 1), then RemoveAll the map. Same pattern as
-// CDDrawWorkerMapSmall::DestroyAll but without the final m_64 clear (that field
+// CDDrawWorkerMapSmall::DestroyAll but without the final m_cachedWorker clear (that field
 // does not exist in this class). /GX EH frame for the local CString key.
 RVA(0x00165210, 0xa2)
 void CDDrawWorkerRegistry::DestroyAll() {
@@ -1110,7 +1110,7 @@ void CDDrawWorkerMapSmall::DestroyAll() {
         } while (pos != 0);
     }
     m_map1.RemoveAll();
-    m_64 = 0;
+    m_cachedWorker = 0; // +0x64 (the teardown nulls it - a pointer, not a counter)
 }
 
 // 0x1658c0: lock the surface arg; on 0 bail. Build a worker, dispatch its +0x28
@@ -1225,14 +1225,14 @@ void CDDrawWorkerMapSmall::ResetSlots() {
         } while (pos != 0);
     }
     m_map1.RemoveAll();
-    m_64 = 0;
+    m_cachedWorker = 0; // +0x64 (the teardown nulls it - a pointer, not a counter)
 }
 
 // 0x165c40 (__thiscall, /GX): remove a specific worker `obj` from m_map1 by value.
 RVA(0x00165c40, 0xe7)
 i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
-    if (m_64 == (i32)obj) {
-        m_64 = 0;
+    if (m_cachedWorker == obj) {
+        m_cachedWorker = 0;
     }
     CObject* val = 0;
     POSITION pos = (POSITION)(m_map1.GetCount() != 0 ? -1 : 0);
@@ -1263,8 +1263,8 @@ i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
         return 0;
     }
     CAniRecordBase2* w = (CAniRecordBase2*)val;
-    if (m_64 == (i32)w) {
-        m_64 = 0;
+    if (m_cachedWorker == val) {
+        m_cachedWorker = 0;
     }
     m_map1.RemoveKey(key);
     delete w;

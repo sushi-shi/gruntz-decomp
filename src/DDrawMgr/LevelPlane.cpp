@@ -31,9 +31,18 @@
 // which had these frame fields grafted on; that class is CTileImageSet now.
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
+// The plane host's +0x0c root and the members its facets were views of: the
+// registry/cache map chains (+0x10/+0x14), the pages/pair bpp (+0x04) and the
+// worker map's palette owner (+0x18). See the cascade proof in <Wwd/WwdFile.h>.
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>  // m_imageRegistry->m_10map
+#include <DDrawMgr/DDrawWorkerCache.h>     // m_workerCache->m_10
+#include <DDrawMgr/DDrawWorkerMapSmall.h>  // m_workerMap->m_palOwner
+#include <DDrawMgr/DDrawSubMgrPages.h>     // m_drawTarget->m_frontPair
+#include <DDrawMgr/DDrawSurfacePair.h>     // ->m_bpp (the ex CPlaneSurfDesc::m_format)
+#include <DDrawMgr/DDrawChildGroup.h>      // m_childGroup (the worker source)
 #include <Io/FileMem.h> // the REAL serialize-stream base CFileMemBase (Save/Load's Read@+0x2c/Write@+0x30)
 #include <Wwd/WwdSpatialMgr.h>       // the canonical spatial/scroll worker (m_scroll)
-#include <DDrawMgr/DDrawWorkerCtx.h> // shared CDDrawWorkerCtx (RegisterNamed's map chain)
 #include <rva.h>
 
 #include <stdio.h>  // sprintf (ValidateTiles diagnostics)
@@ -70,7 +79,7 @@
 // m_0c=a1) + body store order reproduce the schedule exactly.
 // ===========================================================================
 RVA(0x001615a0, 0x9a)
-CDDrawWorkerHost::CDDrawWorkerHost(CPlaneMapData* mapData, i32 field04, i32 flags) {
+CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags) {
     m_04 = field04;
     m_flags = flags;
     m_mapData = mapData; // (merged CLoadable ctor)
@@ -249,7 +258,7 @@ void CDDrawWorkerHost::Cleanup_161bf0() {
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val = 0;
-    ((CDDrawWorkerCtx*)m_mapData)->m_10->m_10.Lookup(key, val);
+    m_mapData->m_imageRegistry->m_10map.Lookup(key, val);
     m_frameSets.SetAtGrow(index, val);
 }
 
@@ -697,8 +706,9 @@ inline void* operator new(u32, void* p) {
 // ---------------------------------------------------------------------------
 
 // (The WwdRegOwner/WwdPlaneHdr/WwdPlaneRender views are GONE: the +0xc "reg owner"
-// IS CPlaneMapData (m_8 worker source, m_24 geometry), the "plane header" IS its
-// CPlaneGeom (the six geometry pairs at +0xb0..+0xdc), and the 0xb8-byte
+// IS the canonical CDDrawSurfaceMgr (m_childGroup worker source, m_level geometry -
+// the ex CPlaneMapData view of it is dissolved too, see <Wwd/WwdFile.h>), the "plane
+// header" IS its CGameLevel (the six geometry pairs at +0xb0..+0xdc), and the 0xb8-byte
 // "plane-render worker" IS the CWwdSpatialMgr grid/scroll worker - its "DtorBody"
 // 0x1682f0 is FreeGrids at the SAME RVA, and the vtable it wears (0x5f02a8,
 // realized as ??_7CWwdGridIter in WwdSpatialMgr.cpp) is the +0x70 embedded list's.)
@@ -750,12 +760,12 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     rc.right = m_wrapW - 1;
     rc.bottom = m_wrapH - 1;
 
-    CPlaneMapData* reg = m_mapData;
-    void* src = reg->m_8;
+    CDDrawSurfaceMgr* reg = m_mapData;
+    CDDrawChildGroup* src = reg->m_childGroup;
     if (src == 0) {
         return 0;
     }
-    CPlaneGeom* hdr = reg->m_geometry;
+    CGameLevel* hdr = reg->m_level;
     if (hdr == 0) {
         return 0;
     }
@@ -900,8 +910,9 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     i32 loaded = 1;
     if (imageSet.GetLength() != 0) {
         void* found = 0;
-        CMapStringToPtr* map = (CMapStringToPtr*)((char*)m_mapData + 0x14 + 0x10);
-        loaded = map->Lookup((const char*)imageSet, found);
+        CObject* foundOb = 0;
+        loaded = m_mapData->m_workerCache->m_10.Lookup((const char*)imageSet, foundOb);
+        found = foundOb;
     }
 
     if (!loaded) {
@@ -1133,14 +1144,14 @@ i32 CDDrawWorkerHost::GetSize_1633e0() {
 // ---------------------------------------------------------------------------
 // CDDrawWorkerHost::InitScrollRects (__thiscall, no args). Seed three (0,0,w-1,h-1)
 // rects + their centers (w/2, h/2) into the scroll sub-object from the plane
-// geometry's three dimension pairs (m_mapData->m_geometry), then park
+// geometry's three dimension pairs (m_mapData->m_level), then park
 // the scroll target at (-22222, -22222) so the first SetTarget always moves.
 RVA(0x00163420, 0xf0)
 void CDDrawWorkerHost::InitScrollRects() {
     if (m_scroll == 0) {
         return;
     }
-    CPlaneGeom* g = m_mapData->m_geometry;
+    CGameLevel* g = m_mapData->m_level;
     if (g == 0) {
         return;
     }
@@ -1270,7 +1281,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
 // zero-register-pinning.md family.
 RVA(0x00163670, 0x95)
 void CDDrawWorkerHost::ResolveColorKey() {
-    i32 format = m_mapData->m_surface->m_desc->m_format;
+    i32 format = m_mapData->m_drawTarget->m_frontPair->m_bpp;
     if (format == 8) {
         return;
     }
@@ -1286,7 +1297,11 @@ void CDDrawWorkerHost::ResolveColorKey() {
         return;
     }
 
-    CPlanePalOwner* owner = m_mapData->m_paletteHost->m_owner;
+    // The cached worker's palette chain (+0x64 -> +0x10 -> +0x0c RGB888). The cast
+    // is the flagged @identity-TODO tail of the cascade: the slot's element type is
+    // the map's CObject*, and this worker's concrete palette-bearing class is the one
+    // link no caller/new-site names (see <Wwd/WwdFile.h>).
+    CPlanePalOwner* owner = (CPlanePalOwner*)m_mapData->m_workerMap->m_cachedWorker;
     if (owner == 0) {
         return;
     }

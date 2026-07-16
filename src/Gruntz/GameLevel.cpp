@@ -113,18 +113,18 @@ static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
 // folds into each method exactly as the retail compiler emitted the block inline.
 static inline void StampParamBlock(CGameLevel* o) {
-    o->m_b0 = 500;
-    o->m_b4 = 250;
-    o->m_b8 = 1000;
-    o->m_bc = 1000;
-    o->m_c0 = 250;
-    o->m_c4 = 125;
-    o->m_c8 = 1600;
-    o->m_cc = 1200;
-    o->m_d0 = 2560;
-    o->m_d4 = 1920;
-    o->m_d8 = 768;
-    o->m_dc = 576;
+    o->m_pairA[0] = 500;
+    o->m_pairA[1] = 250;
+    o->m_pairB[0] = 1000;
+    o->m_pairB[1] = 1000;
+    o->m_pairC[0] = 250;
+    o->m_pairC[1] = 125;
+    o->m_rectAWidth = 1600;
+    o->m_rectAHeight = 1200;
+    o->m_rectBWidth = 2560;
+    o->m_rectBHeight = 1920;
+    o->m_rectCWidth = 768;
+    o->m_rectCHeight = 576;
 }
 
 // ===========================================================================
@@ -158,24 +158,24 @@ CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) {
     m_0c = (CDDrawSurfaceMgr*)a1; // (merged CLoadable ctor; mangling-pinned i32 arg)
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
-    m_b4 = 250;
-    m_c0 = 250;
-    m_b8 = 1000;
-    m_bc = 1000;
+    m_pairA[1] = 250;
+    m_pairC[0] = 250;
+    m_pairB[0] = 1000;
+    m_pairB[1] = 1000;
 
     // cl auto-stamps &??_7CGameLevel here (the derived phase of the two-phase store).
     m_planeCtx.minX = LEVEL_COORD_UNSET;
     m_mainPlane = 0;
     m_mainIndex = -1;
     m_checksum = 0;
-    m_b0 = 500;
-    m_c4 = 125;
-    m_c8 = 1600;
-    m_cc = 1200;
-    m_d0 = 2560;
-    m_d4 = 1920;
-    m_d8 = 768;
-    m_dc = 576;
+    m_pairA[0] = 500;
+    m_pairC[1] = 125;
+    m_rectAWidth = 1600;
+    m_rectAHeight = 1200;
+    m_rectBWidth = 2560;
+    m_rectBHeight = 1920;
+    m_rectCWidth = 768;
+    m_rectCHeight = 576;
 }
 
 RVA(0x0015d280, 0x279)
@@ -370,8 +370,8 @@ fail:
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
 // @early-stop
 // store-scheduling entropy (~84%): the body is byte-exact EXCEPT the independent
-// m_b0=500 direct-immediate store, which cl hoists into the w-read/dec window while
-// retail emits it after the m_b8/m_bc=1000 stores. Inlining the block in retail's
+// m_pairA[0]=500 direct-immediate store, which cl hoists into the w-read/dec window while
+// retail emits it after the m_b8/m_pairB[1]=1000 stores. Inlining the block in retail's
 // store order regressed it further (74.8%); not source-steerable. Deferred.
 RVA(0x0015d030, 0x8f)
 i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
@@ -623,15 +623,14 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
 // the MAIN plane (m_flags bit0) cache it as m_mainPlane with m_mainIndex =
 // (post-append count) - 1. Returns the new plane.
 //
-// The (CPlaneMapData*)m_0c bridge: the plane ctor's arg1 type is the WwdFile.h
-// CPlaneMapData view, but the object IS this level's CDDrawSurfaceMgr world root
-// (+0x08 m_8/"worker source" == m_childGroup, +0x24 m_geometry == m_level) -
-// the CPlaneMapData==CDDrawSurfaceMgr fold is deferred (ctor-mangling ripple).
+// m_0c is passed straight through now: the plane ctor's arg1 IS this level's
+// CDDrawSurfaceMgr world root (the ex CPlaneMapData view of it is dissolved - see
+// the cascade proof in <Wwd/WwdFile.h>), so the old bridge cast is gone.
 //
 // The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
 RVA(0x0015d8d0, 0xc3)
 CPlane* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
-    CPlane* plane = new CPlane((CPlaneMapData*)m_0c, m_planes.GetSize(), 0);
+    CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
 
     if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
         if (plane) {
@@ -659,7 +658,7 @@ CPlane* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/
 // The CPlane ctor + virtuals are UNMATCHED engine code -> reloc-masked calls.
 RVA(0x0015d9a0, 0xdc)
 CPlane* CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
-    CPlane* plane = new CPlane((CPlaneMapData*)m_0c, m_planes.GetSize(), 0);
+    CPlane* plane = new CPlane(m_0c, m_planes.GetSize(), 0);
 
     if (plane->InitGeometry_1619f0(a1, a2, a3, a4, a5, a6, &m_planeCtx, (char*)a7) == 0) {
         if (plane) {

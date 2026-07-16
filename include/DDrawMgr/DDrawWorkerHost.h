@@ -47,14 +47,14 @@ struct CWwdSpatialMgr;
 
 // Support types the method signatures reference (full defs in <Wwd/WwdFile.h> /
 // <Image/ImageSet.h> / <Io/FileMem.h> - pointer-only here).
-struct CPlaneMapData; // the +0x0c owner/map-data chain (pixel format / palette / geometry)
+class CDDrawSurfaceMgr; // the +0x0c world/display root (ex the CPlaneMapData view)
 struct CPlaneDrawCtx; // Draw's render context (its +0x2c is the blit target surface)
 class CImageSet;      // the 0x6c sparse CImage-frame collection
 class CFileMemBase;   // the abstract serialize stream (Read @+0x2c / Write @+0x30)
 
 class CDDrawWorkerHost : public CObject {
 public:
-    CDDrawWorkerHost(CPlaneMapData* mapData, i32 field04, i32 flags); // 0x1615a0
+    CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags); // 0x1615a0
     virtual ~CDDrawWorkerHost() OVERRIDE; // slot 1 (scalar-deleting dtor) 0x163af0
     // `new CPlane` (CGameLevel::ReadPlane/ReadObjectPlane) needs an accessible
     // operator new; MFC CObject's PASCAL one is not usable under MSVC5, so forward to
@@ -130,7 +130,9 @@ public:
     i32 m_04;                 // +0x04  (merged CLoadable base field; ctor arg2)
     u32 m_flags;              // +0x08  bit0 = MAIN/origin-fixed plane, bit1 hidden,
                               //        bit2/3 = wrap X/Y (ctor arg3)
-    CPlaneMapData* m_mapData; // +0x0c  owner/map-data chain (ctor arg1)
+    // +0x0c  the owning world/display root (ctor arg1). Ex CPlaneMapData - a facet
+    // view of THIS class; see the cascade proof in <Wwd/WwdFile.h>.
+    CDDrawSurfaceMgr* m_mapData;
     float m_scaledX;          // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
     float m_scaledY;          // +0x14  scroll origin Y
     float m_scaleX;           // +0x18  X parallax factor (ctor seeds 1.0f)
