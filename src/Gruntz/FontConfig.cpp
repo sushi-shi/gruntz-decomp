@@ -7,10 +7,13 @@
 // TypeChar accumulates, and the single fontconfig init-frag run @0x21610
 // immediately precedes the interval.
 //
-// CFontConfig is a CPtrList-derived container of font-config "items"
-// (FontItem records, each {int type; int data; CString name;}) plus a CString
-// scratch member (+0x1c), five scroll/threshold ints (+0x20..+0x30), and the
-// three cached GDI HFONTs (+0x38/+0x3c/+0x40) built by LoadFontConfig.
+// CFontConfig HOLDS a CPtrList (+0x00) of font-config "items" (FontItem records,
+// each {int type; int data; CString name;}) plus a CString scratch member (+0x1c),
+// five scroll/threshold ints (+0x20..+0x30), and the three cached GDI HFONTs
+// (+0x38/+0x3c/+0x40) built by LoadFontConfig. It does NOT derive from CPtrList -
+// see the proof in FontConfig.h; the list is reached through its PUBLIC inline API
+// (GetHeadPosition/GetNext/GetCount/GetAt/FindIndex), which emits the same loads a
+// raw node-walk would.
 //
 //   LoadFontConfig - builds three GDI HFONTs (the ARIAL UI font fixed at 12x8
 //     bold; the TrainingFont; the MessageFont) via CreateFontA, dims/faces read
@@ -22,13 +25,12 @@
 //     (head when type&2); optionally clears the list first (when type&4).
 //   Scroll         - advance the running offset by a delta; when it crosses the
 //     active threshold, RemoveHead the oldest FontItem and reset the offset.
-//   ~CFontConfig   - Reset + ~CString(m_inputText) + the CPtrList base dtor.
+//   ~CFontConfig   - Reset + ~CString(m_inputText) + the m_list member dtor.
 //
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
-// load-bearing (campaign doctrine). The CPtrList base (sizeof 0x1c) supplies
-// m_pNodeHead@+0x04 / m_nCount@+0x0c and the RemoveAll/RemoveHead/AddHead/
-// AddTail out-of-line NAFXCW calls; the base subobject's non-trivial dtor is
-// what forces the /GX EH frame on AddItem and ~CFontConfig.
+// load-bearing (campaign doctrine). The m_list member (CPtrList, sizeof 0x1c at +0x00)
+// supplies the RemoveAll/RemoveHead/AddHead/AddTail out-of-line NAFXCW calls; its
+// non-trivial dtor is what forces the /GX EH frame on AddItem and ~CFontConfig.
 // ---------------------------------------------------------------------------
 // <Mfc.h> brings <windows.h> (GDI32: CreateFontA / DeleteObject; USER32
 // DrawTextA) and the MFC CPtrList / CString collection types from <afxcoll.h>.
@@ -245,16 +247,14 @@ void CFontConfig::Reset() {
 // CFontConfig::FreeNodes - delete every FontItem in the list, then clear it.
 RVA(0x00021bd0, 0x45)
 void CFontConfig::FreeNodes() {
-    CPtrList::CNode* p = m_pNodeHead;
-    while (p) {
-        CPtrList::CNode* cur = p;
-        p = p->pNext;
-        FontItem* item = (FontItem*)cur->data;
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos) {
+        FontItem* item = (FontItem*)m_list.GetNext(pos);
         if (item) {
             delete item;
         }
     }
-    RemoveAll();
+    m_list.RemoveAll();
     m_inputText.Empty();
     m_inputActive = 0;
 }
@@ -278,25 +278,23 @@ i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {
         return 0;
     }
     if (type & 4) {
-        CPtrList::CNode* p = m_pNodeHead;
-        while (p) {
-            CPtrList::CNode* cur = p;
-            p = p->pNext;
-            FontItem* item = (FontItem*)cur->data;
+        POSITION pos = m_list.GetHeadPosition();
+        while (pos) {
+            FontItem* item = (FontItem*)m_list.GetNext(pos);
             if (item) {
                 delete item;
             }
         }
-        RemoveAll();
+        m_list.RemoveAll();
     }
     FontItem* item = new FontItem;
     item->name = str;
     item->type = type;
     item->data = data;
     if (type & 2) {
-        AddHead(item);
+        m_list.AddHead(item);
     } else {
-        AddTail(item);
+        m_list.AddTail(item);
     }
     return 1;
 }
@@ -310,7 +308,7 @@ void CFontConfig::Scroll(i32 delta) {
     if (m_inputActive) {
         m_inputScrollTotal += delta;
     }
-    i32 count = m_nCount;
+    i32 count = m_list.GetCount();
     if (!count) {
         m_scrollOffset = 0;
     }
@@ -321,7 +319,7 @@ void CFontConfig::Scroll(i32 delta) {
         if (m_scrollOffset < m_highScrollThreshold) {
             return;
         }
-        item = (FontItem*)RemoveHead();
+        item = (FontItem*)m_list.RemoveHead();
         if (!item) {
             return;
         }
@@ -332,7 +330,7 @@ void CFontConfig::Scroll(i32 delta) {
         if (!count) {
             return;
         }
-        item = (FontItem*)RemoveHead();
+        item = (FontItem*)m_list.RemoveHead();
         if (!item) {
             return;
         }
@@ -590,17 +588,17 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (count <= 0) {
         return 0;
     }
-    if (GetCount() <= 0) {
+    if (m_list.GetCount() <= 0) {
         return 0;
     }
-    while (GetCount() > count) {
-        FontItem* dead = (FontItem*)RemoveHead();
+    while (m_list.GetCount() > count) {
+        FontItem* dead = (FontItem*)m_list.RemoveHead();
         if (dead != 0) {
             dead->name.Empty();
             delete dead;
         }
     }
-    i32 n = (count >= GetCount()) ? GetCount() : count;
+    i32 n = (count >= m_list.GetCount()) ? m_list.GetCount() : count;
     if (n <= 0) {
         return 0;
     }
@@ -620,7 +618,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (m_arialFont) {
             savedFont = SelectObject(hdc, m_arialFont);
         }
-        FontItem* item = (FontItem*)GetAt(FindIndex(i));
+        FontItem* item = (FontItem*)m_list.GetAt(m_list.FindIndex(i));
         if (item != 0) {
             if (item->type & FONTITEM_SHADOW) {
                 SetTextColor(hdc, TCLR_BLACK);
@@ -822,10 +820,10 @@ i32 CFontConfig::Draw3DText(
 // CFontConfig::~CFontConfig (0x085f40, out-of-band stray) - Reset, then the
 // CString member + the CPtrList base dtor run by the compiler-emitted cleanup
 // (the EH frame comes from the base).
-// @early-stop
-// EH/vptr wall: our polymorphic model emits one extra `mov [esi],&??_7CFontConfig`
-// most-derived vptr re-stamp that retail elided; /GX frame + base-dtor exact.
-// Not steerable by source spelling - docs/patterns/eh-dtor-vptr-restamp-presence.md.
+// (Was @early-stop'd as an "EH/vptr wall": our model emitted an extra
+// `mov [esi],&??_7CFontConfig` restamp retail elided, judged "not steerable by source
+// spelling". It was steerable - the restamp existed only because we wrongly declared the
+// class polymorphic. De-inheriting CPtrList (see FontConfig.h) removed it -> 100%.)
 RVA(0x00085f40, 0x56)
 CFontConfig::~CFontConfig() {
     Reset();

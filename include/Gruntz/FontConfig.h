@@ -1,6 +1,7 @@
-// FontConfig.h - CFontConfig, the GDI font-configuration object (a CPtrList of
-// FontItem*). Promoted from FontConfig.cpp so the reduced per-TU views (Refresh/
-// Scroll sinks) can fold onto it. Only the load-bearing member offsets are modeled.
+// FontConfig.h - CFontConfig, the GDI font-configuration object (HOLDS a CPtrList of
+// FontItem* at +0x00 - it does NOT derive from it, see below). Promoted from
+// FontConfig.cpp so the reduced per-TU views (Refresh/Scroll sinks) can fold onto it.
+// Only the load-bearing member offsets are modeled.
 #ifndef GRUNTZ_GRUNTZ_FONTCONFIG_H
 #define GRUNTZ_GRUNTZ_FONTCONFIG_H
 
@@ -9,8 +10,16 @@
 #include <rva.h>
 
 SIZE(CFontConfig, 0x44);
-class CFontConfig : public CPtrList {
+// NOT `: public CPtrList` - CFontConfig is NOT polymorphic, proven from retail:
+//   * `~CFontConfig` @0x85f40 does NO vptr restamp (a polymorphic dtor always restamps), and
+//   * CFontConfig has no vtable and no RTTI in the 306-class scan.
+// Deriving from CPtrList (a CObject) would force a virtual dtor, so `delete p` would emit a
+// vtable call - but retail's GruntzMgr +0x5c leg calls the dtor DIRECTLY. The list is a MEMBER
+// at +0x00; base-at-0 and member-at-0 have identical layout AND identical codegen
+// (`mov ecx,esi; call ~CPtrList`), which is why the mis-model went unnoticed.
+class CFontConfig {
 public:
+    CPtrList m_list; // +0x00 (0x1c: vptr, m_pNodeHead@+0x04, m_nCount@+0x0c) - the FontItem* list
     i32 LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold);
     void FreeNodes();
     void Reset();
@@ -23,7 +32,7 @@ public:
     // it is DEFINED, and which is why callers reach it through ILT thunk 0x12a3.
     CString GetInputText(); // 0x00020ef0 (def: src/Gruntz/ChatBoxOwner.cpp)
     void EndInput();
-    virtual ~CFontConfig() OVERRIDE;
+    ~CFontConfig(); // 0x00085f40  NON-virtual (no vptr restamp in retail) - lets `delete` bind direct
     // 0x00022360: draw up to `count` list items as stacked text lines into hdc.
     // Trims the list to `count` (RemoveHead), then per line: optional 1px black
     // shadow (type&0x20), a color from the type&0x10 palette switch (else white),

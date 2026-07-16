@@ -1,38 +1,59 @@
-# /GX virtual dtor: polymorphic model re-stamps the most-derived vptr; retail elided it
-tags: cpp:dtor cpp:eh cpp:virtual | asm:mov | topic:wall topic:eh
-symptoms: ~Class body byte-identical except ONE extra `mov [esi],&??_7Class` re-stamp right after `mov [esp+N],this`, before the trylevel write; recompile ~92-93% with the /GX frame + base-dtor call already exact
-confidence: 6/10
+# Extra `mov [esi],&??_7Class` in a dtor = THE CLASS ISN'T POLYMORPHIC (not a codegen wall)
+tags: cpp:dtor cpp:eh cpp:virtual cpp:layout | asm:mov | topic:mis-model topic:phantom-wall
+symptoms: ~Class body byte-identical except ONE extra `mov [esi],&??_7Class` re-stamp right after `mov [esp+N],this`, before the trylevel write; recompile caps ~92-93% with the /GX frame + base-dtor call already exact
+confidence: 9/10 (was 6/10 while the diagnosis was wrong — see HISTORY)
 
-A `/GX` (`flags="eh"`) **virtual destructor** of a class that derives from a real
-polymorphic base (e.g. `CPtrList`) and overrides only `~Base`: the polymorphic
-model (declare `virtual ~Derived()`, let the compiler emit `??_7Derived`/`??_G`/
-`??_E`) makes cl re-stamp the most-derived vptr at dtor entry — `mov [this],&??_7Derived`
-— before the trylevel-1 write and the body. Retail's `~Class` has the SAME EH frame
-(`push -1`/`mov fs:0`), the SAME trylevel stamps, and the SAME trailing base-dtor
-call, but **no vptr re-stamp at all** (cl elided it because the dtor body makes no
-virtual call on `this`, so the vptr value is dead). The single extra `mov` is the
-only divergence; the function caps ~92-93% with everything else exact.
-
-```cpp
-class CFontConfig : public CPtrList {  // real polymorphic base -> /GX frame from base subobj
-    ~CFontConfig();                    // virtual override (UAE), auto ??_7/??_G/??_E
-};
-CFontConfig::~CFontConfig() { Reset(); }  // body calls a non-virtual method; vptr never observed
-```
+**Symptom.** Your `~Class` matches retail except for one extra most-derived vptr re-stamp
+that retail simply does not have:
 ```asm
 6ff: mov esi,ecx
 701: mov [esp+4],esi          ; retail goes straight to the trylevel write...
-705: mov [esp+0x10],1         ;   (NO mov [esi],&??_7CFontConfig here)
+705: mov [esp+0x10],1         ;   (NO mov [esi],&??_7Class here)
 70d: call Reset
-; our recompile inserts `mov [esi],&??_7CFontConfig@@6B@` between 701 and 705.
+; our recompile inserts `mov [esi],&??_7Class@@6B@` between 701 and 705.
 ```
-WALL: cousin of eh-ctor-vptr-restamp-position.md (ctor: re-stamp present but scheduled
-LATE) — here the dtor re-stamp is ELIDED entirely by retail and NOT by our cl, and the
-presence/absence is decided by cl's /GX EH-state machine, not by any source spelling
-(both the polymorphic auto-emit and a manual `*(void**)this=&vtbl` produce the store).
-Modeling the base subobject is still REQUIRED (it supplies the EH frame + base-dtor call,
-without which you fall to the ~50-60% eh-dtor-needs-base-subobject.md plateau) — so the
-polymorphic model is correct; only this one re-stamp is unreachable. Defer to the final
-sweep. Evidence: `CFontConfig::~CFontConfig` (0x85f40) 92.7%, body+frame otherwise exact;
-siblings Reset/FreeNodes/AddItem/Scroll (same TU) all 100%.
-related: eh-ctor-vptr-restamp-position.md, eh-dtor-needs-base-subobject.md
+
+**CAUSE: retail's class is not polymorphic — you declared it so.** cl emits that store because
+*your* model says the class has its own vtable. Retail has no store because retail's class has
+**no vtable at all**. It is a MIS-MODEL, not a compiler quirk, and it is fully fixable.
+
+**Diagnose before you defer** — check the binary, not the codegen:
+1. Does `Class` have a vtable in the RTTI/vtable scan (`gruntz.analysis.vtable_scan`)? Any RTTI name?
+2. Does retail's `~Class` restamp at all? (If it never does, it isn't polymorphic.)
+If both say no: **the "base" is really a MEMBER at +0x00.**
+
+**Why it hides:** a polymorphic base at +0x00 and that same class as a *member* at +0x00 have
+**identical layout AND identical codegen** (`mov ecx,esi; call ~CPtrList` either way). Nothing in
+the bytes distinguishes them — only the vtable's existence does.
+
+**FIX:** de-inherit; hold the base as a member; drop `virtual` from the dtor.
+```cpp
+// WRONG - forces a vtable, a restamping dtor, and a vtable-dispatched `delete`
+class CFontConfig : public CPtrList { virtual ~CFontConfig() OVERRIDE; };
+// RIGHT - retail has no CFontConfig vtable/RTTI and its dtor never restamps
+class CFontConfig {
+    CPtrList m_list;   // +0x00 (0x1c) - same layout, same codegen
+    ~CFontConfig();    // non-virtual -> `delete p` binds DIRECT, as retail does
+};
+```
+**The protected-access tell.** If de-inheriting breaks on `error C2248: cannot access protected
+member` (`m_pNodeHead`, `CNode`, `m_nCount`), that open-coded node-walk is *itself* the mis-model
+— it is what forced the fake inheritance. MFC's public accessors are inline and emit the same
+loads, so they are byte-identical AND legal:
+`GetHeadPosition()` → `return m_pNodeHead;` · `GetNext(pos)` → `n=pos; pos=n->pNext; return n->data;`
+· `GetCount()` → `return m_nCount;`
+
+**Modeling the base subobject is still required** for the EH frame + base-dtor call (else you fall
+to the ~50-60% plateau of eh-dtor-needs-base-subobject.md) — a *member* supplies both identically.
+
+**Evidence.** `CFontConfig::~CFontConfig` (0x85f40): 92.7% → **100.0000%** on de-inheriting;
+`FreeNodes` → **100%** on swapping the protected node-walk for the public API. It also let
+`delete m_chatLog` bind direct instead of through a vtable (see the delete-fold work).
+
+**HISTORY — why this doc was wrong (2026-07-17).** It previously claimed *"cl elided it because the
+dtor body makes no virtual call on `this`, so the vptr value is dead"*, concluded *"the polymorphic
+model is correct; only this one re-stamp is unreachable"*, and told readers to **defer to the final
+sweep**. That invented a compiler behaviour to explain evidence whose real meaning was "this class
+has no vtable". A wall that survives only because a doc says it's unfixable is a phantom: when the
+bytes and your model disagree, suspect the MODEL first.
+related: eh-ctor-vptr-restamp-position.md, eh-dtor-needs-base-subobject.md, inline-base-dtor-folds-into-leaves.md
