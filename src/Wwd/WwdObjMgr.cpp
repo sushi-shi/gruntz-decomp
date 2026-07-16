@@ -181,8 +181,9 @@ CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, in
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
-        // alloc + placement-construct the real worker (test-else-0 shape == retail)
-        AnimWorkerObj* worker = new ((void*)RezAlloc(0x17c)) AnimWorkerObj(root, a1, 0);
+        // alloc + construct the real worker via the throwing operator new (test-else-0
+        // shape == retail)
+        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, 0);
         *(void**)(obj + 0x7c) = worker;
         *(int*)(obj + 0x98) = 0;
         *(int*)(obj + 0x80) = 0;
@@ -252,8 +253,9 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, in
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
-        // alloc + placement-construct the real worker (test-else-0 shape == retail)
-        AnimWorkerObj* worker = new ((void*)RezAlloc(0x17c)) AnimWorkerObj(root, a1, 0);
+        // alloc + construct the real worker via the throwing operator new (test-else-0
+        // shape == retail)
+        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, 0);
         *(void**)(obj + 0x7c) = worker;
         *(int*)(obj + 0x98) = 0;
         *(int*)(obj + 0x80) = 0;
@@ -319,8 +321,9 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)(obj + 0x5c) = (i32)0x80000000;
         *(i32*)(obj + 0x78) = 0;
-        // alloc + placement-construct the real worker (test-else-0 shape == retail)
-        AnimWorkerObj* worker = new ((void*)RezAlloc(0x17c)) AnimWorkerObj(root, a1, flags);
+        // alloc + construct the real worker via the throwing operator new (test-else-0
+        // shape == retail)
+        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, flags);
         *(void**)(obj + 0x7c) = worker;
         *(i32*)(obj + 0x98) = 0;
         *(i32*)(obj + 0x80) = 0;
