@@ -20,34 +20,16 @@ class DSoundCloneInst; // the pooled cue player (ConfigureItem @0x1360d0; Dsndmg
 // CStatusBarHolder/sprite-keyed copies were views of it (same +0x10 name->object map
 // + the +0x30 emit gate; the cue TUs additionally read its +0x2c sound stream).
 
-// The map render grid reached via m_30->m_tileHolder->m_grid (two parallel tables: a cell
-// state table at +0x20 and a row-offset table at +0x24). Distinct object from the
-// registry +0x70 tile occupancy grid (CTileGrid, <Gruntz/TileGrid.h>).
-SIZE_UNKNOWN(CMapTileGrid);
-struct CMapTileGrid {
-    char m_pad00[0x20];
-    i32* m_cellState; // +0x20  cell-state table
-    i32* m_rowOffset; // +0x24  row-offset table
-};
-// The tile-system notifier at registry +0x70 is the canonical CTileGrid
-// (<Gruntz/TileGrid.h>), viewed through its Notify facet.
-// The registry's world/resource holder (g_gameReg->m_world == CState::m_c, the ONE
-// CSpriteFactoryHolder): the DDraw front/back pages (+0x04, read only by the level-
-// preview driver), the tile-grid holder (+0x24 -> +0x5c grid) and the status-bar
-// holder (+0x28). LevelPreview's former PreviewMgr was a second view of it - folded
-// here. (Deeper fold onto the canonical CSpriteFactoryHolder / CSndHost pending.)
-struct CDDrawSubMgrPages; // +0x04 DDraw front/back page pair (LevelPreview render facet)
-struct CRegHolder {
-    char m_pad00[0x04];
-    CDDrawSubMgrPages* m_04; // +0x04  DDraw front/back pages (preview surface)
-    char m_pad08[0x24 - 0x08];
-    struct M24 {
-        char m_pad00[0x5c];
-        CMapTileGrid* m_grid;
-    }* m_tileHolder;       // +0x24 -> +0x5c grid
-    CSndHost* m_statusBar; // +0x28  the +0x28 cue/status holder (canonical CSndHost)
-};
-SIZE_UNKNOWN(CRegHolder);
+// (CRegHolder + CMapTileGrid are DISSOLVED, 2026-07-16: CRegHolder was
+// g_gameReg->m_world == CState::m_c - the ONE CSpriteFactoryHolder
+// (<Gruntz/GameRegistry.h>): m_04==m_pages, m_statusBar==m_28 (CSndHost), and
+// m_tileHolder==m_24 (the canonical CGameLevel). CMapTileGrid was
+// m_24->m_mainPlane - the canonical CLevelPlane/CDDrawWorkerHost
+// (<DDrawMgr/DDrawWorkerHost.h>): m_cellState==m_tileGrid (+0x20),
+// m_rowOffset==m_colOffsets (+0x24), the exact GetTileHandle table pair. The
+// old "GameRegistry.h can't coexist with GruntzMgr.h" wall was stale -
+// SplashState.cpp already included both. The tile-system notifier at registry
+// +0x70 remains the canonical CTileGrid (<Gruntz/TileGrid.h>), Notify facet.)
 
 // (The EngineLabelBacklog placeholder host + its CTabRec/CTabWidget/CDestructBlock/
 // CStatzTabItem/CStatzTabSub/RegUnitTable satellite views are GONE, 2026-07-16:

@@ -25,6 +25,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Grunt.h>     // real CGrunt (the m_grid cells; ex CSbiTileEntry/CSbiTileSub views)
 #include <Gruntz/GruntzMgr.h> // the REAL *0x24556c singleton class (ReportError @0x08dc60)
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (m_world def; +0x28 CSndHost)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::LoadTabSprites @0x102250 (SetTab's real callee)
 #include <Utils/RegistryHelper.h>
 #include <Globals.h>
@@ -1461,7 +1462,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
         item->m_enabled = one;
         if (m_activeTab == one) {
             m_statObj[idx]->Toggle(m_position, one);
-            CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
+            CSndHost* h = g_gameReg->m_world->m_28;
             if (h->m_emitGate == 0) {
                 void* spr_ob = 0;
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
@@ -1514,7 +1515,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
             if (frame >= 0x1a) {
                 tab->m_state = 2;
                 frame = 0x1a;
-                CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
+                CSndHost* h = g_gameReg->m_world->m_28;
                 if (h->m_emitGate == 0) {
                     void* spr_ob = 0;
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
@@ -1577,7 +1578,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         } else if (m[0x510 / 4] >= 0x1bf) {
             if (m[0x4e8 / 4] != 2) {
                 if (m[0x10c / 4] == 3 && m[0] != 2) {
-                    CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
+                    CSndHost* h = g_gameReg->m_world->m_28;
                     if (h->m_emitGate == 0) {
                         void* spr_ob = 0;
                         h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
@@ -1653,8 +1654,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
 
     void* spr_ob = 0;
     i32 n = phase + 1;
-    ((CRegHolder*)g_gameReg->m_world)
-        ->m_statusBar->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
+    g_gameReg->m_world->m_28->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
     i32* frame =
         (spr && n >= spr->m_firstFrame && n <= spr->m_lastFrame) ? spr->m_frames.m_pData[n] : 0;
@@ -1700,7 +1700,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     m_xDirection = (double)dist2 / dist;
     m_yDirection = (double)dxv / dist;
 
-    CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
+    CSndHost* h = g_gameReg->m_world->m_28;
     if (h->m_emitGate == 0) {
         void* fly_ob = 0;
         h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);

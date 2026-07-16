@@ -33,7 +33,6 @@
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the m_c holder)
 #include <Gruntz/ResMgr.h>       // CSoundRegistry (m_c->m_28 Install facet)
 #include <Gruntz/GruntzMgr.h>    // CGruntzMgr::RestoreVideoMode (m_4 facet) + m_gameWnd->m_hwnd
-#include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
 #include <Gruntz/Attract.h> // CSymParser (m_8 facet; ResolvePath). RunTitleSeq @0xfa350 is now a CState base method.
 #include <Gruntz/SplashState.h> // CSplashState (shared def; dtor emitted in HelpState.cpp)
 #include <rva.h>
@@ -152,7 +151,7 @@ post:
 // current asset-root name, return its result.
 RVA(0x000f9a80, 0x44)
 i32 CSplashState::InputVirtual() {
-    if (((CRegHolder*)m_c)->m_04->Method_158bc0() == 0) {
+    if (m_c->m_pages->Method_158bc0() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {
