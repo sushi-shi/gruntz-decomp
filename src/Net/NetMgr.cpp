@@ -14,7 +14,7 @@
 // blocks are separate retail objects (a ~0xbaf30 .text gap between them).
 #include <Net/NetMgr.h>          // CNetMgr + DirectPlay/list node types (pulls <Mfc.h>, RezMgr)
 #include <Net/InterfaceObject.h> // Find() returns the InterfaceObject group-node
-#include <Font/Font.h> // FontInterfaceObject + CWapNodeB decls (the misnomered 0x1794b0-0x179680
+#include <Font/Font.h> // FontInterfaceObject decls (the misnomered 0x1794b0-0x179570
                        // NetMgr.cpp-tail bodies below; see the seam note there)
 #include <rva.h>
 #include <string.h> // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
@@ -1132,8 +1132,9 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
 // @identity-TODO: NetMgr InterfaceObject, not font - FontInterfaceObject is a
 // misnomered duplicate view of <Net/InterfaceObject.h>'s InterfaceObject (whose
 // header declares these five RVAs as its methods); fold the two classes (and the
-// mangled names) in a dedicated rename pass, not this re-home package. Same for
-// CWapNodeB (a NetMgr node type, declared in <Font/Font.h> for now).
+// mangled names) in a dedicated rename pass, not this re-home package. (The
+// sibling "CWapNodeB" view IS resolved: it was CNetPlayerListNode - see
+// FreeStrings below.)
 // ===========================================================================
 
 // GUIDs for the DirectPlay service-provider interface checks (IsInterfaceX). Given
@@ -1215,20 +1216,25 @@ i32 FontInterfaceObject::IsInterface5() {
 }
 
 // =========================================================================
-// CWapNodeB::FreeStrings (0x179680)
-// Frees two allocated buffers at +0x34 and +0x38 and clears m_type.
-// @identity-TODO: NetMgr InterfaceObject, not font (a NetMgr node type)
+// CNetPlayerListNode::FreeStrings (0x179680)
+// Free the two strdup'd descriptor names (m_desc.m_lpszName @+0x34 /
+// m_desc.m_lpszPassword @+0x38, the ones Init duplicated in place) and clear the
+// dwSize marker (+0x04). IDENTITY (ex "CWapNodeB::FreeStrings"): retail's SINGLE
+// caller is ??1CNetPlayerListNode @0x1793db, the fields it touches live INSIDE
+// this node's 0x50-byte DPSESSIONDESC2 copy, and the dtor chain has exactly two
+// vptr stamps (own 0x5f0760 -> CObject 0x5e8cb4) - so the "CWapNodeB" that
+// carried it was a duplicate view of THIS class, not a base; DISSOLVED.
 RVA(0x00179680, 0x3a)
-void CWapNodeB::FreeStrings() {
-    if (m_buf34) {
-        operator delete(m_buf34);
-        m_buf34 = 0;
+void CNetPlayerListNode::FreeStrings() {
+    if (m_desc.m_lpszName) {
+        operator delete(m_desc.m_lpszName);
+        m_desc.m_lpszName = 0;
     }
-    if (m_buf38) {
-        operator delete(m_buf38);
-        m_buf38 = 0;
+    if (m_desc.m_lpszPassword) {
+        operator delete(m_desc.m_lpszPassword);
+        m_desc.m_lpszPassword = 0;
     }
-    m_type = 0;
+    m_desc.m_dwSize = 0;
 }
 
 // ---------------------------------------------------------------------------

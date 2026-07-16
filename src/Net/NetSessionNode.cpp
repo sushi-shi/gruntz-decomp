@@ -6,8 +6,9 @@
 //       DPSESSIONDESC2 at +0x04 plus two heap-duplicated name strings whose
 //       pointers live INSIDE that copy (+0x34 lpszSessionName, +0x38 lpszPassword).
 //       Init (0x1795a0) memcpy's the desc, forces dwSize=0x50, then strdup's the
-//       two names. Its ~dtor (0x1793b0) defers the two frees to the shared
-//       CWapNodeB::FreeStrings helper (Font.cpp, 0x179680, reloc-masked).
+//       two names. Its ~dtor (0x1793b0) defers the two frees to its own
+//       FreeStrings helper (NetMgr.cpp, 0x179680, reloc-masked; the ex-"CWapNodeB"
+//       view that carried it is dissolved onto this class).
 //   CNetSessionNode (own vtbl 0x5f0778) - holds two CString members (+0x08/+0x0c)
 //       and two raw heap buffers (+0x14/+0x18). Its ~dtor (0x179420) frees the
 //       buffers, clears +0x04/+0x20, then the CString members + base subobject
@@ -23,7 +24,6 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
 // load-bearing.
 #include <Ints.h>
-#include <Font/Font.h>  // canonical CWapNodeB (string-cleanup base, ?FreeStrings@CWapNodeB@)
 #include <Net/NetMgr.h> // canonical CNetPlayerListNode / CNetSessionNode / CNetSessionDesc
 #include <rva.h>
 #include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
@@ -44,8 +44,8 @@ VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
 
 // ===========================================================================
 // CNetPlayerListNode::~CNetPlayerListNode  @0x1793b0
-// Stamp the most-derived vtable (0x5f0760), defer the two name frees + m_type
-// clear to CWapNodeB::FreeStrings, then the base subobject restamps 0x5e8cb4.
+// Stamp the most-derived vtable (0x5f0760), defer the two name frees + dwSize
+// clear to the node's own FreeStrings, then the base subobject restamps 0x5e8cb4.
 // /GX frame from the destructible base subobject.
 // ===========================================================================
 // Real polymorphic now: cl emits the implicit ??_7CNetPlayerListNode own-vptr
@@ -54,7 +54,7 @@ VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
 // destructible base subobject. (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x001793b0, 0x46)
 CNetPlayerListNode::~CNetPlayerListNode() {
-    ((CWapNodeB*)this)->FreeStrings();
+    FreeStrings();
 }
 
 // ===========================================================================

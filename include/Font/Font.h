@@ -218,27 +218,10 @@ struct CharCursor {
 };
 SIZE_UNKNOWN(CharCursor); // reinterpret view over a CString's m_pchData
 
-// ---------------------------------------------------------------------------
-// CWapNodeB - a WAP node carrying packed data + two owned string buffers.
-// Only FreeStrings is matched here.
-// ---------------------------------------------------------------------------
-struct CWapNodeBase {
-    virtual ~CWapNodeBase(); // only the vtable matters
-};
-SIZE_UNKNOWN(CWapNodeBase);
-
-struct CWapNodeB : CWapNodeBase {
-    virtual ~CWapNodeB() OVERRIDE;
-    void FreeStrings();
-
-    i32 m_type;         // +0x04
-    char m_pad08[0x28]; // +0x08..+0x2f
-    char* m_srcStr1;    // +0x30
-    char* m_buf34;      // +0x34  owned buffer (FreeStrings deletes)
-    char* m_buf38;      // +0x38  owned buffer (FreeStrings deletes)
-    char m_rest[0x18];  // +0x3c..+0x53
-};
-SIZE_UNKNOWN(CWapNodeB);
+// (The ex-CWapNodeB/CWapNodeBase pair is DISSOLVED 2026-07-16: it was a duplicate
+// view of <Net/NetMgr.h>'s CNetPlayerListNode - its m_type/m_buf34/m_buf38 were
+// m_desc.m_dwSize/m_lpszName/m_lpszPassword inside the node's DPSESSIONDESC2 copy,
+// and FreeStrings (0x179680, NetMgr.cpp) is that node's dtor helper.)
 
 // FontInterfaceObject - a minimal COM-style object that carries a GUID pointer at
 // +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.

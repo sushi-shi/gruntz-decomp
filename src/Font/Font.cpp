@@ -31,7 +31,7 @@
 // through these. Reloc-masked DIR32 data refs.
 
 // The FontInterfaceObject::IsInterface1-5 GUID predicates (0x1794b0-0x179570), their
-// g_guid1-5 tables, and CWapNodeB::FreeStrings (0x179680) are re-homed to the
+// g_guid1-5 tables, and CNetPlayerListNode::FreeStrings (0x179680) are re-homed to the
 // NetMgr.cpp tail (src/Net/NetMgr.cpp): they precede ??0Font (0x179700) in retail,
 // i.e. they are NetMgr.cpp-obj code, not Font.cpp's (docs/exe-map/
 // interval-dossiers.md calibration case; the netmgr+font seam).

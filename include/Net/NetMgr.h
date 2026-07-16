@@ -790,6 +790,13 @@ public:
     }
     virtual ~CNetPlayerListNode() OVERRIDE; // 0x1793b0 (NetSessionNode.cpp)
     i32 Init(CNetSessionDesc* desc);        // 0x1795a0  copy + trim the descriptor
+    // Free the two strdup'd descriptor names (+0x34/+0x38) and clear the dwSize
+    // marker (0x179680, NetMgr.cpp). The dtor's only helper - retail's SINGLE
+    // caller is ??1 @0x1793db, and the dtor chain has exactly two vptr stamps
+    // (own 0x5f0760 -> CObject 0x5e8cb4), so the ex-"CWapNodeB" that carried it
+    // was a duplicate view of THIS class (its m_type/m_buf34/m_buf38 were
+    // m_desc.m_dwSize/m_lpszName/m_lpszPassword), not a base - DISSOLVED.
+    void FreeStrings(); // 0x179680
 };
 SIZE(CNetPlayerListNode, 0x58);       // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
 VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
