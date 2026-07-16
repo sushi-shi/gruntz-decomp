@@ -26,9 +26,8 @@ extern "C" CGameRegistry* g_gameReg;
 // The g_coordPool.m_freeHead node allocator (?g_coordPool.m_freeHead@@3PAXA): the head is a node whose first
 // dword is the next pointer; a non-empty pop advances the head and yields node+4.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
-// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
-// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
+// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
 // ===========================================================================

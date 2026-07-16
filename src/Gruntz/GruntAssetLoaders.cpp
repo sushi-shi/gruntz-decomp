@@ -9,7 +9,7 @@
 // CString fields each (+0 and +4). They predate the named m_474 member, so they are
 // reached by raw offset (the documented naming-independent-codegen exception).
 #include <Bute/ButeTree.h>
-#include <Gruntz/TypeKeyColl.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
+#include <Gruntz/TypeKeyColl.h> // CButeTree::Find - g_buteTree @0x6bf620
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/BattlezData.h>
