@@ -711,7 +711,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
     if (rec->m_valTable.Walk((const char*)name, m_owner->m_68 == 0) != 0) {
         return 0;
     }
-    CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
+    CSymLeafBuilder* slot = m_owner->PopParseSlot();
     slot->Build(
         this,
         (const char*)name,
@@ -747,7 +747,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
 // builder, just dispatched with a `this`. RVA-keyed pairing absorbs the mangling.
 RVA(0x0013a4b0, 0x75)
 i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
-    CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
+    CSymLeafBuilder* slot = m_owner->PopParseSlot();
     if (slot == 0) {
         return (i32)slot;
     }
@@ -920,7 +920,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 arr = 0;
             }
             if (!skip) {
-                CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
+                CSymLeafBuilder* slot = m_owner->PopParseSlot();
                 slot->Build(this, name1, f4, rec, str2, f3, f1, f2, f6, arr, (void*)a0);
                 rec->m_valTable.Insert(&slot->m_node);
                 m_10 = m_10 + slot->m_0c;
@@ -1786,7 +1786,7 @@ i32 CRezDir::FindEntry(char* name) {
 // + the slot-block down-counter init loop idiom diverge, and the hash-method reloc
 // operands are differently named. Banked for the final sweep.
 RVA(0x0013c0c0, 0x14b)
-void* CSymParser::PopParseSlot() {
+CSymLeafBuilder* CSymParser::PopParseSlot() {
     CHashElement* e = m_hash.First();
     void* rec = e ? e->m_record : 0;
     if (rec == 0) {
@@ -1826,7 +1826,7 @@ void* CSymParser::PopParseSlot() {
     if (rec) {
         m_hash.Remove(&((CSymLeafBuilder*)rec)->m_node);
     }
-    return rec;
+    return (CSymLeafBuilder*)rec;
 }
 
 // AddNode (0x13c210): splice a parse-slot record's intrusive node (its m_node @0x1c)

@@ -186,7 +186,7 @@ public:
     // table is empty, Rez-alloc a fresh block of m_parseSlotBlockCount parse slots, init each, stamp
     // their self-ptrs + register them into m_hash, link the block into m_nodes, then
     // pop the first. Returns the popped record (or 0 on allocation failure).
-    void* PopParseSlot(); // 0x13c0c0
+    CSymLeafBuilder* PopParseSlot(); // 0x13c0c0  (pops a leaf-record parse slot from the pool)
 
     // MakeSeed: the name-keyed clock-seed builder (0x13ba70), __thiscall on the parser
     // (ecx = this; body ignores it, returning time(&t)). The real method - every caller
