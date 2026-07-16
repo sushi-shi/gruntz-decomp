@@ -157,7 +157,7 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = ((CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane)->m_wrapW;
+        i32 limit = (g_gameReg->m_world->m_level->m_mainPlane)->m_wrapW;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -282,7 +282,7 @@ i32 CActionOptionsMenuBar::Render() {
     }
     i32 sx = m_screenX;
     i32 sy = m_screenY;
-    ((CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
+    (g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
 
     i32 r[4];
     i32* src = (i32*)&g_gameReg->m_world->m_level->m_planeCtx;

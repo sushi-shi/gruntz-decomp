@@ -2567,7 +2567,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     }
     i32 maxX = 0;
     i32 maxY = 0;
-    CPlaneRender* grid = (CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane;
+    CPlaneRender* grid = g_gameReg->m_world->m_level->m_mainPlane;
     i32 minX = grid->m_wrapW - 1;
     i32 minY = grid->m_wrapH - 1;
     do {
@@ -2643,7 +2643,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     if (n == 0) {
         return 0;
     }
-    CPlaneRender* dims = (CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane;
+    CPlaneRender* dims = g_gameReg->m_world->m_level->m_mainPlane;
     i32 minX = dims->m_wrapW - 1;
     i32 minY = dims->m_wrapH - 1;
     i32 maxX = 0;

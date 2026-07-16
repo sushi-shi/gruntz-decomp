@@ -828,7 +828,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
 RVA(0x00160ee0, 0xd)
 void CGameLevel::MainPlaneNotify() {
     if (m_mainPlane != 0) {
-        ((CPlaneRender*)m_mainPlane)->InitScrollRects(); // 0x163420
+        m_mainPlane->InitScrollRects(); // 0x163420
     }
 }
 

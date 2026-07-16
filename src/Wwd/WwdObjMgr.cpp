@@ -904,7 +904,7 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
     }
     CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
     CDDrawSurfacePair* drawHost = m_parent->m_drawTarget->m_backPair;
-    CPlaneRender* view = (CPlaneRender*)m_parent->m_level->m_mainPlane;
+    CPlaneRender* view = m_parent->m_level->m_mainPlane;
     if (node == 0) {
         return;
     }

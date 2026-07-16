@@ -19,7 +19,7 @@
 // Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
-    CPlaneRender* grid = (CPlaneRender*)m_world->m_level->m_mainPlane;
+    CPlaneRender* grid = m_world->m_level->m_mainPlane;
     i32 idx = grid->m_colOffsets[col] + row;
     grid->m_tileGrid[idx] = value;
     RezFree((void*)m_tileGrid);

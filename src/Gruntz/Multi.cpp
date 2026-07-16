@@ -1380,8 +1380,8 @@ void CMulti::PumpB() {
     }
     StepScroll();
     Mgr()->m_inputState->Retune(
-        ((CPlaneRender*)mgr->m_level->m_mainPlane)->m_snappedX,
-        ((CPlaneRender*)mgr->m_level->m_mainPlane)->m_snappedY
+        (mgr->m_level->m_mainPlane)->m_snappedX,
+        (mgr->m_level->m_mainPlane)->m_snappedY
     );
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
@@ -1428,7 +1428,7 @@ void CMulti::PumpB() {
     ((CDDrawSurfacePair*)mgr->m_drawTarget->m_frontPair)->m_surface->Flip(0);
     PumpBRefresh2356(g_gameReg, m_guts, m_region0Gate);
     if (mgr->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)mgr->m_level->m_mainPlane)->CenterScrollB();
+        (mgr->m_level->m_mainPlane)->CenterScrollB();
     }
     if (m_region0Gate != 0) {
         if ((i64)g_frameTime - *(i64*)&m_region0TimerLo >= *(i64*)&m_region0Interval) {

@@ -633,7 +633,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
             i32 value = *cursor;
             i32 px = i + m_08 - 1;
             i32 py = j + m_0c - 1;
-            CPlaneRender* plane = (CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane;
+            CPlaneRender* plane = g_gameReg->m_world->m_level->m_mainPlane;
             plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
             g_gameReg->m_tileGrid->Notify(px, py, value);
             if (inRect) {
@@ -714,7 +714,7 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     i32 v;
     if (m_34 != 0) {
         CGruntzMgr* reg = g_gameReg;
-        CPlaneRender* L = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+        CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
         L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = m_34;
         v = m_34;
         ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
@@ -722,23 +722,23 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
         switch (verb) {
             case 0x22: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+                CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
                 v = L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] + 1;
-                CPlaneRender* L2 = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+                CPlaneRender* L2 = reg->m_world->m_level->m_mainPlane;
                 L2->m_tileGrid[L2->m_colOffsets[m_0c] + m_08] = v;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
                 break;
             }
             case 0x1f: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+                CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
                 L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = 0x5b;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5b);
                 break;
             }
             case 0x1e: {
                 CGruntzMgr* reg = g_gameReg;
-                CPlaneRender* L = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+                CPlaneRender* L = reg->m_world->m_level->m_mainPlane;
                 L->m_tileGrid[L->m_colOffsets[m_0c] + m_08] = 0x5a;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5a);
                 break;
@@ -948,9 +948,9 @@ ret1:
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
-    CPlaneRender* layer = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+    CPlaneRender* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] + 1;
-    CPlaneRender* layer2 = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+    CPlaneRender* layer2 = reg->m_world->m_level->m_mainPlane;
     layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
     ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 1;
@@ -966,9 +966,9 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
 RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
-    CPlaneRender* layer = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+    CPlaneRender* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] - 1;
-    CPlaneRender* layer2 = (CPlaneRender*)reg->m_world->m_level->m_mainPlane;
+    CPlaneRender* layer2 = reg->m_world->m_level->m_mainPlane;
     layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
     ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 0;
@@ -1096,7 +1096,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
         }
     }
     {
-        CPlaneRender* grid = (CPlaneRender*)g_gameReg->m_world->m_level->m_mainPlane;
+        CPlaneRender* grid = g_gameReg->m_world->m_level->m_mainPlane;
         i32* cell = &grid->m_tileGrid[grid->m_colOffsets[m_tileY] + m_tileX];
         if (*cell == code) {
             return 0;

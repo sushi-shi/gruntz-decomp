@@ -2740,7 +2740,7 @@ RVA(0x000c9c20, 0x79)
 void CPlay::DrawWorldFrame() {
     Vslot26(); // this->vtbl[+0x98]()  (begin-frame virtual, thiscall)
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollA();
+        m_c->m_level->m_mainPlane->CenterScrollA();
     }
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
@@ -2795,12 +2795,12 @@ i32 CPlay::DrawWorldFrames() {
             ); // 0x3404 -> @0x8f7b0 (retail ecx=m_4; the old m_68 this was fake)
             if (i > 0 && i < last) {
                 if (m_c->m_level->m_mainPlane != 0) {
-                    ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollB();
+                    m_c->m_level->m_mainPlane->CenterScrollB();
                 }
             }
             Vslot26(); // this->vtbl[+0x98]()
             if (m_c->m_level->m_mainPlane != 0) {
-                ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollA();
+                m_c->m_level->m_mainPlane->CenterScrollA();
             }
             m_c->m_childGroup->TickKillCues_159a70(0);
             m_4->m_cmdGrid->LoadTeleporterGooConfig((i32)g_frameDelta);
@@ -2873,7 +2873,7 @@ i32 CPlay::ProfileDeltaFrame() {
     DrawDebugStats();
     m_c->m_drawTarget->m_frontPair->m_surface->Flip(0);
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollB();
+        m_c->m_level->m_mainPlane->CenterScrollB();
     }
     return 1;
 }
@@ -2924,7 +2924,7 @@ i32 CPlay::ProfileInputFrame() {
 
     u32 t3 = tg();
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollA();
+        m_c->m_level->m_mainPlane->CenterScrollA();
     }
     i32 deactMs = (i32)(tg() - t3);
 
@@ -2973,7 +2973,7 @@ i32 CPlay::ProfileInputFrame() {
     g_profAccB = (i32)(tg() - (u32)g_profAccB);
     g_profAccA = (i32)tg();
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollB();
+        m_c->m_level->m_mainPlane->CenterScrollB();
     }
     g_profAccA = (i32)(tg() - (u32)g_profAccA);
     UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0xebd70
@@ -4813,7 +4813,7 @@ i32 CPlay::winapi_0d0b30_CopyRect(i32) {
 RVA(0x000cedf0, 0xf)
 i32 CGameLevel::MainPlaneQueryA() {
     if (m_mainPlane != 0) {
-        return ((CPlaneRender*)m_mainPlane)->CenterScrollA(); // 0x163300
+        return m_mainPlane->CenterScrollA(); // 0x163300
     }
     return 0;
 }
@@ -4821,7 +4821,7 @@ i32 CGameLevel::MainPlaneQueryA() {
 RVA(0x000cee10, 0xf)
 i32 CGameLevel::MainPlaneQueryB() {
     if (m_mainPlane != 0) {
-        return ((CPlaneRender*)m_mainPlane)->CenterScrollB(); // 0x163370
+        return m_mainPlane->CenterScrollB(); // 0x163370
     }
     return 0;
 }
@@ -4840,17 +4840,17 @@ i32 CGameLevel::MainPlaneQueryB() {
 RVA(0x000cefc0, 0xa2)
 i32 CPlay::DrawWorldPresent() {
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollB();
+        m_c->m_level->m_mainPlane->CenterScrollB();
     }
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollA();
+        m_c->m_level->m_mainPlane->CenterScrollA();
     }
     m_c->m_childGroup->TickKillCues_159a70(1);
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollB();
+        m_c->m_level->m_mainPlane->CenterScrollB();
     }
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollA();
+        m_c->m_level->m_mainPlane->CenterScrollA();
     }
     m_c->m_childGroup->TickKillCues_159a70(1);
     m_c->m_level->VisitVisible(m_c->m_drawTarget->m_backPair, m_c->m_childGroup);
@@ -6751,7 +6751,7 @@ finish:
         1
     ); // 0xfa8f0 CState::RetireScene (inherited by CPlay `this`, cast-free)
     if (m_c->m_level->m_mainPlane != 0) {
-        ((CPlaneRender*)m_c->m_level->m_mainPlane)->CenterScrollB();
+        m_c->m_level->m_mainPlane->CenterScrollB();
     }
     m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
     m_inputWarmup1 = 0;

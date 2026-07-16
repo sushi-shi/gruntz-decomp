@@ -181,7 +181,7 @@ static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
 // what kind of tile pixel (subX, subY) is (CImageSet1::GetCollisionAt, slot 8 / +0x20).
 // Returns 0 for an empty/out-of-range cell.
 static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
-    CPlaneRender* g = (CPlaneRender*)level->m_mainPlane; // +0x5c (CLevelPlane == CPlaneRender)
+    CPlaneRender* g = level->m_mainPlane; // +0x5c (CLevelPlane == CPlaneRender)
     if (x < 0) {
         x = 0;
     } else if (x >= g->m_wrapW) {
