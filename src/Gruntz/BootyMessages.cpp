@@ -17,6 +17,7 @@
 #include <Ints.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/BootyMessages.h> // SecretMsgRow (this TU owns the tables)
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/LeafCue.h> // LeafCue + SoundStream (the CSndHost+0x2c stream) via SoundCue.h
 #include <Mfc.h>            // CString temps (/GX) + RECT/CopyRect/SetRect
@@ -75,10 +76,6 @@ RECT g_levelMsgRectsB[8] = {
 // The secret-bonus message tables: a "+0x3d"-encoded buffer pair (decoded in place
 // by the SetAt cipher) for the single-record banner, plus the per-row table indexed
 // by (rowBase*3 + row), each row a 0xa0-byte record carrying two encoded strings.
-struct SecretMsgRow {
-    char strA[0x20]; // +0x00  encoded line A
-    char strB[0x80]; // +0x20  encoded line B
-};
 // Owner-TU definition (.bss, runtime-filled). Row count CODE+DOMAIN-PROVEN, not
 // gap-guessed: idx = rowBase*3 + j with j in 0..2 and rowBase = (levelIndex-1)/4,
 // levelIndex <= 32 (8 worldz x 4 levelz) -> rowBase <= 7 -> 24 rows.

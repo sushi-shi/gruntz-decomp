@@ -18,6 +18,7 @@
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (the name map at g_gameReg->m_world +0x10)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (reader; Read @ vtable +0x2c)
+#include <Gruntz/StreamRecordLoaders.h> // CEventLoadRec (this TU owns the loader)
 #include <Gruntz/SerialRecView.h> // CRegSub30 / CRegTypeTable (shared registry views)
 #include <DDrawMgr/DDrawWorkerCache.h> // the +0x14 worker cache - Find (0x9cab0) is its method
 #include <string.h>                    // inline strlen (repne scasb) over the scratch buffer
@@ -36,20 +37,6 @@
 // ret 4. Note: unlike CTriggerLoadRec it does NOT null-check g_gameReg, only
 // the m_30 sub-registry.
 // ===========================================================================
-struct CEventLoadRec {
-    i32 Load(CSerialArchive* s);
-
-    i32 m_0, m_4; // +0x00,+0x04  raw
-    void* m_8;    // +0x08  name ref
-    i32 m_c;      // +0x0c  raw
-    void* m_10;   // +0x10  indexed type ref
-    void* m_14;   // +0x14  indexed type ref
-    void* m_18;   // +0x18  indexed type ref
-    void* m_1c;   // +0x1c  indexed type ref
-    void* m_20;   // +0x20  indexed type ref
-    char m_pad24[0x48 - 0x24];
-    i32 m_48, m_4c; // +0x48,+0x4c  raw
-};
 
 // @early-stop
 // outparam-zeroinit-scheduling wall (same as CTriggerLoadRec): logic + offsets

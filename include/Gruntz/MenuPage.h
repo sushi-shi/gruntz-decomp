@@ -44,6 +44,16 @@
 class CDDrawSurfaceMgr;
 class CChatBox; // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
 
+// A view of the CPtrList node layout (CPtrList::CNode is protected): next/prev/
+// data. The page's m_items walkers cast POSITIONs to it. (Distinct from
+// GruntzMgr.cpp's CMenuNode menu-tree node; this is the list node.)
+struct CMenuListNode {
+    CMenuListNode* pNext;
+    CMenuListNode* pPrev;
+    CMenuItem* data;
+};
+SIZE_UNKNOWN(CMenuListNode);
+
 class CMenuPage {
 public:
     // Inline (in-class) ctor - retail INLINES it at BuildMainMenuTree's 14 `new

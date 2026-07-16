@@ -82,10 +82,6 @@ extern "C" u32 g_engineFrameDelta;
 // index. The fixup indexes the array at g_gameReg+0x158 by (selector-row * 71)
 // (retail: lea+shl+sub = *71, then the *8 element stride folds into the [...*8]
 // addressing-mode scale), so the row multiply is materialized but the *8 is free.
-struct WwdRefSlot {
-    i32 m_idx; // +0x00  ref-row index (passed to GetSel)
-    i32 m_04;  // +0x04
-};
 
 // The global game registry (canonical <Gruntz/WwdGameReg.h>, RVA 0x24556c; wwdfile
 // owns the DATA label). The tag-8 fixup reads the level sprite-ref table at +0x74

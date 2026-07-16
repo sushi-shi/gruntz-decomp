@@ -8,15 +8,12 @@
 // short-circuit. Field names are placeholders; only offsets + code bytes are load-bearing.
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/DirectionClassify.h> // DirDesc (this TU owns the table)
 
 // (i32)(double) lowers to `call __ftol` (0x11f570) reading st0
 
 // The 8-direction descriptor table (9 * 0x10-byte records at 0x6448c8; entry [8] is the
 // null/no-heading result). Returned by pointer; content is the direction's anim/geo data.
-SIZE_UNKNOWN(DirDesc);
-struct DirDesc {
-    char b[0x10];
-};
 DATA(0x002448c8)
 extern DirDesc g_dirDescTable[9];
 

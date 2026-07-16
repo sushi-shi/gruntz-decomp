@@ -79,4 +79,12 @@ struct WwdGameReg {
     // 0x150.. is the CGruntzMgr m_options[4] block; reach it by raw offset.
 };
 
+// One ref-index array slot of the +0x158 array inside that m_options block (an
+// 8-byte entry whose first dword is the sprite ref-row index passed to GetSel;
+// the FortressFlag tag-8 fixup indexes it by selector-row * 71).
+struct WwdRefSlot {
+    i32 m_idx; // +0x00  ref-row index (passed to GetSel)
+    i32 m_04;  // +0x04
+};
+
 #endif // GRUNTZ_GRUNTZ_WWDGAMEREG_H

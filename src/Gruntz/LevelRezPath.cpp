@@ -28,17 +28,11 @@
 
 #include <Bute/SymParser.h>     // the shared CSymParser (ResolvePath 0x13c030)
 #include <Gruntz/GruntzMgr.h>   // the REAL owner (was the LevelRezLoader view)
+#include <Gruntz/LevelRezPath.h> // LevelRezData (the 0x5f4 rez descriptor)
 #include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse (0x139960/0x1399d0)
 
 // The ButeMgr symbol tree the rez data is resolved/parsed through.
 
-// The 0x5f4-byte rez descriptor read/parsed into a stack buffer; only its +0x2ec
-// field is returned.
-struct LevelRezData {
-    char m_pad00[0x2ec];
-    i32 m_2ec; // +0x2ec  returned field
-    char m_pad2f0[0x5f4 - 0x2f0];
-};
 
 // OWNER RECOVERED: the fake `LevelRezLoader` was CGruntzMgr - CSaveGame::VerifySlot /
 // ::Register call this method on the 0x64556c singleton (retail loads ecx from

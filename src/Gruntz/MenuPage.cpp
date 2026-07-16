@@ -35,15 +35,6 @@ inline void* operator new(size_t, void* p) {
 // External engine callees / globals (no body -> reloc-masked rel32).
 // ---------------------------------------------------------------------------
 
-// A view of the CPtrList node layout (CPtrList::CNode is protected): next/prev/data.
-// (Distinct from GruntzMgr.cpp's CMenuNode menu-tree node; this is the list node.)
-SIZE_UNKNOWN(CMenuListNode);
-struct CMenuListNode {
-    CMenuListNode* pNext;
-    CMenuListNode* pPrev;
-    CMenuItem* data;
-};
-
 // The name->page catalog is reached cast-free through the canonicals (the former
 // it is now the real CDDrawWorkerRegistry typedef in ResMgr.h):
 //   * m_owner IS CDDrawSurfaceMgr (== CState::m_c / CChatBox::m_page; GameRegistry.h);

@@ -26,6 +26,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <ddraw.h> // real DirectDraw SDK (IDirectDraw2, IDirectDrawPalette, LPPALETTEENTRY)
 #include <rva.h>
+#include <DDrawMgr/DirPal.h> // LogPal256 (this TU owns the palette snapshots)
 #include <stdio.h>
 #include <string.h>  // strrchr / _stricmp / inline memcpy
 #include <Globals.h> // g_DirectDrawMgr (the singleton whose device the notify waits on)
@@ -47,13 +48,6 @@ extern HINSTANCE g_resModule;
 // LITERALS (??_C@ .rdata constants, pooled + shared with the Image.cpp / ImagePool.cpp
 // loaders at 0x21a0e4/0x21a0dc/0x21aadc; reloc-masked, so the `push OFFSET` pairs).
 
-// A stack LOGPALETTE with a full 256-entry table (the 0x410-byte frame of
-// CaptureSystemPalette / BlackoutSystemPalette).
-struct LogPal256 {
-    u16 palVersion;                // +0x00
-    u16 palNumEntries;             // +0x02
-    PALETTEENTRY palPalEntry[256]; // +0x04
-};
 
 // CDDPalette::Create (__thiscall, ret 0xc => 3 args). Caches a copy of the
 // PALETTEENTRY array (m_cacheA), allocates a second cache (m_cacheB), then creates the

@@ -13,15 +13,9 @@
 #include <Win32.h>           // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>           // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
 #include <rva.h>
+#include <DDrawMgr/DDrawPolyFill.h> // FillEdgeRow (this TU owns the tables)
 
 // The polygon vertex is the shared 28-byte ClipVtx (x@+0, y@+4; the rest unused here).
-// A per-scanline edge record (stride 0x1c); the interpolated fixed-point x lands at
-// +0x10. The two active-edge tables hold the left/right span endpoints per row.
-struct FillEdgeRow {
-    char p0[0x10];
-    i32 m_10; // +0x10  interpolated x (14-bit fixed point)
-    char p1[0x1c - 0x14];
-};
 DATA(0x002a2cf0)
 extern "C" FillEdgeRow g_rasterEdgeL[]; // 0x6a2cf0 (descending-edge table; fill reads +0x10)
 DATA(0x002856f8)
