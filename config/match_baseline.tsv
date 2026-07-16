@@ -18,7 +18,7 @@ adler32	1	1
 advancedoptions	6	6
 anicycle	7	5
 aniplayer	4	0
-anirecord	13	10
+anirecord	12	10
 areamgr	18	10
 arrayserialize	4	4
 attract	19	8
@@ -431,19 +431,18 @@ aniplayer	?RenderCel_0e5c10@CAniPlayer@@QAEHXZ	98.4848	98.4848	3	e9ed0dcd9d32	0x
 aniplayer	?Serialize@CAniPlayer@@QAEHPAVCFileMemBase@@HHH@Z	88.2500	88.2500	1	9bd50000807a	0xe5c90
 aniplayer	?Start@CAniPlayer@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@HHUSbRect@@PBDHHHHH@Z	74.8958	74.8958	1	7c29170f3d61	0xe5ad0
 aniplayer	?TickToggle_0e5b90@CAniPlayer@@QAEHH@Z	91.6897	91.6897	3	0cfe5c2137cd	0xe5b90
-anirecord	??1CAniRecordBase2@@UAE@XZ	100.0000	100.0000	3	78009ded23b1	0x165dd0
+anirecord	??1CAniRecordBase2@@UAE@XZ	100.0000	100.0000	4	2989a6efec0d	0x165dd0
 anirecord	??1CAniRecordView@@UAE@XZ	100.0000	100.0000	2	6a41756c819d	0x1657a0
-anirecord	?Alloc168ea0@CAniRecordView@@QAEPAXHH@Z	100.0000	100.0000	3	bd3420fb56c4	0x168ea0
-anirecord	?Alloc168ee0@CAniRecordView@@QAEPAXHH@Z	100.0000	100.0000	3	709a3bee41b2	0x168ee0
-anirecord	?Alloc168f20@CAniRecordView@@QAEPAXHH@Z	100.0000	100.0000	3	d3ffcd068b9b	0x168f20
-anirecord	?Alloc168f60@CAniRecordView@@QAEPAXHHH@Z	100.0000	100.0000	3	f60faa1acf19	0x168f60
-anirecord	?FreeBuf_168fb0@CAniRecordView@@QAEXXZ	100.0000	100.0000	2	315aef895539	0x168fb0
-anirecord	?Gap_16b230@@YAHXZ	0.8791	0.8791	1	2dabd70ec0c1	0x16b230
+anirecord	?AllocBufCreate@CAniRecordView@@QAEPAXHH@Z	100.0000	100.0000	1	0c24be10556b	0x168f20
+anirecord	?AllocBufMakeB2@CAniRecordView@@QAEPAXHH@Z	100.0000	100.0000	1	df2ed547ece9	0x168ea0
+anirecord	?AllocBufMakeB3@CAniRecordView@@QAEPAXHHH@Z	100.0000	100.0000	1	37adc1e873fc	0x168f60
+anirecord	?AllocBufMakeB@CAniRecordView@@QAEPAXHH@Z	100.0000	100.0000	1	0bc5ca08e650	0x168ee0
+anirecord	?FreeBuf@CAniRecordView@@QAEXXZ	100.0000	100.0000	1	58ba2f60d373	0x168fb0
 anirecord	?GetAt@CAniStrArray@@QAE?AVCString@@H@Z	100.0000	100.0000	1	842d47d8ccee	0x168e70
-anirecord	?GetSize_168e50@CAniRecordView@@QAEHXZ	49.5833	49.5833	1	315c00de1da3	0x168e50
-anirecord	?Parse_168c60@CAniRecordView@@QAEHPAXPBF@Z	100.0000	100.0000	3	8d8af81aaa10	0x168c60
-anirecord	?ResolveIndices_168d00@CAniRecordView@@QAEXPAUCAniMapOwner@@PBD@Z	97.0686	97.0686	3	fae52642c6e6	0x168d00
-anirecord	?Slot13_168fd0@CAniRecordView@@QAEHXZ	100.0000	100.0000	1	a0b3f2d89c76	0x168fd0
+anirecord	?GetSize@CAniRecordView@@QAEHXZ	49.5833	49.5833	1	549059c266a8	0x168e50
+anirecord	?Parse@CAniRecordView@@QAEHPAXPBF@Z	100.0000	100.0000	1	86ffbb06e5e1	0x168c60
+anirecord	?PushPalette@CAniRecordView@@QAEHXZ	100.0000	100.0000	1	bad9eca149ba	0x168fd0
+anirecord	?ResolveIndices@CAniRecordView@@QAEXPAUCAniMapOwner@@PBD@Z	97.0686	97.0686	1	c010cd78baf7	0x168d00
 areamgr	??0CAreaMgr@@QAE@XZ	100.0000	100.0000	2	a6bca3bf76c7	0x99ba0
 areamgr	??1CAreaMgr@@QAE@XZ	100.0000	100.0000	4	9145dd54e0a7	0x99c20
 areamgr	??1CSpawnList@@QAE@XZ	100.0000	100.0000	1	300ac8464c18	0x99ca0
@@ -1041,12 +1040,12 @@ ddrawsurfacemgr	?SnapshotChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0HHH@ZHPADH@Z	74.
 ddrawsurfacepair	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	d9622c14ef3c	0x6b270
 ddrawsurfacepair	?BlitDirtyRect_164650@CDDrawSurfacePair@@QAEXPAV1@PAH1@Z	100.0000	100.0000	1	db1a8b4ec6ab	0x164650
 ddrawsurfacepair	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	2	bd29ddd935dc	0x3a1d0
-ddrawsurfacepair	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	94.4198	94.4198	1	f3d9e6fa70d4	0x165460
+ddrawsurfacepair	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	94.4198	94.4198	2	ceb7220bbb8b	0x165460
 ddrawsurfacepair	?ClearWorkers@CDDrawWorkerList@@QAEXXZ	100.0000	100.0000	3	437be3d8392f	0x163c60
 ddrawsurfacepair	?Configure_1655c0@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	1	33bfab2187ca	0x1655c0
 ddrawsurfacepair	?Create@CDDrawSurfacePair@@UAEHHHHH@Z	96.0198	96.0198	5	6d0e1d947599	0x163c90
-ddrawsurfacepair	?CreateWorker28@CDDrawWorkerMapSmall@@UAEPAXHPBDH@Z	96.7174	96.7174	3	bf9617f74692	0x165990
-ddrawsurfacepair	?CreateWorker2C@CDDrawWorkerMapSmall@@UAEPAXHPBDH@Z	96.7174	96.7174	3	4e1ed02e088b	0x165a10
+ddrawsurfacepair	?CreateWorker28@CDDrawWorkerMapSmall@@UAEPAXHPBDH@Z	96.7174	96.7174	4	c80b551b2c2a	0x165990
+ddrawsurfacepair	?CreateWorker2C@CDDrawWorkerMapSmall@@UAEPAXHPBDH@Z	96.7174	96.7174	4	15692d66b056	0x165a10
 ddrawsurfacepair	?CreateWorker@CDDrawWorkerCache@@UAEPAXHPBDH@Z	54.6071	54.6071	2	083f44cec9ae	0x1652c0
 ddrawsurfacepair	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	1	d4ff94432a66	0x165730
 ddrawsurfacepair	?DestroyAll@CDDrawWorkerMapSmall@@UAEXXZ	100.0000	100.0000	2	d19a389455c7	0x165810
@@ -1056,8 +1055,8 @@ ddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAHH@Z	52.7887	52.7887	3	be3ed4
 ddrawsurfacepair	?DrawCount@CDDrawSurfacePair@@QAEXPAUtagRECT@@H@Z	100.0000	100.0000	1	df5642e174cb	0x164380
 ddrawsurfacepair	?DrawCross@CDDrawSurfacePair@@QAEXHH@Z	73.1918	73.1918	3	706fbc4a793e	0x164180
 ddrawsurfacepair	?DrawLabel@CDDrawSurfacePair@@QAEXPAUtagRECT@@PAD@Z	100.0000	100.0000	1	b0552c4ffe4e	0x164420
-ddrawsurfacepair	?Factory_1658c0@CDDrawWorkerMapSmall@@UAEPAXPAVCDDrawSurfaceSource@@PBDH@Z	95.8736	95.8736	3	976446bed043	0x1658c0
-ddrawsurfacepair	?Factory_165a90@CDDrawWorkerMapSmall@@UAEPAXPAVCDDrawSurfaceSource@@HH@Z	92.9423	92.9423	3	6417565d3c42	0x165a90
+ddrawsurfacepair	?Factory_1658c0@CDDrawWorkerMapSmall@@UAEPAXPAVCDDrawSurfaceSource@@PBDH@Z	95.8736	95.8736	4	d05df038f9f0	0x1658c0
+ddrawsurfacepair	?Factory_165a90@CDDrawWorkerMapSmall@@UAEPAXPAVCDDrawSurfaceSource@@HH@Z	92.9423	92.9423	4	871cbf421a46	0x165a90
 ddrawsurfacepair	?FindKeyOfValue_165360@CDDrawWorkerCache@@QAE?AVCString@@PAVCImageSet@@@Z	100.0000	100.0000	1	78fc795a3d56	0x165360
 ddrawsurfacepair	?Helper_166040@CDDrawWorkerB@@QAEHHH@Z	95.0000	95.0000	2	09f9879779cd	0x166040
 ddrawsurfacepair	?Init@CResolveNode@@QAEHHHHHHH@Z	100.0000	100.0000	2	d8432522a282	0x1647e0
