@@ -8,6 +8,7 @@
 #include <ddraw.h> // real IDirectDrawSurface (the chatbox DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/ResMgr.h> // CImageRegistry (m_18->m_10) + its m_10map
+#include <Gruntz/Sprite.h> // the "GAME_CHATBOX" map value IS the canonical CSprite
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
 #include <DDrawMgr/DDrawSurfacePair.h> // the real render-target class LoadChatBoxSprite's arg is
@@ -25,14 +26,10 @@ extern "C" CGameRegistry* g_gameReg;
 // Engine views the sprite renderer (LoadChatBoxSprite, 0x20f40) reaches through.
 // Modeled minimally; every call/datum through them is reloc-masked.
 
-// The looked-up "GAME_CHATBOX" sprite set: a frame-entry array gated by two indices.
-struct CChatBoxFrame {
-    char m_pad00[0x14];
-    void** m_14; // +0x14  frame-entry array
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  frame index (mode != 3)
-    i32 m_68; // +0x68  frame index (mode == 3)
-};
+// The looked-up "GAME_CHATBOX" sprite set IS the canonical CSprite (<Gruntz/Sprite.h>):
+// the frame-entry table is CSprite::m_frames.m_pData (+0x14) and the two frame indices
+// gating mode!=3 / mode==3 are m_firstFrame (+0x64) / m_lastFrame (+0x68). The former
+// CChatBoxFrame .cpp-local view is dissolved onto it.
 // The m_18 chain is the WORLD HOLDER (dissolved 2026-07-13, Fable lane): the
 // former CChatBoxRegRoot was CSpriteFactoryHolder (Attach receives CState::m_c,
 // the g_gameReg->m_world object), its +0x10 "registry" (ex-CChatBoxRegistry) is
@@ -246,20 +243,20 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         return 0;
     }
 
-    void* spr = 0;
+    CSprite* spr = 0;
     self->m_18->m_10->m_10map.Lookup("GAME_CHATBOX", (CObject*&)spr);
     if (!spr) {
         return 0;
     }
 
     if (self->m_8 == 3) {
-        void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_68];
+        void* frame = spr->m_frames.m_pData[spr->m_lastFrame];
         if (!frame) {
             return 0;
         }
         RenderChatBoxFrame(arg1, (void*)(self->m_0 + 0x140), (void*)(self->m_4 + 0x20), 0);
     } else {
-        void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_64];
+        void* frame = spr->m_frames.m_pData[spr->m_firstFrame];
         if (!frame) {
             return 0;
         }
@@ -295,4 +292,3 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
 
 // SIZE metadata for the .cpp-local engine views (CChatBoxOwner lives in
 // ChatBoxOwner.h; its SIZE 0x1c is proven by the two alloc sites).
-SIZE_UNKNOWN(CChatBoxFrame);
