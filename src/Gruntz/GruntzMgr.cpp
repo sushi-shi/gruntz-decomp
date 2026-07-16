@@ -104,7 +104,6 @@
 // A polymorphic world sub-object (CWorldZ::m_1c -> *m_1c): abstract __stdcall COM
 // interface, only slot 10 (+0x28) is dispatched. STDMETHOD_(void, ...) ==
 // `virtual void __stdcall`, so `d->Slot0a()` lowers to `mov eax,[d]; call [eax+0x28]`.
-// [The CWorldDispatch 11-slot view is DISSOLVED: the +0x1c child is m_ptrColl
 // (CDDrawPtrCollections); its "Prepare" @0x08dd80 IS GetCapsChecked (the
 // IDirectDraw2::GetCaps probe), and the "*m_1c slot-10 Slot0a" dispatch is
 // m_surf0->FlipToGDISurface() (IDirectDraw2 slot 10, +0x28) before each modal UI.]
@@ -303,7 +302,6 @@ extern "C" {
 }
 
 // The +0x68 world command-grid object is the ONE CTriggerMgr (<Gruntz/TriggerMgr.h>,
-// included above) - the former CCmdGrid facet view is dissolved onto it, thunk-proven:
 // "Teardown" 0x3b1b == ~CTriggerMgr, "Reset"/"Flush" 0x15c3 == DestroyAllAnims,
 // "Command" 0x4250 == RebuildOverlay; the +0x20c/+0x21c delta tables are
 // m_rowStateB/m_rowStateC and the +0x288 scored flag is m_288.
@@ -381,7 +379,6 @@ extern "C" {
 // externs only here (the old extern "C" _g_683eaX shadow definitions are gone).
 
 // The world's +0x10 slot is the game's IMAGE/NAME registry: the REAL CImageRegistry
-// (<Gruntz/ResMgr.h>) - the ex-CWorldLookupHolder view is DISSOLVED. Its "+0x10
 // embedded lookup" IS that class's CMapStringToOb m_10map, and every value it resolves
 // is a real CImageSet (<Image/ImageSet.h>): the two 0x14/0x64/0x68 "color row" /
 // "config record" shells that stood here were that class, offset for offset -
@@ -2660,7 +2657,6 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 
 // ---------------------------------------------------------------------------
 // 0x08e880 - when in the PLAY state, register the DEBUG_SETSKILL cheat command.
-// (re-homed from src/Stub/BoundaryLowerMethods.cpp; dissolves the C8e880 view.)
 // The DEBUG_SETSKILL dialog proc, address-taken through its ILT thunk (0x1947);
 // bound to the thunk rva (the reference is a reloc-masked DIR32 push).
 // @data-symbol: ?Lab401947@@YAXXZ 0x00001947
@@ -3423,7 +3419,6 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     // call live during the temp's range (the strcpy is inlined rep-movs) - /GX
     // still elides the EH frame, matching retail's frameless body. (0x928c0 returns
     // CString by value -> MSVC emits it out-of-line + CALLs it here, as at every
-    // other site; the old separate GetLevelName alias for that call is dissolved.)
     strcpy(dst->m_levelName, GetWorldFileName());
     dst->m_isWon = (m_134 == 3);
     dst->m_f8 = m_130;
@@ -4423,7 +4418,6 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 // 0x64556c singleton (DrawDebugStats loaded it from ds:0x64556c; CGameRegistry::GetRect
 // was the phantom name for the same call). The view's `m_30` IS CGruntzMgr::m_world
 // (+0x30) and its `m_24` is CWorldZ::m_24 (the active CGameLevel view, whose +0x10 is
-// the rect), so the fake RectQuery_08e3a0 / ViewObj_08e3a0 pair is dissolved.
 RVA(0x0008e3a0, 0x94)
 RECT* CGruntzMgr::GetRect(RECT* out) {
     RECT local;

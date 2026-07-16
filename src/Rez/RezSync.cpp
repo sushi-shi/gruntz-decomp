@@ -2,7 +2,6 @@
 // (6445 B), the boot override of WAP32::CGameMgr::Run - SLOT-PROVEN: CGruntzMgr's
 // retail vtable (0x1e9b64) slot 1 is ILT thunk 0x249b -> jmp 0x83450. `this` (ebp)
 // is the 0xa30 CGruntzMgr singleton; returns 1 on success / 0 on every early error
-// path (ret 0x8). (The whole-file `RezSync` view of the manager is DISSOLVED,
 // 2026-07-16 - every field was a canonical <Gruntz/GruntzMgr.h> member.)
 //
 // Large /GX C++-EH carcass: the retail body carries a full exception frame
@@ -186,14 +185,11 @@ extern char g_lab545854[]; // 0x545854
 void __stdcall Blowfish_InitKey(unsigned char*);      // 0x16f6c0
 void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
 
-// (The generic `Mfc` thiscall-helper view is DISSOLVED: its two live calls were
 // real MFC methods - C_1b9c69 == CString::Empty (FID-anchored NAFXCW) on
 // m_strWorldFile, and D_1b48c6 == ~CPtrList on the sound set's m_list.)
 
-// (The local CDDrawSurfaceMgr call-view is DISSOLVED onto the canonical
 // <DDrawMgr/DDrawSurfaceMgr.h>: VInit was the slot-6 Init, VMethod155f50 is
 // SetHwnd, m_04/m_24/m_28 are m_pages/m_resolveSubMgr/m_leafScan. The local
-// CSymParser/CFaderMgr re-declarations are DISSOLVED onto <Bute/SymParser.h> /
 // <Gruntz/FaderMgr.h>, and the 0x94-byte H70 (m_tileGrid) IS the canonical
 // CGruntzMapMgr - the RTTI-proven +0x70 board whose teardown thunk 0x35b7 is
 // ~CGruntzMapMgr @0x85d10. m_sound is the audio host = canonical CGruntzSoundZ
@@ -253,11 +249,9 @@ i32 g_appHInstance;
 // a 31st initializer the binary does not have. Left undefined and honest.
 // ---------------------------------------------------------------------------
 
-// (DecodeObj (0x60) is DISSOLVED: its two "M" calls were the real CRT strstream
 // ctors - 0x169700 == ??0istrstream@@QAE@PADH@Z and 0x1698c0 ==
 // ??0ostrstream@@QAE@PADHH@Z (both FID-anchored LIBCIMT); the trailing `1` arg at
 // each retail call site is the virtual-base most-derived ctor flag. The whole
-// RezSync view struct is DISSOLVED onto CGruntzMgr - the thunk-named methods were:
 //   Init          == this Run override (vtable slot 1 -> 0x83450)
 //   Run(0x13dd50) == WAP32::CGameMgr::Run (the base call)
 //   Error2 0x346d == ReportError            Error1 0x3f80 == ReportWorldStatus
@@ -847,7 +841,6 @@ SIZE_UNKNOWN(CGameMgr);
 // vtable at 0x1e9b8c, so the vptr-store REFERENCE is bound to the right rva (no dangling
 // reloc) while the symbol_names row stays the real WAP32 name.
 // @identity-TODO: this global-namespace CGameMgr IS WAP32::CGameMgr (0x85540 is the
-// out-of-line COMDAT copy of its inline dtor, emitted for the vtable slot); dissolving it
 // needs the inline-XOR-out-of-line dtor conflict resolved first.
 RELOC_VTBL(CGameMgr, 0x001e9b8c); // == ??_7CGameMgr@WAP32@@6B@ (the real base vtable)
 RVA(0x00085540, 0xb)

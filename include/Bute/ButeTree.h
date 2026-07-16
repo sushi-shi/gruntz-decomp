@@ -9,7 +9,6 @@
 //
 // STRUCTURE-RECOVERY (RTTI-proven): CButeTree derives the RTTI-real `zPTree`
 // (<Bute/PTreeNode.h>: zErrHandling @0, CButeNodeEntry/zPtrColl @8). The former fake
-// CButeTreePrimary/CButeTreeSecond/CButeTreeBase2 views are dissolved onto zPTree - the
 // single 0x2c-byte config-tree base every node view shares (CButeStore m_tree, CButeNode,
 // CBSecStream). The trie fields (m_root/m_descentCursor/... at +0x18.., m_nodeCount@+0x14,
 // m_errorSink@+0x04) now live on zPTree/zErrHandling/CButeNodeEntry; CButeTree adds none.

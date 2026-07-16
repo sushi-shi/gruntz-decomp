@@ -101,4 +101,3 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     return out;
 }
 
-// (CImageRle16 view dissolved onto CDDrawShadeBlit; 0x1495d0 == EncodeRle16)

@@ -473,7 +473,6 @@ struct CSyncObj {
 };
 SIZE_UNKNOWN(CSyncObj);
 
-// (CSessionMgr view dissolved: the "session/game manager" the sync object caches at
 // CNetSession+0x04 IS the owning CMulti - the same +0x04 field the command view holds
 // as m_4 (Init's a2, the CMulti). Its "+0x564 net-busy flag" is CMulti::m_pollAbort.
 // Typed CMulti* below; the deref sites (NetCmdSlot.cpp) pull <Gruntz/Multi.h>.)
@@ -500,7 +499,6 @@ void RecycleCmd(void* cmd); // bf580  __cdecl
 // lobby-sync-view name via an anonymous union (byte-neutral; offsets unchanged).
 // ---------------------------------------------------------------------------
 struct CNetSession {
-    // Unions dissolved: the command-session and lobby-sync contexts share ONE field
     // per offset, so each carries a single canonical (typed/semantic) name - the
     // former hex/command-view aliases (m_00/m_4/m_8/m_c/m_10/m_14/m_18/m_1c/m_1b0)
     // are folded onto them.

@@ -1,7 +1,6 @@
 // ButeStoreDtorCopies.h - the RVA-binding anchors for the byte-identical COMDAT copies of
 // CButeStore's (== zPTree's) INLINE Reset + destructor.
 //
-// WHY THESE EXIST (and why they CANNOT be dissolved into one out-of-line def): ~zPTree and
 // zPTree::Reset are INLINE members (<Bute/ButeStore.h> -> <Bute/PTreeNode.h>). MSVC5 without
 // /Gy emits an inline member as a per-OBJECT-FILE STATIC (it folds only the vftable COMDAT,
 // not the function), so retail carries N byte-identical copies at N distinct RVAs - one per

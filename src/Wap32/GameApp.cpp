@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <Globals.h>
 // timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
-// (The former "RezMgr" manager view is DISSOLVED: its four frame-clock methods
 // 0x13ddc0-0x13df00 are WAP32::CGameMgr's own - declared in <Wap32/Wap32.h>,
 // defined below inside CGameMgr's contiguous retail method block. 0x13ddc0 is the
 // base PerFrameTick: retail ??_7CGameMgr @0x5e9b8c slot 4 holds it directly.)
@@ -539,7 +538,6 @@ void WAP32::CGameMgr::Close() {
 // in src/Rez/RezMgr.cpp) and calls this base body first - the direct
 // `call 0x13ddc0` there is the qualified base-call.
 //
-// (Ex "RezMgr::UpdateClock". The RezMgr view is DISSOLVED: the identity proof -
 // RVA interleave inside CGameMgr's contiguous method block, field-for-field slot
 // identity at +0x18..+0x28, and the CGameRegistry third view - lives on in the
 // <Wap32/Wap32.h> member comments. Its own duplicate `InitTimeFields` decl is long

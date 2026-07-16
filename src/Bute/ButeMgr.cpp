@@ -795,7 +795,6 @@ extern "C" {
 // stream in the .rez path - RezSync.cpp). NextChar reads the next char through
 // istream::get() (0x16a410, LIBCIMT carve-out, reloc-masked) and probes EOF
 // through ios::eof() (the vbptr-adjust to the virtual ios base + state&eofbit).
-// (The former CButeStream receiver view is dissolved onto the real istream.)
 
 // (The `ButeMgr : public CButeMgr` class - the host of the 0x170750 attribute-file line
 //  driver, the only method retail mangles under `ButeMgr@@` - now lives in <Bute/ButeMgr.h>.)
@@ -823,7 +822,6 @@ extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
 // implements CopyValue/~CButeValue/SetInt/SetDword/SetFloat/the box-ctor for. pValue
 // points at a heap copy of the parsed value (4-byte for int/dword/float, 8-byte
 // double, 8/16/24-byte point/rect refs), op-new'd so the `push N; call ??2; add esp,4;
-// test eax,eax` shape reloc-masks. (The former local CButeValue view is dissolved.)
 
 // (the ex-`CButeText` view is GONE. It was the statically-linked CRT **ostream**, and
 // its own comment already suspected as much - but it named the class MFC CString and
@@ -2036,7 +2034,6 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 // MSVC's virtual-base ADJUSTMENT for iostream (probe: cl emits `lea ecx,[eax+0x14]` for
 // iostream/fstream, +0xc for istream, +0x8 for ostream; 0x169be0 reads its vbtable at
 // [ecx-0x14], which pins the class). So `this` is the stream base and cl computes the
-// adjust itself. The old FLAG about colliding with m_errCallback at +0x14 dissolves with it.
 RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
     ((iostream*)(void*)this)->iostream::~iostream();  // 0x169be0  ??1iostream@@UAE@XZ

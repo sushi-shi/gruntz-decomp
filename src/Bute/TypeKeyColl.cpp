@@ -1256,7 +1256,6 @@ inline void* operator new(u32, void* p) {
 // through the CTypeKeyColl ctor (construction vtable ??_7CTypeKeyColl @0x5f04d0), retail
 // re-stamps that live 1-slot runtime vtable @0x5f04e4 over it. The former .cpp-local
 // `struct CTypeCollRuntime` view (a duplicate binding of 0x1f04e4 that clashed with
-// TypeCollRuntime.cpp's) is dissolved.
 
 // ===========================================================================
 // `dynamic initializer for g_typeColl' (0x16e730) - construct the shared key

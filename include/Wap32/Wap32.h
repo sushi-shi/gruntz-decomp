@@ -136,7 +136,6 @@ namespace WAP32 {
         // run-state countdown, busy-wait to the ms budget when pacing is armed, and
         // fold the 2s frame-count window into m_fps. CGruntzMgr overrides it (slot 4
         // thunk 0x1c7b -> 0x8b740) with the game tick, which calls this base body
-        // first. (Ex "RezMgr::UpdateClock" - the RezMgr view is dissolved.)
         virtual i32 PerFrameTick();               // +0x10 idx4  @0x13ddc0
         virtual i32 HandleCommand(i32, i32, i32); // +0x14 idx5
 

@@ -34,7 +34,6 @@
 #include <Wap32/ZVec.h>
 // The REAL zPTree config-tree hierarchy (zErrHandling @0, zPtrColl/CButeNodeEntry @8;
 // zPTree : those; CButeTree/CButeStore/CButeNode : zPTree). RTTI-proven single model -
-// the former ButeMgr.h stand-in zErrHandling/zPTree/CButeNodeSub views are dissolved
 // onto it (structure-recovery: CButeTree/CButeStore/CButeNode all derive zPTree).
 #include <Bute/PTreeNode.h>
 
