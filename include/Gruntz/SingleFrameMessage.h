@@ -45,4 +45,10 @@ public:
 VTBL(CSingleFrameMessage, 0x1e864c);
 SIZE(CSingleFrameMessage, 0x54);
 
+// The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
+typedef i32 (CSingleFrameMessage::*SingleFrameHandler)();
+struct CSingleFrameActEntry {
+    SingleFrameHandler m_fn;
+};
+
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

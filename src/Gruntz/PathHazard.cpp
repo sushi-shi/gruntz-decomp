@@ -120,30 +120,12 @@ CPathHazard::CPathHazard() {
 RVA(0x00013340, 0x44)
 CRainCloud::~CRainCloud() {}
 
-// The bound CGameObject viewed by the ctor: it reads the screen position (m_5c/
-// m_60), the layer key (m_74), the flags (m_08), and the raw waypoint coordinate
-// arrays (the 12 ints at +0x134, the 4 ints at +0x64, and the 8 ints at
-// m_7c->+0xf0). The hazard scales each tile coordinate to a pixel centre
-// (coord*0x20 + 0x10). Only the touched offsets are modeled.
-struct CPathCtorSub { // m_object->m_7c (the per-tile-time + extra waypoint owner)
-    char m_pad00[0xbc];
-    i32 m_bc; // +0xbc per-tile time (0 -> read PathHazardTimePerTile)
-    char m_padc0[0xf0 - 0xc0];
-    i32 m_f0, m_f4, m_f8, m_fc, m_100, m_104, m_108, m_10c; // +0xf0..0x10c (8 coords)
-};
-struct CPathCtorObj {
-    char m_pad00[0x08];
-    i32 m_08; // +0x08 flags
-    char m_pad0c[0x5c - 0x0c];
-    i32 m_5c, m_60;             // +0x5c, +0x60 screen position (wp[0])
-    i32 m_64, m_68, m_6c, m_70; // +0x64..0x70 (4 coords)
-    i32 m_74;                   // +0x74 layer key
-    char m_pad78[0x7c - 0x78];
-    CPathCtorSub* m_7c; // +0x7c
-    char m_pad80[0x134 - 0x80];
-    i32 m_134, m_138, m_13c, m_140, m_144, m_148, m_14c, m_150, m_154, m_158, m_15c,
-        m_160; // +0x134..0x160 (12 coords)
-};
+// (The former CPathCtorObj/CPathCtorSub ctor views are DISSOLVED (2026-07-16):
+// the bound object is the canonical CGameObject (screen pos m_screenX/Y, z-key
+// m_latchedAnimId, flags m_flags; the WWD record stores the raw waypoint tile
+// coords in the extent/area/m_154.. slots - a per-kind ROLE of the same fields)
+// and its +0x7c the canonical AnimWorkerObj (per-tile time m_bc, the two +0xf0/
+// +0x100 coord quads).)
 
 // CPathHazard::CPathHazard @0xb35a0 - fold the shared CUserLogic(obj) init, then
 // build the hazard's waypoint path: snap the bound object's screen position to the
@@ -172,28 +154,28 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
 
     m_38->m_flags |= 0x2000002;
 
-    CPathCtorObj* o = (CPathCtorObj*)m_object;
-    i32 snapX = (o->m_5c & ~0x1f) + 0x10;
-    i32 snapY = (o->m_60 & ~0x1f) + 0x10;
-    o->m_5c = snapX;
+    CGameObject* o = m_object;
+    i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
+    i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
+    o->m_screenX = snapX;
     m_posX = (double)snapX;
-    o->m_60 = snapY;
+    o->m_screenY = snapY;
     m_posY = (double)snapY;
-    if (o->m_74 != 0xcf850) {
-        o->m_74 = 0xcf850;
-        o->m_08 |= 0x20000;
+    if (o->m_latchedAnimId != 0xcf850) {
+        o->m_latchedAnimId = 0xcf850;
+        o->m_flags |= 0x20000;
     }
 
-    m_wp[0].x = o->m_5c;
-    m_wp[0].y = o->m_60;
-    m_wp[1].x = (o->m_134 << 5) + 0x10;
-    m_wp[1].y = (o->m_138 << 5) + 0x10;
-    m_wp[2].x = (o->m_13c << 5) + 0x10;
-    m_wp[2].y = (o->m_140 << 5) + 0x10;
-    m_wp[3].x = (o->m_144 << 5) + 0x10;
-    m_wp[3].y = (o->m_148 << 5) + 0x10;
-    m_wp[4].x = (o->m_14c << 5) + 0x10;
-    m_wp[4].y = (o->m_150 << 5) + 0x10;
+    m_wp[0].x = o->m_screenX;
+    m_wp[0].y = o->m_screenY;
+    m_wp[1].x = (o->m_extentL << 5) + 0x10;
+    m_wp[1].y = (o->m_extentT << 5) + 0x10;
+    m_wp[2].x = (o->m_extentR << 5) + 0x10;
+    m_wp[2].y = (o->m_extentB << 5) + 0x10;
+    m_wp[3].x = (o->m_areaL << 5) + 0x10;
+    m_wp[3].y = (o->m_areaT << 5) + 0x10;
+    m_wp[4].x = (o->m_areaR << 5) + 0x10;
+    m_wp[4].y = (o->m_areaB << 5) + 0x10;
     m_wp[5].x = (o->m_154 << 5) + 0x10;
     m_wp[5].y = (o->m_158 << 5) + 0x10;
     m_wp[6].x = (o->m_15c << 5) + 0x10;
@@ -569,8 +551,6 @@ void CPathHazard::ForwardTick() {
 #include <rva.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CPathCtorObj);
-SIZE_UNKNOWN(CPathCtorSub);
 SIZE_UNKNOWN(CPathEntity);
 SIZE_UNKNOWN(CPathSubMgr);
 SIZE_UNKNOWN(CPathWaypoint);

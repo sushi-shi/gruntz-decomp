@@ -52,12 +52,12 @@ CExitTrigger::~CExitTrigger() {}
 // element (<Gruntz/GameRegistry.h>), indexed by the bound object's area index
 // m_124: m_20 the live gate, m_0c the stored id, m_220/m_224 the snapped position.
 
-// The cue receiver (g_gameReg->m_68): +0x2a0 holds the active warlord id.
-struct CExitCueSink {
-    char m_pad00[0x2a0];
-    i32 m_2a0; // +0x2a0
-};
-SIZE_UNKNOWN(CExitCueSink);
+// (The former CExitCueSink view of g_gameReg->m_68 is DISSOLVED (2026-07-16):
+// the "+0x68 cue receiver" IS the CTriggerMgr at m_cmdGrid, and its +0x2a0 IS
+// the canonical m_pendingFx tracked-grunt-logic slot (multi-writer: the fx
+// deserializer stores the spawned fx sprite's m_7c->m_logic there; this ctor
+// stores the current player's WARLORD logic - one retail cell, one field).)
+#include <Gruntz/TriggerMgr.h>
 
 // The game registry singleton (g_gameReg @0x64556c): +0x30 the probe-sink
 // holder, +0x68 the cue receiver, the per-area focus slots at +0x150.
@@ -114,11 +114,12 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (e != 0) {
         e->m_124 = m_object->m_124;
         e->m_7c->m_notify(e);
-        // snapshot the warlord's bound logic (obj->m_7c->m_logic); the cue sink keeps
-        // it as a raw DWORD (authentic pointer-as-dword storage)
+        // snapshot the warlord's bound logic (obj->m_7c->m_logic)
         m_warlordLogic = e->m_7c->m_logic;
         if (m_object->m_124 == g_curPlayer) {
-            ((CExitCueSink*)g_gameReg->m_cmdGrid)->m_2a0 = (i32)m_warlordLogic;
+            // track the local player's warlord in the trigger mgr's pending-fx
+            // grunt slot (CTmCell == CGrunt; the warlord logic is a grunt leaf)
+            g_gameReg->m_cmdGrid->m_pendingFx = (CTmCell*)m_warlordLogic;
         }
         CFocusSlot* slot2 = &g_gameReg->m_focusSlots[m_object->m_124];
         if (slot2 != 0) {

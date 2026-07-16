@@ -61,30 +61,20 @@ extern "C" CGameRegistry* g_gameReg;
 // Each ActReg is the shared <Gruntz/ActReg.h> CActReg archetype (distinct instance);
 // each ActEntry's first dword is the per-frame handler PMF (4-byte code ptr). -------
 
-// CWarpStonePad's registry (@0x64e6a0, range [2000,2010]).
-typedef i32 (CWarpStonePad::*WarpStonePadHandler)();
-struct CWarpStonePadActEntry {
-    WarpStonePadHandler m_fn;
-};
+// CWarpStonePad's registry (@0x64e6a0, range [2000,2010]); the ActEntry record
+// lives with the class (<Gruntz/WarpStonePad.h>).
 // (CWarpStonePadActReg dissolved: it was an EMPTY subclass of CActReg whose only job was
 // to give this global a distinct type name. The variable name already makes the mangled
 // symbol unique, and DATA() rebinds it - so the archetype IS the type.)
 DATA(0x0024e6a0)
 CActReg g_warpStonePadActReg; // 0x64e6a0
 
-// CTileTriggerSwitch's registry (@0x64e798).
-typedef i32 (CTileTriggerSwitch::*TileTriggerSwitchHandler)();
-struct CTileTriggerSwitchActEntry {
-    TileTriggerSwitchHandler m_fn;
-};
+// CTileTriggerSwitch's registry (@0x64e798); ActEntry in <Gruntz/TileTriggerSwitch.h>.
 // (CTileTriggerSwitchActReg dissolved - empty CActReg alias, see above.)
 DATA(0x0024e798)
 CActReg g_tileTriggerSwitchActReg; // 0x64e798
 
-// CCheckpointTrigger's registry (@0x64e7c0; CCheckpointActReg from <Gruntz/ActReg.h>).
-struct CCheckpointActEntry {
-    i32 (CCheckpointTrigger::*m_fn)();
-};
+// CCheckpointTrigger's registry (@0x64e7c0; entry record in <Gruntz/CheckpointTrigger.h>).
 DATA(0x0024e7c0)
 CCheckpointActReg g_checkpointActReg; // 0x64e7c0
 
@@ -94,14 +84,7 @@ DATA(0x0024e810)
 CActReg g_tileTriggerActReg; // 0x64e810
 DATA(0x0024e7e8)
 CActReg g_tileSecretTriggerActReg; // 0x64e7e8
-typedef i32 (CTileTrigger::*TileTriggerHandler)();
-struct CTileTriggerActEntry {
-    TileTriggerHandler m_fn;
-};
-typedef i32 (CTileSecretTrigger::*TileSecretTriggerHandler)();
-struct CTileSecretTriggerActEntry {
-    TileSecretTriggerHandler m_fn;
-};
+// (TileTrigger/TileSecretTrigger ActEntry records live in <Gruntz/TileTrigger.h>.)
 
 // --- CTileTriggerTransition (the tiletriggertransition stray, folded waveM-strays) -----------
 

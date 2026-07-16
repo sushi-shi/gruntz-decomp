@@ -50,4 +50,9 @@ public:
 VTBL(CSpotLight, 0x1e75bc);
 SIZE(CSpotLight, 0xa8);
 
+// The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
+struct CSpotActEntry {
+    i32 (CSpotLight::*m_fn)();
+};
+
 #endif // GRUNTZ_CSPOTLIGHT_H

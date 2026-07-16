@@ -31,4 +31,12 @@ public:
 VTBL(CStatusBarSprite, 0x1e7fc4);
 SIZE(CStatusBarSprite, 0x54);
 
+// The activation-registry handler-entry record (the .data CActReg row): its first
+// dword receives the per-frame handler PMF (4-byte code ptr on this complete
+// single-inheritance class).
+typedef i32 (CStatusBarSprite::*StatusBarSpriteHandler)();
+struct CStatusBarSpriteActEntry {
+    StatusBarSpriteHandler m_fn;
+};
+
 #endif // GRUNTZ_CSTATUSBARSPRITE_H

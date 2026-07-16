@@ -1223,11 +1223,6 @@ source = "src/Gruntz/TileLogicPump.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "actionbeginhost"
-source = "src/Gruntz/ActionBeginHost.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "gruntbehaviorleaf"
 source = "src/Gruntz/GruntBehaviorLeaf.cpp"
 flags = "eh"
@@ -2139,11 +2134,6 @@ unit = "bracketvalue"
 source = "src/Gruntz/BracketValueParse.cpp"
 flags = "base"
 
-
-[[unit]]
-unit = "mgrslotswap"
-source = "src/Gruntz/MgrSlotSwap.cpp"
-flags = "base"
 
 # trace-discovered leaf dtors re-homed from src/Stub/Discovered.cpp (matcher-1):
 [[unit]]

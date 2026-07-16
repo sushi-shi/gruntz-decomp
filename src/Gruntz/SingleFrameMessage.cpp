@@ -53,19 +53,16 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
 // class).
-typedef i32 (CSingleFrameMessage::*SingleFrameHandler)();
-struct CSingleFrameActEntry {
-    SingleFrameHandler m_fn;
-};
+// (The handler-entry record CSingleFrameActEntry lives with the class in
+// <Gruntz/SingleFrameMessage.h>.)
 
 // The class's activation-coordinate registry singleton (@0x645ef0), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
 // duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
 // derives from it, keeping its own placeholder name so the DATA-pinned global is
 // unchanged.
-struct CSingleFrameActReg : public CActReg {};
 DATA(0x00245ef0)
-CSingleFrameActReg g_singleFrameActReg; // 0x645ef0
+CActReg g_singleFrameActReg; // (the CActReg archetype IS the type) // 0x645ef0
 
 // CSingleFrameMessage::InitActReg @0x0ab530 - construct the class's activation-
 // coordinate registry singleton (g_singleFrameActReg @0x645ef0) over the fixed

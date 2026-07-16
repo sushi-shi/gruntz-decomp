@@ -99,17 +99,8 @@ void ConstructHaznRange() {
 // The entry's first dword is a pointer-to-member-function of CStaticHazard
 // (single inheritance -> 4-byte code pointer); FireActivation invokes it on
 // `this`, emitting `mov ecx,this; call [entry]`.
-typedef void (CStaticHazard::*HaznHandler)();
-struct CHaznEntry {
-    HaznHandler m_fn; // [entry]
-};
-
-// RegisterActs binds the two i32-returning handler PMFs (LoadAttributes2 /
-// LoadAttributes); a distinct entry view so the store keeps the real signature.
-typedef i32 (CStaticHazard::*HaznHandler2)();
-struct CHaznEntry2 {
-    HaznHandler2 m_fn;
-};
+// (The CHaznEntry/CHaznEntry2 handler-entry records live with the class in
+// <Gruntz/StaticHazard.h>.)
 
 // ---------------------------------------------------------------------------
 // RegisterActs (0x0fbd50) interns the "A" and "B" activation keys into the shared

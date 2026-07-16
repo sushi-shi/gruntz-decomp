@@ -11,22 +11,15 @@
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class).
-typedef i32 (CAniCycle::*AniCycleHandler)();
-struct CAniCycleActEntry {
-    AniCycleHandler m_fn;
-};
+// (The handler-entry record CAniCycleActEntry lives with the class in <Gruntz/AniCycle.h>.)
 
 // The class's activation-coordinate registry singleton (@0x646088), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
 // duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
 // derives from it, keeping its own placeholder name so the DATA-pinned global is
 // unchanged.
-struct CAniCycleActReg : public CActReg {};
 DATA(0x00246088)
-CAniCycleActReg g_aniCycleActReg; // 0x646088
+CActReg g_aniCycleActReg; // (the CActReg archetype IS the type) // 0x646088
 
 // CAniCycle::GetTypeTag (0x0000f450) is now an inline member in the class header.
 

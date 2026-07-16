@@ -27,4 +27,10 @@ public:
 VTBL(CGruntStartingPoint, 0x1e8284);
 SIZE(CGruntStartingPoint, 0x54);
 
+// The R4 dispatch-entry record (the .data CActReg row; 4-byte PMF).
+typedef i32 (CGruntStartingPoint::*StartActHandler)();
+struct StartActEntry {
+    StartActHandler m_fn;
+};
+
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

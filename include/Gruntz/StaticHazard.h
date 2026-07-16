@@ -58,4 +58,15 @@ public:
 };
 VTBL(CStaticHazard, 0x001e7824);
 
+// The activation-registry handler-entry records (the .data CActReg rows; 4-byte
+// PMFs; FireActivation dispatches them thiscall on the leaf).
+typedef void (CStaticHazard::*HaznHandler)();
+struct CHaznEntry {
+    HaznHandler m_fn;
+};
+typedef i32 (CStaticHazard::*HaznHandler2)();
+struct CHaznEntry2 {
+    HaznHandler2 m_fn;
+};
+
 #endif // GRUNTZ_CSTATICHAZARD_H

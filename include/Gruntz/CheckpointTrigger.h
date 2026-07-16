@@ -29,4 +29,9 @@ public:
 VTBL(CCheckpointTrigger, 0x1e7ebc);
 SIZE(CCheckpointTrigger, 0x94);
 
+// The activation-registry entry record (the .data CActReg row; 4-byte PMF).
+struct CCheckpointActEntry {
+    i32 (CCheckpointTrigger::*m_fn)();
+};
+
 #endif // GRUNTZ_CCHECKPOINTTRIGGER_H

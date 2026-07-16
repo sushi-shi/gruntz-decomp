@@ -33,4 +33,12 @@ public:
                                 //         the state pump's `new CWarpStonePad` = new(0x54))
 };
 
+// The activation-registry entry record (the .data CActReg row): its first dword
+// receives the per-frame handler PMF (4-byte code pointer on this complete
+// single-inheritance class); FireActivation dispatches it thiscall on the leaf.
+typedef i32 (CWarpStonePad::*WarpStonePadHandler)();
+struct CWarpStonePadActEntry {
+    WarpStonePadHandler m_fn;
+};
+
 #endif // GRUNTZ_CWARPSTONEPAD_H

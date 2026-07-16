@@ -49,4 +49,14 @@ public:
     virtual ~CCoveredPowerup() OVERRIDE;
 };
 
+// The activation-registry entry records (the .data CActReg rows; 4-byte PMFs).
+typedef i32 (CTileTrigger::*TileTriggerHandler)();
+struct CTileTriggerActEntry {
+    TileTriggerHandler m_fn;
+};
+typedef i32 (CTileSecretTrigger::*TileSecretTriggerHandler)();
+struct CTileSecretTriggerActEntry {
+    TileSecretTriggerHandler m_fn;
+};
+
 #endif // GRUNTZ_TILETRIGGER_H

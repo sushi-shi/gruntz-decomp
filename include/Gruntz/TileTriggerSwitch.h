@@ -29,4 +29,10 @@ public:
     char m_pad40[0x54 - 0x40];      // +0x40 (unmodeled leaf tail; size 0x54 from `new(0x54)`)
 };
 
+// The activation-registry entry record (the .data CActReg row; 4-byte PMF).
+typedef i32 (CTileTriggerSwitch::*TileTriggerSwitchHandler)();
+struct CTileTriggerSwitchActEntry {
+    TileTriggerSwitchHandler m_fn;
+};
+
 #endif // GRUNTZ_CTILETRIGGERSWITCH_H

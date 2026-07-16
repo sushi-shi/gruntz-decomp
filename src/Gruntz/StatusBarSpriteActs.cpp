@@ -24,24 +24,16 @@
 #include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
-// The handler entry the per-class registry yields: its first dword receives the
-// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
-// class).
-typedef i32 (CStatusBarSprite::*StatusBarSpriteHandler)();
-struct CStatusBarSpriteActEntry {
-    StatusBarSpriteHandler m_fn;
-};
-SIZE_UNKNOWN(CStatusBarSpriteActEntry);
+// (The handler-entry record CStatusBarSpriteActEntry lives with the class in
+// <Gruntz/StatusBarSprite.h>.)
 
 // The class's activation-coordinate registry singleton (@0x64e670), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
 // duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
 // derives from it, keeping its own placeholder name so the DATA-pinned global is
 // unchanged.
-struct CStatusBarSpriteActReg : public CActReg {};
-SIZE_UNKNOWN(CStatusBarSpriteActReg);
 DATA(0x0024e670)
-CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
+CActReg g_statusBarSpriteActReg; // (the CActReg archetype IS the type) // 0x64e670
 
 // StatusBarSpriteStep @0x10c0f0 - the CStatusBarSprite worker-pump (free __cdecl,
 // /GX): the controller lives at obj->m_7c; dispatch on its state id, building the

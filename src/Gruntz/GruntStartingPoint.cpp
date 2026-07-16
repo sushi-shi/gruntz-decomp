@@ -117,13 +117,8 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     return (CTypeNameEntry*)g_typeColl.m_spare; // m_spare is the i32-typed slow-path slot
 }
 
-// The R4 dispatch entry carries the per-coord handler PMF (a 4-byte code pointer on
-// the complete single-inheritance CGruntStartingPoint).
-typedef i32 (CGruntStartingPoint::*StartActHandler)();
-struct StartActEntry {
-    StartActHandler m_fn;
-};
-SIZE_UNKNOWN(StartActEntry);
+// (The R4 dispatch-entry record StartActEntry lives with the class in
+// <Gruntz/GruntStartingPoint.h>.)
 
 // The coordinate->entry lookup: the shared archetype inline (the seven g_actReg4*
 // scalars it used to run over ARE g_actReg4's fields). (The ex-`R4Entry { void* m_fn; }`

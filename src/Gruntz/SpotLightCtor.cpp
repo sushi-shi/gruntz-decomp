@@ -131,9 +131,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
 // declared in LogicActRegistrars.cpp; extern here so the loads reloc-mask). Its
 // entries hold the per-id handler (a code ptr dispatched __thiscall on this).
 extern CActReg g_actReg_646188; // 0x646188
-struct CSpotActEntry {
-    i32 (CSpotLight::*m_fn)();
-};
+// (The handler-entry record CSpotActEntry lives with the class in <Gruntz/SpotLight.h>.)
 
 // CSpotLight::RunAct @0x0b1630 - the class's vtable slot-4 (UserLogicVfunc2) body:
 // resolve the registry entry for id and, if a handler is bound, re-resolve and run

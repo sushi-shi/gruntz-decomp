@@ -53,4 +53,10 @@ public:
 VTBL(CAniCycle, 0x001e86a4);
 SIZE(CAniCycle, 0x54);
 
+// The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
+typedef i32 (CAniCycle::*AniCycleHandler)();
+struct CAniCycleActEntry {
+    AniCycleHandler m_fn;
+};
+
 #endif // GRUNTZ_CANICYCLE_H
