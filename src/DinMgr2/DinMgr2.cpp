@@ -2,7 +2,7 @@
 // original TU: C:\Proj\DinMgr2\DinMgr2.cpp (__FILE__-anchored: asserts at
 // 0x132ce0/0x132f80 push the 0x6199bc DinMgr2.cpp literal).
 //
-// SPLIT (wave1-E, interval dossier calibration): our former DirectInputMgr2.cpp
+// SPLIT (interval dossier calibration): our DirectInputMgr2.cpp
 // covered TWO original files. The boundary is 0x134cb0 - InputDevice.cpp's first
 // fn (Create@CInputDevRoot) asserts at LINE 50 (the wrappers run lines 50..485),
 // leaving no room for the big device bodies before it, and per the private-globals
@@ -48,8 +48,7 @@
 // MB_ICONEXCLAMATION (0x30).
 #include <Win32.h>
 
-// (Free360/Free6d0 device-leaf teardowns re-homed onto CDeviceConfigB/CDeviceConfigC
-// below; the DevCfg placeholder view is dissolved.)
+// (Free360/Free6d0 device-leaf teardowns are on CDeviceConfigB/CDeviceConfigC below.)
 
 // m_devices is the real MFC CPtrArray (DirectInputMgr2.h), and it is called AS a
 // CPtrArray.  The old `(CDWordArray*)` sibling cast was a WRONG-SYMBOL BINDING adopted
@@ -167,10 +166,8 @@ VTBL(CInputDevBase, 0x001ef680);  // middle-base subobject vtable (6 slots)
 // into THIS obj (the class's vtable slot 0 needs its address); retail places it in this
 // same directinputmgr2 block (?DtorC@DICfgC @0x133370 before, ?DtorD1@DICfgD @0x1333b0
 // after). It has no source definition to hang RVA() on, so it is named verbatim - which
-// is what @rva-symbol is for. It was previously mis-modelled in src/Wap32/GameApp.cpp as
-// a fake `WAP32::CGameMgr::vector_deleting_destructor` stamping a fabricated
-// `deviceConfigRootTable` global; that global was really ??_7CInputDevRoot@@6B@ @0x1ef670
-// (bound just above), and the fake view is now dissolved.
+// is what @rva-symbol is for. The `deviceConfigRootTable` global is really
+// ??_7CInputDevRoot@@6B@ @0x1ef670 (bound just above).
 // @rva-symbol: ??_GCInputDevRoot@@UAEPAXI@Z 0x00133380 0x24
 
 // Shared-base ctor: zero the device fields + arm the latch. Inlined into InitA's
@@ -545,7 +542,7 @@ RVA(0x00133300, 0x6a)
 CInputDevice::~CInputDevice() {
     Teardown();
 }
-// 0x133370 (re-homed from src/Stub/BoundaryUpper2.cpp): the out-of-line grand-base
+// 0x133370: the out-of-line grand-base
 // ~CInputDevRoot copy - stamp 0x5ef670 then tail-call the base teardown (ReleaseDevices
 // @0x134d50). Co-located next to CInputDevRoot; kept a distinct placeholder identity
 // (DICfgC::DtorC) because CInputDevRoot's dtor is INLINE (the keyboard/mouse/joystick
@@ -561,7 +558,7 @@ void DICfgC::DtorC() {
     ((CInputDevRoot*)this)->CInputDevRoot::ReleaseDevices();
 }
 
-// 0x1333b0 (re-homed from src/Stub/BoundaryUpper2Eh.cpp): CInputDevBase's standalone
+// 0x1333b0: CInputDevBase's standalone
 // /GX base-subobject destructor (the middle level of the DirectInput device chain):
 // stamp base vftable B @0x5ef680, ReleaseBase (0x1342b0), stamp grand-base C @0x5ef670,
 // BaseDtorC (0x134d50). Kept a distinct placeholder identity (DICfgD): the leaf dtors
@@ -1099,8 +1096,8 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u
     }
     return IsReady() != 0;
 }
-// CDeviceConfigB::Free360 (0x134360) / CDeviceConfigC::Free6d0 (0x1346d0), re-homed from
-// src/Stub/BoundaryUpper.cpp: the two byte-identical device-leaf teardowns (each the
+// CDeviceConfigB::Free360 (0x134360) / CDeviceConfigC::Free6d0 (0x1346d0): the two
+// byte-identical device-leaf teardowns (each the
 // class's ReleaseDevices slot-2 override) - free the inherited GetDeviceState snapshot
 // buffer (m_stateBuffer/+0x2a0), then run the shared grand-base cleanup. Retail calls
 // the 0x1342b0 incremental-link jmp-thunk, which lands on CInputDevRoot::ReleaseDevices
@@ -1359,10 +1356,8 @@ i32 CInputDevice::PollJoystick() {
 
 // ---------------------------------------------------------------------------
 // CFixedPtrArray32 (0x134be0-0x134ca6) - the fixed-capacity pointer array trio,
-// re-homed from the dissolved fixedptrarray32 unit (wave1-E): its three fns
-// directly abut the InputDevice.cpp boundary INSIDE this obj's span (an obj's
-// contribution is contiguous at first link), so they are DinMgr2.cpp content.
-// (Was the trace placeholder tomalla-1.) A small
+// its three fns directly abut the InputDevice.cpp boundary INSIDE this obj's span
+// (an obj's contribution is contiguous at first link), so they are DinMgr2.cpp content. A small
 // value-embedded collection: m_00 flag at +0x00, m_count at +0x04, a 32-entry
 // pointer table m_items[32] at +0x08. Add() appends until the 32-slot cap;
 // FillFrom() resets the object and bulk-appends a source list (skipping nulls).

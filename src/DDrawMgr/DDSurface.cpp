@@ -1,5 +1,5 @@
 // DDSurface.cpp - CDDSurface, the ORIGINAL C:\Proj\DDrawMgr\DIRSURF.CPP TU
-// (wave4-K merge; interval dossier #14G): one obj spanning retail 0x13e060-0x1413cb.
+// (interval dossier #14G): one obj spanning retail 0x13e060-0x1413cb.
 // The __FILE__ assert string is referenced from 16 sites across the whole span; the
 // obj's single init frag (@0x13e060) + its atexit companion ClearImageCache_13e070
 // lead it. The former image / fileimage / fileimageblit / fileimagerundecode /
@@ -10,7 +10,7 @@
 // these UNOPTIMIZED: `#pragma optimize("",off)` islands, see below), the CImage
 // factory/cache, and the rotate-blit forwarders. RezMgr::MakeImageKey (0x13e5d0,
 // text-contained) rides along. EH sites at Build_13e9a0 + ~CDDSurface prove the
-// obj was /GX (the old ddsurface base profile flips to eh).
+// obj is /GX.
 //
 // On a DDERR_SURFACELOST the COM thunks call the wrapper's own virtual RestoreLost
 // (slot 7) to restore + retry, then route a still-bad HRESULT through
@@ -278,7 +278,7 @@ i32 CDDSurface::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) 
 // Returns 1 unless the extension matched but its loader failed (then 0); an
 // unrecognised/absent extension also returns 1. (`this` == the CDDSurface loading
 // the resource - the calls target CDDSurface::LoadBmp/Pcx/Pid @0x144110/0x145110/
-// 0x145cd0; the former RezMgr receiver was a mis-home, now folded.)
+// 0x145cd0.)
 RVA(0x0013e5d0, 0xb1)
 i32 CDDSurface::MakeImageKey(void* arg1, char* name, void* arg3) {
     char* ext = strrchr(name, '.');
@@ -354,7 +354,7 @@ i32 CDDSurface::Fill(u32 color) {
     return hr == 0;
 }
 
-// CDDSurface::Restore (__thiscall, 0x13e7d0, re-homed from src/Stub/BoundaryUpper2.cpp):
+// CDDSurface::Restore (__thiscall, 0x13e7d0):
 // color-fill the dstRect region with `fillColor` via a DDBLT_COLORFILL Blt (BltEx). The
 // stack DDBLTFX is zeroed (dwSize=0x64, dwFillColor=fillColor); reports a non-zero
 // HRESULT through GetErrorString. Guarded on a non-null rect; returns 1 on success.
@@ -432,8 +432,7 @@ extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 // The former CImageFactory (fabricated __thiscall receiver - `this` is never touched, and
 // the true fn is a FREE __stdcall callback) + CRezImageSource (the "probe source", really a
 // real <ddraw.h> IDirectDrawSurface COM interface whose slot 0 is IUnknown::QueryInterface)
-// views are DISSOLVED; the old `Probe(...) != 0` guard was an inverted-polarity bug (retail
-// builds on QI == S_OK).
+// the QI probe builds on QI == S_OK (retail).
 // @early-stop
 // ~62%: complete + correct reconstruction (QI slot 0, `new CDDSurface`, slot-1 Refresh,
 // SetAtGrow/delete, ret 0xc all disasm-verified). Residual is (a) `new CDDSurface` here
@@ -882,9 +881,7 @@ i32 CDDSurface::ShadeBlt(
 }
 
 // ---------------------------------------------------------------------------
-// CDDSurface::ShadeRect (0x13f460; the former lutshaderect unit's fn, folded in -
-// wave4-K; its .cpp-local CDDSurface/HeldDDSurface views dissolved onto the
-// canonical class). __thiscall ShadeRect(pct, clip): validate + clip the target
+// CDDSurface::ShadeRect (0x13f460). __thiscall ShadeRect(pct, clip): validate + clip the target
 // rectangle, scale the fade percentage into a LUT bank offset, then walk the
 // surface rectangle row-by-row (copy the row to a scratch line, split each
 // RGB565/555 pixel and recombine the three channels through the three shade-LUT
