@@ -32,7 +32,7 @@
 // Win32 sprintf / DialogBoxParamA / SetActiveWindow surface CMulti dispatches to.
 #include <Mfc.h>
 
-// OWNERSHIP VERDICT (netmgr-vs-cmulti, 2026-07-05; full proof in <Net/NetMgr.h>):
+// OWNERSHIP VERDICT (netmgr-vs-cmulti; full proof in <Net/NetMgr.h>):
 // this CMulti owns the WHOLE +0x2d8..+0x60c network/lobby field block and the
 // 0xb5xxx-0xbdxxx method cluster (PollSession/SendNetStat/BroadcastChatLine/...).
 // <Net/NetMgr.h>'s CNetMgr models the same fields/methods under the conflated
@@ -55,15 +55,15 @@ class CWorldSoundSet;        // CGruntzMgr::m_inputState (+0x54; Retune @0xbd60)
 class CNetMgr;          // CMulti::m_netGate/+0x524 pointee (net-stat/session wrappers)
 struct CNetGameMgr;     // the network facet of CState::m_4 (m_wnd/m_6c/m_channels/m_38)
 struct CNetPlayerEntry; // the local-player descriptor stored at +0x5bc
-// (the ex-CSndSubMgr facet of CState::m_c is gone - the holder's m_28 IS the CSndHost)
+// (the holder's m_28 IS the CSndHost)
 struct CNetStatPacket; // the 0x10-byte stat packet the Send* family ships
 struct CNetCtrlMsg;    // control-message arg (HandleControlMsg)
 struct CNetVersionMsg; // version-check message arg (HandleVersionCheck)
 struct CNetChannel;    // per-channel record (BroadcastOneChannel)
 struct CNetSession;    // the +0x520 command-session facet (Session() accessor)
 
-// DISSOLVED (RELOC-Multi): the ex-`CMultiMgr` view IS the CGruntzMgr game-manager
-// singleton (*0x64556c) - the CState owner at CMulti+0x04 (CState::m_4, already typed
+// The CGruntzMgr game-manager singleton (*0x64556c) - the CState owner at CMulti+0x04
+// (CState::m_4, already typed
 // CGruntzMgr* in <Gruntz/State.h>). Every one of its "own" methods was a fake alias of a
 // real CGruntzMgr method at the SAME rva (disasm-proven): LogLine == EnterModalUI@0x8ef10
 // (it forwards the text to CGameApp::ShowMessage@0x80c00), RunDialog ==
@@ -74,8 +74,8 @@ struct CNetSession;    // the +0x520 command-session facet (Session() accessor)
 // m_lobbyResult, m_c0 == m_lobby, m_150 == m_options[4], m_0c == CGameMgr::m_frameGate).
 // Mgr() below now returns the REAL CGruntzMgr*, so those calls reloc-bind.
 //
-// The ex-`CMultiDialogHook` (+0x60 pre-dialog receiver) IS CGruntzMgr::m_timer, the real
-// CGruntSpawnConfig: its PreDialog/StartTitleHook were both aliases of
+// The +0x60 pre-dialog receiver IS CGruntzMgr::m_timer, the real CGruntSpawnConfig: its
+// PreDialog/StartTitleHook are both aliases of
 // CGruntSpawnConfig::DtorBody@0x11c7b0 (the 2-iter pair teardown; CGruntzMgr::EnterModalUI
 // itself calls it through ILT 0x20a4 on the same +0x60 slot).
 //
@@ -127,7 +127,7 @@ public:
 
 // Win32 focus restore on the innermost window (m_logic->m_gameWnd->m_hwnd); __cdecl,
 // reloc-masked.
-void SetActiveAndFocus(void* hwnd); // 0x00518930 (ex MultiRestoreFocus)
+void SetActiveAndFocus(void* hwnd); // 0x00518930
 
 // The opened-player object OpenPlayer returns (stashed in m_netGate->m_player); its
 // group-name accessor is read in StartTitle. GroupName is a reloc-masked external leaf.
@@ -186,11 +186,10 @@ public:
 // IDENTITY RESOLVED (op REHOME MF-Net): m_session IS the canonical CNetSession
 // (<Net/NetMgr.h>) - `new CNetSession`, dtor @0xb6220. Its command-session methods
 // (Reset/Verify/CheckLatency/CreateSlot/FindCmdSlot) and lobby-sync methods
-// (Poll/Tick/Advance/Reconcile) run on the SAME object; the ex-views CNetSession2 /
-// CLobbyObjB / CLobbySync are folded onto CNetSession, its 0x64-byte slots onto
-// CNetCmdSlot. m_session is typed CNetSession* below (fwd-decl only; Multi.cpp pulls
+// (Poll/Tick/Advance/Reconcile) run on the SAME object, CNetSession; its 0x64-byte
+// slots are CNetCmdSlot. m_session is typed CNetSession* below (fwd-decl only; Multi.cpp pulls
 // the full <Net/NetMgr.h>). The +0x320 overlay's teardown is CLightFxRender::Ctor
-// @0xa3360 - bound directly in CMulti::Teardown (the ex-CLobbyObjA view is dissolved).
+// @0xa3360 - bound directly in CMulti::Teardown.
 
 // CMulti's own (manually-stamped) vtable. Only the two slots the per-frame Tick
 // dispatches through are typed; the rest are opaque. The slots are thiscall in
@@ -208,8 +207,8 @@ struct CMultiSlotView {
 class CMulti : public CPlay {
 public:
     // Realized real-polymorphic: a virtual dtor makes cl emit ??_7CMulti@@6B@. The
-    // vptr occupies +0x00 (where the old CMultiSlotView* m_vtbl lived - same offset, so
-    // every matched CMulti method is codegen-neutral). ~CMulti's leading manual vptr
+    // vptr occupies +0x00, so every matched CMulti method is codegen-neutral. ~CMulti's
+    // leading manual vptr
     // stamp is dropped so cl's implicit entry vptr-store survives (a leading manual
     // stamp would dead-store-eliminate the implicit one -> no ??_7). The mid-dtor
     // CPlay/CState restamps are realized via local dtor-view classes in CMulti.cpp.
@@ -239,15 +238,15 @@ public:
         return *(CMultiSlotView**)this;
     }
     // The owner back-ptr (CState::m_4) IS the real CGruntzMgr - the game-manager
-    // singleton the lobby methods drive. No downcast: the ex-CMultiMgr view is dissolved
-    // (see the note above), so LogLine/RunDialog/... now resolve to the canonical
+    // singleton the lobby methods drive. No downcast: LogLine/RunDialog/... resolve to
+    // the canonical
     // EnterModalUI/RunModalDialog/... at their real rvas.
     CGruntzMgr* Mgr() {
         return m_4;
     }
     // The +0x524 join/report gate IS the real small CNetMgr (the DirectPlay session
     // wrapper, ??1 @0xb6000). The 0xb9xxx net-stat/session methods (below) reach it as
-    // such; was the CMultiReportGate view / ((CNetMgr*)m_netGate) casts.
+    // such.
     CNetMgr* Peer() {
         return (CNetMgr*)m_netGate;
     }
@@ -257,7 +256,7 @@ public:
         return (CNetPlayerEntry*)m_5bc;
     }
     // The game-manager (CState::m_4) as its network facet (m_wnd/m_6c/m_channels/m_38);
-    // the net methods reach it as CNetGameMgr (was the Frankenstein CNetMgr::m_4 view).
+    // the net methods reach it as CNetGameMgr.
     CNetGameMgr* NetGameMgr() {
         return (CNetGameMgr*)m_4;
     }
@@ -303,7 +302,7 @@ public:
     i32 RunErrorDialog(char* tmpl, void* handler, i32 lparam); // 0x0bc250 (_MultiDispatch)
     void AckJoinFailure();                                     // 0x0bc420
     // (0x0bccd0 replay-name/config commit is the canonical CMulti::SaveConfig below,
-    //  reached with a null recipient; the former Commit3ada view is dissolved onto it.)
+    //  reached with a null recipient.)
 
     // Reconstructed in this TU (ascending RVA).
     i32 StartSession(i32 mode, i32 unused); // 0x0b6580  arm the slot table + reseed timers
@@ -317,11 +316,10 @@ public:
     // External CMulti methods this TU calls but does not define (reloc-masked).
     void SendStatFlag(i32 code, i32 flag); // 0x0b9240 (__thiscall, reads m_5bc)
     // Build a {id, value} stat packet and ship it through the +0x524 CNetMgr
-    // (was SendNetStat3; the NetMgr.h-side name/signature, same RVA).
+    // (the NetMgr.h-side name/signature, same RVA).
     void SendNetStat(i32 id, u32 value, i32 flag); // 0x0b9290 (__thiscall, 3 args)
     // The multiplayer net-game / lobby-watchdog dialog helpers reach these on the
     // g_multiState singleton (Ghidra labels them CNetMgr::, the same-object dual-view).
-    // Folded here from the former per-TU CNetSession / WatchSess lens types.
     void DropPlayer(i32 id);        // 0x0bb510 (roster-side declared-only alias)
     i32 DropChannelPlayer(i32 idx); // 0x0bb510
     i32 Poll(i32 token);            // 0x0bba10  (via ILT 0x1249; verify-custom-level poll)
@@ -373,12 +371,12 @@ public:
     void OnRegion2(i32 v); // 0x0d8a00  arm overlay-A (m_overlayAActive, deadline m_430/+0x438)
     void OnRegion1(i32 v); // 0x0d8aa0  arm overlay-B (m_overlayBActive, deadline m_440/+0x448)
 
-    // ---- The 0xb5xxx-0xbdxxx network/lobby method cluster (wave5-F2 fold) ----
+    // ---- The 0xb5xxx-0xbdxxx network/lobby method cluster ----
     // Recovered from the Frankenstein <Net/NetMgr.h> CNetMgr onto their true owner
     // (this CMulti): retail runs each on this=g_curMulti (a CMulti at offset 0). The
     // small real CNetMgr is reached via Peer() (+0x524). Defined in Multi.cpp.
     i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3); // 0x0b5460
-    i32 Open();                   // 0x0b77a0  (was the NetSessionOpener this-view)
+    i32 Open();                   // 0x0b77a0
     i32 SetupServices();          // 0x0b78b0
     i32 DetectConnectionConfig(); // 0x0b82e0
     void ApplyCmdDelayDefaults(); // 0x0b85a0

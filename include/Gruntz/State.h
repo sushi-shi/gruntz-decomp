@@ -49,7 +49,7 @@ class CString;           // MFC - BuildAssetNamespacePrefixes' key arg (referenc
 
 // The base game-state vtable (RTTI ??_7CState@@6B@ @0x005ea21c, 26 slots); the retail
 // CState ctor @0x08c750 (reconstructed in GameMode.cpp) stamps it. Explicit VTBL()
-// catalog entry (was named only via the RTTI-derived vtable_names.csv).
+// catalog entry.
 SIZE_UNKNOWN(CState);
 VTBL(CState, 0x001ea21c);
 class CState {
@@ -157,16 +157,15 @@ public:
     // CBootyState/CMultiBootyState/CAttract/...) calls them directly on its own `this`
     // -> they ARE CState-level helpers. Definitions live in Attract.cpp (the attract
     // unit owns the 0xfa1f0.. RVAs) as CState:: methods; the callers stay cast-free
-    // (the former ((CAttract*)this)->.. sibling cross-cast is dissolved - that CAttract
-    // was a sibling, not a base, so casting `this` to it was a fakeness). Reloc-masked.
+    // (CAttract is a sibling of CState, not a base). Reloc-masked.
     i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
     i32 RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e);                      // 0x0fa300
     i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);        // 0x0fa350
     // RetireScene (0xfa8f0): the two-channel screen-transition emitter every screen state
     // runs on its own `this` (xref: CBootyState/CMultiBootyState/CCreditsState/CAttract/
     // CPreviewState/CMulti/CPlay/... all call it). It reads the CState resource-chain facet
-    // (fxRes()/m_faderMgr) only, so it IS a CState-level helper; its former CSoundFxEmitter::
-    // Method_fa8f0 view was the sibling-facet lie. Definition lives in Attract.cpp (the
+    // (fxRes()/m_faderMgr) only, so it IS a CState-level helper. Definition lives in
+    // Attract.cpp (the
     // attract unit owns 0xfa8f0.. RVAs) as a CState:: method; reloc-masked.
     i32 RetireScene(i32 a1, i32 a2, i32 a3, i32 a4); // 0x0fa8f0
     // Present (0xfaec0): per-frame present/refresh of the bound view - shade the back
@@ -174,7 +173,7 @@ public:
     // xrefs prove the receiver: CGruntzMgr::RunModalDialog calls it as `mov ecx,[esi+0x2c];
     // call 0x1ec9` (CGruntzMgr+0x2c IS m_curState, a CState*), and CPlay::Vslot23 calls it on
     // its own `this`. Direct rel32 => non-virtual. Definition in Attract.cpp (the unit that
-    // owns the 0xfa.. band). Was the PresentHost_faec0 placeholder, in two TUs.
+    // owns the 0xfa.. band).
     void Present(i32 arg0); // 0x0faec0
     // The emitter resource-chain view of the +0x0c holder (== m_c reinterpreted): its
     // +0x04 DDraw worker + +0x1c gate are what RetireScene walks. Inline -> the same
@@ -186,8 +185,7 @@ public:
     // entered via the 0x43a9 ILT thunk). Every leaf state (CSplashState/CHelpState/
     // CCreditsState/CBootyState/CMenuState/CAttract/CPreviewState/CMulti) calls it on
     // its own `this` and TESTs the int result -> it IS a CState-level non-virtual
-    // (the former per-TU CAssetLoader/CCreditzOwner/LoadAttractScene/LoadAssetNamespaces
-    // views were sibling facets of this one method). Returns 1 on success, 0 on bail.
+    // Returns 1 on success, 0 on bail.
     i32 LoadGameAssetNamespaces(i32 mgr, i32 areaArg, i32 a3); // 0x0f9ea0
     // The title cluster's typed views of the shared CState slots (m_c is the menu
     // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
@@ -238,13 +236,12 @@ public:
     i32 m_24;              // +0x24
     // +0x28  level asset bank; a Bute CSymTab (LookupSet == CSymTab::ResolvePath
     // 0x13bae0), so every user reaches it as CSymTab* -> typed here (kills the casts).
-    // LoadGameAssetNamespaces stores the resolved "AREA%i" node here (the ex-CAssetLoader
-    // view's m_areaNode).
+    // LoadGameAssetNamespaces stores the resolved "AREA%i" node here.
     CSymTab* m_levelBank; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
     // +0x2c  the resolved asset source a state loader caches (CBankMgr::Lookup
     // result): CSplashState/CHelpState store the "STATEZ_*" namespace here and
     // (splash) LoadGroup its "SOUNDZ" set; the attract path stashes its resolved
-    // TITLE state here. A 4-byte pointer slot (was modeled i32 + per-site casts).
+    // TITLE state here. A 4-byte pointer slot.
     CResSource* m_2c; // +0x2c
     // The cached asset source (m_2c) is a Bute CSymTab; one typed accessor for that
     // facet so the state loaders drop the (CSymTab*)m_2c casts. <Bute/SymTab.h>.
@@ -293,20 +290,18 @@ public:
     i32 m_1a0;
     i32 m_1a4;
 
-    // BuildWarpStoneGlitterAnimation (0x19540) re-homed to its real owner
-    // CMultiBootyState (GameMode.h).
+    // BuildWarpStoneGlitterAnimation (0x19540) is a CMultiBootyState method (GameMode.h).
     //
     // LoadGruntEffectSprites (0x1a040), LevelMsgHudDriver (0x1a700) and FormatHudText
-    // (0x1af70) are all GONE from this base - they are CBootyState methods (re-homed;
-    // proof on CBootyState in <Gruntz/GameMode.h>). None of them could ever have lived
+    // (0x1af70) are CBootyState methods (proof on CBootyState in <Gruntz/GameMode.h>).
+    // None of them could ever have lived
     // here: they touch [this+0x1d0], [this+0x264], [this+0x2c4] and write m_icons out to
     // [this+0x31c], while CState is the base of the allocation-proven 0x1c0 CMenuState
-    // and is therefore <= 0x1c0. The old "LoadGruntEffectSprites is a CPlay-layout method
-    // the trace mis-homed on the base" note was wrong on both counts: its `this` comes
-    // from CBootyState's own vtable slot 1 (0x18830, data-referenced at
+    // and is therefore <= 0x1c0. Their `this` comes from CBootyState's own vtable slot 1
+    // (0x18830, data-referenced at
     // ??_7CBootyState@@6B@+0x4), which calls it with `mov ecx,esi`.
     //
-    // BuildBootyWalkingGruntz (0x1b450) re-homed to BzState (BootyWalkAnim.cpp).
+    // BuildBootyWalkingGruntz (0x1b450) is a BzState method (BootyWalkAnim.cpp).
 };
 
 #endif // GRUNTZ_GRUNTZ_CSTATE_H

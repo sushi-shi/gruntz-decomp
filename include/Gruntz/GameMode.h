@@ -68,7 +68,7 @@
 // <Gruntz/AttractActor.h> already carries as AttractActor/AttractActorList (same vtable
 // slots, same +0x2ac flag word, same {pad,count,ptr-array} list at the same global). One
 // class, two names, and the global they hang off had no definition under EITHER name.
-// Unified: the shape lives in AttractActor.h and the old names are aliases of it.
+// The shape lives in <Gruntz/AttractActor.h>.
 #include <Gruntz/AttractActor.h> // AttractActor / AttractActorList / g_actorList
 typedef AttractActor CGMEntity;
 typedef AttractActorList CGMEntityList;
@@ -125,7 +125,6 @@ extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
 // CMenuState's m_1b4 menu-UI object IS a CChatBox (the entity-flag scans fire its
 // OnFlag*/Step/Pre/Post/HitTest* front-end drive; the delete path runs ~CChatBox).
-// The former CGMMenuUI view is folded onto the canonical class here.
 #include <Gruntz/ChatBox.h>
 
 // The version-string RECT source globals (4 ints copied to a stack RECT by value).
@@ -226,8 +225,7 @@ public:
 
     // CMenuState's own methods (the rel32 thunks Render dispatches to with
     // `mov ecx,this`). External no-body -> reloc-masked.
-    // (the version-banner draw at 0xa0d80 IS BuildVersionString below - the former
-    //  fake DrawVersion alias was folded away)
+    // (the version-banner draw at 0xa0d80 IS BuildVersionString below)
 
     // Non-virtual menu helpers (called from FrameSlot28 / its siblings).
     void StartMusic();     // 0xa05a0 - music start gate
@@ -259,7 +257,7 @@ public:
     // `push 0x1c0; call ??2@YAPAXI@Z`, then the ??_7CMenuState (0x5e9e84) stamp).
     // The out-of-bounds `m_liveGame` @+0x1d0 (and its 0x1c0..0x1d0 pad) that used to sit
     // here is GONE: it was never CMenuState's. It is CBootyState::m_initOnce @+0x1d0, read
-    // by FormatHudText - a CBootyState method, now re-homed. This class is whole again.
+    // by FormatHudText - a CBootyState method.
 
     void BuildVersionString(CGMVerRect r); // 0xa0d80 (RECT by value; Render's tail draw)
 };
@@ -270,8 +268,8 @@ VTBL(CMenuState, 0x1e9e84);
 // when it builds the credits state) stamps is 0x1ea2a4, whose COL names .?AVCRgn@@.
 // ~CCreditsState's inlined member teardown is the inlined ~CRgn chain with the
 // CRgn own-stamp dead-store-elided: stamp ??_7CGdiObject (0x1e8cd4), call
-// CGdiObject::DeleteObject (0x1c6a5c - the former "CImageList::DeleteImageList"
-// misname; its Detach calls afxMapHGDIOBJ and the indirect call goes through the
+// CGdiObject::DeleteObject (0x1c6a5c; its Detach calls afxMapHGDIOBJ and the
+// indirect call goes through the
 // GDI32 DeleteObject IAT slot), restamp ??_7CObject (0x1e8cb4). The former fake
 
 // CCreditsState - the credits state. Render
@@ -462,9 +460,8 @@ public:
     //   (the booty idle-anim tick reaches the same 0xfa8f0 through BuildPage too).
     i32 BuildPage(i32 a, i32 b, i32 c, i32 d); // 0xfa8f0
     // The booty HUD/idle overlays + the per-frame walking-grunt tick (BootyMessages.cpp,
-    // BootyWalkAnim.cpp) - the former BzState view folded onto this canonical class. The
-    // Show* toasts are popped by the slot-8 activator (StateImages.cpp::InputVirtual),
-    // which now binds to these real CBootyState symbols (was an @rva SYMBOL override).
+    // BootyWalkAnim.cpp). The Show* toasts are popped by the slot-8 activator
+    // (StateImages.cpp::InputVirtual), which binds to these real CBootyState symbols.
     i32
     BuildBootyGruntIdleAnimation(); // 0x1ce60  the shared booty idle-anim builder Vslot0c tail-calls
     i32 ShowSecretBonusMessage();   // 0x18f00  the secret-bonus toast (ret int)
@@ -524,8 +521,8 @@ public:
     // cannot tell you - only the CALL SITE can, and it says member.
     void GenMenuRandPos(i32 sel, i32* outX, i32* outY);
 
-    // --- CBootyState members (offsets are the ctor ground truth; folded from the
-    // former BzState view). m_activation@+0x1bc doubles as the overlay/animation state
+    // --- CBootyState members (offsets are the ctor ground truth). m_activation@+0x1bc
+    // doubles as the overlay/animation state
     // id (0xc7/0xc8/-2 in the idle-anim tick, ==200 -> secret-bonus toast in slot 8).
     // The +0xc HUD sink the booty toasts read IS the inherited CState::m_c holder.
     char m_pad1a8[0x1b4 - 0x1a8];
@@ -555,8 +552,8 @@ public:
     // +0x204..+0x224: the 8 directional sprint sprites BuildGruntSprintAnimation builds -
     // exactly filling what was padding (8 pointers = 0x20 bytes).
     CGameObject* m_sprintSprites[8]; // +0x204
-    // The level-message HUD sprite banks (folded in from the CEffLoaderSelf view; each
-    // lands in what was pure padding here, so no declared field moved).
+    // The level-message HUD sprite banks (each lands in what was pure padding here, so
+    // no declared field moved).
     CGameObject* m_bomb[8];   // +0x224  bomb-grunt sprites (slide left)
     CGameObject* m_gokart[8]; // +0x244  go-kart sprites (slide right)
     CGameObject* m_expl[8];   // +0x264  explosion sprites (latched active once landed)
@@ -638,8 +635,8 @@ public:
     // base, so a CBootyState method could never have called it on itself.)
     void StepGlitterAnim();  // 0x196c0 - the trig glitter/spawn positioner
     void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
-    // 0x1ed30 - the BATTLE-STATZ scoreboard draw (was the fake class CBattleStatsView,
-    // whose lone field `m_c @+0x0c` is CState::m_c at the same offset). Both call sites
+    // 0x1ed30 - the BATTLE-STATZ scoreboard draw (its m_c @+0x0c is CState::m_c at the
+    // same offset). Both call sites
     // (Render 0x1f480 / InputVirtual 0x1f6f0) invoke it with `mov ecx,this` on their own
     // CMultiBootyState `this`, and no other caller exists (sema xref: only its ILT thunk).
     void DrawBattleStats();
@@ -666,8 +663,8 @@ public:
     i32 Paint();                        // 0xfac70 (reloc-masked engine paint)
     i32 BuildBootyGruntIdleAnimation(); // 0x1ce60 (reloc-masked, own method;
                                         // shares the forwarder's arg frame)
-    // 0x1f8a0: post WM_COMMAND 0x8023 when the m_1b8 latch reads 0xc7 (the folded
-    // PendingCmdKeyHost view). The slot-12/14/17 forwarders tail-call it on `this`.
+    // 0x1f8a0: post WM_COMMAND 0x8023 when the m_1b8 latch reads 0xc7. The slot-12/14/17
+    // forwarders tail-call it on `this`.
     i32 PostCommandIfKey();
 
     // --- CMultiBootyState members (placeholders, beyond the CState layout) ---

@@ -89,13 +89,9 @@ extern WapGetWindow g_pGetWindow;           // 0x2c44d8
 // out of the ctor). It is padded to 0x5c bytes so the subclass members land at
 // the offsets the disasm pins (+0x5c upward).
 // The MFC window/dialog chain (CCmdTarget / CWnd / CComboBox / CDialog) is the REAL
-// one from <afxwin.h> now. It used to be hand-rolled here with ~40 placeholder virtuals
-// (CtVsl5..21, WndVsl22..47, DlgVsl48..53) whose only job was to anchor MFC's vtable slot
-// order. Every one of those mangled to ?CtVslN@CCmdTarget@@UAEXXZ etc - PHANTOMS that no
-// obj and no .LIB defines, i.e. unresolved externals at link. The real classes carry the
-// real slots and their bodies live in NAFXCW.LIB, so they simply resolve.
-// This assert pins the one load-bearing fact the old pad encoded: the derived dialogs'
-// members start at +0x5c, so CDialog must be 0x5c.
+// one from <afxwin.h>. The real classes carry the real slots and their bodies live in
+// NAFXCW.LIB. This assert pins the load-bearing fact: the derived dialogs' members start
+// at +0x5c, so CDialog must be 0x5c.
 SIZE(CDialog, 0x5c);
 
 // ---------------------------------------------------------------------------
@@ -139,7 +135,7 @@ public:
     // dtor removes. The out-of-line COMDAT is still emitted (the vtable slot needs its
     // address) and is bound to 0x14c90 by @rva-symbol in src/Gruntz/Dialogs.cpp.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
-    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
     virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog (0x160d0)
     virtual void OnOK() OVERRIDE;                             // slot 51  OnOK (0x174a0)
 
@@ -233,8 +229,7 @@ public:
     // 0x17540: the shared do-nothing button handler (`ret 4`; ignores its index arg).
     void StubBtnHandler(i32 index);
     // Four more button trampolines (0x172c0/0x172e0/0x17300/0x17320): each forwards
-    // its fixed index 0..3 to ReadCtrlBText (0x17340, above) - the retail reloc
-    // target (the old "Sub01c340" placeholder was a misnamed alias of 0x17340).
+    // its fixed index 0..3 to ReadCtrlBText (0x17340, above) - the retail reloc target.
     void OnActionBtn0();
     void OnActionBtn1();
     void OnActionBtn2();
@@ -260,7 +255,7 @@ public:
     // still emitted (the vtable slot takes its address) and bound by @rva-symbol in
     // src/Gruntz/Dialogs.cpp.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (0x183d0; OrphanLeaves.cpp)
-    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
     // 0x183f0 (OrphanLeaves.cpp): the custom-level listbox (0x516) confirm - the
     // message-map handler at messageMap+0x1c (LB dbl-click -> OnOK when selected).
     void PickIfSelected();
@@ -282,7 +277,7 @@ public:
     // non-virtual so it does not perturb the compiler-emitted vtable/ctor stamp;
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
-    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
     // WM_MEASUREITEM handler (0x17ae0): fixes the owner-draw swatch item size.
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
     // DDX (0x179b0): save reads the 0x515 colour-list selection's item-data into
@@ -315,7 +310,7 @@ public:
         OVERRIDE; // 0x0b8960 (destroy CStringList m_74, CString m_70, chain ~CDialog)
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual i32 DestroyWindow() OVERRIDE; // slot 24 (own override @0x00218a, origin CWnd)
-    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
     virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog
     virtual void OnOK() OVERRIDE;                             // slot 51  OnOK
 
@@ -338,11 +333,10 @@ public:
 
     // --- Multiplayer roster refresh cluster (bodies in MultiStartDlgRoster.cpp) ---
     // The whole 0xc2000-0xc5000 method band drives ONE dialog (this class); the
-    // former per-fn ApiCaller host views (SelHost/RosterHost/BattlezDlg_c4230/
-    // EditAppendHost) were placeholder duplicates of CMultiStartDlg (proven: they
-    // share GetCtrlA..D at 0xc26c0/40/c0/40 and self-call Drive @0xc40b0). The
+    // SelHost/RosterHost/BattlezDlg_c4230/EditAppendHost are CMultiStartDlg methods
+    // (they share GetCtrlA..D at 0xc26c0/40/c0/40 and self-call Drive @0xc40b0). The
     // net-game-config facets CNetGameDlg (NetGameDlg.cpp) / CNetConnCoord
-    // (NetMgrMisc.cpp) are the SAME dialog - PROVEN and folded here (matcher-5):
+    // (NetMgrMisc.cpp) are the SAME dialog:
     // their methods dispatch this class's per-slot accessors 0x1929/0x298c/0x1753/
     // 0x1159/GetCtrlD(0xc2840) on `this` and self-call Drive @0xc40b0. See the
     // "net-game-config facet" block below.
@@ -392,8 +386,8 @@ public:
     CWnd* ColourBtn1753(i32 idx);        // 0x01753  colour button for slot idx
     void SyncColour3a5d(i32 idx, i32 v); // 0x03a5d
 
-    // --- Net-game-config facet (folded from CNetGameDlg / CNetConnCoord; bodies
-    // stay in their own units NetGameDlg.cpp / NetMgrMisc.cpp so delinker packing
+    // --- Net-game-config facet (bodies stay in their own units NetGameDlg.cpp /
+    // NetMgrMisc.cpp so delinker packing
     // is undisturbed). PROVEN same class as CMultiStartDlg (matcher-5): every one
     // of these runs this class's per-slot accessors on `this`. ---
     // SyncChannelSlot (0xc2ab0; also reached via ILT thunk 0x3ffd as the
@@ -401,16 +395,15 @@ public:
     // slot after a join/leave. Was CNetGameDlg::UpdateSlot / the roster's
     // "SyncKind3ffd".
     void SyncChannelSlot(i32 ch);
-    i32 EnableControls(); // 0xc4120  re-enable the four player-config controls (was CNetGameDlg)
+    i32 EnableControls(); // 0xc4120  re-enable the four player-config controls
     void
-    VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level (was CNetGameDlg)
+    VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level
     void
-    ConnectStep(); // 0xc2a20  one connect step: reconcile slot 1 then Drive (was CNetConnCoord::Step)
+    ConnectStep(); // 0xc2a20  one connect step: reconcile slot 1 then Drive
     // Message-map handlers: reconcile channel 2 / 3 (SyncChannelSlot) then re-drive
     // the connect state. Twins of ConnectStep (channel 1); PROVEN CMultiStartDlg (they
     // call this->SyncChannelSlot(0xc2ab0) + this->Drive(0xc40b0)). Bodies in
-    // NetMgrMisc.cpp. Were the Cluster0c.cpp CCluster0c::Run / ReconBatch2.cpp
-    // Host_c2a80::Run placeholder views.
+    // NetMgrMisc.cpp.
     void Method_c2a50(); // 0xc2a50  reconcile channel 2 then Drive
     void Method_c2a80(); // 0xc2a80  reconcile channel 3 then Drive
     // this-side MFC forwarders the net facet reaches (CWnd/CDialog methods,
@@ -472,7 +465,7 @@ public:
     // (`call ??1CDialog` @0x1ba51d, nothing else). Implicit is both correct and linkable.
     // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
-    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
     // DDX (0x23520): on load, cache this dialog's HWND into NetLobby::g_curDlg and
     // clear the "disable prompts" checkbox (control 0x53a, BM_SETCHECK 0). Modeled
     // non-virtual (like CBattlezDlgColors::DoDataExchange) so it does not perturb
@@ -488,7 +481,7 @@ class CMultiHelpDlg : public CDialog {
 public:
     virtual ~CMultiHelpDlg() OVERRIDE;                        // slot 1
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
-    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
 };
 VTBL(CMultiHelpDlg, 0x001ea474);
 
