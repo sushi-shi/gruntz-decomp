@@ -847,6 +847,26 @@ CFileMem::~CFileMem() {
     CFileMemBase::Reset();
 }
 
+// CFileMemBase::Reset (slot 3, 0x157a40): zero the two scalar fields + Empty the name.
+// OUT-OF-LINE (was inline in FileMem.h) so known-type callers `call 0x157a40` instead of
+// inlining - the shape CDDrawSurfaceMgr::SnapshotChildren's `CFileMem S; S.Reset()` needs.
+RVA(0x00157a40, 0x10)
+void CFileMemBase::Reset() {
+    m_4 = 0;
+    m_8 = 0;
+    m_name.Empty();
+}
+
+// CFileMem::Reset (slot 3, 0x157a50, OVERRIDE): also zero the CFileMem position pair.
+RVA(0x00157a50, 0x16)
+void CFileMem::Reset() {
+    m_length = 0;
+    m_offset = 0;
+    m_4 = 0;
+    m_8 = 0;
+    m_name.Empty();
+}
+
 // ---------------------------------------------------------------------------
 // 0x157a80: pick the active cue object from m_worker->+0x20. When `force` is null,
 // require the cue present and its +0x78 set; cache it at m_2c (m_30 = present?

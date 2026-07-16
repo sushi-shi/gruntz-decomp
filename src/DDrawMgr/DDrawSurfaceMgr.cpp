@@ -304,37 +304,17 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 // blit-op calls) / m_resolveSubMgr (cast CGameLevel*) / m_callback; the local view + its
 // SnapRunCallback dissolve onto the canonical HP_Callback. Engine callees reloc-masked.
 // ===========================================================================
-// (The local CFileMem / CFileMemBase / CSerialArchive views are GONE - they ARE the
-// canonical <Io/FileMem.h> classes, and THIS function is what proves the archive's
-// identity: it drives ONE stack-local stream through CFileMem's own slot RVAs
-// (Reset 0x157a50 / SetName 0x165e30 / Open 0x165e60 / Write 0x165f50 / Read 0x165f00
-// / Ready 0x165ef0) and then hands the SAME object to ForEachSerialize as a
-// `CSerialArchive*`. One object, two names -> CSerialArchive == CFileMemBase.)
+// The stack serializer is the ONE canonical <Io/FileMem.h> CFileMem (0x28 B; a CFileMemBase
+// stream + a CFileIO m_file @+0x10). DISASM PROOF (retail 0x156020 prologue): `CFileMem S;`
+// lowers EXACTLY to `call 0x157850` (CFileMemBase ctor) + `call 0x1befd7` (CFile m_file ctor)
+// + `mov [S],0x5efe30` (the derived-vtable stamp - the old Serializer view was MISSING it),
+// then the methods are DIRECT devirtualized calls on the known-type local (Reset 0x157a50 /
+// SetName 0x165e30 / Open 0x165e60 / Write 0x165f50 / Read 0x165f00 / Ready 0x165ef0), and the
+// object auto-destructs (~CFileMem 0x157980, inlined at each /GX unwind) at every return - so
+// NO cast, NO explicit m_file Init, NO explicit dtor call. ForEachSerialize takes it as a
+// CSerialArchive* (== CFileMemBase, the implicit upcast). (Was a local Serializer/SnapStream
+// view that hand-modelled this as an opaque blob and cast `this` to CFileMem at each call.)
 typedef CFileMemBase CSerialArchive;
-
-struct SnapStream {
-    void Init(); // 0x1befd7  CFileIO()
-    char m_pad[0x10];
-};
-
-class Serializer {
-public:
-    Serializer();  // 0x157850 own ctor (vtbl + name CString)
-    ~Serializer(); // 0x1578b0 non-deleting dtor (failure teardown)
-    // Reset @0x157a50 IS CFileMem::Reset; cast at each call.
-    // Close @0x157980 IS CFileMem::~CFileMem; cast at each call.
-    // SetSink @0x165e30 IS CFileMemBase::SetName; cast at each call.
-    // Begin @0x165e60 IS CFileMem::Open; cast at each call.
-    // Read @0x165f00 IS CFileMem::Read; cast at each call.
-    // Write @0x165f50 IS CFileMem::Write; cast at each call.
-    // End @0x165ef0 IS CFileMem::Ready; cast at each call.
-
-    char m_pad00[0x10];  // +0x00..+0x0f (vtbl, ints, name CString)
-    SnapStream m_stream; // +0x10..+0x1f
-    char m_pad20[0x0c];  // +0x20..+0x2b (cursors + tail)
-};
-SIZE_UNKNOWN(Serializer);
-SIZE_UNKNOWN(SnapStream);
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::SnapshotChildren (0x156020, __thiscall, /GX)
@@ -345,14 +325,13 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     }
     m_callback = cb;
 
-    Serializer S;
-    S.m_stream.Init();
-    ((CFileMem*)&S)->Reset();
+    CFileMem S;
+    S.Reset();
 
-    if (((CFileMemBase*)&S)->SetName((const char*)(void*)cb, 0, 0) == 0) {
+    if (S.SetName((const char*)(void*)cb, 0, 0) == 0) {
         return 0;
     }
-    if (((CFileMem*)&S)->Open() == 0) {
+    if (S.Open() == 0) {
         return 0;
     }
 
@@ -368,7 +347,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     i32 probe = ((CWwdObjMgr*)m_childGroup)->CountActive_15abc0();
     *(u32*)(header + 0x114) = g_wwdObjIdCounter;
     *(i32*)(header + 0x118) = probe;
-    ((CFileMem*)&S)->Write((const void*)header, 0x120);
+    S.Write((const void*)header, 0x120);
 
     // ---- dispatch the five blit modes over the children ----
     if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
@@ -389,7 +368,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)->ForEachSerialize_15b020((CSerialArchive*)&S, arg3) == 0) {
+    if (((CWwdObjMgr*)m_childGroup)->ForEachSerialize_15b020(&S, arg3) == 0) {
         return 0;
     }
     if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 4, 0, 0) == 0) {
@@ -405,8 +384,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
         return 0;
     }
 
-    ((CFileMem*)&S)->Ready();
-    ((CFileMem*)&S)->~CFileMem();
+    S.Ready();
     return 1;
 }
 
@@ -439,19 +417,18 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     }
     m_callback = cb;
 
-    Serializer S;
-    S.m_stream.Init();
-    ((CFileMem*)&S)->Reset();
+    CFileMem S;
+    S.Reset();
 
-    if (((CFileMemBase*)&S)->SetName((const char*)name, 1, 0) == 0) {
+    if (S.SetName((const char*)name, 1, 0) == 0) {
         return 0;
     }
-    if (((CFileMem*)&S)->Open() == 0) {
+    if (S.Open() == 0) {
         return 0;
     }
 
     char header[0x120];
-    ((CFileMem*)&S)->Read(header, 0x120);
+    S.Read(header, 0x120);
 
     if (m_callback == 0 || m_callback(this, &S, 2, arg3, (i32)header) == 0) {
         return 0;
@@ -459,7 +436,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     g_wwdObjIdCounter = *(u32*)(header + 0x114);
     m_childGroup->DestroyChildren_159ef0();
     if (((CWwdObjMgr*)m_childGroup)
-            ->LoadObjects((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
+            ->LoadObjects(&S, *(unsigned int*)(header + 0x110), arg3)
         == 0) {
         return 0;
     }
@@ -476,7 +453,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
         return 0;
     }
     if (((CWwdObjMgr*)m_childGroup)
-            ->Deserialize_15b0e0((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
+            ->Deserialize_15b0e0(&S, *(unsigned int*)(header + 0x110), arg3)
         == 0) {
         return 0;
     }
@@ -493,9 +470,8 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
         return 0;
     }
 
-    ((CFileMem*)&S)->Ready();
+    S.Ready();
     ((CGameLevel*)m_resolveSubMgr)->MainPlaneQueryB();
-    ((CFileMem*)&S)->~CFileMem();
     return 1;
 }
 

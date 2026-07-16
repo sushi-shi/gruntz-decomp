@@ -42,12 +42,10 @@ public:
     virtual ~CFileMemBase();                             // slot 0  (0x157960 ??_G)
     virtual i32 SetName(const char* name, i32 a, i32 b); // slot 1  0x00165e30
     virtual void Slot02_157910();                        // slot 2
-    RVA(0x00157a40, 0x10)
-    virtual void Reset() {
-        m_4 = 0;
-        m_8 = 0;
-        m_name.Empty();
-    }
+    // OUT-OF-LINE (body in DDrawSubMgr.cpp @0x157a40): retail is a real function called
+    // directly - an inline body here would let cl inline it at every known-type call site
+    // (e.g. CFileMem S; S.Reset()) where retail emits `call 0x157a40/0x157a50`.
+    virtual void Reset(); // slot 3  0x00157a40
     virtual CString GetName();                     // slot 4  0x157920 (return m_name copy)
     virtual void Slot05_157a00() = 0;              // slot 5  __purecall (CFileMem body rva)
     virtual void Slot06_157a10() = 0;              // slot 6  __purecall (CFileMem body rva)
@@ -75,14 +73,7 @@ class CFileMem : public CFileMemBase {
 public:
     virtual ~CFileMem() OVERRIDE;          // slot 0  0x00157980 (real ~ / ??_G 0x157a20)
     virtual void Slot02_157910() OVERRIDE; // slot 2  (0x157a70)
-    RVA(0x00157a50, 0x16)
-    virtual void Reset() OVERRIDE {
-        m_length = 0;
-        m_offset = 0;
-        m_4 = 0;
-        m_8 = 0;
-        m_name.Empty();
-    }
+    virtual void Reset() OVERRIDE;         // slot 3  0x00157a50 (out-of-line; see base Reset)
     virtual void Slot05_157a00() OVERRIDE;              // slot 5
     virtual void Slot06_157a10() OVERRIDE;              // slot 6
     virtual i32 Open() OVERRIDE;                        // slot 9  0x00165e60
