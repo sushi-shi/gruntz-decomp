@@ -246,7 +246,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
 RVA(0x000def60, 0xbc)
 CProjectile::~CProjectile() {
     if (m_sound != 0) {
-        ((DirectSoundMgr*)m_sound)->StopAndRewind();
+        m_sound->StopAndRewind();
         m_sound = 0;
     }
     for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
@@ -634,7 +634,7 @@ void CProjectile::MovingSlot16() {
             && owner->m_screenY < reg->m_viewOriginB && owner->m_screenY >= reg->m_viewOriginT) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != 0) {
-            ((DirectSoundMgr*)m_sound)->StopAndRewind();
+            m_sound->StopAndRewind();
             m_sound = 0;
         }
     }
@@ -741,7 +741,7 @@ void CProjectile::MovingSlot16() {
 
     // -- arrived at the target tile ------------------------------------------
     if (m_sound != 0) {
-        ((DirectSoundMgr*)m_sound)->StopAndRewind();
+        m_sound->StopAndRewind();
         m_sound = 0;
     }
     ScanTargets(0);
@@ -1381,11 +1381,11 @@ i32 CProjectile::LaunchSound(const char* key) {
     }
     // GetItem returns the pooled DirectSound buffer (DirectSoundMgr in the cue-mgr
     // view); the projectile owns the same buffer as its CProjSample sound sample.
-    m_sound = (CProjSample*)entry->m_10->GetItem();
+    m_sound = (DirectSoundMgr*)entry->m_10->GetItem();
     if (m_sound == 0) {
         return 0;
     }
-    ((DirectSoundMgr*)m_sound)->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+    m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     return 1;
 }
 
