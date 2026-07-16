@@ -27,20 +27,23 @@
 // / 0x150190 free it. m_alloc(+0) gates teardown, m_size(+4) the byte size,
 // m_data(+8) the buffer, m_key(+c) the lookup key. (Bodies live in the sibling
 // element TU; declared here so the builder calls bind by shape, reloc-masked.)
-// CShadeTable is the shade-table role name for the real CDataBuffer class (same
-// 0x10-byte layout, same 0x150180 ctor / 0x1501a0 Set / 0x150190 Reset / 0x1503c0
-// Free / 0x150250 LoadFromFile / 0x150330 LoadFromMem cluster - see
-// Gruntz/DataBuffer.h). The buffer methods are declared here directly (external,
-// reloc-masked; bodies live in the CDataBuffer TU) so the builders call
-// t->Set()/Reset()/Free()/LoadFrom*() with no cross-view (CDataBuffer*) cast. This
-// header stays MFC-free (no <Mfc.h>) so the pure-Win32 includers still compile;
-// CShadeTable and CDataBuffer are a known dual-view of one class, deferred: full
-// unification would rename CShadeTable across Fader/LightFxMgr/SpriteRefTable etc.
+// CShadeTable is the canonical 0x10-byte shade-table buffer (retail name, proven by
+// the builder call relocs): 0x150180 ctor / 0x1501a0 Set / 0x150190 Reset / 0x1503c0
+// Free / 0x150250 LoadFromFile / 0x150330 LoadFromMem / 0x1501f0 ReadFrom / 0x1503f0
+// SaveToFile. The out-of-line bodies live in the DataBuffer.cpp TU. This header stays
+// MFC-free (no <Mfc.h>) so the pure-Win32 includers still compile - the two
+// MFC-signature methods (ReadFrom/SaveToFile) use forward-declared CFile/CString.
+// The MFC file types the buffer readers use in their bodies (this header + its many
+// pure-Win32 includers stay MFC-free; these are only complete in DataBuffer.cpp, which
+// pulls <Mfc.h>). Forward-declared so the by-value/by-ptr method DECLS below need no MFC.
+class CFile;
+class CString;
+
 struct CShadeTable {
-    i32 m_alloc; // +0x00  (CDataBuffer m_loaded)
+    i32 m_alloc; // +0x00  loaded/valid flag
     i32 m_size;  // +0x04
-    u8* m_data;  // +0x08  (CDataBuffer m_data, void* - byte/pixel buffer here)
-    i32 m_key;   // +0x0c  (CDataBuffer m_id, used as the lookup key)
+    u8* m_data;  // +0x08  byte/pixel buffer (RezAlloc'd blob)
+    i32 m_key;   // +0x0c  id / lookup key
 
     CShadeTable();             // 0x150180
     i32 Set(u32 size, i32 id); // 0x1501a0
@@ -51,6 +54,8 @@ struct CShadeTable {
     // the buffer in its OWN CMemFile internally, so the caller passes the raw ptr.
     i32 LoadFromFile(const char* path, i32 id);  // 0x150250
     i32 LoadFromMem(void* buf, u32 len, i32 id); // 0x150330
+    i32 ReadFrom(CFile* file, i32 id);           // 0x1501f0  (LoadFrom* wrap a local CFile)
+    i32 SaveToFile(CString path);                // 0x1503f0  (completeness; no caller)
 };
 
 // The growable element-array subobject (lives at cache +0x04). CShadeTableArray is a

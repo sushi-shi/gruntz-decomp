@@ -10,7 +10,6 @@
 #include <DDrawMgr/ShadeTableCache.h>
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <DDrawMgr/ColorHsv.h>   // the shared ColorHSV record + RgbToHsv (ex-.cpp-local Hsv view)
-#include <Gruntz/DataBuffer.h> // the real CDataBuffer (CShadeTable's dual-view): Free/Reset bind here
 
 #include <math.h> // pow (__CIpow) in HsvShiftTable
 #include <rva.h>
@@ -49,7 +48,7 @@ void* ::operator new(u32); // matches ??2@YAPAXI@Z
 // AddFromArray builds a real MFC CString temp over the name (ctor 0x1b9ba3 ==
 // CString::CString(const char*), dtor 0x1b9cde == ~CString - confirmed via the ghidra
 // export table; both reloc-masked NAFXCW helpers). (AddFromFile builds no such temp:
-// its LoadFile -> CDataBuffer::LoadFromMem wraps the raw buffer in its own CMemFile
+// its LoadFile -> CShadeTable::LoadFromMem wraps the raw buffer in its own CMemFile
 // internally, so no client-side CMemFile is constructed here.)
 // (Was a hand-rolled `struct CStr { char* m_p; ... }` view of exactly this CString.)
 
@@ -119,12 +118,10 @@ i32 CShadeTableCache::Init() {
 RVA(0x0014ded0, 0x64)
 void CShadeTableCache::FreeNodes() {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
-        // CShadeTable IS CDataBuffer (dual-view): Free/Reset bind to CDataBuffer's real
-        // out-of-line bodies (0x1503c0 / 0x150190) via the cross-view cast.
-        ((CDataBuffer*)m_arr.m_pData[i])->Free();
+        m_arr.m_pData[i]->Free();
         CShadeTable* t = m_arr.m_pData[i];
         if (t) {
-            ((CDataBuffer*)t)->Reset();
+            t->Reset();
             ::operator delete(t);
         }
     }
@@ -751,7 +748,7 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
 
 // ===========================================================================
 // 0x14f8b0 - AddFromFile: as AddFromArray, but load the table from a raw (buffer,
-// size) memory blob via the element's LoadFile (0x150330 = CDataBuffer::
+// size) memory blob via the element's LoadFile (0x150330 = CShadeTable::
 // LoadFromMem), which builds its own CMemFile internally. The element-array
 // growth is again inlined. EH frame.
 // ===========================================================================
