@@ -17,6 +17,8 @@
 #include <Image/CImage.h>
 
 #include <Gruntz/MenuPage.h>
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (m_owner) - its m_10 CImageRegistry
+#include <Gruntz/ResMgr.h>       // CImageRegistry (== CDDrawWorkerRegistry): its m_10map catalog
 
 // The engine heap allocator (0x1b9b46), reached as the item's `operator new`.
 // Declared locally (not via RezMgr.h) to keep this TU's include set minimal.
@@ -39,35 +41,14 @@ struct CMenuListNode {
     CMenuItem* data;
 };
 
-// The name->page catalog reached through m_owner->m_catalog->m_map. The full chase pins
-// every hop to a REAL class:
-//   * Configure disasm (0x1832f0): `mov edx,[this]` (m_owner @+0) -> `mov ecx,[edx+0x10]`
-//     (m_catalog @m_owner+0x10) -> `add ecx,0x10` (&m_map @m_catalog+0x10) -> call 0x1b8008.
-//   * m_owner = the template's +0 field (Configure: `m_owner = tmpl[0]`); the builder's
-//     template IS the CChatBox, whose +0x00 is `CSpriteFactoryHolder* m_page` (ChatBox.h) -
-//     so m_owner is a CSpriteFactoryHolder (== CState::m_c, GameRegistry.h).
-//   * CSpriteFactoryHolder+0x10 is `CImageRegistry* m_10` (GameRegistry.h) -> m_catalog IS
-//     a CImageRegistry (the image/name registry).
-//   * CImageRegistry+0x10 is its name map; 0x1b8008 is CMapStringToOb::Lookup (mfc_class-
-//     verified; the 0x1b8008=Ob / 0x1b8438=Ptr band table was INVERTED tree-wide) -> the
-//     map is the real MFC CMapStringToOb (menu pages register as CObject* by key).
-// So CMenuHost==CSpriteFactoryHolder and CMenuCatalog==CImageRegistry. The clean fold is a
-// DEFERRED-FOLD blocked on CImageRegistry: it is only ever forward-declared tree-wide (no
-// TU models its layout), so the middle hop's .m_map can't be typed without first modeling
-// CImageRegistry in ResMgr.h. Kept as minimal, correctly-attributed structural views until
-// then (offsets + code bytes load-bearing); the polymorphic leaf IS the real CMapStringToOb.
-SIZE_UNKNOWN(CMapStringToOb);
-struct
-    CMenuCatalog { // == CImageRegistry (opaque tree-wide; modeling it in ResMgr.h unblocks the fold)
-    char pad0[0x10];
-    CMapStringToOb m_map; // +0x10 the name->page map base (real MFC CMapStringToOb)
-};
-SIZE_UNKNOWN(CMenuCatalog);
-struct CMenuHost { // == CSpriteFactoryHolder (GameRegistry.h; == CChatBox::m_page / CState::m_c)
-    char pad0[0x10];
-    CMenuCatalog* m_catalog; // +0x10 -> the CImageRegistry catalog
-};
-SIZE_UNKNOWN(CMenuHost);
+// The name->page catalog is reached cast-free through the canonicals (the former
+// CMenuHost / CMenuCatalog views are DISSOLVED - the CImageRegistry blocker is resolved,
+// it is now the real CDDrawWorkerRegistry typedef in ResMgr.h):
+//   * m_owner IS CSpriteFactoryHolder (== CState::m_c / CChatBox::m_page; GameRegistry.h);
+//   * m_owner->m_10 IS CImageRegistry (the image/name registry @+0x10);
+//   * CImageRegistry->m_10map IS the name->page CMapStringToOb (@+0x10; Lookup @0x1b8008,
+//     mfc_class-verified). Configure disasm (0x1832f0): `mov edx,[this]` (m_owner @+0) ->
+//     `mov ecx,[edx+0x10]` (m_10) -> `add ecx,0x10` (&m_10map) -> call 0x1b8008.
 
 // Sibling-page helpers (other TUs), reached by name:
 extern CString* MenuPage_KeyFwd(CMenuPage* p, CString* out);  // 0x184610
@@ -119,7 +100,7 @@ i32 CMenuPage::Configure(
         return 0;
     }
     i32* t = (i32*)tmpl;
-    m_owner = (CMenuHost*)t[0];
+    m_owner = (CSpriteFactoryHolder*)t[0];
     m_host = (CChatBox*)tmpl;
     m_key = label;
     m_switchKey = parent;
@@ -132,7 +113,7 @@ i32 CMenuPage::Configure(
     m_offsetX = 0;
     m_offsetY = 0;
     CObject* slot_ob = 0;
-    m_owner->m_catalog->m_map.Lookup(key, slot_ob);
+    m_owner->m_10->m_10map.Lookup(key, slot_ob);
     void* slot = (void*)slot_ob;
     m_subPage = (CMenuPage*)slot;
     return slot != 0;
@@ -174,7 +155,7 @@ void CMenuPage::Clear() {
 RVA(0x001833f0, 0x38)
 i32 CMenuPage::ResolveSubPage(const char* key) {
     CObject* slot_ob = 0;
-    m_owner->m_catalog->m_map.Lookup(key, slot_ob);
+    m_owner->m_10->m_10map.Lookup(key, slot_ob);
     void* slot = (void*)slot_ob;
     m_subPage = (CMenuPage*)slot;
     return slot != 0;

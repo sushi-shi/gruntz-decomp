@@ -38,9 +38,10 @@
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItem2.h>
 
-// The owning menu system (catalog holder) and the render host (Draw/SwitchToPage/
-// wrap flag) reached through m_owner/m_host; minimal views defined in MenuPage.cpp.
-struct CMenuHost;
+// The owning menu system (catalog holder) IS the canonical CSpriteFactoryHolder
+// (== CState::m_c / CChatBox::m_page; GameRegistry.h): the catalog is its +0x10
+// m_10 CImageRegistry, whose +0x10 m_10map is the name->page CMapStringToOb.
+struct CSpriteFactoryHolder;
 class CChatBox; // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
 
 class CMenuPage {
@@ -92,7 +93,7 @@ public:
     i32 SelectFwd2();        // 0x184230  /GX  m_focus GetField4c -> FindByName
     i32 SelectBack2();       // 0x184310  /GX  m_focus GetField50 -> FindByName
 
-    CMenuHost* m_owner;   // +0x00 owning menu system (catalog via ->m_catalog->m_map)
+    CSpriteFactoryHolder* m_owner; // +0x00 owning holder (catalog via ->m_10->m_10map)
     CChatBox* m_host;     // +0x04 render host (Draw/ReplaceNode/ScrollRow1; wrap flag @+0x20)
     CString m_switchKey;  // +0x08 page-switch target key (Switch -> host SwitchToPage)
     CString m_key;        // +0x0c this page/item key (GetKey)
