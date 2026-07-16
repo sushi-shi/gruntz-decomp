@@ -3455,6 +3455,67 @@ CString GetDifficultyName(i32 diffIdx, i32 upper);
 // member) and the scalar config block from the index. The /GX frame comes from
 // the destructible "Player" temp.
 // ===========================================================================
+// ==========================================================================
+// GruntzPlayer's out-of-line default ctor + dtor, homed from the former
+// GruntSpawnLevel.cpp. That TU's own header already proved the class: CGruntzMgr's
+// __ehvec iterators hand the m_options[4] element ctor/dtor through ILT thunks
+// 0x2a7c / 0x1465, which chase to 0xda790 / 0x83260 - and every other GruntzPlayer
+// method (SeedForSlot 0xda870, Clear 0xda960, Reset 0xda9e0, Serialize 0xdace0, ...)
+// already lives in THIS TU. 0xda790 sits immediately ahead of SeedForSlot (0xda870)
+// in this obj's own run; 0x83260 is the COMDAT-pooled dtor (0x8xxxx pool), listed
+// with its ctor.
+// ==========================================================================
+
+// ===========================================================================
+// GruntzPlayer::GruntzPlayer()  (0x0da790) - THE default constructor
+// ===========================================================================
+// Construct the CString m_name + the CBattlezMapConfig m_038, then run the shared
+// frameless field seed (the Clear body at 0x0da960, /O2-inlined here exactly as retail
+// inlines it: the -1 / -2 / 1 / 0xf sentinels + the empty-string assign into m_name).
+// The two destructible members drive the /GX frame.
+// @early-stop
+// /GX EH-state wall (docs/seh-eh.md): the member ctor calls (CString, CBattlezMapConfig),
+// the empty-string assign and the field seeds are all recovered; the residual is a
+// 2-destructible-member ctor's EH state numbering + cl's interleave of the field stores
+// (same family as the CWarlord dtor wall).
+RVA(0x000da790, 0xb0)
+GruntzPlayer::GruntzPlayer() {
+    m_22c = 0;
+    m_230 = 0;
+    m_playerIndex = -1;
+    m_slotKey = -2;
+    m_liveGate = 0;
+    m_joined = 0;
+    m_014 = 1;
+    m_name = g_emptyString;
+    m_008 = 0;
+    m_configId = 0;
+    m_focusX = 0;
+    m_focusY = 0;
+    m_comboSel = 0xf;
+    m_doneFlag = 0;
+    m_030 = 0;
+    m_22c = 0;
+    m_230 = 0;
+}
+
+// ===========================================================================
+// GruntzPlayer::~GruntzPlayer  (0x083260)
+// ===========================================================================
+// Reverse the ctor: run the shared field seed (Clear, 0x0da960 - retail's FIRST call in
+// this body; it is referenceable now that 0x0da960 is bound as a METHOD instead of a
+// phantom second constructor, which is what previously blocked this dtor), then cl
+// destructs the +0x38 CBattlezMapConfig and the CString m_name. The /GX frame numbers
+// the teardowns 2 / 0 / -1.
+// @early-stop
+// /GX teardown-state wall: the Clear() call + both member destructions are present and
+// bind to their real bodies; the residual is cl's EH state numbering for the 2-member
+// teardown (same family as the ctor above).
+RVA(0x00083260, 0x57)
+GruntzPlayer::~GruntzPlayer() {
+    Clear();
+}
+
 // @early-stop
 // ~53%: the ctor-vs-method misbinding is FIXED (retail returns 1, so this is a
 // plain method - no member CString ctor is emitted now), but the /GX frame shape

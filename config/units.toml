@@ -1648,11 +1648,6 @@ source = "src/Wap32/EngStrRenderText.cpp"
 flags = "base"
 
 [[unit]]
-unit = "gruntspawnlevel"
-source = "src/Gruntz/GruntSpawnLevel.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "fxmodedesc"
 source = "src/Gruntz/FxModeDesc.cpp"
 flags = "base"
