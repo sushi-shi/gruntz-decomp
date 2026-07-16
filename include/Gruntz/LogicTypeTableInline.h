@@ -33,23 +33,21 @@ extern "C" {
 // out-param wrapper over the +0x10 CMapStringToOb (Lookup @0x1b8008). The former
 // 16-slot CLogicTypeReg view (9 Slot fillers + 6 VtSlotFill pads) and the
 // CLogicTypeCtx / CLogicTypeBuilder chain shells are dissolved: the builder IS the
-// bound CGameObject (its +0xc world ctx), the ctx the CGameObjWorld view.
+// bound CGameObject (its +0xc world ctx, the typed CDDrawSurfaceMgr).
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     // Each block re-reads world->m_workerCache for BOTH the Find and the
     // CreateWorker call (retail reloads the chain at each site - do not hoist).
-    if (!((CGameObjWorld*)obj->m_0c)->m_workerCache->Find("LogicHit")) {
-        ((CGameObjWorld*)obj->m_0c)
-            ->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
+    if (!obj->m_0c->m_workerCache->Find("LogicHit")) {
+        obj->m_0c->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
     }
-    if (!((CGameObjWorld*)obj->m_0c)->m_workerCache->Find("LogicAttack")) {
-        ((CGameObjWorld*)obj->m_0c)
-            ->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
+    if (!obj->m_0c->m_workerCache->Find("LogicAttack")) {
+        obj->m_0c->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
     }
-    if (!((CGameObjWorld*)obj->m_0c)->m_workerCache->Find("LogicBump")) {
-        ((CGameObjWorld*)obj->m_0c)
-            ->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
+    if (!obj->m_0c->m_workerCache->Find("LogicBump")) {
+        obj->m_0c->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
     }
 }
 

@@ -66,30 +66,28 @@ extern "C" {
 // old CMapStringToPtr cast here bound the reloc to the WRONG library symbol,
 // 0x1b8438; the inverted-label pair struck again). The CLogicType* chain shells
 // are dissolved; the builder is the bound CGameObject.
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
         CObject* found = 0;
-        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicHit", found);
+        obj->m_0c->m_workerCache->m_10.Lookup("LogicHit", found);
         if (!found) {
-            ((CGameObjWorld*)obj->m_0c)
-                ->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
+            obj->m_0c->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
         }
     }
     {
         CObject* found = 0;
-        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicAttack", found);
+        obj->m_0c->m_workerCache->m_10.Lookup("LogicAttack", found);
         if (!found) {
-            ((CGameObjWorld*)obj->m_0c)
-                ->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
+            obj->m_0c->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
         CObject* found = 0;
-        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicBump", found);
+        obj->m_0c->m_workerCache->m_10.Lookup("LogicBump", found);
         if (!found) {
-            ((CGameObjWorld*)obj->m_0c)
-                ->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
+            obj->m_0c->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
         }
     }
 }

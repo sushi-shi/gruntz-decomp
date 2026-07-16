@@ -47,17 +47,13 @@ struct CGameObject; // the owning wide game object (<Gruntz/UserLogic.h>)
 // Zero = "no callback".
 typedef i32(__cdecl* GameObjNotifyFn)(CGameObject* obj);
 
-// The owner context held at m_0c (== the owning object's m_0c). Its +0x08
-// object carries the id->object resolver map at +0x48 (the SAME map Play's
-// case 8 reaches as m_mgr->m_8->m_map48 - CMapPtrToPtr::Lookup @0x1b8760).
-// @identity-TODO: this IS the WwdMgr/CResMgr owner context (WwdGameObject.cpp);
-// kept as a reduced view pending the CResMgr slot-name reconciliation.
-struct LogicContext {
-    void* m_00;
-    void* m_04;
-    char* m_08; // grid/key-table object; the resolver map sits at +0x48
-};
-SIZE_UNKNOWN(LogicContext);
+// (The former LogicContext owner-context view is DISSOLVED (2026-07-16): the
+// m_0c owner context IS the CDDrawSurfaceMgr (== the owning object's m_0c, now
+// typed in <Gruntz/UserLogic.h>). Its "+0x08 grid/key-table with the id->object
+// resolver map at +0x48" is the canonical m_childGroup (CDDrawChildGroup) with
+// its m_map48 (CMapPtrToPtr, Lookup @0x1b8760) - the SAME map Play's case 8
+// reaches. LogicRecord.cpp reads the typed path.)
+class CDDrawSurfaceMgr;
 
 // The 0x17c-byte worker layout (the union of the dissolved views' knowledge).
 // Real polymorphic: `new AnimWorkerObj` makes cl auto-emit ??_7AnimWorkerObj
@@ -85,7 +81,7 @@ struct AnimWorkerObj : public CObject {
     AnimWorkerObj(i32 a, i32 b) {
         m_04 = b;
         m_08 = 0;
-        m_0c = (LogicContext*)a;
+        m_0c = (CDDrawSurfaceMgr*)a; // (mangling-pinned i32 arg; a IS the mgr)
         m_notify = 0;
         m_14 = 0;
         m_logic = 0;
@@ -108,7 +104,8 @@ struct AnimWorkerObj : public CObject {
     i32 m_04;           // +0x04  = owner->m_04 (object id/kind)
     i32 m_08;           // +0x08  frame stamp (Init); bits 1/2 fold into owner
                         //        flags 0x800000/0x1000000 (Setup 0x150d60)
-    LogicContext* m_0c; // +0x0c  = owner->m_0c (owner context; resolver @ m_08+0x48)
+    CDDrawSurfaceMgr* m_0c; // +0x0c  = owner->m_0c (the owner/world context; the
+                            //         id->object resolver is m_childGroup->m_map48)
     // +0x10  the fire/notify callback (see typedef). ALIAS: this is also the
     // collision-notify (ex-name m_collideNotify): CGameLevel::BroadPhase fires
     // `obj->m_collideWorker->m_notify(obj)` - a raw fn-ptr load off the worker,

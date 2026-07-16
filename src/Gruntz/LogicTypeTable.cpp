@@ -42,9 +42,10 @@ extern "C" {
 // sub-object its CMapStringToOb m_10 (Lookup @0x1b8008). The former
 // CLogicRegistry (10-slot filler view) / CLogicCtx / CLogicTypeBuilder chain
 // shells are dissolved: the builder arg is the bound CGameObject, whose +0xc
-// world ctx (the CGameObjWorld view, <Gruntz/UserLogic.h>) carries the cache at
+// world ctx (the typed CDDrawSurfaceMgr at m_0c) carries the cache at
 // +0x14 (== the canonical CDDrawSurfaceMgr's m_workerCache).
 // ---------------------------------------------------------------------------
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 
 // ---------------------------------------------------------------------------
@@ -59,26 +60,23 @@ RVA(0x00008a40, 0xc8)
 void __stdcall BuildLogicTypeTable(CGameObject* obj) {
     {
         CObject* found = 0;
-        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicHit", found);
+        obj->m_0c->m_workerCache->m_10.Lookup("LogicHit", found);
         if (!found) {
-            ((CGameObjWorld*)obj->m_0c)
-                ->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
+            obj->m_0c->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
         }
     }
     {
         CObject* found = 0;
-        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicAttack", found);
+        obj->m_0c->m_workerCache->m_10.Lookup("LogicAttack", found);
         if (!found) {
-            ((CGameObjWorld*)obj->m_0c)
-                ->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
+            obj->m_0c->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
         CObject* found = 0;
-        ((CGameObjWorld*)obj->m_0c)->m_workerCache->m_10.Lookup("LogicBump", found);
+        obj->m_0c->m_workerCache->m_10.Lookup("LogicBump", found);
         if (!found) {
-            ((CGameObjWorld*)obj->m_0c)
-                ->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
+            obj->m_0c->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
         }
     }
 }

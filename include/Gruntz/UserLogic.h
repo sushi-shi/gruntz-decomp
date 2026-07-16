@@ -36,6 +36,10 @@
 // shared with the CGrunt world so both embed the identical link.
 #include <Gruntz/UserBaseLink.h>
 
+// The REAL +0x1a0 tail member: the wide game object embeds the 0x3c-byte
+// CAniAdvanceCursor at +0x1a0 (vptr @+0x1a0, ends at +0x1dc == SIZE(CGameObject)).
+#include <Gruntz/AniAdvanceCursor.h>
+
 // ---------------------------------------------------------------------------
 // CGameObject - the engine object the 1-arg ctors are handed (read into edi).
 // Only the fields/methods those ctors touch are modeled; bodies live in engine
@@ -85,15 +89,12 @@ struct CGameObjLayer {
     i32 m_24;         // +0x24  layer screen-offset Y (CGruntVoice::Update bubble placement)
 };
 
-// The logic-handler name map reached through the object's world context
-// (m_0c -> +0x14 -> +0x10): a CMapStringToOb keyed by logic name ("LogicHit",
-// "LogicAttack", "LogicBump"). Lookup returns the CGameObject handler through the
-// out-param (MFC ?Lookup@CMapStringToOb, reloc-masked; carve-out callee 0x1b8008).
-// Modeled as a lean __thiscall shell so the AddLogic* calls reloc-mask without
-// pulling the whole MFC map machinery into this engine TU.
-SIZE_UNKNOWN(CLogicHandlerMap);
-class CLogicHandlerMap {
-}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call in UserBaseLink.cpp
+// (The former CLogicHandlerMap shell + the LogicMap() offset-hop accessor are
+// DISSOLVED (2026-07-16): the logic-handler name map IS the world context's
+// worker cache map - m_0c (the CDDrawSurfaceMgr) -> m_workerCache (+0x14, the
+// CDDrawWorkerCache) -> m_10 (its +0x10 CMapStringToOb; retail Lookup 0x1b8008,
+// which the old `(CMapStringToPtr*)` cast at the AddLogic* sites mis-bound to
+// the 0x1b8438 Ptr band). The AddLogic* bodies now read the typed path.)
 
 // Exact size 0x1dc, byte-proven from TWO new-sites: CSpriteFactory::CreateSpriteImpl
 // (@0x159600) news 0x1dc for every created instance, and WwdFile's ReadPlaneObjects
@@ -128,12 +129,6 @@ struct CGameObject {
     i32
     EnsureWorker90(CGameObject* src); // 0x151070  (lazy worker @ +0x90, dispatch; returns Slot09)
 
-    // The world's logic-handler name map (m_0c -> +0x14 -> +0x10). m_0c is the
-    // family's generically-typed world/context slot; reached by documented offset.
-    CLogicHandlerMap* LogicMap() {
-        return (CLogicHandlerMap*)(*(char**)((char*)m_0c + 0x14) + 0x10);
-    }
-
     // vptr @ +0x00 (declared-only slots; nothing constructs a bare CGameObject, so
     // no vtable is ever emitted from source - every dispatch reloc-masks). The real
     // object's table is the CWwdGameObjectE family's (0x5f0020): slots 0-4 are MFC
@@ -162,9 +157,16 @@ struct CGameObject {
     i32 m_flags; // +0x08  bit4 = riding m_carrier; bit8 (0x100) = collision-active;
                  //        bit10 (0x400) = pass soft-block tiles; 0x20000 = z-key dirty;
                  //        0x400000 = special-tile latch (probe kind 4)
-    i32 m_0c;    // +0x0c  owning world/context (CGameObjWorld view; generically-
-                 //        typed i32 across the family, cast at the deref sites)
-    i32 m_10;    // +0x10  (worker getters pass src->m_10 through slot 9)
+    // +0x0c  the owning world/display root: the ONE CDDrawSurfaceMgr
+    // (<DDrawMgr/DDrawSurfaceMgr.h>). Every former view of this slot's pointee -
+    // CGameObjWorld (+0x08 obj-chain == m_childGroup / +0x14 worker-cache ==
+    // m_workerCache / +0x24 level == m_resolveSubMgr), CEntranceResMgr (+0x2c ==
+    // m_leaf), CResMgr (+0x04/+0x08/+0x10/+0x28/+0x2c), LfxMapHolder (+0x10 spec
+    // store == m_surfaceDesc / +0x2c effect store == m_leaf) - reads the same
+    // object; the retail map-Lookup bands corroborate per-slot (0x1504d0 ->
+    // 0x1b8008 via +0x10, 0x150610/0x1505b0 -> 0x1b8438 via +0x28/+0x2c).
+    class CDDrawSurfaceMgr* m_0c;
+    i32 m_10; // +0x10  (worker getters pass src->m_10 through slot 9)
     char m_pad14[0x38 - 0x14];
     i32 m_38; // +0x38
     char m_pad3c[0x40 - 0x3c];
@@ -249,90 +251,38 @@ struct CGameObject {
     i32 m_deltaX; // +0x174
     i32 m_deltaY; // +0x178
     char m_pad17c[0x188 - 0x17c];
-    i32 m_188;   // +0x188  object id (warlord battle-event id / game-object archive-cue id)
-    i32 m_18c;   // +0x18c  (WwdFile stamp: -1; CWwdGameObject low byte = dot color / setup flag)
-    i32 m_190;   // +0x190  (WwdFile stamp: -1)
-    char* m_194; // +0x194  object source-def record (its class-name string is at +0x24)
-    CGameObjLayer* m_layer; // +0x198
-    // +0x1a0: the most-derived game object embeds a per-CLASS anim sub-object here
-    // (WwdAnimSub / CPathSubMgr / CAnimSink / CTeleAnimSink / CWarlordAnimSub /
-    // DropperAnim / CWormGeoSub / CGruntPuddleSink / ...). Its concrete type is
-    // determined by the leaf class, so the base CGameObject* view legitimately can
-    // only reach it by address: `((LeafSub*)((char*)m_38 + 0x1a0))->...`. The sink's
-    // +0x20/+0x28 fields surface below as m_1c0/m_1c8. Kept as documented authentic
-    // raw-offset access (a single base field can't type a per-leaf embedded object).
-    i32 m_19c; // +0x19c  (WwdFile stamp: 0)
-    char m_pad1a0[0x1b4 - 0x1a0];
-    i32 m_geoId; // +0x1b4
-    char m_pad1b8[0x1c0 - 0x1b8];
-    i32 m_1c0; // +0x1c0  the +0x1a0 anim sub-mgr's idle flag  (sink+0x20)
-    char m_pad1c4[0x1c8 - 0x1c4];
-    i32 m_1c8; // +0x1c8  the +0x1a0 anim sub-mgr's active flag (sink+0x28)
+    i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
+    i32 m_18c; // +0x18c  (WwdFile stamp: -1; CWwdGameObject low byte = dot color / setup flag)
+    i32 m_190; // +0x190  (WwdFile stamp: -1; sprite role: the cached frame number)
+    union {    // +0x194  role-union: a WwdFile-loaded object keeps its source-def
+               //         record; a CreateSprite'd object caches the looked-up sprite
+               //         (ApplyName/ApplyLookupSprite) / its CImageSet (ActionArea's
+               //         pulse ramp SetAllTypes/SetAllField18 @0x152480/0x1524d0).
+        char* m_194;                 // source-def record (class-name string at +0x24)
+        struct CSprite* m_sprite;    // cached sprite (frame-cache role)
+        class CImageSet* m_imageSet; // cached image set (color/brightness role)
+    };
+    CGameObjLayer* m_layer; // +0x198  (sprite role: the cached frame ptr)
+    i32 m_19c;              // +0x19c  (WwdFile stamp: 0)
+    // +0x1a0..+0x1db: the embedded CAniAdvanceCursor (one real 0x3c member; vptr
+    // @+0x1a0, end +0x1dc == SIZE(CGameObject)). The former per-leaf sink views
+    // (WwdAnimSub / CAnimSink / CTeleAnimSink / CWarlordAnimSub / CGruntPuddleSink /
+    // ...) and the tail fields m_geoId(+0x1b4)/m_1c0(+0x1c0)/m_1c8(+0x1c8) were all
+    // duplicate names for its interior: m_geoId == m_1a0.m_14 (the active
+    // CAniElement* descriptor), m_1c0 == m_1a0.m_20 (per-frame timer / idle gate),
+    // m_1c8 == m_1a0.m_28 (paused-done / active gate). ~CWwdGameObjectA/B stamp
+    // ??_7CAniAdvanceCursor at +0x1a0 - the vtable proof of the embed.
+    CAniAdvanceCursor m_1a0; // +0x1a0  the anim-advance / geometry cursor
 };
 
-// ---------------------------------------------------------------------------
-// The game-object WORLD chain (the level's / each object's m_0c owner context).
-// Real engine classes, UNMATCHED (candidates: the CWwdObjMgr/map-mgr family);
-// modeled as typed shells so CGameLevel's movement/render walks and
-// CMovingLogic's level hop are cast-free. Layout proven by the matched walkers:
-//   owner(+0x0c) -> +0x08 = the object chain; owner -> +0x24 = the CGameLevel
-//   (CMovingLogic::Update, WorldLevelPath); chain +0x14 = head node; node
-//   {+0x00 next, +0x08 object}.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CGameObjNode);
-struct CGameObjNode {
-    CGameObjNode* next; // +0x00
-    char m_pad04[0x04]; // +0x04
-    CGameObject* obj;   // +0x08
-};
-
-// The chain owner IS CDDrawChildGroup == CWwdObjMgr (vtable 0x1efdc0, 17 slots):
-// the +0x10 list with its +0x14 head node, the {next@0, obj@8} node shape and the
-// slot-10 (+0x28) walk hook are exactly the canonical's (m_head / CDDrawGroupNode /
-// WalkDispatch2C - the per-object render broadcast). Kept as CGameLevel's local
-// walking view pending the wide fold (@identity-TODO); slots renamed to the
-// canonical's (<DDrawMgr/DDrawChildGroup.h>). The head node hangs off a +0x10
-// sub-record (the engine lea's its ADDRESS and null-checks it before loading the
-// head - the sub-struct keeps that byte shape).
-SIZE_UNKNOWN(CGameObjChain);
-struct CGameObjChain {
-    virtual void GetRuntimeClass();         // [0]  +0x00  CObject slot (0x1bef01)
-    virtual void ScalarDtor();              // [1]  +0x04  0x157610
-    virtual void Serialize();               // [2]  +0x08  CObject slot (0x0028ec)
-    virtual void AssertValid();             // [3]  +0x0c  CObject slot (0x00106e)
-    virtual void Dump();                    // [4]  +0x10  CObject slot (0x004034)
-    virtual i32 IsLoaded();                 // [5]  +0x14  0x1575e0
-    virtual i32 IsReady();                  // [6]  +0x18  0x1576c0
-    virtual void ForwardTo3C();             // [7]  +0x1c  0x1591e0
-    virtual i32 GetStateId();               // [8]  +0x20  0x157600 (STATE_CHILDGROUP)
-    virtual void TickKillCues(i32 advance); // [9]  +0x24  0x159a70
-    virtual void WalkDispatch2C(void* arg); // [10] +0x28  0x159c90 render-walk broadcast
-                                            //      (VisitVisible's hook)
-
-    char m_pad04[0x10 - 0x04];
-    struct List {
-        char m_pad00[0x04];
-        CGameObjNode* head; // +0x04  (i.e. chain +0x14)
-    } m_list;               // +0x10
-};
-
-class CGameLevel; // fwd (the world owns the level; full class in <Gruntz/GameLevel.h>)
-// The world IS CDDrawSurfaceMgr (<DDrawMgr/DDrawSurfaceMgr.h>): the canonical's
-// own members are m_childGroup @+0x08 (== m_objChain, typed CDDrawChildGroup*)
-// and m_resolveSubMgr @+0x24 (== m_level, typed CGameLevel*). Kept as the game-
-// side walking view pending the fold (@identity-TODO).
-SIZE_UNKNOWN(CGameObjWorld);
-class CDDrawWorkerCache; // +0x14 (the canonical's m_workerCache; DDrawWorkerCache.h)
-struct CGameObjWorld {
-    char m_pad00[0x08];
-    CGameObjChain* m_objChain; // +0x08  the live object chain (BroadPhase/StepAxisAlt)
-    char m_pad0c[0x14 - 0x0c];
-    // +0x14  the string-keyed worker cache (== the canonical CDDrawSurfaceMgr's
-    // m_workerCache) - the logic-type registry BuildLogicTypeTable probes/registers.
-    CDDrawWorkerCache* m_workerCache;
-    char m_pad18[0x24 - 0x18];
-    CGameLevel* m_level; // +0x24  the loaded level (CMovingLogic / WorldLevelPath hop)
-};
+// (The former CGameObjWorld / CGameObjChain / CGameObjNode walking views are
+// DISSOLVED (2026-07-16) onto their proven canonicals: the world IS the
+// CDDrawSurfaceMgr now typed at CGameObject::m_0c (its +0x08 m_objChain ==
+// m_childGroup, +0x14 m_workerCache, +0x24 m_level == m_resolveSubMgr), the
+// chain IS CDDrawChildGroup (17-slot vtable 0x1efdc0; CObList @+0x10, head node
+// @+0x14) and the node IS CDDrawGroupNode - both <DDrawMgr/DDrawChildGroup.h>.
+// The walkers read the head as `(CDDrawGroupNode*)group->m_list.GetHeadPosition()`
+// - the same `mov reg,[grp+0x14]` bytes.)
 
 // (The former AnimWorkerObj view of the +0x7c sub-object is DISSOLVED onto the
 // canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>, the 0x17c worker/logic

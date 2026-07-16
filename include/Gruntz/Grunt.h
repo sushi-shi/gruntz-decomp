@@ -169,45 +169,16 @@ CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 // ---------------------------------------------------------------------------
-// CGruntAnimState - the per-grunt animation player the resolver drives (CGrunt
-// member @+0x38). The resolver feeds it the resolved animation in two steps:
-//   * SetGeometry(srcSprite) on the sub-player @+0x1a0 (engine,
-//     __thiscall ret 4) - also exposes m_1b4 (the active anim descriptor; the
-//     resolver caches m_1b4 into CGrunt::m_activeAnimDesc before the call, and Idle reads
-//     m_1b4->{m_c,m_10} to derive a 2nd lookup arg);
-//   * SetAnim(key) (engine, __thiscall ret 4)  - 1-arg form, OR
-//     SetAnimEx(key, frame) (engine __thiscall ret 8) - 2-arg form
-//     (Idle only) - given the built animation-key char*.
-// All three are external/no-body (reloc-masked). m_1a0 is a raw sub-object the
-// geometry setter runs on; m_1b4 is the active-anim descriptor pointer.
+// (The former CGruntAnimState / CGruntAnimSub / CAnimElem views are DISSOLVED
+// (2026-07-16): the per-grunt "animation player" at CGrunt::m_38 IS the bound
+// CGameObject (the tile-leaf m_38 == obj convention), and the resolvers drive
+// its real methods: SetAnim(key) == ApplyName (0x150540, ret 4), SetAnimEx(key,
+// frame) == ApplyLookupSprite (0x1504d0, ret 8), the +0x1a0 "geometry
+// sub-player" its embedded CAniAdvanceCursor m_1a0 (SetGeometry ==
+// Setup_15c2d0), and m_1b4 (the active anim descriptor the resolvers cache into
+// CGrunt::m_activeAnimDesc) its m_1a0.m_14. CAnimElem (the "+0x14 frame element"
+// the Idle resolver reads) is CAniDesc (<DDrawMgr/AniAdvance.h>, m_param @+0x14).)
 // ---------------------------------------------------------------------------
-// An animation-frame element the Idle resolver reads a sub-arg from.
-SIZE_UNKNOWN(CAnimElem);
-struct CAnimElem {
-    char m_pad0[0x14];
-    i32 m_14; // +0x14
-};
-
-SIZE_UNKNOWN(CGruntAnimSub);
-class CGruntAnimSub {
-public:
-    // The geometry sub-player setter (0x15c2d0, external/reloc-masked; formerly reached
-    // by a per-TU CDDrawBlitParam facet cast on &state->m_1a0).
-    void SetGeometry(i32 src);
-};
-
-SIZE_UNKNOWN(CGruntAnimState);
-class CGruntAnimState {
-public:
-    void SetAnim(const char* key);              // (ret 4)
-    void SetAnimEx(const char* key, i32 frame); // (ret 8)
-
-    char m_pad0[0x1a0];
-    CGruntAnimSub m_1a0; // +0x1a0  (geometry sub-player)
-    i32 m_1a4;           // +0x1a4
-    char m_pad1a8[0x1b4 - 0x1a8];
-    CAniElement* m_1b4; // +0x1b4  active-anim descriptor
-};
 
 // The animation-set record the lookup tree (a CButeTree) returns;
 // stored into CGrunt::m_14->m_1c. m_1c holds the resolved anim-set node.
@@ -270,10 +241,16 @@ public:
     // GetName @0x310f0 IS zDArray::IndexToPtr; cast at each call.
 };
 
-// The entrance-animation player @CGrunt+0x154 (== CGruntBehaviorLeaf::m_drawState,
-// the ex "CDecayMgr"): CEntranceAnimPlayer + its CEntranceResMgr/CEntranceSpriteMgr
-// resource views, extracted to their own header so the leaf shares the ONE shape.
-#include <Gruntz/EntranceAnimPlayer.h>
+// (The entrance-animation player @CGrunt+0x154 (== CGruntBehaviorLeaf::m_drawState,
+// the ex "CDecayMgr"/"CEntranceAnimPlayer") is a plain CGameObject - the created
+// entrance sprite; <Gruntz/EntranceAnimPlayer.h> is dissolved (2026-07-16). Its
+// method RVAs were CGameObject's own bodies (CacheFirstFrame == ApplyName 0x150540,
+// CacheFrame/CacheFrameIndexed == ApplyLookupSprite 0x1504d0, ApplyLookupGeometry
+// 0x1505b0, ApplyGeometryDirect 0x58b60), its ctor-seeded m_e8/m_f4 are
+// m_collCategory/m_collMask, and its +0x1a0 cursor tail ends at +0x1dc ==
+// SIZE(CGameObject). Its "CEntranceResMgr" m_c was the typed CGameObject::m_0c
+// (CDDrawSurfaceMgr) and "CEntranceSpriteMgr" (+0x2c, LookupValue_06b2a0) the
+// canonical CDDrawSubMgrLeaf.)
 
 // CString::GetBuffer(int) the entrance-anim update (@0x690a0) calls to hand the
 // grunt's +0x448 name CString raw to SetAnimFrame. __thiscall (this = &CString),
@@ -1136,9 +1113,11 @@ public:
     // so void* is the authentic recovered type (not a placeholder).
     void* m_prevAnimSetNode; // +0x30  (saved old m_14->m_1c before re-latch)
     char m_pad34[0x38 - 0x34];
-    CGruntAnimState* m_38; // +0x38  (animation player)
+    CGameObject* m_38; // +0x38  the bound game object, driven as the animation
+                       //        player (tile-leaf convention m_38 == obj; the ex
+                       //        CGruntAnimState view)
     char m_pad3c[0x40 - 0x3c];
-    CAniElement* m_activeAnimDesc; // +0x40  (cached m_38->m_1b4)
+    CAniElement* m_activeAnimDesc; // +0x40  (cached m_38->m_1a0.m_14)
     char m_pad44[0x54 - 0x44];
     // +0x54 grunt-type name. Stored as a raw CString body (a single char* -
     // m_pszData) so ~CGrunt does NOT auto-destruct it (retail's leaf dtor tears
@@ -1175,7 +1154,9 @@ public:
     i32 m_148;                  // +0x148
     i32 m_14c;                  // +0x14c
     void* m_150;                // +0x150
-    CEntranceAnimPlayer* m_154; // +0x154 (entrance animation player)
+    CGameObject* m_154; // +0x154  the created entrance-anim sprite object (the ex
+                        //         CEntranceAnimPlayer view - the player IS the
+                        //         created CGameObject; see UserLogic.h's tail note)
     // +0x158: the sprite's worker record. IDENTITY PROVEN by the ctor tail
     // (Grunt.cpp): `m_158 = obj->m_7c` - the bound object's AnimWorkerObj. The
     // ex-`CGruntSndResMgr` view (GruntCombat.cpp) modeled its hop chain
@@ -1183,7 +1164,7 @@ public:
     // CSpriteFactoryHolder facet) whose +0x28 is the CSndHost cue registry
     // (emit gate +0x30, CMapStringToPtr map +0x10).
     AnimWorkerObj* m_158;            // +0x158 (the bound object's worker record)
-    CAniElement* m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
+    CAniElement* m_prevEntranceDesc; // +0x15c (= m_154->m_1a0.m_14 cache)
     char m_pad160[0x170 - 0x160];
     // +0x170 (entrance-reason / movement state). The attack-fire step (UserLogicVfunc7)
     // reads this slot as the grunt's current TOOL/attack kind (switched over the

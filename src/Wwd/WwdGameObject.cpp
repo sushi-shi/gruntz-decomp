@@ -95,8 +95,11 @@
 // the CDDrawWorkerRegistry sibling and now binds on m_workerCache directly (see
 // DDrawWorkerCache.h / DDrawSurfacePair.cpp). The +0x24 camera holder IS CGameLevel::m_mainPlane
 // (CLevelPlane), whose +0x40 Win32 RECT is the off-screen cull rect Test compares against.
-// (CGameObject::Apply* below still cast m_0c to the SEPARATE CResMgr model - that is
-// CGameObject's own manager view, a distinct fold not in this deferral's scope.)
+// (CGameObject::Apply* below now read the typed m_0c (CDDrawSurfaceMgr*) directly -
+// the CResMgr cast is gone (2026-07-16); the per-slot retail Lookup bands corroborate:
+// 0x1504d0 -> 0x1b8008 (Ob, m_surfaceDesc->m_10map), 0x150610/0x1505b0 -> 0x1b8438
+// (Ptr, m_leafScan->m_10 / m_leaf->m_10). The old (CMapStringToOb*) casts on the two
+// Ptr-band maps mis-bound the 0x1b8008 library body - a reloc defect this fixes.)
 
 // (The 0xa0-byte WwdSnapshot record WriteSnapshot assembles on the stack lives in
 // the canonical <Gruntz/WwdGameObject.h> - it is CWwdGameObject's snapshot format,
@@ -156,9 +159,9 @@ static inline void StampWorkerVtbl(AnimWorkerObj* w) {
 // ===========================================================================
 RVA(0x00058b60, 0x2d)
 void CGameObject::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
-    ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Setup_15c2d0(srcSprite);
+    m_1a0.Setup_15c2d0(srcSprite);
     if (applyDefault) {
-        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance(g_engineFrameDelta);
+        m_1a0.Advance(g_engineFrameDelta);
     }
 }
 
@@ -178,8 +181,8 @@ void CGameObject::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) 
 RVA(0x001504d0, 0x6c)
 void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
     CSprite* spr = 0;
-    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_10->m_10map)->Lookup(name, (CObject*&)spr);
-    m_194 = (char*)spr; // +0x194 union: cached sprite
+    m_0c->m_surfaceDesc->m_10map.Lookup(name, (CObject*&)spr);
+    m_sprite = spr; // +0x194 union: cached sprite
     if (spr) {
         if (frame >= spr->m_firstFrame && frame <= spr->m_lastFrame) {
             m_190 = frame;
@@ -199,8 +202,8 @@ void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
 RVA(0x00150540, 0x65)
 void CGameObject::ApplyName(const char* name) {
     CSprite* spr = 0;
-    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_10->m_10map)->Lookup(name, (CObject*&)spr);
-    m_194 = (char*)spr; // +0x194 role-union: the cached sprite (vs a trigger's source-def)
+    m_0c->m_surfaceDesc->m_10map.Lookup(name, (CObject*&)spr);
+    m_sprite = spr; // +0x194 role-union: the cached sprite (vs a trigger source-def)
     if (spr) {
         i32 n = spr->m_firstFrame;
         m_190 = n; // +0x190 role-union: the cached frame number
@@ -221,14 +224,14 @@ void CGameObject::ApplyName(const char* name) {
 RVA(0x001505b0, 0x5c)
 i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CSprite* spr = 0;
-    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_2c->m_10map)->Lookup(name, (CObject*&)spr);
+    m_0c->m_leaf->m_10.Lookup(name, (void*&)spr);
     if (!spr) {
         return 0;
     }
     // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
-    ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Setup_15c2d0((CAniElement*)(i32)spr);
+    m_1a0.Setup_15c2d0((CAniElement*)(i32)spr);
     if (applyDefault) {
-        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance(g_engineFrameDelta);
+        m_1a0.Advance(g_engineFrameDelta);
     }
     return 1;
 }
@@ -244,7 +247,7 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 RVA(0x00150610, 0x41)
 i32 CGameObject::LookupAnimSprite(const char* name) {
     CSprite* spr = 0;
-    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_28->m_10map)->Lookup(name, (CObject*&)spr);
+    m_0c->m_leafScan->m_10.Lookup(name, (void*&)spr);
     if (spr != 0) {
         m_19c = (i32)spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
         return 1;
@@ -618,7 +621,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = (LogicContext*)m_0c;
+            w->m_0c = m_0c;
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_14 = 0;
@@ -649,8 +652,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
 RVA(0x00150f50, 0x33)
 void CGameObject::AddLogicHit(char* key) {
     CGameObject* handler = 0;
-    CLogicHandlerMap* map = LogicMap();
-    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
+    m_0c->m_workerCache->m_10.Lookup(key, (CObject*&)handler);
     EnsureWorker80(handler);
 }
 
@@ -676,7 +678,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = (LogicContext*)m_0c;
+            w->m_0c = m_0c;
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_14 = 0;
@@ -701,8 +703,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
 RVA(0x00151030, 0x33)
 void CGameObject::AddLogicAttack(char* key) {
     CGameObject* handler = 0;
-    CLogicHandlerMap* map = LogicMap();
-    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
+    m_0c->m_workerCache->m_10.Lookup(key, (CObject*&)handler);
     EnsureWorker88(handler);
 }
 
@@ -722,7 +723,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
-            w->m_0c = (LogicContext*)m_0c;
+            w->m_0c = m_0c;
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_14 = 0;
@@ -747,8 +748,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
 RVA(0x00151110, 0x33)
 void CGameObject::AddLogicBump(char* key) {
     CGameObject* handler = 0;
-    CLogicHandlerMap* map = LogicMap();
-    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
+    m_0c->m_workerCache->m_10.Lookup(key, (CObject*&)handler);
     EnsureWorker90(handler);
 }
 
@@ -1414,12 +1414,12 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
                 count++;
             }
             val = tab->NextSym3(val);
-            if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
+            if ((m_0c->m_flags & 0x100) && count > 0) {
                 val = 0;
             }
         }
         sym = tab->NextSym(sym);
-        if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
+        if ((m_0c->m_flags & 0x100) && count > 0) {
             sym = 0;
         }
     }
