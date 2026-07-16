@@ -26,21 +26,8 @@
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 // GruntTilePos/GruntCoordNode (grunt->m_324), GruntCoordNode (grunt->m_320 pending-coord
 // node) and CGruntSub10 (grunt->m_10) are the shared def in <Gruntz/ScanGrid.h>.
-// CScanCell (the grid's 0x1c-B cell) is the shared def in <Gruntz/ScanGrid.h>.
-struct CScanGoal { // this->m_f4[] element
-    i32 m_0, m_4;
-};
-struct CScanMgr {                                                      // this (edi)
-    i32 DoTrigger1fb9(CGrunt* g, i32 x, i32 y, i32 msg, i32 c, i32 d); // 0x1fb9
-    char _00[0xc];
-    CScanGrid* m_c; // +0x0c
-    char _10[0xcc - 0x10];
-    u32 m_cc; // +0xcc idle threshold
-    char _d0[0xf4 - 0xd0];
-    CScanGoal** m_f4; // +0xf4 goal table
-    i32 m_f8;         // +0xf8 goal count
-    i32 ScanRegion32ce0(CGrunt* g);
-};
+// CScanCell (the grid's 0x1c-B cell), plus the scan owner CScanMgr and its goal-point
+// element CScanGoal, are the shared defs in <Gruntz/ScanGrid.h>.
 
 // Recompute the grid dirty rect (m_60) as the {0,0,w,h} box intersected with a
 // copy of itself; m_70/m_74 = the resulting size. Inlined at each exit.
@@ -161,6 +148,3 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(CScanGoal);
-SIZE_UNKNOWN(CScanMgr);

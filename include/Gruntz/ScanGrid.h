@@ -53,6 +53,31 @@ struct CTileScan {
 };
 SIZE_UNKNOWN(CTileScan);
 
+// @identity-TODO: the 10x10 tile-region scan owner (GruntTileScan.cpp
+// CScanMgr::ScanRegion32ce0 @0x32ce0) - a sibling orphan scan-owner of CTileScan (both
+// own a CScanGrid at +0x0c) whose only reference is an ILT thunk-band that dead-ends;
+// kept a DISTINCT shape (its threshold is at +0xcc vs CTileScan's +0xc8, and it adds the
+// +0xf4/+0xf8 goal table) pending proof they are the same class. Homed here (shape belongs
+// in the shared scan header, not the .cpp); the scan body lives in GruntTileScan.cpp.
+struct CScanGoal { // CScanMgr::m_f4[] element (a {x,y} goal point)
+    i32 m_0, m_4;
+};
+struct CScanMgr {
+    // Fire the per-cell trigger (msg 0xd87) on a flagged tile. No body -> the __thiscall
+    // through the 0x1fb9 ILT thunk (-> 0x300c0) reloc-masks.
+    i32 DoTrigger1fb9(CGrunt* g, i32 x, i32 y, i32 msg, i32 c, i32 d); // 0x1fb9
+    char _00[0xc];
+    CScanGrid* m_c; // +0x0c  tile board
+    char _10[0xcc - 0x10];
+    u32 m_cc; // +0xcc  idle threshold
+    char _d0[0xf4 - 0xd0];
+    CScanGoal** m_f4; // +0xf4  goal table
+    i32 m_f8;         // +0xf8  goal count
+    i32 ScanRegion32ce0(CGrunt* g); // 0x32ce0
+};
+SIZE_UNKNOWN(CScanGoal);
+SIZE_UNKNOWN(CScanMgr);
+
 // Path-node coordinate pair {col,row} that CScanNode324::m_8 points at. Shared by
 // the CGrunt tile/arrival scan TUs (was locally redeclared per-TU).
 struct CScanCoord {
