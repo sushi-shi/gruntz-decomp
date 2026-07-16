@@ -934,14 +934,14 @@ CButeStoreDtorCopyMgrA::~CButeStoreDtorCopyMgrA() {}
 // [this+disp+4]). No modeled class with a virtual base sits on esi's dataflow without
 // reconstructing ProcessCheatInput's locals; callee return/param types, vtable DATA-ref,
 // operator new size and RTTI COL all dead-end here. Host stays a placeholder.
-struct VBaseState213 {
+struct VBaseFieldState {
     i32 m_0;
     i32 m_4; // +0x04 (the returned field; role unproven)
 };
-struct CVBaseFieldHost : virtual VBaseState213 {
+struct CVBaseFieldHost : virtual VBaseFieldState {
     i32 GetVBaseField();
 };
-SIZE_UNKNOWN(VBaseState213);
+SIZE_UNKNOWN(VBaseFieldState);
 SIZE_UNKNOWN(CVBaseFieldHost);
 RVA(0x000213a0, 0xa)
 i32 CVBaseFieldHost::GetVBaseField() {
