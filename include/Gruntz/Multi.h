@@ -129,8 +129,13 @@ public:
 // reloc-masked.
 void SetActiveAndFocus(void* hwnd); // 0x00518930 (ex MultiRestoreFocus)
 
-// The opened-player object OpenPlayer returns (group-name accessor @0x4b76a0).
-class CMultiPlayer;
+// The opened-player object OpenPlayer returns (stashed in m_netGate->m_player); its
+// group-name accessor is read in StartTitle. GroupName is a reloc-masked external leaf.
+class CMultiPlayer {
+public:
+    char* GroupName(); // 0x004b76a0
+};
+SIZE_UNKNOWN(CMultiPlayer);
 
 // The report gate's player-info sub-object (gate->m_70): per-slot occupancy probes
 // the multiplayer-start dialog reads to derive the player count. Reloc-masked

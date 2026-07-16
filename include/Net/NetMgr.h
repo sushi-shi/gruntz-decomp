@@ -887,6 +887,21 @@ struct CNetCtrlMsg {
 };
 SIZE_UNKNOWN(CNetCtrlMsg); // packed control-record view (3 dwords pinned); size TBD
 
+// The menu-select control-message variant CMulti::LoadMenuSelectSprite (0xba620) reads.
+// PROVEN the same record as CNetCtrlMsg: HandleControlMsg (0xba1a0) dispatches on
+// msg->m_0 and one arm does `push eax(=msg); call LoadMenuSelectSprite` (0xba1ed), so
+// the void* it takes IS this control message. Its +0x4 gate (== 1) is CNetCtrlMsg's
+// m_4; +0x8 the target player/slot id; +0x20/+0x24 the two AddSessionNode name args.
+struct MenuSelectEvent {
+    char m_pad0[0x4];
+    i32 m_armed;   // +0x4  armed gate (== 1; the CNetCtrlMsg m_4 sub-code)
+    i32 m_id;      // +0x8  player/slot id
+    char m_pad0c[0x20 - 0xc];
+    char* m_nameA; // +0x20  AddSessionNode name arg A
+    char* m_nameB; // +0x24  AddSessionNode name arg B
+};
+SIZE_UNKNOWN(MenuSelectEvent); // menu-select control-message view (touched offsets pinned)
+
 // (CNetChatLog is GONE - 2026-07-13. It was an EMPTY placeholder view of the +0x5c
 // chat/text display, and this very comment already said what it is: "a CFontConfig the
 // message text is appended to". Same slot, same object: CNetGameMgr IS the *0x24556c

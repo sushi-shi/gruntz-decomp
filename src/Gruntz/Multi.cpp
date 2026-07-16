@@ -282,17 +282,9 @@ i32 g_isHost_648cf0;
 
 //  CMulti::Open @0xb77a0, and its +0xc holder is the inherited CState::m_c
 //  (CSpriteFactoryHolder), +0x524 the real CNetMgr via Peer().)
-// The menu-select event the handler is handed (edi): +0x4 the "armed" gate (==1),
-// +0x8 the player/slot id, +0x20/+0x24 the session-add params.
-struct MenuSelectEvent {
-    char m_pad0[0x4];
-    i32 m_armed; // +0x4  armed gate (==1)
-    i32 m_id;    // +0x8  player/slot id
-    char m_pad0c[0x20 - 0xc];
-    i32 m_20; // +0x20
-    i32 m_24; // +0x24
-};
-SIZE_UNKNOWN(MenuSelectEvent); // event view (only touched offsets pinned); size TBD
+// The menu-select event the handler is handed IS the received control message
+// (MenuSelectEvent, now in <Net/NetMgr.h> - xref-proven the CNetCtrlMsg passed by
+// HandleControlMsg @0xba1ed).
 
 // The session/player manager at CNetMgr+0x524 IS the shared CNetMgr (<Net/NetMgr.h>),
 // reached by casting m_peer each use (LoadMenuSelectSprite); no separate view.
@@ -369,11 +361,8 @@ extern "C" void* RegistryFind(void* reg, char* key); // FUN_0053c030 (__cdecl-is
 
 // The player record OpenPlayer returns (stashed in m_netGate->m_player); its
 // group-name accessor is read in StartTitle. 0x004b76a0. (The net-bind entry
-// points Bind/Activate/OpenPlayer are now methods of CMultiReportGate in CMulti.h.)
-class CMultiPlayer {
-public:
-    char* GroupName(); // 0x004b76a0
-};
+// points Bind/Activate/OpenPlayer are now methods of CMultiReportGate in CMulti.h;
+// the opened-player class CMultiPlayer{GroupName} now lives in <Gruntz/Multi.h>.)
 
 // The "sub-window" at m_c->+0x20 is the REAL SoundStream (<Dsndmgr/SoundStream.h>,
 // `class SoundStream : public SoundDevice`): its two per-frame ticks are
@@ -1811,7 +1800,6 @@ SIZE_UNKNOWN(CMultiMgrOptions);
 SIZE_UNKNOWN(CSlotConfig);
 SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
-SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
 SIZE_UNKNOWN(CMultiSlotView);
 SIZE_UNKNOWN(CRefresh21bd0);
@@ -3082,7 +3070,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     if (node == 0) {
         node =
             (void*)Peer()
-                ->AddSessionNode(ev->m_id, (const char*)ev->m_20, (const char*)ev->m_24, (i32)node);
+                ->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, (i32)node);
         if (node == 0) {
             return 0;
         }
