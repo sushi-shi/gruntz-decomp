@@ -26,7 +26,7 @@
 //   0x012e20 E::Serialize    0x012ec0 ~CExplosion
 //   0x045d30 CFortressFlag ctor  0x046000 FF::InitActReg  0x046080 FF::FireActivation
 //   0x0461e0 FF::RegisterActs  0x0463e0 FF::AdvanceAnim  0x046410 FF::Serialize
-//   0x0464e0 CTypeColl464::Resolve  0x046850 LogicDispatchC  0x046990 Handler046990
+//   0x0464e0 CActReg::Resolve  0x046850 LogicDispatchC  0x046990 Handler046990
 //   0x046ad0 CParticlez ctor  0x046cb0 P::InitActReg  0x046d30 P::FireActivation
 //   0x046e90 P::RegisterActs  0x047090 P::Update
 //   0x0470e0 CExplosion ctor  0x0472d0 InitLogicDispatch_6447f8
@@ -354,43 +354,32 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0464e0 (RVA-homed from src/Stub/BoundaryLowerMethods.cpp) - type-id -> entry
-// resolver (the projectile/act fast-range + Find + grow-on-miss lookup; same shape as
-// CTypeKeyColl::TypeResolve). __thiscall(key).
-// @orphan: <- RegisterWarlordActions/RegisterActs_* (a CZArray2D-derived act/proj type
-// collection; the exact sibling class of CTypeKeyColl is unrecovered).
+// CActReg::Resolve (0x0464e0, RVA-homed from src/Stub/BoundaryLowerMethods.cpp) -
+// the STANDALONE out-of-line copy of CActReg::ResolveEntry (<Gruntz/ActReg.h>):
+// byte-for-byte the same fast-range -> GrowTo -> breadcrumb+Set slot resolver.
+// The two big act-register fns CALL it via ILT thunk 0x3544 (their size exhausts
+// cl's inline budget) - RegisterWarlordActions on g_actionTable@0x644610,
+// RegisterActs_644af0 on g_reg_644af0@0x644af0, both CActReg registries - where
+// the small per-class dispatchers inline ResolveEntry. Ex fake view
+// "CTypeColl464" (its m_4/m_buf/m_buf2/m_20 were CActReg's canonical
+// m_coll2/m_base/m_cur/m_scratch).
 // @early-stop
 // esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
-// this->edi). Full fast-range/Find/grow logic + offsets byte-faithful; not steerable.
-// Field layout is the attributed sibling CTypeKeyColl : CZArray2D (Find @0x16da80);
-// its grow-path node inserter m_4 is the canonical <Bute/ButeTree.h> CVariantSlot.
-struct CTypeColl464 {
-    void* m_0;               // +0x00  vptr
-    CVariantSlot* m_4;       // +0x04  grow-path node inserter
-    i32 m_lo;                // +0x08  index low bound
-    i32 m_hi;                // +0x0c  index high bound
-    char* m_buf;             // +0x10  primary element buffer (base)
-    i32 m_buf2;              // +0x14  scratch element (returned as the miss fallback)
-    i32 m_stride;            // +0x18  element size
-    char pad1c[0x20 - 0x1c]; // +0x1c cursor (== m_buf, unused here)
-    i32 m_20;                // +0x20 (reset to 0 on entry)
-    // (Resolve's grow-on-miss calls _zvec::GrowTo @0x16da80 via a (_zvec*)this cast.)
-    void* Resolve(i32 key);
-};
-SIZE_UNKNOWN(CTypeColl464);
+// this->edi). Full fast-range/GrowTo/breadcrumb logic + offsets byte-faithful;
+// not steerable.
 RVA(0x000464e0, 0x74)
-void* CTypeColl464::Resolve(i32 key) {
-    m_20 = 0;
-    if (key >= m_lo && key <= m_hi) {
-        return m_buf + (key - m_lo) * m_stride;
+char* CActReg::Resolve(i32 id) {
+    m_scratch = 0;
+    if (id >= m_lo && id <= m_hi) {
+        return m_base + (id - m_lo) * m_stride;
     }
-    if ((i32)((_zvec*)this)->GrowTo(key, 0)) { // 0x16da80 = _zvec::GrowTo, not a CTypeColl Find
-        return m_buf + (key - m_lo) * m_stride;
+    if ((i32)((_zvec*)this)->GrowTo(id, 0)) { // 0x16da80 = _zvec::GrowTo
+        return m_base + (id - m_lo) * m_stride;
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    m_4->Set(this, (i32)item, 0xc);
-    return (void*)m_buf2;
+    m_coll2->Set(this, (i32)item, 0xc);
+    return m_cur;
 }
 
 // ---------------------------------------------------------------------------

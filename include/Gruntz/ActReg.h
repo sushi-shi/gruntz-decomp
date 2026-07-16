@@ -41,6 +41,13 @@ struct CActReg : public CActColl {
 
     // Lookup @0x3864 IS _zvec::IndexToPtr; RegisterRange/Construct = CZDArrayDerived::Construct. Cast at calls.
 
+    // 0x464e0 (defined out-of-line in FortressFlag.cpp, inside that band): the
+    // STANDALONE copy of ResolveEntry below - same body. The two big act-register
+    // fns (RegisterWarlordActions, RegisterActs_644af0) CALL it via ILT 0x3544
+    // (cl's caller-size inline budget declines the expansion there) where the
+    // small dispatchers inline ResolveEntry.
+    char* Resolve(i32 id);
+
     char* ResolveEntry(i32 id) {
         m_scratch = 0;
         if (id >= m_lo && id <= m_hi) {

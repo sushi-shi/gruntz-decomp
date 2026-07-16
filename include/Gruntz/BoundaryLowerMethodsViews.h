@@ -22,8 +22,9 @@
 //                +0x2dc member, identity unrecovered).
 //   C213a0   <- CChatBoxOwner::ProcessCheatInput (virtual-base field getter; owner is
 //                the class holding that vbase - unmodeled).
-//   CTypeColl464 <- RegisterWarlordActions/RegisterActs_* (a CZArray2D-derived act/proj
-//                type collection; the exact sibling class of CTypeKeyColl unrecovered).
+//   CTypeColl464 RESOLVED: it was the shared CActReg archetype (this=g_actionTable
+//                @0x644610 / g_reg_644af0@0x644af0); Resolve @0x464e0 is the standalone
+//                copy of CActReg::ResolveEntry (now in <Gruntz/ActReg.h>/FortressFlag.cpp).
 //   C9cab0   registry Lookup (m_10 sub's Get @0x1b8008 = CMapStringToOb::Lookup - the
 //                0x1b8438 one is CMapStringToPtr; mfc_class. This pair was recorded
 //                INVERTED here, which is what made the registry look unidentifiable).
@@ -54,25 +55,6 @@ struct C213a0 {
     i32 Get();
 };
 SIZE_UNKNOWN(C213a0);
-
-// 0x0464e0 - type-id -> entry resolver (projectile/act fast-range + Find + grow).
-struct CVariantSlot; // canonical <Bute/ButeTree.h> (Set @0x16d850); pointer-only use here
-// Field layout is the attributed sibling CTypeKeyColl : CZArray2D (TypeKeyColl.cpp)
-// - it shares Find (0x16da80); this is the projectile/act instance.
-struct CTypeColl464 {
-    void* m_0;                // +0x00  vptr
-    CVariantSlot* m_4;        // +0x04  grow-path node inserter
-    i32 m_lo;                 // +0x08  index low bound
-    i32 m_hi;                 // +0x0c  index high bound
-    char* m_buf;              // +0x10  primary element buffer (base)
-    i32 m_buf2;               // +0x14  scratch element (returned as the miss fallback)
-    i32 m_stride;             // +0x18  element size
-    char pad1c[0x20 - 0x1c];  // +0x1c cursor (== m_buf, unused here)
-    i32 m_20;                 // +0x20 (== m_count, but reset to 0 on entry; role unproven)
-    i32 Find(i32 key, i32 z); // 0x16da80
-    void* Resolve(i32 key);
-};
-SIZE_UNKNOWN(CTypeColl464);
 
 // 0x0bd450 - init: run the base ctor (0x3625) then open the "c:\gruntz.log" log.
 struct Cbd450 {

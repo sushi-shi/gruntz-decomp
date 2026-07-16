@@ -133,7 +133,7 @@ extern "C" void Act_F(); // 0x402725
             *slot_ = key;                                                                          \
             ++g_typeCounter;                                                                       \
         }                                                                                          \
-        void** aslot_ = (void**)((_zvec*)&g_actionTable)->IndexToPtr(id_);                         \
+        void** aslot_ = (void**)g_actionTable.Resolve(id_);                                       \
         *aslot_ = (void*)(handler);                                                                \
     } while (0)
 // ===========================================================================
@@ -367,8 +367,8 @@ i32 Gap_043670(void) {
 
 // The file-static per-action handler dispatch array (g_actionTable @0x644610) is
 // the shared CActReg archetype (<Gruntz/ActReg.h>): InitActReg builds it over the
-// fixed [2000, 2010] range via Construct (0x408710); Lookup (0x3864) resolves a
-// per-type slot (used by RegisterWarlordActions below).
+// fixed [2000, 2010] range via Construct (0x408710); CActReg::Resolve (0x464e0,
+// the standalone ResolveEntry copy) resolves a per-type slot (RegisterWarlordActions).
 DATA(0x00244610)
 CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg extent
                        // covers interior fields 0x244614..0x244630, bind as g_obj+offset)

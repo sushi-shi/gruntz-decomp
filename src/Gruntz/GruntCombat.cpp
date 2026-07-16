@@ -477,7 +477,7 @@ SIZE_UNKNOWN(CombatTypeNode);
             ((CString*)slot)->operator=(key);                                                      \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        ((CGruntActEntry*)(char*)((_zvec*)&g_reg_644af0)->IndexToPtr(id))->m_fn =                  \
+        ((CGruntActEntry*)g_reg_644af0.Resolve(id))->m_fn =                                       \
             (GruntActHandler)(handler);                                                            \
     }
 
