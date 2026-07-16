@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 378  functions: 4069
+# units: 378  functions: 4083
 actionarea	11
 actionoptionsmenubar	11
 adler32	1
@@ -36,7 +36,7 @@ brickzload	1
 bridgemovesprites	1
 bsecobj10fctor	1
 buildgruntzcrcinfo	1
-butemgr	55
+butemgr	54
 butenode	4
 butesectionctor	1
 butestoreclear	1
@@ -49,7 +49,7 @@ chatboxowner	7
 cheatmgr	7
 checkpointdlg	6
 checkpointswitchbuild	1
-cimage	28
+cimage	27
 circleshadeblit	1
 cmdscrollapply	2
 colorhsv	1
@@ -74,7 +74,7 @@ ddrawsubmgrleaf	13
 ddrawsurfacemgr	13
 ddrawsurfacepair	44
 ddrawworkerhost	1
-ddrawworkerregistry	24
+ddrawworkerregistry	25
 ddsurface	55
 debugprintf	14
 debugtiming	2
@@ -83,9 +83,9 @@ demo	25
 destructbutton	1
 dialogs	57
 directdrawmgr	62
-directinputmgr2	41
+directinputmgr2	46
 directionclassify	1
-directsoundmgr	72
+directsoundmgr	75
 donothing	7
 drawdebugstats	1
 droppedobject	28
@@ -307,7 +307,7 @@ singleframemessage	7
 slotcombofill	3
 soundbankload	1
 soundfontpath	4
-soundstream	29
+soundstream	36
 soundvoicelist	5
 splashstate	6
 spotlight	1
