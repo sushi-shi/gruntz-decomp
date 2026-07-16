@@ -422,8 +422,8 @@ public:
     void ApplyDynSetting(CString s);               // 0xb76c0 (external)
     void SetServiceName(CString s);                // 0xb7730 (external)
     void PopulateGroupList(void* hList, i32 flag); // 0x1784be (external)
-    static void ReportError(char* file, i32 line, i32 hr, void* hWnd);   // netmgrerror (static)
-    static void SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third); // netmgrerror (static)
+    // (ReportError/SetReportMode are CNetMgr statics reached directly as
+    //  CNetMgr::ReportError - <Net/NetMgr.h> is included by Multi.cpp.)
 
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
     // --- CMulti-own multiplayer block (after CPlay base @0x518) ---

@@ -23,7 +23,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>            // the shared CActReg (g_actionTable @0x644610)
 #include <Gruntz/TypeKeyColl.h>       // the shared CTypeKeyColl (g_typeColl @0x6bf650)
-#include <Gruntz/Grunt.h>             // CGrunt + CGruntHud/g_animLookupTree/GruntRand
+#include <Gruntz/Grunt.h>             // CGrunt + CGruntHud/g_buteTree/GruntRand
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_38->m_0c (the world root)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog; Lookup 0x1b8438)
 #include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record; ex CAnimElem)
@@ -610,7 +610,7 @@ i32 CGrunt::ResolveMovingAnimation() {
     m_38->m_1a0.Setup_15c2d0(m_movingGeoSrc);
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_animLookupTree.Find(s_keyB);
+    m_14->m_1c = g_buteTree.Find(s_keyB);
 
     m_moveStartTime = (GruntRand() % 0x5dc1 + 0x1770) * 10;
     m_moveSeedHi = 0;
@@ -694,7 +694,7 @@ i32 CGrunt::ResolveDeathAnimation() {
     m_38->ApplyName(s_GRUNTZ_ + TypeName() + s__DEATH);
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_animLookupTree.Find(s_keyC);
+    m_14->m_1c = g_buteTree.Find(s_keyC);
     return 1;
 }
 
@@ -727,7 +727,7 @@ i32 CGrunt::ResolveAnimation() {
     m_38->ApplyName(s_GRUNTZ_ + TypeName() + s__JOY);
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_animLookupTree.Find(s_keyE);
+    m_14->m_1c = g_buteTree.Find(s_keyE);
     return 1;
 }
 
@@ -768,7 +768,7 @@ i32 CGrunt::ResolveIdleAnimation() {
     m_38->ApplyLookupSprite(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_animLookupTree.Find(s_keyA);
+    m_14->m_1c = g_buteTree.Find(s_keyA);
     return 1;
 }
 
@@ -804,7 +804,7 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     m_38->ApplyName(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_animLookupTree.Find(s_keyF);
+    m_14->m_1c = g_buteTree.Find(s_keyF);
     return 1;
 }
 

@@ -156,15 +156,9 @@ struct CAnimLookupNode {
     void* m_1c; // +0x1c
 };
 
-// CButeTree::Find (__thiscall ret 4) - the shared keyed lookup.
-SIZE_UNKNOWN(CAnimLookupTree);
-class CAnimLookupTree {
-public:
-    void* Find(const char* key); // stub
-};
-
-// The global animation lookup tree instance.
-extern CAnimLookupTree g_animLookupTree;
+// The animation lookup is CButeTree::Find (0x16d190, __thiscall ret 4) on the
+// shared g_buteTree registry (declared in <Bute/ButeTree.h>, reached via
+// <Gruntz/UserLogic.h> -> <Bute/ButeMgr.h>); the resolvers call g_buteTree.Find(key).
 
 // A per-grunt time/seed default the Moving resolver copies into m_moveSeed.
 extern i32 g_movingSeed;

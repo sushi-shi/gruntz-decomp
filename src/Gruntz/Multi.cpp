@@ -2491,7 +2491,7 @@ i32 CMulti::PollSession() {
         IDirectPlay4Z* dp = Peer()->m_directPlay;
         i32 hr = dp->Receive(&size, &idTo, 1, (void*)g_recvBuffer, &size);
         if (hr) {
-            ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
+            CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
             if (hr) {
                 break;
             }

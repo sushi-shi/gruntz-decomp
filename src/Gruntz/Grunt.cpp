@@ -151,9 +151,8 @@ static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
-// The global animation lookup tree (a CButeTree) + the rand seed
-// default (reloc-masked).
-CAnimLookupTree g_animLookupTree;
+// The rand seed default (reloc-masked). The animation lookup uses the shared
+// g_buteTree registry (<Bute/ButeTree.h>), not a separate tree.
 i32 g_movingSeed;
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
