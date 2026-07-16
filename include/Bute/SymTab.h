@@ -148,6 +148,42 @@ public:
 SIZE(CSymRec, 0x30); // leaf-record allocation size (operator new -> RezAlloc)
 
 // ---------------------------------------------------------------------------
+// CSymLeafBuilder - the leaf-VALUE-record parse slot Build (0x139710) populates from a
+// parse-stream record and ~CSymRec/AddNodeSubEntry tear down via Teardown (0x1397a0).
+// The owning scope at +0x10, the symbol-record back-ptr at +0x04, three parse values
+// (f1/f2/f3) at +0x14/+0x08/+0x0c, the source stream at +0x34, a self-ptr at +0x30, two
+// zeroed counters (+0x18/+0x38). Build's rec/str/stream args are void* in retail (its
+// 11-arg __thiscall signature), so the record/stream slots stay void*. TU-local method
+// bodies live in SymTab.cpp. Field names are placeholders.
+struct CSymLeafBuilder {
+    void Build(
+        CSymTab* owner,
+        const char* name,
+        void* f4,
+        void* rec,
+        void* str2,
+        void* f3,
+        void* f1,
+        void* f2,
+        void* f6,
+        void* arr,
+        void* stream
+    );                     // 0x139710
+    void Teardown();       // 0x1397a0 (leaf-value teardown; called by ~CSymRec + AddNodeSubEntry)
+    char* m_name;          // +0x00  strdup(name) (or null)
+    void* m_record;        // +0x04  rec
+    void* m_08;            // +0x08  f2
+    i32 m_0c;              // +0x0c  f3   (read by ApplyRange)
+    CSymTab* m_ownerScope; // +0x10  owning scope (Teardown reads its m_buf48)
+    i32 m_14;              // +0x14  f1   (read by ApplyRange)
+    i32 m_18;              // +0x18  = 0
+    CHashElement m_node;   // +0x1c  hash-node prefix (m_node.m_record @0x30 = this)
+    void* m_sourceStream;  // +0x34  source stream
+    void* m_38;            // +0x38  = 0 in Build; the owned value buffer Teardown frees
+};
+SIZE(CSymLeafBuilder, 0x3c); // leaf-record parse slot (fields through m_38 @0x38)
+
+// ---------------------------------------------------------------------------
 // CSymTab - the recursive scope node.
 // ---------------------------------------------------------------------------
 class CSymTab {
