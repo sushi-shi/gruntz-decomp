@@ -18,5 +18,5 @@ reinterpret_cast<class*>(m_)	0
 C-style numeric casts	891
 void* m_ members	114
 offset-cast macros	0
-cpp extern decls	481
+cpp extern decls	452
 caller-callee FAKE-VIEW	0

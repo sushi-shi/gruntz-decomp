@@ -1627,7 +1627,7 @@ fontconfig	?DrawWithFont@CFontConfig@@QAEHPBDPAUHDC__@@PAUtagRECT@@I@Z	100.0000	
 fontconfig	?EndInput@CFontConfig@@QAEXXZ	100.0000	100.0000	3	3735f7655262	0x21ef0
 fontconfig	?FreeNodes@CFontConfig@@QAEXXZ	100.0000	100.0000	3	a0db3504ae1c	0x21bd0
 fontconfig	?LoadFontConfig@CFontConfig@@QAEHHH@Z	99.9735	99.9735	11	838f41c6c888	0x218e0
-fontconfig	?MeasureLabel@CFontConfig@@QAEHPAUHDC__@@PAUtagRECT@@@Z	86.8571	86.8571	2	1cac4af9a07c	0x21f20
+fontconfig	?MeasureLabel@CFontConfig@@QAEHPAUHDC__@@PAUtagRECT@@@Z	86.9464	86.9464	2	1cac4af9a07c	0x21f20
 fontconfig	?RenderInputText@CFontConfig@@QAEHPAUHDC__@@HPAUtagRECT@@@Z	75.2239	75.2239	5	acbae09de790	0x22160
 fontconfig	?Reset@CFontConfig@@QAEXXZ	100.0000	100.0000	3	d2b43b21a86e	0x21b60
 fontconfig	?Scroll@CFontConfig@@QAEXH@Z	100.0000	100.0000	4	01ec8cdff663	0x21d80
@@ -2424,7 +2424,7 @@ imagepool	?winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps@ApiCallerStubs@@YAHXZ	
 imagepool	?winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD@ApiCallerStubs@@YAXXZ	100.0000	100.0000	3	41ade200f995	0x177160
 imageprobe	?CheckGrid@CDDScreen@@QAEHXZ	100.0000	100.0000	1	fbf3692f9166	0x17cbe0
 imagerle16encode	?EncodeRle16@CDDrawShadeBlit@@QAEPAXPBE@Z	65.4286	65.4286	2	c339cce1cdb8	0x1495d0
-imagerotate	?ImageRotateBlit@@YAXHHPAHPAX1MMHH@Z	36.4251	36.4251	3	e8aee18d2fcd	0x145f60
+imagerotate	?ImageRotateBlit@@YAXHHPAHPAX1MMHH@Z	36.4251	36.4192	3	e8aee18d2fcd	0x145f60
 imagesavebmp	?DecodeFrame@CDDrawShadeBlit@@QAEHVCString@@UCImageFrameRebuildDesc@@@Z	98.0303	98.0303	1	6e97d1742225	0x149250
 imageset1	??1CImageSet1@@UAE@XZ	100.0000	100.0000	1	f820f16f802a	0x161370
 imageset1	?Parse@CImageSet1@@UAEHPAX@Z	86.6667	86.6667	1	a6085ca582b9	0x166d40
@@ -3207,7 +3207,7 @@ projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	33.9778	33.9778	15	5694299cf60c	0
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	90.5000	90.5000	4	ca160c9d348c	0xe1e60
 projectile	?LoadProjectileSprites@CProjectile@@UAEHHHHHHHH@Z	57.1201	57.1201	11	eab79a9e6830	0xdf050
 projectile	?MovingSlot16@CBoomerang@@UAEXXZ	70.6977	70.6977	4	c9f3406fbca5	0xe08b0
-projectile	?MovingSlot16@CProjectile@@UAEXXZ	69.7359	69.7316	7	7ad93b44da74	0xdfd00
+projectile	?MovingSlot16@CProjectile@@UAEXXZ	69.7359	69.7359	7	7ad93b44da74	0xdfd00
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	92.9130	92.9130	2	14f6e97f0e0c	0xe1990
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	2	1fc33c782a2a	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	7	19f2a743874f	0xdfb00
@@ -4075,7 +4075,7 @@ videoconfig	?winapi_036e50_GetDlgItem_SetScrollPos@ApiCallerStubs@@YAXPAUHWND__@
 videoconfig	?winapi_036ec0_GetDlgItem_GetScrollInfo@ApiCallerStubs@@YAHPAUHWND__@@H@Z	100.0000	100.0000	1	f8fd31fe8da1	0x36ec0
 videoconfig	?winapi_0371e0_GetDlgItem_SetScrollInfo@ApiCallerStubs@@YAXPAUHWND__@@HHH@Z	100.0000	100.0000	1	c19d8c34bade	0x371e0
 voicesoundlist	?BuildVoiceSoundList@CGruntSpawnConfig@@QAEPAVCSpawnList@@H@Z	86.1571	86.1571	4	836010a92524	0x11c210
-wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	41.1727	41.1727	18	8b4874074bac	0x1471d0
+wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	41.1727	37.5396	18	8b4874074bac	0x1471d0
 wap32rect	??0CRect@@QAE@HHHH@Z	100.0000	100.0000	1	1edde1fedff4	0x29ac0
 wap32rect	??4CRect@@QAEAAU0@ABUtagRECT@@@Z	100.0000	100.0000	1	9ad4eb3864d2	0x115b30
 wap32rect	?SetRect@CRect@@QAEXHHHH@Z	100.0000	100.0000	1	f640754770df	0x8c380
