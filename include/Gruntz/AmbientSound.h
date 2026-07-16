@@ -105,9 +105,9 @@ public:
     AmbientBox m_box1;       // +0x18  primary audible box
     AmbientBox m_box2;       // +0x28  secondary audible box
     i32 m_panIndex;          // +0x38  pan index (ApplyAndPlay pan arg; matches CRandomAmbientSound)
-    void* m_listNode;        // +0x3c  the CWorldSoundSet::m_list node this channel was
-                             //        appended at (Create* factories store AddTail's
-                             //        return here); zeroed in the dtor
+    POSITION m_listNode;     // +0x3c  the CWorldSoundSet::m_list POSITION this channel was
+                             //        appended at (Create* factories store AddTail's return;
+                             //        Teardown feeds it to m_list.RemoveAt); zeroed in the dtor
 };
 SIZE(CAmbientSound, 0x40);
 

@@ -174,7 +174,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a
         delete obj;
         return 0;
     }
-    obj->m_listNode = (void*)m_list.AddTail(obj);
+    obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
 
@@ -212,7 +212,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a
         delete obj;
         return 0;
     }
-    obj->m_listNode = (void*)m_list.AddTail(obj);
+    obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
 
@@ -237,7 +237,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
         delete obj;
         return 0;
     }
-    obj->m_listNode = (void*)m_list.AddTail(obj);
+    obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
 
@@ -273,7 +273,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3
         delete obj;
         return 0;
     }
-    obj->m_listNode = (void*)m_list.AddTail(obj);
+    obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
 
@@ -314,7 +314,7 @@ CRandomAmbientSound* CWorldSoundSet::
         return 0;
     }
     obj->Init2(a4, a5, a6, a7);
-    obj->m_listNode = (void*)m_list.AddTail(obj);
+    obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
 
@@ -351,7 +351,7 @@ CRandomAmbientSound* CWorldSoundSet::
         return 0;
     }
     obj->Init2(a4, a5, a6, a7);
-    obj->m_listNode = (void*)m_list.AddTail(obj);
+    obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
 
@@ -1072,7 +1072,7 @@ void SpawnPosSound(PosSoundObj* obj) {
             sound->m_isPlaying = 0;
         }
         if (sound->m_listNode != 0) {
-            arr->RemoveAt((POSITION)sound->m_listNode);
+            arr->RemoveAt(sound->m_listNode);
             delete sound;
         }
         aux->m_voice = 0;
