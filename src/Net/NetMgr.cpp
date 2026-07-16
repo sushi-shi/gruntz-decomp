@@ -497,7 +497,7 @@ void CNetMgr::PopulatePlayerList(void* hList) {
     }
 
     while (payload != 0) {
-        i32 r = (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)payload->m_34);
+        i32 r = (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)payload->m_profile);
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
         }

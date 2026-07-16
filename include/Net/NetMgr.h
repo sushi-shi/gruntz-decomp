@@ -972,7 +972,8 @@ SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (+0x4/+0x5c/+0x6c/+0x150 pinned); re
 // CString / GetName @0x1f450) - the chat broadcaster uses GruntzPlayer directly.
 struct CNetPlayerDesc {
     char m_pad0[0x34];
-    char* m_34; // +0x34  name string (LB_ADDSTRING source)
+    char* m_profile; // +0x34  keyed player-name/profile text (LB_ADDSTRING source;
+                     //         NetFormatKeyed reads the NAME key out of it)
 };
 SIZE_UNKNOWN(CNetPlayerDesc); // descriptor-node view (only +0x34 name pinned); size TBD
 

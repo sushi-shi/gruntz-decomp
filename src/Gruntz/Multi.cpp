@@ -266,8 +266,7 @@ extern "C" HWND g_netPlayerListHwnd; // 0x648d00
 extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList); // 0xb8af0
 // The DirectPlay player-enumeration list + its listbox filler (both defined later in
 // this TU at 0xb89e0); forward-declared so MultiJoinDlgProc (0xb8020) can call them.
-struct Session;
-void FillPlayerList(HWND hList, Session* sess); // 0x0b89e0
+void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0x38 player list)
 
 // (CNetJoinPacket moved to <Net/NetPackets.h> - a fully-known wire struct has no
 // business being DEFINED in a .cpp.)
@@ -295,9 +294,8 @@ struct MenuSelectEvent {
 };
 SIZE_UNKNOWN(MenuSelectEvent); // event view (only touched offsets pinned); size TBD
 
-// The session/player manager at CNetMgr+0x524.
-struct PlayerNode;
-SIZE_UNKNOWN(PlayerMgr); // method-only +0x524 sub-object view; retail size TBD
+// The session/player manager at CNetMgr+0x524 IS the shared CNetMgr (<Net/NetMgr.h>),
+// reached by casting m_peer each use (LoadMenuSelectSprite); no separate view.
 
 // The "ready options" count is CNetGameMgr::CountActiveChannels @0x492e30 (via the
 // 0x38cd ILT thunk; __thiscall ret 4) - the SAME method the channel cluster gates
@@ -1912,7 +1910,7 @@ i32 __stdcall MultiJoinDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                     g_pEndDialog(hDlg, 0);
                     return 1;
                 }
-                FillPlayerList(g_netPlayerListHwnd, (Session*)g_groupEnumMgr);
+                FillPlayerList(g_netPlayerListHwnd, g_groupEnumMgr);
                 if (sel != -1) {
                     ::SendMessageA(g_netPlayerListHwnd, 0x186, sel, 0); // LB_SETCURSEL
                 } else {
@@ -2073,46 +2071,31 @@ i32 CMulti::ShowMultiStartDlg() {
 
 // The player record held in each list node: it carries its profile/name source
 // at +0x34 (NetFormatKeyed reads NAME out of it, else it is used raw as the text).
-struct PlayerRecord {
-    char m_pad[0x34];
-    char* m_profile; // +0x34  keyed text buffer (NetFormatKeyed reads NAME; else used raw as text)
-};
-SIZE_UNKNOWN(PlayerRecord); // player-record view (only +0x34 pinned); retail size TBD
-
-// A node of the session's player list (CObList-shaped): next ptr + the held
-// player record.
-struct PlayerNode {
-    PlayerNode* m_next;   // +0x00
-    PlayerNode* m_prev;   // +0x04  CObList back-link
-    PlayerRecord* m_item; // +0x08 (the player record)
-};
-SIZE_UNKNOWN(PlayerNode); // CObList-shaped list-node view; retail size TBD
-// The session container: a player CObList (head at +0x3c) + a scratch POSITION
-// cursor the listbox fill walks through (+0x80).
-struct Session {
-    char m_pad[0x3c];
-    PlayerNode* m_head; // +0x3c (GetHeadPosition)
-    char m_pad2[0x80 - 0x40];
-    PlayerNode* m_pos; // +0x80 (the running POSITION)
-};
-SIZE_UNKNOWN(Session); // session-container view (only +0x3c/+0x80 pinned); size TBD
+// (The former PlayerRecord / PlayerNode / Session views ARE the canonical
+// CNetPlayerDesc / CNetListNode / CNetMgr from <Net/NetMgr.h>: FillPlayerList walks
+// the CNetMgr +0x38 player CObList exactly as CNetMgr::PopulatePlayerList does. See
+// FillPlayerList below.)
 
 // ---------------------------------------------------------------------------
-// FillPlayerList() - 0x0b89e0. __stdcall(HWND hList, Session* sess): clear the
-// listbox, then for each player node walk the +0x34 profile, format its NAME
-// (NetFormatKeyed) into a scratch buffer, add that string (or the raw profile on
-// a format miss), and stash the node as the new item's data. No-op if either arg
-// is null.
+// FillPlayerList() - 0x0b89e0. __stdcall(HWND hList, CNetMgr* sess): clear the
+// listbox, then walk the CNetMgr +0x38 player CObList (head @+0x3c via
+// GetHeadPosition, running cursor cached in m_playerSelId @+0x80) - for each node's
+// CNetPlayerDesc payload (+0x8) format its NAME key out of the +0x34 profile
+// (NetFormatKeyed) into a scratch buffer, add that string (or the raw profile on a
+// format miss), and stash the payload as the new item's data. No-op if either arg
+// is null. The standalone twin of CNetMgr::PopulatePlayerList (0x178790) - same list
+// walk, same canonical CNetListNode / CNetPlayerDesc types; the Session/PlayerNode/
+// PlayerRecord views it used to carry ARE this CNetMgr + its player-list node/payload.
 // ---------------------------------------------------------------------------
 // @early-stop
 // regalloc/aliasing wall (~91.5%): logic byte-exact except the advance block -
-// retail reloads sess->m_pos into a 2nd register (ecx) for the ->next read while
-// keeping the old position in eax for ->item (`mov ecx,[m_80]; mov eax,[eax+8];
+// retail reloads m_playerSelId into a 2nd register (ecx) for the ->next read while
+// keeping the old position in eax for ->m_data (`mov ecx,[m_80]; mov eax,[eax+8];
 // mov edx,[ecx]`); the recompile keeps the position in one reg and derefs both
 // fields from it. Aliasing-conservatism choice MSVC made in retail, not
 // source-steerable (cf. linked-list-walk-node-eax-rotation.md). Deferred.
 RVA(0x000b89e0, 0xc8)
-void FillPlayerList(HWND hList, Session* sess) {
+void FillPlayerList(HWND hList, CNetMgr* sess) {
     char buf[256];
     if (!hList) {
         return;
@@ -2121,12 +2104,12 @@ void FillPlayerList(HWND hList, Session* sess) {
         return;
     }
     ::SendMessageA(hList, LB_RESETCONTENT, 0, 0);
-    PlayerNode* node = sess->m_head;
-    sess->m_pos = node;
-    PlayerRecord* player;
+    CNetListNode* node = (CNetListNode*)sess->m_players.GetHeadPosition();
+    sess->m_playerSelId = node;
+    CNetPlayerDesc* player;
     if (node) {
-        sess->m_pos = node->m_next;
-        player = node->m_item;
+        sess->m_playerSelId = node->m_next;
+        player = (CNetPlayerDesc*)node->m_data;
     } else {
         player = 0;
     }
@@ -2141,10 +2124,10 @@ void FillPlayerList(HWND hList, Session* sess) {
         if (idx != -1) {
             ::SendMessageA(hList, LB_SETITEMDATA, idx, (LPARAM)player);
         }
-        PlayerNode* pos = sess->m_pos;
+        CNetListNode* pos = sess->m_playerSelId;
         if (pos) {
-            player = pos->m_item;
-            sess->m_pos = pos->m_next;
+            player = (CNetPlayerDesc*)pos->m_data;
+            sess->m_playerSelId = pos->m_next;
         } else {
             player = 0;
         }
@@ -3095,10 +3078,10 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     if (ev->m_armed != 1) {
         return 0;
     }
-    PlayerNode* node = (PlayerNode*)Peer()->GetPlayerData(ev->m_id);
+    void* node = Peer()->GetPlayerData(ev->m_id);
     if (node == 0) {
         node =
-            (PlayerNode*)Peer()
+            (void*)Peer()
                 ->AddSessionNode(ev->m_id, (const char*)ev->m_20, (const char*)ev->m_24, (i32)node);
         if (node == 0) {
             return 0;
