@@ -496,7 +496,7 @@ i32 CMoviePlayer::Frame() {
         ((CDDScreen*)this)->UploadPalette();
     }
     i32 hr = m_24->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
-    while (hr == (i32)0x887601c2) {
+    while (hr == static_cast<i32>(0x887601c2)) {
         if (m_24->Restore() != 0) {
             goto afterLock;
         }
@@ -675,10 +675,10 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
         if (rect->top > rect->bottom) {
             return 0;
         }
-        if ((u32)rect->right > m_screenWidth) {
+        if (static_cast<u32>(rect->right) > m_screenWidth) {
             return 0;
         }
-        if ((u32)rect->bottom > m_screenHeight) {
+        if (static_cast<u32>(rect->bottom) > m_screenHeight) {
             return 0;
         }
     }
@@ -821,11 +821,11 @@ i32 CDDPageMgr::CheckMode16() {
     }
 
     if (r == 5 && g == 5 && b == 5) {
-        m_modeTag = (i32)0x80000000;
+        m_modeTag = static_cast<i32>(0x80000000);
         return 1;
     }
     if (r == 5 && g == 6 && b == 5) {
-        m_modeTag = (i32)0xc0000000;
+        m_modeTag = static_cast<i32>(0xc0000000);
         return 1;
     }
     return 0;

@@ -278,7 +278,7 @@ void CDDrawSurfacePair::TeardownSurface() {
 RVA(0x00163e50, 0x8b)
 i32 CDDrawSurfacePair::LoadImage_163e50(CParseSource* src) {
     i32 type;
-    switch ((u32)src->GetEntryTag()) {
+    switch (static_cast<u32>(src->GetEntryTag())) {
         case 0x424d50: // 'BMP'
             type = 1;
             break;
@@ -364,7 +364,7 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
         return;
     }
     CDDSurface* sv = m_surface;
-    u8 c = (u8)color;
+    u8 c = static_cast<u8>(color);
     i32 w = right - left + 1;
 
     // ---- top + bottom horizontal edges ----
@@ -459,13 +459,13 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     i32 up = off;
     for (i = 0; i < 3; ++i) {
         up -= m_surface->m_pitch;
-        base[up] = (char)0xff;
+        base[up] = static_cast<char>(0xff);
     }
     // vertical arm down (0xff)
     i32 down = off;
     for (i = 0; i < 3; ++i) {
         down += m_surface->m_pitch;
-        base[down] = (char)0xff;
+        base[down] = static_cast<char>(0xff);
     }
 
     CDDSurface* sv = m_surface;

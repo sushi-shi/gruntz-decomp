@@ -315,8 +315,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_ownerId = t1;
 
     CGameObject* owner = m_object;
-    double dx = (double)(m_targetX - owner->m_screenX);
-    double dy = (double)(m_targetY - owner->m_screenY);
+    double dx = static_cast<double>((m_targetX - owner->m_screenX));
+    double dy = static_cast<double>((m_targetY - owner->m_screenY));
     i32 count = 1;
 
     switch (kind) {
@@ -407,9 +407,9 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_sprite->ApplyName(key + "_OBJECT");
 
     // Normalise the launch trajectory into the per-frame velocity + sign vectors.
-    u32 totalTime = (u32)(count * m_timePerTile);
+    u32 totalTime = static_cast<u32>((count * m_timePerTile));
     double len = sqrt(dx * dx + dy * dy);
-    double t = (double)totalTime;
+    double t = static_cast<double>(totalTime);
     double vx = dx / len;
     m_flightDist = len;
     m_velScale = len / t;
@@ -422,7 +422,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     if (vx > 0.0) {
         m_roundXHi = 0x3fe00000;
     } else if (vx < 0.0) {
-        m_roundXHi = (i32)0xbfe00000;
+        m_roundXHi = static_cast<i32>(0xbfe00000);
     } else {
         m_roundXHi = 0;
     }
@@ -430,7 +430,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     if (dy > 0.0) {
         m_roundYHi = 0x3fe00000;
     } else if (dy < 0.0) {
-        m_roundYHi = (i32)0xbfe00000;
+        m_roundYHi = static_cast<i32>(0xbfe00000);
     } else {
         m_roundYHi = 0;
     }
@@ -643,10 +643,10 @@ void CProjectile::MovingSlot16() {
         if (m_kind == 0x16) {
             ScanTargets(0);
         }
-        m_posX = m_posX + (double)(u32)g_frameDelta * m_velX * m_velScale;
-        m_posY = m_posY + (double)(u32)g_frameDelta * m_velY * m_velScale;
-        i32 xRes = (i32)(*(double*)&m_roundXLo + m_posX);
-        i32 yRes = (i32)(*(double*)&m_roundYLo + m_posY);
+        m_posX = m_posX + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_velX * m_velScale;
+        m_posY = m_posY + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_velY * m_velScale;
+        i32 xRes = static_cast<i32>((*(double*)&m_roundXLo + m_posX));
+        i32 yRes = static_cast<i32>((*(double*)&m_roundYLo + m_posY));
         i32 localX = xRes;
         if (m_velX > 0.0) {
             if (xRes > m_targetX) {
@@ -673,8 +673,8 @@ void CProjectile::MovingSlot16() {
         i32 offX = 0;
         i32 offY = 0;
         if (m_isArcing != 0) {
-            double dx = fabs((double)m_targetX - m_posX);
-            double dy = fabs((double)m_targetY - m_posY);
+            double dx = fabs(static_cast<double>(m_targetX) - m_posX);
+            double dy = fabs(static_cast<double>(m_targetY) - m_posY);
             double dist = sqrt(dx * dx + dy * dy);
             double mag = m_flightDist;
             if (dist >= mag * 0.9 || dist < mag * 0.1) {
@@ -756,7 +756,7 @@ void CProjectile::MovingSlot16() {
         i32 tileX = m_targetX >> 5;
         i32 tileY = m_targetY >> 5;
         u32 flags;
-        if ((u32)tileX >= (u32)plane->m_c || (u32)tileY >= (u32)plane->m_10) {
+        if (static_cast<u32>(tileX) >= static_cast<u32>(plane->m_c) || static_cast<u32>(tileY) >= static_cast<u32>(plane->m_10)) {
             flags = 1;
         } else {
             flags = plane->m_8[tileY][tileX * 7]; // cell dword 0 = terrain flags
@@ -890,7 +890,7 @@ step:
     // integrate the sin/cos parabola into the render position.
     double s = sin(m_phase);
     double c = cos(m_phase);
-    double amp = (double)g_frameDelta;
+    double amp = static_cast<double>(g_frameDelta);
     double vx = -m_dirX;
     double vy = m_dirY;
     double px = m_originX + vy * m_velScale * s - vx * amp * c + m_phase;
@@ -898,11 +898,11 @@ step:
     m_posX = px;
     m_posY = py;
     m_phase = px;
-    m_object->m_screenX = (i32)m_posX;
-    m_object->m_screenY = (i32)m_posY;
+    m_object->m_screenX = static_cast<i32>(m_posX);
+    m_object->m_screenY = static_cast<i32>(m_posY);
     if (m_shadow != 0) {
-        m_shadow->m_screenX = (i32)m_posX;
-        m_shadow->m_screenY = (i32)m_posY;
+        m_shadow->m_screenX = static_cast<i32>(m_posX);
+        m_shadow->m_screenY = static_cast<i32>(m_posY);
     }
 }
 
@@ -1215,7 +1215,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
         m_fastPhase = 1;
     } else {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
-        m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
+        m_durationLo = static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0));
         m_durationHi = 0;
         m_startTimeLo = g_frameTime;
         m_startTimeHi = 0;
@@ -1244,7 +1244,7 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
-    if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
+    if (static_cast<u32>(cx) < static_cast<u32>(g->m_c) && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
         char* row = (char*)g->m_8[cy];
         return *(i32*)(row + cx * 0x1c);
     }
@@ -1254,7 +1254,7 @@ static inline void TBombGridClear(CGameObject* obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
-    if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
+    if (static_cast<u32>(cx) < static_cast<u32>(g->m_c) && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
         char* row = (char*)g->m_8[cy];
         *(i32*)(row + cx * 0x1c) &= ~0x1000000;
     }
@@ -1287,15 +1287,15 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    if ((i64)g_frameTime - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
+    if (static_cast<i64>(g_frameTime) - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
         return 0;
     }
     if (m_fastPhase == 0) {
         m_prevAnimNode = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
+        m_durationLo = static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8));
         m_durationHi = 0;
-        m_startTimeLo = (i32)g_frameTime;
+        m_startTimeLo = static_cast<i32>(g_frameTime);
         m_startTimeHi = 0;
         m_fastPhase = 1;
         return 0;

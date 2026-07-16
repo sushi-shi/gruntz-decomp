@@ -816,9 +816,9 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         LOAD_POSE(m_poseToy2, s_pose_TOY2);
         i32 y = ((CAnimSetNode*)m_poseToy2)->m_10;
         if (x >= y) {
-            m_toyBlendPct = (i32)(100.0 / ((double)x / y - -1.0) - -0.5);
+            m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
         } else {
-            m_toyBlendPct = 100 - (i32)(100.0 / ((double)y / x - -1.0) - -0.5);
+            m_toyBlendPct = 100 - static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
         }
     }
 
@@ -1237,7 +1237,7 @@ i32 CGrunt::StepGruntMovement() {
     bd = g_gameReg->m_tileGrid;
     tgtTileX = tgtPxX >> 5;
     tgtTileY = tgtPxY >> 5;
-    if ((u32)tgtTileX < (u32)bd->m_c && (u32)tgtTileY < (u32)bd->m_10) {
+    if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_c) && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_10)) {
         flagHead = ((i32*)bd->m_8[tgtTileY])[tgtTileX * 7];
     } else {
         flagHead = 1;
@@ -1270,7 +1270,7 @@ i32 CGrunt::StepGruntMovement() {
         i32 lastFlag;
         i32 ltx = m_lastTilePxX >> 5;
         i32 lty = m_lastTilePxY >> 5;
-        if ((u32)ltx < (u32)bd->m_c && (u32)lty < (u32)bd->m_10) {
+        if (static_cast<u32>(ltx) < static_cast<u32>(bd->m_c) && static_cast<u32>(lty) < static_cast<u32>(bd->m_10)) {
             lastFlag = ((i32*)bd->m_8[lty])[ltx * 7];
         } else {
             lastFlag = 1;
@@ -1380,7 +1380,7 @@ i32 CGrunt::StepGruntMovement() {
 label_4c68b:
     if ((flagHead & 0x20000000) && !(flagHead & 0x80)) {
         i32 owner;
-        if ((u32)tgtTileX < (u32)bd->m_c && (u32)tgtTileY < (u32)bd->m_10) {
+        if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_c) && static_cast<u32>(tgtTileY) < static_cast<u32>(bd->m_10)) {
             owner = ((i32*)bd->m_8[tgtTileY])[tgtTileX * 7 + 1];
         } else {
             owner = -1;
@@ -1440,7 +1440,7 @@ label_4c6e4:
         i32 bty = beyondPxY >> 5;
         i32 beyondFlag;
         GruntBoard* bd = g_gameReg->m_tileGrid;
-        if ((u32)btx < (u32)bd->m_c && (u32)bty < (u32)bd->m_10) {
+        if (static_cast<u32>(btx) < static_cast<u32>(bd->m_c) && static_cast<u32>(bty) < static_cast<u32>(bd->m_10)) {
             beyondFlag = ((i32*)bd->m_8[bty])[btx * 7];
         } else {
             beyondFlag = 1;
@@ -1478,10 +1478,10 @@ label_4c92b: {
         goto label_4cb4b;
     }
     i32 xbound = bd->m_c;
-    if ((u32)tgtTileX >= (u32)xbound) {
+    if (static_cast<u32>(tgtTileX) >= static_cast<u32>(xbound)) {
         goto label_4cb2a;
     }
-    if ((u32)tgtTileY >= (u32)bd->m_10) {
+    if (static_cast<u32>(tgtTileY) >= static_cast<u32>(bd->m_10)) {
         goto label_4cb2a;
     }
     char** rowtable = bd->m_8;

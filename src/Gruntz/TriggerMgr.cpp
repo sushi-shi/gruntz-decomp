@@ -437,8 +437,8 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
     CPlaneRender* t = m_world->m_level->m_mainPlane;
-    float fy = (float)y;
-    float fx = (float)x;
+    float fy = static_cast<float>(y);
+    float fx = static_cast<float>(x);
     if (!(t->m_flags & 1)) {
         fx *= t->m_scaleX;
         fy *= t->m_scaleY;
@@ -592,7 +592,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         cy = grid->m_gridH - 1;
     }
     i32 cval = grid->m_tileGrid[grid->m_colOffsets[cy] + cx];
-    if (cval != (i32)0xeeeeeeee && cval != -1) {
+    if (cval != static_cast<i32>(0xeeeeeeee) && cval != -1) {
         // the tile's collision image set (m_imageSets data @+0x4c); slot 8 = GetCollisionAt
         CTileImageSet* tc = (CTileImageSet*)view->m_imageSets.GetAt(cval & 0xffff);
         tc->GetCollisionAt(0, 0);
@@ -607,7 +607,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         }
         CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
         i32 attr;
-        if ((u32)tx >= (u32)plane->m_c || (u32)ty >= (u32)plane->m_10) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_c) || static_cast<u32>(ty) >= static_cast<u32>(plane->m_10)) {
             attr = 1;
         } else {
             attr = plane->m_8[ty][tx * 7];
@@ -905,7 +905,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 tile;
-    if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         tile = 1;
     } else {
         tile = grid->m_8[ty][tx * 8 - tx];
@@ -916,7 +916,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
     }
     CPlay* world = (CPlay*)g_gameReg->m_curState;
     i32 idx = a3 - 1;
-    CPlay::Anchor* rec = ((u32)idx < 4) ? &world->m_anchors[idx] : 0;
+    CPlay::Anchor* rec = (static_cast<u32>(idx) < 4) ? &world->m_anchors[idx] : 0;
     if (rec != 0) {
         Eng_SpawnFx(0x14, rec->m_x, rec->m_y, 0, a3, 0);
     }
@@ -1431,7 +1431,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     ar->Read(&count, 4);
     CByteArray* arr = &m_byteArr;
     arr->SetSize(0, -1);
-    for (ci = 0; ci < (u32)count; ci++) {
+    for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 b;
         ar->Read(&b, 1);
         arr->SetAtGrow(ci, b);
@@ -1441,7 +1441,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     // the +0x240 record list (nodes pulled off the shared free-list)
     ar->Read(&count, 4);
     CPtrList* rec = &m_recList;
-    for (ci = 0; ci < (u32)count; ci++) {
+    for (ci = 0; ci < static_cast<u32>(count); ci++) {
         char* fl = (char*)g_coordPool.m_freeHead;
         void* node = 0;
         if (*(void**)fl != 0) {
@@ -1457,7 +1457,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     i32 slot = 0xa;
     do {
         ar->Read(&count, 4);
-        for (ci = 0; ci < (u32)count; ci++) {
+        for (ci = 0; ci < static_cast<u32>(count); ci++) {
             char* fl = (char*)g_coordPool.m_freeHead;
             void* node = 0;
             if (*(void**)fl != 0) {
@@ -1511,7 +1511,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     ar->Read(m_274, 0x10);
     m_baseList.RemoveAll();
     ar->Read(&count, 4);
-    for (ci = 0; ci < (u32)count; ci++) {
+    for (ci = 0; ci < static_cast<u32>(count); ci++) {
         i32 key;
         ar->Read(&key, 4);
         if (key == 0) {
@@ -1728,7 +1728,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             i32 row = (ty >= grid->m_height) ? grid->m_height - 1 : ty;
             i32 cell = grid->m_tileGrid[grid->m_colOffsets[row] + col];
             i32 type;
-            if (cell == (i32)0xeeeeeeee || cell == -1) {
+            if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
                 type = 0;
             } else {
                 CTileImageSet* o = (CTileImageSet*)board->m_imageSets.GetAt(cell & 0xffff);
@@ -2213,14 +2213,14 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
                 void* p_ob = 0;
                 m_world->m_soundRegistry->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
                 LeafCue* p = (LeafCue*)p_ob;
-                m_timerWindow = (u32)(p->m_10->m_durationMs + 500);
+                m_timerWindow = static_cast<u32>((p->m_10->m_durationMs + 500));
                 m_timerBase = g_frameTime;
                 CSndHost* h28 = m_world->m_soundRegistry;
                 if (h28->m_emitGate == 0) {
                     p = 0;
                     h28->m_10.Lookup("GAME\\FINISHLEVEL", (void*&)p);
                     if (p != 0 && g_sndEnabled != 0
-                        && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {
+                        && static_cast<u32>((g_killCueClock - p->m_14)) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
@@ -3002,7 +3002,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
         } while (n != 0);
     }
     if (count == 1) {
-        g_gameReg->m_cmdSubMgr->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
+        g_gameReg->m_cmdSubMgr->EnqueueSingle(1, x, static_cast<char>(buf[0]), 5, 0, 0, 0, 0);
     } else {
         g_gameReg->m_cmdSubMgr->EnqueueMulti(1, x, count, (u8*)buf, 5, 0, 0, 0);
     }

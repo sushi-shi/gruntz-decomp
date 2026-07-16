@@ -249,7 +249,7 @@ void* CButeTree::Find(const char* key) {
     m_descentCursor = root;
     m_candidateLeaf = 0;
     m_lookupPending = 1;
-    i32 bitmax = (i32)strlen(key) * 8 + 7;
+    i32 bitmax = static_cast<i32>(strlen(key)) * 8 + 7;
     m_keyBitLength = bitmax;
     if (root == 0) {
         return 0;
@@ -285,7 +285,7 @@ void* CButeTree::Find(const char* key) {
 // ===========================================================================
 RVA(0x0016d2a0, 0x26)
 zBitVec::~zBitVec() {
-    if ((u32)m_capacity > 0x20) {
+    if (static_cast<u32>(m_capacity) > 0x20) {
         free(m_words);
     }
 }
@@ -301,11 +301,11 @@ RVA(0x0016d2f0, 0xac)
 zBitVec& zBitVec::operator=(const zBitVec& that) {
     if (this != &that) {
         if (m_capacity != that.m_capacity) {
-            if ((u32)m_capacity > 0x20) {
+            if (static_cast<u32>(m_capacity) > 0x20) {
                 ::operator delete(m_words);
             }
-            if ((u32)that.m_capacity > 0x20) {
-                m_words = (u32*)malloc(((u32)that.m_capacity >> 5) * 4);
+            if (static_cast<u32>(that.m_capacity) > 0x20) {
+                m_words = (u32*)malloc((static_cast<u32>(that.m_capacity) >> 5) * 4);
                 if (!m_words) {
                     void* cache = g_projActCache;
                     g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -316,9 +316,9 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
             }
             m_capacity = that.m_capacity;
         }
-        const u32* src = ((u32)that.m_capacity > 0x20) ? that.m_words : (const u32*)&that.m_words;
-        u32* dst = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
-        memcpy(dst, src, (u32)m_capacity >> 3);
+        const u32* src = (static_cast<u32>(that.m_capacity) > 0x20) ? that.m_words : (const u32*)&that.m_words;
+        u32* dst = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
+        memcpy(dst, src, static_cast<u32>(m_capacity) >> 3);
     }
     return *this;
 }
@@ -376,7 +376,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerNam
             v = v * 10 + (*p - '0');
             ++p;
         }
-        if ((u32)v > (u32)maxv) {
+        if (static_cast<u32>(v) > static_cast<u32>(maxv)) {
             maxv = v;
         }
         while (*p != 0) {
@@ -396,7 +396,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerNam
         }
     }
 
-    if ((u32)minSize > (u32)maxv) {
+    if (static_cast<u32>(minSize) > static_cast<u32>(maxv)) {
         maxv = minSize;
     }
     if (!SetSize(maxv)) {
@@ -412,8 +412,8 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerNam
             ++q;
         }
         {
-            u32* band = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
-            band[(u32)v >> 5] |= 1u << (v & 0x1f);
+            u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
+            band[static_cast<u32>(v) >> 5] |= 1u << (v & 0x1f);
         }
         if (*q == 0) {
             break;
@@ -442,8 +442,8 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerNam
                 v2 = t;
             }
             for (i32 b = v + 1; b <= v2; ++b) {
-                u32* band = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
-                band[(u32)b >> 5] |= 1u << (b & 0x1f);
+                u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
+                band[static_cast<u32>(b) >> 5] |= 1u << (b & 0x1f);
             }
             while (*q != 0 && !isdigit(*q)) {
                 ++q;
@@ -507,20 +507,20 @@ CUserBaseLink::CUserBaseLink() {}
 // ~77.8%, logic complete; deferred to the final sweep.
 RVA(0x0016d790, 0xb1)
 zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
-    u32 n = (u32)sizehint;
+    u32 n = static_cast<u32>(sizehint);
     if (n == 0) {
-        n = (u32)g_defaultProjActSize;
+        n = static_cast<u32>(g_defaultProjActSize);
     }
-    if ((u32)idx >= n) {
-        n = (u32)idx + 1;
+    if (static_cast<u32>(idx) >= n) {
+        n = static_cast<u32>(idx) + 1;
     }
-    if (!SetSize((i32)n)) {
+    if (!SetSize(static_cast<i32>(n))) {
         void* cache = g_projActCache;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, (i32)cache, 0xc);
     } else {
-        u32* base = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
-        u32* slot = base + ((u32)idx >> 5);
+        u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : (u32*)&m_words;
+        u32* slot = base + (static_cast<u32>(idx) >> 5);
         *slot |= 1u << (idx & 0x1f);
     }
 }
@@ -544,7 +544,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
 RVA(0x0016d850, 0x11e)
 void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
     if (m_0c == 4) {
-        m_08 = (u16)arg3;
+        m_08 = static_cast<u16>(arg3);
         return;
     }
     i32 idx;
@@ -560,13 +560,13 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
             Format_18d0f0(buf, arg2, 0x4f);
             m_callback(buf, arg3);
         } else if (m_0c == 1) {
-            m_08 = (u16)arg3;
+            m_08 = static_cast<u16>(arg3);
         }
     } else {
         if (m_0c == 2) {
             ((void(__cdecl*)(i32, i32))g_recs23[idx].m_4)(arg2, arg3);
         } else if (m_0c == 1) {
-            g_recs23[idx].m_8 = (short)arg3;
+            g_recs23[idx].m_8 = static_cast<short>(arg3);
         }
     }
 }
@@ -844,7 +844,7 @@ zDArray::~zDArray() {
 RVA(0x0016df70, 0x22)
 CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*)) {
     m_teardown = teardown;
-    m_kind = (i16)n;
+    m_kind = static_cast<i16>(n);
     m_nodeCount = 0;
 }
 
@@ -940,7 +940,7 @@ __declspec(naked) void* GetCallerRetAddr() {
 // signed `int` form (the closest, single-opcode miss) is kept.
 RVA(0x0016e100, 0x7f)
 i32 zBitVec::SetSize(i32 nbits) {
-    if ((u32)nbits > 0x20) {
+    if (static_cast<u32>(nbits) > 0x20) {
         i32 nwords = (nbits >> 5) + ((nbits & 0x1f) != 0 ? 1 : 0);
         m_capacity = nwords;
         u32* band = (u32*)malloc(nwords * 4);
@@ -1015,7 +1015,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
     *np = 0;
     if (errNum != 0) {
         do {
-            *--np = (char)(errNum % 10) + '0';
+            *--np = static_cast<char>((errNum % 10)) + '0';
             errNum = errNum / 10;
         } while (errNum != 0);
     }
@@ -1048,7 +1048,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
     i = 7;
     do {
         i32 d = v & 0xf;
-        *--hp = (char)(d > 9 ? d + 0x37 : d + 0x30);
+        *--hp = static_cast<char>((d > 9 ? d + 0x37 : d + 0x30));
         v >>= 4;
         if (4 == i) {
             break;

@@ -58,7 +58,7 @@ char s_codeK[] = "K"; // "K" (0x60d7f8) - the anim type-code literal
 // See docs/patterns/pin-local-for-callee-saved-reg.md.
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
-    m_38->m_1a0.Advance((i32)g_engineFrameDelta);
+    m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
 
     i32 areaId;
     i32 subId;
@@ -110,7 +110,7 @@ i32 CInGameText::Update() {
                 i32 token = g_sndCueTag;
                 if (enable != 0) {
                     u32 now = g_killCueClock;
-                    if ((u32)(now - res->m_14) >= (u32)res->m_18) {
+                    if (static_cast<u32>((now - res->m_14)) >= static_cast<u32>(res->m_18)) {
                         res->m_14 = now;
                         res->m_10->ConfigureItem(token, 0, 0, 0);
                     }

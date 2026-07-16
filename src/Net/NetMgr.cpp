@@ -313,7 +313,7 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
             i32 idx;
             {
                 CString name = obj->GetName();
-                idx = (i32)SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
+                idx = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name));
             }
             if (idx != -1) {
                 SendMessageA(hList, LB_SETITEMDATA, idx, (LPARAM)obj);
@@ -339,17 +339,17 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     if (hList == 0) {
         return 0;
     }
-    i32 sel = (i32)SendMessageA((HWND)hList, LB_GETCURSEL, 0, 0);
+    i32 sel = static_cast<i32>(SendMessageA((HWND)hList, LB_GETCURSEL, 0, 0));
     if (sel == -1) {
         return 0;
     }
     if (sel < 0) {
         return 0;
     }
-    if (sel >= (i32)m_groups.GetCount()) {
+    if (sel >= static_cast<i32>(m_groups.GetCount())) {
         return 0;
     }
-    i32 data = (i32)SendMessageA((HWND)hList, LB_GETITEMDATA, sel, 0);
+    i32 data = static_cast<i32>(SendMessageA((HWND)hList, LB_GETITEMDATA, sel, 0));
     if (data == -1) {
         return 0;
     }
@@ -497,7 +497,7 @@ void CNetMgr::PopulatePlayerList(void* hList) {
     }
 
     while (payload != 0) {
-        i32 r = (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)payload->m_profile);
+        i32 r = static_cast<i32>(SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)payload->m_profile));
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
         }
@@ -519,17 +519,17 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
     if (hList == 0) {
         return 0;
     }
-    i32 sel = (i32)SendMessageA((HWND)hList, LB_GETCURSEL, 0, 0);
+    i32 sel = static_cast<i32>(SendMessageA((HWND)hList, LB_GETCURSEL, 0, 0));
     if (sel == -1) {
         return 0;
     }
     if (sel < 0) {
         return 0;
     }
-    if (sel >= (i32)m_players.GetCount()) {
+    if (sel >= static_cast<i32>(m_players.GetCount())) {
         return 0;
     }
-    i32 data = (i32)SendMessageA((HWND)hList, LB_GETITEMDATA, sel, 0);
+    i32 data = static_cast<i32>(SendMessageA((HWND)hList, LB_GETITEMDATA, sel, 0));
     if (data == -1) {
         return 0;
     }
@@ -819,7 +819,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
 
     while (payload != 0) {
         CString name = ((CNetMgr*)payload)->GetName();
-        i32 r = (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)(const char*)name);
+        i32 r = static_cast<i32>(SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)(const char*)name));
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
         }
@@ -924,7 +924,7 @@ i32 CNetMgr::SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d,
 RVA(0x00178f50, 0x61)
 i32 CNetMgr::SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i) {
     i32 hr = m_directPlay->SendEx(a, b, c, (void*)d, e, f, g, (void*)h, (i32*)i);
-    if (hr && hr != (i32)0x8000000a) {
+    if (hr && hr != static_cast<i32>(0x8000000a)) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, 0);
     }
     return hr;

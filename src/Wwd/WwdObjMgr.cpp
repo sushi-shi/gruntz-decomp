@@ -179,7 +179,7 @@ CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, in
         new (obj + 0xb8) Obj15b270();
         new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(int*)(obj + 0x5c) = (int)0x80000000;
+        *(int*)(obj + 0x5c) = static_cast<int>(0x80000000);
         *(int*)(obj + 0x78) = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
@@ -251,7 +251,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, in
         new (obj + 0xb8) Obj15b270();
         new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(int*)(obj + 0x5c) = (int)0x80000000;
+        *(int*)(obj + 0x5c) = static_cast<int>(0x80000000);
         *(int*)(obj + 0x78) = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
@@ -319,7 +319,7 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         new (obj + 0xb8) Obj15b270();
         new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(i32*)(obj + 0x5c) = (i32)0x80000000;
+        *(i32*)(obj + 0x5c) = static_cast<i32>(0x80000000);
         *(i32*)(obj + 0x78) = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
@@ -526,7 +526,7 @@ void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
         node = node->m_next;
         CWwdGameObject* obj = cur->m_wwd;
         AnimWorkerObj* rec = obj->m_worker;
-        if (rec->Consume((i32)g_engineFrameDelta) == 0) {
+        if (rec->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
             i32* refc = &rec->m_24;
             if (*refc != 0) {
                 --*refc;
@@ -759,9 +759,9 @@ void CDDrawChildGroup::CollideBroadcast() {
                     i32 mask2 = *(i32*)(oi + 0xe8) & *(i32*)(oj + 0xf0);
                     if (mask1 || mask2) {
                         i32 overlap;
-                        if (*(i32*)(oj + 0x154) == (i32)0x80000000) {
+                        if (*(i32*)(oj + 0x154) == static_cast<i32>(0x80000000)) {
                             overlap = 0;
-                        } else if (*(i32*)(oi + 0x144) == (i32)0x80000000) {
+                        } else if (*(i32*)(oi + 0x144) == static_cast<i32>(0x80000000)) {
                             overlap = 0;
                         } else {
                             CDDrawRect ra, rb;
@@ -850,10 +850,10 @@ void CDDrawChildGroup::CollideBroadcast() {
 // extent/area block documents.
 RVA(0x0015a130, 0xdc)
 i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2) {
-    if (a2->m_154 == (i32)0x80000000) {
+    if (a2->m_154 == static_cast<i32>(0x80000000)) {
         return 0;
     }
-    if (a1->m_areaL == (i32)0x80000000) {
+    if (a1->m_areaL == static_cast<i32>(0x80000000)) {
         return 0;
     }
     i32 a1L = a1->m_areaL + a1->m_screenX;
@@ -1570,7 +1570,7 @@ i32 CDDrawChildGroup::PruneOrphans_15b1d0() {
 // RTTI name (identity-TODO).
 RVA(0x0015b270, 0x11)
 Obj15b270::Obj15b270() {
-    m_8 = (i32)0x80000000;
+    m_8 = static_cast<i32>(0x80000000);
     m_20 = -1;
 }
 

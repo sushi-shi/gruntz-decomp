@@ -152,59 +152,59 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
     strcpy(szLine, g_emptyString);
 
     switch (hr) {
-        case (i32)0x80004001:
+        case static_cast<i32>(0x80004001):
             strcpy(szCode, "DDERR_UNSUPPORTED");
             strcpy(szMsg, "Action not supported");
             break;
-        case (i32)0x80004005:
+        case static_cast<i32>(0x80004005):
             strcpy(szCode, "DDERR_GENERIC");
             strcpy(szMsg, "Generic failure");
             break;
-        case (i32)0x8007000e:
+        case static_cast<i32>(0x8007000e):
             strcpy(szCode, "DDERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x80070057:
+        case static_cast<i32>(0x80070057):
             strcpy(szCode, "DDERR_INVALIDPARAMS");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760064:
+        case static_cast<i32>(0x88760064):
             strcpy(szCode, "DDERR_INVALIDCAPS");
             strcpy(szMsg, "One or more of the caps bits passed to the callback are incorrect");
             break;
-        case (i32)0x88760078:
+        case static_cast<i32>(0x88760078):
             strcpy(szCode, "DDERR_INVALIDMODE");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760082:
+        case static_cast<i32>(0x88760082):
             strcpy(szCode, "DDERR_INVALIDOBJECT");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760091:
+        case static_cast<i32>(0x88760091):
             strcpy(szCode, "DDERR_INVALIDPIXELFORMAT");
             strcpy(szMsg, "Pixel format was invalid as specified.");
             break;
-        case (i32)0x88760096:
+        case static_cast<i32>(0x88760096):
             strcpy(szCode, "DDERR_INVALIDRECT");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887600a0:
+        case static_cast<i32>(0x887600a0):
             strcpy(szCode, "DDERR_LOCKEDSURFACES");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887600aa:
+        case static_cast<i32>(0x887600aa):
             strcpy(szCode, "DDERR_NO3D");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887600b4:
+        case static_cast<i32>(0x887600b4):
             strcpy(szCode, "DDERR_NOALPHAHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887600d2:
+        case static_cast<i32>(0x887600d2):
             strcpy(szCode, "DDERR_NOCOLORCONVHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887600d4:
+        case static_cast<i32>(0x887600d4):
             strcpy(szCode, "DDERR_NOCOOPERATIVELEVELSET");
             strcpy(
                 szMsg,
@@ -212,15 +212,15 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
                 "called"
             );
             break;
-        case (i32)0x887600e1:
+        case static_cast<i32>(0x887600e1):
             strcpy(szCode, "DDERR_NOEXCLUSIVEMODE");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887600f0:
+        case static_cast<i32>(0x887600f0):
             strcpy(szCode, "DDERR_NOGDI");
             strcpy(szMsg, "There is no GDI present");
             break;
-        case (i32)0x887600fa:
+        case static_cast<i32>(0x887600fa):
             strcpy(szCode, "DDERR_NOMIRRORHW");
             strcpy(
                 szMsg,
@@ -228,83 +228,83 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
                 "available."
             );
             break;
-        case (i32)0x887600ff:
+        case static_cast<i32>(0x887600ff):
             strcpy(szCode, "DDERR_NOTFOUND");
             strcpy(szMsg, "Request item was not found");
             break;
-        case (i32)0x88760104:
+        case static_cast<i32>(0x88760104):
             strcpy(szCode, "DDERR_NOOVERLAYHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760118:
+        case static_cast<i32>(0x88760118):
             strcpy(szCode, "DDERR_NORASTEROPHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760122:
+        case static_cast<i32>(0x88760122):
             strcpy(szCode, "DDERR_NOROTATEHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760136:
+        case static_cast<i32>(0x88760136):
             strcpy(szCode, "DDERR_NOSTRETCHHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760140:
+        case static_cast<i32>(0x88760140):
             strcpy(szCode, "DDERR_NOT8BITCOLOR");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8876014a:
+        case static_cast<i32>(0x8876014a):
             strcpy(szCode, "DDERR_NOTEXTUREHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8876014f:
+        case static_cast<i32>(0x8876014f):
             strcpy(szCode, "DDERR_NOVSYNCHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760154:
+        case static_cast<i32>(0x88760154):
             strcpy(szCode, "DDERR_NOZBUFFERHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760168:
+        case static_cast<i32>(0x88760168):
             strcpy(szCode, "DDERR_OUTOFCAPS");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8876017c:
+        case static_cast<i32>(0x8876017c):
             strcpy(szCode, "DDERR_OUTOFVIDEOMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760183:
+        case static_cast<i32>(0x88760183):
             strcpy(szCode, "DDERR_PALETTEBUSY");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887601ae:
+        case static_cast<i32>(0x887601ae):
             strcpy(szCode, "DDERR_SURFACEBUSY");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887601b8:
+        case static_cast<i32>(0x887601b8):
             strcpy(szCode, "DDERR_SURFACEISOBSCURED");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887601c2:
+        case static_cast<i32>(0x887601c2):
             strcpy(szCode, "DDERR_SURFACELOST");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887601cc:
+        case static_cast<i32>(0x887601cc):
             strcpy(szCode, "DDERR_SURFACENOTATTACHED");
             strcpy(szMsg, "The requested surface is not attached");
             break;
-        case (i32)0x887601e0:
+        case static_cast<i32>(0x887601e0):
             strcpy(szCode, "DDERR_TOOBIGSIZE");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887601ea:
+        case static_cast<i32>(0x887601ea):
             strcpy(szCode, "DDERR_TOOBIGWIDTH");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760219:
+        case static_cast<i32>(0x88760219):
             strcpy(szCode, "DDERR_VERTICALBLANKINPROGRESS");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8876021c:
+        case static_cast<i32>(0x8876021c):
             strcpy(szCode, "DDERR_WASTILLDRAWING");
             strcpy(
                 szMsg,
@@ -312,39 +312,39 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
                 "incomplete"
             );
             break;
-        case (i32)0x88760233:
+        case static_cast<i32>(0x88760233):
             strcpy(szCode, "DDERR_NODIRECTDRAWHW");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760232:
+        case static_cast<i32>(0x88760232):
             strcpy(szCode, "DDERR_DIRECTDRAWALREADYCREATED");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760230:
+        case static_cast<i32>(0x88760230):
             strcpy(szCode, "DDERR_XALIGN");
             strcpy(szMsg, "Rectangle provided was not horizontally aligned on a DWORD boundary");
             break;
-        case (i32)0x8876023a:
+        case static_cast<i32>(0x8876023a):
             strcpy(szCode, "DDERR_HWNDSUBCLASSED");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8876023b:
+        case static_cast<i32>(0x8876023b):
             strcpy(szCode, "DDERR_HWNDALREADYSET");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8876023d:
+        case static_cast<i32>(0x8876023d):
             strcpy(szCode, "DDERR_NOPALETTEHW");
             strcpy(szMsg, "No hardware support for 16 or 256 color palettes");
             break;
-        case (i32)0x88760234:
+        case static_cast<i32>(0x88760234):
             strcpy(szCode, "DDERR_PRIMARYSURFACEALREADYEXISTS");
             strcpy(szMsg, "This process already has created a primary surface");
             break;
-        case (i32)0x88760245:
+        case static_cast<i32>(0x88760245):
             strcpy(szCode, "DDERR_EXCLUSIVEMODEALREADYSET");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88760248:
+        case static_cast<i32>(0x88760248):
             strcpy(szCode, "DDERR_LOCKEDSURFACES");
             strcpy(szMsg, "No message");
             break;
@@ -1207,7 +1207,7 @@ RVA(0x001434c0, 0x45)
 i32 CDirectDrawMgr::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
         CDdMode* e = (CDdMode*)m_poolItems.GetData()[i];
-        if (e->m_c == (u32)k0 && e->m_8 == (u32)k1 && e->m_54 == k2) {
+        if (e->m_c == static_cast<u32>(k0) && e->m_8 == static_cast<u32>(k1) && e->m_54 == k2) {
             return i;
         }
     }
@@ -1543,7 +1543,7 @@ CDDPalette* CDDrawPtrCollections::Make950Trailing(u8* buf, i32 size, i32 tag) {
     if (buf == 0) {
         return 0;
     }
-    if ((u32)size < 0x3e8) {
+    if (static_cast<u32>(size) < 0x3e8) {
         return 0;
     }
     return Make950(buf + size - 0x300, tag);
@@ -1657,7 +1657,7 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
         return hr;
     }
     if (ComputeColorMasks() == 0) {
-        hr = (i32)0x80004005;
+        hr = static_cast<i32>(0x80004005);
         if (m_944 == 0) {
             m_944 = 0x3ed;
         }

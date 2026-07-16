@@ -325,8 +325,8 @@ i16 InitializeBlowfish(u8* key, i16 keybytes) {
 
     j = 0;
     for (i = 0; i < 18; i++) {
-        data = ((u32)key[j] << 24) | ((u32)key[(j + 1) % keybytes] << 16)
-               | ((u32)key[(j + 2) % keybytes] << 8) | (u32)key[(j + 3) % keybytes];
+        data = (static_cast<u32>(key[j]) << 24) | (static_cast<u32>(key[(j + 1) % keybytes]) << 16)
+               | (static_cast<u32>(key[(j + 2) % keybytes]) << 8) | static_cast<u32>(key[(j + 3) % keybytes]);
         g_bfP[i] ^= data;
         j = (j + 4) % keybytes;
     }

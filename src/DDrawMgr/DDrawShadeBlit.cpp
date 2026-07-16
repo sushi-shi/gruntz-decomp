@@ -68,8 +68,8 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     }
 
     i32 mode = src->m_b0;
-    m_dstBpp = (u8)mode;
-    if ((u8)mode == 2) {
+    m_dstBpp = static_cast<u8>(mode);
+    if (static_cast<u8>(mode) == 2) {
         if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
             m_blendVariant = 1;
         } else {
@@ -88,12 +88,12 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     }
 
     if (drawType == 7) {
-        if (m_srcBpp != 1 || (u8)mode != 2) {
+        if (m_srcBpp != 1 || static_cast<u8>(mode) != 2) {
             return 0;
         }
     }
     if (drawType == 0xa || drawType == 0xb) {
-        if (m_srcBpp != 1 || (u8)mode != 2) {
+        if (m_srcBpp != 1 || static_cast<u8>(mode) != 2) {
             return 0;
         }
     }
@@ -152,7 +152,7 @@ void CDDrawShadeBlit::BlitMode_149950(
                 pos++;
             } else {
                 x += b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -186,7 +186,7 @@ void CDDrawShadeBlit::BlitMode_149950(
                         trans = 1;
                     } else {
                         x += b;
-                        pos += (i32)b * m_srcBpp + 1;
+                        pos += static_cast<i32>(b) * m_srcBpp + 1;
                         trans = 0;
                     }
                 } while (x < clip->left);
@@ -208,10 +208,10 @@ void CDDrawShadeBlit::BlitMode_149950(
                     memcpy(
                         base + (x - clip->left) * m_dstBpp,
                         &m_rleData[pos + 1],
-                        (i32)b * m_srcBpp
+                        static_cast<i32>(b) * m_srcBpp
                     );
                     x += b;
-                    pos += (i32)b * m_srcBpp + 1;
+                    pos += static_cast<i32>(b) * m_srcBpp + 1;
                 }
             }
         }
@@ -227,15 +227,15 @@ void CDDrawShadeBlit::BlitMode_149950(
                 pos++;
             } else {
                 i32 bytes;
-                if (x + (i32)b < clip->right) {
-                    bytes = (i32)b * m_srcBpp;
+                if (x + static_cast<i32>(b) < clip->right) {
+                    bytes = static_cast<i32>(b) * m_srcBpp;
                 } else {
                     i32 vis = (clip->right - x) * m_srcBpp;
                     bytes = vis < 0 ? 0 : vis;
                 }
                 memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], bytes);
                 x += b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -254,9 +254,9 @@ void CDDrawShadeBlit::BlitMode_149950(
                 x += b - 0x80;
                 pos++;
             } else {
-                memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], (i32)b * m_srcBpp);
+                memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], static_cast<i32>(b) * m_srcBpp);
                 x += b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -302,7 +302,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
                 pos++;
             } else {
                 x += b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -326,7 +326,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
             }
             u32 b = m_rleData[pos];
             if (b & 0x80) {
-                x += 0x80 - (i32)b;
+                x += 0x80 - static_cast<i32>(b);
                 pos++;
             } else {
                 i32 cnt = b;
@@ -371,12 +371,12 @@ void CDDrawShadeBlit::BlitMode_149d00(
                 do {
                     u32 b = m_rleData[pos];
                     if (b & 0x80) {
-                        x += 0x80 - (i32)b;
+                        x += 0x80 - static_cast<i32>(b);
                         pos++;
                         trans = 1;
                     } else {
                         x -= b;
-                        pos += (i32)b * m_srcBpp + 1;
+                        pos += static_cast<i32>(b) * m_srcBpp + 1;
                         trans = 0;
                     }
                 } while (x > clip->right);
@@ -404,7 +404,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
             } else {
                 u32 b = m_rleData[pos];
                 if (b & 0x80) {
-                    x += 0x80 - (i32)b;
+                    x += 0x80 - static_cast<i32>(b);
                     pos++;
                 } else {
                     i32 cnt = b;
@@ -434,7 +434,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
             }
             u32 b = m_rleData[pos];
             if (b & 0x80) {
-                x += 0x80 - (i32)b;
+                x += 0x80 - static_cast<i32>(b);
                 pos++;
             } else {
                 i32 cnt = b;
@@ -508,7 +508,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                 pos++;
             } else {
                 x += b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -545,7 +545,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                         trans = 1;
                     } else {
                         x += b;
-                        pos += (i32)b * m_srcBpp + 1;
+                        pos += static_cast<i32>(b) * m_srcBpp + 1;
                         trans = 0;
                     }
                 } while (x < clip->left);
@@ -583,7 +583,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                         ConvertRow(dd, ss, count);
                     }
                     x += b;
-                    pos += (i32)b * m_srcBpp + 1;
+                    pos += static_cast<i32>(b) * m_srcBpp + 1;
                 }
             }
         }
@@ -599,7 +599,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                 pos++;
             } else {
                 i32 vis;
-                if (x + (i32)b < clip->right) {
+                if (x + static_cast<i32>(b) < clip->right) {
                     vis = b;
                 } else {
                     i32 v = clip->right - x;
@@ -615,7 +615,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                     ConvertRow(dd, ss, vis);
                 }
                 x += b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -701,8 +701,8 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                             u16*
                                         )m_lutBank1)[((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
                                         r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        *(u16*)d = (u16)r;
-                                        *(u16*)(d + rd) = (u16)r;
+                                        *(u16*)d = static_cast<u16>(r);
+                                        *(u16*)(d + rd) = static_cast<u16>(r);
                                         d += 2;
                                     }
                                 } else {
@@ -715,8 +715,8 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                             u16*
                                         )m_lutBank1)[((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
                                         r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        *(u16*)d = (u16)r;
-                                        *(u16*)(d + rd) = (u16)r;
+                                        *(u16*)d = static_cast<u16>(r);
+                                        *(u16*)(d + rd) = static_cast<u16>(r);
                                         d += 2;
                                     }
                                 }
@@ -772,7 +772,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                         u16*
                                     )m_lutBank1)[((a >> 5) & 0x1f) + (((bb >> 5) & 0x1f) << 5)];
                                     r |= ((u16*)m_lutBank0)[(a >> 0xa) + (bb & 0xffe0)];
-                                    *(u16*)d = (u16)r;
+                                    *(u16*)d = static_cast<u16>(r);
                                     d += 2;
                                 }
                             } else {
@@ -786,7 +786,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                     )m_lutBank0)[((a >> 6) & 0x1f) + (((bb >> 6) & 0x1f) << 5)];
                                     r |= ((u16*)m_lutBank1)[((a >> 0xb)) + (bb & 0xffe0)];
                                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((bb & 0x1f) << 5)];
-                                    *(u16*)d = (u16)r;
+                                    *(u16*)d = static_cast<u16>(r);
                                     d += 2;
                                 }
                             }
@@ -805,7 +805,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                     )m_lutBank1)[((a >> 5) & 0x1f) + (((bb >> 5) & 0x1f) << 5)];
                                     r |= ((u16*)m_lutBank0)[(a >> 0xa) + (bb & 0xffe0)];
                                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((bb & 0x1f) << 5)];
-                                    *(u16*)d = (u16)r;
+                                    *(u16*)d = static_cast<u16>(r);
                                     d += 2;
                                 }
                             } else {
@@ -818,7 +818,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                     )m_lutBank0)[((a >> 6) & 0x1f) + (((bb >> 6) & 0x1f) << 5)];
                                     r |= ((u16*)m_lutBank1)[(a >> 0xb) + (bb & 0xffe0)];
                                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((bb & 0x1f) << 5)];
-                                    *(u16*)d = (u16)r;
+                                    *(u16*)d = static_cast<u16>(r);
                                     d += 2;
                                 }
                             }
@@ -842,7 +842,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                         }
                         case 5: {
                             for (i = count; i > 0; i--) {
-                                *d++ = (u8)m_light;
+                                *d++ = static_cast<u8>(m_light);
                             }
                             break;
                         }
@@ -862,7 +862,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                     }
                 }
                 x += b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -912,7 +912,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                 pos++;
             } else {
                 x += b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
@@ -939,7 +939,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
             }
             u32 b = m_rleData[pos];
             if (b & 0x80) {
-                x += 0x80 - (i32)b;
+                x += 0x80 - static_cast<i32>(b);
                 pos++;
             } else {
                 i32 cnt = b;
@@ -979,12 +979,12 @@ void CDDrawShadeBlit::BlitMode_14b770(
                 do {
                     u32 b = m_rleData[pos];
                     if (b & 0x80) {
-                        x += 0x80 - (i32)b;
+                        x += 0x80 - static_cast<i32>(b);
                         pos++;
                         trans = 1;
                     } else {
                         x -= b;
-                        pos += (i32)b * m_srcBpp + 1;
+                        pos += static_cast<i32>(b) * m_srcBpp + 1;
                         trans = 0;
                     }
                 } while (x > clip->right);
@@ -1008,7 +1008,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
             } else {
                 u32 b = m_rleData[pos];
                 if (b & 0x80) {
-                    x += 0x80 - (i32)b;
+                    x += 0x80 - static_cast<i32>(b);
                     pos++;
                 } else {
                     u8* dd = base + x * m_dstBpp;
@@ -1034,7 +1034,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
             }
             u32 b = m_rleData[pos];
             if (b & 0x80) {
-                x += 0x80 - (i32)b;
+                x += 0x80 - static_cast<i32>(b);
                 pos++;
             } else {
                 u8* dst0 = base + x * m_dstBpp;
@@ -1104,8 +1104,8 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                             u16*
                                         )m_lutBank1)[((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
                                         r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        *(u16*)d = (u16)r;
-                                        *(u16*)(d + rd) = (u16)r;
+                                        *(u16*)d = static_cast<u16>(r);
+                                        *(u16*)(d + rd) = static_cast<u16>(r);
                                         d -= 2;
                                     }
                                 } else {
@@ -1119,8 +1119,8 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                             u16*
                                         )m_lutBank1)[((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
                                         r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        *(u16*)d = (u16)r;
-                                        *(u16*)(d + rd) = (u16)r;
+                                        *(u16*)d = static_cast<u16>(r);
+                                        *(u16*)(d + rd) = static_cast<u16>(r);
                                         d -= 2;
                                     }
                                 }
@@ -1177,7 +1177,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |= ((u16*)
                                               m_lutBank0)[(a >> 0xa) + (((dv >> 0xa) & 0x1f) << 5)];
-                                    *(u16*)d = (u16)r;
+                                    *(u16*)d = static_cast<u16>(r);
                                     d -= 2;
                                 }
                             } else {
@@ -1191,7 +1191,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                     r |= ((
                                         u16*
                                     )m_lutBank1)[((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
-                                    *(u16*)d = (u16)r;
+                                    *(u16*)d = static_cast<u16>(r);
                                     d -= 2;
                                 }
                             }
@@ -1211,7 +1211,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |= ((u16*)
                                               m_lutBank0)[(a >> 0xa) + (((dv >> 0xa) & 0x1f) << 5)];
-                                    *(u16*)d = (u16)r;
+                                    *(u16*)d = static_cast<u16>(r);
                                     d -= 2;
                                 }
                             } else {
@@ -1224,7 +1224,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |= ((u16*)
                                               m_lutBank0)[(a >> 0xb) + (((dv >> 0xb) & 0x1f) << 5)];
-                                    *(u16*)d = (u16)r;
+                                    *(u16*)d = static_cast<u16>(r);
                                     d -= 2;
                                 }
                             }
@@ -1246,7 +1246,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                         }
                         case 5: {
                             for (i = count; i > 0; i--) {
-                                *d-- = (u8)m_light;
+                                *d-- = static_cast<u8>(m_light);
                             }
                             break;
                         }
@@ -1265,7 +1265,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                     }
                 }
                 x -= b;
-                pos += (i32)b * m_srcBpp + 1;
+                pos += static_cast<i32>(b) * m_srcBpp + 1;
             }
             if (x <= 0) {
                 row++;
@@ -1338,7 +1338,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     u32 r = ((u16*)m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((b >> 5) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank0)[(a >> 0xa) + (b & 0xffe0)];
-                    *(u16*)dst = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
                     dst += 2;
                 }
             } else {
@@ -1350,7 +1350,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     u32 r = ((u16*)m_lutBank0)[((a >> 6) & 0x1f) + (((b >> 6) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank1)[((a >> 0xb)) + (b & 0xffe0)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
                     dst += 2;
                 }
             }
@@ -1367,7 +1367,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     u32 r = ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((b >> 5) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank0)[(a >> 0xa) + (b & 0xffe0)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
                     dst += 2;
                 }
             } else {
@@ -1378,7 +1378,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     u32 r = ((u16*)m_lutBank0)[((a >> 6) & 0x1f) + (((b >> 6) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank1)[(a >> 0xb) + (b & 0xffe0)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
                     dst += 2;
                 }
             }
@@ -1402,7 +1402,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
         }
         case 5: {
             for (i = count; i > 0; i--) {
-                *dst++ = (u8)m_light;
+                *dst++ = static_cast<u8>(m_light);
             }
             break;
         }
@@ -1484,7 +1484,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                     u32 r = ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
                     dst -= 2;
                 }
             } else {
@@ -1494,7 +1494,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                     u32 r = ((u16*)m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
                     dst -= 2;
                 }
             }
@@ -1511,7 +1511,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                     u32 r = ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
                     dst -= 2;
                 }
             } else {
@@ -1521,7 +1521,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                     u32 r = ((u16*)m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
                     dst -= 2;
                 }
             }
@@ -1543,7 +1543,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         }
         case 5: {
             for (i = count; i > 0; i--) {
-                *dst-- = (u8)m_light;
+                *dst-- = static_cast<u8>(m_light);
             }
             break;
         }
@@ -1634,8 +1634,8 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                     u32 r = ((u16*)m_lutBank0)[(a >> 0xa) + ((d >> 5) & 0xffe0)];
                     r |= ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
-                    *(u16*)(dst + rd) = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
+                    *(u16*)(dst + rd) = static_cast<u16>(r);
                     dst += 2;
                 }
             } else {
@@ -1645,8 +1645,8 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                     u32 r = ((u16*)m_lutBank0)[(a >> 0xb) + ((d >> 6) & 0xffe0)];
                     r |= ((u16*)m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
-                    *(u16*)(dst + rd) = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
+                    *(u16*)(dst + rd) = static_cast<u16>(r);
                     dst += 2;
                 }
             }
@@ -1726,8 +1726,8 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                     u32 r = ((u16*)m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
-                    *(u16*)(dst + rd) = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
+                    *(u16*)(dst + rd) = static_cast<u16>(r);
                     dst -= 2;
                 }
             } else {
@@ -1737,8 +1737,8 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                     u32 r = ((u16*)m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
                     r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    *(u16*)dst = (u16)r;
-                    *(u16*)(dst + rd) = (u16)r;
+                    *(u16*)dst = static_cast<u16>(r);
+                    *(u16*)(dst + rd) = static_cast<u16>(r);
                     dst -= 2;
                 }
             }

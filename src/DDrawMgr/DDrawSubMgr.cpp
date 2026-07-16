@@ -227,7 +227,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
     // (void-modeled) ConfigureItem result so the success epilogue falls through
     // WITHOUT zeroing eax (retail's split-epilogue shape: the guard-failure paths
     // return 0 via the trailing `xor eax,eax` exit, success is the fall-through).
-    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+    if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
         p->m_14 = g_killCueClock;
         return p->m_10->ConfigureItem(item, 0, 0, 0);
     }
@@ -431,12 +431,12 @@ CDDrawWorkerA::~CDDrawWorkerA() {
     volatile i32* pHi = &m_20;
     volatile i32* pLo = &m_38;
     m_78b = 0;
-    *pHi = (i32)0x80000000;
+    *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
-    *pHi = (i32)0x80000000;
+    *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
-    m_5c = (i32)0x80000000;
-    *pHi = (i32)0x80000000;
+    m_5c = static_cast<i32>(0x80000000);
+    *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
     m_04 = -1;
     m_08 = 0;
@@ -445,7 +445,7 @@ CDDrawWorkerA::~CDDrawWorkerA() {
 
 RVA(0x00157110, 0x20)
 i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
-    m_78b = (char)a3;
+    m_78b = static_cast<char>(a3);
     m_refCount = 2;
     return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
 }
@@ -493,12 +493,12 @@ CDDrawWorkerB::~CDDrawWorkerB() {
     volatile i32* pHi = &m_20;
     volatile i32* pLo = &m_38;
     m_78 = 0;
-    *pHi = (i32)0x80000000;
+    *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
-    *pHi = (i32)0x80000000;
+    *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
-    m_5c = (i32)0x80000000;
-    *pHi = (i32)0x80000000;
+    m_5c = static_cast<i32>(0x80000000);
+    *pHi = static_cast<i32>(0x80000000);
     *pLo = -1;
     m_04 = -1;
     m_08 = 0;
@@ -540,7 +540,7 @@ RVA(0x00157310, 0x1a)
 i32 CDDrawWorkerBase::Unload() {
     // retail returns the 0x80000000 sentinel residue in eax (the store source
     // register doubles as the return value; the dev body was likely return-less).
-    i32 v = (i32)0x80000000;
+    i32 v = static_cast<i32>(0x80000000);
     m_78 = 0;
     m_5c = v;
     m_20 = v;
@@ -1484,7 +1484,7 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
     if (cue == 100) {
         vscale = amp;
     } else {
-        vscale = (i32)(amp * (cue * g_sndPanScale));
+        vscale = static_cast<i32>((amp * (cue * g_sndPanScale)));
     }
     return m_soundPlayer->ConfigureItem(vscale, vol, 0, 0);
 }

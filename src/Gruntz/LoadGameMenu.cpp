@@ -67,7 +67,7 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (LoadGameCommand(hDlg, (i32)wParam, g_dlgLoadSink) != 0) {
+            if (LoadGameCommand(hDlg, static_cast<i32>(wParam), g_dlgLoadSink) != 0) {
                 return 1;
             }
             // falls through to the shared "return 0" default

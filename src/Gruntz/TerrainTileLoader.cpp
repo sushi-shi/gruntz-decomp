@@ -113,7 +113,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
     i32 cellType;
     i32 cell = g->m_tileGrid[g->m_colOffsets[cy] + cx];
-    if (cell == (i32)0xeeeeeeee || cell == -1) {
+    if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
         cellType = 0;
     } else {
         CTileImageSet* tc = (CTileImageSet*)grid->m_imageSets.GetAt(cell & 0xffff);

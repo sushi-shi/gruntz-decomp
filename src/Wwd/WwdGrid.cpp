@@ -389,10 +389,10 @@ CWwdGrid::CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH) {
     }
     m_width = hix - lox;
     m_height = hiy - loy;
-    m_shiftY = (i32)(log((double)cellW) / log(2.0));
-    m_shiftX = (i32)(log((double)cellH) / log(2.0));
-    m_cellH = (i32)pow(2.0, (double)m_shiftY);
-    m_cellW = (i32)pow(2.0, (double)m_shiftX);
+    m_shiftY = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
+    m_shiftX = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
+    m_cellH = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftY)));
+    m_cellW = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftX)));
     m_cols = m_width / m_cellH + 1;
     m_rows = m_height / m_cellW + 1;
     m_cellCount = m_rows * m_cols;

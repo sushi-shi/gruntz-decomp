@@ -39,7 +39,7 @@ i32 DrawGlyphString(
     if (!font) {
         return 0;
     }
-    i32 len = (i32)strlen(str);
+    i32 len = static_cast<i32>(strlen(str));
     if (len <= 0) {
         return 0;
     }

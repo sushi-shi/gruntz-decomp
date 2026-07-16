@@ -174,7 +174,7 @@ i32 CGrunt::ResolveArrivalReposition() {
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
     if (occ != 0 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
-        if ((u32)m_dwell > 0xfa) {
+        if (static_cast<u32>(m_dwell) > 0xfa) {
             CGameObject* oh = occ->m_10;
             if (TileSwitch(oh->m_screenX >> 5, oh->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                 CGameObject* oh2 = occ->m_10;
@@ -209,7 +209,7 @@ i32 CGrunt::ResolveArrivalReposition() {
     {
         u32 dwell = *(u32*)&m_dwell;
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_318 != 0 && dwell > 0xbb8) {
-            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_arrivalRerollLo
                 >= *(i64*)&m_arrivalRerollWindowLo) {
                 goto L8b5;
             }
@@ -252,7 +252,7 @@ L8b5:
     m_arrivalRerollWindowHi = 0;
     m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
     m_arrivalRerollWindowHi = 0;
-    m_arrivalRerollLo = (i32)g_frameTime;
+    m_arrivalRerollLo = static_cast<i32>(g_frameTime);
     m_arrivalRerollHi = 0;
     m_390 = 1;
     goto L8a2;
@@ -349,7 +349,7 @@ i32 CGrunt::ArrivalScanA() {
     }
 
 L_ed006:
-    if (g == 0 || (u32)m_dwell <= 0x1f4 || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+    if (g == 0 || static_cast<u32>(m_dwell) <= 0x1f4 || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
         m_390 = 0;
         goto L_ed153;
     }
@@ -395,7 +395,7 @@ L_ed153:
         }
         return 1;
     }
-    if ((u32)m_dwell <= 0x3e8) {
+    if (static_cast<u32>(m_dwell) <= 0x3e8) {
         return 1;
     }
 
@@ -562,7 +562,7 @@ i32 CGrunt::WanderStep() {
                     m_defenderState = 5;
                     return 1;
                 }
-                if ((u32)m_dwell > 0x3e8) {
+                if (static_cast<u32>(m_dwell) > 0x3e8) {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         i32 c[4];
                         g->GetScreenPos((GruntTilePos*)c);
@@ -601,7 +601,7 @@ i32 CGrunt::WanderStep() {
                 m_defenderState = 0;
                 return 1;
             }
-            if ((u32)m_dwell > 0x1f4) {
+            if (static_cast<u32>(m_dwell) > 0x1f4) {
                 StepArrivalDrop(slot->m_lastTilePxX, slot->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
@@ -722,7 +722,7 @@ i32 CGrunt::WanderStep() {
             i32 clip = 1;
             i32 py = GameRand() % 4 + (base->m_screenY >> 5) - 2;
             i32 px = GameRand() % 4 + (base->m_screenX >> 5) - 2;
-            if ((u32)m_arrivalCol < 4 && (u32)m_arrivalRow < 0xf) {
+            if (static_cast<u32>(m_arrivalCol) < 4 && static_cast<u32>(m_arrivalRow) < 0xf) {
                 CGrunt* entry =
                     g_gameReg->m_cmdGrid->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
                 if (entry != 0) {
@@ -744,10 +744,10 @@ i32 CGrunt::WanderStep() {
                 return 1;
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if ((u32)px >= (u32)grid->m_c) {
+            if (static_cast<u32>(px) >= static_cast<u32>(grid->m_c)) {
                 return 1;
             }
-            if ((u32)py >= (u32)grid->m_10) {
+            if (static_cast<u32>(py) >= static_cast<u32>(grid->m_10)) {
                 return 1;
             }
             TileSwitch(px, py, 0, m_arrivalFlags, 1, 0);
@@ -759,11 +759,11 @@ i32 CGrunt::WanderStep() {
     }
 
 timeout:
-    if (m_resetApplied == 0 && m_318 != 0 && (u32)m_dwell > 0xbb8) {
-        i32 hi = -(i32)((u32)g_frameTime < (u32)m_arrivalRerollLo) - m_arrivalRerollHi;
-        i32 lo = (i32)(g_frameTime - (u32)m_arrivalRerollLo);
+    if (m_resetApplied == 0 && m_318 != 0 && static_cast<u32>(m_dwell) > 0xbb8) {
+        i32 hi = -static_cast<i32>((static_cast<u32>(g_frameTime) < static_cast<u32>(m_arrivalRerollLo))) - m_arrivalRerollHi;
+        i32 lo = static_cast<i32>((g_frameTime - static_cast<u32>(m_arrivalRerollLo)));
         if (m_arrivalRerollWindowHi < hi
-            || (m_arrivalRerollWindowHi == hi && (u32)lo >= (u32)m_arrivalRerollWindowLo)) {
+            || (m_arrivalRerollWindowHi == hi && static_cast<u32>(lo) >= static_cast<u32>(m_arrivalRerollWindowLo))) {
             ResetEntranceAnimation(1, 1, 0);
             m_arrivalRerollLo = 0;
             m_arrivalRerollWindowLo = 0;
@@ -771,15 +771,15 @@ timeout:
             m_arrivalRerollWindowHi = 0;
             m_arrivalRerollWindowLo = GameRand() % 30000 + 30000;
             m_arrivalRerollWindowHi = 0;
-            m_arrivalRerollLo = (i32)g_frameTime;
+            m_arrivalRerollLo = static_cast<i32>(g_frameTime);
             m_arrivalRerollHi = 0;
         } else {
             CGameObject* base = m_10;
-            u32 lx = (u32)base->m_extentL;
-            i32 dxr = base->m_extentR - (i32)lx;
+            u32 lx = static_cast<u32>(base->m_extentL);
+            i32 dxr = base->m_extentR - static_cast<i32>(lx);
             i32 ax = (dxr ^ (dxr >> 31)) - (dxr >> 31);
-            u32 ly = (u32)base->m_extentT;
-            i32 dyr = base->m_extentB - (i32)ly;
+            u32 ly = static_cast<u32>(base->m_extentT);
+            i32 dyr = base->m_extentB - static_cast<i32>(ly);
             i32 ay = (dyr ^ (dyr >> 31)) - (dyr >> 31);
             if (ax != 0) {
                 lx += GameRand() % ax;
@@ -787,9 +787,9 @@ timeout:
             if (ay != 0) {
                 ly += GameRand() % ay;
             }
-            if (lx < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_c
-                && ly < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_10) {
-                TileSwitch((i32)lx, (i32)ly, 0, m_arrivalFlags, 1, 0);
+            if (lx < static_cast<u32>(((GruntBoard*)g_gameReg->m_tileGrid)->m_c)
+                && ly < static_cast<u32>(((GruntBoard*)g_gameReg->m_tileGrid)->m_10)) {
+                TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
             }
             if (CoordCount() != 0) {
                 if (ax <= ay) {
@@ -997,7 +997,7 @@ i32 CGrunt::UpdateArrival() {
                         break;
                     }
                 }
-                if (g != 0 && (u32)this->m_dwell > 1000) {
+                if (g != 0 && static_cast<u32>(this->m_dwell) > 1000) {
                     if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         i32 c[4];
                         GetScreenPos((GruntTilePos*)c);
@@ -1021,13 +1021,13 @@ i32 CGrunt::UpdateArrival() {
                     break;
                 }
             }
-            if (this->m_resetApplied == 0 && this->m_318 != 0 && (u32)this->m_dwell > 3000) {
-                i32 cmp = -(i32)((u32)g_frameTime < (u32)this->m_arrivalRerollLo)
+            if (this->m_resetApplied == 0 && this->m_318 != 0 && static_cast<u32>(this->m_dwell) > 3000) {
+                i32 cmp = -static_cast<i32>((static_cast<u32>(g_frameTime) < static_cast<u32>(this->m_arrivalRerollLo)))
                           - this->m_arrivalRerollHi;
                 if (this->m_arrivalRerollWindowHi < cmp
                     || (this->m_arrivalRerollWindowHi <= cmp
-                        && (u32)this->m_arrivalRerollWindowLo
-                               <= g_frameTime - (u32)this->m_arrivalRerollLo)) {
+                        && static_cast<u32>(this->m_arrivalRerollWindowLo)
+                               <= g_frameTime - static_cast<u32>(this->m_arrivalRerollLo))) {
                     ResetEntranceAnimation(1, 1, 0);
                     this->m_arrivalRerollLo = 0;
                     this->m_arrivalRerollWindowLo = 0;
@@ -1035,15 +1035,15 @@ i32 CGrunt::UpdateArrival() {
                     this->m_arrivalRerollWindowHi = 0;
                     this->m_arrivalRerollWindowLo = GruntRand() % 30000 + 30000;
                     this->m_arrivalRerollWindowHi = 0;
-                    this->m_arrivalRerollLo = (i32)g_frameTime;
+                    this->m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                     this->m_arrivalRerollHi = 0;
                 } else {
                     CGameObject* base = this->m_10;
                     u32 lo = base->m_extentL;
-                    i32 dx = base->m_extentR - (i32)lo;
+                    i32 dx = base->m_extentR - static_cast<i32>(lo);
                     i32 ax = (dx ^ (dx >> 31)) - (dx >> 31);
                     u32 lo2 = base->m_extentT;
-                    i32 dy = base->m_extentB - (i32)lo2;
+                    i32 dy = base->m_extentB - static_cast<i32>(lo2);
                     i32 ay = (dy ^ (dy >> 31)) - (dy >> 31);
                     if (ax != 0) {
                         lo = lo + GruntRand() % ax;
@@ -1051,9 +1051,9 @@ i32 CGrunt::UpdateArrival() {
                     if (ay != 0) {
                         lo2 = lo2 + GruntRand() % ay;
                     }
-                    if (lo < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_c
-                        && lo2 < (u32)((GruntBoard*)g_gameReg->m_tileGrid)->m_10) {
-                        TileSwitch((i32)lo, (i32)lo2, 0, this->m_arrivalFlags, 1, 0);
+                    if (lo < static_cast<u32>(((GruntBoard*)g_gameReg->m_tileGrid)->m_c)
+                        && lo2 < static_cast<u32>(((GruntBoard*)g_gameReg->m_tileGrid)->m_10)) {
+                        TileSwitch(static_cast<i32>(lo), static_cast<i32>(lo2), 0, this->m_arrivalFlags, 1, 0);
                     }
                     if (this->CoordCount() != 0) {
                         if (ax <= ay) {
@@ -1245,7 +1245,7 @@ L_ed006b:
     if (m_poweredUp != 0) {
         goto L_scanb;
     }
-    if ((u32)m_dwell <= 0x1f4) {
+    if (static_cast<u32>(m_dwell) <= 0x1f4) {
         goto L_scanb;
     }
     {
@@ -1282,7 +1282,7 @@ L_scanb:
         }
         return 1;
     }
-    if ((u32)m_dwell <= 0x3e8) {
+    if (static_cast<u32>(m_dwell) <= 0x3e8) {
         return 1;
     }
 
@@ -1800,7 +1800,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = 0;
                 return 1;
             }
-            if ((u32)m_dwell > 0x1f4) {
+            if (static_cast<u32>(m_dwell) > 0x1f4) {
                 StepArrivalDrop(occ->m_lastTilePxX, occ->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
@@ -1870,7 +1870,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ == 0) {
                 goto L_f308a;
             }
-            if ((u32)m_dwell <= 0x3e8) {
+            if (static_cast<u32>(m_dwell) <= 0x3e8) {
                 goto L_f308a;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
@@ -1904,10 +1904,10 @@ i32 CGrunt::StepArrivalDefense() {
             if (m_318 == 0) {
                 return 1;
             }
-            if ((u32)m_dwell <= 0xbb8) {
+            if (static_cast<u32>(m_dwell) <= 0xbb8) {
                 return 1;
             }
-            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_arrivalRerollLo
                 >= *(i64*)&m_arrivalRerollWindowLo) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollLo = 0;
@@ -1916,7 +1916,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_arrivalRerollWindowHi = 0;
                 m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollLo = (i32)g_frameTime;
+                m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                 m_arrivalRerollHi = 0;
                 m_dwell = 0;
                 return 1;
@@ -2051,7 +2051,7 @@ i32 CGrunt::ArrivalScanC() {
     if (m_poweredUp != 0) {
         goto L_tailc;
     }
-    if ((u32)m_dwell <= 0x1f4) {
+    if (static_cast<u32>(m_dwell) <= 0x1f4) {
         goto L_tailc;
     }
     if (TileSwitch(g->m_10->m_screenX >> 5, g->m_10->m_screenY >> 5, 0, m_arrivalFlags, 1, 0)
@@ -2082,7 +2082,7 @@ L_tailc:
         }
         return 1;
     }
-    if (m_poweredUp == 0 && (u32)m_dwell > 0x3e8) {
+    if (m_poweredUp == 0 && static_cast<u32>(m_dwell) > 0x3e8) {
         i32 r = m_defenderRadius;
         RECT box;
         box.left = cx - r;
@@ -2268,11 +2268,11 @@ state2: {
     while (acc.GetSize() != 0) {
         i32 sel = GruntRand() % acc.GetSize();
         i32 pt = acc.GetAt(sel);
-        i32 px = (u32)pt >> 0x10;
+        i32 px = static_cast<u32>(pt) >> 0x10;
         i32 py = pt & 0xffff;
         CScanGrid* pl = (CScanGrid*)g_gameReg->m_tileGrid;
         i32 flag;
-        if ((u32)px < (u32)pl->m_c && (u32)py < (u32)pl->m_10 && px < pl->m_c && py < pl->m_10) {
+        if (static_cast<u32>(px) < static_cast<u32>(pl->m_c) && static_cast<u32>(py) < static_cast<u32>(pl->m_10) && px < pl->m_c && py < pl->m_10) {
             flag = ((i32*)pl->m_8[py])[px * 8 - px];
         } else {
             flag = 1;
@@ -2352,7 +2352,7 @@ common: {
         i32 fy = nc->m_y;
         CScanGrid* pl = (CScanGrid*)g_gameReg->m_tileGrid;
         i32 flag;
-        if ((u32)fx < (u32)pl->m_c && (u32)fy < (u32)pl->m_10) {
+        if (static_cast<u32>(fx) < static_cast<u32>(pl->m_c) && static_cast<u32>(fy) < static_cast<u32>(pl->m_10)) {
             flag = ((i32*)pl->m_8[fy])[fx * 8 - fx];
         } else {
             flag = 1;
@@ -2378,7 +2378,7 @@ common: {
     i32 gx = p1->m_x;
     i32 gy = p1->m_y;
     i32 flag2;
-    if ((u32)gx < (u32)pl2->m_c && (u32)gy < (u32)pl2->m_10) {
+    if (static_cast<u32>(gx) < static_cast<u32>(pl2->m_c) && static_cast<u32>(gy) < static_cast<u32>(pl2->m_10)) {
         flag2 = ((i32*)pl2->m_8[gy])[gx * 8 - gx];
     } else {
         flag2 = 1;
@@ -2548,7 +2548,7 @@ i32 CGrunt::SeekTarget() {
         if (this->m_defenderState != 0) {
             return 1;
         }
-        if ((u32)this->m_dwell < 0x3e9) {
+        if (static_cast<u32>(this->m_dwell) < 0x3e9) {
             return 1;
         }
         CGameObject* base =
@@ -2623,7 +2623,7 @@ i32 CGrunt::SeekTarget() {
                 );
             }
         }
-        if ((u32)this->m_dwell < 0x1f5) {
+        if (static_cast<u32>(this->m_dwell) < 0x1f5) {
             return 1;
         }
         if (TileSwitch(
@@ -2772,7 +2772,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 m_defenderState = 0;
                 return 1;
             }
-            if ((u32)m_dwell > 0x1f4) {
+            if (static_cast<u32>(m_dwell) > 0x1f4) {
                 StepArrivalDrop(occ->m_lastTilePxX, occ->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
@@ -2815,15 +2815,15 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (m_318 == 0) {
                 return 1;
             }
-            if ((u32)m_dwell <= 0xbb8) {
+            if (static_cast<u32>(m_dwell) <= 0xbb8) {
                 return 1;
             }
-            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_arrivalRerollLo
                 >= *(i64*)&m_arrivalRerollWindowLo) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollLo = (i32)g_frameTime;
+                m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                 m_arrivalRerollHi = 0;
                 m_dwell = 0;
                 return 1;
@@ -2843,7 +2843,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                     outY += GruntRand() % spanY;
                 }
                 GruntBoard* bd = (GruntBoard*)g_gameReg->m_tileGrid;
-                if ((u32)outX < (u32)bd->m_c && (u32)outY < (u32)bd->m_10) {
+                if (static_cast<u32>(outX) < static_cast<u32>(bd->m_c) && static_cast<u32>(outY) < static_cast<u32>(bd->m_10)) {
                     TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 m328 = CoordCount();

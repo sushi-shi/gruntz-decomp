@@ -67,7 +67,7 @@ void CWwdGameObject::RenderDot(CDDrawSurfacePair* a) {
     i32 x = m_posX;
     i32 m64 = m_clipLeft;
     i32 y;
-    if (m64 == (i32)0x80000000) {
+    if (m64 == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             goto reject;
         }

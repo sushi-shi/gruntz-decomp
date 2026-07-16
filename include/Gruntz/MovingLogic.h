@@ -186,40 +186,40 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     if (lo0 == 0) {
         m_a8 = g_movingLogicMin;
     } else {
-        m_a8 = (double)lo0;
+        m_a8 = static_cast<double>(lo0);
     }
     i32 lo1 = ((CProjBoundCfg*)m_objAux)->m_34;
     if (lo1 == 0) {
         m_b0 = g_movingLogicMin;
     } else {
-        m_b0 = (double)lo1;
+        m_b0 = static_cast<double>(lo1);
     }
     i32 hi0 = ((CProjBoundCfg*)m_objAux)->m_30;
     if (hi0 == 0) {
         m_c0 = g_movingLogicMax;
     } else {
-        m_c0 = (double)hi0;
+        m_c0 = static_cast<double>(hi0);
     }
     i32 hi1 = ((CProjBoundCfg*)m_objAux)->m_38;
     if (hi1 == 0) {
         m_c8 = g_movingLogicMax;
     } else {
-        m_c8 = (double)hi1;
+        m_c8 = static_cast<double>(hi1);
     }
     Motion()->SetParams(
-        (double)m_object->m_screenX,
-        (double)m_object->m_screenY,
+        static_cast<double>(m_object->m_screenX),
+        static_cast<double>(m_object->m_screenY),
         0.0,
-        (double)m_object->m_164,
-        (double)m_object->m_168,
-        0.0,
-        0.0,
+        static_cast<double>(m_object->m_164),
+        static_cast<double>(m_object->m_168),
         0.0,
         0.0,
-        (double)g_frameTime * g_motionZScale,
+        0.0,
+        0.0,
+        static_cast<double>(g_frameTime) * g_motionZScale,
         0.0
     );
-    m_110 = m_118 = m_120 = (double)g_defaultZ;
+    m_110 = m_118 = m_120 = static_cast<double>(g_defaultZ);
 }
 
 #endif // GRUNTZ_CMOVINGLOGIC_H

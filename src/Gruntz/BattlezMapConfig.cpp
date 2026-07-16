@@ -482,18 +482,18 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
             i32 r = g_buteMgr.GetIntDef("Battlez", "NormalDifficulty", 50);
             g_diffTier = 10;
             m_gruntCreationTime =
-                (i32)((double)r * ((double)(i64)m_gruntCreationTime * g_diffScale));
+                static_cast<i32>((static_cast<double>(r) * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale)));
             m_resourceCreationTime =
-                (i32)((double)r * ((double)(i64)m_resourceCreationTime * g_diffScale));
+                static_cast<i32>((static_cast<double>(r) * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale)));
             break;
         }
         case 2: { // Hard
             i32 r = g_buteMgr.GetIntDef("Battlez", "HardDifficulty", 25);
             g_diffTier = 5;
             m_gruntCreationTime =
-                (i32)((double)r * ((double)(i64)m_gruntCreationTime * g_diffScale));
+                static_cast<i32>((static_cast<double>(r) * (static_cast<double>(static_cast<i64>(m_gruntCreationTime)) * g_diffScale)));
             m_resourceCreationTime =
-                (i32)((double)r * ((double)(i64)m_resourceCreationTime * g_diffScale));
+                static_cast<i32>((static_cast<double>(r) * (static_cast<double>(static_cast<i64>(m_resourceCreationTime)) * g_diffScale)));
             break;
         }
         default:
@@ -834,7 +834,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
             }
             usable = 1;
             if (tileRec[0] & 0x20000000) {
-                if ((u8)tileRec[1] != (u8)m_curCell) {
+                if (static_cast<u8>(tileRec[1]) != static_cast<u8>(m_curCell)) {
                     usable = 0;
                 }
                 if (slot38 == 0) {
@@ -895,8 +895,8 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
         r2++;
     }
-    i32 budget = (i32)((double)*(i32*)((char*)m_ctx + m_curCell * 0x238 + 0x378)
-                       * (double)m_budgetMul * g_diffScale);
+    i32 budget = static_cast<i32>((static_cast<double>(*(i32*)((char*)m_ctx + m_curCell * 0x238 + 0x378))
+                       * static_cast<double>(m_budgetMul) * g_diffScale));
     if (slot38 >= m_spawnPct || freeCount >= budget) {
         unit->m_2d8 = 4;
     } else {
@@ -1050,12 +1050,12 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         CBrickzGrid* board = m_board;
         // tile0: is the unit's own coord cell blocked (low flag byte == 1)?
         i32 tile0;
-        if ((u32)ux < (u32)board->m_width && (u32)uy < (u32)board->m_height) {
+        if (static_cast<u32>(ux) < static_cast<u32>(board->m_width) && static_cast<u32>(uy) < static_cast<u32>(board->m_height)) {
             tile0 = ((BrickzCell*)board->m_rows[uy])[ux].m_0;
         } else {
             tile0 = 1;
         }
-        if ((u8)tile0 == 1) {
+        if (static_cast<u8>(tile0) == 1) {
             if (unit->CoordCount() == 0) {
                 return 0;
             }
@@ -1079,7 +1079,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
         BrickzCell scratchA;
         const BrickzCell* srcA;
-        if ((u32)cx < (u32)board->m_width && (u32)cy < (u32)board->m_height) {
+        if (static_cast<u32>(cx) < static_cast<u32>(board->m_width) && static_cast<u32>(cy) < static_cast<u32>(board->m_height)) {
             srcA = &((BrickzCell*)board->m_rows[cy])[cx];
         } else {
             memset(&scratchA, 1, sizeof(scratchA));
@@ -1102,7 +1102,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         i32 sgx = pt.m_x >> 5;
         BrickzCell scratchB;
         const BrickzCell* srcB;
-        if ((u32)sgx < (u32)board->m_width && (u32)sgy < (u32)board->m_height) {
+        if (static_cast<u32>(sgx) < static_cast<u32>(board->m_width) && static_cast<u32>(sgy) < static_cast<u32>(board->m_height)) {
             srcB = &((BrickzCell*)board->m_rows[sgy])[sgx];
         } else {
             memset(&scratchB, 1, sizeof(scratchB));
@@ -1152,14 +1152,14 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             i32 bx = cb->m_x;
             i32 by = cb->m_y;
             i32 tB;
-            if ((u32)bx < (u32)board->m_width && (u32)by < (u32)board->m_height) {
+            if (static_cast<u32>(bx) < static_cast<u32>(board->m_width) && static_cast<u32>(by) < static_cast<u32>(board->m_height)) {
                 tB = ((BrickzCell*)board->m_rows[by])[bx].m_0;
             } else {
                 tB = 1;
             }
             if (tB & 0x20) {
                 i32 tA2;
-                if ((u32)ax < (u32)board->m_width && (u32)ay < (u32)board->m_height) {
+                if (static_cast<u32>(ax) < static_cast<u32>(board->m_width) && static_cast<u32>(ay) < static_cast<u32>(board->m_height)) {
                     tA2 = ((BrickzCell*)board->m_rows[ay])[ax].m_0;
                 } else {
                     tA2 = 1;
@@ -1355,7 +1355,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                         }
                         coordList->RemoveAll();
                     }
-                    m_spawnTimer += (i32)((u32)m_spawnInterval >> 2);
+                    m_spawnTimer += static_cast<i32>((static_cast<u32>(m_spawnInterval) >> 2));
                     return 1;
                 }
             }
@@ -1971,7 +1971,7 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     ar->Read(&count, 4);
     m_104.SetSize(0, -1);
     m_104.SetSize(count, -1);
-    for (i = 0; i < (u32)count; i++) {
+    for (i = 0; i < static_cast<u32>(count); i++) {
         ar->Read(&tmp, 4);
         m_104[i] = tmp;
     }
@@ -1979,7 +1979,7 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     ar->Read(&count, 4);
     m_118.SetSize(0, -1);
     m_118.SetSize(count, -1);
-    for (i = 0; i < (u32)count; i++) {
+    for (i = 0; i < static_cast<u32>(count); i++) {
         ar->Read(&tmp, 4);
         m_118[i] = tmp;
     }
@@ -2001,7 +2001,7 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     m_0f0.SetSize(0, -1);
     ar->Read(&count, 4);
     m_0f0.SetSize(count, -1);
-    for (i = 0; i < (u32)count; i++) {
+    for (i = 0; i < static_cast<u32>(count); i++) {
         void* node = g_coordPool.m_freeHead;
         void* payload = 0;
         if (*(void**)node != 0) {
@@ -2023,7 +2023,7 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     m_candArray.SetSize(0, -1);
     ar->Read(&count, 4);
     m_candArray.SetSize(count, -1);
-    for (i = 0; i < (u32)count; i++) {
+    for (i = 0; i < static_cast<u32>(count); i++) {
         void* node = g_coordPool.m_freeHead;
         void* payload = 0;
         if (*(void**)node != 0) {
@@ -2049,7 +2049,7 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
 RVA(0x0002bfc0, 0x8a)
 i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     CSerialArchive* obj = (CSerialArchive*)objArg;
-    i32 kind = (i32)(i32)kindArg;
+    i32 kind = static_cast<i32>((i32)kindArg);
     switch (kind) {
         case 4:
             if (this->Serialize_02b420(obj) == 0) { // kind-4 validator @0x2b420
@@ -2333,7 +2333,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
 
 // cell flags at (col,row), out-of-bounds -> 0x01010101.
 static __inline i32 arrCell(CBrickzGrid* grid, i32 col, i32 row) {
-    if ((u32)col < (u32)grid->m_width && (u32)row < (u32)grid->m_height) {
+    if (static_cast<u32>(col) < static_cast<u32>(grid->m_width) && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
         return grid->m_rows[row][col].m_0;
     }
     return 1;
@@ -2392,7 +2392,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     // destination cell = grid[gy][bx]; OOB fills the dest buffer itself (self-copy).
     BrickzCell dest;
     BrickzCell* dsrc;
-    if ((u32)bx < (u32)m_board->m_width && (u32)gy < (u32)m_board->m_height) {
+    if (static_cast<u32>(bx) < static_cast<u32>(m_board->m_width) && static_cast<u32>(gy) < static_cast<u32>(m_board->m_height)) {
         dsrc = &m_board->m_rows[gy][bx];
     } else {
         memset(&dest, 1, 0x1c);
@@ -2404,7 +2404,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     // own cell = grid[fcy][fcx], the grunt's head pending coordinate.
     BrickzCell own;
     BrickzCell* osrc;
-    if ((u32)fcx < (u32)m_board->m_width && (u32)fcy < (u32)m_board->m_height) {
+    if (static_cast<u32>(fcx) < static_cast<u32>(m_board->m_width) && static_cast<u32>(fcy) < static_cast<u32>(m_board->m_height)) {
         osrc = &m_board->m_rows[fcy][fcx];
     } else {
         memset(&own, 1, 0x1c);
@@ -2524,7 +2524,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             // t == 0x11: scan the 3x3 neighbourhood for the first in-bounds cell
             for (i32 row = fcy - 1; row < fcy + 2; row++) {
                 for (i32 col = fcx - 1; col < fcx + 2; col++) {
-                    if ((u32)col < (u32)m_board->m_width && (u32)row < (u32)m_board->m_height) {
+                    if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width) && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
                         i32 cf = arrCell(m_board, col, row);
                         if (cf & 0x939) {
                             return 1;
@@ -2655,7 +2655,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 ox = g->m_object->m_screenX >> 5;
         i32 row = rand() % 3 + oy - 1;
         i32 col = rand() % 3 + ox - 1;
-        if ((u32)col >= (u32)m_board->m_width || (u32)row >= (u32)m_board->m_height) {
+        if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width) || static_cast<u32>(row) >= static_cast<u32>(m_board->m_height)) {
             return 1;
         }
         i32 c0 = arrCell(m_board, col, row);
@@ -2829,7 +2829,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         i32 nw;
 
         b = m_board;
-        if ((u32)cm < (u32)b->m_width) {
+        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
             nt = (i32*)((char*)b->m_rows[row] + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2837,7 +2837,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cp < (u32)b->m_width) {
+        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
             nt = (i32*)((char*)b->m_rows[row] + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2845,7 +2845,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)rm < (u32)b->m_width) {
+        if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
             nt = (i32*)((char*)b->m_rows[rm] + ((col * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2853,7 +2853,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)rp < (u32)b->m_width) {
+        if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
             nt = (i32*)((char*)b->m_rows[rp] + ((col * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2861,7 +2861,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cp < (u32)b->m_width && (u32)rm < (u32)b->m_height) {
+        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width) && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
             nt = (i32*)((char*)b->m_rows[rm] + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2869,7 +2869,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cp < (u32)b->m_width && (u32)rp < (u32)b->m_height) {
+        if (static_cast<u32>(cp) < static_cast<u32>(b->m_width) && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
             nt = (i32*)((char*)b->m_rows[rp] + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2877,7 +2877,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cm < (u32)b->m_width && (u32)rp < (u32)b->m_height) {
+        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width) && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
             nt = (i32*)((char*)b->m_rows[rp] + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2885,7 +2885,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cm < (u32)b->m_width && (u32)rm < (u32)b->m_height) {
+        if (static_cast<u32>(cm) < static_cast<u32>(b->m_width) && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
             nt = (i32*)((char*)b->m_rows[rm] + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -2955,7 +2955,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
         i32 col = unit->m_entrancePxX >> 5;
         i32 row = unit->m_entrancePxY >> 5;
         i32 tile0;
-        if ((u32)col < (u32)board->m_width && (u32)row < (u32)board->m_height) {
+        if (static_cast<u32>(col) < static_cast<u32>(board->m_width) && static_cast<u32>(row) < static_cast<u32>(board->m_height)) {
             tile0 = ((i32*)board->m_rows[row])[col * 7];
         } else {
             tile0 = 1;
@@ -2966,7 +2966,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
             i32 cx = c->m_x;
             i32 cy = c->m_y;
             i32 tile1;
-            if ((u32)cx < (u32)board->m_width && (u32)cy < (u32)board->m_height) {
+            if (static_cast<u32>(cx) < static_cast<u32>(board->m_width) && static_cast<u32>(cy) < static_cast<u32>(board->m_height)) {
                 tile1 = ((i32*)board->m_rows[cy])[cx * 7];
             } else {
                 tile1 = 1;
@@ -3141,7 +3141,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         unit->m_390 = 1;
         return 0;
     }
-    if ((u32)unit->m_dwell <= 0x64) {
+    if (static_cast<u32>(unit->m_dwell) <= 0x64) {
         return 1;
     }
     CBrickzGrid* board = m_board;
@@ -3219,7 +3219,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         unit->m_254 = 0;
     }
     if (unit->m_390 != 0) {
-        __int64 elapsed = (__int64)(u32)g_frameTime - *(__int64*)&m_scratch78;
+        __int64 elapsed = (__int64)static_cast<u32>(g_frameTime) - *(__int64*)&m_scratch78;
         if (elapsed >= *(__int64*)&m_scratch80) {
             unit->m_390 = 0;
             CGameObject* lvl = unit->m_object;
@@ -3351,7 +3351,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
             GruntCoord* c = p->m_coord;
             i32 word;
             CBrickzGrid* b = m_board;
-            if ((u32)c->m_x < (u32)b->m_width && (u32)c->m_y < (u32)b->m_height) {
+            if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width) && static_cast<u32>(c->m_y) < static_cast<u32>(b->m_height)) {
                 word = ((i32*)&((BrickzCell*)b->m_rows[c->m_y])[c->m_x])[0];
             } else {
                 word = 1;
@@ -4107,7 +4107,7 @@ i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
                 i32 x = c->m_x;
                 i32 y = c->m_y;
                 i32 tile;
-                if ((u32)x < (u32)board->m_width && (u32)y < (u32)board->m_height) {
+                if (static_cast<u32>(x) < static_cast<u32>(board->m_width) && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
                     tile = ((i32*)board->m_rows[y])[x * 7];
                 } else {
                     tile = 1;
@@ -4325,7 +4325,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     if (cell != 0) {
         // First pass: any sub-cell that already collides with `unit` aborts.
         char** scan = (char**)(cell + 0x3c);
-        while ((i32)(((char*)scan - cell - 0x3c) & ~3) < 0x60) {
+        while (static_cast<i32>((((char*)scan - cell - 0x3c) & ~3)) < 0x60) {
             void* node = *scan;
             if (node != 0) {
                 void* rec = m_cellQuery->FindChild((i32)node, 0);
@@ -4341,7 +4341,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         }
         // Second pass: keep the nearest non-colliding sub-cell.
         char** scan2 = (char**)(cell + 0x3c);
-        while ((i32)(((char*)scan2 - cell - 0x3c) & ~3) < 0x60) {
+        while (static_cast<i32>((((char*)scan2 - cell - 0x3c) & ~3)) < 0x60) {
             void* node = *scan2;
             if (node != 0) {
                 void* rec = m_cellQuery->FindChild((i32)node, 0);
@@ -4574,7 +4574,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         g->GetScreenPos((GruntTilePos*)&c0);
         c0.m_x >>= 5;
         c0.m_y >>= 5;
-        CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, (i32)((u32)W / 3), (i32)((u32)H / 3));
+        CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, static_cast<i32>((static_cast<u32>(W) / 3)), static_cast<i32>((static_cast<u32>(H) / 3)));
         if (nb != 0) {
             Coord c1;
             nb->GetScreenPos((GruntTilePos*)&c1);
@@ -4591,7 +4591,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             return 1;
         }
         // nb == 0: replan / drain
-        if ((u32)g->m_dwell > (u32)m_0b8) {
+        if (static_cast<u32>(g->m_dwell) > static_cast<u32>(m_0b8)) {
             Coord here;
             g->GetScreenPos((GruntTilePos*)&here);
             Plan293c(g, here.m_x >> 5, here.m_y >> 5, m_ac, m_b0, -1);
@@ -4627,7 +4627,7 @@ inflight: {
     g->GetScreenPos((GruntTilePos*)&c0);
     c0.m_x >>= 5;
     c0.m_y >>= 5;
-    CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, (i32)((u32)W / 3), (i32)((u32)H / 3));
+    CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, static_cast<i32>((static_cast<u32>(W) / 3)), static_cast<i32>((static_cast<u32>(H) / 3)));
 
     if (cur == 0) {
         goto L_clear;
@@ -4664,7 +4664,7 @@ inflight: {
         }
     }
     // 3198f: not arrived - reroute by board distance
-    if ((u32)g->m_dwell <= (u32)m_reserveBudget) {
+    if (static_cast<u32>(g->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
         return 1;
     }
     {
@@ -4678,7 +4678,7 @@ inflight: {
         i32 dy = nbpos.m_y - y5;
         i32 adx = dx < 0 ? -dx : dx;
         i32 ady = dy < 0 ? -dy : dy;
-        i32 dist = (i32)sqrt((double)(adx * adx + ady * ady));
+        i32 dist = static_cast<i32>(sqrt(static_cast<double>((adx * adx + ady * ady))));
         if (dist > m_c0) {
             if (g->CoordCount() != 0) {
                 MOVE_RECYCLE(g);
@@ -4790,7 +4790,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
             }
             board->m_gridW = board->m_boundRight - board->m_originX;
             board->m_gridH = board->m_boundBottom - board->m_originY;
-            if ((u32)unit->m_dwell > 0x1f4 && unit->CoordCount() == 0) {
+            if (static_cast<u32>(unit->m_dwell) > 0x1f4 && unit->CoordCount() == 0) {
                 i32 flags = unit->m_250;
                 unit->m_254 = 0x4268;
                 CGameObject* tl = target->m_object;
@@ -5014,7 +5014,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         return 1;
     }
     if (unit->m_defenderState == 6) {
-        if ((u32)unit->m_dwell <= (u32)m_moveBudget) {
+        if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
             return 1;
         }
         i32 gx = unit->m_defenderX;
@@ -5434,7 +5434,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
     CGrunt* unit = (CGrunt*)unitArg;
-    if ((u32)unit->m_dwell <= (u32)m_repathBudget) {
+    if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_repathBudget)) {
         return 1;
     }
     CTmCandidate* best = 0;
@@ -5497,7 +5497,7 @@ i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
     if (unit->CoordCount() != 0) {
         return 1;
     }
-    if ((u32)unit->m_dwell <= (u32)m_reserveBudget) {
+    if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
         return 1;
     }
     unit->TileSwitch(
@@ -5544,7 +5544,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
     }
     if (unit->CoordCount() == 0) {
         if (cell == -1) {
-            if ((u32)unit->m_dwell <= (u32)m_moveBudget) {
+            if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
                 return 1;
             }
             i32 r = rand() % 4;
@@ -5574,7 +5574,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
         if (recB == 0) {
             return 1;
         }
-        if ((u32)unit->m_dwell <= 0x7d0) {
+        if (static_cast<u32>(unit->m_dwell) <= 0x7d0) {
             return 1;
         }
         i32 y = *(i32*)(recB + 0xd4);

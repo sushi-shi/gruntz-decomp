@@ -110,7 +110,7 @@ i32 BuildSoundFontPath(char drive) {
     }
 
     GetCurrentDirectoryA(0xff, g_sfDir);
-    int len = (int)strlen(g_sfDir);
+    int len = static_cast<int>(strlen(g_sfDir));
     if (len > 0 && g_sfDir[len - 1] == '\\') {
         g_sfDir[len - 1] = '\0';
     }

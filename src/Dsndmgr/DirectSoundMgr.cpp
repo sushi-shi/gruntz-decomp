@@ -118,9 +118,9 @@ i32 SoundDevice::VolumeToAttenuation(i32 value) {
     if (value == 0) {
         return -10000;
     }
-    double t = (double)value / c_volScale;
+    double t = static_cast<double>(value) / c_volScale;
     double ratio = acos(pow(c_volNum / t, c_powExp)) / acos(c_acosNorm);
-    return (i32)(-(ratio * c_volScale));
+    return static_cast<i32>((-(ratio * c_volScale)));
 }
 
 // ---------------------------------------------------------------------------
@@ -146,15 +146,15 @@ extern "C" i32 ConvertVolumeToPercent(i32 v) {
     }
     double d;
     if (v < 0) {
-        d = (double)(-v / 100);
+        d = static_cast<double>((-v / 100));
     } else {
-        d = (double)(v / 100);
+        d = static_cast<double>((v / 100));
     }
     double r = c_volScale - (c_volNum - pow(c_acosNorm, -d / c_powExp)) * c_volScale;
     if (v < 0) {
-        return (i32)r;
+        return static_cast<i32>(r);
     }
-    return (i32)(-r);
+    return static_cast<i32>((-r));
 }
 
 // ---------------------------------------------------------------------------
@@ -531,11 +531,11 @@ i32 DirectSoundMgr::SetField2(i32 pct) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 v = pct * (i32)m_freq / 100 + (i32)m_freq;
-    if ((u32)v >= 0x186a0) {
+    i32 v = pct * static_cast<i32>(m_freq) / 100 + static_cast<i32>(m_freq);
+    if (static_cast<u32>(v) >= 0x186a0) {
         v = 0x1869f;
     }
-    if ((u32)v <= 0x64) {
+    if (static_cast<u32>(v) <= 0x64) {
         v = 0x65;
     }
     i32 r = SetFrequency(v);
@@ -823,7 +823,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
             i16* s = (i16*)src;
             char* end = (char*)p1 + n1;
             while (d < end) {
-                *d = (char)((u32)(*s + 0x8000) >> 8);
+                *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
                 ++d;
             }
@@ -833,7 +833,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
             i16* s = (i16*)((char*)src + n1);
             char* end = (char*)p2 + n2;
             while (d < end) {
-                *d = (char)((u32)(*s + 0x8000) >> 8);
+                *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
                 ++d;
             }
@@ -1490,9 +1490,9 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
         return 0;
     }
     if (time == -1) {
-        time = (i32)::timeGetTime();
+        time = static_cast<i32>(::timeGetTime());
     }
-    if ((u32)time <= (u32)m_createFlag) {
+    if (static_cast<u32>(time) <= static_cast<u32>(m_createFlag)) {
         return 1;
     }
     m_createFlag = time;
@@ -1614,7 +1614,7 @@ RVA(0x00137060, 0x6b)
 i32 DSoundVoice::Tick(i32 now) {
     i32 done = 0;
     i32 elapsed = now - m_rampStartTime;
-    if ((u32)elapsed >= (u32)m_rampDurationMs) {
+    if (static_cast<u32>(elapsed) >= static_cast<u32>(m_rampDurationMs)) {
         elapsed = m_rampDurationMs;
         done = 1;
     }

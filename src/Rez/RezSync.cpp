@@ -302,7 +302,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         p->m_next = p + 1;
         p = p->m_next;
         ++i;
-    } while (i < (u32)g_coordPool.m_count - 1);
+    } while (i < static_cast<u32>(g_coordPool.m_count) - 1);
     p->m_next = 0;
     g_coordPool.m_freeHead = pool;
     g_coordPool.m_linkOffset = 4;
@@ -726,7 +726,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(0x800a, 0x41b);
         return 0;
     }
-    g_localVersion = (i32)g_buteMgr.GetDwordDef("General", "RezSync", (u32)g_localVersion);
+    g_localVersion = static_cast<i32>(g_buteMgr.GetDwordDef("General", "RezSync", static_cast<u32>(g_localVersion)));
     m_timer = new CGruntSpawnConfig;
     if (!m_timer->Init((CSpawnOwner*)this)) {
         ReportError(0x800a, 0x45f);

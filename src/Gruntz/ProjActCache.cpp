@@ -48,7 +48,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
         return 0;
     }
 
-    i32 nbits = (i32)(strlen(key) * 8);
+    i32 nbits = static_cast<i32>((strlen(key) * 8));
     m_20 = 0;
     m_1c = m_18;
     m_24 = nbits;
@@ -65,7 +65,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
                 break;
             }
             i32 b = node->m_8;
-            dir = (1 << (b & 7)) & (i32)(signed char)key[b >> 3];
+            dir = (1 << (b & 7)) & static_cast<i32>((signed char)key[b >> 3]);
             *p++ = dir;
             CTrieNode* child = dir ? node->m_4 : node->m_0;
             m_20 = child;
@@ -97,7 +97,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
         if (kb != 0) {
             memcpy(kb, key, strlen(key) + 1);
 
-            i32 selfdir = (1 << (critbit & 7)) & (i32)(signed char)key[critbit >> 3];
+            i32 selfdir = (1 << (critbit & 7)) & static_cast<i32>((signed char)key[critbit >> 3]);
             if (selfdir) {
                 nn->m_4 = nn;
             } else {
@@ -153,14 +153,14 @@ void* CProjActMap::Insert(const char* key, void* value) {
 // ===========================================================================
 RVA(0x00193680, 0x5e)
 zBitVec* zBitVec::Or(zBitVec* o) {
-    if ((u32)o->m_capacity > (u32)m_capacity) {
+    if (static_cast<u32>(o->m_capacity) > static_cast<u32>(m_capacity)) {
         if (!EnsureSize(o->m_capacity)) {
             return this;
         }
     }
-    i32 nwords = (i32)((u32)(o->m_capacity + 1) >> 5);
-    u32* obuf = (u32)o->m_capacity > 0x20 ? o->m_words : (u32*)&o->m_words;
-    u32* tbuf = (u32)m_capacity > 0x20 ? m_words : (u32*)&m_words;
+    i32 nwords = static_cast<i32>((static_cast<u32>((o->m_capacity + 1)) >> 5));
+    u32* obuf = static_cast<u32>(o->m_capacity) > 0x20 ? o->m_words : (u32*)&o->m_words;
+    u32* tbuf = static_cast<u32>(m_capacity) > 0x20 ? m_words : (u32*)&m_words;
     for (i32 i = 0; i < nwords; i++) {
         tbuf[i] |= obuf[i];
     }
@@ -178,14 +178,14 @@ zBitVec* zBitVec::Or(zBitVec* o) {
 // fire the container error sink, returning 0.
 RVA(0x001936e0, 0xd3)
 i32 zBitVec::EnsureSize(i32 nbits) {
-    u32 ndwords = ((nbits & 0x1f) != 0 ? 1 : 0) + ((u32)nbits >> 5);
+    u32 ndwords = ((nbits & 0x1f) != 0 ? 1 : 0) + (static_cast<u32>(nbits) >> 5);
     void* nbuf;
-    if ((u32)m_capacity > 0x20) {
+    if (static_cast<u32>(m_capacity) > 0x20) {
         nbuf = realloc(m_words, ndwords * 4);
         if (!nbuf) {
             goto fail;
         }
-        u32 oldn = (u32)m_capacity >> 5;
+        u32 oldn = static_cast<u32>(m_capacity) >> 5;
         memset((u32*)nbuf + oldn, 0, (ndwords - oldn) * 4);
     } else {
         nbuf = malloc(ndwords * 4);

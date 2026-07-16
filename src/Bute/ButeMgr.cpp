@@ -1052,13 +1052,13 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
                 return *(i32*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
-            return (i32)0x80000000;
+            return static_cast<i32>(0x80000000);
         }
         ReportError(s_fmtNotFound, tag, key);
-        return (i32)0x80000000;
+        return static_cast<i32>(0x80000000);
     }
     ReportError(s_fmtInvalidTag, tag);
-    return (i32)0x80000000;
+    return static_cast<i32>(0x80000000);
 }
 
 // ---------------------------------------------------------------------------
@@ -1206,7 +1206,7 @@ float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
-                    return (float)*(i32*)rec->pValue;
+                    return static_cast<float>(*(i32*)rec->pValue);
                 case kButeFloat:
                     return *(float*)rec->pValue;
             }
@@ -1229,7 +1229,7 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
-                    return (float)*(i32*)rec->pValue;
+                    return static_cast<float>(*(i32*)rec->pValue);
                 case kButeFloat:
                     return *(float*)rec->pValue;
             }
@@ -1255,7 +1255,7 @@ double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
-                    return (double)*(i32*)rec->pValue;
+                    return static_cast<double>(*(i32*)rec->pValue);
                 case kButeDouble:
                     return *(double*)rec->pValue;
             }
@@ -1278,7 +1278,7 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
-                    return (double)*(i32*)rec->pValue;
+                    return static_cast<double>(*(i32*)rec->pValue);
                 case kButeDouble:
                     return *(double*)rec->pValue;
             }
@@ -1628,7 +1628,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 6: { // signed int -> type 0
             vi = atoi(m_token);
             if (m_writeMode) {
-                m_pText->accum << (int)GetInt(m_tagName, m_str104);
+                m_pText->accum << static_cast<int>(GetInt(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
@@ -1673,9 +1673,9 @@ bool ButeMgr::ParseAttributeFile() {
             if (!ScanToken(8)) {
                 return false;
             }
-            vf = (float)ButeRead_Float(m_token);
+            vf = static_cast<float>(ButeRead_Float(m_token));
             if (m_writeMode) {
-                (m_pText->accum << s_strFloat) << (double)GetFloat(m_tagName, m_str104);
+                (m_pText->accum << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
@@ -1693,9 +1693,9 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case 15: { // float ('f'-tagged) -> type 3
-            vf = (float)ButeRead_Float(m_token);
+            vf = static_cast<float>(ButeRead_Float(m_token));
             if (m_writeMode) {
-                m_pText->accum << (double)GetFloat(m_tagName, m_str104);
+                m_pText->accum << static_cast<double>(GetFloat(m_tagName, m_str104));
                 m_pText->accum << s_strFloatSuffix;
             } else if (!bDup) {
                 CButeValue* n = (CButeValue*)operator new(8);
@@ -1716,7 +1716,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 7: { // double -> type 2
             double dv = ButeRead_Float(m_token);
             if (m_writeMode) {
-                m_pText->accum << (double)GetDouble(m_tagName, m_str104);
+                m_pText->accum << static_cast<double>(GetDouble(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValue* n = (CButeValue*)operator new(8);
                 if (n) {
@@ -1738,10 +1738,10 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (m_writeMode) {
                 CButeRef5* r = GetRef5(m_tagName, m_str104);
-                (m_pText->accum << s_strOpen) << (long)r->a;
-                (m_pText->accum << s_strComma) << (long)r->b;
-                (m_pText->accum << s_strComma) << (long)r->c;
-                (m_pText->accum << s_strComma) << (long)r->d;
+                (m_pText->accum << s_strOpen) << static_cast<long>(r->a);
+                (m_pText->accum << s_strComma) << static_cast<long>(r->b);
+                (m_pText->accum << s_strComma) << static_cast<long>(r->c);
+                (m_pText->accum << s_strComma) << static_cast<long>(r->d);
                 m_pText->accum << s_strClose;
             } else if (!bDup) {
                 CButeValue* n = (CButeValue*)operator new(8);
@@ -1767,8 +1767,8 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtPoint2, &a, &b);
             if (m_writeMode) {
                 CButeRef6* r = GetRef6(m_tagName, m_str104);
-                (m_pText->accum << s_strOpen) << (long)r->a;
-                (m_pText->accum << s_strComma) << (long)r->b;
+                (m_pText->accum << s_strOpen) << static_cast<long>(r->a);
+                (m_pText->accum << s_strComma) << static_cast<long>(r->b);
                 m_pText->accum << s_strClose;
             } else if (!bDup) {
                 CButeValue* n = (CButeValue*)operator new(8);
@@ -1795,9 +1795,9 @@ bool ButeMgr::ParseAttributeFile() {
                 double dx = *(double*)&r->a;
                 double dy = *(double*)&r->c;
                 double dz = *(double*)&r->e;
-                (m_pText->accum << s_strLt) << (double)dx;
-                (m_pText->accum << s_strComma) << (double)dy;
-                (m_pText->accum << s_strComma) << (double)dz;
+                (m_pText->accum << s_strLt) << static_cast<double>(dx);
+                (m_pText->accum << s_strComma) << static_cast<double>(dy);
+                (m_pText->accum << s_strComma) << static_cast<double>(dz);
                 m_pText->accum << s_strGt;
             } else if (!bDup) {
                 CButeValue* n = (CButeValue*)operator new(8);
@@ -1824,8 +1824,8 @@ bool ButeMgr::ParseAttributeFile() {
                 CButeRef8* r = GetRef8(m_tagName, m_str104);
                 double dx = *(double*)&r->a;
                 double dy = *(double*)&r->c;
-                (m_pText->accum << s_strLBrack) << (double)dx;
-                (m_pText->accum << s_strComma) << (double)dy;
+                (m_pText->accum << s_strLBrack) << static_cast<double>(dx);
+                (m_pText->accum << s_strComma) << static_cast<double>(dy);
                 m_pText->accum << s_strRBrack;
             } else if (!bDup) {
                 CButeValue* n = (CButeValue*)operator new(8);
@@ -2206,7 +2206,7 @@ void CButeMgr::NextChar() {
     if (m_countLine) {
         m_lineNo++;
     }
-    m_curChar = (char)delta;
+    m_curChar = static_cast<char>(delta);
     m_countLine = delta == 0xa;
     m_pos += delta;
 }
@@ -2216,7 +2216,7 @@ void CButeMgr::NextChar() {
 // Map a raw char to its lexer character-class index (g_charClass[uc] - 1).
 RVA(0x001703e0, 0x15)
 i16 CButeMgr::CharClass(char c) {
-    return (i16)(g_charClass[(u8)c] - 1);
+    return static_cast<i16>((g_charClass[static_cast<u8>(c)] - 1));
 }
 
 // ---------------------------------------------------------------------------

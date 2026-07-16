@@ -228,12 +228,12 @@ i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
         default:
             return 0;
     }
-    m_teamColor1 = (u16)(((u8)((u8)r1 >> (u8)g_rDown) << g_rUp)
-                         | ((u8)((u8)g1 >> (u8)g_gDown) << g_gUp) | (u8)((u8)b1 >> (u8)g_bDown));
-    m_teamColor2 = (u16)(((u8)((u8)g2 >> (u8)g_gDown) << g_gUp)
-                         | ((u8)((u8)r2 >> (u8)g_rDown) << g_rUp) | (u8)((u8)b2 >> (u8)g_bDown));
-    m_teamColor3 = (u16)(((u8)((u8)r3 >> (u8)g_rDown) << g_rUp)
-                         | ((u8)((u8)g3 >> (u8)g_gDown) << g_gUp) | (u8)((u8)b3 >> (u8)g_bDown));
+    m_teamColor1 = static_cast<u16>(((static_cast<u8>((static_cast<u8>(r1) >> static_cast<u8>(g_rDown))) << g_rUp)
+                         | (static_cast<u8>((static_cast<u8>(g1) >> static_cast<u8>(g_gDown))) << g_gUp) | static_cast<u8>((static_cast<u8>(b1) >> static_cast<u8>(g_bDown)))));
+    m_teamColor2 = static_cast<u16>(((static_cast<u8>((static_cast<u8>(g2) >> static_cast<u8>(g_gDown))) << g_gUp)
+                         | (static_cast<u8>((static_cast<u8>(r2) >> static_cast<u8>(g_rDown))) << g_rUp) | static_cast<u8>((static_cast<u8>(b2) >> static_cast<u8>(g_bDown)))));
+    m_teamColor3 = static_cast<u16>(((static_cast<u8>((static_cast<u8>(r3) >> static_cast<u8>(g_rDown))) << g_rUp)
+                         | (static_cast<u8>((static_cast<u8>(g3) >> static_cast<u8>(g_gDown))) << g_gUp) | static_cast<u8>((static_cast<u8>(b3) >> static_cast<u8>(g_bDown)))));
     return 1;
 }
 

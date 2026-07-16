@@ -245,37 +245,37 @@ RVA(0x0016ea90, 0x234)
 void CMovingLogic::MovingSlot16() {
     // Snapshot the integer positions, then step the kinematic state by the
     // elapsed clock delta.
-    m_140 = (i32)Motion()->m_40;
-    m_144 = (i32)Motion()->m_48;
-    Motion()->Step((double)g_frameTime * g_motionTimeScale - Motion()->m_00);
+    m_140 = static_cast<i32>(Motion()->m_40);
+    m_144 = static_cast<i32>(Motion()->m_48);
+    Motion()->Step(static_cast<double>(g_frameTime) * g_motionTimeScale - Motion()->m_00);
 
     // Carrier ride: while riding (flags bit4 + a latched carrier), fold the
     // carrier's per-frame deltas into the object's position and re-seed the
     // motion targets.
     if ((m_object->m_flags & 0x10) && m_object->m_carrier != 0) {
         m_object->m_screenX += m_object->m_carrier->m_deltaX;
-        Motion()->m_40 = (double)m_object->m_screenX;
+        Motion()->m_40 = static_cast<double>(m_object->m_screenX);
         m_object->m_screenY += m_object->m_carrier->m_deltaY;
-        Motion()->m_48 = (double)m_object->m_screenY;
+        Motion()->m_48 = static_cast<double>(m_object->m_screenY);
     }
 
     // Drive the level's move resolver toward the new position.
     if (m_object->m_moveMode == 1) {
         m_148 = m_object->m_0c->m_level
-                    ->MoveToward(m_object, (i32)Motion()->m_40, m_object->m_screenY, m_14c);
+                    ->MoveToward(m_object, static_cast<i32>(Motion()->m_40), m_object->m_screenY, m_14c);
         Motion()->m_30 = 0.0;
     } else {
         m_object->m_flags &= ~0x10;
         m_148 = m_object->m_0c->m_level
-                    ->MoveToward(m_object, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
+                    ->MoveToward(m_object, static_cast<i32>(Motion()->m_40), static_cast<i32>(Motion()->m_48), m_14c);
     }
 
     // X arrival: if the object moved off the motion target, re-solve the X
     // arrival velocity and re-anchor the target.
     CMotionState* ms = Motion();
     i32 sx = m_object->m_screenX;
-    if ((i32)Motion()->m_40 != sx) {
-        double d = (double)sx;
+    if (static_cast<i32>(Motion()->m_40) != sx) {
+        double d = static_cast<double>(sx);
         ms->m_28 = ms->ArrivalVelX(d);
         double a0new = ms->m_a0 - (ms->m_40 - d);
         ms->m_40 = d;
@@ -284,8 +284,8 @@ void CMovingLogic::MovingSlot16() {
 
     // Y arrival (symmetric).
     i32 sy = m_object->m_screenY;
-    if ((i32)Motion()->m_48 != sy) {
-        double d = (double)sy;
+    if (static_cast<i32>(Motion()->m_48) != sy) {
+        double d = static_cast<double>(sy);
         ms->m_30 = ms->ArrivalVelY(d);
         double a8new = ms->m_a8 - (ms->m_48 - d);
         ms->m_48 = d;
@@ -300,12 +300,12 @@ void CMovingLogic::MovingSlot16() {
             return;
         }
         if (f & 0x40000) {
-            Motion()->m_88 = (double)m_140;
+            Motion()->m_88 = static_cast<double>(m_140);
             Motion()->m_28 = Motion()->m_28 * g_motionNegHalf;
             return;
         }
         if (f & 0x80000) {
-            Motion()->m_70 = (double)m_140;
+            Motion()->m_70 = static_cast<double>(m_140);
             Motion()->m_28 = Motion()->m_28 * g_motionNegHalf;
         }
     }

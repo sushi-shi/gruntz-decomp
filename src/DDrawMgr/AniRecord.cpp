@@ -147,7 +147,7 @@ CAniRecordBase2::~CAniRecordBase2() {
 RVA(0x00168c60, 0xa0)
 i32 CAniRecordView::Parse_168c60(void* ctx, const i16* src) {
     const i16* p = src;
-    m_flags = (u16)*p++;
+    m_flags = static_cast<u16>(*p++);
     m_08 = *p++;
     m_owner = (CAniRecordOwner*)*p++;
     m_buf = *p++;
@@ -156,13 +156,13 @@ i32 CAniRecordView::Parse_168c60(void* ctx, const i16* src) {
     m_1c = *p++;
     m_20 = *p++;
     m_24 = *p++;
-    m_28 = (u16)*p++;
+    m_28 = static_cast<u16>(*p++);
     m_indices = 0;
     m_count = 0;
     g_aniParsedNameLen = 0;
     if (m_flags & 0x2) {
         const char* name = (const char*)p;
-        g_aniParsedNameLen = (i32)strlen(name) + 1;
+        g_aniParsedNameLen = static_cast<i32>(strlen(name)) + 1;
         ResolveIndices_168d00((CAniMapOwner*)ctx, name);
     }
     return 1;
@@ -208,7 +208,7 @@ void CAniRecordView::ResolveIndices_168d00(CAniMapOwner* owner, const char* str)
     }
     m_count = tokens.GetSize();
     if (m_count > 0) {
-        m_indices = (i32*)operator new((u32)(m_count * 4));
+        m_indices = (i32*)operator new(static_cast<u32>((m_count * 4)));
         for (i32 i = 0; i < m_count; i++) {
             // GetAt reaches the OUT-OF-LINE CStringArray::GetAt COMDAT (0x168e70), which
             // MFC models _AFXCOLL_INLINE - so it is bound as the layout-identical

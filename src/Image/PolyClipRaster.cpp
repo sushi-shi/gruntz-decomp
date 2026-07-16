@@ -46,14 +46,14 @@ i32 RotateRasterize(
     if (clipFlag == -1) {
         RotateSrcImage* img = (RotateSrcImage*)(void*)a3;
         clip1 = 0.0f;
-        clip0 = (float)img->m_1c;
-        clip2 = (float)img->m_18;
+        clip0 = static_cast<float>(img->m_1c);
+        clip2 = static_cast<float>(img->m_18);
         bound0 = 0.0f;
     } else {
-        bound0 = (float)clipFlag;
-        clip0 = (float)clipB;
-        clip1 = (float)clipC;
-        clip2 = (float)clipD;
+        bound0 = static_cast<float>(clipFlag);
+        clip0 = static_cast<float>(clipB);
+        clip1 = static_cast<float>(clipC);
+        clip2 = static_cast<float>(clipD);
     }
 
     // Pass 1: clip x >= bound0   (verts -> g_rasterVtxA)
@@ -78,7 +78,7 @@ i32 RotateRasterize(
             cur++;
         } while (--j);
     }
-    n = (i32)(out - g_rasterVtxA);
+    n = static_cast<i32>((out - g_rasterVtxA));
     if (n == 0) {
         return 0;
     }
@@ -105,7 +105,7 @@ i32 RotateRasterize(
             cur++;
         } while (--j);
     }
-    n = (i32)(out - g_rasterVtxB);
+    n = static_cast<i32>((out - g_rasterVtxB));
     if (n == 0) {
         return 0;
     }
@@ -132,7 +132,7 @@ i32 RotateRasterize(
             cur++;
         } while (--j);
     }
-    n = (i32)(out - g_rasterVtxA);
+    n = static_cast<i32>((out - g_rasterVtxA));
     if (n == 0) {
         return 0;
     }
@@ -159,7 +159,7 @@ i32 RotateRasterize(
             cur++;
         } while (--j);
     }
-    n = (i32)(out - g_rasterVtxB);
+    n = static_cast<i32>((out - g_rasterVtxB));
     if (n == 0) {
         return 0;
     }

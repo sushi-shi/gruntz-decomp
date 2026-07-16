@@ -82,7 +82,7 @@ DATA(0x001efb1c)
 extern "C" const float g_rasterScaleNeg = -16384.0f;
 
 static i32 warpFtol(double v) {
-    return (i32)v;
+    return static_cast<i32>(v);
 }
 
 // @early-stop
@@ -102,7 +102,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     if (WarpIsPow2(src->m_width) == 0) {
         return 0;
     }
-    g_warpColorkey = (i16)colorkey;
+    g_warpColorkey = static_cast<i16>(colorkey);
 
     // log2(width): the shift used to fold v into the high texture index bits.
     i32 shift = 0;
@@ -138,17 +138,17 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     table = g_rasterEdgeR;
                 }
 
-                i32 topU = warpFtol((double)top->u * g_rasterScale);
-                i32 topV = warpFtol((double)top->v * g_rasterScale);
-                i32 topX = warpFtol((double)top->x * g_rasterScale);
-                i32 topYi = warpFtol((double)top->y * g_rasterScale) >> 0xe;
-                i32 botYi = warpFtol((double)bot->y * g_rasterScale) >> 0xe;
+                i32 topU = warpFtol(static_cast<double>(top->u) * g_rasterScale);
+                i32 topV = warpFtol(static_cast<double>(top->v) * g_rasterScale);
+                i32 topX = warpFtol(static_cast<double>(top->x) * g_rasterScale);
+                i32 topYi = warpFtol(static_cast<double>(top->y) * g_rasterScale) >> 0xe;
+                i32 botYi = warpFtol(static_cast<double>(bot->y) * g_rasterScale) >> 0xe;
                 i32 h = botYi - topYi;
 
                 i32* rec = (i32*)((char*)table + topYi * 0x1c + 0x10);
-                i32 dx = (-topX - warpFtol((double)bot->x * g_rasterScaleNeg)) / h;
-                i32 du = (-topU - warpFtol((double)bot->u * g_rasterScaleNeg)) / h;
-                i32 dv = (-topV - warpFtol((double)bot->v * g_rasterScaleNeg)) / h;
+                i32 dx = (-topX - warpFtol(static_cast<double>(bot->x) * g_rasterScaleNeg)) / h;
+                i32 du = (-topU - warpFtol(static_cast<double>(bot->u) * g_rasterScaleNeg)) / h;
+                i32 dv = (-topV - warpFtol(static_cast<double>(bot->v) * g_rasterScaleNeg)) / h;
 
                 i32 x = topX;
                 i32 u = topU;

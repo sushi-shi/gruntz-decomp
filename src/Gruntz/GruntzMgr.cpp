@@ -1172,7 +1172,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     DWORD dwSize = 0; // real GetConnectionSettings takes LPDWORD (unsigned long*)
     hr = m_lobby->GetConnectionSettings(0, 0, &dwSize);
-    if (hr != 0 && hr != (i32)DPERR_BUFFERTOOSMALL) {
+    if (hr != 0 && hr != static_cast<i32>(DPERR_BUFFERTOOSMALL)) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
         m_lobby = 0;
@@ -2088,7 +2088,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
-                                if ((u32)(g_killCueClock - cue->m_14) >= (u32)cue->m_18) {
+                                if (static_cast<u32>((g_killCueClock - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
                                     cue->m_14 = g_killCueClock;
                                     cue->m_10->ConfigureItem(tag, 0, 0, 0);
                                 }
@@ -2148,7 +2148,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
-                                if ((u32)(g_killCueClock - cue->m_14) >= (u32)cue->m_18) {
+                                if (static_cast<u32>((g_killCueClock - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
                                     cue->m_14 = g_killCueClock;
                                     cue->m_10->ConfigureItem(tag, 0, 0, 0);
                                 }
@@ -2281,9 +2281,9 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
         // result): red (0xff), green (0), blue (0x84). The masks are spelled as
         // u16 truncations so MSVC keeps them per-channel (an explicit `& 0xffff`
         // on all three gets reassociated to one fold).
-        i32 packed = (u16)((0xff >> g_rDown) << g_rUp);
-        packed |= (u16)((0 >> g_gDown) << g_gUp);
-        packed |= (u16)(0x84 >> g_bDown);
+        i32 packed = static_cast<u16>(((0xff >> g_rDown) << g_rUp));
+        packed |= static_cast<u16>(((0 >> g_gDown) << g_gUp));
+        packed |= static_cast<u16>((0x84 >> g_bDown));
         g_surfaceColorKey = packed;
         return 1;
     }
@@ -2927,7 +2927,7 @@ i32 CGruntzMgr::LoadOptionsSlotName(
 // when it is in range and loaded (m_20 != 0); returns Reset()'s result, else 0.
 RVA(0x00092da0, 0x3a)
 i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
-    if ((u32)idx >= 4) {
+    if (static_cast<u32>(idx) >= 4) {
         return 0;
     }
     GruntzPlayer* s = &m_options[idx];
@@ -3079,21 +3079,21 @@ void CGruntzMgr::RecomputeViewScale() {
         return;
     }
     CGameLevel* view = m_world->m_level;
-    float fw = (float)(view->m_planeCtx.maxX - view->m_planeCtx.minX + 1);
-    float fh = (float)(view->m_planeCtx.maxY - view->m_planeCtx.minY + 1);
+    float fw = static_cast<float>((view->m_planeCtx.maxX - view->m_planeCtx.minX + 1));
+    float fh = static_cast<float>((view->m_planeCtx.maxY - view->m_planeCtx.minY + 1));
 
-    view->m_c8 = (i32)(fw * 1.4f);
-    view->m_cc = (i32)(fh * 1.4f);
+    view->m_c8 = static_cast<i32>((fw * 1.4f));
+    view->m_cc = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_d0 = (i32)(fw * 5.3f);
-    view->m_d4 = (i32)(fh * 5.3f);
+    view->m_d0 = static_cast<i32>((fw * 5.3f));
+    view->m_d4 = static_cast<i32>((fh * 5.3f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_d8 = (i32)(fw * 1.12f);
-    view->m_dc = (i32)(fh * 1.12f);
+    view->m_d8 = static_cast<i32>((fw * 1.12f));
+    view->m_dc = static_cast<i32>((fh * 1.12f));
     view->MainPlaneNotify();
 
     CGameLevel* v = m_world->m_level;
@@ -3721,7 +3721,7 @@ i32 CGruntzMgr::SyncOptionsState() {
             matched = 1;
         }
     }
-    srand((u32)time(0));
+    srand(static_cast<u32>(time(0)));
     g_optionsCursor = 0;
 
     i32 idx = 0;
@@ -3976,8 +3976,8 @@ void CGruntzMgr::AccrueScoreTime() {
         // m_134 == 3 is the "won" arm - the live state IS the PLAY state, so the
         // +0x3f4 frame-marker CTimer is reached by a plain derived downcast.
         CTimer* clk = ((CPlay*)st)->m_frameMarker;
-        i64 d = (i64)g_frameTime - *(i64*)&clk->m_38; // the +0x38:+0x3c start stamp
-        g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : (i32)d;
+        i64 d = static_cast<i64>(g_frameTime) - *(i64*)&clk->m_38; // the +0x38:+0x3c start stamp
+        g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : static_cast<i32>(d);
         TransitionState(0x12, 1, 0, 0);
         return;
     }

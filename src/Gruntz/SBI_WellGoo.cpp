@@ -83,11 +83,11 @@ i32 CSBI_WellGoo::Tick() {
     // ceiling-clamped to 1.0, subtracted off the current water line and rounded to an
     // int. The (float) cast keeps the 0.01f/3.0f factors single-precision (fmuls/fsubs,
     // the 32-bit float constant pool) while the 1.0 clamp stays double (fcoml).
-    double fill = (float)(m_rect14.m_c - m_rect14.m_4) * m_fillScale * 0.01f - 3.0f;
+    double fill = static_cast<float>((m_rect14.m_c - m_rect14.m_4)) * m_fillScale * 0.01f - 3.0f;
     if (fill <= 1.0) {
         fill = 1.0;
     }
-    m_fgTop = (i32)((double)m_rect14.m_c - fill);
+    m_fgTop = static_cast<i32>((static_cast<double>(m_rect14.m_c) - fill));
 
     m_blitter->Blit((ShadeRect*)&m_srcRect, m_gooSrc, (ShadeRect*)&m_srcRect, 0, 0);
 

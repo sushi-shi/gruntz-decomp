@@ -821,7 +821,7 @@ i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
 
     i32 count = m_ptrPool.GetSize();
     s->Write(&count, 4);
-    for (u32 n = 0; n < (u32)count; n++) {
+    for (u32 n = 0; n < static_cast<u32>(count); n++) {
         s->Write(m_ptrPool.GetData()[n], 8);
     }
     return 1;
@@ -954,7 +954,7 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     i32 count = 0;
     s->Read(&count, 4);
     m_ptrPool.SetSize(count, -1);
-    for (u32 n = 0; n < (u32)count; n++) {
+    for (u32 n = 0; n < static_cast<u32>(count); n++) {
         char* head = (char*)g_coordPool.m_freeHead;
         void* node = 0;
         if (*(i32*)head != 0) {
@@ -1031,7 +1031,7 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                        if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
@@ -1067,7 +1067,7 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                        if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
@@ -1102,7 +1102,7 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                        if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
@@ -1498,10 +1498,10 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     i32 n = 5;
     do {
         if (tab->m_state == 1) {
-            i64 d = (i64)(u32)g_frameTime - *(i64*)&tab->m_8;
-            i32 elapsed = (d >= 0) ? (i32)d : 0;
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&tab->m_8;
+            i32 elapsed = (d >= 0) ? static_cast<i32>(d) : 0;
             u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
-            i32 frame = (i32)((u32)elapsed / delay) + 1;
+            i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
             if (frame >= 0x1a) {
                 tab->m_state = 2;
                 frame = 0x1a;
@@ -1590,7 +1590,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        i64 d = (i64)(u32)g_frameTime - *(i64*)&m_fallLast;
+        i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_fallLast;
         if (d >= *(i64*)&m_fallDelay) {
             i32 newLo = m_fallRectT + speed;
             m_fallRectT = newLo;
@@ -1606,9 +1606,9 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                 p[2] = m_fallRectR + sx;
                 p[3] = sy + newHi;
             }
-            m_fallDelay = (i32)delay;
+            m_fallDelay = static_cast<i32>(delay);
             m_fallDelayHi = 0;
-            m_fallLast = (i32)g_frameTime;
+            m_fallLast = static_cast<i32>(g_frameTime);
             m_fallLastHi = 0;
             stepped = 1;
         }
@@ -1685,12 +1685,12 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     i32 dxv = tx - srcX;
     i32 dyv = ty - srcY;
     i32 dist2 = dxv * dxv + dyv * dyv;
-    double dist = sqrt((double)dist2);
+    double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDwordDef("WarpStone", "FlyTime", 0x5dc);
 
-    m_velocityScale = (double)flyTime / dist;
-    m_xDirection = (double)dist2 / dist;
-    m_yDirection = (double)dxv / dist;
+    m_velocityScale = static_cast<double>(flyTime) / dist;
+    m_xDirection = static_cast<double>(dist2) / dist;
+    m_yDirection = static_cast<double>(dxv) / dist;
 
     CSndHost* h = g_gameReg->m_world->m_soundRegistry;
     if (h->m_emitGate == 0) {
@@ -1705,8 +1705,8 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
         }
     }
 
-    m_currentX = (double)dxv;
-    m_currentY = (double)dyv;
+    m_currentX = static_cast<double>(dxv);
+    m_currentY = static_cast<double>(dyv);
     return 1;
 }
 
@@ -1742,7 +1742,7 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
     // CDestructBlock view onto the canonical class.)
     switch (m_destructWarnActive) {
         case 1: {
-            i64 d = (i64)(u32)g_frameTime - *(i64*)&m_destructWarnLast;
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_destructWarnLast;
             if (d >= *(i64*)&m_destructWarnDelay) {
                 if (++m_modeState >= 6) {
                     m_modeState = 6;
@@ -1761,7 +1761,7 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
             break;
         }
         case 2: {
-            i64 d = (i64)(u32)g_frameTime - *(i64*)&m_destructWarnLast;
+            i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_destructWarnLast;
             if (d >= *(i64*)&m_destructWarnDelay) {
                 if (--m_modeState <= 2) {
                     m_modeState = 2;
@@ -2364,7 +2364,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
-                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                    if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
@@ -2399,7 +2399,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
                     i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                        if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                             p->m_14 = g_killCueClock;
                             p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
@@ -2487,7 +2487,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
-                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                    if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
@@ -2517,7 +2517,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
             i32 item = g_sndCueTag;
             if (gate != 0) {
                 CSbiCueRecord* p = (CSbiCueRecord*)found;
-                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                     p->m_14 = g_killCueClock;
                     p->m_10->ConfigureItem(item, 0, 0, 0);
                 }
@@ -2993,7 +2993,7 @@ static __inline i32 WapRand(i32 range) {
             x = g_randSeed;
         }
         g_randSeed = x * 214013 + 2531011;
-        return ((u32)g_randSeed >> 16) & 1;
+        return (static_cast<u32>(g_randSeed) >> 16) & 1;
     }
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;
@@ -3002,7 +3002,7 @@ static __inline i32 WapRand(i32 range) {
         x = g_randSeed;
     }
     g_randSeed = x * 214013 + 2531011;
-    return (((i32)g_randSeed >> 16) & 0x7fff) % range + 1;
+    return ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % range + 1;
 }
 
 // 0x107d00 - the falling-item weighted-random roulette. When the game is over
@@ -3358,7 +3358,7 @@ static __inline void HiCueTimed() {
         if (found && g_sndEnabled != 0) {
             i32 item = g_sndCueTag;
             CSbiCueRecord* p = (CSbiCueRecord*)found;
-            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+            if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                 p->m_14 = g_killCueClock;
                 p->m_10->ConfigureItem(item, 0, 0, 0);
             }
@@ -3773,7 +3773,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
                 i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
-                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                    if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                         p->m_14 = g_killCueClock;
                         p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
@@ -3807,13 +3807,13 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 2:
-                if ((i64)(u32)g_frameTime - ph->m_last >= ph->m_interval) {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (++ph->m_counter >= 0x12) {
                         ph->m_counter = 0x12;
                         ph->m_state = 7;
                         ph->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
-                        ph->m_last = (u32)g_frameTime;
+                        ph->m_last = static_cast<u32>(g_frameTime);
                         UpdateFallingItemStatusBar(
                             m_extraNotifyArg0,
                             m_itemRectL + 0xc,
@@ -3824,7 +3824,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 3:
-                if ((i64)(u32)g_frameTime - ph->m_last >= ph->m_interval) {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (--ph->m_counter < 0xa) {
                         ph->m_state = 0;
                         ph->m_counter = 1;
@@ -3832,21 +3832,21 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 4:
-                if ((i64)(u32)g_frameTime - ph->m_last >= ph->m_interval) {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (++ph->m_counter >= 0x18) {
                         ph->m_counter = 0x18;
                         ph->m_state = 6;
                         ph->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
-                        ph->m_last = (u32)g_frameTime;
+                        ph->m_last = static_cast<u32>(g_frameTime);
                         m_machinePhase = 8;
                         m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                        m_beltLast = (u32)g_frameTime;
+                        m_beltLast = static_cast<u32>(g_frameTime);
                     }
                 }
                 break;
             case 5:
-                if ((i64)(u32)g_frameTime - ph->m_last >= ph->m_interval) {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (--ph->m_counter < 0x13) {
                         ph->m_state = 0;
                         ph->m_counter = 1;
@@ -3854,7 +3854,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 6:
-                if ((i64)(u32)g_frameTime - ph->m_last >= ph->m_interval) {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                         if (host->m_30 == 0) {
@@ -3864,7 +3864,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
-                                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
@@ -3875,7 +3875,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case 7:
-                if ((i64)(u32)g_frameTime - ph->m_last >= ph->m_interval) {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                         if (host->m_30 == 0) {
@@ -3885,7 +3885,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
-                                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
@@ -3921,7 +3921,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
     SbiPhaseSlot* pB = (SbiPhaseSlot*)&m_hudRectA_x;
     SbiPhaseSlot* g = (SbiPhaseSlot*)m_groupSlots;
     if (pA->m_state == 5) {
-        if ((i64)(u32)g_frameTime - pA->m_last >= pA->m_interval) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x34) {
                 SetHudRectB(
                     0x2b,
@@ -3930,23 +3930,23 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 );
             } else {
                 pA->m_interval = g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d);
-                pA->m_last = (u32)g_frameTime;
+                pA->m_last = static_cast<u32>(g_frameTime);
             }
         }
     } else if (pA->m_state == 6) {
-        if ((i64)(u32)g_frameTime - pA->m_last >= pA->m_interval) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x44) {
                 SetHudRectB(0x2b, 0, 0x7fffffff);
             } else {
                 pA->m_interval = g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
-                pA->m_last = (u32)g_frameTime;
+                pA->m_last = static_cast<u32>(g_frameTime);
             }
         }
     }
 
     switch (pB->m_state) {
         case 1:
-            if ((i64)(u32)g_frameTime - pB->m_last >= pB->m_interval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 8) {
                     SetHudRectA(
                         1,
@@ -3956,12 +3956,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 } else {
                     pB->m_interval =
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64);
-                    pB->m_last = (u32)g_frameTime;
+                    pB->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case 2:
-            if ((i64)(u32)g_frameTime - pB->m_last >= pB->m_interval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x13) {
                     SetHudRectA(
                         0x14,
@@ -3981,7 +3981,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     }
                     m_machinePhase = 2;
                     m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                    m_beltLast = (u32)g_frameTime;
+                    m_beltLast = static_cast<u32>(g_frameTime);
                     if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
                         if (host->m_30 == 0) {
@@ -3991,7 +3991,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             if (found && g_sndEnabled != 0) {
                                 i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
-                                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                     p->m_14 = g_killCueClock;
                                     p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
@@ -4001,12 +4001,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 } else {
                     pB->m_interval =
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 0x64);
-                    pB->m_last = (u32)g_frameTime;
+                    pB->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case 3:
-            if ((i64)(u32)g_frameTime - pB->m_last >= pB->m_interval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x1d) {
                     SetHudRectA(
                         0x14,
@@ -4016,12 +4016,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 } else {
                     pB->m_interval =
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64);
-                    pB->m_last = (u32)g_frameTime;
+                    pB->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case 4:
-            if ((i64)(u32)g_frameTime - pB->m_last >= pB->m_interval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter == 0x26) {
                     i32 col;
                     i32 which = m_extraNotifyArg0;
@@ -4049,7 +4049,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
-                                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                    if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                         p->m_14 = g_killCueClock;
                                         p->m_10->ConfigureItem(item, 0, 0, 0);
                                     }
@@ -4068,7 +4068,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                 if (fnd && g_sndEnabled != 0) {
                                     i32 item = g_sndCueTag;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
-                                    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                                    if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                         p->m_14 = g_killCueClock;
                                         p->m_10->ConfigureItem(item, 0, 0, 0);
                                     }
@@ -4077,7 +4077,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         }
                     }
                     g[0].m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltDelay", 0x64);
-                    g[0].m_last = (u32)g_frameTime;
+                    g[0].m_last = static_cast<u32>(g_frameTime);
                     if (pB->m_counter > 0x2a) {
                         SetHudRectA(
                             1,
@@ -4087,7 +4087,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     } else {
                         pB->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64);
-                        pB->m_last = (u32)g_frameTime;
+                        pB->m_last = static_cast<u32>(g_frameTime);
                     }
                 }
             }
@@ -4131,23 +4131,23 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     i32 rectFlag = 0;
     switch (m_machinePhase) {
         case 2:
-            if ((i64)(u32)g_frameTime - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_itemRectL += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRectR += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = (u32)g_frameTime;
+                m_beltLast = static_cast<u32>(g_frameTime);
             }
             if (m_itemRectL >= 0x6d) {
                 m_itemRectL = 0x6d;
                 m_itemRectR = 0x84;
                 m_machinePhase = 3;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemInMachineTime", 0x7d0);
-                m_beltLast = (u32)g_frameTime;
+                m_beltLast = static_cast<u32>(g_frameTime);
             }
             refreshFlag = 1;
             break;
         case 3:
-            if ((i64)(u32)g_frameTime - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 SetHudRectB(
                     0x35,
                     6,
@@ -4155,11 +4155,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 );
                 m_machinePhase = 4;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemWaitTime", 0x1f4);
-                m_beltLast = (u32)g_frameTime;
+                m_beltLast = static_cast<u32>(g_frameTime);
             }
             break;
         case 4:
-            if ((i64)(u32)g_frameTime - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
                 if (m_activeTab == 3 && m_position != 2) {
                     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
@@ -4170,7 +4170,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                            if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
                             }
@@ -4178,15 +4178,15 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     }
                 }
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = (u32)g_frameTime;
+                m_beltLast = static_cast<u32>(g_frameTime);
             }
             break;
         case 5:
-            if ((i64)(u32)g_frameTime - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_itemRectT += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_itemRectB += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = (u32)g_frameTime;
+                m_beltLast = static_cast<u32>(g_frameTime);
             }
             if (m_itemRectB >= 0x11c) {
                 m_itemRectB = 0x11c;
@@ -4201,7 +4201,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                            if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
                             }
@@ -4210,7 +4210,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 }
                 m_machinePhase = 7;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = (u32)g_frameTime;
+                m_beltLast = static_cast<u32>(g_frameTime);
                 if (m_extraNotifyArg0 >= 0x22) {
                     m_itemBaseX = 0x6d;
                 } else if (m_extraNotifyArg0 >= 0x17) {
@@ -4222,11 +4222,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case 7:
-            if ((i64)(u32)g_frameTime - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_itemRectL -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRectR -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = (u32)g_frameTime;
+                m_beltLast = static_cast<u32>(g_frameTime);
             }
             if (m_itemRectL <= m_itemBaseX) {
                 m_itemRectL = m_itemBaseX;
@@ -4243,11 +4243,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case 8: {
-            if ((i64)(u32)g_frameTime - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_beltLast >= m_beltInterval) {
                 m_itemRectT += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_itemRectB += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = (u32)g_frameTime;
+                m_beltLast = static_cast<u32>(g_frameTime);
             }
             i32 col;
             if (m_extraNotifyArg0 >= 0x22) {
@@ -4272,7 +4272,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         if (found && g_sndEnabled != 0) {
                             i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                            if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                                 p->m_14 = g_killCueClock;
                                 p->m_10->ConfigureItem(item, 0, 0, 0);
                             }

@@ -51,38 +51,38 @@ i32 ProjectWallQuad(
 ) {
     i32 dx = p3 - p1;
     i32 dy = p4 - p2;
-    double ang = atan2((double)dy, (double)dx);
-    double adx = fabs((double)dx);
-    double ady = fabs((double)dy);
+    double ang = atan2(static_cast<double>(dy), static_cast<double>(dx));
+    double adx = fabs(static_cast<double>(dx));
+    double ady = fabs(static_cast<double>(dy));
     double len = sqrt(adx * adx + ady * ady - g_c24);
     double s = sin(ang);
     double c = cos(ang);
-    double hw = (double)p5;
+    double hw = static_cast<double>(p5);
 
     // The workspace is written as a flat float grid (7 floats == one ClipVtx record).
     float* w = (float*)g_rasterVtxB;
-    w[0] = (float)(-s);
-    w[1] = (float)len;
-    w[5] = (float)c;
-    w[6] = (float)(c + len);
+    w[0] = static_cast<float>((-s));
+    w[1] = static_cast<float>(len);
+    w[5] = static_cast<float>(c);
+    w[6] = static_cast<float>((c + len));
 
     // rotate the four base corners through (c, -s) into the workspace records.
     float* v = &w[1];
     for (i32 i = 0; i < 4; i++) {
-        double bx = (double)v[-1];
-        double by = -(double)v[0];
-        v[-8] = (float)(bx * c * hw - by * s * hw);
-        v[-7] = (float)(bx * s * hw + by * c * hw);
+        double bx = static_cast<double>(v[-1]);
+        double by = -static_cast<double>(v[0]);
+        v[-8] = static_cast<float>((bx * c * hw - by * s * hw));
+        v[-7] = static_cast<float>((bx * s * hw + by * c * hw));
         v += 7;
     }
     for (i32 j = 0; j < 4; j++) {
-        v[-8] = (float)((double)p1 + (double)v[-1]);
-        v[-7] = (float)((double)p2 + (double)v[0]);
+        v[-8] = static_cast<float>((static_cast<double>(p1) + static_cast<double>(v[-1])));
+        v[-7] = static_cast<float>((static_cast<double>(p2) + static_cast<double>(v[0])));
         v += 7;
     }
 
     if (ImagePolyClipRect(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
-        FillPolygon(g_rasterVtxB, g_rasterVtxCount, (CDDSurface*)p0, (i16)p6);
+        FillPolygon(g_rasterVtxB, g_rasterVtxCount, (CDDSurface*)p0, static_cast<i16>(p6));
     }
     return 1;
 }

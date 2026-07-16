@@ -174,13 +174,13 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
     g_hInstance = hInstance;
     i32 bAdvanced = 0;
     SettleDelay(0x64); // busy-wait, ~100ms
-    if ((i16)GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
+    if (static_cast<i16>(GetAsyncKeyState(VK_CONTROL)) & 0x80000000) {
         bAdvanced = 1;
     }
-    if ((i16)GetAsyncKeyState(VK_SHIFT) & 0x80000000) {
+    if (static_cast<i16>(GetAsyncKeyState(VK_SHIFT)) & 0x80000000) {
         bAdvanced = 1;
     }
-    if ((i16)GetAsyncKeyState(VK_DOLLAR) & 0x80000000) {
+    if (static_cast<i16>(GetAsyncKeyState(VK_DOLLAR)) & 0x80000000) {
         bAdvanced = 1;
     }
 

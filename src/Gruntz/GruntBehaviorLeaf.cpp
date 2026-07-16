@@ -58,21 +58,21 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
         if (m_animSuppress == 0) {
             m_260->NotifyCell(m_animArg0, m_animArg1, 0);
         }
-        i32 dt = (i32)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8);
+        i32 dt = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
         if (m_object->m_drawFillCmd == 0xb) {
             m_decayDurationLo = dt;
-            m_decayTimerLo = (i32)g_frameTime - m_object->m_fillFraction * dt / 256;
+            m_decayTimerLo = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
             m_decayDurationHi = 0;
         } else {
             m_decayDurationLo = dt;
             m_decayDurationHi = 0;
-            m_decayTimerLo = (i32)g_frameTime;
+            m_decayTimerLo = static_cast<i32>(g_frameTime);
         }
         m_decayTimerHi = 0;
-        i64 e = (i64)(u32)g_frameTime - *(i64*)&m_decayTimerLo;
-        u32 elapsed = e < 0 ? 0 : (u32)e;
-        i32 r = (i32)((double)elapsed * 256.0
-                      / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
+        i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_decayTimerLo;
+        u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
+        i32 r = static_cast<i32>((static_cast<double>(elapsed) * 256.0
+                      / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8))));
         m_object->m_drawActive = 1;
         m_object->m_drawFillCmd = 0xb;
         m_object->m_fillFraction = r;
@@ -95,7 +95,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
 // clock into a local regressed it. Not source-steerable.
 RVA(0x00061570, 0x11d)
 i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
-    if ((i64)(u32)g_frameTime - *(i64*)&m_decayTimerLo >= *(i64*)&m_decayDurationLo) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_decayTimerLo >= *(i64*)&m_decayDurationLo) {
         m_drawState->m_stateFlags |= 1;
         m_drawState->m_imageSet->SetAllTypes(1);
         if (m_animSuppress == 0) {
@@ -104,10 +104,10 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
         m_drawState->m_flags |= 0x10000;
         return 0;
     }
-    i64 e = (i64)(u32)g_frameTime - *(i64*)&m_decayTimerLo;
-    u32 elapsed = e < 0 ? 0 : (u32)e;
+    i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_decayTimerLo;
+    u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
     i32 r =
-        (i32)((double)elapsed * 256.0 / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
+        static_cast<i32>((static_cast<double>(elapsed) * 256.0 / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8))));
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 0xb;
     m_object->m_fillFraction = r;

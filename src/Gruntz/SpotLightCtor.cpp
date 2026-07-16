@@ -75,8 +75,8 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
 
     i32 ax = (m_object->m_screenX & ~0x1f) + 0x10;
     i32 cx = (m_object->m_screenY & ~0x1f) + 0x10;
-    m_70 = (double)ax;
-    m_78 = (double)cx;
+    m_70 = static_cast<double>(ax);
+    m_78 = static_cast<double>(cx);
     i32 nx;
     if (m_object->m_124 == 0) {
         nx = ax - 0x20;
@@ -85,7 +85,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     }
     m_object->m_screenX = nx;
     m_object->m_screenY = cx;
-    m_60 = (double)nx;
+    m_60 = static_cast<double>(nx);
     m_68 = m_78;
     if (m_object->m_latchedAnimId != 0xcf850) {
         m_object->m_latchedAnimId = 0xcf850;
@@ -100,7 +100,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     } else {
         v = m_object->m_120;
     }
-    m_58 = g_spotRateNum / (double)(u32)v;
+    m_58 = g_spotRateNum / static_cast<double>(static_cast<u32>(v));
     if (m_object->m_12c == 1) {
         m_58 = m_58 * g_spotRateMul;
     }
@@ -310,7 +310,7 @@ i32 CSpotLight::Tick_0b1af0() {
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {
                     g_randSeeded |= 1;
-                    seed = (i32)g_pTimeGetTime();
+                    seed = static_cast<i32>(g_pTimeGetTime());
                 } else {
                     seed = g_randSeed;
                 }
@@ -335,19 +335,19 @@ i32 CSpotLight::Tick_0b1af0() {
     // 2D rotation of the light offset (the fp-stack-schedule wall)
     double s = sin(m_90);
     double c = cos(m_90);
-    double dt = (double)(i32)g_frameDelta;
+    double dt = static_cast<double>(static_cast<i32>(g_frameDelta));
     CGameObject* mv = m_focus; // the focus object (real CGameObject; ex CSpotLaser view)
     double rx = m_80 * c - m_88 * s;
     double ry = m_80 * s + m_88 * c;
     if (mv != 0) {
-        m_70 = (double)mv->m_screenX;
-        m_78 = (double)mv->m_screenY;
+        m_70 = static_cast<double>(mv->m_screenX);
+        m_78 = static_cast<double>(mv->m_screenY);
     }
     m_60 = m_70 + rx;
     m_68 = m_78 + ry;
     m_90 = m_90 + dt * m_58;
-    *(i32*)((char*)m_object + 0x5c) = (i32)m_60;
-    *(i32*)((char*)m_object + 0x60) = (i32)m_68;
+    *(i32*)((char*)m_object + 0x5c) = static_cast<i32>(m_60);
+    *(i32*)((char*)m_object + 0x60) = static_cast<i32>(m_68);
     return 0;
 }
 

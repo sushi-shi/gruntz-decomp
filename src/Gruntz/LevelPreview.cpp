@@ -178,7 +178,7 @@ i32 CPreviewState::Tick() {
     if (snd != 0) {
         snd->PurgeVoiceList(-1);
     }
-    if ((u32)g_wap32FrameDelta >= m_1b8) {
+    if (static_cast<u32>(g_wap32FrameDelta) >= m_1b8) {
         m_1b8 = 0;
     } else {
         m_1b8 = m_1b8 - g_wap32FrameDelta;
@@ -254,7 +254,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
             LeafCue* p = (LeafCue*)p_ob;
             if (p != 0) {
                 i32 tag = g_sndCueTag;
-                if (g_sndEnabled != 0 && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {
+                if (g_sndEnabled != 0 && static_cast<u32>((g_killCueClock - p->m_14)) >= static_cast<u32>(p->m_18)) {
                     p->m_14 = g_killCueClock;
                     p->m_10->ConfigureItem(tag, 0, 0, 0);
                 }

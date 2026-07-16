@@ -209,8 +209,8 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
     switch (msg) {
         case WM_HSCROLL: { // 0x114
-            i32 code = (i32)(wParam & 0xffff);
-            i32 pos = (i32)(wParam >> 0x10);
+            i32 code = static_cast<i32>((wParam & 0xffff));
+            i32 pos = static_cast<i32>((wParam >> 0x10));
             if ((HWND)lParam == g_optHwndResSlider) {
                 SaveVideoResolutionConfig(hDlg, (HWND)lParam, code, pos);
             } else {
@@ -732,7 +732,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (!g_sndEnabled) {
             return;
         }
-        if ((u32)(g_killCueClock - cue->m_14) < (u32)cue->m_18) {
+        if (static_cast<u32>((g_killCueClock - cue->m_14)) < static_cast<u32>(cue->m_18)) {
             return;
         }
         cue->m_14 = g_killCueClock;
@@ -757,7 +757,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (!g_sndEnabled) {
             return;
         }
-        if ((u32)(g_killCueClock - cue->m_14) < (u32)cue->m_18) {
+        if (static_cast<u32>((g_killCueClock - cue->m_14)) < static_cast<u32>(cue->m_18)) {
             return;
         }
         cue->m_14 = g_killCueClock;

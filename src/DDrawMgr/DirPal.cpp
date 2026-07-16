@@ -461,11 +461,11 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
         if (t != prev) {
             for (i32 j = start; j < start + count; j++) {
                 m_cacheA[j * 4 + 0] =
-                    (u8)(((r & 0xff) - snapshot[j * 4 + 0]) * t / durationMs + snapshot[j * 4 + 0]);
+                    static_cast<u8>((((r & 0xff) - snapshot[j * 4 + 0]) * t / durationMs + snapshot[j * 4 + 0]));
                 m_cacheA[j * 4 + 1] =
-                    (u8)(((g & 0xff) - snapshot[j * 4 + 1]) * t / durationMs + snapshot[j * 4 + 1]);
+                    static_cast<u8>((((g & 0xff) - snapshot[j * 4 + 1]) * t / durationMs + snapshot[j * 4 + 1]));
                 m_cacheA[j * 4 + 2] =
-                    (u8)(((b & 0xff) - snapshot[j * 4 + 2]) * t / durationMs + snapshot[j * 4 + 2]);
+                    static_cast<u8>((((b & 0xff) - snapshot[j * 4 + 2]) * t / durationMs + snapshot[j * 4 + 2]));
             }
             m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)(m_cacheA + start * 4));
         }
@@ -547,29 +547,29 @@ i32 CDDPalette::Tick() {
         return 0;
     }
     u32 dt = ::timeGetTime() - m_startTimeMs;
-    if (dt >= (u32)m_durationMs) {
+    if (dt >= static_cast<u32>(m_durationMs)) {
         Flush();
         return 0;
     }
     if (m_targetPalette != 0) {
-        if (dt != (u32)m_lastElapsedMs) {
+        if (dt != static_cast<u32>(m_lastElapsedMs)) {
             i32 i = m_firstColorIndex;
             if (i < m_firstColorIndex + m_colorCount) {
                 do {
                     m_cacheA[i * 4] =
-                        (char)((i32)(((u32)m_targetPalette[i * 4] - (u32)m_sourcePalette[i * 4])
-                                     * dt)
-                               / m_durationMs)
+                        static_cast<char>((static_cast<i32>(((static_cast<u32>(m_targetPalette[i * 4]) - static_cast<u32>(m_sourcePalette[i * 4]))
+                                     * dt))
+                               / m_durationMs))
                         + m_sourcePalette[i * 4];
-                    m_cacheA[i * 4 + 1] = (char)((i32)(((u32)m_targetPalette[i * 4 + 1]
-                                                        - (u32)m_sourcePalette[i * 4 + 1])
-                                                       * dt)
-                                                 / m_durationMs)
+                    m_cacheA[i * 4 + 1] = static_cast<char>((static_cast<i32>(((static_cast<u32>(m_targetPalette[i * 4 + 1])
+                                                        - static_cast<u32>(m_sourcePalette[i * 4 + 1]))
+                                                       * dt))
+                                                 / m_durationMs))
                                           + m_sourcePalette[i * 4 + 1];
-                    m_cacheA[i * 4 + 2] = (char)((i32)(((u32)m_targetPalette[i * 4 + 2]
-                                                        - (u32)m_sourcePalette[i * 4 + 2])
-                                                       * dt)
-                                                 / m_durationMs)
+                    m_cacheA[i * 4 + 2] = static_cast<char>((static_cast<i32>(((static_cast<u32>(m_targetPalette[i * 4 + 2])
+                                                        - static_cast<u32>(m_sourcePalette[i * 4 + 2]))
+                                                       * dt))
+                                                 / m_durationMs))
                                           + m_sourcePalette[i * 4 + 2];
                     i++;
                 } while (i < m_firstColorIndex + m_colorCount);
@@ -582,21 +582,21 @@ i32 CDDPalette::Tick() {
             );
         }
     } else {
-        if (dt != (u32)m_lastElapsedMs) {
+        if (dt != static_cast<u32>(m_lastElapsedMs)) {
             i32 i = m_firstColorIndex;
             if (i < m_firstColorIndex + m_colorCount) {
                 do {
                     m_cacheA[i * 4] =
-                        (char)((i32)(((u32)m_fixedR - (u32)m_sourcePalette[i * 4]) * dt)
-                               / m_durationMs)
+                        static_cast<char>((static_cast<i32>(((static_cast<u32>(m_fixedR) - static_cast<u32>(m_sourcePalette[i * 4])) * dt))
+                               / m_durationMs))
                         + m_sourcePalette[i * 4];
                     m_cacheA[i * 4 + 1] =
-                        (char)((i32)(((u32)m_fixedG - (u32)m_sourcePalette[i * 4 + 1]) * dt)
-                               / m_durationMs)
+                        static_cast<char>((static_cast<i32>(((static_cast<u32>(m_fixedG) - static_cast<u32>(m_sourcePalette[i * 4 + 1])) * dt))
+                               / m_durationMs))
                         + m_sourcePalette[i * 4 + 1];
                     m_cacheA[i * 4 + 2] =
-                        (char)((i32)(((u32)m_fixedB - (u32)m_sourcePalette[i * 4 + 2]) * dt)
-                               / m_durationMs)
+                        static_cast<char>((static_cast<i32>(((static_cast<u32>(m_fixedB) - static_cast<u32>(m_sourcePalette[i * 4 + 2])) * dt))
+                               / m_durationMs))
                         + m_sourcePalette[i * 4 + 2];
                     i++;
                 } while (i < m_firstColorIndex + m_colorCount);
@@ -658,11 +658,11 @@ RVA(0x001482c0, 0x2e9)
 void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, i32 r, i32 g, i32 b) {
     for (i32 i = start; i < start + count; i++) {
         u8 cr = m_cacheA[i * 4 + 0];
-        m_cacheA[i * 4 + 0] = (u8)(((r & 0xff) - cr) * pct / 100 + cr);
+        m_cacheA[i * 4 + 0] = static_cast<u8>((((r & 0xff) - cr) * pct / 100 + cr));
         u8 cg = m_cacheA[i * 4 + 1];
-        m_cacheA[i * 4 + 1] = (u8)(((g & 0xff) - cg) * pct / 100 + cg);
+        m_cacheA[i * 4 + 1] = static_cast<u8>((((g & 0xff) - cg) * pct / 100 + cg));
         u8 cb = m_cacheA[i * 4 + 2];
-        m_cacheA[i * 4 + 2] = (u8)(((b & 0xff) - cb) * pct / 100 + cb);
+        m_cacheA[i * 4 + 2] = static_cast<u8>((((b & 0xff) - cb) * pct / 100 + cb));
     }
     i32 hr = m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)(m_cacheA + start * 4));
     if (hr != 0) {

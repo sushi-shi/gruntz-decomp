@@ -33,7 +33,7 @@ i32 LeafCue::PlayIfElapsed(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (g_sndEnabled == 0) {
         return 0;
     }
-    if (g_killCueClock - (u32)m_14 >= (u32)m_18) {
+    if (g_killCueClock - static_cast<u32>(m_14) >= static_cast<u32>(m_18)) {
         m_14 = g_killCueClock;
         return m_10->ConfigureItem(a0, a1, a2, a3);
     }

@@ -813,40 +813,40 @@ inline CGruntMovingBase::CGruntMovingBase(CGameObject* owner) : CUserLogic(owner
     if (lo0 == 0) {
         m->m_70 = g_movingLogicMin;
     } else {
-        m->m_70 = (double)lo0;
+        m->m_70 = static_cast<double>(lo0);
     }
     i32 lo1 = ((CProjBoundCfg*)m_objAux)->m_34;
     if (lo1 == 0) {
         m->m_78 = g_movingLogicMin;
     } else {
-        m->m_78 = (double)lo1;
+        m->m_78 = static_cast<double>(lo1);
     }
     i32 hi0 = ((CProjBoundCfg*)m_objAux)->m_30;
     if (hi0 == 0) {
         m->m_88 = g_movingLogicMax;
     } else {
-        m->m_88 = (double)hi0;
+        m->m_88 = static_cast<double>(hi0);
     }
     i32 hi1 = ((CProjBoundCfg*)m_objAux)->m_38;
     if (hi1 == 0) {
         m->m_90 = g_movingLogicMax;
     } else {
-        m->m_90 = (double)hi1;
+        m->m_90 = static_cast<double>(hi1);
     }
     m->SetParams(
-        (double)m_object->m_screenX,
-        (double)m_object->m_screenY,
+        static_cast<double>(m_object->m_screenX),
+        static_cast<double>(m_object->m_screenY),
         0.0,
-        (double)m_object->m_164,
-        (double)m_object->m_168,
-        0.0,
-        0.0,
+        static_cast<double>(m_object->m_164),
+        static_cast<double>(m_object->m_168),
         0.0,
         0.0,
-        (double)g_frameTime * g_gruntSpawnScale,
+        0.0,
+        0.0,
+        static_cast<double>(g_frameTime) * g_gruntSpawnScale,
         0.0
     );
-    m->SetZ((double)g_defaultZ);
+    m->SetZ(static_cast<double>(g_defaultZ));
 }
 
 // ---------------------------------------------------------------------------

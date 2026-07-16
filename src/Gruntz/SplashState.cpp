@@ -137,7 +137,7 @@ i32 CSplashState::Render() {
         GM_SimpleAnim(-1);
     }
 
-    if ((u32)g_wap32FrameDelta >= m_1b8) {
+    if (static_cast<u32>(g_wap32FrameDelta) >= m_1b8) {
         m_1b8 = 0;
     } else {
         m_1b8 = m_1b8 - g_wap32FrameDelta;

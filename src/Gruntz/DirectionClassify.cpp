@@ -54,8 +54,8 @@ DirDesc* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == 0) {
         return &g_dirDescTable[7];
     }
-    i32 dy = (i32)(other->m_78 - m_78);
-    i32 dx = (i32)(m_80 - other->m_80);
+    i32 dy = static_cast<i32>((other->m_78 - m_78));
+    i32 dx = static_cast<i32>((m_80 - other->m_80));
     if (dy == 0) {
         if (dx > 0) {
             return &g_dirDescTable[1];
@@ -68,9 +68,9 @@ DirDesc* MotionEntity::Classify(MotionEntity* other, char exact) {
 
     char onCell = exact;
     if (onCell) {
-        onCell = ((i32)m_78 == m_140 && (i32)m_80 == m_144) ? 1 : 0;
+        onCell = (static_cast<i32>(m_78) == m_140 && static_cast<i32>(m_80) == m_144) ? 1 : 0;
     }
-    double ratio = (double)dx / (double)dy;
+    double ratio = static_cast<double>(dx) / static_cast<double>(dy);
 
     if (dx >= 0 && dy > 0) {
         if (onCell) {

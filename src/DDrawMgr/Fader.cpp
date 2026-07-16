@@ -280,18 +280,18 @@ void CFaderMesh::v1(i32 frame) {
         dst->Clear(0);
     }
     if (m_58.m_nSize > 0) {
-        float ff = (float)frame;
+        float ff = static_cast<float>(frame);
         char* pData = (char*)m_58.m_pData;
         for (i32 i = 0; i < m_58.m_nSize; i++) {
             i32* rec = (i32*)(pData + i * 0x28);
             i32 r0 = rec[0], r1 = rec[1], r2 = rec[2], r3 = rec[3];
             i32 r4 = rec[4], r5 = rec[5], r6 = rec[6], r7 = rec[7];
-            float t = ff / (float)v2();
+            float t = ff / static_cast<float>(v2());
 
-            i32 x0 = r0 + (i32)((float)(r4 - r0) * t);
-            i32 y0 = r1 + (i32)((float)(r5 - r1) * t);
-            i32 x1 = r2 + (i32)((float)(r6 - r2) * t);
-            i32 y1 = r3 + (i32)((float)(r7 - r3) * t);
+            i32 x0 = r0 + static_cast<i32>((static_cast<float>((r4 - r0)) * t));
+            i32 y0 = r1 + static_cast<i32>((static_cast<float>((r5 - r1)) * t));
+            i32 x1 = r2 + static_cast<i32>((static_cast<float>((r6 - r2)) * t));
+            i32 y1 = r3 + static_cast<i32>((static_cast<float>((r7 - r3)) * t));
 
             i32 bx0 = r4, by0 = r5, bx1 = r6, by1 = r7;
             if (x0 < 0 && x1 > 0) {
@@ -377,7 +377,7 @@ static __inline i32 FxRand(i32 range) {
         x = g_fxRandSeed;
     }
     g_fxRandSeed = x * 214013 + 2531011;
-    return (((i32)g_fxRandSeed >> 16) & 0x7fff) % range;
+    return ((static_cast<i32>(g_fxRandSeed) >> 16) & 0x7fff) % range;
 }
 
 DATA(0x001f085c)
@@ -425,7 +425,7 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
     m_58 = p;
-    m_54 = (i32)((float)p * g_faderScale_5f085c * w);
+    m_54 = static_cast<i32>((static_cast<float>(p) * g_faderScale_5f085c * w));
     for (i = 0; i < 2000; i++) {
         m_arr0[i] = 0;
         m_arr2[i] = 0;
@@ -608,10 +608,10 @@ i32 CFaderLight::v2() {
     i32 w = m_surface->m_width;
     i32 h = m_surface->m_height;
 
-    double pA = pow((double)cx, g_faderPowK);
-    double pB = pow((double)cy, g_faderPowK);
-    double pH = pow((double)(h - cy), g_faderPowK);
-    double pW = pow((double)(w - cx), g_faderPowK);
+    double pA = pow(static_cast<double>(cx), g_faderPowK);
+    double pB = pow(static_cast<double>(cy), g_faderPowK);
+    double pH = pow(static_cast<double>((h - cy)), g_faderPowK);
+    double pW = pow(static_cast<double>((w - cx)), g_faderPowK);
 
     double d0 = sqrt(pA + pB);
     double d1 = sqrt(pW + pB);
@@ -628,7 +628,7 @@ i32 CFaderLight::v2() {
     if (d3 > m) {
         m = d3;
     }
-    i32 r = (i32)m;
+    i32 r = static_cast<i32>(m);
     m_frameCount = r;
     return r;
 }
@@ -751,9 +751,9 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
         v1(count);
         loops++;
     }
-    float fLoops = (float)loops;
+    float fLoops = static_cast<float>(loops);
     DWORD elapsed = GetTickCount() - startTick;
-    m_34 = (i32)(fLoops / ((float)elapsed * 0.001f));
+    m_34 = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
     v4();
 }
 
@@ -806,12 +806,12 @@ void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
     Wait(lead);
     i32 loops = 0;
     DWORD startTick = GetTickCount();
-    float fStart = (float)startTick;
-    float fDur = (float)dur;
-    float fCount = (float)count;
+    float fStart = static_cast<float>(startTick);
+    float fDur = static_cast<float>(dur);
+    float fCount = static_cast<float>(count);
     if (count >= 0) {
         do {
-            frame = (i32)(((float)GetTickCount() - fStart) / fDur * fCount);
+            frame = static_cast<i32>(((static_cast<float>(GetTickCount()) - fStart) / fDur * fCount));
             if (prev != frame && frame <= count && frame > 0) {
                 if (notify && m_set2cArg) {
                     IFadeSink* o = *(IFadeSink**)m_set2cArg;
@@ -827,9 +827,9 @@ void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
         v1(count);
         loops++;
     }
-    float fLoops = (float)loops;
+    float fLoops = static_cast<float>(loops);
     DWORD elapsed = GetTickCount() - startTick;
-    m_34 = (i32)(fLoops / ((float)elapsed * 0.001f));
+    m_34 = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
     v4();
 }
 
@@ -930,7 +930,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     i32 halfH = m_3c->m_width / 2;
     i32 dx = m_38->m_width / m_50;
     i32 dy = m_38->m_height / m_54;
-    float radius = (float)sqrt((double)(dx * dx + dy * dy));
+    float radius = static_cast<float>(sqrt(static_cast<double>((dx * dx + dy * dy))));
     if (m_54 <= 0) {
         return 1;
     }
@@ -938,17 +938,17 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     for (i32 row = 0; row < m_54; row++) {
         i32 cellW2 = halfW * halfW;
         i32 cellD = halfW * halfW + halfH * halfH;
-        float cellR = (float)sqrt((double)cellD) + radius - g_fxBias;
+        float cellR = static_cast<float>(sqrt(static_cast<double>(cellD))) + radius - g_fxBias;
         if (m_50 <= 0) {
             continue;
         }
         for (i32 col = 0; col < m_50; col++) {
             i32 d2 = halfH * halfH + cellW2;
-            float v = (float)sqrt((double)d2);
+            float v = static_cast<float>(sqrt(static_cast<double>(d2)));
             float normX, normY;
             if (v > g_fxEps) {
-                normY = (float)(row - halfH) / v;
-                normX = (float)(col - halfW) / v;
+                normY = static_cast<float>((row - halfH)) / v;
+                normX = static_cast<float>((col - halfW)) / v;
             } else {
                 normY = 0.0f;
                 normX = 1.0f;
@@ -960,8 +960,8 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
             pt48.right = dx;
             pt48.bottom = dy;
             ::OffsetRect(&pt48, row, col);
-            i32 ox = (i32)(cellR * normX);
-            i32 oy = (i32)(cellR * normY);
+            i32 ox = static_cast<i32>((cellR * normX));
+            i32 oy = static_cast<i32>((cellR * normY));
             ::OffsetRect(&pt48, oy, ox);
 
             RECT pt64;
@@ -1235,24 +1235,24 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     // @+0x20, column stride @+0xb0, held IDirectDrawSurface @m_8. Lock() (0x13e6d0)
     // returns the locked pixel base; UnlockThunk() is the m_8->vtbl[0x80] COM unlock.
     CDDSurface* s = m_srcSurface;
-    m_fadeDivisor = (float)s->m_width * g_faderHalf; // width * 0.5
+    m_fadeDivisor = static_cast<float>(s->m_width) * g_faderHalf; // width * 0.5
     m_centerX = s->m_width / 2;
     m_centerY = s->m_height / 2;
     m_cells = (CFaderRadialCell*)::operator new(s->m_height * s->m_width * 16);
 
     i32 cx = m_centerX;
     i32 cy = m_centerY;
-    m_maxRadius = (i32)(sqrt((double)(cx * cx + cy * cy)) * g_faderScale);
+    m_maxRadius = static_cast<i32>((sqrt(static_cast<double>((cx * cx + cy * cy))) * g_faderScale));
 
     for (i32 y = 0; y < m_srcSurface->m_height; y++) {
         for (i32 x = 0; x < m_srcSurface->m_width; x++) {
             i32 dx = x - m_centerX;
             i32 dy = y - m_centerY;
-            float r = (float)((double)m_maxRadius - sqrt((double)(dx * dx + dy * dy)) * g_faderScale
-                              - g_faderBiasR);
+            float r = static_cast<float>((static_cast<double>(m_maxRadius) - sqrt(static_cast<double>((dx * dx + dy * dy))) * g_faderScale
+                              - g_faderBiasR));
             float fade = r / m_fadeDivisor - g_faderBiasFade;
-            float vx = (float)dx * fade;
-            float vy = (float)dy * fade;
+            float vx = static_cast<float>(dx) * fade;
+            float vy = static_cast<float>(dy) * fade;
             u8 pix;
             i32 base = m_srcSurface->Lock(0);
             if (base != 0) {
@@ -1299,16 +1299,16 @@ void CFaderRadial::v1(i32 frame) {
     }
 
     i32 total = m_srcSurface->m_width * m_srcSurface->m_height;
-    float ff = (float)frame;
+    float ff = static_cast<float>(frame);
     for (i32 i = 0; i < total; i++) {
         CFaderRadialCell* c = &m_cells[i];
         float d = c->m_fade - ff;
         if (d > g_faderOne) {
             float sf = d / m_fadeDivisor - g_faderBiasFade;
-            i32 px = m_centerX + (i32)(c->m_vx / sf);
-            i32 py = m_centerY - (i32)(c->m_vy / sf);
+            i32 px = m_centerX + static_cast<i32>((c->m_vx / sf));
+            i32 py = m_centerY - static_cast<i32>((c->m_vy / sf));
             if (px > 0 && px < dst->m_width && py > 0 && py < dst->m_height) {
-                ((u8*)base)[py * dst->m_pitch + px] = (u8)c->m_pixel;
+                ((u8*)base)[py * dst->m_pitch + px] = static_cast<u8>(c->m_pixel);
             }
         }
     }
@@ -1445,7 +1445,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     if (pInit->m_14 == 0) {
         return 0;
     }
-    if ((u32)pInit->m_14 >= 4) {
+    if (static_cast<u32>(pInit->m_14) >= 4) {
         return 0;
     }
     m_mode = pInit->m_14;
@@ -1453,7 +1453,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     m_halfWidth = pInit->m_10;
 
     if (m_mode == 1 || m_mode == 2) {
-        if (m_span < (i32)((double)m_halfWidth * 3.141592653589793)) {
+        if (m_span < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.141592653589793))) {
             return 0;
         }
     }
@@ -1461,7 +1461,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     m_warpTable = (i32*)RezAlloc(m_halfWidth * 8);
     for (i = 0; i < 2 * m_halfWidth; i++) {
         m_warpTable[i] =
-            (i32)(acos(((float)i - (float)m_halfWidth) / (float)m_halfWidth) * (float)m_halfWidth);
+            static_cast<i32>((acos((static_cast<float>(i) - static_cast<float>(m_halfWidth)) / static_cast<float>(m_halfWidth)) * static_cast<float>(m_halfWidth)));
     }
 
     m_useLut = pInit->m_1c;
@@ -1486,8 +1486,8 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         i32 m = m_halfWidth << 1;
         m_shadeRamp = (u8*)RezAlloc(m);
         for (i = 0; i < m; i++) {
-            i32 t = (i32)(sin((float)i / (float)m_halfWidth * 3.14f) * -32.0);
-            m_shadeRamp[i] = (u8)(0x10 - t);
+            i32 t = static_cast<i32>((sin(static_cast<float>(i) / static_cast<float>(m_halfWidth) * 3.14f) * -32.0));
+            m_shadeRamp[i] = static_cast<u8>((0x10 - t));
         }
     }
 
@@ -1641,17 +1641,17 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
     if (arg1 <= 0) {
         return;
     }
-    i32 arc = (i32)((double)m_halfWidth * 3.14159);
+    i32 arc = static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159));
     i32 bpp = m_surfA->m_b0;
 
     i32 colBase;
     if ((m_mode == 1 && m_stripCopy != 0) || (m_mode == 2 && m_stripCopy == 0)) {
-        colBase = stride - (i32)((double)stride / (arc - m_halfWidth) * (m_span - arg0 - stride));
+        colBase = stride - static_cast<i32>((static_cast<double>(stride) / (arc - m_halfWidth) * (m_span - arg0 - stride)));
     } else {
         colBase = arg0;
     }
     if ((m_mode == 1 && m_stripCopy == 0) || (m_mode == 2 && m_stripCopy != 0)) {
-        colBase = (i32)((double)stride / (arc - m_halfWidth) * arg0);
+        colBase = static_cast<i32>((static_cast<double>(stride) / (arc - m_halfWidth) * arg0));
     }
 
     if ((m_mode == 1 && m_stripCopy != 0) || (m_mode == 2 && m_stripCopy == 0)) {
@@ -1727,7 +1727,7 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
                         } while (i < colBase);
                     }
                     for (; t < stride; t++) {
-                        m_lineBuf[t] = lut[(u32)m_shadeRamp[t] + (u32)gsrc[m_warpTable[t]] * 0x40];
+                        m_lineBuf[t] = lut[static_cast<u32>(m_shadeRamp[t]) + static_cast<u32>(gsrc[m_warpTable[t]]) * 0x40];
                     }
                 }
                 u8* sp = m_lineBuf;
@@ -1835,7 +1835,7 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
                 if (colBase > 0) {
                     do {
                         e = i + 1;
-                        m_lineBuf[i] = lut[(u32)m_shadeRamp[i] + (u32)gsrc[m_warpTable[i]] * 0x40];
+                        m_lineBuf[i] = lut[static_cast<u32>(m_shadeRamp[i]) + static_cast<u32>(gsrc[m_warpTable[i]]) * 0x40];
                         i = e;
                     } while (e < colBase);
                 }

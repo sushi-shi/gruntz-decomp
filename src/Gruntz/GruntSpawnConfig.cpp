@@ -325,7 +325,7 @@ void* CGruntSpawnConfig::GetButeSlot(CSpawnButeConfig* config, CSpawnButeTarget*
     if (config->m_258 == 0x39) {
         return target->m_data + 0x104;
     }
-    switch ((u32)config->m_170) {
+    switch (static_cast<u32>(config->m_170)) {
         case 0:
             return target->m_data + 0x154;
         case 1:

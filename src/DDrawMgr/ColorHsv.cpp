@@ -23,30 +23,30 @@
 // `gruntz sema disasm 0x0014fcc0 --diff`. docs/patterns/zero-register-pinning.md.
 RVA(0x0014fcc0, 0x16d)
 ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
-    u16 lo = (u16)color;
-    u8 b0 = (u8)lo;
-    u8 b1 = (u8)(lo >> 8);
-    u8 b2 = (u8)(color >> 16);
+    u16 lo = static_cast<u16>(color);
+    u8 b0 = static_cast<u8>(lo);
+    u8 b1 = static_cast<u8>((lo >> 8));
+    u8 b2 = static_cast<u8>((color >> 16));
 
     int mx = HSV_MAX(HSV_MAX(b0, b1), b2);
     int mn = HSV_MIN(HSV_MIN(b0, b1), b2);
 
-    float v = (float)mx;
+    float v = static_cast<float>(mx);
     float h, s;
     if (v == 0.0) {
         s = 0.0;
         h = 0.0;
     } else {
-        float delta = v - (float)mn;
+        float delta = v - static_cast<float>(mn);
         s = delta / v;
         if (delta == 0.0) {
             h = 0.0f;
         } else if (b0 == mx) {
-            h = (float)(b1 - b2) / delta;
+            h = static_cast<float>((b1 - b2)) / delta;
         } else if (b1 == mx) {
-            h = (float)(b2 - b0) / delta - 2.0f;
+            h = static_cast<float>((b2 - b0)) / delta - 2.0f;
         } else {
-            h = (float)(b0 - b1) / delta - 4.0f;
+            h = static_cast<float>((b0 - b1)) / delta - 4.0f;
         }
         h = h * 60.0f;
         if (h < 0.0) {

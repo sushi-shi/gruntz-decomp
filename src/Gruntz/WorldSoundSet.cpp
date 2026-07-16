@@ -289,10 +289,10 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3
 RVA(0x0000ba00, 0xc6)
 CRandomAmbientSound* CWorldSoundSet::
     CreateRandomBox_ba00(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
-    if ((u32)a5 < (u32)a4) {
+    if (static_cast<u32>(a5) < static_cast<u32>(a4)) {
         return 0;
     }
-    if ((u32)a7 < (u32)a6) {
+    if (static_cast<u32>(a7) < static_cast<u32>(a6)) {
         return 0;
     }
     void* raw = ::operator new(0x58);
@@ -371,7 +371,7 @@ void CWorldSoundSet::Restart(i32 a1) {
         node = node->m_next;
         CAmbientSound* ch = cur->m_data;
         if (ch != 0) {
-            ch->Recompute((i32)a1);
+            ch->Recompute(static_cast<i32>(a1));
         }
     }
 }
@@ -498,12 +498,12 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
     if (box != 0) {
         *p = *box;
     } else {
-        p->left = (i32)0x80000000;
+        p->left = static_cast<i32>(0x80000000);
     }
     if (p->left == 0 && m_box1.top == 0 && m_box1.right == 0 && m_box1.bottom == 0) {
-        p->left = (i32)0x80000000;
+        p->left = static_cast<i32>(0x80000000);
     }
-    m_box2.left = (i32)0x80000000;
+    m_box2.left = static_cast<i32>(0x80000000);
     return 1;
 }
 
@@ -876,7 +876,7 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
         return;
     }
 
-    i32 dist = __ftol(sqrt((double)dist2));
+    i32 dist = __ftol(sqrt(static_cast<double>(dist2)));
     i32 vol = 0x64 - dist / 3;
     if (vol > 0x64) {
         vol = 0x64;
@@ -1115,11 +1115,11 @@ RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
     i32 inBox = 0;
     i32 b1 = m_box1.left;
-    if (b1 == (i32)0x80000000) {
+    if (b1 == static_cast<i32>(0x80000000)) {
         inBox = 1;
     } else if (x <= b1 || x >= m_box1.right || y <= m_box1.top || y >= m_box1.bottom) {
         i32 b2 = m_box2.left;
-        if (b2 == (i32)0x80000000 || x <= b2 || x >= m_box2.right || y <= m_box2.top
+        if (b2 == static_cast<i32>(0x80000000) || x <= b2 || x >= m_box2.right || y <= m_box2.top
             || y >= m_box2.bottom) {
             inBox = 1;
         }
@@ -1138,7 +1138,7 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
         return;
     }
 
-    if ((u32)m_countdownMs <= (u32)g_frameDelta) {
+    if (static_cast<u32>(m_countdownMs) <= static_cast<u32>(g_frameDelta)) {
         m_countdownMs = 0;
     } else {
         m_countdownMs = m_countdownMs - g_frameDelta;

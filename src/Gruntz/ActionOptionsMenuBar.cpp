@@ -454,7 +454,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_button0Frame) {
-            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_button0Frame, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(static_cast<i32>(m_button0Frame), (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -466,7 +466,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
         i32 v20 = m_button1Frame;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
-            mgr->m_imageRegistry->AnyValueMatches_155630((i32)v20, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(static_cast<i32>(v20), (i32)tmp, (i32)&zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);

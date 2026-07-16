@@ -488,7 +488,7 @@ i32 CMenuPage::CanWrap() {
     if (f & 1) {
         return 1;
     }
-    return (char)m_host->m_wrapFlag & 1; // m_host is the owning CChatBox (i32 @+0x20)
+    return static_cast<char>(m_host->m_wrapFlag) & 1; // m_host is the owning CChatBox (i32 @+0x20)
 }
 
 // single-list grid layout: center each child in the page rect, place

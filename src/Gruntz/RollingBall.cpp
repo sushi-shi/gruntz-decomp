@@ -168,9 +168,9 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = 0x10 + (o->m_screenY & ~0x1f);
     o->m_screenX = snapX;
-    m_subX = (double)snapX;
+    m_subX = static_cast<double>(snapX);
     o->m_screenY = snapY;
-    m_subY = (double)snapY;
+    m_subY = static_cast<double>(snapY);
     if (o->m_latchedAnimId != 0x186a0 + snapY) {
         o->m_latchedAnimId = snapY + 0x186a0;
         o->m_flags |= 0x20000;
@@ -217,7 +217,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     m_targetX = snapY;
     m_explodeLatch = 0;
     m_fallLatch = 0;
-    m_moveSpeed = g_slimeSpeedNum / (double)(i64)(u32)time;
+    m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<i64>(static_cast<u32>(time)));
     o->m_areaL = 0;
     o->m_areaR = 0;
     o->m_areaT = 0;
@@ -305,14 +305,14 @@ i32 CRollingBall::Update() {
         i32 lo = g_frameTime - m_explodeStartLo;
         i32 hi = 0 - m_explodeStartHi;
         i32 lim = m_explodeWindowHi;
-        if (hi < lim || (hi == lim && (u32)lo < (u32)m_explodeWindowLo)) {
+        if (hi < lim || (hi == lim && static_cast<u32>(lo) < static_cast<u32>(m_explodeWindowLo))) {
             RbCacheFirst(m_38, "LEVEL_ROLLINGBALL_EXPLOSION");
             m_savedGeoId = m_38->m_1a0.m_14;
             RbApplyLookup(m_38, "LEVEL_ROLLINGBALLEXPLOSION", 0);
             CTileGrid* map = g_gameReg->m_tileGrid;
             i32 cx = logic->m_screenX >> 5;
             i32 cy = logic->m_screenY >> 5;
-            if ((u32)cx < map->m_c && (u32)cy < map->m_10) {
+            if (static_cast<u32>(cx) < map->m_c && static_cast<u32>(cy) < map->m_10) {
                 i32** row = map->m_8;
                 i32 ix = cx * 7;
                 row[cy][ix] &= 0xefffffff;
@@ -356,7 +356,7 @@ i32 CRollingBall::Update() {
         i32 cx = m_targetX >> 5;
         i32 cy = m_targetY >> 5;
         i32 terrain;
-        if ((u32)cx < map->m_c && (u32)cy < map->m_10) {
+        if (static_cast<u32>(cx) < map->m_c && static_cast<u32>(cy) < map->m_10) {
             i32** row = map->m_8;
             i32 ix = cx * 7;
             terrain = row[cy][ix];
@@ -395,7 +395,7 @@ i32 CRollingBall::Update() {
             i32 idx = *(i32*)((char*)col + ay * 4) + ax;
             i32 raw = *(i32*)(*(char**)(lvl + 0x20) + idx * 4);
             i32 obj = 0;
-            if (raw != (i32)0xeeeeeeee && raw != -1) {
+            if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
                 void* tbl = *(void**)(lvl + 0x4c);
                 void* ent = *(void**)((char*)tbl + (raw & 0xffff) * 4);
                 obj = VtblResolve(ent);
@@ -425,7 +425,7 @@ i32 CRollingBall::Update() {
             RbApplyLookup(m_38, fall, 0);
             if (obj == 4) {
                 i32 t = RbGetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
-                m_moveSpeed = kMsPerSecond / (double)t;
+                m_moveSpeed = kMsPerSecond / static_cast<double>(t);
             }
         }
     }
@@ -470,12 +470,12 @@ i32 CRollingBall::Update() {
 
     // ----- the x87 sub-tile interpolation tail -----
     CGameObject* lg2 = m_object;
-    m_subX = (double)lg2->m_screenX + m_subX;
-    m_subY = (double)lg2->m_screenY + m_subY;
+    m_subX = static_cast<double>(lg2->m_screenX) + m_subX;
+    m_subY = static_cast<double>(lg2->m_screenY) + m_subY;
     m_moveDeltaLo = 0;
     m_moveDeltaHi = 0;
 
-    double dt = (double)g_frameDelta * m_moveSpeed;
+    double dt = static_cast<double>(g_frameDelta) * m_moveSpeed;
     i32 nx = m_targetX >> 5;
     if (m_stepDirX > 0) {
         double v = dt + m_subX;

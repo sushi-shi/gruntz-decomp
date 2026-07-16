@@ -75,7 +75,7 @@ static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";   // s_..._0060d9fc
 
 // Read the tile-flag word at board cell (tx, ty); out-of-bounds -> 1 (blocking).
 static __inline i32 s_TileFlags(GruntBoard* b, i32 tx, i32 ty) {
-    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
     }
     return ((i32*)b->m_8[ty])[tx * 7];
@@ -94,7 +94,7 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     if (tx == mtx && ty == mty) {
         return 1;
     }
-    if ((u32)mtx >= (u32)board->m_c || (u32)mty >= (u32)board->m_10) {
+    if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_c) || static_cast<u32>(mty) >= static_cast<u32>(board->m_10)) {
         return 0;
     }
     i32* tgt = &((i32*)board->m_8[mty])[mtx * 7];
@@ -189,7 +189,7 @@ static __inline void SerRecord(CGruntArchive* ar, i32 mode, char* p) {
 // out-of-bounds path returns 1 (so any flag test passes). Shared by all five.
 static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     GruntBoard* b = g_gameReg->m_tileGrid;
-    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
     }
     return ((i32*)b->m_8[ty])[tx * 7];
@@ -389,7 +389,7 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
         return;
     }
 
-    float ratio = (float)dy / dx;
+    float ratio = static_cast<float>(dy) / dx;
     if (ratio > 2.0f || ratio < -2.0f) {
         if (y > h->m_screenY) {
             PlaySound(1000, *(CGruntVoiceRec*)g_voiceN);
@@ -665,7 +665,7 @@ i32 CGrunt::StepCompassMove() {
             // The target is occupied by another owner: notify the tile mgr (the tile's
             // +0x4 owner id is split into its low two bytes).
             i32 owner;
-            if ((u32)mtx >= (u32)board->m_c || (u32)mty >= (u32)board->m_10) {
+            if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_c) || static_cast<u32>(mty) >= static_cast<u32>(board->m_10)) {
                 owner = -1;
             } else {
                 owner = ((i32*)board->m_8[mty])[mtx * 7 + 1];
@@ -908,7 +908,7 @@ i32 CGrunt::ClaimSwitchTile() {
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 flags;
-    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         flags = 1;
     } else {
         flags = ((i32*)b->m_8[ty])[tx * 7];

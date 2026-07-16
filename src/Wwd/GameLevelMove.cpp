@@ -37,7 +37,7 @@
 
 // The +0x134 axis-low bracket's "unset" sentinel (INT_MIN): BroadPhase tests it
 // before treating an object's AABB as a live box.
-static const i32 AXIS_UNSET = (i32)0x80000000;
+static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
 // The mode-1..2 sub-dispatch is CGameLevel::MoveKindDispatch12 (@0x1671c0,
 // __thiscall), reconstructed below. ApplyMove's call to it reloc-masks to
@@ -711,8 +711,8 @@ i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6,
             m_org2y = p8[1] / 2;
             m_mgr = (CDDrawChildGroup*)a1;
             SetRect((RECT*)&m_bbMinX, rc->left, rc->top, rc->right, rc->bottom);
-            m_scrollX = (i32)0xffffa932;
-            m_scrollY = (i32)0xffffa932;
+            m_scrollX = static_cast<i32>(0xffffa932);
+            m_scrollY = static_cast<i32>(0xffffa932);
             return 1;
         }
     }

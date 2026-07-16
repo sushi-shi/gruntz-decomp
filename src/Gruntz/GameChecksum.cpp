@@ -48,7 +48,7 @@ i32 CGameSyncSig::ComputeSignature() {
                     obj->m_198 + obj->m_entranceCommitted + obj->m_entranceActive + obj->m_224 + d;
                 i32 v = obj->m_entranceReason - 1;
                 i32 r;
-                if ((u32)v > 0x15) {
+                if (static_cast<u32>(v) > 0x15) {
                     r = 0x17;
                 } else {
                     switch (v) {

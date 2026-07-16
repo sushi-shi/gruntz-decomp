@@ -187,7 +187,7 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
     if (name != 0) {
         strcpy(m_name, name);
     }
-    if (bounds->minX != (i32)0x80000000) {
+    if (bounds->minX != static_cast<i32>(0x80000000)) {
         LevelCoordRect local;
         CopyRect((RECT*)&local, (RECT*)bounds);
         m_bounds50 = local;
@@ -199,8 +199,8 @@ i32 CDDrawWorkerHost::InitGeometry_1619f0(
         m_anchorY = ph2 / 2;
         RecomputePlaneCoords();
     }
-    m_scaleX = (float)m_94 * 0.01f;
-    m_scaleY = (float)m_98 * 0.01f;
+    m_scaleX = static_cast<float>(m_94) * 0.01f;
+    m_scaleY = static_cast<float>(m_98) * 0.01f;
     m_tileGrid = (i32*)operator new(m_width * m_height * 4);
     m_colOffsets = (i32*)operator new(m_height * 4);
     for (i32 i = 0; i < m_height; i++) {
@@ -273,21 +273,21 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
     if (wrapX) {
         if (p->m_scaledX < 0.0f) {
             do {
-                p->m_scaledX += (float)p->m_wrapW;
+                p->m_scaledX += static_cast<float>(p->m_wrapW);
             } while (p->m_scaledX < 0.0f);
         }
-        if (p->m_scaledX >= (float)p->m_wrapW) {
+        if (p->m_scaledX >= static_cast<float>(p->m_wrapW)) {
             float t = p->m_scaledX;
             do {
-                t -= (float)p->m_wrapW;
-            } while (t >= (float)p->m_wrapW);
+                t -= static_cast<float>(p->m_wrapW);
+            } while (t >= static_cast<float>(p->m_wrapW));
             p->m_scaledX = t;
         }
     } else {
         if (p->m_scaledX < 0.0f) {
             p->m_scaledX = 0;
-        } else if ((float)p->m_wrapW <= p->m_scaledX) {
-            p->m_scaledX = (float)(p->m_wrapW - 1);
+        } else if (static_cast<float>(p->m_wrapW) <= p->m_scaledX) {
+            p->m_scaledX = static_cast<float>((p->m_wrapW - 1));
         }
     }
 
@@ -296,28 +296,28 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
     if (wrapY) {
         if (p->m_scaledY < 0.0f) {
             do {
-                p->m_scaledY += (float)p->m_wrapH;
+                p->m_scaledY += static_cast<float>(p->m_wrapH);
             } while (p->m_scaledY < 0.0f);
         }
-        if (p->m_scaledY >= (float)p->m_wrapH) {
+        if (p->m_scaledY >= static_cast<float>(p->m_wrapH)) {
             float t = p->m_scaledY;
             do {
-                t -= (float)p->m_wrapH;
-            } while (t >= (float)p->m_wrapH);
+                t -= static_cast<float>(p->m_wrapH);
+            } while (t >= static_cast<float>(p->m_wrapH));
             p->m_scaledY = t;
         }
     } else {
         if (p->m_scaledY < 0.0f) {
             p->m_scaledY = 0;
-        } else if ((float)p->m_wrapH <= p->m_scaledY) {
-            p->m_scaledY = (float)(p->m_wrapH - 1);
+        } else if (static_cast<float>(p->m_wrapH) <= p->m_scaledY) {
+            p->m_scaledY = static_cast<float>((p->m_wrapH - 1));
         }
     }
 
     // --- snap to integer + derive the tile origin ----------------------------
-    i32 ix = (i32)p->m_scaledX;
+    i32 ix = static_cast<i32>(p->m_scaledX);
     p->m_snappedX = ix;
-    i32 iy = (i32)p->m_scaledY;
+    i32 iy = static_cast<i32>(p->m_scaledY);
     p->m_snappedY = iy;
 
     i32 ox = ix - p->m_anchorX;
@@ -371,7 +371,7 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
 // ===========================================================================
 RVA(0x00161e80, 0x79)
 void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
-    if (coords->minX != (i32)0x80000000) {
+    if (coords->minX != static_cast<i32>(0x80000000)) {
         LevelCoordRect local;
         CopyRect((RECT*)&local, (RECT*)coords);
         m_bounds50 = local;
@@ -821,10 +821,10 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     }
 
     i32 id = src[0];
-    u32 nameLen = (u32)src[1];
-    u32 logicLen = (u32)src[2];
-    u32 imageSetLen = (u32)src[3];
-    u32 soundLen = (u32)src[4];
+    u32 nameLen = static_cast<u32>(src[1]);
+    u32 logicLen = static_cast<u32>(src[2]);
+    u32 imageSetLen = static_cast<u32>(src[3]);
+    u32 soundLen = static_cast<u32>(src[4]);
     i32 x = src[5];
     i32 y = src[6];
     i32 z = src[7];
@@ -860,7 +860,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     char buf[0x400];
 
     i32 n;
-    n = (i32)nameLen;
+    n = static_cast<i32>(nameLen);
     if (n > 0) {
         memcpy(buf, strCursor, n);
         strCursor += n;
@@ -868,7 +868,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     buf[n] = 0;
     CString name(buf);
 
-    n = (i32)logicLen;
+    n = static_cast<i32>(logicLen);
     if (n > 0) {
         memcpy(buf, strCursor, n);
         strCursor += n;
@@ -876,7 +876,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     buf[n] = 0;
     CString logic(buf);
 
-    n = (i32)imageSetLen;
+    n = static_cast<i32>(imageSetLen);
     if (n > 0) {
         memcpy(buf, strCursor, n);
         strCursor += n;
@@ -884,7 +884,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     buf[n] = 0;
     CString imageSet(buf);
 
-    n = (i32)soundLen;
+    n = static_cast<i32>(soundLen);
     if (n > 0) {
         memcpy(buf, strCursor, n);
         strCursor += n;
@@ -896,7 +896,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // consumed so far (so the caller still advances over the bad record).
     if (x < 0 || x >= m_wrapW || y < 0 || y >= m_wrapH) {
         obj->Delete(1);
-        return (i32)(strCursor - (const char*)src);
+        return static_cast<i32>((strCursor - (const char*)src));
     }
 
     // If an image set is named, require it to be present in the level map.
@@ -909,11 +909,11 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     if (!loaded) {
         obj->Delete(1);
-        return (i32)(strCursor - (const char*)src);
+        return static_cast<i32>((strCursor - (const char*)src));
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
-    if (obj->Load((i32)logicLen, id, (i32)strCursor, id) == 0) {
+    if (obj->Load(static_cast<i32>(logicLen), id, (i32)strCursor, id) == 0) {
         obj->Delete(1);
         return 0;
     }
@@ -952,7 +952,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // its dynamic-flags field onward.
     const i32* p = &src[10]; // record +0x28 (skip addFlags @+0x24)
 
-    obj->m_flags |= (u32)*p++; // dynamicFlags       (+0x08)
+    obj->m_flags |= static_cast<u32>(*p++); // dynamicFlags       (+0x08)
     obj->m_stateFlags = *p++;  // drawFlags          (+0x40)
     sub[0x28 / 4] = *p++;      // userFlags
     // The six-int "user-value" union (+0x114..+0x128). These are the WWD object
@@ -988,16 +988,16 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     obj->m_70 = *p++;        // clipRect.b         (+0x70)
 
     if (obj->m_areaL == 0 && obj->m_areaR == 0) {
-        obj->m_areaL = (i32)0x80000000;
+        obj->m_areaL = static_cast<i32>(0x80000000);
     }
     if (obj->m_extentL == 0 && obj->m_extentR == 0) {
-        obj->m_extentL = (i32)0x80000000;
+        obj->m_extentL = static_cast<i32>(0x80000000);
     }
     if (obj->m_64 == 0 && obj->m_6c == 0) {
-        obj->m_64 = (i32)0x80000000;
+        obj->m_64 = static_cast<i32>(0x80000000);
     }
     if (obj->m_154 == 0 && obj->m_15c == 0) {
-        obj->m_154 = (i32)0x80000000;
+        obj->m_154 = static_cast<i32>(0x80000000);
     }
 
     sub[0xf0 / 4] = *p++;
@@ -1035,13 +1035,13 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     obj->m_collCategory = *p++; // +0xe8
     obj->m_ec = *p++;           // +0xec
 
-    u32 w = (u32)*p++;
+    u32 w = static_cast<u32>(*p++);
     if (w > 0) {
-        obj->m_strideX = (i32)w; // +0xf8
+        obj->m_strideX = static_cast<i32>(w); // +0xf8
     }
-    u32 h = (u32)*p++;
+    u32 h = static_cast<u32>(*p++);
     if (h > 0) {
-        obj->m_strideY = (i32)h; // +0xfc
+        obj->m_strideY = static_cast<i32>(h); // +0xfc
     }
 
     // Retail: `mov ecx,[this+0xb0]; call 0x1688f0` - it LOADS the spatial worker and
@@ -1050,7 +1050,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // NAFXCW symbol; +0xb0 holds a POINTER, as RebuildPlanes' `new(0xb8)` store proves.)
     m_scroll->RemoveObject((CWwdGameObject*)obj);
 
-    return (i32)(strCursor - (const char*)src);
+    return static_cast<i32>((strCursor - (const char*)src));
 }
 
 // ---------------------------------------------------------------------------
@@ -1081,14 +1081,14 @@ i32 CDDrawWorkerHost::CenterScrollA() {
 
     i32 x;
     if (flags & 0x4) {
-        x = (i32)m_scaledX;
+        x = static_cast<i32>(m_scaledX);
     } else {
         x = (m_originX + m_extentX) / 2 + 1;
     }
 
     i32 y;
     if (flags & 0x8) {
-        y = (i32)m_scaledY;
+        y = static_cast<i32>(m_scaledY);
         return scroll->SetTargetA(x, y);
     }
     y = (m_originY + m_extentY) / 2 + 1;
@@ -1108,14 +1108,14 @@ i32 CDDrawWorkerHost::CenterScrollB() {
 
     i32 x;
     if (flags & 0x4) {
-        x = (i32)m_scaledX;
+        x = static_cast<i32>(m_scaledX);
     } else {
         x = (m_extentX + m_originX) / 2 + 1;
     }
 
     i32 y;
     if (flags & 0x8) {
-        y = (i32)m_scaledY;
+        y = static_cast<i32>(m_scaledY);
         return scroll->SetTargetB(x, y);
     }
     y = (m_extentY + m_originY) / 2 + 1;
@@ -1212,10 +1212,10 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     for (i32 row = 0; row < m_gridH; row++) {
         for (i32 col = 0; col < m_gridW; col++) {
             i32 handle = m_tileGrid[m_colOffsets[row] + col];
-            if (handle == -1 || (u32)handle == 0xeeeeeeee) {
+            if (handle == -1 || static_cast<u32>(handle) == 0xeeeeeeee) {
                 continue;
             }
-            CPlaneFrame* frame = ((CPlaneFrame**)m_frameSets.GetData())[(u32)handle >> 16];
+            CPlaneFrame* frame = ((CPlaneFrame**)m_frameSets.GetData())[static_cast<u32>(handle) >> 16];
             if (frame == 0) {
                 result = 0;
                 if (errOut != 0) {
@@ -1223,7 +1223,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
                         msg,
                         "Plane %s: Bad map image set value (%i) at %i,%i\n",
                         m_name,
-                        (u32)handle >> 16,
+                        static_cast<u32>(handle) >> 16,
                         col,
                         row
                     );
@@ -1298,9 +1298,9 @@ void CDDrawWorkerHost::ResolveColorKey() {
         return;
     }
 
-    m_colorKey = (u16)(((u8)((u8)rgb[idx * 4 + 0] >> (u8)g_rDown) << g_rUp)
-                       | ((u8)((u8)rgb[idx * 4 + 1] >> (u8)g_gDown) << g_gUp)
-                       | (u8)((u8)rgb[idx * 4 + 2] >> (u8)g_bDown));
+    m_colorKey = static_cast<u16>(((static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 0]) >> static_cast<u8>(g_rDown))) << g_rUp)
+                       | (static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 1]) >> static_cast<u8>(g_gDown))) << g_gUp)
+                       | static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 2]) >> static_cast<u8>(g_bDown)))));
 }
 
 // ---------------------------------------------------------------------------

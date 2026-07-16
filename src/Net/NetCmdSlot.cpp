@@ -340,7 +340,7 @@ i32 CNetSession::Tick() {
             }
         }
         m_session->WriteTag("[end]\n");
-        rec->m_payloadLen = (i32)(payload - (char*)rec - 0x10);
+        rec->m_payloadLen = static_cast<i32>((payload - (char*)rec - 0x10));
         m_snapshotDone = 1;
     }
     return SendBatch() + SendAll();
@@ -684,7 +684,7 @@ RVA(0x000c0460, 0x2e)
 CNetCmdSlot* CNetSession::FindSlot(u32 key) {
     CNetCmdSlot* p = &m_slots[0];
     for (i32 i = 0; i < 4; i++, p++) {
-        if (p && p->m_state == 3 && p->m_resetGuard == 0 && (u32)p->m_latency > key) {
+        if (p && p->m_state == 3 && p->m_resetGuard == 0 && static_cast<u32>(p->m_latency) > key) {
             return p;
         }
     }
@@ -700,7 +700,7 @@ i32 CNetSession::CheckLatency(i32 cap) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
         if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0
-            && (u32)slot->m_latency > (u32)cap) {
+            && static_cast<u32>(slot->m_latency) > static_cast<u32>(cap)) {
             return 0;
         }
     }
@@ -901,7 +901,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     CNetCmdPacket* pkt = (CNetCmdPacket*)Unmatched_bf530(0);
     pkt->m_sequence = seq;
     pkt->m_owner = this;
-    pkt->m_flags = (u8)flags;
+    pkt->m_flags = static_cast<u8>(flags);
     pkt->m_payloadLength = rem;
     memcpy(pkt->m_payload, cursor, rem);
     AddCmd((CNetCmd*)pkt);

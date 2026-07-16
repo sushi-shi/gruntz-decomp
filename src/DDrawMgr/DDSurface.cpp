@@ -194,7 +194,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_b0 = divisor;
 
     m_88 = m_width;                  // dwWidth cached after switch
-    m_b4 = (u32)m_pitch / (u32)m_b0; // lPitch / divisor
+    m_b4 = static_cast<u32>(m_pitch) / static_cast<u32>(m_b0); // lPitch / divisor
     m_80[0] = 0;
     m_80[1] = 0;
     i32 height = m_height;
@@ -212,7 +212,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
 // IDirectDrawSurfaces (m_8/m_c) and null them, and clear m_b8.
 RVA(0x0013e4d0, 0x7e)
 void CDDSurface::FreeSurfaces() {
-    for (u32 i = 0; i < (u32)m_elements.GetSize(); i++) {
+    for (u32 i = 0; i < static_cast<u32>(m_elements.GetSize()); i++) {
         CFileImageElement* e = (CFileImageElement*)m_elements[i];
         delete e;
     }
@@ -317,7 +317,7 @@ i32 CDDSurface::Lock(void* rect) {
     if (hr == 0) {
         return m_lockBits;
     }
-    if (hr == (i32)DDERR_SURFACELOST) {
+    if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost() == 0) {
             return 0;
         }
@@ -346,7 +346,7 @@ i32 CDDSurface::Fill(u32 color) {
         *p++ = 0;
     }
     fx[0] = 0x64;          // dwSize
-    fx[0x14] = (i32)color; // dwFillColor @ +0x50
+    fx[0x14] = static_cast<i32>(color); // dwFillColor @ +0x50
     i32 hr = this->BltEx(0, 0, 0, 0x1000400, fx);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString((char*)"C:\\Proj\\DDrawMgr\\DIRSURF.CPP", 0x22c, hr);
@@ -385,7 +385,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
     if (hr == 0) {
         return 0;
     }
-    if (hr == (i32)DDERR_SURFACELOST) {
+    if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost() == 0) {
             return hr;
         }
@@ -502,7 +502,7 @@ void CDDSurface::FillPalette(u32 key) {
     u32 ck[2];
     ck[0] = key;
     ck[1] = key;
-    if ((i32)key != -1) {
+    if (static_cast<i32>(key) != -1) {
         this->m_bc = 1;
     } else {
         this->m_bc = 0;
@@ -643,7 +643,7 @@ void CDDSurface::Clear(i32 white) {
         *p++ = 0;
     }
     fx.dwSize = 0x64;
-    fx.dwROP = white ? (i32)0xff0062 : 0x42; // WHITENESS : BLACKNESS (DDBLT_ROP)
+    fx.dwROP = white ? static_cast<i32>(0xff0062) : 0x42; // WHITENESS : BLACKNESS (DDBLT_ROP)
     i32 hr = this->m_8->Blt(0, 0, 0, 0x1020000, &fx);
     if (hr != 0) {
         if (white != 0) {
@@ -684,11 +684,11 @@ i32 CDDSurface::Blt(CDDSurface* src) {
     void* srcRect = src->m_80;
     void* dstRect = m_80;
     i32 hr = m_8->Blt((LPRECT)dstRect, src->m_8, (LPRECT)srcRect, 0x1000000, 0);
-    if (hr == (i32)DDERR_SURFACELOST) {
+    if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
             hr = m_8->Blt((LPRECT)dstRect, src->m_8, (LPRECT)srcRect, 0x1000000, 0);
         } else {
-            return (i32)DDERR_SURFACELOST;
+            return static_cast<i32>(DDERR_SURFACELOST);
         }
     }
     if (hr != 0) {
@@ -707,11 +707,11 @@ i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, 
     } else {
         hr = m_8->Blt((LPRECT)dstRect, 0, (LPRECT)srcRect, flags, (LPDDBLTFX)fx);
     }
-    if (hr == (i32)DDERR_SURFACELOST) {
+    if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
             hr = m_8->Blt((LPRECT)dstRect, src->m_8, (LPRECT)srcRect, flags, (LPDDBLTFX)fx);
         } else {
-            return (i32)DDERR_SURFACELOST;
+            return static_cast<i32>(DDERR_SURFACELOST);
         }
     }
     if (hr != 0) {
@@ -724,11 +724,11 @@ i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, 
 RVA(0x0013ef90, 0x8b)
 i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans) {
     i32 hr = m_8->BltFast(x, y, src->m_8, (LPRECT)srcRect, trans);
-    if (hr == (i32)DDERR_SURFACELOST) {
+    if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
             hr = m_8->BltFast(x, y, src->m_8, (LPRECT)srcRect, trans);
         } else {
-            return (i32)DDERR_SURFACELOST;
+            return static_cast<i32>(DDERR_SURFACELOST);
         }
     }
     if (hr != 0) {
@@ -943,9 +943,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 5;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = (u16)(*(u16*)((char*)(g_clut + 0x10002) + off + (blue << 6))
+                    *srcPix++ = static_cast<u16>((*(u16*)((char*)(g_clut + 0x10002) + off + (blue << 6))
                                       | *(u16*)((char*)(g_clut + 0x2) + off + (green << 6))
-                                      | *(u16*)((char*)(g_clut + 0x20002) + off + red * 2));
+                                      | *(u16*)((char*)(g_clut + 0x20002) + off + red * 2)));
                 }
                 srcPix += stride;
             }
@@ -959,9 +959,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 6;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = (u16)(*(u16*)((char*)(g_clut + 0x10002) + off + (blue << 6))
+                    *srcPix++ = static_cast<u16>((*(u16*)((char*)(g_clut + 0x10002) + off + (blue << 6))
                                       | *(u16*)((char*)(g_clut + 0x2) + off + (green << 6))
-                                      | *(u16*)((char*)(g_clut + 0x20002) + off + red * 2));
+                                      | *(u16*)((char*)(g_clut + 0x20002) + off + red * 2)));
                 }
                 srcPix += stride;
             }
@@ -1014,9 +1014,9 @@ void BuildColorChannelTables() {
                 do {
                     base += 2;
                     i32 sum = varD / 32 + bDiv;
-                    *(i16*)(g_clut + 0x20000 + base) = (i16)(sum << 0xa);
-                    *(i16*)(g_clut + base) = (i16)(sum << 5);
-                    *(i16*)(g_clut + 0x10000 + base) = (i16)(sum << bShift);
+                    *(i16*)(g_clut + 0x20000 + base) = static_cast<i16>((sum << 0xa));
+                    *(i16*)(g_clut + base) = static_cast<i16>((sum << 5));
+                    *(i16*)(g_clut + 0x10000 + base) = static_cast<i16>((sum << bShift));
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
@@ -1037,9 +1037,9 @@ void BuildColorChannelTables() {
                 do {
                     base += 2;
                     i32 sum = varD / 32 + bDiv;
-                    *(i16*)(g_clut + 0x20000 + base) = (i16)(sum << g_rUp);
-                    *(i16*)(g_clut + base) = (i16)((sum << g_gUp) << 1);
-                    *(i16*)(g_clut + 0x10000 + base) = (i16)(sum << g_bUp);
+                    *(i16*)(g_clut + 0x20000 + base) = static_cast<i16>((sum << g_rUp));
+                    *(i16*)(g_clut + base) = static_cast<i16>(((sum << g_gUp) << 1));
+                    *(i16*)(g_clut + 0x10000 + base) = static_cast<i16>((sum << g_bUp));
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
@@ -1124,7 +1124,7 @@ RVA(0x0013fa60, 0x40)
 i32 CDDSurface::GetColorKey() {
     DDCOLORKEY key;
     i32 hr = m_8->GetColorKey(8, &key);
-    if (hr != (i32)DDERR_NOCOLORKEY) {
+    if (hr != static_cast<i32>(DDERR_NOCOLORKEY)) {
         if (hr == 0) {
             return key.dwColorSpaceLowValue;
         }
@@ -1194,11 +1194,11 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
     }
     u16* lut = g_lut16;
     do {
-        u8 r = (u8)((u8)pal[0] >> g_rDown);
+        u8 r = static_cast<u8>((static_cast<u8>(pal[0]) >> g_rDown));
         pal += 4;
-        u8 g = (u8)((u8)pal[-3] >> g_gDown);
-        u8 b = (u8)((u8)pal[-2] >> g_bDown);
-        *lut++ = (u16)(((u32)r << g_rUp) | ((u32)g << g_gUp) | (u32)b);
+        u8 g = static_cast<u8>((static_cast<u8>(pal[-3]) >> g_gDown));
+        u8 b = static_cast<u8>((static_cast<u8>(pal[-2]) >> g_bDown));
+        *lut++ = static_cast<u16>(((static_cast<u32>(r) << g_rUp) | (static_cast<u32>(g) << g_gUp) | static_cast<u32>(b)));
     } while (lut < g_lut16 + 256);
     u8* locked = (u8*)Lock(0);
     if (locked == 0) {
@@ -1249,9 +1249,9 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
                 u8 g = src[1];
                 u8 r = src[2];
                 src += 3;
-                *dst++ = (u16)(((u32)((u8)((u8)g >> g_gDown)) << g_gUp)
-                               | ((u32)((u8)((u8)r >> g_rDown)) << g_rUp)
-                               | (u32)((u8)((u8)b >> g_bDown)));
+                *dst++ = static_cast<u16>(((static_cast<u32>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)))) << g_gUp)
+                               | (static_cast<u32>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)))) << g_rUp)
+                               | static_cast<u32>((static_cast<u8>((static_cast<u8>(b) >> g_bDown))))));
             }
         }
     } else {
@@ -1262,9 +1262,9 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
                 u8 g = src[1];
                 u8 r = src[2];
                 src += 3;
-                *dst++ = (u16)(((u32)((u8)((u8)g >> g_gDown)) << g_gUp)
-                               | ((u32)((u8)((u8)r >> g_rDown)) << g_rUp)
-                               | (u32)((u8)((u8)b >> g_bDown)));
+                *dst++ = static_cast<u16>(((static_cast<u32>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)))) << g_gUp)
+                               | (static_cast<u32>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)))) << g_rUp)
+                               | static_cast<u32>((static_cast<u8>((static_cast<u8>(b) >> g_bDown))))));
             }
         }
     }
@@ -1348,9 +1348,9 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
             u16* dst = (u16*)(locked + row * this->m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                dst[0] = (u16)(u8)((u8)(u16)(px >> g_rUp) << g_rDown);
-                dst[1] = (u16)(u8)((u8)(u16)(px >> g_gUp) << g_gDown);
-                dst[2] = (u16)(u8)((u8)px << g_bDown);
+                dst[0] = static_cast<u16>(static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown)));
+                dst[1] = static_cast<u16>(static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown)));
+                dst[2] = static_cast<u16>(static_cast<u8>((static_cast<u8>(px) << g_bDown)));
                 dst += 3;
             }
         }
@@ -1359,9 +1359,9 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
             u16* dst = (u16*)(locked + row * this->m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                dst[0] = (u16)(u8)((u8)(u16)(px >> g_rUp) << g_rDown);
-                dst[1] = (u16)(u8)((u8)(u16)(px >> g_gUp) << g_gDown);
-                dst[2] = (u16)(u8)((u8)px << g_bDown);
+                dst[0] = static_cast<u16>(static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown)));
+                dst[1] = static_cast<u16>(static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown)));
+                dst[2] = static_cast<u16>(static_cast<u8>((static_cast<u8>(px) << g_bDown)));
                 dst += 3;
             }
         }
@@ -1418,7 +1418,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
                         }
                     }
                 }
-                *dst = (u8)best;
+                *dst = static_cast<u8>(best);
                 dst++;
             }
         }
@@ -1448,7 +1448,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
                         }
                     }
                 }
-                *dst = (u8)best;
+                *dst = static_cast<u8>(best);
                 dst++;
             }
         }
@@ -1484,9 +1484,9 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                i32 red = (u8)((u8)(u16)(px >> g_rUp) << g_rDown);
-                i32 green = (u8)((u8)(u16)(px >> g_gUp) << g_gDown);
-                i32 blue = (u8)((u8)px << g_bDown);
+                i32 red = static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown));
+                i32 green = static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
+                i32 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
                 i32 d1 = green - pal[1];
                 i32 d2 = blue - pal[2];
@@ -1505,7 +1505,7 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
                         }
                     }
                 }
-                *dst = (u8)best;
+                *dst = static_cast<u8>(best);
                 dst++;
             }
         }
@@ -1514,9 +1514,9 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                i32 red = (u8)((u8)(u16)(px >> g_rUp) << g_rDown);
-                i32 green = (u8)((u8)(u16)(px >> g_gUp) << g_gDown);
-                i32 blue = (u8)((u8)px << g_bDown);
+                i32 red = static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown));
+                i32 green = static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
+                i32 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
                 i32 d1 = green - pal[1];
                 i32 d2 = blue - pal[2];
@@ -1535,7 +1535,7 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
                         }
                     }
                 }
-                *dst = (u8)best;
+                *dst = static_cast<u8>(best);
                 dst++;
             }
         }

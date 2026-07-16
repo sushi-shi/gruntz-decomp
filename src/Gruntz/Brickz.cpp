@@ -88,7 +88,7 @@ i32 CBrickzGrid::SearchEdge(
     i32 maskA,
     i32 maskC
 ) {
-    if ((u32)xA >= m_width || (u32)yA >= m_height || (u32)xB >= m_width || (u32)yB >= m_height) {
+    if (static_cast<u32>(xA) >= m_width || static_cast<u32>(yA) >= m_height || static_cast<u32>(xB) >= m_width || static_cast<u32>(yB) >= m_height) {
         return 0;
     }
     BrickzCell* cellB = &m_rows[yB][xB];
@@ -96,7 +96,7 @@ i32 CBrickzGrid::SearchEdge(
     i32 savedB0 = cellB->m_0;
     i32 savedA4 = cellA->m_4;
     i32 savedA0 = cellA->m_0;
-    i32 bBit29 = ((u32)savedB0 >> 29) & 1;
+    i32 bBit29 = (static_cast<u32>(savedB0) >> 29) & 1;
     i32 savedB4 = cellB->m_4;
     if (bBit29 != 0) {
         cellB->m_0 = savedB0 & 0xdfffffff;
@@ -237,7 +237,7 @@ i32 CBrickzGrid::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
 RVA(0x000853f0, 0x46)
 i32 CBrickzGrid::IsCellClear(i32 x, i32 y) {
     i32 occ;
-    if ((u32)x >= m_width || (u32)y >= m_height) {
+    if (static_cast<u32>(x) >= m_width || static_cast<u32>(y) >= m_height) {
         occ = 1;
     } else {
         occ = m_rows[y][x].m_0;

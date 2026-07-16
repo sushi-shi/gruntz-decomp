@@ -231,8 +231,8 @@ i32 CTimer::Tick(i32 dt) {
         return 1;
     }
     // remaining = (m_accumLo:m_accumHi) - g_frameTime + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
-    i64 rem = *(i64*)&m_accumLo - (u32)g_frameTime + *(i64*)&m_baseTimeLo;
-    i32 v = (rem > 0) ? (i32)rem : 0;
+    i64 rem = *(i64*)&m_accumLo - static_cast<u32>(g_frameTime) + *(i64*)&m_baseTimeLo;
+    i32 v = (rem > 0) ? static_cast<i32>(rem) : 0;
     m_currentMs = v;
 
     if (v == 0) {
@@ -270,7 +270,7 @@ i32 CTimer::Tick(i32 dt) {
         return 1;
     }
 
-    if ((u32)v < 0xea60) {
+    if (static_cast<u32>(v) < 0xea60) {
         i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
         if (key != 0) {
             i32 found = 0;
@@ -288,7 +288,7 @@ i32 CTimer::Tick(i32 dt) {
 
     // decode v (ms) into the MM:SS digits; a 0 digit with no significant digit to
     // its left becomes 10 (the blank frame).
-    u32 t = (u32)v;
+    u32 t = static_cast<u32>(v);
     i32 d10min = t / 600000;
     i32 d1min = t / 60000 % 10;
     if (d1min == 0 && d10min != 0) {
@@ -329,7 +329,7 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
     if (!m_running) {
         return 1;
     }
-    if (force == 0 && (u32)m_currentMs < 0x2710 && (u32)g_timer500 >= 0xfa) {
+    if (force == 0 && static_cast<u32>(m_currentMs) < 0x2710 && static_cast<u32>(g_timer500) >= 0xfa) {
         return 1;
     }
     if (m_frameMinTens) {
@@ -363,15 +363,15 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
 // ---------------------------------------------------------------------------
 RVA(0x0009c090, 0x37)
 void CTimer::SetTime(i32 a, i32 b) {
-    u32 av = (u32)a;
+    u32 av = static_cast<u32>(a);
     if (av > 0x63) {
         av = 0x63;
     }
-    u32 bv = (u32)b;
+    u32 bv = static_cast<u32>(b);
     if (bv > 0x3b) {
         bv = 0x3b;
     }
-    m_currentMs = (i32)((av * 60 + bv) * 1000);
+    m_currentMs = static_cast<i32>(((av * 60 + bv) * 1000));
 }
 
 // ---------------------------------------------------------------------------
@@ -383,15 +383,15 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
     if (!m_running) {
         return;
     }
-    u32 mins = (u32)minutes;
+    u32 mins = static_cast<u32>(minutes);
     if (mins > 0x3b) {
         mins = 0x3b;
     }
-    u32 secs = (u32)seconds;
+    u32 secs = static_cast<u32>(seconds);
     if (secs > 0x63) {
         secs = 0x63;
     }
-    u32 cur = (u32)m_currentMs;
+    u32 cur = static_cast<u32>(m_currentMs);
     // carry = 1 unless (the minute already on the clock + new minutes) fits in 0x3b.
     u32 carry = 1;
     if (cur % 60000 / 1000 + mins <= 0x3b) {

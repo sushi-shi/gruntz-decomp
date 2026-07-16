@@ -133,7 +133,7 @@ i32 SFManager_SelectBestDevice() {
                 (PDWORD)&g_ratingBuf_64dbe0,
                 (PDWORD)&g_ratingRaw_64da84
             );
-            u8 r = (u8)((g_ratingRaw_64da84 >> 0x13) + 0x40);
+            u8 r = static_cast<u8>(((g_ratingRaw_64da84 >> 0x13) + 0x40));
             g_ratings_64e0c0[g_idx_64da80] = r;
             if (r == 0x40) {
                 g_ratings_64e0c0[g_idx_64da80] = 0;
@@ -177,7 +177,7 @@ i32 SFManager_SelectBestDevice() {
     g_caps_64df30 = 0x66;
     g_sfDevice->SF_GetDevCaps(g_sfDeviceId, (PSFCAPSOBJECT)&g_caps_64df30);
     if (g_capsFlags_64df36 & 0x80000000) {
-        g_sfVer = (u32)-1;
+        g_sfVer = static_cast<u32>(-1);
     } else {
         g_sfDevice->SF_QueryStaticSampleMemorySize(
             g_sfDeviceId,
@@ -187,10 +187,10 @@ i32 SFManager_SelectBestDevice() {
     }
     g_sfDevice->SF_GetRouterID(g_sfDeviceId, (PDWORD)&g_id_64df9c);
     u32 v = g_id_64df9c;
-    g_id0_613dff = (char)(v & 0x7f);
-    g_id3_613e02 = (char)((v >> 0x18) & 0x7f);
+    g_id0_613dff = static_cast<char>((v & 0x7f));
+    g_id3_613e02 = static_cast<char>(((v >> 0x18) & 0x7f));
     g_sfReady = (void*)1;
-    g_id1_613e00 = (char)((v >> 8) & 0x7f);
-    g_id2_613e01 = (char)((v >> 0x10) & 0x7f);
+    g_id1_613e00 = static_cast<char>(((v >> 8) & 0x7f));
+    g_id2_613e01 = static_cast<char>(((v >> 0x10) & 0x7f));
     return 1;
 }

@@ -398,7 +398,7 @@ i32 CFontConfig::TypeChar(i32 ch, i32 a2) {
         return 0;
     }
     if (m_inputText.GetLength() < 0x50) {
-        m_inputText += (char)ch;
+        m_inputText += static_cast<char>(ch);
     }
     return 0;
 }
@@ -492,7 +492,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         }
     }
     i32 t;
-    if ((u32)g_frameDelta < (u32)g_caretBlinkMs) {
+    if (static_cast<u32>(g_frameDelta) < static_cast<u32>(g_caretBlinkMs)) {
         t = g_caretBlinkMs - g_frameDelta;
     } else {
         t = 0;

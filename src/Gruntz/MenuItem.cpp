@@ -78,8 +78,8 @@ void CMenuItem::Reset() {
     m_sprite = 0;
     m_owner = 0;
     m_listPos = 0;
-    m_hitLeft = (i32)0xeeeeeeee;
-    m_fixedX = (i32)0xeeeeeeee;
+    m_hitLeft = static_cast<i32>(0xeeeeeeee);
+    m_fixedX = static_cast<i32>(0xeeeeeeee);
     m_navFwdName.Empty();
     m_navBackName.Empty();
     m_54.Empty();
@@ -213,7 +213,7 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
         return 0;
     }
     i32 py, px;
-    if (m_fixedX != (i32)0xeeeeeeee) {
+    if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
         py = m_fixedX;
         px = m_fixedY;
     } else {
@@ -257,7 +257,7 @@ i32 CMenuItem::Trigger() {
 // hit-test: is (x,y) inside the cached placed rect?
 RVA(0x00185700, 0x4b)
 i32 CMenuItem::Hit(i32 x, i32 y) {
-    if (m_hitLeft == (i32)0xeeeeeeee) {
+    if (m_hitLeft == static_cast<i32>(0xeeeeeeee)) {
         return 0;
     }
     if (x < m_hitLeft) {
@@ -316,7 +316,7 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 RVA(0x001858a0, 0x2b)
 i32 CMenuItem2::Notify(void* arg) {
     u32 a = (u32)arg;
-    if (a >= (u32)m_6c) {
+    if (a >= static_cast<u32>(m_6c)) {
         m_6c = m_70;
         NextFrame();
         return 1;
@@ -333,7 +333,7 @@ i32 CMenuItem2::Notify(void* arg) {
 RVA(0x001858d0, 0x72)
 i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     i32 py, px;
-    if (m_fixedX != (i32)0xeeeeeeee) {
+    if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
         py = m_fixedX;
         px = m_fixedY;
     } else {

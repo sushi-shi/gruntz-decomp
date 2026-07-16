@@ -245,19 +245,19 @@ RVA(0x00008440, 0xfe)
 i32 CPulseHighlight::Tick() {
     i64* ts = &m_timestamp;
     i32* phase = &m_phase;
-    if ((i64)(u32)g_frameTime - *ts >= m_duration) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts >= m_duration) {
         *phase = (*phase == 0);
         m_duration = 0x1f4;
-        *ts = (u32)g_frameTime;
+        *ts = static_cast<u32>(g_frameTime);
     }
     if (*phase != 0) {
-        i64 d2 = (i64)(u32)g_frameTime - *ts;
-        double t = (double)(u32)(d2 < 0 ? 0 : (u32)d2);
-        ((CImageSet*)m_38->m_194)->SetAllField18((i32)((1.0 - t * 0.002) * 50.0 - (-155.0)));
+        i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
+        double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
+        ((CImageSet*)m_38->m_194)->SetAllField18(static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0))));
     } else {
-        i64 d2 = (i64)(u32)g_frameTime - *ts;
-        double t = (double)(u32)(d2 < 0 ? 0 : (u32)d2);
-        ((CImageSet*)m_38->m_194)->SetAllField18((i32)(t * 0.1 - (-155.0)));
+        i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
+        double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
+        ((CImageSet*)m_38->m_194)->SetAllField18(static_cast<i32>((t * 0.1 - (-155.0))));
     }
     return 0;
 }

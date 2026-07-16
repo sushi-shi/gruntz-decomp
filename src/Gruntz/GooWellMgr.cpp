@@ -156,7 +156,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     }
     if (count <= 1 && m_phase == 2 && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleActive == 0
         && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleHandle == 0 && m_pendingFx == 0) {
-        if ((i64)g_frameTime - m_timerBase >= m_timerWindow) {
+        if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
             ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
         }
     }
@@ -169,7 +169,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_pendingFx != 0) {
             goto done;
         }
-        if ((i64)g_frameTime - m_timerBase >= m_timerWindow) {
+        if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
             if (g_gameReg->m_134 == 2) {
                 // +0x594 lives past CPlay's tail: it is CMulti::m_594 (CMulti : CPlay),
                 // and the m_134 == 2 arm is exactly the mode where m_curState is a CMulti.
@@ -183,7 +183,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     }
 
     if (m_phase == 1) {
-        if ((i64)g_frameTime - m_timerBase < m_timerWindow) {
+        if (static_cast<i64>(g_frameTime) - m_timerBase < m_timerWindow) {
             goto done;
         }
         if (g_gameReg->m_134 == 1 && m_pendingFx != 0) {
@@ -263,13 +263,13 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             return 0;
         }
         // Goo respawn timer.
-        if ((i64)g_frameTime - m_gooTimerBase >= m_gooInterval) {
+        if (static_cast<i64>(g_frameTime) - m_gooTimerBase >= m_gooInterval) {
             obj->m_guts->AdvanceGauge(1);
             m_gooInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
             m_gooTimerBase = g_frameTime;
         }
         // Resource respawn timer.
-        if ((i64)g_frameTime - m_resourceTimerBase >= m_resourceInterval) {
+        if (static_cast<i64>(g_frameTime) - m_resourceTimerBase >= m_resourceInterval) {
             obj->m_guts->UpdateRezMachineWakeStatusBar();
             m_resourceInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
             m_resourceTimerBase = g_frameTime;

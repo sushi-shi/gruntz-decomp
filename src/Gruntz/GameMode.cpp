@@ -514,7 +514,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                 host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
                 LeafCue* cue = (LeafCue*)cue_ob;
                 if (cue != 0 && g_sndEnabled != 0
-                    && (u32)(g_killCueClock - cue->m_14) >= (u32)cue->m_18) {
+                    && static_cast<u32>((g_killCueClock - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
                     cue->m_14 = g_killCueClock;
                     cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                 }

@@ -30,11 +30,11 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
         const u8* pal = m_palette;
         u16* t = table;
         for (i32 i = 0x100; i != 0; i--) {
-            u8 g = (u8)((u8)pal[1] >> g_gDown);
-            u8 r = (u8)((u8)pal[0] >> g_rDown);
+            u8 g = static_cast<u8>((static_cast<u8>(pal[1]) >> g_gDown));
+            u8 r = static_cast<u8>((static_cast<u8>(pal[0]) >> g_rDown));
             pal += 4;
-            u8 b = (u8)((u8)pal[-2] >> g_bDown);
-            *t++ = (u16)(((u32)g << g_gUp) | ((u32)r << g_rUp) | (u32)b);
+            u8 b = static_cast<u8>((static_cast<u8>(pal[-2]) >> g_bDown));
+            *t++ = static_cast<u16>(((static_cast<u32>(g) << g_gUp) | (static_cast<u32>(r) << g_rUp) | static_cast<u32>(b)));
         }
     }
 
@@ -48,12 +48,12 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                 if (src[idx] & 0x80) {
                     m_rleLen++;
                     idx++;
-                    x += (i32)m_rleData[idx - 1] - 0x80;
+                    x += static_cast<i32>(m_rleData[idx - 1]) - 0x80;
                 } else {
                     m_rleLen++;
-                    m_rleLen += (i32)src[idx] * 2;
-                    x += (i32)m_rleData[idx];
-                    idx += (i32)m_rleData[idx] + 1;
+                    m_rleLen += static_cast<i32>(src[idx]) * 2;
+                    x += static_cast<i32>(m_rleData[idx]);
+                    idx += static_cast<i32>(m_rleData[idx]) + 1;
                 }
                 if (x >= w1) {
                     row++;
@@ -74,7 +74,7 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                 out[outidx] = tk;
                 if (tk & 0x80) {
                     outidx++;
-                    x2 += (i32)m_rleData[srcidx] - 0x80;
+                    x2 += static_cast<i32>(m_rleData[srcidx]) - 0x80;
                     srcidx++;
                 } else {
                     i32 n = src[srcidx];
@@ -83,13 +83,13 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                         const u8* run = src + srcidx + 1;
                         for (i32 k = 0; k < n; k++) {
                             u16 px = table[run[k]];
-                            out[outidx] = (u8)px;
-                            out[outidx + 1] = (u8)(px >> 8);
+                            out[outidx] = static_cast<u8>(px);
+                            out[outidx + 1] = static_cast<u8>((px >> 8));
                             outidx += 2;
                         }
                     }
-                    x2 += (i32)m_rleData[srcidx];
-                    srcidx += (i32)m_rleData[srcidx] + 1;
+                    x2 += static_cast<i32>(m_rleData[srcidx]);
+                    srcidx += static_cast<i32>(m_rleData[srcidx]) + 1;
                 }
                 if (x2 >= m_width - 1) {
                     row2++;

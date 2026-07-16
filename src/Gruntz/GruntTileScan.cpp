@@ -75,7 +75,7 @@ i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
             i32 row = c->m_y;
             CScanGrid* grid = m_c;
             i32 flags;
-            if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
+            if (static_cast<u32>(col) < static_cast<u32>(grid->m_c) && static_cast<u32>(row) < static_cast<u32>(grid->m_10)) {
                 flags = grid->m_8[row][col].m_flags;
             } else {
                 flags = 1;

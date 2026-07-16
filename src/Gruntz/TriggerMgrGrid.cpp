@@ -431,12 +431,12 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     i32 subY = cy - (ty << plane->m_shiftY);
     i32 raw = plane->m_tileGrid[plane->m_colOffsets[ty] + tx];
     i32 tag = 0;
-    if (raw != (i32)0xeeeeeeee && raw != -1) {
+    if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
         CTileImageSet* ts = (CTileImageSet*)level->m_imageSets.GetAt(raw & 0xffff);
         tag = ts->GetCollisionAt(subX, subY);
     }
 
-    if ((u32)(tag - 0xb) > 0x65) {
+    if (static_cast<u32>((tag - 0xb)) > 0x65) {
         return 0;
     }
 
@@ -526,14 +526,14 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     i32 cell = *(i32*)(*(char**)(scroll + 0x24) + (y >> sw) * 4) + (x >> sh);
     i32 attr = *(i32*)(*(char**)(scroll + 0x20) + cell * 4);
     i32 kind;
-    if (attr == (i32)0xeeeeeeee || attr == -1) {
+    if (attr == static_cast<i32>(0xeeeeeeee) || attr == -1) {
         kind = 0;
     } else {
         CUserLogic* logic = (CUserLogic*)*(void**)(*(char**)(view + 0x4c) + (attr & 0xffff) * 4);
         kind = logic->UserLogicVfunc6(); // Apply = vtbl slot 8 (+0x20)
     }
     i32 op = kind - 0x34;
-    if ((u32)op > 0xe) {
+    if (static_cast<u32>(op) > 0xe) {
         return 0;
     }
     i32 cx = x;
@@ -722,11 +722,11 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     // (m_38:m_3c) as the elapsed accumulator, credit the HUD score, then zero the
     // timer's accum/lap/running/current block.
     CTimer* sub = world->m_frameMarker;
-    i64 diff = (i64)(u32)g_frameTime - *(i64*)&sub->m_38;
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&sub->m_38;
     if (diff < 0) {
         diff = 0;
     }
-    g_gameReg->m_scoreHud->m_score += (i32)diff;
+    g_gameReg->m_scoreHud->m_score += static_cast<i32>(diff);
     sub->m_40 = 0;
     sub->m_44 = 0;
     sub->m_accumLo = 0;           // +0x30

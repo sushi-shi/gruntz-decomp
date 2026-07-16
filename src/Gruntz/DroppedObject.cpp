@@ -387,9 +387,9 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
     o->m_screenX = snapX;
-    m_posX = (double)snapX;
+    m_posX = static_cast<double>(snapX);
     o->m_screenY = snapY;
-    m_posY = (double)snapY;
+    m_posY = static_cast<double>(snapY);
     if (o->m_latchedAnimId != 0xcf851) {
         o->m_latchedAnimId = 0xcf851;
         o->m_flags |= 0x20000;
@@ -423,7 +423,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     m_scrollMode = 0;
     m_lastDropTileX = -1;
     m_lastDropTileY = -1;
-    m_speed = g_objDropDiv / (double)(i64)(u32)time;
+    m_speed = g_objDropDiv / static_cast<double>(static_cast<i64>(static_cast<u32>(time)));
     if (g_gameReg->m_134 == 1) {
         m_scrollMode = 1;
     }
@@ -504,7 +504,7 @@ void CObjectDropper::RegisterActs() {
 // to the bound object's screen position.
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
-    if ((i64)g_frameTime - m_lastDropTime >= m_dropInterval) {
+    if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
             CGameObject* o = m_object;
             RECT box;
@@ -527,14 +527,14 @@ i32 CObjectDropper::Update() {
                         i32 cx = fx >> 5;
                         i32 cy = fy >> 5;
                         u32 flags;
-                        if ((u32)cx >= (u32)plane->m_c || (u32)cy >= (u32)plane->m_10) {
+                        if (static_cast<u32>(cx) >= static_cast<u32>(plane->m_c) || static_cast<u32>(cy) >= static_cast<u32>(plane->m_10)) {
                             flags = 1;
                         } else {
                             // the row table is typed i32** on CMapMgr; the row's cells are
                             // the canonical 0x1c-byte BrickzCell (its m_0 = packed terrain
                             // flags). @fold-TODO in MapMgr.h tracks retyping m_8 to
                             // BrickzCell** tree-wide.
-                            flags = (u32)((BrickzCell*)plane->m_8[cy])[cx].m_0;
+                            flags = static_cast<u32>(((BrickzCell*)plane->m_8[cy])[cx].m_0);
                         }
                         if ((flags & 2) == 0) {
                             g_gameReg->m_world->m_childGroup
@@ -551,12 +551,12 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    m_38->m_1a0.Advance((i32)g_engineFrameDelta);
+    m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
 
-    double drift = (double)g_frameDelta * m_speed;
+    double drift = static_cast<double>(g_frameDelta) * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
-        if (m_posX >= (double)g_gameReg->m_world->m_level->m_mainPlane->m_wrapW) {
+        if (m_posX >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapW)) {
             m_posX = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -564,14 +564,14 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDx < 0) {
         m_posX -= drift;
         if (m_posX < 0.0) {
-            m_posX = (double)(g_gameReg->m_world->m_level->m_mainPlane->m_wrapW - 1);
+            m_posX = static_cast<double>((g_gameReg->m_world->m_level->m_mainPlane->m_wrapW - 1));
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }
     }
     if (m_travelDy > 0) {
         m_posY += drift;
-        if (m_posY > (double)g_gameReg->m_world->m_level->m_mainPlane->m_wrapH) {
+        if (m_posY > static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapH)) {
             m_posY = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -579,14 +579,14 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDy < 0) {
         m_posY -= drift;
         if (m_posY < 0.0) {
-            m_posY = (double)(g_gameReg->m_world->m_level->m_mainPlane->m_wrapH - 1);
+            m_posY = static_cast<double>((g_gameReg->m_world->m_level->m_mainPlane->m_wrapH - 1));
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }
     }
 
-    m_object->m_screenX = (i32)m_posX;
-    m_object->m_screenY = (i32)m_posY;
+    m_object->m_screenX = static_cast<i32>(m_posX);
+    m_object->m_screenY = static_cast<i32>(m_posY);
     return 0;
 }
 
@@ -682,13 +682,13 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
     m_landY = adjY;
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
-    m_fallY = (double)m_object->m_screenY;
+    m_fallY = static_cast<double>(m_object->m_screenY);
     if (m_object->m_latchedAnimId != 0xcf851) {
         m_object->m_latchedAnimId = 0xcf851;
         m_object->m_flags |= 0x20000;
     }
     m_timePerTile =
-        32.0 / (double)(u32)g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8);
+        32.0 / static_cast<double>(static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8)));
 }
 
 // CDroppedObject::RegisterRange @0x0c6b50 - seed the dropped-object activation
@@ -788,8 +788,8 @@ void CDroppedObject::RegisterActs() {
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    m_fallY = (double)g_frameDelta * m_timePerTile + m_fallY;
-    i32 landed = (i32)(m_fallY - g_dropFallBias);
+    m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
+    i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
     if (landed > m_landY) {
         i32 x = m_object->m_screenX;
         CTileGrid* g = g_gameReg->m_tileGrid;
@@ -797,7 +797,7 @@ i32 CDroppedObject::ActA() {
         {
             i32 cx = x >> 5;
             i32 cy = m_landY >> 5;
-            if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
+            if (static_cast<u32>(cx) < static_cast<u32>(g->m_c) && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
                 cell = *(i32*)((char*)g->m_8[cy] + cx * 0x1c);
             } else {
                 cell = 1;

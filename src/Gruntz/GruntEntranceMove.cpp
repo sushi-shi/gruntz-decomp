@@ -122,7 +122,7 @@ extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 
 // Read the tile-flag word at board cell (tx, ty); out-of-bounds -> 1 (blocking).
 static __inline i32 s_TileFlags(GruntBoard* b, i32 tx, i32 ty) {
-    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
     }
     return ((i32*)b->m_8[ty])[tx * 7];
@@ -210,7 +210,7 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // gate branch ordering, and the cross-arm regalloc. Deferred to the final sweep.
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     // The +0x1a0 cursor's done-gates (m_28 paused-done, m_20 per-frame timer).
     if (!((m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) || m_moveMode == 0)) {
         return 0;
@@ -460,7 +460,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 // edx/ecx coin-flip; no source lever flips it (an explicit `int z=0;` did not pin).
 RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
-    if (m_154->m_1a0.Advance((u32)g_engineFrameDelta) == 1) {
+    if (m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         CGameObject* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
@@ -468,7 +468,7 @@ void CGrunt::LoadEntranceConfig() {
         i32 ty = h->m_screenY >> 5;
 
         i32 flags;
-        if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
             flags = ((i32*)grid->m_8[ty])[tx * 7];
@@ -476,7 +476,7 @@ void CGrunt::LoadEntranceConfig() {
 
         if (flags & 0x20000000) {
             i32 owner;
-            if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+            if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
                 owner = -1;
             } else {
                 owner = ((i32*)grid->m_8[ty])[tx * 7 + 1];
@@ -570,7 +570,7 @@ void CGrunt::LoadEntranceConfig() {
 // as ResetGeometry @0x616e0) - no source lever flips it. ~88.5%.
 RVA(0x00068370, 0x14c)
 void CGrunt::RearmEntranceDrop() {
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
     if (m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) {
         m_22c = 0;
@@ -732,9 +732,9 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     CSprite* _out;
     if (enable != 0) {
         m_wingzEnabled = 1;
-        m_wingzDurationLo = (i32)((double)m_wingzTime * g_wingzScale - g_wingzBias);
+        m_wingzDurationLo = static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias));
         m_wingzDurationHi = 0;
-        m_wingzClockLo = (i32)g_frameTime;
+        m_wingzClockLo = static_cast<i32>(g_frameTime);
         m_wingzClockHi = 0;
         CreateWingzTimeSprite();
 
@@ -877,7 +877,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // that whole referent set is a final-sweep task.
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     if (m_154->m_1a0.m_28 == 0 || m_154->m_1a0.m_20 != 0) {
         return 0;
     }
@@ -919,7 +919,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     i32 ty = m_lastTilePxY >> 5;
     GruntBoard* board = g->m_tileGrid;
     i32 flags;
-    if ((u32)tx >= (u32)board->m_c || (u32)ty >= (u32)board->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(board->m_c) || static_cast<u32>(ty) >= static_cast<u32>(board->m_10)) {
         flags = 1;
     } else {
         flags = ((i32*)board->m_8[ty])[tx * 7];
@@ -1192,7 +1192,7 @@ finalize:
 // cascade (~87.4%). Logic complete; deferred to the final sweep.
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     if (m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) {
         if (m_freezeUnfrozen != 0) {
             m_entranceActive = 0;
@@ -1209,12 +1209,12 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
         m_idleDelayLo = g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710);
         m_idleDelayHi = 0;
-        m_idleAnchorLo = (i32)g_frameTime;
+        m_idleAnchorLo = static_cast<i32>(g_frameTime);
         m_idleAnchorHi = 0;
         m_freezeDelayDone = 0;
     }
     if (m_freezeDelayDone == 0) {
-        if ((i64)(u32)g_frameTime - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
             m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
             CGameObject* h = m_10;
@@ -1241,7 +1241,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
 RVA(0x00069fd0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
     // 0x15c360 = CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     if (m_154->m_1a0.m_28 == 0 || m_154->m_1a0.m_20 != 0) {
         return 0;
     }
@@ -1295,7 +1295,7 @@ i32 g_moveVecSW[3]; // 0x644b48
 // docs/patterns/switch-jumptable-separate-comdat.md). Final sweep.
 RVA(0x0006a060, 0x43d)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
-    m_400 = 16.0 / (double)g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8);
+    m_400 = 16.0 / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
 
     WwdGameReg* g = g_gameReg;
     void* sub2c = *(void**)((char*)g + 0x2c);
@@ -1305,7 +1305,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     i32 tileY = h->m_screenY >> 5;
     i32 tileX = h->m_screenX >> 5;
     i32 dir;
-    if ((u32)tileX >= (u32)xbound || (u32)tileY >= (u32)b->m_10) {
+    if (static_cast<u32>(tileX) >= static_cast<u32>(xbound) || static_cast<u32>(tileY) >= static_cast<u32>(b->m_10)) {
         dir = 0;
     } else {
         dir = ((i32*)b->m_8[tileY])[tileX * 7 + 3];

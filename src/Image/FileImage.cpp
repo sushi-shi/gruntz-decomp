@@ -508,9 +508,9 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
         for (i32 x = 0; x < width; x++) {
             u16 px = *(u16*)src;
             src += 2;
-            dst[0] = (u8)((u8)px << g_bDown);
-            dst[1] = (u8)((u8)(px >> g_gUp) << g_gDown);
-            dst[2] = (u8)((u8)(px >> g_rUp) << g_rDown);
+            dst[0] = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+            dst[1] = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
+            dst[2] = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
             dst += 3;
         }
         file.Write(line, 3 * width);
@@ -1129,7 +1129,7 @@ i32 CDDSurface::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
     }
 
     if (flags & PID_EMBEDDED_PALETTE) {
-        if ((u32)size <= 0x300) {
+        if (static_cast<u32>(size) <= 0x300) {
             return 0;
         }
         u8* src = hdr + size - 0x300;

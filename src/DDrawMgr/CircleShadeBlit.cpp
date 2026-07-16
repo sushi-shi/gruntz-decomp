@@ -46,8 +46,8 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     i32 dx = a0 - cx;
     i32 dx2 = dx * dx;
     i32 cy = m_centerX;
-    i32 row = cy - (i32)sqrt((double)(a1 - dx2)) + 1;
-    i32 len = (i32)sqrt((double)((row - cy) * (row - cy) + dx2));
+    i32 row = cy - static_cast<i32>(sqrt(static_cast<double>((a1 - dx2)))) + 1;
+    i32 len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
 
     i32 srcpitch = m_surface->m_pitch;
     i32 srcCol = a0 * srcpitch;
@@ -92,7 +92,7 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
                 rowRsrc--;
                 rowRdst--;
                 row++;
-                len = (i32)sqrt((double)((row - cy) * (row - cy) + dx2));
+                len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
             } while (len >= a2 - m_spanCount);
             return;
         }
@@ -118,7 +118,7 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
             rowRsrc--;
             rowRdst--;
             row++;
-            len = (i32)sqrt((double)((row - cy) * (row - cy) + dx2));
+            len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
         } while (len >= a2 - m_spanCount);
         return;
     }
@@ -155,7 +155,7 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
                 rowRsrc--;
                 rowRdst--;
                 row++;
-                len = (i32)sqrt((double)((row - cy) * (row - cy) + dx2));
+                len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
             } while (len >= a2 - m_spanCount);
             return;
         }
@@ -187,7 +187,7 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
             rowRsrc--;
             rowRdst--;
             row++;
-            len = (i32)sqrt((double)((row - cy) * (row - cy) + dx2));
+            len = static_cast<i32>(sqrt(static_cast<double>(((row - cy) * (row - cy) + dx2))));
         } while (len >= a2 - m_spanCount);
     }
 }

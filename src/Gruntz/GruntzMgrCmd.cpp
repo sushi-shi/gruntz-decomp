@@ -667,7 +667,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                             LeafCue* _c = (LeafCue*)_c_ob;
                             if (_c && g_sndEnabled) {
                                 i32 now = g_killCueClock;
-                                if ((u32)(now - _c->m_14) >= (u32)_c->m_18) {
+                                if (static_cast<u32>((now - _c->m_14)) >= static_cast<u32>(_c->m_18)) {
                                     _c->m_14 = now;
                                     _c->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                                 }

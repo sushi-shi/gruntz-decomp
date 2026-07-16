@@ -64,8 +64,8 @@ void ImageRotateBlit(
     }
 
     float rad = rot * 0.01745329238f; // K(0x5efb14)  deg->rad
-    float sn = (float)sin(rad);
-    float cs = (float)cos(rad);
+    float sn = static_cast<float>(sin(rad));
+    float cs = static_cast<float>(cos(rad));
 
     // Centered half-extents of the source box (kept as ints, fild'd per corner).
     i32 hy = h >> 1;
@@ -73,8 +73,8 @@ void ImageRotateBlit(
     i32 ex[2] = {-hx, w - hx};
     i32 ey[2] = {-hy, h - hy};
 
-    float tx = (float)a1;
-    float ty = (float)a2;
+    float tx = static_cast<float>(a1);
+    float ty = static_cast<float>(a2);
 
     // Pass 1: the scaled centered corner products.
     ClipVtx prod[4];
@@ -82,8 +82,8 @@ void ImageRotateBlit(
     i32 iy, ix;
     for (iy = 0; iy < 2; iy++) {
         for (ix = 0; ix < 2; ix++) {
-            prod[k].x = (float)ex[ix] * scale;
-            prod[k].y = (float)ey[iy] * scale;
+            prod[k].x = static_cast<float>(ex[ix]) * scale;
+            prod[k].y = static_cast<float>(ey[iy]) * scale;
             k++;
         }
     }
@@ -95,8 +95,8 @@ void ImageRotateBlit(
         for (ix = 0; ix < 2; ix++) {
             mtx[k].x = prod[k].x * cs - prod[k].y * sn + tx;
             mtx[k].y = prod[k].x * sn + prod[k].y * cs + ty;
-            mtx[k].u = (float)sq[ix != 0 ? 3 : 0];
-            mtx[k].v = (float)sq[iy != 0 ? 2 : 1];
+            mtx[k].u = static_cast<float>(sq[ix != 0 ? 3 : 0]);
+            mtx[k].v = static_cast<float>(sq[iy != 0 ? 2 : 1]);
             k++;
         }
     }

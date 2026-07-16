@@ -278,7 +278,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         ->SpawnVoiceDriver(
                             0,
                             0x3bf,
-                            (((i32)g_randSeed >> 16) & 0x7fff) % 0x11,
+                            ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
                             1,
                             -1,
                             -1

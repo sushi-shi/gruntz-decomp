@@ -601,7 +601,7 @@ i32 CGruntPuddle::Remove() {
         CTileGrid* grid = reg->m_tileGrid;
         i32 tx = m_tileX;
         i32 flags;
-        if ((u32)tx < (u32)grid->m_c && (u32)ty < (u32)grid->m_10) {
+        if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c) && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
             flags = ((i32*)grid->m_8[ty])[tx * 7];
         } else {
             flags = 1;
@@ -955,7 +955,7 @@ i32 CTeleporter::Update() {
 
     CGameObject* o = m_object;
     if (o->m_7c->m_bc != 0) {
-        i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_armClockLo;
+        i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_armClockLo;
         if (delta >= *(i64*)&m_intervalLo) {
             m_savedGeoId = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);

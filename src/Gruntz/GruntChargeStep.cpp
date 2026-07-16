@@ -189,8 +189,8 @@ i32 CGrunt::ChargeStep() {
                     baseY += rand() % spanY;
                 }
                 WwdGameReg* mgr = g_gameReg;
-                if ((u32)baseX < (u32)mgr->m_tileGrid->m_c
-                    && (u32)baseY < (u32)mgr->m_tileGrid->m_10) {
+                if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_c)
+                    && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_10)) {
                     TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
                 if (m_31c.GetCount() != 0) {
@@ -220,7 +220,7 @@ i32 CGrunt::ChargeStep() {
                 m_defenderState = 0;
                 return 1;
             }
-            if ((u32)m_dwell > 500) {
+            if (static_cast<u32>(m_dwell) > 500) {
                 StepArrivalDrop(t->m_lastTilePxX, t->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }

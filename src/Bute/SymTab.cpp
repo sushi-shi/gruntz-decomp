@@ -230,7 +230,7 @@ i32 CParseSource::BeginParse() {
     if (m_buffer == 0) {
         return 0;
     }
-    if (m_reader->Read(m_base, 0, m_length, (void*)m_buffer) != (i32)m_length) {
+    if (m_reader->Read(m_base, 0, m_length, (void*)m_buffer) != static_cast<i32>(m_length)) {
         ::operator delete((void*)m_buffer);
         m_buffer = 0;
     }
@@ -266,7 +266,7 @@ i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
         memcpy(dst, (const void*)(m_buffer + pos), len);
         return 1;
     }
-    return m_reader->Read(m_base, pos, len, dst) == (i32)len;
+    return m_reader->Read(m_base, pos, len, dst) == static_cast<i32>(len);
 }
 
 // SetPos (0x139ae0): seek the read cursor, report success. Out-of-line (retail
@@ -297,7 +297,7 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
         SetPos(seekPos);
     }
 
-    u32 pos = (u32)m_cursor;
+    u32 pos = static_cast<u32>(m_cursor);
     u32 want = len;
     if (pos + want > m_length) {
         want = m_length - pos;
@@ -316,7 +316,7 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
             m_cursor += want;
             return want;
         }
-        if (m_reader->Read(m_base, pos, want, dst) == (i32)want) {
+        if (m_reader->Read(m_base, pos, want, dst) == static_cast<i32>(want)) {
             m_cursor += want;
             return want;
         }
@@ -523,7 +523,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
     }
 
     RezSrc* src = m_src;
-    if (src->m_8 == 0 || (u32)src->m_1c > 1) {
+    if (src->m_8 == 0 || static_cast<u32>(src->m_1c) > 1) {
         RezAssertFail("CRezDir::Load Failed! (File is not sorted!)");
         return 0;
     }
@@ -685,7 +685,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
         return 0;
     }
     m_subTabs.Insert((CHashElement*)&child->m_node20);
-    if (m_owner->m_longestScopeNameLen <= (i32)strlen(name)) {
+    if (m_owner->m_longestScopeNameLen <= static_cast<i32>(strlen(name))) {
         m_owner->m_longestScopeNameLen = strlen(name) + 1;
     }
     return child;
@@ -729,7 +729,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
     }
     rec->m_valTable.Insert(&slot->m_node);
     u32 len = strlen((char*)name);
-    if ((u32)m_owner->m_longestLeafNameLen <= len) {
+    if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
     return (i32)slot;
@@ -753,7 +753,7 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     slot->Build(this, (const char*)a1, a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
     ((CSymRec*)a2)->m_valTable.Insert(&slot->m_node);
     u32 len = strlen((char*)a1);
-    if ((u32)m_owner->m_longestLeafNameLen <= len) {
+    if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
     return (i32)slot;
@@ -837,7 +837,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_10 = 0;
     m_0c = -1;
     i32 maxVal = 0;
-    char* buf = (char*)::operator new((u32)a2);
+    char* buf = (char*)::operator new(static_cast<u32>(a2));
     if (!buf) {
         return 0;
     }
@@ -908,7 +908,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             p += strlen(p) + 1;
             void* arr;
             if (f6 != 0) {
-                arr = ::operator new((u32)((i32)f6 * 4));
+                arr = ::operator new(static_cast<u32>(((i32)f6 * 4)));
                 for (i32 i = (i32)f6; i != 0; i--) {
                     *(void**)arr = *(void**)p;
                     arr = (char*)arr + 4;
@@ -923,10 +923,10 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 slot->Build(this, name1, f4, rec, str2, f3, f1, f2, f6, arr, (void*)a0);
                 rec->m_valTable.Insert(&slot->m_node);
                 m_10 = m_10 + slot->m_0c;
-                if ((u32)slot->m_14 < (u32)m_0c) {
+                if (static_cast<u32>(slot->m_14) < static_cast<u32>(m_0c)) {
                     m_0c = slot->m_14;
                 }
-                if ((u32)slot->m_14 > (u32)maxVal) {
+                if (static_cast<u32>(slot->m_14) > static_cast<u32>(maxVal)) {
                     maxVal = slot->m_14;
                 }
             }
@@ -949,7 +949,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
 // Banked for the final sweep.
 RVA(0x0013a940, 0xc2)
 CSymRec* CSymTab::FindOrAddSym(i32 key) {
-    CSymRec* found = (CSymRec*)m_symbols.FindInt((u32)key);
+    CSymRec* found = (CSymRec*)m_symbols.FindInt(static_cast<u32>(key));
     if (found) {
         return found;
     }
@@ -1322,19 +1322,19 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     node->Read(0, 0, 0xa8, hdr);
     u32 v;
     v = *(u32*)(hdr + 0x97);
-    if (v > (u32)m_54) {
+    if (v > static_cast<u32>(m_54)) {
         m_54 = v;
     }
     v = *(u32*)(hdr + 0x9b);
-    if (v > (u32)m_longestScopeNameLen) {
+    if (v > static_cast<u32>(m_longestScopeNameLen)) {
         m_longestScopeNameLen = v;
     }
     v = *(u32*)(hdr + 0x9f);
-    if (v > (u32)m_longestLeafNameLen) {
+    if (v > static_cast<u32>(m_longestLeafNameLen)) {
         m_longestLeafNameLen = v;
     }
     v = *(u32*)(hdr + 0xa3);
-    if (v > (u32)m_60) {
+    if (v > static_cast<u32>(m_60)) {
         m_60 = v;
     }
     m_root->ApplyRecursive((i32)node, *(i32*)(hdr + 0x83), *(i32*)(hdr + 0x87), flag);
@@ -1420,12 +1420,12 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         char ext[0x108];
         _splitpath(fd.name, 0, 0, fname, ext);
         _strlwr(ext);
-        i32 nleft = (i32)strlen(fname);
+        i32 nleft = static_cast<i32>(strlen(fname));
         i32 i = 0;
         while (i < nleft && fname[i] >= '0' && fname[i] <= '9') {
             i++;
         }
-        i32 key = (i >= nleft) ? atoi(fname) : (i32)m_nextGeneratedFileKey++;
+        i32 key = (i >= nleft) ? atoi(fname) : static_cast<i32>(m_nextGeneratedFileKey++);
         void* extKey = 0;
         if (ext[0] != 0) {
             _strlwr(ext);
@@ -1434,10 +1434,10 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         SymBuildLeaf(this, &fd, extKey);
         void* rec = node->FindOrAddSym(key);
         if (node->Insert(fname, extKey) == 0) {
-            node->AddNodeEntry((void*)(u32)fd.size, rec, full, 0);
+            node->AddNodeEntry((void*)static_cast<u32>(fd.size), rec, full, 0);
         } else if (flag != 0) {
             node->AddNodeSubEntry(rec, extKey);
-            node->AddNodeEntry((void*)(u32)fd.size, rec, full, 0);
+            node->AddNodeEntry((void*)static_cast<u32>(fd.size), rec, full, 0);
         }
         void* node2 = node->FindOrAddSym(key);
         if (node2) {
@@ -1502,7 +1502,7 @@ u32 __stdcall PackTag(const char* s) {
     }
     u32 r = 0;
     u8* rb = (u8*)&r;
-    i32 len = (i32)strlen(s);
+    i32 len = static_cast<i32>(strlen(s));
     if (len > 0) {
         rb[len - 1] = s[0];
     }
@@ -1573,7 +1573,7 @@ i32 CSymParser::CheckNodes() {
 RVA(0x0013ba70, 0x10)
 i32 CSymParser::MakeSeed() {
     time_t t;
-    return (i32)time(&t);
+    return static_cast<i32>(time(&t));
 }
 
 // SetDelims (0x13ba80): free the current owned delimiter buffer, then own a fresh
@@ -1597,7 +1597,7 @@ RVA(0x0013bae0, 0x1b9)
 void* CSymTab::ResolvePath(const char* path) {
     char buf[0x30];
     const char* p = path;
-    if ((i32)strlen(path) > 1) {
+    if (static_cast<i32>(strlen(path)) > 1) {
         if (!IsTokenChar(m_owner->m_delims, *p)) {
             ++p;
             path = p;
@@ -1639,7 +1639,7 @@ void* CSymTab::FindQualified(const char* name) {
     char qual[0x100];
     char key[0x24];
     const char* p = name;
-    i32 len = (i32)strlen(name);
+    i32 len = static_cast<i32>(strlen(name));
     if (len > 1) {
         if (!IsTokenChar(m_owner->m_delims, *p)) {
             ++p;
@@ -1661,7 +1661,7 @@ void* CSymTab::FindQualified(const char* name) {
     if (i <= 1) {
         return Find(qual);
     }
-    strncpy(key, p, (u32)i);
+    strncpy(key, p, static_cast<u32>(i));
     key[i] = 0;
     CSymTab* scope = (CSymTab*)ResolvePath(key);
     if (!scope) {
@@ -1680,7 +1680,7 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     char qual[0x100];
     char key[0x24];
     const char* p = name;
-    i32 len = (i32)strlen(name);
+    i32 len = static_cast<i32>(strlen(name));
     if (len > 1) {
         if (!IsTokenChar(m_owner->m_delims, *p)) {
             ++p;
@@ -1702,7 +1702,7 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     if (i <= 0) {
         return Insert(qual, arg);
     }
-    strncpy(key, p, (u32)i);
+    strncpy(key, p, static_cast<u32>(i));
     key[i] = 0;
     CSymTab* scope = (CSymTab*)ResolvePath(key);
     if (!scope) {
@@ -1807,7 +1807,7 @@ CSymLeafBuilder* CSymParser::PopParseSlot() {
             ::operator delete(node);
             return 0;
         }
-        for (i32 j = 0; (u32)j < (u32)m_parseSlotBlockCount; j++) {
+        for (i32 j = 0; static_cast<u32>(j) < static_cast<u32>(m_parseSlotBlockCount); j++) {
             CSymLeafBuilder* el = &node->m_buffer[j];
             el->m_node.m_record = el;
             m_hash.Insert(&el->m_node);

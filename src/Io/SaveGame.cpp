@@ -322,7 +322,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
 
     // Latch a pending command from a control notification.
-    if (((u32)c >> 16) == 0x100) {
+    if ((static_cast<u32>(c) >> 16) == 0x100) {
         switch (c & 0xffff) {
             case 0x435:
                 g_savedMenuCmd = 0x490;
@@ -909,8 +909,8 @@ i32 CSaveGame::Encode(u8* buf) {
     i32 acc = 0;
     for (u32 i = 0; i < 0x100; i++) {
         u8 t = buf[i];
-        buf[i] = (u8)(t ^ i);
-        acc += (i32)(t & 0xff) * (i32)i;
+        buf[i] = static_cast<u8>((t ^ i));
+        acc += static_cast<i32>((t & 0xff)) * static_cast<i32>(i);
     }
     return acc;
 }
@@ -930,9 +930,9 @@ i32 CSaveGame::Decode(u8* buf) {
     }
     i32 acc = 0;
     for (u32 i = 0; i < 0x100; i++) {
-        u8 t = (u8)(i ^ buf[i]);
+        u8 t = static_cast<u8>((i ^ buf[i]));
         buf[i] = t;
-        acc += (i32)(t & 0xff) * (i32)i;
+        acc += static_cast<i32>((t & 0xff)) * static_cast<i32>(i);
     }
     return acc;
 }
@@ -999,7 +999,7 @@ int __stdcall CloseTempFile_e5550(SaveSlot* p) {
 RVA(0x000e5620, 0x27)
 void CSaveGame::SetMaxLevel(i32 v) {
     if (v < 0x21) {
-        if ((u32)v > m_maxLevel) {
+        if (static_cast<u32>(v) > m_maxLevel) {
             m_maxLevel = v;
             return;
         }
@@ -1011,7 +1011,7 @@ void CSaveGame::SetMaxLevel(i32 v) {
     if (m_maxLevel <= 0x24) {
         return;
     }
-    if ((u32)v <= m_maxLevel) {
+    if (static_cast<u32>(v) <= m_maxLevel) {
         return;
     }
     m_maxLevel = v;

@@ -276,7 +276,7 @@ CLightFx::~CLightFx() {}
 RVA(0x0009cdc0, 0xf1)
 i32 LightFxLogicDispatch(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch ((u32)(size_t)aux->m_1c) {
+    switch (static_cast<u32>((size_t)aux->m_1c)) {
         case 0:
             aux->m_1c = (void*)0x3e8;
             {

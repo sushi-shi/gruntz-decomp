@@ -56,7 +56,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     if (count > 0) {
         i32 n = count;
         do {
-            if ((i32)prev->y != (i32)cur->y) {
+            if (static_cast<i32>(prev->y) != static_cast<i32>(cur->y)) {
                 ClipVtx* top = prev;
                 FillEdgeRow* table;
                 ClipVtx* bottom;
@@ -68,14 +68,14 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
                     bottom = prev;
                     table = g_rasterEdgeR;
                 }
-                i32 topX = (i32)(top->x * g_rasterScale);
-                i32 topYi = (i32)(top->y * g_rasterScale);
-                i32 botYi = (i32)(bottom->y * g_rasterScale);
+                i32 topX = static_cast<i32>((top->x * g_rasterScale));
+                i32 topYi = static_cast<i32>((top->y * g_rasterScale));
+                i32 botYi = static_cast<i32>((bottom->y * g_rasterScale));
                 i32 topRow = topYi >> 0xe;
                 FillEdgeRow* entry = &table[topRow];
                 i32 botRow = botYi >> 0xe;
                 i32 height = botRow - topRow;
-                i32 botX = (i32)(bottom->x * g_rasterScaleNeg);
+                i32 botX = static_cast<i32>((bottom->x * g_rasterScaleNeg));
                 i32 xSlope = (-topX - botX) / height;
                 if (topRow < botRow) {
                     i32 x = topX;
@@ -86,7 +86,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
                     } while (--height != 0);
                 }
             }
-            i32 py = (i32)prev->y;
+            i32 py = static_cast<i32>(prev->y);
             if (py < minYi) {
                 minYi = py;
             }

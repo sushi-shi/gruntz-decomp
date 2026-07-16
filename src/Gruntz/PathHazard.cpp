@@ -157,9 +157,9 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
     o->m_screenX = snapX;
-    m_posX = (double)snapX;
+    m_posX = static_cast<double>(snapX);
     o->m_screenY = snapY;
-    m_posY = (double)snapY;
+    m_posY = static_cast<double>(snapY);
     if (o->m_latchedAnimId != 0xcf850) {
         o->m_latchedAnimId = 0xcf850;
         o->m_flags |= 0x20000;
@@ -302,13 +302,13 @@ i32 CPathHazard::Tick() {
         i32 wy = m_wpY;
         if (m10->m_screenY == wy) {
             // Arrived at the waypoint tile.
-            m_posX = (double)wx;
-            m_posY = (double)wy;
+            m_posX = static_cast<double>(wx);
+            m_posY = static_cast<double>(wy);
             this->Arrive(); // virtual slot 18 (+0x48)
             i32 segs = m_object->m_120;
             if (segs > 0) {
                 m_legWindow = segs;
-                m_legDeadline = (u32)g_frameTime; // the running game clock seeds the leg deadline
+                m_legDeadline = static_cast<u32>(g_frameTime); // the running game clock seeds the leg deadline
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
                 return 0;
@@ -319,11 +319,11 @@ i32 CPathHazard::Tick() {
     }
 
     // Not arrived: integrate the sub-pixel movement vector toward the waypoint.
-    double step = (double)(i64)(u64)(u32)g_frameDelta * m_speed;
+    double step = static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta)))) * m_speed;
     m_posX = m_posX + step * m_unitX;
-    m_posY = m_posY + (double)(u32)g_frameDelta * m_unitY * m_speed;
-    i32 newX = (i32)(m_roundBiasX + m_posX);
-    i32 newY = (i32)(m_roundBiasY + m_posY);
+    m_posY = m_posY + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_unitY * m_speed;
+    i32 newX = static_cast<i32>((m_roundBiasX + m_posX));
+    i32 newY = static_cast<i32>((m_roundBiasY + m_posY));
 
     if (m_unitX > g_pathZero) {
         if (newX > m_wpX) {
@@ -370,7 +370,7 @@ RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {
         i32 sel = 5;
-        i64 elapsed = (i64)(u32)g_frameTime - m_strikeDeadline;
+        i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strikeDeadline;
         if (elapsed >= m_strikeWindow) {
             m_strikeArmed = 0;
         } else if (g_timer200 < 0x64) {
@@ -413,7 +413,7 @@ i32 CPathHazard::SiblingTick() {
         }
     }
 
-    i64 legElapsed = (i64)(u32)g_frameTime - m_legDeadline;
+    i64 legElapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_legDeadline;
     if (legElapsed >= m_legWindow) {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
@@ -442,8 +442,8 @@ i32 CPathHazard::SiblingTick() {
 RVA(0x000b4640, 0x104)
 i32 CPathHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
-    m_strikeWindow = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
-    m_strikeDeadline = (i64)(u32)g_frameTime;
+    m_strikeWindow = static_cast<i64>(static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0)));
+    m_strikeDeadline = static_cast<i64>(static_cast<u32>(g_frameTime));
     g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
 
     CGameObject* obj = m_object;
@@ -462,7 +462,7 @@ i32 CPathHazard::ArmStrike(i32 a, i32 b) {
                 i32 tag = g_sndCueTag;
                 if (enabled != 0) {
                     u32 now = g_killCueClock;
-                    if ((u32)(now - out->m_14) >= out->m_18) {
+                    if (static_cast<u32>((now - out->m_14)) >= out->m_18) {
                         out->m_14 = now;
                         out->m_10->ConfigureItem(tag, 0, 0, 0);
                     }
@@ -504,15 +504,15 @@ i32 CPathHazard::BeginLeg() {
     i32 wy = m_wp[idx].y;
     m_wpY = wy;
 
-    double dx = (double)m_wpX - (double)obj->m_screenX;
-    double dy = (double)m_wpY - (double)obj->m_screenY;
+    double dx = static_cast<double>(m_wpX) - static_cast<double>(obj->m_screenX);
+    double dy = static_cast<double>(m_wpY) - static_cast<double>(obj->m_screenY);
     double len = sqrt(dx * dx + dy * dy);
     double ux = dx / len;
     double uy = dy / len;
 
-    m_speed = g_pathOne / ((double)obj->m_7c->m_bc * g_pathTimeScale);
-    m_posX = (double)obj->m_screenX;
-    m_posY = (double)obj->m_screenY;
+    m_speed = g_pathOne / (static_cast<double>(obj->m_7c->m_bc) * g_pathTimeScale);
+    m_posX = static_cast<double>(obj->m_screenX);
+    m_posY = static_cast<double>(obj->m_screenY);
     m_unitX = ux;
     m_unitY = uy;
 

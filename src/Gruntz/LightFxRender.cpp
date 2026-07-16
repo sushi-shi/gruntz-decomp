@@ -68,7 +68,7 @@ extern "C" u32 g_frameTime; // canonical ?g_clock@@3IA (unsigned; <Gruntz/Trigge
 
 // Pack an 8-bit (r,g,b) constant triple into a screen-native 16-bit pixel.
 static inline u16 Pack(i32 r, i32 g, i32 b) {
-    return (u16)(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
+    return static_cast<u16>((((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown)));
 }
 
 // ===========================================================================
@@ -174,7 +174,7 @@ i32 CLightFxRender::AllocSurface() {
 RVA(0x000a3460, 0x2f3)
 i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     if (rebuild == 0) {
-        if ((u32)delta < (u32)m_refreshRemaining) {
+        if (static_cast<u32>(delta) < static_cast<u32>(m_refreshRemaining)) {
             m_refreshRemaining -= delta;
         } else {
             m_refreshRemaining = 0;
@@ -191,7 +191,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
         }
     }
     CGruntzMapMgr* grid = m_tileGrid;
-    if (m_surface->m_width != (i32)grid->m_width || m_surface->m_height != (i32)grid->m_height) {
+    if (m_surface->m_width != static_cast<i32>(grid->m_width) || m_surface->m_height != static_cast<i32>(grid->m_height)) {
         if (!AllocSurface()) {
             return 0;
         }
@@ -217,7 +217,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 } else {
                     idx = 0;
                 }
-                if ((u32)idx >= 0x1f4) {
+                if (static_cast<u32>(idx) >= 0x1f4) {
                     *dst = 0;
                 } else {
                     *dst = m_buf[idx];
@@ -237,7 +237,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             // The combat clock/timeout i64 pairs are stored as lo/hi i32 halves
             // (every writer stamps them as (lo, hi=0)); the 64-bit compare reads
             // them as the i64 they are - the documented int-pair overlay.
-            if ((i64)(u32)g_frameTime - *(i64*)&desc->m_combatClockLo
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&desc->m_combatClockLo
                     >= *(i64*)&desc->m_combatTimeoutLo
                 || desc->m_tileOwnerHi != g_curPlayer) {
                 CSpriteRef* node = m_mgr->m_spriteFactory->GetA(desc->m_1f4_moveIcon);
@@ -271,7 +271,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             } else {
                 idx = 0;
             }
-            if ((u32)idx >= 0x1f4) {
+            if (static_cast<u32>(idx) >= 0x1f4) {
                 *dst = 0;
             } else {
                 *dst = m_buf[idx];
@@ -367,20 +367,20 @@ void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
     // Top edge (m_surface reloaded per block, matching the retail spill of `this`).
     u16* tp = (u16*)((char*)base + r->top * m_surface->m_pitch + r->left * m_surface->m_b0);
     for (i32 t = 0; t < w; t++) {
-        tp[t] = (u16)color;
+        tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
     u16* bp = (u16*)((char*)base + r->bottom * m_surface->m_pitch + r->left * m_surface->m_b0);
     for (i32 b = 0; b < w; b++) {
-        bp[b] = (u16)color;
+        bp[b] = static_cast<u16>(color);
     }
     // Left / right edges (column step = m_pitch per row).
     i32 h = r->bottom - r->top + 1;
     char* lp = (char*)base + r->left * m_surface->m_b0 + r->top * m_surface->m_pitch;
     char* rp = (char*)base + r->right * m_surface->m_b0 + r->top * m_surface->m_pitch;
     for (i32 v = 0; v < h; v++) {
-        *(u16*)lp = (u16)color;
-        *(u16*)rp = (u16)color;
+        *(u16*)lp = static_cast<u16>(color);
+        *(u16*)rp = static_cast<u16>(color);
         lp += m_surface->m_pitch;
         rp += m_surface->m_pitch;
     }
@@ -410,20 +410,20 @@ void CLightFxRender::DrawBorder(LfxRect* r, CDDrawSurfacePair* ctx, i32 color) {
     // Top edge.
     u16* tp = (u16*)((char*)base + r->top * surf->m_pitch + r->left * surf->m_b0);
     for (i32 t = 0; t < w; t++) {
-        tp[t] = (u16)color;
+        tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
     u16* bp = (u16*)((char*)base + r->bottom * surf->m_pitch + r->left * surf->m_b0);
     for (i32 b = 0; b < w; b++) {
-        bp[b] = (u16)color;
+        bp[b] = static_cast<u16>(color);
     }
     // Left / right edges (column step = m_20 per row).
     i32 h = r->bottom - r->top + 1;
     char* lp = (char*)base + r->left * surf->m_b0 + r->top * surf->m_pitch;
     char* rp = (char*)base + r->right * surf->m_b0 + r->top * surf->m_pitch;
     for (i32 v = 0; v < h; v++) {
-        *(u16*)lp = (u16)color;
-        *(u16*)rp = (u16)color;
+        *(u16*)lp = static_cast<u16>(color);
+        *(u16*)rp = static_cast<u16>(color);
         lp += surf->m_pitch;
         rp += surf->m_pitch;
     }

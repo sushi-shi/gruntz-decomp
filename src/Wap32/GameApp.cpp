@@ -26,7 +26,7 @@
 
 RVA(0x00080d20, 0x24)
 i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
-    return Init(hInstance, szName, szName, g_emptyString, 0, (i32)0x80000000, (i32)0x80000000);
+    return Init(hInstance, szName, szName, g_emptyString, 0, static_cast<i32>(0x80000000), static_cast<i32>(0x80000000));
 }
 
 // CGameApp::HasWindowAndManager (vtbl +0x14, slot 5) - readiness gate: nonzero
@@ -302,8 +302,8 @@ void CGameApp::InitializeDefaultCreateStruct() {
     // neg/sbb/and on the 0x80000000 mask).
     i32 x, y;
     if (m_gameInfo.windowClassFlags & 1) {
-        x = (i32)0x80000000;
-        y = (i32)0x80000000;
+        x = static_cast<i32>(0x80000000);
+        y = static_cast<i32>(0x80000000);
     } else {
         x = 0;
         y = 0;
@@ -549,10 +549,10 @@ i32 WAP32::CGameMgr::PerFrameTick() {
     // reuses it across the three samples (call edi), exactly as retail does.
     DWORD(WINAPI * pTGT)(void) = ::timeGetTime;
     u32 now = pTGT();
-    u32 delta = now - (u32)g_wap32Now;
+    u32 delta = now - static_cast<u32>(g_wap32Now);
     g_wap32Now = now;
     g_wap32FrameDelta = delta;
-    u32 run7c = (u32)g_wap32Run7c;
+    u32 run7c = static_cast<u32>(g_wap32Run7c);
     if (run7c == 0) {
         g_wap32Run7c = g_wap32Run80;
     } else if (delta >= run7c) {
@@ -562,9 +562,9 @@ i32 WAP32::CGameMgr::PerFrameTick() {
     }
 
     if (m_pacingGate > 0) {
-        if ((u32)g_wap32ClockReset > 0) {
-            u32 elapsed = pTGT() - (u32)g_wap32ClockReset;
-            if (elapsed < (u32)m_frameBudgetMs) {
+        if (static_cast<u32>(g_wap32ClockReset) > 0) {
+            u32 elapsed = pTGT() - static_cast<u32>(g_wap32ClockReset);
+            if (elapsed < static_cast<u32>(m_frameBudgetMs)) {
                 SpinWaitUntil(m_frameBudgetMs - elapsed);
             }
         }
@@ -573,7 +573,7 @@ i32 WAP32::CGameMgr::PerFrameTick() {
 
     u32 count = m_frameCounter + 1;
     m_frameCounter = count;
-    if ((u32)g_wap32Now - (u32)m_windowStartTick >= 0x7d0) {
+    if (static_cast<u32>(g_wap32Now) - static_cast<u32>(m_windowStartTick) >= 0x7d0) {
         m_fps = count >> 1;
         InitTimeFields(0); // 0x13de70 (defined below; direct call rel32)
     }
@@ -616,7 +616,7 @@ RVA(0x0013dec0, 0x20)
 void WAP32::CGameMgr::SpinWaitUntil(i32 ms) {
     DWORD(WINAPI * fn)(void) = ::timeGetTime;
     u32 now = fn();
-    u32 end = now + (u32)ms;
+    u32 end = now + static_cast<u32>(ms);
     if (now <= end) {
         do {
             now = fn();
@@ -666,20 +666,20 @@ RVA(0x0013df30, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {
         SHORT(WINAPI * gaks)(int) = ::GetAsyncKeyState;
-        while (!((i32)gaks(vk) & 0x80000000))
+        while (!(static_cast<i32>(gaks(vk)) & 0x80000000))
             ;
-        while ((i32)gaks(vk) & 0x80000000)
+        while (static_cast<i32>(gaks(vk)) & 0x80000000)
             ;
     } else {
         DWORD(WINAPI * tgt)(void) = ::timeGetTime;
         u32 deadline = tgt() + timeoutMs;
         SHORT(WINAPI * gaks)(int) = ::GetAsyncKeyState;
-        while (!((i32)gaks(vk) & 0x80000000)) {
+        while (!(static_cast<i32>(gaks(vk)) & 0x80000000)) {
             if (tgt() > deadline) {
                 return;
             }
         }
-        while ((i32)gaks(vk) & 0x80000000) {
+        while (static_cast<i32>(gaks(vk)) & 0x80000000) {
             if (tgt() > deadline) {
                 return;
             }

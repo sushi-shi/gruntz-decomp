@@ -341,8 +341,8 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     i32 blue = (m_color >> 16) & 0xff;
     i32 rightPartial = 0;
     i32 firstCol = 0;
-    i32 packedColor = ((u8)((u8)red >> (u8)g_rDown) << g_rUp)
-                      | ((u8)((u8)green >> (u8)g_gDown) << g_gUp) | ((u8)blue >> (u8)g_bDown);
+    i32 packedColor = (static_cast<u8>((static_cast<u8>(red) >> static_cast<u8>(g_rDown))) << g_rUp)
+                      | (static_cast<u8>((static_cast<u8>(green) >> static_cast<u8>(g_gDown))) << g_gUp) | (static_cast<u8>(blue) >> static_cast<u8>(g_bDown));
 
     // Left clip: skip glyphs entirely left of rc.left; firstCol is the sub-glyph
     // column offset into the first partly-visible glyph.
@@ -402,19 +402,19 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                     u8 cover = glyphBuf[row * gw + col];
                     if (cover == 0) {
                     } else if (cover == 0xff) {
-                        *dst = (u16)packedColor;
+                        *dst = static_cast<u16>(packedColor);
                     } else {
                         i32 inv = 255 - cover;
                         u16 dp = *dst;
-                        i32 dr = (u8)((u8)(dp >> g_rUp) << g_rDown);
-                        i32 dg = (u8)((u8)(dp >> g_gUp) << g_gDown);
-                        i32 db = (u8)((u8)dp << g_bDown);
+                        i32 dr = static_cast<u8>((static_cast<u8>((dp >> g_rUp)) << g_rDown));
+                        i32 dg = static_cast<u8>((static_cast<u8>((dp >> g_gUp)) << g_gDown));
+                        i32 db = static_cast<u8>((static_cast<u8>(dp) << g_bDown));
                         i32 bB = (db * inv) / 256 + (blue * cover) / 256;
                         i32 rB = (dr * inv) / 256 + (red * cover) / 256;
                         i32 gB = (dg * inv) / 256 + (green * cover) / 256;
-                        *dst = (u16)((u8)((u8)bB >> (u8)g_bDown)
-                                     | ((u8)((u8)rB >> (u8)g_rDown) << g_rUp)
-                                     | ((u8)((u8)gB >> (u8)g_gDown) << g_gUp));
+                        *dst = static_cast<u16>((static_cast<u8>((static_cast<u8>(bB) >> static_cast<u8>(g_bDown)))
+                                     | (static_cast<u8>((static_cast<u8>(rB) >> static_cast<u8>(g_rDown))) << g_rUp)
+                                     | (static_cast<u8>((static_cast<u8>(gB) >> static_cast<u8>(g_gDown))) << g_gUp)));
                     }
                     dst++;
                 }
@@ -424,7 +424,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = startCol; col < clippedW; col++) {
                     if (glyphBuf[row * gw + col] != 0) {
-                        *dst = (u16)packedColor;
+                        *dst = static_cast<u16>(packedColor);
                     }
                     dst++;
                 }
@@ -539,7 +539,7 @@ void FontRenderer::DrawWrapped(
                 if (head.GetLength() > 0) {
                     while (y < rc.bottom) {
                         i32 chW =
-                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(0), 1)).width;
+                            MeasureText(CString(static_cast<char>(((CharCursor*)&head)->GetChar(0)), 1)).width;
                         if (chW + x > rc.right) {
                             if (hcenter) {
                                 i32 cx = rc.left + ((TextRange*)&rc)->Span() / 2
@@ -702,7 +702,7 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
                     i32 j = 0;
                     while (y < bottom) {
                         i32 chW =
-                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(j), 1)).width;
+                            MeasureText(CString(static_cast<char>(((CharCursor*)&head)->GetChar(j)), 1)).width;
                         if (chW + x > right) {
                             y = y + m_font->GetMaxHeight();
                             x = x0;
@@ -809,7 +809,7 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
                 if (head.GetLength() > 0) {
                     while (y < bottom) {
                         i32 chW =
-                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(0), 1)).width;
+                            MeasureText(CString(static_cast<char>(((CharCursor*)&head)->GetChar(0)), 1)).width;
                         if (chW + x > right) {
                             y = y + m_font->GetMaxHeight();
                             x = x0;

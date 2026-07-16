@@ -117,22 +117,22 @@ i32 CDDrawShadeBlit::BuildRle(
             i32 runStart = 0;
             if (m_width > 0) {
                 do {
-                    if ((i32)src[i] != keyVal) {
+                    if (static_cast<i32>(src[i]) != keyVal) {
                         // literal run (the fall-through / primary path)
-                        while (i < m_width && (i - runStart) < 0x7e && (i32)src[i] != keyVal) {
+                        while (i < m_width && (i - runStart) < 0x7e && static_cast<i32>(src[i]) != keyVal) {
                             i++;
                         }
-                        ba.SetAtGrow(ba.GetSize(), (u8)(i - runStart));
+                        ba.SetAtGrow(ba.GetSize(), static_cast<u8>((i - runStart)));
                         for (i32 j = runStart; j < i; j++) {
                             ba.SetAtGrow(ba.GetSize(), src[j]);
                         }
                         runStart = i;
                     } else {
                         // key run (floated to the tail)
-                        while (i < m_width && (i - runStart) < 0x7e && (i32)src[i] == keyVal) {
+                        while (i < m_width && (i - runStart) < 0x7e && static_cast<i32>(src[i]) == keyVal) {
                             i++;
                         }
-                        ba.SetAtGrow(ba.GetSize(), (u8)((i - runStart) | 0x80));
+                        ba.SetAtGrow(ba.GetSize(), static_cast<u8>(((i - runStart) | 0x80)));
                         runStart = i;
                     }
                 } while (i < m_width);
@@ -227,14 +227,14 @@ RVA(0x001490d0, 0x173)
 i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
     i32 flags = src->m_flags;
     if ((flags & 0x40) || (flags & 0x200)) {
-        if ((u8)fmt == 0x10) {
+        if (static_cast<u8>(fmt) == 0x10) {
             m_srcBpp = 1;
             m_dstBpp = 2;
         } else {
             m_srcBpp = 1;
             m_dstBpp = 1;
         }
-    } else if ((u8)fmt == 0x10) {
+    } else if (static_cast<u8>(fmt) == 0x10) {
         m_srcBpp = 2;
         m_dstBpp = 2;
     } else {
@@ -250,14 +250,14 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
 
     i32 stride = size - 0x20;
     m_rleLen = stride;
-    if ((u8)fmt != 0x8 && (u8)fmt != 0x10) {
+    if (static_cast<u8>(fmt) != 0x8 && static_cast<u8>(fmt) != 0x10) {
         return 0;
     }
 
     if (src->m_flags & 0x80) {
         stride -= 0x300;
         m_rleLen = stride;
-        if ((u8)fmt == 0x10) {
+        if (static_cast<u8>(fmt) == 0x10) {
             if (m_palette != 0) {
                 ::operator delete(m_palette);
             }
@@ -333,7 +333,7 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 a1, i32 a2) {
     desc.f7 = 0;
     if (m_colorKey != -1) {
         flags |= 0x100;
-        desc.f6 = (u8)m_colorKey;
+        desc.f6 = static_cast<u8>(m_colorKey);
     }
     if (m_palette != 0) {
         flags |= 0x80;

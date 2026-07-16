@@ -84,10 +84,10 @@ public:
         m_04 = 0;
         m_0c = (i32)ctx; // the CLoadable-family int owner handle
         m_08 = 0;
-        m_20 = (i32)0x80000000;
+        m_20 = static_cast<i32>(0x80000000);
         m_38 = -1;
-        m_5c = (i32)0x80000000;
-        m_64 = (i32)0x80000000;
+        m_5c = static_cast<i32>(0x80000000);
+        m_64 = static_cast<i32>(0x80000000);
         m_3c = 0;
         m_40 = 0;
     }

@@ -83,16 +83,16 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
     // callee-saved reg and re-reads m_4 inside each case (only case 0 reuses the
     // gate's cached `mgr` in eax); caching it across the whole switch would pin it
     // in a callee-saved reg and spill `this`. CSE collapses the repeats within a case.
-    switch ((u8)a4) {
+    switch (static_cast<u8>(a4)) {
         default:
             return 1;
 
         case 0: {
             // case 0 reuses the gate's cached mgr (eax) for the spawn probe.
             i32 r = mgr->m_cmdGrid->PlaceObject(
-                (u8)a2,
-                (u16)a5,
-                (u16)a6,
+                static_cast<u8>(a2),
+                static_cast<u16>(a5),
+                static_cast<u16>(a6),
                 100000,
                 2,
                 g_groupSentinel,
@@ -105,7 +105,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 0
             );
             if (r != -1) {
-                if ((u8)a2 == (u32)g_curPlayer) {
+                if (static_cast<u8>(a2) == static_cast<u32>(g_curPlayer)) {
                     // retail re-loads the grid from g_gameReg (0x64556c), not mgr.
                     g_gameReg->m_cmdGrid->ResetAll();
                 }
@@ -120,14 +120,14 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 2: {
-            u32 player = (u8)a2;
-            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a3 + player * 0xf];
+            u32 player = static_cast<u8>(a2);
+            CGrunt* g = m_4->m_cmdGrid->m_grid[static_cast<u8>(a3) + player * 0xf];
             if (g != 0 && g->m_entranceCommitted != 0) {
                 g->m_arrivalActive = 0;
             }
-            res = m_4->m_cmdGrid->ClearCell(player, (u8)a3, (u16)a5, (u16)a6, 0);
+            res = m_4->m_cmdGrid->ClearCell(player, static_cast<u8>(a3), static_cast<u16>(a5), static_cast<u16>(a6), 0);
             if (res != 0) {
-                if (player != (u32)g_curPlayer) {
+                if (player != static_cast<u32>(g_curPlayer)) {
                     return 1;
                 }
                 if (g != 0 && g->m_entranceCommitted != 0) {
@@ -135,7 +135,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 }
                 return 1;
             }
-            if (player != (u32)g_curPlayer || g == 0 || g->m_entranceCommitted == 0) {
+            if (player != static_cast<u32>(g_curPlayer) || g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
             GruntCue(g, 0x324, -1, 0, -1, -1);
@@ -149,8 +149,8 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             // Read bit 2 (set for cmd 4, clear for cmd 3) so it is NOT CSE'd with the
             // switch selector `a4 & 0xff` (which would spill the selector + add a frame).
             i32 isB = a4 & 4;
-            u32 player = (u8)a2;
-            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a3 + player * 0xf];
+            u32 player = static_cast<u8>(a2);
+            CGrunt* g = m_4->m_cmdGrid->m_grid[static_cast<u8>(a3) + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -167,19 +167,19 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
-            u32 px = (u16)a5;
-            u32 py = (u16)a6;
+            u32 px = static_cast<u16>(a5);
+            u32 py = static_cast<u16>(a6);
             CGrunt* node = (CGrunt*)m_4->m_cmdGrid->CellHitTest(px, py, (i32*)&a4, (i32*)&a8, 5);
             if (node == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
             } else {
-                g->SetArrivalTarget((i32)player, px, node->m_10->m_screenX, node->m_10->m_screenY);
+                g->SetArrivalTarget(static_cast<i32>(player), px, node->m_10->m_screenX, node->m_10->m_screenY);
             }
             res = (isB == 0) ? m_4->m_cmdGrid->ApplyTriggerA(player, *(i32*)&a4, *(i32*)&a8, 0)
                              : m_4->m_cmdGrid->ApplyTriggerB(player, *(i32*)&a4, *(i32*)&a8, 0);
             if (res != 0) {
                 if (res != -1) {
-                    if (player != (u32)g_curPlayer) {
+                    if (player != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
                     if (g->m_entranceCommitted != 0) {
@@ -190,7 +190,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 res = m_4->m_cmdGrid
                           ->ClearCell(player, *(i32*)&a4, *(i32*)&a8, 0, (isB == 0) ? 2 : 3);
                 if (res != 0) {
-                    if (player != (u32)g_curPlayer) {
+                    if (player != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
                     if (g->m_entranceCommitted != 0) {
@@ -198,13 +198,13 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     }
                     return 1;
                 }
-                if (player != (u32)g_curPlayer || g->m_entranceCommitted == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
                 GruntCue(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (player != (u32)g_curPlayer) {
+            if (player != static_cast<u32>(g_curPlayer)) {
                 return 0;
             }
             res = g->m_entranceCommitted;
@@ -216,7 +216,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 5: {
-            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a2 * 0xf + (u8)a3];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[static_cast<u8>(a2) * 0xf + static_cast<u8>(a3)];
             if (g == 0 || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -235,7 +235,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 6: {
-            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a2 * 0xf + (u8)a3];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[static_cast<u8>(a2) * 0xf + static_cast<u8>(a3)];
             if (g != 0) {
                 if (g->m_tileClaimed != 1) {
                     g->m_arrivalRerollLo = 0;
@@ -276,7 +276,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 7: {
-            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a2 * 0xf + (u8)a3];
+            CGrunt* g = m_4->m_cmdGrid->m_grid[static_cast<u8>(a2) * 0xf + static_cast<u8>(a3)];
             if (g == 0 || g->m_tileClaimed == 0) {
                 return 1;
             }
@@ -292,11 +292,11 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 8: {
-            u32 player = (u8)a2;
-            if (player == (u32)g_curPlayer) {
+            u32 player = static_cast<u8>(a2);
+            if (player == static_cast<u32>(g_curPlayer)) {
                 m_4f0 = 0;
             }
-            i32 idx = (u8)a3 + player * 0xf;
+            i32 idx = static_cast<u8>(a3) + player * 0xf;
             CGrunt* g = m_4->m_cmdGrid->m_grid[idx];
             if (g != 0 && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
                 g->m_arrivalRerollLo = 0;
@@ -313,18 +313,18 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             if (g2 == 0 || g2->m_entranceCommitted == 0) {
                 r = 0;
             } else {
-                r = PickupCheck((u8)a7, 0, 0, 0, g_gameReg->m_134 != 1);
+                r = PickupCheck(static_cast<u8>(a7), 0, 0, 0, g_gameReg->m_134 != 1);
             }
             i32 sel;
             if (r == 0) {
                 sel = 0;
             } else {
-                if (player == (u32)g_curPlayer) {
-                    m_4->m_cmdGrid->ResetCell(player, (u8)a3, 0, 0);
+                if (player == static_cast<u32>(g_curPlayer)) {
+                    m_4->m_cmdGrid->ResetCell(player, static_cast<u8>(a3), 0, 0);
                 }
                 sel = 1;
             }
-            if (player == (u32)g_curPlayer) {
+            if (player == static_cast<u32>(g_curPlayer)) {
                 m_dragInhibit2 = 0;
                 m_guts->EnterHlRow(sel, m_cursorFrame); // 0x213f, ecx = m_guts (+0x2dc)
                 SetCursorFrame(0);                      // 0x17a8, ecx = this
@@ -333,8 +333,8 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 9: {
-            u32 player = (u8)a2;
-            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a3 + player * 0xf];
+            u32 player = static_cast<u8>(a2);
+            CGrunt* g = m_4->m_cmdGrid->m_grid[static_cast<u8>(a3) + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -348,7 +348,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
-            u32 row = (u16)a5, col = (u16)a6;
+            u32 row = static_cast<u16>(a5), col = static_cast<u16>(a6);
             CGrunt* g2 = m_4->m_cmdGrid->m_grid[col + row * 0xf];
             if (g2 == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
@@ -361,29 +361,29 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 if (res == -1) {
                     res = m_4->m_cmdGrid->ClearCell(player, *(i32*)&a8, *(i32*)&a2, 0, 2);
                     if (res == 0) {
-                        if ((u32)g_curPlayer != player || g->m_entranceCommitted == 0) {
+                        if (static_cast<u32>(g_curPlayer) != player || g->m_entranceCommitted == 0) {
                             return 0;
                         }
                         GruntCue(g, 0x324, -1, 0, -1, -1);
                         return 0;
                     }
-                    if ((u8)a2 != (u32)g_curPlayer) {
+                    if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    if (*(u32*)&a4 != (u32)g_curPlayer && g->m_entranceCommitted != 0) {
+                    if (*(u32*)&a4 != static_cast<u32>(g_curPlayer) && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                if ((u8)a2 != (u32)g_curPlayer) {
+                if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                     return 1;
                 }
-                if ((u32)g_curPlayer != *(u32*)&a8 && g->m_entranceCommitted != 0) {
+                if (static_cast<u32>(g_curPlayer) != *(u32*)&a8 && g->m_entranceCommitted != 0) {
                     GruntCue(g, 0x325, -1, 0, -1, -1);
                 }
                 return 1;
             }
-            if (player != (u32)g_curPlayer) {
+            if (player != static_cast<u32>(g_curPlayer)) {
                 return 0;
             }
             res = g->m_entranceCommitted;
@@ -395,8 +395,8 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
         }
 
         case 10: {
-            u32 player = (u8)a2;
-            CGrunt* g = m_4->m_cmdGrid->m_grid[(u8)a3 + player * 0xf];
+            u32 player = static_cast<u8>(a2);
+            CGrunt* g = m_4->m_cmdGrid->m_grid[static_cast<u8>(a3) + player * 0xf];
             if (g == 0 || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -410,7 +410,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
-            u32 row = (u16)a5, col = (u16)a6;
+            u32 row = static_cast<u16>(a5), col = static_cast<u16>(a6);
             CGrunt* g2 = m_4->m_cmdGrid->m_grid[col + row * 0xf];
             if (g2 == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
@@ -421,31 +421,31 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             res = m_4->m_cmdGrid->ApplyTriggerB(player, *(i32*)&a7, row, 0);
             if (res != 0) {
                 if (res != -1) {
-                    if ((u8)a2 != (u32)g_curPlayer) {
+                    if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    if (*(u32*)&a8 != (u32)g_curPlayer && g->m_entranceCommitted != 0) {
+                    if (*(u32*)&a8 != static_cast<u32>(g_curPlayer) && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
                 res = m_4->m_cmdGrid->ClearCell(player, *(i32*)&a8, *(i32*)&a2, 0, 3);
                 if (res != 0) {
-                    if ((u8)a2 != (u32)g_curPlayer) {
+                    if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    if ((u32)g_curPlayer != *(u32*)&a4 && g->m_entranceCommitted != 0) {
+                    if (static_cast<u32>(g_curPlayer) != *(u32*)&a4 && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                if ((u32)g_curPlayer != player || g->m_entranceCommitted == 0) {
+                if (static_cast<u32>(g_curPlayer) != player || g->m_entranceCommitted == 0) {
                     return 0;
                 }
                 GruntCue(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (player != (u32)g_curPlayer) {
+            if (player != static_cast<u32>(g_curPlayer)) {
                 return 0;
             }
             res = g->m_entranceCommitted;

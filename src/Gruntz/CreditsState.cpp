@@ -440,15 +440,15 @@ i32 CCreditsState::DrawScrollingCredits() {
     }
 
     m_drawRect = m_scrollRect;
-    double contrib = (double)g_frameDelta * m_scrollStep * 0.001;
+    double contrib = static_cast<double>(g_frameDelta) * m_scrollStep * 0.001;
     m_scrollAccum = m_scrollAccum + contrib;
-    i32 scrolled = (i32)m_scrollAccum;
+    i32 scrolled = static_cast<i32>(m_scrollAccum);
     m_drawRect.top -= scrolled;
     m_drawRect.bottom -= scrolled;
     if (m_drawRect.bottom < 0) {
         m_scrollAccum = 0.0;
         m_drawRect = m_scrollRect;
-        m_1f4 = (i32)(kScreenH / kScrollRate);
+        m_1f4 = static_cast<i32>((kScreenH / kScrollRate));
     }
 
     HDC hdc = 0;
@@ -518,8 +518,8 @@ i32 CCreditsState::SetupTitle() {
         prov->m_8->ReleaseDC(hdc);
     }
     m_scrollAccum = 0.0;
-    m_1f4 = (i32)(kScreenH / kScrollRate);
-    m_scrollStep = (kScreenH * kStepScale) / (double)(unsigned)m_1f4;
+    m_1f4 = static_cast<i32>((kScreenH / kScrollRate));
+    m_scrollStep = (kScreenH * kStepScale) / static_cast<double>(static_cast<unsigned>(m_1f4));
     return 1;
 }
 

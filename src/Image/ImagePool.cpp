@@ -627,7 +627,7 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, vo
     m_bih.biClrImportant = 0;
     if (m_bitCount == 8) {
         for (i32 i = 0; i < 256; i++) {
-            m_pal[i] = (u16)i;
+            m_pal[i] = static_cast<u16>(i);
         }
         m_dibSection =
             CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_PAL_COLORS, (void**)&m_pixels, 0, 0);
@@ -662,7 +662,7 @@ i32 CRezImage::DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcou
         return 0;
     }
     if (m_rowPad == 0) {
-        memcpy(m_pixels, src, (u32)(m_stride * m_height * bitcount) >> 3);
+        memcpy(m_pixels, src, static_cast<u32>((m_stride * m_height * bitcount)) >> 3);
         return 1;
     }
     char* s = (char*)src;
@@ -748,7 +748,7 @@ i32 CRezImage::Convert8To16(void* dc, CRezImage* src, void* pal) {
             u32 r = c & 0xff;
             u32 g = (c >> 8) & 0xff;
             u32 b = (c >> 16) & 0xff;
-            *dp = (u16)(((((r & 0xf8) << 5) | (g & 0xf8)) << 2) | (b >> 3));
+            *dp = static_cast<u16>((((((r & 0xf8) << 5) | (g & 0xf8)) << 2) | (b >> 3)));
             dp++;
             sp++;
         }
@@ -885,17 +885,17 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
     if (hdr[3] != 8) {
         return 0;
     }
-    if (!DecodeBmpHeader(a2, width, height, (i8)hdr[0x41] * 8, a3)) {
+    if (!DecodeBmpHeader(a2, width, height, static_cast<i8>(hdr[0x41]) * 8, a3)) {
         return 0;
     }
 
     u8* src = hdr + 0x80;
-    i32 scanBytes = (width * (i8)hdr[0x41] * (i8)hdr[3] + 7) / 8;
+    i32 scanBytes = (width * static_cast<i8>(hdr[0x41]) * static_cast<i8>(hdr[3]) + 7) / 8;
     u8* scan = (u8*)::operator new(scanBytes);
 
     for (i32 y = 0; y < height; y++) {
         u8* dst = m_pixels + m_rowOffsets[y];
-        i32 n = width * (i8)hdr[0x41];
+        i32 n = width * static_cast<i8>(hdr[0x41]);
         while (n > 0) {
             u8 c = *src++;
             if ((c & 0xc0) == 0xc0) {
@@ -913,11 +913,11 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
             }
         }
 
-        if ((i8)hdr[0x41] == 1) {
+        if (static_cast<i8>(hdr[0x41]) == 1) {
             for (i32 x = width; x != 0; x--) {
                 *dst++ = scan[x - 1];
             }
-        } else if ((i8)hdr[0x41] == 3) {
+        } else if (static_cast<i8>(hdr[0x41]) == 3) {
             u8* g = scan + width * 2;
             u8* b = g + width;
             for (i32 x = width; x != 0; x--) {
@@ -1045,7 +1045,7 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
             u8 c = src[i];
             if (c & 0x80) {
                 i32 count = (c & 0xff) - 0x80;
-                memset(dstRow + x, (u8)fill, count);
+                memset(dstRow + x, static_cast<u8>(fill), count);
                 x += (src[i] & 0xff) - 0x80;
                 i++;
             } else {
@@ -1064,7 +1064,7 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
             }
         }
     } else {
-        for (i32 y = 0; (u32)y < (u32)height; y++) {
+        for (i32 y = 0; static_cast<u32>(y) < static_cast<u32>(height); y++) {
             u8* dst = m_pixels + m_rowOffsets[y];
             i32 n = width;
             while (n > 0) {

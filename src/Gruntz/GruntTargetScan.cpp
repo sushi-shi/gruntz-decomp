@@ -272,7 +272,7 @@ i32 CGrunt::ScanNearestTarget() {
                     goto L_wander;
                 }
             }
-            if ((u32)m_dwell <= 0x3e8) {
+            if (static_cast<u32>(m_dwell) <= 0x3e8) {
                 goto L_wander;
             }
             m_defenderX = m_lastTilePxX;
@@ -315,16 +315,16 @@ i32 CGrunt::ScanNearestTarget() {
             return 1;
 
         L_wander:
-            if (m_resetApplied != 0 || m_318 == 0 || (u32)m_dwell <= 0xbb8) {
+            if (m_resetApplied != 0 || m_318 == 0 || static_cast<u32>(m_dwell) <= 0xbb8) {
                 return 1;
             }
             // 64-bit elapsed = g_frameTime - {m_308:m_30c}; compare with window {m_310:m_314}.
             {
-                i32 lo = (i32)g_frameTime - m_arrivalRerollLo;
+                i32 lo = static_cast<i32>(g_frameTime) - m_arrivalRerollLo;
                 i32 hi = 0 - m_arrivalRerollHi
-                         - ((u32)(i32)g_frameTime < (u32)m_arrivalRerollLo ? 1 : 0);
+                         - (static_cast<u32>(static_cast<i32>(g_frameTime)) < static_cast<u32>(m_arrivalRerollLo) ? 1 : 0);
                 i32 winHi = m_arrivalRerollWindowHi;
-                if (hi > winHi || (hi == winHi && (u32)lo >= (u32)m_arrivalRerollWindowLo)) {
+                if (hi > winHi || (hi == winHi && static_cast<u32>(lo) >= static_cast<u32>(m_arrivalRerollWindowLo))) {
                     // window elapsed: re-arm the idle timer with a fresh rand()%0x7530+0x7530.
                     ResetEntranceAnimation(1, 1, 0);
                     m_arrivalRerollLo = 0;
@@ -333,7 +333,7 @@ i32 CGrunt::ScanNearestTarget() {
                     m_arrivalRerollWindowHi = 0;
                     m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
                     m_arrivalRerollWindowHi = 0;
-                    m_arrivalRerollLo = (i32)g_frameTime;
+                    m_arrivalRerollLo = static_cast<i32>(g_frameTime);
                     m_arrivalRerollHi = 0;
                 } else {
                     // not elapsed: jitter to a random nearby board cell.
@@ -351,7 +351,7 @@ i32 CGrunt::ScanNearestTarget() {
                         baseRow += rand() % spanY;
                     }
                     CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
-                    if ((u32)baseCol < (u32)grid->m_c && (u32)baseRow < (u32)grid->m_10) {
+                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_10)) {
                         this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
                     }
                     if (CoordCount() != 0) {
@@ -391,7 +391,7 @@ i32 CGrunt::ScanNearestTarget() {
             if (this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) == 0) {
                 goto L_clearMode;
             }
-            if ((u32)m_dwell > 0x1f4) {
+            if (static_cast<u32>(m_dwell) > 0x1f4) {
                 StepArrivalDrop(sg->m_lastTilePxX, sg->m_lastTilePxY, m_arrivalFlags, 0, 1, 0);
                 m_dwell = 0;
             }

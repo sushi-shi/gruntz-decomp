@@ -164,8 +164,8 @@ inline CMenuItem::CMenuItem() {
     m_sprite = 0;
     m_owner = 0;
     m_listPos = 0;
-    m_hitLeft = (i32)0xeeeeeeee;
-    m_fixedX = (i32)0xeeeeeeee;
+    m_hitLeft = static_cast<i32>(0xeeeeeeee);
+    m_fixedX = static_cast<i32>(0xeeeeeeee);
     m_navFwdName.Empty();
     m_navBackName.Empty();
     m_54.Empty();

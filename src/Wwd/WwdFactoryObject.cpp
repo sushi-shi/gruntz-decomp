@@ -72,10 +72,10 @@ CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
     m_04 = field04;
     m_08 = field08;
     m_0c = owner;
-    m_20 = (i32)0x80000000;
+    m_20 = static_cast<i32>(0x80000000);
     m_38 = -1;
-    m_5c = (i32)0x80000000;
-    m_64 = (i32)0x80000000;
+    m_5c = static_cast<i32>(0x80000000);
+    m_64 = static_cast<i32>(0x80000000);
     m_3c = 0;
     m_40 = 0;
 }
@@ -113,7 +113,7 @@ i32 AnimWorkerObj::Consume(i32 amount) {
     if (remaining == 0) {
         return remaining; // eax already holds 0
     }
-    if ((u32)amount >= (u32)remaining) {
+    if (static_cast<u32>(amount) >= static_cast<u32>(remaining)) {
         m_20 = 0;
         return 0;
     }
@@ -139,7 +139,7 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 RVA(0x0015b390, 0x128)
 CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c) {
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-    m_5c = (int)0x80000000;
+    m_5c = static_cast<int>(0x80000000);
     m_78 = 0;
     m_7c = new AnimWorkerObj(a, b);
     m_98 = 0;
@@ -160,8 +160,8 @@ CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c)
 // byte-identical EXCEPT the single immediate vptr restamp store position.
 RVA(0x00154a50, 0x23)
 CResolveNode::~CResolveNode() {
-    m_5c = (i32)0x80000000;
-    m_20 = (i32)0x80000000;
+    m_5c = static_cast<i32>(0x80000000);
+    m_20 = static_cast<i32>(0x80000000);
     m_38 = -1;
 }
 
@@ -331,7 +331,7 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 // CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
 RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
-    *(char*)&m_dotColor = (char)flag;
+    *(char*)&m_dotColor = static_cast<char>(flag);
     return CWwdGameObject::Setup(a1, a2, a3, a4);
 }
 
@@ -639,7 +639,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         m_20 = reload;
         m_24 = (~rd->m_flags) & 1;
         if (*(i32*)&m_scale != 0x3f800000) { // raw-bits compare vs 1.0f (retail int cmp)
-            m_20 = (i32)((double)(u32)reload * m_scale);
+            m_20 = static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
         }
 
         // --- select the NEXT descriptor (10-way loop-mode on rd->m_loopMode) --------

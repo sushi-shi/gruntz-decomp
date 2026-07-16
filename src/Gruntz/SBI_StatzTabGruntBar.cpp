@@ -212,7 +212,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         timerVal = m_timerValue;
         if (unit->m_alive == 0) {
             timerVal = -1;
-        } else if ((i64)(u32)g_frameTime - *(i64*)&m_timerAnchorLo >= *(i64*)&m_timerWindowLo) {
+        } else if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_timerAnchorLo >= *(i64*)&m_timerWindowLo) {
             if (timerVal > 0) {
                 timerVal++;
                 if (timerVal > 0xa) {

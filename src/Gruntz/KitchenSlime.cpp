@@ -161,9 +161,9 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
     o->m_screenX = snapX;
-    m_posX = (double)snapX;
+    m_posX = static_cast<double>(snapX);
     o->m_screenY = snapY;
-    m_posY = (double)snapY;
+    m_posY = static_cast<double>(snapY);
     if (o->m_latchedAnimId != 0x13) {
         o->m_latchedAnimId = 0x13;
         o->m_flags |= 0x20000;
@@ -321,7 +321,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    m_38->m_1a0.Advance((i32)g_engineFrameDelta);
+    m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
@@ -346,15 +346,15 @@ i32 CKitchenSlime::Tick() {
         return 0;
     }
 
-    double step = (double)(i64)(u64)(u32)g_frameDelta * m_speed;
+    double step = static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta)))) * m_speed;
     double* m88d = (double*)&m_stepMag;
 
     i32 newX;
     if (m_dirX > g_slimeZero) {
         double t = (m_posX = m_posX + step);
-        newX = (i32)floor(t);
+        newX = static_cast<i32>(floor(t));
         i32 tx = m_tileX;
-        *m88d = fabs(m_posX - (double)tx);
+        *m88d = fabs(m_posX - static_cast<double>(tx));
         // The X axis never clamps (unlike Y), but retail still emits the compare
         // (a min/max fold whose result equals the input); the empty-body test
         // reproduces the cmp + m_tileX stack-spill shared with the fabs.
@@ -363,22 +363,22 @@ i32 CKitchenSlime::Tick() {
         }
     } else if (m_dirX < g_slimeZero) {
         double t = (m_posX = m_posX - step);
-        newX = (i32)ceil(t);
+        newX = static_cast<i32>(ceil(t));
         i32 tx = m_tileX;
-        *m88d = fabs(m_posX - (double)tx);
+        *m88d = fabs(m_posX - static_cast<double>(tx));
         if (newX < tx) {
             newX = newX;
         }
     } else {
-        newX = (i32)floor(m_posX);
+        newX = static_cast<i32>(floor(m_posX));
     }
 
     i32 newY;
     if (m_dirY > g_slimeZero) {
         double t = (m_posY = m_posY + step);
-        newY = (i32)floor(t);
+        newY = static_cast<i32>(floor(t));
         i32 ty = m_tileY;
-        *m88d = fabs(m_posY - (double)ty);
+        *m88d = fabs(m_posY - static_cast<double>(ty));
         if (newY > ty) {
             Level()->m_screenX = newX;
             Level()->m_screenY = ty;
@@ -386,16 +386,16 @@ i32 CKitchenSlime::Tick() {
         }
     } else if (m_dirY < g_slimeZero) {
         double t = (m_posY = m_posY - step);
-        newY = (i32)ceil(t);
+        newY = static_cast<i32>(ceil(t));
         i32 ty = m_tileY;
-        *m88d = fabs(m_posY - (double)ty);
+        *m88d = fabs(m_posY - static_cast<double>(ty));
         if (newY < ty) {
             Level()->m_screenX = newX;
             Level()->m_screenY = ty;
             return 0;
         }
     } else {
-        newY = (i32)floor(m_posY);
+        newY = static_cast<i32>(floor(m_posY));
     }
 
     Level()->m_screenX = newX;
@@ -489,7 +489,7 @@ i32 CKitchenSlime::LoadSprites() {
         i32 gy = tileY >> 5;
         i32 tileFlags;
         CTileGrid* map = g_gameReg->m_tileGrid;
-        if ((u32)gx >= (u32)map->m_c || (u32)gy >= (u32)map->m_10) {
+        if (static_cast<u32>(gx) >= static_cast<u32>(map->m_c) || static_cast<u32>(gy) >= static_cast<u32>(map->m_10)) {
             tileFlags = 1;
         } else {
             tileFlags = ((i32*)map->m_8[gy])[gx * 7];
@@ -526,7 +526,7 @@ i32 CKitchenSlime::LoadSprites() {
     i32 changed = (Level()->m_124 != savedDir);
     switch (Level()->m_124 - 1) {
         case 0: // north
-            m_posY = -(double)*(i32*)&m_stepMag;
+            m_posY = -static_cast<double>(*(i32*)&m_stepMag);
             m_dirX = 0;
             m_dirY = 0;
             *(i32*)&m_dirY = 0;
@@ -559,7 +559,7 @@ i32 CKitchenSlime::LoadSprites() {
             }
             break;
         case 3: // west
-            m_posX = -(double)*(i32*)&m_stepMag;
+            m_posX = -static_cast<double>(*(i32*)&m_stepMag);
             m_dirX = 0;
             m_dirY = 0;
             *((i32*)&m_dirX + 1) = 0xbff00000;
@@ -570,8 +570,8 @@ i32 CKitchenSlime::LoadSprites() {
             break;
     }
 
-    m_posX = (double)Level()->m_screenX + m_posX;
-    m_posY = (double)Level()->m_screenY + m_posY;
+    m_posX = static_cast<double>(Level()->m_screenX) + m_posX;
+    m_posY = static_cast<double>(Level()->m_screenY) + m_posY;
 
     u32 time;
     if (Level()->m_7c->m_bc != 0) {
@@ -580,7 +580,7 @@ i32 CKitchenSlime::LoadSprites() {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
 
-    m_speed = g_slimeSpeedNum / (double)(i64)(u64)time;
+    m_speed = g_slimeSpeedNum / static_cast<double>(static_cast<i64>(static_cast<u64>(time)));
     m_tileX = tileX;
     m_tileY = tileY;
 

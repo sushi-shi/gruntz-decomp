@@ -110,7 +110,7 @@ RVA(0x0001af70, 0x3c0)
 void CBootyState::FormatHudText(CString* buf, i32 sel) {
     switch (sel) {
         case 0: {
-            u32 secs = (u32)(STAT(SumGroupField08, m_score) / 1000);
+            u32 secs = static_cast<u32>((STAT(SumGroupField08, m_score) / 1000));
             buf->Format("%d:%2.2d", secs / 60, secs % 60);
             return;
         }
@@ -269,7 +269,7 @@ void CMenuState::StartMusic() {
     LeafCue* mus = m_1bc;
     if (flag) {
         u32 clk = g_killCueClock;
-        if (clk - mus->m_14 >= (u32)mus->m_18) {
+        if (clk - mus->m_14 >= static_cast<u32>(mus->m_18)) {
             mus->m_14 = clk;
             mus->m_10->ConfigureItem(item, 0, 0, 1);
         }
@@ -338,25 +338,25 @@ i32 CMenuState::Render() {
     L = g_actorList;
     i32 n = L->m_count;
     for (c = 0; c < n; c++) {
-        if ((u32)L->m_data[c]->m_2ac & 0x80000000) {
+        if (static_cast<u32>(L->m_data[c]->m_2ac) & 0x80000000) {
             m_1b4->OnFlag80000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((u32)L->m_data[c]->m_2ac & 0x40000000) {
+        if (static_cast<u32>(L->m_data[c]->m_2ac) & 0x40000000) {
             m_1b4->OnFlag40000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((u32)L->m_data[c]->m_2ac & 0x20000000) {
+        if (static_cast<u32>(L->m_data[c]->m_2ac) & 0x20000000) {
             m_1b4->OnFlag20000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((u32)L->m_data[c]->m_2ac & 0x10000000) {
+        if (static_cast<u32>(L->m_data[c]->m_2ac) & 0x10000000) {
             m_1b4->OnFlag10000000();
             goto tail;
         }

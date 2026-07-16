@@ -455,7 +455,7 @@ i32 CWarlord::LoadAttributes() {
         }
     }
 
-    if ((i64)(u32)g_frameTime - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
         if (rand() % 10 < 5) {
             ((CGrunt*)this)->ResolveIdleAnimation();
             return 0;
@@ -501,7 +501,7 @@ i32 CWarlord::LoadAttributes2() {
             ((CGrunt*)this)->ResolveMovingAnimation();
             return 0;
         }
-        if ((i64)(u32)g_frameTime - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
             ((CRegBattleEvent*)reg->m_cueSink)->PostBattleEvent(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindowLo = 0x7530;
             m_cooldownWindowHi = 0;
@@ -543,7 +543,7 @@ i32 CWarlord::AdvanceMovingAnim() {
         h->m_2a0 = 0;
         CRegThreatHelper* h2 = (CRegThreatHelper*)g_gameReg->m_cmdGrid;
         h2->m_window = 0x3e8;
-        h2->m_stamp = (u32)g_frameTime;
+        h2->m_stamp = static_cast<u32>(g_frameTime);
     }
     ((CGrunt*)this)->ResolveMovingAnimation();
     return 0;

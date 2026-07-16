@@ -115,7 +115,7 @@ i32 CSBI_ImageSetAni::Tick() {
             );
         }
         u32 now = timeGetTime();
-        if (now - (u32)m_40 > (u32)m_3c) {
+        if (now - static_cast<u32>(m_40) > static_cast<u32>(m_3c)) {
             m_38 += m_44;
             m_40 = timeGetTime();
         }

@@ -517,7 +517,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     CTileGrid* grid = g_gameReg->m_tileGrid;
     i32 col = m_object->m_screenX >> 5;
     i32 row = m_object->m_screenY >> 5;
-    if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
+    if (static_cast<u32>(col) < static_cast<u32>(grid->m_c) && static_cast<u32>(row) < static_cast<u32>(grid->m_10)) {
         char* cell = (char*)grid->m_8[row] + col * 0x1c;
         *(i32*)(cell + 8) = mv;
         char* cell0 = (char*)grid->m_8[row] + col * 0x1c;
@@ -731,11 +731,11 @@ i32 CInGameIcon::RefreshCell() {
     CGameObject* obj = m_object;
     i32 tileY = obj->m_screenX >> 5;
     i32 tileX = (obj->m_screenY + 0x18) >> 5;
-    i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_driftPos;
+    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_driftPos;
     if (delta < *(i64*)&m_driftThresh) {
         CTileGrid* grid = g_gameReg->m_tileGrid;
         i32 cell;
-        if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
+        if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
             i32* row = grid->m_8[tileX];
             cell = row[tileY * 8 - tileY + 2];
         } else {
@@ -813,13 +813,13 @@ i32 CInGameIcon::PeekCycle() {
         CTileGrid* grid = reg->m_tileGrid;
         i32 tileX = obj->m_screenX >> 5;
         i32 cell;
-        if ((u32)tileX < (u32)grid->m_c && (u32)tileY < (u32)grid->m_10) {
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
             cell = grid->m_8[tileY][tileX * 7];
         } else {
             cell = 1;
         }
         if ((cell & 0x939) != 0 || (cell & 2) != 0) {
-            if ((u32)tileX < (u32)grid->m_c && (u32)tileY < (u32)grid->m_10) {
+            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
                 grid->m_8[tileY][tileX * 7 + 2] = 0;
                 grid->m_8[tileY][tileX * 7] &= ~0x40000;
             }
@@ -833,7 +833,7 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_130 != 0) {
         return 0;
     }
-    if ((i64)(u32)g_frameTime - *(i64*)&m_68 >= *(i64*)&m_70) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_68 >= *(i64*)&m_70) {
         u32 x;
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
@@ -842,7 +842,7 @@ i32 CInGameIcon::PeekCycle() {
             x = g_randSeed;
         }
         g_randSeed = x * 214013 + 2531011;
-        i32 rec = g_gameReg->m_spriteFactory->GetSel((((i32)g_randSeed >> 16) & 0x7fff) % 0x11, 0);
+        i32 rec = g_gameReg->m_spriteFactory->GetSel(((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11, 0);
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 0xa;
@@ -864,7 +864,7 @@ static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
     CTileGrid* grid = reg->m_tileGrid;
     i32 tileX = owner->m_screenY >> 5;
     i32 tileY = owner->m_screenX >> 5;
-    if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
+    if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
         i32 rowByte = tileX * 4;
         i32 cellOff = (tileY * 8 - tileY) * 4;
         char* cell0 = (char*)*(i32**)((char*)grid->m_8 + rowByte);
@@ -1011,7 +1011,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_driftPos;
+    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_driftPos;
     if (delta >= *(i64*)&m_driftThresh) {
         CGameObject* r = m_38;
         r->m_stateFlags &= ~1;
@@ -1024,7 +1024,7 @@ i32 CInGameIcon::Reposition() {
         i32 tileY = obj->m_screenY >> 5;
         CTileGrid* grid = reg->m_tileGrid;
         i32 cellVal;
-        if ((u32)tileX < (u32)grid->m_c && (u32)tileY < (u32)grid->m_10) {
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
             cellVal = grid->m_8[tileY][tileX * 7 + 2];
         } else {
             cellVal = 0;
@@ -1039,7 +1039,7 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        if ((u32)tileX < (u32)grid->m_c && (u32)tileY < (u32)grid->m_10) {
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
             grid->m_8[tileY][tileX * 7 + 2] = 0;
             grid->m_8[tileY][tileX * 7] &= ~0x40000;
         }
@@ -1048,7 +1048,7 @@ i32 CInGameIcon::Reposition() {
         i32 tileX2 = obj->m_screenX >> 5;
         i32 tileY2 = obj->m_screenY >> 5;
         i32 mv = obj->m_188;
-        if ((u32)tileX2 < (u32)grid->m_c && (u32)tileY2 < (u32)grid->m_10) {
+        if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_10)) {
             grid->m_8[tileY2][tileX2 * 7 + 2] = mv;
             if (mv != 0) {
                 grid->m_8[tileY2][tileX2 * 7] |= 0x40000;

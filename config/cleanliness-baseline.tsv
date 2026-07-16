@@ -9,11 +9,11 @@ placeholder vtable slots	0
 ->vtbl accesses	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
-)this casts	233
-)m_ casts	1017
+)this casts	226
+)m_ casts	758
 (char*) casts	784
 (const char*) casts	173
-C-style numeric casts	3458
+C-style numeric casts	882
 void* m_ members	121
 offset-cast macros	0
 cpp extern decls	664

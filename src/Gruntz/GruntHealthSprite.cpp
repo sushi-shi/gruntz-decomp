@@ -126,7 +126,7 @@ RVA(0x0007f0d0, 0x6e)
 i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_cellX = x;
     m_cellY = y;
-    i32 slot = 0x15 - (i32)((double)health * 0.2 + 0.5);
+    i32 slot = 0x15 - static_cast<i32>((static_cast<double>(health) * 0.2 + 0.5));
     CGruntRenderable* obj = (CGruntRenderable*)m_object;
     CGruntLayerHolder* map = obj->m_layerHolder;
     if (map) {
@@ -171,7 +171,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
     }
     i32 result = Vslot16(e);
     if (m_health != result) {
-        i32 slot = 0x15 - (i32)((double)result * 0.2 + 0.5);
+        i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
         CGruntRenderable* obj = (CGruntRenderable*)m_object;
         CGruntLayerHolder* holder = obj->m_layerHolder;
         if (holder != 0) {

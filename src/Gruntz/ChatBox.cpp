@@ -173,7 +173,7 @@ i32 CChatBox::Step(u32 dt) {
     if (!m_activeNode->NotifyAll((void*)dt)) {
         return 0;
     }
-    return Step((i32)dt) != 0;
+    return Step(static_cast<i32>(dt)) != 0;
 }
 
 // lay out the page using the owner's first surface holder as the ctx.
@@ -342,7 +342,7 @@ RVA(0x00182ed0, 0xbc)
 i32 CChatBox::Step(i32 delta) {
     CImageSet* a = m_row0Anim;
     if (a) {
-        if ((u32)m_row0Timer > (u32)delta) {
+        if (static_cast<u32>(m_row0Timer) > static_cast<u32>(delta)) {
             m_row0Timer -= delta;
         } else {
             m_row0Timer = m_row0Period;
@@ -363,7 +363,7 @@ i32 CChatBox::Step(i32 delta) {
     }
     CImageSet* b = m_row1Anim;
     if (b) {
-        if ((u32)m_row1Timer > (u32)delta) {
+        if (static_cast<u32>(m_row1Timer) > static_cast<u32>(delta)) {
             m_row1Timer -= delta;
             return 1;
         }
@@ -397,7 +397,7 @@ i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
         return 0;
     }
     i32 anchorX, anchorY;
-    if (sprite->m_fixedX != (i32)0xeeeeeeee) {
+    if (sprite->m_fixedX != static_cast<i32>(0xeeeeeeee)) {
         anchorY = sprite->m_fixedY;
         anchorX = sprite->m_fixedX;
     } else {
@@ -441,8 +441,8 @@ i32 CChatBox::ScrollRow0() {
     }
     i32 delta = g_sndCueTag;
     i32 clock = g_killCueClock;
-    u32 elapsed = (u32)clock - (u32)t->m_14;
-    if (elapsed < (u32)t->m_18) {
+    u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_14);
+    if (elapsed < static_cast<u32>(t->m_18)) {
         return 0;
     }
     t->m_14 = clock;
@@ -474,8 +474,8 @@ i32 CChatBox::ScrollRow1() {
     }
     i32 delta = g_sndCueTag;
     i32 clock = g_killCueClock;
-    u32 elapsed = (u32)clock - (u32)t->m_14;
-    if (elapsed < (u32)t->m_18) {
+    u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_14);
+    if (elapsed < static_cast<u32>(t->m_18)) {
         return 0;
     }
     t->m_14 = clock;

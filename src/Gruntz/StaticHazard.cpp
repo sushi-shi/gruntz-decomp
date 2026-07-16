@@ -321,13 +321,13 @@ i32 CStaticHazard::LoadAttributes2() {
         return 0;
     }
     u32 phase = g_frameTime - m_pulseEpoch;
-    u32 base = (u32)m_object->m_118;
+    u32 base = static_cast<u32>(m_object->m_118);
     if (phase <= base) {
         return 0;
     }
     phase -= base;
     u32 span = m_idleWindow + m_activeWindow;
-    if (phase % span > (u32)m_activeWindow) {
+    if (phase % span > static_cast<u32>(m_activeWindow)) {
         return 0;
     }
     m_fired = 1;
@@ -357,9 +357,9 @@ i32 CStaticHazard::LoadAttributes2() {
 // grid-cell op sites spill against retail's stack-slot schedule. Parked for sweep.
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::LoadAttributes() {
-    u32 phase = (g_frameTime - m_pulseEpoch) - (u32)m_object->m_118;
-    u32 rem = phase % (u32)(m_idleWindow + m_activeWindow);
-    if (rem > (u32)m_activeWindow) {
+    u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_118);
+    u32 rem = phase % static_cast<u32>((m_idleWindow + m_activeWindow));
+    if (rem > static_cast<u32>(m_activeWindow)) {
         // idle window
         if (m_fired == 0) {
             goto dispatch;
@@ -382,7 +382,7 @@ i32 CStaticHazard::LoadAttributes() {
             }
             // clear the hazard cell's bit-0x8000000
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
+            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
                 grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
             }
             return 0;
@@ -439,12 +439,12 @@ dispatch:
             m_object->m_flags |= 0x20000;
         }
         CTileGrid* grid = g_gameReg->m_tileGrid;
-        if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
+        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
             grid->m_8[m_tileRow][m_tileCol * 7] |= 0x8000000;
         }
     } else {
         CTileGrid* grid = g_gameReg->m_tileGrid;
-        if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
+        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
             grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
         }
         if (m_object->m_latchedAnimId != 0) {
@@ -464,7 +464,7 @@ dispatch:
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
             }
             CTileGrid* grid = g_gameReg->m_tileGrid;
-            if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
+            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_c) && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_10)) {
                 grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
             }
         }

@@ -57,7 +57,7 @@ typedef enum {
 // LookupTile's empty-cell sentinels: 0xeeeeeeee is the uninitialized-heap fill
 // (no tile placed); -1 is the explicit "clear" marker. (Consolidated here from
 // per-TU copies in GameLevel.cpp / GameLevelMove.cpp, like the enum above.)
-static const i32 TILE_UNINIT = (i32)0xeeeeeeee;
+static const i32 TILE_UNINIT = static_cast<i32>(0xeeeeeeee);
 static const i32 TILE_CLEAR = -1;
 
 // PROBE_TILE - the inlined per-coord tile probe (== AxisProbe @0x161270, defined in

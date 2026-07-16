@@ -534,7 +534,7 @@ void CGruntVoice::Reset() {
 // CSpotLight::SerializeMove's Read path.
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
-    if (m_sample == 0 || (i64)g_frameTime - *(i64*)&m_icon >= *(i64*)&m_durationMs) {
+    if (m_sample == 0 || static_cast<i64>(g_frameTime) - *(i64*)&m_icon >= *(i64*)&m_durationMs) {
         m_sample = 0;
         m_source = 0;
         m_object->m_stateFlags |= 1;

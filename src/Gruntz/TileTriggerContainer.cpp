@@ -1076,7 +1076,7 @@ void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a
             i32 cell = geo->m_colOffsets[y] + x;
             i32 tile = geo->m_tileGrid[cell];
             i32 type;
-            if (tile == (i32)0xeeeeeeee || tile == -1) {
+            if (tile == static_cast<i32>(0xeeeeeeee) || tile == -1) {
                 type = 0;
             } else {
                 // m_imageSets' CObArray payload -> the CTileImageSet collision record;

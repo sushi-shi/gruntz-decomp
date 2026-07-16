@@ -35,7 +35,7 @@ CWarpStoneFly::CWarpStoneFly() {
 // diverges. ~60-75% plateau, deferred to the final sweep.
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(i32 dt) {
-    if ((i32)m_currentX == m_targetX && (i32)m_currentY == m_targetY) {
+    if (static_cast<i32>(m_currentX) == m_targetX && static_cast<i32>(m_currentY) == m_targetY) {
         CWsfTabArray* arr = (CWsfTabArray*)((char*)g_gameReg->m_cmdGrid + 0x260);
         ((CByteArray*)arr)->SetAtGrow(arr->m_index, (BYTE)m_arrivalMode);
         m_owner->m_busy = 0;
@@ -50,29 +50,29 @@ i32 CWarpStoneFly::Tick(i32 dt) {
         return 1;
     }
 
-    double t = (double)dt;
+    double t = static_cast<double>(dt);
     double newX = m_currentX + (t * m_velocityScale) * m_xDirection;
     double newY = m_currentY + (t * m_yDirection) * m_velocityScale;
     m_currentX = newX;
     m_currentY = newY;
 
     if (m_xDirection > 0.0) {
-        if ((i32)newX > m_targetX) {
-            m_currentX = (double)m_targetX;
+        if (static_cast<i32>(newX) > m_targetX) {
+            m_currentX = static_cast<double>(m_targetX);
         }
     } else if (m_xDirection < 0.0) {
-        if ((i32)newX < m_targetX) {
-            m_currentX = (double)m_targetX;
+        if (static_cast<i32>(newX) < m_targetX) {
+            m_currentX = static_cast<double>(m_targetX);
         }
     }
 
     if (m_yDirection > 0.0) {
-        if ((i32)newY > m_targetY) {
-            m_currentY = (double)m_targetY;
+        if (static_cast<i32>(newY) > m_targetY) {
+            m_currentY = static_cast<double>(m_targetY);
         }
     } else if (m_yDirection < 0.0) {
-        if ((i32)newY < m_targetY) {
-            m_currentY = (double)m_targetY;
+        if (static_cast<i32>(newY) < m_targetY) {
+            m_currentY = static_cast<double>(m_targetY);
         }
     }
     return 1;
@@ -83,8 +83,8 @@ RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->RenderFrame(
             (void*)((CWsfGameMgr*)g_gameReg->m_world)->m_drawable->m_context,
-            (void*)(i32)m_currentX,
-            (void*)(i32)m_currentY,
+            (void*)static_cast<i32>(m_currentX),
+            (void*)static_cast<i32>(m_currentY),
             (void*)0
         );
     return 1;

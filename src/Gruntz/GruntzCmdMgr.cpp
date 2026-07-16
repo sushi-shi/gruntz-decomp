@@ -111,7 +111,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
             if (!(flags & 1)) {
                 continue;
             }
-            if ((u8)obj->m_6 != (u32)param) {
+            if (static_cast<u8>(obj->m_6) != static_cast<u32>(param)) {
                 continue;
             }
         }
@@ -148,7 +148,7 @@ void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
         GzTargetObj* obj = *(GzTargetObj**)((char*)pos + 8);
-        if (obj->m_6 == (u8)typeByte && obj->m_4 == (u8)indexByte) {
+        if (obj->m_6 == static_cast<u8>(typeByte) && obj->m_4 == static_cast<u8>(indexByte)) {
             m_base.RemoveAt(pos);
             obj->Deselect();
             return;
@@ -308,7 +308,7 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
     if (!buf) {
         return 0;
     }
-    if ((u8)count > 0x10) {
+    if (static_cast<u8>(count) > 0x10) {
         return 0;
     }
     if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
@@ -390,7 +390,7 @@ i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
 RVA(0x00024050, 0x57)
 i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
     char* start = buf;
-    *buf = (char)GetTag();
+    *buf = static_cast<char>(GetTag());
     *++buf = m_4;
     *++buf = m_5;
     *++buf = m_6;
@@ -401,7 +401,7 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
     w += 2;
     *w = m_10;
     w++;
-    if ((u8)m_5 >= 8) {
+    if (static_cast<u8>(m_5) >= 8) {
         *w = m_11;
         w++;
     }
@@ -416,7 +416,7 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
 RVA(0x000240d0, 0x4d)
 i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
     char* start = buf;
-    *buf = (char)GetTag();
+    *buf = static_cast<char>(GetTag());
     *++buf = m_4;
     *++buf = m_5;
     *++buf = m_6;
@@ -457,7 +457,7 @@ i32 CGruntzCommand::ApplyMask(CPlay* p) {
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
         if (g_cmdBitTable[i] & *(u16*)&m_10) {
-            if (!p->ExecCommand(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
+            if (!p->ExecCommand(m_4, static_cast<char>(i), m_5, m_8, m_a, 0, m_6)) {
                 ok = 0;
             }
         }
@@ -779,7 +779,7 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
     i32 count;
     stream->Read(&count, 4);
     u32 idx = 0;
-    if ((u32)count == 0) {
+    if (static_cast<u32>(count) == 0) {
         return 1;
     }
     do {
@@ -798,7 +798,7 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
         }
         m_base.AddTail(cmd);
         idx++;
-    } while (idx < (u32)count);
+    } while (idx < static_cast<u32>(count));
     return 1;
 }
 

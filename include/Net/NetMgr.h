@@ -565,7 +565,7 @@ struct CNetSession {
     // The engine routes global new/delete through RezAlloc/RezFree; model that as
     // the class allocator so `new CNetSession()` emits a direct RezAlloc call.
     void* operator new(size_t n) {
-        return RezAlloc((u32)n);
+        return RezAlloc(static_cast<u32>(n));
     }
     void operator delete(void* p) {
         RezFree(p);

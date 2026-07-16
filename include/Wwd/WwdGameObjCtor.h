@@ -23,17 +23,17 @@ struct WwdCtorBase {
         m_08 = c;
         m_04 = b;
         m_0c = a;
-        m_20 = (int)0x80000000;
+        m_20 = static_cast<int>(0x80000000);
         m_38 = -1;
         // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0) // 0x5efbc0
-        m_5c = (int)0x80000000;
-        m_64 = (int)0x80000000;
+        m_5c = static_cast<int>(0x80000000);
+        m_64 = static_cast<int>(0x80000000);
         m_3c = 0;
         m_40 = 0;
         m_a8 = 0;
         m_a4 = 0;
         m_b4 = 0;
-        m_c0 = (int)0x80000000;
+        m_c0 = static_cast<int>(0x80000000);
         m_d8 = -1;
     }
     char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)

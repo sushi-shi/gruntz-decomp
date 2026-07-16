@@ -104,11 +104,11 @@
 
 // The "unset" sentinel the ctor writes into the coord record's min corner; the
 // readiness predicate (IsLoaded) tests for it and Unload restores it.
-static const i32 LEVEL_COORD_UNSET = (i32)0x80000000;
+static const i32 LEVEL_COORD_UNSET = static_cast<i32>(0x80000000);
 
 // The +0x134 axis-low bracket's "unset" sentinel (INT_MIN): WalkColumnDown and
 // BroadPhase test it before treating an object's AABB as a live box.
-static const i32 AXIS_UNSET = (i32)0x80000000;
+static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
 // folds into each method exactly as the retail compiler emitted the block inline.
@@ -252,7 +252,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         } else {
             i32 n = 0;
             i32 j = 0;
-            while ((u32)j < *(u32*)(rec + 0x8)) {
+            while (static_cast<u32>(j) < *(u32*)(rec + 0x8)) {
                 CTileImageSet* set = ReadImageSet(elem);
                 if (set == 0) {
                     result = -1;
@@ -280,11 +280,11 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         i32 startY = hdr->startY;
         CLevelPlane* mp = m_mainPlane;
         if (mp->m_flags & 1) {
-            mp->m_scaledX = (float)startX;
-            mp->m_scaledY = (float)startY;
+            mp->m_scaledX = static_cast<float>(startX);
+            mp->m_scaledY = static_cast<float>(startY);
         } else {
-            mp->m_scaledX = (float)startX * mp->m_scaleX;
-            mp->m_scaledY = (float)startY * mp->m_scaleY;
+            mp->m_scaledX = static_cast<float>(startX) * mp->m_scaleX;
+            mp->m_scaledY = static_cast<float>(startY) * mp->m_scaleY;
         }
         mp->RecomputePlaneCoords();
 
@@ -297,11 +297,11 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             if (i2 != m_mainIndex) {
                 CLevelPlane* p = (CLevelPlane*)m_planes[i2];
                 if (p->m_flags & 1) {
-                    p->m_scaledX = (float)ox;
-                    p->m_scaledY = (float)oy;
+                    p->m_scaledX = static_cast<float>(ox);
+                    p->m_scaledY = static_cast<float>(oy);
                 } else {
-                    p->m_scaledX = (float)ox * p->m_scaleX;
-                    p->m_scaledY = (float)oy * p->m_scaleY;
+                    p->m_scaledX = static_cast<float>(ox) * p->m_scaleX;
+                    p->m_scaledY = static_cast<float>(oy) * p->m_scaleY;
                 }
                 p->RecomputePlaneCoords();
             }
@@ -2148,7 +2148,7 @@ i32 __stdcall WwdFile_CompressMainBlock(
         return 0;
     }
     unsigned long outLen = destCap;
-    return WapUncompress(dest, &outLen, src, srcLen) == 0 ? (i32)outLen : 0;
+    return WapUncompress(dest, &outLen, src, srcLen) == 0 ? static_cast<i32>(outLen) : 0;
 }
 // ---------------------------------------------------------------------------
 // ProbeFeetKind (@0x1608c0): the feet-edge twin of ProbeColumn - probe the tile at
@@ -2255,7 +2255,7 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
         return -1;
     }
     i32 n = 0;
-    for (i32 i = 0; (u32)i < dir[2]; i++) {
+    for (i32 i = 0; static_cast<u32>(i) < dir[2]; i++) {
         CTileImageSet* set = ReadImageSet(cursor);
         if (set == 0) {
             return -1;

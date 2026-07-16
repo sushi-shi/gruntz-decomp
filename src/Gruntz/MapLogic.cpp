@@ -153,7 +153,7 @@ i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             }
             m_arr.SetSize(0, -1);
             m_arr.SetSize(count, -1);
-            for (u32 ri = 0; ri < (u32)count; ri++) {
+            for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
                 void** node = (void**)g_coordPool.m_freeHead;
                 void* elem = 0;
                 if (*node != 0) {
@@ -170,7 +170,7 @@ i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             ar->Write(&m_90, 4);
             i32 wn = m_arr.GetSize();
             ar->Write(&wn, 4);
-            for (u32 wi = 0; wi < (u32)wn; wi++) {
+            for (u32 wi = 0; wi < static_cast<u32>(wn); wi++) {
                 void* elem = m_arr.GetData()[wi];
                 if (elem == 0) {
                     return 0;

@@ -116,7 +116,7 @@ i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
         return 0;
     }
     *outLo = data & 0xffff;
-    *outHi = (u32)data >> 0x10;
+    *outHi = static_cast<u32>(data) >> 0x10;
     return 1;
 }
 
@@ -202,7 +202,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
             }
             s->m_ready = 1;
             s->m_14 = 0;
-            s->m_selectionIndex = (i32)pSend(owner->m_hWnd, 0x147, 0, 0) - 1;
+            s->m_selectionIndex = static_cast<i32>(pSend(owner->m_hWnd, 0x147, 0, 0)) - 1;
             s->m_active = 1;
             s->m_label = g_gruntNames[ch];
         }
@@ -896,7 +896,7 @@ void CMultiStartDlg::Watchdog() {
     g_multiState->ResolveLocalPlayer();
     if (g_watchBlinkA == 0) {
         u32 t = ::timeGetTime();
-        g_multiState->SendNetStat(0x41f, (i32)t, 0);
+        g_multiState->SendNetStat(0x41f, static_cast<i32>(t), 0);
     }
     if (g_multiState->m_isHost == 0) {
         if (g_watchBlinkA == 0) {

@@ -65,7 +65,7 @@ i32 CGrunt::StepPeerTracking() {
             ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, b->m_screenX, b->m_screenY);
         return 1;
     }
-    if ((u32)m_dwell <= 0x3e8) {
+    if (static_cast<u32>(m_dwell) <= 0x3e8) {
         return 1;
     }
     if (GruntInRadius(p->m_tileOwnerHi, p->m_tileOwnerLo)) {

@@ -40,7 +40,7 @@ void CEffect6b::Apply(i32 a, i32 b) {
     m_prevDesc = m_player->m_1a0.m_14;
     anim->Setup_15c2d0((CAniElement*)a);
     if (b != 0) {
-        anim->Advance((i32)g_engineFrameDelta);
+        anim->Advance(static_cast<i32>(g_engineFrameDelta));
     }
 }
 
@@ -89,8 +89,8 @@ RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != 0) {
         i32 idx = 5;
-        if ((i64)(u32)g_frameTime - m_strikeDeadline < m_strikeWindow) {
-            if ((u32)g_timer200 >= 0x64) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strikeDeadline < m_strikeWindow) {
+            if (static_cast<u32>(g_timer200) >= 0x64) {
                 idx = 0;
             }
         } else {

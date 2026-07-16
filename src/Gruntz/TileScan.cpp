@@ -24,7 +24,7 @@
 // The inlined grid lookup (the 0x75a40 archetype): the cell's first dword, or 1
 // when out of bounds.
 static inline i32 GridLookup(CScanGrid* g, i32 x, i32 y) {
-    if ((u32)x < (u32)g->m_c && (u32)y < (u32)g->m_10) {
+    if (static_cast<u32>(x) < static_cast<u32>(g->m_c) && static_cast<u32>(y) < static_cast<u32>(g->m_10)) {
         return g->m_8[y][x].m_flags;
     }
     return 1;
@@ -68,7 +68,7 @@ i32 CTileScan::Scan(CGrunt* arg) {
                 continue;
             }
             CScanGrid* grid = m_c;
-            if ((u32)b >= (u32)grid->m_c || (u32)a >= (u32)grid->m_10) {
+            if (static_cast<u32>(b) >= static_cast<u32>(grid->m_c) || static_cast<u32>(a) >= static_cast<u32>(grid->m_10)) {
                 continue;
             }
             i32 flags = GridLookup(grid, b, a);

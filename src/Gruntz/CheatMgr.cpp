@@ -251,7 +251,7 @@ RVA(0x00023090, 0xfc)
 BOOL CCheatMgr::CheckCode(CString code) {
     code.MakeUpper();
     for (i32 i = 0; i < code.GetLength(); i++) {
-        code.SetAt(i, (char)(((const char*)code)[i] + 0x3d));
+        code.SetAt(i, static_cast<char>((((const char*)code)[i] + 0x3d)));
     }
 
     void* value = 0;

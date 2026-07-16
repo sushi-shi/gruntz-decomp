@@ -199,7 +199,7 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
 RVA(0x00152f20, 0x86)
 i32 CImage::Resolve(CParseSource* src, i32 arg) {
     i32 index;
-    switch ((u32)src->GetEntryTag()) {
+    switch (static_cast<u32>(src->GetEntryTag())) {
         case IMGTAG_PMB: // BMP
             index = 1;
             break;
@@ -220,7 +220,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
         return 0;
     }
     i32 result =
-        this->LoadDispatch((CImageFrameDesc*)resolved, (u32)index, (void*)src->m_length, arg);
+        this->LoadDispatch((CImageFrameDesc*)resolved, static_cast<u32>(index), (void*)src->m_length, arg);
     src->EndParse();
     return result;
 }
@@ -268,7 +268,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->CreateA((i32)desc, (i32)mode, (i32)a, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateA((i32)desc, static_cast<i32>(mode), (i32)a, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -475,7 +475,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
     }
 
     i32 index;
-    switch ((u32)src->GetEntryTag()) {
+    switch (static_cast<u32>(src->GetEntryTag())) {
         case IMGTAG_PMB: // BMP
             index = 1;
             break;
@@ -504,7 +504,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
         m_parent->m_1c,
         (void*)resolved,
         index,
-        (u32)src->m_length,
+        static_cast<u32>(src->m_length),
         (void*)g_surfaceColorKey
     );
 }
@@ -606,7 +606,7 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
         if (bottom > destClip.bottom) {
             dbottom = destClip.bottom;
         }
-    } else if (info->m_clipLeft == (i32)0x80000000) {
+    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             dleft = 0;
         }
@@ -790,7 +790,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == (i32)0x80000000) {
+    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -884,7 +884,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == (i32)0x80000000) {
+    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -974,7 +974,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == (i32)0x80000000) {
+    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -1068,7 +1068,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == (i32)0x80000000) {
+    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -1160,7 +1160,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == (i32)0x80000000) {
+    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -1250,7 +1250,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == (i32)0x80000000) {
+    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }
@@ -1339,7 +1339,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
         if (bottom > clip.bottom) {
             d.bottom += clip.bottom - bottom;
         }
-    } else if (info->m_clipLeft == (i32)0x80000000) {
+    } else if (info->m_clipLeft == static_cast<i32>(0x80000000)) {
         if (x < 0) {
             d.left = 0;
         }

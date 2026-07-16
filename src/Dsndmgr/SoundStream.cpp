@@ -484,7 +484,7 @@ void SoundStream::Stop() {
 RVA(0x00137ac0, 0xa2)
 i32 SoundStream::TickSubManagers(i32 time) {
     if (time == -1) {
-        time = (i32)::timeGetTime();
+        time = static_cast<i32>(::timeGetTime());
     }
     DSoundLink* head = m_voices.m_head;
     StreamVoice* o = elemOf<StreamVoice>(head);
@@ -697,8 +697,8 @@ i32 StreamFeeder::Tick(i32 timestamp) {
     if (!m_drained) {
         return 1;
     }
-    i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
-    if ((u32)t <= (u32)(m_lastTickMs + 0x64)) {
+    i32 t = (timestamp == -1) ? static_cast<i32>(timeGetTime()) : timestamp;
+    if (static_cast<u32>(t) <= static_cast<u32>((m_lastTickMs + 0x64))) {
         return 1;
     }
     m_lastTickMs = t;
@@ -707,7 +707,7 @@ i32 StreamFeeder::Tick(i32 timestamp) {
         return 0;
     }
     i32 v;
-    if ((u32)hi >= (u32)m_bufferCursor) {
+    if (static_cast<u32>(hi) >= static_cast<u32>(m_bufferCursor)) {
         if (hi == m_bufferCursor) {
             v = m_bufferLength;
         } else {
@@ -716,7 +716,7 @@ i32 StreamFeeder::Tick(i32 timestamp) {
     } else {
         v = m_bufferLength + hi - m_bufferCursor;
     }
-    if ((u32)v < (u32)m_format) {
+    if (static_cast<u32>(v) < static_cast<u32>(m_format)) {
         return 1;
     }
     return FillBuffer(m_bufferCursor, v) != 0;
@@ -816,7 +816,7 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
 // the buffer, and FillBuffer the whole window.
 RVA(0x001380d0, 0x4e)
 i32 StreamFeeder::TickPump(i32 now) {
-    i32 t = (now == -1) ? (i32)timeGetTime() : now;
+    i32 t = (now == -1) ? static_cast<i32>(timeGetTime()) : now;
     m_lastTickMs = t;
     m_bufferCursor = 0;
     if (!m_buffer->SetCurrentPosition(0)) {
@@ -862,47 +862,47 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
     strcpy(szLine, g_emptyString);
 
     switch (hr) {
-        case (i32)0x80004001:
+        case static_cast<i32>(0x80004001):
             strcpy(szCode, "DSERR_UNSUPPORTED");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x80004005:
+        case static_cast<i32>(0x80004005):
             strcpy(szCode, "DSERR_GENERIC");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x80040110:
+        case static_cast<i32>(0x80040110):
             strcpy(szCode, "DSERR_NOAGGREGATION");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8007000e:
+        case static_cast<i32>(0x8007000e):
             strcpy(szCode, "DSERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x80070057:
+        case static_cast<i32>(0x80070057):
             strcpy(szCode, "DSERR_INVALIDPARAM");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8878000a:
+        case static_cast<i32>(0x8878000a):
             strcpy(szCode, "DSERR_ALLOCATED");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x8878001e:
+        case static_cast<i32>(0x8878001e):
             strcpy(szCode, "DSERR_CONTROLUNAVAIL");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88780032:
+        case static_cast<i32>(0x88780032):
             strcpy(szCode, "DSERR_INVALIDCALL");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88780046:
+        case static_cast<i32>(0x88780046):
             strcpy(szCode, "DSERR_PRIOLEVELNEEDED");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88780064:
+        case static_cast<i32>(0x88780064):
             strcpy(szCode, "DSERR_BADFORMAT");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88780078:
+        case static_cast<i32>(0x88780078):
             strcpy(szCode, "DSERR_NODRIVER");
             strcpy(szMsg, "No message");
             break;
@@ -910,7 +910,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DSERR_BUFFERLOST");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x887800a0:
+        case static_cast<i32>(0x887800a0):
             strcpy(szCode, "DSERR_OTHERAPPHASPRIO");
             strcpy(szMsg, "No message");
             break;

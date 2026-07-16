@@ -82,10 +82,10 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
 // magic divide are all correct; the FP scheduling parks it. Final-sweep candidate.
 RVA(0x001461b0, 0x399)
 i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
-    float left = (float)a2;
-    float right = (float)a4;
-    float top = (float)a3;
-    float bottom = (float)a5;
+    float left = static_cast<float>(a2);
+    float right = static_cast<float>(a4);
+    float top = static_cast<float>(a3);
+    float bottom = static_cast<float>(a5);
     i32 i;
 
     // Pass 1: keep x >= left. poly -> bufA.
@@ -112,7 +112,7 @@ i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
             cur++;
         }
     }
-    i32 n1 = (i32)(out - g_rasterVtxA);
+    i32 n1 = static_cast<i32>((out - g_rasterVtxA));
     if (n1 == 0) {
         return 0;
     }
@@ -141,7 +141,7 @@ i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
             cur++;
         }
     }
-    i32 n2 = (i32)(out - g_rasterVtxB);
+    i32 n2 = static_cast<i32>((out - g_rasterVtxB));
     if (n2 == 0) {
         return 0;
     }
@@ -170,7 +170,7 @@ i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
             cur++;
         }
     }
-    i32 n3 = (i32)(out - g_rasterVtxA);
+    i32 n3 = static_cast<i32>((out - g_rasterVtxA));
     if (n3 == 0) {
         return 0;
     }
@@ -199,7 +199,7 @@ i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
             cur++;
         }
     }
-    i32 n4 = (i32)(out - g_rasterVtxB);
+    i32 n4 = static_cast<i32>((out - g_rasterVtxB));
     if (n4 == 0) {
         return 0;
     }

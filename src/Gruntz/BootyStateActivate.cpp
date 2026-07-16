@@ -185,7 +185,7 @@ i32 CBootyState::Vslot09(i32) {
         set->m_10.Lookup("BOOTY_LOOP", (void*&)res);
         if (res != 0 && g_sndEnabled != 0) {
             u32 now = g_killCueClock;
-            if (now - (u32)res->m_14 >= (u32)res->m_18) {
+            if (now - static_cast<u32>(res->m_14) >= static_cast<u32>(res->m_18)) {
                 res->m_14 = now;
                 res->m_10->ConfigureItem(token, 0, 0, 1);
             }
@@ -303,13 +303,13 @@ void CMultiBootyState::StepGlitterAnim() {
 
     i32 step = m_angleStep;
     i32 idx = m_letterIdx;
-    double r = (float)m_radius; // load (float)m_radius first; shared across sin/cos terms
-    double ang = ((float)step - kGlitterPhaseBias) * kDegToRad;
-    m_scratchX = (i32)(sin(ang) * r + (float)g_bootyLetterCoords[idx * 2]);
-    m_1e8 = (i32)(cos(ang) * r + (float)g_bootyLetterCoords[idx * 2 + 1]);
+    double r = static_cast<float>(m_radius); // load (float)m_radius first; shared across sin/cos terms
+    double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
+    m_scratchX = static_cast<i32>((sin(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2])));
+    m_1e8 = static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2 + 1])));
     m_angleStep = step + 5;
     m_radius =
-        (i32)(kGlitterStartRadius - (float)(step + 5) * kGlitterShrinkRate * kGlitterStartRadius);
+        static_cast<i32>((kGlitterStartRadius - static_cast<float>((step + 5)) * kGlitterShrinkRate * kGlitterStartRadius));
 
     // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
@@ -431,7 +431,7 @@ i32 CBootyState::CheckPerfectBonus() {
     }
     CGameObject* st = m_bootyPerfectSprite;
     i32 phase = st->m_screenX;
-    if (phase == (i32)0xffffff7e) {
+    if (phase == static_cast<i32>(0xffffff7e)) {
         CDDrawSurfaceMgr* host = g_gameReg->m_world;
         i32 item = g_gameReg->m_soundVolume; // +0x11c (configured music item, this facet)
         CSndHost* m28 = host->m_soundRegistry;
@@ -440,7 +440,7 @@ i32 CBootyState::CheckPerfectBonus() {
             m28->m_10.Lookup("BOOTY_PERFECT", found); // ::CMapStringToPtr::Lookup @0x1b8438
             if (found && g_sndEnabled != 0) {
                 LeafCue* p = (LeafCue*)found;
-                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                     p->m_14 = g_killCueClock;
                     p->m_10->ConfigureItem(item, 0, 0, 0);
                 }
@@ -558,7 +558,7 @@ i32 CMultiBootyState::Vslot09(i32) {
         m28->m_10.Lookup("BOOTY_LOOP", found); // ::CMapStringToPtr::Lookup @0x1b8438
         if (found && g_sndEnabled != 0) {
             LeafCue* p = (LeafCue*)found;
-            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+            if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
                 p->m_14 = g_killCueClock;
                 p->m_10->ConfigureItem(item, 0, 0, 1);
             }

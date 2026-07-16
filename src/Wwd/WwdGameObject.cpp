@@ -582,9 +582,9 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_ec = 0;
     m_f0 = 0;
     m_f4 = 0;
-    m_134 = (i32)0x80000000;
-    m_144 = (i32)0x80000000;
-    m_154 = (i32)0x80000000;
+    m_134 = static_cast<i32>(0x80000000);
+    m_144 = static_cast<i32>(0x80000000);
+    m_154 = static_cast<i32>(0x80000000);
     m_region.m_object = this;
     m_region.m_x = m_posX;
     m_region.m_y = m_posY;
@@ -1324,7 +1324,7 @@ CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
     CImage* nf = new CImage(index, m_owner); // real frame ctor (vptr interleaved)
 
     // slot 10 @+0x28  CImage::LoadDispatch
-    if (nf->LoadDispatch((CImageFrameDesc*)a0, (u32)a1, (void*)a3, 1) == 0) {
+    if (nf->LoadDispatch((CImageFrameDesc*)a0, static_cast<u32>(a1), (void*)a3, 1) == 0) {
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }

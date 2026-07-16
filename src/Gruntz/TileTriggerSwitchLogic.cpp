@@ -396,7 +396,7 @@ i32 CTileTriggerLogic::Tick() {
     CString upTemp;  // [esp+0x14] GAME_PYRAMIDUP/DOWN
     CString keyTemp; // [esp+0x10] GAME_<COLOR>PYRAMIDZ
 
-    switch ((u32)(srcId - kSpriteTypeBase)) {
+    switch (static_cast<u32>((srcId - kSpriteTypeBase))) {
         case kGreenPyramidUp - kSpriteTypeBase: // 0x57  GREENPYRAMIDZ
             keyTemp = "GAME_GREENPYRAMIDZ";
             upTemp = (srcId == kGreenPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN";
@@ -650,7 +650,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     // (3) fire the command-grid effect at the tile center (cx/cy reused by step 4).
     i32 cx = (m_08 << 5) + 0x10;
     i32 cy = (m_0c << 5) + 0x10;
-    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(m_c0, cx, cy, (i32)m_30, 1, 0);
+    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(m_c0, cx, cy, static_cast<i32>(m_30), 1, 0);
 
     // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
     if (m_c4 != 0) {
@@ -684,7 +684,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         return;
     }
     i32 kc = g_killCueClock;
-    if ((u32)(kc - out->m_14) < (u32)out->m_18) {
+    if (static_cast<u32>((kc - out->m_14)) < static_cast<u32>(out->m_18)) {
         return;
     }
     out->m_14 = kc;
@@ -1048,7 +1048,7 @@ CTileActionEvent::CTileActionEvent() {
 RVA(0x00112da0, 0x9e)
 i32 CTileActionEvent::SetActionCode(i32 code) {
     m_actionCode = code;
-    if (m_playerFlags[g_tileKindMagic] == 0 && (u32)(code - 0x12f) <= 0x1a) {
+    if (m_playerFlags[g_tileKindMagic] == 0 && static_cast<u32>((code - 0x12f)) <= 0x1a) {
         switch (code) {
             case 0x12f:
             case 0x132:
@@ -1237,7 +1237,7 @@ i32 CTileActionEvent::Process(i32 arg) {
                     "GRUNTZ_NORMALGRUNT_IMPACTMM3"
                 );
                 if (snd != 0) {
-                    snd->PlayIfElapsed((i32)g_sndCueTag, 0, 0, 0);
+                    snd->PlayIfElapsed(static_cast<i32>(g_sndCueTag), 0, 0, 0);
                 }
             }
             if (brick->m_tileOwnerHi == 5) {

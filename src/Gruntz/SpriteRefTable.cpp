@@ -93,7 +93,7 @@ void CSpriteRefTable::Clear() {
 // (retail emits it standalone; the inline member folded away and never emitted).
 RVA(0x000e2360, 0x15)
 CSpriteRef* CSpriteRefTable::GetA(i32 i) {
-    if ((u32)i >= 0x11) {
+    if (static_cast<u32>(i) >= 0x11) {
         return 0;
     }
     return m_refA[i];
@@ -102,7 +102,7 @@ CSpriteRef* CSpriteRefTable::GetA(i32 i) {
 // GetB (0x0e2390): bucket-B node for slot i, null if out of [0,17). Out-of-line.
 RVA(0x000e2390, 0x15)
 CSpriteRef* CSpriteRefTable::GetB(i32 i) {
-    if ((u32)i >= 0x11) {
+    if (static_cast<u32>(i) >= 0x11) {
         return 0;
     }
     return m_refB[i];
@@ -112,7 +112,7 @@ CSpriteRef* CSpriteRefTable::GetB(i32 i) {
 // m_alphaKey, or 0. Out-of-line (retail emits it standalone).
 RVA(0x000e23c0, 0x2d)
 i32 CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
-    if ((u32)i >= 0x11) {
+    if (static_cast<u32>(i) >= 0x11) {
         return 0;
     }
     CSpriteRef* node = bAlt ? m_refB[i] : m_refA[i];

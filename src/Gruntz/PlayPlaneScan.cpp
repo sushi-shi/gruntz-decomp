@@ -115,16 +115,16 @@ i32 CPlay::ScanBuildTiles() {
         if (p == 0) {
             continue;
         }
-        if (p->m_extentL == (i32)0x80000000) {
+        if (p->m_extentL == static_cast<i32>(0x80000000)) {
             p->m_extentL = 0;
         }
-        if (p->m_areaL == (i32)0x80000000) {
+        if (p->m_areaL == static_cast<i32>(0x80000000)) {
             p->m_areaL = 0;
         }
-        if (p->m_154 == (i32)0x80000000) {
+        if (p->m_154 == static_cast<i32>(0x80000000)) {
             p->m_154 = 0;
         }
-        if (p->m_64 == (i32)0x80000000) {
+        if (p->m_64 == static_cast<i32>(0x80000000)) {
             p->m_64 = 0;
         }
         GameObjNotifyFn vf = p->m_7c->m_notify;
@@ -180,7 +180,7 @@ i32 CPlay::ScanBuildTiles() {
             i32 subY = y - (tileY << shY);
             i32 cell = g->m_tileGrid[g->m_colOffsets[tileY] + tileX];
             i32 tile;
-            if (cell == (i32)0xeeeeeeee || cell == (i32)0xffffffff) {
+            if (cell == static_cast<i32>(0xeeeeeeee) || cell == static_cast<i32>(0xffffffff)) {
                 tile = 0;
             } else {
                 // the m_imageSets CObArray element's slot-8 per-pixel collision query
@@ -275,16 +275,16 @@ i32 CPlay::ScanShuffleQuads() {
             || (void*)vf == (void*)PlaneQuadE) {
             p->m_124 = perm[p->m_124];
         } else if ((void*)vf == (void*)PlaneQuadF) {
-            if (p->m_extentL == (i32)0x80000000) {
+            if (p->m_extentL == static_cast<i32>(0x80000000)) {
                 p->m_extentL = 0;
             }
-            if (p->m_areaL == (i32)0x80000000) {
+            if (p->m_areaL == static_cast<i32>(0x80000000)) {
                 p->m_areaL = 0;
             }
-            if (p->m_154 == (i32)0x80000000) {
+            if (p->m_154 == static_cast<i32>(0x80000000)) {
                 p->m_154 = 0;
             }
-            if (p->m_64 == (i32)0x80000000) {
+            if (p->m_64 == static_cast<i32>(0x80000000)) {
                 p->m_64 = 0;
             }
             // scatter-permute the four extent-quad corners

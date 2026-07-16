@@ -78,7 +78,7 @@ static i32 RandRange(i32 lo, i32 hi) {
     if (range == 0) {
         return (GameGetTime() & 1) ? lo : hi;
     }
-    return (i32)GameGetTime() % range + lo;
+    return static_cast<i32>(GameGetTime()) % range + lo;
 }
 
 // @early-stop
@@ -139,8 +139,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
 
     CLevelPlane* v3 = pm->m_world->m_level->m_mainPlane;
     {
-        float sx = (float)scrollX;
-        float sy = (float)scrollY;
+        float sx = static_cast<float>(scrollX);
+        float sy = static_cast<float>(scrollY);
         if (!(v3->m_flags & 1)) {
             sx = sx * v3->m_scaleX;
             sy = sy * v3->m_scaleY;
@@ -155,15 +155,15 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
         i32 nx = gm->m_snappedX;
         i32 ny = gm->m_snappedY;
         if (deltaX != 0 || deltaY != 0) {
-            nx = (i32)((float)nx - (float)deltaX * -0.05f);
-            ny = (i32)((float)ny - (float)deltaY * -0.05f);
+            nx = static_cast<i32>((static_cast<float>(nx) - static_cast<float>(deltaX) * -0.05f));
+            ny = static_cast<i32>((static_cast<float>(ny) - static_cast<float>(deltaY) * -0.05f));
         }
-        if ((i64)g_frameTime - g_scrollAccum >= g_scrollLimit) {
+        if (static_cast<i64>(g_frameTime) - g_scrollAccum >= g_scrollLimit) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             CLevelPlane* g2 = g_backView;
-            float fx = (float)nx;
-            float fy = (float)ny;
+            float fx = static_cast<float>(nx);
+            float fy = static_cast<float>(ny);
             if (!(g2->m_flags & 1)) {
                 fx = fx * g2->m_scaleX;
                 fy = fy * g2->m_scaleY;

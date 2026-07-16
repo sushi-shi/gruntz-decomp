@@ -81,13 +81,13 @@ public:
         WORKER_FREE(m_80);
         WORKER_FREE(m_88);
         WORKER_FREE(m_90);
-        m_c0 = (i32)0x80000000;
+        m_c0 = static_cast<i32>(0x80000000);
         m_d8 = -1;
-        m_5c = (i32)0x80000000;
-        m_20 = (i32)0x80000000;
+        m_5c = static_cast<i32>(0x80000000);
+        m_20 = static_cast<i32>(0x80000000);
         m_38 = -1;
         // retail leaves eax = the INT_MIN it just materialized for the stores
-        return (i32)0x80000000;
+        return static_cast<i32>(0x80000000);
     }
     // slots 8 (GetClassId @0x154a00) and 9 (SetPosition @0x164790) INHERITED.
     // slot 10 - the factories' 4-arg build dispatch (the flat model's Setup

@@ -83,7 +83,7 @@ DeviceState* CInputDevice::ReadState() {
     }
     i32 hr = m_device2->GetDeviceState(m_stateBufferSize, m_stateBuffer);
     if (hr != 0) {
-        if (hr != (i32)DIERR_INPUTLOST && hr != (i32)DIERR_NOTACQUIRED) {
+        if (hr != static_cast<i32>(DIERR_INPUTLOST) && hr != static_cast<i32>(DIERR_NOTACQUIRED)) {
             DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x84, hr);
             return 0;
         }
@@ -241,7 +241,7 @@ i32 CInputDevice::PollDevice() {
     if (hr == 0) {
         return 1;
     }
-    if (hr == (i32)DIERR_INPUTLOST || hr == (i32)DIERR_NOTACQUIRED) {
+    if (hr == static_cast<i32>(DIERR_INPUTLOST) || hr == static_cast<i32>(DIERR_NOTACQUIRED)) {
         if (Acquire() == 0) {
             return 0;
         }

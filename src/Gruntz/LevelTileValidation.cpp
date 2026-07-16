@@ -193,7 +193,7 @@ static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
     i32 subX = x - (tx << g->m_shiftX);
     i32 subY = y - (ty << g->m_shiftY);
     i32 cell = g->GetTileHandle(tx, ty);
-    if (cell == (i32)0xeeeeeeee || cell == -1) {
+    if (cell == static_cast<i32>(0xeeeeeeee) || cell == -1) {
         return 0;
     }
     // +0x4c is m_imageSets' data pointer (the CObArray sits at +0x48). The array holds the
@@ -280,7 +280,7 @@ i32 CPlay::PlaceStartGruntz() {
                 if (e != 0 && counter < e->m_comboSel) {
                     reg->m_cmdSubMgr->EnqueueSingle(
                         result,
-                        (char)obj->m_124,
+                        static_cast<char>(obj->m_124),
                         0,
                         0,
                         (obj->m_screenX & ~0x1f) + 0x10,
@@ -676,12 +676,12 @@ i32 CPlay::ValidateLevelTiles() {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
                     CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-                    if ((u32)gx >= gg->m_c || (u32)gyy >= gg->m_10) {
+                    if (static_cast<u32>(gx) >= gg->m_c || static_cast<u32>(gyy) >= gg->m_10) {
                         continue;
                     }
                     i32 kind = obj->m_124;
                     i32 bit;
-                    if ((u32)kind > 3) {
+                    if (static_cast<u32>(kind) > 3) {
                         bit = 0; // fall through with last ebx (matches retail)
                     } else {
                         switch (kind) {
@@ -701,7 +701,7 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                     counts[kind]++;
                     gg = g_gameReg->m_tileGrid;
-                    if ((u32)gx >= gg->m_c || (u32)gyy >= gg->m_10) {
+                    if (static_cast<u32>(gx) >= gg->m_c || static_cast<u32>(gyy) >= gg->m_10) {
                         continue;
                     }
                     i32* cellRow = (i32*)((char*)gg->m_8[0] + ofs);
@@ -712,7 +712,7 @@ i32 CPlay::ValidateLevelTiles() {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
             i32 cy = obj->m_screenX >> 5;
             i32 cx = obj->m_screenY >> 5;
-            if ((u32)cy < gg->m_c && (u32)cx < gg->m_10) {
+            if (static_cast<u32>(cy) < gg->m_c && static_cast<u32>(cx) < gg->m_10) {
                 // poke the cell
             }
         } else if (who == (void*)0x401f0a) {

@@ -38,12 +38,12 @@ int CSpotLight::Update_0b1ee0() {
         m_60 = -(m_88 * s + m_80 * c);
         m_68 = m_80 * s - m_88 * c;
         if (m_focus) {
-            m_70 = (double)m_focus->m_screenX;
-            m_78 = (double)m_focus->m_screenY;
+            m_70 = static_cast<double>(m_focus->m_screenX);
+            m_78 = static_cast<double>(m_focus->m_screenY);
         }
         m_60 = m_70 + m_60;
         m_68 = m_78 + m_68;
-        m_90 = (double)g_frameDelta * m_58 + m_90;
+        m_90 = static_cast<double>(g_frameDelta) * m_58 + m_90;
     }
     if (g_gameReg->m_cmdGrid->m_grid[m_a0 + m_9c * 15] == 0) {
         m_prevAnimSetNode = m_objAux->m_1c;

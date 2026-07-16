@@ -445,11 +445,11 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 RVA(0x00057060, 0x6f)
 void CGrunt::ComputeFacing(double dt) {
     CGameObject* h = m_10;
-    double dx = (double)m_lastTilePxX - (double)h->m_screenX;
-    double dy = (double)m_lastTilePxY - (double)h->m_screenY;
-    m_400 = (sqrt(dx * dx + dy * dy) / (double)m_timePerTile) * dt;
-    m_408 = (double)h->m_screenX;
-    m_410 = (double)h->m_screenY;
+    double dx = static_cast<double>(m_lastTilePxX) - static_cast<double>(h->m_screenX);
+    double dy = static_cast<double>(m_lastTilePxY) - static_cast<double>(h->m_screenY);
+    m_400 = (sqrt(dx * dx + dy * dy) / static_cast<double>(m_timePerTile)) * dt;
+    m_408 = static_cast<double>(h->m_screenX);
+    m_410 = static_cast<double>(h->m_screenY);
 }
 
 SIZE_UNKNOWN(CombatItemOwner);
@@ -603,9 +603,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
             AnimWorkerObj* ni = n->m_7c;
-            ni->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
+            ni->m_bc = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             n->m_124 = 0;
-            n->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
+            n->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
             CGameObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -617,9 +617,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             e->ApplyName("LEVEL_ROLLINGBALL_EAST");
             AnimWorkerObj* ei = e->m_7c;
-            ei->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
+            ei->m_bc = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             e->m_124 = 0;
-            e->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
+            e->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
             CGameObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -631,9 +631,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
             AnimWorkerObj* si = s->m_7c;
-            si->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
+            si->m_bc = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             s->m_124 = 0;
-            s->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
+            s->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
             CGameObject* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -645,9 +645,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             w->ApplyName("LEVEL_ROLLINGBALL_WEST");
             AnimWorkerObj* wi = w->m_7c;
-            wi->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
+            wi->m_bc = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             w->m_124 = 0;
-            w->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
+            w->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
             return 1;
         }
         default:
@@ -770,7 +770,7 @@ i32 CGrunt::TryPowerupAtTile() {
     i32 tx = px >> 5;
     i32 ty = py >> 5;
     i32 flags;
-    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         flags = 1;
     } else {
         flags = ((i32*)b->m_8[ty])[tx * 7];
@@ -1097,7 +1097,7 @@ i32 CGrunt::PathScan57db0() {
                 i32 rr = row5 + dy;
                 i32 cc = col5 * 7 + dx;
                 i32 cf = 1;
-                if ((u32)rr < (u32)grid->m_height && (u32)cc < (u32)grid->m_width) {
+                if (static_cast<u32>(rr) < static_cast<u32>(grid->m_height) && static_cast<u32>(cc) < static_cast<u32>(grid->m_width)) {
                     cf = ((i32*)grid->m_8[rr])[cc];
                 }
                 if (((m_arrivalFlags | 0x20040002) & cf) & 0x20000000) {
@@ -1148,7 +1148,7 @@ RVA(0x000588f0, 0x1ea)
 void CGrunt::OnStruck(i32 wasHit) {
     m_struckTimerLo = 0xfa0;
     m_struckTimerHi = 0;
-    m_struckClockLo = (i32)g_frameTime;
+    m_struckClockLo = static_cast<i32>(g_frameTime);
     m_struckClockHi = 0;
     i32 c = ++m_struckCount;
 
@@ -1406,7 +1406,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     if (a7 == 0x3a) {
         hit = 0x64;
     } else if (this->m_gruntKind == 0x3c) {
-        hit = (i32)((float)hit * g_dtScale);
+        hit = static_cast<i32>((static_cast<float>(hit) * g_dtScale));
         if (a6 == 0) {
             CGrunt* enemy = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
             if (enemy != 0 && enemy->m_entranceCommitted != 0) {
@@ -1595,7 +1595,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         // Kill-clock-gated launch cue.
         if (cue != 0 && g_sndEnabled != 0) {
             i32 clk = g_killCueClock;
-            if ((u32)(clk - cue->m_14) >= (u32)cue->m_18) {
+            if (static_cast<u32>((clk - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
                 cue->m_14 = clk;
                 cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
             }
@@ -1676,7 +1676,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             goto L_moveDone;
         }
     } else {
-        float slope = (float)dy / dx;
+        float slope = static_cast<float>(dy) / dx;
         if (slope > g_tanC0 || slope < g_tanC1) {
             if (a5 > this->m_object->m_screenY) {
                 SETDIR(2, this->m_lastTilePxX, this->m_lastTilePxY - 0x20);
@@ -1717,10 +1717,10 @@ i32 CGrunt::LoadGruntCombatAnimations(
         i32 oxt = this->m_lastTilePxX >> 5;
         i32 oyt = this->m_lastTilePxY >> 5;
         if (!(oxt == nxt && oyt == nyt)) {
-            if ((u32)nxt >= (u32)grid->m_width) {
+            if (static_cast<u32>(nxt) >= static_cast<u32>(grid->m_width)) {
                 return 1;
             }
-            if ((u32)nyt >= (u32)grid->m_height) {
+            if (static_cast<u32>(nyt) >= static_cast<u32>(grid->m_height)) {
                 return 1;
             }
             i32* cell = grid->m_8[nyt] + nxt * 7;
@@ -1805,13 +1805,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_lastTilePxY = newY;
         this->m_prevAnimSetNode = this->m_14->m_1c;
         this->m_14->m_1c = g_buteTree.Find(s_typeO);
-        double ddx = (double)newX - this->m_object->m_screenX;
-        double ddy = (double)newY - this->m_object->m_screenY;
+        double ddx = static_cast<double>(newX) - this->m_object->m_screenX;
+        double ddy = static_cast<double>(newY) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
         u32 kb = g_buteMgr.GetDwordDef(s_gruntSec, s_knockKey, 200);
-        m_400 = dist / (double)kb;
-        m_408 = (double)(this->m_object->m_screenX);
-        m_410 = (double)(this->m_object->m_screenY);
+        m_400 = dist / static_cast<double>(kb);
+        m_408 = static_cast<double>((this->m_object->m_screenX));
+        m_410 = static_cast<double>((this->m_object->m_screenY));
 
         if (m_31c.GetCount() != 0) {
             CoordNode* node = (CoordNode*)m_31c.GetHeadPosition();
@@ -1874,7 +1874,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
-        if ((u32)tx >= (u32)bd->m_c || (u32)ty >= (u32)bd->m_10) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_c) || static_cast<u32>(ty) >= static_cast<u32>(bd->m_10)) {
             flags = 1;
         } else {
             flags = ((i32*)bd->m_8[ty])[tx * 7];
@@ -1885,9 +1885,9 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     CreateHealthSprite();
-    m_combatTimeoutLo = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
     m_combatTimeoutHi = 0;
-    m_combatClockLo = (i32)g_frameTime;
+    m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
     m_358 = 1;
 
@@ -1948,9 +1948,9 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
     m_poweredUp = 1;
     nb->CreateHealthSprite();
-    nb->m_combatTimeoutLo = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
+    nb->m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
     nb->m_combatTimeoutHi = 0;
-    nb->m_combatClockLo = (i32)g_frameTime;
+    nb->m_combatClockLo = static_cast<i32>(g_frameTime);
     nb->m_combatClockHi = 0;
     ArrivalRecycle(c, d, 1, a, b);
     m_neighborCol = a;
@@ -2003,9 +2003,9 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     m_combatActive = 1;
     CreateHealthSprite();
 
-    m_combatTimeoutLo = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
     m_combatTimeoutHi = 0;
-    m_combatClockLo = (i32)g_frameTime;
+    m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
     m_358 = 1;
     m_208 = a;

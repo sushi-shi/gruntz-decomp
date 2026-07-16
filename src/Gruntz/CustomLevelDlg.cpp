@@ -67,7 +67,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
         ((CWaitCursorApp*)AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
         return;
     }
-    i32 sel = (i32)::SendMessageA(item->m_hWnd, 0x188, 0, 0);
+    i32 sel = static_cast<i32>(::SendMessageA(item->m_hWnd, 0x188, 0, 0));
     if (sel == -1) {
         return;
     }

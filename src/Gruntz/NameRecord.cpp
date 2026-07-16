@@ -29,10 +29,10 @@ i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     if (name == 0) {
         return 0;
     }
-    if ((i32)strlen(name) > 16) {
+    if (static_cast<i32>(strlen(name)) > 16) {
         return 0;
     }
-    if (name2 != 0 && (i32)strlen(name) > 64) {
+    if (name2 != 0 && static_cast<i32>(strlen(name)) > 64) {
         return 0;
     }
     memset(&m_04, 0, 212);
@@ -55,7 +55,7 @@ i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
 RVA(0x00118130, 0x44)
 i32 CGameInfo::CopyBody(char* body) {
     if (body != 0) {
-        i32 len = (i32)strlen(body + 0x10);
+        i32 len = static_cast<i32>(strlen(body + 0x10));
         if (len > 0 && len < 16) {
             memcpy(&m_04, body, 212);
             Check1(); // 0x1182f0 (same +0x08 ready flag)

@@ -120,9 +120,9 @@ i32 CFecFile::ReadArchive(const char* name) {
         }
         m_index.Add(tail);
 
-        for (u16 i = 1; i < (u32)m_14; i++) {
+        for (u16 i = 1; i < static_cast<u32>(m_14); i++) {
             i32 stride = m_entry.m_payloadLen;
-            if (m_stream.Seek(stride, 1) != (i32)m_index.GetData()[i - 1] + stride) {
+            if (m_stream.Seek(stride, 1) != static_cast<i32>(m_index.GetData()[i - 1]) + stride) {
                 goto fail;
             }
             memset(&m_entry, 0, 0x10c);
@@ -131,10 +131,10 @@ i32 CFecFile::ReadArchive(const char* name) {
             }
             i32 w2 = m_entry.m_scramble;
             if (m_stream.Seek(w2 - 0x2b8, 1)
-                != (i32)m_index.GetData()[i - 1] + stride + w2 - 0x1ac) {
+                != static_cast<i32>(m_index.GetData()[i - 1]) + stride + w2 - 0x1ac) {
                 goto fail;
             }
-            m_index.Add((i32)m_index.GetData()[i - 1] + stride + w2 - 0x1ac);
+            m_index.Add(static_cast<i32>(m_index.GetData()[i - 1]) + stride + w2 - 0x1ac);
         }
     }
     return 1;
@@ -150,7 +150,7 @@ fail:
 // (== CMovieDecodeStore::OpenB.)
 RVA(0x0017b840, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
-    if (m_04 && m_00 && idx <= (u32)m_14 && idx != 0) {
+    if (m_04 && m_00 && idx <= static_cast<u32>(m_14) && idx != 0) {
         i32* slot = (i32*)&m_index.GetData()[idx - 1];
         if (m_stream.Seek(*slot, 0) == *slot) {
             return m_stream.m_hFile; // +0x128 - the Win32 file HANDLE
@@ -222,7 +222,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 
     memset(&m_entry, 0, 0x10c);
     m_entry.m_index = m_134;
-    m_entry.m_nameLen = (u16)base.GetLength();
+    m_entry.m_nameLen = static_cast<u16>(base.GetLength());
 
     char* enc = (char*)operator new(base.GetLength() + 1);
     FecEncode(base, enc);
@@ -232,11 +232,11 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     if (base.GetLength() < 0x100) {
         char* p = m_entry.m_name + base.GetLength();
         for (i32 c = 0x100 - base.GetLength(); c != 0; c--) {
-            *p++ = (char)(rand() % 0xff);
+            *p++ = static_cast<char>((rand() % 0xff));
         }
     }
 
-    m_entry.m_scramble = (u16)(rand() % 0x400 + 0x2b8);
+    m_entry.m_scramble = static_cast<u16>((rand() % 0x400 + 0x2b8));
     m_entry.m_payloadLen = file.Seek(0, 2);
     if (file.Seek(0, 0) != 0) {
         m_134--;
@@ -248,7 +248,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 
     char* pad = (char*)operator new(m_entry.m_scramble - 0x2b8);
     for (i32 i = 0; i < m_entry.m_scramble - 0x2b8; i++) {
-        pad[i] = (char)(rand() % 0xff);
+        pad[i] = static_cast<char>((rand() % 0xff));
     }
     m_stream.Write(pad, m_entry.m_scramble - 0x2b8);
     operator delete(pad);
@@ -269,13 +269,13 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
             return 0;
         }
         u32 chunk = 0x8000;
-        if (copied + 0x8000 > (u32)m_entry.m_payloadLen) {
+        if (copied + 0x8000 > static_cast<u32>(m_entry.m_payloadLen)) {
             chunk = m_entry.m_payloadLen - copied;
         }
         file.Read(m_14c, chunk);
         m_stream.Write(m_14c, chunk);
         copied += chunk;
-        if (copied == (u32)m_entry.m_payloadLen) {
+        if (copied == static_cast<u32>(m_entry.m_payloadLen)) {
             done = 1;
         }
     }
@@ -320,7 +320,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     CFile file;
     m_stream.Seek(0xf, 0);
 
-    for (u16 i = 0; i < (u32)m_14; i++) {
+    for (u16 i = 0; i < static_cast<u32>(m_14); i++) {
         if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
             goto fail;
         }
@@ -329,7 +329,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
         if (file.Open(decoded, 0x1002, 0) == 0) {
             goto fail;
         }
-        if (m_stream.Seek((i32)m_index.GetData()[i], 0) != (i32)m_index.GetData()[i]) {
+        if (m_stream.Seek(static_cast<i32>(m_index.GetData()[i]), 0) != static_cast<i32>(m_index.GetData()[i])) {
             goto fail;
         }
         u32 copied = 0;
@@ -354,7 +354,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             m_stream.Read(m_14c, chunk);
             file.Write(m_14c, chunk);
             copied += chunk;
-            if (copied == (u32)m_entry.m_payloadLen) {
+            if (copied == static_cast<u32>(m_entry.m_payloadLen)) {
                 done = 1;
             }
         }

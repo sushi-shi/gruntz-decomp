@@ -124,7 +124,7 @@ static void GruntScratchTeardown();
 
 // Read the tile-flag word at board cell (tx, ty); out-of-bounds -> 1 (blocking).
 static __inline i32 s_TileFlags(CTileGrid* b, i32 tx, i32 ty) {
-    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         return 1;
     }
     return ((i32*)b->m_8[ty])[tx * 7];
@@ -273,10 +273,10 @@ void CGrunt::FinalizeStep(i32 arg) {
         char* cell = (char*)&m_cells[base];
         double d48 = *(double*)(cell + 0x48);
         double d50 = *(double*)(cell + 0x50);
-        m_408 = (double)(i64)(u32)g_frameDelta * d48 * m_400 + m_408;
-        m_410 = (double)(i64)(u32)g_frameDelta * d50 * m_400 + m_410;
-        i32 nx = (i32)(*(double*)(cell + 0x58) + m_408);
-        i32 ny = (i32)(*(double*)(cell + 0x60) + m_410);
+        m_408 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d48 * m_400 + m_408;
+        m_410 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d50 * m_400 + m_410;
+        i32 nx = static_cast<i32>((*(double*)(cell + 0x58) + m_408));
+        i32 ny = static_cast<i32>((*(double*)(cell + 0x60) + m_410));
         if ((d48 > s_fpZero && nx > m_lastTilePxX) || (d48 < s_fpZero && nx < m_lastTilePxX)) {
             nx = m_lastTilePxX;
         }
@@ -305,10 +305,10 @@ void CGrunt::FinalizeStep(i32 arg) {
         char* cell = (char*)&m_cells[base];
         double d48 = *(double*)(cell + 0x48);
         double d50 = *(double*)(cell + 0x50);
-        m_408 = (double)(i64)(u32)g_frameDelta * d48 * m_400 + m_408;
-        m_410 = (double)(i64)(u32)g_frameDelta * d50 * m_400 + m_410;
-        i32 nx = (i32)(*(double*)(cell + 0x58) + m_408);
-        i32 ny = (i32)(*(double*)(cell + 0x60) + m_410);
+        m_408 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d48 * m_400 + m_408;
+        m_410 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d50 * m_400 + m_410;
+        i32 nx = static_cast<i32>((*(double*)(cell + 0x58) + m_408));
+        i32 ny = static_cast<i32>((*(double*)(cell + 0x60) + m_410));
         if ((d48 > s_fpZero && nx > m_lastTilePxX) || (d48 < s_fpZero && nx < m_lastTilePxX)) {
             nx = m_lastTilePxX;
         }
@@ -384,7 +384,7 @@ i32 CGrunt::UpdateGruntStatus() {
         return 0;
     }
 
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
     if (m_stamina >= 0x64) {
         if (m_neighborValid == 0) {
@@ -474,9 +474,9 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     CreateHealthSprite();
 
-    m_combatTimeoutLo = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
     m_combatTimeoutHi = 0;
-    m_combatClockLo = (i32)g_frameTime;
+    m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
 
     {
@@ -726,7 +726,7 @@ i32 CGrunt::StepAttackFire() {
         }
         m_attackDowntimeLo = dt;
         m_attackDowntimeHi = 0;
-        m_860 = (i32)g_frameTime;
+        m_860 = static_cast<i32>(g_frameTime);
         m_864 = 0;
         m_lowStaminaCued = 0;
         m_stamina = 0; // stamina drains fully at each attack
@@ -886,9 +886,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             return 0;
         } else {
             DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
-            m_toyDurationLo = (i32)tt;
+            m_toyDurationLo = static_cast<i32>(tt);
             m_toyDurationHi = 0;
-            m_toyClockLo = (i32)g_frameTime;
+            m_toyClockLo = static_cast<i32>(g_frameTime);
             m_toyClockHi = 0;
             m_toyTime = 0x64;
             CreateToyTimeSprite();
@@ -916,9 +916,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_154->ApplyName(nm);
 
         DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
-        m_idleDelayLo = (i32)(tt >> 1);
+        m_idleDelayLo = static_cast<i32>((tt >> 1));
         m_idleDelayHi = 0;
-        m_idleAnchorLo = (i32)g_frameTime;
+        m_idleAnchorLo = static_cast<i32>(g_frameTime);
         m_idleAnchorHi = 0;
         return 0;
     }
@@ -938,8 +938,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     // against the elapsed toy timer (m_toyClockLo/m_toyClockHi - clock), then re-stamp on change.
     i32 t0 = *(i32*)((char*)m_poseToy1 + 0x24);
     i32 t1 = *(i32*)((char*)m_poseToy2 + 0x24);
-    i64 elapsed = *(i64*)&m_toyClockLo - (i64)(u32)g_frameTime;
-    i32 cap = (i32)elapsed;
+    i64 elapsed = *(i64*)&m_toyClockLo - static_cast<i64>(static_cast<u32>(g_frameTime));
+    i32 cap = static_cast<i32>(elapsed);
     if (elapsed < 0) {
         cap = 0;
     }
@@ -1006,7 +1006,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 // coord list / update the arrival.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
-    i32 ready = m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    i32 ready = m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         if (m_arrived != 0) {
@@ -1023,7 +1023,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
-        if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
             flags = ((i32*)grid->m_8[ty])[tx * 7];
@@ -1042,7 +1042,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         return 0;
     }
     // sub-player armed-but-still-running: the toy-break timer path.
-    i64 diff = (i64)(u32)g_frameTime - *(i64*)&m_toyClockLo;
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_toyClockLo;
     if (diff >= *(i64*)&m_toyDurationLo && m_entranceStamped == 0 && ready == 1) {
         if (m_toyTimeSprite != 0) {
             m_toyTimeSprite->m_flags |= 0x10000;
@@ -1101,9 +1101,9 @@ i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2
     // Top edge (y = p->m_4): straddle in y, interpolate x.
     i32 py = p->m_4;
     if ((e1y < py) != (e2y < py)) {
-        float t = (float)(py - e1y) / (float)(e2y - e1y);
-        float ix = (float)e1->m_0 + t * (float)(e2->m_0 - e1->m_0);
-        if ((float)p->m_0 <= ix && ix <= (float)p->m_8) {
+        float t = static_cast<float>((py - e1y)) / static_cast<float>((e2y - e1y));
+        float ix = static_cast<float>(e1->m_0) + t * static_cast<float>((e2->m_0 - e1->m_0));
+        if (static_cast<float>(p->m_0) <= ix && ix <= static_cast<float>(p->m_8)) {
             return 1;
         }
     }
@@ -1111,9 +1111,9 @@ i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2
     // Bottom edge (y = p->m_c).
     i32 pyc = p->m_c;
     if ((e1y < pyc) != (e2y < pyc)) {
-        float t = (float)(pyc - e1y) / (float)(e2y - e1y);
-        float ix = (float)e1->m_0 + t * (float)(e2->m_0 - e1->m_0);
-        if ((float)p->m_0 <= ix && ix <= (float)p->m_8) {
+        float t = static_cast<float>((pyc - e1y)) / static_cast<float>((e2y - e1y));
+        float ix = static_cast<float>(e1->m_0) + t * static_cast<float>((e2->m_0 - e1->m_0));
+        if (static_cast<float>(p->m_0) <= ix && ix <= static_cast<float>(p->m_8)) {
             return 1;
         }
     }
@@ -1123,9 +1123,9 @@ i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2
     i32 e2x = e2->m_0;
     i32 px = p->m_0;
     if ((e1x > px) != (e2x > px)) {
-        float t = (float)(e2x - px) / (float)(e2x - e1x);
-        float iy = (float)e1y + t * (float)(e2y - e1y);
-        if ((float)p->m_4 <= iy && iy <= (float)p->m_c) {
+        float t = static_cast<float>((e2x - px)) / static_cast<float>((e2x - e1x));
+        float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
+        if (static_cast<float>(p->m_4) <= iy && iy <= static_cast<float>(p->m_c)) {
             return 1;
         }
     }
@@ -1133,9 +1133,9 @@ i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2
     // Right edge (x = p->m_8).
     i32 pxr = p->m_8;
     if ((e1x > pxr) != (e2x > pxr)) {
-        float t = (float)(e2x - pxr) / (float)(e2x - e1x);
-        float iy = (float)e1y + t * (float)(e2y - e1y);
-        if ((float)p->m_4 <= iy && iy <= (float)p->m_c) {
+        float t = static_cast<float>((e2x - pxr)) / static_cast<float>((e2x - e1x));
+        float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
+        if (static_cast<float>(p->m_4) <= iy && iy <= static_cast<float>(p->m_c)) {
             return 1;
         }
     }
@@ -1180,12 +1180,12 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_154->m_1a0.Setup_15c2d0(m_poseIdle[0]);
         m_idleWindowLo = 0x3a98;
         m_idleWindowHi = 0;
-        m_idleTimerLo = (i32)g_frameTime;
+        m_idleTimerLo = static_cast<i32>(g_frameTime);
         m_idleTimerHi = 0;
-        i32 n = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530) + 1;
+        i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
         m_idleDelayLo = GruntRand() % n + 0x7530;
         m_idleDelayHi = 0;
-        m_idleAnchorLo = (i32)g_frameTime;
+        m_idleAnchorLo = static_cast<i32>(g_frameTime);
         m_idleAnchorHi = 0;
         applied = 1;
     } else if (m_poseIdle[1] == 0) {
@@ -1200,11 +1200,11 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_prevEntranceDesc = m_154->m_1a0.m_14;
         m_154->m_1a0.Setup_15c2d0(m_poseIdle[0]);
         {
-            i32 d = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530);
+            i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
             m_idleDelayLo = GruntRand() % (d - 0x4e1f) + 0x4e20;
             m_idleDelayHi = 0;
-            m_idleAnchorLo = (i32)g_frameTime;
+            m_idleAnchorLo = static_cast<i32>(g_frameTime);
             m_idleAnchorHi = 0;
         }
     } else {
@@ -1323,7 +1323,7 @@ void CGrunt::ResolveEntranceArrival() {
         i32 tx = m_10->m_screenX >> 5;
         i32 ty = m_10->m_screenY >> 5;
         i32 flags;
-        if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
             flags = ((i32*)grid->m_8[ty])[tx * 7];
@@ -1333,9 +1333,9 @@ void CGrunt::ResolveEntranceArrival() {
         }
     }
 
-    i32 ready = m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    i32 ready = m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if ((i64)(u32)g_frameTime - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
         CGameRegistry* g = g_gameReg;
         i32 mode = g->m_134;
         if (mode != 1) {
@@ -1389,7 +1389,7 @@ tail:
         }
         return;
     }
-    if ((i64)(u32)g_frameTime - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo && ready == 1) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo && ready == 1) {
         ResetEntranceAnimation(0, 1, 1);
     }
 }
@@ -1419,7 +1419,7 @@ i32 CGrunt::StepEntranceReinit() {
     // the running game clock.
     m_8c8 = 0x7530;
     m_8cc = 0;
-    m_8c0 = (i32)g_frameTime;
+    m_8c0 = static_cast<i32>(g_frameTime);
     m_8c4 = 0;
     m_358 = 0;
 
@@ -1452,7 +1452,7 @@ i32 CGrunt::StepEntranceReinit() {
     GruntCoord* co = (GruntCoord*)m_31c.GetHead();
     CTileGrid* b = g_gameReg->m_tileGrid;
     i32 flag;
-    if ((u32)co->m_x >= (u32)b->m_c || (u32)co->m_y >= (u32)b->m_10) {
+    if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_c) || static_cast<u32>(co->m_y) >= static_cast<u32>(b->m_10)) {
         flag = 1;
     } else {
         flag = ((i32*)b->m_8[co->m_y])[co->m_x * 7];
@@ -1467,7 +1467,7 @@ i32 CGrunt::StepEntranceReinit() {
         i32 tx = m_10->m_screenX >> 5;
         i32 ty = m_10->m_screenY >> 5;
         i32 flag2;
-        if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
             flag2 = 1;
         } else {
             flag2 = ((i32*)b->m_8[ty])[tx * 7];
@@ -1506,11 +1506,11 @@ i32 CGrunt::StepEntranceReinit() {
 // cue operands. Correct shape + control flow; a codegen wall.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
-    i64 diff = (i64)(u32)g_frameTime - *(i64*)&m_8c0;
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_8c0;
     u32 elapsed;
     if (diff >= 0) {
-        elapsed = (u32)diff;
+        elapsed = static_cast<u32>(diff);
     } else {
         elapsed = 0;
     }
@@ -1544,7 +1544,7 @@ i32 CGrunt::StepArrivalReroll() {
             x = g_randSeed;
         }
         g_randSeed = x * 214013 + 2531011;
-        v = (((i32)g_randSeed >> 16) & 0x7fff) % range + elapsed;
+        v = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % range + elapsed;
     }
     if (v <= 0x7148) {
         return 0;
@@ -1557,7 +1557,7 @@ i32 CGrunt::StepArrivalReroll() {
         x2 = g_randSeed;
     }
     g_randSeed = x2 * 214013 + 2531011;
-    i32 pick = (((i32)g_randSeed >> 16) & 0x7fff) % 0x65;
+    i32 pick = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x65;
     CGameObject* h = m_10;
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;
@@ -1632,7 +1632,7 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 // (the documented regalloc tail).
 RVA(0x00063db0, 0x32f)
 void CGrunt::LoadVehicleGruntAnimations() {
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
     CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
@@ -1650,7 +1650,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
-        if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
             flags = 1;
         } else {
             flags = ((i32*)grid->m_8[ty])[tx * 7];
@@ -1662,7 +1662,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         return;
     }
 
-    i64 elapsed = (i64)(u64)g_frameTime - *(i64*)&m_toyClockLo;
+    i64 elapsed = static_cast<i64>(static_cast<u64>(g_frameTime)) - *(i64*)&m_toyClockLo;
     if (elapsed >= *(i64*)&m_toyDurationLo) {
         if (m_entranceStamped == 0 && m_10->m_screenX == m_lastTilePxX
             && m_10->m_screenY == m_lastTilePxY) {
@@ -1695,7 +1695,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         return;
     }
 
-    i64 elapsed2 = (i64)(u64)g_frameTime - *(i64*)&m_idleAnchorLo;
+    i64 elapsed2 = static_cast<i64>(static_cast<u64>(g_frameTime)) - *(i64*)&m_idleAnchorLo;
     if (elapsed2 >= *(i64*)&m_idleDelayLo) {
         CGameObject* h = m_10;
         CGameRegistry* g = g_gameReg;
@@ -2020,7 +2020,7 @@ tail:
     UpdateCombatTimer();
     m_combatTimeoutLo = g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
     m_combatTimeoutHi = 0;
-    m_combatClockLo = (i32)g_frameTime;
+    m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
     if (m_10->m_screenX != m_lastTilePxX || m_10->m_screenY != m_lastTilePxY) {
         OnTileMismatch(1);
@@ -2107,7 +2107,7 @@ tail:
 // reset the geometry.
 RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
@@ -2123,7 +2123,7 @@ i32 CGrunt::StepArrivalCommitA() {
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 flags;
-    if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         flags = 1;
     } else {
         flags = ((i32*)grid->m_8[ty])[tx * 7];
@@ -2154,7 +2154,7 @@ i32 CGrunt::StepArrivalCommitA() {
 RVA(0x000654b0, 0x130)
 i32 CGrunt::StepArrivalCommitB() {
     // 0x15c360 is CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
-    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
@@ -2174,7 +2174,7 @@ i32 CGrunt::StepArrivalCommitB() {
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 flags;
-    if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         flags = 1;
     } else {
         flags = ((i32*)grid->m_8[ty])[tx * 7];
@@ -2368,7 +2368,7 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
 // PlaceAt / cue operands. A register-allocation/scheduling wall, not a shape error.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
-    i32 ready = m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    i32 ready = m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     if (ready > 0) {
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -2397,7 +2397,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 f1;
-    if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         f1 = 1;
     } else {
         f1 = ((i32*)grid->m_8[ty])[tx * 7];
@@ -2408,7 +2408,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     grid = g->m_tileGrid;
     void* cellObj;
-    if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_c) || static_cast<u32>(ty) >= static_cast<u32>(grid->m_10)) {
         cellObj = 0;
     } else {
         cellObj = (void*)((i32*)grid->m_8[ty])[tx * 7 + 2];
@@ -2430,7 +2430,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         return 0;
     }
     grid = g_gameReg->m_tileGrid;
-    if ((u32)tx < (u32)grid->m_c && (u32)ty < (u32)grid->m_10) {
+    if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c) && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
         ((i32*)grid->m_8[ty])[tx * 7 + 2] = 0;
         ((i32*)grid->m_8[ty])[tx * 7] &= ~0x40000;
     }

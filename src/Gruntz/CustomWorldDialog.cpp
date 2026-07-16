@@ -474,11 +474,11 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     if (!hList) {
         return 0;
     }
-    i32 sel = (i32)SendMessageA(hList, 0x188 /*LB_GETCURSEL*/, 0, 0);
+    i32 sel = static_cast<i32>(SendMessageA(hList, 0x188 /*LB_GETCURSEL*/, 0, 0));
     if (sel == -1) {
         return 0;
     }
-    if ((i32)SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, (LPARAM)szLevel) == -1) {
+    if (static_cast<i32>(SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, (LPARAM)szLevel)) == -1) {
         return 0;
     }
     g_levelStr = szLevel;

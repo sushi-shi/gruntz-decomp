@@ -202,8 +202,8 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
             }
             // apply the (optionally parallax-scaled) coords to the main plane + recompute.
             CLevelPlane* mg = gh->m_mainPlane;
-            float fx = (float)curX;
-            float fy = (float)curY;
+            float fx = static_cast<float>(curX);
+            float fy = static_cast<float>(curY);
             if (!(mg->m_flags & 1)) {
                 fx *= mg->m_scaleX;
                 fy *= mg->m_scaleY;
@@ -215,8 +215,8 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
             // the element cast is the devs' own - CObArray stores CObject*).
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
                 CLevelPlane* p = (CLevelPlane*)gh->m_planes[i];
-                float px = (float)curX;
-                float py = (float)curY;
+                float px = static_cast<float>(curX);
+                float py = static_cast<float>(curY);
                 if (!(p->m_flags & 1)) {
                     px *= p->m_scaleX;
                     py *= p->m_scaleY;

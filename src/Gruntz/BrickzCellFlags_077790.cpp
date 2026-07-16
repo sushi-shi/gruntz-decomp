@@ -59,7 +59,7 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     }
     i32 id = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
     i32 typeCode;
-    if (id == (i32)0xeeeeeeee || id == -1) {
+    if (id == static_cast<i32>(0xeeeeeeee) || id == -1) {
         typeCode = 0;
     } else {
         typeCode = ((CTileImageSet*)level->m_imageSets.GetAt(id & 0xffff))->GetCollisionAt(0, 0);
@@ -170,13 +170,13 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     cell->m_c = id3;
     cell->m_10 = typeCode;
     // 8-neighbour edge-update walk over the 3x3 block around (x,y).
-    i32 colCount = (i32)m_width;
+    i32 colCount = static_cast<i32>(m_width);
     for (i32 r = y - 1; r <= y + 1; r++) {
-        if (r < 0 || (u32)r >= (u32)m_height) {
+        if (r < 0 || static_cast<u32>(r) >= static_cast<u32>(m_height)) {
             continue;
         }
         for (i32 c = x - 1; c <= x + 1; c++) {
-            if (c < 0 || (u32)c >= (u32)m_width) {
+            if (c < 0 || static_cast<u32>(c) >= static_cast<u32>(m_width)) {
                 continue;
             }
             BrickzCell* nc = &m_rows[r][c];
@@ -185,7 +185,7 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
                 continue;
             }
             BrickzCell* up = (r != 0) ? nc - colCount : 0;
-            BrickzCell* down = (r < (i32)m_height - 1) ? nc + colCount : 0;
+            BrickzCell* down = (r < static_cast<i32>(m_height) - 1) ? nc + colCount : 0;
             BrickzCell* right = (c < colCount - 1) ? nc + 1 : 0;
             BrickzCell* left = (c != 0) ? nc - 1 : 0;
             BrickzCell* ur = (up && right) ? up + 1 : 0;

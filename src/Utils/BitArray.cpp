@@ -12,7 +12,7 @@ RVA(0x00193640, 0x40)
 zBitVec* zBitVec::SetBit(u32 idx) {
     if (EnsureSize(idx + 1)) {
         i32* p;
-        if ((u32)m_capacity > 0x20) {
+        if (static_cast<u32>(m_capacity) > 0x20) {
             p = (i32*)m_words;
         } else {
             p = (i32*)&m_words;
