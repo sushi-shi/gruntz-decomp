@@ -137,6 +137,10 @@ METRICS = (
     (")m_ casts", _count_nonstring_m_casts, False),  # string-cast-excluded; ratcheted
     ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
     ("(const char*) casts", re.compile(r"\(const char ?\*\)"), False),
+    # reinterpret_cast<CFoo*>(m_x) on a member -> a class-pointer reinterpret is a LAUNDER-SUSPECT:
+    # the doctrine fix is to RETYPE the member (cast vanishes + void* m_ drops), not wrap it. Capital-
+    # initial target excludes genuine u8*/u16*/void* buffer reinterprets. Ratcheted; drive via drivers.
+    ("reinterpret_cast<class*>(m_)", re.compile(r"reinterpret_cast<\s*[A-Z]\w*\s*\*+\s*>\(m_[A-Za-z0-9_]"), False),
     # C-style NUMERIC/math value casts -> static_cast<T>(...) (byte-neutral; un-matches this regex).
     ("C-style numeric casts",
      re.compile(r"\((?:i8|i16|i32|i64|u8|u16|u32|u64|float|double|char|short|int|long|unsigned)\)"), False),
@@ -156,7 +160,7 @@ METRICS = (
 # casts, ...) still count everywhere and are tracked, not ratcheted.
 _VIEW_METRICS = {"placeholder classes", ".cpp-local views", "placeholder vtable slots",
                  "*Vtbl structs", "->vtbl accesses", "g_*Vtbl globals", "m_vtbl/m_vptr members",
-                 ")this casts", ")m_ casts"}
+                 ")this casts", ")m_ casts", "reinterpret_cast<class*>(m_)"}
 
 
 def _is_scaffolding(path) -> bool:
