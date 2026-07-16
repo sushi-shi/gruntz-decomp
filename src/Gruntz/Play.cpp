@@ -107,7 +107,7 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/SpriteRefTable.h>   // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
-#include <Gruntz/GruntzPlayer.h>     // the per-player slot record (its TU folded here, wave3-J)
+#include <Gruntz/GruntzPlayer.h>     // the per-player slot record
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE (the wide-object family base)
 #include <Gruntz/Grunt.h>            // CGrunt (Load @0xd8060 folds here per the 0xd5960 dossier)
 #include <Gruntz/SerialArchive.h>    // the shared archive stream (GruntzPlayer::Serialize)
@@ -117,19 +117,17 @@
 #include <DDrawMgr/DDSurface.h>          // the real CDDSurface (render-flip surface: Fill/Restore)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (m_beginMarker: Serialize/FilterList2)
 #include <Gruntz/LevelSync.h>            // CLevelSync (the +0x2dc guts child-sync @0x1084d0)
-#include <Gruntz/UserLogic.h> // CGameObject/AnimWorkerObj (entity views dissolved onto them)
+#include <Gruntz/UserLogic.h> // CGameObject/AnimWorkerObj
 
 // The zoned sound-bank manager (CGruntzMgr::m_sound); RegionEnter/RegionLeave pause +
 // resume the currently-playing zoned sound via its real (named) methods.
 #include <Dsndmgr/GruntzSoundZ.h>
-// The real owners of the ex-`Eng` conflation (see the note below): each was reached by
-// casting a pointer to a fabricated `Eng` and calling a fabricated method on it.
-#include <Gruntz/Multi.h>       // CMulti::AckJoinFailure  (was Eng::Teardown)
-#include <Gruntz/CBrickz.h>     // CBrickz::LoadAttributes (was Eng::LoadAttributes)
+#include <Gruntz/Multi.h>       // CMulti::AckJoinFailure
+#include <Gruntz/CBrickz.h>     // CBrickz::LoadAttributes
 #include <Gruntz/Brickz.h>      // CBrickzGrid::UpdateDiagonals
 #include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse
-#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize_1633e0 (the plane/grid-owner; ex a CImageSet3 mis-attribution)
-#include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2::ReadAll (was Eng::HideMenu)
+#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize_1633e0 (the plane/grid-owner)
+#include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2::ReadAll
 #include <Globals.h>
 
 // Placement new: the team-slot "reset" at 0x40a7 is retail RE-CONSTRUCTING a GruntzPlayer
@@ -773,12 +771,11 @@ alt2:
 // CPlay::OnExit (0x0cb400) - the PLAY-state teardown: run the ready-gate forwarder,
 // the slot-21 notify, refresh renderer A, then clear the registry's per-frame word
 // (+0x128), drop its mode back to 0 if it was 3, and run the +0x70 tile grid's
-// slot-0 Reset (CMapMgr's real virtual @0x9ec30). (The former CRegExit view of the
+// slot-0 Reset (CMapMgr's real virtual @0x9ec30).
 // ===========================================================================
 // ===========================================================================
-// CPlayLevelLoad::LoadByMode (0x0ca200; re-homed from the former loadlevelbymode unit,
-// waveP - TU_MIGRATION MOVE row `0x0ca200 LoadByMode@CPlayLevelLoad loadlevelbymode ->
-// 0xc8700 play`). The PLAY game-state per-mode level loader (/GX megafunction).
+// CPlayLevelLoad::LoadByMode (0x0ca200). The PLAY game-state per-mode level loader
+// (/GX megafunction).
 // `this` IS the canonical CPlay; CPlayLevelLoad here is a thin CPlay-derived facet
 // (LoadByMode not yet on Play.h - a DEFERRED cross-TU fold onto CPlay, reported). g_curPlayer
 // / g_emptyString reuse Play.h's decls.
@@ -815,7 +812,7 @@ extern "C" void* g_inputMgr; // DAT_00645570
 // g_frameTicks (0x24558c) comes from <Rez/FrameClock.h>.
 extern "C" i32 g_playActive; // DAT_0064e35c
 // (0x612618 - the last-loaded level number, init -1 - is DEFINED below as
-// g_lastLevelNum; the old `void* g_lastLevelCache` view here was the same cell.)
+// g_lastLevelNum.)
 // 0x61139c: the CAreaMgr singleton pointer, statically initialized to &g_areaMgr
 // (retail .data holds VA 0x6459b0 = the g_areaMgr object AreaMgr.cpp defines).
 // Owner-TU definition here (play is its only referencing unit).
@@ -1691,9 +1688,7 @@ void CPlay::PostSetup(void* dc) {
 }
 
 // ===========================================================================
-// CPlay::SyncState  (0x0d7520; re-homed from the former playsync unit, waveP - its
-// retail birth position is inside THIS TU's 0xd5960 interval, TU_MIGRATION MOVE row
-// `0x0d7520 SyncState@CPlay playsync -> 0xd5960 play`). The play-state serialize/
+// CPlay::SyncState  (0x0d7520). The play-state serialize/
 // round-trip: bail on a null archive, run the header serialize, a mode pre-step
 // (4=write, 7=read, 8=re-init ambient cue), then round-trip a sequence of 64-bit
 // timer blocks (mode 4 -> Write vtbl[0x30], mode 7 -> Read vtbl[0x2c]) interleaved
@@ -1795,9 +1790,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
 #undef SYNC_PAIR
 
 // ===========================================================================
-// CArchiveLoadRec::Load (0x0d79d0; re-homed from the former streamrecordloaders unit,
-// waveP - TU_MIGRATION MOVE row `0x0d79d0 Load@CArchiveLoadRec streamrecordloaders ->
-// 0xd5960 play`). The CArchive-store / CString-default flavor of the record
+// CArchiveLoadRec::Load (0x0d79d0). The CArchive-store / CString-default flavor of the record
 // serializer: a larger record streamed through the shared CSerialArchive's +0x30 slot
 // (Write). __thiscall, ret 4; returns 0 when the archive or the bound manager (m_c) is
 // absent, else 1. NB the CArchiveLoadRec::Load method name is the recovered-symbol
@@ -1958,7 +1951,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
 
 // ===========================================================================
 // CPlay::SyncRead2f7c (0x0d8060) - the mode-7 (read) play-state serializer, the
-// symmetric inverse of SyncWrite19fb above. OWNER SETTLED (2026-07-15): retail's
+// symmetric inverse of SyncWrite19fb above. Retail's
 // CPlay::SyncState (0xd7520, 100% EXACT) calls it `mov ecx,edi(=this); push ar`
 // through thunk 0x2f7c, and BroadcastCmd hands SyncState the play state from
 // PickPlayOrPausedState (thunk 0x355d -> 0x92990) - the receiver is the PLAY
@@ -2792,7 +2785,7 @@ i32 CPlay::DrawWorldFrames() {
                 now,
                 dt,
                 accum
-            ); // 0x3404 -> @0x8f7b0 (retail ecx=m_4; the old m_68 this was fake)
+            ); // 0x3404 -> @0x8f7b0 (retail ecx=m_4)
             if (i > 0 && i < last) {
                 if (m_c->m_level->m_mainPlane != 0) {
                     m_c->m_level->m_mainPlane->CenterScrollB();
@@ -3943,10 +3936,8 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
 }
 
 // ===========================================================================
-// CPlay::HandleMousePress (0x0ce660; re-homed from the former gamemousehandler unit,
-// waveP - vtable slot 16 / +0x40 of the CPlay/CMulti/CDemo state vtables, mouse
-// sibling of the keyboard dispatcher; TU_MIGRATION MOVE row `0x0ce660 HandleMousePress
-// @CPlay gamemousehandler -> 0xcdb10 play`). The status-bar sub-objects it reaches
+// CPlay::HandleMousePress (0x0ce660; vtable slot 16 / +0x40 of the CPlay/CMulti/CDemo
+// state vtables, mouse sibling of the keyboard dispatcher). The status-bar sub-objects it reaches
 // are modeled minimally as this-facet views; only offsets / code bytes load-bearing,
 // every helper reloc-masked external.
 // ===========================================================================
@@ -4302,7 +4293,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
 // HudStrip pushes + the __ftol column math are byte-faithful; the counter>=0x37 cap
 // branch merges into the trailing-cap tail via a shared landing pad the C if/else
 // can't reproduce 1:1, and the x87 fmul/fild ordering diverges. ~68%.
-// NB retail rets 0x4 - the old no-arg decl DROPPED the `final` parameter (every
+// NB retail rets 0x4 (every
 // caller pushes 0; LoadByMode's finale pushes 1). The strip blit is LayerBlitFrame
 // (thunk 0x18ca -> 0x115300); retail also runs 2x an 0x11f570 leaf this
 // reconstruction still lacks (final-sweep item).
@@ -5002,7 +4993,7 @@ i32 CPlay::ResumeGame() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0cef50 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). Teardown:
+// 0x0cef50. Teardown:
 // empty the +0x04 owner's +0xc8 CString; when +0x1c0 is live, run the +0x0c
 // worker-mgr close (Method_158d20 -> Method_158e40) and dispatch the manager's
 // ChangeState(3). Returns 1. Uses this TU's real CDDrawSubMgrPages/CGruntzMgr.
@@ -5602,8 +5593,8 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 // in-place (declaration order preserved) rather than at the top so the fold stays
 // codegen-neutral for this TU.
 #include <Gruntz/BankMgr.h>
-// (0xfa8f0 is CState::RetireScene - inherited by CPlay; the former local CSoundFxEmitter
-// (0xfa150 cleanup is CGameModeBase::BaseCleanup - reached via the CState<->CGameModeBase
+// (0xfa8f0 is CState::RetireScene - inherited by CPlay.
+// 0xfa150 cleanup is CGameModeBase::BaseCleanup - reached via the CState<->CGameModeBase
 // reinterpret at offset 0, the same pattern CState.h uses; no local view needed.)
 // The loader family reaches its resource state directly through `this` (a CPlay):
 // the bank manager (CState::m_8), the level/GRUNTZ/GAME banks (CState::m_levelBank/
@@ -5685,7 +5676,7 @@ DATA(0x00213054)
 char g_dat613054[8] = "ANIZ";
 
 // ---------------------------------------------------------------------------
-// 0x0db750 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). "LEVEL"
+// 0x0db750. "LEVEL"
 // config sync through the +0x0c owner's +0x2c config leaf (the 0x152xxx registry
 // API - distinct from this TU's 0x157xxx CDDrawSubMgrLeafScan). @orphan (owner
 // unrecovered; the 0x152xxx leaf + symtab kept as unique local views).
@@ -5977,10 +5968,8 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     return 1;
 }
 // ===========================================================================
-// CState::BuildAssetNamespacePrefixes (0x0dca70; re-homed from the former
-// assetnamespaceprefixes unit, waveP - TU_MIGRATION MOVE row `0x0dca70 -> 0xd5960 play`).
-// The GRUNTZ_ per-object asset-namespace loader (/GX), a base game-state method: the
-// ex-`CNamespaceLoader` view was this method wearing a fake-view owner (RTTI proves
+// CState::BuildAssetNamespacePrefixes (0x0dca70).
+// The GRUNTZ_ per-object asset-namespace loader (/GX), a base game-state method (RTTI proves
 // CState is a root and CPlay's only base is CState). m_c is CState::m_c, m_gruntzBank
 // the CState symbol bank. The three worker-registry views (m_c->m_imageRegistry/m_28/m_2c) reuse
 // THIS TU's CDDrawWorkerRegistry / canonical CDDrawSubMgrLeafScan / CDDrawSubMgrLeaf.
@@ -6493,9 +6482,8 @@ i32 CPlay::ResetPlayState() {
 // the global node free list, then reset the per-grunt-type config rows.
 // __thiscall, no args, no return. Self-contained view.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
-// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
-// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
+// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
 // (The 9 CRt* views are GONE - CRtThis==CPlay, CRtWorld==CWorld, CRtResMgr==
@@ -6815,8 +6803,8 @@ i32 CPlay::AddLevelGruntz() {
         }
         i32 x = ((g->m_screenX & ~0x1f) + 0x10);
         i32 y = ((g->m_screenY & ~0x1f) + 0x10);
-        // ILT 0x40bb == ?PlaceObject@CTriggerMgr@@ @0x6b6d0 (the ex-`AddGrunt` decl was a
-        // phantom alias of it). The 13th arg really is an address at THIS site (the a30
+        // ILT 0x40bb == ?PlaceObject@CTriggerMgr@@ @0x6b6d0. The 13th arg really is an
+        // address at THIS site (the a30
         // slot is kind-dependent).
         i32 r = m_4->m_cmdGrid->PlaceObject(
             g->m_124,
@@ -6838,7 +6826,7 @@ i32 CPlay::AddLevelGruntz() {
             msg.Format("Could not add Grunt: Player=%d", g->m_124, y, x);
             // `mov ecx,[0x64556c]; push msg; call 0x417e` (read off the retail site):
             // a __thiscall on the singleton - CGruntzMgr::EnterModalUI @0x8ef10 (ILT
-            // 0x417e), NOT the 2-arg __cdecl `AgLog` the old decl faked.
+            // 0x417e).
             ((CGruntzMgr*)g_gameReg)->EnterModalUI(msg); // CString -> LPCTSTR (implicit)
             return 0;
         }

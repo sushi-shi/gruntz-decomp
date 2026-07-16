@@ -55,8 +55,7 @@
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
-// WHAT THE VALIDATOR ACTUALLY WALKS (the whole object web, xref-recovered - every
-// former local view here is dissolved onto the real class):
+// WHAT THE VALIDATOR ACTUALLY WALKS (the whole object web, xref-recovered):
 //
 //   CState::m_c            == CDDrawSurfaceMgr   (the resource holder; was `PlayMgr`)
 //     ->m_8                == CDDrawChildGroup          (was `PlayMgrRenderer`)
@@ -134,9 +133,8 @@ extern "C" CGruntzMgr* g_gameReg;
 // The recycled-node free-list head (?g_coordPool.m_freeHead@@3PAXA) and a tile-id constant
 // (DAT_00644c54) the 0x4017e4 case compares against.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
-// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
-// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
+// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 // g_tileKindMagic (active-player slot index) is declared in <Gruntz/TileTriggerLogic.h>
 // (included above).
@@ -160,9 +158,7 @@ static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
 //   - CPlay::ResetPlayState @0x0d60b0 calls PlaceStartGruntz with `mov ecx,esi` - the SAME
 //     `this` it writes at +0x4f8 (`gruntz sema xref --tree`);
 //   - every field lines up at the same offset, and +0x2e0 is CChatBoxOwner* in BOTH models.
-// CPlay's canonical names for the slots this TU used (the residual per-body alias
-// locals are GONE with the TriggerRegistrar/PlayfieldMgr dissolve - the bodies now
-// run on the canonical members directly):
+// CPlay's canonical names for the slots this TU used:
 //     m_gameReg (+0x04) == CState::m_4 (CGruntzMgr*)      m_playMgr  (+0x0c)  == CState::m_c
 //     m_playfieldMgr (+0x2dc) == CPlay::m_guts (CStatusBarMgr - InsertPtr @0x108410)
 //     m_triggerRegistrar (+0x2e4) == CPlay::m_beginMarker (CTileTriggerContainer)
@@ -170,7 +166,7 @@ static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
 
 // The +0x24 slot of the CState::m_c resource holder IS the CGameLevel (its +0x4c image-set
 // array data pointer and its +0x5c main plane are what this TU reads). GameRegistry.h now
-// types that slot CGameLevel* (the former CGameViewport facet is dissolved), so this is a
+// types that slot CGameLevel*, so this is a
 // plain accessor.
 static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
     return holder->m_level;
@@ -413,7 +409,7 @@ i32 CPlay::ValidateLevelTiles() {
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
                         g_gameReg->EnterModalUI(
                             (LPCSTR)s
-                        ); // 0x8ef10 (was the phantom LogTileError)
+                        ); // 0x8ef10
                         return 0;
                     }
                     validCount++;
@@ -440,7 +436,7 @@ i32 CPlay::ValidateLevelTiles() {
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
                         g_gameReg->EnterModalUI(
                             (LPCSTR)s
-                        ); // 0x8ef10 (was the phantom LogTileError)
+                        ); // 0x8ef10
                         return 0;
                     }
                     validCount++;
@@ -467,7 +463,7 @@ i32 CPlay::ValidateLevelTiles() {
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
                         g_gameReg->EnterModalUI(
                             (LPCSTR)s
-                        ); // 0x8ef10 (was the phantom LogTileError)
+                        ); // 0x8ef10
                         return 0;
                     }
                     validCount++;
@@ -494,7 +490,7 @@ i32 CPlay::ValidateLevelTiles() {
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
                         g_gameReg->EnterModalUI(
                             (LPCSTR)s
-                        ); // 0x8ef10 (was the phantom LogTileError)
+                        ); // 0x8ef10
                         return 0;
                     }
                     validCount++;
@@ -521,7 +517,7 @@ i32 CPlay::ValidateLevelTiles() {
                         s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
                         g_gameReg->EnterModalUI(
                             (LPCSTR)s
-                        ); // 0x8ef10 (was the phantom LogTileError)
+                        ); // 0x8ef10
                         return 0;
                     }
                     validCount++;
@@ -548,7 +544,7 @@ i32 CPlay::ValidateLevelTiles() {
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
                         g_gameReg->EnterModalUI(
                             (LPCSTR)s
-                        ); // 0x8ef10 (was the phantom LogTileError)
+                        ); // 0x8ef10
                         return 0;
                     }
                     validCount++;
@@ -575,7 +571,7 @@ i32 CPlay::ValidateLevelTiles() {
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
                         g_gameReg->EnterModalUI(
                             (LPCSTR)s
-                        ); // 0x8ef10 (was the phantom LogTileError)
+                        ); // 0x8ef10
                         return 0;
                     }
                     validCount++;
@@ -602,7 +598,7 @@ i32 CPlay::ValidateLevelTiles() {
                         s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
                         g_gameReg->EnterModalUI(
                             (LPCSTR)s
-                        ); // 0x8ef10 (was the phantom LogTileError)
+                        ); // 0x8ef10
                         return 0;
                     }
                     validCount++;
@@ -755,8 +751,7 @@ i32 CPlay::ValidateLevelTiles() {
 // ---------------------------------------------------------------------------
 // The this->m_2e0 sub-object is the REAL CChatBoxOwner (<Gruntz/ChatBoxOwner.h>): the
 // three branch-calls are CChatBoxOwner::Configure(mode) @0x20530 (thunk 0x171c), NOT a
-// recursive PositionBridgeToggle - the old `((CLevelValidator*)m_2e0)->Position...`
-// self-alias was a mis-model of that reloc-masked call.
+// recursive PositionBridgeToggle.
 
 // ===========================================================================
 // CPlay::PositionBridgeToggle (0x0d5b20) - position the game-timer HUD widget at a
@@ -765,7 +760,7 @@ i32 CPlay::ValidateLevelTiles() {
 // if a goal object is active (m_4->m_cmdGrid->m_goal), flag it released, detach it,
 // and run the timeline goal-tail.
 //
-// HOMED ONTO ::CPlay (was the fake class CLevelValidator). CLevelValidator IS CPlay:
+// CLevelValidator IS CPlay:
 //   - CPlay::ResetPlayState @0x0d60b0 calls the sibling PlaceStartGruntz with
 //     `mov ecx,esi`, the SAME `this` it writes at +0x4f8 (`gruntz sema xref --tree`);
 //   - both views type +0x2e0 as CChatBoxOwner*, +0x2dc as the guts/UI subsystem;

@@ -451,12 +451,9 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
 }
 
 // ===========================================================================
-// The four icon/sprite loaders (0x78960 / 0x7a3f0 / 0x7b330 / 0x7c620) - the
-// ex-iconloaders unit, merged wholesale per dossier 10b (its 4 fns are embedded
-// between the CTriggerMgr runs; the unit's other two fns 0x1c070/0x1e720 stay in
-// IconLoaders.cpp). ALL FOUR are ::CTriggerMgr methods (the ex-`EngineLabelBacklog`
-// its m_cameraSprite @+0x23c IS m_goal - see the LoadCameraSprite proof below);
-// the singleton is the canonical CGameRegistry via g_gameReg (<Gruntz/Grunt.h>).
+// The four icon/sprite loaders (0x78960 / 0x7a3f0 / 0x7b330 / 0x7c620) are ALL
+// ::CTriggerMgr methods (m_cameraSprite @+0x23c IS m_goal - see the LoadCameraSprite
+// proof below); the singleton is the canonical CGameRegistry via g_gameReg (<Gruntz/Grunt.h>).
 // ===========================================================================
 // Two icon-class init-slot fns the toybox de-dup test compares an existing
 // icon's m_7c->Init against (the in-game-icon / in-game-text classes).
@@ -475,7 +472,7 @@ extern "C" void IconClassInitB(); // 0x402bad
 // sprite's init virtual (vtbl slot +0x10), then caches its first frame.
 // __thiscall (this @ esi). Returns 1 on (re)creation, 0 if already present.
 
-// HOMED onto ::CTriggerMgr (was the placeholder host `EngineLabelBacklog`). PROVEN:
+// ::CTriggerMgr ownership, PROVEN:
 //  - retail calls 0x78960 with ecx = the game-mgr's +0x68 object, i.e. a CTriggerMgr
 //    (CPlay::PositionBridgeToggle @0x0d5b20's tail: mov ecx,[esi+4]; mov ecx,[ecx+0x68];
 //    ... mov [ecx+0x23c],0 ; call 0x3d1e -> 0x78960). That tail is the "GoalTail" call
@@ -664,7 +661,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
             // toggle off the pending-fx and rewind
             m_pendingFxKind = 0;
             ((CPlay*)g_gameReg->m_curState)
-                ->LoadCursorSprites(0, 0); // ILT 0x35da (was the StopFx2 phantom)
+                ->LoadCursorSprites(0, 0); // ILT 0x35da
             CGameObject* o = hit->m_10;
             this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
             return 1;
@@ -718,8 +715,8 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
 // The /GX (eh) CTriggerMgr methods below (DestroyGroup 0x798d0, ReinitGroup
 // 0x79b80, Load 0x7abc0, and ~CTriggerMgr 0x85c50 at end-of-file) own
 // destructible locals / new+ctor lifetimes (CString temporaries, the overlay
-// rebuild); the whole unit compiles /GX (the former TriggerMgrEh split is
-// folded back - the real dev TU was one /GX unit, see ResetAll's note).
+// rebuild); the whole unit compiles /GX (the real dev TU was one /GX unit,
+// see ResetAll's note).
 // LAYOUT NOTE: these methods touch `this` by raw offset in places (the
 // opaque-shell convention); only offsets + reloc-masked helpers are modelled.
 
@@ -819,7 +816,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 hy = row;
     if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)
         || hx >= *(i32*)((char*)g_gameReg + 0x148) || hx < *(i32*)((char*)g_gameReg + 0x140)) {
-        ((CPlay*)lvl)->ResetGoals(hy, hx); // ILT 0x2e28 (was the 3-arg Place2 phantom)
+        ((CPlay*)lvl)->ResetGoals(hy, hx); // ILT 0x2e28
     }
     // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
     // receiver is level->m_mainPlane - the ex-CTmGridHolder::Snap fake name)
@@ -881,7 +878,7 @@ void CTriggerMgr::ResetSpawnState() {
         }
     }
     if (g_gameReg->m_134 == 1) {
-        CTmCell* fx = m_pendingFx; // the pending-fx grunt (ex-CTmPendingFx::Pulse == 0x455f0)
+        CTmCell* fx = m_pendingFx; // the pending-fx grunt
         if (fx != 0) {
             fx->ResolveDeathAnimation();
         }
@@ -1111,7 +1108,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
 
     CGameObject* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
-        g_gameReg->ReportError(0x8009, 0x402); // was the fake CGameRegistry::Report
+        g_gameReg->ReportError(0x8009, 0x402);
         return 0;
     }
     spr->ApplyName("GAME_TOYBOX");
@@ -1607,7 +1604,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     } else if (kind != 0) {
         i32 v = kind + kPendingFxIdBase;
         m_pendingFxKind = v;
-        world->LoadCursorSprites(v, 0); // ILT 0x35da @0x7b2f4 (was the StopFx2 phantom)
+        world->LoadCursorSprites(v, 0); // ILT 0x35da @0x7b2f4
     }
     this->Refresh2();
     this->Record2(x, y);
@@ -1641,10 +1638,9 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy
 }
 
 // ===========================================================================
-// CTriggerMgr::BuildRockBreakParticles (0x7b440) - merged from
-// RockBreakParticles.cpp per dossier 10b (rock-break FX spawned by triggers;
-// this TU by retail position). The ex-`CRockBreakMgr` placeholder identity is
-// RESOLVED: it WAS this CTriggerMgr (its m_22c world holder IS m_level, its
+// CTriggerMgr::BuildRockBreakParticles (0x7b440) - rock-break FX spawned by
+// triggers. The CRockBreakMgr placeholder identity is
+// RESOLVED: it IS this CTriggerMgr (its m_22c world holder IS m_level, its
 // Prepare thunk 0x400c IS CombatCue @0x7b930, and every dispatch site reaches
 // it through g_gameReg->m_cmdGrid / the grunt's m_260 board == this class).
 // The Rock* views below were the donor's (RockMgr is the 0x64556c singleton
@@ -1672,9 +1668,9 @@ void FormatStr(CString* out, const char* fmt, ...);
 //   RockLogicObj / RockLogicMgr -> nothing: both were EMPTY comment-only shells whose
 //                                  calls already bridge-cast to the real classes.
 //
-// SETTLED (was an @identity-TODO): the +0x24 slot of the world holder IS the canonical
-// CGameLevel (GameRegistry.h now types it so; the former CGameViewport facet was a fake
-// name - PushView IS VisitVisible @0x15dc90, SetClipRect IS BuildAllPlanes @0x15da80).
+// The +0x24 slot of the world holder IS the canonical
+// CGameLevel (GameRegistry.h now types it so; PushView IS VisitVisible @0x15dc90,
+// SetClipRect IS BuildAllPlanes @0x15da80).
 // The "incompatible" BrickzAttrMgr shape is the SAME object: its bute table @+0x4c is
 // CGameLevel's m_imageSets CObArray data ptr (+0x48 array -> +0x4c m_pData of
 // CTileImageSet*), its grid desc @+0x5c is m_mainPlane - and BrickzButeObj ("8 filler
@@ -1701,7 +1697,7 @@ extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 // zero-register-pinning.md). Logic complete.
 RVA(0x0007b440, 0x3f0)
 i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
-    CombatCue(cx, cy, r, 6, a4); // thunk 0x400c -> 0x7b930 (was the `Prepare` alias)
+    CombatCue(cx, cy, r, 6, a4); // thunk 0x400c -> 0x7b930
 
     // The concrete game-state behind CGameRegistry::m_curState (the base CState is
     // proven <= 0x1c0, so a +0x2e4 read is a DERIVED state's field). Its shape here -
@@ -1997,8 +1993,7 @@ void CTriggerMgr::StopPendingFx() {
 //   ResNode                     -> CTmRecNode (an MFC CPtrList CNode).
 //   ResGrunt                    -> CTmCandidate (<Gruntz/TriggerMgr.h>): identical
 //        +0x38 bound obj / +0x54 +0x58 grid pair / +0x5c occupied / +0x68 type /
-//        +0x6c host - the third view of the baseList element (with the ex-
-//        CTmPuddleTarget); knowledge merged onto the canonical.
+//        +0x6c host.
 //   ResGruntLogic               -> CTmGoal (the +0x8 flags 0x10000 released bit).
 //   ResMgrCfgEntry              -> GruntzPlayer (the m_options[4] element; its
 //        +0x38 CBattlezMapConfig is the real embedded bundle).
@@ -2006,7 +2001,7 @@ void CTriggerMgr::StopPendingFx() {
 //        m_options @+0x150, m_world @+0x30, m_world->m_childGroup factory).
 // ===========================================================================
 // The resource-config manager @0x2453d8 IS the canonical CButeMgr singleton g_buteMgr
-// (?g_buteMgr@@3VCButeMgr@@A, from <Bute/ButeMgr.h>; the former ResButeMgr {} view + its
+// (?g_buteMgr@@3VCButeMgr@@A, from <Bute/ButeMgr.h>).
 
 // @early-stop
 // regalloc/frame-layout wall (~65%): instruction selection, calls, constants,
@@ -2192,13 +2187,12 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
 // m_timerWindow (written as lo,hi=0 - the u32 zero-extend spelling), m_2a0==
 // m_pendingFx (the SAME CGrunt* + ResolveDeathAnimation the +0x2a0 slot's other
 // three users prove), m_3ec/m_400==m_3ec/m_groupFlag. The goo-well update
-// (0x6eb80) calls this driver as its "Notify" on this same object. Ex-
-// `FinishLevelMgr` was the world holder m_level (its +0x28 CSndHost registry).
+// (0x6eb80) calls this driver as its "Notify" on this same object.
 // ===========================================================================
 // DSoundCloneInst - ConfigureItem pushes a cue; +0x28 (DirectSoundMgr::m_durationMs)
 // carries the cue duration. The +0x28 cue holder (name->cue map @+0x10,
 // emit gate @+0x30) is the canonical CSndHost, its looked-up cue the LeafCue -
-// both in <Gruntz/SoundCue.h> (the former CueObj / CStatusBarHolder folded onto them).
+// both in <Gruntz/SoundCue.h>.
 
 // @early-stop
 // Dense 6-case switch (~61%). Two stacked residuals, both confirmed by llvm-objdump

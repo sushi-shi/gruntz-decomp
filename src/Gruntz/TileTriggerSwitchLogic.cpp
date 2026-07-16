@@ -1,9 +1,8 @@
 // TileTriggerSwitchLogic.cpp - the tile-trigger logic TU (C:\Proj\Gruntz): the
-// WOVEN original obj at retail .text [0x110430 .. 0x1140e2] (TU_MIGRATION
-// interval 0x110430, weave 0.30). The four former units tileswitchlogic /
+// WOVEN original obj at retail .text [0x110430 .. 0x1140e2]. The four former units tileswitchlogic /
 // tiletriggerderivedctors / tilegridcommand / tileactionevent interleave
 // function-by-function throughout the interval - impossible across objs at
-// first link => ONE original TU (wave2-F merge; + the tiletriggerlogic /
+// first link => ONE original TU (+ the tiletriggerlogic /
 // tiletriggerload singletons and Gate113860, whose RVAs sit inside this
 // interval). Classes: CTileTriggerSwitchLogic + the 8 derived *Logic /
 // *SwitchLogic leaves, base CTileTriggerLogic, CTileTriggerLogic,
@@ -17,7 +16,7 @@
 // files). Definitions below are in strict ascending retail-RVA order.
 //
 // Flags: eh (/GX) - the interval carries EH-registration evidence
-// (TU_MIGRATION hard error: 0x110430-0x1140e2, 1 EH site).
+// (0x110430-0x1140e2, 1 EH site).
 #include <string.h>            // memcpy -> the /Oi `rep movsd` in BuildSmall
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Io/FileMem.h>        // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -218,8 +217,8 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
 // CTileTriggerSwitchLogic::Setup (slot 0) - the one-shot Setup virtual (0x1104f0,
 // shared as slot 0 across the whole *TriggerSwitchLogic family). If already set up
 // (m_20 non-zero) returns 0; else scatters the 8 args into the object fields, sets
-// the init guard (m_20=1) + clears m_1c, returns 1. Re-homed from ReconBatch2
-// (was the Init8_1104f0 placeholder view; xref: vtable slot +0x0 via thunk 0x1749).
+// the init guard (m_20=1) + clears m_1c, returns 1.
+// (xref: vtable slot +0x0 via thunk 0x1749).
 // ---------------------------------------------------------------------------
 RVA(0x001104f0, 0x56)
 i32 CTileTriggerSwitchLogic::Setup(
@@ -266,9 +265,7 @@ CTileTriggerLogic::CTileTriggerLogic() {
 }
 
 // The single slot-0 virtual (0x110c10, reached via ILT thunk 0x402072) is Tick -
-// DEFINED BELOW in this TU (it was never "an unmatched engine TU": 0x110c10 sits
-// inside THIS interval, and the old CPlayLevelLoad::LoadPyramidBridge shell at that
-// rva was the body wearing a fake receiver). The derived logic classes
+// DEFINED BELOW in this TU (0x110c10 sits inside THIS interval). The derived logic classes
 // (TileTriggerDerivedCtors.cpp) inherit this one slot.
 // (No virtual destructor: retail's derived vtables share this slot value, proving it
 // is a normal inherited virtual, not a per-class ??_G.)
@@ -279,8 +276,6 @@ CTileTriggerLogic::CTileTriggerLogic() {
 //
 // RE-HOMED from CTileTriggerSwitchLogic (which is 0x8c and cannot hold this): retail is
 // `add ecx,0x3c` + 24 iterations = this+0x3c..+0x9b, exactly CTileTriggerLogic::m_block.
-// On the old owner it had to be spelled m_block[i + 4] to reach +0x3c - that "+4" fudge WAS
-// the misattribution. Same bytes, now with the base index and no fudge.
 // ---------------------------------------------------------------------------
 // @interleaver CTileTriggerLogic::FindIndexByKey emitted-in <boundary:
 // StatusBarUpdaters.cpp LoadSwitchUpSprite @0x1106b0 (before) + BridgeMoveSprites.cpp
@@ -300,7 +295,7 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 // CTileTriggerLogic::Tick (0x0110c10) - the slot-0 virtual: the pyramid/bridge
 // tile-TRANSITION dispatcher, run on the trigger's OWN tile coords.
 //
-// RECEIVER SETTLED (F5 lane, 2026-07-15): `this` IS the CTileTriggerLogic. The
+// RECEIVER SETTLED: `this` IS the CTileTriggerLogic. The
 // binary proof: (a) 0x110c10 is the one slot of ??_7CTileTriggerLogic (0x5eaea4,
 // ILT 0x402072) and every in-tree caller (Classify @0x112970, Broadcast
 // @0x112080) invokes it `mov ecx,<logic>; call [vtbl+0]` with NO args pushed;
@@ -455,8 +450,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         return 0;
     }
     // walk the owner CONTAINER's m_list1 (head @ container+0x20) - the 0x9c
-    // CTileTriggerLogic children live there (the old "m_owner->m_20 child list"
-    // reading was the same load through the switch-logic mis-typing).
+    // CTileTriggerLogic children live there.
     TtcNode* node = TtcHead(m_owner->m_list1);
     i32 found = 0;
     CTileTriggerLogic* child = 0;
@@ -530,12 +524,12 @@ i32 CTileTriggerSwitchLogic::Broadcast() {
             return 0;
         }
         if (node->m_key1 != m_key1 && node->m_linkGate != 0) {
-            node->SwitchUp(); // virtual slot 3 (the old view's "Prepare")
+            node->SwitchUp(); // virtual slot 3
             i32 any = 0;
             for (TtcNode* it = TtcHead(m_owner->m_list1); it != 0; it = it->m_next) {
                 CTileTriggerLogic* o = (CTileTriggerLogic*)it->m_data;
                 if (o != 0 && o->FindIndexByKey(node->m_key1)) {
-                    o->Tick(); // slot 0 (the old view's "Destroy")
+                    o->Tick(); // slot 0
                     counter++;
                     any = 1;
                 }
@@ -591,8 +585,7 @@ extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 // The sound-cue registry (g->m_world->m_soundRegistry) + its Lookup result (the LeafCue cue
 // record whose m_14 last-play / m_18 cooldown rate-limit the DSoundCloneInst it plays) are
 // the canonical CSndHost/CSndFinder/LeafCue/DSoundCloneInst from <Gruntz/SoundCue.h>
-// (included above); the former per-TU RbSoundReg/RbLookupTable/RbCueRec/RbCueSound views
-// ConfigureItem 0x1360d0).
+// (included above).
 
 // `this` stays in esi; the tile coords are re-read from m_08/m_0c at each use
 // (retail caches neither, so caching them in locals would spill the frame from
@@ -815,11 +808,9 @@ void CTileTriggerLogic::RecordMove() {
 }
 
 // ---------------------------------------------------------------------------
-// CTileSecretTriggerLogic::Tick (slot-0 override, 0x1128b0; re-homed from the
-// deleted one-fn MgrSlotSwap.cpp where it lived as `CSlotHolder::DoSwap` - the
-// vtable slot map proved the identity: ??_7CTileSecretTriggerLogic@0x1eaf14
-// slot 0 holds this body via ILT thunk 0x18d4, and the "CSlotHolder" fields were
-// the base CTileTriggerLogic's m_08/m_0c coords + m_34 token).
+// CTileSecretTriggerLogic::Tick (slot-0 override, 0x1128b0). The vtable slot map
+// proves the identity: ??_7CTileSecretTriggerLogic@0x1eaf14 slot 0 holds this body
+// via ILT thunk 0x18d4.
 // The secret trigger's duty tick: swap this trigger's parked tile token with the
 // one in the MAIN plane's tile grid at (m_08, m_0c), recompute the cell flags,
 // and adopt the previously-parked token. An empty token reports the 0x8009/0x451
@@ -998,8 +989,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         return 0;
     }
     // walk the owner CONTAINER's m_list1 (head @ container+0x20) - the 0x9c
-    // CTileTriggerLogic children live there (the old "m_owner->m_20 child list"
-    // reading was the same load through the switch-logic mis-typing).
+    // CTileTriggerLogic children live there.
     TtcNode* node = TtcHead(m_owner->m_list1);
     i32 found = 0;
     CTileTriggerLogic* child = 0;
@@ -1490,12 +1480,10 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
 // 0x113860 - CTileTriggerSwitchLogic::ValidateByType: the 0x8c family's save/load
 // dispatcher (mode 4 -> SaveState @0x1138b0, 7 -> LoadState @0x1139a0), the exact
 // twin of CTileTriggerLogic::ValidateByType below. __thiscall, ret 0x10.
-// DE-VIEW (2026-07-13, Fable lane): was the "__stdcall Gate113860(obj,...)" free
-// function - a mis-model. Retail's callers (SerializeApplyA 0x117630, LoadElement
-// 0x117800) do `mov ecx,<element>` before `call 0x277f`, and the body passes ecx
-// UNTOUCHED through to the two __thiscall state helpers (it loads the archive arg
-// into eax, never ecx) - i.e. `this` is the element, the first stack arg the
-// archive. The old model dropped the receiver and named the archive "obj".
+// Retail's callers (SerializeApplyA 0x117630, LoadElement 0x117800) do
+// `mov ecx,<element>` before `call 0x277f`, and the body passes ecx UNTOUCHED
+// through to the two __thiscall state helpers (it loads the archive arg into eax,
+// never ecx) - i.e. `this` is the element, the first stack arg the archive.
 RVA(0x00113860, 0x3b)
 i32 CTileTriggerSwitchLogic::ValidateByType(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
