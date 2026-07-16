@@ -128,13 +128,16 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
 // EntranceSafeTime). Both are DEFERRED to the final sweep: they are decompiler-gated
 // mega-methods (MSVC /O2 stack-slot aliasing + a local CByteArray + the tile grid double-
 // loops + switch tables), of the same shape as CGrunt::ArrivalReticleScan whose front is
-// banked in GruntReticle.cpp. Kept as CUserLogic stubs here (RVA-anchored, so re-homing
-// to a real CGrunt TU is a follow-up); reconstructing them needs the Ghidra decompiler C.
+// banked in GruntReticle.cpp. Kept as stubs here (RVA-anchored, so re-homing to a real
+// CGrunt TU is a follow-up); reconstructing them needs the Ghidra decompiler C.
+// LoadGruntTypeTable is SYMBOL-exported under its real ?LoadGruntTypeTable@CGrunt@@ name
+// (i32 return) so the ~9 CGrunt-side callers bind - it is NOT a CUserLogic method.
 // @confidence: med
 // @source: string-xref;vtable-slot
 // @stub
+SYMBOL(?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z)
 RVA(0x0004dd50, 0x22c0)
-void CUserLogic::LoadGruntTypeTable(i32, i32, i32, i32) {}
+i32 Stub_LoadGruntTypeTable_4dd50(i32, i32, i32, i32) { return 0; }
 
 // @confidence: med
 // @source: string-xref;vtable-slot

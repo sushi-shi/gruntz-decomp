@@ -200,9 +200,9 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
 // move-mode pair (m_moveMode/m_1a4). Called at RunEntranceMove's tail. __thiscall.
 RVA(0x00050ca0, 0x2b)
 void CGrunt::LoadTypeTableClearMove(i32 typeId) {
-    // the real callee is the inherited CUserLogic::LoadGruntTypeTable (0x4dd50), not
-    // CGrunt's i32-returning shadow (which InGameIcon still needs for its result read)
-    CUserLogic::LoadGruntTypeTable(typeId, 0, 0, 0);
+    // the real callee is CGrunt::LoadGruntTypeTable (0x4dd50, SYMBOL-exported in
+    // UserLogic.cpp; a CGrunt method, discards the i32 result here)
+    LoadGruntTypeTable(typeId, 0, 0, 0);
     m_moveMode = -1;
     m_1a4 = 0;
 }

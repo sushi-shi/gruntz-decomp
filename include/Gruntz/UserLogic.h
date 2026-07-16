@@ -418,7 +418,8 @@ public:
     //  anim-code "C" act handler; body in src/Gruntz/GruntEntranceArrival.cpp.)
     // (winapi_0ee800_IntersectRect_PtInRect was XREF-recovered as CGrunt::ArrivalReticleScan
     //  and re-homed to src/Gruntz/GruntReticle.cpp as a real CGrunt method.)
-    void LoadGruntTypeTable(i32, i32, i32, i32);
+    // (LoadGruntTypeTable @0x4dd50 is really CGrunt's - SYMBOL-exported in UserLogic.cpp
+    //  under ?LoadGruntTypeTable@CGrunt@@; declared on CGrunt in <Gruntz/Grunt.h>, not here.)
     void LoadGruntTuningConstants(i32);
     // Leaf placement/arm entrypoints reached through the bound-logic base pointer
     // (CTriggerMgr::SpawnGrunt / ResetGroup on the created sprite's AnimWorkerObj::m_logic):
