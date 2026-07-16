@@ -128,6 +128,10 @@ METRICS = (
     # proximity-homed Gap_/Ghidra FUN_ orphans that the old regex missed entirely.
     ("Method/Stub/FUN/Gap",
      re.compile(r"\b(?:(?:Method|Gap|Sub|Stub|Fwd|Func|FUN|Nullsub)_?[0-9a-f]{4,}|vfunc_[0-9]+)\b"), False),
+    # Virtual vtable SLOTS named by index+RVA (role unrecovered): SlotNN_<hex>, Vfunc<hex>,
+    # Vtbl_<hex>. Real correctly-modeled virtuals, placeholder-named -> vtable-slot naming backlog.
+    ("virtual slot placeholders",
+     re.compile(r"\b(?:Slot[0-9]{1,2}_[0-9a-f]{4,}|Vfunc[0-9a-f]+|Vtbl_[0-9a-f]{4,})\b"), False),
     ("placeholder classes", _count_placeholders, False),
     (".cpp-local views", _count_cpp_local_defs, True),
     # --- manual-vtable residue (the de-hack / vtable-review targets) ---
