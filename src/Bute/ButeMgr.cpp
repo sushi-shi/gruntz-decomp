@@ -919,32 +919,24 @@ RVA(0x00021310, 0x70)
 CButeStoreDtorCopyMgrA::~CButeStoreDtorCopyMgrA() {}
 
 // ---------------------------------------------------------------------------
-// 0x0213a0 - getter that returns the +0x04 field of its VIRTUAL base. Modeled as a
-// real virtual-base member read so it compiles to the vbtable access (load vbptr,
-// load the vbase displacement from vbtable[1], read [this+disp+4]) with no raw cast.
-// __thiscall. Re-homed from src/Stub/BoundaryLowerMethods.cpp (its RVA neighborhood).
-// @identity-TODO (techniques re-run 2026-07-14): xref -> the sole caller is
-// CChatBoxOwner::ProcessCheatInput @0x205c0 (via ILT thunk 0x272f, called at 0x2087e
-// with `mov ecx,esi`), itself reached from CPlay::DispatchKey. The `this` is `esi`
-// deep in ProcessCheatInput, NOT g_gameReg->m_2c as previously guessed - that field is
-// a CState* and CState is an RTTI ROOT with a real vtable at [this+0], whereas this
-// getter's `this` has a genuine vbptr at [this+0] (vtbl access `[[this]+4]` -> disp ->
-// [this+disp+4]). No modeled class with a virtual base sits on esi's dataflow without
-// reconstructing ProcessCheatInput's locals; callee return/param types, vtable DATA-ref,
-// operator new size and RTTI COL all dead-end here. Host stays a placeholder.
-struct VBaseFieldState {
-    i32 m_0;
-    i32 m_4; // +0x04 (the returned field; role unproven)
-};
-struct CVBaseFieldHost : virtual VBaseFieldState {
-    i32 GetVBaseField();
-};
-SIZE_UNKNOWN(VBaseFieldState);
-SIZE_UNKNOWN(CVBaseFieldHost);
-RVA(0x000213a0, 0xa)
-i32 CVBaseFieldHost::GetVBaseField() {
-    return m_4;
-}
+// 0x0213a0 - IDENTITY RECOVERED (was the CVBaseFieldHost @identity-TODO view):
+// `?rdbuf@ostrstream@@QBEPAVstrstreambuf@@XZ` - the out-of-line copy of the CRT
+// <strstrea.h> INLINE member `strstreambuf* ostrstream::rdbuf() const` (returns
+// `(strstreambuf*)ios::rdbuf()`, i.e. the `ios` VIRTUAL base's bp field: load
+// vbptr [this], disp = vbtable[1], read [this+disp+4]). MSVC5 cannot inline a
+// virtual-base access, so the caller's obj emits the copy out-of-line.
+// PROOF (retail bytes): the sole caller CChatBoxOwner::ProcessCheatInput
+// (0x205c0, via ILT 0x272f at 0x2087e) runs it on `esi` = the `new(0x58)` object
+// constructed by ??0ostrstream@@QAE@PADHH@Z @0x1698c0 (already manual-crt-reclass
+// in config/library_labels.csv; its ctor stamps the {0,8} vbtable @0x1f0388 and
+// ctor-flag-constructs the ios vbase at +8, whose vptr 0x1f0384 is the cataloged
+// library ??_7ostrstream) over the Blowfish cheat-decode output buffer
+// (BitStreamBlowfishDecode @0x16f760 writes it), then calls
+// ?out_waiting@streambuf@@QBEHXZ @0x21280 (pptr-pbase, another inline copy) on
+// the result to size the decrypted text. CRT LIBRARY code -> named in
+// config/library_labels.csv (manual-crt-reclass), not reconstructed here; the
+// full ostrstream construction is ProcessCheatInput's final-sweep redo
+// (src/Gruntz/ChatBoxOwner.cpp).
 
 // ---------------------------------------------------------------------------
 // CButeMgr::~CButeMgr

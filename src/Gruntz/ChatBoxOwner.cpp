@@ -184,9 +184,18 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 //   ebx        = CParseSource (m_34->LoadBute 0x13bff0; BeginParse 0x139960 / EndParse 0x1399d0)
 //   [esp+0x54/0x84/0xb0] = 3 scratch CButeStore locals (ctor/Clear 0x16e070; MI dtor
 //                restamps ??_7zPTree@0x5e94ac / ??_7CButeStore@0x5e949c + 0x16dfc0 + 0x16da60)
-//   the two `new`(0x5c/0x58) heap objects (ctors 0x169700/0x1698c0) + their wrappers
-//                (0x16f6c0/0x16f760, dtor 0x16f6b0) are the MSVC istream/ostream-family
-//                stream construction over the loaded TXT resource - LIBRARY machinery.
+//   the two `new`(0x5c/0x58) heap objects are CRT strstreams (both ctors are
+//                manual-crt-reclass in config/library_labels.csv): the 0x58 is an
+//                `ostrstream(buf, len, ios::out)` (??0ostrstream @0x1698c0, over a
+//                `new(len)` byte buffer) that BitStreamBlowfishDecode (0x16f760)
+//                fills with the Blowfish-decoded cheat text; its size is then read
+//                via `os.rdbuf()->out_waiting()` (the inline-member copies
+//                ?rdbuf@ostrstream @0x213a0 / ?out_waiting@streambuf @0x21280 -
+//                MSVC5 won't inline the ios virtual-base access, so the copies sit
+//                in this obj's COMDAT band); the 0x5c is the `istrstream(buf,
+//                count)` reader (??0istrstream @0x169700) the Bute parse then
+//                consumes. All LIBRARY machinery - reconstruct with the real
+//                <strstrea.h>/<iostream.h> classes in the redo.
 // m_14 = CChatBoxTextHost (IsAcceptingInput 0x3508 / GetText 0x12a3 / Dispatch 0x2243 /
 //        ClearInput 0x442b / Refresh 0x25c2); g_gameReg->m_2c GetInputMode @vtbl+0x10;
 //        g_gameReg->m_44 = the cheat applier (Apply 0x4269). Per eh-state-numbering-base.md
