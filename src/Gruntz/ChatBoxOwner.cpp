@@ -51,7 +51,7 @@ extern "C" CGameRegistry* g_gameReg;
 // Attach - latch the world holder + text host, raise active, return TRUE.
 // The old "constant-materialization wall" (retail's `mov eax,1` register-materialized
 // and stored last) was a misread WRONG RETURN TYPE: eax=1 is the RETURN VALUE, live at
-// the `ret` - CPlay::Vfunc1 (0xc7ec0) TESTs it. `return m_c = 1;` is the retail shape
+// the `ret` - CPlay::LoadGameAssetNamespaces (0xc7ec0) TESTs it. `return m_c = 1;` is the retail shape
 // (materialize into a reg, store, keep it in eax).
 RVA(0x000204e0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {

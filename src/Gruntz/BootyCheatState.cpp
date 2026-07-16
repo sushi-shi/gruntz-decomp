@@ -67,7 +67,7 @@ extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical
 
 // (the CBootyCheatState `this`-view is GONE - it WAS CBootyState, and "CBootyCheatState"
 // is not a type at all: 0x18830 is DATA-REFERENCED at ??_7CBootyState@@6B@+0x4, i.e. it is
-// CBootyState's own vtable SLOT 1 (CState::Vfunc1, the asset/state loader). Every field the
+// CBootyState's own vtable SLOT 1 (LoadGameAssetNamespaces, the asset/state loader). Every field the
 // view modeled is a CState or CBootyState member at the same offset - m_4/m_8/m_c are
 // CState's own +0x04/+0x08/+0x0c (CGruntzMgr / CBankMgr / CDDrawSurfaceMgr), m_2c/m_30/
 // m_34 its three bank slots, and m_1b8 / m_1c0..m_1cc land in CBootyState pads. The whole
@@ -89,8 +89,9 @@ extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical
 // is the allocator's block-layout decision, not source-steerable. See
 // docs/patterns/identical-return-epilogue-tailmerge.md (reverse direction).
 RVA(0x00018830, 0x380)
-i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
-    if (!LoadGameAssetNamespaces(a1, a2, a3)) { // CState base loader (0xf9ea0), inherited
+i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
+    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
         goto fail;
     }
 

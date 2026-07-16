@@ -14,7 +14,7 @@
 #include <rva.h>
 #include <string.h>
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (ResetClockGlobals; the a1 arg)
-#include <Gruntz/Play.h>         // canonical CPlay: 0xc7ec0 IS CPlay::Vfunc1 (slot 1)
+#include <Gruntz/Play.h>         // canonical CPlay: 0xc7ec0 IS CPlay::LoadGameAssetNamespaces (slot 1)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (m_guts; LoadBattlezItemConfig/Teardown)
 #include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (m_hitTest; Attach/Deactivate/Configure)
 #include <Gruntz/UserLogic.h>    // canonical CGameObject (m_scrollSink; m_stateFlags bit0)
@@ -64,7 +64,7 @@ namespace modeinit {
 // COMDAT that CStatusBarMgr's ctor hands to the vector-ctor iterator for BOTH
 // m_groupSlots[3] (+0x2c0) and m_hlGrid[12] (+0x378). It is a compiler-generated
 // default ctor, so its home is the TU that instantiates it; the retail COMDAT sits in
-// this obj's band (right after CPlay::Vfunc1 / ~CPlay's pool).
+// this obj's band (right after CPlay::LoadGameAssetNamespaces / ~CPlay's pool).
 RVA(0x000c86d0, 0x11)
 CSbiHlRow::CSbiHlRow() {
     m_8 = 0;
@@ -99,10 +99,10 @@ CSbiHlRow::CSbiHlRow() {
 // it contributes no state at all on our side. Logic, member identities, call targets and
 // every fail-path shape are complete and binary-proven against the full 0x5f5 disasm.
 RVA(0x000c7ec0, 0x5f5)
-i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
+i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
     using namespace modeinit;
     // a1 IS the CGruntzMgr singleton (the one cast is the mangling-locked i32 arg;
-    // CState::Vfunc1's HHH signature cannot be retyped).
+    // the CState slot-1 HHH signature cannot be retyped).
     CGruntzMgr* a1 = (CGruntzMgr*)a1_i;
     {
         if (a1 == 0) {
@@ -125,7 +125,8 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         m_scrollEdgeActive = 0;
         m_scrollEdgeLock = 0;
         m_frameMarker = 0;
-        if (!LoadGameAssetNamespaces(a1_i, a2, a3)) {
+        // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+        if (!CState::LoadGameAssetNamespaces(a1_i, a2, a3)) {
             return 0;
         }
 

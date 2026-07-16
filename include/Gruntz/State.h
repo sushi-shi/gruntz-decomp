@@ -62,7 +62,15 @@ public:
     virtual ~CState() {
         CState::ReleaseResources();
     } // slot 0
-    virtual i32 Vfunc1(i32, i32, i32); // slot 1 (asset/state load; leaf-overridden)
+    // slot 1 (+0x4) - the per-area GAME asset-namespace loader / state-entry hook.
+    // Default body @0xf9ea0 (GameAssetNamespaces.cpp; retail ??_7CState slot 1 =
+    // ILT 0x43a9 -> 0xf9ea0). Every leaf overrides it with its own asset/state
+    // loader (the ex-"Vfunc1"/LoadSounds/LoadAssets/LoadCreditzStateAssets/
+    // EnterAttractMode/SetupMultiplayerSession bodies are all THIS one slot -
+    // RTTI slot-map + ILT-proven) and chains back via the qualified
+    // CState::LoadGameAssetNamespaces() base call (direct rel32, the retail
+    // shape). Returns 1 on success, 0 on bail.
+    virtual i32 LoadGameAssetNamespaces(i32 mgr, i32 areaArg, i32 a3); // slot 1
     // slot 2 (+0x8) - the resource teardown. Default body @0xfa150
     // (StateReleaseResources.cpp; retail ??_7CState slot 2 = ILT 0x3f53 -> 0xfa150):
     // release the four owned blit surfaces, clear m_ready. Leaf states override it
@@ -189,12 +197,8 @@ public:
     FxResource* fxRes() {
         return (FxResource*)m_c;
     }
-    // The per-area GAME asset-namespace loader (0xf9ea0, GameAssetNamespaces.cpp,
-    // entered via the 0x43a9 ILT thunk). Every leaf state (CSplashState/CHelpState/
-    // CCreditsState/CBootyState/CMenuState/CAttract/CPreviewState/CMulti) calls it on
-    // its own `this` and TESTs the int result -> it IS a CState-level non-virtual
-    // Returns 1 on success, 0 on bail.
-    i32 LoadGameAssetNamespaces(i32 mgr, i32 areaArg, i32 a3); // 0x0f9ea0
+    // (LoadGameAssetNamespaces is the slot-1 VIRTUAL above; the leaf loaders chain
+    // the default body with the qualified CState:: spelling - direct rel32.)
     // The title cluster's typed views of the shared CState slots (m_c is the menu
     // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
     // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).

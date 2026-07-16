@@ -211,20 +211,35 @@ public:
     virtual ~CMulti() OVERRIDE; // slot 0  0x08d270 (most-derived /GX dtor; the ~CPlay->~CState
                                 // base chain tears the CPlay/CState sub-objects)
     // The 13 vtable slots CMulti overrides on CState/CPlay (RTTI vtbl 0x1e9fe4, 43 slots).
-    // Declared-only anchors (the real impls are the RVA-bound methods below / reloc-masked).
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1  (CState)
-    virtual void ReleaseResources() OVERRIDE;   // slot 2  (CState)
-    virtual GameStateId Update() OVERRIDE;      // slot 4  (CState)
-    virtual i32 Render() OVERRIDE;              // slot 5  (CState)
-    virtual i32 Vslot09(i32) OVERRIDE;          // slot 9  (CState)
-    virtual i32 FrameSlot28(i32) OVERRIDE;      // slot 10 (CState)
-    virtual i32 Vslot0b(i32, i32) OVERRIDE;     // slot 11 (CState)
-    virtual i32 Vslot15() OVERRIDE;             // slot 21 (CState)
-    virtual i32 Vslot1a() OVERRIDE;             // slot 26 (CPlay)
-    virtual i32 GetFrame() OVERRIDE;            // slot 27 (CPlay)
-    virtual i32 LoadByMode(i32, i32) OVERRIDE;  // slot 30 (CPlay; the per-mode level loader)
-    virtual void OnExit() OVERRIDE;             // slot 32 (CPlay; ex "Vslot20")
-    virtual void TickStateMgrs() OVERRIDE;      // slot 38 (CPlay; 0x0bd3c0, ex "Vslot26")
+    // Own-body slots carry the canonical family name (one name per slot, RTTI+ILT-proven);
+    // the rest are declared-only anchors (impls unreconstructed / reloc-masked).
+    // slot 1 (CState): the multiplayer connect/init driver @0x0b5460, /GX 18-EH-state
+    // (Multi.cpp; retail ??_7CMulti slot 1 = ILT 0x3fb2 -> 0xb5460, ex
+    // "SetupMultiplayerSession") - runs the whole "start a networked game" sequence:
+    // peer CNetMgr + session + interface + command manager new'd and wired, then the
+    // connect wait + first poll. Returns 1 on a fully-established session.
+    virtual i32 LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) OVERRIDE;
+    // slot 2 (CState): the lobby-drain teardown @0x0b6110 (Multi.cpp; retail slot 2 =
+    // ILT 0x2ef5 -> 0xb6110, ex "Teardown") - final stat pushes, free the session/
+    // report-gate/overlay sub-objects, then chain CPlay::ReleaseResources.
+    virtual void ReleaseResources() OVERRIDE;
+    virtual GameStateId Update() OVERRIDE; // slot 4  (CState)
+    // slot 5 (CState): the per-frame lobby pump @0x0b6890 (Multi.cpp; retail slot 5 =
+    // ILT 0x2dab -> 0xb6890, ex "Tick").
+    virtual i32 Render() OVERRIDE;
+    virtual i32 Vslot09(i32) OVERRIDE;      // slot 9  (CState)
+    virtual i32 FrameSlot28(i32) OVERRIDE;  // slot 10 (CState)
+    virtual i32 Vslot0b(i32, i32) OVERRIDE; // slot 11 (CState)
+    virtual i32 Vslot15() OVERRIDE;         // slot 21 (CState)
+    virtual i32 Vslot1a() OVERRIDE;         // slot 26 (CPlay)
+    virtual i32 GetFrame() OVERRIDE;        // slot 27 (CPlay)
+    // slot 30 (CPlay): the per-mode session/level (re)starter @0x0b6580 (Multi.cpp;
+    // retail slot 30 = ILT 0x449e -> 0xb6580, ex "StartSession") - resolve the chosen
+    // host, reseed RNG + frame timers, prime the per-slot config table, load the
+    // level via CPlay::LoadByMode, re-arm the session.
+    virtual i32 LoadByMode(i32 mode, i32 unused) OVERRIDE;
+    virtual void OnExit() OVERRIDE;        // slot 32 (CPlay; ex "Vslot20")
+    virtual void TickStateMgrs() OVERRIDE; // slot 38 (CPlay; 0x0bd3c0, ex "Vslot26")
     // The owner back-ptr (CState::m_4) IS the real CGruntzMgr - the game-manager
     // singleton the lobby methods drive. No downcast: LogLine/RunDialog/... resolve to
     // the canonical
@@ -257,9 +272,8 @@ public:
         return m_session;
     }
 
-    // Teardown helper run first by the dtor (and standalone @0xb6110): drains the
-    // lobby sub-objects and pushes the final stat flags.
-    void Teardown();                     // 0x0b6110
+    // (The dtor-run lobby drain @0xb6110, ex "Teardown", IS the slot-2
+    // ReleaseResources override declared above - one slot, one name.)
     CString& ClearString59c(CString& s); // 0x0b76c0  (assign m_groupName <- empty)
     CString& ClearString5a0(CString& s); // 0x0b7730  (assign m_hostName <- empty)
     CString GetString59c();              // 0x0b7a90 (out-of-line: return m_groupName by value)
@@ -292,12 +306,12 @@ public:
     // (0x0bccd0 replay-name/config commit is the canonical CMulti::SaveConfig below,
     //  reached with a null recipient.)
 
-    // Reconstructed in this TU (ascending RVA).
-    i32 StartSession(i32 mode, i32 unused); // 0x0b6580  arm the slot table + reseed timers
-    i32 Connect(i32 mode);                  // 0x0b67f0  probe + wait for the session
-    i32 Tick();                             // 0x0b6890  per-frame lobby pump
-    i32 StartTitle();                       // 0x0b72c0  /GX: build "TITLE%d" + bind the net host
-    void DropTimeout();                     // 0x0bc2d0  /GX: drop a timed-out player
+    // Reconstructed in this TU (ascending RVA). (StartSession @0xb6580 is the
+    // slot-30 LoadByMode override; Tick @0xb6890 is the slot-5 Render override -
+    // both declared with the vtable slots above.)
+    i32 Connect(i32 mode); // 0x0b67f0  probe + wait for the session
+    i32 StartTitle();      // 0x0b72c0  /GX: build "TITLE%d" + bind the net host
+    void DropTimeout();    // 0x0bc2d0  /GX: drop a timed-out player
     // 0x0bc910  /GX: latch session params, create the host player, register the channel.
     i32 OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
@@ -316,11 +330,12 @@ public:
     i32 VerifyCustomLevel(void* h, i32 token); // 0x0b8fc0
     i32 PollSession();                         // 0x0b95f0 (drain the receive queue; ret i32)
     void AutoTuneCmdDelay();                   // 0x0bcc10
-    // CPlayDtorBody @0xc8700 is CPlay::CPlayDtorBody (inherited - no CMulti redecl, so
-    // Teardown's call binds to the real CPlay method).
+    // (CPlay::ReleaseResources @0xc8700, the CPlay slot-2 body ex "CPlayDtorBody",
+    // is inherited - CMulti::ReleaseResources chains it with the qualified CPlay::
+    // spelling, binding the real CPlay method.)
     void OnDropPlayer(); // 0x0bc110
-    i32 RebindHost();    // 0x0bc750  (also CNetMgr-shared)
-    i32 RebindHostAlt(); // 0x0bc460
+    // (The ex "RebindHost"/"RebindHostAlt" alias decls @0xbc750/0xbc460 are GONE -
+    // they ARE CreateLocalPlayer / SetupTcpIpConfig below, one symbol per body.)
     // The connect-drive helpers the Net-side coordinator (NetMgrMisc.cpp) reaches
     // off the g_multiState singleton. In the 0xb6110-0xbc420 lobby cluster; Ghidra labels
     // them CNetMgr:: (Broadcast*), a heuristic mis-attribution of this CMulti cluster.
@@ -340,22 +355,22 @@ public:
     void PumpB();            // 0x0b6e90
     void OnOutOfSync();      // 0x0bae40
     void RefreshSlotTable(); // 0x021bd0  (free fn-ish thiscall on this)
-    // Out-of-line CMulti bodies reached by thiscall on `this` (reloc-masked): the
-    // mode-driven level loader (StartSession) and the title-screen loader (StartTitle).
-    i32 LoadLevelByMode(i32 mode, i32 flags);                          // 0x000ca200
-    i32 LoadTitleScreen(const char* name, i32 a, i32 b, i32 c, i32 d); // 0x004fa350
-    // PumpB dispatches to the inherited CPlay per-frame helpers directly (CMulti :
-    // public CPlay, <Gruntz/Play.h> included above) - StepInputA/StepC/StepScroll/
-    // LoadScrollSpeedOptions/NotifyVisibleEntities/StepGridWalk/DrawDebugStats/
-    // OnRegion1/OnRegion2/GetAmbientId are CPlay's own bodies, no re-declaration.
-    void CopyRect(void* h);        // 0x0d0b30  compute+clamp the pane copy rect (g_pCopyRect)
+    // (The ex "LoadLevelByMode" @0xca200 alias is GONE - that body is the inherited
+    // CPlay::LoadByMode slot-30 default, reached with the qualified CPlay:: spelling
+    // since CMulti overrides the slot. The ex "LoadTitleScreen" @0xfa350 alias is
+    // GONE - that body is the inherited CState::RunTitleSeq. The ten CPlay per-frame
+    // helper re-decls (StepInputA/StepC/LoadScrollSpeedOptions/StepScroll/
+    // NotifyVisibleEntities/StepGridWalk/winapi_0d0b30_CopyRect/DrawDebugStats/
+    // OnRegion1/OnRegion2) are GONE too - CMulti : public CPlay inherits the real
+    // methods from <Gruntz/Play.h>, so the calls bind the canonical CPlay symbols.)
 
     // ---- The 0xb5xxx-0xbdxxx network/lobby method cluster ----
     // Recovered from the Frankenstein <Net/NetMgr.h> CNetMgr onto their true owner
     // (this CMulti): retail runs each on this=g_curMulti (a CMulti at offset 0). The
     // small real CNetMgr is reached via Peer() (+0x524). Defined in Multi.cpp.
-    i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3); // 0x0b5460
-    i32 Open();                                          // 0x0b77a0
+    // (SetupMultiplayerSession @0xb5460 is the slot-1 LoadGameAssetNamespaces
+    // override declared with the vtable slots above.)
+    i32 Open(); // 0x0b77a0
     i32 SetupServices();                                 // 0x0b78b0
     i32 DetectConnectionConfig();                        // 0x0b82e0
     void ApplyCmdDelayDefaults();                        // 0x0b85a0

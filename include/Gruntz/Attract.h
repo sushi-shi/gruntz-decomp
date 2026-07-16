@@ -44,7 +44,7 @@ public:
 // The attract "state machine" at CAttract+0x8 (== CState::m_8 re-typed) is the
 // shared ButeMgr parser CSymParser: LookupState == CSymParser::ResolvePath
 // (0x13c030), which resolves a named scope. The resolved scope it returns (stashed
-// in m_2c) is a CSymTab; EnterAttractMode loads its "SOUNDZ" set via
+// in m_2c) is a CSymTab; the slot-1 loader (ex "EnterAttractMode") loads its "SOUNDZ" set via
 // CSymTab::FindSub (0x13a230). Both real classes come from <Bute/SymParser.h>.
 class CSymParser; // <Bute/SymParser.h> (ResolvePath 0x13c030); m_8 re-typed
 // CSymTab is forward-declared in <Gruntz/State.h> (m_2c's ResolvePath/FindSub facet).
@@ -87,7 +87,7 @@ public:
     CMenuBrightnessHolder* m_18; // +0x18  menu  brightness holder / blit dst
 };
 
-// The attract registrar at CMenuRoot+0x28: EnterAttractMode hands it the loaded
+// The attract registrar at CMenuRoot+0x28: the slot-1 loader hands it the loaded
 // sound handle plus the "ATTRACT"/"_" tags (engine FUN_00557ee0, __thiscall
 // ret 0xc) so the attract page is wired into the active menu. The slot-2 release
 // (FUN_00557c70, __thiscall ret 8) tears it back down; +0x2c holds a pooled
@@ -156,7 +156,10 @@ public:
 // ---------------------------------------------------------------------------
 class CAttract : public CState {
 public:
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
+    // slot 1  0x013fb0 (AttractState.cpp; retail ??_7CAttract slot 1 = ILT
+    // 0x211c -> 0x13fb0, ex "EnterAttractMode") - enter (or re-enter) the attract
+    // scene. Chains the base default via CState::LoadGameAssetNamespaces().
+    virtual i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) OVERRIDE;
     // Own vtable slots (RTTI vtbl@0x5ea194, 26 slots; slot order anchored by
     // CState). Every slot CAttract overrides is declared here in slot order; the
     // two slots whose bodies live elsewhere / are deferred are declared-only (the
@@ -184,17 +187,13 @@ public:
         OVERRIDE; // slot 12 (+0x30) 0x014720  (declared-only: ESC/SPACE/ENTER cmd)
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x014770  post-exit command
 
-    // Non-virtual attract methods (the rest of the title/menu logic). EnterAttractMode
-    // is the slot-1 body (0x13fb0) but is reached non-virtually; its (int,int,int)
-    // signature differs from CState's slot-1 placeholder, so it stays non-virtual.
-    i32 EnterAttractMode(i32 a, i32 b, i32 mode); // 0x13fb0 (slot 1, called non-virtually)
-    i32 RefreshTitle(i32 unused);                 // 0x39160
-    i32 LoadTitleConfig(i32 mode);                // 0xa03f0
-    i32 Activate();                               // 0xa0a30
-
-    // The pre-flight gate for EnterAttractMode (engine 0xf9ea0, non-virtual __thiscall
-    // ret 0xc, reached via ILT thunk): a zero result aborts the entry. It IS
-    // CState::LoadGameAssetNamespaces (inherited), called cast-free on `this`.
+    // Non-virtual attract methods (the rest of the title/menu logic). (The ex
+    // "EnterAttractMode" decl is GONE - it IS the slot-1 LoadGameAssetNamespaces
+    // override above, RTTI+ILT-proven; the old "signature differs" note was stale,
+    // both are __thiscall (i32,i32,i32) ret 0xc.)
+    i32 RefreshTitle(i32 unused);  // 0x39160
+    i32 LoadTitleConfig(i32 mode); // 0xa03f0
+    i32 Activate();                // 0xa0a30
 
     // (FadeInTitle 0xfa1f0 / RunTitle 0xfa300 / RunTitleSeq 0xfa350 / RetireScene 0xfa8f0
     //  are CState-base title-roll/transition methods now - declared in <Gruntz/State.h>,

@@ -1,9 +1,9 @@
-// SplashState.cpp - the splash-screen game state (its own TU; LoadSounds is the
-// only reconstructed method so far). Re-homed from src/Stub/SplashState.cpp
-// (C:\Proj\Gruntz).
+// SplashState.cpp - the splash-screen game state (its own TU). Re-homed from
+// src/Stub/SplashState.cpp (C:\Proj\Gruntz).
 //
 // CSplashState : public CState (RTTI .?AVCSplashState@@, vtbl@0x1e9d74) - a real
-// CState leaf. LoadSounds reads the shared CState owner/view/bank facets cast-free
+// CState leaf. Its slot-1 loader (LoadGameAssetNamespaces @0xf9780, ex "LoadSounds")
+// reads the shared CState owner/view/bank facets cast-free
 // through their real INHERITED types:
 //   * m_4  (CGruntzMgr*)  - RestoreVideoMode (re-assert the 640x480 display mode).
 //   * m_8  (CBankMgr*)    - Lookup the "STATEZ_SPLASH" bank -> CResSource.
@@ -57,17 +57,19 @@ extern i32 g_wap32FrameDelta; // 0x653c74
 // @confidence: high
 // @source: decomp-xref
 // @early-stop
-// Code bytes 100% byte-identical to retail; the reloc operands can never pair by
+// Code bytes 100% byte-identical to retail; some reloc operands can never pair by
 // name (g_assetRoot @0x64e25c delinks as ?g_netE25c@@..., the "_" arg as
-// ?g_dat60b588@@..., and LoadGameAssetNamespaces is an unnamed placeholder), so the
-// function stays at the documented reloc-masked plateau, NOT exact. See
+// ?g_dat60b588@@...), so the function stays at the documented reloc-masked
+// plateau, NOT exact. (The CState::LoadGameAssetNamespaces base-chain reloc DOES
+// bind now - the slot-1 family unification named it.) See
 // docs/patterns/external-nobody-callee.md + reloc-typing-vptr-global.md.
 RVA(0x000f9780, 0x8c)
-i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
+i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
     if (g_assetRoot.GetLength() == 0) {
         return 0;
     }
-    if (!LoadGameAssetNamespaces(a, b, c)) {
+    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+    if (!CState::LoadGameAssetNamespaces(a, b, c)) {
         return 0;
     }
     SetCursor(0);

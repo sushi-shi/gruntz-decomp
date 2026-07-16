@@ -504,13 +504,18 @@ i32 CBootyState::Vslot0c(i32, i32) {
     return BuildBootyGruntIdleAnimation(); // 0x1ce60 (BzState:: - UNBOUND; needs BzState.h fold)
 }
 
-// CBootyState::StateOnEnter (0x1d440): the booty state-enter driver - engine-label
-// backlog stub (non-virtual; vtable-neutral).
+// CMultiBootyState::LoadGameAssetNamespaces (0x1d440): the multi-booty slot-1
+// asset/state loader - engine-label backlog stub. Owner re-attributed (ex
+// "CBootyState::StateOnEnter"): retail's ONLY reference to 0x1d440 is
+// ??_7CMultiBootyState slot 1 (ILT 0x2900 -> 0x1d440; RTTI slot map), it appears
+// in no other vtable and has no direct caller.
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0001d440, 0xd7d)
-void CBootyState::StateOnEnter() {}
+i32 CMultiBootyState::LoadGameAssetNamespaces(i32, i32, i32) {
+    return 0;
+}
 
 // CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
 // pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown

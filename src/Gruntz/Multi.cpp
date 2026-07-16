@@ -4,7 +4,7 @@
 // of this single game-side multiplayer file - ~15 multi/netmgrgame block
 // alternations span the interval (impossible for two first-link objs), the
 // c:\proj\incs\netmgr.h header-inline assert emits at ?PollSession@CNetMgr
-// @0x0b95f0 (this TU includes netmgr.h), and CMulti::StartSession/Tick/PumpA/
+// @0x0b95f0 (this TU includes netmgr.h), and CMulti::LoadByMode(slot 30)/Render(slot 5)/PumpA/
 // PumpB drive CNetMgr::CreateSession/DispatchRecvMsg/... as one cooperating
 // session layer. (??1CMultiStartDlg @0xb8960 stays in ShowMultiDlg.cpp:
 // COMDAT-at-usage of the dialog whose file is 0xc16b0.)
@@ -106,7 +106,7 @@ extern "C" CNetCreateCtx* g_netCreateCtx;
 //     CNetChatLog; CSymParser is the real <Bute/SymParser.h> class (m_8 typed);
 //     the CNetConnectThis shell and the CNetConnectSlotView PMF vtable-slot view are
 //     DISSOLVED - the four connect-driver dispatches are the real CState/CPlay-chain
-//     virtuals, see SetupMultiplayerSession.)
+//     virtuals, see LoadGameAssetNamespaces, the slot-1 driver.)
 //   * (char*)(const char*)aCString: MFC CString -> LPCTSTR (operator) -> char* to feed a
 //     char*-taking engine API; both casts are required.
 //   * (IDirectPlay4Z*)m_releaseIface etc.: DirectPlay COM downcast off the abstract
@@ -351,8 +351,9 @@ extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
 
 // (ShowCursor comes from the real USER32 import; 0x6c44c4 is its IAT slot, not a global.)
 
-// The string registry lookup on CMulti::m_stateReg (returns a state pointer or 0). 0x0053c030
-extern "C" void* RegistryFind(void* reg, char* key); // FUN_0053c030 (__cdecl-ish, see body)
+// (The ex "RegistryFind" extern @0x13c030 is GONE - retail's call is a plain
+// __thiscall CSymParser::ResolvePath on m_8 (`mov ecx,[this+8]; push key`),
+// spelled m_8->ResolvePath(...) like the 100%-exact sibling state loaders.)
 
 // The player record OpenPlayer returns (stashed in m_netGate->m_player); its
 // group-name accessor is read in StartTitle. 0x004b76a0. (The net-bind entry
@@ -375,11 +376,9 @@ extern void ActiveWait(i32 phase);
 // The CState sub-object dtor-view the most-derived ~CMulti walks: a virtual dtor
 // whose auto vptr-restore stamps ??_7CState@@6B@ (0x5ea21c, name-matching
 // config/vtable_names.csv) then runs the CState base teardown (CState::ReleaseResources). ~CMulti
-// keeps the explicit member teardown in retail order. (The CPlay sub-object teardown
-// is CMulti's own CPlayDtorBody() - the ONE canonical CPlay <Gruntz/Play.h> can't be
-// used as a sub-object dtor-view here because its ~CPlay would double-tear the CPlay
-// members ~CMulti already unwinds; giving ~CMulti the ??_7CPlay restamp would require
-// modeling CMulti : public CPlay for real, out of this CPlay-consolidation's scope.)
+// keeps the explicit member teardown in retail order. (The CPlay sub-object
+// teardown is CPlay::ReleaseResources, the slot-2 body @0xc8700 the slot-2
+// override chains; CMulti : public CPlay is modeled for real now.)
 // (~CMulti itself already auto-stamps ??_7CMulti at dtor entry via CMulti's virtual dtor.)
 
 // ---------------------------------------------------------------------------
@@ -394,7 +393,7 @@ extern void ActiveWait(i32 phase);
 
 // (The 0x0b9290 stat writer is CMulti::SendNetStat - a __thiscall member, declared
 // in Multi.h. The
-// Teardown call site relies on entry ecx still holding `this` - retail emits no
+// ReleaseResources (ex "Teardown") call site relies on entry ecx still holding `this` - retail emits no
 // mov ecx before the call - which the member spelling reproduces.)
 
 // The engine heap free (CLobbyObjA/B teardown above pairs with it).
@@ -428,13 +427,13 @@ extern void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 // per dossier 10b - embedded in the [0x77f80..0x7d7ca] one-TU interval.)
 
 // ===========================================================================
-// CMulti::~CMulti  @ 0x08d270  - the most-derived /GX dtor. Runs Teardown()
-// first, then tears the CString/CByteArray run while stamping the CMulti ->
+// CMulti::~CMulti  @ 0x08d270  - the most-derived /GX dtor. Runs the slot-2
+// ReleaseResources (ex "Teardown") first, then tears the CString/CByteArray run while stamping the CMulti ->
 // CPlay -> CState vtables in turn over the sub-objects.
 // ===========================================================================
 // @early-stop
 // EH-dtor wall (docs/patterns/eh-dtor-needs-base-subobject.md): the body is the
-// correct, complete reconstruction - Teardown(), then the member CString/CByteArray
+// correct, complete reconstruction - ReleaseResources(), then the member CString/CByteArray
 // teardown run in retail order while the CMulti->CPlay->CState vtable stamps and
 // the CState::ReleaseResources tail land at the right points. Retail emits a FLAT 0x124
 // dtor (the CByteArray[4] at +0x3a4 torn via a single ??_M vector-dtor call, light
@@ -447,7 +446,8 @@ RVA(0x0008d270, 0x124)
 CMulti::~CMulti() {
     // cl's implicit vptr store (??_7CMulti) stamps here at dtor entry (CMulti's own
     // virtual dtor); no manual stamp is needed at the most-derived level.
-    Teardown();
+    CMulti::ReleaseResources(); // 0xb6110 (own slot-2 override, ex "Teardown";
+                                // in-dtor static bind -> direct rel32)
     // CMulti sub-object teardown (high block).
     m_604.~CDWordArray();
     m_5b8.~CString();
@@ -480,7 +480,8 @@ void ConstructFileIOGlobal() {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // =========================================================================
-// CNetMgr::SetupMultiplayerSession  (0xb5460, __thiscall, /GX 18-EH-state) - the multiplayer
+// CMulti::LoadGameAssetNamespaces  (0xb5460, slot-1 override, ex "SetupMultiplayerSession";
+// __thiscall, /GX 18-EH-state) - the multiplayer
 // connect/init DRIVER, reconstructed LEAF-FIRST. It operator-new's four objects
 // (the 0x8c peer CNetMgr + 3 CObLists, the 0x1c interface object, the 0x630
 // CStatusBarMgr session, the 0x78 command manager); each `new`+ctor below is a
@@ -511,8 +512,8 @@ extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx
 
 // The external `this`-methods the driver calls (all resolved to real classes;
 // the empty CNetConnectThis shell is gone):
-//   InitConnect IS CState::LoadGameAssetNamespaces (inherited); called cast-free.
-//   StartTitle IS CMulti::StartTitle (called cast-free from SetupMultiplayerSession).
+//   InitConnect IS CState::LoadGameAssetNamespaces (the slot-1 base default; chained qualified).
+//   StartTitle IS CMulti::StartTitle (called cast-free from the slot-1 driver).
 //   Open IS CMulti::Open @0xb77a0 (called cast-free; the NetSessionOpener view is gone).
 //   ShowMultiStartDlg IS CMulti::ShowMultiStartDlg (called cast-free).
 //   LoadCursorSprites IS CPlay::LoadCursorSprites; cast at the call.
@@ -574,7 +575,7 @@ extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx
 //     71.2 -> 66.6 from these shape deltas; the structure (real classes, real sizes,
 //     real teardown order) is now correct per drive-to-0.
 RVA(0x000b5460, 0x914)
-i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
+i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // Connect-state fields reached cast-free through the real classes: `this` is a
     // CMulti (its CPlay/CState base carries the 0x2c..0x4b8 connect-state members and
     // CMulti owns 0x520..0x600), and NetGameMgr() is the CState::m_4 game-mgr's network
@@ -585,7 +586,8 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    if ((LoadGameAssetNamespaces(a1, a2, a3), 0)) {
+    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+    if ((CState::LoadGameAssetNamespaces(a1, a2, a3), 0)) {
         return 0;
     }
     g_connectRptMgr = this;
@@ -710,7 +712,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     m_hitTest = iface;
     // CChatBoxOwner::Attach RETURNS i32 (constant 1), and retail TESTS it here - VERIFIED
     // at 0xb5460+0x349: `call 0x3e77; test eax,eax; jne <continue>` with the same
-    // Deactivate+RezFree+return-0 teardown CPlay::Vfunc1 has. The Attach `== 0` guard
+    // Deactivate+RezFree+return-0 teardown CPlay::LoadGameAssetNamespaces has. The Attach `== 0` guard
     // is REAL: Attach returns a failure signal (see ChatBoxOwner.cpp).
     if (iface->Attach(m_c, NetGameMgr()->m_5c) == 0) {
         CChatBoxOwner* io = m_hitTest;
@@ -800,14 +802,15 @@ CNetMgr::~CNetMgr() {
 }
 
 // ===========================================================================
-// CMulti::Teardown  @ 0x0b6110  - drains the lobby state on teardown: if the
+// CMulti::ReleaseResources  @ 0x0b6110  (slot-2 override, ex "Teardown") - drains
+// the lobby state on teardown: if the
 // join gate is fully armed (m_netGate && m_5bc && m_session && m_connected) push the two final
 // stat updates, then free the two heap lobby sub-objects (m_session, m_attractOverlay), release
 // the report gate object (m_netGate, via its vtable dtor), and hand m_590 back to the
 // logic object (m_logic->m_110).
 // ===========================================================================
 RVA(0x000b6110, 0xc7)
-void CMulti::Teardown() {
+void CMulti::ReleaseResources() {
     if (m_netGate && m_5bc && m_session && m_connected) {
         SendNetStat(0x402, 0x4d2, 1);
         SendStatFlag(0x3ea, 1);
@@ -836,7 +839,8 @@ void CMulti::Teardown() {
         m_lightFx = 0;
     }
     Mgr()->m_isEffectsEnabled = m_590;
-    CPlayDtorBody();
+    // Chain CPlay's slot-2 body (0xc8700, ex "CPlayDtorBody") - qualified -> direct.
+    CPlay::ReleaseResources();
 }
 
 // ---------------------------------------------------------------------------
@@ -951,12 +955,13 @@ i32 CMulti::FrameSlot28(i32 arg) {
 // so it is modeled on a neutral helper and reached by cast at both sites.
 
 // ===========================================================================
-// CMulti::StartSession  @ 0x0b6580  - resolve the chosen host, reseed the RNG +
+// CMulti::LoadByMode  @ 0x0b6580  (slot-30 override, ex "StartSession") - resolve
+// the chosen host, reseed the RNG +
 // the frame timers, prime the per-slot config table (m_logic->m_150[0..3]), load the
 // level, then re-arm everything for the live session. Returns 1 on success.
 // ===========================================================================
 RVA(0x000b6580, 0x1eb)
-i32 CMulti::StartSession(i32 mode, i32 unused) {
+i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     g_optionsCursor = 0;
     // FindOptionsSlot's OptionsSlot is defined in GruntzMgr.cpp; only its +0x00 field is
     // read here (g_curPlayer = *host), so the row is taken as i32*.
@@ -981,7 +986,9 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_5e4 = timeGetTime();
     m_574 = 0;
     m_curSlotId = m_session->m_tick - 1;
-    if (LoadLevelByMode(mode, 0) == 0) {
+    // The CPlay slot-30 default body (0xca200) - qualified -> direct rel32 (this
+    // method IS the CMulti override of that slot; ex the "LoadLevelByMode" alias).
+    if (CPlay::LoadByMode(mode, 0) == 0) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
@@ -1050,7 +1057,8 @@ i32 CMulti::Connect(i32 mode) {
 }
 
 // ===========================================================================
-// CMulti::Tick  @ 0x0b6890  - the per-frame lobby pump: redraw, advance the
+// CMulti::Render  @ 0x0b6890  (slot-5 override, ex "Tick") - the per-frame lobby
+// pump: redraw, advance the
 // frame clock off timeGetTime, step the lobby object, arm the next slot, then
 // either keep ticking, flag out-of-sync, or finish + present.
 // ===========================================================================
@@ -1064,7 +1072,7 @@ i32 CMulti::Connect(i32 mode) {
 // instruction stream diverges despite identical logic. >512 B; deferred to the
 // final sweep (no NEW idea closes it here).
 RVA(0x000b6890, 0x21b)
-i32 CMulti::Tick() {
+i32 CMulti::Render() {
     m_drewThisFrame = 0;
     HandleDragMove(0, m_cursorX, m_cursorY); // slot 31 (+0x7c) virtual dispatch
     i32 oldT = m_lastTime;
@@ -1329,7 +1337,7 @@ void CMulti::PumpB() {
             return;
         }
         StepGridWalk(g_frameDelta);
-        CopyRect(h);
+        winapi_0d0b30_CopyRect((i32)h);
         ((CDDrawSurfacePair*)mgr->m_drawTarget->m_frontPair)->m_surface->Flip(0);
         return;
     }
@@ -1389,7 +1397,7 @@ void CMulti::PumpB() {
     DrawDebugStats();
     Mgr()->m_cmdGrid->OverlayRelease();
     StepGridWalk(g_frameDelta);
-    CopyRect(h);
+    winapi_0d0b30_CopyRect((i32)h);
     if (m_worldReady != 0) {
         h->DrawBox((i32*)&m_hudRect, 0xff);
     }
@@ -1418,7 +1426,7 @@ void CMulti::PumpB() {
 // ===========================================================================
 // @early-stop
 // MFC CString temp + /GX EH wall: the body is the complete, correct
-// reconstruction (the TITLE%d Format, the LoadTitleScreen gate, the view/cursor
+// reconstruction (the TITLE%d Format, the RunTitleSeq gate, the view/cursor
 // reset, the m_netGate Bind/Activate/OpenPlayer net chain, and the two CString stash
 // helpers). Retail interleaves the EH-state stores (the [esp+...]=-1 funclet
 // indices) and the inline strlen+rep-movs CString constructions with a register
@@ -1433,7 +1441,7 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     CResSource* saved = m_2c;
-    CResSource* st = (CResSource*)RegistryFind(m_8, "STATEZ_ATTRACT");
+    CResSource* st = (CResSource*)m_8->ResolvePath("STATEZ_ATTRACT"); // 0x13c030
     m_2c = st;
     if (!st) {
         return 0;
@@ -1441,7 +1449,8 @@ i32 CMulti::StartTitle() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString title;
     title.Format("TITLE%d", idx);
-    if (LoadTitleScreen(title, 0, 0, 1, 0) == 0) {
+    // 0xfa350 CState::RunTitleSeq (inherited; ex the "LoadTitleScreen" alias).
+    if (RunTitleSeq(title, 0, 0, 1, 0) == 0) {
         m_2c = saved;
         return 0;
     }
@@ -1480,7 +1489,9 @@ i32 CMulti::StartTitle() {
     char* grp = player->GroupName();
     CString grpName(grp);
     ClearString59c(grpName); // clear m_groupName, return the temp
-    i32 r = m_isHost ? RebindHostAlt() : RebindHost();
+    // 0xbc460 SetupTcpIpConfig (host) / 0xbc750 CreateLocalPlayer (guest) - the
+    // real bodies below (ex the "RebindHostAlt"/"RebindHost" alias decls).
+    i32 r = m_isHost ? SetupTcpIpConfig() : CreateLocalPlayer();
     return r ? 1 : 0;
 }
 

@@ -15,9 +15,11 @@
 
 class CHelpState : public CState {
 public:
-    virtual ~CHelpState() OVERRIDE;              // slot 0  (0x8cf30)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual ~CHelpState() OVERRIDE; // slot 0  (0x8cf30)
+    // slot 1  0x095090 (HelpState.cpp; retail ??_7CHelpState slot 1 = ILT
+    // 0x2f40 -> 0x95090, ex "LoadAssets") - the help asset loader.
+    virtual i32 LoadGameAssetNamespaces(i32, i32, i32) OVERRIDE;
+    virtual void ReleaseResources() OVERRIDE;    // slot 2  (0x95120, unreconstructed)
     virtual GameStateId Update() OVERRIDE;       // slot 4
     virtual i32 Render() OVERRIDE;               // slot 5
     virtual i32 Vslot06() OVERRIDE;              // slot 6
@@ -27,8 +29,8 @@ public:
     virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
 
-    i32 LoadAssets(i32, i32, i32); // 0x95090
-    // LoadGameAssetNamespaces (0xf9ea0) is inherited from CState (called cast-free).
+    // (The ex "LoadAssets" decl is GONE - it IS the slot-1 override above; its body
+    // chains the base default via the qualified CState::LoadGameAssetNamespaces().)
 
     // The TRUE object is 0x1b8: CGruntzMgr::TransitionState (0x8b960) does `push 0x1b8;
     // call ??2` @0x8be4c, then the inline `mov [esi],??_7CHelpState@@6B@` (0x5e9dfc) stamp.

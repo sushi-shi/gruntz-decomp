@@ -65,9 +65,8 @@ CState::CState() {
 // `{}` anchor stubs that used to sit here are gone (slot order comes from the
 // declaration order in <Gruntz/State.h>, not from bodies; the ctor above emits
 // ??_7CState with extern relocs to them):
-//   slot 1 = ILT 0x43a9 -> 0x0f9ea0, the asset/state loader (the fn our tree defines
-//            as CState::LoadGameAssetNamespaces in GameAssetNamespaces.cpp - the
-//            Vfunc1/LoadGameAssetNamespaces shadowed pair is a flagged follow-up
-//            unification; Vfunc1 stays declared-only meanwhile).
+//   slot 1 = ILT 0x43a9 -> 0x0f9ea0, CState::LoadGameAssetNamespaces
+//            (GameAssetNamespaces.cpp; the ex-"Vfunc1" shadow pair is unified -
+//            the virtual IS the loader, one name family-wide).
 //   slot 2 = ILT 0x3f53 -> 0x0fa150, CState::ReleaseResources
 //            (StateReleaseResources.cpp; ex "CGameModeBase::BaseCleanup").

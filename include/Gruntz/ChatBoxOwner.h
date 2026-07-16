@@ -19,13 +19,13 @@ class CDDrawSurfaceMgr; // the world holder latched at m_18 (<Gruntz/GameRegistr
 // TUs include it); forward-declared here so this header stays lean.
 class CFontConfig;
 
-// SIZE proven by the alloc sites (operator-new ground truth): CPlay::Vfunc1 @0xc7f7f
-// and CMulti::SetupMultiplayerSession @0xb583d both `push 0x1c; call RezAlloc`.
+// SIZE proven by the alloc sites (operator-new ground truth): CPlay::LoadGameAssetNamespaces @0xc7f7f
+// and CMulti::LoadGameAssetNamespaces (slot 1) @0xb583d both `push 0x1c; call RezAlloc`.
 SIZE(CChatBoxOwner, 0x1c);
 class CChatBoxOwner {
 public:
     // Inline ctor, recovered from its retail inline expansion at CMulti::
-    // SetupMultiplayerSession 0xb583d (`push 0x1c; call RezAlloc` then the seven
+    // the CMulti slot-1 driver 0xb583d (`push 0x1c; call RezAlloc` then the seven
     // field stores in this exact order, m_8 = 1 through the pinned-1 register):
     // clear everything, mode = 1. No out-of-line ??0 exists (header-inline).
     CChatBoxOwner() {
@@ -41,7 +41,7 @@ public:
     // Latch the world holder (the sprite/name-registry source) + text host and
     // raise the active flag.
     // RETURNS i32 (constant 1): retail 0x204e0 materializes `mov eax,1` LIVE at the
-    // `ret` and CPlay::Vfunc1 (0xc7ec0) TESTs it. The old `void` decl is what produced
+    // `ret` and CPlay::LoadGameAssetNamespaces (0xc7ec0) TESTs it. The old `void` decl is what produced
     // the bogus "@early-stop constant-materialization wall" on this 25-byte function -
     // it was a wrong RETURN TYPE, not codegen.
     i32 Attach(CDDrawSurfaceMgr* world, CFontConfig* host);

@@ -42,7 +42,7 @@ class CWorldSoundSet;        // CWorld::m_54  (Teardown @0xb660 / Resume @0xbcf0
 class CGruntSpawnConfig;     // CWorld::m_60  (ClearSprites @0x11af90 / DtorBody @0x11c7b0)
 class CGruntzCmdMgr;         // CWorld::m_6c  (EnqueueSingle @0x23c30 - the marker/waypoint queue)
 class CTriggerMgr;           // CWorld::m_68  (== g_gameReg->m_cmdGrid; TriggerMgr.h)
-class CStatusBarMgr;         // CPlay::m_guts (+0x2dc; the 0x630-byte alloc in CPlay::Vfunc1)
+class CStatusBarMgr;         // CPlay::m_guts (+0x2dc; the 0x630-byte alloc in CPlay::LoadGameAssetNamespaces)
 class CLightFxRender;        // CPlay::m_lightFx (+0x320; the 0x43c alloc in LoadByMode)
 class CTileTriggerContainer; // CPlay::m_beginMarker (+0x2e4; Serialize @0x117280)
 struct CGameObject;          // CPlay::m_scrollSink (+0x4e4; the CursorSnapSprite game object)
@@ -166,8 +166,15 @@ public:
         return GAMESTATE_PLAY;
     }
     virtual i32 Render() OVERRIDE;               // THE per-frame heart (this TU)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1 (CState override)
-    virtual void ReleaseResources() OVERRIDE;    // slot 2 (CState override)
+    // slot 1 (CState override): the PLAY mode/object initializer @0xc7ec0
+    // (ModeObjInit.cpp; retail ??_7CPlay slot 1 = ILT 0x132a -> 0xc7ec0).
+    virtual i32 LoadGameAssetNamespaces(i32, i32, i32) OVERRIDE;
+    // slot 2 (CState override): the ~CPlay teardown body @0xc8700 (Play.cpp; retail
+    // ??_7CPlay slot 2 = ILT 0x1dc5 -> 0xc8700, ex "CPlayDtorBody") - free the
+    // per-frame workers (m_320/m_guts/m_hitTest/m_beginMarker/m_frameMarker), clear
+    // the four g_gameReg config rows, flush the m_startMarkers/m_3a4[4]/m_488
+    // free-list arrays, then chain CState::ReleaseResources.
+    virtual void ReleaseResources() OVERRIDE;
     virtual i32 Vslot06() OVERRIDE;              // slot 6 (CState override)
     virtual i32 InputVirtual() OVERRIDE;         // slot 8 (CState override)
     virtual i32 Vslot09(i32) OVERRIDE;           // slot 9 (CState override)
@@ -215,7 +222,7 @@ public:
     virtual i32 Vslot23();
     // slot 36 (+0x90): a genuine retail NO-OP - 0xd0030 is a lone `ret` (raw bytes
     // verified; a Ghidra recovery gap, so it is reachable only through ILT 0x1d9d
-    // from the CPlay/CDemo/CMulti vtables). CPlay::Vfunc1 calls it (no args, result
+    // from the CPlay/CDemo/CMulti vtables). CPlay::LoadGameAssetNamespaces calls it (no args, result
     // unused) between the slot-29 and slot-30 init hooks. Defining it inline both
     // matches retail and un-phantoms the vtable reloc. (The FID row that claimed
     // 0xd0030 was LIBCMT `__fpclear` was a LOW false positive - pruned; the
@@ -489,10 +496,8 @@ public:
     i32 FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY); // 0x0d5f90
     // FreeListTeardown (0x0cb480): release the per-level allocations back onto the
     // global free list (m_374[]/m_3ac[]/m_48c[] arrays + the per-type config rows).
-    // CPlayDtorBody (0x0c8700): the ~CPlay teardown body - free the per-frame
-    // workers (m_320/m_guts/m_hitTest/m_beginMarker/m_frameMarker), clear the four g_gameReg config
-    // rows, flush the m_startMarkers/m_3a4[4]/m_488 free-list arrays, then run the base dtor.
-    void CPlayDtorBody(); // 0x0c8700
+    // (The ~CPlay teardown body @0xc8700, ex "CPlayDtorBody", IS the slot-2
+    // ReleaseResources override declared above - one slot, one name.)
     // AddLevelGruntz (0x0d5960): walk the registry object list and register each
     // valid grunt object with the session; logs "Could not add Grunt" on failure.
     i32 AddLevelGruntz(); // 0x0d5960
@@ -548,7 +553,7 @@ public:
     i32 m_packetsSent; // +0x2d4  net packets sent (debug HUD "Sent = %i")
     i32 m_rngSeed;     // +0x2d8  (CMulti RNG seed)
     // +0x2dc: the "guts"/UI subsystem IS the canonical CStatusBarMgr - proven by the
-    // allocation site (CPlay::Vfunc1 @0xc7fea: `push 0x630; call ??2` stored at
+    // allocation site (CPlay::LoadGameAssetNamespaces @0xc7fea: `push 0x630; call ??2` stored at
     // CPlay+0x2dc == SIZE(CStatusBarMgr, 0x630)) and by every dispatched thunk
     // resolving to a CStatusBarMgr method (HitTest/ClearStat/CommitSlot/SetFallRect/
     // EnterHlRow/HitTestLayer/PlaceCursorTarget/UpdateStatusBarTabHighlight/

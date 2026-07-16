@@ -199,8 +199,13 @@ public:
     CMenuState() {
         m_1b4 = 0;
     }
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual i32 Vslot06() OVERRIDE; // slot 6
+    // slot 1  0x09fe50 (MenuStateAssets.cpp; retail ??_7CMenuState slot 1 = ILT
+    // 0x32ec -> 0x9fe50, ex "LoadAssets") - the MENU asset loader: registers the
+    // MENU IMAGEZ/SOUNDZ namespaces through the m_c (CDDrawSurfaceMgr) resource
+    // facet, primes the state core, then builds the menu HUD object + wires its
+    // keys/sound cues.
+    virtual i32 LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) OVERRIDE;
     virtual i32 Vslot07() OVERRIDE;              // slot 7
     virtual i32 InputVirtual() OVERRIDE;         // slot 8
     virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
@@ -241,11 +246,8 @@ public:
     // proof on CBootyState below. It never belonged to CMenuState: it reads [this+0x1d0]
     // off its own `this`, and this class is 0x1c0.)
 
-    // MENU asset loader (0x9fe50, MenuStateAssets.cpp): registers the MENU
-    // IMAGEZ/SOUNDZ namespaces through the m_c (CDDrawSurfaceMgr) resource facet, primes the
-    // state core, then builds the menu HUD object + wires its keys/sound cues.
-    i32 LoadAssets(i32 a1, i32 a2, i32 a3);
-    // Base namespace loader (0xf9ea0) inherited from CState (called cast-free).
+    // (The ex "LoadAssets" decl is GONE - it IS the slot-1 override above; its body
+    // chains the base default via the qualified CState::LoadGameAssetNamespaces().)
 
     char m_pad1a8[0x1b4 - 0x1a8];
     CChatBox* m_1b4; // +0x1b4 the menu UI object the scans drive (the real CChatBox)
@@ -301,7 +303,9 @@ public:
         m_videoPlaying = 0;
         m_1b4 = 0;
     }
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
+    // slot 1  0x038d20 (CreditsState.cpp; retail ??_7CCreditsState slot 1 = ILT
+    // 0x3954 -> 0x38d20, ex "LoadCreditzStateAssets") - the credits asset loader.
+    virtual i32 LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) OVERRIDE;
     // Own vtable slots (RTTI vtbl@0x5e9c64, 26 slots; slot order anchored by
     // CState). Out-of-line dtor (0x8d5e0, GameMode.cpp): runs ReleaseResources then
     // cl auto-destroys the m_caption CString + the m_1e8 image list before chaining
@@ -374,7 +378,8 @@ public:
     // the class is 0x214 and cannot host the `new` that GruntzMgr.cpp performs.
     char m_pad214[0x218 - 0x214];
 
-    i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3); // 0x38d20 (slot 1, called non-virtually)
+    // (The ex "LoadCreditzStateAssets" decl is GONE - it IS the slot-1 override
+    // above; its body chains the base via CState::LoadGameAssetNamespaces().)
     i32 InitAttractTitle();
     // SetupTitle (0x39a60): pull the "CREDITZ" TXT section into m_caption, build the
     // clip region, measure the text to seed m_scrollRect / m_scrollStep. (Was hosted on
@@ -382,11 +387,9 @@ public:
     i32 SetupTitle();
     // ShowAttractTitle (0x393b0) is the slot-8 InputVirtual override (declared above).
 
-    // Own attract-title tail helper reached via ILT thunk (reloc-masked self-call;
-    // formerly the CAttractSelf `this`-alias view). FadeInTitle @0xfa1f0 is the
-    // inherited CState base method (const char*) - no local shadow (a char* shadow
-    // would emit ?FadeInTitle@CCreditsState@@ which does not resolve to 0xfa1f0).
-    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag); // 0x1fa8f0
+    // (The ex "FadeInTitle"/"BuildMenuPage" local shadows @0xfa1f0/0xfa8f0 are
+    // GONE - they ARE the inherited CState::FadeInTitle / CState::RetireScene
+    // title-roll/transition helpers, reached cast-free.)
 };
 VTBL(CCreditsState, 0x001e9c64);
 
@@ -419,11 +422,13 @@ public:
             m_templateFlags[i] = 0;
         }
     }
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
+    // slot 1  0x018830 (BootyCheatState.cpp; retail ??_7CBootyState slot 1 = ILT
+    // 0x3111 -> 0x18830, ex "Vfunc1"/"CBootyCheatState::LoadAssets") - the booty
+    // asset/cheat-table loader. Chains the base via CState::LoadGameAssetNamespaces().
+    virtual i32 LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) OVERRIDE;
     // Own vtable slots (RTTI vtbl@0x5e9cec, 26 slots; slot order anchored by CState).
-    // CBootyState shares many slot bodies with its siblings CMultiBootyState /
-    // CBootyCheatState (0x1ce30/0x1d420 own CMultiBootyState methods, 0x18830 is
-    // CBootyCheatState::LoadAssets, 0x18d30/0x1c8a0 live in the booty-activate/
+    // CBootyState shares many slot bodies with its siblings (0x1ce30/0x1d420 own
+    // CMultiBootyState methods, 0x18d30/0x1c8a0 live in the booty-activate/
     // state-image TUs); those and the deferred slots are declared-only here (the
     // vtable references them reloc-masked - the vtable itself is not diffed). The
     // EH-framed `??1` (slot 0) re-stamps the CBootyState vtable, runs the slot-2
@@ -445,20 +450,11 @@ public:
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x01d3e0 (declared-only)
     virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17 (+0x44) 0x01d400 (declared-only)
 
-    // Slot 1 (0x18830, CBootyCheatState::LoadAssets, (int,int,int)) is reached
-    // non-virtually and its shape differs from CState's slot-1 placeholder, so it is
-    // not modeled as a CBootyState virtual.
-
-    // Non-virtual engine-label backlog stub (0x1d440; vtable-neutral).
-    void StateOnEnter();
-
-    // Booty-title tail helpers reached via ILT thunks (reloc-masked; the byte match is
-    // name-independent). These are SHARED bodies owned by other classes but dispatched
-    // with a CBootyState `this` (same functions its sibling CMultiBootyState calls):
-    //   FadeInTitle @0xfa1f0 is a CState base method (inherited - no local shadow;
-    //   its callers reach it cast-free), BuildPage == CSoundFxEmitter's 0xfa8f0
-    //   (the booty idle-anim tick reaches the same 0xfa8f0 through BuildPage too).
-    i32 BuildPage(i32 a, i32 b, i32 c, i32 d); // 0xfa8f0
+    // (The ex "StateOnEnter" @0x1d440 decl is GONE from here - retail's ONLY
+    // reference to 0x1d440 is ??_7CMultiBootyState slot 1 (ILT 0x2900), so it is
+    // CMultiBootyState's LoadGameAssetNamespaces override, not a CBootyState
+    // method. The ex "BuildPage" @0xfa8f0 alias is GONE too - it IS the inherited
+    // CState::RetireScene, reached cast-free like FadeInTitle @0xfa1f0.)
     // The booty HUD/idle overlays + the per-frame walking-grunt tick (BootyMessages.cpp,
     // BootyWalkAnim.cpp). The Show* toasts are popped by the slot-8 activator
     // (StateImages.cpp::InputVirtual), which binds to these real CBootyState symbols.
@@ -472,7 +468,7 @@ public:
     // --- the level-message HUD / effect-sprite trio, RE-HOMED here from CState ---
     // All three were CState-homed (and FormatHudText CMenuState-homed) behind a
     // `(CEffLoaderSelf*)this` view-cast; all three are binary-proven CBootyState methods:
-    //   * 0x18830 (this class's vtable SLOT 1, Vfunc1) is data-referenced at
+    //   * 0x18830 (this class's vtable SLOT 1, LoadGameAssetNamespaces) is data-referenced at
     //     ??_7CBootyState@@6B@+0x4 - so its `this` IS a CBootyState. It calls
     //     LoadGruntEffectSprites via thunk 0x3b8e with `mov ecx,esi` (its own `this`).
     //   * LoadGruntEffectSprites WRITES m_icons at +0x2fc..+0x31c, and LevelMsgHudDriver
@@ -490,7 +486,7 @@ public:
     void FormatHudText(CString* buf, i32 sel); // 0x1af70  the 960-B stat-line formatter
 
     // --- the slot-1 asset loader's four-stage build chain, RE-HOMED here ---
-    // Vfunc1 (slot 1) IS 0x18830 - data-referenced at ??_7CBootyState@@6B@+0x4. It was
+    // LoadGameAssetNamespaces (slot 1) IS 0x18830 - data-referenced at ??_7CBootyState@@6B@+0x4. It was
     // defined as `CBootyCheatState::LoadAssets` on a .cpp-local view class that does not
     // exist as a type, and its build chain was five DECLARED-ONLY aliases (Init1..Init5) of
     // real, already-defined functions - fabricated symbols nothing could link. Every one is
@@ -605,14 +601,18 @@ public:
         m_1b4 = 0;
         m_1b8 = 0x64;
     }
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
+    // slot 1  0x01d440 (BootyStateActivate.cpp; retail ??_7CMultiBootyState slot 1
+    // = ILT 0x2900 -> 0x1d440, ex "CBootyState::StateOnEnter" - a mis-attribution:
+    // 0x1d440 appears in NO other vtable and has no direct caller, so it is this
+    // class's own slot-1 loader). Body is a @stub (0xd7d B, unreconstructed).
+    virtual i32 LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) OVERRIDE;
     // Own vtable slots (RTTI vtbl@0x5e9bdc, 26 slots; slot order anchored by CState).
     // The EH-framed `??1` (slot 0, @0x8d510) re-stamps the CMultiBootyState vtable,
     // runs the slot-2 release (statically bound), re-stamps CState, chains
     // CState::ReleaseResources.
-    // Slots whose bodies live in another TU (slot 8 == OnActivate2 in the booty-activate
-    // TU; slot 1 == 0x1d440, shared with CBootyState::StateOnEnter) or are deferred are
-    // declared-only (the vtable references them reloc-masked; the vtable isn't diffed).
+    // Slots whose bodies live in another TU (slot 8 == OnActivate2 in the
+    // booty-activate TU) or are deferred are declared-only (the vtable references
+    // them reloc-masked; the vtable isn't diffed).
     virtual ~CMultiBootyState() OVERRIDE;     // slot 0  0x08d510 (??1) / 0x08d4e0 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x01e520 booty teardown
     RVA(0x0008d4c0, 0x6)
@@ -645,10 +645,8 @@ public:
     // [this+0x2f8] reads and its sole caller CBootyState::Render.)
     i32 QueryGruntSlots(); // 0x1ecf0 - scan 4 reg records for an empty slot
 
-    // Own booty-title tail helpers reached via ILT thunks (reloc-masked self-calls;
-    // formerly the CBootyAnimSelf `this`-alias view). FadeInTitle @0xfa1f0 is a CState
-    // base method (inherited - no local shadow; callers reach it cast-free).
-    void BuildPage(i32 x, i32 w, i32 h, i32 flag); // FUN_004fa8f0
+    // (The ex "BuildPage" @0xfa8f0 alias is GONE - it IS the inherited
+    // CState::RetireScene; FadeInTitle @0xfa1f0 likewise inherited, cast-free.)
     // Slot-8 activator (OnActivate2 @0x1f6f0, booty-activate TU) tail helper:
     // OnActivated (0x1ed30) runs after the namespaces install. (The shared image-load
     // gate at 0xface0 is CState's slot-8 base virtual - reached via CState::InputVirtual(),

@@ -96,15 +96,17 @@ static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_scrol
 
 // @confidence: high
 // @source: decomp-xref
-// CCreditsState::LoadCreditzStateAssets (0x38d20). Byte-exact (100%). int (BOOL) return
+// CCreditsState::LoadGameAssetNamespaces (0x38d20; the slot-1 override, ex
+// "LoadCreditzStateAssets"). Byte-exact (100%). int (BOOL) return
 // like its loader siblings; the literal `return 0;` keeps the opening/Init guards as
 // `test eax,eax`. The MONOLITH block is a SIBLING `if(midiz)` so the second
 // `cmp edi,ebp; je` survives (docs/patterns/redundant-sibling-guard-retest.md). The
 // 'IMX' music tag (0x584d49) is a non-relocated immediate. The "STATEZ_CREDITZ" Register
-// is the CHelpState::LoadAssets source (0x13c030 == CSymParser::ResolvePath).
+// is the CHelpState slot-1 source (0x13c030 == CSymParser::ResolvePath).
 RVA(0x00038d20, 0x176)
-i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
-    if (!LoadGameAssetNamespaces(a1, a2, a3)) { // inherited CState method on `this`
+i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
+    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
         return 0;
     }
     while (ShowCursor(0) >= 0)
@@ -392,7 +394,7 @@ i32 CCreditsState::InitAttractTitle() {
     CDDSurface* tgt = root->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
     ((CDDrawSubMgrPages*)root->m_drawTarget)->Method_158e90();
-    BuildMenuPage(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited; ex "BuildMenuPage")
     return 1;
 }
 

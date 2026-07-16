@@ -6549,10 +6549,11 @@ void CPlay::FreeListTeardown() {
 }
 
 // ---------------------------------------------------------------------------
-// CPlayDtorBody (0x0c8700): the ~CPlay teardown body. Frees the per-frame
-// workers, clears the four g_gameReg config rows, flushes the free-list
-// arrays, then chains the base (CState) dtor. Same free-list idiom as
-// FreeListTeardown (the m_markerData/m_3a4[4]/m_48c flush).
+// CPlay::ReleaseResources (0x0c8700; the slot-2 override, ex "CPlayDtorBody" -
+// retail ??_7CPlay slot 2 = ILT 0x1dc5 -> 0xc8700): the ~CPlay teardown body.
+// Frees the per-frame workers, clears the four g_gameReg config rows, flushes
+// the free-list arrays, then chains CState::ReleaseResources. Same free-list
+// idiom as FreeListTeardown (the m_markerData/m_3a4[4]/m_48c flush).
 // ---------------------------------------------------------------------------
 // (The DtorObList/DtorWorld/CDtorThis views are GONE - CDtorThis was CPlay
 // itself (its FABRICATED 32-filler vtable's "Vfunc80" slot 32/+0x80 is CPlay's
@@ -6564,7 +6565,7 @@ void CPlay::FreeListTeardown() {
 // in edx across the m_markerData/m_3a4/m_48c flush loops are not source-steerable
 // (same coloring plateau as FreeListTeardown 0xcb480, ~99%).
 RVA(0x000c8700, 0x1f4)
-void CPlay::CPlayDtorBody() {
+void CPlay::ReleaseResources() {
     i32 i;
     if (m_lightFx) {
         m_lightFx->Ctor();

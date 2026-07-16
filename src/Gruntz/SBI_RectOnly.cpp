@@ -123,7 +123,7 @@ void SbiList_Dtor(); // 0x5b48c6
 // emits them for a real `~Class()` whose VALUE members have non-trivial dtors. 0xc8980 is
 // a standalone teardown HELPER. 0xc8980 IS the out-of-line COMDAT copy of the real
 // ~CStatusBarMgr, which now exists in <Gruntz/StatusBarMgr.h> as `{ Teardown(); }` plus
-// the compiler-generated member teardown - PROVEN by CPlay::Vfunc1's fail path at 0xc82b6,
+// the compiler-generated member teardown - PROVEN by CPlay::LoadGameAssetNamespaces's fail path at 0xc82b6,
 // where `delete` INLINES exactly this sequence (Teardown / ~CPtrArray on m_ptrPool /
 // __ehvec_dtor over m_tabLists[8]) under /GX states 3/2. So the fix is known: spell this
 // AS the destructor and the frame + trylevels fall out.

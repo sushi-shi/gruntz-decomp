@@ -69,15 +69,15 @@ extern "C" u32 g_frameDelta;
 // spelling the ctor with the default emits the same reference, and the CRT lib
 // defines the symbol.)
 
-// 0x3bfa0 - CDemo::Vfunc1 (slot 1): clear the manager's pending world-file name,
-// run the CPlay base slot-1 (CPlay::Vfunc1 == the mode/object initializer at
-// 0xc7ec0); on failure return 0, else latch m_520 and return 1. (The ctx arg
-// IS the CGruntzMgr - its +0xc8 CString
+// 0x3bfa0 - CDemo::LoadGameAssetNamespaces (slot 1): clear the manager's pending
+// world-file name, chain the CPlay base slot-1 (the mode/object initializer at
+// 0xc7ec0, qualified -> direct); on failure return 0, else latch m_520 and return 1.
+// (The ctx arg IS the CGruntzMgr - its +0xc8 CString
 // is the canonical m_strWorldFile "world file name", which demo mode blanks.)
 RVA(0x0003bfa0, 0x42)
-i32 CDemo::Vfunc1(i32 ctx, i32 a1, i32 a2) {
+i32 CDemo::LoadGameAssetNamespaces(i32 ctx, i32 a1, i32 a2) {
     ((CGruntzMgr*)ctx)->m_strWorldFile.Empty();
-    if (CPlay::Vfunc1(ctx, a1, a2) == 0) {
+    if (CPlay::LoadGameAssetNamespaces(ctx, a1, a2) == 0) {
         return 0;
     }
     m_520 = 0x124f80;

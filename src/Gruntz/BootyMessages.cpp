@@ -295,8 +295,9 @@ i32 CBootyState::ShowSecretBonusMessage() {
 // this+offset. Logic + externs/strings named.
 // reloc-fidelity: FOLDED - now the real CBootyState:: method (was a BzState view + a
 // SYMBOL override), so BootyStateActivate's slot 12/14/17 tail-callers bind structurally.
-// RegisterMultiNamespaces == CState::FadeInTitle (0xfa1f0), StartTimer == BuildPage
-// (0xfa8f0), PassClickToPlayState == CGruntzMgr::PassClickToPlayState (0x8d780, ecx=reg).
+// RegisterMultiNamespaces == CState::FadeInTitle (0xfa1f0), StartTimer ==
+// CState::RetireScene (0xfa8f0, ex "BuildPage"), PassClickToPlayState ==
+// CGruntzMgr::PassClickToPlayState (0x8d780, ecx=reg).
 RVA(0x0001ce60, 0x450)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     i32 state = m_activation;
@@ -363,7 +364,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             m_c->m_drawTarget->Method_158ee0();
             m_c->m_childGroup->WalkDispatch2C(m_c->m_drawTarget->m_backPair);
             m_c->m_drawTarget->Method_158e90();
-            BuildPage(0x50, 0x3e8, 0, 1);
+            RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
             }
@@ -376,7 +377,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 return 0;
             }
             m_c->m_drawTarget->Method_158ee0();
-            BuildPage(0x50, 0x3e8, 0, 1);
+            RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
             m_activation = 0xfffffffe;
             return 1;
         }
@@ -390,7 +391,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             return 0;
         }
         m_c->m_drawTarget->Method_158ee0();
-        BuildPage(0x50, 0x3e8, 0, 1);
+        RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (ex "BuildPage")
         return 1;
     }
 

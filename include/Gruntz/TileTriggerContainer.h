@@ -88,8 +88,8 @@ class CTileTriggerContainer {
 public:
     // Inline ctor: the four CPtrList members construct (each `push 0xa; call
     // ??0CPtrList`) and the m_74 latch zeroes - exactly the inlined sequence at
-    // BOTH retail construction sites (CMulti::SetupMultiplayerSession 0xb5460:
-    // `push 0x78; call ??2` + 4x CPtrList(0xa) + `[esi+0x74]=0`; CPlay::Vfunc1
+    // BOTH retail construction sites (CMulti::LoadGameAssetNamespaces 0xb5460:
+    // `push 0x78; call ??2` + 4x CPtrList(0xa) + `[esi+0x74]=0`; CPlay::LoadGameAssetNamespaces
     // 0xc7ec0 likewise). m_70 is NOT initialized there - follow the bytes.
     CTileTriggerContainer() {
         m_74 = 0;

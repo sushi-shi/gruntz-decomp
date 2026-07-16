@@ -14,8 +14,9 @@
 #include <Gruntz/LeafCue.h>   // canonical LeafCue (m_1bc/m_1b8 sound-cue map value)
 #include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst (LeafCue::m_10 player; m_durationMs +0x28)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (HasKeyEqual_155550)
-// MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-
-// state asset loader.  Sibling of CHelpState::LoadAssets / GameLevelState loaders:
+// MenuStateAssets.cpp - CMenuState::LoadGameAssetNamespaces (0x09fe50, 835 B; the
+// slot-1 override, ex "LoadAssets"), the MENU game-
+// state asset loader.  Sibling of the CHelpState / GameLevelState slot-1 loaders:
 // chains the base namespace loader, registers the "MENU" IMAGEZ+SOUNDZ namespaces
 // through the m_c->m_imageRegistry (vtable +0x48) / m_c->m_soundRegistry registries, primes the state
 // core (m_c->m_4 IsReady/Init), then heap-allocates the menu HUD object (CPtrList +
@@ -91,11 +92,12 @@ i32 MenuCommit(CChatBox* obj, i32 idx); // 0x402fcc
 // the new-obj-vs-EH-state interleave - all allocator choices, not source-steerable.
 // See docs/patterns/zero-register-pinning.md + identical-return-epilogue-tailmerge.md.
 RVA(0x0009fe50, 0x343)
-i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
+i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (a3 == 0) {
         return 0;
     }
-    if (!LoadGameAssetNamespaces(a2, a3, a3)) {
+    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+    if (!CState::LoadGameAssetNamespaces(a2, a3, a3)) {
         return 0;
     }
     m_4->RestoreVideoMode(0);

@@ -623,13 +623,13 @@ i32 PumpIdleFrame() {
 //   +0x3a4  CByteArray[4] (__ehvec_dtor over CByteArray::~CByteArray)  state 2
 //   +0x370  CByteArray   state 1
 //   +0x1b4  CString      state 0
-// The dtor body first runs the explicit teardown CPlayDtorBody (0xc8700) at the
+// The dtor body first runs the explicit slot-2 teardown CPlay::ReleaseResources (0xc8700, ex "CPlayDtorBody") at the
 // top trylevel (state 5), then the members fold, then the CState base subobject
 // restamps its dtor vtable (0x5ea21c, reloc-masked) and runs the CState dtor
 // body (0xfa150). cl auto-emits ??_7CPlay@@6B@ (masks retail 0x5ea0bc, paired
 // via vtable_names.csv) + ??_7CDemo@@6B@ (masks 0x5e9f0c).
 
-// 0x8c830 - CPlay::~CPlay (/GX): stamp the CPlay vtable (prologue), run CPlayDtorBody
+// 0x8c830 - CPlay::~CPlay (/GX): stamp the CPlay vtable (prologue), run the slot-2 ReleaseResources
 // at the top trylevel, fold the five members (reverse decl order, descending /GX
 // states), then fold the CState base subobject (restamp 0x5ea21c, call CState body).
 // INLINE so it folds into CDemo's dtor (0x8d0d0) exactly as retail inlines the base
@@ -638,7 +638,8 @@ i32 PumpIdleFrame() {
 // ??_G -> duplicate-RVA), so it is pinned by mangled name:
 // @rva-symbol: ??1CPlay@@UAE@XZ 0x0008c830 0xaf
 inline CPlay::~CPlay() {
-    CPlayDtorBody();
+    CPlay::ReleaseResources(); // 0xc8700 (own slot-2 override, ex "CPlayDtorBody";
+                               // in-dtor static bind -> direct rel32)
 }
 
 // 0x8c470 - CState::~CState: the STANDALONE out-of-line copy of the (inline, header-
@@ -659,9 +660,9 @@ void ForceEmitCStateDtor() {
 // canonical Play.h class, g_inputMgr reuses this TU's local DirectInputMgr2 (ReadAll
 // added). The state object the factory drives IS the canonical CState (<Gruntz/State.h>,
 // already included).
-// OPEN DEFECT (handed off, not fixed here): CState::Vfunc1's FIRST parameter is typed
+// OPEN DEFECT (handed off, not fixed here): the CState slot-1 loader's FIRST parameter is typed
 // i32 but is really a CGruntzMgr* - proven twice, (a) retail's TransitionState passes
-// `this` into it, and (b) CPlay::Vfunc1 (ModeObjInit.cpp) casts that arg to a view whose
+// `this` into it, and (b) CPlay::LoadGameAssetNamespaces (ModeObjInit.cpp) casts that arg to a view whose
 // +0x164 / +0x170 fields ARE m_options[0].m_014 / m_020 of the game manager. Retyping it
 // touches CState/CPlay/CDemo/CBootyState + ~40 OVERRIDE decls, so it is left for the
 // owner of State.h; until then this one site converts the pointer at the call.
@@ -838,7 +839,8 @@ install:
     RefreshGameClock();
     {
         CState* st = m_curState;
-        i32 ok = st->Vfunc1((i32)this, a2, local10);
+        // slot 1 (+0x4) virtual dispatch - the state's asset/state loader.
+        i32 ok = st->LoadGameAssetNamespaces((i32)this, a2, local10);
         st = m_curState;
         if (ok == 0) {
             if (st != 0) {
@@ -871,15 +873,16 @@ VTBL(CPlay, 0x001ea0bc);
 
 // 0x8d0d0 - CDemo::~CDemo (/GX): stamp the derived vtable (0x5e9f0c), run the derived
 // cleanup (0x3c010) at trylevel 0, then INLINE-fold CPlay's teardown (restamp 0x5ea0bc,
-// CPlayDtorBody, the five members, the CState base).
+// CPlay::ReleaseResources, the five members, the CState base).
 RVA(0x0008d0d0, 0xc4)
 CDemo::~CDemo() {
     // The retail +0x2b call targets the ILT thunk 0x3c010, itself a 5-byte jmp to
-    // CPlayDtorBody (0xc8700) - so the "derived cleanup" resolves to the CPlay
-    // teardown body. Bind to CPlayDtorBody (0xc8700) so the reloc is faithful (the
-    // former ?DerivedCleanup@CDemo view was unbound). The compiler then inline-folds
-    // the ~CPlay base teardown (its own CPlayDtorBody call at +0x40). Byte-neutral.
-    CPlay::CPlayDtorBody();
+    // CPlay::ReleaseResources (0xc8700, ex "CPlayDtorBody") - so the "derived
+    // cleanup" resolves to the CPlay slot-2 teardown body. Bind to 0xc8700 so the
+    // reloc is faithful (the former ?DerivedCleanup@CDemo view was unbound). The
+    // compiler then inline-folds the ~CPlay base teardown (its own
+    // CPlay::ReleaseResources call at +0x40). Byte-neutral.
+    CPlay::ReleaseResources();
 }
 
 // -------------------------------------------------------------------------

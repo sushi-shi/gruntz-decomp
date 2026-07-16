@@ -17,7 +17,7 @@
 // WHY THE HOST IS CStatusBarMgr (evidence, not a guess). The tree already carried a
 // SECOND, independently-reconstructed view of this same object under the name
 // CStatusBarMgr (the LoadTabSprites builder TU). The two views are the same class:
-//   1. CPlay::Vfunc1 @0xc7ec0 does `push 0x630; call ??2@YAPAXI@Z` and stores the
+//   1. CPlay::LoadGameAssetNamespaces @0xc7ec0 does `push 0x630; call ??2@YAPAXI@Z` and stores the
 //      result at CPlay+0x2dc. The ctor is INLINED there. It contains NO vptr store
 //      and NO ??_7 relocation anywhere => the host has no vtable.
 //   2. That inlined ctor runs an EH-vector-ctor over the +0x2c region:
@@ -342,7 +342,7 @@ const i32 kSetTabErrTag = 0x44a;
 //
 // It owns the five per-tab widget lists (Statz / Gruntz / Resource / Multiplayer /
 // Game) as elements [1]..[5] of an eight-element CPtrList array at +0x2c, built by
-// the EH-vector-ctor in CPlay::Vfunc1. LoadTabSprites() (0x102250) is the big per-tab
+// the EH-vector-ctor in CPlay::LoadGameAssetNamespaces. LoadTabSprites() (0x102250) is the big per-tab
 // builder: it dispatches on the current tab index (m_activeTab, 1..5) and, for the
 // selected tab, creates each widget, configures it from a named sprite-asset key + a
 // geometry CRect, and appends it to that tab's list.
@@ -353,8 +353,8 @@ const i32 kSetTabErrTag = 0x44a;
 class CStatusBarMgr {
 public:
     // The REAL inline default ctor. Retail has no out-of-line ??0: it
-    // INLINES this whole body at both `new`-sites (CPlay::Vfunc1 0xc7fea and
-    // CMulti::SetupMultiplayerSession 0xb5931, both `push 0x630; call ??2`). Body is
+    // INLINES this whole body at both `new`-sites (CPlay::LoadGameAssetNamespaces 0xc7fea and
+    // the CMulti slot-1 driver 0xb5931, both `push 0x630; call ??2`). Body is
     // below the class (it needs the complete type). This replaces the ~100 raw
     // `*(i32*)(p + 0xNN) = ...` stores that BOTH call sites used to hand-roll through a
     // local `Worker630` view - the last view in ModeObjInit.cpp - and the two
@@ -363,7 +363,7 @@ public:
 
     // The REAL inline destructor: Teardown() then the compiler-generated member
     // teardown, in reverse declaration order - ~CPtrArray on m_ptrPool, then the
-    // eh-vector-dtor over the eight m_tabLists CPtrLists. PROVEN at CPlay::Vfunc1's
+    // eh-vector-dtor over the eight m_tabLists CPtrLists. PROVEN at CPlay::LoadGameAssetNamespaces's
     // fail path (0xc82b6), where `delete` inlines exactly that sequence under /GX
     // states 3/2.
     ~CStatusBarMgr() {
@@ -537,7 +537,7 @@ public:
     SbiRect m_rect14; // +0x14
     i32 m_24;         // +0x24
     i32 m_28;         // +0x28
-    // +0x2c: EIGHT CPtrLists, built by the EH-vector-ctor in CPlay::Vfunc1
+    // +0x2c: EIGHT CPtrLists, built by the EH-vector-ctor in CPlay::LoadGameAssetNamespaces
     // (`lea edx,[esi+0x2c]; push 0x1c; push 8`; 0x1c == sizeof(CPtrList)). Elements
     // [1]..[5] are the per-tab widget lists the tab selector (m_activeTab, 1..5) picks:
     // [1] Statz  [2] Gruntz  [3] Resource  [4] Multiplayer  [5] Game.
@@ -650,7 +650,7 @@ public:
     // +0x530  the pooled-ptr collection: a REAL MFC ::CPtrArray (0x14 -> +0x530..+0x543).
     // Its internals: m_pData @+0x534, m_nSize @+0x538, m_nMaxSize @+0x53c, m_nGrowBy @+0x540.
     ::CPtrArray m_ptrPool;
-    i32 m_544;    // +0x544  stamped 1 at the session new-site (CMulti::SetupMultiplayerSession
+    i32 m_544;    // +0x544  stamped 1 at the session new-site (the CMulti slot-1 driver
                   //         0xb5460, with m_barFrameGate = 0x1e0); role unrecovered
     i32 m_hlBusy; // +0x548
     CWarpStoneFly* m_retabNotify; // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
@@ -672,7 +672,7 @@ public:
     i32 m_61c[4];         // +0x61c  trailing dword block (cleared on reset)
     i32 m_tabCycle;       // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
-// 0x630 - the allocation site, not an inference: CPlay::Vfunc1 @0xc7fea does
+// 0x630 - the allocation site, not an inference: CPlay::LoadGameAssetNamespaces @0xc7fea does
 // `push 0x630; call ??2@YAPAXI@Z` and stores the result at CPlay+0x2dc.
 SIZE(CStatusBarMgr, 0x630);
 

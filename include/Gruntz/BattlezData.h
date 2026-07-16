@@ -1,7 +1,7 @@
 // BattlezData.h - CBattlezData, the per-game multiplayer (Battlez) progress /
 // score tracker held at CGameReg+0x7c (g_gameReg->m_7c). The game manager
 // new[]s a 0x388-byte instance during Init (push 0x388; call new) and runs the
-// ctor on it; LoadLevelByMode re-runs the ctor each level. The methods cluster
+// ctor on it; the slot-30 LoadByMode loader re-runs the ctor each level. The methods cluster
 // around two 4x4 int grids and an array of per-map records:
 //
 //   +0x00  m_records : pointer to an array of m_04 records, 0x40 bytes each

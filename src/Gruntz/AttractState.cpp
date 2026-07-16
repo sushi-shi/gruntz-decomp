@@ -14,7 +14,7 @@
 //
 // CAttract slots implemented here (order anchored by CState):
 //   ~CAttract()          0x08cd90  slot 0  EH ??1 (vtable restore + base chain)
-//   EnterAttractMode     0x013fb0  slot 1  (reached non-virtually; ret 0xc)
+//   LoadGameAssetNamespaces 0x013fb0  slot 1  (ex "EnterAttractMode"; ret 0xc)
 //   ReleaseResources()   0x0140d0  slot 2  resource release (Free + Release + base)
 //   Vslot09(i32)         0x014120  slot 9  title-screen entry (/GX)
 //   FrameSlot28(i32)     0x014340  slot 10 per-frame voice poll
@@ -78,16 +78,18 @@ extern char g_emptyString[];
 // The CAttract 0x13fb0 core band.
 // ===========================================================================
 
-// CAttract::EnterAttractMode - enter (or re-enter) the attract scene.
-// Gates on CState::LoadGameAssetNamespaces(a, b, mode); on failure returns that result.
+// CAttract::LoadGameAssetNamespaces (slot 1, ex "EnterAttractMode") - enter (or
+// re-enter) the attract scene.
+// Gates on the CState::LoadGameAssetNamespaces base default; on failure returns 0.
 // Otherwise hides the cursor, re-asserts the video mode, resolves the
 // "STATEZ_ATTRACT" state (stored into m_2c), loads its "SOUNDZ" set, registers
 // the sound handle on the menu page under the "ATTRACT"/"_" tags, hides the
 // cursor again, then sets the entry flags: m_host is always cleared, m_activeFlag is
 // cleared when mode == 3 (else set to 1). Returns 1 on success, 0 on early-out.
 RVA(0x00013fb0, 0xd5)
-i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
-    if (LoadGameAssetNamespaces(a, b, mode) == 0) {
+i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
+    // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
+    if (CState::LoadGameAssetNamespaces(a, b, mode) == 0) {
         return 0;
     }
 

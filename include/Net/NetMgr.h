@@ -976,7 +976,7 @@ struct CNetGameMgr {
     char m_pad60[0x6c - 0x60];
     CGruntzCmdMgr* m_6c; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
     char m_pad70[0xac - 0x70];
-    i32 m_ac; // +0xac  connect-in-progress guard (SetupMultiplayerSession toggles 1/0 per phase)
+    i32 m_ac; // +0xac  connect-in-progress guard (the CMulti slot-1 driver toggles 1/0 per phase)
     char m_padb0[0x110 - 0xb0];
     i32 m_110; // +0x110  session-armed gate (Setup saves the old value into CMulti::m_590)
     i32 m_114; // +0x114
@@ -1344,7 +1344,7 @@ public:
     // the 0xb5xxx-0xbdxxx method cluster belong to CMulti (<Gruntz/Multi.h>); this
     // class is only the DirectPlay session wrapper CMulti holds at CMulti+0x524
     // (CMulti::m_netGate, reached via Peer()). Constructed inline at
-    // CMulti::SetupMultiplayerSession @0xb560e: global `operator new(0x8c)`, the
+    // CMulti::LoadGameAssetNamespaces (slot 1) @0xb560e: global `operator new(0x8c)`, the
     // CObject base vptr stamp (0x5e8cb4), the three CObList ctors (nBlockSize 10),
     // the derived vptr stamp (0x5ea42c), then zero +0x14/+0x18.
     // (vptr implicit at +0x000)
@@ -1375,7 +1375,7 @@ public:
 
     // Inline ctor: the CObject base + three CObList members are auto-constructed by
     // cl (base+member+derived vptr stamps), then this body zeroes +0x14/+0x18 -
-    // reproducing the peer construction inlined at SetupMultiplayerSession @0xb560e.
+    // reproducing the peer construction inlined at the CMulti slot-1 driver @0xb560e.
     CNetMgr() {
         m_releaseIface = 0;
         m_directPlay = 0;
@@ -1417,12 +1417,10 @@ public:
     void PopulateGroupList(HWND hList, i32 flag); // 0x178470
     void SetServiceName(CString s);               // 0xb7730
 
-    // The multiplayer connect/init driver (0xb5460, /GX, 18 EH states): runs the
-    // whole "start a networked game" sequence - the peer CNetMgr, the CSBI_RectOnly
-    // session, the interface object and the command manager are all operator-new'd
-    // and wired here, then the connect wait + first poll are kicked off. Returns 1
-    // on a fully-established session, 0 on any failure. (a1 must be non-null.)
-    i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3);
+    // (The multiplayer connect/init driver @0xb5460, ex "SetupMultiplayerSession",
+    // is NOT a CNetMgr method: it is CMulti's slot-1 LoadGameAssetNamespaces
+    // override (<Gruntz/Multi.h>; retail ??_7CMulti slot 1 = ILT 0x3fb2 -> 0xb5460),
+    // run on this=g_curMulti. The orphan alias decl that sat here is gone.)
 };
 SIZE(CNetMgr, 0x8c);       // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
 VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
