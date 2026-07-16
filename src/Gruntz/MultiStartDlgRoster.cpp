@@ -1,10 +1,9 @@
 // MultiStartDlgRoster.cpp - the multiplayer roster/color/net dialog TU: the WOVEN
-// original obj at retail .text [0x0c2980 .. 0x0c5f15] (TU_MIGRATION interval
-// 0x0c2980, weave 0.43; own 8-frag init run @0xc5360 per interval-dossiers #4a -
-// a SEPARATE obj from MultiStartDlg.cpp's 0xc16b0 interval). wave2-F merge of the
-// five former units multistartdlgroster + netmgrmisc(interval fns) + netgamedlg +
-// multistartdlgcolor + multistartdlgnet, + the Sub_c3e30 stray from
-// MultiStartDlg.cpp (TU_MIGRATION MOVE row). Everything here runs on the ONE
+// original obj at retail .text [0x0c2980 .. 0x0c5f15] (own 8-frag init run @0xc5360;
+// a SEPARATE obj from MultiStartDlg.cpp's 0xc16b0 interval). The five former units
+// multistartdlgroster + netmgrmisc(interval fns) + netgamedlg + multistartdlgcolor +
+// multistartdlgnet, + the Sub_c3e30 stray from MultiStartDlg.cpp interleave into one
+// TU. Everything here runs on the ONE
 // multiplayer-start dialog (CMultiStartDlg) or its roster records; definitions in
 // strict ascending retail-RVA order.
 //
@@ -52,15 +51,12 @@ DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
 // The per-player roster record IS the canonical CFocusSlot (GameRegistry.h,
-// CGameRegistry::m_focusSlots[] +0x150, stride 0x238) - the former local RosterSlot
-// facet is dissolved: its roster fields (m_10/m_18/m_1c/m_228/m_16c + the mode-reused
-// m_14/m_20 roles + FormatName_3e54) now live on the canonical (name-preserving
-// union; no offset conflicted, so no conflation to split).
+// CGameRegistry::m_focusSlots[] +0x150, stride 0x238).
 
 // Dialog-item resolver (push idx; __stdcall) that relies on the caller's live ecx=this:
 // a thiscall ready-checkbox accessor (0x1159) spelled __stdcall so the byte stream omits
 // the `mov ecx` the caller already satisfied. (SetListCurSel / OnSlotSelect0..3 now call
-// the real CMultiStartDlg::GetCtrlC @0xc27c0 directly - those shims are dissolved.)
+// the real CMultiStartDlg::GetCtrlC @0xc27c0 directly.)
 CWnd* __stdcall ResolveItem_1159(i32 idx); // 0x01159
 // Roster free helpers (__stdcall, reloc-masked).
 void __stdcall Func1d70(i32 flag);            // 0x01d70
@@ -267,7 +263,7 @@ void CMultiStartDlg::AppendChatLine(char* str) {
 // DISSOLVED onto the real MFC classes: the stack brush is ::CBrush (CGdiObject base -
 // ??_7CObject/CGdiObject/CBrush COMDATs first-instantiated in Dialogs.cpp), the stack DC
 // is ::CDC, and the base owner-draw default is CWnd::OnDrawItem (0x1bbde7). Passing the
-// CBrush to FillRect runs its inline operator HBRUSH() (the old SafeBrush). The /GX EH
+// CBrush to FillRect runs its inline operator HBRUSH(). The /GX EH
 // frame unwinds the CDC/CBrush locals.
 // The game's FillRect fn-ptr (the .idata IAT slot, reloc-masked indirect call). The
 // canonical DATA binding is in Dialogs.cpp (g_pFillRectDlg @0x006c44e0); reference-
@@ -653,9 +649,9 @@ void CMultiStartDlg::OnColorSlot3() {
 // @early-stop
 // Same wall family as the sibling CBattlezDlg::ShowCustomDlg (Dialogs.cpp): /GX EH trylevel
 // numbering (retail 0/1/2/-1 vs 0/1/-1), the child!=0 branch polarity, and an esi-save
-// shrink-wrap our newer codegen does that MSVC5 didn't - none source-steerable. The
-// vptr-restamp part of the old wall is GONE (~CBattlezDlgCustom is compiler-generated now,
-// which is what the binary says and what took the dtor COMDAT to 100%). Body byte-faithful.
+// shrink-wrap our newer codegen does that MSVC5 didn't - none source-steerable.
+// ~CBattlezDlgCustom is compiler-generated (what the binary says; the dtor COMDAT
+// is 100%). Body byte-faithful.
 RVA(0x000c3cb0, 0x128)
 void CMultiStartDlg::OnCustomWorld() {
     if (g_multiState->m_isHost == 0) {
@@ -683,8 +679,7 @@ void CMultiStartDlg::OnCustomWorld() {
 // the CMulti game-state (m_5b4 = name, m_5b8 = "", m_5b0 = 0, Commit3ada). The /GX
 // EH frame unwinds the local scratch CString. GetLBText (CComboBox::GetLBText
 // 0x1ce7db) / operator= / Commit3ada / SendMessageA all reloc-mask.
-// (wave2-F: re-homed here from MultiStartDlg.cpp - RVA 0xc3e30 lies in THIS
-// roster interval, per the TU_MIGRATION MOVE row deferred by wave1-D.)
+// (RVA 0xc3e30 lies in THIS roster interval.)
 RVA(0x000c3e30, 0xfe)
 void CMultiStartDlg::Sub_c3e30() {
     if (g_multiState->m_isHost != 0) {
@@ -864,9 +859,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 }
 
 // ===========================================================================
-// CMultiStartDlg::Watchdog  (0x0c46b0; re-homed from the former netgamedlgwatch unit,
-// waveP - TU_MIGRATION MOVE row `0x0c46b0 Watchdog@CMultiStartDlg netgamedlgwatch ->
-// 0xc2980 multistartdlgroster`). Guarded by a re-entrancy flag, it refreshes the
+// CMultiStartDlg::Watchdog  (0x0c46b0). Guarded by a re-entrancy flag, it refreshes the
 // per-slot roster display, advances two blink counters, then walks the net-session
 // status flags and, on any terminal condition, kills the poll timer, pops a status
 // message, and tears down. Field/class names are placeholders; g_multiState/g_gameReg
@@ -874,7 +867,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 // ===========================================================================
 // The watchdog reads three fields (m_14 present / m_20 active / m_22c display value)
 // per player off the canonical CGameRegistry::m_focusSlots[] (GameRegistry.h, +0x150,
-// stride 0x238) - the former WatchReg/WatchRegSlot cast views are dissolved onto it.
+// stride 0x238).
 
 // The cached timeGetTime fn-ptr (DATA symbol; 0-arg, bound by m5_PaletteLerp).
 // Watchdog re-entrancy guard + two blink counters (.data).
@@ -1033,10 +1026,6 @@ i32 CMultiStartDlg::GetSlotIndex() {
 // guards test the relocatable addresses of CTileExclusiveTriggerSwitchLogic /
 // ReleaseResources (a pointer-to-member null check this cl can't re-spell), which
 // shifts the layout, and the a/b CString destruct-state numbering is EH residue.
-// (CLEANUP p2: folding the CNetSession lens into the real CMulti re-mangled the
-// Poll/SendStatFlag callees CMulti::-side; the code loads are byte-identical -
-// (void*)m_5b0 is the same DWORD mov as the old void* field - but the re-mangled
-// reloc symbol set nudged the EH-scope fuzzy score 54.6% -> 51.9%. Accepted.)
 // before the match starts, confirm every player has the same custom
 // level; otherwise re-enable the dialog and pop the appropriate error modal.
 RVA(0x000c4c00, 0x190)

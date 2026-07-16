@@ -661,7 +661,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
             // toggle off the pending-fx and rewind
             m_pendingFxKind = 0;
             ((CPlay*)g_gameReg->m_curState)
-                ->LoadCursorSprites(0, 0); // ILT 0x35da
+                ->LoadCursorSprites(0, 0);
             CGameObject* o = hit->m_10;
             this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
             return 1;
@@ -816,7 +816,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 hy = row;
     if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)
         || hx >= *(i32*)((char*)g_gameReg + 0x148) || hx < *(i32*)((char*)g_gameReg + 0x140)) {
-        ((CPlay*)lvl)->ResetGoals(hy, hx); // ILT 0x2e28
+        ((CPlay*)lvl)->ResetGoals(hy, hx);
     }
     // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
     // receiver is level->m_mainPlane - the ex-CTmGridHolder::Snap fake name)
@@ -878,7 +878,7 @@ void CTriggerMgr::ResetSpawnState() {
         }
     }
     if (g_gameReg->m_134 == 1) {
-        CTmCell* fx = m_pendingFx; // the pending-fx grunt
+        CTmCell* fx = m_pendingFx;
         if (fx != 0) {
             fx->ResolveDeathAnimation();
         }
@@ -970,7 +970,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         }
         if (k == 0x14) {
             if (g_gameReg->m_134 == 1) {
-                CTmCell* fx = m_pendingFx; // the pending-fx grunt
+                CTmCell* fx = m_pendingFx;
                 if (fx != 0) {
                     fx->ResolveDeathAnimation();
                 }
@@ -1604,7 +1604,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     } else if (kind != 0) {
         i32 v = kind + kPendingFxIdBase;
         m_pendingFxKind = v;
-        world->LoadCursorSprites(v, 0); // ILT 0x35da @0x7b2f4
+        world->LoadCursorSprites(v, 0);
     }
     this->Refresh2();
     this->Record2(x, y);
@@ -1697,7 +1697,7 @@ extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 // zero-register-pinning.md). Logic complete.
 RVA(0x0007b440, 0x3f0)
 i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
-    CombatCue(cx, cy, r, 6, a4); // thunk 0x400c -> 0x7b930
+    CombatCue(cx, cy, r, 6, a4);
 
     // The concrete game-state behind CGameRegistry::m_curState (the base CState is
     // proven <= 0x1c0, so a +0x2e4 read is a DERIVED state's field). Its shape here -

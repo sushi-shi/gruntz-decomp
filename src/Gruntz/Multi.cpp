@@ -34,7 +34,7 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/Attract.h> // g_attractStateCount (attract-title-index divisor)
 
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr - the REAL CState::m_4 game mgr (ex-CMultiMgr view)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr - the REAL CState::m_4 game mgr
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; DtorBody)
 #include <Gruntz/Dialogs.h> // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
 #include <Gruntz/LightFxRender.h> // CLightFxRender (the +0x320 attract overlay; teardown Ctor @0xa3360)
@@ -100,11 +100,6 @@ extern "C" CNetCreateCtx* g_netCreateCtx;
 // directly on CNetGameMgr in <Net/NetMgr.h>, so m_4->Method() needs no cross-cast.)
 // LoadGameAssetNamespaces (0xf9ea0) is now CState::LoadGameAssetNamespaces; CMulti
 // (: CPlay : CState) inherits it and calls it cast-free (the CAssetLoader this-view
-// (The former local CPlay/CMulti/NetSessionOpener/CNetMgrLite this-cast view
-// classes are gone: the REAL CMulti/CPlay come via <Gruntz/Multi.h>, and the
-// NetSessionOpener/CNetMgrLite hosts are defined below with their re-homed
-// methods (0xb77a0 / 0xb86c0).)
-
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * tiny-method-view over this - ((CNetConnectThis/CNetConnectSlotView/CSymParserView*)obj)
 //     ->M(): external reloc-masked __thiscall engine methods (own RVA) / vtable-slot PMFs;
@@ -272,9 +267,8 @@ void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0
 // (CNetJoinPacket moved to <Net/NetPackets.h> - a fully-known wire struct has no
 // business being DEFINED in a .cpp.)
 
-// --- re-homed stray context (dossier #4b seam ledger) ---
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
-// --- (from MultiResumeSlots.cpp) the cached timeGetTime import fn-ptr (0x6c4650);
+// The cached timeGetTime import fn-ptr (0x6c4650);
 // pinned in a callee-saved reg by CMulti::Vslot09.
 // The DirectPlay application GUID (DAT_0060fab8) lives at 0x20fab8 as g_dplayAppGuid
 // (i32[4], bound in Globals.cpp); the Open path casts it to GUID for InitFromProvider.
@@ -292,7 +286,7 @@ i32 g_isHost_648cf0;
 
 // The "ready options" count is CNetGameMgr::CountActiveChannels @0x492e30 (via the
 // 0x38cd ILT thunk; __thiscall ret 4) - the SAME method the channel cluster gates
-// on; the former OptionsHost placeholder folded into the canonical m_4 view.
+// on.
 // The custom-level verify-vote stat ids Poll ships (values load-bearing).
 enum {
     STAT_VERIFY_REQUEST = 0x41c,  // guest -> host: request the level-verify vote
@@ -399,7 +393,7 @@ extern void ActiveWait(i32 phase);
 // ---------------------------------------------------------------------------
 
 // (The 0x0b9290 stat writer is CMulti::SendNetStat - a __thiscall member, declared
-// in Multi.h; the old free-__stdcall extern here was a byte-shape placeholder. The
+// in Multi.h. The
 // Teardown call site relies on entry ecx still holding `this` - retail emits no
 // mov ecx before the call - which the member spelling reproduces.)
 
@@ -463,7 +457,7 @@ CMulti::~CMulti() {
     m_598.~CString();
     // CPlay/CState sub-objects (m_488, m_cueText, m_3a4[], m_startMarkers, m_1b4, ...)
     // are torn down by the compiler-chained ~CPlay -> ~CState base destructors now that
-    // CMulti : CPlay. No manual base teardown here (that was the old flat-model dtor).
+    // CMulti : CPlay. No manual base teardown here.
 }
 
 // InitStr6473d8 @0x0b5380 - the dynamic initializer that default-constructs the global
@@ -475,7 +469,7 @@ void InitStr6473d8() {
 }
 
 // -------------------------------------------------------------------------
-// 0x0b5400 (spatially re-homed from src/Stub/BoundaryLowerThunks.cpp). Re-run
+// 0x0b5400. Re-run
 // the ctor of the static CFileIO global at 0x646778 in place via the explicit-
 // ctor-call tail-jmp (its canonical DATA pin lives in src/Io/FileStream.cpp).
 extern CFileIO g_obj646778;
@@ -738,10 +732,8 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     m_hitTest = iface;
     // CChatBoxOwner::Attach RETURNS i32 (constant 1), and retail TESTS it here - VERIFIED
     // at 0xb5460+0x349: `call 0x3e77; test eax,eax; jne <continue>` with the same
-    // Deactivate+RezFree+return-0 teardown CPlay::Vfunc1 has. The note that once stood
-    // here ("Attach is void (QAEX): no failure signal, so the `== 0` guard was an
-    // artifact") was exactly backwards: the guard is REAL - it was the void decl that
-    // was wrong (see ChatBoxOwner.cpp).
+    // Deactivate+RezFree+return-0 teardown CPlay::Vfunc1 has. The Attach `== 0` guard
+    // is REAL: Attach returns a failure signal (see ChatBoxOwner.cpp).
     if (iface->Attach(m_c, NetGameMgr()->m_5c) == 0) {
         CChatBoxOwner* io = m_hitTest;
         if (io == 0) {
@@ -774,8 +766,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 
     // (4) command manager - the tile-trigger CONTAINER (retail: `push 0x78; call
     // ??2` + four inlined CPtrList(0xa) ctors at +0x00/+0x1c/+0x38/+0x54 +
-    // `[+0x74]=0`; the old `new CTileTriggerSwitchLogic` was the wrong class AND
-    // the wrong size, 0x8c vs 0x78).
+    // `[+0x74]=0`; size 0x78, not CTileTriggerSwitchLogic's 0x8c).
     CTileTriggerContainer* cmd = new CTileTriggerContainer();
     m_beginMarker = cmd;
     if (cmd->GetFlag74() == 0) {
@@ -1188,7 +1179,7 @@ extern "C" u32 g_killCueClock;     // 0x6bf3c0
 extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 // The 0x24558c..0x2455a0 countdown band (g_frameTicks/g_timer32/g_timer100/g_timer200/
 // g_timer400/g_timer500) comes from <Rez/FrameClock.h>. NOTE: the pump below proves
-// 0x245598 == g_timer200 (seed 0xc8 countdown), NOT the old "g_timer200" guess.
+// 0x245598 == g_timer200 (seed 0xc8 countdown).
 
 // dispatches m_c->m_childGroup's slot 9 (+0x24, ONE arg = the frame delta) then slot 16
 // (+0x40, no arg). The class whose RTTI slot map (vtbl 0x1efdc0, 17 slots) carries
@@ -1202,7 +1193,7 @@ extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 // it - the cast is gone.]
 
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
-// CGruntzMgr::m_sound (+0x48) IS the real CGruntzSoundZ (<Dsndmgr/GruntzSoundZ.h>): the former
+// CGruntzMgr::m_sound (+0x48) IS the real CGruntzSoundZ (<Dsndmgr/GruntzSoundZ.h>);
 // the +0x1c inner (m_pCurrent) are CGruntzSoundZ's own members.
 //
 // CTriggerMgr itself (m_cmdGrid's declared type) - its "Step3017" is
@@ -1546,7 +1537,7 @@ CString& CMulti::ClearString5a0(CString& s) {
     return s;
 }
 
-// CMulti::Open @0xb77a0 (__thiscall; was the NetSessionOpener this-cast view): roll the
+// CMulti::Open @0xb77a0 (__thiscall): roll the
 // "BACKGND" title fade, init the DDraw sub-mgr pages, build the session services, connect
 // via DirectPlay using the app GUID, then host- or join-start per g_isHost. The +0x524
 // join gate is the small real CNetMgr (Peer()); Configure/Build/HostStart/JoinStart were
@@ -3360,8 +3351,7 @@ void CMulti::OnMultiPause() {
 }
 
 // (The g_gameReg +0x38 config store is the SAME Utils::RegistryHelper the CNetGameMgr
-// exposes as m_configStore - GetString lives on that one class now; the former
-// CGameCfgStore method-only shadow is folded away.)
+// exposes as m_configStore - GetString lives on that one class now.)
 
 // ---------------------------------------------------------------------------
 // CNetMgr::OnMultiOptions
@@ -4491,8 +4481,8 @@ void CMulti::AutoTuneCmdDelay() {
 }
 
 // The game-settings singleton (_g_mgrSettings @0x64556c) - the same *0x64556c object
-// modeled as CNetGameMgr (BuildRezPath/ShowModal/FindPlayer folded onto it; the former
-// local CGameSettings view is gone). External; the `call rel32` reloc-masks.
+// modeled as CNetGameMgr (BuildRezPath/ShowModal/FindPlayer folded onto it). External;
+// the `call rel32` reloc-masks.
 
 // The active net session the verify path polls (DAT_00648cf8, a CNetMgr*).
 extern "C" CMulti* g_connectRptMgr; // 0x648cf8
