@@ -37,21 +37,30 @@ DATA(0x0024dad4)
 char* g_sfCurPath = 0; // the path currently being tried
 DATA(0x0024dadc)
 u16 g_sfCfgB12 = 0; // config block B +0xc
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
+// The four candidate SF2 path buffers + the current-directory scratch. These are
+// NOT string literals (an earlier @undefined-data note here claimed they were, which
+// is why they stayed unbound): all five are in the retail .data loader-zero TAIL, i.e.
+// zero-init .bss BUFFERS that get WRITTEN - GetCurrentDirectoryA fills g_sfDir, and
+// the four sprintf calls below fill the rest. Each address is read straight off the
+// retail body of BuildSoundFontPath (0xf8f30): `push 0x64dfa0` into
+// GetCurrentDirectoryA + `[ecx+0x64df9f]` for dir[len-1], and each sprintf's last
+// push before the call is its destination. Ascending retail RVA.
+//
+// Binding-only: the extent is deliberately NOT declared. The gaps here are not proven
+// extents (g_sfDeviceId at 0x64dd28 sits between two of them), and a guessed size
+// would be enrolled as a delinker data extent - see docs/data-attribution.md. The
+// definitions stay in <Globals.h>; these DATA() decls only pin name -> retail RVA so
+// the delinker names the references instead of falling back to the nearest symbol.
+DATA(0x0024dae0)
+extern char g_sfMusic4[]; // "<drive>:\MUSIC\Gruntz4.SF2"
+DATA(0x0024dc28)
+extern char g_sfLocal4[]; // "<cwd>\Gruntz4.SF2"
+DATA(0x0024dd30)
+extern char g_sfMusic[]; // "<drive>:\MUSIC\Gruntz.SF2"
+DATA(0x0024de30)
+extern char g_sfLocal[]; // "<cwd>\Gruntz.SF2"
+DATA(0x0024dfa0)
+extern char g_sfDir[]; // GetCurrentDirectoryA(0xff, ...) scratch
 
 // 0xf8ec0: re-seed the music device key table (defined below, in RVA order between
 // CloseSoundFontDevice and BuildSoundFontPath; forward-declared here for Close).
