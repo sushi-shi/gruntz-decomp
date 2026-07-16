@@ -474,6 +474,140 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// CActionOptionsMenuBar::Deserialize (0x00009bb0) - the Serialize mirror: read the
+// raw field run back, then re-resolve the three chip sprites by name and the
+// frame / two button-frame refs by name+bounds-checked frame index through the
+// registry name map. __thiscall, ret 4; returns 1, or 0 if the stream / registry
+// is absent. [Re-homed from the ex TriggerLoadRec.cpp: "CTriggerLoadRec" was a
+// fake view of THIS class - its m_0..m_3c field IO is exactly this layout, and
+// the retail body 0x9bb0 sits directly after Serialize 0x9810 in this obj.]
+// ---------------------------------------------------------------------------
+// @early-stop
+// outparam-zeroinit-scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md),
+// 92.2%: logic + offsets byte-exact. The indexed-block regalloc (idx pinned in a
+// callee-saved reg across the Lookup call) WAS cracked here by the `i32 i = idx;`
+// copy (88.9 -> 92.2). Sole residual: the 6 `out = 0` stores - retail SINKS
+// `mov [&out],eax` (reusing strlen's `xor eax,eax` zero) past the arg pushes, cl
+// HOISTS it after `lea &out`. Tried comma-injecting the store into the call's
+// this-expression and a map-receiver temp (regressed to 89%); the store position
+// is the MSVC5 scheduler coin-flip, source-invariant.
+RVA(0x00009bb0, 0x367)
+i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
+    if (s == 0) {
+        return 0;
+    }
+    CGameRegistry* gr = g_gameReg;
+    if (gr == 0) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* mgr = gr->m_world;
+    if (mgr == 0) {
+        return 0;
+    }
+
+    char buf[0x80];
+    CObject* out;
+    i32 idx;
+
+    s->Read(this, 8); // m_gridX + m_gridY
+    s->Read(&m_screenX, 4);
+    s->Read(&m_screenY, 4);
+    s->Read(&m_loaded, 4);
+    s->Read(&m_active, 4);
+    s->Read(&m_button0State, 8);
+    s->Read(&m_button0Icon, 8);
+
+    g_serialCounter++;
+    s->Read(buf, 0x80);
+    if (strlen(buf) != 0) {
+        out = 0;
+        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        m_normChipSprite = (CSprite*)out;
+    } else {
+        m_normChipSprite = 0;
+    }
+
+    g_serialCounter++;
+    s->Read(buf, 0x80);
+    if (strlen(buf) != 0) {
+        out = 0;
+        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        m_highChipSprite = (CSprite*)out;
+    } else {
+        m_highChipSprite = 0;
+    }
+
+    g_serialCounter++;
+    s->Read(buf, 0x80);
+    if (strlen(buf) != 0) {
+        out = 0;
+        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        m_greyChipSprite = (CSprite*)out;
+    } else {
+        m_greyChipSprite = 0;
+    }
+
+    g_serialCounter++;
+    s->Read(buf, 0x80);
+    s->Read(&idx, 4);
+    if (strlen(buf) != 0) {
+        i32 i = idx;
+        out = 0;
+        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        CSprite* tt = (CSprite*)out;
+        CImage* r;
+        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
+            r = (CImage*)tt->m_frames.m_pData[i];
+        } else {
+            r = 0;
+        }
+        m_frame = r;
+    } else {
+        m_frame = 0;
+    }
+
+    g_serialCounter++;
+    s->Read(buf, 0x80);
+    s->Read(&idx, 4);
+    if (strlen(buf) != 0) {
+        i32 i = idx;
+        out = 0;
+        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        CSprite* tt = (CSprite*)out;
+        i32 r;
+        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
+            r = (i32)tt->m_frames.m_pData[i];
+        } else {
+            r = 0;
+        }
+        m_button0Frame = r;
+    } else {
+        m_button0Frame = 0;
+    }
+
+    g_serialCounter++;
+    s->Read(buf, 0x80);
+    s->Read(&idx, 4);
+    if (strlen(buf) != 0) {
+        i32 i = idx;
+        out = 0;
+        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        CSprite* tt = (CSprite*)out;
+        i32 r;
+        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
+            r = (i32)tt->m_frames.m_pData[i];
+        } else {
+            r = 0;
+        }
+        m_button1Frame = r;
+    } else {
+        m_button1Frame = 0;
+    }
+
+    return 1;
+}
+
 SIZE_UNKNOWN(CActionOptionsMenuBar);
 SIZE_UNKNOWN(CDDrawSubMgrPages);
 SIZE_UNKNOWN(CSpriteMgr);

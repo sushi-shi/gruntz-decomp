@@ -1794,13 +1794,11 @@ unit = "streamrecordloaders"
 source = "src/Gruntz/StreamRecordLoaders.cpp"
 flags = "base"
 
-# Carved out of streamrecordloaders (operation REHOME D8): the trigger / grunt-state /
+# Carved out of streamrecordloaders (operation REHOME D8): the grunt-state /
 # projectile record loaders each sit at their own far-away .text block (separate objs).
-[[unit]]
-unit = "triggerloadrec"
-source = "src/Gruntz/TriggerLoadRec.cpp"
-flags = "base"
-
+# (The ex "triggerloadrec" unit is GONE: its one body 0x9bb0 was
+# CActionOptionsMenuBar::Deserialize - re-homed into actionoptionsmenubar,
+# whose obj it retail-contiguously ends.)
 [[unit]]
 unit = "gruntstaterec"
 source = "src/Gruntz/GruntStateRec.cpp"
