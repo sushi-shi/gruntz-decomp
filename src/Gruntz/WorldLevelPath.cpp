@@ -63,7 +63,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
     } else {
         CString key;
         i32 sel = m_1c;
-        if (g_6455f0 != 0) {
+        if (g_levelBias100 != 0) {
             sel += 0x64;
         }
         if (sel > 0x24 && sel <= 0x28) {

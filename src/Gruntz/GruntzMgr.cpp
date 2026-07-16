@@ -499,7 +499,7 @@ extern "C" {
     extern u32 g_frameTime;        // game-side abs clock (DAT_00645588)
     extern u32 g_engineFrameDelta; // draw-clock delta (cleared) - g_killCueClock is g_killCueClock
     // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
-    // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_645600 below.
+    // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_resolutionChanged below.
     char g_msgScratch[256]; // 0x6452d8
     // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
     // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
@@ -512,7 +512,7 @@ extern "C" {
     DATA(0x002455f8)
     u32 g_explosionz;
     DATA(0x00245600)
-    u32 g_645600; // DAT_00245600 (owner-TU definition, .bss)
+    u32 g_resolutionChanged; // DAT_00245600 (owner-TU definition, .bss)
 }
 // The "Traitor Mode" cheat gate (0x6455b0; DEFINED in src/Gruntz/Grunt.cpp, C++
 // ?g_traitorMode@@3HA - GruntCombat/TriggerMgrGrid/GruntzMgrCmd read the same symbol).
@@ -1734,7 +1734,7 @@ i32 CGruntzMgr::ClearWorldFile() {
 // state globals (reloc-masked DATA refs).
 RVA(0x0008f4f0, 0x26)
 void CGruntzMgr::ResetClockGlobals() {
-    g_645600 = 0;
+    g_resolutionChanged = 0;
     g_traitorMode = 0;
     g_gruntDestruction = 0;
     g_gruntCreation = 0;
@@ -4648,8 +4648,8 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     }
     RecomputeViewScale(); // 0x8f7f0 (thunk 0x1db6; ex the Step1db6 phantom)
     RefreshGameClock();   // 0x8f620 (thunk 0x3d23; ex the Step3d23 phantom)
-    if (g_645600 != 0) {
-        g_645600 = 0;
+    if (g_resolutionChanged != 0) {
+        g_resolutionChanged = 0;
         char buf[0x70];
         sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
         AppendChatMessage(buf); // 0x8f9c0 (thunk 0x1b54; ex the LogLine phantom)

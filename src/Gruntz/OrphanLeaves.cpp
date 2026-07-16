@@ -22,7 +22,7 @@
 // TYPE is still the placeholder void* cell in Globals.h.)
 RVA(0x000183d0, 0x6)
 const AFX_MSGMAP* CBattlezDlgCustom::GetMessageMap() const {
-    return (const AFX_MSGMAP*)&g_5e8e98;
+    return (const AFX_MSGMAP*)&g_battlezCustomMsgMap;
 }
 
 // ---------------------------------------------------------------------------

@@ -56,15 +56,15 @@ extern i32 g_screenTag;
 //  ButeTreeNopFree @0x56ea10 (TypeKeyColl.cpp) and ButeStoreFreeAdapter @0x574de0
 //  (ButeNode.cpp), reconstructed as real functions.)
 extern const i32 g_msgmap_CBattlezDlgColors;
-extern void* g_5e8e98;
+extern void* g_battlezCustomMsgMap;
 extern i32 g_idleSpriteIds[4];
 extern float g_secretRatioScale;
 extern const i32 g_msgmap_CCheckpointDlg;
 extern const float g_diffScale;
 extern double g_wingzScale;
 extern double g_wingzBias;
-extern i32 g_5ea3d4;
-extern i32 g_5ea3d8;
+extern i32 g_menuSparkleLo;
+extern i32 g_menuSparkleHi;
 extern const double g_slimeSpeedNum;
 extern const double g_objDropDiv;
 extern double g_dropFallBias;
@@ -172,10 +172,10 @@ extern i32 g_jitterY;
 extern "C" char g_msgScratch[];
 extern i32 g_panMinX;
 extern i32 g_panMaxX;
-extern "C" i32 g_64553c;
+extern "C" i32 g_areaHazardParam;
 // (0x645548 is g_coordPool.m_count (+0x08) - an interior field, not a global.)
 extern "C" i32 g_cdPromptResult;
-extern "C" i32 g_6455f0;
+extern "C" i32 g_levelBias100;
 extern i32 g_debugDisplayFlags; // 0x6455f4 debug-overlay flags word (def: GruntzMgr.cpp)
 // (g_kslimeColl @0x646228 is ONE 0x24 CActReg object, DEFINED in src/Gruntz/KitchenSlime.cpp
 //  and private to it; 0x64622c..0x646248 are its interior fields, not globals.)

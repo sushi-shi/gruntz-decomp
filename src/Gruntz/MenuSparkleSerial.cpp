@@ -12,9 +12,9 @@
 // The two serialized 4-byte globals (owner-TU defs; VA 0x5ea3d4/0x5ea3d8). Reloc-
 // masked DIR32 referents; defaults 1000/5000, round-tripped through the archive.
 DATA(0x001ea3d4)
-i32 g_5ea3d4 = 1000; // 0x5ea3d4
+i32 g_menuSparkleLo = 1000; // 0x5ea3d4
 DATA(0x001ea3d8)
-i32 g_5ea3d8 = 5000; // 0x5ea3d8
+i32 g_menuSparkleHi = 5000; // 0x5ea3d8
 
 // ===========================================================================
 // CMenuSparkle::SerializeMove  (0xae1c0) - the class's vtable slot-1 serialize.
@@ -36,12 +36,12 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
         if (mode != 7) {
             return 1;
         }
-        arc->Read(&g_5ea3d4, 4);
-        arc->Read(&g_5ea3d8, 4);
+        arc->Read(&g_menuSparkleLo, 4);
+        arc->Read(&g_menuSparkleHi, 4);
         return 1;
     }
-    arc->Write(&g_5ea3d4, 4);
-    arc->Write(&g_5ea3d8, 4);
+    arc->Write(&g_menuSparkleLo, 4);
+    arc->Write(&g_menuSparkleHi, 4);
     return 1;
 }
 

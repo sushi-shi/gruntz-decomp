@@ -896,10 +896,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     g_frameDelta = 0;
     g_lastNow = 0;
     g_frameTime = 0;
-    g_6455f0 = 0;
+    g_levelBias100 = 0;
     if (level > 0x64) {
         level -= 0x64;
-        g_6455f0 = 1;
+        g_levelBias100 = 1;
     }
 
     // clear the frame-marker timer's slots
@@ -1081,35 +1081,35 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             case 1:
                 g_areaPageSize = 0;
-                g_64553c = 0;
+                g_areaHazardParam = 0;
                 break;
             case 2:
                 g_areaPageSize = 8;
-                g_64553c = 0;
+                g_areaHazardParam = 0;
                 break;
             case 3:
                 g_areaPageSize = 8;
-                g_64553c = 0xf;
+                g_areaHazardParam = 0xf;
                 break;
             case 4:
                 g_areaPageSize = 5;
-                g_64553c = 9;
+                g_areaHazardParam = 9;
                 break;
             case 5:
                 g_areaPageSize = 4;
-                g_64553c = 0xb;
+                g_areaHazardParam = 0xb;
                 break;
             case 6:
                 g_areaPageSize = 0xe;
-                g_64553c = 0xb;
+                g_areaHazardParam = 0xb;
                 break;
             case 7:
                 g_areaPageSize = 4;
-                g_64553c = 0;
+                g_areaHazardParam = 0;
                 break;
             default:
                 g_areaPageSize = 4;
-                g_64553c = 0;
+                g_areaHazardParam = 0;
                 break;
         }
     }
@@ -3242,7 +3242,7 @@ i32 CPlay::DrawLevelInfoText() {
                 case 0x28:
                     s2.LoadString(0x819a);
             }
-            if (g_6455f0 != 0) {
+            if (g_levelBias100 != 0) {
                 s1.LoadString(0x81ac);
                 s2.LoadString(0x81ad);
             }

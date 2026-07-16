@@ -56,7 +56,7 @@ extern i32 g_screenTag;
 DATA(0x001e8d10)
 const i32 g_msgmap_CBattlezDlgColors = 6205544;
 DATA(0x001e8e98)
-extern void* g_5e8e98;
+extern void* g_battlezCustomMsgMap;
 DATA(0x001e9068)
 i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
 DATA(0x001e94b8)
@@ -159,7 +159,7 @@ char s_PREVIEW_6135e8[] = "PREVIEW"; // "PREVIEW"
 // g_part* fields DEFINED in src/Gruntz/FortressFlag.cpp (owner TU).
 // g_msgScratch DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
 DATA(0x0024553c)
-extern "C" i32 g_64553c = 0;
+extern "C" i32 g_areaHazardParam = 0;
 // (0x645548 is g_coordPool.m_count (+0x08), an interior field of the pool object at
 //  0x645540 - not a global. The fabricated `g_poolScratch645548` scalar that used to be
 //  pinned here was referenced by nothing at all.)
@@ -167,7 +167,7 @@ extern "C" i32 g_64553c = 0;
 // prompt writes it). g_debugDisplayFlags (0x2455f4, PROVEN i32 - dword cheat-switch
 // accesses) DEFINED in src/Gruntz/GruntzMgr.cpp with its band siblings.
 DATA(0x002455f0)
-extern "C" i32 g_6455f0 = 0;
+extern "C" i32 g_levelBias100 = 0;
 // g_kslime* fields DEFINED in src/Gruntz/KitchenSlime.cpp (owner TU).
 // 0x248ce0 was ALSO bound here as `g_dlgResultSink` while Multi.cpp bound it as
 // `g_sharedFlag` - one cell, two symbols, no storage. Folded onto g_sharedFlag, which

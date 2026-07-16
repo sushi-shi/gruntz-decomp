@@ -216,7 +216,7 @@ extern CButeStore g_store6453f0, g_store64544c; // == g_buteMgr.m_tree / .m_tree
 
 // This TU's own .bss scalar (0x645210 is outside every modelled object).
 DATA(0x00245210)
-i32 g_645210;
+i32 g_appHInstance;
 
 // ---------------------------------------------------------------------------
 // SHREDDED-OBJECT FIX. Fourteen "globals" used to be DEFINED here as separate .bss
@@ -466,7 +466,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     // --- Phase 6: surface manager + game level -----------------------
-    g_645210 = (i32)m_owner->m_hInstance;
+    g_appHInstance = (i32)m_owner->m_hInstance;
     char dpBuf[0x114];
     strcpy(dpBuf, szCmdLine);
     ::AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1); // 0x1d3eff (NAFXCW)

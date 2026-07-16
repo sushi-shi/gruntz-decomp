@@ -220,7 +220,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
     m_object->m_1a0.m_2c = 0;
-    m_object->m_124 = g_64553c;
+    m_object->m_124 = g_areaHazardParam;
     m_activeWindow = 0;
     m_idleWindow = m_object->m_120;
     m_pulseEpoch = g_frameTime;
