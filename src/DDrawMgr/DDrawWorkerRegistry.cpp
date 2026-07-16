@@ -45,18 +45,18 @@ SIZE(CDDrawWorker, 0x6c);
 // operator delete + the engine free.
 void operator delete(void*);
 
-// IDENTITY: CDDrawSubMgrFar is the linker-kept COMDAT-copy pair of CLoadable's
-// (A)-form inline dtor - ??_G @0x155720 (this obj's span) calling ??1 @0xd5d70
-// (CImage.cpp's span). It cannot be spelled on CLoadable itself while the canonical
-// dtor is inline (<Gruntz/Loadable.h>; one-definition rule) - the scaffold name
-// survives until the family's (B)-form explicit-ScalarDtor flip. Modeled with its
-// ScalarDtor here so the ??_G call reloc binds to the real ??1 @0xd5d70.
-class CDDrawSubMgrFar {
-public:
-    void* ScalarDtor(u32 flags); // 0x155720 (`??_G` scalar-deleting destructor)
-    virtual ~CDDrawSubMgrFar();  // 0xd5d70 (member teardown, CImage.cpp)
-};
-SIZE_UNKNOWN(CDDrawSubMgrFar);
+// The linker-kept COMDAT pair of CLoadable's (A)-form inline dtor - ??_G
+// @0x155720 (this obj's span) calling ??1 @0xd5d70 (the CImage-band COMDAT pool)
+// via the ILT thunk 0x429b. This TU `new`s/destroys CDDrawWorker (: CLoadable),
+// so cl auto-emits BOTH as byte-identical COMDATs (verified llvm-objdump -dr:
+// ??1 = xor eax,eax; m_04=-1; m_08/m_0c=0; the ??_7CObject re-stamp; ??_G = the
+// standard call-~/test-flag/operator-delete shell). They are bound below by
+// @rva-symbol - no source spelling is possible (the canonical dtor is inline in
+// <Gruntz/Loadable.h>; one-definition rule). Was the CDDrawSubMgrFar scaffold
+// class (hand-written ScalarDtor + a second fabricated view in CImage.cpp) -
+// dissolved onto the real ??1CLoadable/??_GCLoadable identities.
+// @rva-symbol: ??1CLoadable@@UAE@XZ 0x000d5d70 0x16
+// @rva-symbol: ??_GCLoadable@@UAEPAXI@Z 0x00155720 0x1e
 
 // (The former RegDirEntry tree-cursor view is DISSOLVED 2026-07-14: the walkers'
 // FirstSub/NextSub children are Bute CSymTab scopes - m_name @+0x00, the same
@@ -408,20 +408,8 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x155720: CDDrawSubMgrFar's scalar-deleting destructor (retail placed this COMDAT
-// in this obj's RVA span). Run the real member-teardown ~ (0xd5d70, CImage.cpp),
-// then RezFree when the low deleting-flag bit is set; return this. Hand-written
-// non-virtual + RVA pin (the CDDrawRegistryDtorHost::ScalarDtor pattern) so the
-// member-dtor CALL reloc binds to ??1CDDrawSubMgrFar @0xd5d70 (reloc-fidelity).
-RVA(0x00155720, 0x1e)
-void* CDDrawSubMgrFar::ScalarDtor(u32 flags) {
-    this->CDDrawSubMgrFar::~CDDrawSubMgrFar();
-    if (flags & 1) {
-        ::operator delete(this);
-    }
-    return this;
-}
+// (0x155720 = ??_GCLoadable - the auto-emitted COMDAT, @rva-symbol-bound at the
+// file head; the hand-written CDDrawSubMgrFar::ScalarDtor stand-in is dissolved.)
 
 // ---------------------------------------------------------------------------
 // 0x155750 - CDDrawWorker::IsLoaded (slot 5 override): loaded iff the owner

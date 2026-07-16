@@ -70,10 +70,9 @@ void operator delete(void*);
 // under a second name (<Gruntz/Loadable.h> records the proof). The 3-arg CLoadable
 // base ctor is defined below at its retail RVA.)
 // 0x155720 is CLoadable's ??_G scalar-deleting-dtor COMDAT copy (member-teardown ~ at
-// 0xd5d70, CImage.cpp) - kept as the CDDrawSubMgrFar COMDAT-scaffold pair in
-// DDrawWorkerRegistry.cpp/CImage.cpp (see the notes there): the (A)-form inline
-// ~CLoadable cannot ALSO be defined out-of-line, so the linker-kept COMDAT copies
-// wear the scaffold name until the family's (B)-form flip.
+// 0xd5d70, the CImage-band pool) - both are cl auto-emitted, byte-identical to
+// retail, and @rva-symbol-bound as the REAL ??_GCLoadable/??1CLoadable in
+// DDrawWorkerRegistry.cpp (the ex-CDDrawSubMgrFar scaffold, dissolved).
 
 // (The former CDDrawBlitParamSrc source view is DISSOLVED onto the real
 // CAniElement - see <Gruntz/AniAdvanceCursor.h>.)

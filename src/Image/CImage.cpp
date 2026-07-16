@@ -66,7 +66,7 @@ enum ImageFormatTag {
 //       CImage.h (cl COMDAT-emits them); IsLoaded is CWapObj's base inline virtual
 //       (CImage its sole non-overriding user); Gap_0d5c10 is a CImage-family loader
 //       helper (xref: calls CImage::Resolve/FreeAll/RenderFrame + CSymTab/sprintf);
-//       ??1CDDrawSubMgrFar is a distinct-identity COMDAT dtor copy (C168c10 pattern).
+//       0xd5d70 is the linker-kept ??1CLoadable COMDAT (bound in DDrawWorkerRegistry.cpp).
 // Splitting any of these into a foreign RVA-named .cpp would MISATTRIBUTE CImage's
 // own methods. No split warranted; the flag is a false-positive (flag_outliers
 // _POOLED_RE does not recognise the GetClassId/Slot1N/IsLoaded pooled-virtual names).
@@ -83,31 +83,16 @@ i32 Gap_0d5c10(void) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0d5d70 - IDENTITY: this is ~CLoadable's out-of-line COMDAT copy (the linker kept
-// THIS unit's emission; its ??_G pair 0x155720 was kept from the DDrawSubMgr-band obj
-// and calls it via the ILT thunk 0x429b). It CANNOT be spelled `CLoadable::~CLoadable`
-// here because the (A)-form canonical (<Gruntz/Loadable.h>) defines that dtor INLINE -
-// every derived dtor in the tree folds its resets - and C++ allows no second,
-// out-of-line definition. Until the family's (B)-form explicit-ScalarDtor flip, the
-// linker-kept COMDAT pair wears this distinct scaffold name (C168c10 pattern). The
-// body: field resets (m_04=-1, m_08/m_0c=0) + the single surviving ??_7CObject
-// re-stamp (the intermediate stamps dead-store-eliminated).
-struct CDDrawSubMgrFar : public CObject {
-    virtual void s0();          // slot 0
-    virtual ~CDDrawSubMgrFar(); // slot 1 (its ??_G is 0x155720 in DDrawSubMgr.cpp)
-    virtual void s2();          // slot 2
-    virtual void s3();          // slot 3
-    virtual void s4();          // slot 4
-    i32 m_04;                   // +0x04
-    i32 m_08;                   // +0x08
-    i32 m_0c;                   // +0x0c
-};
-RVA(0x000d5d70, 0x16)
-CDDrawSubMgrFar::~CDDrawSubMgrFar() {
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-}
+// 0x0d5d70 - ??1CLoadable@@UAE@XZ: the ONE linker-kept COMDAT copy of the
+// canonical CLoadable inline dtor (<Gruntz/Loadable.h>): m_04=-1, m_08/m_0c=0 +
+// the single surviving ??_7CObject re-stamp (0x5e8cb4; the intermediate stamps
+// dead-store-eliminated). Its ??_G pair 0x155720 (DDrawWorkerRegistry-band obj)
+// calls it via the ILT thunk 0x429b. Because C++ allows no second out-of-line
+// definition of an inline member, the fn is not spelled here - cl auto-emits the
+// byte-identical COMDAT (verified llvm-objdump -dr) in every CLoadable-using obj,
+// and it is @rva-symbol-bound in src/DDrawMgr/DDrawWorkerRegistry.cpp (whose base
+// obj emits both halves of the pair). Was the fabricated `CDDrawSubMgrFar :
+// CObject` view with four body-less placeholder virtuals - dissolved.
 
 // ---------------------------------------------------------------------------
 // CWapObj::IsLoaded (slot 5, 0x0d5dc0) - the SHARED base default the whole
