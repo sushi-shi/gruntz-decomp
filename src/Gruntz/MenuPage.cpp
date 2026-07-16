@@ -799,24 +799,14 @@ i32 CMenuPage::SelectBackward() {
     return FocusPrev();
 }
 
-// allocate (RezAlloc 0x5c) + placement-construct a child item, Init it,
-// and append on success (else delete).
-// @early-stop
-// /GX placement-new wall (~34%): the allocator (RezAlloc), the Init dispatch
-// (vtable+0x4), the success Append + the failure deleting-dtor are correct, but
-// retail INLINES the 6-CString child ctor into the body, raising a /GX EH frame
-// (push -1/push 0xb/fs:0) with descending trylevel writes [esp+0x20]=0..6 around
-// each CString construct; the recompile keeps the ctor out-of-line (Construct())
-// so it emits no frame. This is the documented rezalloc-placement-new EH wall
-// (docs/patterns/rezalloc-placement-new-no-eh-frame.md,
-// eh-dtor-vptr-stamp-vs-trylevel-order.md; topic:eh/topic:wall). Logic complete;
-// deferred to the final sweep (match the child ctor as a leaf, then inline it).
+// `new CMenuItem()` (the throwing global operator new IS RezAlloc 0x1b9b46) - the
+// idiomatic new-expression the decompiler split into RezAlloc(0x5c) + a null-guarded
+// placement-new. Folding it back lets cl inline the 6-CString child ctor + raise the
+// retail /GX EH frame (push -1/fs:0 + descending trylevel writes) that the raw
+// placement form could not emit: EXACT.
 RVA(0x00183460, 0x13d)
 CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    CMenuItem* item = (CMenuItem*)RezAlloc(0x5c);
-    if (item) {
-        new (item) CMenuItem();
-    }
+    CMenuItem* item = new CMenuItem();
     if (item->Init((i32)this, a0, a1, a2, a3, a4) == 0) {
         if (item) {
             delete item;
@@ -826,15 +816,11 @@ CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     return Append(item) ? item : 0;
 }
 
-// like AddItem, but also links the new item to its parent context.
-// @early-stop
-// same /GX placement-new wall as AddItem (the inlined child ctor + EH trylevel).
+// like AddItem, but also links the new item to its parent context. `new CMenuItem()`
+// folded from the split RezAlloc+placement-new (see AddItem); ~exact (entropy tail).
 RVA(0x001835a0, 0x14b)
 CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    CMenuItem* item = (CMenuItem*)RezAlloc(0x5c);
-    if (item) {
-        new (item) CMenuItem();
-    }
+    CMenuItem* item = new CMenuItem();
     if (item->Init((i32)this, a0, a1, a2, a5, a6) == 0) {
         if (item) {
             delete item;
@@ -846,21 +832,16 @@ CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5,
     return Append(item) ? item : 0;
 }
 
-// allocate (RezAlloc 0x74) + construct the derived item (the CMenuItem2() ctor runs
-// the base ctor -> derived vptr stamp -> seeds the item's +0x5c..+0x70), Init it (vtable +0x4),
-// then on success run its slot-14 setter (SetFrame) and append (else delete).
+// `new CMenuItem2()` folded from the split RezAlloc(0x74)+placement-new (the derived
+// ctor runs the base ctor -> derived vptr stamp -> seeds +0x5c..+0x70), Init it
+// (vtable +0x4), then on success run its slot-14 setter (SetFrame) and append (else
+// delete). The fold recovers the /GX EH frame + inlined base ctor (34%->94%).
 // @early-stop
-// /GX placement-new wall (~34%): retail INLINES the 6-CString base ctor raising a
-// /GX EH frame (push -1/fs:0) with descending trylevel writes around each CString
-// construct. Now that the base/derived ctors are real inline ctors, MSVC inlines
-// them here too; the residual is the EH trylevel scheduling
-// (docs/patterns/rezalloc-placement-new-no-eh-frame.md).
+// 93.9%: residual is the EH trylevel scheduling around the inlined 6-CString base
+// ctor (docs/patterns/rezalloc-placement-new-no-eh-frame.md); logic byte-exact.
 RVA(0x001836f0, 0x160)
 CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    CMenuItem2* item = (CMenuItem2*)RezAlloc(0x74);
-    if (item) {
-        new (item) CMenuItem2();
-    }
+    CMenuItem2* item = new CMenuItem2();
     if (item->Init(a4, a3, a2, a1, a0, (i32)this) == 0) {
         if (item) {
             delete item;
@@ -871,16 +852,14 @@ CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     return Append(item) ? item : 0;
 }
 
-// like AddItem2, but the new item links its parent context (item+0x30/m_1c) on success.
+// like AddItem2, but the new item links its parent context (item+0x30/m_1c) on
+// success. `new CMenuItem2()` folded from the split RezAlloc+placement-new (49%->58%).
 // @early-stop
-// same /GX placement-new wall as AddItem2 (the inlined 6-CString base ctor + the
-// EH trylevel chain). Logic complete; deferred to the final sweep.
+// 58%: same inlined-base-ctor EH-trylevel-scheduling residual as AddItem2, amplified
+// by the extra parent-link stores (docs/patterns/rezalloc-placement-new-no-eh-frame.md).
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
-    CMenuItem2* item = (CMenuItem2*)RezAlloc(0x74);
-    if (item) {
-        new (item) CMenuItem2();
-    }
+    CMenuItem2* item = new CMenuItem2();
     if (item->Init(a6, a4, a2, a1, a0, (i32)this) == 0) {
         if (item) {
             delete item;
