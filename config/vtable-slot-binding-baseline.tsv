@@ -115,13 +115,11 @@ WIRING	0x1e8804	CSecretLevelTrigger	1	0x010bb0	?Serialize@CSecretLevelTrigger@@Q
 WIRING	0x1e8804	CSecretLevelTrigger	4	0x042760	?FireActivation@CSecretLevelTrigger@@QAEXH@Z	secretteleportertrigger
 WIRING	0x1e885c	CVoiceTrigger	1	0x0134e0	?Serialize@CVoiceTrigger@@QAEHHHHH@Z	gruntvoice
 WIRING	0x1e885c	CVoiceTrigger	4	0x11a3a0	?FireActivation@CVoiceTrigger@@QAEXH@Z	gruntvoice
-WIRING	0x1e8bac	CBattlezDlg	35	0x014d00	?BattlezSetupDlgInit@@YGHH@Z	dialogs
 WIRING	0x1e9634	CGruntzSingleCommand	8	0x024050	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	gruntzcmdmgr
 WIRING	0x1e9634	CGruntzSingleCommand	9	0x024140	?ApplyOne@CGruntzCommand@@QAEHPAVCPlay@@@Z	gruntzcmdmgr
 WIRING	0x1e9674	CGruntzCommand	0	0x024330	?ScalarDtor@CGruntzCommand@@QAEPAXI@Z	gruntzcmdmgr
 WIRING	0x1e96b4	CGruntzMultiCommand	8	0x0240d0	?Pack@CGruntzMultiCommand@@QAEHPADH@Z	gruntzcmdmgr
 WIRING	0x1e96b4	CGruntzMultiCommand	9	0x024190	?ApplyMask@CGruntzCommand@@QAEHPAVCPlay@@@Z	gruntzcmdmgr
-WIRING	0x1e9ab4	CGruntzApp	13	0x0809a0	?CreateU10O@@YAPAXXZ	gruntzapp
 WIRING	0x1e9b64	CGruntzMgr	0	0x083330	?ScalarDeletingDtor@CGruntzMgr@@QAEPAXI@Z	gruntzmgr
 WIRING	0x1e9bb4	CGruntzMapMgr	0	0x085480	?FreeNodes@CMapLogic@@QAEXXZ	maplogic
 WIRING	0x1e9bb4	CGruntzMapMgr	1	0x082430	?SerializeNodes@CMapLogic@@QAEHPAVCFileMemBase@@HHH@Z	maplogic
