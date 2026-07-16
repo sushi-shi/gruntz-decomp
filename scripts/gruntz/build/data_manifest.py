@@ -82,6 +82,83 @@ def _alignment(rva, size):
     return a
 
 
+def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
+    """Enrollable `??_C@` string-literal definitions + the withheld ones.
+
+    A data manifest de-materializes any data it does not enroll, so a unit's string
+    literals must be carried too or the functions referencing them stop matching.
+
+    Both facts are PROVEN, never guessed:
+      * the retail RVA comes from content-matching each retail data symbol's bytes
+        against the candidate objs' `??_C@` pools (the same oracle synth_pdb uses to
+        NAME them - cl.exe's own spelling for those exact bytes);
+      * the owning object is the candidate obj that defines the literal.
+    A payload emitted by SEVERAL units is a COMDAT the retail linker folded to one
+    copy; nothing in the image says which unit owned the survivor, so it is withheld
+    (82% of payloads are owned by exactly one unit). Identical payloads at two retail
+    RVAs would collide on one content-derived name; both are withheld.
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
+    from coff_oracle import _Coff, Exe  # noqa: E402
+    import synth_pdb as _synth  # noqa: E402
+    from collections import defaultdict
+
+    base_dir = Path(base_dir or REPO / "build/objdiff/base")
+    ghidra_symbols = Path(ghidra_symbols or REPO / "build/ghidra-enrich/exports/symbols.csv")
+    if not base_dir.is_dir() or not ghidra_symbols.is_file():
+        return [], []
+
+    owners = defaultdict(dict)          # payload -> {unit: ??_C@ name}
+    for obj in sorted(base_dir.glob("*.obj")):
+        try:
+            c = _Coff(obj)
+        except Exception:
+            continue
+        for idx, value, secnum in c.iter_symbols():
+            name = c.sym_name(idx)
+            if name.startswith("??_C@") and secnum >= 1:
+                cs = c.cstring(secnum, value)
+                if cs is not None:
+                    owners[cs][obj.stem] = name
+
+    pe = read_pe(exe)
+    _synth.read_sections(str(exe))
+    rdata_syms, data_syms = _synth.read_data_symbols(str(ghidra_symbols))
+    image = Exe(Path(exe))
+    rows, withheld, by_name = [], [], defaultdict(list)
+    for syms in (rdata_syms, data_syms):
+        for rva, _name in syms:
+            cs = image.cstring(rva + image.base)
+            if cs is None or cs not in owners:
+                continue
+            units = owners[cs]
+            if len(units) != 1:
+                withheld.append((rva, next(iter(units.values())),
+                                 "COMDAT payload defined by %d units - retail owner "
+                                 "unprovable" % len(units)))
+                continue
+            unit, name = next(iter(units.items()))
+            size = len(cs) + 1                      # the payload plus its NUL
+            start = classify_pe_storage(pe, rva)["class"]
+            end = classify_pe_storage(pe, rva + size - 1)["class"]
+            if start not in STORAGE or start != end:
+                withheld.append((rva, name, "string storage %s not enrollable" % start))
+                continue
+            row = {"name": name, "object": "%s.c" % unit, "rva": rva, "size": size,
+                   "storage": STORAGE[start], "alignment": _alignment(rva, size),
+                   "provenance": "candidate-COFF-string"}
+            by_name[name].append(row)
+    for name, group in by_name.items():
+        if len(group) == 1:
+            rows.append(group[0])
+        else:   # one content-derived name cannot address two retail addresses
+            for r in group:
+                withheld.append((r["rva"], name,
+                                 "identical payload at %d retail RVAs" % len(group)))
+    return rows, withheld
+
+
 def candidates(symbols=SYMBOLS, exe=EXE):
     """Enrollable rows + the withheld ones, with a reason for each."""
     pe = read_pe(exe)
@@ -106,7 +183,15 @@ def candidates(symbols=SYMBOLS, exe=EXE):
                 withheld.append((rva, name, "extent crosses %s -> %s" % (start, end)))
                 continue
             rows.append({"name": name, "object": "%s.c" % unit, "rva": rva, "size": size,
-                         "storage": STORAGE[start], "alignment": _alignment(rva, size)})
+                         "storage": STORAGE[start], "alignment": _alignment(rva, size),
+                         "provenance": "src-DATA-sizeof"})
+
+    # The compiler-emitted string literals of each unit. Without them a manifest
+    # de-materializes the literals its objects reference (measured: -3 exact).
+    strings, string_withheld = string_rows(exe=exe)
+    rows += strings
+    withheld += string_withheld
+
     rows.sort(key=lambda x: x["rva"])
     # A reviewed extent must fit the span to its neighbour; an overlap proves one of
     # the pair is mis-modelled but not which, so neither is enrolled.
@@ -120,7 +205,19 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     enrolled = [r for i, r in enumerate(rows) if i not in bad]
     for i in sorted(bad):
         withheld.append((rows[i]["rva"], rows[i]["name"], "overlaps a neighbour"))
-    return enrolled, withheld, overlaps
+    # The delinker requires globally unique names AND RVAs.
+    from collections import Counter
+    n = Counter(r["name"] for r in enrolled)
+    v = Counter(r["rva"] for r in enrolled)
+    final = []
+    for r in enrolled:
+        if n[r["name"]] > 1:
+            withheld.append((r["rva"], r["name"], "duplicate name in manifest"))
+        elif v[r["rva"]] > 1:
+            withheld.append((r["rva"], r["name"], "duplicate rva in manifest"))
+        else:
+            final.append(r)
+    return final, withheld, overlaps
 
 
 def manifest_bytes(rows):
@@ -128,7 +225,8 @@ def manifest_bytes(rows):
     for r in rows:
         out.append("\t".join([
             r["name"], r["object"], "0x%x" % r["rva"], "0x%x" % r["size"],
-            r["storage"], "0x%x" % r["alignment"], "-", "external", "src-DATA-sizeof"]))
+            r["storage"], "0x%x" % r["alignment"], "-", "external",
+            r.get("provenance", "src-DATA-sizeof")]))
     return ("\n".join(out) + "\n").encode("utf-8")
 
 

@@ -106,6 +106,19 @@ def main() -> None:
         check=True,
     )
 
+    # DATA manifest: every PROVEN data definition (src DATA() type-derived extents +
+    # each unit's ??_C@ string literals, owner-resolved against the candidate objs).
+    # Without it the delinker materializes data as anonymous/nearest-symbol blobs that
+    # objdiff cannot score; with it each definition lands in its owning target object
+    # with its real storage class, and references to it become externals.
+    # See scripts/gruntz/build/data_manifest.py + docs/data-attribution.md.
+    data_manifest = names.parent / "delink_data_manifest.tsv"
+    log("Generating the DATA manifest ...")
+    subprocess.run(
+        [sys.executable, str(SCRIPT_DIR / "data_manifest.py"), "-o", str(data_manifest)],
+        check=True,
+    )
+
     delinker = tool("vostok-delinker")
     if delink_dir.exists():
         shutil.rmtree(delink_dir)
@@ -117,14 +130,12 @@ def main() -> None:
          "--exe-path", str(exe),
          "--output-path", str(delink_dir),
          "--engine-path", "c:\\proj\\",
-         # Compatibility mode: recover uncovered DATA relocations with the
-         # permissive nearest-PDB-symbol heuristic (what the old pinned delinker
-         # always did). The strict path instead demands a candidate data/section
-         # manifest for every writable RVA and currently hard-errors with
-         # "no candidate writable identity can represent retail RVA 0x229328".
-         # Dropping this flag is the NEXT step (the data/section manifests), which
-         # is also what finally moves matched_data off ~0 - see
-         # docs/data-attribution.md.
+         "--data-manifest", str(data_manifest),
+         # Safety net only. The manifest now covers enough that the STRICT path
+         # succeeds on its own (measured: byte-identical results either way), but a
+         # future DATA() edit could leave a writable RVA uncovered, and strict turns
+         # that into a hard delink failure for every lane. This keeps the permissive
+         # nearest-PDB-symbol recovery for anything the manifest does not enroll.
          "--recover-data-relocs-from-pdb"],
         check=True,
     )
