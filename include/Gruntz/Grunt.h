@@ -405,6 +405,15 @@ struct GruntCoordNode {
     GruntCoord* m_coord; // +0x08
 };
 
+// The looked-up animation-set node (the g_typeColl id-map payload): Lookup stores
+// node->m_c (an int) into the out slot; the toy-swap blend math reads node->m_10
+// (the animation length). Ex Grunt.cpp-local.
+struct CAnimSetNode {
+    char m_pad0[0xc];
+    i32 m_c;  // +0x0c  the value Lookup returns into the table
+    i32 m_10; // +0x10  animation length (toy-swap blend uses this)
+};
+
 // The "focused grunt" sentinel the on-screen flag compares m_tileOwnerHi against
 // (DAT_00644c54, reloc-masked).
 

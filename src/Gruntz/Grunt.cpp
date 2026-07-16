@@ -266,13 +266,6 @@ static const char s_pose_TOY1[] = "_TOY1";
 static const char s_pose_TOY2[] = "_TOY2";
 static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 
-// The looked-up animation-set node: Lookup stores node->m_c (an int) into the
-// out slot; the blend math reads node->m_10 (the animation length).
-struct CAnimSetNode {
-    char m_pad0[0xc];
-    i32 m_c;  // +0x0c  the value Lookup returns into the table
-    i32 m_10; // +0x10  animation length (toy-swap blend uses this)
-};
 
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
