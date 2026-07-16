@@ -11,8 +11,7 @@
 // code bytes are load-bearing; modeled with real <Mfc.h> CString so cl emits the
 // same ctors/dtors + the real MFC CWaitCursor scope guard: its ctor/dtor are
 // AfxGetApp()->BeginWaitCursor()/EndWaitCursor() (afxwin2.inl), i.e. exactly
-// AfxGetModuleState()->m_pCurrentWinApp->Begin/EndWaitCursor - byte-identical to the
-// former hand-modeled WaitApp/WaitScope views, now dissolved.
+// AfxGetModuleState()->m_pCurrentWinApp->Begin/EndWaitCursor - byte-identical.
 
 #include <Mfc.h>
 // Real MFC CWinApp / CWaitCursor (BeginWaitCursor @0x1beafb). afxwin*.inl is skipped

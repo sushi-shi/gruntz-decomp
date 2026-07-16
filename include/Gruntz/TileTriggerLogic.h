@@ -122,7 +122,7 @@ public:
 
     // Slot-0 Tick's bridge/pyramid sound-cue helper: dispatch a 0x66-case jump table
     // over (type - 0xf), playing the matching bridge-transition cue for this trigger's
-    // own (m_08, m_0c) tile. Body in BridgeMoveSprites.cpp (was the CPlayLevelLoad view).
+    // own (m_08, m_0c) tile. Body in BridgeMoveSprites.cpp.
     void LoadBridgeMove(i32 type); // 0x110860
 
     // The 0x9c family's serialize dispatcher (type 4 = save, 7 = load), and the pair it
@@ -162,7 +162,7 @@ public:
 // four non-rock leaves; the serialize Build factory (0x117800) constructs the same set
 // via its CTrigLogic9c size-bucket. Their ctors are defined (RVA-bound) in
 // TileTriggerSwitchLogic.cpp - the header carries only the declarations so both TUs
-// share one class shape (dissolved from the old TileTriggerSwitchLogic.cpp-local defs).
+// share one class shape.
 // CGiantRockLogic is the ONE leaf of this family that adds data. sizeof = 0xc8, PROVEN from
 // the allocation site (CTileTriggerFactory::Build @0x117b49: `push 0xc8; call ??2; mov ecx,eax;
 // call ??0CGiantRockLogic`, and again at 0x116d10). The 0x2c it adds over the 0x9c base is
