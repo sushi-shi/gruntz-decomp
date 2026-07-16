@@ -33,13 +33,13 @@ the single source of truth).
 
 `GRUNTZ_EXE` is exported pointing at the Internet-Archive-fetched binary.
 
-## Target facts — MEASURED, do not re-derive
+## Target facts
 
 - `GRUNTZ.EXE` (`$GRUNTZ_EXE`, flake-fetched) — EN v1.0, 2,511,872 B, MD5 `81c7f648…`.
 - Built with **MSVC 5.0** (PE optional-header linker **5.10**; Rich C/C++ module
   build **8034**, cvtres **1668**). **CRT + MFC statically linked.**
 - **231 RTTI mangled class names**; `.reloc` **present**; **no debug directory /
-  no PDB** (none ever shipped or leaked for any WAP32 game).
+  no PDB**.
 - Leaked source paths reveal the modular layout:
   `C:\Proj\{DDrawMgr,DinMgr2,Dsndmgr,NetMgr,Gruntz}\` over shared `incs\`.
 - Engine siblings for cross-diff: `CLAW.EXE` (v1.2) and `MEDIEVAL.EXE` (also
@@ -50,16 +50,22 @@ the single source of truth).
 
 ## The pipeline
 
-```
-GRUNTZ.EXE → Ghidra (auto-analyse + RTTI + FLIRT + leaked names)
-           → fake PDB (synth_pdb.py: llvm-pdbutil yaml2pdb over the Ghidra exports + a DBI-header patch)
-           → vostok-delinker → per-symbol COFF "target" objects
-           → objdiff vs "base" objects compiled with MSVC 5.0 under wine
-```
+**One-time, cached (`gruntz init`):** GRUNTZ.EXE → Ghidra (import + auto-analyse + RTTI +
+FLIRT + leaked names) → exports. Not part of the build loop.
 
-Gotchas baked in from reading the delinker source:
-- It needs Public + per-module **Procedure** (length-carrying) + Data symbols;
-  **no section contributions** (so `synth_pdb.py`'s output is structurally enough).
+**Every `gruntz build`** — `src/` drives both sides; they meet at objdiff:
+
+1. **compile** — `src/` → base objs (`cl /O2 /MT` under wine).
+2. **labels** — `RVA()`/`DATA()` annotations (read from LLVM IR) ∩ base objs → per-TU
+   fragments → merge → `build/gen/symbol_names.csv`. **The hinge**: the delink re-fires on it.
+3. **synth PDB** — `symbol_names.csv` + Ghidra exports → fake PDB (`synth_pdb.py`).
+4. **delink** — GRUNTZ.EXE + fake PDB (+ data/section manifests) → per-unit *target* objs
+   (`vostok-delinker`).
+5. **normalize** — base + target → content-addressed comparison copies (objdiff pairs by name).
+6. **objdiff** — normalized base vs target → `report.json`, then the gates.
+
+**Opt-in (`ninja candidate`):** link → candidate `.EXE` + `.map` — the layout/contribution audits
+(`gruntz link`, `exe-diff`). See `docs/data-attribution.md` + `docs/tu-partition-brief.md`.
 
 ## Conventions
 
