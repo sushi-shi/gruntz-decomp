@@ -31,10 +31,10 @@ class DirectSoundMgr;
 
 // The streaming feeder. ALL-VTABLES phase: REAL polymorphic base - cl auto-emits
 // ??_7StreamFeeder@@6B@ (0x5ef6f0) and auto-stamps the vptr in the ctor (0x137cd0).
-// The 3 slots are declared-only virtuals (bodies external / overridden by the
-// derived voice-feeder): slot 0 Feed (retail base = __purecall; kept non-pure so
-// the class stays concrete/embeddable), slot 1 FeedData (0x137e10), slot 2 OnDrain
-// (0x137e20). The voice's embedded feeder overrides slot 0 with CopyWindow (0x137380).
+// Slot 0 Feed is declared-only (retail base = __purecall; kept non-pure so the
+// class stays concrete/embeddable); slots 1/2 FeedData (0x137e10 `return 1`) and
+// OnDrain (0x137e20 no-op) are defined in SoundStream.cpp. The voice's embedded
+// feeder overrides slot 0 with CopyWindow (0x137380).
 struct StreamFeeder {
     virtual i32
     Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2); // [0] feed-two-regions
@@ -61,7 +61,11 @@ struct StreamFeeder {
 
     i32 SeedWindow(CParseSource* src, u32 off, u32 len); // 0x137340
     StreamFeeder();                                      // 0x137cd0
-    void Cleanup();                                      // 0x137cf0  (dtor body)
+    // The REAL (non-virtual - the 3-slot vtable has no dtor slot) destructor:
+    // retail 0x137cf0 stamps ??_7StreamFeeder (0x5ef6f0) at entry then tears down
+    // the armed buffer - a dtor body, and ~StreamVoice's EH state machine calls it
+    // as the m_feeder member dtor (state 0). Was the `Cleanup()` placeholder.
+    ~StreamFeeder(); // 0x137cf0
     i32 FeederStart(
         SoundDevice* owner,
         WaveFormatX* fmt,
@@ -94,8 +98,10 @@ VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base
 // ALL-VTABLES phase: a real StreamFeeder-derived override so cl auto-emits
 // ??_7StreamVoiceFeeder@@6B@ (0x5ef6e0) via base-then-derived member construction
 // (base ctor stamps 0x5ef6f0, then the derived vptr 0x5ef6e0). Adds no fields (size 0x44).
-// Overrides: slot 0 Feed = CopyWindow (0x137380); slots 1/2 (0x137490 / 0x1374b0)
-// are declared-only overrides (bodies external).
+// Overrides (bodies in SoundStream.cpp): slot 0 Feed = CopyWindow (0x137380);
+// slot 1 FeedData = window rewind (0x137490); slot 2 OnDrain = no-op (0x1374b0).
+// Its cl-generated IMPLICIT dtor (a bare tail-jmp to ~StreamFeeder, no vptr
+// re-stamp) is the retail 0x1376c0 copy, @rva-symbol-bound in SoundStream.cpp.
 struct StreamVoiceFeeder : StreamFeeder {
     StreamVoiceFeeder() {} // empty: base ctor stamps 0x5ef6f0, cl then stamps 0x5ef6e0
     virtual i32 Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2)

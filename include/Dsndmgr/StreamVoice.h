@@ -1,69 +1,73 @@
 // StreamVoice.h - the per-stream voice wrapper (Dsndmgr module,
 // C:\Proj\Dsndmgr\DSndMgSR.CPP, retail vftable 0x5ef6d8). The 0xb0-byte
-// DirectSoundMgr-derived buffer wrapper (RezAlloc(0xb0)) constructed by
-// SoundStream::CreateStreamBuffer (ctor 0x1375b0): +0x04 the intrusive instance-
-// list link, +0x0c the IDirectSoundBuffer, +0x10 the owning SoundStream (m_owner),
-// +0x28..+0x3c the DirectSoundMgr duration block, +0x60..+0x68 the idle-policy
-// flags TickSubManagers polls, +0x6c the embedded StreamVoiceFeeder (whose vptr the
-// voice overrides to 0x5ef6e0). ONE class: the former SoundStream.h StreamVoiceNode
-// and DirectSoundMgr.cpp SubNode/SubInnerList/SubGuard views are folded here (wave 3).
+// DSoundCloneInst-derived buffer wrapper (RezAlloc(0xb0)) constructed by
+// SoundStream::CreateStreamBuffer (ctor 0x1375b0): the whole per-buffer base run
+// (+0x00..+0x60) is the inherited DSoundCloneInst (DirectSoundMgr 0x58 ->
+// DSoundBaseSub 0x58 -> DSoundCloneInst 0x60); the voice's own fields start at
+// +0x60 (idle-policy flags), with the embedded StreamVoiceFeeder at +0x6c (whose
+// vptr the voice's ctor stamps to 0x5ef6e0). ONE class: the former SoundStream.h
+// StreamVoiceNode and DirectSoundMgr.cpp SubNode/SubInnerList/SubGuard views are
+// folded here (wave 3).
+//
+// REAL DERIVATION PROOF (RTTI absent - engine lib, /GR off; proof = ctor/dtor
+// chain + stamps + layout, from the retail bytes):
+//   * ctor 0x1375b0: /GX frame; call 0x135b10 (the DSoundCloneInst ctor) with
+//     (buf, owner); EH state 0 = base-constructed; feeder ctor 0x137cd0 at
+//     this+0x6c + derived stamp 0x5ef6e0; own stamp 0x5ef6d8; fields at
+//     +0x60/+0x64/+0x68.
+//   * dtor 0x137650: /GX frame; stamp 0x5ef6d8; state 1 body = FeederReset(0);
+//     state 0 -> call 0x137cf0 (~StreamFeeder, the compiler-run member dtor);
+//     state -1 -> call 0x135bb0 (~DSoundCloneInst, the compiler-run base chain).
+//   * vtable 0x5ef6d8: 1 slot (??_G @0x137630), same shape as the 1-slot
+//     DirectSoundMgr/DSoundBaseSub/DSoundCloneInst tables at 0x5ef6b8/c0/bc.
 #ifndef DSNDMGR_STREAMVOICE_H
 #define DSNDMGR_STREAMVOICE_H
 
 #include <Gruntz/ParseSource.h>
 #include <rva.h>
 
-#include <Dsndmgr/SoundVoiceList.h> // DSoundLink (the +0x04 intrusive instance-list link)
+#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst - the per-buffer base chain
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/WaveFormatX.h>
 
 struct IDirectSoundBuffer;
-class DirectSoundMgr;
 
 // The streaming source reader SetSource parses + arms the feeder over is the
 // canonical CParseSource (included above); the owning SoundStream's ParseWave
 // does the reads.
 
-// The owning SoundStream (m_owner @ +0x10) - the real Dsndmgr streaming device
-// that created this voice (SoundStream::CreateStreamBuffer passes `this`); its
-// +0x78 "device up" flag (inherited from SoundDevice) gates the voice's Configure,
-// and ParseWave (0x137b70) is the RIFF/WAVE parser the voice asks for fmt + data
-// extents. Full definition included in StreamVoice.cpp.
+// The owning SoundStream (the base m_owner @ +0x10) - the real Dsndmgr streaming
+// device that created this voice (SoundStream::CreateStreamBuffer passes `this`);
+// its +0x78 "device up" flag (inherited from SoundDevice) gates the voice's
+// Configure, and ParseWave (0x137b70) is the RIFF/WAVE parser the voice asks for
+// fmt + data extents. Full definition included in StreamVoice.cpp.
 class SoundStream;
 
-// The per-stream voice: a DirectSoundMgr-derived per-buffer object. IDEALLY
-// `struct StreamVoice : DSoundCloneInst` (its base init/dtor are 0x135b10 / 0x135bb0,
-// the DSoundCloneInst ctor/dtor, and its own fields start at the leaf's 0x60). The
-// per-buffer base is now a clean <=0x60 shape (DirectSoundMgr 0x58 -> DSoundCloneInst
-// 0x60, with the device link at +0x04; matcher-6 unified the old dual-this-shape), so
-// the layout blocker is gone - but wiring the real derivation (chaining the base
-// ctor/dtor + reproducing the 0x5ef6d8 vtable, without pushing the embedded feeder past
-// its true +0x6c home) is a StreamVoice class-modeling task, still pending. Until then
-// the voice is a flat class over the per-buffer base layout and reaches the base run
-// (SetVolumeByIndex 0x1355c0 / SetPanByIndex 0x1357a0 / SetFreqByIndex 0x135920 and the
-// base init/dtor 0x135b10 / 0x135bb0) through its own reloc-masked __thiscall decls.
-struct StreamVoice {
-    // Real polymorphic voice: the lone virtual is the destructor, so cl emits a
-    // 1-slot ??_7StreamVoice (slot 0 = the scalar-deleting dtor, matching retail's
-    // 0x5ef6d8) and auto-stamps/auto-resets the vptr in the ctor/dtor.
-    virtual ~StreamVoice(); // +0x00  0x137650  (slot 0 = scalar-deleting dtor)
+// The per-stream voice: a DSoundCloneInst-derived per-buffer object. The base
+// duration block is reused with byte units for a STREAM voice: the creator fills
+// m_sampleCount = the data byte length, m_rateBase = m_sampleRate =
+// fmt->nAvgBytesPerSec - so the base duration formula (ComputeDuration:
+// m_sampleCount*1000/m_sampleRate) and ComputeRatio's position->time divide hold.
+// The base m_link (+0x04) is the SoundDevice instance-list link (m_instanceHead
+// threads voice+4; elemOf<> unbias), m_buffer (+0x0c) the IDirectSoundBuffer,
+// m_owner (+0x10) the owning SoundStream (stored via its SoundDevice base).
+struct StreamVoice : public DSoundCloneInst {
+    // ctor 0x1375b0(buf, owner, a, b): chain the DSoundCloneInst base ctor
+    // (0x135b10), cl constructs the embedded feeder (0x137cd0 then the 0x5ef6e0
+    // derived stamp), then cache the idle-policy flags a/b and clear the active
+    // latch. `owner` is the creating SoundStream (CreateStreamBuffer passes
+    // `this`; upcasts to the base ctor's SoundDevice*).
+    StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b);
+    // dtor 0x137650: FeederReset(0), then cl destroys m_feeder (~StreamFeeder
+    // 0x137cf0) and chains the base ~DSoundCloneInst (0x135bb0), under the /GX
+    // frame. Slot 0 of the 1-slot ??_7StreamVoice (0x5ef6d8) is the auto-emitted
+    // ??_G scalar-deleting dtor (retail 0x137630).
+    virtual ~StreamVoice() OVERRIDE; // 0x137650
 
-    DSoundLink m_link;            // +0x04  intrusive instance-list link (SoundDevice::
-                                  //        m_instanceHead threads voice+4; elemOf<> unbias)
-    IDirectSoundBuffer* m_buffer; // +0x0c  the IDirectSoundBuffer to release
-    SoundStream* m_owner;         // +0x10  owning SoundStream (also the base m_owner)
-    char m_pad14[0x28 - 0x14];
-    // +0x28..+0x3c: the DirectSoundMgr base duration block (canonical names from
-    // <Dsndmgr/DirectSoundMgr.h>; ComputeDuration = m_sampleCount*1000/m_sampleRate).
-    // For a STREAM voice the creator fills them with byte units: m_sampleCount = the
-    // data byte length, m_rateBase = m_sampleRate = fmt->nAvgBytesPerSec - so the
-    // base duration formula and ComputeRatio's position->time divide still hold.
-    u32 m_durationMs;  // +0x28  duration-ms (ComputeDuration 0x1359a0)
-    u32 m_sampleCount; // +0x2c  sample/byte count (stream: data byte length)
-    char m_pad30[0x38 - 0x30];
-    i32 m_rateBase;   // +0x38  rate base (stream: avg-bytes-per-sec)
-    u32 m_sampleRate; // +0x3c  rate divisor (stream: avg-bytes-per-sec; ComputeRatio)
-    char m_pad40[0x60 - 0x40];
+    i32 SetSource(CParseSource* src);                    // 0x1374c0
+    i32 Configure(i32 vol, i32 pan, i32 freq, i32 loop); // 0x137520
+    u32 ComputeRatio();                                  // 0x137590
+
     // ctor args a/b are the idle-policy flags SoundDevice::TickSubManagers (0x137ac0)
     // polls each frame; +0x68 is zero-init then updated with the IsPlaying result.
     i32 m_stopWhenIdle;   // +0x60  ctor arg a: reprime the feeder when the buffer goes idle
@@ -75,30 +79,8 @@ struct StreamVoice {
     // land INSIDE this feeder: +0x9c = feeder+0x30 (m_loop), +0xa8 = feeder+0x3c
     // (m_windowLength).
     StreamVoiceFeeder m_feeder;
-
-    // ctor 0x1375b0(buf, owner, a, b): run the base init, cache the idle-policy
-    // flags a/b, clear the active latch; the feeder is default-constructed (its
-    // ctor 0x137cd0) between. `owner` is the creating SoundStream
-    // (SoundStream::CreateStreamBuffer passes `this`).
-    StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b);
-    i32 SetSource(CParseSource* src);                    // 0x1374c0
-    i32 Configure(i32 vol, i32 pan, i32 freq, i32 loop); // 0x137520
-    u32 ComputeRatio();                                  // 0x137590
-
-    // DirectSoundMgr base run, reloc-masked __thiscall (defined in their own TUs).
-    // BaseInit == the DSoundCloneInst ctor 0x135b10 (its 2nd param is the owning
-    // SoundDevice, so a SoundStream* upcasts implicitly). The volume/pan/freq setters
-    // (0x1355c0/0x1357a0/0x135920) are NOT redeclared here - they are the real
-    // DirectSoundMgr::SetVolumeByIndex/SetPanByIndex/SetField2 methods, which Configure
-    // reaches through the authentic offset-0 base upcast (their fake StreamVoice decls
-    // left the call rel32 UNBOUND). ComputeDuration/BaseInit/BaseDtor stay reloc-masked
-    // decls pending the full StreamVoice : DSoundCloneInst derivation.
-    void BaseInit(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10
-    void BaseDtor();                                            // 0x135bb0
-    void ComputeDuration(); // 0x1359a0  (DirectSoundMgr base: m_durationMs =
-                            //  m_sampleCount*1000/m_sampleRate; reloc-masked)
 };
-SIZE(StreamVoice, 0xb0);       // 0xb0 bytes via operator new (ctor 0x1375b0)
-VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = scalar-deleting dtor 0x137650)
+SIZE(StreamVoice, 0xb0);       // 0x60 DSoundCloneInst base + 0xc flags + 0x44 feeder
+VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = scalar-deleting dtor ??_G 0x137630)
 
 #endif // DSNDMGR_STREAMVOICE_H

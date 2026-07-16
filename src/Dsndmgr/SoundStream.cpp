@@ -59,13 +59,6 @@ extern "C" {
 // WINMM import; TickSubManagers reaches the clock through PurgeVoiceList's sibling
 // indirection - do NOT swap for timeGetTime.
 
-// Placement new (construct in place into the RezAlloc'd block); no allocation, so
-// it is matching-neutral - it just runs the StreamVoice ctor (0x1375b0) on the
-// raw RezAlloc result, exactly as the retail RezAlloc-then-construct does.
-inline void* operator new(u32, void* p) {
-    return p;
-}
-
 // ALL-VTABLES phase: the stream vftable (0x5ef6ec) is cl-emitted as
 // ??_7SoundStream@@6B@ from the real polymorphic SoundStream : SoundDevice (virtual
 // dtor override); the ctor auto-stamps it and the dtor auto-resets it + chains
@@ -148,6 +141,23 @@ i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u
 }
 
 // ---------------------------------------------------------------------------
+// StreamVoiceFeeder::FeedData (slot 1 override, 0x137490): rewind the window -
+// reset the running cursor to the window start and recompute the window end.
+// (Was a declared-only "body external" slot falsely eaten by a FID __fpclear/
+// charNode row; the body is this TU's.)
+RVA(0x00137490, 0x14)
+i32 StreamVoiceFeeder::FeedData() {
+    m_sourceOffset = m_windowStart;
+    m_windowEnd = m_windowStart + m_windowLength;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// StreamVoiceFeeder::OnDrain (slot 2 override, 0x1374b0): no-op.
+RVA(0x001374b0, 0x1)
+void StreamVoiceFeeder::OnDrain() {}
+
+// ---------------------------------------------------------------------------
 // StreamVoice::SetSource (__thiscall, 1 arg). Ask the owning
 // SoundStream (m_owner) to parse the RIFF/WAVE source into a scratch
 // WAVEFORMATEX + data (off, len), then arm the embedded feeder's window over it.
@@ -159,7 +169,10 @@ i32 StreamVoice::SetSource(CParseSource* src) {
     WaveFormatX wf;
     u32 dataOff;
     u32 dataLen;
-    if (m_owner->ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
+    // The base m_owner (+0x10, SoundDevice*) IS the creating SoundStream (the ctor
+    // stores CreateStreamBuffer's `this`); ParseWave is SoundStream's RIFF parser,
+    // so the voice downcasts its owner back to the concrete stream device.
+    if (((SoundStream*)m_owner)->ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
         return 0;
     }
     m_feeder.SeedWindow(src, dataOff, dataLen);
@@ -176,20 +189,17 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    // Authentic offset-0 base upcast: StreamVoice IS-A DirectSoundMgr (layout-proven
-    // identical over +0x00..+0x58; the real derivation is the pending StreamVoice
-    // class-modeling task, same upcast OpenStream uses). Binds the three setters to the
-    // real DirectSoundMgr::SetVolumeByIndex/SetPanByIndex/SetField2 (0x1355c0/0x1357a0/
-    // 0x135920) instead of the former fake StreamVoice::Set* decls (call rel32 UNBOUND).
-    DirectSoundMgr* base = (DirectSoundMgr*)this;
+    // The three setters are the inherited DirectSoundMgr::SetVolumeByIndex/
+    // SetPanByIndex/SetField2 (0x1355c0/0x1357a0/0x135920), reached through the
+    // real DSoundCloneInst base - no upcast needed.
     i32 ok = 1;
-    if (base->SetVolumeByIndex(vol) == 0) {
+    if (SetVolumeByIndex(vol) == 0) {
         ok = 0;
     }
-    if (base->SetPanByIndex(pan) == 0) {
+    if (SetPanByIndex(pan) == 0) {
         ok = 0;
     }
-    if (base->SetField2(freq) == 0) {
+    if (SetField2(freq) == 0) {
         ok = 0;
     }
     m_feeder.m_loop = loop;
@@ -209,44 +219,44 @@ u32 StreamVoice::ComputeRatio() {
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::StreamVoice (__thiscall, /GX EH frame). Run the DirectSoundMgr
-// base init + construct the embedded feeder, cache the two ctor args (a->+0x60,
-// b->+0x64) and clear the position (+0x68).
-// @early-stop
-// EH-ctor wall (docs/patterns/eh-ctor-vptr-store-plateau.md): the base-ctor +
-// feeder-ctor calls, both vptr restamps, and the field stores are byte-exact, but
-// the /GX ctor-in-flight EH frame retail emits for the non-trivial base subobject
-// is unreachable while the flat class can only model the base run as reloc-masked
-// method calls (no real base/member dtors). Defer to the final sweep once the whole
-// Dsndmgr class family is modeled.
+// StreamVoice::StreamVoice (__thiscall, /GX EH frame). Chain the real
+// DSoundCloneInst base ctor (0x135b10), cl constructs the embedded feeder
+// (0x137cd0 + the 0x5ef6e0 derived stamp), then cache the two ctor args
+// (a->+0x60, b->+0x64) and clear the active latch (+0x68). The /GX
+// ctor-in-flight frame (EH state 0 = base constructed) falls out of the real
+// base subobject.
 RVA(0x001375b0, 0x77)
-StreamVoice::StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b) {
-    // cl auto-stamps ??_7StreamVoice at ctor entry (was a manual voice-vptr store).
-    BaseInit(buf, owner);
-    m_retireWhenIdle = b;
-    // m_feeder (StreamVoiceFeeder) is cl-constructed (0x5ef6f0 then 0x5ef6e0) as a
-    // member before this body - the manual feeder-override store is gone.
+StreamVoice::StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b)
+    : DSoundCloneInst(buf, owner) {
+    // cl auto-stamps ??_7StreamVoice after the base + member ctors.
     m_stopWhenIdle = a;
+    m_retireWhenIdle = b;
     m_active = 0;
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::~StreamVoice (__thiscall, /GX EH frame). Reset + tear down the
-// embedded feeder, then run the DirectSoundMgr base destructor; cl auto-resets the
-// vptr to ??_7StreamVoice at entry.
-// @early-stop
-// EH-dtor wall (docs/patterns/eh-dtor-needs-base-subobject.md): the vptr reset,
-// feeder FeederReset(0)/Cleanup, and ~base call are byte-exact, but the /GX EH
-// frame retail emits for the non-trivial feeder member + base subobject is
-// unreachable while the flat class models the base dtor as a reloc-masked call.
-// Sibling of ~DirectSoundMgr (0x135bb0); defer to the final sweep.
+// StreamVoice::~StreamVoice (__thiscall, /GX EH frame). Reset the embedded
+// feeder; cl then destroys m_feeder (~StreamFeeder 0x137cf0, EH state 0) and
+// chains the base ~DSoundCloneInst (0x135bb0, state -1), re-stamping the vptr to
+// ??_7StreamVoice at entry - the retail state machine (1 -> 0 -> -1) is the
+// compiler's member+base teardown, not hand-written calls.
 RVA(0x00137650, 0x64)
 StreamVoice::~StreamVoice() {
-    // cl auto-resets the vptr to ??_7StreamVoice at dtor entry (was the manual store).
     m_feeder.FeederReset(0);
-    m_feeder.Cleanup();
-    BaseDtor();
 }
+
+// 0x137630 - ??_GStreamVoice: the auto-emitted scalar-deleting dtor (slot 0 of the
+// 1-slot ??_7StreamVoice @0x5ef6d8; `push esi; call ~StreamVoice; test [esp+8],1;
+// conditional operator delete; ret 4`). Was a FID ??_G__non_rtti_object false
+// positive in config/library_labels.csv.
+// @rva-symbol: ??_GStreamVoice@@UAEPAXI@Z 0x00137630 0x1e
+
+// 0x1376c0 - ??1StreamVoiceFeeder: cl's auto-generated IMPLICIT dtor for the
+// derived feeder (no members to destroy -> a bare 5-byte tail-jmp to ~StreamFeeder
+// @0x137cf0, no vptr re-stamp). ~StreamVoice's EH unwind funclet (state 1: destroy
+// m_feeder) takes its address, which is why the copy is emitted + kept. Was a FID
+// __inc false positive.
+// @rva-symbol: ??1StreamVoiceFeeder@@QAE@XZ 0x001376c0 0x5
 
 // ---------------------------------------------------------------------------
 // SoundStream::SoundStream (__thiscall). Run the base ctor, then zero the
@@ -262,6 +272,10 @@ SoundStream::SoundStream() {
     m_voices.m_head = 0;
     m_voices.m_tail = 0;
 }
+
+// 0x1376f0 - ??_GSoundStream: the auto-emitted scalar-deleting dtor (slot 0 of
+// ??_7SoundStream @0x5ef6ec). Was a FID ??_G__non_rtti_object false positive.
+// @rva-symbol: ??_GSoundStream@@UAEPAXI@Z 0x001376f0 0x1e
 
 // ---------------------------------------------------------------------------
 // SoundStream::~SoundStream (__thiscall). Empty body: cl resets the vptr to
@@ -301,15 +315,19 @@ void SoundStream::Free() {
 // ---------------------------------------------------------------------------
 // SoundStream::CreateStreamBuffer (__thiscall, /GX EH frame). Validate
 // the PCM WAVEFORMATEX, build a DSBUFFERDESC and ask the inherited IDirectSound
-// device (+0x14) for a secondary buffer, then RezAlloc + construct a StreamVoice
-// wrapping it, thread it on the +0x94 list, and seed its duration fields. Carries
-// the DSndMgSR.cpp __FILE__ anchor (the 0x678 GetErrorString report).
+// device (+0x14) for a secondary buffer, then `new StreamVoice` wrapping it,
+// thread it on the +0x94 list, and seed its duration fields. Carries the
+// DSndMgSR.cpp __FILE__ anchor (the 0x678 GetErrorString report). The former
+// RezAlloc+placement-new EH-frame wall (docs/patterns/
+// rezalloc-placement-new-no-eh-frame.md) fell with the real StreamVoice :
+// DSoundCloneInst derivation: plain `new T` over the ::operator-new(==RezAlloc)
+// allocator now emits the retail /GX frame (byte-identical prologue).
 // @early-stop
-// RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
-// the body (fmt copy, CreateSoundBuffer, RezAlloc, ctor, list insert, ComputeDuration)
-// is byte-exact, but retail's `new`-with-RezAlloc-operator-new emits a /GX
-// ctor-in-flight EH frame that MSVC5's placement-new cannot reproduce. Deferred to
-// the final sweep once a real `new T` allocator path emits the frame.
+// /O2 cross-jump residue: retail tail-merges every early-out `return 0` through
+// ONE shared fs:0-restoring epilogue (`xor eax,eax; jmp <epi>`) and pins arg `a`
+// in ebp (4 callee-saves); cl here inlines the epilogue at each return and uses 3
+// saves. Structure (plain `new`, the proven dev shape) correct; permuter/final-
+// sweep territory. See the UPDATE in the pattern doc.
 RVA(0x00137780, 0x171)
 StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
     if (m_initialized == 0) {
@@ -351,13 +369,10 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
         return 0;
     }
 
-    void* mem = RezAlloc(0xb0);
-    StreamVoice* voice;
-    if (mem == 0) {
-        voice = 0;
-    } else {
-        voice = new (mem) StreamVoice(out, this, b, c);
-    }
+    // Plain `new StreamVoice` - ::operator new IS RezAlloc (0x1b9b46; reloc-masked
+    // same callee), cl emits the null-guard + the /GX delete-on-throw EH state for
+    // the now-really-throwing ctor (the real DSoundCloneInst base).
+    StreamVoice* voice = new StreamVoice(out, this, b, c);
     m_voices.InsertHead(voice ? &voice->m_link : 0);
     voice->m_rateBase = fmt->nAvgBytesPerSec;
     voice->m_sampleRate = fmt->nAvgBytesPerSec;
@@ -397,12 +412,9 @@ StreamVoice* SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, 
     feeder->m_source = src;
     feeder->m_loop = 0;
     feeder->m_sourceOffset = 0;
-    // voice IS-A DirectSoundMgr buffer wrapper; this upcast is authentic. The +0x04
-    // link-overlap blocker is now resolved (DirectSoundMgr carries a DSoundLink m_link
-    // at +0x04, matcher-6); making StreamVoice actually derive the per-buffer base
-    // (so this upcast becomes implicit) is a separate StreamVoice class-modeling task
-    // (its ctor/dtor/vtable 0x5ef6d8), left for the StreamVoice matcher.
-    if (feeder->FeederStart(this, &wf, p1, p2, (DirectSoundMgr*)voice, -1) == 0) {
+    // voice IS-A DirectSoundMgr buffer wrapper (StreamVoice : DSoundCloneInst);
+    // the upcast is implicit.
+    if (feeder->FeederStart(this, &wf, p1, p2, voice, -1) == 0) {
         DestroyVoice(voice);
         return 0;
     }
@@ -579,13 +591,12 @@ StreamFeeder::StreamFeeder() {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::Cleanup (__thiscall - the dtor body). Tear down the armed buffer,
-// clear m_buffer.
-// @early-stop
-// vptr-restamp drop: Cleanup no longer emits the leading vptr reset (a plain method
-// can't reference the cl-emitted ??_7StreamFeeder); the teardown body is unchanged.
+// StreamFeeder::~StreamFeeder (__thiscall - the REAL non-virtual dtor; was the
+// `Cleanup()` placeholder). cl re-stamps ??_7StreamFeeder (0x5ef6f0) at entry,
+// then the body tears down the armed buffer and clears m_buffer. ~StreamVoice's
+// EH state machine calls this as the m_feeder member dtor (state 0).
 RVA(0x00137cf0, 0x20)
-void StreamFeeder::Cleanup() {
+StreamFeeder::~StreamFeeder() {
     if (m_armed != 0) {
         FeederReset(1);
     }
@@ -661,6 +672,20 @@ void StreamFeeder::FeederReset(i32 doStop) {
         m_armed = 0;
     }
 }
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::FeedData (slot 1 base default, 0x137e10): nothing to arm -
+// return success. (Was a declared-only "body external" slot falsely eaten by a
+// FID charNode row; the body is this TU's.)
+RVA(0x00137e10, 0x6)
+i32 StreamFeeder::FeedData() {
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::OnDrain (slot 2 base default, 0x137e20): no-op.
+RVA(0x00137e20, 0x1)
+void StreamFeeder::OnDrain() {}
 
 // ---------------------------------------------------------------------------
 // StreamFeeder::Tick (0x137e30, __thiscall). The per-frame throttled pump

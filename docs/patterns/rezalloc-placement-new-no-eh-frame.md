@@ -33,3 +33,14 @@ inline epilogues + early-out EH handling (~42%, worse). Evidence: SoundStream::
 CreateStreamBuffer (0x137780) — body exact, 47.1%. Defer to the final sweep when the
 StreamVoice ctor (0x1375b0) is modelled and a `new T`-with-real-allocator path can emit the
 retail frame.
+
+UPDATE (2026-07-16, matcher-1): with `StreamVoice : DSoundCloneInst` real (ctor
+0x1375b0 at 100), plain `new StreamVoice(...)` (no class operator new — retail's
+`::operator new` IS RezAlloc/0x1b9b46) now emits the retail /GX frame + prologue
+(`mov eax,fs:0; push -1; push handler; push eax; mov fs:0,esp; sub esp,0x28` —
+byte-identical head). The fn is now STRUCTURALLY correct (the dev source was plain
+`new`); the residual is per-return INLINE epilogues where retail tail-merges all
+early-outs through one shared `jmp` epilogue, plus retail pinning one more arg in
+ebp (4 callee-saves vs 3) — pure /O2 cross-jump/regalloc residue (current ~41 vs
+the placement-new form's 49; MAX preserved). Keep the plain-`new` spelling — it is
+the proven dev shape; the tail-merge residue is permuter/final-sweep territory.
