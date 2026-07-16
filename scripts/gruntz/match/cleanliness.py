@@ -130,8 +130,12 @@ METRICS = (
      re.compile(r"\b(?:(?:Method|Gap|Sub|Stub|Fwd|Func|FUN|Nullsub|Handler|LogicHandler|winapi)_?[0-9a-f]{4,}|vfunc_[0-9]+)\b"), False),
     # Virtual vtable SLOTS named by index+RVA (role unrecovered): SlotNN_<hex>, Vfunc<hex>,
     # Vtbl_<hex>. Real correctly-modeled virtuals, placeholder-named -> vtable-slot naming backlog.
+    # NOTE the bare `v<N>` form (`virtual void v0();`) is ALSO a synthetic slot name and was
+    # evading every metric. Match it ONLY in the DECLARATION shape - bare v0/v1/v2 identifiers
+    # are legit vertex locals in the raster/poly code, so a plain \bv[0-9]+\b would be wrong.
     ("virtual slot placeholders",
-     re.compile(r"\b(?:Slot[0-9]{1,2}_[0-9a-f]{4,}|Vfunc[0-9a-f]+|Vtbl_[0-9a-f]{4,})\b"), False),
+     re.compile(r"\b(?:Slot[0-9]{1,2}_[0-9a-f]{4,}|Vfunc[0-9a-f]+|Vtbl_[0-9a-f]{4,})\b"
+                r"|\bvirtual\b[^;{\n]*?\bv[0-9]+\s*\("), False),
     ("placeholder classes", _count_placeholders, False),
     (".cpp-local views", _count_cpp_local_defs, True),
     # --- manual-vtable residue (the de-hack / vtable-review targets) ---
