@@ -109,18 +109,16 @@ struct CSoundRegistry {
     CViewPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
 };
 
-// The animation registry at CResMgr+0x2c (plain non-virtual helpers) + its +0x10 map.
-// The render/resource state TUs reach it as CState::m_c->m_animRegistry (former
-// View.h CViewAnimRegistry).
-SIZE_UNKNOWN(CAnimRegistry);
-struct CAnimRegistry {
-    i32 Has(const char* szName);                          // 0x152c50 __thiscall, ret found
-    void Register(const char* szName, const char* szKey); // 0x152720 __thiscall
-    void Release(const char* szName, const char* szKey);  // 0x152720 (credits reg, loader alias)
-    void Install(void* set, const char* szName, const char* szKey); // 0x152ad0 __thiscall
-    char m_pad00[0x10];
-    CMapStringToOb m_10map; // +0x10
-};
+// The animation registry at CResMgr+0x2c IS the canonical CDDrawSubMgrLeaf
+// (<DDrawMgr/DDrawSubMgrLeaf.h>) - the ex `CAnimRegistry` view is DISSOLVED
+// (2026-07-16): its Has @0x152c50 was HasKeyPrefix_152c50, its Install @0x152ad0
+// ScanTree_152ad0, and its "Register/Release @0x152720" decls were MISBOUND -
+// 0x152720 is the 0-arg FreeAll (disasm: EH frame + GetNextAssoc walk + RemoveAll,
+// no string args); the 2-arg remove the credits path really calls is
+// RemoveKeysEqual_1527d0 (retail 0x38f00: `mov ecx,[edx+0x2c]; call 0x1527d0`).
+// Its m_10map was also mistyped CMapStringToOb - both retail Lookup users
+// (0xfb7a0, 0x555e0) call 0x1b8438, the CMapStringToPtr band == the Leaf's m_10.
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
 
 // The game's resource/level manager. Different callers pull the manager they need
 // out of its slots: the draw target (+0x04), the world key table (+0x08), the
@@ -136,9 +134,9 @@ struct CResMgr {
     CImageRegistry* m_10; // +0x10  image/tile registry (sprite lookups + install)
     CImageRegistry* m_14; // +0x14  sprite-set registry (CreateSprite lookup)
     char m_pad18[0x24 - 0x18];
-    CMenuViewObj* m_view; // +0x24  level/view object
-    CSoundRegistry* m_28; // +0x28  sound registry
-    CAnimRegistry* m_2c;  // +0x2c  animation registry
+    CMenuViewObj* m_view;      // +0x24  level/view object
+    CSoundRegistry* m_28;      // +0x28  sound registry
+    CDDrawSubMgrLeaf* m_2c;    // +0x2c  animation registry (canonical CDDrawSubMgrLeaf)
 };
 
 // --- vtable catalog ---

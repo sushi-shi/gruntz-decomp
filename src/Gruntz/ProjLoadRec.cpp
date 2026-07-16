@@ -48,7 +48,7 @@ extern "C" CGameRegistry* g_gameReg;
 // g_gameReg->m_world IS the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>):
 // this loader reaches its projectile-object factory (m_8, a CSpriteFactory whose
 // embedded key->object map m_objMap @+0x48 has Lookup @0x1b8760) and its name-leaf
-// registry (m_animRegistry @+0x2c, reached here as the CDDrawSubMgrLeaf serialize
+// registry (m_animRegistry @+0x2c, the canonical CDDrawSubMgrLeaf serialize
 // facet - m_10 name map + KeyOfValue_152d30). Both keyed values ARE created game
 // objects (the same map CTriggerMgr::Load resolves, with the `slot-8 GetTypeId()==5`
 // gate at +0x20), so the out-param is CGameObject*. (Were the .cpp-local CProjObjReg
@@ -154,7 +154,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
                 s->Read(buf, 0x80);
                 if (strlen(buf) != 0) {
                     void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-                    ((CDDrawSubMgrLeaf*)reg->m_animRegistry)->m_10.Lookup(buf, out);
+                    reg->m_animRegistry->m_10.Lookup(buf, out);
                     m_1e0[ni] = out;
                 } else {
                     m_1e0[ni] = 0;
@@ -219,7 +219,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (m_1e0[wi] != 0) {
-                    CString nm = ((CDDrawSubMgrLeaf*)reg->m_animRegistry)
+                    CString nm = reg->m_animRegistry
                                      ->KeyOfValue_152d30((CObject*)m_1e0[wi]);
                     strcpy(buf, nm);
                 }

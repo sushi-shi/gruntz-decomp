@@ -67,7 +67,7 @@ struct CHitMarker {
 // its render sub-objects (CRenderer, CDrawSurface, the placed-object warlord list)
 // now live in the shared <Gruntz/View.h> so the leaf-state TUs share the one shape.
 #include <Gruntz/View.h>
-#include <Gruntz/ResMgr.h> // the real CState::m_c sub-object classes (CDrawTarget / CImageRegistry / CSoundRegistry / CAnimRegistry)
+#include <Gruntz/ResMgr.h> // the real CState::m_c sub-object classes (CDrawTarget / CImageRegistry / CSoundRegistry)
 // (CWarlordCounters is GONE - the +0x7c counter block IS the canonical
 // CBattlezData (BattlezData.h m_30/m_34/m_38/m_40 band; FillRecord/Init are its
 // real methods) - the score/HUD sink, one object under two former view names.)

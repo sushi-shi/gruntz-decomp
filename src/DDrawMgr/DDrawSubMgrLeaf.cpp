@@ -1,9 +1,10 @@
 // DDrawSubMgrLeaf.cpp - the 0x152640-0x152e83 original TU (wave4-L dossier #15,
-// block S2): ONE first-link obj weaving the CDDrawSubMgrLeaf string-catalog meat
-// (A) with the CDDrawSubMgrAni 'ANI' catalog factory/walker (B) A-B-A, closed by
-// ??1CAniElement (the element class the ani factory news). The leaf's
-// IsReady/dtor quartet + ClearContext/ClearMap live in the G obj
-// (src/DDrawMgr/DDrawSubMgr.cpp); CAniElement's meat in the T obj.
+// block S2): ONE first-link obj holding the CDDrawSubMgrLeaf string-catalog meat
+// - both the plain catalog ops AND the 'ANI' factory/walker method set (the ex
+// "CDDrawSubMgrAni" twin class, merged; the old A-B-A "weave" was one class's
+// member defs all along) - closed by ??1CAniElement (the element class the ani
+// factory news). The leaf's IsReady/dtor quartet + ClearContext/ClearMap live in
+// the G obj (src/DDrawMgr/DDrawSubMgr.cpp); CAniElement's meat in the T obj.
 //
 // original TU: filename unknown (@identity-TODO - no __FILE__ anchor; the
 // DDrawMgr keyed-catalog module).
@@ -16,6 +17,7 @@
 #include <Mfc.h>                          // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan (sibling class)
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // the +0x0c owner (m_leafScan = the ANI Configure ctx)
 #include <Gruntz/AniElement.h>            // canonical CAniElement (the 0x28 'ANI' element)
 #include <Bute/SymTab.h>                  // CSymTab - the directory/scope tree the walker iterates
 #include <stdio.h>                        // sprintf (the %s%s%s path-join, 0x11f890)
@@ -43,13 +45,10 @@ void operator delete(void*);
 // (The former ctor-shape view pair CAniElemSub + CAniElementObj is dissolved
 // onto the canonical - one class, one def, one vtable.)
 
-// (CDDrawSubMgrAni now lives in <DDrawMgr/DDrawSubMgrLeaf.h> - the one shape,
-// shared with the Play/asset-namespace consumers.)
-
-// Read the owning manager's +0x28 sub-manager slot (forwarded to Configure).
-static inline void* AniMgrSubObject(void* mgr) {
-    return *(void**)((char*)mgr + 0x28);
-}
+// (The ex `CDDrawSubMgrAni` twin class is MERGED onto CDDrawSubMgrLeaf - one
+// receiver, one TU, one layout; proof in <DDrawMgr/DDrawSubMgrLeaf.h>. The ANI
+// factory reads the owner's +0x28 m_leafScan as the element Configure ctx - a
+// real typed hop now, not the ex raw-offset AniMgrSubObject helper.)
 
 // ---------------------------------------------------------------------------
 // Look up `key` in the map; return the found value (or null), ignoring the bool.
@@ -174,12 +173,12 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
 // exception-cleanup unwind funclet (retail section-splits it out of the delinked
 // range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001528d0, 0xdd)
-CAniElement* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* entry) {
+CAniElement* CDDrawSubMgrLeaf::CreateAniEntry_1528d0(const char* key, void* entry) {
     CAniElement* el = new CAniElement;
     if (el == 0) {
         return 0;
     }
-    if (el->Configure_1655c0(AniMgrSubObject(m_0c), entry, 0) == 0) {
+    if (el->Configure_1655c0(m_0c->m_leafScan, entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -196,12 +195,12 @@ CAniElement* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* entry
 // exception-cleanup unwind funclet (retail section-splits it out of the delinked
 // range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001529b0, 0xdd)
-CAniElement* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* entry) {
+CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2_1529b0(const char* key, void* entry) {
     CAniElement* el = new CAniElement;
     if (el == 0) {
         return 0;
     }
-    if (el->LoadFile_165620(AniMgrSubObject(m_0c), entry, 0) == 0) {
+    if (el->LoadFile_165620(m_0c->m_leafScan, entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -217,7 +216,7 @@ CAniElement* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* entr
 // record not yet cached, build its path and create the element, counting
 // successes. Frees the buffer and returns the count. 3 stack args (ret 0xc).
 RVA(0x00152ad0, 0x17f)
-i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix) {
+i32 CDDrawSubMgrLeaf::ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix) {
     i32 count = 0;
     char* buf = (char*)operator new(0x100);
     if (buf == 0) {
@@ -316,4 +315,3 @@ CAniElement::~CAniElement() {
     // m_records.~CAniRecordArray() (trylevel 0) + ~CObject() (grand-base restore) fold here.
 }
 
-// (SIZE_UNKNOWN(CDDrawSubMgrAni) moved to <DDrawMgr/DDrawSubMgrLeaf.h> with the class.)

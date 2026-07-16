@@ -59,13 +59,14 @@ extern "C" u32 g_engineFrameDelta;
 // The game registry singleton (0x64556c) is the CGruntzMgr view here; its sub-object
 // slots ARE real modeled classes, so the static-hazard paths reach them cast-free
 //   m_curState -> CState               (the ctor switches on CState::m_levelType @+0x20)
-//   m_world    -> CSpriteFactoryHolder (m_animRegistry @+0x2c is CAnimRegistry, whose
-//                 m_10map @+0x10 is the CMapStringToOb the "GO" cue resolves in).
+//   m_world    -> CSpriteFactoryHolder (m_animRegistry @+0x2c is the canonical
+//                 CDDrawSubMgrLeaf, whose m_10 @+0x10 is the CMapStringToPtr the
+//                 "GO" cue resolves in - retail calls 0x1b8438, the Ptr band).
 // The map's VALUE record is a CAniElement (the anim registry's 'ANI' element - the
 // SAME value type the geometry lookup / m_geoId resolves to, and read here as an int
 // at +0x24 == CAniElement::m_total, the accumulated frame total used as the per-effect
 // ---------------------------------------------------------------------------
-#include <Gruntz/ResMgr.h> // CAnimRegistry (m_world->m_animRegistry->m_10map cue lookup)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (m_world->m_animRegistry->m_10 cue lookup)
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms.
 // Now possible because its +0x70 sub-object folded: CGruntzMgr::m_tileGrid is a
@@ -224,8 +225,8 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_activeWindow = 0;
     m_idleWindow = m_object->m_120;
     m_pulseEpoch = g_frameTime;
-    CObject* entry_ob = 0;
-    g_gameReg->m_world->m_animRegistry->m_10map.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
+    void* entry_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) void*& out-param
+    g_gameReg->m_world->m_animRegistry->m_10.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
     CAniElement* entry = (CAniElement*)entry_ob;
     if (entry != 0) {
         // base AniPad window + the resolved anim's frame total (the per-effect AniPad bias)

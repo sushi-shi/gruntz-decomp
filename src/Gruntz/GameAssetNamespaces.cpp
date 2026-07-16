@@ -20,8 +20,8 @@
 //   WorkerHolder  == CSpriteFactoryHolder (m_imageReg@+0x10 == m_10 CImageRegistry,
 //       m_ptrCollections@+0x1c == m_ptrColl, m_soundScan@+0x28 == m_28 (CSndHost ==
 //       CDDrawSubMgrLeafScan, one typedef), m_aniScan@+0x2c == m_animRegistry -
-//       CDDrawSubMgrAni's HasKeyPrefix/ScanTree ARE CAnimRegistry::Has/Install,
-//       same RVAs 0x152c50/0x152ad0).
+//       the canonical CDDrawSubMgrLeaf ANI set (HasKeyPrefix_152c50/ScanTree_152ad0;
+//       the ex CAnimRegistry/CDDrawSubMgrAni views are dissolved onto it).
 #include <Mfc.h> // afx-first umbrella (GruntzMgr.h/ResMgr.h need the MFC classes)
 #include <rva.h>
 #include <Image/CImage.h> // g_resourceInstallActive
@@ -31,7 +31,7 @@
 #include <Gruntz/State.h>     // CState: the real owner of the loader (all leaf states inherit it)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the manager arg (m_world/m_symParser/m_40/...)
 #include <Gruntz/GameRegistry.h>   // CSpriteFactoryHolder (m_10/m_ptrColl/m_28/m_animRegistry)
-#include <Gruntz/ResMgr.h>         // CAnimRegistry (Has @0x152c50 / Install @0x152ad0)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (HasKeyPrefix_152c50 / ScanTree_152ad0)
 #include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_74)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CImageRegistry == CDDrawWorkerRegistry (InstallTree)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
@@ -91,12 +91,12 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
         }
         m_c->m_28->ScanTree_157ee0((CSymTab*)snd, "GAME", "_");
     }
-    if (m_c->m_animRegistry->Has("GAME") == 0) {
+    if (m_c->m_animRegistry->HasKeyPrefix_152c50("GAME") == 0) {
         void* aniz = m_8->ResolvePath("GAME_ANIZ");
         if (aniz == 0) {
             return 0;
         }
-        m_c->m_animRegistry->Install(aniz, "GAME", "_");
+        m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)aniz, "GAME", "_");
     }
     // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
     // handle); the parser pointer is passed through unchanged (reloc-masked).

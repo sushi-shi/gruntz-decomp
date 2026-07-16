@@ -1,5 +1,5 @@
 // AniElement.h - the 0x28-byte 'ANI' animation element (primary vftable
-// @0x5efba8 = ??_7CAniElementObj) cataloged by CDDrawSubMgrAni. It owns a
+// @0x5efba8 = ??_7CAniElementObj) cataloged by the CDDrawSubMgrLeaf ANI set. It owns a
 // CObArray of 0x34-byte frame records (real class CAniRecord, vtable @0x5f02c0)
 // plus a name buffer and a scale.
 //
@@ -55,7 +55,7 @@ struct CAniSource {
 
 class CAniElement : public CObject {
 public:
-    // Inline ctor (retail inlines it at the CDDrawSubMgrAni factory new-sites:
+    // Inline ctor (retail inlines it at the CDDrawSubMgrLeaf ANI factory new-sites:
     // base stamp, m_records CObArray-construct @+0x08 via the NAFXCW ctor, own
     // stamp, zero m_flags/m_name). Was the DDrawSubMgrLeaf.cpp-local ctor-shape
     // view CAniElementObj (m_04/CAniElemSub/m_1c) - one class, one def.

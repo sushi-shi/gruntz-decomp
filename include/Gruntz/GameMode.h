@@ -169,7 +169,7 @@ extern RECT g_levelMsgRectsB[8];
 #include <Gruntz/State.h>
 #include <Gruntz/View.h> // the CState::m_c render sub-object facets (CRenderer/CDrawSurface)
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the CState::m_c holder itself)
-#include <Gruntz/ResMgr.h> // its real sub-object classes (CDrawTarget/CImageRegistry/CSoundRegistry/CAnimRegistry)
+#include <Gruntz/ResMgr.h> // its real sub-object classes (CDrawTarget/CImageRegistry/CSoundRegistry)
 
 // Single-type leaf-state sub-object views, defined in GameMode.cpp; forward-
 // declared so the leaf members below are typed to their real class (no per-site

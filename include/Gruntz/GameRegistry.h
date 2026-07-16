@@ -110,7 +110,8 @@ class CLightFxMgr;
 // dissolved 2026-07-14; renderer A at +0x08 was a SECOND class all along, the
 // already-canonical CDDrawChildGroup.)
 class CDDrawWorkerList;
-struct CAnimRegistry; // +0x2c  anim/third registry (ResMgr.h, real class)
+class CDDrawSubMgrLeaf; // +0x2c  the ANI catalog / anim registry (canonical
+                        // <DDrawMgr/DDrawSubMgrLeaf.h>; ex the CAnimRegistry view)
 
 // The level/view object reached as g->m_30->m_24 (== CState::m_c holder's +0x24) IS
 // the canonical CGameLevel (<Gruntz/GameLevel.h>) - the former `CGameViewport` facet
@@ -173,8 +174,8 @@ struct CSpriteFactoryHolder {
     CSndHost* m_28;   // +0x28  sound registry (CSndHost cue facet <Gruntz/SoundCue.h>; the
                       //         render/resource facet reaches it as CSoundRegistry, cast).
                       //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
-    CAnimRegistry* m_animRegistry; // +0x2c  anim/third registry (real ResMgr.h class;
-                                   //         == CDDrawSurfaceMgr::m_leaf)
+    CDDrawSubMgrLeaf* m_animRegistry; // +0x2c  the ANI catalog / anim registry
+                                      //         (== CDDrawSurfaceMgr::m_leaf)
     void* m_hWnd30;                // +0x30  bound window / device handle (CDDrawSurfaceMgr::m_hWnd)
     i32 m_flags34;                 // +0x34  caps flags
     // +0x38  last-error / world load-status code (ReportWorldStatus maps it to a

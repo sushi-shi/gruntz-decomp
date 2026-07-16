@@ -191,7 +191,7 @@ SIZE_UNKNOWN(Cdb2f0);
 
 // (0x0db750 Cdb750 + its CHolderdb/CDDrawSubMgrLeaf/CSymTab shells are GONE
 // (2026-07-16): the body was already rehomed as CPlay::LoadLevelAnims (Play.cpp)
-// on the canonical CDDrawSubMgrLeaf/CDDrawSubMgrAni/CSymTab - the leftover ODR
+// on the canonical CDDrawSubMgrLeaf/CSymTab - the leftover ODR
 // shadow of the real CDDrawSubMgrLeaf is deleted.)
 
 // 0x0ea170 - 2-bit selector over a +0x38 virtual.

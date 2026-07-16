@@ -46,7 +46,10 @@ public:
 
     i32 m_04; // +0x04  -1 when inactive
     i32 m_08; // +0x08
-    i32 m_0c; // +0x0c  parent/root handle
+    // +0x0c  the owning CDDrawSurfaceMgr (the world/display root). Typed (was an
+    // i32 "parent/root handle"): the ANI factory reads its +0x28 m_leafScan as the
+    // element Configure ctx, the same owner every family sibling binds at +0x0c.
+    class CDDrawSurfaceMgr* m_0c;
     CDDrawSubMgrGrandBase() {}
 };
 inline CDDrawSubMgrGrandBase::~CDDrawSubMgrGrandBase() {
@@ -77,28 +80,29 @@ public:
     CString KeyOfValue_152d30(CObject* target);
     virtual ~CDDrawSubMgrLeaf() OVERRIDE; // slot 1 (real ~ @0x1577e0; cl auto ??_G @0x1577c0)
 
-    CMapStringToPtr m_10; // +0x10  m_map
-};
-// ---------------------------------------------------------------------------
-// The ANI catalog sub-manager (the anim registry at the CState holder's +0x2c
-// slot; == CAnimRegistry's identity in ResMgr.h). Map at +0x10; the owning
-// manager at +0x0c. ScanTree_152ad0 is the ANIZ tree installer. Promoted from
-// DDrawSubMgrLeaf.cpp so Play/AssetNamespace consumers share the one shape.
-// ---------------------------------------------------------------------------
-class CAniElement;
-class CSymTab;
-SIZE_UNKNOWN(CDDrawSubMgrAni);
-class CDDrawSubMgrAni : public CObject {
-public:
-    CAniElement* CreateAniEntry_1528d0(const char* key, void* entry);
-    CAniElement* CreateAniEntry2_1529b0(const char* key, void* entry);
-    i32 ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix);
+    // The ANI catalog method set (the ex `CDDrawSubMgrAni` twin class, MERGED
+    // 2026-07-16 - it was this class wearing a second name). Proof of identity:
+    //  (1) one receiver: every dispatch site reads the SAME holder +0x2c slot
+    //      (CDDrawSurfaceMgr::m_leaf) and calls both method sets on it -
+    //      retail CCreditsState::ReleaseResources @0x38f00 does
+    //      `mov ecx,[edx+0x2c]; call 0x1527d0` (a "Leaf" method) while
+    //      CPlay::BuildAnizKeyTable pairs 0x152c50 probes with 0x152ad0 scans on
+    //      the identical [m_c+0x2c] load;
+    //  (2) one TU: 0x152640..0x152e30 is a single first-link obj weaving the two
+    //      "classes" A-B-A (FreeAll 0x152720 / RemoveKeysEqual 0x1527d0 /
+    //      CreateAniEntry 0x1528d0-0x1529b0 / ScanTree 0x152ad0 / HasKeyPrefix
+    //      0x152c50 / KeyOfValue 0x152d30) - interleaved member defs, not two TUs;
+    //  (3) identical layout (vptr + m_04/m_08/m_0c + the +0x10 CMapStringToPtr;
+    //      mfc_class 0x1b847c => Ptr band for CreateAniEntry2's operator[]), and
+    //      the retail image has NO Ani ctor / vtable / RTTI - nothing ever
+    //      constructed a second class.
+    // ScanTree_152ad0 is the ANIZ tree installer (recurses CSymTab scopes and
+    // caches each 'ANI'-tagged record via CreateAniEntry_1528d0).
+    class CAniElement* CreateAniEntry_1528d0(const char* key, void* entry);
+    class CAniElement* CreateAniEntry2_1529b0(const char* key, void* entry);
+    i32 ScanTree_152ad0(class CSymTab* tree, const char* prefix, const char* suffix);
 
-    i32 m_04;             // +0x04  status word
-    i32 m_08;             // +0x08
-    void* m_0c;           // +0x0c  owning CDirectDrawMgr / CDDrawSurfaceMgr manager
-    CMapStringToPtr m_10; // +0x10  keyed animation catalog (mfc_class 0x1b847c => Ptr:
-                          //         CreateAniEntry2's operator[] lies in the Ptr band)
+    CMapStringToPtr m_10; // +0x10  m_map
 };
 
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);

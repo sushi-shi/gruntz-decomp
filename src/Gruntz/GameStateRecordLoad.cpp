@@ -22,7 +22,7 @@
 #include <Gruntz/GruntDataRecord.h>
 #include <Rez/RezAlloc.h>            // RezAlloc/RezFree
 #include <Gruntz/Grunt.h>            // canonical CGrunt (this) + CGruntHud + CSpriteFactory
-#include <Gruntz/ResMgr.h>           // CAnimRegistry (the name map host, holder +0x2c)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (the name map host, holder +0x2c)
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectE::GetClassId (the ==5 probe)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SpriteRefTable.h>
@@ -57,14 +57,16 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
 
 // The two engine lookup maps are the real MFC containers (reached below by casting
 // the map host + its embedded-map offset): the serial map @0x1b8760 =
-// CMapPtrToPtr::Lookup (int key); the name map @0x1b8438 = CMapStringToOb::Lookup
+// CMapPtrToPtr::Lookup (int key); the name map @0x1b8438 = CMapStringToPtr::Lookup
 // (string key). Modeled directly as the MFC classes at the use sites (Mfc.h), so no
 // per-TU map view is needed.
 
 // The engine object directory IS the canonical CSpriteFactoryHolder
 // (g_gameReg->m_world): the serial map is its m_8 factory's embedded key->object
 // CMapPtrToPtr (+0x48, GruntObjMap in <Gruntz/SpriteFactory.h>), the name map
-// its m_animRegistry's +0x10 CMapStringToOb (<Gruntz/ResMgr.h>). (Ex the CObjDir
+// its m_animRegistry's +0x10 CMapStringToPtr (canonical CDDrawSubMgrLeaf::m_10;
+// all 18 retail NAMEREF lookups call 0x1b8438, the Ptr band - the old
+// CMapStringToOb/m_10map reading bound the wrong-band 0x1b8008). (Ex the CObjDir
 // offset view.)
 
 // The game-manager singleton (the one true CGruntzMgr shape lives in
@@ -120,7 +122,7 @@ void* operator new(u32 n); // 0x1b9b46
         ar->Read(buf, 0x80);                                                                       \
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
-            dir->m_animRegistry->m_10map.Lookup(buf, (CObject*&)obj);                              \
+            dir->m_animRegistry->m_10.Lookup(buf, obj);                                            \
             *(void**)(p + (off)) = obj;                                                            \
         } else {                                                                                   \
             *(void**)(p + (off)) = 0;                                                              \

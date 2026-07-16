@@ -28,6 +28,7 @@
 #include <Gruntz/BankMgr.h>     // CResSource (InitAttractTitle m_2c state store)
 #include <Gruntz/ParseSource.h> // CParseSource (the resolved MIDIZ sub-entry: BeginParse/m_length)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual_1527d0)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
@@ -174,7 +175,9 @@ void CCreditsState::ReleaseResources() {
         }
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("CREDITZ", "_");
         ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("CREDITZ", "_");
-        ((CDDrawWorkerRegistry*)m_c->m_animRegistry)->RemoveKeysEqual_155360("CREDITZ", "_");
+        // retail: `mov ecx,[edx+0x2c]; call 0x1527d0` - the Leaf's own remove (the old
+        // (CDDrawWorkerRegistry*) cast MISBOUND this call to the +0x10 twin's 0x155360).
+        m_c->m_animRegistry->RemoveKeysEqual_1527d0("CREDITZ", "_");
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).

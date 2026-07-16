@@ -36,7 +36,7 @@ extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 // RemoveValue_152660), cross-cast at the call because they describe the SAME object under
 // a different family-name (an unresolved DDrawMgr-family conflation, out of scope here).
 #include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf/CDDrawSubMgrAni + CCatalogNode
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // canonical CDDrawSubMgrLeaf (incl. the ANI set) + CCatalogNode
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
 
@@ -375,8 +375,8 @@ void CSpawnList::DeleteAllEntries() {
 //                  RemoveWorker slot 20 @0x155280).
 //   +0x28 sound  = CDDrawSubMgrLeafScan (CMapStringToPtr map @+0x10; ScanTree_157ee0 direct;
 //                  ProcessNew drain = the reduced-view CSoundResMap::RemoveByValue @0x157b00).
-//   +0x2c aniz   = CDDrawSubMgrAni     (CMapStringToPtr map @+0x10; ScanTree_152ad0 direct;
-//                  ProcessNew drain = the reduced-view CDDrawSubMgrLeaf::RemoveValue_152660).
+//   +0x2c aniz   = CDDrawSubMgrLeaf    (CMapStringToPtr map @+0x10; ScanTree_152ad0 direct;
+//                  ProcessNew drain = RemoveValue_152660; the ex CDDrawSubMgrAni twin is merged).
 // @identity-TODO: the holder's own class is unrecovered (LoadObjectResources' only caller
 // is the ~0x3c51 ILT thunk, no named owner). It is the SAME object as GameAssetNamespaces
 // .cpp / AssetNamespacePrefixes.cpp's `WorkerHolder` placeholder - a dedup candidate once
@@ -386,7 +386,7 @@ struct ObjSpawnEntry {
     CDDrawWorkerRegistry* m_10; // +0x10 image worker registry
     char m_pad14[0x28 - 0x14];
     CDDrawSubMgrLeafScan* m_28; // +0x28 sound leaf-scan registry
-    CDDrawSubMgrAni* m_2c;      // +0x2c aniz sub-manager
+    CDDrawSubMgrLeaf* m_2c;     // +0x2c aniz sub-manager (canonical; ex CDDrawSubMgrAni)
 };
 
 // The resolution source (arg2): ResolvePath looks a namespaced key up, returning a

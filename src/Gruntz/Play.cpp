@@ -76,9 +76,9 @@
 // AnyValueMatches_155630 - since Play already carries a local view of it).
 // The image worker registry (holder m_10), the anim registry leaf (holder m_2c)
 // and the worker list are the CANONICAL DDrawMgr classes - the former .cpp-local
-// CDDrawWorkerRegistry / CDDrawSubMgrAni / CDDrawSubMgrLeaf / CDDrawWorkerList
+// CDDrawWorkerRegistry / CDDrawSubMgrLeaf / CDDrawWorkerList
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry (InstallTree slot 18, +0x48)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf / CDDrawSubMgrAni (0x152xxx leaf API)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (0x152xxx leaf API incl. the ANI set)
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (renderer B: PruneWorkers/ClearWorkers)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (renderer A: TickKillCues/DestroyChildren_159ef0)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
@@ -1562,7 +1562,7 @@ void CPlay::ModeCleanup() {
         m_c->m_10->MapTeardown_1552b0(); // slot 22 (+0x58)
     }
     if (m_c) {
-        ((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->FreeAll_152720(); // @0x152720
+        m_c->m_animRegistry->FreeAll_152720(); // @0x152720
     }
     if (m_c) {
         m_c->m_24->ReleaseChildren(); // slot 17 (+0x44) - real CGameLevel virtual
@@ -5662,7 +5662,7 @@ char g_dat613054[8] = "ANIZ";
 // config sync through the +0x0c owner's +0x2c config leaf (the 0x152xxx registry
 // API - distinct from this TU's 0x157xxx CDDrawSubMgrLeafScan). @orphan (owner
 // unrecovered; the 0x152xxx leaf + symtab kept as unique local views).
-// m_2c is a CDDrawSubMgrAni : CDDrawSubMgrLeaf (0x152xxx config leaf); m_28 is a
+// m_2c is the CDDrawSubMgrLeaf ANI catalog (0x152xxx config leaf); m_28 is a
 // CSymTab (ResolvePath @0x13bae0). Reached via cast at the call sites (real classes).
 // CPlay::LoadLevelAnims (0x0db750; ex the `Cdb750::SyncLevelKey` orphan view - its
 // +0x0c holder is CState::m_c and its +0x28 symtab is CState::m_levelBank, so the
@@ -5674,17 +5674,17 @@ i32 CPlay::LoadLevelAnims(i32 force) {
         return 0;
     }
     if (force == 0) {
-        if (((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->HasKeyPrefix_152c50("LEVEL") != 0) {
+        if (m_c->m_animRegistry->HasKeyPrefix_152c50("LEVEL") != 0) {
             return 1;
         }
     }
-    ((CDDrawSubMgrLeaf*)m_c->m_animRegistry)
+    m_c->m_animRegistry
         ->RemoveKeysEqual_1527d0("LEVEL", (const char*)&g_dat60b588);
     void* e = m_levelBank->ResolvePath((const char*)&g_dat613054);
     if (e == 0) {
         return 0;
     }
-    ((CDDrawSubMgrAni*)m_c->m_animRegistry)
+    m_c->m_animRegistry
         ->ScanTree_152ad0((CSymTab*)e, "LEVEL", (const char*)&g_dat60b588);
     return 1;
 }
@@ -5765,7 +5765,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GAME")) {
+    if (self->m_c->m_animRegistry->HasKeyPrefix_152c50("GAME")) {
         return 1;
     }
 
@@ -5773,7 +5773,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!anims) {
         return 0;
     }
-    ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)anims, "GAME", "_");
+    self->m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)anims, "GAME", "_");
     return 1;
 }
 
@@ -5951,7 +5951,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
 // ex-`CNamespaceLoader` view was this method wearing a fake-view owner (RTTI proves
 // CState is a root and CPlay's only base is CState). m_c is CState::m_c, m_gruntzBank
 // the CState symbol bank. The three worker-registry views (m_c->m_10/m_28/m_2c) reuse
-// THIS TU's CDDrawWorkerRegistry / canonical CDDrawSubMgrLeafScan / CDDrawSubMgrAni.
+// THIS TU's CDDrawWorkerRegistry / canonical CDDrawSubMgrLeafScan / CDDrawSubMgrLeaf.
 // g_gameReg is the 0x64556c singleton, g_resourceInstallActive is reused. Reloc-masked.
 // ===========================================================================
 
@@ -6026,13 +6026,13 @@ i32 CState::BuildAssetNamespacePrefixes(
                     ->ScanTree_157ee0((CSymTab*)tree, "GRUNTZ_" + name, "_");
             }
         }
-        if (((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_" + name) == 0) {
+        if (m_c->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_" + name) == 0) {
             void* tree = m_gruntzBank->ResolvePath("ANIZ_" + name);
             if (tree == 0) {
                 result = 0;
                 goto done;
             }
-            ((CDDrawSubMgrAni*)m_c->m_animRegistry)
+            m_c->m_animRegistry
                 ->ScanTree_152ad0((CSymTab*)tree, "GRUNTZ_" + name, "_");
         }
         result = 1;
@@ -6048,8 +6048,8 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (((CDDrawSubMgrLeafScan*)m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_" + name) != 0) {
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("GRUNTZ_" + name, "_");
     }
-    if (((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_" + name) != 0) {
-        ((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->RemoveKeysEqual_1527d0("GRUNTZ_" + name, "_");
+    if (m_c->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_" + name) != 0) {
+        m_c->m_animRegistry->RemoveKeysEqual_1527d0("GRUNTZ_" + name, "_");
     }
     result = 1;
 done:
@@ -6156,80 +6156,80 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
     if (!self->m_c) {
         return 0;
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)
+    if (!self->m_c->m_animRegistry
              ->HasKeyPrefix_152c50("GRUNTZ_NORMALGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+        self->m_c->m_animRegistry
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_DEATHZ")) {
+    if (!self->m_c->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_DEATHZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+        self->m_c->m_animRegistry
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_ENTRANCEZ")) {
+    if (!self->m_c->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+        self->m_c->m_animRegistry
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_EXITZ")) {
+    if (!self->m_c->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_EXITZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+        self->m_c->m_animRegistry
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)
+    if (!self->m_c->m_animRegistry
              ->HasKeyPrefix_152c50("GRUNTZ_GRUNTPUDDLE")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+        self->m_c->m_animRegistry
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_PICKUPS")) {
+    if (!self->m_c->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_PICKUPS")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+        self->m_c->m_animRegistry
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_BOMBGRUNT")) {
+    if (!self->m_c->m_animRegistry->HasKeyPrefix_152c50("GRUNTZ_BOMBGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+        self->m_c->m_animRegistry
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
@@ -7344,7 +7344,6 @@ i32 CPlay::SetEffectSpriteDurations() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CAnimRegistry);
 SIZE_UNKNOWN(CImageRegistry);
 SIZE_UNKNOWN(CPlay);
 SIZE_UNKNOWN(CSoundRegistry);

@@ -32,7 +32,7 @@ public:
 // @identity-TODO (full xref chase, dead-ends at a void* context): the token-map owner
 // (ResolveIndices arg1 / Parse ctx). sema xref 0x168c60 proves Parse's only caller is
 // CAniElement::Build_165460 (mangled ?...@@QAEHPAXPAU...@@H@Z -> ctx is `void*`, no class
-// name), which forwards its own `ctx` arg (supplied by CDDrawSubMgrAni) straight through.
+// name), which forwards its own `ctx` arg (supplied by the CDDrawSubMgrLeaf ANI factory) straight through.
 // The context carries no RTTI vtable. Its +0x10 is the real MFC CMapStringToPtr the index
 // resolver looks each token up in.
 struct CAniMapOwner {

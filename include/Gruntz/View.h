@@ -14,7 +14,7 @@
 //   * +0x10 image/name registry        -> CImageRegistry   (<Gruntz/ResMgr.h>)
 //   * +0x24 draw surface / level       -> CGameLevel       (<Gruntz/GameLevel.h>)
 //   * +0x28 sound registry (+0x2c res) -> CSoundRegistry    (<Gruntz/ResMgr.h>)
-//   * +0x2c anim registry              -> CAnimRegistry     (<Gruntz/ResMgr.h>)
+//   * +0x2c anim registry              -> CDDrawSubMgrLeaf  (<DDrawMgr/DDrawSubMgrLeaf.h>)
 //
 // REMAINING CASTS (binary-authentic dual-use, NOT removable views - the doctrine's
 // "int-pair overlaid as a struct view" allowance): the MFC state TUs reach these from
