@@ -2138,7 +2138,7 @@ i32 CMulti::JoinAndRegisterChannel() {
     m_hostIndex = *(i32*)((char*)lp + 4);
     CNetChannel* ch0 = NetGameMgr()->m_channels;
     i32 chField = ch0->m_slotId;
-    CString name = ch0->GetName();
+    CString name = ((GruntzPlayer*)ch0)->GetName();
     i32 ok = RegisterChannelFrom(name, chField, -1, m_hostIndex);
     return ok != 0 ? enumResult : 0;
 }
@@ -3129,7 +3129,7 @@ i32 CMulti::BroadcastChannelTable(CNetPlayerEntry* recipient) {
             rec[5] = (char)ch->m_flag;
             rec[4] = (char)ch->m_228;
             *(i32*)(rec + 7) = ch->m_playerId;
-            CString name = ch->GetName();
+            CString name = ((GruntzPlayer*)ch)->GetName();
             strcpy(rec + 0xb, (const char*)name);
         }
         rec += 0x20;
@@ -3406,7 +3406,7 @@ i32 CMulti::BroadcastOneChannel(i32 chan) {
     packet[0x11] = ch->m_228;
     {
         i32 id = ch->m_playerId;
-        CString name = ch->GetName();
+        CString name = ((GruntzPlayer*)ch)->GetName();
         *(i32*)(packet + 0x18) = id;
         strcpy(packet + 0x18, (const char*)name);
     }
@@ -4254,7 +4254,7 @@ i32 CMulti::SetupTcpIpConfig() {
 
     void* lp;
     {
-        CString cn = ch0->GetName();
+        CString cn = ((GruntzPlayer*)ch0)->GetName();
         lp = (void*)Peer()->CreatePlayer((void*)(const char*)cn, (i32)g_emptyString, 0);
     }
     m_5bc = (i32)(CNetPlayerEntry*)lp;
@@ -4265,7 +4265,7 @@ i32 CMulti::SetupTcpIpConfig() {
 
     m_hostIndex = *(i32*)((char*)lp + 4);
     i32 chField = ch0->m_slotId;
-    CString cn2 = ch0->GetName();
+    CString cn2 = ((GruntzPlayer*)ch0)->GetName();
     i32 ok = RegisterChannelFrom(cn2, chField, -1, m_hostIndex);
     return ok != 0;
 }

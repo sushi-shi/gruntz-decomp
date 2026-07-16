@@ -219,10 +219,10 @@ struct CNetChannel {
     i32 m_230;     // +0x230
     char m_pad234[0x238 - 0x234];
 
-    // The channel's name fetched by value (NRV into the caller's slot); thiscall
-    // engine routine reached through an incremental-link thunk (no body here so
-    // the call reloc-masks). 0x41f450.
-    CString GetName();
+    // The channel's name (m_name @+0x04) is fetched via the folded GetName routine
+    // at 0x1f450 - identical +0x04 CString read that COMDAT-folds with
+    // GruntzPlayer::GetName in retail (one address). Callers reach it as
+    // ((GruntzPlayer*)ch)->GetName() (cast at the call; cannot dup the RVA).
 };
 SIZE(CNetChannel, 0x238); // one inline channel descriptor (array stride 0x238)
 
