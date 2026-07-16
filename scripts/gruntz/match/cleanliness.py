@@ -160,12 +160,16 @@ def _is_scaffolding(path) -> bool:
     return "/Stub/" in path.as_posix() or path.name.endswith("Views.h")
 
 
-# The caller_callee reconciliation metric: retail call-graph edges (reconstructed->reconstructed)
-# our source FAILS to reproduce - it reaches the real callee through a fake-view / wrong-signature
-# name (FAKE-VIEW), or omits the edge (MISSING). NOT a text scan (reads clang IR + the retail
-# graph), so it needs a build; shelled here so the SAME baseline tracks + ratchets it to 0 like
-# the source metrics. Gracefully absent (rows omitted) when no build IR is available.
-_CALLER_CALLEE_LABELS = ("caller-callee unreconciled", "caller-callee FAKE-VIEW")
+# The caller_callee FAKE-VIEW metric: our source calls an ALREADY-RECONSTRUCTED callee through
+# the WRONG class-view name (mangles to a name that doesn't resolve to the callee's RVA) -> retype
+# the receiver to the real class and the edge reconciles (and the caller's % rises). This is the
+# ONE genuinely drive-to-0 slice of caller_callee. The other unreconciled kinds (MISSING /
+# MISSING-SPECIAL / UNANALYZED, ~2268) are NOT tracked here: they are dominated by FALSE POSITIVES
+# - inline member ctor/dtor/operator ops, indirect/PMF/virtual calls the static tool can't resolve,
+# and near-exact codegen residue (a 92%-matched fn shows "MISSING" edges for its inlined zBitVec
+# member ops). Tracking that total as drive-to-0 was wrong. NOT a text scan (reads clang IR + the
+# retail graph), so it needs a build; gracefully absent when no build IR.
+_CALLER_CALLEE_LABELS = ("caller-callee FAKE-VIEW",)
 
 
 def _caller_callee_counts() -> dict[str, int]:
