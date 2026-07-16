@@ -71,11 +71,9 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.
 - **Builds are FAST — don't engineer around build time.** A full from-scratch
-  `gruntz clean && gruntz init` (cold Ghidra import+analyze, wine re-init, full
-  recompile, warmup) is ~2–3 min; back-to-back `clean → init` x2 is ~5 min;
-  `gruntz build` (incremental) is faster. Just run them in the foreground and
-  verify changes with a real build — don't background out of fear, avoid clean
-  builds, or skip verification.
+  `gruntz clean && gruntz init` **(in main only — see the pool rule below)** is a few
+  minutes; `gruntz build` (incremental) is faster. Run them in the foreground and verify
+  changes with a real build — don't background out of fear or skip verification.
 - **Every body lives in its real owner TU** — owner proven by xref / vtable-slot, never by RVA
   proximity (`docs/tu-partition-brief.md`; a contribution must be contiguous).
 - **NEVER `gruntz clean` in a `.claude/worktrees/` pool worktree.** Ghidra's `ProjectLocator`
