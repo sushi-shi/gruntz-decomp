@@ -3816,7 +3816,7 @@ tileswitchlogic	??0CTileTimeTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	2	9068e
 tileswitchlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	1	1c40050610fc	0x1107f0
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	7	82a2b34ac645	0x110430
 tileswitchlogic	?ApplyByType@CGiantRockLogic@@QAEHPAXHHH@Z	100.0000	100.0000	1	83cba25e3b8d	0x113d40
-tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHH@Z	70.3622	70.3622	5	33b9beecbd47	0x112590
+tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHH@Z	70.3622	70.3622	6	ccde86e27405	0x112590
 tileswitchlogic	?Broadcast@CTileTriggerSwitchLogic@@QAEHXZ	84.2818	84.2818	2	d81f0ff3e788	0x112080
 tileswitchlogic	?BuildRockBreakInGameText@CGiantRockLogic@@QAEXXZ	69.5956	69.5956	3	cfd93beb9bc3	0x1122a0
 tileswitchlogic	?BuildSmall@CTileTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@HHHHPBHHHH@Z	100.0000	100.0000	2	fa217c0b36cf	0x110460
@@ -3836,10 +3836,10 @@ tileswitchlogic	?SerializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	1
 tileswitchlogic	?SerializeMatrix@CGiantRockLogic@@QAEHPAVCFileMemBase@@@Z	95.0909	95.0909	1	740e06074880	0x113dd0
 tileswitchlogic	?SetActionCode@CTileActionEvent@@QAEHH@Z	0.0000	0.0000	5	933da00c5677	0x112da0
 tileswitchlogic	?Setup@CTileTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@HHHHHHH@Z	100.0000	100.0000	1	f773f18865a8	0x1104f0
-tileswitchlogic	?SwitchDown@CCheckpointTriggerSwitchLogic@@EAEHXZ	73.1351	73.1351	2	8d99c0bc727b	0x112b70
+tileswitchlogic	?SwitchDown@CCheckpointTriggerSwitchLogic@@EAEHXZ	73.1351	73.1351	3	8230342f95b4	0x112b70
 tileswitchlogic	?SwitchDown@CTileSecretTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	01c9b768e75f	0x112820
 tileswitchlogic	?SwitchDown@CTileTimeTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	c254d9ce9f8f	0x112840
-tileswitchlogic	?SwitchUp@CCheckpointTriggerSwitchLogic@@EAEHXZ	73.1351	73.1351	2	3d11a35167c9	0x112bf0
+tileswitchlogic	?SwitchUp@CCheckpointTriggerSwitchLogic@@EAEHXZ	73.1351	73.1351	3	0c35b2e59e91	0x112bf0
 tileswitchlogic	?SwitchUp@CTileTimeTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	7b45ebbbed7d	0x112860
 tileswitchlogic	?Tick@CTileSecretTriggerLogic@@EAEHXZ	87.6226	87.6226	2	9c64e1787348	0x1128b0
 tileswitchlogic	?Tick@CTileTriggerLogic@@UAEHXZ	6.5030	6.5030	2	471cb6403a1b	0x110c10
@@ -3913,7 +3913,7 @@ trees	_set_data_type	100.0000	100.0000	1	167de8f88841	0x18a100
 trees	_tr_static_init	100.0000	100.0000	1	988facf51b1a	0x1884c0
 triggerloadrec	?Deserialize@CTriggerLoadRec@@QAEHPAVCFileMemBase@@@Z	91.7760	91.7760	2	8faa8c3fdc70	0x9bb0
 triggermgr	??1CTriggerMgr@@QAE@XZ	100.0000	100.0000	3	88db8e45269b	0x85c50
-triggermgr	?BuildRockBreakParticles@CTriggerMgr@@QAEHHHHH@Z	84.5920	84.5920	2	f20cbddaa467	0x7b440
+triggermgr	?BuildRockBreakParticles@CTriggerMgr@@QAEHHHHH@Z	84.5920	84.5920	3	b36eefacb4ae	0x7b440
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHH@Z	84.7778	84.7778	9	04832517b78b	0x79b30
 triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	86.6460	86.6460	3	46316417a70d	0x7cf40
 triggermgr	?CenterSelectionGroup@CTriggerMgr@@QAEHH@Z	86.8284	86.8284	19	3bf8391cc396	0x7cd40
