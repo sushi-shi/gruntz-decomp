@@ -261,8 +261,11 @@ public:
     // stamp for a user-written body only, so the dtor is compiler-generated. The COMDAT is
     // still emitted (the vtable slot takes its address) and bound by @rva-symbol in
     // src/Gruntz/Dialogs.cpp.
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (0x183d0; OrphanLeaves.cpp)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    // 0x183f0 (OrphanLeaves.cpp): the custom-level listbox (0x516) confirm - the
+    // message-map handler at messageMap+0x1c (LB dbl-click -> OnOK when selected).
+    void PickIfSelected();
 
     CString m_customName; // +0x5c  (default CString)
 };

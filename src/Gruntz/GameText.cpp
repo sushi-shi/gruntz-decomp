@@ -39,20 +39,18 @@ static CString g_worldName[8] = {
 };
 
 // ---------------------------------------------------------------------------
-// 0x082aa0 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - register thunk: hand
-// the address of a global descriptor (0x60aac8) to a manager singleton (0x6451a8)
-// method (0x1d38c5 == CZDArrayDerived::Construct, __thiscall). __cdecl. RVA-contiguous
-// with the g_worldName initializer @0x82990.
-// @orphan: COMDAT-folded one-liner whose owning class is unrecovered.
-struct CMgr6451a8 {
-    // Register @0x3742 IS CZDArrayDerived::Construct (2nd arg reloc-masked); cast at the call.
-};
-SIZE_UNKNOWN(CMgr6451a8);
+// 0x082aa0 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - register thunk: seed
+// the caption act-registry cell @0x6451a8 (the SAME zDArray-family archetype as
+// every other registry cell: a zero-init .bss CActReg constructed in place by
+// CZDArrayDerived::Construct - the cast is the documented storage/runtime-class
+// duality, see GruntStartingPoint.cpp). __cdecl; RVA-contiguous with the
+// g_worldName initializer @0x82990. (Ex the empty `CMgr6451a8` placeholder shell.)
+#include <Gruntz/ActReg.h> // CActReg - the shared registry-cell archetype
 DATA(0x002451a8)
-CMgr6451a8 g_mgr6451a8;
+CActReg g_actRegCaption;
 RVA(0x00082aa0, 0x10)
 void Register82aa0() {
-    ((CZDArrayDerived*)&g_mgr6451a8)->Construct((i32)(void*)g_msgCaption, 0);
+    ((CZDArrayDerived*)&g_actRegCaption)->Construct((i32)(void*)g_msgCaption, 0);
 }
 
 // ---------------------------------------------------------------------------

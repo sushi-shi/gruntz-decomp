@@ -60,65 +60,53 @@ void CEffect6b::Apply(i32 a, i32 b) {
 // CState95/CMenuHolder95/CWorkerObj95 views are gone.
 
 // ---------------------------------------------------------------------------
-// 0xb4350: a strike/flash effect tick - while the latch m_118 is set, pick the
-// frame index (5, or 0 once a global threshold is reached) unless the strike timer
-// has elapsed (which clears the latch), then seed the bound sprite's anim state
-// (m_4c frame / m_50 = 7 / m_58 = 1). Always runs the trailing helper, returns 0.
+// 0xb4350: CRainCloud::Tick (vtable slot 16, origin CPathHazard). IDENTITY
+// RESOLVED (2026-07-16, ex the `CStrikeEffect` placeholder): its ILT thunk
+// 0x36a2 is referenced ONLY from ??_7CRainCloud@@6B@+0x40 (slot 16), and every
+// viewed field is the canonical CPathHazard strike state - m_118 IS
+// m_strikeArmed, +0x120/+0x128 ARE m_strikeDeadline/m_strikeWindow, +0x10 IS
+// CUserLogic::m_object (the bound CGameObject, whose +0x4c/+0x50/+0x58 are the
+// draw-fill triple). The trailing "helper" thunk 0x2914 IS the base
+// ?Tick@CPathHazard@@ @0xb4020 - the same base chain CUFO::Tick makes.
+// The lightning-strike flash: while armed, pick flash frame 5 (or 0 once the
+// g_timer200 threshold passes) unless the strike window elapsed (disarm), seed
+// the bound object's draw-fill, then run the base Tick; returns 0.
 extern "C" u32 g_frameTime; // tick
 // g_timer200 (0x245598 countdown timer, compared to 0x64) comes from <Rez/FrameClock.h>.
 extern "C" CGameRegistry* g_gameReg; // 0x64556c
-extern "C" void Helper2914();        // 0x2914 (ILT thunk)
-
-struct CStrikeSprite {
-    char _00[0x4c];
-    i32 m_4c; // +0x4c
-    i32 m_50; // +0x50
-    char _54[0x58 - 0x54];
-    i32 m_58; // +0x58
-};
-struct CStrikeEffect {
-    char _00[0x10];
-    CStrikeSprite* m_10; // +0x10
-    char _14[0x118 - 0x14];
-    i32 m_118; // +0x118 latch
-    char _11c[0x120 - 0x11c];
-    i64 m_120;  // +0x120 timestamp
-    i64 m_128;  // +0x128 duration
-    i32 Tick(); // 0xb4350
-};
+#include <Gruntz/RainCloud.h>        // the real owner (CPathHazard strike state + m_object)
+#include <Gruntz/UserLogic.h>        // CGameObject (the bound object's draw-fill triple)
 
 // @early-stop
 // 98.94%: every opcode/offset/branch is byte-identical. The lone residual is a
 // load-order coin-flip in the sprite-write tail - retail reads g_gameReg->m_78
-// (edx) before m_10 (reusing eax for the sprite ptr); cl loads m_10 first (into ecx)
-// and pins the sprite there. A pure allocator choice on the [this+0x10] load; no
-// source reorder flips it.
-// @interleaver CStrikeEffect::Tick emitted-in <boundary: unreconstructed>
+// (edx) before m_object (reusing eax for the sprite ptr); cl loads m_object first
+// (into ecx) and pins the sprite there. A pure allocator choice on the
+// [this+0x10] load; no source reorder flips it.
+// @interleaver CRainCloud::Tick emitted-in <boundary: unreconstructed>
 // (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are ufo CUFO::Tick
-// @0xb4330 (before) and pathhazard CLightningHazard::SiblingTick @0xb43f0 (after),
-// NOT a single reconstructed host on both sides. True obj is the unreconstructed
-// leaf-tick pool at 0xb43xx; CStrikeEffect identity is a placeholder view.)
+// @0xb4330 (before) and pathhazard CLightningHazard::SiblingTick @0xb43f0 (after);
+// the raincloud unit's own block is at 0xb49b0, so this out-of-line member stays
+// in this holding TU pending the 0xb43xx leaf-tick pool reconstruction.)
 RVA(0x000b4350, 0x7e)
-i32 CStrikeEffect::Tick() {
-    if (m_118 != 0) {
+i32 CRainCloud::Tick() {
+    if (m_strikeArmed != 0) {
         i32 idx = 5;
-        if ((i64)(u32)g_frameTime - m_120 < m_128) {
+        if ((i64)(u32)g_frameTime - m_strikeDeadline < m_strikeWindow) {
             if ((u32)g_timer200 >= 0x64) {
                 idx = 0;
             }
         } else {
-            m_118 = 0;
+            m_strikeArmed = 0;
         }
         i32 frame = (i32)g_gameReg->m_logicPump->m_tables[idx];
-        CStrikeSprite* spr = m_10;
-        spr->m_58 = 1;
-        spr->m_4c = frame;
-        spr->m_50 = 7;
+        CGameObject* spr = m_object;
+        spr->m_drawActive = 1;
+        spr->m_drawFillArg = frame;
+        spr->m_drawFillCmd = 7;
     }
-    Helper2914();
+    CPathHazard::Tick(); // the base chain (thunk 0x2914 -> 0xb4020), result unused
     return 0;
 }
 SIZE_UNKNOWN(CAnimOwner6b);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CStrikeEffect);
-SIZE_UNKNOWN(CStrikeSprite);

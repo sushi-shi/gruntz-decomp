@@ -1364,6 +1364,7 @@ rva,name,lib,confidence,source
 0x11e888,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x11e8a4,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x11e8c0,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
+0x11e8dc,??1CException@@UAE@XZ,NAFXCW,HIGH,anchored
 0x11e8e3,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x11e8ff,??1CFileException@@UAE@XZ,NAFXCW,HIGH,anchored
 0x11e933,?SetFilePath@CFile@@UAEXPBD@Z,NAFXCW,MEDIUM,anchored

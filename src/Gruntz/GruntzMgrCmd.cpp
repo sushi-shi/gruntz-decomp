@@ -100,13 +100,13 @@ extern CString g_brickText2;
 // ParseSerial cross-TU (declared here, defined there).
 i32 ParseSerial(CGameRegistry* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
 
-// The world-present toolbar builder chain (thunk 0x277a -> the 6-arg __cdecl
-// forwarder Fwd114ec0 @0x114ec0 -> the guarded forwarder Fwd114f00 @0x114f00). Both
-// forwarders were carved out to src/Gruntz/Fwd114ec0.cpp in REHOME D9 (their
-// 0x114ec0-0x114f3e block is a separate obj); HandleCommand's WM_COMMAND 0x8070 path
-// calls Fwd114ec0 cross-TU (declared here, defined there). The real param shapes are
-// unrecovered; the i32 tuple mirrors the forwarder.
-void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd114ec0.cpp)
+// The screenshot dispatch chain (thunk 0x277a -> the 6-arg __cdecl forwarder
+// Fwd114ec0 @0x114ec0 -> the guarded Fwd114f00 @0x114f00 -> SaveScreenshot
+// @0x114ff0 on the front surface). Both forwarders were carved out to
+// src/Gruntz/Fwd114ec0.cpp in REHOME D9 (their 0x114ec0-0x114f3e block is a
+// separate obj); HandleCommand's WM_COMMAND 0x8070 path calls Fwd114ec0 cross-TU
+// (declared here, defined there). Params are SaveScreenshot's own tail.
+void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7);
 
 // Play a named cue when the world's cue host is not muted: resolve via the
 // host's CueLookup (a real CSndHost __thiscall @0x05b7e0 - ecx is the host at
@@ -1169,10 +1169,10 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             CheckDisplayBoundsB();
             return 1;
-        case 0x8070: { // 0x89fbc  world-present toolbar
+        case 0x8070: { // 0x89fbc  screenshot (front surface -> SaveScreenshot)
             Fwd114ec0(
-                (i32)m_settings,
-                (i32)this,
+                m_settings,
+                this,
                 ((CGameRegistry*)g_gameReg)->m_modeW,
                 ((CGameRegistry*)g_gameReg)->m_modeH,
                 0,

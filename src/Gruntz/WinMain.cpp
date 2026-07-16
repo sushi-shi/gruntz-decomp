@@ -244,18 +244,12 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
     return rc;
 }
 
-// ---------------------------------------------------------------------------
-// 0x11e8dc - a 7-byte base-object vptr restamp: `mov [ecx], &??_7CObject@@6B@; ret`.
-// A shared CObject-base teardown (called by the scalar-deleting-dtor @0x11ea46 and
-// the EH unwind funclets that cleanup a CObject base). Deriving from the REAL CObject
-// makes cl emit the immediate base ~CObject restamp referencing the REAL
-// ??_7CObject@@6B@ (bound @0x1e8cb4), /O2 dead-store-eliding the derived stamp - so the
-// vtable reference is reloc-FAITHFUL, not a fake RELOC_VTBL placeholder. The class's
-// own identity is still unrecovered (@identity-TODO: xref dead-ends at an unmatched
-// scalar-deleting-dtor host); only the CObject base restamp is proven.
-struct CObjStamp11e8dc : CObject {
-    virtual ~CObjStamp11e8dc() OVERRIDE; // slot 1 (CObject dtor)
-};
-SIZE_UNKNOWN(CObjStamp11e8dc);
-RVA(0x0011e8dc, 0x7)
-CObjStamp11e8dc::~CObjStamp11e8dc() {}
+// (0x11e8dc - the ex-`CObjStamp11e8dc` @identity-TODO shell - is GONE, 2026-07-16:
+// it IS the NAFXCW library ??1CException@@UAE@XZ. Proof: its sole caller, the ??_G
+// scalar-deleting dtor @0x11ea46, is referenced ONLY from .rdata 0x1ed588 ==
+// ??_7CException@@6B@+0x4 (the catalog-bound RTTI vtable @0x1ed584), and the whole
+// 0x11e8xx band is the NAFXCW exception-family obj (??1CFileException @0x11e8ff,
+// CArchive/CMemoryException rows around it; the FID "??_GCWinApp" rows there are
+// AMBIG false positives). ~CException is _AFX_INLINE in AFX.INL, so no TU can
+// re-emit it; the identity is recorded as a library label
+// (config/library_labels.csv), where library code belongs - not hand-claimed here.)

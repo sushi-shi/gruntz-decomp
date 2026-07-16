@@ -29,10 +29,11 @@
 extern "C" CGooGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
-// vtable slot 2 (0xe6020, thunk 0x24eb): CSBI_WellGoo's Setup override (dossier
-// #16 identity: vtbl 0x1eadfc slot [2] jmps here; ex the AniPlayer-TU
-// "StubOwner_e6020" placeholder). Kept as the 86% artifact stub pending a full
-// reconstruction (final sweep).
+// vtable slot 2 (0xe6020, thunk 0x24eb): CSBI_WellGoo::Setup, the slot-2 override
+// (dossier #16 identity: vtbl 0x1eadfc slot [2] jmps here). The ex-AniPlayer-TU
+// "StubOwner_e6020" placeholder host is DISSOLVED (2026-07-16) onto the declared
+// override in <Gruntz/SBI_WellGoo.h> - same 10-dword arg shape (a1..a4 + the
+// by-value SbiRect + a9/a10), same ret 0x28.
 // @early-stop
 // return-0 stub (the old ~86% score was a base-length normalization artifact of
 // the previous unit's epilogue alignment; in this unit it scores ~1% - equally
@@ -42,12 +43,8 @@ extern "C" CGooGameReg* g_gameReg;
 // slots as SetRect/lookup scratch, while cl spills a fresh `sub esp,0x10` RECT
 // frame + drops ebp - a uniform frame shift that mismatches every [esp+X]
 // operand. Frame/regalloc wall; full reconstruction deferred to the final sweep.
-struct StubOwner_e6020 {
-    i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
-};
-SIZE_UNKNOWN(StubOwner_e6020);
 RVA(0x000e6020, 0x288)
-i32 StubOwner_e6020::winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
+i32 CSBI_WellGoo::Setup(i32, i32, i32, i32, SbiRect, i32, i32) {
     return 0;
 }
 

@@ -1804,32 +1804,24 @@ void CStatusBarMgr::SetMode(i32 mode) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x10bbe0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). Getter:
-// return +0x4cc when +0x528 is clear; else the active cell (+0x534[+0x52c]) when
-// the +0x538 count exceeds the index, else 0. @orphan: this == a game-registry
-// sub-object ([[0x24556c+0x2c]+0x2dc]); owner class unrecovered.
-struct C10bbe0 {
-    char pad0[0x4cc];
-    i32 m_fallback; // +0x4cc
-    char pad4d0[0x528 - 0x4d0];
-    i32 m_528;   // +0x528
-    i32 m_index; // +0x52c
-    char pad530[0x534 - 0x530];
-    i32** m_entries; // +0x534
-    i32 m_count;     // +0x538
-    i32 GetActiveValue();
-};
+// CStatusBarMgr::GetActiveValue @0x10bbe0 (spatially re-homed from
+// src/Stub/BoundaryLowerMethods.cpp). IDENTITY RESOLVED (ex the `C10bbe0`
+// placeholder): `this` == [[0x24556c+0x2c]+0x2dc] == g_gameReg->m_curState->
+// m_guts, the ONE CStatusBarMgr - and every viewed field is canonical:
+// +0x4cc m_extraNotifyArg0, +0x528 m_rezActive, +0x52c m_rezTick, +0x534/+0x538
+// the m_ptrPool CPtrArray's m_pData/m_nSize (inline GetSize/GetAt loads).
+// Getter: the notify arg when the rez machine is idle; else the active pooled
+// cell's value when the tick index is in range, else 0.
 RVA(0x0010bbe0, 0x34)
-i32 C10bbe0::GetActiveValue() {
-    if (m_528 == 0) {
-        return m_fallback;
+i32 CStatusBarMgr::GetActiveValue() {
+    if (m_rezActive == 0) {
+        return m_extraNotifyArg0;
     }
-    if (m_count > 0 && m_count > m_index) {
-        return *m_entries[m_index];
+    if (m_ptrPool.GetSize() > 0 && m_ptrPool.GetSize() > m_rezTick) {
+        return *(i32*)m_ptrPool.GetAt(m_rezTick);
     }
     return 0;
 }
-SIZE_UNKNOWN(C10bbe0);
 
 // Find the rect widget under (x,y) by walking the three hit-test lists (the +0x30
 // list, the active-tab list at +tab*0x1c+0x30, then the +0xd8 list); return the

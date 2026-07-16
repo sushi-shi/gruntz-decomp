@@ -435,6 +435,9 @@ public:
     // ----- sibling methods called by the reconstructed bodies (declared so the
     // ILT call targets resolve; bodies live elsewhere / are stubbed) -----
     void ResetGroupA();
+    // 0x10bbe0: the rez-machine active-value getter (ex the C10bbe0 placeholder; body
+    // in SBI_RectOnly.cpp - m_extraNotifyArg0 / m_ptrPool active cell).
+    i32 GetActiveValue();
     i32 LoadStatzTabToggleSprite(i32 value, i32 idx); // 0x104e60 (body in SBI_RectOnly.cpp;
                                                       // ex the EngineLabelBacklog placeholder)
     void UpdateGruntOvenStatusBar();

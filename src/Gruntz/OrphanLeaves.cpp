@@ -17,33 +17,31 @@
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
-// 0x183d0: return the address of a fixed global (a runtime-class / map pointer).
-
+// 0x183d0: CBattlezDlgCustom::GetMessageMap (slot 12) - return the dialog's MFC
+// message map @0x5e8e98. (Ex the bare `GetGlobal5e8e98` free fn; the map global's
+// TYPE is still the placeholder void* cell in Globals.h.)
 RVA(0x000183d0, 0x6)
-void* GetGlobal5e8e98() {
-    return &g_5e8e98;
+const AFX_MSGMAP* CBattlezDlgCustom::GetMessageMap() const {
+    return (const AFX_MSGMAP*)&g_5e8e98;
 }
 
 // ---------------------------------------------------------------------------
-// 0x183f0 (RVA-homed from src/Stub/ApiCallers.cpp) - a dialog list-item confirm:
-// GetDlgItem(0x516)'s window sends LB_GETCURSEL (0x188); if it returned a valid
-// selection (!= LB_ERR), run CDialog::OnOK (0x1bacc3). __thiscall, no args.
-// @orphan: only inbound edge is a fn-ptr-table slot (~g_5e8e98+0x1c, via thunk
-// 0x3d5f) - no class vtable / new-site trace, so the concrete CDialog subclass is
-// unrecovered (@identity-TODO for the leaf dialog). Modeled on the canonical CDialog
-// (Dialogs.h): the "OnPick" retire == CDialog::OnOK (0x1bacc3), reached cast-free via
-// the base's own protected virtual (qualified call -> the retail direct rel32).
-struct DlgHost_183f0 : public CDialog {
-    void PickIfSelected(); // thiscall, RVA 0x183f0
-};
+// 0x183f0 (RVA-homed from src/Stub/ApiCallers.cpp) - CBattlezDlgCustom's
+// list-item confirm (the message-map handler at messageMap+0x1c, via thunk
+// 0x3d5f): GetDlgItem(0x516)'s window sends LB_GETCURSEL (0x188); on a valid
+// selection run CDialog::OnOK. IDENTITY RESOLVED (2026-07-16, ex the
+// `DlgHost_183f0` @identity-TODO shell): control 0x516 IS CBattlezDlgCustom's
+// custom-level listbox (its DoDataExchange @0x180e0 fills the same id), the
+// fn-table @0x5e8e98 IS that dialog's message map (GetMessageMap above returns
+// it), and the whole 0x183d0..0x18430 run is that dialog's MFC boilerplate
+// cluster, RVA-adjacent to its DDX.
 RVA(0x000183f0, 0x2e)
-void DlgHost_183f0::PickIfSelected() {
+void CBattlezDlgCustom::PickIfSelected() {
     HWND h = GetDlgItem(0x516)->m_hWnd;
     if (::SendMessageA(h, 0x188, 0, 0) != -1) {
         CDialog::OnOK(); // 0x1bacc3 ?OnOK@CDialog@@MAEXXZ (qualified base call, reloc-masked)
     }
 }
-SIZE_UNKNOWN(DlgHost_183f0);
 
 // ---------------------------------------------------------------------------
 // 0x018430 (re-homed from src/Stub/BoundaryMisc.cpp): end the wait cursor on the
