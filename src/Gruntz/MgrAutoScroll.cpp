@@ -10,44 +10,19 @@
 // placeholders; offsets + code bytes are the load-bearing fact.
 #include <Bute/ButeMgr.h>     // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (game-manager singleton; one true shape)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24; its m_mainPlane)
+#include <Wwd/WwdFile.h>      // canonical CLevelPlane (== CDDrawWorkerHost) - the scroll plane
 #include <Ints.h>
 #include <rva.h>
 #include <Globals.h>
 
-// The active scroll view (pm->m_world->m_24->m_view, and the back-plane g_64c27c).
-// MgrSub/MgrSub2 are the CGruntzMgr::m_world sub-chain (a facet of the world/view
-// object) - a SEPARATE consolidation owned by the world/CViewport modeling, so they
-// stay local here and are reached by a documented view of the canonical m_world.
-struct ScrollView {
-    char p00[0x08];
-    i32 m_flags; // +0x08  flags (&1 => skip the m_scaleX/m_scaleY scale)
-    char p0c[0x10 - 0x0c];
-    float m_scrollX; // +0x10  scaled scroll X
-    float m_scrollY; // +0x14  scaled scroll Y
-    float m_scaleX;  // +0x18  X scale
-    float m_scaleY;  // +0x1c  Y scale
-    char p20[0x30 - 0x20];
-    i32 m_clampX; // +0x30  X clamp extent
-    i32 m_clampY; // +0x34  Y clamp extent
-    char p38[0x40 - 0x38];
-    i32 m_boundL; // +0x40  bound source 0
-    i32 m_boundT; // +0x44  bound source 1
-    i32 m_boundR; // +0x48  bound source 2
-    i32 m_boundB; // +0x4c  bound source 3
-    char p50[0x84 - 0x50];
-    i32 m_curScrollX; // +0x84  current scroll X
-    i32 m_curScrollY; // +0x88  current scroll Y
-};
-
-struct MgrSub2 {
-    char p00[0x5c];
-    ScrollView* m_view; // +0x5c
-};
-
-struct MgrSub {
-    char p00[0x24];
-    MgrSub2* m_sub; // +0x24
-};
+// The active scroll "view" (pm->m_world->m_24->m_mainPlane, and the back-plane g_64c27c)
+// IS the canonical CLevelPlane (CDDrawWorkerHost): the former MgrSub/MgrSub2/ScrollView
+// .cpp-local views are DISSOLVED - MgrSub is m_world (CSpriteFactoryHolder), MgrSub2 its
+// +0x24 CGameLevel, and every ScrollView field maps to an already-named plane member:
+//   m_flags@08, m_scrollX/Y@10/14 -> m_scaledX/Y, m_scaleX/Y@18/1c, m_clampX/Y@30/34 ->
+//   m_wrapW/H, m_boundL/T/R/B@40/44/48/4c -> m_originX/originY/extentX/extentY,
+//   m_curScrollX/Y@84/88 -> m_snappedX/Y. Reached cast-free through the typed m_mainPlane.
 
 // The retail [BackPlane] config reader (CButeMgr::GetDword, 0x172240, __thiscall)
 // is on the canonical CButeMgr (include/Bute/ButeMgr.h).
@@ -90,7 +65,7 @@ i32 g_panMinX;
 DATA(0x0024550c)
 i32 g_panMaxX;
 DATA(0x0024c27c)
-ScrollView* g_backView;
+CLevelPlane* g_backView;
 DATA(0x0024cfb8)
 i64 g_scrollLimit;
 DATA(0x0024cfc4)
@@ -115,9 +90,9 @@ static i32 RandRange(i32 lo, i32 hi) {
 RVA(0x000ebd70, 0x366)
 // __cdecl 3-arg (retail callers push 3; the former 4th `unused` param was spurious).
 void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
-    ScrollView* v = ((MgrSub*)pm->m_world)->m_sub->m_view;
-    i32 scrollX = v->m_curScrollX;
-    i32 scrollY = v->m_curScrollY;
+    CLevelPlane* v = pm->m_world->m_24->m_mainPlane;
+    i32 scrollX = v->m_snappedX;
+    i32 scrollY = v->m_snappedY;
 
     if (g_scrollClock > g_frameTime) {
         if (g_frameDelta < g_scrollTimer) {
@@ -145,15 +120,15 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    ScrollView* v2 = ((MgrSub*)pm->m_world)->m_sub->m_view;
-    if (scrollX > v2->m_clampX - cx) {
-        scrollX = v2->m_clampX - cx;
+    CLevelPlane* v2 = pm->m_world->m_24->m_mainPlane;
+    if (scrollX > v2->m_wrapW - cx) {
+        scrollX = v2->m_wrapW - cx;
     }
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
     }
-    if (scrollY > v2->m_clampY - cy) {
-        scrollY = v2->m_clampY - cy;
+    if (scrollY > v2->m_wrapH - cy) {
+        scrollY = v2->m_wrapH - cy;
     }
 
     i32 deltaY = scrollY - g_lastScrollY;
@@ -161,7 +136,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    ScrollView* v3 = ((MgrSub*)pm->m_world)->m_sub->m_view;
+    CLevelPlane* v3 = pm->m_world->m_24->m_mainPlane;
     {
         float sx = (float)scrollX;
         float sy = (float)scrollY;
@@ -169,15 +144,15 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
             sx = sx * v3->m_scaleX;
             sy = sy * v3->m_scaleY;
         }
-        v3->m_scrollX = sx;
-        v3->m_scrollY = sy;
+        v3->m_scaledX = sx;
+        v3->m_scaledY = sy;
     }
     RecomputePlaneCoords();
 
-    ScrollView* gm = g_backView;
+    CLevelPlane* gm = g_backView;
     if (gm != 0) {
-        i32 nx = gm->m_curScrollX;
-        i32 ny = gm->m_curScrollY;
+        i32 nx = gm->m_snappedX;
+        i32 ny = gm->m_snappedY;
         if (deltaX != 0 || deltaY != 0) {
             nx = (i32)((float)nx - (float)deltaX * -0.05f);
             ny = (i32)((float)ny - (float)deltaY * -0.05f);
@@ -185,28 +160,24 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
         if ((i64)g_frameTime - g_scrollAccum >= g_scrollLimit) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
-            ScrollView* g2 = g_backView;
+            CLevelPlane* g2 = g_backView;
             float fx = (float)nx;
             float fy = (float)ny;
             if (!(g2->m_flags & 1)) {
                 fx = fx * g2->m_scaleX;
                 fy = fy * g2->m_scaleY;
             }
-            g2->m_scrollX = fx;
-            g2->m_scrollY = fy;
+            g2->m_scaledX = fx;
+            g2->m_scaledY = fy;
             RecomputePlaneCoords();
             g_scrollLimit = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollAccum = g_frameTime;
         }
     }
 
-    MgrSub* o = ((MgrSub*)pm->m_world);
-    pm->m_viewOriginL = o->m_sub->m_view->m_boundL - 0x60;
-    pm->m_viewOriginT = o->m_sub->m_view->m_boundT - 0x60;
-    pm->m_viewOriginR = o->m_sub->m_view->m_boundR + 0x60;
-    pm->m_viewOriginB = o->m_sub->m_view->m_boundB + 0x60;
+    CSpriteFactoryHolder* o = pm->m_world;
+    pm->m_viewOriginL = o->m_24->m_mainPlane->m_originX - 0x60;
+    pm->m_viewOriginT = o->m_24->m_mainPlane->m_originY - 0x60;
+    pm->m_viewOriginR = o->m_24->m_mainPlane->m_extentX + 0x60;
+    pm->m_viewOriginB = o->m_24->m_mainPlane->m_extentY + 0x60;
 }
-
-SIZE_UNKNOWN(MgrSub);
-SIZE_UNKNOWN(MgrSub2);
-SIZE_UNKNOWN(ScrollView);

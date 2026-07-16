@@ -33,7 +33,7 @@ struct CVTrigEntry;
 struct GLSResetMgr;
 struct SFMANL101TAG;
 typedef struct SFMANL101TAG SFMANL101API;
-struct ScrollView;
+class CDDrawWorkerHost; // g_backView's real class (the CLevelPlane scroll plane)
 struct ShadeDescr;
 
 // g_typeDesc3 had a bogus DATA(0x0000b620): 0xb620 is CODE (CWorldSoundSet::Deactivate,

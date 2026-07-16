@@ -29,8 +29,8 @@ class CParseSource;
 // The world/game-registry object at +0x4: its rez-path name query (returns a CString
 // by value), the current world-name string, and the two mode gates.
 
-// The "BACK" plane cache (reloc-masked DIR32 store).
-struct ScrollView;
+// The "BACK" plane cache (reloc-masked DIR32 store): g_backView is a CDDrawWorkerHost*
+// (== CPlane, FindPlaneByName's return type) in <Globals.h>, so the store needs no cast.
 // The alternate-level-set gate (second run of levels). Single DATA binding here.
 
 RVA(0x000dbc80, 0x309)
@@ -81,6 +81,6 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
     }
     m_0c->m_24->NotifyAllPlanes();
     m_0c->m_24->m_08 |= 4;
-    g_backView = (ScrollView*)m_0c->m_24->FindPlaneByName("BACK");
+    g_backView = m_0c->m_24->FindPlaneByName("BACK");
     return 1;
 }

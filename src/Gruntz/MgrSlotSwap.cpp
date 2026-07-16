@@ -7,22 +7,16 @@
 // are reloc-masked.
 #include <Gruntz/Brickz.h>
 #include <Ints.h>
-#include <Gruntz/GruntzMgr.h> // the REAL singleton class
-#include <Wwd/WwdFile.h>      // CPlaneRender - the canonical plane (the registry plane)
+#include <Gruntz/GruntzMgr.h>  // the REAL singleton class (+ CSpriteFactoryHolder via GameRegistry.h)
+#include <Gruntz/GameLevel.h>  // CGameLevel - m_world->m_24 (the level; its m_mainPlane)
+#include <Wwd/WwdFile.h>       // CLevelPlane/CPlaneRender - the canonical plane (the registry plane)
 #include <rva.h>
 
-// The registry plane table (g_gameReg->m_world->m_24->m_5c) is the shared
-// world-plane CPlaneRender: value plane m_tileGrid indexed by offset plane m_colOffsets.
-
-struct RegLevel { // g_gameReg->m_world->m_24
-    char m_pad0[0x5c];
-    CPlaneRender* m_5c; // +0x5c
-};
-
-struct RegM30 {
-    char m_pad0[0x24];
-    RegLevel* m_24; // +0x24
-};
+// The registry plane table (g_gameReg->m_world->m_24->m_mainPlane) is the shared
+// world-plane CLevelPlane: value plane m_tileGrid indexed by offset plane m_colOffsets.
+// (The RegM30 / RegLevel .cpp-local views are DISSOLVED: g_gameReg->m_world IS the
+// canonical CSpriteFactoryHolder, its +0x24 m_24 IS CGameLevel, and CGameLevel::m_mainPlane
+// @+0x5c IS the plane - all reached cast-free.)
 
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms.
@@ -65,18 +59,13 @@ i32 CSlotHolder::DoSwap() {
     CGruntzMgr* mgr = g_gameReg;
     i32 grp = this->m_08;
     i32 idx = this->m_0c;
-    i32 newTok =
-        ((RegM30*)mgr->m_world)
-            ->m_24->m_5c->m_tileGrid[((RegM30*)mgr->m_world)->m_24->m_5c->m_colOffsets[idx] + grp];
-    ((RegM30*)g_gameReg->m_world)
-        ->m_24->m_5c
-        ->m_tileGrid[((RegM30*)g_gameReg->m_world)->m_24->m_5c->m_colOffsets[idx] + grp] = oldTok;
+    i32 newTok = mgr->m_world->m_24->m_mainPlane
+                     ->m_tileGrid[mgr->m_world->m_24->m_mainPlane->m_colOffsets[idx] + grp];
+    g_gameReg->m_world->m_24->m_mainPlane
+        ->m_tileGrid[g_gameReg->m_world->m_24->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
     ((CBrickzGrid*)mgr->m_tileGrid)->ComputeCellFlags(grp, idx, oldTok);
     this->m_34 = newTok;
     return 1;
 }
 
 SIZE_UNKNOWN(CSlotHolder);
-SIZE_UNKNOWN(RegLevel);
-SIZE_UNKNOWN(RegM30);
-SIZE_UNKNOWN(RegSubMgr);

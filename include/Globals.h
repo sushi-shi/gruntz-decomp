@@ -41,7 +41,7 @@ struct CVariantSlot;
 struct CVTrigEntry;
 struct SFMANL101TAG;
 typedef struct SFMANL101TAG SFMANL101API;
-struct ScrollView;
+class CDDrawWorkerHost; // g_backView's real class (the CLevelPlane scroll plane)
 struct ShadeDescr;
 
 // The two shared sound globals (DEFINED in src/Gruntz/GruntzMgr.cpp - the run-state /
@@ -199,7 +199,7 @@ extern i32 g_poolCount;
 extern i32 g_savedMultiWndProc;
 // (g_dropColl @0x64bed8 is ONE 0x24 CActReg object, DEFINED in src/Gruntz/DroppedObject.cpp
 //  and private to it; 0x64bedc..0x64bef8 are its interior fields, not globals.)
-extern ScrollView* g_backView;
+extern CDDrawWorkerHost* g_backView; // 0x64c27c the "BACK" scroll plane (CLevelPlane)
 extern "C" i32 g_soundChannelInUse[17];
 extern CVariantSlot* g_projActColl2;
 extern i32 g_projActLo;
