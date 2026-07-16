@@ -247,7 +247,7 @@ multistartdlg	16	7
 multistartdlgroster	31	18
 namerecord	4	3
 netcmdmgr	1	1
-netcmdslot	43	23
+netcmdslot	43	24
 netlobbydialogs	18	17
 netmgr	45	33
 netmgrerror	2	2
@@ -382,7 +382,7 @@ wormhole	28	16
 wormholeacts	3	2
 wwdfactoryobject	33	15
 wwdfile	3	1
-wwdgameobject	43	18
+wwdgameobject	43	19
 wwdgameobjectrender	15	10
 wwdgrid	14	8
 wwdobjmgr	50	24
@@ -1110,7 +1110,7 @@ ddrawworkerregistry	?SetKey_155810@CDDrawWorker@@UAEHPBD@Z	100.0000	100.0000	1	2
 ddrawworkerregistry	?SumSizesEqual_155460@CDDrawWorkerRegistry@@QAEHPBDH@Z	65.6000	65.6000	3	bab74b030655	0x155460
 ddrawworkerregistry	?Unload@CDDrawWorkerRegistry@@UAEHXZ	100.0000	100.0000	1	220748b9d122	0x154ac0
 ddsurface	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	bbcdcbde2404	0x141350
-ddsurface	?Blit1624@CDDSurface@@QAEHPAXH@Z	72.0859	72.0859	1	35d4c3c9667e	0x13fce0
+ddsurface	?Blit1624@CDDSurface@@QAEHPAXH@Z	72.0859	72.0703	1	35d4c3c9667e	0x13fce0
 ddsurface	?Blit168@CDDSurface@@QAEHPAX0H@Z	67.5044	67.5044	1	0ff47ec558d1	0x13fbb0
 ddsurface	?Blit2416@CDDSurface@@QAEHPAXH@Z	82.0000	82.0000	1	0b755881872e	0x13ff80
 ddsurface	?Blit248@CDDSurface@@QAEHPAX0H@Z	94.3103	94.3103	1	323b2be66396	0x13fe60
@@ -1159,8 +1159,8 @@ ddsurface	?SetColorKeyRange@CDDSurface@@QAEHIII@Z	100.0000	100.0000	1	b7668948ad
 ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	0x13eae0
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13eb80
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	1	e8ea561d78f0	0x13e690
-ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	64.9530	64.9530	4	598d22ef216a	0x13f020
-ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	70.3955	70.3955	3	3e7066958296	0x13f460
+ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	64.9530	61.2853	4	598d22ef216a	0x13f020
+ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	70.3955	63.9000	3	3e7066958296	0x13f460
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	1	6da61c43ea0b	0x13f990
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	1	d9eb88597afd	0x1413b0
 ddsurface	?WaitFlip@CDDSurface@@QAEXXZ	100.0000	100.0000	1	e41c44b068a9	0x13ee30
@@ -1567,9 +1567,9 @@ feccrypt	?Init@CFecFile@@QAEHXZ	100.0000	100.0000	3	26f9e69521e5	0x17b510
 feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	3	5e37d6af8fe1	0x17b840
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	3	8b60115f1648	0x17b5a0
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	82.7714	82.7714	6	e3ed2cdfe228	0x17b5f0
-fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAVCFileImageSrc@@HH@Z	87.4065	87.4065	3	066a8d3258ba	0x144b30
+fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAVCFileImageSrc@@HH@Z	87.4720	87.4720	3	066a8d3258ba	0x144b30
 fileimage	?DecodeBmp@CDDSurface@@QAEPAXPAX0I@Z	31.2544	31.2544	1	d56cdb09a69d	0x143fc0
-fileimage	?DecodePcx@CDDSurface@@QAEPAXPAX0I@Z	56.0816	55.9847	2	b5cdff1fc1ef	0x144ee0
+fileimage	?DecodePcx@CDDSurface@@QAEPAXPAX0I@Z	56.0816	56.0816	2	b5cdff1fc1ef	0x144ee0
 fileimage	?DecodePcxData@CDDSurface@@QAEHPAX0HHH@Z	86.2370	86.2370	2	96fc316c2c62	0x1457a0
 fileimage	?DecodePcxEx@CDDSurface@@QAEHPAXPAD00@Z	100.0000	100.0000	2	f86016e4a7cc	0x1459d0
 fileimage	?DecodePid@CDDSurface@@QAEPAXPAX0I0@Z	35.7707	35.7707	2	fd82418a8290	0x145b10
@@ -2797,7 +2797,7 @@ multi	?DetectConnectionConfig@CMulti@@QAEHXZ	85.8924	85.8924	1	5a8e69d27576	0xb8
 multi	?DispatchRecvMsg@CMulti@@QAEHHPADH@Z	77.6273	77.6273	9	515d96957d2c	0xb9750
 multi	?DropChannelPlayer@CMulti@@QAEHH@Z	97.8814	97.8814	1	5564c68f6945	0xbb510
 multi	?DropTimeout@CMulti@@QAEXXZ	78.9286	78.9286	6	8b49bff90f76	0xbc2d0
-multi	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	2	8230294956dd	0xb89e0
+multi	?FillPlayerList@@YAXPAUHWND__@@PAVCNetMgr@@@Z	91.5352	91.5352	1	149110c4a668	0xb89e0
 multi	?FrameSlot28@CMulti@@UAEHH@Z	92.7500	92.7500	7	189dd01c9fd0	0xb63f0
 multi	?FrameSyncWait@CMulti@@QAEIXZ	70.7250	70.7250	1	7a75b55261f8	0xbc070
 multi	?GetConfigNameA@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:67f87b34348f	0xb6090
@@ -2812,8 +2812,8 @@ multi	?InitStr6473d8@@YAXXZ	100.0000	100.0000	2	e5748d9e7932	0xb5380
 multi	?JoinAndRegisterChannel@CMulti@@QAEHXZ	88.0270	88.0270	1	95a37cfc0070	0xb8b10
 multi	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	2	7a8ffa706d88	0xb7fe0
 multi	?LoadConfig@CMulti@@QAEHPAX@Z	100.0000	100.0000	1	938758a4a2ca	0xbce80
-multi	?LoadMenuSelectSprite@CMulti@@QAEHPAX@Z	100.0000	100.0000	6	f9d0fa5f5289	0xba620
-multi	?MultiJoinDlgProc@@YGHPAUHWND__@@IIH@Z	75.7872	75.7872	2	b55a1fff5dbb	0xb8020
+multi	?LoadMenuSelectSprite@CMulti@@QAEHPAX@Z	100.0000	100.0000	7	1a009dd4e9bd	0xba620
+multi	?MultiJoinDlgProc@@YGHPAUHWND__@@IIH@Z	75.7872	75.7872	3	fce84937f564	0xb8020
 multi	?NetSetupDlgProc@@YGHPAUHWND__@@IIH@Z	87.1589	87.1589	3	eaf3f35555cb	0xb7b10
 multi	?OnDropPlayer@CMulti@@QAEXXZ	100.0000	100.0000	4	ece0c440a5cb	0xbc110
 multi	?OnJoinConfirm@CMulti@@QAEHPAX@Z	81.9882	81.9882	2	7fb02ed57601	0xb8cf0
@@ -2964,7 +2964,7 @@ netcmdslot	?SendGruntRecord@CNetCmdSlot@@QAEHHPAUGruntRec@@HHH@Z	90.2632	90.2632
 netcmdslot	?SendOne@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	84.2105	84.2105	1	d350932086b6	0xbfeb0
 netcmdslot	?Tick@CNetSession@@QAEHXZ	84.8495	84.8495	2	57b8542ba6d3	0xbf9e0
 netcmdslot	?Touch@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	3	b5b3a5ef28fe	0xc1390
-netcmdslot	?Verify@CNetSession@@QAEHH@Z	89.5349	89.5349	2	fd5492a044ae	0xc0290
+netcmdslot	?Verify@CNetSession@@QAEHH@Z	100.0000	100.0000	2	fd5492a044ae	0xc0290
 netcmdslot	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	2	fd5492a044ae	0xc04f0
 netlobbydialogs	?DropInDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	e905a288a12a	0xbe550
 netlobbydialogs	?HostWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	0e29f46078e4	0xbd850
@@ -3015,7 +3015,7 @@ netmgr	?IsInterface3@FontInterfaceObject@@QAEHXZ	100.0000	100.0000	1	3fd5f30e47d
 netmgr	?IsInterface4@FontInterfaceObject@@QAEHXZ	100.0000	100.0000	1	53c93a7a1a8a	0x179540
 netmgr	?IsInterface5@FontInterfaceObject@@QAEHXZ	100.0000	100.0000	1	c97641ba66ae	0x179570
 netmgr	?PopulateGroupList@CNetMgr@@QAEXPAUHWND__@@H@Z	90.0612	90.0612	1	18685695aff8	0x178470
-netmgr	?PopulatePlayerList@CNetMgr@@QAEXPAX@Z	93.1636	93.1636	5	7c9a8ed9b052	0x178790
+netmgr	?PopulatePlayerList@CNetMgr@@QAEXPAX@Z	93.1636	93.1636	6	f42da722ab19	0x178790
 netmgr	?PopulateSessionList@CNetMgr@@QAEXPAX@Z	76.5333	76.5333	6	30f1061c8cd3	0x178d40
 netmgr	?ReadGroupSel@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	6	a32e81b1f88d	0x178590
 netmgr	?ReadPlayerSel@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	6	46761572d88d	0x178820
@@ -3121,7 +3121,7 @@ play	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	1	96021d110816	0xdb750
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	6	a5553a05bbbd	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	6	b23765ab3ca6	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	6	887ca489df90	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.3250	90.3250	7	66e49992ddab	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.3250	90.2500	7	66e49992ddab	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	90.8191	90.8191	12	a934ce2a7419	0xd65d0
 play	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	1	79c5e8e9a800	0xcedf0
 play	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	1	17305dac4ee5	0xcee10
@@ -3696,14 +3696,14 @@ symtab	??1CParserObjList@@QAE@XZ	100.0000	100.0000	1	cpp:2462afe64ebd	0x13aaf0
 symtab	??1CSymParser@@QAE@XZ	99.9908	99.9908	4	c7192ef6176c	0x13abc0
 symtab	??1CSymRec@@QAE@XZ	98.3099	98.3099	3	d42eb02deceb	0x139cf0
 symtab	??1CSymTab@@QAE@XZ	92.8061	92.8061	6	b8f44356f8e4	0x139ee0
-symtab	?AddNamedValue@CSymTab@@QAEHPAX0H@Z	88.0520	88.0520	1	03a3a71e32cb	0x13a400
+symtab	?AddNamedValue@CSymTab@@QAEHPAX0H@Z	88.0520	88.0520	2	28ed7b5a907f	0x13a400
 symtab	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	2	d7a36528f16b	0x13c210
-symtab	?AddNodeEntry@CSymTab@@QAEHPAX000@Z	100.0000	100.0000	1	1ae81a302496	0x13a4b0
+symtab	?AddNodeEntry@CSymTab@@QAEHPAX000@Z	100.0000	100.0000	2	d3dd582f870f	0x13a4b0
 symtab	?AddNodeSubEntry@CSymTab@@QAEHPAX0@Z	100.0000	100.0000	3	13b81548a897	0x13a530
-symtab	?ApplyRange@CSymTab@@QAEHHHHH@Z	74.9119	74.9119	6	aadf7c877fda	0x13a640
+symtab	?ApplyRange@CSymTab@@QAEHHHHH@Z	74.9119	74.9119	7	5849778a701a	0x13a640
 symtab	?ApplyRecursive@CSymTab@@QAEHHHHH@Z	70.4657	70.4657	3	5725744b9c99	0x13a580
 symtab	?BeginParse@CParseSource@@QAEHXZ	99.7660	99.7660	2	8a47808e7ab5	0x139960
-symtab	?Build@CSymLeafBuilder@@QAEXPAVCSymTab@@PBDPAX22222222@Z	96.2963	96.2963	1	d1f32c5798c4	0x139710
+symtab	?Build@CSymLeafBuilder@@QAEXPAVCSymTab@@PBDPAX22222222@Z	96.2963	96.2963	2	90ae818e55c9	0x139710
 symtab	?CheckNodes@CSymParser@@QAEHXZ	100.0000	100.0000	3	408c3a92f5cb	0x13ba20
 symtab	?Clear@CSymParser@@QAEHH@Z	91.3803	91.3803	1	fb21b8ee36c6	0x13b850
 symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	78.2500	78.2500	6	daf0ff9fe336	0x13a330
@@ -3731,7 +3731,7 @@ symtab	?NextSym@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	3	fad7f9a33744	0x13a2d0
 symtab	?PackTag@@YGIPBD@Z	100.0000	100.0000	1	5427b9365e37	0x13b910
 symtab	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	78.1500	78.1500	4	12e1790c83ce	0x13ad00
 symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	56.1996	56.1996	2	0add1f4eb5b3	0x13b300
-symtab	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	3	ea2af95bfdc4	0x13c0c0
+symtab	?PopParseSlot@CSymParser@@QAEPAUCSymLeafBuilder@@XZ	77.1304	77.1304	1	c597e3c62c8b	0x13c0c0
 symtab	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	5f22edcbb006	0x13c050
 symtab	?Read@CParseSource@@QAEHPAXIH@Z	91.1848	91.1848	1	c59d38a63c63	0x139af0
 symtab	?ReadAt@CParseSource@@QAEHPAXHI@Z	99.9833	99.9833	1	e55faa5935a8	0x139a40
@@ -4229,7 +4229,7 @@ wwdgameobject	?EnsureWorker88@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	5	9935450
 wwdgameobject	?EnsureWorker90@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	5	ae81b420ac71	0x151070
 wwdgameobject	?FindFrame@CImageSet@@QAEHPAVCImage@@PADPAH@Z	100.0000	100.0000	1	302de21749a9	0x1525c0
 wwdgameobject	?GetFirstFrameState@CImageSet@@QAEHXZ	100.0000	100.0000	2	74bec7b84334	0x152570
-wwdgameobject	?GetMemoryUsage@CImageSet@@QAEHH@Z	100.0000	99.9623	2	71db3dc7d733	0x1523f0
+wwdgameobject	?GetMemoryUsage@CImageSet@@QAEHH@Z	100.0000	100.0000	2	71db3dc7d733	0x1523f0
 wwdgameobject	?Init@AnimWorkerObj@@UAEHP6AHPAUCGameObject@@@ZH@Z	100.0000	100.0000	1	eb8122e3488e	0x151e20
 wwdgameobject	?InsertFrame@CSprite@@QAEPAVCImage@@PAXHH@Z	99.4110	99.4110	2	676ab44d5f9d	0x151f00
 wwdgameobject	?LookupAnimSprite@CGameObject@@QAEHPBD@Z	73.0435	73.0435	2	0e1701ebfa9a	0x150610
