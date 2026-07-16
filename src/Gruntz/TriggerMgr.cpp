@@ -46,7 +46,7 @@
 extern "C" CGruntzMgr* g_gameReg;
 
 // Merged-donor headers (the dossier-10b one-TU merge):
-#include <Gruntz/Play.h>         // CWorld::WorldTimeline (HudRect @0x78060) + CPlay
+#include <Gruntz/Play.h>         // CPlay (PostHudRect/DispatchHudClick drive HudRect @0x78060)
 #include <Gruntz/GameLevel.h>    // CLevelPlane (PositionUpdate @0x788d0 tail call)
 #include <Gruntz/GameRegistry.h> // canonical singleton view (icon/selection donors)
 #include <Gruntz/Grunt.h>        // CGrunt (the board cells) + g_gameReg
@@ -112,8 +112,8 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
 }
 
 // -------------------------------------------------------------------------
-// CWorld::WorldTimeline::HudRect (0x78060) - the combat-region scan
-// CPlay::PostHudRect / CPlay::DispatchHudClick invoke on m_4w()->m_68 (decl in
+// CTriggerMgr::HudRect (0x78060) - the combat-region scan
+// CPlay::PostHudRect / CPlay::DispatchHudClick invoke on m_4->m_cmdGrid (decl in
 // <Gruntz/Play.h>'s WorldTimeline view). Merged from Play.cpp per dossier 10b
 // (embedded singleton, this TU by retail position; @identity-TODO - the
 // WorldTimeline view's +0x1c grunt grid / +0x23c goal ARE CTriggerMgr's

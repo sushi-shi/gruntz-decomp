@@ -1095,7 +1095,7 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
 // 2026-07-15: 0x0d00a0 was CPlay::PostSetup - vtable slot 37 (+0x94), the NEW virtual
 // bound at that slot in ??_7CPlay / ??_7CDemo / ??_7CMulti. The body is now a real
 // CPlay method homed to Play.cpp; `this` is a CPlay* (m_c -> CGameLevel::m_planeCtx
-// rect, m_4 -> CWorld::m_5c CFontConfig draw sink). This `play` interleaver no longer
+// rect, m_4 -> CGruntzMgr::m_chatLog CFontConfig draw sink). This `play` interleaver no longer
 // lives in the savegame TU.)
 
 // Class-metadata annotations (EOF-hosted).

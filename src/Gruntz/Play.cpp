@@ -120,7 +120,7 @@
 #include <Gruntz/LevelSync.h>            // CLevelSync (the +0x2dc guts child-sync @0x1084d0)
 #include <Gruntz/UserLogic.h> // CGameObject/AnimWorkerObj (entity views dissolved onto them)
 
-// The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
+// The zoned sound-bank manager (CGruntzMgr::m_sound); RegionEnter/RegionLeave pause +
 // resume the currently-playing zoned sound via its real (named) methods.
 #include <Dsndmgr/GruntzSoundZ.h>
 // The real owners of the ex-`Eng` conflation (see the note below): each was reached by
@@ -147,7 +147,7 @@ inline void* operator new(u32, void* p) {
 // (CCueSink6 is GONE - thunk 0x39f4 resolves to CGruntSpawnConfig::SpawnVoiceDriver
 // @0x11b3b0, the same method LoadCursorSprites already calls on the +0x60 cue sink.)
 // (CMarkerPlacer is GONE - thunk 0x2095 resolves to CGruntzCmdMgr::EnqueueSingle
-// @0x23c30; CWorld::m_6c is now typed CGruntzCmdMgr*.)
+// @0x23c30; CGruntzMgr::m_cmdSubMgr is the typed CGruntzCmdMgr*.)
 
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
 #include <Gruntz/String.h>
@@ -351,7 +351,7 @@ void ShowHudMessageAlt(
 // or decl-order steerable - tried both). Permuter candidate for the final sweep.
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::FrameSlot28(i32 arg) {
-    m_4w()->m_60->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
+    m_4->m_timer->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = (i32)g_frameTime;
     if (m_40) {
         QuitToMenu();
@@ -363,14 +363,14 @@ i32 CPlay::FrameSlot28(i32 arg) {
     m_c->m_drawTarget->m_18->m_surface->Fill(0);
     CString s;
     s.LoadString(0x81a9);
-    r.right = m_4w()->m_8c;
-    r.bottom = m_4w()->m_90;
+    r.right = m_4->m_modeW;
+    r.bottom = m_4->m_modeH;
     r.left = 0;
     r.top = 0;
     ShowHudMessage(m_c, (i32)&s, (i32)&r, 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
-    if (m_4w() && m_4w()->m_68) {
-        m_4w()->m_68->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
+    if (m_4 && m_4->m_cmdGrid) {
+        m_4->m_cmdGrid->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
     }
     return 1;
 }
@@ -433,7 +433,7 @@ i32 CPlay::Render() {
             m_c->m_drawTarget->m_14,
             m_c->m_drawTarget->m_18
         ); // vtbl[+0x34]
-        m_4w()->m_54->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
+        m_4->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
             m_c->m_24->m_mainPlane->m_originX,
             m_c->m_24->m_mainPlane->m_originY
         );
@@ -473,7 +473,7 @@ i32 CPlay::Render() {
     }
 
     // m_inGame == 0
-    if (m_4w()->m_c != 0) {
+    if (m_4->m_frameGate != 0) {
         goto alt2;
     }
     {
@@ -487,9 +487,9 @@ i32 CPlay::Render() {
     // ---- MENU / PAUSE-OVERLAY frame ----
     // =================================================================
     {
-        CWorld* w = m_4w();
+        CGruntzMgr* w = m_4;
         m_frameMarker->Tick((i32)g_frameDelta); // m_frameMarker begin
-        Eng_FrameTimerStep(w->m_6c, 0);         // m_4->m_6c step (carcass; unresolved callee)
+        Eng_FrameTimerStep(w->m_cmdSubMgr, 0);         // m_4->m_6c step (carcass; unresolved callee)
 
         if (m_levelId == CURSOR_FLAILINGGRUNT) { // booty/flailing-grunt one-shot
             u32 elapsed = g_frameTime - (u32)m_bootyTimerLo;
@@ -515,10 +515,10 @@ i32 CPlay::Render() {
                 char buf[0x80];
                 wsprintfA(buf, "AMBIENT%d", id); // s_AMBIENT%d
                 if (g_gameReg->m_14 != 0) {
-                    w->m_48->PlayByName(buf, 1);
+                    w->m_sound->PlayByName(buf, 1);
                 } else {
                     CGruntzSoundInnerZ* out = 0;
-                    CGruntzSoundInnerZ* snd = w->m_48->FindBank(buf);
+                    CGruntzSoundInnerZ* snd = w->m_sound->FindBank(buf);
                     if (snd != 0) {
                         out = snd;
                     }
@@ -536,7 +536,7 @@ i32 CPlay::Render() {
         }
 
         if (m_worldReady == 0) { // world-ready init
-            if (w->m_68->m_armed != 0) {
+            if (w->m_cmdGrid->m_armed != 0) {
                 WorldSubstep();
             }
             StepWorldB();
@@ -565,7 +565,7 @@ i32 CPlay::Render() {
         }
         m_beginMarker->FilterList2((void*)g_frameDelta);
         m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
-        InputSubStep(w->m_70); // m_4->m_70
+        InputSubStep(w->m_tileGrid); // m_4->m_70
 
         // On-screen overlay/banner: the retail block (0xc91b7..0xc9259) is the same
         // shape as CMulti::PumpB's - place the 120x120 overlay rect by HUD position,
@@ -586,7 +586,7 @@ i32 CPlay::Render() {
             m_lightFx->ComputeRect(m_c->m_drawTarget->m_14, (LfxRect*)&rc);
         }
 
-        m_4w()->m_54->Retune( // world sound retune off the plane scroll origin
+        m_4->m_inputState->Retune( // world sound retune off the plane scroll origin
             m_c->m_24->m_mainPlane->m_originX,
             m_c->m_24->m_mainPlane->m_originY
         );
@@ -633,7 +633,7 @@ i32 CPlay::Render() {
         // --- the four scroll-region one-shots (+0x430/+0x440/+0x450/+0x460) ---
         m_frameMarker->Draw(0, m_frameMarker != 0); // reset
         OnRegion5();
-        Eng_FrameTimerStep(w->m_68, 0); // m_4->m_68 (carcass; unresolved callee)
+        Eng_FrameTimerStep(w->m_cmdGrid, 0); // m_4->m_68 (carcass; unresolved callee)
 
         if (m_winLoseBanner != 0 && m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
             // win/lose banner timer (+0x3f8 again, 0x1f4 ms):
@@ -740,10 +740,10 @@ alt2:
                     char buf[0x80];
                     wsprintfA(buf, "AMBIENT%d", id);
                     if (g_gameReg->m_14 != 0) {
-                        m_4w()->m_48->PlayByName(buf, 1);
+                        m_4->m_sound->PlayByName(buf, 1);
                     } else {
                         CGruntzSoundInnerZ* out = 0;
-                        CGruntzSoundInnerZ* snd = m_4w()->m_48->FindBank(buf);
+                        CGruntzSoundInnerZ* snd = m_4->m_sound->FindBank(buf);
                         if (snd != 0) {
                             out = snd;
                         }
@@ -924,8 +924,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     self->m_4->m_sound->StopAndFlush();
     self->m_4->m_inputState->Teardown();
-    self->m_4w()->m_60->DtorBody();
-    self->m_4w()->m_60->ClearSprites();
+    self->m_4->m_timer->DtorBody();
+    self->m_4->m_timer->ClearSprites();
     self->m_4->RestoreVideoMode(0);
 
     gameReg = (CGruntzMgr*)g_gameReg;
@@ -1292,12 +1292,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // view setup off host->m_70
     {
         CDDrawWorkerHost* g5c = (CDDrawWorkerHost*)self->m_c->m_24->m_mainPlane;
-        CBrickz* host70 = (CBrickz*)self->m_4w()->m_70;
+        CBrickz* host70 = (CBrickz*)self->m_4->m_tileGrid;
         if (!host70->LoadAttributes(g5c->m_width, g5c->m_height)) {
             goto fail0;
         }
     }
-    if (!((CBrickzGrid*)self->m_4w()->m_70)->UpdateDiagonals((i32)self->m_4)) {
+    if (!((CBrickzGrid*)self->m_4->m_tileGrid)->UpdateDiagonals((i32)self->m_4)) {
         goto fail0;
     }
 
@@ -1554,13 +1554,13 @@ void CPlay::ModeCleanup() {
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->ClearMap();
     }
     if (m_4) {
-        m_4w()->m_48->StopAndFlush();
+        m_4->m_sound->StopAndFlush();
         // WRONG-CALLEE FIX (assert_relocs): this called Resume() @0x00bcf0. Retail's rel32 here
         // resolves to 0x00b660 == CWorldSoundSet::Teardown (already 100% EXACT in src). Both
         // exist and are methods of the SAME class, so it linked and objdiff reloc-masked it -
         // a silently-wrong callee. Tearing the world sound set down on mode cleanup is also the
         // only reading that makes sense next to the StopAndFlush above.
-        m_4w()->m_54->Teardown();
+        m_4->m_inputState->Teardown();
     }
     if (m_c) {
         m_c->m_10->MapTeardown_1552b0(); // slot 22 (+0x58)
@@ -1614,14 +1614,14 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
     }
     if (m_paused != 0) {
         m_paused = 0;
-        PostMessageA(m_4w()->m_4->m_4->m_4, 0x111, 0x816e, 0);
+        PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x816e, 0);
         return 1;
     }
-    if (m_4w()->m_c != 0) {
+    if (m_4->m_frameGate != 0) {
         return 0;
     }
     if (m_hitTest->m_10 != 0) {
-        m_4w()->m_5c->TypeChar(key, flag); // 0x3508 -> CFontConfig::TypeChar @0x21e20
+        m_4->m_chatLog->TypeChar(key, flag); // 0x3508 -> CFontConfig::TypeChar @0x21e20
         return 1;
     }
     if (key == ']') {
@@ -1675,14 +1675,14 @@ i32 CPlay::Vslot1c(i32 category) {
 // world's CFontConfig text host (DrawTextLines mode 8, flags 0x10) with the live HDC.
 // (Dissolved from the SaveGame.cpp `BlitHost` interleaver view, 2026-07-15: the same
 // 0xd00a0 is bound at slot 37 in ??_7CPlay / ??_7CDemo / ??_7CMulti - a CPlay* this;
-// m_c->m_24 is the canonical CGameLevel, m_4 the CWorld back-ptr whose +0x5c is the
+// m_c->m_24 is the canonical CGameLevel, m_4 the CGruntzMgr back-ptr whose +0x5c is the
 // CFontConfig draw sink.)
 RVA(0x000d00a0, 0x5a)
 void CPlay::PostSetup(void* dc) {
     RECT src = *(RECT*)&m_c->m_24->m_planeCtx;
     RECT dst;
     CopyRect(&dst, &src);
-    m_4w()->m_5c->DrawTextLines(8, (HDC)dc, &dst, 0x10);
+    m_4->m_chatLog->DrawTextLines(8, (HDC)dc, &dst, 0x10);
 }
 
 // ===========================================================================
@@ -1740,9 +1740,9 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             break;
         case 8: {
             if (m_gridHasSprite) {
-                CWorld* w = m_4w();
+                CGruntzMgr* w = m_4;
                 i32 id = g_curPlayer;
-                void* spr = (void*)w->m_74->GetSel((i32) * (void**)(w->m_158 + (id * 0x47) * 8), 0);
+                void* spr = (void*)w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
                 if (spr == 0) {
                     spr = (void*)g_gameReg->m_spriteFactory->GetSel(1, (i32)spr);
                 }
@@ -1752,7 +1752,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             char buf[0x40];
             wsprintfA(buf, "AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_14) {
-                m_4w()->m_48->PlayByName(buf, 1);
+                m_4->m_sound->PlayByName(buf, 1);
             }
             m_ambientInitDone = 1;
             break;
@@ -2206,11 +2206,11 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
 // docs/patterns/zero-register-pinning.md.
 RVA(0x000d8c60, 0xea)
 i32 CPlay::ResetViewport() {
-    CWorld* w = m_4w();
+    CGruntzMgr* w = m_4;
     CStatusBarMgr* guts = m_guts;
-    i32 right = w->m_8c;
+    i32 right = w->m_modeW;
     i32 state = guts->m_position;
-    i32 bottom = w->m_90;
+    i32 bottom = w->m_modeH;
     RECT r;
     if (state == 1) {
         SetRect(&r, 0xa0, 0, right - 1, bottom - 1);
@@ -2319,7 +2319,7 @@ RVA(0x000d8ed0, 0x128)
 i32 CPlay::ClampViewport2(i32 stride) {
     i32 clamped = 0;
     CSpriteFactoryHolder* v = m_c;
-    CWorld* w = m_4w();
+    CGruntzMgr* w = m_4;
     CStatusBarMgr* guts = m_guts;
 
     i32* rp = (i32*)&v->m_24->m_planeCtx;
@@ -2329,8 +2329,8 @@ i32 CPlay::ClampViewport2(i32 stride) {
     r.right = rp[2];
     r.bottom = rp[3];
 
-    i32 hlimit = w->m_8c;
-    i32 vlimit = w->m_90;
+    i32 hlimit = w->m_modeW;
+    i32 vlimit = w->m_modeH;
 
     if (r.right - r.left < (guts->m_position == 2 ? hlimit : hlimit - 0xa0)) {
         r.left -= stride;
@@ -2374,12 +2374,12 @@ i32 CPlay::ClampViewport2(i32 stride) {
 RVA(0x000d88f0, 0x44)
 void CPlay::RegionEnter() {
     if (m_savedZonedSound == 0) {
-        CWorld* w = m_4w();
-        m_savedZonedSound = w->m_48->m_pCurrent;
-        w->m_48->StopAll();
+        CGruntzMgr* w = m_4;
+        m_savedZonedSound = w->m_sound->m_pCurrent;
+        w->m_sound->StopAll();
     }
     if (g_gameReg->m_14 != 0) {
-        m_4w()->m_48->PlayByName("CURSE", 0);
+        m_4->m_sound->PlayByName("CURSE", 0);
     }
 }
 
@@ -2390,10 +2390,10 @@ RVA(0x000d8960, 0x75)
 void CPlay::RegionLeave() {
     if (m_region0Gate == 0 && m_region1Gate == 0 && m_region2Gate == 0 && m_region3Gate == 0
         && m_savedZonedSound != 0) {
-        m_4w()->m_48->IsPlaying();
-        m_4w()->m_48->m_pCurrent = m_savedZonedSound;
+        m_4->m_sound->IsPlaying();
+        m_4->m_sound->m_pCurrent = m_savedZonedSound;
         if (g_gameReg->m_14 != 0) {
-            m_4w()->m_48->Restart(1);
+            m_4->m_sound->Restart(1);
         }
         m_savedZonedSound = 0;
     }
@@ -2740,7 +2740,7 @@ void CPlay::DrawWorldFrame() {
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
     m_c->m_childGroup->TickKillCues_159a70(0); // m_c->m_8->vtbl[+0x24](0)
-    m_4w()->m_68->LoadTeleporterGooConfig(
+    m_4->m_cmdGrid->LoadTeleporterGooConfig(
         (i32)g_frameDelta
     ); // 0x3017 -> 0x6eb80 per-frame grid step
     if (g_gameReg->m_134 == 3) {
@@ -2798,7 +2798,7 @@ i32 CPlay::DrawWorldFrames() {
                 ((CPlaneRender*)m_c->m_24->m_mainPlane)->CenterScrollA();
             }
             m_c->m_childGroup->TickKillCues_159a70(0);
-            m_4w()->m_68->LoadTeleporterGooConfig((i32)g_frameDelta);
+            m_4->m_cmdGrid->LoadTeleporterGooConfig((i32)g_frameDelta);
             if (g_gameReg->m_134 == 3) {
                 ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle(); // 0x933e0 (was PerFrameCue)
             }
@@ -2846,7 +2846,7 @@ i32 CPlay::ProfileDeltaFrame() {
         DrawWorldFrame();
     }
     i32 renderMs = (i32)(tg() - t0);
-    m_4w()->m_54->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
+    m_4->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
         m_c->m_24->m_mainPlane->m_originX,
         m_c->m_24->m_mainPlane->m_originY
     );
@@ -2904,7 +2904,7 @@ extern "C" {
 // to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
-    m_4w()->m_54->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
+    m_4->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
         m_c->m_24->m_mainPlane->m_originX,
         m_c->m_24->m_mainPlane->m_originY
     ); // untimed
@@ -2922,7 +2922,7 @@ i32 CPlay::ProfileInputFrame() {
 
     u32 t5 = tg();
     m_c->m_childGroup->TickKillCues_159a70(1);
-    m_4w()->m_68->LoadTeleporterGooConfig((i32)g_frameDelta);
+    m_4->m_cmdGrid->LoadTeleporterGooConfig((i32)g_frameDelta);
     m_guts->LoadDestructButtonSprite((i32)g_frameDelta);
     i32 updateMs = (i32)(tg() - t5);
 
@@ -2978,14 +2978,14 @@ i32 CPlay::ProfileInputFrame() {
 // ===========================================================================
 RVA(0x000d5f00, 0x69)
 i32 CPlay::ResetGoals(i32 x, i32 y) {
-    CWorld* w = m_4w();
-    CTriggerMgr* g = w->m_68;
+    CGruntzMgr* w = m_4;
+    CTriggerMgr* g = w->m_cmdGrid;
     if (g->m_goal != 0) {
         g->m_goal->m_8 |= 0x10000;
         g->m_goal = 0;
     }
     g->m_armed = 0;
-    CLevelPlane* pg = m_4w()->m_30->m_24->m_mainPlane;
+    CLevelPlane* pg = m_4->m_world->m_24->m_mainPlane;
     if ((pg->m_flags & 1) == 0) {
         pg->m_scaledX = (float)x * pg->m_scaleX;
         pg->m_scaledY = (float)y * pg->m_scaleY;
@@ -3004,15 +3004,15 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
 // ===========================================================================
 RVA(0x000d9160, 0xac)
 i32 CPlay::RegisterInputBindings() {
-    m_4w()->Wnd()->PumpMessages(0x102, 0x40);
-    m_4w()->Wnd()->PumpMessages(0x100, 0x40);
-    m_4w()->Wnd()->PumpMessages(0x200, 0x40);
-    m_4w()->Wnd()->PumpMessages(0x201, 0x40);
-    m_4w()->Wnd()->PumpMessages(0x202, 0x40);
-    m_4w()->Wnd()->PumpMessages(0x203, 0x40);
-    m_4w()->Wnd()->PumpMessages(0x204, 0x40);
-    m_4w()->Wnd()->PumpMessages(0x205, 0x40);
-    m_4w()->Wnd()->PumpMessages(0x206, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x102, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x100, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x200, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x201, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x202, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x203, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x204, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x205, 0x40);
+    m_4->m_gameWnd->PumpMessages(0x206, 0x40);
     return 1;
 }
 
@@ -3443,7 +3443,7 @@ i32 CPlay::CanQuickSave() {
 RVA(0x000da440, 0x60)
 i32 CPlay::PostHudRect() {
     if (m_worldReady != 0) {
-        m_4w()->m_68->HudRect(m_hudRect, g_spawnConfig->m_18 & 0x20);
+        m_4->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_18 & 0x20);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -3916,7 +3916,7 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
             ->ClearHandle(a, x, y); // 0x13f2 -> CLightFxRender::ClearHandle @0xa9500 (ecx=m_320)
     }
     if (m_worldReady != 0) {
-        m_4w()->m_68->HudRect(m_hudRect, g_spawnConfig->m_18 & 0x20);
+        m_4->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_18 & 0x20);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -3971,7 +3971,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
     }
 
     if (m_guts->m_position == 2 && m_guts->HitTestLayer(x, y)) {
-        CSndHost* set = m_4w()->m_30->m_28;
+        CSndHost* set = m_4->m_world->m_28;
         if (set->m_emitGate == 0) {
             LeafCue* e = 0;
             set->m_10.Lookup("GAME_TABHIGHLIGHT1", (void*&)e); // Ptr map out-param idiom
@@ -4005,7 +4005,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
 
     i32 outArea;
     i32 outVal;
-    if (m_4w()->m_68->ScreenToCell(x, y, &outArea, &outVal, 5) && g_curPlayer == outArea) {
+    if (m_4->m_cmdGrid->ScreenToCell(x, y, &outArea, &outVal, 5) && g_curPlayer == outArea) {
         m_guts->ToggleStat(outVal);
         return 1;
     }
@@ -4022,7 +4022,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         return 0;
     }
 
-    CGameLevel* h = m_4w()->m_30->m_24;
+    CGameLevel* h = m_4->m_world->m_24;
     i32 px = h->m_mainPlane->m_originX - h->m_planeCtx.minX + x;
     i32 py = h->m_mainPlane->m_originY - h->m_planeCtx.minY + y;
     for (i32 i = 0; i < markerCount(); i++) {
@@ -4039,7 +4039,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
             char ab = (char)g_curPlayer;
             px = (px & 0xffe0) + 0x10;
             py = (py & 0xffe0) + 0x10;
-            m_4w()->m_6c->Spawn(1, ab, 0, 0, px, py, 0, 0);
+            m_4->m_cmdSubMgr->Spawn(1, ab, 0, 0, px, py, 0, 0);
             return 1;
         }
     }
@@ -4073,9 +4073,9 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     }
     m_gridHasSprite = hasGrid;
     if (hasGrid != 0) {
-        CWorld* w = m_4w();
+        CGruntzMgr* w = m_4;
         i32 id = g_curPlayer;
-        void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
+        void* spr = w->m_spriteFactory->LoadSprite((void*)w->m_options[id].m_008, 0);
         if (spr == 0) {
             spr = g_gameReg->m_spriteFactory->LoadSprite(spr, 1);
         }
@@ -4179,7 +4179,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         }
 
         // m_worldReady == 0: the hit-test / world-post branch.
-        if (m_hitTest->HitTest(x, y) != 0 || m_4w()->m_c != 0 || m_inGame != 0
+        if (m_hitTest->HitTest(x, y) != 0 || m_4->m_frameGate != 0 || m_inGame != 0
             || m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
             // (a second, distinct re-arm landing pad in retail.)
             CGameObject* s2 = m_scrollSink;
@@ -4201,7 +4201,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         CGameLevel* v = m_c->m_24;
         i32 wx = v->m_mainPlane->m_originX - v->m_planeCtx.minX + x;
         i32 wy = v->m_mainPlane->m_originY - v->m_planeCtx.minY + y;
-        m_4w()->m_68->PlaceObjectFull(wx, wy); // 0x2ca7 -> @0x78a50
+        m_4->m_cmdGrid->PlaceObjectFull(wx, wy); // 0x2ca7 -> @0x78a50
         return 1;
     }
 
@@ -4234,7 +4234,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
             m_hudRect.bottom = m_dragClampMaxY;
         }
     }
-    if (m_dragEndNotify != 0 && m_4w()->m_68->m_pendingFxKind == 0) {
+    if (m_dragEndNotify != 0 && m_4->m_cmdGrid->m_pendingFxKind == 0) {
         FlushPendingOps(); // "EndDragSel" 0x4da2d0 IS this fn's own 0xda2d0
     }
     return 1;
@@ -4403,14 +4403,14 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
     }
     if (m_paused != 0) {
         m_paused = 0;
-        ::PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x816e, 0);
+        ::PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x816e, 0);
         return 1;
     }
     // The overlay-drag / command-grid-idle gates route to the guts dispatch tail
     // (a forward je all the way down); nest the no-active-grunt main body deepest
     // so retail's cold-block-at-tail layout falls out (nested-if-success-deepest).
     if (m_overlayDrag == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0) {
-        if (m_4w()->m_c != 0) {
+        if (m_4->m_frameGate != 0) {
             goto drag_path;
         }
 
@@ -4420,8 +4420,8 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
                 return 1;
             }
         }
-        CWorld* w = m_4w();
-        CGameLevel* geom = w->m_30->m_24;
+        CGruntzMgr* w = m_4;
+        CGameLevel* geom = w->m_world->m_24;
         CLevelPlane* cam = geom->m_mainPlane;
         i32 sx = cam->m_originX - geom->m_planeCtx.minX + xr;
         i32 sy = cam->m_originY - geom->m_planeCtx.minY + y;
@@ -4440,7 +4440,7 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
             if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
                 if (FindStartPointAt(sx, sy, &x, &y)) {
                     char tok = *(char*)&g_curPlayer;
-                    w->m_6c
+                    w->m_cmdSubMgr
                         ->EnqueueSingle(1, tok, 0, 0, (i16)x, (i16)y, 0, 0); // 0x2095 -> @0x23c30
                     placed = 1;
                 }
@@ -4475,8 +4475,8 @@ mode_36c:
             }
             goto waypoint_cancel;
         }
-        CWorld* w = m_4w();
-        CGameLevel* geom = w->m_30->m_24;
+        CGruntzMgr* w = m_4;
+        CGameLevel* geom = w->m_world->m_24;
         RECT* wr = (RECT*)&geom->m_planeCtx;
         if (!(xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top)) {
             goto waypoint_cancel;
@@ -4488,7 +4488,7 @@ mode_36c:
         i32 wy = cam->m_originY - ds->m_planeCtx.minY + y;
         i32 tok = *(char*)&m_cursorFrame;
         if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &x, &y, tok) != 0) {
-            w->m_6c->EnqueueSingle(1, (char)a, (char)y, 8, 0, 0, (char)tok, 0);
+            w->m_cmdSubMgr->EnqueueSingle(1, (char)a, (char)y, 8, 0, 0, (char)tok, 0);
             m_4f0 = 1;
             return 1;
         }
@@ -4504,7 +4504,7 @@ mode_36c:
         if (p == 0 || g_curPlayer != p->m_tileOwnerHi) {
             goto waypoint_cancel;
         }
-        w->m_6c->EnqueueSingle(1, (char)a, (char)y, 8, 0, 0, (char)tok, 0);
+        w->m_cmdSubMgr->EnqueueSingle(1, (char)a, (char)y, 8, 0, 0, (char)tok, 0);
         return 1;
     }
 
@@ -4515,7 +4515,7 @@ waypoint_cancel:
     return 1;
 
 drag_path: {
-    // m_4w()->m_c != 0: an active grunt is selected -> drag / guts dispatch
+    // m_4->m_frameGate != 0: an active grunt is selected -> drag / guts dispatch
     (void)y;
     if (m_guts == 0) {
         return 1;
@@ -4554,11 +4554,11 @@ drag_path: {
 }
 
 drag_box: {
-    if (m_4w()->m_c != 0) {
+    if (m_4->m_frameGate != 0) {
         goto ret1;
     }
-    CWorld* w = m_4w();
-    RECT* wr = (RECT*)&w->m_30->m_24->m_planeCtx;
+    CGruntzMgr* w = m_4;
+    RECT* wr = (RECT*)&w->m_world->m_24->m_planeCtx;
     if (!(x < wr->right && x >= wr->left && y < wr->bottom)) {
         goto ret1;
     }
@@ -4614,7 +4614,7 @@ drag_box: {
     }
     // ce22f: pick a grunt at the point
     i32 slot38 = 0;
-    CGrunt* picked = (CGrunt*)m_4w()->m_68->ScreenToCell(xr, y, &slot38, &slot38, 5); // 0x3cb0
+    CGrunt* picked = (CGrunt*)m_4->m_cmdGrid->ScreenToCell(xr, y, &slot38, &slot38, 5); // 0x3cb0
     if (picked == 0) {
         m_dragClampMaxX = xr;
         m_dragClampMaxY = y;
@@ -4625,7 +4625,7 @@ drag_box: {
         m_worldReady = 1;
         goto ret1;
     }
-    m_4w()->m_68->ResetCell(slot38, slot38, g_spawnConfig->m_18 & 0x20, 0); // 0x29cd -> @0x6bfd0
+    m_4->m_cmdGrid->ResetCell(slot38, slot38, g_spawnConfig->m_18 & 0x20, 0); // 0x29cd -> @0x6bfd0
     if (a == g_curPlayer) {
         if (0 != (g_spawnConfig->m_18 & 0x20)) {
             goto ret1;
@@ -4694,7 +4694,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
     }
     if (m_paused != 0) {
         m_paused = 0;
-        PostMessageA(m_4w()->m_4->m_4->m_4, 0x111, 0x816e, 0);
+        PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x816e, 0);
         return 1;
     }
     if (m_overlayDrag != 0) {
@@ -4703,7 +4703,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
     if (g_gameReg->m_cmdGrid->m_groupFlag == 0) { // reg->m_68 cue-sink busy gate
         return 1;
     }
-    if (m_4w()->m_c != 0) {
+    if (m_4->m_frameGate != 0) {
         return 1;
     }
     if (m_lightFx != 0 && m_guts->m_position != 2 && m_guts->m_activeTab != 5) {
@@ -4721,7 +4721,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
     i32 idx = m_guts->HitTest(x, y);
     if (idx != -1) {
         m_guts->ClearStat(idx);
-        CTriggerMgr* w = m_4w()->m_68;
+        CTriggerMgr* w = m_4->m_cmdGrid;
         if (w->m_goal != 0) {
             w->m_goal->m_8 |= 0x10000;
             w->m_goal = 0;
@@ -4729,10 +4729,10 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
         w->m_armed = 0;
         return 1;
     }
-    if (m_4w()->m_68->m_recList.GetCount() == 0) { // +0x24c == m_recList.m_nCount
+    if (m_4->m_cmdGrid->m_recList.GetCount() == 0) { // +0x24c == m_recList.m_nCount
         return 1;
     }
-    CGameLevel* ph = m_4w()->m_30->m_24;
+    CGameLevel* ph = m_4->m_world->m_24;
     if (x < ph->m_planeCtx.maxX && x >= ph->m_planeCtx.minX && y < ph->m_planeCtx.maxY
         && y >= ph->m_planeCtx.minY) {
         CGameLevel* ds = m_c->m_24;
@@ -4743,7 +4743,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
         i32 snapY = (rawY & ~0x1f) + 0x10;
         m_tileClickX = snapX;
         m_tileClickY = snapY;
-        CTriggerMgr* w = m_4w()->m_68;
+        CTriggerMgr* w = m_4->m_cmdGrid;
         if (w->m_overlay != 0 && w->m_overlay->m_active != 0) {
             w->OverlayTick(); // 0x1514 -> @0x78a30 (was "CancelMarker")
             return 1;
@@ -4832,11 +4832,11 @@ i32 CPlay::PresentAndFlush() {
     if (Vfunc3() == 0) {
         return 0;
     }
-    CWorld* w = m_4w();
-    i32 savedW = w->m_94;
-    i32 liveW = w->m_8c;
-    i32 savedH = w->m_98;
-    i32 liveH = w->m_90;
+    CGruntzMgr* w = m_4;
+    i32 savedW = w->m_savedModeW;
+    i32 liveW = w->m_modeW;
+    i32 savedH = w->m_savedModeH;
+    i32 liveH = w->m_modeH;
     if (savedW != liveW || savedH != liveH) {
         if (((CGruntzMgr*)w)->SetVideoMode(savedW, savedH, 1) == 0) {
             return 0;
@@ -5010,14 +5010,14 @@ i32 CPlay::Vslot15() {
         if (stream) {
             stream->Stop();
         }
-        m_4w()->m_48->StopAndFlush();
-        m_4w()->m_54->Teardown();     // 0x28ab -> CWorldSoundSet::Teardown @0xb660
-        m_4w()->m_60->ClearSprites(); // 0x244b -> CGruntSpawnConfig::ClearSprites @0x11af90
-        ::PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8023, 0);
+        m_4->m_sound->StopAndFlush();
+        m_4->m_inputState->Teardown();     // 0x28ab -> CWorldSoundSet::Teardown @0xb660
+        m_4->m_timer->ClearSprites(); // 0x244b -> CGruntSpawnConfig::ClearSprites @0x11af90
+        ::PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }
     if (m_1bc) {
-        ::PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8023, 0);
+        ::PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         return 1;
     }
     m_4->Post(m_levelIndex + 1);
@@ -5308,15 +5308,15 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     CPlay* self = this;
-    CWorld* w = m_4w();
+    CGruntzMgr* w = m_4;
     i32 changed = 0;
     i32 speed = (i32)((double)w->m_scrollSpeed * g_scrollSpeedScale * g_scrollSpeedRange
                       + g_scrollMinSpeed);
-    CLevelPlane* g = w->m_30->m_24->m_mainPlane;
+    CLevelPlane* g = w->m_world->m_24->m_mainPlane;
     i32 sx = g->m_originX;
     i32 sy = g->m_originY;
-    i32 extentX = w->m_8c;
-    i32 extentY = w->m_90;
+    i32 extentX = w->m_modeW;
+    i32 extentY = w->m_modeH;
 
     // LEFT edge
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
@@ -5769,7 +5769,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
 // methods (SetPos/Read) already read it.
 // The destination category table is the CGruntzSoundZ manager at m_4->m_48
 // (StopAndFlush @0x138530, CreateBank @0x138670; GruntzSoundZ.h).
-// (CMusicOwner is GONE - the destination is m_4w()->m_48, the typed
+// (CMusicOwner is GONE - the destination is m_4->m_sound, the typed
 // CGruntzSoundZ on the canonical CWorld view.)
 
 // The 'XMI' file-format tag CSymTab::Insert stores as the entry's kind value.
@@ -5779,7 +5779,7 @@ typedef enum MusicFormatTag {
 
 RVA(0x000dba30, 0x1ca)
 i32 CPlay::BuildMusicCategoryTable(i32) {
-    m_4w()->m_48->StopAndFlush();
+    m_4->m_sound->StopAndFlush();
 
     CSymTab* levelSet = (CSymTab*)m_levelBank->ResolvePath("MIDIZ");
     if (levelSet) {
@@ -5787,28 +5787,28 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                m_4w()->m_48->CreateBank(res, e->m_length, "AMBIENT0");
+                m_4->m_sound->CreateBank(res, e->m_length, "AMBIENT0");
             }
         }
         e = (CParseSource*)levelSet->Insert("AMBIENT1", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                m_4w()->m_48->CreateBank(res, e->m_length, "AMBIENT1");
+                m_4->m_sound->CreateBank(res, e->m_length, "AMBIENT1");
             }
         }
         e = (CParseSource*)levelSet->Insert("INTRO0", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                m_4w()->m_48->CreateBank(res, e->m_length, "INTRO0");
+                m_4->m_sound->CreateBank(res, e->m_length, "INTRO0");
             }
         }
         e = (CParseSource*)levelSet->Insert("INTRO1", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                m_4w()->m_48->CreateBank(res, e->m_length, "INTRO1");
+                m_4->m_sound->CreateBank(res, e->m_length, "INTRO1");
             }
         }
     }
@@ -5819,21 +5819,21 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                m_4w()->m_48->CreateBank(res, e->m_length, "POWERUP");
+                m_4->m_sound->CreateBank(res, e->m_length, "POWERUP");
             }
         }
         e = (CParseSource*)gameSet->Insert("CURSE", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                m_4w()->m_48->CreateBank(res, e->m_length, "CURSE");
+                m_4->m_sound->CreateBank(res, e->m_length, "CURSE");
             }
         }
         e = (CParseSource*)gameSet->Insert("MONOLITH", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                m_4w()->m_48->CreateBank(res, e->m_length, "MONOLITH");
+                m_4->m_sound->CreateBank(res, e->m_length, "MONOLITH");
             }
         }
     }
@@ -6245,7 +6245,7 @@ i32 CPlay::ResetForMode(i32 mode) {
             return 0;
         }
         m_stepCountdown = 2;
-    } else if (m_renderDisabled == 0 || m_4w()->m_134 == 2) {
+    } else if (m_renderDisabled == 0 || m_4->m_134 == 2) {
         if (!EnterMode(mode)) {
             return 0;
         }
@@ -6262,10 +6262,10 @@ i32 CPlay::ResetForMode(i32 mode) {
     m_worldReady = 0;
     if (m_renderDisabled == 0) {
         if (mode != 9) {
-            ((CWorldSoundSet*)m_4w()->m_54)->Resume();
+            ((CWorldSoundSet*)m_4->m_inputState)->Resume();
         }
-        ((CTriggerMgr*)m_4w()->m_68)->DestroyAllAnims(); // reg m_68 CTriggerMgr @0x7d330
-        ((CGruntSpawnConfig*)m_4w()->m_60)->DtorBody();
+        ((CTriggerMgr*)m_4->m_cmdGrid)->DestroyAllAnims(); // reg m_68 CTriggerMgr @0x7d330
+        ((CGruntSpawnConfig*)m_4->m_timer)->DtorBody();
     }
     return 1;
 }
@@ -6332,29 +6332,29 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char buf[0x40];
-    if (m_4w()->m_14 != 0 && g_gameReg->m_134 == 1) {
+    if (m_4->m_musicEnabled != 0 && g_gameReg->m_134 == 1) {
         m_ambientInterval = AMBIENT_INTRO_INTERVAL_MS;
         m_ambientIntervalHi = 0;
         m_ambientTimerLo = g_frameTime;
         m_ambientTimerHi = 0;
         wsprintfA(buf, "INTRO%d", GetAmbientId());
         if (g_gameReg->m_14 != 0) {
-            m_4w()->m_48->PlayByName(buf, 0);
+            m_4->m_sound->PlayByName(buf, 0);
         }
         m_ambientInitDone = 0;
     } else {
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-        CGruntzSoundZ* snd = m_4w()->m_48;
+        CGruntzSoundZ* snd = m_4->m_sound;
         CGruntzSoundInnerZ* h = snd->FindBank(buf);
         if (h != 0) {
             snd->m_pCurrent = h;
         }
-        if (m_4w()->m_48->m_pCurrent != 0) {
-            m_4w()->m_48->m_pCurrent->SetLoop(1);
+        if (m_4->m_sound->m_pCurrent != 0) {
+            m_4->m_sound->m_pCurrent->SetLoop(1);
         }
         CGameRegistry* reg = g_gameReg;
         if (reg->m_14 != 0 && reg->m_134 == 3) {
-            m_4w()->m_48->PlayByName(buf, 1);
+            m_4->m_sound->PlayByName(buf, 1);
         }
         m_ambientTimerLo = 0;
         m_ambientInterval = 0;
@@ -6362,12 +6362,12 @@ i32 CPlay::ResetPlayState() {
         m_ambientIntervalHi = 0;
         m_ambientInitDone = 1;
     }
-    if (m_4w()->m_134 == 1) {
+    if (m_4->m_134 == 1) {
         CGameRegistry* reg = g_gameReg;
         // +0xc8 holds a buffer whose [-8] header word gates the single-player save
         // (same node-header idiom LoadByMode probes; identity unrecovered).
         if (*(i32*)(*(char**)((char*)reg + 0xc8) - 8) == 0) {
-            m_4w()->m_7c->FillRecord(m_levelIndex, 1);
+            m_4->m_scoreHud->FillRecord(m_levelIndex, 1);
             reg = g_gameReg;
             // +0x44 sub-object's +0x124 replay gate (identity unrecovered; raw offsets).
             if (*(i32*)(*(char**)((char*)reg + 0x44) + 0x124) == 0) {
@@ -6379,14 +6379,14 @@ i32 CPlay::ResetPlayState() {
             }
             ((CSaveGame*)reg->m_saveSink)->Save(0, 0x81a6);
         }
-        CGameLevel* g = m_4w()->m_30->m_24;
+        CGameLevel* g = m_4->m_world->m_24;
         ResetGoalGeom(g->m_header.startX, g->m_header.startY);
     } else {
         CFocusSlot* slot = &g_gameReg->m_focusSlots[g_curPlayer];
         if (slot != 0) {
             ResetGoalGeom(slot->m_220, slot->m_224);
         } else {
-            CGameLevel* g = m_4w()->m_30->m_24;
+            CGameLevel* g = m_4->m_world->m_24;
             ResetGoalGeom(g->m_header.startX, g->m_header.startY);
         }
     }
@@ -6418,7 +6418,7 @@ i32 CPlay::ResetPlayState() {
             fm->m_3c = 0;
         }
     }
-    CTriggerMgr* tl = m_4w()->m_68;
+    CTriggerMgr* tl = m_4->m_cmdGrid;
     tl->m_countdownActive = 1;
     tl->m_phase = 0;
     tl->m_pendingFxKind = 0;
@@ -6471,19 +6471,19 @@ void CPlay::FreeListTeardown() {
     if (m_c == 0) {
         return;
     }
-    if (m_4w() == 0) {
+    if (m_4 == 0) {
         return;
     }
-    if (m_4w()->m_68 != 0) {
-        m_4w()->m_68->ClearGridRange(5);
+    if (m_4->m_cmdGrid != 0) {
+        m_4->m_cmdGrid->ClearGridRange(5);
     }
     Teardown1780();
     if (m_c->m_28->m_2c != 0) {
         m_c->m_28->m_2c->Stop();
     }
-    m_4w()->m_48->StopAndFlush();
-    m_4w()->m_54->Teardown();
-    m_4w()->m_60->ClearSprites();
+    m_4->m_sound->StopAndFlush();
+    m_4->m_inputState->Teardown();
+    m_4->m_timer->ClearSprites();
     g_gameReg->m_cmdGrid->DestroyAllAnims();
     m_c->m_24->ReleaseChildren(); // slot 17 (+0x44) - the real CGameLevel virtual
     ((CWwdObjMgr*)m_c->m_8)->PruneList_15aa90();
@@ -6497,14 +6497,13 @@ void CPlay::FreeListTeardown() {
         m_frameMarker->Reset();
     }
     m_scrollSink = 0;
-    m_4w()->m_68->OverlayTick();
-    CTriggerMgr* tl68 = m_4w()->m_68;
+    m_4->m_cmdGrid->OverlayTick();
+    CTriggerMgr* tl68 = m_4->m_cmdGrid;
     ((CPtrArray*)&tl68->m_byteArr)->SetSize(0, -1); // retail-proven CPtrArray::SetSize @0x1b52e8
     tl68->m_284 = 0;
-    m_4w()
-        ->m_68->m_baseList
+    m_4->m_cmdGrid->m_baseList
         .RemoveAll(); // ?RemoveAll@CPtrList@@ @0x1b48a6 (+0 member; ex Reset1b48a6)
-    m_4w()->m_68->m_pendingFx = 0;
+    m_4->m_cmdGrid->m_pendingFx = 0;
     ((CDDrawWorkerList*)m_c->m_rendererB)->ClearWorkers();
     for (i = 0; i < markerCount(); i++) {
         void* node = markerData()[i];
@@ -6567,7 +6566,7 @@ void CPlay::CPlayDtorBody() {
     }
     OnExit(); // slot 32 (+0x80) - the real CPlay virtual (ex the "Vslot20" placeholder)
     if (m_4) {
-        m_4w()->m_128 = 0;
+        m_4->m_128 = 0;
         m_4->m_strWorldFile.Empty(); // 0x1b9c69 CString::Empty (world-file name clear)
     }
     m_1d0 = 0;
@@ -6576,8 +6575,8 @@ void CPlay::CPlayDtorBody() {
         off += 0x238;
         *(i32*)((char*)g_gameReg + off - 0xc8) = 0;
     } while (off < 0x8e0);
-    if (m_4 && m_4w()->m_5c) {
-        m_4w()->m_5c->FreeNodes();
+    if (m_4 && m_4->m_chatLog) {
+        m_4->m_chatLog->FreeNodes();
     }
     if (m_guts) {
         m_guts->DtorMembers();
@@ -6704,8 +6703,8 @@ finish:
     m_inputWarmup1 = 0;
     m_inputWarmup2 = 0;
     m_inputHalfSel = 0;
-    if (m_4w()->m_10 != 0 && mode != 9) {
-        m_4w()->m_54->Resume();
+    if (m_4->m_soundEnabled != 0 && mode != 9) {
+        m_4->m_inputState->Resume();
     }
     if (mode == 9) {
         g_frameTime = m_savedClock;
@@ -6765,7 +6764,7 @@ i32 CPlay::AddLevelGruntz() {
         // ILT 0x40bb == ?PlaceObject@CTriggerMgr@@ @0x6b6d0 (the ex-`AddGrunt` decl was a
         // phantom alias of it). The 13th arg really is an address at THIS site (the a30
         // slot is kind-dependent).
-        i32 r = m_4w()->m_68->PlaceObject(
+        i32 r = m_4->m_cmdGrid->PlaceObject(
             g->m_124,
             y,
             x,
@@ -7041,13 +7040,13 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             } else if (marker == (void*)CreateInGameIcon) {
                 i32 cv = obj->m_124 == 0x32 ? obj->m_118 : obj->m_124;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
-                    m_4w()->m_7c->m_34++;
+                    m_4->m_scoreHud->m_34++;
                 } else if (cv >= 0x17 && cv <= 0x20) {
-                    m_4w()->m_7c->m_30++;
+                    m_4->m_scoreHud->m_30++;
                 } else if (cv >= 0x36 && cv <= 0x3c) {
-                    m_4w()->m_7c->m_38++;
+                    m_4->m_scoreHud->m_38++;
                 } else if (cv == 0x50) {
-                    m_4w()->m_7c->m_40++;
+                    m_4->m_scoreHud->m_40++;
                 }
                 i32 d = obj->m_124;
                 if (d <= 0x20) {
@@ -7086,13 +7085,13 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             } else if (marker == (void*)CreateCoveredPowerup || marker == (void*)CreateGiantRock) {
                 i32 cv = obj->m_11c == 0x32 ? obj->m_118 : obj->m_11c;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
-                    m_4w()->m_7c->m_34++;
+                    m_4->m_scoreHud->m_34++;
                 } else if (cv >= 0x17 && cv <= 0x20) {
-                    m_4w()->m_7c->m_30++;
+                    m_4->m_scoreHud->m_30++;
                 } else if (cv >= 0x36 && cv <= 0x3c) {
-                    m_4w()->m_7c->m_38++;
+                    m_4->m_scoreHud->m_38++;
                 } else if (cv == 0x50) {
-                    m_4w()->m_7c->m_40++;
+                    m_4->m_scoreHud->m_40++;
                 }
                 i32 e = obj->m_11c;
                 if (e <= 0x20) {
@@ -7325,11 +7324,9 @@ i32 CPlay::SetEffectSpriteDurations() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CAnimRegistry);
 SIZE_UNKNOWN(CImageRegistry);
-SIZE_UNKNOWN(CInputDispatch);
 SIZE_UNKNOWN(CPlay);
 SIZE_UNKNOWN(CSoundRegistry);
 SIZE_UNKNOWN(CState);
-SIZE_UNKNOWN(CWorld);
 SIZE_UNKNOWN(Edge);
 SIZE_UNKNOWN(StateMgrBZ);
 

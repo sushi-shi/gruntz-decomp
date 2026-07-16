@@ -971,7 +971,7 @@ void ShowHudMessage(
 // /GX RECT+CString frame-packing difference (0x14 vs retail 0x10). See Play.cpp.
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::FrameSlot28(i32 arg) {
-    m_4w()->m_60->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
+    m_4->m_timer->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = (i32)g_frameTime;
     if (m_40) {
         QuitToMenu();
@@ -983,14 +983,14 @@ i32 CMulti::FrameSlot28(i32 arg) {
     m_c->m_drawTarget->m_18->m_surface->Fill(0);
     CString s;
     s.LoadString(0x81a9);
-    r.right = m_4w()->m_8c;
-    r.bottom = m_4w()->m_90;
+    r.right = m_4->m_modeW;
+    r.bottom = m_4->m_modeH;
     r.left = 0;
     r.top = 0;
     ShowHudMessage(m_c, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited via CPlay, cast-free)
-    if (m_4w() && m_4w()->m_68) {
-        m_4w()->m_68->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
+    if (m_4 && m_4->m_cmdGrid) {
+        m_4->m_cmdGrid->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
     }
     return 1;
 }

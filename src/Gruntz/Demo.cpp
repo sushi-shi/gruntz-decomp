@@ -85,12 +85,12 @@ i32 CDemo::Vfunc1(i32 ctx, i32 a1, i32 a2) {
 }
 
 // CDemo::Vslot15 (slot 21, 0x3c030): post WM_COMMAND 0x8027 to the owner HWND (the
-// CState/CWorld back-ptr chain m_4w()->m_4->m_4), the demo-state re-post twin of
+// CState back-ptr chain m_4->m_gameWnd->m_hwnd), the demo-state re-post twin of
 // CPlay::Vslot15. (Re-homed from GruntzMgrTransition.cpp - its birth position is
 // this obj's head run.)
 RVA(0x0003c030, 0x22)
 i32 CDemo::Vslot15() {
-    PostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8027, 0);
+    PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
     return 1;
 }
 

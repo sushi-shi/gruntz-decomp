@@ -80,92 +80,27 @@ struct CHitMarker {
 // the chat/key text layer). CPlayPlaneGeom is GONE - a fake view of the canonical
 // CLevelPlane (<Gruntz/GameLevel.h>: m_flags/m_scaledX/m_scaledY/m_scaleX/m_scaleY).)
 
-// The world input dispatcher reached as m_4->m_4 (RegisterInputBindings binds
-// the nine keyboard controls on it). 0x53d4e0 is a thiscall(code, flag).
-struct CInputDispatch {
-    void Bind(i32 code, i32 flag); // 0x53d4e0
-    char p0[0x4];
-    // +0x4 -> a window host whose +0x4 is the top-level HWND (PostMessageA target).
-    struct WndHost {
-        char p0[0x4];
-        HWND m_4; // +0x04
-    }* m_4;       // +0x04
-};
+// (CInputDispatch is GONE (2026-07-16) - a fake view of the WAP32 CGameWnd at
+// mgr+0x04 (CGameMgr::m_gameWnd): its "Bind" @0x53d4e0 (RVA 0x13d4e0) IS
+// CGameWnd::PumpMessages (a declared-only duplicate identity), and its nested
+// WndHost added a phantom indirection where CGameWnd::m_hwnd (+0x04) is the
+// PostMessageA HWND directly - retail (e.g. 0xcbb74) loads [[this+4]+4]+4:
+// this->m_4 (the mgr) -> m_gameWnd -> m_hwnd, three loads, not four.)
 
-class CGameWnd; // the game window facet of CWorld::m_4 (PumpMessages; <Wap32/Wap32.h>)
-
-// m_4 (the CState owner back-ptr -> the world/level object).
-struct CWorld {
-    // ClampApply @0x8f7f0 IS CGruntzMgr::RecomputeViewScale; cast at the call.
-    // The per-frame manager tick + the restore-display-mode helper the play
-    // draw/present sub-steps (DrawWorldPresent / PresentAndFlush) call on m_4.
-    // ManagerTick @0x8f620 IS CGruntzMgr::PerFrameTick; cast at the call.
-    // RestoreVideoMode @0x8df00 IS CGruntzMgr::SetVideoMode; cast at the call.
-    // ReportError @0x346d IS CGruntzMgr::ReportError; cast at the call.
-    char p0[0x4];
-    CInputDispatch* m_4; // +0x04  the input dispatcher (RegisterInputBindings)
-    // The same object is the game window (PumpMessages) - one typed accessor for
-    // that facet so the play loop drops the (CGameWnd*)m_4w()->m_4 downcasts.
-    CGameWnd* Wnd() {
-        return (CGameWnd*)m_4;
-    }
-    char p8[0xc - 0x8];
-    void* m_c; // +0x0c  a "active grunt"/selection ptr (==0 selects overlay path)
-    i32 m_10;  // +0x10  live/loaded gate (EnterMode's world-sound resume test)
-    i32 m_14;  // +0x14  arrival/load gate (== the registry's m_14; ResetPlayState)
-    char p18[0x30 - 0x18];
-    // +0x30: the SAME CSpriteFactoryHolder as CState::m_c (this CWorld view is the
-    // CGruntzMgr singleton, and CState::m_c == CGameRegistry::m_world == reg+0x30).
-    // The former nested RenderStateHolder/PlaneGeomHolder views are dissolved:
-    // m_30->m_24 is the canonical CGameLevel (its +0x10 rect is m_planeCtx, its
-    // +0x5c plane is m_mainPlane).
-    CSpriteFactoryHolder* m_30; // +0x30
-    char p34[0x48 - 0x34];
-    CGruntzSoundZ* m_48; // +0x48  the zoned sound-bank manager (PlaySound/FindSound/StopSound)
-    char p4c[0x54 - 0x4c];
-    CWorldSoundSet* m_54; // +0x54  the world sound set (Teardown/Resume/Retune - the
-                          //         positional-audio retune off the plane scroll origin)
-    char p58[0x5c - 0x58];
-    CFontConfig* m_5c;       // +0x5c  the chat/key text layer (TypeChar; ~CPlay FreeNodes)
-    CGruntSpawnConfig* m_60; // +0x60  grunt-spawn config (ClearSprites/DtorBody teardowns)
-    char p64[0x68 - 0x64];
-    // +0x68: the world command/trigger grid - the SAME object as g_gameReg->m_cmdGrid
-    // (this CWorld view is the CGruntzMgr singleton). The former nested `WorldTimeline`
-    // view (grunt slots / goal / combat scan / marker place) is DISSOLVED onto the
-    // canonical CTriggerMgr (<Gruntz/TriggerMgr.h>): m_grunts==m_grid, m_viewHost==
-    // m_level, m_23c==m_goal, m_24c==m_recList.m_nCount, m_25c==m_overlay,
-    // m_2a8==m_pendingFxKind, m_400==m_groupFlag; Step==LoadTeleporterGooConfig
-    // (0x6eb80), StepFull was a WRONG-this fake (CGruntzMgr::SetGameClock on m_4),
-    // HudRect==CTriggerMgr::HudRect (0x78060, TriggerMgr.cpp), WorldPost==
-    // PlaceObjectFull, Method_6bd40==ClearGridRange, PlaceMarker==ResetGroup,
-    // CancelMarker==OverlayTick, ScreenToCell3cb0==ScreenToCell.
-    CTriggerMgr* m_68; // +0x68
-    // +0x6c: the command manager (== g_gameReg->m_6c) - the marker/waypoint queue
-    // (EnqueueSingle @0x23c30 via thunk 0x2095; Spawn). The former `CMarkerPlacer`
-    // view of this slot is dissolved.
-    CGruntzCmdMgr* m_6c; // +0x6c
-    void* m_70;          // +0x70  an input sub-object
-    // +0x74: the sprite/animation ref table (== g_gameReg->m_spriteFactory; this
-    // CWorld view is the CGruntzMgr singleton). BeginGridWalk loads the grid's frame
-    // sprite via its LoadSprite(desc, flag) facet. Full class in <Gruntz/SpriteRefTable.h>.
-    CSpriteRefTable* m_74;
-    char p78[0x7c - 0x78];
-    CBattlezData* m_7c; // +0x7c  score/HUD sink (per-kind counters m_30..m_40; FillRecord)
-    char p80[0x8c - 0x80];
-    i32 m_8c; // +0x8c  viewport-clamp horizontal limit (ClampViewport2) / live mode W
-    i32 m_90; // +0x90  viewport-clamp vertical limit (ClampViewport2) / live mode H
-    i32 m_94; // +0x94  saved/last-good mode W (PresentAndFlush restore test)
-    i32 m_98; // +0x98  saved/last-good mode H
-    char p9c[0x124 - 0x9c];
-    i32 m_scrollSpeed; // +0x124  "Scroll_Speed" (== the registry's m_scrollSpeed)
-    i32 m_128;         // +0x128  per-frame play word (== the registry's m_128)
-    char p12c[0x134 - 0x12c];
-    i32 m_134; // +0x134  mode/clear word (ResetForMode EnterMode gate)
-    char p138[0x158 - 0x138];
-    // +0x158: a flat config-array (stride 71*8 = 0x238 bytes); entry [id].m_0 is
-    // the per-grunt-type sprite descriptor BeginGridWalk feeds to LoadSprite.
-    char m_158[1]; // base of the config array (indexed by id*0x238)
-};
+// (The CWorld facet view of the m_4 owner back-ptr is DISSOLVED (2026-07-16):
+// it was the CGruntzMgr singleton itself - as its own comments proved three
+// times over - re-declared per-header. Every field is the canonical
+// <Gruntz/GruntzMgr.h> member: m_4==m_gameWnd (base CGameMgr; its former
+// "ClampApply @0x8f7f0 / ManagerTick @0x8f620 / RestoreVideoMode @0x8df00 /
+// ReportError @0x346d" notes are already the real RecomputeViewScale /
+// PerFrameTick / SetVideoMode / ReportError methods there), m_c==m_frameGate,
+// m_10==m_soundEnabled, m_14==m_musicEnabled, m_30==m_world, m_48==m_sound,
+// m_54==m_inputState, m_5c==m_chatLog, m_60==m_timer, m_68==m_cmdGrid,
+// m_6c==m_cmdSubMgr, m_70==m_tileGrid, m_74==m_spriteFactory, m_7c==m_scoreHud,
+// m_8c/m_90==m_modeW/m_modeH, m_94/m_98==m_savedModeW/m_savedModeH,
+// m_124==m_scrollSpeed, m_128/m_134 same names; the +0x158 "flat config array
+// (stride 0x238)" was m_options[g_curPlayer].m_008 - the per-player selected
+// sprite descriptor (GruntzPlayer.h). Consumers use CState::m_4 directly.)
 
 // ===========================================================================
 // CState (base) - the shared canonical definition (full 41-slot vftable + the
@@ -307,10 +242,8 @@ public:
     virtual i32 BuildMusicCategoryTable(i32); // slot 41 (+0xa4) 0x0dba30 (== the MIDIZ installer)
     virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) -> CWorldState::BuildWorldLevelPath
 
-    // typed views of the inherited CState owner back-ptr (+0x4):
-    CWorld* m_4w() {
-        return (CWorld*)m_4;
-    }
+    // (the m_4w() CWorld-cast accessor is GONE - CState::m_4 is the typed
+    // CGruntzMgr* already; consumers deref it directly.)
 
     // The start-point marker array (m_startMarkers) is a real CByteArray/CPtrArray whose
     // data(+0x374)/count(+0x378) FindStartPointAt walks directly (byte-identical to

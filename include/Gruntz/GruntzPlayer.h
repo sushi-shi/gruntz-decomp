@@ -59,7 +59,10 @@ public:
 
     i32 m_playerIndex; // +0x000  = -1 (default) / index (seeded)
     CString m_name;    // +0x004  name ("Player")
-    i32 m_008;         // +0x008
+    i32 m_008;         // +0x008  per-player selected sprite descriptor/index (CPlay's
+                       //         grid walk feeds m_options[g_curPlayer].m_008 to the
+                       //         sprite table's GetSel/LoadSprite; Multi uses it as the
+                       //         player/slot id for chat AddItem + the net-slot table)
     i32 m_00c;         // +0x00c  (serialized) per-mode id / sound id / key word
     i32 m_010;         // +0x010  = 0; per-slot config id (LoadConfig arg; roster combo base)
     i32 m_014;         // +0x014  = 1; armed / arrival gate (roster: human-vs-computer)

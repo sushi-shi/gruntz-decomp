@@ -21,7 +21,7 @@
 // switch over the F-keys / numpad debug keys (key-0xC in 0..0x84).
 //
 // De-hacked (2026-07-14): `this` and its sub-objects are now TYPED against the real
-// engine classes - self=CPlay, host=CWorld (m_4w()), level/lv=CStatusBarMgr (m_guts),
+// engine classes - self=CPlay, host=CGruntzMgr (the m_4 owner), level/lv=CStatusBarMgr (m_guts),
 // dev=StateMgrBZ (g_spawnConfig), rec=CChatBoxOwner (m_hitTest), g_gameReg=CGruntzMgr,
 // area=GruntzPlayer (g_gameReg->m_options[]). The M()/P() offset-cast macros are GONE
 // (2026-07-16): every residual site is typed - the render context is
@@ -161,7 +161,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
 
-    CWorld* host = self->m_4w();
+    CGruntzMgr* host = self->m_4;
     CStatusBarMgr* level = self->m_guts;
     i32 key = vk;
 
@@ -171,19 +171,19 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             // dialog mode (cbd3b)
             if (key == 0x59 || key == 0xd) {
                 if (g_gameReg->m_134 == 1) {
-                    CLEAR_TAB_HINT(host->m_30->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_28);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
                     }
-                    PostMessageA(host->m_4->m_4->m_4, 0x111, 0x8023, 0);
+                    PostMessageA(host->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
                     return 1;
                 }
-                CLEAR_TAB_HINT(host->m_30->m_28);
+                CLEAR_TAB_HINT(host->m_world->m_28);
                 ((CGruntzMgr*)(host))->AccrueScoreTime();
                 return 1;
             }
             if (key == 0x4e || key == 0x1b) {
-                CLEAR_TAB_HINT(host->m_30->m_28);
+                CLEAR_TAB_HINT(host->m_world->m_28);
                 this->ReleaseLevelOverlay(0);
                 return 1;
             }
@@ -192,22 +192,22 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             // paused mode (cbe51)
             if (key == 0x51) {
                 if (g_gameReg->m_134 == 1) {
-                    CLEAR_TAB_HINT(host->m_30->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_28);
                     if (g_gameReg->m_cmdGrid->m_phase == 1) {
                         g_gameReg->UpdateScoreHud();
                     }
-                    PostMessageA(host->m_4->m_4->m_4, 0x111, 0x8023, 0);
+                    PostMessageA(host->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
                 }
                 return 1;
             }
             // paused-only cheats S/R/N/O (cbee0)
             if (key == 0x53 && g_gameReg->m_134 == 1) {
-                CLEAR_TAB_HINT(host->m_30->m_28);
+                CLEAR_TAB_HINT(host->m_world->m_28);
                 ((CGruntzMgr*)(host))->AccrueScoreTime();
             }
             if (key == 0x52) {
                 if (host->m_134 == 1 && g_gameReg->m_cmdGrid->m_phase != 1) {
-                    CLEAR_TAB_HINT(host->m_30->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_28);
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->m_hwnd, 0x111, 0x806b, 0);
                 }
@@ -215,14 +215,14 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             }
             if (key == 0x4e) {
                 if (host->m_134 == 1 && g_gameReg->m_cmdGrid->m_phase == 1) {
-                    CLEAR_TAB_HINT(host->m_30->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_28);
                     ((CGruntzMgr*)(host))->AccrueScoreTime();
                 }
                 return 1;
             }
             if (key == 0x4f) {
                 if (host->m_134 != 1 && self->m_guts->m_578 != 0) {
-                    CLEAR_TAB_HINT(host->m_30->m_28);
+                    CLEAR_TAB_HINT(host->m_world->m_28);
                     this->ReleaseLevelOverlay(0);
                 }
                 return 1;
@@ -245,7 +245,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
     }
     // Esc (cc109)
     if (key == 0x1b) {
-        CTriggerMgr* h68 = host->m_68;
+        CTriggerMgr* h68 = host->m_cmdGrid;
         CTmGoal* n = h68->m_goal;
         if (n != 0) {
             n->m_8 |= 0x10000; // the "released" bit
@@ -470,7 +470,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_30->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_28);
         CStatusBarMgr* lv = self->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -495,7 +495,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_30->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_28);
         CStatusBarMgr* lv = self->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -516,7 +516,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_30->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_28);
         CStatusBarMgr* lv = self->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -540,7 +540,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (g_gameReg->m_134 == 1) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_30->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_28);
         self->m_guts->AdvanceTab(g_spawnConfig->m_18 & 1);
         return 1;
     }
@@ -549,7 +549,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_30->m_28);
+        CLEAR_TAB_HINT(host->m_world->m_28);
         CStatusBarMgr* lv = self->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -644,7 +644,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             CPlaneRender* g = q->m_mainPlane;
             i32 by = g->m_originY - q->m_planeCtx.minY + my;
             i32 bx = g->m_originX - q->m_planeCtx.minX + mx;
-            host->m_68->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
+            host->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
         }
     }
     // x (ccd39): teleport
@@ -668,11 +668,11 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         }
         i32 outA = 0;
         i32 outB = 0;
-        i32 r = (i32)host->m_68->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5);
+        i32 r = (i32)host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5);
         if (r == 0) {
             return 1;
         }
-        host->m_68->CellDispatch(outB, outA, 0, -1);
+        host->m_cmdGrid->CellDispatch(outB, outA, 0, -1);
         return 1;
     }
     // digit cheats 1-9 (cce0f)
