@@ -25,7 +25,8 @@
 // is included RIGHT BELOW, and the local CButeStoreCopy174d DERIVES from that same canonical
 // CButeStore. Adding #include <Bute/ButeMgr.h> here compiles clean under the real MSVC 5.0.
 #include <Bute/ButeValue.h>
-#include <Bute/ButeStore.h> // the canonical CButeStore (real bases; INLINE dtor)
+#include <Bute/ButeStore.h>          // the canonical CButeStore (real bases; INLINE dtor)
+#include <Bute/ButeStoreDtorCopies.h> // CButeStoreCopy174d anchor (0x174d70 ~ copy)
 #include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
 
 // ===========================================================================
@@ -121,10 +122,8 @@ CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 // stamp both vptrs, ClearRecursive(0) (now the REAL ?ClearRecursive@CButeStore@@ at
 // 0x16e070 - it used to be a per-copy fake declared nowhere), then fold the +0x08 base
 // (~CButeNodeEntry 0x16dfc0) and the +0x00 base (~CContainerErr 0x16da60).
-struct CButeStoreCopy174d : public CButeStore {
-    ~CButeStoreCopy174d(); // 0x174d70
-};
-SIZE(CButeStoreCopy174d, 0x2c); // adds nothing to CButeStore
+// (CButeStoreCopy174d - the 0x174d70 anchor - is declared in the shared
+//  <Bute/ButeStoreDtorCopies.h>; its ~ body + the free-adapter below are this TU's.)
 
 // zPTree's OWN two most-derived vtables (== the store's): the pair every copy of the
 // destructor stamps, and which zPTree's ctor (0x16dff0) stamps too. cl spells them through
