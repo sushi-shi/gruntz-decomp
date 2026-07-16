@@ -44,6 +44,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/TileActionEvent.h> // CTileActionEvent - FindByField0C's real return type
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
@@ -2318,24 +2319,16 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
 // THIS class - ResolveArrival is now its method and the seven CArrive* sub-views are
 // dissolved. (CRect was the canonical CRect; CArriveFinder was empty.)
 
-// @identity-TODO - the ONE thing here that is NOT recovered: the record FindByField0C
-// (0x1171d0) / FindChild (0x116ee0) RETURN. Retail walks the receiver's node list at
-// [this+0x58], matches [elem+0x0c] against the key, and ResolveArrival then reads
-// `mov edx,[elem]` and compares it against the ANIM ids 0x13e/0x140/0x143, plus the
-// 4-slot flag array at [elem+0x18+4*m_curCell]. So the element's +0x00 is a dword ID,
-// NOT a vptr - it CANNOT be a CTileTriggerSwitchLogic (that class has a real vtable
-// @0x5eae8c), even though the tree currently declares those two finders as returning
-// one. Modeled here by its proven shape; the finders' owner/return type is the
-// follow-up (it is TileTriggerContainer.cpp's +0x54 list, not the sibling list).
-struct CTileTriggerRecord {
-    i32 m_id; // +0x00  anim/type id (compared against 0x13e/0x140/0x143)
-    i32 m_04; // +0x04  state code (compared against 2)
-    char _pad08[0x0c - 0x08];
-    i32 m_key0c; // +0x0c  the key FindByField0C/FindChild match on
-    char _pad10[0x18 - 0x10];
-    i32 m_flags[4]; // +0x18  per-band state flags (indexed by m_curCell)
-};
-SIZE_UNKNOWN(CTileTriggerRecord);
+// The former CTileTriggerRecord view conflated the TWO finders' distinct return types
+// and is DISSOLVED onto the canonicals each really returns (both already declared in
+// <Gruntz/TileTriggerContainer.h>, so the casts vanish):
+//   * FindChild (0x116ee0) returns CTileTriggerSwitchLogic* - the r->m_04 read is its
+//     type-id field (identical to the existing FindChild use at ResolveArrival ~0x1129);
+//   * FindByField0C (0x1171d0) returns CTileActionEvent* - the r->m_id / r->m_flags[idx]
+//     reads ARE m_actionCode@+0 (the 0x13e/0x140/0x143 anim ids) and m_playerFlags[idx]@
+//     +0x18 (the 4-slot per-band flags at [elem+0x18+4*m_curCell]). Its +0x00 IS a dword
+//     ID (m_actionCode), which is exactly why the element could not be the polymorphic
+//     CTileTriggerSwitchLogic - it is the +0x54 list's CTileActionEvent, now typed so.
 
 // Recycle the grunt's pending-coord list onto g_coordPool (guarded by its count).
 // The occupied-coord CPtrList's head is g->CoordHead() (a GruntCoordNode); its +0x08
@@ -2481,7 +2474,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         g->GetTilePos(&tp);
         i32 key = (keyHi << 8) + (tp.m_y >> 5);
         (void)(tp.m_x >> 5);
-        CTileTriggerRecord* r = (CTileTriggerRecord*)m_cellQuery->FindChild(key, 0);
+        CTileTriggerSwitchLogic* r = m_cellQuery->FindChild(key, 0);
         if (r->m_04 == 2) {
             g->m_defenderState = 0;
             ARR_RECYCLE(g);
@@ -2570,10 +2563,9 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (maskFlags & 0x4000) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 0xf) {
-            CTileTriggerRecord* r =
-                (CTileTriggerRecord*)m_cellQuery->FindByField0C((fcx << 8) + fcy);
+            CTileActionEvent* r = m_cellQuery->FindByField0C((fcx << 8) + fcy);
             if (r != 0) {
-                if (r->m_flags[m_curCell] != 0) {
+                if (r->m_playerFlags[m_curCell] != 0) {
                     ARR_RECYCLE(g);
                     Impact25e5(g, fcx, fcy, 1);
                     return 1;
@@ -2604,11 +2596,10 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 5) {
             if (maskFlags & 0x4000) {
-                CTileTriggerRecord* r =
-                    (CTileTriggerRecord*)m_cellQuery->FindByField0C((fcx << 8) + fcy);
+                CTileActionEvent* r = m_cellQuery->FindByField0C((fcx << 8) + fcy);
                 if (r != 0) {
-                    i32 k = r->m_id;
-                    if (r->m_flags[m_curCell] != 0) {
+                    i32 k = r->m_actionCode;
+                    if (r->m_playerFlags[m_curCell] != 0) {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
                             Impact25e5(g, fcx, fcy, 0);
                         }
