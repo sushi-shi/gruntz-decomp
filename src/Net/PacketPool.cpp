@@ -7,9 +7,9 @@
 #include <rva.h>
 #include <Mfc.h> // CPtrList
 
-// The free list is the canonical CPtrList g_pool (0x64aca8, defined in NetCmdSlot.cpp);
-// g_poolCount (0x64acb4) is its live-record count.
-extern CPtrList g_pool; // 0x64aca8
+// The free list is the canonical CPtrList g_pool (0x64aca8, DATA home NetCmdSlot.cpp;
+// declared in <Net/CmdPool.h>); g_poolCount (0x64acb4) is its live-record count.
+#include <Net/CmdPool.h>
 extern int g_poolCount; // 0x64acb4 (CANONICAL name, shared with Globals.cpp)
 
 // Preallocate: construct the pool free list with a block size of 10 (explicit ctor

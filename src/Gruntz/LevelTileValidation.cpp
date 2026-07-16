@@ -138,7 +138,8 @@ extern "C" CGruntzMgr* g_gameReg;
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
-extern i32 g_tileKindMagic;
+// g_tileKindMagic (active-player slot index) is declared in <Gruntz/TileTriggerLogic.h>
+// (included above).
 
 // The "Bad <kind> at: x=%d, y=%d" diagnostic format strings ($SG .rdata).
 static char s_BadSwitch[] = "Bad switch at: x=%d, y=%d\n";

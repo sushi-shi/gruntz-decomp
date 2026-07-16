@@ -51,9 +51,7 @@
 extern "C" CGameRegistry* g_gameReg;
 
 // The attract-state count divisor (DAT_00645534, a writable global int). extern "C"
-// so it emits the canonical `_g_645534` - the single name bound at 0x245534 (home
-// `multi`); the ex C++-mangled g_attractStateCount lost the per-rva keep-last dedup.
-extern "C" i32 g_attractStateCount;
+// g_attractStateCount (0x245534) is declared in <Gruntz/Attract.h> (included above).
 
 // ShowCursor is the real USER32 import (<Mfc.h>); its IAT slot @0x6c44c4.
 

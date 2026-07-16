@@ -11,6 +11,11 @@
 
 class CTileTriggerContainer; // owner, back-stamped into m_20 (fwd; def in TileTriggerContainer.h)
 
+// The active-player slot index the switch/validation logic reads (an index into
+// m_playerFlags[] and g_gameReg->m_options[]). Reloc-masked, no DATA home; declared
+// here so both tile-logic TUs reference it from one place, not per-TU externs.
+extern i32 g_tileKindMagic;
+
 // The tile-trigger factory/serialize type-id space: the id CTileTriggerContainer::
 // LoadElement (0x117800) switches on and stamps into the element (switch family
 // m_04 / logic family m_typeTag), re-read by the serialize dispatchers

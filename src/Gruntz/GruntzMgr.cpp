@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/AssetRoot.h>     // g_assetRoot (SetAssetRoot target; DATA home NetMgrMisc.cpp)
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <DDrawMgr/PixelShift.h>  // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
@@ -2561,10 +2562,8 @@ void CGruntzMgr::StopBank0IfActive() {
     }
 }
 
-// The global asset-root path CString (0x64e25c; SplashState.cpp's g_assetRoot binds
-// it, NetMgrMisc's g_netE25c is the same datum). SetAssetRoot assigns it and pokes
-// the game window.
-extern CString g_assetRoot;
+// The global asset-root path CString (0x64e25c) SetAssetRoot assigns is declared in
+// <Gruntz/AssetRoot.h> (included at the top); DATA home NetMgrMisc.cpp.
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::SetAssetRoot (0x092060; ret 4). Copy `path` into the global asset-root

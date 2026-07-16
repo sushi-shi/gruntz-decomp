@@ -17,6 +17,11 @@
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (the flip/render target)
 
+// The attract-title-index divisor (0x645534; DATA home + producer src/Rez/RezSync.cpp).
+// `g_gameReg->m_numRuns % g_attractStateCount + 1` picks the attract/title screen.
+// Declared here so the attract states reference it from this header, not per-TU externs.
+extern "C" i32 g_attractStateCount;
+
 // ---------------------------------------------------------------------------
 // The video-mode sub-object at CAttract+0x4 (== CState::m_4 re-typed). Its first
 // method (engine FUN_0048ddd0, __thiscall ret 4 - the RestoreVideoMode shape,

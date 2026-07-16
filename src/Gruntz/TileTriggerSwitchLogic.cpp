@@ -87,9 +87,8 @@
 extern "C" CGruntzMgr* g_gameReg;
 
 // The shared global at DAT_00644c54 (VA 0x644c54): used here as the per-player /
-// active-slot index into m_playerFlags[]. Already named g_tileKindMagic by the
-// leveltilevalidation unit; reuse that name so the DIR32 reloc pairs by symbol.
-extern i32 g_tileKindMagic;
+// active-slot index into m_playerFlags[]; declared in <Gruntz/TileTriggerLogic.h>
+// (included above).
 
 // The impact-sound sink param (DAT_0061ab24): Process plays the impact one-shot
 // through it (Play(sink, 0,0,0)). Already named g_sndCueTag by the chatbox unit;

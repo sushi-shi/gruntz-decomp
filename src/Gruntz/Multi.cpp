@@ -31,6 +31,7 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/Attract.h> // g_attractStateCount (attract-title-index divisor)
 
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the REAL CState::m_4 game mgr (ex-CMultiMgr view)
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; DtorBody)
@@ -56,8 +57,7 @@ extern "C" u32 g_frameTime;  // 0x645588  accum clock
 
 // The game-manager singleton + a divisor for the TITLE%d index.
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-DATA(0x00245534)
-extern "C" i32 g_attractStateCount; // 0x645534  title-index modulus
+// g_attractStateCount (0x645534) is declared in <Gruntz/Attract.h> (included below).
 
 // The DirectPlay session-name CString global (assigned in StartTitle).
 DATA(0x002473d8)

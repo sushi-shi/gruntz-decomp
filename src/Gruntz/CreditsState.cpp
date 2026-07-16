@@ -68,8 +68,9 @@ void operator delete(void*);
 // CGruntzMgr* here exactly as the sibling CreditzAssets.cpp does (was CCreditzAttractReg).
 extern "C" CGruntzMgr* g_gameReg;
 
-// The attract-state count divisor (DEFINED in src/Rez/RezSync.cpp).
-extern "C" i32 g_attractStateCount;
+// The attract-state count divisor (DEFINED in src/Rez/RezSync.cpp) is declared in
+// <Gruntz/Attract.h> (included below).
+#include <Gruntz/Attract.h>
 
 // StepVideo: the Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame);
 // ret nonzero while more frames remain (PTR__SmackGoto@8). Reloc-masked.

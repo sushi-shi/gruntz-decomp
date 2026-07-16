@@ -69,9 +69,8 @@
 // 0x24556c (the CMgrPersistObj::Save m_world gate is the same object).
 extern "C" CGameRegistry* g_gameReg;
 
-// The attract-state count divisor (DAT_00645534, a writable global int).
-DATA(0x00245534)
-extern "C" i32 g_attractStateCount; // DEFINED in RezSync.cpp (the producer)
+// The attract-state count divisor (DAT_00645534) is declared in <Gruntz/Attract.h>
+// (included above); DATA home + producer is src/Rez/RezSync.cpp.
 
 // The "Disable Fades" [Config] gate the CSoundFxEmitter methods poll (0x2455c4).
 // DEFINED in src/Rez/RezSync.cpp (owner); declared in <Globals.h>.

@@ -41,9 +41,9 @@
 
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
 
-// The global asset-root CString whose emptiness gates the load (0x24e25c).
-DATA(0x0024e25c)
-extern CString g_assetRoot;
+// The global asset-root CString whose emptiness gates the load (0x64e25c;
+// declared in <Gruntz/AssetRoot.h>, DATA home NetMgrMisc.cpp).
+#include <Gruntz/AssetRoot.h>
 
 // The engine's just-refreshed per-frame clock delta (?g_wap32FrameDelta@@3HA); the
 // splash title timer counts down by it (0x653c74).

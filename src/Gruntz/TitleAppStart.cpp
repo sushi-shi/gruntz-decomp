@@ -20,8 +20,8 @@
 // ptr (CString::operator LPCTSTR -> the +0 m_pszData load). Single-sourced onto the
 // canonical `g_assetRoot` name (was the fake `g_64e25c` void* that lost the per-rva
 // keep-last dedup to netmgrmisc's ex-`g_netE25c` view - now dissolved -> UNBOUND).
-DATA(0x0024e25c)
-extern CString g_assetRoot; // 0x24e25c (the asset-root CString)
+// Declared in <Gruntz/AssetRoot.h>; DATA home NetMgrMisc.cpp.
+#include <Gruntz/AssetRoot.h>
 
 // CTitleApp is a CState leaf (OnStart calls RunTitleSeq @0xfa350 - a CState base method -
 // on its own `this`; retail passes `this` as the CState). Its exact leaf identity is
