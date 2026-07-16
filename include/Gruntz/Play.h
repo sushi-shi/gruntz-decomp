@@ -189,8 +189,8 @@ public:
     virtual i32 Vslot1a();  // slot 26 (0x8c930)  ret 0
     virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
     // slot 28 (+0x70): count the object manager's live objects whose collision
-    // category (CGameObject::m_collCategory) equals `category` (ex Vslot1c - the
-    // role is proven by the 0xd0050 body, so the slot-index placeholder name goes).
+    // category (CGameObject::m_collCategory) equals `category` (the role is proven
+    // by the 0xd0050 body, so the slot-index placeholder name goes).
     virtual i32 CountObjectsByCategory(i32 category);
     // slot 29 (+0x74): the GRUNTZ/GAME bank cache load (0x0cffe0, body in Play.cpp).
     // PROVEN virtual: retail ??_7CPlay@0x1ea0bc slot 29 -> ILT 0x1a41 -> 0x0cffe0.
@@ -230,7 +230,7 @@ public:
     // / DrawWorldFrames; the vtable's ILT thunks 0x15eb / 0x311b jmp to 0xc9c20 /
     // 0xc9cc0, which are exactly those two methods' bodies in this TU).
     virtual void DrawWorldFrame();            // slot 39 (+0x9c) 0x0c9c20
-    virtual i32 DrawWorldFrames();            // slot 40 (+0xa0) 0x0c9cc0 (ex "RenderFast")
+    virtual i32 DrawWorldFrames();            // slot 40 (+0xa0) 0x0c9cc0
     virtual i32 BuildMusicCategoryTable(i32); // slot 41 (+0xa4) 0x0dba30 (== the MIDIZ installer)
     virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) -> CWorldState::BuildWorldLevelPath
 
@@ -341,9 +341,8 @@ public:
     void GutsStepB();
     void GutsStepC();
     void WorldSubstep();
-    // (Overlay1/Overlay2 are GONE - they were phantom CPlay wrappers of the two
-    // CLightFxRender thunks 0x1fa0/0x14dd, which retail dispatches straight on
-    // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_backPair, &rc).)
+    // The two CLightFxRender thunks 0x1fa0/0x14dd are dispatched straight on
+    // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_backPair, &rc).
     void InputSubStep(void* in);         // (m_4->m_70)
     void RegCue(void* sink, i32 wParam); // (reg->m_60)
     void SnapWalk();

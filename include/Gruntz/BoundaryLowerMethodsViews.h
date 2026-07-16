@@ -129,10 +129,8 @@ struct Cdb2f0 {
 };
 SIZE_UNKNOWN(Cdb2f0);
 
-// (0x0db750 Cdb750 + its CHolderdb/CDDrawSubMgrLeaf/CSymTab shells are GONE
-// (2026-07-16): the body was already rehomed as CPlay::LoadLevelAnims (Play.cpp)
-// on the canonical CDDrawSubMgrLeaf/CSymTab - the leftover ODR
-// shadow of the real CDDrawSubMgrLeaf is deleted.)
+// 0x0db750 is rehomed as CPlay::LoadLevelAnims (Play.cpp) on the canonical
+// CDDrawSubMgrLeaf/CSymTab.
 
 // 0x0ea170 - 2-bit selector over a +0x38 virtual.
 struct Cea170 {
@@ -156,8 +154,7 @@ struct Cea170 {
 SIZE_UNKNOWN(Cea170);
 
 // 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build) through
-// the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>; the former local
-// CDDrawChildGroup re-definition here collided with the canonical class name).
+// the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>).
 struct CHolder104 {
     char pad0[8];
     CDDrawChildGroup* m_8; // +0x08  the sprite factory (CreateSprite @0x1597b0)

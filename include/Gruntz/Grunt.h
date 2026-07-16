@@ -358,19 +358,19 @@ struct GruntEntranceCell {
 // lookup the struck-voice creator @0x57c40 queries). Same shape Projectile's
 // LaunchSound reaches. All external (reloc-masked).
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
-// [DISSOLVED 2026-07-16: the grunt-facet "GruntSoundCat" view of g_gameReg->m_world
-// was the ONE canonical CDDrawSurfaceMgr (its m_8 == m_childGroup the CreateSprite
+// The grunt-facet "GruntSoundCat" access of g_gameReg->m_world resolves to the
+// ONE canonical CDDrawSurfaceMgr (its m_8 == m_childGroup the CreateSprite
 // factory, m_24 == m_level the CGameLevel, m_28 == m_soundRegistry). Its "CGruntViewMid"
 // (+0x24 sub-view whose m_5c based the visible CCueRect at +0x40) was the CGameLevel:
 // m_5c IS m_mainPlane, and the +0x40 rect is the plane's tile-origin block - the
 // spawn-cue gate now reads (char*)world->m_level->m_mainPlane + 0x40, the same
 // authentic int-read of the plane pointer 40+ Grunt.cpp sites use. Its
 // "GruntSoundInner" (+0x28, map @+0x10) was the CDDrawSubMgrLeafScan (m_10, the
-// same CMapStringToPtr band 0x1b8438).]
+// same CMapStringToPtr band 0x1b8438).
 // WwdGameReg (the g_gameReg singleton) is the canonical <Gruntz/WwdGameReg.h>;
 // its m_world is the canonical CDDrawSurfaceMgr; m_cueSink=CGruntCueSink,
 // m_tileGrid=GruntBoard, m_74=CSpriteRefTable are completed by the defs above.
-// g_gameReg decl moved to consumers (was WwdGameReg*; clashes with CGameRegistry* view) - include WwdGameReg.h + declare locally where needed
+// g_gameReg is declared per-consumer (include WwdGameReg.h + declare locally where needed)
 
 // The struck-voice sound model (creator @0x57c40). The lookup returns a
 // GruntSoundEntry whose +0x10 sub-object owns a sample factory (GetItem @0x135d70,

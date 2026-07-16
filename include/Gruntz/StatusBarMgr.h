@@ -104,7 +104,7 @@ struct CSbiSlot {
     i32 m_8;     // +0x08 (gauge-span lo / the 64-bit timer with m_c)
     i32 m_c;     // +0x0c
     i32 m_10;    // +0x10 (the ctor zeroes it)
-    i32 m_14;    // +0x14 (was pad; the ctor zeroes it)
+    i32 m_14;    // +0x14 (the ctor zeroes it)
 };
 
 // The out-of-line-ctor twin (m_groupSlots[3] @+0x2c0 and m_hlGrid[12] @+0x378).
@@ -352,7 +352,7 @@ const i32 kSetTabErrTag = 0x44a;
 // ---------------------------------------------------------------------------
 class CStatusBarMgr {
 public:
-    // The REAL inline default ctor (2026-07-13). Retail has no out-of-line ??0: it
+    // The REAL inline default ctor. Retail has no out-of-line ??0: it
     // INLINES this whole body at both `new`-sites (CPlay::Vfunc1 0xc7fea and
     // CMulti::SetupMultiplayerSession 0xb5931, both `push 0x630; call ??2`). Body is
     // below the class (it needs the complete type). This replaces the ~100 raw

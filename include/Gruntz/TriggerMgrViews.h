@@ -17,7 +17,7 @@
 
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint (+ <Mfc.h> CPtrList/CByteArray)
 
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - m_level's REAL class (ex CTmLevel)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - m_level's REAL class
 #include <Gruntz/GameLevel.h> // CGameLevel - the holder's +0x24 level (ex CTmLevelView/CTmGridHolder)
 #include <Gruntz/GruntzCmdMgr.h>      // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
 #include <Gruntz/SoundCue.h>          // CSndHost (a typedef - never fwd-declare it): holder m_28

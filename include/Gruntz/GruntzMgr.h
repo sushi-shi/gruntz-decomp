@@ -100,13 +100,13 @@ typedef CDDrawSubMgrLeafScan CSndHost;
 // (<DDrawMgr/DDrawWorkerRegistry.h>, real polymorphic).
 class CDDrawWorkerRegistry;
 typedef CDDrawWorkerRegistry CImageRegistry;
-// [The CWorldZ view is DISSOLVED (Fable lane, 2026-07-13): the loaded-world object
-// at +0x30 IS the canonical CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>) == the
-// polymorphic CDDrawSurfaceMgr (see the settled-identity note there). The old
-// facets resolved: m_4 == m_drawTarget/m_drawTarget (CWorldSub4 was CDDrawSubMgrPages;
+// The loaded-world object at +0x30 IS the canonical CDDrawSurfaceMgr
+// (<Gruntz/GameRegistry.h>) == the polymorphic CDDrawSurfaceMgr (see the
+// settled-identity note there). The facets: m_4 == m_drawTarget (CWorldSub4 was
+// CDDrawSubMgrPages;
 // "PausePages" @0x158c70 IS its Method_158c70(CDDrawSurfacePair*)); m_1c ==
 // m_ptrColl (the "*m_1c slot-10 dispatch" is m_ptrColl->m_surf0 IDirectDraw2::
-// FlipToGDISurface, slot 10 +0x28); m_38 == m_lastError.]
+// FlipToGDISurface, slot 10 +0x28); m_38 == m_lastError.
 class CDDrawSurfaceMgr;
 
 // Minimal IDirectPlayLobby-shaped COM surface used by

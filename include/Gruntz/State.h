@@ -220,9 +220,8 @@ public:
     // its +0x04 sub-object is the DDraw worker manager (CDDrawSubMgrPages::Method_158ee0
     // @0x158ee0) and its +0x10 registrar is CImageRegistry (Install/LoadTree +0x48,
     // LoadNamespace +0x4c). The state activators (CBootyState/CMultiBootyState/CImageState
-    // slot-8 loaders) reach it through this one holder; their old per-TU StateMgr/BootyAssetRoot
-    // shadows are folded away. (The former `CView`/`CDDrawSurfaceMgr` render view is folded onto
-    // CDDrawSurfaceMgr; its render sub-object facets live in <Gruntz/View.h>.)
+    // slot-8 loaders) reach it through this one holder. Its render sub-object facets
+    // live in <Gruntz/View.h>.
     CDDrawSurfaceMgr* m_c; // +0x0c
     CFaderMgr* m_faderMgr; // +0x10  fader mgr (RetireScene's Add/Remove target; the
                            //         loader caches mgr->m_40 here - the +0x40 slot's

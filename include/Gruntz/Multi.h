@@ -156,9 +156,7 @@ SIZE_UNKNOWN(CMultiPlayerInfo);
 // signature/typing conflicts are reconciled against the retail bytes in the
 // CNetMgr split - do not re-diverge further.
 // Released via its scalar-deleting destructor (vtable slot +0x04, thiscall,
-// arg 1). ONE struct (was split into a separate CMultiNetGate net-bind view,
-// and the per-TU WatchSess524 / CMultiRegSub lens sub-object views folded
-// here): StartTitle drives its net-bind entry points (non-virtual,
+// arg 1). ONE struct: StartTitle drives its net-bind entry points (non-virtual,
 // reloc-masked thiscall) and stashes the opened player at +0x74; the lobby
 // watchdog re-probes it via M178a80, and the start-dialog reads its +0x70
 // player-info sub-object's per-slot occupancy probes.
@@ -376,10 +374,10 @@ public:
     // (this CMulti): retail runs each on this=g_curMulti (a CMulti at offset 0). The
     // small real CNetMgr is reached via Peer() (+0x524). Defined in Multi.cpp.
     i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3); // 0x0b5460
-    i32 Open();                   // 0x0b77a0
-    i32 SetupServices();          // 0x0b78b0
-    i32 DetectConnectionConfig(); // 0x0b82e0
-    void ApplyCmdDelayDefaults(); // 0x0b85a0
+    i32 Open();                                          // 0x0b77a0
+    i32 SetupServices();                                 // 0x0b78b0
+    i32 DetectConnectionConfig();                        // 0x0b82e0
+    void ApplyCmdDelayDefaults();                        // 0x0b85a0
     // 0x0b86c0 (/GX): pop the multiplayer-start dialog over the suspended game. On a
     // cancel it clears the host's options slot + rebroadcasts the channel table, or
     // ships the guest's 0x3ea abort stat; on OK it applies the cmd-delay defaults

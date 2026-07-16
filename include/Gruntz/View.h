@@ -6,8 +6,8 @@
 // NON-polymorphic (offset 0 is padding, no vtable on the object itself). The former fake
 // `CView` name (a MISATTRIBUTION: `sema class CView` shows 0x5ee1c4 is the *real MFC*
 // `CView : CWnd` vtable, an unrelated library class that collided with MFC's CView and
-// blocked pulling <afxwin.h> for CRgn) is GONE - CView is folded onto
-// CDDrawSurfaceMgr, and its sub-object facets onto the ONE real classes:
+// blocked pulling <afxwin.h> for CRgn). The loaded-world CView object IS
+// CDDrawSurfaceMgr, and its sub-object facets the ONE real classes:
 //   * +0x04 render-pump / draw target  -> CDDrawSubMgrPages      (<Gruntz/ResMgr.h>)
 //   * +0x08 renderer A / factory       -> CDDrawChildGroup (<DDrawMgr/DDrawChildGroup.h>)
 //   * +0x0c renderer B / worker pump   -> CDDrawWorkerList (<DDrawMgr/DDrawWorkerList.h>)
@@ -39,8 +39,7 @@
 // The render-flip surface at each CDDrawSubMgrPages page's m_surface: the real CDDSurface
 // (<DDrawMgr/DDSurface.h>; Fill @0x13e760, Restore @0x13e7d0 - ret 8, two args -
 // held IDirectDrawSurface at its +0x08). Pointer-only here; the dispatching TUs
-// include the real header. (The former nested CDDrawSubMgrPages::SurfaceA/SurfaceB page
-// views are dissolved onto CDDrawSurfacePair - see ResMgr.h.)
+// include the real header. The +0x08 surface pages are CDDrawSurfacePair (see ResMgr.h).
 class CDDSurface;
 
 // The `CRenderer` conflation is TWO real classes:
@@ -61,8 +60,7 @@ class CDDSurface;
 // Both real classes carry every slot evidence-backed.
 
 // The draw-surface object at m_c->m_level is the ONE real CGameLevel
-// (<Gruntz/GameLevel.h>) - the former per-TU CDrawSurface render-facet view AND the
-// former GameRegistry.h `CGameViewport` facet are both folded onto it ("PushView" IS
+// (<Gruntz/GameLevel.h>). Its render facets resolve onto it: ("PushView" IS
 // ?VisitVisible@CGameLevel@@ @0x15dc90, "SetClipRect" IS ?BuildAllPlanes@CGameLevel@@
 // @0x15da80; the "+0x10 viewport rect" is CGameLevel::m_planeCtx, the "+0x5c camera
 // geom" is CGameLevel::m_mainPlane, a CLevelPlane). No separate view here.
