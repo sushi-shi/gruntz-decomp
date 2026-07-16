@@ -259,9 +259,13 @@ SIZE(CInputDevBase, 0x2b4); // middle-base subobject (adds no fields)
 class CInputDevBase : public CInputDevRoot {
 public:
     CInputDevBase();
+    // slot 0. The base cleanup is THIS class's ReleaseDevices override (0x1342b0)
+    // - retail's standalone ??1CInputDevBase (0x1333b0) calls 0x1342b0 then the
+    // inlined ~CInputDevRoot (stamp root + 0x134d50); the qualified call keeps
+    // cl's direct `call rel32` binding to the right override.
     virtual ~CInputDevBase() OVERRIDE {
-        CInputDevRoot::ReleaseDevices();
-    } // slot 0 (inline: base cleanup)
+        CInputDevBase::ReleaseDevices();
+    }
     virtual i32 Create(IDirectInputA* di, const void* guid, void* hwnd)
         OVERRIDE;                           // slot 1 0x134260 (CreateDeviceWrap)
     virtual void ReleaseDevices() OVERRIDE; // slot 2 0x1342b0

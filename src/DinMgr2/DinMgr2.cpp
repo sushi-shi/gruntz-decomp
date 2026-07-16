@@ -529,9 +529,10 @@ i32 CInputDevBase::ResetState() {
 
 // (The two base-subobject destructors are defined inline in the header - each a
 // single ReleaseDevices cleanup - so cl inlines the full base unwind, stamp-by-stamp,
-// into every leaf's /GX destructor. The standalone base dtor 0x1333b0 lives in
-// BoundaryUpper2Eh.cpp; cl's copies here are unbound and only drive the leaf unwinds
-// + force ??_7CInputDevRoot / ??_7CInputDevBase emission.)
+// into every leaf's /GX destructor. cl ALSO emits standalone out-of-line copies of
+// both inline dtors into this obj - the leaf dtors' EH unwind funclets take their
+// addresses - and retail keeps those copies at 0x133370 / 0x1333b0; they are bound
+// below by @rva-symbol, exactly like the auto-emitted ??_G scalar-deleting dtors.)
 
 // CInputDevice::~CInputDevice (__thiscall, 0x133300). Now a REAL polymorphic /GX
 // multilevel deleting-dtor: cl auto-emits the EH frame + the vptr re-stamp down the
@@ -542,47 +543,35 @@ RVA(0x00133300, 0x6a)
 CInputDevice::~CInputDevice() {
     Teardown();
 }
-// 0x133370: the out-of-line grand-base
-// ~CInputDevRoot copy - stamp 0x5ef670 then tail-call the base teardown (ReleaseDevices
-// @0x134d50). Co-located next to CInputDevRoot; kept a distinct placeholder identity
-// (DICfgC::DtorC) because CInputDevRoot's dtor is INLINE (the keyboard/mouse/joystick
-// leaf dtors inline this base unwind) - it cannot also be the real out-of-line
-// ~CInputDevRoot without regressing them (inline XOR out-of-line). The most-derived vptr
-// stamp is compiler-managed; ~50% (the dropped stamp is the residual).
-struct DICfgC {
-    void DtorC(); // 0x133370
-};
-SIZE_UNKNOWN(DICfgC);
-RVA(0x00133370, 0xb)
-void DICfgC::DtorC() {
-    ((CInputDevRoot*)this)->CInputDevRoot::ReleaseDevices();
-}
+// 0x133370 - ??1CInputDevRoot@@UAE@XZ: cl's auto-emitted out-of-line copy of the
+// header-inline grand-base dtor (`mov [ecx],??_7CInputDevRoot; jmp ReleaseDevices
+// @0x134d50` - byte-identical to the base-obj COMDAT, verified llvm-objdump -dr).
+// The leaf dtors' EH unwind funclets reference it, which is why cl emits the copy
+// alongside the inlined-in-leaves unwind. Was the DICfgC placeholder view (a
+// `(CInputDevRoot*)this` cast host stuck at ~50% because a plain method cannot
+// emit the vptr stamp) - dissolved: the compiler's own emission IS the function.
+// @rva-symbol: ??1CInputDevRoot@@UAE@XZ 0x00133370 0xb
 
-// 0x1333b0: CInputDevBase's standalone
-// /GX base-subobject destructor (the middle level of the DirectInput device chain):
-// stamp base vftable B @0x5ef680, ReleaseBase (0x1342b0), stamp grand-base C @0x5ef670,
-// BaseDtorC (0x134d50). Kept a distinct placeholder identity (DICfgD): the leaf dtors
-// (keyboard/mouse/joystick) inline this base unwind, so binding a real ~CInputDevBase
-// here would dup DinMgr2's inline base dtor.
-// @early-stop
-// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
-// body byte-correct (stamp B / ReleaseBase / stamp C / BaseDtorC) but retail wraps it
-// in a /GX frame with [esp+0x10] try-level stamps (0 / -1) from real base-subobject
-// dtors, unreachable under this manual-vptr shape; ~34% (the dropped device-chain
-// vptr stamps 0x5ef680/0x5ef670 reloc-name-mismatch the cl-emitted CInputDevBase/Root
-// tables). Deferred to a final sweep that reunifies the whole chain in one TU.
-struct DICfgD {
-    char _vft0[4];      // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    void ReleaseBase(); // 0x1342b0
-    void BaseDtorC();   // 0x134d50
-    void DtorD1();
-};
-SIZE_UNKNOWN(DICfgD);
-RVA(0x001333b0, 0x55)
-void DICfgD::DtorD1() {
-    ReleaseBase();
-    BaseDtorC();
-}
+// 0x1333b0 - ??1CInputDevBase@@UAE@XZ: cl's auto-emitted out-of-line copy of the
+// middle-base inline dtor, WITH the /GX frame ([esp+0x10] try-levels 0 / -1):
+// stamp ??_7CInputDevBase (0x5ef680), call the CInputDevBase::ReleaseDevices
+// override (0x1342b0), then the inlined ~CInputDevRoot (stamp 0x5ef670 + call
+// 0x134d50) - byte-identical to the base-obj COMDAT. Was the DICfgD placeholder
+// view (@early-stop eh-dtor-needs-base-subobject, ~34%): the real base-subobject
+// chain emits the frame + both stamps that the manual-vptr shape could not reach.
+// @rva-symbol: ??1CInputDevBase@@UAE@XZ 0x001333b0 0x55
+
+// The four leaf/middle ??_G scalar-deleting destructors cl auto-emits for the
+// vtable slot-0s (each `push esi; call ~T; test [esp+8],1; conditional operator
+// delete; ret 4`, 0x1e B). Retail keeps them interleaved with the dtor bodies;
+// slot-0 of each retail vtable is the identity proof (0x5ef628->0x1332e0,
+// 0x5ef680->0x133420, 0x5ef658->0x133440, 0x5ef640->0x1334d0; each inner call
+// targets the matching ~dtor). They were FID false-positives
+// (??_G__non_rtti_object, AMBIG) in config/library_labels.csv - reclassed here.
+// @rva-symbol: ??_GCInputDevice@@UAEPAXI@Z 0x001332e0 0x1e
+// @rva-symbol: ??_GCInputDevBase@@UAEPAXI@Z 0x00133420 0x1e
+// @rva-symbol: ??_GCDeviceConfigC@@UAEPAXI@Z 0x00133440 0x1e
+// @rva-symbol: ??_GCDeviceConfigB@@UAEPAXI@Z 0x001334d0 0x1e
 
 // CDeviceConfigC::~CDeviceConfigC (joystick, 0x133460) and CDeviceConfigB::~CDeviceConfigB
 // (mouse, 0x1334f0): the two sibling /GX multilevel deleting-dtors, same shape as
@@ -1062,6 +1051,17 @@ i32 CInputDevBase::CreateDeviceWrap(IDirectInputA* di, const void* guid, void* h
     }
     ResetState(); // +0x14 dispatch (virtual, slot 5)
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CInputDevBase::ReleaseDevices (slot 2 override, 0x1342b0): a bare forwarder to
+// the grand-base teardown - cl tail-jmps the same-signature qualified call
+// (retail: `jmp 0x134d50`, 5 B). The middle base adds no state of its own to
+// release. (Was a FID `__inc` LOW false positive in config/library_labels.csv,
+// and before that the DICfgD view's "ReleaseBase" decl.)
+RVA(0x001342b0, 0x5)
+void CInputDevBase::ReleaseDevices() {
+    CInputDevRoot::ReleaseDevices();
 }
 
 // CDeviceConfigB::CreateDev (__thiscall, ret 0x10 => 4 args). The device-B (mouse)

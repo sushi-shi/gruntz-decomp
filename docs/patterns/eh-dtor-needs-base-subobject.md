@@ -37,3 +37,14 @@ every already-exact sibling method — defer to the final sweep when the whole c
 (its base + all virtuals) is modeled. Evidence: `DirectSoundMgr::~DirectSoundMgr`
 (0x135bb0) 54.45%, body otherwise exact; sibling ctor 0x1351d0 is frameless + 100%
 (no base-dtor → no frame), confirming the base subobject is the frame's only cause.
+
+RESOLVED (2026-07-16, matcher-1 / Fable lane): the prescription above works — twice.
+(1) `StreamVoice : DSoundCloneInst` (real base insertion + `Cleanup()` renamed to the
+real non-virtual `~StreamFeeder`): ctor 0x1375b0 34%→100, dtor 0x137650 45%→100,
+member dtor 0x137cf0 91%→100 — the /GX frame, the 1→0→-1 trylevel machine and both
+vptr stamps all fall out of the language. (2) The DinMgr2 device chain: the
+standalone base-dtor copies at 0x133370/0x1333b0 are cl's own out-of-line COMDAT
+emissions of the header-inline `~CInputDevRoot`/`~CInputDevBase` (the leaf dtors'
+EH funclets take their addresses) — bind them with `@rva-symbol`, never a
+placeholder view; both 100. If you are staring at this wall, model the real base:
+the frame is not hand-reachable but it is compiler-trivial.
