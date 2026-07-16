@@ -2729,7 +2729,7 @@ i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     m_voiceVolume = v;
     CGruntSpawnConfig* timer = m_timer;
     if (timer) {
-        timer->m_2c = v;
+        timer->m_gruntPercent = v;
     }
     return v;
 }
@@ -3865,7 +3865,7 @@ void CGruntzMgr::Close() {
             cfg->SetValueDword("Music_Volume", m_sound->GetXMidiVolume());
         }
         if (m_timer) {
-            cfg->SetValueDword("Voice_Volume", m_timer->m_2c);
+            cfg->SetValueDword("Voice_Volume", m_timer->m_gruntPercent);
         }
         if (m_world && m_world->m_28) {
             cfg->SetValueDword("Sound_Volume", g_sndCueTag);

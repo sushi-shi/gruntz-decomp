@@ -62,7 +62,7 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
                 name.Format("VOICES_%s_%s", (LPCTSTR)scratch, (LPCTSTR)sub);
             }
             void* res =
-                (void*)((CSymParser*)m_00->m_34)->ResolveQualified((LPCTSTR)name, (void*)0x574156);
+                (void*)((CSymParser*)m_owner->m_34)->ResolveQualified((LPCTSTR)name, (void*)0x574156);
             if (res != 0) {
                 // retail copy-ctors `name` straight into the by-value arg slot
                 // (push 0; push ecx; mov ecx,esp; copy-ctor) - no local temp.
