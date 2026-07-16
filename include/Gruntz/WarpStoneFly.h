@@ -18,22 +18,12 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The CStatusBarMgr owner reached through m_owner. Only the members the three
-// frameless methods touch are modeled; every call through it goes via the ILT and
-// is reloc-masked regardless of name.
-SIZE_UNKNOWN(CWsfOwner);
-struct CWsfOwner {
-    // mode-3 tab-switch helpers, both __thiscall (ILT-reloc-masked):
-    i32 m_mode; // +0x000  mode discriminator (!=2 gates the tab switch)
-    char m_pad4[0x10 - 0x4];
-    i32 m_tabBaseX; // +0x010  tab base x (== CStatusBarMgr::m_10; Init's fly target base)
-    i32 m_tabBaseY; // +0x014  tab base y (== CStatusBarMgr::m_rect14.m_0)
-    char m_pad18[0x10c - 0x18];
-    i32 m_activeTabId; // +0x10c  active-tab id (==5 arms the tab switch)
-    char m_pad110[0x548 - 0x110];
-    i32 m_busy;           // +0x548  busy flag, cleared on arrival
-    void* m_warpStoneFly; // +0x54c  this overlay (freed + nulled on arrival)
-};
+// The owner reached through m_owner IS the real <Gruntz/StatusBarMgr.h>
+// CStatusBarMgr (the 0x630 host); its m_position @+0, m_10 @+0x10, m_rect14.m_0
+// @+0x14, m_activeTab @+0x10c, m_hlBusy @+0x548 and m_retabNotify (this overlay)
+// @+0x54c are exactly the fields the three frameless methods touch (the ex empty
+// CWsfOwner shell modeled them by offset). Only a pointer member is needed here.
+class CStatusBarMgr;
 
 // The sprite (m_sprite) drawn by the overlay IS a CImage: Draw is CImage::RenderFrame
 // (0x153790, ctx/x/y/flag, ret 0x10) - see CWarpStoneFly::Draw. (The former empty
@@ -62,7 +52,7 @@ public:
     double m_xDirection;    // +0x28  x direction/sign gate
     double m_yDirection;    // +0x30  y direction/sign gate
     CImage* m_sprite;       // +0x38  the drawn sprite frame (CImage::RenderFrame)
-    CWsfOwner* m_owner;     // +0x3c  back-pointer to the owning CStatusBarMgr
+    CStatusBarMgr* m_owner; // +0x3c  back-pointer to the owning CStatusBarMgr
 };
 
 // The flying-warpstone overlay's registry views (ex WarpStoneFly.cpp): m_cmdGrid+0x260

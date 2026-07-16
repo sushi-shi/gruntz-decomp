@@ -61,21 +61,21 @@ i32 CSBI_ImageSetAni::Init(
         m_rect14.m_c = rc.bottom;
         m_c = a2;
         if (key != 0) {
-            CSbiConfigRecord* tbl = 0;
+            CImageSet* tbl = 0;
             ((CMapStringToPtr*)&host->m_imageRegistry->m_10map)->Lookup(key, (void*&)tbl);
-            m_34 = (CSprite*)tbl;
+            m_34 = tbl;
             if (tbl != 0) {
                 m_3c = b2;
                 m_48 = b3;
                 m_44 = b4;
-                m_4c = (b0 == -1) ? (b4 >= 0 ? tbl->m_64 : tbl->m_68) : b0;
-                m_50 = (b1 == -1) ? (b4 >= 0 ? tbl->m_68 : tbl->m_64) : b1;
+                m_4c = (b0 == -1) ? (b4 >= 0 ? tbl->m_minIndex : tbl->m_maxIndex) : b0;
+                m_50 = (b1 == -1) ? (b4 >= 0 ? tbl->m_maxIndex : tbl->m_minIndex) : b1;
                 m_38 = m_4c;
-                if (m_4c < tbl->m_64 || m_4c > tbl->m_68) {
+                if (m_4c < tbl->m_minIndex || m_4c > tbl->m_maxIndex) {
                     m_30 = 0;
                     return 0;
                 }
-                m_30 = tbl->m_14[m_4c];
+                m_30 = (i32)tbl->m_frames[m_4c];
                 return m_30 != 0;
             }
         }
@@ -97,10 +97,10 @@ i32 CSBI_ImageSetAni::Init(
 RVA(0x000e7b00, 0xe1)
 i32 CSBI_ImageSetAni::Tick() {
     if (m_28 > 0) {
-        CSbiConfigRecord* tbl = (CSbiConfigRecord*)m_34;
+        CImageSet* tbl = m_34;
         CImage* cel;
-        if (m_38 >= tbl->m_64 && m_38 <= tbl->m_68) {
-            cel = (CImage*)tbl->m_14[m_38];
+        if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
+            cel = tbl->m_frames[m_38];
         } else {
             cel = 0;
         }
@@ -160,12 +160,12 @@ void CSBI_ImageSetAni::SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i
     if (start != -1) {
         m_4c = start;
     } else {
-        m_4c = (step >= 0) ? ((CSbiConfigRecord*)m_34)->m_64 : ((CSbiConfigRecord*)m_34)->m_68;
+        m_4c = (step >= 0) ? m_34->m_minIndex : m_34->m_maxIndex;
     }
     if (end != -1) {
         m_50 = end;
     } else {
-        m_50 = (step >= 0) ? ((CSbiConfigRecord*)m_34)->m_68 : ((CSbiConfigRecord*)m_34)->m_64;
+        m_50 = (step >= 0) ? m_34->m_maxIndex : m_34->m_minIndex;
     }
     if (interval != -1) {
         m_3c = interval;

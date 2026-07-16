@@ -20,8 +20,7 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr - the real config-host class
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CImageRegistry (host->m_10) + its m_10map
-
-struct CSbiConfigRecord; // the value the lookup yields (defined below)
+#include <Image/ImageSet.h>           // CImageSet - the real class the lookup yields
 
 // The registry object held at config-host+0x10: its name->record map is embedded at
 // ITS +0x10. Accessing `host->m_10->m_10map` yields the `[host+0x10]+0x10` map `this`
@@ -46,19 +45,11 @@ struct CSbiConfigRecord; // the value the lookup yields (defined below)
 // name map is the SAME m_10map at the SAME +0x10. The former CSbiConfigHost /
 // CSbiConfigReg shells are gone; consumers include GameRegistry.h + ResMgr.h.
 
-// The keyed config record: m_14 = frame/value table (i32*, indexed by frame),
-// [m_64, m_68] = the valid-frame range (m_64 doubles as the default frame).
-// (Layout-identical to <Image/ImageSet.h> CImageSet - m_frames @+0x14,
-// m_minIndex/m_maxIndex @+0x64/+0x68 - the looked-up record IS a sprite set;
-// fold candidate for the imageset owner lane.)
-SIZE_UNKNOWN(CSbiConfigRecord);
-struct CSbiConfigRecord {
-    char m_pad0[0x14];
-    i32* m_14; // +0x14  frame/value table (== CImageSet::m_frames)
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  range lo / default frame (== CImageSet::m_minIndex)
-    i32 m_68; // +0x68  range hi               (== CImageSet::m_maxIndex)
-};
+// The keyed config record the lookup yields IS the real <Image/ImageSet.h>
+// CImageSet (folded 2026-07-16): its frame table m_frames (CImage**) @+0x14, its
+// valid-frame range m_minIndex/m_maxIndex @+0x64/+0x68 (m_minIndex doubles as the
+// default frame), and its inline name buffer m_name @+0x24 are exactly the fields
+// every consumer reached through the ex CSbiConfigRecord shell (m_14/m_64/m_68).
 
 // The draw-surface pool (CGooGameMgr::m_1c owner): RemoveItemA (0x142160,
 // __thiscall) frees one held surface. Reloc-masked (no body).

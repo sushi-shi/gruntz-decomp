@@ -303,31 +303,31 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_40 = p11;
     m_54 = onLeft;
     if (onLeft == 0) {
-        CSbiConfigRecord* n = 0;
+        CImageSet* n = 0;
         g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
             (CObject*&)n
         );
         CImage* v;
-        if (n == 0 || n->m_64 > 1 || n->m_68 < 1) {
+        if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
         } else {
-            v = (CImage*)n->m_14[1];
+            v = n->m_frames[1];
         }
         m_topFrame = v;
         m_50 = -1;
         m_48 = (p7 - p5) / 2 + parent->m_18;
     } else {
-        CSbiConfigRecord* n = 0;
+        CImageSet* n = 0;
         g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
             (CObject*&)n
         );
         CImage* v;
-        if (n == 0 || n->m_64 > 1 || n->m_68 < 1) {
+        if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
         } else {
-            v = (CImage*)n->m_14[1];
+            v = n->m_frames[1];
         }
         m_topFrame = v;
         m_50 = 1;

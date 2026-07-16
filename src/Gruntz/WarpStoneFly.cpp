@@ -38,14 +38,14 @@ i32 CWarpStoneFly::Tick(i32 dt) {
     if (static_cast<i32>(m_currentX) == m_targetX && static_cast<i32>(m_currentY) == m_targetY) {
         CWsfTabArray* arr = (CWsfTabArray*)((char*)g_gameReg->m_cmdGrid + 0x260);
         ((CByteArray*)arr)->SetAtGrow(arr->m_index, (BYTE)m_arrivalMode);
-        m_owner->m_busy = 0;
-        if (m_owner->m_mode != 2 && m_owner->m_activeTabId == 5) {
-            ((CStatusBarMgr*)m_owner)->ResetWidgets(0);
-            ((CStatusBarMgr*)m_owner)->TryActivate();
+        m_owner->m_hlBusy = 0;
+        if (m_owner->m_position != 2 && m_owner->m_activeTab == 5) {
+            m_owner->ResetWidgets(0);
+            m_owner->TryActivate();
         }
-        if (m_owner->m_warpStoneFly != 0) {
-            RezFree(m_owner->m_warpStoneFly);
-            m_owner->m_warpStoneFly = 0;
+        if (m_owner->m_retabNotify != 0) {
+            RezFree(m_owner->m_retabNotify);
+            m_owner->m_retabNotify = 0;
         }
         return 1;
     }

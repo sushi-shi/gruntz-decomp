@@ -160,10 +160,11 @@ public:
 
     // ----- own fields (after CSBI_Image @0x34) -----
     i32 m_34; // +0x34  menu state tag
-    // +0x38 is a PROVEN-heterogeneous slot: ResolveFrame stores a CSbiConfigRecord*,
-    // Serialize (case 7) stores the CSprite the image registry yields. Same physical
-    // shape, distinct modeled classes reached on different code paths -> kept void*.
-    void* m_38; // +0x38  resolved cue/config record (config-record | sprite)
+    // +0x38 is a PROVEN-heterogeneous slot: ResolveFrame stores the real CImageSet
+    // the image registry yields, Serialize (case 7) stores the CSprite view of that
+    // same record. Same physical shape, distinct modeled classes reached on
+    // different code paths -> kept void*.
+    void* m_38; // +0x38  resolved cue/config record (CImageSet | CSprite)
 };
 SIZE_UNKNOWN(CSBI_MenuItem);
 VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)

@@ -77,19 +77,19 @@ i32 CSBI_ImageSet::SetupImage(
     if (key == 0) {
         return 0;
     }
-    CSbiConfigRecord* rec = 0;
+    CImageSet* rec = 0;
     ((CMapStringToPtr*)&host->m_imageRegistry->m_10map)->Lookup(key, (void*&)rec);
-    m_34 = (CSprite*)rec;
+    m_34 = rec;
     if (rec == 0) {
         return 0;
     }
     i32 f = frame;
     if (f == -1) {
-        f = rec->m_64;
+        f = rec->m_minIndex;
     }
     m_38 = f;
-    if (f >= rec->m_64 && f <= rec->m_68) {
-        m_30 = rec->m_14[f];
+    if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
+        m_30 = (i32)rec->m_frames[f];
     } else {
         m_30 = 0;
     }
@@ -119,10 +119,10 @@ RVA(0x000e7440, 0x5e)
 i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
     if (m_28 > 0) {
         m_28--;
-        CSbiConfigRecord* tbl = (CSbiConfigRecord*)m_34;
+        CImageSet* tbl = m_34;
         CImage* cel;
-        if (m_38 >= tbl->m_64 && m_38 <= tbl->m_68) {
-            cel = (CImage*)tbl->m_14[m_38];
+        if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
+            cel = tbl->m_frames[m_38];
         } else {
             cel = 0;
         }
@@ -167,7 +167,7 @@ i32 CSBI_ImageSet::Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
             g_serialCounter++;
             s->Read(buf, 0x80);
             if (strlen(buf)) {
-                CSprite* out;
+                CImageSet* out;
                 reg->m_imageRegistry->m_10map.Lookup(buf, (CObject*&)out);
                 m_34 = out;
             } else {

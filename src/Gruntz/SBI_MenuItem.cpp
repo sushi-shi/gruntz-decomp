@@ -134,19 +134,19 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CObject* rec_v = 0;
     CDDrawSurfaceMgr* host = (CDDrawSurfaceMgr*)m_24;
     host->m_imageRegistry->m_10map.Lookup((const char*)key, rec_v);
-    CSbiConfigRecord* rec = (CSbiConfigRecord*)rec_v;
+    CImageSet* rec = (CImageSet*)rec_v;
     m_38 = rec;
     if (rec == 0) {
         return (i32)rec;
     }
-    CSbiConfigRecord* r = rec;
+    CImageSet* r = rec;
     if (a == -1) {
-        i32 lo = r->m_64;
-        m_30 = r->m_14[lo];
+        i32 lo = r->m_minIndex;
+        m_30 = (i32)r->m_frames[lo];
         return m_30 != 0;
     }
-    if (a >= r->m_64 && a <= r->m_68) {
-        i32 v = r->m_14[a];
+    if (a >= r->m_minIndex && a <= r->m_maxIndex) {
+        i32 v = (i32)r->m_frames[a];
         m_30 = v;
         return v != 0;
     }
@@ -229,10 +229,10 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
             }
         }
     }
-    CSbiConfigRecord* r = (CSbiConfigRecord*)m_38;
+    CImageSet* r = (CImageSet*)m_38;
     i32 frame;
-    if (state >= r->m_64 && state <= r->m_68) {
-        frame = r->m_14[state];
+    if (state >= r->m_minIndex && state <= r->m_maxIndex) {
+        frame = (i32)r->m_frames[state];
     } else {
         frame = 0;
     }

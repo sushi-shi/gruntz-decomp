@@ -16,7 +16,7 @@
 #include <rva.h>
 
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton
-#include <Gruntz/SbiConfig.h>    // CDDrawSurfaceMgr / CSbiConfigRecord (the record views)
+#include <Gruntz/SbiConfig.h>    // CDDrawSurfaceMgr / CImageSet (the resolved record)
 
 // The g_gameReg singleton (*0x24556c); DATA-pinned elsewhere (canonical extern).
 
@@ -91,10 +91,10 @@ i32 CAniPlayer::TickToggle_0e5b90(i32 param) {
 // ===========================================================================
 RVA(0x000e5c10, 0x54)
 i32 CAniPlayer::RenderCel_0e5c10() {
-    CSbiConfigRecord* tbl = (CSbiConfigRecord*)m_34;
+    CImageSet* tbl = m_34;
     CImage* cel;
-    if (m_38 >= tbl->m_64 && m_38 <= tbl->m_68) {
-        cel = (CImage*)tbl->m_14[m_38];
+    if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
+        cel = tbl->m_frames[m_38];
     } else {
         cel = 0;
     }

@@ -1640,7 +1640,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 // Typed against the canonical <Gruntz/WarpStoneFly.h> layout.
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
-    m_owner = (CWsfOwner*)owner;
+    m_owner = (CStatusBarMgr*)owner;
 
     void* spr_ob = 0;
     i32 n = phase + 1;
@@ -1674,10 +1674,10 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
             break;
     }
 
-    CWsfOwner* base = m_owner;
-    i32 tx = base->m_tabBaseX + cx;
+    CStatusBarMgr* base = m_owner;
+    i32 tx = base->m_10 + cx;
     m_targetX = tx;
-    i32 ty = base->m_tabBaseY + dy;
+    i32 ty = base->m_rect14.m_0 + dy;
     m_targetY = ty;
 
     i32 dxv = tx - srcX;

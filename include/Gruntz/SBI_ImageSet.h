@@ -21,7 +21,7 @@
 #include <rva.h>
 #include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image base (real RTTI base)
 
-struct CSprite; // full def in <Gruntz/Sprite.h>; only a CSprite* member is needed here
+class CImageSet; // full def in <Image/ImageSet.h>; only a CImageSet* member is needed here
 
 // (The ex `CImageSetStream` 13-slot view of the Serialize arg is DISSOLVED: it
 // IS the one engine stream, CSerialArchive == CFileMemBase - Read @slot 11
@@ -68,7 +68,7 @@ public:
     // frame from the record table. Ex CAniPlayer view (dossier #16).
     i32 TickRenderFrame_0e7440(); // 0xe7440
 
-    CSprite* m_34; // +0x34  resolved config record (the image registry's CSprite)
+    CImageSet* m_34; // +0x34  resolved config record (the real image-registry CImageSet)
     i32 m_38;      // +0x38  serialized config id (4 bytes)
 };
 SIZE(CSBI_ImageSet, 0x3c);

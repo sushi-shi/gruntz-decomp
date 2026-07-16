@@ -78,13 +78,13 @@ i32 CSBI_Image::SetupImage(
         m_30 = 0;
         return 0 != 0;
     }
-    CSbiConfigRecord* rec = 0;
+    CImageSet* rec = 0;
     ((CMapStringToPtr*)&host->m_imageRegistry->m_10map)->Lookup(key, (void*&)rec);
-    if (rec == 0 || rec->m_64 > 1 || rec->m_68 < 1) {
+    if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         m_30 = 0;
         return 0 != 0;
     }
-    i32 val = rec->m_14[1];
+    i32 val = (i32)rec->m_frames[1];
     m_30 = val;
     return val != 0;
 }
