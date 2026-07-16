@@ -184,42 +184,20 @@ int HeapStats() {
 // ---------------------------------------------------------------------------
 // Toolhelp32 process-scan support (tail of this TU in retail-RVA order, 0x118ce0).
 // The Toolhelp APIs are resolved at run time via GetProcAddress (they are Win9x/NT
-// version dependent, so never linked directly); the fixed-layout snapshot records
-// are declared here (PROCESSENTRY32 / MODULEENTRY32 - same layout as <tlhelp32.h>).
+// version dependent, so never linked directly); the snapshot records are the REAL
+// SDK <tlhelp32.h> PROCESSENTRY32 / MODULEENTRY32 (layout-identical to the former
+// hand-rolled ProcEntry32/ModEntry32 views - 0x128/0x224 B, asserted below).
 // Re-homed from the deleted fake grab-bag src/Utils/WinAPI.cpp.
 // ---------------------------------------------------------------------------
-struct ProcEntry32 {         // PROCESSENTRY32 (0x128 bytes)
-    u32 dwSize;              // +0x00
-    u32 cntUsage;            // +0x04
-    u32 th32ProcessID;       // +0x08
-    u32 th32DefaultHeapID;   // +0x0c
-    u32 th32ModuleID;        // +0x10
-    u32 cntThreads;          // +0x14
-    u32 th32ParentProcessID; // +0x18
-    i32 pcPriClassBase;      // +0x1c
-    u32 dwFlags;             // +0x20
-    char szExeFile[260];     // +0x24
-};
-struct ModEntry32 {      // MODULEENTRY32 (0x224 bytes)
-    u32 dwSize;          // +0x00
-    u32 th32ModuleID;    // +0x04
-    u32 th32ProcessID;   // +0x08
-    u32 GlblcntUsage;    // +0x0c
-    u32 ProccntUsage;    // +0x10
-    u8* modBaseAddr;     // +0x14
-    u32 modBaseSize;     // +0x18
-    void* hModule;       // +0x1c
-    char szModule[256];  // +0x20
-    char szExePath[260]; // +0x120
-};
-SIZE(ProcEntry32, 0x128);
-SIZE(ModEntry32, 0x224);
+#include <tlhelp32.h>
+SIZE(PROCESSENTRY32, 0x128);
+SIZE(MODULEENTRY32, 0x224);
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
-typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, ProcEntry32* pe);
+typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 
 // Fills a MODULEENTRY32 for the main module of the given process (engine helper at
 // 0x118f60; Module32First/Next based). Reloc-masked direct call.
-extern "C" i32 LegacyFindModule(u32 pid, u32 moduleId, ModEntry32* out, u32 size);
+extern "C" i32 LegacyFindModule(u32 pid, u32 moduleId, MODULEENTRY32* out, u32 size);
 
 // -------------------------------------------------------------------------
 // FindProcessByName
@@ -269,12 +247,12 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
         return 0;
     }
 
-    HANDLE hSnap = pCreate(2 /*TH32CS_SNAPPROCESS*/, 0);
+    HANDLE hSnap = pCreate(TH32CS_SNAPPROCESS, 0);
     if (hSnap == (HANDLE)-1) {
         return 0;
     }
 
-    ProcEntry32 pe;
+    PROCESSENTRY32 pe;
     memset(&pe, 0, sizeof(pe));
     pe.dwSize = sizeof(pe);
     i32 matchCount = 0;
@@ -284,14 +262,14 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     }
 
     do {
-        ModEntry32 me;
+        MODULEENTRY32 me;
         memset(&me, 0, sizeof(me));
         if (LegacyFindModule(pe.th32ProcessID, pe.th32ModuleID, &me, sizeof(me))) {
             if (isFullPath) {
                 if (_stricmp(name, me.szExePath) == 0) {
                     matchCount++;
                     if (matchCount == 1 && pHandleOut != 0) {
-                        *pHandleOut = OpenProcess(0x400, 0, me.th32ProcessID);
+                        *pHandleOut = OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
                     }
                     if (matchCount >= wantCount) {
                         return 1;
@@ -301,7 +279,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                 if (_stricmp(name, me.szModule) == 0) {
                     matchCount++;
                     if (matchCount == 1 && pHandleOut != 0) {
-                        *pHandleOut = OpenProcess(0x400, 0, me.th32ProcessID);
+                        *pHandleOut = OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
                     }
                     if (matchCount >= wantCount) {
                         return 1;
