@@ -22,6 +22,7 @@
 #include <Gruntz/SoundCue.h>              // the ONE +0x28 cue holder (CSndHost / LeafCue)
 #include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (the typed CState::m_c holder)
 #include <Dsndmgr/DirectSoundMgr.h>       // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
+#include <Dsndmgr/SoundStream.h>          // SoundStream::Stop (ResetPreview's owned stream)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Globals.h>
 
@@ -61,10 +62,6 @@ SIZE_UNKNOWN(CPreviewState);
 class CPreviewState : public CState {
 public:
     i32 Enter(void* mgr, i32 a1, i32 a2); // 0x0de030
-    // The state-entry asset loader run on `this` (0x43a9 -> CAssetLoader::
-    // LoadGameAssetNamespaces @0xf9ea0; the CState/CGameModeBase family share the base
-    // state layout - the codegen-neutral cross-view State.h already uses). Declared-
-    // only so the __thiscall call reloc-masks.
     // LoadGameAssetNamespaces (0x0f9ea0) inherited from CState (called cast-free).
     i32 Tick(); // 0x0de200
     // RetireScene (0x0fa8f0) is a CState base method (inherited from <Gruntz/State.h>);
@@ -72,6 +69,7 @@ public:
     void Cancel();                                          // 0x0de590
     void LoadLevelPreviewScreen();                          // 0x0de420
     i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3); // 0x0fab90
+    void ResetPreview();                                    // 0x0de140 (retail dead code)
     i32 NextScreenCmd_0de190(i32 param);                    // 0x0de190
     i32 Refade_0de2c0();                                    // 0x0de2c0
     i32 RefadeVirtual_0de340();                             // 0x0de340
@@ -117,6 +115,29 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     m_1c0 = 0;
     m_4->m_gameWnd->PumpMessages(0x100, 0x40);
     return 1;
+}
+
+// CPreviewState::ResetPreview (0x0de140) - the preview teardown: stop the owned sound
+// stream, prune the PREVIEW-prefixed sound-registry keys, then chain the CState base
+// teardown (qualified -> direct call to CState::ReleaseResources @0xfa150).
+// ATTRIBUTION (ex "CGameModeBase::ResetPreview"; homed here from GameMode.cpp): the
+// body sits INSIDE this TU's retail obj block (between Enter @0xde030 and
+// NextScreenCmd @0xde190) and reads only CState-level fields - but retail has ZERO
+// references to it (no vtable slot, no call, no thunk ref; whole-image scan
+// 2026-07-16), i.e. it is linked-in dead code, so it is a plain non-virtual here -
+// NOT asserted as this class's slot-2 override (CPreviewState's vtable is unlocated).
+// m_c->m_soundRegistry is re-read each statement (retail does not cache it).
+extern char s_PREVIEW_6135e8[]; // "PREVIEW" (bound in Globals.cpp; reloc-masked)
+// @early-stop
+// ~98.8% - m_28-intermediate regalloc wall (retail reuses eax->eax->ecx; cl picks
+// fresh ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.
+RVA(0x000de140, 0x33)
+void CPreviewState::ResetPreview() {
+    if (m_c->m_soundRegistry->m_2c != 0) {
+        m_c->m_soundRegistry->m_2c->Stop();
+    }
+    m_c->m_soundRegistry->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
+    CState::ReleaseResources();
 }
 
 // CPreviewState::NextScreenCmd (0x0de190) - the command-router "advance" entry: hide

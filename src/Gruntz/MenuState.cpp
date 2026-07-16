@@ -1,6 +1,6 @@
 // MenuState.cpp - CMenuState, the front-end menu game-state (C:\Proj\Gruntz).
 // Split out of the former GameMode.cpp god-TU (per-class TU cut): CMenuState now owns
-// its full method set here; the CState base + the CGameModeBase cleanup pair stay in
+// its full method set here; the CState base implementation stays in
 // GameMode.cpp, the sibling states (CCreditsState/CBootyState/CMultiBootyState) in
 // their own TUs. The ~CMenuState `??1` (with the CState ctor) is the class's vtable +
 // inline-virtual (Update) emission anchor - it stays in this TU with the rest of
@@ -222,7 +222,7 @@ CMenuState::~CMenuState() {
 
 // CMenuState::ReleaseResources() (slot 2 / +0x8): release the MENU resource set
 // (name registry + leaf registry), dispose the worker list, free the menu UI
-// object, then chain BaseCleanup. Also reached directly from ~CMenuState.
+// object, then chain CState::ReleaseResources. Also reached directly from ~CMenuState.
 RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
@@ -245,7 +245,7 @@ void CMenuState::ReleaseResources() {
         operator delete(ui);
         m_1b4 = 0;
     }
-    ((CGameModeBase*)this)->BaseCleanup();
+    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
 // CMenuState::StartMusic() (0xa05a0): if the menu music + the registry gate are

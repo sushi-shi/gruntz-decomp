@@ -23,7 +23,6 @@
 
 #include <Ints.h>
 #include <rva.h> // SIZE/VTBL vtable-catalog annotations
-#include <Gruntz/GameModeBase.h>
 #include <Gruntz/GameStateId.h> // Update()'s per-state id return type
 
 class CDDrawSurfaceMgr; // +0x0c render/resource holder == CGameRegistry::m_world;
@@ -57,11 +56,20 @@ public:
     CState();
     // dtor body INLINE so MSVC folds the vtable-restore + base cleanup into the
     // synthesized scalar-deleting dtor ??_G (matched) rather than emitting a ??1.
+    // The qualified call is the guaranteed-direct spelling of the in-dtor
+    // statically-bound teardown (retail: every leaf dtor's trailing rel32 to
+    // ILT 0x3f53 -> 0xfa150).
     virtual ~CState() {
-        ((CGameModeBase*)this)->BaseCleanup();
+        CState::ReleaseResources();
     } // slot 0
     virtual i32 Vfunc1(i32, i32, i32); // slot 1 (asset/state load; leaf-overridden)
-    virtual void ReleaseResources();   // slot 2  (+0x8)  resource teardown (leaf override)
+    // slot 2 (+0x8) - the resource teardown. Default body @0xfa150
+    // (StateReleaseResources.cpp; retail ??_7CState slot 2 = ILT 0x3f53 -> 0xfa150):
+    // release the four owned blit surfaces, clear m_ready. Leaf states override it
+    // and chain back via the qualified CState::ReleaseResources() base call.
+    // (Ex "CGameModeBase::BaseCleanup" - that class was a this-view of CState;
+    // RTTI proves CState is a root, so no such base ever existed.)
+    virtual void ReleaseResources();
     RVA(0x0008c490, 0x4)
     virtual i32 Vfunc3() {
         return m_ready;
@@ -226,8 +234,9 @@ public:
     CFaderMgr* m_faderMgr; // +0x10  fader mgr (RetireScene's Add/Remove target; the
                            //         loader caches mgr->m_40 here - the +0x40 slot's
                            //         CFaderMgr-vs-CTriggerMgr identity conflict is open)
-    i32 m_14;              // +0x14
-    i32 m_18;              // +0x18
+    CDDSurface* m_14;      // +0x14  owned blit surface (ReleaseResources returns it
+                           //         to the m_c->m_ptrColl pool; ex-CGameModeBase typing)
+    CDDSurface* m_18;      // +0x18  owned blit surface (same pool)
     i32 m_levelIndex;      // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
     i32 m_levelType;       // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
                            //         switches on it (4/5/8 land-death, 6 no-death) to pick the
@@ -265,7 +274,7 @@ public:
     i32 m_snapOriginX; // +0x158 drag/select snap origin X
     i32 m_snapOriginY; // +0x15c drag/select snap origin Y
     // +0x160/+0x164: the two 64x64 scratch blit surfaces (LoadGameAssetNamespaces
-    // creates them via m_c->m_ptrColl->MakeAndAddB(0x40,0x40,...); BaseCleanup
+    // creates them via m_c->m_ptrColl->MakeAndAddB(0x40,0x40,...); ReleaseResources
     // RemoveItemA's them back to the pool; StepInputA BltFast's the selected half).
     // The old "axis value" reading was wrong. +0x168..+0x1a4 is the per-half
     // src-RECT/edge block StepInputA feeds (four extents seeded 0x40 by the ctor

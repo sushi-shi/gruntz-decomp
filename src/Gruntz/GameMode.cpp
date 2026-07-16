@@ -1,5 +1,5 @@
-// GameMode.cpp - the free menu/HUD helpers the CState base drives + the CGameModeBase
-// cleanup pair (out-of-line COMDATs). The concrete leaf states were split into per-class
+// GameMode.cpp - the free menu/HUD helpers the CState base drives. The concrete leaf
+// states were split into per-class
 // TUs (per-class TU cut of the former god-TU):
 //   CMenuState     -> src/Gruntz/MenuState.cpp
 //   CCreditsState  -> src/Gruntz/CreditsState.cpp  (+ CCreditzOwner)
@@ -14,15 +14,15 @@
 //   CBootyState::GenMenuRandPos @0x019cd0 - the per-selector edge-spawn RNG helper.
 //   CState::LoadGruntEffectSprites @0x01a040 - preload the in-game effect sprite set.
 //   CState::LevelMsgHudDriver @0x01a700 - the per-frame level-message HUD + explosion driver.
-//   CGameModeBase::ResetPreview @0x0de140 (@interleaver -> levelpreview) / ::Reset
-//     @0x0f9840 (@interleaver -> scattered COMDAT) - the base cleanup pair, out-of-line.
+//   (the ex-"CGameModeBase" cleanup pair 0x0de140/0x0f9840 is homed to
+//    LevelPreview.cpp / SplashState.cpp - see the fold note at EOF.)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
 #include <Gruntz/SoundState.h>            // g_sndEnabled/g_sndCueTag
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (CGameModeBase::ResetPreview)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // the m_c->m_soundRegistry leaf-scan facet
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
-#include <Gruntz/GameMode.h>              // CState / CGameModeBase / CDDrawSurfaceMgr
+#include <Gruntz/GameMode.h>              // CState / CDDrawSurfaceMgr
 #include <Bute/ButeMgr.h>                 // CButeMgr g_buteMgr (SecretColor wormhole tint)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (m_world->m_childGroup CreateSprite)
 #include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
@@ -537,44 +537,10 @@ i32 CBootyState::LevelMsgHudDriver() {
 // out-of-line members, so this TU no longer emits the CState vtable.
 // ===========================================================================
 
-// ===========================================================================
-// CGameModeBase cleanup pair (the base the game-state classes chain their teardown to).
-// Stop the owned sound (SoundStream::Stop), clear/prune the sub-manager map, then
-// BaseCleanup. m_c->m_soundRegistry is re-read each statement (retail does not cache it).
-// ===========================================================================
-
-// 0x0de140 - ResetPreview: prune the PREVIEW-prefixed keys instead of clearing.
-// @interleaver CGameModeBase::ResetPreview emitted-in levelpreview
-// Lone CGameModeBase method inside the levelpreview .text obj block (CPreviewState::Enter
-// @0x0de030 precedes it, CPreviewState::NextScreenCmd_0de190 follows it - both levelpreview).
-// Homing into LevelPreview.cpp is deferred (CGameModeBase not modeled there); flagged
-// in-host per REHOME rule (c). REHOME package D7.
-// @early-stop
-// ~98.8% - m_28-intermediate regalloc wall (retail reuses eax->eax->ecx; cl picks fresh
-// ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.
-extern char s_PREVIEW_6135e8[]; // "PREVIEW" (bound in Globals.cpp; reloc-masked)
-RVA(0x000de140, 0x33)
-void CGameModeBase::ResetPreview() {
-    if (m_c->m_soundRegistry->m_2c != 0) {
-        ((SoundStream*)m_c->m_soundRegistry->m_2c)->Stop();
-    }
-    m_c->m_soundRegistry->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
-    BaseCleanup();
-}
-
-// 0x0f9840 - Reset: ClearMap the whole sub-manager map.
-// @interleaver CGameModeBase::Reset emitted-in <scattered COMDAT; home ambiguous>
-// Lone CGameModeBase method at a unit BOUNDARY (CSplashState::LoadSounds @0x0f9780 before,
-// CTitleApp::OnStart @0x0f9880 after) - a separate 1-fn obj whose owning TU the xref does
-// not crack (its two siblings BaseCleanup @0xfa150 and ResetPreview @0xde140 are each in
-// yet-other objs). Kept in-host with its RVA name; owner-recovery deferred. REHOME D7.
-// @early-stop
-// ~98.7% - same m_28-intermediate regalloc wall as ResetPreview.
-RVA(0x000f9840, 0x29)
-void CGameModeBase::Reset() {
-    if (m_c->m_soundRegistry->m_2c != 0) {
-        ((SoundStream*)m_c->m_soundRegistry->m_2c)->Stop();
-    }
-    m_c->m_soundRegistry->ClearMap();
-    BaseCleanup();
-}
+// (The ex-"CGameModeBase cleanup pair" is HOMED 2026-07-16: CGameModeBase was a
+// this-view of CState - RTTI proves CState is a root - so 0x0de140 is
+// CPreviewState::ResetPreview (LevelPreview.cpp, its retail obj block) and
+// 0x0f9840 is CSplashState::ReleaseResources (SplashState.cpp; retail
+// ??_7CSplashState @0x1e9d74 slot 2 = ILT 0x2919 -> 0xf9840). Their shared tail
+// "BaseCleanup" @0xfa150 IS CState::ReleaseResources - the CState vtable's own
+// slot 2 (StateReleaseResources.cpp).)

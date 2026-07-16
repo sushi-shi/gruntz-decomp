@@ -934,10 +934,11 @@ source = "src/Gruntz/CreditsState.cpp"
 flags = "eh"
 
 [[unit]]
-# CGameModeBase::BaseCleanup (0x0fa150), the base cleanup all game-state
-# ReleaseResources chain to. Its own retail .obj (re-homed from Stub).
-unit = "gamemodebase"
-source = "src/Gruntz/GameModeBase.cpp"
+# CState::ReleaseResources (0x0fa150), the base game-state teardown (CState vtable
+# slot 2's default body; ex "CGameModeBase::BaseCleanup" - that class was a this-view
+# of CState, folded). Its own retail .obj (re-homed from Stub).
+unit = "statereleaseresources"
+source = "src/Gruntz/StateReleaseResources.cpp"
 flags = "base"
 
 [[unit]]

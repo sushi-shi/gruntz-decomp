@@ -9,7 +9,6 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Enums.h>
-#include <Gruntz/GameModeBase.h>
 #include <Gruntz/GruntIndicatorSprite.h>
 #include <Gruntz/LogicTypeTableInline.h>
 
@@ -25,8 +24,6 @@ SIZE_UNKNOWN(CTileGrid);
 SIZE_UNKNOWN(CState);
 // Enums.h
 SIZE_UNKNOWN(GruntzVolumeAttenuation);
-// GameModeBase.h
-SIZE_UNKNOWN(CGameModeBase);
 // GruntIndicatorSprite.h
 SIZE_UNKNOWN(CGruntEntry);
 SIZE_UNKNOWN(CGruntLayerHolder);

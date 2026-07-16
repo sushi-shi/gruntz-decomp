@@ -21,7 +21,6 @@
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup (inherited m_8) -> CResSource
 #include <Gruntz/GruntzMgr.h>    // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
-#include <Gruntz/GameModeBase.h> // CGameModeBase::Reset (the 0x8d000 dtor teardown body)
 #include <Gruntz/HelpState.h>    // canonical CHelpState (was defined locally here)
 #include <Gruntz/SplashState.h>  // CSplashState (the 0x8d000 /GX out-of-line dtor)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the typed CState::m_c holder)
@@ -40,7 +39,7 @@
 
 RVA(0x0008cf30, 0x55)
 CHelpState::~CHelpState() {
-    ((CGameModeBase*)this)->BaseCleanup(); // 0xfa150 (the shared base cleanup)
+    CState::ReleaseResources(); // 0xfa150 (the base slot-2 teardown; qualified -> direct)
 }
 
 // ---------------------------------------------------------------------------
@@ -48,12 +47,13 @@ CHelpState::~CHelpState() {
 // homed in this RVA band (0x08dxxx, RVA-contiguous with ~CHelpState @0x8cf30). It
 // stamps the derived ??_7CSplashState (0x1e9d74, disasm-proven the real CSplashState
 // vtable - the identity the CMenuState8d000 placeholder concealed), runs the teardown
-// (0x2919 == CGameModeBase::Reset), then folds the CState base (restamp ??_7CState
+// (0x2919 == CSplashState::ReleaseResources, its own slot-2 override @0xf9840 -
+// the in-dtor statically-bound call), then folds the CState base (restamp ??_7CState
 // @0x5ea21c + base dtor). The class def is shared via <Gruntz/SplashState.h>; defining
 // slot-0 here is what emits ??_7CSplashState (the loader TU never does).
 RVA(0x0008d000, 0x55)
 CSplashState::~CSplashState() {
-    ((CGameModeBase*)this)->Reset();
+    CSplashState::ReleaseResources(); // 0xf9840 (own slot-2 override; in-dtor static bind)
 }
 
 RVA(0x00095090, 0x6e)

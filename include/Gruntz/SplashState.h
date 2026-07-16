@@ -6,7 +6,7 @@
 #ifndef GRUNTZ_SPLASHSTATE_H
 #define GRUNTZ_SPLASHSTATE_H
 
-#include <Gruntz/State.h> // CState base (m_4/m_8/m_c/m_2c facets) + CGameModeBase + GameStateId
+#include <Gruntz/State.h> // CState base (m_4/m_8/m_c/m_2c facets) + GameStateId
 
 class CSplashState : public CState {
 public:
@@ -21,7 +21,8 @@ public:
     // ??_7CSplashState there (leaving its member-offset codegen unchanged).
     virtual ~CSplashState() OVERRIDE;            // slot 0  (0x08d000)
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual void ReleaseResources() OVERRIDE;    // slot 2  0x0f9840 (SplashState.cpp; retail
+                                                 //   slot 2 = ILT 0x2919; ex "CGameModeBase::Reset")
     virtual GameStateId Update() OVERRIDE;       // slot 4
     virtual i32 Render() OVERRIDE;               // slot 5
     virtual i32 Vslot06() OVERRIDE;              // slot 6

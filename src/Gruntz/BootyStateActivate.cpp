@@ -141,7 +141,7 @@ static const double kGlitterStartRadius = 350.0; // was g_5e93c8
 
 // ---------------------------------------------------------------------------
 // CBootyState::ReleaseResources() (slot 2 / +0x8, 0x18c90): release the BOOTY resource
-// set, then chain BaseCleanup. The `m_c` view's leaf registry (m_28) holds a pooled
+// set, then chain CState::ReleaseResources. The `m_c` view's leaf registry (m_28) holds a pooled
 // resource (Free/Stop if set) and releases two named sound sets; the name registry
 // (m_10) releases two named sprite sets. Also reached directly from ~CBootyState.
 RVA(0x00018c90, 0x72)
@@ -154,7 +154,7 @@ void CBootyState::ReleaseResources() {
     m_c->m_soundRegistry->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
     m_c->m_imageRegistry->RemoveKeysEqual_155360("BOOTY", "_");
     m_c->m_imageRegistry->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
-    ((CGameModeBase*)this)->BaseCleanup();
+    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
 // ---------------------------------------------------------------------------
@@ -514,7 +514,7 @@ void CBootyState::StateOnEnter() {}
 
 // CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
 // pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown
-// on the owner's m_4->m_60 sub-object (~CMoviePlayer), then chain BaseCleanup.
+// on the owner's m_4->m_60 sub-object (~CMoviePlayer), then chain CState::ReleaseResources.
 // @early-stop
 // near-exact (~98.5%): structure/offsets/calls all match; the sole non-reloc residual is
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
@@ -530,7 +530,7 @@ void CMultiBootyState::ReleaseResources() {
     // runs ~CMoviePlayer on it - a real substance divergence on ONE field, flagged (the
     // cast marks it) rather than forked into a second per-TU view of the manager.
     ((CMoviePlayer*)m_4->m_timer)->~CMoviePlayer();
-    ((CGameModeBase*)this)->BaseCleanup();
+    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
 // CMultiBootyState::Vslot09() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
@@ -996,7 +996,7 @@ i32 CMultiBootyState::Vslot0c(i32, i32) {
 
 // ---------------------------------------------------------------------------
 // The EH-framed `??1` destructors (slot 0). Each re-stamps its own vtable, runs the
-// slot-2 release (statically bound), re-stamps CState, chains BaseCleanup (compiler-
+// slot-2 release (statically bound), re-stamps CState, chains CState::ReleaseResources (compiler-
 // emitted). With the CState ctor they anchor the CBootyState / CMultiBootyState vtable +
 // inline-virtual (Update) emission in this TU. /GX EH frame.
 // ---------------------------------------------------------------------------

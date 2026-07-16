@@ -1,7 +1,7 @@
 // CreditsState.cpp - CCreditsState, the credits/attract game-state (C:\Proj\Gruntz).
 // Split out of the former GameMode.cpp god-TU (per-class TU cut): CCreditsState owns
 // its full method set here (incl. SetupTitle @0x39a60, formerly hosted on the fake
-// `CCreditzOwner` this-view). The CState base + the CGameModeBase cleanup pair stay in
+// `CCreditzOwner` this-view). The CState base implementation stays in
 // GameMode.cpp; the sibling states live in MenuState.cpp / BootyStateActivate.cpp.
 // The ~CCreditsState `??1` (with the CState ctor) is the class's vtable +
 // inline-virtual (Update) emission anchor - it stays in this TU.
@@ -165,7 +165,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
 // @source: decomp-xref
 // CCreditsState::ReleaseResources() (0x38f00): if (m_c) free the pooled resource then
 // release the three named registries ("CREDITZ"); then tear down + RezFree the video
-// handle (m_videoHandle) and chain BaseCleanup. m_c is re-read for each access.
+// handle (m_videoHandle) and chain CState::ReleaseResources. m_c is re-read for each access.
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_c) {
@@ -187,7 +187,7 @@ void CCreditsState::ReleaseResources() {
         RezFree(vh);
         m_videoHandle = 0;
     }
-    ((CGameModeBase*)this)->BaseCleanup();
+    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
 // CCreditsState::Vslot09 (slot 9 / +0x24, 0x39120): force the OS cursor hidden,

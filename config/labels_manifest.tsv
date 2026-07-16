@@ -116,8 +116,7 @@ gameinfostring	4
 gamekeyhandler	1
 gamelevel	72
 gamelevelmove	12
-gamemode	5
-gamemodebase	1
+gamemode	3
 gameobjectfactory	1
 gamesave	1
 gamestaterecordload	1
@@ -202,7 +201,7 @@ kitchenslime	9
 latencylist	2
 leafcueplay	1
 levelplane	22
-levelpreview	9
+levelpreview	10
 levelrezpath	1
 leveltilevalidation	3
 leveltimedtor	4
@@ -309,7 +308,7 @@ soundbankload	1
 soundfontpath	4
 soundstream	36
 soundvoicelist	5
-splashstate	6
+splashstate	7
 spotlight	1
 spotlightactreg	2
 spotlightctor	6
@@ -321,6 +320,7 @@ state	18
 statedispatch	1
 stateimages	2
 statemgrbz	7
+statereleaseresources	1
 statichazard	9
 statusbargamemenu	1
 statusbaritem	3

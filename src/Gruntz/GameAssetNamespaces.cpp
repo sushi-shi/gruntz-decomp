@@ -12,7 +12,7 @@
 //       m_levelType (the AREA terrain class), m_areaNode@+0x28 == m_levelBank,
 //       m_loaded@+0x3c == m_ready, m_versionString@+0x4c == m_versionString,
 //       m_scratch0/1@+0x160/+0x164 == m_160/m_164 - the same two surfaces
-//       BaseCleanup releases back to the pool. The +0x10..+0x164 scratch fields
+//       CState::ReleaseResources releases back to the pool. The +0x10..+0x164 scratch fields
 //       are CState members now (State.h).
 //   AssetMgr      == the CGruntzMgr singleton (m_workerHolder@+0x30 == m_world,
 //       m_symParser@+0x34 == m_symParser (ex m_recolorSurface), m_40 == m_40,

@@ -23,6 +23,7 @@
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Dsndmgr/SoundStream.h>       // SoundStream::Stop (ReleaseResources' owned stream)
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::Method_158bc0 (m_c->m_04 page gate)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c->m_8 IsLost poll)
 
@@ -82,6 +83,26 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
         m_c->m_soundRegistry->ScanTree_157ee0((CSymTab*)soundz, g_emptyString, "_");
     }
     return 1;
+}
+
+// CSplashState::ReleaseResources (0xf9840, slot 2 override) - stop the owned sound
+// stream, ClearMap the whole sound sub-manager map, then chain the CState base
+// teardown (qualified -> direct call, retail's trailing rel32 to ILT 0x3f53).
+// IDENTITY (ex "CGameModeBase::Reset"): retail ??_7CSplashState @0x1e9d74 slot 2
+// holds ILT 0x2919 -> 0xf9840 (byte-verified), and its only direct caller is
+// ~CSplashState @0x8d02b (the in-dtor statically-bound own-override call). Homed
+// here from GameMode.cpp (this TU owns the 0xf97xx-0xf9bxx CSplashState band).
+// m_c->m_soundRegistry is re-read each statement (retail does not cache it).
+// @early-stop
+// ~98.7% - m_28-intermediate regalloc wall (retail reuses eax->eax->ecx; cl picks
+// fresh ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.
+RVA(0x000f9840, 0x29)
+void CSplashState::ReleaseResources() {
+    if (m_c->m_soundRegistry->m_2c != 0) {
+        m_c->m_soundRegistry->m_2c->Stop();
+    }
+    m_c->m_soundRegistry->ClearMap();
+    CState::ReleaseResources();
 }
 
 // CSplashState::Render (0xf9920, slot 5) - the per-frame splash draw spine (the

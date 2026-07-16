@@ -4,8 +4,8 @@
 // form one retail .obj: a 2-function block that the linker pooled into the CState/CPlay
 // vtable-emission region (bracketed by the per-class leaf slots in menustate/multi/
 // gruntzmgr). Carved out of GameMode.cpp (REHOME package D7) so the CState BASE
-// implementation - the ctor that stamps ??_7CState@@6B@ @0x005ea21c plus the slot-1/2
-// vtable-order anchors - is its own TU, matching <Gruntz/State.h>. GameMode.cpp keeps
+// implementation - the ctor that stamps ??_7CState@@6B@ @0x005ea21c - is its own TU,
+// matching <Gruntz/State.h>. GameMode.cpp keeps
 // only the free menu/HUD helpers + CState's NON-virtual out-of-line effect-loader
 // methods (LoadGruntEffectSprites / LevelMsgHudDriver), which do not emit the vtable.
 #include <Gruntz/State.h>
@@ -61,9 +61,13 @@ CState::CState() {
 
 // CState::Update (0x0008c4b0) / Render (0x0008c4d0) are inline members in the header.
 
-// The intervening vtable slots (1,2) - out-of-line stubs that anchor the vftable order
-// so Update lands at slot 4 (+0x10) and Render at slot 5 (+0x14).
-i32 CState::Vfunc1(i32, i32, i32) {
-    return 0;
-}
-void CState::ReleaseResources() {}
+// Slots 1/2 have REAL retail default bodies elsewhere - the fabricated `return 0` /
+// `{}` anchor stubs that used to sit here are gone (slot order comes from the
+// declaration order in <Gruntz/State.h>, not from bodies; the ctor above emits
+// ??_7CState with extern relocs to them):
+//   slot 1 = ILT 0x43a9 -> 0x0f9ea0, the asset/state loader (the fn our tree defines
+//            as CState::LoadGameAssetNamespaces in GameAssetNamespaces.cpp - the
+//            Vfunc1/LoadGameAssetNamespaces shadowed pair is a flagged follow-up
+//            unification; Vfunc1 stays declared-only meanwhile).
+//   slot 2 = ILT 0x3f53 -> 0x0fa150, CState::ReleaseResources
+//            (StateReleaseResources.cpp; ex "CGameModeBase::BaseCleanup").

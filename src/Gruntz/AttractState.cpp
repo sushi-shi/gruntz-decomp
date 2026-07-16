@@ -139,9 +139,9 @@ void CAttract::ReleaseResources() {
         ((SoundStream*)reg->m_2c)->Stop();
     }
     ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->RemoveKeysEqual_157c70("ATTRACT", "_");
-    // The base teardown is CGameModeBase::BaseCleanup (0xfa150), not a distinct
-    // CState::ReleaseResources body - same (CGameModeBase*)this bridge the CState dtor uses.
-    ((CGameModeBase*)this)->BaseCleanup();
+    // Chain the base slot-2 teardown (0xfa150 IS CState::ReleaseResources - the
+    // CState vtable slot 2 default body; qualified -> direct call).
+    CState::ReleaseResources();
 }
 
 // CAttract::Vslot09(arg) (slot 9 / +0x24, 0x014120): the full attract title-screen

@@ -36,12 +36,11 @@
 #define SRC_GRUNTZ_GAMEMODE_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
-// The WAP32 base cleanup CState's dtor chains to (reached via the
-// incremental-link thunk). It is a __thiscall (this in ecx, callee-
-// cleaned, NO `add esp,4` at the call site), so it is modeled as a method on a
-// tiny helper whose `this` is the CState object - that emits `mov ecx,this; call
-// rel32` (reloc-masked) with no stack cleanup, matching the target.
-#include <Gruntz/GameModeBase.h>
+// The m_c holder's full shape (the leaf states' teardown/render paths walk its
+// sub-managers). (The ex-CGameModeBase this-view of CState that used to live
+// between State.h and this header is folded: its cleanup is
+// CState::ReleaseResources - see <Gruntz/State.h>.)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 // (The scalar-deleting dtor's `operator delete` is reached via MSVC's
 // auto-synthesized `??3@YAXPAX@Z` in the `??_G` thunk - no explicit decl needed.)
 
@@ -608,7 +607,8 @@ public:
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
     // Own vtable slots (RTTI vtbl@0x5e9bdc, 26 slots; slot order anchored by CState).
     // The EH-framed `??1` (slot 0, @0x8d510) re-stamps the CMultiBootyState vtable,
-    // runs the slot-2 release (statically bound), re-stamps CState, chains BaseCleanup.
+    // runs the slot-2 release (statically bound), re-stamps CState, chains
+    // CState::ReleaseResources.
     // Slots whose bodies live in another TU (slot 8 == OnActivate2 in the booty-activate
     // TU; slot 1 == 0x1d440, shared with CBootyState::StateOnEnter) or are deferred are
     // declared-only (the vtable references them reloc-masked; the vtable isn't diffed).
