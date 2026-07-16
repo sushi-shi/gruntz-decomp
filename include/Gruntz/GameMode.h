@@ -382,10 +382,11 @@ public:
     i32 SetupTitle();
     // ShowAttractTitle (0x393b0) is the slot-8 InputVirtual override (declared above).
 
-    // Own attract-title tail helpers reached via ILT thunks (reloc-masked
-    // self-calls; formerly the CAttractSelf `this`-alias view).
-    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1fa1f0
-    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);               // 0x1fa8f0
+    // Own attract-title tail helper reached via ILT thunk (reloc-masked self-call;
+    // formerly the CAttractSelf `this`-alias view). FadeInTitle @0xfa1f0 is the
+    // inherited CState base method (const char*) - no local shadow (a char* shadow
+    // would emit ?FadeInTitle@CCreditsState@@ which does not resolve to 0xfa1f0).
+    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag); // 0x1fa8f0
 };
 VTBL(CCreditsState, 0x001e9c64);
 

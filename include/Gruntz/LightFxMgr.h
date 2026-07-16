@@ -21,7 +21,7 @@
 
 class CShadeTableCache;
 struct CShadeTable;
-class CGameRegistry;
+struct CGameRegistry; // canonical is `struct` (<Gruntz/GameRegistry.h>); keyword must match for Init's PAU mangling
 class CImageSet;
 
 class CLightFxMgr {

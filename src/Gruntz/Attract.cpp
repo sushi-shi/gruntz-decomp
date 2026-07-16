@@ -759,8 +759,10 @@ i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
 // play) calls it __thiscall (mov ecx,edi=this; push ar/mode/a2/a3) as the header
 // serialize/mode pre-step. SYMBOL exports it under the canonical CPlay name so that
 // call binds; the free-fn Validate_fafa0 view is the recovered-symbol placeholder
-// (body-fold onto CPlay deferred - it touches no members here).
-SYMBOL(?HeaderSerialize@CPlay@@QAEHPAUCSerialArchive@@HHH@Z)
+// (body-fold onto CPlay deferred - it touches no members here). The param mangles
+// PAVCFileMemBase (CSerialArchive is a typedef of the class CFileMemBase), matching
+// CPlay::SyncState's emitted HeaderSerialize call - NOT an elaborated struct U.
+SYMBOL(?HeaderSerialize@CPlay@@QAEHPAVCFileMemBase@@HHH@Z)
 RVA(0x000fafa0, 0x3b)
 i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
     if (a0 == 0) {
