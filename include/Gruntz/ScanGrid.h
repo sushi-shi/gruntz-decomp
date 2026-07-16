@@ -78,23 +78,10 @@ struct CScanMgr {
 SIZE_UNKNOWN(CScanGoal);
 SIZE_UNKNOWN(CScanMgr);
 
-// Path-node coordinate pair {col,row} that CScanNode324::m_8 points at. Shared by
-// the CGrunt tile/arrival scan TUs (was locally redeclared per-TU).
-struct CScanCoord {
-    i32 x, y;
-};
-SIZE_UNKNOWN(CScanCoord);
-
-// A pending-coord list node (the m_31c chain): +0x08 owns the {col,row} coord
-// pair, recycled to the coord pool on drain. (The ex `CScanNode324` "current
-// path node" twin was THIS same node type - both casts target the SAME
-// m_31c.GetHeadPosition() - with +0x08 typed as the coord; one node, one shape.)
-struct CScanListNode {
-    CScanListNode* m_next; // +0x00
-    i32 _04;
-    CScanCoord* m_coord; // +0x08  owned {col,row} pair (g_coordPool.Push on drain)
-};
-SIZE_UNKNOWN(CScanListNode);
+// (CScanCoord / CScanListNode are GONE - they were this header's duplicate views
+// of Grunt.h's GruntCoord {x,y} pair + GruntCoordNode m_31c pending-coord chain
+// node (the SAME MFC CPtrList CNode + payload, offset-for-offset). One node, one
+// shape: <Gruntz/Grunt.h> owns it.)
 
 // The grunt's +0x10 sub-object: screen x/y at +0x5c/+0x60.
 struct CScanSub10 {

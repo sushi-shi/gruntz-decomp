@@ -139,9 +139,9 @@ extern "C" {
 // Drain the pending-coord list (recycle each node's link, then RemoveAll).
 #define DRAIN_COORDS()                                                                             \
     if (CoordCount() != 0) {                                                                       \
-        CScanListNode* n = (CScanListNode*)m_31c.GetHeadPosition();                                \
+        GruntCoordNode* n = (GruntCoordNode*)m_31c.GetHeadPosition();                                \
         while (n != 0) {                                                                           \
-            CScanListNode* cur = n;                                                                \
+            GruntCoordNode* cur = n;                                                                \
             n = cur->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
                 g_coordPool.Push(cur->m_coord);                                                    \
@@ -382,9 +382,9 @@ L_ed006:
 
 L_ed153:
     if (CoordCount() != 0) {
-        CScanCoord* coord = ((CScanListNode*)m_31c.GetHeadPosition())->m_coord;
-        i32 col = coord->x;
-        i32 row = coord->y;
+        GruntCoord* coord = ((GruntCoordNode*)m_31c.GetHeadPosition())->m_coord;
+        i32 col = coord->m_x;
+        i32 row = coord->m_y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
             m_tileMgr
@@ -1270,9 +1270,9 @@ L_ed006b:
 
 L_scanb:
     if (CoordCount() != 0) {
-        CScanCoord* coord = ((CScanListNode*)m_31c.GetHeadPosition())->m_coord;
-        i32 col = coord->x;
-        i32 row = coord->y;
+        GruntCoord* coord = ((GruntCoordNode*)m_31c.GetHeadPosition())->m_coord;
+        i32 col = coord->m_x;
+        i32 row = coord->m_y;
         if (CellTargetable(col, row) != 0) {
             m_tileMgr
                 ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
@@ -2069,9 +2069,9 @@ i32 CGrunt::ArrivalScanC() {
 
 L_tailc:
     if (CoordCount() != 0) {
-        CScanCoord* coord = ((CScanListNode*)m_31c.GetHeadPosition())->m_coord;
-        i32 col = coord->x;
-        i32 row = coord->y;
+        GruntCoord* coord = ((GruntCoordNode*)m_31c.GetHeadPosition())->m_coord;
+        i32 col = coord->m_x;
+        i32 row = coord->m_y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
             m_tileMgr
