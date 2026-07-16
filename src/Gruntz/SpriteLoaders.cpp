@@ -6,6 +6,7 @@
 #include <Image/CImage.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/Warlord.h>      // CWarlord (the fort-under-attack notify target)
 #include <Gruntz/Play.h>         // canonical CPlay (m_curState game-state; level-timer expiry)
 #include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (g_gameReg->m_cmdGrid; ClearRowAndRefresh)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -201,17 +202,14 @@ extern "C" {
 }
 // g_timer500 (0x2455a0 draw-throttle counter) comes from <Rez/FrameClock.h>.
 
-// The grunt the expiry / under-attack notify fires target (external, reloc-masked).
-// ResolveDeathAnimation = "time up"; NotifyFortUnderAttack = "<60s remaining".
-// The object FindByKey returns (or the raw m_15c when not found): its m_7c->m_18
-// holds the grunt the notify fires on, gated non-null.
-struct CTimerNotifyObj {
-    char m_pad00[0x7c];
-    struct Inner {
-        char m_pad00[0x18];
-        CGrunt* m_18; // +0x18
-    }* m_7c;          // +0x7c
-};
+// The logic leaf the expiry / under-attack notify fires on (external, reloc-masked).
+// ResolveDeathAnimation = "time up" (a CGrunt); NotifyFortUnderAttack = "<60s
+// remaining" (a CWarlord - the fort owner). The object FindByKey returns (or the
+// raw key when not found) is a plain CGameObject; its worker's bound logic leaf
+// (m_7c->m_logic, a CUserLogic*) is the notify target, gated non-null, downcast
+// per-branch to the concrete sibling (CGrunt / CWarlord : CUserLogic, offset-0).
+// (Ex the CTimerNotifyObj/Inner .cpp-local views - they were CGameObject +
+// AnimWorkerObj at the same offsets.)
 
 // ---------------------------------------------------------------------------
 // CTimer::Tick (0x9bca0) - recompute the remaining time from the running clock,
@@ -261,10 +259,10 @@ i32 CTimer::Tick(i32 dt) {
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
             void* fv = 0;
             found = g_gameReg->m_world->m_childGroup->m_map48.Lookup((void*)key, fv);
-            CTimerNotifyObj* obj = (CTimerNotifyObj*)fv;
-            CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
-            if (hit != 0 && hit->m_7c->m_18 != 0) {
-                hit->m_7c->m_18->ResolveDeathAnimation();
+            CGameObject* obj = (CGameObject*)fv;
+            CGameObject* hit = found ? obj : (CGameObject*)key;
+            if (hit != 0 && hit->m_7c->m_logic != 0) {
+                static_cast<CGrunt*>(hit->m_7c->m_logic)->ResolveDeathAnimation();
             }
         }
         return 1;
@@ -278,10 +276,10 @@ i32 CTimer::Tick(i32 dt) {
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
             void* fv = 0;
             found = g_gameReg->m_world->m_childGroup->m_map48.Lookup((void*)key, fv);
-            CTimerNotifyObj* obj = (CTimerNotifyObj*)fv;
-            CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
-            if (hit != 0 && hit->m_7c->m_18 != 0) {
-                hit->m_7c->m_18->NotifyFortUnderAttack();
+            CGameObject* obj = (CGameObject*)fv;
+            CGameObject* hit = found ? obj : (CGameObject*)key;
+            if (hit != 0 && hit->m_7c->m_logic != 0) {
+                static_cast<CWarlord*>(hit->m_7c->m_logic)->NotifyFortUnderAttack();
             }
         }
     }
@@ -562,4 +560,3 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
 }
 SIZE_UNKNOWN(CDDrawChildGroup);
 SIZE_UNKNOWN(CLoadingBar);
-SIZE_UNKNOWN(CTimerNotifyObj);

@@ -1020,8 +1020,9 @@ public:
     // --- animation resolvers (this TU's targets) ---
     i32 ResolveMovingAnimation();
     i32 ResolveDeathAnimation();
-    void NotifyFortUnderAttack(); // 0x45270 (reloc-masked)
-    i32 ResolveAnimation();       // (generic / "_JOY")
+    // (NotifyFortUnderAttack @0x45270 is CWarlord's - the CGrunt shadow decl was a
+    //  fake-view alias; the one caller downcasts its CUserLogic* to CWarlord*.)
+    i32 ResolveAnimation(); // (generic / "_JOY")
     i32 ResolveIdleAnimation();
     i32 ResolveBattlecryAnimation();
 
