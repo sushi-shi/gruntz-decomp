@@ -22,6 +22,8 @@
 
 #include <rva.h>
 
+#include <Mfc.h> // POSITION (CDDPalette::m_pos, the pool-B cached CPtrList handle) from the
+                 // real MFC header, not a hand-rolled forward-decl/typedef
 // IDirectDrawSurface (the surface COM interface) + CDDSurface (the wrapper) live
 // in the canonical single-source header; every DDraw-touching TU includes it.
 #include <DDrawMgr/DDSurface.h>
@@ -162,13 +164,8 @@ public:
 // two 0x400-byte PALETTEENTRY caches @0xc/@0x10. Also the +0x498 pool-B item of
 // CDDrawPtrCollections (wave4-K: the pool view's Init/Init2/Init3/Teardown were
 // RVA-proven == CreateRGB/LoadFromFile/CreateFromTrailing/Destroy; folded here).
-// +0x00 doubles as the pool's cached CPtrList POSITION.
+// +0x00 doubles as the pool's cached CPtrList POSITION (MFC POSITION, from <Mfc.h>).
 // ---------------------------------------------------------------------------
-// afx-compatible POSITION forward (identical to afx.h's typedef; this header must
-// not pull <Mfc.h> - it is widely included).
-struct __POSITION;
-typedef __POSITION* POSITION;
-
 SIZE(CDDPalette, 0x38); // measured: the pool factories RezAlloc 0x38-byte items
 struct CDDPalette {     // struct (PAUCDDPalette mangling); consistent with the fwd decls
 public:
