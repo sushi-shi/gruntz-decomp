@@ -127,7 +127,7 @@ METRICS = (
     # (Method_c2a50, Gap_184900, Sub_c3e30) and no-underscore (Method0a90) forms, and the
     # proximity-homed Gap_/Ghidra FUN_ orphans that the old regex missed entirely.
     ("Method/Stub/FUN/Gap",
-     re.compile(r"\b(?:(?:Method|Gap|Sub|Stub|Fwd|Func|FUN|Nullsub)_?[0-9a-f]{4,}|vfunc_[0-9]+)\b"), False),
+     re.compile(r"\b(?:(?:Method|Gap|Sub|Stub|Fwd|Func|FUN|Nullsub|Handler|LogicHandler|winapi)_?[0-9a-f]{4,}|vfunc_[0-9]+)\b"), False),
     # Virtual vtable SLOTS named by index+RVA (role unrecovered): SlotNN_<hex>, Vfunc<hex>,
     # Vtbl_<hex>. Real correctly-modeled virtuals, placeholder-named -> vtable-slot naming backlog.
     ("virtual slot placeholders",
