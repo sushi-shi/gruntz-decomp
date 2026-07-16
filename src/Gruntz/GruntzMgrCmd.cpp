@@ -56,15 +56,10 @@
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.
 extern "C" CGameRegistry* g_gameReg;
 
-// The record-list node (CTriggerMgr::m_recHead): the MFC CPtrList node shape
-// {next, prev, data}; the data payload of a record node is the placed (x,y)
-// pair (CTrigPoint). Completes TriggerMgr.h's forward declaration for this TU
-// (the header's sanctioned per-TU completion pattern).
-struct CTmNode {
-    CTmNode* m_next;  // +0x00
-    CTmNode* m_prev;  // +0x04
-    CTrigPoint* m_pt; // +0x08  the record's placed (x,y)
-};
+// (The former local CTmNode record-list-node view is DISSOLVED (2026-07-16): the
+// node IS the MFC CPtrList CNode, and `((CTmNode*)GetHeadPosition())->m_pt` is
+// spelled with the real accessor `(CTrigPoint*)m_recList.GetHead()` below - the
+// identical two loads (m_pNodeHead, then ->data), byte-proven.)
 
 // The game-manager singleton global comes in WwdGameReg-typed via Grunt.h
 // (WwdGameReg.h) - the grunt-facet view of the same *0x64556c object this class
@@ -155,8 +150,8 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         CGrunt* _cell =                                                                            \
             m_cmdGrid->m_recList.GetCount() == 1                                                   \
                 ? (CGrunt*)m_cmdGrid->m_grid                                                       \
-                      [((CTmNode*)m_cmdGrid->m_recList.GetHeadPosition())->m_pt->y                 \
-                       + ((CTmNode*)m_cmdGrid->m_recList.GetHeadPosition())->m_pt->x * 15]         \
+                      [((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->y                            \
+                       + ((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->x * 15]                    \
                 : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
@@ -179,8 +174,8 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         CGrunt* _cell =                                                                            \
             m_cmdGrid->m_recList.GetCount() == 1                                                   \
                 ? (CGrunt*)m_cmdGrid->m_grid                                                       \
-                      [((CTmNode*)m_cmdGrid->m_recList.GetHeadPosition())->m_pt->y                 \
-                       + ((CTmNode*)m_cmdGrid->m_recList.GetHeadPosition())->m_pt->x * 15]         \
+                      [((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->y                            \
+                       + ((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->x * 15]                    \
                 : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
