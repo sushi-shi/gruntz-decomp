@@ -1405,7 +1405,17 @@ i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
 // slot 14 (+0x38) is CImage::RenderImage @0x153470, the blit-mode/clip selector.
 // Kept as this TU's dispatch view pending the fold (@identity-TODO): CImage.h
 // types slot 14's args (CBlitInfo* info, CImage* dst) while this dispatch passes
-// (worker, surface-pair) - the request/record typing must be reconciled first.
+// (worker, surface-pair). RECONCILIATION (proven, but a whole-subsystem change):
+//   arg1 `info` is really a CResolveNode* - CBlitInfo is a SECOND field-view of the
+//   same layout (CResolveNode m_38/m_40/m_44/m_48/m_5c/m_60 == CBlitInfo
+//   m_result/m_mode/m_44/m_48/m_drawX/m_drawY). CDDrawWorkerBase : CResolveNode, so
+//   `this` (the worker) IS-A CResolveNode; CImage::0x153790 passes a CResolveNode too.
+//   arg2 `dst` is really a CDDrawSurfacePair* (RenderImage reads dst->m_surface/
+//   m_width/m_height - a surface holder, not a CImage). Folding CDDrawFrameNode onto
+//   CImage cast-free therefore requires retyping RenderImage to
+//   (CResolveNode*, CDDrawSurfacePair*) AND every Blit* helper it forwards to
+//   (BlitNorm/BlitFlip*/BlitShade*) off CBlitInfo -> CResolveNode across the blit
+//   subsystem. Deferred as one coordinated change, not a per-TU cast.
 // Slot names below are CImage's own (vtable 0x1eaa2c ground truth).
 struct CDDrawFrameNode {
     virtual void GetRuntimeClass(); // [0]  CObject slot (0x1bef01)
