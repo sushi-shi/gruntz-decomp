@@ -27,6 +27,13 @@ struct CTileInfo {
     u32 m_height; // +0x8  tile height
 };
 
+// IDENTITY PROVEN (VW3 2026-07-17): CDDScreen, CDDPageMgr (<DDrawMgr/DirectDrawMgr.h>)
+// and CMoviePlayer (<Io/MoviePlayer.h>) ARE ONE retail class - all 17 methods
+// interleave in ONE contiguous RVA band in ONE .cpp, and the three layouts tile
+// byte-for-byte (the +0x8690/94/98 CArray header, the +0x9c DDSURFACEDESC chain,
+// m_520==m_bpp, and this class's +0x10 "CTileInfo" == the Smack handle). The full
+// proof + the offset-by-offset merge spec live in <Io/MoviePlayer.h>; the union is
+// the next lane's mechanical job (typedef-alias route, no include explosion).
 class CDDScreen {
 public:
     void HandleError();       // 0x17cc80

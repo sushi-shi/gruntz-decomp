@@ -279,6 +279,11 @@ struct CPageRec {
 };
 
 SIZE_UNKNOWN(CDDPageMgr);
+// IDENTITY PROVEN (VW3 2026-07-17): CDDPageMgr, CDDScreen (<DDrawMgr/DDScreen.h>)
+// and CMoviePlayer (<Io/MoviePlayer.h>) ARE ONE retail class - notably THIS class's
+// m_data/m_count/m_8698 (+0x8690/94/98) are the m_pData/m_nSize/m_nMaxSize of the
+// RTTI-proven MFC CArray playlist embedded at +0x868c, and its CPageRec is that
+// array's PLAYLISTINFOSTRUCT. Full proof + merge spec in <Io/MoviePlayer.h>.
 class CDDPageMgr {
 public:
     i32 Init(void* window, DDModeInfo* mode, u32 coopFlags); // 0x17c040

@@ -79,6 +79,93 @@ SIZE(PLAYLISTINFOSTRUCT, 0x20);
 // dissolved onto the real template.)
 typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 
+// ===========================================================================
+// PROVEN, NOT YET EXECUTED: CMoviePlayer == CDDPageMgr == CDDScreen ARE ONE CLASS
+// (VW3 2026-07-17). This block is the EVIDENCE + the executable spec; the union
+// itself is a mechanical 3-header/6-TU edit left to the next lane (it was not
+// rushed at the tail of a budget - a wrong member union silently corrupts three
+// subsystems' offsets, and "honest gap > wrong fold").
+//
+// WHY THEY ARE ONE CLASS (each item read off retail, none inferred from names):
+//
+//  1. ONE TU, ONE BAND. All 17 methods of the three names live in src/DDrawMgr/
+//     DDPageMgr.cpp and occupy ONE strictly-ascending contiguous RVA band
+//     0x17c040..0x17d8a8, INTERLEAVED by name: PageMgr(0x17c040), Movie(0x17c2a0),
+//     Screen(0x17c3f0), Movie x6, Screen x3, PageMgr x3, Movie(0x17d720). Per the
+//     TU/linker-order invariant one .obj is one TU - three classes cannot interleave
+//     like that.
+//  2. THE ARRAY HEADER TILES THREE WAYS. Movie's +0x868c playlist is an MFC
+//     CArray<PLAYLISTINFOSTRUCT*,...> (RTTI-proven, COL @0x1e971c), whose members
+//     land m_pData@+0x8690 / m_nSize@+0x8694 / m_nMaxSize@+0x8698. CDDPageMgr
+//     independently models EXACTLY those three slots as m_data / m_count / m_8698,
+//     and CDDScreen's m_86a0 ("reset to 0 by Configure") is Movie's m_loopCount
+//     @+0x86a0. Three independent readings, one byte layout.
+//  3. THE DESC CHAIN TILES. CDDScreen's m_srcDesc (DDSURFACEDESC) sits at +0x9c;
+//     DDSURFACEDESC::lPitch is +0x10 and lpSurface +0x24, i.e. +0xac and +0xc0 -
+//     which is EXACTLY where CMoviePlayer independently put m_lPitch and
+//     m_lpSurface. CDDPageMgr's own desc is the OTHER one at +0x30 (0x6c B, ends
+//     +0x9c) - one object, two DDSURFACEDESC scratch buffers (primary + source).
+//  4. m_520 IS m_bpp. Movie called +0x520 "palette-mode state (8 => snapshot on new
+//     palette)"; Screen/PageMgr both call it m_bpp. The magic 8 is 8bpp.
+//  5. CTileInfo IS THE SMACK HANDLE. Screen's +0x10 "CTileInfo*" has m_0/+0x0,
+//     m_width/+0x4, m_height/+0x8 and an RGB palette source at +0x6c - that is the
+//     RAD Smacker handle's Version/Width/Height/palette, i.e. Movie's +0x10
+//     m_smackHandle. Screen's "tile source surface sized to the m_tileInfo dims,
+//     OFFSCREENPLAIN|SYSTEMMEMORY" (CheckGrid) is the classic SmackToBuffer sysmem
+//     staging surface, and its "tiled blit" is the movie frame blitter.
+//
+// EXECUTABLE SPEC (offset -> unified member; anonymous unions carry BOTH readings
+// where they genuinely differ - byte-neutral, the CNetSession precedent):
+//   +0x00 HWND m_window            [Movie's "m_0, NOT a vptr" agrees]
+//   +0x04 i32 m_initialized        [== Movie m_active]
+//   +0x08 i32 m_streamOpen         [Screen m_8 "cleared by InitMode"]
+//   +0x0c i32 m_0c                 [== PageMgr m_c]
+//   +0x10 SmackTag* m_smackHandle  [== Screen m_tileInfo; see (5)]
+//   +0x14 IDirectDraw2* m_dd2      +0x18 IDirectDraw* m_dd  [Screen+PageMgr agree]
+//   +0x1c union { IDirectDrawSurface* m_primary; i32 m_command; }   <- OPEN CONFLICT:
+//         Screen+PageMgr say primary surface, Movie::Advance says a pending command
+//         it saves/restores (mov ebp,[esi+0x1c] / mov [esi+0x1c],ecx / restore).
+//         ARBITRATE by disassembling whether InitMode's [esi+0x1c] is COM-dispatched.
+//   +0x20 IDirectDrawSurface* m_primaryRaw   [Screen m_20 "only Release'd"]
+//   +0x24 IDirectDrawSurface* m_srcSurf      +0x28 IDirectDrawSurface* m_28
+//   +0x2c IDirectDrawPalette* m_palette
+//   +0x30 the PageMgr desc union (0x6c: m_descSize/+0x30, m_descFlags/+0x34,
+//         m_descCaps/+0x98) - ends exactly at +0x9c
+//   +0x9c DDSURFACEDESC m_srcDesc (0x6c) - Movie's m_lPitch/m_lpSurface become
+//         m_srcDesc.lPitch / m_srcDesc.lpSurface; ends at +0x108
+//   +0x108 union { u8 m_colorSlots[0x400]; PALETTEENTRY m_palEntries[0x100]; }
+//         (Screen's precise 0x400 wins over PageMgr's coarse 0x408 blob)
+//   +0x508 union { i32 m_508; void* m_directSound; }  [Screen "a31 pass-through"]
+//   +0x50c i32 m_50c   +0x510 union { i32 m_510; i32 m_modeTag; }   +0x514 i32 m_514
+//   +0x518 u32 m_screenWidth  +0x51c u32 m_screenHeight  +0x520 i32 m_bpp
+//   +0x524 m_tilesAcross  +0x528 m_tilesDown  +0x52c m_originX  +0x530 m_originY
+//   +0x534 union { RECT* m_destRect; void* m_rezBuffer; }
+//   +0x538 union { i32 m_forceSingleRow; i32 m_useDS; }
+//   +0x53c CWnd* m_videoWnd
+//   +0x540 CFecFile m_540 (0x814c, ends +0x868c)
+//   +0x868c CMoviePlaylist m_868c (CArray, 0x14, ends +0x86a0)
+//   +0x86a0 i32 m_loopCount        [== Screen m_86a0]
+//   => SIZE 0x86a4, which both surviving models already imply.
+//
+// EXECUTION NOTES (the two traps that made this look harder than it is):
+//  * NO PROTECTED-MEMBER PROBLEM. CDDPageMgr::RemoveAt @0x17d600 reads
+//    [ebp+0x8694] / [ebp+0x8690] directly, which is simply what MFC's INLINE
+//    CArray::GetSize() / operator[] compile to at /O2 - so RemoveAt/FreeAll are
+//    written against the array's PUBLIC api (m_868c[i], GetSize(), RemoveAt()) and
+//    the raw slots never need touching. PageMgr's "CPageRec with three owned
+//    buffers at +0/+0x10/+0x14" IS PLAYLISTINFOSTRUCT (m_src/+0, m_10, m_14) - the
+//    three ::operator delete calls at 0x17d63e/50/63 free exactly those.
+//  * NO INCLUDE EXPLOSION. Keep CDDScreen / CDDPageMgr as `typedef CMoviePlayer`
+//    aliases (the CBrickzGrid==CMapMgr precedent: MSVC5 mangles a member defined
+//    through the typedef as the REAL class, so the 17 definitions and every
+//    consumer keep compiling and all mangle to ?X@CMoviePlayer@@). DirectDrawMgr.h
+//    (18 consumers!) and DDScreen.h then need only `class CMoviePlayer;` + the
+//    typedef - NOT this header - so MFC/afxtempl does not leak into 18 DirectDraw
+//    TUs. Only the 4 member-using TUs (PaletteCopy/PaletteReset/ImageProbe/
+//    PaletteSnapshot) must swap their umbrella to <Mfc.h> first (proven pattern).
+//  * COST TO EXPECT: the per-fn MAX history is keyed by mangled name, so the ~17
+//    re-keyed rows restart their best-ever. That is bookkeeping, not a regression.
+// ===========================================================================
 class CMoviePlayer {
 public:
     // ----- src/Io/MoviePlayer.cpp -----
