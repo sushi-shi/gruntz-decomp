@@ -4,6 +4,7 @@
 // A shared serialize helper with no recovered caller; homed with the g_syncErrMsgBuf scratch
 // buffer it owns and the EnterModalUI reporter it drives. Same "eh" flags; byte-neutral.
 #include <Mfc.h>                  // wsprintfA (USER32, reloc-masked)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (g_gameReg->EnterModalUI)
@@ -13,7 +14,6 @@
 // The serialize-round sync counter (VA 0x629ad0; DATA home in Io/GameSave.cpp), the
 // game-manager singleton (*0x64556c), and the wsprintfA scratch buffer (VA 0x629a50)
 // the desync path formats into (its sole DATA home is here now).
-extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // 0x629a50 wsprintfA scratch buffer (128 B, bounded by g_serialCounter @0x229ad0);
 // DEFINED here (owner TU) with C linkage (_g_syncErrMsgBuf).
 extern "C" {

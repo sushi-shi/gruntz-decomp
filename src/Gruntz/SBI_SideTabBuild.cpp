@@ -3,13 +3,13 @@
 // UN-MERGED back to its own TU (2026-07-13); see WarpStoneFly.cpp. Like MgrSettings this
 // obj was flags="base" (no /GX) while SBI_RectOnly.cpp is flags="eh".
 #include <rva.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SbiSideTabBuildViews.h> // CSBI_SideTab (ctor view) + CStatzTabBuilder + settings
 #include <Gruntz/GruntzMgr.h>            // the *0x24556c singleton (CGruntzMgr)
 
-extern "C" CGruntzMgr* g_gameReg;
 
 // @early-stop
 // this/newobj callee-saved register-pinning wall (docs/patterns/

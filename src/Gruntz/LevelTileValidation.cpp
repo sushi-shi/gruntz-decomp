@@ -35,6 +35,7 @@
 // (docs/patterns/INDEX.md, topic:wall; big-seh-fuzzy-desync.md).
 
 #include <Mfc.h> // CString (Format / ctor / dtor), RECT
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (m_beginMarker: AddSwitchLogic/
@@ -128,7 +129,6 @@
 //   the per-player start record (`WwdStartPlayer`, stride 0x238) IS m_options[k]
 //     (GruntzPlayer) - its +0x228 is the start-grunt cap this TU reads (the same field the
 //     battlez roster calls m_comboSel; one field, two readers).
-extern "C" CGruntzMgr* g_gameReg;
 
 // The recycled-node free-list head (?g_coordPool.m_freeHead@@3PAXA) and a tile-id constant
 // (DAT_00644c54) the 0x4017e4 case compares against.

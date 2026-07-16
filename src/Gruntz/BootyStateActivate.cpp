@@ -17,6 +17,7 @@
 // object web from the +0x0c context (deferred canonical world-sound model). Only offsets
 // / code bytes are load-bearing; every helper is a reloc-masked external.
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
@@ -102,7 +103,6 @@ void ShowHudMessageAlt(
 // The booty countdown reads CBattlezData +0x10 as elapsed milliseconds where the battlez
 // scoreboard reads it as a score accumulator: ONE field, two readers (the canonical name
 // m_score is kept - the divergence is noted, not forked into a second class).
-extern "C" CGruntzMgr* g_gameReg;
 // USER32 PostMessageA reached through the game-owned IAT-style fn-ptr (ff 15 [ptr]);
 // same global CGruntzMgr/Attract/Play bind. KeyHost::Check posts through it.
 // extern "C" so the reloc emits _g_pPostMessageA - the canonical name bound @0x2c44c8

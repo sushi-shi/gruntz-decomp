@@ -9,6 +9,7 @@
 // untouched. /GX EH frame: CPlay_0d53d0 has a stack CString error temp, and
 // CPlay_0d9290 has a stack CByteArray shuffle temp - both destructible.
 #include <Gruntz/SBI_Image.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/StatusBarMgr.h> // InsertPtr is a method of the 0x630 host, not the SBI leaf
 #include <Ints.h>
 #include <Gruntz/Play.h>      // canonical CPlay (one shape)
@@ -55,7 +56,6 @@
 // both call sites' rel32 (`mov ecx,[0x64556c]; push msg; call 0x417e`); the former
 // `?ReportError@CGameRegistry@@QAEXPBD@Z` was a phantom alias of it.
 extern "C" {
-    extern "C" CGruntzMgr* g_gameReg;
 }
 
 // The two plane-type discriminators the scans compare m_desc->m_typeId against

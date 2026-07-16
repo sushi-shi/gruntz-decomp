@@ -19,6 +19,7 @@
 // GruntTubeAnim.cpp (0x50a50, gap 139 before 0x50ca0) is a PROBABLE head of this
 // TU but stays split (no privates/frags to prove it; noted there).
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
+#include <Gruntz/WwdGameRegPtr.h>
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
@@ -36,7 +37,6 @@
 #include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.cpp)
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
@@ -222,7 +222,6 @@ void CGrunt::LoadTypeTableClearMove(i32 typeId) {
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
                                   // Only the owner defines; everyone externs.
 

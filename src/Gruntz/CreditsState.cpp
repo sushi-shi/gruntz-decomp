@@ -22,6 +22,7 @@
 // the canonical CButeMgr singleton and CCreditzAttractReg was the CGruntzMgr singleton
 // (+0x80 == m_numRuns). Names are placeholders; only offsets + code bytes are load-bearing.
 #include <Bute/SymParser.h>     // CSymParser::ResolvePath (LoadCreditz / InitAttractTitle)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Bute/SymTab.h>        // CSymTab Insert/FindSub/ResolvePath (LoadCreditz / SetupTitle)
 #include <Bute/ButeMgr.h>       // CButeMgr GetIntDef (InitAttractTitle brightness)
 #include <Io/MoviePlayer.h>     // CMoviePlayer (~/CloseSmacker - ReleaseResources / StepVideo)
@@ -67,7 +68,6 @@ void operator delete(void*);
 // The game-manager singleton (0x64556c). Its +0x80 launch counter (m_numRuns,
 // "Num_Runs") rotates the attract TITLE index; same object as CState::m_4. Spelled
 // CGruntzMgr* here exactly as the sibling CreditzAssets.cpp does (was CCreditzAttractReg).
-extern "C" CGruntzMgr* g_gameReg;
 
 // The attract-state count divisor (DEFINED in src/Rez/RezSync.cpp) is declared in
 // <Gruntz/Attract.h> (included below).

@@ -26,6 +26,7 @@
 // rect.left>0 else TextOutA).
 
 #include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8) + windows.h
+#include <Gruntz/GameRegMfcPtr.h>
 #include <ddraw.h> // real IDirectDrawSurface (the debug-overlay DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Play.h>              // the real CPlay : CState (the method owner)
@@ -50,7 +51,6 @@ CString FormatElapsed(i32 count);
 // The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed); GetRect (@0x8e3a0) is its
 // method - the old `g_dbgMgr` CGameRegistry alias emitted the phantom
 // ?GetRect@CGameRegistry@@QAEPAXPAX@Z, which no obj and no .LIB can ever define.
-extern "C" CGruntzMgr* g_gameReg; // *0x64556c the one singleton
 
 // @source: string-xref
 // Code bytes are byte-EXACT vs retail (verified instruction-by-instruction with

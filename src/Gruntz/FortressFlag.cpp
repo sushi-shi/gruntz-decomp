@@ -32,6 +32,7 @@
 //   0x0470e0 CExplosion ctor  0x0472d0 InitLogicDispatch_6447f8
 //   0x047350 E::FireActivation  0x0474b0 RegisterXLogic_6447f8
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/WwdGameRegPtr.h>
 #include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
@@ -90,7 +91,6 @@ struct WwdRefSlot {
 // owns the DATA label). The tag-8 fixup reads the level sprite-ref table at +0x74
 // (m_74) and the ref-index array in the m_options block at +0x158 (raw offset - the
 // established 0x150-region idiom; WwdRefSlot is this TU's element view).
-extern "C" WwdGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CParticlez's per-coordinate activation registry (@0x644870) - ONE 0x24-byte

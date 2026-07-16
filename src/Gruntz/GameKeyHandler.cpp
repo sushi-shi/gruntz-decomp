@@ -32,6 +32,7 @@
 // Every callee body is external (reloc-masked rel32). Only offsets / code bytes are load-bearing.
 
 #include <Wap32/Object.h>      // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <Gruntz/CurPlayer.h>  // g_curPlayer
 #include <rva.h>
@@ -91,7 +92,6 @@ void __stdcall Fn2135(i32 a);                                // 0x2135
 // The game-mgr singleton (*0x64556c). Declared here - AFTER GruntzMgr.h - so the type
 // is the complete CGruntzMgr (per Play.h's note, each TU declares the singleton with the
 // view type it needs). extern "C" -> the symbol is `g_gameReg`, so retyping is byte-neutral.
-extern "C" CGruntzMgr* g_gameReg; // 0x64556c  _g_mgrSettings (game-mgr singleton)
 
 // The recurring "clear GAME_TABHIGHLIGHT1 hint" idiom: through base->m_30->m_28,
 // if its +0x30 sub-flag is clear, Lookup the hint sprite in the table at +0x10

@@ -15,6 +15,7 @@
 // The manager destructor (0x085bd0) carries a /GX EH frame (the inline CPtrList
 // teardown is the destructible sub-object); this TU is built flags="eh".
 #include <Mfc.h>        // afx-first umbrella (windows.h for the 0x92ab0 DialogProc)
+#include <Gruntz/WwdGameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
@@ -31,7 +32,6 @@
 // +0x30 active-game slot (m_world) being non-null; this TU only null-tests it, so
 // the m_world facet type is irrelevant here. (The former separate MgrSettings30
 // view of the same singleton is dissolved onto this one canonical extern.)
-extern "C" WwdGameReg* g_gameReg;
 
 // the registry-active predicate the read pass gates on (0x024ac0, an out-of-line
 // free __stdcall twin of the IsActive member at 0x024a90; same body). Defined below

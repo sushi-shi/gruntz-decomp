@@ -20,6 +20,7 @@
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
 #include <Gruntz/GruntDataRecord.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Rez/RezAlloc.h>             // RezAlloc/RezFree
 #include <Gruntz/Grunt.h>             // canonical CGrunt (this) + CGruntHud + CDDrawChildGroup
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (the name map host, holder +0x2c)
@@ -72,7 +73,6 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
 // <Gruntz/GruntzMgr.h>): the object directory at +0x30 (canonical m_world, viewed
 // here as the serial/name-map host), an engine helper at +0x74 the tail invokes
 // (0x4165). Both sub-objects are engine carcasses reached by a struct-view cast.
-extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // The event/command buffer the tail writes is the grunt's own m_10 CGruntHud
 // (the m_4c/m_50/m_58 move-icon triple SelectMoveIcon also writes, + m_54).

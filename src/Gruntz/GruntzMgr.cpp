@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/AssetRoot.h>     // g_assetRoot (SetAssetRoot target; DATA home NetMgrMisc.cpp)
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter
@@ -557,7 +558,6 @@ i32 g_warpY = -1;
 // CGruntzMgr's OWN TU. Declaring it as a CGameRegistry view would emit the phantom
 // ?ReportError@CGameRegistry@@QAEXHH@Z (an unlinkable name) and force `(CGruntzMgr*)g_gameReg`
 // casts back to its own class.
-extern "C" CGruntzMgr* g_gameReg;
 
 // -------------------------------------------------------------------------
 // PumpIdleFrame (0x08b8c0; ret) - the deferred per-frame pump. When the pending flag is
@@ -3433,8 +3433,10 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 // The game-manager singleton (*0x64556c) - the CGruntzMgr view of the 0x24556c datum
 // used by the modal reporters below. (SerializeSyncMarker, the free 0x13610 serialize
 // validator that also used this, is split out to SerializeSyncMarker.cpp.)
+// GruntzMgr.cpp is the OWNER TU: this DATA() binds the g_gameReg symbol to RVA 0x24556c;
+// consumers get the decl from <Gruntz/GameRegMfcPtr.h> / <Gruntz/GameRegPtr.h> instead.
 DATA(0x0024556c)
-extern "C" CGruntzMgr* g_gameReg; // 0x64556c
+extern "C" CGruntzMgr* g_gameReg;
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::EnterModalUI (0x08ef10; ret 4). Suspends the in-game world for a

@@ -20,6 +20,7 @@
 // <Gruntz/GameMode.h>. Only offsets / control IDs / code bytes are load-bearing;
 // names are placeholders for the recovered engine identities.
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LeafCue.h>         // canonical LeafCue (CMenuState::m_1bc menu-music cue)
 #include <Gruntz/BattlezData.h>     // the REAL stats object (was the CHudStats view)
 #include <Gruntz/GruntzMgr.h>       // CGruntzMgr (the game-manager singleton; one true shape)
@@ -41,7 +42,6 @@
 // <Gruntz/GruntzMgr.h>. (The options-dialog reader/writer family that also taps it
 // is homed in src/Gruntz/VideoConfig.cpp, the options-dialogs TU.)
 extern "C" {
-    extern "C" CGruntzMgr* g_gameReg; // = g_gameReg (the CGruntzMgr singleton)
 }
 
 // The Render menu-entity list (aliases g_actorList @0x245574) and the version-string

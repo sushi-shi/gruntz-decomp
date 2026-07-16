@@ -15,6 +15,7 @@
 //
 // Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
 #include <Mfc.h> // afx.h FIRST (before any windows.h): GameRegistry.h/GruntzMgr.h pull MFC
+#include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the 0x24556c settings singleton's one true shape
 #include <Gruntz/Play.h>      // CPlay (ApplyGameOptions host)
@@ -71,7 +72,6 @@ public:
 // base at the same offsets (m_soundEnabled +0x10, m_musicEnabled +0x14, m_savedModeW/H
 // +0x94/+0x98, ...), so the swap is byte-neutral.
 extern "C" {
-    extern "C" CGruntzMgr* g_gameReg;
 }
 
 // The active dialog handle latch (@0x64557c); the proc stamps it on entry.

@@ -9,6 +9,7 @@
 // writes the four scroll-bound fields (pm->m_viewOriginL..0x148). Field names are
 // placeholders; offsets + code bytes are the load-bearing fact.
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Bute/ButeMgr.h>                 // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (game-manager singleton; one true shape)
@@ -36,7 +37,6 @@ extern "C" {
 }
 
 // Reloc-masked engine globals (DIR32 data operands).
-extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // g_buteMgr (VA 0x6453d8) comes from <Bute/ButeMgr.h>.
 // g_frameTime was a SECOND NAME for g_frameTime (0x245588 frame clock) - same address,
 // so nothing ever defined it. Unified onto the canonical.

@@ -5,6 +5,7 @@
 //   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem (canonical chain).
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h>    // g_sndEnabled/g_sndCueTag
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -46,7 +47,6 @@
 // The g_gameReg singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view
 // (<Gruntz/GruntzMgr.h>). Its +0x30 world slot (m_world) is the resource manager
 // here, cast locally to CDDrawSurfaceMgr at the deref sites.
-extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight cue plays through, and the
 // draw-clock mirror (wrap-safe gate compare).

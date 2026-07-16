@@ -19,6 +19,7 @@
 // Append=?+= 0x1ba0c8, Reset=?Empty 0x1b9c69, Free1b9b93=??0 0x1b9b93 -
 // config/library_labels.csv, all anchored).
 #include <Mfc.h> // afx-first: CString + the dialog API
+#include <Gruntz/GameRegMfcPtr.h>
 
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdWorldHolder/WwdLevelInfoSrc (IsValidWwd receiver)
 #include <Gruntz/WaitCursorApp.h>      // CWaitCursorApp (Begin/EndWaitCursor via AfxGetModuleState)
@@ -91,7 +92,6 @@ i32 LoadCustomWorldSelection(HWND hWnd); // 0x3b310
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
 // (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
 // extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
-extern "C" CGruntzMgr* g_gameReg;
 
 // The "game root dir" the loaders resolve is just the current working directory:
 // 0x11fc10 is the CRT _getcwd (LIBCMT __getcwd), the same routine BuildCustomWwdPath

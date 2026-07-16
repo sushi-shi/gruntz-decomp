@@ -3,6 +3,7 @@
 // the declared-only empty form that diverged across objs. Must precede any SBI include.
 #define SBI_DTOR_CHAIN
 #include <Mfc.h>                 // afx-first umbrella (CByteArray/CPtrList consumers below)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
@@ -82,7 +83,6 @@ extern "C" {
 // m_gameWnd/m_frameGate/m_soundEnabled) exists on CGruntzMgr at the same offsets.
 // Its canonical symbol is _g_mgrSettings (extern-C, bound via DATA in userlogic);
 // referencing it by that name pairs the DIR32 relocs.
-extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight handlers play through.
 // The draw-clock mirror (g_killCueClock), unsigned for the wrap-safe gate compare.

@@ -10,12 +10,12 @@
 // through the state's owner back-ptr (m_4 == CState::m_4, the CGruntzMgr) and the
 // 0x64556c singleton global - the same object, both reads authentic retail.
 #include <rva.h>
+#include <Gruntz/GameRegMfcPtr.h>
 
 #include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ / CGruntzSoundInnerZ
 #include <Gruntz/GameMode.h>      // canonical CCreditsState : CState
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (m_4 / the singleton; m_sound @+0x48)
 
-extern "C" CGruntzMgr* g_gameReg; // 0x64556c (the CGruntzMgr singleton)
 
 RVA(0x00039dc0, 0x10b)
 void CCreditsState::LoadCreditzAssets() {

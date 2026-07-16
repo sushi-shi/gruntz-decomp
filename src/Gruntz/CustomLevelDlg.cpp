@@ -15,6 +15,7 @@
 // real ?DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z). Placeholder
 // names elsewhere; only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>       // CBattlezDlgCustom (: CDialog), CDataExchange, CListBox (afxwin)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (IsBattlezMapFile)
 #include <Gruntz/WaitCursorApp.h> // CWaitCursorApp (Begin/EndWaitCursor via AfxGetModuleState)
 #include <Ints.h>
@@ -25,7 +26,6 @@
 
 // The settings-manager singleton == *0x64556c (the real CGruntzMgr); IsBattlezMapFile
 // takes the display name by value (callee destroys).
-extern "C" CGruntzMgr* g_gameReg; // 0x0064556c
 
 // @early-stop
 // stack-buffer-placement wall (same as sibling CBattlezDlg::FillCustomLevelList

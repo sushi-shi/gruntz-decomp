@@ -22,6 +22,7 @@
 // donor view - the canonical-CGameRegistry fold that unifies them is deferred
 // cleanup work.
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/ActionOptionsMenuBar.h>
@@ -43,7 +44,6 @@
 // m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_134/m_modeW/m_modeH/m_viewOriginL) is a real CGruntzMgr
 // member at the same offset. The +0x70 board is now the REAL CGruntzMapMgr and the +0x6c
 // sub-manager the REAL CGruntzCmdMgr, so those derefs are cast-free too.
-extern "C" CGruntzMgr* g_gameReg;
 
 // Merged-donor headers (the dossier-10b one-TU merge):
 #include <Gruntz/Play.h>         // CPlay (PostHudRect/DispatchHudClick drive HudRect @0x78060)

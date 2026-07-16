@@ -12,6 +12,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Wap32/zBitVec.h>   // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>      // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
@@ -72,7 +73,6 @@ extern "C" u32 g_engineFrameDelta;
 // Now possible because its +0x70 sub-object folded: CGruntzMgr::m_tileGrid is a
 // CGruntzMapMgr*, and the CTileGrid this TU reads IS its CMapMgr base (one class, two
 // names) - so the read is a plain upcast, no cast needed.
-extern "C" CGruntzMgr* g_gameReg;
 
 // ===========================================================================
 // FireActivation's per-coordinate activation registry (CStaticHazard's OWN

@@ -18,6 +18,7 @@
 // Functions in retail-RVA order; shared views/externs in
 // <Gruntz/TriggerMgrViews.h>. /GX unit (ApplySwitch owns a CString temp).
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Play.h>  // canonical CPlay (m_curState real class: ArmSnapshot et al.)
 #include <Gruntz/Timer.h> // CTimer - CPlay::m_frameMarker (the ex-CTmScoreSub @+0x3f4)
 
@@ -42,7 +43,6 @@
 // CGruntzMapMgr, the +0x6c sub-manager the real CGruntzCmdMgr, the +0x7c HUD the real
 // CBattlezData - so every deref below is cast-free and ReportError binds to CGruntzMgr::
 // ReportError @0x08dc60 (it used to emit ?ReportError@CTmGameReg@@, which nothing defines).
-extern "C" CGruntzMgr* g_gameReg;
 
 // 0x6b640: SetLevel - store the supplied world holder at +0x22c, clear m_armed +
 // m_pendingFx and raise m_countdownActive; returns 1 (0 when arg is null).

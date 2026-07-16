@@ -6,6 +6,7 @@
 // The load-side sibling of DrawSaveGameMenu (SaveGame.cpp) (same 0x490/0x49a/0x4a4 id ranges +
 // CSaveGame slots; only offsets + code bytes are load-bearing).
 #include <Mfc.h>         // afx-first superset (EnableWindow/EndDialog/PostMessageA + CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Io/SaveGame.h> // CSaveGame (GetSlot/VerifySlot) + SaveSlot/SaveInfo
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (RunModalDialog/PickPlayOrPausedState/m_saveSink/m_gameWnd/m_saveInfoRec)
 #include <Gruntz/Play.h> // CPlay (PickPlayOrPausedState's concrete return; m_stepCountdown @+0x510)
@@ -19,7 +20,6 @@
 // the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms
 // (?RunModalDialog@CGameRegistry@@... etc. are names no obj and no .LIB can ever define).
 // extern "C" keeps ONE C symbol (_g_gameReg) whatever C++ type a TU declares it at.
-extern "C" CGruntzMgr* g_gameReg;
 // The last-queried slot handle (== SaveGameMenu's g_slotState; DATA-bound there).
 extern i32 g_slotState; // ?g_slotState@@3HA @0x64c864
 // The active GAME_LOAD dialog's CSaveGame sink, latched at WM_INITDIALOG.

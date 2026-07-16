@@ -10,6 +10,7 @@
 // load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
 #include <Gruntz/GruntzCommand.h> // canonical g_singleCmdList/g_multiCmdList (@0x62b5d0/0x62b640)
 #include <rva.h>
@@ -17,7 +18,6 @@
 
 // The game-manager view of the 0x64556c singleton; OnToggleCheckpointPrompts
 // mirrors the "disable prompts" checkbox into its m_isCheckpointPrompts flag.
-extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // The game's SendMessageA fn-ptr global (reloc-masked indirect call). Reference
 // the canonical extern "C" binding _g_pSendMessageA (DATA home @0x2c44a4 in

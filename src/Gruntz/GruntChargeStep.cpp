@@ -29,6 +29,7 @@
 //        "Notify"=CGruntSpawnConfig::SpawnVoiceDriver @0x11b3b0 (0x39f4),
 //        "GruntLos1127"=CGameLevel::PointInBounds @0x6b330 (0x1127, static).
 #include <Ints.h>
+#include <Gruntz/WwdGameRegPtr.h>
 #include <rva.h>
 
 #include <stdlib.h> // rand (0x11fee0)
@@ -39,7 +40,6 @@
 #include <Gruntz/TriggerMgr.h>       // canonical CTriggerMgr (the +0x260 board)
 
 extern "C" {
-    extern "C" WwdGameReg* g_gameReg;
 }
 
 // ---------------------------------------------------------------------------

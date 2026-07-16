@@ -5,6 +5,7 @@
 // flags="base" while SBI_RectOnly.cpp is flags="eh" (/GX). A TU is compiled with ONE
 // flag set, so a "base" obj cannot live inside an "eh" TU without changing its codegen.
 #include <Mfc.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Ints.h>
 #include <rva.h>
@@ -14,7 +15,6 @@
 #include <Gruntz/GruntzMgr.h> // the *0x24556c singleton (CGruntzMgr)
 #include <string.h>           // strlen / memset (inlined to repne scasb / rep stos)
 
-extern "C" CGruntzMgr* g_gameReg;
 
 // @early-stop
 // 89.1% - logic byte-faithful: the mode-4/7 dispatch, the eight scalar Read/Write

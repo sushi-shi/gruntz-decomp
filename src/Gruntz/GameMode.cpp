@@ -17,6 +17,7 @@
 //   (the ex-"CGameModeBase" cleanup pair 0x0de140/0x0f9840 is homed to
 //    LevelPreview.cpp / SplashState.cpp - see the fold note at EOF.)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <Gruntz/WwdGameRegPtr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
 #include <Gruntz/SoundState.h>            // g_sndEnabled/g_sndCueTag
@@ -38,7 +39,6 @@
 
 // The global game registry (canonical <Gruntz/WwdGameReg.h>): the Rand()/RandRange()
 // __thiscall helpers GenMenuRandPos calls (all reloc-masked).
-extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
 
 // The SecretColor -> sprite-handle table hung off g_gameReg->m_78 (WwdGameReg types that
 // slot void*, since it is a genuinely heterogeneous reused slot - ~10 TUs cast it to the

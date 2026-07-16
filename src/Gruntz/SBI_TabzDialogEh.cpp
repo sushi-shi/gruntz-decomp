@@ -26,12 +26,12 @@
 #define SBI_ITEM_OWN_CTOR // out-of-line base ctor => retail's `call ??0CStatusBarItem`
 
 #include <Mfc.h> // afx-first umbrella (CObject / CPtrList / ::CopyRect)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GruntzMgr.h>          // the *0x24556c singleton (CGruntzMgr)
 #include <Gruntz/SbiTabzDialogViews.h> // CSBI_Image/_MenuItemDlg/_ImageSet leaves + CTabzBuilder
 
-extern "C" CGruntzMgr* g_gameReg;
 
 // ===========================================================================
 // CTabzBuilder::BuildTabzDialog  @0x10a340

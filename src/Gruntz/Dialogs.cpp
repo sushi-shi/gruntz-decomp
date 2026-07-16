@@ -20,6 +20,7 @@
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <EmptyString.h> // g_emptyString
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
@@ -28,7 +29,6 @@
 
 // The game-manager view of the 0x64556c singleton (== g_gameReg); the battlez-setup
 // option handlers persist per-slot dropdowns into its m_options array.
-extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // (The old "CImgHolder image-list holder hierarchy" here was a fake-view nest,
 // RTTI-refuted: 0x1e8cb4/0x1e8cd4/0x1e8cf4 carry RTTI .?AVCObject@@/.?AVCGdiObject@@/
