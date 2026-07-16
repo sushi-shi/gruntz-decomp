@@ -65,7 +65,7 @@ i32 (*g_restoreHandler)() = 0; // 0x683edc
 // in <DDrawMgr/DirectDrawMgr.h> (included above).
 
 // Heap alloc/free are ::operator new @0x1b9b46 / ::operator delete @0x1b9b82
-// (NAFXCW), declared by <Mfc.h> - reloc-masked library calls (was RezAlloc/RezFree).
+// (NAFXCW), declared by <Mfc.h> - reloc-masked library calls.
 
 // IID_IDirectDraw2 - the real dxguid GUID constant in .rdata, passed to QueryInterface
 // by REFIID. <ddraw.h> declares it (EXTERN_C const GUID); redeclared with DATA() to bind
@@ -380,7 +380,7 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
 // The MSVC5 explicit-ctor-call extension gives the clean guard-free tail-jmp (a
 // placement-new would keep the null-check) - docs/patterns/explicit-ctor-call-inplace-
 // tail-jmp.md. g_modeArray is now a real MFC CPtrArray, so the ctor reloc binds to
-// the HIGH-confidence library label ??0CPtrArray @0x1b4f0b (was UNBOUND CDdObArray::RemoveAll).
+// the HIGH-confidence library label ??0CPtrArray @0x1b4f0b.
 RVA(0x00141c80, 0xa)
 void ClearModeArray_141c80() {
     g_modeArray.CPtrArray::CPtrArray();
@@ -1293,7 +1293,7 @@ void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 struct CDdDescSrc {
     // COM-style interface (abstract, __stdcall); only slot 12 (+0x30) is invoked.
     // STDMETHOD form == `virtual HRESULT __stdcall`, so `m_8->Make(...)` lowers to
-    // `mov eax,[m_8]; call [eax+0x30]` (was the manual vtbl-struct dispatch).
+    // `mov eax,[m_8]; call [eax+0x30]`.
     STDMETHOD(v00)() PURE;
     STDMETHOD(v01)() PURE;
     STDMETHOD(v02)() PURE;
@@ -1483,7 +1483,7 @@ void CDDrawPtrCollections::SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag
 }
 
 // ---------------------------------------------------------------------------
-// Make950 (0x143950, re-homed from src/Stub/BoundaryUpper2.cpp): install a 256-entry
+// Make950 (0x143950): install a 256-entry
 // palette from a caller-supplied packed RGB-triplet buffer (buf) - expand each 3-byte
 // RGB into the 4-byte display palette entry (4th byte zeroed), then flag present +
 // latch the tag (z). Returns success (1). __thiscall, 2 args (ret 0x8). The palette-
@@ -1540,7 +1540,7 @@ void CDDrawPtrCollections::SetDisplayPaletteDirect_1439b0(i32* rgbq, i32 tag) {
 // (too small to hold the palette); otherwise forward (buf + size - 0x300, tag) to
 // Make950 (the sibling packed-RGB installer).  __thiscall (ecx=this passed straight
 // through to Make950), ret 0xc.
-// (re-homed from src/Stub/GapFunctions.cpp; RVA-adjacent to the Make950/palette family.)
+// (RVA-adjacent to the Make950/palette family.)
 // ---------------------------------------------------------------------------
 RVA(0x001439f0, 0x35)
 CDDPalette* CDDrawPtrCollections::Make950Trailing(u8* buf, i32 size, i32 tag) {

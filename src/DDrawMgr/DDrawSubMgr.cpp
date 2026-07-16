@@ -36,7 +36,7 @@
 #include <string.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>    // single-source CDDrawSurfacePair
-#include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (ex CDDrawBlitParam view)
+#include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor
 #include <Gruntz/SerialArchive.h>         // the shared CSerialArchive stream
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr
 #include <DDrawMgr/DDrawSubMgrPages.h>    // single-source CDDrawSubMgrPages (surface ops)
@@ -848,7 +848,7 @@ CFileMem::~CFileMem() {
 }
 
 // CFileMemBase::Reset (slot 3, 0x157a40): zero the two scalar fields + Empty the name.
-// OUT-OF-LINE (was inline in FileMem.h) so known-type callers `call 0x157a40` instead of
+// OUT-OF-LINE so known-type callers `call 0x157a40` instead of
 // inlining - the shape CDDrawSurfaceMgr::SnapshotChildren's `CFileMem S; S.Reset()` needs.
 RVA(0x00157a40, 0x10)
 void CFileMemBase::Reset() {
