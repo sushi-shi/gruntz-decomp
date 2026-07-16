@@ -119,11 +119,11 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
     if (m_dd2->SetCooperativeLevel((HWND)window, coopFlags) != 0) {
-        HandleError();
+        ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
         return 0;
     }
     if (m_dd2->SetDisplayMode(w, h, bpp, 0, 0) != 0) {
-        HandleError();
+        ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
         return 0;
     }
 
@@ -133,10 +133,10 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
         *d++ = 0;
     }
     m_descSize = 0x6c;
-    m_24 = 1;
+    m_descFlags = 1;    // dwFlags = DDSD_CAPS (retail `mov [esi+0x34],1`; was mis-read as m_24)
     m_descCaps = 0x200; // ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE
     if (m_dd2->CreateSurface((LPDDSURFACEDESC)m_desc, &m_primarySurfaceRaw, 0) != 0) {
-        HandleError();
+        ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
         return 0;
     }
 
@@ -145,11 +145,14 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
 
-    OnModeSet(w);
+    // Snapshot the system palette into the +0x108 table (retail pushes the WINDOW
+    // - `mov eax,[esp+0x20]` - not the width; the old `OnModeSet(w)` fake-alias
+    // decl mis-read both the callee class and the argument).
+    ((CDDScreen*)this)->Snapshot((HWND)window); // same-object bridge (CDDScreen facet)
 
     if (mode->bpp == 8) {
         if (m_dd2->CreatePalette(4, (LPPALETTEENTRY)m_palEntries, &m_palette, 0) != 0) {
-            HandleError();
+            ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
             return 0;
         }
         m_primarySurface->SetPalette(m_palette);
@@ -157,12 +160,12 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     if (mode->bpp == 0x18) {
-        HandleError();
+        ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
         return 0;
     }
     if (mode->bpp == 0x10) {
         if (CheckMode16() == 0) {
-            HandleError();
+            ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
             return 0;
         }
     }
@@ -212,7 +215,10 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     }
     m_videoWnd->SetFocus();
     HWND h = m_videoWnd ? m_videoWnd->m_hWnd : 0;
-    return Init(h, a0, a1);
+    // The bring-up is CDDPageMgr::Init @0x17c040 on this same object (a0 IS the
+    // DDModeInfo*, a1 the coop flags); the old ?Init@CMoviePlayer@@ fake-alias
+    // decl left this rel32 unresolved.
+    return ((CDDPageMgr*)this)->Init(h, (DDModeInfo*)a0, (u32)a1); // same-object bridge
 }
 
 // CDDScreen::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the

@@ -283,10 +283,10 @@ class CDDPageMgr {
 public:
     i32 Init(void* window, DDModeInfo* mode, u32 coopFlags); // 0x17c040
 
-    // Internal helpers (other DDrawMgr TUs; no-body externs => reloc-masked).
-    void HandleError();    // 0x17cc80
-    void OnModeSet(i32 a); // 0x17cd90
-    i32 CheckMode16();     // 0x17d2b0
+    // (HandleError @0x17cc80 and the 0x17cd90 palette snapshot are CDDScreen
+    // methods - the old CDDPageMgr::HandleError/OnModeSet decls were fake-view
+    // aliases; Init reaches both through the documented same-object bridge cast.)
+    i32 CheckMode16(); // 0x17d2b0
 
     // The 1-based page-record cache management (bodies in DDPageMgr.cpp). RemoveAt drops
     // one record (frees its three buffers, shifts the tail down); FreeAll RemoveAt(1)s
@@ -311,8 +311,10 @@ public:
     union {                                  // +0x30  DDSURFACEDESC scratch (CreateSurface target)
         char m_desc[0x6c]; //        raw view (Init bulk-clears the desc as dwords)
         struct {
-            u32 m_descSize; // +0x30  dwSize
-            char m_descpad34[0x98 - 0x34];
+            u32 m_descSize;  // +0x30  dwSize
+            u32 m_descFlags; // +0x34  dwFlags (Init sets DDSD_CAPS - retail `mov [esi+0x34],1`;
+                             //         the old `m_24 = 1` mis-read this store at +0x24)
+            char m_descpad38[0x98 - 0x38];
             u32 m_descCaps; // +0x98  ddsCaps.dwCaps
         };
     };

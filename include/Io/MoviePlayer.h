@@ -85,8 +85,10 @@ public:
     i32 Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x17c6f0
     ~CMoviePlayer();                                          // 0x038fc0
     // ----- src/Io/SmackerVideoWindow.cpp (the playback cluster) -----
-    int Init(HWND__* h, i32 a0, i32 a1);                    // 0x17c040
-    int CreateVideoWindow(i32 a0, i32 a1);                  // 0x17c2a0
+    // (The bring-up 0x17c040 is CDDPageMgr::Init(void*,DDModeInfo*,u32) - the old
+    //  `int Init(HWND,i32,i32)` decl here was a fake-view alias of it;
+    //  CreateVideoWindow reaches it through the same-object bridge cast.)
+    int CreateVideoWindow(i32 a0, i32 a1); // 0x17c2a0
     void Teardown();                                        // 0x17c510
     i32 OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5); // 0x17c570
     i32 OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5); // 0x17c630
