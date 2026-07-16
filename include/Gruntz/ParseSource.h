@@ -30,6 +30,8 @@ typedef enum ParseEntryTag {
     PARSETAG_INA = 0x414e49, // "INA" -> .ANI  animation entry (the sibling Leaf/SurfacePair gate)
 } ParseEntryTag;
 
+#include <Bute/Hash.h> // the REAL CHashElement (the +0x1c node's base)
+
 // The +0x10 mapped-source object: m_baseOffset is its base file offset, m_mapping the
 // live mapping pointer (0 when not mapped). External shape, accessed by offset.
 struct ParseMappedSource {
@@ -49,21 +51,45 @@ public:
     virtual i32 Read(i32 base, i32 pos, u32 len, void* dst);
 };
 
-// The intrusive hash-node prefix embedded at CParseSource+0x1c (its own vptr @0x5ef740):
-// the parse-slot table hashes on this node. Init placement-constructs it (stamping the
-// vptr); its data slots are otherwise untouched. Real polymorphic (2 declared-only slots,
-// reloc-masked); VTBL binds the cl-emitted ??_7 to the delinked datum.
-// IDENTITY NOTE: this is the CHashElement shape (<Bute/Hash.h> - vptr + link pair +
-// owner + bucket; CSymLeafBuilder::m_node is the SAME +0x1c member of the SAME 0x3c
-// parse-slot memory) wearing the concrete parse-slot key-hash vtable; basing it on
-// CHashElement is the deferred deep fold (layout check: CHashElement's +0x14
-// m_record vs CParseSource's +0x30 field).
-SIZE_UNKNOWN(CParseSlotHashNode);
-struct CParseSlotHashNode {
-    virtual void v0(); // slot 0
-    virtual void v1(); // slot 1
-    i32 m_data[4];     // node payload (+0x04..+0x13); untouched by Init
+// The intrusive hash-node prefix embedded at CParseSource+0x1c: the parse-slot table
+// hashes on this node. IDENTITY PROVEN (VW2 2026-07-16) - it IS a CHashElement
+// (<Bute/Hash.h>) wearing the concrete parse-slot key-hash vtable @0x5ef740; the
+// deferred layout check HOLDS. Three independent proofs:
+//
+//  1. SLOT COUNT. The retail vtable @0x1ef740 has exactly ONE slot (vtable_scan:
+//     0x1ef744 starts the next vtable) == CHashElement's single virtual Hash().
+//     The old view declared TWO virtuals - the second slot was FABRICATED, and cl
+//     was emitting an 8-byte ??_7 where retail's is 4.
+//  2. THE SLOT BODY. Slot 0 -> 0x13c230, a Ghidra recovery gap; its raw bytes are
+//         mov eax,[ecx+0x14]  ; this->m_record   <- CHashElement::m_record @+0x14
+//         mov ecx,[ecx+0x0c]  ; this->m_owner    <- CHashElement::m_owner  @+0x0c
+//         mov edx,[eax]       ; m_record's FIRST dword == the key ("key first")
+//         push edx
+//         call 0x13c240       ; CHash::HashStr(key), __thiscall on m_owner
+//         ret
+//     i.e. literally CHashElement::Hash() == m_owner->HashStr(m_record->key). The
+//     +0x14 / +0x0c offsets are read straight out of the binary.
+//  3. THE +0x30 FIELD. Element @+0x1c => m_record lands at +0x1c+0x14 == +0x30,
+//     which is the field Init (0x1396f0) zeroes then sets to `this` - and
+//     CParseSource+0x00 is m_name, the key. So the ex "m_selfLink self back-pointer"
+//     IS m_node1c.m_record: the element points at its own record, key first, exactly
+//     as CHashElement documents. The old view's `i32 m_data[4]` (+0x04..+0x13) is
+//     CHashElement's m_link/m_owner/m_bucket, dword for dword.
+struct CParseSlotHashNode : public CHashElement {
+    // The ctor zeroes m_record - EVIDENCE, not a guess: Init's `mov [eax+0x30],ecx`
+    // sits between the vptr stamp and Init's OWN zero run (+0x34/+0x10/+0x00), i.e.
+    // exactly where an inlined member ctor lands. That also explains the "dead"
+    // +0x30 store retail keeps (cl does not DSE it across the inlined ctor); the
+    // ex model pinned it with a `volatile` member instead.
+    CParseSlotHashNode() {
+        m_record = 0;
+    }
+    // slot 0 (0x13c230): m_owner->HashStr(m_record's key). Declared-only - its
+    // owner is the leaf-symbol CHash instantiation, and typing that here would
+    // need a downcast of the CHashBase* m_owner; the slot reloc-masks.
+    virtual u32 Hash() OVERRIDE;
 };
+SIZE(CParseSlotHashNode, 0x18);
 VTBL(CParseSlotHashNode, 0x001ef740);
 
 // struct (not class): the retail Init return mangles PAU (?Init@CParseSource@@QAEPAU1@XZ),
@@ -92,10 +118,11 @@ struct CParseSource {
     ParseMappedSource* m_mapped;       // +0x10 mapped source
     i32 m_base;                        // +0x14 source base ptr
     i32 m_cursor;                      // +0x18 read cursor
-    CParseSlotHashNode m_node1c;           // +0x1c embedded parse-slot hash-node (vptr @0x5ef740)
-    CParseSource* volatile m_selfLink; // +0x30 self back-pointer (Init: 0 then this; volatile
-                                       // pins the dead store the retail store-order depends on)
-    ParseVReader* m_reader;            // +0x34 virtual reader
+    // +0x1c embedded parse-slot hash-node (0x18 B, vptr @0x5ef740, spans +0x1c..+0x33).
+    // Its m_record (+0x30) is the ex "m_selfLink": Init points it at this record, whose
+    // first dword (m_name) is the hash key.
+    CParseSlotHashNode m_node1c;
+    ParseVReader* m_reader; // +0x34 virtual reader
     i32 m_buffer;                      // +0x38 lazily-allocated inline byte buffer (as int address)
 };
 

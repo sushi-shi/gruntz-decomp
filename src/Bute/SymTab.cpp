@@ -65,18 +65,21 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
 // slot - placement-construct the embedded hash-node (stamping its vptr @0x5ef740), null
 // the name/mapped/reader bookkeeping, self-link +0x30. Returns this. __thiscall.
 // @early-stop
-// vptr-middle re-install wall: the embedded node ctor's implicit vptr stamp reschedules
-// relative to the volatile-pinned +0x30 dead-store sequence, so the store order diverges
-// from retail (documented compiler-model wall). Logic complete; ??_7 named via VTBL.
+// placement-new-guard wall (topic:eh topic:wall, ~56.7%): the node's ctor now supplies
+// the vptr stamp + the m_record(+0x30) zero in retail's exact order (the ex `volatile`
+// pin is gone - see ParseSource.h), but cl's placement-new emits the documented null
+// guard `lea ecx,[this+0x1c]; cmp ecx,0; je` and then addresses the node off ecx, where
+// retail has NO guard and addresses everything off `this` (eax). Retail therefore did
+// not construct this node with placement new; the no-guard spelling is unrecovered
+// (an explicit ctor call is not legal C++). Logic + layout complete; ??_7 named via VTBL.
 // ===========================================================================
 RVA(0x001396f0, 0x1a)
 CParseSource* CParseSource::Init() {
-    new (&m_node1c) CParseSlotHashNode;
-    m_selfLink = 0;
+    new (&m_node1c) CParseSlotHashNode; // stamps the vptr + zeroes m_record (+0x30)
     m_reader = 0;
     m_mapped = 0;
     m_name = 0;
-    m_selfLink = this;
+    m_node1c.m_record = this; // the element's record IS this source (key = m_name @+0)
     return this;
 }
 
