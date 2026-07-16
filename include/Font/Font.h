@@ -223,19 +223,9 @@ SIZE_UNKNOWN(CharCursor); // reinterpret view over a CString's m_pchData
 // m_desc.m_dwSize/m_lpszName/m_lpszPassword inside the node's DPSESSIONDESC2 copy,
 // and FreeStrings (0x179680, NetMgr.cpp) is that node's dtor helper.)
 
-// FontInterfaceObject - a minimal COM-style object that carries a GUID pointer at
-// +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
-struct FontInterfaceObject {
-    char _pad00[4];  // +0x00  (unread by the iid checks below; iid lives at +0x04)
-    const void* iid; // +0x04
-    i32 IsInterface1();
-    i32 IsInterface2();
-    i32 IsInterface3();
-    i32 IsInterface4();
-    i32 IsInterface5();
-};
-SIZE_UNKNOWN(FontInterfaceObject); // Font's COM iid-checker (completeness-only; allocated
-                                   // elsewhere - name shared with Net's polymorphic view)
+// (The FontInterfaceObject view is GONE: the five IsInterface1-5 GUID predicates at
+// 0x1794b0-0x179570 are the canonical <Net/InterfaceObject.h> InterfaceObject's own
+// methods, defined in NetMgr.cpp on that class - not a Font type.)
 
 // --- vtable catalog ---
 

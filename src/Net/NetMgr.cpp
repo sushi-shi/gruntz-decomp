@@ -14,7 +14,7 @@
 // blocks are separate retail objects (a ~0xbaf30 .text gap between them).
 #include <Net/NetMgr.h>          // CNetMgr + DirectPlay/list node types (pulls <Mfc.h>, RezMgr)
 #include <Net/InterfaceObject.h> // Find() returns the InterfaceObject group-node
-#include <Font/Font.h> // FontInterfaceObject decls (the misnomered 0x1794b0-0x179570
+#include <Font/Font.h> // CWapNodeB decl (a NetMgr node type, still homed here - 0x1794b0-0x179680
                        // NetMgr.cpp-tail bodies below; see the seam note there)
 #include <rva.h>
 #include <string.h> // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
@@ -1129,12 +1129,9 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
 // predicates + the node string-free, re-homed from src/Font/Font.cpp per the
 // docs/exe-map/interval-dossiers.md calibration case (they precede ??0Font
 // @0x179700 - NetMgr.cpp-obj code, glued to the font unit only by the seam).
-// @identity-TODO: NetMgr InterfaceObject, not font - FontInterfaceObject is a
-// misnomered duplicate view of <Net/InterfaceObject.h>'s InterfaceObject (whose
-// header declares these five RVAs as its methods); fold the two classes (and the
-// mangled names) in a dedicated rename pass, not this re-home package. (The
-// sibling "CWapNodeB" view IS resolved: it was CNetPlayerListNode - see
-// FreeStrings below.)
+// These five RVAs are the canonical <Net/InterfaceObject.h> InterfaceObject's
+// methods (its m_4 GUID pointer + these predicates). @identity-TODO remains for
+// CWapNodeB (a NetMgr node type, declared in <Font/Font.h> for now).
 // ===========================================================================
 
 // GUIDs for the DirectPlay service-provider interface checks (IsInterfaceX). Given
@@ -1162,57 +1159,52 @@ extern const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
 
 // =========================================================================
 // IsInterface1
-// @identity-TODO: NetMgr InterfaceObject, not font
 RVA(0x001794b0, 0x21)
-i32 FontInterfaceObject::IsInterface1() {
-    if (!iid) {
+i32 InterfaceObject::IsInterface1() {
+    if (!m_4) {
         return 0;
     }
-    return memcmp(iid, g_guid1, 16) == 0 ? 1 : 0;
+    return memcmp((const void*)m_4, g_guid1, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
 // IsInterface2
-// @identity-TODO: NetMgr InterfaceObject, not font
 RVA(0x001794e0, 0x21)
-i32 FontInterfaceObject::IsInterface2() {
-    if (!iid) {
+i32 InterfaceObject::IsInterface2() {
+    if (!m_4) {
         return 0;
     }
-    return memcmp(iid, g_guid2, 16) == 0 ? 1 : 0;
+    return memcmp((const void*)m_4, g_guid2, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
 // IsInterface3
-// @identity-TODO: NetMgr InterfaceObject, not font
 RVA(0x00179510, 0x21)
-i32 FontInterfaceObject::IsInterface3() {
-    if (!iid) {
+i32 InterfaceObject::IsInterface3() {
+    if (!m_4) {
         return 0;
     }
-    return memcmp(iid, g_guid3, 16) == 0 ? 1 : 0;
+    return memcmp((const void*)m_4, g_guid3, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
 // IsInterface4
-// @identity-TODO: NetMgr InterfaceObject, not font
 RVA(0x00179540, 0x21)
-i32 FontInterfaceObject::IsInterface4() {
-    if (!iid) {
+i32 InterfaceObject::IsInterface4() {
+    if (!m_4) {
         return 0;
     }
-    return memcmp(iid, g_guid4, 16) == 0 ? 1 : 0;
+    return memcmp((const void*)m_4, g_guid4, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
 // IsInterface5
-// @identity-TODO: NetMgr InterfaceObject, not font
 RVA(0x00179570, 0x21)
-i32 FontInterfaceObject::IsInterface5() {
-    if (!iid) {
+i32 InterfaceObject::IsInterface5() {
+    if (!m_4) {
         return 0;
     }
-    return memcmp(iid, g_guid5, 16) == 0 ? 1 : 0;
+    return memcmp((const void*)m_4, g_guid5, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
