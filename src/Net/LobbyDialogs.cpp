@@ -55,8 +55,8 @@ extern "C" i32 g_sharedFlag;
 // <Mfc.h> HWND (HWND__*, PAU) would mis-mangle. The HWND args convert to void* implicitly.
 i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 // DAT_00648cec: the "connection established / abort" latch the join-wait timer polls
-// (nonzero = keep waiting, skip the timeout EndDialog). Home elsewhere; extern-only pin.
-extern "C" i32 g_activePlayerCount;
+// (nonzero = keep waiting, skip the timeout EndDialog). Declared in <Net/NetMgr.h>
+// (included above) - the extern-only consumer pin; the DATA binding is homed elsewhere.
 
 namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
