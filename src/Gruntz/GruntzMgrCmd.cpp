@@ -268,7 +268,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             m_strWorldFile.Empty();
             m_134 = 1;
             // retail: `mov eax,[esi+0x58]; mov ecx,[eax+0x18]` - NO null test, and the
-            // field is m_maxLevel (+0x18), not m_curLevel (the old view's ternary +
+            // field is m_maxLevel (+0x18), not m_curLevel (the ternary +
             // offset were both wrong).
             if (!PassClickToPlayState(m_saveSink->m_maxLevel, 0, 1)) {
                 ReportError(0x8005, 0x41f);
@@ -1139,9 +1139,9 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             m_soundEnabled = v;
             g_sndEnabled = v;
             if (v == 0) {
-                m_inputState->Stop(); // 0x29b9->0xbc80 CWorldSoundSet::Stop (was CInput54::Disarm)
+                m_inputState->Stop(); // 0x29b9->0xbc80 CWorldSoundSet::Stop
             } else {
-                m_inputState->Resume(); // 0x18e8->0xbcf0 CWorldSoundSet::Resume (was CInput54::Arm)
+                m_inputState->Resume(); // 0x18e8->0xbcf0 CWorldSoundSet::Resume
             }
             return 1;
         }

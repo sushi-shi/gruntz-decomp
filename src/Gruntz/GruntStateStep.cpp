@@ -66,7 +66,7 @@ extern char s_codeJ[];
 
 // @0x29ac0 (thunk 0x34a4) IS the engine CRect(l,t,r,b) direct-store ctor (Ghidra/
 // FID: ??0CRect@@QAE@HHHH@Z), out-of-line so it is CALLed here. Modeled by the
-// canonical CRect (<Wap32/Rect.h>); the old local QuadIntRecord view folded onto it.
+// canonical CRect (<Wap32/Rect.h>).
 
 // Drain the pending-coord list onto g_coordPool via the CObList Find walk, then
 // empty the list.

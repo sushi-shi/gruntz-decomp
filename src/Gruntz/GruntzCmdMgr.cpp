@@ -19,7 +19,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/State.h> // CState::Update (slot 4) - the live state's id tag
-#include <Gruntz/Play.h> // CPlay::ExecCommand - the ApplyOne/ApplyMask target (ex CGruntzCmdTarget)
+#include <Gruntz/Play.h> // CPlay::ExecCommand - the ApplyOne/ApplyMask target
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/GruntzMgr.h>     // the m_38 manager back-ptr (CGruntzMgr) + m_world chain

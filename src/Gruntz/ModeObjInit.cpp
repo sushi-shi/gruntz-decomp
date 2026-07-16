@@ -74,7 +74,7 @@ CSbiHlRow::CSbiHlRow() {
 }
 
 // @early-stop
-// FULLY DE-VIEWED (2026-07-13, Fable lane). 0xc7ec0 is CPlay's slot-1 override (RTTI),
+// 0xc7ec0 is CPlay's slot-1 override (RTTI),
 // and this body now runs entirely on canonical classes: the ModeObj 37-slot placeholder
 // view, the Parent/Arg1/Peer/Rec78/Ctl1c/Rec50 satellites AND the last one - Worker630,
 // the hand-inlined CStatusBarMgr ctor - are all gone. The three dispatched slots are the
@@ -211,7 +211,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             }
         }
         m_1c4 = 1;
-        m_40 = 0; // the retail DWORD store (the ex-view's u8 was the noted bug)
+        m_40 = 0; // the retail DWORD store
         m_1c0 = 0;
         memset(&m_1d0, 0, 0x40 * 4); // clears +0x1d0..+0x2d0
         a1->ResetClockGlobals();     // retail ecx = the A1 arg slot (a1 IS the mgr)
