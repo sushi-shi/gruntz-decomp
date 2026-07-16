@@ -149,19 +149,19 @@ namespace WAP32 {
         void SetFrameRate(i32 fps);   // @0x13dee0  arm m_pacingGate + derive m_frameBudgetMs
         i32 TrySetFrameRate(i32 fps); // @0x13df00  install only when pacing inactive
 
-        CGameWnd* m_gameWnd; // +0x04  bound game window (set by Run)
-        CGameApp* m_owner;   // +0x08  owning app (pGameWnd->m_owner; set by Run)
-        i32 m_frameGate;     // +0x0c  nonzero suppresses the per-frame advance
-        i32 m_soundEnabled;  // +0x10  sound-on flag (=1 in ctor; WriteInt "Sound")
-        i32 m_musicEnabled;  // +0x14  music-on flag (=1 in ctor; WriteInt "Music")
-        i32 m_fps;           // +0x18  measured frames-per-second (debug HUD "Fps = %i"; =-1 on
-                             //        frame-clock reset = no measurement yet; PerFrameTick
-                             //        stores count>>1 over each 2000 ms window)
-        i32 m_pacingGate;    // +0x1c  frame-pacing gate: the target fps SetFrameRate stores
-                             //        (>0 arms PerFrameTick's busy-wait; cleared by ctor/Run;
-                             //        ex "m_pauseFlag (inferred)")
-        i32 m_frameCounter;  // +0x20  frames-this-window counter (PerFrameTick ++ per frame;
-                             //        zeroed by InitTimeFields; a COUNT - ex "m_elapsedMs")
+        CGameWnd* m_gameWnd;   // +0x04  bound game window (set by Run)
+        CGameApp* m_owner;     // +0x08  owning app (pGameWnd->m_owner; set by Run)
+        i32 m_frameGate;       // +0x0c  nonzero suppresses the per-frame advance
+        i32 m_soundEnabled;    // +0x10  sound-on flag (=1 in ctor; WriteInt "Sound")
+        i32 m_musicEnabled;    // +0x14  music-on flag (=1 in ctor; WriteInt "Music")
+        i32 m_fps;             // +0x18  measured frames-per-second (debug HUD "Fps = %i"; =-1 on
+                               //        frame-clock reset = no measurement yet; PerFrameTick
+                               //        stores count>>1 over each 2000 ms window)
+        i32 m_pacingGate;      // +0x1c  frame-pacing gate: the target fps SetFrameRate stores
+                               //        (>0 arms PerFrameTick's busy-wait; cleared by ctor/Run;
+                               //        ex "m_pauseFlag (inferred)")
+        i32 m_frameCounter;    // +0x20  frames-this-window counter (PerFrameTick ++ per frame;
+                               //        zeroed by InitTimeFields; a COUNT - ex "m_elapsedMs")
         i32 m_windowStartTick; // +0x24  fps-window start tick (timeGetTime, by InitTimeFields)
         i32 m_frameBudgetMs;   // +0x28  target ms-per-frame (SetFrameRate: 1000/fps)
 

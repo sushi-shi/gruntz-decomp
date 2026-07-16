@@ -88,7 +88,7 @@ public:
     void CacheFrameIndexed(const char* key, i32 frame);   // 0x1504d0 (2-arg)
     void CacheFrame(const char* key, i32 frame);          // 0x150540
     void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
-    void ApplyGeometryDirect(i32 src, i32 flag);          // 0x58b60
+    void ApplyGeometryDirect(CAniElement* src, i32 flag); // 0x58b60
 
     // The +0x1a0 anim-advance cursor accessor, kept for the ~30 existing
     // `->Cursor()->` call sites; now a plain address-of (the cast is gone -

@@ -82,7 +82,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         char* buf = m_cells[idx].m_walk.GetBuffer(0);
         m_154->CacheFirstFrame(buf); // 0x1504d0 (the player IS the created game object)
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->Cursor()->Setup_15c2d0((CAniElement*)m_poseWalk);
+        m_154->Cursor()->Setup_15c2d0(m_poseWalk);
         return 1;
     }
     ResetEntranceAnimation(0, 0, 1);

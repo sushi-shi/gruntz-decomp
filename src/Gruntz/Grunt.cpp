@@ -276,9 +276,9 @@ struct CAnimSetNode {
 
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
-        CSprite* _out = 0;                                                                         \
+        CAniElement* _out = 0;                                                                     \
         m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out);         \
-        (dst) = (int)_out;                                                                         \
+        (dst) = _out;                                                                              \
     } while (0)
 
 // The 8 compass grunt-voice records (3 DWORDs each, runtime-filled .data) +
@@ -925,7 +925,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
         // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
         // latched m_entranceCell triple (cell table base 0x468).
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseAttackIdle);
+        m_154->m_1a0.Setup_15c2d0(m_poseAttackIdle);
         {
             CAniElement* desc = m_154->m_1a0.m_14;
             i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
@@ -954,7 +954,7 @@ codeI:
     m_entranceCell.row = rec.m_4;
     m_entranceCell.reason = rec.m_8;
     m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseIdle[1]);
+    m_154->m_1a0.Setup_15c2d0(m_poseIdle[1]);
     ReseedIdleReset(1, 0, 0);
     return;
 
@@ -979,7 +979,7 @@ walk:
     // codes "D"/"M" (and the default): drive the WALK geometry, stamp the cell name
     // from the incoming record (cell table base 0x470), set it by name only.
     m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
+    m_154->m_1a0.Setup_15c2d0(m_poseWalk);
     {
         i32 col = rec.m_0;
         i32 row = rec.m_4;
@@ -1629,7 +1629,7 @@ label_4cb4b:
     }
     if (reason0e) {
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
+        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
         return 1;
     }
     goto label_ret1;

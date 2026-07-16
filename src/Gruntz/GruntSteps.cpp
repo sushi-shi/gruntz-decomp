@@ -1091,7 +1091,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
+        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
         // Stamp the first entrance-cell frame from m_cells[base].m_walk. The by-value
         // cell copy dead-spills `reason` (esp+0x1c) -> `sub esp,0xc`; base = 3*col+row.
         GruntEntranceCell cell = m_entranceCell;
@@ -1314,7 +1314,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseWalk;
+        CAniElement* id = m_poseWalk;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1324,7 +1324,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseAttack1;
+        CAniElement* id = m_poseAttack1;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1334,7 +1334,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseAttack2;
+        CAniElement* id = m_poseAttack2;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1344,7 +1344,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseAttackIdle;
+        CAniElement* id = m_poseAttackIdle;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1354,7 +1354,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseStruck1;
+        CAniElement* id = m_poseStruck1;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1364,7 +1364,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseStruck2;
+        CAniElement* id = m_poseStruck2;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1374,7 +1374,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseIdle[0];
+        CAniElement* id = m_poseIdle[0];
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1384,7 +1384,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseIdle[1];
+        CAniElement* id = m_poseIdle[1];
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1394,7 +1394,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseIdle[2];
+        CAniElement* id = m_poseIdle[2];
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1404,7 +1404,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseIdle4;
+        CAniElement* id = m_poseIdle4;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1414,7 +1414,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseIdle5;
+        CAniElement* id = m_poseIdle5;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1424,7 +1424,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseDeath;
+        CAniElement* id = m_poseDeath;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1434,7 +1434,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseToy1;
+        CAniElement* id = m_poseToy1;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1444,7 +1444,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseToy2;
+        CAniElement* id = m_poseToy2;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1454,7 +1454,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseToyBreak;
+        CAniElement* id = m_poseToyBreak;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1464,7 +1464,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseItem;
+        CAniElement* id = m_poseItem;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);
@@ -1474,7 +1474,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_poseItem2;
+        CAniElement* id = m_poseItem2;
         if (id) {
             CString nm = catalog->KeyOfValue_152d30((CObject*)id);
             strcpy(buf, nm);

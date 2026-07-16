@@ -155,8 +155,8 @@ static inline void StampWorkerVtbl(AnimWorkerObj* w) {
 // directly (no name lookup). __thiscall, ret 8.
 // ===========================================================================
 RVA(0x00058b60, 0x2d)
-void CGameObject::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
-    ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Setup_15c2d0((CAniElement*)srcSprite);
+void CGameObject::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
+    ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Setup_15c2d0(srcSprite);
     if (applyDefault) {
         ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance(g_engineFrameDelta);
     }

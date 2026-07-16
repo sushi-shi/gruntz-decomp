@@ -233,7 +233,7 @@ i32 CGrunt::RunEntranceMove() {
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
+        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
@@ -576,7 +576,7 @@ void CGrunt::RearmEntranceDrop() {
     if (*(i32*)((char*)m_154 + 0x1a0 + 0x28) != 0 && *(i32*)((char*)m_154 + 0x1a0 + 0x20) == 0) {
         m_22c = 0;
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseItem2);
+        m_154->m_1a0.Setup_15c2d0(m_poseItem2);
 
         CAniElement* desc = m_154->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
@@ -700,7 +700,7 @@ i32 CGrunt::StartBombGruntRun() {
         }
     }
     m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseItem);
+    m_154->m_1a0.Setup_15c2d0(m_poseItem);
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col + 0xb;
@@ -760,12 +760,12 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 
         _out = 0;
         m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (void*&)_out);
-        m_poseWalk = (i32)_out;
+        m_poseWalk = (CAniElement*)_out;
         _out = 0;
         m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (void*&)_out);
         m_poseIdle[2] = 0;
-        m_poseIdle[0] = (i32)_out;
-        m_poseIdle[1] = (i32)_out;
+        m_poseIdle[0] = (CAniElement*)_out;
+        m_poseIdle[1] = (CAniElement*)_out;
         m_poseIdle4 = 0;
         m_poseIdle5 = 0;
 
@@ -806,22 +806,22 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 
         _out = 0;
         m_154->m_c->m_2c->m_10map.Lookup(s_WG_WALK, (void*&)_out);
-        m_poseWalk = (i32)_out;
+        m_poseWalk = (CAniElement*)_out;
         _out = 0;
         m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE1, (void*&)_out);
-        m_poseIdle[0] = (i32)_out;
+        m_poseIdle[0] = (CAniElement*)_out;
         _out = 0;
         m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE2, (void*&)_out);
-        m_poseIdle[1] = (i32)_out;
+        m_poseIdle[1] = (CAniElement*)_out;
         _out = 0;
         m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE3, (void*&)_out);
-        m_poseIdle[2] = (i32)_out;
+        m_poseIdle[2] = (CAniElement*)_out;
         _out = 0;
         m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE4, (void*&)_out);
-        m_poseIdle4 = (i32)_out;
+        m_poseIdle4 = (CAniElement*)_out;
         _out = 0;
         m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE5, (void*&)_out);
-        m_poseIdle5 = (i32)_out;
+        m_poseIdle5 = (CAniElement*)_out;
     }
 
     // Re-stamp the current entrance-cell frame keyed by the active anim type.
@@ -829,7 +829,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     GruntScratchTeardown();
     if (strcmp(rec->m_name, s_codeD) == 0) {
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
+        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
         CAniElement* desc = m_154->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
@@ -843,7 +843,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     GruntScratchTeardown();
     if (strcmp(rec2->m_name, s_codeA) == 0) {
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseIdle[0]);
+        m_154->m_1a0.Setup_15c2d0(m_poseIdle[0]);
         CAniElement* desc = m_154->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
@@ -886,7 +886,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     if (m_entranceStamped == 0) {
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseToyBreak);
+        m_154->m_1a0.Setup_15c2d0(m_poseToyBreak);
 
         CAniElement* desc = m_154->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
@@ -1035,7 +1035,7 @@ i32 CGrunt::StepArrivalCommit() {
             m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
             m_prevEntranceDesc = m_154->m_1a0.m_14;
-            m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
+            m_154->m_1a0.Setup_15c2d0(m_poseWalk);
             GruntEntranceCell cell = m_entranceCell;
             i32 colv = cell.row + cell.col * 2;
             i32 base = cell.col + colv;
@@ -1564,7 +1564,7 @@ i32 CGrunt::StepAnimDispatchB() {
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)m_poseWalk);
+        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
         // by-value cell copy dead-spills `reason` (esp+0x24) -> sub esp frame, then
         // GetBuffer(0)/CacheFirstFrame (retail J-arm identical to StepAnimDispatchA).
         GruntEntranceCell cell = m_entranceCell;

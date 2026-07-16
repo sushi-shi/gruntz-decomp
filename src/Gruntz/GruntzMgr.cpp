@@ -67,7 +67,7 @@
 #include <Gruntz/CheatMgr.h>          // CCheatMgr (m_cheatMgr @+0x44; the ex-HudGuard44 m_124 flag)
 #include <Gruntz/FaderMgr.h>          // CFaderMgr (m_faderMgr @+0x40; Close dtor-tears it)
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTableCache (m_shadeCache @+0x50)
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair; ex via RezMgr.h)
+#include <Rez/RezAlloc.h>          // RezAlloc/RezFree (the global allocator pair; ex via RezMgr.h)
 #include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
@@ -4647,7 +4647,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         }
     }
     RecomputeViewScale(); // 0x8f7f0 (thunk 0x1db6; ex the Step1db6 phantom)
-    RefreshGameClock(); // 0x8f620 (thunk 0x3d23; ex the Step3d23 phantom)
+    RefreshGameClock();   // 0x8f620 (thunk 0x3d23; ex the Step3d23 phantom)
     if (g_645600 != 0) {
         g_645600 = 0;
         char buf[0x70];

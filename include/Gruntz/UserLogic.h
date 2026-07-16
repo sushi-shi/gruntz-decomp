@@ -105,6 +105,7 @@ SIZE(CGameObject, 0x1dc);
 // (VTBL'd in <DDrawMgr/AnimWorkerObj.h>), one of the THREE vtables the engine ctor
 // 0x15b390 stamps (0x5efbc0 WwdBResolve / 0x5f0020 CWwdGameObjectE / 0x5efb80
 // AnimWorkerObj), i.e. an EMBEDDED sub-object's vtable, never this class's.
+class CAniElement; // ApplyGeometryDirect's geometry source (<Gruntz/AniElement.h>)
 struct CGameObject {
     void Construct(void* owner, i32 id, i32 z); // 0x15b390  the engine ctor (base subobject)
     void AddLogicHit(char* key);                // 0x150f50
@@ -114,11 +115,13 @@ struct CGameObject {
     // SpriteResource.cpp). They reinterpret the role-union fields m_0c/m_194/m_198(m_layer)
     // /m_19c as the resource holder / cached sprite / frame ptr / frame number (see the
     // field comments) - authentic union access, cast in the bodies.
-    void ApplyLookupSprite(const char* key, i32 flag);         // 0x1504d0 (frame-cache, 2-arg)
-    void ApplyName(const char* name);                          // 0x150540 (first-frame cache)
-    i32 ApplyLookupGeometry(const char* key, i32 flag);        // 0x1505b0
-    i32 LookupAnimSprite(const char* name);                    // 0x150610  (anim-set cache)
-    void ApplyGeometryDirect(i32 srcSprite, i32 applyDefault); // 0x58b60
+    void ApplyLookupSprite(const char* key, i32 flag);  // 0x1504d0 (frame-cache, 2-arg)
+    void ApplyName(const char* name);                   // 0x150540 (first-frame cache)
+    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
+    i32 LookupAnimSprite(const char* name);             // 0x150610  (anim-set cache)
+    void ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault); // 0x58b60 (the
+    // geometry source IS the resolved CAniElement - the body feeds it straight to
+    // the +0x1a0 cursor Setup)
     i32 EnsureWorker80(CGameObject* src); // 0x150eb0  (lazy worker @ +0x80, dispatch)
     i32
     EnsureWorker88(CGameObject* src); // 0x150f90  (lazy worker @ +0x88, dispatch; returns Slot09)

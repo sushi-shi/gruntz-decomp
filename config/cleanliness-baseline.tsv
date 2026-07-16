@@ -11,7 +11,7 @@ g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
 )this casts	268
 )m_ casts	981
-(char*) casts	850
+(char*) casts	852
 (const char*) casts	175
 void* m_ members	156
 offset-cast macros	0

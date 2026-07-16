@@ -508,14 +508,14 @@ public:
     i32 m_numMovies;          // +0x84  "Num_Movies" (movie-playback counter)
     i32 m_colorDepth;         // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
     i32 m_modeW, m_modeH;     // +0x8c, +0x90  live video mode (w, h)
-    i32 m_savedModeW, m_savedModeH;   // +0x94, +0x98  saved/last-good mode (w, h)
-    i32 m_lobbyResult;                // +0x9c  lobby-connect success flag (1/0)
-    i32 m_lobbyProbed;                // +0xa0  one-shot lobby-connect guard
-    i32 m_a4, m_a8;  // +0xa4, +0xa8
-    i32 m_modalBusy; // +0xac  modal-UI/cursor-busy gate
-    i32 m_renderGate; // +0xb0  nonzero suppresses PerFrameTick's post-step Render()
-                      //        (LoadWorldMode arms it around the mode-switch teardown)
-    i32 m_b4;         // +0xb4
+    i32 m_savedModeW, m_savedModeH; // +0x94, +0x98  saved/last-good mode (w, h)
+    i32 m_lobbyResult;              // +0x9c  lobby-connect success flag (1/0)
+    i32 m_lobbyProbed;              // +0xa0  one-shot lobby-connect guard
+    i32 m_a4, m_a8;                 // +0xa4, +0xa8
+    i32 m_modalBusy;                // +0xac  modal-UI/cursor-busy gate
+    i32 m_renderGate;               // +0xb0  nonzero suppresses PerFrameTick's post-step Render()
+    //        (LoadWorldMode arms it around the mode-switch teardown)
+    i32 m_b4;                         // +0xb4
     i32 m_isCheckpointPrompts;        // +0xb8  "Checkpoint_Prompts" enable (=1 in ctor)
     SaveInfo* m_saveInfoRec;          // +0xbc  last FillSaveInfo dst record
     struct IDirectPlayLobby* m_lobby; // +0xc0  the DirectPlay lobby interface (Released/recreated)

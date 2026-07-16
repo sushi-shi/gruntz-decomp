@@ -18,9 +18,9 @@
 // (LogicTypeTable.cpp / UserLogicCtorEmit.cpp) already dispatch on the same member.
 #include <Gruntz/GameObjectFactory.h> // the shared RegisterGameObjectTypes decl
 #include <rva.h>
-#include <Gruntz/ObjTypeRegistrars.h>   // real per-type registrar entry points (reloc fidelity)
-#include <DDrawMgr/DDrawSurfaceMgr.h>   // CDDrawSurfaceMgr - the ctx (m_workerCache @+0x14)
-#include <DDrawMgr/DDrawWorkerCache.h>  // CDDrawWorkerCache::CreateWorker (slot 9, 0x1652c0)
+#include <Gruntz/ObjTypeRegistrars.h>  // real per-type registrar entry points (reloc fidelity)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // CDDrawSurfaceMgr - the ctx (m_workerCache @+0x14)
+#include <DDrawMgr/DDrawWorkerCache.h> // CDDrawWorkerCache::CreateWorker (slot 9, 0x1652c0)
 
 // Reloc-masked externals: per-type object create-fns (ILT thunks to the real
 // ctors) and the per-type follow-up registration helpers (by ILT-thunk RVA).
@@ -289,7 +289,8 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     CTileSecretTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker((i32)CreateTeleporter, "Teleporter", 4);
     CTeleporter_RegisterActs();
-    ctx->m_workerCache->CreateWorker((i32)CreateSecretTeleporterTrigger, "SecretTeleporterTrigger", 4);
+    ctx->m_workerCache
+        ->CreateWorker((i32)CreateSecretTeleporterTrigger, "SecretTeleporterTrigger", 4);
     CSecretTeleporterTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker((i32)CreateSecretLevelTrigger, "SecretLevelTrigger", 4);
     CSecretLevelTrigger::RegisterActs();
