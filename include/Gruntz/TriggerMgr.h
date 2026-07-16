@@ -44,6 +44,11 @@ typedef enum TmGridDim {
 struct CTrigPoint {
     i32 x; // +0x00
     i32 y; // +0x04
+    // 0x75a10 - fill both coords, return this (the ex-CPairXY view's Set; body in
+    // TriggerMgrHitTest.cpp). Sole caller is this unit's unreconstructed gap fn
+    // (0x6f16f..0x6f2f0 band) - the {x,y} shape + the hit-test-unit interleaving
+    // (0x75a10 sits between GetOriginXY and the grid probe) pin it to this pair.
+    CTrigPoint* Set(i32 ax, i32 ay);
 };
 SIZE_UNKNOWN(CTrigPoint);
 

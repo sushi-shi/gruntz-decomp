@@ -179,6 +179,13 @@ public:
     // a method of a class that owns no retail address, i.e. an unlinkable phantom).
     void Notify(i32 x, i32 y, i32 state);
 
+    // 0x75a40 - bounds-checked cell-flags probe: the first dword (packed terrain
+    // flags) of the 0x1c-byte cell at m_rows[y][x]; out of bounds returns 1. The
+    // ex-`CGridLookup::Lookup` view (same m_rows/m_width/m_height trio at the same
+    // offsets + the 0x1c cell stride). Out-of-line in TriggerMgrHitTest.cpp (the
+    // hit-test unit interleaves it; its sole caller is that TU's megafn FUN_6f2f0).
+    i32 CellFlagsAt(i32 x, i32 y);
+
     // FIELDS - the union of the CMapMgr and CBrickzGrid models of this ONE object.
     // The first four offsets carry BOTH spellings (a name alias at the same offset, zero
     // layout change): the semantic names come from the CBrickzGrid model, the m_<hex>
