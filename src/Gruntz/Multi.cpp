@@ -2860,7 +2860,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         case 0x418: {
             CString result;
             if (pd != 0) {
-                CString name = pd->GetName();
+                CString name = ((CNetMgr*)pd)->GetName();
                 result.Format("*** %s has a different version of the game.", (const char*)name);
             } else {
                 result.Format("*** A player had a different version of the game.");

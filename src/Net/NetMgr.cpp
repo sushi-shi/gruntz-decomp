@@ -818,7 +818,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
     }
 
     while (payload != 0) {
-        CString name = payload->GetName();
+        CString name = ((CNetMgr*)payload)->GetName();
         i32 r = (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)(const char*)name);
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
