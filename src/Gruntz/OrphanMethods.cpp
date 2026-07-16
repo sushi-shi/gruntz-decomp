@@ -3,6 +3,7 @@
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
 #include <Gruntz/Effect6b.h>
+#include <Gruntz/Grunt.h> // CEntranceAnimPlayer (the m_player pointee; Cursor()/m_1b4)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - +0x1a0 advance
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -25,13 +26,10 @@
 // source-steerable (every operand/declaration reorder reproduced the same coloring).
 extern "C" u32 g_engineFrameDelta;
 
-// The anim sub-player at owner+0x1a0 IS a CDDrawBlitParam (geo setter Setup_15c2d0
-// @0x15c2d0) / CAniAdvanceCursor (advance @0x15c360) - the two canonical engine
-// classes for the +0x1a0 sub-object; reached cast-at-use like the rest of the tree.
-struct CAnimOwner6b {
-    char _00[0x1b4];
-    i32 m_1b4; // +0x1b4
-};
+// (CAnimOwner6b is DISSOLVED, 2026-07-16: the m_player pointee is the canonical
+// CEntranceAnimPlayer (<Gruntz/Grunt.h>) - its +0x1a0 cursor and +0x1b4 active
+// descriptor are that class's m_1a0/m_1b4; the identity + the pending
+// CDecayMgr/cursor-embed merge are documented in <Gruntz/Effect6b.h>.)
 
 // @interleaver CEffect6b::Apply emitted-in <boundary: unreconstructed>
 // (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are ddrawsubmgrleaf
@@ -39,11 +37,11 @@ struct CAnimOwner6b {
 // reconstructed host on both sides. True obj is the unreconstructed 0x6b2xx run.)
 RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
-    char* anim = (char*)m_4 + 0x1a0;
-    m_c = m_4->m_1b4;
-    ((CAniAdvanceCursor*)anim)->Setup_15c2d0((CAniElement*)a);
+    CAniAdvanceCursor* anim = m_player->Cursor(); // (CAniAdvanceCursor*)&m_1a0
+    m_prevDesc = m_player->m_1b4;
+    anim->Setup_15c2d0((CAniElement*)a);
     if (b != 0) {
-        ((CAniAdvanceCursor*)anim)->Advance((i32)g_engineFrameDelta);
+        anim->Advance((i32)g_engineFrameDelta);
     }
 }
 
@@ -108,5 +106,4 @@ i32 CRainCloud::Tick() {
     CPathHazard::Tick(); // the base chain (thunk 0x2914 -> 0xb4020), result unused
     return 0;
 }
-SIZE_UNKNOWN(CAnimOwner6b);
 SIZE_UNKNOWN(CGameRegistry);
