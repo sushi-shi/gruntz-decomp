@@ -34,11 +34,11 @@ HINSTANCE g_resModule;
 // the buffer addresses are differently-named symbols in the base obj (the absolute
 // pushes/compares reloc-mask against the retail DAT_* names). Declared in their
 // retail BSS order so the layout follows the binary.
-// The shared RGB palette-ramp buffers (.bss). g_683ef0 (the 8-bit source's reversed
+// The shared RGB palette-ramp buffers (.bss). g_paletteRampBuf (the 8-bit source's reversed
 // RGB ramp) + g_grayRamp (the greyscale ramp). DEFINED here (owner TU), reference
 // externs stay in <Globals.h>. (REHOME DD-G)
 DATA(0x00283ef0)
-u8 g_683ef0[0x400];        // 0x683ef0
+u8 g_paletteRampBuf[0x400];        // 0x683ef0
 static u8 s_palBmp[0x400]; // 0x6842f0
 static u8 s_palPcx[0x400]; // 0x6846f0
 DATA(0x00284af0)
@@ -50,7 +50,7 @@ static u8 s_palPcxData[0x400]; // 0x6852f0 (CDDSurface::DecodePcxData)
 // DecodeRun - decode a run-length image (`src`, the DecodeSrc shape) into
 // `info`. The source format is its +0x1c word (8/0x18); a convert pass runs when it
 // differs from info's current format (+0x538): an 8-bit source builds an RGB-reversed
-// ramp from its +0x36 palette into g_683ef0; a 24-bit-into-8-bit uses info's palette
+// ramp from its +0x36 palette into g_paletteRampBuf; a 24-bit-into-8-bit uses info's palette
 // (+0x53c) when present. BlitSurf preps the target; the convert path runs Blit, the
 // straight path BlitDirect. ret 0x10. No /GX frame.
 //
@@ -79,7 +79,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     void* pal = 0;
     if (convert) {
         if (srcFmt == 8) {
-            u8* w = g_683ef0;
+            u8* w = g_paletteRampBuf;
             u8* p = (u8*)src + 0x36;
             do {
                 w[0] = p[2];
@@ -88,8 +88,8 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
                 w[3] = 0;
                 p += 4;
                 w += 4;
-            } while (w < g_683ef0 + 0x400);
-            pal = g_683ef0;
+            } while (w < g_paletteRampBuf + 0x400);
+            pal = g_paletteRampBuf;
         } else if (curFmt == 8) {
             if (info->m_hasPalette != 0) {
                 pal = info->m_palette;

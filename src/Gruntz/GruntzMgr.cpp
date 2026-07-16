@@ -139,7 +139,7 @@ void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member tear
 // Game-clock/registry globals reached by AccrueScoreTime / Close.
 extern "C" {
     DATA(0x00248ce8)
-    i32 g_648ce8;
+    i32 g_scoreTimeBase;
 }
 
 // AccrueScoreTime's objects are all CANONICAL now - the three views that stood here
@@ -221,7 +221,7 @@ public:
     CString m_6c; // +0x6c  entered name
 };
 
-// Resets the 17 sound-channel slots (g_64c3f0[17] = 1); SaveGameAs calls it before
+// Resets the 17 sound-channel slots (g_soundChannelInUse[17] = 1); SaveGameAs calls it before
 // popping the modal. Reloc-masked __cdecl free fn (0xdb1d0).
 void ChannelSlots_InitAll(); // 0xdb1d0
 
@@ -367,7 +367,7 @@ struct CPlayStateView {
 // so both CActiveObj and CActiveSub2dc are gone.
 
 extern "C" {
-    extern i32 g_6455fc; // DAT_006455fc  (round-robin options cursor)
+    extern i32 g_optionsCursor; // DAT_006455fc  (round-robin options cursor)
 }
 
 // -------------------------------------------------------------------------
@@ -3725,19 +3725,19 @@ void CGruntzMgr::ClearOptionsSlots() {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::AdvanceOptionsCycle (0x0933e0; ret). Bumps the global round-robin
-// cursor g_6455fc (mod 4); for the options slot whose index matches the cursor,
+// cursor g_optionsCursor (mod 4); for the options slot whose index matches the cursor,
 // if it is armed (m_164 == 0) and loaded (m_170 != 0) it ticks the slot's +0x38
 // sub-object. The loop runs i in [0, m_optionsCount]; both the count and the cursor are
 // re-read each iteration (the cursor after the reloc-masked tick).
 RVA(0x000933e0, 0x5e)
 i32 CGruntzMgr::AdvanceOptionsCycle() {
-    i32 cursor = (g_6455fc + 1) & 3;
-    g_6455fc = cursor;
+    i32 cursor = (g_optionsCursor + 1) & 3;
+    g_optionsCursor = cursor;
     for (i32 i = 0; i < m_optionsCount + 1; i++) {
         GruntzPlayer* slot = &m_options[i];
         if (cursor == i && slot->m_014 == 0 && slot->m_020 != 0) {
             slot->m_038.Method_025d90();
-            cursor = g_6455fc;
+            cursor = g_optionsCursor;
         }
     }
     return 1;
@@ -3772,7 +3772,7 @@ i32 CGruntzMgr::SyncOptionsState() {
         }
     }
     srand((u32)time(0));
-    g_6455fc = 0;
+    g_optionsCursor = 0;
 
     i32 idx = 0;
     CBattlezMapConfig* tick = &m_options[0].m_038;
@@ -4033,7 +4033,7 @@ void CGruntzMgr::AccrueScoreTime() {
     }
     CBattlezData* hud = g_gameReg->m_scoreHud;
     u32 now = ::timeGetTime();
-    hud->m_score += (now - g_648ce8);
+    hud->m_score += (now - g_scoreTimeBase);
     TransitionState(0x12, 1, 0, 0);
 }
 

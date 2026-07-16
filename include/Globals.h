@@ -86,7 +86,7 @@ extern float g_inv255;
 //  ifstream ctor's default third arg; Demo.cpp spells the real ctor now.)
 extern void* g_retAddrBreadcrumb;
 extern u32 g_zvecErrSentinel;
-extern const double g_5f04f0;
+extern const double g_motionTimeScale;
 extern const double g_motionNegHalf;
 extern const double g_motionNegTwo;
 extern float g_fxBias;
@@ -118,7 +118,7 @@ extern "C" char g_id1_613e00;
 extern "C" char g_id2_613e01;
 extern "C" char g_id3_613e02;
 extern i32 g_dplayAppGuid[4]; // 0x60fab8  DirectPlay app GUID (DEFINED in src/Gruntz/Multi.cpp)
-extern u8 g_6111b0;
+extern u8 g_titleBuf;
 // g_dropPlayerId DEFINED in src/Gruntz/Multi.cpp; single reference extern in <Net/NetMgr.h>.
 extern char s_GameMessagez[];
 extern char s_GameKey[];
@@ -196,11 +196,11 @@ extern i32 gA_e04;
 extern unsigned char gA_e08;
 extern unsigned char gA_data;
 extern i32 g_poolCount;
-extern i32 g_64bdc0;
+extern i32 g_savedMultiWndProc;
 // (g_dropColl @0x64bed8 is ONE 0x24 CActReg object, DEFINED in src/Gruntz/DroppedObject.cpp
 //  and private to it; 0x64bedc..0x64bef8 are its interior fields, not globals.)
 extern ScrollView* g_backView;
-extern "C" i32 g_64c3f0[17];
+extern "C" i32 g_soundChannelInUse[17];
 extern CVariantSlot* g_projActColl2;
 extern i32 g_projActLo;
 extern i32 g_projActHi;
@@ -274,7 +274,7 @@ extern i32 g_imageCacheIndex;
 extern u8 g_clut[]; // 3-plane 16bpp LUT; interior slices +0x2/+0x10002/+0x20002 (subsumed banks)
 extern u16 g_lut16[256];
 extern i32 (*g_restoreHandler)();
-extern u8 g_683ef0[];
+extern u8 g_paletteRampBuf[];
 extern i32 g_warpU;
 extern i32 g_warpV;
 extern i32 g_warpTexBase;

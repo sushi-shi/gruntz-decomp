@@ -191,11 +191,11 @@ void CMovingLogic::FinalizeStep(i32) {
 // is the sole writer + owner of the 0x245580-0x2455a0 frame-timer band); only read here.
 extern "C" u32 g_frameTime;
 DATA(0x001eaa88)
-const double g_5eaa88 = 0.0;
+const double g_motionZScale = 0.0;
 DATA(0x001eab00)
 const double g_projPhase1 = 6.2831854; // 0x5eab00  2*pi phase wrap (m_phase > g_projPhase1)
 DATA(0x001f04e8)
-u32 g_5f04e8 = 0;
+u32 g_defaultZ = 0;
 
 // A post-init hook the spawn ctor fires (0x16ea90, no args; ecx unused).
 extern void Fn16ea90();

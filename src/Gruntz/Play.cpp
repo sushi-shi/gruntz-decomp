@@ -818,7 +818,7 @@ extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
 // DirectInputMgr2*); a plain C++ extern emitted ?g_inputMgr@@3PAXA - unresolved.
 extern "C" void* g_inputMgr; // DAT_00645570
 // g_frameTicks (0x24558c) comes from <Rez/FrameClock.h>.
-extern "C" i32 g_64e35c; // DAT_0064e35c
+extern "C" i32 g_playActive; // DAT_0064e35c
 // (0x612618 - the last-loaded level number, init -1 - is DEFINED below as
 // g_lastLevelNum; the old `void* g_lastLevelCache` view here was the same cell.)
 // 0x61139c: the CAreaMgr singleton pointer, statically initialized to &g_areaMgr
@@ -1501,10 +1501,10 @@ okContinue:
     self->m_snapshotActive = 0;
     self->m_514 = 3;
     self->m_renderDisabled = 1;
-    g_64e35c = 0;
+    g_playActive = 0;
     ResetViewport(); // 0x3d55 -> 0xd8c60
     if (((CGruntzMgr*)g_gameReg)->m_134 == 2) {
-        g_64e35c = 1;
+        g_playActive = 1;
         self->m_renderDisabled = 0;
         self->m_4->CheckSavedMode();
         self->m_4->m_chatLog->FreeNodes();
@@ -3771,7 +3771,7 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
 }
 
 // ===========================================================================
-// The global channel-slot in-use table (g_64c3f0[17]) and its free-function
+// The global channel-slot in-use table (g_soundChannelInUse[17]) and its free-function
 // accessors (ex src/Net/ChannelSlots.cpp; the channelslots init frag sits INSIDE
 // this TU's frag run - one obj). A 17-DWORD array of per-channel "free" flags
 // (1 = free, 0 = taken); CNetMgr and CGruntzMgr init/scan/claim channels through
@@ -3781,14 +3781,14 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
 // Owner-TU definition of the channel-slot table (canonical extern in <Globals.h>).
 extern "C" {
     DATA(0x0024c3f0)
-    i32 g_64c3f0[17];
+    i32 g_soundChannelInUse[17];
 }
 
 // Reset every slot to "free" (1).
 RVA(0x000db1d0, 0x14)
 void ChannelSlots_InitAll() {
     for (i32 i = 0; i < 17; i++) {
-        g_64c3f0[i] = 1;
+        g_soundChannelInUse[i] = 1;
     }
 }
 
@@ -3830,7 +3830,7 @@ i32 GruntzPlayer::SwapChannel(i32 channel) {
 RVA(0x000db280, 0x1b)
 i32 ChannelSlots_FindFree() {
     for (i32 i = 0; i < 17; i++) {
-        if (g_64c3f0[i] != 0) {
+        if (g_soundChannelInUse[i] != 0) {
             return i;
         }
     }
@@ -3840,13 +3840,13 @@ i32 ChannelSlots_FindFree() {
 // Set slot[i] = v.
 RVA(0x000db2b0, 0x10)
 void ChannelSlots_Set(i32 i, i32 v) {
-    g_64c3f0[i] = v;
+    g_soundChannelInUse[i] = v;
 }
 
 // Return slot[i].
 RVA(0x000db2d0, 0xc)
 i32 ChannelSlots_Get(i32 i) {
-    return g_64c3f0[i];
+    return g_soundChannelInUse[i];
 }
 
 // ===========================================================================

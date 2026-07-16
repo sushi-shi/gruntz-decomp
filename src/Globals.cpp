@@ -137,7 +137,7 @@ char k_60df94[] = "S";
 // g_dplayAppGuid (0x20fab8) / g_dropPlayerId (0x211d88) / s_GameKey (0x211ec4) DEFINED in
 // src/Gruntz/Multi.cpp (owner TU). Reference externs stay in <Globals.h> / <Net/NetMgr.h>.
 DATA(0x002111b0)
-u8 g_6111b0 = 72;
+u8 g_titleBuf = 72;
 DATA(0x00211ab8)
 char s_GameMessagez[] = "GAME_MESSAGEZ"; // s_GAME_MESSAGEZ_00611ab8 (image-set name literal)
 // g_warpX / g_warpY DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
@@ -180,7 +180,7 @@ extern "C" i32 g_activePlayerCount = 0;
 DATA(0x0024acb4)
 i32 g_poolCount;
 // g_drop* fields DEFINED in src/Gruntz/DroppedObject.cpp (owner TU).
-// g_64c3f0[17] DEFINED in src/Gruntz/Play.cpp (owner TU).
+// g_soundChannelInUse[17] DEFINED in src/Gruntz/Play.cpp (owner TU).
 // g_projAct*/g_tbomb* fields DEFINED in src/Gruntz/Projectile.cpp (owner TU).
 // g_lastScrollX (0x64cfd0) + g_lastScrollY (0x64cfd4) DEFINED in
 // src/Gruntz/MgrAutoScroll.cpp (owner TU); reference externs stay in <Globals.h>.

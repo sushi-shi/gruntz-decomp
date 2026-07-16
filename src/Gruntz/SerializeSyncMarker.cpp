@@ -1,7 +1,7 @@
 // SerializeSyncMarker.cpp - the WAP32 serialize round validator (0x13610, __cdecl),
 // split out of GruntzMgr.cpp: a free function whose retail object sits far from the
 // CGruntzMgr block (0x13610, among the CVoiceTrigger / CMotionState serialize .text).
-// A shared serialize helper with no recovered caller; homed with the g_629a50 scratch
+// A shared serialize helper with no recovered caller; homed with the g_syncErrMsgBuf scratch
 // buffer it owns and the EnterModalUI reporter it drives. Same "eh" flags; byte-neutral.
 #include <Mfc.h>                  // wsprintfA (USER32, reloc-masked)
 #include <Gruntz/SerialCounter.h> // g_serialCounter
@@ -15,12 +15,12 @@
 // the desync path formats into (its sole DATA home is here now).
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // 0x629a50 wsprintfA scratch buffer (128 B, bounded by g_serialCounter @0x229ad0);
-// DEFINED here (owner TU) with C linkage (_g_629a50).
+// DEFINED here (owner TU) with C linkage (_g_syncErrMsgBuf).
 extern "C" {
     // @undefined-data: a char[] datum here is a STRING (or a run of them); its
     // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
     // in between get swallowed). Inline the literal at its use site instead.
-    extern char g_629a50[];
+    extern char g_syncErrMsgBuf[];
 }
 
 // SerializeSyncMarker (0x13610, __cdecl): the WAP32 serialize round validator every
@@ -40,8 +40,8 @@ i32 SerializeSyncMarker(CSerialArchive* arc, i32 mode, const char* name, i32 lin
         i32 readVal;
         arc->Read(&readVal, 4);
         if (readVal != g_serialCounter + 0x1234666) {
-            wsprintfA(g_629a50, "save/load out of sync at %s, %d", name, line);
-            g_gameReg->EnterModalUI(g_629a50);
+            wsprintfA(g_syncErrMsgBuf, "save/load out of sync at %s, %d", name, line);
+            g_gameReg->EnterModalUI(g_syncErrMsgBuf);
             return 0;
         }
     }

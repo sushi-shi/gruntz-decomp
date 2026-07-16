@@ -636,7 +636,7 @@ i32 CState::Vslot07() {
 // ===========================================================================
 
 DATA(0x0024e35c)
-i32 g_64e35c;
+i32 g_playActive;
 
 // (The former CMgrImageSet 20-slot fake-vtable view is GONE: the +0x10 object the
 // GAME_IMAGEZ load dispatches into is the REAL CImageRegistry (<Gruntz/ResMgr.h>,
@@ -680,7 +680,7 @@ i32 CMgrPersistObj::Init() {
     if (m_levelData->m_pages->Method_158bc0() == 0) {
         return 0;
     }
-    if (g_64e35c == 0) {
+    if (g_playActive == 0) {
         SplashParams sp;
         sp.text.LoadString(0x81a9);
         sp.m_08 = m_displayMgr->m_modeW;
@@ -691,7 +691,7 @@ i32 CMgrPersistObj::Init() {
     }
     while (ShowCursor(0) >= 0)
         ;
-    g_64e35c = 0;
+    g_playActive = 0;
     char* path = (char*)m_rezLocator->ResolvePath("GAME_IMAGEZ");
     if (path == 0) {
         return 0;

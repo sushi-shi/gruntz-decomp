@@ -25,12 +25,12 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicSerial.h> // CButeText/CMovingLogicBase + the serialize helpers
 #include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
-#include <Globals.h>                  // Update: g_5f04f0 / g_motionNegHalf / g_frameTime
+#include <Globals.h>                  // Update: g_motionTimeScale / g_motionNegHalf / g_frameTime
 #include <rva.h>
 
-// The per-tick time scale (owner-TU def; VA 0x5f04f0). Update: g_frameTime * g_5f04f0.
+// The per-tick time scale (owner-TU def; VA 0x5f04f0). Update: g_frameTime * g_motionTimeScale.
 DATA(0x001f04f0)
-const double g_5f04f0 = 0.001; // 0x5f04f0
+const double g_motionTimeScale = 0.001; // 0x5f04f0
 
 // The standalone ctor. The +0x38..+0x10c motion ints are zeroed in retail's
 // scheduled "column" order (all .a/low fields, then all .b/high fields), then the
@@ -246,7 +246,7 @@ void CMovingLogic::MovingSlot16() {
     // elapsed clock delta.
     m_140 = (i32)Motion()->m_40;
     m_144 = (i32)Motion()->m_48;
-    Motion()->Step((double)g_frameTime * g_5f04f0 - Motion()->m_00);
+    Motion()->Step((double)g_frameTime * g_motionTimeScale - Motion()->m_00);
 
     // Carrier ride: while riding (flags bit4 + a latched carrier), fold the
     // carrier's per-frame deltas into the object's position and re-seed the

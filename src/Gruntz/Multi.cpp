@@ -50,7 +50,7 @@
 // retail .data addresses so the DIR32 operands reloc-mask).
 // ---------------------------------------------------------------------------
 DATA(0x002455fc)
-extern "C" i32 g_6455fc = 0;
+extern "C" i32 g_optionsCursor = 0;
 // g_lastNow (0x245580 draw clock) comes from <Rez/FrameClock.h>.
 extern "C" u32 g_frameDelta; // 0x645584  delta cap
 extern "C" u32 g_frameTime;  // 0x645588  accum clock
@@ -314,7 +314,7 @@ enum {
 // CNetGameMgr*; the Wait views cast it per use.)
 
 // The frame-clock base stamp WaitForOtherPlayers republishes on exit (0x648ce8).
-extern "C" i32 g_648ce8; // 0x648ce8
+extern "C" i32 g_scoreTimeBase; // 0x648ce8
 
 // The engine text renderer (__cdecl, 0x115440): obj, string, rect + six style args.
 void EngStr_DrawText(
@@ -1013,7 +1013,7 @@ i32 CMulti::FrameSlot28(i32 arg) {
 // ===========================================================================
 RVA(0x000b6580, 0x1eb)
 i32 CMulti::StartSession(i32 mode, i32 unused) {
-    g_6455fc = 0;
+    g_optionsCursor = 0;
     // FindOptionsSlot's OptionsSlot is defined in GruntzMgr.cpp; only its +0x00 field is
     // read here (g_curPlayer = *host), so the row is taken as i32*.
     i32* host = (i32*)Mgr()->FindOptionsSlot(m_hostIndex);
@@ -3861,7 +3861,7 @@ i32 CMulti::WaitForOtherPlayers() {
         }
     }
 
-    g_648ce8 = timeGetTime();
+    g_scoreTimeBase = timeGetTime();
     if (g->m_14 != 0) {
         char buf[0x40];
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());

@@ -109,7 +109,7 @@ CString g_gruntNames[4];
 // The saved original window proc of the roster child (GWL_WNDPROC), private to this
 // dialog; DEFINED here (owner TU), a plain `extern` stays in Globals.h.
 DATA(0x0024bdc0)
-i32 g_64bdc0 = 0; // 0x24bdc0
+i32 g_savedMultiWndProc = 0; // 0x24bdc0
 
 RVA(0x000c16b0, 0x3d)
 void BuildNamedGruntTable() {
@@ -132,7 +132,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
 // SetupWorldCombo (0xc1840, /GX): fill the 0x4ff "world" combo from the GAME_MULTI
 // registry path (each entry name uppercased through a scratch CString), make the
 // combo's edit child read-only, select the first item, and subclass the edit
-// child's window-proc (saving the old proc in g_64bdc0).
+// child's window-proc (saving the old proc in g_savedMultiWndProc).
 RVA(0x000c1840, 0x16e)
 i32 CMultiStartDlg::SetupWorldCombo() {
     CWnd* combo = GetDlgItem(0x4ff);
@@ -158,7 +158,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     ::SendMessageA(child->m_hWnd, EM_SETREADONLY, 1, 0);
     ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
     HWND__* h = child->m_hWnd;
-    g_64bdc0 = GetWindowLongA(h, GWL_WNDPROC);
+    g_savedMultiWndProc = GetWindowLongA(h, GWL_WNDPROC);
     SetWindowLongA(h, GWL_WNDPROC, (i32)WndProc_c1a10);
     Sub_c3e30();
     return 1;
@@ -166,7 +166,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
 
 // WndProc_c1a10 (0xc1a10) - the subclass window-proc installed on the world combo's
 // read-only edit child: swallow an empty WM_SETTEXT (keeps the shown selection text)
-// and chain everything else to the saved original proc (g_64bdc0).
+// and chain everything else to the saved original proc (g_savedMultiWndProc).
 RVA(0x000c1a10, 0x70)
 extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
@@ -174,7 +174,7 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
             return 0;
         }
     }
-    return CallWindowProcA((WNDPROC)g_64bdc0, hWnd, msg, wParam, lParam);
+    return CallWindowProcA((WNDPROC)g_savedMultiWndProc, hWnd, msg, wParam, lParam);
 }
 
 // ---------------------------------------------------------------------------

@@ -28,7 +28,7 @@
 #include <Gruntz/Attract.h>     // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
 #include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
-#include <Globals.h>            // g_6111b0 (RunTitleSeq title buffer)
+#include <Globals.h>            // g_titleBuf (RunTitleSeq title buffer)
 #include <Gruntz/AttractActor.h> // the shared AttractActor/AttractActorList + g_actorList
 #include <rva.h>
 
@@ -87,7 +87,7 @@ i32 CHelpState::Vslot09(i32 arg) {
         && ((CRegHolder*)m_c)->m_04->Method_158cb0(0, 0x30000) == 0) {
         return 0;
     }
-    if (FadeInTitle((const char*)&g_6111b0, 0, 0, 0, 0, 1) == 0) {
+    if (FadeInTitle((const char*)&g_titleBuf, 0, 0, 0, 0, 1) == 0) {
         return 0;
     }
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
@@ -156,7 +156,7 @@ i32 CHelpState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0); // 0xfa350 (CState base method)
+    i32 r = RunTitleSeq((char*)&g_titleBuf, 0, 0, 1, 0); // 0xfa350 (CState base method)
     while (ShowCursor(FALSE) >= 0) {
     }
     return r;
@@ -171,7 +171,7 @@ i32 CHelpState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0); // 0xfa350 (CState base method)
+    return RunTitleSeq((char*)&g_titleBuf, 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
 // CHelpState::Vslot0c (0x953f0, slot 12) - keydown handler: on ESC/SPACE/ENTER post a
