@@ -192,6 +192,10 @@ def _caller_callee_counts() -> dict[str, int]:
         m = re.search(r"(\d+)\s+FAKE-VIEW", line)
         if m:
             res["caller-callee FAKE-VIEW"] = int(m.group(1))
+    # FAKE-VIEW == 0 vanishes from the breakdown; if the tool ran (UNRECONCILED seen)
+    # but printed no FAKE-VIEW line, that IS the achieved 0 -> keep the row tracked.
+    if "caller-callee unreconciled" in res and "caller-callee FAKE-VIEW" not in res:
+        res["caller-callee FAKE-VIEW"] = 0
     return res
 
 
