@@ -408,7 +408,8 @@ public:
 
     // The WM_COMMAND / accelerator + cheat-code dispatcher (the binary's single
     // largest function; body in GruntzMgrCmd.cpp).
-    virtual i32 HandleCommand(i32 p1, i32 nID, i32 p3) OVERRIDE; // @0x0862f0 slot 5
+    virtual i32
+    HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) OVERRIDE; // @0x0862f0 slot 5
     // (LaunchWebBrowser @0x8f120 is a free __stdcall function, not a CGruntzMgr method -
     //  declared at namespace scope below the class.)
 

@@ -92,13 +92,18 @@ RVA(0x0013d3a0, 0x6a)
 i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     i32 notifyCode = static_cast<i32>((wParam >> 16));
     i32 cmdId = static_cast<i32>((wParam & 0xffff));
-    if (m_owner->HandleCommand(notifyCode, cmdId, lParam)) {
+    // Win32 boundary: the raw LOWORD message id becomes a typed GruntzCommand for
+    // the two command virtuals (byte-neutral - GruntzCommand is int-width). The
+    // slot-2 window hook (Wap32GameWndVfunc2) is a separate vfunc chain that still
+    // takes the raw i32 id.
+    if (m_owner->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)) {
         return 1;
     }
     if (Wap32GameWndVfunc2(notifyCode, cmdId, lParam)) {
         return 1;
     }
-    return m_owner->m_gameMgr->HandleCommand(notifyCode, cmdId, lParam) != 0;
+    return m_owner->m_gameMgr->HandleCommand(notifyCode, static_cast<GruntzCommand>(cmdId), lParam)
+           != 0;
 }
 
 // -------------------------------------------------------------------------

@@ -38,6 +38,7 @@
 #include <string.h>
 
 #include <Gruntz/GameRegistry.h>     // CGameRegistry (g_gameReg) + CDDrawSurfaceMgr
+#include <Gruntz/GruntzCommandId.h>  // GruntzCommand enum (nID param + the case labels)
 #include <Gruntz/GruntzMgr.h>        // the real CGruntzMgr (this) + SaveInfo.h + SoundCue.h
 #include <Gruntz/CheatMgr.h>         // CCheatMgr (m_cheatMgr->m_124 - the "Cheatz cleared" flag)
 #include <Gruntz/Play.h>             // CPlay (the cheat receiver) + CTimer (m_frameMarker)
@@ -248,23 +249,23 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 // use immediate 'mov [mem],1').  These are source-uncontrollable MSVC5 stack-packing
 // + regalloc coin-flips, same class as CGamePlayInput::DispatchKey's 78.5% cap.
 RVA(0x000862f0, 0x3d5a)
-i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
+i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
     switch (nID) {
-        case 0x8005:
-        case 0x8024:
+        case kCmdNewGame:
+        case kCmdNewGameAlt:
             m_134 = 1;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(0x8005, 0x41e);
             }
             return 1;
-        case 0x807f:
+        case kCmdLoadWorld:
             m_strWorldFile.Empty();
             m_134 = 1;
-            if (!PassClickToPlayState(p3, 0, 1)) {
+            if (!PassClickToPlayState(lParam, 0, 1)) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
-        case 0x8174:
+        case kCmdContinueAtMaxLevel:
             m_strWorldFile.Empty();
             m_134 = 1;
             // retail: `mov eax,[esi+0x58]; mov ecx,[eax+0x18]` - NO null test, and the
@@ -274,19 +275,19 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 ReportError(0x8005, 0x41f);
             }
             return 1;
-        case 0x80e3:
+        case kCmdNewGameReplay:
             m_134 = 3;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(0x8005, 0x420);
             }
             return 1;
-        case 0x80e1:
+        case kCmdSaveGameAs:
             SaveGameAs();
             // fall through to default
         default:
             if (m_curState->Update() == GAMESTATE_PLAY) {
                 switch (nID & 0xffff) {
-                    case 0x803b: {
+                    case kCheatProgrammingGod: {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c =
                                 (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)
@@ -298,47 +299,47 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         AppendChatMessage("Brian L. Goble is a programming God...");
                         return 1;
                     }
-                    case 0x8043:
+                    case kCheatTraitorMode:
                         g_traitorMode ^= 1;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Traitor Mode", g_traitorMode);
                         return 1;
-                    case 0x804d:
+                    case kCheatObjectCountDisplay:
                         g_debugDisplayFlags ^= 1;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Object Count Display", g_debugDisplayFlags & 1);
                         return 1;
-                    case 0x804c:
+                    case kCheatWorldPositionDisplay:
                         g_debugDisplayFlags ^= 4;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("World Position Display", g_debugDisplayFlags & 4);
                         return 1;
-                    case 0x804b:
+                    case kCheatFrameRateDisplay:
                         g_debugDisplayFlags ^= 0x10;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Frame Rate Display", g_debugDisplayFlags & 0x10);
                         return 1;
-                    case 0x804e:
+                    case kCheatDebugFlag20:
                         g_debugDisplayFlags ^= 0x20;
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
-                    case 0x8068:
+                    case kCheatBrickTextDisplay:
                         g_debugDisplayFlags = (g_debugDisplayFlags ^ 0x40) & ~0x100;
                         g_brickText1.Empty();
                         g_brickText2.Empty();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
-                    case 0x806f:
+                    case kCheatBrickTextAltDisplay:
                         g_debugDisplayFlags = (g_debugDisplayFlags ^ 0x100) & ~0x40;
                         g_brickText1.Empty();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
-                    case 0x806e:
+                    case kCheatElapsedTimeDisplay:
                         g_debugDisplayFlags ^= 0x80;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Elapsed Time Display", g_debugDisplayFlags & 0x80);
                         return 1;
-                    case 0x8086: {
+                    case kCheatMonolith: {
                         CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 1;
@@ -360,76 +361,76 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         m_sound->PlayByName(buf, 1);
                         return 1;
                     }
-                    case 0x8087:
+                    case kCheatNoOp:
                         return 1;
-                    case 0x808d:
+                    case kCheatBrickGoAway:
                         BRICKPICKUP(0x36, "Hey, where did you go?");
                     // ---- item cheats 0x80e5..0x8104 (SetItem N, announce) ----
-                    case 0x80e5:
+                    case kCheatGiveBomb:
                         ITEMCHEAT(1, "Bombz are cool!");
-                    case 0x80e6:
+                    case kCheatGiveBoomerang:
                         ITEMCHEAT(2, "Boomerangz are cool!");
-                    case 0x80e7:
+                    case kCheatGiveBrickLayer:
                         ITEMCHEAT(3, "Brick Laying Toolz are cool!");
-                    case 0x80e8:
+                    case kCheatGiveClub:
                         ITEMCHEAT(4, "Clubz are cool!");
-                    case 0x80e9:
+                    case kCheatGiveGauntlet:
                         ITEMCHEAT(5, "Gauntletz are cool!");
-                    case 0x80ea:
+                    case kCheatGiveGlove:
                         ITEMCHEAT(6, "Glovez are cool!");
-                    case 0x80eb:
+                    case kCheatGiveGoober:
                         ITEMCHEAT(7, "Gooberz are cool!");
-                    case 0x80ec:
+                    case kCheatGiveGravityBoot:
                         ITEMCHEAT(8, "Gravity Bootz are cool!");
-                    case 0x80ed:
+                    case kCheatGiveGunHat:
                         ITEMCHEAT(9, "Gun Hatz are cool!");
-                    case 0x80ee:
+                    case kCheatGiveSpongeGun:
                         ITEMCHEAT(0xa, "Sponge Gunz are cool!");
-                    case 0x80ef:
+                    case kCheatGiveRock:
                         ITEMCHEAT(0xb, "Rockz are cool!");
-                    case 0x80f0:
+                    case kCheatGiveShield:
                         ITEMCHEAT(0xc, "Shieldz are cool!");
-                    case 0x80f1:
+                    case kCheatGiveShovel:
                         ITEMCHEAT(0xd, "Shovelz are cool!");
-                    case 0x80f2:
+                    case kCheatGiveSpring:
                         ITEMCHEAT(0xe, "Springz are cool!");
-                    case 0x80f3:
+                    case kCheatGiveSpyGear:
                         ITEMCHEAT(0xf, "Spy Gear is cool!");
-                    case 0x80f4:
+                    case kCheatGiveSword:
                         ITEMCHEAT(0x10, "Swordz are cool!");
-                    case 0x80f5:
+                    case kCheatGiveTimeBomb:
                         ITEMCHEAT(0x11, "Time Bombz are cool!");
-                    case 0x80f6:
+                    case kCheatGiveToob:
                         ITEMCHEAT(0x12, "Toobz are cool!");
-                    case 0x80f7:
+                    case kCheatGiveMagicWand:
                         ITEMCHEAT(0x13, "Magic Wandz are cool!");
-                    case 0x80f8:
+                    case kCheatGiveSecret:
                         ITEMCHEAT(0x14, "Hey, how did you get this cheat?");
-                    case 0x80f9:
+                    case kCheatGiveWeldersKit:
                         ITEMCHEAT(0x15, "Welder's Kitz are cool!");
-                    case 0x80fa:
+                    case kCheatGiveWing:
                         ITEMCHEAT(0x16, "Wingz are cool!");
-                    case 0x80fb:
+                    case kCheatGiveBabyWalker:
                         ITEMCHEAT(0x17, "Baby-Walkerz are cool!");
-                    case 0x80fc:
+                    case kCheatGiveBeachBall:
                         ITEMCHEAT(0x18, "Beach Ballz are cool!");
-                    case 0x80fd:
+                    case kCheatGiveMonsterWheel:
                         ITEMCHEAT(0x19, "Monster Wheelz are cool!");
-                    case 0x80fe:
+                    case kCheatGiveGoKart:
                         ITEMCHEAT(0x1a, "Go-Kartz are cool!");
-                    case 0x80ff:
+                    case kCheatGiveJackInTheBox:
                         ITEMCHEAT(0x1b, "Jack-In-The-Boxez are cool!");
-                    case 0x8100:
+                    case kCheatGiveJumpRope:
                         ITEMCHEAT(0x1c, "Jump Ropez are cool!");
-                    case 0x8101:
+                    case kCheatGivePogoStick:
                         ITEMCHEAT(0x1d, "Pogo Stickz are cool!");
-                    case 0x8102:
+                    case kCheatGiveScroll:
                         ITEMCHEAT(0x1e, "Scrollz are cool!");
-                    case 0x8103:
+                    case kCheatGiveSqueakToy:
                         ITEMCHEAT(0x1f, "Squeak Toyz are cool!");
-                    case 0x8104:
+                    case kCheatGiveYoYo:
                         ITEMCHEAT(0x20, "Yo-Yoz are cool!");
-                    case 0x8106: {
+                    case kCheatNuke: {
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
@@ -454,7 +455,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         AppendChatMessage("Global thermal nuclear war!");
                         return 1;
                     }
-                    case 0x8107: {
+                    case kCheatKillTimer: {
                         CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
@@ -470,32 +471,32 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         AppendChatMessage("Ah, who needed that stupid timer anyway?");
                         return 1;
                     }
-                    case 0x8128:
+                    case kCheatGiveBombBrick:
                         ITEMCHEAT(0x26, "Bomb Brickz are cool!");
-                    case 0x8129:
+                    case kCheatGiveIndestructibleBrick:
                         ITEMCHEAT(0x25, "Indestructible Brickz are cool!");
-                    case 0x812b:
+                    case kCheatGiveGauntletBreakerBrick:
                         ITEMCHEAT(0x23, "Gauntlet-Breaker Brickz are cool!");
-                    case 0x812a:
+                    case kCheatGiveTeleportBrick:
                         ITEMCHEAT(0x24, "Teleport Brickz are cool!");
                     // ---- "pickup brick" cheats: grid-select a cell, LoadPickup(id) ----
-                    case 0x8130:
+                    case kCheatBrickAssimilate:
                         BRICKPICKUP(0x39, "Oh yes, they will be assimilated!");
-                    case 0x8131:
+                    case kCheatBrickDeath:
                         BRICKPICKUP(
                             0x3a,
                             "Ladies and gentlemen, please welcome... death... "
                             "He'll be here all week."
                         );
-                    case 0x8132:
+                    case kCheatBrickSuperGrunt:
                         BRICKPICKUP(0x38, "Super Grunt to the rescue!");
-                    case 0x8133:
+                    case kCheatBrickHurt:
                         BRICKPICKUP(0x3c, "This is gonna hurt them more than it will hurt you.");
-                    case 0x8134:
+                    case kCheatBrickSwallow:
                         BRICKPICKUP(0x3b, "How did you swallow that?");
-                    case 0x8135:
+                    case kCheatBrickNoRunning:
                         BRICKPICKUP(0x37, "There is no running allowed by the pool!");
-                    case 0x8136:
+                    case kCheatColorGruntz:
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
@@ -503,7 +504,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("How about a little color in your Gruntz?");
                         return 1;
-                    case 0x8137: {
+                    case kCheatRegionMonitor: {
                         CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
@@ -513,7 +514,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         AppendChatMessage("Whoah... you should get this monitor fixed.");
                         return 1;
                     }
-                    case 0x8138: {
+                    case kCheatRegionDark: {
                         CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
@@ -523,7 +524,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         AppendChatMessage("Is is dark in here?");
                         return 1;
                     }
-                    case 0x8139: {
+                    case kCheatRegionWindow: {
                         CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
@@ -533,23 +534,23 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         AppendChatMessage("Awww... isn't this little window cute?");
                         return 1;
                     }
-                    case 0x813c:
+                    case kCheatAbilityFreeze:
                         BRICKABILITY(1, "Freeze spellz are coooooooooooooooooool!");
-                    case 0x813d:
+                    case kCheatAbilityHeal:
                         BRICKABILITY(2, "For only $9.95, you too can have the healing power!");
-                    case 0x813e:
+                    case kCheatAbilityZombie:
                         BRICKABILITY(3, "Aaahh!  Zombiez!");
-                    case 0x813a:
+                    case kCheatAbilityParty:
                         BRICKABILITY(4, "It's party time!");
-                    case 0x813f:
+                    case kCheatAbilityTeleport:
                         BRICKABILITY(5, "Oh where oh where did the teleported Gruntz go?");
-                    case 0x813b:
+                    case kCheatAbilityRoll:
                         BRICKABILITY(6, "Rollin, rollin, rollin.");
-                    case 0x816f:
+                    case kCheatDebugFlag400:
                         g_debugDisplayFlags ^= 0x400;
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
-                    case 0x8175:
+                    case kCheatWawa:
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c =
                                 (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)
@@ -560,9 +561,9 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         }
                         AppendChatMessage("WA WA WA WA WA WA!");
                         return 1;
-                    case 0x807a:
-                    case 0x807b:
-                    case 0x8246: {
+                    case kCheatKevinLambert:
+                    case kCheatKevinLambertAlt:
+                    case kCheatKevinLambertAlt2: {
                         CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
@@ -577,12 +578,12 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     }
                     // ---- 4th sub-switch: warp / toggle cheats 0x81a3.. ----
-                    case 0x81a3:
+                    case kCheatGooPuddlez:
                         g_gooPuddlez ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Goo puddlez", g_gooPuddlez);
                         return 1;
-                    case 0x81a4: {
+                    case kCheatFillGoo: {
                         CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
@@ -595,17 +596,17 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         AppendChatMessage("May your Wellz be full of Goo!");
                         return 1;
                     }
-                    case 0x81a5:
+                    case kCheatGruntCreation:
                         g_gruntCreation ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Grunt creation", g_gruntCreation);
                         return 1;
-                    case 0x81a6:
+                    case kCheatGruntDestruction:
                         g_gruntDestruction ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Grunt destruction", g_gruntDestruction);
                         return 1;
-                    case 0x81a9:
+                    case kCheatCheatelson:
                         PLAYCUE("GAME_MAJORCHEAT");
                         if (m_saveSink) {
                             m_saveSink->SetCurLevel(0x20);
@@ -617,49 +618,49 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                             "just behind the CheatMart superstore."
                         );
                         return 1;
-                    case 0x81d6:
+                    case kCheatPsyche:
                         RunModalDialog(
                             "PSYCHE",
                             (void*)0x402649,
                             0
                         ); // bare imm matches the target (LAB_, no reloc/symbol)
                         return 1;
-                    case 0x81d7:
+                    case kCheatClearCheats:
                         PLAYCUE("GAME_MAJORCHEAT");
                         m_cheatMgr->m_124 = 0;
                         AppendChatMessage("Cheatz cleared");
                         return 1;
-                    case 0x8240:
+                    case kCheatWarpTropicz:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Trouble in the Tropicz activated!");
                         m_saveSink->SetCurLevel(8);
                         return 1;
-                    case 0x8241:
+                    case kCheatWarpSweetz:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to High on Sweetz activated!");
                         m_saveSink->SetCurLevel(0xc);
                         return 1;
-                    case 0x8242:
+                    case kCheatWarpRollerz:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to High Rollerz activated!");
                         m_saveSink->SetCurLevel(0x10);
                         return 1;
-                    case 0x8243:
+                    case kCheatWarpHoneyShrunk:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Honey, I Shrunk the Gruntz activated!");
                         m_saveSink->SetCurLevel(0x14);
                         return 1;
-                    case 0x8244:
+                    case kCheatWarpMiniatureMasterz:
                         PLAYCUE_MAP("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to The Miniature Masterz activated!");
                         m_saveSink->SetCurLevel(0x18);
                         return 1;
-                    case 0x8245:
+                    case kCheatWarpGruntzInSpace:
                         PLAYCUE_MAP("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Gruntz in Space activated!");
                         m_saveSink->SetCurLevel(0x1c);
                         return 1;
-                    case 0x8247: {
+                    case kCheatExplosionz: {
                         g_explosionz ^= 1;
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             void* _c_ob = 0;
@@ -680,7 +681,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             return 0;
         // ---- remaining UI command bodies (physically after the epilogue) ----
-        case 0x807e: {
+        case kCmdLoadSavedGame: {
             SaveInfo* si = m_saveInfoRec;
             if (!si) {
                 return 1;
@@ -691,7 +692,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             m_114 = 1;
             CString tmp(si->m_levelName);
             m_strWorldFile = tmp;
-            (void)p1;
+            (void)notifyCode;
             if (tmp.GetLength()) {
                 if (si->m_isWon) {
                     if (si->m_f8) {
@@ -721,21 +722,21 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             m_114 = 0;
             return 1;
         }
-        case 0x80b8:
+        case kCmdNoOp80b8:
             return 1;
-        case 0x80d7:
+        case kCmdMultiConnect:
             if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
-                ((CMulti*)m_curState)->Connect(p3);
+                ((CMulti*)m_curState)->Connect(lParam);
             }
             return 1;
-        case 0x80ce:
+        case kCmdLoadGameDialog:
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MENU) {
                 if (!g_cdPromptResult) {
                     RunLoadGameDialog();
                 }
             }
             return 1;
-        case 0x80cf:
+        case kCmdQuickSavePrompt:
             if (m_curState->Update() == GAMESTATE_PLAY) {
                 CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                 if (_g->CanQuickSave()) {
@@ -743,7 +744,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 }
             }
             return 1;
-        case 0x80d8:
+        case kCmdQuickSave:
             if (m_curState->Update() == GAMESTATE_PLAY) {
                 CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                 if (_g->CanQuickSave()) {
@@ -751,160 +752,160 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 }
             }
             return 1;
-        case 0x80d9:
+        case kCmdQuickLoad:
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MENU) {
                 if (!g_cdPromptResult) {
                     Quickload();
                 }
             }
             return 1;
-        case 0x8170:
+        case kCmdRestartLevel:
             RESTART(1);
-        case 0x8171:
+        case kCmdRestartWorld:
             RESTART(2);
-        case 0x8172:
+        case kCmdRestartWorldNoCursor:
             RESTART2(2);
-        case 0x8173:
+        case kCmdRestartGame:
             RESTART(3);
-        case 0x800d:
+        case kCmdWarpLevel1:
             WARP(1, 0x422);
-        case 0x814a:
+        case kCmdDebugWarpLevel37:
             WARP(0x25, 0x45a);
-        case 0x814b:
+        case kCmdDebugWarpLevel38:
             WARP(0x26, 0x45b);
-        case 0x814c:
+        case kCmdDebugWarpLevel39:
             WARP(0x27, 0x45c);
-        case 0x814d:
+        case kCmdDebugWarpLevel40:
             WARP(0x28, 0x45d);
-        case 0x814e:
+        case kCmdDebugWarpLevel1:
             WARP(1, 0x45e);
-        case 0x814f:
+        case kCmdDebugWarpLevel2:
             WARP(2, 0x45f);
-        case 0x8150:
+        case kCmdDebugWarpLevel3:
             WARP(3, 0x460);
-        case 0x8151:
+        case kCmdDebugWarpLevel4:
             WARP(4, 0x461);
-        case 0x8152:
+        case kCmdDebugWarpLevel5:
             WARP(5, 0x462);
-        case 0x8153:
+        case kCmdDebugWarpLevel6:
             WARP(6, 0x45f);
-        case 0x8154:
+        case kCmdDebugWarpLevel7:
             WARP(7, 0x460);
-        case 0x8155:
+        case kCmdDebugWarpLevel8:
             WARP(8, 0x461);
-        case 0x8156:
+        case kCmdDebugWarpLevel9:
             WARP(9, 0x462);
-        case 0x8157:
+        case kCmdDebugWarpLevel10:
             WARP(0xa, 0x463);
-        case 0x8158:
+        case kCmdDebugWarpLevel11:
             WARP(0xb, 0x464);
-        case 0x8159:
+        case kCmdDebugWarpLevel12:
             WARP(0xc, 0x465);
-        case 0x815a:
+        case kCmdDebugWarpLevel13:
             WARP(0xd, 0x466);
-        case 0x815b:
+        case kCmdDebugWarpLevel14:
             WARP(0xe, 0x467);
-        case 0x815c:
+        case kCmdDebugWarpLevel15:
             WARP(0xf, 0x468);
-        case 0x815d:
+        case kCmdDebugWarpLevel16:
             WARP(0x10, 0x469);
-        case 0x815e:
+        case kCmdDebugWarpLevel17:
             WARP(0x11, 0x46a);
-        case 0x815f:
+        case kCmdDebugWarpLevel18:
             WARP(0x12, 0x46b);
-        case 0x8160:
+        case kCmdDebugWarpLevel19:
             WARP(0x13, 0x46c);
-        case 0x8161:
+        case kCmdDebugWarpLevel20:
             WARP(0x14, 0x46d);
-        case 0x8162:
+        case kCmdDebugWarpLevel21:
             WARP(0x15, 0x46e);
-        case 0x8163:
+        case kCmdDebugWarpLevel22:
             WARP(0x16, 0x46f);
-        case 0x8164:
+        case kCmdDebugWarpLevel23:
             WARP(0x17, 0x470);
-        case 0x8165:
+        case kCmdDebugWarpLevel24:
             WARP(0x18, 0x471);
-        case 0x8166:
+        case kCmdDebugWarpLevel25:
             WARP(0x19, 0x472);
-        case 0x8167:
+        case kCmdDebugWarpLevel26:
             WARP(0x1a, 0x473);
-        case 0x8168:
+        case kCmdDebugWarpLevel27:
             WARP(0x1b, 0x474);
-        case 0x8169:
+        case kCmdDebugWarpLevel28:
             WARP(0x1c, 0x475);
-        case 0x816a:
+        case kCmdDebugWarpLevel29:
             WARP(0x1d, 0x476);
-        case 0x816b:
+        case kCmdDebugWarpLevel30:
             WARP(0x1e, 0x477);
-        case 0x816c:
+        case kCmdDebugWarpLevel31:
             WARP(0x1f, 0x478);
-        case 0x816d:
+        case kCmdDebugWarpLevel32:
             WARP(0x20, 0x479);
-        case 0x81b6:
+        case kCmdDebugWarpLevel101:
             WARP(0x65, 0x45e);
-        case 0x81b7:
+        case kCmdDebugWarpLevel102:
             WARP(0x66, 0x45f);
-        case 0x81b8:
+        case kCmdDebugWarpLevel103:
             WARP(0x67, 0x460);
-        case 0x81b9:
+        case kCmdDebugWarpLevel104:
             WARP(0x68, 0x461);
-        case 0x81ba:
+        case kCmdDebugWarpLevel105:
             WARP(0x69, 0x462);
-        case 0x81bb:
+        case kCmdDebugWarpLevel106:
             WARP(0x6a, 0x45f);
-        case 0x81bc:
+        case kCmdDebugWarpLevel107:
             WARP(0x6b, 0x460);
-        case 0x81bd:
+        case kCmdDebugWarpLevel108:
             WARP(0x6c, 0x461);
-        case 0x81be:
+        case kCmdDebugWarpLevel109:
             WARP(0x6d, 0x462);
-        case 0x81bf:
+        case kCmdDebugWarpLevel110:
             WARP(0x6e, 0x463);
-        case 0x81c0:
+        case kCmdDebugWarpLevel111:
             WARP(0x6f, 0x464);
-        case 0x81c1:
+        case kCmdDebugWarpLevel112:
             WARP(0x70, 0x465);
-        case 0x81c2:
+        case kCmdDebugWarpLevel113:
             WARP(0x71, 0x466);
-        case 0x81c3:
+        case kCmdDebugWarpLevel114:
             WARP(0x72, 0x467);
-        case 0x81c4:
+        case kCmdDebugWarpLevel115:
             WARP(0x73, 0x468);
-        case 0x81c5:
+        case kCmdDebugWarpLevel116:
             WARP(0x74, 0x469);
-        case 0x81c6:
+        case kCmdDebugWarpLevel117:
             WARP(0x75, 0x46a);
-        case 0x81c7:
+        case kCmdDebugWarpLevel118:
             WARP(0x76, 0x46b);
-        case 0x81c8:
+        case kCmdDebugWarpLevel119:
             WARP(0x77, 0x46c);
-        case 0x81c9:
+        case kCmdDebugWarpLevel120:
             WARP(0x78, 0x46d);
-        case 0x81ca:
+        case kCmdDebugWarpLevel121:
             WARP(0x79, 0x46e);
-        case 0x81cb:
+        case kCmdDebugWarpLevel122:
             WARP(0x7a, 0x46f);
-        case 0x81cc:
+        case kCmdDebugWarpLevel123:
             WARP(0x7b, 0x470);
-        case 0x81cd:
+        case kCmdDebugWarpLevel124:
             WARP(0x7c, 0x471);
-        case 0x81ce:
+        case kCmdDebugWarpLevel125:
             WARP(0x7d, 0x472);
-        case 0x81cf:
+        case kCmdDebugWarpLevel126:
             WARP(0x7e, 0x473);
-        case 0x81d0:
+        case kCmdDebugWarpLevel127:
             WARP(0x7f, 0x474);
-        case 0x81d1:
+        case kCmdDebugWarpLevel128:
             WARP(0x80, 0x475);
-        case 0x81d2:
+        case kCmdDebugWarpLevel129:
             WARP(0x81, 0x476);
-        case 0x81d3:
+        case kCmdDebugWarpLevel130:
             WARP(0x82, 0x477);
-        case 0x81d4:
+        case kCmdDebugWarpLevel131:
             WARP(0x83, 0x478);
-        case 0x81d5:
+        case kCmdDebugWarpLevel132:
             WARP(0x84, 0x479);
-        case 0x8038:
+        case kCmdWebSite:
             if (m_curState->Update() == GAMESTATE_MENU
                 || m_curState->Update() == GAMESTATE_ATTRACT) {
                 while (::ShowCursor(1) < 0) {
@@ -912,7 +913,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 LaunchWebBrowser((char*)"http://www.gruntzgoo.com/");
             }
             return 1;
-        case 0x80d2:
+        case kCmdMultiJoin:
             m_134 = 2;
             g_isHost_648cf0 = 0;
             if (TransitionState(0x11, 1, 0, 0)) {
@@ -923,7 +924,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             ReportError(0x8005, 0x424);
             return 1;
-        case 0x80d3:
+        case kCmdMultiHost:
             m_134 = 2;
             g_isHost_648cf0 = 1;
             if (TransitionState(0x11, 1, 0, 0)) {
@@ -934,31 +935,31 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             ReportError(0x8005, 0x425);
             return 1;
-        case 0x8023:
+        case kCmdMainMenu:
             if (TransitionState(5, 1, 0, 0)) {
                 return 1;
             }
             ReportError(0x8005, 0x426);
             return 1;
-        case 0x8080:
+        case kCmdShowCredits:
             if (TransitionState(0xb, 1, 1, 0)) {
                 return 1;
             }
             ReportError(0x8005, 0x427);
             return 1;
-        case 0x8090:
-            if (TransitionState(0xd, 1, 1, p3)) {
+        case kCmdShowBooty:
+            if (TransitionState(0xd, 1, 1, lParam)) {
                 return 1;
             }
             ReportError(0x8005, 0x428);
             return 1;
-        case 0x8036:
+        case kCmdNextState:
             if (SwitchToNextState()) {
                 return 1;
             }
             ReportError(0x8005, 0x429);
             return 1;
-        case 0x8021:
+        case kCmdShowHelp:
             if (TransitionState(8, 1, 0, 0)) {
                 return 1;
             }
@@ -967,32 +968,32 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             ReportError(0x8005, 0x42a);
             return 1;
-        case 0x8027:
+        case kCmdAttract:
             if (TransitionState(2, 1, 0, 0)) {
                 return 1;
             }
             ReportError(0x8005, 0x42b);
             return 1;
-        case 0x8029:
+        case kCmdReturnToAttract:
             if (!TransitionState(2, 1, 0, 0)) {
                 ReportError(0x8005, 0x42c);
                 return 1;
             }
             ::PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8023, 0);
             return 1;
-        case 0x80ab:
+        case kCmdShowState0e:
             if (TransitionState(0xe, 1, 0, 0)) {
                 return 1;
             }
             ReportError(0x8005, 0x42d);
             return 1;
-        case 0x8022:
+        case kCmdShowState07:
             if (TransitionState(7, 1, 0, 0)) {
                 return 1;
             }
             ReportError(0x8005, 0x42e);
             return 1;
-        case 0x8007: { // 0x89b97
+        case kCmdPauseToggle: { // 0x89b97
             i32 st = m_curState->Update();
             if (st == GAMESTATE_PLAY || st == GAMESTATE_NONE) {
                 CPlay* ps = (CPlay*)m_curState; // id-proven downcast (CMulti : CPlay)
@@ -1016,7 +1017,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             return 1;
         }
-        case 0x816e: { // 0x89c19
+        case kCmdFinishLevel: { // 0x89c19
             i32 st = m_curState->Update();
             if (st == GAMESTATE_PLAY || st == GAMESTATE_NONE) {
                 i32 f = m_frameGate ^ 1;
@@ -1025,7 +1026,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             return 1;
         }
-        case 0x8084:
+        case kCmdPresentWorld:
             if (!CheckPlayState()) {
                 return 1;
             }
@@ -1034,11 +1035,11 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             ReportError(0x8005, 0x42f);
             return 1;
-        case 0x80b7:
+        case kCmdLobbyReset:
             m_lobbyProbed = 0;
             ::PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8025, 0);
             return 1;
-        case 0x800e: // 0x89c92
+        case kCmdExitToAttract: // 0x89c92
             if (!CheckPlayState()) {
                 return 1;
             }
@@ -1051,35 +1052,35 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             ReportError(0x8005, 0x430);
             return 1;
-        case 0x8042: // 0x89d00
+        case kCmdCaptureWorld: // 0x89d00
             if (g_cdPromptResult) {
                 return 1;
             }
             CaptureWorldFile();
             return 1;
-        case 0x8075: // 0x89d1e
+        case kCmdNextLevel: // 0x89d1e
             if (GoToNextLevel()) {
                 return 1;
             }
             ReportError(0x8007, 0x431);
             return 1;
-        case 0x800f: // 0x89d37 -> falls into 0x8006
+        case kCmdPrevLevel: // 0x89d37 -> falls into 0x8006
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_NONE) {
                 GoToPrevLevel();
                 return 1;
             }
             // fall through
-        case 0x8006: // 0x89d62
+        case kCmdReturnToMenu: // 0x89d62
             m_curState->m_40 = 1;
             if (TransitionState(5, 1, 0, 0)) {
                 return 1;
             }
             ReportError(0x8005, 0x432);
             return 1;
-        case 0x8008: // 0x89d8d
+        case kCmdQuit: // 0x89d8d
             DelayedQuit();
             return 1;
-        case 0x8035: { // 0x89d9e
+        case kCmdShowBootyState: { // 0x89d9e
             i32 st = m_curState->Update();
             if (st == 9 || st == 0xd || st == 0xf || st == 0xe || st == GAMESTATE_CREDITS
                 || st == GAMESTATE_BOOTY || st == GAMESTATE_MULTIBOOTY || st == GAMESTATE_NONE) {
@@ -1091,7 +1092,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             ReportError(0x8005, 0x433);
             return 1;
         }
-        case 0x80e2: { // 0x89e58  CONFIG_SETTINGS modal
+        case kCmdConfigSettings: { // 0x89e58  CONFIG_SETTINGS modal
             i32 st = m_curState->Update();
             CMenuState* mus = 0;
             if (st == GAMESTATE_MENU) {
@@ -1108,7 +1109,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             return 1;
         }
-        case 0x800a: { // 0x89e9f  elapsed-time / sound toggle
+        case kCmdToggleMusic: { // 0x89e9f  elapsed-time / sound toggle
             if (m_frameGate) {
                 return 1;
             }
@@ -1128,7 +1129,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             return 1;
         }
-        case 0x8009: { // 0x89f08  world-position display toggle
+        case kCmdToggleSound: { // 0x89f08  world-position display toggle
             if (m_world) {
                 SoundStream* p = m_world->m_soundRegistry->m_2c;
                 if (p) {
@@ -1145,25 +1146,25 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             }
             return 1;
         }
-        case 0x802c: // 0x89f5a
+        case kCmdRestoreVideoMode: // 0x89f5a
             if (!IsInPlayState()) {
                 return 1;
             }
             RestoreVideoMode(0);
             return 1;
-        case 0x802a: // 0x89f7c
+        case kCmdCheckDisplayBoundsA: // 0x89f7c
             if (!IsInPlayState()) {
                 return 1;
             }
             CheckDisplayBoundsA();
             return 1;
-        case 0x802b: // 0x89f9c
+        case kCmdCheckDisplayBoundsB: // 0x89f9c
             if (!IsInPlayState()) {
                 return 1;
             }
             CheckDisplayBoundsB();
             return 1;
-        case 0x8070: { // 0x89fbc  screenshot (front surface -> SaveScreenshot)
+        case kCmdScreenshot: { // 0x89fbc  screenshot (front surface -> SaveScreenshot)
             Fwd114ec0(
                 m_settings,
                 this,
@@ -1174,7 +1175,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             );
             return 1;
         }
-        case 0x806b: {
+        case kCmdReloadLevel: {
             CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
             if (!_g) {
                 return 1;

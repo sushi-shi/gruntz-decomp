@@ -11,6 +11,13 @@
 // USER32/GDI32 imports), the MFC-controlled way (afx.h first).
 #include <Mfc.h>
 
+// The game's WM_COMMAND id space (defined in <Gruntz/GruntzCommandId.h>). The two
+// base command virtuals below take it by value; the engine only needs the type
+// NAME, so this MS-style opaque forward declaration keeps the game header OUT of
+// the engine layer. MSVC 5.0 treats a forward-declared enum as int-width, so this
+// is a complete-enough type for a by-value parameter and is byte-neutral vs i32.
+enum GruntzCommand;
+
 // CGameWnd::CreateAndShow receives its 12 CreateWindowExA arguments as a
 // CREATESTRUCTA* (the <windows.h> layout, same one CGameApp stores in
 // m_createStruct): lpCreateParams@0 .. dwExStyle@0x2c. The window loads [eax+0]
@@ -137,7 +144,7 @@ namespace WAP32 {
         // fold the 2s frame-count window into m_fps. CGruntzMgr overrides it (slot 4
         // thunk 0x1c7b -> 0x8b740) with the game tick, which calls this base body
         virtual i32 PerFrameTick();               // +0x10 idx4  @0x13ddc0
-        virtual i32 HandleCommand(i32, i32, i32); // +0x14 idx5
+        virtual i32 HandleCommand(i32, GruntzCommand, i32); // +0x14 idx5
 
         // Non-virtual ctor helpers (called directly from the ctor / Run).
         void InitTimeFields(i32 reset); // @0x13de70
@@ -248,7 +255,8 @@ public:
     virtual void FreeGameManager(); // +0x24
     // +0x28 slot 10 (0x080d90): default WM_COMMAND handler - `return 0;` (unhandled).
     // Called by CGameWnd::OnCommand; CGruntzApp overrides it (0x080aa0).
-    virtual i32 HandleCommand(i32 notifyCode, i32 cmdId, i32 lParam); // +0x28 slot 10 0x080d90
+    virtual i32
+    HandleCommand(i32 notifyCode, GruntzCommand cmdId, i32 lParam); // +0x28 slot 10 0x080d90
     virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
     virtual void ShowError() {}                          // +0x30
     virtual CGameWnd* InitializeGameWindow();            // +0x34

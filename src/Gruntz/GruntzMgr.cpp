@@ -3050,7 +3050,7 @@ i32 CGruntzMgr::Wap32GameMgrVfunc3() {
 // WAP32::CGameMgr::HandleCommand (0x85580, base vtable 0x5e9b8c slot 5): the base
 // no-op command sink (CGruntzMgr overrides it at 0x862f0). Returns 0 (unhandled).
 RVA(0x00085580, 0x5)
-i32 WAP32::CGameMgr::HandleCommand(i32, i32, i32) {
+i32 WAP32::CGameMgr::HandleCommand(i32, GruntzCommand, i32) {
     return 0;
 }
 

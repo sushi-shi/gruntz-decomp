@@ -35,7 +35,7 @@ public:
     virtual void ShowError() OVERRIDE; // vtbl +0x30
     // WM_COMMAND handler override; this app claims nothing here - just returns 0.
     RVA(0x00080aa0, 0x5)
-    virtual i32 HandleCommand(i32 notifyCode, i32 cmdId, i32 lParam) OVERRIDE {
+    virtual i32 HandleCommand(i32 notifyCode, GruntzCommand cmdId, i32 lParam) OVERRIDE {
         return 0;
     }
     // Shows the MESSAGE dialog with an arbitrary message string.
