@@ -32,10 +32,16 @@
 #include <Wap32/Object.h>    // CObject - the scratch embed's polymorphic grand-base
 #include <Crypto/FecCrypt.h> // CFecFile - the +0x540 embedded decode store
 
-struct SmackTag;           // the RAD Smacker stream handle (<smack.h>'s `Smack` typedef tag)
-struct IDirectDrawSurface; // <ddraw.h> in the dispatching TUs; pointer-only here
-class CWnd;                // real MFC CWnd (<afxwin.h> in the dispatching TU)
-struct HWND__;             // strong HWND tag (windows.h STRICT)
+// The real DirectDraw SDK types the unified class holds (IDirectDraw/IDirectDraw2/
+// IDirectDrawSurface/IDirectDrawPalette/DDSURFACEDESC) + windows.h's PALETTEENTRY/
+// HWND/POINT/RECT. <Mfc.h> above pulled afx.h -> windows.h the afx-first way, so
+// pulling <ddraw.h> here is safe (this is the header that ex-CDDScreen's consumers
+// had to hand-order themselves).
+#include <ddraw.h>
+
+struct SmackTag;    // the RAD Smacker stream handle (<smack.h>'s `Smack` typedef tag)
+class CWnd;         // real MFC CWnd (<afxwin.h> in the dispatching TU)
+struct DDModeInfo;  // Init's {w,h,bpp} mode arg (<DDrawMgr/DirectDrawMgr.h>; pointer-only)
 
 // The Rez heap free (reloc-masked rel32 callee, __cdecl 1 arg). 0x1b9b82.
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
@@ -166,63 +172,168 @@ typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 //  * COST TO EXPECT: the per-fn MAX history is keyed by mangled name, so the ~17
 //    re-keyed rows restart their best-ever. That is bookkeeping, not a regression.
 // ===========================================================================
+// The ONE class. Members carry every reading the three ex-views proved; where two
+// readings genuinely differ at one offset, BOTH names are kept via an anonymous
+// union (byte-neutral, offsets unchanged - the CNetSession precedent).
 class CMoviePlayer {
 public:
-    // ----- src/Io/MoviePlayer.cpp -----
+    // ----- ex CDDPageMgr (the display bring-up / page cache) -------------------
+    i32 Init(HWND window, DDModeInfo* mode, u32 coopFlags); // 0x17c040
+    i32 CheckMode16();                                       // 0x17d2b0
+    i32 RemoveAt(i32 idx);                                   // 0x17d600
+    i32 FreeAll();                                           // 0x17d6b0
+    // ----- ex CDDScreen (the frame/palette/blit half) --------------------------
+    void HandleError();                                            // 0x17cc80
+    void ResetPalette();                                           // 0x17ca60
+    void Snapshot(HWND hWnd);                                      // 0x17cd90
+    i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);        // 0x17cdf0
+    i32 Configure(i32 mode, i32 flags, POINT* origin, RECT* rect); // 0x17cfc0
+    i32 CheckGrid();                                               // 0x17cbe0
+    void UploadPalette();                                          // 0x17ca10
+    i32 InitMode(
+        HWND wnd,
+        IDirectDraw2* dd2,
+        IDirectDrawSurface* primary,
+        i32 p4,
+        i32 p5,
+        i32 height,
+        i32 width,
+        i32 p8,
+        i32 p9,
+        i32 p10,
+        i32 p11,
+        i32 p12,
+        i32 p13,
+        i32 p14,
+        i32 p15,
+        i32 p16,
+        i32 p17,
+        i32 p18,
+        i32 p19,
+        i32 p20,
+        i32 p21,
+        i32 p22,
+        i32 p23,
+        i32 p24,
+        i32 bpp,
+        i32 p26,
+        i32 p27,
+        i32 p28,
+        i32 p29,
+        i32 p30,
+        i32 a31
+    ); // 0x17c3f0
+    // ----- ex CMoviePlayer (the Smacker playback half) -------------------------
     i32 Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x17c6f0
     ~CMoviePlayer();                                          // 0x038fc0
-    // ----- src/Io/SmackerVideoWindow.cpp (the playback cluster) -----
-    // (The bring-up 0x17c040 is CDDPageMgr::Init(void*,DDModeInfo*,u32) - the old
-    //  `int Init(HWND,i32,i32)` decl here was a fake-view alias of it;
-    //  CreateVideoWindow reaches it through the same-object bridge cast.)
-    int CreateVideoWindow(i32 a0, i32 a1); // 0x17c2a0
-    void Teardown();                                        // 0x17c510
-    i32 OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5); // 0x17c570
-    i32 OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5); // 0x17c630
-    i32 Pump(i32 flags, i32 count);                         // 0x17c790
-    i32 Advance(i32 cmd, i32 loops);                        // 0x17c8e0
-    i32 CloseSmacker();                                     // 0x17c9b0
-    i32 PlayList(i32 loops);                                // 0x17d720
-    i32 Begin(i32 a2, i32 useDS, i32 a4, i32 a5);           // 0x17cfc0 (external)
-    i32 Frame();                                            // 0x17caa0
-    // Frame's new-palette snapshot (0x17ca10) + dirty-rect blit (0x17cdf0) and
-    // Teardown's teardowns (FreeAll 0x17d6b0 / HandleError 0x17cc80) are CDDScreen/
-    // CDDPageMgr methods this same object owns - called via the real classes in
-    // DDPageMgr.cpp (this cluster is one retail class split into 4 reconstruction views).
+    int CreateVideoWindow(i32 a0, i32 a1);                    // 0x17c2a0
+    void Teardown();                                          // 0x17c510
+    i32 OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5);   // 0x17c570
+    i32 OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5);   // 0x17c630
+    i32 Pump(i32 flags, i32 count);                           // 0x17c790
+    // 0x17c8e0: render one frame onto `target`, then restore the previous target.
+    // arg1 is a SURFACE, not a command - it is null-checked, stored into m_primary
+    // (+0x1c) across the Frame() call and restored after (mov ebp,[esi+0x1c] /
+    // mov [esi+0x1c],ecx / call Frame / mov [esi+0x1c],ebp). See the +0x1c note.
+    i32 Advance(IDirectDrawSurface* target, i32 loops); // 0x17c8e0
+    i32 CloseSmacker();                                 // 0x17c9b0
+    i32 PlayList(i32 loops);                            // 0x17d720
+    i32 Begin(i32 a2, i32 useDS, i32 a4, i32 a5);       // 0x17cfc0 (external)
+    i32 Frame();                                        // 0x17caa0
 
-    // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    // +0x00: NOT a vptr - plain data zeroed by Teardown (no stamp anywhere in the
-    // reconstructed cluster; the /GX dtor stamps only the scratch embed's vtables).
-    i32 m_0;
-    i32 m_active;     // +0x04  active flag (Open bails when 0)
-    i32 m_streamOpen; // +0x08  stream-open flag
-    char _0c[0x10 - 0xc];
-    SmackTag* m_smackHandle; // +0x10  Smacker stream handle (SmackOpen result)
-    char _14[0x1c - 0x14];
-    i32 m_command; // +0x1c  pending command
-    char _20[0x24 - 0x20];
-    IDirectDrawSurface* m_24; // +0x24  primary DDraw surface (Lock/Restore/Unlock/Release)
-    IDirectDrawSurface* m_28; // +0x28  secondary DDraw surface (Release)
-    char _2c[0x9c - 0x2c];
-    char m_desc[0xac - 0x9c]; // +0x9c  DDSURFACEDESC head (Lock's out-param)
-    i32 m_lPitch;             // +0xac  desc.lPitch (surface stride)
-    char _b0[0xc0 - 0xb0];
-    LPVOID m_lpSurface; // +0xc0  desc.lpSurface (locked pixel base; the SDK's own LPVOID)
-    char _c4[0x508 - 0xc4];
-    void* m_directSound; // +0x508  DirectSound
-    i32 m_50c;           // +0x50c  frame-locked flag
-    i32 m_510;           // +0x510  SmackToBuffer blit flags
-    i32 m_514;           // +0x514  full-frame flag
-    char _518[0x520 - 0x518];
-    i32 m_520; // +0x520  palette-mode state (8 => snapshot on new palette)
-    char _524[0x534 - 0x524];
-    void* m_rezBuffer;     // +0x534  Rez buffer
-    i32 m_useDS;           // +0x538
-    CWnd* m_videoWnd;      // +0x53c  the video window (real MFC CWnd)
-    CFecFile m_540;        // +0x540  embedded decode store - the canonical CFecFile
-                           //         (0x814c B; ends exactly at the +0x868c playlist)
-    CMoviePlaylist m_868c; // +0x868c  Rez-owned playlist (CArray<PLAYLISTINFOSTRUCT*>, 0x14 B)
-    i32 m_loopCount;       // +0x86a0  loop counter
+    // ----- layout (0x86a4; offsets are the load-bearing fact) -----------------
+    // +0x00: NOT a vptr - plain data (no stamp anywhere in the cluster; the /GX
+    // dtor stamps only the playlist embed's vtables). The window handle.
+    HWND m_window;
+    i32 m_initialized; // +0x04  init/active flag (Open + Advance bail when 0)
+    i32 m_streamOpen;  // +0x08  stream-open flag (InitMode clears it)
+    i32 m_0c;          // +0x0c  ==0 gates the full DDraw-stack teardown (owns-vs-borrows)
+    // +0x10  the RAD Smacker stream handle (SmackOpen's result). The ex CDDScreen
+    // view called this a "CTileInfo*" tile/mode descriptor - same slot: the Smack
+    // handle's Version/Width/Height ARE its m_0/m_width/m_height (+0x0/+0x4/+0x8),
+    // its +0x68 is the new-palette flag Frame tests, and the RGB palette source it
+    // read at +0x6c is Smack's palette. CheckGrid's "tile source surface, sized to
+    // the m_tileInfo dims, OFFSCREENPLAIN|SYSTEMMEMORY" is the SmackToBuffer sysmem
+    // staging surface, and its "tiled blit" is the movie frame blitter.
+    SmackTag* m_smackHandle;
+    IDirectDraw2* m_dd2; // +0x14  the QI'd IDirectDraw2 (InitMode arg2)
+    IDirectDraw* m_dd;   // +0x18  the raw IDirectDraw DirectDrawCreate returns
+    // +0x1c  the primary/target surface. PROVEN a surface, not the "pending command"
+    // the movie view called it: InitMode stores its `primary` arg here and then
+    // COM-dispatches it - `mov eax,[esi+0x1c]; mov ecx,[eax]; call [ecx+0x7c]` is
+    // IDirectDrawSurface::SetPalette(m_palette) (slot 31). Advance's save/restore of
+    // this slot is a frame-target retarget (its arg1 is null-checked like a pointer).
+    IDirectDrawSurface* m_primary;
+    IDirectDrawSurface* m_primaryRaw;   // +0x20  the raw primary (only Release'd)
+    IDirectDrawSurface* m_srcSurf;      // +0x24  frame/tile SOURCE surface (Frame Locks it
+                                        //        into m_srcDesc; CheckGrid creates it)
+    IDirectDrawSurface* m_28;           // +0x28  raw source surface (CheckGrid's out; Release'd)
+    IDirectDrawPalette* m_palette;      // +0x2c  the palette (SetPalette'd onto m_primary)
+    // +0x30  the PRIMARY-surface DDSURFACEDESC scratch. NB it is m_primaryDesc, not
+    // "m_desc": BOTH ex-views had a member spelled m_desc at DIFFERENT offsets (the
+    // page-mgr's here at +0x30, the movie's at +0x9c), so a plain m_desc silently
+    // rebinds one of them to the wrong buffer at the union - which is exactly what
+    // happened to Frame (base emitted `lea edi,[esi+0x30]` for retail's `+0x9c`;
+    // caught by the byte diff, not by the compiler). The distinct names make that
+    // class of error impossible.
+    union {
+        char m_primaryDesc[0x6c]; //        raw view (Init bulk-clears it as dwords)
+        struct {
+            u32 m_descSize;  // +0x30  dwSize
+            u32 m_descFlags; // +0x34  dwFlags (Init sets DDSD_CAPS: `mov [esi+0x34],1`)
+            char m_descpad38[0x98 - 0x38];
+            u32 m_descCaps; // +0x98  ddsCaps.dwCaps
+        };
+    };
+    // +0x9c  the SOURCE-surface DDSURFACEDESC (0x6c B; CheckGrid fills it, Frame passes
+    // it to Lock). One object, two descs - which is why the two views each saw only
+    // "the" desc. The movie view's m_lPitch/+0xac and m_lpSurface/+0xc0 are simply this
+    // struct's lPitch (+0x10) and lpSurface (+0x24) fields: 0x9c+0x10 and 0x9c+0x24.
+    DDSURFACEDESC m_srcDesc;
+    // +0x108  256 * 4-byte PALETTEENTRY slots. Two views: ResetPalette/UploadPalette
+    // walk it byte-wise; Snapshot fills it as a real PALETTEENTRY[256].
+    union {
+        u8 m_colorSlots[0x400];
+        PALETTEENTRY m_palEntries[0x100];
+    };
+    union {                  // +0x508
+        i32 m_508;           //   InitMode's a31 pass-through scalar
+        void* m_directSound; //   the DirectSound the movie half reads
+    };
+    i32 m_50c; // +0x50c  frame-locked flag / reset to 0 by Configure
+    union {    // +0x510
+        i32 m_510;    //   cleared by InitMode after the 8bpp palette attach
+        i32 m_modeTag; //   the page-mgr view's mode tag
+    };
+    i32 m_514;         // +0x514  full-frame flag / mode-2 fallback
+    u32 m_screenWidth; // +0x518
+    u32 m_screenHeight; // +0x51c
+    // +0x520  bits-per-pixel. The movie view called it "palette-mode state (8 =>
+    // snapshot on new palette)" - the magic 8 is 8bpp (Frame: `cmp [esi+0x520],8`
+    // gates UploadPalette on the Smack handle's new-palette flag).
+    i32 m_bpp;
+    i32 m_tilesAcross; // +0x524
+    i32 m_tilesDown;   // +0x528
+    i32 m_originX;     // +0x52c
+    i32 m_originY;     // +0x530
+    union {                // +0x534
+        RECT* m_destRect;  //   explicit dest rect (or 0)
+        void* m_rezBuffer; //   the movie half's Rez buffer
+    };
+    union {                   // +0x538
+        i32 m_forceSingleRow; //   screen view
+        i32 m_useDS;          //   movie view (DirectSound gate)
+    };
+    CWnd* m_videoWnd; // +0x53c  the video window (real MFC CWnd)
+    CFecFile m_540;   // +0x540  embedded decode store - the canonical CFecFile
+                      //         (0x814c B; ends exactly at the +0x868c playlist)
+    // +0x868c  the Rez-owned playlist, an MFC CArray (RTTI-proven, COL @0x1e971c).
+    // Its m_pData/m_nSize/m_nMaxSize land at +0x8690/+0x8694/+0x8698 - which is
+    // EXACTLY what the ex CDDPageMgr view independently modelled as m_data/m_count/
+    // m_8698, and its element IS that view's "CPageRec" (PLAYLISTINFOSTRUCT: the
+    // three owned buffers RemoveAt frees at +0x00/+0x10/+0x14).
+    CMoviePlaylist m_868c;
+    i32 m_loopCount; // +0x86a0  loop counter (the screen view's m_86a0, "reset by Configure")
 };
-
+SIZE_UNKNOWN(CMoviePlayer); // no op-new site names the size; the layout runs to 0x86a4
 #endif // GRUNTZ_CMOVIEPLAYER_H

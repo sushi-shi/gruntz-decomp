@@ -11,7 +11,7 @@
 // in the cluster; they are declared (no body) so their rel32 calls reloc-mask.
 
 // ===========================================================================
-// 0x17c6f0 - Open: bail if the worker is inactive (m_active == 0). Prepare the +0x540
+// 0x17c6f0 - Open: bail if the worker is inactive (m_initialized == 0). Prepare the +0x540
 // decode store (Begin); open the low-res source (OpenA(a1)); open the high-res
 // source (OpenB(a2)); finalize through OpenHi with the OpenB handle + the four
 // trailing args. Any failing step aborts the store and returns 0; full success
@@ -19,7 +19,7 @@
 // ===========================================================================
 RVA(0x0017c6f0, 0x9c)
 i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    if (m_active == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     if (!m_540.Init()) {

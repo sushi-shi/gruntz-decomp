@@ -278,62 +278,15 @@ struct CPageRec {
     void* m_14; // +0x14  owned buffer
 };
 
-SIZE_UNKNOWN(CDDPageMgr);
-// IDENTITY PROVEN (VW3 2026-07-17): CDDPageMgr, CDDScreen (<DDrawMgr/DDScreen.h>)
-// and CMoviePlayer (<Io/MoviePlayer.h>) ARE ONE retail class - notably THIS class's
-// m_data/m_count/m_8698 (+0x8690/94/98) are the m_pData/m_nSize/m_nMaxSize of the
-// RTTI-proven MFC CArray playlist embedded at +0x868c, and its CPageRec is that
-// array's PLAYLISTINFOSTRUCT. Full proof + merge spec in <Io/MoviePlayer.h>.
-class CDDPageMgr {
-public:
-    i32 Init(void* window, DDModeInfo* mode, u32 coopFlags); // 0x17c040
-
-    // (HandleError @0x17cc80 and the 0x17cd90 palette snapshot are CDDScreen
-    // methods - the old CDDPageMgr::HandleError/OnModeSet decls were fake-view
-    // aliases; Init reaches both through the documented same-object bridge cast.)
-    i32 CheckMode16(); // 0x17d2b0
-
-    // The 1-based page-record cache management (bodies in DDPageMgr.cpp). RemoveAt drops
-    // one record (frees its three buffers, shifts the tail down); FreeAll RemoveAt(1)s
-    // every record then frees the array - Init's finalize step tail-calls it (0x17d6b0;
-    // the earlier "FinishInit" name was a guess, the xref proves Init -> FreeAll).
-    i32 RemoveAt(i32 idx); // 0x17d600
-    i32 FreeAll();         // 0x17d6b0
-
-    // --- layout (only touched offsets pinned) ---------------------------------
-    void* m_window;    // +0x00  owner window (HWND; stored last by Init)
-    i32 m_initialized; // +0x04  "initialized" flag
-    char m_pad8[0x0c - 0x08];
-    i32 m_c; // +0x0c
-    char m_pad10[0x14 - 0x10];
-    IDirectDraw2* m_dd2;                     // +0x14  the QI'd IDirectDraw2
-    IDirectDraw* m_dd1;                      // +0x18  the raw IDirectDraw DirectDrawCreate returns
-    IDirectDrawSurface* m_primarySurface;    // +0x1c  primary surface (QI'd to Surface3)
-    IDirectDrawSurface* m_primarySurfaceRaw; // +0x20  primary surface (raw)
-    i32 m_24;                                // +0x24
-    i32 m_28;                                // +0x28
-    IDirectDrawPalette* m_palette;           // +0x2c  the palette
-    union {                                  // +0x30  DDSURFACEDESC scratch (CreateSurface target)
-        char m_desc[0x6c]; //        raw view (Init bulk-clears the desc as dwords)
-        struct {
-            u32 m_descSize;  // +0x30  dwSize
-            u32 m_descFlags; // +0x34  dwFlags (Init sets DDSD_CAPS - retail `mov [esi+0x34],1`;
-                             //         the old `m_24 = 1` mis-read this store at +0x24)
-            char m_descpad38[0x98 - 0x38];
-            u32 m_descCaps; // +0x98  ddsCaps.dwCaps
-        };
-    };
-    char m_pad9c[0x108 - 0x9c];       // +0x9c
-    char m_palEntries[0x510 - 0x108]; // +0x108 PALETTEENTRY init buffer (only &m_palEntries used)
-    i32 m_modeTag;                    // +0x510
-    char m_pad514[0x518 - 0x514];
-    i32 m_width;  // +0x518  width
-    i32 m_height; // +0x51c  height
-    i32 m_bpp;    // +0x520  bpp
-    char m_pad524[0x8690 - 0x524];
-    CPageRec** m_data; // +0x8690  1-based growable array of cached page records
-    i32 m_count;       // +0x8694  record count
-    i32 m_8698;        // +0x8698
-};
-
+// CDDPageMgr IS CMoviePlayer (<Io/MoviePlayer.h>) - ONE retail class. Notably THIS
+// view's m_data/m_count/m_8698 (+0x8690/94/98) are the m_pData/m_nSize/m_nMaxSize of
+// the RTTI-proven MFC CArray playlist embedded at +0x868c, and its CPageRec is that
+// array's PLAYLISTINFOSTRUCT (the three owned buffers RemoveAt frees). Full proof in
+// <Io/MoviePlayer.h>.
+//
+// Kept as a TYPEDEF ALIAS (fwd decl only - this header has 18 consumers and must not
+// pull MFC/afxtempl into them; a TU needing the members includes <Io/MoviePlayer.h>).
+// @fold-TODO: rename the consumers to CMoviePlayer, then drop this alias.
+class CMoviePlayer;
+typedef CMoviePlayer CDDPageMgr;
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

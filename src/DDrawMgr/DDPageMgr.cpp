@@ -3,7 +3,7 @@
 // waveM-mech merged the 0x17c040-0x17d720 .text (ONE original TU: text A-B-A weave -
 // CDDPageMgr's Init@0x17c040 + CheckMode16/RemoveAt/FreeAll@0x17d2b0-0x17d6b0 bracket
 // the CMoviePlayer(smackervideowindow) + CDDScreen(ddscreen) methods; DDPageMgr's Init
-// calls CDDScreen::HandleError@0x17cc80 - same obj). Absorbed the ex ddpagemgr +
+// calls CMoviePlayer::HandleError@0x17cc80 - same obj). Absorbed the ex ddpagemgr +
 // smackervideowindow + ddscreen units.
 //
 // DEFERRED FOLD (@identity-TODO): CDDPageMgr (<DDrawMgr/DirectDrawMgr.h>) and CDDScreen
@@ -13,7 +13,7 @@
 // preserving, but unifying the two header views is deferred work.
 //
 // BOUNDARY (left separate, frag-woven strays out of scope): CMoviePlayer::Open@0x17c6f0
-// (movieplayer), CDDScreen::UploadPalette@0x17ca10 (palettecopy), CDDScreen::ResetPalette
+// (movieplayer), CMoviePlayer::UploadPalette@0x17ca10 (palettecopy), CMoviePlayer::ResetPalette
 // @0x17ca60 (palettereset), CImageProbe::Init@0x17cbe0 (imageprobe), PalCache::Snapshot
 // @0x17cd90 (resourceloaders) - each is a method of this obj's classes wearing a stray
 // unit; SHOULD fold here in a follow-up.
@@ -88,11 +88,11 @@ extern "C" const GUID IID_IDirectDrawSurface3 = {
 // Functions in retail-RVA order.
 // ===========================================================================
 
-// CDDPageMgr::Init (0x17c040, __thiscall) - create DirectDraw, QI IDirectDraw2, set
+// CMoviePlayer::Init (0x17c040, __thiscall) - create DirectDraw, QI IDirectDraw2, set
 // the cooperative level + display mode, create the primary surface (QI'd to
 // IDirectDrawSurface3) and, for 8bpp, a palette; cache geometry + show the cursor.
 RVA(0x0017c040, 0x25d)
-i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
+i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != 0) {
         return 0;
     }
@@ -111,11 +111,11 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
         bpp = 8;
     }
 
-    m_c = 0;
-    if (DirectDrawCreate(0, &m_dd1, 0) != 0) {
+    m_0c = 0;
+    if (DirectDrawCreate(0, &m_dd, 0) != 0) {
         return 0;
     }
-    if (m_dd1->QueryInterface(IID_IDirectDraw2, (void**)&m_dd2) != 0) {
+    if (m_dd->QueryInterface(IID_IDirectDraw2, (void**)&m_dd2) != 0) {
         return 0;
     }
     if (m_dd2->SetCooperativeLevel((HWND)window, coopFlags) != 0) {
@@ -128,19 +128,19 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     i32 i;
-    i32* d = (i32*)m_desc;
+    i32* d = (i32*)m_primaryDesc;
     for (i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
     m_descSize = 0x6c;
-    m_descFlags = 1;    // dwFlags = DDSD_CAPS (retail `mov [esi+0x34],1`; was mis-read as m_24)
+    m_descFlags = 1;    // dwFlags = DDSD_CAPS (retail `mov [esi+0x34],1`; was mis-read as m_srcSurf)
     m_descCaps = 0x200; // ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE
-    if (m_dd2->CreateSurface((LPDDSURFACEDESC)m_desc, &m_primarySurfaceRaw, 0) != 0) {
+    if (m_dd2->CreateSurface((LPDDSURFACEDESC)m_primaryDesc, &m_primaryRaw, 0) != 0) {
         ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
         return 0;
     }
 
-    if (m_primarySurfaceRaw->QueryInterface(IID_IDirectDrawSurface3, (void**)&m_primarySurface)
+    if (m_primaryRaw->QueryInterface(IID_IDirectDrawSurface3, (void**)&m_primary)
         != 0) {
         return 0;
     }
@@ -155,7 +155,7 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
             ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
             return 0;
         }
-        m_primarySurface->SetPalette(m_palette);
+        m_primary->SetPalette(m_palette);
         m_modeTag = 0;
     }
 
@@ -170,13 +170,13 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
         }
     }
 
-    m_width = w;
-    m_24 = 0;
+    m_screenWidth = w;
+    m_srcSurf = 0;
     m_28 = 0;
-    m_height = h;
+    m_screenHeight = h;
     m_bpp = bpp;
     m_window = window;
-    m_c = 0;
+    m_0c = 0;
     ShowCursor(0);
     m_initialized = 1;
     FreeAll();
@@ -215,17 +215,17 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     }
     m_videoWnd->SetFocus();
     HWND h = m_videoWnd ? m_videoWnd->m_hWnd : 0;
-    // The bring-up is CDDPageMgr::Init @0x17c040 on this same object (a0 IS the
+    // The bring-up is CMoviePlayer::Init @0x17c040 on this same object (a0 IS the
     // DDModeInfo*, a1 the coop flags); the old ?Init@CMoviePlayer@@ fake-alias
     // decl left this rel32 unresolved.
     return ((CDDPageMgr*)this)->Init(h, (DDModeInfo*)a0, (u32)a1); // same-object bridge
 }
 
-// CDDScreen::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the
+// CMoviePlayer::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the
 // CDDScreen display object (a stack-local 0x520+-byte block in the caller;
 // CGruntzMgr::ChangeState_8fab0 builds + InitMode()s it).
 RVA(0x0017c3f0, 0x14e)
-i32 CDDScreen::InitMode(
+i32 CMoviePlayer::InitMode(
     HWND wnd,
     IDirectDraw2* dd2,
     IDirectDrawSurface* primary,
@@ -287,26 +287,26 @@ i32 CDDScreen::InitMode(
     m_screenHeight = height;
     m_bpp = bpp;
     m_window = wnd;
-    m_8 = 0;
+    m_streamOpen = 0;
     m_srcSurf = 0;
     m_28 = 0;
     m_508 = a31;
     ::ShowCursor(0);
     m_initialized = 1;
-    ((CDDPageMgr*)this)->FreeAll();
+    FreeAll();
     return 1;
 }
 
 // CMoviePlayer::Teardown (0x17c510) - tear the playback object down + restore the cursor.
 RVA(0x0017c510, 0x5e)
 void CMoviePlayer::Teardown() {
-    if (!m_active) {
+    if (!m_initialized) {
         return;
     }
     CloseSmacker();
-    ((CDDPageMgr*)this)->FreeAll();
-    m_0 = 0; // +0x00 plain data (no vptr evidence; zeroed at teardown)
-    m_active = 0;
+    FreeAll();
+    m_window = 0; // +0x00 plain data (no vptr evidence; zeroed at teardown)
+    m_initialized = 0;
     ((CDDScreen*)this)->HandleError();
     if (m_videoWnd) {
         m_videoWnd->DestroyWindow();
@@ -320,7 +320,7 @@ void CMoviePlayer::Teardown() {
 // DirectSound), begin playback, roll back on failure.
 RVA(0x0017c570, 0xc0)
 i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
-    if (!m_active) {
+    if (!m_initialized) {
         return 0;
     }
     SmackSoundUseDirectSound(m_directSound);
@@ -343,9 +343,9 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
     if (r) {
         return r;
     }
-    if (m_24) {
-        m_24->Release();
-        m_24 = 0;
+    if (m_srcSurf) {
+        m_srcSurf->Release();
+        m_srcSurf = 0;
     }
     if (m_28) {
         m_28->Release();
@@ -358,7 +358,7 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 // CMoviePlayer::OpenHi (0x17c630) - same as OpenLo but with the 0xff000 flag set.
 RVA(0x0017c630, 0xc0)
 i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
-    if (!m_active) {
+    if (!m_initialized) {
         return 0;
     }
     SmackSoundUseDirectSound(m_directSound);
@@ -381,9 +381,9 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
     if (r) {
         return r;
     }
-    if (m_24) {
-        m_24->Release();
-        m_24 = 0;
+    if (m_srcSurf) {
+        m_srcSurf->Release();
+        m_srcSurf = 0;
     }
     if (m_28) {
         m_28->Release();
@@ -397,7 +397,7 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 // selected key/mouse events, else render the next frame until `count` plays elapse.
 RVA(0x0017c790, 0x14a)
 i32 CMoviePlayer::Pump(i32 flags, i32 count) {
-    if (!m_active || count < -1 || count == 0) {
+    if (!m_initialized || count < -1 || count == 0) {
         return 0;
     }
     m_loopCount = 1;
@@ -445,8 +445,8 @@ i32 CMoviePlayer::Pump(i32 flags, i32 count) {
 // CMoviePlayer::Advance (0x17c8e0) - wait for the stream, render a frame, loop on EOF
 // until `loops` is exhausted.
 RVA(0x0017c8e0, 0xca)
-i32 CMoviePlayer::Advance(i32 cmd, i32 loops) {
-    if (!cmd || !m_active || loops < -1 || loops == 0) {
+i32 CMoviePlayer::Advance(IDirectDrawSurface* target, i32 loops) {
+    if (!target || !m_initialized || loops < -1 || loops == 0) {
         return 0;
     }
     i32 result = 1;
@@ -454,8 +454,8 @@ i32 CMoviePlayer::Advance(i32 cmd, i32 loops) {
         m_loopCount = result;
     }
     if (SmackWait(m_smackHandle) == 0) {
-        i32 saved = m_command;
-        m_command = cmd;
+        IDirectDrawSurface* saved = m_primary;
+        m_primary = target;
         result = Frame();
         if (result == 0) {
             if (loops == -1 || ++m_loopCount <= loops) {
@@ -465,7 +465,7 @@ i32 CMoviePlayer::Advance(i32 cmd, i32 loops) {
                 result = 1;
             }
         }
-        m_command = saved;
+        m_primary = saved;
     }
     if (result == 0) {
         m_loopCount = 0;
@@ -498,21 +498,21 @@ i32 CMoviePlayer::CloseSmacker() {
 // changed region(s), advance to the next frame.
 RVA(0x0017caa0, 0x13b)
 i32 CMoviePlayer::Frame() {
-    if (m_smackHandle->NewPalette && m_520 == 8) {
+    if (m_smackHandle->NewPalette && m_bpp == 8) {
         ((CDDScreen*)this)->UploadPalette();
     }
-    i32 hr = m_24->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
+    i32 hr = m_srcSurf->Lock(0, &m_srcDesc, 1, 0);
     while (hr == static_cast<i32>(0x887601c2)) {
-        if (m_24->Restore() != 0) {
+        if (m_srcSurf->Restore() != 0) {
             goto afterLock;
         }
-        hr = m_24->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
+        hr = m_srcSurf->Lock(0, &m_srcDesc, 1, 0);
     }
     if (hr == 0) {
-        SmackToBuffer(m_smackHandle, 0, 0, m_lPitch, m_smackHandle->Height, m_lpSurface, m_510);
+        SmackToBuffer(m_smackHandle, 0, 0, m_srcDesc.lPitch, m_smackHandle->Height, m_srcDesc.lpSurface, m_510);
         SmackDoFrame(m_smackHandle);
         m_50c = 1;
-        m_24->Unlock(m_lpSurface);
+        m_srcSurf->Unlock(m_srcDesc.lpSurface);
     }
 afterLock:
     if (m_514 != 1) {
@@ -536,10 +536,10 @@ afterLock:
     return 1;
 }
 
-// CDDScreen::HandleError (0x17cc80) - release owned interfaces; if still mid-bringup
+// CMoviePlayer::HandleError (0x17cc80) - release owned interfaces; if still mid-bringup
 // black the primary surface, then release the remaining objects.
 RVA(0x0017cc80, 0x109)
-void CDDScreen::HandleError() {
+void CMoviePlayer::HandleError() {
     if (m_srcSurf) {
         m_srcSurf->Release();
         m_srcSurf = 0;
@@ -573,9 +573,9 @@ void CDDScreen::HandleError() {
             m_primary->Release();
             m_primary = 0;
         }
-        if (m_20) {
-            m_20->Release();
-            m_20 = 0;
+        if (m_primaryRaw) {
+            m_primaryRaw->Release();
+            m_primaryRaw = 0;
         }
         if (m_dd2) {
             m_dd2->RestoreDisplayMode();
@@ -589,10 +589,10 @@ void CDDScreen::HandleError() {
     }
 }
 
-// CDDScreen::BlitRegion (0x17cdf0) - blit the (col,row,nCols,nRows) tile region from the
+// CMoviePlayer::BlitRegion (0x17cdf0) - blit the (col,row,nCols,nRows) tile region from the
 // source surface onto the primary; handle DDERR_SURFACELOST by restoring + retrying.
 RVA(0x0017cdf0, 0x1c6)
-i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
+i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     RECT dst, src;
     if (m_destRect) {
         dst.left = m_destRect->left;
@@ -656,16 +656,16 @@ i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     }
 }
 
-// CDDScreen::Configure (0x17cfc0) - derive the tile grid + scroll origin for a layout
+// CMoviePlayer::Configure (0x17cfc0) - derive the tile grid + scroll origin for a layout
 // `mode` (0..3), validating the caller's optional origin/clip against the screen first.
 // @early-stop
 // reloc-mask scoring artifact (~97.4%): the CODE BYTES are byte-exact (llvm-objdump -dr
 // base vs target). The residual is two differently-named reloc operands: the rel32 call
 // to the sibling grid validator at 0x17cbe0 (stubbed ?Unmatched_17cbe0, modeled here as
-// CDDScreen::CheckGrid), and the switch jump table ($L385 vs switchdataD_0057d2a0).
+// CMoviePlayer::CheckGrid), and the switch jump table ($L385 vs switchdataD_0057d2a0).
 // topic:scoring-artifact - no further code change possible.
 RVA(0x0017cfc0, 0x2dd)
-i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
     if (origin) {
         if (origin->x > m_screenWidth) {
             return 0;
@@ -688,10 +688,10 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
             return 0;
         }
     }
-    if (m_tileInfo->m_width > m_screenWidth) {
+    if (m_smackHandle->Width > m_screenWidth) {
         return 0;
     }
-    if (m_tileInfo->m_height > m_screenHeight) {
+    if (m_smackHandle->Height > m_screenHeight) {
         return 0;
     }
     if (!CheckGrid()) {
@@ -700,8 +700,8 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
 
     switch (mode) {
         case 0:
-            m_tilesAcross = m_screenWidth / m_tileInfo->m_width;
-            m_tilesDown = m_screenHeight / m_tileInfo->m_height;
+            m_tilesAcross = m_screenWidth / m_smackHandle->Width;
+            m_tilesDown = m_screenHeight / m_smackHandle->Height;
             if (flags & 0x10) {
                 if (!origin) {
                     return 0;
@@ -709,8 +709,8 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                 m_originX = origin->x;
                 m_originY = origin->y;
             } else {
-                m_originX = (m_screenWidth - m_tilesAcross * m_tileInfo->m_width) >> 1;
-                m_originY = (m_screenHeight - m_tilesDown * m_tileInfo->m_height) >> 1;
+                m_originX = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
+                m_originY = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
             }
             break;
         case 1:
@@ -723,15 +723,15 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                 m_originX = origin->x;
                 m_originY = origin->y;
             } else {
-                m_originX = (m_screenWidth - m_tileInfo->m_width) >> 1;
-                m_originY = (m_screenHeight - m_tileInfo->m_height) >> 1;
+                m_originX = (m_screenWidth - m_smackHandle->Width) >> 1;
+                m_originY = (m_screenHeight - m_smackHandle->Height) >> 1;
             }
             break;
         case 2:
-            if (m_screenWidth % m_tileInfo->m_width == 0
-                && m_screenHeight % m_tileInfo->m_height == 0) {
-                m_tilesAcross = m_screenWidth / m_tileInfo->m_width;
-                m_tilesDown = m_screenHeight / m_tileInfo->m_height;
+            if (m_screenWidth % m_smackHandle->Width == 0
+                && m_screenHeight % m_smackHandle->Height == 0) {
+                m_tilesAcross = m_screenWidth / m_smackHandle->Width;
+                m_tilesDown = m_screenHeight / m_smackHandle->Height;
                 if (flags & 0x10) {
                     if (!origin) {
                         return 0;
@@ -739,8 +739,8 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
                     m_originX = origin->x;
                     m_originY = origin->y;
                 } else {
-                    m_originX = (m_screenWidth - m_tilesAcross * m_tileInfo->m_width) >> 1;
-                    m_originY = (m_screenHeight - m_tilesDown * m_tileInfo->m_height) >> 1;
+                    m_originX = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
+                    m_originY = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
                 }
             } else {
                 m_tilesAcross = 1;
@@ -779,18 +779,18 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
         m_tilesDown = 1;
     }
     m_50c = 0;
-    m_86a0 = 0;
+    m_loopCount = 0;
     return 1;
 }
 
-// CDDPageMgr::CheckMode16 (0x17d2b0) - popcount the current display mode's R/G/B masks
+// CMoviePlayer::CheckMode16 (0x17d2b0) - popcount the current display mode's R/G/B masks
 // and classify a 16-bit mode (5/5/5 -> 0x80000000, 5/6/5 -> 0xc0000000).
 // @early-stop
 // 83.9% - logic/CFG/COM call/popcount loops/classification reproduced. The residual is a
 // regalloc coin-flip: retail spills `this` (sub esp,0x70) + uses ebx as a bit counter,
 // while we keep `this` in ebx (sub esp,0x6c) + use edi for the third counter. Deferred.
 RVA(0x0017d2b0, 0xfa)
-i32 CDDPageMgr::CheckMode16() {
+i32 CMoviePlayer::CheckMode16() {
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
     desc.dwSize = 0x6c;
@@ -837,68 +837,65 @@ i32 CDDPageMgr::CheckMode16() {
     return 0;
 }
 
-// CDDPageMgr::RemoveAt (0x17d600) - drop the 1-based idx-th CPageRec: free its three
+// CMoviePlayer::RemoveAt (0x17d600) - drop the 1-based idx-th CPageRec: free its three
 // owned buffers, shift the tail down one slot, decrement the count, free the record.
 // @early-stop
 // constant-materialization wall (~86%): logic + layout byte-correct, but retail hoists
 // the null `0` into edi (callee-saved) and reuses it for all 7 pointer checks/stores,
 // forcing idx into esi; MSVC5 here emits `test`/immediate-0 and keeps idx in edi.
 RVA(0x0017d600, 0xad)
-i32 CDDPageMgr::RemoveAt(i32 idx) {
+i32 CMoviePlayer::RemoveAt(i32 idx) {
     if (!m_initialized) {
         return 0;
     }
-    if (m_count < idx) {
+    if (m_868c.GetSize() < idx) {
         return 0;
     }
-    CPageRec* rec = m_data[idx - 1];
-    if (rec->m_00) {
-        ::operator delete(rec->m_00);
-        rec->m_00 = 0;
+    // The "page record" IS the playlist clip (PLAYLISTINFOSTRUCT); its three owned
+    // buffers are the three ::operator delete calls retail makes at 0x17d63e/50/63.
+    PLAYLISTINFOSTRUCT* rec = m_868c[idx - 1];
+    if (rec->m_src) {
+        ::operator delete((void*)rec->m_src);
+        rec->m_src = 0;
     }
     if (rec->m_10) {
-        ::operator delete(rec->m_10);
+        ::operator delete((void*)rec->m_10);
         rec->m_10 = 0;
     }
     if (rec->m_14) {
-        ::operator delete(rec->m_14);
+        ::operator delete((void*)rec->m_14);
         rec->m_14 = 0;
     }
-    i32 n = m_count - idx;
-    CPageRec** dst = &m_data[idx - 1];
-    if (n) {
-        memcpy(dst, dst + 1, n * sizeof(CPageRec*));
-    }
-    m_count--;
+    // the tail shuffle + count decrement retail emits IS CArray::RemoveAt inlined
+    // (memmove(m_pData+i, m_pData+i+1, ...); m_nSize -= 1).
+    m_868c.RemoveAt(idx - 1);
     ::operator delete(rec);
     return 1;
 }
 
-// CDDPageMgr::FreeAll (0x17d6b0) - RemoveAt(1) every record, then free the array buffer.
+// CMoviePlayer::FreeAll (0x17d6b0) - RemoveAt(1) every record, then free the array buffer.
 RVA(0x0017d6b0, 0x70)
-i32 CDDPageMgr::FreeAll() {
+i32 CMoviePlayer::FreeAll() {
     if (!m_initialized) {
         return 0;
     }
-    i32 count = m_count;
+    i32 count = m_868c.GetSize();
     for (i32 i = 0; i < count; i++) {
         if (!RemoveAt(1)) {
             return 0;
         }
     }
-    if (m_data) {
-        ::operator delete(m_data);
-        m_data = 0;
-    }
-    m_8698 = 0;
-    m_count = 0;
+    // retail's `operator delete(m_pData); m_pData=0; m_nMaxSize=0; m_nSize=0` IS
+    // CArray::RemoveAll inlined (delete[] (BYTE*)m_pData; m_pData=NULL;
+    // m_nSize = m_nMaxSize = 0).
+    m_868c.RemoveAll();
     return 1;
 }
 
 // CMoviePlayer::PlayList (0x17d720) - play the whole m_868c clip playlist `loops` times.
 RVA(0x0017d720, 0x188)
 i32 CMoviePlayer::PlayList(i32 loops) {
-    if (!m_active || loops < -1 || loops == 0) {
+    if (!m_initialized || loops < -1 || loops == 0) {
         return 0;
     }
     i32 iter = 1;
@@ -931,17 +928,17 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                 CloseSmacker();
                 return result;
             }
-            if (m_command != 0) {
+            if (m_primary != 0) {
                 DDBLTFX fx;
                 memset(&fx, 0, sizeof(fx));
                 fx.dwSize = sizeof(fx);
                 fx.dwROP = 0x42;
-                i32 hr = ((IDirectDrawSurface*)m_command)->Blt(0, 0, 0, 0x1020000, &fx);
+                i32 hr = ((IDirectDrawSurface*)m_primary)->Blt(0, 0, 0, 0x1020000, &fx);
                 if (hr != 0) {
                     memset(&fx, 0, sizeof(fx));
                     fx.dwSize = sizeof(fx);
                     fx.dwFillColor = 0;
-                    ((IDirectDrawSurface*)m_command)->Blt(0, 0, 0, 0x1000400, &fx);
+                    ((IDirectDrawSurface*)m_primary)->Blt(0, 0, 0, 0x1000400, &fx);
                 }
             }
             CloseSmacker();
