@@ -823,6 +823,10 @@ CString CGruntzMgr::GetRezPath() {
 // dtor COMDAT emitter in the now-deleted src/Stub/BoundaryLowerThunks.cpp; it was
 // dropped - it can only be emitted by an inline dtor whose ??_G inlines it, which
 // conflicts with this TU's out-of-line ~CGameMgr, so no clean single-TU home exists.)
+// @view-keep (VW2 2026-07-16): byte-necessary ??_7CGameMgr@@6B@ COMDAT emitter -
+// the ONE sanctioned .cpp-local view survivor (see the paragraphs above/below for
+// the full collision proof: the rva carries the WAP32 name, and a real
+// WAP32::CGameMgr method here would collide with its load-bearing inline dtor).
 struct CGameMgr {
     virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + Close
     virtual void s1();
