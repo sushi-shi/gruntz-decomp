@@ -1,5 +1,5 @@
-// DirectDrawMgr.cpp - the ORIGINAL C:\Proj\DDrawMgr\DDRAWMGR.CPP TU (wave4-K
-// merge; interval dossier #14H): one obj spanning retail 0x1413d0-0x143ca4. The
+// DirectDrawMgr.cpp - the ORIGINAL C:\Proj\DDrawMgr\DDRAWMGR.CPP TU (interval
+// dossier #14H): one obj spanning retail 0x1413d0-0x143ca4. The
 // __FILE__ assert string is referenced from both the CDirectDrawMgr methods
 // (CreateDevice/Init/SetupCaps/CreatePoolItem/GetDisplayMode) AND the former
 // ddrawptrcollections unit's fns (ComputeColorMasks/ConfigureSurface); the obj's
@@ -10,7 +10,7 @@
 // plus the CFileImageSurface dtor pair (0x142340/0x142360 - the a58 pool item's
 // kept ??_G/~ COMDAT copies, emitted from this obj).
 //
-// NOTE (wave4-K): CDDrawPtrCollections and CDirectDrawMgr are two VIEWS of this
+// NOTE: CDDrawPtrCollections and CDirectDrawMgr are two VIEWS of this
 // one DDRAWMGR manager class (+0x00/+0x04 device slots == m_device/m_dd1, the
 // +0x4b4 array, the +0x93c..+0x944 tail are the same cells) - flagged for a
 // canonical-class unification pass; the physical TU is already one file.
@@ -41,7 +41,7 @@ extern "C" {
 // Reporting-mode globals (live in .data), consumed by SetDDrawReportModes/GetErrorString.
 // Module-distinct names (g_dd*): each engine module has its OWN copy of these debug
 // flags at a module-specific rva (DDrawMgr @0x283exx); the shared donor name
-// g_<flag>Enabled conflated four modules' cells onto one symbol (wave5-R5 split).
+// g_<flag>Enabled conflated four modules' cells onto one symbol.
 extern "C" {
     DATA(0x00283ec0)
     i32 g_ddBeepEnabled = 0; // 0x683ec0
@@ -103,7 +103,7 @@ void operator delete(void*);
 // The two pool lists (m_poolA/m_poolB) are real MFC CPtrLists; the drain walks read
 // the head node (GetHeadPosition) and advance element-by-element (GetNext) - the
 // afxcoll.inl inlines lower to the identical `mov reg,[list+4]` head read + node
-// pNext/data walk the old raw-CPtrListNode view spelled by hand.
+// pNext/data walk.
 
 // The shared pool-item base ctor + dtor, defined INLINE here (before the derived
 // classes' bodies) so each derived dtor inlines the shared teardown - retail has
@@ -1012,8 +1012,6 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
 // Create (0x143040).  Sibling of MakeB2: RezAlloc a 0x38-byte CDDPalette, init it
 // via CDDPalette::Create (0x147390) with (m_surf0, a, b); on success add to pool B
 // and return it, else tear down + RezFree and return 0.
-// (re-homed from src/Stub/BoundaryUpper2.cpp; dissolves the CDDPalette/
-// CDDrawPtrCollections placeholder views.)
 // ---------------------------------------------------------------------------
 RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
@@ -1313,12 +1311,11 @@ struct CDdCreateArg {
     CDdDescSrc* m_8; // +0x08 descriptor source
 };
 
-// The pool item is a real CDDSurface (vtable 0x5ef7f0): the former CDdPoolItem
-// "Init/Dtor" 2-slot view + the hand-rolled operator-new construction are dissolved
-// onto `new CDDSurface` + slot-1 Refresh / `delete` (see CreatePoolItem below).
+// The pool item is a real CDDSurface (vtable 0x5ef7f0): `new CDDSurface` + slot-1
+// Refresh / `delete` (see CreatePoolItem below).
 // @early-stop
 // ~89%: `new CDDSurface` now inlines the ctor correctly (CPtrArray @+0x94, vptr stamp
-// 0x5ef7f0, 6 field-zeros - the old hand-rolled path was MISSING the stamp, +% recovered).
+// 0x5ef7f0, 6 field-zeros).
 // Residual is the /GX ctor-in-flight EH-state index of the throwing CPtrArray member ctor
 // (the Create7f0_1/CreateA factory-EH family wall; code bytes match, EH-frame state differs).
 RVA(0x00143630, 0x10d)
@@ -1337,8 +1334,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
     // (m_8/m_c/m_pos/m_dontOwn/m_bitDepth/m_b8). The throwing CPtrArray member ctor is
     // what gives the factory its /GX ctor-in-flight EH frame. Slot 1 (Refresh) is the
     // "init"; a failed init `delete`s the item (slot-0 scalar-deleting dtor under the
-    // compiler's null-guard). The former hand-rolled operator-new + CDdPoolItem view is
-    // dissolved onto this real construction/dispatch.
+    // compiler's null-guard).
     CDDSurface* item = new CDDSurface;
     if (item->Refresh((IDirectDrawSurface*)outA) == 0) {
         delete item;
@@ -1578,8 +1574,7 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
 
 // ---------------------------------------------------------------------------
 // ComputeColorMasks (0x143b20).  Query the device's display-mode pixel format
-// (IDirectDraw2::GetDisplayMode - the former CCachedSurface "GetSurfaceDesc"
-// slot-12 view, dissolved in wave4-K), and for each of the R/G/B bit masks
+// (IDirectDraw2::GetDisplayMode), and for each of the R/G/B bit masks
 // record the low set-bit position (the shift) and 8-minus-popcount (the scale)
 // into the six g_683* globals, then apply (BuildColorChannelTables @0x13f740).
 // On a failed query, report via GetErrorString and return 0.  No EH frame.
@@ -1646,8 +1641,7 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
 
 // ---------------------------------------------------------------------------
 // ConfigureSurface (0x143c20).  Reconfigure the display mode through the device
-// (IDirectDraw2::SetDisplayMode, the former CCachedSurface "Configure" slot-21
-// view - five args forwarded verbatim).  On a non-zero HRESULT, report through
+// (IDirectDraw2::SetDisplayMode - five args forwarded verbatim).  On a non-zero HRESULT, report through
 // GetErrorString, latch m_944 = 0x3ec if unset, and return the HRESULT.
 // Otherwise recompute the color masks; if that fails, latch m_944 = 0x3ed if
 // unset and return E_FAIL (0x80004005).  __thiscall, ret 0x14 (5 stack args). No EH.
