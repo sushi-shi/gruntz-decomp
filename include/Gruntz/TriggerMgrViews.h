@@ -152,15 +152,15 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 // (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
 // masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
 
-// (The baseList element is the canonical CTmCandidate (<Gruntz/TriggerMgr.h>): +0x38
-//  bound/goal object, +0x54/+0x58 grid pair, +0x5c occupied gate; Place @0x9c3f0.)
+// (The baseList element IS the CGruntPuddle logic leaf - see the identity note in
+//  <Gruntz/TriggerMgr.h>: m_tileX/m_tileY/m_pending at +0x54/58/5c; Place @0x40c30.)
 // The cell record nodes PlacePuddle walks: this+0x4 is the intrusive CPtrList head node,
 // this+0xc its count. Each node carries the next ptr @+0 and the placed-object @+0x8.
 // (These are MFC CPtrList CNodes - next/prev/data - viewed with a typed data slot.)
 struct CTmRecNode {
     CTmRecNode* m_next;  // +0x00
     char p0[0x4];        // +0x04
-    CTmCandidate* m_obj; // +0x08  placed object (the baseList candidate element)
+    CGruntPuddle* m_obj; // +0x08  placed object (the baseList puddle element)
 };
 
 // (The +0x2a0 object is the pending-fx GRUNT: its Pulse() is

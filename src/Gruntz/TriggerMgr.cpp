@@ -50,6 +50,7 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/GameLevel.h>    // CLevelPlane (PositionUpdate @0x788d0 tail call)
 #include <Gruntz/GameRegistry.h> // canonical singleton view (icon/selection donors)
 #include <Gruntz/Grunt.h>        // CGrunt (the board cells) + g_gameReg
+#include <Gruntz/GruntPuddle.h>  // CGruntPuddle (the baseList element - ex CTmCandidate)
 #include <Gruntz/String.h>
 #include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
 #include <Gruntz/Brickz.h>          // CBrickzGrid (rock-break ComputeCellFlags)
@@ -1026,13 +1027,13 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
 // Logic + offsets + the RemoveAt/RemoveAll recycle byte-exact. topic:wall.
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
-    CTmCandidate* tgt = (CTmCandidate*)sprite->m_7c->m_logic;
+    CGruntPuddle* tgt = (CGruntPuddle*)sprite->m_7c->m_logic;
     i32 d = sprite->m_118;
     if (d == 0) {
         d = 0x19;
     }
     if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
-        tgt->m_38->m_8 |= 0x10000;
+        tgt->m_38->m_flags |= 0x10000;
         g_gameReg->ReportError(0x8009, 0x401); // dual-view bridge; see SpawnPuddle
         return 0;
     }
@@ -1042,13 +1043,13 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     while (n != 0 && unlinked == 0) {
         CTmRecNode* cur = n;
         n = n->m_next;
-        CTmCandidate* o = cur->m_obj;
-        if (o->m_gridX == tgt->m_gridX && o->m_gridY == tgt->m_gridY) {
-            if (o->m_occupied != 0) {
-                tgt->m_38->m_8 |= 0x10000;
+        CGruntPuddle* o = cur->m_obj;
+        if (o->m_tileX == tgt->m_tileX && o->m_tileY == tgt->m_tileY) {
+            if (o->m_pending != 0) {
+                tgt->m_38->m_flags |= 0x10000;
                 return 0;
             }
-            o->m_38->m_8 |= 0x10000;
+            o->m_38->m_flags |= 0x10000;
             m_baseList.RemoveAt((POSITION)cur);
             unlinked = 1;
         }
@@ -1058,9 +1059,9 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         while (n != 0) {
             CTmRecNode* cur = n;
             n = n->m_next;
-            CTmCandidate* o = cur->m_obj;
-            if (o->m_occupied == 0) {
-                o->m_38->m_8 |= 0x10000;
+            CGruntPuddle* o = cur->m_obj;
+            if (o->m_pending == 0) {
+                o->m_38->m_flags |= 0x10000;
                 m_baseList.RemoveAt((POSITION)cur);
             }
         }
@@ -1987,7 +1988,7 @@ void CTriggerMgr::StopPendingFx() {
 //        (0x1b4ac7) is the MFC ?RemoveAt@CPtrList@@ on the +0 m_baseList - the
 //        same list head (+0x4) the view called `m_4`.
 //   ResNode                     -> CTmRecNode (an MFC CPtrList CNode).
-//   ResGrunt                    -> CTmCandidate (<Gruntz/TriggerMgr.h>): identical
+//   ResGrunt                    -> CGruntPuddle (<Gruntz/TriggerMgr.h>): identical
 //        +0x38 bound obj / +0x54 +0x58 grid pair / +0x5c occupied / +0x68 type /
 //        +0x6c host.
 //   ResGruntLogic               -> CTmGoal (the +0x8 flags 0x10000 released bit).
@@ -2019,13 +2020,13 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
     for (CTmRecNode* node = (CTmRecNode*)m_baseList.GetHeadPosition(); node != 0;
          node = node->m_next) {
-        CTmCandidate* g = node->m_obj;
-        if (g->m_occupied != 0) {
+        CGruntPuddle* g = node->m_obj;
+        if (g->m_pending != 0) {
             continue;
         }
         POINT pt;
-        pt.x = g->m_gridX;
-        pt.y = g->m_gridY;
+        pt.x = g->m_tileX;
+        pt.y = g->m_tileY;
         if (!PtInRect(&rect, pt)) {
             continue;
         }
@@ -2034,8 +2035,8 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         GruntzPlayer* cfg = &g_gameReg->m_options[type];
         i32 aiType = 0;
         i32 ok = 0;
-        i32 px = (g->m_gridX << 5) + 0x10;
-        i32 py = (g->m_gridY << 5) + 0x10;
+        i32 px = (g->m_tileX << 5) + 0x10;
+        i32 py = (g->m_tileY << 5) + 0x10;
 
         if (g_gameReg->m_134 == 1) {
             i32 radius = 0;
@@ -2043,23 +2044,23 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
                 radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
-            if (PlaceObject(type, px, py, 0x186a0, 3, g->m_spawnHost, 0, 0, aiType, radius, 0, 0, 0)
+            if (PlaceObject(type, px, py, 0x186a0, 3, g->m_placeIndex, 0, 0, aiType, radius, 0, 0, 0)
                 != -1) {
                 ok = 1;
             }
         } else if (cfg->m_liveGate != 0 && cfg->m_doneFlag == 0 && cfg->m_clearedRound == 0) {
             if (cfg->m_014 != 0) {
-                if (PlaceObject(type, px, py, 0x186a0, 3, g->m_spawnHost, 0, 0, 0, 0, 0, 0, 0)
+                if (PlaceObject(type, px, py, 0x186a0, 3, g->m_placeIndex, 0, 0, 0, 0, 0, 0, 0)
                     != -1) {
                     ok = 1;
                 }
-            } else if (cfg->m_038.Method_030990(g->m_gridX, g->m_gridY) != 0) {
+            } else if (cfg->m_038.Method_030990(g->m_tileX, g->m_tileY) != 0) {
                 ok = 1;
             }
         }
 
         if (ok) {
-            g->m_38->m_8 |= 0x10000;
+            g->m_38->m_flags |= 0x10000;
             m_baseList.RemoveAt((POSITION)node); // 0x1b4ac7 (retail then reads node->m_next)
             CGameObject* spr = g_gameReg->m_world->m_childGroup
                                    ->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);

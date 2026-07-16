@@ -20,9 +20,12 @@
 
 #include <Mfc.h> // CObject base + <windows.h>
 
-#include <Gruntz/ActReg.h>     // CLogicActTable (the slot-4 activation-dispatch table)
-#include <Gruntz/UserLogic.h>  // CUserLogic : CUserBase, EngStr, CGameObject
-#include <Gruntz/InGameIcon.h> // CGameReg / g_gameReg / CIconFactory / CIconTileGrid
+#include <Gruntz/ActReg.h>    // CLogicActTable (the slot-4 activation-dispatch table)
+#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
+// (InGameIcon.h - CGameRegistry/g_gameReg/CIconFactory - is a BODY-TU dependency
+// (Wormhole.cpp includes it), NOT this header's: pulling it here re-declared
+// g_gameReg into every includer and collided with the CGruntzMgr-typed singleton
+// TUs (TriggerMgr.cpp) when the ex-CTmCandidate consumers started including this.)
 
 // The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
 // CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
@@ -101,15 +104,21 @@ public:
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d);
 
     // --- CGruntPuddle own fields (placeholders; offsets load-bearing) ---
+    // (This class is ALSO the CTriggerMgr::m_baseList element the spawn/resurrect
+    //  scans walk - the ex "CTmCandidate" view, folded 2026-07-16; identity proof
+    //  in <Gruntz/TriggerMgr.h>.)
     CAniElement* m_savedGeoId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
     char m_pad44[0x54 - 0x44];
-    i32 m_tileX;      // +0x54  owner tile X (m_object->m_screenX >> 5)
-    i32 m_tileY;      // +0x58  owner tile Y (m_object->m_screenY >> 5)
-    i32 m_pending;    // +0x5c  not-yet-placed gate (ctor 1; cleared once placed)
-    i32 m_placed;     // +0x60  "placed" flag
-    i32 m_placeArg3;  // +0x64  Place() arg3 snapshot
-    i32 m_placeArg0;  // +0x68  Place() arg0 snapshot
-    i32 m_placeIndex; // +0x6c  Place() arg1 snapshot (icon-factory index)
+    i32 m_tileX;     // +0x54  owner tile X (m_object->m_screenX >> 5)
+    i32 m_tileY;     // +0x58  owner tile Y (m_object->m_screenY >> 5)
+    i32 m_pending;   // +0x5c  not-yet-placed gate (ctor 1; cleared once placed;
+                     //         the spawn/resurrect scans skip a nonzero one)
+    i32 m_placed;    // +0x60  "placed" flag
+    i32 m_placeArg3; // +0x64  Place() arg3 snapshot
+    i32 m_gruntType; // +0x68  the dead owner's grunt-type index (Place() a0 snapshot;
+                     //         the trigger-mgr resurrect re-creates via PlaceObject(type,..))
+    i32 m_placeIndex; // +0x6c  selector/icon index (Place() a1 snapshot; GetSel draws by
+                      //         it, the resurrect passes it through as PlaceObject a6)
 };
 VTBL(CGruntPuddle, 0x1e8124);
 

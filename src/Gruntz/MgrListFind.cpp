@@ -4,13 +4,14 @@
 // DATA load.
 //
 // onto the canonicals (xref-proven, byte-identical shape):
-//   * MgrFindPayload IS CTmCandidate (<Gruntz/TriggerMgr.h>) - m_54/m_58/m_5c ARE
+//   * MgrFindPayload IS CGruntPuddle (<Gruntz/TriggerMgr.h>) - m_54/m_58/m_5c ARE
 //     m_gridX/m_gridY/m_occupied at the same offsets;
 //   * MgrFindNode IS the CPtrList node CTmRecNode (<Gruntz/TriggerMgrViews.h>) -
-//     next@+0, CTmCandidate* obj@+8;
+//     next@+0, CGruntPuddle* obj@+8;
 //   * MgrFindList IS CTriggerMgr::m_baseList (the +0 CPtrList) - its GetHeadPosition()
 //     reads m_pNodeHead @+4, byte-identical to the old (MgrFindList*)cmdGrid->m_4 read.
-#include <Gruntz/TriggerMgrViews.h> // CTriggerMgr + CTmCandidate + CTmRecNode (MFC-first)
+#include <Gruntz/TriggerMgrViews.h> // CTriggerMgr + CTmRecNode (MFC-first)
+#include <Gruntz/GruntPuddle.h>      // CGruntPuddle (the baseList element; m_tileX/m_tileY/m_pending)
 #include <rva.h>
 
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg (VA 0x64556c)
@@ -32,10 +33,10 @@ i32 MgrListFind(i32 a1, i32 a2) {
     while (node) {
         CTmRecNode* cur = node;
         node = node->m_next;
-        CTmCandidate* p = cur->m_obj;
-        if (p->m_occupied == 0) {
-            i32 v54 = p->m_gridX;
-            i32 v58 = p->m_gridY;
+        CGruntPuddle* p = cur->m_obj;
+        if (p->m_pending == 0) {
+            i32 v54 = p->m_tileX;
+            i32 v58 = p->m_tileY;
             if (v54 == a1 && v58 == a2) {
                 return 1;
             }

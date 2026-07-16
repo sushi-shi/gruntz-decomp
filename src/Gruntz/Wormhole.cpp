@@ -36,7 +36,8 @@
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (the shared type/name registry)
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
-#include <Gruntz/GruntPuddle.h>     // CGruntPuddle (+ InGameIcon.h: CGameRegistry/g_gameReg)
+#include <Gruntz/GruntPuddle.h> // CGruntPuddle
+#include <Gruntz/InGameIcon.h>  // CGameRegistry/g_gameReg (ex-transitive via GruntPuddle.h)
 #include <Gruntz/Teleporter.h> // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -554,7 +555,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_tileX = o->m_screenX >> 5;
     m_tileY = o->m_screenY >> 5;
     m_placeArg3 = a3;
-    m_placeArg0 = a0;
+    m_gruntType = a0;
     m_placeIndex = a1;
     i32 rec = g_gameReg->m_spriteFactory->GetSel(a1, 0);
     CGameObject* obj = m_object;
@@ -662,7 +663,7 @@ i32 CGruntPuddle::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
             ar->Write(&m_pending, 4);
             ar->Write(&m_placed, 4);
             ar->Write(&m_placeArg3, 4);
-            ar->Write(&m_placeArg0, 4);
+            ar->Write(&m_gruntType, 4);
             ar->Write(&m_placeIndex, 4);
             break;
         case 7:
@@ -671,7 +672,7 @@ i32 CGruntPuddle::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
             ar->Read(&m_pending, 4);
             ar->Read(&m_placed, 4);
             ar->Read(&m_placeArg3, 4);
-            ar->Read(&m_placeArg0, 4);
+            ar->Read(&m_gruntType, 4);
             ar->Read(&m_placeIndex, 4);
             break;
         case 8: {

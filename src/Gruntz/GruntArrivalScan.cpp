@@ -13,7 +13,8 @@
 // (see the M2 report); they interleave this unit's span until then.
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
 #include <Gruntz/Grunt.h>      // canonical CGrunt / CGruntCueSink / CGameRegistry
-#include <Gruntz/TriggerMgr.h> // the ONE CTriggerMgr
+#include <Gruntz/TriggerMgr.h>  // the ONE CTriggerMgr
+#include <Gruntz/GruntPuddle.h> // CGruntPuddle (the live-candidate list element)
 #include <Gruntz/GameLevel.h>  // canonical CGameLevel (m_world->m_level) + CLevelPlane visible rect
 #include <Wap32/ZVec.h>
 #include <Ints.h>
@@ -1324,11 +1325,11 @@ L_scanb:
     i32 bestY = 0;
     CGruntLiveNode* node = (CGruntLiveNode*)m_tileMgr->m_baseList.GetHeadPosition();
     while (node != 0) {
-        CTmCandidate* gg = node->m_entry;
+        CGruntPuddle* gg = node->m_entry;
         node = node->m_next;
-        if (gg->m_occupied == 0) {
-            i32 gx = gg->m_gridX;
-            i32 gy = gg->m_gridY;
+        if (gg->m_pending == 0) {
+            i32 gx = gg->m_tileX;
+            i32 gy = gg->m_tileY;
             if (RectContains((gx << 5) + 0x10, (gy << 5) + 0x10) != 0) {
                 m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,

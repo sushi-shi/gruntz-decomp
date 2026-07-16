@@ -441,13 +441,14 @@ struct GruntCoordNode {
 // ---------------------------------------------------------------------------
 // A node of the board's live-candidate list (CTriggerMgr::m_baseList's CPtrList
 // chain, walked raw through the recycled node shape): m_next @+0, and @+8 the
-// candidate payload (CTmCandidate: grid x/y/occupied at +0x54/58/5c).
-struct CTmCandidate; // <Gruntz/TriggerMgr.h> (the walk TUs include it)
+// placed CGruntPuddle (m_tileX/m_tileY/m_pending at +0x54/58/5c - identity note
+// in <Gruntz/TriggerMgr.h>; the walk TUs include <Gruntz/GruntPuddle.h>).
+class CGruntPuddle;
 SIZE_UNKNOWN(CGruntLiveNode);
 struct CGruntLiveNode {
     CGruntLiveNode* m_next; // +0x00
     char m_pad4[0x8 - 0x4];
-    CTmCandidate* m_entry; // +0x08  candidate (m_gridX/m_gridY/m_occupied at +0x54/58/5c)
+    CGruntPuddle* m_entry; // +0x08  placed puddle (tile x/y + pending gate)
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue

@@ -113,21 +113,19 @@ class CActionOptionsMenuBar;
 // slot (leaf->m_38->m_8 |= 0x10000 "released" - the CTileLogic-tail bound-object idiom),
 // the +0x68 grunt-type index and the +0x6c spawn-host word the resurrect pass feeds to
 // PlaceObject. Union of the three views' knowledge, one shape.
-SIZE_UNKNOWN(CTmCandidate);
-struct CTmCandidate {
-    // PlacePuddle's real placement driver on the element (reloc-masked @0x9c3f0).
-    i32 Place(i32 a, i32 b, i32 c, i32 d); // 0x9c3f0
-    char m_pad00[0x38];
-    CTmGoal* m_38; // +0x38  bound/goal object (its +0x8 flags word takes the 0x10000
-                   //        released bit; the CTileLogic tail stores the bound obj here)
-    char m_pad3c[0x54 - 0x3c];
-    i32 m_gridX;    // +0x54  grid x
-    i32 m_gridY;    // +0x58  grid y
-    i32 m_occupied; // +0x5c  occupied flag (the spawn/resurrect scans skip a set one)
-    char m_pad60[0x68 - 0x60];
-    i32 m_gruntType; // +0x68  grunt type index (the m_options[] row the resurrect uses)
-    i32 m_spawnHost; // +0x6c  spawn-host word (opaque; passed through to PlaceObject a6)
-};
+// RESOLVED IDENTITY (ex the `CTmCandidate` @identity-TODO view): the baseList
+// element IS the CGruntPuddle logic leaf (<Gruntz/GruntPuddle.h>). Proof:
+//   * PlacePuddle's placement driver on the element is ?Place@CGruntPuddle@@QAEHHHHH@Z
+//     @0x40c30 (the retail rel32 - the view's "@0x9c3f0" note was stale/wrong);
+//   * the view's +0x54/+0x58 grid pair + +0x5c gate are exactly CGruntPuddle's
+//     m_tileX/m_tileY/m_pending, its +0x38 bound object is the inherited
+//     TILE_LOGIC_TAIL m_38 (CGameObject*, whose m_flags takes the 0x10000 released
+//     bit), and +0x68/+0x6c are the Place() a0/a1 snapshots the resurrect pass
+//     reads back (m_gruntType -> PlaceObject type, m_placeIndex -> PlaceObject a6);
+//   * PlacePuddle AddTail()s the SAME object it Place()d, closing the element type.
+// Game semantics agree: a dead grunt leaves a goo puddle; the spawn/resurrect
+// scans walk the placed puddles. Consumers include GruntPuddle.h for the members.
+class CGruntPuddle;
 
 // The embedded MFC containers are the REAL MFC classes from <Mfc.h> (CPtrList 0x1c B,
 // CByteArray 0x14 B) - the former hand-rolled CTmObList/CTmByteArray views are GONE.

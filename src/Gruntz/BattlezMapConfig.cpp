@@ -58,6 +58,7 @@
 #include <Gruntz/FreeNodePool.h> // canonical coord free-pool (g_coordPool)
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (the local dup class is gone)
+#include <Gruntz/GruntPuddle.h>    // CGruntPuddle (the m_baseList spawn-candidate element)
 #include <Gruntz/MapMgr.h>         // CBrickzGrid == CMapMgr (the board / tile grid)
 #include <Gruntz/QueueDrainHost.h> // the level's game-object collection + its cells
 #include <Wap32/zBitVec.h>         // CContainerErr (the zvec error-report target)
@@ -106,7 +107,7 @@ void* __stdcall ListNodeAdvance(void** pos);
 // The level's CTriggerMgr is likewise the canonical class (<Gruntz/TriggerMgr.h>): the
 // view's "m_objListHead @+0x04" is m_baseList's head slot (an MFC CPtrList is
 // {vptr, pHead@+4, pTail@+8, count@+0xc, ...}) and its "m_grid[0x3c] @+0x1c" is
-// m_grid. Its candidate payloads are CTmCandidate (promoted to TriggerMgr.h).
+// m_grid. Its candidate payloads are CGruntPuddle (promoted to TriggerMgr.h).
 
 // The {x,y} pair is the canonical Coord (<Gruntz/CoordNode.h>); the tile record is
 // the canonical BrickzCell (<Gruntz/Brickz.h>, the 0x1c-byte cell: m_0 flags word,
@@ -116,7 +117,7 @@ void* __stdcall ListNodeAdvance(void** pos);
 // the [0x1b4867, 0x1b4b43) band's ctor stamps ??_7CPtrList@@6B@). Its cells are walked
 // with GetHeadPosition()/GetNext() (both _AFXCOLL_INLINE - the identical
 // `mov eax,pos; mov pos,[eax]; mov eax,[eax+8]` the raw node view emitted), and the
-// payloads are CTmCandidate (<Gruntz/TriggerMgr.h>).
+// payloads are CGruntPuddle (<Gruntz/TriggerMgr.h>).
 
 // The board/tile map held at this->m_board is the canonical CBrickzGrid
 // (<Gruntz/Brickz.h>). m_rows is a row-pointer table; a row is a BrickzCell array indexed
@@ -1330,10 +1331,10 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         //     the unit's path, advance the spawn timer, and return 1. ---
         POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (opos != 0) {
-            CTmCandidate* cand = (CTmCandidate*)m_triggerMgr->m_baseList.GetNext(opos);
-            if (cand->m_occupied == 0) {
-                i32 ox = cand->m_gridX;
-                i32 oy = cand->m_gridY;
+            CGruntPuddle* cand = (CGruntPuddle*)m_triggerMgr->m_baseList.GetNext(opos);
+            if (cand->m_pending == 0) {
+                i32 ox = cand->m_tileX;
+                i32 oy = cand->m_tileY;
                 if (((CGrunt*)unit)->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10) != 0) {
                     m_triggerMgr->ApplyTriggerB(
                         unit->m_tileOwnerHi,
@@ -5408,7 +5409,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 
 // One node of the grid object's candidate list (head at m_triggerMgr->m_4): ->next at +0,
 // the candidate sub-object (its level coord at +0x54 / +0x58, an "occupied" flag at
-// +0x5c) at +0x8. GridCandNode / CTmCandidate are defined near the top of this TU
+// +0x5c) at +0x8. GridCandNode / CGruntPuddle are defined near the top of this TU
 // (before Method_029b40's kind-7 arm, which also walks this list).
 
 // ===========================================================================
@@ -5437,19 +5438,19 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
     if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_repathBudget)) {
         return 1;
     }
-    CTmCandidate* best = 0;
+    CGruntPuddle* best = 0;
     i32 bestDist = 0x7fffffff;
     POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
     while (pos != 0) {
-        CTmCandidate* cand = (CTmCandidate*)m_triggerMgr->m_baseList.GetNext(pos);
-        if (cand->m_occupied == 0) {
+        CGruntPuddle* cand = (CGruntPuddle*)m_triggerMgr->m_baseList.GetNext(pos);
+        if (cand->m_pending == 0) {
             CGameObject* lvl = unit->m_object;
             i32 lx = lvl->m_screenX >> 5;
             i32 ly = lvl->m_screenY >> 5;
-            if (cand->m_gridX != lx || cand->m_gridY != ly) {
-                i32 dx = cand->m_gridX - lx;
+            if (cand->m_tileX != lx || cand->m_tileY != ly) {
+                i32 dx = cand->m_tileX - lx;
                 dx = abs(dx);
-                i32 dy = cand->m_gridY - ly;
+                i32 dy = cand->m_tileY - ly;
                 dy = abs(dy);
                 i32 dist = dx * dx + dy * dy;
                 if (dist < bestDist) {
@@ -5460,7 +5461,7 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
         }
     }
     if (best != 0) {
-        Method_0300c0(unitArg, best->m_gridX, best->m_gridY, 0xd87, 0, 0);
+        Method_0300c0(unitArg, best->m_tileX, best->m_tileY, 0xd87, 0, 0);
     }
     unit->m_dwell = 0;
     return 1;
@@ -5477,8 +5478,8 @@ i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
     CPtrList& lst = m_ctx->m_triggerMgr->m_baseList;
     POSITION pos = lst.GetHeadPosition();
     while (pos != 0) {
-        CTmCandidate* cand = (CTmCandidate*)lst.GetNext(pos);
-        if (cand != 0 && cand->m_gridX == x && cand->m_gridY == y && cand->m_occupied == 0) {
+        CGruntPuddle* cand = (CGruntPuddle*)lst.GetNext(pos);
+        if (cand != 0 && cand->m_tileX == x && cand->m_tileY == y && cand->m_pending == 0) {
             return 1;
         }
     }
