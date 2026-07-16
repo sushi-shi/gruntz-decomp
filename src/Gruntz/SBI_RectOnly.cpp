@@ -2,7 +2,7 @@
 // so this /GX host TU's ??1/??_GCStatusBarItem match retail + the SBI leaf TUs instead of
 // the declared-only empty form that diverged across objs. Must precede any SBI include.
 #define SBI_DTOR_CHAIN
-#include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CPtrList consumers below)
+#include <Mfc.h> // afx-first umbrella (CByteArray/CPtrList consumers below)
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
@@ -18,8 +18,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/LeafCue.h>
-// The g_gameReg spine slots are the REAL classes (the former per-TU CSbiSubMgr/
-// CSbiActiveObj/CSbiLogger facet views are gone): the current play-state (CPlay), the
+// The g_gameReg spine slots are the REAL classes: the current play-state (CPlay), the
 // single-player trigger grid (CTriggerMgr) and the registry writer (RegistryHelper).
 #include <Gruntz/Play.h>
 #include <Gruntz/TriggerMgr.h>
@@ -29,7 +28,7 @@
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::LoadTabSprites @0x102250 (SetTab's real callee)
 #include <Utils/RegistryHelper.h>
 #include <Globals.h>
-// wave1-E one-TU merge (interval dossier 0x104d60-0x10bc14): this TU absorbed
+// One-TU merge (interval dossier 0x104d60-0x10bc14): this TU absorbed
 // StatusBarUpdaters' five in-interval updaters, WarpStoneFly.cpp, SBI_SideTabBuild.cpp
 // (CStatzTabBuilder::Build), LevelSync.cpp (CLevelSync::Sync), MgrSettings.cpp
 // (CMgrSettings::Serialize) and SBI_TabzDialogEh.cpp (CTabzBuilder::BuildTabzDialog) -
@@ -95,9 +94,8 @@ extern "C" u32 g_killCueClock;
 // The engine free-list head + the node-pointer bias (raw subtrahend), shared with
 // Projectile/TriggerMgr. The teardown returns each pooled element to this list.
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
-// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
-// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) are
+// fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 
 // ---------------------------------------------------------------------------
@@ -123,8 +121,7 @@ void SbiList_Dtor(); // 0x5b48c6
 // push base) all match retail. But the whole /GX SEH frame (push -1 / push handler / mov
 // fs:0,esp) and the descending [esp+0x10]=1/0/-1 trylevel stamps are MISSING: MSVC only
 // emits them for a real `~Class()` whose VALUE members have non-trivial dtors. 0xc8980 is
-// a standalone teardown HELPER. THAT DIAGNOSIS IS NOW SETTLED, AND SO IS THE TRADE-OFF
-// (2026-07-13, Fable lane): 0xc8980 IS the out-of-line COMDAT copy of the real
+// a standalone teardown HELPER. 0xc8980 IS the out-of-line COMDAT copy of the real
 // ~CStatusBarMgr, which now exists in <Gruntz/StatusBarMgr.h> as `{ Teardown(); }` plus
 // the compiler-generated member teardown - PROVEN by CPlay::Vfunc1's fail path at 0xc82b6,
 // where `delete` INLINES exactly this sequence (Teardown / ~CPtrArray on m_ptrPool /
@@ -150,8 +147,8 @@ void CStatusBarMgr::DtorMembers() {
 }
 
 // ~CStatusBarItem is the SBI_DTOR_CHAIN inline body (stamp vftable + DtorStatus) now, so
-// this TU's ??1/??_GCStatusBarItem match retail + the SBI leaf TUs (was an empty-stub
-// COMDAT that diverged). SbiVfunc0 (slot 1 base default) still anchors the vftable here.
+// this TU's ??1/??_GCStatusBarItem match retail + the SBI leaf TUs. SbiVfunc0 (slot 1
+// base default) still anchors the vftable here.
 i32 CStatusBarItem::SbiVfunc0() {
     return 0;
 }
@@ -249,7 +246,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
         return 0;
     }
     // the grid cell is the real CGrunt (CTmCell typedef); its m_10 HUD carries the
-    // on-screen origin pair (ex the CSbiTileEntry/CSbiTileSub views, dissolved).
+    // on-screen origin pair.
     CGrunt* entry = g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
     if (entry == 0) {
         return 0;
@@ -468,8 +465,8 @@ void CStatusBarMgr::NotifyAllSlots() {
 // recompile spills the inner counter and reserves 3 via `sub esp,0xc`). Not
 // steerable from C (docs/patterns regalloc/scheduling walls); deferred.
 
-// CLevelSync::Sync (0x1084d0) - RE-MERGED here (2026-07-13) after being un-merged.
-// THE BINARY SAYS IT BELONGS IN THIS OBJ. Carved into its own TU (the pre-wave1-E
+// CLevelSync::Sync (0x1084d0). THE BINARY SAYS IT BELONGS IN THIS OBJ. Carved into its
+// own TU (the pre-merge
 // LevelSync.cpp, byte-identical source, same flags="eh", same minimal include set) it
 // scores 45.87%; compiled here it scores 73.53%. A 27.66-point swing on a 2412-byte
 // function is a codegen-level statement about which TU retail compiled it in - the same
@@ -1405,18 +1402,14 @@ i32 CStatusBarMgr::Activate() {
 }
 
 // ===========================================================================
-// wave1-E one-TU merge block [0x104e60 .. 0x10b320] - see the include-block note.
+// One-TU merge block [0x104e60 .. 0x10b320] - see the include-block note.
 // Referent decls carried over from the absorbed TUs:
 // ===========================================================================
 
 // (the running game clock g_frameTime is declared once at the top of this TU)
 
-// (the CWsfTabArray/CWsfDrawable/CWsfGameMgr views moved to <Gruntz/WarpStoneFly.h> and
-// the CLevelSync/CLevelSyncChild/SyncSub views to <Gruntz/LevelSync.h> with their
-// functions, when those objs were un-merged back out of this TU.)
-
 // The ?::CopyRect@@3P6GXPAUtagRECT@@PBU1@@ZA global fn-pointer (VA 0x6c44bc): a
-// __stdcall RECT copier called `call ds:[::CopyRect]` (ex SBI_TabzDialogEh.cpp).
+// __stdcall RECT copier called `call ds:[::CopyRect]`.
 
 // ===========================================================================
 // CStatusBarMgr::LoadStatzTabToggleSprite @0x104e60
@@ -1436,13 +1429,11 @@ i32 CStatusBarMgr::Activate() {
 // registers and emits the 1 as inline immediates instead. Already spelled with a
 // shared `i32 one=1` local, which MSVC5 declines to keep in a register - a regalloc
 // pressure coin-flip, not source-steerable; deferred to the final sweep.
-// FOLDED (2026-07-16): the ex-EngineLabelBacklog def is now the real
-// CStatusBarMgr method (0x104e60 - ToggleStat calls it unqualified on `this`);
-// the raw (i32*)this word soup is typed against the canonical layout
-// (m_statFlags @+0x114, m_hitRects @+0x150, m_statObj @+0x18c, m_activeTab,
-// m_position) and the +0x150 element's toggle facet (ex CStatzTabItem) is the
+// 0x104e60 is a real CStatusBarMgr method (ToggleStat calls it unqualified on `this`),
+// typed against the canonical layout (m_statFlags @+0x114, m_hitRects @+0x150,
+// m_statObj @+0x18c, m_activeTab, m_position). The +0x150 element's toggle facet is the
 // same CSbiRect (m_enabled/+0x44 m_toggleValue). The +0x68 "unit-record table"
-// (ex RegUnitTable) IS CTriggerMgr - its +0x1c slot array is m_grid.
+// IS CTriggerMgr - its +0x1c slot array is m_grid.
 RVA(0x00104e60, 0xed)
 i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     if (m_statFlags[idx] == value) {
@@ -1561,8 +1552,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 // regalloc coin-flip, not source-steerable; deferred to the final sweep.
 RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
-    // Typed 2026-07-16 (ex the (i32*)this word soup + the CGrinderRect view of the
-    // +0x500 widget): every offset is the canonical member - the grinder conveyor
+    // Every offset is the canonical member - the grinder conveyor
     // is the m_fall* band and the rect-target widget is m_extraNotify1's own
     // +0x14 screen rect (CSbiSlotPtr::m_rect14 - the same slot-map rect band
     // CSbiRect carries as m_xLo..m_yHi).
@@ -1630,7 +1620,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 }
 
 // ===========================================================================
-// CWarpStoneFly::Init @0x109bd0 (ex EngineLabelBacklog::UpdateWarpStoneStatusBar)
+// CWarpStoneFly::Init @0x109bd0
 // ===========================================================================
 //
 // Sets up the warp-stone "fly" animation toward the warp tab. It records arg0 at
@@ -1647,10 +1637,9 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 // temp (eax) and branch-selects into edi in retail, where this toolchain fuses the
 // load directly into edi (`mov edi,[ecx+4*edi]`). Same select-register-fusion family
 // as the 64-bit clamp; not source-steerable; deferred to the final sweep.
-// FOLDED (2026-07-16): 0x109bd0 IS CWarpStoneFly::Init - CStatusBarMgr::EnsureSub
-// news a CWarpStoneFly and calls o->Init(this,a,b,c) on it (the void* owner is the
-// CStatusBarMgr back-ptr). The ex-EngineLabelBacklog def + its (i32*)this word soup
-// are typed against the canonical <Gruntz/WarpStoneFly.h> layout.
+// 0x109bd0 IS CWarpStoneFly::Init - CStatusBarMgr::EnsureSub news a CWarpStoneFly and
+// calls o->Init(this,a,b,c) on it (the void* owner is the CStatusBarMgr back-ptr).
+// Typed against the canonical <Gruntz/WarpStoneFly.h> layout.
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     m_owner = (CWsfOwner*)owner;
@@ -1807,9 +1796,8 @@ void CStatusBarMgr::SetMode(i32 mode) {
 }
 
 // ---------------------------------------------------------------------------
-// CStatusBarMgr::GetActiveValue @0x10bbe0 (spatially re-homed from
-// src/Stub/BoundaryLowerMethods.cpp). IDENTITY RESOLVED (ex the `C10bbe0`
-// placeholder): `this` == [[0x24556c+0x2c]+0x2dc] == g_gameReg->m_curState->
+// CStatusBarMgr::GetActiveValue @0x10bbe0. `this` == [[0x24556c+0x2c]+0x2dc] ==
+// g_gameReg->m_curState->
 // m_guts, the ONE CStatusBarMgr - and every viewed field is canonical:
 // +0x4cc m_extraNotifyArg0, +0x528 m_rezActive, +0x52c m_rezTick, +0x534/+0x538
 // the m_ptrPool CPtrArray's m_pData/m_nSize (inline GetSize/GetAt loads).
@@ -1833,8 +1821,8 @@ i32 CStatusBarMgr::GetActiveValue() {
 // @early-stop
 // ~95.3%: the walk is now byte-exact instruction-for-instruction (the CPtrList
 // GetNext two-copy idiom - cur=n; n=n->m_next; r=cur->m_payload - reproduces retail's
-// `mov eax,esi; mov esi,[esi]; mov eax,[eax+8]` in all three loops; raised 94.08->95.27
-// from the old payload-first shape). Residual is a pure esi<->edx register-naming
+// `mov eax,esi; mov esi,[esi]; mov eax,[eax+8]` in all three loops; raised 94.08->95.27).
+// Residual is a pure esi<->edx register-naming
 // SWAP: retail loads the loop cursor into the callee-saved esi (after `push esi`) and
 // puts the {enabled,hit} temps in edx; MSVC's prologue scheduler pulls the head-load
 // `mov edx,[ecx+0x30]` up BEFORE `push esi`, pinning the cursor in edx and forcing the
@@ -2785,10 +2773,9 @@ void CStatusBarMgr::ReportTab(i32 tab) {
 // that spelling is not the source shape; REVERTED rather than banked. Whoever picks this up
 // should start from the caller bytes, not from my guess. The struct-copy is real; the
 // signature that produces it is not yet known.
-// The merged-TU ctor-spelling conflict that used to cap this function is RESOLVED: retail
-// INLINES the CStatusBarItem base ctor at this function's `new` sites, and BuildTabzDialog
-// (which needs the out-of-line CALL) has been un-merged back to its own TU. This TU now
-// leaves SBI_ITEM_OWN_CTOR off, so the base ctor inlines here - the retail spelling.
+// Retail INLINES the CStatusBarItem base ctor at this function's `new` sites (BuildTabzDialog,
+// which needs the out-of-line CALL, is in its own TU). This TU leaves SBI_ITEM_OWN_CTOR
+// off, so the base ctor inlines here - the retail spelling.
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -3255,10 +3242,10 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
 // MainBarDrawFrame arg-block register allocation (the documented MSVC5 cross-function
 // codegen leak), dropping the byte-match 95.6%->88.6% with NO source change here; the
 // frame-draw args are still byte-content-correct. Accepted per the de-cast mandate.
-// SECOND TRIGGER (wave1-E one-TU merge): absorbing the updater/warpstone/serialize
+// A second trigger (the one-TU merge): absorbing the updater/warpstone/serialize
 // cluster into this TU re-fired the same stack-store/arg-block reshuffle
 // (95.6% -> 88.6% again, no source change here). Accepted per the merge mandate.
-// THIRD TRIGGER (2026-07-13, the BuildTabzDialog un-merge): removing that 3019-byte
+// A third trigger (the BuildTabzDialog un-merge): removing that 3019-byte
 // function from this TU fired the SAME 95.6% -> 88.6% reshuffle a third time, again with
 // no source change here. A/B ruled out the SBI_ITEM_OWN_CTOR knob (with the knob forced
 // back ON it still read 88.55), so the trigger was purely this TU's /O2 budget.
