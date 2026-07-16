@@ -54,11 +54,40 @@ CTileTriggerContainer::~CTileTriggerContainer() {
     // order) by the compiler-emitted /GX member teardown.
 }
 
-// @early-stop
-// 0x115b60 (151 B) = a __thiscall predicate walking this->m_2c's chain and dispatching a
-// vtable slot (+0x44/+0x68) - a tile-trigger container query. Homed from GapFunctions.cpp
-// (matcher-5) by RVA neighbourhood (this TU's .text block brackets 0x115b60). Homed pending
-// full reconstruction of the receiver's field/vtable model.
+// @identity-TODO (arg0's class only - see BLOCKER; everything else below is PROVEN)
+// 0x115b60 (151 B) - a GDI "draw 3D text onto a plane's DirectDraw surface" helper. Homed
+// from GapFunctions.cpp (matcher-5) by RVA neighbourhood (this TU's .text brackets it).
+//
+// The old note here was WRONG on two counts (GO1, corrected from retail bytes):
+//   * NOT a "__thiscall predicate": retail reads arg0 at [esp+0x4] BEFORE any push and ends
+//     in a bare `ret` (no `ret N`, no ecx receiver) -> a FREE __cdecl fn.
+//   * The "+0x44/+0x68 vtable slots" are not a game class's: the object is pushed as an
+//     explicit stack arg (`push &out; push pSurf; call [vtbl+0x44]`) = COM __stdcall. On
+//     IDirectDrawSurface, +0x44 is slot 17 GetDC(HDC*) and +0x68 is slot 26 ReleaseDC(HDC)
+//     (exact <ddraw.h> offsets) - i.e. this is a GetDC/draw/ReleaseDC bracket.
+//
+// DECODED (byte-exact; 8 args, returns 0 on every null-gate, 1 on success):
+//   f(obj, const CString* text, RECT* dst, i32 fontFlag, i32 useFront, i32 r, i32 g, i32 b)
+//     if (!obj) return 0;
+//     p = useFront ? obj->m_4->m_10 : obj->m_4->m_14;   if (!p) return 0;
+//     CDDSurface* s = p->m_2c;                          if (!s) return 0;
+//     HDC hdc = 0;                       // MSVC reuses the DEAD arg0 slot [esp+8] as this local
+//     s->m_8->GetDC(&hdc);               // m_8 is the IDirectDrawSurface* (DDSurface.h)
+//     g_gameReg->m_chatLog->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
+//     s->m_8->ReleaseDC(hdc);
+//     return 1;
+//   The Draw3DText binding is PROVEN, not inferred: the call is ILT 0x140b -> `jmp 0x22810`,
+//   and CFontConfig::Draw3DText @0x22810 (FontConfig.h) takes exactly the 10 args the push
+//   order yields - (strSrc, hdc, dst, fontFlag, r, g, b, shadow, dx, dy) with shadow/dx/dy
+//   the pushed literals 1/2/3. `g_gameReg->m_5c` IS CFontConfig* m_chatLog (GruntzMgr.h).
+//
+// BLOCKER (why this is not written out as code): arg0's CLASS is unrecoverable. Full chase
+// run and dead-ended - `sema xref 0x115b60` AND `--tree`: "(no direct call/jmp rel32 caller
+// in .text)"; it is a ZERO-REF orphan (dead debug helper, compiled in but never called), so
+// there is no call site to type arg0 from, and no vtable/data-ref either. Writing the
+// obj->m_4->m_10 chain would require FABRICATING a view of an un-xref-able receiver
+// (no-fake-view rule). Everything except arg0's type is settled; the moment any caller of
+// 0x115b60 is reconstructed, this is a ~20-line write-out.
 RVA(0x00115b60, 0x97)
 i32 Gap_115b60(void) {
     return 0;

@@ -30,7 +30,7 @@
 //
 // waveM-mech absorbed the ex fxmodedesc unit (the CFxModeDesc/T1-T6 mode-descriptor
 // ctors @0x17e7b0-0x17e910, woven between CFader::Set2c and CFaderMesh) + the ex
-// lighteffectsetup unit (CFaderLightApply::Setup + CFaderLight::v2/v3/v4 @0x1804a0-
+// lighteffectsetup unit (CFaderLightApply::Setup + CFaderLight::GetFrameCount/BeginFade/EndFade @0x1804a0-
 // 0x1816a0, woven around CFaderLight's ctor/dtor) - both frag-less but text-woven
 // (Fader brackets each), so ONE original TU. The ex-fxmodedesc's out-of-interval
 // MakeButeSectionKey@0xf9280 stays in FxModeDesc.cpp (a separate obj, ~0.44M RVA away).
@@ -53,7 +53,7 @@
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (was the Surf/FShadeSurf/TileSurf/FxBox views)
 #include <DDrawMgr/DirectDrawMgr.h> // the real CDDPalette (its +0x0c m_cacheA is the
                                     // PalEntry base; was the PalHolder/FInitPal/FrImageSrc views)
-#include <DDrawMgr/DDrawPtrCollections.h> // the +0x2c overlay surface pool (CFaderLight v3/v4)
+#include <DDrawMgr/DDrawPtrCollections.h> // the +0x2c overlay surface pool (CFaderLight BeginFade/EndFade)
 #include <Gruntz/FxModeT1.h>              // the CString-bearing CFxModeT1 (ex fxmodedesc)
 #include <Gruntz/FxModeDesc.h>            // CFxModeDesc + T2-T6 (ex fxmodedesc)
 #include <math.h>                         // acos/sin (fsin) / sqrt (fsqrt) intrinsics
@@ -257,22 +257,22 @@ RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
 // ===========================================================================
-// 0x17ef00 - CFaderMesh::v1(frame): the mesh-warp blit. Prime the dest surface
+// 0x17ef00 - CFaderMesh::RenderFrame(frame): the mesh-warp blit. Prime the dest surface
 // (m_3c): Blt the m_40 source if set, else Clear it. Then for each of the m_58
 // buffer's records (40 bytes = {srcRectA[4], dstRectB[4], _, _}): interpolate the
-// A->B rect by t = frame/v2(), clip it to the dest surface, and BltEx from the m_38
+// A->B rect by t = frame/GetFrameCount(), clip it to the dest surface, and BltEx from the m_38
 // source (srcRect = m_4c ? rectA : the clipped rectB). Finally Flip m_44.
 // ===========================================================================
 // @early-stop
 // x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md; sibling of
-// ApplyInit @0x17ea00): the per-record t=frame/v2() divide, the four
+// ApplyInit @0x17ea00): the per-record t=frame/GetFrameCount() divide, the four
 // A + (int)((B-A)*t) rect interpolations (fild/fmul/__ftol), the surface clip and the
 // BltEx/Flip dispatch are byte-faithful in operation/offset, but retail keeps t on the
 // x87 stack across the four __ftol calls and colours the record temporaries into a
 // dense frame-slot layout cl doesn't reproduce; the frame/count int64->float loads
 // also differ (fild qword vs dword). Not source-steerable.
 RVA(0x0017ef00, 0x21c)
-void CFaderMesh::v1(i32 frame) {
+void CFaderMesh::RenderFrame(i32 frame) {
     CDDSurface* dst = m_3c;
     if (m_40 != 0) {
         dst->Blt(m_40);
@@ -286,7 +286,7 @@ void CFaderMesh::v1(i32 frame) {
             i32* rec = (i32*)(pData + i * 0x28);
             i32 r0 = rec[0], r1 = rec[1], r2 = rec[2], r3 = rec[3];
             i32 r4 = rec[4], r5 = rec[5], r6 = rec[6], r7 = rec[7];
-            float t = ff / static_cast<float>(v2());
+            float t = ff / static_cast<float>(GetFrameCount());
 
             i32 x0 = r0 + static_cast<i32>((static_cast<float>((r4 - r0)) * t));
             i32 y0 = r1 + static_cast<i32>((static_cast<float>((r5 - r1)) * t));
@@ -578,7 +578,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
 
 // 0x180630 - CFaderLight::SubFree180630: the empty member-teardown ~CFaderLight calls,
 // a bare `ret`. The __fpclear FID row that owned 0x180630 was a false positive (that
-// 1-byte-`ret` fingerprint matched ~35 rvas at LOW confidence, incl. CFader::v3/v4
+// 1-byte-`ret` fingerprint matched ~35 rvas at LOW confidence, incl. CFader::BeginFade/EndFade
 // @0x17e790/0x17e7a0); the retail dtor calls it thiscall (ecx=this), so it is the game
 // member, not a CRT stub. Reconstructed here (library label removed) - the dtor's call
 // binds. reloc-fidelity (R45).
@@ -586,14 +586,15 @@ RVA(0x00180630, 0x1)
 void CFaderLight::SubFree180630() {}
 
 // @early-stop
-// 0x180640 (2412 B) = a large light/circle-shade blit worker; homed pending leaf-first
-// reconstruction (>512 B).
+// CFaderLight::RenderFrame (0x180640, vtable slot 1, 2412 B): the light fader's per-frame
+// light/circle-shade blit. Identity recovered by data-ref: 0x180640 is ??_7CFaderLight
+// @@6B@+0x4 (vtable slot 1), the RenderFrame(i32 frame) the class already declares. Defined here
+// as the real virtual (was the mis-homed Gap_180640 free-fn stub) so ??_7CFaderLight
+// slot 1 binds to its own body; body parked (>512 B leaf-first reconstruction).
 RVA(0x00180640, 0x96c)
-i32 Gap_180640(void) {
-    return 0;
-}
+void CFaderLight::RenderFrame(i32 frame) {}
 
-// CFaderLight::v2 (0x1814f0, vtable slot 2) - the fade frame count = the maximum
+// CFaderLight::GetFrameCount (0x1814f0, vtable slot 2) - the fade frame count = the maximum
 // distance from the light centre to any active-surface corner (each squaring is
 // pow(x, 2.0), the largest hypotenuse __ftol'd into m_5c).
 // @early-stop
@@ -602,7 +603,7 @@ i32 Gap_180640(void) {
 // interleaves the pow calls with a dense fxch/fld juggle + open-codes the max as an fcomp
 // tree; cl serialises them + lowers the max as fcom/branch pairs. Not source-steerable.
 RVA(0x001814f0, 0x16d)
-i32 CFaderLight::v2() {
+i32 CFaderLight::GetFrameCount() {
     i32 cx = m_centerX;
     i32 cy = m_centerY;
     i32 w = m_surface->m_width;
@@ -633,10 +634,10 @@ i32 CFaderLight::v2() {
     return r;
 }
 
-// CFaderLight::v3 (0x181660, vtable slot 3) - AddItem: when active, acquire a fresh
+// CFaderLight::BeginFade (0x181660, vtable slot 3) - AddItem: when active, acquire a fresh
 // overlay surface from the +0x2c pool (MakeAndAddB), stash it in m_40, blit it onto m_38.
 RVA(0x00181660, 0x40)
-void CFaderLight::v3() {
+void CFaderLight::BeginFade() {
     if (m_spanCount > 0 && m_lightGate != 0) {
         CDDrawPtrCollections* pool = (CDDrawPtrCollections*)m_set2cArg; // +0x2c dual-role pool slot
         CDDSurface* h = pool->MakeAndAddB(m_surfWidth, m_surfHeight, 0, 0, -1);
@@ -645,10 +646,10 @@ void CFaderLight::v3() {
     }
 }
 
-// CFaderLight::v4 (0x1816a0, vtable slot 4) - DropItem: if an overlay surface is held,
+// CFaderLight::EndFade (0x1816a0, vtable slot 4) - DropItem: if an overlay surface is held,
 // release it back to the +0x2c pool (RemoveItemA) and clear the slot.
 RVA(0x001816a0, 0x1c)
-void CFaderLight::v4() {
+void CFaderLight::EndFade() {
     if (m_overlay) {
         CDDrawPtrCollections* pool = (CDDrawPtrCollections*)m_set2cArg;
         pool->RemoveItemA(m_overlay);
@@ -712,7 +713,7 @@ CFaderShape::CFaderShape() {
 // 0x17e540 - CFader::RunFadeStepped(step, lead, notify): the stepped counterpart
 // of RunFade. Primes frame 0, busy-waits the lead-in, then renders every `step`-th
 // frame from 1..count back-to-back (no elapsed/duration mapping), poking the
-// m_set2cArg fade sink + v1(frame) each step. Finalizes v1(count)/v4() and records
+// m_set2cArg fade sink + RenderFrame(frame) each step. Finalizes RenderFrame(count)/EndFade() and records
 // the achieved frame rate in m_34. NON-EH (base /O2) frame.
 // ===========================================================================
 // @early-stop
@@ -726,12 +727,12 @@ CFaderShape::CFaderShape() {
 // schedule are not source-steerable (docs/patterns/x87-fp-stack-schedule.md).
 RVA(0x0017e540, 0xd8)
 void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
-    i32 count = v2();
+    i32 count = GetFrameCount();
     if (count < 1) {
         return;
     }
-    v3();
-    v1(0);
+    BeginFade();
+    RenderFrame(0);
     Wait(lead);
     DWORD startTick = GetTickCount();
     i32 loops = 0;
@@ -742,19 +743,19 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
                 IFadeSink* o = *(IFadeSink**)m_set2cArg;
                 o->FadeNotify(1, 0);
             }
-            v1(frame);
+            RenderFrame(frame);
             loops++;
             frame += step;
         } while (frame <= count);
     }
     if (frame != count) {
-        v1(count);
+        RenderFrame(count);
         loops++;
     }
     float fLoops = static_cast<float>(loops);
     DWORD elapsed = GetTickCount() - startTick;
     m_34 = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
-    v4();
+    EndFade();
 }
 
 // ============================================================================
@@ -763,14 +764,14 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
 // FaderRun.cpp - the CFader "run timed fade" driver (0x17e620), a CFader-subtype
 // method the ApiCaller stub misfiled as winapi_17e620_GetTickCount. It drives the
 // whole fade: primes frame 0, busy-waits the lead-in (Wait), then spins on
-// GetTickCount mapping elapsed/duration onto the [0..count] frame index (v2 = frame
-// count, v1 = render frame N). Each newly-reached frame optionally pokes a COM-style
+// GetTickCount mapping elapsed/duration onto the [0..count] frame index (GetFrameCount = frame
+// count, RenderFrame = render frame N). Each newly-reached frame optionally pokes a COM-style
 // sink (m_2c) then renders; at the end it records the achieved frame rate in m_34
-// and finalizes via v4. Field NAMES are placeholders; offsets + bytes load-bearing.
+// and finalizes via EndFade. Field NAMES are placeholders; offsets + bytes load-bearing.
 //
 // `this` is modelled as a standalone CFader-subtype shape (vtable + fields to +0x38)
-// rather than deriving CFader, because the recovered CFader.h fixes v1/v2 as void()
-// while this driver needs v1(int)/v2()->int; the vtable SLOTS + call bytes are what
+// rather than deriving CFader, because the recovered CFader.h fixes RenderFrame/GetFrameCount as void()
+// while this driver needs RenderFrame(int)/GetFrameCount()->int; the vtable SLOTS + call bytes are what
 // match (reloc-masked), not the names. NON-EH (base /O2) frame.
 
 // The busy-wait spinner (0x17e510): spins until GetTickCount() >= now + delay.
@@ -780,8 +781,8 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
 // through m_set2cArg (an IFadeSink** stored as a dword via Set2c): *sink is the
 // interface whose slot 0x58 is poked __stdcall(this, 1, 0) once per newly-reached frame.
 // (Was the standalone FaderRun view; dissolved onto the real CFader base - RunFade is a
-// CFader method @0x17e620, Wait/v1/v2/v3/v4 are the base's, m_2c==m_set2cArg, m_34 is the
-// base's trailing frame-rate field. The v1(i32)/i32 v2() slot signatures the driver needs
+// CFader method @0x17e620, Wait/RenderFrame/GetFrameCount/BeginFade/EndFade are the base's, m_2c==m_set2cArg, m_34 is the
+// base's trailing frame-rate field. The RenderFrame(i32)/i32 GetFrameCount() slot signatures the driver needs
 // are now the CFader canonical, fixing the old void-signature mismodel.)
 
 // @early-stop
@@ -797,12 +798,12 @@ RVA(0x0017e620, 0x13b)
 void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
     i32 prev = 0;
     i32 frame = 0;
-    i32 count = v2();
+    i32 count = GetFrameCount();
     if (count < 1) {
         return;
     }
-    v3();
-    v1(0);
+    BeginFade();
+    RenderFrame(0);
     Wait(lead);
     i32 loops = 0;
     DWORD startTick = GetTickCount();
@@ -817,20 +818,20 @@ void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
                     IFadeSink* o = *(IFadeSink**)m_set2cArg;
                     o->FadeNotify(1, 0);
                 }
-                v1(frame);
+                RenderFrame(frame);
                 loops++;
             }
             prev = frame;
         } while (frame <= count);
     }
     if (frame != count) {
-        v1(count);
+        RenderFrame(count);
         loops++;
     }
     float fLoops = static_cast<float>(loops);
     DWORD elapsed = GetTickCount() - startTick;
     m_34 = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
-    v4();
+    EndFade();
 }
 
 // ============================================================================
@@ -1112,8 +1113,8 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
 //
 // DE-VIEW: the `CFaderElem` this-view is CFaderFlat (0x17f5e0 is exactly the ApplyInit
 // FaderSubtypes.h declares for it, and its m_3c/m_44 are the m_src/m_percent that
-// CFaderFlat::v2 @0x17f950 reads back); `FaderArg` is the real CFxModeT5 (fader type 4
-// -> pInit id 5, whose m_10 default 0x19 IS the 25% duration scale v2 applies).
+// CFaderFlat::GetFrameCount @0x17f950 reads back); `FaderArg` is the real CFxModeT5 (fader type 4
+// -> pInit id 5, whose m_10 default 0x19 IS the 25% duration scale GetFrameCount applies).
 
 // FaderSrc is the canonical <Gruntz/FaderSubtypes.h> struct (frameCount @+0x18).
 
@@ -1144,11 +1145,11 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     return 1;
 }
 
-// 0x17f950 - CFaderFlat::v2 (vtable slot 2): the flat fader's total duration - the
+// 0x17f950 - CFaderFlat::GetFrameCount (vtable slot 2): the flat fader's total duration - the
 // source frame count scaled up by m_percent% (signed /100 via the 0x51eb851f
 // reciprocal-multiply idiom), plus the base frame count.
 RVA(0x0017f950, 0x24)
-i32 CFaderFlat::v2() {
+i32 CFaderFlat::GetFrameCount() {
     i32 n = m_src->m_frameCount;
     return n + (m_percent * n) / 100;
 }
@@ -1200,7 +1201,7 @@ extern const float g_faderOne = 1.0f; // 1.0  (per-cell render threshold: fade -
 // -1.0) are the reloc-masked .rdata doubles/floats. Residual is a callee-saved regalloc
 // coloring (retail pins this->esi/zero->ebp; our cl picks edi/ebx) + the x87 temp-slot
 // frame (sub esp,0x18 vs 0xc) - genuine MSVC5 scheduling, not logic.
-// (The cells store FLOAT vx/vy/fade - v1 @0x17fc60 reads them with fld/fcomp - so the
+// (The cells store FLOAT vx/vy/fade - RenderFrame @0x17fc60 reads them with fld/fcomp - so the
 // de-view also drops the three (i32) truncations the old FrCell forced.)
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
@@ -1272,7 +1273,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
 }
 
 // ===========================================================================
-// 0x17fc60 - CFaderRadial::v1(frame) (the vtable slot-1 render, hosted on the
+// 0x17fc60 - CFaderRadial::RenderFrame(frame) (the vtable slot-1 render, hosted on the
 // CFaderRadialApply flat view): plot the precomputed radial-fade cells whose fade
 // threshold still exceeds `frame` into the m_3c dest surface. Alloc a per-width Rez
 // scratch (retail allocates it but leaves it unused, freed at the end), Clear + Lock
@@ -1288,7 +1289,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
 // cl schedules the frame-float on the x87 stack and colours edi/ebx/ebp differently
 // than retail (which pins this->esi/cellptr->ebx/index->ebp). Not source-steerable.
 RVA(0x0017fc60, 0x136)
-void CFaderRadial::v1(i32 frame) {
+void CFaderRadial::RenderFrame(i32 frame) {
     CDDSurface* dst = m_dstSurface;         // +0x3c
     void* scratch = RezAlloc(dst->m_width); // per-width scratch (alloc'd, unused)
     dst->Clear(0);
@@ -1877,11 +1878,11 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
     }
 }
 
-// 0x182900 - CFaderShape::v2 (vtable slot 2): total frame count for the shape
+// 0x182900 - CFaderShape::GetFrameCount (vtable slot 2): total frame count for the shape
 // transition. Modes 1/2 (box) run m_60-2*m_58 frames; mode 3 (diamond) halves the
 // m_60-4*m_58 span. Any other mode is a zero-length (instant) transition.
 RVA(0x00182900, 0x35)
-i32 CFaderShape::v2() {
+i32 CFaderShape::GetFrameCount() {
     i32 mode = m_mode;
     if (mode == 1 || mode == 2) {
         return m_span - m_halfWidth * 2;
@@ -1893,26 +1894,23 @@ i32 CFaderShape::v2() {
 }
 
 // ---------------------------------------------------------------------------
-// Homed from src/Stub/GapFunctions.cpp (matcher-5): three Fader TU leaves, homed
-// by RVA neighbourhood (all inside Fader's .text block).
+// The slot-1 render virtuals (RenderFrame(i32 frame)) of three CFader subtypes. Identity
+// recovered by data-ref: each RVA is its class's ??_7CFader<Sub>@@6B@+0x4 (vtable slot
+// 1), the RenderFrame the class already declares in FaderSubtypes.h. Defined here as the real
+// virtuals (were mis-homed Gap_* free-fn stubs from GapFunctions.cpp, matcher-5) so each
+// ??_7 slot 1 binds to its own body; bodies parked (>512 B leaf-first reconstructions).
 // ---------------------------------------------------------------------------
 // @early-stop
-// 0x17f660 (742 B) - a Fader worker; homed pending leaf-first reconstruction (>512 B).
+// CFaderFlat::RenderFrame (0x17f660, vtable slot 1, 742 B): the flat fader's per-frame render.
 RVA(0x0017f660, 0x2e6)
-i32 Gap_17f660(void) {
-    return 0;
-}
+void CFaderFlat::RenderFrame(i32 frame) {}
 
 // @early-stop
-// 0x17ff30 (1218 B) - a large Fader worker; homed pending leaf-first reconstruction (>512 B).
+// CFaderSine::RenderFrame (0x17ff30, vtable slot 1, 1218 B): the sine fader's per-frame render.
 RVA(0x0017ff30, 0x4c2)
-i32 Gap_17ff30(void) {
-    return 0;
-}
+void CFaderSine::RenderFrame(i32 frame) {}
 
 // @early-stop
-// 0x181b00 (847 B) - a Fader worker; homed pending leaf-first reconstruction (>512 B).
+// CFaderShape::RenderFrame (0x181b00, vtable slot 1, 847 B): the shape fader's per-frame render.
 RVA(0x00181b00, 0x34f)
-i32 Gap_181b00(void) {
-    return 0;
-}
+void CFaderShape::RenderFrame(i32 frame) {}

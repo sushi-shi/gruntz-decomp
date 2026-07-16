@@ -40,24 +40,26 @@ class CFader {
 public:
     CFader();                   // 0x17e450
     virtual ~CFader();          // 0x17e4a0  (/GX EH frame; vtable slot 0)
-    virtual void v1(i32 f) = 0; // slot 1 (__purecall in base; render-frame in subtypes)
-    virtual i32 v2() = 0;       // slot 2 (__purecall in base; frame-count in subtypes)
-    virtual void v3();          // slot 3 (0x17e790, sibling TU) - begin
-    virtual void v4();          // slot 4 (0x17e7a0, sibling TU) - end
+    // Slot roles PROVEN by the two run-drivers below: `count = GetFrameCount(); BeginFade();
+    // RenderFrame(0); ... RenderFrame(frame); ... RenderFrame(count); EndFade();`.
+    virtual void RenderFrame(i32 f) = 0; // slot 1 (__purecall in base; renders one fade frame)
+    virtual i32 GetFrameCount() = 0;     // slot 2 (__purecall in base; total fade frame count)
+    virtual void BeginFade();            // slot 3 (0x17e790, sibling TU; base = empty default)
+    virtual void EndFade();              // slot 4 (0x17e7a0, sibling TU; base = empty default)
 
     void Wait(i32 delay);         // 0x17e510 - busy-wait until GetTickCount >= now+delay
     void SetTimers(i32 a, i32 b); // 0x17e760
     void Set2c(i32 v);            // 0x17e780
     // 0x17e540 - the stepped counterpart of RunFade: prime frame 0, busy-wait the
-    // lead-in, then render every `step`-th frame from 1..v2() back-to-back (no timing;
-    // poke the fade sink + v1(frame) each step), then finalize v1(count)/v4() and record
+    // lead-in, then render every `step`-th frame from 1..GetFrameCount() back-to-back (no timing;
+    // poke the fade sink + RenderFrame(frame) each step), then finalize RenderFrame(count)/EndFade() and record
     // the achieved frame rate in m_34. Used for the non-timed / max-speed transition.
     void RunFadeStepped(i32 step, i32 lead, i32 notify); // 0x17e540
 
     // 0x17e620 - drive the whole timed fade: prime frame 0, busy-wait the lead-in,
-    // then map elapsed/duration onto the [0..v2()] frame index, poking the m_set2cArg
-    // fade sink + v1(frame) per newly-reached frame; records the achieved frame rate
-    // in m_34 and finalizes via v4(). (Was the standalone FaderRun view - dissolved.)
+    // then map elapsed/duration onto the [0..GetFrameCount()] frame index, poking the m_set2cArg
+    // fade sink + RenderFrame(frame) per newly-reached frame; records the achieved frame rate
+    // in m_34 and finalizes via EndFade(). (Was the standalone FaderRun view - dissolved.)
     void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
 
     // implicit vptr        // +0x00
@@ -76,7 +78,8 @@ SIZE(CFader, 0x38);
 // virtuals). cl emits ??_7CFader; catalogs/pairs the 0x1f07a8 datum (was
 // vtbl-placeholders vtbl-cluster-66). Slots 1/2 are __purecall (pure); a
 // per-slot FUN_<rva> is impossible for overridden virtuals - subtypes must share
-// the base slot name (v1/v2), so those slot names are C++-mandated, not anonymous.
+// the base slot name (RenderFrame/GetFrameCount), so those slot names are
+// C++-mandated, not anonymous.
 VTBL(CFader, 0x001f07a8);
 
 // NOTE: the fade-math .rdata constants (g_faderScale_5f085c/g_faderPowK/g_faderHalf/

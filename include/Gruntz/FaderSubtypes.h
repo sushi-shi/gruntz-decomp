@@ -1,7 +1,7 @@
 // FaderSubtypes.h - the six concrete CFader screen-fader subtypes the
 // CFaderMgr::Add factory allocates. Each is a real polymorphic CFader subclass
 // (: public CFader): its ctor chains ??0CFader, stamps its own vftable, and zeroes
-// its subtype fields; its two motion virtuals (v1/v2) override the CFader pure
+// its subtype fields; its two motion virtuals (RenderFrame/GetFrameCount) override the CFader pure
 // virtuals (slots 1/2). The ctor/dtor bodies live in CFader.cpp; this header is the
 // single owner of the declarations so CFaderMgr.cpp can `new` the real subtype and
 // call the inherited CFader::SetTimers/Set2c directly (no (CFaderImpl*) cross-cast,
@@ -74,8 +74,8 @@ struct CDDPalette; // the real DDraw palette (its +0x0c m_cacheA is the 256-entr
 
 // The 16-byte radial fade cell (CFaderRadial::m_cells[]): the precomputed per-pixel
 // displacement + fade threshold + source pixel. ApplyInit fills one per source pixel;
-// v1 plots the cells whose (fade - frame) still exceeds 1.0. The first three are FLOATS
-// (v1 reads them with fld/fcomp).
+// RenderFrame plots the cells whose (fade - frame) still exceeds 1.0. The first three are FLOATS
+// (RenderFrame reads them with fld/fcomp).
 struct CFaderRadialCell {
     float m_vx;   // +0x00  x displacement
     float m_vy;   // +0x04  y displacement
@@ -109,8 +109,8 @@ class CFaderMesh : public CFader {
 public:
     virtual ~CFaderMesh() OVERRIDE;
     CFaderMesh();                    // 0x17e940
-    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17ef00 (overrides CFader pure)
-    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17f120 (overrides CFader pure)
+    virtual void RenderFrame(i32 f) OVERRIDE; // slot 1 -> 0x17ef00 (overrides CFader pure)
+    virtual i32 GetFrameCount() OVERRIDE;       // slot 2 -> 0x17f120 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x6c);
@@ -122,7 +122,7 @@ public:
 
     // ApplyInit latches the transition descriptor into these fields, then walks an
     // (m_50 x m_54) grid emitting projected mesh records into the m_58 buffer. The four
-    // surface slots are all real CDDSurface* (v1 Blt/Clear/BltEx/Flips them); ApplyInit
+    // surface slots are all real CDDSurface* (RenderFrame Blt/Clear/BltEx/Flips them); ApplyInit
     // fills them from the CFxModeT6 descriptor (m_44 is BOTH the null-gate and the flip
     // target - retail bails when the descriptor's +0x10 surface is null).
     CDDSurface* m_38;      // +0x38  BltEx source surface   (desc +0x08, else base m_timerB)
@@ -145,8 +145,8 @@ class CFaderSine : public CFader {
 public:
     CFaderSine();                    // 0x17fdb0
     virtual ~CFaderSine() OVERRIDE;  // 0x17fdf0
-    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17ff30 (overrides CFader pure)
-    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x180400 (overrides CFader pure)
+    virtual void RenderFrame(i32 f) OVERRIDE; // slot 1 -> 0x17ff30 (overrides CFader pure)
+    virtual i32 GetFrameCount() OVERRIDE;       // slot 2 -> 0x180400 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x7d5c);
@@ -180,8 +180,8 @@ class CFaderFlat : public CFader {
 public:
     virtual ~CFaderFlat() OVERRIDE;
     CFaderFlat();                    // 0x17f530
-    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17f660 (overrides CFader pure)
-    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17f950 (overrides CFader pure)
+    virtual void RenderFrame(i32 f) OVERRIDE; // slot 1 -> 0x17f660 (overrides CFader pure)
+    virtual i32 GetFrameCount() OVERRIDE;       // slot 2 -> 0x17f950 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x50);
@@ -196,7 +196,7 @@ public:
     i32 m_38;        // +0x38  desc +0x04 (else the base's m_timerA default)
     FaderSrc* m_src; // +0x3c  animation source (frame count at +0x18)
     i32 m_40;        // +0x40  desc +0x0c
-    i32 m_percent;   // +0x44  duration-scale percent (desc +0x10; v2)
+    i32 m_percent;   // +0x44  duration-scale percent (desc +0x10; GetFrameCount)
     i32 m_48;        // +0x48  desc +0x14
     i32* m_frames;   // +0x4c  per-frame work array (m_src->m_frameCount ints)
 };
@@ -208,12 +208,12 @@ SIZE(CFaderLight, 0x206c);
 VTBL(CFaderLight, 0x001f0870);
 class CFaderLight : public CFader {
 public:
-    virtual void v3() OVERRIDE; // slot 3
-    virtual void v4() OVERRIDE; // slot 4
+    virtual void BeginFade() OVERRIDE; // slot 3
+    virtual void EndFade() OVERRIDE; // slot 4
     virtual ~CFaderLight() OVERRIDE;
     CFaderLight();                   // 0x180410
-    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
-    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x1814f0 (overrides CFader pure)
+    virtual void RenderFrame(i32 f) OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
+    virtual i32 GetFrameCount() OVERRIDE;       // slot 2 -> 0x1814f0 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x206c);
@@ -230,8 +230,8 @@ public:
 
     // The light/shade effect state. ApplyInit (0x1804a0) captures the CFxModeT2
     // descriptor's surface/palette/centre, clips the centre to the surface rect and fills
-    // the per-scanline span tables; v2 (0x1814f0) derives the frame count from the
-    // longest centre->corner distance; v3/v4 acquire/release the overlay surface from the
+    // the per-scanline span tables; GetFrameCount (0x1814f0) derives the frame count from the
+    // longest centre->corner distance; BeginFade/EndFade acquire/release the overlay surface from the
     // pool held in the CFader base's dual-role +0x2c slot (m_set2cArg, a
     // CDDrawPtrCollections*). (Was the Fader.cpp-local `CFaderLightApply` flat view; the
     // 0x206c size is exactly these fields.)
@@ -245,10 +245,10 @@ public:
     i32 m_centerX;         // +0x4c  light centre x (desc +0x18; T2 default 0x140)
     i32 m_centerY;         // +0x50  light centre y (desc +0x1c; T2 default 0xf0)
     char _pad54[0x5c - 0x54];
-    i32 m_frameCount;       // +0x5c  fade frame count (v2: max centre->corner distance)
+    i32 m_frameCount;       // +0x5c  fade frame count (GetFrameCount: max centre->corner distance)
     i32 m_spanStarts[1024]; // +0x60    per-scanline span start
     i32 m_spanEnds[1024];   // +0x1060  per-scanline span end
-    i32 m_spanCount;        // +0x2060  shade-table step count (desc +0x14; v3 gate)
+    i32 m_spanCount;        // +0x2060  shade-table step count (desc +0x14; BeginFade gate)
     i32 m_surfWidth;        // +0x2064  active-surface width
     i32 m_surfHeight;       // +0x2068  active-surface height
 };
@@ -262,8 +262,8 @@ class CFaderRadial : public CFader {
 public:
     virtual ~CFaderRadial() OVERRIDE;
     CFaderRadial();                  // 0x17f9a0
-    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17fc60 (overrides CFader pure)
-    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17fda0 (overrides CFader pure)
+    virtual void RenderFrame(i32 f) OVERRIDE; // slot 1 -> 0x17fc60 (overrides CFader pure)
+    virtual i32 GetFrameCount() OVERRIDE;       // slot 2 -> 0x17fda0 (overrides CFader pure)
 
     // (The `operator new(u32) { return ::operator new(0x5c); }` override is gone - the same
     // masking hack CFaderShape carried: it hard-coded the allocation size to paper over a
@@ -277,7 +277,7 @@ public:
     // The radial distance-field state. ApplyInit (0x17fa40) resolves the source/dest
     // surfaces from the CFxModeT4 descriptor, builds the base's shade table through the
     // embedded m_cache (HueRampTable @0x14e830, so the base dtor's FindRemove frees it),
-    // then precomputes one CFaderRadialCell per source pixel; v1 (0x17fc60) plots them.
+    // then precomputes one CFaderRadialCell per source pixel; RenderFrame (0x17fc60) plots them.
     // (Was the Fader.cpp-local `CFaderRadialApply` flat view.)
     CDDSurface* m_srcSurface; // +0x38  source surface (desc +0x08, else base m_timerB)
     CDDSurface* m_dstSurface; // +0x3c  destination surface (desc +0x04, else base m_timerA)
@@ -285,7 +285,7 @@ public:
     i32 m_maxRadius;          // +0x44  sqrt(cx^2+cy^2) * 10000
     i32 m_48;                 // +0x48
     float m_fadeDivisor;      // +0x4c  radius->fade divisor (width * 0.5)
-    // +0x50..+0x58 were MISSING before the fold: v1 (0x17fc60) reads all three off `this`,
+    // +0x50..+0x58 were MISSING before the fold: RenderFrame (0x17fc60) reads all three off `this`,
     // and they carry the object to its retail size 0x5c (the `new CFaderRadial` push).
     CFaderRadialCell* m_cells; // +0x50  width*height cell buffer (freed by FreeBuffer17fc40)
     i32 m_centerX;             // +0x54
@@ -301,8 +301,8 @@ class CFaderShape : public CFader {
 public:
     CFaderShape();                   // 0x1816c0
     virtual ~CFaderShape() OVERRIDE; // slot 0 -> 0x181720 (body in Obj5f0890Dtor.cpp)
-    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x181b00 (overrides CFader pure)
-    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x182900 (overrides CFader pure)
+    virtual void RenderFrame(i32 f) OVERRIDE; // slot 1 -> 0x181b00 (overrides CFader pure)
+    virtual i32 GetFrameCount() OVERRIDE;       // slot 2 -> 0x182900 (overrides CFader pure)
 
     // (The `operator new(u32) { return ::operator new(0x494); }` override is gone: it
     // hard-coded the allocation size to paper over a class that only computed 0x490. With
@@ -310,7 +310,7 @@ public:
     // on its own - which is what retail's new-site at 0x17da14 does.)
     i32 ApplyInit(CFxModeDesc* src); // 0x1817e0 (apply the built default init)
     i32 CopyFrom(CFader* src);       // 0x1817e0 (same method; copy from the pInit descriptor)
-    // The two scanline compositors v1 (0x181b00) drives, one per placement mode. Proven
+    // The two scanline compositors RenderFrame (0x181b00) drives, one per placement mode. Proven
     // CFaderShape methods by sema xref: 0x182610 and 0x181e50 are called from EXACTLY one
     // site each - 0x181b00, this class's vtable slot 1. (They were the Fader.cpp-local
     // `CFaderTileRender` view, whose fields align field-for-field with ApplyInit's.)

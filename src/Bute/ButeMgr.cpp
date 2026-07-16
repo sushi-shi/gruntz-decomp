@@ -2380,7 +2380,17 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
 // Ghidra never carved, homed by RVA neighbourhood (all inside ButeMgr's .text).
 // ---------------------------------------------------------------------------
 // @early-stop
-// 0x1714e0 (102 B) - a small ButeMgr helper; homed pending reconstruction.
+// 0x1714e0 (102 B) - a Bute "write section to stream" helper. DECODED (GO1): free
+// __cdecl(const char* name, CButeTree* tree, ostream* os); `ret` (no N) + args read at
+// [esp+8]/[esp+0xc]/[esp+0x10] past the `push esi`. Body:
+//   *os << (unsigned char)'\n' << <manip 0x171570>;   x2   (blank line + endl)
+//   *os << g_str_613efc << name << g_str_613eec;            (3 chained operator<<)
+//   tree->Walk(0x1712b0 /*node writer cb*/, os, 0);         (call 0x193340)
+// GAME code that USES iostreams - NOT library: 0x16be60 (??6ostream@@QAEAAV0@PBD@Z) and
+// 0x192060 (??6ostream@@QAEAAV0@E@Z) are LIBCIMT/HIGH carve-outs, but 0x171550 (the
+// inline `operator<<(ostream&(*)(ostream&))` manipulator overload, emitted as a COMDAT
+// into this TU) and 0x193340 (ButeTree.cpp) are ours. Reconstruction BLOCKED on modelling
+// the MSVC iostream `ostream` + the manipulator overload; identity recovered, body parked.
 RVA(0x001714e0, 0x66)
 i32 Gap_1714e0(void) {
     return 0;
