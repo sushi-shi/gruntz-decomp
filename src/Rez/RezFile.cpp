@@ -226,9 +226,9 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
     if (m_readBuf != 0) {
         ::operator delete(m_readBuf);
     }
-    m_readBuf = ::operator new(strlen(filename) + 1);
+    m_readBuf = (char*)::operator new(strlen(filename) + 1);
     if (m_readBuf != 0) {
-        strcpy((char*)m_readBuf, filename);
+        strcpy(m_readBuf, filename);
     }
     m_pos = -1;
     return 1;
@@ -320,7 +320,7 @@ i32 CRezItm::Check() {
     if (RezDirLookup(m_fp) != -1) {
         return 1;
     }
-    return Open((char*)m_readBuf, m_18, 0) != 0;
+    return Open(m_readBuf, m_18, 0) != 0;
 }
 
 // ---------------------------------------------------------------------------

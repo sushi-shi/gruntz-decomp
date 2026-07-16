@@ -14,6 +14,9 @@
 #include <Mfc.h> // CString (the +0xdc label member)
 #include <rva.h>
 
+struct AnimWorkerObj; // <DDrawMgr/AnimWorkerObj.h> - the owned +0x7c worker (canonical
+                      // WwdGameObjectFamily.h types m_7c as AnimWorkerObj*)
+
 // The CResolveNode base subobject: stamps 0x5efbc0 + the +0x04..+0xd8 field block.
 struct WwdCtorBase {
     WwdCtorBase(int a, int b, int c) {
@@ -45,7 +48,7 @@ struct WwdCtorBase {
     int m_64;
     char _p68[0x78 - 0x68];
     int m_78;
-    void* m_7c; // +0x7c worker
+    AnimWorkerObj* m_7c; // +0x7c  owned worker (canonical WwdGameObjectFamily.h m_7c)
     int m_80;
     char _p84[0x88 - 0x84];
     int m_88;
