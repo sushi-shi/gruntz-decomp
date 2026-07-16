@@ -210,7 +210,10 @@ void CAniRecordView::ResolveIndices_168d00(CAniMapOwner* owner, const char* str)
     if (m_count > 0) {
         m_indices = (i32*)operator new((u32)(m_count * 4));
         for (i32 i = 0; i < m_count; i++) {
-            CString t = tokens.GetAt(i);
+            // GetAt reaches the OUT-OF-LINE CStringArray::GetAt COMDAT (0x168e70), which
+            // MFC models _AFXCOLL_INLINE - so it is bound as the layout-identical
+            // CAniStrArray shim (vptr@0 / m_data@0x04 == m_pData). See AniRecordViews.h.
+            CString t = ((CAniStrArray*)&tokens)->GetAt(i);
             void* v = 0;
             owner->m_map.Lookup(t, v);
             m_indices[i] = (i32)v;
