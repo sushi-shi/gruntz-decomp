@@ -95,7 +95,7 @@ struct CGameObjLayer {
 // which the old `(CMapStringToPtr*)` cast at the AddLogic* sites mis-bound to
 // the 0x1b8438 Ptr band). The AddLogic* bodies now read the typed path.)
 
-// Exact size 0x1dc, byte-proven from TWO new-sites: CSpriteFactory::CreateSpriteImpl
+// Exact size 0x1dc, byte-proven from TWO new-sites: CDDrawChildGroup::CreateSpriteImpl
 // (@0x159600) news 0x1dc for every created instance, and WwdFile's ReadPlaneObjects
 // manually `operator new(0x1dc)`s + runs the same engine ctor (0x15b390).
 SIZE(CGameObject, 0x1dc);
@@ -207,10 +207,10 @@ struct CGameObject {
     u32 m_collCategory; // +0xe8  collision category bits (0x80 = carrier/platform;
                         //        BroadPhase tests other->m_collCategory & t->m_collMask)
     i32 m_ec;           // +0xec  (WwdFile record scatter target)
-    i32 m_f0;       // +0xf0  (the entrance-sprite ctor seeds 1)
-    u32 m_collMask; // +0xf4  which categories this object collides with
-    i32 m_strideX;  // +0xf8  tile-probe stride X (the move steppers' scan step)
-    i32 m_strideY;  // +0xfc  tile-probe stride Y
+    i32 m_f0;           // +0xf0  (the entrance-sprite ctor seeds 1)
+    u32 m_collMask;     // +0xf4  which categories this object collides with
+    i32 m_strideX;      // +0xf8  tile-probe stride X (the move steppers' scan step)
+    i32 m_strideY;      // +0xfc  tile-probe stride Y
     char m_pad100[0x114 - 0x100];
     i32 m_114;       // +0x114  (teleporter spawn: source-tile coordinate mirror)
     i32 m_118;       // +0x118  CSpotLight ctor: pi/0 mode gate
@@ -434,7 +434,7 @@ public:
     i32 m_04;          // +0x04
     i32 m_08;          // +0x08
     CGameObject* m_0c; // +0x0c
-    union { // +0x10  bound game object (== m_38; one type, two historical spellings)
+    union {            // +0x10  bound game object (== m_38; one type, two historical spellings)
         CGameObject* m_object;
         CGameObject* m_10;
     };

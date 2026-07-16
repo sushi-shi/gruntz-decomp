@@ -54,10 +54,10 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h> // this TU's class (LoadTileArrivalFx is a CTriggerMgr method)
 
-#include <Gruntz/GameLevel.h>     // CGameLevel (m_level->m_24) + CTileImageSet (GetCollisionAt)
-#include <Gruntz/GameRegistry.h>  // CGameRegistry / CSpriteFactoryHolder (the *0x24556c singleton)
-#include <Gruntz/Play.h>          // CPlay (g_gameReg->m_curState) - m_beginMarker @+0x2e4
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/GameLevel.h>    // CGameLevel (m_level->m_24) + CTileImageSet (GetCollisionAt)
+#include <Gruntz/GameRegistry.h> // CGameRegistry / CSpriteFactoryHolder (the *0x24556c singleton)
+#include <Gruntz/Play.h>         // CPlay (g_gameReg->m_curState) - m_beginMarker @+0x2e4
+#include <DDrawMgr/DDrawChildGroup.h>    // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (FindInLists12/DelFromList1)
 #include <Gruntz/TileTriggerLogic.h>     // CTileTriggerLogic (ApplyMove tags the found set)
 #include <Gruntz/UserLogic.h>            // CGameObject (the created Particlez sprite)

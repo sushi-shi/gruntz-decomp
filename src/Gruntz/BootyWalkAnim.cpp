@@ -56,7 +56,7 @@ char g_secretChars[] = "WARP"; // "WARP"
 // (esi=this+0x2c8, m_animSprites via [esi+0x10]); cl anchors at m_animSprites
 // (this+0x2d8), flipping every sprite-access displacement byte; (2) reloc-name
 // scoring artifact - the CacheFirstFrame/ApplyLookupGeometry/CreateSprite/GetSel
-// callees live on the real CGruntSprite/CGruntAnimPlayer/CSpriteFactory/CGruntSprite
+// callees live on the real CGruntSprite/CGruntAnimPlayer/CDDrawChildGroup/CGruntSprite
 // classes but are modeled as BzSprite/BzSpriteFactory/BzSelSource methods (code bytes
 // identical, REL32 masked); (3) the /GX static-CString-guard EH frame (docs/seh-eh.md).
 RVA(0x0001b450, 0x1ac)

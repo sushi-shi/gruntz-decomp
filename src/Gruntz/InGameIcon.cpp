@@ -33,11 +33,11 @@ extern "C" {}
 
 #include <rva.h>
 
-#include <string.h>               // inline strcmp: the ctor's icon-name dispatch chain
-#include <Bute/ButeMgr.h>         // CButeTree (the bute store Setup queries)
-#include <Wap32/ZVec.h>           // zDArray (the command-dispatch tables)
-#include <Gruntz/LogicFnTable.h>  // the shared LogicFnTable dispatch-table shape
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <string.h>                   // inline strcmp: the ctor's icon-name dispatch chain
+#include <Bute/ButeMgr.h>             // CButeTree (the bute store Setup queries)
+#include <Wap32/ZVec.h>               // zDArray (the command-dispatch tables)
+#include <Gruntz/LogicFnTable.h>      // the shared LogicFnTable dispatch-table shape
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Globals.h>
 #include <Wap32/ZDArrayDerived.h>
 
@@ -52,7 +52,7 @@ extern "C" {}
 // (g_buteMgr.GetInt) - declared in <Gruntz/UserLogic.h> (pulled via the header).
 
 // The sprite/animation factory reached as g_gameReg->m_world->m_8 is the canonical
-// CSpriteFactory (shared <Gruntz/SpriteFactory.h>); CreateSprite (0x1597b0, __thiscall)
+// CDDrawChildGroup (shared <Gruntz/SpriteFactory.h>); CreateSprite (0x1597b0, __thiscall)
 // builds a "SimpleAnimation" glitter sprite (returned as the created CGameObject).
 
 // The current game-state (g_gameReg->m_curState) IS the canonical CPlay during play;

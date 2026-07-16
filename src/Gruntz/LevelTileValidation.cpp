@@ -42,16 +42,16 @@
 #include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic/CGiantRockLogic (the FindInLists12 hits)
 #include <Gruntz/StatusBarMgr.h>     // CStatusBarMgr::InsertPtr @0x108410 (m_guts)
 
-#include <Gruntz/ChatBoxOwner.h>  // CChatBoxOwner (this->m_2e0; Configure @0x20530)
-#include <Gruntz/Play.h>          // ::CPlay - the REAL class of this TU's CLevelValidator view
-                                  // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
-#include <Gruntz/GruntzMgr.h>     // ::CGruntzMgr - the RTTI-true *0x24556c singleton AND
-                                  // CState::m_4 (m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_options)
-#include <Gruntz/UserLogic.h>     // CGameObject + AnimWorkerObj - the objects being validated
-#include <Gruntz/SpriteFactory.h> // CSpriteFactory + CSpriteListNode - the live-object list
-#include <Gruntz/GameLevel.h>     // CGameLevel - the +0x24 level (image sets @+0x48, plane @+0x5c)
-#include <Gruntz/ImageSets.h>     // CImageSet1 - the tile-attrib class (GetCollisionAt, slot 8)
-#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (tile grid + transform)
+#include <Gruntz/ChatBoxOwner.h>      // CChatBoxOwner (this->m_2e0; Configure @0x20530)
+#include <Gruntz/Play.h>              // ::CPlay - the REAL class of this TU's CLevelValidator view
+                                      // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
+#include <Gruntz/GruntzMgr.h>         // ::CGruntzMgr - the RTTI-true *0x24556c singleton AND
+                                      // CState::m_4 (m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_options)
+#include <Gruntz/UserLogic.h>         // CGameObject + AnimWorkerObj - the objects being validated
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup + CDDrawGroupNode - the live-object list
+#include <Gruntz/GameLevel.h> // CGameLevel - the +0x24 level (image sets @+0x48, plane @+0x5c)
+#include <Gruntz/ImageSets.h> // CImageSet1 - the tile-attrib class (GetCollisionAt, slot 8)
+#include <Wwd/WwdFile.h>      // CPlaneRender - the canonical plane (tile grid + transform)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -59,13 +59,13 @@
 // former local view here is dissolved onto the real class):
 //
 //   CState::m_c            == CSpriteFactoryHolder   (the resource holder; was `PlayMgr`)
-//     ->m_8                == CSpriteFactory          (was `PlayMgrRenderer`)
-//        ->m_liveObjects   == CSpriteListNode*        (was `TileObjNode`/`StartNode`; the
+//     ->m_8                == CDDrawChildGroup          (was `PlayMgrRenderer`)
+//        ->m_list (head)   == CDDrawGroupNode*        (was `TileObjNode`/`StartNode`; the
 //                                                      head of the CPtrList embedded at
 //                                                      factory+0x10, head node @+0x14 - the
 //                                                      SAME list CGruntzMgr::XorLiveObjectFlags
 //                                                      / CTriggerMgr / CPlay already walk)
-//           ->m_sprite     == CGameObject*            (was `TileLogicObj` - every offset the
+//           ->m_gameObj    == CGameObject*            (was `TileLogicObj` - every offset the
 //                                                      validator touches (+0x04/+0x08/+0x5c/
 //                                                      +0x60/+0x64/+0x7c/+0x114..+0x12c/
 //                                                      +0x134/+0x144/+0x154/+0x164/+0x168) is
@@ -225,16 +225,14 @@ static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
 // the whole body. Same EH/regalloc wall ValidateLevelTiles (this TU) hits. topic:wall.
 RVA(0x000d2b20, 0x21f)
 i32 CPlay::PlaceStartGruntz() {
-    // Retail lea's the live-object CPtrList embedded at factory+0x10 and null-tests it (a
-    // vacuous guard). CSpriteFactory exposes only that list's HEAD node (m_liveObjects,
-    // +0x14), so the guard addresses the head; folding the real CPtrList into the factory
-    // is a SpriteFactory.h item (see CGruntzMgr::XorLiveObjectFlags, same wall).
-    CSpriteListNode** list = &m_c->m_8->m_liveObjects;
+    // Retail lea's the live-object CObList embedded at manager+0x10 (the real m_list
+    // member) and null-tests it (a vacuous guard), then reads its head (+4).
+    CObList* list = &m_c->m_8->m_list;
     if (list == 0) {
         return 0;
     }
     CGruntzMgr* reg = m_4;
-    CSpriteListNode* node = *list;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)list->GetHeadPosition();
     i32 result = 1;
     i32 counter = 0;
     i32 flag14 = 0;
@@ -245,8 +243,8 @@ i32 CPlay::PlaceStartGruntz() {
         return result;
     }
     do {
-        CGameObject* obj = node->m_sprite;
-        CSpriteListNode* next = node->next;
+        CGameObject* obj = node->m_gameObj;
+        CDDrawGroupNode* next = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
             void* who = (void*)aux->m_notify; // +0x10: WHICH leaf class built this object
@@ -315,20 +313,20 @@ i32 CPlay::ValidateLevelTiles() {
     counts[2] = 0;
     counts[3] = 0;
 
-    // The live-object list (the CPtrList embedded at factory+0x10; head node @+0x14).
-    CSpriteListNode** list = &m_c->m_8->m_liveObjects;
+    // The live-object list (the CObList embedded at manager+0x10; head node 191880x14).
+    CObList* list = &m_c->m_8->m_list;
     if (list == 0) {
         return 0;
     }
-    CSpriteListNode* node = *list;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)list->GetHeadPosition();
     if (node == 0) {
         return 1;
     }
 
     i32 ok = 1;
     do {
-        CGameObject* obj = node->m_sprite; // GetNext: data @+0x08
-        node = node->next;                 //          pNext @+0x00
+        CGameObject* obj = node->m_gameObj; // GetNext: data @+0x08
+        node = node->m_next;                //          pNext @+0x00
         if (obj == 0) {
             continue;
         }

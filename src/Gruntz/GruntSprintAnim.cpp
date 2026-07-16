@@ -22,15 +22,15 @@
 #include <Gruntz/SpriteRefTable.h>
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite)
-#include <Mfc.h>                  // CString (the /GX directional-name temps) + Win32
-#include <Gruntz/GameMode.h>      // the REAL owner: CBootyState (was the CGruntSprintAnim view)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite)
+#include <Mfc.h>                      // CString (the /GX directional-name temps) + Win32
+#include <Gruntz/GameMode.h>          // the REAL owner: CBootyState (was the CGruntSprintAnim view)
 
 #include <rva.h>
 
 // The HUD sprite factory reached via g_gameReg->m_world->m_8 is the canonical
-// CSpriteFactory (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0) looks the template
+// CDDrawChildGroup (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0) looks the template
 // up by class-NAME (the 5th arg; __thiscall ret 0x18) and returns the created
 // CGameObject. The world holder is the canonical CSpriteFactoryHolder
 // (<Gruntz/GameRegistry.h>) - no local holder view.

@@ -32,12 +32,12 @@
 #include <rva.h>
 #include <Gruntz/BankMgr.h> // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
 #include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CSpriteFactoryHolder facet
-#include <Gruntz/GruntzMgr.h>     // CMultiBootyState::Render: CState::m_4 owner (ReportError)
-#include <Gruntz/SpriteFactory.h> // CMultiBootyState::Render: m_c->m_8 frame-worker slots 9/10
-#include <Gruntz/LeafCue.h>       // LeafCue (Booty/MultiBooty FrameSlot28 BOOTY_LOOP cue)
-#include <Gruntz/UserLogic.h>     // CGameObject (glitter/letter sprites; StepGlitterAnim/BuildWarp)
-#include <Gruntz/BattlezData.h>   // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
-#include <Gruntz/WwdGameReg.h> // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
+#include <Gruntz/GruntzMgr.h>         // CMultiBootyState::Render: CState::m_4 owner (ReportError)
+#include <DDrawMgr/DDrawChildGroup.h> // CMultiBootyState::Render: m_c->m_8 frame-worker slots 9/10
+#include <Gruntz/LeafCue.h>           // LeafCue (Booty/MultiBooty FrameSlot28 BOOTY_LOOP cue)
+#include <Gruntz/UserLogic.h>   // CGameObject (glitter/letter sprites; StepGlitterAnim/BuildWarp)
+#include <Gruntz/BattlezData.h> // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
+#include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder / CSndHost (CState::m_c draw+cue context)
 #include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 // (FadeInTitle @0xfa1f0 and RetireScene @0xfa8f0 are now CState base methods via
@@ -82,7 +82,7 @@ void ShowHudMessageAlt(
 //     BzGameWnd        (+0x04, HWND @+0x04)    -> CGameWnd     (WAP32::CGameMgr::m_gameWnd,
 //                                                               <Wap32/Wap32.h>: m_hwnd @+0x04)
 //     BootySndWorld / CBootyMusicHost /
-//       CGlitterMgrM30 (all +0x30)             -> CWorldZ      (m_8 == CSpriteFactory* the
+//       CGlitterMgrM30 (all +0x30)             -> CWorldZ      (m_8 == CDDrawChildGroup* the
 //                                                               glitter factory; m_28 == CSndHost*)
 //     BootySndSet / CBootyMusicHost::M28       -> CSndHost     (<Gruntz/SoundCue.h>: the real
 //                                                               ::CMapStringToPtr m_10 @+0x10 the
@@ -857,7 +857,7 @@ i32 CMultiBootyState::Render() {
         DrawBattleStats(); // 0x1ed30 (OnActivated slot; own method, cast-free)
         m_1b8 = 0xc7;
     }
-    m_c->m_8->TickKillCues(1);
+    m_c->m_8->TickKillCues_159a70(1);
     m_c->m_8->WalkDispatch2C(m_c->m_drawTarget->m_14);
 
     // +0x7c->+0x10: the booty countdown's elapsed-millisecond source. The SAME field the

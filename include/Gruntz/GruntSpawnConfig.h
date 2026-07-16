@@ -27,10 +27,10 @@
 #include <Ints.h>
 #include <Mfc.h> // CPtrArray + <windows.h>
 
-#include <Gruntz/GameRegistry.h>  // WwdGameReg / g_gameReg
-#include <Gruntz/SpawnList.h>     // canonical CSpawnList / CSpawnEntry (voice lists)
-#include <Gruntz/SpriteFactory.h> // the shared CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + AnimWorkerObj
+#include <Gruntz/GameRegistry.h>      // WwdGameReg / g_gameReg
+#include <Gruntz/SpawnList.h>         // canonical CSpawnList / CSpawnEntry (voice lists)
+#include <DDrawMgr/DDrawChildGroup.h> // the shared CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite) + AnimWorkerObj
 
 // Forward decls so the manager's typed slots need no view-casts (defs below / in
 // the .cpp). m_04 is ONE config tree (its +0x08 sprite factory + +0x20 collection),
@@ -127,22 +127,22 @@ public:
     ~CGruntSpawnConfig();    // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---
-    CSpawnOwner* m_owner; // +0x00
-    CSpawnTree* m_configTree;  // +0x04  = owner->m_30 (config tree)
-    CGruntVoice* m_voice0; // +0x08  voice-sprite pair
-    CGruntVoice* m_voice1; // +0x0c
-    StreamVoice* m_stream0; // +0x10  owned voice-stream pair (the real Dsndmgr StreamVoice)
-    StreamVoice* m_stream1; // +0x14
+    CSpawnOwner* m_owner;     // +0x00
+    CSpawnTree* m_configTree; // +0x04  = owner->m_30 (config tree)
+    CGruntVoice* m_voice0;    // +0x08  voice-sprite pair
+    CGruntVoice* m_voice1;    // +0x0c
+    StreamVoice* m_stream0;   // +0x10  owned voice-stream pair (the real Dsndmgr StreamVoice)
+    StreamVoice* m_stream1;   // +0x14
     // ::CPtrArray, not CDWordArray: retail's ctor/SetSize calls land in [0x1b4f0b,
     // 0x1b527e), whose head stamps ??_7CPtrArray@@6B@ (mfc_class --audit).
     CPtrArray m_voiceLists; // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
-    i32 m_gruntPercent;       // +0x2c  = 0x64
+    i32 m_gruntPercent;     // +0x2c  = 0x64
 };
 
 // --- the per-method helper externs (reloc-masked; no body) ---
 
 // LoadGruntVoices builds a play request through the shared sprite factory
-// (m_04->m_08, the CSpriteFactory whose CreateSprite lives at 0x1597b0; see
+// (m_04->m_08, the CDDrawChildGroup whose CreateSprite lives at 0x1597b0; see
 // <Gruntz/SpriteFactory.h>). The created instance is the shared CGameObject
 // (<Gruntz/UserLogic.h>); this loader only touches its +0x7c AnimWorkerObj control
 // block (the Init driver @+0x10, the m_18 setup slot it stashes as the voice
@@ -166,7 +166,7 @@ struct CSpawnRemoveColl {
 // collection (was three overlapping views: CSpawnTree/CSpawnConfigTree/CSpawnSpriteSource).
 struct CSpawnTree {
     char m_pad00[8];
-    CSpriteFactory* m_08; // +0x08  the sprite factory (LoadGruntVoices)
+    CDDrawChildGroup* m_08; // +0x08  the sprite factory (LoadGruntVoices)
     char m_pad0c[0x20 - 0xc];
     CSpawnRemoveColl* m_20; // +0x20  the remove/stream collection
 };

@@ -15,7 +15,7 @@
 // Same 0x17c size, same vtable, same +0x10 callback + +0x18 logic leaf in every
 // view; the merged layout below carries the union of the proven field knowledge.
 //
-// Every game object owns one at +0x7c (built by the CWwdObjMgr factories /
+// Every game object owns one at +0x7c (built by the CDDrawChildGroup factories /
 // CWwdGameObj ctor 0x15b390) and lazily builds three more at +0x80/+0x88/+0x90
 // (EnsureWorker80/88/90 - the Hit/Attack/Bump logic handlers).
 //
@@ -41,7 +41,7 @@ struct CGameObject; // the owning wide game object (<Gruntz/UserLogic.h>)
 // 0x151c00 WriteSnapshot / 0x159250 the C factory / 0x15f0xx BroadPhase).
 // Fired on three occasions, same slot each time: post-create activation (the
 // creators' `spr->m_7c->m_notify(spr)`), the play-state dance (m_1c = 0x50..
-// 0x53 around the call), and kill-cue expiry (CWwdObjMgr::TickKillCues).
+// 0x53 around the call), and kill-cue expiry (CDDrawChildGroup::TickKillCues).
 // Zero = "no callback".
 typedef i32(__cdecl* GameObjNotifyFn)(CGameObject* obj);
 
@@ -69,7 +69,7 @@ struct AnimWorkerObj : public CObject {
 
     AnimWorkerObj() {}
     // The full 3-arg seed ctor (0x15b300, out-of-line in WwdFactoryObject.cpp;
-    // the CWwdObjMgr factories construct through it): m_04=b, m_08=c, m_0c=a,
+    // the CDDrawChildGroup factories construct through it): m_04=b, m_08=c, m_0c=a,
     // zero the rest. The arg-store order (b,c,a) is load-bearing.
     AnimWorkerObj(i32 a, i32 b, i32 c);
     // The inline 2-arg construction the 0x15b390 game-object ctor folds (was the
@@ -97,9 +97,9 @@ struct AnimWorkerObj : public CObject {
                                                      //   allocates the m_14 payload)
     i32 ResolveTarget(void* a);                      // 0x1651b0 (Dispatch case 8)
 
-    i32 m_04;           // +0x04  = owner->m_04 (object id/kind)
-    i32 m_08;           // +0x08  frame stamp (Init); bits 1/2 fold into owner
-                        //        flags 0x800000/0x1000000 (Setup 0x150d60)
+    i32 m_04;               // +0x04  = owner->m_04 (object id/kind)
+    i32 m_08;               // +0x08  frame stamp (Init); bits 1/2 fold into owner
+                            //        flags 0x800000/0x1000000 (Setup 0x150d60)
     CDDrawSurfaceMgr* m_0c; // +0x0c  = owner->m_0c (the owner/world context; the
                             //         id->object resolver is m_childGroup->m_map48)
     // +0x10  the fire/notify callback (see typedef). ALIAS: this is also the

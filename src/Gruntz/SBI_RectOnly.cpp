@@ -7,7 +7,7 @@
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
 #include <Gruntz/LevelSync.h>           // CLevelSync + its referents (was a TU-local view)
-#include <Gruntz/SpriteFactory.h>       // real CSpriteFactory::CreateSprite (0x1597b0); 0x104dd0
+#include <DDrawMgr/DDrawChildGroup.h>   // real CDDrawChildGroup::CreateSprite (0x1597b0); 0x104dd0
 #include <Gruntz/WarpStoneFly.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Rez/RezList.h>

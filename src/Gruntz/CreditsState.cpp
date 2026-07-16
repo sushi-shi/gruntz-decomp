@@ -28,8 +28,8 @@
 #include <Gruntz/BankMgr.h>     // CResSource (InitAttractTitle m_2c state store)
 #include <Gruntz/ParseSource.h> // CParseSource (the resolved MIDIZ sub-entry: BeginParse/m_length)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual_1527d0)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>  // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual_1527d0)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
 #include <Gruntz/GameMode.h>              // CCreditsState : CState + CGMOwner/CGMSoundEntry

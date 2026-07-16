@@ -68,7 +68,7 @@ public:
     i32 Update();                                             // 0x0b0140
 
     // --- CRollingBall own fields (offsets load-bearing) ---
-    CAniElement* m_savedGeoId;          // +0x40  saved m_38->m_1a0.m_14 geometry id
+    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id
     char m_pad44[0x58 - 0x44]; // CUserLogic ends +0x40
     double m_moveSpeed;        // +0x58  per-frame speed (numerator / RollingBallTimePerTile)
     double m_subX;             // +0x60  sub-tile X position

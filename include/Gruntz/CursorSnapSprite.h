@@ -50,7 +50,7 @@ public:
     void FireActivation(i32 id);
     virtual ~CCursorSnapSprite() OVERRIDE; // 0x11920 (folds the CUserLogic teardown)
 
-    CAniElement* m_geoId;               // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)
+    CAniElement* m_geoId;      // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)
     char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from the
                                //         anim-worker `new CCursorSnapSprite`)
 };

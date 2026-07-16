@@ -13,8 +13,8 @@
 #define GRUNTZ_GRUNTZ_BZSTATE_H
 
 #include <Ints.h>
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // CGameObject (the created idle-grunt sprites)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>         // CGameObject (the created idle-grunt sprites)
 
 #include <rva.h>
 
@@ -69,12 +69,12 @@ struct BzSoundSet {
 };
 SIZE_UNKNOWN(BzSoundSet);
 
-// g_gameReg->m_soundHolder->m_spriteFactory - the canonical CSpriteFactory
+// g_gameReg->m_soundHolder->m_spriteFactory - the canonical CDDrawChildGroup
 // (<Gruntz/SpriteFactory.h>) the booty setup builds its per-player idle grunts
 // through (CreateSprite @0x1597b0).
 struct BzSoundHolder {
     char m_pad00[0x8];
-    CSpriteFactory* m_spriteFactory; // +0x08  sprite/animation factory
+    CDDrawChildGroup* m_spriteFactory; // +0x08  sprite/animation factory
     char m_pad0c[0x28 - 0xc];
     BzSoundSet* m_soundSet; // +0x28
 };

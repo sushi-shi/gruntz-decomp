@@ -112,7 +112,7 @@ public:
     i32 m_clipRight;     // +0x6c
     i32 m_clipBottom;    // +0x70
     i32 m_sortKey;       // +0x74  the manager z-order sort key (Setup28 stores a3;
-                         //         CWwdObjMgr::InsertSorted orders the list by it)
+                         //         CDDrawChildGroup::InsertSorted orders the list by it)
     i32 m_posCache;      // +0x78  CObList POSITION cache (InsertSorted stores the node;
                          //         TickKillCues/RemoveAndDelete unlink through it)
     AnimWorkerObj* m_7c; // +0x7c  the owned worker/logic record
@@ -136,7 +136,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // CWwdGameObjectA - the 0x1dc "created sprite" kind (vtable 0x5f00a8; the
-// CSpriteFactory/CreateSprite instance class). Adds the +0x18c geometry cache +
+// CDDrawChildGroup/CreateSprite instance class). Adds the +0x18c geometry cache +
 // the embedded +0x1a0 CAniAdvanceCursor.
 // ---------------------------------------------------------------------------
 class CWwdGameObjectA : public CWwdGameObjectE {
@@ -282,7 +282,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// The embedded sub-object records the CWwdObjMgr factories placement-construct
+// The embedded sub-object records the CDDrawChildGroup factories placement-construct
 // (ctor bodies at 0x15b270/0x15b2a0/0x15b2b0 in WwdObjMgr.cpp). Obj15b270 is the
 // E-level SHADOW dirty-rect block at +0xb8: its m_8 (abs +0xc0) seeds the INT_MIN
 // sentinel the family dtors re-clear as m_c0, and its m_20 (abs +0xd8) the -1

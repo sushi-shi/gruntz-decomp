@@ -20,7 +20,7 @@
 //   m_sound         = CGruntzSoundZ (Restart 0x1388c0 / StopAll 0x1388f0)
 //   m_saveSink      = the CSaveGame (Io/SaveGame.h), m_saveInfoRec = SaveInfo (SaveInfo.h)
 //   *0x64556c       = g_gameReg (CGameRegistry; the death cheat's key is
-//                     m_focusSlots[0].m_0c, its map CSpriteFactory::m_objMap)
+//                     m_focusSlots[0].m_0c, its map CDDrawChildGroup::m_map48)
 // Grid cells are CGrunt (m_tileOwnerHi/Lo @+0x1ec/+0x1f0, LoadPickupSprites
 // @0x65e80, LoadGruntAbilityTuning @0x57100); the CTmCell==CGrunt retype in
 // TriggerMgr.h is deferred (owned by a parallel worker) - the two casts below
@@ -145,12 +145,11 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recList.GetCount() == 1                                                   \
-                ? (CGrunt*)m_cmdGrid->m_grid                                                       \
-                      [((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->y                            \
-                       + ((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->x * 15]                    \
-                : 0;                                                                               \
+        CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
+                            ? (CGrunt*)m_cmdGrid->m_grid                                           \
+                                  [((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->y                \
+                                   + ((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->x * 15]        \
+                            : 0;                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
@@ -169,12 +168,11 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recList.GetCount() == 1                                                   \
-                ? (CGrunt*)m_cmdGrid->m_grid                                                       \
-                      [((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->y                            \
-                       + ((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->x * 15]                    \
-                : 0;                                                                               \
+        CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
+                            ? (CGrunt*)m_cmdGrid->m_grid                                           \
+                                  [((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->y                \
+                                   + ((CTrigPoint*)m_cmdGrid->m_recList.GetHead())->x * 15]        \
+                            : 0;                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
@@ -439,9 +437,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         void* _key = (void*)_s->m_focusSlots[0].m_0c; // death/monologo sprite key
                         if (_key) {
                             CWwdGameObjectE* _dr = 0;
-                            if (((CMapPtrToPtr*)&_s->m_world->m_8->m_objMap)
-                                    ->Lookup((void*)_key, (void*&)_dr)
-                                && _dr) {
+                            if (_s->m_world->m_8->m_map48.Lookup((void*)_key, (void*&)_dr) && _dr) {
                                 // the entry's inner receiver is the grunt logic (thunk
                                 // 0x3a1c -> CGrunt::ResolveDeathAnimation @0x455f0);
                                 // AnimWorkerObj::m_logic holds the bound grunt logic leaf

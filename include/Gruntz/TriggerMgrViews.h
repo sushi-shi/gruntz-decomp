@@ -20,13 +20,13 @@
 
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - m_level's REAL class (ex CTmLevel)
 #include <Gruntz/GameLevel.h> // CGameLevel - the holder's +0x24 level (ex CTmLevelView/CTmGridHolder)
-#include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
-#include <Gruntz/SoundCue.h>      // CSndHost (a typedef - never fwd-declare it): holder m_28
-#include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the world's +0x2dc status-bar item)
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
-#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (dims here)
+#include <Gruntz/GruntzCmdMgr.h>      // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
+#include <Gruntz/SoundCue.h>          // CSndHost (a typedef - never fwd-declare it): holder m_28
+#include <Gruntz/StatusBarMgr.h>      // CStatusBarMgr (the world's +0x2dc status-bar item)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/TileGrid.h>          // canonical CTileGrid (the registry's +0x70 tile grid)
+#include <Bute/ButeMgr.h>             // canonical CButeMgr (one shape)
+#include <Wwd/WwdFile.h>              // CPlaneRender - the canonical plane (dims here)
 #include <rva.h>
 
 // The pending-fx sprite-id base: a cell's logic kind maps to its pending overlay-fx sprite
@@ -129,21 +129,21 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 // A DirectSound channel helper (?StopAndRewind@DirectSoundMgr, @0x135380, __thiscall,
 // reloc-masked); DestroyAllAnims rewinds three channels.
 
-// The level's sprite factory (level->m_8) is the canonical CSpriteFactory
+// The level's sprite factory (level->m_8) is the canonical CDDrawChildGroup
 // (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0, reloc-masked) builds a sprite
 // from a config key, and the factory owns the live display-object list at +0x14
-// (m_liveObjects / CSpriteListNode). The created sprite is the shared CGameObject,
+// (m_list / CDDrawGroupNode). The created sprite is the shared CGameObject,
 // cast to this TU's placed-object view CTmCell (the unit-wide B-view; its full fold
 // onto CGameObject is deferred). The sprite carries a descriptor at +0x7c whose
 // slot-4 (+0x10) is an Init thunk run on the fresh sprite.
 // (CTmSprite / CTmSpriteDesc are GONE. They were duplicates of the canonical
 //  <Gruntz/UserLogic.h> CGameObject and AnimWorkerObj - which already model exactly this:
-//  "spr->m_7c->Init(spr) on the fresh CSpriteFactory::CreateSprite result", and
+//  "spr->m_7c->Init(spr) on the fresh CDDrawChildGroup::CreateSprite result", and
 //  AnimWorkerObj::m_logic as the bound logic leaf. CreateSprite RETURNS CGameObject*, so the
 //  (CTmCell*) casts on its result were wrong outright: the deleted CTmCell view had
 //  conflated the SPRITE with the LOGIC the sprite carries.)
 //  CTmLevel WAS the world holder CSpriteFactoryHolder (<Gruntz/GameRegistry.h>): all
-//  three members land on it at identical offsets AND names (m_8 CSpriteFactory* /
+//  three members land on it at identical offsets AND names (m_8 CDDrawChildGroup* /
 //  m_24 the level / m_28 CSndHost*). CTmLevelView WAS the canonical CGameLevel
 //  (<Gruntz/GameLevel.h>): its "m_10/m_14 view origin" is m_planeCtx.minX/minY (the
 //  LevelCoordRect at +0x10), its "+0x4c tile-class table" is m_imageSets' CObArray
@@ -151,8 +151,8 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 //  CPlaneRender == CDDrawWorkerHost - one typedef, so no cast). CTriggerMgr::m_level
 //  is typed CSpriteFactoryHolder* in <Gruntz/TriggerMgr.h>.)
 
-// The level's display-object list (level->m_8->m_liveObjects, the canonical
-// CSpriteListNode chain): each node carries the next ptr @+0 and the bound object
+// The level's display-object list (level->m_8->m_list, the canonical
+// CDDrawGroupNode chain): each node carries the next ptr @+0 and the bound object
 // @+8. The object's type is identified by a fixed entry in its descriptor
 // (obj+0x7c) slot-4 (+0x10) matching the CGrunt::ReadConfigFromButeMgr method
 // address; on a match, +0x18 names the target whose +0x200 channel marker is cleared.

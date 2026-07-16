@@ -59,13 +59,13 @@
 // (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md - the include-as-lever).
 #include <Gruntz/SoundCue.h>
 
-struct CSpriteFactory; // +0x30 -> +0x08 factory (CreateSprite); Grunt.h completes it
-class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it (or, in
-                       // the pure-Win32 grunt-step TUs that can't pull Grunt.h,
-                       // completed locally with just the 0x4039f4 6-arg cue - a
-                       // data-less method handle, so layout-neutral, no cross-cast)
-class CState;          // +0x2c current game-state; CState.h completes it
-class CWorldSoundSet;  // +0x54 active-level input/spatial-sound object (WorldSoundSet.h)
+class CDDrawChildGroup; // +0x30 -> +0x08 the object collection / sprite factory (CreateSprite)
+class CGruntCueSink;    // +0x60 on-screen cue receiver; Grunt.h completes it (or, in
+                        // the pure-Win32 grunt-step TUs that can't pull Grunt.h,
+                        // completed locally with just the 0x4039f4 6-arg cue - a
+                        // data-less method handle, so layout-neutral, no cross-cast)
+class CState;           // +0x2c current game-state; CState.h completes it
+class CWorldSoundSet;   // +0x54 active-level input/spatial-sound object (WorldSoundSet.h)
 // +0x68 world command/trigger grid. RESOLVED -> CTriggerMgr (<Gruntz/TriggerMgr.h>):
 // the ~10 per-TU downcasts (CTeleIconTable/CTriggerSink/CSbIconSet/CSlimeCueGate/
 // CPathCueGate/TgcRegion/MgrObj/RbCmdGrid/...) are all VIEWS of the ONE non-polymorphic
@@ -135,7 +135,7 @@ class SoundStream; // +0x20 (Dsndmgr; the per-frame sound tick)
 // (<DDrawMgr/DDrawSurfaceMgr.h>, ??_7 @0x1efc58, SIZE 0x40) - the two canonicals
 // agree member-for-member: +0x20 both named m_soundStream, +0x24 both CGameLevel,
 // +0x28 CSndHost==CDDrawSubMgrLeafScan (settled), and the pairs m_drawTarget==
-// m_pages / m_8(CSpriteFactory)==m_childGroup / m_10(CImageRegistry)==m_surfaceDesc /
+// m_pages / m_8(CDDrawChildGroup)==m_childGroup / m_10(CImageRegistry)==m_surfaceDesc /
 // m_animRegistry==m_leaf are per-slot identities of the same children. The CLASS
 // merge (one definition) is deferred - it must not emit two vtables for the one
 // retail ??_7; this game-side view stays vptr-padded (m_pad0) until then.]
@@ -147,11 +147,11 @@ struct CSpriteFactoryHolder {
         CDrawTarget* m_drawTarget;
         struct CDDrawSubMgrPages* m_pages;
     };
-    // +0x08: the sprite/object factory == the DDraw child-group == CWwdObjMgr (the
+    // +0x08: the sprite/object factory == the DDraw child-group == CDDrawChildGroup (the
     // three-way class identity is documented in SpriteFactory.h / WwdObjMgr.cpp).
     union {
-        CSpriteFactory* m_8;
-        struct CDDrawChildGroup* m_childGroup;
+        CDDrawChildGroup* m_8;
+        CDDrawChildGroup* m_childGroup;
     };
     // +0x0c  renderer B: the real CDDrawWorkerList (per-frame worker pump; "Present"
     // == its slot-13 PruneWorkers; ClearWorkers is the leaf-state teardown).
@@ -176,8 +176,8 @@ struct CSpriteFactoryHolder {
                       //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
     CDDrawSubMgrLeaf* m_animRegistry; // +0x2c  the ANI catalog / anim registry
                                       //         (== CDDrawSurfaceMgr::m_leaf)
-    void* m_hWnd30;                // +0x30  bound window / device handle (CDDrawSurfaceMgr::m_hWnd)
-    i32 m_flags34;                 // +0x34  caps flags
+    void* m_hWnd30; // +0x30  bound window / device handle (CDDrawSurfaceMgr::m_hWnd)
+    i32 m_flags34;  // +0x34  caps flags
     // +0x38  last-error / world load-status code (ReportWorldStatus maps it to a
     // message id; Init stores 0x3e9..0x3f1). u32 alias = the old CWorldZ::m_38.
     union {

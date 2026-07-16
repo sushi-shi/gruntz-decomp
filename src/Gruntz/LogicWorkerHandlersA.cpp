@@ -106,7 +106,7 @@ struct CUserLogicOOL {
     // +0x00 vptr anchor (declared-only): slot 0 of the REAL table (??_7CUserLogic
     // family) is the scalar-deleting dtor - named so, not spelled as a C++ dtor,
     // because a dtor here would add an EH unwind funclet the retail `new DnnRec`
-    // frame does not have (same plain-virtual spelling as CSpriteFactory's).
+    // frame does not have (same plain-virtual spelling as CDDrawChildGroup's).
     virtual void ScalarDtor();
     CUserLogicOOL(DnnOwner* owner); // 0x58cd0
     char m_pad04[0x34 - 0x04];      // +0x04..+0x33

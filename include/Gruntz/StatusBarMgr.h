@@ -605,29 +605,29 @@ public:
     CSbiHlRow m_groupSlots[3];     // +0x2c0
     CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
-    i32 m_hudRectB_x;          // +0x318  HUD-rect group B (x0)
-    i32 m_hudRectB_y;          // +0x31c  (y0)
-    i32 m_hudRectB_clock;      // +0x320  (latched dword from g_dat645588)
-    i32 m_hudRectB_clockHi;    // +0x324
-    i32 m_hudRectB_z;          // +0x328
-    i32 m_hudRectB_zHi;        // +0x32c
-    i32 m_hudRectA_x;          // +0x330  HUD-rect group A (x0)
-    i32 m_hudRectA_y;          // +0x334  (y0)
-    i32 m_hudRectA_clock;      // +0x338
-    i32 m_hudRectA_clockHi;    // +0x33c
-    i32 m_hudRectA_z;          // +0x340
-    i32 m_hudRectA_zHi;        // +0x344
+    i32 m_hudRectB_x;                     // +0x318  HUD-rect group B (x0)
+    i32 m_hudRectB_y;                     // +0x31c  (y0)
+    i32 m_hudRectB_clock;                 // +0x320  (latched dword from g_dat645588)
+    i32 m_hudRectB_clockHi;               // +0x324
+    i32 m_hudRectB_z;                     // +0x328
+    i32 m_hudRectB_zHi;                   // +0x32c
+    i32 m_hudRectA_x;                     // +0x330  HUD-rect group A (x0)
+    i32 m_hudRectA_y;                     // +0x334  (y0)
+    i32 m_hudRectA_clock;                 // +0x338
+    i32 m_hudRectA_clockHi;               // +0x33c
+    i32 m_hudRectA_z;                     // +0x340
+    i32 m_hudRectA_zHi;                   // +0x344
     CSbiMachineDisplay* m_machineDisplay; // +0x348  rez-machine snooze display object
-    i32 m_34c;                 // +0x34c
-    i32 m_350;                 // +0x350
-    i32 m_hitTestDisabled;     // +0x354  hit-test disable flag
-    i32 m_tabsBuilt;           // +0x358  tab-widgets-built flag
-    i32 m_activeSlot;          // +0x35c  active-slot index (-1 = none)
-    i32 m_pendingHlRow;        // +0x360  pending highlight row index (-1 none)
-    CSbiSlotPtr* m_notify0;    // +0x364  notify targets (slot 0x28)
-    CSbiSlotPtr* m_notify1;    // +0x368
-    CSbiSlotPtr* m_notify2;    // +0x36c
-    CSbiSlotPtr* m_notify3;    // +0x370
+    i32 m_34c;                            // +0x34c
+    i32 m_350;                            // +0x350
+    i32 m_hitTestDisabled;                // +0x354  hit-test disable flag
+    i32 m_tabsBuilt;                      // +0x358  tab-widgets-built flag
+    i32 m_activeSlot;                     // +0x35c  active-slot index (-1 = none)
+    i32 m_pendingHlRow;                   // +0x360  pending highlight row index (-1 none)
+    CSbiSlotPtr* m_notify0;               // +0x364  notify targets (slot 0x28)
+    CSbiSlotPtr* m_notify1;               // +0x368
+    CSbiSlotPtr* m_notify2;               // +0x36c
+    CSbiSlotPtr* m_notify3;               // +0x370
     char m_pad374[0x378 - 0x374];
     CSbiHlRow m_hlGrid[12];      // +0x378  3 groups x 4 highlight rows (24B each)
     CSbiSlotPtr* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
@@ -1017,18 +1017,18 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_notify2 = 0;
     m_notify3 = 0;
     m_notify1 = 0;
-    m_extraNotify0 = 0; // +0x4e0
-    m_extraNotify1 = 0; // +0x500
-    m_machineDisplay = 0;          // +0x348
-    m_modeNotify = 0;   // +0x570
-    m_gaugeNotify = 0;  // +0x218
-    m_gaugeSink = 0;    // +0x21c
-    m_gaugeTarget = 0;  // +0x29c  (stored BEFORE m_gauge in retail)
-    m_gauge = 0;        // +0x298
-    m_544 = 1;          // +0x544
-    m_hlBusy = 0;       // +0x548
-    m_retabNotify = 0;  // +0x54c
-    m_modeArmed = 0;    // +0x574
+    m_extraNotify0 = 0;   // +0x4e0
+    m_extraNotify1 = 0;   // +0x500
+    m_machineDisplay = 0; // +0x348
+    m_modeNotify = 0;     // +0x570
+    m_gaugeNotify = 0;    // +0x218
+    m_gaugeSink = 0;      // +0x21c
+    m_gaugeTarget = 0;    // +0x29c  (stored BEFORE m_gauge in retail)
+    m_gauge = 0;          // +0x298
+    m_544 = 1;            // +0x544
+    m_hlBusy = 0;         // +0x548
+    m_retabNotify = 0;    // +0x54c
+    m_modeArmed = 0;      // +0x574
 }
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

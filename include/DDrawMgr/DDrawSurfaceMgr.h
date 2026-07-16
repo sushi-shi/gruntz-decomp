@@ -64,7 +64,7 @@ class CDDrawSubMgrPages;    // +0x04 the page/child factory (front/back/overlay 
 class CDDrawChildGroup;     // +0x08 the broadcast child-group (intrusive list + 2 maps)
 class CDDrawWorkerRegistry; // +0x10 the name->sprite registry (: CLoadable, vtbl 0x5efd28, m_10map)
 class CDDrawWorkerCache;    // +0x14 the string-keyed worker cache (its +0x10 map is the
-                            //       name->value resolve map the CWwdObjMgr factories read)
+                            //       name->value resolve map the CDDrawChildGroup factories read)
 class CDDrawWorkerMapSmall; // +0x18 the polymorphic sprite/palette registry (: CObject, 13 slots)
 class CDDrawSubMgrLeafScan; // (class, not struct - the PAU/PAV fwd-mangling trap)
 class CDDrawSubMgrLeaf;     // +0x2c the label sub-manager (KeyOfValue_152d30 / m_10 map)

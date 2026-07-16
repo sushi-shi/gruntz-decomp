@@ -18,14 +18,14 @@
 #include <Gruntz/GameRegistry.h> // CGameRegistry singleton (pulls SoundCue.h + TileGrid.h)
 #include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (m_cmdGrid: LoadExplosionSprites @0x7b330)
 #include <Gruntz/State.h>        // CState (reg->m_curState: the level-type descriptor)
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
-#include <Gruntz/StringNode.h>    // the shared type-name teardown slot (CStringNode::Free)
-#include <Gruntz/ActColl.h>       // shared registry collection (CActColl/CVariantSlot Find/Insert/
-                                  // RegisterRange + g_actCache/g_retAddrBreadcrumb/GetRetAddr)
-#include <Bute/ButeMgr.h>         // CButeTree (the type-registry funnel)
-#include <math.h>                 // sin / cos (StepMotion's parabola)
-#include <string.h>               // memset (1-arg spawn ctor's +0x1e0 zero-fill)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/TypeNameEntry.h>     // the shared type-name-registry record (CString m_name)
+#include <Gruntz/StringNode.h>        // the shared type-name teardown slot (CStringNode::Free)
+#include <Gruntz/ActColl.h> // shared registry collection (CActColl/CVariantSlot Find/Insert/
+                            // RegisterRange + g_actCache/g_retAddrBreadcrumb/GetRetAddr)
+#include <Bute/ButeMgr.h>   // CButeTree (the type-registry funnel)
+#include <math.h>           // sin / cos (StepMotion's parabola)
+#include <string.h>         // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
 #include <Globals.h>
 #include <Wap32/ZVec.h>
@@ -68,7 +68,7 @@ extern "C" u32 g_engineFrameDelta;
 // reloc-masks the `mov ecx,ds:g_gameReg` load against the already-named symbol.
 // The projectile sound/hit-scan/effects paths reach the canonical sub-objects
 // through it: reg->m_world (CSpriteFactoryHolder) -> m_8 the HUD sprite factory
-// (CSpriteFactory) + m_28 the sound-cue host (CSndHost, <Gruntz/SoundCue.h>);
+// (CDDrawChildGroup) + m_28 the sound-cue host (CSndHost, <Gruntz/SoundCue.h>);
 // reg->m_tileGrid the terrain grid (CTileGrid, cell dword 0 = the terrain flags
 // MovingSlot16 tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
 // the level-type descriptor (CState, +0x20 terrain-class id switch key).
@@ -440,7 +440,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_arrived = 0;
 
     // Spawn the LightFx shadow companion + activate its two frames.
-    CSpriteFactory* factory = g_gameReg->m_world->m_8;
+    CDDrawChildGroup* factory = g_gameReg->m_world->m_8;
     m_shadow =
         (CGameObject*)factory
             ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);

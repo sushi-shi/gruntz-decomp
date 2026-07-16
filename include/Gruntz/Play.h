@@ -194,7 +194,10 @@ public:
     // --- CPlay-owned high slots 26..40 (moved from CState; RTTI CState is 26 slots) ---
     virtual i32 Vslot1a();  // slot 26 (0x8c930)  ret 0
     virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
-    virtual i32 Vslot1c(i32 category); // slot 28 (+0x70) count live objects by coll-category
+    // slot 28 (+0x70): count the object manager's live objects whose collision
+    // category (CGameObject::m_collCategory) equals `category` (ex Vslot1c - the
+    // role is proven by the 0xd0050 body, so the slot-index placeholder name goes).
+    virtual i32 CountObjectsByCategory(i32 category);
     // slot 29 (+0x74): the GRUNTZ/GAME bank cache load (0x0cffe0, body in Play.cpp).
     // PROVEN virtual: retail ??_7CPlay@0x1ea0bc slot 29 -> ILT 0x1a41 -> 0x0cffe0.
     virtual i32 LoadImageBanks();

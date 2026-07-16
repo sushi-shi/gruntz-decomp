@@ -1,9 +1,9 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/String.h>
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteListNode shape
-#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + AnimWorkerObj
-#include <Gruntz/PickupType.h>    // the shared object/pickup/grunt-kind type id space
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup + CDDrawGroupNode shape
+#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite) + AnimWorkerObj
+#include <Gruntz/PickupType.h>        // the shared object/pickup/grunt-kind type id space
 #include <Bute/ButeMgr.h>
 
 #include <stdlib.h> // rand (reloc-masked CRT PRNG)
@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------------
 // Shared engine objects, modeled minimally (mirroring SpriteLoaders.cpp's idiom).
 // ---------------------------------------------------------------------------
-// CSpriteFactory + CSpriteListNode live in the shared <Gruntz/SpriteFactory.h>; the
+// CDDrawChildGroup + CDDrawGroupNode live in the shared <DDrawMgr/DDrawChildGroup.h>; the
 // created sprite is the shared CGameObject (<Gruntz/UserLogic.h>, included above).
 
 // The four sprite loaders formerly here (LoadCameraSprite 0x78960,

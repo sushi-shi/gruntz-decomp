@@ -23,7 +23,7 @@
 #include <Gruntz/WwdGrid.h> // CWwdGrid (the grids' final type; Setup == CWwdGrid::CWwdGrid @0x1915c0)
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Wap32/Object.h>     // CObject grand-base (SubWidget_168080's base)
+#include <Wap32/Object.h>             // CObject grand-base (SubWidget_168080's base)
 #include <Gruntz/UserLogic.h>         // canonical CGameObject (the movement target)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (the chain owner)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
@@ -709,7 +709,7 @@ i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6,
             m_rect2Bottom = p8[1] - 1;
             m_org2x = p8[0] / 2;
             m_org2y = p8[1] / 2;
-            m_mgr = (CWwdObjMgr*)a1;
+            m_mgr = (CDDrawChildGroup*)a1;
             SetRect((RECT*)&m_bbMinX, rc->left, rc->top, rc->right, rc->bottom);
             m_scrollX = (i32)0xffffa932;
             m_scrollY = (i32)0xffffa932;

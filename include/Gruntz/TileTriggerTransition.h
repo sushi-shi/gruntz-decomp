@@ -71,8 +71,8 @@ public:
     // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
     // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the
     // +0x1b4 animation descriptor.
-    CAniElement* m_activeAnimDesc;      // +0x40
-    char m_pad44[0x54 - 0x44]; // +0x44..+0x53
+    CAniElement* m_activeAnimDesc; // +0x40
+    char m_pad44[0x54 - 0x44];     // +0x44..+0x53
 };
 VTBL(CTileTriggerTransition, 0x1e7db4);
 SIZE_UNKNOWN(CTileTriggerTransition);

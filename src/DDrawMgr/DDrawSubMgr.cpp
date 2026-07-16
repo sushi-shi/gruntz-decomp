@@ -255,7 +255,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
 // CLoadable::CLoadable (0x156cb0, the ex "??0CDDrawSubMgr"): the out-of-line 3-arg
 // loadable-base ctor - seed the three header words, stamp ??_7CLoadable (compiler-
 // generated). Retail callers: CDDrawSurfaceMgr::Init 0x155900, CDDrawSubMgrPages::
-// CreateChildren 0x1588f0, CWwdObjMgr::CreateObject 0x1598d0, CDDrawWorkerHost::
+// CreateChildren 0x1588f0, CDDrawChildGroup::CreateObject 0x1598d0, CDDrawWorkerHost::
 // ReadPlaneObjects 0x162af0.
 RVA(0x00156cb0, 0x20)
 CLoadable::CLoadable(i32 owner, i32 field04, i32 field08) {

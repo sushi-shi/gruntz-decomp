@@ -49,7 +49,7 @@ public:
     i32 AdvanceAnim();              // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
     virtual ~CGruntCreationPoint() OVERRIDE; // 0x010730 (folds the CUserLogic teardown)
 
-    CAniElement* m_savedGeoId;          // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
+    CAniElement* m_savedGeoId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from
                                //         AnimWorkerHandlers `new CGruntCreationPoint`)
 };

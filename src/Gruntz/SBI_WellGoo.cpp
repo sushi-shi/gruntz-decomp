@@ -127,7 +127,8 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
-    CGooGameMgr* mgr = g_gameReg->m_gameMgr; // cached across the calls (retail spills it @[esp+0x14])
+    CGooGameMgr* mgr =
+        g_gameReg->m_gameMgr; // cached across the calls (retail spills it @[esp+0x14])
     if (mgr == 0) {
         return 0;
     }
@@ -147,7 +148,8 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             memset(buf, 0, 0x80);
             idx = 0;
             if (m_fgFrame != 0) {
-                mgr->m_frameSetRegistry->AnyValueMatches_155630((i32)m_fgFrame, (i32)buf, (i32)&idx);
+                mgr->m_frameSetRegistry
+                    ->AnyValueMatches_155630((i32)m_fgFrame, (i32)buf, (i32)&idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -155,7 +157,8 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             memset(buf, 0, 0x80);
             idx = 0;
             if (m_baseFrame != 0) {
-                mgr->m_frameSetRegistry->AnyValueMatches_155630((i32)m_baseFrame, (i32)buf, (i32)&idx);
+                mgr->m_frameSetRegistry
+                    ->AnyValueMatches_155630((i32)m_baseFrame, (i32)buf, (i32)&idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -174,7 +177,8 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 CSbiFrameSet* set = 0;
-                ((CMapStringToPtr*)((char*)mgr->m_frameSetRegistry + 0x10))->Lookup(buf, (void*&)set);
+                ((CMapStringToPtr*)((char*)mgr->m_frameSetRegistry + 0x10))
+                    ->Lookup(buf, (void*&)set);
                 if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
                     m_fgFrame = set->m_frames[idx];
                 } else {
@@ -188,7 +192,8 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
                 CSbiFrameSet* set = 0;
-                ((CMapStringToPtr*)((char*)mgr->m_frameSetRegistry + 0x10))->Lookup(buf, (void*&)set);
+                ((CMapStringToPtr*)((char*)mgr->m_frameSetRegistry + 0x10))
+                    ->Lookup(buf, (void*&)set);
                 if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
                     m_baseFrame = set->m_frames[idx];
                 } else {

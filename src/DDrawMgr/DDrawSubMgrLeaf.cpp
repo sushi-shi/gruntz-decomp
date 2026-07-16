@@ -314,4 +314,3 @@ CAniElement::~CAniElement() {
     DeleteAll();
     // m_records.~CAniRecordArray() (trylevel 0) + ~CObject() (grand-base restore) fold here.
 }
-

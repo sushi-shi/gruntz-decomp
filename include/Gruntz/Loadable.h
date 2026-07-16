@@ -103,7 +103,7 @@ public:
     // "??0CDDrawSubMgr"). `owner` is the owning/parent context stored at m_0c
     // (IsLoaded checks it nonzero); field04/field08 are the two managed header
     // words. Retail call sites: CDDrawSurfaceMgr::Init 0x155900, CDDrawSubMgrPages::
-    // CreateChildren 0x1588f0, CWwdObjMgr::CreateObject 0x1598d0, CDDrawWorkerHost::
+    // CreateChildren 0x1588f0, CDDrawChildGroup::CreateObject 0x1598d0, CDDrawWorkerHost::
     // ReadPlaneObjects 0x162af0. NB retail ALSO shows the store triple fused into
     // ctors like CResolveNode(i32,i32,i32) @0x15b2c0 - those leaves spell the three
     // stores in their own ctor body (over the default base ctor), reproducing the

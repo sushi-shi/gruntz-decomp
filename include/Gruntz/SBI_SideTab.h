@@ -108,17 +108,17 @@ public:
     // base region m_0..0x2f comes from CStatusBarItem (incl. m_2c, the owner slot that
     // inherited slot-2 Setup fills - BuildHandle reads it as the empty-slot fallback
     // notify target via ((CSBI_RectOnly*)m_2c)); leaf fields start at +0x30.
-    CImage* m_topFrame; // +0x30  top frame handle
+    CImage* m_topFrame;    // +0x30  top frame handle
     CImage* m_bottomFrame; // +0x34  bottom frame handle (resolved glyph)
-    i32 m_sampledValue;     // +0x38  tracked sampled value
-    i32 m_rowIndex;     // +0x3c  unit-table row index (stride 15)
-    i32 m_40;     // +0x40  unit-table column index
-    i32 m_44;     // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
-    i32 m_48;     // +0x48  draw x
-    i32 m_4c;     // +0x4c  draw y
-    i32 m_50;     // +0x50  bottom-frame y delta
-    i32 m_54;     // +0x54  side latch (BuildStatzTabStatusBar's `onLeft`); was an unnamed pad
-    i32 m_58;     // +0x58  draw gate (0 => not built)
+    i32 m_sampledValue;    // +0x38  tracked sampled value
+    i32 m_rowIndex;        // +0x3c  unit-table row index (stride 15)
+    i32 m_40;              // +0x40  unit-table column index
+    i32 m_44;              // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
+    i32 m_48;              // +0x48  draw x
+    i32 m_4c;              // +0x4c  draw y
+    i32 m_50;              // +0x50  bottom-frame y delta
+    i32 m_54; // +0x54  side latch (BuildStatzTabStatusBar's `onLeft`); was an unnamed pad
+    i32 m_58; // +0x58  draw gate (0 => not built)
 };
 SIZE_UNKNOWN(CSBI_SideTab);
 VTBL(CSBI_SideTab, 0x001eae3c); // vtable_names -> code (RTTI game class)

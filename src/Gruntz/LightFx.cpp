@@ -7,12 +7,12 @@
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h>      // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
-#include <Image/ImageSet.h>         // CImageSet - the spec Lookup result (frames + index range)
-#include <DDrawMgr/DDrawSurfaceMgr.h>      // the m_0c world root (spec/effect stores)
+#include <Gruntz/LightFxMgr.h>        // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
+#include <Image/ImageSet.h>           // CImageSet - the spec Lookup result (frames + index range)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (spec/effect stores)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_surfaceDesc (the spec store; Ob 0x1b8008)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // m_leaf (the effect store; Ptr 0x1b8438)
-#include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
+#include <Gruntz/LogicTypeTableInline.h>  // unrolled built-in logic-type registration
 #include <Gruntz/SerialArchive.h>    // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>     // the +0x34 serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)

@@ -22,7 +22,7 @@
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
 #include <Gruntz/GameMode.h>              // CState / CGameModeBase / CSpriteFactoryHolder
 #include <Bute/ButeMgr.h>                 // CButeMgr g_buteMgr (SecretColor wormhole tint)
-#include <Gruntz/SpriteFactory.h>         // CSpriteFactory (m_world->m_8 CreateSprite)
+#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (m_world->m_8 CreateSprite)
 #include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
 #include <Gruntz/WwdGameReg.h>            // g_gameReg (GenMenuRandPos Rand/RandRange)
 #include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (the real m_world class)
@@ -42,7 +42,7 @@ extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked
 // slot void*, since it is a genuinely heterogeneous reused slot - ~10 TUs cast it to the
 // type each needs, so it stays void* on the shared class). LoadGruntEffectSprites indexes
 // it by the "SecretColor" bute value to tint the wormhole. The former CGlitterMgr /
-// a CSpriteFactory via GruntSoundCat) and selection source (m_74, CSpriteRefTable) are the
+// a CDDrawChildGroup via GruntSoundCat) and selection source (m_74, CSpriteRefTable) are the
 // real WwdGameReg fields, reached directly; only this local color table remains.
 // CGlitterColorTable is declared in <Gruntz/GameMode.h> (included above).
 
@@ -173,7 +173,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     m_c->m_10->InstallTree(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
-    CSpriteFactory* f = g_gameReg->m_world->m_8;
+    CDDrawChildGroup* f = g_gameReg->m_world->m_8;
 
     CGameObject* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     m_icons[0] = sw;

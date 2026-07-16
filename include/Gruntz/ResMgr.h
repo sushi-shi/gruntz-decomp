@@ -134,9 +134,9 @@ struct CResMgr {
     CImageRegistry* m_10; // +0x10  image/tile registry (sprite lookups + install)
     CImageRegistry* m_14; // +0x14  sprite-set registry (CreateSprite lookup)
     char m_pad18[0x24 - 0x18];
-    CMenuViewObj* m_view;      // +0x24  level/view object
-    CSoundRegistry* m_28;      // +0x28  sound registry
-    CDDrawSubMgrLeaf* m_2c;    // +0x2c  animation registry (canonical CDDrawSubMgrLeaf)
+    CMenuViewObj* m_view;   // +0x24  level/view object
+    CSoundRegistry* m_28;   // +0x28  sound registry
+    CDDrawSubMgrLeaf* m_2c; // +0x2c  animation registry (canonical CDDrawSubMgrLeaf)
 };
 
 // --- vtable catalog ---

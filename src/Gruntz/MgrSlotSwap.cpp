@@ -7,9 +7,9 @@
 // are reloc-masked.
 #include <Gruntz/Brickz.h>
 #include <Ints.h>
-#include <Gruntz/GruntzMgr.h>  // the REAL singleton class (+ CSpriteFactoryHolder via GameRegistry.h)
-#include <Gruntz/GameLevel.h>  // CGameLevel - m_world->m_24 (the level; its m_mainPlane)
-#include <Wwd/WwdFile.h>       // CLevelPlane/CPlaneRender - the canonical plane (the registry plane)
+#include <Gruntz/GruntzMgr.h> // the REAL singleton class (+ CSpriteFactoryHolder via GameRegistry.h)
+#include <Gruntz/GameLevel.h> // CGameLevel - m_world->m_24 (the level; its m_mainPlane)
+#include <Wwd/WwdFile.h>      // CLevelPlane/CPlaneRender - the canonical plane (the registry plane)
 #include <rva.h>
 
 // The registry plane table (g_gameReg->m_world->m_24->m_mainPlane) is the shared

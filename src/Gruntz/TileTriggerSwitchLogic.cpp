@@ -31,7 +31,7 @@
 #include <Gruntz/TileGridCommand.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane
-#include <Gruntz/SpriteFactory.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/SoundCue.h>
@@ -73,7 +73,7 @@
 // ---------------------------------------------------------------------------
 
 // g_gameReg->m_world is the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>),
-// whose m_8 is the CSpriteFactory, m_24 the CGameLevel and m_28 the CSndHost. The one
+// whose m_8 is the CDDrawChildGroup, m_24 the CGameLevel and m_28 the CSndHost. The one
 // live read - the impact-sound gate - is g_gameReg->m_world->m_28->m_emitGate (CSndHost
 // +0x30). The CTileEventSink placeholder was dead - deleted.)
 

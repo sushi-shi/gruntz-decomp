@@ -29,12 +29,12 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
-#include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
-#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (dims here)
-#include <stdlib.h>               // rand (0x11fee0, reloc-masked)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>         // canonical CUserLogic (switch/trigger logic virtuals)
+#include <Gruntz/TileGrid.h>          // canonical CTileGrid (the registry's +0x70 tile grid)
+#include <Bute/ButeMgr.h>             // canonical CButeMgr (one shape)
+#include <Wwd/WwdFile.h>              // CPlaneRender - the canonical plane (dims here)
+#include <stdlib.h>                   // rand (0x11fee0, reloc-masked)
 #include <Globals.h>
 
 // The *0x24556c singleton, typed as the REAL class (CGruntzMgr). This TU is MFC, so it
@@ -507,7 +507,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
         cx = vy - 0x28;
     }
 
-    CSpriteFactory* fac = m_level->m_8;
+    CDDrawChildGroup* fac = m_level->m_8;
     CGameObject* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_goal = (CTmGoal*)spr;
     spr->m_7c->m_notify(spr);
@@ -693,14 +693,14 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         if (*(i32*)((char*)this + 0x2c) == 0) { // placeholder gate (see raw)
             return 0;
         }
-        CSpriteFactory* fac = m_level->m_8;
+        CDDrawChildGroup* fac = m_level->m_8;
         sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
         kindArg = 3;
         logicArg = 1;
     } else {
         // sel==2: place-and-report variant -> WarpStone factory
         this->PlaceB(a14, a18, 1);
-        CSpriteFactory* fac = m_level->m_8;
+        CDDrawChildGroup* fac = m_level->m_8;
         sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
         kindArg = 2;
         logicArg = 1;
@@ -999,7 +999,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
 // stash the placement fields (+0x124/+0x114/+0x118) and tail into PlacePuddle. (ret 0x18.)
 RVA(0x0007a180, 0x86)
 i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
-    CSpriteFactory* fac = m_level->m_8;
+    CDDrawChildGroup* fac = m_level->m_8;
     CGameObject* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
         // The *0x24556c singleton IS a CGruntzMgr; ReportError @0x08dc60 is ITS method.
@@ -1079,7 +1079,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
 // ===========================================================================
 //
 // Lazily creates the "GAME_TOYBOX" in-game icon at tile (x>>5, y>>5): first walks
-// the factory's live-icon list (m_level->m_8->m_liveObjects) and bails (return 0) if an
+// the factory's live-icon list (m_level->m_8->m_list) and bails (return 0) if an
 // existing icon of one of the two icon classes already sits on that tile;
 // otherwise CreateSprite("InGameIcon"), cache its frame, stamp the four config
 // slots and the +0x40 visible bit.  __thiscall, ret 0x14 (5 args).
@@ -1090,15 +1090,15 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
 
 RVA(0x0007a3f0, 0xd7)
 i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
-    CSpriteFactory* fac = m_level->m_8;
+    CDDrawChildGroup* fac = m_level->m_8;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
 
-    CSpriteListNode* node = fac->m_liveObjects;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)fac->m_list.GetHeadPosition();
     while (node != 0) {
-        CSpriteListNode* cur = node;
-        node = node->next;
-        CGameObject* obj = cur->m_sprite;
+        CDDrawGroupNode* cur = node;
+        node = node->m_next;
+        CGameObject* obj = cur->m_gameObj;
         void* init = (void*)obj->m_7c->m_notify;
         if (init == (void*)&IconClassInitA || init == (void*)&IconClassInitB) {
             i32 ox = obj->m_screenX >> 5;
@@ -1371,7 +1371,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
 // slot-8 virtual GetTypeId (+0x20) yields the serialize type-id, its +0x7c AnimWorkerObj holds
 // the bound logic (aux->m_logic @+0x18). (Former CTmSerMapObj/CTmSerMapObjVtbl PMF-vtable +
 // CTmSerAux views folded onto the real class + real virtual.)
-// The serialize key->object map is the CSpriteFactory's embedded m_objMap (@factory+0x48,
+// The serialize key->object map is the CDDrawChildGroup's embedded m_map48 (@factory+0x48,
 // see <Gruntz/SpriteFactory.h>); reached through the typed member, no this+offset cast.
 // The manager's embedded list nodes (base list @this+0, record @+0x240, the ten
 // selection lists @+0x2d0) are the real MFC CPtrList members; the +0x260 byte array is the
@@ -1624,7 +1624,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
 
 RVA(0x0007b330, 0xc6)
 i32 CTriggerMgr::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
-    CSpriteFactory* fac = m_level->m_8;
+    CDDrawChildGroup* fac = m_level->m_8;
     CGameObject* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         i32 v = variant;
@@ -1655,7 +1655,7 @@ void FormatStr(CString* out, const char* fmt, ...);
 
 // The eye-candy sprite the factory returns is the shared CGameObject (ApplyName
 // @0x150540 / ApplyLookupGeometry @0x1505b0); the factory is the canonical
-// CSpriteFactory (m_level->m_8; <Gruntz/SpriteFactory.h>).
+// CDDrawChildGroup (m_level->m_8; <Gruntz/SpriteFactory.h>).
 
 // Every object the rock-break driver walks is a REAL class already in the tree; the
 // eleven Rock* views were a second model of them (offsets identical field-for-field):
@@ -2116,7 +2116,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     }
     i32 vis = src->m_198;
     this->Reset3(col, k, vis); // prep self-call 0x7ec96
-    CSpriteFactory* fac = m_level->m_8;
+    CDDrawChildGroup* fac = m_level->m_8;
     CGameObject* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == 0) {
         return 0;
@@ -2840,10 +2840,10 @@ void CTriggerMgr::DestroyAllAnims() {
         r--;
     } while (r != 0);
 
-    CSpriteListNode* node = m_level->m_8->m_liveObjects;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_level->m_8->m_list.GetHeadPosition();
     while (node != 0) {
-        CTmCell* obj = (CTmCell*)node->m_sprite;
-        node = node->next;
+        CTmCell* obj = (CTmCell*)node->m_gameObj;
+        node = node->m_next;
         if (obj != 0) {
             char* desc = *(char**)((char*)obj + 0x7c);
             void (CTmCell::*tag)() = &CTmCell::ReadConfigFromButeMgr;

@@ -30,16 +30,16 @@
 struct tagRECT; // the Init grid rect (Win32 RECT; completed via <Mfc.h>/<Win32.h> in the .cpp)
 typedef struct tagRECT RECT;
 
-class CWwdObjMgr;     // the master object manager (+0x00)
-class CWwdGrid;       // one plane's spatial bucket index (each TU supplies its own def)
-class CWwdGameObject; // the engine sprite the grids hold (the canonical managed object)
+class CDDrawChildGroup; // the master object manager (+0x00)
+class CWwdGrid;         // one plane's spatial bucket index (each TU supplies its own def)
+class CWwdGameObject;   // the engine sprite the grids hold (the canonical managed object)
 
 SIZE(CWwdSpatialMgr, 0xb8); // RebuildPlanes' `operator new(0xb8)`
 struct CWwdSpatialMgr {
-    CWwdObjMgr* m_mgr; // +0x00
-    CWwdGrid* m_grid0; // +0x04
-    CWwdGrid* m_grid1; // +0x08
-    CWwdGrid* m_grid2; // +0x0c
+    CDDrawChildGroup* m_mgr; // +0x00
+    CWwdGrid* m_grid0;       // +0x04
+    CWwdGrid* m_grid1;       // +0x08
+    CWwdGrid* m_grid2;       // +0x0c
     // +0x10..+0x3c: each grid's world rect (seeded to (0,0,w-1,h-1) from the plane
     // geometry's three dimension pairs). grid1's rect is at +0x30 and grid2's at
     // +0x20 - the write order of the matched InitScrollRects.

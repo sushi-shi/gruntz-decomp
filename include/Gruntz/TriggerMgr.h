@@ -63,7 +63,7 @@ SIZE_UNKNOWN(CTrigPoint);
 // its own pass - not a wall, just cross-lane. Same for the level object, sound-channel
 // helper and the two intrusive list-node shapes - each TU completes them as it needs.
 class CGrunt;
-struct CGameObject; // <Gruntz/UserLogic.h> - what CSpriteFactory::CreateSprite returns
+struct CGameObject; // <Gruntz/UserLogic.h> - what CDDrawChildGroup::CreateSprite returns
 // CTmCell IS ::CGrunt - PROVEN, and the fold is done: this is an alias now, so every
 // `CTmCell*` here keeps compiling while every method call on one mangles to the REAL
 // ?X@CGrunt@@ body. (The "+0x120 phantom-gap layout bug" that was said to block this does
@@ -76,7 +76,7 @@ struct CGameObject; // <Gruntz/UserLogic.h> - what CSpriteFactory::CreateSprite 
 typedef CGrunt CTmCell;
 // The +0x22c level object IS the world/resource holder CSpriteFactoryHolder
 // 2026-07-15: all three of its members land on the canonical holder at the identical
-// offsets and names (m_8 CSpriteFactory* / m_24 the level / m_28 CSndHost*), and the
+// offsets and names (m_8 CDDrawChildGroup* / m_24 the level / m_28 CSndHost*), and the
 // finish-level driver reaches the SAME +0x28 cue registry through g_gameReg->m_world.
 // The blocking "CTmLevelView vs CGameLevel" reconciliation is DONE: the view's m_10/m_14
 // were CGameLevel::m_planeCtx.minX/minY, its m_4c was m_imageSets' data pointer and its

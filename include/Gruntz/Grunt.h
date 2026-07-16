@@ -30,7 +30,7 @@ class DirectSoundMgr; // folded GruntSoundSample
 #include <Ints.h>
 #include <Gruntz/LogicTypeId.h>
 #include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
-#include <Gruntz/SpriteFactory.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/UserBaseLink.h>   // shared CUserBaseLink (+0x18 link; ~EngStr 0x16d2a0)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 #include <Gruntz/WwdGameReg.h>     // the canonical WwdGameReg singleton layout (g_gameReg)
@@ -374,7 +374,7 @@ struct GruntSoundCat { // m_30: the sound-category / world-resource holder objec
     // SpriteFactory.h>) - the attack-fire step (UserLogicVfunc7, ProjectileUpdate.cpp)
     // spawns the projectile eye-candy sprites through it. Same slot GameRegistry.h's
     // CSpriteFactoryHolder models (this holder object is that facet's grunt view).
-    struct CSpriteFactory* m_8;
+    class CDDrawChildGroup* m_8;
     char m_padc[0x24 - 0xc];
     CGruntViewMid* m_24;   // +0x24  -> the visible-viewport gate (movement spawn cue)
     GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
@@ -1117,9 +1117,9 @@ public:
     //  m_118 / m_124) with recovered roles. The old CTmCell view conflated the SPRITE with
     //  the LOGIC, and this was a piece of that conflation leaking onto CGrunt.)
     char m_padb0[0x148 - 0xb0];
-    i32 m_148;                  // +0x148
-    i32 m_14c;                  // +0x14c
-    void* m_150;                // +0x150
+    i32 m_148;          // +0x148
+    i32 m_14c;          // +0x14c
+    void* m_150;        // +0x150
     CGameObject* m_154; // +0x154  the created entrance-anim sprite object (the ex
                         //         CEntranceAnimPlayer view - the player IS the
                         //         created CGameObject; see UserLogic.h's tail note)

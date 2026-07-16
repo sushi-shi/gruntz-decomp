@@ -26,7 +26,7 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/BattlezData.h> // CBattlezData - the REAL +0x7c HUD/score board (was CTmScoreBoard)
-#include <Gruntz/SpriteFactory.h>        // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <DDrawMgr/DDrawChildGroup.h>    // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>            // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Gruntz/TileTriggerContainer.h> // CTileTriggerContainer (CPlay::m_beginMarker; FindChild)
 #include <Gruntz/TileTriggerSwitchLogic.h> // the 0x8c switch element (SwitchDown/m_key1)
@@ -145,7 +145,7 @@ i32 CTriggerMgr::PlaceObject(
     if (free >= 15) {
         return -1;
     }
-    CSpriteFactory* fac = m_level->m_8;
+    CDDrawChildGroup* fac = m_level->m_8;
     CGameObject* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
     if (sprite == 0) {
         return -1;

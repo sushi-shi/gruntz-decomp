@@ -652,7 +652,7 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
 
 // WwdFile::ReadPlaneObjects deserializes each WWD plane record into a freshly
 // `operator new(0x1dc)`d shared CGameObject (<Gruntz/UserLogic.h>) - the SAME
-// 0x1dc-byte instance CSpriteFactory::CreateSprite builds, brought up by the same
+// 0x1dc-byte instance CDDrawChildGroup::CreateSprite builds, brought up by the same
 // engine base ctor (0x15b390). The former local `WwdGameObj` view is FOLDED AWAY:
 // CGameObject's usage-proven field names win (m_stateFlags/m_extentL../m_strideX..,
 // slot [1] Delete / [10] Load reconciled from the ReadPlaneObjects call bytes); the
@@ -840,7 +840,8 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
-    new ((void*)&obj->m_1a0) CLoadable((i32)m_mapData, id, 0); // the embedded loadable (ctor 0x156cb0)
+    new ((void*)&obj->m_1a0)
+        CLoadable((i32)m_mapData, id, 0); // the embedded loadable (ctor 0x156cb0)
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     obj->m_1a0.m_10 = 0;
     obj->m_1a0.m_14 = 0;

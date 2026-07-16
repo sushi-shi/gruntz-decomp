@@ -16,16 +16,16 @@
 #include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (0x408710)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
-#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
-#include <Gruntz/Trigger.h>          // CTrigger (point-probe result, its m_10 HUD sprite)
-#include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (m_world/m_cmdGrid/
-                                     // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
-#include <Gruntz/BattlezData.h>      // CBattlezData (g_gameReg->m_scoreHud; +0x3c armed counter)
-#include <Gruntz/SpriteFactory.h>    // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/ActColl.h>          // CActColl/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
-#include <Gruntz/ActNameRegistry.h>  // the SHARED activation-name registry (g_buteTree/
-                                     // g_typeCounter/s_codeA/g_typeColl*/ActNameLookup)
-#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
+#include <Gruntz/GruntSpawnConfig.h>  // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
+#include <Gruntz/Trigger.h>           // CTrigger (point-probe result, its m_10 HUD sprite)
+#include <Gruntz/GameRegistry.h>      // the canonical *0x24556c singleton (m_world/m_cmdGrid/
+                                      // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
+#include <Gruntz/BattlezData.h>       // CBattlezData (g_gameReg->m_scoreHud; +0x3c armed counter)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/ActColl.h>           // CActColl/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
+#include <Gruntz/ActNameRegistry.h>   // the SHARED activation-name registry (g_buteTree/
+                                      // g_typeCounter/s_codeA/g_typeColl*/ActNameLookup)
+#include <Gruntz/ActReg.h>            // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
 #include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
 #include <Gruntz/SerialObjRef.h>            // CSerialObjRef::Chain (0x8c00) - the +0x34 round-trip
@@ -345,7 +345,7 @@ i32 CSecretLevelTrigger::Tick() {
 // position, clone the trigger's teleport-link/tile fields into it, and (when the
 // hit grunt is on-screen) fire the 6-arg cue. Always closes by marking the
 // trigger sub-object hidden (m_38->m_08 |= 0x10000). The sprite factory is the
-// canonical g_gameReg->m_world->m_8 CSpriteFactory (the ex CTeleResHolder/
+// canonical g_gameReg->m_world->m_8 CDDrawChildGroup (the ex CTeleResHolder/
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
@@ -354,7 +354,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         (CTrigger*)g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
     if (hit) {
         o = m_object;
-        CSpriteFactory* fac = g_gameReg->m_world->m_8;
+        CDDrawChildGroup* fac = g_gameReg->m_world->m_8;
         CGameObject* spr = fac->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,

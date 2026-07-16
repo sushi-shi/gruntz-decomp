@@ -24,7 +24,7 @@ public:
     static void RegisterActs();         // 0x10c610
     i32 AdvanceAnim();                  // 0x10c810 (the per-frame handler PMF; body in the stub TU)
 
-    CAniElement* m_40;                  // +0x40  saved active-anim descriptor (ctor snapshot)
+    CAniElement* m_40;         // +0x40  saved active-anim descriptor (ctor snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled leaf tail; size 0x54 proven from
     //         the state pump's `new CStatusBarSprite` = operator new(0x54))
 };

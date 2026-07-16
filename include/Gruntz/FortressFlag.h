@@ -51,9 +51,9 @@ public:
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d);                      // 0x046410 (vtable slot 1)
     virtual ~CFortressFlag() OVERRIDE; // 0x010e90 (folds the CUserLogic teardown)
 
-    CAniElement* m_prevAnimNode;        // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
-    char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from
-                               //         AnimWorkerHandlers `new CFortressFlag`)
+    CAniElement* m_prevAnimNode; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
+    char m_pad44[0x54 - 0x44];   // +0x44  (unmodeled tail; size proven 0x54 from
+                                 //         AnimWorkerHandlers `new CFortressFlag`)
 };
 VTBL(CFortressFlag, 0x001e725c);
 SIZE(CFortressFlag, 0x54);

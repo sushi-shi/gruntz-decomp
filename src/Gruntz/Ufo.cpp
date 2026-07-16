@@ -10,11 +10,11 @@
 #include <Gruntz/Ufo.h> // CUFO : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
-#include <Gruntz/SpriteFactory.h>   // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/SpotLight.h>       // CSpotLight - the spawned spotlight's bound logic leaf
-#include <Gruntz/SerialArchive.h>   // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>    // the +0x34 serialized-object-reference facet
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/SpotLight.h>         // CSpotLight - the spawned spotlight's bound logic leaf
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference facet
+#include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
 #include <rva.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
@@ -159,7 +159,8 @@ i32 CUFO::Serialize(void* stream, i32 tag, i32 c, i32 d) {
     if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(stream), tag, c, d) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CGameObject*)d) == 0) {
+    if (((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CGameObject*)d)
+        == 0) {
         return 0;
     }
     SerQuadPair(s, tag, B + 0x108);

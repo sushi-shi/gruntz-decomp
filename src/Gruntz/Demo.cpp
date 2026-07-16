@@ -27,15 +27,15 @@
 #include <fstream.h> // the REAL CRT ifstream/ofstream/ios (their dtors ARE in the CRT libs)
 #include <rva.h>
 
-#include <Bute/ButeMgr.h>         // CButeMgr (Parse @0x3cc20)
-#include <Bute/SymTab.h>          // the shared CSymTab (ResolveQualified 0x13be40)
-#include <Gruntz/AnimWorker.h>    // shared Owner / Worker views + Worker_DefaultPump
-#include <Gruntz/GameLevel.h>     // canonical CGameLevel + CLevelPlane (RecomputePlaneCoords)
-#include <Gruntz/SerialObjRef.h>  // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialRecords.h> // CTriRecord
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory shape (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // the dispatched CUserLogic leaves' slot layout
-#include <Gruntz/WorldState.h>    // canonical CWorldState + LevelMgr
+#include <Bute/ButeMgr.h>             // CButeMgr (Parse @0x3cc20)
+#include <Bute/SymTab.h>              // the shared CSymTab (ResolveQualified 0x13be40)
+#include <Gruntz/AnimWorker.h>        // shared Owner / Worker views + Worker_DefaultPump
+#include <Gruntz/GameLevel.h>         // canonical CGameLevel + CLevelPlane (RecomputePlaneCoords)
+#include <Gruntz/SerialObjRef.h>      // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialRecords.h>     // CTriRecord
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>         // the dispatched CUserLogic leaves' slot layout
+#include <Gruntz/WorldState.h>        // canonical CWorldState + LevelMgr
 #include <Globals.h>
 #include <Ints.h>
 #include <stdlib.h> // rand (0x11fee0, the engine LCG)

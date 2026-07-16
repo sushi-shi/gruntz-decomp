@@ -27,7 +27,7 @@
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // real +0x18 child type (m_workerMap; slot-1 scalar-delete)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
 #include <DDrawMgr/DDrawChildGroup.h>     // real +0x08 child type (m_childGroup)
-#include <Gruntz/WwdObjMgr.h> // CWwdObjMgr (Snapshot/RestoreChildren blit-op target, waveP)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (Snapshot/RestoreChildren blit-op target, waveP)
 #include <Gruntz/GameLevel.h> // CGameLevel (m_resolveSubMgr child; EditDispatch/MainPlaneQueryB)
 #include <Globals.h>          // g_wwdObjIdCounter (serialized header id)
 #include <string.h>           // strcpy/memset (inline header build)
@@ -102,7 +102,7 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
 //   children instead stamp base vtbl 0x5efc30 + [+4]=[+8]=0 + [+c]=this], inline
 //   CMap member ctors(0xa), then stamp the derived vtbl; store into this->m_XX:
 //     m_pages = new(0x1c)  vtbl 0x5efe08                                   (CDDrawSubMgrPages)
-//     m_childGroup = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CWwdObjMgr view)
+//     m_childGroup = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CDDrawChildGroup view)
 //     m_workerList = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (CDDrawWorkerList)
 //     m_surfaceDesc = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
 //     m_workerCache = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
@@ -300,7 +300,7 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 // CDDrawSurfaceMgr::SnapshotChildren (0x156020) / RestoreChildren (0x156530) - the /GX
 // child blit-param serializer pair, re-homed from the former ddrawsurfacemgrserialize
 // unit (waveP): the split-out /GX tail of THIS obj. The canonical class already declares
-// both (DDrawSurfaceMgr.h); member access uses m_childGroup (cast CWwdObjMgr* for the
+// both (DDrawSurfaceMgr.h); member access uses m_childGroup (cast CDDrawChildGroup* for the
 // blit-op calls) / m_resolveSubMgr (cast CGameLevel*) / m_callback; the local view + its
 // SnapRunCallback dissolve onto the canonical HP_Callback. Engine callees reloc-masked.
 // ===========================================================================
@@ -344,7 +344,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_mday;
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header + 0x10, name);
-    i32 probe = ((CWwdObjMgr*)m_childGroup)->CountActive_15abc0();
+    i32 probe = m_childGroup->CountActive_15abc0();
     *(u32*)(header + 0x114) = g_wwdObjIdCounter;
     *(i32*)(header + 0x118) = probe;
     S.Write((const void*)header, 0x120);
@@ -353,13 +353,13 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)->ForEachProbe_15acb0((i32)&S, arg3) == 0) {
+    if (m_childGroup->ForEachProbe_15acb0((i32)&S, arg3) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 3, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)->ForEachDispatch_15ac20((i32)&S, 3, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch_15ac20((i32)&S, 3, arg3) == 0) {
         return 0;
     }
     if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 3, 0, 0) == 0) {
@@ -368,7 +368,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)->ForEachSerialize_15b020(&S, arg3) == 0) {
+    if (m_childGroup->ForEachSerialize_15b020(&S, arg3) == 0) {
         return 0;
     }
     if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 4, 0, 0) == 0) {
@@ -377,7 +377,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)->ForEachDispatch_15ac20((i32)&S, 5, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch_15ac20((i32)&S, 5, arg3) == 0) {
         return 0;
     }
     if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 5, 0, 0) == 0) {
@@ -435,13 +435,13 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     }
     g_wwdObjIdCounter = *(u32*)(header + 0x114);
     m_childGroup->DestroyChildren_159ef0();
-    if (((CWwdObjMgr*)m_childGroup)->LoadObjects(&S, *(unsigned int*)(header + 0x110), arg3) == 0) {
+    if (m_childGroup->LoadObjects(&S, *(unsigned int*)(header + 0x110), arg3) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 6, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)->ForEachDispatch_15ac20((i32)&S, 6, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch_15ac20((i32)&S, 6, arg3) == 0) {
         return 0;
     }
     if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 6, 0, 0) == 0) {
@@ -450,8 +450,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)->Deserialize_15b0e0(&S, *(unsigned int*)(header + 0x110), arg3)
-        == 0) {
+    if (m_childGroup->Deserialize_15b0e0(&S, *(unsigned int*)(header + 0x110), arg3) == 0) {
         return 0;
     }
     if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 7, 0, 0) == 0) {
@@ -460,7 +459,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 8, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_childGroup)->ForEachDispatch_15ac20((i32)&S, 8, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch_15ac20((i32)&S, 8, arg3) == 0) {
         return 0;
     }
     if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 8, 0, 0) == 0) {

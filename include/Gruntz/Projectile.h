@@ -88,9 +88,9 @@ public:
     // +0x140..+0x14f (m_140/m_144/m_148/m_14c) belong to the CMovingLogic base
     // now (its Update/Serialize round-trip touches them); CProjectile's own data
     // resumes at +0x150.
-    i32 m_150;                // +0x150  (= owner; write-only here, role unproven)
-    CGameObject* m_sprite;    // +0x154  primary sprite/render object (== owner)
-    i32 m_158;                // +0x158  (= owner->m_7c; write-only here)
+    i32 m_150;                    // +0x150  (= owner; write-only here, role unproven)
+    CGameObject* m_sprite;        // +0x154  primary sprite/render object (== owner)
+    i32 m_158;                    // +0x158  (= owner->m_7c; write-only here)
     CAniElement* m_savedFrameGeo; // +0x15c  saved m_sprite->m_1a0.m_14 before each anim Setup
     char m_pad160[0x170 - 0x160]; //
     i32 m_kind;                   // +0x170  projectile kind (ProjectileKind; 0x16=WINGZ)
@@ -114,12 +114,12 @@ public:
     CAniElement* m_frame2;        // +0x1e4  sprite frame "<base>2"
     CAniElement* m_frame3;        // +0x1e8  sprite frame "<base>3"
     CAniElement *m_frame4, *m_frame5; // +0x1ec/+0x1f0  sprite frames "<base>4"/"5"
-    CAniElement* m_impactSprite;  // +0x1f4  "<base>IMPACT" sprite
-    CAniElement* m_fallSprite;    // +0x1f8  "<base>FALL" sprite
-    CGameObject* m_shadow;        // +0x1fc  LightFx shadow render companion
-    CProjSample* m_sound;         // +0x200  launch sound sample
-    CPtrList m_hitList;           // +0x204  tracked-hit list (block size 10)
-    i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit
+    CAniElement* m_impactSprite;      // +0x1f4  "<base>IMPACT" sprite
+    CAniElement* m_fallSprite;        // +0x1f8  "<base>FALL" sprite
+    CGameObject* m_shadow;            // +0x1fc  LightFx shadow render companion
+    CProjSample* m_sound;             // +0x200  launch sound sample
+    CPtrList m_hitList;               // +0x204  tracked-hit list (block size 10)
+    i32 m_targetId, m_ownerId;        // +0x220/+0x224  target/owner ids passed to DeliverHit
     // sizeof(CProjectile) == 0x228 (proven: LogicDispatchE @0xde8a0 `new CProjectile`
     // pushes 0x228). The boomerang return-trajectory fields (+0x228..+0x258) belong to
     // the derived CBoomerang (<Gruntz/Boomerang.h>), NOT here - see StepMotion.

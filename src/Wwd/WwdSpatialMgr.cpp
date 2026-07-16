@@ -1,21 +1,21 @@
 #include <rva.h>
 // <Mfc.h> brings the real CObject/CRect types. This cluster's three spatial
-// grids (tomalla-64), the master CWwdObjMgr, and the grid iterator are all
+// grids (tomalla-64), the master CDDrawChildGroup, and the grid iterator are all
 // reloc-masked engine externs (no bodies here).
-#include <Gruntz/WwdObjMgr.h>     // the shared object-collection manager class
-#include <Gruntz/WwdGameObject.h> // canonical CWwdGameObject (the managed sprites)
-#include <Wwd/WwdSpatialMgr.h>    // the canonical class (was defined locally here)
-#include <Gruntz/WwdGrid.h>       // canonical CWwdGrid (Add/Remove/Query/Clear @0x191840..0x191a70)
-                                  // + WwdRegion + BucketHead - was a reduced .cpp-local view here
-#include <Gruntz/WwdGridIter.h>   // CWwdGridIter cursor + WwdGridNode + WwdRect (shared;
-                                  // the cursor's Start/Init/GetNext bodies live in WwdGrid.cpp)
+#include <DDrawMgr/DDrawChildGroup.h> // the shared object-collection manager class
+#include <Gruntz/WwdGameObject.h>     // canonical CWwdGameObject (the managed sprites)
+#include <Wwd/WwdSpatialMgr.h>        // the canonical class (was defined locally here)
+#include <Gruntz/WwdGrid.h>     // canonical CWwdGrid (Add/Remove/Query/Clear @0x191840..0x191a70)
+                                // + WwdRegion + BucketHead - was a reduced .cpp-local view here
+#include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor + WwdGridNode + WwdRect (shared;
+                                // the cursor's Start/Init/GetNext bodies live in WwdGrid.cpp)
 #include <Mfc.h>
 #include <Wap32/Object.h> // CObject - the shared engine grand-base (iterator's CObject prefix)
 
 // ===========================================================================
 // CWwdSpatialMgr - the per-level object-bucket manager held at WwdFile+0xb0.
 //
-// Owns a master CWwdObjMgr (m_mgr @ +0x00) plus THREE spatial grids
+// Owns a master CDDrawChildGroup (m_mgr @ +0x00) plus THREE spatial grids
 // (CWwdGrid / tomalla-64, one per plane: m_grid0/1/2 @ +0x04/+0x08/+0x0c).
 // An object is routed into a grid by its flag bits (0x800000 -> grid1,
 // 0x1000000 -> grid2, else grid0). Origin pairs at +0x40.. track each grid's
@@ -46,7 +46,7 @@
 // (+0x08), the +0x7c worker (whose +0x08 flag word is WwdAnimWorker::m_08), and
 // the embedded +0x9c WwdGridNode region (m_region).
 
-// CWwdObjMgr - master object manager (m_mgr) is the shared <Gruntz/WwdObjMgr.h>
+// CDDrawChildGroup - master object manager (m_mgr) is the shared <Gruntz/WwdObjMgr.h>
 // class; the cluster calls InsertSorted_159e40 / AddToMap48_15aba0 / PruneOrphans_15b1d0.
 
 // CWwdGridIter (the rect-restricted position cursor over a CWwdGrid) is defined

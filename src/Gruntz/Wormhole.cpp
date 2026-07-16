@@ -50,11 +50,11 @@
 #include <Gruntz/Grunt.h>          // CGrunt (Teleporter::Update's hit-test target)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Play.h>
-#include <Gruntz/ActReg.h>        // shared activation-registrar archetype
-#include <Gruntz/GameRegistry.h>  // the ONE CGameRegistry
-#include <Gruntz/BattlezData.h>   // CBattlezData - the typed m_scoreHud (was the CTeleMgrSub view)
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/ActNameRegistry.h> // g_buteTree/g_typeCounter/s_codeA/ActNameLookup
+#include <Gruntz/ActReg.h>       // shared activation-registrar archetype
+#include <Gruntz/GameRegistry.h> // the ONE CGameRegistry
+#include <Gruntz/BattlezData.h>  // CBattlezData - the typed m_scoreHud (was the CTeleMgrSub view)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/ActNameRegistry.h>   // g_buteTree/g_typeCounter/s_codeA/ActNameLookup
 #include <Bute/ButeMgr.h>
 #include <Globals.h>
 #include <Mfc.h> // CString (the scratch name-vec element)
@@ -88,7 +88,7 @@ extern "C" void WormholeTypeMarker();
 // ---------------------------------------------------------------------------
 // The game-object registry list SpawnPartners walks IS the world's object chain:
 // g_gameReg->m_world (the world CDDrawSurfaceMgr; the CSpriteFactoryHolder/
-// CDDrawChildGroup (== CWwdObjMgr); its CObList @+0x10 heads at +0x14 and each
+// CDDrawChildGroup (== CDDrawChildGroup); its CObList @+0x10 heads at +0x14 and each
 // CDDrawGroupNode chains via m_next with the CGameObject at +0x08 - the SAME
 // canonical shape CGameLevel::VisitVisible walks (<DDrawMgr/DDrawChildGroup.h>).
 // ---------------------------------------------------------------------------

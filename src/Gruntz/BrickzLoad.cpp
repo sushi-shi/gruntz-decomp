@@ -1,15 +1,15 @@
 #include <Mfc.h> // real ::CPtrArray (CGruntzMapMgr::m_arr) - MFC umbrella kept first
 #include <rva.h>
 #include <Ints.h>
-#include <Gruntz/GruntzMapMgr.h>  // CGruntzMapMgr : CMapMgr (the +0x70 grid container)
-#include <Gruntz/Brickz.h>        // BrickzCell (the 0x1c-byte grid cell)
-#include <Gruntz/GameRegistry.h>  // CGameRegistry (*0x64556c); m_world == CSpriteFactoryHolder
-#include <Gruntz/SpriteFactory.h> // CSpriteFactory (object mgr) + CSpriteListNode (live list)
-#include <Gruntz/UserLogic.h>     // CGameObject (walked sprite) + AnimWorkerObj (m_7c) + g_buteMgr
-#include <Gruntz/GameLevel.h>     // CGameLevel (m_world->m_24; m_mainPlane @+0x5c)
-#include <Wwd/WwdFile.h>          // CPlaneRender - the raw tile-grid facet of the main plane
-#include <Bute/ButeMgr.h>         // CButeMgr::GetInt (g_buteMgr @0x6453d8)
-#include <Gruntz/FreeNodePool.h>  // g_coordPool @0x645540 + CoordPoolNode (recycled coord node)
+#include <Gruntz/GruntzMapMgr.h>      // CGruntzMapMgr : CMapMgr (the +0x70 grid container)
+#include <Gruntz/Brickz.h>            // BrickzCell (the 0x1c-byte grid cell)
+#include <Gruntz/GameRegistry.h>      // CGameRegistry (*0x64556c); m_world == CSpriteFactoryHolder
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (object mgr) + CDDrawGroupNode (live list)
+#include <Gruntz/UserLogic.h>    // CGameObject (walked sprite) + AnimWorkerObj (m_7c) + g_buteMgr
+#include <Gruntz/GameLevel.h>    // CGameLevel (m_world->m_24; m_mainPlane @+0x5c)
+#include <Wwd/WwdFile.h>         // CPlaneRender - the raw tile-grid facet of the main plane
+#include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr @0x6453d8)
+#include <Gruntz/FreeNodePool.h> // g_coordPool @0x645540 + CoordPoolNode (recycled coord node)
 
 #include <stdlib.h> // rand (0x11fee0, the engine rng)
 
@@ -364,13 +364,13 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
 
     // Freelist-recycle pass: for each moving object of the footprint kind, seed a
     // 3x3 footprint of recycled free nodes, then commit them into the grid.
-    CSpriteFactory* mgr = g_gameReg->m_world->m_8;
-    mgr->m_walkCursor = mgr->m_liveObjects;
+    CDDrawChildGroup* mgr = g_gameReg->m_world->m_8;
+    mgr->m_walkCursor = (CDDrawGroupNode*)mgr->m_list.GetHeadPosition();
     CGameObject* obj;
     if (mgr->m_walkCursor != 0) {
-        CSpriteListNode* n = mgr->m_walkCursor;
-        mgr->m_walkCursor = n->next;
-        obj = n->m_sprite;
+        CDDrawGroupNode* n = mgr->m_walkCursor;
+        mgr->m_walkCursor = n->m_next;
+        obj = n->m_gameObj;
     } else {
         obj = 0;
     }
@@ -412,9 +412,9 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             m_arr.SetSize(0, -1);
         }
         if (mgr->m_walkCursor != 0) {
-            CSpriteListNode* n = mgr->m_walkCursor;
-            mgr->m_walkCursor = n->next;
-            obj = n->m_sprite;
+            CDDrawGroupNode* n = mgr->m_walkCursor;
+            mgr->m_walkCursor = n->m_next;
+            obj = n->m_gameObj;
         } else {
             obj = 0;
         }

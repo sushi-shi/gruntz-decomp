@@ -2551,7 +2551,8 @@ i32 CGrunt::SeekTarget() {
         if ((u32)this->m_dwell < 0x3e9) {
             return 1;
         }
-        CGameObject* base = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
+        CGameObject* base =
+            g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
         TileSwitch(base->m_screenX >> 5, base->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->FindNearestEnemy(this);

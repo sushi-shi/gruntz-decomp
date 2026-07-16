@@ -95,7 +95,7 @@ i32 CPlay::OnActivate() {
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
-        m_c->m_24->VisitVisible((void*)m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
+        m_c->m_24->VisitVisible((void*)m_c->m_drawTarget->m_14, m_c->m_8);
         m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
     }
 

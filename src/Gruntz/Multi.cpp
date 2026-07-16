@@ -1191,15 +1191,14 @@ extern "C" u32 g_engineFrameDelta; // 0x6bf3bc  (= delta cap mirror)
 
 // dispatches m_c->m_8's slot 9 (+0x24, ONE arg = the frame delta) then slot 16
 // (+0x40, no arg). The class whose RTTI slot map (vtbl 0x1efdc0, 17 slots) carries
-// BOTH - at those exact offsets, with those exact arities - is CDDrawChildGroup ==
-// CWwdObjMgr: slot 9 = TickKillCues_159a70 (0x159a70, ret 4) and slot 16 = Slot40
+// BOTH - at those exact offsets, with those exact arities - is the one
+// CDDrawChildGroup: slot 9 = TickKillCues_159a70 (0x159a70, ret 4) and slot 16 = Slot40
 // (0x159f00, ret 0). Both bodies already exist in the tree. No new slot was needed
 // (the earlier "CRenderer has no slot 16" blocker read the dispatch off the WRONG
 // member - it is the object-manager at +0x08, not the renderer at +0x0c).
-// The remaining `(CDDrawChildGroup*)` cast at the site is the visible symptom of the
-// KNOWN m_8 3-way conflation (CSpriteFactory / "renderer A" / CWwdObjMgr are one
-// physical class under three names - see <Gruntz/GameRegistry.h> m_8). Fixing that
-// member's type is the next fold; casting here does not lie about the dispatch.]
+// The 3-way conflation is RESOLVED (2026-07-16): the ex CSpriteFactory / ex
+// CWwdObjMgr twins are merged onto the one CDDrawChildGroup, and m_8 is typed to
+// it - the cast is gone.]
 
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
 // CGruntzMgr::m_sound (+0x48) IS the real CGruntzSoundZ (<Dsndmgr/GruntzSoundZ.h>): the former
@@ -1350,7 +1349,7 @@ void CMulti::PumpB() {
     CSpriteFactoryHolder* mgr = m_c;
     if (m_594 == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
-        ((CGameLevel*)mgr->m_24)->VisitVisible(mgr->m_drawTarget->m_14, (CDDrawChildGroup*)mgr->m_8);
+        ((CGameLevel*)mgr->m_24)->VisitVisible(mgr->m_drawTarget->m_14, mgr->m_8);
         mgr->m_rendererB->PruneWorkers(mgr->m_drawTarget->m_14, mgr->m_drawTarget->m_18);
         m_guts->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
@@ -1383,7 +1382,7 @@ void CMulti::PumpB() {
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
     } else {
-        ((CGameLevel*)mgr->m_24)->VisitVisible(mgr->m_drawTarget->m_14, (CDDrawChildGroup*)mgr->m_8);
+        ((CGameLevel*)mgr->m_24)->VisitVisible(mgr->m_drawTarget->m_14, mgr->m_8);
         mgr->m_rendererB->PruneWorkers(mgr->m_drawTarget->m_14, mgr->m_drawTarget->m_18);
     }
     m_guts->LoadMainStatusBarSprite();

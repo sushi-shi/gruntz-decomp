@@ -35,7 +35,7 @@
 #include <afxwin.h>
 #include <new>
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/SpriteFactory.h> // CSpriteFactory/CSpriteListNode (m_world->m_8 live-object list)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (m_world->m_8 live-object list)
 #include <Gruntz/UserLogic.h> // CGameObject (the scanned live objects: m_screenX/Y, m_collCategory)
 #include <Image/CImage.h>     // the "Gruntz" set's frames the cheats read ARE CImages
 #include <DDrawMgr/DDrawShadeBlit.h> // CImage::m_owned - the shaded sprite the cheats retype/relight
@@ -1011,22 +1011,19 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 // -------------------------------------------------------------------------
 // CGruntzMgr::XorLiveObjectFlags  (@0x08dc20, ret 4)
 // Toggle the given flag bits (m_stateFlags @+0x40) on every live object in the
-// world sprite factory's created-object list (m_world->m_8->m_liveObjects).
-// @early-stop
-// byte-proven (llvm-objdump -dr base vs target): the loop body is byte-identical;
-// the ONLY difference is the list-head access. Retail computes `m_8+0x10` then reads
-// `[+4]` with a dead null-preserving check (`add eax,0x10; je`), i.e. it reaches the
-// head through a CPtrList/CPtrList sub-object at factory+0x10 (head @+0x14 = the
-// sub-object's m_pNodeHead) rather than the flat `m_liveObjects@+0x14` field the
-// ScanObjects walkers use. No source spelling over the flat field reproduces the
-// +0x10 intermediate + its dead guard; the 3-instr shift cascades to 87.6%.
+// world object manager's created-object list. Retail computes `m_8+0x10` (the
+// embedded CObList m_list) then reads its head `[+4]` behind a dead null-guard
+// (`add eax,0x10; je`) - exactly the `&m_list` + GetHeadPosition() spelling now
+// that the list is the real member (the old flat `m_liveObjects@+0x14` field
+// could not produce the +0x10 intermediate; that 87.6% wall dissolves with it).
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
-    CSpriteListNode* node = m_world->m_8->m_liveObjects;
+    CObList* list = &m_world->m_8->m_list;
+    CDDrawGroupNode* node = list ? (CDDrawGroupNode*)list->GetHeadPosition() : 0;
     while (node) {
-        CSpriteListNode* cur = node;
-        node = node->next;
-        CGameObject* obj = cur->m_sprite;
+        CDDrawGroupNode* cur = node;
+        node = node->m_next;
+        CGameObject* obj = cur->m_gameObj;
         if (obj) {
             obj->m_stateFlags ^= mask;
         }
@@ -2226,7 +2223,7 @@ typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ScanObjectsInRadius (0x092180; __thiscall; ret 0x18). Walks the live
-// game-object list (m_world->m_8->m_liveObjects) and, for each object whose
+// game-object list (m_world->m_8->m_list) and, for each object whose
 // collision-category bits (m_collCategory) intersect `mask`, tests a game-space reach
 // metric (|dx|^2 + 2*|dy|) against radius^2. Every in-range object is counted and
 // passed to cb(obj, user); the walk stops early if cb returns 0. Returns the hit
@@ -2238,11 +2235,11 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, 
     }
     i32 r2 = radius * radius;
     i32 count = 0;
-    CSpriteListNode* node = m_world->m_8->m_liveObjects;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_8->m_list.GetHeadPosition();
     while (node) {
-        CSpriteListNode* cur = node;
-        node = node->next;
-        CGameObject* obj = cur->m_sprite;
+        CDDrawGroupNode* cur = node;
+        node = node->m_next;
+        CGameObject* obj = cur->m_gameObj;
         if (obj->m_collCategory & mask) {
             i32 adx = abs(obj->m_screenX - x);
             i32 ady = abs(obj->m_screenY - y);
@@ -2284,11 +2281,11 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb
     i32 loY = r->top + offY;
     i32 hiY = r->bottom + offY;
     i32 count = 0;
-    CSpriteListNode* node = m_world->m_8->m_liveObjects;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_8->m_list.GetHeadPosition();
     while (node) {
-        CSpriteListNode* cur = node;
-        node = node->next;
-        CGameObject* obj = cur->m_sprite;
+        CDDrawGroupNode* cur = node;
+        node = node->m_next;
+        CGameObject* obj = cur->m_gameObj;
         if (obj->m_collCategory & mask) {
             i32 ox = obj->m_screenX;
             if (ox >= loX && ox <= hiX) {

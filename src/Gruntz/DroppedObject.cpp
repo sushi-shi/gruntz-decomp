@@ -41,14 +41,14 @@
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CSiblingActReg)
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/TriggerMgr.h>    // canonical CTriggerMgr (m_cmdGrid; FindGruntAt @0x75c60)
-#include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00)
-#include <Gruntz/UserLogic.h>     // canonical CGameObject / CGameObjLayer (the bound object)
-#include <Gruntz/Brickz.h>        // canonical BrickzCell (the 0x1c-byte tile-grid cell)
-#include <Gruntz/State.h>         // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
+#include <Gruntz/TriggerMgr.h>        // canonical CTriggerMgr (m_cmdGrid; FindGruntAt @0x75c60)
+#include <Gruntz/LightFxMgr.h>        // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/SerialArchive.h>     // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>      // CSerialObjRef::Chain (0x8c00)
+#include <Gruntz/UserLogic.h>         // canonical CGameObject / CGameObjLayer (the bound object)
+#include <Gruntz/Brickz.h>            // canonical BrickzCell (the 0x1c-byte tile-grid cell)
+#include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
 #include <Globals.h>
 
 #include <string.h> // inline strcmp for the direction-name match
@@ -183,7 +183,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
 //                  CGameObject - so `found->m_obj` is just `found->m_object`.
 //   DropperBox   -> RECT             FindGruntAt already takes `RECT* span, RECT* src`.
 //   DropperMgr   -> CSpriteFactoryHolder  g_gameReg->m_world is ALREADY declared as it
-//                  (GameRegistry.h); its m_8 is the canonical CSpriteFactory. The Update
+//                  (GameRegistry.h); its m_8 is the canonical CDDrawChildGroup. The Update
 //                  path called CreateSprite through the view while the ActA path (0xc7090)
 //                  already called it cast-free off the real type.
 //   DropperLevel -> CGameLevel       (holder->m_24; CGameViewport was the same class)

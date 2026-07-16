@@ -180,18 +180,18 @@ public:
     i32 m_clipRight;  // +0x6c
     i32 m_clipBottom; // +0x70
     i32 m_sortKey;    // +0x74  the manager's z-order sort key (Setup stores its a3;
-                      //         CWwdObjMgr::InsertSorted orders the list by it)
-    i32 m_posCache;   // +0x78  CObList POSITION cache (CWwdObjMgr::InsertSorted stores the
+                      //         CDDrawChildGroup::InsertSorted orders the list by it)
+    i32 m_posCache;   // +0x78  CObList POSITION cache (CDDrawChildGroup::InsertSorted stores the
                       //         node; TickKillCues/RemoveAndDelete unlink through it)
     // +0x7c  the owned 0x17c worker/logic record - ONE class, ONE api
     // (the ex-CLogicRecord kill-cue view is folded onto AnimWorkerObj).
     AnimWorkerObj* m_worker;
-    void* m_80;           // +0x80  object ref (serialized by name)
-    i32 m_84;             // +0x84
-    void* m_88;           // +0x88  object ref
-    i32 m_8c;             // +0x8c
-    void* m_90;           // +0x90  object ref
-    i32 m_94;             // +0x94
+    void* m_80;                     // +0x80  object ref (serialized by name)
+    i32 m_84;                       // +0x84
+    void* m_88;                     // +0x88  object ref
+    i32 m_8c;                       // +0x8c
+    void* m_90;                     // +0x90  object ref
+    i32 m_94;                       // +0x94
     CWwdGameObject* m_linkedObject; // +0x98  linked object (Play case 3 reads its +0x188 object id)
     // +0x9c  the embedded spatial-grid region node (<Gruntz/WwdGridIter.h>): its
     // m_x/m_y (+0xac/+0xb0) are the position copies Setup refreshes and its
@@ -253,7 +253,7 @@ public:
     // CSprite::m_frames.m_pData) to get +0x198 - exactly what ApplyLookupSprite assigns to
     // its CGameObjLayer* m_layer at the SAME +0x198. ReadState confirms the sprite: it
     // strcpy's the name at m_194+0x24, and CSprite::m_name is at +0x24.
-    CSprite* m_sprite;       // +0x194  cached sprite (was void*)
+    CSprite* m_sprite;      // +0x194  cached sprite (was void*)
     CGameObjLayer* m_layer; // +0x198  cached frame / layer (half-extents; was i32)
     // +0x19c is the resolved sound-cue value: ReadState hands it straight to
     // CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafCue*), which is its type.

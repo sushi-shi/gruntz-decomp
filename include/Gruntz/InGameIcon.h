@@ -126,17 +126,17 @@ public:
     void SetField54(i32 v);                             // 0x099b10
 
     // --- CInGameIcon own fields (+0x44/+0x68..+0x74 roles still unproven) ---
-    CAniElement* m_savedGeoId;    // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
-    char m_44[0x10];     // +0x44  a fixed 0x10-byte blob the serializer round-trips
-    i32 m_cmapId;        // +0x54  registry-CMap lookup result (SetField54; place gate)
-    i32 m_driftPos;      // +0x58  drift-tracked position lo (i64 {m_driftPos:m_driftPosHi})
-    i32 m_driftPosHi;    // +0x5c  drift-tracked position hi
-    i32 m_driftThresh;   // +0x60  drift threshold lo (i64 {m_driftThresh:m_driftThreshHi})
-    i32 m_driftThreshHi; // +0x64  drift threshold hi
-    i32 m_68;            // +0x68  (serialized state; role unproven)
-    i32 m_6c;            // +0x6c  (role unproven)
-    i32 m_70;            // +0x70  (role unproven)
-    i32 m_74;            // +0x74  (role unproven)
+    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
+    char m_44[0x10];           // +0x44  a fixed 0x10-byte blob the serializer round-trips
+    i32 m_cmapId;              // +0x54  registry-CMap lookup result (SetField54; place gate)
+    i32 m_driftPos;            // +0x58  drift-tracked position lo (i64 {m_driftPos:m_driftPosHi})
+    i32 m_driftPosHi;          // +0x5c  drift-tracked position hi
+    i32 m_driftThresh;         // +0x60  drift threshold lo (i64 {m_driftThresh:m_driftThreshHi})
+    i32 m_driftThreshHi;       // +0x64  drift threshold hi
+    i32 m_68;                  // +0x68  (serialized state; role unproven)
+    i32 m_6c;                  // +0x6c  (role unproven)
+    i32 m_70;                  // +0x70  (role unproven)
+    i32 m_74;                  // +0x74  (role unproven)
     CGameObject* m_glitterSprite; // +0x78  glitter overlay FX sprite (powerup/curse)
 };
 VTBL(CInGameIcon, 0x1e7d04);

@@ -78,8 +78,8 @@
 #include <Ints.h>
 #include <Wap32/Object.h>
 #include <rva.h>
-#include <Gruntz/SerialArchive.h> // canonical Read@+0x2c / Write@+0x30 archive stream
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/SerialArchive.h>     // canonical Read@+0x2c / Write@+0x30 archive stream
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 
 // 0x0213a0 - virtual-base field getter (reads +0x04 of the virtual base whose
 // displacement lives in the vbtable's second slot).
@@ -227,11 +227,11 @@ SIZE_UNKNOWN(Cea170);
 // vtable slot-3 thunk 0x30b7 jmps to 0x104c80. See <Gruntz/SBI_WellGoo.h>.)
 
 // 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build) through
-// the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>; the former local
-// CSpriteFactory re-definition here collided with the canonical class name).
+// the canonical CDDrawChildGroup (<Gruntz/SpriteFactory.h>; the former local
+// CDDrawChildGroup re-definition here collided with the canonical class name).
 struct CHolder104 {
     char pad0[8];
-    CSpriteFactory* m_8; // +0x08  the sprite factory (CreateSprite @0x1597b0)
+    CDDrawChildGroup* m_8; // +0x08  the sprite factory (CreateSprite @0x1597b0)
 };
 SIZE_UNKNOWN(CHolder104);
 struct C104dd0 {

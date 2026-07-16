@@ -15,7 +15,7 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0; +0x48 GruntObjMap)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0; +0x48 GruntObjMap)
 #include <Gruntz/SerialObjRef.h>  // SerialRef34()->Chain (0x8c00) + CSerialArchive Read/Write
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 
@@ -40,7 +40,7 @@ CExitTrigger::~CExitTrigger() {}
 // The active-area index (DAT_00644c54): the exit trigger pins the focused warlord
 // HUD only for the active area.
 
-// The level-exit "Warlord" entity is a fresh CSpriteFactory::CreateSprite result
+// The level-exit "Warlord" entity is a fresh CDDrawChildGroup::CreateSprite result
 // (the canonical 0x1597b0 factory entry on g_gameReg->m_world->m_8; the former
 // "Probe" reading was a mislabel - it CREATES the warlord head sprite at the bound
 // screen pos). The created instance is the shared CGameObject: +0x7c AnimWorkerObj
@@ -161,7 +161,8 @@ i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             arc->Read(&key, 4);
             if (key != 0) {
                 CGameObject* found = 0;
-                CGameObject* obj = holder->m_8->m_objMap.Lookup((void*)key, found) ? found : 0;
+                CGameObject* obj =
+                    holder->m_8->m_map48.Lookup((void*)key, (void*&)found) ? found : 0;
                 m_warlordLogic = obj->m_7c->m_logic;
                 if (m_warlordLogic == 0) {
                     return 0;

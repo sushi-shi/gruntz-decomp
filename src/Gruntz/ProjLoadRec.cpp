@@ -10,12 +10,12 @@
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Rez/RezList.h>          // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
-#include <Gruntz/SerialObjRef.h>      // CSerialArchive + the canonical CDDrawSubMgrLeaf/CGameObject
+#include <Gruntz/SerialObjRef.h>  // CSerialArchive + the canonical CDDrawSubMgrLeaf/CGameObject
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_158->m_0c (the world root; m_leaf hop)
-#include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world = CSpriteFactoryHolder*)
-#include <Gruntz/SpriteFactory.h> // CSpriteFactory (m_world->m_8; m_objMap key->object map @+0x48)
-#include <Gruntz/UserLogic.h>     // CGameObject (the resolved object; GetTypeId [8] + m_188)
-#include <string.h>               // inline strlen / strcpy over the scratch buffer
+#include <Gruntz/GameRegistry.h>      // CGameRegistry (g_gameReg->m_world = CSpriteFactoryHolder*)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (m_world->m_8; m_map48 key->object map @+0x48)
+#include <Gruntz/UserLogic.h>         // CGameObject (the resolved object; GetTypeId [8] + m_188)
+#include <string.h>                   // inline strlen / strcpy over the scratch buffer
 
 // The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
 extern "C" CGameRegistry* g_gameReg;
@@ -46,8 +46,8 @@ extern "C" CGameRegistry* g_gameReg;
 // ===========================================================================
 
 // g_gameReg->m_world IS the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>):
-// this loader reaches its projectile-object factory (m_8, a CSpriteFactory whose
-// embedded key->object map m_objMap @+0x48 has Lookup @0x1b8760) and its name-leaf
+// this loader reaches its projectile-object factory (m_8, a CDDrawChildGroup whose
+// embedded key->object map m_map48 @+0x48 has Lookup @0x1b8760) and its name-leaf
 // registry (m_animRegistry @+0x2c, the canonical CDDrawSubMgrLeaf serialize
 // facet - m_10 name map + KeyOfValue_152d30). Both keyed values ARE created game
 // objects (the same map CTriggerMgr::Load resolves, with the `slot-8 GetTypeId()==5`
@@ -79,9 +79,9 @@ struct CProjLoadRec {
     i32 ChainLoad(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3); // 0x16f4a0
 
     char _00[0x150];
-    CGameObject* m_150;                     // +0x150  a3
-    CGameObject* m_154;                     // +0x154  a3
-    AnimWorkerObj* m_158;              // +0x158  a3->m_7c
+    CGameObject* m_150;                    // +0x150  a3
+    CGameObject* m_154;                    // +0x154  a3
+    AnimWorkerObj* m_158;                  // +0x158  a3->m_7c
     void* m_15c;                           // +0x15c  resolved value (CMapStringToPtr entry)
     i32 m_160, m_164, m_168, m_16c;        // +0x160  the 0x10-byte blob
     i32 m_170, m_174, m_178, m_17c, m_180; // +0x170
@@ -166,7 +166,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
             s->Read(&key, 4);
             CGameObject* found = 0;
             i32 r;
-            if (reg->m_8->m_objMap.Lookup((void*)key, found) == 0) {
+            if (reg->m_8->m_map48.Lookup((void*)key, (void*&)found) == 0) {
                 r = 0;
             } else if (found == 0) {
                 r = 0;
@@ -219,8 +219,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (m_1e0[wi] != 0) {
-                    CString nm = reg->m_animRegistry
-                                     ->KeyOfValue_152d30((CObject*)m_1e0[wi]);
+                    CString nm = reg->m_animRegistry->KeyOfValue_152d30((CObject*)m_1e0[wi]);
                     strcpy(buf, nm);
                 }
                 s->Write(buf, 0x80);

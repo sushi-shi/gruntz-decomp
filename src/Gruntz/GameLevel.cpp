@@ -34,15 +34,15 @@
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/SerialArchive.h> // CSerialArchive (== CFileMemBase; the EditDispatch stream)
-#include <Io/FileMem.h>           // CFileMemBase complete type (Read/Write dispatch)
-#include <Wap32/Object.h>         // CObject grand-base (slots 0-4) for the CImageSetN variants
-#include <Gruntz/ParseSource.h>   // canonical CParseSource (BeginParse/EndParse)
+#include <Gruntz/SerialArchive.h>      // CSerialArchive (== CFileMemBase; the EditDispatch stream)
+#include <Io/FileMem.h>                // CFileMemBase complete type (Read/Write dispatch)
+#include <Wap32/Object.h>              // CObject grand-base (slots 0-4) for the CImageSetN variants
+#include <Gruntz/ParseSource.h>        // canonical CParseSource (BeginParse/EndParse)
 #include <Gruntz/UserLogic.h>          // canonical CGameObject (the movement target)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // the m_0c world root (the chain owner)
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup/CDDrawGroupNode (the object chain)
-#include <Io/FileStream.h>        // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
-#include <Gruntz/ImageSets.h>     // CImageSet1/2/3 variant records + RezAlloc/RezFree
+#include <Io/FileStream.h>             // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
+#include <Gruntz/ImageSets.h>          // CImageSet1/2/3 variant records + RezAlloc/RezFree
 #include <DDrawMgr/DDrawWorkerHost.h>  // the REAL plane class (CPlane == CDDrawWorkerHost)
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdLevelInfoSrc (0x160530 IsValidWwd is its method)
 #include <rva.h>
@@ -1104,7 +1104,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
             ++idx;
         } while (idx <= m_mainIndex);
     }
-    ctx->WalkDispatch2C((i32)visitor);
+    ctx->WalkDispatch2C((CDDrawSurfacePair*)visitor);
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {

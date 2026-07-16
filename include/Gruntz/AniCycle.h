@@ -47,7 +47,7 @@ public:
     i32 AdvanceAnim();
     virtual ~CAniCycle() OVERRIDE; // empty vtable-anchor dtor (folds the CUserLogic teardown)
 
-    CAniElement* m_40;                  // +0x40  saved active-anim descriptor (ctor snapshot)
+    CAniElement* m_40;         // +0x40  saved active-anim descriptor (ctor snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CAniCycle` @0xa9a40)
 };
 VTBL(CAniCycle, 0x001e86a4);

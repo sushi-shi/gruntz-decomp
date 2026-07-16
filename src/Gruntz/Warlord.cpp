@@ -21,14 +21,14 @@
 // MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
 #include <Gruntz/Warlord.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h>         // the shared CActReg (g_actionTable @0x644610)
-#include <Gruntz/TypeKeyColl.h>    // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+#include <Gruntz/ActReg.h>            // the shared CActReg (g_actionTable @0x644610)
+#include <Gruntz/TypeKeyColl.h>       // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <Gruntz/Grunt.h>             // CGrunt + CGruntHud/g_animLookupTree/GruntRand
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_38->m_0c (the world root)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog; Lookup 0x1b8438)
 #include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record; ex CAnimElem)
-                                   // (the five Resolve*Animation bodies below)
-#include <Gruntz/AniElement.h>     // full CAniElement (ResolveIdleAnimation's desc walk)
+                                      // (the five Resolve*Animation bodies below)
+#include <Gruntz/AniElement.h>        // full CAniElement (ResolveIdleAnimation's desc walk)
 #include <Gruntz/TriggerMgr.h>     // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable::GetSel (g_gameReg->m_spriteFactory)
 #include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
@@ -585,7 +585,7 @@ i32 CWarlord::RearmMoving2() {
 //   ... reg->m_150[o->m_124 * 0x48].m_0c = 0 (owner-array slot) ...
 // @early-stop
 // DEFERRED to the final sweep WITH the sprite models: the effect spawn is
-// CSpriteFactory::CreateSprite (0x1597b0) + CGruntSprite::CacheFirstFrame (0x150540)
+// CDDrawChildGroup::CreateSprite (0x1597b0) + CGruntSprite::CacheFirstFrame (0x150540)
 // + CGruntAnimPlayer::ApplyLookupGeometry (0x1505b0) - all in the sprite-worker-owned
 // spriteresource domain (excluded from this brief). Best reconstructed alongside
 // those class models; homed so the RVA is labeled.

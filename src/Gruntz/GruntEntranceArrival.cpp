@@ -24,11 +24,11 @@
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded
 #include <Gruntz/Grunt.h>
-#include <DDrawMgr/AniAdvance.h> // CAniDesc (the descriptor record)
-#include <Bute/SymTab.h>         // CSymTab (ResolveQualified)
+#include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record)
+#include <Bute/SymTab.h>              // CSymTab (ResolveQualified)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
-#include <Gruntz/Enums.h>       // GruntType tool/powerup kinds + GruntDeathKind + RezTypeTag
+#include <Gruntz/Enums.h>             // GruntType tool/powerup kinds + GruntDeathKind + RezTypeTag
 #include <Gruntz/State.h>       // CState (m_levelIndex/m_levelBank - StepWarpExit's level lookup)
 #include <Wap32/Wap32.h>        // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
@@ -194,10 +194,10 @@ static void GruntScratchTeardown() {
 // ==== CGrunt::UserLogicVfunc7 @0x61cb0 (ex ProjectileUpdate.cpp; its private .data cell
 // 0x20e180 HEADS this TU's band) ====
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (fire-view cast)
-#include <Gruntz/Projectile.h>    // canonical CProjectile (slot-17 LoadProjectileSprites)
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite + the bound object)
+#include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
+#include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 // The entrance geometry-source global at 0x2bf3bc every step in this TU arms the
 // entrance sub-player with (fed to CAniAdvanceCursor::Advance). 0x2bf3bc is a
 // tree-wide name conflation: ~17 TUs bind it via this extern "C" `_g_6bf3bc` (the
@@ -213,7 +213,7 @@ extern "C" i32 g_engineFrameDelta;
 // the bound setup/logic object IS a CProjectile (downcast per site; the slot is
 // generically typed on the canonical aux; proven-heterogeneous across classes).
 // The HUD sprite factory reached as g_gameReg->m_world->m_8 is the canonical
-// CSpriteFactory (shared <Gruntz/SpriteFactory.h>).
+// CDDrawChildGroup (shared <Gruntz/SpriteFactory.h>).
 // The game-registry singleton (0x64556c) is the CGameRegistry-typed g_gameReg
 // (declared above) - the attack-fire paths read it natively, cast-free.
 
@@ -2425,7 +2425,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     CGameObject* found = 0;
     CGameObject* result = 0;
-    if (g->m_world->m_8->m_objMap.Lookup(cellObj, found)) {
+    if (g->m_world->m_8->m_map48.Lookup(cellObj, (void*&)found)) {
         result = found;
     }
     if (result != 0) {

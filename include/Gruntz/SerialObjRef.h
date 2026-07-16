@@ -53,8 +53,8 @@ public:
     CGameObject* m_00;   // +0x00  the referenced object
     CGameObject* m_04;   // +0x04  (== m_00)
     AnimWorkerObj* m_08; // +0x08  obj->m_7c
-    CObject* m_value;        // +0x0c  resolved value (registry Lookup result)
-    char m_blob[0x10];       // +0x10  the 0x10-byte serialized blob
+    CObject* m_value;    // +0x0c  resolved value (registry Lookup result)
+    char m_blob[0x10];   // +0x10  the 0x10-byte serialized blob
 };
 SIZE_UNKNOWN(CSerialObjRef);
 
