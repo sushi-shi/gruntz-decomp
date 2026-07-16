@@ -33,6 +33,26 @@ struct CScanGrid {
 };
 SIZE_UNKNOWN(CScanGrid);
 
+struct CGameRegistry; // CTileScan::m_4 (the registry whose +0x150 m_focusSlots[] the scan probes)
+class CGrunt;         // CTileScan::Scan arg (the scanned grunt)
+
+// @identity-TODO: the 3x3 tile-region scan owner (TileScan.cpp @0x35f10) is an orphan
+// COMDAT - no caller / new-site / RTTI / vtable-dispatch (all attribution techniques
+// dead-end). Its members are typed from their proven roles: m_4 the CGameRegistry (the
+// scan indexes its +0x150 m_focusSlots[] by the grunt's slot id), m_c the CScanGrid tile
+// board, m_c8 the per-frame dwell threshold. Homed here (its shape belongs in the shared
+// scan header, not the .cpp); Scan's body is in TileScan.cpp.
+struct CTileScan {
+    char _00[4];
+    CGameRegistry* m_4; // +0x04  registry (its +0x150 m_focusSlots[] the scan probes)
+    char _08[0xc - 8];
+    CScanGrid* m_c; // +0x0c  tile board (dims + row table)
+    char _10[0xc8 - 0x10];
+    i32 m_c8;              // +0xc8  dwell threshold
+    i32 Scan(CGrunt* arg); // 0x35f10
+};
+SIZE_UNKNOWN(CTileScan);
+
 // Path-node coordinate pair {col,row} that CScanNode324::m_8 points at. Shared by
 // the CGrunt tile/arrival scan TUs (was locally redeclared per-TU).
 struct CScanCoord {

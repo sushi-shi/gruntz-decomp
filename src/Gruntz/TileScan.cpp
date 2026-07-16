@@ -19,20 +19,8 @@
 // +0x5c/+0x60). (The former CScanArg/CScanPos .cpp-local views are dissolved onto
 // CGrunt/CGruntHud - m_dwell @+0x2ec is the proven CGrunt signature.)
 //
-// @identity-TODO: the scan OWNER (this, CTileScan) is unrecovered - an orphan COMDAT
-// (0x35f10, no caller / new-site / RTTI / vtable-dispatch; the applicable techniques
-// all dead-end). Its members are typed from their proven roles: m_4 is the
-// CGameRegistry (the scan indexes its +0x150 m_focusSlots[] by the grunt's slot id),
-// m_c the CScanGrid tile board, m_c8 the per-frame dwell threshold.
-struct CTileScan {
-    char _00[4];
-    CGameRegistry* m_4; // +0x04  registry (its +0x150 m_focusSlots[] the scan probes)
-    char _08[0xc - 8];
-    CScanGrid* m_c; // +0x0c  tile board (dims + row table)
-    char _10[0xc8 - 0x10];
-    i32 m_c8;              // +0xc8  dwell threshold
-    i32 Scan(CGrunt* arg); // 0x35f10
-};
+// CTileScan (the orphan-COMDAT scan owner, @identity-TODO) is declared in
+// <Gruntz/ScanGrid.h> (included above) - its shape belongs in the shared scan header.
 
 // The inlined grid lookup (the 0x75a40 archetype): the cell's first dword, or 1
 // when out of bounds.
@@ -98,6 +86,4 @@ i32 CTileScan::Scan(CGrunt* arg) {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CTileScan);
+// (SIZE_UNKNOWN(CTileScan) now travels with the struct in <Gruntz/ScanGrid.h>.)

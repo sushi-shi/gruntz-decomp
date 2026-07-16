@@ -29,10 +29,7 @@
 
 // Per-player idle-sprite id table (0x5e9068) + the trailing 4-sprite geometry
 // table (0x5e8fe4, {y, x} pairs - onscreen coordinates), and the wand-cue ambient sound tag.
-struct BzGeomPair {
-    i32 m_y; // +0x00  onscreen y
-    i32 m_x; // +0x04  onscreen x
-};
+// BzGeomPair is declared in <Gruntz/GameMode.h> (included above).
 // Owner-TU definition, TRANSCRIBED from the retail .rdata bytes @0x5e8fe4
 // ({0,472} {101,525} {98,474} {146,525} - the four idle-sprite onscreen spots).
 DATA(0x001e8fe4)
@@ -414,5 +411,4 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     return 1;
 }
 
-SIZE_UNKNOWN(BzGeomPair);
 SIZE_UNKNOWN(SecretMsgRow);

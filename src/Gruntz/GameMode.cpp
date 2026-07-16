@@ -45,11 +45,7 @@ extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked
 // CGlitterMgrM30 / CGlitterMgrSet views are DISSOLVED: the sprite factory (m_world->m_8,
 // a CSpriteFactory via GruntSoundCat) and selection source (m_74, CSpriteRefTable) are the
 // real WwdGameReg fields, reached directly; only this local color table remains.
-SIZE_UNKNOWN(CGlitterColorTable);
-struct CGlitterColorTable {
-    char m_pad00[0x14];
-    i32 m_arr14[1]; // +0x14  SecretColor -> handle table
-};
+// CGlitterColorTable is declared in <Gruntz/GameMode.h> (included above).
 
 // LoadGruntEffectSprites externs: the CButeMgr text-config singleton + the wormhole
 // SecretColor bute tag + the go-kart install byte flag.

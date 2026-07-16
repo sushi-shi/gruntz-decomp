@@ -135,6 +135,22 @@ struct CGMVerRect {
 };
 extern "C" CGMVerRect g_versionRect; // (the 4-int source @c8/cc/d0/d4)
 extern "C" u32 g_frameDelta;         // (last-frame delta, fed to Step)
+
+// A {y,x} onscreen-coordinate pair (the booty idle-sprite geometry table @0x5e8fe4;
+// DATA home BootyMessages.cpp). Homed here from that TU (per-TU view -> owner header).
+SIZE_UNKNOWN(BzGeomPair);
+struct BzGeomPair {
+    i32 m_y; // +0x00  onscreen y
+    i32 m_x; // +0x04  onscreen x
+};
+
+// The SecretColor -> handle color table (the CBootyState/wormhole-tint local table;
+// DATA home GameMode.cpp). Homed here from that TU.
+SIZE_UNKNOWN(CGlitterColorTable);
+struct CGlitterColorTable {
+    char m_pad00[0x14];
+    i32 m_arr14[1]; // +0x14  SecretColor -> handle table
+};
 // The 8 booty-message layout RECTs (0x60b8f8; DATA home BootyMessages.cpp). Shared
 // by CBootyState/CMultiBootyState layout code here (declared, not per-TU extern).
 extern RECT g_levelMsgRectsB[8];

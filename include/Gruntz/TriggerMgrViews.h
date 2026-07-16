@@ -212,6 +212,36 @@ struct CTmOverlaySrc {
 struct CTmCursorMgr {
     void Spawn(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x90bf4 (gameReg+0x60)
 };
+
+// --- the megafn (FUN_6f2f0) leaf helpers, @identity-TODO (orphan COMDATs whose only
+// caller is the ~21 KB unreconstructed megafunction; owner unrecovered). Homed here from
+// TriggerMgrHitTest.cpp - their shapes belong in the family scaffolding header; the
+// method bodies stay in that .cpp. ---
+
+// 0x75a10: a 2-field setter (CPoint/CSize-style) that fills m_0/m_4 and returns this.
+struct CPairXY {
+    i32 m_0;
+    i32 m_4;
+    CPairXY* Set(i32 a, i32 b); // 0x75a10
+};
+
+// 0x75a40: a 2D grid lookup - bounds-check (x, y) against width/height, then return the
+// first dword of the (0x1c-byte-stride) cell at rows[y][x]; out of bounds returns 1. The
+// m_8/m_c/m_10 trio + the 0x1c cell stride are the SAME shape as canonical CTileGrid (a
+// likely CTileGrid method); kept as the view pending the megafn's reconstruction, because
+// respelling the [y][x] walk onto CTileGrid's i32* rows changes scaled-index codegen.
+struct CGridCell {
+    i32 m_0;
+    char _pad[0x1c - 4];
+};
+struct CGridLookup {
+    char _00[8];
+    CGridCell** m_8;          // +0x08  rows
+    i32 m_c;                  // +0x0c  width
+    i32 m_10;                 // +0x10  height
+    i32 Lookup(i32 x, i32 y); // 0x75a40
+};
+
 #include <Gruntz/TraitorMode.h> // g_traitorMode (DAT_006455b0, the alt-group gate)
 
 // Class-metadata size annotations (all partial modeling views -> SIZE_UNKNOWN).
@@ -228,5 +258,8 @@ SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CTmCell);
 SIZE_UNKNOWN(CTmOverlaySrc);
 SIZE_UNKNOWN(CTmCursorMgr);
+SIZE_UNKNOWN(CPairXY);
+SIZE_UNKNOWN(CGridCell);
+SIZE_UNKNOWN(CGridLookup);
 
 #endif // GRUNTZ_TRIGGERMGR_VIEWS_H

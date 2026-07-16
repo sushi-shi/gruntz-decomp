@@ -38,42 +38,23 @@ CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x75a10: a 2-field setter (CPoint/CSize-style) that fills m_0/m_4 and returns this.
-struct CPairXY {
-    i32 m_0;
-    i32 m_4;
-    CPairXY* Set(i32 a, i32 b); // 0x75a10
-};
+// CPairXY / CGridCell / CGridLookup (the megafn FUN_6f2f0 leaf helpers, @identity-TODO)
+// are declared in <Gruntz/TriggerMgrViews.h> (included above) - their shapes belong in
+// the family scaffolding header; only the method bodies live here.
 
-// CPairXY::Set (0x75a10) - fill m_0/m_4 and return this. @identity-TODO: owner unrecovered.
+// CPairXY::Set (0x75a10) - fill m_0/m_4 and return this. @identity-TODO: owner unrecovered
+// (called ONLY by this TU's megafn FUN_6f2f0).
 RVA(0x00075a10, 0x12)
 CPairXY* CPairXY::Set(i32 a, i32 b) {
     m_0 = a;
     m_4 = b;
     return this;
 }
-SIZE_UNKNOWN(CPairXY);
-// (^ @identity-TODO: owner unrecovered - called ONLY by this TU's megafn
-// FUN_6f2f0; moved from OrphanLeaves.cpp per the interval verdict.)
 
 // ---------------------------------------------------------------------------
 // 0x75a40: a 2D grid lookup - bounds-check (x, y) against the width/height, then
 // return the first dword of the (28-byte-stride) cell at rows[y][x]; out of bounds
 // returns 1.
-SIZE_UNKNOWN(CGridCell);
-struct CGridCell {
-    i32 m_0;
-    char _pad[0x1c - 4];
-};
-SIZE_UNKNOWN(CGridLookup);
-struct CGridLookup {
-    char _00[8];
-    CGridCell** m_8;          // +0x08  rows
-    i32 m_c;                  // +0x0c  width
-    i32 m_10;                 // +0x10  height
-    i32 Lookup(i32 x, i32 y); // 0x75a40
-};
-
 RVA(0x00075a40, 0x34)
 i32 CGridLookup::Lookup(i32 x, i32 y) {
     if ((u32)x < (u32)m_c && (u32)y < (u32)m_10) {
