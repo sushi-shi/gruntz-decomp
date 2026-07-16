@@ -89,7 +89,7 @@ extern "C" CGameRegistry* g_gameReg;
 // (<Gruntz/SoundCue.h>, pulled by GameRegistry.h): reg->m_world->m_soundRegistry is the
 // CSndHost, its embedded CSndFinder (m_10) Lookups the effect name to a LeafCue,
 // whose DSoundCloneInst (m_10) GetItem (0x135d70) clones the DirectSound buffer the
-// projectile owns as its CProjSample (m_sound).
+// projectile owns as its m_sound sound sample.
 
 // The shared default-bound doubles the CMovingLogic ctor copies into the twelve
 // coordinate-bound members (retail .rdata 0x5f04b0 / 0x5f04b8). Defined here with
@@ -1380,7 +1380,7 @@ i32 CProjectile::LaunchSound(const char* key) {
         return 0;
     }
     // GetItem returns the pooled DirectSound buffer (DirectSoundMgr in the cue-mgr
-    // view); the projectile owns the same buffer as its CProjSample sound sample.
+    // view); the projectile owns the same buffer as its m_sound sound sample.
     m_sound = (DirectSoundMgr*)entry->m_10->GetItem();
     if (m_sound == 0) {
         return 0;

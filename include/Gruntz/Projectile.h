@@ -40,8 +40,7 @@ class CLightFx; // folded CProjShadowActivate
 
 // The sound sample object the projectile launches (+0x200) IS a DirectSoundMgr: the
 // cue-mgr's GetItem hands back the pooled DirectSound buffer, and StopAndRewind
-// (0x135380) / ApplyAndPlay are DirectSoundMgr methods. (The former empty CProjSample
-// placeholder view is dissolved.)
+// (0x135380) / ApplyAndPlay are DirectSoundMgr methods.
 class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the pooled DirectSound buffer
 
 // ---------------------------------------------------------------------------

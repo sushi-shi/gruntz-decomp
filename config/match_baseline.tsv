@@ -633,8 +633,8 @@ bootystateactivate	?Vslot0e@CBootyState@@UAEHHHH@Z	100.0000	100.0000	2	2b752da0b
 bootystateactivate	?Vslot0e@CMultiBootyState@@UAEHHHH@Z	100.0000	100.0000	1	c3e7d46e285e	0x1f8e0
 bootystateactivate	?Vslot11@CBootyState@@UAEHHHH@Z	100.0000	100.0000	2	141a8fc80406	0x1d400
 bootystateactivate	?Vslot11@CMultiBootyState@@UAEHHHH@Z	100.0000	100.0000	1	83f904b8d067	0x1f900
-bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.8158	92.8158	1	199f07b1b7c1	0x1b450
-bootywalkanim	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	93.5142	93.5142	4	98752bc4e606	0x1b690
+bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.8158	92.8158	2	4157e3072467	0x1b450
+bootywalkanim	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	93.5142	93.5142	5	bc5436c7152c	0x1b690
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	22	621add35a117	0xf9160
 brickz	?IsCellClear@CMapMgr@@UAEHHH@Z	100.0000	100.0000	1	cpp:21b941a07ae8	0x853f0
 brickz	?LineIsClear@CMapMgr@@QAEHHHHH@Z	99.7500	99.7500	1	cpp:21b941a07ae8	0x82250
@@ -3190,7 +3190,7 @@ projactcache	?Or@zBitVec@@QAEPAV1@PAV1@@Z	100.0000	100.0000	1	e9db99f9448e	0x193
 projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	55.2278	55.2278	8	5bdee2de1a5f	0xdec60
 projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	9	5bdee2de1a5f	0x126e0
 projectile	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	83.3548	83.3548	3	e6b793337f5f	0xe1b90
-projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	6	0d1d999d036d	0xdef60
+projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	7	d2e61c74c40e	0xdef60
 projectile	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	60e9ec8a4aa5	0x12a70
 projectile	?ConstructTBombRange@@YAXXZ	100.0000	100.0000	1	9a53b05db40c	0xe17b0
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	11	e3c0103eaac8	0xe05e0
@@ -3198,11 +3198,11 @@ projectile	?FinalizeStep@CMovingLogic@@UAEXH@Z	100.0000	100.0000	1	058bb662343e	
 projectile	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	7d3624842f2b	0xe1830
 projectile	?GetTypeTag@CProjectile@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:cb6c32e06c4c	0x12960
 projectile	?GetTypeTag@CTimeBomb@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:cb6c32e06c4c	0x12a20
-projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	33.9778	33.9778	14	726335c56538	0xe2190
+projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	33.9778	33.9778	15	5694299cf60c	0xe2190
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	90.5000	90.5000	3	40cb46e03bb9	0xe1e60
 projectile	?LoadProjectileSprites@CProjectile@@UAEHHHHHHHH@Z	57.1201	57.1201	9	770f9aaca127	0xdf050
 projectile	?MovingSlot16@CBoomerang@@UAEXXZ	70.6977	70.6977	3	b9af934d2267	0xe08b0
-projectile	?MovingSlot16@CProjectile@@UAEXXZ	69.7316	69.7316	5	6fca31419360	0xdfd00
+projectile	?MovingSlot16@CProjectile@@UAEXXZ	69.7316	69.7316	6	c64febcda8a5	0xdfd00
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	92.9130	92.9130	2	14f6e97f0e0c	0xe1990
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	2	1fc33c782a2a	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	7	19f2a743874f	0xdfb00
@@ -3386,7 +3386,7 @@ sbi_rectonly	?HitTestRects@CStatusBarMgr@@QAEPAVCSbiRect@@HH@Z	95.2717	95.2717	1
 sbi_rectonly	?HlClickGroup0@CStatusBarMgr@@QAEHH@Z	94.1739	94.1739	2	1cd076a504dc	0x10b5d0
 sbi_rectonly	?HlClickGroup1@CStatusBarMgr@@QAEHH@Z	94.1739	94.1739	2	8ca190b5b99e	0x10b6f0
 sbi_rectonly	?HlClickGroup2@CStatusBarMgr@@QAEHH@Z	94.1739	94.1739	2	d5540de1d14b	0x10b810
-sbi_rectonly	?Init@CWarpStoneFly@@QAEHPAXHHH@Z	81.2286	81.2286	2	f248c8f0c97b	0x109bd0
+sbi_rectonly	?Init@CWarpStoneFly@@QAEHPAXHHH@Z	81.2286	81.2286	3	68997776fed2	0x109bd0
 sbi_rectonly	?InitTabRects@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	281764b8c109	0x106900
 sbi_rectonly	?InsertPtr@CStatusBarMgr@@QAEHHH@Z	75.8491	75.8491	2	9162a22fb139	0x108410
 sbi_rectonly	?LoadBattlezItemConfig@CStatusBarMgr@@QAEHPAVCDDrawSurfaceMgr@@@Z	93.6625	93.6625	1	feb0edff012b	0xfdc00
@@ -3645,13 +3645,13 @@ statemgrbz	?Init@StateMgrBZ@@QAEHPAVDirectInputMgr2@@H@Z	100.0000	100.0000	1	cff
 statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	5	11eb124e7ed1	0x386b0
 statemgrbz	?SetDirBits@StateMgrBZ@@QAEHH@Z	100.0000	100.0000	1	7e0222bb7b41	0x38770
 statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	3	59a26d57b0eb	0x38340
-statichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	83.7462	83.7462	10	c6148aaa8902	0xfb7a0
+statichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	83.7462	83.7462	11	08c09b68e9a1	0xfb7a0
 statichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	2	235905f30c31	0x12b30
 statichazard	?ConstructHaznRange@@YAXXZ	100.0000	100.0000	1	574cc000a70c	0xfbb70
 statichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	2	d0aa48e9f9a8	0xfbbf0
 statichazard	?GetTypeTag@CStaticHazard@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	35f087d0260e	0x12ae0
-statichazard	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8571	97.8571	5	730a3019896d	0xfc0b0
-statichazard	?LoadAttributes@CStaticHazard@@QAEHXZ	49.6981	49.6981	6	8472f93d207a	0xfc1a0
+statichazard	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8571	97.8571	6	50cecbb3f65d	0xfc0b0
+statichazard	?LoadAttributes@CStaticHazard@@QAEHXZ	49.6981	49.6981	7	9b51ef241eb5	0xfc1a0
 statichazard	?RegisterActs@CStaticHazard@@SAXXZ	78.5970	78.5970	5	0ee3d6f03fe9	0xfbd50
 statichazard	?SerializeMove@CStaticHazard@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	2	ed15c6226faa	0xfc5b0
 statusbargamemenu	?BuildGameMenu@CStatusBarMgr@@QAEXXZ	51.2482	51.2482	3	aa1a8bc9c8a3	0x101580
@@ -3763,7 +3763,7 @@ tilelogicpump	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:cfcb7226a2f7	0x112
 tilelogicpump	??1CTileTriggerSwitch@@UAE@XZ	100.0000	100.0000	1	114390a8ab8a	0x110f0
 tilelogicpump	??1CTileTriggerTransition@@UAE@XZ	100.0000	100.0000	2	4fc5962fb72c	0x117f0
 tilelogicpump	??1CWarpStonePad@@UAE@XZ	100.0000	100.0000	1	33b44541445e	0x10fc0
-tilelogicpump	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	2	696eed25e7cf	0x110070
+tilelogicpump	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	3	22bac423f9f1	0x110070
 tilelogicpump	?CheckpointTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	ba3ccd85fff5	0x10d290
 tilelogicpump	?CoveredPowerupStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	d2a2b973a243	0x10d010
 tilelogicpump	?FireActivation@CCheckpointTrigger@@QAEXH@Z	100.0000	100.0000	1	561800b7475b	0x10ea80
@@ -4090,7 +4090,7 @@ warlord	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	3	793c36d6cde1	0x45
 warlord	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	2	fc43aa151cb2	0x45100
 warlord	?ResolveState@CWarlord@@QAEHH@Z	100.0000	100.0000	4	c2313f09dc99	0x44640
 warpstonefly	??0CWarpStoneFly@@QAE@XZ	100.0000	100.0000	1	0f208826f07b	0x109bb0
-warpstonefly	?Draw@CWarpStoneFly@@QAEHXZ	100.0000	100.0000	1	2365d2f6b65e	0x10a2f0
+warpstonefly	?Draw@CWarpStoneFly@@QAEHXZ	100.0000	100.0000	2	e5f35e8e1097	0x10a2f0
 warpstonefly	?Tick@CWarpStoneFly@@QAEHH@Z	79.3651	79.3651	1	50cb5eac3b58	0x10a0f0
 warptextureblit	?WarpIsPow2@@YAHH@Z	82.0000	82.0000	1	64804376f3f0	0x145e00
 warptextureblit	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	50.6857	50.6857	1	c6aec47a5da3	0x146a20
