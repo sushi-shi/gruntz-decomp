@@ -92,7 +92,7 @@ RVA(0x0013d3a0, 0x6a)
 i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     i32 notifyCode = (i32)(wParam >> 16);
     i32 cmdId = (i32)(wParam & 0xffff);
-    if (m_owner->VirtualUnknownMethod11(notifyCode, cmdId, lParam)) {
+    if (m_owner->HandleCommand(notifyCode, cmdId, lParam)) {
         return 1;
     }
     if (Wap32GameWndVfunc2(notifyCode, cmdId, lParam)) {

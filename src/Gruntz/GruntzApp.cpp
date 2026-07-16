@@ -221,7 +221,7 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-// CGruntzApp::VirtualUnknownMethod11 (0x00080aa0) is now an inline member in the header.
+// CGruntzApp::HandleCommand (0x00080aa0) is now an inline member in the header.
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::ShowMessage

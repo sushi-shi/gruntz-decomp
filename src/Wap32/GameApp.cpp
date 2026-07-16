@@ -37,10 +37,10 @@ i32 CGameApp::HasWindowAndManager() {
     return m_gameWnd != 0 && m_gameMgr != 0;
 }
 
-// CGameApp::VirtualUnknownMethod11 (vtbl +0x28, slot 10) - the default OnCommand
-// fan-out: unhandled, returns 0. (CGruntzApp overrides it at 0x080aa0.)
+// CGameApp::HandleCommand (vtbl +0x28, slot 10) - the default WM_COMMAND
+// handler: unhandled, returns 0. (CGruntzApp overrides it at 0x080aa0.)
 RVA(0x00080d90, 0x5)
-i32 CGameApp::VirtualUnknownMethod11(i32, i32, i32) {
+i32 CGameApp::HandleCommand(i32, i32, i32) {
     return 0;
 }
 

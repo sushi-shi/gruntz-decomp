@@ -247,9 +247,9 @@ public:
     virtual void ReportError(WPARAM wParam, LPARAM lParam); // +0x1c
     virtual void OnIdle();          // +0x20 idle virtual (tail-calls m_gameMgr->Tick)
     virtual void FreeGameManager(); // +0x24
-    // +0x28 slot 10 (0x080d90): default OnCommand fan-out - `return 0;` (unhandled).
-    // Called by CGameWnd::Wap32GameWndVfunc2; CGruntzApp overrides it (0x080aa0).
-    virtual i32 VirtualUnknownMethod11(i32, i32, i32);   // +0x28  slot 10  0x080d90
+    // +0x28 slot 10 (0x080d90): default WM_COMMAND handler - `return 0;` (unhandled).
+    // Called by CGameWnd::OnCommand; CGruntzApp overrides it (0x080aa0).
+    virtual i32 HandleCommand(i32 notifyCode, i32 cmdId, i32 lParam); // +0x28 slot 10 0x080d90
     virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
     virtual void ShowError() {}                          // +0x30
     virtual CGameWnd* InitializeGameWindow();            // +0x34
