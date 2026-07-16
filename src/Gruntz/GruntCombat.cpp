@@ -25,6 +25,8 @@
 // @0x58cd0 (userlogicctoremit), CPairRecord::Serialize @0x58ee0
 // (trirecordserialize), Lookup_05b7e0 @0x5b7e0 (ddrawsubmgrleafscan).
 #include <Gruntz/Grunt.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/ActReg.h>    // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>

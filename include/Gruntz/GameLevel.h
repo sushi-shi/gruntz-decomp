@@ -216,7 +216,7 @@ struct CParseSource;
 // ---------------------------------------------------------------------------
 // The movement/collision target of the DispatchMove/MoveStep cluster is the
 // canonical CGameObject (<Gruntz/UserLogic.h>) - the level steps its
-// m_screenX/m_screenY through the tile probes. CGameObjChain is its world
+// m_screenX/m_screenY through the tile probes. CDDrawChildGroup is its world
 // object-chain owner. Only pointers appear below, so fwd decls suffice.
 //
 // EditDispatch's `sink` is a cross-TU polymorphic serializer whose concrete view
@@ -226,11 +226,15 @@ struct CParseSource;
 // a third one perturbs the /O2 register schedule of an unrelated GruntzMgr.h
 // includer (CSBI_MenuItem::DecCounter's RenderFrame arg block; see report).
 struct CGameObject;
-struct CGameObjChain;
+class CDDrawChildGroup; // the world object chain (<DDrawMgr/DDrawChildGroup.h>)
+class CDDrawSurfaceMgr; // the m_0c owner/world root (<DDrawMgr/DDrawSurfaceMgr.h>)
 
 class CGameLevel : public CObject {
 public:
-    i32 m_04, m_08, m_0c; // +0x04..0x0f (merged from CLoadable base)
+    i32 m_04, m_08;         // +0x04..0x0b (merged from CLoadable base)
+    CDDrawSurfaceMgr* m_0c; // +0x0c  the owning world/display root (the CLoadable
+                            //        owner slot; BroadPhase/StepAxisAlt walk its
+                            //        m_childGroup, MovingLogic hops m_resolveSubMgr)
     // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is
     // the real method (RVA-bound in GameLevel.cpp), so cl emits ??_7CGameLevel@@6B@
     // with those slots pointing at the matched functions; the engine-thunk base
@@ -360,7 +364,7 @@ public:
     // bound) interleaved with the plane Syncs; otherwise Sync every plane around
     // the main index and dispatch ctx's Hook. `visitor` is the render-visitor arg
     // every dispatch receives; `ctx` is the world object chain.
-    void VisitVisible(void* visitor, CGameObjChain* ctx);
+    void VisitVisible(void* visitor, CDDrawChildGroup* ctx);
 
     // String/state edit dispatch: arg1 selects a level-name get/set on `sink` (a
     // serializer, the GameLevel.cpp-local EditSink view), then forwards (arg2,

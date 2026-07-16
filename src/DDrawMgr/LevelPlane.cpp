@@ -678,13 +678,9 @@ inline void* operator new(u32, void* p) {
     return p;
 } // placement (embedded sub-object ctor)
 
-// The embedded sub-object's stampable view: vptr@0, then the three DWORDs
-// (+0x10/+0x14/+0x18) ReadPlaneObjects zeroes right after re-stamping its vtable.
-struct WwdObjAnimInit {
-    void* vptr; // +0x00
-    char pad_4[0x10 - 0x4];
-    i32 z10, z14, z18; // +0x10, +0x14, +0x18
-};
+// (The WwdObjAnimInit stampable view is DISSOLVED (2026-07-16): the +0x1a0
+// sub-object is CGameObject::m_1a0, the embedded CAniAdvanceCursor; the three
+// zeroed DWORDs are its m_10/m_14/m_element source-binding fields.)
 
 // MFC CMapStringToOb::Lookup(key, &valueOut) const. __thiscall, ret 0x8.
 // authentic: reached at a COMPUTED address (m_assetOwner+0x14+0x10), not a typed
@@ -848,12 +844,11 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
-    WwdObjAnimInit* subInit = (WwdObjAnimInit*)((char*)obj + 0x1a0);
-    new (subInit) CLoadable((i32)m_mapData, id, 0); // the embedded loadable (ctor 0x156cb0)
+    new ((void*)&obj->m_1a0) CLoadable((i32)m_mapData, id, 0); // the embedded loadable (ctor 0x156cb0)
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-    subInit->z10 = 0;
-    subInit->z14 = 0;
-    subInit->z18 = 0;
+    obj->m_1a0.m_10 = 0;
+    obj->m_1a0.m_14 = 0;
+    obj->m_1a0.m_element = 0;
 
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     obj->m_18c = -1;
@@ -1419,4 +1414,3 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 // --- local views moved with their bodies from src/Wwd/WwdFile.cpp ---
 SIZE_UNKNOWN(CStringAssign); // +0xdc CString::operator= helper (WwdGameObj folded to CGameObject)
 SIZE_UNKNOWN(WwdSubMgrCtor);
-SIZE_UNKNOWN(WwdObjAnimInit);

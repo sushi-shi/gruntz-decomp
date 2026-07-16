@@ -113,7 +113,7 @@ public:
     virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     virtual ~CTeleporter() OVERRIDE;        // 0x10dd0 (folds the CUserLogic teardown)
 
-    i32 m_savedGeoId; // +0x40  snapshot of m_38->m_geoId
+    CAniElement* m_savedGeoId; // +0x40  snapshot of m_38->m_1a0.m_14
     char m_pad44[0x54 - 0x44];
     i32 m_armed; // +0x54  armed flag (a resolved target id)
     // The armed-at running-clock snapshot (m_58) and the bound object's per-tile-time

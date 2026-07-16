@@ -81,7 +81,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
     if (m_animSuppress == 0) {
         m_260->NotifyCell(m_animArg0, m_animArg1, 0);
     }
-    m_drawState->m_8 |= 0x10000;
+    m_drawState->m_flags |= 0x10000;
     return 0;
 }
 
@@ -96,12 +96,12 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
 RVA(0x00061570, 0x11d)
 i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
     if ((i64)(u32)g_frameTime - *(i64*)&m_decayTimerLo >= *(i64*)&m_decayDurationLo) {
-        m_drawState->m_40 |= 1;
-        m_drawState->m_194->SetAllTypes(1);
+        m_drawState->m_stateFlags |= 1;
+        m_drawState->m_imageSet->SetAllTypes(1);
         if (m_animSuppress == 0) {
             m_260->NotifyCell(m_animArg0, m_animArg1, 0);
         }
-        m_drawState->m_8 |= 0x10000;
+        m_drawState->m_flags |= 0x10000;
         return 0;
     }
     i64 e = (i64)(u32)g_frameTime - *(i64*)&m_decayTimerLo;

@@ -297,7 +297,7 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
-    if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CSerialObj*)d)) {
+    if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     char* p = (char*)&m_timestamp;

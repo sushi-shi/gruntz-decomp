@@ -2139,7 +2139,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     // sprite's. The downcast to the concrete leaf is the authentic one every creator does.
     CGrunt* logic = (CGrunt*)sprite->m_7c->m_logic;
     if (logic->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
-        logic->m_154->m_8 |= 0x10000;
+        logic->m_154->m_flags |= 0x10000;
         return 0;
     }
     m_grid[row * TM_GRID_COLS + free] = logic;

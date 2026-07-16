@@ -29,7 +29,7 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)arc, mode, a3, a4)) {
         return 0;
     }
-    if (!m_34.Chain((CSerialArchive*)arc, mode, a3, (CSerialObj*)a4)) {
+    if (!m_34.Chain((CSerialArchive*)arc, mode, a3, (CGameObject*)a4)) {
         return 0;
     }
     if (mode != 4) {

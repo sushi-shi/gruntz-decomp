@@ -31,7 +31,7 @@
 // from source under /O2 (function-scope `val` and inner-scope reshapes both
 // regressed). Logic complete; deferred to the final sweep.
 RVA(0x00008c00, 0x152)
-i32 CSerialObjRef::Chain(CSerialArchive* arc, i32 mode, i32 unused, CSerialObj* obj) {
+i32 CSerialObjRef::Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj) {
     char name[0x80];
 
     if (arc == 0) {
@@ -49,7 +49,7 @@ i32 CSerialObjRef::Chain(CSerialArchive* arc, i32 mode, i32 unused, CSerialObj* 
             return 1;
         }
         void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-        m_08->m_0c->m_2c->m_10.Lookup(name, val);
+        m_08->m_0c->m_leaf->m_10.Lookup(name, val);
         m_value = (CObject*)val; // the map stores void*; KeyOfValue_152d30 takes CObject*
         return 1;
     }
@@ -59,7 +59,7 @@ i32 CSerialObjRef::Chain(CSerialArchive* arc, i32 mode, i32 unused, CSerialObj* 
             ((i32*)name)[i] = 0;
         }
         if (m_value != 0) {
-            CString nm = m_08->m_0c->m_2c->KeyOfValue_152d30(m_value);
+            CString nm = m_08->m_0c->m_leaf->KeyOfValue_152d30(m_value);
             strcpy(name, (const char*)nm);
         }
         arc->Write(name, 0x80);
@@ -71,6 +71,3 @@ i32 CSerialObjRef::Chain(CSerialArchive* arc, i32 mode, i32 unused, CSerialObj* 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);
-SIZE_UNKNOWN(CSerialNameHolder);
-SIZE_UNKNOWN(CSerialObj);
-SIZE_UNKNOWN(CSerialRegHolder);

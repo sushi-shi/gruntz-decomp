@@ -19,7 +19,9 @@
 #include <Mfc.h> // afx-first: CString + <windows.h>; keep before any Win32 header
 #include <rva.h>
 
-#include <Gruntz/Grunt.h>            // canonical CGrunt (+ CEntranceAnimPlayer/CGruntCellRec/etc.)
+#include <Gruntz/Grunt.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)            // canonical CGrunt (+ CEntranceAnimPlayer/CGruntCellRec/etc.)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (the +0x1a0 blit param)
 #include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
 #include <Gruntz/TypeKeyColl.h>  // g_typeColl (+ CAnimNameRecord, _zvec::IndexToPtr)
@@ -80,9 +82,9 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         GruntEntranceCell cell = m_entranceCell;
         i32 idx = cell.col * 3 + cell.row;
         char* buf = m_cells[idx].m_walk.GetBuffer(0);
-        m_154->CacheFirstFrame(buf); // 0x1504d0 (the player IS the created game object)
+        m_154->ApplyName(buf); // 0x1504d0 (the player IS the created game object)
         m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->Cursor()->Setup_15c2d0(m_poseWalk);
+        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
         return 1;
     }
     ResetEntranceAnimation(0, 0, 1);

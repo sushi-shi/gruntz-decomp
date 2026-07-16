@@ -208,7 +208,7 @@ struct CGameObject {
     u32 m_collCategory; // +0xe8  collision category bits (0x80 = carrier/platform;
                         //        BroadPhase tests other->m_collCategory & t->m_collMask)
     i32 m_ec;           // +0xec  (WwdFile record scatter target)
-    char m_padf0[0xf4 - 0xf0];
+    i32 m_f0;       // +0xf0  (the entrance-sprite ctor seeds 1)
     u32 m_collMask; // +0xf4  which categories this object collides with
     i32 m_strideX;  // +0xf8  tile-probe stride X (the move steppers' scan step)
     i32 m_strideY;  // +0xfc  tile-probe stride Y

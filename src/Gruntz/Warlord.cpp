@@ -23,7 +23,10 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>         // the shared CActReg (g_actionTable @0x644610)
 #include <Gruntz/TypeKeyColl.h>    // the shared CTypeKeyColl (g_typeColl @0x6bf650)
-#include <Gruntz/Grunt.h>          // CGrunt + CGruntHud/CAnimElem/g_animLookupTree/GruntRand
+#include <Gruntz/Grunt.h>             // CGrunt + CGruntHud/g_animLookupTree/GruntRand
+#include <DDrawMgr/DDrawSurfaceMgr.h> // m_38->m_0c (the world root)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog; Lookup 0x1b8438)
+#include <DDrawMgr/AniAdvance.h>      // CAniDesc (the descriptor record; ex CAnimElem)
                                    // (the five Resolve*Animation bodies below)
 #include <Gruntz/AniElement.h>     // full CAniElement (ResolveIdleAnimation's desc walk)
 #include <Gruntz/TriggerMgr.h>     // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
@@ -190,17 +193,16 @@ typedef enum WarlordBattleTag {
 } WarlordBattleTag;
 
 // One unrolled anim-key lookup on the bound object's embedded animation
-// name->handle map: the object's generically-typed world/resource slot
-// (CGameObject::m_0c, +0xc; cast at the deref site per the UserLogic.h convention)
-// -> +0x2c sprite manager -> its CMapStringToPtr m_10map (Grunt.h; retail Lookup
-// 0x1b8438). Build "GRUNTZ_" + m_54 + suffix (two CString temps), look it up
+// name->handle map: the object's typed world slot (CGameObject::m_0c, the
+// CDDrawSurfaceMgr) -> m_leaf (+0x2c, CDDrawSubMgrLeaf) -> its CMapStringToPtr
+// m_10 (retail Lookup 0x1b8438). Build "GRUNTZ_" + m_54 + suffix (two CString temps), look it up
 // (out-param zeroed first so a miss stores 0), stash the handle. The chain stays
 // in the macro (not a cached local) so cl reloads m_38 per unrolled lookup, as retail.
 #define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
         void* h = 0;                                                                               \
-        ((CEntranceResMgr*)m_38->m_0c)->m_2c->m_10map.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);      \
-        dst = h;                                                                                   \
+        m_38->m_0c->m_leaf->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                           \
+        dst = (CAniElement*)h;                                                                     \
     }
 
 // @early-stop  (~79%; complete correct body, up from a 3.7% stub)
@@ -320,7 +322,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
 // FULLY DECODED (R3, this session) - the complete body is understood; it is NOT a
 // blind stub. Signature: i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
 // where ar == CFileMemBase (Read @vtbl+0x2c / Write @vtbl+0x30), a4 is the referenced
-// object (int in the mangling, a CSerialObj*). Structure:
+// object (int in the mangling, a CGameObject*). Structure:
 //   1. if (!((CMovingLogicBase*)this)->Serialize(ar,mode,a3,a4)) return 0;   (0x16e7f0)
 //   2. if (!ar) return 0;   (retail SHARES this ret-0 with the save-body null check @43c5c)
 //   3. header field (m_40 handle + m_44 0x10 blob):
@@ -337,7 +339,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
 //        mode 8 POST : re-derive the draw-fill selector (the ctor GetSel path, UNCLAMPED).
 //   5. tail: the two i64 timers m_88/m_90 then m_98/m_a0, Read (7) / Write (4), ret 1.
 //   The registry is the canonical CSerialObjRef.h chain: a4->m_7c (CSerialNameHolder)
-//   ->m_0c (CSerialRegHolder) ->m_2c (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_10
+//   ->m_0c (CDDrawSurfaceMgr) ->m_leaf (CDDrawSubMgrLeaf) - its ::CMapStringToPtr m_10
 //   forward-Lookups a key (0x1b8438) and KeyOfValue_152d30 (RVO CString) reverses it.
 //   Every callee/field/mode/chain above was verified against the retail disasm.
 //
@@ -420,7 +422,7 @@ void RegisterWarlordActions() {
 // move (m_28 != 0 && m_20 == 0), resolve the moving animation. Returns 0.
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         ((CGrunt*)this)->ResolveMovingAnimation();
@@ -438,7 +440,7 @@ i32 CWarlord::RearmMoving() {
 // Returns int 0 on every path. Plain /O2 leaf (no destructible local, no /GX use).
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) != 1) {
+    if (m_38->m_1a0.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
@@ -481,7 +483,7 @@ i32 CWarlord::LoadAttributes() {
 // m_2c-chain split; all no-change at the same ~91% plateau).
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) != 1) {
+    if (m_38->m_1a0.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
@@ -531,7 +533,7 @@ i32 CWarlord::LoadAttributes2() {
 // same instruction count, an MSVC5 addressing-mode scheduling coin-flip.
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
@@ -556,7 +558,7 @@ i32 CWarlord::AdvanceMovingAnim() {
 // animation when the sub's state words say it is ready. Returns 0.
 RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         ((CGrunt*)this)->ResolveMovingAnimation();
@@ -576,7 +578,7 @@ i32 CWarlord::RearmMoving2() {
 //   CGameObject* o = m_10; i32 x=o->m_5c, y=o->m_60;
 //   if (x in [reg->m_13c, reg->m_144) && y in [reg->m_140, reg->m_148)) {
 //     spr = reg->m_30->m_08->CreateSprite(0, x-30, y+10, 0xcf84f, "..."@0x60a96c, 0x40003);
-//     if (spr) { spr->CacheFirstFrame("..."@0x60d30c);    // 0x150540
+//     if (spr) { spr->ApplyName("..."@0x60d30c);    // 0x150540
 //               spr->ApplyLookupGeometry("..."@0x60d30c, 0); } // 0x1505b0
 //   }
 //   ... panic sub reg->m_68 (m_288/m_2a0/m_290 timer arm to 0x3e8/g_frameTime) ...
@@ -602,10 +604,10 @@ i32 CGrunt::ResolveMovingAnimation() {
         return 0;
     }
 
-    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__MOVING);
+    m_38->ApplyName(s_GRUNTZ_ + TypeName() + s__MOVING);
 
-    m_activeAnimDesc = m_38->m_1b4;
-    m_38->m_1a0.SetGeometry(m_movingGeoSrc);
+    m_activeAnimDesc = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_movingGeoSrc);
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyB);
@@ -649,8 +651,8 @@ i32 CGrunt::ResolveMovingAnimation() {
 //     }
 //     m_cooldownStampHi = 0;
 //   resolve panic anim (shared tail):
-//     m_activeAnimDesc = m_38->m_1b4;
-//     m_38->m_1a0.SetGeometry((i32)m_animPanic);                          // 0x15c2d0
+//     m_activeAnimDesc = m_38->m_1a0.m_14;
+//     m_38->m_1a0.Setup_15c2d0((i32)m_animPanic);                          // 0x15c2d0
 //     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);                       // 0x150540
 //     m_prevAnimSetNode = m_14->m_1c; m_14->m_1c = g_buteTree.Find(s_codeD);  // 0x16d190
 //     return 1;
@@ -686,10 +688,10 @@ i32 CGrunt::ResolveDeathAnimation() {
         g->m_cueSink->Cue(m_10->m_188, m_deathCueArg, -1, -1, -1);
     }
 
-    m_activeAnimDesc = m_38->m_1b4;
-    m_38->m_1a0.SetGeometry(m_deathGeoSrc);
+    m_activeAnimDesc = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_deathGeoSrc);
 
-    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__DEATH);
+    m_38->ApplyName(s_GRUNTZ_ + TypeName() + s__DEATH);
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyC);
@@ -719,10 +721,10 @@ i32 CGrunt::ResolveAnimation() {
         g->m_cueSink->Cue(m_10->m_188, 0x43f, -1, -1, -1);
     }
 
-    m_activeAnimDesc = m_38->m_1b4;
-    m_38->m_1a0.SetGeometry(m_joyGeoSrc);
+    m_activeAnimDesc = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_joyGeoSrc);
 
-    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__JOY);
+    m_38->ApplyName(s_GRUNTZ_ + TypeName() + s__JOY);
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyE);
@@ -756,14 +758,14 @@ i32 CGrunt::ResolveIdleAnimation() {
         g->m_cueSink->Cue(m_10->m_188, idx + 0x43b, -1, -1, -1);
     }
 
-    m_activeAnimDesc = m_38->m_1b4;
-    m_38->m_1a0.SetGeometry(m_idleGeoSrc[idx]);
+    m_activeAnimDesc = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_idleGeoSrc[idx]);
 
-    CAniElement* desc = m_38->m_1b4;
-    CAnimElem* elem = desc->m_records.m_nSize > 0 ? (CAnimElem*)*desc->m_records.m_pData : 0;
-    i32 frame = elem->m_14;
+    CAniElement* desc = m_38->m_1a0.m_14;
+    CAniDesc* elem = desc->m_records.m_nSize > 0 ? (CAniDesc*)*desc->m_records.m_pData : 0;
+    i32 frame = elem->m_param;
 
-    m_38->SetAnimEx(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
+    m_38->ApplyLookupSprite(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyA);
@@ -796,10 +798,10 @@ i32 CGrunt::ResolveBattlecryAnimation() {
         g->m_cueSink->Cue(m_10->m_188, idx + 0x438, -1, -1, -1);
     }
 
-    m_activeAnimDesc = m_38->m_1b4;
-    m_38->m_1a0.SetGeometry(m_battlecryGeoSrc[idx]);
+    m_activeAnimDesc = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_battlecryGeoSrc[idx]);
 
-    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
+    m_38->ApplyName(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyF);

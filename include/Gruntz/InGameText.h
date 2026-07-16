@@ -58,7 +58,7 @@ public:
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b); // 0x099a30
 
     // --- CInGameText own fields (offsets load-bearing) ---
-    i32 m_savedGeoId;          // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
+    CAniElement* m_savedGeoId;          // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
     char m_pad44[0x54 - 0x44]; // +0x44..+0x53 (inherited tail / own scratch)
     i32 m_cachedAreaId;        // +0x54  Update: cached hit-test area id; serialized scalar
     i32 m_cachedSubId;         // +0x58  Update: cached hit-test sub id; serialized scalar

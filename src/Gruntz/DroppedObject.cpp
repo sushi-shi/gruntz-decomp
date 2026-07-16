@@ -378,7 +378,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    m_geomId = m_38->m_geoId;
+    m_geomId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_OBJECTDROPPER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -552,7 +552,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance((i32)g_engineFrameDelta);
+    m_38->m_1a0.Advance((i32)g_engineFrameDelta);
 
     double drift = (double)g_frameDelta * m_speed;
     if (m_travelDx > 0) {
@@ -599,7 +599,7 @@ i32 CObjectDropper::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
 
@@ -655,7 +655,7 @@ i32 CObjectDropper::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
 // ===========================================================================
 // CDroppedObject::CDroppedObject(CGameObject*) @0xc68b0 - the 1-arg leaf ctor:
 // the standard CUserLogic(obj) init (folded inline) plus the dropped-object tail
-// - cache the anim-set node off the "A" bute key, snapshot m_38->m_1b4, apply the
+// - cache the anim-set node off the "A" bute key, snapshot m_38->m_1a0.m_14, apply the
 // dropped-object sprite/geometry, raise the bound object's logic/collision bits,
 // snap the bound object's screen position to the tile grid, then bias its Y by the
 // bute "DroppedObjectYOffset" (storing the result as a double) and seed the
@@ -676,7 +676,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_38->m_flags |= 0x2000002;
     i32 adjY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -788,7 +788,7 @@ void CDroppedObject::RegisterActs() {
 // sweep.
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     m_fallY = (double)g_frameDelta * m_timePerTile + m_fallY;
     i32 landed = (i32)(m_fallY - g_dropFallBias);
     if (landed > m_landY) {
@@ -850,7 +850,7 @@ i32 CDroppedObject::ActA() {
                 }
             }
         }
-        m_savedGeoId = m_38->m_geoId;
+        m_savedGeoId = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
@@ -867,8 +867,8 @@ i32 CDroppedObject::ActA() {
 // active (m_1c8) but idle (m_1c0 == 0).
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::UserLogicVfunc5() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
-    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         m_38->m_flags |= 0x10000;
     }
     return 0;
@@ -881,7 +881,7 @@ i32 CDroppedObject::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     switch (tag) {
@@ -902,7 +902,7 @@ i32 CDroppedObject::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
 // ===========================================================================
 // CDroppedObjectShadow::CDroppedObjectShadow(CGameObject*) @0xc7490 - the 1-arg
 // leaf ctor: the standard CUserLogic(obj) init (folded inline) plus the shadow
-// tail - cache the anim-set node off the "A" bute key, snapshot m_38->m_1b4,
+// tail - cache the anim-set node off the "A" bute key, snapshot m_38->m_1a0.m_14,
 // apply the shadow sprite/geometry to the bound object, raise its logic/collision
 // flag bits, and seed the bound object's render state (m_4c from the game
 // registry, m_50=7/m_58=1, the 0xcf84f tile-key + its dirty bit). Constructs a
@@ -921,7 +921,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_flags |= 0x2000002;
     m_object->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[5];
@@ -996,12 +996,12 @@ void CDroppedObjectShadow::RegisterActs() {
 // (local/inline m_object + permute all identical). Parked for the final sweep.
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) == 2) {
+    if (m_38->m_1a0.Advance(g_engineFrameDelta) == 2) {
         CGameObject* o = m_object;
         g_gameReg->m_world->m_8
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);
     }
-    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
+    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         m_38->m_flags |= 0x10000;
     }
     return 0;
@@ -1017,7 +1017,7 @@ i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain((CSerialArchive*)ar, mode, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain((CSerialArchive*)ar, mode, c, (CGameObject*)d)) {
         return 0;
     }
     if (mode == 8) {

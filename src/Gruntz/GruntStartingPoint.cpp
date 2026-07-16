@@ -38,7 +38,7 @@ i32 CGruntStartingPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CGruntStartingPoint::~CGruntStartingPoint (0x10670) - the /GX leaf dtor folds

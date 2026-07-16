@@ -161,7 +161,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     m_explodeWindowLo = 0;
     m_explodeStartHi = 0;
     m_explodeWindowHi = 0;
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -294,10 +294,10 @@ void CRollingBall::RegisterActs() {
 // reloc-typings across 2682 B. See file header; final-sweep.
 RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
 
     CGameObject* anim = m_38;
-    if (anim->m_1c8 != 0 && anim->m_1c0 == 0) {
+    if (anim->m_1a0.m_28 != 0 && anim->m_1a0.m_20 == 0) {
         anim->m_flags |= 0x10000;
         return 0;
     }
@@ -310,7 +310,7 @@ i32 CRollingBall::Update() {
         i32 lim = m_explodeWindowHi;
         if (hi < lim || (hi == lim && (u32)lo < (u32)m_explodeWindowLo)) {
             RbCacheFirst(m_38, "LEVEL_ROLLINGBALL_EXPLOSION");
-            m_savedGeoId = m_38->m_geoId;
+            m_savedGeoId = m_38->m_1a0.m_14;
             RbApplyLookup(m_38, "LEVEL_ROLLINGBALLEXPLOSION", 0);
             CTileGrid* map = g_gameReg->m_tileGrid;
             i32 cx = logic->m_screenX >> 5;
@@ -424,7 +424,7 @@ i32 CRollingBall::Update() {
                     break;
             }
             RbCacheFirst(m_38, explosion);
-            m_savedGeoId = m_38->m_geoId;
+            m_savedGeoId = m_38->m_1a0.m_14;
             RbApplyLookup(m_38, fall, 0);
             if (obj == 4) {
                 i32 t = RbGetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
@@ -543,7 +543,7 @@ i32 CRollingBall::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
 

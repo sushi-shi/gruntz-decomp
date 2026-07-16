@@ -39,7 +39,7 @@ RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
-    m_geoId = m_38->m_geoId;
+    m_geoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -128,7 +128,7 @@ i32 CGruntSelectedSprite::Update() {
     CGameRegistry* reg = g_gameReg;
     CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_drawn != 0) {
-        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+        m_38->m_1a0.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_renderable->m_screenX;
         m_object->m_screenY = e->m_renderable->m_screenY;
     }
@@ -155,5 +155,5 @@ i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i3
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;
+    return SerialRef34()->Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
 }

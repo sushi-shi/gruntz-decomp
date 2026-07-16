@@ -40,7 +40,7 @@ i32 CAniCycle::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CAniCycle::~CAniCycle @0x0f510 - empty vtable-anchor dtor; folds the CUserLogic
@@ -54,8 +54,8 @@ RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 1;
-    if (m_38->m_geoId == 0) {
-        m_40 = m_38->m_geoId;
+    if (m_38->m_1a0.m_14 == 0) {
+        m_40 = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     m_prevAnimSetNode = m_objAux->m_1c;

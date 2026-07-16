@@ -42,7 +42,7 @@ RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_38->ApplyName("GAME_LIGHTING_POWERUP");
-    m_geoId = m_38->m_geoId;
+    m_geoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     if (m_object->m_latchedAnimId != 0x15) {
         m_object->m_latchedAnimId = 0x15;
@@ -134,7 +134,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 // Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     CGruntEntry* e = ((CGruntEntry**)((char*)g_gameReg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_object->m_screenX = e->m_renderable->m_screenX;
@@ -152,7 +152,7 @@ i32 CGruntPowerupSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4)
     if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CSerialObj*)a4) == 0) {
+    if (((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     switch (mode) {

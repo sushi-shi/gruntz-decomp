@@ -27,71 +27,13 @@ class CLightFx; // folded CProjShadowActivate
 #include <rva.h>
 
 // The animation sub-object embedded in a render object at +0x1a0. It bridges the two
-// canonical engine classes for this slot: Advance (@0x15c360) IS
-// CAniAdvanceCursor::Advance (advances the active animation by the draw clock -
-// every call site feeds g_engineFrameDelta - and returns the anim state: 2 = the fire/cue point
-// the grunt fire step gates on), and SetGeometry (@0x15c2d0) IS
-// CDDrawBlitParam::Setup_15c2d0 (installs the resolved frame-0 sprite). Both are
-// out-of-line forwarders to the real (reloc-masked) methods (defined in
-// Projectile.cpp, so Projectile.h stays light and no phantom symbol is emitted). The
-// two state gates the fire step's finish tail reads live at +0x20/+0x28 of this
-// sub-object == m_1c0/m_1c8.
-struct CProjAnim {
-    void SetGeometry(void* src); // -> CDDrawBlitParam::Setup_15c2d0 (0x15c2d0)
-    i32 Advance(u32 clock);      // -> CAniAdvanceCursor::Advance (0x15c360)
-};
-SIZE_UNKNOWN(CProjAnim);
-
-// The name->sprite geometry map the sprite object owns (the loaders Lookup by frame name).
-// Reached via m_154->m_c->m_2c, map embedded 27930x10.
-// THE MAP IS ::CMapStringToPtr, NOT CMapStringToOb (mfc_class + disasm, 2026-07-13):
-// CProjectile::LoadProjectileSprites (0xdf050) `call 0x1b8438` x7, and mfc_class names that
-// band [0x1b8247, 0x1b85b1) CMapStringToPtr (ctor stamps ??_7CMapStringToPtr@B@ 0x1eb014).
-// CMapStringToOb is the SEPARATE band [0x1b7e17, 0x1b8247), Lookup 0x1b8008. The old
-// CMapStringToOb decl bound the WRONG routine - reloc-masked, so objdiff showed nothing.
-SIZE_UNKNOWN(CProjSpriteMgr);
-struct CProjSpriteMgr {
-    char m_pad00[0x10];
-    CMapStringToPtr m_10; // +0x10  the lookup map (Lookup 0x1b8438)
-};
-SIZE_UNKNOWN(CProjResMgr);
-struct CProjResMgr {
-    char m_pad00[0x2c];
-    CProjSpriteMgr* m_2c; // +0x2c
-};
-
-// A render object the projectile owns/points at (the +0x154 sprite/animation and
-// the +0x1fc shadow companion). Only the offsets the reconstructed methods touch
-// are modeled: +0x08 flag word, +0x0c resource host (frame lookup), +0x40 flag
-// word, +0x5c/+0x60 screen position, +0x1a0 animation sub-object, +0x1b4 geometry
-// word, +0x1c0/+0x1c8 state gates.
-SIZE_UNKNOWN(CProjRenderObj);
-struct CProjRenderObj {
-    char m_pad00[0x08];
-    u32 m_08;         // +0x08  flag word (|= 0x10000)
-    CProjResMgr* m_c; // +0x0c  resource host (name->sprite map via m_2c)
-    char m_pad10[0x40 - 0x10];
-    u32 m_40; // +0x40  flag word (&= ~1)
-    char m_pad44[0x5c - 0x44];
-    i32 m_5c; // +0x5c  screen X
-    i32 m_60; // +0x60  screen Y
-    char m_pad64[0x7c - 0x64];
-    struct AnimWorkerObj* m_7c; // +0x7c  the canonical worker (m_notify @+0x10, leaf @+0x18)
-    char m_pad80[0x1a0 - 0x80];
-    CProjAnim m_1a0; // +0x1a0  animation sub-object (CAniAdvanceCursor/CDDrawBlitParam bridge)
-    char m_pad1a4[0x1b4 - 0x1a4];
-    i32 m_1b4; // +0x1b4  geometry word (saved into CProjectile::m_savedFrameGeo)
-    char m_pad1b8[0x1c0 - 0x1b8];
-    i32 m_1c0; // +0x1c0
-    char m_pad1c4[0x1c8 - 0x1c4];
-    i32 m_1c8; // +0x1c8
-
-    // The render object IS a CGameObject: these out-of-line forwarders (defined in
-    // Projectile.cpp) bind to CGameObject::ApplyName (0x150540, first-frame cache) /
-    // ApplyLookupGeometry (0x1505b0), so no phantom symbol is emitted.
-    void CacheFirstFrame(const char* name);             // -> CGameObject::ApplyName
-    i32 ApplyLookupGeometry(const char* key, i32 flag); // -> CGameObject::ApplyLookupGeometry
-};
+// (The former CProjAnim / CProjSpriteMgr / CProjResMgr / CProjRenderObj views are
+// DISSOLVED (2026-07-16): the +0x154 render object and its +0x1fc shadow companion
+// ARE canonical CGameObjects (<Gruntz/UserLogic.h>) - m_08==m_flags, m_c==m_0c
+// (the CDDrawSurfaceMgr; the frame map is m_0c->m_leaf->m_10, the mfc_class-proven
+// CMapStringToPtr band 0x1b8438), m_40==m_stateFlags, m_5c/m_60==m_screenX/Y,
+// +0x1a0 the embedded CAniAdvanceCursor (SetGeometry==Setup_15c2d0, Advance
+// @0x15c360), m_1b4==m_1a0.m_14 and the +0x1c0/+0x1c8 gates its m_20/m_28.)
 
 // (The former CProjShadowSub/CProjShadowActivate views of the shadow's +0x7c
 // sub-object are DISSOLVED onto the canonical AnimWorkerObj: the "+0x10 Init"
@@ -148,10 +90,10 @@ public:
     // +0x140..+0x14f (m_140/m_144/m_148/m_14c) belong to the CMovingLogic base
     // now (its Update/Serialize round-trip touches them); CProjectile's own data
     // resumes at +0x150.
-    i32 m_150;                    // +0x150  (= owner; write-only here, role unproven)
-    CProjRenderObj* m_sprite;     // +0x154  primary sprite/render object (== owner)
-    i32 m_158;                    // +0x158  (= owner->m_7c; write-only here)
-    i32 m_savedFrameGeo;          // +0x15c  saved m_sprite->m_1b4 before each anim Setup
+    i32 m_150;                // +0x150  (= owner; write-only here, role unproven)
+    CGameObject* m_sprite;    // +0x154  primary sprite/render object (== owner)
+    i32 m_158;                // +0x158  (= owner->m_7c; write-only here)
+    CAniElement* m_savedFrameGeo; // +0x15c  saved m_sprite->m_1a0.m_14 before each anim Setup
     char m_pad160[0x170 - 0x160]; //
     i32 m_kind;                   // +0x170  projectile kind (ProjectileKind; 0x16=WINGZ)
     i32 m_srcRow, m_srcCol;       // +0x174/+0x178  launcher grid cell (row/col)
@@ -170,13 +112,13 @@ public:
     i32 m_curX, m_curY;           // +0x1d0/+0x1d4  current screen pos (init = owner muzzle)
     i32 m_isArcing;               // +0x1d8  arced trajectory (per-type; drives 5-tier sprites)
     i32 m_arrived;                // +0x1dc  one-shot arrival latch (gates LoadProjectileEffects)
-    void* m_frame1;               // +0x1e0  sprite frame "<base>1"
-    void* m_frame2;               // +0x1e4  sprite frame "<base>2"
-    void* m_frame3;               // +0x1e8  sprite frame "<base>3"
-    void *m_frame4, *m_frame5;    // +0x1ec/+0x1f0  sprite frames "<base>4"/"5"
-    void* m_impactSprite;         // +0x1f4  "<base>IMPACT" sprite
-    void* m_fallSprite;           // +0x1f8  "<base>FALL" sprite
-    CProjRenderObj* m_shadow;     // +0x1fc  LightFx shadow render companion
+    CAniElement* m_frame1;        // +0x1e0  sprite frame "<base>1" (resolved geometry)
+    CAniElement* m_frame2;        // +0x1e4  sprite frame "<base>2"
+    CAniElement* m_frame3;        // +0x1e8  sprite frame "<base>3"
+    CAniElement *m_frame4, *m_frame5; // +0x1ec/+0x1f0  sprite frames "<base>4"/"5"
+    CAniElement* m_impactSprite;  // +0x1f4  "<base>IMPACT" sprite
+    CAniElement* m_fallSprite;    // +0x1f8  "<base>FALL" sprite
+    CGameObject* m_shadow;        // +0x1fc  LightFx shadow render companion
     CProjSample* m_sound;         // +0x200  launch sound sample
     CPtrList m_hitList;           // +0x204  tracked-hit list (block size 10)
     i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit

@@ -41,6 +41,8 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (the world root)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <Gruntz/LogicFnTable.h>   // the shared LogicFnTable dispatch-table shape
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
@@ -85,12 +87,11 @@ extern "C" void WormholeTypeMarker();
 
 // ---------------------------------------------------------------------------
 // The game-object registry list SpawnPartners walks IS the world's object chain:
-// g_gameReg->m_world (CSpriteFactoryHolder == CGameObjWorld) -> m_objChain (+0x08,
-// == m_8) is the CGameObjChain (CDDrawChildGroup == CWwdObjMgr); its +0x10 List
-// sub-object holds the head at +0x14 and each CGameObjNode chains via `next` and
-// holds a CGameObject at +0x08 - the SAME canonical shape CGameLevel::VisitVisible
-// walks. (The former Wormhole-local WorldNode/WorldList views are dissolved onto
-// CGameObjChain/CGameObjNode from <Gruntz/UserLogic.h>.)
+// g_gameReg->m_world (the world CDDrawSurfaceMgr; the CSpriteFactoryHolder/
+// CGameObjWorld views are dissolved) -> m_childGroup (+0x08) is the canonical
+// CDDrawChildGroup (== CWwdObjMgr); its CObList @+0x10 heads at +0x14 and each
+// CDDrawGroupNode chains via m_next with the CGameObject at +0x08 - the SAME
+// canonical shape CGameLevel::VisitVisible walks (<DDrawMgr/DDrawChildGroup.h>).
 // ---------------------------------------------------------------------------
 // (the CTeleporter selection-record node holder at mgr->m_cmdGrid->m_recList's head
 // is the real MFC CPtrList node - its +0x8 data (the {row,col} index pair) is reached
@@ -271,7 +272,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 0x2000002;
     m_38->ApplyName("GAME_WORMHOLE");
-    m_prevAnimNode = m_38->m_geoId;
+    m_prevAnimNode = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_WORMHOLE", 0);
     if (m_object->m_latchedAnimId != 0x1869f) {
         m_object->m_latchedAnimId = 0x1869f;
@@ -307,7 +308,7 @@ i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag == 8) {
@@ -404,12 +405,12 @@ void CWormhole::SpawnPartners() {
     // The geo-call dereferences m_38 once (its own ecx); the gate block then
     // re-reads m_38 ONCE into a scratch and reuses it for all three field reads
     // (the target keeps this=esi live across both, loading [esi+0x38] twice).
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
 
     // Gate: only spawn partners when the object is "open" (m_1c8 set) and not
     // already paired (m_1c0 clear); then mark it paired-in-progress (m_08 |= 0x10000).
     CGameObject* g = m_38;
-    if (g->m_1c8 == 0 || g->m_1c0 != 0) {
+    if (g->m_1a0.m_28 == 0 || g->m_1a0.m_20 != 0) {
         return;
     }
     g->m_flags |= 0x10000;
@@ -421,17 +422,17 @@ void CWormhole::SpawnPartners() {
         return;
     }
 
-    CGameObjChain::List* list = &((CGameObjWorld*)g_gameReg->m_world)->m_objChain->m_list;
+    CObList* list = &((CDDrawSurfaceMgr*)g_gameReg->m_world)->m_childGroup->m_list;
     if (list == 0) {
         return;
     }
-    CGameObjNode* node = list->head;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)list->GetHeadPosition();
     if (node == 0) {
         return;
     }
     do {
-        CGameObject* obj = node->obj;
-        node = node->next;
+        CGameObject* obj = node->m_gameObj;
+        node = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
             if ((void*)aux->m_notify == (void*)&WormholeTypeMarker && obj->m_screenX == tx
@@ -460,7 +461,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_flags |= 0x20000;
     }
     m_38->ApplyName("GRUNTZ_GRUNTPUDDLE");
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -568,7 +569,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         m_placed = 1;
         m_pending = 0;
-        m_savedGeoId = m_38->m_geoId;
+        m_savedGeoId = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry(g_puddleSpriteKey, 0);
     }
     return 1;
@@ -621,13 +622,13 @@ i32 CGruntPuddle::Remove() {
             }
         }
     }
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     CGameObject* o = m_38;
-    if (o->m_1c8 != 0 && o->m_1c0 == 0) {
+    if (o->m_1a0.m_28 != 0 && o->m_1a0.m_20 == 0) {
         if (m_placed != 0) {
             o->m_stateFlags |= 1;
         } else {
-            m_savedGeoId = o->m_geoId;
+            m_savedGeoId = o->m_1a0.m_14;
             o->ApplyLookupGeometry(g_puddleSpriteKey, 0);
             m_placed = 1;
             m_pending = 0;
@@ -653,7 +654,7 @@ i32 CGruntPuddle::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
-    if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CSerialObj*)d)) {
+    if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     switch (tag) {
@@ -761,7 +762,7 @@ void CWormhole::LoadColors() {
 RVA(0x000412c0, 0x63)
 i32 CWormhole::ReapplyConfig() {
     m_38->ApplyName("GAME_WORMHOLE");
-    m_prevAnimNode = m_38->m_geoId;
+    m_prevAnimNode = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_codeA);
@@ -784,7 +785,7 @@ i32 CTeleporter::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     // The two i64 snapshots (+0x58 arm-clock, +0x60 interval) round-trip through one
@@ -886,7 +887,7 @@ void CTeleporter_RegisterActs() {
 // CGruntPuddle::Place / CPlay::ApplyGameOptions carry; no source lever flips it.
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
 
     if (((CTeleAnimSink*)((char*)m_38 + 0x1a0))->m_28 == 0) {
         return 0;
@@ -899,7 +900,7 @@ i32 CTeleporter::Begin() {
     m_intervalHi = 0;
     m_armClockLo = g_frameTime;
     m_armClockHi = 0;
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_object->ApplyLookupGeometry(g_teleporterGeoKey, 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
@@ -926,9 +927,9 @@ i32 CTeleporter::Begin() {
 // carry; not source-steerable. Logic + every offset/branch/call-arg byte-faithful.
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     CGameObject* a = m_38;
-    if (a->m_1c8 != 0 && a->m_1c0 == 0) {
+    if (a->m_1a0.m_28 != 0 && a->m_1a0.m_20 == 0) {
         if (m_object->m_124 == 1) {
             a->m_flags |= 0x10000;
         } else {
@@ -958,7 +959,7 @@ i32 CTeleporter::Update() {
     if (o->m_7c->m_bc != 0) {
         i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_armClockLo;
         if (delta >= *(i64*)&m_intervalLo) {
-            m_savedGeoId = m_38->m_geoId;
+            m_savedGeoId = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
             m_object->m_7c->m_bc = 0;
             m_tickHandled = 1;
@@ -977,7 +978,7 @@ i32 CTeleporter::Update() {
     if (m_object->m_124 == 2) {
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 1, 1);
         g_gameReg->m_scoreHud->m_28++; // wormhole/teleporter use counter (FormatHudText case 7)
-        m_savedGeoId = m_38->m_geoId;
+        m_savedGeoId = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_object;
         CGameObject* spawned = g_gameReg->m_world->m_8->CreateSprite(
@@ -1009,7 +1010,7 @@ i32 CTeleporter::Update() {
         spawned->m_168 = m_object->m_screenY;
         spawned->m_124 = m_object->m_placeMode;
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 0, 0);
-        m_savedGeoId = m_38->m_geoId;
+        m_savedGeoId = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
     }
 

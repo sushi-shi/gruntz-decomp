@@ -38,7 +38,7 @@ public:
     // and the +0x34 serialized-object-reference; return whether the ref chain succeeded.
     i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4); // 0x07fa20
 
-    i32 m_geoId; // +0x40  geometry-id cache slot (indicator-sprite family; unset by this leaf's ApplyLookupSprite ctor)
+    CAniElement* m_geoId; // +0x40  geometry-id cache slot (indicator-sprite family; unset by this leaf's ApplyLookupSprite ctor)
     char m_pad44[0x54 - 0x44];
     i32 m_cellX;     // +0x54  grunt cell x
     i32 m_cellY;     // +0x58  grunt cell y

@@ -32,7 +32,7 @@ public:
     i32 SetCell(i32 x, i32 y); // 0x07e9c0
     i32 Update();              // 0x07e9f0
 
-    i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
+    CAniElement* m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)
     char m_pad44[0x54 - 0x44];
     i32 m_cellX; // +0x54  grunt cell x
     i32 m_cellY; // +0x58  grunt cell y

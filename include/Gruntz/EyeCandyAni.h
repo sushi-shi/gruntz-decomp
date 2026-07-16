@@ -37,7 +37,7 @@ public:
     // current draw-delta (g_engineFrameDelta) and return 0.
     i32 AdvanceAnim(); // 0x0acf10
 
-    i32 m_savedGeoId;          // +0x40  geometry id (m_38->m_geoId snapshot)
+    CAniElement* m_savedGeoId;          // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CEyeCandyAni` @0xaa820)
 };
 VTBL(CEyeCandyAni, 0x001e8334);

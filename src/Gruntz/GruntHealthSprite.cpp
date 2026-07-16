@@ -212,5 +212,5 @@ i32 CGruntHealthSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) 
     if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CSerialObj*)a4) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CGameObject*)a4) != 0;
 }

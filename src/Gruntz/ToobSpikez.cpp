@@ -143,7 +143,7 @@ extern i32 ToobLogic_114bc0();
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
-    m_40 = m_38->m_geoId;
+    m_40 = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 2);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -174,7 +174,7 @@ i32 CToobSpikez::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CGameObject*)d) != 0;
 }
 
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members

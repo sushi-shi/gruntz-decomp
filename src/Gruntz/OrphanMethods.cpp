@@ -3,7 +3,7 @@
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
 #include <Gruntz/Effect6b.h>
-#include <Gruntz/Grunt.h>            // CEntranceAnimPlayer (the m_player pointee; Cursor()/m_1b4)
+#include <Gruntz/Grunt.h>            // CGrunt (the m_player pointee is the canonical CGameObject)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - +0x1a0 advance
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -15,21 +15,21 @@
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
-// 0x6b2e0: an animation effect apply - cache the owner's m_1b4 into this->m_c, run
+// 0x6b2e0: an animation effect apply - cache the owner's active descriptor into
+// this->m_prevDesc, run
 // the owner's embedded anim sub-object (+0x1a0) advance, and (when the flag arg is
 // set) re-target its draw-delta.
 // @early-stop
-// 76%: every instruction (lea anim, m_1b4 read, m_c store, arg push, both calls) is
+// 76%: every instruction (lea anim, descriptor read, m_prevDesc store, arg push, both calls) is
 // byte-faithful; the residual is pure register coloring + a 2-instr scheduling flip
 // in this 0x39-byte leaf - retail keeps m_1b4 in edx and hoists the `a` load into
-// eax before the m_c store; cl colors m_1b4 in eax and stores m_c first. Not
+// eax before the m_prevDesc store; cl colors the descriptor in eax and stores m_prevDesc first. Not
 // source-steerable (every operand/declaration reorder reproduced the same coloring).
 extern "C" u32 g_engineFrameDelta;
 
 // (CAnimOwner6b is DISSOLVED, 2026-07-16: the m_player pointee is the canonical
-// CEntranceAnimPlayer (<Gruntz/Grunt.h>) - its +0x1a0 cursor and +0x1b4 active
-// descriptor are that class's m_1a0/m_1b4; the identity + the pending
-// CDecayMgr/cursor-embed merge are documented in <Gruntz/Effect6b.h>.)
+// CGameObject (<Gruntz/UserLogic.h>) - the +0x1a0 embedded cursor and its m_14
+// active descriptor; see <Gruntz/Effect6b.h>.)
 
 // @interleaver CEffect6b::Apply emitted-in <boundary: unreconstructed>
 // (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are ddrawsubmgrleaf
@@ -37,7 +37,7 @@ extern "C" u32 g_engineFrameDelta;
 // reconstructed host on both sides. True obj is the unreconstructed 0x6b2xx run.)
 RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
-    CAniAdvanceCursor* anim = m_player->Cursor(); // (CAniAdvanceCursor*)&m_1a0
+    CAniAdvanceCursor* anim = &m_player->m_1a0;
     m_prevDesc = m_player->m_1a0.m_14;
     anim->Setup_15c2d0((CAniElement*)a);
     if (b != 0) {

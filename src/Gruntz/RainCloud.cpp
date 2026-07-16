@@ -26,7 +26,7 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     o->m_drawActive = 1;
     o->m_drawFillCmd = 0x7;
     o->m_drawFillArg = n;
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
     m_object->m_areaL = 1;
     m_object->m_areaR = 1;

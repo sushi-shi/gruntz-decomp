@@ -312,7 +312,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     } else if (m_walkStarted != 0) {
         // the +0x1a0 anim-sink pair: m_1c8 = active/armed, m_1c0 = idle/done
         CGameObject* spr = m_animSprites[m_stepIndex];
-        if (spr->m_1c8 != 0 && spr->m_1c0 == 0) {
+        if (spr->m_1a0.m_28 != 0 && spr->m_1a0.m_20 == 0) {
             m_stepIndex++;
             if (m_stepIndex == g_gameReg->m_levelRecord->m_levelIndex % 4) {
                 m_stepIndex = 4;

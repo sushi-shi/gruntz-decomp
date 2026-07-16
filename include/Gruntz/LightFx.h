@@ -57,7 +57,7 @@ public:
     virtual ~CLightFx() OVERRIDE;
 
     // ----- leaf layout over CUserLogic(0x40) (offsets load-bearing)
-    i32 m_layerBase; // +0x40  cached object layer base (m_38->m_1b4)
+    CAniElement* m_layerBase; // +0x40  cached object layer base (m_38->m_1a0.m_14)
     char m_pad44[0x54 - 0x44];
     i32 m_anchorA; // +0x54  latched anchor A
     i32 m_anchorB; // +0x58  latched anchor B

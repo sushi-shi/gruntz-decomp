@@ -28,7 +28,7 @@ i32 CCursorSnapSprite::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CCursorSnapSprite::~CCursorSnapSprite @0x011920 - the leaf adds no destructible
@@ -93,7 +93,7 @@ RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_38->ApplyName("GAME_CURSORSNAPSPRITE");
-    m_geoId = m_38->m_geoId;
+    m_geoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");

@@ -12,7 +12,7 @@
 // CString temp on the write path is inner-scoped + RVO so /GX elides the EH frame
 // (the function is frameless in retail).
 //
-// The registry is a CDDrawSubMgrLeaf reached via obj->m_7c->m_0c->m_2c: its name
+// The registry is the canonical CDDrawSubMgrLeaf reached via obj->m_7c->m_0c->m_leaf: its name
 // map (a ::CMapStringToPtr at +0x10) resolves the key (m_10.Lookup), and its
 // KeyOfValue_152d30 turns a value pointer back into its key CString. Both are the
 // real symbols in CDDrawSubMgrLeaf.cpp; modeled here so the reloc-masked calls pair
@@ -31,57 +31,29 @@
 // slot +0x2c / Write @ slot +0x30), now a real declared-only virtual class.
 #include <Gruntz/SerialArchive.h>
 
-// The class name registry (matches CDDrawSubMgrLeaf.cpp): the name->value map sits at
-// +0x10; KeyOfValue_152d30 turns a value back into its key CString (FUN_00552d30, RVO
-// return). Only the class name + signatures matter for the reloc-masked symbols.
-//
-// THE MAP IS ::CMapStringToPtr, NOT CMapStringToOb (mfc_class + disasm, 2026-07-13). The
-// note here cited "CMapStringToOb::Lookup is the 0x1b8438 call" - both halves inverted.
-// The binary names each band from its .obj ctor's own vtable stamp:
-//     0x1b8008 = CMapStringToOb::Lookup   band [0x1b7e17, 0x1b8247)  vtbl 0x1eafd4
-//     0x1b8438 = CMapStringToPtr::Lookup  band [0x1b8247, 0x1b85b1)  vtbl 0x1eb014
-// and CProjLoadRec::Load (0xe0d40) `call 0x1b8438` x2. The canonical
-// <DDrawMgr/DDrawSubMgrLeaf.h> already types it CMapStringToPtr; this header carries an
-// ODR-DUPLICATE definition of that same class (-TODO - fold them), so the
-// two must at least agree. Declaring CMapStringToOb bound the WRONG routine (reloc-masked,
-// so objdiff showed nothing; caught only by mfc_class --audit).
-class CDDrawSubMgrLeaf {
-public:
-    CString KeyOfValue_152d30(CObject* target); // 0x152d30
+// The class-name registry is the CANONICAL CDDrawSubMgrLeaf (the ODR-duplicate
+// local def here is folded, 2026-07-16): the name->value map is its m_10
+// (::CMapStringToPtr, Lookup 0x1b8438 - the mfc_class-proven band) and
+// KeyOfValue_152d30 turns a value back into its key CString.
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
 
-    char _00[0x10];
-    CMapStringToPtr m_10; // +0x10  the name map (Lookup 0x1b8438)
-};
-
-// The name-holder reached through obj->m_7c->m_0c: its +0x2c is the registry leaf.
-class CSerialRegHolder {
-public:
-    char _00[0x2c];
-    CDDrawSubMgrLeaf* m_2c; // +0x2c  registry leaf
-};
-class CSerialNameHolder {
-public:
-    char _00[0x0c];
-    CSerialRegHolder* m_0c; // +0x0c
-};
-
-// The referenced game object (param4): its m_7c is the name-holder above.
-class CSerialObj {
-public:
-    char _00[0x7c];
-    CSerialNameHolder* m_7c; // +0x7c
-};
+// (The former CSerialRegHolder / CSerialNameHolder / CSerialObj shell chain is
+// DISSOLVED (2026-07-16): the referenced object is the canonical CGameObject,
+// its +0x7c the AnimWorkerObj, the worker's m_0c the CDDrawSurfaceMgr, and the
+// +0x2c registry its m_leaf - obj->m_7c->m_0c->m_leaf, all typed.)
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/UserLogic.h>
 
 // ---------------------------------------------------------------------------
 // The serialized-object-reference record itself (embedded at +0x34).
 class CSerialObjRef {
 public:
     // Serialize the referenced object by its registry key name (read/write per mode).
-    i32 Chain(CSerialArchive* arc, i32 mode, i32 unused, CSerialObj* obj); // 0x8c00
+    i32 Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj); // 0x8c00
 
-    CSerialObj* m_00;        // +0x00  the referenced object
-    CSerialObj* m_04;        // +0x04  (== m_00)
-    CSerialNameHolder* m_08; // +0x08  obj->m_7c
+    CGameObject* m_00;   // +0x00  the referenced object
+    CGameObject* m_04;   // +0x04  (== m_00)
+    AnimWorkerObj* m_08; // +0x08  obj->m_7c
     CObject* m_value;        // +0x0c  resolved value (registry Lookup result)
     char m_blob[0x10];       // +0x10  the 0x10-byte serialized blob
 };

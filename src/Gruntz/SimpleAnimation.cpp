@@ -30,7 +30,7 @@ i32 CSimpleAnimation::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
@@ -213,7 +213,7 @@ void RegisterSimpleAnimLogic() {
 // CProjectile::DetachRenderObj's SetAnim(g_engineFrameDelta).
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 

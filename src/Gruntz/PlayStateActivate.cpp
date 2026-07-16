@@ -20,7 +20,8 @@
 #include <EmptyString.h> // g_emptyString
 #include <Bute/SymTab.h> // canonical CSymTab (ResolvePath @0x13bae0)
 
-#include <Gruntz/Play.h>       // the real CPlay : CState (method owner)
+#include <Gruntz/Play.h>
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (the VisitVisible chain arg)       // the real CPlay : CState (method owner)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar) + CDrawTarget
 #include <rva.h>
@@ -95,7 +96,7 @@ i32 CPlay::OnActivate() {
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
-        m_c->m_24->VisitVisible((void*)m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+        m_c->m_24->VisitVisible((void*)m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
         m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
     }
 

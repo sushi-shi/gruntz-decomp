@@ -101,7 +101,7 @@ public:
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d);
 
     // --- CGruntPuddle own fields (placeholders; offsets load-bearing) ---
-    i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)
+    CAniElement* m_savedGeoId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
     char m_pad44[0x54 - 0x44];
     i32 m_tileX;      // +0x54  owner tile X (m_object->m_screenX >> 5)
     i32 m_tileY;      // +0x58  owner tile Y (m_object->m_screenY >> 5)

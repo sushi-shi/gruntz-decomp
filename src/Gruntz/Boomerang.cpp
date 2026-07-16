@@ -39,7 +39,7 @@ const double g_projPhase0 = 3.1415927;
 RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     // vptr stamp is IMPLICIT (real polymorphic class).
-    m_sprite->m_08 |= 0x2000002;
+    m_sprite->m_flags |= 0x2000002;
 }
 
 // The game registry singleton (the m_world resource gate + m_cmdGrid launcher grid).

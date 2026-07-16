@@ -21,6 +21,8 @@
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
                                 // WERE the fake g_animScratch / g_animScratchCount
                                 // globals (defined in 5 TUs each; LNK2005)
@@ -1098,7 +1100,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
         char* nm = m_cells[base].m_walk.GetBuffer(0);
-        m_154->CacheFirstFrame(nm);
+        m_154->ApplyName(nm);
         goto modeDispatch;
     } else {
         ApplySetState1(1);
@@ -1170,7 +1172,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
     // then the +0x150 CSerialObjRef's chain (0x8c00 via the 0x1aff thunk)
-    if (((CSerialObjRef*)(&m_150))->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) == 0) {
+    if (((CSerialObjRef*)(&m_150))->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     switch (mode) {

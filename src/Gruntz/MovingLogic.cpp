@@ -25,6 +25,7 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicSerial.h> // CButeText/CMovingLogicBase + the serialize helpers
 #include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // m_object->m_0c (the world root; m_resolveSubMgr hop)
 #include <Globals.h>                  // Update: g_motionTimeScale / g_motionNegHalf / g_frameTime
 #include <rva.h>
 
@@ -215,7 +216,7 @@ i32 CMovingLogicBase::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 // COLLAPSED into it - m_flags bit4 = riding, m_carrier = the latched carrier
 // object (its m_deltaX/m_deltaY are the per-frame ride deltas; CGameLevel::
 // StepAxisAlt latches it), m_moveMode drives the level's DispatchMove. The level
-// hop is (CGameObjWorld*)m_object->m_0c -> m_level -> MoveToward (0x15de40); the
+// hop is m_object->m_0c (CDDrawSurfaceMgr) -> m_resolveSubMgr -> MoveToward (0x15de40); the
 // m_0c cast is language-forced (the base stores the owner as a generic i32).
 
 // CMovingLogic is the shared canonical (<Gruntz/MovingLogic.h>): its +0x38
@@ -261,14 +262,12 @@ void CMovingLogic::MovingSlot16() {
     // Drive the level's move resolver toward the new position.
     if (m_object->m_moveMode == 1) {
         m_148 =
-            ((CGameObjWorld*)m_object->m_0c)
-                ->m_level->MoveToward(m_object, (i32)Motion()->m_40, m_object->m_screenY, m_14c);
+            m_object->m_0c->m_resolveSubMgr->MoveToward(m_object, (i32)Motion()->m_40, m_object->m_screenY, m_14c);
         Motion()->m_30 = 0.0;
     } else {
         m_object->m_flags &= ~0x10;
         m_148 =
-            ((CGameObjWorld*)m_object->m_0c)
-                ->m_level->MoveToward(m_object, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
+            m_object->m_0c->m_resolveSubMgr->MoveToward(m_object, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
     }
 
     // X arrival: if the object moved off the motion target, re-solve the X

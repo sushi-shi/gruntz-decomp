@@ -24,6 +24,10 @@
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded
 #include <Gruntz/Grunt.h>
+#include <DDrawMgr/AniAdvance.h> // CAniDesc (the descriptor record)
+#include <Bute/SymTab.h>         // CSymTab (ResolveQualified)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
 #include <Gruntz/Enums.h>       // GruntType tool/powerup kinds + GruntDeathKind + RezTypeTag
 #include <Gruntz/State.h>       // CState (m_levelIndex/m_levelBank - StepWarpExit's level lookup)
 #include <Wap32/Wap32.h>        // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
@@ -361,7 +365,7 @@ i32 CGrunt::ResetGeometry() {
     i32 row = m_entranceCell.row;
     i32 index = 3 * col + row;
     const char* name = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
-    m_154->CacheFrame(name, frame);
+    m_154->ApplyLookupSprite(name, frame);
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)g_buteTree.Find(s_animKeyA);
@@ -388,7 +392,7 @@ i32 CGrunt::UpdateGruntStatus() {
         return 0;
     }
 
-    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
 
     if (m_stamina >= 0x64) {
         if (m_neighborValid == 0) {
@@ -503,7 +507,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
         }
     }
 
-    CEntranceAnimPlayer* p = m_154;
+    CGameObject* p = m_154;
     m_prevEntranceDesc = p->m_1a0.m_14;
     p->m_1a0.Setup_15c2d0((&m_poseAttack1)[idx]);
 
@@ -517,7 +521,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     i32 base = cc + (cr + 2 * cc);
     i32 idx2 = base + base * 12;
     char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
-    m_154->CacheFrame(buf, frame);
+    m_154->ApplyLookupSprite(buf, frame);
     m_214 = 1;
     return 0;
 }
@@ -539,7 +543,7 @@ i32 CGrunt::RearmAttackAnim2() {
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)g_buteTree.Find(s_codeF);
 
-    CEntranceAnimPlayer* p = m_154;
+    CGameObject* p = m_154;
     m_prevEntranceDesc = p->m_1a0.m_14;
     p->m_1a0.Setup_15c2d0(m_poseAttack2);
 
@@ -553,7 +557,7 @@ i32 CGrunt::RearmAttackAnim2() {
     i32 base = col + (row + 2 * col);
     i32 idx2 = base + base * 12;
     char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
-    m_154->CacheFrame(buf, frame);
+    m_154->ApplyLookupSprite(buf, frame);
     m_214 = 1;
     return 0;
 }
@@ -564,7 +568,7 @@ i32 CGrunt::RearmAttackAnim2() {
 // its ILT thunk 0x13cf into the g_reg_644af0 act registry under the anim-code key
 // "C" @0x60cc90 - the registry CGrunt::RunAct dispatches as PMFs on the grunt;
 // (2) every offset is the CGrunt layout (m_154 entrance player + the identical
-// m_154->m_8 |= 0x10000 retire idiom as FinishEntranceMove, m_tileOwnerHi/Lo fed
+// m_154->m_flags |= 0x10000 retire idiom as FinishEntranceMove, m_tileOwnerHi/Lo fed
 // to the tile-cell notify exactly as the attack step feeds CellDispatch, m_tileMgr
 // +0x260, the m_36c suppress gate FinishEntranceMove also reads). The five old
 // CWarp* views are DISSOLVED onto the canonicals: CWarpLeaf == CGrunt, CWarpM154
@@ -603,7 +607,7 @@ extern "C" i32 g_engineFrameDelta;
 RVA(0x00061cb0, 0x34a)
 i32 CGrunt::StepAttackFire() {
     i32 flag = 0;
-    if (m_154->Cursor()->Advance(g_engineFrameDelta) == 2) {
+    if (m_154->m_1a0.Advance(g_engineFrameDelta) == 2) {
         // The +0x170 slot holds the grunt's current TOOL/attack kind here (the
         // GruntType/PickupType id space, <Gruntz/Enums.h>); >0x16 kinds = melee.
         switch (m_entranceReason) {
@@ -630,7 +634,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->m_sprite->m_08 |= 0x10000;
+                    s->m_sprite->m_flags |= 0x10000;
                 }
                 break;
             }
@@ -655,7 +659,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->m_sprite->m_08 |= 0x10000;
+                    s->m_sprite->m_flags |= 0x10000;
                 }
                 break;
             }
@@ -691,7 +695,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->m_sprite->m_08 |= 0x10000;
+                    s->m_sprite->m_flags |= 0x10000;
                 }
                 break;
             }
@@ -743,8 +747,8 @@ i32 CGrunt::StepAttackFire() {
     }
 
     // finish tail (0x61f74): bail while the cursor is still un-armed or running.
-    CEntranceAnimPlayer* r = m_154;
-    if ((r->Cursor()->m_28 == 0 || r->Cursor()->m_20 != 0) && flag == 0) {
+    CGameObject* r = m_154;
+    if ((r->m_1a0.m_28 == 0 || r->m_1a0.m_20 != 0) && flag == 0) {
         return 0;
     }
     if (m_entranceReason == GRUNT_BOOMERANG) {
@@ -867,7 +871,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             i32 frame = el[0x14 / 4];
             char* buf = ((CString*)&m_448)->GetBuffer(0);
-            m_154->CacheFrame(buf, frame);
+            m_154->ApplyLookupSprite(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
             CGameRegistry* g = g_gameReg;
@@ -919,7 +923,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         i32 colv = cell.row + cell.col * 2;
         i32 basev = cell.col + colv;
         char* nm = m_cells[basev].m_walk.GetBuffer(0);
-        m_154->CacheFirstFrame(nm);
+        m_154->ApplyName(nm);
 
         DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
         m_idleDelayLo = (i32)(tt >> 1);
@@ -970,7 +974,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = el[0x14 / 4];
         char* buf = ((CString*)&m_448)->GetBuffer(0);
-        m_154->CacheFrame(buf, frame);
+        m_154->ApplyLookupSprite(buf, frame);
     }
 
     // The visible-bounds cue: probe the grunt's HUD point against the live view rect,
@@ -1012,8 +1016,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 // coord list / update the arrival.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
-    i32 ready = m_154->Cursor()->Advance((u32)g_engineFrameDelta);
-    CAniAdvanceCursor* sub = m_154->Cursor();
+    i32 ready = m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         if (m_arrived != 0) {
             CreateHealthSprite();
@@ -1057,10 +1061,10 @@ i32 CGrunt::StepEntranceRelatchA() {
         m_prevEntranceDesc = m_154->m_1a0.m_14;
         m_154->m_1a0.Setup_15c2d0(m_poseToyBreak);
         CAniElement* desc = m_154->m_1a0.m_14;
-        CAnimElem* elem = desc->m_records.m_nSize > 0 ? (CAnimElem*)*desc->m_records.m_pData : 0;
-        i32 frame = elem->m_14;
+        CAniDesc* elem = desc->m_records.m_nSize > 0 ? (CAniDesc*)*desc->m_records.m_pData : 0;
+        i32 frame = elem->m_param;
         char* nm = ((CString*)&m_448)->GetBuffer(0);
-        m_154->CacheFrameIndexed(nm, frame);
+        m_154->ApplyLookupSprite(nm, frame);
         m_entranceStamped = 1;
         CGruntHud* h = m_10;
         CGameRegistry* g = g_gameReg;
@@ -1339,7 +1343,7 @@ void CGrunt::ResolveEntranceArrival() {
         }
     }
 
-    i32 ready = m_154->Cursor()->Advance((u32)g_engineFrameDelta);
+    i32 ready = m_154->m_1a0.Advance((u32)g_engineFrameDelta);
 
     if ((i64)(u32)g_frameTime - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
         CGameRegistry* g = g_gameReg;
@@ -1494,7 +1498,7 @@ i32 CGrunt::StepEntranceReinit() {
     // (sizeof CGruntCellRec) to the same lea chain the raw offset produced (verified
     // byte-identical) - no imul, so the real member access is faithful.
     char* nm = m_cells[base].m_walk.GetBuffer(0);
-    m_154->CacheFirstFrame(nm);
+    m_154->ApplyName(nm);
     return 0;
 }
 
@@ -1512,7 +1516,7 @@ i32 CGrunt::StepEntranceReinit() {
 // cue operands. Correct shape + control flow; a codegen wall.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
-    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
     i64 diff = (i64)(u32)g_frameTime - *(i64*)&m_8c0;
     u32 elapsed;
     if (diff >= 0) {
@@ -1638,9 +1642,9 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 // (the documented regalloc tail).
 RVA(0x00063db0, 0x32f)
 void CGrunt::LoadVehicleGruntAnimations() {
-    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
+    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
 
-    CAniAdvanceCursor* sub = m_154->Cursor();
+    CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         if (m_arrived) {
             CreateHealthSprite();
@@ -1684,7 +1688,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             CAniElement* desc = m_154->m_1a0.m_14;
             i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             char* buf = ((CString*)&m_448)->GetBuffer(0);
-            m_154->CacheFrame(buf, elem[0x14 / 4]);
+            m_154->ApplyLookupSprite(buf, elem[0x14 / 4]);
 
             CGruntHud* h = m_10;
             CGameRegistry* g = g_gameReg;
@@ -1802,7 +1806,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CSprite* found;
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
-        found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
+        found = (CSprite*)m_154->m_0c->m_leaf->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 (i32)&g->m_world->m_24->m_mainPlane->m_originX,
@@ -1812,7 +1816,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
+        found = (CSprite*)m_154->m_0c->m_leaf->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 (i32)&g->m_world->m_24->m_mainPlane->m_originX,
@@ -1822,7 +1826,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
+        found = (CSprite*)m_154->m_0c->m_leaf->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 (i32)&g->m_world->m_24->m_mainPlane->m_originX,
@@ -1836,7 +1840,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     ((CEffect6b*)(&m_150))->Apply((i32)found, 0);
     i32* elem = (i32*)m_154->m_1a0.m_14->AtChecked_06b270(0);
     i32 frame = elem[0x14 / 4];
-    m_154->CacheFrame(s_GRUNTZ_EXITZ, frame);
+    m_154->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
     return 0;
 }
 
@@ -1845,8 +1849,8 @@ i32 CGrunt::BuildGruntExitAnimation() {
 // reloads + the /GX CString unwind state ordering; not source-steerable.
 RVA(0x00064540, 0x11c)
 i32 CGrunt::StepWarpExit() {
-    m_154->Cursor()->Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = m_154->Cursor();
+    m_154->m_1a0.Advance(g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 == 0) {
         return 0;
     }
@@ -1865,7 +1869,7 @@ i32 CGrunt::StepWarpExit() {
     if (m_36c == 0) {
         m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 1);
     }
-    m_154->m_8 |= 0x10000;
+    m_154->m_flags |= 0x10000;
     return 0;
 }
 
@@ -1962,7 +1966,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             i32 row = base * 3;
             i32 idx = base + row * 4;
             char* cn = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
-            m_154->CacheFirstFrame(cn);
+            m_154->ApplyName(cn);
         } else {
             ReseedIdleReset(1, 0, 0);
         }
@@ -2088,7 +2092,7 @@ tail:
         i32 row = base * 3;
         i32 idx = base + row * 4;
         char* cn = ((CString*)((char*)this + idx * 8 + 0x46c))->GetBuffer(0);
-        m_154->CacheFrame(cn, frame);
+        m_154->ApplyLookupSprite(cn, frame);
     }
     {
         CGruntHud* h = m_10;
@@ -2113,8 +2117,8 @@ tail:
 // reset the geometry.
 RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
-    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
-    CAniAdvanceCursor* sub = m_154->Cursor();
+    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }
@@ -2160,8 +2164,8 @@ i32 CGrunt::StepArrivalCommitA() {
 RVA(0x000654b0, 0x130)
 i32 CGrunt::StepArrivalCommitB() {
     // 0x15c360 is CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
-    m_154->Cursor()->Advance((u32)g_engineFrameDelta);
-    CAniAdvanceCursor* sub = m_154->Cursor();
+    m_154->m_1a0.Advance((u32)g_engineFrameDelta);
+    CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }
@@ -2309,7 +2313,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 base = cell.col + col + 0xb;
     i32 idx = base + base * 3 * 4;
     char* name = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
-    m_154->CacheFirstFrame(name);
+    m_154->ApplyName(name);
 }
 
 // LoadWandGruntItemConfig (0x65a60): per-frame wand-grunt item logic. Advance the
@@ -2374,7 +2378,7 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
 // PlaceAt / cue operands. A register-allocation/scheduling wall, not a shape error.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
-    i32 ready = m_154->Cursor()->Advance((u32)g_engineFrameDelta);
+    i32 ready = m_154->m_1a0.Advance((u32)g_engineFrameDelta);
     if (ready > 0) {
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -2385,7 +2389,7 @@ i32 CGrunt::StepEntranceRelatchB() {
             ready
         );
     }
-    CAniAdvanceCursor* sub = m_154->Cursor();
+    CAniAdvanceCursor* sub = &m_154->m_1a0;
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }

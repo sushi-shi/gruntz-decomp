@@ -45,7 +45,7 @@ public:
                                                //  static: no this, called this-less by the factory)
     virtual ~CToobSpikez() OVERRIDE;           // 0x012c60 (folds the CUserLogic teardown)
 
-    i32 m_40;                  // +0x40 (leaf field, written by the ctor)
+    CAniElement* m_40; // +0x40  saved active-anim descriptor (ctor snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44  leaf tail (true object size 0x54, per the
                                //         `operator new(0x54)` at the phase-0 factory)
 };

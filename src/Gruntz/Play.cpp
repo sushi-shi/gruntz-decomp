@@ -428,7 +428,7 @@ i32 CPlay::Render() {
 
         // --- shared world-draw block #1 ---
         m_c->m_childGroup->TickKillCues_159a70(0); // slot 9 [+0x24]
-        m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8); // 0x15dc90
+        m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8); // 0x15dc90
         m_c->m_rendererB->PruneWorkers(
             m_c->m_drawTarget->m_14,
             m_c->m_drawTarget->m_18
@@ -555,12 +555,12 @@ i32 CPlay::Render() {
         }
 
         // --- shared world-draw block #2 ---
-        m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+        m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
         m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18); // present
         if (m_region1Gate != 0) {
             StepC(); // alt-input draw
         } else {
-            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
             m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
         }
         m_beginMarker->FilterList2((void*)g_frameDelta);
@@ -706,7 +706,7 @@ alt2:
         }
         if (m_paused != 0) {
             // ---- the paused frame: draw-only ----
-            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
             m_c->m_rendererB->PruneWorkers(
                 m_c->m_drawTarget->m_14,
                 m_c->m_drawTarget->m_18
@@ -720,7 +720,7 @@ alt2:
             // ---- the active short frame: entity step + cues ----
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
-                m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+                m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
                 m_c->m_rendererB->PruneWorkers(
                     m_c->m_drawTarget->m_14,
                     m_c->m_drawTarget->m_18
@@ -2851,7 +2851,7 @@ i32 CPlay::ProfileDeltaFrame() {
         m_c->m_24->m_mainPlane->m_originY
     );
     u32 t2 = tg();
-    m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+    m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
     m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
     i32 presentMs = (i32)(tg() - t2);
     ProfLog(
@@ -2930,7 +2930,7 @@ i32 CPlay::ProfileInputFrame() {
     i32 hitTestMs = (i32)(tg() - t7);
 
     u32 t9 = tg();
-    m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+    m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
     i32 drawMs = (i32)(tg() - t9);
 
     u32 t11 = tg();
@@ -4812,7 +4812,7 @@ i32 CPlay::DrawWorldPresent() {
         ((CPlaneRender*)m_c->m_24->m_mainPlane)->CenterScrollA();
     }
     m_c->m_childGroup->TickKillCues_159a70(1);
-    m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+    m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
     m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
     m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
     return 1;
@@ -4847,7 +4847,7 @@ i32 CPlay::PresentAndFlush() {
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
-            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
             m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
         }
         m_c->m_drawTarget->m_10->m_surface->Flip(0); // 0x13e850
@@ -6662,7 +6662,7 @@ i32 CPlay::EnterMode(i32 mode) {
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
-            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
             m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
         }
         m_guts->Deactivate();
@@ -6671,7 +6671,7 @@ i32 CPlay::EnterMode(i32 mode) {
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
-            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CGameObjChain*)m_c->m_8);
+            m_c->m_24->VisitVisible(m_c->m_drawTarget->m_14, (CDDrawChildGroup*)m_c->m_8);
             m_c->m_rendererB->PruneWorkers(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
         }
         m_guts->Deactivate();

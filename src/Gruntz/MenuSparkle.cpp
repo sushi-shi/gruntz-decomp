@@ -28,7 +28,7 @@ RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_38->ApplyName("MENU_SPARKLE");
-    m_40 = m_38->m_geoId;
+    m_40 = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("MENU_FORWARD100", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -42,7 +42,7 @@ CMenuSparkle::~CMenuSparkle() {}
 
 // CMenuSparkle::AdvanceAnim @0x0ae2a0 - the sparkle's per-frame handler. Tick down
 // the aux flicker countdown (m_objAux->m_130, seeded random in the ctor); when it
-// reaches 0 advance the +0x1a0 anim; then, while the object is active (m_38->m_1c8)
+// reaches 0 advance the +0x1a0 anim; then, while the object is active (m_38->m_1a0.m_28)
 // and the anim is idle (m_20 == 0), recompute the blit param and re-arm the random
 // flicker delay (rand()%0xfa1 + 0x3e8, the same range the ctor seeds).
 // @early-stop
@@ -61,10 +61,10 @@ i32 CMenuSparkle::AdvanceAnim() {
         m_objAux->m_130 -= delta;
     }
     if (m_objAux->m_130 == 0) {
-        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+        m_38->m_1a0.Advance(g_engineFrameDelta);
     }
-    CAniAdvanceCursor* anim = (CAniAdvanceCursor*)((char*)m_38 + 0x1a0);
-    i32 active = m_38->m_1c8;
+    CAniAdvanceCursor* anim = &m_38->m_1a0;
+    i32 active = m_38->m_1a0.m_28;
     if (active != 0 && anim->m_20 == 0) {
         if (anim != 0) {
             anim->Recompute_15c320(1);

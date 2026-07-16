@@ -43,7 +43,7 @@ i32 CSingleAnimation::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CSingleAnimation::~CSingleAnimation @0x010540 - the leaf adds no destructible
@@ -124,8 +124,8 @@ void CSingleAnimation::RegisterActs() {
 // Returns 0. (Sibling of CMenuSparkle::AdvanceAnim without the flicker countdown.)
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
-    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         m_38->m_flags |= 0x10000;
     }
     return 0;

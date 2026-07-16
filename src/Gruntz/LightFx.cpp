@@ -9,7 +9,9 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h>      // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
 #include <Image/ImageSet.h>         // CImageSet - the spec Lookup result (frames + index range)
-#include <Gruntz/LightFxResource.h> // the object-context spec/effect resource stores (@identity-TODO)
+#include <DDrawMgr/DDrawSurfaceMgr.h>      // the m_0c world root (spec/effect stores)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_surfaceDesc (the spec store; Ob 0x1b8008)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>     // m_leaf (the effect store; Ptr 0x1b8438)
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 #include <Gruntz/SerialArchive.h>    // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>     // the +0x34 serialized-object-reference (Chain @0x8c00)
@@ -31,8 +33,9 @@ extern "C" u32 g_engineFrameDelta;
 // so their call displacements reloc-mask. Field names are placeholders; only the
 // OFFSETS + code bytes are load-bearing.
 
-// The spec/effect resource stores + their owner-context holder (LfxSpecStore /
-// LfxEffectStore / LfxMapHolder) live in <Gruntz/LightFxResource.h> (included
+// The spec/effect resource stores are the typed m_0c world root's m_surfaceDesc
+// (CDDrawWorkerRegistry, Ob band 0x1b8008) and m_leaf (CDDrawSubMgrLeaf, Ptr band
+// 0x1b8438); the former LfxSpecStore/LfxEffectStore/LfxMapHolder views (included
 // above) - the two store maps are DIFFERENT real MFC types (CMapStringToOb for the
 // spec @0x1b8008, CMapStringToPtr for the effect @0x1b8438: proven by disasm of
 // CLightFx::Activate @0x9d520; the labels used to be inverted here).
@@ -145,7 +148,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
     // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
     // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
-    ((LfxMapHolder*)m_3c->m_0c)->m_spec->m_map.Lookup((const char*)spec, (CObject*&)node);
+    m_3c->m_0c->m_surfaceDesc->m_10map.Lookup((const char*)spec, (CObject*&)node);
     i32 found = node;
     g_gameReg->m_logicPump->Push((CImageSet*)found, anchorA, 7);
     if (found != 0) {
@@ -171,12 +174,12 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     m_anchorB = anchorB;
     // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
     // context (CGameObject::m_0c @+0xc); out is void*&.
-    ((LfxMapHolder*)m_38->m_0c)->m_effect->m_map.Lookup((const char*)effect, (void*&)node);
+    m_38->m_0c->m_leaf->m_10.Lookup((const char*)effect, (void*&)node);
     if (node != 0) {
         node = 0;
-        ((LfxMapHolder*)m_38->m_0c)->m_effect->m_map.Lookup((const char*)effect, (void*&)node);
-        m_layerBase = m_38->m_geoId;
-        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Setup_15c2d0((CAniElement*)node);
+        m_38->m_0c->m_leaf->m_10.Lookup((const char*)effect, (void*&)node);
+        m_layerBase = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0((CAniElement*)node);
         RebindNode();
     }
     return 0;
@@ -193,7 +196,7 @@ i32 CLightFx::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) == 0) {
+    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     switch (mode) {
@@ -232,8 +235,8 @@ i32 CLightFx::RebindNode() {
 // ===========================================================================
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
-    if (m_38->m_1c8 && !m_38->m_1c0 && m_anchorB) {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    if (m_38->m_1a0.m_28 && !m_38->m_1a0.m_20 && m_anchorB) {
         m_38->m_flags |= 0x10000;
     }
     return 0;
@@ -242,8 +245,8 @@ i32 CLightFx::AdvanceAnim() {
 // All of this TU's former per-TU view structs are now DISSOLVED onto real classes
 // or homed to headers: LfxObj -> CGameObject, LfxMapSource -> AnimWorkerObj::m_0c,
 // LfxEffectNode -> CImageSet, CLightFxActReg -> the CActReg archetype,
-// CLightFxActEntry -> <Gruntz/LightFx.h>, and LfxSpecStore/LfxEffectStore/
-// LfxMapHolder -> <Gruntz/LightFxResource.h>. No struct/class is defined in this .cpp.
+// CLightFxActEntry -> <Gruntz/LightFx.h>; the Lfx store views are dissolved onto
+// the canonical CDDrawSurfaceMgr members. No struct/class is defined in this .cpp.
 
 // ============================================================================
 // merged from LightFxEh.cpp (the /GX EH-frame sibling; unit flags -> eh)

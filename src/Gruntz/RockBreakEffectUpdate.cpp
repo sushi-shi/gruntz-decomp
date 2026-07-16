@@ -48,13 +48,13 @@ struct RbEffect {
 // steerable (a cached-pointer local didn't flip it). Logic + all relocs exact.
 RVA(0x000476b0, 0x69)
 i32 RbEffect::Update() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) == 1) {
+    if (m_38->m_1a0.Advance(g_engineFrameDelta) == 1) {
         CGameObject* t = m_10;
         if (t->m_114 == 1) {
             g_gameReg->m_cmdGrid->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_124);
         }
     }
-    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
+    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         m_38->m_flags |= 0x10000;
     }
     return 0;

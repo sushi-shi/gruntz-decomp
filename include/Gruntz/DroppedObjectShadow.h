@@ -41,7 +41,7 @@ public:
     void FireActivation(i32 coord); // 0xc7750 (look up + fire the registered handler)
     static void RegisterActs();     // 0xc78b0 (bind Advance to the "A" key)
     i32 Advance();                  // 0xc7ab0 (per-frame: advance anim; drop frame -> spawn)
-    i32 m_savedGeoId;               // +0x40  m_38->m_geoId snapshot
+    CAniElement* m_savedGeoId;               // +0x40  m_38->m_1a0.m_14 snapshot
     char m_pad44[0x54 - 0x44];
 };
 VTBL(CDroppedObjectShadow, 0x1e787c);

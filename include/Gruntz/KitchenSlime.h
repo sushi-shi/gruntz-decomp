@@ -46,7 +46,7 @@ public:
         return m_38;
     }
 
-    i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
+    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
     char m_pad44[0x58 - 0x44];
     double m_speed;  // +0x58  per-frame speed (g_slimeSpeedNum / timePerTile)
     double m_posX;   // +0x60  sub-pixel X position accumulator

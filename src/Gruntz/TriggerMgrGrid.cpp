@@ -245,7 +245,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
             do {
                 CTmCell* c = *cell;
                 if (c != 0) {
-                    c->m_154->m_8 |= 0x10000;
+                    c->m_154->m_flags |= 0x10000;
                     *cell = 0;
                     m_cellFlag[g2 + col] = 0;
                 }

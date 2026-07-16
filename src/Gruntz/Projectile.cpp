@@ -42,24 +42,10 @@
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
 
-// The CProjAnim/CProjRenderObj facet methods forward (out-of-line, defined here so the
-// shared Projectile.h stays light) to the canonical engine classes: the +0x1a0 anim
-// sub-object's SetGeometry/Advance -> CDDrawBlitParam::Setup_15c2d0 /
-// CAniAdvanceCursor::Advance, and the render object's CacheFirstFrame/
-// ApplyLookupGeometry -> CGameObject::ApplyName / ApplyLookupGeometry. All calls
-// reloc-mask, so no phantom symbol is emitted and the sites stay cast-free.
-void CProjAnim::SetGeometry(void* src) {
-    ((CAniAdvanceCursor*)this)->Setup_15c2d0((CAniElement*)src);
-}
-i32 CProjAnim::Advance(u32 clock) {
-    return ((CAniAdvanceCursor*)this)->Advance(clock);
-}
-void CProjRenderObj::CacheFirstFrame(const char* name) {
-    ((CGameObject*)this)->ApplyName(name);
-}
-i32 CProjRenderObj::ApplyLookupGeometry(const char* key, i32 flag) {
-    return ((CGameObject*)this)->ApplyLookupGeometry(key, flag);
-}
+// (The CProjAnim/CProjRenderObj facet forwarders are DISSOLVED (2026-07-16): the
+// render object IS the canonical CGameObject and the +0x1a0 sub-object its
+// embedded CAniAdvanceCursor - the sites call Setup_15c2d0/Advance/ApplyName/
+// ApplyLookupGeometry directly.)
 
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
@@ -228,10 +214,10 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_object->m_moveMode = 7;
     Fn16ea90();
     m_150 = (i32)owner;
-    m_sprite = (CProjRenderObj*)owner;
+    m_sprite = (CGameObject*)owner;
     m_158 = (i32)owner->m_7c;
-    m_sprite->m_08 |= 0x2000002;
-    m_sprite->m_40 |= 1;
+    m_sprite->m_flags |= 0x2000002;
+    m_sprite->m_stateFlags |= 1;
     if (m_object->m_latchedAnimId != 0xcf850) {
         m_object->m_latchedAnimId = 0xcf850;
         m_object->m_flags |= 0x20000;
@@ -391,36 +377,36 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     }
 
     // Resolve the six numbered frame sprites; frame "1" is required.
-    CMapStringToPtr& map = m_sprite->m_c->m_2c->m_10; // Lookup 0x1b8438 -> void& out-param
+    CMapStringToPtr& map = m_sprite->m_0c->m_leaf->m_10; // Lookup 0x1b8438 -> void& out-param
     void* out;
     out = 0;
     map.Lookup(key + "1", out);
-    m_frame1 = out;
+    m_frame1 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
     if (m_frame1 == 0) {
         return 0;
     }
     out = 0;
     map.Lookup(key + "2", out);
-    m_frame2 = out;
+    m_frame2 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "3", out);
-    m_frame3 = out;
+    m_frame3 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "4", out);
-    m_frame4 = out;
+    m_frame4 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "5", out);
-    m_frame5 = out;
+    m_frame5 = (CAniElement*)out; // (the Ptr map is void*-valued; container-edge cast)
     out = 0;
     map.Lookup(key + "IMPACT", out);
-    m_impactSprite = out;
+    m_impactSprite = (CAniElement*)out;
     out = 0;
     map.Lookup(key + "FALL", out);
-    m_fallSprite = out;
+    m_fallSprite = (CAniElement*)out;
 
-    m_savedFrameGeo = m_sprite->m_1b4;
-    m_sprite->m_1a0.SetGeometry(m_frame1);
-    m_sprite->CacheFirstFrame(key + "_OBJECT");
+    m_savedFrameGeo = m_sprite->m_1a0.m_14;
+    m_sprite->m_1a0.Setup_15c2d0(m_frame1);
+    m_sprite->ApplyName(key + "_OBJECT");
 
     // Normalise the launch trajectory into the per-frame velocity + sign vectors.
     u32 totalTime = (u32)(count * m_timePerTile);
@@ -458,7 +444,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     // Spawn the LightFx shadow companion + activate its two frames.
     CSpriteFactory* factory = g_gameReg->m_world->m_8;
     m_shadow =
-        (CProjRenderObj*)factory
+        (CGameObject*)factory
             ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
     if (m_shadow != 0) {
         m_shadow->m_7c->m_notify((CGameObject*)m_shadow);
@@ -696,51 +682,51 @@ void CProjectile::MovingSlot16() {
             if (dist >= mag * 0.9 || dist < mag * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_sprite->m_1b4 != (i32)m_frame1) {
-                    m_savedFrameGeo = m_sprite->m_1b4;
-                    m_sprite->m_1a0.SetGeometry(m_frame1);
+                if (m_sprite->m_1a0.m_14 != m_frame1) {
+                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
+                    m_sprite->m_1a0.Setup_15c2d0(m_frame1);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.SetGeometry(m_frame1);
+                        m_shadow->m_1a0.Setup_15c2d0(m_frame1);
                     }
                 }
             } else if (dist >= mag * 0.8 || dist < mag * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_sprite->m_1b4 != (i32)m_frame2) {
-                    m_savedFrameGeo = m_sprite->m_1b4;
-                    m_sprite->m_1a0.SetGeometry(m_frame2);
+                if (m_sprite->m_1a0.m_14 != m_frame2) {
+                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
+                    m_sprite->m_1a0.Setup_15c2d0(m_frame2);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.SetGeometry(m_frame2);
+                        m_shadow->m_1a0.Setup_15c2d0(m_frame2);
                     }
                 }
             } else if (dist >= mag * 0.7 || dist < mag * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_sprite->m_1b4 != (i32)m_frame3) {
-                    m_savedFrameGeo = m_sprite->m_1b4;
-                    m_sprite->m_1a0.SetGeometry(m_frame3);
+                if (m_sprite->m_1a0.m_14 != m_frame3) {
+                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
+                    m_sprite->m_1a0.Setup_15c2d0(m_frame3);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.SetGeometry(m_frame3);
+                        m_shadow->m_1a0.Setup_15c2d0(m_frame3);
                     }
                 }
             } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_sprite->m_1b4 != (i32)m_frame4) {
-                    m_savedFrameGeo = m_sprite->m_1b4;
-                    m_sprite->m_1a0.SetGeometry(m_frame4);
+                if (m_sprite->m_1a0.m_14 != m_frame4) {
+                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
+                    m_sprite->m_1a0.Setup_15c2d0(m_frame4);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.SetGeometry(m_frame4);
+                        m_shadow->m_1a0.Setup_15c2d0(m_frame4);
                     }
                 }
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_sprite->m_1b4 != (i32)m_frame5) {
-                    m_savedFrameGeo = m_sprite->m_1b4;
-                    m_sprite->m_1a0.SetGeometry(m_frame5);
+                if (m_sprite->m_1a0.m_14 != m_frame5) {
+                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
+                    m_sprite->m_1a0.Setup_15c2d0(m_frame5);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.SetGeometry(m_frame5);
+                        m_shadow->m_1a0.Setup_15c2d0(m_frame5);
                     }
                 }
             }
@@ -748,8 +734,8 @@ void CProjectile::MovingSlot16() {
         m_object->m_screenX = offX + m_curX;
         m_object->m_screenY = offY + m_curY;
         if (m_shadow != 0) {
-            m_shadow->m_5c = localX;
-            m_shadow->m_60 = yRes;
+            m_shadow->m_screenX = localX;
+            m_shadow->m_screenY = yRes;
         }
         return;
     }
@@ -761,7 +747,7 @@ void CProjectile::MovingSlot16() {
     }
     ScanTargets(0);
     if (m_shadow != 0) {
-        m_shadow->m_08 |= 0x10000;
+        m_shadow->m_flags |= 0x10000;
         m_shadow = 0;
     }
     m_arrived = 1;
@@ -789,7 +775,7 @@ void CProjectile::MovingSlot16() {
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
-            m_sprite->m_08 |= 0x10000;
+            m_sprite->m_flags |= 0x10000;
             return;
         }
         if (flags & 0x2) {
@@ -821,19 +807,19 @@ void CProjectile::MovingSlot16() {
                                 fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                             }
                         }
-                        m_sprite->m_08 |= 0x10000;
+                        m_sprite->m_flags |= 0x10000;
                         return;
                 }
             }
         }
     }
-    void* sprite = (tier != 0) ? m_fallSprite : m_impactSprite;
+    CAniElement* sprite = (tier != 0) ? m_fallSprite : m_impactSprite;
     if (sprite == 0) {
-        m_sprite->m_08 |= 0x10000;
+        m_sprite->m_flags |= 0x10000;
         return;
     }
-    m_savedFrameGeo = m_sprite->m_1b4;
-    m_sprite->m_1a0.SetGeometry(sprite);
+    m_savedFrameGeo = m_sprite->m_1a0.m_14;
+    m_sprite->m_1a0.Setup_15c2d0(sprite);
 }
 
 // ---------------------------------------------------------------------------
@@ -843,14 +829,14 @@ void CProjectile::MovingSlot16() {
 // ---------------------------------------------------------------------------
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
-    m_sprite->m_40 &= ~1u;
+    m_sprite->m_stateFlags &= ~1u;
     // The +0x1a0 anim sub-object IS a CAniAdvanceCursor (Advance @0x15c360); call
     // it directly (retail's DetachRenderObj rel32s straight to 0x15c360, not a forwarder),
     // matching the cast-at-use pattern of the sibling site below (~line 1322).
-    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance(g_engineFrameDelta);
-    CProjRenderObj* r = m_sprite;
-    if (r->m_1c8 != 0 && r->m_1c0 == 0) {
-        r->m_08 |= 0x10000;
+    m_sprite->m_1a0.Advance(g_engineFrameDelta);
+    CGameObject* r = m_sprite;
+    if (r->m_1a0.m_28 != 0 && r->m_1a0.m_20 == 0) {
+        r->m_flags |= 0x10000;
     }
     return 0;
 }
@@ -885,8 +871,8 @@ void CBoomerang::MovingSlot16() {
             m_object->m_screenX = m_targetX;
             m_object->m_screenY = m_targetY;
             if (m_shadow != 0) {
-                m_shadow->m_5c = m_targetX;
-                m_shadow->m_60 = m_targetY;
+                m_shadow->m_screenX = m_targetX;
+                m_shadow->m_screenY = m_targetY;
             }
             m_launched = 1;
             goto step;
@@ -895,10 +881,10 @@ void CBoomerang::MovingSlot16() {
         // past the terminal threshold: deliver the impact scan + expire.
         ScanTargets(1);
         if (m_shadow != 0) {
-            m_shadow->m_08 |= 0x10000;
+            m_shadow->m_flags |= 0x10000;
             m_shadow = 0;
         }
-        m_sprite->m_08 |= 0x10000;
+        m_sprite->m_flags |= 0x10000;
         return;
     }
 step:
@@ -917,8 +903,8 @@ step:
     m_object->m_screenX = (i32)m_posX;
     m_object->m_screenY = (i32)m_posY;
     if (m_shadow != 0) {
-        m_shadow->m_5c = (i32)m_posX;
-        m_shadow->m_60 = (i32)m_posY;
+        m_shadow->m_screenX = (i32)m_posX;
+        m_shadow->m_screenY = (i32)m_posY;
     }
 }
 
@@ -1196,7 +1182,7 @@ void CTimeBomb::RegisterActs() {
 // CTimeBomb::CTimeBomb(CGameObject*) @0xe1b90 - the 1-arg leaf ctor: the standard
 // CUserLogic(obj) init (folded inline) plus the timebomb tail - raise the bound
 // object's logic/collision bits, set its z gate, apply the GAME_TIMEBOMB sprite,
-// cache the anim-set node off the "A" bute key, snapshot m_38->m_1b4, then pick
+// cache the anim-set node off the "A" bute key, snapshot m_38->m_1a0.m_14, then pick
 // the FAST (per-tile-time>0) or SLOW (bute TimeBombSlowTime) geometry + running
 // clock, mark the collision-grid cell at the bound object's tile, and arm the
 // bound object's per-tile-time gate (-1). Constructs a throwing CUserBaseLink, so
@@ -1221,7 +1207,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_TIMEBOMB");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_prevAnimNode = m_38->m_geoId;
+    m_prevAnimNode = m_38->m_1a0.m_14;
     if (m_object->m_120 > 0) {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = m_object->m_120;
@@ -1302,12 +1288,12 @@ i32 CTimeBomb::LoadAttributes() {
         TBombGridClear(m_object);
         return 0;
     }
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     if ((i64)g_frameTime - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
         return 0;
     }
     if (m_fastPhase == 0) {
-        m_prevAnimNode = m_38->m_geoId;
+        m_prevAnimNode = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
         m_durationHi = 0;
@@ -1358,7 +1344,7 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;
+    return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
 }
 
 // ---------------------------------------------------------------------------

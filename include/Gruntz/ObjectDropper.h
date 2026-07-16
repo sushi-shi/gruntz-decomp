@@ -46,7 +46,7 @@ public:
     // pin; the vtable slot is reloc-masked, like CRollingBall::Serialize).
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc6680
 
-    i32 m_geomId; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    CAniElement* m_geomId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
     char m_pad44[0x58 - 0x44];
     double m_speed;      // +0x58  per-frame speed (32.0 / time-per-tile)
     double m_posX;       // +0x60  accumulated x (double)

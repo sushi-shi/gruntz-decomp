@@ -82,7 +82,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_latchedAnimId = 5;
         m_object->m_flags |= 0x20000;
     }
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     i32 key = m_object->m_124;
@@ -131,7 +131,7 @@ i32 CGruntCreationPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag != 4 && tag == 8) {
@@ -214,7 +214,7 @@ void CGruntCreationPoint::RegisterActs() {
 // return 0. Same archetype as CSimpleAnimation::AdvanceAnim (0x0abf70).
 RVA(0x0003ecc0, 0x17)
 i32 CGruntCreationPoint::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 

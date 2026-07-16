@@ -10,7 +10,8 @@
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Rez/RezList.h>          // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
-#include <Gruntz/SerialObjRef.h>  // CSerialArchive, CDDrawSubMgrLeaf (KeyOfValue), CSerialObj
+#include <Gruntz/SerialObjRef.h>      // CSerialArchive + the canonical CDDrawSubMgrLeaf/CGameObject
+#include <DDrawMgr/DDrawSurfaceMgr.h> // m_158->m_0c (the world root; m_leaf hop)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world = CSpriteFactoryHolder*)
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory (m_world->m_8; m_objMap key->object map @+0x48)
 #include <Gruntz/UserLogic.h>     // CGameObject (the resolved object; GetTypeId [8] + m_188)
@@ -41,7 +42,7 @@ extern "C" CGameRegistry* g_gameReg;
 // Mode 4 = WRITE: re-derives each ref's name via reg->m_2c->KeyOfValue_152d30 and
 // writes it back. Either way it tail-chains the base loader (0x16f4a0), then runs an
 // embedded CSerialObjRef record at +0x150 (read/write a key name + 0x10 blob, resolve
-// through a3->m_7c->m_c->m_2c). Names are placeholders; offsets + bytes load-bearing.
+// through a3->m_7c->m_0c->m_leaf). Names are placeholders; offsets + bytes load-bearing.
 // ===========================================================================
 
 // g_gameReg->m_world IS the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>):
@@ -59,9 +60,9 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The +0x204 list the read path appends payloads to (CPtrList::AddTail @0x1b4991);
 // sized to one pointer so the following fields keep their offsets.
-// a3->m_7c->m_c->m_2c is the registry leaf; CSerialObj/CSerialNameHolder give m_7c
+// a3->m_7c->m_0c->m_leaf is the registry leaf; the canonical types give m_7c
 // and m_0c, but the inlined +0x150 record reaches m_c (not m_0c) - the same shape at
-// +0x0c. Reuse CSerialObj for a3; view its name-holder's +0x0c through CSerialNameHolder.
+// +0x0c. Reuse CGameObject for a3; view its name-holder's +0x0c through AnimWorkerObj.
 // @identity-recovered: CProjLoadRec IS CProjectile, and Load @0x0e0d40 IS
 // CProjectile::SerializeMove (vtable slot 1). PROOF: vtable_hierarchy --class
 // CProjectile resolves slot 1 (ILT thunk 0x0034b3) to this RVA under the src name
@@ -74,13 +75,13 @@ extern "C" CGameRegistry* g_gameReg;
 // m_1e0[]/m_204 with CProjectile's named-field/CPtrList layout - risks the byte
 // match; left for the projectile-serialize rehome.
 struct CProjLoadRec {
-    i32 Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3);      // 0x0e0d40
-    i32 ChainLoad(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3); // 0x16f4a0
+    i32 Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3);      // 0x0e0d40
+    i32 ChainLoad(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3); // 0x16f4a0
 
     char _00[0x150];
-    CSerialObj* m_150;                     // +0x150  a3
-    CSerialObj* m_154;                     // +0x154  a3
-    CSerialNameHolder* m_158;              // +0x158  a3->m_7c
+    CGameObject* m_150;                     // +0x150  a3
+    CGameObject* m_154;                     // +0x154  a3
+    AnimWorkerObj* m_158;              // +0x158  a3->m_7c
     void* m_15c;                           // +0x15c  resolved value (CMapStringToPtr entry)
     i32 m_160, m_164, m_168, m_16c;        // +0x160  the 0x10-byte blob
     i32 m_170, m_174, m_178, m_17c, m_180; // +0x170
@@ -116,7 +117,7 @@ struct CProjLoadRec {
 // the MSVC5 scratch-buffer slot assignment + outparam zero-init store positions. Not
 // source-steerable.
 RVA(0x000e0d40, 0x6c2)
-i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
+i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
     CSpriteFactoryHolder* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
@@ -253,7 +254,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
         char blob[0x80];
         memset(blob, 0, sizeof(blob));
         if (m_15c != 0) {
-            CString nm = m_158->m_0c->m_2c->KeyOfValue_152d30((CObject*)m_15c);
+            CString nm = m_158->m_0c->m_leaf->KeyOfValue_152d30((CObject*)m_15c);
             strcpy(blob, nm);
         }
         s->Write(blob, 0x80);
@@ -274,7 +275,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
         return 1;
     }
     void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-    m_158->m_0c->m_2c->m_10.Lookup(buf, out);
+    m_158->m_0c->m_leaf->m_10.Lookup(buf, out);
     m_15c = out;
     return 1;
 }

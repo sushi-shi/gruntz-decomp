@@ -35,6 +35,7 @@
 #include <DDrawMgr/DDrawShadeBlit.h>   // CDDrawShadeBlit - CImage::m_owned (was CImageFormat)
 #include <Image/ImageSet.h>            // CImageSet (sparse CImage-frame collection)
 #include <Gruntz/AniAdvanceCursor.h>   // canonical CAniAdvanceCursor (Advance)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>  // m_0c->m_leaf (the +0x2c geometry-source catalog)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
@@ -1414,12 +1415,12 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
                 count++;
             }
             val = tab->NextSym3(val);
-            if ((m_0c->m_flags & 0x100) && count > 0) {
+            if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
                 val = 0;
             }
         }
         sym = tab->NextSym(sym);
-        if ((m_0c->m_flags & 0x100) && count > 0) {
+        if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
             sym = 0;
         }
     }

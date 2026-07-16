@@ -866,7 +866,7 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
         i32 surfaceMgr = parent->m_0c;
         w->m_04 = field1c;
         w->m_08 = 0;
-        w->m_0c = (LogicContext*)surfaceMgr;
+        w->m_0c = (CDDrawSurfaceMgr*)surfaceMgr;
         w->m_notify = 0;
         w->m_14 = 0;
         w->m_logic = 0;

@@ -1127,11 +1127,15 @@ public:
     CString& TypeName() {
         return *(CString*)&m_typeName;
     }
-    i32 m_idleGeoSrc[(0x68 - 0x58) / 4];      // +0x58  (Idle geometry sources)
-    i32 m_battlecryGeoSrc[(0x74 - 0x68) / 4]; // +0x68  (Battlecry geometry sources)
-    i32 m_joyGeoSrc;                          // +0x74  (generic/_JOY geometry source)
-    i32 m_deathGeoSrc;                        // +0x78  (death geometry source)
-    i32 m_movingGeoSrc;                       // +0x7c  (moving geometry source)
+    // +0x58..+0x7c: the resolved per-anim geometry sources - CAniElement* handles
+    // looked up from m_0c->m_leaf->m_10 (the Ptr-band catalog); fed to the cursor's
+    // Setup_15c2d0. (Were i32; the map is void*-valued so the fill sites cast at
+    // the container edge.)
+    CAniElement* m_idleGeoSrc[(0x68 - 0x58) / 4];      // +0x58  (Idle geometry sources)
+    CAniElement* m_battlecryGeoSrc[(0x74 - 0x68) / 4]; // +0x68  (Battlecry geometry sources)
+    CAniElement* m_joyGeoSrc;                          // +0x74  (generic/_JOY geometry source)
+    CAniElement* m_deathGeoSrc;                        // +0x78  (death geometry source)
+    CAniElement* m_movingGeoSrc;                       // +0x7c  (moving geometry source)
     char m_pad80[0x88 - 0x80];
     i32 m_moveSeed;      // +0x88  (moving: = g_movingSeed)
     i32 m_moveTimeHi;    // +0x8c  (moving: = 0)

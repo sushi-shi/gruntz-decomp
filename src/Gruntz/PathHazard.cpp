@@ -235,7 +235,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
     } else {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
-        m_savedGeoId = m_38->m_geoId;
+        m_savedGeoId = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
 }
@@ -282,7 +282,7 @@ i32 CPathHazard::RunAct(i32 id) {
 // wall CKitchenSlime::Tick carries). Logic byte-for-byte correct.
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
 
     CGameObject* obj = m_object;
     // The probe rect (a 4-int local) the on-screen query tests, computed
@@ -401,7 +401,7 @@ i32 CPathHazard::SiblingTick() {
         o->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[sel]; // [m_78 + sel*4 + 0x14]
     }
 
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
 
     CGameObject* obj = m_object;
     i32 rect[4];

@@ -239,7 +239,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     AnimWorkerObj* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
     aux->m_1c = g_buteTree.Find(s_codeA);
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     m_38->m_flags |= 2;
@@ -764,7 +764,7 @@ i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) == 0) {
+    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     // The two i64 drift fields sit contiguous (m_driftPos @+0x58, m_driftThresh @+0x60);
@@ -804,7 +804,7 @@ i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // this 390-byte body differs from retail's and is not source-steerable. Deferred.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     CGameObject* obj = m_object;
     i32 cmd = obj->m_124;
     if (cmd == 0x55) {
@@ -1010,7 +1010,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 // this 397-byte body differs from retail's and is not source-steerable. Deferred.
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     i64 delta = (i64)(u32)g_frameTime - *(i64*)&m_driftPos;
     if (delta >= *(i64*)&m_driftThresh) {
         CGameObject* r = m_38;
@@ -1121,7 +1121,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->ApplyName("GAME_HELPBOX");
     m_38->m_flags |= 2;
@@ -1223,7 +1223,7 @@ i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
     if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, a, b) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, a, (CSerialObj*)b) == 0) {
+    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, a, (CGameObject*)b) == 0) {
         return 0;
     }
     switch (tag) {

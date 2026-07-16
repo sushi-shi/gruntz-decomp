@@ -49,7 +49,7 @@ public:
     // slot reloc-masked, like CRollingBall::Serialize).
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc73a0
 
-    i32 m_savedGeoId; // +0x40  m_38->m_geoId snapshot
+    CAniElement* m_savedGeoId; // +0x40  m_38->m_1a0.m_14 snapshot
     char m_pad44[0x58 - 0x44];
     double m_timePerTile; // +0x58  per-tile time (32.0 / TimePerTile)
     double m_fallY;       // +0x60  fall accumulator (adjusted screen Y)

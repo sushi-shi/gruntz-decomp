@@ -27,7 +27,7 @@ public:
     // The per-frame handler (@0x0ae2a0): tick the aux flicker countdown, advance the
     // +0x1a0 anim on expiry, then re-arm the random flicker delay.
     i32 AdvanceAnim();
-    i32 m_40;                  // +0x40
+    CAniElement* m_40;         // +0x40  saved active-anim descriptor (ctor snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf is 0x54: its only new-site, the
                                // logic-worker pump @0xaa0a0, pushes 0x54)
 };

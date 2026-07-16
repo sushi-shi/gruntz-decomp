@@ -46,6 +46,7 @@
 #include <Gruntz/GameRegistry.h>          // g_gameReg->m_134 (play sub-mode gate in the warp ctor)
 #include <string.h>                       // memset (inlined rep stosd)
 #include <rva.h>
+#include <DDrawMgr/AniAdvance.h> // CAniDesc (the descriptor record)
 
 // The activation key "B" (0x60d1bc) CTileSecretTrigger's second registration interns;
 // s_codeA/g_buteTree/g_typeCounter come from <Gruntz/ActNameRegistry.h>.
@@ -177,7 +178,7 @@ i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // CWarpStonePad::~CWarpStonePad @0x10fc0 - empty vtable-anchor dtor; folds the bare
@@ -191,7 +192,7 @@ i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // CTileTriggerSwitch::~CTileTriggerSwitch @0x110f0 - the 0x44 folded CUserLogic teardown.
@@ -214,7 +215,7 @@ i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // ~CTileTrigger is inline (header) so it folds into the three leaf dtors instead of
@@ -237,7 +238,7 @@ i32 CBrickz::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CGameObject*)d) != 0;
 }
 
 // ~CCheckpointTrigger @0x011480 - the bare folded CUserLogic teardown (store the
@@ -274,7 +275,7 @@ i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // ~CTileTriggerTransition (0x0117f0) - THIS class's own out-of-line dtor COMDAT, not the
@@ -755,7 +756,7 @@ i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;
+    return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
 }
 
 // --- The three CTileTrigger leaves' 1-arg ctors (0x10fa60/90/c0) --- each chains
@@ -843,13 +844,13 @@ void CTileTriggerTransition::RegisterActs() {
 // aux's bute node for the "A" node (caching the old one).
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    m_activeAnimDesc = m_38->m_geoId;
+    m_activeAnimDesc = m_38->m_1a0.m_14;
     if (m_38->ApplyLookupGeometry(geom, 0) == 0) {
         return 0;
     }
-    CAniElement* desc = (CAniElement*)m_38->m_geoId;
-    CAnimElem* elem = desc->m_records.m_nSize > 0 ? (CAnimElem*)*desc->m_records.m_pData : 0;
-    m_38->ApplyLookupSprite(sprite, elem->m_14);
+    CAniElement* desc = (CAniElement*)m_38->m_1a0.m_14;
+    CAniDesc* elem = desc->m_records.m_nSize > 0 ? (CAniDesc*)*desc->m_records.m_pData : 0;
+    m_38->ApplyLookupSprite(sprite, elem->m_param);
     m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
     m_objAux->m_1c = g_buteTree.Find("A");
     return 1;
@@ -860,8 +861,8 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 // active (m_1c8 != 0) but not idle (m_1c0 == 0), mark the object stalled/handled this frame.
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::Handler_110110() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
-    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         m_38->m_flags |= 0x10000;
     }
     return 0;

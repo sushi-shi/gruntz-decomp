@@ -7,6 +7,8 @@
 // This file will fold into the T host (DDrawSurfacePair.cpp) when
 // that obj's assembly lands; kept as a single-block correct partial meanwhile.
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c (the owner/world root)
+#include <DDrawMgr/DDrawChildGroup.h> // m_childGroup->m_map48 (the id->object resolver)
 #include <Gruntz/UserLogic.h> // CUserLogic (m_logic SerializeMove dispatch) + CGameObject (m_170)
 #include <rva.h>
 #include <Mfc.h>        // CMapPtrToPtr::Lookup (0x1b8760)
@@ -59,7 +61,7 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
         case 8:
             if (m_174) {
                 void* out = 0;
-                CMapPtrToPtr* res = (CMapPtrToPtr*)(m_0c->m_08 + 0x48);
+                CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
                 m_170 = res->Lookup((void*)m_174, out) ? (CGameObject*)out : (CGameObject*)0;
             }
             break;
@@ -278,7 +280,7 @@ i32 AnimWorkerObj::ResolveTarget(void* a) {
         return 0;
     }
     if (m_174) {
-        CMapPtrToPtr* res = (CMapPtrToPtr*)(m_0c->m_08 + 0x48);
+        CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
         void* out = 0;
         if (!res->Lookup((void*)m_174, out)) {
             m_170 = 0;

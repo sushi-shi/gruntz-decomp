@@ -98,7 +98,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_areaR = 1;
     m_object->m_areaT = 1;
     m_object->m_areaB = 1;
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = 0;
     CFocusSlot* slot = &g_gameReg->m_focusSlots[m_object->m_124];
@@ -149,7 +149,7 @@ i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
     CSerialArchive* arc = (CSerialArchive*)ar;
-    if (!SerialRef34()->Chain(arc, mode, a3, (CSerialObj*)a4)) {
+    if (!SerialRef34()->Chain(arc, mode, a3, (CGameObject*)a4)) {
         return 0;
     }
 

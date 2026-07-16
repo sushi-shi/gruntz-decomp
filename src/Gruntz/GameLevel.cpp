@@ -38,7 +38,9 @@
 #include <Io/FileMem.h>           // CFileMemBase complete type (Read/Write dispatch)
 #include <Wap32/Object.h>         // CObject grand-base (slots 0-4) for the CImageSetN variants
 #include <Gruntz/ParseSource.h>   // canonical CParseSource (BeginParse/EndParse)
-#include <Gruntz/UserLogic.h>     // canonical CGameObject (the movement target) + world chain types
+#include <Gruntz/UserLogic.h>          // canonical CGameObject (the movement target)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // the m_0c world root (the chain owner)
+#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup/CDDrawGroupNode (the object chain)
 #include <Io/FileStream.h>        // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <Gruntz/ImageSets.h>     // CImageSet1/2/3 variant records + RezAlloc/RezFree
 #include <DDrawMgr/DDrawWorkerHost.h>  // the REAL plane class (CPlane == CDDrawWorkerHost)
@@ -153,7 +155,7 @@ RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) {
     m_04 = a2;
     m_08 = a3;
-    m_0c = a1; // (merged CLoadable ctor)
+    m_0c = (CDDrawSurfaceMgr*)a1; // (merged CLoadable ctor; mangling-pinned i32 arg)
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
     m_b4 = 250;
@@ -686,7 +688,7 @@ CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5
 // fields; the trigger ctors initialize the same m_extent/m_area records. The
 // former per-family window structs (LevelScroll/ScrollTarget/EditTarget/ProbeObj/
 // HoldPayload/ProbeTarget/BPObj + the BP chain shells) are COLLAPSED into it; the
-// world chain (CGameObjNode/CGameObjChain/CGameObjWorld) lives beside it in
+// world chain (CDDrawChildGroup/CDDrawGroupNode) lives beside it in
 // UserLogic.h. The level steps each object's m_screenX/m_screenY through the tile
 // probes; m_extentL/T/R/B are the object's per-side collision extents,
 // m_areaL/T/R its stand/activation box, m_carrier + m_deltaX/Y the platform ride.
@@ -1033,8 +1035,8 @@ CPlane* CGameLevel::FindPlaneByName(const char* name) {
     return 0;
 }
 
-// (The world object chain - CGameObjNode/CGameObjChain - is the canonical model
-// in <Gruntz/UserLogic.h>; the chain payloads are CGameObjects. The objects'
+// (The world object chain is the canonical CDDrawChildGroup/CDDrawGroupNode
+// (<DDrawMgr/DDrawChildGroup.h>); the chain payloads are CGameObjects. The objects'
 // +0x74 z-key is read here for the draw ordering - the canonical field is named
 // m_latchedAnimId (historical); CheckpointTrigger derives it as
 // layer-base + screenY + bias, i.e. a cached z-order key. Rename deferred until
@@ -1054,15 +1056,15 @@ CPlane* CGameLevel::FindPlaneByName(const char* name) {
 // reloads `cap` from spill each iteration; cl keeps cap live in edx and restores via the
 // surviving eax. Logic + offsets + CFG exact; allocator coin-flip. Deferred to the final sweep.
 RVA(0x0015dc90, 0x141)
-void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
+void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     // The engine lea's the +0x10 list record's ADDRESS and null-checks it (always
-    // live) before loading the head - the sub-struct keeps that byte shape.
-    CGameObjChain::List* chain = &ctx->m_list;
+    // live) before loading the head - the CObList member keeps that byte shape.
+    CObList* chain = &ctx->m_list;
 
     if ((m_08 & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
         ((CLevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))
             ->Draw((CPlaneDrawCtx*)visitor);
-        CGameObjNode* node = chain->head;
+        CDDrawGroupNode* node = (CDDrawGroupNode*)chain->GetHeadPosition();
 
         i32 i = 1;
         if (m_planes.GetSize() > i) {
@@ -1072,9 +1074,9 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
                 i32 zBound = p->m_zBound;
                 i32 blocked = 0;
                 while (node != 0 && blocked == 0) {
-                    CGameObjNode* cur = node;
-                    node = node->next;
-                    CGameObject* pl = cur->obj;
+                    CDDrawGroupNode* cur = node;
+                    node = node->m_next;
+                    CGameObject* pl = cur->m_gameObj;
                     if (pl->m_latchedAnimId < zBound) { // z-key vs the plane's z bound
                         pl->Draw(visitor);
                     } else {
@@ -1088,9 +1090,9 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
         }
 
         while (node != 0) {
-            CGameObjNode* cur = node;
-            node = node->next;
-            cur->obj->Draw(visitor);
+            CDDrawGroupNode* cur = node;
+            node = node->m_next;
+            cur->m_gameObj->Draw(visitor);
         }
         return;
     }
@@ -1103,7 +1105,7 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
             ++idx;
         } while (idx <= m_mainIndex);
     }
-    ctx->WalkDispatch2C(visitor);
+    ctx->WalkDispatch2C((i32)visitor);
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
@@ -1804,11 +1806,11 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
         return 0;
     }
 
-    CGameObjNode* node = ((CGameObjWorld*)m_0c)->m_objChain->m_list.head;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_0c->m_childGroup->m_list.GetHeadPosition();
     while (node != 0) {
-        CGameObjNode* cur = node;
-        node = node->next;
-        CGameObject* pl = cur->obj;
+        CDDrawGroupNode* cur = node;
+        node = node->m_next;
+        CGameObject* pl = cur->m_gameObj;
         if (pl->m_collCategory == 0x80) {
             if (AltStepValidate(t, pl, a1, a2, outY, a3) != 0) {
                 t->m_moveMode = 1;

@@ -6,6 +6,8 @@
 // runs a 2nd unit-type switch) and fires the on-screen entrance cue. Class-split
 // into its own TU (matching-neutral); only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/Grunt.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
 #include <Wap32/ZVec.h>
 extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <Gruntz/TypeKeyColl.h>   // the shared CTypeKeyColl (g_typeColl @0x6bf650)
@@ -37,7 +39,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         a4 = 0;                                                                                    \
-        m_154->m_c->m_2c->m_10map.Lookup((key), (void*&)a4);                                       \
+        m_154->m_0c->m_leaf->m_10.Lookup((key), (void*&)a4);                                       \
         id = (idv);                                                                                \
         m_pickupGeoSrc = a4;                                                                       \
     } while (0)
@@ -243,7 +245,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         case PICKUP_MEGAPHONE: {
             MegaHolder* mh = (MegaHolder*)g_gameReg->m_2c;
             a4 = 0;
-            m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (void*&)a4);
+            m_154->m_0c->m_leaf->m_10.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (void*&)a4);
             m_pickupGeoSrc = a4;
             i32 n = mh->m_2dc->M();
             if (a5 != 0) {
@@ -479,7 +481,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     m_prevEntranceDesc = m_154->m_1a0.m_14;
     m_154->m_1a0.Setup_15c2d0((CAniElement*)m_pickupGeoSrc);
-    m_154->CacheFirstFrame("GRUNTZ_PICKUPS");
+    m_154->ApplyName("GRUNTZ_PICKUPS");
     return 1;
 }
 

@@ -209,7 +209,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_savedGeoId = m_38->m_geoId;
+    m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     o->m_areaL = 0;
     o->m_areaR = 0;
@@ -325,7 +325,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance((i32)g_engineFrameDelta);
+    m_38->m_1a0.Advance((i32)g_engineFrameDelta);
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
@@ -452,7 +452,7 @@ i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
     if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(stream), tag, c, d) == 0) {
         return 0;
     }
-    return ((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CSerialObj*)d)
+    return ((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CGameObject*)d)
            != 0;
 }
 

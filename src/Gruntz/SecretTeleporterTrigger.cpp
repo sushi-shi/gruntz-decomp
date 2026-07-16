@@ -124,7 +124,7 @@ i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d) != 0;
+    return SerialRef34()->Chain((CSerialArchive*)a, b, c, (CGameObject*)d) != 0;
 }
 
 // --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
@@ -151,7 +151,7 @@ i32 CSecretLevelTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no

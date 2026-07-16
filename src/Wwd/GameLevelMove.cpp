@@ -24,7 +24,9 @@
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
 #include <Wap32/Object.h>     // CObject grand-base (SubWidget_168080's base)
-#include <Gruntz/UserLogic.h> // canonical CGameObject (the movement target) + world chain types
+#include <Gruntz/UserLogic.h>         // canonical CGameObject (the movement target)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (the chain owner)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
 #include <rva.h>
 
 // The collision-relevant tile codes are the typed enum TileCollision in
@@ -590,8 +592,7 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
 // axis) but t's CANDIDATE box (at candX, candY) WOULD overlap, it stores the
 // other party in t->m_hitOther and fires t's worker m_notify; on a
 // nonzero reply it fires the object's own notify (masks permitting), returns 1.
-// (The `(CGameObjWorld*)m_0c` cast is language-forced: the CLoadable base stores
-// the owning context as a generic i32 across the whole family.)
+// (m_0c is the typed CDDrawSurfaceMgr owner; the walk reads its m_childGroup.)
 // ===========================================================================
 
 // @early-stop
@@ -601,13 +602,13 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & 0x100)) {
         return 0;
     }
-    CGameObjNode* node = ((CGameObjWorld*)m_0c)->m_objChain->m_list.head;
+    CDDrawGroupNode* node = (CDDrawGroupNode*)m_0c->m_childGroup->m_list.GetHeadPosition();
     if (node == 0) {
         return 0;
     }
     do {
-        CGameObjNode* nx = node->next;
-        CGameObject* obj = node->obj;
+        CDDrawGroupNode* nx = node->m_next;
+        CGameObject* obj = node->m_gameObj;
         if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_collCategory)
             && t->m_extentL != AXIS_UNSET && obj->m_extentL != AXIS_UNSET) {
             i32 tLeft = t->m_extentL + t->m_screenX;

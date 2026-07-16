@@ -37,7 +37,7 @@ public:
     // renderable (m_10). (__thiscall: ret 0x10.)
     i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4);
 
-    i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
+    CAniElement* m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)
     char m_pad44[0x54 - 0x44];
     i32 m_cellX;     // +0x54  grunt cell x
     i32 m_cellY;     // +0x58  grunt cell y

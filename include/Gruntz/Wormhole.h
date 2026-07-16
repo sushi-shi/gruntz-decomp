@@ -42,7 +42,7 @@ public:
     // CWormhole's own data begins at +0x40 (CUserLogic base ends at +0x40). Only
     // the offsets the matched methods write are modeled; +0x54/+0x68 are config
     // state flags whose exact roles are unproven (kept as offset placeholders).
-    i32 m_prevAnimNode; // +0x40  snapshot of the bound object's active-anim descriptor
+    CAniElement* m_prevAnimNode; // +0x40  snapshot of the bound object's active-anim descriptor
     char m_pad44[0x54 - 0x44];
     i32 m_54; // +0x54  config flag (set to 1 by ReapplyConfig)
     char m_pad58[0x68 - 0x58];

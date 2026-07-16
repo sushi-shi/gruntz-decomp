@@ -50,7 +50,7 @@ public:
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010050 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandyAni() OVERRIDE;          // 0x0100f0 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40 (geoId latch; written by the ctor)
+    CAniElement* m_40; // +0x40  saved active-anim descriptor (ctor snapshot)
     char
         m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CBehindCandyAni` @0xaa5a0)
 };

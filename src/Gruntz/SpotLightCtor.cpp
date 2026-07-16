@@ -179,7 +179,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
     if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, c, d) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)arc, mode, c, (CSerialObj*)d) == 0) {
+    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)arc, mode, c, (CGameObject*)d) == 0) {
         return 0;
     }
     CGameRegistry* reg = g_gameReg;

@@ -22,7 +22,7 @@ i32 CLevelTime::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // CLevelTime::CLevelTime @0x9b8b0 - fold the shared CUserLogic(obj) init (with the

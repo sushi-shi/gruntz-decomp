@@ -36,7 +36,7 @@ public:
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     virtual ~CExitTrigger() OVERRIDE; // 0x0108c0 (folds the CUserLogic teardown)
 
-    i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id
+    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id
     char m_pad44[0x54 - 0x44];
     CUserLogic* m_warlordLogic; // +0x54  the resolved warlord's bound logic (obj->m_7c->m_logic)
     i32 m_resolved;             // +0x58  resolved gate (1 = warlord bound, 0 = inactive slot)

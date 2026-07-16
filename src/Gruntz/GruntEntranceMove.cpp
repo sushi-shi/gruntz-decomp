@@ -16,6 +16,8 @@
 // its 31 private cells sit inside this TU's band).
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
                                 // WERE the fake g_animScratch / g_animScratchCount
@@ -195,7 +197,7 @@ static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
 static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 
 // (The entrance-cell WALK/IDLE anim-name CStrings are m_cells[k].m_walk / .m_idle,
-// +0x08/+0x0c of each record; the sprite lookup runs on m_154->m_c->m_2c->m_10map.)
+// +0x08/+0x0c of each record; the sprite lookup runs on m_154->m_0c->m_leaf->m_10map.)
 
 // ---------------------------------------------------------------------------
 // CGrunt::RunEntranceMove()   @0x67850   (ret 0)
@@ -209,10 +211,8 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
     m_154->m_1a0.Advance((u32)g_engineFrameDelta);
-    // The geometry sub-player @m_154+0x1a0: m_20/m_28 live past its own m_1b4, so
-    // read via raw offsets off &player->m_1a0 (keeps cl on one base).
-    i32* sub = (i32*)((char*)m_154 + 0x1a0);
-    if (!((sub[0xa] != 0 && sub[8] == 0) || m_moveMode == 0)) {
+    // The +0x1a0 cursor's done-gates (m_28 paused-done, m_20 per-frame timer).
+    if (!((m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) || m_moveMode == 0)) {
         return 0;
     }
 
@@ -238,7 +238,7 @@ i32 CGrunt::RunEntranceMove() {
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
         char* nm = m_cells[base].m_walk.GetBuffer(0);
-        m_154->CacheFirstFrame(nm);
+        m_154->ApplyName(nm);
     } else {
         ReseedIdleReset(1, 0, 0);
     }
@@ -392,29 +392,29 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     if (mode == 1) {
         i32 r = GruntRand() % 0x1e1;
         if (r > 0x140) {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, (void*&)found);
+            m_154->m_0c->m_leaf->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37a, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, (void*&)found);
+            m_154->m_0c->m_leaf->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37b, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, (void*&)found);
+            m_154->m_0c->m_leaf->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37c, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         }
     } else if (mode == 2) {
-        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (void*&)found);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (void*&)found);
         base = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
-        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, (void*&)found);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, (void*&)found);
         base = s_GRUNTZ_DEATHZ_MELT;
     }
 
@@ -520,10 +520,10 @@ void CGrunt::LoadEntranceConfig() {
             h->m_8 |= 0x20000;
         }
 
-        CEntranceAnimPlayer* p = m_154;
+        CGameObject* p = m_154;
         void* found_ob = 0;
         void* cached = p->m_1a0.m_14;
-        p->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, found_ob);
+        p->m_0c->m_leaf->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, found_ob);
         CSprite* found = (CSprite*)found_ob;
         if ((void*)found == cached) {
             if (m_tileOwnerHi == g_curPlayer) {
@@ -548,8 +548,7 @@ void CGrunt::LoadEntranceConfig() {
         EntranceFinishWire(0, 0);
     }
 
-    char* sub = (char*)&m_154->m_1a0;
-    if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
+    if (m_154->m_1a0.m_28 == 0 || m_154->m_1a0.m_20 != 0) {
         return;
     }
     ResetEntranceAnimation(1, 0, 0);
@@ -573,7 +572,7 @@ RVA(0x00068370, 0x14c)
 void CGrunt::RearmEntranceDrop() {
     m_154->m_1a0.Advance((u32)g_engineFrameDelta);
 
-    if (*(i32*)((char*)m_154 + 0x1a0 + 0x28) != 0 && *(i32*)((char*)m_154 + 0x1a0 + 0x20) == 0) {
+    if (m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) {
         m_22c = 0;
         m_prevEntranceDesc = m_154->m_1a0.m_14;
         m_154->m_1a0.Setup_15c2d0(m_poseItem2);
@@ -589,7 +588,7 @@ void CGrunt::RearmEntranceDrop() {
         // into idx*0x68 + 0x478 and diverge.
         const char* name =
             (const char*)((zDArray*)((char*)this + (3 * col + row + 0xb) * 0x68))->IndexToPtr(0);
-        m_154->CacheFrame(name, frame);
+        m_154->ApplyLookupSprite(name, frame);
     }
 
     if (m_22c == 0) {
@@ -706,7 +705,7 @@ i32 CGrunt::StartBombGruntRun() {
     i32 base = cell.col + col + 0xb;
     i32 idx = base + base * 3 * 4;
     char* cn = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
-    m_154->CacheFirstFrame(cn);
+    m_154->ApplyName(cn);
     return 0;
 }
 
@@ -759,10 +758,10 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[8].m_walk = s_SE_ITEM;
 
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (void*&)_out);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_WG_ITEM, (void*&)_out);
         m_poseWalk = (CAniElement*)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_ITEM, (void*&)_out);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_WG_ITEM, (void*&)_out);
         m_poseIdle[2] = 0;
         m_poseIdle[0] = (CAniElement*)_out;
         m_poseIdle[1] = (CAniElement*)_out;
@@ -805,22 +804,22 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[8].m_idle = s_SE_IDLE;
 
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_WALK, (void*&)_out);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_WG_WALK, (void*&)_out);
         m_poseWalk = (CAniElement*)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE1, (void*&)_out);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_WG_IDLE1, (void*&)_out);
         m_poseIdle[0] = (CAniElement*)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE2, (void*&)_out);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_WG_IDLE2, (void*&)_out);
         m_poseIdle[1] = (CAniElement*)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE3, (void*&)_out);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_WG_IDLE3, (void*&)_out);
         m_poseIdle[2] = (CAniElement*)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE4, (void*&)_out);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_WG_IDLE4, (void*&)_out);
         m_poseIdle4 = (CAniElement*)_out;
         _out = 0;
-        m_154->m_c->m_2c->m_10map.Lookup(s_WG_IDLE5, (void*&)_out);
+        m_154->m_0c->m_leaf->m_10.Lookup(s_WG_IDLE5, (void*&)_out);
         m_poseIdle5 = (CAniElement*)_out;
     }
 
@@ -835,7 +834,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_walk, 0);
-        m_154->CacheFrame(buf, frame);
+        m_154->ApplyLookupSprite(buf, frame);
         return 1;
     }
 
@@ -849,7 +848,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_idle, 0);
-        m_154->CacheFrame(buf, frame);
+        m_154->ApplyLookupSprite(buf, frame);
     }
     return 1;
 }
@@ -879,8 +878,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
     m_154->m_1a0.Advance((u32)g_engineFrameDelta);
-    char* sub = (char*)m_154 + 0x1a0;
-    if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
+    if (m_154->m_1a0.m_28 == 0 || m_154->m_1a0.m_20 != 0) {
         return 0;
     }
 
@@ -893,7 +891,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         i32 frame = elem[0x14 / 4];
 
         char* buf = ((CString*)&m_448)->GetBuffer(0);
-        m_154->CacheFrame(buf, frame);
+        m_154->ApplyLookupSprite(buf, frame);
 
         m_entranceStamped = 1;
         i32 v = m_moveVariant;
@@ -1040,7 +1038,7 @@ i32 CGrunt::StepArrivalCommit() {
             i32 colv = cell.row + cell.col * 2;
             i32 base = cell.col + colv;
             char* nm = m_cells[base].m_walk.GetBuffer(0);
-            m_154->CacheFirstFrame(nm);
+            m_154->ApplyName(nm);
         } else {
             ResetEntranceAnimation(1, 0, 0);
         }
@@ -1166,7 +1164,7 @@ finalize:
         CAniElement* desc = m_154->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
-        m_154->CacheFrame(s_GRUNTZ_DEATHZ_FREEZE, frame);
+        m_154->ApplyLookupSprite(s_GRUNTZ_DEATHZ_FREEZE, frame);
     }
     m_freezeUnfrozen = 0;
     m_freezeDelayDone = 1;
@@ -1195,8 +1193,7 @@ finalize:
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
     m_154->m_1a0.Advance((u32)g_engineFrameDelta);
-    char* sub = (char*)&m_154->m_1a0;
-    if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
+    if (m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) {
         if (m_freezeUnfrozen != 0) {
             m_entranceActive = 0;
             ReadConfigFromButeMgr();
@@ -1240,20 +1237,19 @@ i32 CGrunt::LoadFreezeSpellAssets() {
 // Arm the entrance geometry source ((CAniAdvanceCursor*)&(m_154->m_1a0)->Advance((u32)g_engineFrameDelta)); when
 // the geometry sub-player is armed-but-not-running (sub+0x28 != 0 && sub+0x20 == 0):
 // unless m_36c is already set, notify the tile-mgr of the drop, then retire the
-// entrance player (m_154->m_8 |= 0x10000). Returns 0.
+// entrance player (m_154->m_flags |= 0x10000). Returns 0.
 RVA(0x00069fd0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
     // 0x15c360 = CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
     m_154->m_1a0.Advance((u32)g_engineFrameDelta);
-    char* sub = (char*)&m_154->m_1a0;
-    if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
+    if (m_154->m_1a0.m_28 == 0 || m_154->m_1a0.m_20 != 0) {
         return 0;
     }
     if (m_36c == 0) {
         // 0x79fb0 = CTriggerMgr::NotifyCell (the reused registry slot), not a CGruntTileMgr method
         m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
-    m_154->m_8 |= 0x10000;
+    m_154->m_flags |= 0x10000;
     return 0;
 }
 
@@ -1571,7 +1567,7 @@ i32 CGrunt::StepAnimDispatchB() {
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
         char* nm = m_cells[base].m_walk.GetBuffer(0);
-        m_154->CacheFirstFrame(nm);
+        m_154->ApplyName(nm);
         goto modeDispatch;
     } else {
         ApplySetState1(1);

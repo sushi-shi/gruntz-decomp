@@ -53,7 +53,7 @@ i32 CBehindCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CBehindCandyAni::~CBehindCandyAni @0x0100f0 - the leaf adds no destructible
@@ -73,8 +73,8 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_38->m_geoId == 0) {
-        m_40 = m_38->m_geoId;
+    if (m_38->m_1a0.m_14 == 0) {
+        m_40 = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     if (m_object->m_latchedAnimId != 0) {
@@ -152,7 +152,7 @@ void CBehindCandyAni::RegisterActs() {
 // displacement.
 RVA(0x000adbb0, 0x17)
 i32 CBehindCandyAni::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 

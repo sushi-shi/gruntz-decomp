@@ -183,7 +183,7 @@ i32 CParticlez::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CParticlez::~CParticlez @0x012d90 - the leaf adds no destructible members
@@ -202,7 +202,7 @@ i32 CExplosion::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CExplosion::~CExplosion (0x12ec0) - the /GX leaf dtor folds the bare CUserLogic
@@ -254,7 +254,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName(name);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_codeA);
-    m_prevAnimNode = m_38->m_geoId;
+    m_prevAnimNode = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_flags |= 3;
     i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[m_object->m_124 * 71].m_idx;
@@ -324,7 +324,7 @@ void CFortressFlag::RegisterActs() {
 // Same archetype as CGruntCreationPoint::AdvanceAnim (0x03ecc0).
 RVA(0x000463e0, 0x17)
 i32 CFortressFlag::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -339,7 +339,7 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag == 8) {
@@ -552,9 +552,9 @@ void CParticlez::RegisterActs() {
 // Always returns 0. The extended AdvanceAnim archetype.
 RVA(0x00047090, 0x4c)
 i32 CParticlez::Update() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta);
+    m_38->m_1a0.Advance(g_engineFrameDelta);
     CGameObject* o = m_38;
-    if (o->m_1c8 != 0 && o->m_1c0 == 0) {
+    if (o->m_1a0.m_28 != 0 && o->m_1a0.m_20 == 0) {
         o->m_flags |= 0x10000;
     }
     return 0;

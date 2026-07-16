@@ -97,7 +97,7 @@ RVA(0x0015b300, 0x40)
 AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
     m_04 = b;
     m_08 = c;
-    m_0c = (LogicContext*)a;
+    m_0c = (CDDrawSurfaceMgr*)a; // (mangling-pinned i32 arg; a IS the mgr)
     m_notify = 0;
     m_14 = 0;
     m_logic = 0;

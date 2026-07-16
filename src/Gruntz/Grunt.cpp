@@ -18,7 +18,7 @@
 //
 // Animation-resolver cluster (5/5 logic + CFG + member-offsets byte-exact; equal
 // instruction counts; residue = reloc-masked EH/CString/call operands + an
-// edx/ecx coin-flip on the `m_activeAnimDesc = m_38->m_1b4` store that no source lever flips,
+// edx/ecx coin-flip on the `m_activeAnimDesc = m_38->m_1a0.m_14` store that no source lever flips,
 // plus, for Idle/Battlecry, the compiler hoisting `idx+0xNNN` into a callee-saved
 // reg early - all entropy-class):
 //   CGrunt::ResolveMovingAnimation()    91.97%
@@ -72,6 +72,8 @@
 // return 0; else return 1.
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_leaf hop)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_leaf (the anim-key catalog)
 #include <Gruntz/TriggerMgr.h>  // CTriggerMgr::ApplySwitch @0x6d300 (the ex-ApplyTileSwitch alias)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
                                 // WERE the fake g_animScratch / g_animScratchCount
@@ -234,7 +236,7 @@ static void GruntScratchTeardown();
 // CGrunt::LoadAnimNameTable(int kind, int toyOnly)   @0x49c60
 // Fills the per-pose animation-name index table (m_poseWalk..m_poseItem2) by looking up
 // "GRUNTZ_" + this->m_animSetName + "_<POSE>" in the entrance player's
-// name->animset hash (m_154->m_c->m_2c->m_10map). __thiscall, ret 8 (/GX - the
+// name->animset hash (m_154->m_0c->m_leaf->m_10map). __thiscall, ret 8 (/GX - the
 // two operator+ CString temporaries per block carry a C++ EH frame).
 //
 //   * kind==0  : load the full grunt pose set (WALK/ATTACK*/STRUCK*/IDLE1..5/
@@ -277,7 +279,7 @@ struct CAnimSetNode {
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
-        m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out);         \
+        m_154->m_0c->m_leaf->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out);         \
         (dst) = _out;                                                                              \
     } while (0)
 
@@ -440,7 +442,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     ((CMovingLogic*)this)->MovingSlot16();
     CGameObject* obj = (CGameObject*)owner; // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
     m_150 = obj;
-    m_154 = (CEntranceAnimPlayer*)owner; // the owner object doubles as the entrance player
+    m_154 = obj; // the owner object doubles as the entrance player
     m_158 =
         obj->m_7c; // the bound object's AnimWorkerObj (typed; the ex-CGruntSndResMgr cast fell out)
     m_struckClockLo = 0;
@@ -487,11 +489,11 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     m_poseToyBreak = 0;
     m_pickupGeoSrc = 0;
     m_arrived = 0;
-    m_154->m_e8 = 0x100000;
+    m_154->m_collCategory = 0x100000;
     m_154->m_ec = 0x3d1;
-    m_154->m_8 |= 0x2000100;
-    m_154->m_f4 |= 0x103f;
-    m_154->m_f0 = 1;
+    m_154->m_flags |= 0x2000100;
+    m_154->m_collMask |= 0x103f;
+    m_154->m_f0 = 1; // +0xf0 (named below in UserLogic.h)
     m_tileOwnerHi = -1;
     m_tileOwnerLo = -1;
     m_neighborCol = -1;
@@ -934,7 +936,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
             i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
             const char* nm = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
-            m_154->CacheFrame(nm, frame);
+            m_154->ApplyLookupSprite(nm, frame);
         }
         goto store;
     }
@@ -971,7 +973,7 @@ idle:
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
         const char* nm = (const char*)((zDArray*)&m_cells[index].m_idle)->IndexToPtr(0);
-        m_154->CacheFrame(nm, frame);
+        m_154->ApplyLookupSprite(nm, frame);
     }
     goto store;
 
@@ -985,7 +987,7 @@ walk:
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
         const char* nm = (const char*)((zDArray*)&m_cells[index].m_walk)->IndexToPtr(0);
-        m_154->CacheFirstFrame(nm);
+        m_154->ApplyName(nm);
     }
 
 store:

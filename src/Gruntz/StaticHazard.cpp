@@ -50,7 +50,7 @@ extern "C" u32 g_engineFrameDelta;
 // gate the "animation finished -> revert to IDLE" branch; their exact roles are
 // unproven, so they stay placeholders.
 
-// The active-anim descriptor is the resolved geometry element (m_38->m_geoId, a
+// The active-anim descriptor is the resolved geometry element (m_38->m_1a0.m_14, a
 // CAniElement): the SetAnimEx idiom reads its first frame record's (CAniRecordView)
 // seed frame (m_seedFrame). Same idiom TileLogicPump uses. (The former HazAnimElem/
 // HazAnimDesc .cpp-local views are dissolved onto <Gruntz/AniElement.h>.)
@@ -197,10 +197,10 @@ RVA(0x000fb7a0, 0x2d4)
 CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     // re-arm the IDLE geometry + STATICHAZARD sprite (SetAnimEx idiom).
-    m_prevAnimNode = m_38->m_geoId;
+    m_prevAnimNode = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
-        CAniElement* d = (CAniElement*)m_38->m_geoId;
+        CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
         CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
@@ -231,7 +231,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
-    ((CAniAdvanceCursor*)((char*)m_object + 0x1a0))->m_2c = 0;
+    m_object->m_1a0.m_2c = 0;
     m_object->m_124 = g_64553c;
     m_activeWindow = 0;
     m_idleWindow = m_object->m_120;
@@ -342,10 +342,10 @@ i32 CStaticHazard::LoadAttributes2() {
         return 0;
     }
     m_fired = 1;
-    m_prevAnimNode = m_38->m_geoId;
+    m_prevAnimNode = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
-        CAniElement* d = (CAniElement*)m_38->m_geoId;
+        CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
         CAniRecordView* e = d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
@@ -379,10 +379,10 @@ i32 CStaticHazard::LoadAttributes() {
             // re-arm IDLE (cache the anim-set node first)
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find("A");
-            m_prevAnimNode = m_38->m_geoId;
+            m_prevAnimNode = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                CAniElement* d = (CAniElement*)m_38->m_geoId;
+                CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
                 CAniRecordView* e =
                     d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
@@ -399,10 +399,10 @@ i32 CStaticHazard::LoadAttributes() {
             return 0;
         }
         // m_120 == 0: re-arm GO + clear the fired flag
-        m_prevAnimNode = m_38->m_geoId;
+        m_prevAnimNode = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            CAniElement* d = (CAniElement*)m_38->m_geoId;
+            CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
             CAniRecordView* e =
                 d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
@@ -422,10 +422,10 @@ i32 CStaticHazard::LoadAttributes() {
             goto dispatch;
         }
         // turn on: re-arm GO, latch the fired flag
-        m_prevAnimNode = m_38->m_geoId;
+        m_prevAnimNode = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            CAniElement* d = (CAniElement*)m_38->m_geoId;
+            CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
             CAniRecordView* e =
                 d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
@@ -439,7 +439,7 @@ i32 CStaticHazard::LoadAttributes() {
     }
 
 dispatch:
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance(g_engineFrameDelta) == 2) {
+    if (m_38->m_1a0.Advance(g_engineFrameDelta) == 2) {
         i32 a = 0, b = 0;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {
@@ -464,12 +464,12 @@ dispatch:
         }
     }
     {
-        CAniAdvanceCursor* sub = (CAniAdvanceCursor*)((char*)m_38 + 0x1a0);
+        CAniAdvanceCursor* sub = &m_38->m_1a0;
         if (sub->m_28 != 0 && sub->m_20 == 0) {
-            m_prevAnimNode = m_38->m_geoId;
+            m_prevAnimNode = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                CAniElement* d = (CAniElement*)m_38->m_geoId;
+                CAniElement* d = (CAniElement*)m_38->m_1a0.m_14;
                 CAniRecordView* e =
                     d->m_records.m_nSize > 0 ? (CAniRecordView*)*d->m_records.m_pData : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
@@ -528,5 +528,5 @@ i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain(arc, mode, a3, (CSerialObj*)a4) != 0;
+    return SerialRef34()->Chain(arc, mode, a3, (CGameObject*)a4) != 0;
 }

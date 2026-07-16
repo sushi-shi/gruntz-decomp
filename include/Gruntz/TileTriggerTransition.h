@@ -23,13 +23,9 @@
 // data layout (CGameObject/AnimWorkerObj/CUserLogic) is modeled there too.
 #include <Gruntz/UserLogic.h>
 
-// The +0x1b4 animation-descriptor collection CGameObject hangs (ApplyAnimation
-// walks it, same shape CGrunt's anim resolvers use - see <Gruntz/Grunt.h>):
-// element[0]'s +0x14 is the seed frame.
-struct CAnimElem {
-    char m_pad00[0x14];
-    i32 m_14; // +0x14  seed frame
-};
+// (The former CAnimElem "+0x14 seed frame" element view is DISSOLVED
+// (2026-07-16): the m_1a0.m_14 descriptor's record element is the canonical
+// CAniDesc (<DDrawMgr/AniAdvance.h>; m_param @+0x14 is the seed frame).)
 
 // (The former CTileTransitionController/CTileTransitionState pump views are
 // DISSOLVED (2026-07-13 worker fold): the controller IS the canonical
@@ -77,7 +73,7 @@ public:
     // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
     // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the
     // +0x1b4 animation descriptor.
-    i32 m_activeAnimDesc;      // +0x40
+    CAniElement* m_activeAnimDesc;      // +0x40
     char m_pad44[0x54 - 0x44]; // +0x44..+0x53
 };
 VTBL(CTileTriggerTransition, 0x1e7db4);

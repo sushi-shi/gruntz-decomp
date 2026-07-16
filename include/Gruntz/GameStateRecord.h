@@ -9,23 +9,13 @@
 
 #include <Ints.h>
 
-// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
-// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
-// re-declare a distinct class and silently out-rank the typedef (MSVC5).
-class CFileMemBase;
-typedef CFileMemBase CSerialArchive;
-class CSerialObj;
-
 // (The CGameStateRecord shim is GONE: 0x555e0 is CGrunt::Load, declared in
 // <Gruntz/Grunt.h> and defined in GameStateRecordLoad.cpp - the attribution
 // TODO this header carried is executed.)
 
-// CSerialObjRef::Chain (0x8c00): the +0x150 serialized-object-reference's chain. The
-// full class lives in <Gruntz/SerialObjRef.h>; only Chain is needed here and that
-// header can't be pulled into GruntSteps (its CDDrawSubMgrLeaf view collides).
-class CSerialObjRef {
-public:
-    i32 Chain(CSerialArchive* arc, i32 mode, i32 unused, CSerialObj* obj); // 0x8c00
-};
+// The ONE CSerialObjRef (Chain @0x8c00). The ODR-duplicate one-method shell this
+// header used to carry is folded (2026-07-16): SerialObjRef.h now uses the
+// canonical CDDrawSubMgrLeaf, so the old "view collides" blocker is gone.
+#include <Gruntz/SerialObjRef.h>
 
 #endif // GRUNTZ_GAMESTATERECORD_H

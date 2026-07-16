@@ -126,7 +126,7 @@ public:
     void SetField54(i32 v);                             // 0x099b10
 
     // --- CInGameIcon own fields (+0x44/+0x68..+0x74 roles still unproven) ---
-    i32 m_savedGeoId;    // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
+    CAniElement* m_savedGeoId;    // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
     char m_44[0x10];     // +0x44  a fixed 0x10-byte blob the serializer round-trips
     i32 m_cmapId;        // +0x54  registry-CMap lookup result (SetField54; place gate)
     i32 m_driftPos;      // +0x58  drift-tracked position lo (i64 {m_driftPos:m_driftPosHi})

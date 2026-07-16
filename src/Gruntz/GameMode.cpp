@@ -395,7 +395,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             // sub-mgr reports active-but-not-idle, then done.
             for (i32 i = 0; i < 8; i++) {
                 CGameObject* e = m_expl[i];
-                if (e->m_1c8 != 0 && e->m_1c0 == 0) {
+                if (e->m_1a0.m_28 != 0 && e->m_1a0.m_20 == 0) {
                     e->m_stateFlags |= 1;
                 }
             }
@@ -419,7 +419,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
             ShowHudMessage(m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
-            if (i >= m_slot && (i != m_slot || m_expl[i]->m_geoId == 0)) {
+            if (i >= m_slot && (i != m_slot || m_expl[i]->m_1a0.m_14 == 0)) {
                 CGameObject* e = m_expl[i];
                 e->m_stateFlags &= ~1;
                 e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
@@ -475,7 +475,7 @@ i32 CBootyState::LevelMsgHudDriver() {
     // latch the already-landed explosion sprites active.
     for (i32 j = 0; j < m_slot; j++) {
         CGameObject* e = m_expl[j];
-        if (e->m_1c8 != 0 && e->m_1c0 == 0) {
+        if (e->m_1a0.m_28 != 0 && e->m_1a0.m_20 == 0) {
             e->m_stateFlags |= 1;
         }
     }
