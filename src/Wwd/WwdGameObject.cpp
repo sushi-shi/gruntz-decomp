@@ -371,7 +371,7 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
 // camera-rect and grid-extent bounds checks are byte-faithful.
 RVA(0x001509c0, 0xab)
 i32 CWwdGameObject::Test() {
-    CGameObjLayer* e = m_198;
+    CGameObjLayer* e = m_layer;
     if (!e) {
         return 0;
     }
@@ -456,15 +456,15 @@ i32 CWwdGameObject::ReadState(i32 src) {
     ar->Write(&m_dotColor, 4);
     ar->Write(&m_190, 4);
     i32 flag = 0;
-    if (m_198 != 0) {
+    if (m_layer != 0) {
         flag = 1;
     }
     ar->Write(&flag, 4);
 
     char tmp[0x100]; // 256-byte name scratch (only 0x80 written; cf. Sub150c30's name[0x100])
     memset(tmp, 0, 0x80);
-    if (m_194 != 0) {
-        strcpy(tmp, m_194->m_name); // CSprite::m_name IS the +0x24 the raw read used
+    if (m_sprite != 0) {
+        strcpy(tmp, m_sprite->m_name); // CSprite::m_name IS the +0x24 the raw read used
     }
     ar->Write(tmp, 0x80);
 
@@ -495,7 +495,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     ar->Read(&m_190, 4);
     i32 flag;
     ar->Read(&flag, 4);
-    m_194 = 0;
+    m_sprite = 0;
 
     char name[0x100];
     ar->Read(name, 0x80);
@@ -506,7 +506,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         CSprite* found = 0;
         CDDrawSurfaceMgr* mgr = m_mgr;
         mgr->m_surfaceDesc->m_10map.Lookup(name, (CObject*&)found);
-        m_194 = found;
+        m_sprite = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
             CGameObjLayer* frame;
@@ -515,7 +515,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
             } else {
                 frame = 0;
             }
-            m_198 = frame;
+            m_layer = frame;
         }
     }
 
@@ -774,8 +774,8 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
     switch (type) {
         case 3: {
             m_184 = 0;
-            if (m_98 != 0) {
-                m_184 = m_98->m_188; // the linked object's +0x188 id
+            if (m_linkedObject != 0) {
+                m_184 = m_linkedObject->m_188; // the linked object's +0x188 id
             }
             w = m_worker;
             if (w == 0) {
@@ -829,13 +829,13 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             if (node != 0) {
                 void* found = 0;
                 if (m_mgr->m_childGroup->m_map48.Lookup((void*)node, found) == 0) {
-                    m_98 = 0;
+                    m_linkedObject = 0;
                 } else {
-                    m_98 =
+                    m_linkedObject =
                         (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
                 }
             } else {
-                m_98 = 0;
+                m_linkedObject = 0;
             }
             w = m_worker;
             if (w == 0) {
@@ -1055,13 +1055,13 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
     if (m_184 != 0) {
         void* found = 0;
         if (m_mgr->m_childGroup->m_map48.Lookup((void*)m_184, found) == 0) {
-            m_98 = 0;
+            m_linkedObject = 0;
             return 1;
         }
-        m_98 = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
+        m_linkedObject = (CWwdGameObject*)found; // CMapPtrToPtr value (void*) -> the linked object
         return 1;
     }
-    m_98 = 0;
+    m_linkedObject = 0;
     return 1;
 }
 

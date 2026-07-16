@@ -192,7 +192,7 @@ public:
     i32 m_8c;             // +0x8c
     void* m_90;           // +0x90  object ref
     i32 m_94;             // +0x94
-    CWwdGameObject* m_98; // +0x98  linked object (Play case 3 reads its +0x188 object id)
+    CWwdGameObject* m_linkedObject; // +0x98  linked object (Play case 3 reads its +0x188 object id)
     // +0x9c  the embedded spatial-grid region node (<Gruntz/WwdGridIter.h>): its
     // m_x/m_y (+0xac/+0xb0) are the position copies Setup refreshes and its
     // m_object (+0xb4) the self back-pointer - the old m_ac/m_b0/m_self trio.
@@ -253,8 +253,8 @@ public:
     // CSprite::m_frames.m_pData) to get +0x198 - exactly what ApplyLookupSprite assigns to
     // its CGameObjLayer* m_layer at the SAME +0x198. ReadState confirms the sprite: it
     // strcpy's the name at m_194+0x24, and CSprite::m_name is at +0x24.
-    CSprite* m_194;       // +0x194  cached sprite (was void*)
-    CGameObjLayer* m_198; // +0x198  cached frame / layer (half-extents; was i32)
+    CSprite* m_sprite;       // +0x194  cached sprite (was void*)
+    CGameObjLayer* m_layer; // +0x198  cached frame / layer (half-extents; was i32)
     // +0x19c is the resolved sound-cue value: ReadState hands it straight to
     // CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafCue*), which is its type.
     LeafCue* m_19c;             // +0x19c  resolved leaf-scan cue (was void*)
