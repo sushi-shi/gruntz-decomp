@@ -394,6 +394,18 @@ runs `ninja` (which builds the objs AND `report.json` in-graph), and runs the
 non-fatal feedback tail (README score block + regression check) **only when
 `report.json` actually moved** — a no-op build returns in ~0.15s.
 
+**Build timing.** Every `gruntz build` invocation records its wall-clock — printed
+as `[gruntz] build timing: total Ns (ninja Xs, gates Ys) [mode]` and appended to
+`build/gen/build_times.tsv` (gitignored, per-worktree; columns
+`timestamp worktree mode ninja_s gates_s total_s`). `mode` is `noop` (nothing
+rebuilt), `fast` (`--fast`, ninja + summary only), or `full` (ninja + the whole
+gate tail). It splits the two costs that matter: **ninja** (the incremental
+recompile/delink — usually seconds) vs **gates** (the structural-invariant tail:
+`verify_*`, `structs` regen, `class_sizes`, the `vtable_*` audits, `view_debt` — the
+dominant cost of a full build, which is exactly why matchers iterate with `--fast`
+and pay the gate tail once before committing). Pool the per-worktree TSVs to compare
+how long worker builds take.
+
 ## Pairing (objdiff)
 
 `build/objdiff/objdiff.json` (written by `configure.py:emit_objdiff`) pairs, per unit:

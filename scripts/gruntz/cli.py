@@ -49,12 +49,14 @@ Subcommands
 """
 
 import argparse
+import datetime
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import time
 import tomllib
 from pathlib import Path
 
@@ -78,6 +80,7 @@ MANIFEST           = REPO / "config" / "units.toml"
 OBJDIFF_DIR        = REPO / "build" / "objdiff"
 TARGET_DIR         = OBJDIFF_DIR / "target"
 REPORT             = OBJDIFF_DIR / "report.json"
+BUILD_TIMES        = REPO / "build" / "gen" / "build_times.tsv"  # per-invocation build wall-clock log (gitignored, per-worktree)
 GEN_NAMES          = REPO / "build" / "gen" / "symbol_names.csv"
 GHIDRA_PROJECT_DIR = REPO / "build" / "ghidra-named"
 GHIDRA_PROJECT     = "gruntz"                                          # project name (gruntz.{gpr,rep})
@@ -120,6 +123,25 @@ def run(cmd: list, **kw) -> subprocess.CompletedProcess:
 def units() -> list[dict]:
     with MANIFEST.open("rb") as f:
         return tomllib.load(f).get("unit", [])
+
+
+def _record_build_time(mode: str, total_s: float, ninja_s: float, gates_s: float) -> None:
+    """Print + append a per-invocation build-timing row (BUILD_TIMES), so worker build
+    cost can be analysed. `mode` is noop/fast/full. build/ is gitignored + per-worktree,
+    so each worktree accumulates its own log; the `worktree` column keeps rows
+    distinguishable if pooled. Best-effort: a logging failure never fails the build."""
+    parts = [f"ninja {ninja_s:.1f}s"] + ([f"gates {gates_s:.1f}s"] if gates_s else [])
+    log(f"build timing: total {total_s:.1f}s ({', '.join(parts)}) [{mode}]")
+    try:
+        BUILD_TIMES.parent.mkdir(parents=True, exist_ok=True)
+        header = not BUILD_TIMES.exists()
+        with BUILD_TIMES.open("a") as f:
+            if header:
+                f.write("timestamp\tworktree\tmode\tninja_s\tgates_s\ttotal_s\n")
+            ts = datetime.datetime.now().isoformat(timespec="seconds")
+            f.write(f"{ts}\t{REPO.name}\t{mode}\t{ninja_s:.1f}\t{gates_s:.1f}\t{total_s:.1f}\n")
+    except OSError:
+        pass
 
 
 # --- summary ---------------------------------------------------------------
@@ -225,6 +247,7 @@ def summarize(report: dict, full: bool = True) -> None:
 
 # --- subcommands -----------------------------------------------------------
 def cmd_build(args) -> None:
+    build_start = time.monotonic()   # wall-clock start (see _record_build_time)
     # build.ninja regenerates itself via its `configure` generator edge whenever
     # config/units.toml or configure.py change, so don't re-run configure every
     # build - only bootstrap it when it doesn't exist yet (fresh tree / pre-init).
@@ -249,9 +272,12 @@ def cmd_build(args) -> None:
     # nothing, so there is nothing to summarize/check and `gruntz build` returns
     # near-instantly. Everything below is non-fatal reporting, not part of the build.
     before = REPORT.stat().st_mtime if REPORT.exists() else 0
+    ninja_t0 = time.monotonic()
     run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
+    ninja_s = time.monotonic() - ninja_t0
     if (REPORT.stat().st_mtime if REPORT.exists() else 0) == before:
         log("up to date - nothing rebuilt.")
+        _record_build_time("noop", time.monotonic() - build_start, ninja_s, 0.0)
         return
 
     # Fast inner loop: show the objdiff %% and stop. The structural gates below
@@ -262,7 +288,9 @@ def cmd_build(args) -> None:
     if getattr(args, "fast", False):
         summarize(json.loads(REPORT.read_text()), full=False)
         log("fast build: skipped structural gates - run a full `gruntz build` before committing.")
+        _record_build_time("fast", time.monotonic() - build_start, ninja_s, 0.0)
         return
+    gates_t0 = time.monotonic()   # gate-tail start (full build only)
 
     # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
     # so this is the only check on its address uniqueness + format.
@@ -390,6 +418,9 @@ def cmd_build(args) -> None:
     out = (r.stdout + r.stderr).strip()
     if out:
         log(out.splitlines()[0])
+
+    _record_build_time("full", time.monotonic() - build_start, ninja_s,
+                       time.monotonic() - gates_t0)
 
 
 def cmd_labels(args) -> None:
