@@ -138,7 +138,43 @@ So there are **two hard prerequisites** before the new delinker emits anything:
 real extent, so the `--data-manifest` has bounded sizes to enroll instead of next-symbol
 gaps.
 
-**Ordering + gate.** (a) → re-delink → gate `code exact >= 2366`; then (b) incrementally,
+### 3a. Status: (a) DONE, the bump is IN, (b) proven but coverage-blocked
+
+- **(a) DONE** — `synth_pdb.py` emits all **456/456** `.idata` IAT symbols (0 guessed);
+  the delinker's IAT hard-error is gone (0 objs → 406).
+- **Bump DONE** — `flake.nix` pins the reviewed-data-topology rev and `delink.py`
+  passes `--recover-data-relocs-from-pdb`. **exact 2366 → 2385 (+19)**: the branch
+  retains real PDB identities instead of coalescing byte-identical function groups.
+- **(b) mechanism PROVEN, coverage incomplete.** `gruntz.build.data_manifest`
+  generates the manifest from the type-derived extents (519 enrolled). With it the
+  delinker runs in STRICT mode (`RVA 0x229328` cleared, 407 objs) and the metric
+  finally moves:
+
+  | | no manifest | + data-manifest (strict) |
+  |---|---|---|
+  | `matched_data` | 8/69184 = **0.012%** | **38275/246684 = 15.52%** |
+  | `exact` | 2385 | 2382 (**-3**) |
+
+  **Why the -3, and why it is not wired in yet:** a data manifest is the topology
+  AUTHORITY for the objects it names — data it does not enroll stops being
+  materialized into those target objects. Enrolling only the `DATA()` globals drops
+  each unit's compiler-emitted data (string literals `??_C@…`, the 393 unsized
+  globals, `$T` pools), and three functions reference exactly that: `soundfontpath
+  BuildSoundFontPath` and `gametext _$E1`/`_$E4` lose their `??_C@` strings. homm2
+  covers this with **5216** supplemental rows derived from the candidate COFFs.
+  Completing per-object coverage is the remaining work; until then `delink.py` does
+  not pass `--data-manifest` and the code gate holds at its **2385** floor.
+
+- **Bonus: the sizeof extents are a contradiction check.** A reviewed extent must fit
+  the span to its neighbour. Six overlaps fell out, each proving one of a pair is
+  mis-modelled (neither is enrolled — we do not know which is wrong):
+  `g_singleCmdList`/`g_multiCmdList`/`g_pool` (`CPtrList` 0x1c swallows the adjacent
+  `…Count` 0xc in), `g_smallFont` (`Font` 0x18 swallows `g_loadedFlag`), `g_panTable`
+  (mangles `PAHA` = `int*` = 4 but the declared type sized 0x20), `g_imageCache`
+  (`CPtrArray` 0x14 swallows `g_imageCacheIndex`). A real defect worklist:
+  `python -m gruntz.build.data_manifest --report`.
+
+**Ordering + gate.** (a) → re-delink → gate `code exact >= 2385`; then (b) incrementally,
 enrolling reviewed extents in batches and re-gating each time. Also available, already in
 `/nix/store`: homm2's objdiff-cli 3.7.1 + `objdiff-data-symbol-details.patch` (per-symbol
 `section` + `data_relocations` JSON rows) which unlocks the project-neutral
