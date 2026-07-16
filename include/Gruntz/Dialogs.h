@@ -43,10 +43,8 @@ struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem a
 // Shared dialog-plumbing globals (canonical DATA homes elsewhere; declared here so
 // the dialog TUs reference them from this header, not per-TU externs).
 // ---------------------------------------------------------------------------
-// The active modeless-dialog HWND cache (0x24557c).
-namespace NetLobby {
-    extern HWND g_curDlg_64557c;
-}
+// The active modeless-dialog HWND cache (0x24557c): NetLobby::g_curDlg.
+#include <Net/NetLobby.h>
 // The chat-log child-window HWND cache (0x248ce0; DATA home Multi.cpp).
 extern "C" i32 g_sharedFlag;
 // The engine's cached USER32 fn-ptr table (the 0x2c44xx block of bare absolutes,

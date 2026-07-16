@@ -40,15 +40,13 @@ typedef enum GruntzAppResId {
 #include <Gruntz/GruntzMgr.h>
 
 // The dialog HWND that ErrorDialogProc caches @0x24557c is the SHARED active-dialog
-// HWND NetLobby::g_curDlg_64557c (every dialog proc - error/lobby/checkpoint/
+// HWND NetLobby::g_curDlg (every dialog proc - error/lobby/checkpoint/
 // custom-world - caches its HWND at the SAME .bss slot; DATA home Net/LobbyDialogs.cpp).
 // It is a cross-TU global, not a GruntzApp static: modeling it as a local `g_errorHwnd`
 // static split 0x24557c into a second name (`_g_errorHwnd$S18951`) that won the per-RVA
 // keep-last and left the NetLobby users (CheckpointDlg/CustomWorldDialog/GruntzWnd)
 // UNBOUND. Unified onto the shared extern here (DIR32 masked - byte-neutral).
-namespace NetLobby {
-    extern HWND g_curDlg_64557c;
-}
+#include <Net/NetLobby.h> // NetLobby::g_curDlg
 // The error-text buffer @0x244ea0 is a GruntzApp file-static in retail. Bind it by RVA
 // via a STABLE symbol name: as a C++ `static` it mangles to `_g_errorText$S<idx>`, whose
 // per-TU index cl5 RENUMBERS on any string-pool change (measured 18949->18953->18964...),
@@ -205,7 +203,7 @@ WAP32::CGameMgr* CGruntzApp::InitializeGameManager() {
 RVA(0x00080c70, 0x55)
 INT_PTR CALLBACK
 CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    NetLobby::g_curDlg_64557c = hWnd;
+    NetLobby::g_curDlg = hWnd;
 
     switch (message) {
         case WM_INITDIALOG:

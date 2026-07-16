@@ -260,9 +260,7 @@ extern i32 g_panMaxX; // ?g_panMaxX@@3HA @0x24550c (was g_64550c)
 // 0x64557c - the active modeless dialog HWND (cleared on both modal-dialog exits);
 // DEFINED in src/Net/LobbyDialogs.cpp (namespace NetLobby), where the dialog procs
 // cache it. The old `g_modalBusy` alias here was the same cell.
-namespace NetLobby {
-    extern HWND g_curDlg_64557c;
-}
+#include <Net/NetLobby.h> // NetLobby::g_curDlg
 extern "C" {
     // The clock/scroll/warp timer globals SaveState streams live in <Rez/FrameClock.h>.
     DATA(0x002455e8)
@@ -3532,7 +3530,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 
     m_modalBusy = 1;
     app->RunModal(msg, m_gameWnd->m_hwnd);
-    NetLobby::g_curDlg_64557c = 0;
+    NetLobby::g_curDlg = 0;
     m_modalBusy = 0;
     if (shown <= 0) {
         while (show(0) >= 0) {
@@ -3575,7 +3573,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
 
     m_modalBusy = 1;
     i32 result = dlg->DoModal(); // vtable slot 48 (+0xc0) - see the proof in GruntzMgr.h
-    NetLobby::g_curDlg_64557c = 0;
+    NetLobby::g_curDlg = 0;
     m_modalBusy = 0;
     if (m_curState && notify) {
         m_curState->Vslot06();
@@ -4179,7 +4177,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     m_modalBusy = 1;
     i32 result =
         ::DialogBoxParamA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, (DLGPROC)dlgProc, 0);
-    NetLobby::g_curDlg_64557c = 0;
+    NetLobby::g_curDlg = 0;
     m_modalBusy = 0;
     if (m_curState && flag) {
         m_curState->Vslot06();

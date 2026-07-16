@@ -29,7 +29,7 @@
 #include <stdio.h>                // sprintf/fopen/fclose (DoDataExchange custom-level probe)
 #include <rva.h>
 #include <Globals.h>
-// NetLobby::g_curDlg_64557c, g_sharedFlag, and the USER32 fn-ptr globals
+// NetLobby::g_curDlg, g_sharedFlag, and the USER32 fn-ptr globals
 // (g_pSendMessageA / g_pGetWindow) come from <Gruntz/Dialogs.h> above.
 
 // The global CGameRegistry the ctor snapshots: it copies g_gameReg->m_curState into
@@ -354,7 +354,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = (Utils::RegistryHelper*)g_gameReg->m_settings;
     if (pDX->m_bSaveAndValidate == 0) {
         GetDlgItem(0x512)->SetWindowTextA(g_multiState->GetString59c());
-        NetLobby::g_curDlg_64557c = (HWND__*)GetSafe1c();
+        NetLobby::g_curDlg = (HWND__*)GetSafe1c();
         if (!SetupWorldCombo()) {
             return;
         }
@@ -452,7 +452,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                 slots[i].m_154 = temp;
             }
         }
-        NetLobby::g_curDlg_64557c = 0;
+        NetLobby::g_curDlg = 0;
     }
     FlashCtrlD();
 }

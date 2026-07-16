@@ -24,11 +24,8 @@ extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // GruntzMgr.cpp); the old local DATA(0x006c44a4) was the VA, not the RVA - it
 // mis-bound the C++-mangled ?::SendMessageA to 0x6c44a4 (retail wants 0x2c44a4).
 
-// The active modeless-dialog HWND cache (NetLobby::g_curDlg_64557c; DATA home in
-// Net/LobbyDialogs.cpp). Referenced reloc-masked.
-namespace NetLobby {
-    extern HWND g_curDlg_64557c;
-}
+// The active modeless-dialog HWND cache (NetLobby::g_curDlg; DATA home in
+// Net/LobbyDialogs.cpp) comes from <Gruntz/Dialogs.h> (included above).
 
 // ---------------------------------------------------------------------------
 RVA(0x000234a0, 0x1e)
@@ -41,7 +38,7 @@ CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 RVA(0x00023520, 0x3e)
 void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
     if (pDX->m_bSaveAndValidate == 0) {
-        NetLobby::g_curDlg_64557c = GetSafeHwnd();
+        NetLobby::g_curDlg = GetSafeHwnd();
         CWnd* item = GetDlgItem(0x53a);
         ::SendMessageA(item->m_hWnd, 0xf1, 0, 0); // BM_SETCHECK
     }

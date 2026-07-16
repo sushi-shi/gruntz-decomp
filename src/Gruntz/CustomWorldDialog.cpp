@@ -48,9 +48,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 extern "C" INT_PTR CALLBACK CustomWorldInfoDlgProcThunk(HWND, UINT, WPARAM, LPARAM);
 
 // The active modeless dialog HWND, cached on entry (shared NetLobby global @0x64557c).
-namespace NetLobby {
-    extern HWND g_curDlg_64557c;
-}
+#include <Net/NetLobby.h> // NetLobby::g_curDlg
 // This file's private .data/.bss globals, DEFINED here (the owning TU) in ascending
 // RVA order. The map-name scratch pair (used by GetMapBaseName below), g_dat62c268
 // (RunCustomWorldDialog's world-slot exchange) and the two launcher handles + the
@@ -175,7 +173,7 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
 // on double-click (LBN_DBLCLK=2 -> PostMessage WM_COMMAND/1).
 RVA(0x0003ae60, 0xec)
 extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    NetLobby::g_curDlg_64557c = hDlg;
+    NetLobby::g_curDlg = hDlg;
     switch (msg) {
         case 0x110: // WM_INITDIALOG
             g_customLevelList = GetDlgItem(hDlg, 0x3fc);

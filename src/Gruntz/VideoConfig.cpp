@@ -77,9 +77,7 @@ extern "C" {
 // The active dialog handle latch (@0x64557c); the proc stamps it on entry.
 // DEFINED in Net/LobbyDialogs.cpp (namespace NetLobby); the old `g_curDlg_optdlg`
 // alias symbol (nothing defined it) is gone.
-namespace NetLobby {
-    extern HWND g_curDlg_64557c;
-}
+#include <Net/NetLobby.h> // NetLobby::g_curDlg
 
 // The CD-prompt result gate (@0x6455ec); DEFINED in StartUpPrompt.cpp (its writer).
 extern "C" i32 g_cdPromptResult;
@@ -207,7 +205,7 @@ i32 GetResolutionCode() {
 // cross-cast) is reloc-masked scaffolding pending those classes' shared modeling.
 RVA(0x00036410, 0x366)
 BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    NetLobby::g_curDlg_64557c = hDlg;
+    NetLobby::g_curDlg = hDlg;
 
     switch (msg) {
         case WM_HSCROLL: { // 0x114

@@ -23,6 +23,7 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS, control IDs, and code
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h> // real MFC CString (status/drop banners) + windows.h (dialog API) via afx.h
+#include <Net/NetLobby.h> // NetLobby::g_curDlg (defined below; DATA home is this TU)
 #include <EmptyString.h> // g_emptyString
 #include <Ints.h>
 #include <rva.h>
@@ -61,7 +62,7 @@ namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
     // DAT_0064557c: the active modeless dialog HWND, cached on entry/init.
     DATA(0x0024557c)
-    HWND g_curDlg_64557c;
+    HWND g_curDlg;
 
     // Owner-TU DEFINITIONS (private to this dialog TU), ascending by RVA (.bss/zero).
     DATA(0x002487e0)
@@ -118,13 +119,13 @@ namespace NetLobby {
     // WM_COMMAND ends on 0x4d2 / 2 (pushing the abort stat) or cancels on 0x4c6.
     RVA(0x000bd850, 0x141)
     i32 CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        g_curDlg_64557c = hWnd;
+        g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
             case 0x110:
-                g_curDlg_64557c = hWnd;
+                g_curDlg = hWnd;
                 g_curMulti = (CMulti*)g_gameReg->m_curState;
                 NetDlgInit_bda00(hWnd, g_curMulti);
                 GetAsyncKeyState(0x13);
@@ -174,13 +175,13 @@ namespace NetLobby {
     // WM_COMMAND cancels on 0x4c6.
     RVA(0x000bda70, 0xda)
     i32 CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        g_curDlg_64557c = hWnd;
+        g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
             case 0x110:
-                g_curDlg_64557c = hWnd;
+                g_curDlg = hWnd;
                 g_curMulti = (CMulti*)g_gameReg->m_curState;
                 NetDlgInit_bdb90(hWnd, g_curMulti);
                 return 1;
@@ -221,13 +222,13 @@ namespace NetLobby {
     // __stdcall DlgProc(hWnd, msg, wParam, lParam): the network-lobby dialog proc.
     RVA(0x000bdc00, 0x10c)
     i32 CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        g_curDlg_64557c = hWnd;
+        g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
             case 0x110:
-                g_curDlg_64557c = hWnd;
+                g_curDlg = hWnd;
                 g_curMulti = (CMulti*)g_gameReg->m_curState;
                 NetDlgInit_bdd60(hWnd, g_curMulti);
                 return 1;
@@ -275,13 +276,13 @@ namespace NetLobby {
     // ships the command as a 0x402 stat before EndDialog - or cancels on 0x4c6.
     RVA(0x000bddd0, 0x193)
     i32 CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        g_curDlg_64557c = hWnd;
+        g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
             case 0x110:
-                g_curDlg_64557c = hWnd;
+                g_curDlg = hWnd;
                 g_curMulti = (CMulti*)g_gameReg->m_curState;
                 NetDlgInit_bdfe0(hWnd, g_curMulti);
                 return 1;
@@ -351,13 +352,13 @@ namespace NetLobby {
     // button IDs; WM_TIMER (0x113) polls the abort deadline and re-posts the cancel.
     RVA(0x000be0a0, 0x1c7)
     i32 CALLBACK NetGameDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        g_curDlg_64557c = hWnd;
+        g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
             case 0x110:
-                g_curDlg_64557c = hWnd;
+                g_curDlg = hWnd;
                 g_curMulti = (CMulti*)g_gameReg->m_curState;
                 NetDlgInitDropWait(hWnd, g_curMulti);
                 return 1;
@@ -462,13 +463,13 @@ namespace NetLobby {
     // command as a 0x402 stat when host, then EndDialog - or cancels on 0x4c6.
     RVA(0x000be550, 0x193)
     i32 CALLBACK DropInDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        g_curDlg_64557c = hWnd;
+        g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
             case 0x110:
-                g_curDlg_64557c = hWnd;
+                g_curDlg = hWnd;
                 g_curMulti = (CMulti*)g_gameReg->m_curState;
                 NetDlgInitDropIn(hWnd, g_curMulti);
                 return 1;
