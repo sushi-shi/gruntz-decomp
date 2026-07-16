@@ -90,8 +90,8 @@ public:
     // +0x08..+0x1f: the region rect + 2 scalars (retail Init @0x182ab0 CopyRects the
     // rect arg into +0x08 and stores the two i32 args at +0x18/+0x1c).
     RECT m_rect8; // +0x08  region rect (left/top/right/bottom)
-    i32 m_18;     // +0x18
-    i32 m_1c;     // +0x1c
+    i32 m_headGap;    // +0x18  page head-item gap (CMenuPage::Configure -> m_headGap)
+    i32 m_rowSpacing; // +0x1c  page per-item row spacing (Configure -> m_rowSpacing)
     // +0x20: focus-wrap-enable. A 4-byte field: Init stores the whole DWORD arg;
     // CanWrap reads the low byte SIGNED (`movsx eax, byte [host+0x20]; and eax,1`).
     i32 m_wrapFlag;

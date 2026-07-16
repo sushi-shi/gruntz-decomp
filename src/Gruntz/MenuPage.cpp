@@ -70,13 +70,11 @@ SIZE_UNKNOWN(CMenuPlacer);
 
 // ===========================================================================
 
-// destructor: InitDefaults() (reset-to-defaults, which itself calls Clear) then
-// tear down the CPtrList + three CStrings. (retail calls 0x1833a0 InitDefaults, not
-// 0x1833c0 Clear - reloc_fidelity MISBOUND fix, wave5-R8.)
-RVA(0x00183250, 0x71)
-CMenuPage::~CMenuPage() {
-    InitDefaults();
-}
+// The destructor is inline in MenuPage.h (retail inlines it at the builder's
+// `delete page` sites); its standalone COMDAT copy @0x183250 is emitted by and
+// pinned in ChatBox.cpp (CChatBox::Clear, the one non-inlined caller). NB it
+// calls 0x1833a0 InitDefaults, not 0x1833c0 Clear (reloc_fidelity MISBOUND
+// fix, wave5-R8).
 
 // CMenuPage::GetKey (0x1832d0) - return the page key CString by value.
 RVA(0x001832d0, 0x20)
@@ -84,34 +82,30 @@ CString CMenuPage::GetKey() {
     return m_key;
 }
 
-// configure this page from a template item, then resolve its catalog
-// slot via m_owner->m_catalog->m_map CMapStringToPtr::Lookup. The string args are
-// const char* (label/key/parent) - the sibling MainMenuBuilder.cpp view of this
-// same 0x1832f0 fn spells them so. Typing them (vs the old i32 + (const char*)
-// casts) reorders this TU's COMDATs and nudges the adjacent Layout 100->99.98%
-// (1 byte); accepted per "chase the real dev types" - the casts were the artifact.
+// configure this page from the owning chat/menu box (a1 IS the CChatBox -
+// Configure stores it whole into m_host, its +0x00 m_page into m_owner, block-
+// copies its +0x08 region RECT into m_rect and reads its +0x18/+0x1c layout
+// scalars), then resolve the catalog slot via m_owner->m_imageRegistry->m_10map
+// CMapStringToOb::Lookup. The string args are const char* (label/key/parent).
 RVA(0x001832f0, 0xa5)
 i32 CMenuPage::Configure(
-    CMenuItem* tmpl,
+    CChatBox* host,
     const char* label,
     const char* key,
     const char* parent,
     i32 flags
 ) {
-    if (!tmpl) {
+    if (!host) {
         return 0;
     }
-    i32* t = (i32*)tmpl;
-    m_owner = (CDDrawSurfaceMgr*)t[0];
-    m_host = (CChatBox*)tmpl;
+    m_owner = host->m_page;
+    m_host = host;
     m_key = label;
     m_switchKey = parent;
-    m_rowSpacing = t[7]; // tmpl+0x1c
-    m_headGap = t[6];    // tmpl+0x18
+    m_rowSpacing = host->m_rowSpacing; // host+0x1c
+    m_headGap = host->m_headGap;       // host+0x18
     m_flags = flags;
-    // 16-byte block copy tmpl+0x8 -> this+0x34: the layout rect {L,T,R,B} (m_rectLeft..
-    // m_rectBottom IS a RECT), so the real type is RECT - no .cpp-local struct.
-    *(RECT*)&m_rectLeft = *(RECT*)((char*)tmpl + 0x8);
+    m_rect = host->m_rect8; // 16-byte block copy host+0x8 -> this+0x34
     m_offsetX = 0;
     m_offsetY = 0;
     CObject* slot_ob = 0;
@@ -412,10 +406,10 @@ i32 CMenuPage::Layout(i32 ctx) {
     if (m_flags & 4) {
         return LayoutOne(ctx);
     }
-    i32 x0 = m_rectLeft;
-    i32 x1 = m_rectRight;
+    i32 x0 = m_rect.left;
+    i32 x1 = m_rect.right;
     i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
-    i32 y = m_offsetY + m_rectTop;
+    i32 y = m_offsetY + m_rect.top;
     CMenuPage* sub = m_subPage;
     if (sub) {
         i32 idx = *(i32*)((char*)sub + 0x64);
@@ -501,10 +495,10 @@ i32 CMenuPage::CanWrap() {
 // steerable (canonicalizes to the same register pick). Logic complete.
 RVA(0x00183e50, 0x11c)
 i32 CMenuPage::LayoutOne(i32 ctx) {
-    i32 x0 = m_rectLeft;
-    i32 x1 = m_rectRight;
+    i32 x0 = m_rect.left;
+    i32 x1 = m_rect.right;
     i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
-    i32 y = m_offsetY + m_rectTop;
+    i32 y = m_offsetY + m_rect.top;
     CMenuPage* sub = m_subPage;
     if (sub) {
         i32 idx = *(i32*)((char*)sub + 0x64);
@@ -516,7 +510,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
             y += m_headGap + head->m_1c;
         }
     }
-    i32 col = ((m_colWidth / 2)) + m_rectLeft + m_colOffset;
+    i32 col = ((m_colWidth / 2)) + m_rect.left + m_colOffset;
     i32 ytop = y;
     i32 row = 0;
     CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();

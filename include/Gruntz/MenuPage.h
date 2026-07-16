@@ -46,10 +46,33 @@ class CChatBox; // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag
 
 class CMenuPage {
 public:
-    ~CMenuPage();     // 0x183250  /GX member teardown
+    // Inline (in-class) ctor - retail INLINES it at BuildMainMenuTree's 14 `new
+    // CMenuPage` sites (0xa1208...: member ctors +0x08/+0x0c/+0x10 CString +
+    // +0x14 CPtrList, then the body's zero stores in exactly this order:
+    // +0x00, +0x04, +0x60, +0x64, +0x30). No out-of-line ??0CMenuPage exists in
+    // retail (no other new-site), so the COMDAT never materializes.
+    CMenuPage() {
+        m_owner = 0;
+        m_host = 0;
+        m_subPage = 0;
+        m_focus = 0;
+        m_flags = 0;
+    }
+    // Inline (in-class) dtor - retail INLINES it at the builder's `delete page`
+    // failure paths (call InitDefaults 0x1833a0 at the whole-object EH state,
+    // then the member teardown at descending states, then operator delete) and
+    // keeps the out-of-line COMDAT copy at 0x183250 for the non-EH-framed
+    // caller CChatBox::Clear (`call 0x183250`); that standalone copy is pinned
+    // by @rva-symbol in ChatBox.cpp (an inline dtor cannot carry RVA()).
+    ~CMenuPage() {
+        InitDefaults();
+    }
     CString GetKey(); // 0x1832d0
+    // 0x1832f0: seed this page from the owning chat/menu box: m_owner <- host->m_page,
+    // m_host <- host, the label/parent CStrings, m_rect <- host->m_rect8 (16-byte block
+    // copy), headGap/rowSpacing <- host->m_18/m_1c, then resolve the catalog sub-page.
     i32 Configure(
-        CMenuItem* tmpl,
+        CChatBox* host,
         const char* label,
         const char* key,
         const char* parent,
@@ -112,10 +135,9 @@ public:
     CString m_focusName;       // +0x10 saved focus item name (RestoreFocus)
     CPtrList m_items;          // +0x14 child items (m_pNodeHead @+0x18; node {next,prev,data@+8})
     i32 m_flags;               // +0x30 flag bits: 0x1 wrap-on, 0x2 wrap-off, 0x4 grid, 0x8 no-draw
-    i32 m_rectLeft;            // +0x34  page rect (block-copied from template +0x8): left
-    i32 m_rectTop;             // +0x38  top (initial y = m_offsetY + m_rectTop)
-    i32 m_rectRight;           // +0x3c  right (x center = (right-left+1)/2 + m_offsetX + left)
-    i32 m_rectBottom;          // +0x40  bottom
+    RECT m_rect;               // +0x34  page rect (block-copied from CChatBox::m_rect8;
+                               //        initial y = m_offsetY + m_rect.top; x center =
+                               //        (right-left+1)/2 + m_offsetX + left)
     i32 m_headGap;             // +0x44  gap after sub-page head item (template +0x18)
     i32 m_rowSpacing;          // +0x48  per-item vertical advance (template +0x1c)
     i32 m_colWidth;            // +0x4c  column width (grid wrap step)
@@ -126,6 +148,6 @@ public:
     CMenuPage* m_subPage;      // +0x60 sub-page/name-cache (catalog Lookup result)
     CMenuItem* m_focus;        // +0x64 current focused child item
 };
-SIZE_UNKNOWN(CMenuPage);
+SIZE(CMenuPage, 0x68); // op-new ground truth: `push 0x68` at the builder's 14 new-sites
 
 #endif // GRUNTZ_MENUPAGE_H

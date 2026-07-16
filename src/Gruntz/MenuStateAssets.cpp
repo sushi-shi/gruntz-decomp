@@ -183,7 +183,7 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
 //
 // The `this` IS the CChatBox LoadAssets just newed (retail `mov [esi+0x1b4],ecx` right
 // before `call 0x182ab0`, ecx unchanged) - now a real CChatBox method. Every store lands
-// on a CChatBox member (m_page/m_4/the m_rect8 RECT/m_18/m_1c/m_wrapFlag/m_activeNode);
+// on a CChatBox member (m_page/m_4/the m_rect8 RECT/m_headGap/m_rowSpacing/m_wrapFlag/m_activeNode);
 // the three ex-blockers (m_page CChatPage->CDDrawSurfaceMgr, m_pad8->RECT, m_wrapFlag
 // char->i32) are all resolved in ChatBox.h, so the ex MenuRegion view is dissolved.
 RVA(0x00182ab0, 0x7b)
@@ -194,8 +194,8 @@ i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, i32 a, RECT* rc, i32 d, i32 e, i
     m_page = src;
     m_4 = a;
     m_wrapFlag = f;
-    m_18 = d;
-    m_1c = e;
+    m_headGap = d;
+    m_rowSpacing = e;
     m_activeNode = 0;
     if (rc) {
         CopyRect(&m_rect8, rc);

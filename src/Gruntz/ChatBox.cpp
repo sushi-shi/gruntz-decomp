@@ -106,16 +106,21 @@ void CChatBox::Reset() {
 }
 
 // free every node's owned payload, empty the list, clear the queue slot.
+// `delete payload` calls the header-inline ~CMenuPage OUT-OF-LINE: under /GX
+// (this TU's flags) MSVC5 declines to fold the EH-stateful teardown into a
+// frameless fn (verified: under base flags it folds and Clear craters 100->69),
+// so this obj emits + calls the standalone COMDAT copy retail keeps at
+// 0x183250 (link position = this obj's COMDAT tail, right after HitTest2
+// 0x183230) - pinned here (an inline dtor cannot carry RVA(); MenuPage.cpp no
+// longer defines it).
+// @rva-symbol: ??1CMenuPage@@QAE@XZ 0x00183250 0x71
 RVA(0x00182b60, 0x3e)
 void CChatBox::Clear() {
     POSITION pos = m_nodeList.GetHeadPosition();
     while (pos) {
         CMenuPage* payload = (CMenuPage*)m_nodeList.GetNext(pos);
         if (payload) {
-            payload->~CMenuPage();
-            operator delete(
-                payload
-            ); // engine ::operator delete (??3@YAXPAX@Z @0x1b9b82), reloc-masked
+            delete payload; // ~CMenuPage @0x183250 + engine ::operator delete (0x1b9b82)
         }
     }
     m_nodeList.RemoveAll();
@@ -136,10 +141,14 @@ i32 CChatBox::AddNode(void* node) {
 }
 
 // @early-stop
-// regalloc + stack-slot wall: body byte-exact (advance-first node walk + inline
-// strcmp + GetKey-by-value), but MSVC reserves an extra `push ecx` slot and pins
-// the node walk in a different callee-saved reg (ebp vs edi) than retail; logic
-// is complete. ~74%.
+// EH-frame contradiction wall (topic:eh topic:wall): retail Find destructs its
+// GetKey CString temp with NO fs:0 frame (a non-/GX shape), but this TU MUST be
+// /GX for Clear + the ??1CMenuPage COMDAT (see the unit note in units.toml) -
+// under /GX cl frames this fn (73.8 -> 47.9). One retail fn per flag choice
+// diverges; suspected retail TU split around 0x182be0 (this region is already
+// split: InitRegion 0x182ab0 lives in menustateassets). Underneath sits the
+// older regalloc residual (node walk pinned ebp-vs-edi + an extra `push ecx`
+// slot); logic is complete.
 // find the message node whose key matches s (linear scan + strcmp).
 RVA(0x00182be0, 0x8d)
 i32 CChatBox::Find(const char* s) {

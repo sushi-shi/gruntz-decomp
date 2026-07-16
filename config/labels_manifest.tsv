@@ -43,7 +43,7 @@ butestoreclear	1
 butetree	1
 bzkinddispatch	1
 chainforward	2
-chatbox	28
+chatbox	29
 chatbox_eh	1
 chatboxowner	7
 cheatmgr	7
@@ -219,7 +219,7 @@ mainmenubuilder	2
 maplogic	4
 mapmgr	25
 menuitem	21
-menupage	35
+menupage	34
 menusparkle	4
 menusparkleserial	1
 menustate	29

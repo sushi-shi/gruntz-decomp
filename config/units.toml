@@ -1446,7 +1446,14 @@ flags = "eh"
 [[unit]]
 unit = "chatbox"
 source = "src/Gruntz/ChatBox.cpp"
-flags = "base"
+# eh: /GX is what makes Clear CALL the header-inline ~CMenuPage instead of
+# folding it (the inliner declines to create an EH frame in a frameless fn) and
+# what emits the standalone ??1 COMDAT this obj contributes at 0x183250 (retail
+# link position: right after HitTest2 0x183230, before menupage's GetKey).
+# Lone dissenter: Find (0x182be0) destructs a CString temp with NO fs:0 frame
+# in retail (non-/GX shape) - see the @early-stop on Find (suspected retail TU
+# split around it; /O1 disproven empirically - mass craters).
+flags = "eh"
 
 [[unit]]
 unit = "chatbox_eh"
