@@ -98,6 +98,12 @@ PY = "python3"
 CC_WRAP = "scripts/gruntz/build/cc_wrap.py"
 DELINK = "scripts/gruntz/build/delink.py"
 LINK = "scripts/gruntz/build/link.py"
+# Data-symbol normalization: rewrite compiler-private ($SG/$T/$S) data names +
+# jump-table DIR32 labels of base AND target into a content-addressed, disposable
+# comparison copy so objdiff pairs them BY NAME (matching-neutral; the real objs
+# are untouched). See scripts/gruntz/build/canonicalize_data_symbols.py.
+NORMALIZE = "scripts/gruntz/build/normalize_objs.py"
+NORMALIZE_MOD = "scripts/gruntz/build/canonicalize_data_symbols.py"
 GEN_LABELS = "scripts/gruntz/build/labels.py"
 # The rva->name,unit map is GENERATED from src `// @address:` annotations joined
 # to the base objs (clang mangledName INTERSECT nm) - no hand-written CSV. See
@@ -120,6 +126,7 @@ SYMBOLS = "build/ghidra-enrich/exports/symbols.csv"
 OBJDIFF_DIR = "build/objdiff"
 BASE_DIR = "build/objdiff/base"      # recompiled base objs (phase 1 outputs)
 TARGET_DIR = "build/objdiff/target"  # collected delinked target objs
+NORM_DIR = "build/objdiff/normalized"  # disposable normalized objdiff comparison copies
 DELINK_RAW = "build/delink/named"    # raw vostok-delinker output
 PDB_DIR = "build/pdb"                # synth PDB/YAML
 LABELS_DIR = "build/gen/labels"      # per-TU symbol_names.csv fragments
@@ -329,6 +336,27 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                 implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py"])
         w.newline()
 
+        # NORMALIZE: rewrite compiler-private data names + jump-table labels of
+        # every base/target obj into content-addressed comparison copies under
+        # build/objdiff/normalized/ (objdiff pairs BY NAME; the real objs are
+        # untouched, so this is matching-neutral and can only sharpen the diff).
+        # One stamped edge drives the whole set (mirrors delink); the driver
+        # mtime-skips unchanged objs, so a single base recompile only re-normalizes
+        # that one obj. Keyed on the base objs + the delink stamp so it re-runs when
+        # either side changes. See docs/build-system.md (data-symbol normalization).
+        w.comment("=== NORMALIZE: base/target -> content-addressed comparison copies ===")
+        normalize_stamp = f"{OBJDIFF_DIR}/.normalize.stamp"
+        unit_norm_args = " ".join(f"--unit {u['unit']}" for u in units)
+        w.rule("normalize",
+               command=(f"{PY} {NORMALIZE} --base-dir {BASE_DIR} "
+                        f"--target-dir {TARGET_DIR} --out-dir {NORM_DIR} "
+                        f"--stamp {normalize_stamp} {unit_norm_args}"),
+               description="normalize base/target objs")
+        w.build(normalize_stamp, "normalize",
+                inputs=base_objs + [delink_stamp],
+                implicit=[NORMALIZE, NORMALIZE_MOD])
+        w.newline()
+
         # OBJDIFF MANIFEST: objdiff.json pairs each base obj with its target obj.
         # Whether a unit pairs with its real <unit>.c.obj or the empty dummy.obj is
         # decided from symbol_names.csv, which gen_labels regenerates ABOVE - so the
@@ -357,8 +385,10 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         w.rule("report",
                command=f"objdiff-cli report generate -p {OBJDIFF_DIR} -o {report_json}",
                description="objdiff report -> report.json")
+        # Reads the NORMALIZED comparison copies (objdiff.json points at them); the
+        # normalize stamp transitively carries the base-obj + delink dependencies.
         w.build(report_json, "report",
-                inputs=base_objs + [delink_stamp, objdiff_json])
+                inputs=[normalize_stamp, objdiff_json])
         w.newline()
 
         # Convenience aliases.
@@ -425,8 +455,8 @@ def units_with_named_functions(names_csv: Path) -> set:
 def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
     """Write build/objdiff/objdiff.json pairing base <-> target BY NAME.
 
-    base   : ./base/<unit>.obj      (cl /O2 /MT vendor/zlib-1.0.4/<unit>.c)
-    target : ./target/<unit>.c.obj  (delinked, named per symbol_names.csv)
+    base   : ./normalized/base/<unit>.obj      (cl /O2 /MT, then data-name normalized)
+    target : ./normalized/target/<unit>.c.obj  (delinked per symbol_names.csv, normalized)
 
     Symbols are pre-named on both sides (cdecl `_<name>`), so objdiff pairs them
     directly with no `symbol_mappings` overlay. Paths reflect build INTENT, not
@@ -452,8 +482,13 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
              else {u["unit"] for u in manifest["unit"]})
     units = []
     for u in manifest["unit"]:
-        base_path = f"./base/{u['unit']}.obj"   # ninja always builds this
-        target_path = (f"./target/{u['unit']}.c.obj"
+        # Pair the NORMALIZED comparison copies (compiler-private data names +
+        # jump-table labels content-addressed on both sides). ninja's `normalize`
+        # edge produces base/<unit>.obj for every unit and target/<unit>.c.obj for
+        # named units; an unnamed unit has no delinked target, so it pairs against
+        # the empty dummy (which has no data symbols to normalize).
+        base_path = f"./normalized/base/{u['unit']}.obj"
+        target_path = (f"./normalized/target/{u['unit']}.c.obj"
                        if u["unit"] in named else "./dummy.obj")
         units.append({
             "name": u["unit"],

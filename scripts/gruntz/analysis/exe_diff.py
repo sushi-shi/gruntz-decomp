@@ -124,6 +124,100 @@ def load_exact_set(report_json: Path):
     return exact
 
 
+# ------------------------------------------------- DATA static-storage (link E)
+# Ported from homm2 link_exe.static_symbol_diagnostics + classify_pe_storage: per
+# data symbol, join the candidate LINK .map to the retail data inventory, classify
+# .rdata/.data/.bss storage on both sides, and report the RVA delta AND the
+# SECTION-RELATIVE delta (whole-section RVA drift removed, so a section shift does
+# not masquerade as a contribution mismatch). This is the DATA analog of section
+# B/C: what per-object diff can never see -- whether each global lands at its
+# retail offset within its section after a real link. Retail data owners come from
+# Ghidra + DATA() (symbol_names.csv), NOT a CodeView stream (GRUNTZ.EXE has none).
+def _classify_storage(pe, rva):
+    """.rdata / data-initialized / data-loader-zero-tail / other / outside."""
+    for want, cls in ((".rdata", "rdata"), (".data", "data")):
+        sec = pe["secs"].get(want)
+        if sec and sec[0] <= rva < sec[0] + sec[1]:
+            off = rva - sec[0]
+            if want == ".rdata":
+                return "rdata", ".rdata", off
+            return ("data-initialized" if off < sec[3] else "data-loader-zero-tail"), ".data", off
+    for name, (va, vs, rp, rs) in pe["secs"].items():
+        if va <= rva < va + max(vs, rs):
+            return "other", name, rva - va
+    return "outside", None, None
+
+
+def load_map_data_symbols(map_path: Path, imgbase: int):
+    """name -> candidate RVA for map symbols that are NOT functions (data)."""
+    data = {}
+    if not map_path.exists():
+        return data
+    for ln in map_path.read_text(errors="replace").splitlines():
+        p = ln.split()
+        if (len(p) >= 4 and ":" in p[0] and RVA_RE.match(p[2]) and p[1].startswith(("_", "?"))
+                and "f" not in p[3:4]):
+            data[p[1]] = int(p[2], 16) - imgbase
+    return data
+
+
+def load_retail_data_names(names_csv: Path):
+    """name -> rva for kind=data rows (DATA()-annotated / Ghidra data symbols)."""
+    ret = {}
+    with names_csv.open() as f:
+        for r in csv.DictReader(l for l in f if not l.lstrip().startswith("#")):
+            if (r.get("kind") or "func") == "data":
+                ret[r["name"]] = int(r["rva"], 16)
+    return ret
+
+
+def data_static_storage(cand_pe, ret_pe, cand_data, retail_data):
+    """homm2-style per-data-symbol layout audit -> summary + first divergences."""
+    rows = []
+    for name, rrva in sorted(retail_data.items(), key=lambda kv: kv[1]):
+        rcls, rsec, roff = _classify_storage(ret_pe, rrva)
+        crva = cand_data.get(name)
+        row = {"name": name, "retail_rva": rrva, "retail_class": rcls,
+               "candidate": crva is not None}
+        if crva is not None:
+            ccls, csec, coff = _classify_storage(cand_pe, crva)
+            row.update({
+                "candidate_rva": crva, "candidate_class": ccls,
+                "delta": crva - rrva,
+                "section_relative_delta": (coff - roff if rsec == csec and
+                                           roff is not None and coff is not None else None),
+                "class_match": rcls == ccls,
+            })
+        rows.append(row)
+    defined = [r for r in rows if r["candidate"]]
+    exact_rva = sum(1 for r in defined if r["delta"] == 0)
+    class_ok = sum(1 for r in defined if r.get("class_match"))
+    secrel0 = sum(1 for r in defined if r.get("section_relative_delta") == 0)
+    # First section-relative divergence per section (homm2 first_divergences).
+    first_div, prev = [], {}
+    for r in defined:
+        d = r.get("section_relative_delta")
+        if d is None:
+            continue
+        sec = r["retail_class"]
+        if d != 0 and d != prev.get(sec) and len(first_div) < 15:
+            first_div.append({"name": r["name"], "section": sec,
+                              "retail_rva": hexk(r["retail_rva"]),
+                              "candidate_rva": hexk(r["candidate_rva"]),
+                              "section_relative_delta": d})
+        prev[sec] = d
+    from collections import Counter
+    return {
+        "retail_data_symbols": len(rows),
+        "candidate_defined": len(defined),
+        "exact_rva": exact_rva,
+        "section_relative_exact": secrel0,
+        "storage_class_matches": class_ok,
+        "retail_storage_classes": dict(Counter(r["retail_class"] for r in rows)),
+        "first_section_relative_divergences": first_div,
+    }
+
+
 # ----------------------------------------------------------------------- report
 def hexk(n):
     return f"{n:#x}"
@@ -147,6 +241,12 @@ def main() -> None:
     ret = load_retail_names(Path(args.names))
     exact_set = load_exact_set(Path(args.report))
     common = set(cand) & set(ret)
+
+    # E. DATA static-storage layout (homm2-style; candidate .map data syms vs retail).
+    data_storage = data_static_storage(
+        cand_pe, ret_pe,
+        load_map_data_symbols(Path(args.map), cand_pe["imgbase"]),
+        load_retail_data_names(Path(args.names)))
 
     # --- A. headers / sections ------------------------------------------------
     sec_rows = []
@@ -229,6 +329,7 @@ def main() -> None:
             "exact_subset_identical": ex_same, "exact_subset_total": ex_tot,
             "exact_subset_pct": pct(ex_same, ex_tot),
         },
+        "data_static_storage": data_storage,
     }
 
     if args.json:
@@ -293,6 +394,31 @@ def main() -> None:
     print(f"        here ({100 - pct(ex_same, ex_tot):.2f}%) is purely unresolved-extern")
     print(f"        displacement bytes (/FORCE resolves them to 0). Real code")
     print(f"        differences live in the non-exact functions.")
+
+    print("\n" + "-" * W)
+    print("E. DATA STATIC-STORAGE  (linked .rdata/.data layout; what per-obj diff can't see)")
+    print("-" * W)
+    ds = data_storage
+    print(f"  retail data symbols (DATA()/Ghidra)   : {ds['retail_data_symbols']}"
+          f"   storage: " + ", ".join(f"{k}={v}" for k, v in sorted(
+              ds['retail_storage_classes'].items())))
+    dd = ds["candidate_defined"]
+    print(f"  DEFINED + placed by candidate link    : {dd}/{ds['retail_data_symbols']} "
+          f"({pct(dd, ds['retail_data_symbols']):.1f}%)  "
+          f"(rest are extern/unresolved under /FORCE)")
+    print(f"  at CORRECT absolute retail RVA        : {ds['exact_rva']}/{dd}")
+    print(f"  at CORRECT section-relative offset    : {ds['section_relative_exact']}/{dd}"
+          f"   (whole-section drift removed = the real contribution signal)")
+    print(f"  storage-class (.rdata/.data) matches  : {ds['storage_class_matches']}/{dd}")
+    if ds["first_section_relative_divergences"]:
+        print("  first section-relative divergences (earliest credible contribution cause):")
+        for d in ds["first_section_relative_divergences"][:8]:
+            print(f"     {d['name'][:42]:42} {d['section']:6} "
+                  f"ret {d['retail_rva']} cand {d['candidate_rva']} "
+                  f"Δoff {d['section_relative_delta']:+#x}")
+    print("     -> fix the EARLIEST cause, relink; later rows are cumulative layout")
+    print("        consequences (homm2 static-storage method). matched_data byte")
+    print("        verification is `gruntz data-audit` (retail oracle) + the delinker bump.")
 
     print("\n" + "-" * W)
     print("D. PROPOSED TRACKED EXE-MATCH NUMBERS  (`gruntz exe-diff`)")

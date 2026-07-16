@@ -769,6 +769,25 @@ def cmd_exe_diff(args) -> None:
     run(cmd)
 
 
+def cmd_data_audit(args) -> None:
+    """Attribute retail .rdata/.data/.bss bytes to source DATA() symbols + fingerprint.
+
+    Thin alias for `python -m gruntz.analysis.data_audit`: reads ONLY the retail
+    GRUNTZ.EXE (no delinker/PDB/wine), classifies each named data symbol's PE
+    storage, resolves an extent (reviewed size, else next-symbol gap), and records a
+    relocation-normalized content digest + HIGHLOW fingerprint into
+    build/gen/data_attribution.tsv. This makes the data-section attribution explicit
+    and gives the data-match loop a fixed retail oracle. See
+    docs/data-attribution.md.
+    """
+    cmd = [sys.executable, "-m", "gruntz.analysis.data_audit"]
+    if args.rva:
+        cmd += ["--rva", args.rva]
+    if args.json:
+        cmd += ["--json", args.json]
+    run(cmd)
+
+
 def cmd_lint(args) -> None:
     """On-demand clang-tidy DE-HACK finder (READ-ONLY worklist; never auto-fix).
 
@@ -1556,6 +1575,11 @@ def main() -> None:
                         "(layout + linked bytes; needs `gruntz link` first)")
     xd.add_argument("--json", action="store_true", help="emit the JSON summary only")
     xd.set_defaults(func=cmd_exe_diff)
+    da = sub.add_parser("data-audit", help="attribute retail .rdata/.data/.bss bytes "
+                        "to DATA() symbols + fingerprint (-> build/gen/data_attribution.tsv)")
+    da.add_argument("--rva", help="audit + print a single data symbol RVA")
+    da.add_argument("--json", help="also write full per-symbol evidence JSON to this path")
+    da.set_defaults(func=cmd_data_audit)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
     ln = sub.add_parser("lint", help="on-demand clang-tidy de-hack finder "

@@ -406,12 +406,25 @@ dominant cost of a full build, which is exactly why matchers iterate with `--fas
 and pay the gate tail once before committing). Pool the per-worktree TSVs to compare
 how long worker builds take.
 
+## Data-symbol normalization (before objdiff)
+
+Between delink and report, a `normalize` ninja edge
+(`scripts/gruntz/build/normalize_objs.py` → `canonicalize_data_symbols.py`) rewrites the
+compiler-private data names (`$SG`/`$T`/`name$S<n>`) and same-function jump-table `DIR32`
+labels of every base + target obj into a **content-addressed, disposable comparison copy**
+under `build/objdiff/normalized/{base,target}/`. objdiff pairs those copies so identical
+data/jump-tables match BY NAME across base and target. The transform is **matching-neutral**
+(the real `base/`+`delink/` objs are untouched; a fail-closed reparse proves only symbol
+names + authorized jump-table reloc fields moved and every resolved offset is unchanged) and
+proven safe over all objs (exact-match count unchanged). See **`docs/data-attribution.md`**;
+`gruntz data-audit` complements it with a retail data-byte attribution ledger.
+
 ## Pairing (objdiff)
 
 `build/objdiff/objdiff.json` (written by `configure.py:emit_objdiff`) pairs, per unit:
 
-- base: `./base/<unit>.obj` (cl `/O2 /MT vendor/zlib-1.0.4/<unit>.c`)
-- target: `./target/<unit>.c.obj` (delinked, named per `symbol_names.csv`)
+- base: `./normalized/base/<unit>.obj` (cl `/O2 /MT`, then data-name normalized)
+- target: `./normalized/target/<unit>.c.obj` (delinked per `symbol_names.csv`, normalized)
 
 Symbols are pre-named on both sides (cdecl `_<name>`), so objdiff pairs them
 **by symbol name** with no `symbol_mappings` overlay. A unit whose target obj
