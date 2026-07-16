@@ -132,8 +132,8 @@ extern "C" CGruntzMgr* g_gameReg;
 // sub-selector 4) under the outer Serialize switch (0x517636). It pulls a fixed
 // run of dword fields off the archive (virtual Read @ vtable byte 0x30) once the
 // game registry's m_30 sub-manager is live.
-// DE-VIEW (2026-07-13, Fable lane): the `CTileTriggerData` record view is GONE -
-// it was CTileTriggerSwitchLogic itself. 0x1138b0 streams the EXACT field list
+// The `CTileTriggerData` record is CTileTriggerSwitchLogic itself.
+// 0x1138b0 streams the EXACT field list
 // LoadState (0x1139a0) reads back - m_08, m_key0c, m_key1, m_linkGate, m_18,
 // m_1c, m_20, m_28, then m_block[24] from +0x2c, skipping the +0x24 owner - so
 // it is the WRITE mirror, now CTileTriggerSwitchLogic::SaveState (the mode-4 arm

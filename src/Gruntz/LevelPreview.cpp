@@ -48,8 +48,8 @@ extern "C" {
 // unlocated). Every reconstructed sibling overrides slot 8, so it likely does too, but
 // that is an inference - not asserted here as a declared-only phantom method.
 //
-// The +0x0c holder is the typed CState CDDrawSurfaceMgr (m_c; the CRegHolder
-// view is DISSOLVED 2026-07-16). The +0x2c slot stays a dual-view (CSymTab vs
+// The +0x0c holder is the typed CState CDDrawSurfaceMgr (m_c). The +0x2c slot
+// stays a dual-view (CSymTab vs
 // CResSource), reached with a view-cast at each site until that fold lands.
 //
 // FadeInTitle (0xfa1f0) and RetireScene (0xfa8f0) are SHARED CState base methods, not

@@ -105,8 +105,8 @@
 // CLevelPlane (GameLevel.h) and CPlaneRender (WwdFile.h) are the same object under two
 // names - m_mainPlane is cast to the render facet that owns GetTileHandle.
 // ---------------------------------------------------------------------------
-// (The TriggerRegistrar / PlayfieldMgr views are GONE - DISSOLVED 2026-07-15 onto
-//  the canonicals, every thunk chased:
+// (The TriggerRegistrar / PlayfieldMgr accesses resolve onto the canonicals,
+//  every thunk chased:
 //    RegisterSwitchLogic @0x115f60 (thunk 0x1131) IS CTileTriggerContainer::
 //      AddSwitchLogic on m_beginMarker (retail: mov ecx,[this+0x2e4]);
 //    LookupKind @0x21df IS CTileTriggerContainer::FindInLists12 @0x116f20;

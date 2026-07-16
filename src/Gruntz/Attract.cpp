@@ -169,12 +169,8 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         menuRoot()->m_04->TransExit();
     }
 
-    RetireScene(
-        0x50,
-        0x3e8,
-        0,
-        1
-    ); // 0xfa8f0 CState::RetireScene
+    RetireScene(0x50, 0x3e8, 0,
+                1); // 0xfa8f0 CState::RetireScene
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
     // slot in a reg.
     if (ShowCursor(1) < 0) {
@@ -229,12 +225,8 @@ i32 CAttract::Activate() {
         ->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), (tagRECT*)0);
     menuRoot()->m_04->TransTitle();
 
-    RetireScene(
-        0x50,
-        0x3e8,
-        0,
-        1
-    ); // 0xfa8f0 CState::RetireScene
+    RetireScene(0x50, 0x3e8, 0,
+                1); // 0xfa8f0 CState::RetireScene
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
     // slot in a reg.
     if (ShowCursor(1) < 0) {
@@ -640,7 +632,7 @@ i32 g_playActive;
 // slot 19 (+0x4c)" IS CImageRegistry::LoadNamespace, the very slot the game-state
 // activators (CBootyState/CMenuState/CPlay slot-8 loaders) already reach.)
 
-// CLevelData / CDisplayMgr are DISSOLVED (2026-07-14): m_levelData IS the canonical
+// CLevelData / CDisplayMgr are the canonical classes: m_levelData IS the canonical
 // CDDrawSurfaceMgr (<Gruntz/GameRegistry.h>; its +0x04 CDDrawSubMgrPages worker ==
 // the old m_ready, its +0x10 CImageRegistry == the old m_imageSet) and m_displayMgr IS
 // the canonical CGruntzMgr (<Gruntz/GruntzMgr.h>; its +0x8c/+0x90 m_modeW/m_modeH ==
