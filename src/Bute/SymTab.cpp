@@ -1,4 +1,4 @@
-// SymTab.cpp - the ButeMgr symbol-table ORIGINAL TU (wave4-K merge; interval
+// SymTab.cpp - the ButeMgr symbol-table ORIGINAL TU (interval
 // dossier #14A): one obj spanning retail 0x1396f0-0x13c22a. The former
 // cremusreadstream (ParseSource.cpp), symrec (SymRec.cpp) and symparser
 // (SymParser.cpp) units were text-A-B-A-woven slices of this file and are folded
@@ -56,12 +56,12 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
     return 0;
 }
 
-// The +0x80 hash member's construction (0x184960) is CHashBase::Construct (folded
-// from the former CSymList::Construct view; wave5-F1) - a real method on the parser's
+// The +0x80 hash member's construction (0x184960) is CHashBase::Construct - a real
+// method on the parser's
 // CParserHash/CHashBase member, reached cast-free via m_hash.Construct(1).
 
 // ===========================================================================
-// 0x1396f0 - Init (re-homed from src/Stub/BoundaryUpper2.cpp): initialize a fresh parse
+// 0x1396f0 - Init: initialize a fresh parse
 // slot - placement-construct the embedded hash-node (stamping its vptr @0x5ef740), null
 // the name/mapped/reader bookkeeping, self-link +0x30. Returns this. __thiscall.
 // @early-stop
@@ -140,7 +140,7 @@ void CSymLeafBuilder::Build(
 // `if (m_38) free` arms tail-merge). Xref: called by ~CSymRec (0x139cf0) over each
 // m_valTable payload and by CSymTab::AddNodeSubEntry (0x13a530) when a stale value key
 // is re-scanned - proving the record is the leaf VALUE record CSymLeafBuilder::Build
-// fills (the former Obj1397a0/Obj49Target placeholder views are dissolved onto it).
+// fills.
 RVA(0x001397a0, 0x57)
 void CSymLeafBuilder::Teardown() {
     if (m_name) {
@@ -326,8 +326,7 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
 
 // ---------------------------------------------------------------------------
 // CSymRec - the two leaf-record ctors + the /GX teardown (0x139bf0/0x139c80/
-// 0x139cf0), unified onto the canonical <Bute/SymTab.h> CSymRec (wave4-K; was
-// the SymRec.cpp TU-local model). Both ctors stamp the +0x04 node prefix
+// 0x139cf0), unified onto the canonical <Bute/SymTab.h> CSymRec. Both ctors stamp the +0x04 node prefix
 // (CSymRecNode's inlined ctor: vptr 0x1ef744 + zeroed payload), build the two
 // hash-table members (reloc-masked container ctors 0x184950/0x184960; the
 // destructible members force the /GX EH frame), then wire key/back-ptr/scope.
@@ -763,7 +762,7 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
 // The removed value-entry's teardown (0x1397a0 = CSymLeafBuilder::Teardown, defined in
 // full above in this TU): `found` is the leaf VALUE record CSymLeafBuilder::Build fills.
 
-// CSymTab::AddNodeSubEntry (0x13a530, re-homed from src/Stub/BoundaryUpper2.cpp): the
+// CSymTab::AddNodeSubEntry (0x13a530): the
 // leaf-merge helper ApplyRange calls when a value key already exists in a leaf record's
 // +0x24 value sub-table. Subtract the stale entry's span from this scope's running total
 // (m_10), unlink it from the parent record's value sub-table, tear it down, and return it
@@ -817,7 +816,7 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
 // forwards the reader (`(i32)node`/`(i32)reader`, LoadEntry/ParseBuffer) as `a0`, and
 // stream->Read(pos, 0, len, buf) is CRezItmBase::Read (slot 2 = +0x8). Reloc-masked
 // virtual; the `mov eax,[a0]; call [eax+8]` dispatch falls out of the base with no local
-// view. (The former CSymRangeStream interface shell is dissolved onto CRezItmBase.)
+// view.
 
 // CSymLeafBuilder (the 11-arg leaf-record builder, 0x139710) is defined at the top
 // of this TU in retail-RVA order; ApplyRange below uses it.
@@ -1026,8 +1025,7 @@ CSymParser::CSymParser() {
 // stamp). It exists because CSymParser's /GX dtor unwind funclets (0x1e0b30/0x1e0b50/
 // 0x1e0b90 - xref-verified, its ONLY referents) take the member dtor's address.
 // Sibling of ??1CRezList @0x13ca30 (RezFile.cpp). An inline dtor can't hang an RVA(), so
-// it is pinned by mangled name. (Was the fake placeholder class CAbstract13aaf0, whose
-// emitted ??_7 aliased the bound ??_7CObjListBase datum - a RELOC_VTBL.)
+// it is pinned by mangled name.
 // @rva-symbol: ??1CParserObjList@@QAE@XZ 0x0013aaf0 0x7
 
 // 0x13ab00: the 3-arg buffer constructor. Construct the sub-object members (the +0x10
@@ -1038,7 +1036,7 @@ CSymParser::CSymParser() {
 // unmatched TU - a reloc-masked call.)
 // @early-stop
 // ~74.8% (real polymorphic now, ALL-VTABLES phase): the primary vptr is auto-
-// stamped by cl @+0 at ctor entry (was the hand-rolled mid-body vptr store); the
+// stamped by cl @+0 at ctor entry; the
 // /GX frame, the member-init store sequence (m_list, the +0x80 hash Init(1), the
 // +0x88 node-list), the discarded default-temp ctor/dtor pair and the ParseBuffer
 // 3-arg tail are byte-faithful. Residual is the /GX trylevel state-NUMBERING wall
@@ -1046,7 +1044,7 @@ CSymParser::CSymParser() {
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
     // cl auto-stamps ??_7CSymParser @+0 at ctor entry, and the m_list member ctor
-    // auto-stamps ??_7CObjList @+0x10 (== the old CObjList_ctor_vftbl stamp).
+    // auto-stamps ??_7CObjList @+0x10.
     m_list.m_head = 0;
     m_list.m_tail = 0;
     m_hash.Construct(1);
@@ -1065,8 +1063,7 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 // sub-object vtable. The +0x80 CHashBase auto-destructs after the body.
 // 99.99% (ALL-VTABLES phase): making CSymParser real-polymorphic lets cl auto-stamp
 // the vptr @+0 at dtor entry (into EH-state 0, early) - which is exactly the retail
-// schedule, closing the old eh-dtor-vptr-stamp-vs-trylevel-order wall that capped
-// this at ~98% while the vptr was a hand-rolled store. Code bytes are byte-identical;
+// schedule. Code bytes are byte-identical;
 // the sole 0.009% residual is a reloc-NAME artifact: the +0x88 node-list Unlink is now
 // the cast-free m_nodes.Unlink (CHashSlotList's own op) instead of the old cross-module
 // (DSoundList*) reinterpret, and the delinker had 0x1391e0 blessed under the DSoundList
