@@ -134,7 +134,7 @@ extern const u8 g_keyboardDataFormat[]; // 0x590aa0
 extern const u8 g_mouseDataFormat[]; // 0x590b30
 
 // The joystick DIDATAFORMAT (c_dfDIJoystick2, 0x110-byte DIJOYSTATE2) the joystick
-// bring-up (CDeviceConfigB::CreateDevJoystick) passes to SetDataFormat; reloc-masked DIR32.
+// bring-up (CDeviceConfigC::CreateDevJoystick) passes to SetDataFormat; reloc-masked DIR32.
 // @data-symbol: ?g_joystickDataFormat@@3PBEB 0x00191590
 extern const u8 g_joystickDataFormat[]; // 0x591590
 
@@ -1204,12 +1204,15 @@ i32 CInputDevice::PollMouse() {
     return 1;
 }
 
-// CDeviceConfigB::CreateDevJoystick (__thiscall, ret 0x10 => 4 args). The joystick-device
+// CDeviceConfigC::CreateDevJoystick (__thiscall, ret 0x10 => 4 args). The joystick-device
 // bring-up the enum-devices callback drives: same shape as CreateDev (mouse) but the
 // joystick data format, a 0x110-byte DIJOYSTATE2 snapshot buffer, and a SetupAxes()
-// finalizer that configures the DI axis ranges + dead zones.
+// finalizer that configures the DI axis ranges + dead zones. [Owner corrected B -> C:
+// the ONE retail caller is DinEnumDevicesCallback, which news a CDeviceConfigC
+// (vtable 0x5ef658) as its receiver - the CDeviceConfigB claim was a fake-view
+// alias that left the callback's emitted callee symbol unresolved.]
 RVA(0x00134630, 0x98)
-i32 CDeviceConfigB::CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
+i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
@@ -1246,13 +1249,14 @@ void CDeviceConfigC::Free6d0() {
     CInputDevRoot::ReleaseDevices();
 }
 
-// CDeviceConfigB::SetupAxes (__thiscall, no args). Configures the joystick's two axes
+// CDeviceConfigC::SetupAxes (__thiscall, no args). Configures the joystick's two axes
 // via IDirectInputDevice::SetProperty: a [-1000, 1000] DIPROP_RANGE on the X (dwObj 0)
 // then Y (dwObj 4) axis, then a 5000-unit DIPROP_DEADZONE on each. The DIPROPRANGE is
 // built once on the stack and reused (only dwObj changes); the dead zones go through the
 // DIPROPDWORD helper. Bails (return 0) the first time a SetProperty fails.
+// [Owner corrected B -> C with CreateDevJoystick, its sole retail caller.]
 RVA(0x00134710, 0xb2)
-i32 CDeviceConfigB::SetupAxes() {
+i32 CDeviceConfigC::SetupAxes() {
     if (m_device2 == 0) {
         return 0;
     }

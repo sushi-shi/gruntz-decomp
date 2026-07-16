@@ -308,8 +308,9 @@ public:
 };
 
 // CDeviceConfigB (mouse, vtable 0x5ef640, 0x2c8) - InitB's device. The teardown
-// dtor 0x1334f0 is emitted here; CreateDev/CreateDevJoystick reach the shared root
-// thunks (same offsets - reloc-masked).
+// dtor 0x1334f0 is emitted here; CreateDev reaches the shared root
+// thunks (same offsets - reloc-masked). (CreateDevJoystick/SetupAxes are
+// CDeviceConfigC's - the joystick bring-up; the B decls were fake-view aliases.)
 SIZE(CDeviceConfigB, 0x2c8);
 class CDeviceConfigB : public CInputDevBase {
 public:
@@ -320,8 +321,6 @@ public:
 
     i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x1342c0
     i32 IsReady(); // 0x1343a0 (out-of-line)
-    i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x134630
-    i32 SetupAxes();                                                                   // 0x134710
     void Free360(); // 0x134360 (mouse leaf teardown; body in BoundaryUpper.cpp)
 
     i32 m_flags; // +0x2b4
@@ -340,7 +339,8 @@ public:
     virtual void ReleaseDevices() OVERRIDE; // slot 2  0x1346d0 (Free6d0)
     virtual i32 Poll() OVERRIDE;            // slot 4  (joystick poll override)
     i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x134630
-    void Free6d0(); // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
+    i32 SetupAxes(); // 0x134710 (axis ranges + dead zones; CreateDevJoystick's finalizer)
+    void Free6d0();  // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
 
     i32 m_flags; // +0x2b4
 };
