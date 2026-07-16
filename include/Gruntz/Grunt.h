@@ -88,40 +88,12 @@ struct CCueRect {
 // (run-phase view; offsets +0x08/+0x0c/+0x10(->+0x2e4)/+0x14/+0x18/+0x5c/+0x60 match
 // BattlezMapConfig.h exactly) - it folds there, NOT onto CGruntHud.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CGruntHud);
-struct CGruntHud {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08   CGameObject flags word (BuildEntrance |= 0x20000; NOT the battlez mover)
-    char m_padc[0x40 - 0xc];
-    i32 m_40; // +0x40   (sprite-state flag word; ExitAnim/RunConfig clears bit 8)
-    char m_pad44[0x4c - 0x44];
-    i32 m_4c;      // +0x4c   (SelectMoveIcon: = GetSel result)
-    i32 m_50;      // +0x50   (SelectMoveIcon: = 0xa; CGrunt::Load: 0xa/0xb event kind)
-    i32 m_54;      // +0x54   (CGrunt::Load: the 0xb event value - ghost transparency)
-    i32 m_58;      // +0x58   (SelectMoveIcon: = 1)
-    i32 m_screenX; // +0x5c
-    i32 m_screenY; // +0x60
-    char m_pad64[0x74 - 0x64];
-    i32 m_74; // +0x74   (entrance: latched anim id; cmp 0xcf850)
-    char m_pad78[0xe4 - 0x78];
-    i32 m_e4; // +0xe4   (CGameObject dirty/update state; ctor stamps 7 then 1)
-    char m_pade8[0x11c - 0xe8];
-    i32 m_11c; // +0x11c  (ctor snapshot -> m_434)
-    char m_pad120[0x134 - 0x120];
-    i32 m_134; // +0x134  (arrival: view-cull mode cleared)
-    i32 m_138; // +0x138  (arrival: view-cull, cleared)
-    i32 m_13c; // +0x13c  (arrival: view-cull, cleared)
-    i32 m_140; // +0x140  (arrival: view-cull, cleared)
-    char m_pad144[0x148 - 0x144];
-    i32 m_148;   // +0x148
-    i32 m_14c;   // +0x14c
-    void* m_150; // +0x150
-    char m_pad154[0x188 - 0x154];
-    i32 m_188; // +0x188  (cue arg; the trigger leaves also read it as the archive/serialize id)
-    char m_pad18c[0x198 - 0x18c];
-    i32 m_198; // +0x198  clickable/hit gate (from the trigger leaves' disasm - folded in
-               //         from the deleted CTmDisplay view, which was a duplicate of this class)
-};
+// (The CGruntHud view is DISSOLVED (2026-07-16): the +0x10 bound object IS the
+// canonical CGameObject - m_8==m_flags, m_40==m_stateFlags, m_4c..m_58 the
+// drawFill quad, m_5c/m_60==m_screenX/Y, m_74==m_latchedAnimId (the 0xcf850
+// z-key), m_e4==m_moveMode (ctor stamps 7=direct then 1), m_134..m_140 the
+// extent quad, m_148..m_150 the area T/R/B, m_188 the object id, m_198==m_layer
+// (the clickable gate is the frame ptr). One shape, <Gruntz/UserLogic.h>.)
 
 // ---------------------------------------------------------------------------
 // The global HUD sprite factory, reached via the global registry ptr -> +0x30 -> +0x8.

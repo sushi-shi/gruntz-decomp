@@ -244,7 +244,7 @@ extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 
 // (The CGruntCmdObj / CGruntAnchor / CGruntRegistrar views are GONE - DISSOLVED
 //  2026-07-15 onto the canonicals. CGruntCmdObj WAS ::CGrunt: m_10 == m_10
-//  (CGruntHud*), m_17c/m_180 == m_lastTilePxX/m_lastTilePxY, m_198 == m_198,
+//  (CGameObject*), m_17c/m_180 == m_lastTilePxX/m_lastTilePxY, m_198 == m_198,
 //  m_1a0 == m_moveMode, m_260 == m_tileMgr, m_region0/m_region1 == m_2b0../m_2c0..
 //  (the same 8-dword block RectContainsGated + the serializer already read on
 //  CGrunt). CGruntAnchor WAS CGruntHud (m_5c/m_60 == m_screenX/m_screenY - the
@@ -384,7 +384,7 @@ i32 g_voiceSW[3];
 // 3-DWORD voice record through PlaySound(1000, rec). __thiscall, ret 8, frameless.
 RVA(0x000511b0, 0x246)
 void CGrunt::PlayMoveSound(i32 x, i32 y) {
-    CGruntHud* h = m_10;
+    CGameObject* h = m_10;
     i32 dy = y - h->m_screenY;
     i32 dx = x - h->m_screenX;
     i32 cx = h->m_screenX;
@@ -464,10 +464,10 @@ RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 a) {
     m_10->m_screenX = m_lastTilePxX;
     m_10->m_screenY = m_lastTilePxY;
-    CGruntHud* h = m_10;
-    if (h->m_74 != h->m_screenY + 0x186a0) {
-        h->m_74 = h->m_screenY + 0x186a0;
-        h->m_8 |= 0x20000;
+    CGameObject* h = m_10;
+    if (h->m_latchedAnimId != h->m_screenY + 0x186a0) {
+        h->m_latchedAnimId = h->m_screenY + 0x186a0;
+        h->m_flags |= 0x20000;
     }
     SetEntrancePos(a, 1);
     if (m_arrivalPending != 0) {
@@ -994,7 +994,7 @@ void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
 // reverses the eax/ecx axis assignment. Source-invariant on a 75-byte leaf. ~84%.
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 a) {
-    CGruntHud* h = m_10;
+    CGameObject* h = m_10;
     i32 px = (h->m_screenX & ~0x1f) + 0x10;
     i32 py = (h->m_screenY & ~0x1f) + 0x10;
     if (px != m_lastTilePxX || py != m_lastTilePxY) {
@@ -1115,9 +1115,9 @@ idleReseed:
     SetMoveStateA(m_19c, 1, 0, 1);
     {
         i32 px = m_10->m_screenY + 0x186a0;
-        if (m_10->m_74 != px) {
-            m_10->m_74 = px;
-            m_10->m_8 |= 0x20000;
+        if (m_10->m_latchedAnimId != px) {
+            m_10->m_latchedAnimId = px;
+            m_10->m_flags |= 0x20000;
         }
     }
     if (m_toyTimeSprite != 0) {

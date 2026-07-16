@@ -68,7 +68,7 @@ i32 CGrunt::ChargeStep() {
     CTmCell* g = m_tileMgr->FindNearestEnemy(this);
     i32 hitGate = 0;
     if (g != 0) {
-        CGruntHud* gp = g->m_10;
+        CGameObject* gp = g->m_10;
         if (gp->m_screenX == g->m_lastTilePxX && gp->m_screenY == g->m_lastTilePxY
             && RectContains(gp->m_screenX, gp->m_screenY)) {
             hitGate = 1;
@@ -128,7 +128,7 @@ i32 CGrunt::ChargeStep() {
             // scan for a target on the wander tile
             if (g != 0) {
                 if (hitGate != 0 && m_stamina >= 100) {
-                    CGruntHud* gp = g->m_10;
+                    CGameObject* gp = g->m_10;
                     if (gp->m_screenX == g->m_lastTilePxX && gp->m_screenY == g->m_lastTilePxY
                         && RectContains(gp->m_screenX, gp->m_screenY)) {
                         CommitNeighbor(
@@ -157,7 +157,7 @@ i32 CGrunt::ChargeStep() {
                         m_arrivalCol = g->m_tileOwnerHi;
                         m_arrivalRow = g->m_tileOwnerLo;
                         m_defenderState = 1;
-                        CGruntHud* mp = m_10;
+                        CGameObject* mp = m_10;
                         WwdGameReg* mgr = g_gameReg;
                         // the visible-rect gate: play the "engaged" voice only when this
                         // grunt is on screen (the rect sits 0x40 into the viewport object)
@@ -176,12 +176,12 @@ i32 CGrunt::ChargeStep() {
                 }
             }
             if (m_resetApplied == 0 && m_318 != 0 && m_dwell > 3000) {
-                CGruntHud* mp = m_10;
-                i32 baseX = mp->m_134;
-                i32 spanX = mp->m_13c - baseX;
+                CGameObject* mp = m_10;
+                i32 baseX = mp->m_extentL;
+                i32 spanX = mp->m_extentR - baseX;
                 spanX = spanX < 0 ? -spanX : spanX;
-                i32 baseY = mp->m_138;
-                i32 spanY = mp->m_140 - baseY;
+                i32 baseY = mp->m_extentT;
+                i32 spanY = mp->m_extentB - baseY;
                 spanY = spanY < 0 ? -spanY : spanY;
                 if (spanX != 0) {
                     baseX += rand() % spanX;

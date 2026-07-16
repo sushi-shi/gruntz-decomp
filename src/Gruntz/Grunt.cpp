@@ -433,7 +433,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     // base ctor above did the CMotionState band @+0x38 + coordinate bounds) ---
     m_148 = 0;
     m_14c = 0;
-    m_10->m_e4 = 7;
+    m_10->m_moveMode = 7;
     // The base moving-object per-frame update (CMovingLogic::MovingSlot16 / Update
     // @0x16ea90) fired once at spawn. It is the CANONICAL CMovingLogic slot-16 body
     // (bound in MovingLogic.cpp); CGrunt rides the lean CGruntMovingBase, so the base
@@ -467,7 +467,7 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     m_entranceCell.reason = g_gruntDefEntranceCell[2];
     m_434 = m_10->m_11c;
     m_438 = g_frameTicks;
-    m_10->m_e4 = 1;
+    m_10->m_moveMode = 1;
     m_430 = 0;
     m_42c = 0;
     m_poseWalk = 0;
@@ -548,11 +548,11 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     m_defenderState = 0;
     m_2d8 = 0;
     {
-        CGruntHud* h = m_10;
+        CGameObject* h = m_10;
         i32 lim = h->m_screenY + 0x186a0;
-        if (h->m_74 != lim) {
-            h->m_74 = lim;
-            h->m_8 |= 0x20000;
+        if (h->m_latchedAnimId != lim) {
+            h->m_latchedAnimId = lim;
+            h->m_flags |= 0x20000;
         }
     }
     m_390 = 1;
@@ -777,11 +777,11 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         *(CString*)&m_448 = s_GRUNTZ_ + m_animSetName;
     }
     i32 sel = g_gameReg->m_74->GetSel(m_1f4_moveIcon, kind);
-    CGruntHud* h = m_10;
-    i32 keep50 = h->m_50;
-    h->m_58 = 1;
-    h->m_50 = keep50;
-    h->m_4c = sel;
+    CGameObject* h = m_10;
+    i32 keep50 = h->m_drawFillCmd;
+    h->m_drawActive = 1;
+    h->m_drawFillCmd = keep50;
+    h->m_drawFillArg = sel;
 }
 
 SIZE_UNKNOWN(CAnimSetNode);
@@ -845,7 +845,7 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
     }
     RECT r;
     CopyRect(&r, (LPRECT)((char*)tgt->m_154 + 0x144));
-    CGruntHud* th = tgt->m_10;
+    CGameObject* th = tgt->m_10;
     OffsetRect(&r, th->m_screenX, th->m_screenY);
 
     POINT a, b;

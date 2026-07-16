@@ -112,7 +112,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
         return 0;
     }
     if (exact != 0) {
-        CGruntHud* o = cell->m_10;
+        CGameObject* o = cell->m_10;
         if (o->m_screenX != x || o->m_screenY != y) {
             return 0;
         }
@@ -124,7 +124,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
         }
         return 1;
     }
-    CGruntHud* o = cell->m_10;
+    CGameObject* o = cell->m_10;
     i32 ox = o->m_screenX;
     i32 oy = o->m_screenY;
     if (x + 7 > ox + 14 || x - 7 < ox - 7 || y + 7 > oy + 14 || y - 7 < oy - 7) {

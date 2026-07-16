@@ -451,7 +451,7 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 // dt is the per-tile time step; m_41c is the configured TimePerTile.
 RVA(0x00057060, 0x6f)
 void CGrunt::ComputeFacing(double dt) {
-    CGruntHud* h = m_10;
+    CGameObject* h = m_10;
     double dx = (double)m_lastTilePxX - (double)h->m_screenX;
     double dy = (double)m_lastTilePxY - (double)h->m_screenY;
     m_400 = (sqrt(dx * dx + dy * dy) / (double)m_timePerTile) * dt;
@@ -704,10 +704,10 @@ void CGrunt::SelectMoveIcon(i32 a) {
         m_1f4_moveIcon = 0;
     }
     i32 sel = g_gameReg->m_74->GetSel(m_1f4_moveIcon, m_entranceReason >= 0x17);
-    CGruntHud* h = m_10;
-    h->m_58 = 1;
-    h->m_50 = 0xa;
-    h->m_4c = sel;
+    CGameObject* h = m_10;
+    h->m_drawActive = 1;
+    h->m_drawFillCmd = 0xa;
+    h->m_drawFillArg = sel;
 }
 
 // ---------------------------------------------------------------------------
@@ -771,7 +771,7 @@ i32 CGrunt::TryPowerupAtTile() {
     if (reason <= 0 || reason >= 0x17) {
         return 0;
     }
-    CGruntHud* h = m_10;
+    CGameObject* h = m_10;
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
     GruntBoard* b = g_gameReg->m_tileGrid;
@@ -1272,7 +1272,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         if ((phase == 3 || phase == 2) && m_arrivalActive != 0) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
             if (occ != 0) {
-                CGruntHud* inner = occ->m_10;
+                CGameObject* inner = occ->m_10;
                 i32 yMasked = (inner->m_screenY & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_screenX & ~0x1f) + 0x10;
                 i32 hit;
@@ -2253,7 +2253,7 @@ i32 CGrunt::Activate() {
     }
 
     // --- spawn-state reset tail (integer field stores) ---
-    CGruntHud* h = m_10;
+    CGameObject* h = m_10;
     i32 px = h->m_screenX;
     m_commitPxX = px;
     m_lastTilePxX = px;

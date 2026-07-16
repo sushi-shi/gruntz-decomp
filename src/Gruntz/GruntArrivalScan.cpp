@@ -176,9 +176,9 @@ i32 CGrunt::ResolveArrivalReposition() {
     m_defenderY = m_lastTilePxY;
     if (occ != 0 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
         if ((u32)m_dwell > 0xfa) {
-            CGruntHud* oh = occ->m_10;
+            CGameObject* oh = occ->m_10;
             if (TileSwitch(oh->m_screenX >> 5, oh->m_screenY >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
-                CGruntHud* oh2 = occ->m_10;
+                CGameObject* oh2 = occ->m_10;
                 if (m_tileMgr->ApplyTriggerA(
                         m_tileOwnerHi,
                         m_tileOwnerLo,
@@ -188,7 +188,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                     == -1) {
                     m_dwell = 0;
                     if (m_390 != 0) {
-                        CGruntHud* h = m_10;
+                        CGameObject* h = m_10;
                         i32 vx = h->m_screenX;
                         i32 vy = h->m_screenY;
                         char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
@@ -214,11 +214,11 @@ i32 CGrunt::ResolveArrivalReposition() {
                 >= *(i64*)&m_arrivalRerollWindowLo) {
                 goto L8b5;
             }
-            CGruntHud* h = m_10;
-            i32 baseX = h->m_134;
-            i32 spanX = abs(h->m_13c - baseX);
-            i32 baseY = h->m_138;
-            i32 spanY = abs(h->m_140 - baseY);
+            CGameObject* h = m_10;
+            i32 baseX = h->m_extentL;
+            i32 spanX = abs(h->m_extentR - baseX);
+            i32 baseY = h->m_extentT;
+            i32 spanY = abs(h->m_extentB - baseY);
             i32 outX = baseX;
             if (spanX != 0) {
                 outX += GruntRand() % spanX;
@@ -719,7 +719,7 @@ i32 CGrunt::WanderStep() {
             if (CoordCount() != 0) {
                 return 1;
             }
-            CGruntHud* base = m_10;
+            CGameObject* base = m_10;
             i32 clip = 1;
             i32 py = GameRand() % 4 + (base->m_screenY >> 5) - 2;
             i32 px = GameRand() % 4 + (base->m_screenX >> 5) - 2;
@@ -727,7 +727,7 @@ i32 CGrunt::WanderStep() {
                 CGrunt* entry =
                     g_gameReg->m_cmdGrid->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
                 if (entry != 0) {
-                    CGruntHud* e10 = entry->m_10;
+                    CGameObject* e10 = entry->m_10;
                     RECT rc;
                     rc.left = (e10->m_screenX >> 5) - 2;
                     rc.top = (e10->m_screenY >> 5) - 2;
@@ -775,12 +775,12 @@ timeout:
             m_arrivalRerollLo = (i32)g_frameTime;
             m_arrivalRerollHi = 0;
         } else {
-            CGruntHud* base = m_10;
-            u32 lx = (u32)base->m_134;
-            i32 dxr = base->m_13c - (i32)lx;
+            CGameObject* base = m_10;
+            u32 lx = (u32)base->m_extentL;
+            i32 dxr = base->m_extentR - (i32)lx;
             i32 ax = (dxr ^ (dxr >> 31)) - (dxr >> 31);
-            u32 ly = (u32)base->m_138;
-            i32 dyr = base->m_140 - (i32)ly;
+            u32 ly = (u32)base->m_extentT;
+            i32 dyr = base->m_extentB - (i32)ly;
             i32 ay = (dyr ^ (dyr >> 31)) - (dyr >> 31);
             if (ax != 0) {
                 lx += GameRand() % ax;
@@ -1039,12 +1039,12 @@ i32 CGrunt::UpdateArrival() {
                     this->m_arrivalRerollLo = (i32)g_frameTime;
                     this->m_arrivalRerollHi = 0;
                 } else {
-                    CGruntHud* base = this->m_10;
-                    u32 lo = base->m_134;
-                    i32 dx = base->m_13c - (i32)lo;
+                    CGameObject* base = this->m_10;
+                    u32 lo = base->m_extentL;
+                    i32 dx = base->m_extentR - (i32)lo;
                     i32 ax = (dx ^ (dx >> 31)) - (dx >> 31);
-                    u32 lo2 = base->m_138;
-                    i32 dy = base->m_140 - (i32)lo2;
+                    u32 lo2 = base->m_extentT;
+                    i32 dy = base->m_extentB - (i32)lo2;
                     i32 ay = (dy ^ (dy >> 31)) - (dy >> 31);
                     if (ax != 0) {
                         lo = lo + GruntRand() % ax;
@@ -1598,7 +1598,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             m_arrivalRow = o->m_tileOwnerLo;
             m_defenderState = 1;
             {
-                CGruntHud* h = m_10;
+                CGameObject* h = m_10;
                 i32 x = h->m_screenX;
                 i32 y = h->m_screenY;
                 i32* rect =
@@ -1769,7 +1769,7 @@ i32 CGrunt::StepArrivalDefense() {
         c2_miss:
             m_defenderState = 1;
             {
-                CGruntHud* h = m_10;
+                CGameObject* h = m_10;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
@@ -1887,7 +1887,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_arrivalCol = occ->m_tileOwnerHi;
                 m_arrivalRow = occ->m_tileOwnerLo;
                 m_defenderState = 1;
-                CGruntHud* h = m_10;
+                CGameObject* h = m_10;
                 char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
                 i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
                 if (CueVisible((i32)rect, h->m_screenX, h->m_screenY) == 0) {
@@ -1923,11 +1923,11 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             {
-                CGruntHud* h = m_10;
-                i32 baseX = h->m_134;
-                i32 spanX = abs(h->m_13c - baseX);
-                i32 baseY = h->m_138;
-                i32 spanY = abs(h->m_140 - baseY);
+                CGameObject* h = m_10;
+                i32 baseX = h->m_extentL;
+                i32 spanX = abs(h->m_extentR - baseX);
+                i32 baseY = h->m_extentT;
+                i32 spanY = abs(h->m_extentB - baseY);
                 i32 outX = baseX;
                 if (spanX != 0) {
                     outX += GruntRand() % spanX;
@@ -2523,7 +2523,7 @@ i32 CGrunt::SeekTarget() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCol = bestIdx;
-                CGruntHud* base = slots[bestIdx]->m_10;
+                CGameObject* base = slots[bestIdx]->m_10;
                 if (TileSwitch(
                         base->m_screenX >> 5,
                         base->m_screenY >> 5,
@@ -2551,7 +2551,7 @@ i32 CGrunt::SeekTarget() {
         if ((u32)this->m_dwell < 0x3e9) {
             return 1;
         }
-        CGruntHud* base = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
+        CGameObject* base = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol]->m_10;
         TileSwitch(base->m_screenX >> 5, base->m_screenY >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->FindNearestEnemy(this);
@@ -2719,7 +2719,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             );
             return 1;
         c2_miss: {
-            CGruntHud* h = m_10;
+            CGameObject* h = m_10;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
@@ -2739,7 +2739,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             m_defenderState = 1;
             m_dwell = 0x1f4;
             {
-                CGruntHud* h = m_10;
+                CGameObject* h = m_10;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 char* m24 = *(char**)((char*)g_gameReg->m_world + 0x24);
@@ -2828,11 +2828,11 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 return 1;
             }
             {
-                CGruntHud* h = m_10;
-                i32 baseX = h->m_134;
-                i32 spanX = abs(h->m_13c - baseX);
-                i32 baseY = h->m_138;
-                i32 spanY = abs(h->m_140 - baseY);
+                CGameObject* h = m_10;
+                i32 baseX = h->m_extentL;
+                i32 spanX = abs(h->m_extentR - baseX);
+                i32 baseY = h->m_extentT;
+                i32 spanY = abs(h->m_extentB - baseY);
                 i32 outX = baseX;
                 if (spanX != 0) {
                     outX += GruntRand() % spanX;

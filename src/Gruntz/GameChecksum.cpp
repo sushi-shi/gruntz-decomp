@@ -7,7 +7,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <stdlib.h>       // rand (0x11fee0), the trailing signature component
-#include <Gruntz/Grunt.h> // the real CGrunt object-table entry + its CGruntHud* m_10
+#include <Gruntz/Grunt.h> // the real CGrunt object-table entry + its CGameObject* m_10
 // g_frameTime (the per-frame sync salt, 0x645588) comes from <Gruntz/MovingLogic.h>
 // via Grunt.h as `extern "C" u32 g_frameTime` - re-declaring it here clashed (C2371).
 
@@ -35,9 +35,9 @@ i32 CGameSyncSig::ComputeSignature() {
             char* base = *(char**)(*(char**)(*(char**)((char*)this + 4) + 4) + 0x68);
             CGrunt* obj = *(CGrunt**)(base + off);
             if (obj != 0) {
-                CGruntHud* sub = obj->m_10;
+                CGameObject* sub = obj->m_10;
                 sum += obj->m_entranceCell.reason + obj->m_stamina + obj->m_toyTime + obj->m_health
-                       + sub->m_screenY + sub->m_74 + sub->m_screenX + obj->m_lastTilePxX
+                       + sub->m_screenY + sub->m_latchedAnimId + sub->m_screenX + obj->m_lastTilePxX
                        + obj->m_lastTilePxY;
                 i32 n = obj->m_entranceReason;
                 i32 d = n;

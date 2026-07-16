@@ -58,10 +58,10 @@ i32 CGrunt::StepPeerTracking() {
     if (p->m_entranceCommitted == 0) {
         return 1;
     }
-    CGruntHud* a = p->m_10;
+    CGameObject* a = p->m_10;
     if (a->m_screenX == p->m_lastTilePxX && a->m_screenY == p->m_lastTilePxY
         && RectContainsGated(a->m_screenX, a->m_screenY)) {
-        CGruntHud* b = p->m_10;
+        CGameObject* b = p->m_10;
         g_gameReg->m_cmdGrid
             ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, b->m_screenX, b->m_screenY);
         return 1;
@@ -70,13 +70,13 @@ i32 CGrunt::StepPeerTracking() {
         return 1;
     }
     if (GruntInRadius(p->m_tileOwnerHi, p->m_tileOwnerLo)) {
-        CGruntHud* b = p->m_10;
+        CGameObject* b = p->m_10;
         TileSwitch(b->m_screenX >> 5, b->m_screenY >> 5, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
         if (m_390 == 0) {
             return 1;
         }
-        CGruntHud* c = m_10;
+        CGameObject* c = m_10;
         CGameRegistry* g = g_gameReg;
         i32 y = c->m_screenY;
         i32 x = c->m_screenX;

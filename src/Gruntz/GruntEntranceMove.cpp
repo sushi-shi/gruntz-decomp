@@ -346,9 +346,9 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
     m_entranceActive = 1;
-    if (m_10->m_74 != 0xcf850) {
-        m_10->m_74 = 0xcf850;
-        m_10->m_8 |= 0x20000;
+    if (m_10->m_latchedAnimId != 0xcf850) {
+        m_10->m_latchedAnimId = 0xcf850;
+        m_10->m_flags |= 0x20000;
     }
 
     EntrancePrepare(); // thunk_FUN_0044b240 (a void this-method)
@@ -462,7 +462,7 @@ RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
     if (m_154->m_1a0.Advance((u32)g_engineFrameDelta) == 1) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        CGruntHud* h = m_10;
+        CGameObject* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
         i32 tx = h->m_screenX >> 5;
         i32 ty = h->m_screenY >> 5;
@@ -515,9 +515,9 @@ void CGrunt::LoadEntranceConfig() {
 
         h = m_10;
         m_entranceCommitted = 1;
-        if (h->m_74 != h->m_screenY + 0x186a0) {
-            h->m_74 = h->m_screenY + 0x186a0;
-            h->m_8 |= 0x20000;
+        if (h->m_latchedAnimId != h->m_screenY + 0x186a0) {
+            h->m_latchedAnimId = h->m_screenY + 0x186a0;
+            h->m_flags |= 0x20000;
         }
 
         CGameObject* p = m_154;
@@ -667,7 +667,7 @@ i32 CGrunt::StartBombGruntRun() {
     ApplySetState1(1);
     SetEntrancePos(1, 1);
     if (SetMoveStateA(1, 1, 0, 1) == 0) {
-        CGruntHud* h = m_10;
+        CGameObject* h = m_10;
         m_tileMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
     }
@@ -677,7 +677,7 @@ i32 CGrunt::StartBombGruntRun() {
         dx = 1;
     }
     {
-        CGruntHud* h = m_10;
+        CGameObject* h = m_10;
         dy += h->m_screenY >> 5;
         dx += h->m_screenX >> 5;
     }
@@ -689,7 +689,7 @@ i32 CGrunt::StartBombGruntRun() {
     m_timePerTile = g_buteMgr.GetIntDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
     m_22c = 1;
     {
-        CGruntHud* h = m_10;
+        CGameObject* h = m_10;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
         char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
@@ -931,11 +931,11 @@ i32 CGrunt::UpdateEntranceAnim() {
         return 0;
     }
 
-    CGruntHud* h = m_10;
+    CGameObject* h = m_10;
     i32 z = h->m_screenY + 0x186a0;
-    if (h->m_74 != z) {
-        h->m_74 = z;
-        h->m_8 |= 0x20000;
+    if (h->m_latchedAnimId != z) {
+        h->m_latchedAnimId = z;
+        h->m_flags |= 0x20000;
     }
     return 0;
 }
@@ -1083,9 +1083,9 @@ idleReseed:
     SetMoveStateA(m_19c, 1, 0, 0);
     {
         i32 z = m_10->m_screenY + 0x186a0;
-        if (m_10->m_74 != z) {
-            m_10->m_74 = z;
-            m_10->m_8 |= 0x20000;
+        if (m_10->m_latchedAnimId != z) {
+            m_10->m_latchedAnimId = z;
+            m_10->m_flags |= 0x20000;
         }
     }
     if (m_toyTimeSprite != 0) {
@@ -1153,9 +1153,9 @@ finalize:
     m_14->m_1c = (void*)g_buteTree.Find(s_codeQ);
     {
         i32 z = m_10->m_screenY + 0x186a0;
-        if (m_10->m_74 != z) {
-            m_10->m_74 = z;
-            m_10->m_8 |= 0x20000;
+        if (m_10->m_latchedAnimId != z) {
+            m_10->m_latchedAnimId = z;
+            m_10->m_flags |= 0x20000;
         }
     }
     m_prevEntranceDesc = m_154->m_1a0.m_14;
@@ -1217,7 +1217,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         if ((i64)(u32)g_frameTime - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
             m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
-            CGruntHud* h = m_10;
+            CGameObject* h = m_10;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             char* sc = *(char**)((char*)g_gameReg->m_world + 0x24);
@@ -1300,7 +1300,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     WwdGameReg* g = g_gameReg;
     void* sub2c = *(void**)((char*)g + 0x2c);
     GruntBoard* b = g->m_tileGrid;
-    CGruntHud* h = m_10;
+    CGameObject* h = m_10;
     i32 xbound = b->m_c;
     i32 tileY = h->m_screenY >> 5;
     i32 tileX = h->m_screenX >> 5;

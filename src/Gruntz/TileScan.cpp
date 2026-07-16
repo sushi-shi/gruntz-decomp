@@ -57,7 +57,7 @@ i32 CTileScan::Scan(CGrunt* arg) {
         return 1;
     }
 
-    CGruntHud* p = arg->m_10;
+    CGameObject* p = arg->m_10;
     i32 v60 = p->m_screenY;
     i32 v5c = p->m_screenX;
     i32 a0 = v60 >> 5;

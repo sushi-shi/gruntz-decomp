@@ -352,7 +352,6 @@ VTBL(CUserBase, 0x001e70b4); // ??_7CUserBase@@6B@ (the RTTI base vtable; catalo
 // true 0x30 boundary, because CGrunt uses 0x30..0x3c for its OWN (different)
 // fields. Both are correct expressions of one class - see the NOTE.
 // ---------------------------------------------------------------------------
-struct CGruntHud;       // Grunt.h view of the +0x10 bound object
 struct CAnimLookupNode; // Grunt.h view of the +0x14 aux (anim-set lookup)
 class CUserLogic : public CUserBase {
 public:
@@ -440,9 +439,9 @@ public:
     i32 m_04;          // +0x04
     i32 m_08;          // +0x08
     CGameObject* m_0c; // +0x0c
-    union {            // +0x10  bound game object (== m_38); CGrunt views it as CGruntHud*
+    union { // +0x10  bound game object (== m_38; one type, two historical spellings)
         CGameObject* m_object;
-        CGruntHud* m_10;
+        CGameObject* m_10;
     };
     union { // +0x14  aux sub-object (obj->m_7c); CGrunt views it as CAnimLookupNode*
         AnimWorkerObj* m_objAux;

@@ -4732,7 +4732,7 @@ L_clear:
 // pair). Permuter found no closing spelling (operand-order invariant). Emits at 0x31c70.
 RVA(0x00031c70, 0x1d)
 GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
-    CGruntHud* h = m_10;
+    CGameObject* h = m_10;
     i32 x = h->m_screenX >> 5;
     i32 y = h->m_screenY >> 5;
     out->m_x = x;

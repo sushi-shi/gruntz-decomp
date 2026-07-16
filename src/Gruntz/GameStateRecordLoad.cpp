@@ -377,17 +377,17 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     // m_4c/m_50/m_58 move-icon triple, the SelectMoveIcon idiom).
     i32 flag = (m_entranceReason >= 0x17);
     i32 r = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, flag);
-    CGruntHud* cb = m_10;
-    cb->m_58 = 1;
-    cb->m_50 = 0xa;
-    cb->m_4c = r;
+    CGameObject* cb = m_10;
+    cb->m_drawActive = 1;
+    cb->m_drawFillCmd = 0xa;
+    cb->m_drawFillArg = r;
 
     if (m_gruntKind == 0x36) {
-        CGruntHud* cb2 = m_10;
+        CGameObject* cb2 = m_10;
         i32 v = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
-        cb2->m_58 = 1;
-        cb2->m_50 = 0xb;
-        cb2->m_54 = v;
+        cb2->m_drawActive = 1;
+        cb2->m_drawFillCmd = 0xb;
+        cb2->m_fillFraction = v;
     }
     return 1;
 }

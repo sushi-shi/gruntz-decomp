@@ -151,7 +151,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     ClearSubA();         // 0x57c10
     ClearSubB();         // 0x57ce0
 
-    m_10->m_40 &= ~8;
+    m_10->m_stateFlags &= ~8;
     m_deathAnimStarted = 1;
     m_health = 0;
     m_entranceCommitted = 0;
@@ -198,9 +198,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     m_14->m_1c = (void*)g_buteTree.Find(s_dAnimKeyC);
 
     m_154->m_flags |= 1;
-    if (m_10->m_74 != 0x15f90) {
-        m_10->m_74 = 0x15f90;
-        m_10->m_8 |= 0x20000;
+    if (m_10->m_latchedAnimId != 0x15f90) {
+        m_10->m_latchedAnimId = 0x15f90;
+        m_10->m_flags |= 0x20000;
     }
 
     if (a2 != -1) {
@@ -268,9 +268,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_prevEntranceDesc = m_154->m_1a0.m_14;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
-            if (m_10->m_74 != -1) {
-                m_10->m_74 = -1;
-                m_10->m_8 |= 0x20000;
+            if (m_10->m_latchedAnimId != -1) {
+                m_10->m_latchedAnimId = -1;
+                m_10->m_flags |= 0x20000;
             }
             DEATH_CUE(0x357);
             goto finalize;
@@ -283,9 +283,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_poseDeath =
                     (CAniElement*)m_154->m_0c->m_leaf->LookupValue_06b2a0(s_DEATHZ_QUICKFALL);
                 tag = 0x357;
-                if (m_10->m_74 != -1) {
-                    m_10->m_74 = -1;
-                    m_10->m_8 |= 0x20000;
+                if (m_10->m_latchedAnimId != -1) {
+                    m_10->m_latchedAnimId = -1;
+                    m_10->m_flags |= 0x20000;
                 }
                 m_10->m_screenX = (m_10->m_screenX & ~0x1f) + 0x10;
                 m_10->m_screenY = (m_10->m_screenY & ~0x1f) + 0x10;
@@ -309,9 +309,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_poseDeath =
                     (CAniElement*)m_154->m_0c->m_leaf->LookupValue_06b2a0(s_DEATHZ_QUICKFALL2);
                 tag = 0x357;
-                if (m_10->m_74 != -1) {
-                    m_10->m_74 = -1;
-                    m_10->m_8 |= 0x20000;
+                if (m_10->m_latchedAnimId != -1) {
+                    m_10->m_latchedAnimId = -1;
+                    m_10->m_flags |= 0x20000;
                 }
                 m_10->m_screenX = (m_10->m_screenX & ~0x1f) + 0x10;
                 m_10->m_screenY = (m_10->m_screenY & ~0x1f) + 0x10;
