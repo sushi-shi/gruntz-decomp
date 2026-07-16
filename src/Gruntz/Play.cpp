@@ -1721,8 +1721,8 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
                 if (spr == 0) {
                     spr = (void*)g_gameReg->m_spriteFactory->GetSel(1, (i32)spr);
                 }
-                ((CImageSet*)m_grid)->SetAllTypes(0xa);
-                ((CImageSet*)m_grid)->SetAllFormats((i32)spr);
+                m_grid->SetAllTypes(0xa);
+                m_grid->SetAllFormats((i32)spr);
             }
             char buf[0x40];
             wsprintfA(buf, "AMBIENT%d", GetAmbientId());
@@ -3374,7 +3374,7 @@ i32 CPlay::FlushPendingOps() {
     }
     i32 changed = 0;
     if (m_dragInhibit1 != 0) {
-        CStatusBarMgr* worker = (CStatusBarMgr*)m_guts;
+        CStatusBarMgr* worker = m_guts;
         m_dragInhibit1 = 0;
         worker->CommitSlot(0);
         SetCursorFrame(0); // via the 0x17a8 ILT thunk in retail
@@ -3382,7 +3382,7 @@ i32 CPlay::FlushPendingOps() {
     }
     if (m_dragInhibit2 != 0) {
         i32 spr = m_cursorFrame;
-        CStatusBarMgr* worker = (CStatusBarMgr*)m_guts;
+        CStatusBarMgr* worker = m_guts;
         m_dragInhibit2 = 0;
         worker->EnterHlRow(0, spr);
         SetCursorFrame(0);
@@ -4913,7 +4913,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
 RVA(0x000d6560, 0x45)
 i32 CPlay::ReleaseLevelOverlay(i32) {
     if (m_overlayDrag != 0) {
-        CStatusBarMgr* worker = (CStatusBarMgr*)m_guts;
+        CStatusBarMgr* worker = m_guts;
         m_overlayDrag = 0;
         worker->ExitMode();
         if (g_gameReg->m_134 != 2) {

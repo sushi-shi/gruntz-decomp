@@ -6,7 +6,7 @@
 // 0xfa350 = ?RunTitleSeq@CAttract@@QAEHPBDHHHH@Z [attract] - so `this` is a CAttract*.
 // But (1) OnStart @0xf9880 sits far from the CAttract obj block (which starts at
 // FadeInTitle @0xfa1f0, amid the splashstate/gamemode objs) and (2) it writes an int
-// timer (0xea60) to +0x1b8, which Attract.h models as a CAttractVoice* sound/host
+// timer (0xea60) to +0x1b8, which Attract.h models as a CAttractHost* sound/host
 // sub-object - a real layout conflict. So the CAttract binding is NOT forced here: the
 // CTitleApp placeholder host keeps the RVA (RunTitleSeq declared-only, reloc-masked to
 // the real CAttract::RunTitleSeq at 0xfa350). Resolve the +0x1b8 conflict + the obj

@@ -669,7 +669,7 @@ i32 CGrunt::StepCompassMove() {
             } else {
                 owner = ((i32*)board->m_8[mty])[mtx * 7 + 1];
             }
-            ((CTriggerMgr*)m_tileMgr)
+            m_tileMgr
                 ->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
         }
         goto commit;
@@ -813,7 +813,7 @@ i32 CGrunt::StepCompassMove() {
     }
 
 commit:
-    ((CTriggerMgr*)m_tileMgr)
+    m_tileMgr
         ->ApplySwitch(
             this,
             m_lastTilePxX,
@@ -916,7 +916,7 @@ i32 CGrunt::ClaimSwitchTile() {
         return 0;
     }
 
-    ((CTriggerMgr*)m_tileMgr)
+    m_tileMgr
         ->ApplySwitch(
             this,
             m_lastTilePxX,

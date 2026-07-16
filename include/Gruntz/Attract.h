@@ -123,15 +123,13 @@ public:
 
 // The m_1b8 sound/host sub-object the per-frame poll drives: its +0x10 voice is
 // queried (IsPlaying), (re)started, and the registrar's pooled resource is
-// stopped on the way out.
-class CAttractVoice {
-public:
-    // IsPlaying @? IS DirectSoundMgr::IsPlaying; cast at each call.
-    // Restart @? IS DirectSoundMgr::CloneAndPlay; cast at the call.
-};
+// stopped on the way out. The +0x10 voice IS the real DirectSoundMgr (its
+// IsPlaying/CloneAndPlay/ApplyAndPlay/m_durationMs are driven directly); the ex
+// empty CAttractVoice placeholder that stood here was a fake view of it.
+class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> (full def at the call sites)
 struct CAttractHost {
     char m_pad00[0x10];
-    CAttractVoice* m_10; // +0x10  voice/host object
+    DirectSoundMgr* m_10; // +0x10  voice/host object (the real DirectSoundMgr)
 };
 
 // The game-manager owner facet (m_4). Forward-declared here so the typed slot

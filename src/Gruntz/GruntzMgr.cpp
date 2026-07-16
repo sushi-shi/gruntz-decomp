@@ -3348,7 +3348,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     dst->m_f8 = m_130;
     // The +0x58 sink IS CSaveGame; Store == CSaveGame::CopySlot (0xe51d0) copying the
     // source state's SaveSlot block (+0x1d0) into the record. Bind the real callee.
-    ((CSaveGame*)m_saveSink)->CopySlot((SaveSlot*)dst, (const SaveSlot*)(src + 0x1d0));
+    m_saveSink->CopySlot((SaveSlot*)dst, (const SaveSlot*)(src + 0x1d0));
     m_saveInfoRec = dst;
     if (snapshot) {
         strncpy((char*)dst->m_snapshot, (char*)snapshot, 0x20);
@@ -3601,7 +3601,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
     }
     if (inPlay && a1 == 0) {
         m_curState->FrameSlot28(m_curState->Update());
-        if (((CPlay*)m_curState)->LoadByMode(a0, a2) == 0) {
+        if (static_cast<CPlay*>(m_curState)->LoadByMode(a0, a2) == 0) {
             return 0;
         }
         m_curState->Vslot09(m_curState->Update());
@@ -4510,7 +4510,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             CPlaneRender* f = m_world->m_level->m_mainPlane;
             if (f != 0) {
                 if (w > f->m_wrapW || h > f->m_wrapH) {
-                    CPlay* st = (CPlay*)m_curState;
+                    CPlay* st = static_cast<CPlay*>(m_curState);
                     st->ResetViewport();
                     if (st->m_guts != 0) {
                         st->m_guts->m_barFrameGate = m_modeH;
@@ -4550,7 +4550,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             m_savedModeW = w;
             m_savedModeH = h;
         }
-        CPlay* st = (CPlay*)m_curState;
+        CPlay* st = static_cast<CPlay*>(m_curState);
         st->ResetViewport();
         if (st->m_guts != 0) {
             st->m_guts->m_barFrameGate = h;

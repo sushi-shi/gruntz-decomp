@@ -1262,7 +1262,7 @@ i32 CMulti::PumpA() {
         win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
         win->TickSubManagers(now); // 0x137ac0
     }
-    ((CTileTriggerContainer*)m_beginMarker)->FilterList2((void*)g_frameDelta);
+    m_beginMarker->FilterList2((void*)g_frameDelta);
     ((CBrickzGrid*)Mgr()->m_tileGrid)
         ->UpdateDiagonals((i32)Mgr()); // CBrickzGrid is a view of CGruntzMapMgr (+0x70)
     if (ready == 0) {

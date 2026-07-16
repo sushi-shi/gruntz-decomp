@@ -192,8 +192,8 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         i32 st = m_curState->Update();                                                             \
         CMenuState* mus = 0;                                                                       \
         if (st == GAMESTATE_MENU) {                                                                \
-            mus = (CMenuState*)m_curState;                                                         \
-            ((CMenuState*)m_curState)->StopMusicChain();                                           \
+            mus = static_cast<CMenuState*>(m_curState);                                                         \
+            (static_cast<CMenuState*>(m_curState))->StopMusicChain();                                           \
             if (::ShowCursor(0) >= 0)                                                              \
                 while (::ShowCursor(0) >= 0) {                                                     \
                 }                                                                                  \
@@ -213,8 +213,8 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
         i32 st = m_curState->Update();                                                             \
         CMenuState* mus = 0;                                                                       \
         if (st == GAMESTATE_MENU) {                                                                \
-            mus = (CMenuState*)m_curState;                                                         \
-            ((CMenuState*)m_curState)->StopMusicChain();                                           \
+            mus = static_cast<CMenuState*>(m_curState);                                                         \
+            (static_cast<CMenuState*>(m_curState))->StopMusicChain();                                           \
         }                                                                                          \
         ChangeState_8fab0(N);                                                                      \
         if (mus)                                                                                   \
@@ -725,7 +725,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             return 1;
         case kCmdMultiConnect:
             if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
-                ((CMulti*)m_curState)->Connect(lParam);
+                static_cast<CMulti*>(m_curState)->Connect(lParam);
             }
             return 1;
         case kCmdLoadGameDialog:
@@ -995,7 +995,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
         case kCmdPauseToggle: { // 0x89b97
             i32 st = m_curState->Update();
             if (st == GAMESTATE_PLAY || st == GAMESTATE_NONE) {
-                CPlay* ps = (CPlay*)m_curState; // id-proven downcast (CMulti : CPlay)
+                CPlay* ps = static_cast<CPlay*>(m_curState); // id-proven downcast (CMulti : CPlay)
                 if (ps->m_inGame) {
                     return 1;
                 }
@@ -1029,7 +1029,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             if (!CheckPlayState()) {
                 return 1;
             }
-            if (((CPlay*)m_curState)->DrawWorldPresent()) {
+            if (static_cast<CPlay*>(m_curState)->DrawWorldPresent()) {
                 return 1;
             }
             ReportError(0x8005, 0x42f);
@@ -1095,8 +1095,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             i32 st = m_curState->Update();
             CMenuState* mus = 0;
             if (st == GAMESTATE_MENU) {
-                mus = (CMenuState*)m_curState;
-                ((CMenuState*)m_curState)->StopMusicChain();
+                mus = static_cast<CMenuState*>(m_curState);
+                (static_cast<CMenuState*>(m_curState))->StopMusicChain();
             }
             RunModalDialog(
                 "CONFIG_SETTINGS",

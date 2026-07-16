@@ -1569,7 +1569,7 @@ label_4cb2a:
 
 label_4cb4b:
     m_210 = 0;
-    ((CTriggerMgr*)m_tileMgr)
+    m_tileMgr
         ->ApplySwitch(
             this,
             m_lastTilePxX,

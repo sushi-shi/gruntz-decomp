@@ -84,7 +84,7 @@ i32 CBootyState::InputVirtual() {
     if (m_c->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
-    void* gruntz = ((CSymTab*)m_gruntzBank)->ResolvePath("IMAGEZ");
+    void* gruntz = m_gruntzBank->ResolvePath("IMAGEZ");
     if (gruntz == 0) {
         return 0;
     }

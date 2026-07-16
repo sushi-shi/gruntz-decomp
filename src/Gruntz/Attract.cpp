@@ -859,7 +859,6 @@ SIZE_UNKNOWN(CAttractRegistrar);
 SIZE_UNKNOWN(CAttractSceneSlot);
 SIZE_UNKNOWN(CAttractScreenObj);
 SIZE_UNKNOWN(CAttractVideo);
-SIZE_UNKNOWN(CAttractVoice);
 SIZE_UNKNOWN(CMenuBrightnessHolder);
 SIZE_UNKNOWN(CMenuBrightnessReset);
 SIZE_UNKNOWN(CMenuBrightnessTarget);

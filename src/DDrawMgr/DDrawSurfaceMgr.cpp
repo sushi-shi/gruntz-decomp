@@ -359,7 +359,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_childGroup->ForEachDispatch_15ac20((i32)&S, 3, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevel*)m_level)->EditDispatch((void*)&S, 3, 0, 0) == 0) {
+    if (m_level->EditDispatch((void*)&S, 3, 0, 0) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
@@ -368,7 +368,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_childGroup->ForEachSerialize_15b020(&S, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevel*)m_level)->EditDispatch((void*)&S, 4, 0, 0) == 0) {
+    if (m_level->EditDispatch((void*)&S, 4, 0, 0) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
@@ -377,7 +377,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_childGroup->ForEachDispatch_15ac20((i32)&S, 5, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevel*)m_level)->EditDispatch((void*)&S, 5, 0, 0) == 0) {
+    if (m_level->EditDispatch((void*)&S, 5, 0, 0) == 0) {
         return 0;
     }
 
@@ -441,7 +441,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->ForEachDispatch_15ac20((i32)&S, 6, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevel*)m_level)->EditDispatch((void*)&S, 6, 0, 0) == 0) {
+    if (m_level->EditDispatch((void*)&S, 6, 0, 0) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, (i32)header) == 0) {
@@ -450,7 +450,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->Deserialize_15b0e0(&S, *(unsigned int*)(header + 0x110), arg3) == 0) {
         return 0;
     }
-    if (((CGameLevel*)m_level)->EditDispatch((void*)&S, 7, 0, 0) == 0) {
+    if (m_level->EditDispatch((void*)&S, 7, 0, 0) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 8, arg3, (i32)header) == 0) {
@@ -459,12 +459,12 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->ForEachDispatch_15ac20((i32)&S, 8, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevel*)m_level)->EditDispatch((void*)&S, 8, 0, 0) == 0) {
+    if (m_level->EditDispatch((void*)&S, 8, 0, 0) == 0) {
         return 0;
     }
 
     S.Ready();
-    ((CGameLevel*)m_level)->MainPlaneQueryB();
+    m_level->MainPlaneQueryB();
     return 1;
 }
 

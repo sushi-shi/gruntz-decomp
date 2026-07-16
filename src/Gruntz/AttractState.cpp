@@ -198,9 +198,9 @@ i32 CAttract::Vslot09(i32 arg) {
     m_host = (CAttractHost*)found;
     if (found != 0 && m_activeFlag != 0) {
         if (g_sndEnabled) {
-            ((DirectSoundMgr*)m_host->m_10)->ApplyAndPlay(0x64, 0, 0, 0);
+            m_host->m_10->ApplyAndPlay(0x64, 0, 0, 0);
         }
-        m_idleTimer = ((DirectSoundMgr*)m_host->m_10)->m_durationMs + 0x2710;
+        m_idleTimer = m_host->m_10->m_durationMs + 0x2710;
     } else {
         m_idleTimer = 0x1f40;
     }
@@ -226,11 +226,11 @@ i32 CAttract::FrameSlot28(i32 arg) {
     if (m_host == 0) {
         return 1;
     }
-    if (!((DirectSoundMgr*)m_host->m_10)->IsPlaying()) {
+    if (!m_host->m_10->IsPlaying()) {
         return 1;
     }
-    ((DirectSoundMgr*)m_host->m_10)->CloneAndPlay(0, 0x1f4, 1);
-    if (!((DirectSoundMgr*)m_host->m_10)->IsPlaying()) {
+    m_host->m_10->CloneAndPlay(0, 0x1f4, 1);
+    if (!m_host->m_10->IsPlaying()) {
         return 1;
     }
     do {
@@ -238,7 +238,7 @@ i32 CAttract::FrameSlot28(i32 arg) {
         if (r) {
             ((SoundDevice*)r)->PurgeVoiceList(-1);
         }
-    } while (((DirectSoundMgr*)m_host->m_10)->IsPlaying());
+    } while (m_host->m_10->IsPlaying());
     return 1;
 }
 
@@ -403,6 +403,5 @@ SIZE_UNKNOWN(CAttractHost);
 SIZE_UNKNOWN(CAttractPooledRes);
 SIZE_UNKNOWN(CAttractRegistrar);
 SIZE_UNKNOWN(CAttractVideo);
-SIZE_UNKNOWN(CAttractVoice);
 SIZE_UNKNOWN(CMenuRoot);
 SIZE_UNKNOWN(CDDrawSurfacePair);

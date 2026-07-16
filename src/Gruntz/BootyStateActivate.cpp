@@ -915,7 +915,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    tree = ((CSymTab*)m_gruntzBank)->ResolvePath("IMAGEZ");
+    tree = m_gruntzBank->ResolvePath("IMAGEZ");
     if (!tree) {
         return 0;
     }
@@ -924,7 +924,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    tree = ((CSymTab*)m_levelBank)->ResolvePath("IMAGEZ");
+    tree = m_levelBank->ResolvePath("IMAGEZ");
     if (!tree) {
         return 0;
     }
