@@ -82,7 +82,30 @@ TARGET_DIR         = OBJDIFF_DIR / "target"
 REPORT             = OBJDIFF_DIR / "report.json"
 BUILD_TIMES        = REPO / "build" / "gen" / "build_times.tsv"  # per-invocation build wall-clock log (gitignored, per-worktree)
 GEN_NAMES          = REPO / "build" / "gen" / "symbol_names.csv"
-GHIDRA_PROJECT_DIR = REPO / "build" / "ghidra-named"
+def _ghidra_project_dir() -> Path:
+    """Where the Ghidra DB lives - normally build/ghidra-named, but NEVER under a dot-path.
+
+    Ghidra's `ProjectLocator` hard-rejects any path element starting with `.`
+    ("Path element starting with '.' is not permitted"), so a checkout under e.g.
+    `.claude/worktrees/matcher-1` cannot host the DB at all - `init` used to die there
+    AFTER doing the wine/clangd/analyze work, leaving `gruntz clean` unrecoverable in a
+    pool worktree. The constraint is on the DB's OWN path, not the repo, so when the repo
+    sits under a dot-path we relocate the DB to a dot-free dir keyed by the repo path
+    (stable across runs, unique per worktree, and outside the tree so `clean` can't eat it).
+    """
+    d = REPO / "build" / "ghidra-named"
+    if not any(part.startswith(".") for part in d.parts):
+        return d
+    import hashlib
+    # NOT tempfile.gettempdir(): under `nix develop` that is the shell's own per-invocation
+    # TMPDIR (/tmp/nix-shell.XXXX), so the DB would be rebuilt every shell and could vanish
+    # mid-use. A fixed /tmp dir keyed by the repo path is stable across shells and unique
+    # per worktree.
+    tag = hashlib.sha1(str(REPO).encode()).hexdigest()[:12]
+    return Path("/tmp") / f"gruntz-ghidra-{tag}" / "ghidra-named"
+
+
+GHIDRA_PROJECT_DIR = _ghidra_project_dir()
 GHIDRA_PROJECT     = "gruntz"                                          # project name (gruntz.{gpr,rep})
 GHIDRA_FUNCTIONS   = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"  # delink input
 RETAIL_EXE         = REPO / "build" / "exe" / "GRUNTZ.EXE"             # stable copy of $GRUNTZ_EXE (delink input + Ghidra import)
