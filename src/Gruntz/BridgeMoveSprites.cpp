@@ -1,6 +1,6 @@
-// BridgeMoveSprites.cpp - CPlayLevelLoad::LoadBridgeMove (RVA 0x110860), the
-// frameless sibling of CPlayLevelLoad::LoadPyramidBridge (0x110c10). Given a tile-
-// action descriptor (`this`, +0x8 = tile x, +0xc = tile y) and a sprite-type id,
+// BridgeMoveSprites.cpp - CTileTriggerLogic::LoadBridgeMove (RVA 0x110860), the
+// bridge/pyramid sound-cue helper called by slot-0 Tick (0x110c10). Given the
+// trigger's own tile (m_08 = tile x, m_0c = tile y) and a sprite-type id,
 // it dispatches a 0x66-case jump table over (type - 0xf): each in-bounds case
 // plays the matching bridge-transition sound cue. Two cue shapes:
 //   * FindEntry + rate-limited Play(g_sndCueTag) (GAME_PYRAMIDMOVE /
@@ -16,7 +16,8 @@
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/GameRegistry.h> // g_gameReg canonical view (0x24556c)
+#include <Gruntz/GameRegistry.h>     // g_gameReg canonical view (0x24556c)
+#include <Gruntz/TileTriggerLogic.h> // this IS CTileTriggerLogic (m_08/m_0c coord x/y)
 
 // The booty/bridge sound chain on the *0x64556c game registry (the same shape the
 // BootyState/CHelpBookSprite cue idioms use). The former BmGameReg/BmSndMgr local
@@ -24,13 +25,10 @@
 // (+0x13c..+0x148) and the sound chain is m_world->m_28 (CSndHost == CDDrawSubMgrLeafScan).
 extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
-class CPlayLevelLoad {
-public:
-    void LoadBridgeMove(i32 type);
-    char m_pad00[0x8];
-    i32 m_8; // +0x08  tile x
-    i32 m_c; // +0x0c  tile y
-};
+// The receiver IS the canonical CTileTriggerLogic (<Gruntz/TileTriggerLogic.h>): its
+// slot-0 Tick (0x110c10) calls this helper on itself, and the tile coords m_08/m_0c
+// are the trigger's own (m_08=x, m_0c=y). The former CPlayLevelLoad .cpp-local view
+// is dissolved onto it.
 
 // @early-stop
 // switch range-header + inline-jump-table wall (~77%): all six case bodies are
@@ -46,7 +44,7 @@ public:
 // symbols. Both documented: docs/patterns/switch-jumptable-separate-comdat.md +
 // jumptable-data-overlap.md. Logic complete; not source-steerable.
 RVA(0x00110860, 0x25f)
-void CPlayLevelLoad::LoadBridgeMove(i32 type) {
+void CTileTriggerLogic::LoadBridgeMove(i32 type) {
     i32 px, py;
     CGameRegistry* r;
     CDDrawSubMgrLeafScan* set;
@@ -65,8 +63,8 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
         case 104:
         case 105:
         case 106:
-            py = (m_c << 5) + 0x10;
-            px = (m_8 << 5) + 0x10;
+            py = (m_0c << 5) + 0x10;
+            px = (m_08 << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -81,8 +79,8 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             return;
         case 107:
         case 108:
-            py = (m_c << 5) + 0x10;
-            px = (m_8 << 5) + 0x10;
+            py = (m_0c << 5) + 0x10;
+            px = (m_08 << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -97,8 +95,8 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             return;
         case 113:
         case 114:
-            py = (m_c << 5) + 0x10;
-            px = (m_8 << 5) + 0x10;
+            py = (m_0c << 5) + 0x10;
+            px = (m_08 << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -107,8 +105,8 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             return;
         case 109:
         case 110:
-            py = (m_c << 5) + 0x10;
-            px = (m_8 << 5) + 0x10;
+            py = (m_0c << 5) + 0x10;
+            px = (m_08 << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -117,8 +115,8 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             return;
         case 115:
         case 116:
-            py = (m_c << 5) + 0x10;
-            px = (m_8 << 5) + 0x10;
+            py = (m_0c << 5) + 0x10;
+            px = (m_08 << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -127,8 +125,8 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             return;
         case 111:
         case 112:
-            py = (m_c << 5) + 0x10;
-            px = (m_8 << 5) + 0x10;
+            py = (m_0c << 5) + 0x10;
+            px = (m_08 << 5) + 0x10;
             r = g_gameReg;
             if (px < r->m_viewOriginR && px >= r->m_viewOriginL && py < r->m_viewOriginB
                 && py >= r->m_viewOriginT) {
@@ -137,5 +135,3 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             return;
     }
 }
-
-SIZE_UNKNOWN(CPlayLevelLoad);

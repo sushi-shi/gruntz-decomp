@@ -120,6 +120,11 @@ public:
     // VerifyBlockLinks calls it (ILT 0x1fa5) on the child it then scans at child+0x3c.
     i32 FindIndexByKey(i32 key); // 0x110820
 
+    // Slot-0 Tick's bridge/pyramid sound-cue helper: dispatch a 0x66-case jump table
+    // over (type - 0xf), playing the matching bridge-transition cue for this trigger's
+    // own (m_08, m_0c) tile. Body in BridgeMoveSprites.cpp (was the CPlayLevelLoad view).
+    void LoadBridgeMove(i32 type); // 0x110860
+
     // The 0x9c family's serialize dispatcher (type 4 = save, 7 = load), and the pair it
     // forwards `this` to. RE-HOMED from CTileTriggerSwitchLogic: CTileTriggerFactory::Build
     // calls ValidateByType (ILT 0x1abe) at 0x117aa7 on a freshly-`new`ed 0x9c

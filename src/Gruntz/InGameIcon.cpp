@@ -1153,10 +1153,9 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
     m_cachedSubId = -1;
 }
 
-// The activation-coordinate registry view of the dispatch table (g_textDispatch
-// @0x645950): InitActReg builds it over the fixed [2000, 2010] range via the
-// shared registry ctor (0x408710, __thiscall ret 8).
-struct CTextActReg {}; // Construct = CZDArrayDerived::Construct; cast at the call
+// The activation-coordinate registry is the dispatch table g_textDispatch
+// (@0x645950); InitActReg builds it over the fixed [2000, 2010] range via the
+// shared CZDArrayDerived registry ctor (0x408710, __thiscall ret 8).
 
 // CInGameText::InitActReg @0x0993e0 - construct the class's activation-coordinate
 // registry (g_textDispatch @0x645950) over [2000, 2010]. Free init thunk.
@@ -1266,4 +1265,3 @@ SIZE_UNKNOWN(CInGameIcon);
 SIZE_UNKNOWN(IconSpriteFactory);
 SIZE_UNKNOWN(LogicFnTable);
 SIZE_UNKNOWN(CInGameText);
-SIZE_UNKNOWN(CTextActReg);
