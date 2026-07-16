@@ -962,13 +962,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         if (gameReg->m_134 == 1) {
             team->SeedForSlot(0);
             if (t == 0) {
-                team->m_020 = 1;
-                team->m_028 = 1;
+                team->m_liveGate = 1;
+                team->m_joined = 1;
             }
         } else {
-            team->m_02c = 0;
-            team->m_028 = team->m_020;
-            team->m_024 = 0;
+            team->m_doneFlag = 0;
+            team->m_joined = team->m_liveGate;
+            team->m_clearedRound = 0;
         }
     }
 
@@ -3490,17 +3490,17 @@ RVA(0x000da870, 0xb8)
 i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_name = g_emptyString;
     m_playerIndex = index;
-    m_018 = -2;
-    m_020 = 0;
-    m_028 = 0;
+    m_slotKey = -2;
+    m_liveGate = 0;
+    m_joined = 0;
     m_014 = 1;
     m_name = GetDefaultName();
     m_008 = index;
-    m_010 = 0;
-    m_220 = 0;
-    m_224 = 0;
+    m_configId = 0;
+    m_focusX = 0;
+    m_focusY = 0;
     m_comboSel = 0xf;
-    m_02c = 0;
+    m_doneFlag = 0;
     m_030 = 0;
     m_22c = 0;
     m_230 = 0;
@@ -3536,16 +3536,16 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
 RVA(0x000da960, 0x5b)
 void GruntzPlayer::Clear() {
     m_playerIndex = -1;
-    m_018 = -2;
-    m_020 = 0;
+    m_slotKey = -2;
+    m_liveGate = 0;
     m_014 = 1;
     m_name = g_emptyString;
     m_008 = 0;
-    m_010 = 0;
-    m_220 = 0;
-    m_224 = 0;
+    m_configId = 0;
+    m_focusX = 0;
+    m_focusY = 0;
     m_comboSel = 0xf;
-    m_02c = 0;
+    m_doneFlag = 0;
     m_030 = 0;
     m_22c = 0;
     m_230 = 0;
@@ -3566,16 +3566,16 @@ void GruntzPlayer::Clear() {
 RVA(0x000da9e0, 0x60)
 i32 GruntzPlayer::Reset() {
     m_playerIndex = -1;
-    m_018 = -2;
-    m_020 = 0;
+    m_slotKey = -2;
+    m_liveGate = 0;
     m_014 = 1;
     m_name = g_emptyString;
     m_008 = 0;
-    m_010 = 0;
-    m_220 = 0;
-    m_224 = 0;
+    m_configId = 0;
+    m_focusX = 0;
+    m_focusY = 0;
     m_comboSel = 0xf;
-    m_02c = 0;
+    m_doneFlag = 0;
     m_030 = 0;
     m_22c = 0;
     m_230 = 0;
@@ -3589,9 +3589,9 @@ i32 GruntzPlayer::Reset() {
 // ===========================================================================
 RVA(0x000daa60, 0x24)
 i32 GruntzPlayer::ClearRoundState_0daa60() {
-    m_020 = 1;
-    m_01c = 0;
-    m_02c = 0;
+    m_liveGate = 1;
+    m_readyFlag = 0;
+    m_doneFlag = 0;
     m_030 = 0;
     m_22c = 0;
     m_230 = 0;
@@ -3669,18 +3669,18 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
             ar->Read(&m_playerIndex, 4);
             ar->Read(&m_008, 4);
             ar->Read(&m_00c, 4);
-            ar->Read(&m_010, 4);
+            ar->Read(&m_configId, 4);
             ar->Read(&m_014, 4);
-            ar->Read(&m_018, 4);
-            ar->Read(&m_01c, 4);
-            ar->Read(&m_020, 4);
-            ar->Read(&m_028, 4);
-            ar->Read(&m_024, 4);
+            ar->Read(&m_slotKey, 4);
+            ar->Read(&m_readyFlag, 4);
+            ar->Read(&m_liveGate, 4);
+            ar->Read(&m_joined, 4);
+            ar->Read(&m_clearedRound, 4);
             g_serialCounter++;
             ar->Read(tmp, 0x80);
             m_name = tmp;
-            ar->Read(&m_220, 4);
-            ar->Read(&m_224, 4);
+            ar->Read(&m_focusX, 4);
+            ar->Read(&m_focusY, 4);
             ar->Read(&m_comboSel, 4);
         }
     } else {
@@ -3688,19 +3688,19 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_playerIndex, 4);
         ar->Write(&m_008, 4);
         ar->Write(&m_00c, 4);
-        ar->Write(&m_010, 4);
+        ar->Write(&m_configId, 4);
         ar->Write(&m_014, 4);
-        ar->Write(&m_018, 4);
-        ar->Write(&m_01c, 4);
-        ar->Write(&m_020, 4);
-        ar->Write(&m_028, 4);
-        ar->Write(&m_024, 4);
+        ar->Write(&m_slotKey, 4);
+        ar->Write(&m_readyFlag, 4);
+        ar->Write(&m_liveGate, 4);
+        ar->Write(&m_joined, 4);
+        ar->Write(&m_clearedRound, 4);
         g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
         strcpy(tmp, (const char*)m_name);
         ar->Write(tmp, 0x80);
-        ar->Write(&m_220, 4);
-        ar->Write(&m_224, 4);
+        ar->Write(&m_focusX, 4);
+        ar->Write(&m_focusY, 4);
         ar->Write(&m_comboSel, 4);
     }
     return ((CBattlezMapConfig*)&m_038)->Method_02bfc0((i32)ar, (void*)kind, a3, a4) != 0;
@@ -3845,13 +3845,13 @@ i32 ChannelSlots_Get(i32 i) {
 // board bundle (unless m_014 is set) and deactivate. Returns 1/0.
 RVA(0x000db2f0, 0x2b)
 i32 GruntzPlayer::Deactivate() {
-    if (m_020 == 0) {
+    if (m_liveGate == 0) {
         return 0;
     }
     if (m_014 == 0) {
         ((CBattlezMapConfig*)&m_038)->Clear_02ade0();
     }
-    m_020 = 0;
+    m_liveGate = 0;
     return 1;
 }
 

@@ -2063,7 +2063,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 != -1) {
                 ok = 1;
             }
-        } else if (cfg->m_020 != 0 && cfg->m_02c == 0 && cfg->m_024 == 0) {
+        } else if (cfg->m_liveGate != 0 && cfg->m_doneFlag == 0 && cfg->m_clearedRound == 0) {
             if (cfg->m_014 != 0) {
                 if (PlaceObject(type, px, py, 0x186a0, 3, g->m_spawnHost, 0, 0, 0, 0, 0, 0, 0)
                     != -1) {

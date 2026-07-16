@@ -3005,7 +3005,7 @@ i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
     if (s == 0) {
         return 0;
     }
-    if (s->m_020 == 0) {
+    if (s->m_liveGate == 0) {
         return 0;
     }
     // The options slot IS a GruntzPlayer; Reset == GruntzPlayer::Reset (0xda9e0).
@@ -3059,7 +3059,7 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
     GruntzPlayer* slot = m_options;
     i32 i = 0;
     do {
-        if (slot && slot->m_018 == x) {
+        if (slot && slot->m_slotKey == x) {
             return slot;
         }
         i++;
@@ -3741,7 +3741,7 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
     g_optionsCursor = cursor;
     for (i32 i = 0; i < m_optionsCount + 1; i++) {
         GruntzPlayer* slot = &m_options[i];
-        if (cursor == i && slot->m_014 == 0 && slot->m_020 != 0) {
+        if (cursor == i && slot->m_014 == 0 && slot->m_liveGate != 0) {
             slot->m_038.Method_025d90();
             cursor = g_optionsCursor;
         }
@@ -3782,7 +3782,7 @@ i32 CGruntzMgr::SyncOptionsState() {
 
     i32 idx = 0;
     CBattlezMapConfig* tick = &m_options[0].m_038;
-    i32* cfgp = &m_options[0].m_010;
+    i32* cfgp = &m_options[0].m_configId;
     i32* arm = &m_options[0].m_014;
     for (i32 i = 0; i < m_optionsCount; i++) {
         i32 cfg;

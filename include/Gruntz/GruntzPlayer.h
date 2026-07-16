@@ -68,14 +68,14 @@ public:
                        //         sprite table's GetSel/LoadSprite; Multi uses it as the
                        //         player/slot id for chat AddItem + the net-slot table)
     i32 m_00c;         // +0x00c  (serialized) per-mode id / sound id / key word
-    i32 m_010;         // +0x010  = 0; per-slot config id (LoadConfig arg; roster combo base)
+    i32 m_configId;         // +0x010  = 0; per-slot config id (LoadConfig arg; roster combo base)
     i32 m_014;         // +0x014  = 1; armed / arrival gate (roster: human-vs-computer)
-    i32 m_018;         // +0x018  = -2; slot key (CGruntzMgr::FindOptionsSlot match)
-    i32 m_01c;         // +0x01c  (serialized) roster: ready flag
-    i32 m_020;         // +0x020  = 0; loaded / live gate
-    i32 m_024;         // +0x024  (serialized) "already cleared this round"
-    i32 m_028;         // +0x028  joined
-    i32 m_02c;         // +0x02c  = 0; done
+    i32 m_slotKey;         // +0x018  = -2; slot key (CGruntzMgr::FindOptionsSlot match)
+    i32 m_readyFlag;         // +0x01c  (serialized) roster: ready flag
+    i32 m_liveGate;         // +0x020  = 0; loaded / live gate
+    i32 m_clearedRound;         // +0x024  (serialized) "already cleared this round"
+    i32 m_joined;         // +0x028  joined
+    i32 m_doneFlag;         // +0x02c  = 0; done
     i32 m_030;         // +0x030  = 0
     char m_pad034[0x38 - 0x34]; // +0x034
     // The REAL embedded spawn/board bundle. Proven by the array element ctor/dtor
@@ -83,8 +83,8 @@ public:
     // (0x024dc0 / 0x024f80) - and by every consumer, all of which cast this block to
     // CBattlezMapConfig* to call LoadConfig / FreeArrays / Clear_02ade0.
     CBattlezMapConfig m_038;      // +0x038  (0x1e8 B, ends at 0x220)
-    i32 m_220;                    // +0x220  = 0 (snapped focus x)
-    i32 m_224;                    // +0x224  = 0 (snapped focus y)
+    i32 m_focusX;                    // +0x220  = 0 (snapped focus x)
+    i32 m_focusY;                    // +0x224  = 0 (snapped focus y)
     i32 m_comboSel;               // +0x228  = 0xf in the ctor/Clear seed; the battlez
                                   //          dialog's per-slot dropdown selection (+1)
     i32 m_22c;                    // +0x22c  = 0

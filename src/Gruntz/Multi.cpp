@@ -1038,10 +1038,10 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
             return 0;
         }
         e->m_038.FreeArrays();
-        if (e->m_038.LoadConfig((CLevelInfo*)Mgr(), i, e->m_010) == 0) {
+        if (e->m_038.LoadConfig((CLevelInfo*)Mgr(), i, e->m_configId) == 0) {
             return 0;
         }
-        if (e->m_014 && e->m_020) {
+        if (e->m_014 && e->m_liveGate) {
             e->m_038.Clear_02ade0();
         }
     }
@@ -2047,7 +2047,7 @@ i32 CMulti::ShowMultiStartDlg() {
             if (rec == 0) {
                 return 0;
             }
-            rec->m_020 = 0;
+            rec->m_liveGate = 0;
             NetCueReset_3bbb(rec->m_008, 1);
             BroadcastChannelTable(0); // 0xba810 (ILT 0x1d70)
         }
@@ -3027,7 +3027,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     if (slot == 0) {
         return 0;
     }
-    if (slot->m_020 == 0) {
+    if (slot->m_liveGate == 0) {
         return 0;
     }
     if (slot->m_014 == 0) {
@@ -3038,7 +3038,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
         slot->m_030 = 0;
         g_activePlayerCount--;
     }
-    slot->m_020 = 0;
+    slot->m_liveGate = 0;
     ChannelSlots_Set(slot->m_008, 1);
 
     CString line = ((CNetMgr*)slot)->GetName() + " has left the game.";

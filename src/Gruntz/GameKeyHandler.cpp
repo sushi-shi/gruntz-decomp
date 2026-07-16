@@ -292,7 +292,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             }
             area = &g_gameReg->m_options[pick];
             while (pick != idx) {
-                if (area->m_028 == 0 || (area->m_02c == 0 && area->m_024 == 0)) {
+                if (area->m_joined == 0 || (area->m_doneFlag == 0 && area->m_clearedRound == 0)) {
                     break;
                 }
                 pick--;
@@ -308,7 +308,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
             }
             area = &g_gameReg->m_options[pick];
             while (pick != idx) {
-                if (area->m_028 == 0 || (area->m_02c == 0 && area->m_024 == 0)) {
+                if (area->m_joined == 0 || (area->m_doneFlag == 0 && area->m_clearedRound == 0)) {
                     break;
                 }
                 pick++;
@@ -318,9 +318,9 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
                 area = &g_gameReg->m_options[pick];
             }
         }
-        if (area->m_028 != 0 && area->m_02c == 0 && area->m_024 == 0) {
+        if (area->m_joined != 0 && area->m_doneFlag == 0 && area->m_clearedRound == 0) {
             self->m_514 = pick;
-            this->ResetGoals(area->m_220, area->m_224);
+            this->ResetGoals(area->m_focusX, area->m_focusY);
         }
     }
     // H (cc30b): jump to the current area's default cue
@@ -329,7 +329,7 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (a == 0) {
             return 1;
         }
-        this->ResetGoals(a->m_220, a->m_224);
+        this->ResetGoals(a->m_focusX, a->m_focusY);
         return 1;
     }
     // Q (cc350): toggle the pause flag

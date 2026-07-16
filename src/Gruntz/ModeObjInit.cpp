@@ -112,7 +112,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         if (sub == 0) {
             return 0;
         }
-        sub->m_020 = 1; // live gate  (== the ex-CNetChannel::m_active view)
+        sub->m_liveGate = 1; // live gate  (== the ex-CNetChannel::m_active view)
         sub->m_014 = 1; // armed gate (== the ex-CNetChannel::m_14 view)
         m_region0Gate = 0;
         m_region1Gate = 0;
