@@ -84,10 +84,8 @@ RVA(0x0011ae30, 0x95)
 void CGruntSpawnConfig::Clear() {
     for (i32 i = 0; i < m_voiceLists.GetSize(); i++) {
         CSpawnList* e = (CSpawnList*)m_voiceLists[i];
-        if (e != 0) {
-            e->~CSpawnList(); // extern call (dtor defined in AreaMgr.cpp) - retail shape
-            RezFree(e);
-        }
+        // RezFree IS ::operator delete (both 0x1b9b82), so this pair IS `delete e`.
+        delete e; // ~CSpawnList non-virtual (0x99ca0, defined in AreaMgr.cpp) + ??3
     }
     m_voiceLists.SetSize(0, -1);
     if (m_configTree != 0 && m_configTree->m_20 != 0) {

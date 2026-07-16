@@ -221,10 +221,7 @@ void CDDrawWorkerHost::Cleanup_161bf0() {
         m_scroll->PruneCount();
     }
     CWwdSpatialMgr* g = m_scroll;
-    if (g != 0) {
-        g->~CWwdSpatialMgr(); // the out-of-line complete dtor (0x163a40)
-        ::operator delete(g);
-    }
+    delete g; // ~CWwdSpatialMgr non-virtual, out-of-line (0x163a40) + ??3 (no null-out)
     if (m_tileGrid != 0) {
         ::operator delete(m_tileGrid);
         m_tileGrid = 0;

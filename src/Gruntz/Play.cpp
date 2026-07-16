@@ -6596,8 +6596,7 @@ void CPlay::ReleaseResources() {
         m_hitTest = 0;
     }
     if (m_beginMarker) {
-        m_beginMarker->~CTileTriggerContainer();
-        ::operator delete(m_beginMarker);
+        delete m_beginMarker; // ~CTileTriggerContainer non-virtual (0xc8640) + ??3
         m_beginMarker = 0;
     }
     if (m_frameMarker) {

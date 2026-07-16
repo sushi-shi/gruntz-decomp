@@ -28,10 +28,7 @@ void CKeyedList::Clear() {
             CPtrList::CNode* cur = node;
             node = node->pNext;
             CKeyedNode* sub = (CKeyedNode*)cur->data;
-            if (sub != 0) {
-                sub->~CKeyedNode();
-                ::operator delete(sub);
-            }
+            delete sub; // ~CKeyedNode non-virtual -> direct dtor + ??3
         } while (node != 0);
     }
     RemoveAll();

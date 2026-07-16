@@ -185,8 +185,8 @@ void CCreditsState::ReleaseResources() {
     // Teardown call (retail reuses the same register for the RezFree push).
     CMoviePlayer* vh = m_videoHandle;
     if (vh) {
-        vh->~CMoviePlayer();
-        RezFree(vh);
+        // RezFree IS ::operator delete (both 0x1b9b82), so this pair IS `delete vh`.
+        delete vh; // ~CMoviePlayer non-virtual (0x038fc0) + ??3
         m_videoHandle = 0;
     }
     CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)

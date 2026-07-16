@@ -242,8 +242,7 @@ void CMenuState::ReleaseResources() {
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CChatBox* ui = m_1b4;
     if (ui) {
-        ui->~CChatBox();
-        operator delete(ui);
+        delete ui; // ~CChatBox non-virtual -> direct dtor + ??3
         m_1b4 = 0;
     }
     CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)

@@ -437,20 +437,14 @@ CSymTab::~CSymTab() {
         CHashElement* next = cur->Next();
         m_symbols.Remove(cur);
         CSymRec* rec = (CSymRec*)cur->m_record;
-        if (rec) {
-            rec->~CSymRec();
-            ::operator delete(rec);
-        }
+        delete rec; // ~CSymRec non-virtual; CSymRec::operator delete inlines to RezFree (0x1b9b82)
         cur = next;
     }
     for (cur = m_subTabs.First(); cur != 0;) {
         CHashElement* next = cur->Next();
         m_subTabs.Remove(cur);
         CSymTab* sub = (CSymTab*)cur->m_record;
-        if (sub) {
-            sub->~CSymTab();
-            ::operator delete(sub);
-        }
+        delete sub; // ~CSymTab non-virtual; CSymTab::operator delete inlines to RezFree
         cur = next;
     }
     if (m_name) {
@@ -1081,8 +1075,7 @@ CSymParser::~CSymParser() {
     }
     CSymTab* root = m_root;
     if (root) {
-        root->~CSymTab();
-        ::operator delete(root);
+        delete root; // ~CSymTab non-virtual; CSymTab::operator delete inlines to RezFree
         m_root = 0;
     }
     if (m_cachedSourceBuffer) {
@@ -1471,8 +1464,7 @@ i32 CSymParser::Clear(i32 final) {
         delete p;
     }
     if (m_root) {
-        m_root->~CSymTab();
-        ::operator delete(m_root);
+        delete m_root; // ~CSymTab non-virtual; CSymTab::operator delete inlines to RezFree
         m_root = 0;
     }
     if (m_cachedSourceBuffer) {

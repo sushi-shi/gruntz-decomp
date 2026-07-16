@@ -119,9 +119,7 @@ void CChatBox::Clear() {
     POSITION pos = m_nodeList.GetHeadPosition();
     while (pos) {
         CMenuPage* payload = (CMenuPage*)m_nodeList.GetNext(pos);
-        if (payload) {
-            delete payload; // ~CMenuPage @0x183250 + engine ::operator delete (0x1b9b82)
-        }
+        delete payload; // ~CMenuPage is non-virtual -> direct dtor + ??3 (retail 0x182b79/0x182b7f)
     }
     m_nodeList.RemoveAll();
     m_activeNode = 0;

@@ -3831,16 +3831,12 @@ void CGruntzMgr::Close() {
         m_spriteFactory = 0;
     }
     if (m_cmdGrid) {
-        m_cmdGrid->~CTriggerMgr(); // real dtor (thunk 0x3b1b; body in the trigger eh TU)
-        operator delete(m_cmdGrid);
+        delete m_cmdGrid; // ~CTriggerMgr non-virtual (thunk 0x3b1b) + ??3; retail +0x68 leg
         m_cmdGrid = 0;
     }
     if (m_tileGrid) {
-        // MISBOUND FIX: this used to call ~CTriggerMgr (thunk 0x3b1b) on the +0x70 object -
-        // a real but WRONG rva. Retail's +0x70 teardown leg calls thunk 0x35b7 ->
-        // ~CGruntzMapMgr @0x85d10. +0x70 IS a CGruntzMapMgr, so the cast is gone too.
-        m_tileGrid->~CGruntzMapMgr();
-        operator delete(m_tileGrid);
+        // Retail's +0x70 leg calls thunk 0x35b7 -> ~CGruntzMapMgr @0x85d10 (non-virtual).
+        delete m_tileGrid;
         m_tileGrid = 0;
     }
     if (m_scoreHud) {
@@ -3849,11 +3845,8 @@ void CGruntzMgr::Close() {
         m_scoreHud = 0;
     }
     if (m_cmdSubMgr) {
-        // MISBOUND FIX (same bug as the +0x70 leg): this called ~CTriggerMgr (thunk 0x3b1b),
-        // a real but WRONG rva. Retail's +0x6c teardown leg calls thunk 0x4066 ->
-        // ~CGruntzCmdMgr @0x85bd0 (already 100% EXACT in src). +0x6c IS a CGruntzCmdMgr.
-        m_cmdSubMgr->~CGruntzCmdMgr();
-        operator delete(m_cmdSubMgr);
+        // Retail's +0x6c leg calls thunk 0x4066 -> ~CGruntzCmdMgr @0x85bd0 (non-virtual).
+        delete m_cmdSubMgr;
         m_cmdSubMgr = 0;
     }
     if (g_spawnConfig) {
@@ -3872,8 +3865,7 @@ void CGruntzMgr::Close() {
         g_inputMgr = 0;
     }
     if (m_cheatMgr) {
-        m_cheatMgr->~CCheatMgr();
-        operator delete(m_cheatMgr);
+        delete m_cheatMgr; // ~CCheatMgr non-virtual (thunk 0x1f41 -> 0x85e60) + ??3
         m_cheatMgr = 0;
     }
     if (m_sound) {
@@ -3887,11 +3879,22 @@ void CGruntzMgr::Close() {
         m_inputState = 0;
     }
     if (m_faderMgr) {
-        m_faderMgr->~CFaderMgr();
-        operator delete(m_faderMgr);
+        delete m_faderMgr; // ~CFaderMgr non-virtual (0x17d910, direct) + ??3
         m_faderMgr = 0;
     }
     if (m_chatLog) {
+        // NOT folded to `delete m_chatLog` - and this leg does not match today either.
+        // Retail's +0x5c leg (0x8590b) is a DIRECT dtor call: `call 0x3779` -> ~CFontConfig
+        // @0x85f40, then `call 0x1b9b82` (??3). We emit a VIRTUAL `mov eax,[ecx]; push ebx;
+        // call [eax+4]` because FontConfig.h declares `virtual ~CFontConfig() OVERRIDE` on a
+        // CPtrList base - so even the explicit `p->~T()` dispatches through the vtable, and
+        // `delete m_chatLog` would emit the ??_G (`push 1; call [eax+4]`) - also wrong.
+        // Root cause is a header bug, not a spelling: retail's ~CFontConfig @0x85f40 has NO
+        // vptr restamp and CFontConfig has no vtable/RTTI in the 306-class scan, so it is NOT
+        // polymorphic and cannot derive from CPtrList (CObject would force a virtual dtor).
+        // CPtrList is a MEMBER at +0x00 (`mov ecx,esi; call 0x1b48c6` = ~CPtrList on `this`
+        // is identical codegen for a base-at-0 and a member-at-0). Fixing = de-inherit
+        // CFontConfig; then this leg folds to `delete m_chatLog`. Reported, not done here.
         m_chatLog->~CFontConfig();
         operator delete(m_chatLog);
         m_chatLog = 0;
@@ -3910,8 +3913,12 @@ void CGruntzMgr::Close() {
         m_symParser = 0;
     }
     if (m_settings) {
-        ((CTriggerMgr*)m_settings)->~CTriggerMgr();
-        operator delete(m_settings);
+        // MISBOUND FIX: this cross-cast a RegistryHelper* to CTriggerMgr* to force an
+        // out-of-line dtor call (thunk 0x3b1b -> ~CTriggerMgr @0x85c50) - a real but WRONG
+        // rva. Retail's +0x38 leg (0x8596a) is `call 0x139330` + ??3, and 0x139330 IS
+        // Utils::RegistryHelper::Close - i.e. the INLINE `~RegistryHelper() { Close(); }`
+        // body that `delete m_settings` expands to. So the plain delete is the true source.
+        delete m_settings;
         m_settings = 0;
     }
     if (m_3c) {
@@ -3919,13 +3926,14 @@ void CGruntzMgr::Close() {
         m_3c = 0;
     }
     if (m_shadeCache) {
-        m_shadeCache->~CShadeTableCache();
-        operator delete(m_shadeCache);
+        delete m_shadeCache; // ~CShadeTableCache non-virtual (0x14de50, direct) + ??3
         m_shadeCache = 0;
     }
     if (m_saveSink) {
-        ((CTriggerMgr*)m_saveSink)->~CTriggerMgr();
-        operator delete(m_saveSink);
+        // MISBOUND FIX (same bug as the +0x38 leg): this cross-cast a CSaveGame* to
+        // CTriggerMgr* (thunk 0x3b1b -> ~CTriggerMgr @0x85c50), a real but WRONG rva.
+        // Retail's +0x58 leg (0x859af) calls thunk 0x3521 -> ~CSaveGame @0x85b50 (non-virtual).
+        delete m_saveSink;
         m_saveSink = 0;
     }
     if (m_logicPump) {

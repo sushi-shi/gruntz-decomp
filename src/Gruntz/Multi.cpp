@@ -811,13 +811,11 @@ void CMulti::ReleaseResources() {
         SendNetStat(0x402, 0x4d2, 1);
         SendStatFlag(0x3ea, 1);
     }
-    // The +0x520 session object is destroyed as ~CNetSession (0xb6220) - its real dtor
-    // (ResetSync + vector-destroy the 4 CNetCmdSlot slots). `delete` shape: dtor then
-    // engine free.
+    // The +0x520 session object is destroyed as ~CNetSession (0xb6220, non-virtual) - its
+    // real dtor (ResetSync + vector-destroy the 4 CNetCmdSlot slots) - then the engine free.
     CNetSession* p520 = m_session;
     if (p520) {
-        p520->~CNetSession();
-        ::operator delete(p520);
+        delete p520;
         m_session = 0;
     }
     if (m_netGate) {

@@ -171,12 +171,9 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, i32 k2) {
         node = node->m_next;
         CTileTriggerSwitchLogic* data = (CTileTriggerSwitchLogic*)pn->m_data;
         if (data->m_04 == k2 && data->m_key1 == k1) {
-            if (data) {
-                // The inlined `delete data`: the dtor restamps the vptr
-                // (`mov [data],offset ??_7`) + clears m_20, then RezFree frees it.
-                data->~CTileTriggerSwitchLogic();
-                ::operator delete(data);
-            }
+            // ~CTileTriggerSwitchLogic is non-virtual + inline: the dtor restamps the vptr
+            // (`mov [data],offset ??_7`) + clears m_20, then ??3 frees it.
+            delete data;
             m_base.RemoveAt((POSITION)cur);
             return 1;
         }
@@ -486,12 +483,11 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i
         return 0;
     }
     if (e->m_1c != 0) {
-        // The inlined failure-path delete runs the BASE dtor (retail stamps
-        // ??_7CTileTriggerLogic @0x5eaea4, not the rock's own vtable): the devs
-        // deleted through a CTileTriggerLogic* with the non-virtual dtor.
+        // The failure-path delete runs the BASE dtor (retail stamps ??_7CTileTriggerLogic
+        // @0x5eaea4, not the rock's own vtable): the devs deleted through a
+        // CTileTriggerLogic* whose non-virtual dtor makes the static type load-bearing.
         CTileTriggerLogic* dead = e;
-        dead->~CTileTriggerLogic();
-        ::operator delete(dead);
+        delete dead;
         return 0;
     }
     for (i32 i = 0; i < 9; i++) {
@@ -538,12 +534,9 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
         node = node->m_next;
         CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
         if (elem == (CTileTriggerLogic*)data) {
-            if (elem != 0) {
-                // the inlined `delete elem`: ~CTileTriggerLogic restamps the vptr
-                // (??_7CTileTriggerLogic @0x5eaea4) + clears m_1c, then RezFree.
-                elem->~CTileTriggerLogic();
-                ::operator delete(elem);
-            }
+            // ~CTileTriggerLogic (non-virtual, inline) restamps the vptr
+            // (??_7CTileTriggerLogic @0x5eaea4) + clears m_1c, then ??3.
+            delete elem;
             m_list1.RemoveAt((POSITION)cur);
             return 1;
         }
@@ -631,10 +624,7 @@ void CTileTriggerContainer::RemoveAll() {
         TtcNode* cur = node;
         node = node->m_next;
         CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
-        if (elem != 0) {
-            elem->~CTileTriggerLogic(); // vptr 0x5eaea4 restamp + m_1c = 0
-            ::operator delete(elem);
-        }
+        delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
     }
     m_list1.RemoveAll();
     node = TtcHead(m_base);
@@ -642,10 +632,7 @@ void CTileTriggerContainer::RemoveAll() {
         TtcNode* cur = node;
         node = node->m_next;
         CTileTriggerSwitchLogic* elem = (CTileTriggerSwitchLogic*)cur->m_data;
-        if (elem != 0) {
-            elem->~CTileTriggerSwitchLogic(); // vptr 0x5eae8c restamp + m_20 = 0
-            ::operator delete(elem);
-        }
+        delete elem; // vptr 0x5eae8c restamp + m_20 = 0, then ??3
     }
     m_base.RemoveAll();
     node = TtcHead(m_list2);
@@ -653,10 +640,7 @@ void CTileTriggerContainer::RemoveAll() {
         TtcNode* cur = node;
         node = node->m_next;
         CTileTriggerLogic* elem = (CTileTriggerLogic*)cur->m_data;
-        if (elem != 0) {
-            elem->~CTileTriggerLogic(); // vptr 0x5eaea4 restamp + m_1c = 0
-            ::operator delete(elem);
-        }
+        delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
     }
     m_list2.RemoveAll();
     node = TtcHead(m_list3);
@@ -664,10 +648,7 @@ void CTileTriggerContainer::RemoveAll() {
         TtcNode* cur = node;
         node = node->m_next;
         CTileActionEvent* elem = (CTileActionEvent*)cur->m_data;
-        if (elem != 0) {
-            elem->~CTileActionEvent(); // m_10 = 0 (no vtable -> no stamp)
-            ::operator delete(elem);
-        }
+        delete elem; // m_10 = 0 (no vtable -> no stamp), then ??3
     }
     m_list3.RemoveAll();
     m_70 = 0;
@@ -695,10 +676,7 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
             i32 r = elem->Classify((i32)arg);
             if (r == 0) {
                 m_list2.RemoveAt((POSITION)cur);
-                if (elem != 0) {
-                    elem->~CTileTriggerLogic(); // vptr 0x5eaea4 restamp + m_1c = 0
-                    ::operator delete(elem);
-                }
+                delete elem; // vptr 0x5eaea4 restamp + m_1c = 0, then ??3
             } else if (r == -1) {
                 m_list2.RemoveAt((POSITION)cur);
                 m_list1.AddTail(elem);
@@ -773,10 +751,7 @@ i32 CTileTriggerContainer::DelFromList3(void* data) {
     for (TtcNode* node = TtcHead(m_list3); node != 0; node = node->m_next) {
         CTileActionEvent* elem = (CTileActionEvent*)node->m_data;
         if (elem == (CTileActionEvent*)data) {
-            if (elem != 0) {
-                elem->~CTileActionEvent(); // m_10 = 0 (no vtable -> no stamp)
-                ::operator delete(elem);
-            }
+            delete elem; // m_10 = 0 (no vtable -> no stamp), then ??3
             m_list3.RemoveAt((POSITION)node);
             return 1;
         }

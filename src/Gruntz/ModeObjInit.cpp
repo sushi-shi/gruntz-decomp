@@ -188,10 +188,8 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
         }
         m_beginMarker = r78;
         if (m_beginMarker->GetFlag74() == 0) {
-            if (m_beginMarker) {
-                m_beginMarker->~CTileTriggerContainer();
-                RezFree(m_beginMarker);
-            }
+            // RezFree IS ::operator delete (both 0x1b9b82), so this pair IS the delete.
+            delete m_beginMarker; // ~CTileTriggerContainer non-virtual (0xc8640) + ??3
             m_beginMarker = 0;
             return 0;
         }
