@@ -78,7 +78,14 @@ extern "C" CGameRegistry* g_gameReg;
 // when its sub-op (sel) is 2, and clears the tile's tag-0x1a set when sel is 0x63.
 // ===========================================================================
 RVA(0x00075e90, 0x1329)
-i32 CTriggerMgr::LoadTileArrivalFx(i32 ownerHi, i32 ownerLo, i32 tileX, i32 tileY, i32 reason, i32 sel) {
+i32 CTriggerMgr::LoadTileArrivalFx(
+    i32 ownerHi,
+    i32 ownerLo,
+    i32 tileX,
+    i32 tileY,
+    i32 reason,
+    i32 sel
+) {
     (void)ownerHi;
     (void)ownerLo;
     CString diag; // the "No giant rock logic found" temp - forces the /GX EH frame

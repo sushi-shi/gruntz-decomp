@@ -707,7 +707,6 @@ CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5
 // (+0x8c/+0x90), the column-offset table m_colOffsets (+0x24) and the tile grid
 // m_tileGrid (+0x20).
 
-
 // AxisProbe - 0x161270 (__thiscall, ret 8). The standalone tile probe the editor
 // loops call as a reloc-masked leaf: clamp (coord, limit) into the main plane's tile
 // grid, split each into tile index + sub-offset, fetch the tile id, and (unless the

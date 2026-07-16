@@ -140,8 +140,8 @@ public:
     // 0x085bd0 - the /GX destructor.
     ~CGruntzCmdMgr();
 
-    GzObList m_base; // +0x00  primary target queue
-    GzObList m_1c;   // +0x1c  nested subset queue
+    GzObList m_base;  // +0x00  primary target queue
+    GzObList m_1c;    // +0x1c  nested subset queue
     CGruntzMgr* m_38; // +0x38  the game-manager singleton (RezSync::Init self-registers)
 };
 

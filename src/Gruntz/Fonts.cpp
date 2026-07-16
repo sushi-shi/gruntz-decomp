@@ -32,7 +32,6 @@ Font g_tinyFont;
 DATA(0x0024eb14)
 i32 g_loadedFlag = 0; // 0x24eb14  Fonts::EnsureLoaded once-gate
 
-
 // ---------------------------------------------------------------------------
 // The compiler-generated dynamic initializer for the g_mediumFont global (the
 // _initterm entry): construct it in place via the explicit-ctor-call tail-jmp

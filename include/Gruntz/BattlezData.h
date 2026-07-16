@@ -90,9 +90,9 @@ public:
     i32 m_allDone;            // +0x0c
     // +0x10 / +0x48: names migrated from the now-deleted CTmScoreBoard fake view
     // (TriggerMgrViews.h), which modeled this same +0x7c object at the same offsets.
-    i32 m_score;        // +0x10  score accumulator
-    i32 m_toyzCount;    // +0x14  toyz picked up (LoadPickupSprites bumps; HUD stat)
-    i32 m_weaponCount;  // +0x18  weaponz picked up (WARPSTONE excluded)
+    i32 m_score;       // +0x10  score accumulator
+    i32 m_toyzCount;   // +0x14  toyz picked up (LoadPickupSprites bumps; HUD stat)
+    i32 m_weaponCount; // +0x18  weaponz picked up (WARPSTONE excluded)
     i32 m_1c, m_20;
     i32 m_powerupCount; // +0x24  powerupz picked up
     i32 m_28, m_2c, m_30, m_34, m_38, m_3c, m_40, m_scoreValue;

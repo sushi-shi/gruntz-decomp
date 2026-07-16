@@ -24,7 +24,7 @@
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h> // real MFC CString (status/drop banners) + windows.h (dialog API) via afx.h
 #include <Net/NetLobby.h> // NetLobby::g_curDlg (defined below; DATA home is this TU)
-#include <EmptyString.h> // g_emptyString
+#include <EmptyString.h>  // g_emptyString
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (g_gameReg->m_curState @ +0x2c)

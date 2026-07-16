@@ -14,16 +14,16 @@
 //
 // The manager destructor (0x085bd0) carries a /GX EH frame (the inline CPtrList
 // teardown is the destructible sub-object); this TU is built flags="eh".
-#include <Mfc.h> // afx-first umbrella (windows.h for the 0x92ab0 DialogProc)
+#include <Mfc.h>        // afx-first umbrella (windows.h for the 0x92ab0 DialogProc)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/State.h> // CState::Update (slot 4) - the live state's id tag
 #include <Gruntz/Play.h> // CPlay::ExecCommand - the ApplyOne/ApplyMask target (ex CGruntzCmdTarget)
-#include <Gruntz/SerialArchive.h>     // the shared archive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
-#include <Gruntz/GruntzMgr.h>  // the m_38 manager back-ptr (CGruntzMgr) + m_world chain
-#include <Gruntz/GameLevel.h>  // CGameLevel (m_world->m_24: m_planeCtx + m_mainPlane)
+#include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
+#include <Gruntz/GruntzMgr.h>     // the m_38 manager back-ptr (CGruntzMgr) + m_world chain
+#include <Gruntz/GameLevel.h>     // CGameLevel (m_world->m_24: m_planeCtx + m_mainPlane)
 #include <rva.h>
 
 // The game registry singleton (canonical <Gruntz/WwdGameReg.h>). The command

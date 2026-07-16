@@ -15,9 +15,9 @@
 #include <Gruntz/Boomerang.h> // CBoomerang::MovingSlot16 (@0xe08b0) is defined here, interleaved
 #include <Gruntz/LightFx.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-#include <Gruntz/GameRegistry.h>  // CGameRegistry singleton (pulls SoundCue.h + TileGrid.h)
-#include <Gruntz/TriggerMgr.h>    // canonical CTriggerMgr (m_cmdGrid: LoadExplosionSprites @0x7b330)
-#include <Gruntz/State.h>         // CState (reg->m_curState: the level-type descriptor)
+#include <Gruntz/GameRegistry.h> // CGameRegistry singleton (pulls SoundCue.h + TileGrid.h)
+#include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (m_cmdGrid: LoadExplosionSprites @0x7b330)
+#include <Gruntz/State.h>        // CState (reg->m_curState: the level-type descriptor)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/StringNode.h>    // the shared type-name teardown slot (CStringNode::Free)
@@ -1318,9 +1318,8 @@ i32 CTimeBomb::LoadAttributes() {
     }
     m_38->m_flags |= 0x10000;
     TBombGridClear(m_object);
-    g_gameReg->m_cmdGrid->LoadExplosionSprites(
-        m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1
-    );
+    g_gameReg->m_cmdGrid
+        ->LoadExplosionSprites(m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1);
     return 0;
 }
 

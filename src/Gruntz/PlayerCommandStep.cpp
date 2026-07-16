@@ -80,10 +80,10 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
     }
     i32 res;
 
-// grid is re-derived per case as this->m_4->m_cmdGrid: retail keeps `this` in a
-// callee-saved reg and re-reads m_4 inside each case (only case 0 reuses the
-// gate's cached `mgr` in eax); caching it across the whole switch would pin it
-// in a callee-saved reg and spill `this`. CSE collapses the repeats within a case.
+    // grid is re-derived per case as this->m_4->m_cmdGrid: retail keeps `this` in a
+    // callee-saved reg and re-reads m_4 inside each case (only case 0 reuses the
+    // gate's cached `mgr` in eax); caching it across the whole switch would pin it
+    // in a callee-saved reg and spill `this`. CSE collapses the repeats within a case.
     switch ((u8)a4) {
         default:
             return 1;
@@ -188,7 +188,8 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     }
                     return 1;
                 }
-                res = m_4->m_cmdGrid->ClearCell(player, *(i32*)&a4, *(i32*)&a8, 0, (isB == 0) ? 2 : 3);
+                res = m_4->m_cmdGrid
+                          ->ClearCell(player, *(i32*)&a4, *(i32*)&a8, 0, (isB == 0) ? 2 : 3);
                 if (res != 0) {
                     if (player != (u32)g_curPlayer) {
                         return 1;

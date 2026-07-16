@@ -163,8 +163,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
 // viewed through its CActReg activation facet).
 RVA(0x000acbb0, 0x102)
 i32 CEyeCandyAni::RunAct(i32 id) {
-    CEyeCandyActEntry* e =
-        (CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id);
+    CEyeCandyActEntry* e = (CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id);
     if (e->m_fn != 0) {
         return (this->*((CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id))->m_fn)();
     }

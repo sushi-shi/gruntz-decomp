@@ -190,10 +190,10 @@ static void GruntScratchTeardown() {
 // ==== CGrunt::UserLogicVfunc7 @0x61cb0 (ex ProjectileUpdate.cpp; its private .data cell
 // 0x20e180 HEADS this TU's band) ====
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
-#include <Gruntz/Projectile.h>        // canonical CProjectile (slot-17 LoadProjectileSprites)
-#include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
+#include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (fire-view cast)
+#include <Gruntz/Projectile.h>    // canonical CProjectile (slot-17 LoadProjectileSprites)
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite + the bound object)
 // The entrance geometry-source global at 0x2bf3bc every step in this TU arms the
 // entrance sub-player with (fed to CAniAdvanceCursor::Advance). 0x2bf3bc is a
 // tree-wide name conflation: ~17 TUs bind it via this extern "C" `_g_6bf3bc` (the

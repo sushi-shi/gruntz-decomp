@@ -28,7 +28,7 @@
 // out-of-line ??1CBrush copy is kept from Dialogs.cpp - see the pins there):
 // @rva-symbol: ??_GCBrush@@UAEPAXI@Z 0x000164d0 0x1e
 #include <Gruntz/Dialogs.h> // pulls <Mfc.h>/afxwin (CWnd/CDialog/CBrush/CPaintDC)
-#include <Gruntz/Random.h> // g_randSeed/g_randSeeded
+#include <Gruntz/Random.h>  // g_randSeed/g_randSeeded
 
 #include <Ints.h>
 #include <rva.h>

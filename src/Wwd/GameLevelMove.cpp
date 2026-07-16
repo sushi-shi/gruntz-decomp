@@ -44,7 +44,6 @@ static const i32 AXIS_UNSET = (i32)0x80000000;
 // literal method-call form (92.61%) - see ApplyMove's @early-stop note.
 extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c); // @0x1671c0
 
-
 // ---------------------------------------------------------------------------
 // ApplyMove: drive the +0xe4 edit-state machine. editKind <= 0: nothing; kind 7
 // commits the new scroll x/y directly; kinds 1..2 fan to MoveKindDispatch12. Then

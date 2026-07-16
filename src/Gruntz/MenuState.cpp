@@ -91,7 +91,7 @@ extern "C" {
 // One HUD stat read, inlined per site as retail does (the typed g_gameReg->m_scoreHud
 // CBattlezData reloaded at each use).
 #define STAT(getter, field)                                                                        \
-    ((m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0) ? g_gameReg->m_scoreHud->getter() \
+    ((m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0) ? g_gameReg->m_scoreHud->getter()  \
                                                                 : g_gameReg->m_scoreHud->field)
 
 // CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an

@@ -796,8 +796,10 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             }
             this->NameEdit298c(idx)->EnableWindow(enName);
             this->KindCombo1929(idx)->EnableWindow(
-                g_multiState->m_isHost && localColour == 0 && slot->m_18 != g_multiState->m_hostIndex ? 1
-                                                                                              : 0
+                g_multiState->m_isHost && localColour == 0
+                        && slot->m_18 != g_multiState->m_hostIndex
+                    ? 1
+                    : 0
             );
             CWnd* ready = this->ReadyCheck1159(idx);
             ready->EnableWindow(slot->m_18 == g_multiState->m_hostIndex ? 1 : 0);

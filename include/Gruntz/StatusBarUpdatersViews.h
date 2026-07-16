@@ -67,7 +67,6 @@ struct CGrinderRect {
 };
 SIZE_UNKNOWN(CGrinderRect);
 
-
 // --- vtable catalog ---
 
 #endif // GRUNTZ_STATUSBAR_UPDATERS_VIEWS_H

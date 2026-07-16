@@ -14,11 +14,11 @@
 // extern-"C" Func267b hex thunk are DISSOLVED (2026-07-16). Both __cdecl.
 #include <Ints.h>
 
-#include <Gruntz/GruntzMgr.h>           // the real CGruntzMgr (arg2's true class) + m_world chain
-#include <Gruntz/GameRegistry.h>        // CSpriteFactoryHolder (m_world's real class)
-#include <DDrawMgr/DDrawSubMgrPages.h>  // m_pages (the ex-CWorldSub4 +0x4 child)
-#include <DDrawMgr/DDrawSurfacePair.h>  // m_frontPair (CDDrawSurfacePair: m_surface @+0x2c)
-#include <Gruntz/SaveScreenshot.h>      // the real callee (thunk 0x267b -> 0x114ff0)
+#include <Gruntz/GruntzMgr.h>          // the real CGruntzMgr (arg2's true class) + m_world chain
+#include <Gruntz/GameRegistry.h>       // CSpriteFactoryHolder (m_world's real class)
+#include <DDrawMgr/DDrawSubMgrPages.h> // m_pages (the ex-CWorldSub4 +0x4 child)
+#include <DDrawMgr/DDrawSurfacePair.h> // m_frontPair (CDDrawSurfacePair: m_surface @+0x2c)
+#include <Gruntz/SaveScreenshot.h>     // the real callee (thunk 0x267b -> 0x114ff0)
 
 #include <rva.h>
 

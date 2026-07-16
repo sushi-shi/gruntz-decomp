@@ -35,7 +35,7 @@ CGruntzWnd::~CGruntzWnd() {
 // PreDispatchMessage (slot 1) externs: the IAT-mirror imports (call ds:0x6c44a0/
 // 0x6c44a4), the NetLobby active-dialog HWND (0x64557c), and the empty ret-8
 // message hook (0x138940, unnamed - reloc-masked).
-extern HWND g_curDlg_64557c;                      // 0x0064557c
+#include <Net/NetLobby.h> // NetLobby::g_curDlg (0x64557c, active modeless-dialog HWND)
 extern void __stdcall Sub_138940(WPARAM, LPARAM); // 0x138940 (empty hook)
 
 // -------------------------------------------------------------------------
@@ -74,10 +74,10 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (!isIconic(m_hwnd)) {
                 return 0;
             }
-            if (g_curDlg_64557c == 0) {
+            if (NetLobby::g_curDlg == 0) {
                 return 0;
             }
-            ::SendMessageA(g_curDlg_64557c, 0x112, wParam, lParam);
+            ::SendMessageA(NetLobby::g_curDlg, 0x112, wParam, lParam);
             return 0;
         }
         case 0x3b9: {

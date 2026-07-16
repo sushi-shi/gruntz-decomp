@@ -111,8 +111,7 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
         return 0;
     }
 
-    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)
-        ->ScanTree_157ee0((CSymTab*)sound, "ATTRACT", "_");
+    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->ScanTree_157ee0((CSymTab*)sound, "ATTRACT", "_");
 
     if (ShowCursor(0) >= 0) {
         do {

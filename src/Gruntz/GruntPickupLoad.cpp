@@ -37,7 +37,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         a4 = 0;                                                                                    \
-        m_154->m_c->m_2c->m_10map.Lookup((key), (void*&)a4);                                    \
+        m_154->m_c->m_2c->m_10map.Lookup((key), (void*&)a4);                                       \
         id = (idv);                                                                                \
         m_pickupGeoSrc = a4;                                                                       \
     } while (0)
@@ -252,7 +252,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
                     g_gameReg->m_scoreHud->m_weaponPickupz[n - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
                 } else if (n >= PICKUP_BABYWALKER && n <= PICKUP_YOYO) {
                     g_gameReg->m_scoreHud->m_toyzCount++;
-                    g_gameReg->m_scoreHud->m_toyPickupz[n - PICKUP_BABYWALKER + 10 * m_tileOwnerHi]++;
+                    g_gameReg->m_scoreHud
+                        ->m_toyPickupz[n - PICKUP_BABYWALKER + 10 * m_tileOwnerHi]++;
                 }
             }
             switch (n) {

@@ -65,14 +65,14 @@ extern "C" i32 g_explosionz;
 // External engine receivers - all now the REAL canonical classes (declared-only
 // methods stay reloc-masked, so each `call rel32` masks; the SYMBOL is the real
 // class method defined in its own unit). No .cpp-local receiver views remain.
-#include <Gruntz/StatusBarMgr.h>    // canonical CStatusBarMgr (the +0x2dc guts: tab/slot dispatch)
-#include <Gruntz/ChatBoxOwner.h>    // canonical CChatBoxOwner (+0x2e0 chat/cheat text sink)
-#include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
+#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the +0x2dc guts: tab/slot dispatch)
+#include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (+0x2e0 chat/cheat text sink)
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
 #include <Gruntz/GruntzCmdMgr.h> // canonical CGruntzCmdMgr (m_cmdSubMgr: BlitTileMarker @0x23d90)
-#include <Gruntz/FontConfig.h> // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
-#include <Gruntz/SoundCue.h>   // CSndHost (its +0x10 IS the real MFC CMapStringToOb)
-#include <Gruntz/GruntzMgr.h>  // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
-#include <Gruntz/Play.h>       // canonical CPlay - the PLAY-state object DispatchKey runs on
+#include <Gruntz/FontConfig.h>   // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
+#include <Gruntz/SoundCue.h>     // CSndHost (its +0x10 IS the real MFC CMapStringToOb)
+#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
+#include <Gruntz/Play.h>         // canonical CPlay - the PLAY-state object DispatchKey runs on
 // CObj23d90 (the 0x23d90 grid-snap blit) is the canonical view in
 // <Gruntz/BoundaryTailViews.h>, included below; its Blit body is re-homed here.
 // The +0x488 ring buffer is a real MFC CDWordArray (SetAtGrow @0x1b5144, InsertAt
@@ -618,9 +618,8 @@ i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
-        h->m_cmdSubMgr->BlitTileMarker(
-            1, g_curPlayer, *(i16*)&self->m_cursorX, *(i16*)&self->m_cursorY, 0
-        );
+        h->m_cmdSubMgr
+            ->BlitTileMarker(1, g_curPlayer, *(i16*)&self->m_cursorX, *(i16*)&self->m_cursorY, 0);
         return 1;
     }
     // P (ccca9): on bounds-fail or after the action, fall through to the x

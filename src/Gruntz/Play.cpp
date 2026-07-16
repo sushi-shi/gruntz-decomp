@@ -1378,7 +1378,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             key.Format("Level%i", i);
             CTriggerMgr* bm = gameReg->m_cmdGrid;
             i32 v = g_buteMgr.GetInt((const char*)key, "WarpStone");
-            bm->m_byteArr.SetAtGrow(bm->m_byteArr.GetSize(), (u8)v); // inline GetSize == the +0x268 m_nSize load
+            bm->m_byteArr.SetAtGrow(
+                bm->m_byteArr.GetSize(),
+                (u8)v
+            ); // inline GetSize == the +0x268 m_nSize load
         }
     }
     self->m_guts->LoadMultiplayerBattlezConfig(self->m_levelIndex);

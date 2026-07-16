@@ -1,4 +1,4 @@
-#include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
+#include <Mfc.h>                // the REAL MFC CPtrList - CScanList was a fake view of it
 #include <Gruntz/TraitorMode.h> // g_traitorMode
 // GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):
 // the grunt combat / struck-voice / attack / ability-tuning / spawn family,
@@ -47,8 +47,8 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/ScanRectInit.h>  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h>        // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
-                                // WERE the fake g_animScratch / g_animScratchCount
-                                // globals (defined in 5 TUs each; LNK2005)
+// WERE the fake g_animScratch / g_animScratchCount
+// globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - the worker's m_0c owner-context facet
@@ -471,7 +471,7 @@ SIZE_UNKNOWN(CombatTypeNode);
         if (id == 0) {                                                                             \
             g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id = g_typeCounter;                                                                    \
-            char* slot = (char*)((_zvec*)&g_typeColl)->IndexToPtr(id);                          \
+            char* slot = (char*)((_zvec*)&g_typeColl)->IndexToPtr(id);                             \
             i32 n = g_typeColl.m_grown;                                                            \
             void** list = (void**)g_typeColl.m_alloc;                                              \
             while (n-- != 0) {                                                                     \
@@ -1378,14 +1378,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
     if (a7 == 0x39) {
         CGrunt* enemy = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
         if (enemy != 0
-            && m_tileMgr
-                       ->SpawnGrunt(
-                           this->m_tileOwnerHi,
-                           this->m_tileOwnerLo,
-                           a2,
-                           enemy->m_1f4_moveIcon
-                       )
-                   != 0) {
+            && m_tileMgr->SpawnGrunt(
+                   this->m_tileOwnerHi,
+                   this->m_tileOwnerLo,
+                   a2,
+                   enemy->m_1f4_moveIcon
+               ) != 0) {
             i32 h = enemy->m_health + 0x19;
             if (h >= 0x64) {
                 h = 0x64;
@@ -1439,8 +1437,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
     this->m_health = nh;
     if (this->m_entranceReason == 1) {
-        m_tileMgr
-            ->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 1, a2);
+        m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 1, a2);
         return 0;
     }
     if (nh <= 0) {
@@ -1621,8 +1618,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_health > 0) {
             return 1;
         }
-        m_tileMgr
-            ->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 7, a2);
+        m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 7, a2);
         return 0;
     }
 
@@ -1786,8 +1782,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         // Arrival commit + occupancy re-stamp + knockback trajectory tail.
         if (this->m_arrivalPending == 0) {
-            m_tileMgr
-                ->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
+            m_tileMgr->ApplySwitch(this, this->m_lastTilePxX, this->m_lastTilePxY);
         }
         CBrickzGrid* g2 = (CBrickzGrid*)g_gameReg->m_tileGrid; // GruntBoard==CBrickzGrid facet
         i32 ox = this->m_lastTilePxX >> 5;

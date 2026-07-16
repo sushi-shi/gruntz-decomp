@@ -43,7 +43,7 @@ struct CWsfSprite {};
 SIZE_UNKNOWN(CWarpStoneFly);
 class CWarpStoneFly {
 public:
-    CWarpStoneFly();                            // 0x109bb0  clears m_sprite/m_owner, returns this
+    CWarpStoneFly(); // 0x109bb0  clears m_sprite/m_owner, returns this
     // 0x109bd0 (body in SBI_RectOnly.cpp, its own RVA band): record the owner, resolve
     // the warp-tab fly frame + per-phase screen target, seed the fly velocity. Ex the
     // EngineLabelBacklog::UpdateWarpStoneStatusBar placeholder def (was CSbiMode54c::Init).
