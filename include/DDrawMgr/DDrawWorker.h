@@ -42,7 +42,8 @@ class CImage; // <Image/CImage.h>
 // the field-reset dtor + the grand-base 0x5e8cb4 re-stamp folded via ~CWapObj ->
 // ~CObject). Its ctor/dtor fold into the leaf's, giving retail's two-phase
 // vptr schedule + the destructible-base /GX frame.
-class CSymTab; // Bute/SymTab.h - the name->record table slots 10/15 iterate
+class CSymTab;      // Bute/SymTab.h - the name->record table slots 10/15 iterate
+class CImageParent; // the +0x0c owning parent handed to each frame (== CImage::m_parent)
 
 class CDDrawWorker : public CLoadable {
 public:
@@ -69,20 +70,36 @@ public:
     virtual i32 CreateFrame24(i32 a, i32 b, i32 c, i32 d); // slot 11 @0x152110
     virtual i32 CreateFrame28(i32 a, i32 b, i32 c, i32 d); // slot 12 @0x152060
     virtual i32 CreateFrame30(i32 a, i32 b, i32 c);        // slot 13 @0x151fb0
-    // @identity-TODO: CDDrawWorker IS CImageSet (<Image/ImageSet.h>) - one class, two names.
-    // PROVEN from the binary: this class's vtable is ??_7CDDrawWorker@@6B@ @RVA 0x1efbe8 =
-    // VA 0x5efbe8, and ImageSet.h independently records CImageSet's vtable as @0x5efbe8 -
-    // the SAME datum. The slot bodies agree too: slot 11 @0x152110 and slot 12 @0x152060 are
-    // exactly CImageSet::CreateFrame24 / CreateFrame28 (reconstructed in WwdGameObject.cpp),
-    // and slot 14 @0x151f00 below is the body currently claimed as ?InsertFrame@CSprite@@ -
-    // whose own code reads the frame CObArray at +0x10 (m_pData@+0x14 / m_nSize@+0x18) and
-    // the owner at +0x0c, i.e. CImageSet's m_array/m_frames/m_count/m_owner, offset for
-    // offset. So 0x151f00 is slot 14 of THIS class, not a CSprite method, and CSprite is a
-    // third view of the same 0x6c object. Folding the three is a real (large) merge with no
-    // link-defect payoff - flagged with the evidence rather than half-done.
-    virtual i32 InsertFrame(void* rec, i32 n, i32 flag); // slot 14 @0x151f00
+    // FOLD (stage 4, DONE for CSprite): the ex `CSprite` (<Gruntz/Sprite.h>) IS this
+    // class - it is now a typedef of it. Slot 14's body @0x151f00 was declared as
+    // ?InsertFrame@CSprite@@ while BEING this vtable's slot-14 body: its own code reads
+    // the frame CObArray at +0x10 (m_pData@+0x14 / m_nSize@+0x18) and the owner at
+    // +0x0c - i.e. m_items/m_owner, offset for offset - and it already cast its own
+    // array to the real ::CObArray to call SetAtGrow. Declaring it here as the real
+    // virtual retires that WIRING row. The return type is CImage* (the body's own
+    // mangled name says PAVCImage, not the `i32` this slot used to be declared with).
+    //
+    // STILL A VIEW: CImageSet (<Image/ImageSet.h>) is the same 0x6c object again -
+    // slots [11]/[12]/[13] (0x152110/0x152060/0x151fb0) are declared as
+    // CImageSet::CreateFrame24/28/30 and are this vtable's own slots. Stage 5.
+    virtual CImage* InsertFrame(void* rec, i32 n, i32 flag); // slot 14 @0x151f00
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);  // slot 15 @0x1522b0
     virtual i32 Slot40_1523b0(i32 rec, i32 n, i32 flag); // slot 16 @0x1523b0
+    // Bounds-read a frame pointer against [m_minIndex, m_maxIndex] (0x15cc30, the ex
+    // CSprite::GetFrame; out-of-line in the spriteresource unit).
+    i32 GetFrame(i32 n); // 0x15cc30
+    // The +0x0c owning parent context, typed. CLoadable models m_0c as a plain i32
+    // because each of its derivatives owns a DIFFERENT parent type - retyping the
+    // shared base would be wrong for the others - so the concrete type lives here, in
+    // ONE accessor, instead of a cast at every use site. Both ex-views (CSprite::m_c /
+    // CImageSet::m_owner) proved the type: it is handed to each created frame as
+    // CImage::m_parent (`new CImage(index, m_owner)`).
+    CImageParent* Owner() const {
+        return (CImageParent*)m_0c;
+    }
+    void SetOwner(CImageParent* p) {
+        m_0c = (i32)p;
+    }
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
     void AddFrameAt_1521c0(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 

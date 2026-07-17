@@ -132,7 +132,7 @@ i32 CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 a3, i3
     if (worker == 0) {
         return 0;
     }
-    return worker->InsertFrame(rec, a3, a4);
+    return (i32)worker->InsertFrame(rec, a3, a4); // slot 14 returns CImage*; forwarded as i32
 }
 
 // ---------------------------------------------------------------------------
@@ -177,7 +177,7 @@ i32 CDDrawWorkerRegistry::Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4
 
 RVA(0x00154f20, 0x1b)
 i32 CDDrawWorkerRegistry::Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4) {
-    return worker->InsertFrame(rec, a3, a4);
+    return (i32)worker->InsertFrame(rec, a3, a4); // slot 14 returns CImage*; forwarded as i32
 }
 
 RVA(0x00154f40, 0x20)

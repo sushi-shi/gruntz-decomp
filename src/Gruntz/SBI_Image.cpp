@@ -163,7 +163,7 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
                 mgr->m_imageRegistry->m_10map.Lookup(name, r_ob);
                 CSprite* r = (CSprite*)r_ob;
                 if (r && idx >= r->m_minIndex && idx <= r->m_maxIndex) {
-                    m_30 = r->m_items.m_pData[idx];
+                    m_30 = (CImage*)r->m_items.GetAt(idx);
                 } else {
                     m_30 = 0;
                 }

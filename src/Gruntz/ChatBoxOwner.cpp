@@ -257,13 +257,13 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     if (self->m_8 == 3) {
-        CImage* frame = (CImage*)spr->m_items.m_pData[spr->m_maxIndex];
+        CImage* frame = (CImage*)spr->m_items.GetAt(spr->m_maxIndex);
         if (!frame) {
             return 0;
         }
         frame->RenderFrame((void*)arg1, (void*)(self->m_0 + 0x140), (void*)(self->m_4 + 0x20), 0);
     } else {
-        CImage* frame = (CImage*)spr->m_items.m_pData[spr->m_minIndex];
+        CImage* frame = (CImage*)spr->m_items.GetAt(spr->m_minIndex);
         if (!frame) {
             return 0;
         }

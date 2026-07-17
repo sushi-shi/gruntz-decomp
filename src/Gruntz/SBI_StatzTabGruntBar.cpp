@@ -234,7 +234,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         CSprite* gm = m_glyphMap;
         m_statusGlyphLatched = (statusVal < gm->m_minIndex || statusVal > gm->m_maxIndex)
                                    ? 0
-                                   : gm->m_items.m_pData[statusVal];
+                                   : (CImage*)gm->m_items.GetAt(statusVal);
         m_statusValue = statusVal;
         dirty = 1;
     }
@@ -243,7 +243,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         CSprite* gm = m_glyphMap;
         m_abilityGlyphLatched = (abilityVal < gm->m_minIndex || abilityVal > gm->m_maxIndex)
                                     ? 0
-                                    : gm->m_items.m_pData[abilityVal];
+                                    : (CImage*)gm->m_items.GetAt(abilityVal);
         m_abilityValue = abilityVal;
         dirty = 1;
     }
@@ -252,7 +252,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         CSprite* gm = m_glyphMap;
         m_overrideGlyphLatched = (overrideVal < gm->m_minIndex || overrideVal > gm->m_maxIndex)
                                      ? 0
-                                     : gm->m_items.m_pData[overrideVal];
+                                     : (CImage*)gm->m_items.GetAt(overrideVal);
         m_overrideValue = overrideVal;
         dirty = 1;
     }
@@ -263,7 +263,8 @@ i32 CSBI_StatzTabGruntBar::Update() {
         } else {
             CSprite* gm = m_glyphMap;
             i32 key = selectVal + 0x28;
-            m_selectGlyph = (key < gm->m_minIndex || key > gm->m_maxIndex) ? 0 : gm->m_items.m_pData[key];
+            m_selectGlyph =
+                (key < gm->m_minIndex || key > gm->m_maxIndex) ? 0 : (CImage*)gm->m_items.GetAt(key);
         }
         m_selectValue = selectVal;
         dirty = 1;
@@ -272,7 +273,9 @@ i32 CSBI_StatzTabGruntBar::Update() {
     if (m_timerValue != timerVal) {
         CSprite* gm = m_timerGlyphMap;
         m_timerGlyph =
-            (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex) ? 0 : gm->m_items.m_pData[timerVal];
+            (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex)
+                ? 0
+                : (CImage*)gm->m_items.GetAt(timerVal);
         m_timerValue = timerVal;
         dirty = 1;
     }

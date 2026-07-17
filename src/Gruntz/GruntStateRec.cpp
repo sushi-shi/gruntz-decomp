@@ -37,7 +37,7 @@
 // stream or the registry sub-object (g_gameReg->m_world) is absent.
 //
 // Mode 7 (read) resolves each tracked glyph from the stream as a registry ref: a name +
-// an index, Lookup'd to a glyph map, then gated to map->m_items.m_pData[index] (the same
+// an index, Lookup'd to a glyph map, then gated to (CImage*)map->m_items.GetAt(index) (the same
 // name -> Lookup -> [m_minIndex..m_maxIndex] -> frame idiom CSBI_Image::SerializeFields
 // runs against the real CSprite). Mode 4 (write) reverse-looks-up each glyph's name +
 // index through the registry (AnyValueMatches_155630) and writes them back. The two
@@ -129,7 +129,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
         CSprite* gm = (CSprite*)out;                                                 \
         CImage* r;                                                                                 \
         if (gm != 0 && i >= gm->m_minIndex && i <= gm->m_maxIndex) {                                  \
-            r = gm->m_items.m_pData[i];                                                                    \
+            r = (CImage*)gm->m_items.GetAt(i);                                                                    \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \

@@ -49,7 +49,6 @@
 #include <Mfc.h> // the registries' +0x10 map IS the real MFC CMapStringToOb
 #include <rva.h>
 
-struct CSprite;
 class CImage; // the frame element IS the real CImage (Image/CImage.h)
 struct CObject;
 // (the ex-`CFrameGrid` map value IS the canonical CImageSet - CPlay::m_grid; see Play.h)
@@ -65,42 +64,26 @@ struct CObject;
 // call through it needed an object-cast AND bound to nothing. The registries' +0x10 map
 // members are now the real CMapStringToOb.)
 
-// The CSprite frame table is a CObArray of CImage frame-workers living AT
-// CSprite+0x10 (so its m_pData is +0x14, its m_nSize +0x18). The frame INSERT
-// (0x151f00) grows it via SetAtGrow and the frame READ indexes m_pData directly.
-// SetAtGrow(index, element): __thiscall ret 8, no body -> the call reloc-masks
-// against the engine CObArray helper @0x1b5822.
-SIZE_UNKNOWN(CFrameArray);
-struct CFrameArray {
-    char _vft0[4];   // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    CImage** m_pData; // +0x04  frame-pointer table (the element IS the real CImage)
-    i32 m_nSize;     // +0x08  element count
-    i32 m_nMaxSize; // +0x0c
-    i32 m_nGrowBy;  // +0x10
-    void SetAtGrow(i32 index, CObject* element); // 0x1b5822
-};
+// ============================================================================
+// CSprite IS CDDrawWorker - stage 4 of the fold, DONE. It survives as a typedef so
+// the ~177 call sites keep reading in their own domain language (the tree's own
+// CMoviePlayer precedent: CDDScreen/CDDPageMgr are typedefs of it), while there is
+// exactly ONE type, ONE layout and ONE vtable behind them.
+//
+// The ex `CFrameArray` at +0x10 is GONE: it was the real MFC ::CObArray all along -
+// this view even cast its own array to `(CObArray*)` to call SetAtGrow @0x1b5822.
+// Frame access now goes through the real API ((CImage*)x->m_items.GetAt(i) /
+// GetSize()), the spelling WwdGameObject.cpp already matched with, because MFC's
+// m_pData/m_nSize are protected.
+//
+// The ex `m_c`/`m_owner` (+0x0c) is CLoadable::m_0c, reached through the typed
+// CDDrawWorker::Owner() accessor - see the note there for why the type lives on the
+// leaf and not on the shared base.
+//
+// (CImageSet is the SAME object a third time - stage 5, still open. See the
+// fold-state note below.)
+#include <DDrawMgr/DDrawWorker.h> // the ONE real class (vtbl 0x1efbe8, CLoadable-derived)
 
-// The engine sprite (animation frame-data) object: the value the sprite hash
-// table resolves. m_c is the parent context handed to each frame worker; the
-// frame CObArray lives at +0x10; the inclusive valid frame range is [m_64..m_68].
-// The ex "gated-lookup table" views CRegTypeTable/CStatzGlyphMap/CMgrLookupRec
-// (elements @+0x14, name @+0x24, bounds @+0x64/+0x68) were all THIS class,
-// resolved from the same m_imageRegistry->m_10map the SBI_Image loader uses.
-class CImageParent; // the parent context handed to each frame worker (== CImage::m_parent)
-
-SIZE_UNKNOWN(CSprite);
-struct CSprite {
-    char m_pad00[0xc];
-    CImageParent* m_owner; // +0x0c  parent context handed to each frame worker (CImage frame m_parent)
-    CFrameArray m_items;     // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
-    char m_name[0x64 - 0x24]; // +0x24  registry/config name (the sprite's lookup key)
-    i32 m_minIndex;         // +0x64  first valid frame number
-    i32 m_maxIndex;          // +0x68  last valid frame number
-
-    // Insert a frame worker at frame number `n` (0x151f00); bounds-read a frame
-    // pointer (0x15cc30). Bodies live in the spriteresource unit.
-    CImage* InsertFrame(void* src, i32 n, i32 mode); // 0x151f00
-    i32 GetFrame(i32 n);                             // 0x15cc30 (out-of-line)
-};
+typedef CDDrawWorker CSprite;
 
 #endif // GRUNTZ_SPRITE_H

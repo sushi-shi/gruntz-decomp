@@ -1647,7 +1647,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     g_gameReg->m_world->m_soundRegistry->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
     CImage* frame =
-        (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex) ? spr->m_items.m_pData[n] : 0;
+        (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex) ? (CImage*)spr->m_items.GetAt(n) : 0;
     m_sprite = frame;
     if (frame == 0) {
         return 1;

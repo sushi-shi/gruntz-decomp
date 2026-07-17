@@ -88,11 +88,11 @@ i32 CPlay::LoadLoadingBarSprite() {
     }
 
     m_revealCapStart =
-        (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) ? spr->m_items.m_pData[1] : 0;
+        (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) ? (CImage*)spr->m_items.GetAt(1) : 0;
     m_revealCapMid =
-        (spr->m_minIndex <= 2 && spr->m_maxIndex >= 2) ? spr->m_items.m_pData[2] : 0;
+        (spr->m_minIndex <= 2 && spr->m_maxIndex >= 2) ? (CImage*)spr->m_items.GetAt(2) : 0;
     m_revealCapEnd =
-        (spr->m_minIndex <= 3 && spr->m_maxIndex >= 3) ? spr->m_items.m_pData[3] : 0;
+        (spr->m_minIndex <= 3 && spr->m_maxIndex >= 3) ? (CImage*)spr->m_items.GetAt(3) : 0;
     m_revealFrame = 1;
     return 1;
 }
@@ -148,27 +148,27 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     }
 
     m_frameMinTens =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? spr->m_items.m_pData[10] : 0;
+        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? (CImage*)spr->m_items.GetAt(10) : 0;
     if (!m_frameMinTens) {
         return 0;
     }
     m_frameMinOnes =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? spr->m_items.m_pData[10] : 0;
+        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? (CImage*)spr->m_items.GetAt(10) : 0;
     if (!m_frameMinOnes) {
         return 0;
     }
     m_frameColon =
-        (spr->m_minIndex <= 11 && spr->m_maxIndex >= 11) ? spr->m_items.m_pData[11] : 0;
+        (spr->m_minIndex <= 11 && spr->m_maxIndex >= 11) ? (CImage*)spr->m_items.GetAt(11) : 0;
     if (!m_frameColon) {
         return 0;
     }
     m_frameSecTens =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? spr->m_items.m_pData[10] : 0;
+        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? (CImage*)spr->m_items.GetAt(10) : 0;
     if (!m_frameSecTens) {
         return 0;
     }
     m_frameSecOnes =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? spr->m_items.m_pData[10] : 0;
+        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? (CImage*)spr->m_items.GetAt(10) : 0;
     if (!m_frameSecOnes) {
         return 0;
     }
@@ -299,16 +299,16 @@ i32 CTimer::Tick(i32 dt) {
 
     CSprite* spr = m_sprite;
     m_frameMinTens = (spr->m_minIndex <= d10min && d10min <= spr->m_maxIndex)
-                         ? spr->m_items.m_pData[d10min]
+                         ? (CImage*)spr->m_items.GetAt(d10min)
                          : 0;
     m_frameMinOnes = (spr->m_minIndex <= d1min && d1min <= spr->m_maxIndex)
-                         ? spr->m_items.m_pData[d1min]
+                         ? (CImage*)spr->m_items.GetAt(d1min)
                          : 0;
     m_frameSecTens = (spr->m_minIndex <= d10sec && d10sec <= spr->m_maxIndex)
-                         ? spr->m_items.m_pData[d10sec]
+                         ? (CImage*)spr->m_items.GetAt(d10sec)
                          : 0;
     m_frameSecOnes = (spr->m_minIndex <= d1sec && d1sec <= spr->m_maxIndex)
-                         ? spr->m_items.m_pData[d1sec]
+                         ? (CImage*)spr->m_items.GetAt(d1sec)
                          : 0;
     return 1;
 }

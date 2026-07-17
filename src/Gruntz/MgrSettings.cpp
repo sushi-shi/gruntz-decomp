@@ -63,7 +63,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             if (rec == 0 || index < rec->m_minIndex || index > rec->m_maxIndex) {
                 m_38 = 0;
             } else {
-                m_38 = rec->m_items.m_pData[index];
+                m_38 = (CImage*)rec->m_items.GetAt(index);
             }
             return 1;
         }

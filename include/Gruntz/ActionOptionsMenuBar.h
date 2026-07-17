@@ -6,7 +6,9 @@
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 class CImage; // the menu-bar drawable (m_frame; RenderFrameClipped 0x153810)
-struct CSprite;
+class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
+typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
+                              // and keeps this header pointer-only/include-light.
 
 class CActionOptionsMenuBar {
 public:

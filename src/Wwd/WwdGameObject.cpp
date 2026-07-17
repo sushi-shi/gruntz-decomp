@@ -183,7 +183,7 @@ void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
     if (spr) {
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
             m_190 = frame;
-            m_layer = spr->m_items.m_pData[frame]; // +0x198 union: frame ptr
+            m_layer = (CImage*)spr->m_items.GetAt(frame); // +0x198 union: frame ptr
         } else {
             m_190 = frame;
             m_layer = 0;
@@ -205,7 +205,7 @@ void CGameObject::ApplyName(const char* name) {
         i32 n = spr->m_minIndex;
         m_190 = n; // +0x190 role-union: the cached frame number
         if (n >= spr->m_minIndex && n <= spr->m_maxIndex) {
-            m_layer = spr->m_items.m_pData[n]; // +0x198 union: the frame ptr
+            m_layer = (CImage*)spr->m_items.GetAt(n); // +0x198 union: the frame ptr
             return;
         }
     }
@@ -511,7 +511,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
             i32 idx = m_190;
             CImage* frame;
             if (idx >= found->m_minIndex && idx <= found->m_maxIndex) {
-                frame = found->m_items.m_pData[idx];
+                frame = (CImage*)found->m_items.GetAt(idx);
             } else {
                 frame = 0;
             }
@@ -1243,25 +1243,24 @@ void CDDrawWorker::DeleteAll() {
 // 4th) - same wall as CreateFrame30.
 RVA(0x00151f00, 0xa4)
 CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
-    if (n < m_items.m_nSize && m_items.m_pData[n] != 0) {
+    if (n < m_items.GetSize() && (CImage*)m_items.GetAt(n) != 0) {
         return 0;
     }
     // Two casts SURVIVE here, and they are honest: they are telling us two types above them
     // are still fake, NOT something to force away.
-    //   (CImageParent*)m_c - CSprite::m_c is still `void* m_c` (Sprite.h). Type that member
-    //                        and this falls out.
-    //   (CParseSource*)src - InsertFrame's `void* src` is a VIRTUAL-SLOT signature shared
-    //                        with CDDrawWorker::InsertFrame (slot 14, the SAME rva 0x151f00 -
-    //                        worth a look on its own), so retyping it ripples through that
-    //                        vtable. Deferred, not bodged.
-    CImage* worker = new CImage(n, m_owner);              // real frame ctor (vptr interleaved)
+    //   (CParseSource*)src - InsertFrame's `void* src` is the VIRTUAL-SLOT signature of
+    //                        slot 14; retyping it ripples through the vtable. Still deferred.
+    // (The ex `(CImageParent*)m_c` cast is GONE: this IS CDDrawWorker slot 14 and +0x0c is
+    //  reached through the typed Owner() accessor - the note that predicted "type that
+    //  member and this falls out" was right, and it did.)
+    CImage* worker = new CImage(n, Owner());         // real frame ctor (vptr interleaved)
     if (!worker->Resolve((CParseSource*)src, mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
             delete worker; // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
-    ((CObArray*)&m_items)->SetAtGrow(n, (CObject*)worker);
+    m_items.SetAtGrow(n, (CObject*)worker);
     if (n < m_minIndex) {
         m_minIndex = n;
     }

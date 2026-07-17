@@ -24,7 +24,8 @@
 class DSoundCloneInst; // the pooled cue play-object (ConfigureItem @0x1360d0; the
                        // caller TUs that dispatch it include <Dsndmgr/DirectSoundMgr.h>)
 
-struct CSprite; // the frame-data value the +0x10 map ALSO yields (Sprite.h); the +0x28
+class CDDrawWorker;           // the frame-data value the +0x10 map ALSO yields; the +0x28
+typedef CDDrawWorker CSprite; // (CSprite IS CDDrawWorker - Sprite.h)
                 // registry's CMapStringToPtr stores both cue emitters and sprites by key.
                 // Fwd-declared (not #included) to keep this light header (pulled into the
                 // ~60-TU GameRegistry.h) free of the sprite graph.

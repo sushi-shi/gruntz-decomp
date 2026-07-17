@@ -25,17 +25,8 @@ WIRING	0x1e9e84	CMenuState	6	0x0a0a30	?Activate@CAttract@@QAEHXZ	attract
 WIRING	0x1e9e84	CMenuState	7	0x0a0d40	?ReadyGate@CMenuState@@QAEHXZ	menustate
 WIRING	0x1e9e84	CMenuState	8	0x0a09a0	?LoadStateImages@CImageState@@QAEHXZ	stateimages
 WIRING	0x1e9e84	CMenuState	9	0x0a03f0	?LoadTitleConfig@CAttract@@QAEHH@Z	attract
-WIRING	0x1e9f0c	CDemo	20	0x08c970	?SetBeginClearParams@CState@@QAEHHHH@Z	play
-WIRING	0x1e9f0c	CDemo	24	0x0cee90	?PauseGame@CPlay@@QAEHXZ	play
-WIRING	0x1e9f0c	CDemo	25	0x0cef00	?ResumeGame@CPlay@@QAEHXZ	play
 WIRING	0x1e9f0c	CDemo	42	0x03c0e0	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	demo
-WIRING	0x1e9fe4	CMulti	20	0x08c970	?SetBeginClearParams@CState@@QAEHHHH@Z	play
-WIRING	0x1e9fe4	CMulti	24	0x0cee90	?PauseGame@CPlay@@QAEHXZ	play
-WIRING	0x1e9fe4	CMulti	25	0x0cef00	?ResumeGame@CPlay@@QAEHXZ	play
 WIRING	0x1e9fe4	CMulti	42	0x0dbc80	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	worldlevelpath
-WIRING	0x1ea0bc	CPlay	20	0x08c970	?SetBeginClearParams@CState@@QAEHHHH@Z	play
-WIRING	0x1ea0bc	CPlay	24	0x0cee90	?PauseGame@CPlay@@QAEHXZ	play
-WIRING	0x1ea0bc	CPlay	25	0x0cef00	?ResumeGame@CPlay@@QAEHXZ	play
 WIRING	0x1ea0bc	CPlay	42	0x0dbc80	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	worldlevelpath
 WIRING	0x1ea8ec	CMultiStartDlg	51	0x0c4c00	?VerifyCustomLevel@CMultiStartDlg@@QAEXXZ	multistartdlgroster
 WIRING	0x1eab4c	CSBI_MenuItem	3	0x0e81a0	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	sbi_menuitem
@@ -88,7 +79,6 @@ WIRING	0x1efbe8	CDDrawWorker	7	0x151eb0	?DeleteAll@CDDrawWorker@@QAEXXZ	wwdgameo
 WIRING	0x1efbe8	CDDrawWorker	11	0x152110	?CreateFrame24@CImageSet@@QAEPAVCImage@@HHHH@Z	wwdgameobject
 WIRING	0x1efbe8	CDDrawWorker	12	0x152060	?CreateFrame28@CImageSet@@QAEPAVCImage@@HHHH@Z	wwdgameobject
 WIRING	0x1efbe8	CDDrawWorker	13	0x151fb0	?CreateFrame30@CImageSet@@QAEPAVCImage@@HHH@Z	wwdgameobject
-WIRING	0x1efbe8	CDDrawWorker	14	0x151f00	?InsertFrame@CSprite@@QAEPAVCImage@@PAXHH@Z	wwdgameobject
 WIRING	0x1efc78	CDDrawSubMgrLeaf	7	0x152720	?FreeAll_152720@CDDrawSubMgrLeaf@@QAEXXZ	ddrawsubmgrleaf
 WIRING	0x1efca0	CDDrawSubMgrLeafScan	1	0x157550	?ScalarDtor@CDDrawSubMgrLeafScan@@QAEPAXI@Z	ddrawsubmgr
 WIRING	0x1efd00	CDDrawWorkerCache	7	0x165210	?DestroyAll@CDDrawWorkerRegistry@@QAEXXZ	ddrawsurfacepair

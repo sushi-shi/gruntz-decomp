@@ -84,7 +84,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = (CSprite*)out;
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = tt->m_items.m_pData[i];
+            r = (CImage*)tt->m_items.GetAt(i);
         } else {
             r = 0;
         }
@@ -103,7 +103,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = (CSprite*)out;
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = tt->m_items.m_pData[i];
+            r = (CImage*)tt->m_items.GetAt(i);
         } else {
             r = 0;
         }
@@ -122,7 +122,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = (CSprite*)out;
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = tt->m_items.m_pData[i];
+            r = (CImage*)tt->m_items.GetAt(i);
         } else {
             r = 0;
         }
@@ -141,7 +141,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = (CSprite*)out;
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = tt->m_items.m_pData[i];
+            r = (CImage*)tt->m_items.GetAt(i);
         } else {
             r = 0;
         }
@@ -160,7 +160,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         CSprite* tt = (CSprite*)out;
         void* r;
         if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = tt->m_items.m_pData[i];
+            r = (CImage*)tt->m_items.GetAt(i);
         } else {
             r = 0;
         }

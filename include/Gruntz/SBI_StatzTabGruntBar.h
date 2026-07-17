@@ -107,7 +107,9 @@ SIZE_UNKNOWN(CStatzSelf);
 // m_frames.m_pData - the same (name -> Lookup -> gated index -> frame) idiom
 // CSBI_Image::SerializeFields runs. (The ex CStatzGlyphMap view is dissolved;
 // fwd-decl only - consumers that deref include <Gruntz/Sprite.h> themselves.)
-struct CSprite;
+class CDDrawWorker; // CSprite IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
+typedef CDDrawWorker CSprite; // typedef repeats Sprite.h's - identical, so legal,
+                              // and keeps this header pointer-only/include-light.
 
 // ---------------------------------------------------------------------------
 // CSBI_StatzTabGruntBar - the per-grunt stat tab. Derives directly from

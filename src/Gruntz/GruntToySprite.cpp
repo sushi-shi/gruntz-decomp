@@ -121,7 +121,7 @@ i32 CGruntToySprite::Update() {
         if (h != 0) {
             CImage* mapped;
             if (layer >= h->m_minIndex && layer <= h->m_maxIndex) {
-                mapped = h->m_items.m_pData[layer];
+                mapped = (CImage*)h->m_items.GetAt(layer);
             } else {
                 mapped = 0;
             }

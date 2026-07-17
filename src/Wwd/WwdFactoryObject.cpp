@@ -373,7 +373,7 @@ void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
     }
     m_index = 0;
     if (src->m_records.m_nSize > 0) {
-        e = (CAniDesc*)src->m_records.m_pData[0];
+        e = (CAniDesc*)src->m_records.GetAt(0);
     } else {
         e = 0;
     }
@@ -401,7 +401,7 @@ void CAniAdvanceCursor::Recompute_15c320(i32 a1) {
     m_index = 0;
     CAniDesc* e;
     if (src->m_records.m_nSize > 0) {
-        e = (CAniDesc*)src->m_records.m_pData[0];
+        e = (CAniDesc*)src->m_records.GetAt(0);
     } else {
         e = 0;
     }
@@ -732,7 +732,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     i = m_index + 1;
                     m_index = i;
                     if (i >= 0 && i < arr->m_records.m_nSize) {
-                        nd = (CAniDesc*)arr->m_records.m_pData[i];
+                        nd = (CAniDesc*)arr->m_records.GetAt(i);
                     } else {
                         nd = 0;
                     }
@@ -757,7 +757,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                         m_index = j;
                         CAniDesc* p;
                         if (j >= 0 && j < a->m_records.m_nSize) {
-                            p = (CAniDesc*)a->m_records.m_pData[j];
+                            p = (CAniDesc*)a->m_records.GetAt(j);
                         } else {
                             p = 0;
                         }
@@ -767,7 +767,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                             i32 cnt = a->m_records.m_nSize;
                             CAniDesc* first;
                             if (cnt > 0) {
-                                first = (CAniDesc*)a->m_records.m_pData[0];
+                                first = (CAniDesc*)a->m_records.GetAt(0);
                             } else {
                                 first = 0;
                             }
@@ -916,7 +916,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     if (w != 0) {
         CAniDesc* e;
         if (m_index >= 0 && m_index < w->m_records.m_nSize) {
-            e = (CAniDesc*)w->m_records.m_pData[m_index];
+            e = (CAniDesc*)w->m_records.GetAt(m_index);
         } else {
             e = 0;
         }
@@ -924,7 +924,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
         if (e == 0) {
             m_index = 0;
             if (w->m_records.m_nSize > 0) {
-                e = (CAniDesc*)w->m_records.m_pData[0];
+                e = (CAniDesc*)w->m_records.GetAt(0);
             } else {
                 e = 0;
             }
@@ -946,7 +946,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
 RVA(0x0015cc30, 0x1e)
 i32 CSprite::GetFrame(i32 n) {
     if (n >= m_minIndex && n <= m_maxIndex) {
-        return (i32)m_items.m_pData[n];
+        return (i32)(CImage*)m_items.GetAt(n);
     }
     return 0;
 }
@@ -968,7 +968,7 @@ void CAniRenderCtx::ClampFirst_15cc50() {
     i32 n = seq->m_minIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = (i32)seq->m_items.m_pData[n];
+        m_curFrame = (i32)(CImage*)seq->m_items.GetAt(n);
     } else {
         m_curFrame = 0;
     }
@@ -985,7 +985,7 @@ void CAniRenderCtx::ClampLast_15cc90() {
     i32 n = seq->m_maxIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = (i32)seq->m_items.m_pData[n];
+        m_curFrame = (i32)(CImage*)seq->m_items.GetAt(n);
     } else {
         m_curFrame = 0;
     }

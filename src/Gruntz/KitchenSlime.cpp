@@ -594,7 +594,7 @@ i32 CKitchenSlime::LoadSprites() {
     if (changed != 0 && spr != 0) {
         if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
             player->m_190 = 1;
-            player->m_layer = spr->m_items.m_pData[1];
+            player->m_layer = (CImage*)spr->m_items.GetAt(1);
             m_stepMag = 0;
             m_stepMagHi = 0;
             return 1;
@@ -612,5 +612,4 @@ i32 CKitchenSlime::LoadSprites() {
 // size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
 
 // (CKSlimeEntry SIZE_UNKNOWN lives in KitchenSlime.h; CSlimeAnimPlayer/CSlimeLevel/
-SIZE_UNKNOWN(CSprite);
 SIZE_UNKNOWN(CStringNode);
