@@ -1123,20 +1123,40 @@ public:
     //     ("m_158 = obj->m_7c", "m_15c = m_154->m_1a0.m_14 cache", a 0x10-byte pad),
     //     and CGrunt's real own data resumes at +0x170 = 0x150 + sizeof(CWapX).
     //
-    // NOT YET CONVERTED (deferred, with the blocker named - do not "just add the
-    // base"): a second base lands immediately after the PRIMARY base's size, so
-    // `: public CGruntMovingBase, public CWapX` would put CWapX at +0x34, not +0x150,
-    // because CGruntMovingBase is the LEAN base (see its note above). Landing it needs
-    // BOTH:
-    //   (a) CGruntMovingBase absorbs this class's +0x34..+0x14f members so it becomes
-    //       the true 0x150 spine RTTI says CMovingLogic is (byte-neutral: identical
-    //       offsets, base data precedes own data); and
-    //   (b) CGrunt's own `m_38` (+0x38, the anim player) must be RENAMED first - it
-    //       collides by NAME with the inherited CWapX::m_38 (+0x150). That is the
-    //       silent-rebind trap (union-member-name-collision-rebind), and it is why
-    //       this is a dedicated pass, not a tail-end edit: ~560 `m_38` sites / 76 TUs.
+    // NOT YET CONVERTED. Step 1 (the name collisions) is DONE and committed; step 2
+    // (the spine) is written, ATTEMPTED, and blocked on ONE named thing - read this
+    // before you retry, it is cheap to re-derive wrongly:
+    //
+    //   (1) DONE - the collision renames, USR-exact + byte-neutral (0 functions moved):
+    //         CGrunt::m_38 -> m_animPlayer  (+0x38; collided with CWapX::m_38 @+0x150)
+    //         m_150/m_154/m_158/m_prevEntranceDesc -> m_34/m_38/m_3c/m_value
+    //       so the +0x150 use sites already read the base's names. NB clangd's renamer
+    //       does NOT rewrite MACRO BODIES - three macros kept expanding to the dead
+    //       m_154 and only the build caught them. Rename FIRST, then delete: with the
+    //       decls still present a missed site is a compile error, not a silent rebind.
+    //
+    //   (2) BLOCKED - `: public CGruntMovingBase, public CWapX` needs the PRIMARY base
+    //       to be the 0x150 spine (a second base lands right after the primary's size,
+    //       so with today's LEAN base CWapX would sit at +0x34, not +0x150). Moving
+    //       +0x34..+0x14f into CGruntMovingBase is mechanical and byte-neutral (base
+    //       data precedes own data -> offsets unchanged). ATTEMPTED 2026-07-17: it
+    //       compiles down to exactly ONE class of error, and it is the OLD, KNOWN
+    //       CGrunt-ODR blocker #4 (the i32/void slot-signature split; see the NOTE in
+    //       <Gruntz/UserLogic.h>) surfacing at the PMF table: making CGrunt MI widens
+    //       `i32 (CGrunt::*)()` to 8 bytes where retail stores 4, so GruntActHandler
+    //       must be declared on the SI base (retail's own RTTI names the table
+    //       `zDArray<int (CUserLogic::*)(void)>`, and it mixes CGrunt with
+    //       CGruntBehaviorLeaf handlers, so the base IS its true type - that part is
+    //       right). But g_reg_644af0's handlers are a MIX of void- and i32-returning
+    //       methods, and MSVC5 rejects `(i32 (CUserLogic::*)())&CGrunt::<void method>`.
+    //       So the PMF retype cannot land until the void/i32 return split is
+    //       reconciled from the BODIES (which arm actually materializes eax) - the same
+    //       reconciliation blocker #4 already describes. Do that FIRST; the spine move
+    //       itself is ready and is not the hard part.
+    //
     // The equivalent conversion on CProjectile (same base, same +0x150) is DONE and
-    // byte-verified - see <Gruntz/Projectile.h> for the worked shape.
+    // byte-verified - see <Gruntz/Projectile.h> for the worked shape. CProjectile did
+    // not hit this because its handler table's return types are uniform.
     // ---------------------------------------------------------------------
     void* m_34; // +0x150  (CWapX::m_34)
     CGameObject* m_38; // +0x154  the created entrance-anim sprite object (the ex
