@@ -84,7 +84,6 @@ public:
     // (+0x58/+0x60) then the two i32 fields (m_armed/+0x54, m_tickHandled/+0x68);
     // tag 8 (post-load) re-applies the config via LoadColors. Same archetype as
     // CGruntPuddle::Serialize / CWormhole::Serialize.
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d);
     // LoadColors (0x411f0) IS CWormhole::LoadColors - there is ONE such function at
     // 0x411f0 (MSVC5 has no /OPT:ICF); the tag-8 post-load reapply calls it on the
     // teleporter `this` (cast to CWormhole* at the call site), so no fake shadow decl.

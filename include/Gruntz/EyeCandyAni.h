@@ -25,7 +25,6 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00ff20 (vtable slot 1: two-chain Serialize)
     // Resolve the registry entry for id; run its bound handler as a PMF on this
     // (ResolveEntry inlined twice). 0x0acbb0.
     i32 RunAct(i32 id);

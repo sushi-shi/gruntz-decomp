@@ -1,7 +1,6 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
 #include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LightFx.h>
@@ -190,7 +189,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
 // ===========================================================================
 RVA(0x0009d660, 0xc8)
 i32 CLightFx::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
         return 0;
     }
     if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {

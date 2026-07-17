@@ -354,7 +354,7 @@ CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
 // blind stub. Signature: i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
 // where ar == CFileMemBase (Read @vtbl+0x2c / Write @vtbl+0x30), a4 is the referenced
 // object (int in the mangling, a CGameObject*). Structure:
-//   1. if (!((CMovingLogicBase*)this)->Serialize(ar,mode,a3,a4)) return 0;   (0x16e7f0)
+//   1. if (!CUserLogic::SerializeMove(ar,mode,a3,a4)) return 0;   (0x16e7f0)
 //   2. if (!ar) return 0;   (retail SHARES this ret-0 with the save-body null check @43c5c)
 //   3. header field (m_40 handle + m_44 0x10 blob):
 //        mode 7 LOAD : ar->Read(hbuf,0x80); ar->Read(&m_44,0x10); m_34=m_38=a4;

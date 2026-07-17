@@ -21,12 +21,6 @@ public:
     }
     TILE_LOGIC_TAIL
 public:
-    i32 Serialize(
-        i32 ar,
-        i32 tag,
-        i32 c,
-        i32 d
-    );                             // 0xfa60 (slot-1 two-chain body; ??_7CFrontCandy slot 1)
     CFrontCandy(CGameObject* obj); // 0x0abfa0
     virtual ~CFrontCandy() OVERRIDE;
     char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf is 0x54: its only new-site, the

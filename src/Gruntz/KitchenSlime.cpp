@@ -2,7 +2,6 @@
 #include <Gruntz/GameRegPtr.h>
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (g_kslimeColl)
@@ -409,7 +408,7 @@ i32 CKitchenSlime::Tick() {
 // call is reloc-masked, as in CStatusBarMgr::Serialize).
 
 // The +0x34 serializable sub-object the slime chains into after the shared
-// CUserLogic::SerializeChain is the shared CSerialObjRef (Chain @0x8c00 via the
+// CUserLogic::SerializeMove is the shared CSerialObjRef (Chain @0x8c00 via the
 // 0x1aff thunk); same archetype as CFortressFlag::Serialize.
 
 // CKitchenSlime::Serialize @0x0b2ff0 - the slime's serialize override. For the
@@ -420,9 +419,9 @@ i32 CKitchenSlime::Tick() {
 // The seven 8-byte fields span the doubles m_speed..m_78 plus the (m_tileX,m_tileY) and
 // (m_stepMag,m_stepMagHi) int pairs, so they are addressed by offset (codegen-neutral here).
 RVA(0x000b2ff0, 0x11b)
-i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
+i32 CKitchenSlime::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
     char* B = (char*)this;
-    CSerialArchive* s = (CSerialArchive*)stream;
+    CSerialArchive* s = stream;
     // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
     // MSVC lays the tag-7 (Read) block physically first (cmp 4/je else; cmp 7/jne;
     // Read; jmp; else: Transfer) - the retail dispatch order.
@@ -445,10 +444,10 @@ i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
         s->Write(B + 0x80, 8);
         s->Write(B + 0x88, 8);
     }
-    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(stream), tag, c, d) == 0) {
+    if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    return ((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CGameObject*)d)
+    return ((CSerialObjRef*)(B + 0x34))->Chain(stream, tag, c, (CGameObject*)d)
            != 0;
 }
 

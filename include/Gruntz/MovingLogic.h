@@ -88,7 +88,6 @@ public:
     // Slot 1 override (bute-text serialize). Kept a plain method (its (arc,mode,..)
     // signature does not match CUserBase's slot-1 prototype, so it is not spelled as
     // a C++ override); the body @0x16f4a0 is what matters, the vtable slot is stamped.
-    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16f4a0
 
     // The +0x38 kinematic band as a CMotionState (the real dev subobject), reached
     // via a cast so the flat-int ctor zero-init layout below overlays the same bytes.

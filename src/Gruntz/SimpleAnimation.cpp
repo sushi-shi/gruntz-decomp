@@ -10,7 +10,6 @@
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
 #include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/TypeKeyColl.h>     // g_typeCounter (the shared type-id counter)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -26,11 +25,11 @@
 // CSimpleAnimation::Serialize @0x00f930 - the vtable slot-1 override: base CUserLogic
 // chain + the +0x34 sub-object chain. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
 RVA(0x0000f930, 0x47)
-i32 CSimpleAnimation::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CSimpleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta

@@ -5,7 +5,7 @@
 //   CMovingLogic::CMovingLogic       @0x013940 - standalone out-of-line ctor (COMDAT)
 //   CMovingLogic::~CMovingLogic      @0x013bd0 - /GX leaf dtor (also the vftable anchor)
 //   WriteCurve                       @0x16cdd0 - the bute-text curve writer
-//   CMovingLogicBase::Serialize      @0x16e7f0 - the base-class bute round-trip
+//   CUserLogic::SerializeMove        @0x16e7f0 - the base-class bute round-trip (slot 1)
 //   CMovingLogic::MovingSlot16             @0x16ea90 - the per-frame scroll/position pump
 //   CMovingLogic::Serialize          @0x16f4a0 - the derived bute round-trip
 //
@@ -23,7 +23,7 @@
 #define CMOVINGLOGIC_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicSerial.h> // CButeText/CMovingLogicBase + the serialize helpers
+#include <Gruntz/MovingLogicSerial.h> // CButeText accumulators + the serialize helpers
 #include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_object->m_0c (the world root; m_level hop)
 #include <Globals.h>                  // Update: g_motionTimeScale / g_motionNegHalf / g_frameTime
@@ -146,7 +146,11 @@ ostream& WriteCurve(ostream& accum, const CMotionState& c) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x16e7f0 - CMovingLogicBase::Serialize(arc, mode, a3, a4): the base-class
+// 0x16e7f0 - CUserLogic::SerializeMove(arc, mode, a3, a4): the class's OWN vtable
+// slot-1 override (vtbl 0x1e705c[1], `override` of CUserBase's slot 1 per RTTI;
+// CGruntVoice : CUserLogic tags the same slot `inherited`, so CUserLogic defines
+// it). Was bound here under the fake `CMovingLogicBase::Serialize` - see the
+// dissolution note in <Gruntz/MovingLogicSerial.h>. The base-class round-trip
 // round-trip 0x16f4a0 chains to. mode 4 = write (append the name text, length-
 // prefix it, write the three trailing ints + g_logicTypesRegistered); mode 7 =
 // read (RezAlloc + read the text, parse the name back, read the four ints, then
@@ -161,7 +165,7 @@ ostream& WriteCurve(ostream& accum, const CMotionState& c) {
 // g_logicTypesRegistered transfers and the read-mode back-pointer seeding are all
 // byte-faithful. Logic complete; deferred to the final sweep with its sibling.
 RVA(0x0016e7f0, 0x1cf)
-i32 CMovingLogicBase::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CUserLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -170,14 +174,14 @@ i32 CMovingLogicBase::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         char buf[0x100];
         CButeWriteTemp accum;
         accum.Ctor(buf, 0x100, 2, 1);
-        WriteName(&accum, &m_18);
+        WriteName(&accum, &m_link);
         i32 len = accum.Length();
         arc->Write(&len, 4);
         arc->Write(accum.GetBuffer(), len);
         arc->Write(&m_28, 4);
         arc->Write(&m_2c, 4);
         arc->Write(&g_logicTypesRegistered, 4);
-        arc->Write(&m_30, 4);
+        arc->Write(&m_prevAnimSetNode, 4);
         accum.m_vbase.DtorWriteB();
         accum.m_vbase.FuncB();
     } else if (mode == 7) {
@@ -188,17 +192,17 @@ i32 CMovingLogicBase::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         arc->Read(buf, len);
         CButeReadTemp accum;
         accum.Ctor(buf, len, 1);
-        ReadName(&accum, &m_18);
+        ReadName(&accum, &m_link);
         RezFree(buf);
         arc->Read(&m_28, 4);
         arc->Read(&m_2c, 4);
         arc->Read(&g_logicTypesRegistered, 4);
-        arc->Read(&m_30, 4);
-        m_c = (void*)a4;
-        m_10 = (void*)a4;
-        m_14 = ((CMlSerialCtx*)a4)->m_7c;
-        m_4 = 0;
-        m_8 = 0;
+        arc->Read(&m_prevAnimSetNode, 4);
+        m_0c = (CGameObject*)a4;
+        m_object = (CGameObject*)a4;
+        m_objAux = ((CGameObject*)a4)->m_7c;
+        m_04 = 0;
+        m_08 = 0;
         m_28 = 0x3e9;
         accum.m_vbase.DtorReadA();
         accum.m_vbase.FuncB();
@@ -330,7 +334,7 @@ void CMovingLogic::MovingSlot16() {
 // (paired 100%) / ReadCurve, the four trailing-int transfers and the base chain
 // are all byte-faithful. Logic complete; deferred to the final sweep.
 RVA(0x0016f4a0, 0x1da)
-i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CMovingLogic::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -366,12 +370,10 @@ i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         accum.m_vbase.DtorReadA();
         accum.m_vbase.FuncB();
     }
-    return ((CMovingLogicBase*)this)->Serialize(arc, mode, a3, a4) != 0;
+    return CUserLogic::SerializeMove(arc, mode, a3, a4) != 0;
 }
 
 SIZE_UNKNOWN(CButeReadTemp);
 SIZE_UNKNOWN(CButeVbaseTeardown);
 SIZE_UNKNOWN(CButeWriteTemp);
-SIZE_UNKNOWN(CMlSerialCtx);
 SIZE_UNKNOWN(ostream); // CRT ostream (declared-only; library operator<< appends)
-SIZE_UNKNOWN(CMovingLogicBase);

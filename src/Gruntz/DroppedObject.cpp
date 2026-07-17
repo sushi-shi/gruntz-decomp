@@ -30,7 +30,6 @@
 #include <Gruntz/GameRegPtr.h>
 #include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/DroppedObject.h>   // CDroppedObject : CUserLogic (ctor 0xc68b0)
 #include <Gruntz/DroppedObjectShadow.h> // CDroppedObjectShadow : CUserLogic (ctor 0xc7490)
 #include <Wap32/ZVec.h>
@@ -593,8 +592,8 @@ i32 CObjectDropper::Update() {
 // timing i64 pair, then the +0x58..+0x80 move/state fields; mode 8 instead seeds a
 // draw-fill command on the bound object from the light-FX table set.
 RVA(0x000c6680, 0x1b4)
-i32 CObjectDropper::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
+i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
@@ -875,8 +874,8 @@ i32 CDroppedObject::UserLogicVfunc5() {
 // CDroppedObject::Serialize (0xc73a0): base/chain gate, then the +0x58/+0x60 doubles
 // and the +0x68 landing row.
 RVA(0x000c73a0, 0xb5)
-i32 CDroppedObject::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
+i32 CDroppedObject::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
@@ -1012,7 +1011,7 @@ i32 CDroppedObjectShadow::Advance() {
 // mode-8 archetype.
 RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, c, d)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain((CSerialArchive*)ar, mode, c, (CGameObject*)d)) {

@@ -41,7 +41,6 @@ public:
     // Serialize (0x11880): chain the shared CUserLogic serialize helper on `this`,
     // then (only on success) the +0x34 sub-object's chain; both run the same
     // (ar, tag, c, d) tuple. Returns the second chain's success as a bool.
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d);
     CCursorSnapSprite(CGameObject* obj); // 0x3a340
     // FireActivation (0x3a5b0): slot-4 (UserLogicVfunc2) override - resolve `id`
     // in the class dispatch table g_logicActReg_62bfa0; if the resolved entry holds

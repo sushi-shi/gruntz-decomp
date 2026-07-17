@@ -8,7 +8,6 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -32,11 +31,11 @@ extern "C" u32 g_engineFrameDelta;
 // CUserLogic serialize helper on `this`, then (only on success) the +0x34 sub-object's
 // chain. Returns the second chain's success normalized to a bool.
 RVA(0x000104a0, 0x47)
-i32 CSingleAnimation::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CSingleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CSingleAnimation::~CSingleAnimation @0x010540 - the leaf adds no destructible

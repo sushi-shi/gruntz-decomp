@@ -20,7 +20,6 @@
 class CSingleAnimation : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x104a0 (slot-1 two-chain body)
     RVA(0x00010480, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SINGLEANIMATION;

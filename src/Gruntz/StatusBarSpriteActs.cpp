@@ -10,7 +10,6 @@
 // <Gruntz/ActNameRegistry.h> view of the registry globals without colliding with
 // the stub TU's class model.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/UserLogic.h>
@@ -158,7 +157,7 @@ void CStatusBarSprite::RegisterActs() {
 // CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
 RVA(0x00011ae0, 0x47)
 i32 CStatusBarSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
     return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;

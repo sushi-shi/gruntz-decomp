@@ -1048,12 +1048,12 @@ public:
     i32 RectSegProbe(void* r, void* a, void* b); // call 0x4138 -> 0x62b70 (__thiscall, 3 args)
 
     // Data members. vptr(+0), m_10(+0x10), m_14(+0x14) are in CUserBase; the +0x18
-    // EngStr link is CUserLogic::m_18. CGrunt's own members begin at +0x30.
-    // +0x30 opaque anim-set node handle (m_14->m_1c). The shared CUserLogic base
-    // (<Gruntz/UserLogic.h>) authoritatively types this +0x30 slot void*; it is a
-    // bute-tree node token passed straight to g_typeColl.GetNameRecord(void*),
-    // so void* is the authentic recovered type (not a placeholder).
-    void* m_prevAnimSetNode; // +0x30  (saved old m_14->m_1c before re-latch)
+    // EngStr link is CUserLogic::m_18. CGrunt's own members begin at +0x34.
+    // +0x30 m_prevAnimSetNode is INHERITED from CUserLogic (<Gruntz/UserLogic.h>),
+    // which owns and serializes it: CGrunt::SerializeMove @0x53b80 chains the base
+    // 0x16e7f0, and that body read/writes this+0x30 - so +0x30 cannot be CGrunt's
+    // own field. The local re-declaration was dropped 2026-07-17 (SM1); the name,
+    // type (void*) and offset are unchanged, so every use site is untouched.
     char m_pad34[0x38 - 0x34];
     CGameObject* m_38; // +0x38  the bound game object, driven as the animation
                        //        player (tile-leaf convention m_38 == obj; the ex
@@ -1468,7 +1468,7 @@ public:
     // directly; the sub-records at +0x150/+0x43c/+0x278/+0x308/+0x890..+0x8c0
     // serialize through their own engine helpers (external/reloc-masked).
     // (SerializeMove is the vtable slot-1 override, declared at the top of CGrunt.)
-    // The head sub-serializer is CMovingLogicBase::Serialize (0x16e7f0); the mode-4/7
+    // The head sub-serializer is the inherited CUserLogic::SerializeMove (0x16e7f0); the mode-4/7
     // pre-steps are CGrunt::Save (0x53f90) / CGrunt::Load (0x555e0) - all
     // real bound callees now.
 

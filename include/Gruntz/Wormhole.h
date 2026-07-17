@@ -35,7 +35,6 @@ public:
     CWormhole(CGameObject* obj);                  // 0x03fc70 (1-arg leaf ctor, /GX frame)
     void SpawnPartners();                         // 0x0403b0
     void LoadColors();                            // 0x0411f0
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x03fed0 (two-chain + tag-8 color fixup)
     i32 ReapplyConfig();                          // 0x0412c0 (per-partner config re-run)
     virtual ~CWormhole() OVERRIDE;                // 0x010980 (folded leaf teardown, /GX frame)
 

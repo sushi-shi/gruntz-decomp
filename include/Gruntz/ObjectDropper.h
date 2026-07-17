@@ -44,7 +44,6 @@ public:
     static void RegisterActs(); // 0xc60e0
     // The slot-1 serialize impl (modeled as a plain method so its ?Serialize name + RVA
     // pin; the vtable slot is reloc-masked, like CRollingBall::Serialize).
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc6680
 
     CAniElement* m_geomId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
     char m_pad44[0x58 - 0x44];

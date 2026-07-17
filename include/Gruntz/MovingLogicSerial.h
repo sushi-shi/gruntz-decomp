@@ -93,33 +93,25 @@ void ReadName(void* accum, void* pstr);  // 0x193140
 // streams alongside the three trailing ints.
 extern i32 g_logicTypesRegistered; // 0x6bf674 (?g_logicTypesRegistered@@3HA)
 
-// The read-mode context arg: m_14 is seeded from ctx->m_7c.
-struct CMlSerialCtx {
-    char _00[0x7c];
-    i32 m_7c; // +0x7c
-};
-
-// CMovingLogic's base class providing the chained Serialize (0x16e7f0): persist
-// the name string + three trailing ints + g_logicTypesRegistered, and on read
-// seed the back-pointers (m_c/m_10) and m_14 from the context arg.
-class CMovingLogicBase {
-public:
-    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16e7f0
-
-    void* _vptr;     // +0x00
-    i32 m_4;         // +0x04
-    i32 m_8;         // +0x08
-    void* m_c;       // +0x0c
-    void* m_10;      // +0x10
-    i32 m_14;        // +0x14
-    char m_18[0x10]; // +0x18  name CString (helpers take &m_18)
-    i32 m_28;        // +0x28
-    i32 m_2c;        // +0x2c
-    i32 m_30;        // +0x30
-};
+// DISSOLVED 2026-07-17 (SM1): the fake `CMovingLogicBase` view that used to live
+// here - and its `CMlSerialCtx` read-context view - were both CUserLogic
+// (<Gruntz/UserLogic.h>) / CGameObject. The shared chain Serialize at 0x16e7f0 IS
+// CUserLogic::SerializeMove, the class's OWN vtable slot-1 override:
+//   * vtable_hierarchy: CUserLogic vtbl@0x1e705c slot 1 = 0x16e7f0, tagged
+//     `override` of CUserBase's slot 1 (RTTI COL -> base-class array).
+//   * The sibling CGruntVoice : CUserLogic tags that same slot `inherited`, so
+//     CUserLogic is the class that DEFINES the body - not some unnamed base.
+//   * The dissolved view was field-for-field CUserLogic (vptr, m_4, m_8, m_c,
+//     m_10, m_14, the +0x18 link, m_28, m_2c) + the +0x30 node CUserLogic owns.
+//   * UserLogic.h already DECLARED `virtual i32 SerializeMove(...) OVERRIDE` at
+//     slot 1 with no definition, while this view's non-virtual `Serialize` held
+//     the body: a pure wiring defect (gruntz.match.vtable_slot_binding).
+// Leaves now chain `CUserLogic::SerializeMove(...)` directly - a qualified,
+// non-virtual call, exactly retail's `call 0x16e7f0` - instead of the 57
+// `((CMovingLogicBase*)this)->Serialize(...)` `)this` casts.
 
 // CMovingLogic itself is the shared canonical (<Gruntz/MovingLogic.h>): its
 // Serialize (0x16f4a0) streams the +0x38 CMotionState curve (reached via Motion())
-// and the four trailing ints, then chains to CMovingLogicBase::Serialize.
+// and the four trailing ints, then chains to CUserLogic::SerializeMove.
 
 #endif // GRUNTZ_CMOVINGLOGICSERIAL_H

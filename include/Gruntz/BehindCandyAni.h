@@ -47,7 +47,6 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010050 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandyAni() OVERRIDE;          // 0x0100f0 (folds the CUserLogic teardown)
 
     CAniElement* m_40; // +0x40  saved active-anim descriptor (ctor snapshot)

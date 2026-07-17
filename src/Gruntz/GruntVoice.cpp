@@ -11,7 +11,6 @@
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Mfc.h>                    // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
 #include <Gruntz/CurPlayer.h>       // g_curPlayer
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <rva.h>
 
 #include <Gruntz/GruntVoice.h>
@@ -154,11 +153,11 @@ CVoiceTrigger::CVoiceTrigger() {}
 // sub-object's chain; normalize the second chain's success to a strict bool. The
 // byte-identical chain-Serialize archetype (differs only in the two call displacements).
 RVA(0x000134e0, 0x47)
-i32 CVoiceTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CVoiceTrigger::~CVoiceTrigger @0x0135a0 - the leaf adds no destructible members

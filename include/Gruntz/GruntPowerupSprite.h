@@ -31,11 +31,10 @@ public:
 
     i32 SetCell(i32 x, i32 y, i32 powerup); // 0x080380
     i32 Update();                           // 0x080410
-    // 0x080490: the serialize override - chain CUserLogic::SerializeChain + the +0x34
+    // 0x080490: the serialize override - chain CUserLogic::SerializeMove + the +0x34
     // sub-object, then round-trip m_cellX/m_cellY (8 B) and m_powerupId (4 B). On read (mode 7) it
     // re-resolves the powerup's bute-set record from g_gameReg->m_78 into the bound
     // renderable (m_10). (__thiscall: ret 0x10.)
-    i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4);
 
     CAniElement* m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)
     char m_pad44[0x54 - 0x44];

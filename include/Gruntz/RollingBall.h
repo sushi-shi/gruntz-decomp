@@ -64,7 +64,6 @@ public:
     // name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x0aff40
 
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x0b0fe0 (vtable slot 1)
     i32 Update();                                             // 0x0b0140
 
     // --- CRollingBall own fields (offsets load-bearing) ---

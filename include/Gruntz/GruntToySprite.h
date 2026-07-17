@@ -34,9 +34,8 @@ public:
     i32 SetCell(i32 x, i32 y); // 0x07f920
     i32 Update();              // 0x07f960
     // 0x07fa20: the serialize override - round-trip m_cellX/m_cellY (8 B) + m_lastLayer
-    // (4 B) per mode (4=write @+0x30, 7=read @+0x2c), then chain CUserLogic::SerializeChain
+    // (4 B) per mode (4=write @+0x30, 7=read @+0x2c), then chain CUserLogic::SerializeMove
     // and the +0x34 serialized-object-reference; return whether the ref chain succeeded.
-    i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4); // 0x07fa20
 
     CAniElement*
         m_geoId; // +0x40  geometry-id cache slot (indicator-sprite family; unset by this leaf's ApplyLookupSprite ctor)

@@ -22,7 +22,6 @@ public:
     // GameObjectCtors.cpp): it wraps this non-virtual field-transfer helper and, on
     // mode 8, re-seeds the ctor's draw-fill state.
     i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b4d30
-    i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (superseded; call-free)
     // 0x0b4cb0: serialize-then-decorate variant (exact name unrecovered); re-homed
     // from AppHelpers.cpp (was CHandlerB4::Handle - proven a CUFO method by xref).
     i32 Method_b4cb0(void* stream, i32 tag, i32 c, i32 d);

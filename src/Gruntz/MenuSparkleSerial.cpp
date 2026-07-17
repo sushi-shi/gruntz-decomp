@@ -6,7 +6,6 @@
 // Read/Write are reloc-masked.
 #include <Gruntz/MenuSparkleSerial.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - the real slot-1 base serialize
 #include <Globals.h>
 
 // The two serialized 4-byte globals (owner-TU defs; VA 0x5ea3d4/0x5ea3d8). Reloc-
@@ -26,7 +25,7 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     }
     // The slot-1 base serialize is the shared CMovingLogicBase::Serialize @0x16e7f0
     // (the real callee - CUserLogic::SerializeMove was a fake, unbound name for it).
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)arc, mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)arc, mode, a3, a4)) {
         return 0;
     }
     if (!m_34.Chain((CSerialArchive*)arc, mode, a3, (CGameObject*)a4)) {

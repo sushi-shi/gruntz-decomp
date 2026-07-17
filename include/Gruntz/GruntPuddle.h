@@ -101,7 +101,6 @@ public:
     // tag-dispatched field round-trip - tag 4 writes / tag 7 reads the 7 own i32
     // fields via the archive vtable, tag 8 re-resolves the placed sprite from the
     // game registry. Same archetype as CGruntHealthSprite::Serialize.
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d);
 
     // --- CGruntPuddle own fields (placeholders; offsets load-bearing) ---
     // (This class is ALSO the CTriggerMgr::m_baseList element the spawn/resurrect

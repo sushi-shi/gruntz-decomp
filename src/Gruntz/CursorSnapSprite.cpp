@@ -10,7 +10,6 @@
 // identities.
 #include <Gruntz/CursorSnapSprite.h>
 #include <Bute/ButeTree.h>          // g_buteTree
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 
 #include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (Handler03a200)
 #include <Gruntz/UserLogic.h>  // the dispatched CUserLogic slot layout
@@ -24,11 +23,11 @@
 // to a bool (the retail neg/sbb/neg idiom). The SAME archetype as
 // CFortressFlag::Serialize (0x46410), minus the tag-8 sprite fixup.
 RVA(0x00011880, 0x47)
-i32 CCursorSnapSprite::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return SerialRef34()->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CCursorSnapSprite::~CCursorSnapSprite @0x011920 - the leaf adds no destructible

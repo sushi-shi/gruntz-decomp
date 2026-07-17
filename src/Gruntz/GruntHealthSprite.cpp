@@ -14,7 +14,6 @@
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SerialObjRef.h> // (moved from header; +0x34 serialized-object-ref, .cpp-only)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
@@ -194,10 +193,10 @@ i32 CGruntHealthSprite::HealthUpdate() {
 
 // CGruntHealthSprite::Serialize @0x07f270 - round-trip the own leaf state (m_cellX/m_cellY
 // = 8 B, m_health = 4 B, m_60 = 4 B) per mode (4 = write @+0x30, 7 = read @+0x2c), then
-// chain the base CUserLogic::SerializeChain (bail 0 on failure) and the +0x34 serialized-
+// chain the base CUserLogic::SerializeMove (bail 0 on failure) and the +0x34 serialized-
 // object-reference (CSerialObjRef::Chain via the 0x1aff thunk); return whether it chained.
 RVA(0x0007f270, 0xa3)
-i32 CGruntHealthSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) {
+i32 CGruntHealthSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     switch (mode) {
         case 4:
             ar->Write(&m_cellX, 8);
@@ -210,7 +209,7 @@ i32 CGruntHealthSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) 
             ar->Read(&m_60, 4);
             break;
     }
-    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CGameObject*)a4) != 0;

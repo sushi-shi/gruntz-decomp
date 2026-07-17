@@ -389,11 +389,10 @@ public:
     virtual i32 UserLogicVfuncC(); // slot 14 (retail impl 0x001730)
     virtual i32 UserLogicVfuncD(); // slot 15 (retail impl 0x003607)
 
-    // The shared serialize-chain helper at 0x16e7f0 IS CMovingLogicBase::Serialize
-    // (bound in movinglogic); leaf overrides now drive it via ((CMovingLogicBase*)this)
-    // ->Serialize(...) [<Gruntz/MovingLogicBase.h>]. Decl kept (unused) to avoid a
-    // cross-TU codegen ripple its removal triggers in CUserLogic-including TUs.
-    i32 SerializeChain(i32 a, i32 b, i32 c, i32 d); // 0x16e7f0 (superseded; call-free)
+    // (The shared serialize chain at 0x16e7f0 is the `SerializeMove` slot-1 virtual
+    // declared above - it is THIS class's own override, defined in MovingLogic.cpp.
+    // The `SerializeChain` non-virtual twin that used to be declared here, and the
+    // fake CMovingLogicBase the leaves cast to, were both dissolved onto it.)
 
     // The serialize-object-reference facet embedded at +0x34 of every tile-logic
     // leaf: a CSerialObjRef (its m_00/m_04/m_08 overlay the tail m_34/m_38/m_3c)
@@ -455,17 +454,33 @@ public:
     CUserBaseLink m_link; // +0x18..+0x27 (ctor 0x16d710, can throw)
     i32 m_28;             // +0x28
     i32 m_2c;             // +0x2c  (base ctor 0x58cd0's highest write: `mov [esi+0x2c],2`)
+    // +0x30 opaque anim-set node handle (m_objAux->m_1c), saved before a re-latch.
+    // OWNED BY THE BASE (2026-07-17, SM1): CUserLogic's OWN slot-1 virtual
+    // SerializeMove (0x16e7f0, below) read/writes this+0x30 (`lea ecx,[edi+0x30]`
+    // in both the mode-4 write and mode-7 read arms, streamed right after m_28/m_2c)
+    // - a base virtual cannot touch a derived field, so +0x30 is CUserLogic's.
+    // Was declared THREE times in the derived worlds (TILE_LOGIC_TAIL, CTileLogic,
+    // CGrunt) under this same name/offset/role: one inherited field, modeled thrice.
+    void* m_prevAnimSetNode; // +0x30
 };
-SIZE(CUserLogic, 0x30);       // TRUE base size: 0x30 (see the NOTE). The tile-logic leaves'
+SIZE(CUserLogic, 0x34);       // base size 0x34 (see the NOTE). The tile-logic leaves'
 VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
-                              // 0x30..0x3c tail lives on CTileLogic (below).
-// NOTE - the ONE TRUE CUserLogic size is 0x30, NOT 0x40. Evidence (retail):
-//   * The base ctor CUserLogic(CGameObject*) @0x58cd0 initializes fields only
-//     through m_2c (the highest write is `mov [esi+0x2c],2`), then returns. It
-//     never writes 0x30..0x3c. -> the base object ends at 0x30.
-//   * CGrunt : CUserLogic (<Gruntz/Grunt.h>) places its OWN, byte-exact-matched
-//     members at 0x30 (m_prevAnimSetNode), 0x38 (anim player), 0x40 (activeAnim)
-//     - proving the base it inherits is exactly 0x30.
+                              // 0x34..0x3c tail lives on CTileLogic (below).
+// NOTE - the ONE TRUE CUserLogic size is 0x34, NOT 0x30 and NOT 0x40. Evidence (retail):
+//   * CUserLogic's OWN slot-1 virtual is SerializeMove @0x16e7f0 (vtable 0x1e705c
+//     slot 1, tagged `override` of CUserBase's slot-1 by vtable_hierarchy/RTTI; the
+//     sibling CGruntVoice : CUserLogic tags the same slot `inherited`, so CUserLogic
+//     is the class that DEFINES it). That body read/writes this+0x04..+0x30
+//     INCLUSIVE - `lea ecx,[edi+0x30]` feeds the archive Read/Write right after
+//     m_28/m_2c. -> the base object extends through 0x30, i.e. size 0x34.
+//   * SUPERSEDED (was: "the base ctor 0x58cd0 only writes through m_2c, so the base
+//     ends at 0x30"). A ctor need not initialize every field: +0x30 is a lookup
+//     cache the leaves seed on demand (`m_prevAnimSetNode = m_objAux->m_1c`), so
+//     its absence from the ctor proves nothing about the boundary.
+//   * SUPERSEDED (was: "CGrunt places its OWN members at 0x30, proving the base is
+//     0x30"). CGrunt::SerializeMove @0x53b80 CALLS 0x16e7f0 (`sema xref 0x16e7f0`),
+//     so the base chain writes CGrunt's +0x30 - it cannot be CGrunt's own field.
+//     CGrunt's own members begin at +0x34.
 //   * The ??_7CUserLogic@@6B@ vftable is 16 slots (0x40 bytes); ??_7CUserBase is
 //     3 slots (config/vtable_names.csv).
 //   * Corroboration (matcher-2, 0x9b8b0 - a tile-logic leaf ctor, vptr 0x5e801c): the
@@ -582,8 +597,10 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 // The tile-logic leaves' shared +0x30 tail, inlined per-leaf so each derives
 // CUserLogic DIRECTLY (matching RTTI - CTileLogic is not a retail class). Declare
 // FIRST in the leaf body so it lands at +0x30. Seed with TILE_LOGIC_SEED(obj).
+// m_prevAnimSetNode (+0x30) is NOT here: it is a real CUserLogic member (its own
+// slot-1 SerializeMove @0x16e7f0 streams it) that every leaf inherits at the same
+// offset under the same name - see the CUserLogic size NOTE above.
 #define TILE_LOGIC_TAIL                                                                            \
-    void* m_prevAnimSetNode;                                                                       \
     CGameObject* m_34;                                                                             \
     CGameObject* m_38;                                                                             \
     AnimWorkerObj* m_3c;
@@ -597,9 +614,8 @@ public:
     CTileLogic() {}
     CTileLogic(CGameObject* obj);
 
-    void*
-        m_prevAnimSetNode; // +0x30  saved prior aux lookup node (m_objAux->m_1c) before installing "A"
-    CGameObject* m_34;     // +0x34
+    // (+0x30 m_prevAnimSetNode is inherited from CUserLogic - see its size NOTE.)
+    CGameObject* m_34; // +0x34
     CGameObject* m_38;     // +0x38  (== the bound object; leaves read m_38->m_flags etc.)
     AnimWorkerObj* m_3c; // +0x3c
 };

@@ -12,7 +12,6 @@
 #include <Mfc.h>           // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
 #include <Gruntz/TypeKeyColl.h>    // g_typeCounter (the shared type-id counter)
@@ -749,41 +748,6 @@ i32 CInGameIcon::RefreshCell() {
 }
 
 // ===========================================================================
-// CInGameIcon::SerializeMove  (0x0983e0)  -- vtable slot 1 (the in-level serialize)
-// ===========================================================================
-// The tile-logic-leaf slot-1 serialize: chain the base CUserLogic::SerializeChain
-// (bail 0), the +0x34 serialized-object-reference (CSerialObjRef::Chain, bail 0),
-// then round-trip the icon's two i64 drift fields (m_driftPos @+0x58, m_driftThresh
-// @+0x60; 8 bytes each) per mode (4 = write @+0x30, 7 = read @+0x2c). Returns 1.
-// The archive is the slot-1 CGruntArchive; its Read/Write live at the shared
-// CSerialArchive slots (+0x2c/+0x30), reached by that view at the calls.
-RVA(0x000983e0, 0x98)
-i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
-        return 0;
-    }
-    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
-        return 0;
-    }
-    // The two i64 drift fields sit contiguous (m_driftPos @+0x58, m_driftThresh @+0x60);
-    // retail walks one pointer over the blob (edi += 0x58 hoisted, then edi += 8).
-    char* p = (char*)&m_driftPos;
-    switch (mode) {
-        case 4:
-            ((CSerialArchive*)ar)->Write(p, 8);
-            p += 8;
-            ((CSerialArchive*)ar)->Write(p, 8);
-            break;
-        case 7:
-            ((CSerialArchive*)ar)->Read(p, 8);
-            p += 8;
-            ((CSerialArchive*)ar)->Read(p, 8);
-            break;
-    }
-    return 1;
-}
-
-// ===========================================================================
 // CInGameIcon::PeekCycle  (0x0984b0)
 // ===========================================================================
 // Per-frame peek update: advance the +0x1a0 anim cursor, then dispatch on the icon's
@@ -1062,7 +1026,7 @@ i32 CInGameIcon::Reposition() {
 // CInGameIcon::Serialize  (0x098c90)
 // ===========================================================================
 // The CArchive load/store of the icon state: guard on the archive, chain the
-// shared CUserLogic::SerializeChain, then a `sub 4 / sub 3 / dec` running tag
+// shared CUserLogic::SerializeMove, then a `sub 4 / sub 3 / dec` running tag
 // switch dispatching per-mode CArchive Read/Write (vtable +0x2c write / +0x30
 // read) of the +0x34..+0x78 fields, with inline strlen/strcpy CString round-trips
 // (repne scas / rep movs), a g_serialCounter bump, and two registry CMap lookups
@@ -1078,7 +1042,7 @@ i32 CInGameIcon::Reposition() {
 // A faithful reconstruction needs the corrected boundary first; pinned no-body so
 // its RVA registers and the unit builds. See report.
 RVA(0x00098c90, 0x31f)
-i32 CInGameIcon::Serialize(CArchive*, i32, i32, i32) {
+i32 CInGameIcon::SerializeMove(CGruntArchive*, i32, i32, i32) {
     return 0;
 }
 
@@ -1210,18 +1174,18 @@ void RegisterTextLogic() {
 // ===========================================================================
 // CInGameText::Serialize  (0x099a30)
 // ===========================================================================
-// Guard on the archive, chain the shared CUserLogic::SerializeChain, then the
+// Guard on the archive, chain the shared CUserLogic::SerializeMove, then the
 // +0x34 sub-object's own serializer, then round-trip the two own dwords at
 // +0x54/+0x58: tag 4 stores (archive Write), tag 7 loads (archive Read).
 RVA(0x00099a30, 0xaa)
-i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
+i32 CInGameText::SerializeMove(CGruntArchive* ar, i32 tag, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, a, b) == 0) {
+    if (CUserLogic::SerializeMove(ar, tag, a, b) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, a, (CGameObject*)b) == 0) {
+    if (((CSerialObjRef*)&m_34)->Chain(ar, tag, a, (CGameObject*)b) == 0) {
         return 0;
     }
     switch (tag) {

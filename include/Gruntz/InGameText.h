@@ -55,7 +55,6 @@ public:
     static void InitActReg();                                 // 0x0993e0
     void Dispatch(i32 idx);                                   // 0x099460
     i32 Update();                                             // 0x0997c0
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b); // 0x099a30
 
     // --- CInGameText own fields (offsets load-bearing) ---
     CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)

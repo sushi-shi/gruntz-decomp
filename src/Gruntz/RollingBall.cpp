@@ -39,7 +39,6 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance)
 #include <Gruntz/RollingBall.h>      // CRollingBall : CUserLogic (+ the /GX CString temps)
@@ -536,8 +535,8 @@ i32 CRollingBall::Update() {
 // The +0x88/+0x90 explosion-timing pair is streamed first, then the move/state
 // field list (+0x58..+0x98).
 RVA(0x000b0fe0, 0x1ab)
-i32 CRollingBall::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
+i32 CRollingBall::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {

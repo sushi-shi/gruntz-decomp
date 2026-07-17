@@ -12,7 +12,6 @@
 // SHARED activation-name registry (<Gruntz/ActNameRegistry.h>, @0x6bf650; the
 #include <Bute/ButeTree.h>          // CVariantSlot::Set (0x16d850)
 #include <Gruntz/GameRegPtr.h>
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
 #include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (0x408710)
 #include <Gruntz/TriggerMgr.h>
@@ -116,11 +115,11 @@ SIZE_UNKNOWN(CTrigger);
 // Chains the shared serialize helper on `this`, and (only on success) the +0x34
 // serializable sub-object's chain; normalizes the result to a strict bool.
 RVA(0x00010a10, 0x47)
-i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
+i32 CSecretTeleporterTrigger::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)a, b, c, (CGameObject*)d) != 0;
+    return SerialRef34()->Chain(a, b, c, (CGameObject*)d) != 0;
 }
 
 // --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
@@ -143,11 +142,11 @@ CSecretLevelTrigger::CSecretLevelTrigger() {}
 // bool. The byte-identical chain-Serialize archetype (differs only in the two call
 // displacements) - the direct sibling of CSecretTeleporterTrigger::Serialize (0x010a10).
 RVA(0x00010bb0, 0x47)
-i32 CSecretLevelTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CSecretLevelTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no

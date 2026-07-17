@@ -3,7 +3,6 @@
 // This TU hosts the leaf dtor + the 1-arg ctor (the "unrolled" CUserLogic(obj)
 // prologue) against the matched <Gruntz/UserLogic.h> teardown.
 #include <Gruntz/LevelTimeDtor.h>
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 #include <Gruntz/SerialObjRef.h>         // CSerialObjRef::Chain (0x8c00) for SerializeMove
 #include <Gruntz/SerialArchive.h>        // the serialize stream (== the real CFileMemBase)
@@ -19,7 +18,7 @@ CLevelTime::~CLevelTime() {}
 // CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
 RVA(0x000119b0, 0x47)
 i32 CLevelTime::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
     return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;

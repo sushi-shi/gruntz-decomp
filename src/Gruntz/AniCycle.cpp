@@ -4,7 +4,6 @@
 //
 // CAniCycle : CUserLogic. Only offsets / code bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
@@ -29,11 +28,11 @@ CActReg g_aniCycleActReg; // (the CActReg archetype IS the type) // 0x646088
 // normalized to a bool. Byte-identical to CCursorSnapSprite::Serialize (0x011880)
 // save the two call displacements.
 RVA(0x0000f470, 0x47)
-i32 CAniCycle::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CAniCycle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CAniCycle::~CAniCycle @0x0f510 - empty vtable-anchor dtor; folds the CUserLogic

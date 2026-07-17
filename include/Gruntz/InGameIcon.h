@@ -122,7 +122,6 @@ public:
     i32 PeekCycle();                    // 0x0984b0 (peek-timer random-sprite refresh)
     i32 PlaceAt(i32 idx, i32 gridBase); // 0x0986b0
     i32 Reposition();                   // 0x098a90 (drift re-place refresh)
-    i32 Serialize(CArchive* ar, i32 tag, i32 a, i32 b); // 0x098c90
     void SetField54(i32 v);                             // 0x099b10
 
     // --- CInGameIcon own fields (+0x44/+0x68..+0x74 roles still unproven) ---

@@ -1156,7 +1156,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
     // chain the base-class serialize on `this` (0x16e7f0 = CMovingLogicBase::Serialize)
-    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)ar, mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove((CSerialArchive*)ar, mode, a3, a4) == 0) {
         return 0;
     }
     // then the +0x150 CSerialObjRef's chain (0x8c00 via the 0x1aff thunk)

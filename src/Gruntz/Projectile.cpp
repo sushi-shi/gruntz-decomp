@@ -1,7 +1,6 @@
 #include <Mfc.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Grunt.h>
 // Projectile.cpp - the CProjectile game-object (C:\Proj\Gruntz). Continues the
@@ -1310,12 +1309,12 @@ i32 CTimeBomb::LoadAttributes() {
 // manager is loaded (g_gameReg->m_world); round-trip the 64-bit phase-start clock
 // (m_startTime) + the phase duration (m_duration) + the fast/slow phase flag
 // (m_fastPhase) through the archive stream (mode 4 = Write @+0x30, mode 7 = Read
-// @+0x2c), then chain the shared CUserLogic serialize helper (SerializeChain,
+// @+0x2c), then chain the shared CUserLogic serialize helper (SerializeMove,
 // 0x16e7f0) and the +0x34 CSerialObjRef sub-object's Chain (0x8c00). Same two-chain
 // archetype as CGruntPuddle::Serialize.
 // @early-stop
 // regalloc/hoist wall (~79%, docs/patterns/zero-register-pinning.md): logic is
-// byte-correct (the m_world gate, the m_58/m_60/m_54 round-trip, the SerializeChain
+// byte-correct (the m_world gate, the m_58/m_60/m_54 round-trip, the SerializeMove
 // + CSerialObjRef Chain tail). Residue: retail pins `this` in ebx and hoists
 // `lea edi,[this+0x58]` above the mode branches (reusing edi via `add edi,8` for the
 // consecutive 8-byte fields), where cl keeps `this` in edi and recomputes each
@@ -1338,7 +1337,7 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     } else if (mode == 7) {
         sa->Read(&m_fastPhase, 4);
     }
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;

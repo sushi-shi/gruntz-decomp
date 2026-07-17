@@ -37,7 +37,6 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x012cf0 (vtable slot 1: serialize chain)
     static void InitActReg();       // 0x046cb0 (construct g_partColl over [2000,2010])
     void FireActivation(i32 coord); // 0x046d30
     // Bind the per-frame handler (Update) to the activation key "A" via the shared

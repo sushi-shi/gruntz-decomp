@@ -22,7 +22,6 @@ public:
     virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f5a0 (slot-1 body)
     CSingleFrameMessage(CGameObject* obj);        // 0x0ab310 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry singleton
     // (g_singleFrameActReg @0x645ef0) over the fixed [2000, 2010] range. Static.

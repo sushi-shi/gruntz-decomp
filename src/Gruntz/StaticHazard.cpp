@@ -15,7 +15,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Wap32/zBitVec.h>   // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>      // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
@@ -514,7 +513,7 @@ i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             arc->Read(&m_tileRow, 4);
             break;
     }
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
     return SerialRef34()->Chain(arc, mode, a3, (CGameObject*)a4) != 0;

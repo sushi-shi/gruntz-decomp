@@ -47,7 +47,6 @@ public:
     virtual ~CDroppedObject() OVERRIDE; // 0x0125b0 (folds the CUserLogic teardown)
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CRollingBall::Serialize).
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc73a0
 
     CAniElement* m_savedGeoId; // +0x40  m_38->m_1a0.m_14 snapshot
     char m_pad44[0x58 - 0x44];

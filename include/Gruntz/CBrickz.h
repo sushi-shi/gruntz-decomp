@@ -33,7 +33,6 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x11320 (vtable slot 1: serialize chain)
     // Declared-only (body 0x810f0, Brickz.cpp): load the puzzle's tile attributes.
     // Added so Play.cpp can call it on the real class instead of on the fabricated `Eng`
     // conflation (the call reloc-masks either way, but only this spelling binds to the

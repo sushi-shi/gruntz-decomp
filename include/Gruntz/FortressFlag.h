@@ -48,7 +48,6 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d);                      // 0x046410 (vtable slot 1)
     virtual ~CFortressFlag() OVERRIDE; // 0x010e90 (folds the CUserLogic teardown)
 
     CAniElement* m_prevAnimNode; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)

@@ -34,7 +34,6 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -174,11 +173,11 @@ CFortressFlag::~CFortressFlag() {}
 // sub-object's chain; normalize the second chain's success to a strict bool. The
 // byte-identical chain-Serialize archetype (differs only in the two call displacements).
 RVA(0x00012cf0, 0x47)
-i32 CParticlez::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CParticlez::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CParticlez::~CParticlez @0x012d90 - the leaf adds no destructible members
@@ -193,11 +192,11 @@ CParticlez::~CParticlez() {}
 // sub-object's chain; normalize the second chain's success to a strict bool. The
 // byte-identical chain-Serialize archetype (differs only in the two call displacements).
 RVA(0x00012e20, 0x47)
-i32 CExplosion::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CExplosion::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CExplosion::~CExplosion (0x12ec0) - the /GX leaf dtor folds the bare CUserLogic
@@ -330,11 +329,11 @@ i32 CFortressFlag::AdvanceAnim() {
 // resolve it through the level sprite-ref table, and re-seed the bound sprite's
 // state trio. Always returns 1 once the two chains succeed.
 RVA(0x00046410, 0x92)
-i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d)) {
+    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag == 8) {

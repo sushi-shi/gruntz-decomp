@@ -38,7 +38,6 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x012bc0 (vtable slot 1: serialize chain)
     void Register_1147e0();                    // 0x1147e0 (reserve the activation range)
     void FireActivation(i32 coord);            // 0x114860 (vtable slot 4)
     static void RegisterActs();                // 0x1149c0 (binds the logic handler to key "A";

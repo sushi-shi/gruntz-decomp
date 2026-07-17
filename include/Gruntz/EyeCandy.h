@@ -34,7 +34,6 @@ public:
         return LOGIC_EYECANDY;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00fcc0 (vtable slot 1: two-chain Serialize)
     virtual ~CEyeCandy() OVERRIDE;                // 0x00fd60 (folds the CUserLogic teardown)
 };
 VTBL(CEyeCandy, 0x001e843c);

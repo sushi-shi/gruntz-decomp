@@ -12,7 +12,6 @@
 #include <Gruntz/SerialObjRef.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
@@ -145,12 +144,12 @@ i32 CGruntPowerupSprite::Update() {
 }
 
 // CGruntPowerupSprite::Serialize @0x080490 - the serialize override. Chain the base
-// CUserLogic::SerializeChain and the +0x34 sub-object, then round-trip the own state:
+// CUserLogic::SerializeMove and the +0x34 sub-object, then round-trip the own state:
 // m_cellX/m_cellY (8 B) + m_powerupId (4 B). mode 4 = write, mode 7 = read. On read, re-resolve
 // the powerup's bute-set record (g_gameReg->m_78[m_powerupId*4 + 0x14]) into the bound renderable.
 RVA(0x00080490, 0xbe)
-i32 CGruntPowerupSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
+i32 CGruntPowerupSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
     if (((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CGameObject*)a4) == 0) {

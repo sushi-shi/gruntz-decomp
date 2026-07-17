@@ -11,7 +11,6 @@
 // file.
 #include <Gruntz/GruntStartingPoint.h>
 #include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 
 #include <Bute/ButeMgr.h> // CButeTree
@@ -34,11 +33,11 @@
 // shared CUserLogic serialize helper on `this`, then (only on success) the +0x34
 // sub-object's chain. Returns the second chain's success normalized to a bool.
 RVA(0x000105d0, 0x47)
-i32 CGruntStartingPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CGruntStartingPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CGruntStartingPoint::~CGruntStartingPoint (0x10670) - the /GX leaf dtor folds

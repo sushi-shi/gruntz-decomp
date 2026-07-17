@@ -8,7 +8,6 @@
 #include <Mfc.h>           // real MFC CString (the type-name record's +0x00 member)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActionArea.h>
 #include <Image/ImageSet.h> // CImageSet::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
 #include <Bute/ButeTree.h>
@@ -293,7 +292,7 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (ar == 0) {
         return 0;
     }
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
     if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d)) {

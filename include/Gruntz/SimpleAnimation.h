@@ -32,7 +32,6 @@ public:
     virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f930 (slot-1 body)
     CSimpleAnimation(CGameObject* obj);           // 0x0ab940 (ctor body in UserLogic.cpp)
     i32 AdvanceAnim(); // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)
     // Index g_simpleAnimDispatch by idx; if the resolved slot holds a handler,

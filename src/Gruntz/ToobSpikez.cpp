@@ -9,7 +9,6 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SerialObjRef.h>    // the shared serialized-object-reference (Chain @0x8c00)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
@@ -169,11 +168,11 @@ void CToobSpikez::Register_1147e0() {
 // serialize helper on `this`, then (on success) the +0x34 sub-object's chain,
 // normalized to a strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
 RVA(0x00012bc0, 0x47)
-i32 CToobSpikez::Serialize(i32 a, i32 b, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
+i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(a, b, c, (CGameObject*)d) != 0;
 }
 
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members

@@ -17,7 +17,6 @@
 #include <Gruntz/SoundState.h>  // g_sndEnabled/g_sndCueTag
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/UserLogic.h>       // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>           // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h>    // canonical *0x24556c singleton (color table via m_78)
@@ -171,7 +170,7 @@ i32 CSpotLight::RunAct(i32 id) {
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
-    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, c, d) == 0) {
+    if (CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, c, d) == 0) {
         return 0;
     }
     if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)arc, mode, c, (CGameObject*)d) == 0) {

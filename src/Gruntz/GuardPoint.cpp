@@ -1,7 +1,6 @@
 // GuardPoint.cpp - the guard-point marker (C:\Proj\Gruntz), a CUserLogic leaf.
 // The /GX leaf dtor + the 1-arg ctor (the "unrolled" CUserLogic(obj) prologue).
 #include <Gruntz/GuardPoint.h>
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/SerialObjRef.h>    // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
@@ -12,11 +11,11 @@
 // serialize helper on `this`, then (only on success) the +0x34 sub-object's chain,
 // normalized to a strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
 RVA(0x00010370, 0x47)
-i32 CGuardPoint::Serialize(i32 a, i32 b, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
+i32 CGuardPoint::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(a, b, c, (CGameObject*)d) != 0;
 }
 
 // CGuardPoint::~CGuardPoint (0x10410) - the /GX leaf dtor folds the bare

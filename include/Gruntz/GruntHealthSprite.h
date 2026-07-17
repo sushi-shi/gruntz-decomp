@@ -51,7 +51,6 @@ public:
 
     i32 HealthUpdate(); // 0x07f180 (the registered per-frame handler; reconstructed in the .cpp)
     i32 SetHealthGlyph(i32 x, i32 y, i32 health);                // 0x07f0d0
-    i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4); // 0x07f270
     // slot 16 (new): the per-class stat-time getter (leaf overrides read the bound
     // grunt's stamina/wingz/toy timer); HealthUpdate dispatches it with the grunt entry.
     virtual i32 Vslot16(CGrunt* grunt);

@@ -32,7 +32,6 @@ public:
     // The vtable slot-1 two-chain body (0xfdf0): the shared CUserLogic serialize
     // helper on `this`, then the +0x34 sub-object's chain. (0xfa60 was mis-attributed
     // here; the vtable read proves it is CFrontCandy::Serialize.)
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0xfdf0
     // Construct the class's activation-coordinate registry (g_frontCandyActReg
     // @0x6460b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x0ad130

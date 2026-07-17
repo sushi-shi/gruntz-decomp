@@ -10,7 +10,6 @@
 // recovered engine identities.
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/GameRegPtr.h>
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
@@ -119,18 +118,18 @@ extern "C" i32 ChannelSlots_FindFree();
 // channel slot) and re-seed the bound object's draw trio.
 // @early-stop
 // GetSel inline-vs-call + regalloc wall (~72%): the body is byte-faithful (the
-// SerializeChain + the +0x34 Chain + the m_134-first / ref-array (stride 71) / free-
+// SerializeMove + the +0x34 Chain + the m_134-first / ref-array (stride 71) / free-
 // channel selector + the sel==0 fallback + the draw-trio store all match retail).
 // Residual: retail CALLS the out-of-line CSpriteRefTable::GetSel (0xe23c0) here while
 // MSVC inlines the header-inline copy into this small fn (an inlining-heuristic
 // difference, not source-steerable), and it pins `this` in edi vs retail's esi. The
 // ctor @0x3e520 shares the same wall (~80%).
 RVA(0x0003e7a0, 0xd7)
-i32 CGruntCreationPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CGruntCreationPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d)) {
+    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag != 4 && tag == 8) {

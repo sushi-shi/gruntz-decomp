@@ -29,7 +29,6 @@ public:
     // (the same archetype as CSecretLevelTrigger::RegisterActs).
     static void RegisterActs(); // 0x0422b0
     // The two overridden CUserLogic virtuals reconstructed in UserLogic.cpp.
-    i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x010a10 (vtable slot 1)
     void FireActivation(i32 coord);            // 0x042150 (vtable slot 4)
     // The registered point-activation callback 0x042b80 stamped into the
     // coordinate registry by FireActivation. __thiscall, no args, returns int.

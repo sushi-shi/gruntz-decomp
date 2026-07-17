@@ -104,7 +104,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 // CSecretTeleporterTrigger virtual support. Two engine externs the Serialize
 // override (0x010a10) chains; both __thiscall ret 0x10 (4 args), modeled NO-body
 // so the calls reloc-mask:
-//   * CUserLogic::SerializeChain (0x16e7f0) - run on `this`.
+//   * CUserLogic::SerializeMove (0x16e7f0) - run on `this`.
 //   * the +0x34 serializable sub-object's chain (0x8c00) - run on `&this->m_34`
 //     (reached via `lea ecx,[esi+0x34]`). Modeled by the shared CSerialObjRef
 //     (Chain @0x8c00, <Gruntz/SerialObjRef.h>).

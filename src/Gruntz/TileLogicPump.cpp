@@ -29,7 +29,6 @@
 #include <Gruntz/GameRegPtr.h>
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h>                // CActReg archetype + CCheckpointActReg
@@ -153,7 +152,7 @@ CActReg g_tileActReg;
 // helper on `this`, then (only on success) the +0x34 CSerialObjRef sub-object.
 RVA(0x00010f20, 0x47)
 i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
     return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
@@ -167,7 +166,7 @@ CWarpStonePad::~CWarpStonePad() {}
 // CTileTriggerSwitch::SerializeMove @0x11050, vtable slot 1.
 RVA(0x00011050, 0x47)
 i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
     return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
@@ -190,7 +189,7 @@ CTileTrigger::CTileTrigger() {}
 // (inherited) by CGiantRock/CCoveredPowerup/CTileSecretTrigger (no leaf override).
 RVA(0x000111f0, 0x47)
 i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
     return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
@@ -212,11 +211,11 @@ CBrickz::~CBrickz() {}
 // helper on `this`, then (on success) the +0x34 sub-object's chain, normalized to a
 // strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
 RVA(0x00011320, 0x47)
-i32 CBrickz::Serialize(i32 a, i32 b, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
+i32 CBrickz::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CGameObject*)d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain(a, b, c, (CGameObject*)d) != 0;
 }
 
 // ~CCheckpointTrigger @0x011480 - the bare folded CUserLogic teardown (store the
@@ -250,7 +249,7 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 // CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
 RVA(0x00011750, 0x47)
 i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
     return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
@@ -730,7 +729,7 @@ i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 
         sa->Read(m_state, 0x3c);
         sa->Read(&m_firstEmpty, 4);
     }
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;

@@ -23,7 +23,6 @@ public:
         return LOGIC_SECRETLEVELTRIGGER;
     } // slot 2
     virtual i32 UserLogicVfunc2() OVERRIDE;       // slot 4
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010bb0 (vtable slot 1: serialize chain)
     TILE_LOGIC_TAIL
 public:
     CSecretLevelTrigger();                   // 0x010b20 (no-arg ctor; body in UserLogic.cpp)

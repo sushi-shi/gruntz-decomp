@@ -35,7 +35,6 @@
 #include <Gruntz/Wormhole.h>    // the shared CWormhole class (object logic + acts)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (the shared type/name registry)
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GruntPuddle.h> // CGruntPuddle
 #include <Gruntz/InGameIcon.h>  // CGameRegistry/g_gameReg (ex-transitive via GruntPuddle.h)
 #include <Gruntz/Teleporter.h> // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
@@ -303,11 +302,11 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
 // table (+0x78) at [id*4 + 0x14] and re-seed the bound object's draw trio.
 // ---------------------------------------------------------------------------
 RVA(0x0003fed0, 0xa9)
-i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
+i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CGameObject*)d)) {
+    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag == 8) {
@@ -649,8 +648,8 @@ i32 CGruntPuddle::Remove() {
 // the GetSel fallback + the draw-trio store); residual is retail calling the out-of-
 // line CSpriteRefTable::GetSel (0xe23c0) where MSVC inlines the header copy here.
 RVA(0x00040e50, 0x170)
-i32 CGruntPuddle::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
+i32 CGruntPuddle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d)) {
@@ -780,8 +779,8 @@ i32 CWormhole::ReapplyConfig() {
 // body is COMDAT-ICF-folded with CWormhole::LoadColors at 0x411f0). Same archetype
 // as CGruntPuddle::Serialize. Byte-exact.
 RVA(0x00041350, 0xee)
-i32 CTeleporter::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
+i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
