@@ -637,7 +637,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_cmdSubMgr = new CGruntzCmdMgr;
     // (the cross-cast documents the open RezSync==CGruntzMgr fold: this whole Init
     // runs on the 0xa30 CGruntzMgr singleton; see the TU header dossier.)
-    if (!m_cmdSubMgr->SetMgr((CGruntzMgr*)this)) {
+    if (!m_cmdSubMgr->SetMgr(this)) {
         ReportError(0x800a, 0x414);
         return 0;
     }

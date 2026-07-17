@@ -142,9 +142,16 @@ public:
     // raise the fort alert when an enemy is inside the panic radius (0x45270).
     void NotifyFortUnderAttack();
 
-    // The moving/idle/battlecry anim resolves (0x45100/0x45960/0x45b60) are real
-    // CGrunt methods (the warlord `this` is a CGrunt receiver at these sites) - the
-    // callers cast to CGrunt::* so the rel32 binds; no fake CWarlord shadow decl.
+    // The moving/idle/battlecry anim resolvers (0x45100/0x45960/0x45b60) are CWarlord's.
+    // This header used to claim they "are real CGrunt methods (the warlord `this` is a
+    // CGrunt receiver at these sites)" - that was an assertion with no caller evidence
+    // behind it, and the callers refute it: every retail caller of all three is a
+    // CWarlord method, 0x45100's include ??0CWarlord (the ctor, which can only call its
+    // own class's/bases' methods), and CWarlord's RTTI chain (CUserLogic/CUserBase/CWapX)
+    // has no CGrunt. They stay declared on CGrunt for now ONLY because their bodies use
+    // animation members (m_animPlayer/m_activeAnimDesc/m_*GeoSrc) that CWarlord does not
+    // model yet - see the blocker write-up in Warlord.cpp's banner. Not a wall: a
+    // dependency on the CGrunt-spine conversion Grunt.h tracks.
     void RaiseBattleAlert(); // 0x457b0  (panic-radius alert variant)
 
     // Past the 0x40 CUserLogic base. m_38 is the inherited CUserLogic::m_38

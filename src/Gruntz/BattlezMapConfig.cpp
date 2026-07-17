@@ -5565,7 +5565,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
                 unit->m_arrivalCol = band;
                 unit->m_arrivalRow = 0;
-                ((CBattlezMapConfig*)this)->Method_02c080((i32)unit);
+                Method_02c080((i32)unit);
             }
             unit->m_dwell = 0;
             return 1;

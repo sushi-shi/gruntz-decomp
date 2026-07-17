@@ -11,11 +11,34 @@
 //     0x49c60; 0x20d36c/0x20d374 = 0x45960/0x45b60) ahead of the fortressflag
 //     ctor's band (0x20d384).
 //   * init frag i302 @0x445a0 (before InitActReg @0x445c0) is this obj's.
-// @identity-TODO: the resolvers' mangled owner (CGrunt) is the historical
-// attribution; Warlord.h declares same-named CWarlord methods that the warlord
-// handlers call (reloc-masked aliases of the SAME retail bodies). Whether the
-// original class was CGrunt (shared layout) or CWarlord is unresolved - the
-// byte match is owner-independent; kept as-is pending an identity pass.
+// IDENTITY RESOLVED (2026-07-17) - the resolvers are CWarlord's, NOT CGrunt's. The old
+// note here called this "unresolved ... pending an identity pass"; the pass is done and
+// the CALLERS settle it (`python -m gruntz.analysis.xref 0x00045100 --tree`):
+//
+//   0x45100 ResolveMovingAnimation    <- ??0CWarlord@@QAE@H@Z  (the CWarlord CTOR),
+//                                        RearmMoving, RearmMoving2, LoadAttributes2,
+//                                        AdvanceMovingAnim   - all CWarlord methods
+//   0x45960 ResolveIdleAnimation      <- LoadAttributes@CWarlord
+//   0x45b60 ResolveBattlecryAnimation <- LoadAttributes@CWarlord
+//
+// with NO CGrunt caller anywhere. ??0CWarlord is decisive: a ctor can only call methods
+// of its own class or its bases, and CWarlord's RTTI ClassHierarchyDescriptor @0x5f3818
+// lists CWarlord/CUserLogic/CUserBase/CWapX - there is no CGrunt in the chain. (Warlord.h
+// claimed "the warlord `this` is a CGrunt receiver at these sites"; that was an assertion
+// with no caller behind it, and it is false.) This is the same mis-attribution Grunt.h
+// already recovered for NotifyFortUnderAttack @0x45270, which sits between them.
+//
+// BLOCKED, NOT DEFERRED-BY-CHOICE: re-declaring them on CWarlord does not compile - the
+// bodies use m_animPlayer/m_activeAnimDesc/m_animResolved/m_movingGeoSrc/m_idleGeoSrc/
+// m_battlecryGeoSrc, and NONE of those are modeled on CWarlord or CUserLogic (they exist
+// only on CGrunt, e.g. m_animPlayer @CGrunt+0x38). Landing the re-attribution therefore
+// needs CWarlord's own animation members modeled at their real offsets, which is
+// entangled with the CGrunt spine conversion Grunt.h documents as "NOT YET CONVERTED /
+// BLOCKED" (`: public CGruntMovingBase, public CWapX`, CWapX @+0x150). Attempted and
+// reverted here rather than fabricate a member model. That dependency is the whole
+// blocker; the identity itself is settled. It is also what forces this TU's 7
+// `((CGrunt*)this)->Resolve*Animation()` casts - they are the SYMPTOM of the alias and
+// must NOT be laundered away; they die when the member model lands.
 //
 // CUserBase / CUserLogic / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
 // MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
