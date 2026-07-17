@@ -114,7 +114,7 @@ public:
     // 0xeb830: latch the raw direction (m_3c) + the derived state (m_38 = 1 or 2).
     i32 SetState(i32 dir);
     // vtable slot 5 (0xeb880): the per-frame render of the head's two frames.
-    i32 Render(i32 z);
+    i32 Render(); // 0-arg: body ends `retl` (cleans 0); the ex-`i32 z` was fabricated + unused
 
     // The show/hide notifier for a frame's sprite handle (0x14dd90, __stdcall,
     // ret 8). Modeled as a free function so `push 0; push arg; call` falls out with

@@ -99,7 +99,7 @@ public:
     // and arm the countdown (m_28 = 2). Out-of-line.
     void SetFrames(i32 idxA, i32 idxB); // 0xe8dc0
     // vtable slot 5 (0xe8cb0): the per-frame render of the machine's frames.
-    i32 Render(i32 z);
+    i32 Render(); // 0-arg: body ends `retl` (cleans 0); the ex-`i32 z` was fabricated + unused
 
     // ----- own fields (after CStatusBarItem @0x30, which now owns m_2c); base draw
     // origins reuse m_rect14.m_0/m_4 (@0x14/0x18), the frame countdown reuses m_28.

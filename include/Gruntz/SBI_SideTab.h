@@ -105,7 +105,7 @@ public:
 
     void Reset();            // 0xe9800 (out-of-line)
     i32 Refresh(i32 unused); // vslot 4 (0xe9820)  rebuild the +0x58 draw gate (ret int 0)
-    i32 Render(i32 z);       // vslot 5 (0xe99c0)  draw the two side frames
+    i32 Render(); // vslot 5 (0xe99c0) draw the two side frames. 0-arg: the body ends `retl` (cleans 0); the ex-`i32 z` param was fabricated and unused.
     i32 BuildHandle();       // 0xe9850  sibling: build the +0x58 draw gate
 
     // base region m_0..0x2f comes from CStatusBarItem (incl. m_2c, the owner slot that

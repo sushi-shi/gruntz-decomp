@@ -186,7 +186,7 @@ void CSBI_GruntMachine::Reset() {
 // additionally flips the m_28 early-out layout (retail jle-to-end vs inline
 // return-1) plus the commutative anchor adds - operand flips don't steer it.
 RVA(0x000e8cb0, 0xc4)
-i32 CSBI_GruntMachine::Render(i32 z) {
+i32 CSBI_GruntMachine::Render() {
     if (m_28 <= 0) {
         return 1;
     }
@@ -596,7 +596,7 @@ i32 CSBI_SideTab::BuildHandle() {
 // RenderFrame arg to the literal 0 (was `z` - passing the arg forced an extra
 // `push ebx` to stage it). Residual is only the g_gameReg DIR32 name artifact.
 RVA(0x000e99c0, 0x4c)
-i32 CSBI_SideTab::Render(i32 z) {
+i32 CSBI_SideTab::Render() {
     if (m_58) {
         i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
         m_topFrame->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);

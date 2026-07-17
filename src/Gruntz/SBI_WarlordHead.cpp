@@ -129,7 +129,7 @@ i32 CSBI_WarlordHead::SetState(i32 dir) {
 // differently-named symbols (docs/patterns/reloc-typing-vptr-global.md). Same
 // plateau as CSBI_SideTab::Render (87.8%).
 RVA(0x000eb880, 0xbd)
-i32 CSBI_WarlordHead::Render(i32 z) {
+i32 CSBI_WarlordHead::Render() {
     if (m_28 <= 0) {
         return 1;
     }
