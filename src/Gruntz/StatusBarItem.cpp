@@ -21,6 +21,21 @@
 #include <Gruntz/StatusBarItem.h>
 
 // ---------------------------------------------------------------------------
+// CStatusBarItem::SetSubtype (0x1005b0) - vtable slot 10 (+0x28): arm the countdown.
+//
+// Re-homed here from SBI_MenuItem.cpp, where it was declared `CSBI_MenuItem::SetSubtype`
+// (a non-virtual, shadowing this class's `virtual void SetSubtype()` at slot 10). It is
+// the BASE's body, not the leaf's: CStatusBarItem / CSBI_Image / CSBI_MenuItem /
+// CSBI_StatzTabGruntBar ALL resolve their slot 10 to this one RVA, so nobody overrides
+// it - an inherited slot cannot be a leaf's method. It touches only m_28 (+0x28), which
+// this class owns, and 0x1005b0 sits directly below this TU's band (0x1005d0..0x100660),
+// so it is first here by RVA order.
+RVA(0x001005b0, 0x8)
+void CStatusBarItem::SetSubtype() {
+    m_28 = 2;
+}
+
+// ---------------------------------------------------------------------------
 // CStatusBarItem::CStatusBarItem()
 // Out-of-line complete-object ctor: zeroes m_4/m_8/m_24/m_28 after the vftable
 // is installed. Byte-identical to the COMDAT copy of the header's inline ctor.

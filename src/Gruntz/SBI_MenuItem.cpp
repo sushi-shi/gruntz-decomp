@@ -52,7 +52,8 @@
 // draw-clock mirror (wrap-safe gate compare).
 extern "C" u32 g_killCueClock;
 
-// CMiTabHost/CMiSelf moved to <Gruntz/SBI_MenuItem.h>.
+// CMiTabHost moved to <Gruntz/SBI_MenuItem.h>; CMiSelf is gone (it was a self-cast view
+// of slot 10, which is the real CStatusBarItem::SetSubtype).
 
 // The config host + its lookup map + record come from the shared canonical family
 // (<Gruntz/SbiConfig.h>): CDDrawSurfaceMgr / CSbiConfigMap / CSbiConfigRecord.
@@ -238,7 +239,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     }
     m_30 = frame;
     m_34 = state;
-    ((CMiSelf*)this)->Refresh();
+    SetSubtype(); // slot 10 (+0x28); the CMiSelf view called it "Refresh"
     return 1;
 }
 
@@ -312,12 +313,6 @@ i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
     }
     // QUALIFIED = the direct CSBI_Image base leg (0xe6e40); unqualified is recursion.
     return CSBI_Image::SerializeFields(ar, kind, a, b) != 0;
-}
-
-// CSBI_MenuItem::SetSubtype (0x1005b0): arm the countdown (m_28 = 2). Out-of-line (matcher-5).
-RVA(0x001005b0, 0x8)
-void CSBI_MenuItem::SetSubtype() {
-    m_28 = 2;
 }
 
 // ---------------------------------------------------------------------------

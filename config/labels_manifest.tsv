@@ -274,7 +274,7 @@ savescreenshot	1
 sbi_image	5
 sbi_imageset	5
 sbi_imagesetani	5
-sbi_menuitem	12
+sbi_menuitem	11
 sbi_rectonly	83
 sbi_rectonlybase	3
 sbi_rectonlydtor_eh	2
@@ -315,7 +315,7 @@ statemgrbz	7
 statereleaseresources	1
 statichazard	9
 statusbargamemenu	1
-statusbaritem	3
+statusbaritem	4
 statusbarmgr	1
 statusbarspriteacts	7
 statusbartabbuilders	16
