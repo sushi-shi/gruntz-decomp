@@ -577,10 +577,10 @@ i32 CSBI_SideTab::BuildHandle() {
     );
     CSprite* gm = (CSprite*)gm_ob;
     i32 glyph;
-    if (gm == 0 || val < gm->m_firstFrame || val > gm->m_lastFrame) {
+    if (gm == 0 || val < gm->m_minIndex || val > gm->m_maxIndex) {
         glyph = 0;
     } else {
-        glyph = (i32)gm->m_frames.m_pData[val];
+        glyph = (i32)gm->m_items.m_pData[val];
     }
     m_sampledValue = val;
     m_bottomFrame = (CImage*)glyph;
@@ -816,20 +816,20 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         return 0;
     }
     CImage* v;
-    if (head->m_firstFrame > 0x21 || head->m_lastFrame < 0x21) {
+    if (head->m_minIndex > 0x21 || head->m_maxIndex < 0x21) {
         v = 0;
     } else {
-        v = head->m_frames.m_pData[0x21];
+        v = head->m_items.m_pData[0x21];
     }
     m_statusGlyph = v;
     if (v == 0) {
         return 0;
     }
     CImage* w;
-    if (head->m_firstFrame > 0x22 || head->m_lastFrame < 0x22) {
+    if (head->m_minIndex > 0x22 || head->m_maxIndex < 0x22) {
         w = 0;
     } else {
-        w = head->m_frames.m_pData[0x22];
+        w = head->m_items.m_pData[0x22];
     }
     m_abilityGlyph = w;
     if (w == 0) {
@@ -845,10 +845,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         if (sel == 0) {
             return 0;
         }
-        if (m_glyphMap->m_firstFrame > 0x23 || m_glyphMap->m_lastFrame < 0x23) {
+        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
             val = 0;
         } else {
-            val = m_glyphMap->m_frames.m_pData[0x23];
+            val = m_glyphMap->m_items.m_pData[0x23];
         }
     } else {
         CSprite* sel = 0;
@@ -860,19 +860,19 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
             return 0;
         }
         CImage* x;
-        if (m_glyphMap->m_firstFrame > 0x23 || m_glyphMap->m_lastFrame < 0x23) {
+        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
             x = 0;
         } else {
-            x = m_glyphMap->m_frames.m_pData[0x23];
+            x = m_glyphMap->m_items.m_pData[0x23];
         }
         m_selectKey = x;
         if (x == 0) {
             return 0;
         }
-        if (m_glyphMap->m_firstFrame > 0x22 || m_glyphMap->m_lastFrame < 0x22) {
+        if (m_glyphMap->m_minIndex > 0x22 || m_glyphMap->m_maxIndex < 0x22) {
             val = 0;
         } else {
-            val = m_glyphMap->m_frames.m_pData[0x22];
+            val = m_glyphMap->m_items.m_pData[0x22];
         }
     }
     m_overrideGlyph = val;

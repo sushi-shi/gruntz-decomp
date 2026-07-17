@@ -232,27 +232,27 @@ i32 CSBI_StatzTabGruntBar::Update() {
     // value 0: status (glyph/value, main glyph map)
     if (m_statusValue != statusVal) {
         CSprite* gm = m_glyphMap;
-        m_statusGlyphLatched = (statusVal < gm->m_firstFrame || statusVal > gm->m_lastFrame)
+        m_statusGlyphLatched = (statusVal < gm->m_minIndex || statusVal > gm->m_maxIndex)
                                    ? 0
-                                   : gm->m_frames.m_pData[statusVal];
+                                   : gm->m_items.m_pData[statusVal];
         m_statusValue = statusVal;
         dirty = 1;
     }
     // value 1: ability (glyph/value, main glyph map)
     if (m_abilityValue != abilityVal) {
         CSprite* gm = m_glyphMap;
-        m_abilityGlyphLatched = (abilityVal < gm->m_firstFrame || abilityVal > gm->m_lastFrame)
+        m_abilityGlyphLatched = (abilityVal < gm->m_minIndex || abilityVal > gm->m_maxIndex)
                                     ? 0
-                                    : gm->m_frames.m_pData[abilityVal];
+                                    : gm->m_items.m_pData[abilityVal];
         m_abilityValue = abilityVal;
         dirty = 1;
     }
     // value 2: override (glyph/value, main glyph map)
     if (m_overrideValue != overrideVal) {
         CSprite* gm = m_glyphMap;
-        m_overrideGlyphLatched = (overrideVal < gm->m_firstFrame || overrideVal > gm->m_lastFrame)
+        m_overrideGlyphLatched = (overrideVal < gm->m_minIndex || overrideVal > gm->m_maxIndex)
                                      ? 0
-                                     : gm->m_frames.m_pData[overrideVal];
+                                     : gm->m_items.m_pData[overrideVal];
         m_overrideValue = overrideVal;
         dirty = 1;
     }
@@ -263,7 +263,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         } else {
             CSprite* gm = m_glyphMap;
             i32 key = selectVal + 0x28;
-            m_selectGlyph = (key < gm->m_firstFrame || key > gm->m_lastFrame) ? 0 : gm->m_frames.m_pData[key];
+            m_selectGlyph = (key < gm->m_minIndex || key > gm->m_maxIndex) ? 0 : gm->m_items.m_pData[key];
         }
         m_selectValue = selectVal;
         dirty = 1;
@@ -272,7 +272,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     if (m_timerValue != timerVal) {
         CSprite* gm = m_timerGlyphMap;
         m_timerGlyph =
-            (timerVal < gm->m_firstFrame || timerVal > gm->m_lastFrame) ? 0 : gm->m_frames.m_pData[timerVal];
+            (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex) ? 0 : gm->m_items.m_pData[timerVal];
         m_timerValue = timerVal;
         dirty = 1;
     }

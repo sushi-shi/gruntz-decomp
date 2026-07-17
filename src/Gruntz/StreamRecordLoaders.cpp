@@ -83,8 +83,8 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = tt->m_frames.m_pData[i];
+        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+            r = tt->m_items.m_pData[i];
         } else {
             r = 0;
         }
@@ -102,8 +102,8 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = tt->m_frames.m_pData[i];
+        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+            r = tt->m_items.m_pData[i];
         } else {
             r = 0;
         }
@@ -121,8 +121,8 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = tt->m_frames.m_pData[i];
+        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+            r = tt->m_items.m_pData[i];
         } else {
             r = 0;
         }
@@ -140,8 +140,8 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = tt->m_frames.m_pData[i];
+        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+            r = tt->m_items.m_pData[i];
         } else {
             r = 0;
         }
@@ -159,8 +159,8 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
         reg->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = tt->m_frames.m_pData[i];
+        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+            r = tt->m_items.m_pData[i];
         } else {
             r = 0;
         }

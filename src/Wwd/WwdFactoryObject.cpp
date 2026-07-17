@@ -473,7 +473,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 c->m_frameCursor = idx;
                 c->m_curFrame = seq->GetFrame(idx);
                 if (c->m_curFrame == 0) {
-                    i32 first = c->m_frameSeq->m_firstFrame;
+                    i32 first = c->m_frameSeq->m_minIndex;
                     c->m_frameCursor = first;
                     c->m_curFrame = c->m_frameSeq->GetFrame(first);
                 }
@@ -486,8 +486,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     break;
                 }
                 i32 idx = c->m_frameCursor;
-                if (idx == seq->m_firstFrame) {
-                    c->m_frameCursor = seq->m_lastFrame;
+                if (idx == seq->m_minIndex) {
+                    c->m_frameCursor = seq->m_maxIndex;
                 } else {
                     c->m_frameCursor = idx - 1;
                 }
@@ -511,7 +511,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 if (seq == 0) {
                     break;
                 }
-                i32 first = seq->m_firstFrame;
+                i32 first = seq->m_minIndex;
                 c->m_frameCursor = first;
                 c->m_curFrame = seq->GetFrame(first);
                 break;
@@ -522,7 +522,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 if (seq == 0) {
                     break;
                 }
-                i32 last = seq->m_lastFrame;
+                i32 last = seq->m_maxIndex;
                 c->m_frameCursor = last;
                 c->m_curFrame = seq->GetFrame(last);
                 break;
@@ -704,7 +704,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 2: { // advance only when the cursor reached the seq low frame
                 CAniRenderCtx* c2 = m_10;
                 CSprite* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_firstFrame) {
+                if (c2->m_frameCursor == seq->m_minIndex) {
                     goto loop_restart;
                 }
                 break;
@@ -712,7 +712,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 3: { // advance only when the cursor reached the seq high frame
                 CAniRenderCtx* c2 = m_10;
                 CSprite* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_lastFrame) {
+                if (c2->m_frameCursor == seq->m_maxIndex) {
                     goto loop_restart;
                 }
                 break;
@@ -720,7 +720,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 4: { // advance one past the seq low frame
                 CAniRenderCtx* c2 = m_10;
                 CSprite* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_firstFrame + 1) {
+                if (c2->m_frameCursor == seq->m_minIndex + 1) {
                     goto loop_restart;
                 }
                 break;
@@ -750,7 +750,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 5: { // advance only when the cursor reached one before the high frame
                 CAniRenderCtx* c2 = m_10;
                 CSprite* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_lastFrame - 1) {
+                if (c2->m_frameCursor == seq->m_maxIndex - 1) {
                     if (modeWord != 9) {
                         CAniElement* a = m_14;
                         i32 j = m_index + 1;
@@ -945,8 +945,8 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
 // obj; the CSprite frame methods live in the S1 obj, WwdGameObject.cpp).
 RVA(0x0015cc30, 0x1e)
 i32 CSprite::GetFrame(i32 n) {
-    if (n >= m_firstFrame && n <= m_lastFrame) {
-        return (i32)m_frames.m_pData[n];
+    if (n >= m_minIndex && n <= m_maxIndex) {
+        return (i32)m_items.m_pData[n];
     }
     return 0;
 }
@@ -965,10 +965,10 @@ void CAniRenderCtx::ClampFirst_15cc50() {
     if (seq == 0) {
         return;
     }
-    i32 n = seq->m_firstFrame;
+    i32 n = seq->m_minIndex;
     m_frameCursor = n;
-    if (n >= seq->m_firstFrame && n <= seq->m_lastFrame) {
-        m_curFrame = (i32)seq->m_frames.m_pData[n];
+    if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
+        m_curFrame = (i32)seq->m_items.m_pData[n];
     } else {
         m_curFrame = 0;
     }
@@ -982,10 +982,10 @@ void CAniRenderCtx::ClampLast_15cc90() {
     if (seq == 0) {
         return;
     }
-    i32 n = seq->m_lastFrame;
+    i32 n = seq->m_maxIndex;
     m_frameCursor = n;
-    if (n >= seq->m_firstFrame && n <= seq->m_lastFrame) {
-        m_curFrame = (i32)seq->m_frames.m_pData[n];
+    if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
+        m_curFrame = (i32)seq->m_items.m_pData[n];
     } else {
         m_curFrame = 0;
     }

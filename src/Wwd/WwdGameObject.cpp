@@ -181,9 +181,9 @@ void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
     m_0c->m_imageRegistry->m_10map.Lookup(name, (CObject*&)spr);
     m_sprite = spr; // +0x194 union: cached sprite
     if (spr) {
-        if (frame >= spr->m_firstFrame && frame <= spr->m_lastFrame) {
+        if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
             m_190 = frame;
-            m_layer = spr->m_frames.m_pData[frame]; // +0x198 union: frame ptr
+            m_layer = spr->m_items.m_pData[frame]; // +0x198 union: frame ptr
         } else {
             m_190 = frame;
             m_layer = 0;
@@ -202,10 +202,10 @@ void CGameObject::ApplyName(const char* name) {
     m_0c->m_imageRegistry->m_10map.Lookup(name, (CObject*&)spr);
     m_sprite = spr; // +0x194 role-union: the cached sprite (vs a trigger source-def)
     if (spr) {
-        i32 n = spr->m_firstFrame;
+        i32 n = spr->m_minIndex;
         m_190 = n; // +0x190 role-union: the cached frame number
-        if (n >= spr->m_firstFrame && n <= spr->m_lastFrame) {
-            m_layer = spr->m_frames.m_pData[n]; // +0x198 union: the frame ptr
+        if (n >= spr->m_minIndex && n <= spr->m_maxIndex) {
+            m_layer = spr->m_items.m_pData[n]; // +0x198 union: the frame ptr
             return;
         }
     }
@@ -510,8 +510,8 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
             CImage* frame;
-            if (idx >= found->m_firstFrame && idx <= found->m_lastFrame) {
-                frame = found->m_frames.m_pData[idx];
+            if (idx >= found->m_minIndex && idx <= found->m_maxIndex) {
+                frame = found->m_items.m_pData[idx];
             } else {
                 frame = 0;
             }
@@ -1243,7 +1243,7 @@ void CDDrawWorker::DeleteAll() {
 // 4th) - same wall as CreateFrame30.
 RVA(0x00151f00, 0xa4)
 CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
-    if (n < m_frames.m_nSize && m_frames.m_pData[n] != 0) {
+    if (n < m_items.m_nSize && m_items.m_pData[n] != 0) {
         return 0;
     }
     // Two casts SURVIVE here, and they are honest: they are telling us two types above them
@@ -1254,19 +1254,19 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     //                        with CDDrawWorker::InsertFrame (slot 14, the SAME rva 0x151f00 -
     //                        worth a look on its own), so retyping it ripples through that
     //                        vtable. Deferred, not bodged.
-    CImage* worker = new CImage(n, m_c);              // real frame ctor (vptr interleaved)
+    CImage* worker = new CImage(n, m_owner);              // real frame ctor (vptr interleaved)
     if (!worker->Resolve((CParseSource*)src, mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
             delete worker; // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
-    ((CObArray*)&m_frames)->SetAtGrow(n, (CObject*)worker);
-    if (n < m_firstFrame) {
-        m_firstFrame = n;
+    ((CObArray*)&m_items)->SetAtGrow(n, (CObject*)worker);
+    if (n < m_minIndex) {
+        m_minIndex = n;
     }
-    if (n > m_lastFrame) {
-        m_lastFrame = n;
+    if (n > m_maxIndex) {
+        m_maxIndex = n;
     }
     return worker;
 }

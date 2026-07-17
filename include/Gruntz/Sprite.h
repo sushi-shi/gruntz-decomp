@@ -13,6 +13,35 @@
 //     that one is IconLoaders.cpp's CIconSprite / Grunt.h's CHudSprite, NOT this.
 //
 // Only offsets + code bytes are load-bearing; field names are placeholders.
+// ============================================================================
+// FOLD IN PROGRESS - CSprite / CImageSet / CDDrawWorker ARE ONE RETAIL CLASS.
+// Stage 1-2 (naming) done; the type substitution is the remaining work.
+//
+// PROOF (all three read from the binary, no prose):
+//   * CDDrawWorker's vtable is ??_7CDDrawWorker@@6B@ @RVA 0x1efbe8 = VA 0x5efbe8,
+//     and ImageSet.h independently recorded CImageSet's vtable as @0x5efbe8 - the
+//     SAME datum (that line was prose nobody had re-measured).
+//   * That vtable's own slots are held by BOTH views: [11] 0x152110 / [12] 0x152060 /
+//     [13] 0x151fb0 are CImageSet::CreateFrame24/28/30 and [14] 0x151f00 is
+//     CSprite::InsertFrame - which is why 4 WIRING rows sit in the slot-binding
+//     baseline (the bodies exist but are declared on the views, so the vtable's
+//     relocs dangle onto non-virtual symbols of another class).
+//   * SIZE 0x6c is annotated independently on CDDrawWorker and CImageSet, and all
+//     three layouts agree offset-for-offset (owner +0x0c, CObArray +0x10 with
+//     m_pData +0x14 / m_nSize +0x18, name buffer +0x24, [min,max] +0x64/+0x68).
+//   * The seed pattern proves the range's meaning: DeleteAll seeds +0x64 = 99999
+//     and +0x68 = 0 (min=+inf / max=0) so the first insert widens [min,max].
+//
+// REMAINING (measured USR-exact with gruntz.analysis.rename_member, NOT grep):
+//   CSprite  177 member sites / 16 files;  CImageSet 188 / 17.  Plus 11 RVA-bound
+//   methods to re-home and two decisions:
+//     (a) frame access must go through the REAL MFC ::CObArray API
+//         ((CImage*)m_items.GetAt(i) / m_items.GetSize()) because MFC's m_pData is
+//         protected - the spelling WwdGameObject.cpp already matches with;
+//     (b) +0x0c is CLoadable::m_0c (i32) on the canonical but CImageParent* on both
+//         views - retyping the shared base would hit every CLoadable derivative, so
+//         the merged class needs its own typed accessor, not a cast at 4 sites.
+// ============================================================================
 #ifndef GRUNTZ_SPRITE_H
 #define GRUNTZ_SPRITE_H
 
@@ -62,11 +91,11 @@ class CImageParent; // the parent context handed to each frame worker (== CImage
 SIZE_UNKNOWN(CSprite);
 struct CSprite {
     char m_pad00[0xc];
-    CImageParent* m_c; // +0x0c  parent context handed to each frame worker (CImage frame m_parent)
-    CFrameArray m_frames;     // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
+    CImageParent* m_owner; // +0x0c  parent context handed to each frame worker (CImage frame m_parent)
+    CFrameArray m_items;     // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
     char m_name[0x64 - 0x24]; // +0x24  registry/config name (the sprite's lookup key)
-    i32 m_firstFrame;         // +0x64  first valid frame number
-    i32 m_lastFrame;          // +0x68  last valid frame number
+    i32 m_minIndex;         // +0x64  first valid frame number
+    i32 m_maxIndex;          // +0x68  last valid frame number
 
     // Insert a frame worker at frame number `n` (0x151f00); bounds-read a frame
     // pointer (0x15cc30). Bodies live in the spriteresource unit.

@@ -101,8 +101,8 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     m_active = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
-    m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1)
-                  ? (CImage*)spr->m_frames.m_pData[1]
+    m_frame = (spr && spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
+                  ? (CImage*)spr->m_items.m_pData[1]
                   : 0;
     if (!m_frame) {
         return 0;
@@ -235,23 +235,23 @@ i32 CActionOptionsMenuBar::Refresh() {
         switch (p[-4]) {
             case 1: {
                 CSprite* s = m_normChipSprite;
-                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : (i32)s->m_frames.m_pData[*p];
+                            : (i32)s->m_items.m_pData[*p];
                 break;
             }
             case 2: {
                 CSprite* s = m_highChipSprite;
-                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : (i32)s->m_frames.m_pData[*p];
+                            : (i32)s->m_items.m_pData[*p];
                 break;
             }
             case 3: {
                 CSprite* s = m_greyChipSprite;
-                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
-                            : (i32)s->m_frames.m_pData[*p];
+                            : (i32)s->m_items.m_pData[*p];
                 break;
             }
             default:
@@ -557,8 +557,8 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
         CImage* r;
-        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = (CImage*)tt->m_frames.m_pData[i];
+        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+            r = (CImage*)tt->m_items.m_pData[i];
         } else {
             r = 0;
         }
@@ -576,8 +576,8 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
         CImage* r;
-        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = tt->m_frames.m_pData[i];
+        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+            r = tt->m_items.m_pData[i];
         } else {
             r = 0;
         }
@@ -595,8 +595,8 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
         CImage* r;
-        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = tt->m_frames.m_pData[i];
+        if (tt != 0 && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
+            r = tt->m_items.m_pData[i];
         } else {
             r = 0;
         }

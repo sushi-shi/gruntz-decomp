@@ -134,8 +134,8 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     CSprite* map = obj->m_sprite;
     if (map) {
         CImage* glyph;
-        if (slot >= map->m_firstFrame && slot <= map->m_lastFrame) {
-            glyph = map->m_frames.m_pData[slot];
+        if (slot >= map->m_minIndex && slot <= map->m_maxIndex) {
+            glyph = map->m_items.m_pData[slot];
         } else {
             glyph = 0;
         }
@@ -179,8 +179,8 @@ i32 CGruntHealthSprite::HealthUpdate() {
         CSprite* holder = obj->m_sprite;
         if (holder != 0) {
             CImage* glyph;
-            if (slot >= holder->m_firstFrame && slot <= holder->m_lastFrame) {
-                glyph = holder->m_frames.m_pData[slot];
+            if (slot >= holder->m_minIndex && slot <= holder->m_maxIndex) {
+                glyph = holder->m_items.m_pData[slot];
             } else {
                 glyph = 0;
             }

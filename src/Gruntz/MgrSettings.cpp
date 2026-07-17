@@ -60,10 +60,10 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
             CObject* out = 0;
             lvl->m_imageRegistry->m_10map.Lookup(name, out);
             CSprite* rec = (CSprite*)out;
-            if (rec == 0 || index < rec->m_firstFrame || index > rec->m_lastFrame) {
+            if (rec == 0 || index < rec->m_minIndex || index > rec->m_maxIndex) {
                 m_38 = 0;
             } else {
-                m_38 = rec->m_frames.m_pData[index];
+                m_38 = rec->m_items.m_pData[index];
             }
             return 1;
         }

@@ -7,7 +7,9 @@
 // name, so the class name (CImageSet) and field names are descriptive placeholders
 // recovered from usage; the OFFSETS + code bytes are the load-bearing facts (object
 // size 0x6c, vtable @0x5efbe8, frame array @0x14 / count @0x18 / inline name @0x24 /
-// index range @0x64,0x68).
+// index range @0x64,0x68). NOTE: that "vtable @0x5efbe8" is CDDrawWorker's own
+// ??_7 (RVA 0x1efbe8) - this class IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+// see the fold-state note in <Gruntz/Sprite.h>.
 //
 // The frame element IS the RTTI CImage (`.?AVCImage@@`, vtable @0x5eaa2c). The old
 // "+0x30 does NOT line up" wall (which kept a CImageFrame/CImageFormat/

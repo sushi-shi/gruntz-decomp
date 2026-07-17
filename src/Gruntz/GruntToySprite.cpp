@@ -120,8 +120,8 @@ i32 CGruntToySprite::Update() {
         CSprite* h = r->m_sprite;
         if (h != 0) {
             CImage* mapped;
-            if (layer >= h->m_firstFrame && layer <= h->m_lastFrame) {
-                mapped = h->m_frames.m_pData[layer];
+            if (layer >= h->m_minIndex && layer <= h->m_maxIndex) {
+                mapped = h->m_items.m_pData[layer];
             } else {
                 mapped = 0;
             }
