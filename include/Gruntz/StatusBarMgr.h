@@ -399,6 +399,14 @@ public:
 
     // Engine-label backlog stubs.
     i32 BuildStatusBarTabs();
+    // 0x10a340 (body in SBI_TabzDialogEh.cpp - its own retail obj; that TU needs the
+    // out-of-line CStatusBarItem base ctor, this one inlines it). PROVEN a CStatusBarMgr
+    // method, not the ex-"CTabzBuilder" view: BuildStatusBarTabs (0xffde0) takes its own
+    // `this` into edi (`mov edi,ecx` @0xffdfc) and calls it unchanged (`mov ecx,edi;
+    // call 0x41a1` @0x100353) - same object, so the receiver is a CStatusBarMgr. The
+    // view's 16 `(CStatusBarMgr*)this` casts at its SetupImage arg1 were that identity
+    // spelling itself out.
+    i32 BuildTabzDialog();
     i32 Probe2e69(); // 0x2e69 (post-build validity probe)
     i32 Probe41a1(); // 0x41a1 (post-build validity probe)
     i32 winapi_107d00_SetRect();

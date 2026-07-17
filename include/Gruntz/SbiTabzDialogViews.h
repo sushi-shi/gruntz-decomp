@@ -43,23 +43,12 @@
 // that second ctor shape. slot 11 SetupImage takes the geometry rect BY VALUE, and the
 // call sites pass an INLINE TEMPORARY (SbRect(...)) so cl builds the struct in place.
 
-// tag 2 menu item: m_8=2, clear m_34/m_30/m_38.  vtable 0x5eab4c.
-// == retail CSBI_MenuItem; kept under a distinct name (Dlg suffix) so its emitted
-// ??_7 does not collide with the CSBI_MenuItem canonical (SBI_MenuItem.h) until that
-// leaf's slot-0/1/3/4/5 overrides are wired here (a follow-on fold, not a DIVERGENT:
-// this name is emitted only in this TU, reloc-masked against retail's 0x5eab4c stamp).
-class CSBI_MenuItemDlg : public CSBI_Image {
-public:
-    CSBI_MenuItemDlg() {
-        m_8 = 2;
-        m_34 = 0;
-        m_30 = 0;
-        m_38 = 0;
-    }
-    i32 m_34; // +0x34
-    i32 m_38; // +0x38
-}; // size 0x3c
-SIZE(CSBI_MenuItemDlg, 0x3c);
+// DISSOLVED (2026-07-17): the CSBI_MenuItemDlg view IS the canonical CSBI_MenuItem
+// (<Gruntz/SBI_MenuItem.h>) - the follow-on fold this header flagged. Retail settles it:
+// every `new` site here stamps ??_7CSBI_MenuItem@@6B@ (0x5eab4c) and inlines exactly the
+// view's ctor body, and the shapes were already identical (: CSBI_Image + m_34 + m_38,
+// size 0x3c). The view's sole unique knowledge - that inline ctor - has been migrated
+// onto the canonical, which was missing it.
 
 // The g_gameReg singleton chain (DATA 0x64556c, RVA 0x24556c). Only the fields
 // this builder reads are modeled: the mission-complete selector (m_68->m_288), the
@@ -89,40 +78,24 @@ struct TabzPlayer {
 };
 SIZE_UNKNOWN(TabzPlayer);
 
-// The host sub-object at +0xc: a two-hop RECT holder (m_c->m_24 + 0x10 = RECT).
-struct TabzRectHolder {
-    char _00[0x10];
-    RECT m_10; // +0x10
-};
-SIZE_UNKNOWN(TabzRectHolder);
-struct TabzSub {
-    char _00[0x24];
-    TabzRectHolder* m_24; // +0x24
-};
-SIZE_UNKNOWN(TabzSub);
-
-// The builder host (a CSBI_RectOnly-family status bar). Placeholder fields; only
-// the offsets are load-bearing.
-class CTabzBuilder {
-public:
-    i32 BuildTabzDialog(); // 0x10a340
-
-    char _00[0x0c];
-    TabzSub* m_c; // +0x0c
-    char _10[0xd4 - 0x10];
-    CPtrList m_d4; // +0xd4  item list (AddTail)
-    char _padd4[0x1f4 - (0xd4 + sizeof(CPtrList))];
-    CSBI_Image* m_1f4; // +0x1f4
-    CSBI_Image* m_1f8; // +0x1f8
-    CSBI_Image* m_1fc; // +0x1fc
-    CSBI_Image* m_200; // +0x200
-    char _204[0x550 - 0x204];
-    i32 m_550; // +0x550  active gate
-    i32 m_554; // +0x554  confirm-dialog selector
-    char _558[0x578 - 0x558];
-    i32 m_578; // +0x578  observe/statz-only flag
-};
-SIZE_UNKNOWN(CTabzBuilder);
+// DISSOLVED (2026-07-17): the CTabzBuilder / TabzSub / TabzRectHolder views are gone -
+// all three were fake views of classes we already model, and the builder's own casts
+// named every one of them:
+//
+//   CTabzBuilder    IS CStatusBarMgr     - BuildStatusBarTabs (0xffde0) keeps its `this`
+//                                          in edi and calls BuildTabzDialog with it
+//                                          unchanged (`mov ecx,edi; call 0x41a1`), so the
+//                                          receiver is a CStatusBarMgr. That is why the
+//                                          view cast its own `this` to CStatusBarMgr* 16x.
+//   TabzSub         IS CDDrawSurfaceMgr  - the canonical CStatusBarMgr already types +0x0c
+//                                          as CDDrawSurfaceMgr*, which is exactly what the
+//                                          view cast m_c to at every SetupImage arg2.
+//   TabzRectHolder  IS CGameLevel        - CDDrawSurfaceMgr::m_level (+0x24), whose
+//                                          m_planeCtx (LevelCoordRect, +0x10) is the rect.
+//
+// Retail proves the whole chain at 0x10a36e: `mov eax,[ebx+0xc]` (m_c) -> `mov eax,[eax+0x24]`
+// (m_level) -> `add eax,0x10` (m_planeCtx) -> four dword loads (the 4-int rect copy).
+// BuildTabzDialog now lives on CStatusBarMgr in <Gruntz/StatusBarMgr.h>.
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

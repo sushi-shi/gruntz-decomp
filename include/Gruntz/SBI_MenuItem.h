@@ -97,6 +97,26 @@ SIZE_UNKNOWN(CMiTabHost);
 // ---------------------------------------------------------------------------
 class CSBI_MenuItem : public CSBI_Image {
 public:
+    // The REAL inline default ctor. Retail has no out-of-line ??0: it INLINES this body
+    // at every `new CSBI_MenuItem` site, in exactly this store order, right after the
+    // compiler's own vptr stamp. PROVEN identically at two independent TUs' retail bytes:
+    //
+    //   statusbargamemenu.c.obj @0x85 | sbi_tabzdialog_eh.c.obj @0x53a
+    //     IMAGE_REL_I386_DIR32 ??_7CSBI_MenuItem@@6B@   <- cl's vptr store
+    //     movl $0x2, 0x8(%eax)                          <- m_8  = 2
+    //     movl %ebp, 0x34(%eax)                         <- m_34 = 0
+    //     movl %ebp, 0x30(%eax)                         <- m_30 = 0
+    //     movl %ebp, 0x38(%eax)                         <- m_38 = 0
+    //
+    // This ctor was missing from the canonical: only the ex-"CSBI_MenuItemDlg" view (in
+    // SbiTabzDialogViews.h) carried it, so every canonical `new CSBI_MenuItem` site
+    // under-emitted the four stores. Recovered here as part of dissolving that view.
+    CSBI_MenuItem() {
+        m_8 = 2;
+        m_34 = 0;
+        m_30 = 0;
+        m_38 = 0;
+    }
     // Real vtable shape (sema class: vtbl@0x1eab4c, 12 slots; overrides 0/1/3/4/5/11).
     // The out-of-line ~ (0x1007d0, calls ClearFrame2) lives in SBI_MenuItem.cpp via
     // the CHAIN-DTOR device (see StatusBarItem.h).
