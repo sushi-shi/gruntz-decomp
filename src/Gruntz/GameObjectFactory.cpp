@@ -254,7 +254,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker((i32)CreateTileSecretTrigger, "TileSecretTrigger", 4);
     CTileTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker((i32)CreateBrickz, "Brickz", 4);
-    CCheckpointTrigger::RegisterActs();
+    CBrickz::RegisterActs(); // 0x10ebe0 (ex 'CCheckpointTrigger::' - the shift-by-one)
     ctx->m_workerCache->CreateWorker((i32)CreateTileTriggerTransition, "TileTriggerTransition", 4);
     CTileTriggerTransition::RegisterActs();
     ctx->m_workerCache->CreateWorker((i32)CreateGruntStartingPoint, "GruntStartingPoint", 4);
@@ -264,7 +264,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker((i32)CreateFortressFlag, "FortressFlag", 4);
     CFortressFlag::RegisterActs();
     ctx->m_workerCache->CreateWorker((i32)CreateExitTrigger, "ExitTrigger", 4);
-    CWormhole::RegisterActs();
+    CExitTrigger::RegisterActs(); // 0x3f3f0 (ex 'CWormhole::' - CExitTrigger's act cluster)
     ctx->m_workerCache->CreateWorker((i32)CreateGiantRock, "GiantRock", 4);
     CTileTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker((i32)CreateCoveredPowerup, "CoveredPowerup", 4);
@@ -286,7 +286,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_workerCache->CreateWorker((i32)CreateDroppedObjectShadow, "DroppedObjectShadow", 4);
     CDroppedObjectShadow::RegisterActs();
     ctx->m_workerCache->CreateWorker((i32)CreateCheckpointTrigger, "CheckpointTrigger", 4);
-    CTileSecretTrigger::RegisterActs();
+    CCheckpointTrigger::RegisterActs(); // 0x10f340 (ex 'CTileSecretTrigger::')
     ctx->m_workerCache->CreateWorker((i32)CreateTeleporter, "Teleporter", 4);
     CTeleporter_RegisterActs();
     ctx->m_workerCache

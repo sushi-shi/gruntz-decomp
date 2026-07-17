@@ -25,11 +25,9 @@ public:
     CTileSecretTrigger(CGameObject* obj);      // 0x10fa60
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
-    static void InitActReg(); // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
-    void FireActivation(i32 coord); // 0x10f1e0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs();     // 0x10f340 (binds "A"/"B" handlers)
-    i32 Act_10f6a0();               // 0x10f6a0 ("A" handler)
-    i32 Act_10f970();               // 0x10f970 ("B" handler)
+    // NO own slot-4 body and no act cluster: RTTI says this class's vtable (0x1e7e64)
+    // slot 4 is INHERITED from CTileTrigger (-> 0x0034fe -> jmp 0x10e4a0). The
+    // 0x10f160.. cluster it used to claim is CCheckpointTrigger's (the shift-by-one).
 };
 
 SIZE_UNKNOWN(CGiantRock);
@@ -57,9 +55,6 @@ typedef i32 (CUserLogic::*TileTriggerHandler)();
 struct CTileTriggerActEntry {
     TileTriggerHandler m_fn;
 };
-typedef i32 (CUserLogic::*TileSecretTriggerHandler)();
-struct CTileSecretTriggerActEntry {
-    TileSecretTriggerHandler m_fn;
-};
+
 
 #endif // GRUNTZ_TILETRIGGER_H

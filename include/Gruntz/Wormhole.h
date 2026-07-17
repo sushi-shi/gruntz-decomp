@@ -3,8 +3,7 @@
 // CUserLogic teardown (the /GX leaf-dtor archetype). Split across two TUs:
 //   Wormhole.cpp      - the object logic (~CWormhole, SpawnPartners, LoadColors,
 //                       the config-rerun stubs).
-//   CWormholeActs.cpp - the activation-registration side (InitActReg / RegisterActs
-//                       / the AdvanceAnim handler PMF).
+//   WormholeActs.cpp  - now the CEXITTRIGGER act cluster (re-attributed).
 // The vtable is stamped by ~CWormhole (its key function, in Wormhole.cpp); no other
 // TU instantiates the class, so none re-emits it. Field names/offsets + code bytes
 // are load-bearing.
@@ -23,29 +22,13 @@ public:
         return LOGIC_WORMHOLE;
     } // slot 2
 public:
-    static void InitActReg();   // 0x03f210
-    static void RegisterActs(); // 0x03f3f0
-    // @identity-TODO  0x03f290 is NOT CWormhole's - the retail bytes say it is
-    // CExitTrigger's vtable slot 4: the ILT thunk at 0x0042e6 is `e9 a5 af 03 00`
-    // = `jmp 0x03f290`, and CExitTrigger's RTTI vtable (0x1e822c) slot 4 holds
-    // exactly 0x0042e6 (CWormhole's own slot 4 is 0x0034e5 -> 0x040050 below, on
-    // the SEPARATE g_wormholeDispatch registry - so CWormhole does not need, and
-    // cannot have, a second slot-4 body). Corroborated by the RVA band:
-    // ExitTrigger.cpp runs 0x3ecf0..0x3f187 and this act cluster (InitActReg
-    // 0x3f210 / this 0x3f290 / RegisterActs 0x3f3f0 / AdvanceAnim 0x3f5f0)
-    // continues it contiguously, while CWormhole's own methods start at 0x3fc70.
-    // MSVC5 has no /OPT:ICF, so 0x3f290 has exactly ONE owner. The "wormhole"
-    // naming of the cluster + g_wormholeActReg (0x6445c0) is a previous lane's
-    // guess from RVA proximity - the global's name is DATA-reloc-masked and proves
-    // nothing. Re-attributing the whole cluster (4 fns + the registry global + the
-    // entry PMF type) to CExitTrigger is a follow-up: it re-mangles 4 RVA-bound
-    // methods, which needs its own per-unit %-verification. Recipe + precedent:
-    // CToyPeek::FireActivation @0x97de0 (was CInGameIcon::RunState), done this
-    // session - byte-neutral, 100% held.
-    void FireAct(i32 coord); // 0x03f290 (act-registry PMF dispatcher, g_wormholeActReg)
+    // (The ex "CWormhole act cluster" - InitActReg 0x3f210 / FireAct 0x3f290 /
+    // RegisterActs 0x3f3f0 / AdvanceAnim 0x3f5f0 / g_wormholeActReg 0x6445c0 - is
+    // RE-ATTRIBUTED to CExitTrigger (RTTI: CExitTrigger[4] -> ILT 0x0042e6 -> jmp
+    // 0x3f290). This class's OWN slot 4 is 0x0034e5 -> 0x040050, below. See
+    // <Gruntz/ExitTrigger.h>.
     virtual void FireActivation(i32 id) OVERRIDE; // slot 4: 0x040050 (logic-command
                                                   // dispatch via g_wormholeDispatch)
-    i32 AdvanceAnim();                            // 0x03f5f0 (the per-frame handler PMF)
     CWormhole(CGameObject* obj);                  // 0x03fc70 (1-arg leaf ctor, /GX frame)
     void SpawnPartners();                         // 0x0403b0
     void LoadColors();                            // 0x0411f0
@@ -62,14 +45,7 @@ public:
 };
 VTBL(CWormhole, 0x1e817c);
 
-// The per-class activation-registry entry: its first dword receives the per-frame
-// handler PMF (AdvanceAnim; a 4-byte code ptr on this single-inheritance class).
-// Declared here (not .cpp-local) with the class it binds to (same pattern as
-// CLightFxActEntry / CTeleporterActEntry).
-typedef i32 (CUserLogic::*WormholeHandler)();
-struct CWormholeActEntry {
-    WormholeHandler m_fn;
-};
-SIZE_UNKNOWN(CWormholeActEntry);
+// (CWormholeActEntry moved to <Gruntz/ExitTrigger.h> as CExitActEntry - the act
+// cluster is CExitTrigger's.)
 
 #endif // GRUNTZ_CWORMHOLE_H

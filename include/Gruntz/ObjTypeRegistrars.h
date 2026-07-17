@@ -11,6 +11,8 @@
 #include <Gruntz/MovingLogic.h> // CMovingLogic (CProjectile base) -> pulls CUserLogic
 // The REAL grunt-HUD sprite leaves (they already declare the static RegisterActs the factory
 // calls). The old base-less shells for these four are gone - see the note below.
+#include <Gruntz/CBrickz.h>     // the REAL CBrickz (its static RegisterActs @0x10ebe0)
+#include <Gruntz/ExitTrigger.h> // the REAL CExitTrigger (its static RegisterActs @0x3f3f0)
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
@@ -57,18 +59,20 @@ struct CTileTriggerTransition : public CUserLogic {
     static void RegisterActs(); // 0x10fe70 (home: TileLogicPump.cpp)
 };
 // CTileTrigger (+ its RegisterActs @0x10e600) comes from <Gruntz/UserLogic.h>.
-struct CTileSecretTrigger : public CTileTrigger {
-    static void RegisterActs();
-};
+// (The CTileSecretTrigger shell is GONE: its "RegisterActs @0x10f340" is
+// CCheckpointTrigger's - the TileLogicPump act clusters were shifted one class.
+// CBrickz's registrar @0x10ebe0 comes from the REAL <Gruntz/CBrickz.h> included
+// above - no base-less shell: this class is MI (CUserLogic + CWapX) and a shell
+// would be a second, divergent definition.)
 struct CTileTriggerSwitch : public CUserLogic {
     static void RegisterActs();
 };
 struct CWarpStonePad : public CUserLogic {
     static void RegisterActs();
 };
-struct CWormhole : public CUserLogic {
-    static void RegisterActs();
-};
+// (CExitTrigger's registrar @0x3f3f0 comes from the REAL <Gruntz/ExitTrigger.h>
+// included above - the ex 'CWormhole' shell here declared a base-less/single-base
+// shape while the real class is MI (CUserLogic + CWapX): a divergent redefinition.)
 
 // non-RTTI helper registrars: CClass::RegisterActs()/RegisterType() -> ?..@@SAXXZ
 struct CProjActObj {
@@ -95,7 +99,7 @@ struct CEyeCandyAni {
 // shape. Including the real headers is layout-neutral (a static member changes no offset and
 // no vtable) and the mangled names the factory CALLs bind to are identical.
 struct CCheckpointTrigger {
-    static void RegisterActs();
+    static void RegisterActs(); // 0x10f340 (home: TileLogicPump.cpp; ex 'CTileSecretTrigger's')
 };
 struct CGruntCreationPoint {
     static void RegisterActs();

@@ -31,7 +31,7 @@
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
-#include <Gruntz/ActReg.h>                // CActReg archetype + CCheckpointActReg
+#include <Gruntz/ActReg.h>                // CActReg archetype
 #include <Gruntz/TileTrigger.h>           // CTileTrigger + the 3 leaves (new-sites)
 #include <Gruntz/TileTriggerSwitch.h>     // CTileTriggerSwitch (new-site)
 #include <Gruntz/WarpStonePad.h>          // CWarpStonePad (new-site)
@@ -73,13 +73,14 @@ CActReg g_tileTriggerSwitchActReg; // 0x64e798
 
 // CCheckpointTrigger's registry (@0x64e7c0; entry record in <Gruntz/CheckpointTrigger.h>).
 DATA(0x0024e7c0)
-CCheckpointActReg g_checkpointActReg; // 0x64e7c0
+CActReg g_brickzActReg; // 0x64e7c0 (ex "g_checkpointActReg" - the act clusters here
+                        // were shifted one class down; see the note at 0x10ea00)
 
 // CTileTrigger / CTileSecretTrigger's registries (@0x64e810 / @0x64e7e8).
 DATA(0x0024e810)
 CActReg g_tileTriggerActReg; // 0x64e810
 DATA(0x0024e7e8)
-CActReg g_tileSecretTriggerActReg; // 0x64e7e8
+CActReg g_checkpointActReg; // 0x64e7e8 (ex "g_tileSecretTriggerActReg" - the shift)
 // (TileTrigger/TileSecretTrigger ActEntry records live in <Gruntz/TileTrigger.h>.)
 
 // --- CTileTriggerTransition (the tiletriggertransition stray, folded waveM-strays) -----------
@@ -554,51 +555,43 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }
 
-// @identity-TODO  THE WHOLE CLUSTER BELOW (InitActReg 0x10ea00 / FireActivation
-// 0x10ea80 / RegisterActs 0x10ebe0 + its Act handlers + g_checkpointActReg +
-// CCheckpointActEntry) IS CBrickz's, NOT CCheckpointTrigger's - and the NEXT cluster
-// (0x10f160/0x10f1e0/0x10f340, filed under CTileSecretTrigger) is CCheckpointTrigger's.
-// The act clusters in this TU are shifted by one class. Retail bytes:
-//   CBrickz            RTTI vtbl 0x1e7c54 slot 4 = ILT 0x0012b2 = `e9 c9 d7 10 00`
-//                      -> jmp 0x10ea80   (this cluster's FireActivation)
-//   CCheckpointTrigger RTTI vtbl 0x1e7ebc slot 4 = ILT 0x001366 = `e9 75 de 10 00`
-//                      -> jmp 0x10f1e0   (the NEXT cluster's FireActivation)
-//   CTileSecretTrigger RTTI vtbl 0x1e7e64 slot 4 is INHERITED from CTileTrigger
-//                      (0x0034fe -> 0x10e4a0) - it has NO own slot-4 body at all,
-//                      so `CTileSecretTrigger::FireActivation @0x10f1e0` cannot exist.
-// MSVC5 has no /OPT:ICF, so each body has exactly one owner. Not fixed here because
-// it is a full cluster re-attribution: RegisterActs stores class-typed PMFs
-// (`&CTileSecretTrigger::Act_10f6a0`), so the Act handlers + entry types + registry
-// globals must move with it, through a chained rename (CCheckpointTrigger's name is
-// currently occupied by THIS cluster while it should own the next one). Several
-// members are @early-stop'd, so it needs its own per-unit %-verification.
-// The precedent + recipe: CToyPeek::FireActivation @0x97de0 (was CInGameIcon::RunState)
-// was re-attributed the same way this session - byte-neutral, 100% held.
+// RE-ATTRIBUTED (the ex @identity-TODO shift-by-one, executed): this cluster
+// (InitActReg 0x10ea00 / FireActivation 0x10ea80 / RegisterActs 0x10ebe0 +
+// g_brickzActReg + CBrickzActEntry + Trigger 0x10ede0) is CBRICKZ's, and the NEXT
+// cluster (0x10f160/0x10f1e0/0x10f340) is CCHECKPOINTTRIGGER's. Retail proof, read
+// two independent ways that agree:
+//   vtable_hierarchy (RTTI):  CBrickz[4] override -> 0x0012b2 ; CCheckpointTrigger[4]
+//                             override -> 0x001366 ; CTileSecretTrigger[4] INHERITED
+//                             -> 0x0034fe (origin CUserLogic)
+//   sema xref (jmp graph):    0x0012b2 -> jmp 0x10ea80 ; 0x001366 -> jmp 0x10f1e0 ;
+//                             0x0034fe -> jmp 0x10e4a0 (CTileTrigger::FireActivation)
+// So CTileSecretTrigger has NO own slot-4 body at all. MSVC5 has no /OPT:ICF, so each
+// body has exactly one owner.
 //
-// CCheckpointTrigger::InitActReg @0x10ea00 - construct g_checkpointActReg over [2000,2010].
+// CBrickz::InitActReg @0x10ea00 - construct g_brickzActReg over [2000,2010].
 RVA(0x0010ea00, 0x15)
-void CCheckpointTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_checkpointActReg)->Construct(2000, 2010);
+void CBrickz::InitActReg() {
+    ((CZDArrayDerived*)&g_brickzActReg)->Construct(2000, 2010);
 }
 
-// CCheckpointTrigger::FireActivation (0x10ea80), vtable slot 4 - the double-ResolveEntry
+// CBrickz::FireActivation (0x10ea80), vtable slot 4 - the double-ResolveEntry
 // + PMF-fire archetype (ResolveEntry has side effects, so re-run for the actual call).
 RVA(0x0010ea80, 0x102)
-void CCheckpointTrigger::FireActivation(i32 coord) {
-    CCheckpointActEntry* e = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
+void CBrickz::FireActivation(i32 coord) {
+    CBrickzActEntry* e = (CBrickzActEntry*)g_brickzActReg.ResolveEntry(coord);
     if (e->m_fn != 0) {
-        CCheckpointActEntry* e2 = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
+        CBrickzActEntry* e2 = (CBrickzActEntry*)g_brickzActReg.ResolveEntry(coord);
         (this->*(e2->m_fn))();
     }
 }
 
-// CCheckpointTrigger::RegisterActs (0x10ebe0) - the register-"A"-then-bind archetype.
+// CBrickz::RegisterActs (0x10ebe0) - the register-"A"-then-bind archetype.
 // @early-stop
 // register-pinning wall (docs/patterns/zero-register-pinning.md +
 // test-old-value-decrement-loop-while-postdec.md): logic + every byte faithful; only
 // the regalloc/free-loop-count materialization diverges. Deferred.
 RVA(0x0010ebe0, 0x18d)
-void CCheckpointTrigger::RegisterActs() {
+void CBrickz::RegisterActs() {
     i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
@@ -617,8 +610,8 @@ void CCheckpointTrigger::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
-        (i32 (CUserLogic::*)())&CCheckpointTrigger::Trigger;
+    ((CBrickzActEntry*)g_brickzActReg.ResolveEntry(id))->m_fn =
+        (i32 (CUserLogic::*)())&CBrickz::Trigger;
 }
 
 // CCheckpointTrigger::CCheckpointTrigger(CGameObject*) @0x10ee20 - the 1-arg leaf ctor:
@@ -674,25 +667,24 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
     }
 }
 
-// CTileSecretTrigger::InitActReg (0x10f160) - construct g_tileSecretTriggerActReg.
+// CCheckpointTrigger::InitActReg (0x10f160) - construct g_checkpointActReg.
 RVA(0x0010f160, 0x15)
-void CTileSecretTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_tileSecretTriggerActReg)->Construct(2000, 2010);
+void CCheckpointTrigger::InitActReg() {
+    ((CZDArrayDerived*)&g_checkpointActReg)->Construct(2000, 2010);
 }
 
-// CTileSecretTrigger::FireActivation (0x10f1e0), vtable slot 4.
+// CCheckpointTrigger::FireActivation (0x10f1e0), vtable slot 4 (RTTI: its slot 4 is
+// ILT 0x001366 -> jmp here; the 0x10ea80 body it used to claim is CBrickz's).
 RVA(0x0010f1e0, 0x102)
-void CTileSecretTrigger::FireActivation(i32 coord) {
-    CTileSecretTriggerActEntry* e =
-        (CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(coord);
+void CCheckpointTrigger::FireActivation(i32 coord) {
+    CCheckpointActEntry* e = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
     if (e->m_fn != 0) {
-        CTileSecretTriggerActEntry* e2 =
-            (CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(coord);
+        CCheckpointActEntry* e2 = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
         (this->*(e2->m_fn))();
     }
 }
 
-// CTileSecretTrigger::RegisterActs (0x10f340) - intern "A" and "B", bind each handler.
+// CCheckpointTrigger::RegisterActs (0x10f340) - intern "A" and "B", bind each handler.
 // @early-stop
 // register-pinning wall (docs/patterns/zero-register-pinning.md +
 // test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
@@ -700,7 +692,7 @@ void CTileSecretTrigger::FireActivation(i32 coord) {
 // handler stores match retail); residual is the slot-vs-id callee-saved register
 // choice cascading into the free-loop counts. Deferred.
 RVA(0x0010f340, 0x2ac)
-void CTileSecretTrigger::RegisterActs() {
+void CCheckpointTrigger::RegisterActs() {
     i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         id = g_typeCounter;
@@ -717,8 +709,8 @@ void CTileSecretTrigger::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id))->m_fn =
-        (i32 (CUserLogic::*)())&CTileSecretTrigger::Act_10f6a0;
+    ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
+        (i32 (CUserLogic::*)())&CCheckpointTrigger::Act_10f6a0;
 
     i32 id2 = (i32)g_buteTree.Find("B");
     if (id2 == 0) {
@@ -736,18 +728,21 @@ void CTileSecretTrigger::RegisterActs() {
         ((CString*)slot)->operator=("B");
         g_typeCounter++;
     }
-    ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id2))->m_fn =
-        (i32 (CUserLogic::*)())&CTileSecretTrigger::Act_10f970;
+    ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id2))->m_fn =
+        (i32 (CUserLogic::*)())&CCheckpointTrigger::Act_10f970;
 }
 
-// @early-stop
-// 0x10f6a0 (565 B) = CCheckpointTrigger's per-frame "A" activation handler (homed from
-// src/Stub/GapFunctions.cpp, matcher-5). Operates on the 0x94 checkpoint layout;
-// ~10 callees (FindChild, CButeTree::Find, ApplyLookupGeometry, LeafCue::PlayIfElapsed,
-// OnCheckpointReached, SpawnVoiceDriver + inline rand + a level sprite-ref hit-test).
-// Homed pending leaf-first reconstruction (>512 B).
+// @confidence: high
+// @source: vtable-slot+pmf (RegisterActs binds this RVA as the "A" handler)
+// @stub
+// 0x10f6a0 (565 B) = CCheckpointTrigger's per-frame "A" activation handler (ex the
+// free Gap_10f6a0, homed from src/Stub/GapFunctions.cpp by matcher-5). Operates on
+// the 0x94 checkpoint layout; ~10 callees (FindChild, CButeTree::Find,
+// ApplyLookupGeometry, LeafCue::PlayIfElapsed, OnCheckpointReached, SpawnVoiceDriver
+// + inline rand + a level sprite-ref hit-test). Pending leaf-first reconstruction
+// (>512 B); the empty body keeps the PMF wired to the real method symbol.
 RVA(0x0010f6a0, 0x235)
-i32 Gap_10f6a0(void) {
+i32 CCheckpointTrigger::Act_10f6a0() {
     return 0;
 }
 
@@ -882,7 +877,6 @@ i32 CTileTriggerTransition::Handler_110110() {
 SIZE_UNKNOWN(CWarpStonePadActEntry);
 SIZE_UNKNOWN(CTileTriggerSwitchActEntry);
 SIZE_UNKNOWN(CCheckpointActEntry);
-SIZE_UNKNOWN(CCheckpointActReg);
 SIZE_UNKNOWN(CTileTriggerActEntry);
-SIZE_UNKNOWN(CTileSecretTriggerActEntry);
+SIZE_UNKNOWN(CBrickzActEntry);
 // (TileActEntry's SIZE_UNKNOWN moved to <Gruntz/TileTriggerTransition.h> with the class.)

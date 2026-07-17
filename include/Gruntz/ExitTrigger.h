@@ -32,9 +32,15 @@ public:
         return LOGIC_EXITTRIGGER;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x3f040)
-    // slot 4: RTTI proves this class overrides (its own slot rva, not the base 0x246e),
-    // but the body is NOT reconstructed yet - declared-only, deliberately no definition.
-    virtual void FireActivation(i32 id) OVERRIDE;
+    // slot 4 (0x3f290, body in WormholeActs.cpp): the act-registry PMF dispatcher over
+    // g_exitTriggerActReg. RE-ATTRIBUTED from the ex "CWormhole act cluster" - RTTI:
+    // CExitTrigger[4] override -> ILT 0x0042e6, and 0x0042e6 -> jmp 0x3f290 (sema
+    // xref); the cluster's band (0x3f210..0x3f77d) also continues this class's own
+    // ExitTrigger.cpp band (0x3ecf0..0x3f187) contiguously.
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x3f290
+    static void InitActReg();   // 0x03f210 (constructs g_exitTriggerActReg @0x6445c0)
+    static void RegisterActs(); // 0x03f3f0 (binds the "A" activation handler)
+    i32 AdvanceAnim();          // 0x03f5f0 (the per-frame handler PMF; declared-only)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     CUserLogic* m_warlordLogic; // +0x54  the resolved warlord's bound logic (obj->m_7c->m_logic)
@@ -42,5 +48,15 @@ public:
 };
 VTBL(CExitTrigger, 0x001e822c);
 SIZE(CExitTrigger, 0x5c);
+
+// The activation-registry entry record (the .data CActReg row; 4-byte PMF).
+// Ex CWormholeActEntry (the act-cluster re-attribution). The PMF is typed on the
+// single-inheritance CUserLogic base: CExitTrigger itself is MI (CUserLogic + CWapX),
+// so a PMF to it would not be a 4-byte code ptr.
+typedef i32 (CUserLogic::*ExitTriggerHandler)();
+struct CExitActEntry {
+    ExitTriggerHandler m_fn;
+};
+SIZE_UNKNOWN(CExitActEntry);
 
 #endif // GRUNTZ_CEXITTRIGGER_H

@@ -11,9 +11,6 @@ MISBOUND	0x1e72b4	CUFO	2	0x0133b0	?GetTypeTag@CVoiceTrigger@@UAE?AW4LogicTypeId@
 WIRING	0x1e7324	CRainCloud	1	0x0b4cb0	?Method_b4cb0@CUFO@@QAEHPAXHHH@Z	ufo
 WIRING	0x1e7324	CRainCloud	20	0x0b4640	?ArmStrike@CPathHazard@@QAEHHH@Z	pathhazard
 WIRING	0x1e798c	CProjectile	1	0x0e0d40	?Load@CProjLoadRec@@QAEHPAVCFileMemBase@@HHPAUCGameObject@@@Z	projloadrec
-MISBOUND	0x1e7c54	CBrickz	4	0x10ea80	?FireActivation@CCheckpointTrigger@@UAEXH@Z	tilelogicpump
-MISBOUND	0x1e7ebc	CCheckpointTrigger	4	0x10f1e0	?FireActivation@CTileSecretTrigger@@UAEXH@Z	tilelogicpump
-WIRING	0x1e822c	CExitTrigger	4	0x03f290	?FireAct@CWormhole@@QAEXH@Z	wormholeacts
 WIRING	0x1e8754	CGrunt	3	0x05d210	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	userlogic
 WIRING	0x1e9634	CGruntzSingleCommand	8	0x024050	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	gruntzcmdmgr
 WIRING	0x1e9634	CGruntzSingleCommand	9	0x024140	?ApplyOne@CGruntzCommand@@QAEHPAVCPlay@@@Z	gruntzcmdmgr

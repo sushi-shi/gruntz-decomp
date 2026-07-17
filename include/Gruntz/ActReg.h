@@ -71,6 +71,7 @@ struct CLookupColl : public CActReg {};    // the outlined-lookup registries
 struct CSiblingActReg : public CActReg {}; // CUserLogic-leaf sibling registries
 SIZE_UNKNOWN(CSiblingActReg);
 struct CTeleporterActReg : public CActReg {}; // CTeleporter's registry (0x6446b0)
-struct CCheckpointActReg : public CActReg {}; // CCheckpointTrigger's registry (0x64e7c0)
+// (the empty CCheckpointActReg subclass shell is gone - the 0x64e7c0 registry is
+// CBrickz's plain CActReg, g_brickzActReg)
 
 #endif // GRUNTZ_GRUNTZ_ACTREG_H

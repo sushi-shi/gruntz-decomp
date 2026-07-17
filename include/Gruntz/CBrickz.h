@@ -33,20 +33,36 @@ public:
         return LOGIC_BRICKZ;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    // slot 4: RTTI proves this class overrides (its own slot rva, not the base 0x246e),
-    // but the body is NOT reconstructed yet - declared-only, deliberately no definition.
-    virtual void FireActivation(i32 id) OVERRIDE;
+    // slot 4 (0x10ea80, body in TileLogicPump.cpp): the act-registry PMF dispatcher
+    // over g_brickzActReg. RE-ATTRIBUTED from CCheckpointTrigger - the TileLogicPump
+    // act clusters were shifted one class down. RTTI: CBrickz[4] override -> 0x0012b2,
+    // and 0x0012b2 -> jmp 0x10ea80 (sema xref).
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x10ea80
+    static void InitActReg();   // 0x10ea00 (constructs g_brickzActReg @0x64e7c0)
+    static void RegisterActs(); // 0x10ebe0 (binds the "A" activation handler)
+    i32 Trigger();              // 0x10ede0 (the activation handler; declared-only, used as a PMF)
     // Declared-only (body 0x810f0, Brickz.cpp): load the puzzle's tile attributes.
     // Added so Play.cpp can call it on the real class instead of on the fabricated `Eng`
     // conflation (the call reloc-masks either way, but only this spelling binds to the
     // symbol retail actually calls).
     i32 LoadAttributes(i32 a, i32 b); // 0x0810f0
 
-    // CBrickz's own data begins at +0x40 (CUserLogic ends at +0x40); the 1-arg
-    // ctor touches none of it. The leaf is 0x54 (0x40 base + 0x14 own).
-    char m_own[0x54 - 0x40];
+    // No own data: the two bases already span the whole object -
+    // CUserLogic (0x34) + CWapX (0x20) == 0x54 == SIZE. The ex `m_own[0x54-0x40]`
+    // was the CWapX base spelled as padding (the pre-CWapX model thought the base
+    // ended at +0x40 and the leaf added 0x14); the CWapX sweep missed it because it
+    // was named m_own, not m_pad40. Removing it makes the body compute 0x54 exactly.
 };
 VTBL(CBrickz, 0x001e7c54);
-SIZE(CBrickz, 0x54); // 0x40 CUserLogic base + 0x14 own
+SIZE(CBrickz, 0x54); // CUserLogic (0x34) + CWapX (0x20)
+
+// The activation-registry entry record (the .data CActReg row; 4-byte PMF).
+// Ex CCheckpointActEntry (the shift-by-one re-attribution). The PMF is typed on the
+// single-inheritance CUserLogic base: CBrickz itself is MI (CUserLogic + CWapX), so a
+// PMF to it would not be a 4-byte code ptr.
+typedef i32 (CUserLogic::*BrickzHandler)();
+struct CBrickzActEntry {
+    BrickzHandler m_fn;
+};
 
 #endif // GRUNTZ_CBRICKZ_H
