@@ -296,7 +296,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_stateFlags |= 1;
     m_playFlags = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_codeA);
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_source = 0;
     m_owner = 0;
 }
@@ -333,7 +333,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_flags |= 2;
     m_38->m_stateFlags |= 1;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_codeA);
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_object->m_areaL = m_object->m_screenX - (m_object->m_extentL << 5) - 7;
@@ -403,10 +403,10 @@ void CVoiceTrigger::FireActivation(i32 coord) {
 // than retail. Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
 RVA(0x0011a500, 0x18d)
 void CVoiceTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert(s_codeA, (void*)id);
+        g_buteTree.Insert("A", (void*)id);
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -416,7 +416,7 @@ void CVoiceTrigger::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     *(void**)g_vtrigActReg.ResolveEntry(id) = (void*)&VTrigLogic_11a700;
@@ -495,7 +495,7 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     m_5c = 0;
     m_playFlags = a2;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
+    m_objAux->m_1c = g_buteTree.Find("B");
     return 1;
 }
 
@@ -509,7 +509,7 @@ RVA(0x0011a870, 0x38)
 void CGruntVoice::Reset() {
     m_sample = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_codeA);
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_playFlags = 0;
     m_source = 0;
 }
@@ -535,7 +535,7 @@ i32 CGruntVoice::Update() {
         m_source = 0;
         m_object->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find(s_codeA);
+        m_objAux->m_1c = g_buteTree.Find("A");
         m_playFlags = 0;
         return 0;
     }

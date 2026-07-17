@@ -1762,7 +1762,6 @@ i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 // retail .rdata (byte-verified at the rvas below; DATA-bound in src/Globals.cpp). Declared
 // here so the grunt TUs that strcmp against them share ONE symbol instead of each emitting
 // its own definition (which made 14 duplicate external symbols across 5 objs).
-extern char s_codeA[]; // "A" (0x0060a454)
 extern char s_codeD[]; // "D" (0x0060cca4)
 extern char s_codeF[]; // "F" (0x0060d2e8)
 extern char s_codeH[]; // "H" (0x0060d7fc)

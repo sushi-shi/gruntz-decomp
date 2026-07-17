@@ -1017,7 +1017,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "A") == 0);
     if (eq) {
         goto applyTail;
     }

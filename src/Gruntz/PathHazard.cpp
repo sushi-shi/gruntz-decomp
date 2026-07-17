@@ -305,7 +305,7 @@ i32 CPathHazard::Tick() {
                 m_legDeadline =
                     static_cast<u32>(g_frameTime); // the running game clock seeds the leg deadline
                 m_prevAnimSetNode = m_objAux->m_1c;
-                m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
+                m_objAux->m_1c = g_buteTree.Find("B");
                 return 0;
             }
             this->BeginLeg(); // virtual slot 19 (+0x4c)

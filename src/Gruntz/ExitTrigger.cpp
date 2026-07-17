@@ -85,7 +85,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 2;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_codeA);
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     if (m_object->m_latchedAnimId != 0x124f8) {

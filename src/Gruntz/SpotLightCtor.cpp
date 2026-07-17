@@ -298,7 +298,7 @@ i32 CSpotLight::Tick_0b1af0() {
             (CGrunt*)Probe_32ce(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
         if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
             m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
+            m_objAux->m_1c = g_buteTree.Find("B");
             // CGrunt's +0x10 bound geometry source (undeclared base padding; by offset).
             char* t = *(char**)((char*)tgt + 0x10);
             *(i32*)(o + 0x5c) = *(i32*)(t + 0x5c);

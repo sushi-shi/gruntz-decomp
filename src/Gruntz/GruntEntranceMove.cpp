@@ -838,7 +838,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 
     CAnimNameRecord* rec2 = g_typeColl.ScratchResolve(m_14->m_1c);
     GruntScratchTeardown();
-    if (strcmp(rec2->m_name, s_codeA) == 0) {
+    if (strcmp(rec2->m_name, "A") == 0) {
         m_prevEntranceDesc = m_154->m_1a0.m_14;
         m_154->m_1a0.Setup_15c2d0(m_poseIdle[0]);
         CAniElement* desc = m_154->m_1a0.m_14;
@@ -908,7 +908,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     }
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_buteTree.Find(s_codeA);
+    m_14->m_1c = (void*)g_buteTree.Find("A");
     SetMoveStateA(m_19c, 1, 0, 0);
     m_entranceActive = 0;
 
@@ -968,7 +968,7 @@ i32 CGrunt::StepArrivalCommit() {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "A") == 0);
     if (eq) {
         goto finalize;
     }
@@ -1506,7 +1506,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::StepAnimDispatchB() {
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "A") == 0);
     if (eq) {
         goto kArm;
     }

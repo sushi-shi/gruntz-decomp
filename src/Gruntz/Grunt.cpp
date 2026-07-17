@@ -901,7 +901,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     if (eq) {
         goto walk;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "A") == 0);
     if (eq) {
         goto idle;
     }
@@ -1922,7 +1922,7 @@ RVA(0x0005f310, 0xb5e)
 void CGrunt::MovingSlot16() {
     if (m_arrivalState != 0x11) {
         bool eq;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "A") == 0);
         if (eq && CoordCount() != 0) {
             GruntCoordNode* head = CoordHead();
             GruntCoord* co = head->m_coord;

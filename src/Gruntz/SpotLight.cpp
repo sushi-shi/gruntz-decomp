@@ -47,7 +47,7 @@ int CSpotLight::Update_0b1ee0() {
     }
     if (g_gameReg->m_cmdGrid->m_grid[m_a0 + m_9c * 15] == 0) {
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find(s_codeA);
+        m_objAux->m_1c = g_buteTree.Find("A");
     }
     return 0;
 }

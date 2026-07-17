@@ -52,24 +52,24 @@ static inline void FreeNameSlotNodes() {
 // A/B inline asymmetry + register-pinning wall (see SpotLightActReg.cpp header).
 RVA(0x00119fa0, 0x2ac)
 void RegisterActs_6514d8() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     *(void**)g_actReg_6514d8.ResolveEntry(id) = (void*)&Handler_4037bf;
 
-    i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
+    i32 id2 = (i32)g_buteTree.Find("B");
     if (id2 == 0) {
-        g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
+        g_buteTree.Insert("B", (void*)g_typeCounter);
         id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_actKeyB);
+        ((CString*)slot)->operator=("B");
         g_typeCounter++;
     }
     *(void**)g_actReg_6514d8.ResolveEntry(id2) = (void*)&Handler_402dd8;

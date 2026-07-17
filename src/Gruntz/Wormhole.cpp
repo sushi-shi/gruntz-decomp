@@ -111,8 +111,6 @@ extern "C" void WormholeTypeMarker();
 // TU's "NormalColor"/"SingleUseColor" literals - owner pool). DEFINED here; the ten
 // registration TUs + the icon/hazard headers reference it (the old `s_actKeyB`
 // name was a second alias of this same literal).
-DATA(0x0020d1bc)
-char s_actKeyB[] = "B";
 
 // (The three teleporter key strings @0x20a72c/0x20bd38/0x20d1fc were FICTIONS -- invented
 // names for cl's own folded `??_C@` literal COMDATs, not named char[] globals. Spelled
@@ -272,7 +270,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_flags |= 0x20000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_codeA);
+    m_objAux->m_1c = g_buteTree.Find("A");
     i32 kind = m_object->m_124;
     i32 color;
     if (kind == -1) {
@@ -368,11 +366,11 @@ void CWormhole::FireActivation(i32 idx) {
 // register assignment is not source-steerable.
 RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
-    i32 idx = (i32)g_buteTree.Find(s_codeA);
+    i32 idx = (i32)g_buteTree.Find("A");
     if (idx == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = s_codeA;
+        *(CString*)slot = "A";
         g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_wormholeDispatch, idx);
@@ -501,24 +499,24 @@ void CGruntPuddle::FireActivation(i32 id) {
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x000408b0, 0x2ac)
 void RegisterLogic_6445e8() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     *(void**)g_logicDispatch_6445e8.ResolveEntry(id) = (void*)&Handler_4021f8;
 
-    i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
+    i32 id2 = (i32)g_buteTree.Find("B");
     if (id2 == 0) {
-        g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
+        g_buteTree.Insert("B", (void*)g_typeCounter);
         id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_actKeyB);
+        ((CString*)slot)->operator=("B");
         g_typeCounter++;
     }
     *(void**)g_logicDispatch_6445e8.ResolveEntry(id2) = (void*)&Handler_403418;
@@ -558,7 +556,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     obj->m_drawFillArg = rec;
     m_38->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
+    m_objAux->m_1c = g_buteTree.Find("B");
     if (a1 == 0) {
         m_placed = 1;
         m_pending = 0;
@@ -759,7 +757,7 @@ i32 CWormhole::ReapplyConfig() {
     m_prevAnimNode = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_codeA);
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_54 = 1;
     m_68 = 0;
     m_38->m_stateFlags &= ~1;
@@ -841,24 +839,24 @@ void CTeleporter::FireActivation(i32 coord) {
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     *(void**)g_teleporterActReg.ResolveEntry(id) = (void*)&Handler_40187a;
 
-    i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
+    i32 id2 = (i32)g_buteTree.Find("B");
     if (id2 == 0) {
-        g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
+        g_buteTree.Insert("B", (void*)g_typeCounter);
         id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_actKeyB);
+        ((CString*)slot)->operator=("B");
         g_typeCounter++;
     }
     *(void**)g_teleporterActReg.ResolveEntry(id2) = (void*)&Handler_403846;
@@ -897,7 +895,7 @@ i32 CTeleporter::Begin() {
     m_savedGeoId = m_38->m_1a0.m_14;
     m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
+    m_objAux->m_1c = g_buteTree.Find("B");
     return 0;
 }
 

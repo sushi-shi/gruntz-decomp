@@ -62,7 +62,6 @@ struct CGameRegMapHolder {
 
 #include <Gruntz/SoundState.h> // g_sndCueTag (the cue-item id) + g_sndEnabled
 
-extern char s_actKeyB[]; // DAT_0060d1bc  (the bute key string the place path queries)
 
 extern "C" u32 g_frameTime; // DAT_00645588  (the running game clock stamped into +0x58)
 

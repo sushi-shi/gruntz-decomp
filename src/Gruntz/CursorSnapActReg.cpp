@@ -30,9 +30,9 @@ extern "C" void LogicHandler_039910();
 // the slot's old CString nodes, assign the key, bump the global counter; returns the
 // (possibly newly-allocated) action id.
 static inline i32 RegisterActionName() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
         char* slot = ActNameLookup(key);
@@ -46,7 +46,7 @@ static inline i32 RegisterActionName() {
                 nodes++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     return id;

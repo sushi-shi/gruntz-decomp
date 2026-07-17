@@ -1013,7 +1013,7 @@ i32 CGrunt::StepEntranceRelatchA() {
             CreateToySprite();
         }
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)g_buteTree.Find(s_codeA);
+        m_14->m_1c = (void*)g_buteTree.Find("A");
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
         CGameRegistry* g = g_gameReg;
@@ -1895,7 +1895,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         }
     }
 
-    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "A") == 0) {
         goto tail;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeD) == 0) {

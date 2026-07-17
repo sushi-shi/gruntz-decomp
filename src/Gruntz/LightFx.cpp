@@ -103,10 +103,10 @@ void CLightFx::FireActivation(i32 id) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x0009d320, 0x18d)
 void CLightFx::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert(s_codeA, (void*)id);
+        g_buteTree.Insert("A", (void*)id);
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -116,7 +116,7 @@ void CLightFx::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     ((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn = &CLightFx::AdvanceAnim;

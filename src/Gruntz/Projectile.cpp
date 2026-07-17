@@ -1081,8 +1081,6 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 // (0x60a454) is the "A" key. The id->name-slot resolve reuses the shared
 // Find/GetRetAddr/Insert + g_actCache/g_retAddrBreadcrumb collection methods.
 // ---------------------------------------------------------------------------
-DATA(0x0020a454)
-char s_codeA[] = "A";
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A
@@ -1155,10 +1153,10 @@ void CTimeBomb::FireActivation(i32 coord) {
 // count). Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert(s_codeA, (void*)id);
+        g_buteTree.Insert("A", (void*)id);
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -1168,7 +1166,7 @@ void CTimeBomb::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     *(void**)TBombLookup(id) = (void*)&TBombLogic_e1e60;

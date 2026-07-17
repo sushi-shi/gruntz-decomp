@@ -2133,8 +2133,8 @@ void CGrunt::FireActivation(i32 id) {
 // slot-vs-id callee-saved coloring repeated per block. Not source-steerable.
 RVA(0x0005be30, 0x9e5)
 void RegisterActs_644af0() {
-    REGISTER_KEY_644AF0(s_codeA, &CGrunt::ResolveEntranceArrival);
-    REGISTER_KEY_644AF0(s_actKeyB, &CGrunt::StepWarpExit);
+    REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
+    REGISTER_KEY_644AF0("B", &CGrunt::StepWarpExit);
     REGISTER_KEY_644AF0("C", &CGruntBehaviorLeaf::LoadGruntDecayConfig);
     REGISTER_KEY_644AF0(s_codeD, &CGrunt::StepArrivalReroll);
     REGISTER_KEY_644AF0("E", &CGrunt::UpdateGruntStatus);

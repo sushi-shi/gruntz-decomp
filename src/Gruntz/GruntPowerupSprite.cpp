@@ -82,10 +82,10 @@ void CGruntPowerupSprite::FireActivation(i32 id) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x00080180, 0x18d)
 void CGruntPowerupSprite::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert(s_codeA, (void*)id);
+        g_buteTree.Insert("A", (void*)id);
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -95,7 +95,7 @@ void CGruntPowerupSprite::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     ((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn = &CGruntPowerupSprite::Update;

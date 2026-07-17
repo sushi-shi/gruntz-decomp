@@ -236,7 +236,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     // swap the aux bute node (save old into m_30) + seed the cycle geometry
     AnimWorkerObj* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
-    aux->m_1c = g_buteTree.Find(s_codeA);
+    aux->m_1c = g_buteTree.Find("A");
     m_savedGeoId = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
@@ -649,21 +649,21 @@ void InitIconActionTable() {
 // correct; the register assignment is not source-steerable.
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
-    i32 idxA = (i32)g_buteTree.Find(s_codeA);
+    i32 idxA = (i32)g_buteTree.Find("A");
     if (idxA == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = s_codeA;
+        *(CString*)slot = "A";
         g_typeCounter++;
     }
     i32 dslotA = ResolveSlot(&g_iconActionTable, idxA);
     *(void**)dslotA = (void*)&IconAction_4023d3;
 
-    i32 idxB = (i32)g_buteTree.Find(s_actKeyB);
+    i32 idxB = (i32)g_buteTree.Find("B");
     if (idxB == 0) {
-        g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
+        g_buteTree.Insert("B", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = s_actKeyB;
+        *(CString*)slot = "B";
         g_typeCounter++;
     }
     i32 dslotB = ResolveSlot(&g_iconActionTable, idxB);
@@ -714,11 +714,11 @@ void CToyPeek::FireActivation(i32 id) {
 // source-steerable. Logic + find/insert + the fn-ptr store correct.
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
-    i32 idx = (i32)g_buteTree.Find(s_codeA);
+    i32 idx = (i32)g_buteTree.Find("A");
     if (idx == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = s_codeA;
+        *(CString*)slot = "A";
         g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_iconStateTable, idx);
@@ -949,7 +949,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         owner->m_stateFlags |= 1;
         AnimWorkerObj* aux = m_objAux;
         m_prevAnimSetNode = aux->m_1c;
-        aux->m_1c = g_buteTree.Find(s_actKeyB);
+        aux->m_1c = g_buteTree.Find("B");
         owner = m_38;
         m_driftPos = owner->m_120;
         m_driftPosHi = 0;
@@ -994,7 +994,7 @@ i32 CInGameIcon::Reposition() {
         CGameObject* r = m_38;
         r->m_stateFlags &= ~1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find(s_codeA);
+        m_objAux->m_1c = g_buteTree.Find("A");
 
         CGameRegistry* reg = g_gameReg;
         CGameObject* obj = m_object;
@@ -1179,11 +1179,11 @@ void CInGameText::FireActivation(i32 idx) {
 // correct; the register assignment is not source-steerable.
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
-    i32 idx = (i32)g_buteTree.Find(s_codeA);
+    i32 idx = (i32)g_buteTree.Find("A");
     if (idx == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *(CString*)slot = s_codeA;
+        *(CString*)slot = "A";
         g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_textDispatch, idx);

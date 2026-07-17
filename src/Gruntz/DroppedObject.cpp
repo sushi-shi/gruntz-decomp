@@ -470,9 +470,9 @@ void CObjectDropper::FireActivation(i32 actId) {
 // ebp,[eax+1]`). Identical to CAniCycle::RegisterActs. Deferred to the final sweep.
 RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
@@ -485,7 +485,7 @@ void CObjectDropper::RegisterActs() {
                 list++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     ((CDropperActEntry*)g_dropperActReg.ResolveEntry(id))->m_fn = &CObjectDropper::Update;
@@ -729,10 +729,10 @@ void CDroppedObject::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop counts. Deferred.
 RVA(0x000c6d30, 0x2ac)
 void CDroppedObject::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert(s_codeA, (void*)id);
+        g_buteTree.Insert("A", (void*)id);
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -742,15 +742,15 @@ void CDroppedObject::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     *(void**)DropLookup(id) = (void*)&DropActA_c7090;
 
-    i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
+    i32 id2 = (i32)g_buteTree.Find("B");
     if (id2 == 0) {
         id2 = g_typeCounter;
-        g_buteTree.Insert(s_actKeyB, (void*)id2);
+        g_buteTree.Insert("B", (void*)id2);
         char* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -760,7 +760,7 @@ void CDroppedObject::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyB);
+        ((CString*)slot)->operator=("B");
         g_typeCounter++;
     }
     *(void**)DropLookup(id2) = (void*)&DropActB_c7be0;
@@ -855,7 +855,7 @@ i32 CDroppedObject::ActA() {
         m_savedGeoId = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
+        m_objAux->m_1c = g_buteTree.Find("B");
         g_gameReg->m_cmdGrid->CombatCue(m_object->m_screenX, m_landY, 1, 7, -1);
         return 0;
     }
@@ -962,9 +962,9 @@ void CDroppedObjectShadow::FireActivation(i32 coord) {
 // byte byte-faithful; only the regalloc/free-loop-count materialization diverges).
 RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
-        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
         char* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
@@ -977,7 +977,7 @@ void CDroppedObjectShadow::RegisterActs() {
                 list++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     ((CShadowActEntry*)g_shadowActReg.ResolveEntry(id))->m_fn = &CDroppedObjectShadow::Advance;

@@ -208,10 +208,10 @@ void CToobSpikez::FireActivation(i32 coord) {
 // than retail. Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
 RVA(0x001149c0, 0x18d)
 void CToobSpikez::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert(s_codeA, (void*)id);
+        g_buteTree.Insert("A", (void*)id);
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -221,7 +221,7 @@ void CToobSpikez::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     *(void**)g_toobColl.ResolveEntry(id) = (void*)&ToobLogic_114bc0;

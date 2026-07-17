@@ -75,7 +75,6 @@ extern const double g_pathOne; // VA 0x5ea410
 
 // The "B" bute key the new-leg path query passes (0x60d1bc) - the SAME rdata as
 // CInGameIcon.h's s_actKeyB; reuse the identical declaration so the reloc pairs.
-extern char s_actKeyB[]; // DAT_0060d1bc
 
 // g_buteTree (the global bute store) is declared canonically in <Bute/ButeTree.h>,
 // reached here transitively via <Bute/ButeMgr.h>.

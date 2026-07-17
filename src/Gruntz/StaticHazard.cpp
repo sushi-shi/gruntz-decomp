@@ -264,10 +264,10 @@ void CStaticHazard::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop counts. Deferred.
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_codeA);
+    i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert(s_codeA, (void*)id);
+        g_buteTree.Insert("A", (void*)id);
         char* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -277,15 +277,15 @@ void CStaticHazard::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_codeA);
+        ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
     ((CHaznEntry2*)HaznLookup(id))->m_fn = &CStaticHazard::LoadAttributes2;
 
-    i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
+    i32 id2 = (i32)g_buteTree.Find("B");
     if (id2 == 0) {
         id2 = g_typeCounter;
-        g_buteTree.Insert(s_actKeyB, (void*)id2);
+        g_buteTree.Insert("B", (void*)id2);
         char* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
         void** list = (void**)g_typeColl.m_alloc;
@@ -295,7 +295,7 @@ void CStaticHazard::RegisterActs() {
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyB);
+        ((CString*)slot)->operator=("B");
         g_typeCounter++;
     }
     ((CHaznEntry2*)HaznLookup(id2))->m_fn = &CStaticHazard::LoadAttributes;

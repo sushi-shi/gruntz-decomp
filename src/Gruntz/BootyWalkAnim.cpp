@@ -160,7 +160,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                                 letter = "W";
                                 break;
                             case 1:
-                                letter = s_codeA;
+                                letter = "A";
                                 break;
                             case 2:
                                 letter = "R";
@@ -234,7 +234,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     letter = "W";
                     break;
                 case 1:
-                    letter = s_codeA;
+                    letter = "A";
                     break;
                 case 2:
                     letter = "R";
