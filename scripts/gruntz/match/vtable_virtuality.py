@@ -135,11 +135,20 @@ def main() -> int:
                 pass
 
     violations = []
+    unverifiable = []
     checked = 0
     for name, rva, path, ln in source_vtbls():
         if rva in lib_rvas:
             continue
-        n_slots = sizes.get(rva, 1)
+        # No scan size = we do not know how many slots to require. The old default of 1
+        # was a GUESS that silently made the check vacuous for that vtable (any class with
+        # a single virtual passes a 1-slot requirement). Nothing to compare -> say so and
+        # skip, rather than assert against a number nobody measured. 0 cases today; it
+        # stays 0 only because someone looks.
+        if rva not in sizes:
+            unverifiable.append((name, rva, path, ln))
+            continue
+        n_slots = sizes[rva]
         checked += 1
         if name not in classes:
             violations.append((name, rva, n_slots, 0, "no class definition (fabricated name)", path, ln))
@@ -162,6 +171,12 @@ def main() -> int:
             print(f"  0x{rva:06x} {name:24} slots={slots:<3} virtuals={nv:<3} {why}", file=sys.stderr)
         return 1
     print(f"vtable-virtuality: all {checked} source-bound vtables modelled by real virtuals")
+    if unverifiable:
+        print(f"    ({len(unverifiable)} VTBL'd rva(s) UNVERIFIABLE - vtable_scan found no "
+              f"vtable there, so the slot count is unknown and nothing was asserted; "
+              f"vtable_coverage owns that binding)")
+        for name, rva, path, ln in sorted(unverifiable, key=lambda v: v[1]):
+            print(f"      0x{rva:06x} {name}")
     return 0
 
 

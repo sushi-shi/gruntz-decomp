@@ -210,20 +210,15 @@ def summarize(report: dict, full: bool = True) -> None:
     # work (e.g. the inline-header migration) drops matched+total together - the quality
     # held. Track/print the peak so matchers judge by MAX %, not the raw count, and don't
     # panic (or revert correct work) when the absolute number dips. Never break the report.
+    # The ratchet lives in gruntz.match.high_water: a bare `max(prev, cur)` absorbed a
+    # 0/0 report's published 100% and pinned this file at 100.0000 forever (bb4d94cef),
+    # so a reading is only allowed to raise the peak when it covers a comparable
+    # population. See that module's docstring.
     try:
-        maxf = REPO / "config" / "match-max.tsv"
-        cur = float(m.get("fuzzy_match_percent", 0.0) or 0.0)
-        prev = float(maxf.read_text().split()[0]) if maxf.is_file() else cur
-        peak = max(prev, cur)
-        if peak > prev + 0.005:
-            note = f"NEW HIGH (+{peak - prev:.2f})"
-        elif cur < peak - 0.005:
-            note = (f"unchanged; current {cur:.2f}% is a transient structural dip "
-                    "(inlined members re-match as their vtable-TU coverage lands)")
-        else:
-            note = "unchanged"
+        from gruntz.match.high_water import update as _hw_update
+        peak, note, _wrote = _hw_update(float(m.get("fuzzy_match_percent", 0.0) or 0.0),
+                                        _i(m.get("total_functions")))
         print(f"  MAX %: {peak:.2f}% fuzzy (high-water) - {note}")
-        maxf.write_text(f"{peak:.4f}\n")
     except Exception as exc:  # never let the high-water probe break a build report
         print(f"  MAX %: (unavailable: {exc})")
     # Cleanliness scoreboard - part of the report so agents see their cast /
@@ -277,6 +272,7 @@ def cmd_build(args) -> None:
     if not (REPO / "build.ninja").exists():
         run([sys.executable, str(CONFIGURE)])
     _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
+    _ensure_compdb_fresh()                            # cheap, idempotent (unit list moved?)
     if not GHIDRA_FUNCTIONS.exists():
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
     ninja = tool("ninja")
@@ -290,18 +286,32 @@ def cmd_build(args) -> None:
         (OBJDIFF_DIR / ".delink.stamp").unlink(missing_ok=True)
         log("force-delink: removed delink stamp -> delink will re-run this build.")
 
-    # ninja builds the objs AND report.json in-graph (only what changed). Gate the
-    # feedback tail on whether report.json actually moved: a no-op build refreshes
-    # nothing, so there is nothing to summarize/check and `gruntz build` returns
-    # near-instantly. Everything below is non-fatal reporting, not part of the build.
+    # ninja builds the objs AND report.json in-graph (only what changed).
+    #
+    # This used to RETURN here when report.json had not moved ("a no-op build refreshes
+    # nothing, so there is nothing to summarize/check"), which made `gruntz build` exit 0
+    # having run ZERO gates. That reasoning holds for the objdiff summary and for nothing
+    # else: the FATAL gates below read SOURCE, not report.json. verify_stubs, class_sizes,
+    # vtable_bans, class_vtables, vtable_virtuality and the VTBL/uniqueness asserts all
+    # scan src/ + include/ + config/ - so the ONLY edits they exist to catch (an @stub tag,
+    # a SIZE(), a VTBL() binding, a header layout) are exactly the edits that need not
+    # produce a byte of new codegen. The check was therefore skipped precisely when it was
+    # the only thing that could fail, and "the build passed" could mean "nothing was
+    # checked". Measured: an @stub metadata fix + a header edit -> ninja no-op -> exit 0,
+    # gates never ran.
+    #
+    # So: a no-op is now reported, not returned on. The gate tail is ~20s; the fast inner
+    # loop is `--fast`, which skips it deliberately and says so.
     before = REPORT.stat().st_mtime if REPORT.exists() else 0
     ninja_t0 = time.monotonic()
     run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
     ninja_s = time.monotonic() - ninja_t0
-    if (REPORT.stat().st_mtime if REPORT.exists() else 0) == before:
-        log("up to date - nothing rebuilt.")
-        _record_build_time("noop", time.monotonic() - build_start, ninja_s, 0.0)
-        return
+    noop = (REPORT.stat().st_mtime if REPORT.exists() else 0) == before
+    if noop:
+        log("up to date - nothing rebuilt (running the source gates anyway; they read "
+            "src/, not report.json).")
+    if not REPORT.exists():
+        die("no objdiff report - the build did not produce build/objdiff/report.json.")
 
     # Fast inner loop: show the objdiff %% and stop. The structural gates below
     # (verify_stubs / class_sizes / vtable_* / uniqueness, ~20s of fresh-interpreter
@@ -315,6 +325,14 @@ def cmd_build(args) -> None:
         return
     gates_t0 = time.monotonic()   # gate-tail start (full build only)
 
+    # Gate 0: the gates' own NEGATIVE CONTROLS (~0.01s, hermetic - no build artifacts).
+    # Every gate below reports a number, and a gate nobody has watched FAIL reports it
+    # whether or not it is true: vtable_slot_binding's baseline once parsed as empty (so it
+    # passed everything), class_sizes read SIZE() out of a COMMENT (so it failed correct
+    # code), and the MAX-% ratchet absorbed a 0/0 report's 100% and pinned itself there
+    # forever. Each of those is now a test that fails against the code that shipped it.
+    # This runs FIRST: if the checks are broken, their verdicts below are worthless.
+    run([sys.executable, "-m", "gruntz.match.gate_selftest"])
     # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
     # so this is the only check on its address uniqueness + format.
     run([sys.executable, "-m", "gruntz.match.verify_stubs"])
@@ -499,6 +517,11 @@ def cmd_structs(args) -> None:
     run(cmd)
 
 
+def cmd_gate_selftest(args) -> None:
+    """Run the gates' negative controls (also gate 0 of every full build)."""
+    run([sys.executable, "-m", "gruntz.match.gate_selftest", "-v"])
+
+
 def cmd_ghidra_refresh(args) -> None:
     """Part-2 loop: push generated names/structs/enums into the Ghidra DB, then
     re-export the functions.csv/symbols.csv the delink consumes.
@@ -564,6 +587,33 @@ def cmd_capture(args) -> None:
          str(GHIDRA_EXPORT_USER), "--no-analyze"])
     log("capture done: human edits -> config/user_annotations.json "
         "(commit it to persist across clean rebuilds).")
+
+
+def _ensure_compdb_fresh() -> None:
+    """Regenerate build/clangd/compile_commands.json when config/units.toml is newer.
+
+    The compdb is a GENERATED artifact with no ninja edge: only `gruntz init` / `gruntz
+    clangd` write it, and nothing re-runs them. So it silently describes the unit list as
+    it was at init time - and a unit ADDED or DELETED since then leaves it wrong, with no
+    error from anything that reads it.
+
+    That is not hypothetical. `ShowMultiDlg.cpp` was deleted in d34f5af3f; every worktree
+    initialised before that kept a compdb entry for the dead file, so
+    ghidra_metadata_generate could not compile it, correctly refused to emit a partial
+    structs.json - and `gruntz build` died there, on a file the tree no longer has. With
+    structs.json frozen, the class_sizes CORRECTNESS gate then refused to answer for as
+    long as the compdb stayed stale.
+
+    Regenerating costs ~0.5s (it emits JSON from units.toml; nothing is compiled), so
+    just keep it honest on every build, like the retail copy below.
+    """
+    compdb = REPO / "build" / "clangd" / "compile_commands.json"
+    manifest = REPO / "config" / "units.toml"
+    if compdb.is_file() and manifest.is_file() and compdb.stat().st_mtime >= manifest.stat().st_mtime:
+        return
+    log("compile DB is older than config/units.toml - regenerating (cheap) ...")
+    subprocess.run([sys.executable, str(INIT / "clangd.py")], cwd=str(REPO),
+                   stdout=subprocess.DEVNULL, env=_pkg_env())
 
 
 def _ensure_retail_copy() -> None:
@@ -1588,6 +1638,9 @@ def main() -> None:
     s = sub.add_parser("structs", help="regenerate structs.json + enums.json")
     s.add_argument("--tu", action="append", default=[])
     s.set_defaults(func=cmd_structs)
+
+    sub.add_parser("gate-selftest", help="negative controls: prove the build gates can FAIL"
+                   ).set_defaults(func=cmd_gate_selftest)
 
     sub.add_parser("ghidra-refresh", help="apply generated data to Ghidra + re-export"
                    ).set_defaults(func=cmd_ghidra_refresh)

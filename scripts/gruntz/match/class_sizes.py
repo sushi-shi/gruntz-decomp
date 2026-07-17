@@ -38,8 +38,8 @@ from pathlib import Path
 
 import sys
 
-from gruntz.match.class_meta import (iter_class_defs, rel, size_annotated_names,
-                                     source_files, unique_class_defs)
+from gruntz.match.class_meta import (_blank_comments, iter_class_defs, rel,
+                                     size_annotated_names, source_files, unique_class_defs)
 
 _SIZE_DECL_RE = re.compile(r"\bSIZE\(\s*(\w+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*\)")
 _REPO = Path(__file__).resolve().parents[3]
@@ -48,26 +48,41 @@ _STRUCTS = _REPO / "build/gen/structs.json"
 
 # A SIZE() written in PROSE is not a declaration. Without this, a note like
 # `// (2) SIZE(CUserLogic, 0x30) revisited - a base at +0x34 requires ...` parses as a
-# real decl, and since `out[name]` overwrites, whichever file sorts last WINS - so a
-# comment silently overrode the true `SIZE(CUserLogic, 0x34)` and turned this FATAL gate
-# red against correct code. Strip comments before matching (same rule the cleanliness
-# metrics use). Real decls are also reported per-name below when multiply-defined.
-_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
-_LINE_COMMENT = re.compile(r"//[^\n]*")
-
-
-def _strip_comments(text: str) -> str:
-    return _LINE_COMMENT.sub("", _BLOCK_COMMENT.sub("", text))
-
-
+# real decl and silently overrode the true `SIZE(CUserLogic, 0x34)`, turning this FATAL
+# gate red against correct code.
+#
+# Comments are blanked with class_meta._blank_comments - the SAME state machine
+# class_meta's own SIZE scan (the COMPLETENESS half of this gate) uses. This file used to
+# carry a private regex stripper, which meant the two halves of one gate disagreed about
+# what a declaration IS: the naive `//`-regex also treats a `//` INSIDE a string literal
+# as a comment start and eats the rest of the line. One definition of "code", one scanner.
 def _declared_sizes() -> dict:
-    out = {}
+    """{class: size} for every REAL SIZE(C, N) declaration.
+
+    Conflicting duplicates are an ERROR, not a last-writer-wins race. `out[name] = ...`
+    is precisely what let a comment beat a real decl: the loser was silent, so the gate
+    reported a number nobody wrote. Two REAL decls disagreeing about one class is the
+    same defect wearing different clothes - the tree states two sizes for one layout and
+    the gate must not pick one. Agreeing duplicates are fine (one class, restated).
+    """
+    seen: dict = defaultdict(dict)     # name -> {value: [locations]}
     for path in source_files():
-        code = _strip_comments(path.read_text(errors="ignore"))
+        code = _blank_comments(path.read_text(errors="ignore"))
         for m in _SIZE_DECL_RE.finditer(code):
             n = m.group(2)
-            out[m.group(1)] = int(n, 16 if n.startswith("0x") else 10)
-    return out
+            val = int(n, 16 if n.startswith("0x") else 10)
+            seen[m.group(1)].setdefault(val, []).append(
+                f"{rel(path)}:{code.count(chr(10), 0, m.start()) + 1}")
+    conflicts = {c: v for c, v in seen.items() if len(v) > 1}
+    if conflicts:
+        print(f"class-size correctness: {len(conflicts)} class(es) DECLARE CONFLICTING "
+              f"SIZE()s - the tree states two sizes for one layout; this gate will not "
+              f"pick a winner:", file=sys.stderr)
+        for c, vals in sorted(conflicts.items()):
+            for val, locs in sorted(vals.items()):
+                print(f"  {c}: SIZE 0x{val:x} at {', '.join(locs)}", file=sys.stderr)
+        raise SystemExit(1)
+    return {c: next(iter(v)) for c, v in seen.items()}
 
 
 def _stale_sources() -> list:
@@ -108,11 +123,20 @@ def _loadbearing() -> set:
     their sizeof, so the short body can never reach the instruction stream. The moment a
     class is `new`ed, its sizeof becomes the operator-new immediate and a short body is a
     hard byte bug (CFaderRadial, CHelpState).
+
+    PROSE IS NOT CODE - and this predicate decides which side of that line a class falls on,
+    so reading prose here ESCALATES a documented partial model into a FATAL "wrong
+    operator-new immediate" failure. English is full of `new <noun>`: scanning the raw text
+    matched 134 phantom "load-bearing" names of 354 (`a new object`, `the new tile`, `new
+    fader`, ...), among them real classes - CGameMgr, CObject, CFile, CImageOwned,
+    CAniCycle. None of them is `new`ed in code; every one of them was one SIZE mismatch away
+    from turning this gate red against correct code. Same rule as the SIZE scan above: blank
+    comments (and never trust `//` inside a string) before matching.
     """
     names = set()
     pat = re.compile(r"\bnew\s+([A-Za-z_]\w*)|\bsizeof\s*\(\s*([A-Za-z_]\w*)\s*\)")
     for path in source_files():
-        for m in pat.finditer(path.read_text(errors="ignore")):
+        for m in pat.finditer(_blank_comments(path.read_text(errors="ignore"))):
             names.add(m.group(1) or m.group(2))
     return names
 

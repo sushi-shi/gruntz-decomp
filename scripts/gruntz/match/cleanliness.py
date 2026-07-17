@@ -198,7 +198,13 @@ def _caller_callee_counts() -> dict[str, int]:
             [sys.executable, "-m", "gruntz.analysis.caller_callee", "--metric"],
             capture_output=True, text=True, timeout=600, cwd=str(REPO),
         ).stdout
-    except Exception:
+    except Exception as exc:
+        # Say so. Returning {} drops these rows from the scoreboard, and a silently
+        # absent ratcheted metric is indistinguishable from a clean 0 (see
+        # merge_baseline_downonly, which now preserves the floor rather than dropping it).
+        print(f"  cleanliness: caller-callee metrics UNMEASURED ({type(exc).__name__}: "
+              f"{exc}) - their baseline floors are carried forward, not re-blessed",
+              file=sys.stderr)
         return {}
     res: dict[str, int] = {}
     for line in out.splitlines():
@@ -273,13 +279,30 @@ def merge_baseline_downonly(rows: list[tuple[str, int]]) -> list[tuple[str, int]
     min(new count, committed floor) so a regression stays visible as debt on every
     later build instead of being silently blessed into the floor; other (tracked,
     non-ratcheted) metrics roll forward as before. Manual ``--update`` still writes
-    the true counts (the one deliberate way to bless a floor - only ever lower)."""
+    the true counts (the one deliberate way to bless a floor - only ever lower).
+
+    A label MISSING from `rows` keeps its committed floor instead of being dropped.
+    An UNMEASURED metric is not a measurement of zero, and dropping its row deletes
+    the floor: `count()` only appends the caller-callee rows when
+    ``_caller_callee_counts()`` returns them, and that helper swallows EVERY exception
+    (it shells out with a 600s timeout and returns {} on any failure). Since
+    ``gruntz build`` calls ``save_baseline(merge_baseline_downonly(count()))`` on every
+    full build, ONE flaky/timed-out caller_callee run used to rewrite the baseline
+    without ``caller-callee FAKE-VIEW`` - erasing its 0 floor, after which any
+    regression reads as a brand-new metric with no delta and no ratchet. Carry the
+    floor forward; a metric we could not measure is reported as unmeasured, never
+    blessed away.
+    """
     base = load_baseline()
     out = []
     for label, n in rows:
         if label in _RATCHET and label in base:
             out.append((label, min(n, base[label])))
         else:
+            out.append((label, n))
+    measured = {label for label, _ in rows}
+    for label, n in base.items():
+        if label not in measured:
             out.append((label, n))
     return out
 
