@@ -18,7 +18,7 @@
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>  // the shared +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZDArrayDerived.h>
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
@@ -124,8 +124,11 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame. Byte-identical in shape to the established leaf
 // dtors (UserLogic.cpp 0x10ab0 / 0x11540); the empty body is enough for cl.
-RVA(0x00013100, 0x44)
-CKitchenSlime::~CKitchenSlime() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CKitchenSlime() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CKitchenSlime@@UAE@XZ 0x00013100 0x44
 
 // The global bute store the ctor binds the "A" node through (g_buteTree @0x6bf620;
 // Find 0x16d190). Declared here so the ctor's lookup reloc-masks.
@@ -152,8 +155,7 @@ CKitchenSlime::~CKitchenSlime() {}
 // alloc, the cmov-vs-branch min/max selection polarity, and the /GX leaf-vptr
 // re-stamp position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000b23a0, 0x3f8)
-CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
 
     CGameObject* o = m_object;
@@ -204,7 +206,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     o->m_areaL = 0;
     o->m_areaR = 0;
@@ -447,7 +449,7 @@ i32 CKitchenSlime::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    return ((CSerialObjRef*)(B + 0x34))->Chain(stream, tag, c, (CGameObject*)d)
+    return Chain(stream, tag, c, (CGameObject*)d)
            != 0;
 }
 

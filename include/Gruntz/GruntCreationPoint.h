@@ -21,14 +21,13 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CGruntCreationPoint : CUserLogic)
 
-class CGruntCreationPoint : public CUserLogic {
+class CGruntCreationPoint : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000106e0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTCREATIONPOINT;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CGruntCreationPoint(CGameObject* obj); // 0x3e520 (folds CUserLogic(obj) + tail)
     // Construct the class's activation-coordinate registry (g_creationPointActReg
@@ -45,11 +44,8 @@ public:
     // dispatch it on `this`. Same archetype as CParticlez::FireActivation.
     virtual void FireActivation(i32 id) OVERRIDE; // 0x03e960
     i32 AdvanceAnim(); // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
-    virtual ~CGruntCreationPoint() OVERRIDE; // 0x010730 (folds the CUserLogic teardown)
-
-    CAniElement* m_savedGeoId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
-    char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from
-                               //         AnimWorkerHandlers `new CGruntCreationPoint`)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CGruntCreationPoint, 0x1e81d4);
 SIZE(CGruntCreationPoint, 0x54);

@@ -20,7 +20,7 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free); typedef CGrunt CTmCell
 #include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver @0x11b3b0)
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_13400 (CUFO fold-flat leaf dtor, RVA-homed here)
-#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/ActName.h> // CActName (shared)
 #include <Gruntz/ActReg.h> // CActReg - the ONE registry archetype (subsumes the old per-field globals)
@@ -139,6 +139,11 @@ extern i32 VTrigLogic_11a700();
 // those intermediate stamps -> byte-proven crater to 4.7%. This flat `: CUserLogic`
 // L_13400 model is the SAME faithful shape as the sibling CPathHazard leaf. 100%
 // byte-exact. A future pass could rename to CUFO by remodeling Ufo.h as a flat leaf.
+// Kept an EXPLICIT dtor body (not the implicit+pin form the CWapX-converted leaves
+// use): nothing constructs an L_13400, so no TU emits its vtable/??_G and an implicit
+// dtor would have no emitter for a pin to bind to. Its class is also NOT CWapX-converted
+// (unresolved identity - see BoundaryLeafLogicViews.h), so no base EH state exists to
+// block the restamp elision: the explicit body stays byte-exact here.
 RVA(0x00013400, 0x44)
 L_13400::~L_13400() {}
 
@@ -157,7 +162,7 @@ i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CVoiceTrigger::~CVoiceTrigger @0x0135a0 - the leaf adds no destructible members
@@ -168,8 +173,11 @@ i32 CVoiceTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl. It is also
 // the out-of-line virtual key function, so cl emits ??_7CVoiceTrigger@@6B@
 // (0x5e885c) directly - no manual g_voiceTriggerVtbl extern.
-RVA(0x000135a0, 0x44)
-CVoiceTrigger::~CVoiceTrigger() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CVoiceTrigger() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CVoiceTrigger@@UAE@XZ 0x000135a0 0x44
 
 // GruntVoiceStep @0x119620 - the CGruntVoice worker-pump (free __cdecl, /GX): the
 // controller lives at obj->m_7c; dispatch on its state id, building the CGruntVoice
@@ -276,8 +284,7 @@ i32 VoiceTriggerStep(CGameObject* obj) {
 // (states 3/4 around ApplyName) differently than retail. Logic complete; the same
 // store-schedule + eh-state walls the sibling Setup (0x11a7e0) carries. Final sweep.
 RVA(0x001198a0, 0x195)
-CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_icon = 0;
     m_5c = 0;
     m_durationMs = 0;
@@ -308,8 +315,11 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj) {
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
 // (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. The empty body is enough.
-RVA(0x00119ae0, 0x44)
-CGruntVoice::~CGruntVoice() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntVoice() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntVoice@@UAE@XZ 0x00119ae0 0x44
 
 // CVoiceTrigger::CVoiceTrigger(CGameObject*) @0x119b50 - the 1-arg leaf ctor: the
 // standard CUserLogic(obj) init (folded inline) plus the voice-trigger tail - cl
@@ -328,8 +338,7 @@ CGruntVoice::~CGruntVoice() {}
 // byte-AND codegen pick. The SAME plateau as CTimeBomb / the other bute ctors; not
 // source-steerable. Parked for the final sweep.
 RVA(0x00119b50, 0x1ce)
-CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_38->m_stateFlags |= 1;
     m_prevAnimSetNode = m_objAux->m_1c;

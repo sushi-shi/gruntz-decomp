@@ -23,7 +23,7 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
-#include <Gruntz/SerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
 // CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
@@ -41,17 +41,17 @@ typedef CFileMemBase CSerialArchive;
 // The dtor (0x12f80) adds no destructible members, so it folds the bare
 // CUserLogic teardown.
 // ---------------------------------------------------------------------------
-class CRollingBall : public CUserLogic {
+class CRollingBall : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012f30, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_ROLLINGBALL;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CRollingBall(CGameObject* obj);   // 0x0af820 (folds CUserLogic(obj) + the ball setup)
-    virtual ~CRollingBall() OVERRIDE; // 0x012f80 (folds the bare CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     // Construct the class's activation-coordinate registry (g_rollingBallActReg
     // @0x6461b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
@@ -66,8 +66,7 @@ public:
     i32 Update(); // 0x0b0140
 
     // --- CRollingBall own fields (offsets load-bearing) ---
-    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id
-    char m_pad44[0x58 - 0x44]; // CUserLogic ends +0x40
+    char m_pad54[0x58 - 0x54]; // CUserLogic ends +0x40
     double m_moveSpeed;        // +0x58  per-frame speed (numerator / RollingBallTimePerTile)
     double m_subX;             // +0x60  sub-tile X position
     double m_subY;             // +0x68  sub-tile Y position
@@ -89,7 +88,7 @@ VTBL(CRollingBall, 0x1e86fc);
 // The class's activation-registry entry record: its first dword receives the
 // per-frame handler PMF (Update, a 4-byte code ptr on this single-inheritance
 // class). Declared AFTER the complete class so the PMF stays 4 bytes.
-typedef i32 (CRollingBall::*RollingBallHandler)();
+typedef i32 (CUserLogic::*RollingBallHandler)();
 struct CRollingBallActEntry {
     RollingBallHandler m_fn;
 };

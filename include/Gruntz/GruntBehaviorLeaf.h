@@ -35,7 +35,9 @@
 SIZE_UNKNOWN(CGruntBehaviorLeaf);
 class CGruntBehaviorLeaf : public CUserLogic {
 public:
-    TILE_LOGIC_TAIL
+    CGameObject* m_34;   // +0x34  (ex TILE_LOGIC_TAIL; own fields here - NO CWapX base:
+    CGameObject* m_38;   // +0x38   this class's RTTI/identity places CWapX elsewhere or
+    AnimWorkerObj* m_3c; // +0x3c   not at all - see the class comment)
 public:
     i32 LoadGruntDecayConfig();    // 0x612a0
     i32 LoadGruntDecayConfig2();   // 0x61570

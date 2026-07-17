@@ -8,7 +8,7 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniCycle.h>
-#include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // (The handler-entry record CAniCycleActEntry lives with the class in <Gruntz/AniCycle.h>.)
 
@@ -32,22 +32,24 @@ i32 CAniCycle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CAniCycle::~CAniCycle @0x0f510 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the destructible +0x18 link forces the /GX EH frame).
-RVA(0x0000f510, 0x44)
-CAniCycle::~CAniCycle() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CAniCycle() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CAniCycle@@UAE@XZ 0x0000f510 0x44
 
 // --- CAniCycle (0x0aad20), vptr 0x5e86a4 --- the ctor anchors GetTypeTag @0xf450
 // + the ??_7CAniCycle vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x000aad20, 0x15c)
-CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 1;
     if (m_38->m_1a0.m_14 == 0) {
-        m_40 = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -101,7 +103,7 @@ void CAniCycle::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CAniCycleActEntry*)g_aniCycleActReg.ResolveEntry(id))->m_fn = &CAniCycle::AdvanceAnim;
+    ((CAniCycleActEntry*)g_aniCycleActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CAniCycle::AdvanceAnim;
 }
 
 #include <rva.h>

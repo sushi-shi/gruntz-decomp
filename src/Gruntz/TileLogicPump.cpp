@@ -40,7 +40,7 @@
 #include <Gruntz/CBrickz.h>               // CBrickz (ctor + leaf pool; LogicDispatchB new-site)
 #include <Gruntz/AniElement.h>            // CAniElement (ApplyAnimation +0x1b4 anim descriptor)
 #include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (Handler_110110 anim sub-object)
-#include <Gruntz/SerialObjRef.h>          // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GameRegistry.h>          // g_gameReg->m_134 (play sub-mode gate in the warp ctor)
 #include <string.h>                       // memset (inlined rep stosd)
@@ -155,13 +155,16 @@ i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // CWarpStonePad::~CWarpStonePad @0x10fc0 - empty vtable-anchor dtor; folds the bare
 // CUserLogic teardown (the destructible +0x18 link forces the /GX EH frame).
-RVA(0x00010fc0, 0x44)
-CWarpStonePad::~CWarpStonePad() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CWarpStonePad() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CWarpStonePad@@UAE@XZ 0x00010fc0 0x44
 
 // CTileTriggerSwitch::SerializeMove @0x11050, vtable slot 1.
 RVA(0x00011050, 0x47)
@@ -169,12 +172,15 @@ i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // CTileTriggerSwitch::~CTileTriggerSwitch @0x110f0 - the 0x44 folded CUserLogic teardown.
-RVA(0x000110f0, 0x44)
-CTileTriggerSwitch::~CTileTriggerSwitch() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CTileTriggerSwitch() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CTileTriggerSwitch@@UAE@XZ 0x000110f0 0x44
 
 // @interleaver CTileTrigger ctor in tilelogicpump's own 0x11xxx block - KEEP (correctly placed)
 // (REHOME D10: flag_outliers marks 0x11160 a lone "misplaced" outlier (home_n=1, weak), but
@@ -192,7 +198,7 @@ i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // ~CTileTrigger is inline (header) so it folds into the three leaf dtors instead of
@@ -201,11 +207,12 @@ i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // hang an RVA()):
 // @rva-symbol: ??1CTileTrigger@@UAE@XZ 0x00011290 0x44
 
-// --- CBrickz leaf pool (the cbrickz stray, folded waveM-strays) --- ~CBrickz is the
-// vtable anchor (gives the leaf its most-derived vftable 0x5e7c54 so the ctor's vptr
-// store falls out; empty body is enough). CBrickz::GetTypeTag @0x011300 is header-inline
-// (in <Gruntz/CBrickz.h>) so it emits at 0x11300 without a body line here.
-CBrickz::~CBrickz() {}
+// --- CBrickz leaf pool (the cbrickz stray, folded waveM-strays) --- ~CBrickz is
+// IMPLICIT (retail 0x113c0 is COMPILER-GENERATED). Identity proven by the vtable-owner
+// probe (see <Gruntz/MapLogic.h>: ??_7CBrickz @0x1e7c54 slot 0 -> sdd 0x11390 -> 0x113c0;
+// the ex-CMapLogic view binding). This TU emits CBrickz vtable/??_G -> the ??1 COMDAT.
+// CBrickz::GetTypeTag @0x011300 is header-inline (in <Gruntz/CBrickz.h>).
+// @rva-symbol: ??1CBrickz@@UAE@XZ 0x000113c0 0x44
 
 // CBrickz::Serialize @0x011320 - vtable slot 1: chain the shared CUserLogic serialize
 // helper on `this`, then (on success) the +0x34 sub-object's chain, normalized to a
@@ -215,28 +222,40 @@ i32 CBrickz::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(a, b, c, (CGameObject*)d) != 0;
+    return Chain(a, b, c, (CGameObject*)d) != 0;
 }
 
 // ~CCheckpointTrigger @0x011480 - the bare folded CUserLogic teardown (store the
 // CUserLogic vptr, inline-destruct the +0x18 link via ~EngStr, store CUserBase vptr;
 // the destructible link forces the /GX EH frame).
-RVA(0x00011480, 0x44)
-CCheckpointTrigger::~CCheckpointTrigger() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CCheckpointTrigger() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CCheckpointTrigger@@UAE@XZ 0x00011480 0x44
 
 // --- CTileTrigger leaf destructors (0x011540 / 0x011600 / 0x0116c0) --- the SAME
 // folded CUserLogic teardown (leaf vptr store dead-eliminated).
-RVA(0x00011540, 0x44)
-CTileSecretTrigger::~CTileSecretTrigger() {}
-RVA(0x00011600, 0x44)
-CGiantRock::~CGiantRock() {}
-RVA(0x000116c0, 0x44)
-CCoveredPowerup::~CCoveredPowerup() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CTileSecretTrigger() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CTileSecretTrigger@@UAE@XZ 0x00011540 0x44
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGiantRock() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGiantRock@@UAE@XZ 0x00011600 0x44
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CCoveredPowerup() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CCoveredPowerup@@UAE@XZ 0x000116c0 0x44
 
 // --- CTileTriggerTransition leaf pool (the tiletriggertransition stray, folded waveM-strays)
-// --- ~CTileTriggerTransition is an empty leaf dtor that folds the CUserLogic base teardown.
-// The folded ~CUserLogic lands as one standalone COMDAT at 0x117f0.
-CTileTriggerTransition::~CTileTriggerTransition() {}
+// --- ~CTileTriggerTransition is IMPLICIT (retail is COMPILER-GENERATED - a user `{}`
+// would emit the leaf-vptr restamp now that the CWapX base EH state blocks the old
+// dead-store elision). Its out-of-line COMDAT is the 0x117f0 @rva-symbol pin below.
 
 // CTileTriggerTransition::GetTypeTag (0x011730) - per-class logic-type id (0x405). Out-of-line
 // here so its RVA lands in leaf-pool order (one deduped COMDAT copy in retail).
@@ -252,7 +271,7 @@ i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // ~CTileTriggerTransition (0x0117f0) - THIS class's own out-of-line dtor COMDAT, not the
@@ -346,8 +365,7 @@ i32 WarpStonePadStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 // --- CWarpStonePad (0x10d650), vptr 0x5e71ac --- the ctor anchors GetTypeTag @0x10f00
 // + the ??_7CWarpStonePad vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x0010d650, 0x16c)
-CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     if (g_gameReg->m_134 == 1) {
@@ -401,13 +419,12 @@ void CWarpStonePad::RegisterActs() {
         g_typeCounter++;
     }
     ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn =
-        &CWarpStonePad::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CWarpStonePad::AdvanceAnim;
 }
 
 // --- CTileTriggerSwitch (0x10dc40), vptr 0x5e7f6c --- ctor anchors the vtable.
 RVA(0x0010dc40, 0x154)
-CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 2;
@@ -457,13 +474,12 @@ void CTileTriggerSwitch::RegisterActs() {
         g_typeCounter++;
     }
     ((CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(id))->m_fn =
-        &CTileTriggerSwitch::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CTileTriggerSwitch::AdvanceAnim;
 }
 
 // --- CTileTrigger 1-arg (0x10e220), vptr 0x5e7f14 ---
 RVA(0x0010e220, 0x17d)
-CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 2;
@@ -514,7 +530,7 @@ void CTileTrigger::RegisterActs() {
         g_typeCounter++;
     }
     ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
-        &CTileTrigger::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CTileTrigger::AdvanceAnim;
 }
 
 // CBrickz::CBrickz @0x10e800 (the cbrickz stray, folded waveM-strays) - the 1-arg leaf ctor:
@@ -526,8 +542,7 @@ void CTileTrigger::RegisterActs() {
 // RMW + the m_38->m_40 bit, the m_164/m_168/m_04 tile-coord seed); the residue is this ctor's
 // own __ehfuncinfo + a 1-slot pop-edi scheduling delta in the tail. Not source-steerable; ~88%.
 RVA(0x0010e800, 0x17d)
-CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 2;
@@ -602,7 +617,7 @@ void CCheckpointTrigger::RegisterActs() {
         g_typeCounter++;
     }
     ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
-        &CCheckpointTrigger::Trigger;
+        (i32 (CUserLogic::*)())&CCheckpointTrigger::Trigger;
 }
 
 // CCheckpointTrigger::CCheckpointTrigger(CGameObject*) @0x10ee20 - the 1-arg leaf ctor:
@@ -613,8 +628,7 @@ void CCheckpointTrigger::RegisterActs() {
 // byte-faithful; the residue is this ctor's own __ehfuncinfo state numbering + the
 // zero-register-pinning callee-saved choice (the shared CUserLogic-init wall). Deferred.
 RVA(0x0010ee20, 0x27d)
-CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 2;
@@ -703,7 +717,7 @@ void CTileSecretTrigger::RegisterActs() {
         g_typeCounter++;
     }
     ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id))->m_fn =
-        &CTileSecretTrigger::Act_10f6a0;
+        (i32 (CUserLogic::*)())&CTileSecretTrigger::Act_10f6a0;
 
     i32 id2 = (i32)g_buteTree.Find("B");
     if (id2 == 0) {
@@ -722,7 +736,7 @@ void CTileSecretTrigger::RegisterActs() {
         g_typeCounter++;
     }
     ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id2))->m_fn =
-        &CTileSecretTrigger::Act_10f970;
+        (i32 (CUserLogic::*)())&CTileSecretTrigger::Act_10f970;
 }
 
 // @early-stop
@@ -753,7 +767,7 @@ i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
+    return Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
 }
 
 // --- The three CTileTrigger leaves' 1-arg ctors (0x10fa60/90/c0) --- each chains
@@ -779,8 +793,7 @@ CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 // scope-cookie initializes to 8 not 0 - see docs/patterns/eh-ctor-vptr-restamp-position.md
 // (non-steerable EH-state machine ordering). Body byte-identical otherwise.
 RVA(0x0010faf0, 0x128)
-CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x1000000;
     if (m_object->m_latchedAnimId != 0) {
         m_object->m_latchedAnimId = 0;
@@ -833,7 +846,7 @@ void CTileTriggerTransition::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((TileActEntry*)g_tileActReg.ResolveEntry(id))->m_fn = &CTileTriggerTransition::Handler_110110;
+    ((TileActEntry*)g_tileActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CTileTriggerTransition::Handler_110110;
 }
 
 // ApplyAnimation (0x110070) - reads the object's +0x1b4 animation descriptor, applies the
@@ -841,7 +854,7 @@ void CTileTriggerTransition::RegisterActs() {
 // aux's bute node for the "A" node (caching the old one).
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    m_activeAnimDesc = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     if (m_38->ApplyLookupGeometry(geom, 0) == 0) {
         return 0;
     }

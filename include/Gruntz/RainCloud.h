@@ -18,7 +18,8 @@ public:
     CRainCloud(CGameObject* obj);
     // The slots CRainCloud overrides over CPathHazard's vtable (declared only;
     // reloc-masked). slots 1/2 (origin CUserBase) stay inherited-attributed.
-    virtual ~CRainCloud() OVERRIDE;         // slot 0
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     virtual i32 Tick() OVERRIDE;            // slot 16
     virtual i32 HitTest(i32, i32) OVERRIDE; // slot 20
 };

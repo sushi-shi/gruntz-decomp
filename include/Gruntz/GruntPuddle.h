@@ -76,17 +76,17 @@ extern char g_puddleSpriteKey[]; // s_..._0060c1c0
 // CUserLogic teardown.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntPuddle);
-class CGruntPuddle : public CUserLogic {
+class CGruntPuddle : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00010cc0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPUDDLE;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CGruntPuddle(CGameObject* obj);   // 0x040490
-    virtual ~CGruntPuddle() OVERRIDE; // 0x010d10
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     i32 Place(i32 a0, i32 a1, i32 a2, i32 a3); // 0x040c30
     i32 Remove();                              // 0x040d20
@@ -105,8 +105,6 @@ public:
     // (This class is ALSO the CTriggerMgr::m_baseList element the spawn/resurrect
     //  scans walk - the ex "CTmCandidate" view, folded 2026-07-16; identity proof
     //  in <Gruntz/TriggerMgr.h>.)
-    CAniElement* m_savedGeoId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
-    char m_pad44[0x54 - 0x44];
     i32 m_tileX;      // +0x54  owner tile X (m_object->m_screenX >> 5)
     i32 m_tileY;      // +0x58  owner tile Y (m_object->m_screenY >> 5)
     i32 m_pending;    // +0x5c  not-yet-placed gate (ctor 1; cleared once placed;
@@ -129,7 +127,7 @@ extern CLogicActTable g_logicDispatch_6445e8;
 // A dispatch-table entry: its first dword is the class activation handler, stored
 // by the registrar as a free-fn ptr but dispatched __thiscall on `this` - a 4-byte
 // single-inheritance PMF gives the plain `mov ecx,this; call [entry]` code.
-typedef i32 (CGruntPuddle::*PuddleActHandler)();
+typedef i32 (CUserLogic::*PuddleActHandler)();
 struct CPuddleActEntry {
     PuddleActHandler m_fn;
 };

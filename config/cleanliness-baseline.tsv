@@ -1,4 +1,4 @@
-m_<hex> fields	10561
+m_<hex> fields	10518
 Unknown ids	0
 g_<hex> globals	0
 Method/Stub/FUN/Gap	280
@@ -10,9 +10,9 @@ placeholder vtable slots	0
 ->vtbl accesses	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
-)this casts	174
+)this casts	173
 )m_ casts	703
-(char*) casts	778
+(char*) casts	777
 (const char*) casts	167
 reinterpret_cast<class*>(m_)	1
 C-style numeric casts	873

@@ -16,9 +16,8 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CVoiceTrigger : CUserLogic)
 
 SIZE(CVoiceTrigger, 0x54);
-class CVoiceTrigger : public CUserLogic {
+class CVoiceTrigger : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CVoiceTrigger();                 // 0x013470 (no-arg ctor; body in UserLogic.cpp)
     CVoiceTrigger(CGameObject* obj); // 0x119b50 (1-arg leaf ctor; body in VoiceTrigger.cpp)
@@ -35,8 +34,8 @@ public:
     static void RegisterActs();        // 0x11a500 (binds Tick to the activation key "A"; static:
                                        //  no this, called this-less by the game-object factory)
     i32 Tick();                        // 0x11a700
-    virtual ~CVoiceTrigger() OVERRIDE; // 0x0135a0 (folds the CUserLogic teardown)
-    char m_pad40[0x54 - 0x40];         // +0x40  (unmodeled leaf tail; size 0x54 proven from
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
                                        //         the state pump's `new CVoiceTrigger` = new(0x54))
 };
 VTBL(CVoiceTrigger, 0x001e885c);
@@ -46,7 +45,7 @@ VTBL(CVoiceTrigger, 0x001e885c);
 // it on `this`, emitting `mov ecx,this; call [entry]`. Mirrors GruntVoice.h's
 // CVActEntry/VActHandler; the class must be COMPLETE above so MSVC sizes the PMF as a
 // bare 4-byte code pointer (an incomplete type forces the 8-byte general PMF).
-typedef void (CVoiceTrigger::*VTrigHandler)();
+typedef void (CUserLogic::*VTrigHandler)();
 SIZE_UNKNOWN(CVTrigEntry);
 struct CVTrigEntry {
     VTrigHandler m_fn; // [entry]  the registered handler PMF

@@ -27,7 +27,7 @@ i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return SerialRef34()->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CCursorSnapSprite::~CCursorSnapSprite @0x011920 - the leaf adds no destructible
@@ -36,8 +36,11 @@ i32 CCursorSnapSprite::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame. Byte-identical in shape to ~CFortressFlag
 // (0x010e90) / ~CTeleporter (0x010dd0); the empty body is enough for cl.
-RVA(0x00011920, 0x44)
-CCursorSnapSprite::~CCursorSnapSprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CCursorSnapSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CCursorSnapSprite@@UAE@XZ 0x00011920 0x44
 
 // Handler03a200 @0x3a200 - this class's state-0 anim-worker dispatch handler (the
 // same pump archetype as Demo.cpp's Handler03d2b0 family; the class file carries
@@ -89,10 +92,9 @@ i32 Handler03a200(Owner* owner) {
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0003a340, 0x16e)
-CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_CURSORSNAPSPRITE");
-    m_geoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");

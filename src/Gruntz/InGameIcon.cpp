@@ -18,7 +18,7 @@
 #include <Gruntz/TypeKeyColl.h>    // g_typeCounter (the shared type-id counter)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
-#include <Gruntz/SerialObjRef.h>   // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (the +0x1a0 sub-object sync)
 #include <Gruntz/Play.h>             // CPlay - g_gameReg->m_curState's concrete play state
 
@@ -159,8 +159,11 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
 // (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. The empty body is enough.
-RVA(0x00011d00, 0x44)
-CInGameIcon::~CInGameIcon() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CInGameIcon() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CInGameIcon@@UAE@XZ 0x00011d00 0x44
 
 // ===========================================================================
 // CInGameText::~CInGameText  (0x011dc0)
@@ -169,8 +172,11 @@ CInGameIcon::~CInGameIcon() {}
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
 // (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. The empty body is enough.
-RVA(0x00011dc0, 0x44)
-CInGameText::~CInGameText() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CInGameText() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CInGameText@@UAE@XZ 0x00011dc0 0x44
 
 // ===========================================================================
 // CInGameIcon::CInGameIcon(CGameObject*)  (0x095b10)  -- the HUD-icon builder
@@ -212,8 +218,7 @@ CInGameText::~CInGameText() {}
 //   the block byte stream. Every call, string literal, field offset, immediate and
 //   control-flow edge matches retail. Deferred to the final sweep.
 RVA(0x00095b10, 0x15f0)
-CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
     m_driftPos = 0;
     m_driftThresh = 0;
@@ -237,7 +242,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     AnimWorkerObj* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
     aux->m_1c = g_buteTree.Find("A");
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     m_38->m_flags |= 2;
@@ -1095,15 +1100,14 @@ typedef i32 (CUserLogic::*LogicFn)();
 // retail). Residual is the /GX leaf-vptr re-stamp position + the visibility-gate
 // branch-polarity (retail emits `je visible` where structured C emits `jne hide`).
 RVA(0x00099110, 0x215)
-CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_134 == 2) {
         m_38->m_flags |= 0x10000;
         return;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->ApplyName("GAME_HELPBOX");
     m_38->m_flags |= 2;
@@ -1204,7 +1208,7 @@ i32 CInGameText::SerializeMove(CGruntArchive* ar, i32 tag, i32 a, i32 b) {
     if (CUserLogic::SerializeMove(ar, tag, a, b) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain(ar, tag, a, (CGameObject*)b) == 0) {
+    if (Chain(ar, tag, a, (CGameObject*)b) == 0) {
         return 0;
     }
     switch (tag) {

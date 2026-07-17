@@ -22,7 +22,7 @@
 // draw-delta mirror). Declared extern "C" so the value-load reloc-masks.
 extern "C" u32 g_engineFrameDelta;
 #include <Gruntz/AnimSink.h>
-#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // CFrontCandy::Serialize @0x00fa60 - the vtable slot-1 body (??_7CFrontCandy slot 1,
 // via thunk 0x2e46). Was MIS-ATTRIBUTED to CFrontCandyAni; the retail vtable read proves
@@ -33,13 +33,16 @@ i32 CFrontCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CFrontCandy::~CFrontCandy @0x0fb00 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the /GX leaf-dtor archetype). Adjacent to CFrontCandy::Serialize (0xfa60).
-RVA(0x0000fb00, 0x44)
-CFrontCandy::~CFrontCandy() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CFrontCandy() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CFrontCandy@@UAE@XZ 0x0000fb00 0x44
 
 // CFrontCandyAni::Serialize @0xfdf0 - the vtable slot-1 two-chain body (??_7CFrontCandyAni
 // slot 1, via thunk 0x19a6): base CUserLogic chain + the +0x34 sub-object chain.
@@ -48,13 +51,16 @@ i32 CFrontCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CFrontCandyAni::~CFrontCandyAni @0xfe90 - empty vtable-anchor dtor (??_7CFrontCandyAni
 // slot 0 -> sdd 0xfe60); folds the CUserLogic teardown (the /GX leaf-dtor archetype).
-RVA(0x0000fe90, 0x44)
-CFrontCandyAni::~CFrontCandyAni() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CFrontCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CFrontCandyAni@@UAE@XZ 0x0000fe90 0x44
 
 // CEyeCandyAni::GetTypeTag (0x0000ff00) is now an inline member in the class header.
 
@@ -68,21 +74,23 @@ i32 CEyeCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CEyeCandyAni::~CEyeCandyAni @0x0ffc0 - empty vtable-anchor dtor; folds the
 // CUserLogic teardown (the /GX leaf-dtor archetype).
-RVA(0x0000ffc0, 0x44)
-CEyeCandyAni::~CEyeCandyAni() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CEyeCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CEyeCandyAni@@UAE@XZ 0x0000ffc0 0x44
 
 // --- CFrontCandy (0x0abfa0), vptr 0x5e84ec --- CFrontCandy's Serialize (0xfa60) +
 // dtor (0xfb00) already live in this TU; the ctor anchors GetTypeTag @0xfa40 + the
 // ??_7CFrontCandy vtable here, reuniting the whole class. Folds the inline
 // CUserLogic(obj) base + the shared z-clamp tail.
 RVA(0x000abfa0, 0x1b6)
-CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (m_object->m_latchedAnimId != 0xf4240) {
         m_object->m_latchedAnimId = 0xf4240;
         m_object->m_flags |= 0x20000;
@@ -126,12 +134,11 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ac870, 0x20e)
-CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     if (m_38->m_1a0.m_14 == 0) {
-        m_savedGeoId = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     CGameObject* o = m_object;
@@ -198,7 +205,7 @@ void CEyeCandyAni::RegisterActs() {
         g_typeCounter++;
     }
     ((CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id))->m_fn =
-        &CEyeCandyAni::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CEyeCandyAni::AdvanceAnim;
 }
 
 // CEyeCandyAni::AdvanceAnim @0x0acf10 - re-target the bound object's animation
@@ -213,12 +220,11 @@ i32 CEyeCandyAni::AdvanceAnim() {
 // --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 --- the ctor anchors the
 // ??_7CFrontCandyAni vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x000acf40, 0x16e)
-CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     if (m_38->m_1a0.m_14 == 0) {
-        m_40 = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     if (m_object->m_latchedAnimId != 0xf4240) {
@@ -287,7 +293,7 @@ void CFrontCandyAni::RegisterActs() {
         g_typeCounter++;
     }
     ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn =
-        &CFrontCandyAni::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CFrontCandyAni::AdvanceAnim;
 }
 
 // CFrontCandyAni::AdvanceAnim @0x0ad510 - re-target the bound object's animation

@@ -28,7 +28,7 @@
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-class CDroppedObject : public CUserLogic {
+class CDroppedObject : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012560, 0x6)
@@ -36,19 +36,17 @@ public:
         return LOGIC_DROPPEDOBJECT;
     } // slot 2
     virtual i32 UserLogicVfunc5() OVERRIDE; // slot 7
-    TILE_LOGIC_TAIL
 public:
     CDroppedObject(CGameObject* obj); // 0x0c68b0 (1-arg leaf ctor)
     static void RegisterRange();      // 0x0c6b50 (seed the activation table's fast range)
     static void RegisterActs();       // 0x0c6d30
     virtual void FireActivation(i32 id) OVERRIDE; // 0x0c6bd0
     i32 ActA();                                   // 0x0c7090 (per-frame "A" activation handler)
-    virtual ~CDroppedObject() OVERRIDE;           // 0x0125b0 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CRollingBall::Serialize).
-
-    CAniElement* m_savedGeoId; // +0x40  m_38->m_1a0.m_14 snapshot
-    char m_pad44[0x58 - 0x44];
+    char m_pad54[0x58 - 0x54];
     double m_timePerTile; // +0x58  per-tile time (32.0 / TimePerTile)
     double m_fallY;       // +0x60  fall accumulator (adjusted screen Y)
     i32 m_landY;          // +0x68  landing row (pre-offset screen Y)
@@ -59,7 +57,7 @@ VTBL(CDroppedObject, 0x1e78d4);
 // dispatched __thiscall on `this` (4-byte single-inheritance PMF -> `mov ecx,this;
 // call [entry]`; CDroppedObject is complete above so the PMF stays 4 bytes). Was the
 // .cpp-local CDropEntry view.
-typedef void (CDroppedObject::*DropHandler)();
+typedef void (CUserLogic::*DropHandler)();
 struct CDropEntry {
     DropHandler m_fn; // [entry]
 };

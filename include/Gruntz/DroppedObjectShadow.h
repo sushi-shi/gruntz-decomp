@@ -18,17 +18,17 @@
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-class CDroppedObjectShadow : public CUserLogic {
+class CDroppedObjectShadow : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012620, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECTSHADOW;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CDroppedObjectShadow(CGameObject* obj);   // 0xc7490 (1-arg leaf ctor)
-    virtual ~CDroppedObjectShadow() OVERRIDE; // 0x12670 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CDroppedObject::Serialize).
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc7b40
@@ -40,8 +40,6 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // 0xc7750 (look up + fire the registered handler)
     static void RegisterActs();                   // 0xc78b0 (bind Advance to the "A" key)
     i32 Advance();             // 0xc7ab0 (per-frame: advance anim; drop frame -> spawn)
-    CAniElement* m_savedGeoId; // +0x40  m_38->m_1a0.m_14 snapshot
-    char m_pad44[0x54 - 0x44];
 };
 VTBL(CDroppedObjectShadow, 0x1e787c);
 SIZE(CDroppedObjectShadow, 0x54);
@@ -50,7 +48,7 @@ SIZE(CDroppedObjectShadow, 0x54);
 // dispatched __thiscall on `this` (4-byte single-inheritance PMF; CDroppedObjectShadow
 // is complete above so the PMF stays 4 bytes). Was the .cpp-local CShadowActEntry view.
 struct CShadowActEntry {
-    i32 (CDroppedObjectShadow::*m_fn)();
+    i32 (CUserLogic::*m_fn)();
 };
 SIZE_UNKNOWN(CShadowActEntry);
 

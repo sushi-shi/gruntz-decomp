@@ -34,15 +34,12 @@
 #include <Gruntz/ScrollState.h> // g_scrollAccum (bound in MgrAutoScroll.cpp)
 
 // ===========================================================================
-// CMapLogic::~CMapLogic  (0x0113c0)
+// (the 0x113c0 dtor)
 // ===========================================================================
-// The leaf adds no destructible members of its own beyond the CUserLogic base, so
-// its dtor folds the bare CUserLogic teardown: store the CUserLogic vptr
-// (0x5e705c), inline-destruct the +0x18 link (the embedded ~EngStr call), store the
-// CUserBase vptr (0x5e70b4). The destructible link forces the /GX EH frame. The
-// empty body is enough (same shape as CGruntPuddle::~CGruntPuddle).
-RVA(0x000113c0, 0x44)
-CMapLogic::~CMapLogic() {}
+// 0x113c0 is ??1CBrickz - the vtable-owner probe in <Gruntz/MapLogic.h> proved this
+// class IS CBrickz (??_7CBrickz @0x1e7c54 slot 0 -> sdd 0x11390 -> 0x113c0). The dtor
+// is therefore pinned under its REAL name in src/Gruntz/TileLogicPump.cpp (the TU that
+// emits CBrickz vtable/??_G -> the implicit ??1 COMDAT); no ??1CMapLogic exists.
 
 // ===========================================================================
 // MapSerializeCurve  (0x0ec230) - __cdecl

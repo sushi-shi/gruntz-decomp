@@ -13,7 +13,7 @@
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/SerialObjRef.h> // (moved from header; +0x34 serialized-object-ref, .cpp-only)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
@@ -35,14 +35,16 @@ CIndicatorActReg g_healthActReg; // 0x644d80
 RVA(0x00011ef0, 0x4b)
 CGruntHealthSprite::CGruntHealthSprite() {}
 
-RVA(0x00011fb0, 0x44)
-CGruntHealthSprite::~CGruntHealthSprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntHealthSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntHealthSprite@@UAE@XZ 0x00011fb0 0x44
 
 // --- CGruntHealthSprite 1-arg ctor (0x07eb00), vptr 0x5e7ba4 --- the ctor anchors
 // the ??_7CGruntHealthSprite vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x0007eb00, 0x170)
-CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -113,7 +115,7 @@ void CGruntHealthSprite::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn = &CGruntHealthSprite::HealthUpdate;
+    ((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CGruntHealthSprite::HealthUpdate;
 }
 
 // CGruntHealthSprite::SetHealthGlyph @0x07f0d0 - stash the two passed coordinates
@@ -212,5 +214,5 @@ i32 CGruntHealthSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(ar, mode, a3, (CGameObject*)a4) != 0;
 }

@@ -11,7 +11,9 @@
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Rez/RezList.h>          // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
-#include <Gruntz/SerialObjRef.h>  // CSerialArchive + the canonical CDDrawSubMgrLeaf/CGameObject
+#include <Gruntz/SerialArchive.h>     // CSerialArchive (the inherited CWapX::Chain arg)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // the anim registry (m_10 Lookup / KeyOfValue; ex SerialObjRef.h pull)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // obj->m_0c world root (ex SerialObjRef.h pull)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_158->m_0c (the world root; m_animRegistry hop)
 #include <Gruntz/GameRegistry.h>      // CGameRegistry (g_gameReg->m_world = CDDrawSurfaceMgr*)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (m_world->m_childGroup; m_map48 key->object map @+0x48)

@@ -50,7 +50,8 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTWINGZTIMESPRITE;
     }
-    virtual ~CGruntWingzTimeSprite() OVERRIDE;        // 0x0121f0 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     virtual i32 Vslot16(CGrunt* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
 SIZE(CGruntWingzTimeSprite, 0x64);       // recovered from operator-new sites (gruntz.analysis.news)

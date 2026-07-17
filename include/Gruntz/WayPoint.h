@@ -10,9 +10,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
-class CWayPoint : public CUserLogic {
+class CWayPoint : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models these slots with placeholder signatures; see the .cpp).
@@ -24,8 +23,8 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     CWayPoint(CGameObject* obj);               // 0xae3f0
-    virtual ~CWayPoint() OVERRIDE;             // 0x102e0 (folds the CUserLogic teardown)
-    char m_pad40[0x54 - 0x40];
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CWayPoint, 0x001e74b4);
 SIZE(CWayPoint, 0x54);

@@ -9,7 +9,7 @@
 // recovered engine identities.
 #include <Gruntz/BehindCandy.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // CBehindCandy::GetTypeTag (0x0000fb70) is now an inline member in the class header.
 
@@ -23,7 +23,7 @@ i32 CBehindCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CBehindCandy::~CBehindCandy @0x00fc30 - the leaf adds no destructible members
@@ -32,15 +32,17 @@ i32 CBehindCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame. Byte-identical in shape to ~CTimeBomb @0x012a70;
 // the empty body is enough for cl.
-RVA(0x0000fc30, 0x44)
-CBehindCandy::~CBehindCandy() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CBehindCandy() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CBehindCandy@@UAE@XZ 0x0000fc30 0x44
 
 // --- CBehindCandy (0x0ac3f0), vptr 0x5e8494 --- the ctor anchors GetTypeTag @0xfb70
 // + the ??_7CBehindCandy vtable in this TU. Folds the inline CUserLogic(obj) base +
 // the shared z-clamp tail.
 RVA(0x000ac3f0, 0x1b1)
-CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (m_object->m_latchedAnimId != 0) {
         m_object->m_latchedAnimId = 0;
         m_object->m_flags |= 0x20000;

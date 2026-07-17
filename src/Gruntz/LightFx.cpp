@@ -14,7 +14,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // m_animRegistry (the effect store; Ptr 0x1b8438)
 #include <Gruntz/LogicTypeTableInline.h>  // unrolled built-in logic-type registration
 #include <Gruntz/SerialArchive.h>    // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
-#include <Gruntz/SerialObjRef.h>     // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
@@ -56,7 +56,7 @@ extern "C" u32 g_engineFrameDelta;
 // (the owner context), +0x190/m_194/m_layer(+0x198) are CGameObject's role-union
 // resolved-node fields (source-def/z-clamp descriptor, reinterpreted here per the
 // canonical's own note), +0x1a0 the per-leaf anim sub-object (CAniAdvanceCursor,
-// reached by address), +0x1b4 the m_geoId geometry descriptor. The alleged +0x198
+// reached by address), +0x1b4 the m_value geometry descriptor. The alleged +0x198
 // "conflict" was the documented role-union, not a distinct field.
 
 // CLightFxActEntry (the registry entry's per-frame handler PMF) is declared with
@@ -119,7 +119,7 @@ void CLightFx::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn = &CLightFx::AdvanceAnim;
+    ((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CLightFx::AdvanceAnim;
 }
 
 // ===========================================================================
@@ -173,7 +173,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     if (node != 0) {
         node = 0;
         m_38->m_0c->m_animRegistry->m_10.Lookup((const char*)effect, (void*&)node);
-        m_layerBase = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup_15c2d0((CAniElement*)node);
         RebindNode();
     }
@@ -191,7 +191,7 @@ i32 CLightFx::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
+    if (Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     switch (mode) {
@@ -256,8 +256,11 @@ i32 CLightFx::AdvanceAnim() {
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded ~EngStr
 // call 0x16d2a0), store the CUserBase vptr (0x5e70b4). Byte-identical in shape to
 // the established leaf-dtor archetype.
-RVA(0x00012430, 0x44)
-CLightFx::~CLightFx() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CLightFx() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CLightFx@@UAE@XZ 0x00012430 0x44
 
 // The default-state fall-through helper IS the real shared coordinate/type-registry
 // resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z, __cdecl); the record
@@ -319,8 +322,7 @@ i32 LightFxLogicDispatch(CGameObject* obj) {
 // body byte-identical (incl. the unrolled logic-type registration); residual is the
 // /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0009cf00, 0x1a5)
-CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_anchorA = 2;
     m_anchorB = 1;
 }

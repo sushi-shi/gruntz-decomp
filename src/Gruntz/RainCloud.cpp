@@ -25,10 +25,24 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     o->m_drawActive = 1;
     o->m_drawFillCmd = 0x7;
     o->m_drawFillArg = n;
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
     m_object->m_areaL = 1;
     m_object->m_areaR = 1;
     m_object->m_areaT = 1;
     m_object->m_areaB = 1;
 }
+
+// ~CRainCloud @0x013340 - the CPathHazard-derived rain-cloud leaf's dtor: no
+// destructible members of its own, so it folds the bare CUserLogic teardown (store
+// the CUserLogic vptr, inline-destruct the +0x18 link's ~EngStr, store the CUserBase
+// vptr; the throwing link forces the /GX EH frame). IDENTITY (vtable-owner probe):
+// ??_7CRainCloud @0x1e7324 (RTTI-named, <Gruntz/RainCloud.h>) slot 0 -> ILT thunk ->
+// the sdd 0x13310 -> THIS body (it was once misbound as ~CPathHazard).
+//
+// IMPLICIT (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B): a
+// user-declared `~CRainCloud() {}` emits the leaf-vptr restamp, and the CWapX base
+// EH state blocks the dead-store elision that used to hide it. THIS obj emits
+// ??_7CRainCloud -> ??_G -> the implicit ??1 COMDAT (the ctor above is what needs
+// the vtable), so the pin resolves here - PathHazard.cpp never emits it.
+// @rva-symbol: ??1CRainCloud@@UAE@XZ 0x00013340 0x44

@@ -17,14 +17,13 @@
 
 #include <Gruntz/UserLogic.h>
 
-class CLightFx : public CUserLogic {
+class CLightFx : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000123e0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_LIGHTFX;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CLightFx(CGameObject* obj); // 0x9cf00
     // 0x9d1c0  RunAct - the slot-4 impl: resolve the class registry entry for id and,
@@ -53,11 +52,10 @@ public:
     // 0x12430  the /GX leaf dtor - shares CUserLogic's vtable (adds no own
     // virtuals), so the most-derived vptr store is dead-eliminated and only the
     // folded CUserLogic teardown remains (the 0x44 leaf-dtor archetype).
-    virtual ~CLightFx() OVERRIDE;
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     // ----- leaf layout over CUserLogic(0x40) (offsets load-bearing)
-    CAniElement* m_layerBase; // +0x40  cached object layer base (m_38->m_1a0.m_14)
-    char m_pad44[0x54 - 0x44];
     i32 m_anchorA; // +0x54  latched anchor A
     i32 m_anchorB; // +0x58  latched anchor B
 };
@@ -67,7 +65,7 @@ SIZE(CLightFx, 0x5c);
 // The per-class activation-registry entry: its first dword receives the per-frame
 // handler PMF (AdvanceAnim; a 4-byte code ptr on this complete single-inheritance
 // class). Declared here (not .cpp-local) with the class it binds to.
-typedef i32 (CLightFx::*LightFxHandler)();
+typedef i32 (CUserLogic::*LightFxHandler)();
 struct CLightFxActEntry {
     LightFxHandler m_fn;
 };

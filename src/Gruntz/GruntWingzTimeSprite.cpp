@@ -50,8 +50,11 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
 // (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. Byte-identical in shape to the
 // established leaf dtors; the empty body is enough for cl.
-RVA(0x000121f0, 0x44)
-CGruntWingzTimeSprite::~CGruntWingzTimeSprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntWingzTimeSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntWingzTimeSprite@@UAE@XZ 0x000121f0 0x44
 
 // CGruntWingzTimeSprite::Vslot16 (0x07fd90) - ??_7CGruntWingzTimeSprite (0x1e77cc)
 // slot 16, +0x40: the leaf's stat-time getter. Reads the bound grunt's +0x3f8

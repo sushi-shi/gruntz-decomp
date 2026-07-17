@@ -22,9 +22,8 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CEyeCandy : CUserLogic)
 
 SIZE_UNKNOWN(CEyeCandy);
-class CEyeCandy : public CUserLogic {
+class CEyeCandy : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CEyeCandy(CGameObject* obj); // 0x0ac620 (ctor body in UserLogic.cpp)
     // 0x0000fca0 vtable slot 2: per-class logic-type id, inline (one
@@ -34,7 +33,8 @@ public:
         return LOGIC_EYECANDY;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual ~CEyeCandy() OVERRIDE;                // 0x00fd60 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CEyeCandy, 0x001e843c);
 

@@ -13,24 +13,23 @@
 
 SIZE(CTileTriggerSwitch, 0x54);
 VTBL(CTileTriggerSwitch, 0x001e7f6c); // vtable_names -> code (RTTI game class)
-class CTileTriggerSwitch : public CUserLogic {
+class CTileTriggerSwitch : public CUserLogic, public CWapX {
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    TILE_LOGIC_TAIL
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
-    virtual ~CTileTriggerSwitch() OVERRIDE;
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     static void InitActReg(); // 0x10de20
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x10dea0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs(); // 0x10e000
     i32 AdvanceAnim();          // 0x10e200 (declared-only; recovery gap)
-    char m_pad40[0x54 - 0x40];  // +0x40 (unmodeled leaf tail; size 0x54 from `new(0x54)`)
 };
 
 // The activation-registry entry record (the .data CActReg row; 4-byte PMF).
-typedef i32 (CTileTriggerSwitch::*TileTriggerSwitchHandler)();
+typedef i32 (CUserLogic::*TileTriggerSwitchHandler)();
 struct CTileTriggerSwitchActEntry {
     TileTriggerSwitchHandler m_fn;
 };

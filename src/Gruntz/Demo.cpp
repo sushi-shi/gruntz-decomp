@@ -31,7 +31,7 @@
 #include <Bute/SymTab.h>              // the shared CSymTab (ResolveQualified 0x13be40)
 #include <Gruntz/AnimWorker.h>        // shared Owner / Worker views + Worker_DefaultPump
 #include <Gruntz/GameLevel.h>         // canonical CGameLevel + CLevelPlane (RecomputePlaneCoords)
-#include <Gruntz/SerialObjRef.h>      // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialRecords.h>     // CTriRecord
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // the dispatched CUserLogic leaves' slot layout

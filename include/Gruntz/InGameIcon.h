@@ -94,17 +94,17 @@ struct CIconRecord {
 // +0x40). The dtor (0x11d00) adds no destructible members, so it folds the bare
 // CUserLogic teardown.
 // ---------------------------------------------------------------------------
-class CInGameIcon : public CUserLogic {
+class CInGameIcon : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00011cb0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_INGAMEICON;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CInGameIcon(CGameObject* obj);   // 0x095b10  (the HUD-icon builder ctor)
-    virtual ~CInGameIcon() OVERRIDE; // 0x011d00
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     // Configure the icon's sprite/animation for a category ("GAME_TREASURE" /
     // "GAME_POWERUP" / "GAME_CURSE"; 0 for the initial reset). Reached through an
@@ -125,8 +125,6 @@ public:
     void SetField54(i32 v);             // 0x099b10
 
     // --- CInGameIcon own fields (+0x44/+0x68..+0x74 roles still unproven) ---
-    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
-    char m_44[0x10];           // +0x44  a fixed 0x10-byte blob the serializer round-trips
     i32 m_cmapId;              // +0x54  registry-CMap lookup result (SetField54; place gate)
     i32 m_driftPos;            // +0x58  drift-tracked position lo (i64 {m_driftPos:m_driftPosHi})
     i32 m_driftPosHi;          // +0x5c  drift-tracked position hi
@@ -142,6 +140,6 @@ VTBL(CInGameIcon, 0x1e7d04);
 
 // The handler PMF stored in each g_icon*Table slot (a 4-byte code pointer on this
 // complete single-inheritance class; RunAction/RunState dispatch it on `this`).
-typedef i32 (CInGameIcon::*IconActHandler)();
+typedef i32 (CUserLogic::*IconActHandler)();
 
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H

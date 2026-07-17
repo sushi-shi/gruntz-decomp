@@ -2,7 +2,7 @@
 // Only the 1-arg ctor is reconstructed here (the shared CUserLogic(obj) prologue
 // + the per-class eyecandy tail).
 #include <Gruntz/ToyPeek.h>
-#include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) - the +0x34 facet in SerializeMove
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Bute/ButeTree.h> // g_buteTree
 
@@ -14,8 +14,11 @@ extern "C" i32 g_frameTime; // DEFINED in Projectile.cpp (extern "C" = canonical
 
 // CToyPeek::~CToyPeek @0x11c40 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the /GX leaf-dtor archetype).
-RVA(0x00011c40, 0x44)
-CToyPeek::~CToyPeek() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CToyPeek() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CToyPeek@@UAE@XZ 0x00011c40 0x44
 
 // CToyPeek::CToyPeek (0x98140) - fold the shared CUserLogic(obj) init, then nudge
 // the owner up 0x18 px, lock its draw order to 0xdbba0, apply the small-icon
@@ -25,8 +28,7 @@ CToyPeek::~CToyPeek() {}
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids
 // + the leaf-field zero-init schedule (CToyPeek's wider +0x58..+0x64 init block).
 RVA(0x00098140, 0x18e)
-CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_startClockLo = 0;
     m_countdownLo = 0;
     m_startClockHi = 0;
@@ -68,7 +70,7 @@ i32 CToyPeek::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (SerialRef34()->Chain(ar, mode, a3, (CGameObject*)a4) == 0) {
+    if (Chain(ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     // The two i64 timer fields sit contiguous (m_startClock @+0x58, m_countdown

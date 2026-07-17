@@ -15,9 +15,8 @@
                                   // `class CSerialArchive;` would shadow it and break the match)
 
 SIZE_UNKNOWN(CActionArea);
-class CActionArea : public CUserLogic {
+class CActionArea : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CActionArea(CGameObject* obj); // 0x7da0
     // vtable_hierarchy proves ??_7CActionArea slot 4 IS FireActivation. (The static
@@ -38,9 +37,8 @@ public:
         return LOGIC_ACTIONAREA;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual ~CActionArea() OVERRIDE; // 0x7fd0 (folds the CUserLogic teardown)
-
-    char m_pad40[0x54 - 0x40];
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     i32 m_54; // +0x54
     i32 m_58; // +0x58
     i32 m_5c; // +0x5c
@@ -53,7 +51,7 @@ VTBL(CActionArea, 0x001e7004);
 // handler, dispatched __thiscall on `this` (4-byte single-inheritance PMF ->
 // `mov ecx,this; call [entry]`; CActionArea is complete above so the PMF stays 4
 // bytes). Was the .cpp-local R3Entry view.
-typedef void (CActionArea::*ProjActHandler)();
+typedef void (CUserLogic::*ProjActHandler)();
 struct CActionAreaActEntry {
     ProjActHandler m_fn; // [entry] - the registered handler
 };
@@ -62,9 +60,13 @@ SIZE_UNKNOWN(CActionAreaActEntry); // only the first dword (the handler) is mode
 // CPulseHighlight : CUserLogic - the pulse-highlight sprite leaf (ex pulsehighlight
 // unit, merged into ActionArea.cpp): a per-frame brightness ramp (Tick 0x8440) +
 // serialize round-trip (0x8600). Was defined .cpp-local in ActionArea.cpp.
-class CPulseHighlight : public CUserLogic {
-public:
-    TILE_LOGIC_TAIL
+// The CWapX second base is BEHAVIOURALLY proven here (no RTTI COL carries this
+// name): retail Serialize @0x8600 runs the shared CWapX::Chain on this+0x34, and
+// this class's own fields start at +0x54 = 0x34 (CUserLogic) + 0x20 (CWapX) exactly.
+// @identity-TODO: no `.?AVCPulseHighlight@@` TypeDescriptor exists - the name is a
+// placeholder for a real RTTI-65 leaf whose vtable holds the 0x3512/0x1235 thunks
+// (Tick 0x8440 / Serialize 0x8600); chase via vtable_scan when that family is audited.
+class CPulseHighlight : public CUserLogic, public CWapX {
 public:
     i32 Tick();                                               // 0x8440
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x8600
@@ -72,7 +74,6 @@ public:
     // Leaf pulse-timer fields past the CUserLogic base. Serialize transfers them
     // as a raw byte stream (the +0x54..+0x67 block, kept as documented offset
     // access); Tick reads them as scalars, so they are named here.
-    char m_pad40[0x54 - 0x40]; // +0x40..+0x53 (the +0x34/+0x38 base-region per-TU views)
     i32 m_phase;               // +0x54 pulse phase flag (toggles every m_duration ms)
     i64 m_timestamp;           // +0x58 last-toggle game clock
     i64 m_duration;            // +0x60 current interval (ms)

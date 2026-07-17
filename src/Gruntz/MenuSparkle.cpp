@@ -49,10 +49,9 @@ extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  frame tick
 // vtable in this TU. Folds the inline CUserLogic(obj) base + the sparkle name/geometry
 // setup, then seeds the random flicker delay.
 RVA(0x000adbe0, 0x178)
-CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("MENU_SPARKLE");
-    m_40 = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("MENU_FORWARD100", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -61,8 +60,11 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CMenuSparkle::~CMenuSparkle (0x101b0) --- empty vtable-anchor dtor; folds the
 // bare CUserLogic teardown (the destructible +0x18 link forces the /GX EH frame).
-RVA(0x000101b0, 0x44)
-CMenuSparkle::~CMenuSparkle() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CMenuSparkle() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CMenuSparkle@@UAE@XZ 0x000101b0 0x44
 
 // ===========================================================================
 // CMenuSparkle's per-class activation registrar (dispatch table 0x646010), homed
@@ -130,7 +132,7 @@ void ConstructLogicActRange_646010() {
 // The entry's leading slot is a __thiscall handler taking this object; MSVC5 rejects
 // the __thiscall keyword, so model it as a single-inheritance member pointer (a bare
 // 4-byte code address) reinterpreted from the entry word.
-typedef void (CMenuSparkle::*MenuSparkleActHandler)();
+typedef void (CUserLogic::*MenuSparkleActHandler)();
 
 RVA(0x000ade60, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {

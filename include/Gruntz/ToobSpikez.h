@@ -23,9 +23,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CToobSpikez : CUserLogic)
 
-class CToobSpikez : public CUserLogic {
+class CToobSpikez : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CToobSpikez(CGameObject* obj); // 0x1145c0 (ctor body in UserLogic.cpp)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
@@ -41,11 +40,8 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // 0x114860 (vtable slot 4)
     static void RegisterActs();                   // 0x1149c0 (binds the logic handler to key "A";
     //  static: no this, called this-less by the factory)
-    virtual ~CToobSpikez() OVERRIDE; // 0x012c60 (folds the CUserLogic teardown)
-
-    CAniElement* m_40;         // +0x40  saved active-anim descriptor (ctor snapshot)
-    char m_pad44[0x54 - 0x44]; // +0x44  leaf tail (true object size 0x54, per the
-                               //         `operator new(0x54)` at the phase-0 factory)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CToobSpikez, 0x001e7774);
 SIZE(CToobSpikez, 0x54);

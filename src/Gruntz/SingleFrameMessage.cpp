@@ -11,7 +11,7 @@
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleFrameMessage.h>
 #include <Gruntz/WwdGameReg.h>   // g_gameReg->GetMessageBounds (on-screen message bounds)
-#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // The game registry singleton (canonical <Gruntz/WwdGameReg.h>); the ctor asks it
 // for the on-screen message-bounds RECT. Declared extern only (wwdfile owns 0x24556c).
@@ -25,20 +25,22 @@ i32 CSingleFrameMessage::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CSingleFrameMessage::~CSingleFrameMessage @0x0f640 - empty vtable-anchor dtor;
 // folds the CUserLogic teardown (the /GX leaf-dtor archetype).
-RVA(0x0000f640, 0x44)
-CSingleFrameMessage::~CSingleFrameMessage() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CSingleFrameMessage() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CSingleFrameMessage@@UAE@XZ 0x0000f640 0x44
 
 // --- CSingleFrameMessage (0x0ab310), vptr 0x5e864c --- the ctor anchors the
 // ??_7CSingleFrameMessage vtable in this TU. Folds the inline CUserLogic(obj) base,
 // applies the message sprite, then centers the object in g_gameReg's message bounds.
 RVA(0x000ab310, 0x18d)
-CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_38->m_04);
@@ -111,7 +113,7 @@ void CSingleFrameMessage::RegisterActs() {
         g_typeCounter++;
     }
     ((CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id))->m_fn =
-        &CSingleFrameMessage::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CSingleFrameMessage::AdvanceAnim;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

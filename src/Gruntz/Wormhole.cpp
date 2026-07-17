@@ -46,7 +46,7 @@
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <Gruntz/LogicFnTable.h>   // the shared LogicFnTable dispatch-table shape
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
-#include <Gruntz/SerialObjRef.h>   // CSerialArchive (Read/Write) + the +0x34 sub-object chain
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/Grunt.h>          // CGrunt (Teleporter::Update's hit-test target)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Play.h>
@@ -227,21 +227,30 @@ typedef i32 (CUserLogic::*LogicFn)();
 // (0x010ab0). The empty body is enough for cl to emit the fold (the inline base
 // dtors live in <Gruntz/UserLogic.h>).
 // @source: trace this/ecx (high)
-RVA(0x00010980, 0x44)
-CWormhole::~CWormhole() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CWormhole() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CWormhole@@UAE@XZ 0x00010980 0x44
 
 // ===========================================================================
 // CGruntPuddle::~CGruntPuddle  (0x010d10)
 // Same /GX leaf-teardown fold as ~CWormhole; the empty body is enough.
-RVA(0x00010d10, 0x44)
-CGruntPuddle::~CGruntPuddle() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntPuddle() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntPuddle@@UAE@XZ 0x00010d10 0x44
 
 // ===========================================================================
 // CTeleporter::~CTeleporter  (0x010dd0)
 // Same /GX leaf-teardown fold; byte-identical in shape to ~CGruntPuddle
 // (0x010d10) / ~CTimeBomb (0x012a70); the empty body is enough for cl.
-RVA(0x00010dd0, 0x44)
-CTeleporter::~CTeleporter() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CTeleporter() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CTeleporter@@UAE@XZ 0x00010dd0 0x44
 
 // ---------------------------------------------------------------------------
 // CWormhole::CWormhole(CGameObject*) @0x03fc70 - the 1-arg leaf ctor: the shared
@@ -259,11 +268,10 @@ CTeleporter::~CTeleporter() {}
 // position (docs/patterns/eh-ctor-vptr-restamp-position.md). The SAME plateau as
 // CVoiceTrigger / CTimeBomb / the other bute ctors; not source-steerable.
 RVA(0x0003fc70, 0x1db)
-CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
     m_38->ApplyName("GAME_WORMHOLE");
-    m_prevAnimNode = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_WORMHOLE", 0);
     if (m_object->m_latchedAnimId != 0x1869f) {
         m_object->m_latchedAnimId = 0x1869f;
@@ -299,7 +307,7 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag == 8) {
@@ -444,15 +452,14 @@ void CWormhole::SpawnPartners() {
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x00040490, 0x1ab)
-CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     if (m_object->m_latchedAnimId != 0xa) {
         m_object->m_latchedAnimId = 0xa;
         m_object->m_flags |= 0x20000;
     }
     m_38->ApplyName("GRUNTZ_GRUNTPUDDLE");
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -560,7 +567,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         m_placed = 1;
         m_pending = 0;
-        m_savedGeoId = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry(g_puddleSpriteKey, 0);
     }
     return 1;
@@ -620,7 +627,7 @@ i32 CGruntPuddle::Remove() {
         if (m_placed != 0) {
             o->m_stateFlags |= 1;
         } else {
-            m_savedGeoId = o->m_1a0.m_14;
+            m_value = o->m_1a0.m_14;
             o->ApplyLookupGeometry(g_puddleSpriteKey, 0);
             m_placed = 1;
             m_pending = 0;
@@ -646,7 +653,7 @@ i32 CGruntPuddle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     switch (tag) {
@@ -686,8 +693,7 @@ i32 CGruntPuddle::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // anchor: GetTypeTag @0x10d80 + the ??_7CTeleporter vtable emit in this TU. Folds
 // the inline CUserLogic(obj) base + the tile-snap/enter-field tail.
 RVA(0x00041020, 0x170)
-CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_armClockLo = 0;
     m_intervalLo = 0;
     m_armClockHi = 0;
@@ -754,7 +760,7 @@ void CWormhole::LoadColors() {
 RVA(0x000412c0, 0x63)
 i32 CWormhole::ReapplyConfig() {
     m_38->ApplyName("GAME_WORMHOLE");
-    m_prevAnimNode = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -777,7 +783,7 @@ i32 CTeleporter::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     // The two i64 snapshots (+0x58 arm-clock, +0x60 interval) round-trip through one
@@ -892,7 +898,7 @@ i32 CTeleporter::Begin() {
     m_intervalHi = 0;
     m_armClockLo = g_frameTime;
     m_armClockHi = 0;
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("B");
@@ -951,7 +957,7 @@ i32 CTeleporter::Update() {
     if (o->m_7c->m_bc != 0) {
         i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_armClockLo;
         if (delta >= *(i64*)&m_intervalLo) {
-            m_savedGeoId = m_38->m_1a0.m_14;
+            m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
             m_object->m_7c->m_bc = 0;
             m_tickHandled = 1;
@@ -970,7 +976,7 @@ i32 CTeleporter::Update() {
     if (m_object->m_124 == 2) {
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 1, 1);
         g_gameReg->m_scoreHud->m_28++; // wormhole/teleporter use counter (FormatHudText case 7)
-        m_savedGeoId = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
         CGameObject* s = m_object;
         CGameObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -1002,7 +1008,7 @@ i32 CTeleporter::Update() {
         spawned->m_168 = m_object->m_screenY;
         spawned->m_124 = m_object->m_placeMode;
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 0, 0);
-        m_savedGeoId = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
     }
 

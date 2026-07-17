@@ -9,7 +9,7 @@
 // recovered engine identities.
 #include <Gruntz/EyeCandy.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // CEyeCandy::GetTypeTag (0x0000fca0) is now an inline member in the class header.
 
@@ -23,7 +23,7 @@ i32 CEyeCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CEyeCandy::~CEyeCandy @0x00fd60 - the leaf adds no destructible members beyond
@@ -32,15 +32,17 @@ i32 CEyeCandy::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible link forces the
 // /GX EH frame. Byte-identical in shape to ~CTimeBomb @0x012a70; the empty body is
 // enough for cl.
-RVA(0x0000fd60, 0x44)
-CEyeCandy::~CEyeCandy() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CEyeCandy() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CEyeCandy@@UAE@XZ 0x0000fd60 0x44
 
 // --- CEyeCandy (0x0ac620), vptr 0x5e843c --- the ctor is the vtable-emission anchor
 // for this class (GetTypeTag @0xfca0 + the ??_7 vtable emit in this TU because the
 // ctor lives here). Folds the inline CUserLogic(obj) base + the shared z-clamp tail.
 RVA(0x000ac620, 0x1cf)
-CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CGameObject* o = m_object;
     if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
         i32 v = o->m_layer->m_halfHeight + o->m_screenY + 0x186a0;

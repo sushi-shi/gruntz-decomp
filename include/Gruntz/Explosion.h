@@ -9,14 +9,13 @@
 #include <Gruntz/ActReg.h> // CLogicActTable (the slot-4 activation-dispatch table)
 #include <Gruntz/UserLogic.h>
 
-class CExplosion : public CUserLogic {
+class CExplosion : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012e00, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_EXPLOSION;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CExplosion(CGameObject* obj); // 0x470e0
     // FireActivation (0x47350): slot-4 (UserLogicVfunc2) override - resolve `id` in
@@ -24,8 +23,8 @@ public:
     // handler, re-resolve and dispatch it __thiscall on `this`. Same archetype as
     // CTeleporter::FireActivation.
     virtual void FireActivation(i32 id) OVERRIDE;
-    virtual ~CExplosion() OVERRIDE; // 0x12ec0 (folds the CUserLogic teardown)
-    char m_pad40[0x54 - 0x40];
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CExplosion, 0x1e766c);
 SIZE(CExplosion, 0x54);
@@ -38,7 +37,7 @@ extern CLogicActTable g_logicActReg_6447f8;
 // A dispatch-table entry: its first dword is the class activation handler, stored
 // by the registrar as a free-fn ptr but dispatched __thiscall on `this` - a 4-byte
 // single-inheritance PMF gives the plain `mov ecx,this; call [entry]` code.
-typedef i32 (CExplosion::*ExplosionActHandler)();
+typedef i32 (CUserLogic::*ExplosionActHandler)();
 struct CExplosionActEntry {
     ExplosionActHandler m_fn;
 };

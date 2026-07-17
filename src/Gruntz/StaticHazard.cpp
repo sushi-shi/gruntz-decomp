@@ -23,7 +23,7 @@
 #include <Gruntz/StaticHazard.h>
 #include <Gruntz/GruntzMgr.h>     // the REAL singleton class
 #include <Gruntz/TileGrid.h>      // CTileGrid == CMapMgr (the +0x70 board's real class)
-#include <Gruntz/SerialObjRef.h>  // SerialRef34()->Chain (0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
 #include <Globals.h>
@@ -63,7 +63,7 @@ extern "C" u32 g_engineFrameDelta;
 //                 CDDrawSubMgrLeaf, whose m_10 @+0x10 is the CMapStringToPtr the
 //                 "GO" cue resolves in - retail calls 0x1b8438, the Ptr band).
 // The map's VALUE record is a CAniElement (the anim registry's 'ANI' element - the
-// SAME value type the geometry lookup / m_geoId resolves to, and read here as an int
+// SAME value type the geometry lookup / m_value resolves to, and read here as an int
 // at +0x24 == CAniElement::m_total, the accumulated frame total used as the per-effect
 // ---------------------------------------------------------------------------
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (m_world->m_animRegistry->m_10 cue lookup)
@@ -165,8 +165,11 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown; the
 // destructible +0x18 link forces the /GX EH frame. Byte-identical in shape to
 // ~CTimeBomb @0x012a70; the empty body is enough for cl.
-RVA(0x00012b30, 0x44)
-CStaticHazard::~CStaticHazard() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CStaticHazard() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CStaticHazard@@UAE@XZ 0x00012b30 0x44
 
 // ---------------------------------------------------------------------------
 // CStaticHazard::CStaticHazard @0x0fb7a0 - the 1-arg ctor. Chains the standard
@@ -182,10 +185,9 @@ CStaticHazard::~CStaticHazard() {}
 // against retail's stack-slot schedule and the jump-table data region scores as
 // the jumptable-data-overlap artifact. Parked for the final sweep.
 RVA(0x000fb7a0, 0x2d4)
-CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // re-arm the IDLE geometry + STATICHAZARD sprite (SetAnimEx idiom).
-    m_prevAnimNode = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
         CAniElement* d = m_38->m_1a0.m_14;
@@ -280,7 +282,7 @@ void CStaticHazard::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CHaznEntry2*)HaznLookup(id))->m_fn = &CStaticHazard::LoadAttributes2;
+    ((CHaznEntry2*)HaznLookup(id))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes2;
 
     i32 id2 = (i32)g_buteTree.Find("B");
     if (id2 == 0) {
@@ -298,7 +300,7 @@ void CStaticHazard::RegisterActs() {
         ((CString*)slot)->operator=("B");
         g_typeCounter++;
     }
-    ((CHaznEntry2*)HaznLookup(id2))->m_fn = &CStaticHazard::LoadAttributes;
+    ((CHaznEntry2*)HaznLookup(id2))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes;
 }
 
 // ---------------------------------------------------------------------------
@@ -330,7 +332,7 @@ i32 CStaticHazard::LoadAttributes2() {
         return 0;
     }
     m_fired = 1;
-    m_prevAnimNode = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
         CAniElement* d = m_38->m_1a0.m_14;
@@ -367,7 +369,7 @@ i32 CStaticHazard::LoadAttributes() {
             // re-arm IDLE (cache the anim-set node first)
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find("A");
-            m_prevAnimNode = m_38->m_1a0.m_14;
+            m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = m_38->m_1a0.m_14;
@@ -387,7 +389,7 @@ i32 CStaticHazard::LoadAttributes() {
             return 0;
         }
         // m_120 == 0: re-arm GO + clear the fired flag
-        m_prevAnimNode = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             CAniElement* d = m_38->m_1a0.m_14;
@@ -410,7 +412,7 @@ i32 CStaticHazard::LoadAttributes() {
             goto dispatch;
         }
         // turn on: re-arm GO, latch the fired flag
-        m_prevAnimNode = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             CAniElement* d = m_38->m_1a0.m_14;
@@ -454,7 +456,7 @@ dispatch:
     {
         CAniAdvanceCursor* sub = &m_38->m_1a0;
         if (sub->m_28 != 0 && sub->m_20 == 0) {
-            m_prevAnimNode = m_38->m_1a0.m_14;
+            m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = m_38->m_1a0.m_14;
@@ -516,5 +518,5 @@ i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain(arc, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(arc, mode, a3, (CGameObject*)a4) != 0;
 }

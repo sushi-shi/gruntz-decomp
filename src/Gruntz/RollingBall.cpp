@@ -115,8 +115,11 @@ static i32 VtblResolve(void* ent) {
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
 // (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. The empty body is enough.
-RVA(0x00012f80, 0x44)
-CRollingBall::~CRollingBall() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CRollingBall() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CRollingBall@@UAE@XZ 0x00012f80 0x44
 
 // The direction-name match builds an MFC CString temp (static-linked helpers,
 // reloc-masked: CString() = 0x1b9b93, operator=(LPCSTR) = 0x1b9e74, ~CString() =
@@ -151,13 +154,12 @@ CRollingBall::~CRollingBall() {}
 // result-reg alloc, the shared dy=0 store fold, and the /GX leaf-vptr re-stamp
 // position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000af820, 0x40d)
-CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_explodeStartLo = 0;
     m_explodeWindowLo = 0;
     m_explodeStartHi = 0;
     m_explodeWindowHi = 0;
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -272,7 +274,7 @@ void CRollingBall::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id))->m_fn = &CRollingBall::Update;
+    ((CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CRollingBall::Update;
 }
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
@@ -305,7 +307,7 @@ i32 CRollingBall::Update() {
         i32 lim = m_explodeWindowHi;
         if (hi < lim || (hi == lim && static_cast<u32>(lo) < static_cast<u32>(m_explodeWindowLo))) {
             RbCacheFirst(m_38, "LEVEL_ROLLINGBALL_EXPLOSION");
-            m_savedGeoId = m_38->m_1a0.m_14;
+            m_value = m_38->m_1a0.m_14;
             RbApplyLookup(m_38, "LEVEL_ROLLINGBALLEXPLOSION", 0);
             CTileGrid* map = g_gameReg->m_tileGrid;
             i32 cx = logic->m_screenX >> 5;
@@ -419,7 +421,7 @@ i32 CRollingBall::Update() {
                     break;
             }
             RbCacheFirst(m_38, explosion);
-            m_savedGeoId = m_38->m_1a0.m_14;
+            m_value = m_38->m_1a0.m_14;
             RbApplyLookup(m_38, fall, 0);
             if (obj == 4) {
                 i32 t = RbGetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
@@ -538,7 +540,7 @@ i32 CRollingBall::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
 

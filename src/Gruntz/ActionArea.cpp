@@ -20,7 +20,7 @@
 #include <Gruntz/TypeColl2.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
-#include <Gruntz/SerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30) + CSerialObjRef
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/HaznColl.h> // CCoordColl - the shared _zvec-based registry-collection address-view
 
@@ -141,6 +141,22 @@ i32 Gap_007c60(void) {
 // `mov [ecx],offset ??_7CUserBase; ret`. @rva-symbol NAMES the retail copy.
 // @rva-symbol: ??1CUserBase@@UAE@XZ 0x000087b0 0x7
 
+// 0x8860 - ??1CUserLogic@@UAE@XZ: the out-of-line COMDAT copy of the inline
+// ~CUserLogic (<Gruntz/UserLogic.h>), same pool. cl auto-emits it here (this obj's
+// /GX leaf ctors' partial-unwind funclets call it out-of-line - e.g. ~CWarlord's
+// unwind action(0) reaches it via the 0x3cfb-band thunk); the body stamps
+// ??_7CUserLogic, inline-destructs the +0x18 link's ~EngStr, stamps ??_7CUserBase.
+// Was the L_8860 placeholder shell (BoundaryLeafLogicViews.h), dissolved 2026-07-17.
+// @rva-symbol: ??1CUserLogic@@UAE@XZ 0x00008860 0x44
+
+// 0x8be0 - ??1CWapX@@QAE@XZ: the out-of-line COMDAT copy of the EMPTY inline
+// ~CWapX (<Gruntz/UserLogic.h> - the tile-logic second base), a 1-byte `ret`.
+// cl auto-emits it here (the /GX leaf ctor/dtor funclets reference it for the
+// +0x34 base subobject unwind - e.g. ~CWarlord FuncInfo state 1's funclet
+// @0x1d8578 null-check-adjusts this+0x34 and calls it). FID's `__fpclear` row
+// for 0x8be0 was a LOW-confidence false positive (pruned from library_labels.csv).
+// @rva-symbol: ??1CWapX@@QAE@XZ 0x00008be0 0x1
+
 // CActionArea::CActionArea (0x7da0) - fold the shared CUserLogic(obj) init, then
 // name the bound object "GAME_ACTIONAREA_RED", bind the "A" bute node, lock the
 // draw order to 6, seed the leaf state (+0x54=1) and flag the sub-object.
@@ -148,8 +164,7 @@ i32 Gap_007c60(void) {
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x00007da0, 0x17e)
-CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_58 = 0;
     m_60 = 0;
     m_5c = 0;
@@ -175,8 +190,11 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
 // vptr) like retail. IDENTITY (vtable-owner probe): ??_7CActionArea @0x1e7004 slot 0 ->
 // ILT thunk -> the scalar-deleting dtor 0x7fa0 -> THIS body. (It used to be RVA-pinned on
 // the fake CProjActOwner twin while this definition went un-annotated.)
-RVA(0x00007fd0, 0x44)
-CActionArea::~CActionArea() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CActionArea() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CActionArea@@UAE@XZ 0x00007fd0 0x44
 
 // 0x8060: register the default projectile-action id range [0x7d0, 0x7da] on the
 // global registry.
@@ -295,7 +313,7 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
-    if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     char* p = (char*)&m_timestamp;

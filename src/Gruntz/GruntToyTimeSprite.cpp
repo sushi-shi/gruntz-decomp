@@ -54,5 +54,8 @@ i32 CGruntToyTimeSprite::Vslot16(CGrunt* grunt) {
 // teardown (store CUserLogic vptr 0x5e705c, inline-destruct the +0x18 link via
 // ~EngStr @0x16d2a0, store CUserBase vptr 0x5e70b4); the intermediate leaf/health
 // vptr stamps dead-store-eliminate. Byte-identical to the sibling leaf dtors.
-RVA(0x00012130, 0x44)
-CGruntToyTimeSprite::~CGruntToyTimeSprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntToyTimeSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntToyTimeSprite@@UAE@XZ 0x00012130 0x44

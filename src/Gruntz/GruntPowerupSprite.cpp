@@ -9,7 +9,7 @@
 // The 0x44 is a DESTRUCTOR (stamps CUserLogic 0x5e705c then CUserBase 0x5e70b4,
 // tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
 // shape to ~CTimeBomb @0x012a70.
-#include <Gruntz/SerialObjRef.h>
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/AniAdvanceCursor.h>
@@ -33,16 +33,18 @@ CIndicatorActReg g_powerupActReg; // 0x644d30
 // the in-game-text leaf uses). External; no body.
 
 // ~CGruntPowerupSprite @0x012370 - the CUserLogic-folded /GX leaf dtor.
-RVA(0x00012370, 0x44)
-CGruntPowerupSprite::~CGruntPowerupSprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntPowerupSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntPowerupSprite@@UAE@XZ 0x00012370 0x44
 
 // --- CGruntPowerupSprite (0x07fdb0), vptr 0x5e76c4 --- the ctor anchors the
 // ??_7CGruntPowerupSprite vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x0007fdb0, 0x166)
-CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_LIGHTING_POWERUP");
-    m_geoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     if (m_object->m_latchedAnimId != 0x15) {
         m_object->m_latchedAnimId = 0x15;
@@ -98,7 +100,7 @@ void CGruntPowerupSprite::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn = &CGruntPowerupSprite::Update;
+    ((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CGruntPowerupSprite::Update;
 }
 
 // SetCell @0x080380 - stash the grunt cell (x,y) and powerup id, seed the bound
@@ -152,7 +154,7 @@ i32 CGruntPowerupSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CGameObject*)a4) == 0) {
+    if (Chain(ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     switch (mode) {

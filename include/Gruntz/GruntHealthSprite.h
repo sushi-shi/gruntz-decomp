@@ -35,9 +35,8 @@
 class CGrunt;
 
 SIZE_UNKNOWN(CGruntHealthSprite);
-class CGruntHealthSprite : public CUserLogic {
+class CGruntHealthSprite : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00011f60, 0x6)
@@ -56,7 +55,8 @@ public:
     virtual i32 Vslot16(CGrunt* grunt);
     CGruntHealthSprite();                   // 0x011ef0 (no-arg ctor; body in GruntHealthSprite.cpp)
     CGruntHealthSprite(CGameObject* obj);   // 0x07eb00 (1-arg ctor; body in GruntHealthSprite.cpp)
-    virtual ~CGruntHealthSprite() OVERRIDE; // 0x011fb0 (folds the CUserLogic teardown; out-of-line
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
                                             // so its 0x11fb0 COMDAT labels cleanly - an inline dtor
                                             // can't hang RVA() without also tagging the synthesized
     // ??_G, tripping the duplicate-RVA guard. The derived leaf
@@ -65,7 +65,6 @@ public:
 
     // CUserLogic is 0x40; the leaf adds its own fields. SetHealthGlyph stashes the
     // two coordinates at +0x54/+0x58 and the health at +0x5c.
-    char m_pad40[0x54 - 0x40];
     i32 m_cellX;  // +0x54  stashed grunt cell x
     i32 m_cellY;  // +0x58  stashed grunt cell y
     i32 m_health; // +0x5c  stashed health value
@@ -76,7 +75,7 @@ VTBL(CGruntHealthSprite, 0x001e7ba4);
 // The class registry entry: its first dword receives the handler PMF (a 4-byte
 // code pointer on this complete single-inheritance class). CGruntHealthSprite is
 // complete above so the PMF stays 4 bytes (matching `mov [entry], offset thunk`).
-typedef i32 (CGruntHealthSprite::*HealthActHandler)();
+typedef i32 (CUserLogic::*HealthActHandler)();
 SIZE_UNKNOWN(CHealthActEntry);
 struct CHealthActEntry {
     HealthActHandler m_fn;

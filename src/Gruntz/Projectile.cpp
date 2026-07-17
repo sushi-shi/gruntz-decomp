@@ -37,7 +37,9 @@
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection (CCoordColl)
 #include <Gruntz/TimeBomb.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
+#include <Gruntz/SerialArchive.h>     // CSerialArchive (the inherited CWapX::Chain arg)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // the anim registry (m_10 Lookup; ex SerialObjRef.h pull)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // obj->m_0c world root (ex SerialObjRef.h pull)
 #include <Gruntz/ActName.h>       // CActName (shared)
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
@@ -132,8 +134,11 @@ CProjectile::CProjectile() {}
 // @0x013100 / the established leaf dtors; the empty body is enough for cl.
 // @interleaver CTimeBomb - own-class COMDAT-pooled leaf dtor in the 0x12xxx dtor pool
 // (CTimeBomb shares this merged TU; kept here, RVA-placement artifact not conflation).
-RVA(0x00012a70, 0x44)
-CTimeBomb::~CTimeBomb() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CTimeBomb() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CTimeBomb@@UAE@XZ 0x00012a70 0x44
 
 // ---------------------------------------------------------------------------
 // CMovingLogic::FinalizeStep (0x13c70) - the slot-5 override (SETTLED: it sits in
@@ -1191,8 +1196,7 @@ void CTimeBomb::RegisterActs() {
 // CBrickz::CBrickz / CStaticHazard::CStaticHazard; not source-steerable. Parked
 // for the final sweep.
 RVA(0x000e1b90, 0x23d)
-CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
     if (m_object->m_latchedAnimId != 0xf) {
         m_object->m_latchedAnimId = 0xf;
@@ -1201,7 +1205,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_TIMEBOMB");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_prevAnimNode = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     if (m_object->m_120 > 0) {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = m_object->m_120;
@@ -1290,7 +1294,7 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     if (m_fastPhase == 0) {
-        m_prevAnimNode = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo =
             static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8));
@@ -1342,7 +1346,7 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
+    return Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
 }
 
 // ---------------------------------------------------------------------------

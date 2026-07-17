@@ -64,9 +64,8 @@ extern "C" u32 g_frameTime; // VA 0x645588 (?g_clock@@3IA, unsigned)
 // state at +0x40 (CUserLogic ends at +0x40). The CUserLogic base gives the +0x18
 // destructible link, so the dtor folds the shared teardown.
 // ---------------------------------------------------------------------------
-class CTeleporter : public CUserLogic {
+class CTeleporter : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CTeleporter(CGameObject* obj); // 0x41020 (base init + name/state setup; body in UserLogic.cpp)
     // InitActReg (0x414a0): construct the class's activation-coordinate registry
@@ -107,10 +106,8 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32)
         OVERRIDE;                    // slot 1 (body: Serialize 0x41350)
-    virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
-
-    CAniElement* m_savedGeoId; // +0x40  snapshot of m_38->m_1a0.m_14
-    char m_pad44[0x54 - 0x44];
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     i32 m_armed; // +0x54  armed flag (a resolved target id)
     // The armed-at running-clock snapshot (m_58) and the bound object's per-tile-time
     // interval (m_60), each a manually zero-extended i64 (lo stored, hi forced 0) so
@@ -130,7 +127,7 @@ SIZE(CTeleporter, 0x70);
 // handler (stored as a free-fn ptr by CTeleporter_RegisterActs, dispatched on
 // `this` -> modeled as a 4-byte single-inheritance PMF so the call lowers to
 // `mov ecx,this; call [entry]`).
-typedef i32 (CTeleporter::*TeleporterHandler)();
+typedef i32 (CUserLogic::*TeleporterHandler)();
 struct CTeleporterActEntry {
     TeleporterHandler m_fn;
 };

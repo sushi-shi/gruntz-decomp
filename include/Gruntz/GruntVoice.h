@@ -90,12 +90,12 @@ extern CVariantSlot* g_vactColl2;    // 0x2514dc
 // (an extra adjust-load + `add this`), which diverges the first dispatch call.
 // ---------------------------------------------------------------------------
 SIZE(CGruntVoice, 0x78);
-class CGruntVoice : public CUserLogic {
+class CGruntVoice : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
-    virtual ~CGruntVoice() OVERRIDE; // 0x119ae0
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     static void InitActReg(); // 0x119dc0 (construct g_vactColl over [2000,2010])
     virtual void FireActivation(i32 id) OVERRIDE;    // 0x119e40
@@ -104,7 +104,6 @@ public:
     i32 Update();                                    // 0x11a8e0 (per-frame: elapse + reposition)
 
     // --- CGruntVoice own fields (offsets load-bearing; roles from Setup/Reset) ---
-    char m_pad40[0x54 - 0x40];
     i32 m_sample;     // +0x54  the play request's sample object (Setup stores, Reset clears)
     i32 m_icon;       // +0x58  in-game icon handle (seeded to g_frameTime)
     i32 m_5c;         // +0x5c  icon-companion slot (zeroed with m_icon; role unproven)
@@ -121,7 +120,7 @@ VTBL(CGruntVoice, 0x1eaf6c);
 // The registry Entry: its first dword is a pointer-to-member-function of
 // CGruntVoice (single inheritance -> a 4-byte code pointer); Dispatch invokes it
 // on `this`, emitting `mov ecx,this; call [entry]`.
-typedef void (CGruntVoice::*VActHandler)();
+typedef void (CUserLogic::*VActHandler)();
 SIZE_UNKNOWN(CVActEntry);
 struct CVActEntry {
     VActHandler m_fn; // [entry]

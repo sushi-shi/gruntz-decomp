@@ -23,7 +23,8 @@ class CTileSecretTrigger : public CTileTrigger {
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     CTileSecretTrigger(CGameObject* obj);      // 0x10fa60
-    virtual ~CTileSecretTrigger() OVERRIDE;
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     static void InitActReg(); // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
     void FireActivation(i32 coord); // 0x10f1e0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs();     // 0x10f340 (binds "A"/"B" handlers)
@@ -37,7 +38,8 @@ class CGiantRock : public CTileTrigger {
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     CGiantRock(CGameObject* obj);              // 0x10fa90
-    virtual ~CGiantRock() OVERRIDE;
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 
 SIZE_UNKNOWN(CCoveredPowerup);
@@ -46,15 +48,16 @@ class CCoveredPowerup : public CTileTrigger {
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     CCoveredPowerup(CGameObject* obj);         // 0x10fac0
-    virtual ~CCoveredPowerup() OVERRIDE;
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 
 // The activation-registry entry records (the .data CActReg rows; 4-byte PMFs).
-typedef i32 (CTileTrigger::*TileTriggerHandler)();
+typedef i32 (CUserLogic::*TileTriggerHandler)();
 struct CTileTriggerActEntry {
     TileTriggerHandler m_fn;
 };
-typedef i32 (CTileSecretTrigger::*TileSecretTriggerHandler)();
+typedef i32 (CUserLogic::*TileSecretTriggerHandler)();
 struct CTileSecretTriggerActEntry {
     TileSecretTriggerHandler m_fn;
 };

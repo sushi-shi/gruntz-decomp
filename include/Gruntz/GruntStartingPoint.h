@@ -8,26 +8,25 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-class CGruntStartingPoint : public CUserLogic {
+class CGruntStartingPoint : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000105b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSTARTINGPOINT;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CGruntStartingPoint(CGameObject* obj);   // 0x3df30
-    virtual ~CGruntStartingPoint() OVERRIDE; // 0x10670 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     virtual void FireActivation(i32 id)
         OVERRIDE; // 0x3e1a0 (vtable slot 4: per-coord PMF dispatch, R4 registry)
-    char m_pad40[0x54 - 0x40];
 };
 VTBL(CGruntStartingPoint, 0x1e8284);
 SIZE(CGruntStartingPoint, 0x54);
 
 // The R4 dispatch-entry record (the .data CActReg row; 4-byte PMF).
-typedef i32 (CGruntStartingPoint::*StartActHandler)();
+typedef i32 (CUserLogic::*StartActHandler)();
 struct StartActEntry {
     StartActHandler m_fn;
 };

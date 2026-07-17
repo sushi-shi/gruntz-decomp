@@ -74,7 +74,9 @@ public:
     // release + the MovingSlot16 tail; was bound as `CProjectile::ReleaseDeferred`,
     // but the slot lives in ??_7CMovingLogic @0x1e87ac - CProjectile INHERITS it).
     virtual void FinalizeStep(i32 unused) OVERRIDE;
-    TILE_LOGIC_TAIL
+    CGameObject* m_34;   // +0x34  (ex TILE_LOGIC_TAIL; own fields here - NO CWapX base:
+    CGameObject* m_38;   // +0x38   this class's RTTI/identity places CWapX elsewhere or
+    AnimWorkerObj* m_3c; // +0x3c   not at all - see the class comment)
 public:
     CMovingLogic();                   // 0x13940 (standalone) / inlined into leaves
     CMovingLogic(CGameObject* owner); // 1-arg (folds into CProjectile(owner))
@@ -176,7 +178,11 @@ inline CMovingLogic::CMovingLogic() {
 // default MIN/MAX when 0), then the 11-double coordinate setter (0x58bc0) and the
 // default-Z band.
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
-    TILE_LOGIC_SEED(owner);
+    // the ex-TILE_LOGIC_SEED stores - CMovingLogic's OWN +0x34..0x3c fields (no CWapX
+    // base here; RTTI puts the moving world's CWapX at +0x150 on the LEAVES).
+    m_34 = owner;
+    m_38 = owner;
+    m_3c = owner->m_7c;
     Motion()->Init();
     // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
     // widened via fild. Written as if/else (not ?:) so the constant branch stays a

@@ -21,9 +21,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CBehindCandy : CUserLogic)
 
-class CBehindCandy : public CUserLogic {
+class CBehindCandy : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CBehindCandy(CGameObject* obj); // 0x0ac3f0 (ctor body in UserLogic.cpp)
     // 0x0000fb70 vtable slot 2: per-class logic-type id, inline (one
@@ -33,8 +32,8 @@ public:
         return LOGIC_BEHINDCANDY;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual ~CBehindCandy() OVERRIDE;             // 0x00fc30 (folds the CUserLogic teardown)
-    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CBehindCandy` @0xaa320)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CBehindCandy, 0x001e8494);
 SIZE(CBehindCandy, 0x54);

@@ -51,8 +51,11 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
 // (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. Byte-identical in shape to
 // ~CGruntHealthSprite @0x00011fb0; the empty body is enough for cl.
-RVA(0x00012070, 0x44)
-CGruntStaminaSprite::~CGruntStaminaSprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntStaminaSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntStaminaSprite@@UAE@XZ 0x00012070 0x44
 
 // CGruntStaminaSprite::Vslot16 (0x0007fbb0) - the leaf's slot-16 stat-time getter:
 // read the bound grunt's +0x3f0 stamina-timer (`mov eax,[esp+4]; mov eax,[eax+0x3f0];

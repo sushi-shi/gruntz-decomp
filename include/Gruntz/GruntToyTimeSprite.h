@@ -25,7 +25,8 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTTOYTIMESPRITE;
     }
-    virtual ~CGruntToyTimeSprite() OVERRIDE;          // 0x012130 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     virtual i32 Vslot16(CGrunt* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
 VTBL(CGruntToyTimeSprite, 0x001e79ec);

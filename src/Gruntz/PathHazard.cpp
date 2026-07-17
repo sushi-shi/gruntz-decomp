@@ -110,14 +110,8 @@ CPathHazard::CPathHazard() {
 
 // CPathHazard::GetTypeTag (0x000132f0) is now an inline member in the class header.
 
-// CRainCloud::~CRainCloud @0x013340 - the CPathHazard-derived rain-cloud leaf's dtor
-// (byte-identical to ~CPathHazard above: no destructible members of its own, so it folds
-// the same bare CUserLogic teardown). IDENTITY (vtable-owner probe): ??_7CRainCloud
-// @0x1e7324 (RTTI-named, bound in <Gruntz/RainCloud.h>) slot 0 -> ILT thunk -> the sdd
-// 0x13310 -> THIS body. It was misbound as ~CPathHazard; ~CRainCloud was declared and
-// never defined.
-RVA(0x00013340, 0x44)
-CRainCloud::~CRainCloud() {}
+// (~CRainCloud x13340 is IMPLICIT and its COMDAT is emitted by raincloud.obj - the
+// TU that constructs it - so its @rva-symbol pin lives in RainCloud.cpp, not here.)
 
 // the bound object is the canonical CGameObject (screen pos m_screenX/Y, z-key
 // m_latchedAnimId, flags m_flags; the WWD record stores the raw waypoint tile
@@ -143,8 +137,7 @@ CRainCloud::~CRainCloud() {}
 // position + retail's walking-pointer reuse of the copy's ecx in the search loop
 // (a regalloc artifact, not source-steerable).
 RVA(0x000b35a0, 0x401)
-CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_legDeadline = 0;
     m_legWindow = 0;
     m_strikeDeadline = 0;
@@ -215,7 +208,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
     } else {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
-        m_savedGeoId = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
 }

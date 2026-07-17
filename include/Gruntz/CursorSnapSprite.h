@@ -19,7 +19,7 @@
 #include <rva.h>
 
 #include <Gruntz/ActReg.h>       // CLogicActTable (the slot-4 activation-dispatch table)
-#include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/UserLogic.h>    // CUserLogic base (CCursorSnapSprite : CUserLogic)
 
 // ---------------------------------------------------------------------------
@@ -28,14 +28,13 @@
 // the CUserLogic layout. The CUserLogic base gives the +0x18 destructible link,
 // so the dtor folds the shared teardown.
 // ---------------------------------------------------------------------------
-class CCursorSnapSprite : public CUserLogic {
+class CCursorSnapSprite : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00011860, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_CURSORSNAPSPRITE;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     // Serialize (0x11880): chain the shared CUserLogic serialize helper on `this`,
     // then (only on success) the +0x34 sub-object's chain; both run the same
@@ -46,11 +45,8 @@ public:
     // a registered handler, re-resolve and dispatch it __thiscall on `this`. Same
     // archetype as CTeleporter::FireActivation (double ResolveEntry + PMF dispatch).
     virtual void FireActivation(i32 id) OVERRIDE;
-    virtual ~CCursorSnapSprite() OVERRIDE; // 0x11920 (folds the CUserLogic teardown)
-
-    CAniElement* m_geoId;      // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)
-    char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from the
-                               //         anim-worker `new CCursorSnapSprite`)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CCursorSnapSprite, 0x1e8074);
 SIZE(CCursorSnapSprite, 0x54);
@@ -63,7 +59,7 @@ extern CLogicActTable g_logicActReg_62bfa0;
 // A dispatch-table entry: its first dword is the class activation handler, stored
 // by the registrar as a free-fn ptr but dispatched __thiscall on `this` - a 4-byte
 // single-inheritance PMF gives the plain `mov ecx,this; call [entry]` code.
-typedef i32 (CCursorSnapSprite::*SnapActHandler)();
+typedef i32 (CUserLogic::*SnapActHandler)();
 struct CSnapActEntry {
     SnapActHandler m_fn;
 };

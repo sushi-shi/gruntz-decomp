@@ -45,7 +45,7 @@
 #include <Gruntz/LightFxMgr.h>        // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/SerialArchive.h>     // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>      // CSerialObjRef::Chain (0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/UserLogic.h>         // canonical CGameObject / CGameObjLayer (the bound object)
 #include <Gruntz/Brickz.h>            // canonical BrickzCell (the 0x1c-byte tile-grid cell)
 #include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
@@ -174,7 +174,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
 //                  so the fold was impossible - that is FALSE: UserLogic.h carries
 //                  `char* m_194 // object source-def record (class-name string at +0x24)`,
 //                  exactly the field the view called m_nameRec. It also already has
-//                  m_layer @+0x198 and m_geoId @+0x1b4.)
+//                  m_layer @+0x198 and m_value @+0x1b4.)
 //   DropperLayer -> CGameObjLayer    (m_halfWidth/m_halfHeight @+0x18/+0x1c)
 //   DropperFound -> CTmCell (= CGrunt)  the REAL return type of CTriggerMgr::FindGruntAt
 //                  (<Gruntz/TriggerMgr.h>); its +0x10 is CUserLogic::m_object, the bound
@@ -216,14 +216,23 @@ typedef enum DropperDir {
 // leaf vptr store is dead-eliminated. Byte-identical in shape to ~CTimeBomb
 // @0x012a70; the empty bodies are enough for cl.
 // ===========================================================================
-RVA(0x000124f0, 0x44)
-CObjectDropper::~CObjectDropper() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CObjectDropper() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CObjectDropper@@UAE@XZ 0x000124f0 0x44
 
-RVA(0x000125b0, 0x44)
-CDroppedObject::~CDroppedObject() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CDroppedObject() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CDroppedObject@@UAE@XZ 0x000125b0 0x44
 
-RVA(0x00012670, 0x44)
-CDroppedObjectShadow::~CDroppedObjectShadow() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CDroppedObjectShadow() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CDroppedObjectShadow@@UAE@XZ 0x00012670 0x44
 
 // ===========================================================================
 // The three logic-worker pumps (0xc5630/0xc5770/0xc58b0, ex ObjectLogicPump.cpp)
@@ -371,11 +380,10 @@ i32 DroppedObjectShadowPump(CGameObject* obj) {
 // alloc (ebx pinned to 1 across the first loop), the /GX leaf-vptr re-stamp position
 // + the shared dy=0 store fold. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000c59f0, 0x3e3)
-CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    m_geomId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_OBJECTDROPPER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -488,7 +496,7 @@ void CObjectDropper::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CDropperActEntry*)g_dropperActReg.ResolveEntry(id))->m_fn = &CObjectDropper::Update;
+    ((CDropperActEntry*)g_dropperActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CObjectDropper::Update;
 }
 
 // CObjectDropper::Update @0xc62e0 - the per-frame tick (re-homed from the
@@ -597,7 +605,7 @@ i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
 
@@ -669,12 +677,11 @@ i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // byte-AND codegen pick. The SAME plateau as CBrickz / the other bute ctors; not
 // source-steerable. Parked for the final sweep.
 RVA(0x000c68b0, 0x1f5)
-CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_38->m_flags |= 0x2000002;
     i32 adjY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -852,7 +859,7 @@ i32 CDroppedObject::ActA() {
                 }
             }
         }
-        m_savedGeoId = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("B");
@@ -883,7 +890,7 @@ i32 CDroppedObject::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     switch (tag) {
@@ -918,12 +925,11 @@ i32 CDroppedObject::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // 1-slot callee-saved scheduling delta MSVC coin-flips. The SAME plateau as
 // CBrickz::CBrickz (~92%); not source-steerable. Parked for the final sweep.
 RVA(0x000c7490, 0x1a6)
-CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_flags |= 0x2000002;
     m_object->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[5];
@@ -980,7 +986,7 @@ void CDroppedObjectShadow::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CShadowActEntry*)g_shadowActReg.ResolveEntry(id))->m_fn = &CDroppedObjectShadow::Advance;
+    ((CShadowActEntry*)g_shadowActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CDroppedObjectShadow::Advance;
 }
 
 // CDroppedObjectShadow::Advance (0xc7ab0): the per-frame act handler - advance
@@ -1019,7 +1025,7 @@ i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain((CSerialArchive*)ar, mode, c, (CGameObject*)d)) {
+    if (!Chain((CSerialArchive*)ar, mode, c, (CGameObject*)d)) {
         return 0;
     }
     if (mode == 8) {

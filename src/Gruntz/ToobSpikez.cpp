@@ -8,7 +8,7 @@
 // CToobSpikez : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
-#include <Gruntz/SerialObjRef.h>    // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
@@ -119,7 +119,7 @@ CActReg g_toobColl;
 // `mov ecx,this; call [entry]`. CToobSpikez is defined COMPLETE in the header above so
 // the PMF stays 4 bytes (pmf-complete-class-4byte). ResolveEntry returns the raw slot,
 // reinterpreted as the PMF pointer (no entry-struct view needed).
-typedef void (CToobSpikez::*ToobHandler)();
+typedef void (CUserLogic::*ToobHandler)();
 
 // ---------------------------------------------------------------------------
 // The shared activation-NAME registry CToobSpikez::RegisterActs (0x1149c0) interns
@@ -139,9 +139,8 @@ extern i32 ToobLogic_114bc0();
 // --- CToobSpikez (0x1145c0), vptr 0x5e7774 --- the ctor anchors GetTypeTag @0x12ba0
 // + the ??_7CToobSpikez vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x001145c0, 0x18e)
-CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_40 = m_38->m_1a0.m_14;
+CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 2);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -172,7 +171,7 @@ i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(a, b, c, (CGameObject*)d) != 0;
+    return Chain(a, b, c, (CGameObject*)d) != 0;
 }
 
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members
@@ -181,8 +180,11 @@ i32 CToobSpikez::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 d) {
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame. Byte-identical in shape to ~CTimeBomb @0x012a70;
 // the empty body is enough for cl.
-RVA(0x00012c60, 0x44)
-CToobSpikez::~CToobSpikez() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CToobSpikez() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CToobSpikez@@UAE@XZ 0x00012c60 0x44
 
 // CToobSpikez::FireActivation @0x114860 - look the activation coordinate up in
 // the registry; if the entry has a registered handler, look it up again and

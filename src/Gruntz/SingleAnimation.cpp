@@ -13,7 +13,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleAnimation.h>
-#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // The class's activation-coordinate registry singleton (@0x645f70), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). CSingleAnimActReg
@@ -35,7 +35,7 @@ i32 CSingleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CSingleAnimation::~CSingleAnimation @0x010540 - the leaf adds no destructible
@@ -44,14 +44,16 @@ i32 CSingleAnimation::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. Byte-identical in shape to the
 // established leaf dtors; the empty body is enough for cl.
-RVA(0x00010540, 0x44)
-CSingleAnimation::~CSingleAnimation() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CSingleAnimation() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CSingleAnimation@@UAE@XZ 0x00010540 0x44
 
 // --- CSingleAnimation (0x0ae7f0), vptr 0x5e745c --- the ctor anchors the
 // ??_7CSingleAnimation vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x000ae7f0, 0x13d)
-CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -106,7 +108,7 @@ void CSingleAnimation::RegisterActs() {
         g_typeCounter++;
     }
     ((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn =
-        &CSingleAnimation::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CSingleAnimation::AdvanceAnim;
 }
 
 // CSingleAnimation::AdvanceAnim @0x0aed80 - advance the bound object's +0x1a0 anim

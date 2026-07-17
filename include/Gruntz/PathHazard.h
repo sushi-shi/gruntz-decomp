@@ -91,14 +91,13 @@ extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed
 // at +0x90.. The CUserLogic base gives the +0x18 destructible link, so the dtor
 // folds the shared teardown (the /GX leaf-dtor archetype).
 // ---------------------------------------------------------------------------
-class CPathHazard : public CUserLogic {
+class CPathHazard : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     // The vtable slot-4 (UserLogicVfunc2) activation dispatcher body (0x0b3b60;
     // shared by CUFO/CRainCloud); a plain method - the base placeholder blocks the
     // int-arg OVERRIDE spelling.
     virtual void FireActivation(i32 id) OVERRIDE;
-    TILE_LOGIC_TAIL
 public:
     CPathHazard(); // 0x13170 (no-arg deserialize-path ctor; zeroes the leg/strike i64s)
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
@@ -129,16 +128,12 @@ public:
     // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
     // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
     void ForwardTick(); // 0x0b5070 (out-of-line: tail-jump to Tick(), virtual slot 16)
-    // INLINE (like ~CUserLogic): the derived leaves (CRainCloud/CUFO) must FOLD this
-    // teardown into their own dtors - retail's ~CRainCloud @0x13340 is a flat CUserLogic
-    // teardown, byte-identical to ~CPathHazard, with every intermediate vptr stamp
-    // dead-store-eliminated. An out-of-line base dtor would emit `call ??1CPathHazard`
-    // there instead. The out-of-line COMDAT the vtable dispatches to (0x13280) is pinned
-    // by @rva-symbol in PathHazard.cpp (an inline dtor cannot hang an RVA()).
-    virtual ~CPathHazard() OVERRIDE {} // slot 0 (COMDAT @0x13280)
-
-    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
-    char m_pad44[0x58 - 0x44];
+    // NO user-declared dtor: retail 0x13280 is the COMPILER-GENERATED one (implicit
+    // elides the leaf-vptr restamp a user `{}` would emit now that the CWapX base EH
+    // state blocks the old dead-store elision). Still implicitly-inline, so the derived
+    // leaves (CRainCloud/CUFO) FOLD the teardown; the out-of-line COMDAT keeps its
+    // @rva-symbol pin in PathHazard.cpp.
+    char m_pad54[0x58 - 0x54];
     double m_speed;         // +0x58  per-frame speed (1 / (m_bc / 32))
     double m_posX;          // +0x60  sub-pixel X position accumulator
     double m_posY;          // +0x68  sub-pixel Y position accumulator
@@ -167,7 +162,7 @@ VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)
 // The activation-registry handler entry (the PMF slot RunAct resolves; defined
 // after the complete class, the FortressFlag.h record pattern).
 struct CPathHazardActEntry {
-    i32 (CPathHazard::*m_fn)();
+    i32 (CUserLogic::*m_fn)();
 };
 
 #endif // GRUNTZ_CPATHHAZARD_H

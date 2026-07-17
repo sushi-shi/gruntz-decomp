@@ -8,9 +8,10 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-class CToyPeek : public CUserLogic {
+class CToyPeek : public CUserLogic, public CWapX {
 public:
-    virtual ~CToyPeek() OVERRIDE;                                      // slot 0
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in ToyPeek.cpp)
     RVA(0x00011bf0, 0x6)
@@ -30,11 +31,10 @@ public:
     // RegisterIconState is a FREE fn storing an UNTYPED code ptr. The body still lives
     // in InGameIcon.cpp (that .text run); re-homing the TU is a separate question.
     virtual void FireActivation(i32 id) OVERRIDE; // 0x097de0
-    TILE_LOGIC_TAIL
 public:
     CToyPeek(CGameObject* obj); // 0x98140
 
-    char m_pad40[0x58 - 0x40];
+    char m_pad54[0x58 - 0x54];
     // The peek timer: a 64-bit start-clock snapshot (m_startClock) and countdown
     // window (m_countdown), each a lo/hi i32 pair (retail zero-inits both halves).
     i32 m_startClockLo; // +0x58  running-clock snapshot (g_frameTime)
@@ -46,6 +46,6 @@ VTBL(CToyPeek, 0x1e7204);
 
 // The handler PMF stored in each g_iconStateTable slot (a 4-byte code pointer on
 // this complete single-inheritance class; FireActivation dispatches it on `this`).
-typedef i32 (CToyPeek::*ToyPeekActHandler)();
+typedef i32 (CUserLogic::*ToyPeekActHandler)();
 
 #endif // GRUNTZ_CTOYPEEK_H

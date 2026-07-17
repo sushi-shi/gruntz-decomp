@@ -51,13 +51,13 @@
 // slot-4 placeholder (UserLogicVfunc2), so slot 4 is filled by the base-shaped
 // UserLogicVfunc2() OVERRIDE + FireActivation stays a plain method (the same
 // compromise CTileTrigger / CSpotLight / CLightFx use for their slot-4 body).
-class CTileTriggerTransition : public CUserLogic {
+class CTileTriggerTransition : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    TILE_LOGIC_TAIL
 public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
-    virtual ~CTileTriggerTransition() OVERRIDE;
+    // NO user-declared dtor: retail 0x117f0 is COMPILER-GENERATED (implicit; pin in
+    // TileLogicPump.cpp).
 
     // per-class logic-type id (0x405); body out-of-line at 0x011730 in the leaf pool.
     virtual LogicTypeId GetTypeTag() OVERRIDE;
@@ -71,15 +71,13 @@ public:
     // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
     // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the
     // +0x1b4 animation descriptor.
-    CAniElement* m_activeAnimDesc; // +0x40
-    char m_pad44[0x54 - 0x44];     // +0x44..+0x53
 };
 VTBL(CTileTriggerTransition, 0x1e7db4);
 SIZE_UNKNOWN(CTileTriggerTransition);
 
 // The per-class registry entry: its first dword receives the per-frame handler PMF
 // (a 4-byte code pointer on this complete single-inheritance class).
-typedef i32 (CTileTriggerTransition::*TileActHandler)();
+typedef i32 (CUserLogic::*TileActHandler)();
 struct TileActEntry {
     TileActHandler m_fn;
 };

@@ -25,9 +25,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CStaticHazard : CUserLogic)
 
-class CStaticHazard : public CUserLogic {
+class CStaticHazard : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
@@ -43,11 +42,10 @@ public:
     i32 LoadAttributes2();                        // 0x0fc0b0 (time-gated pulse)
     i32 LoadAttributes();                         // 0x0fc1a0 (periodic tick/update)
     virtual void FireActivation(i32 id) OVERRIDE; // 0x0fbbf0 (vtable slot 4)
-    virtual ~CStaticHazard() OVERRIDE;            // 0x012b30 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     // CStaticHazard's own data begins at +0x40 (CUserLogic ends at +0x40).
-    CAniElement* m_prevAnimNode; // +0x40  snapshot of the bound object's active-anim descriptor
-    char m_pad44[0x54 - 0x44];
     u32 m_pulseEpoch;   // +0x54  pulse epoch (latched g_frameTime at construction)
     i32 m_activeWindow; // +0x58  active-window length (Hazardz/AniPad bute int + offset)
     i32 m_idleWindow;   // +0x5c  idle-window length
@@ -59,11 +57,11 @@ VTBL(CStaticHazard, 0x001e7824);
 
 // The activation-registry handler-entry records (the .data CActReg rows; 4-byte
 // PMFs; FireActivation dispatches them thiscall on the leaf).
-typedef void (CStaticHazard::*HaznHandler)();
+typedef void (CUserLogic::*HaznHandler)();
 struct CHaznEntry {
     HaznHandler m_fn;
 };
-typedef i32 (CStaticHazard::*HaznHandler2)();
+typedef i32 (CUserLogic::*HaznHandler2)();
 struct CHaznEntry2 {
     HaznHandler2 m_fn;
 };

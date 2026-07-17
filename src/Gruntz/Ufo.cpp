@@ -12,7 +12,7 @@
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/SpotLight.h>         // CSpotLight - the spawned spotlight's bound logic leaf
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference facet
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
 #include <rva.h>
 
@@ -48,7 +48,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     CGameObject* o = m_object;
     i32 sx = o->m_screenX;
     i32 sy = o->m_screenY;
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
         CGameObject* sl =
@@ -171,7 +171,7 @@ i32 CPathHazard::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CGameObject*)d)
+    if (Chain((CSerialArchive*)stream, tag, c, (CGameObject*)d)
         == 0) {
         return 0;
     }

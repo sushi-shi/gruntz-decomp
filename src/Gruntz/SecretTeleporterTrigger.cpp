@@ -28,7 +28,7 @@
 #include <Gruntz/ActReg.h>            // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
 #include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
-#include <Gruntz/SerialObjRef.h>            // CSerialObjRef::Chain (0x8c00) - the +0x34 round-trip
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Globals.h>                        // g_actLo/Hi/Base/Stride/Scratch/Cur/Coll2 (fast range)
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
@@ -119,7 +119,7 @@ i32 CSecretTeleporterTrigger::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return SerialRef34()->Chain(a, b, c, (CGameObject*)d) != 0;
+    return Chain(a, b, c, (CGameObject*)d) != 0;
 }
 
 // --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
@@ -128,8 +128,11 @@ i32 CSecretTeleporterTrigger::SerializeMove(CGruntArchive* a, i32 b, i32 c, i32 
 // ~EngStr call), store the CUserBase vptr. The destructible link forces the /GX
 // EH frame. The fold requires ~CUserBase/~CUserLogic/~CUserBaseLink to be inline
 // (see UserLogic.h); the empty leaf body below is enough for cl to emit it.
-RVA(0x00010ab0, 0x44)
-CSecretTeleporterTrigger::~CSecretTeleporterTrigger() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CSecretTeleporterTrigger() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CSecretTeleporterTrigger@@UAE@XZ 0x00010ab0 0x44
 
 // --- CSecretLevelTrigger no-arg ctor (0x010b20) --- the deserialize-path ctor:
 // base prologue + link + leaf vptr stamp (the empty body is enough for cl).
@@ -146,7 +149,7 @@ i32 CSecretLevelTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no
@@ -155,13 +158,15 @@ i32 CSecretLevelTrigger::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
 // (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. Byte-identical in shape to
 // ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
-RVA(0x00010c50, 0x44)
-CSecretLevelTrigger::~CSecretLevelTrigger() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CSecretLevelTrigger() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CSecretLevelTrigger@@UAE@XZ 0x00010c50 0x44
 
 // --- CSecretTeleporterTrigger (0x041e90), vptr 0x5e7564 ---
 RVA(0x00041e90, 0x1ac)
-CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_isEasyMode == 0 && g_gameReg->m_134 == 1) {
         m_38->m_flags |= 0x10000;
     } else {
@@ -230,14 +235,13 @@ void CSecretTeleporterTrigger::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CTelActEntry*)ActLookup(id))->m_fn = &CSecretTeleporterTrigger::SpawnTeleporter;
+    ((CTelActEntry*)ActLookup(id))->m_fn = (i32 (CUserLogic::*)())&CSecretTeleporterTrigger::SpawnTeleporter;
 }
 
 // --- CSecretLevelTrigger 1-arg ctor (0x0424b0), vptr 0x5e8804 --- folds the inline
 // CUserLogic(obj) base + the tile-snap/anim tail (gated on the play sub-mode).
 RVA(0x000424b0, 0x1a0)
-CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
         m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -304,7 +308,7 @@ void CSecretLevelTrigger::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CSecretActEntry*)g_secretActReg.ResolveEntry(id))->m_fn = &CSecretLevelTrigger::Tick;
+    ((CSecretActEntry*)g_secretActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CSecretLevelTrigger::Tick;
 }
 
 // CSecretLevelTrigger::Tick @0x042ac0 - probe the trigger's screen position; if a

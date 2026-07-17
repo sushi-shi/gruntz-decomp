@@ -24,9 +24,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CFortressFlag : CUserLogic)
 
-class CFortressFlag : public CUserLogic {
+class CFortressFlag : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CFortressFlag(CGameObject* obj); // 0x045d30
     // Construct the class's activation-coordinate registry (g_fortressFlagActReg
@@ -47,11 +46,8 @@ public:
         return LOGIC_FORTRESSFLAG;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual ~CFortressFlag() OVERRIDE; // 0x010e90 (folds the CUserLogic teardown)
-
-    CAniElement* m_prevAnimNode; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
-    char m_pad44[0x54 - 0x44];   // +0x44  (unmodeled tail; size proven 0x54 from
-                                 //         AnimWorkerHandlers `new CFortressFlag`)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CFortressFlag, 0x001e725c);
 SIZE(CFortressFlag, 0x54);
@@ -59,7 +55,7 @@ SIZE(CFortressFlag, 0x54);
 // The class's activation-registry entry record: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
 // class). Declared AFTER the complete class so the PMF stays 4 bytes.
-typedef i32 (CFortressFlag::*FortressFlagHandler)();
+typedef i32 (CUserLogic::*FortressFlagHandler)();
 struct CFortressFlagActEntry {
     FortressFlagHandler m_fn;
 };

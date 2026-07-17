@@ -12,14 +12,13 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSingleFrameMessage : CUserLogic)
 
-class CSingleFrameMessage : public CUserLogic {
+class CSingleFrameMessage : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x0000f580, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SINGLEFRAMEMESSAGE;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CSingleFrameMessage(CGameObject* obj); // 0x0ab310 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry singleton
@@ -35,16 +34,14 @@ public:
     // so it is declared only - RegisterActs takes its address as a reloc-masked
     // handler-store operand.
     i32 AdvanceAnim();
-    virtual ~CSingleFrameMessage()
-        OVERRIDE; // empty vtable-anchor dtor (folds the CUserLogic teardown)
-    char m_pad40
-        [0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSingleFrameMessage` @0xa9b80)
+    // NO user-declared dtor: retail 0xf640 is COMPILER-GENERATED (implicit; pin in
+    // SingleFrameMessage.cpp).
 };
 VTBL(CSingleFrameMessage, 0x1e864c);
 SIZE(CSingleFrameMessage, 0x54);
 
 // The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
-typedef i32 (CSingleFrameMessage::*SingleFrameHandler)();
+typedef i32 (CUserLogic::*SingleFrameHandler)();
 struct CSingleFrameActEntry {
     SingleFrameHandler m_fn;
 };

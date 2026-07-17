@@ -91,14 +91,13 @@ struct CWarlordMission {
 // ---------------------------------------------------------------------------
 // CWarlord
 // ---------------------------------------------------------------------------
-class CWarlord : public CUserLogic {
+class CWarlord : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000107a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARLORD;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CWarlord(i32); // 0x42d40 (the warlord ctor: base init + name/state setup)
     // NO user-declared destructor: retail's ~CWarlord (0x107f0) is the COMPILER-
@@ -151,7 +150,6 @@ public:
     // Past the 0x40 CUserLogic base. m_38 is the inherited CUserLogic::m_38
     // (anim player); CString m_54 is CWarlord's own destructible member; the
     // 64-bit cooldown stamp/window live at m_88/m_8c and m_90/m_94.
-    char m_pad40[0x54 - 0x40];
     CString m_54; // +0x54  destructible string member (the resolved "WARLORDZ_<owner>" name)
     // The ctor resolves the eleven per-state animation handles by looking each
     // "GRUNTZ_<owner>_<state>" key up in the bound object's embedded name->handle map

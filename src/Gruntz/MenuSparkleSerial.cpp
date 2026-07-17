@@ -4,7 +4,8 @@
 // globals through the archive (mode 4 = write via vtbl[0x30], mode 7 = read via
 // vtbl[0x2c]). Plain /O2 leaf (no /GX). The base/sub serialize + the archive
 // Read/Write are reloc-masked.
-#include <Gruntz/MenuSparkleSerial.h>
+#include <Gruntz/MenuSparkle.h> // the ONE canonical CMenuSparkle (the Grunt.h-world
+                               // MenuSparkleSerial.h view died with the CWapX conversion)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Globals.h>
 
@@ -28,7 +29,7 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (!CUserLogic::SerializeMove((CSerialArchive*)arc, mode, a3, a4)) {
         return 0;
     }
-    if (!m_34.Chain((CSerialArchive*)arc, mode, a3, (CGameObject*)a4)) {
+    if (!Chain((CSerialArchive*)arc, mode, a3, (CGameObject*)a4)) {
         return 0;
     }
     if (mode != 4) {

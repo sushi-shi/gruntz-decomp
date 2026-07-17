@@ -21,16 +21,16 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CDoNothingNormal : CUserLogic)
 
 SIZE_UNKNOWN(CDoNothingNormal);
-class CDoNothingNormal : public CUserLogic {
+class CDoNothingNormal : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x0000f7e0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DONOTHINGNORMAL;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
-    virtual ~CDoNothingNormal() OVERRIDE;         // 0x0000f8a0 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CDoNothingNormal, 0x1e859c);
 

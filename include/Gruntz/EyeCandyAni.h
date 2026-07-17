@@ -11,11 +11,11 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic, CGameObject, g_buteMgr
 
-class CEyeCandyAni : public CUserLogic {
+class CEyeCandyAni : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
-    virtual ~CEyeCandyAni() OVERRIDE; // slot 0
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     CEyeCandyAni(CGameObject* obj);   // 0xac870
     // 0x0000ff00 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
@@ -34,9 +34,6 @@ public:
     // Re-target the bound object's animation sub-object (m_38 + 0x1a0) to the
     // current draw-delta (g_engineFrameDelta) and return 0.
     i32 AdvanceAnim(); // 0x0acf10
-
-    CAniElement* m_savedGeoId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
-    char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CEyeCandyAni` @0xaa820)
 };
 VTBL(CEyeCandyAni, 0x001e8334);
 SIZE(CEyeCandyAni, 0x54);
@@ -45,7 +42,7 @@ SIZE(CEyeCandyAni, 0x54);
 // first dword receives the per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this
 // single-inheritance class). RunAct/RegisterActs cast the CActReg entry to this. A
 // faithful 4-byte PMF record, hoisted out of FrontCandyAni.cpp.
-typedef i32 (CEyeCandyAni::*EyeCandyHandler)();
+typedef i32 (CUserLogic::*EyeCandyHandler)();
 struct CEyeCandyActEntry {
     EyeCandyHandler m_fn;
 };

@@ -32,7 +32,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/GameStateRecord.h> // CSerialObjRef::Chain (0x8c00)
+#include <Gruntz/GameStateRecord.h> // CWapX::Chain (0x8c00) - the ex-CSerialObjRef
 #include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -1159,8 +1159,12 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (CUserLogic::SerializeMove((CSerialArchive*)ar, mode, a3, a4) == 0) {
         return 0;
     }
-    // then the +0x150 CSerialObjRef's chain (0x8c00 via the 0x1aff thunk)
-    if (((CSerialObjRef*)(&m_150))->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
+    // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
+    // @identity-TODO(deferred): CGrunt's RTTI CHD @VA 0x5f2c40 proves CWapX is a
+    // DIRECT second base at mdisp +0x150 (past the 0x150 CMovingLogic spine). The
+    // Grunt.h ODR world is not converted yet, so the subobject is reached by cast
+    // until that MI conversion lands (MI1 flagged item 1).
+    if (((CWapX*)&m_150)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     switch (mode) {

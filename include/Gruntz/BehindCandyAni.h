@@ -24,9 +24,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CBehindCandyAni : CUserLogic)
 
-class CBehindCandyAni : public CUserLogic {
+class CBehindCandyAni : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CBehindCandyAni(CGameObject* obj); // 0x0ad540 (ctor body in UserLogic.cpp)
     // Resolve the registry entry for id; run its bound handler as a PMF on this
@@ -46,11 +45,8 @@ public:
         return LOGIC_BEHINDCANDYANI;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual ~CBehindCandyAni() OVERRIDE; // 0x0100f0 (folds the CUserLogic teardown)
-
-    CAniElement* m_40; // +0x40  saved active-anim descriptor (ctor snapshot)
-    char
-        m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CBehindCandyAni` @0xaa5a0)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CBehindCandyAni, 0x001e838c);
 SIZE(CBehindCandyAni, 0x54);
@@ -59,7 +55,7 @@ SIZE(CBehindCandyAni, 0x54);
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
 // class). FireActivation invokes it __thiscall on the trigger. Defined after the
 // complete class (the FortressFlag.h record pattern).
-typedef i32 (CBehindCandyAni::*BehindCandyHandler)();
+typedef i32 (CUserLogic::*BehindCandyHandler)();
 struct CBehindCandyActEntry {
     BehindCandyHandler m_fn;
 };

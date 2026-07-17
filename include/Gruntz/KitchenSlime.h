@@ -12,14 +12,13 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGameObject / CGruntArchive)
 
-class CKitchenSlime : public CUserLogic {
+class CKitchenSlime : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x000130b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_KITCHENSLIME;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     static void RegisterRange(); // 0x0b28c0 (seed the activation table's fast range)
     static void RegisterType();  // 0x0b2aa0 (level-load class registrar)
@@ -27,7 +26,8 @@ public:
     i32 Tick();
     i32 LoadSprites();
     CKitchenSlime(CGameObject* obj);   // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
-    virtual ~CKitchenSlime() OVERRIDE; // 0x013100 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     // The bound CGameObject IS the slime's level/anim data (inherited m_object == m_38,
     // the same object). The two accessors keep the two distinct base-member loads
@@ -41,9 +41,7 @@ public:
     CGameObject* Anim() {
         return m_38;
     }
-
-    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
-    char m_pad44[0x58 - 0x44];
+    char m_pad54[0x58 - 0x54];
     double m_speed;  // +0x58  per-frame speed (g_slimeSpeedNum / timePerTile)
     double m_posX;   // +0x60  sub-pixel X position accumulator
     double m_posY;   // +0x68  sub-pixel Y position accumulator
@@ -64,7 +62,7 @@ SIZE(CKitchenSlime, 0x90);
 // (Retail's grow-path allocs 0xc-byte nodes, so the real record may carry 2 more
 // fields at +4/+8 that no code touches - @identity-TODO; the addressing stride is a
 // runtime DATA value, so the 4-byte model is byte-exact here.)
-typedef void (CKitchenSlime::*KSlimeHandler)();
+typedef void (CUserLogic::*KSlimeHandler)();
 struct CKSlimeEntry {
     KSlimeHandler m_fn; // [entry]
 };

@@ -17,23 +17,11 @@
 // Leaf destructors (the /GX leaf-dtor archetype; byte-identical to ~CSimpleAnimation,
 // the only per-class difference being the reloc-masked EH funcinfo table).
 //
-// L_8860 - PROVEN to be ??1CUserLogic itself (??_7CUserLogic @0x1e705c slot 0 -> ILT
-// thunk 0x3cfb -> sdd 0x8a10 -> this dtor 0x8860). The fold is BLOCKED, not unproven:
-// ~CUserLogic is inline in <Gruntz/UserLogic.h> (load-bearing - ~50 leaf dtors fold it),
-// so the out-of-line COMDAT can only be pinned by @rva-symbol in a TU whose obj EMITS it,
-// and our WorldSoundSet TU does not odr-use CUserLogic yet (retail's did - the whole
-// CUserBase/CUserLogic base-COMDAT pool 0x87d0-0x8b50 lands in that obj). Reconstructing
-// that TU's CUserLogic user unblocks the fold; until then the placeholder keeps the body
-// matched (100%) rather than dropping it. @identity-TODO: L_8860 == CUserLogic.
-
-class L_8860 : public CUserLogic {
-public:
-    TILE_LOGIC_TAIL
-public:
-    virtual ~L_8860() OVERRIDE;
-};
-SIZE_UNKNOWN(L_8860);
-RELOC_VTBL(L_8860, 0x001e705c); // IS ~CUserLogic (see above) - fold blocked on the emitter
+// (L_8860 is DISSOLVED, 2026-07-17: it was ??1CUserLogic's out-of-line COMDAT
+// (??_7CUserLogic @0x1e705c slot 0 -> ILT thunk 0x3cfb -> sdd 0x8a10 -> 0x8860).
+// The old emitter-blocker is dead: after the CWapX conversion the leaf ctor/dtor
+// funclets odr-use ~CUserLogic out-of-line, so the COMDAT is emitted and the body
+// is pinned by @rva-symbol in src/Gruntz/ActionArea.cpp.)
 
 // L_13400 - a REAL, distinct CUserLogic leaf: its own vtable is ??_7L_13400 @0x1e72b4
 // (slot 0 -> sdd 0x133d0 -> the dtor 0x13400; slot 1 = 0xb4c40; slot 2 = the GetTypeTag
@@ -42,9 +30,19 @@ RELOC_VTBL(L_8860, 0x001e705c); // IS ~CUserLogic (see above) - fold blocked on 
 // 0x135a0 with vtable 0x1e885c - i.e. ONE of the two bindings is wrong and the conflict
 // needs the CUFO/CVoiceTrigger/CPathHazard leaf-vtable family re-audited as a whole (see
 // the GruntVoice.cpp note). The vtable rva below is binary-proven either way.
+// NOT converted to the CWapX second base (MI1, 2026-07-17), deliberately: this
+// class's IDENTITY is unresolved (see the @identity-TODO above), and CWapX is a
+// per-CLASS RTTI fact - asserting it on a shell whose real class is unknown would
+// be a fabrication. The +0x34..0x3c triple stays flat, exactly as the ex-TILE_LOGIC_TAIL
+// spelled it, and the dtor stays an explicit body (nothing constructs an L_13400, so
+// no TU emits its vtable/??_G - an implicit dtor would have no emitter to pin).
+// Resolve the identity first (the CUFO/CVoiceTrigger/CPathHazard vtable-family audit);
+// the CWapX conversion follows for free once the real class is named.
 class L_13400 : public CUserLogic {
 public:
-    TILE_LOGIC_TAIL
+    CGameObject* m_34;   // +0x34  (ex TILE_LOGIC_TAIL)
+    CGameObject* m_38;   // +0x38
+    AnimWorkerObj* m_3c; // +0x3c
 public:
     virtual ~L_13400() OVERRIDE;
 };

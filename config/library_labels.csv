@@ -21,7 +21,6 @@ rva,name,lib,confidence,source
 0x0089b0,__fpclear,LIBCMT,LOW,anchored
 0x0089f0,__fpclear,LIBCMT,LOW,anchored
 0x008a10,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x008be0,__fpclear,LIBCMT,LOW,anchored
 0x008dc0,__inc,LIBCMT,LOW,anchored
 0x008e10,__inc,LIBCMT,LOW,anchored
 0x008e60,__inc,LIBCMT,LOW,anchored

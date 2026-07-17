@@ -23,7 +23,7 @@
 // Field names are placeholders; the OFFSETS + emitted code bytes are load-bearing.
 #include <Mfc.h> // MFC superset (afx-first); also pulled by WorldSoundSet.h
 #include <Gruntz/WorldSoundSet.h>
-#include <Gruntz/BoundaryLeafLogicViews.h> // L_8860 (== ~CUserLogic; fold blocked, see below)
+#include <Gruntz/BoundaryLeafLogicViews.h> // the boundary leaf-dtor views (L_8860 dissolved)
 #include <Gruntz/AmbientSound.h>           // canonical CAmbientSound / CAmbientPosSound
 #include <Gruntz/RandomAmbientSound.h>     // canonical CRandomAmbientSound
 #include <Gruntz/PosSound.h> // PosSoundObj / PosSoundAux / PosSoundPlaced spawn-path types
@@ -78,22 +78,11 @@ void SpawnPosSound(PosSoundObj* obj);
 // ctor's partial-unwind calls it via thunk 0x1343) + its body: stamp ??_7CUserBase
 // (0x5e70b4, RTTI .?AVCUserBase@@) and return.
 
-// @early-stop
-// 0x8860 IS ??1CUserLogic - PROVEN from the binary: ??_7CUserLogic @0x1e705c slot 0 holds
-// an ILT thunk (0x3cfb) to the scalar-deleting dtor 0x8a10, whose body calls 0x8860. (The
-// old note claimed a rival ~CUserLogic copy at 0x117f0; that was a MISBINDING - 0x117f0's
-// sdd 0x117c0 sits in slot 0 of ??_7CTileTriggerTransition @0x1e7db4, and MSVC5 keeps
-// exactly ONE COMDAT per mangled name, so N byte-identical empty leaf dtors can never be
-// N copies of one ~CUserLogic: each is its OWN class's dtor. 0x117f0 is now correctly
-// bound as ??1CTileTriggerTransition in TileLogicPump.cpp.)
-// The fold is BLOCKED on the EMITTER, not on the identity: ~CUserLogic is inline in
-// <Gruntz/UserLogic.h> (load-bearing - ~50 leaf dtors fold it), so it can only be pinned
-// by @rva-symbol from a TU whose obj emits the COMDAT, and this TU does not odr-use
-// CUserLogic yet (retail's did - the whole CUserBase/CUserLogic base-method COMDAT pool
-// 0x87d0/0x87f0/0x8810/0x8840/0x8a10/0x8b50 lands in THIS obj's band). Keeping the
-// placeholder holds the body at 100% instead of dropping it. @identity-TODO: L_8860 == CUserLogic.
-RVA(0x00008860, 0x44)
-L_8860::~L_8860() {}
+// (The L_8860 placeholder dtor is DISSOLVED, 2026-07-17: 0x8860 IS ??1CUserLogic -
+// ??_7CUserLogic @0x1e705c slot 0 -> ILT thunk 0x3cfb -> sdd 0x8a10 -> 0x8860; it is
+// ALSO ~CWarlord unwind action(0) target. The old emitter-blocker died with the CWapX
+// conversion (leaf ctor/dtor funclets now odr-use the out-of-line COMDAT); the body is
+// pinned by @rva-symbol in src/Gruntz/ActionArea.cpp beside ??1CUserBase.)
 
 // ---------------------------------------------------------------------------
 // Init: refuse a null world, otherwise stash both back-pointers, mark active and

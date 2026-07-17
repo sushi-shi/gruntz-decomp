@@ -21,9 +21,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CExitTrigger : CUserLogic)
 
-class CExitTrigger : public CUserLogic {
+class CExitTrigger : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CExitTrigger(CGameObject* obj); // 0x03ecf0 (1-arg leaf ctor)
     // 0x00010870 vtable slot 2: per-class logic-type id, inline (one
@@ -36,10 +35,8 @@ public:
     // slot 4: RTTI proves this class overrides (its own slot rva, not the base 0x246e),
     // but the body is NOT reconstructed yet - declared-only, deliberately no definition.
     virtual void FireActivation(i32 id) OVERRIDE;
-    virtual ~CExitTrigger() OVERRIDE; // 0x0108c0 (folds the CUserLogic teardown)
-
-    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id
-    char m_pad44[0x54 - 0x44];
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     CUserLogic* m_warlordLogic; // +0x54  the resolved warlord's bound logic (obj->m_7c->m_logic)
     i32 m_resolved;             // +0x58  resolved gate (1 = warlord bound, 0 = inactive slot)
 };

@@ -11,7 +11,7 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CFrontCandy : CUserLogic)
 
 SIZE_UNKNOWN(CFrontCandy);
-class CFrontCandy : public CUserLogic {
+class CFrontCandy : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in UserLogic.cpp)
@@ -19,11 +19,10 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_FRONTCANDY;
     }
-    TILE_LOGIC_TAIL
 public:
     CFrontCandy(CGameObject* obj); // 0x0abfa0
-    virtual ~CFrontCandy() OVERRIDE;
-    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf is 0x54: its only new-site, the
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
                                // logic-worker pump @0xaa1e0, pushes 0x54)
 };
 VTBL(CFrontCandy, 0x1e84ec);

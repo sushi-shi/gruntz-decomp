@@ -252,9 +252,8 @@ RVA(0x00042d40, 0x73e)
 // object handle; the cast to CGameObject* reproduces that (kept i32 so the mangled
 // symbol still binds to 0x42d40). Sibling leaf ctors (CGruntVoice, ...) took a real
 // CGameObject*; this one did not.
-CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg) {
+CWarlord::CWarlord(i32 arg) : CUserLogic((CGameObject*)arg), CWapX((CGameObject*)arg) {
     CGameObject* obj = (CGameObject*)arg;
-    TILE_LOGIC_SEED(obj);
 
     // Two 64-bit stamp/window cooldown timers, cleared.
     m_cooldownStampLo = 0;
@@ -426,7 +425,7 @@ void CWarlord::FireActivation(i32 key) {
     if (*slot != 0) {
         // the handler is a __thiscall dispatched on this warlord (`mov ecx,this;
         // call [slot2]`); a complete-class PMF gives the plain 4-byte code-ptr call.
-        typedef i32 (CWarlord::*StateHandler)();
+        typedef i32 (CUserLogic::*StateHandler)();
         StateHandler h = *(StateHandler*)g_actionTable.ResolveEntry(key);
         (this->*h)();
     }

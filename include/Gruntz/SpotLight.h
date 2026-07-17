@@ -10,7 +10,7 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGruntArchive / CGameObject)
 
-class CSpotLight : public CUserLogic {
+class CSpotLight : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in SpotLightCtor.cpp)
@@ -18,10 +18,10 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SPOTLIGHT;
     }
-    TILE_LOGIC_TAIL
 public:
     CSpotLight(CGameObject* obj); // 0xb1200
-    virtual ~CSpotLight() OVERRIDE;
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     // The vtable slot-4 (UserLogicVfunc2) activation dispatcher body (0x0b1630);
     // a plain method - the base placeholder blocks the int-arg OVERRIDE spelling.
     virtual void FireActivation(i32 id) OVERRIDE;
@@ -31,7 +31,7 @@ public:
     // body in SpotLight.cpp.
     int Update_0b1ee0();
 
-    char m_pad40[0x58 - 0x40];
+    char m_pad54[0x58 - 0x54];
     double m_58;          // +0x58  per-tick angular rate (Update: angleStep advancing m_90)
     double m_60;          // +0x60  computed/world offset X (Update result m_70/m_78 + rotation)
     double m_68;          // +0x68  computed/world offset Y
@@ -51,7 +51,7 @@ SIZE(CSpotLight, 0xa8);
 
 // The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
 struct CSpotActEntry {
-    i32 (CSpotLight::*m_fn)();
+    i32 (CUserLogic::*m_fn)();
 };
 
 #endif // GRUNTZ_CSPOTLIGHT_H

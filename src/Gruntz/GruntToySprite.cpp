@@ -10,7 +10,7 @@
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/SerialObjRef.h> // (moved from header; +0x34 serialized-object-ref, .cpp-only)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
@@ -22,14 +22,16 @@ DATA(0x00244d58)
 CIndicatorActReg g_toyActReg; // 0x644d58
 
 // ~CGruntToySprite @0x0122b0 - the CUserLogic-folded /GX leaf dtor (see header).
-RVA(0x000122b0, 0x44)
-CGruntToySprite::~CGruntToySprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntToySprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntToySprite@@UAE@XZ 0x000122b0 0x44
 
 // --- CGruntToySprite (0x07f350), vptr 0x5e7b4c --- the ctor anchors the
 // ??_7CGruntToySprite vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x0007f350, 0x16a)
-CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -88,7 +90,7 @@ void CGruntToySprite::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn = &CGruntToySprite::Update;
+    ((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CGruntToySprite::Update;
 }
 
 // SetCell @0x07f920 - stash the (x,y) grunt cell, clear m_38 bit 0, return 1.
@@ -150,5 +152,5 @@ i32 CGruntToySprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) 
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain(ar, mode, a3, (CGameObject*)a4) != 0;
 }

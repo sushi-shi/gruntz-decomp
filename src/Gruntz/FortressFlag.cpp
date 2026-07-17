@@ -43,7 +43,7 @@
 #include <Gruntz/Explosion.h>
 #include <Gruntz/AnimWorker.h>     // shared Owner / Worker views + Worker_DefaultPump
 #include <Gruntz/UserLogic.h>      // CUserLogic leaves the worker handlers build
-#include <Gruntz/SerialObjRef.h>   // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_74->GetSel)
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 #include <Gruntz/AnimSink.h>
@@ -165,8 +165,11 @@ static inline i32 RegisterActionName() {
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame. Byte-identical in shape to
 // ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
-RVA(0x00010e90, 0x44)
-CFortressFlag::~CFortressFlag() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CFortressFlag() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CFortressFlag@@UAE@XZ 0x00010e90 0x44
 
 // CParticlez::Serialize @0x012cf0 - the vtable slot-1 override: chain the shared
 // CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
@@ -177,15 +180,18 @@ i32 CParticlez::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CParticlez::~CParticlez @0x012d90 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown. The
 // destructible link forces the /GX EH frame. Byte-identical in shape to
 // ~CTimeBomb @0x012a70; the empty body is enough for cl.
-RVA(0x00012d90, 0x44)
-CParticlez::~CParticlez() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CParticlez() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CParticlez@@UAE@XZ 0x00012d90 0x44
 
 // CExplosion::Serialize @0x012e20 - the vtable slot-1 override: chain the shared
 // CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
@@ -196,15 +202,18 @@ i32 CExplosion::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CExplosion::~CExplosion (0x12ec0) - the /GX leaf dtor folds the bare CUserLogic
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
 // (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame; the leaf vptr store is dead-eliminated.
-RVA(0x00012ec0, 0x44)
-CExplosion::~CExplosion() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CExplosion() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CExplosion@@UAE@XZ 0x00012ec0 0x44
 
 // CFortressFlag::CFortressFlag @0x045d30 - fold the shared CUserLogic(obj) init,
 // run the eyecandy z-clamp, pick the flag's faction name (a 4-way switch on the
@@ -219,8 +228,7 @@ CExplosion::~CExplosion() {}
 // body byte-identical (incl. the m_124 jump table); residual is the /GX leaf-vptr
 // re-stamp position + EH-state ids.
 RVA(0x00045d30, 0x203)
-CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CGameObject* o = m_object;
     i32 v = o->m_layer->m_halfHeight + o->m_screenY + 0x186a0;
     if (o->m_latchedAnimId != v) {
@@ -248,7 +256,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName(name);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_prevAnimNode = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_flags |= 3;
     i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[m_object->m_124 * 71].m_idx;
@@ -310,7 +318,7 @@ void CFortressFlag::RegisterActs() {
         g_typeCounter++;
     }
     ((CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(id))->m_fn =
-        &CFortressFlag::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CFortressFlag::AdvanceAnim;
 }
 
 // CFortressFlag::AdvanceAnim @0x0463e0 - re-target the bound object's animation
@@ -333,7 +341,7 @@ i32 CFortressFlag::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag == 8) {
@@ -463,8 +471,7 @@ i32 Handler046990(Owner* owner) {
 // --- CParticlez (0x046ad0), vptr 0x5e7614 --- the ctor anchors GetTypeTag @0x12cd0
 // + the ??_7CParticlez vtable in this TU. Folds the inline CUserLogic(obj) base.
 RVA(0x00046ad0, 0x15e)
-CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
@@ -526,7 +533,7 @@ void CParticlez::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CPartEntryI32*)PartLookup(id))->m_fn = &CParticlez::Update;
+    ((CPartEntryI32*)PartLookup(id))->m_fn = (i32 (CUserLogic::*)())&CParticlez::Update;
 }
 
 // CParticlez::Update @0x047090 - re-target the bound object's animation sub-object
@@ -553,8 +560,7 @@ i32 CParticlez::Update() {
 // position + the EH-state ids, not source-steerable - the established leaf-ctor
 // baseline (cf. CMenuSparkle 92.8% / CEyeCandy 92.5% in userlogic).
 RVA(0x000470e0, 0x16b)
-CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_EXPLOSION");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");

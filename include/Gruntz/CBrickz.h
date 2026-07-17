@@ -17,12 +17,13 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CBrickz : CUserLogic)
 
-class CBrickz : public CUserLogic {
+class CBrickz : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CBrickz(CGameObject* obj);   // 0x10e800 (1-arg ctor)
-    virtual ~CBrickz() OVERRIDE; // (folds the CUserLogic teardown; vtable anchor)
+    // NO user-declared dtor: retail 0x113c0 is COMPILER-GENERATED (implicit; the
+    // vtable-owner-probe proof is in <Gruntz/MapLogic.h>; @rva-symbol pin in
+    // TileLogicPump.cpp).
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
     // 0x00011300 vtable slot 2: per-class logic-type id, inline (one

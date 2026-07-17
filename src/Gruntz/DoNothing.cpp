@@ -17,7 +17,7 @@
 #include <Gruntz/DoNothing.h>
 #include <Gruntz/DoNothingNormalDtor.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 #include <Ints.h>
 #include <rva.h>
@@ -33,7 +33,7 @@ i32 CDoNothing::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CDoNothing::~CDoNothing @0x00f770 - the leaf adds no destructible members beyond
@@ -42,8 +42,11 @@ i32 CDoNothing::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible link forces the
 // /GX EH frame. Byte-identical in shape to ~CTimeBomb @0x012a70; the empty body is
 // enough for cl.
-RVA(0x0000f770, 0x44)
-CDoNothing::~CDoNothing() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CDoNothing() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CDoNothing@@UAE@XZ 0x0000f770 0x44
 
 // CDoNothingNormal::Serialize @0x00f800 - the vtable slot-1 override (same shape as
 // CDoNothing::Serialize): base CUserLogic chain + the +0x34 sub-object chain.
@@ -52,7 +55,7 @@ i32 CDoNothingNormal::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CDoNothingNormal::~CDoNothingNormal @0x0000f8a0 - folds the bare CUserLogic
@@ -60,8 +63,11 @@ i32 CDoNothingNormal::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. Byte-identical to ~CDoNothing
 // @0x0000f770.
-RVA(0x0000f8a0, 0x44)
-CDoNothingNormal::~CDoNothingNormal() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CDoNothingNormal() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CDoNothingNormal@@UAE@XZ 0x0000f8a0 0x44
 
 // Realize ??_7CDoNothingNormal@@6B@ (0x1e859c): retail's dtor folds straight to the
 // CUserLogic teardown and never references the leaf vtable (so ~CDoNothingNormal only
@@ -83,8 +89,7 @@ CDoNothingNormal* RealizeCDoNothingNormal() {
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ac1d0, 0x1a5)
-CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 1;
     CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {

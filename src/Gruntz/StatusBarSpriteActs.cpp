@@ -13,7 +13,7 @@
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) for SerializeMove
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
@@ -85,10 +85,9 @@ i32 StatusBarSpriteStep(CGameObject* obj) {
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0010c230, 0x178)
-CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_STATUSBARSPRITE");
-    m_40 = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -150,7 +149,7 @@ void CStatusBarSprite::RegisterActs() {
         g_typeCounter++;
     }
     ((CStatusBarSpriteActEntry*)g_statusBarSpriteActReg.ResolveEntry(id))->m_fn =
-        &CStatusBarSprite::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CStatusBarSprite::AdvanceAnim;
 }
 
 // CStatusBarSprite::SerializeMove (0x11ae0), vtable slot 1 - the
@@ -160,10 +159,13 @@ i32 CStatusBarSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
+    return Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) != 0;
 }
 
 // CStatusBarSprite::~CStatusBarSprite @0x11b80 - empty vtable-anchor dtor; folds the
 // CUserLogic teardown (the /GX leaf-dtor archetype). Adjacent to SerializeMove (0x11ae0).
-RVA(0x00011b80, 0x44)
-CStatusBarSprite::~CStatusBarSprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CStatusBarSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CStatusBarSprite@@UAE@XZ 0x00011b80 0x44

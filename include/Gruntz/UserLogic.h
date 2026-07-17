@@ -48,8 +48,7 @@
 //   m_7c                    = a sub-object pointer copied into the trigger.
 // ---------------------------------------------------------------------------
 struct CGameObject;  // fwd (the worker's collide callback takes the object)
-class CUserLogic;    // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
-class CSerialObjRef; // fwd (the +0x34 serialize-ref facet; <Gruntz/SerialObjRef.h>)
+class CUserLogic; // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
 struct GruntTilePos; // fwd (the {m_x,m_y} screen-pos out-point; <Gruntz/Grunt.h>)
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
@@ -411,14 +410,8 @@ public:
     // The `SerializeChain` non-virtual twin that used to be declared here, and the
     // fake CMovingLogicBase the leaves cast to, were both dissolved onto it.)
 
-    // The serialize-object-reference facet embedded at +0x34 of every tile-logic
-    // leaf: a CSerialObjRef (its m_00/m_04/m_08 overlay the tail m_34/m_38/m_3c)
-    // whose Chain (0x8c00) the leaf Serialize overrides drive to persist the
-    // referenced registry object by name. Centralizes the +0x34 facet access so
-    // the leaves don't each `(CSerialObjRef*)((char*)this + 0x34)`. <Gruntz/SerialObjRef.h>.
-    CSerialObjRef* SerialRef34() {
-        return (CSerialObjRef*)((char*)this + 0x34);
-    }
+    // (The former SerialRef34() +0x34 facet hop is gone: the "+0x34 CSerialObjRef"
+    // IS the CWapX second base below - leaves call the inherited Chain directly.)
 
     // Copies the bound object's screen position into the out point (m_object->m_5c
     // = x, m_object->m_60 = y). 0x29a50, __thiscall ret 4. The out-point is the
@@ -482,8 +475,14 @@ public:
 };
 SIZE(CUserLogic, 0x34);       // base size 0x34 (see the NOTE). The tile-logic leaves'
 VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
-                              // 0x34..0x3c tail lives on CTileLogic (below).
+                              // 0x34..0x54 band is the CWapX SECOND BASE (below).
 // NOTE - the ONE TRUE CUserLogic size is 0x34, NOT 0x30 and NOT 0x40. Evidence (retail):
+//   * INDEPENDENT CORROBORATION (MI1, 2026-07-17): every tile-logic leaf's RTTI
+//     ClassHierarchyDescriptor places its CWapX second base at PMD.mdisp +0x34 (65
+//     CHDs; e.g. CWarlord's @VA 0x5f3818). MSVC lays base subobjects consecutively,
+//     so mdisp IS the compiler's own statement that sizeof(CUserLogic)==0x34 - a
+//     second, structural proof of the same boundary the SerializeMove body proves
+//     below. Two unrelated lines of retail evidence agree.
 //   * CUserLogic's OWN slot-1 virtual is SerializeMove @0x16e7f0 (vtable 0x1e705c
 //     slot 1, tagged `override` of CUserBase's slot-1 by vtable_hierarchy/RTTI; the
 //     sibling CGruntVoice : CUserLogic tags the same slot `inherited`, so CUserLogic
@@ -506,11 +505,13 @@ VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
 //     eax` THEN the leaf vptr `mov [esi],0x5e801c` - i.e. m_34/m_38/m_3c are set AFTER
 //     the base ends and BEFORE the leaf vptr, exactly what CTileLogic(obj) below emits.
 //
-// REPARENT DONE (matcher-2, 2026-07-05): the CTileLogic intermediate now exists and the
-// tile-logic leaves (~90: EyeCandy/Teleporter/Projectile/SpotLight/TileTrigger family/
-// CMovingLogic/...) derive from it; CUserLogic is slimmed to its TRUE 0x30 and the tail
-// lives on CTileLogic. Byte-neutral (full sweep 1847 exacts unchanged). This RESOLVES two
-// of the four CGrunt-ODR-merge blockers below.
+// REPARENT HISTORY: matcher-2 (2026-07-05) first split the fat 0x40 view into a base +
+// a CTileLogic intermediate carrying a 0x30..0x40 "tail". SM1 (2026-07-17) proved the
+// base's true boundary is 0x34 (m_prevAnimSetNode is CUserLogic's). MI1 (2026-07-17)
+// finished it from RTTI: there is NO CTileLogic in retail - the "tail" (+ each leaf's
+// m_pad40) was the CWapX SECOND BASE at +0x34 spelled as padding, and every tile-logic
+// leaf is `class CLeaf : public CUserLogic, public CWapX`. The intermediate and the
+// TILE_LOGIC_TAIL/TILE_LOGIC_SEED macros are deleted.
 //
 // RIDER EVIDENCE (matcher-2) - the parallel CUserBase/CUserLogic in <Gruntz/Grunt.h>:
 // ~1119/1130 is still a separate ODR view. Member diff (offsets identical; owner/type/
@@ -617,35 +618,81 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 // m_prevAnimSetNode (+0x30) is NOT here: it is a real CUserLogic member (its own
 // slot-1 SerializeMove @0x16e7f0 streams it) that every leaf inherits at the same
 // offset under the same name - see the CUserLogic size NOTE above.
-#define TILE_LOGIC_TAIL                                                                            \
-    CGameObject* m_34;                                                                             \
-    CGameObject* m_38;                                                                             \
-    AnimWorkerObj* m_3c;
-#define TILE_LOGIC_SEED(obj)                                                                       \
-    m_34 = (obj);                                                                                  \
-    m_38 = (obj);                                                                                  \
-    m_3c = (obj)->m_7c;
-
-class CTileLogic : public CUserLogic {
+// ---------------------------------------------------------------------------
+// CWapX - the REAL SECOND BASE of every tile-logic leaf (RTTI .?AVCWapX@@, TD @VA
+// 0x60a3e0). Non-polymorphic (no vtable/COL anywhere in retail). This class is what
+// the TILE_LOGIC_TAIL macro + the CTileLogic intermediate + each leaf's m_pad40
+// were SPELLING AS PADDING - all three are deleted in its favour (2026-07-17).
+//
+// PROVEN from retail's own tables (a raw-bytes RTTI walk over GRUNTZ.EXE):
+//   * 68 ClassHierarchyDescriptors carry it - every one attributes=1 (MULTIPLE
+//     INHERITANCE). 65 tile-logic leaves list it at PMD.mdisp +0x34 as a DIRECT
+//     base beside CUserLogic (e.g. CWarlord CHD @VA 0x5f3818:
+//     CWarlord+0 | CUserLogic+0 | CUserBase+0 | CWapX+0x34 - while CUserLogic's own
+//     CHD @0x5f1fd8 is attributes=0 / 2 bases, so CWapX does NOT arrive through it);
+//     CGrunt/CProjectile (+CBoomerang via CProjectile) list it at +0x150 past the
+//     0x150 CMovingLogic spine (that world's conversion is deferred - see Grunt.h).
+//   * ~CWarlord's FuncInfo @VA 0x5f8298 (magic 0x19930520) has maxState=3; state 1's
+//     funclet @0x1d8578 is `p = this ? this+0x34 : 0; ~T(p)` - the null-check
+//     this-adjust cl emits ONLY for a non-primary base - and it tail-jmps (via ILT
+//     0x1b04) to 0x8be0: a 1-byte `ret` = the out-of-line COMDAT of an EMPTY INLINE
+//     dtor (the main dtor body 0x107f0 carries NO call to it - cl inlined it away -
+//     so the definition was visible: `~CWapX() {}` here).
+//   * SIZE 0x20, thrice-corroborated: CWarlord's first own member (the m_54 CString
+//     its dtor destroys) sits at 0x34+0x20=0x54; the CTileTrigger state pumps
+//     `operator new(0x54)` = 0x34 (CUserLogic) + 0x20 (CWapX) with no leaf members;
+//     CPulseHighlight's own fields likewise start at +0x54.
+//   * mdisp +0x34 independently corroborates SIZE(CUserLogic, 0x34) above (bases are
+//     laid consecutively, both 4-aligned, no inter-base padding) - the same boundary
+//     SM1 proved from CUserLogic::SerializeMove's own `lea ecx,[edi+0x30]`.
+//
+// WHAT IT IS: the serialized-object-reference mixin (the former CSerialObjRef view,
+// dissolved onto it). Chain (0x8c00, __thiscall ret 0x10) is run by each leaf's
+// SerializeMove override to persist WHICH registry object this logic points at,
+// keyed by that object's registry NAME: mode 7 = READ (read an 0x80-byte key name
+// + the 0x10-byte blob, resolve the name through obj->m_7c->m_0c->m_animRegistry's
+// CMapStringToPtr m_10 into m_value); mode 4 = WRITE (re-derive the value's name via
+// KeyOfValue_152d30, write it back + the blob). Chain's body writes this-rel
+// +0x00/+0x04/+0x08/+0x0c and streams +0x10..0x20 - the whole 0x20 layout.
+//
+// The 1-arg ctor seeds only the first three fields (retail leaf ctors write
+// [esi+0x34]=obj, [esi+0x38]=obj, [esi+0x3c]=obj->m_7c right after the folded
+// CUserLogic init and BEFORE the leaf vptr stamp - i.e. in base-ctor position); the
+// no-arg leaf ctors write nothing here (e.g. CTileTrigger @0x11160) -> both ctors
+// inline, the no-arg one empty.
+//
+// Field names keep the tile-leaf flat-offset spellings every leaf already uses
+// (CWapX-relative +0x00/+0x04/+0x08; the CGrunt world sees them at +0x150).
+// ---------------------------------------------------------------------------
+#include <Gruntz/SerialArchive.h> // CSerialArchive == CFileMemBase (typedef; NEVER fwd-declare it)
+class CWapX {
 public:
-    CTileLogic() {}
-    CTileLogic(CGameObject* obj);
+    CWapX() {}
+    CWapX(CGameObject* obj) {
+        m_34 = obj;
+        m_38 = obj;
+        m_3c = obj->m_7c;
+    }
+    ~CWapX() {} // EMPTY INLINE (see the 0x8be0 evidence above); out-of-line COMDAT
+                // pinned by @rva-symbol in ActionArea.cpp
+    // Serialize the referenced object by its registry key name (read/write per mode).
+    i32 Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj); // 0x8c00
 
-    // (+0x30 m_prevAnimSetNode is inherited from CUserLogic - see its size NOTE.)
-    CGameObject* m_34;   // +0x34
-    CGameObject* m_38;   // +0x38  (== the bound object; leaves read m_38->m_flags etc.)
-    AnimWorkerObj* m_3c; // +0x3c
+    CGameObject* m_34;   // +0x00 (leaf +0x34)  the referenced object
+    CGameObject* m_38;   // +0x04 (leaf +0x38)  == m_34 (leaves read m_38->m_flags etc.)
+    AnimWorkerObj* m_3c; // +0x08 (leaf +0x3c)  obj->m_7c
+    // +0x0c (leaf +0x40)  the resolved registry value - the anim registry's values
+    // are CAniElement (: CObject) entries; several leaf ctors snapshot the bound
+    // object's active descriptor here (`m_value = m_38->m_1a0.m_14` - the ex
+    // per-leaf `CAniElement* m_40`), and Chain re-resolves it by name on READ /
+    // KeyOfValue's it on WRITE (CObject* upcast).
+    class CAniElement* m_value;
+    char m_blob[0x10]; // +0x10..0x20 (leaf +0x44..0x54)  the serialized blob
 };
-SIZE(CTileLogic, 0x40);
+SIZE(CWapX, 0x20);
 
-// The tail-setting 1-arg ctor: chains the true-0x30 CUserLogic(obj) base init, then
-// seeds the leaf-shared tail. Inline so MSVC folds it (base + tail) into each leaf's
-// 1-arg ctor as one flat sequence.
-inline CTileLogic::CTileLogic(CGameObject* obj) : CUserLogic(obj) {
-    m_34 = obj;
-    m_38 = obj;
-    m_3c = obj->m_7c;
-}
+// (The former CTileLogic::CTileLogic(obj) tail-seeding ctor is gone: those three
+// stores are the CWapX(obj) base ctor above, folded from each leaf's init list.)
 
 // ---------------------------------------------------------------------------
 // CTileTrigger : CTileLogic (vftable 0x5e7f14). Adds no data members. Three
@@ -655,11 +702,10 @@ inline CTileLogic::CTileLogic(CGameObject* obj) : CUserLogic(obj) {
 // src/Gruntz/UserLogic.cpp (no-arg 0x011160, 1-arg 0x10e220, dtor 0x011290).
 // ---------------------------------------------------------------------------
 SIZE(CTileTrigger, 0x54);
-class CTileTrigger : public CUserLogic {
+class CTileTrigger : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    TILE_LOGIC_TAIL
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
@@ -668,17 +714,17 @@ public:
         OVERRIDE;               // 0x10e4a0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs(); // 0x10e600
     i32 AdvanceAnim();          // 0x10ee00
-    // Leaf tail: TILE_LOGIC_TAIL ends at +0x40; the three leaves (CTileSecretTrigger/
-    // CGiantRock/CCoveredPowerup) add no data. Size 0x54 proven from the state pumps'
-    // `new CTileTrigger`/`new CTileSecretTrigger`/... = operator new(0x54).
-    char m_pad40[0x54 - 0x40]; // +0x40
-    // Inline & trivial so it folds into the three leaf dtors (0x11540/0x11600/
-    // 0x116c0) rather than being called. MSVC still emits one out-of-line COMDAT
-    // copy (called by CTileTrigger's scalar-deleting dtor); it lands at 0x011290
-    // and is labeled via the @rva-symbol pin in src/Gruntz/UserLogic.cpp (an
-    // inline-defined fn can't hang an RVA() without also tagging the synthesized
-    // ??_G - see the duplicate-RVA guard).
-    virtual ~CTileTrigger() OVERRIDE {}
+    // No data of its own: SIZE 0x54 = 0x34 (CUserLogic) + 0x20 (CWapX) EXACTLY, and
+    // the three sub-leaves (CTileSecretTrigger/CGiantRock/CCoveredPowerup) add none
+    // either - the state pumps' `new CTileTrigger`/`new CTileSecretTrigger`/... all
+    // push 0x54. (The old `char m_pad40[0x54-0x40]` was the CWapX m_value+m_blob.)
+    //
+    // NO user-declared dtor: retail 0x011290 is the COMPILER-GENERATED one (implicit
+    // elides the leaf-vptr restamp a user `{}` would emit now that the CWapX base EH
+    // state blocks the old dead-store elision; eh-dtor-vptr-restamp CAUSE B). It stays
+    // implicitly-inline, so the three sub-leaf dtors (0x11540/0x11600/0x116c0) still
+    // FOLD it; the out-of-line COMDAT (called by ??_G) is labeled via the @rva-symbol
+    // pin in src/Gruntz/UserLogic.cpp.
 };
 VTBL(CTileTrigger, 0x1e7f14);
 

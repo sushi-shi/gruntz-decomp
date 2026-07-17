@@ -21,7 +21,7 @@
 // The per-class registry slot holds the per-frame handler PMF (AdvanceAnim, a 4-byte
 // code ptr on this single-inheritance class); read straight off the ResolveEntry slot
 // as the PMF pointer (no entry-struct view). FireActivation invokes it on `this`.
-typedef i32 (CGruntCreationPoint::*CreationPointHandler)();
+typedef i32 (CUserLogic::*CreationPointHandler)();
 
 // The class's activation-coordinate registry singleton (@0x644700), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). IS the shared
@@ -41,8 +41,11 @@ extern "C" u32 g_engineFrameDelta;
 // (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. Byte-identical in shape to the
 // established leaf dtors; the empty body is enough for cl.
-RVA(0x00010730, 0x44)
-CGruntCreationPoint::~CGruntCreationPoint() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntCreationPoint() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntCreationPoint@@UAE@XZ 0x00010730 0x44
 
 // ---------------------------------------------------------------------------
 // The game registry singleton (0x24556c) is the canonical CGameRegistry. The former
@@ -73,14 +76,13 @@ CGruntCreationPoint::~CGruntCreationPoint() {}
 // ebx (extra push ebx -> a 4th callee-saved reg, shifting every stack-slot offset).
 // Not source-steerable (global regalloc). ~80%.
 RVA(0x0003e520, 0x1fd)
-CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     if (m_object->m_latchedAnimId != 5) {
         m_object->m_latchedAnimId = 5;
         m_object->m_flags |= 0x20000;
     }
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     i32 key = m_object->m_124;
@@ -108,7 +110,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
 // ref-index array has no armed row. External/no-body (reloc-masked).
 extern "C" i32 ChannelSlots_FindFree();
 
-#include <Gruntz/SerialObjRef.h>  // the +0x34 sub-object's serialize chain
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // CGruntCreationPoint::Serialize @0x03e7a0 - chain the shared CUserLogic serialize
@@ -129,7 +131,7 @@ i32 CGruntCreationPoint::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d)
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()->Chain(ar, tag, c, (CGameObject*)d)) {
+    if (!Chain(ar, tag, c, (CGameObject*)d)) {
         return 0;
     }
     if (tag != 4 && tag == 8) {
@@ -204,7 +206,7 @@ void CGruntCreationPoint::RegisterActs() {
         g_typeCounter++;
     }
     *(CreationPointHandler*)g_creationPointActReg.ResolveEntry(id) =
-        &CGruntCreationPoint::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CGruntCreationPoint::AdvanceAnim;
 }
 
 // CGruntCreationPoint::AdvanceAnim @0x03ecc0 - re-target the bound object's

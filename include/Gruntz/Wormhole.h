@@ -15,14 +15,13 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CWormhole : CUserLogic)
 
 SIZE_UNKNOWN(CWormhole);
-class CWormhole : public CUserLogic {
+class CWormhole : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00010930, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WORMHOLE;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     static void InitActReg();   // 0x03f210
     static void RegisterActs(); // 0x03f3f0
@@ -51,13 +50,12 @@ public:
     void SpawnPartners();                         // 0x0403b0
     void LoadColors();                            // 0x0411f0
     i32 ReapplyConfig();                          // 0x0412c0 (per-partner config re-run)
-    virtual ~CWormhole() OVERRIDE;                // 0x010980 (folded leaf teardown, /GX frame)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     // CWormhole's own data begins at +0x40 (CUserLogic base ends at +0x40). Only
     // the offsets the matched methods write are modeled; +0x54/+0x68 are config
     // state flags whose exact roles are unproven (kept as offset placeholders).
-    CAniElement* m_prevAnimNode; // +0x40  snapshot of the bound object's active-anim descriptor
-    char m_pad44[0x54 - 0x44];
     i32 m_54; // +0x54  config flag (set to 1 by ReapplyConfig)
     char m_pad58[0x68 - 0x58];
     i32 m_68; // +0x68  config flag (cleared by ReapplyConfig)
@@ -68,7 +66,7 @@ VTBL(CWormhole, 0x1e817c);
 // handler PMF (AdvanceAnim; a 4-byte code ptr on this single-inheritance class).
 // Declared here (not .cpp-local) with the class it binds to (same pattern as
 // CLightFxActEntry / CTeleporterActEntry).
-typedef i32 (CWormhole::*WormholeHandler)();
+typedef i32 (CUserLogic::*WormholeHandler)();
 struct CWormholeActEntry {
     WormholeHandler m_fn;
 };

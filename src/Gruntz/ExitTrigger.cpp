@@ -16,7 +16,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0; +0x48 GruntObjMap)
-#include <Gruntz/SerialObjRef.h>  // SerialRef34()->Chain (0x8c00) + CSerialArchive Read/Write
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 
 // The per-serialize round counter the archive helpers bump (DAT_00629ad0); the
@@ -30,8 +30,11 @@
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame. Byte-identical in shape to ~CTimeBomb @0x012a70;
 // the empty body is enough for cl.
-RVA(0x000108c0, 0x44)
-CExitTrigger::~CExitTrigger() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CExitTrigger() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CExitTrigger@@UAE@XZ 0x000108c0 0x44
 
 // The global bute store the leaf interns "A" into (g_buteTree @0x6bf620; Find
 // 0x16d190 __thiscall ret 4). The "A" key (0x60a454).
@@ -81,8 +84,7 @@ SIZE_UNKNOWN(CGameRegistry);
 // CUserLogic-init wall) + the `and al,0xe0` byte-AND codegen pick. The SAME plateau
 // as CTimeBomb / the other bute ctors; not source-steerable. Parked for the final sweep.
 RVA(0x0003ecf0, 0x292)
-CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -96,7 +98,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_areaR = 1;
     m_object->m_areaT = 1;
     m_object->m_areaB = 1;
-    m_savedGeoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = 0;
     CFocusSlot* slot = &g_gameReg->m_focusSlots[m_object->m_124];
@@ -148,7 +150,7 @@ i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
     CSerialArchive* arc = (CSerialArchive*)ar;
-    if (!SerialRef34()->Chain(arc, mode, a3, (CGameObject*)a4)) {
+    if (!Chain(arc, mode, a3, (CGameObject*)a4)) {
         return 0;
     }
 

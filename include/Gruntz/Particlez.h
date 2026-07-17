@@ -20,12 +20,10 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CParticlez : CUserLogic)
 
-class CParticlez : public CUserLogic {
+class CParticlez : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
     // +0x40..+0x53 unmodeled tail (sizeof proven 0x54 by the worker-pump new-site
     // `push 0x54` @0x46850 LogicDispatchC, FortressFlag.cpp).
-    char m_pad40[0x54 - 0x40];
 
 public:
     CParticlez(CGameObject* obj); // 0x046ad0 (ctor body in UserLogic.cpp)
@@ -42,7 +40,8 @@ public:
     // name registry (the same archetype as CSecretTeleporterTrigger::RegisterActs).
     static void RegisterActs();     // 0x046e90
     i32 Update();                   // 0x047090 (advance anim + on-screen latch; ret 0)
-    virtual ~CParticlez() OVERRIDE; // 0x012d90 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CParticlez, 0x001e7614);
 
@@ -51,12 +50,12 @@ VTBL(CParticlez, 0x001e7614);
 // PMF (CPartEntry); RegisterActs stamps Update through the i32-returning
 // CPartEntryI32 view of the same slot. Declared AFTER the complete class so the
 // PMF stays 4 bytes.
-typedef void (CParticlez::*PartHandler)();
+typedef void (CUserLogic::*PartHandler)();
 struct CPartEntry {
     PartHandler m_fn; // [entry]
 };
 SIZE_UNKNOWN(CPartEntry);
-typedef i32 (CParticlez::*PartHandlerI32)();
+typedef i32 (CUserLogic::*PartHandlerI32)();
 struct CPartEntryI32 {
     PartHandlerI32 m_fn;
 };

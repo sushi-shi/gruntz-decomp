@@ -15,14 +15,13 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSecretLevelTrigger : CUserLogic)
 
 SIZE(CSecretLevelTrigger, 0x54);
-class CSecretLevelTrigger : public CUserLogic {
+class CSecretLevelTrigger : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00010b90, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SECRETLEVELTRIGGER;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CSecretLevelTrigger();                 // 0x010b20 (no-arg ctor; body in UserLogic.cpp)
     CSecretLevelTrigger(CGameObject* obj); // 0x0424b0 (1-arg ctor; body in UserLogic.cpp)
@@ -30,9 +29,8 @@ public:
     static void RegisterActs();            // 0x0428c0 (register the class's activation handlers)
     virtual void FireActivation(i32 id) OVERRIDE; // 0x042760 (per-coord PMF dispatcher)
     i32 Tick();                                   // 0x042ac0
-    virtual ~CSecretLevelTrigger() OVERRIDE;      // 0x010c50 (folds the CUserLogic teardown)
-
-    char m_pad40[0x54 - 0x40]; // +0x40  (unmodeled tail; size proven 0x54 from
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
                                //         AnimWorkerHandlers `new CSecretLevelTrigger`)
 };
 VTBL(CSecretLevelTrigger, 0x1e8804);
@@ -40,7 +38,7 @@ VTBL(CSecretLevelTrigger, 0x1e8804);
 // The secret-level trigger's activation-registry entry: its first dword is the
 // Tick handler PMF (a 4-byte code pointer on this single-inheritance class).
 // Declared AFTER the complete class so the PMF stays 4 bytes.
-typedef i32 (CSecretLevelTrigger::*SecretActHandler)();
+typedef i32 (CUserLogic::*SecretActHandler)();
 struct CSecretActEntry {
     SecretActHandler m_fn;
 };

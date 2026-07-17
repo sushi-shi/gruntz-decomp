@@ -12,9 +12,8 @@
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 
 SIZE_UNKNOWN(CGruntSelectedSprite);
-class CGruntSelectedSprite : public CUserLogic {
+class CGruntSelectedSprite : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x07ea70)
     RVA(0x00011e30, 0x6)
@@ -22,7 +21,8 @@ public:
         return LOGIC_GRUNTSELECTEDSPRITE;
     } // slot 2
     CGruntSelectedSprite(CGameObject* obj);   // 0x07e3e0 (ctor body in GruntSelectedSprite.cpp)
-    virtual ~CGruntSelectedSprite() OVERRIDE; // 0x011e80 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     static void InitActReg(); // 0x07e5e0 (construct g_selectedActReg over [2000,2010])
     virtual void FireActivation(i32 id)
@@ -31,9 +31,6 @@ public:
 
     i32 SetCell(i32 x, i32 y); // 0x07e9c0
     i32 Update();              // 0x07e9f0
-
-    CAniElement* m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)
-    char m_pad44[0x54 - 0x44];
     i32 m_cellX; // +0x54  grunt cell x
     i32 m_cellY; // +0x58  grunt cell y
 };
@@ -41,7 +38,7 @@ VTBL(CGruntSelectedSprite, 0x001e7bfc); // vtable_names -> code (RTTI game class
 
 // The class registry entry: its first dword receives the Update handler PMF (a
 // 4-byte code pointer on this complete single-inheritance class).
-typedef i32 (CGruntSelectedSprite::*SelectedActHandler)();
+typedef i32 (CUserLogic::*SelectedActHandler)();
 SIZE_UNKNOWN(CSelectedActEntry);
 struct CSelectedActEntry {
     SelectedActHandler m_fn;

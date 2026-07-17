@@ -16,7 +16,7 @@
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/BehindCandyAni.h>
 #include <Gruntz/AnimSink.h>
-#include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // The class's activation-coordinate registry singleton (@0x645f98), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). CBehindCandyActReg
@@ -44,7 +44,7 @@ i32 CBehindCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CGameObject*)d) != 0;
+    return Chain(ar, tag, c, (CGameObject*)d) != 0;
 }
 
 // CBehindCandyAni::~CBehindCandyAni @0x0100f0 - the leaf adds no destructible
@@ -53,19 +53,21 @@ i32 CBehindCandyAni::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 // embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. Byte-identical in shape to the
 // established leaf dtors; the empty body is enough for cl.
-RVA(0x000100f0, 0x44)
-CBehindCandyAni::~CBehindCandyAni() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CBehindCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CBehindCandyAni@@UAE@XZ 0x000100f0 0x44
 
 // --- CBehindCandyAni (0x0ad540), vptr 0x5e838c --- the ctor anchors GetTypeTag
 // @0x10030 + the ??_7CBehindCandyAni vtable in this TU. Folds the inline
 // CUserLogic(obj) base + the shared z-clamp tail.
 RVA(0x000ad540, 0x1f0)
-CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     if (m_38->m_1a0.m_14 == 0) {
-        m_40 = m_38->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     if (m_object->m_latchedAnimId != 0) {
@@ -133,7 +135,7 @@ void CBehindCandyAni::RegisterActs() {
         g_typeCounter++;
     }
     ((CBehindCandyActEntry*)g_behindCandyActReg.ResolveEntry(id))->m_fn =
-        &CBehindCandyAni::AdvanceAnim;
+        (i32 (CUserLogic::*)())&CBehindCandyAni::AdvanceAnim;
 }
 
 // CBehindCandyAni::AdvanceAnim @0x0adbb0 - re-target the bound object's

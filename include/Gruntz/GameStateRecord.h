@@ -16,6 +16,6 @@
 // The ONE CSerialObjRef (Chain @0x8c00). The ODR-duplicate one-method shell this
 // header used to carry is folded (2026-07-16): SerialObjRef.h now uses the
 // canonical CDDrawSubMgrLeaf, so the old "view collides" blocker is gone.
-#include <Gruntz/SerialObjRef.h>
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 #endif // GRUNTZ_GAMESTATERECORD_H

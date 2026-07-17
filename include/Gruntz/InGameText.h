@@ -18,7 +18,7 @@
 
 #include <Gruntz/UserLogic.h>    // CUserLogic : CUserBase, CGameObject
 #include <Wap32/ZVec.h>          // zDArray<member-fn-ptr> (the dispatch table)
-#include <Gruntz/SerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 // The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
 // CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
@@ -39,25 +39,23 @@ typedef CFileMemBase CSerialArchive;
 // CInGameText : CUserLogic. Its own state begins at +0x54 (within the inherited
 // layout the dtor folds the bare CUserLogic teardown).
 // ---------------------------------------------------------------------------
-class CInGameText : public CUserLogic {
+class CInGameText : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00011d70, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_INGAMETEXT;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CInGameText(CGameObject* obj);   // 0x099110 (folds CUserLogic(obj) + on-screen tail)
-    virtual ~CInGameText() OVERRIDE; // 0x011dc0
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     static void InitActReg();                     // 0x0993e0
     virtual void FireActivation(i32 id) OVERRIDE; // 0x099460
     i32 Update();                                 // 0x0997c0
 
     // --- CInGameText own fields (offsets load-bearing) ---
-    CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)
-    char m_pad44[0x54 - 0x44]; // +0x44..+0x53 (inherited tail / own scratch)
     i32 m_cachedAreaId;        // +0x54  Update: cached hit-test area id; serialized scalar
     i32 m_cachedSubId;         // +0x58  Update: cached hit-test sub id; serialized scalar
 };

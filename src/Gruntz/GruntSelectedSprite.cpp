@@ -13,7 +13,7 @@
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
@@ -29,17 +29,19 @@ CIndicatorActReg g_selectedActReg; // 0x644da8
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame; the empty body is enough for cl.
-RVA(0x00011e80, 0x44)
-CGruntSelectedSprite::~CGruntSelectedSprite() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CGruntSelectedSprite() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CGruntSelectedSprite@@UAE@XZ 0x00011e80 0x44
 
 // --- CGruntSelectedSprite (0x07e3e0), vptr 0x5e7bfc --- the ctor anchors the
 // ??_7CGruntSelectedSprite vtable in this TU. Folds the inline CUserLogic(obj) base
 // + the sprite name/geometry tail.
 RVA(0x0007e3e0, 0x178)
-CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
-    m_geoId = m_38->m_1a0.m_14;
+    m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -97,7 +99,7 @@ void CGruntSelectedSprite::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn = &CGruntSelectedSprite::Update;
+    ((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CGruntSelectedSprite::Update;
 }
 
 // SetCell @0x07e9c0 - stash the (x,y) grunt cell, return 1.
@@ -155,5 +157,5 @@ i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i3
     if (!CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
-    return SerialRef34()->Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
+    return Chain(sa, mode, a3, (CGameObject*)a4) ? 1 : 0;
 }

@@ -12,9 +12,8 @@
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 #include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
 
-class CGruntPowerupSprite : public CUserLogic {
+class CGruntPowerupSprite : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012320, 0x6)
@@ -22,7 +21,8 @@ public:
         return LOGIC_GRUNTPOWERUPSPRITE;
     } // slot 2
     CGruntPowerupSprite(CGameObject* obj);   // 0x07fdb0 (ctor body in GruntPowerupSprite.cpp)
-    virtual ~CGruntPowerupSprite() OVERRIDE; // 0x012370 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     static void InitActReg(); // 0x07ffa0 (construct g_powerupActReg over [2000,2010])
     virtual void FireActivation(i32 id)
@@ -35,9 +35,6 @@ public:
     // sub-object, then round-trip m_cellX/m_cellY (8 B) and m_powerupId (4 B). On read (mode 7) it
     // re-resolves the powerup's bute-set record from g_gameReg->m_78 into the bound
     // renderable (m_10). (__thiscall: ret 0x10.)
-
-    CAniElement* m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)
-    char m_pad44[0x54 - 0x44];
     i32 m_cellX;     // +0x54  grunt cell x
     i32 m_cellY;     // +0x58  grunt cell y
     i32 m_powerupId; // +0x5c  powerup id
@@ -46,7 +43,7 @@ VTBL(CGruntPowerupSprite, 0x001e76c4); // vtable_names -> code (RTTI game class)
 
 // The class registry entry: its first dword receives the Update handler PMF (a
 // 4-byte code pointer on this complete single-inheritance class).
-typedef i32 (CGruntPowerupSprite::*PowerupActHandler)();
+typedef i32 (CUserLogic::*PowerupActHandler)();
 struct CPowerupActEntry {
     PowerupActHandler m_fn;
 };

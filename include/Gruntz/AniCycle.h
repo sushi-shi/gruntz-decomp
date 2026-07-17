@@ -14,9 +14,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CAniCycle : CUserLogic)
 
-class CAniCycle : public CUserLogic {
+class CAniCycle : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CAniCycle(CGameObject* obj); // 0x0aad20 (ctor body in UserLogic.cpp)
     // The vtable slot-2 logic-type id accessor (returns 0x3ea).
@@ -43,16 +42,14 @@ public:
     // so it is declared only - RegisterActs takes its address as a reloc-masked
     // handler-store operand.
     i32 AdvanceAnim();
-    virtual ~CAniCycle() OVERRIDE; // empty vtable-anchor dtor (folds the CUserLogic teardown)
-
-    CAniElement* m_40;         // +0x40  saved active-anim descriptor (ctor snapshot)
-    char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CAniCycle` @0xa9a40)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 VTBL(CAniCycle, 0x001e86a4);
 SIZE(CAniCycle, 0x54);
 
 // The activation-registry handler-entry record (the .data CActReg row; 4-byte PMF).
-typedef i32 (CAniCycle::*AniCycleHandler)();
+typedef i32 (CUserLogic::*AniCycleHandler)();
 struct CAniCycleActEntry {
     AniCycleHandler m_fn;
 };

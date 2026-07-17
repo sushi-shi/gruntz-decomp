@@ -17,9 +17,8 @@
 class CFileMemBase;
 typedef CFileMemBase CSerialArchive;
 
-class CObjectDropper : public CUserLogic {
+class CObjectDropper : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
@@ -31,7 +30,8 @@ public:
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
-    virtual ~CObjectDropper() OVERRIDE; // 0x124f0 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     i32 Update();                       // 0xc62e0 (per-frame drop tick + drift/wrap)
     virtual void FireActivation(i32 id)
         OVERRIDE; // 0xc5f80 (look up + fire the registered act handler)
@@ -44,9 +44,7 @@ public:
     static void RegisterActs(); // 0xc60e0
     // The slot-1 serialize impl (modeled as a plain method so its ?Serialize name + RVA
     // pin; the vtable slot is reloc-masked, like CRollingBall::Serialize).
-
-    CAniElement* m_geomId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
-    char m_pad44[0x58 - 0x44];
+    char m_pad54[0x58 - 0x54];
     double m_speed;      // +0x58  per-frame speed (32.0 / time-per-tile)
     double m_posX;       // +0x60  accumulated x (double)
     double m_posY;       // +0x68  accumulated y (double)
@@ -67,7 +65,7 @@ SIZE(CObjectDropper, 0x98);
 // call [entry]`; CObjectDropper is complete above so the PMF stays 4 bytes). Was the
 // .cpp-local CDropperActEntry view.
 struct CDropperActEntry {
-    i32 (CObjectDropper::*m_fn)();
+    i32 (CUserLogic::*m_fn)();
 };
 SIZE_UNKNOWN(CDropperActEntry);
 

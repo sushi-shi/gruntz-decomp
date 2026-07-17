@@ -22,9 +22,8 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CDoNothing : CUserLogic)
 
 VTBL(CDoNothing, 0x001e85f4); // vtable_names -> code (RTTI game class)
-class CDoNothing : public CUserLogic {
+class CDoNothing : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CDoNothing(CGameObject* obj); // 0xac1d0
     // 0x0000f6b0 vtable slot 2: per-class logic-type id, inline (one
@@ -34,8 +33,8 @@ public:
         return LOGIC_DONOTHING;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x2b26)
-    virtual ~CDoNothing() OVERRIDE; // 0x00f770 (folds the CUserLogic teardown)
-    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CDoNothing` @0xa9cc0)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 };
 SIZE(CDoNothing, 0x54);
 

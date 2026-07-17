@@ -67,12 +67,12 @@ SIZE_UNKNOWN(CMapLogic);
 // evidence (a class's size is bounded only by `push <n>; call ??2@YAPAXI@Z` at its
 // new-site; CBrickz's 1-arg ctor 0x10e800 is declared-only, so the oracle has no row yet).
 RELOC_VTBL(CMapLogic, 0x001e7c54); // == ??_7CBrickz (true rva; fold pending the size oracle)
-class CMapLogic : public CUserLogic {
+class CMapLogic : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     CMapLogic();                   // no-arg shape (only the teardown is here)
-    virtual ~CMapLogic() OVERRIDE; // 0x0113c0 (bare CUserLogic teardown, /GX frame)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     // The +0x7c pointer-array serializer (0x082430) + its tear-down helper
     // (0x085480). __thiscall; both free the array's nodes back to g_freeList,
@@ -87,7 +87,7 @@ public:
 
     // grid/array members (offsets from the field stores; the CUserLogic base owns
     // +0x00..+0x3f). Only the touched offsets are named.
-    char m_pad40[0x7c - 0x40];
+    char m_pad54[0x7c - 0x54];
     CPtrArray m_arr; // +0x7c  ::CPtrArray (m_pData@+0x80, m_nSize@+0x84)
     i32 m_90;        // +0x90  scratch dword the node serializer streams
 };

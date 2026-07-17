@@ -86,7 +86,7 @@ void CWormhole::RegisterActs() {
         ((CString*)slot)->operator=("A");
         g_typeCounter++;
     }
-    ((CWormholeActEntry*)g_wormholeActReg.ResolveEntry(id))->m_fn = &CWormhole::AdvanceAnim;
+    ((CWormholeActEntry*)g_wormholeActReg.ResolveEntry(id))->m_fn = (i32 (CUserLogic::*)())&CWormhole::AdvanceAnim;
 }
 
 // (CWormhole's SIZE_UNKNOWN + CWormholeActEntry now ride <Gruntz/Wormhole.h>;

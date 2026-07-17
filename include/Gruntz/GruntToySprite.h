@@ -14,9 +14,8 @@
 
 SIZE_UNKNOWN(CGruntToySprite);
 VTBL(CGruntToySprite, 0x001e7b4c); // vtable_names -> code (RTTI game class)
-class CGruntToySprite : public CUserLogic {
+class CGruntToySprite : public CUserLogic, public CWapX {
 public:
-    TILE_LOGIC_TAIL
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012260, 0x6)
@@ -24,7 +23,8 @@ public:
         return LOGIC_GRUNTTOYSPRITE;
     } // slot 2
     CGruntToySprite(CGameObject* obj);   // 0x07f350 (ctor body in GruntToySprite.cpp)
-    virtual ~CGruntToySprite() OVERRIDE; // 0x0122b0 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
 
     static void InitActReg(); // 0x07f540 (construct g_toyActReg over [2000,2010])
     virtual void FireActivation(i32 id)
@@ -39,7 +39,6 @@ public:
 
     CAniElement*
         m_geoId; // +0x40  geometry-id cache slot (indicator-sprite family; unset by this leaf's ApplyLookupSprite ctor)
-    char m_pad44[0x54 - 0x44];
     i32 m_cellX;     // +0x54  grunt cell x
     i32 m_cellY;     // +0x58  grunt cell y
     i32 m_lastLayer; // +0x5c  last-seen layer index (Update tracks layer change)
@@ -47,7 +46,7 @@ public:
 
 // The class registry entry: its first dword receives the Update handler PMF (a
 // 4-byte code pointer on this complete single-inheritance class).
-typedef i32 (CGruntToySprite::*ToyActHandler)();
+typedef i32 (CUserLogic::*ToyActHandler)();
 SIZE_UNKNOWN(CToyActEntry);
 struct CToyActEntry {
     ToyActHandler m_fn;

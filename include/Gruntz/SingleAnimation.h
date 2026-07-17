@@ -17,14 +17,13 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSingleAnimation : CUserLogic)
 
-class CSingleAnimation : public CUserLogic {
+class CSingleAnimation : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00010480, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SINGLEANIMATION;
     } // slot 2
-    TILE_LOGIC_TAIL
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0 (ctor body in UserLogic.cpp)
     static void InitActReg(); // 0x0ae9a0 (construct the activation registry over [2000,2010])
@@ -34,7 +33,8 @@ public:
     // The per-frame handler (@0x0aed80); Ghidra did not carve it (recovery gap), so it
     // is declared only - RegisterActs takes its address as a reloc-masked operand.
     i32 AdvanceAnim();
-    virtual ~CSingleAnimation() OVERRIDE; // 0x010540 (folds the CUserLogic teardown)
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     char m_pad40
         [0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSingleAnimation` @0xaaaa0)
 };
@@ -44,7 +44,7 @@ SIZE(CSingleAnimation, 0x54);
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
 // class). Defined after the complete class (the FortressFlag.h record pattern).
-typedef i32 (CSingleAnimation::*SingleAnimHandler)();
+typedef i32 (CUserLogic::*SingleAnimHandler)();
 struct CSingleAnimActEntry {
     SingleAnimHandler m_fn;
 };

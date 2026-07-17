@@ -25,7 +25,7 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
 #include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/Loadable.h> // LoadableClassId - CLASSID_SERIALREF (the GetTypeId()==5 focus probe)
 #include <Gruntz/Grunt.h> // CGrunt - the Probe_32ce (CTriggerMgr::FindGruntAt) result (m_gruntKind)
 #include <math.h>         // sin / cos (the Tick rotation)
@@ -54,8 +54,11 @@ const double g_spotRateMul = -1.0; // 0x5ea3f8
 // CSpotLight::~CSpotLight @0x13040 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the /GX leaf-dtor archetype). Gives CSpotLight a real vftable so the
 // ctor's vptr store falls out.
-RVA(0x00013040, 0x44)
-CSpotLight::~CSpotLight() {}
+// IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
+// a user-declared `~CSpotLight() {}` emits the leaf-vptr restamp, and the CWapX
+// base EH state blocks the dead-store elision that used to hide it. The ??_G
+// in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+// @rva-symbol: ??1CSpotLight@@UAE@XZ 0x00013040 0x44
 
 RVA(0x000b1200, 0x2cb)
 // @early-stop
@@ -66,8 +69,7 @@ RVA(0x000b1200, 0x2cb)
 // that derives m_60/m_68/m_80/m_88 from m_70/m_78 - its fld/fsub/fxch stack
 // ordering is not steerable from C (same wall as CSpotLight::Update @0xb1ee0).
 // Logic complete; deferred to the final sweep.
-CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
+CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 2;
@@ -172,7 +174,7 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
     if (CUserLogic::SerializeMove((CSerialArchive*)((i32)arc), mode, c, d) == 0) {
         return 0;
     }
-    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)arc, mode, c, (CGameObject*)d) == 0) {
+    if (Chain((CSerialArchive*)arc, mode, c, (CGameObject*)d) == 0) {
         return 0;
     }
     CGameRegistry* reg = g_gameReg;

@@ -12,7 +12,7 @@
 
 SIZE(CWarpStonePad, 0x54);
 VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
-class CWarpStonePad : public CUserLogic {
+class CWarpStonePad : public CUserLogic, public CWapX {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in UserLogic.cpp)
     RVA(0x00010f00, 0x6)
@@ -21,22 +21,21 @@ class CWarpStonePad : public CUserLogic {
     }
 
 public:
-    TILE_LOGIC_TAIL
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
-    virtual ~CWarpStonePad() OVERRIDE;
+    // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
+    // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
     static void InitActReg();                     // 0x10d840
     virtual void FireActivation(i32 id) OVERRIDE; // 0x10d8c0 (vtable slot 4)
     static void RegisterActs();                   // 0x10da20
     i32 AdvanceAnim();                            // 0x10dc20
-    char m_pad40[0x54 - 0x40]; // +0x40  (unmodeled leaf tail; size 0x54 proven from
                                //         the state pump's `new CWarpStonePad` = new(0x54))
 };
 
 // The activation-registry entry record (the .data CActReg row): its first dword
 // receives the per-frame handler PMF (4-byte code pointer on this complete
 // single-inheritance class); FireActivation dispatches it thiscall on the leaf.
-typedef i32 (CWarpStonePad::*WarpStonePadHandler)();
+typedef i32 (CUserLogic::*WarpStonePadHandler)();
 struct CWarpStonePadActEntry {
     WarpStonePadHandler m_fn;
 };
