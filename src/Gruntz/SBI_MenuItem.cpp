@@ -271,14 +271,13 @@ i32 CSBI_MenuItem::Blit() {
 }
 
 // ---------------------------------------------------------------------------
-// CSBI_MenuItem::Serialize - the top (CSBI_MenuItem) leg: transfer the menu
-// state tag + the cue name (read via strlen+Lookup / write via inline strcpy of
-// the host name), then tail-chain into the CSBI_Image leg (SerializeChain).
+// CSBI_MenuItem::SerializeFields - the top (CSBI_MenuItem) leg of vtable slot 1:
+// transfer the menu state tag + the cue name (read via strlen+Lookup / write via
+// inline strcpy of the host name), then tail-chain into the CSBI_Image leg.
 // ~99.7%: byte-exact; residual is the reloc-symbol-naming tail (g_gameReg type
 // name / g_serialCounter / the cue Lookup symbol vs retail's REL32 names).
 RVA(0x000e8520, 0x152)
-i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
-    CSerialArchive* ar = (CSerialArchive*)arP;
+i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
@@ -312,7 +311,8 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
             ar->Write(tmp, 0x80);
             break;
     }
-    return SerializeChain(ar, kind, a, b) != 0;
+    // QUALIFIED = the direct CSBI_Image base leg (0xe6e40); unqualified is recursion.
+    return CSBI_Image::SerializeFields(ar, kind, a, b) != 0;
 }
 
 // CSBI_MenuItem::SetSubtype (0x1005b0): arm the countdown (m_28 = 2). Out-of-line (matcher-5).
@@ -348,9 +348,15 @@ void CStatusBarItem::DtorStatus() {}
 // re-attributed from CSBI_MenuItem, dossier #16): transfer the six base-region
 // rect/flag fields (m_4..m_rect14, then +0x28) through the archive. Body kept in
 // this TU (its retail obj neighborhood is the 0xfdc00/0x10bxxx band).
+//
+// This is the VIRTUAL slot-1 leg (see StatusBarItem.h): it was declared non-virtual
+// (`QAE`) beside a fabricated 0-arg `SbiVfunc0` that held the slot, so nothing joined
+// the declared slot to this body. The `void*` first arg was a placeholder the body then
+// cast back to CSerialArchive* on its first line; the leaves already spelled the same
+// param `CSerialArchive*`/`CImageSetStream*` (both typedefs of the real CFileMemBase),
+// which is what an override requires. Typed here, so the cast is gone.
 RVA(0x0010bfc0, 0xe8)
-i32 CStatusBarItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
-    CSerialArchive* ar = (CSerialArchive*)arP;
+i32 CStatusBarItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }

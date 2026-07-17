@@ -43,8 +43,9 @@ public:
         m_34 = 0;
     }
     virtual ~CSBI_ImageSet() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE;  // slot 1
-    virtual void SbiSlot3() OVERRIDE;  // slot 3
+    // slot 1 (vtbl 0x1eac4c thunk 0x3ca1 -> 0xe74f0): chains CSBI_Image::SerializeFields.
+    virtual i32 SerializeFields(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe74f0
+    virtual void SbiSlot3() OVERRIDE;                                                   // slot 3
     virtual void SbiSlot4() OVERRIDE;  // slot 4
     virtual void SbiSlot5() OVERRIDE;  // slot 5
     virtual i32
@@ -53,8 +54,8 @@ public:
     // slot 12 (new), body 0x0e74c0 (a Ghidra recovery gap - not yet reconstructed). It takes
     // ONE arg: the game-menu builder calls it as `Activate(7)` on the DESTRUCT item.
     virtual void SbiSlot12(i32 a);
-    i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4); // vslot 1 (0xe74f0)
-    // (the 0xe6e40 base slot-1 leg is the real CSBI_Image::SerializeChain - SBI_Image.h)
+    // (0xe74f0 was declared here as a non-virtual `Serialize` - it IS the slot-1
+    //  SerializeFields override above. The 0xe6e40 base leg is CSBI_Image's - SBI_Image.h.)
     // slot-3 body (vtbl 0x1eac4c slot [3], thunk 0x2a09): reset the resolved record +
     // latched value. Re-attributed from the SBI_RectOnly host TU (dossier #16).
     // This IS the member teardown the CHAIN-DTOR device runs from every ~CSBI_X below

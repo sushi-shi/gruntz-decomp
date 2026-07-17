@@ -72,8 +72,11 @@ public:
         m_44 = -1;
     }
     virtual ~CSBI_SideTab() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE; // slot 1
-    virtual void SbiSlot3() OVERRIDE; // slot 3
+    // slot 1 (vtbl 0x1eae3c thunk 0x1ef1 -> 0xe9a30): the side-tab serialize leg,
+    // tail-chaining CStatusBarItem::SerializeFields. 4 args, proven by `ret 0x10` + the
+    // body's `mov esi,[esp+0x9c]` archive read / `[esp+0xa4]` kind switch (case 4/7).
+    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe9a30
+    virtual void SbiSlot3() OVERRIDE;                                                 // slot 3
     virtual void SbiSlot4() OVERRIDE; // slot 4
     virtual void SbiSlot5() OVERRIDE; // slot 5
 

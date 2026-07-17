@@ -152,7 +152,7 @@ i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
 // result to recover the dead store regresses it (98.4%) - a non-steerable /O2
 // dead-store artifact (docs/patterns/reloc-typing-vptr-global.md). Effectively done.
 RVA(0x000e74f0, 0x152)
-i32 CSBI_ImageSet::Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_ImageSet::SerializeFields(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
@@ -184,7 +184,8 @@ i32 CSBI_ImageSet::Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
             s->Write(buf, 0x80);
             break;
     }
-    return SerializeChain(s, mode, a3, a4) != 0; // the CSBI_Image base leg (0xe6e40)
+    // QUALIFIED = the direct CSBI_Image base leg (0xe6e40); unqualified is recursion.
+    return CSBI_Image::SerializeFields(s, mode, a3, a4) != 0;
 }
 
 // ---------------------------------------------------------------------------

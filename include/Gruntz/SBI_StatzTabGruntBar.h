@@ -104,12 +104,24 @@ SIZE_UNKNOWN(CStatzSelf);
 // The glyph map a changed value is resolved through (m_glyphMap for the first four
 // values, m_timerGlyphMap for the timer value): a [m_minIndex..m_maxIndex]-gated
 // table at m_glyphs.
+// NOTE (proven, fold pending): this is the REAL CSprite (<Gruntz/Sprite.h>) - identical
+// field for field. CSprite's m_frames CObArray starts at +0x10, so its m_pData lands at
+// +0x14 == m_glyphs; its m_name is +0x24..0x64 == m_name below; its m_firstFrame/
+// m_lastFrame are +0x64/+0x68 == m_minIndex/m_maxIndex. SBI_Image.cpp already writes this
+// same (name -> Lookup -> gated index -> frame) idiom against the real CSprite. The
+// identical `CRegTypeTable` in <Gruntz/SerialRecView.h> is the same view again.
+// Dissolving all three onto CSprite is follow-up work (it also touches the
+// CEventLoadRec/CTriggerLoadRec TUs that share SerialRecView.h).
 struct CStatzGlyphMap {
     char m_pad0[0x14];
-    CImage** m_glyphs; // +0x14  glyph table (frame handles)
-    char m_pad18[0x64 - 0x18];
-    i32 m_minIndex; // +0x64  glyph-index range lo gate
-    i32 m_maxIndex; // +0x68  glyph-index range hi gate
+    CImage** m_glyphs; // +0x14  glyph table (frame handles)  [== CSprite::m_frames.m_pData]
+    char m_pad18[0x24 - 0x18];
+    // +0x24 registry name, extent 0x24..0x64 (bounded by m_minIndex): the key the glyph
+    // map was Lookup'd under, which the slot-1 serialize's mode-4 leg strcpy's out.
+    // Same offset AND same extent as CSprite::m_name.
+    char m_name[0x64 - 0x24];
+    i32 m_minIndex; // +0x64  glyph-index range lo gate  [== CSprite::m_firstFrame]
+    i32 m_maxIndex; // +0x68  glyph-index range hi gate  [== CSprite::m_lastFrame]
 };
 SIZE_UNKNOWN(CStatzGlyphMap);
 
@@ -145,7 +157,22 @@ public:
         m_timerGlyph = 0;
     }
     virtual ~CSBI_StatzTabGruntBar() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE;          // slot 1
+    // slot 1 (vtbl 0x1eace4 thunk 0x11e0 -> 0xea990): the stat-bar serialize. Mode 7
+    // resolves each glyph through the registry (name + gated index); mode 4 writes each
+    // back by reverse-lookup; both tail-chain CStatusBarItem::SerializeFields.
+    //
+    // 0xea990 used to be claimed as `CGruntStateRec::Load` - a .cpp-local placeholder
+    // class in GruntStateRec.cpp. It is THIS class's slot-1 body, proven four ways:
+    //  1. ??_7CSBI_StatzTabGruntBar (0x1eace4) slot 1 -> thunk 0x11e0 -> 0xea990 (direct).
+    //  2. the body tail-chains `call 0x1848` (CStatusBarItem::SerializeFields) with
+    //     `mov ecx,ebp` = its OWN this -> a qualified base call -> `this` IS a
+    //     CStatusBarItem. A free record-loader could not make that call.
+    //  3. RVA band: 0xea990 sits inside this class's run (0xea1f0/0xea470/0xea4b0/
+    //     0xea4e0/0xea6c0).
+    //  4. the view's own shape: `char m_pad00[0x30]` (exactly the CStatusBarItem base
+    //     subobject) then 19 fields whose ptr/int pattern matches this class's
+    //     m_statusGlyph..m_glyphMap at every single offset.
+    virtual i32 SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) OVERRIDE; // 0xea990
     virtual void SbiSlot3() OVERRIDE;          // slot 3
     virtual void SbiSlot4() OVERRIDE;          // slot 4
     virtual void SbiSlot5() OVERRIDE;          // slot 5

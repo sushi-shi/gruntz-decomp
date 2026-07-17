@@ -117,7 +117,10 @@ public:
     // The out-of-line ~ (0x104bb0) lives in SBI_WellGoo.cpp via the CHAIN-DTOR device
     // (see StatusBarItem.h).
     virtual ~CSBI_WellGoo() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE; // slot 1 (the Serialize below)
+    // slot 1 (vtbl 0x1eadfc thunk 0x3e90 -> 0xe64c0): the goo serialize. Round-trips the
+    // fill/rect fields + two frame handles by name+index, (mode 8) re-resolves the goo
+    // surface + rebinds the frames' shade nodes, then chains CSBI_Image::SerializeFields.
+    virtual i32 SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe64c0
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10)
         OVERRIDE; // slot 2 (0xe6020; args 5..8 are ONE by-value SbRect - see StatusBarItem.h)
     virtual void SbiSlot3() OVERRIDE; // slot 3 (the Free below)
@@ -128,13 +131,10 @@ public:
     // region: fillBase=m_rect14.m_4 (@0x18), fillTop=m_rect14.m_c (@0x20), countdown=m_28.
     i32 Tick();
 
-    // vtable slot 1 (0xe64c0): the goo serialize. Chains the base SerializeChain
-    // (0xe6e40, the CSBI_Image leg the delinker labels CSBI_MenuItem::SerializeChain),
-    // round-trips the fill/rect fields + two frame handles by name+index, and (mode 8)
-    // re-resolves the goo surface + rebinds the frames' shade nodes.
-    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x0e64c0
-    // (SerializeChain @0xe6e40 is the inherited CSBI_Image leg - not re-declared here;
-    //  a shadow would emit ?SerializeChain@CSBI_WellGoo@@ which does not resolve to 0xe6e40.)
+    // (0xe64c0 was declared here as a non-virtual `Serialize` - it IS the slot-1
+    //  SerializeFields override declared above. Its base leg 0xe6e40 is CSBI_Image's and
+    //  is reached with a QUALIFIED CSBI_Image::SerializeFields call - never re-declared
+    //  here, which would emit a CSBI_WellGoo symbol that resolves nowhere.)
 
     // vtable slot 3 (0x104c80): release the owned goo source surface through the
     // cached manager's (+0x24) surface pool, then clear it.

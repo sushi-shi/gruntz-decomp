@@ -177,7 +177,7 @@ i32 CSBI_WarlordHead::Render(i32 z) {
 // floats it to the tail (forward je). The m_3c transfer, the base-chain call and the
 // neg/sbb/neg bool are byte-faithful.
 RVA(0x000eb970, 0x72)
-i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_WarlordHead::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
@@ -189,7 +189,7 @@ i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     } else if (mode == 7) {
         s->Read(&m_3c, 4);
     }
-    return CSBI_ImageSet::Serialize(s, mode, a3, a4) != 0; // qualified = direct base call
+    return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
 }
 
 // ---------------------------------------------------------------------------

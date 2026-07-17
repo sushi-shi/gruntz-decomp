@@ -123,7 +123,7 @@ i32 CSBI_WellGoo::Tick() {
 // direct where retail uses ILT thunks + the differently-named folded base leg, and
 // the inline repne-scas/rep-stos scheduling. Not source-steerable; final sweep.
 RVA(0x000e64c0, 0x3e7)
-i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -132,7 +132,8 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (mgr == 0) {
         return 0;
     }
-    if (SerializeChain(arc, mode, a3, a4) == 0) {
+    // QUALIFIED = the direct CSBI_Image base leg (0xe6e40); unqualified is recursion.
+    if (CSBI_Image::SerializeFields(arc, mode, a3, a4) == 0) {
         return 0;
     }
     switch (mode) {

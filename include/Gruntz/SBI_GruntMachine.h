@@ -75,8 +75,11 @@ public:
     // The out-of-line ~ (0x104ce0, calls Reset) lives in SBI_GruntMachine.cpp via the
     // CHAIN-DTOR device (see StatusBarItem.h).
     virtual ~CSBI_GruntMachine() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE;      // slot 1
-    virtual void SbiSlot3() OVERRIDE;      // slot 3 (the Reset below)
+    // slot 1 (vtbl 0x1eadbc thunk 0x381e -> 0xe8e00): the grunt-machine serialize leg,
+    // tail-chaining CStatusBarItem::SerializeFields (retail 0xe9202: `call 0x1848`).
+    // 4 args, proven by the body's `ret 0x10` + its `[esp+0xa0/0xa4/0xa8]` arg reads.
+    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8e00
+    virtual void SbiSlot3() OVERRIDE; // slot 3 (the Reset below)
     virtual void SbiSlot4() OVERRIDE;      // slot 4
     virtual void SbiSlot5() OVERRIDE;      // slot 5 (the Render below)
 

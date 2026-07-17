@@ -86,8 +86,10 @@ public:
     // The out-of-line ~ (0x104a00, calls DtorReset) lives in SBI_WarlordHead.cpp via
     // the CHAIN-DTOR device (see StatusBarItem.h).
     virtual ~CSBI_WarlordHead() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE;     // slot 1 (the Serialize below)
-    virtual void SbiSlot5() OVERRIDE;     // slot 5 (the Render below)
+    // slot 1 (vtbl 0x1ead24 thunk 0x3cd8 -> 0xeb970): serialize the head's direction
+    // (m_3c), then chain CSBI_ImageSet::SerializeFields (0xe74f0).
+    virtual i32 SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xeb970
+    virtual void SbiSlot5() OVERRIDE; // slot 5 (the Render below)
     // slot 11 (0xeb6b0), the CSBI_Image::SetupImage override. This USED to be split in
     // two: a body-less `virtual` declared purely to pin the slot, plus the real body as a
     // separate NON-virtual overload distinguished only by `i32 host` vs `CDDrawSurfaceMgr*`.
@@ -107,11 +109,9 @@ public:
     // (two `call 0xe7400`). The old declared-only DtorReset alias was a fake view of that
     // same function (unbound - would not link).
 
-    // vtable slot 1 (0xeb970): serialize the head's single direction (m_3c), then
-    // chain to the CSBI_ImageSet base serialize (0xe74f0). (The six-int slot-1
-    // serialize formerly claimed here at 0xe7cd0 was CSBI_ImageSetAni's - re-homed
-    // to SBI_ImageSetAni.cpp; warlord's own slot 1 is 0xeb970, thunk 0x3cd8.)
-    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);
+    // (0xeb970 was declared here as a non-virtual `Serialize` - it IS the slot-1
+    //  SerializeFields override declared above. The six-int slot-1 serialize formerly
+    //  claimed here at 0xe7cd0 was CSBI_ImageSetAni's - re-homed to SBI_ImageSetAni.cpp.)
     // (The `BaseSetupImage` declared here was a fake alias of CSBI_ImageSet::SetupImage
     // (0xe72f0) - the real base slot. With the real chain modeled, ~SetupImage just calls
     // the base qualified, so the alias is gone.)

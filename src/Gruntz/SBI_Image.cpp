@@ -140,8 +140,7 @@ i32 CSBI_Image::TickRenderCurrent_0e6dd0() {
 // ebx + this in esi; the recompile swaps them) plus the dead-spill-slot packing
 // (retail's temps share a slot, shifting the esp+ frame offsets by 4). Deferred.
 RVA(0x000e6e40, 0x17c)
-i32 CSBI_Image::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
-    CSerialArchive* ar = (CSerialArchive*)arP;
+i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
@@ -185,7 +184,9 @@ i32 CSBI_Image::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             ar->Write(&idx, 4);
             break;
     }
-    return SerializeFields(ar, kind, a, b) != 0;
+    // QUALIFIED = the direct base leg (retail `call 0x1848`). Unqualified would now be
+    // infinite recursion on this very override - and would compile clean.
+    return CStatusBarItem::SerializeFields(ar, kind, a, b) != 0;
 }
 
 // ---------------------------------------------------------------------------

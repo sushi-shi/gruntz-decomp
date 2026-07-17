@@ -126,7 +126,13 @@ i32 CAniPlayer::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
-    if (CSBI_ImageSetAni::Serialize((CImageSetStream*)arc, mode, a3, a4) == 0) {
+    // The base leg is CSBI_ImageSetAni's vtable slot-1 override, renamed Serialize ->
+    // SerializeFields with the rest of the family (StatusBarItem.h). NB: this class's own
+    // `Serialize` below is deliberately NOT renamed - CAniPlayer has no VTBL binding and
+    // no RTTI row, so whether 0xe5c90 is CAniPlayer's own slot 1 is unproven. Naming it
+    // SerializeFields would give it the base virtual's exact name+signature and silently
+    // make it an override (C++ implicit virtual), claiming a slot on no evidence.
+    if (CSBI_ImageSetAni::SerializeFields((CImageSetStream*)arc, mode, a3, a4) == 0) {
         return 0;
     }
     if (mode == 4) {

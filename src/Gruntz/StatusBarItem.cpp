@@ -37,11 +37,12 @@ CStatusBarItem::CStatusBarItem() {
 // DtorStatus) and ??_GCStatusBarItem (0x100620: stamp + call DtorStatus + delete),
 // byte-matching the SBI leaf TUs - no longer the empty-stub COMDAT that diverged.
 // This TU labels the cl-auto-generated ??_G at its retail RVA (it emits the vftable).
-// SbiVfunc0 (slot 1 base default) still anchors the vftable in this TU (not matched).
+// (The fabricated `SbiVfunc0 { return 0; }` that used to sit here as a vftable anchor is
+// GONE: slot 1 is the real 4-arg CStatusBarItem::SerializeFields, defined at its retail
+// 0x10bfc0 in SBI_MenuItem.cpp. No anchor is needed - MSVC has no key-function rule, and
+// the out-of-line ctor at 0x1005d0 below stamps the vptr, which is what references ??_7
+// and forces the COMDAT out in this TU.)
 // @rva-symbol: ??_GCStatusBarItem@@UAEPAXI@Z 0x00100620 0x24
-i32 CStatusBarItem::SbiVfunc0() {
-    return 0;
-}
 
 // CStatusBarItem vtable RVA binding (moved from the deleted
 // src/Stub/BoundaryLowerThunks.cpp vtable catalog).

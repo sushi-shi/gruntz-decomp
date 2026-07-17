@@ -30,8 +30,12 @@ public:
     // news 13/14). The out-of-line ~ (0x1047f0) lives in SBI_ImageSetAni.cpp via
     // the CHAIN-DTOR device (see StatusBarItem.h).
     virtual ~CSBI_ImageSetAni() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE;     // slot 1 (the Serialize below)
-    virtual void SbiSlot4() OVERRIDE;     // slot 4
+    // slot 1 (vtbl 0x1ead6c thunk 0x2829 -> 0xe7cd0): serialize the six persistent ints
+    // (m_3c..m_50) through the stream, then chain CSBI_ImageSet::SerializeFields.
+    // CImageSetStream is a typedef of CSerialArchive == the real CFileMemBase, so this is
+    // the same parameter type as the rest of the chain (mangles PAVCFileMemBase@@).
+    virtual i32 SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe7cd0
+    virtual void SbiSlot4() OVERRIDE;                                                   // slot 4
     virtual void SbiSlot5() OVERRIDE;     // slot 5
     // Slots 13/14 ARE Init and SetRange - the ILT thunks prove it (0x3b48 -> jmp 0xe7980
     // = Init; 0x3bde -> jmp 0xe7c30 = SetRange). They used to be declared here TWICE: as
@@ -60,9 +64,8 @@ public:
     // (two `call 0xe7400`). The old declared-only DtorImageSetAni alias was a fake view
     // of that same function (unbound - would not link).
 
-    // vtable slot 1 (0xe7cd0): serialize the six persistent ints (m_3c..m_50) through
-    // the stream's Read/WriteBytes, then chain the CSBI_ImageSet base serialize.
-    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);
+    // (0xe7cd0 was declared here as a non-virtual `Serialize` - it IS the slot-1
+    //  SerializeFields override declared above.)
 
     // slot-5 body (vtbl 0x1ead6c slot [5], thunk 0x2dfb): the timeGetTime-driven cel
     // advance within [m_4c, m_50]. Ex CAniPlayer::Tick (dossier #16 identity fold).

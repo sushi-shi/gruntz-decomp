@@ -120,8 +120,11 @@ public:
     // The out-of-line ~ (0x1007d0, calls ClearFrame2) lives in SBI_MenuItem.cpp via
     // the CHAIN-DTOR device (see StatusBarItem.h).
     virtual ~CSBI_MenuItem() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE;  // slot 1 (the Serialize below)
-    virtual void SbiSlot3() OVERRIDE;  // slot 3 (the ClearFrame2 below)
+    // slot 1 (vtbl 0x1eab4c thunk 0x100a -> 0xe8520): the menu-item serialize leg;
+    // tail-chains CSBI_Image::SerializeFields. Was the non-virtual `Serialize` beside a
+    // fabricated 0-arg `SbiVfunc0` placeholder that held the slot.
+    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8520
+    virtual void SbiSlot3() OVERRIDE; // slot 3 (the ClearFrame2 below)
     virtual void SbiSlot4() OVERRIDE;  // slot 4 (the DecCounter below)
     virtual void SbiSlot5() OVERRIDE;  // slot 5
     // slot 11 (0xe80e0), the CSBI_Image::SetupImage override. This USED to be split in two:
@@ -148,13 +151,14 @@ public:
     void ClearFrame2(); // 0xe81a0 (out-of-line)
     // (InitItem was the real 0xe80e0 body under a second name - it IS the slot-11
     // SetupImage override declared above.)
-    i32 ResolveFrame(i32 key, i32 a);                // 0xe81e0
-    i32 DecCounter();                                // 0xe82a0  decrement-and-blit
-    i32 SetState(i32 state, i32 a);                  // 0xe8310
-    i32 ProbeState(i32 state);                       // 0xe8480
-    i32 Blit();                                      // 0xe84f0  conditional blit
-    i32 Serialize(void* ar, i32 kind, i32 a, i32 b); // 0xe8520  top serialize
-    void SetSubtype();                               // 0x1005b0 (out-of-line)
+    i32 ResolveFrame(i32 key, i32 a); // 0xe81e0
+    i32 DecCounter();                 // 0xe82a0  decrement-and-blit
+    i32 SetState(i32 state, i32 a);   // 0xe8310
+    i32 ProbeState(i32 state);        // 0xe8480
+    i32 Blit();                       // 0xe84f0  conditional blit
+    // (0xe8520 was declared here as a non-virtual `Serialize` - it IS the slot-1
+    // SerializeFields override declared above.)
+    void SetSubtype(); // 0x1005b0 (out-of-line)
     // (0x10bfc0 SerializeFields is the real CStatusBarItem slot-1 base leg -
     // decl on the base in StatusBarItem.h; body stays in SBI_MenuItem.cpp.)
 

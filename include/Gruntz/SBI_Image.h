@@ -79,9 +79,14 @@ public:
         m_8 = 3;
         m_30 = 0;
     }
-    virtual ~CSBI_Image() OVERRIDE;   // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE; // slot 1
-    virtual void SbiSlot3() OVERRIDE; // slot 3
+    virtual ~CSBI_Image() OVERRIDE; // slot 0
+    // slot 1 (vtbl 0x1eac0c thunk 0x2077 -> 0xe6e40): the CSBI_Image serialize leg;
+    // tail-chains the base CStatusBarItem::SerializeFields. Re-attributed from
+    // CSBI_MenuItem (dossier #16); body in SBI_Image.cpp. This IS the slot - it used to
+    // be a non-virtual `SerializeChain` sitting beside a fabricated 0-arg `SbiVfunc0`
+    // that held the slot instead.
+    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe6e40
+    virtual void SbiSlot3() OVERRIDE;                                                 // slot 3
     virtual void SbiSlot4() OVERRIDE; // slot 4
     virtual void SbiSlot5() OVERRIDE; // slot 5
     // vtable slot 11 (0xe6c80): the image setup, 11 dwords of args. The RETAIL BODY pins
@@ -110,9 +115,6 @@ public:
     // slot-5 body (vtbl 0x1eac0c slot [5], thunk 0x16e5): one play step rendering the
     // CURRENT resolved frame m_30 (no table re-lookup). Ex CAniPlayer view (dossier #16).
     i32 TickRenderCurrent_0e6dd0(); // 0xe6dd0
-    // slot-1 body (vtbl 0x1eac0c slot [1], thunk 0x2077): the CSBI_Image serialize leg;
-    // tail-chains the base SerializeFields. Re-attributed from CSBI_MenuItem (dossier #16).
-    i32 SerializeChain(void* ar, i32 kind, i32 a, i32 b); // 0xe6e40
 
     // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
     i32 m_30; // +0x30  latched config value

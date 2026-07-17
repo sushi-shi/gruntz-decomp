@@ -4,6 +4,7 @@
 #ifndef STATUSBARITEM_H
 #define STATUSBARITEM_H
 
+#include <Gruntz/SerialArchive.h> // CSerialArchive (== the real CFileMemBase) - the slot-1 arg
 #include <Ints.h>
 #include <rva.h>
 
@@ -66,7 +67,23 @@ public:
     }
 #endif
     virtual ~CStatusBarItem();
-    virtual i32 SbiVfunc0(); // slot 1
+    // vtable slot 1 (thunk 0x1848 -> 0x10bfc0): the family serialize. Transfers the six
+    // base-region fields (m_4..m_rect14, then +0x28) through the archive; `kind` selects
+    // the leg (7 = read, 4 = write - the arms every override switches on).
+    //
+    // THE SIGNATURE IS 4-ARG, PROVEN BY THE BYTES. Every slot-1 body in this hierarchy
+    // ends `ret 0x10` (0x10bfc0, 0xe6e40, 0xe74f0, 0xe8520, 0xe8e00, 0xe9a30, 0xea990,
+    // ...) = 4 stack args + __thiscall. The old `virtual i32 SbiVfunc0()` that stood here
+    // was a FABRICATED 0-arg placeholder: it emitted a bare `ret`, and because the two
+    // real bodies wired onto it (CSBI_GruntMachine 0xe8e00 / CSBI_SideTab 0xe9a30) were
+    // virtual, vtable_slot_binding could not see the defect - it only checks virtuality,
+    // never the signature. Wiring a body to the right slot under the wrong signature is
+    // still wrong; the gate went green while the bytes stayed broken.
+    //
+    // Each override tail-chains its base leg with a QUALIFIED call (retail: `call 0x1848`
+    // + `neg/sbb/neg` = normalise to 0/1), which is itself the proof that those bodies'
+    // `this` is a CStatusBarItem: an unqualified call would be recursion.
+    virtual i32 SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b); // 0x10bfc0
     // vtable slot 2 (0x100660): the base 10-arg setup - bails (returns 0) if the object
     // id (a2) or owner (a1) is null, else stores the eight live args into the base-region
     // fields (the last two args are ABI-accepted but unused). CSBI_RectOnly overrides it
@@ -108,11 +125,6 @@ public:
     // Member teardown run by the inline destructor of the CHAIN-DTOR device below
     // (reloc-masked extern; the retail standalone body is 0x10bfa0).
     void DtorStatus(); // 0x10bfa0
-
-    // slot-1 base leg (vtbl slot [1] thunk 0x1848 -> 0x10bfc0): serialize the six
-    // base-region fields (m_4..m_rect14, m_28). Re-attributed from CSBI_MenuItem
-    // (dossier #16); the body TU is SBI_MenuItem.cpp (its retail obj neighborhood).
-    i32 SerializeFields(void* ar, i32 kind, i32 a, i32 b); // 0x10bfc0
 };
 SIZE_UNKNOWN(CStatusBarItem);
 

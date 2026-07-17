@@ -183,7 +183,7 @@ void CSBI_ImageSetAni::SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i
 // Bails early when the stream is null or the active game manager (g_gameReg->m_world)
 // is gone.
 RVA(0x000e7cd0, 0xf8)
-i32 CSBI_ImageSetAni::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_ImageSetAni::SerializeFields(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
@@ -208,7 +208,7 @@ i32 CSBI_ImageSetAni::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
             s->Write(&m_50, 4);
             break;
     }
-    return CSBI_ImageSet::Serialize(s, mode, a3, a4) != 0; // qualified = direct base call
+    return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
 }
 
 // ---------------------------------------------------------------------------

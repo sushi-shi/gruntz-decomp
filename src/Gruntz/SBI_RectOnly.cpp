@@ -145,11 +145,11 @@ void CStatusBarMgr::DtorMembers() {
 }
 
 // ~CStatusBarItem is the SBI_DTOR_CHAIN inline body (stamp vftable + DtorStatus) now, so
-// this TU's ??1/??_GCStatusBarItem match retail + the SBI leaf TUs. SbiVfunc0 (slot 1
-// base default) still anchors the vftable here.
-i32 CStatusBarItem::SbiVfunc0() {
-    return 0;
-}
+// this TU's ??1/??_GCStatusBarItem match retail + the SBI leaf TUs.
+// (The fabricated `CStatusBarItem::SbiVfunc0 { return 0; }` vftable anchor that stood
+// here is GONE - slot 1 is the real 4-arg SerializeFields (0x10bfc0, SBI_MenuItem.cpp).
+// It was a second definition of the same base slot; the inline dtor above already
+// references ??_7, which is what emits the COMDAT.)
 
 // CStatusBarItem base default slots 6..9 (0x100530/0x100550/0x100570/0x100590):
 // each is `xor eax,eax; ret 0xc` - returns 0 for its 3-arg call (no SBI leaf

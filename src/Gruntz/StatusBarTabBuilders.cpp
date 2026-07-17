@@ -240,16 +240,23 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
     m_28 = 2;
 }
 
-// @early-stop
-// 0x0e8e00 (1.0 KB) = CSBI_GruntMachine::SbiVfunc0 - ??_7CSBI_GruntMachine (0x1eadbc)
-// slot 1, +0x4. A status-bar grunt-machine tab worker over g_gameReg->m_30. Homed from
-// src/Stub/GapFunctions.cpp (matcher-5); body pending leaf-first reconstruction (>512 B).
-// WIRED (VT1): was the free fn `Gap_0e8e00` while the class's `virtual i32 SbiVfunc0()
-// OVERRIDE // slot 1` had no definition - the slot's reloc dangled onto a __cdecl free
-// symbol. Signature is the base CStatusBarItem::SbiVfunc0 `i32()` (StatusBarItem.h:69);
-// the old "__thiscall(4 args)" note was a Ghidra arity guess, not the declared slot.
+// @stub
+// 0x0e8e00 (1.0 KB) = CSBI_GruntMachine::SerializeFields - ??_7CSBI_GruntMachine
+// (0x1eadbc) slot 1, thunk 0x381e. The grunt-machine serialize leg over
+// g_gameReg->m_world. Body still unreconstructed (1050 B); the SIGNATURE is now the
+// proven one, so the frame/`ret 0x10` are right even while the body is empty.
+//
+// SIGNATURE CORRECTION: the previous note claimed the slot was `i32()` (0 args) and
+// dismissed Ghidra's "__thiscall(4 args)" as an arity guess. GHIDRA WAS RIGHT. Retail:
+//   0xe8e03  mov ebx,[esp+0x90]   arg1 = the archive (null-test -> return 0)
+//   0xe8e2b  mov eax,[esp+0xa0]   arg2 = kind; `cmp eax,4` / `cmp eax,7` - the family's
+//                                 write/read arms, identical to CStatusBarItem 0x10bfc0
+//   0xe91e7  [esp+0xa8]/[esp+0xa4]/[esp+0xa0] -> push arg4,arg3,arg2, push ebx(arg1),
+//            mov ecx,ebp(this), call 0x1848  = QUALIFIED CStatusBarItem::SerializeFields
+//   0xe9217  ret 0x10             = 4 stack args, __thiscall
+// The 0-arg `SbiVfunc0` it was wired to was a FABRICATED placeholder (StatusBarItem.h).
 RVA(0x000e8e00, 0x41a)
-i32 CSBI_GruntMachine::SbiVfunc0() {
+i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
     return 0;
 }
 
@@ -455,15 +462,19 @@ i32 CSBI_SideTab::Render(i32 z) {
     return 1;
 }
 
-// @early-stop
-// 0x0e9a30 (798 B) = CSBI_SideTab::SbiVfunc0 - ??_7CSBI_SideTab slot 1, +0x4. A
-// status-bar side-tab worker. Homed from src/Stub/GapFunctions.cpp (matcher-5); body
-// pending leaf-first reconstruction (>512 B).
-// WIRED (VT1): was the free fn `Gap_0e9a30` while the class's `virtual i32 SbiVfunc0()
-// OVERRIDE // slot 1` had no definition. Signature is the base CStatusBarItem::SbiVfunc0
-// `i32()` (StatusBarItem.h:69).
+// @stub
+// 0x0e9a30 (798 B) = CSBI_SideTab::SerializeFields - ??_7CSBI_SideTab (0x1eae3c) slot 1,
+// thunk 0x1ef1. The side-tab serialize leg. Body still unreconstructed (798 B); the
+// SIGNATURE is now the proven one.
+//
+// SIGNATURE CORRECTION (same as CSBI_GruntMachine above - the `i32()` claim was wrong):
+//   0xe9a3d  mov esi,[esp+0x9c]   arg1 = the archive (null-test -> return 0)
+//   0xe9a77  mov eax,[esp+0xa4]   arg2 = kind; `cmp eax,4` / `cmp eax,7` - the family arms
+//   0xe9d1b+ tail: push arg4,arg3,arg2, push the archive, call 0x1848 (= QUALIFIED
+//            CStatusBarItem::SerializeFields), then neg/sbb/neg = normalise to 0/1
+//   ret 0x10                      = 4 stack args, __thiscall
 RVA(0x000e9a30, 0x31e)
-i32 CSBI_SideTab::SbiVfunc0() {
+i32 CSBI_SideTab::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
     return 0;
 }
 
