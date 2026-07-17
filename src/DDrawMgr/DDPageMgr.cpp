@@ -407,7 +407,7 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 // ===========================================================================
 RVA(0x0017c6f0, 0x9c)
 i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    if (m_active == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     if (!m_540.Init()) {
