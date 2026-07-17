@@ -270,7 +270,7 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
-        m_154->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out); \
+        m_38->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out); \
         (dst) = _out;                                                                              \
     } while (0)
 
@@ -432,9 +432,9 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     // offset 0) to reloc-mask against 0x16ea90.
     ((CMovingLogic*)this)->MovingSlot16();
     CGameObject* obj = (CGameObject*)owner; // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
-    m_150 = obj;
-    m_154 = obj; // the owner object doubles as the entrance player
-    m_158 =
+    m_34 = obj;
+    m_38 = obj; // the owner object doubles as the entrance player
+    m_3c =
         obj->m_7c; // the bound object's AnimWorkerObj (typed)
     m_struckClockLo = 0;
     m_struckTimerLo = 0;
@@ -480,11 +480,11 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     m_poseToyBreak = 0;
     m_pickupGeoSrc = 0;
     m_arrived = 0;
-    m_154->m_collCategory = 0x100000;
-    m_154->m_ec = 0x3d1;
-    m_154->m_flags |= 0x2000100;
-    m_154->m_collMask |= 0x103f;
-    m_154->m_f0 = 1; // +0xf0 (named below in UserLogic.h)
+    m_38->m_collCategory = 0x100000;
+    m_38->m_ec = 0x3d1;
+    m_38->m_flags |= 0x2000100;
+    m_38->m_collMask |= 0x103f;
+    m_38->m_f0 = 1; // +0xf0 (named below in UserLogic.h)
     m_tileOwnerHi = -1;
     m_tileOwnerLo = -1;
     m_neighborCol = -1;
@@ -831,7 +831,7 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
         return 0;
     }
     RECT r;
-    CopyRect(&r, (LPRECT)((char*)tgt->m_154 + 0x144));
+    CopyRect(&r, (LPRECT)((char*)tgt->m_38 + 0x144));
     CGameObject* th = tgt->m_10;
     OffsetRect(&r, th->m_screenX, th->m_screenY);
 
@@ -913,17 +913,17 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     if (eq) {
         // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
         // latched m_entranceCell triple (cell table base 0x468).
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseAttackIdle);
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseAttackIdle);
         {
-            CAniElement* desc = m_154->m_1a0.m_14;
+            CAniElement* desc = m_38->m_1a0.m_14;
             i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             i32 frame = elem[0x14 / 4];
             i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
             const char* nm = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
-            m_154->ApplyLookupSprite(nm, frame);
+            m_38->ApplyLookupSprite(nm, frame);
         }
         goto store;
     }
@@ -942,39 +942,39 @@ codeI:
     m_entranceCell.col = rec.m_0;
     m_entranceCell.row = rec.m_4;
     m_entranceCell.reason = rec.m_8;
-    m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->m_1a0.Setup_15c2d0(m_poseIdle[1]);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_poseIdle[1]);
     ReseedIdleReset(1, 0, 0);
     return;
 
 idle:
     // codes "A"/"K": drive the IDLE1 geometry (the forwarding setter), stamp the
     // cell frame from the incoming record (cell table base 0x474).
-    m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->ApplyGeometryDirect(m_poseIdle[0], 0);
+    m_value = m_38->m_1a0.m_14;
+    m_38->ApplyGeometryDirect(m_poseIdle[0], 0);
     {
-        CAniElement* desc = m_154->m_1a0.m_14;
+        CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
         const char* nm = (const char*)((zDArray*)&m_cells[index].m_idle)->IndexToPtr(0);
-        m_154->ApplyLookupSprite(nm, frame);
+        m_38->ApplyLookupSprite(nm, frame);
     }
     goto store;
 
 walk:
     // codes "D"/"M" (and the default): drive the WALK geometry, stamp the cell name
     // from the incoming record (cell table base 0x470), set it by name only.
-    m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->m_1a0.Setup_15c2d0(m_poseWalk);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_poseWalk);
     {
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
         const char* nm = (const char*)((zDArray*)&m_cells[index].m_walk)->IndexToPtr(0);
-        m_154->ApplyName(nm);
+        m_38->ApplyName(nm);
     }
 
 store:
@@ -1616,8 +1616,8 @@ label_4cb4b:
         return 1;
     }
     if (reason0e) {
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
         return 1;
     }
     goto label_ret1;

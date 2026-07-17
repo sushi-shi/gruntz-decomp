@@ -1138,8 +1138,8 @@ public:
     // The equivalent conversion on CProjectile (same base, same +0x150) is DONE and
     // byte-verified - see <Gruntz/Projectile.h> for the worked shape.
     // ---------------------------------------------------------------------
-    void* m_150; // +0x150  (CWapX::m_34)
-    CGameObject* m_154; // +0x154  the created entrance-anim sprite object (the ex
+    void* m_34; // +0x150  (CWapX::m_34)
+    CGameObject* m_38; // +0x154  the created entrance-anim sprite object (the ex
                         //         CEntranceAnimPlayer view - the player IS the
                         //         created CGameObject; see UserLogic.h's tail note)
     // +0x158: the sprite's worker record. IDENTITY PROVEN by the ctor tail
@@ -1148,8 +1148,8 @@ public:
     // m_0c->m_28->m_30: worker->m_0c is the owner/world context (the
     // CDDrawSurfaceMgr facet) whose +0x28 is the CSndHost cue registry
     // (emit gate +0x30, CMapStringToPtr map +0x10).
-    AnimWorkerObj* m_158;            // +0x158 (the bound object's worker record)
-    CAniElement* m_prevEntranceDesc; // +0x15c (= m_154->m_1a0.m_14 cache)
+    AnimWorkerObj* m_3c;            // +0x158 (the bound object's worker record)
+    CAniElement* m_value; // +0x15c (= m_154->m_1a0.m_14 cache)
     char m_pad160[0x170 - 0x160];
     // +0x170 (entrance-reason / movement state). The attack-fire step (UserLogicVfunc7)
     // reads this slot as the grunt's current TOOL/attack kind (switched over the

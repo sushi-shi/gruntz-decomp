@@ -208,9 +208,9 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // gate branch ordering, and the cross-arm regalloc. Deferred to the final sweep.
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
-    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
+    m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     // The +0x1a0 cursor's done-gates (m_28 paused-done, m_20 per-frame timer).
-    if (!((m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) || m_moveMode == 0)) {
+    if (!((m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) || m_moveMode == 0)) {
         return 0;
     }
 
@@ -230,13 +230,13 @@ i32 CGrunt::RunEntranceMove() {
         m_35c = 0;
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
         char* nm = m_cells[base].m_walk.GetBuffer(0);
-        m_154->ApplyName(nm);
+        m_38->ApplyName(nm);
     } else {
         ReseedIdleReset(1, 0, 0);
     }
@@ -390,29 +390,29 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     if (mode == 1) {
         i32 r = GruntRand() % 0x1e1;
         if (r > 0x140) {
-            m_154->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, (void*&)found);
+            m_38->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37a, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
-            m_154->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, (void*&)found);
+            m_38->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37b, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
-            m_154->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, (void*&)found);
+            m_38->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, (void*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37c, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         }
     } else if (mode == 2) {
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (void*&)found);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (void*&)found);
         base = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, (void*&)found);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, (void*&)found);
         base = s_GRUNTZ_DEATHZ_MELT;
     }
 
@@ -421,9 +421,9 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     if (!found) {
         ResetEntranceAnimation(1, 0, 0);
     } else {
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0((CAniElement*)found);
-        CAniElement* desc = m_154->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0((CAniElement*)found);
+        CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         EntranceApplyFrame(key, elem[0x14 / 4]);
     }
@@ -458,7 +458,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 // edx/ecx coin-flip; no source lever flips it (an explicit `int z=0;` did not pin).
 RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
-    if (m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
+    if (m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         CGameObject* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
@@ -518,7 +518,7 @@ void CGrunt::LoadEntranceConfig() {
             h->m_flags |= 0x20000;
         }
 
-        CGameObject* p = m_154;
+        CGameObject* p = m_38;
         void* found_ob = 0;
         void* cached = p->m_1a0.m_14;
         p->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, found_ob);
@@ -546,7 +546,7 @@ void CGrunt::LoadEntranceConfig() {
         EntranceFinishWire(0, 0);
     }
 
-    if (m_154->m_1a0.m_28 == 0 || m_154->m_1a0.m_20 != 0) {
+    if (m_38->m_1a0.m_28 == 0 || m_38->m_1a0.m_20 != 0) {
         return;
     }
     ResetEntranceAnimation(1, 0, 0);
@@ -568,14 +568,14 @@ void CGrunt::LoadEntranceConfig() {
 // as ResetGeometry @0x616e0) - no source lever flips it. ~88.5%.
 RVA(0x00068370, 0x14c)
 void CGrunt::RearmEntranceDrop() {
-    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
+    m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) {
+    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         m_22c = 0;
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseItem2);
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseItem2);
 
-        CAniElement* desc = m_154->m_1a0.m_14;
+        CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
 
@@ -586,7 +586,7 @@ void CGrunt::RearmEntranceDrop() {
         // into idx*0x68 + 0x478 and diverge.
         const char* name =
             (const char*)((zDArray*)((char*)this + (3 * col + row + 0xb) * 0x68))->IndexToPtr(0);
-        m_154->ApplyLookupSprite(name, frame);
+        m_38->ApplyLookupSprite(name, frame);
     }
 
     if (m_22c == 0) {
@@ -696,14 +696,14 @@ i32 CGrunt::StartBombGruntRun() {
             g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }
     }
-    m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->m_1a0.Setup_15c2d0(m_poseItem);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_poseItem);
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col + 0xb;
     i32 idx = base + base * 3 * 4;
     char* cn = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
-    m_154->ApplyName(cn);
+    m_38->ApplyName(cn);
     return 0;
 }
 
@@ -756,10 +756,10 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[8].m_walk = s_SE_ITEM;
 
         _out = 0;
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_WG_ITEM, (void*&)_out);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_ITEM, (void*&)_out);
         m_poseWalk = (CAniElement*)_out;
         _out = 0;
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_WG_ITEM, (void*&)_out);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_ITEM, (void*&)_out);
         m_poseIdle[2] = 0;
         m_poseIdle[0] = (CAniElement*)_out;
         m_poseIdle[1] = (CAniElement*)_out;
@@ -802,22 +802,22 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[8].m_idle = s_SE_IDLE;
 
         _out = 0;
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_WG_WALK, (void*&)_out);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_WALK, (void*&)_out);
         m_poseWalk = (CAniElement*)_out;
         _out = 0;
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE1, (void*&)_out);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE1, (void*&)_out);
         m_poseIdle[0] = (CAniElement*)_out;
         _out = 0;
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE2, (void*&)_out);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE2, (void*&)_out);
         m_poseIdle[1] = (CAniElement*)_out;
         _out = 0;
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE3, (void*&)_out);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE3, (void*&)_out);
         m_poseIdle[2] = (CAniElement*)_out;
         _out = 0;
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE4, (void*&)_out);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE4, (void*&)_out);
         m_poseIdle4 = (CAniElement*)_out;
         _out = 0;
-        m_154->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE5, (void*&)_out);
+        m_38->m_0c->m_animRegistry->m_10.Lookup(s_WG_IDLE5, (void*&)_out);
         m_poseIdle5 = (CAniElement*)_out;
     }
 
@@ -825,28 +825,28 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     CAnimNameRecord* rec = g_typeColl.ScratchResolve(m_14->m_1c);
     GruntScratchTeardown();
     if (strcmp(rec->m_name, s_codeD) == 0) {
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
-        CAniElement* desc = m_154->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
+        CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_walk, 0);
-        m_154->ApplyLookupSprite(buf, frame);
+        m_38->ApplyLookupSprite(buf, frame);
         return 1;
     }
 
     CAnimNameRecord* rec2 = g_typeColl.ScratchResolve(m_14->m_1c);
     GruntScratchTeardown();
     if (strcmp(rec2->m_name, "A") == 0) {
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseIdle[0]);
-        CAniElement* desc = m_154->m_1a0.m_14;
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseIdle[0]);
+        CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_idle, 0);
-        m_154->ApplyLookupSprite(buf, frame);
+        m_38->ApplyLookupSprite(buf, frame);
     }
     return 1;
 }
@@ -875,21 +875,21 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // that whole referent set is a final-sweep task.
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
-    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (m_154->m_1a0.m_28 == 0 || m_154->m_1a0.m_20 != 0) {
+    m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
+    if (m_38->m_1a0.m_28 == 0 || m_38->m_1a0.m_20 != 0) {
         return 0;
     }
 
     if (m_entranceStamped == 0) {
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseToyBreak);
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseToyBreak);
 
-        CAniElement* desc = m_154->m_1a0.m_14;
+        CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
 
         char* buf = ((CString*)&m_448)->GetBuffer(0);
-        m_154->ApplyLookupSprite(buf, frame);
+        m_38->ApplyLookupSprite(buf, frame);
 
         m_entranceStamped = 1;
         i32 v = m_moveVariant;
@@ -1030,13 +1030,13 @@ i32 CGrunt::StepArrivalCommit() {
             m_35c = 0;
             m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
-            m_prevEntranceDesc = m_154->m_1a0.m_14;
-            m_154->m_1a0.Setup_15c2d0(m_poseWalk);
+            m_value = m_38->m_1a0.m_14;
+            m_38->m_1a0.Setup_15c2d0(m_poseWalk);
             GruntEntranceCell cell = m_entranceCell;
             i32 colv = cell.row + cell.col * 2;
             i32 base = cell.col + colv;
             char* nm = m_cells[base].m_walk.GetBuffer(0);
-            m_154->ApplyName(nm);
+            m_38->ApplyName(nm);
         } else {
             ResetEntranceAnimation(1, 0, 0);
         }
@@ -1156,13 +1156,13 @@ finalize:
             m_10->m_flags |= 0x20000;
         }
     }
-    m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
+    m_value = m_38->m_1a0.m_14;
+    m_38->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
     {
-        CAniElement* desc = m_154->m_1a0.m_14;
+        CAniElement* desc = m_38->m_1a0.m_14;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
-        m_154->ApplyLookupSprite(s_GRUNTZ_DEATHZ_FREEZE, frame);
+        m_38->ApplyLookupSprite(s_GRUNTZ_DEATHZ_FREEZE, frame);
     }
     m_freezeUnfrozen = 0;
     m_freezeDelayDone = 1;
@@ -1190,8 +1190,8 @@ finalize:
 // cascade (~87.4%). Logic complete; deferred to the final sweep.
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
-    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (m_154->m_1a0.m_28 != 0 && m_154->m_1a0.m_20 == 0) {
+    m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
+    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         if (m_freezeUnfrozen != 0) {
             m_entranceActive = 0;
             ReadConfigFromButeMgr();
@@ -1203,8 +1203,8 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             }
             return 0;
         }
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
+        m_value = m_38->m_1a0.m_14;
+        m_38->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
         m_idleDelayLo = g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710);
         m_idleDelayHi = 0;
         m_idleAnchorLo = static_cast<i32>(g_frameTime);
@@ -1213,8 +1213,8 @@ i32 CGrunt::LoadFreezeSpellAssets() {
     }
     if (m_freezeDelayDone == 0) {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
-            m_prevEntranceDesc = m_154->m_1a0.m_14;
-            m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
+            m_value = m_38->m_1a0.m_14;
+            m_38->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
             CGameObject* h = m_10;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
@@ -1239,15 +1239,15 @@ i32 CGrunt::LoadFreezeSpellAssets() {
 RVA(0x00069fd0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
     // 0x15c360 = CAniAdvanceCursor::Advance (cast the m_1a0 geometry facet)
-    m_154->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (m_154->m_1a0.m_28 == 0 || m_154->m_1a0.m_20 != 0) {
+    m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
+    if (m_38->m_1a0.m_28 == 0 || m_38->m_1a0.m_20 != 0) {
         return 0;
     }
     if (m_36c == 0) {
         // 0x79fb0 = CTriggerMgr::NotifyCell (the reused registry slot), not a CGruntTileMgr method
         m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
-    m_154->m_flags |= 0x10000;
+    m_38->m_flags |= 0x10000;
     return 0;
 }
 
@@ -1557,15 +1557,15 @@ i32 CGrunt::StepAnimDispatchB() {
         m_35c = 0;
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
         // by-value cell copy dead-spills `reason` (esp+0x24) -> sub esp frame, then
         // GetBuffer(0)/CacheFirstFrame (retail J-arm identical to StepAnimDispatchA).
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
         char* nm = m_cells[base].m_walk.GetBuffer(0);
-        m_154->ApplyName(nm);
+        m_38->ApplyName(nm);
         goto modeDispatch;
     } else {
         ApplySetState1(1);

@@ -39,7 +39,7 @@
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         a4 = 0;                                                                                    \
-        m_154->m_0c->m_animRegistry->m_10.Lookup((key), (void*&)a4);                               \
+        m_38->m_0c->m_animRegistry->m_10.Lookup((key), (void*&)a4);                               \
         id = (idv);                                                                                \
         m_pickupGeoSrc = a4;                                                                       \
     } while (0)
@@ -245,7 +245,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         case PICKUP_MEGAPHONE: {
             MegaHolder* mh = (MegaHolder*)g_gameReg->m_2c;
             a4 = 0;
-            m_154->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (void*&)a4);
+            m_38->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (void*&)a4);
             m_pickupGeoSrc = a4;
             i32 n = mh->m_2dc->M();
             if (a5 != 0) {
@@ -479,9 +479,9 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
-    m_prevEntranceDesc = m_154->m_1a0.m_14;
-    m_154->m_1a0.Setup_15c2d0((CAniElement*)m_pickupGeoSrc);
-    m_154->ApplyName("GRUNTZ_PICKUPS");
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0((CAniElement*)m_pickupGeoSrc);
+    m_38->ApplyName("GRUNTZ_PICKUPS");
     return 1;
 }
 

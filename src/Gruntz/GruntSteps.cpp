@@ -1080,15 +1080,15 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_35c = 0;
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)g_buteTree.Find(s_codeD);
-        m_prevEntranceDesc = m_154->m_1a0.m_14;
-        m_154->m_1a0.Setup_15c2d0(m_poseWalk);
+        m_value = m_38->m_1a0.m_14;
+        m_38->m_1a0.Setup_15c2d0(m_poseWalk);
         // Stamp the first entrance-cell frame from m_cells[base].m_walk. The by-value
         // cell copy dead-spills `reason` (esp+0x1c) -> `sub esp,0xc`; base = 3*col+row.
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
         char* nm = m_cells[base].m_walk.GetBuffer(0);
-        m_154->ApplyName(nm);
+        m_38->ApplyName(nm);
         goto modeDispatch;
     } else {
         ApplySetState1(1);
@@ -1164,7 +1164,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     // DIRECT second base at mdisp +0x150 (past the 0x150 CMovingLogic spine). The
     // Grunt.h ODR world is not converted yet, so the subobject is reached by cast
     // until that MI conversion lands (MI1 flagged item 1).
-    if (((CWapX*)&m_150)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
+    if (((CWapX*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CGameObject*)a4) == 0) {
         return 0;
     }
     switch (mode) {
@@ -1224,7 +1224,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     if (!ar) {
         return 0;
     }
-    CDDrawSubMgrLeaf* catalog = ((CGruntTypeCatalog*)*(void**)&m_158)->m_c;
+    CDDrawSubMgrLeaf* catalog = ((CGruntTypeCatalog*)*(void**)&m_3c)->m_c;
     if (!catalog) {
         return 0;
     }
