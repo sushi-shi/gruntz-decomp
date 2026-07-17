@@ -486,7 +486,10 @@ public:
     i32 BuildAnizKeyTable(CMulti* notify);        // 0x0ddaa0 (GRUNTZ_* anim installer)
 
     // ---- the keyboard/UI command dispatcher (THIS TU) ----
-    i32 OnKeyCommand(i32 key, i32 flag); // 0x0cbaf0
+    // (OnKeyCommand 0x0cbaf0 folded onto the slot-11 virtual Vslot0b above.
+    // CMulti::Vslot0b overrides slot 11 and chains this base leg QUALIFIED
+    // (CPlay::Vslot0b) - retail's 0x0bd210 does a direct rel32 to slot 11's thunk,
+    // which is exactly what the qualified call emits.)
     // Two large play-state sub-steps the dispatcher tail-calls (external/reloc-masked;
     // deferred to the final sweep): the mode-enter gate (0x0d6fa0) and the per-frame
     // play-state reset (0x0d60b0).
@@ -494,9 +497,11 @@ public:
     i32 ResetPlayState();    // 0x0d60b0
 
     // ---- the trace-discovered CPlay __thiscall cluster (THIS TU) ----
-    // ResetForMode (0x0c8a10): capture+hide the cursor, enter a mode, then reset
-    // the per-frame drag/world-ready state and three world sub-objects.
-    i32 ResetForMode(i32 mode); // 0x0c8a10
+    // (ResetForMode 0x0c8a10 folded onto the slot-9 virtual Vslot09 above: it
+    // captures+hides the cursor, enters a mode, then resets the per-frame
+    // drag/world-ready state and three world sub-objects. CMulti::Vslot09
+    // overrides slot 9 and chains this base leg QUALIFIED (CPlay::Vslot09) -
+    // retail's 0x0b6330 does `call 0x3c2e`, a direct rel32 to slot 9's thunk.)
     // FindStartPointAt (0x0d5f90): registry-gated hit-test over this->m_374[] +-0x20
     // marker boxes; outputs the matched marker's coords. ret 0x10 (4 args).
     i32 FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY); // 0x0d5f90

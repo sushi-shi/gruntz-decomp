@@ -881,7 +881,7 @@ CNetCmdSlot::~CNetCmdSlot() {
 // callee-saved regs.
 RVA(0x000b6330, 0x89)
 i32 CMulti::Vslot09(i32 arg) {
-    if (ResetForMode(arg) == 0) {
+    if (CPlay::Vslot09(arg) == 0) { // qualified: the BASE leg, not this override
         return 0;
     }
     m_4->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
@@ -4723,5 +4723,5 @@ i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
         }
         return 1;
     }
-    return OnKeyCommand(arg0, arg1);
+    return CPlay::Vslot0b(arg0, arg1); // qualified: the BASE leg, not this override
 }

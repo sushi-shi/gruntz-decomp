@@ -1573,7 +1573,7 @@ void CPlay::ModeCleanup() {
 // reverse), cascading a small offset shift. Not source-steerable.
 // docs/patterns/identical-return-epilogue-tailmerge.md.
 RVA(0x000cbaf0, 0x16f)
-i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
+i32 CPlay::Vslot0b(i32 key, i32 flag) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
@@ -6296,7 +6296,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
 // requested mode (publishing the level-start clock for mode 9), then reset the
 // per-frame drag/world-ready latches and the three world sub-objects.
 RVA(0x000c8a10, 0x119)
-i32 CPlay::ResetForMode(i32 mode) {
+i32 CPlay::Vslot09(i32 mode) {
     POINT pt;
     GetCursorPos(&pt);
     m_cursorX = pt.x;
