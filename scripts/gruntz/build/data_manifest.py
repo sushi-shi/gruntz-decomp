@@ -1,51 +1,53 @@
 #!/usr/bin/env python3
-"""Generate the vostok `--data-manifest` from src DATA() definitions + their sizeof.
+"""Generate vostok's `--data-manifest` + `--data-section-manifest`.
 
-STATUS: proven but NOT yet wired into delink.py - see "Coverage" below.
+STATUS: WIRED IN - delink.py passes both. See docs/data-attribution.md §3b.
 
-The reviewed-data-topology delinker can emit each DATA()-annotated global as a real
-named definition in its owning target object (right storage class + alignment, with
-interior base relocations converted to COFF relocations, and function references to
-it becoming EXTERNALS instead of duplicated 4-byte allocations) when it is handed a
-data manifest. That is what makes objdiff able to score DATA at all.
+The reviewed-data-topology delinker emits each DATA()-annotated global and each
+`??_C@` string literal as a real named definition in its owning target object (right
+storage class + alignment, with interior base relocations converted to COFF
+relocations, and function references to it becoming EXTERNALS instead of duplicated
+4-byte allocations). That is what makes objdiff able to score DATA at all. The
+companion SECTION manifest additionally rebuilds those definitions in the CANDIDATE's
+section shape - see section_rows() for why that is what actually moves the metric.
 
-Schema (read out of the delinker binary; it accepts a 9- or 10-column header):
-    name  object  rva  size  storage  alignment  section_offset  scope  provenance
-`section_offset = -` selects the legacy reviewed-allocation form (no candidate
-section topology); a numeric offset instead enrolls the row in a candidate group.
+Schemas (read out of the delinker binary; the data manifest takes 9 or 10 columns):
+    name  object  rva  size  storage  alignment  [section_ordinal]  section_offset
+        scope  provenance
+    object  ordinal  name  rva  size  alignment  characteristics  comdat_selection
+        associative_ordinal  storage  provenance
+`section_ordinal = -` / `section_offset = -` selects the legacy reviewed-allocation
+form (the delinker packs the row itself); an ordinal instead places the row in a
+candidate section declared by the section manifest. Section ordinals are per-object
+and must be CONTIGUOUS FROM ONE.
 
 Inputs, all already generated:
   * build/gen/symbol_names.csv - kind=data rows carry rva/name/unit and, since the
     DATA()-sizeof work, an exact type-derived `size` (labels.sizeof_qualtype);
   * the retail PE - classifies each RVA's storage (.rdata / initialized .data /
-    loader-zero tail => rdata/data/bss) via analysis.data_audit.
+    loader-zero tail => rdata/data/bss) via analysis.data_audit;
+  * build/objdiff/base/*.obj - the candidate COFFs cl.exe emitted, which carry the
+    authoritative section topology (name/alignment/characteristics/COMDAT selection).
 
 Evidence rules (never fabricate an extent):
-  * a row is enrolled ONLY with a proven size; the 393 rows whose declared type is
-    not resolvable are withheld, not guessed;
+  * a row is enrolled ONLY with a proven size; the rows whose declared type is not
+    resolvable are withheld, not guessed;
   * a reviewed extent must FIT the span to its neighbour. An overlap PROVES one of
     the two models is wrong but not which, so BOTH are withheld and reported - the
     overlap list is a real reconstruction-defect worklist, not noise;
   * an allocation crossing a storage boundary is withheld.
 
-Coverage (why this is not wired in yet)
---------------------------------------
-A data manifest is the topology AUTHORITY for the objects it names: data that is not
-enrolled stops being materialized into those target objects. Enrolling only the
-DATA()-annotated globals therefore drops each unit's compiler-emitted data (string
-literals `??_C@...`, the unsized globals, $T constant pools), which costs exact
-functions that reference them - measured: 3 lost (soundfontpath BuildSoundFontPath,
-gametext _$E1/_$E4, which reference the `??_C@` strings this manifest does not yet
-carry). homm2 covers this with 5216 supplemental rows derived from the candidate
-COFFs. Completing per-object coverage is the remaining step; until then delink.py
-does not pass --data-manifest, so the code gate stays at its 2385 floor.
+Measured (see docs/data-attribution.md §3b for the table):
+    matched_data   41258/274106 (15.05%)  ->  67080/279630 (23.99%)
+    exact          2384 (unchanged - this only reshapes target data containers)
 
-Measured with the 519 enrolled rows (strict, no --recover-data-relocs-from-pdb):
-    matched_data     8/69184 (0.012%)  ->  38275/246684 (15.52%)
-    exact            2385 -> 2382 (-3, the uncovered-string references above)
+Known gap: 296 payloads / 902 (object, literal) copies stay withheld because a COMDAT
+literal is emitted by EVERY TU that uses it while the delinker rejects one rva claimed
+by two objects (`duplicate data RVA`). That is an upstream relaxation, not an evidence
+problem - there is no owner to attribute, all owners are correct.
 
 Usage:
-    python -m gruntz.build.data_manifest              # -> build/gen/delink_data_manifest.tsv
+    python -m gruntz.build.data_manifest              # -> build/gen/delink_data_*manifest.tsv
     python -m gruntz.build.data_manifest --report     # print the withheld/defect lists
 """
 from __future__ import annotations
@@ -100,10 +102,18 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
         against the candidate objs' `??_C@` pools (the same oracle synth_pdb uses to
         NAME them - cl.exe's own spelling for those exact bytes);
       * the owning object is the candidate obj that defines the literal.
-    A payload emitted by SEVERAL units is a COMDAT the retail linker folded to one
-    copy; nothing in the image says which unit owned the survivor, so it is withheld
-    (82% of payloads are owned by exactly one unit). Identical payloads at two retail
-    RVAs would collide on one content-derived name; both are withheld.
+
+    A payload emitted by SEVERAL units is withheld - but NOT because the owner is
+    unprovable. A COMDAT is by definition emitted into EVERY TU that uses the literal
+    and folded by the linker to one surviving rva, so ALL of them are owners and each
+    target object should get its own copy (our base objs already do). There is nothing
+    to attribute. The blocker is the delinker: enrolling one rva for two objects fails
+    with `duplicate data RVA`, so 296 payloads / 902 (object, literal) copies wait on
+    an upstream relaxation. 82% of payloads are used by exactly one unit and enroll
+    fine. See docs/data-attribution.md §3b.
+
+    Identical payloads at two retail RVAs would collide on one content-derived name;
+    both are withheld.
     """
     import sys as _sys
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
@@ -141,9 +151,12 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
                 continue
             units = owners[cs]
             if len(units) != 1:
+                # Not an attribution problem: all %d ARE owners (that is what a COMDAT
+                # is). The delinker just rejects one rva claimed by two objects.
                 withheld.append((rva, next(iter(units.values())),
-                                 "COMDAT payload defined by %d units - retail owner "
-                                 "unprovable" % len(units)))
+                                 "COMDAT literal used by %d units - delinker rejects "
+                                 "one rva per >1 object (duplicate data RVA)"
+                                 % len(units)))
                 continue
             unit, name = next(iter(units.items()))
             size = len(cs) + 1                      # the payload plus its NUL
