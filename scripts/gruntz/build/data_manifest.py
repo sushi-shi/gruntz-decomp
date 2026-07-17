@@ -183,6 +183,87 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
     return rows, withheld
 
 
+def vtable_rows(exe=EXE, base_dir=None):
+    """Enrollable `??_7` vtable definitions + the withheld ones.
+
+    A vtable is emitted EXACTLY like a `??_C@` string literal: cl gives each one its
+    own COMDAT (`comdat=2` = PICK_ANY, `.rdata`, align 8) holding that one symbol at
+    offset 0, emits it into EVERY TU that needs it, and the linker folds them onto one
+    surviving rva. Measured on our base objs: 235 distinct `??_7` symbols over 457
+    definitions, every one a lone member at offset 0 of its own `.rdata` COMDAT
+    (`??_7CUserLogic@@6B@` alone is emitted by 47 objects). So they enroll through the
+    same fold path string_rows() uses - once per owning unit - and section_rows()
+    rebuilds them in the candidate's shape.
+
+    This is what `.rdata` was waiting on. Of the 305 kind=data rows that classify
+    rdata, only 68 carried a proven extent; 237 were withheld "no proven extent" and
+    220 of those are vtables - `labels.py` derives extents by sizeof() on a DECLARED
+    C++ type, and a compiler-emitted vtable has no such type. Nothing was ever
+    materialized into the target objects' `.rdata`, which is why objdiff saw only
+    419 bytes of it.
+
+    NOTHING IS FABRICATED. The extent is enrolled only where TWO INDEPENDENT sources
+    agree: the retail RTTI slot map (vtable_hierarchy's registry, read out of the
+    shipped image's COL/base-class arrays) and the candidate COMDAT cl.exe actually
+    emitted. `slot_count * 4 == candidate section size` or the row is withheld - the
+    same contradiction check section_rows() applies to a literal whose candidate
+    payload disagrees with its retail extent. A disagreement is a real mis-modelling
+    signal (our class has the wrong number of virtuals), not noise.
+
+    Only PRIMARY vtables (base_off 0, spelled `??_7<class>@@6B@`) are enrolled; a
+    secondary/MI vtable (`??_7<class>@@6B<base>@@@`) is left to the next pass.
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
+    from coff_oracle import _Coff  # noqa: E402
+
+    try:
+        from gruntz.analysis.vtable_hierarchy import build_registry  # noqa: E402
+        reg, _src = build_registry()
+    except Exception as exc:                      # no Ghidra exports -> enroll nothing
+        return [], [(0, "??_7*", "vtable registry unavailable (%s)" % type(exc).__name__)]
+
+    # class -> (primary vtable rva, slot count), straight from the RTTI slot map.
+    primary = {}
+    for name, ci in reg.items():
+        p = ci.vtables.get(0)
+        if p is not None:
+            primary["??_7%s@@6B@" % name] = (p[0], p[1])
+
+    base_dir = Path(base_dir or REPO / "build/objdiff/base")
+    rows, withheld, seen = [], [], {}
+    for obj in sorted(base_dir.glob("*.obj")):
+        try:
+            c = _Coff(obj)
+        except Exception:
+            continue
+        for sec in c.section_table:
+            members = c.defined_symbols(sec["index"])
+            if len(members) != 1 or members[0][0] != 0:
+                continue
+            name = members[0][1]
+            if not name.startswith("??_7"):
+                continue
+            hit = primary.get(name)
+            if hit is None:                        # secondary/MI vtable, or no RTTI
+                seen.setdefault(name, "no primary-vtable slot map for this name")
+                continue
+            rva, slots = hit
+            if sec["size"] != slots * 4:
+                seen.setdefault(name, "candidate section 0x%x != RTTI %d slots (0x%x)"
+                                % (sec["size"], slots, slots * 4))
+                continue
+            rows.append({"name": name, "object": "%s.c" % obj.stem, "rva": rva,
+                         "size": sec["size"], "storage": "rdata",
+                         "alignment": _alignment(rva, sec["size"]),
+                         "provenance": "candidate-COFF-vtable"})
+    enrolled = {r["name"] for r in rows}
+    for name, why in sorted(seen.items()):
+        if name not in enrolled:
+            withheld.append((primary.get(name, (0, 0))[0], name, why))
+    return rows, withheld
+
+
 def candidates(symbols=SYMBOLS, exe=EXE):
     """Enrollable rows + the withheld ones, with a reason for each."""
     pe = read_pe(exe)
@@ -215,6 +296,11 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     strings, string_withheld = string_rows(exe=exe)
     rows += strings
     withheld += string_withheld
+
+    # The compiler-emitted vtables - same fold, same one-COMDAT-per-symbol shape.
+    vtables, vtable_withheld = vtable_rows(exe=exe)
+    rows += vtables
+    withheld += vtable_withheld
 
     # The N owners of a folded COMDAT all claim ONE rva, so collapse each fold to a
     # single extent before the neighbour check - otherwise the copies read as mutual
@@ -288,9 +374,10 @@ def section_rows(rows, base_dir=None):
     secs, withheld = [], []
     by_obj = {}
     for r in rows:
-        # Only cl.exe's string literals own a whole COMDAT. The DATA() globals share
-        # one `.bss`/`.data` per object, so they keep the legacy allocation form.
-        if r.get("provenance") == "candidate-COFF-string":
+        # Only cl.exe's string literals and vtables own a whole COMDAT. The DATA()
+        # globals share one `.bss`/`.data` per object, so they keep the legacy
+        # allocation form.
+        if r.get("provenance") in ("candidate-COFF-string", "candidate-COFF-vtable"):
             by_obj.setdefault(r["object"], []).append(r)
 
     for obj, rs in sorted(by_obj.items()):
@@ -305,13 +392,13 @@ def section_rows(rows, base_dir=None):
         for sec in c.section_table:
             members = c.defined_symbols(sec["index"])
             if len(members) == 1 and members[0][0] == 0 \
-                    and members[0][1].startswith("??_C@"):
+                    and members[0][1].startswith(("??_C@", "??_7")):
                 owner[members[0][1]] = sec
         for r in rs:
             sec = owner.get(r["name"])
             if sec is None:
                 withheld.append((r["rva"], r["name"],
-                                 "no single-literal COMDAT in the candidate obj"))
+                                 "no single-symbol COMDAT in the candidate obj"))
                 continue
             if sec["size"] != r["size"]:
                 # The candidate's own payload disagrees with the retail extent that

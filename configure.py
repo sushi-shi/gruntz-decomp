@@ -339,7 +339,11 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                 # scoring the previous manifest.
                 implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py",
                           "scripts/gruntz/build/data_manifest.py",
-                          "scripts/gruntz/analysis/data_audit.py"])
+                          "scripts/gruntz/analysis/data_audit.py",
+                          # vtable_rows() reads the RTTI slot map through
+                          # vtable_hierarchy -> vtable_scan; both decide vtable extents.
+                          "scripts/gruntz/analysis/vtable_hierarchy.py",
+                          "scripts/gruntz/analysis/vtable_scan.py"])
         w.newline()
 
         # NORMALIZE: rewrite compiler-private data names + jump-table labels of

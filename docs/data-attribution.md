@@ -286,6 +286,49 @@ overlap no other band (rdata 2/15, data 5/17, bss 1/54; aggregates excluded). Me
 overlap **all-pairs**, never adjacent-only — that error reports ~70–80% clean where the
 truth is ~9%. See **`docs/tu-partition-brief.md`**.
 
+### 3b-ii. `.rdata` was 419 bytes because the VTABLES were withheld (fixed; vein now visible)
+
+`.rdata` read **68/419 = 16.23%** and looked like nothing was there. It was measuring an
+almost-empty container. Of the **305** `kind=data` rows that classify `rdata`, only **68**
+carried a proven extent; **237** were withheld `no proven extent` and **220 of those are
+`??_7` vtables** — `labels.py` derives an extent by `sizeof()` on a DECLARED C++ type, and a
+compiler-emitted vtable has no such type. So the delinker never materialized them and
+objdiff compared ~nothing.
+
+**A vtable is emitted exactly like a `??_C@` literal**, so it enrolls through the same fold
+path (`data_manifest.vtable_rows()`): measured over the base objs, **235 distinct `??_7`
+symbols across 457 definitions**, every one a *lone member at offset 0 of its own `.rdata`
+COMDAT* (`comdat=2` PICK_ANY, align 8) — `??_7CUserLogic@@6B@` alone is emitted by **47**
+objects and folded by the linker onto one rva. All owners are correct; each target object
+gets its own copy.
+
+**The extent is never fabricated — two INDEPENDENT sources must agree:** the retail RTTI
+slot map (`vtable_hierarchy`'s registry, read out of the shipped image's COL/base-class
+arrays) and the candidate COMDAT cl.exe emitted. `slot_count * 4 == candidate section size`
+or the row is withheld — the same contradiction check `section_rows()` applies to a literal.
+It immediately caught one real defect (`candidate section 0xc != RTTI 2 slots`) plus 17
+secondary/MI vtables (`??_7X@@6B<base>@@@`, left to a later pass).
+
+| | vtables withheld | vtables enrolled |
+|---|---|---|
+| `.rdata` | 68/**419** = 16.23% | 20/**21319** = 0.09% |
+| `matched_data` | 81691/293441 = 27.84% | 81643/314341 = 25.97% |
+| `exact` | 2385 | 2385 |
+
+**Read that table carefully — the old number was the lie.** Enrolling materializes **+20900
+bytes of real, previously-invisible `.rdata`**; absolute matched bytes are flat (−48, one
+container that had been scoring 100% on incomplete content). The percentage falls only
+because the denominator finally tells the truth.
+
+**The vein is REAL and the blocker is now named.** The 147 `.rdata` sections land at
+**84–94%, not 100** (rezfile 93.9, movinglogic 86.7, donothing 85.0, …; only 3 tiny
+float-pool sections reach 100). `matched_data` credits a section **only at exactly 100.0**,
+so ~21 KB sits one step away. The residual ~15% is the **slot pointers**: a vtable's slots
+are DIR32 relocs to its virtuals, and a section pairs only when EVERY slot's function is
+named — the data-side analog of "a fn flips exact only when its WHOLE referent set is
+named". ⇒ **`.rdata` unlocks as vtable-slot function naming completes**, and it pays ~21 KB
+when it does. Do not re-derive this; the enrolment is already wired.
+
 ### 3c. `.bss` is capped by an objdiff INFERENCE artifact — do not budget against it
 
 **`.bss` is 212211 of 279630 `total_data` (~76%), and `ddsurface` alone is 197144 of it
