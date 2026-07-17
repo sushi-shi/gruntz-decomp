@@ -79,26 +79,34 @@ i32 CUserLogic::UserLogicVfuncD() {
     return 0;
 }
 
-// reloc-fidelity: pin the obj-defined base virtuals above to the real retail vtable-
-// slot RVAs (CUserBase vtbl 0x5e70b4 slots 1-2; CUserLogic vtbl 0x5e705c slots 3-15,
-// from `sema class`). Every tile-logic leaf obj emits ??_7CUserBase / ??_7CUserLogic
-// with these slots as DIR32 relocs to the base virtual symbols; unpinned they bound
-// to NO rva (reloc-masked but wrong). Bodies are NOT matched (dummy anchors) - the
-// pin only binds the slot symbol to the address retail's slot uses.
-// @rva-symbol: ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z 0x000039e0
-// @rva-symbol: ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ 0x0000242d
-// @rva-symbol: ?UserLogicVfunc1@CUserLogic@@UAEHXZ 0x00003413
-// @rva-symbol: ?FireActivation@CUserLogic@@UAEXH@Z 0x0000246e
-// @rva-symbol: ?Activate@CUserLogic@@UAEHXZ 0x000033dc
-// @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x00002162
-// @rva-symbol: ?UserLogicVfunc6@CUserLogic@@UAEHXZ 0x000026b7
-// @rva-symbol: ?StepAttackFire@CUserLogic@@UAEHXZ 0x00001361
-// @rva-symbol: ?UserLogicVfunc8@CUserLogic@@UAEHXZ 0x000023f6
-// @rva-symbol: ?UserLogicVfunc9@CUserLogic@@UAEHXZ 0x0000225c
-// @rva-symbol: ?UserLogicVfuncA@CUserLogic@@UAEHXZ 0x0000150a
-// @rva-symbol: ?UserLogicVfuncB@CUserLogic@@UAEHXZ 0x00003116
-// @rva-symbol: ?UserLogicVfuncC@CUserLogic@@UAEHXZ 0x00001730
-// @rva-symbol: ?UserLogicVfuncD@CUserLogic@@UAEHXZ 0x00003607
+// reloc-fidelity: pin the obj-defined base virtuals above to their real retail BODY
+// RVAs (CUserBase vtbl 0x5e70b4 slots 1-2; CUserLogic vtbl 0x5e705c slots 3-15, from
+// `sema class`). Every tile-logic leaf obj emits ??_7CUserBase / ??_7CUserLogic with
+// these slots as DIR32 relocs to the base virtual symbols; unpinned they bound to NO
+// rva (reloc-masked but wrong). Bodies are NOT matched (dummy anchors) - the pin only
+// binds the slot symbol to the body's address.
+//
+// These pins previously carried the vtable slot's stored VALUE (0x1361, 0x242d, ...),
+// which is NOT a body: retail is linked /INCREMENTAL, so each slot holds the address
+// of a 5-byte `jmp rel32` incremental-link thunk (band 0x1005..0x44a8) that forwards
+// to the body. Pinning a symbol onto a thunk claims a 5-byte jmp IS the function. The
+// addresses below are the thunks' destinations - the contiguous 0x87d0..0x89f0 cluster
+// of tiny CUserLogic virtuals (sizes 1-8B) that the slots actually reach.
+// See docs/patterns/ilt-thunk-indirection.md.
+// @rva-symbol: ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z 0x000087d0
+// @rva-symbol: ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ 0x000087f0
+// @rva-symbol: ?UserLogicVfunc1@CUserLogic@@UAEHXZ 0x00008b50
+// @rva-symbol: ?FireActivation@CUserLogic@@UAEXH@Z 0x00008b70
+// @rva-symbol: ?Activate@CUserLogic@@UAEHXZ 0x000088d0
+// @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x000088f0
+// @rva-symbol: ?UserLogicVfunc6@CUserLogic@@UAEHXZ 0x00008910
+// @rva-symbol: ?StepAttackFire@CUserLogic@@UAEHXZ 0x00008930
+// @rva-symbol: ?UserLogicVfunc8@CUserLogic@@UAEHXZ 0x00008950
+// @rva-symbol: ?UserLogicVfunc9@CUserLogic@@UAEHXZ 0x00008970
+// @rva-symbol: ?UserLogicVfuncA@CUserLogic@@UAEHXZ 0x00008990
+// @rva-symbol: ?UserLogicVfuncB@CUserLogic@@UAEHXZ 0x000089b0
+// @rva-symbol: ?UserLogicVfuncC@CUserLogic@@UAEHXZ 0x000089d0
+// @rva-symbol: ?UserLogicVfuncD@CUserLogic@@UAEHXZ 0x000089f0
 
 // ---------------------------------------------------------------------------
 // CSecretTeleporterTrigger virtual support. Two engine externs the Serialize
