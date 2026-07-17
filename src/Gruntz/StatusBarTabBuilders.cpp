@@ -33,7 +33,10 @@
 // The name maps are the real MFC CMapStringToOb (Lookup x1b8008 - mfc_class names that
 // band CMapStringToOb; the ex-note here had the Ob/Ptr pairing inverted). No local view.
 #include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)
-#include <Image/ImageSet.h>                   // canonical CImageSet (SetAllTypes/SetAllFormats)
+#include <Image/ImageSet.h> // canonical CImageSet (SetAllTypes/SetAllFormats; the config record)
+#include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/SerialCounter.h> // g_serialCounter (bumped once per string field)
+#include <string.h> // inline strlen/strcpy/memset over the serialize scratch buffer
 
 // The g_gameReg singleton (VA 0x64556c), shared by the CSBI_GruntMachine /
 // CSBI_SideTab methods below: the render chain m_world (+0x30, CDDrawSurfaceMgr) ->
@@ -68,7 +71,7 @@ namespace StatusBarTabBuilders {
 // CSbConfigItem base, so the reference resolved to nothing at link. The `this` is proven
 // by the call site (`new CSBI_GruntMachine` immediately before) and the field map is
 // exact: m_parent/m_owner/m_geom ARE the CStatusBarItem base slots m_2c/m_24/m_rect14,
-// and the view's CSbImageSet is the canonical CGmConfig (m_14 table + m_64/m_68 gates).
+// and the view's CSbImageSet is the canonical CImageSet (frame table + index gates).
 // @early-stop
 // identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md,
 // topic:wall): prologue + body are byte-exact (the geometry block groups via the struct-copy
@@ -101,23 +104,23 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     m_rect14.m_4 = g.top;
     m_rect14.m_8 = g.right;
     m_rect14.m_c = g.bottom;
-    CGmConfig* rec = 0;
+    CImageSet* rec = 0;
     m_c = p3;
     h->m_imageRegistry->m_10map.Lookup(
         "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
         (CObject*&)rec
     );
     CImage* spr;
-    if (rec == 0 || rec->m_64 > 1 || rec->m_68 < 1) {
+    if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         spr = 0;
     } else {
-        spr = rec->m_14[1];
+        spr = rec->m_frames[1];
     }
     m_44 = spr;
     if (spr == 0) {
         return 0;
     }
-    CGmConfig* cfg = 0;
+    CImageSet* cfg = 0;
     ((CDDrawSurfaceMgr*)m_24)->m_imageRegistry->m_10map.Lookup(key, (CObject*&)cfg);
     m_30 = cfg;
     if (cfg == 0) {
@@ -126,10 +129,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     m_38 = idxA;
     m_40 = idxB;
     CImage* s;
-    if (idxA < m_30->m_64 || idxA > m_30->m_68) {
+    if (idxA < m_30->m_minIndex || idxA > m_30->m_maxIndex) {
         s = 0;
     } else {
-        s = m_30->m_14[idxA];
+        s = m_30->m_frames[idxA];
     }
     m_34 = s;
     if (s == 0) {
@@ -146,13 +149,13 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (sel == 0) {
         sel = ((CSpriteRefTable*)StatusBarTabBuilders::g_gameReg->m_spriteFactory)->GetSel(1, 0);
     }
-    ((CImageSet*)m_30)->SetAllTypes(10);
-    ((CImageSet*)m_30)->SetAllFormats(sel);
+    m_30->SetAllTypes(10);
+    m_30->SetAllFormats(sel);
     CImage* val;
-    if (m_40 < m_30->m_64 || m_40 > m_30->m_68) {
+    if (m_40 < m_30->m_minIndex || m_40 > m_30->m_maxIndex) {
         val = 0;
     } else {
-        val = m_30->m_14[m_40];
+        val = m_30->m_frames[m_40];
     }
     m_3c = val;
     return val != 0;
@@ -189,11 +192,11 @@ i32 CSBI_GruntMachine::Render(i32 z) {
     }
     i32 idx = m_38;
     m_28--;
-    CGmConfig* cfg = m_30;
+    CImageSet* cfg = m_30;
 
-    m_34 = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
+    m_34 = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : cfg->m_frames[idx];
     idx = m_40;
-    m_3c = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
+    m_3c = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : cfg->m_frames[idx];
 
     i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
 
@@ -240,26 +243,164 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
     m_28 = 2;
 }
 
-// @confidence: high
-// @source: rtti-vptr
-// @stub
-// 0x0e8e00 (1.0 KB) = CSBI_GruntMachine::SerializeFields - ??_7CSBI_GruntMachine
-// (0x1eadbc) slot 1, thunk 0x381e. The grunt-machine serialize leg over
-// g_gameReg->m_world. Body still unreconstructed (1050 B); the SIGNATURE is now the
-// proven one, so the frame/`ret 0x10` are right even while the body is empty.
+// ===========================================================================
+// CSBI_GruntMachine::SerializeFields (0x0e8e00) - ??_7CSBI_GruntMachine (0x1eadbc)
+// slot 1 (thunk 0x381e); the grunt-machine dual-mode serialize leg. __thiscall
+// (stream, mode, a2, a3), ret 0x10; bails 0 when the stream or g_gameReg->m_world
+// is absent.
 //
-// SIGNATURE CORRECTION: the previous note claimed the slot was `i32()` (0 args) and
-// dismissed Ghidra's "__thiscall(4 args)" as an arity guess. GHIDRA WAS RIGHT. Retail:
-//   0xe8e03  mov ebx,[esp+0x90]   arg1 = the archive (null-test -> return 0)
-//   0xe8e2b  mov eax,[esp+0xa0]   arg2 = kind; `cmp eax,4` / `cmp eax,7` - the family's
-//                                 write/read arms, identical to CStatusBarItem 0x10bfc0
-//   0xe91e7  [esp+0xa8]/[esp+0xa4]/[esp+0xa0] -> push arg4,arg3,arg2, push ebx(arg1),
-//            mov ecx,ebp(this), call 0x1848  = QUALIFIED CStatusBarItem::SerializeFields
-//   0xe9217  ret 0x10             = 4 stack args, __thiscall
-// The 0-arg `SbiVfunc0` it was wired to was a FABRICATED placeholder (StatusBarItem.h).
+// Mode 7 (read): the config record m_30 by NAME (registry Lookup, ungated), the
+// raw m_38, then the three frames m_34/m_3c/m_44 as name+index registry refs
+// gated to rec->m_frames[idx] (the family's [m_minIndex..m_maxIndex] resolve),
+// with the raw m_40 between the first two. Mode 4 (write): m_30 round-trips by
+// name only (strcpy of its +0x24 m_name); each frame reverse-looks-up its
+// name+index through AnyValueMatches_155630. Both arms tail-chain the QUALIFIED
+// CStatusBarItem::SerializeFields (retail `call 0x1848`) and 0/1-normalise.
+// ===========================================================================
+// @early-stop
+// stack-slot recoloring wall (the GruntStateRec/CTimer scratch-slot family), 99.89%:
+// every instruction byte-identical except the frame size (mine 0x8c vs retail 0x88)
+// and the dependent esp-relative offsets. Retail's compiler reuses the dead `reg`
+// spill slot ([esp+0x14]) for `idx` once reg is cached in esi after the first
+// (index-less) name block; cl gives idx its own slot. The sibling CSBI_SideTab leg
+// (whose FIRST block already uses idx, keeping the slot hot) hit 100.00 EXACT with
+// the same spelling; block-scoping v/out/idx recovered out/v sharing but the
+// reg/idx recoloring is not source-steerable (permuter: no change).
 RVA(0x000e8e00, 0x41a)
-i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
-    return 0;
+i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
+    if (s == 0) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
+    if (reg == 0) {
+        return 0;
+    }
+
+    char buf[0x80];
+
+    switch (mode) {
+        case 4: {
+            i32 v;
+            // --- mode 4 (store): the config record by name, each frame by
+            // reverse name+index lookup ---
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_30 != 0) {
+                strcpy(buf, m_30->m_name);
+            }
+            s->Write(buf, 0x80);
+            s->Write(&m_38, 4);
+
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            v = 0;
+            if (m_34 != 0) {
+                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_34, (i32)buf, (i32)&v);
+            }
+            s->Write(buf, 0x80);
+            s->Write(&v, 4);
+            s->Write(&m_40, 4);
+
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            v = 0;
+            if (m_3c != 0) {
+                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_3c, (i32)buf, (i32)&v);
+            }
+            s->Write(buf, 0x80);
+            s->Write(&v, 4);
+
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            v = 0;
+            if (m_44 != 0) {
+                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_44, (i32)buf, (i32)&v);
+            }
+            s->Write(buf, 0x80);
+            s->Write(&v, 4);
+            break;
+        }
+
+        case 7: {
+            CObject* out;
+            i32 idx;
+            // --- mode 7 (load): the config record by name, each frame by
+            // name + gated index ---
+            g_serialCounter++;
+            s->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                out = 0;
+                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                m_30 = (CImageSet*)out;
+            } else {
+                m_30 = 0;
+            }
+            s->Read(&m_38, 4);
+
+            g_serialCounter++;
+            s->Read(buf, 0x80);
+            s->Read(&idx, 4);
+            if (strlen(buf) != 0) {
+                i32 i = idx;
+                out = 0;
+                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                CImageSet* rec = (CImageSet*)out;
+                CImage* r;
+                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                    r = rec->m_frames[i];
+                } else {
+                    r = 0;
+                }
+                m_34 = r;
+            } else {
+                m_34 = 0;
+            }
+            s->Read(&m_40, 4);
+
+            g_serialCounter++;
+            s->Read(buf, 0x80);
+            s->Read(&idx, 4);
+            if (strlen(buf) != 0) {
+                i32 i = idx;
+                out = 0;
+                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                CImageSet* rec = (CImageSet*)out;
+                CImage* r;
+                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                    r = rec->m_frames[i];
+                } else {
+                    r = 0;
+                }
+                m_3c = r;
+            } else {
+                m_3c = 0;
+            }
+
+            g_serialCounter++;
+            s->Read(buf, 0x80);
+            s->Read(&idx, 4);
+            if (strlen(buf) != 0) {
+                i32 i = idx;
+                out = 0;
+                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                CImageSet* rec = (CImageSet*)out;
+                CImage* r;
+                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                    r = rec->m_frames[i];
+                } else {
+                    r = 0;
+                }
+                m_44 = r;
+            } else {
+                m_44 = 0;
+            }
+            break;
+        }
+    }
+
+    // QUALIFIED = the direct base leg (retail `call 0x1848`); unqualified would be
+    // recursion on this override.
+    return CStatusBarItem::SerializeFields(s, mode, a2, a3) != 0 ? 1 : 0;
 }
 
 namespace StatusBarTabBuilders {} // namespace StatusBarTabBuilders
@@ -464,22 +605,122 @@ i32 CSBI_SideTab::Render(i32 z) {
     return 1;
 }
 
-// @confidence: high
-// @source: rtti-vptr
-// @stub
-// 0x0e9a30 (798 B) = CSBI_SideTab::SerializeFields - ??_7CSBI_SideTab (0x1eae3c) slot 1,
-// thunk 0x1ef1. The side-tab serialize leg. Body still unreconstructed (798 B); the
-// SIGNATURE is now the proven one.
+// ===========================================================================
+// CSBI_SideTab::SerializeFields (0x0e9a30) - ??_7CSBI_SideTab (0x1eae3c) slot 1
+// (thunk 0x1ef1); the side-tab dual-mode serialize leg. __thiscall (stream, mode,
+// a2, a3), ret 0x10; bails 0 when the stream or g_gameReg->m_world is absent.
 //
-// SIGNATURE CORRECTION (same as CSBI_GruntMachine above - the `i32()` claim was wrong):
-//   0xe9a3d  mov esi,[esp+0x9c]   arg1 = the archive (null-test -> return 0)
-//   0xe9a77  mov eax,[esp+0xa4]   arg2 = kind; `cmp eax,4` / `cmp eax,7` - the family arms
-//   0xe9d1b+ tail: push arg4,arg3,arg2, push the archive, call 0x1848 (= QUALIFIED
-//            CStatusBarItem::SerializeFields), then neg/sbb/neg = normalise to 0/1
-//   ret 0x10                      = 4 stack args, __thiscall
+// Mode 7 (read): the two frames m_topFrame/m_bottomFrame as name+index registry
+// refs gated to rec->m_frames[idx], then the raw field run m_38/m_3c/m_40/m_44,
+// the m_48+m_4c draw-origin PAIR as one 8-byte read, and m_50/m_54/m_58. Mode 4
+// (write): each frame reverse-looks-up its name+index (AnyValueMatches_155630),
+// then the same raw run. Both arms tail-chain the QUALIFIED
+// CStatusBarItem::SerializeFields (retail `call 0x1848`) and 0/1-normalise.
+// ===========================================================================
 RVA(0x000e9a30, 0x31e)
-i32 CSBI_SideTab::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
-    return 0;
+i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
+    if (s == 0) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
+    if (reg == 0) {
+        return 0;
+    }
+
+    char buf[0x80];
+
+    switch (mode) {
+        case 4: {
+            i32 v;
+            // --- mode 4 (store): each frame by reverse name+index lookup, then
+            // the raw field run ---
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            v = 0;
+            if (m_topFrame != 0) {
+                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_topFrame, (i32)buf, (i32)&v);
+            }
+            s->Write(buf, 0x80);
+            s->Write(&v, 4);
+
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            v = 0;
+            if (m_bottomFrame != 0) {
+                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_bottomFrame, (i32)buf, (i32)&v);
+            }
+            s->Write(buf, 0x80);
+            s->Write(&v, 4);
+
+            s->Write(&m_sampledValue, 4);
+            s->Write(&m_rowIndex, 4);
+            s->Write(&m_40, 4);
+            s->Write(&m_44, 4);
+            s->Write(&m_48, 8); // the m_48+m_4c draw-origin pair, one 8-byte record
+            s->Write(&m_50, 4);
+            s->Write(&m_54, 4);
+            s->Write(&m_58, 4);
+            break;
+        }
+
+        case 7: {
+            CObject* out;
+            i32 idx;
+            // --- mode 7 (load): each frame by name + gated index, then the raw
+            // field run ---
+            g_serialCounter++;
+            s->Read(buf, 0x80);
+            s->Read(&idx, 4);
+            if (strlen(buf) != 0) {
+                i32 i = idx;
+                out = 0;
+                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                CImageSet* rec = (CImageSet*)out;
+                CImage* r;
+                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                    r = rec->m_frames[i];
+                } else {
+                    r = 0;
+                }
+                m_topFrame = r;
+            } else {
+                m_topFrame = 0;
+            }
+
+            g_serialCounter++;
+            s->Read(buf, 0x80);
+            s->Read(&idx, 4);
+            if (strlen(buf) != 0) {
+                i32 i = idx;
+                out = 0;
+                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                CImageSet* rec = (CImageSet*)out;
+                CImage* r;
+                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                    r = rec->m_frames[i];
+                } else {
+                    r = 0;
+                }
+                m_bottomFrame = r;
+            } else {
+                m_bottomFrame = 0;
+            }
+
+            s->Read(&m_sampledValue, 4);
+            s->Read(&m_rowIndex, 4);
+            s->Read(&m_40, 4);
+            s->Read(&m_44, 4);
+            s->Read(&m_48, 8); // the m_48+m_4c draw-origin pair, one 8-byte record
+            s->Read(&m_50, 4);
+            s->Read(&m_54, 4);
+            s->Read(&m_58, 4);
+            break;
+        }
+    }
+
+    // QUALIFIED = the direct base leg (retail `call 0x1848`); unqualified would be
+    // recursion on this override.
+    return CStatusBarItem::SerializeFields(s, mode, a2, a3) != 0 ? 1 : 0;
 }
 
 // ===========================================================================

@@ -27,28 +27,18 @@
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
-#include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <Image/CImage.h>   // the canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <Image/ImageSet.h> // the config record IS the canonical CImageSet (SbiConfig.h fold)
 
-// ---------------------------------------------------------------------------
-// Shared engine views (modeled minimally; only the touched members/methods are
-// load-bearing; every call/datum through them is reloc-masked).
-
-// The frame record (an element of the config record's m_14 frame table, and the
+// The frame record (an element of the config record's m_frames table, and the
 // type of the standalone m_44 handle) is the RTTI-confirmed CImage: a draw-offset
-// pair at m_18/m_1c, drawn by CImage::RenderFrame (0x153790, __thiscall). Modeled
-// by the shared <Image/CImage.h> definition; every call through it is reloc-masked.
-
-// The resolved config record (CSBI_GruntMachine::m_30): a frame-index range gate at
-// m_64/m_68 and a frame table at m_14 (an array of CImage*). Same CSbiConfigRecord
-// shape as CSbiConfigRecord (<Gruntz/SbiConfig.h>).
-struct CGmConfig {
-    char m_pad0[0x14];
-    CImage** m_14; // +0x14  frame table (array of frame-record pointers)
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  frame-index range lo gate (idx < m_64 => reject)
-    i32 m_68; // +0x68  frame-index range hi gate (idx > m_68 => reject)
-};
-SIZE_UNKNOWN(CGmConfig);
+// pair at m_18/m_1c, drawn by CImage::RenderFrame (0x153790, __thiscall).
+//
+// (The ex CGmConfig view of the resolved config record m_30 is DISSOLVED onto the
+// real CImageSet: frame table m_frames @+0x14, gates m_minIndex/m_maxIndex
+// @+0x64/+0x68, inline name m_name @+0x24 - the member the slot-1 serialize's
+// mode-4 leg strcpy's out. BuildResourceTabStatusBar already called
+// SetAllTypes/SetAllFormats through a (CImageSet*) cast of the same member.)
 
 // The active surface context Render passes into RenderFrame is reached through the
 // canonical resource manager: g_gameReg->m_world (CDDrawSurfaceMgr) ->
@@ -113,7 +103,7 @@ public:
 
     // ----- own fields (after CStatusBarItem @0x30, which now owns m_2c); base draw
     // origins reuse m_rect14.m_0/m_4 (@0x14/0x18), the frame countdown reuses m_28.
-    CGmConfig* m_30; // +0x30  resolved config record (frame table host)
+    CImageSet* m_30; // +0x30  resolved config record (frame table host; ex CGmConfig view)
     CImage* m_34;    // +0x34  resolved frame for index m_38
     i32 m_38;        // +0x38  frame index A (resolved into m_34)
     CImage* m_3c;    // +0x3c  resolved frame for index m_40
