@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 373  functions: 4083
+# units: 370  functions: 4083
 actionarea	11
 actionoptionsmenubar	12
 adler32	1
@@ -60,7 +60,7 @@ cremusnode	1
 cspawnentry	1
 cursorsnapactreg	2
 cursorsnapsprite	6
-customleveldlg	1
+customleveldlg	4
 customworlddialog	13
 databuffer	8
 ddpagemgr	18
@@ -132,7 +132,7 @@ gruntchargestep	1
 gruntcombat	25
 gruntcreationpoint	8
 gruntdatarecord	2
-gruntentrancearrival	22
+gruntentrancearrival	23
 gruntentrancemove	14
 grunthealthsprite	10
 gruntindicatorworkerhandlers	7
@@ -206,7 +206,6 @@ lightfx	11
 lightfxmgr	3
 lightfxrender	23
 loadgamemenu	4
-logicactreg646010	3
 logicdispatchinit	1
 logicrecord	5
 logicrecorddispatch	4
@@ -218,7 +217,7 @@ maplogic	4
 mapmgr	25
 menuitem	21
 menupage	34
-menusparkle	4
+menusparkle	7
 menusparkleserial	1
 menustate	30
 mgrautoscroll	1
@@ -242,13 +241,11 @@ netsession	1
 netsessionnode	3
 netthingdtor	1
 objecttracker	1
-orphanleaves	3
-orphanmethods	2
 packetpool	2
 palettebmp	2
 palettecopy	1
 palettesnapshot	1
-pathhazard	12
+pathhazard	13
 pathhazardactreg	2
 play	115
 playercommandstep	1

@@ -345,6 +345,58 @@ i32 CPathHazard::Tick() {
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// 0xb4350: CRainCloud::Tick (vtable slot 16, origin CPathHazard). IDENTITY
+// RESOLVED (2026-07-16, ex the `CStrikeEffect` placeholder): its ILT thunk
+// 0x36a2 is referenced ONLY from ??_7CRainCloud@@6B@+0x40 (slot 16), and every
+// viewed field is the canonical CPathHazard strike state - m_118 IS
+// m_strikeArmed, +0x120/+0x128 ARE m_strikeDeadline/m_strikeWindow, +0x10 IS
+// CUserLogic::m_object (the bound CGameObject, whose +0x4c/+0x50/+0x58 are the
+// draw-fill triple). The trailing "helper" thunk 0x2914 IS the base
+// ?Tick@CPathHazard@@ @0xb4020 - the same base chain CUFO::Tick makes.
+// The lightning-strike flash: while armed, pick flash frame 5 (or 0 once the
+// g_timer200 threshold passes) unless the strike window elapsed (disarm), seed
+// the bound object's draw-fill, then run the base Tick; returns 0.
+// g_timer200 (0x245598 countdown timer, compared to 0x64) comes from <Rez/FrameClock.h>.
+
+// @early-stop
+// 98.94%: every opcode/offset/branch is byte-identical. The lone residual is a
+// load-order coin-flip in the sprite-write tail - retail reads g_gameReg->m_78
+// (edx) before m_object (reusing eax for the sprite ptr); cl loads m_object first
+// (into ecx) and pins the sprite there. A pure allocator choice on the
+// [this+0x10] load; no source reorder flips it.
+// HOMED here (matcher-6, tu-partition): the earlier "BOUNDARY COMDAT - not homeable"
+// verdict read the 8-byte CUFO::Tick @0xb4330 as the lower neighbour, but that body is
+// itself an outlier of Ufo.cpp. The real bracket is THIS TU on BOTH sides -
+// CPathHazard::Tick @0xb4020 below and CPathHazard::SiblingTick @0xb43f0 above - and
+// 0xb4350 lies inside this obj's own contiguous 0xb35a0..0xb5075 run, which a
+// compiland's .text contribution must be. vtable_hierarchy independently tags this
+// slot-16 override's ORIGIN as CPathHazard, and this TU already owns CRainCloud's dtor
+// (0x13340) and includes <Gruntz/RainCloud.h>. (Ufo.cpp 0xb4330..0xb4fb7 and
+// RainCloud.cpp 0xb49b0 are also entirely inside this run - i.e. this one retail obj
+// holds CPathHazard plus its CUFO/CRainCloud leaves - so they want folding here too;
+// left for a follow-up, they are not orphan TUs.)
+RVA(0x000b4350, 0x7e)
+i32 CRainCloud::Tick() {
+    if (m_strikeArmed != 0) {
+        i32 idx = 5;
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strikeDeadline < m_strikeWindow) {
+            if (static_cast<u32>(g_timer200) >= 0x64) {
+                idx = 0;
+            }
+        } else {
+            m_strikeArmed = 0;
+        }
+        i32 frame = (i32)g_gameReg->m_logicPump->m_tables[idx];
+        CGameObject* spr = m_object;
+        spr->m_drawActive = 1;
+        spr->m_drawFillArg = frame;
+        spr->m_drawFillCmd = 7;
+    }
+    CPathHazard::Tick(); // the base chain (thunk 0x2914 -> 0xb4020), result unused
+    return 0;
+}
+
 // CPathHazard::SiblingTick @0x0b43f0 (virtual slot 17) - the timed
 // striking hazard's per-frame driver. When armed (m_118), check the strike window:
 // if the i64 (clock - deadline) is past the window OR the strike-threshold gate

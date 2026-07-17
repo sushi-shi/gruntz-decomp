@@ -2434,3 +2434,43 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// CEffect6b::Apply (0x6b2e0) - homed here from the former OrphanMethods.cpp holding
+// TU. OWNER PROVEN BY XREF, not by RVA: `gruntz sema xref 0x6b2e0` gives exactly ONE
+// caller - CGrunt::BuildGruntExitAnimation (0x641b0), which is THIS TU's own body
+// (line ~1828: `((CEffect6b*)(&m_150))->Apply((i32)found, 0)`), and this TU already
+// includes <Gruntz/Effect6b.h>. CEffect6b is CGrunt's embedded +0x150 exit-animation
+// facet (`this` == &CGrunt::m_150; m_player == CGrunt::m_154, m_prevDesc ==
+// CGrunt::m_prevEntranceDesc +0x15c), so its class home is CGrunt and its only user
+// is this obj.
+//
+// Its RVA (0x6b2e0) is COMDAT-POOLED and so sits outside this obj's 0x5ecd0..0x65df5
+// run - the 0x6b26x..0x6b33x band packs five tiny bodies from five unrelated classes
+// into 0xd0 bytes (CGrunt::DispatchVtbl24 0x6b260, CAniElement::AtChecked 0x6b270,
+// CDDrawSubMgrLeaf::LookupValue 0x6b2a0, this, CGameLevel::PointInBounds 0x6b330),
+// each an outlier of a TU ~1 MB away. That is the linker's COMDAT grouping, and it is
+// NOT a reason to strand the body in a holding TU: the tree already homes pooled
+// COMDATs with their class (CMenuSparkle's dtor 0x101b0 in MenuSparkle.cpp,
+// ~CMenuState 0x8ce60 in MenuState.cpp, CBootyState's 0x8d440/0x8d510 in
+// BootyStateActivate.cpp). Owner-by-xref wins; the span outlier is the pool's, not a
+// partition defect.
+//
+// Cache the owner's active descriptor into m_prevDesc, run the owner's embedded anim
+// sub-object (+0x1a0) advance, and (when the flag arg is set) re-target its draw-delta.
+// @early-stop
+// 76%: every instruction (lea anim, descriptor read, m_prevDesc store, arg push, both
+// calls) is byte-faithful; the residual is pure register coloring + a 2-instr
+// scheduling flip in this 0x39-byte leaf - retail keeps m_1b4 in edx and hoists the
+// `a` load into eax before the m_prevDesc store; cl colors the descriptor in eax and
+// stores m_prevDesc first. Not source-steerable (every operand/declaration reorder
+// reproduced the same coloring).
+RVA(0x0006b2e0, 0x39)
+void CEffect6b::Apply(i32 a, i32 b) {
+    CAniAdvanceCursor* anim = &m_player->m_1a0;
+    m_prevDesc = m_player->m_1a0.m_14;
+    anim->Setup_15c2d0((CAniElement*)a);
+    if (b != 0) {
+        anim->Advance(static_cast<i32>(g_engineFrameDelta));
+    }
+}

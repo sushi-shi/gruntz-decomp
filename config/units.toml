@@ -1585,18 +1585,8 @@ source = "src/Bute/TypeCollRuntime.cpp"
 flags = "base"
 
 [[unit]]
-unit = "orphanleaves"
-source = "src/Gruntz/OrphanLeaves.cpp"
-flags = "base"
-
-[[unit]]
 unit = "trirecordserialize"
 source = "src/Gruntz/TriRecordSerialize.cpp"
-flags = "base"
-
-[[unit]]
-unit = "orphanmethods"
-source = "src/Gruntz/OrphanMethods.cpp"
 flags = "base"
 
 [[unit]]
@@ -1853,11 +1843,6 @@ flags = "base"
 [[unit]]
 unit = "cursorsnapactreg"
 source = "src/Gruntz/CursorSnapActReg.cpp"
-flags = "base"
-
-[[unit]]
-unit = "logicactreg646010"
-source = "src/Gruntz/LogicActReg646010.cpp"
 flags = "base"
 
 

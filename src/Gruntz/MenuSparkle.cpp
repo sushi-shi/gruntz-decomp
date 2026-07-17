@@ -1,13 +1,37 @@
 // MenuSparkle.cpp - the menu-sparkle eyecandy game-object (C:\Proj\Gruntz).
 //
-// The canonical CMenuSparkle band (ctor 0xadbe0 - the vtable-emission anchor - the
-// /GX leaf dtor 0x101b0, and the per-frame AdvanceAnim 0xae2a0), re-homed out of the
-// UserLogic god-TU. The slot-1 SerializeMove (0xae1c0) lives in MenuSparkleSerial.cpp
-// under the Grunt.h-world serialize view (documented dual-model; never coexist in a
-// TU). Only offsets / code bytes are load-bearing.
+// This obj's ordinary .text contribution is the CONTIGUOUS run 0xadbe0..0xae32e:
+// the ctor (0xadbe0 - the vtable-emission anchor), this leaf's per-class activation
+// registrar (0xadde0 / 0xade60 / 0xadfc0), and the per-frame AdvanceAnim (0xae2a0).
+// The /GX leaf dtor 0x101b0 is COMDAT-pooled (0x1xxxx pool), outside the run.
+//
+// The registrar trio was the former LogicActReg646010.cpp, whose @identity-TODO
+// ("pin the owning leaf class" behind dispatch table 0x646010) is RESOLVED: the leaf
+// is CMenuSparkle. Proof:
+//   * ??_7CMenuSparkle@@6B@+0x10 (.rdata 0x1e82ec, via ILT thunk 0x19b0) points at
+//     0xade60 - so that body is CMenuSparkle's own vtable slot 4, not some
+//     "CProjActDispatcher"'s (that view is dissolved here).
+//   * the trio is bracketed on BOTH sides by CMenuSparkle's own bodies inside this
+//     run (ctor 0xadbe0 < 0xadde0/0xade60/0xadfc0 < SerializeMove 0xae1c0 <
+//     AdvanceAnim 0xae2a0); a compiland's .text run is contiguous.
+//   * ConstructLogicActRange_646010 (0xadde0) is called from the file-scope static
+//     initializer at 0xadd58 - immediately after this ctor (0xadbe0+0x178), i.e.
+//     inside this obj's own run.
+//   * the archetype matches the sibling leaves exactly: CBehindCandyAni keeps its own
+//     RegisterActs (0xad9b0) beside its AdvanceAnim (0xadbb0) in BehindCandyAni.cpp,
+//     and CKitchenSlime::RegisterType is the cited ordering archetype.
+// So g_logicActReg_646010 is CMenuSparkle's per-class activation table.
+//
+// The slot-1 SerializeMove (0xae1c0) still lives in MenuSparkleSerial.cpp under the
+// Grunt.h-world serialize view (documented dual-model; never coexist in a TU) - it is
+// inside this run and wants folding once that dual-model is retired.
+// Only offsets / code bytes are load-bearing.
 #include <Gruntz/MenuSparkle.h>
 #include <Gruntz/AniAdvanceCursor.h> // the +0x1a0 anim sub-object (Advance)
 #include <Bute/ButeTree.h>           // CButeTree (the "A" animset key store)
+#include <Gruntz/ActNameRegistry.h>  // the shared action-name registry archetype
+#include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
+#include <Wap32/ZDArrayDerived.h>    // CZDArrayDerived::Construct ([lo,hi] static init)
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
 
 // The global bute store the ctor interns "A" in (?g_buteTree@@3VCButeTree@@A @0x6bf620).
@@ -39,6 +63,95 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
 // bare CUserLogic teardown (the destructible +0x18 link forces the /GX EH frame).
 RVA(0x000101b0, 0x44)
 CMenuSparkle::~CMenuSparkle() {}
+
+// ===========================================================================
+// CMenuSparkle's per-class activation registrar (dispatch table 0x646010), homed
+// from the former LogicActReg646010.cpp - see the identity proof in the header.
+// ===========================================================================
+
+// This leaf's per-class activation dispatch table (.data, DATA-pinned).
+DATA(0x00246010)
+CLogicActTable g_logicActReg_646010; // 0x646010
+
+// The class activation handler (ILT thunk 0x403c10 -> 0xad2a0).
+extern "C" void LogicHandler_0ad2a0();
+
+// The shared name-registry build (action key "A"), CKitchenSlime::RegisterType
+// ordering: register the action name on first use, resolve its name-table slot, free
+// the slot's old CString nodes, assign the key, bump the global counter; returns the
+// (possibly newly-allocated) action id.
+static inline i32 RegisterActionName() {
+    i32 id = (i32)g_buteTree.Find(s_codeA);
+    if (id == 0) {
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        i32 key = g_typeCounter;
+        id = key;
+        char* slot = ActNameLookup(key);
+        i32 cnt = g_typeColl.m_grown;
+        void** nodes = (void**)g_typeColl.m_alloc;
+        if (cnt != 0) {
+            do {
+                if (nodes != 0) {
+                    ((CString*)nodes)->CString::~CString();
+                }
+                nodes++;
+            } while (--cnt);
+        }
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
+    }
+    return id;
+}
+
+// ConstructLogicActRange_646010 @0x0adde0 - the static initializer that builds this
+// leaf's dispatch table's fast [0x7d0, 0x7da] id range. Called from the file-scope
+// static-init at 0xadd58, immediately after this TU's ctor.
+RVA(0x000adde0, 0x15)
+void ConstructLogicActRange_646010() {
+    ((CZDArrayDerived*)&g_logicActReg_646010)->Construct(0x7d0, 0x7da);
+}
+
+// CMenuSparkle::Dispatch @0x0ade60 - per-coordinate activation dispatch over this
+// leaf's table. Resolves the activation entry for `coord` (ResolveEntry, inlined
+// twice); if the entry's leading handler slot is non-null, re-resolves and invokes it
+// __thiscall on this object.
+//
+// This IS CMenuSparkle's vtable slot 4 (??_7CMenuSparkle@@6B@+0x10 -> 0xade60 via ILT
+// thunk 0x19b0; vtable_hierarchy tags slot 4 `override`, origin CUserLogic). It is
+// declared a PLAIN method rather than the OVERRIDE, because the campaign-wide
+// CUserLogic base models slot 4 with a no-arg `UserLogicVfunc2()` placeholder while
+// the real slot is int-arg - retail's own base body (thunk 0x246e -> 0x8b70) and this
+// override both `ret 4`. That is the same documented workaround ~40 sibling leaves use
+// for their RunAct/FireActivation slot-4 bodies (see Grunt.h, Projectile.h,
+// PathHazard.cpp, ActionArea.h); fixing the base arity is a tree-wide change and would
+// let every one of them become a real OVERRIDE and delete its placeholder virtual.
+// The former CProjActDispatcher .cpp-local view is DISSOLVED onto CMenuSparkle here.
+
+// The entry's leading slot is a __thiscall handler taking this object; MSVC5 rejects
+// the __thiscall keyword, so model it as a single-inheritance member pointer (a bare
+// 4-byte code address) reinterpreted from the entry word.
+typedef void (CMenuSparkle::*MenuSparkleActHandler)();
+
+RVA(0x000ade60, 0x102)
+void CMenuSparkle::Dispatch(i32 coord) {
+    char* e = g_logicActReg_646010.ResolveEntry(coord);
+    if (*(void**)e != 0) {
+        char* e2 = g_logicActReg_646010.ResolveEntry(coord);
+        MenuSparkleActHandler h = *(MenuSparkleActHandler*)e2;
+        (this->*h)();
+    }
+}
+
+// RegisterXLogic_646010 @0x0adfc0 - bind this leaf to its activation handler. Same
+// archetype/wall as 0x03a710.
+// @early-stop
+// register-pinning wall (see CursorSnapActReg.cpp): logic byte-faithful, residual is
+// the action-id register coloring + count-down induction. Deferred.
+RVA(0x000adfc0, 0x18d)
+void RegisterXLogic_646010() {
+    i32 id = RegisterActionName();
+    *(void**)g_logicActReg_646010.ResolveEntry(id) = (void*)&LogicHandler_0ad2a0;
+}
 
 // CMenuSparkle::AdvanceAnim @0x0ae2a0 - the sparkle's per-frame handler. Tick down
 // the aux flicker countdown (m_objAux->m_130, seeded random in the ctor); when it
