@@ -1,7 +1,8 @@
 // GruntzMapMgr.h - the grunt-map manager container (C:\Proj\Gruntz). Its dtor
-// (0x85d10) sits in the 0x85xxx text region next to CMapLogic::FreeNodes (0x85480)
-// and shares the SAME node-pool teardown idiom (the freelist push of every CObArray
-// element back onto g_freeList, then SetSize(0,-1) + Reset @0x9ec30).
+// (0x85d10) and its slot-0 override Reset (0x85480) share the SAME node-pool teardown
+// idiom (the freelist push of every CPtrArray element back onto g_coordPool, then
+// SetSize(0,-1) + the base CMapMgr::Reset @0x9ec30) - the resemblance that got Reset
+// conflated into the ex-"CMapLogic" view until the split (see <Gruntz/MapLogic.h>).
 //
 // Layout recovered from the dtor: a polymorphic CMapMgr base (dtor @0x135c) with
 // its vptr at +0x00 occupying +0x00..+0x7b, then the MFC CObArray of map-node
@@ -47,12 +48,23 @@ typedef CFileMemBase CSerialArchive;
 //  names now; this header keeps only the DERIVED class.)
 SIZE_UNKNOWN(CGruntzMapMgr);
 VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
+// This class overrides EXACTLY slots 0 and 1, and the binary says so three ways:
+// ??_7CGruntzMapMgr @0x1e9bb4 slot[0] -> thunk 0x4430 -> 0x85480 and slot[1] -> thunk
+// 0x16a9 -> 0x82430; that vtable's slots 2..5 (0x1c49/0x1186/0x3f7b/0x33eb) are
+// BIT-IDENTICAL to ??_7CMapMgr @0x1ea3b4's, so 0 and 1 are the only divergences; and
+// each of those two bodies tail-chains the base slot it overrides (0x85480 -> thunk
+// 0x1a91 -> CMapMgr::Reset @0x9ec30; 0x82430 -> thunk 0x26b2 -> CMapMgr::Visit
+// @0x9f7f0). Both were DECLARED-ONLY here until ML1 homed their bodies (they had been
+// stranded on the ex-"CMapLogic" view as non-virtual FreeNodes/SerializeNodes).
 class CGruntzMapMgr : public CMapMgr {
 public:
-    ~CGruntzMapMgr();              // 0x85d10 (CMapMgr's dtor is non-virtual, so is this)
-    virtual void Reset() OVERRIDE; // slot 0 (own Reset; the dtor calls the BASE CMapMgr::Reset)
-    // slot 1 (0x082430 SerializeNodes): the base's Visit slot, overridden. CGruntzMgr::
-    // BroadcastCmd drives it as a 4-arg command dispatch (`mov eax,[ecx]; call [eax+4]`).
+    ~CGruntzMapMgr(); // 0x85d10 (CMapMgr's dtor is non-virtual, so is this)
+    // slot 0 (0x085480): free the node table back to g_coordPool, then chain the base
+    // grid cleanup. The dtor runs the same teardown inline.
+    virtual void Reset() OVERRIDE;
+    // slot 1 (0x082430): stream the node table + m_90 through the archive, then chain
+    // the base probe. CGruntzMgr::BroadcastCmd drives it as a 4-arg command dispatch
+    // (`mov eax,[ecx]; call [eax+4]`).
     virtual i32 Visit(CSerialArchive* ar, i32 b, i32 c, i32 d) OVERRIDE;
 
     // The level-load terrain parser (0x0810f0): allocates the grid, rolls per-cell

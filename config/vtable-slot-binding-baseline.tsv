@@ -18,8 +18,6 @@ WIRING	0x1e9674	CGruntzCommand	0	0x024330	?ScalarDtor@CGruntzCommand@@QAEPAXI@Z	
 WIRING	0x1e96b4	CGruntzMultiCommand	8	0x0240d0	?Pack@CGruntzMultiCommand@@QAEHPADH@Z	gruntzcmdmgr
 WIRING	0x1e96b4	CGruntzMultiCommand	9	0x024190	?ApplyMask@CGruntzCommand@@QAEHPAVCPlay@@@Z	gruntzcmdmgr
 WIRING	0x1e9b64	CGruntzMgr	0	0x083330	?ScalarDeletingDtor@CGruntzMgr@@QAEPAXI@Z	gruntzmgr
-WIRING	0x1e9bb4	CGruntzMapMgr	0	0x085480	?FreeNodes@CMapLogic@@QAEXXZ	maplogic
-WIRING	0x1e9bb4	CGruntzMapMgr	1	0x082430	?SerializeNodes@CMapLogic@@QAEHPAVCFileMemBase@@HHH@Z	maplogic
 WIRING	0x1e9c64	CCreditsState	10	0x039160	?RefreshTitle@CAttract@@QAEHH@Z	attract
 WIRING	0x1e9cec	CBootyState	7	0x01ce30	?ReadyAndPaint@CMultiBootyState@@QAEHXZ	bootystateactivate
 WIRING	0x1e9d74	CSplashState	9	0x0f9880	?OnStart@CTitleApp@@QAEHH@Z	titleappstart

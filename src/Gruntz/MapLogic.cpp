@@ -1,26 +1,22 @@
-// MapLogic.cpp - the CUserLogic-derived 2D terrain/influence grid game-logic
-// object (placeholder name CMapLogic; see <Gruntz/MapLogic.h>). Migrated out of
-// the trace-mislabeled "CBrickz" block in src/Stub/Discovered.cpp - the matched
-// CBrickz container (the self-contained node graph) lives in Brickz.cpp; THIS is
-// the CUserLogic leaf with the CObArray-at-+0x7c serializer family.
+// MapLogic.cpp - the scroll-state serializer MapSerializeCurve (0x0ec230).
 //
-// Functions in ascending retail-RVA order. CUserLogic/CUserBase/EngStr come from
-// <Gruntz/UserLogic.h>; the archive object + the free-list node pool from
-// <Gruntz/MapLogic.h>. Engine callees are reloc-masked (no body).
+// This TU is what is LEFT of the ex-"CMapLogic" view, which conflated two unrelated
+// classes and has now been SPLIT onto both real owners (nothing of it survives):
+//   * the dtor 0x113c0 is ??1CBrickz - pinned in TileLogicPump.cpp (that TU emits
+//     the CBrickz vtable/??_G, hence the implicit ??1 COMDAT). CBrickz is 0x54 bytes
+//     (allocation-site proven at LogicDispatchB 0x10d3d0: `push 0x54; call
+//     ??2@YAPAXI@Z; mov ecx,eax; call 0x3701`), so it could never have owned the
+//     view's +0x7c/+0x90 members - they sit 0x3c bytes past its end.
+//   * the serializer half (0x82430 / 0x85480) is CGruntzMapMgr's slot-1 / slot-0
+//     vtable overrides - homed in GruntzMapMgr.cpp, on the 0x94-byte object where
+//     the +0x7c CPtrArray and +0x90 dword actually fit.
 //
-// BANKED (all byte-exact): ~CMapLogic (0x113c0), MapSerializeCurve (0xec230),
-//   CMapLogic::FreeNodes (0x85480); CMapMgr::Visit (0x9f7f0) is MapMgr.cpp's.
-//   SerializeNodes (0x82430) reconstructed here (~96%, stack-slot entropy tail).
-// The terrain-grid methods (0x77790/0x81e10/0x82030) operate on the CBrickz grid
-// shape (+0x4 cell pool / +0x8 column table / +0xc/+0x10 dims / +0x4c mask) and
-// were moved to Brickz.cpp; 0x9eca0/0x9f010 are CBrickz CONTAINER methods (they
-// call CBrickz::Insert/Find/Unlink/CellPop) - see Brickz.cpp. (0x9356c is a thin
-// Serialize wrapper over MapSerializeCurve + the +0x7c sub-object serializer.)
+// MapSerializeCurve is a __cdecl free function belonging to neither class, so it
+// stays here. Engine callees are reloc-masked (no body).
 #include <Mfc.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/MapLogic.h>
-#include <Gruntz/MapMgr.h> // CMapMgr::Visit (0x9f7f0) - SerializeNodes' direct tail-call
 
 #include <rva.h>
 
@@ -32,14 +28,6 @@
 // leaving cmdscrollapply's `?g_scrollAccum@@3_JA` reference UNBOUND. Anchored on the
 // real g_scrollAccum now - its DATA binding lives in MgrAutoScroll.cpp.)
 #include <Gruntz/ScrollState.h> // g_scrollAccum (bound in MgrAutoScroll.cpp)
-
-// ===========================================================================
-// (the 0x113c0 dtor)
-// ===========================================================================
-// 0x113c0 is ??1CBrickz - the vtable-owner probe in <Gruntz/MapLogic.h> proved this
-// class IS CBrickz (??_7CBrickz @0x1e7c54 slot 0 -> sdd 0x11390 -> 0x113c0). The dtor
-// is therefore pinned under its REAL name in src/Gruntz/TileLogicPump.cpp (the TU that
-// emits CBrickz vtable/??_G -> the implicit ??1 COMDAT); no ??1CMapLogic exists.
 
 // ===========================================================================
 // MapSerializeCurve  (0x0ec230) - __cdecl
@@ -85,106 +73,3 @@ i32 MapSerializeCurve(CSerialArchive* ar, i32 mode) {
     }
     return 1;
 }
-
-// ===========================================================================
-// CMapLogic::FreeNodes  (0x085480) - __thiscall
-// ===========================================================================
-// Tear-down helper: walk the +0x7c CObArray's pointer body, push each non-null
-// element's node (element - g_coordPool.m_linkOffset) back onto the global g_coordPool.m_freeHead,
-// then shrink the array to empty (SetSize(0, -1)) and run the grid Reset (0x9ec30).
-//
-// The trailing Reset() call: retail routes the rel32 through the ILT jmp-thunk 0x1a91
-// (-> 0x9ec30 = ?Reset@CMapMgr@@UAEXXZ, bound in the mapmgr unit). CMapLogic::Reset is
-// declared-only (MapLogic.h) - it aliases the SAME body, and 0x9ec30 can't take a 2nd
-// func label (dup-RVA guard vs CMapMgr::Reset), so bind the alias to the THUNK the call
-// literally targets; reloc_fidelity thunk-resolves both sides to 0x9ec30 -> CORRECT.
-// @data-symbol: ?Reset@CMapLogic@@QAEXXZ 0x00001a91
-RVA(0x00085480, 0x52)
-void CMapLogic::FreeNodes() {
-    for (i32 i = 0; i < m_arr.GetSize(); i++) {
-        void* elem = m_arr.GetData()[i];
-        if (elem != 0) {
-            void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
-        }
-    }
-    m_arr.SetSize(0, -1);
-    Reset();
-}
-
-// ===========================================================================
-// CMapLogic::SerializeNodes  (0x082430) - __thiscall
-// ===========================================================================
-// Stream the +0x7c pointer-array (m_80 body, m_84 count) and the +0x90 scratch
-// dword through `ar` keyed by `mode`, then tail-dispatch the polymorphic Visit
-// probe (0x9f7f0) with the archive. mode 4 = write-out (slot +0x30): write m_90,
-// the count, then each non-null node body (size 8). mode 7 = read-in (slot +0x2c):
-// read m_90, the new count, push every existing node back onto g_coordPool.m_freeHead, resize
-// the array to empty then to count, and pull a fresh node off g_coordPool.m_freeHead per slot
-// (body = node+4), reading each (size 8). Returns the Visit probe's bool.
-// @early-stop
-// stack-slot coalescing entropy tail (~96%): instruction selection + block order
-// byte-match retail; residual is the write-count local landing at esp+0x14 where
-// retail spreads the read/write counts across esp+0x14 / esp+0x18 (frame-layout,
-// not steerable without guessing the local-allocation order).
-RVA(0x00082430, 0x161)
-i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
-    if (ar == 0) {
-        return 0;
-    }
-    switch (mode) {
-        case 7: {
-            // read-in: m_90, the new count; recycle every existing node onto
-            // g_coordPool.m_freeHead; resize empty->count; pull a fresh node per slot.
-            ar->Read(&m_90, 4);
-            i32 count;
-            ar->Read(&count, 4);
-            for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
-                void* elem = m_arr.GetData()[fi];
-                if (elem != 0) {
-                    void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
-                    *node = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = node;
-                }
-            }
-            m_arr.SetSize(0, -1);
-            m_arr.SetSize(count, -1);
-            for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
-                void** node = (void**)g_coordPool.m_freeHead;
-                void* elem = 0;
-                if (*node != 0) {
-                    elem = (char*)node + 4;
-                    g_coordPool.m_freeHead = *node;
-                }
-                ar->Read(elem, 8);
-                m_arr.GetData()[ri] = elem;
-            }
-            break;
-        }
-        case 4: {
-            // write-out: m_90, the count (a local copy of m_84), each node body.
-            ar->Write(&m_90, 4);
-            i32 wn = m_arr.GetSize();
-            ar->Write(&wn, 4);
-            for (u32 wi = 0; wi < static_cast<u32>(wn); wi++) {
-                void* elem = m_arr.GetData()[wi];
-                if (elem == 0) {
-                    return 0;
-                }
-                ar->Write(elem, 8);
-            }
-            break;
-        }
-    }
-    // Retail tail: `mov ecx,this; call 0x26b2` (the ?Visit@CMapMgr@@ ILT thunk) - a
-    // DIRECT call of CMapMgr::Visit (slot [1] body, 0x9f7f0, MapMgr.cpp) on THIS
-    // CUserLogic-family object. The qualified call keeps it non-virtual; the cross-cast
-    // survives because the receiver's real relation to CMapMgr is still unrecovered
-    // (@identity-TODO in MapMgr.h - CMapMgr/CBrickzGrid/CMapLogic reconciliation).
-    return ((CMapMgr*)this)->CMapMgr::Visit(ar, mode, a2, a3) != 0;
-}
-
-// CMapMgr::Visit (0x9f7f0) lives in its home TU per the interval dossier
-// (#10a seam): src/Gruntz/MapMgr.cpp - the single fn between the CBrickzGrid
-// block and CMapMgr::Save/Load.

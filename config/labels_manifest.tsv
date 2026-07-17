@@ -158,7 +158,7 @@ gruntvoiceactreg	1
 gruntwingztimesprite	4
 gruntzapp	9
 gruntzcmdmgr	40
-gruntzmapmgr	1
+gruntzmapmgr	3
 gruntzmgr	152
 gruntzmgr2	1
 gruntzmgrcmd	1
@@ -213,7 +213,7 @@ logictypetable	2
 logicworkerhandlersa	15
 logicworkerhandlersb	6
 mainmenubuilder	2
-maplogic	3
+maplogic	1
 mapmgr	25
 menuitem	21
 menupage	34
