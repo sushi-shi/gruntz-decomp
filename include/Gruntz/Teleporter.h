@@ -77,7 +77,7 @@ public:
     // FireActivation (0x41520): per-coordinate activation dispatcher - look coord up
     // in g_teleporterActReg; if the entry has a registered handler, dispatch it on
     // `this`. Same archetype as CParticlez::FireActivation (double ResolveEntry).
-    void FireActivation(i32 coord);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // Serialize (0x41350): slot-1 (SerializeMove) override - chain the shared
     // CUserLogic serialize helper + the +0x34 sub-object's chain, then tag-dispatch
     // the leaf state: tag 4 writes / tag 7 reads the two i64 arm/interval snapshots
@@ -108,9 +108,8 @@ public:
         return LOGIC_TELEPORTER;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32)
-        OVERRIDE;                           // slot 1 (body: Serialize 0x41350)
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
-    virtual ~CTeleporter() OVERRIDE;        // 0x10dd0 (folds the CUserLogic teardown)
+        OVERRIDE;                    // slot 1 (body: Serialize 0x41350)
+    virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
 
     CAniElement* m_savedGeoId; // +0x40  snapshot of m_38->m_1a0.m_14
     char m_pad44[0x54 - 0x44];

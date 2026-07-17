@@ -24,7 +24,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_FRONTCANDYANI;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CFrontCandyAni(CGameObject* obj);   // 0x0acf40
@@ -38,7 +37,7 @@ public:
     // Look the activation coordinate up in the class registry; if its entry has a
     // bound handler, look it up again and dispatch it __thiscall on this. The SAME
     // archetype as CParticlez::FireActivation (0x046d30).
-    void FireActivation(i32 coord); // 0x0ad1b0
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x0ad1b0
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
     static void RegisterActs(); // 0x0ad310

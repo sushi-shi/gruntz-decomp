@@ -34,10 +34,10 @@ public:
     static void InitActReg(); // 0x046000
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry (the same archetype as CBehindCandyAni::RegisterActs).
-    static void RegisterActs();     // 0x0461e0
-    void FireActivation(i32 coord); // 0x046080 (per-coord PMF dispatcher)
-    i32 AdvanceAnim();              // 0x0463e0 (re-target bound anim to the draw-delta; ret 0)
-    void HandleFortConquered();     // 0x03f5f0 (per-frame fort-conquest check)
+    static void RegisterActs();                   // 0x0461e0
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x046080 (per-coord PMF dispatcher)
+    i32 AdvanceAnim();          // 0x0463e0 (re-target bound anim to the draw-delta; ret 0)
+    void HandleFortConquered(); // 0x03f5f0 (per-frame fort-conquest check)
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
     // 0x00010e40 vtable slot 2: per-class logic-type id, inline (one
@@ -47,7 +47,6 @@ public:
         return LOGIC_FORTRESSFLAG;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     virtual ~CFortressFlag() OVERRIDE; // 0x010e90 (folds the CUserLogic teardown)
 
     CAniElement* m_prevAnimNode; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)

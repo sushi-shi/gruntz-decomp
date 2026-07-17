@@ -876,13 +876,12 @@ public:
         return LOGIC_GRUNT;
     } // slot 2  (0xf2a0)
     virtual i32 UserLogicVfunc1() OVERRIDE; // slot 3  (0x5d210)
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4  (0x5bcd0)
     // RunAct (0x5bcd0): the class's vtable slot-4 (UserLogicVfunc2) activation
     // dispatcher body - a plain method (the no-arg UserLogicVfunc2() base placeholder
     // blocks the int-arg OVERRIDE spelling). Resolves `id`'s handler in the per-class
     // registry g_reg_644af0 and dispatches it as a PMF on `this`; else returns the
     // entry pointer. Same archetype as CPathHazard::RunAct.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
 
     // ---- the trigger/switch leaves' per-kind hooks ----
     // These are the methods ApplyTriggerA and friends dispatch on a placed grid grunt. Ten

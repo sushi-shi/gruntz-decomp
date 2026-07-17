@@ -31,7 +31,7 @@ public:
     CBehindCandyAni(CGameObject* obj); // 0x0ad540 (ctor body in UserLogic.cpp)
     // Resolve the registry entry for id; run its bound handler as a PMF on this
     // (ResolveEntry inlined twice). 0x0ad850.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // Construct the class's activation-coordinate registry (g_behindCandyActReg
     // @0x645f98) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x0ad7d0
@@ -46,8 +46,7 @@ public:
         return LOGIC_BEHINDCANDYANI;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    virtual ~CBehindCandyAni() OVERRIDE;          // 0x0100f0 (folds the CUserLogic teardown)
+    virtual ~CBehindCandyAni() OVERRIDE; // 0x0100f0 (folds the CUserLogic teardown)
 
     CAniElement* m_40; // +0x40  saved active-anim descriptor (ctor snapshot)
     char

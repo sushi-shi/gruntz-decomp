@@ -37,12 +37,11 @@ public:
         return LOGIC_TOOBSPIKEZ;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    void Register_1147e0();                    // 0x1147e0 (reserve the activation range)
-    void FireActivation(i32 coord);            // 0x114860 (vtable slot 4)
-    static void RegisterActs();                // 0x1149c0 (binds the logic handler to key "A";
-                                               //  static: no this, called this-less by the factory)
-    virtual ~CToobSpikez() OVERRIDE;           // 0x012c60 (folds the CUserLogic teardown)
+    void Register_1147e0();                       // 0x1147e0 (reserve the activation range)
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x114860 (vtable slot 4)
+    static void RegisterActs();                   // 0x1149c0 (binds the logic handler to key "A";
+    //  static: no this, called this-less by the factory)
+    virtual ~CToobSpikez() OVERRIDE; // 0x012c60 (folds the CUserLogic teardown)
 
     CAniElement* m_40;         // +0x40  saved active-anim descriptor (ctor snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44  leaf tail (true object size 0x54, per the

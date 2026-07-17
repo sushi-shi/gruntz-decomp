@@ -28,7 +28,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTCREATIONPOINT;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntCreationPoint(CGameObject* obj); // 0x3e520 (folds CUserLogic(obj) + tail)
@@ -44,8 +43,8 @@ public:
     // Per-coordinate activation dispatcher: look the coordinate up in the class
     // registry (g_creationPointActReg) and, if it has a registered handler PMF,
     // dispatch it on `this`. Same archetype as CParticlez::FireActivation.
-    void FireActivation(i32 coord); // 0x03e960
-    i32 AdvanceAnim();              // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x03e960
+    i32 AdvanceAnim(); // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
     virtual ~CGruntCreationPoint() OVERRIDE; // 0x010730 (folds the CUserLogic teardown)
 
     CAniElement* m_savedGeoId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)

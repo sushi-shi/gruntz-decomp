@@ -9,8 +9,8 @@
 // ~dtor) is the boundary orphan-COMDAT pool emission - kept, ascending.
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
-#include <Mfc.h>                    // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
-#include <Gruntz/CurPlayer.h>       // g_curPlayer
+#include <Mfc.h>              // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
+#include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <rva.h>
 
 #include <Gruntz/GruntVoice.h>
@@ -362,7 +362,7 @@ void CGruntVoice::InitActReg() {
 // Entry*; if its handler slot is set, look it up again and invoke the handler
 // __thiscall on `this`.
 RVA(0x00119e40, 0x102)
-void CGruntVoice::Dispatch(i32 coord) {
+void CGruntVoice::FireActivation(i32 coord) {
     CVActEntry* e = VActLookup(coord);
     if (e->m_fn != 0) {
         CVActEntry* e2 = VActLookup(coord);

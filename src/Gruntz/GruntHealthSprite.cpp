@@ -68,7 +68,7 @@ void CGruntHealthSprite::InitActReg() {
 // entry and dispatch the PMF on `this`. Two inline ResolveEntry expansions (side effects,
 // no CSE across the guard).
 RVA(0x0007ed70, 0x102)
-void CGruntHealthSprite::RunAct(i32 id) {
+void CGruntHealthSprite::FireActivation(i32 id) {
     if (((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn != 0) {
         (this->*((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn)();
     }

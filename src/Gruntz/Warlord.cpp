@@ -133,7 +133,7 @@ extern "C" void Act_F(); // 0x402725
             *slot_ = key;                                                                          \
             ++g_typeCounter;                                                                       \
         }                                                                                          \
-        void** aslot_ = (void**)g_actionTable.Resolve(id_);                                       \
+        void** aslot_ = (void**)g_actionTable.Resolve(id_);                                        \
         *aslot_ = (void*)(handler);                                                                \
     } while (0)
 // ===========================================================================
@@ -421,16 +421,15 @@ void CWarlord::InitActReg() {
 // once to test `*slot != 0`, once to fetch the slot for dispatch. When the slot is
 // empty, the ResolveEntry return pointer falls straight out in eax as the result.
 RVA(0x00044640, 0x102)
-i32 CWarlord::ResolveState(i32 key) {
+void CWarlord::FireActivation(i32 key) {
     void** slot = (void**)g_actionTable.ResolveEntry(key);
     if (*slot != 0) {
         // the handler is a __thiscall dispatched on this warlord (`mov ecx,this;
         // call [slot2]`); a complete-class PMF gives the plain 4-byte code-ptr call.
         typedef i32 (CWarlord::*StateHandler)();
         StateHandler h = *(StateHandler*)g_actionTable.ResolveEntry(key);
-        return (this->*h)();
+        (this->*h)();
     }
-    return (i32)slot;
 }
 
 RVA(0x000447a0, 0x333)
@@ -486,7 +485,8 @@ i32 CWarlord::LoadAttributes() {
         }
     }
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo
+        >= *(i64*)&m_cooldownWindowLo) {
         if (rand() % 10 < 5) {
             ((CGrunt*)this)->ResolveIdleAnimation();
             return 0;
@@ -532,7 +532,8 @@ i32 CWarlord::LoadAttributes2() {
             ((CGrunt*)this)->ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_cooldownStampLo
+            >= *(i64*)&m_cooldownWindowLo) {
             ((CRegBattleEvent*)reg->m_cueSink)->PostBattleEvent(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindowLo = 0x7530;
             m_cooldownWindowHi = 0;

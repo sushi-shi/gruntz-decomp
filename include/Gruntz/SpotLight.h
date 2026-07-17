@@ -18,14 +18,13 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SPOTLIGHT;
     }
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CSpotLight(CGameObject* obj); // 0xb1200
     virtual ~CSpotLight() OVERRIDE;
     // The vtable slot-4 (UserLogicVfunc2) activation dispatcher body (0x0b1630);
     // a plain method - the base placeholder blocks the int-arg OVERRIDE spelling.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // The per-tick laser/rotation update (0x0b1af0).
     i32 Tick_0b1af0();
     // The per-tick offset-rotation + grid-cell "A" bute re-resolve (0x0b1ee0);

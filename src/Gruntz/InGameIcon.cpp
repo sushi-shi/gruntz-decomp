@@ -13,6 +13,7 @@
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/ToyPeek.h> // CToyPeek::FireActivation @0x97de0 (its slot 4 lives in this .text run)
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
 #include <Gruntz/TypeKeyColl.h>    // g_typeCounter (the shared type-id counter)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
@@ -514,7 +515,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     CTileGrid* grid = g_gameReg->m_tileGrid;
     i32 col = m_object->m_screenX >> 5;
     i32 row = m_object->m_screenY >> 5;
-    if (static_cast<u32>(col) < static_cast<u32>(grid->m_c) && static_cast<u32>(row) < static_cast<u32>(grid->m_10)) {
+    if (static_cast<u32>(col) < static_cast<u32>(grid->m_c)
+        && static_cast<u32>(row) < static_cast<u32>(grid->m_10)) {
         char* cell = (char*)grid->m_8[row] + col * 0x1c;
         *(i32*)(cell + 8) = mv;
         char* cell0 = (char*)grid->m_8[row] + col * 0x1c;
@@ -615,7 +617,7 @@ i32 CInGameIcon::HandleInput() {
 // side effects (m_grown=0, may grow) so cl re-evaluates it for the guarded call
 // rather than CSE-ing - hence the two inline expansions.
 RVA(0x00097880, 0x102)
-void CInGameIcon::RunAction(i32 id) {
+void CInGameIcon::FireActivation(i32 id) {
     if (*(IconActHandler*)ResolveSlot(&g_iconActionTable, id) != 0) {
         (this->*(*(IconActHandler*)ResolveSlot(&g_iconActionTable, id)))();
     }
@@ -679,15 +681,22 @@ void InitIconStateTable() {
 }
 
 // ===========================================================================
-// CInGameIcon::RunState  (0x097de0)
+// CToyPeek::FireActivation  (0x097de0)  - CUserLogic vtable slot 4
 // ===========================================================================
-// Same dispatcher archetype as RunAction, over g_iconStateTable: resolve the slot
-// for `id` (inline zvec ResolveSlot) and, if it holds a registered handler PMF,
-// re-resolve and dispatch the PMF on `this` (two inline ResolveSlot expansions).
+// Same dispatcher archetype as CInGameIcon::FireActivation, over g_iconStateTable:
+// resolve the slot for `id` (inline zvec ResolveSlot) and, if it holds a registered
+// handler PMF, re-resolve and dispatch the PMF on `this` (two inline ResolveSlot
+// expansions).
+//
+// This is CToyPeek's slot 4, NOT CInGameIcon's "RunState": CToyPeek's RTTI vtable
+// (0x1e7204) slot 4 holds ILT thunk 0x001e83 = `e9 58 5f 09 00` = `jmp 0x097de0`,
+// while CInGameIcon's slot 4 is the separate thunk 0x002658 -> 0x097880. See the
+// note in <Gruntz/ToyPeek.h>. The body stays in this .text run; only the owner
+// (and so the PMF's class) is corrected.
 RVA(0x00097de0, 0x102)
-void CInGameIcon::RunState(i32 id) {
-    if (*(IconActHandler*)ResolveSlot(&g_iconStateTable, id) != 0) {
-        (this->*(*(IconActHandler*)ResolveSlot(&g_iconStateTable, id)))();
+void CToyPeek::FireActivation(i32 id) {
+    if (*(ToyPeekActHandler*)ResolveSlot(&g_iconStateTable, id) != 0) {
+        (this->*(*(ToyPeekActHandler*)ResolveSlot(&g_iconStateTable, id)))();
     }
 }
 
@@ -732,7 +741,8 @@ i32 CInGameIcon::RefreshCell() {
     if (delta < *(i64*)&m_driftThresh) {
         CTileGrid* grid = g_gameReg->m_tileGrid;
         i32 cell;
-        if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c)
+            && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
             i32* row = grid->m_8[tileX];
             cell = row[tileY * 8 - tileY + 2];
         } else {
@@ -775,13 +785,15 @@ i32 CInGameIcon::PeekCycle() {
         CTileGrid* grid = reg->m_tileGrid;
         i32 tileX = obj->m_screenX >> 5;
         i32 cell;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
             cell = grid->m_8[tileY][tileX * 7];
         } else {
             cell = 1;
         }
         if ((cell & 0x939) != 0 || (cell & 2) != 0) {
-            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
+            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c)
+                && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
                 grid->m_8[tileY][tileX * 7 + 2] = 0;
                 grid->m_8[tileY][tileX * 7] &= ~0x40000;
             }
@@ -804,7 +816,10 @@ i32 CInGameIcon::PeekCycle() {
             x = g_randSeed;
         }
         g_randSeed = x * 214013 + 2531011;
-        i32 rec = g_gameReg->m_spriteFactory->GetSel(((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11, 0);
+        i32 rec = g_gameReg->m_spriteFactory->GetSel(
+            ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
+            0
+        );
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 0xa;
@@ -826,7 +841,8 @@ static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
     CTileGrid* grid = reg->m_tileGrid;
     i32 tileX = owner->m_screenY >> 5;
     i32 tileY = owner->m_screenX >> 5;
-    if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
+    if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_c)
+        && static_cast<u32>(tileX) < static_cast<u32>(grid->m_10)) {
         i32 rowByte = tileX * 4;
         i32 cellOff = (tileY * 8 - tileY) * 4;
         char* cell0 = (char*)*(i32**)((char*)grid->m_8 + rowByte);
@@ -986,7 +1002,8 @@ i32 CInGameIcon::Reposition() {
         i32 tileY = obj->m_screenY >> 5;
         CTileGrid* grid = reg->m_tileGrid;
         i32 cellVal;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
             cellVal = grid->m_8[tileY][tileX * 7 + 2];
         } else {
             cellVal = 0;
@@ -1001,7 +1018,8 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_c)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_10)) {
             grid->m_8[tileY][tileX * 7 + 2] = 0;
             grid->m_8[tileY][tileX * 7] &= ~0x40000;
         }
@@ -1010,7 +1028,8 @@ i32 CInGameIcon::Reposition() {
         i32 tileX2 = obj->m_screenX >> 5;
         i32 tileY2 = obj->m_screenY >> 5;
         i32 mv = obj->m_188;
-        if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_c) && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_c)
+            && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_10)) {
             grid->m_8[tileY2][tileX2 * 7 + 2] = mv;
             if (mv != 0) {
                 grid->m_8[tileY2][tileX2 * 7] |= 0x40000;
@@ -1135,7 +1154,7 @@ void CInGameText::InitActReg() {
 // table accessor is inlined (the _zvec::IndexToPtr body, no out-of-line call),
 // computed once for the null-test and once for the call.
 RVA(0x00099460, 0x102)
-void CInGameText::Dispatch(i32 idx) {
+void CInGameText::FireActivation(i32 idx) {
     if (*(void**)ResolveSlot(&g_textDispatch, idx) != 0) {
         LogicFn fn = *(LogicFn*)ResolveSlot(&g_textDispatch, idx);
         (this->*fn)();

@@ -45,9 +45,9 @@ LogicTypeId CUserBase::GetTypeTag() {
 i32 CUserLogic::UserLogicVfunc1() {
     return 0;
 }
-i32 CUserLogic::UserLogicVfunc2() {
-    return 0;
-}
+// The real base body (0x8b70, reached via the slot's ILT thunk 0x246e) is a bare
+// `ret 4` - an empty do-nothing hook taking the activation id. Anchor only.
+void CUserLogic::FireActivation(i32) {}
 i32 CUserLogic::Activate() {
     return 0;
 }
@@ -88,7 +88,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 // @rva-symbol: ?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z 0x000039e0
 // @rva-symbol: ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ 0x0000242d
 // @rva-symbol: ?UserLogicVfunc1@CUserLogic@@UAEHXZ 0x00003413
-// @rva-symbol: ?UserLogicVfunc2@CUserLogic@@UAEHXZ 0x0000246e
+// @rva-symbol: ?FireActivation@CUserLogic@@UAEXH@Z 0x0000246e
 // @rva-symbol: ?Activate@CUserLogic@@UAEHXZ 0x000033dc
 // @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x00002162
 // @rva-symbol: ?UserLogicVfunc6@CUserLogic@@UAEHXZ 0x000026b7
@@ -137,7 +137,9 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
 // @stub
 SYMBOL(?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z)
 RVA(0x0004dd50, 0x22c0)
-i32 Stub_LoadGruntTypeTable_4dd50(i32, i32, i32, i32) { return 0; }
+i32 Stub_LoadGruntTypeTable_4dd50(i32, i32, i32, i32) {
+    return 0;
+}
 
 // @confidence: med
 // @source: string-xref;vtable-slot

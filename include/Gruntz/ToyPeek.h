@@ -17,7 +17,19 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TOYPEEK;
     }
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
+    // slot 4 @0x097de0 - the activation dispatcher over this class's act registry
+    // (g_iconStateTable). PROVEN CToyPeek's, not CInGameIcon's (where it sat as
+    // "RunState"): CToyPeek's RTTI vtable (0x1e7204) slot 4 holds ILT thunk 0x001e83,
+    // whose bytes are `e9 58 5f 09 00` = `jmp 0x097de0`. CInGameIcon's own slot 4 is a
+    // DIFFERENT thunk (0x002658 -> 0x097880, RunAction), so 0x097de0 was never its
+    // virtual - and MSVC5 has no /OPT:ICF, so the body has exactly one owner.
+    // Corroborated by the act-cluster archetype (InitActReg 0x15 / FireActivation
+    // 0x102 / RegisterActs 0x18d / ctor), which here runs InitIconStateTable ->
+    // 0x097de0 -> RegisterIconState 0x097f40 -> CToyPeek::CToyPeek 0x098140: the
+    // cluster ends at THIS class's ctor. Nothing but the label tied it to CInGameIcon -
+    // RegisterIconState is a FREE fn storing an UNTYPED code ptr. The body still lives
+    // in InGameIcon.cpp (that .text run); re-homing the TU is a separate question.
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x097de0
     TILE_LOGIC_TAIL
 public:
     CToyPeek(CGameObject* obj); // 0x98140
@@ -31,5 +43,9 @@ public:
     i32 m_countdownHi;  // +0x64
 };
 VTBL(CToyPeek, 0x1e7204);
+
+// The handler PMF stored in each g_iconStateTable slot (a 4-byte code pointer on
+// this complete single-inheritance class; FireActivation dispatches it on `this`).
+typedef i32 (CToyPeek::*ToyPeekActHandler)();
 
 #endif // GRUNTZ_CTOYPEEK_H

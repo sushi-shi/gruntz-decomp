@@ -38,8 +38,8 @@
 
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/GameRegPtr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance)
 #include <Gruntz/RollingBall.h>      // CRollingBall : CUserLogic (+ the /GX CString temps)
 #include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (g_gameReg typed)
@@ -64,10 +64,10 @@ CActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
 // ---------------------------------------------------------------------------
 // Shared singletons (named so their DIR32 datum reloc-masks).
 // ---------------------------------------------------------------------------
-                                     // (Update reaches its sub-objects cast-free through the
-                                     //  canonical members: m_tileGrid/m_world/m_cmdGrid +
-                                     //  the m_viewOrigin* bounds; the deep level-plane graph
-                                     //  stays raw-offset like the sibling ApplySwitch)
+// (Update reaches its sub-objects cast-free through the
+//  canonical members: m_tileGrid/m_world/m_cmdGrid +
+//  the m_viewOrigin* bounds; the deep level-plane graph
+//  stays raw-offset like the sibling ApplySwitch)
 // (g_buteMgr comes from <Bute/ButeMgr.h> via UserLogic.h; Update reaches it only
 //  through RbGetDwordDef, so no direct extern is needed here.)
 extern "C" i32 g_frameTime;  // DAT_00645588 @0x645588 (world clock ms)
@@ -237,12 +237,11 @@ void CRollingBall::InitActReg() {
 // is bound, re-resolve and invoke it as a PMF on this, else return the entry
 // pointer. Same archetype as CAniCycle::RunAct.
 RVA(0x000afde0, 0x102)
-i32 CRollingBall::RunAct(i32 id) {
+void CRollingBall::FireActivation(i32 id) {
     CRollingBallActEntry* e = (CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id))->m_fn)();
+        (this->*((CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // CRollingBall::RegisterActs @0x0aff40 - bind the per-frame handler (Update

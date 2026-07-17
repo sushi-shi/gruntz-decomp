@@ -66,12 +66,11 @@ void CAniCycle::InitActReg() {
 // bound (entry->m_fn != 0) re-resolve and invoke it as a PMF on this, else return
 // the entry pointer. ResolveEntry is inlined twice (side-effectful; no CSE).
 RVA(0x000aaf80, 0x102)
-i32 CAniCycle::RunAct(i32 id) {
+void CAniCycle::FireActivation(i32 id) {
     CAniCycleActEntry* e = (CAniCycleActEntry*)g_aniCycleActReg.ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CAniCycleActEntry*)g_aniCycleActReg.ResolveEntry(id))->m_fn)();
+        (this->*((CAniCycleActEntry*)g_aniCycleActReg.ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // CAniCycle::RegisterActs @0x0ab0e0 - bind the class's per-frame handler

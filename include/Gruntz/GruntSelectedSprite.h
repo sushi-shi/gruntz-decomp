@@ -21,12 +21,12 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSELECTEDSPRITE;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;   // slot 4
     CGruntSelectedSprite(CGameObject* obj);   // 0x07e3e0 (ctor body in GruntSelectedSprite.cpp)
     virtual ~CGruntSelectedSprite() OVERRIDE; // 0x011e80 (folds the CUserLogic teardown)
 
-    static void InitActReg();   // 0x07e5e0 (construct g_selectedActReg over [2000,2010])
-    void RunAct(i32 id);        // 0x07e660 (resolve the id's registered handler + dispatch it)
+    static void InitActReg(); // 0x07e5e0 (construct g_selectedActReg over [2000,2010])
+    virtual void FireActivation(i32 id)
+        OVERRIDE;               // 0x07e660 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07e7c0 (register the class's activation handlers)
 
     i32 SetCell(i32 x, i32 y); // 0x07e9c0

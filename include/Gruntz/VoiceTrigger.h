@@ -29,9 +29,9 @@ public:
         return LOGIC_VOICETRIGGER;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    static void InitActReg();                     // 0x11a320 (constructs g_vtrigColl @0x651500)
-    void FireActivation(i32 coord);    // 0x11a3a0 (vtable slot 4 body: per-coord PMF dispatch)
+    static void InitActReg(); // 0x11a320 (constructs g_vtrigColl @0x651500)
+    virtual void FireActivation(i32 id)
+        OVERRIDE;                      // 0x11a3a0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs();        // 0x11a500 (binds Tick to the activation key "A"; static:
                                        //  no this, called this-less by the game-object factory)
     i32 Tick();                        // 0x11a700

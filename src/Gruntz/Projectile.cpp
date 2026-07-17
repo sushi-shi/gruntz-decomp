@@ -553,12 +553,11 @@ void CProjectile::RegisterRange() {
 // is bound, re-resolve and invoke it __thiscall on this, else return the entry
 // pointer. Same archetype as CProjActDispatcher::Dispatch / CPathHazard::RunAct.
 RVA(0x000df9a0, 0x102)
-i32 CProjectile::RunAct(i32 coord) {
+void CProjectile::FireActivation(i32 coord) {
     CProjActEntry* e = ProjActLookup(coord);
     if (e->m_fn != 0) {
-        return (this->*(ProjActLookup(coord)->m_fn))();
+        (this->*(ProjActLookup(coord)->m_fn))();
     }
-    return (i32)e;
 }
 
 // CProjectile::RegisterType @0x0dfb00 - the level-load class registrar (same
@@ -754,7 +753,8 @@ void CProjectile::MovingSlot16() {
         i32 tileX = m_targetX >> 5;
         i32 tileY = m_targetY >> 5;
         u32 flags;
-        if (static_cast<u32>(tileX) >= static_cast<u32>(plane->m_c) || static_cast<u32>(tileY) >= static_cast<u32>(plane->m_10)) {
+        if (static_cast<u32>(tileX) >= static_cast<u32>(plane->m_c)
+            || static_cast<u32>(tileY) >= static_cast<u32>(plane->m_10)) {
             flags = 1;
         } else {
             flags = plane->m_8[tileY][tileX * 7]; // cell dword 0 = terrain flags
@@ -1213,7 +1213,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
         m_fastPhase = 1;
     } else {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
-        m_durationLo = static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0));
+        m_durationLo =
+            static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0));
         m_durationHi = 0;
         m_startTimeLo = g_frameTime;
         m_startTimeHi = 0;
@@ -1242,7 +1243,8 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_c) && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
+    if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
+        && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
         char* row = (char*)g->m_8[cy];
         return *(i32*)(row + cx * 0x1c);
     }
@@ -1252,7 +1254,8 @@ static inline void TBombGridClear(CGameObject* obj) {
     CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_c) && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
+    if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
+        && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
         char* row = (char*)g->m_8[cy];
         *(i32*)(row + cx * 0x1c) &= ~0x1000000;
     }
@@ -1291,7 +1294,8 @@ i32 CTimeBomb::LoadAttributes() {
     if (m_fastPhase == 0) {
         m_prevAnimNode = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_durationLo = static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8));
+        m_durationLo =
+            static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8));
         m_durationHi = 0;
         m_startTimeLo = static_cast<i32>(g_frameTime);
         m_startTimeHi = 0;

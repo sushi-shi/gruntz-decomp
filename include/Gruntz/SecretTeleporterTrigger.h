@@ -17,7 +17,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SECRETTELEPORTERTRIGGER;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
@@ -29,7 +28,7 @@ public:
     // (the same archetype as CSecretLevelTrigger::RegisterActs).
     static void RegisterActs(); // 0x0422b0
     // The two overridden CUserLogic virtuals reconstructed in UserLogic.cpp.
-    void FireActivation(i32 coord);            // 0x042150 (vtable slot 4)
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x042150 (vtable slot 4)
     // The registered point-activation callback 0x042b80 stamped into the
     // coordinate registry by FireActivation. __thiscall, no args, returns int.
     i32 SpawnTeleporter(); // 0x042b80

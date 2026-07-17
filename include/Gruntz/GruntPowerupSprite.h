@@ -21,12 +21,12 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPOWERUPSPRITE;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;  // slot 4
     CGruntPowerupSprite(CGameObject* obj);   // 0x07fdb0 (ctor body in GruntPowerupSprite.cpp)
     virtual ~CGruntPowerupSprite() OVERRIDE; // 0x012370 (folds the CUserLogic teardown)
 
-    static void InitActReg();   // 0x07ffa0 (construct g_powerupActReg over [2000,2010])
-    void RunAct(i32 id);        // 0x080020 (resolve the id's registered handler + dispatch it)
+    static void InitActReg(); // 0x07ffa0 (construct g_powerupActReg over [2000,2010])
+    virtual void FireActivation(i32 id)
+        OVERRIDE;               // 0x080020 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x080180 (register the class's activation handlers)
 
     i32 SetCell(i32 x, i32 y, i32 powerup); // 0x080380

@@ -24,10 +24,9 @@ public:
         return LOGIC_EYECANDYANI;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     // Resolve the registry entry for id; run its bound handler as a PMF on this
     // (ResolveEntry inlined twice). 0x0acbb0.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry + the class's coordinate registry (g_eyeCandyActReg
     // @0x646060). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).

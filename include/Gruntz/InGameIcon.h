@@ -102,7 +102,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_INGAMEICON;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CInGameIcon(CGameObject* obj);   // 0x095b10  (the HUD-icon builder ctor)
@@ -115,14 +114,16 @@ public:
     // Post-build validity probe (ILT 0x1fb4); returns 0 to hide the icon.
     i32 Check(); // -> 0x1fb4
 
-    i32 HandleInput();                  // 0x097680
-    void RunAction(i32 id);             // 0x097880 (dispatch g_iconActionTable[id] on this)
-    void RunState(i32 id);              // 0x097de0 (dispatch g_iconStateTable[id] on this)
+    i32 HandleInput(); // 0x097680
+    virtual void FireActivation(i32 id)
+        OVERRIDE; // 0x097880 (dispatch g_iconActionTable[id] on this)
+    // (RunState @0x097de0 is GONE from here: the ILT bytes prove it is CToyPeek's
+    // vtable slot 4 - see <Gruntz/ToyPeek.h>. It never was a CInGameIcon method.)
     i32 RefreshCell();                  // 0x098340
     i32 PeekCycle();                    // 0x0984b0 (peek-timer random-sprite refresh)
     i32 PlaceAt(i32 idx, i32 gridBase); // 0x0986b0
     i32 Reposition();                   // 0x098a90 (drift re-place refresh)
-    void SetField54(i32 v);                             // 0x099b10
+    void SetField54(i32 v);             // 0x099b10
 
     // --- CInGameIcon own fields (+0x44/+0x68..+0x74 roles still unproven) ---
     CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)

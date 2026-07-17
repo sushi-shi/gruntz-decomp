@@ -28,15 +28,14 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TIMEBOMB;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
-    CTimeBomb(CGameObject* obj);    // 0x0e1b90 (1-arg leaf ctor)
-    void FireActivation(i32 coord); // 0x0e1830
-    static void RegisterActs();     // 0x0e1990 (binds the logic handler to key "A"; static:
-                                    //  no this, called this-less by the game-object factory)
-    i32 LoadAttributes();           // 0x0e1e60 (per-frame timer/detonate step)
-    virtual ~CTimeBomb() OVERRIDE;  // 0x012a70 (folds the CUserLogic teardown)
+    CTimeBomb(CGameObject* obj);                  // 0x0e1b90 (1-arg leaf ctor)
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x0e1830
+    static void RegisterActs();    // 0x0e1990 (binds the logic handler to key "A"; static:
+                                   //  no this, called this-less by the game-object factory)
+    i32 LoadAttributes();          // 0x0e1e60 (per-frame timer/detonate step)
+    virtual ~CTimeBomb() OVERRIDE; // 0x012a70 (folds the CUserLogic teardown)
 
     CAniElement* m_prevAnimNode; // +0x40  m_38->m_1a0.m_14 snapshot
     char m_pad44[0x54 - 0x44];

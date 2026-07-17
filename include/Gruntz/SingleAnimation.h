@@ -24,12 +24,12 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SINGLEANIMATION;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0 (ctor body in UserLogic.cpp)
-    static void InitActReg();   // 0x0ae9a0 (construct the activation registry over [2000,2010])
-    i32 RunAct(i32 id);         // 0x0aea20 (resolve+dispatch the bound handler PMF on this)
+    static void InitActReg(); // 0x0ae9a0 (construct the activation registry over [2000,2010])
+    virtual void FireActivation(i32 id)
+        OVERRIDE;               // 0x0aea20 (resolve+dispatch the bound handler PMF on this)
     static void RegisterActs(); // 0x0aeb80 (bind the per-frame handler to key "A")
     // The per-frame handler (@0x0aed80); Ghidra did not carve it (recovery gap), so it
     // is declared only - RegisterActs takes its address as a reloc-masked operand.

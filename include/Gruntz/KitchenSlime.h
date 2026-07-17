@@ -19,12 +19,11 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_KITCHENSLIME;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     static void RegisterRange(); // 0x0b28c0 (seed the activation table's fast range)
     static void RegisterType();  // 0x0b2aa0 (level-load class registrar)
-    void FireActivation(i32 coord);
+    virtual void FireActivation(i32 id) OVERRIDE;
     i32 Tick();
     i32 LoadSprites();
     CKitchenSlime(CGameObject* obj);   // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)

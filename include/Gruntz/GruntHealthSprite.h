@@ -26,8 +26,8 @@
 // its +0x194 gated lookup table CGruntLayerHolder (table @+0x14, [m_64..m_68] index gate
 // - the shared gated-lookup archetype, also seen as CStatzGlyphMap).
 #include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg + CGruntLayerHolder
-#include <Gruntz/UserLogic.h>     // CUserLogic base (CGruntHealthSprite : CUserLogic)
-#include <Gruntz/SerialArchive.h> // shared CSerialArchive (Read +0x2c / Write +0x30)
+#include <Gruntz/UserLogic.h>            // CUserLogic base (CGruntHealthSprite : CUserLogic)
+#include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
 
 // The bound grunt the slot-16 stat getter reads (a registry grunt-table slot). A pointer
 // param needs no definition; `class` (not `struct`) is required - <Gruntz/Grunt.h> defines
@@ -44,13 +44,13 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTHEALTHSPRITE;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
-    static void InitActReg();               // 0x07ecf0 (construct g_healthActReg over [2000,2010])
-    void RunAct(i32 id);        // 0x07ed70 (resolve the id's registered handler + dispatch it)
+    static void InitActReg(); // 0x07ecf0 (construct g_healthActReg over [2000,2010])
+    virtual void FireActivation(i32 id)
+        OVERRIDE;               // 0x07ed70 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07eed0 (register the class's activation handlers)
 
     i32 HealthUpdate(); // 0x07f180 (the registered per-frame handler; reconstructed in the .cpp)
-    i32 SetHealthGlyph(i32 x, i32 y, i32 health);                // 0x07f0d0
+    i32 SetHealthGlyph(i32 x, i32 y, i32 health); // 0x07f0d0
     // slot 16 (new): the per-class stat-time getter (leaf overrides read the bound
     // grunt's stamina/wingz/toy timer); HealthUpdate dispatches it with the grunt entry.
     virtual i32 Vslot16(CGrunt* grunt);

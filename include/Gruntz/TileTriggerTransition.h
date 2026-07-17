@@ -54,7 +54,6 @@
 class CTileTriggerTransition : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
@@ -62,9 +61,10 @@ public:
 
     // per-class logic-type id (0x405); body out-of-line at 0x011730 in the leaf pool.
     virtual LogicTypeId GetTypeTag() OVERRIDE;
-    void Register_10fc90();         // 0x10fc90
-    void FireActivation(i32 coord); // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
-    static void RegisterActs();     // 0x10fe70  intern "A", bind Handler (static: no this)
+    void Register_10fc90(); // 0x10fc90
+    virtual void FireActivation(i32 id)
+        OVERRIDE;               // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
+    static void RegisterActs(); // 0x10fe70  intern "A", bind Handler (static: no this)
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
     i32 Handler_110110();                         // 0x110110  the per-frame handler bound here
 

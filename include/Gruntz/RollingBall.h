@@ -48,7 +48,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_ROLLINGBALL;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CRollingBall(CGameObject* obj);   // 0x0af820 (folds CUserLogic(obj) + the ball setup)
@@ -59,12 +58,12 @@ public:
     static void InitActReg(); // 0x0afd60
     // Resolve the registry entry for id; run its bound handler as a PMF on this
     // (ResolveEntry inlined twice). 0x0afde0.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // Bind the per-frame handler (Update) to the activation key "A" via the shared
     // name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x0aff40
 
-    i32 Update();                                             // 0x0b0140
+    i32 Update(); // 0x0b0140
 
     // --- CRollingBall own fields (offsets load-bearing) ---
     CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id

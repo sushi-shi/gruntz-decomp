@@ -98,7 +98,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARLORD;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CWarlord(i32); // 0x42d40 (the warlord ctor: base init + name/state setup)
@@ -118,8 +117,8 @@ public:
 
     // slot-4 override of an inherited CUserLogic virtual: the animation-state
     // dispatcher over the file-static table.
-    i32 ResolveState(i32 key); // 0x44640 (homed by RVA; non-virtual to keep the
-                               // dtor's vtable-stamp codegen aligned with retail)
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x44640 (homed by RVA; non-virtual to keep the
+    // dtor's vtable-stamp codegen aligned with retail)
 
     // re-arm the moving animation off the global geo source (0x44bb0).
     i32 RearmMoving(); // 0x44bb0
@@ -171,7 +170,7 @@ public:
     CAniElement* m_animDeath;      // +0x78
     CAniElement* m_animMoving;     // +0x7c
     CAniElement* m_animPanic;      // +0x80
-    char m_pad84[0x88 - 0x84]; // +0x84
+    char m_pad84[0x88 - 0x84];     // +0x84
     // The threat-cooldown timer: a 64-bit start stamp (m_cooldownStamp) and window
     // (m_cooldownWindow), each stored as a manually zero-extended lo/hi i32 pair so
     // the elapsed compare runs 64-bit; retail emits separate 32-bit stores.

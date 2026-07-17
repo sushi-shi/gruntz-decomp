@@ -35,7 +35,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_CURSORSNAPSPRITE;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     // Serialize (0x11880): chain the shared CUserLogic serialize helper on `this`,
@@ -46,7 +45,7 @@ public:
     // in the class dispatch table g_logicActReg_62bfa0; if the resolved entry holds
     // a registered handler, re-resolve and dispatch it __thiscall on `this`. Same
     // archetype as CTeleporter::FireActivation (double ResolveEntry + PMF dispatch).
-    void FireActivation(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     virtual ~CCursorSnapSprite() OVERRIDE; // 0x11920 (folds the CUserLogic teardown)
 
     CAniElement* m_geoId;      // +0x40  cached bound-object geometry id (ctor: m_38->m_1a0.m_14)

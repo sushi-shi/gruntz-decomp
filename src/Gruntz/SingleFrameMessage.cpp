@@ -75,12 +75,11 @@ void CSingleFrameMessage::InitActReg() {
 // handler is bound, re-resolve and invoke it as a PMF on this, else return the
 // entry pointer. Same archetype as CAniCycle::RunAct.
 RVA(0x000ab5b0, 0x102)
-i32 CSingleFrameMessage::RunAct(i32 id) {
+void CSingleFrameMessage::FireActivation(i32 id) {
     CSingleFrameActEntry* e = (CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id))->m_fn)();
+        (this->*((CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // CSingleFrameMessage::RegisterActs @0x0ab710 - bind the class's per-frame handler

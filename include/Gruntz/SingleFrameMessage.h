@@ -19,16 +19,15 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SINGLEFRAMEMESSAGE;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
-    CSingleFrameMessage(CGameObject* obj);        // 0x0ab310 (ctor body in UserLogic.cpp)
+    CSingleFrameMessage(CGameObject* obj); // 0x0ab310 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry singleton
     // (g_singleFrameActReg @0x645ef0) over the fixed [2000, 2010] range. Static.
     static void InitActReg(); // 0x0ab530
     // Resolve the registry entry for id; run its bound handler as a PMF on this
     // (ResolveEntry inlined twice). 0x0ab5b0.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
     static void RegisterActs(); // 0x0ab710

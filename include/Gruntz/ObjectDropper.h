@@ -30,11 +30,11 @@ public:
         return LOGIC_OBJECTDROPPER;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
     virtual ~CObjectDropper() OVERRIDE; // 0x124f0 (folds the CUserLogic teardown)
     i32 Update();                       // 0xc62e0 (per-frame drop tick + drift/wrap)
-    void FireAct(i32 actId);            // 0xc5f80 (look up + fire the registered act handler)
+    virtual void FireActivation(i32 id)
+        OVERRIDE; // 0xc5f80 (look up + fire the registered act handler)
     // Construct the class's activation-coordinate registry (g_dropperActReg
     // @0x64be90) over the fixed [2000,2010] range; free init thunk (ex the
     // "NetConfigureBe90" parking name), reloc-masked.

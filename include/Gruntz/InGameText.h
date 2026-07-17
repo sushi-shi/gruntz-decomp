@@ -46,15 +46,14 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_INGAMETEXT;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CInGameText(CGameObject* obj);   // 0x099110 (folds CUserLogic(obj) + on-screen tail)
     virtual ~CInGameText() OVERRIDE; // 0x011dc0
 
-    static void InitActReg();                                 // 0x0993e0
-    void Dispatch(i32 idx);                                   // 0x099460
-    i32 Update();                                             // 0x0997c0
+    static void InitActReg();                     // 0x0993e0
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x099460
+    i32 Update();                                 // 0x0997c0
 
     // --- CInGameText own fields (offsets load-bearing) ---
     CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id (before GAME_CYCLE100)

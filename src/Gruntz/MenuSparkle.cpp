@@ -133,7 +133,7 @@ void ConstructLogicActRange_646010() {
 typedef void (CMenuSparkle::*MenuSparkleActHandler)();
 
 RVA(0x000ade60, 0x102)
-void CMenuSparkle::Dispatch(i32 coord) {
+void CMenuSparkle::FireActivation(i32 coord) {
     char* e = g_logicActReg_646010.ResolveEntry(coord);
     if (*(void**)e != 0) {
         char* e2 = g_logicActReg_646010.ResolveEntry(coord);

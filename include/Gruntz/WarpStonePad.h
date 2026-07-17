@@ -19,18 +19,18 @@ class CWarpStonePad : public CUserLogic {
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARPSTONEPAD;
     }
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
+
 public:
     TILE_LOGIC_TAIL
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
     virtual ~CWarpStonePad() OVERRIDE;
-    static void InitActReg();   // 0x10d840
-    void FireWarp(i32 coord);   // 0x10d8c0 (vtable slot 4)
-    static void RegisterActs(); // 0x10da20
-    i32 AdvanceAnim();          // 0x10dc20
-    char m_pad40[0x54 - 0x40];  // +0x40  (unmodeled leaf tail; size 0x54 proven from
-                                //         the state pump's `new CWarpStonePad` = new(0x54))
+    static void InitActReg();                     // 0x10d840
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x10d8c0 (vtable slot 4)
+    static void RegisterActs();                   // 0x10da20
+    i32 AdvanceAnim();                            // 0x10dc20
+    char m_pad40[0x54 - 0x40]; // +0x40  (unmodeled leaf tail; size 0x54 proven from
+                               //         the state pump's `new CWarpStonePad` = new(0x54))
 };
 
 // The activation-registry entry record (the .data CActReg row): its first dword

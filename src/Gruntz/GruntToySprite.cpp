@@ -54,7 +54,7 @@ void CGruntToySprite::InitActReg() {
 // the entry and dispatch the PMF on `this`. Two inline ResolveEntry expansions because
 // it has side effects and cl cannot CSE it across the guard. See RunAct notes elsewhere.
 RVA(0x0007f5c0, 0x102)
-void CGruntToySprite::RunAct(i32 id) {
+void CGruntToySprite::FireActivation(i32 id) {
     if (((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn != 0) {
         (this->*((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn)();
     }

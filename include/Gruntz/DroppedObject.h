@@ -35,16 +35,15 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECT;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     virtual i32 UserLogicVfunc5() OVERRIDE; // slot 7
     TILE_LOGIC_TAIL
 public:
-    CDroppedObject(CGameObject* obj);   // 0x0c68b0 (1-arg leaf ctor)
-    static void RegisterRange();        // 0x0c6b50 (seed the activation table's fast range)
-    static void RegisterActs();         // 0x0c6d30
-    void FireActivation(i32 coord);     // 0x0c6bd0
-    i32 ActA();                         // 0x0c7090 (per-frame "A" activation handler)
-    virtual ~CDroppedObject() OVERRIDE; // 0x0125b0 (folds the CUserLogic teardown)
+    CDroppedObject(CGameObject* obj); // 0x0c68b0 (1-arg leaf ctor)
+    static void RegisterRange();      // 0x0c6b50 (seed the activation table's fast range)
+    static void RegisterActs();       // 0x0c6d30
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x0c6bd0
+    i32 ActA();                                   // 0x0c7090 (per-frame "A" activation handler)
+    virtual ~CDroppedObject() OVERRIDE;           // 0x0125b0 (folds the CUserLogic teardown)
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CRollingBall::Serialize).
 

@@ -17,16 +17,16 @@ class CTileTriggerSwitch : public CUserLogic {
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
     virtual ~CTileTriggerSwitch() OVERRIDE;
-    static void InitActReg();       // 0x10de20
-    void FireActivation(i32 coord); // 0x10dea0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs();     // 0x10e000
-    i32 AdvanceAnim();              // 0x10e200 (declared-only; recovery gap)
-    char m_pad40[0x54 - 0x40];      // +0x40 (unmodeled leaf tail; size 0x54 from `new(0x54)`)
+    static void InitActReg(); // 0x10de20
+    virtual void FireActivation(i32 id)
+        OVERRIDE;               // 0x10dea0 (vtable slot 4 body: per-coord PMF dispatch)
+    static void RegisterActs(); // 0x10e000
+    i32 AdvanceAnim();          // 0x10e200 (declared-only; recovery gap)
+    char m_pad40[0x54 - 0x40];  // +0x40 (unmodeled leaf tail; size 0x54 from `new(0x54)`)
 };
 
 // The activation-registry entry record (the .data CActReg row; 4-byte PMF).

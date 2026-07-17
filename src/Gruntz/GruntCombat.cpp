@@ -1,4 +1,4 @@
-#include <Mfc.h>                // the REAL MFC CPtrList - CScanList was a fake view of it
+#include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
 #include <Gruntz/WwdGameRegPtr.h>
 #include <Gruntz/TraitorMode.h> // g_traitorMode
 // GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):
@@ -477,8 +477,7 @@ SIZE_UNKNOWN(CombatTypeNode);
             ((CString*)slot)->operator=(key);                                                      \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        ((CGruntActEntry*)g_reg_644af0.Resolve(id))->m_fn =                                       \
-            (GruntActHandler)(handler);                                                            \
+        ((CGruntActEntry*)g_reg_644af0.Resolve(id))->m_fn = (GruntActHandler)(handler);            \
     }
 
 // @early-stop
@@ -602,7 +601,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
             AnimWorkerObj* ni = n->m_7c;
-            ni->m_bc = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
+            ni->m_bc =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             n->m_124 = 0;
             n->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
@@ -616,7 +616,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             e->ApplyName("LEVEL_ROLLINGBALL_EAST");
             AnimWorkerObj* ei = e->m_7c;
-            ei->m_bc = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
+            ei->m_bc =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             e->m_124 = 0;
             e->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
@@ -630,7 +631,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
             AnimWorkerObj* si = s->m_7c;
-            si->m_bc = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
+            si->m_bc =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             s->m_124 = 0;
             s->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
 
@@ -644,7 +646,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             w->ApplyName("LEVEL_ROLLINGBALL_WEST");
             AnimWorkerObj* wi = w->m_7c;
-            wi->m_bc = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
+            wi->m_bc =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
             w->m_124 = 0;
             w->m_118 = static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
             return 1;
@@ -669,8 +672,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
-                                  // src/Gruntz/GameText.cpp (the pool's owner TU).
-                                  // Only the owner defines; everyone externs.
+// src/Gruntz/GameText.cpp (the pool's owner TU).
+// Only the owner defines; everyone externs.
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -768,7 +771,8 @@ i32 CGrunt::TryPowerupAtTile() {
     i32 tx = px >> 5;
     i32 ty = py >> 5;
     i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c) || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_c)
+        || static_cast<u32>(ty) >= static_cast<u32>(b->m_10)) {
         flags = 1;
     } else {
         flags = ((i32*)b->m_8[ty])[tx * 7];
@@ -1091,7 +1095,8 @@ i32 CGrunt::PathScan57db0() {
                 i32 rr = row5 + dy;
                 i32 cc = col5 * 7 + dx;
                 i32 cf = 1;
-                if (static_cast<u32>(rr) < static_cast<u32>(grid->m_height) && static_cast<u32>(cc) < static_cast<u32>(grid->m_width)) {
+                if (static_cast<u32>(rr) < static_cast<u32>(grid->m_height)
+                    && static_cast<u32>(cc) < static_cast<u32>(grid->m_width)) {
                     cf = ((i32*)grid->m_8[rr])[cc];
                 }
                 if (((m_arrivalFlags | 0x20040002) & cf) & 0x20000000) {
@@ -1868,7 +1873,8 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         i32 tx = m_lastTilePxX >> 5;
         i32 ty = m_lastTilePxY >> 5;
         i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_c) || static_cast<u32>(ty) >= static_cast<u32>(bd->m_10)) {
+        if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_c)
+            || static_cast<u32>(ty) >= static_cast<u32>(bd->m_10)) {
             flags = 1;
         } else {
             flags = ((i32*)bd->m_8[ty])[tx * 7];
@@ -1942,7 +1948,8 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
     m_poweredUp = 1;
     nb->CreateHealthSprite();
-    nb->m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+    nb->m_combatTimeoutLo =
+        static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
     nb->m_combatTimeoutHi = 0;
     nb->m_combatClockLo = static_cast<i32>(g_frameTime);
     nb->m_combatClockHi = 0;
@@ -2111,12 +2118,11 @@ void ConstructActRange_644af0() {
 }
 
 RVA(0x0005bcd0, 0x102)
-i32 CGrunt::RunAct(i32 id) {
+void CGrunt::FireActivation(i32 id) {
     CGruntActEntry* e = (CGruntActEntry*)g_reg_644af0.ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CGruntActEntry*)g_reg_644af0.ResolveEntry(id))->m_fn)();
+        (this->*((CGruntActEntry*)g_reg_644af0.ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // @early-stop

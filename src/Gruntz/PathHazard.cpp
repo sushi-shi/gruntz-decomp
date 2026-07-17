@@ -236,12 +236,11 @@ extern CActReg g_actReg_646250; // 0x646250
 // @0xb3cc0 (after)>. A /Gy first-use COMDAT the linker placed inside PathHazardActReg's
 // block, not this TU's body run.
 RVA(0x000b3b60, 0x102)
-i32 CPathHazard::RunAct(i32 id) {
+void CPathHazard::FireActivation(i32 id) {
     CPathHazardActEntry* e = (CPathHazardActEntry*)g_actReg_646250.ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CPathHazardActEntry*)g_actReg_646250.ResolveEntry(id))->m_fn)();
+        (this->*((CPathHazardActEntry*)g_actReg_646250.ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // CPathHazard::Tick @0x0b4020 (virtual slot 16) - the per-frame driver. Advance
@@ -303,7 +302,8 @@ i32 CPathHazard::Tick() {
             i32 segs = m_object->m_120;
             if (segs > 0) {
                 m_legWindow = segs;
-                m_legDeadline = static_cast<u32>(g_frameTime); // the running game clock seeds the leg deadline
+                m_legDeadline =
+                    static_cast<u32>(g_frameTime); // the running game clock seeds the leg deadline
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
                 return 0;
@@ -314,7 +314,9 @@ i32 CPathHazard::Tick() {
     }
 
     // Not arrived: integrate the sub-pixel movement vector toward the waypoint.
-    double step = static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta)))) * m_speed;
+    double step =
+        static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta))))
+        * m_speed;
     m_posX = m_posX + step * m_unitX;
     m_posY = m_posY + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_unitY * m_speed;
     i32 newX = static_cast<i32>((m_roundBiasX + m_posX));
@@ -489,7 +491,9 @@ i32 CPathHazard::SiblingTick() {
 RVA(0x000b4640, 0x104)
 i32 CPathHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
-    m_strikeWindow = static_cast<i64>(static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0)));
+    m_strikeWindow = static_cast<i64>(
+        static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0))
+    );
     m_strikeDeadline = static_cast<i64>(static_cast<u32>(g_frameTime));
     g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
 

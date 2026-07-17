@@ -22,16 +22,15 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_SECRETLEVELTRIGGER;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;       // slot 4
     TILE_LOGIC_TAIL
 public:
-    CSecretLevelTrigger();                   // 0x010b20 (no-arg ctor; body in UserLogic.cpp)
-    CSecretLevelTrigger(CGameObject* obj);   // 0x0424b0 (1-arg ctor; body in UserLogic.cpp)
-    static void InitActReg();                // 0x0426e0 (construct g_secretActReg over [2000,2010])
-    static void RegisterActs();              // 0x0428c0 (register the class's activation handlers)
-    void FireActivation(i32 coord);          // 0x042760 (per-coord PMF dispatcher)
-    i32 Tick();                              // 0x042ac0
-    virtual ~CSecretLevelTrigger() OVERRIDE; // 0x010c50 (folds the CUserLogic teardown)
+    CSecretLevelTrigger();                 // 0x010b20 (no-arg ctor; body in UserLogic.cpp)
+    CSecretLevelTrigger(CGameObject* obj); // 0x0424b0 (1-arg ctor; body in UserLogic.cpp)
+    static void InitActReg();              // 0x0426e0 (construct g_secretActReg over [2000,2010])
+    static void RegisterActs();            // 0x0428c0 (register the class's activation handlers)
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x042760 (per-coord PMF dispatcher)
+    i32 Tick();                                   // 0x042ac0
+    virtual ~CSecretLevelTrigger() OVERRIDE;      // 0x010c50 (folds the CUserLogic teardown)
 
     char m_pad40[0x54 - 0x40]; // +0x40  (unmodeled tail; size proven 0x54 from
                                //         AnimWorkerHandlers `new CSecretLevelTrigger`)

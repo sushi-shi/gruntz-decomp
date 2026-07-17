@@ -92,14 +92,13 @@ extern CVariantSlot* g_vactColl2;    // 0x2514dc
 SIZE(CGruntVoice, 0x78);
 class CGruntVoice : public CUserLogic {
 public:
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
     virtual ~CGruntVoice() OVERRIDE; // 0x119ae0
 
     static void InitActReg(); // 0x119dc0 (construct g_vactColl over [2000,2010])
-    void Dispatch(i32 coord); // 0x119e40
+    virtual void FireActivation(i32 id) OVERRIDE;    // 0x119e40
     i32 Setup(i32 a0, void* sample, i32 a2, i32 a3); // 0x11a7e0
     void Reset();                                    // 0x11a870
     i32 Update();                                    // 0x11a8e0 (per-frame: elapse + reposition)

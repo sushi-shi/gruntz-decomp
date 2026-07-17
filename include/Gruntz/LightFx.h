@@ -24,14 +24,13 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_LIGHTFX;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4 (declared-only slot)
     TILE_LOGIC_TAIL
 public:
     CLightFx(CGameObject* obj); // 0x9cf00
     // 0x9d1c0  RunAct - the slot-4 impl: resolve the class registry entry for id and,
     // if a handler PMF is bound, re-resolve + dispatch it on this (double inline
     // ResolveEntry), else return the entry pointer. Same archetype as CEyeCandyAni::RunAct.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // 0x9d660  SerializeMove (slot 1): chain the base serialize + the +0x34 object
     // reference, then per mode read/write the (anchorA, anchorB) pair or (mode 8) re-push
     // the effect into the logic pump. (definition uses the slot-1 virtual below)

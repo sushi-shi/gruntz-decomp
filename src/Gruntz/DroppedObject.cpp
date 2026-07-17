@@ -30,7 +30,7 @@
 #include <Gruntz/GameRegPtr.h>
 #include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/DroppedObject.h>   // CDroppedObject : CUserLogic (ctor 0xc68b0)
+#include <Gruntz/DroppedObject.h> // CDroppedObject : CUserLogic (ctor 0xc68b0)
 #include <Gruntz/DroppedObjectShadow.h> // CDroppedObjectShadow : CUserLogic (ctor 0xc7490)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
@@ -452,7 +452,7 @@ void CObjectDropper::InitActReg() {
 // effects (m_scratch reset + GrowTo-on-miss), so it is re-run for the actual call
 // rather than cached; the null-slot path just returns (eax = the entry ptr).
 RVA(0x000c5f80, 0x102)
-void CObjectDropper::FireAct(i32 actId) {
+void CObjectDropper::FireActivation(i32 actId) {
     if (((CDropperActEntry*)g_dropperActReg.ResolveEntry(actId))->m_fn != 0) {
         (this->*(((CDropperActEntry*)g_dropperActReg.ResolveEntry(actId))->m_fn))();
     }
@@ -525,7 +525,8 @@ i32 CObjectDropper::Update() {
                         i32 cx = fx >> 5;
                         i32 cy = fy >> 5;
                         u32 flags;
-                        if (static_cast<u32>(cx) >= static_cast<u32>(plane->m_c) || static_cast<u32>(cy) >= static_cast<u32>(plane->m_10)) {
+                        if (static_cast<u32>(cx) >= static_cast<u32>(plane->m_c)
+                            || static_cast<u32>(cy) >= static_cast<u32>(plane->m_10)) {
                             flags = 1;
                         } else {
                             // the row table is typed i32** on CMapMgr; the row's cells are
@@ -686,7 +687,10 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_flags |= 0x20000;
     }
     m_timePerTile =
-        32.0 / static_cast<double>(static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8)));
+        32.0
+        / static_cast<double>(
+            static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8))
+        );
 }
 
 // CDroppedObject::RegisterRange @0x0c6b50 - seed the dropped-object activation
@@ -795,7 +799,8 @@ i32 CDroppedObject::ActA() {
         {
             i32 cx = x >> 5;
             i32 cy = m_landY >> 5;
-            if (static_cast<u32>(cx) < static_cast<u32>(g->m_c) && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
+            if (static_cast<u32>(cx) < static_cast<u32>(g->m_c)
+                && static_cast<u32>(cy) < static_cast<u32>(g->m_10)) {
                 cell = *(i32*)((char*)g->m_8[cy] + cx * 0x1c);
             } else {
                 cell = 1;

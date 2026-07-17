@@ -27,7 +27,6 @@ public:
         return LOGIC_ANICYCLE;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     // The vtable slot-1 override (two-chain Serialize): the shared CUserLogic
     // serialize helper on `this`, then the +0x34 sub-object's chain.
     // Construct the class's activation-coordinate registry singleton over the
@@ -36,7 +35,7 @@ public:
     // Look up the activation-registry entry for id and, if a handler is bound, run
     // it as a PMF on this (the same ResolveEntry archetype inlined twice, once for
     // the null-check, once for the dispatch). 0x0aaf80.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
     static void RegisterActs(); // 0x0ab0e0

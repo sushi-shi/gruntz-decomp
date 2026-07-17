@@ -95,11 +95,10 @@ extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed
 class CPathHazard : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     // The vtable slot-4 (UserLogicVfunc2) activation dispatcher body (0x0b3b60;
     // shared by CUFO/CRainCloud); a plain method - the base placeholder blocks the
     // int-arg OVERRIDE spelling.
-    i32 RunAct(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     TILE_LOGIC_TAIL
 public:
     CPathHazard(); // 0x13170 (no-arg deserialize-path ctor; zeroes the leg/strike i64s)

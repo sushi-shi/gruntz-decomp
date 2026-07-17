@@ -83,7 +83,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPUDDLE;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntPuddle(CGameObject* obj);   // 0x040490
@@ -96,7 +95,7 @@ public:
     // the class dispatch table g_logicDispatch_6445e8; if the resolved entry holds a
     // handler, re-resolve and dispatch it __thiscall on `this`. Same archetype as
     // CTeleporter::FireActivation.
-    void FireActivation(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     // Serialize (0x40e50): two-chain (CUserLogic base + the +0x34 sub-object) then a
     // tag-dispatched field round-trip - tag 4 writes / tag 7 reads the 7 own i32
     // fields via the archive vtable, tag 8 re-resolves the placed sprite from the
@@ -108,14 +107,14 @@ public:
     //  in <Gruntz/TriggerMgr.h>.)
     CAniElement* m_savedGeoId; // +0x40  geometry id (m_38->m_1a0.m_14 snapshot)
     char m_pad44[0x54 - 0x44];
-    i32 m_tileX;     // +0x54  owner tile X (m_object->m_screenX >> 5)
-    i32 m_tileY;     // +0x58  owner tile Y (m_object->m_screenY >> 5)
-    i32 m_pending;   // +0x5c  not-yet-placed gate (ctor 1; cleared once placed;
-                     //         the spawn/resurrect scans skip a nonzero one)
-    i32 m_placed;    // +0x60  "placed" flag
-    i32 m_placeArg3; // +0x64  Place() arg3 snapshot
-    i32 m_gruntType; // +0x68  the dead owner's grunt-type index (Place() a0 snapshot;
-                     //         the trigger-mgr resurrect re-creates via PlaceObject(type,..))
+    i32 m_tileX;      // +0x54  owner tile X (m_object->m_screenX >> 5)
+    i32 m_tileY;      // +0x58  owner tile Y (m_object->m_screenY >> 5)
+    i32 m_pending;    // +0x5c  not-yet-placed gate (ctor 1; cleared once placed;
+                      //         the spawn/resurrect scans skip a nonzero one)
+    i32 m_placed;     // +0x60  "placed" flag
+    i32 m_placeArg3;  // +0x64  Place() arg3 snapshot
+    i32 m_gruntType;  // +0x68  the dead owner's grunt-type index (Place() a0 snapshot;
+                      //         the trigger-mgr resurrect re-creates via PlaceObject(type,..))
     i32 m_placeIndex; // +0x6c  selector/icon index (Place() a1 snapshot; GetSel draws by
                       //         it, the resurrect passes it through as PlaceObject a6)
 };

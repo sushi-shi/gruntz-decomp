@@ -20,15 +20,10 @@ public:
     TILE_LOGIC_TAIL
 public:
     CActionArea(CGameObject* obj); // 0x7da0
-    // FireActivation (0x80e0) is the slot-4 (UserLogicVfunc2) per-coordinate
-    // activation dispatch body; the fat CUserLogic base models slot 4 with the
-    // no-arg UserLogicVfunc2() placeholder below, so the int-arg real shape is a
-    // plain method (the leaf vtable slot stays base-attributed - same pattern as
-    // CProjectile::RunAct). The .cpp-local CProjActObj OBJECT view dissolved here -
     // vtable_hierarchy proves ??_7CActionArea slot 4 IS FireActivation. (The static
     // level-load registrar @0x8240 stays CProjActObj::RegisterType - the
     // ObjTypeRegistrars.h shell the factory calls; see ActionArea.cpp.)
-    void FireActivation(i32 coord); // 0x80e0
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x80e0
     // ApplyColor (0x8580): re-name the bound object's sprite for the owning team
     // (owner 1 -> "GAME_ACTIONAREA_BLUE", owner 2 -> "GAME_ACTIONAREA_RED"), reset
     // its image set's pixel-format types (SetAllTypes 8), clear the object's
@@ -43,7 +38,6 @@ public:
         return LOGIC_ACTIONAREA;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     virtual ~CActionArea() OVERRIDE; // 0x7fd0 (folds the CUserLogic teardown)
 
     char m_pad40[0x54 - 0x40];

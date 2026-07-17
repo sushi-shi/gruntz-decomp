@@ -15,14 +15,14 @@ public:
     virtual ~CStatusBarSprite() OVERRIDE;                              // slot 0
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CStatusBarSprite(CGameObject* obj); // 0x10c230
     static void InitActReg();           // 0x10c430
-    void FireActivation(i32 coord);     // 0x10c4b0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs();         // 0x10c610
-    i32 AdvanceAnim();                  // 0x10c810 (the per-frame handler PMF; body in the stub TU)
+    virtual void FireActivation(i32 id)
+        OVERRIDE;               // 0x10c4b0 (vtable slot 4 body: per-coord PMF dispatch)
+    static void RegisterActs(); // 0x10c610
+    i32 AdvanceAnim();          // 0x10c810 (the per-frame handler PMF; body in the stub TU)
 
     CAniElement* m_40;         // +0x40  saved active-anim descriptor (ctor snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled leaf tail; size 0x54 proven from

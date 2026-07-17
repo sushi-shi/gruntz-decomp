@@ -9,8 +9,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
-#include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Gruntz/TypeKeyColl.h>     // g_typeCounter (the shared type-id counter)
+#include <Wap32/zBitVec.h>      // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 
@@ -171,7 +171,7 @@ typedef i32 (CUserLogic::*LogicFn)();
 // Same archetype as CInGameText::Dispatch.
 // ===========================================================================
 RVA(0x000abc10, 0x102)
-void CSimpleAnimation::Dispatch(i32 idx) {
+void CSimpleAnimation::FireActivation(i32 idx) {
     if (*(void**)ResolveSlot(&g_simpleAnimDispatch, idx) != 0) {
         LogicFn fn = *(LogicFn*)ResolveSlot(&g_simpleAnimDispatch, idx);
         (this->*fn)();

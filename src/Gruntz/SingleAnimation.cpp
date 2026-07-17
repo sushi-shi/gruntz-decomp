@@ -70,12 +70,11 @@ void CSingleAnimation::InitActReg() {
 // pointer. ResolveEntry is inlined twice (side-effectful; no CSE). Same archetype as
 // CAniCycle::RunAct.
 RVA(0x000aea20, 0x102)
-i32 CSingleAnimation::RunAct(i32 id) {
+void CSingleAnimation::FireActivation(i32 id) {
     CSingleAnimActEntry* e = (CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn)();
+        (this->*((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // CSingleAnimation::RegisterActs @0x0aeb80 - bind the class's per-frame handler

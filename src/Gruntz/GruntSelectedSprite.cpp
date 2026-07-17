@@ -63,7 +63,7 @@ void CGruntSelectedSprite::InitActReg() {
 // `this`. ResolveEntry has side effects (m_scratch=0, may grow) so cl re-evaluates it for
 // the guarded call rather than CSE-ing - hence the two inline expansions.
 RVA(0x0007e660, 0x102)
-void CGruntSelectedSprite::RunAct(i32 id) {
+void CGruntSelectedSprite::FireActivation(i32 id) {
     if (((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn != 0) {
         (this->*((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn)();
     }

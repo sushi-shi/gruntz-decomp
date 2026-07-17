@@ -64,7 +64,7 @@ void CGruntPowerupSprite::InitActReg() {
 // entry and dispatch the PMF on `this`. Two inline ResolveEntry expansions (side effects,
 // no CSE across the guard).
 RVA(0x00080020, 0x102)
-void CGruntPowerupSprite::RunAct(i32 id) {
+void CGruntPowerupSprite::FireActivation(i32 id) {
     if (((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn != 0) {
         (this->*((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn)();
     }

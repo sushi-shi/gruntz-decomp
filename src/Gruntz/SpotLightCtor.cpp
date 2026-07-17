@@ -14,13 +14,13 @@
 // CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
 #include <Gruntz/GameRegPtr.h>
-#include <Gruntz/SoundState.h>  // g_sndEnabled/g_sndCueTag
-#include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
-#include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/UserLogic.h>       // CUserLogic / CGameObject base init + g_buteMgr
-#include <Bute/ButeMgr.h>           // CButeTree / CButeMgr
-#include <Gruntz/GameRegistry.h>    // canonical *0x24556c singleton (color table via m_78)
-#include <Gruntz/LightFxMgr.h>      // CLightFxMgr - m_logicPump's real class (m_tables[10] @+0x14)
+#include <Gruntz/SoundState.h>   // g_sndEnabled/g_sndCueTag
+#include <Gruntz/TypeKeyColl.h>  // s_codeA/s_actKeyB registration keys
+#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/UserLogic.h>    // CUserLogic / CGameObject base init + g_buteMgr
+#include <Bute/ButeMgr.h>        // CButeTree / CButeMgr
+#include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (color table via m_78)
+#include <Gruntz/LightFxMgr.h>   // CLightFxMgr - m_logicPump's real class (m_tables[10] @+0x14)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - m_world->m_childGroup (embedded GruntObjMap m_map48 @+0x48)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
 #include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
@@ -139,12 +139,11 @@ extern CActReg g_actReg_646188; // 0x646188
 // 4 with the no-arg UserLogicVfunc2() placeholder, so the int-arg real shape can't
 // spell OVERRIDE - kept a plain method; the leaf vtable slot stays base-attributed.
 RVA(0x000b1630, 0x102)
-i32 CSpotLight::RunAct(i32 id) {
+void CSpotLight::FireActivation(i32 id) {
     CSpotActEntry* e = (CSpotActEntry*)g_actReg_646188.ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CSpotActEntry*)g_actReg_646188.ResolveEntry(id))->m_fn)();
+        (this->*((CSpotActEntry*)g_actReg_646188.ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // SerializeMove's +0x98 focus slot (m_focus) holds a serialized object reference: a

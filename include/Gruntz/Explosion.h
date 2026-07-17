@@ -16,7 +16,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_EXPLOSION;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;       // slot 4
     TILE_LOGIC_TAIL
 public:
     CExplosion(CGameObject* obj); // 0x470e0
@@ -24,7 +23,7 @@ public:
     // the class dispatch table g_logicActReg_6447f8; if the resolved entry holds a
     // handler, re-resolve and dispatch it __thiscall on `this`. Same archetype as
     // CTeleporter::FireActivation.
-    void FireActivation(i32 id);
+    virtual void FireActivation(i32 id) OVERRIDE;
     virtual ~CExplosion() OVERRIDE; // 0x12ec0 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];
 };

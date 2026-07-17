@@ -367,7 +367,7 @@ void CWarpStonePad::InitActReg() {
 // CWarpStonePad::FireWarp @0x10d8c0, vtable slot 4 - resolve the coordinate; if the
 // entry carries a handler PMF, re-resolve and dispatch it __thiscall on this.
 RVA(0x0010d8c0, 0x102)
-void CWarpStonePad::FireWarp(i32 coord) {
+void CWarpStonePad::FireActivation(i32 coord) {
     CWarpStonePadActEntry* e = (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
     if (e->m_fn != 0) {
         CWarpStonePadActEntry* e2 =
@@ -538,6 +538,27 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }
 
+// @identity-TODO  THE WHOLE CLUSTER BELOW (InitActReg 0x10ea00 / FireActivation
+// 0x10ea80 / RegisterActs 0x10ebe0 + its Act handlers + g_checkpointActReg +
+// CCheckpointActEntry) IS CBrickz's, NOT CCheckpointTrigger's - and the NEXT cluster
+// (0x10f160/0x10f1e0/0x10f340, filed under CTileSecretTrigger) is CCheckpointTrigger's.
+// The act clusters in this TU are shifted by one class. Retail bytes:
+//   CBrickz            RTTI vtbl 0x1e7c54 slot 4 = ILT 0x0012b2 = `e9 c9 d7 10 00`
+//                      -> jmp 0x10ea80   (this cluster's FireActivation)
+//   CCheckpointTrigger RTTI vtbl 0x1e7ebc slot 4 = ILT 0x001366 = `e9 75 de 10 00`
+//                      -> jmp 0x10f1e0   (the NEXT cluster's FireActivation)
+//   CTileSecretTrigger RTTI vtbl 0x1e7e64 slot 4 is INHERITED from CTileTrigger
+//                      (0x0034fe -> 0x10e4a0) - it has NO own slot-4 body at all,
+//                      so `CTileSecretTrigger::FireActivation @0x10f1e0` cannot exist.
+// MSVC5 has no /OPT:ICF, so each body has exactly one owner. Not fixed here because
+// it is a full cluster re-attribution: RegisterActs stores class-typed PMFs
+// (`&CTileSecretTrigger::Act_10f6a0`), so the Act handlers + entry types + registry
+// globals must move with it, through a chained rename (CCheckpointTrigger's name is
+// currently occupied by THIS cluster while it should own the next one). Several
+// members are @early-stop'd, so it needs its own per-unit %-verification.
+// The precedent + recipe: CToyPeek::FireActivation @0x97de0 (was CInGameIcon::RunState)
+// was re-attributed the same way this session - byte-neutral, 100% held.
+//
 // CCheckpointTrigger::InitActReg @0x10ea00 - construct g_checkpointActReg over [2000,2010].
 RVA(0x0010ea00, 0x15)
 void CCheckpointTrigger::InitActReg() {

@@ -43,12 +43,14 @@ void CWormhole::InitActReg() {
     ((CZDArrayDerived*)&g_wormholeActReg)->Construct(2000, 2010);
 }
 
-// CWormhole::FireActivation @0x03f290 - look the activation coordinate up in the
+// CWormhole::FireAct @0x03f290 [@identity-TODO: retail says this is CExitTrigger's
+// vtable slot 4 - ILT 0x42e6 `jmp 0x3f290` + CExitTrigger vtbl 0x1e822c slot 4 == 0x42e6;
+// see the note in <Gruntz/Wormhole.h>] - look the activation coordinate up in the
 // class registry (g_wormholeActReg); if the resolved entry carries a registered
 // handler PMF, resolve it again and dispatch it __thiscall on `this`. Same
 // archetype as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
 RVA(0x0003f290, 0x102)
-void CWormhole::FireActivation(i32 coord) {
+void CWormhole::FireAct(i32 coord) {
     CWormholeActEntry* e = (CWormholeActEntry*)g_wormholeActReg.ResolveEntry(coord);
     if (e->m_fn != 0) {
         CWormholeActEntry* e2 = (CWormholeActEntry*)g_wormholeActReg.ResolveEntry(coord);

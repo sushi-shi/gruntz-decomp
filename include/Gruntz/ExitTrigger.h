@@ -33,7 +33,9 @@ public:
         return LOGIC_EXITTRIGGER;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x3f040)
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    // slot 4: RTTI proves this class overrides (its own slot rva, not the base 0x246e),
+    // but the body is NOT reconstructed yet - declared-only, deliberately no definition.
+    virtual void FireActivation(i32 id) OVERRIDE;
     virtual ~CExitTrigger() OVERRIDE; // 0x0108c0 (folds the CUserLogic teardown)
 
     CAniElement* m_savedGeoId; // +0x40  saved m_38->m_1a0.m_14 geometry id

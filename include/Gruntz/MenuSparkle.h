@@ -19,7 +19,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_MENUSPARKLE;
     } // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CMenuSparkle(CGameObject* obj); // 0x0adbe0
@@ -32,7 +31,7 @@ public:
     // `ret 4`) - the same documented workaround the ~40 sibling leaves use for their
     // RunAct/FireActivation slot-4 bodies. Per-coordinate activation dispatch over this
     // leaf's own table g_logicActReg_646010 (0x646010).
-    void Dispatch(i32 coord); // 0x0ade60
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x0ade60
     // The per-frame handler (@0x0ae2a0): tick the aux flicker countdown, advance the
     // +0x1a0 anim on expiry, then re-arm the random flicker delay.
     i32 AdvanceAnim();

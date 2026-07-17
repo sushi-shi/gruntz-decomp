@@ -251,17 +251,17 @@ struct CGameObject {
     i32 m_deltaX; // +0x174
     i32 m_deltaY; // +0x178
     char m_pad17c[0x188 - 0x17c];
-    i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
-    i32 m_18c; // +0x18c  (WwdFile stamp: -1; CWwdGameObject low byte = dot color / setup flag)
-    union { // +0x190  role-union
-        i32 m_190;           // (WwdFile stamp: -1; sprite role: the cached frame number)
+    i32 m_188;     // +0x188  object id (warlord battle-event id / game-object archive-cue id)
+    i32 m_18c;     // +0x18c  (WwdFile stamp: -1; CWwdGameObject low byte = dot color / setup flag)
+    union {        // +0x190  role-union
+        i32 m_190; // (WwdFile stamp: -1; sprite role: the cached frame number)
         i32 m_resolvedLayer; // grunt-indicator role: the layer index the glyph resolved from
     };
-    union {    // +0x194  role-union: a WwdFile-loaded object keeps its source-def
-               //         record; a CreateSprite'd object caches the looked-up sprite
-               //         (ApplyName/ApplyLookupSprite) / its CImageSet (ActionArea's
-               //         pulse ramp SetAllTypes/SetAllField18 @0x152480/0x1524d0).
-        char* m_194;                 // source-def record (class-name string at +0x24)
+    union {          // +0x194  role-union: a WwdFile-loaded object keeps its source-def
+                     //         record; a CreateSprite'd object caches the looked-up sprite
+                     //         (ApplyName/ApplyLookupSprite) / its CImageSet (ActionArea's
+                     //         pulse ramp SetAllTypes/SetAllField18 @0x152480/0x1524d0).
+        char* m_194; // source-def record (class-name string at +0x24)
         struct CSprite* m_sprite;    // cached sprite (frame-cache role)
         class CImageSet* m_imageSet; // cached image set (color/brightness role)
         // grunt-indicator role: the layer-clamp/glyph table the Grunt*Sprite updaters
@@ -273,7 +273,7 @@ struct CGameObject {
         CGameObjLayer* m_layer; // (sprite role: the cached frame ptr)
         i32 m_mappedLayer;      // grunt-indicator role: the glyph the layer mapped to
     };
-    i32 m_19c;              // +0x19c  (WwdFile stamp: 0)
+    i32 m_19c; // +0x19c  (WwdFile stamp: 0)
     // +0x1a0..+0x1db: the embedded CAniAdvanceCursor (one real 0x3c member; vptr
     // @+0x1a0, end +0x1dc == SIZE(CGameObject)). The former per-leaf sink views
     // (WwdAnimSub / CAnimSink / CTeleAnimSink / CWarlordAnimSub / CGruntPuddleSink /
@@ -367,7 +367,24 @@ public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     virtual i32 UserLogicVfunc1();
-    virtual i32 UserLogicVfunc2();
+    // slot 4 (+0x10): the activation dispatcher - SIGNATURE SETTLED (2026-07-15) from
+    // retail: the base body (thunk 0x246e -> 0x8b70) is a bare `ret 4`, i.e. an empty
+    // __thiscall taking ONE stack arg, and every leaf override reads that arg at
+    // [esp+0xc] and `ret 4` too. Was a no-arg `UserLogicVfunc2()` placeholder, which
+    // forced all 51 overriding leaves to park their real body beside it as a
+    // non-virtual under 9 different invented names (FireActivation/RunAct/Dispatch/...).
+    // The arg is the activation ID interned by the leaf's RegisterActs via
+    // g_buteTree.Find(key) (see <Gruntz/ActNameRegistry.h>), NOT a coordinate.
+    // Returns void: no exit in the base or in any override materializes eax (the 17
+    // leaves that were spelled `i32` only ever "returned" the leftover entry pointer
+    // cast to int - an RE artifact). Same shape as the sibling slot 5 FinalizeStep.
+    //
+    // NB the OVERRIDE macro is what polices this: MSVC5 expands it to NOTHING, so a
+    // leaf whose spelling drifts from this signature still COMPILES under cl and
+    // silently re-binds to a new non-virtual, leaving the vtable slot on the base.
+    // Only the clang label pass (which expands OVERRIDE to `override`) rejects it.
+    // If you change this signature, trust clang's error, not cl's silence.
+    virtual void FireActivation(i32 id);
     // slot 5 (+0x14): the per-tick finalize step - SIGNATURE SETTLED (Fable A2,
     // 2026-07-14) from all three bodies: base 0x8b90 (`ret 4`, arg unused; body in
     // LogicTypeTable.cpp - fires the two m_04/m_08 deferred callbacks, resets
@@ -615,8 +632,8 @@ public:
     CTileLogic(CGameObject* obj);
 
     // (+0x30 m_prevAnimSetNode is inherited from CUserLogic - see its size NOTE.)
-    CGameObject* m_34; // +0x34
-    CGameObject* m_38;     // +0x38  (== the bound object; leaves read m_38->m_flags etc.)
+    CGameObject* m_34;   // +0x34
+    CGameObject* m_38;   // +0x38  (== the bound object; leaves read m_38->m_flags etc.)
     AnimWorkerObj* m_3c; // +0x3c
 };
 SIZE(CTileLogic, 0x40);
@@ -642,15 +659,15 @@ class CTileTrigger : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
     static void InitActReg();       // 0x10e420
-    void FireActivation(i32 coord); // 0x10e4a0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs();     // 0x10e600
-    i32 AdvanceAnim();              // 0x10ee00
+    virtual void FireActivation(i32 id)
+        OVERRIDE;               // 0x10e4a0 (vtable slot 4 body: per-coord PMF dispatch)
+    static void RegisterActs(); // 0x10e600
+    i32 AdvanceAnim();          // 0x10ee00
     // Leaf tail: TILE_LOGIC_TAIL ends at +0x40; the three leaves (CTileSecretTrigger/
     // CGiantRock/CCoveredPowerup) add no data. Size 0x54 proven from the state pumps'
     // `new CTileTrigger`/`new CTileSecretTrigger`/... = operator new(0x54).

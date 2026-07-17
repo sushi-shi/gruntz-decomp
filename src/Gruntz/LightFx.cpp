@@ -84,12 +84,11 @@ void CLightFx::InitActReg() {
 // CActReg::ResolveEntry expansions (side-effecting -> cl cannot CSE across the guard).
 // The SAME archetype as CEyeCandyAni::RunAct (0x0acbb0).
 RVA(0x0009d1c0, 0x102)
-i32 CLightFx::RunAct(i32 id) {
+void CLightFx::FireActivation(i32 id) {
     CLightFxActEntry* e = (CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn)();
+        (this->*((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // CLightFx::RegisterActs @0x9d320 - bind the per-frame handler (AdvanceAnim

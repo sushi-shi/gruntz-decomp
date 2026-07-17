@@ -37,7 +37,7 @@
 #include <Io/FileMem.h>         // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntPuddle.h> // CGruntPuddle
 #include <Gruntz/InGameIcon.h>  // CGameRegistry/g_gameReg (ex-transitive via GruntPuddle.h)
-#include <Gruntz/Teleporter.h> // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
+#include <Gruntz/Teleporter.h>  // CTeleporter (+ g_engineFrameDelta/g_frameTime/s_actKeyB/geo keys)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
@@ -349,7 +349,7 @@ void InitWormholeDispatch() {
 // Same archetype as CSimpleAnimation::Dispatch (0x0abc10).
 // ===========================================================================
 RVA(0x00040050, 0x102)
-void CWormhole::Dispatch(i32 idx) {
+void CWormhole::FireActivation(i32 idx) {
     if (*(void**)ResolveSlot(&g_wormholeDispatch, idx) != 0) {
         LogicFn fn = *(LogicFn*)ResolveSlot(&g_wormholeDispatch, idx);
         (this->*fn)();
@@ -601,7 +601,8 @@ i32 CGruntPuddle::Remove() {
         CTileGrid* grid = reg->m_tileGrid;
         i32 tx = m_tileX;
         i32 flags;
-        if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c) && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
+        if (static_cast<u32>(tx) < static_cast<u32>(grid->m_c)
+            && static_cast<u32>(ty) < static_cast<u32>(grid->m_10)) {
             flags = ((i32*)grid->m_8[ty])[tx * 7];
         } else {
             flags = 1;

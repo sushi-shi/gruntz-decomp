@@ -161,12 +161,11 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
 // pointer. Same archetype as CAniCycle::RunAct (g_eyeCandyDispatch @0x646060
 // viewed through its CActReg activation facet).
 RVA(0x000acbb0, 0x102)
-i32 CEyeCandyAni::RunAct(i32 id) {
+void CEyeCandyAni::FireActivation(i32 id) {
     CEyeCandyActEntry* e = (CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id))->m_fn)();
+        (this->*((CEyeCandyActEntry*)((CActReg*)&g_eyeCandyDispatch)->ResolveEntry(id))->m_fn)();
     }
-    return (i32)e;
 }
 
 // CEyeCandyAni::RegisterActs @0x0acd10 - bind the class's per-frame handler

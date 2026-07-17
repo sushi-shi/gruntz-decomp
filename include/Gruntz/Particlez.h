@@ -36,9 +36,8 @@ public:
         return LOGIC_PARTICLEZ;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    static void InitActReg();       // 0x046cb0 (construct g_partColl over [2000,2010])
-    void FireActivation(i32 coord); // 0x046d30
+    static void InitActReg(); // 0x046cb0 (construct g_partColl over [2000,2010])
+    virtual void FireActivation(i32 id) OVERRIDE; // 0x046d30
     // Bind the per-frame handler (Update) to the activation key "A" via the shared
     // name registry (the same archetype as CSecretTeleporterTrigger::RegisterActs).
     static void RegisterActs();     // 0x046e90

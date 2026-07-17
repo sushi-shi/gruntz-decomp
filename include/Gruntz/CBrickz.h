@@ -32,7 +32,9 @@ public:
         return LOGIC_BRICKZ;
     }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    // slot 4: RTTI proves this class overrides (its own slot rva, not the base 0x246e),
+    // but the body is NOT reconstructed yet - declared-only, deliberately no definition.
+    virtual void FireActivation(i32 id) OVERRIDE;
     // Declared-only (body 0x810f0, Brickz.cpp): load the puzzle's tile attributes.
     // Added so Play.cpp can call it on the real class instead of on the fabricated `Eng`
     // conflation (the call reloc-masks either way, but only this spelling binds to the
