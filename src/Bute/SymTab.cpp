@@ -23,11 +23,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// The child-scope hash-node vtable (the key-hash interface a scope exposes to its
-// parent's m_subTabs). Manual-stamp model -> reloc-masked DATA() extern.
-DATA(0x001ef748)
-void* CSymTab_node_vftable;
-
 // A leaf record's parse stream is the canonical CParseSource (included above);
 // EndParse (0x1399d0) releases its inline buffer, reloc-masked __thiscall.
 
@@ -406,7 +401,7 @@ CSymTab::CSymTab(
     i32 subN,
     i32 symN
 )
-    : m_node20((void*)&CSymTab_node_vftable), m_34(0), m_subTabs(subN), m_symbols(symN) {
+    : m_subTabs(subN), m_symbols(symN) {
     m_name = (char*)::operator new(strlen(name) + 1);
     if (m_name) {
         strcpy(m_name, name);
@@ -419,7 +414,7 @@ CSymTab::CSymTab(
     m_0c = 0;
     m_buf48 = 0;
     m_1c = p1;
-    m_34 = this;
+    m_node20.m_record = this;
 }
 
 // ~CSymTab (0x139ee0): tear down the scope tree. Walk the leaf-symbol table
@@ -465,7 +460,7 @@ CSymTab::~CSymTab() {
     m_buf48 = 0;
     m_owner = 0;
     m_1c = 0;
-    m_34 = 0;
+    m_node20.m_record = 0;
     // m_symbols, m_subTabs destruct here (reverse decl order, /GX trylevels).
 }
 
@@ -681,7 +676,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     if (!child) {
         return 0;
     }
-    m_subTabs.Insert((CHashElement*)&child->m_node20);
+    m_subTabs.Insert(&child->m_node20);
     if (m_owner->m_longestScopeNameLen <= static_cast<i32>(strlen(name))) {
         m_owner->m_longestScopeNameLen = strlen(name) + 1;
     }
@@ -868,7 +863,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                     o->m_subTabBucketCount,
                     o->m_symbolBucketCount
                 );
-                m_subTabs.Insert((CHashElement*)&node->m_node20);
+                m_subTabs.Insert(&node->m_node20);
             } else {
                 ((CSymTab*)existing)->m_04 = fA;
                 ((CSymTab*)existing)->m_08 = fB;
@@ -1543,6 +1538,30 @@ void __stdcall UnpackTag(u32 tag, char* dst) {
         dst[3] = tb[len - 4];
     }
     dst[len] = 0;
+}
+
+// ---------------------------------------------------------------------------
+// The three CSymParser primary vtable slots (??_7CSymParser @0x1ef750). Retail's
+// bodies are inert defaults - the parser's "subclass me" hooks, which every shipped
+// caller leaves at the base. They land in THIS TU's 0x13b9e2..0x13ba20 gap (between
+// UnpackTag and CheckNodes), which is what homes them here rather than proximity.
+// Signatures are read off the bytes; see the decl comments in <Bute/SymParser.h>.
+// ---------------------------------------------------------------------------
+
+// V0 (0x13b9f0): xor eax,eax; ret 4 - one stack arg, returns 0.
+RVA(0x0013b9f0, 0x5)
+i32 CSymParser::V0(i32 a) {
+    return 0;
+}
+
+// V1 (0x13ba00): ret 4 - one stack arg, void.
+RVA(0x0013ba00, 0x3)
+void CSymParser::V1(i32 a) {}
+
+// V2 (0x13ba10): xor eax,eax; ret - no args, returns 0.
+RVA(0x0013ba10, 0x3)
+i32 CSymParser::V2() {
+    return 0;
 }
 
 // CheckNodes (0x13ba20): walk the +0x10 object list, calling each node's slot-7

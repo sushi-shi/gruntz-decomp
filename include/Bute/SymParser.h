@@ -127,9 +127,18 @@ VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor st
                               // `mov [esi],0x5ef750` at +0. Rehomed from AnalysisVtables.
 class CSymParser {
 public:
-    virtual void V0(); // slot 0 (sub_13b9f0)
-    virtual void V1(); // slot 1 (sub_13ba00)
-    virtual void V2(); // slot 2 (sub_13ba10)
+    // The three primary slots. Retail's bodies are inert defaults (the parser's
+    // "subclass me" hooks); their SIGNATURES are read off the bytes, not guessed -
+    // the ret flavor gives the stack-arg count and the eax write gives the return:
+    //     0x13b9f0  33 c0 c2 04 00   xor eax,eax; ret 4  -> 1 stack arg, returns 0
+    //     0x13ba00        c2 04 00   ret 4               -> 1 stack arg, void
+    //     0x13ba10        33 c0 c3   xor eax,eax; ret    -> no args,     returns 0
+    // (The ex `void V0()/V1()/V2()` triple contradicted all three: it dropped the
+    // arg that `ret 4` proves and voided the eax that `xor eax,eax` proves.)
+    // Defined out-of-line in SymTab.cpp - they sit in that TU's 0x13b9e2..0x13ba20 gap.
+    virtual i32 V0(i32 a);  // slot 0 (0x13b9f0)
+    virtual void V1(i32 a); // slot 1 (0x13ba00)
+    virtual i32 V2();       // slot 2 (0x13ba10)
 
     // The default ctor (0x13aa10, defined in SymParser.cpp) seeds the parse-config
     // defaults; the 3-arg buf-ctor's discarded temp `CSymParser tmp;` lowers to a

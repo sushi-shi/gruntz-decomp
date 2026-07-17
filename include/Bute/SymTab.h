@@ -48,21 +48,44 @@ void* operator new(u32 size);
 // come from the real <string.h>/<stdlib.h> in SymTab.cpp, the sole user - kept out
 // of this shared header so the other includers don't pull the CRT.
 
-// The child-scope hash-node vtable stamped at CSymTab+0x20 (the key-hash interface
-// that lets a scope be inserted into its parent's m_subTabs). The CSymTab ctor
-// (0x139de0) stamps `mov [ebx+0x20],0x5ef748` via &CSymTab_node_vftable (a manual
-// stamp: its virtuals live in other, unmatched TUs) -> reloc-masked extern.
-extern void* CSymTab_node_vftable; // 0x5ef748
-
 // The real polymorphic class the 0x1ef748 vtable belongs to: the CSymTab +0x20
-// hash-node prefix (slot0 sub_13c3b0). Named home for the vtable catalog (distinct
-// from CSymRec's own +0x4 CHashInsertNode at 0x1ef744). Its one virtual is
-// declared-only (defined in an unmatched TU); no vtable is emitted here, so the
-// VTBL below is a pure target-side catalog binding.
-SIZE_UNKNOWN(CSymTabNode);
-struct CSymTabNode {
-    virtual void Slot00_13c3b0(); // slot 0 (0x13c3b0; role unrecovered)
+// hash-node prefix (distinct from CSymRec's own +0x4 node at 0x1ef744).
+//
+// IDENTITY PROVEN (UB1 2026-07-17) - it IS a CHashElement, exactly like its two
+// sibling nodes (CParseSlotHashNode 0x1ef740 / CSymRecNode 0x1ef744). The slot-0
+// body @0x13c3b0 is the SAME 15-byte forwarder all three share, read straight out
+// of the image:
+//     mov eax,[ecx+0x14]  ; this->m_record   <- CHashElement::m_record @+0x14
+//     mov ecx,[ecx+0x0c]  ; this->m_owner    <- CHashElement::m_owner  @+0x0c
+//     mov edx,[eax]       ; m_record's FIRST dword == the key ("key first")
+//     push edx
+//     call 0x13c3c0       ; CHashB::HashStr(key), __thiscall on m_owner
+//     ret
+// i.e. literally CHashElement::Hash() == m_owner->HashStr(m_record->key) - the
+// child-scope (CHashB) instantiation, which is precisely the table CSymTab::m_subTabs
+// is. The ex "role unrecovered / void Slot00_13c3b0" placeholder returned void; the
+// body plainly returns HashStr's u32.
+//
+// The CSymTab embed corroborates it dword for dword: node@+0x20 => vptr +0x20
+// (m_node20's manual stamp), m_link +0x24, m_owner +0x2c, m_bucket +0x30, m_record
+// +0x34 - and +0x34 is the field the ctor zeroes and the header already calls "the
+// scope's own record back-pointer", i.e. the element pointing at its own record,
+// key first, exactly as CParseSlotHashNode does at ITS +0x30.
+struct CSymTabNode : public CHashElement {
+    // Slot 0 (0x13c3b0): m_owner->HashStr(m_record's key), on the CHashB child-scope
+    // instantiation. Defined out-of-line in Hash.cpp (retail emits it beside that
+    // instantiation's HashStr/Walk - the interleave proves the TU).
+    virtual u32 Hash() OVERRIDE;
+    // Stamp the vptr + zero m_record - the exact two stores CSymTab's ctor (0x139de0)
+    // opens with (the ex model spelled them `m_node20(&CSymTab_node_vftable), m_34(0)`
+    // by hand). The enclosing ctor then re-points m_record at `this`, which is why
+    // retail keeps the "dead" zero store: cl does not DSE it across the inlined
+    // member ctor. Identical to CParseSlotHashNode/CSymRecNode's inline ctors.
+    CSymTabNode() {
+        m_record = 0;
+    }
 };
+SIZE(CSymTabNode, 0x18); // no new fields over CHashElement
 VTBL(CSymTabNode, 0x001ef748);
 
 // The clock-seed builder is CSymParser::MakeSeed (0x13ba70, __thiscall on the parser);
@@ -304,13 +327,17 @@ public:
     void* m_14;          // +0x14  (role unproven; only nulled in dtor)
     CSymParser* m_owner; // +0x18
     void* m_1c;          // +0x1c
-    void* m_node20;      // +0x20  hash-node vtable (the scope's parent-table interface)
-    char m_pad24[0x30 - 0x24];
-    void* m_30;       // +0x30
-    void* m_34;       // +0x34  self-ptr (the scope's own record back-pointer)
-    CHashB m_subTabs; // +0x38  child-scope table (Walk 0x13c3f0; destructed last)
-    CHash m_symbols;  // +0x40  leaf-symbol table (Walk 0x13c270; destructed first)
-    char* m_buf48;    // +0x48
+    // +0x20 the scope's OWN hash-node - the element the PARENT splices into its
+    // m_subTabs (CreateSub/AddNodeEntry do `m_subTabs.Insert(&child->m_node20)`).
+    // The ex model spelled this a `void* m_node20` vtable slot + a 12-byte pad +
+    // `void* m_30` + `void* m_34`; that IS a CHashElement dword for dword (vptr
+    // +0x20, m_link +0x24, m_owner +0x2c, m_bucket +0x30, m_record +0x34) and the
+    // Insert call sites had to cast &m_node20 to CHashElement* to say so. Layout is
+    // unchanged (CHashElement is 0x18: +0x20..+0x37, m_subTabs still lands at +0x38).
+    CSymTabNode m_node20; // +0x20
+    CHashB m_subTabs;     // +0x38  child-scope table (Walk 0x13c3f0; destructed last)
+    CHash m_symbols;      // +0x40  leaf-symbol table (Walk 0x13c270; destructed first)
+    char* m_buf48;        // +0x48
 };
 SIZE(CSymTab, 0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
 
