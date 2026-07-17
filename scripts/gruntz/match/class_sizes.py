@@ -46,10 +46,25 @@ _REPO = Path(__file__).resolve().parents[3]
 _STRUCTS = _REPO / "build/gen/structs.json"
 
 
+# A SIZE() written in PROSE is not a declaration. Without this, a note like
+# `// (2) SIZE(CUserLogic, 0x30) revisited - a base at +0x34 requires ...` parses as a
+# real decl, and since `out[name]` overwrites, whichever file sorts last WINS - so a
+# comment silently overrode the true `SIZE(CUserLogic, 0x34)` and turned this FATAL gate
+# red against correct code. Strip comments before matching (same rule the cleanliness
+# metrics use). Real decls are also reported per-name below when multiply-defined.
+_BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
+_LINE_COMMENT = re.compile(r"//[^\n]*")
+
+
+def _strip_comments(text: str) -> str:
+    return _LINE_COMMENT.sub("", _BLOCK_COMMENT.sub("", text))
+
+
 def _declared_sizes() -> dict:
     out = {}
     for path in source_files():
-        for m in _SIZE_DECL_RE.finditer(path.read_text(errors="ignore")):
+        code = _strip_comments(path.read_text(errors="ignore"))
+        for m in _SIZE_DECL_RE.finditer(code):
             n = m.group(2)
             out[m.group(1)] = int(n, 16 if n.startswith("0x") else 10)
     return out
