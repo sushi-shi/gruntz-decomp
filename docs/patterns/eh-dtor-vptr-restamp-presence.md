@@ -1,7 +1,8 @@
-# Extra `mov [esi],&??_7Class` in a dtor = THE CLASS ISN'T POLYMORPHIC (not a codegen wall)
-tags: cpp:dtor cpp:eh cpp:virtual cpp:layout | asm:mov | topic:mis-model topic:phantom-wall
+# Extra `mov [esi],&??_7Class` in a dtor = A MIS-MODEL (not a codegen wall): the class
+# isn't polymorphic (A), or retail's dtor is compiler-generated and yours isn't (B)
+tags: cpp:dtor cpp:eh cpp:virtual cpp:layout cpp:implicit-member | asm:mov | topic:mis-model topic:phantom-wall topic:codegen-idiom
 symptoms: ~Class body byte-identical except ONE extra `mov [esi],&??_7Class` re-stamp right after `mov [esp+N],this`, before the trylevel write; recompile caps ~92-93% with the /GX frame + base-dtor call already exact
-confidence: 9/10 (was 6/10 while the diagnosis was wrong — see HISTORY)
+confidence: 10/10 (both causes MEASURED with cl 5.0 both ways; was 6/10 while the diagnosis was wrong — see HISTORY)
 
 **Symptom.** Your `~Class` matches retail except for one extra most-derived vptr re-stamp
 that retail simply does not have:
@@ -13,11 +14,22 @@ that retail simply does not have:
 ; our recompile inserts `mov [esi],&??_7Class@@6B@` between 701 and 705.
 ```
 
-**CAUSE: retail's class is not polymorphic — you declared it so.** cl emits that store because
-*your* model says the class has its own vtable. Retail has no store because retail's class has
-**no vtable at all**. It is a MIS-MODEL, not a compiler quirk, and it is fully fixable.
+**It is always a MIS-MODEL, never a compiler quirk — and there are TWO of them.** Run the
+vtable scan FIRST; it tells you which cause you have:
 
-**Diagnose before you defer** — check the binary, not the codegen:
+| `gruntz.analysis.vtable_scan` says | cause | fix |
+|---|---|---|
+| **no vtable / no RTTI** for the class | **CAUSE A** — retail's class isn't polymorphic; you declared it so | de-inherit: the "base" is really a MEMBER at +0x00 |
+| **a real RTTI-backed vtable** exists | **CAUSE B** — the class IS polymorphic, but retail's dtor is **compiler-generated**; yours is user-declared | delete the destructor declaration; pin the body with `@rva-symbol` |
+
+Cause B is the common one for MFC dialog / engine leaf classes, and the vtable scan alone
+distinguishes them in one command. **Do not stop at "it has a vtable, so the wall stands."**
+
+---
+
+## CAUSE A — the class is not polymorphic
+
+**Diagnose** — check the binary, not the codegen:
 1. Does `Class` have a vtable in the RTTI/vtable scan (`gruntz.analysis.vtable_scan`)? Any RTTI name?
 2. Does retail's `~Class` restamp at all? (If it never does, it isn't polymorphic.)
 If both say no: **the "base" is really a MEMBER at +0x00.**
@@ -50,10 +62,66 @@ to the ~50-60% plateau of eh-dtor-needs-base-subobject.md) — a *member* suppli
 `FreeNodes` → **100%** on swapping the protected node-walk for the public API. It also let
 `delete m_chatLog` bind direct instead of through a vtable (see the delete-fold work).
 
-**HISTORY — why this doc was wrong (2026-07-17).** It previously claimed *"cl elided it because the
-dtor body makes no virtual call on `this`, so the vptr value is dead"*, concluded *"the polymorphic
-model is correct; only this one re-stamp is unreachable"*, and told readers to **defer to the final
-sweep**. That invented a compiler behaviour to explain evidence whose real meaning was "this class
-has no vtable". A wall that survives only because a doc says it's unfixable is a phantom: when the
-bytes and your model disagree, suspect the MODEL first.
+---
+
+## CAUSE B — the class IS polymorphic, but retail's dtor is COMPILER-GENERATED
+
+**cl 5.0 elides the most-derived vptr store in an IMPLICIT (compiler-generated) destructor, and
+always emits it for a user-declared one — even an empty `~Class() {}`.** With no user body, cl
+knows nothing can observe the vptr between the stamp and the base dtor's own stamp, so it never
+emits it. This is the whole difference; nothing else about the two dtors differs.
+
+**MEASURED** (cl 5.0 `/nologo /c /O2 /MT /GX`, identical class both ways):
+
+```cpp
+struct Derived : Base { virtual ~Derived(); Str m_54; };   // user-declared (any spelling:
+Derived::~Derived() {}                                     //  out-of-line OR inline in-class)
+//   mov esi,ecx
+//   mov DWORD PTR [esi],OFFSET ??_7Derived@@6B@   <-- EMITTED
+//   lea ecx,[esi+0x54] ...
+
+struct Derived : Base { Str m_54; };                       // NO declared dtor -> implicit
+//   mov esi,ecx
+//   lea ecx,[esi+0x54] ...                        <-- NO stamp. Matches retail.
+```
+
+**FIX: delete the destructor declaration.** It is still virtual (the base's is), still destroys
+the members, still emits. Since there is then no source body to hang `RVA()` on, pin it with a
+self-contained label — cl emits the COMDAT in **every using obj**, so put the pin in a TU whose
+base obj actually emits it (the `@rva-symbol` authority check is nm membership):
+
+```cpp
+// in the class header: NO `virtual ~CFoo() OVERRIDE;` at all
+// in a .cpp whose obj emits it (defines the ctor -> vtable -> ??_G -> ??1, or
+// stack-constructs a CFoo):
+// @rva-symbol: ??1CFoo@@UAE@XZ 0x000b8960 0x59
+```
+
+**Where the COMDAT lands is evidence, not an accident.** Retail emitted `~CMultiStartDlg` at
+0xb8960 — beside `CMulti::ShowMultiStartDlg` (0xb86c0), which stack-constructs the dialog. Once
+the dtor is implicit, cl reproduces exactly that placement, and the dedicated
+`ShowMultiDlg.cpp` holding TU that existed only to host the user-declared body is deleted.
+
+**Evidence.** `??1CMultiStartDlg@@UAE@XZ` (0xb8960): 92.7% → **100.0000%**. `??1CWarlord`
+(0x107f0): 73.95% → 85.43% (its residual is a different bug — a missing `CWapX` MI base at
++0x34, RTTI-proven; see src/Gruntz/Warlord.cpp). Same fix already independently in the tree for
+`??1CBattlezDlg` (0x14c90) and `??1CBattlezDlgCustom` (0x17140) — see src/Gruntz/Dialogs.cpp.
+
+**Do not confuse this with a real wall.** Three sites were `@early-stop`'d on this doc's old
+"unreachable restamp" story. One (`ApplyColorSlot0..3`) had **no restamp in its diff at all** —
+the note was copied, not measured; its real residual was argument-evaluation order (the MFC
+inline `CWnd::InvalidateRect` member vs the global import), and it went 91.1% → **100%**.
+**Re-measure the diff before you inherit a wall's diagnosis.**
+
+**HISTORY.** (1) The doc originally claimed *"cl elided it because the dtor body makes no virtual
+call on `this`, so the vptr value is dead"*, concluded *"the polymorphic model is correct; only
+this one re-stamp is unreachable"*, and told readers to **defer to the final sweep**. That invented
+a compiler behaviour to explain evidence it had not measured. Disproved twice over: cl keeps the
+stamp across a call that cannot read the vptr (`~CAttract` 0x8cd90, 100% match, stamps then calls),
+so "dead store" was never the rule. (2) The 2026-07-17 rewrite fixed the cause to "the class isn't
+polymorphic" (CAUSE A, from CFontConfig) — right for that class, but it then read as *"has a vtable
+⇒ the wall stands"*, which re-parked three polymorphic sites that were all fixable (CAUSE B).
+A wall that survives only because a doc says it's unfixable is a phantom: when the bytes and your
+model disagree, suspect the MODEL first — and **measure the compiler both ways instead of
+reasoning about what it "must" do**. Both causes here are now cl-5.0-measured, not argued.
 related: eh-ctor-vptr-restamp-position.md, eh-dtor-needs-base-subobject.md, inline-base-dtor-folds-into-leaves.md
