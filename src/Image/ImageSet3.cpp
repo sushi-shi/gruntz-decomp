@@ -67,13 +67,13 @@ CImageSet3::~CImageSet3() {
 RVA(0x00166e00, 0xa8)
 i32 CImageSet3::ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
-    i32 target = ((u8*)m_pixels)[off];
+    i32 target = (m_pixels)[off];
     while (x > 0) {
         --x;
         --off;
-        if (((u8*)m_pixels)[off] != target) {
+        if ((m_pixels)[off] != target) {
             *outX = x;
-            *outVal = ((u8*)m_pixels)[off];
+            *outVal = (m_pixels)[off];
             return 1;
         }
     }

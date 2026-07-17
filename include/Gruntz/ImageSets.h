@@ -150,7 +150,13 @@ struct CImageSet3 : CObject {
     i32 m_height;     // +0x08  tile height
     i32 m_heightLog2; // +0x0c  log2(height)
     i32 m_byteSize;   // +0x10  width*height (byte size)
-    void* m_pixels;   // +0x14  owned pixel buffer
+    // +0x14 the owned pixel plane. Typed u8* on the binary's own evidence, not a
+    // guess: EVERY reader indexes it as bytes - GetCollisionAt does
+    // `(u8*)m_pixels + ((y << m_heightLog2) + x)` and the whole scan family does
+    // `((u8*)m_pixels)[off]` (18 sites, not one of them casting to anything else),
+    // and m_byteSize is width*height, i.e. ONE byte per pixel. The void* was what
+    // forced all 18 casts.
+    u8* m_pixels; // +0x14  owned pixel plane (1 byte/pixel; m_byteSize = w*h)
 };
 
 #endif // GRUNTZ_IMAGESETS_H

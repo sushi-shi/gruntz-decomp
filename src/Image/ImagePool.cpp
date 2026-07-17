@@ -741,8 +741,8 @@ i32 CRezImage::Convert8To16(void* dc, CRezImage* src, void* pal) {
         return 0;
     }
     for (i32 y = 0; y < m_height; y++) {
-        u8* sp = (u8*)src->m_pixels + y * src->m_stride;
-        u16* dp = (u16*)((u8*)m_pixels + y * m_stride * 2);
+        u8* sp = src->m_pixels + y * src->m_stride;
+        u16* dp = (u16*)(m_pixels + y * m_stride * 2);
         for (i32 x = 0; x < m_width; x++) {
             u32 c = palette[*sp];
             u32 r = c & 0xff;
@@ -800,7 +800,7 @@ void CRezImage::Fill(i32 value) {
         memset(m_pixels, value, m_stride * m_height);
     } else {
         for (i32 y = 0; y < m_height; y++) {
-            memset((u8*)m_pixels + m_rowOffsets[y], value, m_width);
+            memset(m_pixels + m_rowOffsets[y], value, m_width);
         }
     }
 }
@@ -1284,7 +1284,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     file.Write(&fileHdr, 0xe);
     file.Write(info, 0x428);
     for (i32 row = m_height - 1; row >= 0; row--) {
-        file.Write((u8*)m_pixels + m_rowOffsets[row], m_width);
+        file.Write(m_pixels + m_rowOffsets[row], m_width);
     }
     return 1;
 }

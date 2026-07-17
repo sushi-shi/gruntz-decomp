@@ -48,7 +48,8 @@ i32 CImageSet3::Parse(void* record) {
     if ((1 << m_heightLog2) != w) {
         return 0;
     }
-    void* dst = ::operator new(m_byteSize);
+    // the (u8*) is language-forced (operator new returns void*), not a mis-model cast
+    u8* dst = (u8*)::operator new(m_byteSize);
     m_pixels = dst;
     if (dst == 0) {
         return 0;
@@ -66,13 +67,13 @@ i32 CImageSet3::Parse(void* record) {
 RVA(0x00166eb0, 0x6a)
 i32 CImageSet3::ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
-    i32 target = ((u8*)m_pixels)[off];
+    i32 target = (m_pixels)[off];
     while (y > 0) {
         off -= m_width;
         --y;
-        if (((u8*)m_pixels)[off] != target) {
+        if ((m_pixels)[off] != target) {
             *outY = y;
-            *outVal = ((u8*)m_pixels)[off];
+            *outVal = (m_pixels)[off];
             return 1;
         }
     }
@@ -86,7 +87,7 @@ i32 CImageSet3::ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal) {
 // callee-saved reg, flipping this/base spill). docs/patterns/zero-register-pinning.md.
 RVA(0x00166f20, 0x52)
 i32 CImageSet3::ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY) {
-    u8* p = (u8*)m_pixels + ((y << m_heightLog2) + x);
+    u8* p = m_pixels + ((y << m_heightLog2) + x);
     while (y > 0) {
         p -= m_width;
         --y;
@@ -106,14 +107,14 @@ i32 CImageSet3::ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY) {
 RVA(0x00166f80, 0x68)
 i32 CImageSet3::ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
-    i32 target = ((u8*)m_pixels)[off];
+    i32 target = (m_pixels)[off];
     i32 lim = m_width - 1;
     while (x < lim) {
         ++x;
         ++off;
-        if (((u8*)m_pixels)[off] != target) {
+        if ((m_pixels)[off] != target) {
             *outX = x;
-            *outVal = ((u8*)m_pixels)[off];
+            *outVal = (m_pixels)[off];
             return 1;
         }
     }
@@ -127,7 +128,7 @@ i32 CImageSet3::ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal) {
 RVA(0x00166ff0, 0x52)
 i32 CImageSet3::ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX) {
     i32 lim = m_width - 1;
-    u8* p = (u8*)m_pixels + ((y << m_heightLog2) + x);
+    u8* p = m_pixels + ((y << m_heightLog2) + x);
     while (x < lim) {
         ++x;
         ++p;
@@ -147,14 +148,14 @@ i32 CImageSet3::ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX) {
 RVA(0x00167050, 0x74)
 i32 CImageSet3::ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
-    i32 target = ((u8*)m_pixels)[off];
+    i32 target = (m_pixels)[off];
     i32 lim = m_height - 1;
     while (y < lim) {
         off += m_width;
         ++y;
-        if (((u8*)m_pixels)[off] != target) {
+        if ((m_pixels)[off] != target) {
             *outY = y;
-            *outVal = ((u8*)m_pixels)[off];
+            *outVal = (m_pixels)[off];
             return 1;
         }
     }
@@ -172,7 +173,7 @@ i32 CImageSet3::ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY) {
     while (y < lim) {
         off += m_width;
         ++y;
-        if (((u8*)m_pixels)[off] == val) {
+        if ((m_pixels)[off] == val) {
             *outY = y;
             return 1;
         }
