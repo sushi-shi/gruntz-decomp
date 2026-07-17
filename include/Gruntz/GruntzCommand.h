@@ -121,7 +121,12 @@ public:
     // override it with real parsers, the base anchor is a no-op. Consumed-byte
     // count returned. (Recovered from NetCmdSlot.cpp's ProcessCmd dispatch.)
     virtual i32 Parse(void* data, i32 len);
-    virtual i32 Vfunc8(); // slot 8
+    // slot 8 - pack this command into a flat byte buffer; __purecall in the base, so
+    // each leaf provides the body. It was declared `Vfunc8()` (0-arg) purely as a
+    // placeholder guess: the leaves' bodies (0x24050/0x240d0) end in `ret 8`, so the
+    // slot is a 2-ARG __thiscall, and they read the buffer from the first stack arg and
+    // return the byte count. Named from that proven role - a CHOICE, not a reading.
+    virtual i32 Pack(char* buf, i32 unused); // slot 8 (+0x20) __purecall in the base
     // slots 9/10 - __purecall in the base (RTTI: 11 slots, [9] and [10] both
     // __purecall @0x11fec0), so each leaf provides the body. CGruntzCmdMgr::ScanTargets
     // (0x23a10) dispatches them back-to-back on every queued command: Select is handed
@@ -175,16 +180,16 @@ public:
     virtual i32 Vslot05() OVERRIDE; // 0x24260
     virtual i32 GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
-    virtual i32 Vfunc8() OVERRIDE;
+    // 0x024050 (slot 8) - pack this command into a flat byte buffer: tag (GetTag), then
+    // the five scalar params, then m_10, and conditionally m_11 (when m_5 >= 8). Returns
+    // the number of bytes written. WAS declared twice: as the `Vfunc8` placeholder here
+    // and as a non-virtual `Pack` below - one body, two names.
+    virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
     virtual void Select(CState* state) OVERRIDE; // slot 9  (base is __purecall)
     virtual void Deselect() OVERRIDE;            // slot 10 (base is __purecall)
     CGruntzSingleCommand() {}                    // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
     static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
-    // 0x024050 - pack this command into a flat byte buffer: tag (GetTag), then the
-    // five scalar params, then m_10, and conditionally m_11 (when m_5 >= 8). Returns
-    // the number of bytes written.
-    i32 Pack(char* buf, i32 unused);
 };
 
 // ---------------------------------------------------------------------------
@@ -205,16 +210,15 @@ public:
     virtual i32 Vslot05() OVERRIDE; // 0x243a0
     virtual i32 GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
-    virtual i32 Vfunc8() OVERRIDE;
+    // 0x0240d0 (slot 8) - pack this command into a flat byte buffer: tag (GetTag), the
+    // five scalar params, then the +0x10 16-bit flag mask as a WORD. Returns the number
+    // of bytes written. Same one-body-two-names shadow as the Single twin.
+    virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
     virtual void Select(CState* state) OVERRIDE; // slot 9  (base is __purecall)
     virtual void Deselect() OVERRIDE;            // slot 10 (base is __purecall)
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
     static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
-    // 0x0240d0 - pack this command into a flat byte buffer: tag (GetTag), the five
-    // scalar params, then the +0x10 16-bit flag mask as a WORD. Returns the number
-    // of bytes written.
-    i32 Pack(char* buf, i32 unused);
 };
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the

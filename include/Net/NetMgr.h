@@ -454,9 +454,20 @@ SIZE(GruntRec, 0x410);
 // @identity-TODO (xref chase FAILED, evidence preserved so the next pass doesn't re-run it):
 //   * m_idMap is NEVER written in the reconstructed tree (only cleared in Reset/ResetSync);
 //     the register that would name the concrete type is an UNRECONSTRUCTED retail function.
-//   * Not CGruntzCommand: that vtable puts a 4-arg CSerialArchive Serialize at slot 1 and
-//     a 0-arg Vfunc8 at slot 8 - CSyncObj's slot 8 is the 2-arg buffer serializer, a
-//     different shape.
+//   * "Not CGruntzCommand" is WITHDRAWN - the exclusion rested on two placeholder guesses,
+//     both of them OURS, and neither survives:
+//       - "a 0-arg Vfunc8 at slot 8" is FALSE. CGruntzCommand's slot 8 is __purecall in
+//         the base and its leaves' bodies (0x24050/0x240d0) end in `ret 8` = a 2-ARG
+//         __thiscall that reads the buffer from the first stack arg and returns the byte
+//         count. That IS "the 2-arg buffer serializer" this note used to rule it out; the
+//         slot is now declared `Pack(char*, i32)`. The 0-arg was a placeholder's guess.
+//       - "a 4-arg CSerialArchive Serialize at slot 1" cannot discriminate either: it is
+//         compared against CSyncObj's slot 1, which is `v1()` - one of the body-less
+//         v0()..v7() placeholders below, whose void/0-arg signatures are invented. A
+//         placeholder contradicts nothing.
+//     So CGruntzCommand is NOT excluded, and the one slot CSyncObj has real evidence for
+//     (slot 8 @+0x20, 2-arg buffer serializer) now MATCHES it. That is not proof of
+//     identity - it removes an exclusion. Re-run the chase; do not fold on this alone.
 //   * GetSlotPtr @0xc0430 / NoopSync @0xbfb20 return no caller edges in the xref DB.
 //   So the identity is genuinely unrecovered until the m_idMap-insert function lands; this
 //   is a flagged TODO, NOT a silent placeholder.
