@@ -283,7 +283,7 @@ savescreenshot	1	0
 sbi_image	5	2
 sbi_imageset	5	2
 sbi_imagesetani	5	2
-sbi_menuitem	12	8
+sbi_menuitem	12	9
 sbi_rectonly	83	39
 sbi_rectonlybase	3	2
 sbi_rectonlydtor_eh	2	2
@@ -1715,7 +1715,7 @@ gameapp	?SpinWaitUntil@CGameMgr@WAP32@@QAEXH@Z	100.0000	100.0000	2	009f0290c0e2	
 gameapp	?TrySetFrameRate@CGameMgr@WAP32@@QAEHH@Z	100.0000	100.0000	1	82b9bf2aec3a	0x13df00
 gameapp	?WaitKeyEdge@@YAXHH@Z	100.0000	100.0000	4	edd920d9e9e0	0x13df30
 gameassetnamespaces	?LoadGameAssetNamespaces@CState@@UAEHHHH@Z	94.5249	94.5249	1	cpp:0eb14fb5c2f2	0xf9ea0
-gamechecksum	?Checksum@CNetSession@@QAEHXZ	56.0640	56.0480	1	99d08a51ff80	0xc0590
+gamechecksum	?Checksum@CNetSession@@QAEHXZ	56.0640	56.0400	1	99d08a51ff80	0xc0590
 gameiconflasheffect	?GameIconFlashEffect@@YAHPAUCGameObject@@@Z	100.0000	100.0000	5	a23cf6a19b44	0xae360
 gameinfostring	?BuildGameDate@@YAHPAUCGameInfoTime@@@Z	92.6667	92.6667	1	4f350faa4de0	0x118330
 gameinfostring	?Check1@CGameInfo@@QAEHXZ	100.0000	100.0000	1	b83b42b69830	0x1182f0
@@ -2172,7 +2172,7 @@ gruntzmgr	?ExitModalUI@CGruntzMgr@@QAEHPAVCDialog@@H@Z	99.5745	99.5745	8	cacc5ee
 gruntzmgr	?FillSaveInfo@CGruntzMgr@@QAEHPAUSaveInfo@@PAX@Z	100.0000	100.0000	14	d73cf26ea800	0x927b0
 gruntzmgr	?FindOptionsSlot@CGruntzMgr@@QAEPAVGruntzPlayer@@H@Z	82.6923	82.6923	2	91b6ba2f923d	0x92e80
 gruntzmgr	?FindStateById@CGruntzMgr@@QAEPAVCState@@H@Z	100.0000	100.0000	5	72acae9e9da0	0x92900
-gruntzmgr	?FinishLevel@CGruntzMgr@@QAEHHH@Z	84.1471	84.1471	12	85b02d06ea9c	0x8e980
+gruntzmgr	?FinishLevel@CGruntzMgr@@QAEHHH@Z	84.1471	84.1471	13	72fbc725e474	0x8e980
 gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	6	49082d3f5f31	0x8fa70
 gruntzmgr	?GetRect@CGruntzMgr@@QAEPAUtagRECT@@PAU2@@Z	100.0000	100.0000	2	8e579b451851	0x8e3a0
 gruntzmgr	?GoToNextLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	790ecc12dc13	0x8d850
@@ -2203,7 +2203,7 @@ gruntzmgr	?NotifyState10@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	e39d90854d89	
 gruntzmgr	?NotifyState11@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	29e55fd41189	0x8db20
 gruntzmgr	?NotifyState12@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	a8c72ed65037	0x8db60
 gruntzmgr	?NotifyState13@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	a882a07ae45a	0x8dba0
-gruntzmgr	?NotifyState14@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	cbab4079ef74	0x8dbe0
+gruntzmgr	?NotifyState14@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	5	c83db156cbb2	0x8dbe0
 gruntzmgr	?OnCheckpointReached@CGruntzMgr@@QAEXXZ	100.0000	100.0000	8	0c55d9c2f86f	0x8e6c0
 gruntzmgr	?PassClickToPlayState@CGruntzMgr@@QAEHHHH@Z	84.8594	84.8594	5	e56ef01421f7	0x8d780
 gruntzmgr	?PickPausedThenPlayState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	9a76e16102b1	0x929b0
@@ -2668,7 +2668,7 @@ mapmgr	?PopFront@CMapMgr@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	1	cpp:9c12c84dc
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	7	16a47b5fc418	0x9ec30
 mapmgr	?ResetCells@CMapMgr@@QAEXXZ	64.7115	64.7115	1	cpp:9c12c84dc665	0x9f5d0
 mapmgr	?Save@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	c077aa4e2a47	0x9f840
-mapmgr	?Search@CMapMgr@@UAEHHHHHPAXHHH@Z	89.8447	89.8447	1	cpp:9c12c84dc665	0x9eca0
+mapmgr	?Search@CMapMgr@@UAEHHHHHPAXHHH@Z	89.8447	89.7992	1	cpp:9c12c84dc665	0x9eca0
 mapmgr	?SetVersionRect@@YAXXZ	100.0000	100.0000	3	36ff1ac5c92f	0x9fe10
 mapmgr	?Unlink@CMapMgr@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	1	cpp:9c12c84dc665	0x9f690
 mapmgr	?Visit@CMapMgr@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	1	8da3282af1e2	0x9f7f0
@@ -3129,7 +3129,7 @@ play	?OnRegion1@CPlay@@QAEHH@Z	100.0000	100.0000	3	768867f2f1bf	0xd8aa0
 play	?OnRegion2@CPlay@@QAEHH@Z	100.0000	100.0000	3	9c97c7758f4b	0xd8a00
 play	?OnRegion3@CPlay@@QAEHH@Z	100.0000	100.0000	4	77370d64376e	0xd8b20
 play	?OnRegion4@CPlay@@QAEHH@Z	100.0000	100.0000	6	85b1e02b82e3	0xd8bc0
-play	?PauseGame@CPlay@@QAEHXZ	100.0000	100.0000	6	633260355a11	0xcee90
+play	?PauseGame@CPlay@@UAEHXZ	100.0000	100.0000	1	633260355a11	0xcee90
 play	?PlayBacklog08c9d0@CPlay@@QAEXXZ	0.7407	0.7407	1	c6c18e0f3ae5	0x8c9d0
 play	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.9580	87.9580	8	231c5b3c8a6b	0xd1890
 play	?PostActionCue@CPlay@@QAEHH@Z	100.0000	100.0000	1	0f472982da83	0xd7220
@@ -3148,10 +3148,10 @@ play	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	3	fd51f66e0c86	0xda9e0
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	8	ff30d7e0d210	0xd5f00
 play	?ResetPlayState@CPlay@@QAEHXZ	92.0100	92.0100	9	c7fb00f64848	0xd60b0
 play	?ResetViewport@CPlay@@QAEHXZ	95.5455	95.5455	8	497c3b77c0ad	0xd8c60
-play	?ResumeGame@CPlay@@QAEHXZ	100.0000	100.0000	6	4d2292a8f91c	0xcef00
+play	?ResumeGame@CPlay@@UAEHXZ	100.0000	100.0000	1	4d2292a8f91c	0xcef00
 play	?SeedForSlot@GruntzPlayer@@QAEHH@Z	53.0588	53.0588	1	e98a933a4425	0xda870
 play	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	100.0000	100.0000	3	cf9f63b5f4c0	0xdace0
-play	?SetBeginClearParams@CState@@QAEHHHH@Z	100.0000	100.0000	1	bbe0547732f5	0x8c970
+play	?SetBeginClearParams@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	ba9e2ae84ab0	0x8c970
 play	?SetCursorFrame@CPlay@@QAEHH@Z	100.0000	100.0000	1	dc34957d10b8	0xd1b30
 play	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	6	b562b880764d	0xdc060
 play	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	2	adb4377193c9	0xd8d90
@@ -3349,7 +3349,7 @@ sbi_imagesetani	?Tick@CSBI_ImageSetAni@@QAEHXZ	91.2667	91.2667	5	35d8b1d36d27	0x
 sbi_menuitem	??1CSBI_MenuItem@@UAE@XZ	100.0000	100.0000	1	674154901a15	0x1007d0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	2	c243a91ef3a4	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	0438e44a3a76	0xe81a0
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	74.0357	74.0357	11	b9c8e923a084	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	11	b9c8e923a084	0xe82a0
 sbi_menuitem	?DtorStatus@CStatusBarItem@@QAEXXZ	100.0000	100.0000	1	36985686423f	0x10bfa0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	2	316d4a1ee9fa	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	44.6226	44.6226	11	28749ba50d93	0xe81e0
@@ -3630,6 +3630,7 @@ startupprompt	?StartUpPrompt@@YAHPAUHWND__@@@Z	97.9951	97.9951	23	20647d8758de	0
 state	??0CState@@QAE@XZ	100.0000	100.0000	2	09e37de8eac9	0x8c750
 state	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c710
 state	?Render@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c4d0
+state	?SetBeginClearParams@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:d6fd8bafd83b	0x8c670
 state	?Update@CState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c4b0
 state	?Vfunc3@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c490
 state	?Vslot06@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c4f0
@@ -3642,7 +3643,6 @@ state	?Vslot10@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c5f0
 state	?Vslot11@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c610
 state	?Vslot12@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c630
 state	?Vslot13@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c650
-state	?Vslot14@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c670
 state	?Vslot15@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c690
 state	?Vslot16@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c6b0
 statedispatch	?StateDispatch@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	287b34d9be2c	0x9b770
