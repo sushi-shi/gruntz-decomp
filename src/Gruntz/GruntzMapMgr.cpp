@@ -48,10 +48,25 @@
 // existed because the view had no real relation to CMapMgr; with the true inheritance
 // it is the plain qualified base call it always was, and the cast is gone.)
 // @early-stop
-// stack-slot coalescing entropy tail (~96%): instruction selection + block order
-// byte-match retail; residual is the write-count local landing at esp+0x14 where
-// retail spreads the read/write counts across esp+0x14 / esp+0x18 (frame-layout,
-// not steerable without guessing the local-allocation order).
+// REGALLOC wall (~96.27%): a 3-way register-assignment permutation, nothing more.
+// Instruction selection, block order AND stack layout all byte-match retail; every
+// differing instruction is the same opcode with a different register field:
+//       value      retail   ours
+//       this       edi      ebx
+//       mode       ebx      eax
+//       &m_arr     ebp      edi
+// Retail also materializes `this` (`push edi; mov edi,ecx`) BEFORE the `test esi,esi`
+// null check, where cl sinks it past the test for us.
+//
+// NB the diagnosis this comment carried while the body lived on the ex-"CMapLogic"
+// view - "stack-slot coalescing entropy tail ... the write-count local landing at
+// esp+0x14 where retail spreads the read/write counts across esp+0x14 / esp+0x18
+// (frame-layout)" - is REFUTED by the measurement: `mov ecx,dword ptr [esp+0x14]`
+// is IDENTICAL on both sides and no frame offset differs anywhere in the body. The
+// wall is register assignment, not frame layout. (Re-measured with
+// `gruntz sema disasm 0x00082430 --diff` after the split; don't inherit the old
+// text.) Structure is correct (real inheritance, real qualified base call, no
+// casts), so the residue is the permuter's job, not a source-shape bug.
 RVA(0x00082430, 0x161)
 i32 CGruntzMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
