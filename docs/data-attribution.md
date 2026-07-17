@@ -93,7 +93,10 @@ first divergence: ??_7CActionArea@@6B@ rdata ret 0x1e7004 cand 0x101000 Doff -0x
 
 ## 3. Why `matched_data` is ~0, and what it actually costs to fix (MEASURED)
 
-Current: `matched_data` = **4 / 69184 bytes (0.006%)** vs homm2's **305328/305328 = 100%**.
+Historical (kept for the mechanism; the numbers are superseded by §3b): `matched_data`
+was **4 / 69184 bytes (0.006%)** vs homm2's **305328/305328 = 100%**. It is now
+**67080/279630 = 23.99%** — and §3c explains why the `.bss` share of the remainder is
+not reachable at all.
 
 **Root cause (measured, not naming).** The delinked target objs already carry REAL data
 names — `??_7CActionArea@@6B@` in `.rdata`, `_g_gameReg`, `?g_buteMgr@@3VCButeMgr@@A`. The
@@ -155,15 +158,14 @@ gaps.
   | `matched_data` | 8/69184 = **0.012%** | **38275/246684 = 15.52%** |
   | `exact` | 2385 | 2382 (**-3**) |
 
-  **Why the -3, and why it is not wired in yet:** a data manifest is the topology
-  AUTHORITY for the objects it names — data it does not enroll stops being
-  materialized into those target objects. Enrolling only the `DATA()` globals drops
-  each unit's compiler-emitted data (string literals `??_C@…`, the 393 unsized
-  globals, `$T` pools), and three functions reference exactly that: `soundfontpath
-  BuildSoundFontPath` and `gametext _$E1`/`_$E4` lose their `??_C@` strings. homm2
-  covers this with **5216** supplemental rows derived from the candidate COFFs.
-  Completing per-object coverage is the remaining work; until then `delink.py` does
-  not pass `--data-manifest` and the code gate holds at its **2385** floor.
+  **The -3, and how it was closed:** a data manifest is the topology AUTHORITY for the
+  objects it names — data it does not enroll stops being materialized into those target
+  objects. Enrolling only the `DATA()` globals dropped each unit's compiler-emitted data
+  (string literals `??_C@…`, the unsized globals, `$T` pools), and three functions
+  referenced exactly that (`soundfontpath BuildSoundFontPath`, `gametext _$E1`/`_$E4`).
+  Enrolling each unit's `??_C@` literals alongside the `DATA()` globals fixed it;
+  `delink.py` now passes `--data-manifest` **and** `--data-section-manifest` (§3b), plus
+  `--recover-data-relocs-from-pdb` as a safety net for anything left uncovered.
 
 - **Bonus: the sizeof extents are a contradiction check.** A reviewed extent must fit
   the span to its neighbour. Six overlaps fell out, each proving one of a pair is
@@ -174,14 +176,75 @@ gaps.
   (`CPtrArray` 0x14 swallows `g_imageCacheIndex`). A real defect worklist:
   `python -m gruntz.build.data_manifest --report`.
 
-**Contribution ranges are BLOCKED (measured).** Placing definitions at candidate
-`section_offset`s, and attributing the withheld COMDAT strings / `$T` pools, both need
-per-compiland contribution intervals. GRUNTZ.EXE has no NB09, so they must come from our
-TU partition — which does not hold: only **8 of 86** per-(unit,storage) bands overlap no
-other band (rdata 2/15, data 5/17, bss 1/54; aggregates excluded), and **0 of 296**
-ambiguous COMDAT copies are attributable by band containment. Measure overlap
-**all-pairs**, never adjacent-only — that error reports ~70–80% clean where the truth is
-~9%. See **`docs/tu-partition-brief.md`**.
+### 3b. `--data-section-manifest` is IN — the container artifact is dead (DONE)
+
+Placing definitions at candidate `section_offset`s turned out **not** to need
+contribution ranges (see the correction below). `data_manifest.section_rows()` now
+emits the candidate section manifest and `delink.py` passes it.
+
+**The defect it kills.** cl.exe emits every `??_C@` literal as its OWN COMDAT section
+holding one symbol at offset 0; the delinked target PACKED a unit's literals into one
+blob (`soundfontpath`: base `0x15|0x16|0x0e|0x0f` vs target one `0x49`). `objdiff-cli
+report generate` hard-codes `combine_data_sections=true`, so it diffed the packed blob
+against the base's COMBINED-COMDAT layout — every payload present, all at shifted
+offsets → ~99.3%, never the **exact 100.0** that `report.rs` demands before it credits
+a section. *`matched_data` is all-or-nothing PER SECTION; naming/enrolling alone could
+never move it.*
+
+| | before | + `--data-section-manifest` | + blowfish storage fix |
+|---|---|---|---|
+| `matched_data` | 41258/274106 = **15.05%** | 58744/275462 = **21.33%** | 67080/279630 = **23.99%** |
+| `.data` | 32268/61476 = 52.5% | 49754/62832 = 79.2% | — |
+| `exact` | 2384 | 2384 | 2384 |
+
+Nothing is invented: `rva`/`size` stay the PROVEN retail extent, while
+name/alignment/characteristics/COMDAT-selection are read out of the candidate COFF.
+Ordinals are manifest-local, **contiguous from one**, and follow the candidate's
+section order (objdiff stable-sorts same-named sections when combining, so order
+decides the combined layout).
+
+**CORRECTION — the 296 ambiguous COMDAT copies are NOT a contribution-range problem.**
+Earlier text framed them as "retail owner unprovable, needs `--contribution-manifest`".
+That is the wrong question. A COMDAT is *by definition* emitted into **every** TU that
+uses the literal, and the linker folds them to one surviving rva — so **all** owners
+are correct and each target object should get its own copy (our base objs already do:
+`actionoptionsmenubar.obj` and `statusbarmgr.obj` both define
+`??_C@…GAME_INGAMEICONZ_GRE…`, folded to 0x20a544). There is no owner to attribute.
+
+The real blocker is a **delinker constraint**: enrolling one rva for two objects fails
+with `Error: <manifest>:1801: duplicate data RVA`. 296 payloads = **902 (object,
+literal) copies** are unreachable until the delinker lets a COMDAT rva be claimed by N
+objects. Histogram of owners-per-payload: `{2:224, 3:31, 4:20, 5:6, 6:6, 7:3, 14:1,
+16:1, 35:1, 43:3}`. This is an upstream relaxation, **not** blocked on the TU
+partition.
+
+**Contribution ranges are still BLOCKED (measured)** — but only the `$T` pools and
+absolute-RVA layout now depend on them. GRUNTZ.EXE has no NB09, so they must come from
+our TU partition, which does not hold: only **8 of 86** per-(unit,storage) bands
+overlap no other band (rdata 2/15, data 5/17, bss 1/54; aggregates excluded). Measure
+overlap **all-pairs**, never adjacent-only — that error reports ~70–80% clean where the
+truth is ~9%. See **`docs/tu-partition-brief.md`**.
+
+### 3c. `.bss` is capped by an objdiff INFERENCE artifact — do not budget against it
+
+**`.bss` is 212211 of 279630 `total_data` (~76%), and `ddsurface` alone is 197144 of it
+— stuck at 99.998985% on ONE symbol.** COFF carries no symbol sizes, so objdiff infers
+`size = next symbol's offset` (`obj/read.rs: infer_symbol_sizes`), and `diff_bss_symbol`
+scores 100 iff the two sizes are equal. MSVC5's `.bss` hole-filling allocator always
+parks a 4-byte int in the pad before the first 8-aligned array, so that int measures
+**8** on the base and **4** on the target. Both sides are correct; only the measurement
+differs. Three `cl /O2` probes prove the layout is **declaration-order invariant**, so
+it is not steerable from `src/`.
+
+Do NOT candidate-shape `.bss` to "fix" it: `.bss` has no bytes, so mirroring the
+candidate's offsets makes every inferred size agree **by construction, for any set of
+globals** — a vacuous 100%. (Candidate-shaping is legitimate for `.data`/`.rdata`
+precisely because the delinker still fills the container with retail bytes from each
+definition's proven rva, so the byte comparison stays real.) Full mechanism +
+the rejected fabrications: **`docs/patterns/bss-symbol-size-inference-hole.md`**.
+
+⇒ **Read `matched_data` as a `.data`/`.rdata` measure.** Its `.bss` share is gated on
+tooling, not on reconstruction quality.
 
 **Ordering + gate.** (a) → re-delink → gate `code exact >= 2385`; then (b) incrementally,
 enrolling reviewed extents in batches and re-gating each time. Also available, already in
