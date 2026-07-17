@@ -100,3 +100,6 @@ WIRING	0x1f02d8	CAniRecordBase2	10	0x168ee0	?AllocBufMakeB@CAniRecordView@@QAEPA
 WIRING	0x1f02d8	CAniRecordBase2	11	0x168ea0	?AllocBufMakeB2@CAniRecordView@@QAEPAXHH@Z	anirecord
 WIRING	0x1f02d8	CAniRecordBase2	12	0x168f60	?AllocBufMakeB3@CAniRecordView@@QAEPAXHHH@Z	anirecord
 WIRING	0x1f02d8	CAniRecordBase2	13	0x168fd0	?PushPalette@CAniRecordView@@QAEHXZ	anirecord
+WIRING	0x1ead24	CSBI_WarlordHead	5	0x0eb880	?Render@CSBI_WarlordHead@@QAEHXZ	sbi_warlordhead
+WIRING	0x1eadbc	CSBI_GruntMachine	5	0x0e8cb0	?Render@CSBI_GruntMachine@@QAEHXZ	statusbartabbuilders
+WIRING	0x1eae3c	CSBI_SideTab	5	0x0e99c0	?Render@CSBI_SideTab@@QAEHXZ	statusbartabbuilders
