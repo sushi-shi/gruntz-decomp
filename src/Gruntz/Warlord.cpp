@@ -137,30 +137,53 @@ extern "C" void Act_F(); // 0x402725
         *aslot_ = (void*)(handler);                                                                \
     } while (0)
 // ===========================================================================
-// CWarlord::~CWarlord  (0x0107f0)
+// CWarlord::~CWarlord  (0x0107f0)  - COMPILER-GENERATED, no source body
 // ===========================================================================
 // CWarlord adds one destructible member past the CUserLogic base - the +0x54
-// CString. The empty body lets MSVC emit the canonical most-derived teardown:
+// CString - so the IMPLICIT dtor emits the canonical most-derived teardown:
 //   1. ~CString(m_54)                      (retail EH state 1)
 //   2. store the CUserLogic vptr (0x5e705c); inline-destruct the +0x18 link's
 //      ~EngStr                             (retail EH state 2)
 //   3. store the CUserBase vptr (0x5e70b4)
-// The destructible members force the /GX frame. The empty body is enough; the
-// teardown BODY (lea+call x2 + the two base vptr stores) is byte-identical.
+//
+// CWarlord declares NO destructor (see Warlord.h). Retail's dtor does not
+// re-stamp ??_7CWarlord at entry, and cl 5.0 only elides that store for an
+// IMPLICIT dtor - a user-declared one, even `~CWarlord() {}`, always emits it
+// (MEASURED both ways with cl 5.0 /O2 /GX). Declaring the dtor purely to hang an
+// RVA() on was the mis-model; the label moves to the @rva-symbol pin below.
+// This TU's ctor emits ??_7CWarlord -> ??_GCWarlord -> ??1CWarlord, so the
+// implicit body is a COMDAT in this obj and the pin resolves against it.
+// docs/patterns/eh-dtor-vptr-restamp-presence.md
 //
 // @early-stop
-// Two intersecting /GX EH-machine walls, no source lever (body is byte-exact):
-//   (a) eh-dtor-vptr-restamp-presence.md - because the FIRST destruction is the
-//       leaf's OWN +0x54 CString (vs the single-destructible leaves whose first
-//       destruction is the base +0x18 link), cl re-stamps ??_7CWarlord at entry;
-//       retail elided that store entirely.
-//   (b) eh-state-numbering-base.md - retail numbers the two trylevels 1/2 over a
-//       deeper frame (extra `push ecx`, state slot [esp+0x10], add esp,0x10),
-//       ours uses 0/1 over [esp+0xc] / add esp,0xc. A cl EH-state-machine choice
-//       for a 2-destructible-member dtor; neither member order nor the vptr model
-//       (polymorphic vs manual) flips it. ~74%, deferred to the final sweep.
-RVA(0x000107f0, 0x55)
-CWarlord::~CWarlord() {}
+// The restamp wall is DEAD (implicit dtor above): 73.95% -> 85.43%. What remains is
+// NOT a codegen wall - it is a MISSING BASE CLASS, and the residual is its symptom:
+//   retail  push ecx (a dedicated this-spill slot); EH states 1/2; add esp,0x10
+//   ours    no spill slot;                          EH states 0/1; add esp,0xc
+// PROVEN from retail's own EH tables + RTTI (not inferred from codegen):
+//   * ~CWarlord pushes handler 0x5d85a0 -> `mov eax,0x5f8298; jmp __CxxFrameHandler`,
+//     and FuncInfo @0x5f8298 has magic 0x19930520 and **maxState = 3** (unwind map
+//     @0x5f82b8): state0(toState -1), state1(toState 0), state2(toState -1). We
+//     compile only 2 states -> we are missing one destructible SUBOBJECT.
+//   * state 1's funclet @0x1d8578 is `p = this ? this+0x34 : 0; ~T(p)` - the
+//     null-check this-adjust cl emits for a NON-PRIMARY BASE, i.e. a base at +0x34.
+//   * CWarlord's RTTI ClassHierarchyDescriptor @0x5f3818 says **attributes=1
+//     (MULTIPLE INHERITANCE)**, numBaseClasses=4:
+//         CWarlord +0x00 | CUserLogic +0x00 | CUserBase +0x00 | **CWapX +0x34**
+//     while CUserLogic's own CHD @0x5f1fd8 is attributes=0 (single-inh, 2 bases) -
+//     so CWapX is NOT inherited through CUserLogic: it is a SECOND DIRECT BASE of
+//     CWarlord at +0x34. Our header spells that subobject as anonymous padding
+//     (m_pad40 / the TILE_LOGIC_TAIL m_34/m_38/m_3c injection, 0x34..0x40 = 12 B).
+// So the true shape is `class CWarlord : public CUserLogic, public CWapX`. Landing
+// it needs two things this TU does not own: (1) CWapX modeled (no `class CWapX`
+// exists in include/ yet) and (2) SIZE(CUserLogic, 0x30) revisited - a base at
+// +0x34 requires the primary base to occupy 0x00..0x34, whereas UserLogic.h pins
+// 0x30 from "the base ctor's highest write is [esi+0x2c]" (which bounds the
+// INITIALIZED fields, not the size). CBehindCandy/CBehindCandyAni are flagged <MI>
+// too, so this is a ~50-leaf tile-logic-wide structural item, not a CWarlord one.
+// Also entangled: unwind action(0) calls ??1L_8860@@UAE@XZ - still an L_<rva>
+// placeholder shell (src/Gruntz/WorldSoundSet.cpp).
+// @rva-symbol: ??1CWarlord@@UAE@XZ 0x000107f0 0x55
 
 // ===========================================================================
 // CWarlord::CWarlord(int)  (0x042d40)  - the warlord ctor

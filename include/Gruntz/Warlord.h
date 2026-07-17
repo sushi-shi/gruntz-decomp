@@ -101,8 +101,16 @@ public:
     virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
-    CWarlord(i32);                // 0x42d40 (the warlord ctor: base init + name/state setup)
-    virtual ~CWarlord() OVERRIDE; // 0x107f0 (the home-TU dtor: ~CString(m_54) + the base teardown)
+    CWarlord(i32); // 0x42d40 (the warlord ctor: base init + name/state setup)
+    // NO user-declared destructor: retail's ~CWarlord (0x107f0) is the COMPILER-
+    // GENERATED one. cl 5.0 elides the most-derived vptr re-stamp in an IMPLICIT
+    // dtor (it knows no user body can observe the vptr) but always emits it for a
+    // user-declared one - even an empty `{}`. Declaring it was the mis-model behind
+    // the old "unreachable restamp" wall. The implicit dtor still destroys the
+    // CString m_54 + chains the base teardown, and is still virtual (CUserBase's is);
+    // Warlord.cpp's ctor emits the vtable -> ??_GCWarlord -> ??1CWarlord, so the
+    // body lands in this obj and is pinned by @rva-symbol there.
+    // docs/patterns/eh-dtor-vptr-restamp-presence.md
 
     // construct the file-static per-action handler table (g_actionTable @0x644610)
     // over the fixed [2000, 2010] range via the shared registry ctor (0x408710).
