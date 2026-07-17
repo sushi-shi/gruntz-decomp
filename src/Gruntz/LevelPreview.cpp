@@ -111,7 +111,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
             m_c->m_soundRegistry
-                ->ScanTree_157ee0((CSymTab*)set, "PREVIEW", (const char*)&g_dat60b588);
+                ->ScanTree_157ee0((CSymTab*)set, "PREVIEW", "_");
         }
     }
     m_1bc = "PREVIEW0";

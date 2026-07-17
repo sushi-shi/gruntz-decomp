@@ -93,7 +93,6 @@ extern float g_fxBias;
 extern float g_fxEps;
 extern char
     g_msgCaption[]; // "Gruntz" @0x60aac8 (def: WinMain.cpp; doubles as GameText's descriptor tag)
-extern u8 g_dat60b588;
 extern char s_codeD[];
 extern char s_codeF[];
 extern char s_codeM[];
@@ -113,7 +112,6 @@ extern char s_GameKey[];
 extern i32 g_warpX;
 extern i32 g_warpY;
 extern i32 g_lastLevelNum;
-extern char g_dat613054[8];
 extern void* g_desc_6156f4;
 extern char g_bmpHeaderTemplate[];
 extern i32 g_wwdObjIdCounter;

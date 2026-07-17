@@ -51,7 +51,6 @@
 // LoadGruntEffectSprites externs: the CButeMgr text-config singleton + the wormhole
 // SecretColor bute tag + the go-kart install byte flag.
 // g_buteMgr (?g_buteMgr@@3VCButeMgr@@A) comes from <Bute/ButeMgr.h>.
-extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
 
 // (The `CEffGeomRow g_effGeom[8]` view @0x60b8fc is GONE: it was a +4-SHIFTED alias
 //  of g_levelMsgRectsB @0x60b8f8 - its `a`/`c` members were rectsB[i].top/.bottom
@@ -172,7 +171,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (img == 0) {
         return 0;
     }
-    m_c->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
+    m_c->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
 
     CDDrawChildGroup* f = g_gameReg->m_world->m_childGroup;
 

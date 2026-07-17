@@ -5704,8 +5704,6 @@ i32 CPlay::LoadLevelSounds(i32 force) {
 
 // The "ANIZ" symtab-path tag SyncLevelKey resolves (owner-TU .data definition; the
 // canonical extern is in <Globals.h>). RVA-ascending: 0x213054 follows the name arrays.
-DATA(0x00213054)
-char g_dat613054[8] = "ANIZ";
 
 // ---------------------------------------------------------------------------
 // 0x0db750. "LEVEL"
@@ -5728,12 +5726,12 @@ i32 CPlay::LoadLevelAnims(i32 force) {
             return 1;
         }
     }
-    m_c->m_animRegistry->RemoveKeysEqual_1527d0("LEVEL", (const char*)&g_dat60b588);
-    void* e = m_levelBank->ResolvePath((const char*)&g_dat613054);
+    m_c->m_animRegistry->RemoveKeysEqual_1527d0("LEVEL", "_");
+    void* e = m_levelBank->ResolvePath("ANIZ");
     if (e == 0) {
         return 0;
     }
-    m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)e, "LEVEL", (const char*)&g_dat60b588);
+    m_c->m_animRegistry->ScanTree_152ad0((CSymTab*)e, "LEVEL", "_");
     return 1;
 }
 

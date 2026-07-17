@@ -86,8 +86,6 @@ DATA(0x001f04f8)
 extern const double g_motionNegHalf = -0.5;
 // (g_desc60aac8 was the "Gruntz" app-name literal @0x60aac8 viewed as an i32 tag;
 //  folded onto g_msgCaption, DEFINED in src/Gruntz/WinMain.cpp.)
-DATA(0x0020b588)
-u8 g_dat60b588 = 95;
 // The single-character bute key literals (0x60beb8..0x60df94 in retail's .rdata). Each is
 // a one-char string - read straight out of the image, not guessed - and they are DEFINED
 // here, with storage. They used to be `DATA(0x..) extern char s_codeX[];` - a DATA()

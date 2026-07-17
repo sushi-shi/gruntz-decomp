@@ -319,7 +319,7 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymTab* arg1, i32 arg2) {
     if (result == 0) {
         return 0;
     }
-    return InstallTree(result, g_emptyString, (const char*)&g_dat60b588); // slot-18 self-dispatch
+    return InstallTree(result, g_emptyString, "_"); // slot-18 self-dispatch
 }
 
 // ---------------------------------------------------------------------------
