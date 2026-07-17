@@ -594,7 +594,7 @@ i32 CKitchenSlime::LoadSprites() {
     if (changed != 0 && spr != 0) {
         if (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) {
             player->m_190 = 1;
-            player->m_layer = (CGameObjLayer*)spr->m_frames.m_pData[1];
+            player->m_layer = spr->m_frames.m_pData[1];
             m_stepMag = 0;
             m_stepMagHi = 0;
             return 1;

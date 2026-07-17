@@ -25,7 +25,6 @@ SIZE_UNKNOWN(CState);
 // Enums.h
 SIZE_UNKNOWN(GruntzVolumeAttenuation);
 // GruntIndicatorSprite.h
-SIZE_UNKNOWN(CGruntLayerHolder);
 SIZE_UNKNOWN(CIndicatorActReg);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CIndicatorSyncHelper);

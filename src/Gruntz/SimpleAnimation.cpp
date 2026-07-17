@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
+#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/zBitVec.h>      // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
 #include <Wap32/ZDArrayDerived.h>
@@ -137,10 +138,10 @@ RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    CGameObjLayer* aux = m_object->m_layer;
+    CImage* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;

@@ -241,10 +241,15 @@ public:
     void BlitShadeFlipH(CBlitInfo* info, CImage* dst);  // 0x154750  X flip, shaded
 
     // --- layout (continues from m_parent at +0x0c) ----------------------------
+    // (m_width..m_originY also serve the game-object frame-cache consumers - the ex
+    // CGameObjLayer view: width/height gate the eyecandy BigActHeight test; the
+    // anchors double as HALF-EXTENTS for the symmetric +-7 wander box (PathHazard/
+    // CObjectDropper) and the z-sort key sy + m_anchorY (TileLogicPump/FrontCandyAni/
+    // FortressFlag); the origins place the CGruntVoice speech bubble.)
     i32 m_width;              // +0x10  width  (from item->m_1c)
     i32 m_height;             // +0x14  height (from item->m_18)
-    i32 m_anchorX;            // +0x18  draw anchor x (width>>1)
-    i32 m_anchorY;            // +0x1c  draw anchor y (height>>1)
+    i32 m_anchorX;            // +0x18  draw anchor x (width>>1; doubles as half-width)
+    i32 m_anchorY;            // +0x1c  draw anchor y (height>>1; doubles as half-height)
     i32 m_originX;            // +0x20  origin x (desc->m_10, or 0)
     i32 m_originY;            // +0x24  origin y (desc->m_14, or 0)
     i32 m_loadResult;         // +0x28  load-result code (0x10 / 0x11)

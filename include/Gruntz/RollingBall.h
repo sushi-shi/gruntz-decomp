@@ -34,7 +34,7 @@ typedef CFileMemBase CSerialArchive;
 
 // The CArchive-like serializer the record is streamed through (Serialize's arg1) is
 // the shared WAP32 CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), pulled in via
-// <Gruntz/SerialObjRef.h> above - the former local `CRbArchive` view is folded away.
+// <Gruntz/SerialArchive.h> above - the former local `CRbArchive` view is folded away.
 
 // ---------------------------------------------------------------------------
 // CRollingBall : CUserLogic (vftable 0x5e86fc). Own state from +0x40 onward.

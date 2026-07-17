@@ -183,7 +183,7 @@ void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
     if (spr) {
         if (frame >= spr->m_firstFrame && frame <= spr->m_lastFrame) {
             m_190 = frame;
-            m_layer = (CGameObjLayer*)spr->m_frames.m_pData[frame]; // +0x198 union: frame ptr
+            m_layer = spr->m_frames.m_pData[frame]; // +0x198 union: frame ptr
         } else {
             m_190 = frame;
             m_layer = 0;
@@ -205,7 +205,7 @@ void CGameObject::ApplyName(const char* name) {
         i32 n = spr->m_firstFrame;
         m_190 = n; // +0x190 role-union: the cached frame number
         if (n >= spr->m_firstFrame && n <= spr->m_lastFrame) {
-            m_layer = (CGameObjLayer*)spr->m_frames.m_pData[n]; // +0x198 union: the frame ptr
+            m_layer = spr->m_frames.m_pData[n]; // +0x198 union: the frame ptr
             return;
         }
     }
@@ -371,14 +371,14 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
 // camera-rect and grid-extent bounds checks are byte-faithful.
 RVA(0x001509c0, 0xab)
 i32 CWwdGameObject::Test() {
-    CGameObjLayer* e = m_layer;
+    CImage* e = m_layer;
     if (!e) {
         return 0;
     }
-    i32 right = m_posX + e->m_halfWidth;
-    i32 left = m_posX - e->m_halfWidth;
-    i32 top = m_posY - e->m_halfHeight;
-    i32 bottom = m_posY + e->m_halfHeight;
+    i32 right = m_posX + e->m_anchorX;
+    i32 left = m_posX - e->m_anchorX;
+    i32 top = m_posY - e->m_anchorY;
+    i32 bottom = m_posY + e->m_anchorY;
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CLevelPlane == the former WwdCamHolder->m_5c camera object).
@@ -509,9 +509,9 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
         m_sprite = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
-            CGameObjLayer* frame;
+            CImage* frame;
             if (idx >= found->m_firstFrame && idx <= found->m_lastFrame) {
-                frame = (CGameObjLayer*)found->m_frames.m_pData[idx];
+                frame = found->m_frames.m_pData[idx];
             } else {
                 frame = 0;
             }

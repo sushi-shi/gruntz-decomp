@@ -26,17 +26,14 @@
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
 // ---------------------------------------------------------------------------
-// The level layer-clamp holder reached as a grunt's m_10->m_194. The Toy
-// updater clamps the grunt's layer index into [m_64, m_68] and maps it through
-// the +0x14 layer table into m_10->m_198. Only the touched offsets modeled.
+// (The ex CGruntLayerHolder view is DISSOLVED onto the real CSprite
+// (<Gruntz/Sprite.h>): the "layer table" @+0x14 with the [+0x64..+0x68] gate is
+// the frame-data sprite's m_frames.m_pData / [m_firstFrame..m_lastFrame] - the
+// bound object's +0x194 cached sprite (CGameObject::m_sprite), whose resolved
+// frame the updaters publish to m_layer (+0x198) and m_190. The old "matches no
+// existing class - it is NOT CGameObjLayer" note compared against the wrong
+// candidate; the shape IS CSprite's, from the same registry Lookup.)
 // ---------------------------------------------------------------------------
-struct CGruntLayerHolder {
-    char m_pad00[0x14];
-    i32* m_layerTable; // +0x14  the per-index layer table
-    char m_pad18[0x64 - 0x18];
-    i32 m_layerLo; // +0x64  lo layer bound
-    i32 m_layerHi; // +0x68  hi layer bound
-};
 
 // ---------------------------------------------------------------------------
 // CGruntEntry / CGruntRenderable: FOLDED (VT1) onto their real classes - they were
@@ -53,10 +50,8 @@ struct CGruntLayerHolder {
 //     m_drawFillArg/m_drawFillCmd/m_drawActive, which the same TUs ALREADY spell the
 //     CGameObject way; and every use site reached it by casting `(CGruntRenderable*)
 //     m_object` - a CGameObject* - which is the cast that proves the type.
-// The three role-fields the view carried (+0x190/+0x194/+0x198) are now named union
-// members on CGameObject in <Gruntz/UserLogic.h>. CGruntLayerHolder above STAYS: its
-// +0x14/+0x64/+0x68 shape matches no existing class (it is NOT CGameObjLayer, whose
-// +0x10/+0x14 z-clamps disagree), so it is a real distinct type, not a view.
+// The three role-fields the view carried (+0x190/+0x194/+0x198) are named members
+// on CGameObject in <Gruntz/UserLogic.h> (m_190 / m_sprite / m_layer).
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------

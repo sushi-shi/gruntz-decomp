@@ -160,7 +160,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
         } else {
             val = (i32)en->m_frames[key];
         }
-        m_38->m_layer = (CGameObjLayer*)val;
+        m_38->m_layer = (CImage*)val;
         m_38->m_190 = key;
     }
     node = 0;

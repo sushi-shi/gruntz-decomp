@@ -23,9 +23,9 @@
 #include <rva.h>
 // The health glyph resolve reads its bound game object (CUserLogic::m_object) directly
 // - the object IS a CGameObject (the CGruntRenderable view was folded onto it) - through
-// its +0x194 gated lookup table CGruntLayerHolder (table @+0x14, [m_64..m_68] index gate
+// its +0x194 cached CSprite (frame table @+0x14, [m_firstFrame..m_lastFrame] gate
 // - the shared gated-lookup archetype, the CSprite frame-table shape).
-#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg + CGruntLayerHolder
+#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg
 #include <Gruntz/UserLogic.h>            // CUserLogic base (CGruntHealthSprite : CUserLogic)
 #include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
 

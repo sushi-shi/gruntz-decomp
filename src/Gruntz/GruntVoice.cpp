@@ -30,6 +30,7 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Globals.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
 // The global running game clock (DAT_00645588); the value-load reloc-masks.
 
@@ -590,10 +591,10 @@ i32 CGruntVoice::Update() {
         }
         m_object->m_stateFlags &= ~1;
         i32 dx = 0, dy = 0;
-        CGameObjLayer* layer = ((CGameObject*)resolved)->m_layer;
+        CImage* layer = ((CGameObject*)resolved)->m_layer;
         if (layer != 0) {
-            dx = layer->m_20;
-            dy = layer->m_24;
+            dx = layer->m_originX;
+            dy = layer->m_originY;
         }
         m_object->m_screenX = ((CGameObject*)resolved)->m_screenX + dx;
         m_object->m_screenY = ((CGameObject*)resolved)->m_screenY + dy - 0x32;

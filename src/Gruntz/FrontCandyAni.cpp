@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -95,10 +96,10 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_latchedAnimId = 0xf4240;
         m_object->m_flags |= 0x20000;
     }
-    CGameObjLayer* aux = m_object->m_layer;
+    CImage* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
@@ -143,16 +144,16 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     CGameObject* o = m_object;
     if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
-        i32 v = o->m_layer->m_halfHeight + o->m_screenY + 0x186a0;
+        i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
         if (o->m_latchedAnimId != v) {
             o->m_latchedAnimId = v;
             o->m_flags |= 0x20000;
         }
     }
-    CGameObjLayer* aux = m_object->m_layer;
+    CImage* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;

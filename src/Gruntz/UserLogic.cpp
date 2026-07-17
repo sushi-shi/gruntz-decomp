@@ -107,7 +107,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 //   * CUserLogic::SerializeMove (0x16e7f0) - run on `this`.
 //   * the +0x34 serializable sub-object's chain (0x8c00) - run on `&this->m_34`
 //     (reached via `lea ecx,[esi+0x34]`). Modeled by the shared CSerialObjRef
-//     (Chain @0x8c00, <Gruntz/SerialObjRef.h>).
+//     (Chain @0x8c00, <Gruntz/SerialArchive.h>).
 // (Both bodies are pinned in src/Stub/Discovered.cpp.)
 
 // @confidence: low

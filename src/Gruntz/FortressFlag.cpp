@@ -44,6 +44,7 @@
 #include <Gruntz/AnimWorker.h>     // shared Owner / Worker views + Worker_DefaultPump
 #include <Gruntz/UserLogic.h>      // CUserLogic leaves the worker handlers build
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_74->GetSel)
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 #include <Gruntz/AnimSink.h>
@@ -230,7 +231,7 @@ i32 CExplosion::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
 RVA(0x00045d30, 0x203)
 CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CGameObject* o = m_object;
-    i32 v = o->m_layer->m_halfHeight + o->m_screenY + 0x186a0;
+    i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
     if (o->m_latchedAnimId != v) {
         o->m_latchedAnimId = v;
         o->m_flags |= 0x20000;
@@ -611,7 +612,6 @@ void RegisterXLogic_6447f8() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 // (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
 //  CActReg.) WwdRefSlot stays a flagged .cpp view - it is a genuine element of the
 //  unmodeled CGameRegistry m_focusSlots ref-index sub-array (@identity-TODO).

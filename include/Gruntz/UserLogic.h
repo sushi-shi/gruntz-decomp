@@ -68,26 +68,14 @@ struct GruntTilePos; // fwd (the {m_x,m_y} screen-pos out-point; <Gruntz/Grunt.h
 // The m_collideNotify (+0x10) semantic name migrated onto the canonical.]
 #include <DDrawMgr/AnimWorkerObj.h>
 
-// The +0x198 layer descriptor several eyecandy ctors poll for z-clamping (its
-// +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
-SIZE_UNKNOWN(CGameObjLayer);
-struct CGameObjLayer {
-    char m_pad00[0x10];
-    i32 m_zClampLo; // +0x10  z-clamp bound (eyecandy)
-    i32 m_zClampHi; // +0x14  z-clamp bound (eyecandy)
-    // +0x18/+0x1c are the object's HALF-EXTENTS, not a base origin (the old
-    // m_baseX/"layer base X" name was a misreading; renamed via sema rename).
-    // Three independent consumers agree, all building a box SYMMETRICALLY around the
-    // object's screen position:
-    //   PathHazard::0x298    rect = (sx - m_halfWidth + 7, sy - m_halfHeight + 7,
-    //                                sx + m_halfWidth - 7, sy + m_halfHeight - 7)
-    //   CObjectDropper::Update  the identical +-7 wander box
-    //   TileLogicPump/FrontCandyAni  z-sort key = sy + m_halfHeight (the bottom/feet edge)
-    i32 m_halfWidth;  // +0x18  half-width  (screen px)
-    i32 m_halfHeight; // +0x1c  half-height (screen px)
-    i32 m_20;         // +0x20  layer screen-offset X (CGruntVoice::Update bubble placement)
-    i32 m_24;         // +0x24  layer screen-offset Y (CGruntVoice::Update bubble placement)
-};
+// The +0x198 cached frame IS the real CImage (<Image/CImage.h>): every writer of
+// the slot stores a CSprite/CImageSet frame element (ApplyLookupSprite/ApplyName/
+// Sub150c30/LightFx/KitchenSlime), and the ex-CGameObjLayer view's fields were
+// CImage's at identical offsets - "z-clamp bounds" +0x10/+0x14 == m_width/m_height
+// (the BigActHeight test), "half-extents" +0x18/+0x1c == m_anchorX/m_anchorY
+// (width>>1/height>>1 - the +-7 wander box + z-sort consumers), "+0x20/+0x24
+// screen offsets" == m_originX/m_originY (the CGruntVoice bubble placement).
+class CImage;
 
 // (The former CLogicHandlerMap shell + the LogicMap() offset-hop accessor are
 // worker cache map - m_0c (the CDDrawSurfaceMgr) -> m_workerCache (+0x14, the
@@ -252,26 +240,25 @@ struct CGameObject {
     char m_pad17c[0x188 - 0x17c];
     i32 m_188;     // +0x188  object id (warlord battle-event id / game-object archive-cue id)
     i32 m_18c;     // +0x18c  (WwdFile stamp: -1; CWwdGameObject low byte = dot color / setup flag)
-    union {        // +0x190  role-union
-        i32 m_190; // (WwdFile stamp: -1; sprite role: the cached frame number)
-        i32 m_resolvedLayer; // grunt-indicator role: the layer index the glyph resolved from
-    };
+    // +0x190  the cached frame NUMBER (WwdFile stamp: -1). The ex m_resolvedLayer
+    // "grunt-indicator role" was the same meaning: the frame index the glyph
+    // resolved from.
+    i32 m_190;
     union {          // +0x194  role-union: a WwdFile-loaded object keeps its source-def
                      //         record; a CreateSprite'd object caches the looked-up sprite
                      //         (ApplyName/ApplyLookupSprite) / its CImageSet (ActionArea's
                      //         pulse ramp SetAllTypes/SetAllField18 @0x152480/0x1524d0).
+                     //         The ex CGruntLayerHolder "grunt-indicator" member was the
+                     //         cached CSprite again (same gated [m_firstFrame..m_lastFrame]
+                     //         frame resolve, published to m_layer/m_190).
         char* m_194; // source-def record (class-name string at +0x24)
         struct CSprite* m_sprite;    // cached sprite (frame-cache role)
         class CImageSet* m_imageSet; // cached image set (color/brightness role)
-        // grunt-indicator role: the layer-clamp/glyph table the Grunt*Sprite updaters
-        // walk (m_layerLo/m_layerHi bounds + m_layerTable). Was the CGruntRenderable
-        // view's own +0x194 member before that view was folded onto this class.
-        struct CGruntLayerHolder* m_layerHolder;
     };
-    union {                     // +0x198  role-union
-        CGameObjLayer* m_layer; // (sprite role: the cached frame ptr)
-        i32 m_mappedLayer;      // grunt-indicator role: the glyph the layer mapped to
-    };
+    // +0x198  the cached frame POINTER (a CImage - see the note above CGameObject).
+    // The ex m_mappedLayer "grunt-indicator role" was the same store: the resolved
+    // glyph frame.
+    CImage* m_layer;
     i32 m_19c; // +0x19c  (WwdFile stamp: 0)
     // +0x1a0..+0x1db: the embedded CAniAdvanceCursor (one real 0x3c member; vptr
     // @+0x1a0, end +0x1dc == SIZE(CGameObject)). The former per-leaf sink views

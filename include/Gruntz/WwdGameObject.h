@@ -48,7 +48,7 @@ SIZE(WwdSnapshot, 0xa0); // WriteSnapshot emits ar->Write(&rec, 0xa0)
 // +0x198, +0x19c). Real classes: <Gruntz/Sprite.h>, <Gruntz/UserLogic.h> and
 // <DDrawMgr/DDrawSubMgrLeafScan.h>. Pointer members only -> forward decls suffice.
 struct CSprite;
-struct CGameObjLayer;
+class CImage;  // the cached frame element (<Image/CImage.h>; ex CGameObjLayer view)
 class CDDrawSurfacePair; // slots 12-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 struct LeafCue;          // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex LeafScanValue)
 
@@ -254,10 +254,10 @@ public:
     // macros: it bounds-checks the frame number against the looked-up object's +0x64/+0x68
     // (== CSprite::m_firstFrame / m_lastFrame) and then indexes its +0x14 (==
     // CSprite::m_frames.m_pData) to get +0x198 - exactly what ApplyLookupSprite assigns to
-    // its CGameObjLayer* m_layer at the SAME +0x198. ReadState confirms the sprite: it
+    // its CImage* m_layer at the SAME +0x198. ReadState confirms the sprite: it
     // strcpy's the name at m_194+0x24, and CSprite::m_name is at +0x24.
     CSprite* m_sprite;      // +0x194  cached sprite (was void*)
-    CGameObjLayer* m_layer; // +0x198  cached frame / layer (half-extents; was i32)
+    CImage* m_layer;        // +0x198  cached frame (a CImage; ex CGameObjLayer view, was i32)
     // +0x19c is the resolved sound-cue value: ReadState hands it straight to
     // CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafCue*), which is its type.
     LeafCue* m_19c;             // +0x19c  resolved leaf-scan cue (was void*)

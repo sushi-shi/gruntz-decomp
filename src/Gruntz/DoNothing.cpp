@@ -22,6 +22,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
 // CDoNothing::GetTypeTag (0x0000f6b0) is now an inline member in the class header.
 
@@ -91,10 +92,10 @@ CDoNothingNormal* RealizeCDoNothingNormal() {
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 1;
-    CGameObjLayer* aux = m_object->m_layer;
+    CImage* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;

@@ -29,11 +29,11 @@ typedef CFileMemBase CSerialArchive;
 
 // The engine serialization stream the leaf Serialize round-trips through is the shared
 // WAP32 CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), pulled in via
-// <Gruntz/SerialObjRef.h> above - the former local `CTextArchive` view is folded away.
+// <Gruntz/SerialArchive.h> above - the former local `CTextArchive` view is folded away.
 
 // The embedded serializable sub-object overlaid at CInGameText+0x34 is the shared
 // CSerialObjRef (Chain @0x8c00 via the 0x1aff thunk); reached as
-// `lea ecx,[this+0x34]; call`. Modeled by <Gruntz/SerialObjRef.h> above.
+// `lea ecx,[this+0x34]; call`. Modeled by <Gruntz/SerialArchive.h> above.
 
 // ---------------------------------------------------------------------------
 // CInGameText : CUserLogic. Its own state begins at +0x54 (within the inherited

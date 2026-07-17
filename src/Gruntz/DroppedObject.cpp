@@ -45,8 +45,8 @@
 #include <Gruntz/LightFxMgr.h>        // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/SerialArchive.h>     // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/UserLogic.h>         // canonical CGameObject / CGameObjLayer (the bound object)
+#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Gruntz/Brickz.h>            // canonical BrickzCell (the 0x1c-byte tile-grid cell)
 #include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
 #include <Globals.h>
@@ -176,6 +176,8 @@ static inline CDropEntry* DropLookup(i32 coord) {
 //                  exactly the field the view called m_nameRec. It also already has
 //                  m_layer @+0x198 and m_value @+0x1b4.)
 //   DropperLayer -> CGameObjLayer    (m_halfWidth/m_halfHeight @+0x18/+0x1c)
+//                  m_layer @+0x198 and m_geoId @+0x1b4.)
+//   DropperLayer -> CImage           (m_anchorX/m_anchorY half-extents @+0x18/+0x1c)
 //   DropperFound -> CTmCell (= CGrunt)  the REAL return type of CTriggerMgr::FindGruntAt
 //                  (<Gruntz/TriggerMgr.h>); its +0x10 is CUserLogic::m_object, the bound
 //                  CGameObject - so `found->m_obj` is just `found->m_object`.
@@ -514,10 +516,10 @@ i32 CObjectDropper::Update() {
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
             CGameObject* o = m_object;
             RECT box;
-            box.left = o->m_screenX - o->m_layer->m_halfWidth + 7;
-            box.right = o->m_screenX + o->m_layer->m_halfWidth - 7;
-            box.top = o->m_screenY - o->m_layer->m_halfHeight + 7;
-            box.bottom = o->m_screenY + o->m_layer->m_halfHeight - 7;
+            box.left = o->m_screenX - o->m_layer->m_anchorX + 7;
+            box.right = o->m_screenX + o->m_layer->m_anchorX - 7;
+            box.top = o->m_screenY - o->m_layer->m_anchorY + 7;
+            box.bottom = o->m_screenY + o->m_layer->m_anchorY - 7;
             i32 tx;
             i32 ty;
             CTmCell* found =

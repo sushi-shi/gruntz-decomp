@@ -9,6 +9,7 @@
 // CGruntHealthSprite : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
+#include <Gruntz/Sprite.h> // CSprite - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/Grunt.h> // CGrunt - the registry grunt-table slot (was the CGruntEntry view)
 #include <Gruntz/GameRegPtr.h>
@@ -130,16 +131,16 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_cellY = y;
     i32 slot = 0x15 - static_cast<i32>((static_cast<double>(health) * 0.2 + 0.5));
     CGameObject* obj = m_object;
-    CGruntLayerHolder* map = obj->m_layerHolder;
+    CSprite* map = obj->m_sprite;
     if (map) {
-        i32 glyph;
-        if (slot >= map->m_layerLo && slot <= map->m_layerHi) {
-            glyph = map->m_layerTable[slot];
+        CImage* glyph;
+        if (slot >= map->m_firstFrame && slot <= map->m_lastFrame) {
+            glyph = map->m_frames.m_pData[slot];
         } else {
             glyph = 0;
         }
-        obj->m_mappedLayer = glyph;
-        obj->m_resolvedLayer = slot;
+        obj->m_layer = glyph;
+        obj->m_190 = slot;
     }
     m_health = health;
     return 1;
@@ -175,16 +176,16 @@ i32 CGruntHealthSprite::HealthUpdate() {
     if (m_health != result) {
         i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
         CGameObject* obj = m_object;
-        CGruntLayerHolder* holder = obj->m_layerHolder;
+        CSprite* holder = obj->m_sprite;
         if (holder != 0) {
-            i32 glyph;
-            if (slot >= holder->m_layerLo && slot <= holder->m_layerHi) {
-                glyph = holder->m_layerTable[slot];
+            CImage* glyph;
+            if (slot >= holder->m_firstFrame && slot <= holder->m_lastFrame) {
+                glyph = holder->m_frames.m_pData[slot];
             } else {
                 glyph = 0;
             }
-            obj->m_mappedLayer = glyph;
-            obj->m_resolvedLayer = slot;
+            obj->m_layer = glyph;
+            obj->m_190 = slot;
         }
         m_health = result;
     }

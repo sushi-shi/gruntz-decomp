@@ -7,6 +7,7 @@
 // The 0x44 is a DESTRUCTOR (stamps CUserLogic 0x5e705c then CUserBase 0x5e70b4,
 // tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
 // shape to ~CTimeBomb @0x012a70.
+#include <Gruntz/Sprite.h> // CSprite - the bound object's +0x194 cached sprite (ex CGruntLayerHolder)
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
@@ -116,16 +117,16 @@ i32 CGruntToySprite::Update() {
     if (m_lastLayer != layer) {
         CGameObject* r = m_object;
         m_lastLayer = layer;
-        CGruntLayerHolder* h = r->m_layerHolder;
+        CSprite* h = r->m_sprite;
         if (h != 0) {
-            i32 mapped;
-            if (layer >= h->m_layerLo && layer <= h->m_layerHi) {
-                mapped = h->m_layerTable[layer];
+            CImage* mapped;
+            if (layer >= h->m_firstFrame && layer <= h->m_lastFrame) {
+                mapped = h->m_frames.m_pData[layer];
             } else {
                 mapped = 0;
             }
-            r->m_mappedLayer = mapped;
-            r->m_resolvedLayer = layer;
+            r->m_layer = mapped;
+            r->m_190 = layer;
         }
     }
     m_object->m_screenX = e->m_object->m_screenX;

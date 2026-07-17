@@ -46,6 +46,7 @@
 #include <string.h>                       // memset (inlined rep stosd)
 #include <rva.h>
 #include <DDrawMgr/AniAdvance.h> // CAniDesc (the descriptor record)
+#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
 // The activation key "B" (0x60d1bc) CTileSecretTrigger's second registration interns;
 // s_codeA/g_buteTree/g_typeCounter come from <Gruntz/ActNameRegistry.h>.
@@ -633,7 +634,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
-    i32 zk = m_object->m_layer->m_halfHeight + m_object->m_screenY + 0x186a0;
+    i32 zk = m_object->m_layer->m_anchorY + m_object->m_screenY + 0x186a0;
     if (m_object->m_latchedAnimId != zk) {
         m_object->m_latchedAnimId = zk;
         m_object->m_flags |= 0x20000;

@@ -10,6 +10,7 @@
 #include <Gruntz/BehindCandy.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
 
 // CBehindCandy::GetTypeTag (0x0000fb70) is now an inline member in the class header.
 
@@ -48,8 +49,8 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_flags |= 0x20000;
     }
     if (m_object->m_layer != 0) {
-        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (m_object->m_layer->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
@@ -61,4 +62,3 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 #include <rva.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
