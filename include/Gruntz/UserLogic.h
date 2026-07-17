@@ -604,8 +604,24 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 //     base beside CUserLogic (e.g. CWarlord CHD @VA 0x5f3818:
 //     CWarlord+0 | CUserLogic+0 | CUserBase+0 | CWapX+0x34 - while CUserLogic's own
 //     CHD @0x5f1fd8 is attributes=0 / 2 bases, so CWapX does NOT arrive through it);
-//     CGrunt/CProjectile (+CBoomerang via CProjectile) list it at +0x150 past the
-//     0x150 CMovingLogic spine (that world's conversion is deferred - see Grunt.h).
+//     CGrunt/CProjectile list it at +0x150 (a DIRECT base of each, past the 0x150
+//     CMovingLogic spine); CBoomerang INHERITS it through CProjectile and must not
+//     declare it (decoded from the CHD numContainedBases nesting - see below).
+//
+// THREE DISPLACEMENTS, ONE CLASS (MI1, 2026-07-17). Decoding each CHD's
+// numContainedBases nesting (the base array is a pre-order flattening, so a direct
+// base is found by skipping each entry's whole subtree) gives the DIRECT declarers:
+//   CTileTrigger & the 60-odd tile leaves : CUserLogic(0x34) + CWapX@0x34
+//   CGrunt                                : CMovingLogic(0x150) + CWapX@0x150
+//   CProjectile                           : CMovingLogic(0x150) + CWapX@0x150
+//   CBoomerang                            : CProjectile only  -> INHERITS CWapX
+//   CCoveredPowerup/CGiantRock/...        : CTileTrigger only -> INHERIT CWapX
+// The +0x150 world spelled this base FLAT as own members and reached the same five
+// fields by three independent recoveries - CGrunt's m_150/m_154/m_158/
+// m_prevEntranceDesc/pad160 and CProjectile's m_150/m_sprite/m_158/m_savedFrameGeo/
+// m_pad160 are m_34/m_38/m_3c/m_value/m_blob. The BYTES agree: CGrunt's ctor @0x47a10
+// emits `mov [esi+0x150],ebp; mov [esi+0x154],ebp; mov ecx,[ebp+0x7c];
+// mov [esi+0x158],ecx` - the CWapX(obj) three-store seed, at +0x150 instead of +0x34.
 //   * ~CWarlord's FuncInfo @VA 0x5f8298 (magic 0x19930520) has maxState=3; state 1's
 //     funclet @0x1d8578 is `p = this ? this+0x34 : 0; ~T(p)` - the null-check
 //     this-adjust cl emits ONLY for a non-primary base - and it tail-jmps (via ILT
@@ -629,11 +645,20 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 // KeyOfValue_152d30, write it back + the blob). Chain's body writes this-rel
 // +0x00/+0x04/+0x08/+0x0c and streams +0x10..0x20 - the whole 0x20 layout.
 //
-// The 1-arg ctor seeds only the first three fields (retail leaf ctors write
-// [esi+0x34]=obj, [esi+0x38]=obj, [esi+0x3c]=obj->m_7c right after the folded
-// CUserLogic init and BEFORE the leaf vptr stamp - i.e. in base-ctor position); the
-// no-arg leaf ctors write nothing here (e.g. CTileTrigger @0x11160) -> both ctors
-// inline, the no-arg one empty.
+// CONSTRUCTION - the ctor is very likely TRIVIAL; the derived ctors assign these
+// fields THEMSELVES (MI1, 2026-07-17). The +0x34 leaves write [esi+0x34]=obj,
+// [esi+0x38]=obj, [esi+0x3c]=obj->m_7c right after the folded CUserLogic init, which
+// an init-list `CWapX(obj)` reproduces exactly - so the leaves below use that spelling
+// and are byte-matched. But CProjectile::CProjectile(owner) @0xdec60 emits the SAME
+// three stores at +0x150 AFTER four unrelated body statements (m_148=0, m_14c=0,
+// m_object->m_moveMode=7, Fn16ea90()), which a base ctor CANNOT do - it must run before
+// the body. The only shape consistent with BOTH is a trivial CWapX ctor + per-derived
+// body assignment, with the leaves' stores merely happening to come first. The
+// init-list spelling is kept where it is byte-identical (the leaves) and NOT used where
+// the order forbids it (CProjectile); the 1-arg ctor below is therefore a spelling
+// convenience, not evidence of a seeding base ctor. Do not "unify" the two by moving
+// CProjectile's stores into an init list - that is the disagreement, not a defect.
+// The no-arg leaf ctors write nothing here (e.g. CTileTrigger @0x11160).
 //
 // Field names keep the tile-leaf flat-offset spellings every leaf already uses
 // (CWapX-relative +0x00/+0x04/+0x08; the CGrunt world sees them at +0x150).
@@ -652,16 +677,25 @@ public:
     // Serialize the referenced object by its registry key name (read/write per mode).
     i32 Chain(CSerialArchive* arc, i32 mode, i32 unused, CGameObject* obj); // 0x8c00
 
-    CGameObject* m_34;   // +0x00 (leaf +0x34)  the referenced object
-    CGameObject* m_38;   // +0x04 (leaf +0x38)  == m_34 (leaves read m_38->m_flags etc.)
-    AnimWorkerObj* m_3c; // +0x08 (leaf +0x3c)  obj->m_7c
-    // +0x0c (leaf +0x40)  the resolved registry value - the anim registry's values
-    // are CAniElement (: CObject) entries; several leaf ctors snapshot the bound
-    // object's active descriptor here (`m_value = m_38->m_1a0.m_14` - the ex
-    // per-leaf `CAniElement* m_40`), and Chain re-resolves it by name on READ /
-    // KeyOfValue's it on WRITE (CObject* upcast).
+    // Field names keep the tile-leaf +0x34 spellings (this class is reached at THREE
+    // displacements - see the note above - so no one spelling can be offset-accurate).
+    // The union of what the three worlds independently recovered about each slot:
+    CGameObject* m_34;   // +0x00 (leaf +0x34, moving +0x150)  the referenced object
+    CGameObject* m_38;   // +0x04 (leaf +0x38, moving +0x154)  == m_34: the bound/render
+                         //   object (leaves read m_38->m_flags; the projectile world
+                         //   called this m_sprite, "primary sprite/render object")
+    AnimWorkerObj* m_3c; // +0x08 (leaf +0x3c, moving +0x158)  obj->m_7c - the bound
+                         //   object's worker record (CGrunt called this m_158 and
+                         //   proved it the same way: ctor tail `= obj->m_7c`)
+    // +0x0c (leaf +0x40, moving +0x15c)  the resolved registry value - the anim
+    // registry's values are CAniElement (: CObject) entries; every world's ctors
+    // snapshot the bound object's active descriptor here via the SAME expression
+    // (`m_value = m_38->m_1a0.m_14`): the ex per-leaf `CAniElement* m_40`, CGrunt's
+    // `m_prevEntranceDesc` and CProjectile's `m_savedFrameGeo` were all this field.
+    // Chain re-resolves it by name on READ / KeyOfValue's it on WRITE (CObject* upcast).
     class CAniElement* m_value;
-    char m_blob[0x10]; // +0x10..0x20 (leaf +0x44..0x54)  the serialized blob
+    char m_blob[0x10]; // +0x10..0x20 (leaf +0x44..0x54, moving +0x160..0x170)  the
+                       // serialized blob (every world had it as a 0x10 pad)
 };
 SIZE(CWapX, 0x20);
 

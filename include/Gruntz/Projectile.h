@@ -49,8 +49,23 @@ class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the pooled DirectSound buf
 // (+0x140..+0x224); sizeof == 0x228. Field names are placeholders; the OFFSETS +
 // code bytes are the load-bearing facts.
 // ---------------------------------------------------------------------------
+// CWapX is a DIRECT second base at +0x150 (MI1, 2026-07-17), RTTI-proven from
+// CProjectile's own CHD @VA 0x5f3438: attributes=1 (MI), and decoding the
+// numContainedBases nesting gives DIRECT bases = CMovingLogic@0x0 + CWapX@0x150
+// (CMovingLogic's own CHD @0x5f3cf0 is attributes=0 and carries NO CWapX, so it does
+// not arrive through it). mdisp +0x150 also states sizeof(CMovingLogic)==0x150 - the
+// fat canonical spine this class already rides, so the base lands with NO layout
+// change and this class's real own members still start at +0x170 = 0x150 + 0x20.
+// The five fields that used to be spelled here (m_150/m_sprite/m_158/m_savedFrameGeo/
+// m_pad160) were that base as flat padding - the same error the +0x34 tile-logic
+// leaves carried. Their own comments gave it away ("= owner", "= owner->m_7c",
+// "role unproven", "write-only here"): the ctor seeds them and CWapX::Chain consumes
+// them in ANOTHER TU, so their role was invisible from inside this one.
+// NB the ctor assigns them in its BODY (not via an init-list `CWapX(owner)`) - retail
+// orders those stores after m_148/m_14c/m_moveMode/Fn16ea90, which a base ctor cannot
+// do. See the ctor + the ordering note in UserLogic.h.
 SIZE(CProjectile, 0x228);
-class CProjectile : public CMovingLogic {
+class CProjectile : public CMovingLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     RVA(0x00012960, 0x6)
@@ -84,14 +99,10 @@ public:
     i32 LaunchSound(const char* key);     // 0xe2190 (create + play the launch CSample)
     virtual void MovingSlot16() OVERRIDE; // slot 16 @0xdfd00 (impact/particle effects)
 
-    // +0x140..+0x14f (m_140/m_144/m_148/m_14c) belong to the CMovingLogic base
-    // now (its Update/Serialize round-trip touches them); CProjectile's own data
-    // resumes at +0x150.
-    i32 m_150;                    // +0x150  (= owner; write-only here, role unproven)
-    CGameObject* m_sprite;        // +0x154  primary sprite/render object (== owner)
-    i32 m_158;                    // +0x158  (= owner->m_7c; write-only here)
-    CAniElement* m_savedFrameGeo; // +0x15c  saved m_sprite->m_1a0.m_14 before each anim Setup
-    char m_pad160[0x170 - 0x160]; //
+    // +0x140..+0x14f (m_140/m_144/m_148/m_14c) belong to the CMovingLogic base;
+    // +0x150..+0x16f is the CWapX SECOND BASE (see the class note above) - what used
+    // to be spelled here as m_150/m_sprite/m_158/m_savedFrameGeo/m_pad160 are its
+    // m_34/m_38/m_3c/m_value/m_blob. CProjectile's own data starts at +0x170.
     i32 m_kind;                   // +0x170  projectile kind (ProjectileKind; 0x16=WINGZ)
     i32 m_srcRow, m_srcCol;       // +0x174/+0x178  launcher grid cell (row/col)
     i32 m_targetX, m_targetY;     // +0x17c/+0x180  destination tile-centre screen pos
@@ -130,7 +141,7 @@ VTBL(CProjectile, 0x1e798c);
 // 4-byte single-inheritance PMF gives the plain `mov ecx,this; call [entry]` code.
 // (Was the .cpp-local CProjActEntry view; CProjectile is complete above so the PMF
 // stays 4 bytes - pmf-complete-class-4byte.)
-typedef i32 (CProjectile::*ProjActHandler)();
+typedef i32 (CUserLogic::*ProjActHandler)();
 struct CProjActEntry {
     ProjActHandler m_fn;
 };

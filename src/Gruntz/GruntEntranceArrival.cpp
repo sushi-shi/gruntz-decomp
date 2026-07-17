@@ -622,7 +622,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->m_sprite->m_flags |= 0x10000;
+                    s->m_38->m_flags |= 0x10000;
                 }
                 break;
             }
@@ -647,7 +647,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->m_sprite->m_flags |= 0x10000;
+                    s->m_38->m_flags |= 0x10000;
                 }
                 break;
             }
@@ -683,7 +683,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->m_sprite->m_flags |= 0x10000;
+                    s->m_38->m_flags |= 0x10000;
                 }
                 break;
             }

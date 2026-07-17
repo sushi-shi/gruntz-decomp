@@ -74,9 +74,26 @@ public:
     // release + the MovingSlot16 tail; was bound as `CProjectile::ReleaseDeferred`,
     // but the slot lives in ??_7CMovingLogic @0x1e87ac - CProjectile INHERITS it).
     virtual void FinalizeStep(i32 unused) OVERRIDE;
-    CGameObject* m_34;   // +0x34  (ex TILE_LOGIC_TAIL; own fields here - NO CWapX base:
-    CGameObject* m_38;   // +0x38   this class's RTTI/identity places CWapX elsewhere or
-    AnimWorkerObj* m_3c; // +0x3c   not at all - see the class comment)
+    // NO back-pointer fields at +0x34..+0x3c (MI1, 2026-07-17). They used to be spelled
+    // here (the blanket ex-TILE_LOGIC_TAIL injection, from when this class was thought to
+    // derive the fake CTileLogic) and they were a FABRICATION: retail's CProjectile ctor
+    // @0xdec60 - which folds this class's 1-arg init - never stores to +0x34/+0x38/+0x3c
+    // (its only +0x38 touch is `lea edi,[esi+0x38]`, the CMotionState band pointer), and
+    // the no-arg 0x13940's +0x38/+0x3c writes are that band's zero-init. The three
+    // back-pointers this class appeared to own are the CWapX base's, and they live at
+    // +0x150 on the DERIVED classes (CGrunt/CProjectile), not here: CMovingLogic's own
+    // CHD @VA 0x5f3cf0 is attributes=0 and carries no CWapX at all. Deleting them also
+    // resolves the m_34/m_38/m_3c name collision the CWapX base would otherwise create
+    // in CProjectile (see union-member-name-collision-rebind).
+    // +0x38.. is the CMotionState band, reached via Motion(). Its first two dwords are
+    // ALSO spelled flat below (m_band38/m_band3c) because the no-arg ctor zero-inits the
+    // band field-by-field in one interleaved run with m_40..m_104 - the established
+    // overlay idiom. They are NOT back-pointers, and they are deliberately NOT named
+    // m_38/m_3c: those names now belong to the CWapX base at +0x150 on the derived
+    // classes, and a same-name/different-offset pair is exactly the silent-rebind trap.
+    char m_pad34[0x38 - 0x34]; // +0x34  own; no ctor writes it (role unrecovered)
+    i32 m_band38;              // +0x38  CMotionState band dword 0 (overlays Motion())
+    i32 m_band3c;              // +0x3c  CMotionState band dword 1
 public:
     CMovingLogic();                   // 0x13940 (standalone) / inlined into leaves
     CMovingLogic(CGameObject* owner); // 1-arg (folds into CProjectile(owner))
@@ -137,7 +154,7 @@ inline CMovingLogic::CMovingLogic() {
     m_48 = 0;
     m_50 = 0;
     m_58 = 0;
-    m_38 = 0; // inherited CTileLogic field (re-zeroed in the no-arg path)
+    m_band38 = 0; // the CMotionState band's dword 0 (flat overlay zero-init)
     m_40 = 0;
     m_f8 = 0;
     m_100 = 0;
@@ -151,7 +168,7 @@ inline CMovingLogic::CMovingLogic() {
     m_4c = 0;
     m_54 = 0;
     m_5c = 0;
-    m_3c = 0; // inherited CTileLogic field
+    m_band3c = 0; // the band's dword 1
     m_44 = 0;
     m_fc = 0;
     m_104 = 0;
@@ -178,11 +195,9 @@ inline CMovingLogic::CMovingLogic() {
 // default MIN/MAX when 0), then the 11-double coordinate setter (0x58bc0) and the
 // default-Z band.
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
-    // the ex-TILE_LOGIC_SEED stores - CMovingLogic's OWN +0x34..0x3c fields (no CWapX
-    // base here; RTTI puts the moving world's CWapX at +0x150 on the LEAVES).
-    m_34 = owner;
-    m_38 = owner;
-    m_3c = owner->m_7c;
+    // (No +0x34..0x3c back-pointer stores: retail 0xdec60 does not emit them - they
+    // were the fabricated ex-TILE_LOGIC_SEED. The real ones are the CWapX base's at
+    // +0x150, assigned by each derived ctor's body. See the class note above.)
     Motion()->Init();
     // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
     // widened via fild. Written as if/else (not ?:) so the constant branch stays a

@@ -792,6 +792,16 @@ class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); 
 // from a comment, re-derive it from the binary first: allocation site for the size, then
 // the field offsets the real bodies actually read.
 //
+// WHERE THE "0x120" CAME FROM (MI1, 2026-07-17 - closing it out): it is not a gap and
+// never was a member. It is arithmetic: 0x150 (the fat CMovingLogic spine RTTI proves,
+// from the CWapX mdisp on CGrunt/CProjectile) minus 0x30 (the CUserLogic base as it was
+// then modeled) = 0x120 - i.e. exactly what you would mis-shift by if you swapped the
+// lean base for the fat one WITHOUT deleting the flat +0x38..+0x14f members that already
+// cover the same bytes. The two models are byte-identical today; the fat-base form is the
+// one RTTI names, and adopting it is step (a) of the CWapX@+0x150 conversion described at
+// the +0x150 members below. The standing "phantom +0x120 gap" memory is STALE - re-derive
+// before acting on it.
+//
 // The 1-arg ctor is inlined into CGrunt::CGrunt @0x47a10: it seeds the CTileLogic
 // back-pointers, builds the +0x38 CMotionState band via Motion()->Init(), seeds the
 // four coordinate bounds from the per-type config (m_14), and runs SetParams. The
@@ -1096,9 +1106,39 @@ public:
     //  m_118 / m_124) with recovered roles. The old CTmCell view conflated the SPRITE with
     //  the LOGIC, and this was a piece of that conflation leaking onto CGrunt.)
     char m_padb0[0x148 - 0xb0];
-    i32 m_148;          // +0x148
-    i32 m_14c;          // +0x14c
-    void* m_150;        // +0x150
+    i32 m_148; // +0x148
+    i32 m_14c; // +0x14c
+    // ---------------------------------------------------------------------
+    // +0x150..+0x16f IS THE CWapX SECOND BASE, spelled flat (MI1, 2026-07-17).
+    // PROVEN, not suspected - three independent lines agree:
+    //  1. RTTI: CGrunt's CHD @VA 0x5f2c40 is attributes=1 (MI) and, decoding the
+    //     numContainedBases nesting, its DIRECT bases are CMovingLogic@0x0 +
+    //     CWapX@0x150. (CMovingLogic's own CHD @0x5f3cf0 is attributes=0 with NO
+    //     CWapX, so it does not arrive through the spine.)
+    //  2. BYTES: the ctor @0x47a10 emits `mov [esi+0x150],ebp; mov [esi+0x154],ebp;
+    //     mov ecx,[ebp+0x7c]; mov [esi+0x158],ecx` - exactly the three-store CWapX
+    //     seed the +0x34 tile leaves emit, at +0x150.
+    //  3. SHAPE: the five fields below == CWapX's m_34/m_38/m_3c/m_value/m_blob,
+    //     field for field, including this header's own independently-recovered notes
+    //     ("m_158 = obj->m_7c", "m_15c = m_154->m_1a0.m_14 cache", a 0x10-byte pad),
+    //     and CGrunt's real own data resumes at +0x170 = 0x150 + sizeof(CWapX).
+    //
+    // NOT YET CONVERTED (deferred, with the blocker named - do not "just add the
+    // base"): a second base lands immediately after the PRIMARY base's size, so
+    // `: public CGruntMovingBase, public CWapX` would put CWapX at +0x34, not +0x150,
+    // because CGruntMovingBase is the LEAN base (see its note above). Landing it needs
+    // BOTH:
+    //   (a) CGruntMovingBase absorbs this class's +0x34..+0x14f members so it becomes
+    //       the true 0x150 spine RTTI says CMovingLogic is (byte-neutral: identical
+    //       offsets, base data precedes own data); and
+    //   (b) CGrunt's own `m_38` (+0x38, the anim player) must be RENAMED first - it
+    //       collides by NAME with the inherited CWapX::m_38 (+0x150). That is the
+    //       silent-rebind trap (union-member-name-collision-rebind), and it is why
+    //       this is a dedicated pass, not a tail-end edit: ~560 `m_38` sites / 76 TUs.
+    // The equivalent conversion on CProjectile (same base, same +0x150) is DONE and
+    // byte-verified - see <Gruntz/Projectile.h> for the worked shape.
+    // ---------------------------------------------------------------------
+    void* m_150; // +0x150  (CWapX::m_34)
     CGameObject* m_154; // +0x154  the created entrance-anim sprite object (the ex
                         //         CEntranceAnimPlayer view - the player IS the
                         //         created CGameObject; see UserLogic.h's tail note)

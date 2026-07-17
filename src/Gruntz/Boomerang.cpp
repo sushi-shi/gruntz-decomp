@@ -33,14 +33,14 @@ const double g_projPhase0 = 3.1415927;
 // @source: rtti-vptr
 // @early-stop
 // vptr-store-schedule wall (~97.3%): retail emits the implicit vptr store BEFORE
-// the m_sprite (+0x154) load; MSVC5 /O2 fills the post-base-call latency slot with
-// the independent m_sprite load and sinks the store after it. A real polymorphic
+// the m_38 (+0x154) load; MSVC5 /O2 fills the post-base-call latency slot with
+// the independent m_38 load and sinks the store after it. A real polymorphic
 // class (implicit vptr init), so the store is no longer source-orderable - the
 // schedule is the optimizer's, not steerable. Byte-exact otherwise.
 RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     // vptr stamp is IMPLICIT (real polymorphic class).
-    m_sprite->m_flags |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
 }
 
 // The game registry singleton (the m_world resource gate + m_cmdGrid launcher grid).

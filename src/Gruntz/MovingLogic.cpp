@@ -60,7 +60,7 @@ CMovingLogic::CMovingLogic() {
     m_48 = 0;
     m_50 = 0;
     m_58 = 0;
-    m_38 = 0; // inherited CUserLogic field (re-zeroed in the no-arg path)
+    m_band38 = 0; // the CMotionState band's dword 0 (flat overlay zero-init)
     m_40 = 0;
     m_f8 = 0;
     m_100 = 0;
@@ -74,7 +74,7 @@ CMovingLogic::CMovingLogic() {
     m_4c = 0;
     m_54 = 0;
     m_5c = 0;
-    m_3c = 0; // inherited CUserLogic field
+    m_band3c = 0; // the band's dword 1
     m_44 = 0;
     m_fc = 0;
     m_104 = 0;

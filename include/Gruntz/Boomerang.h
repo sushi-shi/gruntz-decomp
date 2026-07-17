@@ -24,6 +24,12 @@
 // CProjectile/CUserLogic. cl emits ??_7CBoomerang@@6B@ from CProjectile's vtable with
 // these overrides applied (all reloc-masked); the ctor stamps the vptr implicitly.
 SIZE(CBoomerang, 0x260);
+// Do NOT add `public CWapX` here. CBoomerang's CHD @VA 0x5f2d18 lists CWapX@0x150, but
+// that is the transitive closure, not a declaration: decoding its numContainedBases
+// nesting gives exactly ONE direct base, CProjectile - which is where CWapX is declared
+// (MI1, 2026-07-17). Re-declaring it would create a second CWapX subobject. Same rule as
+// the +0x34 sub-leaves (CCoveredPowerup/CGiantRock/CTileSecretTrigger), which inherit
+// theirs through CTileTrigger.
 class CBoomerang : public CProjectile {
 public:
     CBoomerang(CGameObject* owner); // 0xe0650 (chains CProjectile(owner))

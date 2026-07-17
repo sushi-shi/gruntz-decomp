@@ -213,11 +213,17 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_14c = 0;
     m_object->m_moveMode = 7;
     Fn16ea90();
-    m_150 = (i32)owner;
-    m_sprite = (CGameObject*)owner;
-    m_158 = (i32)owner->m_7c;
-    m_sprite->m_flags |= 0x2000002;
-    m_sprite->m_stateFlags |= 1;
+    // Seed the CWapX base's back-pointers (the +0x150 second base; <Gruntz/UserLogic.h>).
+    // ASSIGNED IN THE BODY, not via a `CWapX(owner)` init-list base ctor: retail puts
+    // these three stores AFTER m_148/m_14c/m_moveMode/Fn16ea90, which a base ctor could
+    // not do (it must run before the body). So CWapX's ctor is trivial and every derived
+    // ctor assigns the inherited fields itself - see the ordering note in UserLogic.h.
+    // Typing them on the base also retires three `(i32)`/`(CGameObject*)` casts.
+    m_34 = owner;
+    m_38 = owner;
+    m_3c = owner->m_7c;
+    m_38->m_flags |= 0x2000002;
+    m_38->m_stateFlags |= 1;
     if (m_object->m_latchedAnimId != 0xcf850) {
         m_object->m_latchedAnimId = 0xcf850;
         m_object->m_flags |= 0x20000;
@@ -378,7 +384,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 
     // Resolve the six numbered frame sprites; frame "1" is required.
     CMapStringToPtr& map =
-        m_sprite->m_0c->m_animRegistry->m_10; // Lookup 0x1b8438 -> void& out-param
+        m_38->m_0c->m_animRegistry->m_10; // Lookup 0x1b8438 -> void& out-param
     void* out;
     out = 0;
     map.Lookup(key + "1", out);
@@ -405,9 +411,9 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     map.Lookup(key + "FALL", out);
     m_fallSprite = (CAniElement*)out;
 
-    m_savedFrameGeo = m_sprite->m_1a0.m_14;
-    m_sprite->m_1a0.Setup_15c2d0(m_frame1);
-    m_sprite->ApplyName(key + "_OBJECT");
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(m_frame1);
+    m_38->ApplyName(key + "_OBJECT");
 
     // Normalise the launch trajectory into the per-frame velocity + sign vectors.
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
@@ -682,9 +688,9 @@ void CProjectile::MovingSlot16() {
             if (dist >= mag * 0.9 || dist < mag * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_sprite->m_1a0.m_14 != m_frame1) {
-                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
-                    m_sprite->m_1a0.Setup_15c2d0(m_frame1);
+                if (m_38->m_1a0.m_14 != m_frame1) {
+                    m_value = m_38->m_1a0.m_14;
+                    m_38->m_1a0.Setup_15c2d0(m_frame1);
                     if (m_shadow != 0) {
                         m_shadow->m_1a0.Setup_15c2d0(m_frame1);
                     }
@@ -692,9 +698,9 @@ void CProjectile::MovingSlot16() {
             } else if (dist >= mag * 0.8 || dist < mag * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_sprite->m_1a0.m_14 != m_frame2) {
-                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
-                    m_sprite->m_1a0.Setup_15c2d0(m_frame2);
+                if (m_38->m_1a0.m_14 != m_frame2) {
+                    m_value = m_38->m_1a0.m_14;
+                    m_38->m_1a0.Setup_15c2d0(m_frame2);
                     if (m_shadow != 0) {
                         m_shadow->m_1a0.Setup_15c2d0(m_frame2);
                     }
@@ -702,9 +708,9 @@ void CProjectile::MovingSlot16() {
             } else if (dist >= mag * 0.7 || dist < mag * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_sprite->m_1a0.m_14 != m_frame3) {
-                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
-                    m_sprite->m_1a0.Setup_15c2d0(m_frame3);
+                if (m_38->m_1a0.m_14 != m_frame3) {
+                    m_value = m_38->m_1a0.m_14;
+                    m_38->m_1a0.Setup_15c2d0(m_frame3);
                     if (m_shadow != 0) {
                         m_shadow->m_1a0.Setup_15c2d0(m_frame3);
                     }
@@ -712,9 +718,9 @@ void CProjectile::MovingSlot16() {
             } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_sprite->m_1a0.m_14 != m_frame4) {
-                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
-                    m_sprite->m_1a0.Setup_15c2d0(m_frame4);
+                if (m_38->m_1a0.m_14 != m_frame4) {
+                    m_value = m_38->m_1a0.m_14;
+                    m_38->m_1a0.Setup_15c2d0(m_frame4);
                     if (m_shadow != 0) {
                         m_shadow->m_1a0.Setup_15c2d0(m_frame4);
                     }
@@ -722,9 +728,9 @@ void CProjectile::MovingSlot16() {
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_sprite->m_1a0.m_14 != m_frame5) {
-                    m_savedFrameGeo = m_sprite->m_1a0.m_14;
-                    m_sprite->m_1a0.Setup_15c2d0(m_frame5);
+                if (m_38->m_1a0.m_14 != m_frame5) {
+                    m_value = m_38->m_1a0.m_14;
+                    m_38->m_1a0.Setup_15c2d0(m_frame5);
                     if (m_shadow != 0) {
                         m_shadow->m_1a0.Setup_15c2d0(m_frame5);
                     }
@@ -776,7 +782,7 @@ void CProjectile::MovingSlot16() {
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
-            m_sprite->m_flags |= 0x10000;
+            m_38->m_flags |= 0x10000;
             return;
         }
         if (flags & 0x2) {
@@ -808,7 +814,7 @@ void CProjectile::MovingSlot16() {
                                 fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                             }
                         }
-                        m_sprite->m_flags |= 0x10000;
+                        m_38->m_flags |= 0x10000;
                         return;
                 }
             }
@@ -816,11 +822,11 @@ void CProjectile::MovingSlot16() {
     }
     CAniElement* sprite = (tier != 0) ? m_fallSprite : m_impactSprite;
     if (sprite == 0) {
-        m_sprite->m_flags |= 0x10000;
+        m_38->m_flags |= 0x10000;
         return;
     }
-    m_savedFrameGeo = m_sprite->m_1a0.m_14;
-    m_sprite->m_1a0.Setup_15c2d0(sprite);
+    m_value = m_38->m_1a0.m_14;
+    m_38->m_1a0.Setup_15c2d0(sprite);
 }
 
 // ---------------------------------------------------------------------------
@@ -830,12 +836,12 @@ void CProjectile::MovingSlot16() {
 // ---------------------------------------------------------------------------
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
-    m_sprite->m_stateFlags &= ~1u;
+    m_38->m_stateFlags &= ~1u;
     // The +0x1a0 anim sub-object IS a CAniAdvanceCursor (Advance @0x15c360); call
     // it directly (retail's DetachRenderObj rel32s straight to 0x15c360, not a forwarder),
     // matching the cast-at-use pattern of the sibling site below (~line 1322).
-    m_sprite->m_1a0.Advance(g_engineFrameDelta);
-    CGameObject* r = m_sprite;
+    m_38->m_1a0.Advance(g_engineFrameDelta);
+    CGameObject* r = m_38;
     if (r->m_1a0.m_28 != 0 && r->m_1a0.m_20 == 0) {
         r->m_flags |= 0x10000;
     }
@@ -885,7 +891,7 @@ void CBoomerang::MovingSlot16() {
             m_shadow->m_flags |= 0x10000;
             m_shadow = 0;
         }
-        m_sprite->m_flags |= 0x10000;
+        m_38->m_flags |= 0x10000;
         return;
     }
 step:
