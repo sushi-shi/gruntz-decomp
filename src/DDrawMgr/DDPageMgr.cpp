@@ -6,11 +6,16 @@
 // calls CMoviePlayer::HandleError@0x17cc80 - same obj). Absorbed the ex ddpagemgr +
 // smackervideowindow + ddscreen units.
 //
-// DEFERRED FOLD (@identity-TODO): CDDPageMgr (<DDrawMgr/DirectDrawMgr.h>) and CDDScreen
-// (<DDrawMgr/DDScreen.h>) are two cross-header views of the SAME tiled-DirectDraw
-// display object (Init@CDDPageMgr calls HandleError@CDDScreen); the declared-only
-// cross-calls stay reloc-masked (distinct mangled names), so co-locating is byte-
-// preserving, but unifying the two header views is deferred work.
+// FOLD DONE (2026-07-17). CDDPageMgr and CDDScreen were "two cross-header views of the
+// SAME tiled-DirectDraw display object", and the note here said unifying them was
+// deferred work whose cross-calls "stay reloc-masked (distinct mangled names)". That
+// note had already been overtaken: both names are now TYPEDEF ALIASES of CMoviePlayer
+// (<DDrawMgr/DirectDrawMgr.h>:291, <DDrawMgr/DDScreen.h>:44), which is the class every
+// method in this TU is already defined on. So the 13 `((CDDScreen*)this)->X()` /
+// `((CDDPageMgr*)this)->X()` "same-object bridges" were casting CMoviePlayer* to
+// CMoviePlayer* - self-casts, one mangled name, not a bridge between anything. They are
+// removed: `this->X()` is the identical call (CheckMode16() was already spelled that way
+// beside them). Byte-neutral, and the fold this banner deferred is simply finished.
 //
 // BOUNDARY (left separate, frag-woven strays out of scope): CMoviePlayer::Open@0x17c6f0
 // (movieplayer), CMoviePlayer::UploadPalette@0x17ca10 (palettecopy), CMoviePlayer::ResetPalette
@@ -119,11 +124,11 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
     if (m_dd2->SetCooperativeLevel((HWND)window, coopFlags) != 0) {
-        ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
+        HandleError();
         return 0;
     }
     if (m_dd2->SetDisplayMode(w, h, bpp, 0, 0) != 0) {
-        ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
+        HandleError();
         return 0;
     }
 
@@ -136,7 +141,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     m_descFlags = 1;    // dwFlags = DDSD_CAPS (retail `mov [esi+0x34],1`; was mis-read as m_srcSurf)
     m_descCaps = 0x200; // ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE
     if (m_dd2->CreateSurface((LPDDSURFACEDESC)m_primaryDesc, &m_primaryRaw, 0) != 0) {
-        ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
+        HandleError();
         return 0;
     }
 
@@ -148,11 +153,11 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     // Snapshot the system palette into the +0x108 table (retail pushes the WINDOW
     // - `mov eax,[esp+0x20]` - not the width; the old `OnModeSet(w)` fake-alias
     // decl mis-read both the callee class and the argument).
-    ((CDDScreen*)this)->Snapshot((HWND)window); // same-object bridge (CDDScreen facet)
+    Snapshot((HWND)window);
 
     if (mode->bpp == 8) {
         if (m_dd2->CreatePalette(4, (LPPALETTEENTRY)m_palEntries, &m_palette, 0) != 0) {
-            ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
+            HandleError();
             return 0;
         }
         m_primary->SetPalette(m_palette);
@@ -160,12 +165,12 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     if (mode->bpp == 0x18) {
-        ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
+        HandleError();
         return 0;
     }
     if (mode->bpp == 0x10) {
         if (CheckMode16() == 0) {
-            ((CDDScreen*)this)->HandleError(); // same-object bridge (CDDScreen facet)
+            HandleError();
             return 0;
         }
     }
@@ -218,7 +223,7 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     // The bring-up is CMoviePlayer::Init @0x17c040 on this same object (a0 IS the
     // DDModeInfo*, a1 the coop flags); the old ?Init@CMoviePlayer@@ fake-alias
     // decl left this rel32 unresolved.
-    return ((CDDPageMgr*)this)->Init(h, (DDModeInfo*)a0, (u32)a1); // same-object bridge
+    return Init(h, (DDModeInfo*)a0, (u32)a1);
 }
 
 // CMoviePlayer::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the
@@ -283,7 +288,7 @@ i32 CMoviePlayer::InitMode(
         return 0;
     }
     if (bpp == 16) {
-        if (!((CDDPageMgr*)this)->CheckMode16()) {
+        if (!CheckMode16()) {
             HandleError();
             return 0;
         }
@@ -312,7 +317,7 @@ void CMoviePlayer::Teardown() {
     FreeAll();
     m_window = 0; // +0x00 plain data (no vptr evidence; zeroed at teardown)
     m_initialized = 0;
-    ((CDDScreen*)this)->HandleError();
+    HandleError();
     if (m_videoWnd) {
         m_videoWnd->DestroyWindow();
         delete m_videoWnd; // virtual dtor -> the compiler's own null-guarded slot-1 dispatch
@@ -540,7 +545,7 @@ i32 CMoviePlayer::CloseSmacker() {
 RVA(0x0017caa0, 0x13b)
 i32 CMoviePlayer::Frame() {
     if (m_smackHandle->NewPalette && m_bpp == 8) {
-        ((CDDScreen*)this)->UploadPalette();
+        UploadPalette();
     }
     i32 hr = m_srcSurf->Lock(0, &m_srcDesc, 1, 0);
     while (hr == static_cast<i32>(0x887601c2)) {
@@ -558,8 +563,7 @@ i32 CMoviePlayer::Frame() {
 afterLock:
     if (m_514 != 1) {
         while (SmackToBufferRect(m_smackHandle, 0) != 0) {
-            ((CDDScreen*)this)
-                ->BlitRegion(
+            BlitRegion(
                     m_smackHandle->LastRectx,
                     m_smackHandle->LastRecty,
                     m_smackHandle->LastRectw,
@@ -567,7 +571,7 @@ afterLock:
                 );
         }
     } else {
-        ((CDDScreen*)this)->BlitRegion(0, 0, m_smackHandle->Width, m_smackHandle->Height);
+        BlitRegion(0, 0, m_smackHandle->Width, m_smackHandle->Height);
     }
     Smack* s = m_smackHandle;
     if (s->FrameNum == s->Frames - 1) {
