@@ -240,6 +240,8 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
     m_28 = 2;
 }
 
+// @confidence: high
+// @source: rtti-vptr
 // @stub
 // 0x0e8e00 (1.0 KB) = CSBI_GruntMachine::SerializeFields - ??_7CSBI_GruntMachine
 // (0x1eadbc) slot 1, thunk 0x381e. The grunt-machine serialize leg over
@@ -462,6 +464,8 @@ i32 CSBI_SideTab::Render(i32 z) {
     return 1;
 }
 
+// @confidence: high
+// @source: rtti-vptr
 // @stub
 // 0x0e9a30 (798 B) = CSBI_SideTab::SerializeFields - ??_7CSBI_SideTab (0x1eae3c) slot 1,
 // thunk 0x1ef1. The side-tab serialize leg. Body still unreconstructed (798 B); the
