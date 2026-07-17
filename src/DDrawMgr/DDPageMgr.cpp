@@ -224,7 +224,12 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
 // CMoviePlayer::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the
 // CDDScreen display object (a stack-local 0x520+-byte block in the caller;
 // CGruntzMgr::ChangeState_8fab0 builds + InitMode()s it).
-RVA(0x0017c3f0, 0x14e)
+// Size was 0x14e - OVER-DECLARED by 0x2e, overlapping ?Teardown@CMoviePlayer@@ @0x17c510.
+// The bytes end this function at 0x17c50f: `... pop edi; pop esi; pop ebp; xor eax,eax;
+// pop ebx; ret 0x7c` closes at 0x17c50e, then a single `90` nop aligns to 0x17c510 where
+// Teardown's `push esi; mov esi,ecx; ...` begins. Real size 0x120. Found by the new
+// overlapping-range census in verify_unique_names.
+RVA(0x0017c3f0, 0x120)
 i32 CMoviePlayer::InitMode(
     HWND wnd,
     IDirectDraw2* dd2,

@@ -81,6 +81,24 @@ Fix: delete the fragment; the real owner already models the bytes.
 
 "No source form reproduces this" is a claim about the *compiler*. Before accepting it,
 check the cheaper claim about the *tool*: that the address you were given is a function
-at all. `verify_unique_names` only enforces one RVA per NAME — it does **not** catch two
-names claiming overlapping RANGES, so a fragment can sit inside its parent indefinitely
-and both get scored.
+at all.
+
+## This is now gated (2026-07-17)
+
+`verify_unique_names` used to enforce only one RVA per NAME — it never looked at
+EXTENTS, which is how this fragment sat inside its parent, scored, indefinitely. It now
+also fails on any two claims with overlapping `[rva, rva+size)` ranges (MSVC5 has no
+`/OPT:ICF`, so no two functions ever share bytes). The first run found two more, both
+over-declared sizes rather than phantoms:
+
+| claim | was | is | what it ran into |
+|---|---|---|---|
+| `LaunchWebBrowser` 0x8f120 | `0x264` | `0x170` | its own int3 padding + all of `PollUnlessIdle` @0x8f2f0 (a real function) |
+| `CMoviePlayer::InitMode` 0x17c3f0 | `0x14e` | `0x120` | 0x2e bytes into `Teardown` @0x17c510 |
+
+So an overlap has two flavours, and the fix differs:
+- **over-declared size** (common) — the `RVA()` size arg reaches past the function's real
+  end. Find the end (the `ret` + the `cc cc` padding, or a 1-byte `90` alignment nop) and
+  shrink the size.
+- **phantom claim** (worse) — the inner "function" is a fragment of the outer one. Balance
+  its stack per the test above; if it does not close, delete it.

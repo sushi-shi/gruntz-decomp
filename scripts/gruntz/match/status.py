@@ -17,13 +17,38 @@ PDBs for the target and only a few dozen units, so a flat text file diffed
 against a fresh build (with git as the history store) is enough.
 
 Two ideas:
-  * keep the max %            - so unrelated regressions are at least visible.
-  * gate the max by a source  - each function carries a fingerprint. On `update`,
-    fingerprint               if a function's fingerprint changed, best<-current
-                              (the old peak belonged to different source); if
-                              unchanged, best<-max(best,current). So deliberately
-                              editing a function clears its stale peak, but its
-                              siblings keep guarding their high-water marks.
+  * keep the max %            - so unrelated regressions are at least visible. best is
+    UNCONDITIONALLY            monotone non-decreasing for a given BODY: nothing but an
+                               explicit `--accept-regressions` may lower it.
+  * gate the reset by the rva  - a best measures a BODY; the name is only our label for
+    (identity), NOT by source  it. When a row's rva MOVES, the name now labels a different
+                               body, so its peak starts fresh (see rebound()). The old
+                               body keeps its peak under whatever name now sits at that rva.
+
+  FIXED 2026-07-17 (ML1): `update` used to reset best<-current whenever a function's
+  source FINGERPRINT changed ("the old peak belonged to different source"), gated behind
+  a non-default --keep-max. So the documented bless - plain `status update`, what every
+  lane runs - did `best = pct` unconditionally on any edited row. That is not a ratchet,
+  and it broke in the direction that costs the most: editing a body is EXACTLY when the
+  high-water must hold, because the structure-over-current-% doctrine asks lanes to take
+  proven-correct shapes at a %-cost. The tool erased the peak precisely when a lane did
+  the thing we ask for. gate_selftest's TestBestEverRatchet pins the mechanism (it fails
+  against the old code, resetting a 98.8947 peak to 87.0526).
+
+  EXPOSURE when this was fixed: 59 of 3982 rows had best > cur - 217.3 best-% one edit
+  away from being destroyed, including FOUR rows at best=100.0000 (a proven byte-exact
+  match) sitting at currents of 58.5 / 66.4 / 83.8 / 89.5.
+
+  Two things this note deliberately does NOT claim, because they were checked and are
+  false: (1) that the cold-cache path erodes - real_edit() already refuses to call a
+  `cpp:` fallback an edit (test_a_fallback_fingerprint_is_not_an_edit pins that); and
+  (2) any count of peaks eroded in the wild. An earlier version of this note asserted
+  "3 eroded, then 6" from real blesses; that measurement read the cur_pct column instead
+  of best_pct and is WITHDRAWN. The bug is real and provable from the code and the test;
+  how often it actually fired was never established.
+
+  The fingerprint now drives `tries` and the TOUCHED/REGRESS split ONLY; IDENTITY (the
+  rva) drives best.
 
 The fingerprint is PER FUNCTION, not per .cpp: gruntz.match.fingerprints asks
 clangd for each function's source extent and hashes that range. That way editing
@@ -296,8 +321,36 @@ def real_edit(prev_fp: str, cur_fp: str) -> bool:
     """True only when BOTH sides are real (non-fallback) fingerprints that differ -
     a genuine source edit, not a cache hash-domain change. A fallback on either
     side means "unknown", which must NOT count as an edit (else a stale cache hides
-    regressions as TOUCHED and corrupts the baseline on update)."""
+    regressions as TOUCHED and corrupts the baseline on update).
+
+    NB this drives `tries` and the TOUCHED/REGRESS split ONLY. It must NEVER gate
+    `best` - see rebound() and cmd_update()."""
     return not is_fallback(prev_fp) and not is_fallback(cur_fp) and prev_fp != cur_fp
+
+
+def rebound(prev_addr: int | None, cur_addr: int | None) -> bool:
+    """True when this NAME now labels a DIFFERENT BODY (its rva moved).
+
+    THE identity question for the ratchet, and the rva is what answers it. A row's
+    best-ever measures a BODY; the name is just our label for it, and labels get
+    reassigned (a fold renames a method, a shift-by-one attribution fix slides a whole
+    cluster of names down one rva). When the name at a row moves to another address,
+    the recorded peak belonged to the body that used to be here, so it is not this
+    one's floor and must not be carried onto it.
+
+    Unknown on either side (a pre-rva baseline row, or a function with no
+    symbol_names entry) returns False = "same body" DELIBERATELY: that keeps the
+    ratchet, so an unvouchable row can only ever over-report a regression (which a
+    human reads) instead of silently eroding a peak (which nobody sees). Erosion is
+    the failure mode that costs us the truth; a loud false REGRESS is cheap.
+
+    Do NOT use the source fingerprint for this. A fingerprint answers "did the TEXT
+    change", which is a different question and the wrong one: editing a body is
+    exactly when the ratchet has to hold (a lane takes a proven-correct structural
+    change at a %-cost - see the structure-over-current-% doctrine), and the
+    fingerprint falls back to a whole-.cpp hash whenever the clangd cache is cold, so
+    it reports every function in a touched file as edited."""
+    return prev_addr is not None and cur_addr is not None and prev_addr != cur_addr
 
 
 def fingerprinter():
@@ -426,12 +479,19 @@ HEADER = (
     "#   function rows:  unit  function  best_pct  cur_pct  tries  src_hash  rva\n"
     "#   rva      = retail RVA (stable identity): a vanished row whose rva is still\n"
     "#              occupied is a rename, not a loss - so signature edits don't regress.\n"
+    "#              It is ALSO what gates best_pct: the rva identifies the BODY, and a\n"
+    "#              best measures a body, not a name (see status.rebound()).\n"
     "#   best_pct = best-ever (max) objdiff fuzzy% - the REGRESSION gate (may be 100%).\n"
+    "#              A RATCHET: for a given rva it never decreases. Only an explicit\n"
+    "#              `update --accept-regressions`, or the rva MOVING (the name now labels\n"
+    "#              a different body), may lower it. Editing a function does NOT - that is\n"
+    "#              exactly when the high-water must hold (structure over current %).\n"
     "#   cur_pct  = fuzzy% at THIS commit - `diff <revA> [<revB>]` two commits to see\n"
     "#              the moves (e.g. unit 5->10 fns, a fn 10%->40%) while best_pct holds.\n"
     "#   tries    = times this function's source fingerprint changed (how much it has\n"
     "#              been worked on - high = hard to match).\n"
-    "#   src_hash = per-function source fingerprint (editing a fn bumps tries + resets best).\n"
+    "#   src_hash = per-function source fingerprint. Drives tries + the TOUCHED/REGRESS\n"
+    "#              split ONLY; it must never gate best_pct (it used to, and eroded it).\n"
     "# Query: python -m gruntz.match.status check | status | summary | diff <revA> [<revB>]\n"
 )
 
@@ -510,27 +570,38 @@ def cmd_update(args) -> int:
     fp, _, stale = fingerprinter()
     rvas = func_rvas()
 
-    raised = touched = added = 0
+    raised = touched = added = rebounds = 0
     new_funcs: dict[tuple[str, str], dict] = {}
     for key, pct in cur.items():
         cur_fp = fp(*key)
         prev = base_funcs.get(key)
+        cur_addr = rvas.get(key)
         if prev is None:
             new_funcs[key] = {"best": pct, "cur": pct, "tries": 1, "fp": cur_fp}  # 1st try
             added += 1
-        elif real_edit(prev["fp"], cur_fp):
-            # genuine source edit -> bump tries; old peak is stale, reset best to current
-            best = max(prev["best"], pct) if args.keep_max else pct
-            new_funcs[key] = {"best": best, "cur": pct,
-                              "tries": prev["tries"] + 1, "fp": cur_fp}
-            touched += 1
+        elif rebound(prev.get("addr"), cur_addr):
+            # This NAME now labels a DIFFERENT BODY (its rva moved). The recorded peak
+            # measured the body that used to sit here, so it is not this one's floor -
+            # start fresh. The old body's peak is not lost: whatever name now sits at
+            # the old rva keeps it (same-body ratchet) or enters as a new row at its own
+            # %. This is the ONLY path that may lower a best without --accept-regressions,
+            # and it is keyed on identity, never on "the source text changed".
+            new_funcs[key] = {"best": pct, "cur": pct, "tries": 1, "fp": cur_fp}
+            rebounds += 1
         else:
-            # unchanged, OR a fallback on either side (fingerprint unknown): never bump
-            # tries, never LOWER best; adopt a real fp if we now have one, else keep it.
+            # SAME BODY -> RATCHET. best NEVER goes down here; that is the contract the
+            # whole structure-over-current-% doctrine rests on. A lane must be able to
+            # take a proven-correct shape at a %-cost without erasing the high-water -
+            # so a source edit bumps `tries` and NOTHING else. Adopt a real fp if we now
+            # have one, else keep the old one.
             best = max(prev["best"], pct)
             keep_fp = cur_fp if not is_fallback(cur_fp) else prev["fp"]
+            edited = real_edit(prev["fp"], cur_fp)
             new_funcs[key] = {"best": best, "cur": pct,
-                              "tries": prev["tries"], "fp": keep_fp}
+                              "tries": prev["tries"] + 1 if edited else prev["tries"],
+                              "fp": keep_fp}
+            if edited:
+                touched += 1
             if best - prev["best"] > EPS:
                 raised += 1
 
@@ -550,9 +621,14 @@ def cmd_update(args) -> int:
 
     lost = sorted(k for k in base_funcs if k not in cur)
     write_baseline(new_funcs)
-    print(f"baseline written: {BASELINE.relative_to(REPO)}")
+    try:  # a redirected BASELINE (tests) need not live under REPO
+        shown = BASELINE.relative_to(REPO)
+    except ValueError:
+        shown = BASELINE
+    print(f"baseline written: {shown}")
     print(f"  {len(new_funcs)} functions across {len({u for (u, _) in new_funcs})} units")
-    print(f"  raised best: {raised}  tried(touched): {touched}  new: {added}  dropped: {len(lost)}")
+    print(f"  raised best: {raised}  tried(touched): {touched}  new: {added}  "
+          f"rebound(rva moved, best reset): {rebounds}  dropped: {len(lost)}")
     if lost and args.verbose:
         for u, fn in lost:
             print(f"    dropped {u}/{fn}")
@@ -1010,9 +1086,12 @@ def main() -> int:
 
     u = sub.add_parser("update", help="recompute best+fingerprint, write baseline")
     u.add_argument("--accept-regressions", action="store_true",
-                   help="bless current as the new floor (lower best to current)")
+                   help="bless current as the new floor (lower best to current) - the ONLY "
+                        "way a plain update can lower a best-ever")
     u.add_argument("--keep-max", action="store_true",
-                   help="do NOT reset best when a function's source changed")
+                   help=argparse.SUPPRESS)  # DEPRECATED no-op: keeping the max is now
+                                            # unconditional (see rebound()). Accepted so
+                                            # old scripts/aliases keep working.
     u.add_argument("-v", "--verbose", action="store_true")
     u.set_defaults(func=cmd_update)
 

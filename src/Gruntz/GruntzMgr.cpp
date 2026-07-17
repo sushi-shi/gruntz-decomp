@@ -1322,7 +1322,12 @@ i32 CGruntzMgr::ToggleBaseLayer() {
 // methods (in the gruntzmgr .obj). Re-homed from src/Stub/ApiWrappers.cpp.
 // The real callee at 0x118ce0 (reloc-masked): ?FindProcessByName@@YAHPBDHPAPAX@Z.
 i32 FindProcessByName(const char* name, i32 flag, void** out);
-RVA(0x0008f120, 0x264)
+// Size was 0x264 - OVER-DECLARED by 0xf4, reaching past this function's end (0x8f290,
+// where its int3 padding starts) and swallowing both that padding and the whole of
+// ?PollUnlessIdle@CGruntzMgr@@QAEHXZ @0x8f2f0, which is a real function (64 bytes of
+// int3 before it; a self-contained __thiscall). Found by the new overlapping-range
+// census in verify_unique_names - name-injectivity never looked at extents.
+RVA(0x0008f120, 0x170)
 i32 __stdcall LaunchWebBrowser(char* url) {
     LONG len = 0x104;
     char cmd[0x104];

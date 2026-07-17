@@ -4,12 +4,19 @@
 #   function rows:  unit  function  best_pct  cur_pct  tries  src_hash  rva
 #   rva      = retail RVA (stable identity): a vanished row whose rva is still
 #              occupied is a rename, not a loss - so signature edits don't regress.
+#              It is ALSO what gates best_pct: the rva identifies the BODY, and a
+#              best measures a body, not a name (see status.rebound()).
 #   best_pct = best-ever (max) objdiff fuzzy% - the REGRESSION gate (may be 100%).
+#              A RATCHET: for a given rva it never decreases. Only an explicit
+#              `update --accept-regressions`, or the rva MOVING (the name now labels
+#              a different body), may lower it. Editing a function does NOT - that is
+#              exactly when the high-water must hold (structure over current %).
 #   cur_pct  = fuzzy% at THIS commit - `diff <revA> [<revB>]` two commits to see
 #              the moves (e.g. unit 5->10 fns, a fn 10%->40%) while best_pct holds.
 #   tries    = times this function's source fingerprint changed (how much it has
 #              been worked on - high = hard to match).
-#   src_hash = per-function source fingerprint (editing a fn bumps tries + resets best).
+#   src_hash = per-function source fingerprint. Drives tries + the TOUCHED/REGRESS
+#              split ONLY; it must never gate best_pct (it used to, and eroded it).
 # Query: python -m gruntz.match.status check | status | summary | diff <revA> [<revB>]
 # [units]	unit	n_functions	matched
 actionarea	13	10
