@@ -1827,8 +1827,6 @@ rva,name,lib,confidence,source
 0x139dd0,__inc,LIBCMT,LOW,anchored
 0x139ec0,__inc,LIBCMT,LOW,anchored
 0x139ed0,__inc,LIBCMT,LOW,anchored
-0x13ba10,___init_collate,LIBCMT,LOW,anchored
-0x13c4c0,__fpclear,LIBCMT,LOW,anchored
 0x13d430,___init_collate,LIBCMT,LOW,anchored
 0x13e080,___inittime,LIBCMT,LOW,anchored
 0x141300,___init_collate,LIBCMT,LOW,anchored
