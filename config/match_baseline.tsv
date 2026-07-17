@@ -290,7 +290,7 @@ savescreenshot	1	0
 sbi_image	5	3
 sbi_imageset	5	2
 sbi_imagesetani	5	2
-sbi_menuitem	12	8
+sbi_menuitem	11	7
 sbi_rectonly	83	39
 sbi_rectonlybase	3	2
 sbi_rectonlydtor_eh	2	2
@@ -331,7 +331,7 @@ statemgrbz	7	5
 statereleaseresources	1	0
 statichazard	9	5
 statusbargamemenu	1	0
-statusbaritem	3	2
+statusbaritem	4	3
 statusbarmgr	1	0
 statusbarspriteacts	7	5
 statusbartabbuilders	16	10
@@ -1362,11 +1362,11 @@ directinputmgr2	?Add@CFixedPtrArray32@@QAEHPAX@Z	100.0000	100.0000	1	d7c569f394e
 directinputmgr2	?AddController@DirectInputMgr2@@QAEPAXHHH@Z	100.0000	100.0000	6	7ef1fd9da18d	0x1331e0
 directinputmgr2	?AddControllerArr@DirectInputMgr2@@QAEPAXHHHHHHH@Z	100.0000	100.0000	1	d60a47e5d1ec	0x133260
 directinputmgr2	?Clear@CFixedPtrArray32@@QAEXXZ	100.0000	100.0000	1	209a6f2254a6	0x134c60
-directinputmgr2	?Create@DirectInputMgr2@@QAEHPAX0I@Z	100.0000	100.0000	3	07603720063c	0x132ce0
-directinputmgr2	?CreateDev@CDeviceConfigB@@QAEHPAUIDirectInputA@@PBXPAXI@Z	100.0000	100.0000	2	bbcbb674dc21	0x1342c0
-directinputmgr2	?CreateDev@CInputDevice@@QAEHPAUIDirectInputA@@PBXPAXI@Z	100.0000	100.0000	2	a9d61ad060b4	0x133b50
-directinputmgr2	?CreateDevJoystick@CDeviceConfigC@@QAEHPAUIDirectInputA@@PBXPAXI@Z	100.0000	100.0000	1	45eb2031f11e	0x134630
-directinputmgr2	?CreateDeviceWrap@CInputDevBase@@QAEHPAUIDirectInputA@@PBXPAX@Z	100.0000	100.0000	2	ef0872153aa3	0x134260
+directinputmgr2	?Create@CInputDevBase@@UAEHPAUIDirectInputA@@PBXPAUHWND__@@@Z	100.0000	100.0000	1	f23dac9432fb	0x134260
+directinputmgr2	?Create@DirectInputMgr2@@QAEHPAUHWND__@@PAUHINSTANCE__@@I@Z	100.0000	100.0000	1	45b142c87689	0x132ce0
+directinputmgr2	?CreateDev@CDeviceConfigB@@QAEHPAUIDirectInputA@@PBXPAUHWND__@@I@Z	100.0000	100.0000	1	21bf21085c4b	0x1342c0
+directinputmgr2	?CreateDev@CInputDevice@@QAEHPAUIDirectInputA@@PBXPAUHWND__@@I@Z	100.0000	100.0000	1	8204ac0946e2	0x133b50
+directinputmgr2	?CreateDevJoystick@CDeviceConfigC@@QAEHPAUIDirectInputA@@PBXPAUHWND__@@I@Z	100.0000	100.0000	1	77cfd3bb6f36	0x134630
 directinputmgr2	?EnumGameControllers@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	5	8ff25d80a5ad	0x132f80
 directinputmgr2	?FillFrom@CFixedPtrArray32@@QAEHPAPAXHH@Z	92.3016	92.3016	1	1bd3ea4762d8	0x134be0
 directinputmgr2	?Free360@CDeviceConfigB@@QAEXXZ	100.0000	100.0000	3	00820cd07f77	0x134360
@@ -2508,7 +2508,7 @@ ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	99.9881	99.9881	4	4bb343853
 ingameworkerhandlers	?Handler095890@@YAHPAUOwner@@@Z	100.0000	100.0000	4	3d45693e214a	0x95890
 ingameworkerhandlers	?Handler0959d0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	bedafd8367e8	0x959d0
 inputdevice	?Acquire@CInputDevice@@QAEHXZ	100.0000	100.0000	1	fabbd90ae828	0x134fb0
-inputdevice	?Create@CInputDevRoot@@UAEHPAUIDirectInputA@@PBXPAX@Z	100.0000	100.0000	1	09a2f4188d8c	0x134cb0
+inputdevice	?Create@CInputDevRoot@@UAEHPAUIDirectInputA@@PBXPAUHWND__@@@Z	100.0000	100.0000	1	70ee4ce7d3d3	0x134cb0
 inputdevice	?Escape@CInputDevRoot@@QAEHPAX@Z	100.0000	100.0000	1	f9ce58e668b7	0x135000
 inputdevice	?GetCapabilities@CInputDevRoot@@QAEPAUDIDEVCAPS@@XZ	100.0000	100.0000	1	56326cbb63f3	0x134e30
 inputdevice	?GetDeviceInfo@CInputDevRoot@@QAEPAUDIDEVICEINSTANCEA@@XZ	100.0000	100.0000	1	973db94bf416	0x134df0
@@ -2516,7 +2516,7 @@ inputdevice	?GetProperty@CInputDevRoot@@QAEPAUDIPROPHEADER@@ABU_GUID@@@Z	100.000
 inputdevice	?PollDevice@CInputDevice@@QAEHXZ	100.0000	100.0000	2	37678266aafd	0x135040
 inputdevice	?ReadState@CInputDevice@@QAEPATDeviceState@@XZ	100.0000	100.0000	2	d78d5963cbc9	0x134d90
 inputdevice	?ReleaseDevices@CInputDevRoot@@UAEXXZ	100.0000	100.0000	1	835d517b3126	0x134d50
-inputdevice	?SetCooperativeLevel@CInputDevRoot@@QAEHI@Z	100.0000	100.0000	1	172e7c8d78de	0x134ef0
+inputdevice	?SetCooperativeLevel@CInputDevRoot@@QAEHI@Z	100.0000	100.0000	2	5340f1038685	0x134ef0
 inputdevice	?SetDataFormat@CInputDevRoot@@QAEHPBX@Z	100.0000	100.0000	1	3b280a953eae	0x134eb0
 inputdevice	?SetProperty@CInputDevRoot@@QAEHABU_GUID@@PAX@Z	100.0000	100.0000	1	0b65bd14a5a9	0x134f30
 inputdevice	?SetPropertyDword@CInputDevRoot@@QAEHABU_GUID@@III@Z	100.0000	100.0000	1	43eebc24e054	0x134f70
@@ -3128,7 +3128,7 @@ play	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	3	6f6b6ceac3a4	0xdb750
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	7	27dd0fbcb776	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	7	bae8df96baf1	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	7	9f1f3b59ea43	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.0250	90.0250	9	324c43f9e176	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.0250	89.9500	9	324c43f9e176	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	90.8191	90.8191	13	4616245aeed2	0xd65d0
 play	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	2	03f0d70791b8	0xcedf0
 play	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	2	f5c3cf707abf	0xcee10
@@ -3359,14 +3359,13 @@ sbi_imagesetani	?Tick@CSBI_ImageSetAni@@QAEHXZ	91.4000	91.4000	6	a1065773e367	0x
 sbi_menuitem	??1CSBI_MenuItem@@UAE@XZ	100.0000	100.0000	1	674154901a15	0x1007d0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	2	c243a91ef3a4	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	0438e44a3a76	0xe81a0
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	92.0357	11	b9c8e923a084	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	74.0714	11	b9c8e923a084	0xe82a0
 sbi_menuitem	?DtorStatus@CStatusBarItem@@QAEXXZ	100.0000	100.0000	1	36985686423f	0x10bfa0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	2	316d4a1ee9fa	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	44.6226	44.6226	12	de04dc11f354	0xe81e0
 sbi_menuitem	?SerializeFields@CSBI_MenuItem@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	2	73a218af441b	0xe8520
 sbi_menuitem	?SerializeFields@CStatusBarItem@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	1	3a0995948e6d	0x10bfc0
-sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	15	935322bdaeb1	0xe8310
-sbi_menuitem	?SetSubtype@CSBI_MenuItem@@UAEXXZ	100.0000	100.0000	1	ee2dad86f1ce	0x1005b0
+sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	16	6ab0b59d627f	0xe8310
 sbi_menuitem	?SetupImage@CSBI_MenuItem@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@HHUSbRect@@PBDHH@Z	67.8261	67.8261	1	33c5cce595c6	0xe80e0
 sbi_rectonly	?Activate@CStatusBarMgr@@QAEHXZ	93.4250	93.4250	2	feb499e30d57	0x104dd0
 sbi_rectonly	?ActivateSlot@CStatusBarMgr@@QAEHH@Z	67.1259	67.1259	3	8aa3567407c1	0x10b930
@@ -3678,6 +3677,7 @@ statichazard	?SerializeMove@CStaticHazard@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	1
 statusbargamemenu	?BuildGameMenu@CStatusBarMgr@@QAEXXZ	51.2482	51.2482	3	aa1a8bc9c8a3	0x101580
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	4	7c1bf73fb437	0x1005d0
 statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	100.0000	100.0000	1	cpp:08500b778fe1	0x100620
+statusbaritem	?SetSubtype@CStatusBarItem@@UAEXXZ	100.0000	100.0000	1	2e5b279bc7b9	0x1005b0
 statusbaritem	?Setup@CStatusBarItem@@UAEHHHHHUSbiRect@@HH@Z	90.0000	90.0000	1	1a397525d18a	0x100660
 statusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	83.5879	83.5879	12	7a7291eab23a	0x102250
 statusbarspriteacts	??0CStatusBarSprite@@QAE@PAUCGameObject@@@Z	93.8333	93.8333	7	656e86bdbeb3	0x10c230

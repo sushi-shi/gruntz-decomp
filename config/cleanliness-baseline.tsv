@@ -10,9 +10,9 @@ placeholder vtable slots	0
 ->vtbl accesses	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
-)this casts	171
+)this casts	170
 )m_ casts	674
-(char*) casts	776
+(char*) casts	766
 (const char*) casts	167
 reinterpret_cast<class*>(m_)	1
 C-style numeric casts	819
