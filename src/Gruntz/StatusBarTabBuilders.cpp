@@ -295,7 +295,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_34 != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_34, (i32)buf, (i32)&v);
+                reg->m_imageRegistry->AnyValueMatches_155630(m_34, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -305,7 +305,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_3c != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_3c, (i32)buf, (i32)&v);
+                reg->m_imageRegistry->AnyValueMatches_155630(m_3c, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -314,7 +314,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_44 != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_44, (i32)buf, (i32)&v);
+                reg->m_imageRegistry->AnyValueMatches_155630(m_44, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -638,7 +638,7 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_topFrame != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_topFrame, (i32)buf, (i32)&v);
+                reg->m_imageRegistry->AnyValueMatches_155630(m_topFrame, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);
@@ -647,7 +647,7 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
             memset(buf, 0, sizeof(buf));
             v = 0;
             if (m_bottomFrame != 0) {
-                reg->m_imageRegistry->AnyValueMatches_155630((i32)m_bottomFrame, (i32)buf, (i32)&v);
+                reg->m_imageRegistry->AnyValueMatches_155630(m_bottomFrame, buf, &v);
             }
             s->Write(buf, 0x80);
             s->Write(&v, 4);

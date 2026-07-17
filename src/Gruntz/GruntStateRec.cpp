@@ -76,7 +76,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
     memset(buf, 0, sizeof(buf));                                                                   \
     v = 0;                                                                                         \
     if (field != 0) {                                                                              \
-        reg->m_imageRegistry->AnyValueMatches_155630((i32)field, (i32)buf, (i32) & v);                        \
+        reg->m_imageRegistry->AnyValueMatches_155630(field, buf, &v);                                       \
     }                                                                                              \
     s->Write(buf, 0x80);                                                                           \
     s->Write(&v, 4)

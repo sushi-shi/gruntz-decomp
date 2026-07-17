@@ -30,6 +30,7 @@ class CDDrawSurfaceMgr;
 // SetupImage arg1 is the owning status-bar manager (latched into the base m_2c slot);
 // only a pointer is needed here. `class` (not `struct`) - the mangling depends on it.
 class CStatusBarMgr;
+class CImage; // the latched/resolved m_30 frame (<Image/CImage.h>)
 
 // CSBI_RectOnly - the empty intermediate between CStatusBarItem and CSBI_Image
 // (RTTI: CSBI_Image : CSBI_RectOnly : CStatusBarItem). In retail it overrides only
@@ -117,7 +118,7 @@ public:
     i32 TickRenderCurrent_0e6dd0(); // 0xe6dd0
 
     // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
-    i32 m_30; // +0x30  latched config value
+    CImage* m_30; // +0x30  latched/resolved frame (the config value; ex i32)
 };
 SIZE(CSBI_Image, 0x34);
 VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)

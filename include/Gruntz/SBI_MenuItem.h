@@ -168,7 +168,10 @@ public:
     // the image registry yields, Serialize (case 7) stores the CSprite view of that
     // same record. Same physical shape, distinct modeled classes reached on
     // different code paths -> kept void*.
-    void* m_38; // +0x38  resolved cue/config record (CImageSet | CSprite)
+    // +0x38  resolved cue/config record. Typed CImageSet*; the serialize leg's
+    // Lookup result was spelled CSprite - the SAME +0x14/+0x24/+0x64/+0x68 shape
+    // (the CImageSet==CSprite duplicate-class question; see the session report).
+    CImageSet* m_38;
 };
 SIZE_UNKNOWN(CSBI_MenuItem);
 VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)

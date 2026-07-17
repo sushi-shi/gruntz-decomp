@@ -385,15 +385,15 @@ i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
 }
 
 // ---------------------------------------------------------------------------
-// Map scan: probe every non-null value via its FindFrame(a1,a2,a3); return 1
-// on the first that returns nonzero, else 0. Returns 0 immediately if a1 is null.
-// @early-stop
-// regalloc wall (~75.9%) - complete & correct: a1==0 guard, the per-value
-// FindFrame thiscall, the loop CFG all reproduced. Residue is the same
-// val/loop-flag stack-slot swap + reloc-masked EH-state push as RemoveKeysEqual.
+// Reverse frame lookup: probe every non-null map value (a CImageSet) via its
+// FindFrame(frame, outName, outIndex); return 1 on the first hit, else 0.
+// Returns 0 immediately if `frame` is null. (The ~75.9% "regalloc wall" the old
+// i32,i32,i32 fake-typed signature carried DISSOLVED at 100.00 the moment the
+// params got their real CImage*/char*/i32* types - the lie scored worse than
+// the truth.)
 RVA(0x00155630, 0xc5)
-i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
-    if (a1 == 0) {
+i32 CDDrawWorkerRegistry::AnyValueMatches_155630(CImage* frame, char* outName, i32* outIndex) {
+    if (frame == 0) {
         return 0;
     }
     CString key;
@@ -401,7 +401,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
     POSITION pos = m_10map.GetStartPosition();
     while (pos != 0) {
         m_10map.GetNextAssoc(pos, key, val);
-        if (val != 0 && ((CImageSet*)val)->FindFrame((CImage*)a1, (char*)a2, (int*)a3)) {
+        if (val != 0 && ((CImageSet*)val)->FindFrame(frame, outName, outIndex)) {
             return 1;
         }
     }

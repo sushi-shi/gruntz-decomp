@@ -33,8 +33,8 @@ public:
     CImage* m_frame;           // +0x10  menu-bar frame 1 (the drawable)
     i32 m_button0State;        // +0x14  button[0] state
     i32 m_button1State;        // +0x18  button[1] state
-    i32 m_button0Frame;        // +0x1c  button[0] resolved frame
-    i32 m_button1Frame;        // +0x20  button[1] resolved frame
+    CImage* m_button0Frame;    // +0x1c  button[0] resolved frame
+    CImage* m_button1Frame;    // +0x20  button[1] resolved frame
     i32 m_button0Icon;         // +0x24  button[0] icon
     i32 m_button1Icon;         // +0x28  button[1] icon
     i32 m_active;              // +0x2c  active flag

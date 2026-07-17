@@ -1857,7 +1857,7 @@ i32 CPlay::SyncWrite19fb(CSerialArchive* s) {
         memset(buf, 0, sizeof(buf));
         i32 v = 0;
         if (m_gridCurFrame != 0) {
-            mc->m_imageRegistry->AnyValueMatches_155630((i32)m_gridCurFrame, (i32)buf, (i32)&v);
+            mc->m_imageRegistry->AnyValueMatches_155630(m_gridCurFrame, buf, &v);
         }
         s->Write(buf, 0x80);
         s->Write(&v, 4);

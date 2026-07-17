@@ -89,7 +89,7 @@ i32 CSBI_ImageSet::SetupImage(
     }
     m_38 = f;
     if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
-        m_30 = (i32)rec->m_frames[f];
+        m_30 = rec->m_frames[f];
     } else {
         m_30 = 0;
     }
@@ -126,7 +126,7 @@ i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
         } else {
             cel = 0;
         }
-        m_30 = (i32)cel;
+        m_30 = cel;
         if (cel != 0) {
             cel->RenderFrame(
                 (void*)(i32)g_gameReg->m_world->m_drawTarget->m_backPair,

@@ -5,6 +5,7 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WarlordHead.h>
+#include <Image/ImageSet.h> // canonical CImageSet (the m_34 config record; ex CWhConfig view)
 #include <DDrawMgr/DDrawShadeBlit.h> // full CImage::m_owned (CDDrawShadeBlit) for the +0x1c latch
 #include <Gruntz/GameRegistry.h>     // canonical g_gameReg singleton + CDDrawSurfaceMgr m_world
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -75,12 +76,12 @@ i32 CSBI_WarlordHead::SetupImage(
 // symbol (docs/patterns/reloc-typing-vptr-global.md). Exact once it co-names.
 RVA(0x000eb740, 0xb3)
 i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
-    CWhConfig* cfg = (CWhConfig*)m_34;
+    CImageSet* cfg = m_34;
     if (cfg == 0) {
         return 0;
     }
 
-    CImage* f = (cfg->m_64 <= 1 && cfg->m_68 >= 1) ? cfg->m_14[1] : 0;
+    CImage* f = (cfg->m_minIndex <= 1 && cfg->m_maxIndex >= 1) ? cfg->m_frames[1] : 0;
     if (f == 0) {
         return 0;
     }
@@ -91,7 +92,7 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
         f->m_owned->m_palDescr = palDescr;
     }
 
-    f = (cfg->m_64 <= 2 && cfg->m_68 >= 2) ? cfg->m_14[2] : 0;
+    f = (cfg->m_minIndex <= 2 && cfg->m_maxIndex >= 2) ? cfg->m_frames[2] : 0;
     if (f == 0) {
         return 0;
     }
@@ -135,12 +136,12 @@ i32 CSBI_WarlordHead::Render(i32 z) {
     m_28--;
     i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
 
-    CWhConfig* cfg = (CWhConfig*)m_34;
+    CImageSet* cfg = m_34;
     CImage* f;
     if (m_3c == 1) {
-        f = (cfg->m_64 > 3 || cfg->m_68 < 3) ? 0 : cfg->m_14[3];
+        f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3) ? 0 : cfg->m_frames[3];
     } else {
-        f = (cfg->m_64 > 4 || cfg->m_68 < 4) ? 0 : cfg->m_14[4];
+        f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4) ? 0 : cfg->m_frames[4];
     }
     if (f) {
         f->RenderFrame(
@@ -151,10 +152,10 @@ i32 CSBI_WarlordHead::Render(i32 z) {
         );
     }
 
-    cfg = (CWhConfig*)m_34;
+    cfg = m_34;
     i32 idx = m_38;
-    CImage* g = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
-    m_30 = (i32)g;
+    CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : cfg->m_frames[idx];
+    m_30 = g;
     if (g) {
         g->RenderFrame(
             (void*)ctx,

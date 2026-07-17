@@ -142,11 +142,11 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CImageSet* r = rec;
     if (a == -1) {
         i32 lo = r->m_minIndex;
-        m_30 = (i32)r->m_frames[lo];
+        m_30 = r->m_frames[lo];
         return m_30 != 0;
     }
     if (a >= r->m_minIndex && a <= r->m_maxIndex) {
-        i32 v = (i32)r->m_frames[a];
+        CImage* v = r->m_frames[a];
         m_30 = v;
         return v != 0;
     }
@@ -171,7 +171,7 @@ RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::DecCounter() {
     if (m_28 > 0) {
         m_28--;
-        CImage* f = (CImage*)m_30;
+        CImage* f = m_30;
         if (f) {
             f->RenderFrame(
                 (void*)g_gameReg->m_world->m_drawTarget->m_backPair,
@@ -229,10 +229,10 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
             }
         }
     }
-    CImageSet* r = (CImageSet*)m_38;
-    i32 frame;
+    CImageSet* r = m_38;
+    CImage* frame;
     if (state >= r->m_minIndex && state <= r->m_maxIndex) {
-        frame = (i32)r->m_frames[state];
+        frame = r->m_frames[state];
     } else {
         frame = 0;
     }
@@ -295,8 +295,7 @@ i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
             if (strlen(tmp) != 0) {
                 CObject* found_ob = 0;
                 mgr->m_imageRegistry->m_10map.Lookup(tmp, found_ob);
-                CSprite* found = (CSprite*)found_ob;
-                m_38 = found;
+                m_38 = (CImageSet*)found_ob;
             } else {
                 m_38 = 0;
             }
@@ -306,7 +305,7 @@ i32 CSBI_MenuItem::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             memset(tmp, 0, sizeof(tmp));
             if (m_38) {
-                strcpy(tmp, ((CSprite*)m_38)->m_name);
+                strcpy(tmp, m_38->m_name);
             }
             ar->Write(tmp, 0x80);
             break;

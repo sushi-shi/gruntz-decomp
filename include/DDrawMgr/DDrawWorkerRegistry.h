@@ -36,6 +36,7 @@ class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWork
                     // is load-bearing: it keeps the PAU (not PAV) tag in the Forward*/
                     // RemoveWorker method manglings that take CDDrawWorker*.
 class CImageSet;
+class CImage; // the frame element (AnyValueMatches probes each set for it)
 class CSymTab; // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
 
 // ---------------------------------------------------------------------------
@@ -85,7 +86,9 @@ public:
     i32 RemoveKeysEqual_155360(const char* base, const char* str);
     i32 SumSizesEqual_155460(const char* str, i32 a2);
     i32 HasKeyEqual_155550(const char* str);
-    i32 AnyValueMatches_155630(i32 a1, i32 a2, i32 a3);
+    // Reverse frame lookup: scan every map value (a CImageSet) for `frame`; on a hit
+    // copy the set name into outName + the frame index into outIndex (FindFrame).
+    i32 AnyValueMatches_155630(CImage* frame, char* outName, i32* outIndex);
     // FindKeyOfValue_165360 (0x165360) moved to CDDrawWorkerCache (its true owner: the
     // only callers reverse-look-up a worker in the +0x14 worker cache, xref-confirmed).
     // 0x155630 (frame-name reverse lookup; reloc-masked direct call).

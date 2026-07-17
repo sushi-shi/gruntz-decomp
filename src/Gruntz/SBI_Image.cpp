@@ -84,7 +84,7 @@ i32 CSBI_Image::SetupImage(
         m_30 = 0;
         return 0 != 0;
     }
-    i32 val = (i32)rec->m_frames[1];
+    CImage* val = rec->m_frames[1];
     m_30 = val;
     return val != 0;
 }
@@ -114,7 +114,7 @@ RVA(0x000e6dd0, 0x45)
 i32 CSBI_Image::TickRenderCurrent_0e6dd0() {
     if (m_28 > 0) {
         m_28--;
-        CImage* cel = (CImage*)m_30;
+        CImage* cel = m_30;
         if (cel != 0) {
             cel->RenderFrame(
                 (void*)(i32)g_gameReg->m_world->m_drawTarget->m_backPair,
@@ -163,7 +163,7 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
                 mgr->m_imageRegistry->m_10map.Lookup(name, r_ob);
                 CSprite* r = (CSprite*)r_ob;
                 if (r && idx >= r->m_firstFrame && idx <= r->m_lastFrame) {
-                    m_30 = (i32)r->m_frames.m_pData[idx];
+                    m_30 = r->m_frames.m_pData[idx];
                 } else {
                     m_30 = 0;
                 }
@@ -178,7 +178,7 @@ i32 CSBI_Image::SerializeFields(CSerialArchive* ar, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_30) {
-                mgr->m_imageRegistry->AnyValueMatches_155630(m_30, (i32)name, (i32)&idx);
+                mgr->m_imageRegistry->AnyValueMatches_155630(m_30, name, &idx);
             }
             ar->Write(name, 0x80);
             ar->Write(&idx, 4);

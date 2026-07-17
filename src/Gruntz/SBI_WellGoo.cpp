@@ -150,7 +150,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             idx = 0;
             if (m_fgFrame != 0) {
                 mgr->m_frameSetRegistry
-                    ->AnyValueMatches_155630((i32)m_fgFrame, (i32)buf, (i32)&idx);
+                    ->AnyValueMatches_155630(m_fgFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -159,7 +159,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             idx = 0;
             if (m_baseFrame != 0) {
                 mgr->m_frameSetRegistry
-                    ->AnyValueMatches_155630((i32)m_baseFrame, (i32)buf, (i32)&idx);
+                    ->AnyValueMatches_155630(m_baseFrame, buf, &idx);
             }
             arc->Write(buf, 0x80);
             arc->Write(&idx, 4);
@@ -216,12 +216,12 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
             if (node == 0) {
                 node = g_gameReg->m_refTable->GetSel(1, 0);
             }
-            CImage* fr = (CImage*)m_30;
+            CImage* fr = m_30;
             if (fr->m_owned != 0) {
                 fr->m_owned->Select(0xa, 0);
             }
-            if (node != 0 && ((CImage*)m_30)->m_owned != 0) {
-                ((CImage*)m_30)->m_owned->m_palDescr = (ShadeDescr*)node;
+            if (node != 0 && m_30->m_owned != 0) {
+                m_30->m_owned->m_palDescr = (ShadeDescr*)node;
             }
             fr = m_baseFrame;
             if (fr->m_owned != 0) {

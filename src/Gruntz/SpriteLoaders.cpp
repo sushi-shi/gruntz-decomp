@@ -499,7 +499,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinTens) {
-            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameMinTens, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameMinTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -510,7 +510,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinOnes) {
-            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameMinOnes, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameMinOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -521,7 +521,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecTens) {
-            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameSecTens, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameSecTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -532,7 +532,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecOnes) {
-            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameSecOnes, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameSecOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -543,7 +543,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameColon) {
-            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frameColon, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(m_frameColon, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);

@@ -75,7 +75,7 @@ i32 CSBI_ImageSetAni::Init(
                     m_30 = 0;
                     return 0;
                 }
-                m_30 = (i32)tbl->m_frames[m_4c];
+                m_30 = tbl->m_frames[m_4c];
                 return m_30 != 0;
             }
         }
@@ -104,7 +104,7 @@ i32 CSBI_ImageSetAni::Tick() {
         } else {
             cel = 0;
         }
-        m_30 = (i32)cel;
+        m_30 = cel;
         if (cel != 0) {
             i32 surfaceCtx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
             cel->RenderFrame(

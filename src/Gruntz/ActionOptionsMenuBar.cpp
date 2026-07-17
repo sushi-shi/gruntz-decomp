@@ -443,7 +443,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frame) {
-            mgr->m_imageRegistry->AnyValueMatches_155630((i32)m_frame, (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(m_frame, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -454,7 +454,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_button0Frame) {
-            mgr->m_imageRegistry->AnyValueMatches_155630(static_cast<i32>(m_button0Frame), (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(m_button0Frame, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -463,10 +463,10 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     g_serialCounter++;
     {
         i32 zero = 0;
-        i32 v20 = m_button1Frame;
+        CImage* v20 = m_button1Frame;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
-            mgr->m_imageRegistry->AnyValueMatches_155630(static_cast<i32>(v20), (i32)tmp, (i32)&zero);
+            mgr->m_imageRegistry->AnyValueMatches_155630(v20, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -575,9 +575,9 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
-        i32 r;
+        CImage* r;
         if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = (i32)tt->m_frames.m_pData[i];
+            r = tt->m_frames.m_pData[i];
         } else {
             r = 0;
         }
@@ -594,9 +594,9 @@ i32 CActionOptionsMenuBar::Deserialize(CSerialArchive* s) {
         out = 0;
         mgr->m_imageRegistry->m_10map.Lookup(buf, out);
         CSprite* tt = (CSprite*)out;
-        i32 r;
+        CImage* r;
         if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
-            r = (i32)tt->m_frames.m_pData[i];
+            r = tt->m_frames.m_pData[i];
         } else {
             r = 0;
         }

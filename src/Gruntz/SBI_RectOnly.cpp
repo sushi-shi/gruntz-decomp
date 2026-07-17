@@ -2927,10 +2927,10 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* mp = (CSBI_MenuItem*)it;
         mp->m_34 = 4;
-        SbiTabFrame* f = (SbiTabFrame*)mp->m_38;
-        i32 v;
-        if (f != 0 && f->m_64 <= 4 && f->m_68 >= 4) {
-            v = f->m_14->m_10;
+        CImageSet* f = mp->m_38;
+        CImage* v;
+        if (f != 0 && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
+            v = f->m_frames[4]; // the ex-SbiTabFrame 'm_14->m_10' hop == frames[4]
         } else {
             v = 0;
         }

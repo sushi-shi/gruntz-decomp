@@ -34,17 +34,10 @@ struct ShadeDescr; // CImage::m_owned->m_palDescr type, latched by ShowFrames (C
 // object at m_30 (a CImageOwned whose m_1c ShowFrames latches), drawn by
 // CImage::RenderFrame (0x153790, __thiscall). Modeled by <Image/CImage.h>.
 
-// The resolved config record (CSBI_Image::m_34 / the ImageSet lookup result): a
-// frame-index range gate at m_64/m_68 and a frame table at m_14 (an array of
-// CImage*). Same shape as CSbiConfigRecord (<Gruntz/SbiConfig.h>).
-struct CWhConfig {
-    char m_pad0[0x14];
-    CImage** m_14; // +0x14  frame table (array of frame-record pointers)
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  frame-index range hi gate (idx > m_64 => reject)
-    i32 m_68; // +0x68  frame-index range lo gate (idx < m_68 => reject)
-};
-SIZE_UNKNOWN(CWhConfig);
+// (The ex CWhConfig view of the resolved config record m_34 is DISSOLVED onto the
+// real CImageSet - the member is already typed CImageSet* on the CSBI_ImageSet
+// base; the view's m_64/m_68 gate comments even had lo/hi swapped. Frame table
+// m_frames @+0x14, gates m_minIndex/m_maxIndex @+0x64/+0x68.)
 
 // The active surface context Render passes into RenderFrame is reached through the
 // canonical resource manager: g_gameReg->m_world (CDDrawSurfaceMgr) ->
@@ -129,7 +122,7 @@ public:
 
     // ----- own fields (after CSBI_ImageSet @0x3c); base region reuses inherited
     // m_rect14.m_0/m_4 (draw origin), m_28 (countdown), m_30 (frame, base-typed i32),
-    // m_34 (config, base-typed CSprite* -> cast to CWhConfig*), m_38 (state index).
+    // m_34 (config, the base's CImageSet*), m_38 (state index).
     i32 m_3c; // +0x3c  direction (SetState writes the raw dir; Serialize + Render read it)
 };
 SIZE_UNKNOWN(CSBI_WarlordHead);

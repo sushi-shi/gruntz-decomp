@@ -79,12 +79,12 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         arc->Write(&m_30, 8);
         g_serialCounter++;
 
-        void* obj = m_38;
+        CImage* obj = m_38;
         char name[0x80];
         i32 index = 0;
         memset(name, 0, 0x80);
         if (obj != 0) {
-            lvl->m_imageRegistry->AnyValueMatches_155630((i32)obj, (i32)name, (i32)&index);
+            lvl->m_imageRegistry->AnyValueMatches_155630(obj, name, &index);
         }
         arc->Write(name, 0x80);
         arc->Write(&index, 4);
