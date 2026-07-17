@@ -1227,8 +1227,8 @@ void CDDrawWorker::DeleteAll() {
     m_items.SetSize(0, -1); // CObArray::SetSize @0x1b5653 - the m_items
     // vtable (0x1ed494) CRuntimeClass-names it CObArray; the old (CDWordArray*) cast bound
     // this reloc to the WRONG library symbol (CDWordArray lives at [0x1b4b43,0x1b4f0b)).
-    m_64 = 99999;
-    m_68 = 0;
+    m_minIndex = 99999;
+    m_maxIndex = 0;
 }
 
 // ===========================================================================
@@ -1377,11 +1377,11 @@ CImage* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 RVA(0x001521c0, 0x2b)
 void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
     m_items.SetAtGrow(index, (CObject*)elem); // CObArray::SetAtGrow @0x1b5822
-    if (index < m_64) {
-        m_64 = index;
+    if (index < m_minIndex) {
+        m_minIndex = index;
     }
-    if (index > m_68) {
-        m_68 = index;
+    if (index > m_maxIndex) {
+        m_maxIndex = index;
     }
 }
 
@@ -1447,7 +1447,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
         cnt = 0;
         for (i32 i = 0; i < n; i++) {
             CImage* el;
-            if (i >= m_64 && i <= m_68) {
+            if (i >= m_minIndex && i <= m_maxIndex) {
                 el = (CImage*)m_items.GetAt(i);
             } else {
                 el = 0;
@@ -1492,7 +1492,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
 RVA(0x001523b0, 0x3b)
 i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
     CImage* el;
-    if (n >= m_64 && n <= m_68) {
+    if (n >= m_minIndex && n <= m_maxIndex) {
         el = (CImage*)m_items.GetAt(n);
     } else {
         el = 0;

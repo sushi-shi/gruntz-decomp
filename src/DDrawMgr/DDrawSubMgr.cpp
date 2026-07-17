@@ -517,7 +517,7 @@ i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
 RVA(0x001572b0, 0x38)
 i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, CDDrawWorker* src, i32 a4) {
     i32 frame;
-    if (a4 >= src->m_64 && a4 <= src->m_68) {
+    if (a4 >= src->m_minIndex && a4 <= src->m_maxIndex) {
         frame = (i32)src->m_items[a4]; // CObArray operator[] inline = m_pData[a4]
     } else {
         frame = 0;

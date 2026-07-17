@@ -87,10 +87,10 @@ public:
     void AddFrameAt_1521c0(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
     ::CObArray m_items; // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
-    char m_key[0x40];   // +0x24  registry key buffer (SetKey_155810 strncpy's it,
+    char m_name[0x40];   // +0x24  registry key buffer (SetKey_155810 strncpy's it,
                         //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
-    i32 m_64;           // +0x64  cached-index sentinel (DeleteAll seeds 99999)
-    i32 m_68;           // +0x68
+    i32 m_minIndex;           // +0x64  cached-index sentinel (DeleteAll seeds 99999)
+    i32 m_maxIndex;           // +0x68
 };
 VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 

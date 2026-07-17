@@ -77,8 +77,8 @@ static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {
         w->m_04 = field1c;
         w->m_08 = 0;
         w->m_0c = surfaceMgr;
-        w->m_64 = 99999;
-        w->m_68 = 0;
+        w->m_minIndex = 99999;
+        w->m_maxIndex = 0;
     }
     return w;
 }
@@ -291,7 +291,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
 RVA(0x00155280, 0x22)
 void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     if (worker != 0) {
-        m_10map.RemoveKey(worker->m_key);
+        m_10map.RemoveKey(worker->m_name);
         delete worker;
     }
 }
@@ -455,7 +455,7 @@ CDDrawWorker::~CDDrawWorker() {
 // the buffer is the WORKER's key field.)
 RVA(0x00155810, 0x23)
 i32 CDDrawWorker::SetKey_155810(const char* src) {
-    strncpy(m_key, src, 0x3f);
-    m_key[0x3f] = 0;
+    strncpy(m_name, src, 0x3f);
+    m_name[0x3f] = 0;
     return 1;
 }
