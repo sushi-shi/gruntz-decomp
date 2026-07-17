@@ -94,7 +94,7 @@ i32 CAniPlayer::RenderCel_0e5c10() {
     CImageSet* tbl = m_34;
     CImage* cel;
     if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-        cel = tbl->m_frames[m_38];
+        cel = (CImage*)tbl->m_items.GetAt(m_38);
     } else {
         cel = 0;
     }

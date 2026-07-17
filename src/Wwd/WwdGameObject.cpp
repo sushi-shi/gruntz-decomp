@@ -1270,13 +1270,13 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     return worker;
 }
 
-// CImageSet::CreateFrame30 (__thiscall, ret 0xc). Refuse if a frame already
+// CDDrawWorker::CreateFrame30 (__thiscall, ret 0xc). Refuse if a frame already
 // occupies `index`; else allocate a CImage frame, run its loader virtual at slot
 // +0x30, insert it (SetAtGrow at `index`) and widen the populated index range.
 // The (CImageFrameDesc*) casts on a0 are honest: CreateFrame*'s `i32 a0` params are
 // still the fake type (the callers hand in a descriptor pointer as an int).
 // @early-stop
-// vptr-scheduler wall (99.5%): the real `new CImage(index, m_owner)` ctor
+// vptr-scheduler wall (99.5%): the real `new CImage(index, Owner())` ctor
 // (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the whole regalloc
 // (was ~66% with a spelled-out new+store or a helper call). The ONLY residual is the
 // vptr store position: cl stamps `mov [nf],??_7CImage` at ctor entry (1st store) while
@@ -1286,12 +1286,12 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
 // base-class ctor. (The other diff, `[eax+edi*4]` vs `[eax+4*edi]`, is a byte-neutral
 // disasm-spelling artifact.)
 RVA(0x00151fb0, 0xa4)
-CImage* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
-    if (index < m_count && m_frames[index] != 0) {
+CImage* CDDrawWorker::CreateFrame30(i32 a0, i32 index, i32 a2) {
+    if (index < m_items.GetSize() && (CImage*)m_items.GetAt(index) != 0) {
         return 0;
     }
 
-    CImage* nf = new CImage(index, m_owner); // real frame ctor (vptr interleaved)
+    CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
     if (nf->Create((CImageFrameDesc*)a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
@@ -1300,7 +1300,7 @@ CImage* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
         return 0;
     }
 
-    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
+    m_items.SetAtGrow(index, (CObject*)nf);
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -1315,12 +1315,12 @@ CImage* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
 // @early-stop
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152060, 0xab)
-CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
-    if (index < m_count && m_frames[index] != 0) {
+CImage* CDDrawWorker::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
+    if (index < m_items.GetSize() && (CImage*)m_items.GetAt(index) != 0) {
         return 0;
     }
 
-    CImage* nf = new CImage(index, m_owner); // real frame ctor (vptr interleaved)
+    CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
     // slot 10 @+0x28  CImage::LoadDispatch
     if (nf->LoadDispatch((CImageFrameDesc*)a0, static_cast<u32>(a1), (void*)a3, 1) == 0) {
@@ -1330,7 +1330,7 @@ CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
         return 0;
     }
 
-    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
+    m_items.SetAtGrow(index, (CObject*)nf);
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -1345,12 +1345,12 @@ CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 // @early-stop
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152110, 0xa9)
-CImage* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
-    if (index < m_count && m_frames[index] != 0) {
+CImage* CDDrawWorker::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
+    if (index < m_items.GetSize() && (CImage*)m_items.GetAt(index) != 0) {
         return 0;
     }
 
-    CImage* nf = new CImage(index, m_owner); // real frame ctor (vptr interleaved)
+    CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
     if (nf->Create24((CImageFrameDesc*)a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
@@ -1359,7 +1359,7 @@ CImage* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
         return 0;
     }
 
-    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
+    m_items.SetAtGrow(index, (CObject*)nf);
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -1504,7 +1504,7 @@ i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
     return el->Reload((CParseSource*)rec, flag) != 0;
 }
 
-// CImageSet::GetMemoryUsage (__thiscall, ret 4). Walk every populated frame in
+// CDDrawWorker::GetMemoryUsage (__thiscall, ret 4). Walk every populated frame in
 // [m_minIndex, m_maxIndex] (the inlined bounds-checked GetAt) and accumulate its
 // decoded byte size: width*height, doubled for a 16bpp held surface or tripled for
 // 24bpp, overridden by the owned object's exact count when one is present, plus a
@@ -1515,7 +1515,7 @@ i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
 // to the reverse (keeps m_width, reads m_height) for EVERY spelling (a*b, b*a, temp + *=). A
 // 2-byte (displacement) instruction-selection canonicalization, not source-steerable.
 RVA(0x001523f0, 0x82)
-i32 CImageSet::GetMemoryUsage(i32 raw) {
+i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     i32 sum = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
@@ -1544,7 +1544,7 @@ i32 CImageSet::GetMemoryUsage(i32 raw) {
 // (The (ShadeSelector*) cast that used to sit here is GONE: 0x14dd90 is bound to its real
 // owner now, so the owned sprite is called directly.)
 RVA(0x00152480, 0x4e)
-i32 CImageSet::SetAllTypes(i32 type) {
+i32 CDDrawWorker::SetAllTypes(i32 type) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
@@ -1563,7 +1563,7 @@ i32 CImageSet::SetAllTypes(i32 type) {
 // straight to the return). CheatEclipseToggle drives it with rand() % 256, which is
 // exactly what a 0..255 light level wants.
 RVA(0x001524d0, 0x41)
-i32 CImageSet::SetAllField18(i32 value) {
+i32 CDDrawWorker::SetAllField18(i32 value) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
@@ -1580,7 +1580,7 @@ i32 CImageSet::SetAllField18(i32 value) {
 // The (ShadeDescr*) cast is honest: the `i32 format` param is still the fake type (every
 // caller casts a descriptor POINTER into it) - see the @fake-param note in ImageSet.h.
 RVA(0x00152520, 0x4b)
-i32 CImageSet::SetAllFormats(i32 format) {
+i32 CDDrawWorker::SetAllFormats(i32 format) {
     if (!format) {
         return 0;
     }
@@ -1598,8 +1598,8 @@ i32 CImageSet::SetAllFormats(i32 format) {
 // GetFirstFrameState (__thiscall, ret 0). Read the draw type (+0x14) of the
 // lowest-indexed frame's owned sprite; returns 1 when that frame or its sprite is null.
 RVA(0x00152570, 0x24)
-i32 CImageSet::GetFirstFrameState() {
-    CImage* frame = m_frames[m_minIndex];
+i32 CDDrawWorker::GetFirstFrameState() {
+    CImage* frame = (CImage*)m_items.GetAt(m_minIndex);
     if (frame == 0) {
         return 1;
     }
@@ -1612,10 +1612,10 @@ i32 CImageSet::GetFirstFrameState() {
 
 // FindFrame (__thiscall, ret 0xc). Returns 1 on a hit, 0 otherwise.
 RVA(0x001525c0, 0x76)
-i32 CImageSet::FindFrame(CImage* frame, char* outName, i32* outIndex) {
+i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     if (frame) {
-        for (i32 i = 0; i < m_count; i++) {
-            CImage* cur = m_frames[i];
+        for (i32 i = 0; i < m_items.GetSize(); i++) {
+            CImage* cur = (CImage*)m_items.GetAt(i);
             if (cur && cur == frame) {
                 if (outName) {
                     strcpy(outName, m_name);

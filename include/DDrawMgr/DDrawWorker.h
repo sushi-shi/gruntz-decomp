@@ -67,9 +67,9 @@ public:
     // (slot 16). m_0c is the owning CDDrawSurfaceMgr (single-frame flag m_flags&0x100).
     virtual i32 SetKey_155810(const char* key);            // slot 9  @0x155810 (key copy)
     virtual i32 BuildFramesFromSymTab(CSymTab* tab);       // slot 10 @0x1521f0
-    virtual i32 CreateFrame24(i32 a, i32 b, i32 c, i32 d); // slot 11 @0x152110
-    virtual i32 CreateFrame28(i32 a, i32 b, i32 c, i32 d); // slot 12 @0x152060
-    virtual i32 CreateFrame30(i32 a, i32 b, i32 c);        // slot 13 @0x151fb0
+    virtual CImage* CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3); // slot 11 @0x152110
+    virtual CImage* CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3); // slot 12 @0x152060
+    virtual CImage* CreateFrame30(i32 a0, i32 index, i32 a2);         // slot 13 @0x151fb0
     // FOLD (stage 4, DONE for CSprite): the ex `CSprite` (<Gruntz/Sprite.h>) IS this
     // class - it is now a typedef of it. Slot 14's body @0x151f00 was declared as
     // ?InsertFrame@CSprite@@ while BEING this vtable's slot-14 body: its own code reads
@@ -79,12 +79,32 @@ public:
     // virtual retires that WIRING row. The return type is CImage* (the body's own
     // mangled name says PAVCImage, not the `i32` this slot used to be declared with).
     //
-    // STILL A VIEW: CImageSet (<Image/ImageSet.h>) is the same 0x6c object again -
-    // slots [11]/[12]/[13] (0x152110/0x152060/0x151fb0) are declared as
-    // CImageSet::CreateFrame24/28/30 and are this vtable's own slots. Stage 5.
+    // FOLD (stage 5, DONE for CImageSet): that third view of this same 0x6c object is
+    // dissolved too - it is now a typedef, and slots [11]/[12]/[13] (0x152110/0x152060/
+    // 0x151fb0), which it had declared as CImageSet::CreateFrame24/28/30, are this
+    // class's own virtuals. Their return type is CImage* (the bodies' mangled names say
+    // PAVCImage), not the `i32` the slots used to be declared with.
     virtual CImage* InsertFrame(void* rec, i32 n, i32 flag); // slot 14 @0x151f00
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);  // slot 15 @0x1522b0
     virtual i32 Slot40_1523b0(i32 rec, i32 n, i32 flag); // slot 16 @0x1523b0
+    // ---- the ex-CImageSet non-virtual methods (stage 5 of the fold; bodies in
+    // wwdgameobject at their retail RVAs). They were declared on a THIRD view of this
+    // same 0x6c object; CreateFrame24/28/30 above are this vtable's own slots 11/12/13.
+    i32 SetAllTypes(i32 type);        // 0x152480  walk [min,max], set each frame's draw type
+    i32 SetAllFormats(i32 format);    // 0x152520  @fake-param: really a ShadeDescr*
+    i32 SetAllField18(i32 value);     // 0x1524d0  walk [min,max], set each owned light level
+    i32 GetFirstFrameState();         // 0x152570  lowest frame's owned draw type
+    i32 GetMemoryUsage(i32 raw);      // 0x1523f0  sum decoded byte size over [min,max]
+    i32 FindFrame(CImage* frame, char* outName, i32* outIndex); // linear scan + name copy
+    // The bounds-checked accessor SetAllTypes/SetAllFormats inline: a frame index outside
+    // [m_minIndex, m_maxIndex] yields a null frame.
+    CImage* GetAt(i32 index) {
+        if (index < m_minIndex || index > m_maxIndex) {
+            return 0;
+        }
+        return (CImage*)m_items.GetAt(index);
+    }
+
     // Bounds-read a frame pointer against [m_minIndex, m_maxIndex] (0x15cc30, the ex
     // CSprite::GetFrame; out-of-line in the spriteresource unit).
     i32 GetFrame(i32 n); // 0x15cc30

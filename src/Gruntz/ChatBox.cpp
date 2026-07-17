@@ -334,7 +334,7 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     if (!a) {
         return 0;
     }
-    m_row0Frame = a->m_frames[a->m_minIndex];
+    m_row0Frame = (CImage*)a->m_items.GetAt(a->m_minIndex);
     m_row0FrameIdx = a->m_minIndex;
     m_row0Period = x;
     m_row0Timer = x;
@@ -359,7 +359,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     if (!a) {
         return 0;
     }
-    m_row1Frame = a->m_frames[a->m_minIndex];
+    m_row1Frame = (CImage*)a->m_items.GetAt(a->m_minIndex);
     m_row1FrameIdx = a->m_minIndex;
     m_row1Period = x;
     m_row1Timer = x;
@@ -384,13 +384,13 @@ i32 CChatBox::Step(i32 delta) {
             m_row0FrameIdx = f;
             CImage* v;
             if (f >= a->m_minIndex && f <= a->m_maxIndex) {
-                v = a->m_frames[f];
+                v = (CImage*)a->m_items.GetAt(f);
             } else {
                 v = 0;
             }
             m_row0Frame = v;
             if (v == 0) {
-                m_row0Frame = a->m_frames[a->m_minIndex];
+                m_row0Frame = (CImage*)a->m_items.GetAt(a->m_minIndex);
                 m_row0FrameIdx = a->m_minIndex;
             }
         }
@@ -406,13 +406,13 @@ i32 CChatBox::Step(i32 delta) {
         m_row1FrameIdx = f;
         CImage* v;
         if (f >= b->m_minIndex && f <= b->m_maxIndex) {
-            v = b->m_frames[f];
+            v = (CImage*)b->m_items.GetAt(f);
         } else {
             v = 0;
         }
         m_row1Frame = v;
         if (v == 0) {
-            m_row1Frame = b->m_frames[b->m_minIndex];
+            m_row1Frame = (CImage*)b->m_items.GetAt(b->m_minIndex);
             m_row1FrameIdx = b->m_minIndex;
         }
     }

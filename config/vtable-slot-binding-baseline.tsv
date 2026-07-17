@@ -76,9 +76,6 @@ WIRING	0x1ef658	CDeviceConfigC	4	0x1347d0	?PollJoystick@CInputDevice@@QAEHXZ	dir
 WIRING	0x1ef680	CInputDevBase	1	0x134260	?CreateDeviceWrap@CInputDevBase@@QAEHPAUIDirectInputA@@PBXPAX@Z	directinputmgr2
 WIRING	0x1efa58	CFileImageSurface	0	0x142340	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	directdrawmgr
 WIRING	0x1efbe8	CDDrawWorker	7	0x151eb0	?DeleteAll@CDDrawWorker@@QAEXXZ	wwdgameobject
-WIRING	0x1efbe8	CDDrawWorker	11	0x152110	?CreateFrame24@CImageSet@@QAEPAVCImage@@HHHH@Z	wwdgameobject
-WIRING	0x1efbe8	CDDrawWorker	12	0x152060	?CreateFrame28@CImageSet@@QAEPAVCImage@@HHHH@Z	wwdgameobject
-WIRING	0x1efbe8	CDDrawWorker	13	0x151fb0	?CreateFrame30@CImageSet@@QAEPAVCImage@@HHH@Z	wwdgameobject
 WIRING	0x1efc78	CDDrawSubMgrLeaf	7	0x152720	?FreeAll_152720@CDDrawSubMgrLeaf@@QAEXXZ	ddrawsubmgrleaf
 WIRING	0x1efca0	CDDrawSubMgrLeafScan	1	0x157550	?ScalarDtor@CDDrawSubMgrLeafScan@@QAEPAXI@Z	ddrawsubmgr
 WIRING	0x1efd00	CDDrawWorkerCache	7	0x165210	?DestroyAll@CDDrawWorkerRegistry@@QAEXXZ	ddrawsurfacepair

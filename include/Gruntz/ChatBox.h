@@ -35,7 +35,9 @@ class CDDrawSurfaceMgr;
 
 // Per-row animation record: the canonical CImageSet (<Image/ImageSet.h>) - each advance
 // caches m_frames[m_minIndex]; Step clamps the frame index to [m_minIndex, m_maxIndex].
-class CImageSet;
+class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+                                // keeps this header pointer-only/include-light.
 class CImage; // Image/CImage.h
 
 // ---------------------------------------------------------------------------

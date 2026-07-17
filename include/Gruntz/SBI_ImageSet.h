@@ -21,7 +21,9 @@
 #include <rva.h>
 #include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image base (real RTTI base)
 
-class CImageSet; // full def in <Image/ImageSet.h>; only a CImageSet* member is needed here
+class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+                                // keeps this header pointer-only/include-light.
 
 // (The ex `CImageSetStream` 13-slot view of the Serialize arg is DISSOLVED: it
 // IS the one engine stream, CSerialArchive == CFileMemBase - Read @slot 11

@@ -39,68 +39,25 @@
 // Object size 0x6c (recorded in the header note above; the body computes exactly that:
 // m_maxIndex at +0x68). The SIZE line used to sit on the GameLevel.h class of the same
 // name - that class is CTileImageSet now, so it lives here, on the class it describes.
-SIZE(CImageSet, 0x6c);
-class CImageSet {
-public:
-    // Walk every populated frame in [m_minIndex, m_maxIndex] and (re)set the draw type
-    // of its +0x30 owned shaded sprite; returns the number of frames touched.
-    i32 SetAllTypes(i32 type);
+// ============================================================================
+// CImageSet IS CDDrawWorker - stage 5 of the fold, DONE. The third view of the same
+// 0x6c object is dissolved; it survives as a typedef so call sites keep reading in
+// their own domain language while ONE type/layout/vtable stands behind them.
+//
+// This header's own prose had recorded the proof without it ever being acted on:
+// "vtable @0x5efbe8" IS ??_7CDDrawWorker@@6B@ (RVA 0x1efbe8). The three slots this
+// view declared as CreateFrame24/28/30 are that vtable's own [11]/[12]/[13], which is
+// why they sat in the slot-binding baseline as WIRING rows; they are real virtuals of
+// CDDrawWorker now, and those rows are retired.
+//
+// The +0x10/+0x14/+0x18 trio (m_array/m_frames/m_count) was the real MFC ::CObArray
+// all along - vptr/m_pData/m_nSize - so frame access goes through the real API
+// ((CImage*)x->m_items.GetAt(i) / GetSize()); m_pData is protected. The +0x0c m_owner
+// is reached through CDDrawWorker::Owner(). SIZE 0x6c was already annotated on BOTH
+// classes independently - the same object, recorded twice.
+#include <DDrawMgr/DDrawWorker.h> // the ONE real class (vtbl 0x1efbe8, CLoadable-derived)
 
-    // Same walk, but writes `format` straight into each owned sprite's palette/shade
-    // descriptor (m_palDescr, +0x1c). A null format is a no-op (returns 0).
-    // @fake-param: `format` is really a ShadeDescr* - every caller casts a pointer into
-    // it ((i32)table / (i32)spr). Retyping it re-mangles the 0x152520 symbol and ripples
-    // through the second (GameLevel.h) CImageSet view, so the cast at the store site
-    // stays and is honest. Returns the count touched.
-    i32 SetAllFormats(i32 format);
-
-    // Same walk, writing `value` into each populated frame's owned-sprite light level
-    // (m_light, +0x18).
-    i32 SetAllField18(i32 value); // 0x1524d0
-
-    // Read the lowest-indexed frame's owned-sprite draw type (+0x14); returns 1 when
-    // that frame or its owned sprite is absent. 0x152570.
-    i32 GetFirstFrameState(); // 0x152570
-
-    // Sum the decoded byte size of every populated frame (width*height scaled by the
-    // held surface's bit depth, or the owned sprite's exact RLE byte count when
-    // present). When `raw` is 0 each frame also carries a fixed 0x34-byte overhead
-    // (== sizeof(CImage), the frame element itself). 0x1523f0.
-    i32 GetMemoryUsage(i32 raw); // 0x1523f0
-
-    // Linear-search the frame array for `frame`; on a hit, copy the set's name into
-    // `outName` (when non-null) and store the matched array index through `outIndex`
-    // (when non-null). Returns 1 on a hit, 0 otherwise.
-    i32 FindFrame(CImage* frame, char* outName, i32* outIndex);
-
-    // Three frame-creation overloads (0x151fb0/0x152060/0x152110). Each refuses if a
-    // frame already occupies `index`, else allocates a CImage, runs the frame's
-    // loader virtual (slot 0x30/0x28/0x24), inserts it (SetAtGrow), and widens the
-    // populated index range. Returns the new frame, or 0 on refusal/load failure.
-    CImage* CreateFrame30(i32 a0, i32 index, i32 a2);
-    CImage* CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3);
-    CImage* CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3);
-
-    // The bounds-checked accessor SetAllTypes/SetAllFormats inline: a frame index
-    // outside [m_minIndex, m_maxIndex] yields a null frame.
-    CImage* GetAt(i32 index) {
-        if (index < m_minIndex || index > m_maxIndex) {
-            return 0;
-        }
-        return m_frames[index];
-    }
-
-    char m_pad00[0x0c];
-    CImageParent* m_owner;     // +0x0c  shared into each created frame's m_parent (+0xc)
-    char m_array[0x14 - 0x10]; // +0x10  embedded frame array (SetAtGrow this)
-    CImage** m_frames;         // +0x14  frame pointer array (indexed by signed frame index)
-    i32 m_count;               // +0x18  array element count (for the linear FindFrame scan)
-    char m_pad1c[0x24 - 0x1c];
-    char m_name[0x40 - 0x24]; // +0x24  inline name buffer (copied out by FindFrame)
-    char m_pad40[0x64 - 0x40];
-    i32 m_minIndex; // +0x64  lowest populated frame index
-    i32 m_maxIndex; // +0x68  highest populated frame index
-};
+typedef CDDrawWorker CImageSet;
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

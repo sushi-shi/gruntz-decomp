@@ -114,7 +114,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         spr = 0;
     } else {
-        spr = rec->m_frames[1];
+        spr = (CImage*)rec->m_items.GetAt(1);
     }
     m_44 = spr;
     if (spr == 0) {
@@ -132,7 +132,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (idxA < m_30->m_minIndex || idxA > m_30->m_maxIndex) {
         s = 0;
     } else {
-        s = m_30->m_frames[idxA];
+        s = (CImage*)m_30->m_items.GetAt(idxA);
     }
     m_34 = s;
     if (s == 0) {
@@ -155,7 +155,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (m_40 < m_30->m_minIndex || m_40 > m_30->m_maxIndex) {
         val = 0;
     } else {
-        val = m_30->m_frames[m_40];
+        val = (CImage*)m_30->m_items.GetAt(m_40);
     }
     m_3c = val;
     return val != 0;
@@ -194,9 +194,9 @@ i32 CSBI_GruntMachine::Render(i32 z) {
     m_28--;
     CImageSet* cfg = m_30;
 
-    m_34 = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : cfg->m_frames[idx];
+    m_34 = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : (CImage*)cfg->m_items.GetAt(idx);
     idx = m_40;
-    m_3c = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : cfg->m_frames[idx];
+    m_3c = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : (CImage*)cfg->m_items.GetAt(idx);
 
     i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_backPair;
 
@@ -347,7 +347,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 CImageSet* rec = (CImageSet*)out;
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = rec->m_frames[i];
+                    r = (CImage*)rec->m_items.GetAt(i);
                 } else {
                     r = 0;
                 }
@@ -367,7 +367,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 CImageSet* rec = (CImageSet*)out;
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = rec->m_frames[i];
+                    r = (CImage*)rec->m_items.GetAt(i);
                 } else {
                     r = 0;
                 }
@@ -386,7 +386,7 @@ i32 CSBI_GruntMachine::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 
                 CImageSet* rec = (CImageSet*)out;
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = rec->m_frames[i];
+                    r = (CImage*)rec->m_items.GetAt(i);
                 } else {
                     r = 0;
                 }
@@ -465,7 +465,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
         } else {
-            v = n->m_frames[1];
+            v = (CImage*)n->m_items.GetAt(1);
         }
         m_topFrame = v;
         m_50 = -1;
@@ -480,7 +480,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
         } else {
-            v = n->m_frames[1];
+            v = (CImage*)n->m_items.GetAt(1);
         }
         m_topFrame = v;
         m_50 = 1;
@@ -678,7 +678,7 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
                 CImageSet* rec = (CImageSet*)out;
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = rec->m_frames[i];
+                    r = (CImage*)rec->m_items.GetAt(i);
                 } else {
                     r = 0;
                 }
@@ -697,7 +697,7 @@ i32 CSBI_SideTab::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
                 CImageSet* rec = (CImageSet*)out;
                 CImage* r;
                 if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = rec->m_frames[i];
+                    r = (CImage*)rec->m_items.GetAt(i);
                 } else {
                     r = 0;
                 }

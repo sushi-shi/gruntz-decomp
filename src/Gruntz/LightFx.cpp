@@ -158,7 +158,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;
         } else {
-            val = (i32)en->m_frames[key];
+            val = (i32)(CImage*)en->m_items.GetAt(key);
         }
         m_38->m_layer = (CImage*)val;
         m_38->m_190 = key;

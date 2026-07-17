@@ -23,7 +23,9 @@ class CShadeTableCache;
 struct CShadeTable;
 struct CGameRegistry; // canonical is `struct` (<Gruntz/GameRegistry.h>); keyword must match for Init's PAU mangling
 class CDDrawSurfaceMgr; // reg->m_world (+0x30) - the loaded world/resource holder
-class CImageSet;
+class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+                                // keeps this header pointer-only/include-light.
 
 class CLightFxMgr {
 public:

@@ -431,7 +431,7 @@ void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
 // dimensions and stop. An empty set leaves the tile size unchanged.
 RVA(0x00161fa0, 0x6c)
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
-    for (i32 i = 0; i < set->m_count; i++) {
+    for (i32 i = 0; i < set->m_items.GetSize(); i++) {
         if (set->GetAt(i) != 0) {
             CImage* f = set->GetAt(i);
             SetTileSize(f->m_width, f->m_height);

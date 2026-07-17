@@ -49,7 +49,9 @@ struct CWwdSpatialMgr;
 // <Image/ImageSet.h> / <Io/FileMem.h> - pointer-only here).
 class CDDrawSurfaceMgr; // the +0x0c world/display root (ex the CPlaneMapData view)
 struct CPlaneDrawCtx; // Draw's render context (its +0x2c is the blit target surface)
-class CImageSet;      // the 0x6c sparse CImage-frame collection
+class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+                                // keeps this header pointer-only/include-light.
 class CFileMemBase;   // the abstract serialize stream (Read @+0x2c / Write @+0x30)
 
 class CDDrawWorkerHost : public CObject {

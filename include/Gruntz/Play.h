@@ -146,7 +146,9 @@ class CImage;
 // == m_frames, m_name24 @+0x24 == m_name, m_firstRow/m_lastRow @+0x64/+0x68 == m_minIndex/
 // m_maxIndex, size 0x6c; its SetDelay/SetSprite ARE SetAllTypes/SetAllFormats. Pointer-only
 // here (consumers include ImageSet.h), so a forward decl suffices.
-class CImageSet;
+class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+                                // keeps this header pointer-only/include-light.
 
 // ===========================================================================
 // CPlay - the in-game PLAY state. Extends CState from +0x1a8. The per-frame

@@ -84,7 +84,7 @@ i32 CSBI_Image::SetupImage(
         m_30 = 0;
         return 0 != 0;
     }
-    CImage* val = rec->m_frames[1];
+    CImage* val = (CImage*)rec->m_items.GetAt(1);
     m_30 = val;
     return val != 0;
 }

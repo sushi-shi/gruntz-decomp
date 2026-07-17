@@ -76,7 +76,8 @@ struct GruntTilePos; // fwd (the {m_x,m_y} screen-pos out-point; <Gruntz/Grunt.h
 // (width>>1/height>>1 - the +-7 wander box + z-sort consumers), "+0x20/+0x24
 // screen offsets" == m_originX/m_originY (the CGruntVoice bubble placement).
 class CDDrawWorker;           // the +0x194 cached sprite IS CDDrawWorker
-typedef CDDrawWorker CSprite; // (identical repeat of Sprite.h's typedef)
+typedef CDDrawWorker CSprite;   // (identical repeat of Sprite.h's typedef)
+typedef CDDrawWorker CImageSet; // the +0x194 union's other role - the SAME class again
 class CImage;
 
 // (The former CLogicHandlerMap shell + the LogicMap() offset-hop accessor are
@@ -255,7 +256,7 @@ struct CGameObject {
                      //         frame resolve, published to m_layer/m_190).
         char* m_194; // source-def record (class-name string at +0x24)
         CSprite* m_sprite;           // cached sprite (frame-cache role)
-        class CImageSet* m_imageSet; // cached image set (color/brightness role)
+        CImageSet* m_imageSet;       // cached image set (color/brightness role)
     };
     // +0x198  the cached frame POINTER (a CImage - see the note above CGameObject).
     // The ex m_mappedLayer "grunt-indicator role" was the same store: the resolved

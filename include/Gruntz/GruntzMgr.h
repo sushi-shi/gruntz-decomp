@@ -107,6 +107,8 @@ typedef CDDrawWorkerRegistry CImageRegistry;
 // "PausePages" @0x158c70 IS its Method_158c70(CDDrawSurfacePair*)); m_1c ==
 // m_ptrColl (the "*m_1c slot-10 dispatch" is m_ptrColl->m_surf0 IDirectDraw2::
 // FlipToGDISurface, slot 10 +0x28); m_38 == m_lastError.
+class CDDrawWorker;             // SetGruntColor's sink IS CDDrawWorker
+typedef CDDrawWorker CImageSet; // (identical repeat of ImageSet.h's typedef)
 class CDDrawSurfaceMgr;
 
 // Minimal IDirectPlayLobby-shaped COM surface used by
@@ -287,7 +289,7 @@ public:
     i32 CheatRevealTreasures();    // @0x090f10 (PLAY-only: color all treasure/collectible rows)
     // x0910d0 - blit one frame of `sink` over the same-named frame of the image set
     // registered under `key` (both are real CImageSets; the copy is CImage::CopyFrom).
-    i32 SetGruntColor(class CImageSet* sink, const char* key, i32 idx);
+    i32 SetGruntColor(CImageSet* sink, const char* key, i32 idx);
     void CheatSkeletonToggle(); // @0x091250 (toggle the grunt "skeleton" image type + cue)
     void CheatEclipseToggle();  // @0x091390 (toggle the grunt "eclipse" image type + cue)
     i32 WarpCheat();            // @0x08eaf0 (per-level warp X/Y registry set/apply)

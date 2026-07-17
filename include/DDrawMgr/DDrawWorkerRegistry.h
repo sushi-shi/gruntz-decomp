@@ -35,7 +35,9 @@ class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWork
                     // class-key MUST match the definition (mangling: PAV vs PAU)
                     // is load-bearing: it keeps the PAU (not PAV) tag in the Forward*/
                     // RemoveWorker method manglings that take CDDrawWorker*.
-class CImageSet;
+class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+                                // keeps this header pointer-only/include-light.
 class CImage; // the frame element (AnyValueMatches probes each set for it)
 class CSymTab; // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
 

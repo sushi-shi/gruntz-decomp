@@ -1887,7 +1887,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         return 0;
     }
     i32 savedIdx = rec->m_minIndex;
-    CImage* e = rec->m_frames[savedIdx];
+    CImage* e = (CImage*)rec->m_items.GetAt(savedIdx);
     if (e == 0) {
         return 0;
     }
@@ -1943,7 +1943,7 @@ i32 CGruntzMgr::SetGruntColor(CImageSet* sink, const char* key, i32 idx) {
         m_world->m_imageRegistry->m_10map.Lookup(key, out);
         CImageSet* row = (CImageSet*)out;
         if (row) {
-            CImage* dst = row->m_frames[row->m_minIndex];
+            CImage* dst = (CImage*)row->m_items.GetAt(row->m_minIndex);
             if (dst) {
                 CImage* src = sink->GetAt(idx);
                 if (src != 0) {
@@ -2055,7 +2055,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
         m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
-            CImage* fr = set->m_frames[set->m_minIndex];
+            CImage* fr = (CImage*)set->m_items.GetAt(set->m_minIndex);
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
@@ -2114,7 +2114,7 @@ void CGruntzMgr::CheatEclipseToggle() {
         m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
-            CImage* fr = set->m_frames[set->m_minIndex];
+            CImage* fr = (CImage*)set->m_items.GetAt(set->m_minIndex);
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {

@@ -75,7 +75,7 @@ i32 CSBI_ImageSetAni::Init(
                     m_30 = 0;
                     return 0;
                 }
-                m_30 = tbl->m_frames[m_4c];
+                m_30 = (CImage*)tbl->m_items.GetAt(m_4c);
                 return m_30 != 0;
             }
         }
@@ -100,7 +100,7 @@ i32 CSBI_ImageSetAni::Tick() {
         CImageSet* tbl = m_34;
         CImage* cel;
         if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-            cel = tbl->m_frames[m_38];
+            cel = (CImage*)tbl->m_items.GetAt(m_38);
         } else {
             cel = 0;
         }

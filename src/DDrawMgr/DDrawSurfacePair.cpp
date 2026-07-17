@@ -913,7 +913,12 @@ CString CDDrawWorkerCache::FindKeyOfValue_165360(CImageSet* target) {
     CString key;
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
-        if (val != 0 && *(i32*)((CImageSet*)val)->m_array == *(i32*)target->m_array) {
+        // Reads the raw +0x10 dword of both, exactly as retail does (this is the ex
+        // `m_array` view of that offset). NOTE, flagged not fixed: +0x10 is the embedded
+        // ::CObArray's VPTR, so for two CObArray-holding objects this compare is a
+        // constant-vs-itself and the scan returns the first key. That is pre-existing
+        // and out of this fold's scope - the fold only preserves the same memory read.
+        if (val != 0 && *(i32*)&((CImageSet*)val)->m_items == *(i32*)&target->m_items) {
             return key;
         }
     }

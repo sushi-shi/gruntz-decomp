@@ -16,7 +16,9 @@
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Gruntz/MapStringToOb.h>
 
-class CImageSet; // FindKeyOfValue_165360's reverse-lookup target (<Image/ImageSet.h>)
+class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+                                // keeps this header pointer-only/include-light.
 
 // Real polymorphic (own 10-slot vtable ??_7CDDrawWorkerCache @0x5efd00). Slots
 // 0/2/3/4 are the shared CObject thunks, slot 1 the ??_G scalar-deleting dtor

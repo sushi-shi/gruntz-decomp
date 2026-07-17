@@ -142,11 +142,11 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     CImageSet* r = rec;
     if (a == -1) {
         i32 lo = r->m_minIndex;
-        m_30 = r->m_frames[lo];
+        m_30 = (CImage*)r->m_items.GetAt(lo);
         return m_30 != 0;
     }
     if (a >= r->m_minIndex && a <= r->m_maxIndex) {
-        CImage* v = r->m_frames[a];
+        CImage* v = (CImage*)r->m_items.GetAt(a);
         m_30 = v;
         return v != 0;
     }
@@ -232,7 +232,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     CImageSet* r = m_38;
     CImage* frame;
     if (state >= r->m_minIndex && state <= r->m_maxIndex) {
-        frame = r->m_frames[state];
+        frame = (CImage*)r->m_items.GetAt(state);
     } else {
         frame = 0;
     }

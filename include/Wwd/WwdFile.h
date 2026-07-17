@@ -6,7 +6,9 @@
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
-class CImageSet; // Image/ImageSet.h - SetTileSizeFromImageSet's frame source
+class CDDrawWorker;             // CImageSet IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+typedef CDDrawWorker CImageSet; // identical repeat of ImageSet.h's typedef - legal, and
+                                // keeps this header pointer-only/include-light.
 
 #include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
 #include <Ints.h>

@@ -2071,7 +2071,7 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
         if (set == 0 || idx < set->m_minIndex || idx > set->m_maxIndex) {
             m_gridCurFrame = 0;
         } else {
-            m_gridCurFrame = set->m_frames[idx];
+            m_gridCurFrame = (CImage*)set->m_items.GetAt(idx);
         }
     }
 
@@ -3917,13 +3917,13 @@ i32 CPlay::StepGridWalk(i32 dt) {
     CImageSet* g = m_grid;
     CImage* frame;
     if (idx >= g->m_minIndex && idx <= g->m_maxIndex) {
-        frame = g->m_frames[idx];
+        frame = (CImage*)g->m_items.GetAt(idx);
     } else {
         frame = 0;
     }
     m_gridCurFrame = frame;
     if (frame == 0) {
-        m_gridCurFrame = g->m_frames[g->m_minIndex];
+        m_gridCurFrame = (CImage*)g->m_items.GetAt(g->m_minIndex);
         m_gridRow = g->m_minIndex;
     }
     return 1;
@@ -4118,7 +4118,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     CImageSet* g = m_grid;
     CImage* frame;
     if (index >= g->m_minIndex && index <= g->m_maxIndex) {
-        frame = g->m_frames[index];
+        frame = (CImage*)g->m_items.GetAt(index);
     } else {
         frame = 0;
     }

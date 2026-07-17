@@ -89,7 +89,7 @@ i32 CSBI_ImageSet::SetupImage(
     }
     m_38 = f;
     if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
-        m_30 = rec->m_frames[f];
+        m_30 = (CImage*)rec->m_items.GetAt(f);
     } else {
         m_30 = 0;
     }
@@ -122,7 +122,7 @@ i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
         CImageSet* tbl = m_34;
         CImage* cel;
         if (m_38 >= tbl->m_minIndex && m_38 <= tbl->m_maxIndex) {
-            cel = tbl->m_frames[m_38];
+            cel = (CImage*)tbl->m_items.GetAt(m_38);
         } else {
             cel = 0;
         }

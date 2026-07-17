@@ -2930,7 +2930,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         CImageSet* f = mp->m_38;
         CImage* v;
         if (f != 0 && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
-            v = f->m_frames[4]; // the ex-SbiTabFrame 'm_14->m_10' hop == frames[4]
+            v = (CImage*)f->m_items.GetAt(4); // the ex-SbiTabFrame 'm_14->m_10' hop == frames[4]
         } else {
             v = 0;
         }
