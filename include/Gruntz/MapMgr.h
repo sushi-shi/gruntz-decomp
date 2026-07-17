@@ -158,8 +158,13 @@ public:
     );                                               // 0x081e10
     i32 UpdateDiagonals(i32 unused);                 // 0x082030 diagonal-passability walk
     i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1); // 0x082250 straight-line probe
-    i32 Serialize(i32 a0, i32 a1, i32 a2, i32 a3);   // 0x09356c (the +0x7c object comes
-                                                     //          from a3, NOT from `this`)
+    // (`Serialize` @0x09356c is GONE - it was never this class's, and never a function:
+    //  0x9356c is the TAIL of CGruntzMgr::BroadcastCmd @0x093460, which already claims
+    //  0x93460..0x935bc. Its stack proves it (4 pushes + `add esp,0x10` vs FIVE pops
+    //  before `ret 0x10` = five dwords short of a valid entry). The note that the +0x7c
+    //  object "comes from a3, NOT from `this`" was the tell, read backwards: under
+    //  BroadcastCmd's real 5-push frame, [esp+0x10] is the saved ecx - it IS `this`.
+    //  See docs/patterns/unbalanced-stack-means-wrong-boundary.md.)
     i32 Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag); // 0x09f010
     i32 Insert(BrickzNode* node);                                     // 0x09f370
     BrickzNode* PopFront();                                           // 0x09f430

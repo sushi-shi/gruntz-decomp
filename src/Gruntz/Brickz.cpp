@@ -57,11 +57,11 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
-// MapSerializeCurve (0x0ec230) - declared 4-arg __cdecl here: the Serialize
-// wrapper forwards all four of its args unchanged (the callee only reads the first
-// two). Modeled no-body so the call reloc-masks. Same symbol as the 2-arg form in
-// MapLogic.cpp; the extra params don't change the @0xec230 displacement.
-extern "C" i32 __cdecl MapSerializeCurve(i32 a0, i32 a1, i32 a2, i32 a3);
+// (The per-TU `extern "C" i32 __cdecl MapSerializeCurve(i32,i32,i32,i32)` is GONE. It
+// existed only for the phantom `CBrickzGrid::Serialize` @0x9356c deleted below, and it
+// never bound: extern "C" mangles `_MapSerializeCurve`, while the real definition in
+// MapLogic.cpp is C++-mangled. The one true declaration lives in the owner's header,
+// <Gruntz/MapLogic.h>; this TU has no call site for it.)
 
 // ---------------------------------------------------------------------------
 // CBrickzGrid::SearchEdge (0x081e10) - run a Search between two adjacent cells with
@@ -246,25 +246,38 @@ i32 CBrickzGrid::IsCellClear(i32 x, i32 y) {
 }
 
 // ---------------------------------------------------------------------------
-// CBrickzGrid::Serialize (0x09356c) - thin wrapper: MapSerializeCurve(a0,a1,a2,a3) and,
-// on success, the +0x7c sub-object's Serialize(a0,a1,a2,a3); returns the latter as
-// a bool. The +0x7c object is reached through the LAST arg (a3), not `this`.
-// @early-stop
-// arg-forwarding-via-uninitialised-callee-saved-regs wall (~38%): logic correct
-// (MapSerializeCurve gate, then arg3->m_7c->Serialize forwarding the 4 args, neg/
-// sbb/neg bool). The wall: retail pushes ebx/ebp/esi/edi straight as the 4 call
-// args with NO loads (the forwarded values arrive in those callee-saved registers,
-// separate from the stack args - arg3 IS re-read from [esp+0x10] for ->m_7c), so a
-// normal __thiscall(i32,i32,i32,i32) reconstruction necessarily emits the 4
-// `mov reg,[esp+N]` loads retail omits. Not reproducible from a standard signature;
-// see docs/patterns/serialize-wrapper-reg-forward.md. Parked for the final sweep.
-RVA(0x0009356c, 0x38)
-i32 CBrickzGrid::Serialize(i32 a0, i32 a1, i32 a2, i32 a3) {
-    if (MapSerializeCurve(a0, a1, a2, a3) == 0) {
-        return 0;
-    }
-    return ((CBattlezData*)a3)->Serialize((CSerialArchive*)a0, a1, a2, a3) != 0;
-}
+// DELETED (ML1, 2026-07-17): `CBrickzGrid::Serialize` @0x09356c was a PHANTOM - not a
+// function at all, but the TAIL of CGruntzMgr::BroadcastCmd @0x093460, double-claimed.
+// BroadcastCmd's RVA(0x00093460, 0x15c) covers 0x93460..0x935bc; this claim's
+// 0x9356c..0x935a4 sat ENTIRELY INSIDE it - the same 56 bytes scored twice, under two
+// names, in two units (brickz + gruntzmgr).
+//
+// The stack proves it, and it is just arithmetic. The block has FOUR pushes
+// (ebx/ebp/esi/edi), cancelled by the `add esp,0x10` after its __cdecl call, then FIVE
+// pops (edi/esi/ebp/ebx/ecx) before `ret 0x10`: it reaches its epilogue 0x14 - five
+// dwords - short of what the ret needs. Impossible for a function entry. Assume instead
+// a continuation of a function whose prologue pushed five registers and it closes
+// exactly - and 0x93460 (the first byte after the `cc cc` int3 padding at
+// 0x93440..0x9345f) is precisely `push ecx; push ebx; push ebp; push esi; push edi`.
+// 0x93562 `jne 0x9356c` jumps INTO it over an early `ret 0x10` at 0x93569 (a rel8 jcc -
+// invisible to a rel32 caller scan, which is why `sema xref` reported no caller at all;
+// nothing in .rdata/.data points at it either, and no ILT thunk jmps to it).
+//
+// So the `@early-stop` "arg-forwarding-via-uninitialised-callee-saved-regs wall (~38%)"
+// was a misdiagnosis, and docs/patterns/serialize-wrapper-reg-forward.md invented an ABI
+// to explain it ("the forwarded values arrive already in the callee-saved registers";
+// "no natural C++ signature reproduces the register-resident-args ABI"). MSVC5 invents
+// no conventions: the args arrive in those registers because BROADCASTCMD'S OWN EARLIER
+// BODY loads them - the body this fragment did not contain. Likewise its
+// `mov eax,[esp+0x10]; mov ecx,[eax+0x7c]`, read as "arg3->m_7c, not `this`": under the
+// real 5-push frame [esp+0x10] IS the saved ecx, i.e. plain `this->m_7c` (= BroadcastCmd's
+// m_scoreHud, which GruntzMgr.cpp already models). That pattern doc is replaced by
+// docs/patterns/unbalanced-stack-means-wrong-boundary.md.
+//
+// Nothing is lost: GruntzMgr.cpp already reconstructs these bytes as part of BroadcastCmd
+// (the MapSerializeCurve gate, the m_scoreHud->Command forward, the neg/sbb/neg bool).
+// The `extern "C" i32 __cdecl MapSerializeCurve(i32,i32,i32,i32)` this TU carried existed
+// only to serve this phantom's call and dies with it - see <Gruntz/MapLogic.h>.
 
 SIZE_UNKNOWN(BrickzCell);
 SIZE_UNKNOWN(BrickzNode);
