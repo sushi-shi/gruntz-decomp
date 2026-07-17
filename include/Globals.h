@@ -17,6 +17,7 @@
 
 #include <rva.h> // int aliases (i8..u64)
 #include <Bute/ButeTree.h>
+#include <Gruntz/ScrollState.h> // the auto-scroll state block (was declared inline here)
 
 // Forward declarations for pointer-to-engine-object globals.
 struct AttractActorList;
@@ -200,10 +201,9 @@ extern char* g_tbombBase;
 extern CTBombEntry* g_tbombCur;
 extern i32 g_tbombStride;
 extern i32 g_tbombScratch;
-extern i64 g_scrollLimit;
-extern u32 g_scrollTimer;
-extern i32 g_lastScrollX;
-extern i32 g_lastScrollY;
+// (the auto-scroll state block moved to its owner header, <Gruntz/ScrollState.h>,
+//  included above - g_scrollLimit / g_scrollTimer / g_lastScrollX / g_lastScrollY
+//  live there next to g_scrollAccum / g_scrollClock, which already did.)
 extern u16 g_idx_64da80;
 extern u32 g_ratingRaw_64da84;
 extern i32 g_factoryRc_64da88;

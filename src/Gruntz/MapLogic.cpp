@@ -36,8 +36,19 @@
 // archive `ar` keyed by `mode`: mode 7 reads (vtable slot +0x2c), mode 4 writes
 // (slot +0x30). The first block transfers the two leading 8-byte accumulators; the
 // second transfers six trailing dwords (size 4). Any other mode is a no-op that
-// still returns 1. Returns 0 only for a null archive. (Every operand is
-// g_scrollAccum+addend -> reloc-masked, byte-identical to the ex g_mapCurve[k] form.)
+// still returns 1. Returns 0 only for a null archive.
+//
+// Each operand is an ABSOLUTE .data reference to its OWN global, which is what retail
+// emits: the block is 8 separately-referenced globals, not one object read at offsets.
+// This used to be spelled `(char*)&g_scrollAccum + 0xNN` for every slot but the first -
+// 14 banned offset-casts that also hid the references from reloc-fidelity, since each
+// bound to g_scrollAccum+addend instead of to the global actually being streamed. Five
+// of them already had names and real consumers elsewhere (g_scrollLimit / g_scrollClock
+// / g_scrollTimer via UpdateMgrScroll + Cmd_ResetScroll; g_lastScrollX/Y), so naming
+// them here is byte-neutral - same DATA reloc, same address - and binds the reference to
+// the right symbol. +0x18 / +0x1c keep their casts: they are real globals but the ONLY
+// references to either are this function's own read and write paths, so there is nothing
+// to name them from (see <Gruntz/ScrollState.h>).
 // The last two params are unnamed and unread: the body never touches them, and the
 // arity comes from the call site (see <Gruntz/MapLogic.h>), not from this body -
 // __cdecl means the caller cleans up, so declaring them costs zero bytes here.
@@ -49,29 +60,29 @@ i32 MapSerializeCurve(CSerialArchive* ar, i32 mode, i32, i32) {
     switch (mode) {
         case 4:
             ar->Write(&g_scrollAccum, 8);
-            ar->Write((char*)&g_scrollAccum + 0x8, 8);
+            ar->Write(&g_scrollLimit, 8);
             break;
         case 7:
             ar->Read(&g_scrollAccum, 8);
-            ar->Read((char*)&g_scrollAccum + 0x8, 8);
+            ar->Read(&g_scrollLimit, 8);
             break;
     }
     switch (mode) {
         case 4:
-            ar->Write((char*)&g_scrollAccum + 0x10, 4);
-            ar->Write((char*)&g_scrollAccum + 0x14, 4);
-            ar->Write((char*)&g_scrollAccum + 0x18, 4);
-            ar->Write((char*)&g_scrollAccum + 0x1c, 4);
-            ar->Write((char*)&g_scrollAccum + 0x20, 4);
-            ar->Write((char*)&g_scrollAccum + 0x24, 4);
+            ar->Write(&g_scrollClock, 4);
+            ar->Write(&g_scrollTimer, 4);
+            ar->Write((char*)&g_scrollAccum + 0x18, 4); // @identity-TODO (see ScrollState.h)
+            ar->Write((char*)&g_scrollAccum + 0x1c, 4); // @identity-TODO
+            ar->Write(&g_lastScrollX, 4);
+            ar->Write(&g_lastScrollY, 4);
             break;
         case 7:
-            ar->Read((char*)&g_scrollAccum + 0x10, 4);
-            ar->Read((char*)&g_scrollAccum + 0x14, 4);
-            ar->Read((char*)&g_scrollAccum + 0x18, 4);
-            ar->Read((char*)&g_scrollAccum + 0x1c, 4);
-            ar->Read((char*)&g_scrollAccum + 0x20, 4);
-            ar->Read((char*)&g_scrollAccum + 0x24, 4);
+            ar->Read(&g_scrollClock, 4);
+            ar->Read(&g_scrollTimer, 4);
+            ar->Read((char*)&g_scrollAccum + 0x18, 4); // @identity-TODO (see ScrollState.h)
+            ar->Read((char*)&g_scrollAccum + 0x1c, 4); // @identity-TODO
+            ar->Read(&g_lastScrollX, 4);
+            ar->Read(&g_lastScrollY, 4);
             break;
     }
     return 1;
