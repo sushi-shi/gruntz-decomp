@@ -593,31 +593,18 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 }
 
 // ---------------------------------------------------------------------------
-// CTileLogic : CUserLogic - the fat tile-logic intermediate (SIZE 0x40). The true
-// CUserLogic base ends at 0x30 (base ctor 0x58cd0 writes only through m_2c); the
-// tile-logic game-object leaves (EyeCandy, Teleporter, Projectile, SpotLight, the
-// TileTrigger family, ...) share a common 0x10-byte tail m_30/m_34/m_38/m_3c that
-// their 1-arg ctors seed to obj/obj/obj->m_7c right after the folded base init. This
-// intermediate carries that tail + the tail-setting ctor so the leaves fold both the
-// base and the tail as one flat sequence, exactly as retail emits them.
+// HISTORY (2026-07-17): the shared "+0x30 tail" documented here for months was CWapX
+// below, spelled as padding. Three shapes modelled it in turn - a fat CTileLogic : CUserLogic
+// intermediate (SIZE 0x40), the TILE_LOGIC_TAIL/TILE_LOGIC_SEED member-injection macros, and
+// per-leaf m_pad40 - all three now deleted in CWapX's favour.
 //
-// Adds NO new/overridden virtual (its vtable == CUserLogic's 16 slots), so MSVC emits
-// no distinct ??_7CTileLogic and no extra vptr stamp in leaf ctors/dtors - byte-
-// identical to the old fat-CUserLogic view (verified: guardpoint holds its exact
-// dtor/Serialize; whole-sweep exacts unchanged).
-//
-// Naming basis: no RTTI / leaked-path / string evidence names this intermediate (it
-// is COMDAT-folded into every leaf and never instantiated standalone with its own
-// vftable). "CTileLogic" is a descriptive placeholder for the tile-logic-leaf common
-// tail owner; kept generic like the m_<hex> field placeholders. Only the 0x30-vs-0x40
-// boundary + the tail offsets are load-bearing.
-// ---------------------------------------------------------------------------
-// The tile-logic leaves' shared +0x30 tail, inlined per-leaf so each derives
-// CUserLogic DIRECTLY (matching RTTI - CTileLogic is not a retail class). Declare
-// FIRST in the leaf body so it lands at +0x30. Seed with TILE_LOGIC_SEED(obj).
-// m_prevAnimSetNode (+0x30) is NOT here: it is a real CUserLogic member (its own
-// slot-1 SerializeMove @0x16e7f0 streams it) that every leaf inherits at the same
-// offset under the same name - see the CUserLogic size NOTE above.
+// Why they held for so long: none was refuted by a build. A test of macro-vs-CTileLogic
+// picked the macro (leaf ctor 96.87 vs 96.17) and that was written down as "TILE_LOGIC_TAIL
+// is RTTI-faithful, don't fix it to inheritance" - but the ballot had two names on it and
+// the real base was on neither. Rejecting one alternative never elects the incumbent.
+// The RTTI claim was also read off each leaf's TYPE DESCRIPTOR (COMDAT-folded to
+// .?AVCUserLogic@@), which is structurally blind to a second base: multiple inheritance
+// lives in the CHD's base-class array, unread until the walk below.
 // ---------------------------------------------------------------------------
 // CWapX - the REAL SECOND BASE of every tile-logic leaf (RTTI .?AVCWapX@@, TD @VA
 // 0x60a3e0). Non-polymorphic (no vtable/COL anywhere in retail). This class is what
