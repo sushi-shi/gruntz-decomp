@@ -50,7 +50,17 @@
         # linker onto one rva, so all owners are correct. The section manifest already
         # permits exactly this (`compatible_folded_comdat_alias`); the data manifest
         # never got the same treatment. Mirrors it there. docs/data-attribution.md §3b.
-        patches = [ ./nix/patches/vostok-data-manifest-folded-comdat.patch ];
+        # ILT: link.exe /INCREMENTAL routes function-ADDRESS references (vtable
+        # slots, fn-ptr tables) through a 5-byte `jmp rel32` thunk band at the
+        # start of .text. The thunk is a link-time artifact - cl cannot name a
+        # symbol that does not exist until link, so the original object's DIR32
+        # named the BODY. Resolve through the thunk to reconstruct that, the same
+        # way an IAT slot is resolved back to its import. docs/patterns/ilt-thunk-
+        # indirection.md.
+        patches = [
+          ./nix/patches/vostok-data-manifest-folded-comdat.patch
+          ./nix/patches/vostok-ilt-thunk-resolution.patch
+        ];
       };
 
       # objdiff - upstream prebuilt Linux binaries (not in nixpkgs), so foreign ELF
