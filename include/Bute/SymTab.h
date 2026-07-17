@@ -217,11 +217,11 @@ public:
     // +0x20/+0x34 stamps go in the init list so they precede the member ctors.
     CSymTab(
         CSymParser* owner,
-        void* p1,
+        CSymTab* parent,
         const char* name,
-        void* p3,
-        void* p4,
-        void* p5,
+        i32 dataOff,
+        i32 dataSize,
+        i32 seed,
         i32 subN,
         i32 symN
     );
@@ -319,14 +319,27 @@ public:
     void* NextSym2(void* rec); // 0x13a2f0  (rec+0x24)->Next()->payload
     void* NextSym3(void* rec); // 0x13a310  (rec+0x1c)->Next()->payload
 
-    char* m_name;        // +0x00
-    void* m_04;          // +0x04
-    void* m_08;          // +0x08
+    char* m_name; // +0x00
+    // +0x04/+0x08 are the scope's data EXTENT in the parse stream, not pointers. Proven
+    // by what ApplyRange (their only consumer) does with them: ApplyRecursive forwards
+    // them as `(a1, a2)`, and ApplyRange spends a1 as the read OFFSET and a2 as a byte
+    // COUNT - `::operator new(a2)`, `stream->Read(a1, 0, a2, buf)`, `end = buf + a2`.
+    // They arrive as two raw dwords of the sub-scope record ({tag, fA, fB, fC, name}).
+    // The void* was what forced the `(i32)sub->m_04` / `(i32)sub->m_08` reads.
+    i32 m_dataOff;       // +0x04  sub-scope data offset in the stream
+    i32 m_dataSize;      // +0x08  sub-scope data byte count
     i32 m_0c;            // +0x0c  min-accumulator in ApplyRange (starts at -1)
     i32 m_10;            // +0x10  sum-accumulator in ApplyRange
-    void* m_14;          // +0x14  (role unproven; only nulled in dtor)
+    // +0x14 the name-keyed clock seed: every construction site passes
+    // `(void*)owner->MakeSeed()`, and MakeSeed (0x13ba70) returns i32 - the cast existed
+    // only to squeeze an int through a void* slot. (Never read back in this TU; its
+    // SOURCE is what proves the type.)
+    i32 m_seed;          // +0x14  the parser's name-keyed clock seed
     CSymParser* m_owner; // +0x18
-    void* m_1c;          // +0x1c
+    // +0x1c the PARENT scope. All three construction sites say so: the root
+    // (CSymParser::ParseBuffer) passes 0 - it has no parent - and both child sites
+    // (CreateSub 0x13a330 / the ApplyRange sub-scope arm) pass `this`, a CSymTab*.
+    CSymTab* m_parent;   // +0x1c
     // +0x20 the scope's OWN hash-node - the element the PARENT splices into its
     // m_subTabs (CreateSub/AddNodeEntry do `m_subTabs.Insert(&child->m_node20)`).
     // The ex model spelled this a `void* m_node20` vtable slot + a 12-byte pad +

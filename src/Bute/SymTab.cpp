@@ -393,11 +393,11 @@ CSymRec::~CSymRec() {
 RVA(0x00139de0, 0xd4)
 CSymTab::CSymTab(
     CSymParser* owner,
-    void* p1,
+    CSymTab* parent,
     const char* name,
-    void* p3,
-    void* p4,
-    void* p5,
+    i32 dataOff,
+    i32 dataSize,
+    i32 seed,
     i32 subN,
     i32 symN
 )
@@ -406,14 +406,14 @@ CSymTab::CSymTab(
     if (m_name) {
         strcpy(m_name, name);
     }
-    m_14 = p5;
-    m_08 = p4;
-    m_04 = p3;
+    m_seed = seed;
+    m_dataSize = dataSize;
+    m_dataOff = dataOff;
     m_owner = owner;
     m_10 = 0;
     m_0c = 0;
     m_buf48 = 0;
-    m_1c = p1;
+    m_parent = parent;
     m_node20.m_record = this;
 }
 
@@ -452,14 +452,14 @@ CSymTab::~CSymTab() {
         ::operator delete(m_buf48);
     }
     m_name = 0;
-    m_14 = 0;
-    m_08 = 0;
-    m_04 = 0;
+    m_seed = 0;
+    m_dataSize = 0;
+    m_dataOff = 0;
     m_10 = 0;
     m_0c = 0;
     m_buf48 = 0;
     m_owner = 0;
-    m_1c = 0;
+    m_parent = 0;
     m_node20.m_record = 0;
     // m_symbols, m_subTabs destruct here (reverse decl order, /GX trylevels).
 }
@@ -669,7 +669,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
         name,
         0,
         0,
-        (void*)owner->MakeSeed(),
+        owner->MakeSeed(),
         owner->m_subTabBucketCount,
         owner->m_symbolBucketCount
     );
@@ -771,8 +771,8 @@ i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
 }
 
 // ApplyRecursive (0x13a580): a2 == 0 is a no-op returning 1. Otherwise null each
-// child scope's m_04, run the big range pass (ApplyRange, 0x13a640) over this scope,
-// then recurse into every child whose m_04 the pass set, ANDing the results.
+// child scope's m_dataOff, run the big range pass (ApplyRange, 0x13a640) over this
+// scope, then recurse into every child whose extent the pass set, ANDing the results.
 // @early-stop
 // regalloc wall (~70%): logic complete. Retail pins a2 in ebx and the shared 0
 // constant in ebp; the recompile swaps them (a2->ebp, 0->ebx), which cascades through
@@ -783,7 +783,7 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (a2 != 0) {
         CHashElement* e = m_subTabs.First();
         while (e) {
-            ((CSymTab*)e->m_record)->m_04 = 0;
+            ((CSymTab*)e->m_record)->m_dataOff = 0;
             e = e->Next();
         }
         if (ApplyRange(a0, a1, a2, a3) == 0) {
@@ -792,8 +792,8 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
         e = m_subTabs.First();
         while (e) {
             CSymTab* sub = (CSymTab*)e->m_record;
-            if (sub->m_04 != 0) {
-                if (sub->ApplyRecursive(a0, (i32)sub->m_04, (i32)sub->m_08, a3) == 0) {
+            if (sub->m_dataOff != 0) {
+                if (sub->ApplyRecursive(a0, sub->m_dataOff, sub->m_dataSize, a3) == 0) {
                     ok = 0;
                 }
             }
@@ -843,10 +843,10 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
     while (p < end) {
         if (*(i32*)p == 1) {
             // sub-scope record: { tag, fA, fB, fC, name\0 }
-            void* fA = *(void**)(p + 4);
+            i32 fA = *(i32*)(p + 4);
             p += 8;
-            void* fB = *(void**)p;
-            void* fC = *(void**)(p + 4);
+            i32 fB = *(i32*)p;
+            i32 fC = *(i32*)(p + 4);
             p += 8;
             char* name = p;
             p += strlen(name) + 1;
@@ -865,9 +865,9 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 );
                 m_subTabs.Insert(&node->m_node20);
             } else {
-                ((CSymTab*)existing)->m_04 = fA;
-                ((CSymTab*)existing)->m_08 = fB;
-                ((CSymTab*)existing)->m_14 = fC;
+                ((CSymTab*)existing)->m_dataOff = fA;
+                ((CSymTab*)existing)->m_dataSize = fB;
+                ((CSymTab*)existing)->m_seed = fC;
             }
         } else {
             // leaf record: { tag, f1, f3, f2, f4, f5(key), f6, name\0, str2\0, dwords[f6] }
@@ -1167,7 +1167,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             g_emptyString,
             0,
             0,
-            (void*)this->MakeSeed(),
+            this->MakeSeed(),
             m_subTabBucketCount,
             m_symbolBucketCount
         );
@@ -1198,7 +1198,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             g_emptyString,
             0,
             0,
-            (void*)this->MakeSeed(),
+            this->MakeSeed(),
             m_subTabBucketCount,
             m_symbolBucketCount
         );
@@ -1226,9 +1226,9 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         this,
         0,
         g_emptyString,
-        (void*)m_30,
-        (void*)m_34,
-        (void*)m_38,
+        m_30,
+        m_34,
+        m_38,
         m_subTabBucketCount,
         m_symbolBucketCount
     );
