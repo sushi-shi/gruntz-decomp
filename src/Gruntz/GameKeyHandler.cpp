@@ -140,7 +140,7 @@ void __stdcall Fn2135(i32 a);                                // 0x2135
 // banked. Deferred to the final sweep. See docs/patterns/
 // megafunction-cached-locals-vs-reload-regalloc.md.
 RVA(0x000cbcc0, 0x16da)
-i32 CPlay::DispatchKey(i32 vk, i32 lparam) {
+i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     CPlay* self = this;
 
     // Top guard (cbcc9): any of five transition flags set -> swallow (ret 1).

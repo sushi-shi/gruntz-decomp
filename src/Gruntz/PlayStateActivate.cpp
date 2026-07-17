@@ -54,7 +54,7 @@ class CGruntzMgr;
 void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag); // reloc-masked
 
 RVA(0x000cb800, 0x191)
-i32 CPlay::OnActivate() {
+i32 CPlay::InputVirtual() {
     if (!CState::
             InputVirtual()) { // 0xface0 CState base activate gate (was fake CMgrPersistObj::Init)
         return 0;

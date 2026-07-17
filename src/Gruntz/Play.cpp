@@ -3943,7 +3943,7 @@ i32 CPlay::StepGridWalk(i32 dt) {
 // (xor ebx,ebx + cmp ebx,[member] null tests) and colors y into ebp (5 callee-saves),
 // MSVC here uses test/4 saves. No source lever forces it. docs/patterns/zero-register-pinning.md.
 RVA(0x000ce530, 0xe3)
-i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
+i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
@@ -3992,7 +3992,7 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
 // A documented stack-slot-coalesce coin-flip (docs/patterns/stack-slot-coalesce-
 // frame-4b.md), not source-steerable; ZERO logic differences remain.
 RVA(0x000ce660, 0x362)
-i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
+i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
     if (m_hudSuppressed != 0 || m_guts == 0) {
         return 1;
     }
@@ -4443,7 +4443,7 @@ i32 CPlay::Vslot0d(i32 key, i32 flags) {
 // cascades worse); plus m_5c `add 0x40`/`[+0x40]` addressing-mode coin-flips.
 // Final-sweep/permuter candidate.
 RVA(0x000cdb10, 0x80c)
-i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
+i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
     // retail keeps the ORIGINAL click x in EBX for the pre-snap value reads while
     // the arg slot [esp+0x38] is modified in place by the snap/place calls (they
     // take &x). Declared before any goto so no init is skipped.
@@ -4738,7 +4738,7 @@ i32 CPlay::Vslot13(i32 a, i32 b, i32 c) {
 // displacements + 7 epilogue add esp shift). Pure allocator choice, no source
 // lever. ~81%.
 RVA(0x000ceae0, 0x268)
-i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
+i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
@@ -4895,7 +4895,7 @@ i32 CPlay::DrawWorldPresent() {
 // operands to the unmatched engine callees (m_guts ClampApply 0x500cb0, the
 // PushView 0x15dc90, surface flush 0x13e850, m_4 RestoreVideoMode 0x8df00).
 RVA(0x000cba10, 0xb0)
-i32 CPlay::PresentAndFlush() {
+i32 CPlay::Vslot06() {
     if (Vfunc3() == 0) {
         return 0;
     }

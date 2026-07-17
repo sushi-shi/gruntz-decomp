@@ -175,8 +175,12 @@ public:
     // the four g_gameReg config rows, flush the m_startMarkers/m_3a4[4]/m_488
     // free-list arrays, then chain CState::ReleaseResources.
     virtual void ReleaseResources() OVERRIDE;
-    virtual i32 Vslot06() OVERRIDE;              // slot 6 (CState override)
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8 (CState override)
+    // slot 6 (CState override) - the overlay-frame present path: restore-mode
+    // guard + present-or-notify + flush (0x0cba10, Play.cpp).
+    virtual i32 Vslot06() OVERRIDE;
+    // slot 8 (CState override) - the per-state activation entry (0x0cb800,
+    // PlayStateActivate.cpp).
+    virtual i32 InputVirtual() OVERRIDE;
     virtual i32 Vslot09(i32) OVERRIDE;           // slot 9 (CState override)
     virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10 (CState override)
     virtual i32 Vslot0b(i32, i32) OVERRIDE;      // slot 11 (CState override)
@@ -279,10 +283,11 @@ public:
     // CDirectDrawMgr::GetErrorString (thunk-target proven).
     i32 StepInputA(); // (THIS TU)
     void StepWorldB();
-    // The PLAY-state keyboard/cheat dispatcher (0xcbcc0, GameKeyHandler.cpp). Routes a
-    // virtual-key to its game/cheat action; reads the guts (+0x2dc), chat sink (+0x2e0),
-    // area idx and cheat globals. Non-virtual __thiscall; body in its own split TU.
-    i32 DispatchKey(i32 vk, i32 lparam); // 0x0cbcc0 (GameKeyHandler.cpp)
+    // (The PLAY-state keyboard/cheat dispatcher 0xcbcc0 folded onto the slot-12
+    // virtual Vslot0c: it routes a virtual-key to its game/cheat action, reading
+    // the guts (+0x2dc), chat sink (+0x2e0), area idx and cheat globals. The old
+    // "Non-virtual __thiscall" note here was WRONG - ??_7CPlay/CDemo/CMulti all
+    // hold 0x0cbcc0 at slot 12 (+0x30). Body still in GameKeyHandler.cpp.)
     // (ViewPreStep/ViewPostStep are GONE - fabricated; retail's per-frame view
     // pre/post calls are StepGridWalk (0x2e2d) + winapi_0d0b30_CopyRect (0x1519).)
     // PlayCueAt: (cueId,a2,a3,a4,a5,a6,a7,rectSrc)
@@ -332,10 +337,10 @@ public:
     i32 ResetViewport(); // 0x0d8c60 (thiscall on this)
     // CPlay state-exit teardown (THIS TU): ready-gate, slot-21 notify, renderer
     // refresh, then clear the registry's per-frame words + run its +0x70 teardown.
-    // CPlay state-activation (vtable slot 8; body in PlayStateActivate.cpp): chain
-    // the base activate, register the level TILEZ/IMAGEZ namespaces, run the level-
-    // specific init chain, kick the state timer. Reached directly by CTriggerMgr.
-    i32 OnActivate(); // 0x0cb800
+    // (OnActivate 0x0cb800 folded onto the slot-8 virtual InputVirtual above: it
+    // chains the base activate, registers the level TILEZ/IMAGEZ namespaces, runs
+    // the level-specific init chain and kicks the state timer. The "slot 8" note
+    // here was always right - it was just declared non-virtual beside its own slot.)
 
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
     void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1
@@ -368,7 +373,7 @@ public:
     // DrawDebugStats.cpp; called by Render's tail + CMulti::PumpB). Was misnamed
     // "ProfFlushTail" here and re-declared on a fake CDbgView view - one method.
     void DrawDebugStats();
-    i32 DispatchHudClick(i32, i32, i32);                // 0x0ce530 (THIS TU)
+    // (DispatchHudClick 0x0ce530 folded onto the slot-15 virtual Vslot0f.)
     i32 BeginGridWalk(const char*, i32, i32, i32, i32); // 0x0d0920 (THIS TU)
     i32 StepGridWalk(i32 dt);                           // 0x0d0a60 (THIS TU)
     i32 ResetGoals(i32, i32);                           // 0x0d5f00 (THIS TU)
@@ -452,7 +457,8 @@ public:
     i32 PostHudRect();                    // 0x0da440
     // Two more draw/present sub-steps migrated from the engine_boundary backlog:
     i32 DrawWorldPresent(); // 0x0cefc0 (double world-draw + present + manager tick)
-    i32 PresentAndFlush();  // 0x0cba10 (restore-mode guard + present-or-notify + flush)
+    // (PresentAndFlush 0x0cba10 folded onto the slot-6 virtual Vslot06 above -
+    // one body, one name: the vtable slot IS this function.)
     // Overlay sub-step migrated from the engine_boundary backlog:
     i32 EnterOverlayDrag(i32 arg); // 0x0d6440 (arm overlay-drag + guts busy words)
     // (HudClickInRect/DragHudInRect/ApplyOverlay3e59 are GONE - all three were
@@ -685,21 +691,21 @@ public:
 
     // Engine-label backlog stubs.
     void PlayBacklog08c9d0();
-    i32 winapi_0cdb10_PostMessageA(i32, i32, i32);
-    // HandleTileClick (0xceae0): the menu/pause-state pointer-click handler - the
-    // mouse-input twin of OnKeyCommand. Gated resume/report/unpause chain, then an
-    // overlay probe + a HUD hit-test + a grid-snapped world marker place/cancel.
-    i32 HandleTileClick(i32 a, i32 x, i32 y);
+    // (winapi_0cdb10_PostMessageA 0x0cdb10 folded onto the slot-14 virtual Vslot0e.)
+    // (HandleTileClick 0xceae0 folded onto the slot-17 virtual Vslot11: the menu/
+    // pause-state pointer-click handler - the mouse-input twin of OnKeyCommand.
+    // Gated resume/report/unpause chain, then an overlay probe + a HUD hit-test +
+    // a grid-snapped world marker place/cancel.)
     i32 winapi_0d0b30_CopyRect(i32);
     i32 LoadCursorSprites(i32 frame, i32 flag);
     i32 LoadScrollSpeedOptions();
     i32 BuildGruntTypeNameTable(i32, i32, i32, i32);
 
-    // HandleMousePress (0x0ce660): vtable slot 16 (+0x40) - the in-game
-    // pointer/click dispatcher (mouse sibling of OnKeyCommand). Re-homed from
-    // GameMouseHandler.cpp; reaches the guts/status-bar sub-objects at m_guts /
-    // m_hitTest / m_4 / m_c which that TU casts to its local facet views.
-    i32 HandleMousePress(i32 msg, i32 x, i32 y); // 0x0ce660
+    // (HandleMousePress 0x0ce660 folded onto the slot-16 virtual Vslot10 - the
+    // "vtable slot 16 (+0x40)" note here was always right, it was just declared
+    // non-virtual. The in-game pointer/click dispatcher (mouse sibling of
+    // OnKeyCommand); reaches the guts/status-bar sub-objects at m_guts /
+    // m_hitTest / m_4 / m_c. Body in Play.cpp.)
 
     // The two per-frame plane-list sub-steps (bodies in CPlayPlaneScan.cpp): walk
     // the renderer's embedded plane list (m_c->renderer+0x10) and dispatch on each
