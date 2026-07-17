@@ -367,8 +367,20 @@ def cmd_build(args) -> None:
     # capable of false-PASSING a class whose layout we have since broken - which is the
     # exact defect the gate exists to catch. It also fooled stale_walls into reporting all
     # 9 layout bugs as still-live for 90 minutes after they were fixed.
-    # Regenerate it here, before anything reads it. It is cheap next to the build.
-    cmd_structs(argparse.Namespace(tu=[]))
+    # Regenerate it here, before anything reads it.
+    #
+    # It is NOT cheap (a clang layout+ast dump per TU, ~4.5 min - it dominates the gate
+    # tail), so do it only when it is actually stale. structs.json is a pure function of
+    # src/+include/, so "no source is newer than it" == "it already describes this tree";
+    # the same _stale_sources() predicate class_sizes uses to decide whether it may
+    # answer at all. This keeps the gates running on every full build (a no-op build must
+    # still verify the source invariants) without paying 4.5 min to recompute a file that
+    # cannot have changed.
+    from gruntz.match.class_sizes import _stale_sources
+    if _stale_sources() or not (GEN_NAMES.parent / "structs.json").is_file():
+        cmd_structs(argparse.Namespace(tu=[]))
+    else:
+        log("structs.json is current (no source newer) - skipping the layout regen.")
 
     # Class-metadata invariants. Every vtable-bearing class should carry a
     # VTBL/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
