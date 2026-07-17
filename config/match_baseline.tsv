@@ -352,7 +352,7 @@ typekeycoll	31	12
 ufo	5	4
 uncompr	1	1
 unknownfileioctor	1	1
-userlogic	17	0
+userlogic	17	2
 userlogicctoremit	2	1
 videoconfig	18	11
 voicesoundlist	1	0
@@ -4037,22 +4037,22 @@ ufo	?SerializeMove@CUFO@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	2	0ebb44ed
 ufo	?Tick@CUFO@@UAEHXZ	100.0000	100.0000	1	41b9dc44dedf	0xb4330
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownfileioctor	??0FileIOOwner@@QAE@XZ	100.0000	100.0000	10	01b3d14d4690	0x8fea0
-userlogic	?Activate@CUserLogic@@UAEHXZ	0.0000	0.0000	1	a8e3cb02fde8	0x33dc
-userlogic	?FireActivation@CUserLogic@@UAEXH@Z	40.0000	40.0000	1	c0ed59805ee5	0x246e
-userlogic	?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ	0.0000	0.0000	1	8baca66053b5	0x242d
+userlogic	?Activate@CUserLogic@@UAEHXZ	0.0000	0.0000	1	a8e3cb02fde8	0x88d0
+userlogic	?FireActivation@CUserLogic@@UAEXH@Z	100.0000	100.0000	1	c0ed59805ee5	0x8b70
+userlogic	?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	8baca66053b5	0x87f0
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	3	6997bbd3ffc7	0x5d210
 userlogic	?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z	0.0000	0.0000	1	cpp:8841d01b65e1	0x4dd50
-userlogic	?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z	0.0000	0.0000	1	b11675028000	0x39e0
-userlogic	?StepAttackFire@CUserLogic@@UAEHXZ	0.0000	0.0000	1	4dab623cd9fd	0x1361
-userlogic	?UserLogicVfunc1@CUserLogic@@UAEHXZ	0.0000	0.0000	1	0947b750351e	0x3413
-userlogic	?UserLogicVfunc5@CUserLogic@@UAEHXZ	0.0000	0.0000	1	22577e8d342a	0x2162
-userlogic	?UserLogicVfunc6@CUserLogic@@UAEHXZ	0.0000	0.0000	1	ebb474615b5e	0x26b7
-userlogic	?UserLogicVfunc8@CUserLogic@@UAEHXZ	0.0000	0.0000	1	aaa06ddf1d0e	0x23f6
-userlogic	?UserLogicVfunc9@CUserLogic@@UAEHXZ	0.0000	0.0000	1	4a4bd047108b	0x225c
-userlogic	?UserLogicVfuncA@CUserLogic@@UAEHXZ	0.0000	0.0000	1	38bf0e79a6b1	0x150a
-userlogic	?UserLogicVfuncB@CUserLogic@@UAEHXZ	0.0000	0.0000	1	2fe3cd32fc47	0x3116
-userlogic	?UserLogicVfuncC@CUserLogic@@UAEHXZ	0.0000	0.0000	1	3cdcccf34536	0x1730
-userlogic	?UserLogicVfuncD@CUserLogic@@UAEHXZ	0.0000	0.0000	1	4f7f96da4f64	0x3607
+userlogic	?SerializeMove@CUserBase@@UAEHPAVCFileMemBase@@HHH@Z	70.0000	70.0000	1	b11675028000	0x87d0
+userlogic	?StepAttackFire@CUserLogic@@UAEHXZ	70.0000	70.0000	1	4dab623cd9fd	0x8930
+userlogic	?UserLogicVfunc1@CUserLogic@@UAEHXZ	0.0000	0.0000	1	0947b750351e	0x8b50
+userlogic	?UserLogicVfunc5@CUserLogic@@UAEHXZ	70.0000	70.0000	1	22577e8d342a	0x88f0
+userlogic	?UserLogicVfunc6@CUserLogic@@UAEHXZ	70.0000	70.0000	1	ebb474615b5e	0x8910
+userlogic	?UserLogicVfunc8@CUserLogic@@UAEHXZ	0.0000	0.0000	1	aaa06ddf1d0e	0x8950
+userlogic	?UserLogicVfunc9@CUserLogic@@UAEHXZ	0.0000	0.0000	1	4a4bd047108b	0x8970
+userlogic	?UserLogicVfuncA@CUserLogic@@UAEHXZ	0.0000	0.0000	1	38bf0e79a6b1	0x8990
+userlogic	?UserLogicVfuncB@CUserLogic@@UAEHXZ	0.0000	0.0000	1	2fe3cd32fc47	0x89b0
+userlogic	?UserLogicVfuncC@CUserLogic@@UAEHXZ	0.0000	0.0000	1	3cdcccf34536	0x89d0
+userlogic	?UserLogicVfuncD@CUserLogic@@UAEHXZ	0.0000	0.0000	1	4f7f96da4f64	0x89f0
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	4	ea5a56c47dbc	0x4d800
 userlogicctoremit	??0CUserLogic@@QAE@PAUCGameObject@@@Z	89.0446	89.0446	1	cpp:aca2e8db625f	0x58cd0
 userlogicctoremit	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	cpp:aca2e8db625f	0x138d0
