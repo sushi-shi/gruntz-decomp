@@ -192,10 +192,10 @@ public:
     virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17 (CState override)
     virtual i32 Vslot12(i32, i32, i32) OVERRIDE; // slot 18 (CState override)
     virtual i32 Vslot13(i32, i32, i32) OVERRIDE; // slot 19 (CState override)
-    virtual i32 Vslot14(i32, i32, i32) OVERRIDE; // slot 20 (CState override)
+    virtual i32 SetBeginClearParams(i32, i32, i32) OVERRIDE; // slot 20 (CState override, 0x8c970)
     virtual i32 Vslot15() OVERRIDE;              // slot 21 (CState override)
-    virtual void Vslot18() OVERRIDE;             // slot 24 (CState override)
-    virtual void Vslot19() OVERRIDE;             // slot 25 (CState override)
+    virtual i32 PauseGame() OVERRIDE;            // slot 24 (CState override, 0xcee90)
+    virtual i32 ResumeGame() OVERRIDE;           // slot 25 (CState override, 0xcef00)
     // --- CPlay-owned high slots 26..40 (moved from CState; RTTI CState is 26 slots) ---
     virtual i32 Vslot1a();  // slot 26 (0x8c930)  ret 0
     virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
@@ -415,11 +415,10 @@ public:
     i32 LoadLoadingBarSprite(); // 0x0d7440
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
     i32 ForwardReady(); // 0x0cee70 (out-of-line: tail-call the slot-3 ready gate Vfunc3)
-    // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):
+    // (PauseGame/ResumeGame are the slot 24/25 virtuals declared above: this pair WAS the
+    // non-virtual half of a one-body-two-names shadow with CState::Vslot18/Vslot19.
     // PauseGame saves the game clock into m_savedClock + freezes the world; ResumeGame
-    // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
-    i32 PauseGame();  // 0x0cee90
-    i32 ResumeGame(); // 0x0cef00
+    // restores the clock + unpauses. Migrated from engine_boundary (CPlay).)
     // FrameSlot28's own-this reloc-masked callee (external body elsewhere; invoked
     // with ecx=this in the status/pause overlay). QuitToMenu (0x0cef50, no-arg notify
     // when the m_40 latch is set). (0x0fa8f0 is CState::RetireScene - the status-message

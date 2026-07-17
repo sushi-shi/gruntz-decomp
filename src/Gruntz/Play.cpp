@@ -4381,9 +4381,12 @@ i32 CPlay::GetFrame() {
     return 0;
 }
 
-// CState::SetBeginClearParams (0x8c970) - seed the begin-clear params.
+// CPlay::SetBeginClearParams (0x8c970) - CPlay's OVERRIDE of CState's slot 20, not a
+// CState non-virtual: `vtable_hierarchy --class CPlay` reads slot [20] override (origin
+// CState) and its slot resolves here, while CState's own slot 20 is the return-0 default
+// at 0x8c670. It was already homed in the `play` unit under a CState name.
 RVA(0x0008c970, 0x1c)
-i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
+i32 CPlay::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
     m_cursorX = arg2;
     m_cursorY = arg3;
     return 1;

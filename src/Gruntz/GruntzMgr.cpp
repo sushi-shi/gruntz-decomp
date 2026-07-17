@@ -1616,7 +1616,7 @@ i32 CGruntzMgr::NotifyState13(i32 a, i32 b, i32 c) {
 RVA(0x0008dbe0, 0x23)
 i32 CGruntzMgr::NotifyState14(i32 a, i32 b, i32 c) {
     if (m_curState) {
-        return m_curState->Vslot14(a, b, c);
+        return m_curState->SetBeginClearParams(a, b, c);
     }
     return 0;
 }
@@ -3404,7 +3404,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) && stopBank) {
             m_sound->StopAll();
         }
-        m_curState->Vslot18();
+        m_curState->PauseGame();
         if (full) {
             return 1;
         }
@@ -3421,7 +3421,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
             m_cmdGrid->DestroyAllAnims();
         }
     }
-    m_curState->Vslot19();
+    m_curState->ResumeGame();
     g_inputMgr->ReadAll();
     RefreshGameClock();
     return 1;

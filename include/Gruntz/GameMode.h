@@ -212,7 +212,7 @@ public:
     virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
     virtual i32 Vslot10(i32, i32, i32) OVERRIDE; // slot 16
-    virtual i32 Vslot14(i32, i32, i32) OVERRIDE; // slot 20
+    virtual i32 SetBeginClearParams(i32, i32, i32) OVERRIDE; // slot 20
     // The ~CMenuState() destructor (EH-framed `??1` under /GX): it re-stamps the
     // CMenuState vtable, runs the slot-2 resource release (ReleaseResources,
     // statically bound in the dtor), then re-stamps the CState vtable and chains

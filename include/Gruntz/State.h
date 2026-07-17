@@ -137,10 +137,13 @@ public:
     virtual i32 Vslot13(i32, i32, i32) {
         return 0;
     } // slot 19 (+0x4c)
+    // slot 20 (+0x50): seeds the begin-clear params. The base default returns 0; the
+    // role is named from CPlay's override (0x8c970), the only leaf whose body proves
+    // one - a CHOICE from the evidence, not a reading (retail carries no symbols).
     RVA(0x0008c670, 0x5)
-    virtual i32 Vslot14(i32, i32, i32) {
+    virtual i32 SetBeginClearParams(i32, i32, i32) {
         return 0;
-    } // slot 20 (+0x50)
+    }
     // slot 21 (+0x54): HandleCommand's 0x800e path polls it as a veto gate
     // (`if (m_curState->Vslot15()) return 1;`) - the i32 return is proven there.
     RVA(0x0008c690, 0x3)
@@ -155,11 +158,13 @@ public:
     // slot 23 (+0x5c, 0x0fa6b0): the frame-surface GDI text overlay (all states inherit
     // it). GetDC on the frame surface, SetBkMode/SetTextColor, TextOutA(x,y,str), ReleaseDC.
     virtual i32 Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode);
-    virtual void Vslot18();
-    virtual void Vslot19();
+    // slots 24/25: named from CPlay's overrides (0xcee90/0xcef00), the only leaves whose
+    // bodies prove a role - a CHOICE from the evidence, not a reading. The i32 return is
+    // the bodies' (`QAEH`), not the void these placeholders guessed; both call sites in
+    // CGruntzMgr discard it.
+    virtual i32 PauseGame();
+    virtual i32 ResumeGame();
 
-    // Non-virtual leaf (matched): seeds the begin-clear params.
-    i32 SetBeginClearParams(i32 unused, i32 arg2, i32 arg3); // 0x8c970
     // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
     void NotifyExit(i32 code);
 
