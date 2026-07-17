@@ -1025,7 +1025,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     if (eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
     if (eq) {
         // code "I": arrival cue (m_170==0x13) then re-notify the tile mgr.
         if (m_entranceReason == 0x13) {
@@ -1045,15 +1045,15 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeG) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "G") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeL) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "L") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeP) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "P") == 0);
     if (eq) {
         goto idleReseed;
     }
@@ -1068,7 +1068,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     if (eq) {
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeJ) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "J") == 0);
     if (eq) {
         // code "J": clear the entrance gate, re-latch a fresh anim set, drive the
         // geometry sub-player.

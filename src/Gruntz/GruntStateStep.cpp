@@ -200,9 +200,9 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm =
                     ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)g->m_14->m_1c))->m_0;
-                if (strcmp(nm, s_codeI) != 0 && strcmp(nm, s_codeG) != 0 && strcmp(nm, s_codeL) != 0
-                    && strcmp(nm, s_codeP) != 0 && strcmp(nm, s_codeJ) != 0
-                    && strcmp(nm, k_60cc90) != 0 && strcmp(nm, k_60bebc) != 0) {
+                if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0
+                    && strcmp(nm, "P") != 0 && strcmp(nm, "J") != 0
+                    && strcmp(nm, "C") != 0 && strcmp(nm, "R") != 0) {
                     Finish3e4f(g, cur);
                 }
             }

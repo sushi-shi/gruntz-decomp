@@ -51,7 +51,6 @@
 // LoadGruntEffectSprites externs: the CButeMgr text-config singleton + the wormhole
 // SecretColor bute tag + the go-kart install byte flag.
 // g_buteMgr (?g_buteMgr@@3VCButeMgr@@A) comes from <Bute/ButeMgr.h>.
-extern char* g_wormholeSpawnKey;  // ?g_wormholeSpawnKey@@3PADA ("Wormhole" bute tag @0x60a7ac)
 extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
 
 // (The `CEffGeomRow g_effGeom[8]` view @0x60b8fc is GONE: it was a +4-SHIFTED alias
@@ -193,7 +192,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         return 0;
     }
     i32 tint = ((CGlitterColorTable*)g_gameReg->m_78)
-                   ->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
+                   ->m_arr14[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CGameObject* p318 = m_icons[7];

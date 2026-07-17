@@ -277,7 +277,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
     i32 color;
     if (kind == -1) {
         i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
-        color = colorTable[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "EntranceColor", 3) + 0x14 / 4];
+        color = colorTable[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3) + 0x14 / 4];
     } else {
         i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
         color = colorTable[kind + 0x14 / 4];
@@ -312,7 +312,7 @@ i32 CWormhole::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
         if (kind == -1) {
             i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
             color =
-                colorTable[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "EntranceColor", 3) + 0x14 / 4];
+                colorTable[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3) + 0x14 / 4];
         } else {
             i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
             color = colorTable[kind + 0x14 / 4];
@@ -997,7 +997,7 @@ i32 CTeleporter::Update() {
             s->m_164 * 32 + 16,
             s->m_168 * 32 + 16,
             0,
-            g_wormholeSpawnKey,
+            "Wormhole",
             0x40003
         );
         spawned->m_164 = m_object->m_screenX;

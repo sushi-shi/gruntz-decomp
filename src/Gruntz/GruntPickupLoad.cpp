@@ -72,7 +72,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
                 != 0
             && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), s_codeD)
                    != 0
-            && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), s_codeE)
+            && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), "E")
                    != 0) {
             return 0;
         }
@@ -127,7 +127,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_codeJ);
+    m_14->m_1c = g_buteTree.Find("J");
 
     i32 id = 0;
     a2 = 0; // force-cue local (reuses the consumed arg2 slot)

@@ -976,7 +976,7 @@ i32 CGrunt::StepArrivalCommit() {
     if (eq) {
         goto finalize;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
     if (eq) {
         if (m_entranceReason == 0x13) {
             g_gameReg->m_cueSink->Cue1(m_10->m_188);
@@ -995,15 +995,15 @@ i32 CGrunt::StepArrivalCommit() {
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         return 0;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeG) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "G") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeL) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "L") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeP) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "P") == 0);
     if (eq) {
         goto idleReseed;
     }
@@ -1013,7 +1013,7 @@ i32 CGrunt::StepArrivalCommit() {
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         goto finalize;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeJ) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "J") == 0);
     if (eq) {
         // code "J": clear the entrance gate; if the PREVIOUS anim set was "D",
         // re-latch a fresh "D" set + drive the WALK geometry + stamp the cell frame.
@@ -1514,7 +1514,7 @@ i32 CGrunt::StepAnimDispatchB() {
     if (eq) {
         goto kArm;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
     if (eq) {
         if (m_entranceReason == 0x13) {
             EmitMoveCueShort(m_10->m_188, 0, 0);
@@ -1529,15 +1529,15 @@ i32 CGrunt::StepAnimDispatchB() {
         );
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeG) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "G") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeL) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "L") == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeP) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "P") == 0);
     if (eq) {
         goto idleReseed;
     }
@@ -1547,7 +1547,7 @@ i32 CGrunt::StepAnimDispatchB() {
         CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeJ) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "J") == 0);
     if (eq) {
         m_entranceActive = 0;
         if (m_poweredUp == 0 && m_neighborValid == 0) {

@@ -16,7 +16,6 @@
 extern "C" u32 g_frameTime;        // 0x645588  running game clock (ms)
 extern "C" i32 g_engineFrameDelta; // 0x6bf3bc  per-frame draw-delta (arrival probe ctx)
 // g_buteMgr (0x6453d8, getters reloc-mask) comes from <Bute/ButeMgr.h>.
-extern char k_60bebc[]; // interned bute-node name "R"
 
 // LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle
 // anim by grunt mode, then (once arrived + not busy) latch the decay timer + fill.
@@ -54,7 +53,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
     i32 mode = m_gruntMode;
     if (mode == 1 || mode == 2 || mode == 0xb || mode == 6) {
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find(k_60bebc);
+        m_objAux->m_1c = g_buteTree.Find("R");
         if (m_animSuppress == 0) {
             m_260->NotifyCell(m_animArg0, m_animArg1, 0);
         }

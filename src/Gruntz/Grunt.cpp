@@ -909,7 +909,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeE) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "E") == 0);
     if (eq) {
         // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
         // latched m_entranceCell triple (cell table base 0x468).
@@ -927,7 +927,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
         }
         goto store;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
     if (eq) {
         goto codeI;
     }
@@ -1392,7 +1392,7 @@ label_4c6e4:
         CAnimNameRecord* r = g_typeColl.ScratchResolve(m_14->m_1c);
         GruntScratchTeardown();
         bool ne;
-        ne = (strcmp(r->m_name, s_codeL) != 0);
+        ne = (strcmp(r->m_name, "L") != 0);
         if (ne) {
             m_entranceActive = 0;
         }

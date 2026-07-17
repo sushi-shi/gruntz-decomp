@@ -1910,7 +1910,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         return 1;
     }
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0);
     if (eq) {
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -2135,22 +2135,22 @@ RVA(0x0005be30, 0x9e5)
 void RegisterActs_644af0() {
     REGISTER_KEY_644AF0(s_codeA, &CGrunt::ResolveEntranceArrival);
     REGISTER_KEY_644AF0(s_actKeyB, &CGrunt::StepWarpExit);
-    REGISTER_KEY_644AF0(k_60cc90, &CGruntBehaviorLeaf::LoadGruntDecayConfig);
+    REGISTER_KEY_644AF0("C", &CGruntBehaviorLeaf::LoadGruntDecayConfig);
     REGISTER_KEY_644AF0(s_codeD, &CGrunt::StepArrivalReroll);
-    REGISTER_KEY_644AF0(s_codeE, &CGrunt::UpdateGruntStatus);
+    REGISTER_KEY_644AF0("E", &CGrunt::UpdateGruntStatus);
     REGISTER_KEY_644AF0(s_codeF, &CGrunt::DispatchVtbl24);
-    REGISTER_KEY_644AF0(s_codeG, &CGrunt::StepEntranceRelatchA);
+    REGISTER_KEY_644AF0("G", &CGrunt::StepEntranceRelatchA);
     REGISTER_KEY_644AF0(s_codeH, &CGrunt::StepArrivalCommitA);
-    REGISTER_KEY_644AF0(s_codeI, &CGruntBehaviorLeaf::LoadWandGruntItemConfig);
-    REGISTER_KEY_644AF0(s_codeJ, &CGrunt::RunEntranceMove);
+    REGISTER_KEY_644AF0("I", &CGruntBehaviorLeaf::LoadWandGruntItemConfig);
+    REGISTER_KEY_644AF0("J", &CGrunt::RunEntranceMove);
     REGISTER_KEY_644AF0(s_codeK, &CGrunt::LoadEntranceConfig);
-    REGISTER_KEY_644AF0(s_codeL, &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_KEY_644AF0("L", &CGrunt::LoadVehicleGruntAnimations);
     REGISTER_KEY_644AF0(s_codeM, &CGrunt::RearmEntranceDrop);
     REGISTER_KEY_644AF0(s_codeN, &CGrunt::StepEntranceRelatchB);
     REGISTER_KEY_644AF0(s_codeO, &CGrunt::StepArrivalCommitB);
-    REGISTER_KEY_644AF0(s_codeP, &CGrunt::UpdateEntranceAnim);
+    REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
     REGISTER_KEY_644AF0(s_codeQ, &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_KEY_644AF0(k_60bebc, &CGruntBehaviorLeaf::LoadGruntDecayConfig2);
+    REGISTER_KEY_644AF0("R", &CGruntBehaviorLeaf::LoadGruntDecayConfig2);
     REGISTER_KEY_644AF0(k_60df94, &CGrunt::FinishEntranceMove);
 }
 // ---------------------------------------------------------------------------

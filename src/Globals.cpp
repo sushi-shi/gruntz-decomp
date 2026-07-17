@@ -84,8 +84,6 @@ DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
 DATA(0x001f04f8)
 extern const double g_motionNegHalf = -0.5;
-DATA(0x0020a7ac)
-char g_wormholeSpawnKey[] = "Wormhole"; // "Wormhole" @ 0x60a7ac
 // (g_desc60aac8 was the "Gruntz" app-name literal @0x60aac8 viewed as an i32 tag;
 //  folded onto g_msgCaption, DEFINED in src/Gruntz/WinMain.cpp.)
 DATA(0x0020b588)
@@ -97,26 +95,10 @@ u8 g_dat60b588 = 95;
 // every one of the ~16 was an unresolved external referenced from a dozen grunt TUs.
 // (?s_codeD@@3PADA and ?k_60cca4@@3PADA are the SAME address, 0x60cca4 = "D": two TUs each
 // invented a name for one literal. One definition now serves both.)
-DATA(0x0020beb8)
-char s_codeP[] = "P";
-DATA(0x0020bebc)
-char k_60bebc[] = "R";
-DATA(0x0020cc90)
-char k_60cc90[] = "C";
-DATA(0x0020cc94)
-char s_codeJ[] = "J";
-DATA(0x0020cc98)
-char s_codeL[] = "L";
-DATA(0x0020cc9c)
-char s_codeG[] = "G";
-DATA(0x0020cca0)
-char s_codeI[] = "I";
 DATA(0x0020cca4)
 char s_codeD[] = "D";
 DATA(0x0020d2e8)
 char s_codeF[] = "F";
-DATA(0x0020d2ec)
-char s_codeE[] = "E";
 DATA(0x0020d7f4)
 char s_codeM[] = "M";
 DATA(0x0020d7fc)
@@ -141,8 +123,6 @@ u8 g_titleBuf = 72;
 // (s_GameMessagez @0x211ab8 was a FICTION -- cl's folded `??_C@_0O@DDJB@GAME_MESSAGEZ@` literal.)
 // g_warpX / g_warpY DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
 // g_archiveDefault612618 / g_dat613054 DEFINED in src/Gruntz/Play.cpp (owner TU).
-DATA(0x002135e8)
-char s_PREVIEW_6135e8[] = "PREVIEW"; // "PREVIEW"
 // g_wwdObjIdCounter (0x61ab14, init = 1) DEFINED in src/Wwd/WwdObjMgr.cpp (owner:
 // stamps + post-increments it per created object); extern in <Globals.h>.
 // (g_modeTab_e8..ee are GONE: 0x624fe8..ee are the four u16s of zlib's

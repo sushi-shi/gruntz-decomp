@@ -138,7 +138,7 @@ void CPreviewState::ResetPreview() {
     if (m_c->m_soundRegistry->m_2c != 0) {
         m_c->m_soundRegistry->m_2c->Stop();
     }
-    m_c->m_soundRegistry->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
+    m_c->m_soundRegistry->RemoveKeysEqual_157c70("PREVIEW", "_");
     CState::ReleaseResources();
 }
 
