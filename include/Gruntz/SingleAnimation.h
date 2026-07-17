@@ -35,8 +35,14 @@ public:
     i32 AdvanceAnim();
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; @rva-symbol pin in the home TU).
-    char m_pad40
-        [0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSingleAnimation` @0xaaaa0)
+    // No own data: the two bases already span the whole object -
+    // CUserLogic (0x34) + CWapX (0x20) == 0x54 == SIZE (sizeof corroborated by
+    // `new CSingleAnimation` @0xaaaa0). The ex `m_pad40[0x54-0x40]` was the CWapX
+    // base spelled as PADDING (the pre-CWapX model thought the base ended at +0x40
+    // and the leaf added 0x14). It survived the CWapX sweep because the divergent
+    // registrar shell in ObjTypeRegistrars.h made this class multiply-defined, and
+    // class_sizes reports UNVERIFIABLE (not a mismatch) for a duplicated name - the
+    // same way CBrickz::m_own hid. Same fix, same evidence.
 };
 VTBL(CSingleAnimation, 0x1e745c);
 SIZE(CSingleAnimation, 0x54);

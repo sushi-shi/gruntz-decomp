@@ -5,6 +5,14 @@
 // only - the __thiscall registrars stay in the .cpp (can't be plain-called here).
 // The RTTI-known game-object classes carry their real base so the vtable audit
 // (INHERIT) stays clean; the rest are non-RTTI helpers (no base).
+// NOTE: a base-less / single-base `struct C... { static void RegisterActs(); };`
+// shell here is a SECOND, DIVERGENT definition of a real class (these leaves are MI:
+// CUserLogic + CWapX). It also MASKS the size gate: class_sizes keeps one size per
+// NAME, so a multiply-defined class reports UNVERIFIABLE instead of being checked -
+// which is exactly how CBrickz's and CSingleAnimation's stale CWapX-as-padding
+// members stayed hidden. Include the real header instead; it is layout-neutral
+// (a static member changes no offset and no vtable) and the mangled names the
+// factory CALLs bind to are identical.
 #ifndef GRUNTZ_OBJTYPEREGISTRARS_H
 #define GRUNTZ_OBJTYPEREGISTRARS_H
 
@@ -13,50 +21,28 @@
 // calls). The old base-less shells for these four are gone - see the note below.
 #include <Gruntz/CBrickz.h>     // the REAL CBrickz (its static RegisterActs @0x10ebe0)
 #include <Gruntz/ExitTrigger.h> // the REAL CExitTrigger (its static RegisterActs @0x3f3f0)
+#include <Gruntz/ObjectDropper.h> // the REAL CObjectDropper (MI: CUserLogic + CWapX)
+#include <Gruntz/Particlez.h> // the REAL CParticlez (MI: CUserLogic + CWapX)
+#include <Gruntz/RollingBall.h> // the REAL CRollingBall (MI: CUserLogic + CWapX)
+#include <Gruntz/SecretLevelTrigger.h> // the REAL CSecretLevelTrigger (MI: CUserLogic + CWapX)
+#include <Gruntz/SecretTeleporterTrigger.h> // the REAL CSecretTeleporterTrigger (MI: CUserLogic + CWapX)
+#include <Gruntz/SingleAnimation.h> // the REAL CSingleAnimation (MI: CUserLogic + CWapX)
+#include <Gruntz/StaticHazard.h> // the REAL CStaticHazard (MI: CUserLogic + CWapX)
+#include <Gruntz/StatusBarSprite.h> // the REAL CStatusBarSprite (MI: CUserLogic + CWapX)
+#include <Gruntz/TileTriggerSwitch.h> // the REAL CTileTriggerSwitch (MI: CUserLogic + CWapX)
+#include <Gruntz/TileTriggerTransition.h> // the REAL CTileTriggerTransition (MI: CUserLogic + CWapX)
+#include <Gruntz/TimeBomb.h> // the REAL CTimeBomb (MI: CUserLogic + CWapX)
+#include <Gruntz/ToobSpikez.h> // the REAL CToobSpikez (MI: CUserLogic + CWapX)
+#include <Gruntz/VoiceTrigger.h> // the REAL CVoiceTrigger (MI: CUserLogic + CWapX)
+#include <Gruntz/WarpStonePad.h> // the REAL CWarpStonePad (MI: CUserLogic + CWapX)
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/GruntToySprite.h>
 
 // RTTI-known logic classes: real base per vtable_hierarchy so INHERIT stays clean.
-struct CObjectDropper : public CUserLogic {
-    static void RegisterActs();
-};
-struct CParticlez : public CUserLogic {
-    static void RegisterActs();
-};
 struct CProjectile : public CMovingLogic {
     static void RegisterType();
-};
-struct CRollingBall : public CUserLogic {
-    static void RegisterActs();
-};
-struct CSecretLevelTrigger : public CUserLogic {
-    static void RegisterActs();
-};
-struct CSecretTeleporterTrigger : public CUserLogic {
-    static void RegisterActs();
-};
-struct CSingleAnimation : public CUserLogic {
-    static void RegisterActs();
-};
-struct CStaticHazard : public CUserLogic {
-    static void RegisterActs();
-};
-struct CStatusBarSprite : public CUserLogic {
-    static void RegisterActs();
-};
-struct CTimeBomb : public CUserLogic {
-    static void RegisterActs(); // 0x0e1990 (home: Projectile.cpp)
-};
-struct CToobSpikez : public CUserLogic {
-    static void RegisterActs(); // 0x1149c0 (home: ToobSpikez.cpp)
-};
-struct CVoiceTrigger : public CUserLogic {
-    static void RegisterActs(); // 0x11a500 (home: GruntVoice.cpp)
-};
-struct CTileTriggerTransition : public CUserLogic {
-    static void RegisterActs(); // 0x10fe70 (home: TileLogicPump.cpp)
 };
 // CTileTrigger (+ its RegisterActs @0x10e600) comes from <Gruntz/UserLogic.h>.
 // (The CTileSecretTrigger shell is GONE: its "RegisterActs @0x10f340" is
@@ -64,12 +50,6 @@ struct CTileTriggerTransition : public CUserLogic {
 // CBrickz's registrar @0x10ebe0 comes from the REAL <Gruntz/CBrickz.h> included
 // above - no base-less shell: this class is MI (CUserLogic + CWapX) and a shell
 // would be a second, divergent definition.)
-struct CTileTriggerSwitch : public CUserLogic {
-    static void RegisterActs();
-};
-struct CWarpStonePad : public CUserLogic {
-    static void RegisterActs();
-};
 // (CExitTrigger's registrar @0x3f3f0 comes from the REAL <Gruntz/ExitTrigger.h>
 // included above - the ex 'CWormhole' shell here declared a base-less/single-base
 // shape while the real class is MI (CUserLogic + CWapX): a divergent redefinition.)
