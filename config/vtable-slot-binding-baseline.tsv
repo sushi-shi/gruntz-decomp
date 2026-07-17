@@ -16,7 +16,6 @@ WIRING	0x1e72b4	CUFO	4	0x0b3b60	?RunAct@CPathHazard@@QAEHH@Z	pathhazard
 WIRING	0x1e7324	CRainCloud	1	0x0b4cb0	?Method_b4cb0@CUFO@@QAEHPAXHHH@Z	ufo
 WIRING	0x1e7324	CRainCloud	4	0x0b3b60	?RunAct@CPathHazard@@QAEHH@Z	pathhazard
 WIRING	0x1e7324	CRainCloud	20	0x0b4640	?ArmStrike@CPathHazard@@QAEHHH@Z	pathhazard
-WIRING	0x1e7394	CPathHazard	1	0x0b4d30	?Serialize@CUFO@@QAEHPAXHHH@Z	ufo
 WIRING	0x1e7394	CPathHazard	4	0x0b3b60	?RunAct@CPathHazard@@QAEHH@Z	pathhazard
 WIRING	0x1e7404	CWarlord	4	0x044640	?ResolveState@CWarlord@@QAEHH@Z	warlord
 WIRING	0x1e745c	CSingleAnimation	4	0x0aea20	?RunAct@CSingleAnimation@@QAEHH@Z	singleanimation

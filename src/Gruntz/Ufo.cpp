@@ -79,14 +79,14 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 
 // ---------------------------------------------------------------------------
 // CUFO::SerializeMove (0x0b4c40) - vtable slot 1 (the real slot-1 override; thunk
-// 0x3fb7). Chains the 647-byte CUFO::Serialize helper (call 0x3035 -> 0xb4d30, the
-// UFO's field-transfer serialize); bails 0 on failure. On success + mode 8 it
+// 0x3fb7). Chains its BASE CPathHazard::SerializeMove (call 0x3035 -> 0xb4d30, the
+// inherited field-transfer serialize); bails 0 on failure. On success + mode 8 it
 // re-applies the ctor's draw-fill render state on the bound object (the same
 // m_drawActive=1 / m_drawFillCmd=8 / m_fillFraction=0x80 the ctor seeds above).
 // ---------------------------------------------------------------------------
 RVA(0x000b4c40, 0x4b)
 i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
-    if (!Serialize(ar, mode, c, d)) {
+    if (!CPathHazard::SerializeMove(ar, mode, c, d)) {
         return 0;
     }
     if (mode == 8) {
@@ -100,7 +100,7 @@ i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
 
 // ---------------------------------------------------------------------------
 // CUFO::Method_b4cb0 (0x0b4cb0) - re-homed from the AppHelpers.cpp holding TU (was the
-// CHandlerB4::Handle / CSub10 view; xref-proven a CUFO method - it calls CUFO::Serialize
+// CHandlerB4::Handle / CSub10 view; xref-proven a CUFO method - it calls the base SerializeMove
 // (0xb4d30) on `this` and sits in the ufo obj between SerializeMove and Serialize). Same
 // serialize-then-configure archetype as SerializeMove, but on tag 8 it decorates the
 // bound object (m_object, +0x10) with the light-FX draw-fill state: fill-cmd 7 pointing
@@ -109,7 +109,7 @@ i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
 // ---------------------------------------------------------------------------
 RVA(0x000b4cb0, 0x56)
 i32 CUFO::Method_b4cb0(void* stream, i32 tag, i32 c, i32 d) {
-    if (!Serialize(stream, tag, c, d)) {
+    if (!CPathHazard::SerializeMove((CGruntArchive*)stream, tag, c, d)) {
         return 0;
     }
     if (tag == 8) {
@@ -123,8 +123,21 @@ i32 CUFO::Method_b4cb0(void* stream, i32 tag, i32 c, i32 d) {
 }
 
 // ---------------------------------------------------------------------------
-// CUFO::Serialize (0x0b4d30) - the UFO's serialize override. Same archetype as
-// CKitchenSlime::Serialize: chain the shared CUserLogic serialize (0x16e7f0) and
+// CPathHazard::SerializeMove (0x0b4d30) - the BASE's vtable slot-1 override.
+//
+// RE-ATTRIBUTED 2026-07-17 (SM1) from `CUFO::Serialize`, a non-virtual twin that
+// left CPathHazard's declared slot-1 virtual (PathHazard.h) with no definition.
+// PROOF (gruntz.match.vtable_slot_binding WIRING):
+//   * vtable_scan --holds 0x0b4d30 -> held by exactly ONE vtable: CPathHazard's
+//     (0x1e7394) slot 1, via its ILT thunk. NOT CUFO's.
+//   * CUFO : CPathHazard by RTTI, and CUFO's own slot 1 is a DIFFERENT body
+//     (0x0b4c40) which CALLS this one - i.e. the ordinary derived->base chain.
+//     A base cannot dispatch a derived class's method, so the old name was
+//     impossible; CUFO inherits this body, it does not own it.
+// Body stays in this TU (its retail obj neighborhood); attribution != placement.
+//
+// Same archetype as
+// CKitchenSlime::SerializeMove: chain the shared CUserLogic serialize (0x16e7f0) and
 // the +0x34 serializable sub-object (0x408c00 via the 0x1aff thunk) first - bail
 // on either failure - then transfer the per-instance state. The state is three
 // tag-gated groups (tag 7 = read via slot 0x2c, tag 4 = transfer via slot 0x30):
@@ -152,10 +165,10 @@ static inline void SerQuadPair(CSerialArchive* s, i32 tag, char* p) {
 }
 
 RVA(0x000b4d30, 0x287)
-i32 CUFO::Serialize(void* stream, i32 tag, i32 c, i32 d) {
-    CSerialArchive* s = (CSerialArchive*)stream;
+i32 CPathHazard::SerializeMove(CGruntArchive* stream, i32 tag, i32 c, i32 d) {
+    CSerialArchive* s = stream;
     char* B = (char*)this;
-    if (CUserLogic::SerializeMove((CSerialArchive*)(stream), tag, c, d) == 0) {
+    if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
     if (((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CGameObject*)d)
