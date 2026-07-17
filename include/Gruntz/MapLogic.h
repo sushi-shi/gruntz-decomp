@@ -53,19 +53,46 @@ extern FreeNodePool g_coordPool;
 // The CUserLogic base occupies +0x00..+0x3f; this leaf's grid/array members start
 // past it.
 // ---------------------------------------------------------------------------
+// Deliberately SIZE_UNKNOWN and staying that way: this view spans two real classes
+// (see the SPLIT note below), so no single number is true of it. CBrickz is 0x54
+// (allocation-site proven); CGruntzMapMgr is 0x94. Asserting either here would make
+// class_sizes "verify" a fiction.
 SIZE_UNKNOWN(CMapLogic);
-// IDENTITY PROVEN (vtable-owner probe): this class IS CBrickz. Its dtor (0x113c0) is
+// PARTLY PROVEN (vtable-owner probe) - true of the DTOR ONLY, see the SPLIT note: this
+// class's dtor IS CBrickz's. Its dtor (0x113c0) is
 // dispatched from ??_7CBrickz @0x1e7c54 (RTTI-named, bound in <Gruntz/CBrickz.h>) slot 0
 // via the scalar-deleting dtor 0x11390, and that vtable's slot 2 is CBrickz::GetTypeTag
 // (0x11300 -> LOGIC_BRICKZ). The header note above even guessed it ("the trace grouped
 // these under CBrickz") and then talked itself out of it - the binary says yes.
 // The old RELOC_VTBL pointed at 0x1e705c (CUserLogic's vtable): a MISBINDING, corrected
 // here to the true rva.
-// @identity-TODO: CMapLogic == CBrickz. The FOLD is blocked on a layout conflict that
-// must be settled by the ALLOCATION SITE, not by either header's guess: CBrickz.h asserts
-// SIZE 0x54 while this view reads +0x7c/+0x90 - so at least one is wrong, and neither is
-// evidence (a class's size is bounded only by `push <n>; call ??2@YAPAXI@Z` at its
-// new-site; CBrickz's 1-arg ctor 0x10e800 is declared-only, so the oracle has no row yet).
+// SETTLED BY THE ALLOCATION SITE (MI1, 2026-07-17) - and the answer is that the fold
+// would have been WRONG. `CMapLogic` is a CONFLATION OF TWO UNRELATED CLASSES.
+//
+// The oracle, read straight from the binary (no inference from vtable slots or ctor
+// writes - both unsound for size): CBrickz's only new-site is LogicDispatchB @0x10d3d0,
+// reached from the 1-arg ctor's ILT thunk 0x3701, and it does
+//     push 0x54 ; call 0x1b9b46 (??2@YAPAXI@Z) ; add esp,4 ; mov ecx,eax ; call 0x3701
+// => sizeof(CBrickz) == 0x54, confirming CBrickz.h. So a CBrickz CANNOT own the +0x7c
+// CPtrArray / +0x90 dword this view declares: they sit 0x3c bytes past the end of it.
+//
+// The two halves belong to different classes, and each half's owner is binary-proven:
+//   * the DTOR 0x113c0 IS CBrickz's       - ??_7CBrickz @0x1e7c54 slot 0 -> sdd 0x11390
+//                                           -> 0x113c0 (the vtable-owner probe below).
+//   * SerializeNodes 0x82430 + FreeNodes 0x85480 are CGruntzMapMgr's - they have NO
+//     rel32 caller at all; they are VTABLE SLOTS of ??_7CGruntzMapMgr @0x1e9bb4
+//     (FreeNodes at +0x0, SerializeNodes at +0x4, both via thunks). And the canonical
+//     CGruntzMapMgr (<Gruntz/GruntzMapMgr.h>, VTBL 0x1e9bb4 - the same vtable) ALREADY
+//     declares this view's high members field-for-field: `CPtrArray m_arr; // +0x7c`
+//     and `i32 m_90; // +0x90`, in a 0x94-byte object where they fit.
+//
+// So: do NOT fold CMapLogic onto CBrickz - that would move CGruntzMapMgr's serializer
+// methods onto a 0x54 tile leaf. The correct resolution is a SPLIT: the dtor half is
+// already bound as ??1CBrickz (pinned in TileLogicPump.cpp), and the +0x7c/+0x90
+// serializer half belongs on the canonical CGruntzMapMgr. Not executed here (it re-homes
+// bodies + re-mangles their symbols across units, so it needs its own byte-verified
+// pass); the evidence is complete and this note is the brief.
+// @identity-TODO: CMapLogic = CBrickz(dtor) + CGruntzMapMgr(serializer half) - SPLIT, not fold.
 RELOC_VTBL(CMapLogic, 0x001e7c54); // == ??_7CBrickz (true rva; fold pending the size oracle)
 class CMapLogic : public CUserLogic, public CWapX {
 public:
