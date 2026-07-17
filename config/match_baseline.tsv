@@ -590,7 +590,7 @@ blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	3	29535c5f5c96	0x16fc70
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	2	d92c7ec3c73c	0x16f7f0
 blowfish	?InitializeBlowfish@@YAFPAEF@Z	100.0000	100.0000	4	8b06a8f665b0	0x170100
 blowfishcopy	?BitStreamBlowfishEncode@@YGXPAVistream@@PAVostream@@@Z	84.8696	84.8696	1	fb4a383fdc31	0x16f6e0
-boomerang	??0CBoomerang@@QAE@PAUCGameObject@@@Z	97.3077	97.3077	2	cb3bbed43404	0xe0650
+boomerang	??0CBoomerang@@QAE@PAUCGameObject@@@Z	97.3077	97.3077	3	5930b7ae25e5	0xe0650
 boomerang	?LoadProjectileSprites@CBoomerang@@UAEHHHHHHHH@Z	71.4553	71.4553	5	0a52286282be	0xe0690
 boomerang	?SerializeMove@CBoomerang@@UAEHPAVCFileMemBase@@HHH@Z	96.7364	96.7364	1	68f40a8c0c05	0xe15d0
 bootycheatstate	?LoadGameAssetNamespaces@CBootyState@@UAEHHHH@Z	86.2008	86.2008	1	185d8ee7d0f9	0x18830
@@ -1941,7 +1941,7 @@ gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEXHH@Z	77.6745	77.6745	9	23b2095ea
 gruntentrancearrival	?StepArrivalCommitA@CGrunt@@QAEHXZ	99.6981	99.6981	7	b1fad2410d0b	0x65300
 gruntentrancearrival	?StepArrivalCommitB@CGrunt@@QAEHXZ	100.0000	100.0000	7	9926a9df075f	0x654b0
 gruntentrancearrival	?StepArrivalReroll@CGrunt@@QAEHXZ	77.1911	77.1911	11	065697f30a58	0x63b60
-gruntentrancearrival	?StepAttackFire@CGrunt@@UAEHXZ	10.0195	10.0195	3	77f2385fc76b	0x61cb0
+gruntentrancearrival	?StepAttackFire@CGrunt@@UAEHXZ	10.0195	10.0195	4	32f136ad0ba1	0x61cb0
 gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHHHHHHHHH@Z	73.6582	73.6582	8	c2b62a933209	0x646b0
 gruntentrancearrival	?StepEntranceReinit@CGrunt@@QAEHXZ	77.2051	77.2051	8	584f03371571	0x637a0
 gruntentrancearrival	?StepEntranceRelatchA@CGrunt@@QAEHXZ	98.7318	98.7318	13	9edb41e8cb74	0x62840
@@ -2762,7 +2762,7 @@ motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	0a441e9b59a0	0x58ca0
 motionstate	?Step@CMotionState@@QAEXN@Z	65.7271	65.7271	3	d478e2d40fde	0x16ecd0
 movieplayer	??1CFecFile@@QAE@XZ	100.0000	100.0000	1	6aa615bbaa2f	0x390a0
 movieplayer	??1CMoviePlayer@@QAE@XZ	100.0000	100.0000	3	6dd46b86435b	0x38fc0
-movinglogic	??0CMovingLogic@@QAE@XZ	98.4158	98.4158	2	afd9ef6d2984	0x13940
+movinglogic	??0CMovingLogic@@QAE@XZ	98.4158	98.4158	3	aaa42cc0528d	0x13940
 movinglogic	??1CMovingLogic@@UAE@XZ	100.0000	100.0000	2	027955febd0b	0x13bd0
 movinglogic	?MovingSlot16@CMovingLogic@@UAEXXZ	98.5455	98.5455	5	8489773f7540	0x16ea90
 movinglogic	?SerializeMove@CMovingLogic@@UAEHPAVCFileMemBase@@HHH@Z	63.4329	63.4329	1	3959fbf034d2	0x16f4a0
@@ -3187,13 +3187,13 @@ portalpath	?LaunchProcessInDir@@YGHPAD0@Z	100.0000	100.0000	14	fb8a85f3980e	0x90
 projactcache	?EnsureSize@zBitVec@@QAEHH@Z	90.8000	90.8000	5	b311448c17d4	0x1936e0
 projactcache	?Insert@CProjActMap@@QAEPAXPBDPAX@Z	58.2085	58.2085	4	1b4376dea83c	0x1933b0
 projactcache	?Or@zBitVec@@QAEPAV1@PAV1@@Z	100.0000	100.0000	2	d927e3439b2b	0x193680
-projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	55.2278	55.2278	8	5bdee2de1a5f	0xdec60
-projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	9	5bdee2de1a5f	0x126e0
+projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	60.2785	60.2785	9	1963f6c63427	0xdec60
+projectile	??0CProjectile@@QAE@XZ	99.0566	99.0566	10	1963f6c63427	0x126e0
 projectile	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	86.4129	86.4129	6	e9ada074a801	0xe1b90
-projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	7	d2e61c74c40e	0xdef60
+projectile	??1CProjectile@@UAE@XZ	94.2653	94.2653	7	d2e61c74c40e	0xdef60
 projectile	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	60e9ec8a4aa5	0x12a70
 projectile	?ConstructTBombRange@@YAXXZ	100.0000	100.0000	1	9a53b05db40c	0xe17b0
-projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	11	e3c0103eaac8	0xe05e0
+projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	12	9baf14a775f6	0xe05e0
 projectile	?FinalizeStep@CMovingLogic@@UAEXH@Z	100.0000	100.0000	1	058bb662343e	0x13c70
 projectile	?FireActivation@CProjectile@@UAEXH@Z	100.0000	100.0000	1	14a185264d1a	0xdf9a0
 projectile	?FireActivation@CTimeBomb@@UAEXH@Z	100.0000	100.0000	1	7d3624842f2b	0xe1830
@@ -3201,9 +3201,9 @@ projectile	?GetTypeTag@CProjectile@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	c
 projectile	?GetTypeTag@CTimeBomb@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:cb6c32e06c4c	0x12a20
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	33.9778	33.9778	15	5694299cf60c	0xe2190
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	90.5000	90.5000	6	d2c24071f379	0xe1e60
-projectile	?LoadProjectileSprites@CProjectile@@UAEHHHHHHHH@Z	57.1201	57.1201	11	eab79a9e6830	0xdf050
-projectile	?MovingSlot16@CBoomerang@@UAEXXZ	70.6977	70.6977	4	c9f3406fbca5	0xe08b0
-projectile	?MovingSlot16@CProjectile@@UAEXXZ	69.7359	69.7316	8	d8abb7636e8c	0xdfd00
+projectile	?LoadProjectileSprites@CProjectile@@UAEHHHHHHHH@Z	57.1201	57.1201	12	63203b570bb9	0xdf050
+projectile	?MovingSlot16@CBoomerang@@UAEXXZ	70.6977	70.6977	5	ee82f3fbef58	0xe08b0
+projectile	?MovingSlot16@CProjectile@@UAEXXZ	69.7316	69.7316	9	7a7852707ecf	0xdfd00
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	92.9130	92.9130	3	c8d4379c4257	0xe1990
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	2	1fc33c782a2a	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	7	19f2a743874f	0xdfb00
