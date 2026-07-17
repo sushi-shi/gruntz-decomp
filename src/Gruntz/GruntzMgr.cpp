@@ -23,6 +23,7 @@
 #include <DDrawMgr/PixelShift.h>  // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Gruntz/TraitorMode.h>   // g_traitorMode
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/MapLogic.h>      // MapSerializeCurve (0x0ec230) - BroadcastCmd's fan-out hook
 #include <ddraw.h> // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
 // The REAL MFC CDialog (ExitModalUI's argument - proof in <Gruntz/GruntzMgr.h>). afx.h
 // arrives first via <Mfc.h>, so there is no windows.h-first C1189 here. The afxwin*.inl
@@ -309,9 +310,11 @@ extern "C" {
 // A free helper that flushes/forces a redraw of one map index (reloc-masked).
 void RedrawMapIndex(i32 idx); // FUN_00558c70
 
-// The trailing __cdecl command hook in BroadcastCmd's fan-out (reloc-masked;
-// `push a3..a0; call; add esp,0x10`).
-i32 CmdHook(i32 a, i32 b, i32 c, i32 d); // FUN @ 0x17da thunk
+// (The `CmdHook` declared-only fake - "i32 CmdHook(i32,i32,i32,i32); // FUN @ 0x17da
+// thunk" - is GONE. Thunk 0x17da jmps to 0x0ec230, which this tree already DEFINES as
+// MapSerializeCurve in MapLogic.cpp: one function under two names, neither binding to
+// the other. BroadcastCmd's fan-out calls it through the real declaration now, from
+// the owner's header - see <Gruntz/MapLogic.h> for why its arity is 4.)
 
 // The +0x60 timer/poll object (CGruntzMgr::m_timer; reloc-masked thiscalls).
 // SetVoiceVolume mirrors the latest input-state value into its +0x2c field; Stop
@@ -3157,7 +3160,10 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (m_tileGrid->Visit((CSerialArchive*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (CmdHook(a0, cmd, a2, a3) == 0) {
+    // 0x93570: `push ebx/ebp/esi/edi; call 0x17da; add esp,0x10` - the __cdecl
+    // scroll-state serializer 0x0ec230 (MapLogic.cpp). This 4-push/`add esp,0x10` site
+    // is what PROVES its arity is 4; the callee reads only the first two.
+    if (MapSerializeCurve((CSerialArchive*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
     return m_scoreHud->Command(a0, cmd, a2, a3) != 0;

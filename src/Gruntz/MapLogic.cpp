@@ -38,8 +38,11 @@
 // second transfers six trailing dwords (size 4). Any other mode is a no-op that
 // still returns 1. Returns 0 only for a null archive. (Every operand is
 // g_scrollAccum+addend -> reloc-masked, byte-identical to the ex g_mapCurve[k] form.)
+// The last two params are unnamed and unread: the body never touches them, and the
+// arity comes from the call site (see <Gruntz/MapLogic.h>), not from this body -
+// __cdecl means the caller cleans up, so declaring them costs zero bytes here.
 RVA(0x000ec230, 0x11c)
-i32 MapSerializeCurve(CSerialArchive* ar, i32 mode) {
+i32 MapSerializeCurve(CSerialArchive* ar, i32 mode, i32, i32) {
     if (ar == 0) {
         return 0;
     }

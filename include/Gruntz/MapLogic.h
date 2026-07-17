@@ -43,12 +43,30 @@
 // `ret`); drives the archive's read/write slots over the g_scrollAccum block keyed by
 // `mode` (7=read via +0x2c, 4=write via +0x30). Belongs to no class - declared at
 // namespace scope.
-// NB: src/Gruntz/Brickz.cpp re-declares this as a per-TU `extern "C" i32 __cdecl
-// MapSerializeCurve(i32,i32,i32,i32)` - a DIFFERENT arity AND a different symbol
-// (extern "C" `_MapSerializeCurve` vs this C++-mangled
-// ?MapSerializeCurve@@YAHPAVCFileMemBase@@H@Z), so that call binds to nothing. Left
-// alone deliberately: its caller CBrickzGrid::Serialize (0x9356c) is @early-stop'd on
-// a documented reg-forwarding wall, and settling the true arity is its own pass.
-i32 MapSerializeCurve(CSerialArchive* ar, i32 mode); // 0x0ec230
+//
+// ARITY IS 4, AND THE CALLER IS WHAT PROVES IT (ML1, 2026-07-17). The callee alone
+// CANNOT settle this: a __cdecl definition that ignores its trailing params compiles
+// to byte-identical code to one that never declared them (the CALLER cleans up), so
+// 0xec230's bytes are consistent with both. What its disassembly does prove is the
+// convention and the reads - three `c3` near rets (=> __cdecl), and exactly two arg
+// slots touched: [esp+8] after 1 push (arg0 `ar`) and [esp+0x10] after 2 pushes
+// (arg1 `mode`). Nothing reads arg2/arg3.
+//
+// The CALL SITE settles it. The only real one is CGruntzMgr::BroadcastCmd @0x93570:
+//     push ebx ; push ebp ; push esi ; push edi ; call 0x17da ; add esp,0x10
+// Four dwords pushed and 0x10 cleaned => the declaration in scope at the call site
+// had FOUR parameters. Had it been the 2-arg form, cl would have pushed 2 and done
+// `add esp,8`. So the real signature is 4 params with the last two unused - declared
+// here as unnamed, since no body reads them and inventing names would assert meaning
+// the bytes do not carry.
+//
+// This is byte-neutral for 0xec230 itself (it stays EXACT: the two extra params are
+// never touched) and it makes the ONE symbol that both the definition and the real
+// call site bind to: ?MapSerializeCurve@@YAHPAVCFileMemBase@@HHH@Z. It retires the
+// three-names-for-one-function tangle - the ex `CmdHook` declared-only fake in
+// GruntzMgr.cpp ("FUN @ 0x17da thunk") and the ex per-TU `extern "C" i32 __cdecl
+// MapSerializeCurve(i32,i32,i32,i32)` in Brickz.cpp (which mangled to a different
+// symbol, `_MapSerializeCurve`, and therefore bound to nothing) are both gone.
+i32 MapSerializeCurve(CSerialArchive* ar, i32 mode, i32, i32); // 0x0ec230
 
 #endif // GRUNTZ_MAPLOGIC_H
