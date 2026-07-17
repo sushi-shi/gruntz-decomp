@@ -114,14 +114,9 @@ extern "C" void WormholeTypeMarker();
 DATA(0x0020d1bc)
 char s_actKeyB[] = "B";
 
-// The teleporter geometry-lookup key strings (.data literals). DEFINED here (owner
-// TU), reference externs stay in <Globals.h>. (REHOME DD-G)
-DATA(0x0020a72c)
-char g_teleporterSpawnKey[] = "Teleporter"; // 0x60a72c
-DATA(0x0020bd38)
-char g_teleporterGeoKey[] = "GAME_TELEPORTER"; // 0x60bd38 (extern in <Gruntz/Teleporter.h>)
-DATA(0x0020d1fc)
-char g_teleporterCloseKey[] = "GAME_TELEPORTERCLOSE"; // 0x60d1fc
+// (The three teleporter key strings @0x20a72c/0x20bd38/0x20d1fc were FICTIONS -- invented
+// names for cl's own folded `??_C@` literal COMDATs, not named char[] globals. Spelled
+// inline now; the <Globals.h>/<Gruntz/Teleporter.h> externs are gone with them.)
 
 // The puddle sprite-set geometry key (0x60c1c0; extern in <Gruntz/GruntPuddle.h>).
 DATA(0x0020c1c0)
@@ -900,7 +895,7 @@ i32 CTeleporter::Begin() {
     m_armClockLo = g_frameTime;
     m_armClockHi = 0;
     m_savedGeoId = m_38->m_1a0.m_14;
-    m_object->ApplyLookupGeometry(g_teleporterGeoKey, 0);
+    m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
     return 0;
@@ -959,7 +954,7 @@ i32 CTeleporter::Update() {
         i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - *(i64*)&m_armClockLo;
         if (delta >= *(i64*)&m_intervalLo) {
             m_savedGeoId = m_38->m_1a0.m_14;
-            m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
+            m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
             m_object->m_7c->m_bc = 0;
             m_tickHandled = 1;
             return 0;
@@ -978,14 +973,14 @@ i32 CTeleporter::Update() {
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 1, 1);
         g_gameReg->m_scoreHud->m_28++; // wormhole/teleporter use counter (FormatHudText case 7)
         m_savedGeoId = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
+        m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
         CGameObject* s = m_object;
         CGameObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             s->m_11c * 32 + 16,
             s->m_120 * 32 + 16,
             0,
-            g_teleporterSpawnKey,
+            "Teleporter",
             0x40003
         );
         if (spawned != 0) {
@@ -1010,7 +1005,7 @@ i32 CTeleporter::Update() {
         spawned->m_124 = m_object->m_placeMode;
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 0, 0);
         m_savedGeoId = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
+        m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
     }
 
     m_armed = 0;

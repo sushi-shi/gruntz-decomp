@@ -47,7 +47,6 @@ extern "C" u32 g_engineFrameDelta;
 
 // The lookup-geometry key "GAME_TELEPORTER" (VA 0x60bd38) the finalize applies to
 // the bound object via CGameObject::ApplyLookupGeometry (0x1505b0).
-extern char g_teleporterGeoKey[]; // s_GAME_TELEPORTER_0060bd38
 
 // The running game clock (g_frameTime .data int) stashed into the leaf's +0x58.
 extern "C" u32 g_frameTime; // VA 0x645588 (?g_clock@@3IA, unsigned)

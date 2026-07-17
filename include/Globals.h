@@ -91,7 +91,6 @@ extern const double g_motionNegHalf;
 extern const double g_motionNegTwo;
 extern float g_fxBias;
 extern float g_fxEps;
-extern char g_teleporterSpawnKey[];
 extern char g_wormholeSpawnKey[];
 extern char
     g_msgCaption[]; // "Gruntz" @0x60aac8 (def: WinMain.cpp; doubles as GameText's descriptor tag)
@@ -104,7 +103,6 @@ extern char s_codeL[];
 extern char s_codeG[];
 extern char s_codeI[];
 extern char s_codeD[];
-extern char g_teleporterCloseKey[];
 extern char s_codeF[];
 extern char s_codeE[];
 extern char s_codeM[];
@@ -120,7 +118,6 @@ extern "C" char g_id3_613e02;
 extern i32 g_dplayAppGuid[4]; // 0x60fab8  DirectPlay app GUID (DEFINED in src/Gruntz/Multi.cpp)
 extern u8 g_titleBuf;
 // g_dropPlayerId DEFINED in src/Gruntz/Multi.cpp; single reference extern in <Net/NetMgr.h>.
-extern char s_GameMessagez[];
 extern char s_GameKey[];
 extern i32 g_warpX;
 extern i32 g_warpY;

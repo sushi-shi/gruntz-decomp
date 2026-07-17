@@ -72,8 +72,9 @@ extern "C" {
 // literal follows it). Owner-TU definition; shared as the window title here and as
 // the MessageBoxA caption in GruntzMgr.cpp (extern there as g_msgCaption). Length
 // NULL-TERMINATOR-PROVEN ("Gruntz" + NUL = 7 B).
-DATA(0x0020aac8)
-char g_msgCaption[] = "Gruntz";
+// (g_msgCaption @0x20aac8 was a FICTION -- an invented name for cl's folded
+// `??_C@_06HPPL@Gruntz@` literal COMDAT, which all 7 referencing TUs emit for
+// themselves. Spelled inline now.)
 
 // The MFC global allocator / deallocator (NAFXCW); used as
 // the explicit operator-function forms for the FileVersion query buffer (the

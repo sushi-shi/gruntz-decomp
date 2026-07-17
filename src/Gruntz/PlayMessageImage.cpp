@@ -50,7 +50,7 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr*, CImage*, i32, i32, i32, i32); // 0x115300
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CObject* set_ob = 0;
-    m_c->m_imageRegistry->m_10map.Lookup(s_GameMessagez, set_ob);
+    m_c->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
     CImageSet* set = (CImageSet*)set_ob;
     if (set != 0) {
         CImage* frame = set->GetAt(index);
@@ -79,7 +79,7 @@ i32 CPlay::Vslot23() {
     Present(0x3c);
 
     CObject* lookup_ob = 0;
-    m_c->m_imageRegistry->m_10map.Lookup(s_GameMessagez, lookup_ob);
+    m_c->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", lookup_ob);
     CImageSet* lookup = (CImageSet*)lookup_ob;
     CImageSet* set = lookup;
     if (set == 0) {

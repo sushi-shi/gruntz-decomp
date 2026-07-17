@@ -273,7 +273,7 @@ namespace m4 {
         if (found) {
             do {
                 char disp[260];
-                sprintf(disp, g_nameFmt, fd.name);
+                sprintf(disp, "%s", fd.name);
                 if (!g_gameReg->IsBattlezMapFile(CString(disp))) {
                     i32 len = strlen(disp);
                     if (len > 4) {

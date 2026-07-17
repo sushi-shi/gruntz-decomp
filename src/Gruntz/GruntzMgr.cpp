@@ -973,7 +973,6 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
 
 // The "GAME" asset-namespace root key (0x60ba44; DEFINED in
 // src/Gruntz/BootyStateActivate.cpp, whose .data run holds it).
-extern char s_assetKeyGame[];
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::RegisterLevelAssetKeys  (@0x08dc90, ret 0)
@@ -996,12 +995,12 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     w->m_ptrColl->GetCapsChecked();
     w->m_imageRegistry->SumSizesEqual_155460(0, 1);
     w->m_imageRegistry->SumSizesEqual_155460("GRUNTZ", 1);
-    w->m_imageRegistry->SumSizesEqual_155460(s_assetKeyGame, 1);
+    w->m_imageRegistry->SumSizesEqual_155460("GAME", 1);
     w->m_imageRegistry->SumSizesEqual_155460("LEVEL", 1);
     w->m_imageRegistry->SumSizesEqual_155460("ACTION", 1);
     w->m_soundRegistry->SumField_1580b0(0);
     w->m_soundRegistry->SumField_1580b0("GRUNTZ");
-    w->m_soundRegistry->SumField_1580b0(s_assetKeyGame);
+    w->m_soundRegistry->SumField_1580b0("GAME");
     w->m_soundRegistry->SumField_1580b0("LEVEL");
 }
 
@@ -1209,7 +1208,6 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 // The shared "Gruntz" app-name caption (0x60aac8) passed as the MessageBoxA title;
 // DEFINED in src/Gruntz/WinMain.cpp (the app TU whose .data run holds it, next to
 // the "1.0" version literal).
-extern char g_msgCaption[];
 // @early-stop
 // regalloc free-list-pick wall (98.89%): every instruction matches one-for-one; the
 // only difference is a global eax<->edx<->ecx rotation in the dispatch load
@@ -1226,7 +1224,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     i32 wasShown = ShowCursor(1);
     while (ShowCursor(1) < 0) {
     }
-    i32 result = MessageBoxA(m_gameWnd->m_hwnd, text, g_msgCaption, type);
+    i32 result = MessageBoxA(m_gameWnd->m_hwnd, text, "Gruntz", type);
     if (wasShown <= 0) {
         while (ShowCursor(0) >= 0) {
         }

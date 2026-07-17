@@ -35,10 +35,9 @@
 // address, so nothing ever defined it. Unified onto the canonical CGameRegistry; the
 // dead CStatzFactoryHolder/CStatzGameReg local views (m_world->m_childGroup == the canonical
 // CDDrawChildGroup) are dissolved.
-DATA(0x0020aa34)
-char g_statzTabSpriteName[] = "BehindCandy"; // CreateSprite name buffer
-DATA(0x0020f928)
-char g_statzTabCfgTag[] = "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"; // Configure tag global
+// (g_statzTabSpriteName @0x20aa34 / g_statzTabCfgTag @0x20f928 were FICTIONS: invented
+// names for cl's own folded `??_C@` string-literal COMDATs. Both rvas are the pooled
+// literal, not a named char[] global -- proven below. They are now spelled inline.)
 
 // The class itself now lives in <Gruntz/TileTriggerSwitchLogic.h> (real derived class, no
 // data members, sizeof 0x8c). BuildSmall is its slot-1 override; the base's slot-0 "build"
@@ -81,12 +80,12 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         return 1;
     }
     CGameObject* spr =
-        g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
     if (!spr) {
         return 0;
     }
     spr->m_7c->m_notify(spr);
-    spr->ApplyLookupSprite(g_statzTabCfgTag, a9);
+    spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", a9);
     if (spr->m_layer == 0) {
         return 0;
     }

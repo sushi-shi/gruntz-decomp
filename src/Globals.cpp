@@ -138,8 +138,7 @@ char k_60df94[] = "S";
 // src/Gruntz/Multi.cpp (owner TU). Reference externs stay in <Globals.h> / <Net/NetMgr.h>.
 DATA(0x002111b0)
 u8 g_titleBuf = 72;
-DATA(0x00211ab8)
-char s_GameMessagez[] = "GAME_MESSAGEZ"; // s_GAME_MESSAGEZ_00611ab8 (image-set name literal)
+// (s_GameMessagez @0x211ab8 was a FICTION -- cl's folded `??_C@_0O@DDJB@GAME_MESSAGEZ@` literal.)
 // g_warpX / g_warpY DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
 // g_archiveDefault612618 / g_dat613054 DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x002135e8)
