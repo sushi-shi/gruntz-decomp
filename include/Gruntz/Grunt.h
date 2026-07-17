@@ -1064,7 +1064,7 @@ public:
     // own field. The local re-declaration was dropped 2026-07-17 (SM1); the name,
     // type (void*) and offset are unchanged, so every use site is untouched.
     char m_pad34[0x38 - 0x34];
-    CGameObject* m_38; // +0x38  the bound game object, driven as the animation
+    CGameObject* m_animPlayer; // +0x38  the bound game object, driven as the animation
                        //        player (tile-leaf convention m_38 == obj; the ex
                        //        CGruntAnimState view)
     char m_pad3c[0x40 - 0x3c];
