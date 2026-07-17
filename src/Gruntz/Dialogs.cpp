@@ -499,60 +499,59 @@ void CBattlezDlg::ApplyOption3() {
 // import all reloc-mask. The four bodies differ only in N (the a1 arg, the
 // SetSlotValue index, and the control ID).
 // -------------------------------------------------------------------------
-// @early-stop
-// eh-dtor vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md):
-// the /GX frame + CBattlezDlgColors-local ctor/DoModal/dtor + SetSlotValue/Sub0173e0/
-// GetDlgItem chain + InvalidateRect import are byte-exact, but the local dtor's polymorphic
-// teardown emits one extra vptr re-stamp retail elided (same wall the neighboring dialog
-// dtors + ShowCustomDlg hit). All four bodies score an identical 91.1% -> shared structural
-// residual, not the per-N push form. Not source-steerable.
-// The InvalidateRect import (call ff 15 [ptr]); reloc-masked DIR32.
+// The swatch refresh is the MFC inline CWnd::InvalidateRect member (afxwin2.inl:
+// `::InvalidateRect(m_hWnd, lpRect, bErase)`), NOT the global import spelled on a
+// hoisted handle. That is what fixes both halves of the old residual: the CWnd*
+// is evaluated FIRST as the inline's `this` (retail pushes 0x501/call GetDlgItem
+// before push 1/push 0), and because eax stays live as that `this`, the m_hWnd
+// load lands in edx - `mov edx,[eax+0x1c]; push 1; push 0; push edx`, byte-exact.
+// (Was @early-stop'd as an "eh-dtor vptr-restamp wall, not source-steerable" at
+// 91.1%; that diagnosis was wrong - there is no restamp in this diff at all. The
+// four bodies scoring an identical 91.1% was the shared ARG-ORDER residual, not a
+// shared structural wall.)
 RVA(0x00016cd0, 0x98)
 void CBattlezDlg::ApplyColorSlot0() {
     CBattlezDlgColors dlg(m_slots, 0, 0, 0);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(0, dlg.m_pickedColor)) {
             Sub0173e0();
-            ::InvalidateRect(GetDlgItem(0x501)->m_hWnd, 0, 1);
+            GetDlgItem(0x501)->InvalidateRect(0, 1);
         }
     }
 }
 
-// @early-stop
-// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
+// Same MFC CWnd::InvalidateRect inline as ApplyColorSlot0 (see there).
 RVA(0x00016dc0, 0x97)
 void CBattlezDlg::ApplyColorSlot1() {
     CBattlezDlgColors dlg(m_slots, 1, 0, 0);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(1, dlg.m_pickedColor)) {
             Sub0173e0();
-            ::InvalidateRect(GetDlgItem(0x503)->m_hWnd, 0, 1);
+            GetDlgItem(0x503)->InvalidateRect(0, 1);
         }
     }
 }
 
-// @early-stop
-// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
+// Same MFC CWnd::InvalidateRect inline as ApplyColorSlot0 (see there).
 RVA(0x00016e90, 0x98)
 void CBattlezDlg::ApplyColorSlot2() {
     CBattlezDlgColors dlg(m_slots, 2, 0, 0);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(2, dlg.m_pickedColor)) {
             Sub0173e0();
-            ::InvalidateRect(GetDlgItem(0x505)->m_hWnd, 0, 1);
+            GetDlgItem(0x505)->InvalidateRect(0, 1);
         }
     }
 }
 
-// @early-stop
-// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
+// Same MFC CWnd::InvalidateRect inline as ApplyColorSlot0 (see there).
 RVA(0x00016f60, 0x98)
 void CBattlezDlg::ApplyColorSlot3() {
     CBattlezDlgColors dlg(m_slots, 3, 0, 0);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(3, dlg.m_pickedColor)) {
             Sub0173e0();
-            ::InvalidateRect(GetDlgItem(0x507)->m_hWnd, 0, 1);
+            GetDlgItem(0x507)->InvalidateRect(0, 1);
         }
     }
 }
