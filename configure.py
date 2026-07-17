@@ -333,11 +333,13 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         target_objs = [f"{TARGET_DIR}/{u['unit']}.c.obj" for u in units]
         w.build(delink_stamp, "delink",
                 inputs=[EXE, FUNCTIONS, SYMBOLS, GEN_NAMES],
-                # data_manifest.py: delink.py regenerates the data/section manifests
-                # in-process on every run, so editing the generator must re-delink
-                # too - otherwise objdiff keeps scoring the previous manifest.
+                # data_manifest.py (+ the data_audit PE classifier it imports):
+                # delink.py regenerates the data/section manifests in-process on every
+                # run, so editing either must re-delink too - otherwise objdiff keeps
+                # scoring the previous manifest.
                 implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py",
-                          "scripts/gruntz/build/data_manifest.py"])
+                          "scripts/gruntz/build/data_manifest.py",
+                          "scripts/gruntz/analysis/data_audit.py"])
         w.newline()
 
         # NORMALIZE: rewrite compiler-private data names + jump-table labels of

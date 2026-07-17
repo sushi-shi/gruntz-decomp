@@ -77,19 +77,60 @@ def read_pe(path: Path) -> dict:
     return {
         "data": data,
         "image_base": struct.unpack_from("<I", data, optional + 28)[0],
+        # SizeOfRawData is rounded UP to FileAlignment, so a section's last
+        # <FileAlignment bytes may be padding rather than emitted content. Needed to
+        # bound that ambiguity - see classify_pe_storage().
+        "file_alignment": struct.unpack_from("<I", data, optional + 36)[0],
         "sections": sections,
     }
 
 
+def _emitted_content_floor(pe: dict, section: dict) -> int:
+    """Largest section offset that is PROVABLY inside emitted initialized content.
+
+    `SizeOfRawData` is `round_up(E, FileAlignment)` for the true end E of the
+    linker's initialized content, so E > raw_size - FileAlignment. Every offset
+    below that bound is emitted content no matter what E is; at or above it, an
+    all-zero run is indistinguishable from alignment padding.
+    """
+    return max(0, section["raw_size"] - pe.get("file_alignment", 0))
+
+
+def _zero_to_raw_edge(pe: dict, section: dict, offset: int) -> bool:
+    """Is [offset, raw_size) all zero? Only then can it be alignment padding.
+
+    A nonzero byte at or after `offset` proves the linker emitted content there,
+    which resolves the ambiguity in favour of `data-initialized`.
+    """
+    start = section["raw_offset"] + offset
+    end = section["raw_offset"] + section["raw_size"]
+    return not any(pe["data"][start:end])
+
+
 def classify_pe_storage(pe: dict, rva: int) -> dict:
-    """.rdata (ro) / .data initialized / .data loader-zero tail / other / outside."""
+    """.rdata (ro) / .data initialized / unprovable tail / loader-zero tail / other.
+
+    `data-initialized` vs `data-loader-zero-tail` splits on `raw_size`, but MSVC
+    merges .bss INTO .data and rounds `raw_size` up to FileAlignment - so the last
+    <FileAlignment bytes of the file-backed span can be alignment padding that the
+    first .bss symbols already live in. An all-zero run there is byte-identical to
+    a zero-valued .data global, and the PE cannot tell them apart. Such an offset is
+    reported `data-unprovable-tail` (fail-closed: callers must not enrol it) rather
+    than asserted initialized. Zeros BELOW that bound are proven emitted content.
+    """
     readonly = pe["sections"].get(".rdata")
     if readonly and readonly["rva"] <= rva < readonly["rva"] + readonly["virtual_size"]:
         return {"class": "rdata", "section": ".rdata", "section_offset": rva - readonly["rva"]}
     writable = pe["sections"].get(".data")
     if writable and writable["rva"] <= rva < writable["rva"] + writable["virtual_size"]:
         offset = rva - writable["rva"]
-        storage = "data-initialized" if offset < writable["raw_size"] else "data-loader-zero-tail"
+        if offset >= writable["raw_size"]:
+            storage = "data-loader-zero-tail"
+        elif offset >= _emitted_content_floor(pe, writable) \
+                and _zero_to_raw_edge(pe, writable, offset):
+            storage = "data-unprovable-tail"
+        else:
+            storage = "data-initialized"
         return {"class": storage, "section": ".data", "section_offset": offset}
     for name, section in pe["sections"].items():
         extent = max(section["virtual_size"], section["raw_size"])

@@ -49,6 +49,10 @@ alias exactly as its section manifest always had (nix/patches/, upstream-pending
     matched_data   67080/279630 (23.99%)  ->  77902/292484 (26.63%)   +10822 bytes
     exact          2386 (unchanged)
 
+Withholding the two `data-unprovable-tail` rows (the .data rawsize-edge artifact -
+docs/data-attribution.md §2) then took it to 80902/292476 (27.66%), +3000 more:
+asserting `.data` for them had been breaking their containers.
+
 Usage:
     python -m gruntz.build.data_manifest              # -> build/gen/delink_data_*manifest.tsv
     python -m gruntz.build.data_manifest --report     # print the withheld/defect lists

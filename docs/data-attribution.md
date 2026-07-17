@@ -42,8 +42,8 @@ build/objdiff/target`.
 retail `GRUNTZ.EXE` (no delinker/PDB/wine), for every `kind=data` symbol in
 `symbol_names.csv` it:
 
-- classifies PE storage (`.rdata` ro / `.data` initialized / `.data` loader-zero tail /
-  other / outside);
+- classifies PE storage (`.rdata` ro / `.data` initialized / `.data` **unprovable tail** /
+  `.data` loader-zero tail / other / outside);
 - resolves an EXTENT: reviewed `symbol_names.csv` size, else the next-data-symbol gap
   (flagged `next-symbol-gap`);
 - reads that span, zeroes every HIGHLOW base-relocation field, and records
@@ -51,11 +51,34 @@ retail `GRUNTZ.EXE` (no delinker/PDB/wine), for every `kind=data` symbol in
   content+relocation fingerprint.
 
 Output `build/gen/data_attribution.tsv` is the reviewable attribution ledger; `--json`
-emits full per-symbol evidence, `--rva 0x..` probes one symbol. Current census: 925 data
-symbols (rdata=306, data-init=115, bss-tail=409, other=95); 417 rdata/data spans
-fingerprinted. **916/925 extents come from the next-symbol gap** — the "DATA() has no size"
-gap (§3). Identical vtables surface immediately: `CActionArea`/`CUserLogic`/`CGuardPoint`
-share `normalized_sha256 10eef285…`.
+emits full per-symbol evidence, `--rva 0x..` probes one symbol. Current census: 929 data
+symbols (rdata=305, data-init=112, bss-tail=414, unprovable-tail=3, other=95); 414
+rdata/data spans fingerprinted; 395/929 extents still come from the next-symbol gap — the
+"DATA() has no size" gap (§3). Identical vtables surface immediately:
+`CActionArea`/`CUserLogic`/`CGuardPoint` share `normalized_sha256 10eef285…`.
+
+**`data-unprovable-tail` — the rawsize-edge artifact (fixed).** `data-initialized` vs
+`data-loader-zero-tail` splits on `raw_size`, but MSVC merges `.bss` INTO `.data` and
+`SizeOfRawData` is `round_up(E, FileAlignment)` for the true end `E` of emitted content.
+So `E ∈ (raw_size − FileAlignment, raw_size]` and the last `<FileAlignment` file-backed
+bytes may be alignment padding that the first `.bss` symbols already occupy — an all-zero
+run there is byte-identical to a zero-valued `.data` global and the PE cannot tell them
+apart. Measured on GRUNTZ.EXE: `.data` rva `0x208000`, `raw_size 0x21400`,
+`FileAlignment 0x200` → the unprovable window is exactly **rva [0x229200, 0x229400)**.
+Three symbols sit in it — `?g_projReg@@3UCCoordColl@@A`, `?g_projRegColl2@@3PAUCVariantSlot@@A`
+(`actionarea`) and `_g_emptyString` (`netmgrerror`, 12 bytes from the edge). They are now
+reported `data-unprovable-tail`; `data_manifest.STORAGE` does not map that class, so they
+are withheld rather than asserted.
+
+Note the trailing all-zero run is `0x3ae0` bytes — far bigger than FileAlignment — but the
+zeros *below* `0x229200` are **proven** emitted content (`round_up` could not have produced
+`0x21400` from a smaller `E`), so they stay `data-initialized`. Only the last `0x200` is
+unprovable, and a nonzero byte anywhere in `[offset, raw_size)` resolves it back to
+`data-initialized`.
+
+**Withholding those two enrolled rows RAISED `matched_data` 26.63% → 27.66% (+3000
+bytes)** — asserting `.data` for them had been breaking their containers; `netmgrerror`'s
+2920-byte `.data` went to **100%**. The correctness fix and the metric agreed.
 
 This is the retail oracle a real data-byte loop gates against: once source data
 initializers relink (or the delinked target carries typed data), compare candidate bytes
@@ -95,7 +118,7 @@ first divergence: ??_7CActionArea@@6B@ rdata ret 0x1e7004 cand 0x101000 Doff -0x
 
 Historical (kept for the mechanism; the numbers are superseded by §3b): `matched_data`
 was **4 / 69184 bytes (0.006%)** vs homm2's **305328/305328 = 100%**. It is now
-**77902/292484 = 26.63%** — and §3c explains why the `.bss` share of the remainder is
+**80902/292476 = 27.66%** — and §3c explains why the `.bss` share of the remainder is
 not reachable at all.
 
 **Root cause (measured, not naming).** The delinked target objs already carry REAL data
