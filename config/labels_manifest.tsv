@@ -227,7 +227,7 @@ modeobjinit	2
 motionstate	6
 movieplayer	2
 movinglogic	6
-multi	103
+multi	104
 multistartdlg	16
 multistartdlgroster	32
 namerecord	4
@@ -292,7 +292,6 @@ serialobjref	1
 sfselectdevice	1
 shadedescrtable	2
 shadetablecache	24
-showmultidlg	1
 simpleanimation	8
 singleanimation	8
 singleframemessage	7

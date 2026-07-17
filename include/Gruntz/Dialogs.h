@@ -306,8 +306,16 @@ VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
-    virtual ~CMultiStartDlg()
-        OVERRIDE; // 0x0b8960 (destroy CStringList m_74, CString m_70, chain ~CDialog)
+    // NO user-declared destructor: retail's ~CMultiStartDlg (0x0b8960) is the
+    // COMPILER-GENERATED one (destroy CStringList m_74, CString m_70, chain
+    // ~CDialog). cl 5.0 elides the most-derived vptr re-stamp in an IMPLICIT dtor
+    // but always emits it for a user-declared one, even an empty `{}` (MEASURED
+    // both ways, cl 5.0 /O2 /GX) - declaring it purely to hang an RVA() on was the
+    // mis-model behind the old "unreachable restamp" wall. Still virtual (CDialog's
+    // is). cl auto-emits the COMDAT in every using obj; it is @rva-symbol-bound in
+    // src/Gruntz/Multi.cpp, whose CMulti::ShowMultiStartDlg (0xb86c0) stack-
+    // constructs the dialog - which is exactly why retail emitted the COMDAT there.
+    // docs/patterns/eh-dtor-vptr-restamp-presence.md
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual i32 DestroyWindow() OVERRIDE; // slot 24 (own override @0x00218a, origin CWnd)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35

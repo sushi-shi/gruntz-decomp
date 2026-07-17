@@ -1995,6 +1995,18 @@ void CMulti::ApplyCmdDelayDefaults() {
     reg->SetValueDword((char*)(const char*)resendName, m_drainReload);
 }
 
+// ~CMultiStartDlg @0x0b8960 - the COMPILER-GENERATED dtor (destroy CStringList
+// m_74, then CString m_70, then chain the NAFXCW ~CDialog base; all reloc-masked).
+// CMultiStartDlg declares no dtor (see Dialogs.h), so there is no source body to
+// hang an RVA() on: cl emits it as a COMDAT in every using obj, and THIS obj is
+// one - ShowMultiStartDlg below stack-constructs the dialog, which is exactly why
+// retail placed the COMDAT here at 0xb8960, right after ShowMultiStartDlg's
+// 0xb86c0+0x206. (Was defined in a dedicated src/Gruntz/ShowMultiDlg.cpp holding
+// TU; that fiction existed only to host the user-declared dtor, and the
+// declaration was itself the vptr-restamp mis-model. Deleted.)
+// docs/patterns/eh-dtor-vptr-restamp-presence.md
+//
+// @rva-symbol: ??1CMultiStartDlg@@UAE@XZ 0x000b8960 0x59
 RVA(0x000b86c0, 0x206)
 i32 CMulti::ShowMultiStartDlg() {
     CMultiStartDlg dlg((i32)m_4, 0);
