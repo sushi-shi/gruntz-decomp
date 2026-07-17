@@ -41,10 +41,13 @@ Measured (see docs/data-attribution.md §3b for the table):
     matched_data   41258/274106 (15.05%)  ->  67080/279630 (23.99%)
     exact          2384 (unchanged - this only reshapes target data containers)
 
-Known gap: 296 payloads / 902 (object, literal) copies stay withheld because a COMDAT
-literal is emitted by EVERY TU that uses it while the delinker rejects one rva claimed
-by two objects (`duplicate data RVA`). That is an upstream relaxation, not an evidence
-problem - there is no owner to attribute, all owners are correct.
+Folded COMDATs are now enrolled once PER OWNING UNIT (docs/data-attribution.md §3b-i):
+a literal is emitted into every TU that uses it and folded by the linker onto one rva,
+so all owners are correct and each target object gets its own copy. The delinker used
+to reject that (`duplicate data RVA`); its data manifest now permits a folded-COMDAT
+alias exactly as its section manifest always had (nix/patches/, upstream-pending).
+    matched_data   67080/279630 (23.99%)  ->  77902/292484 (26.63%)   +10822 bytes
+    exact          2386 (unchanged)
 
 Usage:
     python -m gruntz.build.data_manifest              # -> build/gen/delink_data_*manifest.tsv
@@ -55,6 +58,7 @@ from __future__ import annotations
 import argparse
 import csv
 import sys
+from collections import Counter, defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
@@ -103,14 +107,13 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
         NAME them - cl.exe's own spelling for those exact bytes);
       * the owning object is the candidate obj that defines the literal.
 
-    A payload emitted by SEVERAL units is withheld - but NOT because the owner is
-    unprovable. A COMDAT is by definition emitted into EVERY TU that uses the literal
-    and folded by the linker to one surviving rva, so ALL of them are owners and each
-    target object should get its own copy (our base objs already do). There is nothing
-    to attribute. The blocker is the delinker: enrolling one rva for two objects fails
-    with `duplicate data RVA`, so 296 payloads / 902 (object, literal) copies wait on
-    an upstream relaxation. 82% of payloads are used by exactly one unit and enroll
-    fine. See docs/data-attribution.md §3b.
+    A payload emitted by SEVERAL units enrolls once PER OWNING UNIT. A COMDAT is by
+    definition emitted into EVERY TU that uses the literal and folded by the linker to
+    one surviving rva, so ALL of them are owners and each target object gets its own
+    copy - exactly as our base objs do. There is nothing to attribute and no owner to
+    choose. (The delinker used to reject one rva claimed by two objects; its data
+    manifest now permits a folded-COMDAT alias, as its section manifest always had.
+    See docs/data-attribution.md §3b.)
 
     Identical payloads at two retail RVAs would collide on one content-derived name;
     both are withheld.
@@ -119,7 +122,6 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
     from coff_oracle import _Coff, Exe  # noqa: E402
     import synth_pdb as _synth  # noqa: E402
-    from collections import defaultdict
 
     base_dir = Path(base_dir or REPO / "build/objdiff/base")
     ghidra_symbols = Path(ghidra_symbols or REPO / "build/ghidra-enrich/exports/symbols.csv")
@@ -150,32 +152,30 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
             if cs is None or cs not in owners:
                 continue
             units = owners[cs]
-            if len(units) != 1:
-                # Not an attribution problem: all %d ARE owners (that is what a COMDAT
-                # is). The delinker just rejects one rva claimed by two objects.
-                withheld.append((rva, next(iter(units.values())),
-                                 "COMDAT literal used by %d units - delinker rejects "
-                                 "one rva per >1 object (duplicate data RVA)"
-                                 % len(units)))
-                continue
-            unit, name = next(iter(units.items()))
             size = len(cs) + 1                      # the payload plus its NUL
             start = classify_pe_storage(pe, rva)["class"]
             end = classify_pe_storage(pe, rva + size - 1)["class"]
             if start not in STORAGE or start != end:
-                withheld.append((rva, name, "string storage %s not enrollable" % start))
+                withheld.append((rva, next(iter(units.values())),
+                                 "string storage %s not enrollable" % start))
                 continue
-            row = {"name": name, "object": "%s.c" % unit, "rva": rva, "size": size,
-                   "storage": STORAGE[start], "alignment": _alignment(rva, size),
-                   "provenance": "candidate-COFF-string"}
-            by_name[name].append(row)
+            # EVERY unit that emitted the literal is an owner (that is what a COMDAT
+            # is) - each gets its own copy of the one folded rva.
+            for unit, name in sorted(units.items()):
+                by_name[name].append(
+                    {"name": name, "object": "%s.c" % unit, "rva": rva, "size": size,
+                     "storage": STORAGE[start], "alignment": _alignment(rva, size),
+                     "provenance": "candidate-COFF-string"})
     for name, group in by_name.items():
-        if len(group) == 1:
-            rows.append(group[0])
-        else:   # one content-derived name cannot address two retail addresses
+        # N owners of ONE rva is a fold and enrolls; one content-derived name over
+        # SEVERAL retail rvas cannot address them all, so that group is withheld.
+        addrs = {r["rva"] for r in group}
+        if len(addrs) == 1:
+            rows += group
+        else:
             for r in group:
                 withheld.append((r["rva"], name,
-                                 "identical payload at %d retail RVAs" % len(group)))
+                                 "identical payload at %d retail RVAs" % len(addrs)))
     return rows, withheld
 
 
@@ -212,29 +212,47 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     rows += strings
     withheld += string_withheld
 
-    rows.sort(key=lambda x: x["rva"])
-    # A reviewed extent must fit the span to its neighbour; an overlap proves one of
-    # the pair is mis-modelled but not which, so neither is enrolled.
+    # The N owners of a folded COMDAT all claim ONE rva, so collapse each fold to a
+    # single extent before the neighbour check - otherwise the copies read as mutual
+    # overlaps. Every real extent still has to fit the span to its neighbour; an
+    # overlap proves one of the pair is mis-modelled but not which, so neither is
+    # enrolled.
+    rows.sort(key=lambda x: (x["rva"], x["size"], x["name"]))
+    extents = []                       # [{rva, size, name, copies: [row, ...]}]
+    for r in rows:
+        if extents and (extents[-1]["rva"], extents[-1]["size"], extents[-1]["name"]) \
+                == (r["rva"], r["size"], r["name"]):
+            extents[-1]["copies"].append(r)
+        else:
+            extents.append({"rva": r["rva"], "size": r["size"], "name": r["name"],
+                            "copies": [r]})
     bad, overlaps = set(), []
-    for i in range(len(rows) - 1):
-        a, b = rows[i], rows[i + 1]
+    for i in range(len(extents) - 1):
+        a, b = extents[i], extents[i + 1]
         if a["rva"] + a["size"] > b["rva"]:
             bad.add(i)
             bad.add(i + 1)
             overlaps.append((a, b, a["rva"] + a["size"] - b["rva"]))
-    enrolled = [r for i, r in enumerate(rows) if i not in bad]
+    enrolled = [r for i, e in enumerate(extents) if i not in bad for r in e["copies"]]
     for i in sorted(bad):
-        withheld.append((rows[i]["rva"], rows[i]["name"], "overlaps a neighbour"))
-    # The delinker requires globally unique names AND RVAs.
-    from collections import Counter
-    n = Counter(r["name"] for r in enrolled)
-    v = Counter(r["rva"] for r in enrolled)
+        withheld.append((extents[i]["rva"], extents[i]["name"], "overlaps a neighbour"))
+    # The delinker admits N objects claiming one rva under one name (a folded COMDAT)
+    # and nothing looser: one name must still resolve to one extent, one rva to one
+    # name, and no object may define a name twice.
+    extent_of = defaultdict(set)
+    name_at = defaultdict(set)
+    for r in enrolled:
+        extent_of[r["name"]].add((r["rva"], r["size"]))
+        name_at[r["rva"]].add(r["name"])
+    per_object = Counter((r["name"], r["object"]) for r in enrolled)
     final = []
     for r in enrolled:
-        if n[r["name"]] > 1:
+        if len(extent_of[r["name"]]) > 1:
             withheld.append((r["rva"], r["name"], "duplicate name in manifest"))
-        elif v[r["rva"]] > 1:
+        elif len(name_at[r["rva"]]) > 1:
             withheld.append((r["rva"], r["name"], "duplicate rva in manifest"))
+        elif per_object[(r["name"], r["object"])] > 1:
+            withheld.append((r["rva"], r["name"], "duplicate definition in one object"))
         else:
             final.append(r)
     return final, withheld, overlaps
@@ -368,8 +386,9 @@ def main(argv=None):
     args.output.write_bytes(manifest_bytes(enrolled))
     args.section_output.parent.mkdir(parents=True, exist_ok=True)
     args.section_output.write_bytes(section_manifest_bytes(secs))
-    from collections import Counter
-    print("[data-manifest] enrolled %d row(s) -> %s" % (len(enrolled), args.output))
+    folds = len(enrolled) - len({(r["name"], r["rva"]) for r in enrolled})
+    print("[data-manifest] enrolled %d row(s) (%d folded-COMDAT copies) -> %s"
+          % (len(enrolled), folds, args.output))
     print("[data-manifest] storage: " + ", ".join(
         "%s=%d" % kv for kv in sorted(Counter(r["storage"] for r in enrolled).items())))
     print("[data-manifest] %d row(s) placed in %d candidate section(s) -> %s"

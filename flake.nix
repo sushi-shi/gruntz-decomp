@@ -45,6 +45,12 @@
         version = "0.1.0";
         src = vostok-delinker-src;
         cargoHash = "sha256-ry3TH1fz7Aj/JdbmlgQFFn29m8E7EQHyGaVXnZTEcXo=";
+        # UPSTREAM-PENDING. --data-manifest rejected one rva claimed by two objects,
+        # but a COMDAT is emitted into EVERY object that uses it and folded by the
+        # linker onto one rva, so all owners are correct. The section manifest already
+        # permits exactly this (`compatible_folded_comdat_alias`); the data manifest
+        # never got the same treatment. Mirrors it there. docs/data-attribution.md §3b.
+        patches = [ ./nix/patches/vostok-data-manifest-folded-comdat.patch ];
       };
 
       # objdiff - upstream prebuilt Linux binaries (not in nixpkgs), so foreign ELF

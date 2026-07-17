@@ -95,7 +95,7 @@ first divergence: ??_7CActionArea@@6B@ rdata ret 0x1e7004 cand 0x101000 Doff -0x
 
 Historical (kept for the mechanism; the numbers are superseded by §3b): `matched_data`
 was **4 / 69184 bytes (0.006%)** vs homm2's **305328/305328 = 100%**. It is now
-**67080/279630 = 23.99%** — and §3c explains why the `.bss` share of the remainder is
+**77902/292484 = 26.63%** — and §3c explains why the `.bss` share of the remainder is
 not reachable at all.
 
 **Root cause (measured, not naming).** The delinked target objs already carry REAL data
@@ -203,20 +203,58 @@ Ordinals are manifest-local, **contiguous from one**, and follow the candidate's
 section order (objdiff stable-sorts same-named sections when combining, so order
 decides the combined layout).
 
-**CORRECTION — the 296 ambiguous COMDAT copies are NOT a contribution-range problem.**
-Earlier text framed them as "retail owner unprovable, needs `--contribution-manifest`".
-That is the wrong question. A COMDAT is *by definition* emitted into **every** TU that
-uses the literal, and the linker folds them to one surviving rva — so **all** owners
-are correct and each target object should get its own copy (our base objs already do:
-`actionoptionsmenubar.obj` and `statusbarmgr.obj` both define
-`??_C@…GAME_INGAMEICONZ_GRE…`, folded to 0x20a544). There is no owner to attribute.
+### 3b-i. The folded-COMDAT copies are IN — the `duplicate data RVA` limit is gone (DONE)
 
-The real blocker is a **delinker constraint**: enrolling one rva for two objects fails
-with `Error: <manifest>:1801: duplicate data RVA`. 296 payloads = **902 (object,
-literal) copies** are unreachable until the delinker lets a COMDAT rva be claimed by N
-objects. Histogram of owners-per-payload: `{2:224, 3:31, 4:20, 5:6, 6:6, 7:3, 14:1,
-16:1, 35:1, 43:3}`. This is an upstream relaxation, **not** blocked on the TU
-partition.
+**The diagnosis, twice corrected.** These 296 payloads were first framed as "retail
+owner unprovable, needs `--contribution-manifest`" — the wrong question. A COMDAT is *by
+definition* emitted into **every** TU that uses the literal, and the linker folds them to
+one surviving rva, so **all** owners are correct and each target object gets its own copy
+(our base objs already do: `actionoptionsmenubar.obj` and `statusbarmgr.obj` both define
+`??_C@…GAME_INGAMEICONZ_GRE…`, folded to `0x20a544`). There is no owner to attribute. That
+left a pure **delinker constraint**: `Error: <manifest>:1801: duplicate data RVA`.
+
+**It was an upstream asymmetry, now patched.** `data_section_manifest.rs` *already*
+permitted exactly this aliasing — `compatible_folded_comdat_alias()` admits two sections
+at one rva when they agree on name/size/alignment/characteristics/storage/COMDAT-selection
+and the selection is one that permits duplicates (`2|3|4|6|7`, i.e. every
+`IMAGE_COMDAT_SELECT_*` except `1=NODUPLICATES` and `5=ASSOCIATIVE`) — and
+`object_files.rs` already materializes per-object
+(`topology_replays_relocations_for_each_folded_comdat_section`). Only `data_manifest.rs`
+never got the same treatment. `nix/patches/vostok-data-manifest-folded-comdat.patch`
+(pinned via `flake.nix`, **upstream-pending**) mirrors the predicate there.
+
+**Why admitting them cannot make owner resolution ambiguous** (the reason the constraint
+was over-strict, not load-bearing): every consumer of a resolved owner —
+`relocs.rs:315/450` via `owner_and_addend_for_rva` — reads only `owner.name`,
+`owner.storage` and the addend. **`owner.object` is never read.** So for a group agreeing
+on all of those, *which* copy is returned is unobservable.
+
+The relaxation is narrow and stays fail-closed: a copy is admitted only when it agrees
+with its group on (name, rva, size, storage, alignment) and comes from a **distinct**
+object, and only for `external` scope. Two *different* names at one rva, a same-name
+disagreement on extent/storage/alignment, one object defining a name twice, and two
+`local` statics sharing an rva all still bail (tests
+`rejects_duplicate_rvas`, `rejects_folded_comdat_copies_that_disagree`,
+`rejects_a_duplicate_definition_within_one_object`, `rejects_local_definitions_sharing_an_rva`).
+
+Measured (A/B on one base, delinker patch held constant, generator toggled):
+
+| | folds withheld | folds enrolled |
+|---|---|---|
+| `matched_data` | 67080/279630 = **23.99%** | 77902/292484 = **26.63%** |
+| `.data` | 58090/67000 = 86.70% | 68912/79854 = 86.30% |
+| `exact` | 2386 | 2386 |
+
+**+10822 matched bytes.** `.data`'s *percentage* dips 0.4pt because the fold materializes
++12854 previously-absent real bytes and matches 10822 (84%) of them — absolute matched
+bytes, which is what `matched_data` sums, rises. Owners-per-payload histogram:
+`{2:224, 3:31, 4:20, 5:6, 6:6, 7:3, 14:1, 16:1, 35:1, 43:3}`; 517 copies enrol (only the
+payloads that content-match a retail data symbol reach the manifest).
+
+**Build-graph fix shipped with it:** `delink.py` regenerates both manifests in-process on
+every run, but the ninja edge did not depend on `data_manifest.py` — so editing the
+generator left objdiff scoring the *previous* manifest until `--force-delink`.
+`configure.py` now declares it an implicit dep.
 
 **Contribution ranges are still BLOCKED (measured)** — but only the `$T` pools and
 absolute-RVA layout now depend on them. GRUNTZ.EXE has no NB09, so they must come from
