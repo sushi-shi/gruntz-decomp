@@ -41,11 +41,11 @@ public:
     i32 m_active;      // +0x0c visible/active flag
     // The five cached MM:SS frames, laid out L->R by Draw at x-0x22..x+0x22 and
     // reassigned per Tick's digit decode: [MinTens][MinOnes][:][SecTens][SecOnes].
-    i32* m_frameMinTens; // +0x10 tens-of-minutes digit frame
-    i32* m_frameMinOnes; // +0x14 units-of-minutes digit frame
-    i32* m_frameSecTens; // +0x18 tens-of-seconds digit frame
-    i32* m_frameSecOnes; // +0x1c units-of-seconds digit frame
-    i32* m_frameColon;   // +0x20 colon frame (static frame 11, drawn centre)
+    CImage* m_frameMinTens; // +0x10 tens-of-minutes digit frame
+    CImage* m_frameMinOnes; // +0x14 units-of-minutes digit frame
+    CImage* m_frameSecTens; // +0x18 tens-of-seconds digit frame
+    CImage* m_frameSecOnes; // +0x1c units-of-seconds digit frame
+    CImage* m_frameColon;   // +0x20 colon frame (static frame 11, drawn centre)
     char m_pad24[0x28 - 0x24];
     i32 m_baseTimeLo; // +0x28 base (limit) time lo
     i32 m_baseTimeHi; // +0x2c base (limit) time hi

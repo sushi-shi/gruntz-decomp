@@ -12,8 +12,10 @@
 #include <Gruntz/MgrSettings.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/GruntzMgr.h> // the *0x24556c singleton (CGruntzMgr)
-#include <string.h>           // strlen / memset (inlined to repne scasb / rep stos)
+#include <Gruntz/GruntzMgr.h>         // the *0x24556c singleton (CGruntzMgr)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (ex CMgrActiveHolder view)
+#include <Gruntz/Sprite.h> // CSprite - the looked-up, index-gated record (ex CMgrLookupRec view)
+#include <string.h>        // strlen / memset (inlined to repne scasb / rep stos)
 
 
 // @early-stop
@@ -30,7 +32,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
-    CMgrActiveHolder* lvl = (CMgrActiveHolder*)g_gameReg->m_world;
+    CDDrawSurfaceMgr* lvl = g_gameReg->m_world;
     if (lvl == 0) {
         return 0;
     }
@@ -56,12 +58,12 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
                 return 1;
             }
             CObject* out = 0;
-            lvl->m_10->m_10map.Lookup(name, out);
-            CMgrLookupRec* rec = (CMgrLookupRec*)out;
-            if (rec == 0 || index < rec->m_64 || index > rec->m_68) {
+            lvl->m_imageRegistry->m_10map.Lookup(name, out);
+            CSprite* rec = (CSprite*)out;
+            if (rec == 0 || index < rec->m_firstFrame || index > rec->m_lastFrame) {
                 m_38 = 0;
             } else {
-                m_38 = rec->m_14[index];
+                m_38 = rec->m_frames.m_pData[index];
             }
             return 1;
         }
@@ -82,7 +84,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         i32 index = 0;
         memset(name, 0, 0x80);
         if (obj != 0) {
-            lvl->m_10->AnyValueMatches_155630((i32)obj, (i32)name, (i32)&index);
+            lvl->m_imageRegistry->AnyValueMatches_155630((i32)obj, (i32)name, (i32)&index);
         }
         arc->Write(name, 0x80);
         arc->Write(&index, 4);

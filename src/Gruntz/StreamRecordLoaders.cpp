@@ -10,16 +10,18 @@
 // CDDrawWorkerRegistry's CMapStringToOb::Lookup). A global sequence counter
 // (g_serialCounter) ticks once per string read. Each Load is a __thiscall taking the
 // reader (ret 4); names are placeholders, only the field offsets + code bytes are
-// load-bearing. The shared registry views (CRegSub30 / CRegTypeTable) live in
-// <Gruntz/SerialRecView.h>.
+// load-bearing. The ex-view registry chain (CRegSub30 -> CRegTypeTable) is the REAL
+// g_gameReg->m_world (CDDrawSurfaceMgr) -> m_imageRegistry -> m_10map -> CSprite
+// chain: the indexed "type table" is the same [m_firstFrame..m_lastFrame]-gated
+// CSprite frame resolve CSBI_Image::SerializeFields runs.
 #include <rva.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (the name map at g_gameReg->m_world +0x10)
-#include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world)
+#include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world = CDDrawSurfaceMgr*)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (reader; Read @ vtable +0x2c)
 #include <Gruntz/StreamRecordLoaders.h> // CEventLoadRec (this TU owns the loader)
-#include <Gruntz/SerialRecView.h> // CRegSub30 / CRegTypeTable (shared registry views)
+#include <Gruntz/Sprite.h>             // CSprite (the looked-up, index-gated frame table)
 #include <DDrawMgr/DDrawWorkerCache.h> // the +0x14 worker cache - Find (0x9cab0) is its method
 #include <string.h>                    // inline strlen (repne scasb) over the scratch buffer
 
@@ -48,7 +50,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = (CRegSub30*)g_gameReg->m_world;
+    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -64,7 +66,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, out);
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);
         m_8 = out;
     } else {
         m_8 = 0;
@@ -78,11 +80,11 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, out);
-        CRegTypeTable* tt = (CRegTypeTable*)out;
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
-            r = tt->m_elems[i];
+        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
+            r = tt->m_frames.m_pData[i];
         } else {
             r = 0;
         }
@@ -97,11 +99,11 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, out);
-        CRegTypeTable* tt = (CRegTypeTable*)out;
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
-            r = tt->m_elems[i];
+        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
+            r = tt->m_frames.m_pData[i];
         } else {
             r = 0;
         }
@@ -116,11 +118,11 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, out);
-        CRegTypeTable* tt = (CRegTypeTable*)out;
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
-            r = tt->m_elems[i];
+        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
+            r = tt->m_frames.m_pData[i];
         } else {
             r = 0;
         }
@@ -135,11 +137,11 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, out);
-        CRegTypeTable* tt = (CRegTypeTable*)out;
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
-            r = tt->m_elems[i];
+        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
+            r = tt->m_frames.m_pData[i];
         } else {
             r = 0;
         }
@@ -154,11 +156,11 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, out);
-        CRegTypeTable* tt = (CRegTypeTable*)out;
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        CSprite* tt = (CSprite*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
-            r = tt->m_elems[i];
+        if (tt != 0 && i >= tt->m_firstFrame && i <= tt->m_lastFrame) {
+            r = tt->m_frames.m_pData[i];
         } else {
             r = 0;
         }

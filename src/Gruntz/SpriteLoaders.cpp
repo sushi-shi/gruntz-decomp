@@ -326,23 +326,23 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
         return 1;
     }
     if (m_frameMinTens) {
-        ((CImage*)m_frameMinTens)
+        m_frameMinTens
             ->RenderFrame((void*)(pSurf), (void*)(m_baseX - 0x22), (void*)(m_baseY), (void*)(0));
     }
     if (m_frameMinOnes) {
-        ((CImage*)m_frameMinOnes)
+        m_frameMinOnes
             ->RenderFrame((void*)(pSurf), (void*)(m_baseX - 0x10), (void*)(m_baseY), (void*)(0));
     }
     if (m_frameColon) {
-        ((CImage*)m_frameColon)
+        m_frameColon
             ->RenderFrame((void*)(pSurf), (void*)(m_baseX), (void*)(m_baseY), (void*)(0));
     }
     if (m_frameSecTens) {
-        ((CImage*)m_frameSecTens)
+        m_frameSecTens
             ->RenderFrame((void*)(pSurf), (void*)(m_baseX + 0x10), (void*)(m_baseY), (void*)(0));
     }
     if (m_frameSecOnes) {
-        ((CImage*)m_frameSecOnes)
+        m_frameSecOnes
             ->RenderFrame((void*)(pSurf), (void*)(m_baseX + 0x22), (void*)(m_baseY), (void*)(0));
     }
     return 1;

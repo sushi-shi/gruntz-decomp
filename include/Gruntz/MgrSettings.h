@@ -26,23 +26,10 @@
 // dissolved (it was an ODR divergence the two never-meeting TUs hid).
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 
-// The record CMapStringToOb::Lookup yields, viewed as a bounded element array.
-SIZE_UNKNOWN(CMgrLookupRec);
-struct CMgrLookupRec {
-    char _00[0x14];
-    void** m_14; // +0x14 element array
-    char _18[0x64 - 0x18];
-    i32 m_64; // +0x64 lo index (inclusive)
-    i32 m_68; // +0x68 hi index (inclusive)
-};
-
-// g_gameReg singleton chain (CGameRegistry* @ RVA 0x24556c; +0x30 active holder; its
-// +0x10 is the registry leaf).
-SIZE_UNKNOWN(CMgrActiveHolder);
-struct CMgrActiveHolder {
-    char _00[0x10];
-    CDDrawWorkerRegistry* m_10; // +0x10
-};
+// (The ex CMgrLookupRec/CMgrActiveHolder views are DISSOLVED: the record Lookup
+// yields is the real frame-data CSprite (<Gruntz/Sprite.h>: elements @+0x14, bounds
+// @+0x64/+0x68), and the +0x30 "active holder" is the real g_gameReg->m_world
+// CDDrawSurfaceMgr whose +0x10 IS m_imageRegistry.)
 
 // Per-serialize round counter the archive bumps - declared in <Gruntz/SerialCounter.h>.
 #include <Gruntz/SerialCounter.h>

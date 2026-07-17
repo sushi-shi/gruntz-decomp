@@ -586,21 +586,21 @@ i32 CKitchenSlime::LoadSprites() {
     m_tileY = tileY;
 
     // The direction sprite + first-frame cache is the CGameObject frame-cache
-    // role-union: +0x194 (m_194) is the cached CSprite*, +0x198 (m_layer) doubles as
-    // the first-frame pointer - the same reinterpret CGameObject's own ApplyName does
-    // (authentic union access, cast at the site).
+    // role-union: +0x194 (m_sprite) is the cached CSprite*, +0x198 (m_layer) doubles
+    // as the first-frame pointer - the same union access CGameObject's own ApplyName
+    // does.
     CGameObject* player = Anim();
-    CSprite* spr = (CSprite*)player->m_194;
+    CSprite* spr = player->m_sprite;
     if (changed != 0 && spr != 0) {
         if (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) {
             player->m_190 = 1;
-            *(i32**)&player->m_layer = spr->m_frames.m_pData[1];
+            player->m_layer = (CGameObjLayer*)spr->m_frames.m_pData[1];
             m_stepMag = 0;
             m_stepMagHi = 0;
             return 1;
         }
         player->m_190 = 1;
-        *(i32**)&player->m_layer = 0;
+        player->m_layer = 0;
         m_stepMag = 0;
         m_stepMagHi = 0;
         return 1;

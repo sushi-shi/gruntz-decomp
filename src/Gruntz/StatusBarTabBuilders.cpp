@@ -534,7 +534,7 @@ void CSBI_StatzTabArrow::SetDirectionAlt(i32 a1, i32 a2) {
 // CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar (0xea1f0) - the stat bar's own
 // configure. Re-homed off the `CSbTab` view (the same conflation that held
 // BuildResourceTabStatusBar; `this` is proven by the call site's `new
-// CSBI_StatzTabGruntBar`). The view's CSbImageSet is the canonical CStatzGlyphMap.
+// CSBI_StatzTabGruntBar`). The view's CSbImageSet is the canonical CSprite (the glyph map).
 // @early-stop
 // identical-return-epilogue tail-merge wall (topic:wall): prologue + body byte-exact
 // (geometry block grouped via the struct-copy idiom), residual is the many fail-path
@@ -567,7 +567,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     m_rect14.m_4 = g.top;
     m_rect14.m_8 = g.right;
     m_rect14.m_c = g.bottom;
-    CStatzGlyphMap* head = 0;
+    CSprite* head = 0;
     m_c = p3;
     h->m_imageRegistry->m_10map.Lookup(key, (CObject*&)head);
     m_glyphMap = head;
@@ -575,20 +575,20 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         return 0;
     }
     CImage* v;
-    if (head->m_minIndex > 0x21 || head->m_maxIndex < 0x21) {
+    if (head->m_firstFrame > 0x21 || head->m_lastFrame < 0x21) {
         v = 0;
     } else {
-        v = head->m_glyphs[0x21];
+        v = head->m_frames.m_pData[0x21];
     }
     m_statusGlyph = v;
     if (v == 0) {
         return 0;
     }
     CImage* w;
-    if (head->m_minIndex > 0x22 || head->m_maxIndex < 0x22) {
+    if (head->m_firstFrame > 0x22 || head->m_lastFrame < 0x22) {
         w = 0;
     } else {
-        w = head->m_glyphs[0x22];
+        w = head->m_frames.m_pData[0x22];
     }
     m_abilityGlyph = w;
     if (w == 0) {
@@ -596,7 +596,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     }
     CImage* val;
     if (selMode == 0) {
-        CStatzGlyphMap* sel = 0;
+        CSprite* sel = 0;
         ((CDDrawSurfaceMgr*)m_24)
             ->m_imageRegistry->m_10map
             .Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (CObject*&)sel);
@@ -604,13 +604,13 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         if (sel == 0) {
             return 0;
         }
-        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
+        if (m_glyphMap->m_firstFrame > 0x23 || m_glyphMap->m_lastFrame < 0x23) {
             val = 0;
         } else {
-            val = m_glyphMap->m_glyphs[0x23];
+            val = m_glyphMap->m_frames.m_pData[0x23];
         }
     } else {
-        CStatzGlyphMap* sel = 0;
+        CSprite* sel = 0;
         ((CDDrawSurfaceMgr*)m_24)
             ->m_imageRegistry->m_10map
             .Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", (CObject*&)sel);
@@ -619,19 +619,19 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
             return 0;
         }
         CImage* x;
-        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
+        if (m_glyphMap->m_firstFrame > 0x23 || m_glyphMap->m_lastFrame < 0x23) {
             x = 0;
         } else {
-            x = m_glyphMap->m_glyphs[0x23];
+            x = m_glyphMap->m_frames.m_pData[0x23];
         }
         m_selectKey = x;
         if (x == 0) {
             return 0;
         }
-        if (m_glyphMap->m_minIndex > 0x22 || m_glyphMap->m_maxIndex < 0x22) {
+        if (m_glyphMap->m_firstFrame > 0x22 || m_glyphMap->m_lastFrame < 0x22) {
             val = 0;
         } else {
-            val = m_glyphMap->m_glyphs[0x22];
+            val = m_glyphMap->m_frames.m_pData[0x22];
         }
     }
     m_overrideGlyph = val;

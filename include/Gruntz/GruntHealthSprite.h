@@ -12,7 +12,7 @@
 // passed coordinates (m_cellX/m_cellY), round the passed health to a glyph slot
 // (slot = 0x15 - (int)(health*0.2 + 0.5)), resolve that slot through the bound
 // object's [m_64..m_68]-gated glyph table at +0x194 (the SAME gated-glyph-table
-// archetype as CStatzGlyphMap in SBI_StatzTabGruntBar.h), publish the glyph and
+// archetype as the CSprite glyph maps in SBI_StatzTabGruntBar.h), publish the glyph and
 // slot back into the object (+0x198 / +0x190), stash the health (m_health), return 1.
 //
 // Field names are placeholders; only OFFSETS + the inheritance chain are
@@ -24,7 +24,7 @@
 // The health glyph resolve reads its bound game object (CUserLogic::m_object) directly
 // - the object IS a CGameObject (the CGruntRenderable view was folded onto it) - through
 // its +0x194 gated lookup table CGruntLayerHolder (table @+0x14, [m_64..m_68] index gate
-// - the shared gated-lookup archetype, also seen as CStatzGlyphMap).
+// - the shared gated-lookup archetype, the CSprite frame-table shape).
 #include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg + CGruntLayerHolder
 #include <Gruntz/UserLogic.h>            // CUserLogic base (CGruntHealthSprite : CUserLogic)
 #include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)

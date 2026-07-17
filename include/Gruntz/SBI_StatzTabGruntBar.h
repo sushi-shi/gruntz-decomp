@@ -101,29 +101,13 @@ public:
 };
 SIZE_UNKNOWN(CStatzSelf);
 
-// The glyph map a changed value is resolved through (m_glyphMap for the first four
-// values, m_timerGlyphMap for the timer value): a [m_minIndex..m_maxIndex]-gated
-// table at m_glyphs.
-// NOTE (proven, fold pending): this is the REAL CSprite (<Gruntz/Sprite.h>) - identical
-// field for field. CSprite's m_frames CObArray starts at +0x10, so its m_pData lands at
-// +0x14 == m_glyphs; its m_name is +0x24..0x64 == m_name below; its m_firstFrame/
-// m_lastFrame are +0x64/+0x68 == m_minIndex/m_maxIndex. SBI_Image.cpp already writes this
-// same (name -> Lookup -> gated index -> frame) idiom against the real CSprite. The
-// identical `CRegTypeTable` in <Gruntz/SerialRecView.h> is the same view again.
-// Dissolving all three onto CSprite is follow-up work (it also touches the
-// CEventLoadRec/CTriggerLoadRec TUs that share SerialRecView.h).
-struct CStatzGlyphMap {
-    char m_pad0[0x14];
-    CImage** m_glyphs; // +0x14  glyph table (frame handles)  [== CSprite::m_frames.m_pData]
-    char m_pad18[0x24 - 0x18];
-    // +0x24 registry name, extent 0x24..0x64 (bounded by m_minIndex): the key the glyph
-    // map was Lookup'd under, which the slot-1 serialize's mode-4 leg strcpy's out.
-    // Same offset AND same extent as CSprite::m_name.
-    char m_name[0x64 - 0x24];
-    i32 m_minIndex; // +0x64  glyph-index range lo gate  [== CSprite::m_firstFrame]
-    i32 m_maxIndex; // +0x68  glyph-index range hi gate  [== CSprite::m_lastFrame]
-};
-SIZE_UNKNOWN(CStatzGlyphMap);
+// The glyph maps (m_glyphMap for the first four values, m_timerGlyphMap for the
+// timer value) ARE the engine frame-data sprite CSprite (<Gruntz/Sprite.h>): each
+// changed value resolves through the [m_firstFrame..m_lastFrame]-gated frame table
+// m_frames.m_pData - the same (name -> Lookup -> gated index -> frame) idiom
+// CSBI_Image::SerializeFields runs. (The ex CStatzGlyphMap view is dissolved;
+// fwd-decl only - consumers that deref include <Gruntz/Sprite.h> themselves.)
+struct CSprite;
 
 // ---------------------------------------------------------------------------
 // CSBI_StatzTabGruntBar - the per-grunt stat tab. Derives directly from
@@ -216,10 +200,10 @@ public:
     i32 m_selectValue;               // +0x5c  selection value (tracked)
     i32 m_unitRow;                   // +0x60  unit-table row index (stride 15 records)
     i32 m_unitCol;                   // +0x64  unit-table column index (within the 15-dword record)
-    CStatzGlyphMap* m_timerGlyphMap; // +0x68  timer glyph map
-    CImage* m_timerGlyph;            // +0x6c  timer glyph (resolved by Update)
-    i32 m_timerValue;                // +0x70  timer value (tracked)
-    CStatzGlyphMap* m_glyphMap;      // +0x74  glyph map for the first four values
+    CSprite* m_timerGlyphMap; // +0x68  timer glyph map (a frame-data CSprite)
+    CImage* m_timerGlyph;     // +0x6c  timer glyph (resolved by Update)
+    i32 m_timerValue;         // +0x70  timer value (tracked)
+    CSprite* m_glyphMap;      // +0x74  glyph map for the first four values (a CSprite)
     i32 m_timerAnchorLo;             // +0x78  timer anchor lo (g_frameTime at last bump)
     i32 m_timerAnchorHi;             // +0x7c  timer anchor hi
     i32 m_timerWindowLo;             // +0x80  timer window lo

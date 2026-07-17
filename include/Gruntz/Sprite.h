@@ -43,9 +43,9 @@ struct CObject;
 // against the engine CObArray helper @0x1b5822.
 SIZE_UNKNOWN(CFrameArray);
 struct CFrameArray {
-    char _vft0[4];  // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    i32** m_pData;  // +0x04  frame-pointer table
-    i32 m_nSize;    // +0x08  element count
+    char _vft0[4];   // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    CImage** m_pData; // +0x04  frame-pointer table (the element IS the real CImage)
+    i32 m_nSize;     // +0x08  element count
     i32 m_nMaxSize; // +0x0c
     i32 m_nGrowBy;  // +0x10
     void SetAtGrow(i32 index, CObject* element); // 0x1b5822
@@ -54,6 +54,9 @@ struct CFrameArray {
 // The engine sprite (animation frame-data) object: the value the sprite hash
 // table resolves. m_c is the parent context handed to each frame worker; the
 // frame CObArray lives at +0x10; the inclusive valid frame range is [m_64..m_68].
+// The ex "gated-lookup table" views CRegTypeTable/CStatzGlyphMap/CMgrLookupRec
+// (elements @+0x14, name @+0x24, bounds @+0x64/+0x68) were all THIS class,
+// resolved from the same m_imageRegistry->m_10map the SBI_Image loader uses.
 class CImageParent; // the parent context handed to each frame worker (== CImage::m_parent)
 
 SIZE_UNKNOWN(CSprite);

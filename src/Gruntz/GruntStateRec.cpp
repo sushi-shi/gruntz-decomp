@@ -22,8 +22,8 @@
 #include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>  // CDDrawWorkerRegistry (name map + AnyValueMatches_155630)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)
-#include <Gruntz/SBI_StatzTabGruntBar.h> // the REAL class (+ CStatzGlyphMap)
-#include <Gruntz/SerialRecView.h>        // CRegSub30 (the g_gameReg->m_world name-table view)
+#include <Gruntz/SBI_StatzTabGruntBar.h> // the REAL class
+#include <Gruntz/Sprite.h> // CSprite - the glyph maps ARE frame-data sprites (ex CStatzGlyphMap)
 #include <string.h>                      // inline strlen / strcpy / memset over the scratch buffer
 
 // The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
@@ -37,7 +37,7 @@
 // stream or the registry sub-object (g_gameReg->m_world) is absent.
 //
 // Mode 7 (read) resolves each tracked glyph from the stream as a registry ref: a name +
-// an index, Lookup'd to a glyph map, then gated to map->m_glyphs[index] (the same
+// an index, Lookup'd to a glyph map, then gated to map->m_frames.m_pData[index] (the same
 // name -> Lookup -> [m_firstFrame..m_lastFrame] -> frame idiom CSBI_Image::SerializeFields
 // runs against the real CSprite). Mode 4 (write) reverse-looks-up each glyph's name +
 // index through the registry (AnyValueMatches_155630) and writes them back. The two
@@ -58,7 +58,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = (CRegSub30*)g_gameReg->m_world;
+    CDDrawSurfaceMgr* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -76,7 +76,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
     memset(buf, 0, sizeof(buf));                                                                   \
     v = 0;                                                                                         \
     if (field != 0) {                                                                              \
-        reg->m_10->AnyValueMatches_155630((i32)field, (i32)buf, (i32) & v);                        \
+        reg->m_imageRegistry->AnyValueMatches_155630((i32)field, (i32)buf, (i32) & v);                        \
     }                                                                                              \
     s->Write(buf, 0x80);                                                                           \
     s->Write(&v, 4)
@@ -125,11 +125,11 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
-        reg->m_10->m_10map.Lookup(buf, out);                                                       \
-        CStatzGlyphMap* gm = (CStatzGlyphMap*)out;                                                 \
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);                                                       \
+        CSprite* gm = (CSprite*)out;                                                 \
         CImage* r;                                                                                 \
-        if (gm != 0 && i >= gm->m_minIndex && i <= gm->m_maxIndex) {                               \
-            r = gm->m_glyphs[i];                                                                   \
+        if (gm != 0 && i >= gm->m_firstFrame && i <= gm->m_lastFrame) {                               \
+            r = gm->m_frames.m_pData[i];                                                                   \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
@@ -142,8 +142,8 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CSerialArchive* s, i32 mode, i32 a2, 
     s->Read(buf, 0x80);                                                                            \
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
-        reg->m_10->m_10map.Lookup(buf, out);                                                       \
-        field = (CStatzGlyphMap*)out;                                                              \
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);                                                       \
+        field = (CSprite*)out;                                                              \
     } else {                                                                                       \
         field = 0;                                                                                 \
     }
