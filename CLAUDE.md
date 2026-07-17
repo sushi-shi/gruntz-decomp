@@ -71,15 +71,11 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.
 - **Builds are FAST — don't engineer around build time.** A full from-scratch
-  `gruntz clean && gruntz init` **(in main only — see the pool rule below)** is a few
-  minutes; `gruntz build` (incremental) is faster. Run them in the foreground and verify
-  changes with a real build — don't background out of fear or skip verification.
+  `gruntz clean && gruntz init` is a few minutes; `gruntz build` (incremental) is faster.
+  Run them in the foreground and verify changes with a real build — don't background out of
+  fear or skip verification. `--fast` skips the gate tail; run one full build before a commit.
 - **Every body lives in its real owner TU** — owner proven by xref / vtable-slot, never by RVA
   proximity (`docs/tu-partition-brief.md`; a contribution must be contiguous).
-- **NEVER `gruntz clean` in a `.claude/worktrees/` pool worktree.** Ghidra's `ProjectLocator`
-  rejects path elements starting with `.`, so `init` can never rebuild the DB there — the pool
-  runs on `build/ghidra-enrich/exports/{functions,symbols}.csv` **seeded from main**, and `clean`
-  deletes them unrecoverably. (Delink needs only those CSVs; re-seed from main to recover.)
 - **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over
   `docs/reference/gooroosgruntz/` (mirrored community docs); the +0x114 union is
   Score/Points/Powerup/Damage/Smarts/Health.
