@@ -80,26 +80,6 @@ struct CStatzGameReg {
 };
 SIZE_UNKNOWN(CStatzGameReg);
 
-// A polymorphic view of `this` used only for the self-virtual slot-0x28 redraw
-// dispatch (CStatusBarItem vtable slot 10): 10 leading slots + Refresh at index 10
-// (byte 0x28). Declared (never defined) so no ??_7 is emitted here;
-// `((CStatzSelf*)this)->Refresh()` lowers to the exact
-// mov eax,[this]; mov ecx,this; call [eax+0x28] __thiscall dispatch.
-class CStatzSelf {
-public:
-    virtual void Destroy();     // slot 0  scalar-deleting dtor
-    virtual void Serialize();   // slot 1
-    virtual void Setup();       // slot 2
-    virtual void ClearFrame();  // slot 3
-    virtual void Poll();        // slot 4
-    virtual void Tick();        // slot 5
-    virtual void HitHandlerA(); // slot 6
-    virtual void HitHandlerB(); // slot 7
-    virtual void HitHandlerC(); // slot 8
-    virtual void HitHandlerD(); // slot 9
-    virtual void Refresh();     // +0x28 (slot 10)
-};
-SIZE_UNKNOWN(CStatzSelf);
 
 // The glyph maps (m_glyphMap for the first four values, m_timerGlyphMap for the
 // timer value) ARE the engine frame-data sprite CSprite (<Gruntz/Sprite.h>): each

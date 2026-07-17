@@ -50,7 +50,7 @@ void CSBI_StatzTabGruntBar::Reset() {
 RVA(0x000ea4b0, 0x1c)
 i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
     if (Update()) {
-        ((CStatzSelf*)this)->Refresh();
+        SetSubtype(); // slot 10 (+0x28); the CStatzSelf view called it "Refresh"
     }
     return 1;
 }
