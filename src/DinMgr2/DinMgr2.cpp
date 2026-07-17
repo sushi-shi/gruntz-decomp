@@ -218,14 +218,14 @@ DirectInputMgr2::~DirectInputMgr2() {
 // gated on a flags bit being CLEAR (InitA unless bit 4, InitB unless bit 2,
 // EnumGameControllers unless bit 8) and short-circuiting to 0 if a step fails.
 RVA(0x00132ce0, 0xae)
-i32 DirectInputMgr2::Create(void* owner, void* hinst, u32 flags) {
+i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
     if (owner == 0) {
         return 0;
     }
     if (hinst == 0) {
         return 0;
     }
-    i32 hr = DirectInputCreateA((HINSTANCE)hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
+    i32 hr = DirectInputCreateA(hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0x32, hr);
         return 0;
@@ -730,14 +730,14 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
 // flag, seeds the scan-code table, sets the keyboard data format + cooperative level,
 // then allocates the 0x100-byte GetDeviceState snapshot buffer (+0x2a0/+0x2a4).
 RVA(0x00133b50, 0x97)
-i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
+i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
     if (owner == 0) {
         return 0;
     }
-    if (CreateDeviceWrap(di, cfg, owner) == 0) {
+    if (CInputDevBase::Create(di, cfg, owner) == 0) { // qualified -> direct call 0x134260
         return 0;
     }
     m_modeFlags = flags;
@@ -1039,7 +1039,7 @@ i32 CInputDevice::Poll() {
 // hwnd), runs the CreateDevice+QI bring-up (Create), then dispatches the +0x14
 // configure virtual through the stamped foreign vtable. Returns 1 on success.
 RVA(0x00134260, 0x43)
-i32 CInputDevBase::CreateDeviceWrap(IDirectInputA* di, const void* guid, void* hwnd) {
+i32 CInputDevBase::Create(IDirectInputA* di, const void* guid, HWND hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -1071,14 +1071,14 @@ void CInputDevBase::ReleaseDevices() {
 // cooperative level, then returns whether the device came up (IsReady). The shared
 // wrapper thunks live on CInputDevice (the device-config objects share its prefix).
 RVA(0x001342c0, 0x95)
-i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
+i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
     if (owner == 0) {
         return 0;
     }
-    if (CreateDeviceWrap(di, cfg, owner) == 0) {
+    if (CInputDevBase::Create(di, cfg, owner) == 0) { // qualified -> direct call 0x134260
         return 0;
     }
     m_flags = flags;
@@ -1212,14 +1212,14 @@ i32 CInputDevice::PollMouse() {
 // (vtable 0x5ef658) as its receiver - the CDeviceConfigB claim was a fake-view
 // alias that left the callback's emitted callee symbol unresolved.]
 RVA(0x00134630, 0x98)
-i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
+i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
     if (owner == 0) {
         return 0;
     }
-    if (CreateDeviceWrap(di, cfg, owner) == 0) {
+    if (CInputDevBase::Create(di, cfg, owner) == 0) { // qualified -> direct call 0x134260
         return 0;
     }
     m_flags = flags;

@@ -92,7 +92,7 @@ class DirectInputMgr2 {
 public:
     // Brings up the DInput object (DirectInputCreateA) into m_directInput, caches
     // the owner/hinst/flags, then runs the three sub-initializers gated on the flags.
-    i32 Create(void* owner, void* hinst, u32 flags); // 0x132ce0
+    i32 Create(HWND owner, HINSTANCE hinst, u32 flags); // 0x132ce0
 
     // Destructor: Shutdown(), then auto-destructs the m_deviceList and m_devices
     // array (the /GX EH frame covers the two member sub-object dtors). 0x085fc0.
@@ -135,12 +135,15 @@ public:
 
     // --- layout ---------------------------------------------------------------
     IDirectInputA* m_directInput; // +0x00  the DInput object (DirectInputCreateA out)
-    // m_owner / m_hinst are Win32 HWND / HINSTANCE handles. They stay void* to
-    // match the void*-typed DInput/Win32 wrappers they flow into and to keep this
-    // header (also included by GameApp/UnknownVTables) free of <windows.h> - a
-    // documented FOREIGN-HANDLE keep (the SDK's own LPVOID/HANDLE convention).
-    void* m_owner;            // +0x04  owner window (Create arg1; the cooperative-level HWND)
-    void* m_hinst;            // +0x08  the HINSTANCE passed to DirectInputCreateA
+    // m_owner / m_hinst are Win32 HWND / HINSTANCE, and are now TYPED as such. The
+    // ex "documented FOREIGN-HANDLE keep" rested on "keep this header free of
+    // <windows.h>", which was never true: this header already includes <Mfc.h> (which
+    // pulls windows.h) AND <dinput.h>, so both types were always in scope. Nor does the
+    // doctrine's void* exception cover them - it is for slots the SDK ITSELF types void*
+    // (LPVOID/HANDLE); HWND is `struct HWND__*`. The APIs at the point of use name the
+    // types outright: DirectInputCreateA(HINSTANCE,..) and SetCooperativeLevel(HWND,..).
+    HWND m_owner;             // +0x04  owner window (Create arg1; the cooperative-level HWND)
+    HINSTANCE m_hinst;        // +0x08  the HINSTANCE passed to DirectInputCreateA
     u32 m_flags;              // +0x0c  the device-type flags (Create arg3)
     CInputDevBase* m_deviceB; // +0x10  keyboard/mouse device B (InitB)
     CInputDevBase* m_deviceA; // +0x14  keyboard device A (InitA)
@@ -210,7 +213,7 @@ public:
     // an unmatched teardown at 0x1342b0) - reloc-masked in objdiff, so cl's inherited
     // targets here diff clean. Direct callers qualify the call (CInputDevRoot::Create)
     // to keep the byte-exact direct `call rel32`.
-    virtual i32 Create(IDirectInputA* di, const void* deviceGuid, void* hwnd); // slot 1  0x134cb0
+    virtual i32 Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd); // slot 1  0x134cb0
     virtual void ReleaseDevices();                                             // slot 2  0x134d50
     RVA(0x001332b0, 0xb)
     virtual i32 IsValid() {
@@ -243,9 +246,7 @@ public:
     DIDEVICEINSTANCEA m_deviceInfo;  // +0x01c  GetDeviceInfo() out (0x244 bytes)
     DIDEVCAPS m_caps;                // +0x260  GetCapabilities() out (0x2c bytes)
     DIPROPHEADER m_prop;             // +0x28c  GetProperty() header scratch (0x10 bytes)
-    // m_hwnd is the cached cooperative-level HWND (Win32 handle) - kept void* for the
-    // same documented FOREIGN-HANDLE reason as the manager's m_owner/m_hinst.
-    void* m_hwnd;               // +0x29c  cached cooperative-level HWND
+    HWND m_hwnd;                // +0x29c  cached cooperative-level HWND (SetCooperativeLevel's arg)
     DeviceState* m_stateBuffer; // +0x2a0  GetDeviceState snapshot buffer (operator new)
     u32 m_stateBufferSize;      // +0x2a4  snapshot buffer size
     i32 m_latchedKeys;          // +0x2a8  per-bit "already counted" latch (= -1)
@@ -266,8 +267,9 @@ public:
     virtual ~CInputDevBase() OVERRIDE {
         CInputDevBase::ReleaseDevices();
     }
-    virtual i32 Create(IDirectInputA* di, const void* guid, void* hwnd)
-        OVERRIDE;                           // slot 1 0x134260 (CreateDeviceWrap)
+    // slot 1 override, body @0x134260 (ex "CreateDeviceWrap"): validate (di, hwnd),
+    // run the base bring-up qualified, then dispatch the +0x14 ResetState virtual.
+    virtual i32 Create(IDirectInputA* di, const void* guid, HWND hwnd) OVERRIDE;
     virtual void ReleaseDevices() OVERRIDE; // slot 2 0x1342b0
     // The two poll slots. Poll (slot 4) is the per-frame device poll: the base body
     // (0x133410) is a stub; the keyboard leaf overrides it (CInputDevice::Poll,
@@ -279,9 +281,6 @@ public:
     }
     virtual i32 ResetState(); // +0x14  slot 5  clear the press-edge latch
 
-    // CreateDeviceWrap (0x134260): validates (di, hwnd), runs Create, then dispatches
-    // the +0x14 ResetState virtual. Non-virtual; direct-called by every leaf.
-    i32 CreateDeviceWrap(IDirectInputA* di, const void* guid, void* hwnd); // 0x134260
 };
 
 // CInputDevice (keyboard, vtable 0x5ef628, 0x338) - the object InitA new's. Adds
@@ -293,7 +292,7 @@ public:
     virtual ~CInputDevice() OVERRIDE;       // 0x133300 (the /GX multilevel deleting-dtor)
     virtual void ReleaseDevices() OVERRIDE; // slot 2  0x133bf0 (Teardown)
 
-    i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x133b50
+    i32 CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags); // 0x133b50
     void Teardown();                                                           // 0x133bf0
     void SetupKeyTable();                                                      // 0x133c30
     virtual i32 Poll() OVERRIDE;                                               // slot 4  0x133d00
@@ -319,7 +318,7 @@ public:
     virtual void ReleaseDevices() OVERRIDE; // slot 2  0x134360 (Free360)
     virtual i32 Poll() OVERRIDE;            // slot 4  0x1343b0 (PollMouse)
 
-    i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x1342c0
+    i32 CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags); // 0x1342c0
     i32 IsReady(); // 0x1343a0 (out-of-line)
     void Free360(); // 0x134360 (mouse leaf teardown; body in BoundaryUpper.cpp)
 
@@ -338,7 +337,7 @@ public:
     virtual ~CDeviceConfigC() OVERRIDE;     // 0x133460 (the /GX multilevel deleting-dtor)
     virtual void ReleaseDevices() OVERRIDE; // slot 2  0x1346d0 (Free6d0)
     virtual i32 Poll() OVERRIDE;            // slot 4  (joystick poll override)
-    i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x134630
+    i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND owner, u32 flags); // 0x134630
     i32 SetupAxes(); // 0x134710 (axis ranges + dead zones; CreateDevJoystick's finalizer)
     void Free6d0();  // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
 

@@ -29,7 +29,7 @@ extern "C" const GUID IID_IDirectInputDevice2A;
 // IDirectInput::CreateDevice into m_device, then QueryInterfaces it to the v2 device
 // interface (m_device2). Each COM failure is reported; returns whether m_device2 is non-null.
 RVA(0x00134cb0, 0x94)
-i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, void* hwnd) {
+i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -156,7 +156,7 @@ i32 CInputDevRoot::SetDataFormat(const void* fmt) {
 // given flags; report on failure.
 RVA(0x00134ef0, 0x3c)
 i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
-    i32 hr = m_device2->SetCooperativeLevel((HWND)m_hwnd, flags);
+    i32 hr = m_device2->SetCooperativeLevel(m_hwnd, flags);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x128, hr);
         return 0;
