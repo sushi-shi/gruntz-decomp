@@ -75,7 +75,7 @@ void CExitTrigger::FireActivation(i32 coord) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x0003f3f0, 0x18d)
 void CExitTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);

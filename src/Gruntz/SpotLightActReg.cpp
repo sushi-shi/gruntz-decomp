@@ -60,7 +60,7 @@ void ConstructActRange_646188() {
 // store are byte-faithful.
 RVA(0x000b1790, 0x2ac)
 void RegisterActs_646188() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
@@ -71,7 +71,7 @@ void RegisterActs_646188() {
     }
     *(void**)g_actReg_646188.ResolveEntry(id) = (void*)&Handler_4025db;
 
-    i32 id2 = (i32)g_buteTree.Find("B");
+    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         g_buteTree.Insert("B", (void*)g_typeCounter);
         id2 = g_typeCounter;

@@ -654,7 +654,7 @@ void InitIconActionTable() {
 // correct; the register assignment is not source-steerable.
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
-    i32 idxA = (i32)g_buteTree.Find("A");
+    i32 idxA = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idxA == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
@@ -664,7 +664,7 @@ void RegisterIconActions() {
     i32 dslotA = ResolveSlot(&g_iconActionTable, idxA);
     *(void**)dslotA = (void*)&IconAction_4023d3;
 
-    i32 idxB = (i32)g_buteTree.Find("B");
+    i32 idxB = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (idxB == 0) {
         g_buteTree.Insert("B", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
@@ -719,7 +719,7 @@ void CToyPeek::FireActivation(i32 id) {
 // source-steerable. Logic + find/insert + the fn-ptr store correct.
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
-    i32 idx = (i32)g_buteTree.Find("A");
+    i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
@@ -1183,7 +1183,7 @@ void CInGameText::FireActivation(i32 idx) {
 // correct; the register assignment is not source-steerable.
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
-    i32 idx = (i32)g_buteTree.Find("A");
+    i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);

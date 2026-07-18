@@ -461,7 +461,7 @@ SIZE_UNKNOWN(CombatTypeNode);
 // loop stays inline.
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \
-        i32 id = (i32)g_buteTree.Find(key);                                                        \
+        i32 id = reinterpret_cast<i32>(g_buteTree.Find(key));                                                        \
         if (id == 0) {                                                                             \
             g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id = g_typeCounter;                                                                    \

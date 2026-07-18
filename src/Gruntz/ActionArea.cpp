@@ -232,7 +232,7 @@ RVA(0x00008240, 0x18d)
 // caller/definition reloc consistency - the object VIEW folded to CActionArea, but
 // this static registrar's symbol stays CProjActObj:: (no phantom).
 void CProjActObj::RegisterType() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 key = g_typeCounter;

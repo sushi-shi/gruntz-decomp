@@ -266,7 +266,7 @@ void CStaticHazard::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop counts. Deferred.
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);
@@ -284,7 +284,7 @@ void CStaticHazard::RegisterActs() {
     }
     ((CHaznEntry2*)HaznLookup(id))->m_fn = (i32 (CUserLogic::*)())&CStaticHazard::LoadAttributes2;
 
-    i32 id2 = (i32)g_buteTree.Find("B");
+    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         id2 = g_typeCounter;
         g_buteTree.Insert("B", (void*)id2);

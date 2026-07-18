@@ -100,7 +100,7 @@ void CGruntHealthSprite::FireActivation(i32 id) {
 // Logic complete; deferred to the final sweep.
 RVA(0x0007eed0, 0x18d)
 void CGruntHealthSprite::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);

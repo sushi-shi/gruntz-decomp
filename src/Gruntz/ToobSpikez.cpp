@@ -210,7 +210,7 @@ void CToobSpikez::FireActivation(i32 coord) {
 // than retail. Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
 RVA(0x001149c0, 0x18d)
 void CToobSpikez::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);

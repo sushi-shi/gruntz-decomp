@@ -582,7 +582,7 @@ void CProjectile::FireActivation(i32 coord) {
 // source-steerable; deferred to the final sweep.
 RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 key = g_typeCounter;
@@ -1164,7 +1164,7 @@ void CTimeBomb::FireActivation(i32 coord) {
 // count). Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);

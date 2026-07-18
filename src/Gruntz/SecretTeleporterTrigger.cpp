@@ -219,7 +219,7 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop count. Deferred.
 RVA(0x000422b0, 0x18d)
 void CSecretTeleporterTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);
@@ -292,7 +292,7 @@ void CSecretLevelTrigger::FireActivation(i32 coord) {
 // choice cascading into the free-loop count materialization. Deferred.
 RVA(0x000428c0, 0x18d)
 void CSecretLevelTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);

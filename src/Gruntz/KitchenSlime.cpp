@@ -264,7 +264,7 @@ extern "C" void KSlimeActivationHandler(); // 0x40180c
 // scratch=0. Not source-steerable (regalloc/strength-reduction wall); deferred.
 RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 key = g_typeCounter;

@@ -404,7 +404,7 @@ void CWarpStonePad::FireActivation(i32 coord) {
 // into the free-loop count materialization. Deferred.
 RVA(0x0010da20, 0x18d)
 void CWarpStonePad::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);
@@ -459,7 +459,7 @@ void CTileTriggerSwitch::FireActivation(i32 coord) {
 // byte-faithful; residual is the slot-vs-id callee-saved register choice. Deferred.
 RVA(0x0010e000, 0x18d)
 void CTileTriggerSwitch::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);
@@ -515,7 +515,7 @@ void CTileTrigger::FireActivation(i32 coord) {
 // byte-faithful; residual is the slot-vs-id callee-saved register choice. Deferred.
 RVA(0x0010e600, 0x18d)
 void CTileTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);
@@ -592,7 +592,7 @@ void CBrickz::FireActivation(i32 coord) {
 // the regalloc/free-loop-count materialization diverges. Deferred.
 RVA(0x0010ebe0, 0x18d)
 void CBrickz::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
@@ -693,7 +693,7 @@ void CCheckpointTrigger::FireActivation(i32 coord) {
 // choice cascading into the free-loop counts. Deferred.
 RVA(0x0010f340, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);
@@ -712,7 +712,7 @@ void CCheckpointTrigger::RegisterActs() {
     ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
         (i32 (CUserLogic::*)())&CCheckpointTrigger::Act_10f6a0;
 
-    i32 id2 = (i32)g_buteTree.Find("B");
+    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         id2 = g_typeCounter;
         g_buteTree.Insert("B", (void*)id2);
@@ -826,7 +826,7 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
 // name-list free-loop count materialization - identical wall to CSecretLevelTrigger::RegisterActs.
 RVA(0x0010fe70, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);

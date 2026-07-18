@@ -223,7 +223,7 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     // The bring-up is CMoviePlayer::Init @0x17c040 on this same object (a0 IS the
     // DDModeInfo*, a1 the coop flags); the old ?Init@CMoviePlayer@@ fake-alias
     // decl left this rel32 unresolved.
-    return Init(h, (DDModeInfo*)a0, (u32)a1);
+    return Init(h, (DDModeInfo*)a0, static_cast<u32>(a1));
 }
 
 // CMoviePlayer::InitMode (0x17c3f0) - the borrowed-interface mode bring-up over the

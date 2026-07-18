@@ -374,7 +374,7 @@ void CWormhole::FireActivation(i32 idx) {
 // register assignment is not source-steerable.
 RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
-    i32 idx = (i32)g_buteTree.Find("A");
+    i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
@@ -506,7 +506,7 @@ void CGruntPuddle::FireActivation(i32 id) {
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x000408b0, 0x2ac)
 void RegisterLogic_6445e8() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
@@ -517,7 +517,7 @@ void RegisterLogic_6445e8() {
     }
     *(void**)g_logicDispatch_6445e8.ResolveEntry(id) = (void*)&Handler_4021f8;
 
-    i32 id2 = (i32)g_buteTree.Find("B");
+    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         g_buteTree.Insert("B", (void*)g_typeCounter);
         id2 = g_typeCounter;
@@ -845,7 +845,7 @@ void CTeleporter::FireActivation(i32 coord) {
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
@@ -856,7 +856,7 @@ void CTeleporter_RegisterActs() {
     }
     *(void**)g_teleporterActReg.ResolveEntry(id) = (void*)&Handler_40187a;
 
-    i32 id2 = (i32)g_buteTree.Find("B");
+    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         g_buteTree.Insert("B", (void*)g_typeCounter);
         id2 = g_typeCounter;

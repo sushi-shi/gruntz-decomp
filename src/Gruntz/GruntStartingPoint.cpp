@@ -154,7 +154,7 @@ void CGruntStartingPoint::FireActivation(i32 coord) {
 // the type-id register coloring). Not source-steerable; deferred to the final sweep.
 RVA(0x0003e300, 0x18d)
 void ActReg4RegisterType() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 key = g_typeCounter;

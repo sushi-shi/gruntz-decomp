@@ -480,7 +480,7 @@ void CObjectDropper::FireActivation(i32 actId) {
 // ebp,[eax+1]`). Identical to CAniCycle::RegisterActs. Deferred to the final sweep.
 RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;
@@ -738,7 +738,7 @@ void CDroppedObject::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop counts. Deferred.
 RVA(0x000c6d30, 0x2ac)
 void CDroppedObject::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", (void*)id);
@@ -756,7 +756,7 @@ void CDroppedObject::RegisterActs() {
     }
     *(void**)DropLookup(id) = (void*)&DropActA_c7090;
 
-    i32 id2 = (i32)g_buteTree.Find("B");
+    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
         id2 = g_typeCounter;
         g_buteTree.Insert("B", (void*)id2);
@@ -970,7 +970,7 @@ void CDroppedObjectShadow::FireActivation(i32 coord) {
 // byte byte-faithful; only the regalloc/free-loop-count materialization diverges).
 RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find("A");
+    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (id == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         id = g_typeCounter;

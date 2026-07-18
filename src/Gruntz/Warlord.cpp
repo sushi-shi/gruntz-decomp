@@ -144,7 +144,7 @@ extern "C" void Act_F(); // 0x402725
 // The placement-new null guard (`if (p) ctor(p)`) is retail's `test esi,esi; je`.
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
-        i32 id_ = (i32)g_buteTree.Find(key);                                                       \
+        i32 id_ = reinterpret_cast<i32>(g_buteTree.Find(key));                                                       \
         if (id_ == 0) {                                                                            \
             g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id_ = g_typeCounter;                                                                   \

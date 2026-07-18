@@ -198,7 +198,7 @@ void CSimpleAnimation::FireActivation(i32 idx) {
 // register assignment is not source-steerable.
 RVA(0x000abd70, 0x18d)
 void RegisterSimpleAnimLogic() {
-    i32 idx = (i32)g_buteTree.Find("A");
+    i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
         g_buteTree.Insert("A", (void*)g_typeCounter);
         i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
