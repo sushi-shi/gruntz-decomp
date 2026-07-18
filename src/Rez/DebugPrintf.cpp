@@ -17,6 +17,7 @@
 #include <string.h> // inline strcpy (rep movs / repne scasb), strpbrk, strstr
 #include <Globals.h>
 #include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
+#include <Rez/DebugConfig.h> // canonical CDebugConfig (the debug-output config singleton)
 
 // The debug config's free-global state, DEFINED here (this TU owns the .bss block).
 // g_debugPrintMode keeps its reference `extern` in <Globals.h>; the rest are TU-local. All
@@ -53,12 +54,6 @@ void DebugSetCursorXY(i32 x, i32 y);
 // DebugSetCursorXY's rel32 CALL binds. __cdecl (caller-cleans), returns void.
 void DebugSetCursor(i32, i32, i32); // 0x184fd0
 extern "C" i32 fclose(void* fp);    // 0x11f780 (CRT fclose, library row _fclose)
-
-SIZE_UNKNOWN(CDebugConfig);
-class CDebugConfig {
-public:
-    CDebugConfig* InitFromEnv(); // 0x185000
-};
 
 // The debug-config singleton (VA 0x6bf848 -> RVA 0x2bf848); InitFromEnv drives its
 // members g_debugChannels (the +0x8 CRangeSet) and g_debugPrintMode (the +0x94 mode word), which this

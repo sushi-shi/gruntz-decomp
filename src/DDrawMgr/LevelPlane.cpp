@@ -667,12 +667,8 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
 // every derived TU), so the imageSet assignment goes through the raw-offset
 // CStringAssign helper below (CString::operator=(LPCSTR), 0x1b9e74, reloc-masked).
 
-// CString::operator=(LPCSTR) on the +0xdc name slot (NAFXCW, reloc-masked). The
-// engine's bare CString handle is one char*; its operator= is out-of-line, modeled
-// as a method the &slot handle is reinterpreted through (no member to fold into).
-struct CStringAssign {
-    // Assign @0x1b9e74 IS CString::operator=; cast at the call.
-};
+// The +0xdc name slot receives its value through the real MFC CString::operator=
+// (0x1b9e74, reloc-masked) at the call site below; there is no local helper type.
 
 // The +0x1a0 embedded sub-object is a CLoadable (base ctor 0x156cb0; the former
 // identity, see <Gruntz/Loadable.h>).
@@ -1421,5 +1417,4 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 // bodies; keep the completeness typedefs after the last function).
 // ===========================================================================
 // --- local views moved with their bodies from src/Wwd/WwdFile.cpp ---
-SIZE_UNKNOWN(CStringAssign); // +0xdc CString::operator= helper (WwdGameObj folded to CGameObject)
 SIZE_UNKNOWN(WwdSubMgrCtor);

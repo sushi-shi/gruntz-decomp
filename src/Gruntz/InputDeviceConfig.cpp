@@ -25,23 +25,12 @@
 // call displacements reloc-mask against the matched NAFXCW routines.
 // ---------------------------------------------------------------------------
 #include <Gruntz/String.h>
+#include <Gruntz/InputConfig.h>      // canonical CInputConfig (input-device option holder)
 #include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2 (g_inputMgr; controller count @ m_devices.m_size)
 #include <DinMgr2/InputMgrPtr.h>     // g_inputMgr (DirectInputMgr2* view; the one decl)
 
 // The DirectInput manager singleton (DAT_00645570, owned by GruntzMgr.cpp);
 // its m_devices array element count is the enumerated game-controller/joystick count.
-
-// ---------------------------------------------------------------------------
-// CInputConfig - the input-device option holder. Only the device-id discriminator
-// at +0x14 is load-bearing.
-// ---------------------------------------------------------------------------
-class CInputConfig {
-public:
-    CString LoadInputDeviceConfig(i32 unused);
-
-    char m_pad00[0x14];
-    i32 m_deviceId; // +0x14  configured device id (1..5)
-};
 
 // ---------------------------------------------------------------------------
 // CInputConfig::LoadInputDeviceConfig
@@ -99,5 +88,3 @@ i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(CInputConfig);

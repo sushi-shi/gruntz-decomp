@@ -22,18 +22,7 @@
 // keep-last dedup to netmgrmisc's ex-`g_netE25c` view - now dissolved -> UNBOUND).
 // Declared in <Gruntz/AssetRoot.h>; DATA home NetMgrMisc.cpp.
 #include <Gruntz/AssetRoot.h>
-
-// CTitleApp is a CState leaf (OnStart calls RunTitleSeq @0xfa350 - a CState base method -
-// on its own `this`; retail passes `this` as the CState). Its exact leaf identity is
-// still @identity-TODO, but deriving CState is proven + sufficient to bind the base
-// symbol. The +0x1b8 timer sits past the CState base (which ends at +0x1a8), exactly as
-// CPreviewState's own m_1b8 does.
-class CTitleApp : public CState {
-public:
-    int OnStart(int unused); // 0xf9880
-    char m_pad1a8[0x1b8 - 0x1a8];
-    int m_1b8; // +0x1b8 timer
-};
+#include <Gruntz/TitleApp.h> // canonical CTitleApp (CState leaf; identity @identity-TODO)
 
 RVA(0x000f9880, 0x43)
 int CTitleApp::OnStart(int) {
@@ -44,5 +33,3 @@ int CTitleApp::OnStart(int) {
     m_1b8 = 0xea60;
     return 1;
 }
-
-SIZE_UNKNOWN(CTitleApp);

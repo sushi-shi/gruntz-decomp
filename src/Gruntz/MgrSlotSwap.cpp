@@ -11,6 +11,7 @@
 #include <Gruntz/GruntzMgr.h> // the REAL singleton class (+ CDDrawSurfaceMgr via GameRegistry.h)
 #include <Gruntz/GameLevel.h> // CGameLevel - m_world->m_level (the level; its m_mainPlane)
 #include <Wwd/WwdFile.h>      // CLevelPlane/CPlaneRender - the canonical plane (the registry plane)
+#include <Gruntz/SlotHolder.h> // canonical CSlotHolder (the swapping game object)
 #include <rva.h>
 
 // The registry plane table (g_gameReg->m_world->m_level->m_mainPlane) is the shared
@@ -24,15 +25,8 @@
 // CGruntzMapMgr*, and the CTileGrid this TU reads IS its CMapMgr base (one class, two
 // names) - so the read is a plain upcast, no cast needed.
 
-// The owning object: group/index coordinates + the parked token.
-struct CSlotHolder {
-    i32 DoSwap(); // 0x1128b0
-    char m_pad0[0x08];
-    i32 m_08; // +0x08  group
-    i32 m_0c; // +0x0c  index
-    char m_pad10[0x34 - 0x10];
-    i32 m_34; // +0x34  token
-};
+// The owning object (group/index coordinates + the parked token) is the canonical
+// CSlotHolder (<Gruntz/SlotHolder.h>).
 
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -66,5 +60,3 @@ i32 CSlotHolder::DoSwap() {
     this->m_34 = newTok;
     return 1;
 }
-
-SIZE_UNKNOWN(CSlotHolder);

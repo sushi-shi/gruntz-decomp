@@ -21,10 +21,9 @@
 
 // The class's activation-coordinate registry singleton (@0x645f98), built over the
 // fixed [2000,2010] range by the shared registry ctor (0x408710). CBehindCandyActReg
-// is the shared <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its
-// layout + ResolveEntry); it keeps its own placeholder name so the DATA-pinned
-// global symbol is unchanged.
-struct CBehindCandyActReg : public CActReg {};
+// is the shared <Gruntz/ActReg.h> CActReg archetype (declared there among the
+// concrete per-registry instances); it keeps its own placeholder name so the
+// DATA-pinned global symbol is unchanged.
 DATA(0x00245f98)
 CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 

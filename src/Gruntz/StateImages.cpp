@@ -19,6 +19,7 @@
 #include <rva.h>
 #include <Gruntz/BankMgr.h>  // CResSource::LookupSet (the state's +0x2c/+0x30 asset source)
 #include <Gruntz/GameMode.h> // canonical CBootyState : CState + the shared CDDrawSurfaceMgr facet
+#include <Gruntz/ImageState.h> // canonical CImageState (CState leaf, MENU image loader)
 
 // 0xface0 is CState's slot-8 base virtual (the shared image-load/activate gate every
 // state override calls first via CState::InputVirtual(); def SYMBOL-bound in Attract.cpp).
@@ -32,12 +33,7 @@
 // image namespace. Its concrete RTTI name is unrecovered (the 0xa09a0 body is reached
 // non-virtually via an ILT thunk), so it is modeled as a minimal CState subclass: the
 // +0x0c view (m_c) and +0x2c source (m_2c) are the inherited CDDrawSurfaceMgr/CResSource facets, and
-// the per-state image hook is CState's slot 6 (Vslot06).
-SIZE_UNKNOWN(CImageState);
-class CImageState : public CState {
-public:
-    i32 LoadStateImages();
-};
+// the per-state image hook is CState's slot 6 (Vslot06). (Canonical def: <Gruntz/ImageState.h>.)
 
 RVA(0x000a09a0, 0x6a)
 i32 CImageState::LoadStateImages() {
