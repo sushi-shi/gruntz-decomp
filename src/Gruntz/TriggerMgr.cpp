@@ -199,7 +199,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
             k--;
         } while (k != 0);
     }
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     if (n == 0) {
         return 0;
     }
@@ -266,7 +266,7 @@ found:
 // Correct shape, accepted cost - do NOT revert to recover the 0.61%.
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     if (n != 0) {
         do {
             CTmNode* cur = n;
@@ -300,7 +300,7 @@ void CTriggerMgr::ResetAll() {
 // `xor eax,eax`. docs/patterns/identical-return-epilogue-tailmerge.md
 RVA(0x000784d0, 0x3a)
 i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     if (n == 0) {
         return 0;
     }
@@ -332,7 +332,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
     }
     u8 bytes[0x88];
     u8 count = 0;
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     while (n != 0) {
         CTmNode* next = n->m_next;
         u8* payload = (u8*)n->m_payload;
@@ -365,7 +365,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
     }
     u8 bytes[0x88];
     u8 count = 0;
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     while (n != 0) {
         CTmNode* next = n->m_next;
         u8* payload = (u8*)n->m_payload;
@@ -401,7 +401,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
 // with the pushes. docs/patterns/zero-store-before-loop-inline-bound.md
 RVA(0x00078880, 0x3c)
 void CTriggerMgr::ClearRecords() {
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     if (n != 0) {
         i32 bias = g_coordPool.m_linkOffset;
         void* head = g_coordPool.m_freeHead;
@@ -544,7 +544,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     if (m_recList.GetCount() != 1) {
         cell = 0;
     } else {
-        i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
+        i32* rec = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
@@ -648,7 +648,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     if (m_recList.GetCount() != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
+        i32* rec = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     i32 sel;
@@ -747,7 +747,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     if (ov->m_active != 0 || m_recList.GetCount() != 1) {
         return 0;
     }
-    i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
+    i32* rec = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
     char* cellp = (char*)m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_curPlayer) {
         return 0;
@@ -1285,7 +1285,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     }
     i32 flag24c = m_recList.GetCount();
     ar->Write(&flag24c, 4);
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     while (n != 0) {
         CTmNode* cur = n;
         n = n->m_next;
@@ -1581,7 +1581,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     if (m_recList.GetCount() != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
+        i32* rec = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     CPlay* world = (CPlay*)g_gameReg->m_curState;
@@ -2510,7 +2510,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
         } while (n != 0);
     }
     sel->RemoveAll();
-    CTmNode* rec = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* rec = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     while (rec != 0) {
         CTmNode* cur = rec;
         rec = rec->m_next;
@@ -2629,7 +2629,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 // residual is min/max register colouring + the doubled grid-lookup spill.  No EH.
 RVA(0x0007cf40, 0x12e)
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     if (n == 0) {
         return 0;
     }
@@ -2666,7 +2666,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     i32 cx = minX + (maxX - minX) / 2;
     i32 r = ((CPlay*)g_gameReg->m_curState)->ResetGoals(cx, cy);
     if (r != 0 && count == 1 && m_recList.GetCount() == 1) {
-        i32* head = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
+        i32* head = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
         CTmCell* cell2 = m_grid[head[0] * TM_GRID_COLS + head[1]];
         if (cell2 != 0) {
             i32 v1f0 = cell2->m_tileOwnerLo;
@@ -2891,7 +2891,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     if (m_recList.GetCount() != 1) {
         cell = 0;
     } else {
-        i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
+        i32* rec = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
@@ -2940,7 +2940,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     if (m_recList.GetCount() != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
+        i32* rec = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
@@ -2986,7 +2986,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     u8 buf[0x68];
     u8 count = 0;
     char x = 0;
-    CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
     if (n != 0) {
         i32 magic = g_curPlayer;
         do {
