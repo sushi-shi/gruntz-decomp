@@ -321,19 +321,9 @@ void RedrawMapIndex(i32 idx); // FUN_00558c70
 // pauses it (Quicksave/AdvanceFrame/UnloadSoundChain); Tick fires it during a cmd-4/7
 // broadcast (BroadcastCmd); Teardown + operator delete tear it down (Close).
 
-// One player-status slot in the PLAY state's 4-entry status array (m_curState->+0x520),
-// each 0x64 bytes; the status id is at +0x20 (3 == "won/done").
-struct PlayStatusSlot {
-    char m_pad0[0x20];
-    i32 m_status; // +0x20
-    char m_pad24[0x64 - 0x24];
-};
-// A view of the live PLAY state (a CState subclass) exposing the +0x520 status
-// array base.
-struct CPlayStateView {
-    char m_pad0[0x520];
-    PlayStatusSlot* m_520; // +0x520
-};
+// The reduced PLAY-state status views (PlayStatusSlot / CPlayStateView, reached via
+// ((CPlayStateView*)m_curState)->m_520) live in <Gruntz/PlayStateView.h>.
+#include <Gruntz/PlayStateView.h>
 
 // SaveInfo (the save-slot record) and SaveSink58 (the +0x58 sink) now come from
 // <Gruntz/SaveInfo.h> (via GruntzMgr.h) - shared with the WM_COMMAND dispatcher TU.
@@ -4647,12 +4637,10 @@ SIZE_UNKNOWN(CMonoEntry);
 SIZE_UNKNOWN(CMonoSprite);
 SIZE_UNKNOWN(CMonoView);
 SIZE_UNKNOWN(CMonoWorld);
-SIZE_UNKNOWN(CPlayStateView);
 SIZE_UNKNOWN(CRezSurface94);
 SIZE_UNKNOWN(CBattlezDlg);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CmdSink);
-SIZE_UNKNOWN(PlayStatusSlot);
 SIZE_UNKNOWN(RegScoreHud);
 SIZE_UNKNOWN(ScoreNotifier);
 SIZE_UNKNOWN(StateMgrBZ);

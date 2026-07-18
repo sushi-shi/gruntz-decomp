@@ -1285,31 +1285,9 @@ void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 //      (`mov eax,[arg0+8]; mov edx,[eax]; call [edx+0x30]`).
 //   4. no RTTI COL on the descriptor or its interface (no vptr-by-address stamp).
 // Kept as honest by-offset + abstract-COM-interface models (no fabricated identity) until
-// the CDDrawSurfacePair->+0xc surface-descriptor subsystem is RTTI-pinned.
-// The descriptor source (arg0->m_8): a COM-style interface; slot +0x30 fills the
-// two out params.  Reloc-masked __stdcall.
-struct CDdDescSrc {
-    // COM-style interface (abstract, __stdcall); only slot 12 (+0x30) is invoked.
-    // STDMETHOD form == `virtual HRESULT __stdcall`, so `m_8->Make(...)` lowers to
-    // `mov eax,[m_8]; call [eax+0x30]`.
-    STDMETHOD(v00)() PURE;
-    STDMETHOD(v01)() PURE;
-    STDMETHOD(v02)() PURE;
-    STDMETHOD(v03)() PURE;
-    STDMETHOD(v04)() PURE;
-    STDMETHOD(v05)() PURE;
-    STDMETHOD(v06)() PURE;
-    STDMETHOD(v07)() PURE;
-    STDMETHOD(v08)() PURE;
-    STDMETHOD(v09)() PURE;
-    STDMETHOD(v0a)() PURE;
-    STDMETHOD(v0b)() PURE;
-    STDMETHOD(Make)(void* outB, void* outA) PURE; // slot 12 (+0x30)
-};
-struct CDdCreateArg {
-    char m_pad00[8];
-    CDdDescSrc* m_8; // +0x08 descriptor source
-};
+// the CDDrawSurfacePair->+0xc surface-descriptor subsystem is RTTI-pinned. The factory-arg
+// views CDdDescSrc / CDdCreateArg live in <DDrawMgr/DdCreateArg.h>.
+#include <DDrawMgr/DdCreateArg.h>
 
 // The pool item is a real CDDSurface (vtable 0x5ef7f0): `new CDDSurface` + slot-1
 // Refresh / `delete` (see CreatePoolItem below).

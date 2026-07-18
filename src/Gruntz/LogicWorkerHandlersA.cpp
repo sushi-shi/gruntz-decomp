@@ -95,77 +95,10 @@ i32 HandlerA9CC0(Owner* owner) {
 // inlined-ctor variant, not fakes to fold.
 // ===========================================================================
 
-struct DnnOwner;
-
-// The OUT-OF-LINE shared CUserLogic(CGameObject*) base ctor (CUserLogic_058cd0
-// @0x58cd0). External/no-body so the chained `call` reloc-masks. It sets
-// m_0c/m_10/m_14/m_04/m_08/m_28/m_2c + the throwing link + AddLogic*; it does NOT
-// set m_34/m_38/m_3c (the leaf does). Modeled as a non-polymorphic base class so
-// the leaf record chains it; the throwing link ctor inside forces the /GX EH frame.
-struct CUserLogicOOL {
-    // +0x00 vptr anchor (declared-only): slot 0 of the REAL table (??_7CUserLogic
-    // family) is the scalar-deleting dtor - named so, not spelled as a C++ dtor,
-    // because a dtor here would add an EH unwind funclet the retail `new DnnRec`
-    // frame does not have (same plain-virtual spelling as CDDrawChildGroup's).
-    virtual void ScalarDtor();
-    CUserLogicOOL(DnnOwner* owner); // 0x58cd0
-    char m_pad04[0x34 - 0x04];      // +0x04..+0x33
-    DnnOwner* m_34;                 // +0x34
-    DnnOwner* m_38;                 // +0x38
-    void* m_3c;                     // +0x3c
-};
-
-// Real polymorphic: DnnRec (a distinct polymorphic leaf) makes cl auto-stamp its own
-// ??_7DnnRec at ctor entry, replacing the old vptr-MIDDLE manual stamp of the engine
-// CDoNothingNormal vtable (0x5e859c; realized as ??_7CDoNothingNormal in
-// DoNothing.cpp via RealizeCDoNothingNormal). The auto-stamp lands at ctor entry
-// (after the base ctor) rather than after the member stores - an accepted codegen
-// shift (see the @early-stop).
-struct DnnRec : CUserLogicOOL {
-    char m_animRegistry[0x54 - 0x40]; // +0x40..+0x53
-    DnnRec(DnnOwner* owner);
-};
-
-// The dispatch interface: a polymorphic class with the same vtable slot layout as
-// the engine record (slot 6 @ +0x18 = activate; slots 10..15 @ +0x28..+0x3c = the
-// per-state handlers). Declared-only + never constructed here, so no ??_7 is
-// emitted; a record* is reinterpreted to it only to lower `mov eax,[rec]; call
-// [eax+N]`.
-class EngRec {
-public:
-    virtual void s0();       // +0x00
-    virtual void s1();       // +0x04
-    virtual void s2();       // +0x08
-    virtual void s3();       // +0x0c
-    virtual void s4();       // +0x10
-    virtual void s5();       // +0x14
-    virtual void Activate(); // +0x18  (slot 6)
-    virtual void s7();       // +0x1c
-    virtual void s8();       // +0x20
-    virtual void s9();       // +0x24
-    virtual void V28();      // +0x28
-    virtual void V2C();      // +0x2c
-    virtual void V30();      // +0x30
-    virtual void V34();      // +0x34
-    virtual void V38();      // +0x38
-    virtual void V3C();      // +0x3c
-};
-
-// The worker held at owner->m_7c; only the pump fields are modeled.
-struct DnnWorker {
-    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    char m_pad04[0x18 - 0x04];
-    DnnRec* m_18; // +0x18  the live record
-    u32 m_1c;     // +0x1c  state tag (UNSIGNED switch key)
-};
-
-// The owner game object handed to the pump; its worker hangs at +0x7c.
-struct DnnOwner {
-    char m_pad00[0x08];
-    u32 m_08; // +0x08
-    char m_pad0c[0x7c - 0x0c];
-    DnnWorker* m_7c; // +0x7c
-};
+// The inline-XOR-out-of-line ctor-wall scaffolding (CUserLogicOOL / DnnRec / EngRec /
+// DnnWorker / DnnOwner) lives in <Gruntz/LogicWorkerHandlersAViews.h> - genuine matching
+// scaffolding for a real MSVC5 codegen limitation, not fakes to fold.
+#include <Gruntz/LogicWorkerHandlersAViews.h>
 
 // The engine default message pump (0x16e4f0) taking the DnnRec view: a C++
 // overload of the extern "C" Worker_DefaultPump above (one address, two views;

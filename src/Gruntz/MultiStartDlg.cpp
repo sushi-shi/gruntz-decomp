@@ -39,21 +39,9 @@
 // ctor snapshots it from g_gameReg->m_curState (+0x2c). Declared in <Gruntz/Multi.h>.
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 
-// A player-slot record in the m_host slot array (0x238 stride). DEFERRED-FOLD onto the
-// canonical CFocusSlot (<Gruntz/GameRegistry.h>, the g_gameReg->m_focusSlots[4] element
-// MultiStartDlgRoster.cpp already indexes as (CFocusSlot*)m_host): m_16c IS CFocusSlot::
-// m_16c (the roster colour/lock value). BLOCKED: this view also models a CString player-
-// name at +0x154 that CFocusSlot does NOT yet declare (it falls inside CFocusSlot's
-// m_pad30[0x30..0x164]) - folding now would DEGRADE that typed member to a raw offset,
-// and GameRegistry.h is a hot header owned by the CGruntzMgr manager-fold lane. So the
-// fold waits on that lane adding `CString m_154` (+ the +0x150/+0x158/+0x160/+0x170 tail).
-struct CMultiSlot {
-    char m_pad00[0x154];
-    CString m_154; // +0x154  player-name edit contents (DoDataExchange save pass)
-    char m_pad158[0x16c - 0x158];
-    i32 m_16c; // +0x16c  occupancy field (== CFocusSlot::m_16c)
-    char m_pad170[0x238 - 0x170];
-};
+// The per-slot player record CMultiSlot (a proven CFocusSlot view, fold deferred on the
+// +0x154 CString into CGameRegistry's by-value slot array) lives in <Gruntz/MultiSlot.h>.
+#include <Gruntz/MultiSlot.h>
 
 // The dialog drives exactly four player slots (four kind combos / name edits /
 // slot records; retail's save loop walks the m_host CMultiSlot[] with stride
@@ -75,12 +63,10 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 // The GAME_MULTI registry path -> a name registry. m_host is the canonical CNetDlgHost;
 // its +0x34 m_registry is the real Bute CSymParser (ResolvePath 0x13c030 - proven), which
 // returns a CSymTab symbol table. The table is iterated FirstSym/NextSym2 (first entry)
-// then NextSym3 (advance) - CSymTab methods; kept as this TU's iteration view MpSymTable
-// (each returned payload's +0x00 is the entry name). Folding MpSymTable onto CSymTab is
-// proven but DEFERRED (its payload/item identity - CSymRec vs child scope - is unsettled).
-struct MpSymItem {
-    char* m_name; // +0x00  entry name (LPCSTR)
-};
+// then NextSym3 (advance) - CSymTab methods; kept as this TU's iteration view.
+// The payload reader MpSymItem lives in <Gruntz/MpSymItem.h> (each payload's +0x00 is
+// the entry name; folding onto CSymTab is proven but the item identity is unsettled).
+#include <Gruntz/MpSymItem.h>
 
 // The color-dialog facet (0xc1aa0) IS CMultiStartDlg - PROVEN, dissolved (was the
 // m4::MultiColorDlg view): its SlotIndex2d4c is the ILT thunk 0x2d4c to

@@ -63,27 +63,10 @@ CWnd* __stdcall ResolveItem_1159(i32 idx); // 0x01159
 void __stdcall Func1d70(i32 flag);            // 0x01d70
 void __stdcall Refresh185c(CFocusSlot* slot); // 0x0185c
 
-// The per-channel player-slot record (lives at +0x150 inside a 0x238-byte channel entry,
-// reached off CMultiStartDlg::m_host). DEFERRED-FOLD onto CFocusSlot (GameRegistry.h):
-// m_host's entries are CFocusSlot (base m_host, stride 0x238 - exactly as OnColorSlotN /
-// UpdatePlayers already treat them via ((CFocusSlot*)m_host)[N]); this record is the
-// +0x150-shifted sub-window, so ChannelSlot.m_14 (entry+0x164) IS CFocusSlot::m_164 and
-// ChannelSlot.m_ready (entry+0x16c) IS CFocusSlot::m_16c. Fully dissolving it needs 5 more
-// CFocusSlot members at +0x150/+0x154(CString)/+0x158/+0x160/+0x170 - GameRegistry.h is a
-// reserved hot header, so those adds are flagged for the GameRegistry lane; kept local
-// meanwhile (only offsets + code bytes are load-bearing).
-struct ChannelSlot {
-    i32 m_playerId;  // +0x00 player id
-    CString m_label; // +0x04 label
-    i32 m_slotIndex; // +0x08 slot index
-    char m_pad0c[0x10 - 0x0c];
-    i32 m_selectionIndex; // +0x10
-    i32 m_14;             // +0x14
-    char m_pad18[0x1c - 0x18];
-    i32 m_ready;  // +0x1c ready flag
-    i32 m_active; // +0x20 active flag
-};
-SIZE_UNKNOWN(ChannelSlot);
+// The per-channel player-slot record (a proven +0x150-shifted view of CFocusSlot) lives
+// in <Gruntz/ChannelSlot.h>; the full CFocusSlot fold is deferred there (the +0x154
+// CString member into CGameRegistry's by-value CFocusSlot array needs ctor reconciliation).
+#include <Gruntz/ChannelSlot.h>
 
 extern CString g_gruntNames[];       // 0x64bdb0 per-channel label table
 

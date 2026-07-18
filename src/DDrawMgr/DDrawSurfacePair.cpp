@@ -20,6 +20,7 @@
 #include <rva.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawFrameNode.h> // the CDDrawWorkerObj element-array + CDDrawFrameNode dispatch views
 #include <DDrawMgr/DDSurface.h> // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
 #include <Gruntz/ParseSource.h> // CParseSource (LoadImage's byte-reader arg: GetEntryTag/BeginParse/EndParse)
 #include <Win32.h>              // windows.h base types (ddraw.h needs them first)
@@ -769,15 +770,8 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
 // The CDDrawWorkerBase/B non-virtual helpers (0x164790 / 0x166040): the worker
 // hierarchy's reset/arm helper (inherited by both subtypes) and CDDrawWorkerB's
 // named-object frame fetch. Both hang off the worker's +0x0c owner context.
-// The object Lookup yields, viewed as a bounded element array.
-struct CDDrawWorkerObj {
-    char pad_00[0x14];
-    void** m_14; // +0x14  element array
-    char pad_18[0x64 - 0x18];
-    i32 m_64; // +0x64  lo index
-    i32 m_68; // +0x68  hi index
-};
-SIZE_UNKNOWN(CDDrawWorkerObj);
+// The object Lookup yields, viewed as a bounded element array: CDDrawWorkerObj
+// (<DDrawMgr/DDrawFrameNode.h>).
 
 // CResolveNode::SetPosition (0x164790, vtable slot 9 of ??_7CResolveNode - the
 // datum holds this RVA at +0x24): set position + reset the draw state; seeds m_3c
@@ -1423,25 +1417,8 @@ i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
 //   (CResolveNode*, CDDrawSurfacePair*) AND every Blit* helper it forwards to
 //   (BlitNorm/BlitFlip*/BlitShade*) off CBlitInfo -> CResolveNode across the blit
 //   subsystem. Deferred as one coordinated change, not a per-TU cast.
-// Slot names below are CImage's own (vtable 0x1eaa2c ground truth).
-struct CDDrawFrameNode {
-    virtual void GetRuntimeClass(); // [0]  CObject slot (0x1bef01)
-    virtual void ScalarDtor();      // [1]  0x002adb
-    virtual void Serialize();       // [2]  CObject slot (0x0028ec)
-    virtual void AssertValid();     // [3]  CObject slot (0x00106e)
-    virtual void Dump();            // [4]  CObject slot (0x004034)
-    virtual void IsLoaded();        // [5]  0x0013b6 (CWapObj default)
-    virtual void IsReady();         // [6]  0x001c08 (CWapObj default)
-    virtual void FreeAll();         // [7]  0x153260
-    virtual void GetClassId();      // [8]  0x0042aa
-    virtual void Create24();        // [9]  0x1530e0
-    virtual void LoadDispatch();    // [10] 0x152fb0
-    virtual void Resolve();         // [11] 0x152f20
-    virtual void Create();          // [12] 0x152e90
-    virtual void Reload();          // [13] 0x153380
-    virtual void RenderImage(CDDrawWorkerB* worker, CDDrawSurfacePair* target); // [14] 0x153470
-};
-SIZE_UNKNOWN(CDDrawFrameNode);
+// The dispatch view CDDrawFrameNode (slot names are CImage's own, vtable 0x1eaa2c ground
+// truth) lives in <DDrawMgr/DDrawFrameNode.h> (included at the top of this TU).
 
 // 0x1660b0 (CDDrawWorkerB vtable slot 10): draw the worker's current frame node
 // (m_78) onto the first target `a`, then - when the second target `b` has a live
