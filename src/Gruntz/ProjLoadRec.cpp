@@ -18,6 +18,7 @@
 #include <Gruntz/GameRegistry.h>      // CGameRegistry (g_gameReg->m_world = CDDrawSurfaceMgr*)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (m_world->m_childGroup; m_map48 key->object map @+0x48)
 #include <Gruntz/UserLogic.h> // CGameObject (the resolved object; GetTypeId [8] + m_188)
+#include <Gruntz/ProjLoadRec.h> // canonical CProjLoadRec (proven CProjectile; fold deferred)
 #include <string.h>           // inline strlen / strcpy over the scratch buffer
 
 // The game registry singleton (0x64556c). Reloc-masked DIR32 (cplay owns the def).
@@ -74,40 +75,7 @@
 // Projectile.cpp's RVA band (0xdec60..0xe2213), so folding onto CProjectile means
 // re-homing this whole @early-stop body into Projectile.cpp AND reconciling
 // m_1e0[]/m_204 with CProjectile's named-field/CPtrList layout - risks the byte
-// match; left for the projectile-serialize rehome.
-struct CProjLoadRec {
-    i32 Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3);      // 0x0e0d40
-    i32 ChainLoad(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3); // 0x16f4a0
-
-    char _00[0x150];
-    CGameObject* m_150;                    // +0x150  a3
-    CGameObject* m_154;                    // +0x154  a3
-    AnimWorkerObj* m_158;                  // +0x158  a3->m_7c
-    CObject* m_15c;                        // +0x15c  resolved value (CMapStringToPtr entry)
-    i32 m_160, m_164, m_168, m_16c;        // +0x160  the 0x10-byte blob
-    i32 m_170, m_174, m_178, m_17c, m_180; // +0x170
-    i32 _184;
-    i32 m_188, m_18c; // +0x188 (8)
-    i32 m_190;        // +0x190
-    i32 _194;
-    i32 m_198, m_19c;               // +0x198 (8)
-    i32 m_1a0, m_1a4;               // +0x1a0 (8)
-    i32 m_1a8, m_1ac;               // +0x1a8 (8)
-    i32 m_1b0, m_1b4;               // +0x1b0 (8)
-    i32 m_1b8, m_1bc;               // +0x1b8 (8)
-    i32 m_1c0, m_1c4;               // +0x1c0 (8)
-    i32 m_1c8, m_1cc;               // +0x1c8 (8)
-    i32 m_1d0, m_1d4, m_1d8, m_1dc; // +0x1d0
-    CObject* m_1e0[7];              // +0x1e0..+0x1f8  name refs (CMapStringToPtr entries)
-    CGameObject* m_1fc;             // +0x1fc  type-5 latch (the resolved game object)
-    i32 m_200;                      // +0x200
-    CRezList m_204;                 // +0x204  AddTail target
-    CoordNode* m_208;               // +0x208  write-path node list
-    i32 _20c;
-    i32 m_210; // +0x210
-    i32 _214, _218, _21c;
-    i32 m_220, m_224; // +0x220, +0x224
-};
+// match; left for the projectile-serialize rehome. Struct def: <Gruntz/ProjLoadRec.h>.
 
 // @early-stop
 // scratch-slot scheduling tail (same family as CTriggerLoadRec/CEventLoadRec/
@@ -279,4 +247,3 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CGameObject* a3) {
     m_15c = static_cast<CObject*>(out);
     return 1;
 }
-SIZE_UNKNOWN(CProjLoadRec);

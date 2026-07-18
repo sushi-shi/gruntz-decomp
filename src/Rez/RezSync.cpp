@@ -19,6 +19,7 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Rez/FrameClock.h> // g_lastNow (the frame-clock now cell Init seeds)
+#include <Rez/RezSyncViews.h> // the global ::CGameMgr out-of-line-dtor emitter (scaffolding)
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
@@ -823,31 +824,11 @@ CString CGruntzMgr::GetRezPath() {
 // dtor COMDAT emitter in the now-deleted src/Stub/BoundaryLowerThunks.cpp; it was
 // dropped - it can only be emitted by an inline dtor whose ??_G inlines it, which
 // conflicts with this TU's out-of-line ~CGameMgr, so no clean single-TU home exists.)
-// @view-keep (VW2 2026-07-16): byte-necessary ??_7CGameMgr@@6B@ COMDAT emitter -
-// the ONE sanctioned .cpp-local view survivor (see the paragraphs above/below for
-// the full collision proof: the rva carries the WAP32 name, and a real
-// WAP32::CGameMgr method here would collide with its load-bearing inline dtor).
-struct CGameMgr {
-    virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + Close
-    virtual void s1();
-    virtual void s2();
-    virtual void s3();
-    virtual void s4();
-    virtual void s5();
-};
-SIZE_UNKNOWN(CGameMgr);
-// The vptr restamp at +0x2 is the cl-emitted ??_7CGameMgr@@6B@ of THIS global
-// placeholder, reloc-MASKING the real WAP32::CGameMgr vtable at 0x1e9b8c (bound in
-// gruntzmgr as ??_7CGameMgr@WAP32@@6B@). It cannot take a VTBL() row at 0x1e9b8c - that
-// rva already carries the WAP32 name, and the two would keep-last-collide - and making
-// this dtor a real WAP32::CGameMgr method would collide with WAP32::CGameMgr's INLINE
-// header dtor (load-bearing for CGruntzMgr's inlined base teardown - a cross-unit
-// regression). RELOC_VTBL records exactly that: the placeholder's vtable IS the retail
-// vtable at 0x1e9b8c, so the vptr-store REFERENCE is bound to the right rva (no dangling
-// reloc) while the symbol_names row stays the real WAP32 name.
-// @identity-TODO: this global-namespace CGameMgr IS WAP32::CGameMgr (0x85540 is the
-// needs the inline-XOR-out-of-line dtor conflict resolved first.
-RELOC_VTBL(CGameMgr, 0x001e9b8c); // == ??_7CGameMgr@WAP32@@6B@ (the real base vtable)
+// The global-namespace ::CGameMgr placeholder (the byte-necessary out-of-line emitter of
+// the ??1CGameMgr@WAP32@@ dtor below) is defined in <Rez/RezSyncViews.h> (included above):
+// genuine inline-XOR-out-of-line dtor-wall scaffolding - it IS WAP32::CGameMgr but its
+// out-of-line dtor here would collide with WAP32::CGameMgr's load-bearing inline dtor. The
+// RELOC_VTBL there binds the emitted vptr restamp to the retail ??_7CGameMgr@WAP32@@ (0x1e9b8c).
 RVA(0x00085540, 0xb)
 CGameMgr::~CGameMgr() {
     // devirtualized tail-call to WAP32::CGameMgr::Close (0x13ddb0); the qualified call
