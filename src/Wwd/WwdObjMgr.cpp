@@ -145,7 +145,7 @@ void CDDrawChildGroup::DestroyChildren() {
             q->Prune_1628d0();
         }
     }
-    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (n != 0) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
@@ -520,7 +520,7 @@ void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
         g_engineFrameDelta = delta;
     }
 
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -581,7 +581,7 @@ void CDDrawChildGroup::TickKillCues_159a70(i32 advance) {
 // form tried; the register set, offsets, arg order, and CFG are byte-exact.
 RVA(0x00159c90, 0x23)
 void CDDrawChildGroup::WalkDispatch2C(CDDrawSurfacePair* target) {
-    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -593,7 +593,7 @@ void CDDrawChildGroup::WalkDispatch2C(CDDrawSurfacePair* target) {
 
 RVA(0x00159cc0, 0x2a)
 void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
-    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -605,7 +605,7 @@ void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
 
 RVA(0x00159cf0, 0x42)
 void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
             n->m_obj->BltDirtyEx((CDDrawSurfacePair*)a1, (CDDrawSurfacePair*)a2, a3);
@@ -617,7 +617,7 @@ void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
 
 RVA(0x00159d40, 0x42)
 void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
             n->m_obj->BltDirtyRegions((CDDrawSurfacePair*)a1, (CDDrawSurfacePair*)a2, a3);
@@ -631,7 +631,7 @@ void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
 // Walk the +0x14 list setting each child's field at +0xd8 to -1.
 RVA(0x00159d90, 0x1c)
 void CDDrawChildGroup::ResetChildD8() {
-    CDDrawGroupNode* n = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -686,7 +686,7 @@ void CDDrawChildGroup::InsertSorted_159e40(CWwdGameObject* obj, i32 addToMaps) {
         m_map2c[WwdKey(obj)] = obj;
         m_map48[WwdKey(obj)] = obj;
     }
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     i32 key = obj->m_sortKey;
     while (node != 0) {
         CDDrawGroupNode* cur = node;
@@ -737,7 +737,7 @@ i32 __stdcall BoxesOverlap_15a130(CGameObject* a1, CGameObject* a2);
 // compiled fine in the smaller pre-split TU).
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
-    CDDrawGroupNode* outer = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* outer = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (outer != 0) {
         char* oi = (char*)outer->m_obj;
         CDDrawGroupNode* nextOuter = outer->m_next;
@@ -905,7 +905,7 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
     if (!(m_flags08 & 0x200000)) {
         return;
     }
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     CDDrawSurfacePair* drawHost = m_parent->m_drawTarget->m_backPair;
     CPlaneRender* view = m_parent->m_level->m_mainPlane;
     if (node == 0) {
@@ -968,7 +968,7 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
 // codegen loop-rotation wall, not a source-shape bug.
 RVA(0x0015a780, 0x70)
 i32 CDDrawChildGroup::CheckSortOrder_15a780() {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     CWwdGameObject* anchor = node->m_wwd;
     node = node->m_next;
     if (anchor == 0) {
@@ -1017,7 +1017,7 @@ i32 CDDrawChildGroup::CheckSortOrder_15a780() {
 // `type`; return it, or 0 when none.
 RVA(0x0015a7f0, 0x20)
 CWwdGameObject* CDDrawChildGroup::FindByType04_15a7f0(i32 type) {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1034,7 +1034,7 @@ CWwdGameObject* CDDrawChildGroup::FindByType04_15a7f0(i32 type) {
 // +0x20) is 5 AND whose +0x04 key matches `type`; return it, or 0 when none.
 RVA(0x0015a810, 0x42)
 CWwdGameObject* CDDrawChildGroup::FindByTypeProbe_15a810(i32 type) {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1056,7 +1056,7 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe_15a810(i32 type) {
 // return-0, our cl shares one return-0. The documented loop-epilogue-merge wall.
 RVA(0x0015a860, 0x57)
 CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (node == 0) {
         return 0;
     }
@@ -1091,7 +1091,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker_15a860(i32 type, void* key) {
 // +0x14 worker cache holds the name map this looks the key up in, exactly as
 // CreateNamed_1593e0/1595b0 do) and m_listHead @+0x14 is m_10's head node (the CObList sits
 // at +0x10). So Find_15a8c0 is a plain CDDrawChildGroup method, walking the same list with the
-// same `(CDDrawGroupNode*)m_list.GetHeadPosition()` idiom every sibling FindBy* here uses.
+// same `reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition())` idiom every sibling FindBy* here uses.
 RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find_15a8c0(i32 id, const char* key) {
     CObject* found = 0;
@@ -1119,7 +1119,7 @@ void* CDDrawChildGroup::Find_15a8c0(i32 id, const char* key) {
 // 85% - same loop-epilogue-merge wall as FindByWorker_15a860.
 RVA(0x0015a940, 0x52)
 CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (node == 0) {
         return 0;
     }
@@ -1139,7 +1139,7 @@ CWwdGameObject* CDDrawChildGroup::FindByField_15a940(i32 type, void* key) {
 // 0x15a9a0: return the first list object whose map key (+0x188) equals `key`.
 RVA(0x0015a9a0, 0x23)
 CWwdGameObject* CDDrawChildGroup::FindByKey_15a9a0(void* key) {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1156,7 +1156,7 @@ CWwdGameObject* CDDrawChildGroup::FindByKey_15a9a0(void* key) {
 // whose map key (+0x188) equals `key`.
 RVA(0x0015a9d0, 0x45)
 CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1174,7 +1174,7 @@ CWwdGameObject* CDDrawChildGroup::FindByStatusKey_15a9d0(void* key) {
 RVA(0x0015aa20, 0x3c)
 i32 CDDrawChildGroup::IsKindUnique_15aa20(i32 kind) {
     CWwdGameObject* found = 0;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1194,7 +1194,7 @@ i32 CDDrawChildGroup::IsKindUnique_15aa20(i32 kind) {
 RVA(0x0015aa60, 0x23)
 i32 CDDrawChildGroup::CountByKind_15aa60(i32 kind) {
     i32 count = 0;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1215,7 +1215,7 @@ i32 CDDrawChildGroup::CountByKind_15aa60(i32 kind) {
 // exact. docs/patterns/linked-list-walk-node-eax-rotation.md.
 RVA(0x0015aa90, 0x5d)
 void CDDrawChildGroup::PruneList_15aa90() {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1239,7 +1239,7 @@ RVA(0x0015aaf0, 0x35)
 i32 CDDrawChildGroup::SumWeighted_15aaf0() {
     i32 sum = 0;
     i32 i = 0;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;

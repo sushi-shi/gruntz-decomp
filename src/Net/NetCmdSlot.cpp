@@ -1083,7 +1083,7 @@ void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
 // ---------------------------------------------------------------------------
 RVA(0x000c11b0, 0x55)
 void CNetCmdSlot::RemoveCmd(i32 seq) {
-    CNetCmdNode* node = (CNetCmdNode*)m_cmds.GetHeadPosition();
+    CNetCmdNode* node = reinterpret_cast<CNetCmdNode*>(m_cmds.GetHeadPosition());
     while (node != 0) {
         CNetCmdNode* cur = node;
         node = node->m_next;
@@ -1113,7 +1113,7 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
     }
     *pMax = 0x80000001;
     *pMin = 0x7fffffff;
-    CNetCmdNode* node = (CNetCmdNode*)m_cmds.GetHeadPosition();
+    CNetCmdNode* node = reinterpret_cast<CNetCmdNode*>(m_cmds.GetHeadPosition());
     if (node == 0) {
         *pMax = 0;
         *pMin = 0;
@@ -1138,7 +1138,7 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
 // ---------------------------------------------------------------------------
 RVA(0x000c12b0, 0x1f)
 CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
-    CNetCmdNode* node = (CNetCmdNode*)m_cmds.GetHeadPosition();
+    CNetCmdNode* node = reinterpret_cast<CNetCmdNode*>(m_cmds.GetHeadPosition());
     while (node != 0) {
         CNetCmdNode* cur = node;
         node = node->m_next;

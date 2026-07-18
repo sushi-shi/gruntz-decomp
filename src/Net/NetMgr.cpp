@@ -256,7 +256,7 @@ i32 CNetMgr::AddGroupNode(void* guid, void* name) {
 // RemoveAll's the list and zeroes the count/id pair (+0x7c, +0x70).
 RVA(0x00178430, 0x3a)
 void CNetMgr::ClearGroupList() {
-    CNetListNode* node = (CNetListNode*)m_groups.GetHeadPosition();
+    CNetListNode* node = reinterpret_cast<CNetListNode*>(m_groups.GetHeadPosition());
     while (node != 0) {
         CNetListNode* cur = node;
         node = node->m_next;
@@ -291,7 +291,7 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
     }
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
-    CGroupNode* node = (CGroupNode*)m_groups.GetHeadPosition();
+    CGroupNode* node = reinterpret_cast<CGroupNode*>(m_groups.GetHeadPosition());
     m_groupSelId = node;
     InterfaceObject* obj;
     if (node != 0) {
@@ -454,7 +454,7 @@ i32 CNetMgr::AddPlayerNode(void* playerDesc) {
 // node's payload, RemoveAll's the list, zeroes the count/id pair (+0x80, +0x74).
 RVA(0x00178750, 0x3d)
 void CNetMgr::ClearPlayerList() {
-    CNetListNode* node = (CNetListNode*)m_players.GetHeadPosition();
+    CNetListNode* node = reinterpret_cast<CNetListNode*>(m_players.GetHeadPosition());
     while (node != 0) {
         CNetListNode* cur = node;
         node = node->m_next;
@@ -487,7 +487,7 @@ void CNetMgr::PopulatePlayerList(void* hList) {
 
     SendMessageA((HWND)hList, LB_RESETCONTENT, 0, 0);
 
-    CNetListNode* node = (CNetListNode*)m_players.GetHeadPosition();
+    CNetListNode* node = reinterpret_cast<CNetListNode*>(m_players.GetHeadPosition());
     m_playerSelId = node;
     CNetPlayerDesc* payload;
     if (node != 0) {
@@ -740,7 +740,7 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
 // node's payload, RemoveAll's the list, zeroes the count/id pair (+0x84, +0x78).
 RVA(0x00178c70, 0x3d)
 void CNetMgr::ClearSessionList() {
-    CNetListNode* node = (CNetListNode*)m_sessions.GetHeadPosition();
+    CNetListNode* node = reinterpret_cast<CNetListNode*>(m_sessions.GetHeadPosition());
     while (node != 0) {
         CNetListNode* cur = node;
         node = node->m_next;
@@ -808,7 +808,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
 
     SendMessageA((HWND)hList, LB_RESETCONTENT, 0, 0);
 
-    CNetListNode* node = (CNetListNode*)m_sessions.GetHeadPosition();
+    CNetListNode* node = reinterpret_cast<CNetListNode*>(m_sessions.GetHeadPosition());
     m_sessionSelId = node;
     CNetSessionNode* payload;
     if (node != 0) {
@@ -873,7 +873,7 @@ i32 CNetMgr::RemovePlayerById(i32 id) {
 // the requested id, or null if the list is empty / no entry matches.
 RVA(0x00178e90, 0x20)
 CNetPlayerEntry* CNetMgr::FindPlayerById(i32 id) {
-    CNetPlayerNode* node = (CNetPlayerNode*)m_sessions.GetHeadPosition();
+    CNetPlayerNode* node = reinterpret_cast<CNetPlayerNode*>(m_sessions.GetHeadPosition());
     while (node != 0) {
         CNetPlayerNode* cur = node;
         node = node->m_next;
@@ -1087,7 +1087,7 @@ i32 CNetMgr::EnumSessions2(void* ctx) {
 // docs/patterns/linked-list-walk-node-eax-rotation.md. Logic complete.
 RVA(0x00179270, 0x89)
 InterfaceObject* CNetMgr::Find(i32 kind) {
-    CGroupNode* node = (CGroupNode*)m_groups.GetHeadPosition();
+    CGroupNode* node = reinterpret_cast<CGroupNode*>(m_groups.GetHeadPosition());
     m_groupSelId = node;
     InterfaceObject* item;
     if (node) {

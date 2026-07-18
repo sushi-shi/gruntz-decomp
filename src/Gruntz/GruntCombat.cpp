@@ -1813,7 +1813,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_410 = static_cast<double>((this->m_object->m_screenY));
 
         if (m_31c.GetCount() != 0) {
-            CoordNode* node = (CoordNode*)m_31c.GetHeadPosition();
+            CoordNode* node = reinterpret_cast<CoordNode*>(m_31c.GetHeadPosition());
             if (node != 0) {
                 void* fl = g_coordPool.m_freeHead;
                 do {

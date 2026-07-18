@@ -121,7 +121,7 @@ void CWorldSoundSet::Deactivate() {
 // ---------------------------------------------------------------------------
 RVA(0x0000b660, 0x2b)
 void CWorldSoundSet::Teardown() {
-    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
+    CSoundNode* node = reinterpret_cast<CSoundNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -354,7 +354,7 @@ void CWorldSoundSet::Restart(i32 a1) {
     if (m_world->m_soundDev != 0) {
         m_world->m_soundDev->FreeSamples();
     }
-    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
+    CSoundNode* node = reinterpret_cast<CSoundNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -374,7 +374,7 @@ void CWorldSoundSet::Stop() {
     if (m_world != 0 && m_world->m_soundDev != 0) {
         m_world->m_soundDev->FreeSamples();
     }
-    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
+    CSoundNode* node = reinterpret_cast<CSoundNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -397,7 +397,7 @@ void CWorldSoundSet::Stop() {
 // one byte. No source lever flips the dead-this reuse. See zero-register-pinning.md.
 RVA(0x0000bcf0, 0x43)
 void CWorldSoundSet::Resume() {
-    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
+    CSoundNode* node = reinterpret_cast<CSoundNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -428,7 +428,7 @@ RVA(0x0000bd60, 0x4b)
 void CWorldSoundSet::Retune(i32 x, i32 y) {
     m_listenerX = x;
     m_listenerY = y;
-    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
+    CSoundNode* node = reinterpret_cast<CSoundNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;

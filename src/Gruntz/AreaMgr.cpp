@@ -243,7 +243,7 @@ void CAreaMgr::Reset() {
 // ---------------------------------------------------------------------------
 RVA(0x0009a0d0, 0x133)
 CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
-    for (CSpawnNode* n = (CSpawnNode*)m_list.GetHeadPosition(); n != 0; n = n->m_next) {
+    for (CSpawnNode* n = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition()); n != 0; n = n->m_next) {
         CSpawnEntry* e = n->m_entry;
         if (e == 0) {
             continue;
@@ -281,7 +281,7 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
 RVA(0x0009a290, 0x138)
 CSpawnEntry* CSpawnList::FindByName(const CString& name) {
     CString key(name);
-    for (CSpawnNode* n = (CSpawnNode*)m_list.GetHeadPosition(); n != 0; n = n->m_next) {
+    for (CSpawnNode* n = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition()); n != 0; n = n->m_next) {
         CSpawnEntry* e = n->m_entry;
         if (e == 0) {
             continue;
@@ -305,7 +305,7 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
 // ---------------------------------------------------------------------------
 RVA(0x0009a420, 0x1c)
 void CSpawnList::ClearFlags() {
-    CSpawnNode* p = (CSpawnNode*)m_list.GetHeadPosition();
+    CSpawnNode* p = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition());
     if (p == 0) {
         return;
     }
@@ -328,7 +328,7 @@ void CSpawnList::ClearFlags() {
 // ---------------------------------------------------------------------------
 RVA(0x0009a450, 0x36)
 void CSpawnList::DeleteAllEntries() {
-    CSpawnNode* node = (CSpawnNode*)m_list.GetHeadPosition();
+    CSpawnNode* node = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CSpawnNode* cur = node;
         node = node->m_next;
