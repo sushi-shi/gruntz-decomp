@@ -46,6 +46,20 @@ public:
 SIZE_UNKNOWN(CSpriteRefHashTable);
 class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call
 
+// Reduced reader views of the map value Add() resolves (`out`), only the two fields
+// Add() reads. @identity-TODO: the sprite value's concrete class needs an xref chase
+// from the sprite LOADER side (it is NOT CAniRecordBase2). Kept minimal until then.
+struct CLookupSprite {
+    char m_pad00[0xc];
+    void* m_frameData; // +0x0c
+};
+struct CLookupResult {
+    char m_pad00[0x10];
+    CLookupSprite* m_sprite; // +0x10
+};
+SIZE_UNKNOWN(CLookupSprite);
+SIZE_UNKNOWN(CLookupResult);
+
 // The animation/alpha factory cached as Init's arg0 (m_factory) IS the canonical
 // CShadeTableCache (<DDrawMgr/ShadeTableCache.h>). XREF proof: its builder passes
 // RezSync+0x50 (RezSync.cpp: `CShadeTableCache* m_50`) as arg0, and the "factory"

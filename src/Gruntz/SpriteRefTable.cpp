@@ -27,19 +27,10 @@ void* ::operator new(u32); // matches ??2@YAPAXI@Z
 // CMapStringToOb). Add()/LoadGruntzPalette() reach it cast-free.
 
 // The object Lookup writes into `out`: +0x10 is the sprite, whose +0xc holds the
-// frame data fed to the alpha factory. (@identity-TODO - honest map-value view: the
-// registry map (m_map1) is a heterogeneous CMapStringToOb; the palette/worker path
-// stores CAniRecordBase2 (dissolved), but this SPRITE value is stored by the sprite
-// LOADER elsewhere, so its concrete class needs an xref chase from THAT side - it is
-// NOT CAniRecordBase2 (whose +0x10 m_10 is a plain i32 buffer, not a sprite ptr).)
-struct CLookupSprite {
-    char m_pad00[0xc];
-    void* m_frameData; // +0x0c
-};
-struct CLookupResult {
-    char m_pad00[0x10];
-    CLookupSprite* m_sprite; // +0x10
-};
+// frame data fed to the alpha factory. The reduced reader views CLookupSprite /
+// CLookupResult live in <Gruntz/SpriteRefTable.h> (@identity-TODO - the sprite value's
+// concrete class needs an xref chase from the sprite LOADER side; it is NOT
+// CAniRecordBase2, whose +0x10 m_10 is a plain i32 buffer, not a sprite ptr).
 
 // ---------------------------------------------------------------------------
 
@@ -431,7 +422,5 @@ i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
     m_built = 1;
     return 1;
 }
-SIZE_UNKNOWN(CLookupResult);
-SIZE_UNKNOWN(CLookupSprite);
 
 // --- vtable catalog ---

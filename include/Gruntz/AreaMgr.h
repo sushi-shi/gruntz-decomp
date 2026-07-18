@@ -29,9 +29,12 @@
 #include <Gruntz/SpawnList.h> // CSpawnList (embedded at +0x04) + CSpawnEntry
 
 // The per-spawn registry-holder + resolution-source args of the LoadObject*
-// reconcilers (full defs local to src/Gruntz/LoadObjectResources.cpp).
-struct ObjSpawnEntry;
-class CSymTab; // Bute/SymTab.h (ResolvePath)
+// reconcilers. The holder IS the canonical CDDrawSurfaceMgr (proven: its +0x10
+// image / +0x28 sound / +0x2c aniz registries are exactly m_imageRegistry /
+// m_soundRegistry / m_animRegistry, and the sibling GameAssetNamespaces.cpp's
+// WorkerHolder is the same object == CDDrawSurfaceMgr).
+class CDDrawSurfaceMgr; // DDrawMgr/DDrawSurfaceMgr.h (the per-spawn registry holder)
+class CSymTab;          // Bute/SymTab.h (ResolvePath)
 
 class CAreaMgr {
 public:
@@ -55,10 +58,10 @@ public:
     // The OBJECTZ_ namespace asset reconcilers (LoadObjectResources.cpp): walk
     // the entry's registry map, reconcile against m_spawnEntryList, install the
     // still-unwanted assets through the registry.
-    i32 LoadObjectResources(ObjSpawnEntry* entry, CSymTab* src); // 0x09a4c0 (drives the 3 below)
-    i32 LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src); // 0x09a510
-    i32 LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src); // 0x09a910
-    i32 LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src);  // 0x09ac20
+    i32 LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src); // 0x09a4c0 (drives the 3 below)
+    i32 LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src); // 0x09a510
+    i32 LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src); // 0x09a910
+    i32 LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src);  // 0x09ac20
 
     // The 40 per-area handlers (0x09af30..0x09b410, each `mov eax,1; ret`).  Each
     // is an external sibling method; reloc-masked rel32 callees of Dispatch.

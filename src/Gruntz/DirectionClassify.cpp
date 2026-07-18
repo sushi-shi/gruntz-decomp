@@ -27,16 +27,8 @@ const double g_slopePosTwo = 2.0;
 DATA(0x001e9768)
 const double g_slopeNegTwo = -2.0;
 
-SIZE_UNKNOWN(MotionEntity);
-struct MotionEntity {
-    char p0[0x78];
-    double m_78; // +0x78  world coord A
-    double m_80; // +0x80  world coord B
-    char p88[0x140 - 0x88];
-    i32 m_140;                                          // +0x140  snapped cell A
-    i32 m_144;                                          // +0x144  snapped cell B
-    DirDesc* Classify(MotionEntity* other, char exact); // 0x4a780
-};
+// MotionEntity (the position-bearing entity Classify runs on) is defined in
+// <Gruntz/DirectionClassify.h>; identity @identity-TODO.
 
 // @early-stop
 // ~96% - structure + logic + all FP thresholds/relocs exact (the 9-way octant tree,

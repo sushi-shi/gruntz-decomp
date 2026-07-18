@@ -19,25 +19,14 @@
 #include <Gruntz/UserLogic.h>    // CGameObject (the target + effect sprite are both one)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_cmdGrid)
 #include <Gruntz/TriggerMgr.h> // BuildRockBreakParticles (ex CRockBreakMgr - dissolved onto CTriggerMgr)
+#include <Gruntz/RbEffect.h>   // canonical RbEffect (the rock-break effect leaf; identity @identity-TODO)
 
 extern "C" u32 g_engineFrameDelta;   // 0x6bf3bc  per-frame draw delta (advance ctx)
 
 // The effect leaf: its bound target (m_10, +0x114 state gates the spawn) and its
 // effect sprite (m_38, CAniAdvanceCursor @+0x1a0, +0x1c0/+0x1c8 gates) are BOTH real
-// CGameObjects (world pos @+0x5c/+0x60, flags @+0x08 - proven: the ex RbTarget/RbSprite
-// CGameObject <Gruntz/UserLogic.h>). @identity-TODO: this owning leaf's own class name
-// is unrecovered (orphan COMDAT @0x476b0 - no caller/new-site/RTTI/vtable-dispatch; the
-// applicable techniques - caller xref, callee sigs (CAniAdvanceCursor::Advance +
-// CRockBreakMgr::BuildRockBreakParticles name the callees not the owner), new-site,
-// COL/RTTI - all dead-end), so the leaf stays a flagged local placeholder.
-SIZE_UNKNOWN(RbEffect);
-struct RbEffect {
-    char p0[0x10];
-    CGameObject* m_10; // +0x10  target object
-    char p14[0x38 - 0x14];
-    CGameObject* m_38; // +0x38  effect sprite
-    i32 Update();      // 0x476b0
-};
+// CGameObjects (world pos @+0x5c/+0x60, flags @+0x08). See <Gruntz/RbEffect.h> for the
+// full shape + the @identity-TODO on the owning leaf's own class name.
 
 // @early-stop
 // Regalloc wall on the tail (~90%): `this` is dead after the spawn, so retail reuses
