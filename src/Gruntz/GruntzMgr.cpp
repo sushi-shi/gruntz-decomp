@@ -1695,7 +1695,7 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (n <= 0) {
         return 0;
     }
-    CState* top = (CState*)m_stateStack.GetAt(n - 1);
+    CState* top = reinterpret_cast<CState*>(m_stateStack.GetAt(n - 1));
     m_stateStack.RemoveAt(n - 1, 1);
     return top == s;
 }
@@ -1707,7 +1707,7 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
 RVA(0x00090a50, 0x40)
 void CGruntzMgr::ClearStateStack() {
     for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
-        CState* s = (CState*)m_stateStack.GetAt(i);
+        CState* s = reinterpret_cast<CState*>(m_stateStack.GetAt(i));
         if (s) {
             delete s;
         }

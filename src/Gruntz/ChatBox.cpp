@@ -145,7 +145,7 @@ RVA(0x00182b60, 0x3e)
 void CChatBox::Clear() {
     POSITION pos = m_nodeList.GetHeadPosition();
     while (pos) {
-        CMenuPage* payload = (CMenuPage*)m_nodeList.GetNext(pos);
+        CMenuPage* payload = reinterpret_cast<CMenuPage*>(m_nodeList.GetNext(pos));
         delete payload; // ~CMenuPage is non-virtual -> direct dtor + ??3 (retail 0x182b79/0x182b7f)
     }
     m_nodeList.RemoveAll();
@@ -179,7 +179,7 @@ RVA(0x00182be0, 0x8d)
 i32 CChatBox::Find(const char* s) {
     POSITION pos = m_nodeList.GetHeadPosition();
     while (pos) {
-        CMenuPage* payload = (CMenuPage*)m_nodeList.GetNext(pos);
+        CMenuPage* payload = reinterpret_cast<CMenuPage*>(m_nodeList.GetNext(pos));
         if (payload) {
             CString key = payload->GetKey();
             if (strcmp(key, s) == 0) {

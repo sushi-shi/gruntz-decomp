@@ -946,7 +946,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
 RVA(0x0015cc30, 0x1e)
 i32 CSprite::GetFrame(i32 n) {
     if (n >= m_minIndex && n <= m_maxIndex) {
-        return (i32)(CImage*)m_items.GetAt(n);
+        return (i32)reinterpret_cast<CImage*>(m_items.GetAt(n));
     }
     return 0;
 }
