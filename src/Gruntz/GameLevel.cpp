@@ -473,7 +473,7 @@ i32 CGameLevel::Unload() {
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CTileImageSet* child = (CTileImageSet*)m_imageSets.GetData()[i];
+        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);
         if (child) {
             delete child; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
@@ -501,7 +501,7 @@ void CGameLevel::ReleaseChildren() {
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CTileImageSet* child = (CTileImageSet*)m_imageSets.GetData()[i];
+        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);
         if (child) {
             delete child; // the inherited virtual scalar-deleting dtor (+0x04, flag 1)
         }
@@ -756,7 +756,7 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
+    CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
     return set->GetCollisionAt(subX, subY);
 }
 
@@ -817,7 +817,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
+    CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
     return set->GetCollisionAt(0, 0); // slot +0x20, called with (0, 0)
 }
 
@@ -1982,7 +1982,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
+    CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
     *outLo = alignedX;
     *outHi = alignedX + set->m_width - 1;
     return 1;

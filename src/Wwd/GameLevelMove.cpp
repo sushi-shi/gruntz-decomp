@@ -177,7 +177,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = kTilePassable;
         } else {
-            CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
+            CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
             result = set->GetCollisionAt(subX, subY);
         }
     }
@@ -270,7 +270,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = kTilePassable;
         } else {
-            CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
+            CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
             result = set->GetCollisionAt(subX, subY);
         }
     }
@@ -363,7 +363,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = kTilePassable;
         } else {
-            CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
+            CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
             result = set->GetCollisionAt(subX, subY);
         }
     }
@@ -456,7 +456,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = kTilePassable;
         } else {
-            CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
+            CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
             result = set->GetCollisionAt(subX, subY);
         }
     }

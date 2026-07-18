@@ -1183,7 +1183,7 @@ void CDirectDrawMgr::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
         out->a = -1;
         out->b = -1;
     } else {
-        CDdMode* e = (CDdMode*)m_poolItems.GetData()[idx];
+        CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
         out->a = e->m_c;
         out->b = e->m_8;
     }
@@ -1194,7 +1194,7 @@ RVA(0x00143470, 0x47)
 i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
     i32 r = -1;
     for (i32 i = m_poolItems.GetSize() - 1; i >= 0; i--) {
-        CDdMode* e = (CDdMode*)m_poolItems.GetData()[i];
+        CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[i]);
         if (e->m_c >= k0 && e->m_8 >= k1 && e->m_54 == k2) {
             r = i;
         }
@@ -1206,7 +1206,7 @@ i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
 RVA(0x001434c0, 0x45)
 i32 CDirectDrawMgr::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
-        CDdMode* e = (CDdMode*)m_poolItems.GetData()[i];
+        CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[i]);
         if (e->m_c == static_cast<u32>(k0) && e->m_8 == static_cast<u32>(k1) && e->m_54 == k2) {
             return i;
         }
@@ -1226,7 +1226,7 @@ void CDirectDrawMgr::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
         idx++;
         if (idx < m_poolItems.GetSize()) {
             for (; idx < m_poolItems.GetSize(); idx++) {
-                CDdMode* e = (CDdMode*)m_poolItems.GetData()[idx];
+                CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
                 if (e->m_54 == k2) {
                     out->a = e->m_c;
                     out->b = e->m_8;
@@ -1249,7 +1249,7 @@ void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
         idx--;
         if (idx >= 0) {
             for (; idx >= 0; idx--) {
-                CDdMode* e = (CDdMode*)m_poolItems.GetData()[idx];
+                CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
                 if (e->m_54 == k2) {
                     out->a = e->m_c;
                     out->b = e->m_8;
