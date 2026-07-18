@@ -25,6 +25,7 @@ name,rva,size,note
 ??_7CEdit@@6B@,0x1ec0cc,0xc0,MFC/CRT (statically linked; not reconstructed)
 ??_7CScrollBar@@6B@,0x1ec19c,0xc0,MFC/CRT (statically linked; not reconstructed)
 ??_7_AFX_THREAD_STATE@@6B@,0x1ec264,0x4,MFC/CRT (statically linked; not reconstructed)
+??_7CNoTrackObject@@6B@,0x1ec26c,0x4,MFC/CRT (statically linked; not reconstructed)
 ??_7AFX_MODULE_STATE@@6B@,0x1ec274,0x4,MFC/CRT (statically linked; not reconstructed)
 ??_7AFX_MODULE_THREAD_STATE@@6B@,0x1ec27c,0x4,MFC/CRT (statically linked; not reconstructed)
 ??_7_AFX_BASE_MODULE_STATE@@6B@,0x1ec284,0x4,MFC/CRT (statically linked; not reconstructed)

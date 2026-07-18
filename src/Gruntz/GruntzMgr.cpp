@@ -173,50 +173,15 @@ extern "C" {
 void OpenSettingsStore();  // FUN_005158f0
 void CloseSettingsStore(); // FUN_004f8e20
 
-// The modal dialog OnCheckpointReached pops: a destructible stack local built by
-// FUN_004234a0(this, 0) and torn down by FUN_005ba51d, handed to ExitModalUI as a
-// CModalScreen. Its ctor/dtor reloc-mask; only the size + destructibility (the /GX
-// frame) are load-bearing.
-// It IS a real MFC CDialog subclass: the dtor at 0x1ba51d is
-// CDialog::~CDialog itself, and its 0x5c body is exactly sizeof(CDialog). Deriving from the
-// real base binds that teardown to ??1CDialog@@UAE@XZ in NAFXCW.LIB
-// and lets it reach ExitModalUI CAST-FREE. The dtor stays
-// IMPLICIT so retail's inlined stack-local teardown still falls out.
-class CCheckpointDlg : public CDialog {
-public:
-    CCheckpointDlg(CWnd* a); // 0x234a0  ??0CCheckpointDlg@@QAE@PAVCWnd@@@Z
-};
-
-// The save-as name dialog SaveGameAs pops IS a CBattlezDlg (proven: its ctor @0x14b30
-// == ??0CBattlezDlg@@QAE@HPAVCWnd@@@Z, and its +0x68 custom-name flag + +0x6c CString
-// name match <Gruntz/Dialogs.h>'s CBattlezDlg exactly). It is modeled LOCALLY here
-// (not via the canonical Dialogs.h) for ONE codegen reason: retail INLINES this local
-// object's destruction (~CString m_6c + CDialog::~CDialog 0x1ba51d, no vptr restamp),
-// whereas Dialogs.h's OUT-OF-LINE ~CBattlezDlg (0x14c90, needed for the vtable slot)
-// would force a `call ??1CBattlezDlg` and diverge SaveGameAs's /GX frame. So this TU
-// keeps an implicit-dtor twin - a per-TU dtor-emission split, not a conflation. The
-// ctor is declared-only, so its call reloc-binds to the real 0x14b30; CSaveDlgBase
-// stands in for CDialog's reloc-masked virtual dtor (0x1ba51d).
-// The base is the REAL MFC CDialog (0x5c); the same reloc-masked dtor call binds to
-// ??1CDialog@@UAE@XZ in NAFXCW.LIB (0x1ba51d).
-class CBattlezDlg : public CDialog {
-public:
-    CBattlezDlg(i32 a0, CWnd* pParent); // 0x14b30  ??0CBattlezDlg@@QAE@HPAVCWnd@@@Z
-    // The dtor stays IMPLICIT here - do NOT declare it out-of-line. Retail's SaveGameAs
-    // (0x92f00) INLINES the CBattlezDlg teardown at the stack local's scope exit:
-    //     lea ecx,[esp+0x78]; call 0x1b9cde   ; ~CString  (the m_6c member)
-    //     lea ecx,[esp+0xc];  call 0x1ba51d   ; ~CDialog  (the base)
-    // - there is no `call ??1CBattlezDlg` anywhere in it. So cl saw an INLINE (compiler-
-    // generated) dtor for this class; the out-of-line 0x14c90 body is just the COMDAT copy
-    // emitted where its address is needed (the vtable slot). Declaring it out-of-line here
-    // forces a call and desyncs the whole function (measured: SaveGameAs 100% -> broken).
-    // ??1CBattlezDlg IS still an ODR-divergent duplicate (dialogs models this class as
-    // `: public CDialog`, we model it as `: CSaveDlgBase`) - but the fix for THAT is to
-    // unify the class shape, not to change the dtor's linkage. Reported, not bodged.
-    char m_pad5c[0x68 - 0x5c];
-    i32 m_68;     // +0x68  use-custom-prefix flag (== CBattlezDlg::m_customNameFlag)
-    CString m_6c; // +0x6c  entered name
-};
+// The modal dialogs OnCheckpointReached / SaveGameAs pop (CCheckpointDlg / CBattlezDlg)
+// are the canonical <Gruntz/Dialogs.h> classes. Both were fixed to an IMPLICIT
+// compiler-generated dtor, which inlines the stack-local teardown here EXACTLY as retail
+// (~CString m_6c + ~CDialog, no vptr restamp) - so the per-TU implicit-dtor twins that
+// used to sit here are dissolved. This is the "ODR landmine that the implicit dtor
+// removes" the Dialogs.h CBattlezDlg comment describes; both ctors (0x234a0 / 0x14b30)
+// stay reloc-masked, CCheckpointDlg reaches ExitModalUI as a CModalScreen (== CDialog)
+// cast-free, and CBattlezDlg's custom-flag is m_customNameFlag (+0x68) / name m_6c (+0x6c).
+#include <Gruntz/Dialogs.h>
 
 // Resets the 17 sound-channel slots (g_soundChannelInUse[17] = 1); SaveGameAs calls it before
 // popping the modal. Reloc-masked __cdecl free fn (0xdb1d0).
@@ -4182,7 +4147,7 @@ i32 CGruntzMgr::SaveGameAs() {
     if (ExitModalUI(&dlg, 1) != 1) {
         return 0;
     }
-    if (dlg.m_68 != 0) {
+    if (dlg.m_customNameFlag != 0) {
         m_128 = 0;
         m_strWorldFile = "custom\\" + dlg.m_6c;
     } else {
@@ -4638,7 +4603,6 @@ SIZE_UNKNOWN(CMonoSprite);
 SIZE_UNKNOWN(CMonoView);
 SIZE_UNKNOWN(CMonoWorld);
 SIZE_UNKNOWN(CRezSurface94);
-SIZE_UNKNOWN(CBattlezDlg);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(RegScoreHud);
