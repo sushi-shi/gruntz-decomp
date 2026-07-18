@@ -464,7 +464,7 @@ RVA(0x001331a0, 0x37)
 void DirectInputMgr2::FreeDeviceList() {
     POSITION pos = m_deviceList.GetHeadPosition();
     while (pos != 0) {
-        CDeviceListNode* payload = (CDeviceListNode*)m_deviceList.GetNext(pos);
+        CDeviceListNode* payload = reinterpret_cast<CDeviceListNode*>(m_deviceList.GetNext(pos));
         if (payload != 0) {
             ((CFixedPtrArray32*)payload)->Clear();
             operator delete(payload);

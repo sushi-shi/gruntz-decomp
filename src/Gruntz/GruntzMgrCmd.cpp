@@ -57,7 +57,7 @@
 // real class it needs -- see the note in Play.h). Type unchanged for this TU.
 
 // node IS the MFC CPtrList CNode, and `((CTmNode*)GetHeadPosition())->m_pt` is
-// spelled with the real accessor `(CTrigPoint*)m_recList.GetHead()` below - the
+// spelled with the real accessor `reinterpret_cast<CTrigPoint*>(m_recList.GetHead())` below - the
 // identical two loads (m_pNodeHead, then ->data), byte-proven.)
 
 // The game-manager singleton global comes in WwdGameReg-typed via Grunt.h

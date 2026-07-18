@@ -182,7 +182,7 @@ RVA(0x00174f60, 0x37)
 void CImagePool::ClearSurfaces() {
     POSITION pos = m_surfaces.GetHeadPosition();
     while (pos) {
-        CRezImage* item = (CRezImage*)m_surfaces.GetNext(pos);
+        CRezImage* item = reinterpret_cast<CRezImage*>(m_surfaces.GetNext(pos));
         if (item) {
             item->Free();
             ::operator delete(item);
@@ -199,7 +199,7 @@ RVA(0x00174fa0, 0x3e)
 void CImagePool::ClearPalettes() {
     POSITION pos = m_palettes.GetHeadPosition();
     while (pos) {
-        CImagePaletteNode* item = (CImagePaletteNode*)m_palettes.GetNext(pos);
+        CImagePaletteNode* item = reinterpret_cast<CImagePaletteNode*>(m_palettes.GetNext(pos));
         if (item) {
             item->Run();
             ::operator delete(item);

@@ -577,7 +577,7 @@ RVA(0x00142120, 0x31)
 void CDDrawPtrCollections::EmptyPoolA() {
     POSITION pos = m_poolA.GetHeadPosition();
     while (pos) {
-        CDDSurface* item = (CDDSurface*)m_poolA.GetNext(pos);
+        CDDSurface* item = reinterpret_cast<CDDSurface*>(m_poolA.GetNext(pos));
         delete item;
     }
     m_poolA.RemoveAll();
@@ -948,7 +948,7 @@ RVA(0x00142ed0, 0x3d)
 void CDDrawPtrCollections::EmptyPoolB() {
     POSITION pos = m_poolB.GetHeadPosition();
     while (pos) {
-        CDDPalette* item = (CDDPalette*)m_poolB.GetNext(pos);
+        CDDPalette* item = reinterpret_cast<CDDPalette*>(m_poolB.GetNext(pos));
         if (item) {
             item->Destroy();
             ::operator delete(item);
