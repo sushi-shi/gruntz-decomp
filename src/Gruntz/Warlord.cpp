@@ -251,7 +251,7 @@ typedef enum WarlordBattleTag {
     {                                                                                              \
         void* h = 0;                                                                               \
         m_38->m_0c->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);                   \
-        dst = (CAniElement*)h;                                                                     \
+        dst = reinterpret_cast<CAniElement*>(h);                                                                     \
     }
 
 // @early-stop  (~79%; complete correct body, up from a 3.7% stub)

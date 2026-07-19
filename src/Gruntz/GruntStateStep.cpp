@@ -73,9 +73,9 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
         GruntCoordNode* nd = (g)->CoordHead();                                                     \
         if (nd != 0) {                                                                             \
             do {                                                                                   \
-                void* r = ListNodeAdvance((void**)&nd);                                            \
-                if (*(i32*)r != 0) {                                                               \
-                    g_coordPool.Push((void*)(*(i32*)r));                                           \
+                void* r = ListNodeAdvance(reinterpret_cast<void**>(&nd));                                            \
+                if (*static_cast<i32*>(r) != 0) {                                                               \
+                    g_coordPool.Push(reinterpret_cast<void*>(*static_cast<i32*>(r)));                                           \
                 }                                                                                  \
             } while (nd != 0);                                                                     \
         }                                                                                          \
@@ -88,14 +88,14 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        (RECT*)new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height);                           \
-        RECT* pb = (RECT*)new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height);                \
+        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));                           \
+        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect((RECT*)&(grid)->m_originX, &ra, &rb)) {                                 \
-            *(RECT*)&(grid)->m_originX = ra;                                                       \
+        if (!IntersectRect(reinterpret_cast<RECT*>(&(grid)->m_originX), &ra, &rb)) {                                 \
+            *reinterpret_cast<RECT*>(&(grid)->m_originX) = ra;                                                       \
         }                                                                                          \
         (grid)->m_gridW = (grid)->m_boundRight - (grid)->m_originX;                                \
         (grid)->m_gridH = (grid)->m_boundBottom - (grid)->m_originY;                               \

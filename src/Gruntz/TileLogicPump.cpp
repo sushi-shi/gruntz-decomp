@@ -139,7 +139,7 @@ CActReg g_tileActReg;
         case 0x3e8:                                                                                \
             break;                                                                                 \
         default:                                                                                   \
-            ProjTypeXfer((CXferArchive*)ctl->m_logic);                                             \
+            ProjTypeXfer(reinterpret_cast<CXferArchive*>(ctl->m_logic));                                             \
             break;                                                                                 \
     }                                                                                              \
     return 1;

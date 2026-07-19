@@ -69,8 +69,8 @@ extern "C" {
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        ((CScanRectInit*)&ra)->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                           \
-        RECT* pb = ((CScanRectInit*)&rb)->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                \
+        (reinterpret_cast<CScanRectInit*>(&ra))->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                           \
+        RECT* pb = (reinterpret_cast<CScanRectInit*>(&rb))->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
@@ -103,8 +103,8 @@ extern "C" {
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        ((CScanRectInit*)&ra)->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                           \
-        RECT* pb = ((CScanRectInit*)&rb)->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                \
+        (reinterpret_cast<CScanRectInit*>(&ra))->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                           \
+        RECT* pb = (reinterpret_cast<CScanRectInit*>(&rb))->Set34a4(0, 0, (grid)->m_c, (grid)->m_10);                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \

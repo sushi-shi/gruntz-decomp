@@ -44,7 +44,7 @@
     switch (rec->m_1c) {                                                                           \
         case 0: {                                                                                  \
             rec->m_1c = 0x3e8;                                                                     \
-            CUserLogic* sub = new LEAF((CGameObject*)owner);                                       \
+            CUserLogic* sub = new LEAF(reinterpret_cast<CGameObject*>(owner));                                       \
             sub->Activate(); /* slot 6 (+0x18): activate */                                        \
             rec->m_18 = sub;                                                                       \
             break;                                                                                 \

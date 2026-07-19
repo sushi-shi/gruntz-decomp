@@ -97,7 +97,7 @@ void* operator new(u32 n); // 0x1b9b46
         ar->Read(&id, 4);                                                                          \
         obj = 0;                                                                                   \
         void* r;                                                                                   \
-        if (dir->m_childGroup->m_map48.Lookup((void*)id, obj) != 0 && obj != 0) {                  \
+        if (dir->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), obj) != 0 && obj != 0) {                  \
             r = (((CWwdGameObjectE*)obj)->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
         } else {                                                                                   \
             r = 0;                                                                                 \
