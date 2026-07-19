@@ -66,7 +66,7 @@ SIZE_UNKNOWN(FaderSrc);
 struct FaderSrc {
     char pad00[0x18];
     i32 m_frameCount; // +0x18  frame count (w)
-    i32 m_1c;         // +0x1c  element count
+    i32 m_count;      // +0x1c  element count
 };
 class CDDSurface;  // the real DDraw surface every subtype's source/dest slots point at
 struct CDDPalette; // the real DDraw palette (its +0x0c m_cacheA is the 256-entry PalEntry
@@ -125,15 +125,15 @@ public:
     // surface slots are all real CDDSurface* (RenderFrame Blt/Clear/BltEx/Flips them); ApplyInit
     // fills them from the CFxModeT6 descriptor (m_44 is BOTH the null-gate and the flip
     // target - retail bails when the descriptor's +0x10 surface is null).
-    CDDSurface* m_38;      // +0x38  BltEx source surface   (desc +0x08, else base m_timerB)
-    CDDSurface* m_3c;      // +0x3c  destination surface    (desc +0x04, else base m_timerA)
-    CDDSurface* m_40;      // +0x40  prime source (0 => Clear the dest instead)
-    CDDSurface* m_44;      // +0x44  flip target (the ApplyInit gate)
-    i32 m_48;              // +0x48
-    i32 m_4c;              // +0x4c  record-order flag
-    i32 m_50;              // +0x50  columns
-    i32 m_54;              // +0x54  rows
-    CRezBufferObject m_58; // +0x58..+0x6b  growable mesh buffer (the real CObArray-of-RezElem40)
+    CDDSurface* m_bltSrc;      // +0x38  BltEx source surface   (desc +0x08, else base m_timerB)
+    CDDSurface* m_dstSurface;  // +0x3c  destination surface    (desc +0x04, else base m_timerA)
+    CDDSurface* m_primeSrc;    // +0x40  prime source (0 => Clear the dest instead)
+    CDDSurface* m_flipTarget;  // +0x44  flip target (the ApplyInit gate)
+    i32 m_48;                  // +0x48
+    i32 m_recOrderFlag;        // +0x4c  record-order flag
+    i32 m_cols;                // +0x50  columns
+    i32 m_rows;                // +0x54  rows
+    CRezBufferObject m_meshBuf; // +0x58..+0x6b  growable mesh buffer (the real CObArray-of-RezElem40)
 };
 
 // ===========================================================================
@@ -157,14 +157,14 @@ public:
     // ApplyInit latches the source boxes + geometry, range-checks the 0..100 intensity,
     // computes the scaled magnitude (m_54) via the FP pipeline, then fills four parallel
     // 2000-int arrays (three zeroed, one seeded with rand()%count) and scatters the last.
-    FaderSrc* m_38;           // +0x38  active source box (else CFader::m_timerA)
-    FaderSrc* m_3c;           // +0x3c  active alt/dst source box (else CFader::m_timerB)
-    i32 m_40;                 // +0x40  count/param (=1 when m_3c is null)
+    FaderSrc* m_srcBox;       // +0x38  active source box (else CFader::m_timerA)
+    FaderSrc* m_dstBox;       // +0x3c  active alt/dst source box (else CFader::m_timerB)
+    i32 m_boxParam;           // +0x40  count/param (=1 when m_dstBox is null)
     char _pad44[0x4c - 0x44]; // +0x44..+0x4b
-    i32 m_4c;                 // +0x4c  frame count (source +0x18)
-    i32 m_50;                 // +0x50  element count (source +0x1c)
-    i32 m_54;                 // +0x54  scaled magnitude (intensity * scale * frames)
-    i32 m_58;                 // +0x58  intensity (0..100)
+    i32 m_frameCount;         // +0x4c  frame count (source +0x18)
+    i32 m_elemCount;          // +0x50  element count (source +0x1c)
+    i32 m_scaledMag;          // +0x54  scaled magnitude (intensity * scale * frames)
+    i32 m_intensity;          // +0x58  intensity (0..100)
     i32 m_arr0[2000];         // +0x5c
     i32 m_arr1[2000];         // +0x1f9c  seeded with rand()%count
     i32 m_arr2[2000];         // +0x3edc
@@ -193,11 +193,11 @@ public:
     // else the base's m_timerB default), the two scalars, the duration percent, and the
     // per-frame work array it RezAllocs. (Was the Fader.cpp-local `CFaderElem` view - the
     // RVA is CFaderFlat::ApplyInit, and its m_src/m_percent are these fields.)
-    i32 m_38;        // +0x38  desc +0x04 (else the base's m_timerA default)
+    i32 m_desc04;    // +0x38  desc +0x04 (else the base's m_timerA default)
     FaderSrc* m_src; // +0x3c  animation source (frame count at +0x18)
-    i32 m_40;        // +0x40  desc +0x0c
+    i32 m_desc0c;    // +0x40  desc +0x0c
     i32 m_percent;   // +0x44  duration-scale percent (desc +0x10; GetFrameCount)
-    i32 m_48;        // +0x48  desc +0x14
+    i32 m_desc14;    // +0x48  desc +0x14
     i32* m_frames;   // +0x4c  per-frame work array (m_src->m_frameCount ints)
 };
 
@@ -236,7 +236,7 @@ public:
     // CDDrawPtrCollections*). (Was the Fader.cpp-local `CFaderLightApply` flat view; the
     // 0x206c size is exactly these fields.)
     CDDSurface* m_surface; // +0x38  active surface (desc +0x04, else base m_timerA)
-    CDDSurface* m_3c;      // +0x3c  secondary/dst blit surface (desc +0x08, else base
+    CDDSurface* m_dstSurface; // +0x3c  secondary/dst blit surface (desc +0x08, else base
                            //        m_timerB; a dword holding a surface - Render 0x180fb0
                            //        reads its m_pitch, ApplyInit null-checks it)
     CDDSurface* m_overlay; // +0x40  current pooled overlay surface (0 = none)

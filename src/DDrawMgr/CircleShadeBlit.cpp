@@ -52,7 +52,7 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     i32 srcpitch = m_surface->m_pitch;
     i32 srcCol = a0 * srcpitch;
     i32 rowLsrc = a4 + row + srcCol;
-    i32 dstpitch = m_3c->m_pitch;
+    i32 dstpitch = m_dstSurface->m_pitch;
     i32 dstCol = a0 * dstpitch;
     i32 rowLdst = a5 + row + dstCol;
     i32 rowRsrc = (a4 - row) + srcCol + 2 * cy;

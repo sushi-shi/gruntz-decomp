@@ -273,16 +273,16 @@ CFaderMesh::~CFaderMesh() {}
 // also differ (fild qword vs dword). Not source-steerable.
 RVA(0x0017ef00, 0x21c)
 void CFaderMesh::RenderFrame(i32 frame) {
-    CDDSurface* dst = m_3c;
-    if (m_40 != 0) {
-        dst->Blt(m_40);
+    CDDSurface* dst = m_dstSurface;
+    if (m_primeSrc != 0) {
+        dst->Blt(m_primeSrc);
     } else {
         dst->Clear(0);
     }
-    if (m_58.m_nSize > 0) {
+    if (m_meshBuf.m_nSize > 0) {
         float ff = static_cast<float>(frame);
-        char* pData = reinterpret_cast<char*>(m_58.m_pData);
-        for (i32 i = 0; i < m_58.m_nSize; i++) {
+        char* pData = reinterpret_cast<char*>(m_meshBuf.m_pData);
+        for (i32 i = 0; i < m_meshBuf.m_nSize; i++) {
             i32* rec = reinterpret_cast<i32*>((pData + i * 0x28));
             i32 r0 = rec[0], r1 = rec[1], r2 = rec[2], r3 = rec[3];
             i32 r4 = rec[4], r5 = rec[5], r6 = rec[6], r7 = rec[7];
@@ -311,7 +311,7 @@ void CFaderMesh::RenderFrame(i32 frame) {
 
             i32 dstRect[4] = {x0, y0, x1, y1};
             i32 srcRect[4];
-            if (m_4c != 0) {
+            if (m_recOrderFlag != 0) {
                 srcRect[0] = r0;
                 srcRect[1] = r1;
                 srcRect[2] = r2;
@@ -322,10 +322,10 @@ void CFaderMesh::RenderFrame(i32 frame) {
                 srcRect[2] = bx1;
                 srcRect[3] = by1;
             }
-            dst->BltEx(dstRect, m_38, srcRect, 0x1000000, 0);
+            dst->BltEx(dstRect, m_bltSrc, srcRect, 0x1000000, 0);
         }
     }
-    m_44->Flip(0);
+    m_flipTarget->Flip(0);
 }
 
 // ===========================================================================
@@ -344,8 +344,8 @@ void CFaderMesh::RenderFrame(i32 frame) {
 // ===========================================================================
 RVA(0x0017fdb0, 0x1a)
 CFaderSine::CFaderSine() {
-    m_50 = 0;
-    m_4c = 0;
+    m_elemCount = 0;
+    m_frameCount = 0;
 }
 
 // ===========================================================================
@@ -397,26 +397,26 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     i32 p;
     i32 i;
     m_20 = 0;
-    m_40 = desc->m_0c;
+    m_boxParam = desc->m_0c;
     FaderSrc* src = reinterpret_cast<FaderSrc*>(desc->m_04);
     if (!src) {
         src = reinterpret_cast<FaderSrc*>(m_timerA);
     }
-    m_38 = src;
+    m_srcBox = src;
     i32 alt = desc->m_08;
     if (!alt) {
         alt = m_timerB;
     }
-    m_3c = reinterpret_cast<FaderSrc*>(alt);
-    if (!m_38) {
+    m_dstBox = reinterpret_cast<FaderSrc*>(alt);
+    if (!m_srcBox) {
         goto fail;
     }
-    if (!m_3c) {
-        m_40 = 1;
+    if (!m_dstBox) {
+        m_boxParam = 1;
     }
-    m_50 = m_38->m_1c;
-    w = m_38->m_frameCount;
-    m_4c = w;
+    m_elemCount = m_srcBox->m_count;
+    w = m_srcBox->m_frameCount;
+    m_frameCount = w;
     p = desc->m_10;
     if (p < 0) {
         goto fail;
@@ -424,15 +424,15 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     if (p > 100) {
         goto fail;
     }
-    m_58 = p;
-    m_54 = static_cast<i32>((static_cast<float>(p) * g_faderScale_5f085c * w));
+    m_intensity = p;
+    m_scaledMag = static_cast<i32>((static_cast<float>(p) * g_faderScale_5f085c * w));
     for (i = 0; i < 2000; i++) {
         m_arr0[i] = 0;
         m_arr2[i] = 0;
         m_arr3[i] = 0;
-        m_arr1[i] = FxRand(m_50);
+        m_arr1[i] = FxRand(m_elemCount);
     }
-    ScatterSamples(m_arr3, 0, m_50, 1);
+    ScatterSamples(m_arr3, 0, m_elemCount, 1);
     return 1;
 fail:
     return 0;
@@ -511,11 +511,11 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
         s = reinterpret_cast<CDDSurface*>(m_timerA); // the base's default-surface dword
     }
     m_surface = s;
-    CDDSurface* b = reinterpret_cast<CDDSurface*>(d->m_08); // desc dword holds a surface (m_3c is CDDSurface*)
+    CDDSurface* b = reinterpret_cast<CDDSurface*>(d->m_08); // desc dword holds a surface
     if (b == 0) {
-        m_3c = reinterpret_cast<CDDSurface*>(m_timerB);
+        m_dstSurface = reinterpret_cast<CDDSurface*>(m_timerB);
     } else {
-        m_3c = b;
+        m_dstSurface = b;
     }
     m_lightGate = d->m_10;
     m_centerX = d->m_18;
@@ -530,7 +530,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     if (m_surface == 0) {
         return 0;
     }
-    if (m_3c == 0 && m_lightGate == 0) {
+    if (m_dstSurface == 0 && m_lightGate == 0) {
         return 0;
     }
     RECT rect;
@@ -908,42 +908,42 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     // The arg is the type-6 CFxMode transition descriptor; m_58 is this fader's real
     // growable mesh buffer (CRezBufferObject).
     CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
-    CRezBufferObject* mesh = &m_58;
+    CRezBufferObject* mesh = &m_meshBuf;
 
-    m_3c = cfg->m_04 ? reinterpret_cast<CDDSurface*>(cfg->m_04) : reinterpret_cast<CDDSurface*>(m_timerA);
-    m_38 = cfg->m_08 ? reinterpret_cast<CDDSurface*>(cfg->m_08) : reinterpret_cast<CDDSurface*>(m_timerB);
+    m_dstSurface = cfg->m_04 ? reinterpret_cast<CDDSurface*>(cfg->m_04) : reinterpret_cast<CDDSurface*>(m_timerA);
+    m_bltSrc = cfg->m_08 ? reinterpret_cast<CDDSurface*>(cfg->m_08) : reinterpret_cast<CDDSurface*>(m_timerB);
     if (cfg->m_10 == 0) {
         return 0;
     }
-    m_40 = reinterpret_cast<CDDSurface*>(cfg->m_0c);
-    m_44 = reinterpret_cast<CDDSurface*>(cfg->m_10);
+    m_primeSrc = reinterpret_cast<CDDSurface*>(cfg->m_0c);
+    m_flipTarget = reinterpret_cast<CDDSurface*>(cfg->m_10);
     m_48 = cfg->m_18;
-    m_4c = cfg->m_14;
-    m_50 = cfg->m_1c;
-    m_54 = cfg->m_20;
+    m_recOrderFlag = cfg->m_14;
+    m_cols = cfg->m_1c;
+    m_rows = cfg->m_20;
 
     mesh->SetSize(0, -1);
 
     // The two "boxes" are surfaces: the geometry comes out of their DDSURFACEDESC cache
     // (+0x18 dwHeight, +0x1c dwWidth). Offsets preserved from the old FxBox view, whose
     // width/height names were swapped relative to the canonical descriptor.
-    i32 halfW = m_3c->m_height / 2;
-    i32 halfH = m_3c->m_width / 2;
-    i32 dx = m_38->m_width / m_50;
-    i32 dy = m_38->m_height / m_54;
+    i32 halfW = m_dstSurface->m_height / 2;
+    i32 halfH = m_dstSurface->m_width / 2;
+    i32 dx = m_bltSrc->m_width / m_cols;
+    i32 dy = m_bltSrc->m_height / m_rows;
     float radius = static_cast<float>(sqrt(static_cast<double>((dx * dx + dy * dy))));
-    if (m_54 <= 0) {
+    if (m_rows <= 0) {
         return 1;
     }
 
-    for (i32 row = 0; row < m_54; row++) {
+    for (i32 row = 0; row < m_rows; row++) {
         i32 cellW2 = halfW * halfW;
         i32 cellD = halfW * halfW + halfH * halfH;
         float cellR = static_cast<float>(sqrt(static_cast<double>(cellD))) + radius - g_fxBias;
-        if (m_50 <= 0) {
+        if (m_cols <= 0) {
             continue;
         }
-        for (i32 col = 0; col < m_50; col++) {
+        for (i32 col = 0; col < m_cols; col++) {
             i32 d2 = halfH * halfH + cellW2;
             float v = static_cast<float>(sqrt(static_cast<double>(d2)));
             float normX, normY;
@@ -973,7 +973,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
             ::OffsetRect(&pt64, row, col);
 
             i32 pt[10]; // the 40-byte mesh record (a RezElem40 slot)
-            if (m_4c) {
+            if (m_recOrderFlag) {
                 pt[0] = pt64.right;
                 pt[1] = pt64.bottom;
                 pt[2] = pt64.left;
@@ -1128,16 +1128,16 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     if (!a) {
         a = m_timerA; // the base's default dword
     }
-    m_38 = a;
+    m_desc04 = a;
     if (s->m_08) {
         m_src = reinterpret_cast<FaderSrc*>(s->m_08);
     } else {
         m_src = reinterpret_cast<FaderSrc*>(m_timerB);
     }
-    m_40 = s->m_0c;
+    m_desc0c = s->m_0c;
     m_percent = s->m_10;
     m_20 = 0;
-    m_48 = s->m_14;
+    m_desc14 = s->m_14;
     m_frames = static_cast<i32*>(RezAlloc(m_src->m_frameCount << 2));
     for (i32 i = 0; i < m_src->m_frameCount; i++) {
         m_frames[i] = 0;
