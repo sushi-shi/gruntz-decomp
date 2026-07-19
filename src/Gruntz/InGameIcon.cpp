@@ -565,8 +565,7 @@ i32 CInGameIcon::HandleInput() {
         if (sub < 0x17 || sub > 0x20) {
             return 0;
         }
-        i32 slot = key * 71;
-        i32 icon = (reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x158)))[slot * 2];
+        i32 icon = g_gameReg->m_options[key].m_008;
         if (icon < 0 || icon >= 0x11) {
             icon = 0;
         }

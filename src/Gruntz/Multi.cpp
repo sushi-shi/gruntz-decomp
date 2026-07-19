@@ -633,11 +633,10 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
 
     // m_channelLatency[0..3] + the four g_gameReg slots (+0x37c / +0x380)
     i32* clat = m_channelLatency;
-    for (i32 k = 0; k < 0x8e0; k += 0x238) {
+    for (GruntzPlayer* p = g_gameReg->m_options; p < g_gameReg->m_options + 4; p++) {
         *clat++ = 0;
-        i32* slot = reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + k + 0x37c));
-        slot[0] = 0;
-        slot[1] = 0;
+        p->m_22c = 0;
+        p->m_230 = 0;
     }
 
     NetGameMgr()->m_114 = 0;
