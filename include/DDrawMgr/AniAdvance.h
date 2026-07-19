@@ -77,9 +77,10 @@ public:
         i32 range2
     );                  // 0x1587f0  __thiscall on the cursor (G obj)
     char m_pad00[0x0c]; // +0x00..0x0b
-    // authentic: geometry context, reached only by raw offset (+0x24 -> +0x5c -> +0x84,
-    // +0x4); its class is not modeled here - kept void*.
-    void* m_ctx;                    // +0x0c geometry context
+    // The geometry context IS the world/display root: its +0x24 level -> +0x5c main
+    // plane -> +0x84 snappedX and +0x04 drawTarget -> +0x10 frontPair -> +0x10 width
+    // are exactly CDDrawSurfaceMgr's modeled chain (typed 2026-07-19).
+    class CDDrawSurfaceMgr* m_ctx;  // +0x0c geometry context (the world root)
     DSoundCloneInst* m_soundPlayer; // +0x10 sound player
 };
 SIZE_UNKNOWN(CAniBlitTrigger);

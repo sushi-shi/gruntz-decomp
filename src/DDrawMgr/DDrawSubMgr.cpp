@@ -44,7 +44,9 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (real polymorphic)
 #include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (the registry map values)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawWorkerHost.h> // CLevelPlane (the m_ctx geometry chain)
+#include <Gruntz/GameLevel.h>         // CGameLevel::m_mainPlane (the m_ctx geometry chain)
 #include <DDrawMgr/AniAdvance.h>          // CAniBlitTrigger (the per-frame sound trigger)
 #include <Dsndmgr/SoundResMap.h>          // CSoundResMap (RemoveByValue @0x157b00)
 #include <Wap32/WapObj.h>                 // CWapObj : CObject
@@ -1450,15 +1452,13 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
         return 0;
     }
     if (center <= 0) {
-        center = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(*reinterpret_cast<char**>(reinterpret_cast<char*>(m_ctx) + 0x24) + 0x5c) + 0x84));
+        center = m_ctx->m_level->m_mainPlane->m_snappedX;
     }
     if (range1 <= 0) {
-        char* m4 = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_ctx) + 0x4));
-        range1 = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(m4 + 0x10) + 0x10)) << 2;
+        range1 = m_ctx->m_drawTarget->m_frontPair->m_width << 2;
     }
     if (range2 <= 0) {
-        char* m4 = *reinterpret_cast<char**>((reinterpret_cast<char*>(m_ctx) + 0x4));
-        range2 = *reinterpret_cast<i32*>((*reinterpret_cast<char**>(m4 + 0x10) + 0x10)) / 3;
+        range2 = m_ctx->m_drawTarget->m_frontPair->m_width / 3;
     }
     i32 d = pos - center;
     i32 pan;
