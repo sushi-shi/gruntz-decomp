@@ -1,7 +1,7 @@
 // ChannelSlot.h - the per-channel multiplayer roster player-slot record.
 //
 // PROVEN-FOLD (deferred): ChannelSlot IS the +0x150-shifted tail sub-window of the
-// canonical CFocusSlot (GameRegistry.h) - CMultiStartDlg::SyncChannelSlot reaches it as
+// canonical GruntzPlayer (ex CFocusSlot, folded) - CMultiStartDlg::SyncChannelSlot reaches it as
 // (m_host + ch*0x238 + 0x150), exactly the CFocusSlot entry stride the roster's
 // OnColorSlotN / UpdatePlayers already use via ((CFocusSlot*)m_host)[ch]. So
 // ChannelSlot.m_14 (entry+0x164) IS CFocusSlot::m_164 and ChannelSlot.m_ready

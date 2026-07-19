@@ -1,7 +1,7 @@
 // MultiSlot.h - CMultiSlot, a player-slot record in the multiplayer-start dialog's
 // m_host slot array (0x238 stride).
 //
-// PROVEN-FOLD (deferred): CMultiSlot IS a view of the canonical CFocusSlot
+// PROVEN-FOLD (deferred): CMultiSlot IS a view of the canonical GruntzPlayer (ex CFocusSlot - now folded)
 // (GameRegistry.h, the g_gameReg->m_options[4] element MultiStartDlgRoster.cpp
 // already indexes as (CFocusSlot*)m_host) - m_16c IS CFocusSlot::m_16c. The +0x154
 // CString player-name member is the blocker: CGameRegistry holds CFocusSlot by value,
