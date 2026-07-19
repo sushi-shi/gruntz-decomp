@@ -34,8 +34,8 @@ CDB_PATH = REPO + "/build/clangd/compile_commands.json"
 _VOID_KEEPS = {
     # retail's own Build signature passes these as void* (11-arg __thiscall) - typing
     # them would contradict the recovered retail shape (SymTab.h doc block).
-    ("CSymLeafBuilder", "m_record"), ("CSymLeafBuilder", "m_08"),
-    ("CSymLeafBuilder", "m_sourceStream"), ("CSymLeafBuilder", "m_38"),
+    ("CSymLeafBuilder", "m_record"), ("CSymLeafBuilder", "m_typeTag"),
+    ("CSymLeafBuilder", "m_sourceStream"), ("CSymLeafBuilder", "m_valueBuf"),
     # identity cookie by design: heterogeneous object addresses used as reap keys
     # (SoundVoiceList.h "the owning buffer's address as their reap key").
     ("DSoundElem", "m_key"),

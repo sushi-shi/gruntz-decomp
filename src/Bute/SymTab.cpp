@@ -124,8 +124,8 @@ void CSymLeafBuilder::Build(
     m_record = rec;
     m_0c = reinterpret_cast<i32>(f3);
     m_14 = reinterpret_cast<i32>(f1);
-    m_08 = f2;
-    m_38 = 0;
+    m_typeTag = f2;
+    m_valueBuf = 0;
     m_18 = 0;
     m_node.m_record = this;
 }
@@ -133,9 +133,9 @@ void CSymLeafBuilder::Build(
 // ---------------------------------------------------------------------------
 // CSymLeafBuilder::Teardown (0x1397a0, RVA-adjacent to CSymLeafBuilder::Build): the
 // leaf-VALUE-record teardown. Free the strdup'd name (m_name); then free the owned
-// value buffer (m_38) UNLESS the owning scope's shared buffer is live (m_ownerScope &&
+// value buffer (m_valueBuf) UNLESS the owning scope's shared buffer is live (m_ownerScope &&
 // m_ownerScope->m_buf48 != 0); then clear nine fields. __thiscall, void (the two
-// `if (m_38) free` arms tail-merge). Xref: called by ~CSymRec (0x139cf0) over each
+// `if (m_valueBuf) free` arms tail-merge). Xref: called by ~CSymRec (0x139cf0) over each
 // m_valTable payload and by CSymTab::AddNodeSubEntry (0x13a530) when a stale value key
 // is re-scanned - proving the record is the leaf VALUE record CSymLeafBuilder::Build
 // fills.
@@ -146,20 +146,20 @@ void CSymLeafBuilder::Teardown() {
     }
     if (m_ownerScope != 0) {
         if (m_ownerScope->m_buf48 == 0) {
-            if (m_38) {
-                ::operator delete(m_38);
+            if (m_valueBuf) {
+                ::operator delete(m_valueBuf);
             }
         }
     } else {
-        if (m_38) {
-            ::operator delete(m_38);
+        if (m_valueBuf) {
+            ::operator delete(m_valueBuf);
         }
     }
     m_name = 0;
     m_record = 0;
-    m_08 = 0;
+    m_typeTag = 0;
     m_0c = 0;
-    m_38 = 0;
+    m_valueBuf = 0;
     m_ownerScope = 0;
     m_14 = 0;
     m_18 = 0;

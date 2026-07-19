@@ -195,14 +195,14 @@ struct CSymLeafBuilder {
     void Teardown();       // 0x1397a0 (leaf-value teardown; called by ~CSymRec + AddNodeSubEntry)
     char* m_name;          // +0x00  strdup(name) (or null)
     void* m_record;        // +0x04  rec
-    void* m_08;            // +0x08  f2
+    void* m_typeTag;       // +0x08  the Build f2 type-tag slot (opaque per retail's void* sig)
     i32 m_0c;              // +0x0c  f3   (read by ApplyRange)
     CSymTab* m_ownerScope; // +0x10  owning scope (Teardown reads its m_buf48)
     i32 m_14;              // +0x14  f1   (read by ApplyRange)
     i32 m_18;              // +0x18  = 0
     CHashElement m_node;   // +0x1c  hash-node prefix (m_node.m_record @0x30 = this)
     void* m_sourceStream;  // +0x34  source stream
-    void* m_38;            // +0x38  = 0 in Build; the owned value buffer Teardown frees
+    void* m_valueBuf;      // +0x38  the owned leaf-value buffer (0 in Build; Teardown frees)
 };
 SIZE(CSymLeafBuilder, 0x3c); // leaf-record parse slot (fields through m_38 @0x38)
 
