@@ -279,7 +279,7 @@ void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
         if (m_letterIdx >= 0) {
             i32* tbl = g_bootyLetterCoords + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
-            CGameObject** ap = (CGameObject**)((char*)this + 0x1ec); // walks arr1ec by 1
+            CGameObject** ap = m_trailSprites; // walks the array by 1
             for (i32 i = 0; i <= m_letterIdx; i++) {
                 CGameObject* e = *ap;
                 e->m_screenX = tbl[-1];
@@ -311,7 +311,7 @@ void CMultiBootyState::StepGlitterAnim() {
 
     // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
-    CGameObject** arr1ec = (CGameObject**)((char*)this + 0x1ec);
+    CGameObject** arr1ec = m_trailSprites;
     if (idx > 0) {
         i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
         CGameObject** ap = arr1ec;          // eax
@@ -353,7 +353,7 @@ void CMultiBootyState::StepGlitterAnim() {
 RVA(0x00019b90, 0xd7)
 void CMultiBootyState::MoveLettersByDir() {
     if (m_1b4) {
-        CGameObject** p = (CGameObject**)((char*)this + 0x204);
+        CGameObject** p = m_sprintSprites;
         i32 n = 8;
         do {
             CGameObject* e = *p;
@@ -362,7 +362,7 @@ void CMultiBootyState::MoveLettersByDir() {
         } while (--n);
         return;
     }
-    CGameObject** p = (CGameObject**)((char*)this + 0x204);
+    CGameObject** p = m_sprintSprites;
     for (i32 i = 0; i < 8; i++, p++) {
         CGameObject* e = *p;
         i32 x = e->m_screenX;

@@ -263,9 +263,9 @@ public:
     CNetGameMgr* NetGameMgr() {
         return reinterpret_cast<CNetGameMgr*>(m_4);
     }
-    // The resync WM_COMMAND lParam latch (CState +0x1c base-class field, unmodeled here).
+    // The resync WM_COMMAND lParam latch (the inherited CState::m_levelIndex slot, role-reused).
     i32& ResyncLParam() {
-        return *(i32*)((char*)this + 0x1c);
+        return m_levelIndex; // the CState +0x1c slot reused as the resync latch
     }
     // The +0x520 session (command-slot + lobby-sync facets are the same CNetSession).
     CNetSession* Session() {

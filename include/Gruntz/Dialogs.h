@@ -442,11 +442,11 @@ public:
     // controls - the CBattlezDlg::FlashCtrlD twin, no rect-deflate, returns 1.
     i32 FlashCtrlD();
 
-    // The GetSafeHwnd-style accessor the builders fold inline: (this != 0) ?
+    // The GetSafeHwnd-style accessor the builders fold inline (CWnd::m_hWnd @+0x1c): (this != 0) ?
     // (handle @ +0x1c) : 0. Inline member so MSVC inlines it and keeps the null
     // test (matching retail's `test esi,esi; jne; xor eax,eax; mov eax,[esi+0x1c]`).
     i32 GetSafe1c() {
-        return this == 0 ? 0 : *(i32*)((char*)this + 0x1c);
+        return this == 0 ? 0 : reinterpret_cast<i32>(m_hWnd);
     }
 
     i32 m_host;               // +0x5c  (= a0) heterogeneous handle: a CMultiSlot[]/CFocusSlot[]

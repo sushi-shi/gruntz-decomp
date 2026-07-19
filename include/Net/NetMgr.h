@@ -794,7 +794,7 @@ public:
     // Zero the 0x14-dword body + m_54 (the retail ctor sequence AddPlayerNode
     // inlines: single coalesced vptr stamp 0x5f0760 then the zero loop).
     CNetPlayerListNode() {
-        i32* body = (i32*)((char*)this + 4);
+        i32* body = reinterpret_cast<i32*>(&m_desc);
         for (i32 i = 0; i < 0x14; i++) {
             body[i] = 0;
         }

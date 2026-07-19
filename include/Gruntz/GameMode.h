@@ -679,8 +679,9 @@ public:
     i32 m_angleStep; // +0x1e0 spiral angle/step counter (advances by 5)
     i32 m_scratchX;  // +0x1e4 computed scratch X (sin(ang)*r + tableX)
     i32 m_1e8;       // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
-    char m_pad1ec[0x1fc - 0x1ec];
-    CGameObject* m_cursorLetter; // +0x1fc the trailing/cursor letter sprite
+    CGameObject* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle
+                                    //         sprites (walked 0..m_letterIdx, %4-bounded)
+    CGameObject* m_cursorLetter;    // +0x1fc the trailing/cursor letter sprite
     // ENDS AT 0x244 - the allocation-proven size (TransitionState @0x8c056:
     // `push 0x244; call ??2@YAPAXI@Z`, then the ??_7CMultiBootyState (0x5e9bdc) stamp).
     // The out-of-bounds `m_bonusState` @+0x2f8 that used to sit here is GONE, and so is its
@@ -688,7 +689,9 @@ public:
     // [this+0x2f8] off its own `this`, 0xb4 bytes past this class's end, and its only caller
     // is CBootyState::Render. This class is whole again - the fourth and last of the
     // out-of-bounds @identity-TODOs to close by the allocation-site bound.
-    char m_pad200[0x244 - 0x200];
+    i32 m_levelCompleteGate;         // +0x200  level-complete gate (mirrors CBootyState)
+    CGameObject* m_sprintSprites[8]; // +0x204..+0x223  the 8 directional sprint sprites
+    char m_pad224[0x244 - 0x224];
 };
 VTBL(CMultiBootyState, 0x001e9bdc);
 
