@@ -46,7 +46,8 @@ struct WwdGameReg {
     tagRECT* GetMessageBounds(tagRECT* out); // 0x2cb1 thunk, on-screen message bounds
 
     char m_pad0[0x10];
-    i32 m_10; // +0x10  presence gate
+    i32 m_soundEnabled; // +0x10  sound-on flag (== the CGameMgr base's m_soundEnabled;
+                        //         ex "presence gate" - the combat cue paths gate on it)
     char m_pad14[0x2c - 0x14];
     CState* m_2c;              // +0x2c  current game state (curState; the MEGAPHONE unit-count path
                                //         reads its +0x2dc sub-object; == GameRegistry m_curState)

@@ -808,7 +808,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (sample != 0) {
         return;
     }
-    if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x10)) == 0) {
+    if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
     void* entry_ob = 0;
@@ -901,7 +901,7 @@ void CGrunt::ClearSubB() {
 // together once the CMovingLogic/CGrunt field duplication is reconciled.
 RVA(0x00057d10, 0x4e)
 void CGrunt::ReapplyVoiceParams() {
-    if (*reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + 0x10)) == 0) {
+    if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
     DirectSoundMgr* a = m_424;

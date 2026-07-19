@@ -351,7 +351,7 @@ void CMenuState::StartMusic() {
     if (m_1bc == 0) {
         return;
     }
-    if ((reinterpret_cast<WwdGameReg*>(g_gameReg))->m_10 == 0) {
+    if ((reinterpret_cast<WwdGameReg*>(g_gameReg))->m_soundEnabled == 0) {
         return;
     }
     i32 saved = g_sndEnabled;
