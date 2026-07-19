@@ -5292,7 +5292,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
 
     // Map the candidate index, or Probe/Reserve a fresh slot.
     i32 ci = reinterpret_cast<i32>(unit->m_objAux->m_1c);
-    i32 sel;
+    char* sel;
     g_typeColl.m_grown = 0;
     if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
         sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;

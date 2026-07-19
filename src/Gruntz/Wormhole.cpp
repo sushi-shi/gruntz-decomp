@@ -159,8 +159,8 @@ extern "C" void Handler_403846(); // 0x403846 (teleporter "B")
 
 // The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
 // the freshly-grown region (the zDArray::IndexToPtr body).
-static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
-    i32 r;
+static inline char* ResolveNameSlot(zDArray* v, i32 idx) {
+    char* r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
@@ -185,7 +185,7 @@ static inline i32 ResolveNameSlot(zDArray* v, i32 idx) {
 }
 
 // The plain _zvec accessor inlined (no fixup) - the dispatch-table slot resolver.
-static inline i32 ResolveSlot(_zvec* v, i32 idx) {
+static inline char* ResolveSlot(_zvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
@@ -377,11 +377,11 @@ void RegisterWormholeLogic() {
     i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
     if (idx == 0) {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
-        i32 slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
+        char* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
-    i32 dslot = ResolveSlot(&g_wormholeDispatch, idx);
+    char* dslot = ResolveSlot(&g_wormholeDispatch, idx);
     *reinterpret_cast<void**>(dslot) = static_cast<void*>(&WormholeLogic_40181b);
 }
 

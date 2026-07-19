@@ -52,17 +52,17 @@ public:
     _zvec(void* errSink) : CContainerErr(errSink) {}
 
     void* GrowTo(i32 idx, i32 at); // 0x16da80
-    i32 IndexToPtr(i32 idx);       // 0x312a0  (the plain base accessor)
+    char* IndexToPtr(i32 idx);     // 0x312a0  (the plain base accessor)
 
     // vptr @+0x00 and the error sink @+0x04 come from CContainerErr (which names the
     // sink m_errSink; this class's code still reads it under that name).
-    i32 m_lo;     // +0x08
-    i32 m_hi;     // +0x0c
-    i32 m_base;   // +0x10
-    i32 m_spare;  // +0x14
-    i32 m_stride; // +0x18
-    i32 m_alloc;  // +0x1c
-    i32 m_grown;  // +0x20
+    i32 m_lo;      // +0x08
+    i32 m_hi;      // +0x0c
+    char* m_base;  // +0x10  element band (byte-addressed: base + (idx-lo)*stride)
+    char* m_spare; // +0x14  scratch element / error-path result
+    i32 m_stride;  // +0x18
+    char* m_alloc; // +0x1c  raw realloc base / per-element-fixup start
+    i32 m_grown;   // +0x20
 };
 
 // zDArray<int (CUserLogic::*)(void)>: the derived vector whose elements are
@@ -82,7 +82,7 @@ public:
     // inherited error sink. /GX (the half-built CContainerErr base unwinds).
     zDArray(i32 stride, i32 lo, i32 hi, void* scratch);
     i32 Destroy();               // 0x8750  (re-stamp live vtable + run ~zDArray)
-    i32 IndexToPtr(i32 i);       // 0x310f0 (base accessor + per-slot member-ptr init)
+    char* IndexToPtr(i32 i);     // 0x310f0 (base accessor + per-slot member-ptr init)
     virtual ~zDArray() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
 };
 

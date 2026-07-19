@@ -466,7 +466,7 @@ SIZE_UNKNOWN(CombatTypeNode);
         if (id == 0) {                                                                             \
             g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                                          \
             id = g_typeCounter;                                                                    \
-            char* slot = reinterpret_cast<char*>((reinterpret_cast<_zvec*>(&g_typeColl))->IndexToPtr(id));                             \
+            char* slot = g_typeColl._zvec::IndexToPtr(id);                             \
             i32 n = g_typeColl.m_grown;                                                            \
             void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);                                              \
             while (n-- != 0) {                                                                     \

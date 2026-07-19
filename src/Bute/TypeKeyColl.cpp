@@ -602,7 +602,7 @@ RVA(0x0016da80, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
     void* p;
     if (idx < m_lo) {
-        p = realloc(reinterpret_cast<void*>(m_base), (m_hi - (idx - at) + 1) * m_stride);
+        p = realloc(m_base, (m_hi - (idx - at) + 1) * m_stride);
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
             m_errSink->Set(static_cast<void*>(this), reinterpret_cast<u32>(s_out_of_memory), 0x22);
@@ -611,15 +611,15 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
         i32 shift = m_lo - (idx - at);
         m_grown = shift;
-        m_alloc = reinterpret_cast<i32>(p);
-        memcpy(reinterpret_cast<char*>(p) + shift * m_stride, p, oldbytes);
-        memset(reinterpret_cast<char*>(m_alloc), 0, m_grown * m_stride);
+        m_alloc = static_cast<char*>(p);
+        memcpy(m_alloc + shift * m_stride, p, oldbytes);
+        memset(m_alloc, 0, m_grown * m_stride);
         m_lo = idx - at;
-        m_base = reinterpret_cast<i32>(p);
+        m_base = static_cast<char*>(p);
         return p;
     }
     i32 hinew = idx + at;
-    p = realloc(reinterpret_cast<void*>(m_base), (hinew - m_lo + 1) * m_stride);
+    p = realloc(m_base, (hinew - m_lo + 1) * m_stride);
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(static_cast<void*>(this), reinterpret_cast<u32>(s_out_of_memory), 0x22);
@@ -628,10 +628,10 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
     char* fill = reinterpret_cast<char*>(p) + oldbytes;
     m_grown = hinew - m_hi;
-    m_alloc = reinterpret_cast<i32>(fill);
+    m_alloc = fill;
     memset(fill, 0, m_grown * m_stride);
     m_hi = hinew;
-    m_base = reinterpret_cast<i32>(p);
+    m_base = static_cast<char*>(p);
     return p;
 }
 
@@ -792,7 +792,7 @@ CTypeKeyColl::CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch)
 RVA(0x0016de30, 0xe7)
 zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
     : _zvec(&g_zArrayTag) { // -> the CContainerErr base ctor @0x16d9c0
-    m_spare = reinterpret_cast<i32>(scratch); // +0x14  scratch element (was the m_buf2 view)
+    m_spare = static_cast<char*>(scratch); // +0x14  scratch element (was the m_buf2 view)
     m_lo = lo;
     m_hi = hi;
     m_base = 0; // +0x10  element band (was the m_buf view)
@@ -804,13 +804,13 @@ zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
     }
     i32 total = (hi - lo + 1) * stride;
     void* buf = malloc(total);
-    m_base = reinterpret_cast<i32>(buf);
+    m_base = static_cast<char*>(buf);
     if (buf != 0) {
         memset(buf, 0, total);
         if (m_spare != 0) {
             return;
         }
-        m_spare = reinterpret_cast<i32>(malloc(m_stride));
+        m_spare = static_cast<char*>(malloc(m_stride));
         if (m_spare != 0) {
             return;
         }
@@ -827,9 +827,9 @@ zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
 // ===========================================================================
 RVA(0x0016df40, 0x22)
 zDArray::~zDArray() {
-    i32 p = m_base;
+    char* p = m_base;
     if (p) {
-        free(reinterpret_cast<void*>(p));
+        free(p);
     }
     // ~_zvec() base destructor is chained in by the compiler (mov ecx,esi; call).
 }

@@ -48,7 +48,7 @@ extern void* const zDArrayLiveTable; // 0x5e70fc
 // m_base local is not source-recoverable. Logic (re-stamp + run ~zDArray) exact.
 RVA(0x00008750, 0x15)
 i32 zDArray::Destroy() {
-    i32 tmp = m_base;
+    i32 tmp = reinterpret_cast<i32>(m_base);
     *reinterpret_cast<void**>(this) = const_cast<void**>(&zDArrayLiveTable); // re-stamp LIVE vtable (non-dtor wall)
     this->~zDArray();
     return tmp;
@@ -60,8 +60,8 @@ i32 zDArray::Destroy() {
 // Method_030f20 @0x30f20 (before) + FreeNodePool.cpp Push @0x311b0 (after)>. A
 // template-accessor COMDAT the /Gy linker placed by first-use between two OTHER units.
 RVA(0x000310f0, 0x8d)
-i32 zDArray::IndexToPtr(i32 i) {
-    i32 r;
+char* zDArray::IndexToPtr(i32 i) {
+    char* r;
     m_grown = 0;
     if (i >= m_lo && i <= m_hi) {
         r = m_base + (i - m_lo) * m_stride;
@@ -73,7 +73,7 @@ i32 zDArray::IndexToPtr(i32 i) {
         m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
         r = m_spare;
     }
-    char* slot = reinterpret_cast<char*>(m_alloc);
+    char* slot = m_alloc;
     i32 n = m_grown;
     while (n-- != 0) {
         if (slot) {
@@ -95,19 +95,19 @@ i32 zDArray::IndexToPtr(i32 i) {
 // override (0x310f0) matches because its trailing fixup loop shifts the reg
 // pressure; the loop-less base accessor does not flip. Not source-steerable.
 RVA(0x000312a0, 0x74)
-i32 _zvec::IndexToPtr(i32 idx) {
+char* _zvec::IndexToPtr(i32 idx) {
     i32 lo = m_lo;
     m_grown = 0;
     if (idx >= lo && idx <= m_hi) {
         idx -= lo;
         idx *= m_stride;
-        return idx + m_base;
+        return m_base + idx;
     }
     if (GrowTo(idx, 0)) {
-        i32 base = m_base;
+        char* base = m_base;
         idx -= m_lo;
         idx *= m_stride;
-        return idx + base;
+        return base + idx;
     }
     i32 sentinel = reinterpret_cast<i32>(g_projActCache);
     g_retAddrBreadcrumb = GetRetAddr();
