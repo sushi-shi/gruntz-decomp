@@ -1966,7 +1966,7 @@ i32 CDDSurface::RotateBlit(
     i32 colorkey
 ) {
     // Rotation fixed at 0.0f (no rotate); the 5th param carries the scale.
-    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, 0.0f, scale, mode, colorkey);
+    ImageRotateBlit(a1, a2, (i32*)pivot, static_cast<void*>(this), (void*)rect, 0.0f, scale, mode, colorkey);
     return 1;
 }
 
@@ -1991,7 +1991,7 @@ i32 CDDSurface::ScaleBlit(
     i32 colorkey
 ) {
     // Scale fixed at 1.0f (no scale); the 5th param carries the rotation.
-    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, angle, 1.0f, mode, colorkey);
+    ImageRotateBlit(a1, a2, (i32*)pivot, static_cast<void*>(this), (void*)rect, angle, 1.0f, mode, colorkey);
     return 1;
 }
 
@@ -2006,7 +2006,7 @@ i32 CDDSurface::RotateScaleBlit(
     i32 mode,
     i32 colorkey
 ) {
-    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, angle, scale, mode, colorkey);
+    ImageRotateBlit(a1, a2, (i32*)pivot, static_cast<void*>(this), (void*)rect, angle, scale, mode, colorkey);
     return 1;
 }
 

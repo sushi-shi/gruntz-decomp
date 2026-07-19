@@ -382,13 +382,13 @@ i32 Gap_03c990(void) {
 // <Gruntz/DemoHelpers.h>, not as a .cpp-local view.
 RVA(0x0003cbc0, 0x14)
 void COwnerWithSubs::DtorSubC() {
-    ((ifstream*)(void*)this)->ifstream::~ifstream(); // 0x16a240 ??1ifstream@@UAE@XZ
+    ((ifstream*)static_cast<void*>(this))->ifstream::~ifstream(); // 0x16a240 ??1ifstream@@UAE@XZ
     ((ios*)(void*)((char*)this + 0xc))->ios::~ios(); // 0x169d70 ??1ios@@UAE@XZ
 }
 
 RVA(0x0003cbf0, 0x14)
 void COwnerWithSubs::DtorSub8() {
-    ((ofstream*)(void*)this)->ofstream::~ofstream(); // 0x16a8e0 ??1ofstream@@UAE@XZ
+    ((ofstream*)static_cast<void*>(this))->ofstream::~ofstream(); // 0x16a8e0 ??1ofstream@@UAE@XZ
     ((ios*)(void*)((char*)this + 0x8))->ios::~ios(); // 0x169d70 ??1ios@@UAE@XZ
 }
 

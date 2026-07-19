@@ -605,7 +605,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         p = realloc(reinterpret_cast<void*>(m_base), (m_hi - (idx - at) + 1) * m_stride);
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
-            m_errSink->Set((void*)this, reinterpret_cast<u32>(s_out_of_memory), 0x22);
+            m_errSink->Set(static_cast<void*>(this), reinterpret_cast<u32>(s_out_of_memory), 0x22);
             return 0;
         }
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
@@ -622,7 +622,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     p = realloc(reinterpret_cast<void*>(m_base), (hinew - m_lo + 1) * m_stride);
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set((void*)this, reinterpret_cast<u32>(s_out_of_memory), 0x22);
+        m_errSink->Set(static_cast<void*>(this), reinterpret_cast<u32>(s_out_of_memory), 0x22);
         return 0;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
@@ -799,7 +799,7 @@ zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
     m_stride = stride;
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set((void*)this, reinterpret_cast<i32>("Inconsistent bounds"), 0x16);
+        m_errSink->Set(static_cast<void*>(this), reinterpret_cast<i32>("Inconsistent bounds"), 0x16);
         return;
     }
     i32 total = (hi - lo + 1) * stride;
@@ -816,7 +816,7 @@ zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
         }
     }
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set((void*)this, reinterpret_cast<i32>("out of memory"), 0xc);
+    m_errSink->Set(static_cast<void*>(this), reinterpret_cast<i32>("out of memory"), 0xc);
 }
 
 // ===========================================================================

@@ -49,7 +49,7 @@ extern void* const zDArrayLiveTable; // 0x5e70fc
 RVA(0x00008750, 0x15)
 i32 zDArray::Destroy() {
     i32 tmp = m_base;
-    *(void**)this = (void*)&zDArrayLiveTable; // re-stamp LIVE vtable (non-dtor wall)
+    *reinterpret_cast<void**>(this) = (void*)&zDArrayLiveTable; // re-stamp LIVE vtable (non-dtor wall)
     this->~zDArray();
     return tmp;
 }
@@ -70,7 +70,7 @@ i32 zDArray::IndexToPtr(i32 i) {
     } else {
         i32 sentinel = reinterpret_cast<i32>(g_projActCache);
         g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set((void*)this, sentinel, 0xc);
+        m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
         r = m_spare;
     }
     char* slot = reinterpret_cast<char*>(m_alloc);
@@ -111,7 +111,7 @@ i32 _zvec::IndexToPtr(i32 idx) {
     }
     i32 sentinel = reinterpret_cast<i32>(g_projActCache);
     g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set((void*)this, sentinel, 0xc);
+    m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
     return m_spare;
 }
 

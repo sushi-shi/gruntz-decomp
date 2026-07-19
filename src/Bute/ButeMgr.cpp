@@ -2028,7 +2028,7 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 // [ecx-0x14], which pins the class). So `this` is the stream base and cl computes the
 RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
-    ((iostream*)(void*)this)->iostream::~iostream();  // 0x169be0  ??1iostream@@UAE@XZ
+    ((iostream*)static_cast<void*>(this))->iostream::~iostream();  // 0x169be0  ??1iostream@@UAE@XZ
     ((ios*)(void*)((char*)this + 0x14))->ios::~ios(); // 0x169d70  ??1ios@@UAE@XZ
 }
 

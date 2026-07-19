@@ -1416,7 +1416,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
                     return 0;
                 }
             }
-            ((void**)this)[base + i] = cell;
+            (reinterpret_cast<void**>(this))[base + i] = cell;
         }
     }
 

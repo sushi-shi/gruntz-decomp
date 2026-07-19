@@ -5333,7 +5333,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
 RVA(0x00034960, 0x24)
 void CContainerErr::Report(i32 sentinel, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set((void*)this, sentinel, code);
+    m_errSink->Set(static_cast<void*>(this), sentinel, code);
 }
 
 // ===========================================================================
