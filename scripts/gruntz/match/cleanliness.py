@@ -149,10 +149,14 @@ METRICS = (
     (")m_ casts", _count_nonstring_m_casts, False),  # string-cast-excluded; ratcheted
     ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
     ("(const char*) casts", re.compile(r"\(const char ?\*\)"), False),
-    # reinterpret_cast<CFoo*>(m_x) on a member -> a class-pointer reinterpret is a LAUNDER-SUSPECT:
-    # the doctrine fix is to RETYPE the member (cast vanishes + void* m_ drops), not wrap it. Capital-
-    # initial target excludes genuine u8*/u16*/void* buffer reinterprets. Ratcheted; drive via drivers.
-    ("reinterpret_cast<class*>(m_)", re.compile(r"reinterpret_cast<\s*[A-Z]\w*\s*\*+\s*>\(m_[A-Za-z0-9_]"), False),
+    # reinterpret_cast<CFoo*>(m_x) where the operand IS the member (bare) -> a LAUNDER-SUSPECT: the
+    # doctrine fix is to RETYPE the member (cast vanishes + void* m_ drops), not wrap it. The operand
+    # must be exactly `m_x)` - a derived operand `m_list.GetNext(pos)` / `m_arr.GetData()[i]` is a
+    # correct MFC POSITION/void*-container reinterpret (opaque by contract, NOT retypable), not a
+    # member to type. (Audited 2026-07-19: the loose regex read 119, ALL of them derived - 89
+    # POSITION, 29 container-element, 1 chain; 0 bare. See metric-regexes-drift-from-tree.)
+    ("reinterpret_cast<class*>(m_)",
+     re.compile(r"reinterpret_cast<\s*[A-Z]\w*\s*\*+\s*>\(\s*m_[A-Za-z0-9_]+\s*\)"), False),
     # C-style NUMERIC/math value casts -> static_cast<T>(...) (byte-neutral; un-matches this regex).
     # A cast is `(TYPE)operand` in a VALUE context. The lookbehind excludes DECLARATOR contexts the
     # bare regex mis-read as casts: a single-arg fn param list `Method(i32)`, a fn-pointer type
