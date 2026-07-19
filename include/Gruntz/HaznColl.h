@@ -3,7 +3,7 @@
 // as the static-hazard registry (@0x64e3d0), the timebomb registry (@0x64c780), and
 // the shared name registry (@0x6bf650), and range-registered from the boundary thunk
 // pool. The slow coordinate lookup and range-register are the real _zvec / CZDArray
-// methods, called through a cast: `((_zvec*)&g)->GrowTo` (0x16da80) and
+// methods, called through a cast: `(reinterpret_cast<_zvec*>(&g))->GrowTo` (0x16da80) and
 // `((CZDArrayDerived*)&g)->Construct` (0x8710). This struct is now a pure
 // address-holder for the DATA-pinned globals; offsets + code bytes are load-bearing.
 //

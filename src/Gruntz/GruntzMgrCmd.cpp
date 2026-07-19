@@ -117,7 +117,7 @@ void Fwd114ec0(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char*
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c = 0;                                                                           \
-        m_world->m_soundRegistry->m_10.Lookup(TAG, (void*&)_c); /* CMapStringToPtr (0x1b8438) */   \
+        m_world->m_soundRegistry->m_10.Lookup(TAG, reinterpret_cast<void*&>(_c)); /* CMapStringToPtr (0x1b8438) */   \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }

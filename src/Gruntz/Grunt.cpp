@@ -270,7 +270,7 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
-        m_38->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), (void*&)_out); \
+        m_38->m_0c->m_animRegistry->m_10.Lookup("GRUNTZ_" + m_animSetName + (sfx), reinterpret_cast<void*&>(_out)); \
         (dst) = _out;                                                                              \
     } while (0)
 

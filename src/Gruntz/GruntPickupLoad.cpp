@@ -39,7 +39,7 @@
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
         a4 = 0;                                                                                    \
-        m_38->m_0c->m_animRegistry->m_10.Lookup((key), (void*&)a4);                               \
+        m_38->m_0c->m_animRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(a4));                               \
         id = (idv);                                                                                \
         m_pickupGeoSrc = a4;                                                                       \
     } while (0)

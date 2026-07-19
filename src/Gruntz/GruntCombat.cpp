@@ -253,7 +253,7 @@ enum SpellzEffect {
 //  (the CSndHost, defined below in this very TU), then __thiscalls the looked-up
 //  LeafCue's PlayIfElapsed. The "__cdecl lookup" was a latent-ecx flat alias.)
 
-// The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
+// The active-anim-set type-name registry: (reinterpret_cast<_zvec*>(&g_typeColl))->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeColl.m_alloc[0..g_typeColl.m_grown) each get Reset.
 // The bute-config manager (canonical CButeMgr, g_buteMgr from <Bute/ButeMgr.h>):
 // GetDwordDef (0x1721e0) is reloc-masked __thiscall.
@@ -306,7 +306,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
-        g_gameReg->m_world->m_soundRegistry->m_10.Lookup((key), (void*&)out);                      \
+        g_gameReg->m_world->m_soundRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(out));                      \
         cue = out;                                                                                 \
     } while (0)
 
@@ -465,7 +465,7 @@ SIZE_UNKNOWN(CombatTypeNode);
         if (id == 0) {                                                                             \
             g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                                          \
             id = g_typeCounter;                                                                    \
-            char* slot = reinterpret_cast<char*>(((_zvec*)&g_typeColl)->IndexToPtr(id));                             \
+            char* slot = reinterpret_cast<char*>((reinterpret_cast<_zvec*>(&g_typeColl))->IndexToPtr(id));                             \
             i32 n = g_typeColl.m_grown;                                                            \
             void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);                                              \
             while (n-- != 0) {                                                                     \
