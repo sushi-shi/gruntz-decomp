@@ -557,7 +557,7 @@ public:
     i32 m_1bc;                    // +0x1bc  Dispatch re-post gate (WM_COMMAND 0x8023 while set)
     i32 m_1c0; // +0x1c0  Dispatch level-quiesce latch (set 1 on level index 0x20)
     i32 m_1c4; // +0x1c4  deferred-draw gate (LoadByMode sets 1; EnterMode consumes; serialized)
-    char m_pad1c8[0x1cc - 0x1c8]; // +0x1c8
+    i32 m_1c8; // +0x1c8  (CPlay ctor zero-init)
     i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_frameTime)
     i32 m_1d0; // +0x1d0  cleared by the ~CPlay teardown body
     char m_pad1d4[0x2d0 - 0x1d4];
