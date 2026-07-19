@@ -35,7 +35,7 @@ void SetShadeDescr(ShadeDescr* v, int mode); // 0x14dcf0
 // additive + eight subtractive color tables, and register the grey table (key 9).
 // ===========================================================================
 RVA(0x0009dad0, 0x14a)
-i32 CLightFxMgr::Init(CGameRegistry* reg, void* owner) {
+i32 CLightFxMgr::Init(CGameRegistry* reg, CGruntzMgr* owner) {
     if (!reg) {
         return 0;
     }

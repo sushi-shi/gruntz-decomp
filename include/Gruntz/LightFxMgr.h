@@ -32,7 +32,7 @@ public:
     // 0x9dad0  Init - bind to the game registry, fetch the shade-table cache, and
     // build the identity + additive + 8 subtractive color tables, registering the
     // grey table globally (key 9). __thiscall, 2 args (reg, owner), ret 0x8.
-    i32 Init(CGameRegistry* reg, void* owner);
+    i32 Init(CGameRegistry* reg, class CGruntzMgr* owner);
     // 0x9dc80  Reset - zero the bound pointers (+0x4..+0x10) and the 10 table
     // slots. __thiscall, no args, ret 0.
     void Reset();
@@ -41,7 +41,7 @@ public:
     // resolved format word. __thiscall, 3 args, ret 0xc.
     i32 Push(CImageSet* imgSet, i32 anchor, i32 slot);
 
-    void* m_owner;             // +0x00  owner (Init arg1)
+    class CGruntzMgr* m_owner; // +0x00  owner (Init arg2 = the manager)
     CGameRegistry* m_reg;      // +0x04  the game registry (Init arg0)
     CDDrawSurfaceMgr* m_world; // +0x08  reg->m_world (+0x30 loaded world/resource holder;
                                //        ex `void* m_spriteFactory` - misnamed)

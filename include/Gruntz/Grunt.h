@@ -1158,7 +1158,7 @@ public:
     // byte-verified - see <Gruntz/Projectile.h> for the worked shape. CProjectile did
     // not hit this because its handler table's return types are uniform.
     // ---------------------------------------------------------------------
-    void* m_34; // +0x150  (CWapX::m_34)
+    CGameObject* m_34; // +0x150  (CWapX::m_34; == the bound object, m_38's twin slot)
     CGameObject* m_38; // +0x154  the created entrance-anim sprite object (the ex
                         //         CEntranceAnimPlayer view - the player IS the
                         //         created CGameObject; see UserLogic.h's tail note)

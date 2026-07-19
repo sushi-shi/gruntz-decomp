@@ -599,7 +599,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_logicPump) + 0x14 + k * 4)) = 0;
         }
     }
-    if (!m_logicPump->Init(0, static_cast<void*>(this))) {
+    if (!m_logicPump->Init(0, this)) {
         if (m_logicPump) {
             m_logicPump->Reset();
             RezFree(m_logicPump);
