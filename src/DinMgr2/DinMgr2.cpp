@@ -1145,12 +1145,12 @@ typedef enum MouseKeyFlags {
     do {                                                                                           \
         if (m_edgeKeys & (bit)) {                                                                  \
             if (m_latchedKeys & (bit)) {                                                           \
-                m_currentKeys &= ~(u32)(bit);                                                      \
+                m_currentKeys &= ~static_cast<u32>(bit);                                                      \
             } else {                                                                               \
                 m_latchedKeys |= (bit);                                                            \
             }                                                                                      \
         } else {                                                                                   \
-            m_latchedKeys &= ~(u32)(bit);                                                          \
+            m_latchedKeys &= ~static_cast<u32>(bit);                                                          \
         }                                                                                          \
     } while (0)
 

@@ -118,7 +118,7 @@ public:
         return (CImageParent*)m_0c;
     }
     void SetOwner(CImageParent* p) {
-        m_0c = (i32)p;
+        m_0c = reinterpret_cast<i32>(p);
     }
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
     void AddFrameAt_1521c0(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]

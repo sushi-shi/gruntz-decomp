@@ -40,13 +40,13 @@ inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     // Each block re-reads world->m_workerCache for BOTH the Find and the
     // CreateWorker call (retail reloads the chain at each site - do not hoist).
     if (!obj->m_0c->m_workerCache->Find("LogicHit")) {
-        obj->m_0c->m_workerCache->CreateWorker((i32)LogicHitFactory, "LogicHit", 2);
+        obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicHitFactory), "LogicHit", 2);
     }
     if (!obj->m_0c->m_workerCache->Find("LogicAttack")) {
-        obj->m_0c->m_workerCache->CreateWorker((i32)LogicAttackFactory, "LogicAttack", 2);
+        obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicAttackFactory), "LogicAttack", 2);
     }
     if (!obj->m_0c->m_workerCache->Find("LogicBump")) {
-        obj->m_0c->m_workerCache->CreateWorker((i32)LogicBumpFactory, "LogicBump", 2);
+        obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicBumpFactory), "LogicBump", 2);
     }
 }
 

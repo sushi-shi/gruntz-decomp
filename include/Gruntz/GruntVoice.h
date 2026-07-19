@@ -132,12 +132,12 @@ static inline CVActEntry* VActLookup(i32 coord) {
     if (coord >= g_vactLo && coord <= g_vactHi) {
         return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
     }
-    if ((i32)((_zvec*)&g_vactColl)->GrowTo(coord, 0)) {
+    if (reinterpret_cast<i32>(((_zvec*)&g_vactColl)->GrowTo(coord, 0))) {
         return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_vactColl2->Set(&g_vactColl, (i32)item, 0xc);
+    g_vactColl2->Set(&g_vactColl, reinterpret_cast<i32>(item), 0xc);
     return g_vactCur;
 }
 

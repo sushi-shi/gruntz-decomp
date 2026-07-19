@@ -82,7 +82,7 @@ public:
     // vptr stamp; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
     CDDrawWorkerBase(CDDrawWorkerCtx* ctx) : CResolveNode(NO_SEED) {
         m_04 = 0;
-        m_0c = (i32)ctx; // the CLoadable-family int owner handle
+        m_0c = reinterpret_cast<i32>(ctx); // the CLoadable-family int owner handle
         m_08 = 0;
         m_20 = static_cast<i32>(0x80000000);
         m_38 = -1;

@@ -53,12 +53,12 @@ struct CActReg : public CActColl {
         if (id >= m_lo && id <= m_hi) {
             return m_base + (id - m_lo) * m_stride;
         }
-        if ((i32)((_zvec*)this)->GrowTo(id, 0)) {
+        if (reinterpret_cast<i32>(((_zvec*)this)->GrowTo(id, 0))) {
             return m_base + (id - m_lo) * m_stride;
         }
         void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_coll2->Set(this, (i32)item, 0xc);
+        m_coll2->Set(this, reinterpret_cast<i32>(item), 0xc);
         return m_cur;
     }
 };

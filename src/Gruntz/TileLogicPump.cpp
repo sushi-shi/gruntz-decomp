@@ -110,7 +110,7 @@ CActReg g_tileActReg;
 // ---------------------------------------------------------------------------
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_7c;                                                                \
-    switch ((u32)ctl->m_1c) {                                                                      \
+    switch (reinterpret_cast<u32>(ctl->m_1c)) {                                                                      \
         case 0: {                                                                                  \
             ctl->m_1c = (void*)0x3e8;                                                              \
             LEAF* t = new LEAF(obj);                                                               \

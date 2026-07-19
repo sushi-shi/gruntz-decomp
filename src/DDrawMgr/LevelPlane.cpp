@@ -467,7 +467,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
 // locals; expanded textually to reproduce the 9 separate inlined sites.
 #define DRAW_CELL(handle, xp, yp, srcp)                                                            \
     do {                                                                                           \
-        u32 h_ = (u32)(handle);                                                                    \
+        u32 h_ = static_cast<u32>(handle);                                                                    \
         if (h_ == 0xeeeeeeee) {                                                                    \
             dr.left = (xp);                                                                        \
             dr.top = (yp);                                                                         \
@@ -476,7 +476,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
             surf->BltEx(&dr, 0, 0, 0x1000400, &m_surface);                                         \
         } else if (h_ != 0xffffffff) {                                                             \
             CPlaneFrame* fr_ = ((CPlaneFrame**)m_frameSets.GetData())[h_ >> 16];                   \
-            i32 idx_ = (i32)(h_ & 0xffff);                                                         \
+            i32 idx_ = static_cast<i32>(h_ & 0xffff);                                                         \
             CPlaneTile* e_;                                                                        \
             if (idx_ >= fr_->m_lo && idx_ <= fr_->m_hi) {                                          \
                 e_ = fr_->m_frames[idx_];                                                          \

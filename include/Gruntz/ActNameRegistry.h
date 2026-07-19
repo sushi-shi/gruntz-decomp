@@ -70,14 +70,14 @@ static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     char* slot;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        slot = (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
-    } else if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
-        slot = (char*)(g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride);
+        slot = reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+    } else if (reinterpret_cast<i32>(((_zvec*)&g_typeColl)->GrowTo(id, 0))) {
+        slot = reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
     } else {
         void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        g_typeColl.m_errSink->Set(&g_typeColl, (i32)item, 0xc);
-        slot = (char*)g_typeColl.m_spare;
+        g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+        slot = reinterpret_cast<char*>(g_typeColl.m_spare);
     }
     return slot;
 }
