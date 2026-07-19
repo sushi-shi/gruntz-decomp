@@ -872,10 +872,10 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
     return w;
 }
 RVA(0x001652c0, 0x92)
-void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
+void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 a3) {
     AnimWorkerObj* w = MakeAnimWorker(this);
 
-    if (w->Init(reinterpret_cast<GameObjNotifyFn>(a1), a3) == 0) {
+    if (w->Init(factory, a3) == 0) {
         if (w != 0) {
             delete w;
         }

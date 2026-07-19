@@ -56,9 +56,9 @@
 // COMDAT but not into any leaf.
 // ---------------------------------------------------------------------------
 extern "C" {
-    void LogicHitFactory();    // 0x56e4c0
-    void LogicAttackFactory(); // 0x56e4d0
-    void LogicBumpFactory();   // 0x56e4e0
+    i32 LogicHitFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)    // 0x56e4c0
+    i32 LogicAttackFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant) // 0x56e4d0
+    i32 LogicBumpFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)   // 0x56e4e0
 }
 // REGISTRY = the canonical CDDrawWorkerCache (Fable A2, 2026-07-14; see
 // LogicTypeTable.cpp): the "+0x24 registrar" is its slot-9 CreateWorker and the
@@ -72,21 +72,21 @@ inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicHit", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicHitFactory), "LogicHit", 2);
+            obj->m_0c->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
         }
     }
     {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicAttack", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicAttackFactory), "LogicAttack", 2);
+            obj->m_0c->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
         CObject* found = 0;
         obj->m_0c->m_workerCache->m_10.Lookup("LogicBump", found);
         if (!found) {
-            obj->m_0c->m_workerCache->CreateWorker(reinterpret_cast<i32>(LogicBumpFactory), "LogicBump", 2);
+            obj->m_0c->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
         }
     }
 }

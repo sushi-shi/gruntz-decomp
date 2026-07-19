@@ -11,6 +11,7 @@
 // bytes are load-bearing (campaign doctrine).
 
 #include <Ints.h>
+#include <DDrawMgr/AnimWorkerObj.h> // GameObjNotifyFn (the CreateWorker registrant ABI)
 #include <rva.h>
 #include <Wap32/Object.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
@@ -57,7 +58,10 @@ public:
     virtual StateId GetStateId() {
         return STATE_WORKERCACHE; // 0x13
     }
-    virtual void* CreateWorker(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
+    // The registered per-type notify/factory callback: the body hands it straight to
+    // AnimWorkerObj::Init as the worker's GameObjNotifyFn (a1 was `i32` - every one
+    // of the 82 call sites passed reinterpret_cast<i32>(&Factory)).
+    virtual void* CreateWorker(GameObjNotifyFn factory, const char* key, i32 a3); // [9] 0x1652c0
 
     // 0x9cab0 (body in StreamRecordLoaders.cpp - spatially adjacent at retail): the
     // out-param wrapper over m_10.Lookup (CMapStringToOb::Lookup @0x1b8008); returns

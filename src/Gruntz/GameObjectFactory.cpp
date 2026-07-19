@@ -25,79 +25,79 @@
 // Reloc-masked externals: per-type object create-fns (ILT thunks to the real
 // ctors) and the per-type follow-up registration helpers (by ILT-thunk RVA).
 extern "C" {
-    void* CreateAniCycle();
-    void* CreateDoNothingNormal();
-    void* CreateDoNothing();
-    void* CreateSimpleAnimation();
-    void* CreateMenuSparkle();
-    void* CreateFrontCandy();
-    void* CreateBehindCandy();
-    void* CreateFrontCandyAni();
-    void* CreateBehindCandyAni();
-    void* CreateEyeCandy();
-    void* CreateEyeCandyAni();
-    void* CreateGrunt();
-    void* CreateGlobalAmbientSound();
-    void* CreateAmbientSound();
-    void* CreateAmbientPosSound();
-    void* CreateSpotAmbientSound();
-    void* CreateActionArea();
-    void* CreateStatusBarSprite();
-    void* CreateParticlez();
-    void* CreateExplosion();
-    void* CreateGruntSelectedSprite();
-    void* CreateGruntHealthSprite();
-    void* CreateGruntStaminaSprite();
-    void* CreateGruntToySprite();
-    void* CreateGruntToyTimeSprite();
-    void* CreateGruntWingzTimeSprite();
-    void* CreateGruntPowerupSprite();
-    void* CreateToyPeek();
-    void* CreateTileTriggerSwitch();
-    void* CreateTileTrigger();
-    void* CreateTileSecretTrigger();
-    void* CreateBrickz();
-    void* CreateTileTriggerTransition();
-    void* CreateGruntStartingPoint();
-    void* CreateGruntCreationPoint();
-    void* CreateFortressFlag();
-    void* CreateExitTrigger();
-    void* CreateGiantRock();
-    void* CreateCoveredPowerup();
-    void* CreateInGameIcon();
-    void* CreateInGameText();
-    void* CreateWormhole();
-    void* CreateGruntPuddle();
-    void* CreateRollingBall();
-    void* CreateObjectDropper();
-    void* CreateDroppedObject();
-    void* CreateDroppedObjectShadow();
-    void* CreateCheckpointTrigger();
-    void* CreateTeleporter();
-    void* CreateSecretTeleporterTrigger();
-    void* CreateSecretLevelTrigger();
-    void* CreateProjectile();
-    void* CreateBoomerang();
-    void* CreateStaticHazard();
-    void* CreateToobSpikez();
-    void* CreateTimeBomb();
-    void* CreateSpotLight();
-    void* CreateKitchenSlime();
-    void* CreateSingleAnimation();
-    void* CreateWayPoint();
-    void* CreateWarlord();
-    void* CreatePathHazard();
-    void* CreateRainCloud();
-    void* CreateUFO();
-    void* CreateGruntVoice();
-    void* CreateWarpStonePad();
-    void* CreateGuardPoint();
-    void* CreateVoiceTrigger();
-    void* CreateLevelTime();
-    void* CreateCursorSnapSprite();
-    void* CreateLightFx();
-    void* CreateDemoMover();
-    void* CreateDemoSign();
+    i32 CreateAniCycle(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateDoNothingNormal(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateDoNothing(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateSimpleAnimation(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateMenuSparkle(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateFrontCandy(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateBehindCandy(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateFrontCandyAni(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateBehindCandyAni(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateEyeCandy(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateEyeCandyAni(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGrunt(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGlobalAmbientSound(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateAmbientSound(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateAmbientPosSound(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateSpotAmbientSound(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateActionArea(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateStatusBarSprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateParticlez(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateExplosion(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntSelectedSprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntHealthSprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntStaminaSprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntToySprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntToyTimeSprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntWingzTimeSprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntPowerupSprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateToyPeek(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateTileTriggerSwitch(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateTileTrigger(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateTileSecretTrigger(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateBrickz(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateTileTriggerTransition(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntStartingPoint(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntCreationPoint(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateFortressFlag(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateExitTrigger(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGiantRock(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateCoveredPowerup(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateInGameIcon(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateInGameText(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateWormhole(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntPuddle(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateRollingBall(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateObjectDropper(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateDroppedObject(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateDroppedObjectShadow(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateCheckpointTrigger(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateTeleporter(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateSecretTeleporterTrigger(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateSecretLevelTrigger(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateProjectile(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateBoomerang(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateStaticHazard(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateToobSpikez(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateTimeBomb(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateSpotLight(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateKitchenSlime(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateSingleAnimation(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateWayPoint(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateWarlord(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreatePathHazard(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateRainCloud(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateUFO(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGruntVoice(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateWarpStonePad(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateGuardPoint(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateVoiceTrigger(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateLevelTime(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateCursorSnapSprite(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateLightFx(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateDemoMover(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
+    i32 CreateDemoSign(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)
     // (The five remaining follow-up registrars are now bound as real static-member
     // calls via <Gruntz/ObjTypeRegistrars.h>: their home TUs declare them `static`
     // (SAXXZ), so the retail this-less `call rel32` binds to the exact RVA without a
@@ -200,137 +200,137 @@ extern "C" {
 // @source: string-xref
 RVA(0x0000a3b0, 0x6e2)
 void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateAniCycle), "AniCycle", 2);
+    ctx->m_workerCache->CreateWorker(CreateAniCycle, "AniCycle", 2);
     CAniCycle::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateDoNothingNormal), "DoNothingNormal", 0);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateDoNothing), "DoNothing", 2);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateSimpleAnimation), "SimpleAnimation", 2);
+    ctx->m_workerCache->CreateWorker(CreateDoNothingNormal, "DoNothingNormal", 0);
+    ctx->m_workerCache->CreateWorker(CreateDoNothing, "DoNothing", 2);
+    ctx->m_workerCache->CreateWorker(CreateSimpleAnimation, "SimpleAnimation", 2);
     RegisterSimpleAnimLogic();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateMenuSparkle), "MenuSparkle", 2);
+    ctx->m_workerCache->CreateWorker(CreateMenuSparkle, "MenuSparkle", 2);
     RegisterXLogic_646010();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateFrontCandy), "FrontCandy", 2);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateBehindCandy), "BehindCandy", 2);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateFrontCandyAni), "FrontCandyAni", 2);
+    ctx->m_workerCache->CreateWorker(CreateFrontCandy, "FrontCandy", 2);
+    ctx->m_workerCache->CreateWorker(CreateBehindCandy, "BehindCandy", 2);
+    ctx->m_workerCache->CreateWorker(CreateFrontCandyAni, "FrontCandyAni", 2);
     CFrontCandyAni::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateBehindCandyAni), "BehindCandyAni", 2);
+    ctx->m_workerCache->CreateWorker(CreateBehindCandyAni, "BehindCandyAni", 2);
     CBehindCandyAni::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateEyeCandy), "EyeCandy", 2);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateEyeCandyAni), "EyeCandyAni", 2);
+    ctx->m_workerCache->CreateWorker(CreateEyeCandy, "EyeCandy", 2);
+    ctx->m_workerCache->CreateWorker(CreateEyeCandyAni, "EyeCandyAni", 2);
     CEyeCandyAni::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGrunt), "Grunt", 4);
+    ctx->m_workerCache->CreateWorker(CreateGrunt, "Grunt", 4);
     RegisterActs_644af0();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGlobalAmbientSound), "GlobalAmbientSound", 4);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateAmbientSound), "AmbientSound", 1);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateAmbientPosSound), "AmbientPosSound", 0);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateSpotAmbientSound), "SpotAmbientSound", 0);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateActionArea), "ActionArea", 4);
+    ctx->m_workerCache->CreateWorker(CreateGlobalAmbientSound, "GlobalAmbientSound", 4);
+    ctx->m_workerCache->CreateWorker(CreateAmbientSound, "AmbientSound", 1);
+    ctx->m_workerCache->CreateWorker(CreateAmbientPosSound, "AmbientPosSound", 0);
+    ctx->m_workerCache->CreateWorker(CreateSpotAmbientSound, "SpotAmbientSound", 0);
+    ctx->m_workerCache->CreateWorker(CreateActionArea, "ActionArea", 4);
     CProjActObj::RegisterType();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateStatusBarSprite), "StatusBarSprite", 2);
+    ctx->m_workerCache->CreateWorker(CreateStatusBarSprite, "StatusBarSprite", 2);
     CStatusBarSprite::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateParticlez), "Particlez", 4);
+    ctx->m_workerCache->CreateWorker(CreateParticlez, "Particlez", 4);
     CParticlez::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateExplosion), "Explosion", 4);
+    ctx->m_workerCache->CreateWorker(CreateExplosion, "Explosion", 4);
     RegisterXLogic_6447f8();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntSelectedSprite), "GruntSelectedSprite", 2);
+    ctx->m_workerCache->CreateWorker(CreateGruntSelectedSprite, "GruntSelectedSprite", 2);
     CGruntSelectedSprite::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntHealthSprite), "GruntHealthSprite", 2);
+    ctx->m_workerCache->CreateWorker(CreateGruntHealthSprite, "GruntHealthSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntStaminaSprite), "GruntStaminaSprite", 2);
+    ctx->m_workerCache->CreateWorker(CreateGruntStaminaSprite, "GruntStaminaSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntToySprite), "GruntToySprite", 2);
+    ctx->m_workerCache->CreateWorker(CreateGruntToySprite, "GruntToySprite", 2);
     CGruntToySprite::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntToyTimeSprite), "GruntToyTimeSprite", 2);
+    ctx->m_workerCache->CreateWorker(CreateGruntToyTimeSprite, "GruntToyTimeSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntWingzTimeSprite), "GruntWingzTimeSprite", 2);
+    ctx->m_workerCache->CreateWorker(CreateGruntWingzTimeSprite, "GruntWingzTimeSprite", 2);
     CGruntHealthSprite::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntPowerupSprite), "GruntPowerupSprite", 2);
+    ctx->m_workerCache->CreateWorker(CreateGruntPowerupSprite, "GruntPowerupSprite", 2);
     CGruntPowerupSprite::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateToyPeek), "ToyPeek", 4);
+    ctx->m_workerCache->CreateWorker(CreateToyPeek, "ToyPeek", 4);
     RegisterIconState();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateTileTriggerSwitch), "TileTriggerSwitch", 4);
+    ctx->m_workerCache->CreateWorker(CreateTileTriggerSwitch, "TileTriggerSwitch", 4);
     CTileTriggerSwitch::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateTileTrigger), "TileTrigger", 4);
+    ctx->m_workerCache->CreateWorker(CreateTileTrigger, "TileTrigger", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateTileSecretTrigger), "TileSecretTrigger", 4);
+    ctx->m_workerCache->CreateWorker(CreateTileSecretTrigger, "TileSecretTrigger", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateBrickz), "Brickz", 4);
+    ctx->m_workerCache->CreateWorker(CreateBrickz, "Brickz", 4);
     CBrickz::RegisterActs(); // 0x10ebe0 (ex 'CCheckpointTrigger::' - the shift-by-one)
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateTileTriggerTransition), "TileTriggerTransition", 4);
+    ctx->m_workerCache->CreateWorker(CreateTileTriggerTransition, "TileTriggerTransition", 4);
     CTileTriggerTransition::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntStartingPoint), "GruntStartingPoint", 4);
+    ctx->m_workerCache->CreateWorker(CreateGruntStartingPoint, "GruntStartingPoint", 4);
     ActReg4RegisterType();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntCreationPoint), "GruntCreationPoint", 4);
+    ctx->m_workerCache->CreateWorker(CreateGruntCreationPoint, "GruntCreationPoint", 4);
     CGruntCreationPoint::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateFortressFlag), "FortressFlag", 4);
+    ctx->m_workerCache->CreateWorker(CreateFortressFlag, "FortressFlag", 4);
     CFortressFlag::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateExitTrigger), "ExitTrigger", 4);
+    ctx->m_workerCache->CreateWorker(CreateExitTrigger, "ExitTrigger", 4);
     CExitTrigger::RegisterActs(); // 0x3f3f0 (ex 'CWormhole::' - CExitTrigger's act cluster)
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGiantRock), "GiantRock", 4);
+    ctx->m_workerCache->CreateWorker(CreateGiantRock, "GiantRock", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateCoveredPowerup), "CoveredPowerup", 4);
+    ctx->m_workerCache->CreateWorker(CreateCoveredPowerup, "CoveredPowerup", 4);
     CTileTrigger::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateInGameIcon), "InGameIcon", 4);
+    ctx->m_workerCache->CreateWorker(CreateInGameIcon, "InGameIcon", 4);
     RegisterIconActions();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateInGameText), "InGameText", 4);
+    ctx->m_workerCache->CreateWorker(CreateInGameText, "InGameText", 4);
     RegisterTextLogic();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateWormhole), "Wormhole", 4);
+    ctx->m_workerCache->CreateWorker(CreateWormhole, "Wormhole", 4);
     RegisterWormholeLogic();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntPuddle), "GruntPuddle", 4);
+    ctx->m_workerCache->CreateWorker(CreateGruntPuddle, "GruntPuddle", 4);
     RegisterLogic_6445e8();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateRollingBall), "RollingBall", 4);
+    ctx->m_workerCache->CreateWorker(CreateRollingBall, "RollingBall", 4);
     CRollingBall::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateObjectDropper), "ObjectDropper", 4);
+    ctx->m_workerCache->CreateWorker(CreateObjectDropper, "ObjectDropper", 4);
     CObjectDropper::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateDroppedObject), "DroppedObject", 4);
+    ctx->m_workerCache->CreateWorker(CreateDroppedObject, "DroppedObject", 4);
     CDroppedObject::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateDroppedObjectShadow), "DroppedObjectShadow", 4);
+    ctx->m_workerCache->CreateWorker(CreateDroppedObjectShadow, "DroppedObjectShadow", 4);
     CDroppedObjectShadow::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateCheckpointTrigger), "CheckpointTrigger", 4);
+    ctx->m_workerCache->CreateWorker(CreateCheckpointTrigger, "CheckpointTrigger", 4);
     CCheckpointTrigger::RegisterActs(); // 0x10f340 (ex 'CTileSecretTrigger::')
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateTeleporter), "Teleporter", 4);
+    ctx->m_workerCache->CreateWorker(CreateTeleporter, "Teleporter", 4);
     CTeleporter_RegisterActs();
     ctx->m_workerCache
-        ->CreateWorker(reinterpret_cast<i32>(CreateSecretTeleporterTrigger), "SecretTeleporterTrigger", 4);
+        ->CreateWorker(CreateSecretTeleporterTrigger, "SecretTeleporterTrigger", 4);
     CSecretTeleporterTrigger::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateSecretLevelTrigger), "SecretLevelTrigger", 4);
+    ctx->m_workerCache->CreateWorker(CreateSecretLevelTrigger, "SecretLevelTrigger", 4);
     CSecretLevelTrigger::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateProjectile), "Projectile", 4);
+    ctx->m_workerCache->CreateWorker(CreateProjectile, "Projectile", 4);
     CProjectile::RegisterType();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateBoomerang), "Boomerang", 4);
+    ctx->m_workerCache->CreateWorker(CreateBoomerang, "Boomerang", 4);
     CProjectile::RegisterType();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateStaticHazard), "StaticHazard", 4);
+    ctx->m_workerCache->CreateWorker(CreateStaticHazard, "StaticHazard", 4);
     CStaticHazard::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateToobSpikez), "ToobSpikez", 4);
+    ctx->m_workerCache->CreateWorker(CreateToobSpikez, "ToobSpikez", 4);
     CToobSpikez::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateTimeBomb), "TimeBomb", 4);
+    ctx->m_workerCache->CreateWorker(CreateTimeBomb, "TimeBomb", 4);
     CTimeBomb::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateSpotLight), "SpotLight", 4);
+    ctx->m_workerCache->CreateWorker(CreateSpotLight, "SpotLight", 4);
     RegisterActs_646188();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateKitchenSlime), "KitchenSlime", 4);
+    ctx->m_workerCache->CreateWorker(CreateKitchenSlime, "KitchenSlime", 4);
     CKitchenSlime::RegisterType();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateSingleAnimation), "SingleAnimation", 4);
+    ctx->m_workerCache->CreateWorker(CreateSingleAnimation, "SingleAnimation", 4);
     CSingleAnimation::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateWayPoint), "WayPoint", 4);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateWarlord), "Warlord", 4);
+    ctx->m_workerCache->CreateWorker(CreateWayPoint, "WayPoint", 4);
+    ctx->m_workerCache->CreateWorker(CreateWarlord, "Warlord", 4);
     RegisterWarlordActions();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreatePathHazard), "PathHazard", 4);
+    ctx->m_workerCache->CreateWorker(CreatePathHazard, "PathHazard", 4);
     RegisterActs_646250();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateRainCloud), "RainCloud", 4);
+    ctx->m_workerCache->CreateWorker(CreateRainCloud, "RainCloud", 4);
     RegisterActs_646250();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateUFO), "UFO", 4);
+    ctx->m_workerCache->CreateWorker(CreateUFO, "UFO", 4);
     RegisterActs_646250();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGruntVoice), "GruntVoice", 4);
+    ctx->m_workerCache->CreateWorker(CreateGruntVoice, "GruntVoice", 4);
     RegisterActs_6514d8();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateWarpStonePad), "WarpStonePad", 4);
+    ctx->m_workerCache->CreateWorker(CreateWarpStonePad, "WarpStonePad", 4);
     CWarpStonePad::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateGuardPoint), "GuardPoint", 4);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateVoiceTrigger), "VoiceTrigger", 4);
+    ctx->m_workerCache->CreateWorker(CreateGuardPoint, "GuardPoint", 4);
+    ctx->m_workerCache->CreateWorker(CreateVoiceTrigger, "VoiceTrigger", 4);
     CVoiceTrigger::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateLevelTime), "LevelTime", 4);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateCursorSnapSprite), "CursorSnapSprite", 1);
+    ctx->m_workerCache->CreateWorker(CreateLevelTime, "LevelTime", 4);
+    ctx->m_workerCache->CreateWorker(CreateCursorSnapSprite, "CursorSnapSprite", 1);
     RegisterXLogic_62bfa0();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateLightFx), "LightFx", 4);
+    ctx->m_workerCache->CreateWorker(CreateLightFx, "LightFx", 4);
     CLightFx::RegisterActs();
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateDemoMover), "DemoMover", 0);
-    ctx->m_workerCache->CreateWorker(reinterpret_cast<i32>(CreateDemoSign), "DemoSign", 0);
+    ctx->m_workerCache->CreateWorker(CreateDemoMover, "DemoMover", 0);
+    ctx->m_workerCache->CreateWorker(CreateDemoSign, "DemoSign", 0);
 }
