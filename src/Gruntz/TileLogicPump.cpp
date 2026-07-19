@@ -421,7 +421,7 @@ void CWarpStonePad::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CWarpStonePad::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
 }
 
 // --- CTileTriggerSwitch (0x10dc40), vptr 0x5e7f6c --- ctor anchors the vtable.
@@ -476,7 +476,7 @@ void CTileTriggerSwitch::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CTileTriggerSwitch::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
 }
 
 // --- CTileTrigger 1-arg (0x10e220), vptr 0x5e7f14 ---
@@ -532,7 +532,7 @@ void CTileTrigger::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CTileTrigger::AdvanceAnim;
+        static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
 }
 
 // CBrickz::CBrickz @0x10e800 (the cbrickz stray, folded waveM-strays) - the 1-arg leaf ctor:
@@ -611,7 +611,7 @@ void CBrickz::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CBrickz::Trigger;
+        static_cast<i32 (CUserLogic::*)()>(&CBrickz::Trigger);
 }
 
 // CCheckpointTrigger::CCheckpointTrigger(CGameObject*) @0x10ee20 - the 1-arg leaf ctor:
@@ -710,7 +710,7 @@ void CCheckpointTrigger::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(id)))->m_fn =
-        (i32 (CUserLogic::*)())&CCheckpointTrigger::Act_10f6a0;
+        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f6a0);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -729,7 +729,7 @@ void CCheckpointTrigger::RegisterActs() {
         g_typeCounter++;
     }
     (reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(id2)))->m_fn =
-        (i32 (CUserLogic::*)())&CCheckpointTrigger::Act_10f970;
+        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f970);
 }
 
 // @confidence: high
@@ -842,7 +842,7 @@ void CTileTriggerTransition::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(id)))->m_fn = (i32 (CUserLogic::*)())&CTileTriggerTransition::Handler_110110;
+    (reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::Handler_110110);
 }
 
 // ApplyAnimation (0x110070) - reads the object's +0x1b4 animation descriptor, applies the

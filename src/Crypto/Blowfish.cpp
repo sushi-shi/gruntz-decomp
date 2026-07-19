@@ -48,7 +48,7 @@ u32 g_bfInitP[18] = BF_PI_P_INIT;
 DATA(0x0021bf40)
 u32 g_bfInitS[4][256] = BF_PI_S_INIT;
 
-#define BF_S ((u32*)g_bfS)
+#define BF_S (reinterpret_cast<u32*>(g_bfS))
 
 // One Feistel round: LL ^= P; LL ^= F(R). Computed as retail does it -
 // (S[0x100+b] + S[0x000+a]) is a commutative add the optimizer reorders.

@@ -531,30 +531,30 @@ i32 CKitchenSlime::LoadSprites() {
             m_dirX = 0;
             m_dirY = 0;
             *reinterpret_cast<i32*>(&m_dirY) = 0;
-            *((i32*)&m_dirX + 1) = 0;
-            *((i32*)&m_dirY + 1) = 0xbff00000;
+            *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0;
+            *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0xbff00000;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
             *reinterpret_cast<i32*>(&m_posX) = m_stepMag;
-            *((i32*)&m_posX + 1) = *((i32*)&m_stepMag + 1);
+            *(reinterpret_cast<i32*>(&m_posX) + 1) = *(reinterpret_cast<i32*>(&m_stepMag) + 1);
             m_dirX = 0;
             m_dirY = 0;
-            *((i32*)&m_dirX + 1) = 0x3ff00000;
-            *((i32*)&m_dirY + 1) = 0;
+            *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0x3ff00000;
+            *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
             *reinterpret_cast<i32*>(&m_posY) = m_stepMag;
-            *((i32*)&m_posY + 1) = *((i32*)&m_stepMag + 1);
+            *(reinterpret_cast<i32*>(&m_posY) + 1) = *(reinterpret_cast<i32*>(&m_stepMag) + 1);
             m_dirX = 0;
             m_dirY = 0;
-            *((i32*)&m_dirY + 1) = 0x3ff00000;
-            *((i32*)&m_dirX + 1) = 0;
+            *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0x3ff00000;
+            *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
             }
@@ -563,8 +563,8 @@ i32 CKitchenSlime::LoadSprites() {
             m_posX = -static_cast<double>(*reinterpret_cast<i32*>(&m_stepMag));
             m_dirX = 0;
             m_dirY = 0;
-            *((i32*)&m_dirX + 1) = 0xbff00000;
-            *((i32*)&m_dirY + 1) = 0;
+            *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0xbff00000;
+            *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_WEST");
             }

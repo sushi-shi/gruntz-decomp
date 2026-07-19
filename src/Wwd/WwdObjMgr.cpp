@@ -767,16 +767,16 @@ void CDDrawChildGroup::CollideBroadcast() {
                             CDDrawRect ra, rb;
                             i32 xi = *reinterpret_cast<i32*>((oi + 0x5c));
                             i32 yi = *reinterpret_cast<i32*>((oi + 0x60));
-                            ra.left = *(i32*)(oi + 0x144) + xi;
-                            ra.top = *(i32*)(oi + 0x148) + yi;
-                            ra.right = *(i32*)(oi + 0x14c) + xi;
-                            ra.bottom = *(i32*)(oi + 0x150) + yi;
+                            ra.left = *reinterpret_cast<i32*>(oi + 0x144) + xi;
+                            ra.top = *reinterpret_cast<i32*>(oi + 0x148) + yi;
+                            ra.right = *reinterpret_cast<i32*>(oi + 0x14c) + xi;
+                            ra.bottom = *reinterpret_cast<i32*>(oi + 0x150) + yi;
                             i32 xj = *reinterpret_cast<i32*>((oj + 0x5c));
                             i32 yj = *reinterpret_cast<i32*>((oj + 0x60));
-                            rb.left = *(i32*)(oj + 0x154) + xj;
-                            rb.top = *(i32*)(oj + 0x158) + yj;
-                            rb.right = *(i32*)(oj + 0x15c) + xj;
-                            rb.bottom = *(i32*)(oj + 0x160) + yj;
+                            rb.left = *reinterpret_cast<i32*>(oj + 0x154) + xj;
+                            rb.top = *reinterpret_cast<i32*>(oj + 0x158) + yj;
+                            rb.right = *reinterpret_cast<i32*>(oj + 0x15c) + xj;
+                            rb.bottom = *reinterpret_cast<i32*>(oj + 0x160) + yj;
                             overlap = RectsOverlap_15bfb0(&ra, &rb);
                         }
                         if (overlap) {
@@ -789,10 +789,10 @@ void CDDrawChildGroup::CollideBroadcast() {
                             }
                             if (mask1) {
                                 if (*reinterpret_cast<i32*>((oi + 8)) & 8) {
-                                    i32 v = *(i32*)(oi + 0x128) - *reinterpret_cast<i32*>((oj + 0x120));
+                                    i32 v = *reinterpret_cast<i32*>(oi + 0x128) - *reinterpret_cast<i32*>((oj + 0x120));
                                     *reinterpret_cast<i32*>((oi + 0x128)) = v;
                                     if (v <= 0) {
-                                        *reinterpret_cast<i32*>((*(char**)(oi + 0x7c) + 0x1c)) = 0x1c;
+                                        *reinterpret_cast<i32*>((*reinterpret_cast<char**>(oi + 0x7c) + 0x1c)) = 0x1c;
                                     }
                                 } else {
                                     AnimWorkerObj* nf = *reinterpret_cast<AnimWorkerObj**>((oi + 0x80));
@@ -1106,7 +1106,7 @@ void* CDDrawChildGroup::Find_15a8c0(i32 id, const char* key) {
         node = *reinterpret_cast<char**>(node);
         i32 tag = (reinterpret_cast<CWwdGameObjectE*>(obj))->GetClassId(); // vtable slot 8 (the type tag)
         if (tag == 5 && *reinterpret_cast<i32*>((obj + 4)) == id
-            && *reinterpret_cast<i32*>((*(char**)(obj + 0x7c) + 0x10)) == *reinterpret_cast<i32*>((fp + 0x10))) {
+            && *reinterpret_cast<i32*>((*reinterpret_cast<char**>(obj + 0x7c) + 0x10)) == *reinterpret_cast<i32*>((fp + 0x10))) {
             return obj;
         }
     } while (node != 0);
