@@ -8,6 +8,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/Grunt.h> // complete CGrunt: the CUserLogic downcast is static
 #include <Gruntz/GameRegPtr.h>
 #include <Gruntz/CurPlayer.h>     // g_curPlayer
 #include <Gruntz/SerialCounter.h> // g_serialCounter

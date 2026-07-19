@@ -22,6 +22,7 @@
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h>
+#include <Gruntz/WwdGameObject.h> // complete CWwdGameObject: the CGameObject downcast is static
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 #include <Gruntz/GameLevel.h>    // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
 #include <Gruntz/UserLogic.h>    // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
@@ -1052,7 +1053,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // registers the object with it. (The old view took the ADDRESS of +0xb0 and called
     // CObList::AddTail on it - a `lea` where retail emits a `mov`, and a mis-bound
     // NAFXCW symbol; +0xb0 holds a POINTER, as RebuildPlanes' `new(0xb8)` store proves.)
-    m_scroll->RemoveObject(reinterpret_cast<CWwdGameObject*>(obj));
+    m_scroll->RemoveObject(static_cast<CWwdGameObject*>(obj));
 
     return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
 }
