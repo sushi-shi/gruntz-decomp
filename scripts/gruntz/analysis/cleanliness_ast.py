@@ -183,8 +183,11 @@ def scan_tu(tu, board):
                             board.add("offset-casts", rel, off)
         elif node.kind == cidx.CursorKind.FIELD_DECL:
             t = node.type.get_canonical()
+            # judge the SPELLED type: a named typedef (HANDLE, LPVOID-free spellings)
+            # IS a typed member; only literal void* spellings count.
             if t.kind == cidx.TypeKind.POINTER \
-                    and t.get_pointee().get_canonical().kind == cidx.TypeKind.VOID:
+                    and t.get_pointee().get_canonical().kind == cidx.TypeKind.VOID \
+                    and node.type.spelling.replace(' ', '') in ('void*', 'constvoid*'):
                 rel = _rel(node)
                 if rel:
                     cls = node.semantic_parent.spelling if node.semantic_parent else '?'
