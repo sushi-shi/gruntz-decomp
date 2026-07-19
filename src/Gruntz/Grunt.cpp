@@ -748,7 +748,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_cells[6].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ITEM;
         m_cells[7].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ITEM;
         m_cells[8].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ITEM;
-        *reinterpret_cast<CString*>(&m_44c) = s_GRUNTZ_ + m_animSetName + s_d48_DEATH;
+        m_44c = s_GRUNTZ_ + m_animSetName + s_d48_DEATH;
     } else if (dirOnly != 0) {
         m_cells[0].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST;
         m_cells[1].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
@@ -759,9 +759,9 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_cells[6].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST;
         m_cells[7].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH;
         m_cells[8].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST;
-        *reinterpret_cast<CString*>(&m_448) = s_GRUNTZ_ + m_animSetName + s_d48_BREAK;
+        m_448 = s_GRUNTZ_ + m_animSetName + s_d48_BREAK;
     } else {
-        *reinterpret_cast<CString*>(&m_448) = s_GRUNTZ_ + m_animSetName;
+        m_448 = s_GRUNTZ_ + m_animSetName;
     }
     i32 sel = g_gameReg->m_74->GetSel(m_1f4_moveIcon, kind);
     CGameObject* h = m_10;

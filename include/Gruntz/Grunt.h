@@ -1379,9 +1379,9 @@ public:
     i32 m_434;                        // +0x434
     i32 m_438;                        // +0x438
     GruntEntranceCell m_entranceCell; // +0x43c (entrance-cell triple {col, row, reason})
-    GruntStrSub m_448;                // +0x448 (~CString 0x1b9cde; destructed by ~CGrunt)
+    CString m_448;                    // +0x448 (real CString; ex the GruntStrSub shell)
     char m_pad449[0x44c - 0x449];
-    GruntStrSub m_44c; // +0x44c (~CString 0x1b9cde; destructed by ~CGrunt)
+    CString m_44c; // +0x44c (real CString; ex the GruntStrSub shell)
     char m_pad44d[0x450 - 0x44d];
     i32 m_arrivalPhase;    // +0x450 (arrival/update dispatch phase: 2 = in-flight, 3 = committing)
     i32 m_454;             // +0x454 (serialized)

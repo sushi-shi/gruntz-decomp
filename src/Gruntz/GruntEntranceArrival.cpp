@@ -856,7 +856,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             CAniElement* desc = m_38->m_1a0.m_14;
             i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
             i32 frame = el[0x14 / 4];
-            char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
+            char* buf = (&m_448)->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
@@ -959,7 +959,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         CAniElement* desc = m_38->m_1a0.m_14;
         i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = el[0x14 / 4];
-        char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
+        char* buf = (&m_448)->GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
     }
 
@@ -1049,7 +1049,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         CAniElement* desc = m_38->m_1a0.m_14;
         CAniDesc* elem = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem->m_param;
-        char* nm = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
+        char* nm = (&m_448)->GetBuffer(0);
         m_38->ApplyLookupSprite(nm, frame);
         m_entranceStamped = 1;
         CGameObject* h = m_10;
@@ -1673,7 +1673,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
 
             CAniElement* desc = m_38->m_1a0.m_14;
             i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-            char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
+            char* buf = (&m_448)->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, elem[0x14 / 4]);
 
             CGameObject* h = m_10;

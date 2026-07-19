@@ -887,7 +887,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         i32* elem = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
 
-        char* buf = (reinterpret_cast<CString*>(&m_448))->GetBuffer(0);
+        char* buf = (&m_448)->GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
 
         m_entranceStamped = 1;
