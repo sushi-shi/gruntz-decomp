@@ -118,7 +118,7 @@ public:
 // still-`void*` canonical member.
 class CMultiLogicDesc {
 public:
-    void* m_0;
+    u32 m_0;    // +0x00  the DPLCONNECTION dwSize dword (the desc overlays the blob)
     u8 m_flags; // +0x04  bit 0x2 -> m_isHost latch
     char m_pad5_8[0x8 - 0x5];
     char* m_8;            // +0x08  host-name string

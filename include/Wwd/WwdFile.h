@@ -72,7 +72,7 @@ private:
     // vptr (its virtuals are unmatched; declaring them would emit a wrong ??_7 and
     // regress Save), m_handle is a Win32 HANDLE, m_name the engine CString buffer.
     // None are dereferenced here; they are pure layout placeholders. Kept void*.
-    void* m_00;      // +0x00  engine vptr (opaque)
+    char _vft0[4];   // +0x00  engine vptr (reduced view; not dispatched)
     HANDLE m_handle; // +0x04  Win32 HANDLE (-1 when closed); never dereferenced here
     i32 m_open;      // +0x08  open/refcount flag
     char* m_name;    // +0x0C  CString filename buffer (the CString body pointer)

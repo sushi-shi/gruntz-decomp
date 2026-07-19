@@ -30,7 +30,7 @@
 // CActColl's 3 methods are all views of real fns (cast at each call, no local methods):
 //   Find @0x16da80 = _zvec::GrowTo,  Construct/RegisterRange @0x8710 = CZDArrayDerived::Construct.
 struct CActColl {
-    void* m_coll; // +0x00  the collection object (its first dword)
+    class CQueueDrainHost* m_coll; // +0x00  the object collection (ListGetFirst/Next host)
 };
 // GetRetAddr / g_projActCache / g_retAddrBreadcrumb are declared canonically in
 // <Wap32/zBitVec.h> (included above) - the low-level container-error breadcrumb owner.
