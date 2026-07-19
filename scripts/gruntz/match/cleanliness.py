@@ -260,6 +260,22 @@ def count() -> list[tuple[str, int]]:
                     continue
                 totals[label] += matcher(code) if callable(matcher) else len(matcher.findall(code))
     rows = [(label, totals[label]) for label, _, _ in METRICS]
+    # The *Views.h holding pens are EXCLUDED from the ratcheted view metrics above
+    # (drain-campaign machinery), which made their resident view classes invisible
+    # once the drain ended - a false green (user call-out 2026-07-19). Count them
+    # as their own tracked (non-ratcheted) debt row: every class/struct DEFINITION
+    # in a *Views.h is a view by construction; drive to 0 by identity folds.
+    vh = 0
+    for root in ROOTS:
+        base = REPO / root
+        if not base.is_dir():
+            continue
+        for path in base.rglob("*Views.h"):
+            try:
+                vh += len(_TYPEDEF_DEF.findall(_strip(path.read_text(errors="ignore"))))
+            except OSError:
+                pass
+    rows.append(("view classes (*Views.h)", vh))
     cc = _caller_callee_counts()  # build-derived; omitted if no IR
     for lbl in _CALLER_CALLEE_LABELS:
         if lbl in cc:

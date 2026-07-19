@@ -66,6 +66,44 @@ _VOID_KEEPS = {
     ("CRect118", "m_0"), ("Cb151d20", "m_1c"),
 }
 
+def _usr(d):
+    try:
+        return d.get_usr()
+    except Exception:  # noqa
+        return None
+
+
+def _bases(decl, seen):
+    for ch in decl.get_children():
+        if ch.kind == cidx.CursorKind.CXX_BASE_SPECIFIER:
+            d = ch.type.get_declaration()
+            u = _usr(d)
+            if d is not None and u and u not in seen:
+                seen.add(u)
+                yield d
+                yield from _bases(d, seen)
+
+
+def _hier_related(a, b):
+    au, bu = _usr(a), _usr(b)
+    if not au or not bu:
+        return False
+    if au == bu:
+        return True
+    for base in _bases(a, set()):
+        if _usr(base) == bu:
+            return True
+    for base in _bases(b, set()):
+        if _usr(base) == au:
+            return True
+    return False
+
+
+# Generic-collection element types whose casts are the ALLOWED keeps (user goal
+# 2026-07-19): POSITION cookies and MFC list-node internals - by-contract opaque.
+_COLL_TYPES = {"__POSITION"}
+
+
 _NUMERIC = {cidx.TypeKind.INT, cidx.TypeKind.UINT, cidx.TypeKind.LONG, cidx.TypeKind.ULONG,
             cidx.TypeKind.LONGLONG, cidx.TypeKind.ULONGLONG, cidx.TypeKind.SHORT,
             cidx.TypeKind.USHORT, cidx.TypeKind.CHAR_S, cidx.TypeKind.CHAR_U,
@@ -126,7 +164,7 @@ class Board:
         self.seen.add((key, rel, off))
         self.counts[key] += 1
         self.by_file[rel][key] += 1
-        if len(self.sites[key]) < 20:
+        if len(self.sites[key]) < 400:
             self.sites[key].append("%s:%s %s" % (rel, off, note))
 
 
@@ -181,6 +219,27 @@ def scan_tu(tu, board):
                         toks = [t.spelling for t in parent.get_tokens()]
                         if "+" in toks or "-" in toks:
                             board.add("offset-casts", rel, off)
+        elif node.kind == cidx.CursorKind.CXX_REINTERPRET_CAST_EXPR:
+            rel = _rel(node)
+            if rel:
+                tgt = node.type.get_canonical()
+                kids = list(node.get_children())
+                op = kids[-1] if kids else None
+                if op is not None and tgt.kind == cidx.TypeKind.POINTER:
+                    tp = tgt.get_pointee().get_canonical()
+                    ot = op.type.get_canonical()
+                    if tp.kind == cidx.TypeKind.RECORD and ot.kind == cidx.TypeKind.POINTER:
+                        opp = ot.get_pointee().get_canonical()
+                        if opp.kind == cidx.TypeKind.RECORD:
+                            td, od = tp.get_declaration(), opp.get_declaration()
+                            tn, on = td.spelling, od.spelling
+                            if tn in _COLL_TYPES or on in _COLL_TYPES:
+                                board.add("cross-casts (collection keeps)", rel,
+                                          node.extent.start.offset)
+                            elif not _hier_related(td, od):
+                                board.add("cross-class reinterpret casts", rel,
+                                          node.extent.start.offset,
+                                          "%s -> %s" % (on[:24], tn[:24]))
         elif node.kind == cidx.CursorKind.FIELD_DECL:
             t = node.type.get_canonical()
             # judge the SPELLED type: a named typedef (HANDLE, LPVOID-free spellings)
@@ -223,14 +282,16 @@ def main():
         if (i + 1) % 40 == 0 or i + 1 == len(tus):
             sys.stderr.write("[%d/%d]\n" % (i + 1, len(tus)))
     print("=== cleanliness (AST, definitional) ===")
-    order = ["c-style casts", "vendor-macro casts", "  target numeric", "  target char*", "  target class*",
+    order = ["cross-class reinterpret casts", "cross-casts (collection keeps)",
+             "c-style casts", "vendor-macro casts", "  target numeric", "  target char*", "  target class*",
              "  target other-ptr", "  operand this", "offset-casts", "self-casts",
              "void* fields", "void* fields (documented keeps)", "extern var decls (.cpp)"]
     for k in order:
         print("%-26s %5d" % (k, board.counts.get(k, 0)))
     for k in order:
         if board.counts.get(k) and k.strip() != "void* fields" \
-                and k != "extern var decls (.cpp)":
+                and k != "extern var decls (.cpp)" \
+                and k != "cross-casts (collection keeps)":
             print("--- %s sites (first %d) ---" % (k, len(board.sites[k])))
             for s in board.sites[k]:
                 print("   ", s)
