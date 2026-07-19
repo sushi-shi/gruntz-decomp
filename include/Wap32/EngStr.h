@@ -24,16 +24,10 @@
 
 #include <Ints.h>
 
-// The render config the forwarder fetches (obj->m_sub->m_cfg); its +0x2c is the font
-// draw-method pointer injected as the render worker's 4th arg (forwarded opaquely).
-struct EngStrRenderCfg {
-    char m_pad00[0x2c]; // +0x00
-    class CDDSurface* m_drawSurface;     // +0x2c
-};
-struct EngStrRenderSub {
-    char m_pad00[0x10];     // +0x00
-    EngStrRenderCfg* m_cfg; // +0x10
-};
+// (EngStrRenderSub/EngStrRenderCfg are DISSOLVED, 2026-07-19 - offset-proven:
+// the "sub" is CDDrawSubMgrPages (its +0x10 m_cfg == m_frontPair) and the "cfg"
+// is CDDrawSurfacePair (its +0x2c m_drawSurface == m_surface). The render chain
+// in real terms: world->m_drawTarget->m_frontPair->m_surface.)
 // (EngStrRenderObj is DISSOLVED, 2026-07-19: the "render object" IS the world
 // manager CDDrawSurfaceMgr - every caller passed m_c/m_world/m_levelData, all the
 // same holder - and its +0x04 "m_sub" is m_drawTarget (the pages). The Sub/Cfg

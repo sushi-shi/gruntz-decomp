@@ -2,7 +2,9 @@
 // the Ghidra `EngStr` text routine (C:\Proj\incs). The container classes it touches
 // (CContainerErr, zBitVec, CVariantSlot) are the canonical <Wap32/zBitVec.h> shapes.
 #include <Ints.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the real render "object" (world mgr; m_drawTarget)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // the real render "object" (world mgr; m_drawTarget)
+#include <DDrawMgr/DDrawSubMgrPages.h>  // the pages (m_frontPair)
+#include <DDrawMgr/DDrawSurfacePair.h>  // the front pair (m_surface)
 #include <rva.h>
 // EngStrRenderCfg/Sub/Obj (the opaque per-caller text-render object) + the lean
 // EngStr_DrawText/EngStr_RenderText decls now live in the shared header, so every
@@ -30,11 +32,11 @@ void EngStr_DrawText(
     i32 a7,
     i32 a8
 ) {
-    EngStrRenderCfg* cfg = (reinterpret_cast<EngStrRenderSub*>(obj->m_drawTarget))->m_cfg; // the pages' EngStr facet (next fold layer)
-    if (cfg == 0) {
+    CDDrawSurfacePair* pair = obj->m_drawTarget->m_frontPair; // the real chain (ex the Sub/Cfg facets)
+    if (pair == 0) {
         return;
     }
-    EngStr_RenderText(obj, a1, a2, cfg->m_drawSurface, a3, a4, a5, a6, a7, a8);
+    EngStr_RenderText(obj, a1, a2, pair->m_surface, a3, a4, a5, a6, a7, a8);
 }
 
 // (~CContainerErr @0x16da60 and zBitVec::SetSize @0x16e100 live in their retail
@@ -42,7 +44,5 @@ void EngStr_DrawText(
 
 // Size metadata for the <Wap32/EngStr.h> render-family types (hosted at .cpp EOF so the
 // SIZE records do not reschedule this TU's /O2 codegen).
-SIZE_UNKNOWN(EngStrRenderCfg); // render-config partial (pad + drawFn)
-SIZE_UNKNOWN(EngStrRenderSub); // render-sub partial (pad + cfg)
 
 // --- vtable catalog ---
