@@ -155,7 +155,7 @@ def main():
             sys.stderr.write("PARSE-FAIL %s: %s\n" % (e["file"], ex))
             continue
 
-        def visit(node):
+        def visit(node, parent=None):
             if node.kind == cidx.CursorKind.CXX_REINTERPRET_CAST_EXPR:
                 rel = _rel(node)
                 if rel:
@@ -167,10 +167,35 @@ def main():
                         if op is not None:
                             b, frm, to = _classify(node.type.get_canonical(),
                                                    op.type.get_canonical())
+                            if b == "char-arith":
+                                # SPLIT: does the cast participate in pointer math?
+                                # (result under +/-/[] => an array-walk SUSPECT; the
+                                # operand itself being an arith expr counts too - the
+                                # (T*)((char*)p + off) shape.)
+                                suspect = False
+                                if parent is not None and parent.kind in (
+                                        cidx.CursorKind.BINARY_OPERATOR,
+                                        cidx.CursorKind.ARRAY_SUBSCRIPT_EXPR):
+                                    toks = [t.spelling for t in parent.get_tokens()][:24]
+                                    if '+' in toks or '-' in toks or '[' in toks:
+                                        suspect = True
+                                if not suspect and op is not None:
+                                    ok = list(op.get_children())
+                                    inner = op
+                                    while ok and inner.kind in (
+                                            cidx.CursorKind.UNEXPOSED_EXPR,
+                                            cidx.CursorKind.PAREN_EXPR):
+                                        inner = ok[0]
+                                        ok = list(inner.get_children())
+                                    if inner.kind == cidx.CursorKind.BINARY_OPERATOR:
+                                        toks = [t.spelling for t in inner.get_tokens()][:24]
+                                        if '+' in toks or '-' in toks:
+                                            suspect = True
+                                b = "char-walk" if suspect else "char-io"
                             counts[b] += 1
                             rows.append((b, "%s:%d" % (rel, off), frm, to))
             for ch in node.get_children():
-                visit(ch)
+                visit(ch, node)
 
         visit(tu.cursor)
         if (i + 1) % 40 == 0 or i + 1 == len(tus):

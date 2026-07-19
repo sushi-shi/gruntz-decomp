@@ -25,7 +25,11 @@ class CDDSurface;
 // carried-verbatim extra attributes. The inside-vertex copy moves the whole record
 // (rep movs, 7 dwords).
 struct ClipVtx {
-    float x, y, u, v, c, d, e;
+    float x, y, u, v; // the clip passes interpolate these as floats
+    // +0x10..+0x1b: the 14-bit FIXED-POINT (x,u,v) the edge tables interpolate per
+    // scanline (the warp/fill rasters read/write ONLY these as i32; no float use of
+    // the tail exists anywhere - grep-proven 2026-07-19; ex `float c,d,e`).
+    i32 fx, fu, fv;
 };
 
 // The two ping-pong clip/raster scratch buffers + the published clipped-vertex count.

@@ -74,7 +74,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
                 if (topRow < botRow) {
                     i32 x = topX;
                     do {
-                        entry->m_10 = x;
+                        entry->fx = x;
                         x += xSlope;
                         entry++;
                     } while (--height != 0);

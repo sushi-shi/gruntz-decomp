@@ -5,12 +5,9 @@
 
 #include <Ints.h>
 
-// A per-scanline edge record (stride 0x1c); the interpolated fixed-point x lands
-// at +0x10. The two active-edge tables hold the left/right span endpoints per row.
-struct FillEdgeRow {
-    char p0[0x10];
-    i32 m_10; // +0x10  interpolated x (14-bit fixed point)
-    char p1[0x1c - 0x14];
-};
+#include <Image/RasterVtx.h>
+// The per-scanline edge record IS the raster vertex row (stride 0x1c, fixed x at
+// +0x10 == ClipVtx::fx). The padded FillEdgeRow shell is dissolved (2026-07-19).
+typedef ClipVtx FillEdgeRow;
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWPOLYFILL_H
