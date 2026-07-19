@@ -24,6 +24,9 @@
 // would DEVIRTUALIZE to a direct call. Dispatching through this never-constructed
 // dummy-virtual view (cl can't reason about its dynamic type) keeps the retail
 // virtual dispatch. Kept for CFileMem. (docs/patterns/dummy-virtual-slots.md.)
+// DISSOLUTION TESTED 2026-07-19: `CFile* f = &m_file; f->Open(..)` held bytes at
+// CFileMem::Open, but converting ALL sites + deleting this view cost -4 exact
+// (deterministic) - the shim is LOAD-BEARING for the other dispatch sites; keep.
 struct CFileIODispatch {
     // Slots 0-9 are MFC's own (CObject's five + CFile's early getters; the slot-10
     // Open @+0x28 pins the alignment). Never dispatched through this view - the
