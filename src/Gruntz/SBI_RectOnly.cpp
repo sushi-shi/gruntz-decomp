@@ -15,6 +15,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_c->m_imageRegistry->m_10map (LoadMainStatusBarSprite)
 #include <Gruntz/SBI_GruntMachine.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDSurface.h>
@@ -139,9 +140,9 @@ void SbiList_Dtor(); // 0x5b48c6
 RVA(0x000c8980, 0x64)
 void CStatusBarMgr::DtorMembers() {
     Teardown();
-    ((CByteArray*)((char*)this + 0x530))
+    reinterpret_cast<CByteArray*>(&m_ptrPool)
         ->CByteArray::~CByteArray(); // +0x530 real CByteArray teardown
-    Tm_DestroyArray((char*)this + 0x2c, 0x1c, 8, (void*)&SbiList_Dtor);
+    Tm_DestroyArray(m_tabLists, 0x1c, 8, (void*)&SbiList_Dtor);
 }
 
 // ~CStatusBarItem is the SBI_DTOR_CHAIN inline body (stamp vftable + DtorStatus) now, so
@@ -3158,7 +3159,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_position = 0;
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
-    SetRect((LPRECT)((char*)this + 0x10), vx - 0xa0, 0, vx, 0x1e0);
+    SetRect(reinterpret_cast<LPRECT>(&m_10), vx - 0xa0, 0, vx, 0x1e0); // the +0x10..+0x1f tab-strip rect
     m_rect14.m_c = 0;
     m_24 = vx - 0x45;
     m_28 = vy - 0x30;
@@ -3272,9 +3273,9 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 rc.c = m_rect14.m_4;
                 ((CDDSurface*)tgt)->Restore(&rc, 0);
             }
-            char* mc = *(char**)((char*)this + 0xc);
+            CMapStringToOb* map = &m_c->m_imageRegistry->m_10map;
             void* found = 0;
-            CMapStringToOb* map = (CMapStringToOb*)(*(char**)(mc + 0x10) + 0x10);
+
             map->Lookup("GAME_STATUSBAR_MAINBAR", (CObject*&)found);
             if (found) {
                 CSbiMainBarCfg* cfg = (CSbiMainBarCfg*)found;
