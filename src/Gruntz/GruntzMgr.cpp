@@ -1207,7 +1207,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
 // wall, see docs/patterns/constant-cse-immediate-vs-hoist.md (regalloc family).
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
-    if (Wap32GameMgrVfunc3() && m_world) {
+    if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
             i32 count = view->m_planes.GetSize();
@@ -1235,7 +1235,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
 // (no lock check). Active-gated + world/view guarded like ToggleObjectLayer.
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
-    if (Wap32GameMgrVfunc3() && m_world) {
+    if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
             CPlaneRender* layer = view->m_mainPlane;
@@ -1254,7 +1254,7 @@ i32 CGruntzMgr::ToggleHeightLayer() {
 // positive); unlocked-checked (bit 0) then m_8 ^= 2. Active-gated + guarded.
 RVA(0x0008f0b0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
-    if (Wap32GameMgrVfunc3() && m_world) {
+    if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
             CPlaneRender* layer =
@@ -1405,7 +1405,7 @@ void CGruntzMgr::RefreshGameClock() {
 // idle.
 RVA(0x0008f6a0, 0x7d)
 void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
-    if (Wap32GameMgrVfunc3() == 0) {
+    if (IsActive() == 0) {
         return;
     }
 
@@ -2975,21 +2975,21 @@ CGruntzMgr::~CGruntzMgr() {
     Close();
 }
 
-// WAP32::CGameMgr::Wap32GameMgrVfunc3 (0x85560, base vtable 0x5e9b8c slot 3): the
+// WAP32::CGameMgr::IsActive (0x85560, base vtable 0x5e9b8c slot 3): the
 // "active?" gate - nonzero iff a game window is bound (m_gameWnd != 0).
 RVA(0x00085560, 0xb)
-i32 WAP32::CGameMgr::Wap32GameMgrVfunc3() {
+i32 WAP32::CGameMgr::IsActive() {
     return m_gameWnd != 0;
 }
 
-// CGruntzMgr::Wap32GameMgrVfunc3 (0x83300, own vtable 0x5e9b64 slot 3 via thunk
+// CGruntzMgr::IsActive (0x83300, own vtable 0x5e9b64 slot 3 via thunk
 // 0x40d9 - byte-verified): the derived "active?" gate - nonzero iff a world is
 // loaded AND a state is live. (Was a declared-only phantom; the 0x17-byte body is
 // a Ghidra recovery gap - no functions.csv boundary - reconstructed from the raw
 // bytes: mov eax,[ecx+0x30]; test; je; mov eax,[ecx+0x2c]; test; je; mov eax,1;
 // ret; xor eax,eax; ret.)
 RVA(0x00083300, 0x17)
-i32 CGruntzMgr::Wap32GameMgrVfunc3() {
+i32 CGruntzMgr::IsActive() {
     if (m_world) {
         if (m_curState) {
             return 1;
@@ -3511,7 +3511,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
 // runs the post-switch hook, returning 1. Otherwise returns 0.
 RVA(0x0008d6a0, 0xaf)
 i32 CGruntzMgr::SwitchToNextState() {
-    if (Wap32GameMgrVfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     CState* next = TopState();

@@ -183,10 +183,10 @@ i32 CSplashState::InputVirtual() {
 }
 
 // CSplashState::Vslot06 (0xf9af0, slot 6) - activation-ready poll: gate on the state's
-// own readiness virtual (Vfunc3), hide the cursor, roll the splash title sequence.
+// own readiness virtual (IsActive), hide the cursor, roll the splash title sequence.
 RVA(0x000f9af0, 0x3e)
 i32 CSplashState::Vslot06() {
-    if (Vfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

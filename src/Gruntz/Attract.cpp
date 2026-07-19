@@ -182,7 +182,7 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
 }
 
 // CAttract::Activate - virtual attract-screen (re)entry. Gates on slot-3
-// (Vfunc3); if it fails, returns that result. Otherwise resets the title
+// (IsActive); if it fails, returns that result. Otherwise resets the title
 // brightness target, picks a random TITLE state off the registry, resolves it,
 // runs the title fade, sets menu brightness, transitions the page, rebuilds the
 // menu page, forces the cursor visible, and returns 1.
@@ -196,7 +196,7 @@ i32 CAttract::Activate() {
     char stateName[0x20];
     char titleName[0x20];
 
-    i32 gate = Vfunc3();
+    i32 gate = IsActive();
     if (gate == 0) {
         return gate;
     }

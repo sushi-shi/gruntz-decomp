@@ -175,7 +175,7 @@ public:
     // owning TU for any class a second TU constructs.
     virtual GameStateId Update() OVERRIDE; // slot 4  (+0x10) 0x08cd40
     virtual i32 Render() OVERRIDE;         // slot 5  (+0x14) 0x0143e0  attract per-frame poll/draw
-    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x014630  random-title roll (Vfunc3 gate)
+    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x014630  random-title roll (IsActive gate)
     virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x0147b0  host/paint poll
     virtual i32 InputVirtual() OVERRIDE; // slot 8  (+0x20) 0x014520  random-title roll (page gate)
     virtual i32 Vslot09(i32)

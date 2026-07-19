@@ -79,7 +79,7 @@ public:
     // RTTI proves CState is a root, so no such base ever existed.)
     virtual void ReleaseResources();
     RVA(0x0008c490, 0x4)
-    virtual i32 Vfunc3() {
+    virtual i32 IsActive() {
         return m_ready;
     }
     RVA(0x0008c4b0, 0x6)
@@ -268,7 +268,7 @@ public:
     CSymTab* m_gruntzBank; // +0x30  GRUNTZ asset bank (CSymTab; LoadImageBanks caches here)
     CSymTab* m_gameBank;   // +0x34  GAME asset bank (CSymTab; GAME-namespace loaders' source)
     i32 m_38;              // +0x38
-    i32 m_ready;           // +0x3c  active/ready gate (Vfunc3 returns it)
+    i32 m_ready;           // +0x3c  active/ready gate (IsActive returns it)
     i32 m_40;              // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
                            //         menu transition)
     i32 m_44;              // +0x44  (LoadGameAssetNamespaces seeds -1; role unrecovered)

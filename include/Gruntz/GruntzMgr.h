@@ -176,7 +176,7 @@ public:
     CGruntzMgr();
     virtual ~CGruntzMgr() OVERRIDE;             // vtbl slot 0 (own vftable 0x5e9b64)
     virtual i32 Run(CGameWnd*, char*) OVERRIDE; // slot 1 (declared-only)
-    virtual i32 Wap32GameMgrVfunc3() OVERRIDE;  // slot 3 @0x083300 (thunk 0x40d9):
+    virtual i32 IsActive() OVERRIDE;  // slot 3 @0x083300 (thunk 0x40d9):
                                                 // m_world && m_curState
     // The ??_G scalar-deleting destructor (vtable slot 0 entry the retail vtable
     // holds): run the dtor body, then operator delete when the low flag bit is set;

@@ -579,10 +579,10 @@ i32 CBootyState::Render() {
 }
 
 // CBootyState::Vslot06 (slot 6 / +0x18, 0x1ce10): boolify the class's slot-3
-// active/ready virtual (Vfunc3) - return 1 iff ready, else 0.
+// active/ready virtual (IsActive) - return 1 iff ready, else 0.
 RVA(0x0001ce10, 0xc)
 i32 CBootyState::Vslot06() {
-    return Vfunc3() != 0;
+    return IsActive() != 0;
 }
 
 // CMultiBootyState::ReadyAndPaint() (0x1ce30): gate on the active/ready virtual (CState
@@ -590,7 +590,7 @@ i32 CBootyState::Vslot06() {
 // otherwise return the (zero) gate result.
 RVA(0x0001ce30, 0x1d)
 i32 CMultiBootyState::ReadyAndPaint() {
-    if (Vfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     return CState::Vslot07() != 0; // 0xfac70 (qualified base call, cast-free)
@@ -1057,22 +1057,22 @@ i32 CMultiBootyState::InputVirtual() {
 }
 
 // CMultiBootyState::Vslot06 (slot 6 / +0x18, 0x1f850): boolify the class's slot-3
-// active/ready virtual (Vfunc3) - return 1 iff ready, else 0.
+// active/ready virtual (IsActive) - return 1 iff ready, else 0.
 RVA(0x0001f850, 0xc)
 i32 CMultiBootyState::Vslot06() {
-    return Vfunc3() != 0;
+    return IsActive() != 0;
 }
 
 // ---------------------------------------------------------------------------
 // CMultiBootyState::Vslot07 (slot 7 / +0x1c, 0x1f870): gate on the slot-3 ready
-// virtual (Vfunc3); when ready run the non-virtual paint (Paint, 0xfac70) and return
+// virtual (IsActive); when ready run the non-virtual paint (Paint, 0xfac70) and return
 // its normalized result, else 0. (Was the @orphan CGuardedDispatch1f870 view; the
 // vtable slot-7 attribution -- find_holding(0x1f870) == CMultiBootyState:7 -- recovers
 // its real identity.)
 // ---------------------------------------------------------------------------
 RVA(0x0001f870, 0x1d)
 i32 CMultiBootyState::Vslot07() {
-    if (Vfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     return CState::Vslot07() != 0; // 0xfac70 (qualified base call, cast-free)

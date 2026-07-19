@@ -291,12 +291,12 @@ i32 CCreditsState::InputVirtual() {
     return 1;
 }
 
-// CCreditsState::Vslot06 (slot 6 / +0x18, 0x39400): the Vfunc3-gated title roll -
-// bail unless the state's ready gate (Vfunc3) is set, hide the cursor, then (re)prime
+// CCreditsState::Vslot06 (slot 6 / +0x18, 0x39400): the IsActive-gated title roll -
+// bail unless the state's ready gate (IsActive) is set, hide the cursor, then (re)prime
 // the attract title and return its result.
 RVA(0x00039400, 0x2f)
 i32 CCreditsState::Vslot06() {
-    if (Vfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     if (ShowCursor(0) >= 0) {

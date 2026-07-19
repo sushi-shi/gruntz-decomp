@@ -4890,7 +4890,7 @@ i32 CPlay::DrawWorldPresent() {
 
 // ===========================================================================
 // PresentAndFlush (0x0cba10) - the overlay-frame present path: bail unless the
-// state is active (Vfunc3), restore the saved display mode if it drifted, then
+// state is active (IsActive), restore the saved display mode if it drifted, then
 // either notify-visible (region-1 gate) or push+present, and flush the draw
 // surface. Migrated from engine_boundary (CPlay).
 // @early-stop
@@ -4899,7 +4899,7 @@ i32 CPlay::DrawWorldPresent() {
 // PushView 0x15dc90, surface flush 0x13e850, m_4 RestoreVideoMode 0x8df00).
 RVA(0x000cba10, 0xb0)
 i32 CPlay::Vslot06() {
-    if (Vfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     CGruntzMgr* w = m_4;
@@ -4988,11 +4988,11 @@ i32 CPlay::ReleaseLevelOverlay(i32) {
 }
 
 // ForwardReady (0x0cee70): tiny vtable forwarder that tail-calls the slot-3 ready
-// gate (Vfunc3). Out-of-line (retail emits it standalone; the inline member folded
+// gate (IsActive). Out-of-line (retail emits it standalone; the inline member folded
 // into its callers and never emitted).
 RVA(0x000cee70, 0x5)
 i32 CPlay::ForwardReady() {
-    return Vfunc3();
+    return IsActive();
 }
 
 // CPlay::PauseGame (0x0cee90) - vtable slot 24 (shared by CDemo/CMulti). Flush

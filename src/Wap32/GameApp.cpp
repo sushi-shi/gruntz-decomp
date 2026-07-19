@@ -443,8 +443,8 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
 
 // (the three "CGameMgr vtable anchor" stubs that used to sit here are GONE. They were not
 // anchors, they were a SECOND definition of functions this tree already reconstructs at
-// their retail rvas in src/Gruntz/GruntzMgr.cpp - Wap32GameMgrVfunc3 @0x85560,
-// PerFrameTick, HandleCommand @0x85580 - and the Vfunc3 stub was WRONG: it returned a
+// their retail rvas in src/Gruntz/GruntzMgr.cpp - IsActive @0x85560,
+// PerFrameTick, HandleCommand @0x85580 - and the IsActive stub was WRONG: it returned a
 // constant 0 where retail returns `m_gameWnd != 0` (`mov edx,[ecx+4]; xor eax,eax;
 // test edx,edx; setne al; ret`). One mangled name, two byte-shapes, and MSVC5 keeps exactly
 // one COMDAT - so the linker could have handed every caller in this tree the stub that says

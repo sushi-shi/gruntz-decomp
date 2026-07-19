@@ -522,13 +522,13 @@ i32 CMenuState::Vslot10(i32 arg1, i32 arg2, i32 arg3) {
 }
 
 // CMenuState::ReadyGate @0x0a0d40 - the &&-chained ready/transition probe: poll
-// the active/ready gate (Vfunc3, slot 3); if ready, attempt the pending state
+// the active/ready gate (IsActive, slot 3); if ready, attempt the pending state
 // commit (CommitState, the 0x1136 thunk); if that succeeds, run the activation
 // poll (Vslot06, slot 6). A short-circuit chain - each early bail returns the
 // failing call's (zero) result.
 RVA(0x000a0d40, 0x24)
 i32 CMenuState::ReadyGate() {
-    i32 r = Vfunc3();
+    i32 r = IsActive();
     if (r == 0) {
         return r;
     }

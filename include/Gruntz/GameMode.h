@@ -236,7 +236,7 @@ public:
     void StopMusicChain(); // 0xa0640 - stop + cue chain
 
     // ReadyGate (0xa0d40): the &&-chained ready/transition probe -
-    // Vfunc3() (slot 3) && CommitState() (the 0x1136 thunk) ? Vslot06() (slot 6).
+    // IsActive() (slot 3) && CommitState() (the 0x1136 thunk) ? Vslot06() (slot 6).
     i32 ReadyGate();
     // CommitState (reached via the 0x1136 ILT thunk; external no-body ->
     // reloc-masked). Returns nonzero when the pending state commit succeeds.
@@ -319,7 +319,7 @@ public:
         return GAMESTATE_CREDITS;
     }
     virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x0391d0 per-frame credits draw
-    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x039400 (declared-only: Vfunc3-gated roll)
+    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x039400 (declared-only: IsActive-gated roll)
     virtual i32 InputVirtual()
         OVERRIDE;                      // slot 8  (+0x20) 0x0393b0 per-frame input poll (title gate)
     virtual i32 Vslot09(i32) OVERRIDE; // slot 9  (+0x24) 0x039120 (declared-only)

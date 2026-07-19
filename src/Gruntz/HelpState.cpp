@@ -165,10 +165,10 @@ i32 CHelpState::InputVirtual() {
 }
 
 // CHelpState::Vslot06 (0x953a0, slot 6) - activation-ready poll: gate on the state's
-// own readiness virtual (Vfunc3), hide the cursor, roll the help title sequence.
+// own readiness virtual (IsActive), hide the cursor, roll the help title sequence.
 RVA(0x000953a0, 0x3c)
 i32 CHelpState::Vslot06() {
-    if (Vfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

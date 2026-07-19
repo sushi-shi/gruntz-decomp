@@ -136,7 +136,7 @@ namespace WAP32 {
         } // +0x00 idx0 dtor
         virtual i32 Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
         virtual void Close();                                 // +0x08 idx2
-        virtual i32 Wap32GameMgrVfunc3();                     // +0x0c idx3 (active? gate)
+        virtual i32 IsActive();                     // +0x0c idx3 (active? gate)
         // +0x10 idx4 - the base per-frame tick (body @0x13ddc0, base vtable slot 4
         // holds it DIRECTLY - verified against retail ??_7CGameMgr @0x5e9b8c): sample
         // timeGetTime into the g_wap32Now/g_wap32FrameDelta clock pair, run down the

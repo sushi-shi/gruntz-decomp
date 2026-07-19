@@ -180,10 +180,10 @@ i32 CPreviewState::Refade_0de2c0() {
 }
 
 // CPreviewState::RefadeVirtual (0x0de340) - twin of Refade_0de2c0, but gated on the
-// state's own readiness virtual (CState slot 3, Vfunc3) instead of the page manager.
+// state's own readiness virtual (CState slot 3, IsActive) instead of the page manager.
 RVA(0x000de340, 0x56)
 i32 CPreviewState::RefadeVirtual_0de340() {
-    if (Vfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

@@ -415,8 +415,8 @@ public:
     // resmgr is CState::m_c and its +0x4bc..+0x4c8 block is exactly
     // m_revealFrame/m_revealCapMid/End/Start).
     i32 LoadLoadingBarSprite(); // 0x0d7440
-    // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
-    i32 ForwardReady(); // 0x0cee70 (out-of-line: tail-call the slot-3 ready gate Vfunc3)
+    // Tiny vtable forwarder: tail-call the slot-3 ready gate (IsActive).
+    i32 ForwardReady(); // 0x0cee70 (out-of-line: tail-call the slot-3 ready gate IsActive)
     // (PauseGame/ResumeGame are the slot 24/25 virtuals declared above: this pair WAS the
     // non-virtual half of a one-body-two-names shadow with CState::Vslot18/Vslot19.
     // PauseGame saves the game clock into m_savedClock + freezes the world; ResumeGame

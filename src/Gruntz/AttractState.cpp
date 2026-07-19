@@ -20,7 +20,7 @@
 //   FrameSlot28(i32)     0x014340  slot 10 per-frame voice poll
 //   Render()             0x0143e0  slot 5  per-frame poll/draw
 //   InputVirtual()       0x014520  slot 8  random-title roll (page gate)
-//   Vslot06()            0x014630  slot 6  random-title roll (Vfunc3 gate)
+//   Vslot06()            0x014630  slot 6  random-title roll (IsActive gate)
 //   Vslot0c(i32,i32)     0x014720  slot 12 keydown handler
 //   Vslot0e(i32,i32,i32) 0x014770  slot 14 post-exit command
 //   Vslot07()            0x0147b0  slot 7  host/paint poll
@@ -316,10 +316,10 @@ i32 CAttract::InputVirtual() {
 }
 
 // CAttract::Vslot06 (slot 6 / +0x18, 0x14630): identical to the InputVirtual roll but
-// gated on the slot-3 virtual (Vfunc3) instead of the page IsLoaded.
+// gated on the slot-3 virtual (IsActive) instead of the page IsLoaded.
 RVA(0x00014630, 0xbd)
 i32 CAttract::Vslot06() {
-    if (Vfunc3() == 0) {
+    if (IsActive() == 0) {
         return 0;
     }
     // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
@@ -354,12 +354,12 @@ i32 CAttract::Vslot0e(i32, i32, i32) {
 }
 
 // CAttract::Vslot07() (slot 7 / +0x1c, 0x0147b0): the host/paint poll. Gate on the
-// slot-3 virtual (Vfunc3); bail if the menu root (m_c) is null; run the base
+// slot-3 virtual (IsActive); bail if the menu root (m_c) is null; run the base
 // CState::Vslot07() paint; force the cursor hidden; flip the render target; blit
 // the title frame onto the menu page. Returns 1.
 RVA(0x000147b0, 0x6a)
 i32 CAttract::Vslot07() {
-    if (!Vfunc3()) {
+    if (!IsActive()) {
         return 0;
     }
     if (!m_c) {
