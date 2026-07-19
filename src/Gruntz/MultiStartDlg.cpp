@@ -16,6 +16,7 @@
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
+#include <Gruntz/GruntzMgr.h> // m_host's real type (the ex CNetDlgHost/CMultiSlot views)
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegPtr.h>
 #include <Net/InterfaceObject.h>
@@ -41,7 +42,6 @@
 
 // The per-slot player record CMultiSlot (a proven CFocusSlot view, fold deferred on the
 // +0x154 CString into CGameRegistry's by-value slot array) lives in <Gruntz/MultiSlot.h>.
-#include <Gruntz/MultiSlot.h>
 
 // The dialog drives exactly four player slots (four kind combos / name edits /
 // slot records; retail's save loop walks the m_host CMultiSlot[] with stride
@@ -107,7 +107,7 @@ void BuildNamedGruntTable() {
 
 // ---------------------------------------------------------------------------
 RVA(0x000c1750, 0x88)
-CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
+CMultiStartDlg::CMultiStartDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
     m_host = a0;
     m_6c = 0;
     m_slotList = 0;
@@ -125,7 +125,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == 0) {
         return 0;
     }
-    CSymTab* st = static_cast<CSymTab*>((reinterpret_cast<CNetDlgHost*>(m_host))->m_registry->ResolvePath("GAME_MULTI"));
+    CSymTab* st = static_cast<CSymTab*>(m_host->m_symParser->ResolvePath("GAME_MULTI"));
     if (st == 0) {
         return 0;
     }
@@ -199,7 +199,7 @@ i32 CMultiStartDlg::UpdateColorItems() {
             return 0;
         }
         i32 idx = GetSlotIndex();
-        i32 en = ((reinterpret_cast<CMultiSlot*>(m_host))[idx].m_16c == 0);
+        i32 en = (m_host->m_options[idx].m_readyFlag == 0);
         it4ff->EnableWindow(en);
         it42b->EnableWindow(en);
         it4e9->EnableWindow(0);
@@ -297,7 +297,7 @@ i32 CMultiStartDlg::UpdateSlot() {
     i32 enable;
     if (reg->m_isHost) {
         i32 idx = GetSlotIndex();
-        enable = ((reinterpret_cast<CMultiSlot*>(m_host))[idx].m_16c == 0);
+        enable = (m_host->m_options[idx].m_readyFlag == 0);
     } else {
         enable = 0;
     }
@@ -429,13 +429,13 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             reg->SetValueString("LastMultiMap", m_70);
             reg->SetValueDword("CustomMultiMap", m_6c);
         }
-        CMultiSlot* slots = reinterpret_cast<CMultiSlot*>(m_host);
+        GruntzPlayer* slots = m_host->m_options;
         for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {
             CWnd* e = NameEdit298c(i);
             if (e != 0) {
                 CString temp;
                 e->GetWindowTextA(temp);
-                slots[i].m_154 = temp;
+                slots[i].m_name = temp;
             }
         }
         NetLobby::g_curDlg = 0;
@@ -603,5 +603,4 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
     return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
 }
 
-SIZE_UNKNOWN(CMultiSlot);
 SIZE_UNKNOWN(MpSymItem);

@@ -50,7 +50,7 @@ long CBattlezDlg::DoDefault() {
 
 // ---------------------------------------------------------------------------
 RVA(0x00014b30, 0x64)
-CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
+CBattlezDlg::CBattlezDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_slots = a0;
     m_customNameFlag = 0;
 }
@@ -185,7 +185,7 @@ void CBattlezDlg::ShowCustomDlg() {
 
 // ---------------------------------------------------------------------------
 RVA(0x00017930, 0x3a)
-CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
+CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent)
     : CDialog(0xc2, pParent) {
     m_slots = a0;
     m_slotIndex = a1;
@@ -226,12 +226,12 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
         pSend = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
             i32 avail = 1;
-            i32* rec = reinterpret_cast<i32*>((m_slots + 0x158)); // -> slot[0].m_158 (color / m_170 occupancy)
+            GruntzPlayer* rec = m_slots->m_options; // the per-player slots (color=m_008, occupancy=m_liveGate)
             for (i32 j = 0; j < 4; j++) {
-                if (rec[6] != 0 && rec[0] == i) { // occupied slot already using color i
+                if (rec->m_liveGate != 0 && rec->m_008 == i) { // occupied slot already using color i
                     avail = 0;
                 }
-                rec = reinterpret_cast<i32*>((reinterpret_cast<char*>(rec) + 0x238));
+                rec++;
             }
             if (avail) {
                 long idx = pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
@@ -390,7 +390,7 @@ i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
 // Homed out-of-line (matcher-5).
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
-    (reinterpret_cast<CBattlezSlot*>(m_slots))[index].m_158 = val;
+    m_slots->m_options[index].m_008 = val;
     return 1;
 }
 
@@ -729,7 +729,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case 0x501:
             if (GetCtrlD(0)->IsWindowEnabled()) {
-                switch ((reinterpret_cast<CBattlezSlot*>(m_slots))[0].m_158) {
+                switch (m_slots->m_options[0].m_008) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -792,7 +792,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x503:
             if (GetCtrlD(1)->IsWindowEnabled()) {
-                switch ((reinterpret_cast<CBattlezSlot*>(m_slots))[1].m_158) {
+                switch (m_slots->m_options[1].m_008) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -855,7 +855,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x505:
             if (GetCtrlD(2)->IsWindowEnabled()) {
-                switch ((reinterpret_cast<CBattlezSlot*>(m_slots))[2].m_158) {
+                switch (m_slots->m_options[2].m_008) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -918,7 +918,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x507:
             if (GetCtrlD(3)->IsWindowEnabled()) {
-                switch ((reinterpret_cast<CBattlezSlot*>(m_slots))[3].m_158) {
+                switch (m_slots->m_options[3].m_008) {
                     case 0:
                         color = 0x0080ff;
                         break;

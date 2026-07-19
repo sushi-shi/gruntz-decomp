@@ -67,7 +67,6 @@ void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
 // The per-channel player-slot record (a proven +0x150-shifted view of CFocusSlot) lives
 // in <Gruntz/ChannelSlot.h>; the full CFocusSlot fold is deferred there (the +0x154
 // CString member into CGameRegistry's by-value CFocusSlot array needs ctor reconciliation).
-#include <Gruntz/ChannelSlot.h>
 
 extern CString g_gruntNames[];       // 0x64bdb0 per-channel label table
 
@@ -156,39 +155,39 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     CWnd* c2 = GetCtrlD(ch);         // 0x30da -> 0xc2840
     ColourBtn1753(ch);               // 0x1753 (side effect only)
     ReadyCheck1159(ch);              // 0x1159 (side effect only)
-    ChannelSlot* s = reinterpret_cast<ChannelSlot*>((reinterpret_cast<char*>(m_host) + ch * 0x238 + 0x150));
+    GruntzPlayer* s = &m_host->m_options[ch];
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
-        if (s->m_14 != 0) {
-            if (s->m_active != 0) {
-                g_multiState->DropPlayer(s->m_playerId);
+        if (s->m_014 != 0) {
+            if (s->m_liveGate != 0) {
+                g_multiState->DropPlayer(s->m_playerIndex);
             }
-        } else if (s->m_active != 0) {
-            ChannelSlots_Set(s->m_slotIndex, 1);
+        } else if (s->m_liveGate != 0) {
+            ChannelSlots_Set(s->m_008, 1);
         }
-        s->m_active = 0;
-        s->m_ready = 0;
+        s->m_liveGate = 0;
+        s->m_readyFlag = 0;
         c1->EnableWindow(0);
         c2->EnableWindow(0);
     } else {
         if (pSend(owner->m_hWnd, 0x147, 0, 0) != 4) {
-            if (s->m_14 != 0) {
-                if (s->m_active != 0) {
-                    g_multiState->DropPlayer(s->m_playerId);
+            if (s->m_014 != 0) {
+                if (s->m_liveGate != 0) {
+                    g_multiState->DropPlayer(s->m_playerIndex);
                 }
                 i32 free = ChannelSlots_FindFree();
-                s->m_slotIndex = free;
+                s->m_008 = free;
                 ChannelSlots_Set(free, 0);
-            } else if (s->m_active == 0) {
+            } else if (s->m_liveGate == 0) {
                 i32 free = ChannelSlots_FindFree();
-                s->m_slotIndex = free;
+                s->m_008 = free;
                 ChannelSlots_Set(free, 0);
             }
-            s->m_ready = 1;
-            s->m_14 = 0;
-            s->m_selectionIndex = static_cast<i32>(pSend(owner->m_hWnd, 0x147, 0, 0)) - 1;
-            s->m_active = 1;
-            s->m_label = g_gruntNames[ch];
+            s->m_readyFlag = 1;
+            s->m_014 = 0;
+            s->m_configId = static_cast<i32>(pSend(owner->m_hWnd, 0x147, 0, 0)) - 1;
+            s->m_liveGate = 1;
+            s->m_name = g_gruntNames[ch];
         }
         c1->EnableWindow(1);
         c2->EnableWindow(1);
@@ -331,7 +330,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case 0x501:
             if (GetCtrlD(0)->IsWindowEnabled()) {
-                switch ((reinterpret_cast<CBattlezSlot*>(m_host))[0].m_158) {
+                switch (m_host->m_options[0].m_008) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -394,7 +393,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x503:
             if (GetCtrlD(1)->IsWindowEnabled()) {
-                switch ((reinterpret_cast<CBattlezSlot*>(m_host))[1].m_158) {
+                switch (m_host->m_options[1].m_008) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -457,7 +456,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x505:
             if (GetCtrlD(2)->IsWindowEnabled()) {
-                switch ((reinterpret_cast<CBattlezSlot*>(m_host))[2].m_158) {
+                switch (m_host->m_options[2].m_008) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -520,7 +519,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x507:
             if (GetCtrlD(3)->IsWindowEnabled()) {
-                switch ((reinterpret_cast<CBattlezSlot*>(m_host))[3].m_158) {
+                switch (m_host->m_options[3].m_008) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -605,9 +604,9 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnColorSlot0() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || (reinterpret_cast<GruntzPlayer*>(m_host))[0].m_038.m_12c != 0)
-        && ((reinterpret_cast<GruntzPlayer*>(m_host))[0].m_038.m_134 != 0
-            || (reinterpret_cast<GruntzPlayer*>(m_host))[0].m_038.m_130 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || m_host->m_options[0].m_014 != 0)
+        && (m_host->m_options[0].m_readyFlag != 0
+            || m_host->m_options[0].m_slotKey != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 0, 1, 0);
@@ -623,9 +622,9 @@ void CMultiStartDlg::OnColorSlot0() {
 RVA(0x000c3950, 0xd1)
 void CMultiStartDlg::OnColorSlot1() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || (reinterpret_cast<GruntzPlayer*>(m_host))[1].m_038.m_12c != 0)
-        && ((reinterpret_cast<GruntzPlayer*>(m_host))[1].m_038.m_134 != 0
-            || (reinterpret_cast<GruntzPlayer*>(m_host))[1].m_038.m_130 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || m_host->m_options[1].m_014 != 0)
+        && (m_host->m_options[1].m_readyFlag != 0
+            || m_host->m_options[1].m_slotKey != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 1, 1, 0);
@@ -641,9 +640,9 @@ void CMultiStartDlg::OnColorSlot1() {
 RVA(0x000c3a70, 0xd1)
 void CMultiStartDlg::OnColorSlot2() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || (reinterpret_cast<GruntzPlayer*>(m_host))[2].m_038.m_12c != 0)
-        && ((reinterpret_cast<GruntzPlayer*>(m_host))[2].m_038.m_134 != 0
-            || (reinterpret_cast<GruntzPlayer*>(m_host))[2].m_038.m_130 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || m_host->m_options[2].m_014 != 0)
+        && (m_host->m_options[2].m_readyFlag != 0
+            || m_host->m_options[2].m_slotKey != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 2, 1, 0);
@@ -659,9 +658,9 @@ void CMultiStartDlg::OnColorSlot2() {
 RVA(0x000c3b90, 0xd1)
 void CMultiStartDlg::OnColorSlot3() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || (reinterpret_cast<GruntzPlayer*>(m_host))[3].m_038.m_12c != 0)
-        && ((reinterpret_cast<GruntzPlayer*>(m_host))[3].m_038.m_134 != 0
-            || (reinterpret_cast<GruntzPlayer*>(m_host))[3].m_038.m_130 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || m_host->m_options[3].m_014 != 0)
+        && (m_host->m_options[3].m_readyFlag != 0
+            || m_host->m_options[3].m_slotKey != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 3, 1, 0);
@@ -815,7 +814,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     i32 f18 = 0;
     i32 idx = 0;
     i32 t = this->LocalSlot2d4c();
-    i32 localColour = g_multiState->m_isHost ? (reinterpret_cast<GruntzPlayer*>(m_host))[t].m_038.m_134 : 1;
+    i32 localColour = g_multiState->m_isHost ? m_host->m_options[t].m_readyFlag : 1;
     i32 off = 0;
     do {
         GruntzPlayer* slot = &g_gameReg->m_options[idx];

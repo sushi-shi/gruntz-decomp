@@ -4136,7 +4136,7 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
 // (with its CString member) is the compound /GX frame's two destructibles.
 RVA(0x00092f00, 0x1ef)
 i32 CGruntzMgr::SaveGameAs() {
-    CBattlezDlg dlg(reinterpret_cast<i32>(this), 0); // ctor 0x14b30 (a0 = this, pParent = null)
+    CBattlezDlg dlg(this, 0); // ctor 0x14b30 (a0 = this, pParent = null)
     i32 st = m_curState->Update();
     if (st != 5 && st != 2 && st != 3 && st != 7) {
         return 0;

@@ -4,6 +4,7 @@
 // (control A) reports a selection, enable controls B/C/D and raise the row's
 // +0x20 flag; otherwise disable them. Field names are placeholders; only offsets +
 // code bytes are load-bearing.
+#include <Gruntz/GruntzMgr.h> // m_slots' real type (the slot array is m_options[])
 #include <rva.h>
 
 #include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
@@ -24,16 +25,16 @@ i32 CBattlezDlg::ToggleRow(i32 row) {
     CWnd* d = GetCtrlD(row);
     CWnd* c = GetCtrlC(row);
     if (row != 0) {
-        CBattlezSlot* rec = &(reinterpret_cast<CBattlezSlot*>(m_slots))[row];
+        GruntzPlayer* rec = &m_slots->m_options[row];
         if (::SendMessageA(a->m_hWnd, 0x147, 0, 0) != 0) {
             b->EnableWindow(1);
             d->EnableWindow(1);
-            rec->m_170 = 1;
+            rec->m_liveGate = 1;
             return c->EnableWindow(1);
         }
         b->EnableWindow(0);
         d->EnableWindow(0);
-        rec->m_170 = 0;
+        rec->m_liveGate = 0;
         c = reinterpret_cast<CWnd*>(c->EnableWindow(0));
     }
     return reinterpret_cast<i32>(c);

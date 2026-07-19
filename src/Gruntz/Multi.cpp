@@ -2007,7 +2007,7 @@ void CMulti::ApplyCmdDelayDefaults() {
 // @rva-symbol: ??1CMultiStartDlg@@UAE@XZ 0x000b8960 0x59
 RVA(0x000b86c0, 0x206)
 i32 CMulti::ShowMultiStartDlg() {
-    CMultiStartDlg dlg(reinterpret_cast<i32>(m_4), 0);
+    CMultiStartDlg dlg(m_4, 0);
     i32 r = m_4->ExitModalUI(&dlg, 0);
     g_sharedFlag = 0;
     if (r != 1) {

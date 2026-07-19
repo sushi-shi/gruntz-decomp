@@ -98,17 +98,8 @@ SIZE(CDialog, 0x5c);
 // CBattlezDlg
 //   base CDialog(0xc0, pParent); m_slots = a0; CString @+0x6c; m_68 = 0.
 // ---------------------------------------------------------------------------
-// A player-slot record in the battle dialog's slot array (CBattlezDlg::m_slots).
-// 0x238 bytes/slot (the disasm scales index by 0x238 = lea x71, *8); only the
-// +0x158 int field (set by SetSlotValue) and the size are load-bearing.
-SIZE_UNKNOWN(CBattlezSlot);
-struct CBattlezSlot {
-    char pad0[0x158];
-    i32 m_158; // +0x158  slot value / assigned color (SetSlotValue)
-    char pad15c[0x170 - 0x15c];
-    i32 m_170; // +0x170  occupancy flag (nonzero = slot in use)
-    char pad174[0x238 - 0x174];
-};
+// (CBattlezSlot is FOLDED: the 0x238-stride slot array IS m_slots->m_options[]
+// (GruntzPlayer) - m_158 == m_008 (assigned color), m_170 == m_liveGate.)
 
 // CDataExchange is the REAL MFC one (<afxwin.h>) now; the local 1-field stand-in is gone.
 
@@ -120,7 +111,7 @@ SIZE_UNKNOWN(CBattlezDlg);
 VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
 class CBattlezDlg : public CDialog {
 public:
-    CBattlezDlg(i32 a0, CWnd* pParent);
+    CBattlezDlg(class CGruntzMgr* a0, CWnd* pParent);
     // NO DECLARED DESTRUCTOR - and that is a binary fact, not laziness. Retail's
     // ??1CBattlezDlg (0x14c90, 71 B) destroys the CString m_6c and chains ~CDialog with NO
     // `mov [esi],??_7CBattlezDlg` vptr re-stamp at entry. cl only emits that stamp for a
@@ -139,7 +130,7 @@ public:
     virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog (0x160d0)
     virtual void OnOK() OVERRIDE;                             // slot 51  OnOK (0x174a0)
 
-    i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
+    class CGruntzMgr* m_slots; // +0x5c  (= a0; the manager - its m_options[] is the slot array)
     char m_pad60[8];      // +0x60
     i32 m_customNameFlag; // +0x68  1 = custom level name typed, 0 = picked from list
     CString m_6c;         // +0x6c  (default CString)
@@ -271,7 +262,7 @@ SIZE_UNKNOWN(CBattlezDlgColors);
 VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
 class CBattlezDlgColors : public CDialog {
 public:
-    CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent);
+    CBattlezDlgColors(class CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent);
     virtual ~CBattlezDlgColors() OVERRIDE; // slot 1
     // MFC GetMessageMap override: returns &CBattlezDlgColors::messageMap (modeled
     // non-virtual so it does not perturb the compiler-emitted vtable/ctor stamp;
@@ -285,7 +276,7 @@ public:
     // not already taken by an occupied player slot. Modeled non-virtual (like
     // GetMessageMap/OnMeasureItem) so it does not perturb the compiler-emitted vtable.
 
-    i32 m_slots;       // +0x5c  (= a0; the CBattlezSlot* slot-array base, from parent)
+    class CGruntzMgr* m_slots; // +0x5c  (= a0; the manager, from parent)
     i32 m_slotIndex;   // +0x60  (= a1; the slot being colored)
     i32 m_pickedColor; // +0x64  (= 0; the picked value read after DoModal)
     i32 m_68;          // +0x68  (= a2; always 0 at call sites; role unproven)
@@ -305,7 +296,7 @@ SIZE_UNKNOWN(CMultiStartDlg);
 VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 class CMultiStartDlg : public CDialog {
 public:
-    CMultiStartDlg(i32 a0, CWnd* pParent);
+    CMultiStartDlg(class CGruntzMgr* a0, CWnd* pParent);
     // NO user-declared destructor: retail's ~CMultiStartDlg (0x0b8960) is the
     // COMPILER-GENERATED one (destroy CStringList m_74, CString m_70, chain
     // ~CDialog). cl 5.0 elides the most-derived vptr re-stamp in an IMPLICIT dtor
@@ -449,7 +440,9 @@ public:
         return this == 0 ? 0 : reinterpret_cast<i32>(m_hWnd);
     }
 
-    i32 m_host;               // +0x5c  (= a0) heterogeneous handle: a CMultiSlot[]/CFocusSlot[]
+    class CGruntzMgr* m_host; // +0x5c  (= a0) the game manager (ex "heterogeneous handle":
+                              //         the CNetDlgHost/CMultiSlot[]/CFocusSlot[] views were all
+                              //         MGR facets - m_options[] slots + m_symParser @+0x34)
                               //        slot-array base (Dialogs.cpp/MultiStartDlgRoster.cpp) AND
                               //        the CNetDlgHost host-facet (FindOptionsSlot @0x92e80 +
                               //        m_registry @+0x34) - each site casts to the type it needs.
