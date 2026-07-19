@@ -261,8 +261,8 @@ CProjectile::~CProjectile() {
         void* data = m_hitList.GetNext(pos);
         if (data != 0) {
             // authentic: freelist recycle - bias the node back to its list-link header
-            void** node = (void**)((char*)data - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(data);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
@@ -995,7 +995,7 @@ void CProjectile::ScanTargets(i32 impact) {
                 slot = &p->m_coord; // the {x,y} payload overlays +4 (past the link word)
                 slot->m_x = keyX;
                 slot->m_y = keyY;
-                g_coordPool.m_freeHead = (void*)p->m_next;
+                g_coordPool.m_freeHead = p->m_next;
             }
             m_hitList.AddTail(slot);
             g->StepCombatReaction(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);

@@ -290,14 +290,14 @@ i32 g_appHInstance;
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 1: coord-pool free list -------------------------------
-    CoordNode* pool = (CoordNode*)RezAlloc(0x3a980);
+    CoordPoolNode* pool = (CoordPoolNode*)RezAlloc(0x3a980);
     g_coordPool.m_block = pool;
     if (!pool) {
         ReportError(0x800a, 0x404);
         return 0;
     }
-    g_coordPool.m_count = 0x4e20; // 0x3a980 / sizeof(CoordNode) 0xc
-    CoordNode* p = pool;
+    g_coordPool.m_count = 0x4e20; // 0x3a980 / sizeof(CoordPoolNode) 0xc
+    CoordPoolNode* p = pool;
     u32 i = 0;
     do {
         p->m_next = p + 1;

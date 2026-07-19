@@ -189,8 +189,8 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
                 n = n->m_next;
                 i32* p = cur->m_payload;
                 if (p[0] == x && p[1] == y) {
-                    void** slot = (void**)((char*)p - g_coordPool.m_linkOffset);
-                    *slot = g_coordPool.m_freeHead;
+                    CoordPoolNode* slot = g_coordPool.NodeOf(p);
+                    slot->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = slot;
                     list->RemoveAt((POSITION)cur);
                 }
@@ -234,8 +234,8 @@ found:
     if (ov != 0 && ov->m_gridX == p[0] && ov->m_gridY == p[1]) {
         OverlayTick();
     }
-    void** slot = (void**)((char*)p - g_coordPool.m_linkOffset);
-    *slot = g_coordPool.m_freeHead;
+    CoordPoolNode* slot = g_coordPool.NodeOf(p);
+    slot->m_next = g_coordPool.m_freeHead;
     g_coordPool.m_freeHead = slot;
     m_recList.RemoveAt((POSITION)cur);
     return 1;
@@ -277,8 +277,8 @@ void CTriggerMgr::ResetAll() {
             if (cell != 0) {
                 ((CGrunt*)cell)
                     ->ClearAllSprites(); // CTmCell IS CGrunt (0x4b240); bridge-cast, see note
-                void** slot = (void**)((char*)payload - g_coordPool.m_linkOffset);
-                *slot = g_coordPool.m_freeHead;
+                CoordPoolNode* slot = g_coordPool.NodeOf(payload);
+                slot->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = slot;
             }
         } while (n != 0);
@@ -408,10 +408,11 @@ void CTriggerMgr::ClearRecords() {
         do {
             CTmNode* cur = n;
             n = n->m_next;
-            void** slot = (void**)((char*)cur->m_payload - bias);
-            *slot = head;
+            CoordPoolNode* slot
+                = reinterpret_cast<CoordPoolNode*>(reinterpret_cast<char*>(cur->m_payload) - bias);
+            slot->m_next = static_cast<CoordPoolNode*>(head);
             head = slot;
-            g_coordPool.m_freeHead = head;
+            g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
         } while (n != 0);
     }
     m_recList.RemoveAll();
@@ -1443,11 +1444,11 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     ar->Read(&count, 4);
     CPtrList* rec = &m_recList;
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
-        char* fl = static_cast<char*>(g_coordPool.m_freeHead);
+        CoordPoolNode* fl = g_coordPool.m_freeHead;
         void* node = 0;
-        if (*(void**)fl != 0) {
-            node = fl + 4;
-            g_coordPool.m_freeHead = *(void**)fl;
+        if (fl->m_next != 0) {
+            node = &fl->m_coord;
+            g_coordPool.m_freeHead = fl->m_next;
         }
         ar->Read(node, 8);
         rec->AddTail(node);
@@ -1459,11 +1460,11 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     do {
         ar->Read(&count, 4);
         for (ci = 0; ci < static_cast<u32>(count); ci++) {
-            char* fl = static_cast<char*>(g_coordPool.m_freeHead);
+            CoordPoolNode* fl = g_coordPool.m_freeHead;
             void* node = 0;
-            if (*(void**)fl != 0) {
-                node = fl + 4;
-                g_coordPool.m_freeHead = *(void**)fl;
+            if (fl->m_next != 0) {
+                node = &fl->m_coord;
+                g_coordPool.m_freeHead = fl->m_next;
             }
             ar->Read(node, 8);
             sel->AddTail(node);
@@ -2502,10 +2503,10 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
             n = n->m_next;
             i32* payload = cur->m_payload;
             if (payload != 0) {
-                void** slot = (void**)((char*)payload - g_coordPool.m_linkOffset);
-                *slot = head;
+                CoordPoolNode* slot = g_coordPool.NodeOf(payload);
+                slot->m_next = static_cast<CoordPoolNode*>(head);
                 head = slot;
-                g_coordPool.m_freeHead = head;
+                g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
             }
         } while (n != 0);
     }
@@ -2516,11 +2517,11 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
         rec = rec->m_next;
         i32* src = cur->m_payload;
         void** fh = (void**)g_coordPool.m_freeHead;
-        void* nextFree = *fh;
+        CoordPoolNode* fhNode = reinterpret_cast<CoordPoolNode*>(fh);
         i32* dst = 0;
-        if (nextFree != 0) {
-            dst = (i32*)((char*)fh + 4);
-            g_coordPool.m_freeHead = nextFree;
+        if (fhNode->m_next != 0) {
+            dst = reinterpret_cast<i32*>(&fhNode->m_coord);
+            g_coordPool.m_freeHead = fhNode->m_next;
         }
         dst[0] = src[0];
         dst[1] = src[1];
@@ -2586,8 +2587,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 }
             }
         } else {
-            void** node = (void**)((char*)payload - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(payload);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
             m_selLists[slot].RemoveAt((POSITION)cur);
         }
@@ -2697,10 +2698,10 @@ void CTriggerMgr::ClearSelections() {
                 n = n->m_next;
                 i32* payload = cur->m_payload;
                 if (payload != 0) {
-                    void** slot = (void**)((char*)payload - g_coordPool.m_linkOffset);
-                    *slot = head;
+                    CoordPoolNode* slot = g_coordPool.NodeOf(payload);
+                    slot->m_next = static_cast<CoordPoolNode*>(head);
                     head = slot;
-                    g_coordPool.m_freeHead = head;
+                    g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
                 }
             } while (n != 0);
         }

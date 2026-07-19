@@ -90,8 +90,8 @@ extern "C" {
             GruntCoordNode* next = n->m_next;                                                      \
             void* pay = n->m_coord;                                                                \
             if (pay != 0) {                                                                        \
-                void** slot = (void**)((char*)pay - g_coordPool.m_linkOffset);                     \
-                *slot = g_coordPool.m_freeHead;                                                    \
+                CoordPoolNode* slot = g_coordPool.NodeOf(pay);                                     \
+                slot->m_next = g_coordPool.m_freeHead;                                             \
                 g_coordPool.m_freeHead = slot;                                                     \
             }                                                                                      \
             n = next;                                                                              \
@@ -688,8 +688,8 @@ i32 CGrunt::WanderStep() {
                         node = *(void**)node;
                         i32 data = *(i32*)((char*)cur + 8);
                         if (data != 0) {
-                            i32* fslot = (i32*)(data - g_coordPool.m_linkOffset);
-                            *fslot = prev;
+                            CoordPoolNode* fslot = g_coordPool.NodeOf(reinterpret_cast<void*>(data));
+                            fslot->m_next = reinterpret_cast<CoordPoolNode*>(prev);
                             prev = reinterpret_cast<i32>(fslot);
                             g_coordPool.m_freeHead = fslot;
                         }
@@ -1125,10 +1125,10 @@ i32 CGrunt::UpdateArrival() {
                     GruntCoord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
-                        g_coordPool.m_freeHead
-                            = (void*)(reinterpret_cast<i32>(*link) - g_coordPool.m_linkOffset);
-                        *(void**)g_coordPool.m_freeHead = prev;
-                        prev = g_coordPool.m_freeHead;
+                        CoordPoolNode* n2 = g_coordPool.NodeOf(*link);
+                        n2->m_next = static_cast<CoordPoolNode*>(prev);
+                        g_coordPool.m_freeHead = n2;
+                        prev = n2;
                     }
                 }
                 m_31c.RemoveAll();

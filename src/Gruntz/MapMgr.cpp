@@ -417,7 +417,7 @@ reached:
             slot = &rec->m_4;
             rec->m_4 = p->m_0;
             rec->m_8 = p->m_4;
-            g_coordPool.m_freeHead = (void*)rec->m_0;
+            g_coordPool.m_freeHead = reinterpret_cast<CoordPoolNode*>(rec->m_0);
         }
         ((CRezList*)list)->AddHead((CRezListNode*)slot);
         p = (BrickzNode*)p->m_1c;

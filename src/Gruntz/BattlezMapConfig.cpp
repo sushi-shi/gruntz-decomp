@@ -596,16 +596,16 @@ void CBattlezMapConfig::FreeArrays() {
     for (i = 0; i < m_candArray.GetSize(); i++) {
         void* p = m_candArray[i];
         if (p != 0) {
-            void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(p);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
     m_candArray.SetSize(0, -1);
 
     for (i = 0; i < m_0f0.GetSize(); i++) {
-        void** node = (void**)((char*)m_0f0[i] - g_coordPool.m_linkOffset);
-        *node = g_coordPool.m_freeHead;
+        CoordPoolNode* node = g_coordPool.NodeOf(m_0f0[i]);
+        node->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = node;
     }
     m_0f0.SetSize(0, -1);
@@ -765,8 +765,8 @@ i32 CBattlezMapConfig::Method_025d90() {
                         GruntCoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != 0) {
-                            void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                            *node = g_coordPool.m_freeHead;
+                            CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                            node->m_next = g_coordPool.m_freeHead;
                             g_coordPool.m_freeHead = node;
                         }
                     }
@@ -1212,9 +1212,8 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                             GruntCoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
-                                void** fn =
-                                    (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                                *fn = g_coordPool.m_freeHead;
+                                CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
+                                fn->m_next = g_coordPool.m_freeHead;
                                 g_coordPool.m_freeHead = fn;
                                 coordList->RemoveAt((POSITION)cur);
                             }
@@ -1347,9 +1346,8 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                             GruntCoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
-                                void** fn =
-                                    (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                                *fn = g_coordPool.m_freeHead;
+                                CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
+                                fn->m_next = g_coordPool.m_freeHead;
                                 g_coordPool.m_freeHead = fn;
                             }
                         }
@@ -1483,8 +1481,8 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
             && list.GetCount() != 0) {
             void* head = list.RemoveHead();
             if (head != 0) {
-                void** n = (void**)((char*)head - g_coordPool.m_linkOffset);
-                *n = g_coordPool.m_freeHead;
+                CoordPoolNode* n = g_coordPool.NodeOf(head);
+                n->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = n;
             }
             if (list.GetCount() != 0) {
@@ -1993,8 +1991,8 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     for (j = 0; j < m_0f0.GetSize(); j++) {
         void* q = m_0f0[j];
         if (q != 0) {
-            void** node = (void**)((char*)q - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(q);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
@@ -2002,11 +2000,11 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     ar->Read(&count, 4);
     m_0f0.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
-        void* node = g_coordPool.m_freeHead;
+        CoordPoolNode* node = g_coordPool.m_freeHead;
         void* payload = 0;
-        if (*(void**)node != 0) {
-            payload = (char*)node + 4;
-            g_coordPool.m_freeHead = *(void**)node;
+        if (node->m_next != 0) {
+            payload = &node->m_coord;
+            g_coordPool.m_freeHead = node->m_next;
         }
         ar->Read(payload, 8);
         m_0f0[i] = payload;
@@ -2015,8 +2013,8 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     for (j = 0; j < m_candArray.GetSize(); j++) {
         void* q = m_candArray[j];
         if (q != 0) {
-            void** node = (void**)((char*)q - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(q);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
@@ -2024,11 +2022,11 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     ar->Read(&count, 4);
     m_candArray.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
-        void* node = g_coordPool.m_freeHead;
+        CoordPoolNode* node = g_coordPool.m_freeHead;
         void* payload = 0;
-        if (*(void**)node != 0) {
-            payload = (char*)node + 4;
-            g_coordPool.m_freeHead = *(void**)node;
+        if (node->m_next != 0) {
+            payload = &node->m_coord;
+            g_coordPool.m_freeHead = node->m_next;
         }
         ar->Read(payload, 8);
         m_candArray[i] = payload;
@@ -2429,8 +2427,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     if (!(m_board->m_rows[drow][dcol].m_0 & 0x20000000)) {
                         void* h = cs.RemoveHead();
                         if (h != 0) {
-                            void** node = (void**)((char*)h - g_coordPool.m_linkOffset);
-                            *node = g_coordPool.m_freeHead;
+                            CoordPoolNode* node = g_coordPool.NodeOf(h);
+                            node->m_next = g_coordPool.m_freeHead;
                             g_coordPool.m_freeHead = node;
                         }
                     }
@@ -2724,8 +2722,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                     while (n != 0) {
                         GruntCoordNode* cur = n;
                         n = n->m_next;
-                        void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                        *node = g_coordPool.m_freeHead;
+                        CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                        node->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = node;
                     }
                 }
@@ -2763,8 +2761,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                         while (n != 0) {
                             GruntCoordNode* cur = n;
                             n = n->m_next;
-                            void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                            *node = g_coordPool.m_freeHead;
+                            CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                            node->m_next = g_coordPool.m_freeHead;
                             g_coordPool.m_freeHead = node;
                         }
                     }
@@ -2809,8 +2807,8 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                     while (n != 0) {
                         GruntCoordNode* cur = n;
                         n = n->m_next;
-                        void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                        *node = g_coordPool.m_freeHead;
+                        CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                        node->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = node;
                     }
                 }
@@ -3331,8 +3329,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 GruntCoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
-                    void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                    *node = g_coordPool.m_freeHead;
+                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                    node->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = node;
                 }
             }
@@ -3481,8 +3479,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                                 // Recycle the unit's old path coords onto g_coordPool.
                                 void* head = list.RemoveHead();
                                 if (head != 0) {
-                                    void** node = (void**)((char*)head - g_coordPool.m_linkOffset);
-                                    *node = g_coordPool.m_freeHead;
+                                    CoordPoolNode* node = g_coordPool.NodeOf(head);
+                                    node->m_next = g_coordPool.m_freeHead;
                                     g_coordPool.m_freeHead = node;
                                 }
                                 if (unit->CoordCount() != 0) {
@@ -3491,9 +3489,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                                         GruntCoordNode* cur = nn;
                                         nn = nn->m_next;
                                         if (cur->m_coord != 0) {
-                                            void** fn = (void**)((char*)cur->m_coord
-                                                                 - g_coordPool.m_linkOffset);
-                                            *fn = g_coordPool.m_freeHead;
+                                            CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
+                                            fn->m_next = g_coordPool.m_freeHead;
                                             g_coordPool.m_freeHead = fn;
                                         }
                                     }
@@ -3769,8 +3766,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                         GruntCoordNode* curn = n;
                         n = n->m_next;
                         if (curn->m_coord != 0) {
-                            void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
-                            *node = g_coordPool.m_freeHead;
+                            CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
+                            node->m_next = g_coordPool.m_freeHead;
                             g_coordPool.m_freeHead = node;
                         }
                     }
@@ -3796,8 +3793,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                     GruntCoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != 0) {
-                        void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
-                        *node = g_coordPool.m_freeHead;
+                        CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
+                        node->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = node;
                     }
                 }
@@ -3810,8 +3807,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                     GruntCoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != 0) {
-                        void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
-                        *node = g_coordPool.m_freeHead;
+                        CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
+                        node->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = node;
                     }
                 }
@@ -3912,8 +3909,8 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     }
     void* head = list.RemoveHead();
     if (head != 0) {
-        void** node = (void**)((char*)head - g_coordPool.m_linkOffset);
-        *node = g_coordPool.m_freeHead;
+        CoordPoolNode* node = g_coordPool.NodeOf(head);
+        node->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = node;
     }
     if (list.GetCount() == 0) {
@@ -4000,8 +3997,8 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     }
     void* head = list.RemoveHead();
     if (head != 0) {
-        void** node = (void**)((char*)head - g_coordPool.m_linkOffset);
-        *node = g_coordPool.m_freeHead;
+        CoordPoolNode* node = g_coordPool.NodeOf(head);
+        node->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = node;
     }
     if (list.GetCount() == 0) {
@@ -4009,8 +4006,8 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     }
     // The matched-path-segment recycle (degenerate in retail).
     if (match != 0 && unit->CoordHead() != 0) {
-        void** node = (void**)((char*)&unit->m_31c - g_coordPool.m_linkOffset);
-        *node = g_coordPool.m_freeHead;
+        CoordPoolNode* node = g_coordPool.NodeOf(&unit->m_31c);
+        node->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = node;
     }
     // Recycle the unit's existing coord nodes onto g_coordPool.m_freeHead, then empty its path.
@@ -4020,8 +4017,8 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
             GruntCoordNode* cur4 = p;
             p = p->m_next;
             if (cur4->m_coord != 0) {
-                void** node = (void**)((char*)cur4->m_coord - g_coordPool.m_linkOffset);
-                *node = g_coordPool.m_freeHead;
+                CoordPoolNode* node = g_coordPool.NodeOf(cur4->m_coord);
+                node->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = node;
             }
         }
@@ -4408,8 +4405,8 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     }
     void* head = list.RemoveHead();
     if (head != 0) {
-        void** node = (void**)((char*)head - g_coordPool.m_linkOffset);
-        *node = g_coordPool.m_freeHead;
+        CoordPoolNode* node = g_coordPool.NodeOf(head);
+        node->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = node;
     }
     if (list.GetCount() == 0) {
@@ -4422,8 +4419,8 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
             GruntCoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
-                void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                *fn = g_coordPool.m_freeHead;
+                CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
+                fn->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = fn;
             }
         }
@@ -4810,14 +4807,14 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
         if (unit->CoordCount() != 0) {
             GruntCoordNode* n = unit->CoordHead();
             if (n != 0) {
-                void* head = g_coordPool.m_freeHead;
+                CoordPoolNode* head = g_coordPool.m_freeHead;
                 do {
                     GruntCoordNode* cur = n;
                     n = n->m_next;
                     void* coord = cur->m_coord;
                     if (coord != 0) {
-                        void** slot = (void**)((char*)coord - g_coordPool.m_linkOffset);
-                        *slot = head;
+                        CoordPoolNode* slot = g_coordPool.NodeOf(coord);
+                        slot->m_next = head;
                         head = slot;
                         g_coordPool.m_freeHead = head;
                     }
@@ -4944,8 +4941,8 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                     GruntCoordNode* cur = n;
                     n = n->m_next;
                     if (cur->m_coord != 0) {
-                        void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                        *node = g_coordPool.m_freeHead;
+                        CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                        node->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = node;
                     }
                 }
@@ -4966,8 +4963,8 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             GruntCoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
-                void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                *node = g_coordPool.m_freeHead;
+                CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                node->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = node;
             }
         }
@@ -5169,14 +5166,14 @@ void CGrunt::RecycleCoords() {
     }
     GruntCoordNode* n = CoordHead();
     if (n != 0) {
-        void* head = g_coordPool.m_freeHead;
+        CoordPoolNode* head = g_coordPool.m_freeHead;
         do {
             GruntCoordNode* cur = n;
             n = n->m_next;
             void* coord = cur->m_coord;
             if (coord != 0) {
-                void** slot = (void**)((char*)coord - g_coordPool.m_linkOffset);
-                *slot = head;
+                CoordPoolNode* slot = g_coordPool.NodeOf(coord);
+                slot->m_next = head;
                 head = slot;
                 g_coordPool.m_freeHead = head;
             }
@@ -5391,8 +5388,8 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
                 GruntCoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
-                    void** slot = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-                    *slot = g_coordPool.m_freeHead;
+                    CoordPoolNode* slot = g_coordPool.NodeOf(cur->m_coord);
+                    slot->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = slot;
                 }
             }
@@ -5637,8 +5634,8 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
         GruntCoordNode* cur = n;
         n = n->m_next;
         if (cur->m_coord != 0) {
-            void** slot = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-            *slot = g_coordPool.m_freeHead;
+            CoordPoolNode* slot = g_coordPool.NodeOf(cur->m_coord);
+            slot->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = slot;
         }
     }

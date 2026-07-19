@@ -40,8 +40,15 @@ class FreeNodePool {
 public:
     void Push(void* p); // 0x0311b0
 
+    // The payload->node back-step every recycle site performs: the element pointer
+    // minus m_linkOffset is its CoordPoolNode. m_linkOffset is a RUNTIME field (the
+    // pool's design), so the arithmetic lives here once, not open-coded per site.
+    CoordPoolNode* NodeOf(void* payload) {
+        return reinterpret_cast<CoordPoolNode*>(reinterpret_cast<char*>(payload) - m_linkOffset);
+    }
+
     void* m_block;    // +0x00  owned backing block (RezAlloc'd; freed by ClearCoordPool)
-    void* m_freeHead; // +0x04  free-list head
+    CoordPoolNode* m_freeHead; // +0x04  free-list head
     i32 m_count;      // +0x08  element count of m_block
     i32 m_linkOffset; // +0x0c  payload offset inside a node (Push subtracts it)
 };

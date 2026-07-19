@@ -323,15 +323,15 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     if (*(void**)(p + 0x328) != 0) {
         void* node = *(void**)(p + 0x320);
         if (node != 0) {
-            void* fl = g_coordPool.m_freeHead;
+            CoordPoolNode* fl = g_coordPool.m_freeHead;
             do {
                 void* next = *(void**)node;
                 char* buf = *(char**)((char*)node + 8);
                 if (buf != 0) {
-                    buf -= g_coordPool.m_linkOffset;
-                    *(void**)buf = fl;
-                    fl = buf;
-                    g_coordPool.m_freeHead = buf;
+                    CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
+                    n2->m_next = fl;
+                    fl = n2;
+                    g_coordPool.m_freeHead = n2;
                 }
                 node = next;
             } while (node != 0);
@@ -343,11 +343,11 @@ i32 CGrunt::LoadStateRecord(CGruntArchive* ar) {
     i32 count;
     ar->Read(&count, 4);
     for (i32 a = 0; a < count; ++a) {
-        char* slot = static_cast<char*>(g_coordPool.m_freeHead);
-        void* nf = *(void**)slot;
-        char* item = 0;
+        CoordPoolNode* slot = g_coordPool.m_freeHead;
+        CoordPoolNode* nf = slot->m_next;
+        void* item = 0;
         if (nf != 0) {
-            item = slot + 4;
+            item = &slot->m_coord;
             g_coordPool.m_freeHead = nf;
         }
         ar->Read(item, 8);

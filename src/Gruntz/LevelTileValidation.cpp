@@ -623,11 +623,11 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (who == (void*)0x4017e4) {
             if (obj->m_124 == g_tileKindMagic) {
-                void** cell = (void**)g_coordPool.m_freeHead;
+                CoordPoolNode* cell = g_coordPool.m_freeHead;
                 void* slot = 0;
-                if (*cell != 0) {
-                    slot = (void*)(cell + 1);
-                    g_coordPool.m_freeHead = *cell;
+                if (cell->m_next != 0) {
+                    slot = &cell->m_coord;
+                    g_coordPool.m_freeHead = cell->m_next;
                 }
                 if (slot != 0) {
                     ((i32*)slot)[0] = (obj->m_screenX & ~0x1f) + 0x10;
@@ -717,9 +717,9 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (who == (void*)0x401f0a) {
             if (g_gameReg->m_134 != ok) {
-                void** cell = (void**)g_coordPool.m_freeHead;
-                if (*cell != 0) {
-                    g_coordPool.m_freeHead = *cell;
+                CoordPoolNode* cell = g_coordPool.m_freeHead;
+                if (cell->m_next != 0) {
+                    g_coordPool.m_freeHead = cell->m_next;
                 }
             }
         }

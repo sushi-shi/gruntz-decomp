@@ -388,11 +388,11 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                     // void* generic-free-list idiom as Grunt.cpp's recycle. Retail hardcodes
                     // the +4 in the pop (and reads m_linkOffset only in the push below).
                     Coord* elem = 0;
-                    if (*(void**)g_coordPool.m_freeHead != 0) {
-                        elem = (Coord*)((char*)g_coordPool.m_freeHead + 4);
+                    if (g_coordPool.m_freeHead->m_next != 0) {
+                        elem = &g_coordPool.m_freeHead->m_coord;
                         elem->m_x = tileX + xo;
                         elem->m_y = tileY + yo;
-                        g_coordPool.m_freeHead = *(void**)g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                     }
                     m_arr.SetAtGrow(m_arr.GetSize(), elem);
                 }
@@ -404,8 +404,8 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                     m_cellPool[elem->m_y * m_c + elem->m_x].m_c = 0;
                     // Recycle: recover the raw node (payload - m_linkOffset) and relink onto
                     // the free-list head (the Grunt.cpp void** idiom).
-                    void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
-                    *node = g_coordPool.m_freeHead;
+                    CoordPoolNode* node = g_coordPool.NodeOf(elem);
+                    node->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = node;
                 }
             }

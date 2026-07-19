@@ -18,7 +18,7 @@
 // pointer and chain the raw node onto the free-list head (m_4). __thiscall, 1 stack arg.
 RVA(0x000311b0, 0x14)
 void FreeNodePool::Push(void* p) {
-    char* node = (char*)p - m_linkOffset;
-    *(void**)node = m_freeHead;
+    CoordPoolNode* node = NodeOf(p);
+    node->m_next = m_freeHead;
     m_freeHead = node;
 }

@@ -108,8 +108,8 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
                 GruntCoordNode* next = n->m_next;
                 GruntCoord* data = n->m_coord;
                 if (data != 0) {
-                    void** p = (void**)((char*)data - g_coordPool.m_linkOffset);
-                    *p = g_coordPool.m_freeHead;
+                    CoordPoolNode* p = g_coordPool.NodeOf(data);
+                    p->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = p;
                 }
                 n = next;

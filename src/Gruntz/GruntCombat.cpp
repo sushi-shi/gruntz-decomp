@@ -428,8 +428,8 @@ void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 
 #define FREELIST_PUSH(elem)                                                                        \
     {                                                                                              \
-        void** node = (void**)((char*)(elem) - g_coordPool.m_linkOffset);                          \
-        *node = g_coordPool.m_freeHead;                                                            \
+        CoordPoolNode* node = g_coordPool.NodeOf((elem));                                          \
+        node->m_next = g_coordPool.m_freeHead;                                                     \
         g_coordPool.m_freeHead = node;                                                             \
     }
 
@@ -1059,7 +1059,7 @@ i32 CGrunt::PathScan57db0() {
                 void** fn = (void**)g_coordPool.m_freeHead;
                 fn[0] = (void*)co->m_x;
                 fn[1] = (void*)co->m_y;
-                g_coordPool.m_freeHead = *fn;
+                g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(*fn);
                 m_31c.AddTail(fn);
             }
         }
@@ -1792,10 +1792,10 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 rx = this->m_lastTilePxX >> 5;
             i32 ry = this->m_lastTilePxY >> 5;
             if (*(void**)g_coordPool.m_freeHead != 0) {
-                node = (i32*)((char*)g_coordPool.m_freeHead + 4);
+                node = reinterpret_cast<i32*>(&g_coordPool.m_freeHead->m_coord);
                 node[0] = rx;
                 node[1] = ry;
-                g_coordPool.m_freeHead = *(void**)g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_31c.AddHead(node);
         }
@@ -1815,15 +1815,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (m_31c.GetCount() != 0) {
             CoordNode* node = reinterpret_cast<CoordNode*>(m_31c.GetHeadPosition());
             if (node != 0) {
-                void* fl = g_coordPool.m_freeHead;
+                CoordPoolNode* fl = g_coordPool.m_freeHead;
                 do {
                     CoordNode* cur = node;
                     node = cur->m_next;
                     Coord* data = cur->m_coord;
                     if (data != 0) {
-                        CoordPoolNode* slot =
-                            (CoordPoolNode*)((char*)data - g_coordPool.m_linkOffset);
-                        slot->m_next = (CoordPoolNode*)fl;
+                        CoordPoolNode* slot = g_coordPool.NodeOf(data);
+                        slot->m_next = fl;
                         fl = slot;
                         g_coordPool.m_freeHead = fl;
                     }

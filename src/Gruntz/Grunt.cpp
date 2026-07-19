@@ -303,8 +303,8 @@ void GruntRecycleCoords(CGrunt* g) {
         GruntCoordNode* cur = n;
         n = n->m_next;
         if (cur->m_coord != 0) {
-            void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
@@ -596,8 +596,8 @@ i32 CGrunt::UserLogicVfunc9() {
                 void* next = node[0];
                 void* buf = node[2];
                 if (buf) {
-                    void** slot = (void**)((char*)buf - g_coordPool.m_linkOffset);
-                    *slot = g_coordPool.m_freeHead;
+                    CoordPoolNode* slot = g_coordPool.NodeOf(buf);
+                    slot->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = slot;
                 }
                 node = (void**)next;
@@ -1172,8 +1172,8 @@ i32 CGrunt::StepGruntMovement() {
         GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
         coordX = co->m_x;
         coordY = co->m_y;
-        void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
-        *p = g_coordPool.m_freeHead;
+        CoordPoolNode* p = g_coordPool.NodeOf(co);
+        p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
     } else {
         GruntCoord* co = CoordHead()->m_coord;
@@ -1290,10 +1290,10 @@ i32 CGrunt::StepGruntMovement() {
     }
     {
         void* node = 0;
-        void** head = (void**)g_coordPool.m_freeHead;
-        if (*head != 0) {
-            node = (char*)head + 4;
-            g_coordPool.m_freeHead = *head;
+        CoordPoolNode* head = g_coordPool.m_freeHead;
+        if (head->m_next != 0) {
+            node = &head->m_coord;
+            g_coordPool.m_freeHead = head->m_next;
         }
         ((i32*)node)[0] = tgtTileX;
         ((i32*)node)[1] = tgtTileY;
@@ -1362,8 +1362,8 @@ i32 CGrunt::StepGruntMovement() {
             return 0;
         }
         GruntCoord* co2 = static_cast<GruntCoord*>(m_31c.RemoveHead());
-        void** p = (void**)((char*)co2 - g_coordPool.m_linkOffset);
-        *p = g_coordPool.m_freeHead;
+        CoordPoolNode* p = g_coordPool.NodeOf(co2);
+        p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
         goto label_4c6e4;
     }
@@ -1382,8 +1382,8 @@ label_4c68b:
 label_4c6e4:
     if (m_arrivalState == 0x11 && CoordCount() != 0) {
         GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
-        void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
-        *p = g_coordPool.m_freeHead;
+        CoordPoolNode* p = g_coordPool.NodeOf(co);
+        p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
     }
     if (flagHead & 0x80) {
@@ -1442,8 +1442,8 @@ label_4c6e4:
         if (CoordCount() != 0 && m_arrivalState != 0x11) {
             GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
             if (co->m_x == btx && co->m_y == bty) {
-                void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
-                *p = g_coordPool.m_freeHead;
+                CoordPoolNode* p = g_coordPool.NodeOf(co);
+                p->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = p;
             } else {
                 m_31c.AddHead(co);
@@ -1655,8 +1655,8 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
                 void* next = node[0];
                 void* buf = node[2];
                 if (buf) {
-                    void** slot = (void**)((char*)buf - g_coordPool.m_linkOffset);
-                    *slot = g_coordPool.m_freeHead;
+                    CoordPoolNode* slot = g_coordPool.NodeOf(buf);
+                    slot->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = slot;
                 }
                 node = (void**)next;

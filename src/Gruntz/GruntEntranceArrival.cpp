@@ -827,8 +827,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 void* next = node[0];
                 void* buf = node[2];
                 if (buf != 0) {
-                    void** sp = (void**)((char*)buf - g_coordPool.m_linkOffset);
-                    *sp = g_coordPool.m_freeHead;
+                    CoordPoolNode* sp = g_coordPool.NodeOf(buf);
+                    sp->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = sp;
                 }
                 node = (void**)next;

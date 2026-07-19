@@ -1984,8 +1984,8 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
         for (i32 i = 0; i < markerCount(); i++) {
             void* node = markerData()[i];
             if (node) {
-                void** q = (void**)((char*)node - g_coordPool.m_linkOffset);
-                *q = g_coordPool.m_freeHead;
+                CoordPoolNode* q = g_coordPool.NodeOf(node);
+                q->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = q;
             }
         }
@@ -1994,10 +1994,10 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
         ar->Read(&n, 4);
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
             void* node = 0;
-            void** head = (void**)g_coordPool.m_freeHead;
-            void* next = *head;
+            CoordPoolNode* head = g_coordPool.m_freeHead;
+            CoordPoolNode* next = head->m_next;
             if (next) {
-                node = (char*)head + 4;
+                node = reinterpret_cast<char*>(&head->m_coord);
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
@@ -2021,8 +2021,8 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
             for (i32 i = 0; i < arrCount(k); i++) {
                 void* node = arrData(k)[i];
                 if (node) {
-                    void** q = (void**)((char*)node - g_coordPool.m_linkOffset);
-                    *q = g_coordPool.m_freeHead;
+                    CoordPoolNode* q = g_coordPool.NodeOf(node);
+                    q->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = q;
                 }
             }
@@ -2031,10 +2031,10 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
             ar->Read(&n, 4);
             for (u32 j = 0; j < static_cast<u32>(n); j++) {
                 void* node = 0;
-                void** head = (void**)g_coordPool.m_freeHead;
-                void* next = *head;
+                CoordPoolNode* head = g_coordPool.m_freeHead;
+                CoordPoolNode* next = head->m_next;
                 if (next) {
-                    node = (char*)head + 4;
+                    node = &head->m_coord;
                     g_coordPool.m_freeHead = next;
                 }
                 ar->Read(node, 8);
@@ -2143,8 +2143,8 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
         for (i32 i = 0; i < arr488Count(); i++) {
             void* node = arr488Data()[i];
             if (node) {
-                void** q = (void**)((char*)node - g_coordPool.m_linkOffset);
-                *q = g_coordPool.m_freeHead;
+                CoordPoolNode* q = g_coordPool.NodeOf(node);
+                q->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = q;
             }
         }
@@ -2152,10 +2152,10 @@ i32 CPlay::SyncRead2f7c(CSerialArchive* ar) {
         m_488.SetSize(n488, -1);
         for (u32 j = 0; j < static_cast<u32>(n488); j++) {
             void* node = 0;
-            void** head = (void**)g_coordPool.m_freeHead;
-            void* next = *head;
+            CoordPoolNode* head = g_coordPool.m_freeHead;
+            CoordPoolNode* next = head->m_next;
             if (next) {
-                node = (char*)head + 4;
+                node = reinterpret_cast<char*>(&head->m_coord);
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
@@ -3333,8 +3333,8 @@ i32 CPlay::ClearPlacedObjects() {
                 rec->RemoveAt(i, 1);
                 // return the placed-object node to the MFC free list (the node
                 // header sits g_coordPool.m_linkOffset bytes before the payload).
-                void* node = (char*)obj - g_coordPool.m_linkOffset;
-                *(void**)node = g_coordPool.m_freeHead;
+                CoordPoolNode* node = g_coordPool.NodeOf(obj);
+                node->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = node;
                 return -1;
             }
@@ -6576,8 +6576,8 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < markerCount(); i++) {
         void* node = markerData()[i];
         if (node != 0) {
-            void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-            *p = g_coordPool.m_freeHead;
+            CoordPoolNode* p = g_coordPool.NodeOf(node);
+            p->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = p;
         }
     }
@@ -6586,8 +6586,8 @@ void CPlay::FreeListTeardown() {
         for (i = 0; i < arrCount(k); i++) {
             void* node = arrData(k)[i];
             if (node != 0) {
-                void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-                *p = g_coordPool.m_freeHead;
+                CoordPoolNode* p = g_coordPool.NodeOf(node);
+                p->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = p;
             }
         }
@@ -6596,8 +6596,8 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < arr488Count(); i++) {
         void* node = arr488Data()[i];
         if (node != 0) {
-            void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-            *p = g_coordPool.m_freeHead;
+            CoordPoolNode* p = g_coordPool.NodeOf(node);
+            p->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = p;
         }
     }
@@ -6669,8 +6669,8 @@ void CPlay::ReleaseResources() {
     for (i = 0; i < markerCount(); i++) {
         void* node = markerData()[i];
         if (node != 0) {
-            void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-            *p = g_coordPool.m_freeHead;
+            CoordPoolNode* p = g_coordPool.NodeOf(node);
+            p->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = p;
         }
     }
@@ -6679,8 +6679,8 @@ void CPlay::ReleaseResources() {
         for (i = 0; i < arrCount(k); i++) {
             void* node = arrData(k)[i];
             if (node != 0) {
-                void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-                *p = g_coordPool.m_freeHead;
+                CoordPoolNode* p = g_coordPool.NodeOf(node);
+                p->m_next = g_coordPool.m_freeHead;
                 g_coordPool.m_freeHead = p;
             }
         }
@@ -6689,8 +6689,8 @@ void CPlay::ReleaseResources() {
     for (i = 0; i < arr488Count(); i++) {
         void* node = arr488Data()[i];
         if (node != 0) {
-            void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
-            *p = g_coordPool.m_freeHead;
+            CoordPoolNode* p = g_coordPool.NodeOf(node);
+            p->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = p;
         }
     }

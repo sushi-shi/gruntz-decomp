@@ -943,8 +943,8 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     for (i32 t = 0; t < m_ptrPool.GetSize(); t++) {
         void* pp = m_ptrPool.GetData()[t];
         if (pp) {
-            void** node = (void**)((char*)pp - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(pp);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
@@ -954,11 +954,11 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     s->Read(&count, 4);
     m_ptrPool.SetSize(count, -1);
     for (u32 n = 0; n < static_cast<u32>(count); n++) {
-        char* head = static_cast<char*>(g_coordPool.m_freeHead);
+        CoordPoolNode* head = g_coordPool.m_freeHead;
         void* node = 0;
-        if (*(i32*)head != 0) {
-            node = head + 4;
-            g_coordPool.m_freeHead = *(void**)head;
+        if (head->m_next != 0) {
+            node = &head->m_coord;
+            g_coordPool.m_freeHead = head->m_next;
         }
         s->Read(node, 8);
         m_ptrPool.GetData()[n] = node;
@@ -1344,8 +1344,8 @@ void CStatusBarMgr::Teardown() {
     for (i32 i = 0; i < m_ptrPool.GetSize(); i++) {
         void* p = m_ptrPool.GetData()[i];
         if (p) {
-            void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(p);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
@@ -2698,7 +2698,8 @@ i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
         node = (CSbiFreeNode*)&head->m_4;
         node->m_0 = a;
         node->m_4 = b;
-        g_coordPool.m_freeHead = (void*)((CSbiFreeNode*)g_coordPool.m_freeHead)->m_0;
+        g_coordPool.m_freeHead
+            = reinterpret_cast<CoordPoolNode*>(((CSbiFreeNode*)g_coordPool.m_freeHead)->m_0);
     }
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;
@@ -3027,8 +3028,8 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
         if (m_ptrPool.GetSize() > 0) {
             void* p = m_ptrPool.GetData()[0];
             result = *(i32*)p;
-            void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(p);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
             m_ptrPool.RemoveAt(0, 1);
         } else {
@@ -4410,8 +4411,8 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     for (i32 j = 0; j < m_ptrPool.GetSize(); j++) {
         void* p = m_ptrPool.GetData()[j];
         if (p) {
-            void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(p);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }

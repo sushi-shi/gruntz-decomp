@@ -82,19 +82,19 @@ i32 CGruntzMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
                 void* elem = m_arr.GetData()[fi];
                 if (elem != 0) {
-                    void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
-                    *node = g_coordPool.m_freeHead;
+                    CoordPoolNode* node = g_coordPool.NodeOf(elem);
+                    node->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = node;
                 }
             }
             m_arr.SetSize(0, -1);
             m_arr.SetSize(count, -1);
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
-                void** node = (void**)g_coordPool.m_freeHead;
+                CoordPoolNode* node = g_coordPool.m_freeHead;
                 void* elem = 0;
-                if (*node != 0) {
-                    elem = (char*)node + 4;
-                    g_coordPool.m_freeHead = *node;
+                if (node->m_next != 0) {
+                    elem = &node->m_coord;
+                    g_coordPool.m_freeHead = node->m_next;
                 }
                 ar->Read(elem, 8);
                 m_arr.GetData()[ri] = elem;
@@ -139,8 +139,8 @@ void CGruntzMapMgr::Reset() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         void* elem = m_arr.GetData()[i];
         if (elem != 0) {
-            void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(elem);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
@@ -160,8 +160,8 @@ CGruntzMapMgr::~CGruntzMapMgr() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         void* elem = m_arr.GetAt(i);
         if (elem != 0) {
-            void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
-            *node = g_coordPool.m_freeHead;
+            CoordPoolNode* node = g_coordPool.NodeOf(elem);
+            node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
