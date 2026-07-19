@@ -52,6 +52,18 @@ _VOID_KEEPS = {
     ("CButeValue", "pValue"), ("TypeKeyRec", "m_4"),
     ("CHashElement", "m_record"),  # the generic hash payload (typed per-table at use)
     ("CObjNode", "m_base"),        # the intrusive-list element view slot (vptr-or-data)
+    # RenderFrame's RETAIL signature is void* x4 (CImage.h 0x153790) - the ctx slot
+    # inherits the ABI type.
+    ("CStatzDrawable", "m_14"),
+    # multi-type list/bucket payloads (proven variant at their use sites) + generic
+    # container value slots + caller-unfound records - each flagged in its header.
+    ("TtcNode", "m_data"), ("CObjListNode", "m_data"), ("MapElemB", "m_0"),
+    ("CTrieNode", "m_10"), ("TypeKeyRec", "m_4"), ("CKeyFinder", "m_owner"),
+    ("CParseSource", "m_entry"), ("CGMSound", "m_14"),
+    # boundary-drain scaffolding hosts (*Views.h holding pens) - the fields die with
+    # the drain campaign's identity folds, not by per-field typing.
+    ("Iter118330", "pos"), ("CUserLogicOOL", "m_3c"), ("Cdb200", "m_8"),
+    ("CRect118", "m_0"), ("Cb151d20", "m_1c"),
 }
 
 _NUMERIC = {cidx.TypeKind.INT, cidx.TypeKind.UINT, cidx.TypeKind.LONG, cidx.TypeKind.ULONG,
