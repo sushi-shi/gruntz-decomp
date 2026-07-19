@@ -47,7 +47,6 @@
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
 #include <Bute/ButeMgr.h>
 #include <EmptyString.h>              // g_emptyString
-#include <Bute/ButeStoreDtorCopies.h> // the 0x21310 zPTree store-dtor copy anchor (MgrA)
 #include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
 #include <Globals.h>
@@ -905,22 +904,26 @@ static const char s_strLBrack[] = "[";
 static const char s_strRBrack[] = "]";
 
 // ===========================================================================
-// 0x021310 - this TU's per-obj static copy of ~CButeStore (the store's INLINE
-// destructor) - the ONLY genuine copy-anchor left: zPTree's own vtable 0x1e94ac
-// slot 0 (sdd 0x212e0, via ILT 0x4372) dispatches to it, so it really is plain
-// ~zPTree as emitted in butemgr (MSVC5 without /Gy emits an inline member as a
-// per-obj static while folding the vftable COMDAT). See
-// <Bute/ButeStoreDtorCopies.h>. Its two ex-siblings were NOT copies: 0x174d70 is
-// the real ~CButeNode (butenode) and 0x21570 the real ~CBSecStream (below) - their
-// bodies are byte-identical to this one only because neither subclass adds
-// destructible state. The inline ~CButeStore expands here: stamp both vptrs,
-// ClearRecursive(0) (the REAL ?ClearRecursive@CButeStore@@ @0x16e070 - the old per-copy
-// CButeStoreZPTree::ClearRecursive was declared nowhere and would not have linked), then
-// fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base (~CContainerErr
-// 0x16da60). __thiscall, /GX.
+// 0x021310 - this TU's compiler-emitted copy of ??1zPTree (the store's INLINE
+// destructor): zPTree's own vtable 0x1e94ac slot 0 (sdd 0x212e0, via ILT 0x4372)
+// dispatches to it, so it really is plain ~zPTree as emitted in butemgr (MSVC5
+// without /Gy emits an inline member per obj while folding the vftable COMDAT).
+// Our cl emits the same ??1zPTree/??_GzPTree/??_EzPTree trio in this obj on its
+// own (the TU deletes stores); the @rva-symbol pins below just NAME the retail
+// copies for the delink carve - the ex CButeStoreDtorCopyMgrA anchor class and its
+// RELOC_VTBL(0x1e94ac) are DISSOLVED (no anchor is needed for compiler-emitted
+// copies). Its two ex-siblings were never copies at all: 0x174d70 is the real
+// ~CButeNode (butenode) and 0x21570 the real ~CBSecStream (below) - byte-identical
+// only because neither subclass adds destructible state. The inline ~zPTree
+// expands as: stamp both vptrs, ClearRecursive(0) (?ClearRecursive@CButeStore@@
+// @0x16e070), fold the +0x08 base (~CButeNodeEntry 0x16dfc0) and the +0x00 base
+// (~CContainerErr 0x16da60). __thiscall, /GX.
+// 0x212e0 = the scalar-deleting destructor (vtable 0x1e94ac slot 0); 0x21600 = the
+// second-base adjustor flavor (vtable 0x1e949c slot 0, via ILT 0x1c30).
 // ===========================================================================
-RVA(0x00021310, 0x70)
-CButeStoreDtorCopyMgrA::~CButeStoreDtorCopyMgrA() {}
+// @rva-symbol: ??_GzPTree@@UAEPAXI@Z 0x000212e0
+// @rva-symbol: ??1zPTree@@UAE@XZ 0x00021310 0x70
+// @rva-symbol: ??_EzPTree@@W7AEPAXI@Z 0x00021600
 
 // ---------------------------------------------------------------------------
 // 0x0213a0 - IDENTITY RECOVERED (was the CVBaseFieldHost @identity-TODO view):

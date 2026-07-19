@@ -191,7 +191,6 @@ rva,name,lib,confidence,source
 0x0203f0,__inc,LIBCMT,LOW,anchored
 0x020440,__inc,LIBCMT,LOW,anchored
 0x020490,__inc,LIBCMT,LOW,anchored
-0x0212e0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x021610,__inc,LIBCMT,LOW,anchored
 0x021660,__inc,LIBCMT,LOW,anchored
 0x0216b0,__inc,LIBCMT,LOW,anchored
