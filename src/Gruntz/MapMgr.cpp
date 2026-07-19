@@ -264,7 +264,7 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, void (*callback)()) {
     b.top = 0;
     b.right = width;
     b.bottom = height;
-    RECT* out = reinterpret_cast<RECT*>(&m_bounds.left);
+    RECT* out = &m_bounds;
     if (!IntersectRect(out, &a, &b)) {
         *out = a;
     }

@@ -36,8 +36,8 @@ void CBrickzGrid::Clip(const RECT* src) {
         a.right = m_width;
         a.bottom = m_height;
     }
-    if (!IntersectRect(reinterpret_cast<RECT*>(&m_bounds.left), &a, &b)) {
-        *reinterpret_cast<RECT*>(&m_bounds.left) = a;
+    if (!IntersectRect(&m_bounds, &a, &b)) {
+        m_bounds = a;
     }
     m_gridW = m_bounds.right - m_bounds.left;
     m_gridH = m_bounds.bottom - m_bounds.top;
