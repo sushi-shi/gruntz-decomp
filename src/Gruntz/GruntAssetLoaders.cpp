@@ -118,7 +118,7 @@ enum GruntDeathType {
     do {                                                                                           \
         CGameRegistry* _g = g_gameReg;                                                             \
         if (GruntPointVisible(                                                                     \
-                (i32) & _g->m_world->m_level->m_mainPlane->m_originX,                              \
+                reinterpret_cast<i32>(&_g->m_world->m_level->m_mainPlane->m_originX),                              \
                 m_10->m_screenX,                                                                   \
                 m_10->m_screenY                                                                    \
             )) {                                                                                   \

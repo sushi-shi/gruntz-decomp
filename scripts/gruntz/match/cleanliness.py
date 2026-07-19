@@ -154,8 +154,13 @@ METRICS = (
     # initial target excludes genuine u8*/u16*/void* buffer reinterprets. Ratcheted; drive via drivers.
     ("reinterpret_cast<class*>(m_)", re.compile(r"reinterpret_cast<\s*[A-Z]\w*\s*\*+\s*>\(m_[A-Za-z0-9_]"), False),
     # C-style NUMERIC/math value casts -> static_cast<T>(...) (byte-neutral; un-matches this regex).
+    # A cast is `(TYPE)operand` in a VALUE context. The lookbehind excludes DECLARATOR contexts the
+    # bare regex mis-read as casts: a single-arg fn param list `Method(i32)`, a fn-pointer type
+    # `)(int)`, a template method `Foo<T>(i32)`, and `sizeof(int)` - all preceded by an identifier,
+    # `>` or `)`, never an operand. (Audited 2026-07-19: bare regex read 83, 82 of them param/fn-ptr
+    # decls; the one real macro-body cast was converted. See metric-regexes-drift-from-tree.)
     ("C-style numeric casts",
-     re.compile(r"\((?:i8|i16|i32|i64|u8|u16|u32|u64|float|double|char|short|int|long|unsigned)\)"), False),
+     re.compile(r"(?<![\w>)])\((?:i8|i16|i32|i64|u8|u16|u32|u64|float|double|char|short|int|long|unsigned)\)"), False),
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
