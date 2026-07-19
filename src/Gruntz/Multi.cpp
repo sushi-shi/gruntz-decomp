@@ -12,7 +12,7 @@
 // Functions in strictly ascending retail-RVA order. Field names are placeholders;
 // only the OFFSETS + the per-method call/branch structure are load-bearing.
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <rva.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Rez/FrameClock.h>   // the frame-clock/timer band the session loop reads/pumps
@@ -1207,7 +1207,7 @@ i32 CMulti::PumpA() {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_ambientTimerLo) >= *reinterpret_cast<i64*>(&m_ambientInterval)) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
-            if (g_gameReg->m_14 != 0) {
+            if (g_gameReg->m_musicEnabled != 0) {
                 Mgr()->m_sound->PlayByName(name, 1);
             } else {
                 CGruntzSoundInnerZ* p = Mgr()->m_sound->FindBank(name);
@@ -2269,10 +2269,10 @@ i32 CMulti::VerifyCustomLevel(void* h, i32 playerTok) {
     i32 token;
     if (m_5b0 != 0) {
         CString b = GetConfigNameB();
-        token = (reinterpret_cast<CGruntzMgr*>(g_gameReg))->BuildLevelRezPath(0, m_5b0, 0, 0, b);
+        token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, b);
     } else {
         CString a = GetConfigNameA();
-        token = (reinterpret_cast<CGruntzMgr*>(g_gameReg))->BuildLevelRezPath(0, m_5b0, 0, 0, a);
+        token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, a);
     }
 
     g_connectRptMgr->m_levelVerifyResult = 0;
@@ -2780,7 +2780,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             i32 stamp = msg->m_8;
             u32 now = timeGetTime();
             i32 delta = now - stamp;
-            GruntzPlayer* player = static_cast<GruntzPlayer*>((reinterpret_cast<CGruntzMgr*>(g_gameReg))->FindOptionsSlot(sender));
+            GruntzPlayer* player = static_cast<GruntzPlayer*>((g_gameReg)->FindOptionsSlot(sender));
             if (player == 0) {
                 return 1;
             }
@@ -2795,7 +2795,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_isHost == 0) {
                 break;
             }
-            GruntzPlayer* player = static_cast<GruntzPlayer*>((reinterpret_cast<CGruntzMgr*>(g_gameReg))->FindOptionsSlot(sender));
+            GruntzPlayer* player = static_cast<GruntzPlayer*>((g_gameReg)->FindOptionsSlot(sender));
             if (player == 0) {
                 return 1;
             }
@@ -2814,7 +2814,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             return 1;
 
         case 0x41c: {
-            GruntzPlayer* player = static_cast<GruntzPlayer*>((reinterpret_cast<CGruntzMgr*>(g_gameReg))->FindOptionsSlot(sender));
+            GruntzPlayer* player = static_cast<GruntzPlayer*>((g_gameReg)->FindOptionsSlot(sender));
             if (player == 0) {
                 return 1;
             }
@@ -3751,7 +3751,7 @@ i32 CMulti::WaitForOtherPlayers() {
 
     SendStatFlag(0x3ed, 1);
     CString waitStr("Waiting for other playerz...");
-    CGameRegistry* g = g_gameReg;
+    CGameRegistry* g = reinterpret_cast<CGameRegistry*>(g_gameReg); // registry view (facet fields; convert with its fields)
     RECT rc;
     rc.left = 0;
     rc.top = 0;

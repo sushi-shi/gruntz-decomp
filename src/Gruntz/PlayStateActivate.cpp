@@ -16,7 +16,7 @@
 // asset root's m_4/m_c/m_24 are m_drawTarget/m_workerList/m_24 with their real
 // classes). "Present" IS CDDrawWorkerList::PruneWorkers, slot 13.)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/GameRegPtr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Mfc.h>                          // ShowCursor (afx-first)
 #include <EmptyString.h>                  // g_emptyString
 #include <Bute/SymTab.h>                  // canonical CSymTab (ResolvePath @0x13bae0)
@@ -91,7 +91,7 @@ i32 CPlay::InputVirtual() {
         ;
 
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-    UpdateMgrScroll(reinterpret_cast<CGruntzMgr*>(g_gameReg), reinterpret_cast<i32*>(m_guts), m_region0Gate);
+    UpdateMgrScroll(g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate);
 
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
