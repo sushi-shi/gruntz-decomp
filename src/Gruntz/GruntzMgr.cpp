@@ -1127,7 +1127,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
         return 0;
     }
 
-    m_connSettings = operator new(dwSize);
+    m_connSettings = static_cast<u8*>(operator new(dwSize));
     if (!m_connSettings) {
         m_lobby->Release();
         m_lobby = 0;

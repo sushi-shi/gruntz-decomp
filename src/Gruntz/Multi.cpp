@@ -1461,7 +1461,7 @@ i32 CMulti::StartTitle() {
     if (!Mgr()->m_lobby) {
         return 0;
     }
-    CMultiLogicDesc* desc = static_cast<CMultiLogicDesc*>(Mgr()->m_connSettings);
+    CMultiLogicDesc* desc = reinterpret_cast<CMultiLogicDesc*>(Mgr()->m_connSettings);
     if (!desc) {
         return 0;
     }

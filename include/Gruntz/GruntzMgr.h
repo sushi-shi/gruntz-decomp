@@ -516,7 +516,9 @@ public:
     i32 m_isCheckpointPrompts;        // +0xb8  "Checkpoint_Prompts" enable (=1 in ctor)
     SaveInfo* m_saveInfoRec;          // +0xbc  last FillSaveInfo dst record
     struct IDirectPlayLobby* m_lobby; // +0xc0  the DirectPlay lobby interface (Released/recreated)
-    void* m_connSettings;             // +0xc4  the launch connection-settings buffer
+    u8* m_connSettings;               // +0xc4  the launch connection-settings byte blob
+                                      //        (DPLCONNECTION-shaped; sized by
+                                      //        GetConnectionSettings, opaque to the engine)
     CString m_strWorldFile;           // +0xc8  world file name (EH state 0)
     i32 m_cc;                         // +0xcc  (=0x1e in ctor)
     char m_driveLetter;               // +0xd0  cached CD drive letter

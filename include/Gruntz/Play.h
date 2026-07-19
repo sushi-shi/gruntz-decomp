@@ -666,7 +666,7 @@ public:
     i32 m_scrollEdgeLock;   // +0x4b8  edge lock bits
     i32 m_revealFrame;      // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
     // +0x4c0  reveal-strip cap sprite objects (passed by-ptr to the HUD-strip draw).
-    void *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
+    CImage *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
     // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (canonical CImageSet)
     CImageSet* m_grid;      // +0x4cc  level tile/frame grid (canonical CImageSet)
     CImage* m_gridCurFrame; // +0x4d0  current tile/frame image (a CImageSet row)
