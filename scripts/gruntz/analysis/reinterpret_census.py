@@ -35,6 +35,30 @@ CDB_PATH = REPO + "/build/clangd/compile_commands.json"
 OUT_DEFAULT = REPO + "/build/gen/reinterpret_census.tsv"
 
 _COLL = {"__POSITION"}
+# Runtime-generic container classes: their storage fields (m_alloc/m_base/m_cur/
+# m_spare) hold stride-typed rows - the stride is a RUNTIME field (_zvec +0x18), so
+# no compile-time type exists for the rows and every facet cast off them is the
+# generic-collection keep the goal allows (like POSITION). zDArray<T> instances
+# exist in retail RTTI, but the multi-role singletons (g_typeColl/CActReg cells)
+# are used at several strides - by construction generic.
+_ZVEC_FAMILY = {"_zvec", "zDArray", "CTypeKeyColl", "CActReg", "CActColl"}
+_ZVEC_FIELDS = {"m_alloc", "m_base", "m_cur", "m_spare"}
+
+
+def _zvec_origin(op):
+    """True if the operand expression reads a _zvec-family storage field."""
+    stack = [op]
+    depth = 0
+    while stack and depth < 400:
+        depth += 1
+        n = stack.pop()
+        if n.kind == cidx.CursorKind.MEMBER_REF_EXPR and n.spelling in _ZVEC_FIELDS:
+            d = n.referenced
+            par = d.semantic_parent if d is not None else None
+            if par is not None and par.spelling in _ZVEC_FAMILY:
+                return True
+        stack.extend(n.get_children())
+    return False
 _HANDLE = {"HWND__", "HINSTANCE__", "HANDLE", "HDC__", "HBITMAP__", "HBRUSH__",
            "HICON__", "HMENU__", "HKEY__", "HFONT__", "HPALETTE__", "HRGN__"}
 
@@ -167,6 +191,9 @@ def main():
                         if op is not None:
                             b, frm, to = _classify(node.type.get_canonical(),
                                                    op.type.get_canonical())
+                            if b in ("cross-class", "char-walk", "char-io", "other", "int-ptr") \
+                                    and _zvec_origin(op):
+                                b = "collection"  # _zvec runtime-stride storage origin
                             if b == "char-arith":
                                 # SPLIT: does the cast participate in pointer math?
                                 # (result under +/-/[] => an array-walk SUSPECT; the
