@@ -611,17 +611,18 @@ i32 CObjectDropper::SerializeMove(CGruntArchive* ar, i32 tag, i32 c, i32 d) {
         return 0;
     }
 
-    // The drop-timing i64 pair (+0x88/+0x90), streamed through a walking pointer.
-    char* p = (char*)this + 0x88;
+    // The drop-timing i64 pair (m_lastDropTime/m_dropInterval), streamed through a
+    // walking typed cursor.
+    i64* p = &m_lastDropTime;
     switch (tag) {
         case 4:
             ar->Write(p, 8);
-            p += 8;
+            p += 1;
             ar->Write(p, 8);
             break;
         case 7:
             ar->Read(p, 8);
-            p += 8;
+            p += 1;
             ar->Read(p, 8);
             break;
     }

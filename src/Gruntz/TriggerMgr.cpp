@@ -686,7 +686,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         } else {
             rep->Report1(1, a14, a18, 0, 0, 0, 0);
         }
-        if (*(i32*)((char*)this + 0x2c) == 0) { // placeholder gate (see raw)
+        if (m_grid[4] == 0) { // the +0x2c grid-cell gate (see raw)
             return 0;
         }
         CDDrawChildGroup* fac = m_world->m_childGroup;

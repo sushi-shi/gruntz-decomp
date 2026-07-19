@@ -1529,9 +1529,9 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     ar->Write(&m_toyTime, 4);
     ar->Write(&m_wingzTime, 4);
     ar->Write(
-        (char*)this + 0x400,
+        &m_400,
         8
-    ); // m_400 double (raw: converting shifts a neighbor's regalloc)
+    );
     ar->Write(&m_418, 4);
     ar->Write(&m_42c, 4);
     ar->Write(&m_430, 4);
@@ -1553,8 +1553,8 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     ar->Write(&m_moveTileX, 8);
     ar->Write(&m_arrivalPhase, 4);
     ar->Write(&m_timePerTile, 4);
-    ar->Write((char*)this + 0x408, 8); // m_408 double (raw: see m_400 note)
-    ar->Write((char*)this + 0x410, 8); // m_410 double (raw: see m_400 note)
+    ar->Write(&m_408, 8);
+    ar->Write(&m_410, 8);
     ar->Write(&m_8d0, 4);
     ar->Write(&m_coordToggle, 4);
     ar->Write(&m_wingzEnabled, 4);

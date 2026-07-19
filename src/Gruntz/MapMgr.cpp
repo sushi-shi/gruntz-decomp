@@ -247,7 +247,7 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     if (((CMapArrayA*)&m_colA.m_block)->Allocate(count * 5) == 0) {
         return 0;
     }
-    if (((CMapArrayB*)((char*)this + 0x3c))->Allocate(count * 5) == 0) {
+    if (m_colB.Allocate(count * 5) == 0) {
         return 0;
     }
     m_stepCb = (void (*)())callback;

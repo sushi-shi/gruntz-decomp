@@ -671,7 +671,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     NetGameMgr()->m_ac = 0;
     // rep stos: zero 0x40 dwords from this+0x1d0
     {
-        i32* p = (i32*)((char*)this + 0x1d0);
+        i32* p = &m_1d0;
         for (i32 i = 0; i < 0x40; i++) {
             p[i] = 0;
         }
@@ -2136,7 +2136,7 @@ i32 CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
-    Cfg_SetSection(buf, "%s", *(i32*)((char*)this + 0x59c));
+    Cfg_SetSection(buf, "%s", reinterpret_cast<i32&>(m_groupName)); // the CString buffer handle
     Cfg_AppendKeyVal(buf, "CMDDELAY", m_5a4);
     Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
     Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
