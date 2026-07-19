@@ -508,7 +508,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
     CGameObject* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_goal = (CTmGoal*)spr;
     spr->m_7c->m_notify(spr);
-    ((CGameObject*)m_goal)->ApplyName("GAME_CAMERASPRITE");
+    (reinterpret_cast<CGameObject*>(m_goal))->ApplyName("GAME_CAMERASPRITE");
     return 1;
 }
 
@@ -2494,7 +2494,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
 RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     CPtrList* sel = &m_selLists[idx];
-    CTmNode* n = (CTmNode*)m_selLists[idx].GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_selLists[idx].GetHeadPosition());
     if (n != 0) {
         void* head = g_coordPool.m_freeHead;
         do {
@@ -2550,7 +2550,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     if (ov != 0 && ov->m_active != 0) {
         OverlayTick();
     }
-    CTmNode* n = (CTmNode*)m_selLists[slot].GetHeadPosition();
+    CTmNode* n = reinterpret_cast<CTmNode*>(m_selLists[slot].GetHeadPosition());
     if (n == 0) {
         m_selSentinel = -1;
         return 0;
@@ -2830,7 +2830,7 @@ void CTriggerMgr::DestroyAllAnims() {
         r--;
     } while (r != 0);
 
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_childGroup->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
         CTmCell* obj = (CTmCell*)node->m_gameObj;
         node = node->m_next;

@@ -77,7 +77,7 @@ i32 CSBI_WellGoo::Tick() {
     }
 
     CGooRenderCtx* ctx = g_gameReg->m_gameMgr->m_drawable->m_renderCtx;
-    m_baseFrame->RenderFrame((void*)ctx, (void*)m_drawX, (void*)(m_rect14.m_c + 3), 0);
+    m_baseFrame->RenderFrame((void*)ctx, reinterpret_cast<void*>(m_drawX), (void*)(m_rect14.m_c + 3), 0);
 
     // Goo fill height: a fraction of the (m_rect14.m_c - m_rect14.m_4) progress,
     // ceiling-clamped to 1.0, subtracted off the current water line and rounded to an
@@ -97,7 +97,7 @@ i32 CSBI_WellGoo::Tick() {
     m_blitGuard--;
     m_drawGuard--;
 
-    m_fgFrame->RenderFrame((void*)ctx, (void*)m_drawX, (void*)(m_fgTop - 2), 0);
+    m_fgFrame->RenderFrame((void*)ctx, reinterpret_cast<void*>(m_drawX), (void*)(m_fgTop - 2), 0);
     return 1;
 }
 
@@ -252,7 +252,7 @@ i32 CSBI_WellGoo::SerializeFields(CSerialArchive* arc, i32 mode, i32 a3, i32 a4)
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_gooSrc != 0) {
-        ((CGooGameMgr*)m_24)->m_surfacePool->RemoveItemA(m_gooSrc);
+        (reinterpret_cast<CGooGameMgr*>(m_24))->m_surfacePool->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;
     }
 }
@@ -267,7 +267,7 @@ CSBI_WellGoo::~CSBI_WellGoo() {
 RVA(0x00104c80, 0x1f)
 void CSBI_WellGoo::Free() {
     if (m_gooSrc != 0) {
-        ((CGooGameMgr*)m_24)->m_surfacePool->RemoveItemA(m_gooSrc);
+        (reinterpret_cast<CGooGameMgr*>(m_24))->m_surfacePool->RemoveItemA(m_gooSrc);
         m_gooSrc = 0;
     }
 }

@@ -382,7 +382,7 @@ L_ed006:
 
 L_ed153:
     if (CoordCount() != 0) {
-        GruntCoord* coord = ((GruntCoordNode*)m_31c.GetHeadPosition())->m_coord;
+        GruntCoord* coord = (reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition()))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         CScanCell* cell = &grid->m_8[row][col];
@@ -1270,7 +1270,7 @@ L_ed006b:
 
 L_scanb:
     if (CoordCount() != 0) {
-        GruntCoord* coord = ((GruntCoordNode*)m_31c.GetHeadPosition())->m_coord;
+        GruntCoord* coord = (reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition()))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) != 0) {
@@ -1321,7 +1321,7 @@ L_scanb:
     i32 best = 0x7fffffff;
     i32 bestX = 0;
     i32 bestY = 0;
-    CGruntLiveNode* node = (CGruntLiveNode*)m_tileMgr->m_baseList.GetHeadPosition();
+    CGruntLiveNode* node = reinterpret_cast<CGruntLiveNode*>(m_tileMgr->m_baseList.GetHeadPosition());
     while (node != 0) {
         CGruntPuddle* gg = node->m_entry;
         node = node->m_next;
@@ -2069,7 +2069,7 @@ i32 CGrunt::ArrivalScanC() {
 
 L_tailc:
     if (CoordCount() != 0) {
-        GruntCoord* coord = ((GruntCoordNode*)m_31c.GetHeadPosition())->m_coord;
+        GruntCoord* coord = (reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition()))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         CScanCell* cell = &grid->m_8[row][col];

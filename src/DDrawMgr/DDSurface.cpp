@@ -141,7 +141,7 @@ RVA(0x0013e140, 0x133)
 i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_8 = surf;
     i32 i;
-    i32* d = (i32*)m_desc;
+    i32* d = reinterpret_cast<i32*>(m_desc);
     for (i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
@@ -213,7 +213,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
 RVA(0x0013e4d0, 0x7e)
 void CDDSurface::FreeSurfaces() {
     for (u32 i = 0; i < static_cast<u32>(m_elements.GetSize()); i++) {
-        CFileImageElement* e = (CFileImageElement*)m_elements[i];
+        CFileImageElement* e = static_cast<CFileImageElement*>(m_elements[i]);
         delete e;
     }
     m_elements.SetSize(0, -1);
@@ -1559,7 +1559,7 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
 RVA(0x00140770, 0x326)
 void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 i;
-    i32* p = (i32*)m_desc;
+    i32* p = reinterpret_cast<i32*>(m_desc);
     for (i = 0x1b; i != 0; i--) {
         *p++ = 0;
     }

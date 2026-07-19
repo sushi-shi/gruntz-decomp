@@ -172,7 +172,7 @@ i32 StreamVoice::SetSource(CParseSource* src) {
     // The base m_owner (+0x10, SoundDevice*) IS the creating SoundStream (the ctor
     // stores CreateStreamBuffer's `this`); ParseWave is SoundStream's RIFF parser,
     // so the voice downcasts its owner back to the concrete stream device.
-    if (((SoundStream*)m_owner)->ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
+    if ((static_cast<SoundStream*>(m_owner))->ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
         return 0;
     }
     m_feeder.SeedWindow(src, dataOff, dataLen);

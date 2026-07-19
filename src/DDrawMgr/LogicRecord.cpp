@@ -62,7 +62,7 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             if (m_174) {
                 void* out = 0;
                 CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
-                m_170 = res->Lookup((void*)m_174, out) ? (CGameObject*)out : (CGameObject*)0;
+                m_170 = res->Lookup(reinterpret_cast<void*>(m_174), out) ? (CGameObject*)out : (CGameObject*)0;
             }
             break;
         default: // 5, 6
@@ -282,7 +282,7 @@ i32 AnimWorkerObj::ResolveTarget(void* a) {
     if (m_174) {
         CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
         void* out = 0;
-        if (!res->Lookup((void*)m_174, out)) {
+        if (!res->Lookup(reinterpret_cast<void*>(m_174), out)) {
             m_170 = 0;
         } else {
             m_170 = (CGameObject*)out;

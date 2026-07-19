@@ -39,7 +39,7 @@ extern void* const CTypeCollRuntime_vtbl;
 // all fold the same way) and the permuter finds no operand-order win.
 RVA(0x0016ea20, 0x51)
 void* CTypeCollRuntime::ScalarDelete(u32 flags) {
-    CString* p = (CString*)m_base; // +0x10
+    CString* p = reinterpret_cast<CString*>(m_base); // +0x10
     *(void**)this = (void*)&CTypeCollRuntime_vtbl;
     if (p) {
         i32 count = m_hi - m_lo + 1; // +0x0c - +0x08 + 1

@@ -251,17 +251,17 @@ public:
     // wrapper, ??1 @0xb6000). The 0xb9xxx net-stat/session methods (below) reach it as
     // such.
     CNetMgr* Peer() {
-        return (CNetMgr*)m_netGate;
+        return reinterpret_cast<CNetMgr*>(m_netGate);
     }
     // The local player descriptor at +0x5bc (the roster/dialog TUs view the slot as an
     // i32 token, so the canonical member stays i32; this accessor is the typed view).
     CNetPlayerEntry* LocalPlayer() {
-        return (CNetPlayerEntry*)m_5bc;
+        return reinterpret_cast<CNetPlayerEntry*>(m_5bc);
     }
     // The game-manager (CState::m_4) as its network facet (m_wnd/m_6c/m_channels/m_38);
     // the net methods reach it as CNetGameMgr.
     CNetGameMgr* NetGameMgr() {
-        return (CNetGameMgr*)m_4;
+        return reinterpret_cast<CNetGameMgr*>(m_4);
     }
     // The resync WM_COMMAND lParam latch (CState +0x1c base-class field, unmodeled here).
     i32& ResyncLParam() {

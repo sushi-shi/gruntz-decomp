@@ -390,7 +390,7 @@ i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
 // Homed out-of-line (matcher-5).
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
-    ((CBattlezSlot*)m_slots)[index].m_158 = val;
+    (reinterpret_cast<CBattlezSlot*>(m_slots))[index].m_158 = val;
     return 1;
 }
 
@@ -729,7 +729,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case 0x501:
             if (GetCtrlD(0)->IsWindowEnabled()) {
-                switch (((CBattlezSlot*)m_slots)[0].m_158) {
+                switch ((reinterpret_cast<CBattlezSlot*>(m_slots))[0].m_158) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -792,7 +792,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x503:
             if (GetCtrlD(1)->IsWindowEnabled()) {
-                switch (((CBattlezSlot*)m_slots)[1].m_158) {
+                switch ((reinterpret_cast<CBattlezSlot*>(m_slots))[1].m_158) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -855,7 +855,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x505:
             if (GetCtrlD(2)->IsWindowEnabled()) {
-                switch (((CBattlezSlot*)m_slots)[2].m_158) {
+                switch ((reinterpret_cast<CBattlezSlot*>(m_slots))[2].m_158) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -918,7 +918,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x507:
             if (GetCtrlD(3)->IsWindowEnabled()) {
-                switch (((CBattlezSlot*)m_slots)[3].m_158) {
+                switch ((reinterpret_cast<CBattlezSlot*>(m_slots))[3].m_158) {
                     case 0:
                         color = 0x0080ff;
                         break;

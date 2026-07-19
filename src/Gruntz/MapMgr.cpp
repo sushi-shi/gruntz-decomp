@@ -98,7 +98,7 @@ i32 CMapArrayA::Allocate(u32 count) {
 
     MapElemA* e = block;
     for (u32 i = 0; i < m_count; ++i) {
-        if (e == (MapElemA*)m_block) {
+        if (e == reinterpret_cast<MapElemA*>(m_block)) {
             e->m_prev = 0;
         } else {
             e->m_prev = e - 1;
@@ -106,7 +106,7 @@ i32 CMapArrayA::Allocate(u32 count) {
         e->m_next = e + 1;
         ++e;
     }
-    ((MapElemA*)m_block)[m_count - 1].m_next = 0;
+    (reinterpret_cast<MapElemA*>(m_block))[m_count - 1].m_next = 0;
     return 1;
 }
 
@@ -159,7 +159,7 @@ i32 CMapArrayB::Allocate(u32 count) {
 
     MapElemB* e = block;
     for (u32 i = 0; i < m_count; ++i) {
-        if (e == (MapElemB*)m_block) {
+        if (e == reinterpret_cast<MapElemB*>(m_block)) {
             e->m_prev = 0;
         } else {
             e->m_prev = e - 1;
@@ -168,7 +168,7 @@ i32 CMapArrayB::Allocate(u32 count) {
         e->m_next = e + 1;
         ++e;
     }
-    ((MapElemB*)m_block)[m_count - 1].m_next = 0;
+    (reinterpret_cast<MapElemB*>(m_block))[m_count - 1].m_next = 0;
     return 1;
 }
 

@@ -218,7 +218,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         i32 dist = static_cast<i32>(sqrt(static_cast<double>((iabs(dx) * iabs(dx) + iabs(dy) * iabs(dy)))));
         if (dist > m_0a4) {
             if (m_0f0.GetSize() != 0) {
-                GruntCoord* e = ((GruntCoord**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
+                GruntCoord* e = (reinterpret_cast<GruntCoord**>(m_0f0.GetData()))[rand() % m_0f0.GetSize()];
                 g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
             g->m_arrivalCol = -1;
@@ -278,7 +278,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
 tail:
     if (Method_034460(reinterpret_cast<i32>(g))) {
         if (g->CoordCount() == 0 && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_0a0) && m_0f0.GetSize() != 0) {
-            GruntCoord* e = ((GruntCoord**)m_0f0.GetData())[rand() % m_0f0.GetSize()];
+            GruntCoord* e = (reinterpret_cast<GruntCoord**>(m_0f0.GetData()))[rand() % m_0f0.GetSize()];
             g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             g->m_dwell = 0;
         }

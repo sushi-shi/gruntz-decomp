@@ -289,7 +289,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                     case kCheatProgrammingGod: {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c =
-                                (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)
+                                (LeafCue*)(static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
                                     ->Lookup_05b7e0("GAME_MINORCHEAT");
                             if (_c) {
                                 _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -552,7 +552,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                     case kCheatWawa:
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
                             LeafCue* _c =
-                                (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_soundRegistry)
+                                (LeafCue*)(static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
                                     ->Lookup_05b7e0("GAME_WAWA");
                             if (_c) {
                                 _c->PlayIfElapsed(0x64, 0, 0, 0);

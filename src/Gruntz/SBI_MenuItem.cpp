@@ -133,7 +133,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     }
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
     CObject* rec_v = 0;
-    CDDrawSurfaceMgr* host = (CDDrawSurfaceMgr*)m_24;
+    CDDrawSurfaceMgr* host = reinterpret_cast<CDDrawSurfaceMgr*>(m_24);
     host->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), rec_v);
     CImageSet* rec = (CImageSet*)rec_v;
     m_38 = rec;
@@ -204,7 +204,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     if (state == 2 && m_34 == 3) {
         return 1;
     }
-    CMiTabHost* host = (CMiTabHost*)m_2c;
+    CMiTabHost* host = reinterpret_cast<CMiTabHost*>(m_2c);
     if (state == 3) {
         ((CStatusBarMgr*)host)->ClearTabGroup();
         host->m_10c = m_c;

@@ -1219,7 +1219,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
             if (handle == -1 || static_cast<u32>(handle) == 0xeeeeeeee) {
                 continue;
             }
-            CPlaneFrame* frame = ((CPlaneFrame**)m_frameSets.GetData())[static_cast<u32>(handle) >> 16];
+            CPlaneFrame* frame = (reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()))[static_cast<u32>(handle) >> 16];
             if (frame == 0) {
                 result = 0;
                 if (errOut != 0) {
@@ -1297,7 +1297,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
     // is the flagged @identity-TODO tail of the cascade: the slot's element type is
     // the map's CObject*, and this worker's concrete palette-bearing class is the one
     // link no caller/new-site names (see <Wwd/WwdFile.h>).
-    CPlanePalOwner* owner = (CPlanePalOwner*)m_mapData->m_workerMap->m_cachedWorker;
+    CPlanePalOwner* owner = reinterpret_cast<CPlanePalOwner*>(m_mapData->m_workerMap->m_cachedWorker);
     if (owner == 0) {
         return;
     }

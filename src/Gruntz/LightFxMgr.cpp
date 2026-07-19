@@ -93,7 +93,7 @@ i32 CLightFxMgr::Init(CGameRegistry* reg, void* owner) {
     if (!m_tables[9]) {
         return 0;
     }
-    SetShadeDescr((ShadeDescr*)m_greyTable, 9);
+    SetShadeDescr(reinterpret_cast<ShadeDescr*>(m_greyTable), 9);
     return 1;
 }
 

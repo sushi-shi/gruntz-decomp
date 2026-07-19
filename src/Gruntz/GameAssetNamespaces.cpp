@@ -70,7 +70,7 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
     sprintf(area, "AREA%i", m_levelType);
-    CSymTab* node = (CSymTab*)m_8->ResolvePath(area);
+    CSymTab* node = static_cast<CSymTab*>(m_8->ResolvePath(area));
     m_levelBank = node;
     if (node == 0) {
         return 0;

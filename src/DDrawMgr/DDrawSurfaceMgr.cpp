@@ -249,7 +249,7 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
         // SetDimensions body - on it. Either CGameLevel exposes a same-layout
         // SetCoords or the +0x24 head mirrors the owner's; unresolved, the cast
         // preserves retail's call target. @identity-TODO.
-        if (((CDDrawSurfaceMgr*)m_level)->SetDimensions(x, y, 0) == 0) {
+        if ((reinterpret_cast<CDDrawSurfaceMgr*>(m_level))->SetDimensions(x, y, 0) == 0) {
             return 0;
         }
     }
@@ -268,7 +268,7 @@ void CDDrawSurfaceMgr::FreeContext() {
         // SoundDevice*; this site proves the held object is a SoundStream (the
         // non-virtual call 0x137a80 = SoundStream::Stop). The m_2c retype is
         // deferred (DDrawSubMgrLeafScan.h is additive-only this session).
-        SoundStream* inner = (SoundStream*)m_soundRegistry->m_2c;
+        SoundStream* inner = static_cast<SoundStream*>(m_soundRegistry->m_2c);
         if (inner != 0) {
             inner->Stop(); // 0x137a80 (leaf-scan +0x2c held stream: pause/reset)
         }

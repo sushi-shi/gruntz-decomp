@@ -398,7 +398,7 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
     gA_e04 = rec->m_checksum;
     gA_e08 = rec->m_count;
     memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
-    return ((CNetMgr*)m_latchedSeq)
+    return (reinterpret_cast<CNetMgr*>(m_latchedSeq))
                ->SetData(m_desc->m_playerId, gruntId, 0, reinterpret_cast<i32>(&gA_flag), rec->m_payloadLen + 0xf)
            == 0;
 }
@@ -1156,7 +1156,7 @@ CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
 RVA(0x000c12e0, 0x2c)
 void CNetCmdSlot::ClearCmds() {
     while (m_cmds.GetCount() != 0) {
-        CNetCmd* cmd = (CNetCmd*)m_cmds.RemoveHead();
+        CNetCmd* cmd = static_cast<CNetCmd*>(m_cmds.RemoveHead());
         if (cmd != 0) {
             RecycleCmd(cmd);
         }

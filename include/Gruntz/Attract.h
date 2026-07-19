@@ -205,16 +205,16 @@ public:
     // Inline -> the same `mov reg,[this+off]` falls out with no extra codegen.
     // (menuRoot()/screenObj() moved to CState with the title-roll cluster.)
     CSymParser* stateMgr() {
-        return (CSymParser*)m_8;
+        return static_cast<CSymParser*>(m_8);
     }
     CAttractVideo* video() {
-        return (CAttractVideo*)m_4;
+        return reinterpret_cast<CAttractVideo*>(m_4);
     }
     CGruntzMgr* owner() {
-        return (CGruntzMgr*)m_4;
+        return static_cast<CGruntzMgr*>(m_4);
     }
     CSymTab* attractState() {
-        return (CSymTab*)m_2c;
+        return reinterpret_cast<CSymTab*>(m_2c);
     }
 
     // The attract-specific block sits past the CState spine (which ends at +0x1a4).

@@ -398,7 +398,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 }
             }
             for (i32 k = 0; k < m_arr.GetSize(); k++) {
-                Coord* elem = (Coord*)m_arr[k];
+                Coord* elem = static_cast<Coord*>(m_arr[k]);
                 if (elem != 0 && static_cast<u32>(elem->m_x) < static_cast<u32>(m_c) && static_cast<u32>(elem->m_y) < static_cast<u32>(m_10)) {
                     m_cellPool[elem->m_y * m_c + elem->m_x].m_0 = 0x10;
                     m_cellPool[elem->m_y * m_c + elem->m_x].m_c = 0;

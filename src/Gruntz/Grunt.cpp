@@ -803,9 +803,9 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         LOAD_POSE(m_poseWalk, s_pose_WALK);
     } else {
         LOAD_POSE(m_poseToy1, s_pose_TOY1);
-        i32 x = ((CAnimSetNode*)m_poseToy1)->m_10;
+        i32 x = (reinterpret_cast<CAnimSetNode*>(m_poseToy1))->m_10;
         LOAD_POSE(m_poseToy2, s_pose_TOY2);
-        i32 y = ((CAnimSetNode*)m_poseToy2)->m_10;
+        i32 y = (reinterpret_cast<CAnimSetNode*>(m_poseToy2))->m_10;
         if (x >= y) {
             m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
         } else {
@@ -1169,7 +1169,7 @@ i32 CGrunt::StepGruntMovement() {
         goto label_dropRet0;
     }
     if (m_arrivalState != 0x11) {
-        GruntCoord* co = (GruntCoord*)m_31c.RemoveHead();
+        GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
         coordX = co->m_x;
         coordY = co->m_y;
         void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
@@ -1361,7 +1361,7 @@ i32 CGrunt::StepGruntMovement() {
             SetEntrancePos(1, 0);
             return 0;
         }
-        GruntCoord* co2 = (GruntCoord*)m_31c.RemoveHead();
+        GruntCoord* co2 = static_cast<GruntCoord*>(m_31c.RemoveHead());
         void** p = (void**)((char*)co2 - g_coordPool.m_linkOffset);
         *p = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
@@ -1381,7 +1381,7 @@ label_4c68b:
 
 label_4c6e4:
     if (m_arrivalState == 0x11 && CoordCount() != 0) {
-        GruntCoord* co = (GruntCoord*)m_31c.RemoveHead();
+        GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
         void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
         *p = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
@@ -1440,7 +1440,7 @@ label_4c6e4:
             goto label_4cb2a;
         }
         if (CoordCount() != 0 && m_arrivalState != 0x11) {
-            GruntCoord* co = (GruntCoord*)m_31c.RemoveHead();
+            GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
             if (co->m_x == btx && co->m_y == bty) {
                 void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
                 *p = g_coordPool.m_freeHead;
@@ -1716,7 +1716,7 @@ i32 CGrunt::CreateToySprite() {
     );
     m_toySprite->m_7c->m_notify(m_toySprite);
 
-    CGruntToySprite* reg = (CGruntToySprite*)m_toySprite->m_7c->m_logic;
+    CGruntToySprite* reg = static_cast<CGruntToySprite*>(m_toySprite->m_7c->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
         reg->m_38->m_flags |= 0x10000;
         m_toySprite = 0;
@@ -1882,7 +1882,7 @@ i32 CGrunt::CreateSelectedSprite() {
     );
     m_selectedSprite->m_7c->m_notify(m_selectedSprite);
 
-    CGruntSelectedSprite* reg = (CGruntSelectedSprite*)m_selectedSprite->m_7c->m_logic;
+    CGruntSelectedSprite* reg = static_cast<CGruntSelectedSprite*>(m_selectedSprite->m_7c->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
         reg->m_38->m_flags |= 0x10000;
         m_selectedSprite = 0;

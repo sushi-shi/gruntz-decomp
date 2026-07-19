@@ -157,7 +157,7 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 // slot 5 (0x185520): the m_width of the sprite's representative frame (index 2).
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
-    CMenuSprite* s = (CMenuSprite*)m_sprite;
+    CMenuSprite* s = reinterpret_cast<CMenuSprite*>(m_sprite);
     if (!s) {
         return 0;
     }
@@ -171,7 +171,7 @@ i32 CMenuItem::GetFrameWidth() {
 // the menu-page layout uses this as each row's vertical step (y += GetWidth()/2).
 RVA(0x00185550, 0x2c)
 i32 CMenuItem::GetWidth() {
-    CMenuSprite* s = (CMenuSprite*)m_sprite;
+    CMenuSprite* s = reinterpret_cast<CMenuSprite*>(m_sprite);
     if (!s) {
         return 0;
     }
@@ -241,7 +241,7 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
 RVA(0x00185690, 0x25)
 i32 CMenuItem::Configure(void* notify) {
     if (notify) {
-        ((CChatBox*)m_host)->ScrollRow0();
+        (reinterpret_cast<CChatBox*>(m_host))->ScrollRow0();
     }
     Disable(2);
     return 1;
@@ -249,9 +249,9 @@ i32 CMenuItem::Configure(void* notify) {
 // trigger: scroll the host row, notify, then re-activate the host node.
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
-    ((CChatBox*)m_host)->ScrollRow1();
+    (reinterpret_cast<CChatBox*>(m_host))->ScrollRow1();
     NotifyCmd();
-    ((CChatBox*)m_host)->ReplaceNode(*(void**)&m_key);
+    (reinterpret_cast<CChatBox*>(m_host))->ReplaceNode(*(void**)&m_key);
     return 1;
 }
 // hit-test: is (x,y) inside the cached placed rect?

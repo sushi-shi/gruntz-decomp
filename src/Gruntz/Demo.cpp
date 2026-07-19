@@ -451,8 +451,8 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
     // the member - not the typed local `s`, which cl would keep in a register - is what
     // reproduces retail's two member reloads. The istream subobject sits at offset 0 of
     // ifstream (MSVC5), so the downcast is zero-adjust: byte-neutral vs the old void* model.
-    ((ifstream*)m_stream)->sync();
-    delete (ifstream*)m_stream;
+    (static_cast<ifstream*>(m_stream))->sync();
+    delete static_cast<ifstream*>(m_stream);
     return result;
 }
 

@@ -819,7 +819,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
     if (n <= 0) {
         return 1;
     }
-    Coord** cands = (Coord**)m_candArray.GetData();
+    Coord** cands = reinterpret_cast<Coord**>(m_candArray.GetData());
     Coord* cand = 0;
     i32 i = 0;
     i32 tileRec[7];
@@ -1330,7 +1330,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         //     the unit's path, advance the spawn timer, and return 1. ---
         POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (opos != 0) {
-            CGruntPuddle* cand = (CGruntPuddle*)m_triggerMgr->m_baseList.GetNext(opos);
+            CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(opos));
             if (cand->m_pending == 0) {
                 i32 ox = cand->m_tileX;
                 i32 oy = cand->m_tileY;
@@ -2590,7 +2590,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                         }
                     } else {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
-                            ((CTileTriggerContainer*)m_cellQuery)->SetCell(fcx, fcy, m_curCell);
+                            (static_cast<CTileTriggerContainer*>(m_cellQuery))->SetCell(fcx, fcy, m_curCell);
                         }
                     }
                 }
@@ -4317,7 +4317,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     if (*(i32*)((char*)tile + 0x10) == 0x67) {
         cell = reinterpret_cast<char*>(m_ctx->m_dims); // ctx+0x70 IS the board (== this->m_board)
     } else {
-        cell = reinterpret_cast<char*>(((CTileTriggerContainer*)m_ctx)->FindInLists12((col << 8) + row, 0));
+        cell = reinterpret_cast<char*>((reinterpret_cast<CTileTriggerContainer*>(m_ctx))->FindInLists12((col << 8) + row, 0));
     }
     i32 bestX = col;
     i32 bestY = col;
@@ -5441,7 +5441,7 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
     i32 bestDist = 0x7fffffff;
     POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
     while (pos != 0) {
-        CGruntPuddle* cand = (CGruntPuddle*)m_triggerMgr->m_baseList.GetNext(pos);
+        CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
         if (cand->m_pending == 0) {
             CGameObject* lvl = unit->m_object;
             i32 lx = lvl->m_screenX >> 5;

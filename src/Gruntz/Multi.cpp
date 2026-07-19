@@ -682,7 +682,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     Vslot24(); // slot 36 (+0x90) virtual dispatch, ex "OnReady"
-    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_MULTI");
+    m_2c = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_MULTI"));
     if (m_2c == 0) {
         return 0;
     }
@@ -1437,7 +1437,7 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     CResSource* saved = m_2c;
-    CResSource* st = (CResSource*)m_8->ResolvePath("STATEZ_ATTRACT"); // 0x13c030
+    CResSource* st = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_ATTRACT")); // 0x13c030
     m_2c = st;
     if (!st) {
         return 0;
@@ -4218,7 +4218,7 @@ void CMulti::DropTimeout() {
 // reproduced. Delegation + return-the-arg are otherwise exact. ~67%.
 RVA(0x000bc3f0, 0x1e)
 CString* CNetCmdSlot::BuildHostName(CString* out) {
-    *out = ((GruntzPlayer*)m_desc)->GetName();
+    *out = (reinterpret_cast<GruntzPlayer*>(m_desc))->GetName();
     return out;
 }
 
@@ -4365,7 +4365,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         ReportNetError(m_5bc);
         return 0;
     }
-    m_hostIndex = ((i32*)m_5bc)[1];
+    m_hostIndex = (reinterpret_cast<i32*>(m_5bc))[1];
     return RegisterChannelFrom(reinterpret_cast<const char*>(a1), a2, -1, m_hostIndex) != 0;
 }
 

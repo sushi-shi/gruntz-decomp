@@ -163,7 +163,7 @@ void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
 RVA(0x00023bc0, 0x25)
 void CGruntzCmdMgr::DrainBase() {
     while (m_base.GetCount()) {
-        GzTargetObj* obj = (GzTargetObj*)m_base.RemoveTail();
+        GzTargetObj* obj = static_cast<GzTargetObj*>(m_base.RemoveTail());
         if (obj) {
             obj->Deselect();
         }
@@ -755,8 +755,7 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
         i32 count = m_base.GetCount();
         stream->Write(&count, 4);
         GzCmdNode* node =
-            (GzCmdNode*)
-                m_base.GetHeadPosition(); // MFC-protected m_pNodeHead via the inline accessor
+            reinterpret_cast<GzCmdNode*>(m_base.GetHeadPosition()); // MFC-protected m_pNodeHead via the inline accessor
         while (node) {
             CGruntzCommand* cmd = node->m_8;
             node = node->m_0;

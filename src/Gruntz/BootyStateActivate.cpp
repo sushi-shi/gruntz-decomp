@@ -647,7 +647,7 @@ void CMultiBootyState::ReleaseResources() {
     // its +0x60 slot. GruntzMgr.h types that slot TimerObj* (m_timer) while this teardown
     // runs ~CMoviePlayer on it - a real substance divergence on ONE field, flagged (the
     // cast marks it) rather than forked into a second per-TU view of the manager.
-    ((CMoviePlayer*)m_4->m_timer)->~CMoviePlayer();
+    (reinterpret_cast<CMoviePlayer*>(m_4->m_timer))->~CMoviePlayer();
     CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
@@ -993,7 +993,7 @@ i32 CMultiBootyState::Render() {
     } else {
         s.Format("%d:%2.2d", secs / 60, secs % 60);
     }
-    ShowHudMessageAlt((HudMsgSink*)m_c, reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rc), 0x6e, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessageAlt(reinterpret_cast<HudMsgSink*>(m_c), reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rc), 0x6e, 1, 0xff, 0xff, 0, 1);
 
     CDDrawSubMgrPages* dt = m_c->m_drawTarget;
     dt->m_frontPair->m_surface->Flip(0);

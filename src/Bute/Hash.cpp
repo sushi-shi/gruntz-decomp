@@ -38,7 +38,7 @@
 // CParseSlotHashNode::Hash (0x13c230): the parse-slot table's element - string key.
 RVA(0x0013c230, 0xf)
 u32 CParseSlotHashNode::Hash() {
-    return static_cast<CHash*>(m_owner)->HashStr(*(const char**)m_record);
+    return static_cast<CHash*>(m_owner)->HashStr(*static_cast<const char**>(m_record));
 }
 
 // ---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ void* CHash::Walk(const char* name, i32 ci) {
 // HashInt, which is what homes it here.
 RVA(0x0013c340, 0xf)
 u32 CSymRecNode::Hash() {
-    return static_cast<CHash*>(m_owner)->HashInt(*(u32*)m_record);
+    return static_cast<CHash*>(m_owner)->HashInt(*static_cast<u32*>(m_record));
 }
 
 // HashInt (0x13c350): int key hash - `key % m_count` (unsigned div, remainder).
@@ -127,7 +127,7 @@ void* CHash::FindInt(u32 key) {
 // "_b" instantiation. Interleaved between FindInt and CHashB::HashStr.
 RVA(0x0013c3b0, 0xf)
 u32 CSymTabNode::Hash() {
-    return static_cast<CHashB*>(m_owner)->HashStr(*(const char**)m_record);
+    return static_cast<CHashB*>(m_owner)->HashStr(*static_cast<const char**>(m_record));
 }
 
 // CHashB::HashStr (0x13c3c0): identical source to CHash::HashStr, distinct RVA.

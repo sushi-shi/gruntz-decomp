@@ -204,7 +204,7 @@ i32 CLightFx::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             ((CSerialArchive*)ar)->Read(&m_anchorB, 4);
             break;
         case 8:
-            g_gameReg->m_logicPump->Push((CImageSet*)m_38->m_194, m_anchorA, 7);
+            g_gameReg->m_logicPump->Push(reinterpret_cast<CImageSet*>(m_38->m_194), m_anchorA, 7);
             break;
     }
     return 1;

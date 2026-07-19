@@ -64,7 +64,7 @@ i32 CHelpState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     }
     while (ShowCursor(0) >= 0)
         ;
-    m_2c = (CResSource*)m_8->ResolvePath("STATEZ_HELP");
+    m_2c = static_cast<CResSource*>(m_8->ResolvePath("STATEZ_HELP"));
     if (!m_2c) {
         return 0;
     }
@@ -118,7 +118,7 @@ i32 CHelpState::Vslot09(i32 arg) {
 // CAttract::Render documents (ReportError/PostMessageA/PurgeVoiceList). topic:regalloc.
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
-    IDirectDrawSurface* busy = ((CMenuRoot*)m_c)->m_04->m_10->m_2c->m_8;
+    IDirectDrawSurface* busy = (reinterpret_cast<CMenuRoot*>(m_c))->m_04->m_10->m_2c->m_8;
     if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_4->ReportError(0x8006, 0x445);
@@ -126,7 +126,7 @@ i32 CHelpState::Render() {
         }
     }
 
-    CAttractPooledRes* res = ((CMenuRoot*)m_c)->m_28->m_2c;
+    CAttractPooledRes* res = (reinterpret_cast<CMenuRoot*>(m_c))->m_28->m_2c;
     if (res) {
         ((SoundDevice*)res)->PurgeVoiceList(-1);
     }

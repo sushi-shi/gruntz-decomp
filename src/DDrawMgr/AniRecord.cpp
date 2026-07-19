@@ -334,11 +334,11 @@ void CAniRecordView::FreeBuf() {
 // result; otherwise return 1. __thiscall, no args (ret).
 RVA(0x00168fd0, 0x24)
 i32 CAniRecordView::PushPalette() {
-    AniSurfDesc* sd = ((AniImageHost*)m_owner->m_04)->m_10;
+    AniSurfDesc* sd = (reinterpret_cast<AniImageHost*>(m_owner->m_04))->m_10;
     if (sd->m_18 != 8) {
         return 1;
     }
-    return sd->m_2c->SetPalette((CDDPalette*)m_buf, 0);
+    return sd->m_2c->SetPalette(reinterpret_cast<CDDPalette*>(m_buf), 0);
 }
 
 // TU-level SIZE rows for the by-offset owner/surface models (defs in

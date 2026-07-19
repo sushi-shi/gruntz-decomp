@@ -305,7 +305,7 @@ i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
 // Same family as Create's copy-loop plateau. docs/patterns/zero-register-pinning.md.
 RVA(0x00147aa0, 0x6a)
 i32 CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
-    i32* cache = (i32*)m_cacheA;
+    i32* cache = reinterpret_cast<i32*>(m_cacheA);
     for (i32 i = 0; i < count; i++) {
         cache[start + i] = data[i];
     }
@@ -701,7 +701,7 @@ i32 CDDPalette::CaptureSystemPalette() {
         return 0;
     }
     DeleteDC(hdc);
-    PALETTEENTRY* dest = (PALETTEENTRY*)m_cacheA;
+    PALETTEENTRY* dest = reinterpret_cast<PALETTEENTRY*>(m_cacheA);
     if (!dest) {
         return 0;
     }

@@ -357,10 +357,10 @@ CRezDir::~CRezDir() {
     // Typed intrusive-list access: the children are CRezItmBase-derived nodes
     // (each `delete` dispatches the node's slot-1 scalar-deleting dtor).
     while (m_openList.m_head != 0) {
-        delete (CRezItmBase*)m_openList.m_head;
+        delete reinterpret_cast<CRezItmBase*>(m_openList.m_head);
     }
     while (m_closedList.m_head != 0) {
-        delete (CRezItmBase*)m_closedList.m_head;
+        delete reinterpret_cast<CRezItmBase*>(m_closedList.m_head);
     }
 }
 
@@ -403,7 +403,7 @@ i32 CRezDir::Close() {
     // typed intrusive-list access - CRezFile's node base is at offset 0, so this is a
     // zero-offset static downcast, matching-neutral). CloseFile() is a direct call.
     while (m_openList.m_head != 0) {
-        ((CRezFile*)m_openList.m_head)->CloseFile();
+        (reinterpret_cast<CRezFile*>(m_openList.m_head))->CloseFile();
     }
     return 1;
 }
@@ -562,7 +562,7 @@ i32 CRezFile::OpenFile() {
     if (m_dir->m_openCount > m_dir->m_maxOpen) {
         // Typed intrusive-list access: the LRU eviction candidate (the open list's
         // tail) is a CRezFile (zero-offset static downcast; see CRezDir::Close).
-        CRezFile* lru = (CRezFile*)m_dir->m_openList.m_tail;
+        CRezFile* lru = reinterpret_cast<CRezFile*>(m_dir->m_openList.m_tail);
         if (lru != 0) {
             lru->CloseFile();
         }

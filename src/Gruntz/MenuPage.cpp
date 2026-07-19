@@ -271,7 +271,7 @@ i32 CMenuPage::FocusNext() {
     if (!m_focus) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)m_focus->m_listPos;
+    CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(m_focus->m_listPos);
     if (!pos) {
         return 0;
     }
@@ -293,7 +293,7 @@ i32 CMenuPage::FocusNext() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuListNode* p2 = (CMenuListNode*)m_focus->m_listPos;
+        CMenuListNode* p2 = reinterpret_cast<CMenuListNode*>(m_focus->m_listPos);
         if (!p2) {
             return 0;
         }
@@ -332,7 +332,7 @@ i32 CMenuPage::FocusPrev() {
     if (!m_focus) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)m_focus->m_listPos;
+    CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(m_focus->m_listPos);
     if (!pos) {
         return 0;
     }
@@ -354,7 +354,7 @@ i32 CMenuPage::FocusPrev() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuListNode* p2 = (CMenuListNode*)m_focus->m_listPos;
+        CMenuListNode* p2 = reinterpret_cast<CMenuListNode*>(m_focus->m_listPos);
         if (!p2) {
             return 0;
         }

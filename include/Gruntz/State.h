@@ -200,7 +200,7 @@ public:
     // +0x04 DDraw worker + +0x1c gate are what RetireScene walks. Inline -> the same
     // `mov reg,[this+0x0c]` as the direct member read (forward-declared facet).
     FxResource* fxRes() {
-        return (FxResource*)m_c;
+        return reinterpret_cast<FxResource*>(m_c);
     }
     // (LoadGameAssetNamespaces is the slot-1 VIRTUAL above; the leaf loaders chain
     // the default body with the qualified CState:: spelling - direct rel32.)
@@ -208,10 +208,10 @@ public:
     // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
     // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).
     CMenuRoot* menuRoot() {
-        return (CMenuRoot*)m_c;
+        return reinterpret_cast<CMenuRoot*>(m_c);
     }
     CAttractScreenObj* screenObj() {
-        return (CAttractScreenObj*)m_2c;
+        return reinterpret_cast<CAttractScreenObj*>(m_2c);
     }
 
     // Register/unregister a "GRUNTZ_<name>" asset namespace across the state's three
@@ -263,7 +263,7 @@ public:
     // The cached asset source (m_2c) is a Bute CSymTab; one typed accessor for that
     // facet so the state loaders drop the (CSymTab*)m_2c casts. <Bute/SymTab.h>.
     CSymTab* SymTab2c() {
-        return (CSymTab*)m_2c;
+        return reinterpret_cast<CSymTab*>(m_2c);
     }
     CSymTab* m_gruntzBank; // +0x30  GRUNTZ asset bank (CSymTab; LoadImageBanks caches here)
     CSymTab* m_gameBank;   // +0x34  GAME asset bank (CSymTab; GAME-namespace loaders' source)

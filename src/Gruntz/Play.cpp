@@ -461,7 +461,7 @@ i32 CPlay::Render() {
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));             // 0x3710  CTimer::Tick
         m_frameMarker->Draw(0, static_cast<i32>(g_frameDelta));          // 0x27a2  CTimer::Draw
         m_c->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
-        UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0x2356
+        UpdateMgrScroll((CGruntzMgr*)g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
         winapi_0d0b30_CopyRect(reinterpret_cast<i32>(m_c->m_drawTarget->m_backPair));           // 0x1519
         return 1;                                                             // -> draw tail
     }
@@ -1737,7 +1737,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     i32* p;
     p = &m_syncTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!((CLevelSync*)m_guts)->Sync(ar, mode, a2, a3)) { // guts child-sync @0x1084d0
+    if (!(reinterpret_cast<CLevelSync*>(m_guts))->Sync(ar, mode, a2, a3)) { // guts child-sync @0x1084d0
         return 0;
     }
     if (!m_frameMarker->HandleEvent(ar, mode, a2, a3)) { // CTimer's real serialize entry
@@ -2640,7 +2640,7 @@ void CPlay::LoadSBITextEdges(char* name) {
     i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
     SetRect(&rect, left, top, right, bottom);
 
-    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rect), 0x78, 1, 0xff, 0xff, 0, 1);
+    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s), reinterpret_cast<i32>(&rect), 0x78, 1, 0xff, 0xff, 0, 1);
     m_stepCountdown = 2;
 }
 
@@ -2690,7 +2690,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     if (a3 != 0) {
         ShowHudMessageAlt(m_c, reinterpret_cast<i32>(&m_cueText), reinterpret_cast<i32>(&rect), a2, 1, a4, a5, a6, a7);
     } else {
-        EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&m_cueText), reinterpret_cast<i32>(&rect), a2, 1, a4, a5, a6, a7);
+        EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&m_cueText), reinterpret_cast<i32>(&rect), a2, 1, a4, a5, a6, a7);
     }
 }
 
@@ -2940,7 +2940,7 @@ i32 CPlay::ProfileInputFrame() {
         m_c->m_level->m_mainPlane->CenterScrollB();
     }
     g_profAccA = static_cast<i32>((tg() - static_cast<u32>(g_profAccA)));
-    UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0xebd70
+    UpdateMgrScroll((CGruntzMgr*)g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0xebd70
     return 1;
 }
 
@@ -3270,10 +3270,10 @@ i32 CPlay::DrawLevelInfoText() {
     SetRect(&r2, 0, 0x2b, 0x280, 0x59);
     SetRect(&r3, 0, 0x176, 0x280, 0x1a2);
     SetRect(&r4, 0, 0x1b8, 0x280, 0x1e0);
-    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s0), reinterpret_cast<i32>(&r1), 0x78, 0, 0, 0, 0, 1);
-    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s1), reinterpret_cast<i32>(&r2), 0x6e, 0, 0, 0, 0, 1);
-    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s2), reinterpret_cast<i32>(&r3), 0x6e, 0, 0, 0, 0, 1);
-    EngStr_DrawText((EngStrRenderObj*)m_c, reinterpret_cast<i32>(&s3), reinterpret_cast<i32>(&r4), 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s0), reinterpret_cast<i32>(&r1), 0x78, 0, 0, 0, 0, 1);
+    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s1), reinterpret_cast<i32>(&r2), 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s2), reinterpret_cast<i32>(&r3), 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText(reinterpret_cast<EngStrRenderObj*>(m_c), reinterpret_cast<i32>(&s3), reinterpret_cast<i32>(&r4), 0x6e, 0, 0, 0, 0, 1);
     return 1;
 }
 
@@ -4332,13 +4332,13 @@ i32 CPlay::PostActionCue(i32 cueId) {
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(i32 final) {
     (void) final;
-    CImage* view = (CImage*)m_c->m_drawTarget->m_backPair;
+    CImage* view = reinterpret_cast<CImage*>(m_c->m_drawTarget->m_backPair);
     if (view == 0) {
         return 0;
     }
     if (m_revealFrame == 1) {
-        LayerBlitFrame(m_c, (CImage*)m_revealCapStart, 0x140, 0x1a6, 1, 0);
-        LayerBlitFrame(m_c, (CImage*)m_revealCapMid, 0xe0, 0x1a6, 1, 0);
+        LayerBlitFrame(m_c, static_cast<CImage*>(m_revealCapStart), 0x140, 0x1a6, 1, 0);
+        LayerBlitFrame(m_c, static_cast<CImage*>(m_revealCapMid), 0xe0, 0x1a6, 1, 0);
     }
 
     i32 counter = m_revealFrame;
@@ -4347,14 +4347,14 @@ i32 CPlay::BuildHelpReveal(i32 final) {
         i32 i = counter;
         do {
             i32 x = 0xe0 - static_cast<i32>((static_cast<float>(i) * -3.7857143878936768f));
-            LayerBlitFrame(m_c, (CImage*)m_revealCapMid, x, 0x1a6, 1, 0);
+            LayerBlitFrame(m_c, static_cast<CImage*>(m_revealCapMid), x, 0x1a6, 1, 0);
             i++;
         } while (i < 0x37);
     } else {
-        LayerBlitFrame(m_c, (CImage*)m_revealCapMid, col + 0xe0, 0x1a6, 1, 0);
+        LayerBlitFrame(m_c, static_cast<CImage*>(m_revealCapMid), col + 0xe0, 0x1a6, 1, 0);
     }
 
-    LayerBlitFrame(m_c, (CImage*)m_revealCapEnd, 0x1b4, 0x1a6, 1, 0);
+    LayerBlitFrame(m_c, static_cast<CImage*>(m_revealCapEnd), 0x1b4, 0x1a6, 1, 0);
     m_revealFrame = m_revealFrame + 1;
     return 1;
 }
@@ -4681,7 +4681,7 @@ drag_box: {
     }
     // ce22f: pick a grunt at the point
     i32 slot38 = 0;
-    CGrunt* picked = (CGrunt*)m_4->m_cmdGrid->ScreenToCell(xr, y, &slot38, &slot38, 5); // 0x3cb0
+    CGrunt* picked = static_cast<CGrunt*>(m_4->m_cmdGrid->ScreenToCell(xr, y, &slot38, &slot38, 5)); // 0x3cb0
     if (picked == 0) {
         m_dragClampMaxX = xr;
         m_dragClampMaxY = y;
@@ -5855,7 +5855,7 @@ RVA(0x000dba30, 0x1ca)
 i32 CPlay::BuildMusicCategoryTable(i32) {
     m_4->m_sound->StopAndFlush();
 
-    CSymTab* levelSet = (CSymTab*)m_levelBank->ResolvePath("MIDIZ");
+    CSymTab* levelSet = static_cast<CSymTab*>(m_levelBank->ResolvePath("MIDIZ"));
     if (levelSet) {
         CParseSource* e = (CParseSource*)levelSet->Insert("AMBIENT0", (void*)MUSIC_TAG_XMI);
         if (e) {
@@ -5887,7 +5887,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         }
     }
 
-    CSymTab* gameSet = (CSymTab*)m_gameBank->ResolvePath("MIDIZ");
+    CSymTab* gameSet = static_cast<CSymTab*>(m_gameBank->ResolvePath("MIDIZ"));
     if (gameSet) {
         CParseSource* e = (CParseSource*)gameSet->Insert("POWERUP", (void*)MUSIC_TAG_XMI);
         if (e) {
@@ -6331,10 +6331,10 @@ i32 CPlay::Vslot09(i32 mode) {
     m_worldReady = 0;
     if (m_renderDisabled == 0) {
         if (mode != 9) {
-            ((CWorldSoundSet*)m_4->m_inputState)->Resume();
+            (static_cast<CWorldSoundSet*>(m_4->m_inputState))->Resume();
         }
-        ((CTriggerMgr*)m_4->m_cmdGrid)->DestroyAllAnims(); // reg m_68 CTriggerMgr @0x7d330
-        ((CGruntSpawnConfig*)m_4->m_timer)->DtorBody();
+        (static_cast<CTriggerMgr*>(m_4->m_cmdGrid))->DestroyAllAnims(); // reg m_68 CTriggerMgr @0x7d330
+        (static_cast<CGruntSpawnConfig*>(m_4->m_timer))->DtorBody();
     }
     return 1;
 }
@@ -6572,7 +6572,7 @@ void CPlay::FreeListTeardown() {
     m_4->m_cmdGrid->m_baseList
         .RemoveAll(); // ?RemoveAll@CPtrList@@ @0x1b48a6 (+0 member; ex Reset1b48a6)
     m_4->m_cmdGrid->m_pendingFx = 0;
-    ((CDDrawWorkerList*)m_c->m_workerList)->ClearWorkers();
+    (static_cast<CDDrawWorkerList*>(m_c->m_workerList))->ClearWorkers();
     for (i = 0; i < markerCount(); i++) {
         void* node = markerData()[i];
         if (node != 0) {
@@ -6726,7 +6726,7 @@ i32 CPlay::EnterMode(i32 mode) {
     if (m_1c4 != 0) {
         m_1c4 = 0;
         m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-        UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0x2356
+        UpdateMgrScroll((CGruntzMgr*)g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate); // 0x2356
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
@@ -6820,7 +6820,7 @@ extern "C" char
 // the 13-arg AddGrunt + CString-temp EH frame keep it reloc-fuzzy.
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_c->m_childGroup->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_c->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
         CGameObject* g = node->m_gameObj;
         node = node->m_next;

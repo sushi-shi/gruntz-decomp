@@ -584,7 +584,7 @@ RVA(0x0016da60, 0x12)
 CContainerErr::~CContainerErr() {
     // 0x16e360 is CKeyFinder::Add (the cursor's insert/update/remove facet), reached on
     // the error sink; cast at the call (the sink is a CKeyFinder cursor over the key table).
-    ((CKeyFinder*)m_errSink)->Add(this, 0);
+    (reinterpret_cast<CKeyFinder*>(m_errSink))->Add(this, 0);
 }
 
 // ===========================================================================
@@ -602,7 +602,7 @@ RVA(0x0016da80, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
     void* p;
     if (idx < m_lo) {
-        p = realloc((void*)m_base, (m_hi - (idx - at) + 1) * m_stride);
+        p = realloc(reinterpret_cast<void*>(m_base), (m_hi - (idx - at) + 1) * m_stride);
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
             m_errSink->Set((void*)this, reinterpret_cast<u32>(s_out_of_memory), 0x22);
@@ -619,7 +619,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         return p;
     }
     i32 hinew = idx + at;
-    p = realloc((void*)m_base, (hinew - m_lo + 1) * m_stride);
+    p = realloc(reinterpret_cast<void*>(m_base), (hinew - m_lo + 1) * m_stride);
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set((void*)this, reinterpret_cast<u32>(s_out_of_memory), 0x22);

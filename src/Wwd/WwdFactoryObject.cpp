@@ -658,7 +658,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case 8: { // reset to the first descriptor and unscaled timing
                 if (m_14 != 0) {
                     m_index = 0;
-                    m_element = (CAniDesc*)m_14->AtChecked_06b270(0);
+                    m_element = reinterpret_cast<CAniDesc*>(m_14->AtChecked_06b270(0));
                     m_28 = 0;
                     m_scale = 1.0f;
                     m_pendingDraw = m_element->m_drawValue;
@@ -668,10 +668,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             }
             case 7: { // hold on the first two descriptors (m_index = 1 then 0)
                 m_index = 1;
-                m_element = (CAniDesc*)m_14->AtChecked_06b270(1);
+                m_element = reinterpret_cast<CAniDesc*>(m_14->AtChecked_06b270(1));
                 if (m_element == 0) {
                     m_index = 0;
-                    m_element = (CAniDesc*)m_14->AtChecked_06b270(0);
+                    m_element = reinterpret_cast<CAniDesc*>(m_14->AtChecked_06b270(0));
                 }
                 if (m_element != 0) {
                     m_28 = 0;
@@ -871,7 +871,7 @@ i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
     if (m_14 != 0) {
         // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
         // KeyOfValue_152d30 returns the label for the map VALUE m_14 (CAniElement : CObject).
-        CString label = ((CDDrawSurfaceMgr*)m_0c)->m_animRegistry->KeyOfValue_152d30(m_14);
+        CString label = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_animRegistry->KeyOfValue_152d30(m_14);
         strcpy(buf, label);
     }
     ar->Write(buf, 0x80);
@@ -909,7 +909,7 @@ i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     } else {
         // the leaf's +0x10 map is CMapStringToPtr (Lookup 0x1b8438), value-typed void*
         void* out = 0;
-        ((CDDrawSurfaceMgr*)m_0c)->m_animRegistry->m_10.Lookup(buf, out);
+        (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_animRegistry->m_10.Lookup(buf, out);
         m_14 = (CAniElement*)out;
     }
     CAniElement* w = m_14;

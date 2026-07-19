@@ -295,7 +295,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         while (i2 < m_planes.GetSize()) // GetSize() == the plane count
         {
             if (i2 != m_mainIndex) {
-                CLevelPlane* p = (CLevelPlane*)m_planes[i2];
+                CLevelPlane* p = static_cast<CLevelPlane*>(m_planes[i2]);
                 if (p->m_flags & 1) {
                     p->m_scaledX = static_cast<float>(ox);
                     p->m_scaledY = static_cast<float>(oy);
@@ -850,7 +850,7 @@ i32 CGameLevel::ValidateAllPlanes(char* errOut) {
         *errOut = 0;
     }
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        if (((CPlaneRender*)m_planes[i])->ValidateTiles(errOut) == 0) { // 0x163510
+        if ((static_cast<CPlaneRender*>(m_planes[i]))->ValidateTiles(errOut) == 0) { // 0x163510
             ok = 0;
         }
     }
@@ -863,7 +863,7 @@ RVA(0x0015da80, 0x47)
 void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
     m_planeCtx = *coords;
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        ((CLevelPlane*)m_planes[i])->Build(coords);
+        (static_cast<CLevelPlane*>(m_planes[i]))->Build(coords);
     }
 }
 
@@ -1034,7 +1034,7 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
 RVA(0x0015dde0, 0x5c)
 CPlane* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? (CLevelPlane*)m_planes[i] : 0;
+        CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[i]) : 0;
         if (_strcmpi(name, p->m_name) == 0) {
             return (CPlane*)p;
         }
@@ -1127,7 +1127,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        ((CPlaneRender*)m_planes[i])->ResolveColorKey(); // 0x163670
+        (static_cast<CPlaneRender*>(m_planes[i]))->ResolveColorKey(); // 0x163670
     }
 }
 
@@ -1813,7 +1813,7 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
         return 0;
     }
 
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_0c->m_childGroup->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_0c->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -2282,7 +2282,7 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
 // last plane and stamp its MAIN bit. 0 on an invalid index/null plane, else 1.
 RVA(0x0015db30, 0xae)
 i32 CGameLevel::RemovePlane(i32 index) {
-    CLevelPlane* p = (index >= 0 && index < m_planes.GetSize()) ? (CLevelPlane*)m_planes[index] : 0;
+    CLevelPlane* p = (index >= 0 && index < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[index]) : 0;
     if (p == 0) {
         return 0;
     }
@@ -2292,12 +2292,12 @@ i32 CGameLevel::RemovePlane(i32 index) {
     if (wasMain) {
         i32 last = m_planes.GetSize() - 1;
         CLevelPlane* lp =
-            (last >= 0 && last < m_planes.GetSize()) ? (CLevelPlane*)m_planes[last] : 0;
+            (last >= 0 && last < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[last]) : 0;
         if (lp != 0) {
             m_mainIndex = -1;
             m_mainPlane = 0;
             for (i32 i = 0; i < m_planes.GetSize(); i++) {
-                ((CLevelPlane*)m_planes[i])->m_flags &= ~1;
+                (static_cast<CLevelPlane*>(m_planes[i]))->m_flags &= ~1;
             }
             m_mainIndex = last;
             m_mainPlane = lp;
@@ -2318,7 +2318,7 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
         if (from == to) {
             return 1;
         }
-        CLevelPlane* el = (from < m_planes.GetSize()) ? (CLevelPlane*)m_planes[from] : 0;
+        CLevelPlane* el = (from < m_planes.GetSize()) ? static_cast<CLevelPlane*>(m_planes[from]) : 0;
         if (el != 0) {
             m_planes.RemoveAt(from, 1);
             m_planes.InsertAt(to, (CObject*)el, 1);

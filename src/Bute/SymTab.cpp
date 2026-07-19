@@ -173,7 +173,7 @@ void CSymLeafBuilder::Teardown() {
 // ===========================================================================
 RVA(0x00139800, 0x6)
 i32 CParseSource::GetEntryTag() {
-    return *(i32*)m_entry;
+    return *static_cast<i32*>(m_entry);
 }
 
 // ===========================================================================
@@ -228,8 +228,8 @@ i32 CParseSource::BeginParse() {
     if (m_buffer == 0) {
         return 0;
     }
-    if (m_reader->Read(m_base, 0, m_length, (void*)m_buffer) != static_cast<i32>(m_length)) {
-        ::operator delete((void*)m_buffer);
+    if (m_reader->Read(m_base, 0, m_length, reinterpret_cast<void*>(m_buffer)) != static_cast<i32>(m_length)) {
+        ::operator delete(reinterpret_cast<void*>(m_buffer));
         m_buffer = 0;
     }
     return m_buffer;
@@ -241,7 +241,7 @@ i32 CParseSource::BeginParse() {
 RVA(0x001399d0, 0x21)
 i32 CParseSource::EndParse() {
     if (m_buffer != 0) {
-        ::operator delete((void*)m_buffer);
+        ::operator delete(reinterpret_cast<void*>(m_buffer));
         m_buffer = 0;
     }
     return 1;
@@ -470,7 +470,7 @@ CSymTab::~CSymTab() {
 // The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
 RVA(0x0013a000, 0x37)
 i32 CSymTab::Insert(const char* key, void* arg) {
-    CSymRec* rec = (CSymRec*)m_symbols.FindInt(reinterpret_cast<u32>(arg));
+    CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(reinterpret_cast<u32>(arg)));
     if (!rec) {
         return reinterpret_cast<i32>(rec);
     }
@@ -711,7 +711,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
         0,
         0,
         0,
-        (void*)m_owner->MakeSeed(),
+        reinterpret_cast<void*>(m_owner->MakeSeed()),
         0,
         0,
         m_owner->m_activeNode
@@ -742,7 +742,7 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     if (slot == 0) {
         return reinterpret_cast<i32>(slot);
     }
-    slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
+    slot->Build(this, static_cast<const char*>(a1), a0, a2, 0, 0, 0, reinterpret_cast<void*>(m_owner->MakeSeed()), 0, 0, a3);
     ((CSymRec*)a2)->m_valTable.Insert(&slot->m_node);
     u32 len = strlen(static_cast<char*>(a1));
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
@@ -941,7 +941,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
 // Banked for the final sweep.
 RVA(0x0013a940, 0xc2)
 CSymRec* CSymTab::FindOrAddSym(i32 key) {
-    CSymRec* found = (CSymRec*)m_symbols.FindInt(static_cast<u32>(key));
+    CSymRec* found = static_cast<CSymRec*>(m_symbols.FindInt(static_cast<u32>(key)));
     if (found) {
         return found;
     }
@@ -1066,7 +1066,7 @@ CSymParser::~CSymParser() {
         Clear(0);
     }
     CRezItmBase* p;
-    for (p = (CRezItmBase*)m_list.m_head; p != 0; p = (CRezItmBase*)m_list.m_head) {
+    for (p = reinterpret_cast<CRezItmBase*>(m_list.m_head); p != 0; p = reinterpret_cast<CRezItmBase*>(m_list.m_head)) {
         m_list.Remove((CObjNode*)p);
         m_list.m_count--;
         delete p; // the slot-1 scalar-deleting dtor (delete emits the same null test)
@@ -1085,7 +1085,7 @@ CSymParser::~CSymParser() {
         m_delims = 0;
     }
     // chain head points at &node->m_link (offset 0 in CSlotNode) - direct reinterpret
-    CSlotNode* node = (CSlotNode*)m_nodes.m_head;
+    CSlotNode* node = reinterpret_cast<CSlotNode*>(m_nodes.m_head);
     m_parseArmed = 0;
     m_activeNode = 0;
     m_30 = 0;
@@ -1108,7 +1108,7 @@ CSymParser::~CSymParser() {
             ::operator delete(node->m_buffer);
             m_nodes.Unlink(&node->m_link);
             ::operator delete(node);
-            node = (CSlotNode*)m_nodes.m_head;
+            node = reinterpret_cast<CSlotNode*>(m_nodes.m_head);
         } while (node);
     }
     // m_hash (RemoveAll) then m_list (vptr restore to 0x5ef760) auto-destruct here,
@@ -1450,12 +1450,12 @@ RVA(0x0013b850, 0xa8)
 i32 CSymParser::Clear(i32 final) {
     (void) final;
     i32 r = m_activeNode->Close(); // [5] (the view's "Detach")
-    m_list.Remove((CObjNode*)m_activeNode);
+    m_list.Remove(reinterpret_cast<CObjNode*>(m_activeNode));
     m_list.m_count--;
     delete m_activeNode; // slot-1 scalar dtor (delete emits the same null test)
     m_activeNode = 0;
     CRezItmBase* p;
-    for (p = (CRezItmBase*)m_list.m_head; p != 0; p = (CRezItmBase*)m_list.m_head) {
+    for (p = reinterpret_cast<CRezItmBase*>(m_list.m_head); p != 0; p = reinterpret_cast<CRezItmBase*>(m_list.m_head)) {
         p->Close();
         m_list.Remove((CObjNode*)p);
         m_list.m_count--;
@@ -1570,7 +1570,7 @@ i32 CSymParser::V2() {
 RVA(0x0013ba20, 0x27)
 i32 CSymParser::CheckNodes() {
     i32 ok = 1;
-    for (CRezItmBase* n = (CRezItmBase*)m_list.m_head; n != 0; n = n->m_next) {
+    for (CRezItmBase* n = reinterpret_cast<CRezItmBase*>(m_list.m_head); n != 0; n = n->m_next) {
         if (n->Check() == 0) {
             ok = 0;
         }

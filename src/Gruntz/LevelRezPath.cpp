@@ -80,7 +80,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
     // inline per sub-path (no factoring), so it is duplicated here to match.
     if (a1 != 0) {
         sprintf(scratch, "AREA%i_WORLDZ", ((a4 - 1) % 0x24) / 4 + 1);
-        CSymTab* node = (CSymTab*)m_symParser->ResolvePath(scratch);
+        CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(scratch));
         if (node == 0) {
             return 0;
         }
@@ -104,7 +104,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
         return buf.m_2ec;
     }
     if (a2 == 0) {
-        CSymTab* node = (CSymTab*)m_symParser->ResolvePath("GAME_MULTI");
+        CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_MULTI"));
         if (node == 0) {
             return 0;
         }
@@ -121,7 +121,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
         sub->EndParse();
         return buf.m_2ec;
     }
-    CSymTab* node = (CSymTab*)m_symParser->ResolvePath("GAME_BATTLEZ");
+    CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_BATTLEZ"));
     if (node == 0) {
         return 0;
     }

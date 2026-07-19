@@ -119,7 +119,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         if (m_object->m_124 == g_curPlayer) {
             // track the local player's warlord in the trigger mgr's pending-fx
             // grunt slot (CTmCell == CGrunt; the warlord logic is a grunt leaf)
-            g_gameReg->m_cmdGrid->m_pendingFx = (CTmCell*)m_warlordLogic;
+            g_gameReg->m_cmdGrid->m_pendingFx = reinterpret_cast<CTmCell*>(m_warlordLogic);
         }
         CFocusSlot* slot2 = &g_gameReg->m_focusSlots[m_object->m_124];
         if (slot2 != 0) {

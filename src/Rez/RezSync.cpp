@@ -477,7 +477,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         flags |= 0x10;
     }
     m_colorDepth = 0x10;
-    if (!world->Init((void*)m_gameWnd->m_hwnd, 0x280, 0x1e0, 0x10, flags)) {
+    if (!world->Init(static_cast<void*>(m_gameWnd->m_hwnd), 0x280, 0x1e0, 0x10, flags)) {
         ReportWorldStatus(0x407);
         return 0;
     }
@@ -593,7 +593,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 11: settings host (m_logicPump, m_saveSink) -----------------------
     m_logicPump = (CLightFxMgr*)RezAlloc(0x3c);
     if (m_logicPump) {
-        i32* z = (i32*)m_logicPump;
+        i32* z = reinterpret_cast<i32*>(m_logicPump);
         z[1] = z[2] = z[3] = z[4] = 0;
         for (i32 k = 0; k < 10; ++k) {
             *(i32*)((char*)m_logicPump + 0x14 + k * 4) = 0;
@@ -649,7 +649,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_spriteFactory = (CSpriteRefTable*)RezAlloc(0x94);
     if (m_spriteFactory) {
-        i32* z = (i32*)m_spriteFactory;
+        i32* z = reinterpret_cast<i32*>(m_spriteFactory);
         z[0] = z[1] = 0;
         *(i32*)((char*)m_spriteFactory + 0x90) = 0;
         for (i32 k = 0; k < 0x11; ++k) {
@@ -657,7 +657,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             *(i32*)((char*)m_spriteFactory + 0x4c + k * 4) = 0;
         }
     }
-    if (!((CTriggerMgr*)m_spriteFactory)->SetLevel((CDDrawSurfaceMgr*)m_shadeCache)) {
+    if (!(reinterpret_cast<CTriggerMgr*>(m_spriteFactory))->SetLevel(reinterpret_cast<CDDrawSurfaceMgr*>(m_shadeCache))) {
         ReportError(0x800a, 0x416);
         return 0;
     }
@@ -771,7 +771,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     {
         // ResolvePath returns the resolved CSymTab node; its 0x13be40 resolver is
         // CSymTab::ResolveQualified (the old view's "CSymParser::ResolveTab").
-        CSymTab* attract = (CSymTab*)m_symParser->ResolvePath("STATEZ_ATTRACT");
+        CSymTab* attract = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT"));
         CString title;
         g_attractStateCount = 0;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);

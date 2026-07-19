@@ -241,9 +241,9 @@ i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
 // Hand the alpha table back to its cache and clear the cached pointers.
 RVA(0x000e32e0, 0x25)
 void CSpriteRef::Free() {
-    CShadeTableCache* cache = (CShadeTableCache*)m_cache;
+    CShadeTableCache* cache = reinterpret_cast<CShadeTableCache*>(m_cache);
     if (cache && m_alphaKey) {
-        cache->FindRemove((CShadeTable*)m_alphaKey);
+        cache->FindRemove(reinterpret_cast<CShadeTable*>(m_alphaKey));
         m_cache = 0;
         m_alphaKey = 0;
     }

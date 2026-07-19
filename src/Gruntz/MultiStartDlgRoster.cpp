@@ -330,7 +330,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case 0x501:
             if (GetCtrlD(0)->IsWindowEnabled()) {
-                switch (((CBattlezSlot*)m_host)[0].m_158) {
+                switch ((reinterpret_cast<CBattlezSlot*>(m_host))[0].m_158) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -393,7 +393,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x503:
             if (GetCtrlD(1)->IsWindowEnabled()) {
-                switch (((CBattlezSlot*)m_host)[1].m_158) {
+                switch ((reinterpret_cast<CBattlezSlot*>(m_host))[1].m_158) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -456,7 +456,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x505:
             if (GetCtrlD(2)->IsWindowEnabled()) {
-                switch (((CBattlezSlot*)m_host)[2].m_158) {
+                switch ((reinterpret_cast<CBattlezSlot*>(m_host))[2].m_158) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -519,7 +519,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case 0x507:
             if (GetCtrlD(3)->IsWindowEnabled()) {
-                switch (((CBattlezSlot*)m_host)[3].m_158) {
+                switch ((reinterpret_cast<CBattlezSlot*>(m_host))[3].m_158) {
                     case 0:
                         color = 0x0080ff;
                         break;
@@ -604,9 +604,9 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnColorSlot0() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || ((CFocusSlot*)m_host)[0].m_164 != 0)
-        && (((CFocusSlot*)m_host)[0].m_16c != 0
-            || ((CFocusSlot*)m_host)[0].m_168 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || (reinterpret_cast<CFocusSlot*>(m_host))[0].m_164 != 0)
+        && ((reinterpret_cast<CFocusSlot*>(m_host))[0].m_16c != 0
+            || (reinterpret_cast<CFocusSlot*>(m_host))[0].m_168 != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 0, 1, 0);
@@ -622,9 +622,9 @@ void CMultiStartDlg::OnColorSlot0() {
 RVA(0x000c3950, 0xd1)
 void CMultiStartDlg::OnColorSlot1() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || ((CFocusSlot*)m_host)[1].m_164 != 0)
-        && (((CFocusSlot*)m_host)[1].m_16c != 0
-            || ((CFocusSlot*)m_host)[1].m_168 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || (reinterpret_cast<CFocusSlot*>(m_host))[1].m_164 != 0)
+        && ((reinterpret_cast<CFocusSlot*>(m_host))[1].m_16c != 0
+            || (reinterpret_cast<CFocusSlot*>(m_host))[1].m_168 != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 1, 1, 0);
@@ -640,9 +640,9 @@ void CMultiStartDlg::OnColorSlot1() {
 RVA(0x000c3a70, 0xd1)
 void CMultiStartDlg::OnColorSlot2() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || ((CFocusSlot*)m_host)[2].m_164 != 0)
-        && (((CFocusSlot*)m_host)[2].m_16c != 0
-            || ((CFocusSlot*)m_host)[2].m_168 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || (reinterpret_cast<CFocusSlot*>(m_host))[2].m_164 != 0)
+        && ((reinterpret_cast<CFocusSlot*>(m_host))[2].m_16c != 0
+            || (reinterpret_cast<CFocusSlot*>(m_host))[2].m_168 != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 2, 1, 0);
@@ -658,9 +658,9 @@ void CMultiStartDlg::OnColorSlot2() {
 RVA(0x000c3b90, 0xd1)
 void CMultiStartDlg::OnColorSlot3() {
     CMulti* mp = g_multiState;
-    if ((mp->m_isHost == 0 || ((CFocusSlot*)m_host)[3].m_164 != 0)
-        && (((CFocusSlot*)m_host)[3].m_16c != 0
-            || ((CFocusSlot*)m_host)[3].m_168 != mp->m_hostIndex)) {
+    if ((mp->m_isHost == 0 || (reinterpret_cast<CFocusSlot*>(m_host))[3].m_164 != 0)
+        && ((reinterpret_cast<CFocusSlot*>(m_host))[3].m_16c != 0
+            || (reinterpret_cast<CFocusSlot*>(m_host))[3].m_168 != mp->m_hostIndex)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 3, 1, 0);
@@ -777,7 +777,7 @@ void CMultiStartDlg::Drive() {
         netMgr->BroadcastChannelTable(0);
         UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = reinterpret_cast<i32>(((CGruntzMgr*)m_host)->FindOptionsSlot(netMgr->m_hostIndex));
+        i32 transformedPlayerId = reinterpret_cast<i32>((reinterpret_cast<CGruntzMgr*>(m_host))->FindOptionsSlot(netMgr->m_hostIndex));
         g_multiState->BroadcastOneChannel(transformedPlayerId);
     }
 }
@@ -814,7 +814,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     i32 f18 = 0;
     i32 idx = 0;
     i32 t = this->LocalSlot2d4c();
-    i32 localColour = g_multiState->m_isHost ? ((CFocusSlot*)m_host)[t].m_16c : 1;
+    i32 localColour = g_multiState->m_isHost ? (reinterpret_cast<CFocusSlot*>(m_host))[t].m_16c : 1;
     i32 off = 0;
     do {
         CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + off + 0x150);
@@ -1051,7 +1051,7 @@ void CMultiStartDlg::Watchdog() {
 // OptOwner_c4b30::Resolve view; m_5c is CMultiStartDlg::m_host, xref-proven).
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetSlotIndex() {
-    i32* slot = (i32*)((CGruntzMgr*)m_host)->FindOptionsSlot(g_multiState->m_hostIndex);
+    i32* slot = (i32*)(reinterpret_cast<CGruntzMgr*>(m_host))->FindOptionsSlot(g_multiState->m_hostIndex);
     if (slot == 0) {
         return -1;
     }

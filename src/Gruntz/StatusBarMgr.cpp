@@ -134,7 +134,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // GetSel + SetAllTypes/Formats. Pointer locals (aptr/bptr/y) match retail's
             // incremented [esp+0x18]/[esp+0x28]/[esp+0x20] induction variables.
             {
-                i32* aptr = (i32*)m_slotNotify;  // +0x204, stride 4
+                i32* aptr = reinterpret_cast<i32*>(m_slotNotify);  // +0x204, stride 4
                 i32* bptr = &m_slots[0].m_value; // +0x224, stride 0x18
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {

@@ -243,7 +243,7 @@ void CStatusBarMgr::BuildGameMenu() {
             it->m_4 = 0;
             m_modeState = 7;
             m_destructWarnActive = 0;
-            ((CSBI_ImageSet*)m_modeNotify)->SbiSlot12(7);
+            (reinterpret_cast<CSBI_ImageSet*>(m_modeNotify))->SbiSlot12(7);
         }
         return;
     }

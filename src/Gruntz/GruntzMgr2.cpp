@@ -22,5 +22,5 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
     CPlaneRender* grid = m_world->m_level->m_mainPlane;
     i32 idx = grid->m_colOffsets[col] + row;
     grid->m_tileGrid[idx] = value;
-    RezFree((void*)m_tileGrid);
+    RezFree(static_cast<void*>(m_tileGrid));
 }

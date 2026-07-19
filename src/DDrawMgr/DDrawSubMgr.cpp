@@ -1354,7 +1354,7 @@ LeafCue::~LeafCue() {
 // obj's RVA span.)
 RVA(0x001586e0, 0x34)
 i32 LeafCue::LoadSoundA(void* riff) {
-    SoundDevice* dev = ((CDDrawSurfaceMgr*)m_0c)->m_soundStream;
+    SoundDevice* dev = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_soundStream;
     if (!dev) {
         return 0;
     }
@@ -1367,7 +1367,7 @@ i32 LeafCue::LoadSoundA(void* riff) {
 // fopen + slurp + Acquire. (Ex "Configure2_158720"; CreateEntry2's loader.)
 RVA(0x00158720, 0x34)
 i32 LeafCue::LoadSoundB(void* src) {
-    SoundDevice* dev = ((CDDrawSurfaceMgr*)m_0c)->m_soundStream;
+    SoundDevice* dev = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_soundStream;
     if (!dev) {
         return 0;
     }
@@ -1393,7 +1393,7 @@ i32 LeafCue::Configure_158760(CParseSource* src) {
     if (blob == 0) {
         return 0;
     }
-    SoundDevice* dev = ((CDDrawSurfaceMgr*)m_0c)->m_soundStream;
+    SoundDevice* dev = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_soundStream;
     if (dev == 0) {
         src->EndParse();
         return 0;
@@ -1422,7 +1422,7 @@ RVA(0x001587c0, 0x23)
 i32 LeafCue::Unload() {
     i32 r = reinterpret_cast<i32>(m_10);
     if (r != 0) {
-        SoundDevice* dev = ((CDDrawSurfaceMgr*)m_0c)->m_soundStream;
+        SoundDevice* dev = (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_soundStream;
         if (dev != 0) {
             dev->RemoveBuffer(m_10);
             m_10 = 0;

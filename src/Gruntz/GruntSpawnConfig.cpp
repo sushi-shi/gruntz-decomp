@@ -83,7 +83,7 @@ BOOL CGruntSpawnConfig::Init(CSpawnOwner* owner) {
 RVA(0x0011ae30, 0x95)
 void CGruntSpawnConfig::Clear() {
     for (i32 i = 0; i < m_voiceLists.GetSize(); i++) {
-        CSpawnList* e = (CSpawnList*)m_voiceLists[i];
+        CSpawnList* e = static_cast<CSpawnList*>(m_voiceLists[i]);
         // RezFree IS ::operator delete (both 0x1b9b82), so this pair IS `delete e`.
         delete e; // ~CSpawnList non-virtual (0x99ca0, defined in AreaMgr.cpp) + ??3
     }
@@ -92,7 +92,7 @@ void CGruntSpawnConfig::Clear() {
         void** p = (void**)&m_stream0;
         for (i32 k = 0; k < 2; k++) {
             if (p[0] != 0) {
-                ((SoundStream*)m_configTree->m_20)->DestroyVoice((StreamVoice*)p[0]);
+                (reinterpret_cast<SoundStream*>(m_configTree->m_20))->DestroyVoice((StreamVoice*)p[0]);
                 p[0] = 0;
             }
             p++;
@@ -254,7 +254,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] = ((SoundStream*)m_configTree->m_20)
+        streams[chosen] = (reinterpret_cast<SoundStream*>(m_configTree->m_20))
                               ->OpenStream((CParseSource*)src, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
@@ -531,7 +531,7 @@ RVA(0x0011c7f0, 0x2b)
 void CGruntSpawnConfig::ResetPicks() {
     DtorBody();
     for (i32 i = 0; i < m_voiceLists.GetSize(); i++) {
-        CSpawnList* e = (CSpawnList*)m_voiceLists[i];
+        CSpawnList* e = static_cast<CSpawnList*>(m_voiceLists[i]);
         if (e != 0) {
             e->m_lastPicked = -1;
         }

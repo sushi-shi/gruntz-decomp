@@ -267,7 +267,7 @@ RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
     POSITION pos = m_subList.GetHeadPosition();
     while (pos != 0) {
-        CObject* p = (CObject*)(void*)m_subList.GetNext(pos);
+        CObject* p = (CObject*)static_cast<void*>(m_subList.GetNext(pos));
         if (p != 0) {
             delete p;
         }
@@ -347,7 +347,7 @@ CWwdGameObjectB::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* 
     // m_0c is the CLoadable owner int handle == the CDDrawSurfaceMgr; its worker-cache name
     // map (CMapStringToOb @+0x10, Lookup 0x1b8008 - disasm-confirmed, NOT the CMapStringToPtr
     // the ex-view guessed) resolves `name` -> the child's arg5.
-    ((CDDrawSurfaceMgr*)m_0c)->m_workerCache->m_10.Lookup(name, val);
+    (reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_workerCache->m_10.Lookup(name, val);
     if (val == 0) {
         return 0;
     }

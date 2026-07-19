@@ -829,25 +829,25 @@ inline CGruntMovingBase::CGruntMovingBase(CGameObject* owner) : CUserLogic(owner
     // the constant branch stays a mov/mov copy instead of a folded fld/fstp).
     CMotionState* m = Motion();
     m->Init();
-    i32 lo0 = ((CProjBoundCfg*)m_objAux)->m_2c;
+    i32 lo0 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_2c;
     if (lo0 == 0) {
         m->m_70 = g_movingLogicMin;
     } else {
         m->m_70 = static_cast<double>(lo0);
     }
-    i32 lo1 = ((CProjBoundCfg*)m_objAux)->m_34;
+    i32 lo1 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_34;
     if (lo1 == 0) {
         m->m_78 = g_movingLogicMin;
     } else {
         m->m_78 = static_cast<double>(lo1);
     }
-    i32 hi0 = ((CProjBoundCfg*)m_objAux)->m_30;
+    i32 hi0 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_30;
     if (hi0 == 0) {
         m->m_88 = g_movingLogicMax;
     } else {
         m->m_88 = static_cast<double>(hi0);
     }
-    i32 hi1 = ((CProjBoundCfg*)m_objAux)->m_38;
+    i32 hi1 = (reinterpret_cast<CProjBoundCfg*>(m_objAux))->m_38;
     if (hi1 == 0) {
         m->m_90 = g_movingLogicMax;
     } else {
@@ -1311,16 +1311,16 @@ public:
     // private, and a CPtrList POSITION *is* that node ({pNext, pPrev, data}), whose
     // +8 data slot is GruntCoord* m_coord.
     GruntCoordNode* CoordHead() const {
-        return (GruntCoordNode*)m_31c.GetHeadPosition();
+        return reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition());
     }
     GruntCoordNode* CoordTail() const {
-        return (GruntCoordNode*)m_31c.GetTailPosition();
+        return reinterpret_cast<GruntCoordNode*>(m_31c.GetTailPosition());
     }
     i32 CoordCount() const {
         return m_31c.GetCount();
     }
     CGruntListNode* PayloadHead() const {
-        return (CGruntListNode*)m_338.GetHeadPosition();
+        return reinterpret_cast<CGruntListNode*>(m_338.GetHeadPosition());
     }
     i32 PayloadCount() const {
         return m_338.GetCount();

@@ -1855,7 +1855,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     }
     i32 geoA = e->m_width;
     i32 geoB = e->m_height;
-    CPlaneRender* found = (CPlaneRender*)m_world->m_level->FindPlaneByName("MONOLITH");
+    CPlaneRender* found = static_cast<CPlaneRender*>(m_world->m_level->FindPlaneByName("MONOLITH"));
     if (found == 0) {
         CPlaneRender* spr =
             m_world->m_level->ReadObjectPlane(0x20, 0x20, geoA, geoB, -0x19, -0x19, reinterpret_cast<i32>("MONOLITH"));
@@ -2133,7 +2133,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, 
     }
     i32 r2 = radius * radius;
     i32 count = 0;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_childGroup->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -2179,7 +2179,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb
     i32 loY = r->top + offY;
     i32 hiY = r->bottom + offY;
     i32 count = 0;
-    CDDrawGroupNode* node = (CDDrawGroupNode*)m_world->m_childGroup->m_list.GetHeadPosition();
+    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -2809,7 +2809,7 @@ i32 CGruntzMgr::Quickload() {
         // The +0x58 sink IS CSaveGame; Check == CSaveGame::VerifySlot (0xe52c0) and
         // the record IS a SaveSlot (elsewhere this file casts g_gameReg->m_saveSink
         // to CSaveGame). Bind to the real callee so the reloc is faithful.
-        if (m_saveSink->VerifySlot((SaveSlot*)m_saveInfoRec) == 0) {
+        if (m_saveSink->VerifySlot(reinterpret_cast<SaveSlot*>(m_saveInfoRec)) == 0) {
             return 1;
         }
         ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
@@ -3109,7 +3109,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (((CTriggerMgr*)PickPlayOrPausedState())->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (((CTriggerMgr*)m_cmdSubMgr)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
+    if ((reinterpret_cast<CTriggerMgr*>(m_cmdSubMgr))->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
     // slot 1 (0x82430 = the derived "SerializeNodes"): the base's Visit slot, whose base
@@ -3339,7 +3339,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
 RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_curState && m_curState->Update() == 0x11) {
-        PlayStatusSlot* base = ((CPlayStateView*)m_curState)->m_520;
+        PlayStatusSlot* base = (reinterpret_cast<CPlayStateView*>(m_curState))->m_520;
         char* p = (char*)base + 0x20;
         i32 done = 0;
         for (i32 d = 4; d != 0; d--) {
@@ -4265,7 +4265,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CDdModePair pt;
-    ((CDirectDrawMgr*)m_world->m_ptrColl)->FindFwd(&pt, m_modeW, m_modeH, m_colorDepth);
+    (reinterpret_cast<CDirectDrawMgr*>(m_world->m_ptrColl))->FindFwd(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -4291,7 +4291,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CDdModePair pt;
-    ((CDirectDrawMgr*)m_world->m_ptrColl)->FindBack(&pt, m_modeW, m_modeH, m_colorDepth);
+    (reinterpret_cast<CDirectDrawMgr*>(m_world->m_ptrColl))->FindBack(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {

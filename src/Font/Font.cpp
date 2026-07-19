@@ -393,7 +393,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         } else {
             clippedW = gw;
         }
-        u8* glyphBuf = (u8*)m_font->GetSurface(text[ci])[0];
+        u8* glyphBuf = static_cast<u8*>(m_font->GetSurface(text[ci])[0]);
         i32 startCol = firstCol;
         if (blend) {
             for (i32 row = rc.top; row < rc.bottom; row++) {

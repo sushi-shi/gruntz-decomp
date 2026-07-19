@@ -1447,7 +1447,7 @@ i32 CGrunt::StepEntranceReinit() {
 
     // The head occupied-coord's tile is clear of the spawn-block bit -> re-latch a
     // fresh "D" anim set and re-stamp the first entrance-cell frame.
-    GruntCoord* co = (GruntCoord*)m_31c.GetHead();
+    GruntCoord* co = static_cast<GruntCoord*>(m_31c.GetHead());
     CTileGrid* b = g_gameReg->m_tileGrid;
     i32 flag;
     if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_c) || static_cast<u32>(co->m_y) >= static_cast<u32>(b->m_10)) {
@@ -1794,7 +1794,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CSprite* found;
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
-        found = (CSprite*)m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
+        found = static_cast<CSprite*>(m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE));
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
@@ -1804,7 +1804,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = (CSprite*)m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
+        found = static_cast<CSprite*>(m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO));
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
@@ -1814,7 +1814,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = (CSprite*)m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
+        found = static_cast<CSprite*>(m_38->m_0c->m_animRegistry->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE));
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
                 reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
@@ -1826,7 +1826,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     }
 
     ((CEffect6b*)(&m_34))->Apply(reinterpret_cast<i32>(found), 0);
-    i32* elem = (i32*)m_38->m_1a0.m_14->AtChecked_06b270(0);
+    i32* elem = reinterpret_cast<i32*>(m_38->m_1a0.m_14->AtChecked_06b270(0));
     i32 frame = elem[0x14 / 4];
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
     return 0;

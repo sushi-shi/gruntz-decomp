@@ -91,12 +91,12 @@ i32 CPlay::InputVirtual() {
         ;
 
     m_c->m_drawTarget->m_backPair->m_surface->Fill(0);
-    UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate);
+    UpdateMgrScroll((CGruntzMgr*)g_gameReg, reinterpret_cast<i32*>(m_guts), m_region0Gate);
 
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
-        m_c->m_level->VisitVisible((void*)m_c->m_drawTarget->m_backPair, m_c->m_childGroup);
+        m_c->m_level->VisitVisible(static_cast<void*>(m_c->m_drawTarget->m_backPair), m_c->m_childGroup);
         m_c->m_workerList->PruneWorkers(
             m_c->m_drawTarget->m_backPair,
             m_c->m_drawTarget->m_overlayPair

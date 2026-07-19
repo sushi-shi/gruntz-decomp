@@ -172,7 +172,7 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
                 i32 rowN = rowB - rowA + 1;
                 i32 idx = base;
                 do {
-                    WwdRegion* r = (WwdRegion*)m_buckets[idx].m_head; // list head -> typed node
+                    WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].m_head); // list head -> typed node
                     while (r) {
                         i32 x = r->m_x;
                         WwdRegion* next = (WwdRegion*)r->m_next;
@@ -204,12 +204,12 @@ RVA(0x00191a70, 0x57)
 i32 CWwdGrid::Clear() {
     i32 nonEmpty = 0;
     for (i32 i = 0; i < m_cellCount; ++i) {
-        WwdRegion* r = (WwdRegion*)m_buckets[i].m_head;
+        WwdRegion* r = static_cast<WwdRegion*>(m_buckets[i].m_head);
         while (r) {
             m_buckets[i].Unlink(r);
             r->m_bucket = 0;
             ++nonEmpty;
-            r = (WwdRegion*)m_buckets[i].m_head;
+            r = static_cast<WwdRegion*>(m_buckets[i].m_head);
         }
     }
     m_count = 0;
@@ -321,7 +321,7 @@ top:
             m_row = m_rowStart;
             ++m_col;
         }
-        m_cur = (WwdGridNode*)m_grid->m_buckets[m_cell].m_head;
+        m_cur = reinterpret_cast<WwdGridNode*>(m_grid->m_buckets[m_cell].m_head);
         if (m_cur == 0) {
             goto nextcell;
         }
@@ -334,7 +334,7 @@ walk:
     if (m_cur->m_x >= m_rect.a && m_cur->m_y >= m_rect.b && m_cur->m_x <= m_rect.c
         && m_cur->m_y <= m_rect.d) {
         if (m_remove) {
-            m_grid->m_buckets[m_cell].Unlink((DSoundLink*)m_cur);
+            m_grid->m_buckets[m_cell].Unlink(reinterpret_cast<DSoundLink*>(m_cur));
             m_cur->m_bucket = 0;
             --m_grid->m_count;
         }

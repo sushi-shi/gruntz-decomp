@@ -125,7 +125,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == 0) {
         return 0;
     }
-    CSymTab* st = (CSymTab*)((CNetDlgHost*)m_host)->m_registry->ResolvePath("GAME_MULTI");
+    CSymTab* st = (CSymTab*)(reinterpret_cast<CNetDlgHost*>(m_host))->m_registry->ResolvePath("GAME_MULTI");
     if (st == 0) {
         return 0;
     }
@@ -199,7 +199,7 @@ i32 CMultiStartDlg::UpdateColorItems() {
             return 0;
         }
         i32 idx = GetSlotIndex();
-        i32 en = (((CMultiSlot*)m_host)[idx].m_16c == 0);
+        i32 en = ((reinterpret_cast<CMultiSlot*>(m_host))[idx].m_16c == 0);
         it4ff->EnableWindow(en);
         it42b->EnableWindow(en);
         it4e9->EnableWindow(0);
@@ -297,7 +297,7 @@ i32 CMultiStartDlg::UpdateSlot() {
     i32 enable;
     if (reg->m_isHost) {
         i32 idx = GetSlotIndex();
-        enable = (((CMultiSlot*)m_host)[idx].m_16c == 0);
+        enable = ((reinterpret_cast<CMultiSlot*>(m_host))[idx].m_16c == 0);
     } else {
         enable = 0;
     }
@@ -429,7 +429,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             reg->SetValueString("LastMultiMap", m_70);
             reg->SetValueDword("CustomMultiMap", m_6c);
         }
-        CMultiSlot* slots = (CMultiSlot*)m_host;
+        CMultiSlot* slots = reinterpret_cast<CMultiSlot*>(m_host);
         for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {
             CWnd* e = NameEdit298c(i);
             if (e != 0) {

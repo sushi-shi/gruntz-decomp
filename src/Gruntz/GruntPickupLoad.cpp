@@ -480,7 +480,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_wingzTimeSprite = 0;
     }
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup_15c2d0((CAniElement*)m_pickupGeoSrc);
+    m_38->m_1a0.Setup_15c2d0(reinterpret_cast<CAniElement*>(m_pickupGeoSrc));
     m_38->ApplyName("GRUNTZ_PICKUPS");
     return 1;
 }

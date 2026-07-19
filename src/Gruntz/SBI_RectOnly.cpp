@@ -748,7 +748,7 @@ i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
     // Authentic int-as-pointer overlay; retyping it lives in the base class, not
     // here, so the cast stays (flagged in the report).
     if (m_8) {
-        seq = ((CSbiSeqHolder*)m_8)->m_188;
+        seq = (reinterpret_cast<CSbiSeqHolder*>(m_8))->m_188;
     }
     s->Write(&seq, 4);
 
@@ -1267,7 +1267,7 @@ i32 CStatusBarMgr::Deactivate() {
 
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiSlotPtr* cur = (CSbiSlotPtr*)m_tabLists[0].GetNext(n);
+        CSbiSlotPtr* cur = static_cast<CSbiSlotPtr*>(m_tabLists[0].GetNext(n));
         if (cur) {
             cur->Refresh();
         }
@@ -1297,7 +1297,7 @@ i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
     }
     POSITION n = m_tabLists[5].GetHeadPosition();
     while (n) {
-        CSbiNotifyTarget* cur = (CSbiNotifyTarget*)m_tabLists[5].GetNext(n);
+        CSbiNotifyTarget* cur = static_cast<CSbiNotifyTarget*>(m_tabLists[5].GetNext(n));
         if (cur) {
             cur->Notify(1);
         }
@@ -1807,7 +1807,7 @@ i32 CStatusBarMgr::GetActiveValue() {
         return m_extraNotifyArg0;
     }
     if (m_ptrPool.GetSize() > 0 && m_ptrPool.GetSize() > m_rezTick) {
-        return *(i32*)m_ptrPool.GetAt(m_rezTick);
+        return *static_cast<i32*>(m_ptrPool.GetAt(m_rezTick));
     }
     return 0;
 }
@@ -1831,7 +1831,7 @@ RVA(0x000ffcb0, 0xe2)
 CSbiRect* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiRect* r = (CSbiRect*)m_tabLists[0].GetNext(n);
+        CSbiRect* r = static_cast<CSbiRect*>(m_tabLists[0].GetNext(n));
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
@@ -1852,7 +1852,7 @@ CSbiRect* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     }
     n = m_tabLists[6].GetHeadPosition();
     while (n) {
-        CSbiRect* r = (CSbiRect*)m_tabLists[6].GetNext(n);
+        CSbiRect* r = static_cast<CSbiRect*>(m_tabLists[6].GetNext(n));
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
@@ -2023,7 +2023,7 @@ void CStatusBarMgr::ExitMode() {
     }
     POSITION n = m_tabLists[6].GetHeadPosition();
     while (n) {
-        CSbiNotifyTarget* cur = (CSbiNotifyTarget*)m_tabLists[6].GetNext(n);
+        CSbiNotifyTarget* cur = static_cast<CSbiNotifyTarget*>(m_tabLists[6].GetNext(n));
         if (cur) {
             cur->Notify(1);
         }
@@ -2386,7 +2386,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         r->m_toggleValue = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
-            ((CStatusBarMgr*)m_statObj[idx])->ResetGroupA();
+            (reinterpret_cast<CStatusBarMgr*>(m_statObj[idx]))->ResetGroupA();
             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_musicHost;
             if (host->m_30 == 0) {
                 void* found = 0;
@@ -2652,12 +2652,12 @@ i32 CStatusBarMgr::RefreshState() {
 // while the recompile parks y in esi loaded early. Not source-steerable; deferred.
 RVA(0x000fe860, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
-    CSbiRenderObj* r = (CSbiRenderObj*)m_8;
+    CSbiRenderObj* r = reinterpret_cast<CSbiRenderObj*>(m_8);
     if (r == 0) {
         return 0;
     }
     r->m_5c = x;
-    ((CSbiRenderObj*)m_8)->m_60 = y;
+    (reinterpret_cast<CSbiRenderObj*>(m_8))->m_60 = y;
     m_28 = y;
     m_24 = x;
     return 1;
@@ -2668,7 +2668,7 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
 // (m_198->m_18/m_1c offset by m_5c/m_60). Returns 1 inside, 0 outside.
 RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
-    CSbiRenderObj* r = (CSbiRenderObj*)m_8;
+    CSbiRenderObj* r = reinterpret_cast<CSbiRenderObj*>(m_8);
     CSbiLayer* L = r->m_layer;
     i32 xlo = r->m_5c - L->m_18;
     i32 ylo = r->m_60 - L->m_1c;
@@ -2702,7 +2702,7 @@ i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;
     if (n > 0) {
-        CSbiFreeNode** t = (CSbiFreeNode**)m_ptrPool.GetData();
+        CSbiFreeNode** t = reinterpret_cast<CSbiFreeNode**>(m_ptrPool.GetData());
         do {
             CSbiFreeNode* e = *t;
             if (e != 0 && b < e->m_4) {
@@ -3289,7 +3289,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
         char* B = reinterpret_cast<char*>(this);
         POSITION n = m_tabLists[0].GetHeadPosition();
         while (n) {
-            CSbiNotifyPayload* cur = (CSbiNotifyPayload*)m_tabLists[0].GetNext(n);
+            CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(m_tabLists[0].GetNext(n));
             if (cur) {
                 cur->Tick();
             }
@@ -3309,7 +3309,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 
     POSITION k = m_tabLists[6].GetHeadPosition();
     while (k) {
-        CSbiNotifyPayload* p = (CSbiNotifyPayload*)m_tabLists[6].GetNext(k);
+        CSbiNotifyPayload* p = static_cast<CSbiNotifyPayload*>(m_tabLists[6].GetNext(k));
         if (p) {
             p->Refresh();
             p->Tick();
@@ -3667,7 +3667,7 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     char* B = reinterpret_cast<char*>(this);
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiNotifyPayload* cur = (CSbiNotifyPayload*)m_tabLists[0].GetNext(n);
+        CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(m_tabLists[0].GetNext(n));
         if (cur) {
             cur->Poll(arg);
         }
@@ -3682,7 +3682,7 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     }
     POSITION k = m_tabLists[6].GetHeadPosition();
     while (k) {
-        CSbiNotifyPayload* cur = (CSbiNotifyPayload*)m_tabLists[6].GetNext(k);
+        CSbiNotifyPayload* cur = static_cast<CSbiNotifyPayload*>(m_tabLists[6].GetNext(k));
         if (cur) {
             cur->Poll(arg);
         }
@@ -3796,7 +3796,7 @@ RVA(0x00105990, 0x398)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
     CSbiSlotPtr** notify = m_groupNotify;
-    SbiPhaseSlot* ph = (SbiPhaseSlot*)m_groupSlots;
+    SbiPhaseSlot* ph = reinterpret_cast<SbiPhaseSlot*>(m_groupSlots);
     do {
         switch (ph->m_state) {
             case 1:
@@ -3917,7 +3917,7 @@ RVA(0x00105e40, 0x62c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     SbiPhaseSlot* pA = (SbiPhaseSlot*)&m_hudRectB_x;
     SbiPhaseSlot* pB = (SbiPhaseSlot*)&m_hudRectA_x;
-    SbiPhaseSlot* g = (SbiPhaseSlot*)m_groupSlots;
+    SbiPhaseSlot* g = reinterpret_cast<SbiPhaseSlot*>(m_groupSlots);
     if (pA->m_state == 5) {
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x34) {

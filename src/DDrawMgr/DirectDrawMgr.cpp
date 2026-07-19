@@ -1472,7 +1472,7 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
         return 0;
     }
     const u8* src = (const u8*)buf;
-    u8* dst = (u8*)m_palette;
+    u8* dst = reinterpret_cast<u8*>(m_palette);
     for (i32 i = 0; i < 256; i++) {
         dst[0] = src[0];
         dst[1] = src[1];

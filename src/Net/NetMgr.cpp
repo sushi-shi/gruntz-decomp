@@ -68,7 +68,7 @@ i32 CNetMgr::InitFromProvider(void* a, GUID appGuid) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x41, hr, 0);
         return 0;
     }
-    IDirectPlay4Z* raw = (IDirectPlay4Z*)m_releaseIface;
+    IDirectPlay4Z* raw = reinterpret_cast<IDirectPlay4Z*>(m_releaseIface);
     hr = raw->QueryInterface((void*)&g_netDirectPlayRiid, &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
@@ -444,7 +444,7 @@ i32 CNetMgr::AddPlayerNode(void* playerDesc) {
         return 0;
     }
 
-    node->m_54 = (__POSITION*)m_players.AddTail((::CObject*)node);
+    node->m_54 = static_cast<__POSITION*>(m_players.AddTail((::CObject*)node));
     return reinterpret_cast<i32>(node);
 }
 
@@ -724,7 +724,7 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
     }
 
     if (node != 0) {
-        __POSITION* pos = (__POSITION*)m_sessions.AddTail((::CObject*)node);
+        __POSITION* pos = static_cast<__POSITION*>(m_sessions.AddTail((::CObject*)node));
         if (pos == 0) {
             delete node;
         } else {
@@ -1166,7 +1166,7 @@ i32 InterfaceObject::IsInterface1() {
     if (!m_4) {
         return 0;
     }
-    return memcmp((const void*)m_4, g_guid1, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_4), g_guid1, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
@@ -1176,7 +1176,7 @@ i32 InterfaceObject::IsInterface2() {
     if (!m_4) {
         return 0;
     }
-    return memcmp((const void*)m_4, g_guid2, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_4), g_guid2, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
@@ -1186,7 +1186,7 @@ i32 InterfaceObject::IsInterface3() {
     if (!m_4) {
         return 0;
     }
-    return memcmp((const void*)m_4, g_guid3, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_4), g_guid3, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
@@ -1196,7 +1196,7 @@ i32 InterfaceObject::IsInterface4() {
     if (!m_4) {
         return 0;
     }
-    return memcmp((const void*)m_4, g_guid4, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_4), g_guid4, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================
@@ -1206,7 +1206,7 @@ i32 InterfaceObject::IsInterface5() {
     if (!m_4) {
         return 0;
     }
-    return memcmp((const void*)m_4, g_guid5, 16) == 0 ? 1 : 0;
+    return memcmp(reinterpret_cast<const void*>(m_4), g_guid5, 16) == 0 ? 1 : 0;
 }
 
 // =========================================================================

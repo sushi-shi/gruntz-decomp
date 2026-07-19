@@ -506,7 +506,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     // the sprite's worker -> owner context (CDDrawSurfaceMgr facet) -> cue host
-    CSndHost* slot = ((CDDrawSurfaceMgr*)m_3c->m_0c)->m_soundRegistry;
+    CSndHost* slot = (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
         slot->m_10.Lookup(s_GAME_ATTACK, (void*&)sout); // CMapStringToPtr @0x1b8438
@@ -1382,7 +1382,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             enemy->m_health = h;
             // worker -> owner context (the world holder facet) -> cue host; retail
             // keeps the host in ecx from the gate test into the Lookup __thiscall.
-            CSndHost* host = ((CDDrawSurfaceMgr*)m_3c->m_0c)->m_soundRegistry;
+            CSndHost* host = (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 LeafCue* cc = (LeafCue*)host->Lookup_05b7e0(s_CONVERSIONHIT);
                 if (cc != 0) {

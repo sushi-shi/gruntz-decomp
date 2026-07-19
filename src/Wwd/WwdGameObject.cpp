@@ -915,21 +915,21 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360((CImageSet*)m_80);
+        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_80));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360((CImageSet*)m_88);
+        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_88));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_90 != 0) {
-        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360((CImageSet*)m_90);
+        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_90));
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -1051,7 +1051,7 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
     }
     if (m_184 != 0) {
         void* found = 0;
-        if (m_mgr->m_childGroup->m_map48.Lookup((void*)m_184, found) == 0) {
+        if (m_mgr->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(m_184), found) == 0) {
             m_linkedObject = 0;
             return 1;
         }
@@ -1108,7 +1108,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
     rec.m_10 = edi;
 
     {
-        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360((CImageSet*)m_worker);
+        CString str = m_mgr->m_workerCache->FindKeyOfValue_165360(reinterpret_cast<CImageSet*>(m_worker));
         strcpy(rec.m_name, str);
     }
     ar->Write(&rec, 0xa0);
@@ -1410,12 +1410,12 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
                 count++;
             }
             val = tab->NextSym3(val);
-            if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
+            if (((reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_flags & 0x100) && count > 0) {
                 val = 0;
             }
         }
         sym = tab->NextSym(sym);
-        if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
+        if (((reinterpret_cast<CDDrawSurfaceMgr*>(m_0c))->m_flags & 0x100) && count > 0) {
             sym = 0;
         }
     }

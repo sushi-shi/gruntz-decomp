@@ -102,7 +102,7 @@ public:
         if (index < m_minIndex || index > m_maxIndex) {
             return 0;
         }
-        return (CImage*)m_items.GetAt(index);
+        return reinterpret_cast<CImage*>(m_items.GetAt(index));
     }
 
     // Bounds-read a frame pointer against [m_minIndex, m_maxIndex] (0x15cc30, the ex
@@ -115,7 +115,7 @@ public:
     // CImageSet::m_owner) proved the type: it is handed to each created frame as
     // CImage::m_parent (`new CImage(index, m_owner)`).
     CImageParent* Owner() const {
-        return (CImageParent*)m_0c;
+        return reinterpret_cast<CImageParent*>(m_0c);
     }
     void SetOwner(CImageParent* p) {
         m_0c = reinterpret_cast<i32>(p);

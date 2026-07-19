@@ -133,7 +133,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     i32 i;
-    i32* d = (i32*)m_primaryDesc;
+    i32* d = reinterpret_cast<i32*>(m_primaryDesc);
     for (i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
@@ -601,7 +601,7 @@ void CMoviePlayer::HandleError() {
         memset(&fx, 0, sizeof(fx));
         fx.dwSize = 0x64;
         fx.dwROP = 0x42;
-        void* rc = (void*)m_primary->Blt(0, 0, 0, 0x1020000, &fx);
+        void* rc = reinterpret_cast<void*>(m_primary->Blt(0, 0, 0, 0x1020000, &fx));
         if (rc) {
             memset(&fx, 0, sizeof(fx));
             fx.dwSize = 0x64;
@@ -978,12 +978,12 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                 memset(&fx, 0, sizeof(fx));
                 fx.dwSize = sizeof(fx);
                 fx.dwROP = 0x42;
-                i32 hr = ((IDirectDrawSurface*)m_primary)->Blt(0, 0, 0, 0x1020000, &fx);
+                i32 hr = (static_cast<IDirectDrawSurface*>(m_primary))->Blt(0, 0, 0, 0x1020000, &fx);
                 if (hr != 0) {
                     memset(&fx, 0, sizeof(fx));
                     fx.dwSize = sizeof(fx);
                     fx.dwFillColor = 0;
-                    ((IDirectDrawSurface*)m_primary)->Blt(0, 0, 0, 0x1000400, &fx);
+                    (static_cast<IDirectDrawSurface*>(m_primary))->Blt(0, 0, 0, 0x1000400, &fx);
                 }
             }
             CloseSmacker();

@@ -195,7 +195,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             return 0;
         }
     }
-    u16* base = (u16*)m_surface->Lock(0);
+    u16* base = reinterpret_cast<u16*>(m_surface->Lock(0));
     if (base == 0) {
         return 0;
     }
@@ -447,7 +447,7 @@ i32 CLightFxRender::BuildShape(i32 shape) {
         return 0;
     }
     {
-        u32* p = (u32*)m_buf;
+        u32* p = reinterpret_cast<u32*>(m_buf);
         for (i32 i = 0; i < 0xfa; i++) {
             p[i] = 0;
         }
@@ -1560,7 +1560,7 @@ i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
     }
     // The +0x2c slot is the current game state; the draw path only runs in play,
     // so the concrete state is the CPlay (the PickPlayOrPausedState downcast).
-    CPlay* ctx = (CPlay*)m_mgr->m_curState;
+    CPlay* ctx = static_cast<CPlay*>(m_mgr->m_curState);
     if (ctx != 0) {
         ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
@@ -1605,7 +1605,7 @@ i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    CPlay* ctx = (CPlay*)m_mgr->m_curState;
+    CPlay* ctx = static_cast<CPlay*>(m_mgr->m_curState);
     if (ctx != 0) {
         ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }

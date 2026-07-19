@@ -249,7 +249,7 @@ RVA(0x00021bd0, 0x45)
 void CFontConfig::FreeNodes() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos) {
-        FontItem* item = (FontItem*)m_list.GetNext(pos);
+        FontItem* item = static_cast<FontItem*>(m_list.GetNext(pos));
         if (item) {
             delete item;
         }
@@ -280,7 +280,7 @@ i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {
     if (type & 4) {
         POSITION pos = m_list.GetHeadPosition();
         while (pos) {
-            FontItem* item = (FontItem*)m_list.GetNext(pos);
+            FontItem* item = static_cast<FontItem*>(m_list.GetNext(pos));
             if (item) {
                 delete item;
             }
@@ -319,7 +319,7 @@ void CFontConfig::Scroll(i32 delta) {
         if (m_scrollOffset < m_highScrollThreshold) {
             return;
         }
-        item = (FontItem*)m_list.RemoveHead();
+        item = static_cast<FontItem*>(m_list.RemoveHead());
         if (!item) {
             return;
         }
@@ -330,7 +330,7 @@ void CFontConfig::Scroll(i32 delta) {
         if (!count) {
             return;
         }
-        item = (FontItem*)m_list.RemoveHead();
+        item = static_cast<FontItem*>(m_list.RemoveHead());
         if (!item) {
             return;
         }
@@ -592,7 +592,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         return 0;
     }
     while (m_list.GetCount() > count) {
-        FontItem* dead = (FontItem*)m_list.RemoveHead();
+        FontItem* dead = static_cast<FontItem*>(m_list.RemoveHead());
         if (dead != 0) {
             dead->name.Empty();
             delete dead;
@@ -618,7 +618,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (m_arialFont) {
             savedFont = SelectObject(hdc, m_arialFont);
         }
-        FontItem* item = (FontItem*)m_list.GetAt(m_list.FindIndex(i));
+        FontItem* item = static_cast<FontItem*>(m_list.GetAt(m_list.FindIndex(i)));
         if (item != 0) {
             if (item->type & FONTITEM_SHADOW) {
                 SetTextColor(hdc, TCLR_BLACK);

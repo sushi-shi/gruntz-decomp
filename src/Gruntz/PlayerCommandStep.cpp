@@ -169,7 +169,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             u32 px = static_cast<u16>(a5);
             u32 py = static_cast<u16>(a6);
-            CGrunt* node = (CGrunt*)m_4->m_cmdGrid->CellHitTest(px, py, (i32*)&a4, (i32*)&a8, 5);
+            CGrunt* node = static_cast<CGrunt*>(m_4->m_cmdGrid->CellHitTest(px, py, (i32*)&a4, (i32*)&a8, 5));
             if (node == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
             } else {

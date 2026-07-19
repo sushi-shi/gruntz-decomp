@@ -24,7 +24,7 @@ i32 CBattlezDlg::ToggleRow(i32 row) {
     CWnd* d = GetCtrlD(row);
     CWnd* c = GetCtrlC(row);
     if (row != 0) {
-        CBattlezSlot* rec = &((CBattlezSlot*)m_slots)[row];
+        CBattlezSlot* rec = &(reinterpret_cast<CBattlezSlot*>(m_slots))[row];
         if (::SendMessageA(a->m_hWnd, 0x147, 0, 0) != 0) {
             b->EnableWindow(1);
             d->EnableWindow(1);
