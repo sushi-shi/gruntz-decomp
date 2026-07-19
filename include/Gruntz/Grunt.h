@@ -628,14 +628,15 @@ void GruntNode_Delete(void* p);
 //
 // The compass records (each 3 DWORDs at .data, runtime-filled). Modeled as 24
 // individual i32 externs so each `mov ds:addr` reloc-masks against retail.
-extern i32 g_voiceN[3];  // 0x6448e8  (dx==0, dy>0  -> South: down)
-extern i32 g_voiceS[3];  // 0x6448d8  (dx==0, dy<0  -> North: up)
-extern i32 g_voiceE[3];  // 0x6448c8  (shallow +, dx>0 -> East)
-extern i32 g_voiceW[3];  // 0x6448f8  (shallow +, dx<0 -> West)
-extern i32 g_voiceSE[3]; // 0x644928  (mid +, dx>0)
-extern i32 g_voiceNW[3]; // 0x644918  (mid +, dx<0)
-extern i32 g_voiceNE[3]; // 0x644908  (mid -, dx>0)
-extern i32 g_voiceSW[3]; // 0x644948  (mid -, dx<0)
+struct CGruntVoiceRec; // defined below (the 3-DWORD by-value voice record)
+extern CGruntVoiceRec g_voiceN;  // 0x6448e8  (dx==0, dy>0  -> South: down)
+extern CGruntVoiceRec g_voiceS;  // 0x6448d8  (dx==0, dy<0  -> North: up)
+extern CGruntVoiceRec g_voiceE;  // 0x6448c8  (shallow +, dx>0 -> East)
+extern CGruntVoiceRec g_voiceW;  // 0x6448f8  (shallow +, dx<0 -> West)
+extern CGruntVoiceRec g_voiceSE; // 0x644928  (mid +, dx>0)
+extern CGruntVoiceRec g_voiceNW; // 0x644918  (mid +, dx<0)
+extern CGruntVoiceRec g_voiceNE; // 0x644908  (mid -, dx>0)
+extern CGruntVoiceRec g_voiceSW; // 0x644948  (mid -, dx<0)
 
 // The grunt-voice record passed by value to PlaySound (3 DWORDs). Building it
 // from a named [3] record makes cl emit the 3 `mov ds:addr; mov [stk],reg` copies

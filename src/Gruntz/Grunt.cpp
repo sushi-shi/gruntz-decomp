@@ -1186,41 +1186,41 @@ i32 CGrunt::StepGruntMovement() {
     gtY = m_10->m_screenY >> 5;
     if (coordX > gtX) {
         if (coordY > gtY) {
-            rec.m_0 = g_voiceSE[0];
-            rec.m_4 = g_voiceSE[1];
-            rec.m_8 = g_voiceSE[2];
+            rec.m_0 = g_voiceSE.m_0;
+            rec.m_4 = g_voiceSE.m_4;
+            rec.m_8 = g_voiceSE.m_8;
         } else if (coordY == gtY) {
-            rec.m_0 = g_voiceE[0];
-            rec.m_4 = g_voiceE[1];
-            rec.m_8 = g_voiceE[2];
+            rec.m_0 = g_voiceE.m_0;
+            rec.m_4 = g_voiceE.m_4;
+            rec.m_8 = g_voiceE.m_8;
         } else {
-            rec.m_0 = g_voiceNE[0];
-            rec.m_4 = g_voiceNE[1];
-            rec.m_8 = g_voiceNE[2];
+            rec.m_0 = g_voiceNE.m_0;
+            rec.m_4 = g_voiceNE.m_4;
+            rec.m_8 = g_voiceNE.m_8;
         }
     } else if (coordX < gtX) {
         if (coordY > gtY) {
-            rec.m_0 = g_voiceSW[0];
-            rec.m_4 = g_voiceSW[1];
-            rec.m_8 = g_voiceSW[2];
+            rec.m_0 = g_voiceSW.m_0;
+            rec.m_4 = g_voiceSW.m_4;
+            rec.m_8 = g_voiceSW.m_8;
         } else if (coordY == gtY) {
-            rec.m_0 = g_voiceW[0];
-            rec.m_4 = g_voiceW[1];
-            rec.m_8 = g_voiceW[2];
+            rec.m_0 = g_voiceW.m_0;
+            rec.m_4 = g_voiceW.m_4;
+            rec.m_8 = g_voiceW.m_8;
         } else {
-            rec.m_0 = g_voiceNW[0];
-            rec.m_4 = g_voiceNW[1];
-            rec.m_8 = g_voiceNW[2];
+            rec.m_0 = g_voiceNW.m_0;
+            rec.m_4 = g_voiceNW.m_4;
+            rec.m_8 = g_voiceNW.m_8;
         }
     } else {
         if (coordY < gtY) {
-            rec.m_0 = g_voiceS[0];
-            rec.m_4 = g_voiceS[1];
-            rec.m_8 = g_voiceS[2];
+            rec.m_0 = g_voiceS.m_0;
+            rec.m_4 = g_voiceS.m_4;
+            rec.m_8 = g_voiceS.m_8;
         } else {
-            rec.m_0 = g_voiceN[0];
-            rec.m_4 = g_voiceN[1];
-            rec.m_8 = g_voiceN[2];
+            rec.m_0 = g_voiceN.m_0;
+            rec.m_4 = g_voiceN.m_4;
+            rec.m_8 = g_voiceN.m_8;
         }
     }
 
@@ -1319,41 +1319,41 @@ i32 CGrunt::StepGruntMovement() {
         i32 gy = m_10->m_screenY >> 5;
         if (cx > gx) {
             if (cy > gy) {
-                rec.m_0 = g_voiceSE[0];
-                rec.m_4 = g_voiceSE[1];
-                rec.m_8 = g_voiceSE[2];
+                rec.m_0 = g_voiceSE.m_0;
+                rec.m_4 = g_voiceSE.m_4;
+                rec.m_8 = g_voiceSE.m_8;
             } else if (cy == gy) {
-                rec.m_0 = g_voiceE[0];
-                rec.m_4 = g_voiceE[1];
-                rec.m_8 = g_voiceE[2];
+                rec.m_0 = g_voiceE.m_0;
+                rec.m_4 = g_voiceE.m_4;
+                rec.m_8 = g_voiceE.m_8;
             } else {
-                rec.m_0 = g_voiceNE[0];
-                rec.m_4 = g_voiceNE[1];
-                rec.m_8 = g_voiceNE[2];
+                rec.m_0 = g_voiceNE.m_0;
+                rec.m_4 = g_voiceNE.m_4;
+                rec.m_8 = g_voiceNE.m_8;
             }
         } else if (cx < gx) {
             if (cy > gy) {
-                rec.m_0 = g_voiceSW[0];
-                rec.m_4 = g_voiceSW[1];
-                rec.m_8 = g_voiceSW[2];
+                rec.m_0 = g_voiceSW.m_0;
+                rec.m_4 = g_voiceSW.m_4;
+                rec.m_8 = g_voiceSW.m_8;
             } else if (cy == gy) {
-                rec.m_0 = g_voiceW[0];
-                rec.m_4 = g_voiceW[1];
-                rec.m_8 = g_voiceW[2];
+                rec.m_0 = g_voiceW.m_0;
+                rec.m_4 = g_voiceW.m_4;
+                rec.m_8 = g_voiceW.m_8;
             } else {
-                rec.m_0 = g_voiceNW[0];
-                rec.m_4 = g_voiceNW[1];
-                rec.m_8 = g_voiceNW[2];
+                rec.m_0 = g_voiceNW.m_0;
+                rec.m_4 = g_voiceNW.m_4;
+                rec.m_8 = g_voiceNW.m_8;
             }
         } else {
             if (cy < gy) {
-                rec.m_0 = g_voiceS[0];
-                rec.m_4 = g_voiceS[1];
-                rec.m_8 = g_voiceS[2];
+                rec.m_0 = g_voiceS.m_0;
+                rec.m_4 = g_voiceS.m_4;
+                rec.m_8 = g_voiceS.m_8;
             } else {
-                rec.m_0 = g_voiceN[0];
-                rec.m_4 = g_voiceN[1];
-                rec.m_8 = g_voiceN[2];
+                rec.m_0 = g_voiceN.m_0;
+                rec.m_4 = g_voiceN.m_4;
+                rec.m_8 = g_voiceN.m_8;
             }
         }
         GruntBoard* bd = g_gameReg->m_tileGrid;

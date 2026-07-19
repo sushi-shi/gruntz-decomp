@@ -347,26 +347,26 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     }
     return 1;
 }
-// The 8 compass grunt-voice records (3 DWORDs each, runtime-filled .bss) +
+// The 8 compass grunt-voice records (CGruntVoiceRec, runtime-filled .bss) +
 // PlaySound (the @0x4ac10 entrance handler, external/reloc-masked). TU-local
 // definitions bound to their retail .bss RVAs so each `mov ds:addr` reloc-checks
 // against the real target (array mangling -> @data-symbol names the exact cl sym).
-// @data-symbol: ?g_voiceN@@3PAHA 0x002448e8
-i32 g_voiceN[3];
-// @data-symbol: ?g_voiceS@@3PAHA 0x002448d8
-i32 g_voiceS[3];
-// @data-symbol: ?g_voiceE@@3PAHA 0x002448c8
-i32 g_voiceE[3];
-// @data-symbol: ?g_voiceW@@3PAHA 0x002448f8
-i32 g_voiceW[3];
-// @data-symbol: ?g_voiceSE@@3PAHA 0x00244928
-i32 g_voiceSE[3];
-// @data-symbol: ?g_voiceNW@@3PAHA 0x00244918
-i32 g_voiceNW[3];
-// @data-symbol: ?g_voiceNE@@3PAHA 0x00244908
-i32 g_voiceNE[3];
-// @data-symbol: ?g_voiceSW@@3PAHA 0x00244948
-i32 g_voiceSW[3];
+// @data-symbol: ?g_voiceN@@3UCGruntVoiceRec@@A 0x002448e8
+CGruntVoiceRec g_voiceN;
+// @data-symbol: ?g_voiceS@@3UCGruntVoiceRec@@A 0x002448d8
+CGruntVoiceRec g_voiceS;
+// @data-symbol: ?g_voiceE@@3UCGruntVoiceRec@@A 0x002448c8
+CGruntVoiceRec g_voiceE;
+// @data-symbol: ?g_voiceW@@3UCGruntVoiceRec@@A 0x002448f8
+CGruntVoiceRec g_voiceW;
+// @data-symbol: ?g_voiceSE@@3UCGruntVoiceRec@@A 0x00244928
+CGruntVoiceRec g_voiceSE;
+// @data-symbol: ?g_voiceNW@@3UCGruntVoiceRec@@A 0x00244918
+CGruntVoiceRec g_voiceNW;
+// @data-symbol: ?g_voiceNE@@3UCGruntVoiceRec@@A 0x00244908
+CGruntVoiceRec g_voiceNE;
+// @data-symbol: ?g_voiceSW@@3UCGruntVoiceRec@@A 0x00244948
+CGruntVoiceRec g_voiceSW;
 
 // CGrunt::PlayMoveSound(x, y) @0x511b0 - directional grunt-voice dispatcher.
 // Bucketize the screen vector (x,y) - (m_10->m_5c, m_10->m_60) into one of 8
@@ -381,9 +381,9 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
 
     if (dx == 0) {
         if (y > h->m_screenY) {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceN));
+            PlaySound(1000, g_voiceN);
         } else if (y < h->m_screenY) {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceS));
+            PlaySound(1000, g_voiceS);
         }
         return;
     }
@@ -391,33 +391,33 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
     float ratio = static_cast<float>(dy) / dx;
     if (ratio > 2.0f || ratio < -2.0f) {
         if (y > h->m_screenY) {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceN));
+            PlaySound(1000, g_voiceN);
         } else {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceS));
+            PlaySound(1000, g_voiceS);
         }
         return;
     }
     if (ratio <= 0.5 && ratio >= -0.5) {
         if (x > cx) {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceE));
+            PlaySound(1000, g_voiceE);
         } else {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceW));
+            PlaySound(1000, g_voiceW);
         }
         return;
     }
     if (ratio > 0.5) {
         if (x > cx) {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceSE));
+            PlaySound(1000, g_voiceSE);
         } else {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceNW));
+            PlaySound(1000, g_voiceNW);
         }
         return;
     }
     if (ratio < -0.5) {
         if (x > cx) {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceNE));
+            PlaySound(1000, g_voiceNE);
         } else {
-            PlaySound(1000, *reinterpret_cast<CGruntVoiceRec*>(g_voiceSW));
+            PlaySound(1000, g_voiceSW);
         }
     }
 }
@@ -599,60 +599,60 @@ i32 CGrunt::StepCompassMove() {
             case 0:
             case 4:
                 moveY = y - 0x20;
-                voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceS);
+                voice = g_voiceS;
                 break;
             case 1:
             case 5:
                 moveY = y + 0x20;
-                voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceN);
+                voice = g_voiceN;
                 break;
             case 2:
             case 6:
                 moveX = x - 0x20;
-                voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceW);
+                voice = g_voiceW;
                 break;
             case 3:
             case 7:
                 moveX = x + 0x20;
-                voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceE);
+                voice = g_voiceE;
                 break;
             case 8:
                 switch (m_entranceCell.reason - 1) {
                     case 0:
                         moveY = y - 0x20;
-                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceS);
+                        voice = g_voiceS;
                         break;
                     case 1:
                         moveX = x + 0x20;
                         moveY = y - 0x20;
-                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNE);
+                        voice = g_voiceNE;
                         break;
                     case 2:
                         moveX = x + 0x20;
-                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceE);
+                        voice = g_voiceE;
                         break;
                     case 3:
                         moveY = y + 0x20;
                         moveX = x + 0x20;
-                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSE);
+                        voice = g_voiceSE;
                         break;
                     case 4:
                         moveY = y + 0x20;
-                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceN);
+                        voice = g_voiceN;
                         break;
                     case 5:
                         moveY = y + 0x20;
                         moveX = x - 0x20;
-                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSW);
+                        voice = g_voiceSW;
                         break;
                     case 6:
                         moveX = x - 0x20;
-                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceW);
+                        voice = g_voiceW;
                         break;
                     case 7:
                         moveX = x - 0x20;
                         moveY = y - 0x20;
-                        voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNW);
+                        voice = g_voiceNW;
                         break;
                 }
                 break;
@@ -699,39 +699,39 @@ i32 CGrunt::StepCompassMove() {
             switch (m_entranceCell.reason - 1) {
                 case 0:
                     moveY = y - 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceS);
+                    voice = g_voiceS;
                     break;
                 case 1:
                     moveY = y - 0x20;
                     moveX = x + 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNE);
+                    voice = g_voiceNE;
                     break;
                 case 2:
                     moveX = x + 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceE);
+                    voice = g_voiceE;
                     break;
                 case 3:
                     moveY = y + 0x20;
                     moveX = x + 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSE);
+                    voice = g_voiceSE;
                     break;
                 case 4:
                     moveY = y + 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceN);
+                    voice = g_voiceN;
                     break;
                 case 5:
                     moveY = y + 0x20;
                     moveX = x - 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSW);
+                    voice = g_voiceSW;
                     break;
                 case 6:
                     moveX = x - 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceW);
+                    voice = g_voiceW;
                     break;
                 case 7:
                     moveX = x - 0x20;
                     moveY = y - 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNW);
+                    voice = g_voiceNW;
                     break;
             }
             result = s_CanCommitMove(this, moveX, moveY);
@@ -766,39 +766,39 @@ i32 CGrunt::StepCompassMove() {
             switch (dir - 1) {
                 case 0:
                     moveY = y - 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceS);
+                    voice = g_voiceS;
                     break;
                 case 1:
                     moveX = x + 0x20;
                     moveY = y - 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNE);
+                    voice = g_voiceNE;
                     break;
                 case 2:
                     moveX = x + 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceE);
+                    voice = g_voiceE;
                     break;
                 case 3:
                     moveX = x + 0x20;
                     moveY = y + 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSE);
+                    voice = g_voiceSE;
                     break;
                 case 4:
                     moveY = y + 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceN);
+                    voice = g_voiceN;
                     break;
                 case 5:
                     moveX = x - 0x20;
                     moveY = y + 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceSW);
+                    voice = g_voiceSW;
                     break;
                 case 6:
                     moveX = x - 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceW);
+                    voice = g_voiceW;
                     break;
                 case 7:
                     moveY = y - 0x20;
                     moveX = x - 0x20;
-                    voice = *reinterpret_cast<CGruntVoiceRec*>(g_voiceNW);
+                    voice = g_voiceNW;
                     break;
             }
             result = s_CanCommitMove(this, moveX, moveY);
