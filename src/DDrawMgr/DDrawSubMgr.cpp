@@ -402,7 +402,7 @@ void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerA/B dtors + frame-set virtuals (0x1570d0-0x1572f0).
-// Vfunc30's a3 frame table @+0x14 bounded by [+0x64,+0x68] IS the canonical
+// PlaceFrame's a3 frame table @+0x14 bounded by [+0x64,+0x68] IS the canonical
 // CDDrawWorker - m_items (::CObArray, m_pData@+0x14) windowed by m_64/m_68, the very
 // fields MakeWorker seeds to 99999/0 and AddFrameAt_1521c0 widens.
 
@@ -456,7 +456,7 @@ i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
 RVA(0x00157150, 0xa5)
 void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
-    if (w->Vfunc34(a1, a2, a3, a4) == 0) {
+    if (w->PlaceBound(a1, a2, a3, a4) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -508,7 +508,7 @@ CDDrawWorkerB::~CDDrawWorkerB() {
 }
 
 RVA(0x00157280, 0x30)
-i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CDDrawWorkerB::PlaceBound(i32 a1, i32 a2, i32 a3, i32 a4) {
     Helper_166040(a3, a4);
     m_refCount = 2;
     return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
@@ -517,7 +517,7 @@ i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
 // 0x1572b0: store frame `src->m_frameTable[a4]` (0 if a4 out of bounds) into
 // m_78, set m_refCount=2, then forward (a1,a2) to the base SetPosition (0x164790).
 RVA(0x001572b0, 0x38)
-i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, CDDrawWorker* src, i32 a4) {
+i32 CDDrawWorkerB::PlaceFrame(i32 a1, i32 a2, CDDrawWorker* src, i32 a4) {
     i32 frame;
     if (a4 >= src->m_minIndex && a4 <= src->m_maxIndex) {
         frame = reinterpret_cast<i32>(src->m_items[a4]); // CObArray operator[] inline = m_pData[a4]
@@ -554,7 +554,7 @@ i32 CDDrawWorkerBase::Unload() {
 RVA(0x00157330, 0xa5)
 void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
-    if (w->Vfunc30(a1, a2, a3, a4) == 0) {
+    if (w->PlaceFrame(a1, a2, a3, a4) == 0) {
         if (w != 0) {
             delete w;
         }

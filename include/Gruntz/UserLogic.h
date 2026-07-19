@@ -154,7 +154,7 @@ struct CGameObject {
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c);      // [13] +0x34
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // [14] +0x38
     virtual i32 Slot3C(i32 ar, i32 mode, i32 a3, void* self); // [15] +0x3c  0x151150 == Play
-    virtual i32 Vfunc40(); // [16] +0x40  0x1bef01 const-getter (== slot 0)
+    virtual i32 GetSnapshotSubId(); // [16] +0x40  0x1bef01 const-getter (== slot 0)
 
     i32 m_04;    // +0x04
     i32 m_flags; // +0x08  bit4 = riding m_carrier; bit8 (0x100) = collision-active;

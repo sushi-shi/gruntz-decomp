@@ -36,7 +36,7 @@
 // and its +0x10 named-object map backs Helper_166040. Completed in HelperHost.cpp.
 struct CDDrawWorkerCtx;
 
-// Vfunc30's frame-source arg IS the canonical CDDrawWorker (m_items CObArray
+// PlaceFrame's frame-source arg IS the canonical CDDrawWorker (m_items CObArray
 // m_pData@+0x14, windowed by m_64/m_68) - the ex CDDrawFrameSource view.
 class CDDrawWorker; // the frame-source (ex CDDrawFrameSource view)
 
@@ -110,7 +110,7 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
 SIZE(CDDrawWorkerA, 0x7c);
 VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
 
-// int-frame worker (14-slot vtable 0x1efed0): adds Vfunc30 (slot 12) / Vfunc34
+// int-frame worker (14-slot vtable 0x1efed0): adds PlaceFrame (slot 12) / PlaceBound
 // (slot 13) plus the non-virtual named-object frame fetch Helper_166040 (0x166040).
 struct CDDrawWorkerB : public CDDrawWorkerBase {
     virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (compiler ??_G @0x157220; ~ @0x157240)
@@ -122,8 +122,8 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
         m_78 = 0;
     }
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                    // [11] 0x1572f0
-    virtual i32 Vfunc30(i32 a1, i32 a2, CDDrawWorker* src, i32 a4); // [12] 0x1572b0
-    virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);            // [13] 0x157280
+    virtual i32 PlaceFrame(i32 a1, i32 a2, CDDrawWorker* src, i32 a4); // [12] 0x1572b0
+    virtual i32 PlaceBound(i32 a1, i32 a2, i32 a3, i32 a4);            // [13] 0x157280
 
     // Non-virtual: look up a named object in the owner map, fetch element[idx] when
     // in range, cache at m_78, return whether it is non-null.

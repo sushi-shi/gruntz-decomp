@@ -63,7 +63,7 @@ public:
     // realizes the vtable per the all-vtables mandate; was a bare VTBL() manual ref).
     // Bodies live at their retail RVAs (reloc-masked). Slots 10 (0x1521f0, byte-exact)
     // and 15 (0x1522b0, @early-stop regalloc wall) are HOMED in DDrawWorker.cpp: they
-    // walk a CSymTab scope and self-dispatch InsertFrame (slot 14) / Slot40_1523b0
+    // walk a CSymTab scope and self-dispatch InsertFrame (slot 14) / ReloadFrame
     // (slot 16). m_0c is the owning CDDrawSurfaceMgr (single-frame flag m_flags&0x100).
     virtual i32 SetKey_155810(const char* key);            // slot 9  @0x155810 (key copy)
     virtual i32 BuildFramesFromSymTab(CSymTab* tab);       // slot 10 @0x1521f0
@@ -86,7 +86,7 @@ public:
     // PAVCImage), not the `i32` the slots used to be declared with.
     virtual CImage* InsertFrame(void* rec, i32 n, i32 flag); // slot 14 @0x151f00
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);  // slot 15 @0x1522b0
-    virtual i32 Slot40_1523b0(i32 rec, i32 n, i32 flag); // slot 16 @0x1523b0
+    virtual i32 ReloadFrame(i32 rec, i32 n, i32 flag); // slot 16 @0x1523b0
     // ---- the ex-CImageSet non-virtual methods (stage 5 of the fold; bodies in
     // wwdgameobject at their retail RVAs). They were declared on a THIRD view of this
     // same 0x6c object; CreateFrame24/28/30 above are this vtable's own slots 11/12/13.

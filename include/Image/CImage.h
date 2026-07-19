@@ -214,9 +214,9 @@ public:
     virtual i32 Create(CImageFrameDesc* desc, i32 keyed);                      // slot 12 0x152e90
     virtual i32 Reload(CParseSource* src, i32 arg);                            // slot 13 0x153380
     virtual void RenderImage(CBlitInfo* info, CImage* dst);                    // slot 14 0x153470
-    virtual void Slot15_153370(void* a);                                       // slot 15 (external)
-    virtual void Slot16_0d5e00(void* a); // slot 16 (ILT 0x002d6a; no-op sink)
-    virtual void Slot17_0d5e20(void* a); // slot 17: forward arg to slots 15 then 16
+    virtual void FlipVertical(void* a);                                       // slot 15 (external)
+    virtual void FlipHorizontal(void* a); // slot 16 (ILT 0x002d6a; no-op sink)
+    virtual void FlipBoth(void* a); // slot 17: forward arg to slots 15 then 16
 
     // Non-virtual members (direct-called; not in the vtable).
     i32

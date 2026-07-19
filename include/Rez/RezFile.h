@@ -72,7 +72,7 @@ public:
     // from the dir's closed list (CObjList::Remove), then ~CRezItmBase folds.
     virtual ~CRezFile() OVERRIDE; // [1]; ??_G 0x13cb60
 
-    virtual void Slot00_13c530() OVERRIDE; // [0] own empty copy at 0x13cef0
+    virtual void Noop() OVERRIDE; // [0] own empty copy at 0x13cef0
 
     // Read `count` bytes at `pos` into buf, ensuring the handle is open and
     // recovering through the dir's gate on seek/short-read failure (0x13cc00).

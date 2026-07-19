@@ -1088,7 +1088,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
 
     i32 ebx = 0;
     if (this->GetTypeId() == 0x1c) {
-        ebx = this->Vfunc40();
+        ebx = this->GetSnapshotSubId();
     }
 
     w = m_7c;
@@ -1425,7 +1425,7 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
 // ===========================================================================
 // 0x1522b0 (slot 15): validate that a CSymTab scope's image-type value records
 // (tags 'PCX'/'BMP'/'RID'/'PID') each resolve to a frame in the cached window via
-// slot 16 (Slot40_1523b0). Returns -1 the moment a resolve fails, or if fewer
+// slot 16 (ReloadFrame). Returns -1 the moment a resolve fails, or if fewer
 // records matched than the count of live frames in [m_64, m_68]; else the match
 // count. __thiscall(tab), ret 4.
 // ===========================================================================
@@ -1471,7 +1471,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
                     p++;
                 }
                 i32 fi = atoi(p);
-                if (0 == Slot40_1523b0(reinterpret_cast<i32>(val), fi, 1)) {
+                if (0 == ReloadFrame(reinterpret_cast<i32>(val), fi, 1)) {
                     return -1;
                 }
                 matched++;
@@ -1489,7 +1489,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
 // slot-13 query (rec, flag), returning it as a bool; otherwise 0. __thiscall, ret 0xc.
 // ===========================================================================
 RVA(0x001523b0, 0x3b)
-i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
+i32 CDDrawWorker::ReloadFrame(i32 rec, i32 n, i32 flag) {
     CImage* el;
     if (n >= m_minIndex && n <= m_maxIndex) {
         el = reinterpret_cast<CImage*>(m_items.GetAt(n));

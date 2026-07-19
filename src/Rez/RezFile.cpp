@@ -77,11 +77,11 @@ CRezItmBase::~CRezItmBase() {
 }
 
 // ---------------------------------------------------------------------------
-// CRezItmBase::Slot00_13c530 (vtable slot 0): an empty body (bare ret). The
+// CRezItmBase::Noop (vtable slot 0): an empty body (bare ret). The
 // base's concrete slot-0 default; CRezFile carries its own identical empty copy
 // (0x13cef0), CRezItm/CRezDir inherit this one.
 RVA(0x0013c530, 0x1)
-void CRezItmBase::Slot00_13c530() {}
+void CRezItmBase::Noop() {}
 
 // ---------------------------------------------------------------------------
 // CRezItm::CRezItm(parent)
@@ -618,11 +618,11 @@ i32 CRezFile::CloseFile() {
     return ok;
 }
 
-// CRezFile::Slot00_13c530 (0x13cef0, vtable slot 0): the class's own empty copy of the
+// CRezFile::Noop (0x13cef0, vtable slot 0): the class's own empty copy of the
 // slot-0 default (retail emits it standalone; the base's identical copy is
 // 0x13c530 - MSVC5 has no ICF, so both bodies survive).
 RVA(0x0013cef0, 0x1)
-void CRezFile::Slot00_13c530() {}
+void CRezFile::Noop() {}
 
 // (WAP32::CGameMgr::PerFrameTick @0x13ddc0 (ex "RezMgr::UpdateClock"; the base
 // vtable slot 4), SpinWaitUntil @0x13dec0, SetFrameRate @0x13dee0, TrySetFrameRate

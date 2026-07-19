@@ -35,7 +35,7 @@ struct WwdSnapshot {
     i32 m_00;          // +0x00  m_04
     i32 m_04;          // +0x04  m_188 (object id)
     i32 m_08;          // +0x08  this->GetTypeId()
-    i32 m_0c;          // +0x0c  0, or this->Vfunc40() when GetTypeId()==0x1c
+    i32 m_0c;          // +0x0c  0, or this->GetSnapshotSubId() when GetTypeId()==0x1c
     i32 m_10;          // +0x10  0, or worker->m_logic->GetTypeTag()
     char m_name[0x80]; // +0x14  name string from the mgr
     i32 m_94;          // +0x94  m_posX
@@ -100,7 +100,7 @@ SIZE_UNKNOWN(CWwdGameObject); // the DISPATCH model; the concrete kinds carry th
 // m_7c && m_0c && m_04 != -1`) / IsReady (0x001c08 default) pair, 7 ReleaseSubs
 // @0x15b5d0, 8 GetTypeId @0x154a00 (per-kind tag: E=0, C=6, F=0x16, B=0x1b),
 // 9 SetPosition @0x164790 (body = Helper164790 below, the direct-call spelling),
-// 10 Setup, 11 Render, 12-14 BltDirty*, 15 Slot3C == Play, 16 Vfunc40.
+// 10 Setup, 11 Render, 12-14 BltDirty*, 15 Slot3C == Play, 16 GetSnapshotSubId.
 class CWwdGameObject : public CGameObject {
 public:
     // slot 10 - the factories' 4-arg Build dispatch; the body definition
