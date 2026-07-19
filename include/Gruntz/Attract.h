@@ -214,7 +214,7 @@ public:
         return static_cast<CGruntzMgr*>(m_4);
     }
     CSymTab* attractState() {
-        return reinterpret_cast<CSymTab*>(m_2c);
+        return (m_2c);
     }
 
     // The attract-specific block sits past the CState spine (which ends at +0x1a4).

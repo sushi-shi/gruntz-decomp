@@ -33,7 +33,8 @@ class CSymParser;       // +0x08 the level/rez symbol parser (<Bute/SymParser.h>
 // shell WAS this class: every consumer called ((CSymParser*)m_8)->ResolvePath
 // (@0x13c030), and the loader stores mgr->m_symParser here outright.
 class CDDSurface;        // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
-struct CResSource;       // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
+class CSymTab;
+typedef CSymTab CResSource; // +0x28/+0x30/+0x34 resolved asset banks (== the ButeMgr symbol table)
 class CSymTab;           // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
 class CMenuRoot;         // m_c's title/menu-root facet (the title-roll cluster's view)
 class CAttractScreenObj; // m_2c's fade-screen-resolver facet (FadeInTitle's view)
@@ -263,7 +264,7 @@ public:
     // The cached asset source (m_2c) is a Bute CSymTab; one typed accessor for that
     // facet so the state loaders drop the (CSymTab*)m_2c casts. <Bute/SymTab.h>.
     CSymTab* SymTab2c() {
-        return reinterpret_cast<CSymTab*>(m_2c);
+        return (m_2c);
     }
     CSymTab* m_gruntzBank; // +0x30  GRUNTZ asset bank (CSymTab; LoadImageBanks caches here)
     CSymTab* m_gameBank;   // +0x34  GAME asset bank (CSymTab; GAME-namespace loaders' source)

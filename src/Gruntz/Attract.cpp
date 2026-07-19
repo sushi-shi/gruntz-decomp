@@ -146,13 +146,13 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
 
         CSymTab* saved = attractState();
         CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
-        m_2c = reinterpret_cast<CResSource*>(state);
+        m_2c = (state);
         if (state == 0) {
             return 0;
         }
 
         i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-        m_2c = reinterpret_cast<CResSource*>(saved);
+        m_2c = (saved);
         if (faded == 0) {
             return 0;
         }
@@ -209,13 +209,13 @@ i32 CAttract::Activate() {
 
     CSymTab* saved = attractState();
     CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
-    m_2c = reinterpret_cast<CResSource*>(state);
+    m_2c = (state);
     if (state == 0) {
         return 0;
     }
 
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_2c = reinterpret_cast<CResSource*>(saved);
+    m_2c = (saved);
     if (faded == 0) {
         return 0;
     }

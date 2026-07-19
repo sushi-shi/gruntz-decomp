@@ -1100,7 +1100,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // m_2c = m_28 (the resolved area descriptor); refresh the host window
     {
         CResSource* prevTiles = self->m_2c;
-        self->m_2c = reinterpret_cast<CResSource*>(self->m_levelBank);
+        self->m_2c = (self->m_levelBank);
         UpdateWindow(self->m_4->m_gameWnd->m_hwnd);
 
         host = self->m_4;

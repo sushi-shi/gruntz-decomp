@@ -24,11 +24,11 @@
 // (0x13a230). The state activators reach the SAME +0x2c/+0x28/+0x30 source through this
 // facet (LookupSet) - so folding a state's CSymTab-typed asset-source shadow (e.g.
 // StateImages' bootySymTab/gruntzSymTab) onto CState's CResSource* fields is byte-neutral.
-// Kept as this 2-method facet rather than retyped to CSymTab because the excluded Play.cpp
-// reaches m_levelBank/m_gameBank by the LookupSet name (full CResSource<->CSymTab merge
-// deferred; see the reports).
-SIZE_UNKNOWN(CResSource);
-struct CResSource {};
+// MERGED 2026-07-19: CResSource IS CSymTab (the deferred full merge, executed). The
+// facet name survives as a typedef so the State.h field comments stay readable; the
+// two facet methods are the real CSymTab::ResolvePath / CSymTab::FindSub.
+class CSymTab;
+typedef CSymTab CResSource;
 
 // (CBankMgr is GONE - DISSOLVED 2026-07-15: the +0x08 bank/namespace manager IS the
 //  Bute CSymParser (<Bute/SymParser.h>): its "Lookup"/"Register" is ResolvePath
