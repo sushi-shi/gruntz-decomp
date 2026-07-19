@@ -46,11 +46,6 @@ struct CTmNode {
 // name registry maps to a string. And the goal object (cell->m_154 / the manager's goal),
 // whose +0x8 flags word gets the 0x10000 done-bit; full CTmGoal is defined below.
 struct CTmGoal;
-struct CTmNotifyHook; // a cell's opaque +0x368 notify hook (only null-tested)
-struct CTmCellConfig {
-    char p0[0x1c];
-    i32 m_1c; // +0x1c  config-name id
-};
 
 // The display sub-object hung at a grid cell's +0x10: the world position (m_5c/m_60),
 // the archive id (m_188) and the clickable/hit gate (m_198). Reached as cell->m_10.
@@ -198,9 +193,6 @@ struct CTmOverlaySrc {
 
 // The world's report/spawn sub-mgrs ResetGroup dispatches through (gameReg+0x6c reporter,
 // +0x68 fx-mgr, +0x60 cursor-mgr), all reloc-masked.
-struct CTmCursorMgr {
-    void Spawn(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x90bf4 (gameReg+0x60)
-};
 
 // --- the megafn (FUN_6f2f0) leaf helpers, @identity-TODO (orphan COMDATs whose only
 // caller is the ~21 KB unreconstructed megafunction; owner unrecovered). Homed here from
@@ -239,14 +231,12 @@ struct CGridLookup {
 // end-of-TU (after all bodies) is matching-neutral.
 SIZE_UNKNOWN(CTmNode);
 SIZE_UNKNOWN(CTmDisplay);
-SIZE_UNKNOWN(CTmCellConfig);
 SIZE_UNKNOWN(CTmOverlay);
 SIZE_UNKNOWN(CTmGoal);
 SIZE_UNKNOWN(CTmNameReg);
 SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CTmCell);
 SIZE_UNKNOWN(CTmOverlaySrc);
-SIZE_UNKNOWN(CTmCursorMgr);
 SIZE_UNKNOWN(CPairXY);
 SIZE_UNKNOWN(CGridCell);
 SIZE_UNKNOWN(CGridLookup);

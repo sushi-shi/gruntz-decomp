@@ -19,11 +19,6 @@
 
 // The settings/registry singleton (0x64556c); its +0x30 is the level's status-bar
 // owner passed as the StatzTab arg2.
-struct CSbBuildSettings {
-    char m_pad00[0x30];
-    class CDDrawSurfaceMgr* m_world; // +0x30  the loaded world (the singleton's m_world slot)
-};
-SIZE_UNKNOWN(CSbBuildSettings);
 
 // CStatzTabBuilder - the STATZTAB CONTAINER Build runs on (0x105070 was MISLABELED
 // ~CSBI_SideTab by the rtti-vptr heuristic; the CSBI_SideTab is the CHILD it builds,

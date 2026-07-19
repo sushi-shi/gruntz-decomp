@@ -44,10 +44,5 @@ struct Iter118330 {
     Node118330* GetNext(int x); // 0x1b30f0 (__thiscall)
 };
 SIZE_UNKNOWN(Iter118330);
-struct Out118330 {
-    char _0[0xc];
-    i32 m_c, m_10, m_14; // 0xc,0x10,0x14
-};
-SIZE_UNKNOWN(Out118330);
 
 #endif // GRUNTZ_BOUNDARYTAILVIEWS_H
