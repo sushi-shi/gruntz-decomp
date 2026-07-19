@@ -1060,7 +1060,7 @@ struct CNetCreateCtx {
     char m_pad0[0x70];
     InterfaceObject*
         m_serviceProvider; // +0x70  selected service-provider (IsInterface2 -> slow-link timeout)
-    void* m_74;            // +0x74  the group-enumeration record
+    u8* m_74;              // +0x74  the group-enumeration record blob
 };
 SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail size TBD
 // (g_netCreateCtx moved to its only user, Multi.cpp, so it can carry the DATA() binding a

@@ -27,7 +27,8 @@
 #include <Bute/ButeMgr.h>                 // CButeMgr g_buteMgr (SecretColor wormhole tint)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (m_world->m_childGroup CreateSprite)
 #include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
-#include <Gruntz/WwdGameReg.h>            // g_gameReg (GenMenuRandPos Rand/RandRange)
+#include <Gruntz/WwdGameReg.h>
+#include <Gruntz/LightFxMgr.h> // m_78->m_tables (the glitter handle table)            // g_gameReg (GenMenuRandPos Rand/RandRange)
 #include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (the real m_world class)
 #include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_childGroup factory)
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
@@ -190,8 +191,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (wh == 0) {
         return 0;
     }
-    i32 tint = (static_cast<CGlitterColorTable*>(g_gameReg->m_78))
-                   ->m_arr14[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
+    i32 tint = reinterpret_cast<i32>(
+        g_gameReg->m_78->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)]);
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CGameObject* p318 = m_icons[7];

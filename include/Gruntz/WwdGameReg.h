@@ -56,10 +56,11 @@ struct WwdGameReg {
                               //         downcasts to CTeleCueSink)
     char m_pad64[0x68 - 0x64];
     i32 m_68;   // +0x68  reused slot (cast: CGruntTileMgr* / PlaceGridMgr* / CTriggerProbe*)
-    void* m_6c; // +0x6c  reused slot (cast: StartCmdMgr*)
+    class CGruntzCmdMgr* m_6c; // +0x6c  the cmd sub-mgr (twin of CGameRegistry
+                               //        m_cmdSubMgr; the StartCmdMgr casts are its facet)
     GruntBoard* m_tileGrid;   // +0x70  level tile board (grunt facet; cast: WwdGameGrid*)
     CSpriteRefTable* m_74;    // +0x74  sprite/animation ref table (GetSel)
-    void* m_78;               // +0x78
+    class CLightFxMgr* m_78;  // +0x78  the logic pump (twin of CGruntzMgr m_logicPump)
     CBattlezData* m_scoreHud; // +0x7c  (same slot/name as the CGameRegistry sibling view;
                               //  the former GruntPickupStats/WwdGameRegInner/Aux views of it
                               //  are dissolved - the pickup-stat bands are its +0xd8.. arrays)

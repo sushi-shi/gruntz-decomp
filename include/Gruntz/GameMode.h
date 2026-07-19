@@ -146,11 +146,8 @@ struct BzGeomPair {
 
 // The SecretColor -> handle color table (the CBootyState/wormhole-tint local table;
 // DATA home GameMode.cpp). Homed here from that TU.
-SIZE_UNKNOWN(CGlitterColorTable);
-struct CGlitterColorTable {
-    char m_pad00[0x14];
-    i32 m_arr14[1]; // +0x14  SecretColor -> handle table
-};
+// (The former CGlitterColorTable view is DISSOLVED: its +0x14 handle table IS
+// CLightFxMgr::m_tables - the shade-table pointers read as int handles.)
 // The 8 booty-message layout RECTs (0x60b8f8; DATA home BootyMessages.cpp). Shared
 // by CBootyState/CMultiBootyState layout code here (declared, not per-TU extern).
 extern RECT g_levelMsgRectsB[8];
