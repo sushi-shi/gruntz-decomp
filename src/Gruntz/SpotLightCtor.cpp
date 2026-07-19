@@ -346,8 +346,8 @@ i32 CSpotLight::Tick_0b1af0() {
     m_60 = m_70 + rx;
     m_68 = m_78 + ry;
     m_90 = m_90 + dt * m_58;
-    *(i32*)((char*)m_object + 0x5c) = static_cast<i32>(m_60);
-    *(i32*)((char*)m_object + 0x60) = static_cast<i32>(m_68);
+    m_object->m_screenX = static_cast<i32>(m_60);
+    m_object->m_screenY = static_cast<i32>(m_68);
     return 0;
 }
 

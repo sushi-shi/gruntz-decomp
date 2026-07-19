@@ -420,21 +420,21 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_normChipSprite) {
-        strcpy(tmp, (char*)m_normChipSprite + 0x24);
+        strcpy(tmp, m_normChipSprite->m_name);
     }
     ar->Write(tmp, 0x80);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_highChipSprite) {
-        strcpy(tmp, (char*)m_highChipSprite + 0x24);
+        strcpy(tmp, m_highChipSprite->m_name);
     }
     ar->Write(tmp, 0x80);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_greyChipSprite) {
-        strcpy(tmp, (char*)m_greyChipSprite + 0x24);
+        strcpy(tmp, m_greyChipSprite->m_name);
     }
     ar->Write(tmp, 0x80);
 

@@ -1398,7 +1398,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
 
     // The factory's embedded serialize map is the real MFC CMapPtrToPtr at +0x48
     // (Lookup @0x1b8760); documented embedded-member offset (see SpriteFactory.h).
-    CMapPtrToPtr* map = (CMapPtrToPtr*)((char*)m_world->m_childGroup + 0x48);
+    CMapPtrToPtr* map = &m_world->m_childGroup->m_map48;
 
     // the 4x15 placed-object grid (this[7..66], byte offsets +0x1c..+0x108)
     for (i32 base = 7; base < 0x43; base += 0xf) {

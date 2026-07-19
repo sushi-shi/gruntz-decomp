@@ -887,10 +887,10 @@ RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
 
-    if (((CTeleAnimSink*)((char*)m_38 + 0x1a0))->m_28 == 0) {
+    if (m_38->m_1a0.m_28 == 0) {
         return 0;
     }
-    if (((CTeleAnimSink*)((char*)m_38 + 0x1a0))->m_20 != 0) {
+    if (m_38->m_1a0.m_20 != 0) {
         return 0;
     }
 

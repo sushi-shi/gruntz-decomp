@@ -475,7 +475,7 @@ void RegisterWarlordActions() {
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
+    CAniAdvanceCursor* sub = &m_38->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
     }
@@ -588,7 +588,7 @@ i32 CWarlord::LoadAttributes2() {
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
+    CAniAdvanceCursor* sub = &m_38->m_1a0;
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
     }
@@ -613,7 +613,7 @@ i32 CWarlord::AdvanceMovingAnim() {
 RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
+    CAniAdvanceCursor* sub = &m_38->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         (reinterpret_cast<CGrunt*>(this))->ResolveMovingAnimation();
     }
